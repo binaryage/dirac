@@ -64,7 +64,7 @@ WebInspector.ResourceSourceFrame.prototype = {
         return this._resource;
     },
 
-    populateTextAreaContextMenu: function(contextMenu, lineNumber)
+    populateTextAreaContextMenu: function(contextMenu, lineNumber, columnNumber)
     {
         contextMenu.appendApplicableItems(this._resource);
     },

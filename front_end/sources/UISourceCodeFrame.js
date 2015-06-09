@@ -168,10 +168,11 @@ WebInspector.UISourceCodeFrame.prototype = {
         delete this._isSettingContent;
     },
 
-    populateTextAreaContextMenu: function(contextMenu, lineNumber)
+    populateTextAreaContextMenu: function(contextMenu, lineNumber, columnNumber)
     {
-        WebInspector.SourceFrame.prototype.populateTextAreaContextMenu.call(this, contextMenu, lineNumber);
+        WebInspector.SourceFrame.prototype.populateTextAreaContextMenu.call(this, contextMenu, lineNumber, columnNumber);
         contextMenu.appendApplicableItems(this._uiSourceCode);
+        contextMenu.appendApplicableItems(new WebInspector.UILocation(this._uiSourceCode, lineNumber, columnNumber));
         contextMenu.appendSeparator();
     },
 

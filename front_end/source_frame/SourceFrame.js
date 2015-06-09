@@ -604,7 +604,7 @@ WebInspector.SourceFrame.prototype = {
     {
     },
 
-    populateTextAreaContextMenu: function(contextMenu, lineNumber)
+    populateTextAreaContextMenu: function(contextMenu, lineNumber, columnNumber)
     {
     },
 
@@ -1019,9 +1019,9 @@ WebInspector.TextEditorDelegateForSourceFrame.prototype = {
     /**
      * @override
      */
-    populateTextAreaContextMenu: function(contextMenu, lineNumber)
+    populateTextAreaContextMenu: function(contextMenu, lineNumber, columnNumber)
     {
-        this._sourceFrame.populateTextAreaContextMenu(contextMenu, lineNumber);
+        this._sourceFrame.populateTextAreaContextMenu(contextMenu, lineNumber, columnNumber);
     },
 
     /**

@@ -667,10 +667,17 @@ WebInspector.SourcesPanel.prototype = {
     },
 
     /**
-     * @param {!WebInspector.DebuggerModel.Location} rawLocation
+     * @param {!WebInspector.UILocation} uiLocation
      */
-    continueToLocation: function(rawLocation)
+    _continueToLocation: function(uiLocation)
     {
+        var executionContext = WebInspector.context.flavor(WebInspector.ExecutionContext);
+        if (!executionContext)
+            return;
+        var rawLocation = WebInspector.debuggerWorkspaceBinding.uiLocationToRawLocation(executionContext.target(), uiLocation.uiSourceCode, uiLocation.lineNumber, uiLocation.columnNumber);
+        if (!rawLocation)
+            return;
+
         if (!this._prepareToResume())
             return;
 
@@ -820,6 +827,7 @@ WebInspector.SourcesPanel.prototype = {
     appendApplicableItems: function(event, contextMenu, target)
     {
         this._appendUISourceCodeItems(event, contextMenu, target);
+        this.appendUILocationItems(contextMenu, target);
         this._appendRemoteObjectItems(contextMenu, target);
         this._appendNetworkRequestItems(contextMenu, target);
     },
@@ -925,20 +933,40 @@ WebInspector.SourcesPanel.prototype = {
 
         var uiSourceCode = /** @type {!WebInspector.UISourceCode} */ (target);
         var projectType = uiSourceCode.project().type();
+
+        if (projectType !== WebInspector.projectTypes.Debugger && !event.target.isSelfOrDescendant(this._navigator.view.element)) {
+            contextMenu.appendItem(WebInspector.UIString.capitalize("Reveal in ^navigator"), this._handleContextMenuReveal.bind(this, uiSourceCode));
+            contextMenu.appendSeparator();
+        }
+        this._appendUISourceCodeMappingItems(contextMenu, uiSourceCode);
         if (projectType !== WebInspector.projectTypes.FileSystem)
             contextMenu.appendItem(WebInspector.UIString.capitalize("Local ^modifications\u2026"), this._showLocalHistory.bind(this, uiSourceCode));
-        this._appendUISourceCodeMappingItems(contextMenu, uiSourceCode);
+    },
+
+    /**
+     * @param {!WebInspector.ContextMenu} contextMenu
+     * @param {!Object} object
+     */
+    appendUILocationItems: function(contextMenu, object)
+    {
+        if (!(object instanceof WebInspector.UILocation))
+            return;
+        var uiLocation = /** @type {!WebInspector.UILocation} */ (object);
+        var uiSourceCode = uiLocation.uiSourceCode;
+        var projectType = uiSourceCode.project().type();
 
         var contentType = uiSourceCode.contentType();
+        if (contentType === WebInspector.resourceTypes.Script || contentType === WebInspector.resourceTypes.Document) {
+            var target = WebInspector.context.flavor(WebInspector.Target);
+            var debuggerModel = WebInspector.DebuggerModel.fromTarget(target);
+            if (debuggerModel && debuggerModel.isPaused())
+                contextMenu.appendItem(WebInspector.UIString.capitalize("Continue to ^here"), this._continueToLocation.bind(this, uiLocation));
+        }
+
         if ((contentType === WebInspector.resourceTypes.Script || contentType === WebInspector.resourceTypes.Document) && projectType !== WebInspector.projectTypes.Snippets) {
             var networkURL = this._networkMapping.networkURL(uiSourceCode);
             var url = projectType === WebInspector.projectTypes.Formatter ? uiSourceCode.originURL() : networkURL;
             this.sidebarPanes.callstack.appendBlackboxURLContextMenuItems(contextMenu, url, projectType === WebInspector.projectTypes.ContentScripts);
-        }
-
-        if (projectType !== WebInspector.projectTypes.Debugger && !event.target.isSelfOrDescendant(this._navigator.view.element)) {
-            contextMenu.appendSeparator();
-            contextMenu.appendItem(WebInspector.UIString.capitalize("Reveal in ^navigator"), this._handleContextMenuReveal.bind(this, uiSourceCode));
         }
     },
 

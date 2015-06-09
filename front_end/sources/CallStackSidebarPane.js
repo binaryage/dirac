@@ -205,7 +205,6 @@ WebInspector.CallStackSidebarPane.prototype = {
         if (!blackboxed && !isContentScript && !canBlackBox)
             return;
 
-        contextMenu.appendSeparator();
         if (blackboxed) {
             contextMenu.appendItem(WebInspector.UIString.capitalize("Stop ^blackboxing"), this._handleContextMenuBlackboxURL.bind(this, url, isContentScript, false));
         } else {

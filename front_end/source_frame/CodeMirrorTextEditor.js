@@ -1061,8 +1061,10 @@ WebInspector.CodeMirrorTextEditor.prototype = {
         var target = event.target.enclosingNodeOrSelfWithClass("CodeMirror-gutter-elt");
         if (target)
             this._delegate.populateLineGutterContextMenu(contextMenu, parseInt(target.textContent, 10) - 1);
-        else
-            this._delegate.populateTextAreaContextMenu(contextMenu, 0);
+        else {
+            var textSelection = this.selection();
+            this._delegate.populateTextAreaContextMenu(contextMenu, textSelection.startLine, textSelection.startColumn);
+        }
         contextMenu.appendApplicableItems(this);
         contextMenu.show();
     },
@@ -2168,8 +2170,9 @@ WebInspector.TextEditorDelegate.prototype = {
     /**
      * @param {!WebInspector.ContextMenu} contextMenu
      * @param {number} lineNumber
+     * @param {number} columnNumber
      */
-    populateTextAreaContextMenu: function(contextMenu, lineNumber) { },
+    populateTextAreaContextMenu: function(contextMenu, lineNumber, columnNumber) { },
 
     /**
      * @param {?WebInspector.TextRange} from
