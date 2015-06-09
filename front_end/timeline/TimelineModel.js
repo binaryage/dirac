@@ -146,6 +146,7 @@ WebInspector.TimelineModel.RecordType = {
     LazyPixelRef: "LazyPixelRef",
     LayerTreeHostImplSnapshot: "cc::LayerTreeHostImpl",
     PictureSnapshot: "cc::Picture",
+    DisplayItemListSnapshot: "cc::DisplayItemList",
 
     // CpuProfile is a virtual event created on frontend to support
     // serialization of CPU Profiles within tracing timeline data.
@@ -1132,6 +1133,7 @@ WebInspector.TimelineModel.prototype = {
             this._lastPaintForLayer[layerUpdateEvent.args["layerId"]] = event;
             break;
 
+        case recordTypes.DisplayItemListSnapshot:
         case recordTypes.PictureSnapshot:
             var layerUpdateEvent = this._findAncestorEvent(recordTypes.UpdateLayer);
             if (!layerUpdateEvent || layerUpdateEvent.args["layerTreeId"] !== this._inspectedTargetLayerTreeId)
