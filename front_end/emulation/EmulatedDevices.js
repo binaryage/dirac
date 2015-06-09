@@ -28,6 +28,9 @@ WebInspector.EmulatedDevice = function()
     this._show = WebInspector.EmulatedDevice._Show.Default;
     /** @type {boolean} */
     this._showByDefault = true;
+
+    /** @type {?Runtime.Extension} */
+    this._extension = null;
 }
 
 /** @typedef {!{title: string, orientation: string, pageRect: !WebInspector.Geometry.Rect, images: !WebInspector.EmulatedDevice.Images}} */
@@ -260,6 +263,22 @@ WebInspector.EmulatedDevice.compareByTitle = function(device1, device2)
 
 WebInspector.EmulatedDevice.prototype = {
     /**
+     * @return {?Runtime.Extension}
+     */
+    extension: function()
+    {
+        return this._extension;
+    },
+
+    /**
+     * @param {?Runtime.Extension} extension
+     */
+    setExtension: function(extension)
+    {
+        this._extension = extension;
+    },
+
+    /**
      * @return {*}
      */
     _toJSON: function()
@@ -421,30 +440,11 @@ WebInspector.EmulatedDevicesList = function()
 {
     WebInspector.Object.call(this);
 
-    /**
-     * @param {!Array.<*>} list
-     * @param {string} type
-     * @return {!Array.<*>}
-     */
-    function convert(list, type)
-    {
-        var result = [];
-        for (var i = 0; i < list.length; ++i) {
-            var device = WebInspector.EmulatedDevice.fromOverridesDevice(/** @type {!WebInspector.OverridesSupport.Device} */ (list[i]), list[i].title, type);
-            result.push(device._toJSON());
-        }
-        return result;
-    }
-
-    // FIXME: shrink default list once external list is good enough.
-    var defaultValue = convert(WebInspector.OverridesUI._phones, "phone")
-        .concat(convert(WebInspector.OverridesUI._tablets, "tablet"))
-        .concat(convert(WebInspector.OverridesUI._notebooks, "notebook"));
-
     /** @type {!WebInspector.Setting} */
-    this._standardSetting = WebInspector.settings.createSetting("standardEmulatedDeviceList", defaultValue);
+    this._standardSetting = WebInspector.settings.createSetting("standardEmulatedDeviceList", []);
     /** @type {!Array.<!WebInspector.EmulatedDevice>} */
     this._standard = this._listFromJSONV1(this._standardSetting.get());
+    this._updateStandardDevices();
 
     /** @type {!WebInspector.Setting} */
     this._customSetting = WebInspector.settings.createSetting("customEmulatedDeviceList", []);
@@ -458,6 +458,20 @@ WebInspector.EmulatedDevicesList.Events = {
 }
 
 WebInspector.EmulatedDevicesList.prototype = {
+    _updateStandardDevices: function()
+    {
+        var devices = [];
+        var extensions = self.runtime.extensions("emulated-device");
+        for (var i = 0; i < extensions.length; ++i) {
+            var device = WebInspector.EmulatedDevice.fromJSONV1(extensions[i].descriptor()["device"]);
+            device.setExtension(extensions[i]);
+            devices.push(device);
+        }
+        this._copyShowValues(this._standard, devices);
+        this._standard = devices;
+        this.saveStandardDevices();
+    },
+
     /**
      * @param {!Array.<*>} jsonArray
      * @return {!Array.<!WebInspector.EmulatedDevice>}

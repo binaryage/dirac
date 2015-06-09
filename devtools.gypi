@@ -303,6 +303,7 @@
             'front_end/components_lazy/module.json',
             'front_end/console/module.json',
             'front_end/elements/module.json',
+            'front_end/emulated_devices/module.json',
             'front_end/emulation/module.json',
             'front_end/extensions/module.json',
             'front_end/heap_snapshot_worker/module.json',
@@ -410,6 +411,8 @@
             'front_end/elements/StylesSectionModel.js',
             'front_end/elements/StylesSidebarPane.js',
             'front_end/elements/ComputedStyleWidget.js',
+        ],
+        'devtools_emulated_devices_js_files': [
         ],
         'devtools_extensions_js_files': [
             'front_end/extensions/ExtensionAuditCategory.js',
@@ -665,6 +668,7 @@
             '<@(devtools_components_lazy_js_files)',
             '<@(devtools_console_js_files)',
             '<@(devtools_elements_js_files)',
+            '<@(devtools_emulated_devices_js_files)',
             '<@(devtools_extensions_js_files)',
             '<@(devtools_heap_snapshot_worker_js_files)',
             '<@(devtools_layers_js_files)',

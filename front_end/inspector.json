@@ -29,6 +29,7 @@
     { "name": "accessibility", "type": "remote" },
     { "name": "animation", "type": "remote" },
     { "name": "screencast", "condition": "remoteFrontend", "type": "remote" },
+    { "name": "emulated_devices", "type": "remote" },
 
     { "name": "heap_snapshot_worker", "type": "worker" },
     { "name": "script_formatter_worker", "type": "worker" },

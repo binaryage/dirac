@@ -214,8 +214,6 @@ class ReleaseBuilder(AppBuilder):
         module = self.descriptors.modules[module_name]
         scripts = module.get('scripts')
         resources = self.descriptors.module_resources(module_name)
-        if not scripts and not resources:
-            return
         module_dir = join(self.application_dir, module_name)
         output = StringIO()
         if scripts:
