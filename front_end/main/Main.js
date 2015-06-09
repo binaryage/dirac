@@ -225,7 +225,7 @@ WebInspector.Main.prototype = {
 
         new WebInspector.OverlayController();
         new WebInspector.ContentScriptProjectDecorator();
-        new WebInspector.ExecutionContextSelector();
+        new WebInspector.ExecutionContextSelector(WebInspector.targetManager, WebInspector.context);
 
         var autoselectPanel = WebInspector.UIString("a panel chosen automatically");
         var openAnchorLocationSetting = WebInspector.settings.createSetting("openLinkHandler", autoselectPanel);

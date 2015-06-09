@@ -5,15 +5,19 @@
 /**
  * @constructor
  * @implements {WebInspector.TargetManager.Observer}
+ * @param {!WebInspector.TargetManager} targetManager
+ * @param {!WebInspector.Context} context
  */
-WebInspector.ExecutionContextSelector = function()
+WebInspector.ExecutionContextSelector = function(targetManager, context)
 {
-    WebInspector.targetManager.observeTargets(this);
-    WebInspector.context.addFlavorChangeListener(WebInspector.ExecutionContext, this._executionContextChanged, this);
-    WebInspector.context.addFlavorChangeListener(WebInspector.Target, this._targetChanged, this);
+    targetManager.observeTargets(this);
+    context.addFlavorChangeListener(WebInspector.ExecutionContext, this._executionContextChanged, this);
+    context.addFlavorChangeListener(WebInspector.Target, this._targetChanged, this);
 
-    WebInspector.targetManager.addModelListener(WebInspector.RuntimeModel, WebInspector.RuntimeModel.Events.ExecutionContextCreated, this._onExecutionContextCreated, this);
-    WebInspector.targetManager.addModelListener(WebInspector.RuntimeModel, WebInspector.RuntimeModel.Events.ExecutionContextDestroyed, this._onExecutionContextDestroyed, this);
+    targetManager.addModelListener(WebInspector.RuntimeModel, WebInspector.RuntimeModel.Events.ExecutionContextCreated, this._onExecutionContextCreated, this);
+    targetManager.addModelListener(WebInspector.RuntimeModel, WebInspector.RuntimeModel.Events.ExecutionContextDestroyed, this._onExecutionContextDestroyed, this);
+    this._targetManager = targetManager;
+    this._context = context;
 }
 
 WebInspector.ExecutionContextSelector.prototype = {
@@ -28,11 +32,17 @@ WebInspector.ExecutionContextSelector.prototype = {
             return;
         // Defer selecting default target since we need all clients to get their
         // targetAdded notifications first.
-        setImmediate(function() {
+        setImmediate(deferred.bind(this));
+
+        /**
+         * @this {WebInspector.ExecutionContextSelector}
+         */
+        function deferred()
+        {
             // We always want the second context for the service worker targets.
-            if (!WebInspector.context.flavor(WebInspector.Target))
-                WebInspector.context.setFlavor(WebInspector.Target, target);
-        });
+            if (!this._context.flavor(WebInspector.Target))
+                this._context.setFlavor(WebInspector.Target, target);
+        }
     },
 
     /**
@@ -43,13 +53,13 @@ WebInspector.ExecutionContextSelector.prototype = {
     {
         if (!target.hasJSContext())
             return;
-        var currentExecutionContext = WebInspector.context.flavor(WebInspector.ExecutionContext);
+        var currentExecutionContext = this._context.flavor(WebInspector.ExecutionContext);
         if (currentExecutionContext && currentExecutionContext.target() === target)
             this._currentExecutionContextGone();
 
-        var targets = WebInspector.targetManager.targetsWithJSContext();
-        if (WebInspector.context.flavor(WebInspector.Target) === target && targets.length)
-            WebInspector.context.setFlavor(WebInspector.Target, targets[0]);
+        var targets = this._targetManager.targetsWithJSContext();
+        if (this._context.flavor(WebInspector.Target) === target && targets.length)
+            this._context.setFlavor(WebInspector.Target, targets[0]);
     },
 
     /**
@@ -58,8 +68,20 @@ WebInspector.ExecutionContextSelector.prototype = {
     _executionContextChanged: function(event)
     {
         var newContext = /** @type {?WebInspector.ExecutionContext} */ (event.data);
-        if (newContext)
-            WebInspector.context.setFlavor(WebInspector.Target, newContext.target());
+        if (newContext) {
+            this._context.setFlavor(WebInspector.Target, newContext.target());
+            if (!this._contextIsGoingAway)
+                this._lastSelectedContextId = this._contextPersistentId(newContext);
+        }
+    },
+
+    /**
+     * @param {!WebInspector.ExecutionContext} executionContext
+     * @return {string}
+     */
+    _contextPersistentId: function(executionContext)
+    {
+        return executionContext.isMainWorldContext ? executionContext.target().name() + ":" + executionContext.frameId : "";
     },
 
     /**
@@ -68,7 +90,7 @@ WebInspector.ExecutionContextSelector.prototype = {
     _targetChanged: function(event)
     {
         var newTarget = /** @type {?WebInspector.Target} */(event.data);
-        var currentContext = WebInspector.context.flavor(WebInspector.ExecutionContext);
+        var currentContext = this._context.flavor(WebInspector.ExecutionContext);
 
         if (!newTarget || (currentContext && currentContext.target() === newTarget))
             return;
@@ -82,7 +104,7 @@ WebInspector.ExecutionContextSelector.prototype = {
             if (executionContexts[i].isMainWorldContext)
                 newContext = executionContexts[i];
         }
-        WebInspector.context.setFlavor(WebInspector.ExecutionContext, newContext);
+        this._context.setFlavor(WebInspector.ExecutionContext, newContext);
     },
 
     /**
@@ -91,9 +113,8 @@ WebInspector.ExecutionContextSelector.prototype = {
     _onExecutionContextCreated: function(event)
     {
         var executionContext = /** @type {!WebInspector.ExecutionContext} */ (event.data);
-
-        if (!WebInspector.context.flavor(WebInspector.ExecutionContext))
-            WebInspector.context.setFlavor(WebInspector.ExecutionContext, executionContext);
+        if (!this._context.flavor(WebInspector.ExecutionContext) || (this._lastSelectedContextId && this._lastSelectedContextId === this._contextPersistentId(executionContext)))
+            this._context.setFlavor(WebInspector.ExecutionContext, executionContext);
     },
 
     /**
@@ -102,13 +123,13 @@ WebInspector.ExecutionContextSelector.prototype = {
     _onExecutionContextDestroyed: function(event)
     {
         var executionContext = /** @type {!WebInspector.ExecutionContext}*/ (event.data);
-        if (WebInspector.context.flavor(WebInspector.ExecutionContext) === executionContext)
+        if (this._context.flavor(WebInspector.ExecutionContext) === executionContext)
             this._currentExecutionContextGone();
     },
 
     _currentExecutionContextGone: function()
     {
-        var targets = WebInspector.targetManager.targetsWithJSContext();
+        var targets = this._targetManager.targetsWithJSContext();
         var newContext = null;
         for (var i = 0; i < targets.length; ++i) {
             if (targets[i].isServiceWorker())
@@ -119,9 +140,10 @@ WebInspector.ExecutionContextSelector.prototype = {
                 break;
             }
         }
-        WebInspector.context.setFlavor(WebInspector.ExecutionContext, newContext);
+        this._contextIsGoingAway = true;
+        this._context.setFlavor(WebInspector.ExecutionContext, newContext);
+        this._contextIsGoingAway = false;
     }
-
 }
 
 /**
