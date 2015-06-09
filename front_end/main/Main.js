@@ -37,6 +37,7 @@
 WebInspector.Main = function()
 {
     WebInspector.console.setUIDelegate(this);
+    WebInspector.Main._instanceForTest = this;
     runOnWindowLoad(this._loaded.bind(this));
 }
 
@@ -56,11 +57,22 @@ WebInspector.Main.prototype = {
 
         if (InspectorFrontendHost.isUnderTest())
             self.runtime.useTestBase();
-        InspectorFrontendHost.getPreferences(this._createSettings.bind(this));
+        InspectorFrontendHost.getPreferences(this._gotPreferences.bind(this));
     },
 
     /**
      * @param {!Object<string, string>} prefs
+     */
+    _gotPreferences: function(prefs)
+    {
+        console.timeStamp("Main._gotPreferences");
+        this._createSettings(prefs);
+        this._createAppUI();
+    },
+
+    /**
+     * @param {!Object<string, string>} prefs
+     * Note: this function is called from testSettings in Tests.js.
      */
     _createSettings: function(prefs)
     {
@@ -102,8 +114,6 @@ WebInspector.Main.prototype = {
 
         if (!InspectorFrontendHost.isUnderTest())
             new WebInspector.VersionController().updateVersion();
-
-        this._createAppUI();
     },
 
     /**

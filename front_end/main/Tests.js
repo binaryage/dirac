@@ -489,6 +489,44 @@ TestSuite.prototype.testDeviceMetricsOverrides = function()
     this.waitForThrottler(WebInspector.overridesSupport._deviceMetricsThrottler, step1);
 };
 
+TestSuite.prototype.testSettings = function()
+{
+    var test = this;
+
+    createSettings();
+    test.takeControl();
+    setTimeout(reset, 0);
+
+    function createSettings()
+    {
+        var localSetting = WebInspector.settings.createSetting("local", undefined, true);
+        localSetting.set({s: "local", n: 1 });
+        var globalSetting = WebInspector.settings.createSetting("global", undefined, false);
+        globalSetting.set({s: "global", n: 2 });
+    }
+
+    function reset()
+    {
+        Runtime.experiments.clearForTest();
+        InspectorFrontendHost.getPreferences(gotPreferences);
+    }
+
+    function gotPreferences(prefs)
+    {
+        WebInspector.Main._instanceForTest._createSettings(prefs);
+
+        var localSetting = WebInspector.settings.createSetting("local", undefined, true);
+        test.assertEquals("object", typeof localSetting.get());
+        test.assertEquals("local", localSetting.get().s);
+        test.assertEquals(1, localSetting.get().n);
+        var globalSetting = WebInspector.settings.createSetting("global", undefined, false);
+        test.assertEquals("object", typeof globalSetting.get());
+        test.assertEquals("global", globalSetting.get().s);
+        test.assertEquals(2, globalSetting.get().n);
+        test.releaseControl();
+    }
+}
+
 TestSuite.prototype.waitForTestResultsInConsole = function()
 {
     var messages = WebInspector.multitargetConsoleModel.messages();

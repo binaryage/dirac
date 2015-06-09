@@ -991,6 +991,13 @@ Runtime.ExperimentsSupport.prototype = {
         this._enabledTransiently[experimentName] = true;
     },
 
+    clearForTest: function()
+    {
+        this._experiments = [];
+        this._experimentNames = {};
+        this._enabledTransiently = {};
+    },
+
     cleanUpStaleExperiments: function()
     {
         var experimentsSetting = Runtime._experimentsSetting();
