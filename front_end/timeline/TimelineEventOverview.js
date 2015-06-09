@@ -51,7 +51,7 @@ WebInspector.TimelineEventOverview = function(model, frameModel)
 }
 
 /** @const */
-WebInspector.TimelineEventOverview._fullStripHeight = 16;
+WebInspector.TimelineEventOverview._fullStripHeight = 20;
 /** @const */
 WebInspector.TimelineEventOverview._smallStripHeight = 8;
 
@@ -89,7 +89,7 @@ WebInspector.TimelineEventOverview.prototype = {
         position += this._drawNetwork(mainThreadEvents, position, networkHeight);
         if (Runtime.experiments.isEnabled("frameRateOnEventsOverview"))
             position += this._drawFrames(position, WebInspector.TimelineEventOverview._fullStripHeight);
-        position += this._drawEvents(mainThreadEvents, position, WebInspector.TimelineEventOverview._fullStripHeight);
+        position += this._drawStackedUtilizationChart(mainThreadEvents, position, WebInspector.TimelineEventOverview._fullStripHeight);
         for (var thread of threads.filter(function(thread) { return !thread.isWorker(); }))
             this._drawEvents(thread.events, position, WebInspector.TimelineEventOverview._smallStripHeight);
         position += WebInspector.TimelineEventOverview._smallStripHeight;
@@ -189,6 +189,75 @@ WebInspector.TimelineEventOverview.prototype = {
     /**
      * @param {!Array.<!WebInspector.TracingModel.Event>} events
      * @param {number} position
+     * @param {number} height
+     * @return {number}
+     */
+    _drawStackedUtilizationChart: function(events, position, height)
+    {
+        var /** @const */ quantSizePx = 4 * window.devicePixelRatio;
+        var /** @const */ padding = 1;
+        var visualHeight = (height - padding) * window.devicePixelRatio;
+        var baseLine = (position + height) * window.devicePixelRatio;
+        var timeOffset = this._model.minimumRecordTime();
+        var timeSpan = this._model.maximumRecordTime() - timeOffset;
+        var scale = this._canvas.width / timeSpan;
+        var quantTime = quantSizePx / scale;
+        var quantizer = new WebInspector.Quantizer(timeOffset, quantTime, drawSample.bind(this));
+        var ctx = this._context;
+        var x = 0;
+        var categories = WebInspector.TimelineUIUtils.categories();
+        var categoryOrder = ["idle", "scripting", "rendering", "painting", "loading", "other"];
+        var otherIndex = categoryOrder.indexOf("other");
+        var idleIndex = 0;
+        console.assert(idleIndex === categoryOrder.indexOf("idle"));
+        for (var i = idleIndex + 1; i < categoryOrder.length; ++i)
+            categories[categoryOrder[i]]._overviewIndex = i;
+        var categoryIndexStack = [];
+
+        /**
+         * @param {!Array<number>} counters
+         * @this {WebInspector.TimelineEventOverview}
+         */
+        function drawSample(counters)
+        {
+            var y = baseLine;
+            for (var i = idleIndex + 1; i < counters.length; ++i) {
+                if (!counters[i])
+                    continue;
+                var h = counters[i] / quantTime * visualHeight;
+                ctx.fillStyle = this._categoryColor(categories[categoryOrder[i]]);
+                ctx.fillRect(x, y - h, quantSizePx, h);
+                y -= h;
+            }
+            x += quantSizePx;
+        }
+
+        /**
+         * @param {!WebInspector.TracingModel.Event} e
+         */
+        function onEventStart(e)
+        {
+            var index = categoryIndexStack.length ? categoryIndexStack.peekLast() : idleIndex;
+            quantizer.appendInterval(e.startTime, index);
+            categoryIndexStack.push(WebInspector.TimelineUIUtils.eventStyle(e).category._overviewIndex || otherIndex);
+        }
+
+        /**
+         * @param {!WebInspector.TracingModel.Event} e
+         */
+        function onEventEnd(e)
+        {
+            quantizer.appendInterval(e.endTime, categoryIndexStack.pop());
+        }
+
+        WebInspector.TimelineModel.forEachEvent(events, onEventStart, onEventEnd);
+        quantizer.appendInterval(timeOffset + timeSpan + quantTime, idleIndex);  // Kick drawing the last bucket.
+        return height;
+    },
+
+    /**
+     * @param {!Array.<!WebInspector.TracingModel.Event>} events
+     * @param {number} position
      * @param {number} stripHeight
      * @return {number}
      */
@@ -205,16 +274,6 @@ WebInspector.TimelineEventOverview.prototype = {
         position += padding;
 
         /**
-         * @param {!WebInspector.TimelineCategory} category
-         * @return {string}
-         * @this {WebInspector.TimelineEventOverview}
-         */
-        function categoryColor(category)
-        {
-            return category.hidden ? this._disabledCategoryFillStyle : this._fillStyles[category.name];
-        }
-
-        /**
          * @param {!WebInspector.TracingModel.Event} e
          * @this {WebInspector.TimelineEventOverview}
          */
@@ -225,7 +284,7 @@ WebInspector.TimelineEventOverview.prototype = {
                 var category = categoryStack.peekLast();
                 var bar = ditherer.appendInterval(category, lastX, pos);
                 if (bar)
-                    this._renderBar(bar.start, bar.end, position, visualHeight, categoryColor.call(this, category));
+                    this._renderBar(bar.start, bar.end, position, visualHeight, this._categoryColor(category));
             }
             categoryStack.push(WebInspector.TimelineUIUtils.eventStyle(e).category);
             lastX = pos;
@@ -241,12 +300,21 @@ WebInspector.TimelineEventOverview.prototype = {
             var pos = (e.endTime - timeOffset) * scale;
             var bar = ditherer.appendInterval(category, lastX, pos);
             if (bar)
-                this._renderBar(bar.start, bar.end, position, visualHeight, categoryColor.call(this, category));
+                this._renderBar(bar.start, bar.end, position, visualHeight, this._categoryColor(category));
             lastX = pos;
         }
 
         WebInspector.TimelineModel.forEachEvent(events, onEventStart.bind(this), onEventEnd.bind(this));
         return stripHeight;
+    },
+
+    /**
+     * @param {!WebInspector.TimelineCategory} category
+     * @return {string}
+     */
+    _categoryColor: function(category)
+    {
+        return category.hidden ? this._disabledCategoryFillStyle : this._fillStyles[category.name];
     },
 
     /**
@@ -390,5 +458,50 @@ WebInspector.Dithering.prototype = {
             this._groupError.set(g, value);
         }
         return toDistribute;
+    }
+}
+
+/**
+ * @constructor
+ * @param {number} startTime
+ * @param {number} quantDuration
+ * @param {function(!Array<number>)} callback
+ */
+WebInspector.Quantizer = function(startTime, quantDuration, callback)
+{
+    this._lastTime = startTime;
+    this._quantDuration = quantDuration;
+    this._callback = callback;
+    this._counters = [];
+    this._remainder = quantDuration;
+}
+
+WebInspector.Quantizer.prototype = {
+    /**
+     * @param {number} time
+     * @param {number} group
+     */
+    appendInterval: function(time, group)
+    {
+        var interval = time - this._lastTime;
+        if (interval <= this._remainder) {
+            this._counters[group] = (this._counters[group] || 0) + interval;
+            this._remainder -= interval;
+            this._lastTime = time;
+            return;
+        }
+        this._counters[group] = (this._counters[group] || 0) + this._remainder;
+        this._callback(this._counters);
+        interval -= this._remainder;
+        while (interval >= this._quantDuration) {
+            var counters = [];
+            counters[group] = this._quantDuration;
+            this._callback(counters);
+            interval -= this._quantDuration;
+        }
+        this._counters = [];
+        this._counters[group] = interval;
+        this._lastTime = time;
+        this._remainder = this._quantDuration - interval;
     }
 }
