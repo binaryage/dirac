@@ -54,20 +54,19 @@ WebInspector.FilmStripModel.prototype = {
      * @param {number} timestamp
      * @return {?WebInspector.FilmStripModel.Frame}
      */
-    firstFrameAfterCommit: function(timestamp)
+    frameByTimestamp: function(timestamp)
     {
-        var bestIndex = 0;
-        var bestDelta = Number.MAX_VALUE;
-        for (var i = 0; i < this._frames.length; ++i) {
-            var delta = this._frames[i].timestamp - timestamp;
-            if (delta < 0)
-                continue;
-            if (delta < bestDelta) {
-                bestIndex = i;
-                bestDelta = delta;
-            }
+        /**
+         * @param {number} timestamp
+         * @param {!WebInspector.FilmStripModel.Frame} frame
+         * @return {number}
+         */
+        function comparator(timestamp, frame)
+        {
+            return timestamp - frame.timestamp;
         }
-        return bestDelta < 10 ? this._frames[bestIndex] : null;
+        var index = this._frames.lowerBound(timestamp, comparator);
+        return index < this._frames.length ? this._frames[index] : null;
     }
 }
 
