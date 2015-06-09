@@ -1332,11 +1332,11 @@ function createCheckboxLabel(title, checked)
          */
         createdCallback: function()
         {
-            var root = WebInspector.createShadowRootWithCoreStyles(this);
-            root.appendChild(WebInspector.Widget.createStyleElement("ui/checkboxTextLabel.css"));
+            this._root = WebInspector.createShadowRootWithCoreStyles(this);
+            this._root.appendChild(WebInspector.Widget.createStyleElement("ui/checkboxTextLabel.css"));
             var checkboxElement = createElementWithClass("input", "dt-checkbox-button");
             checkboxElement.type = "checkbox";
-            root.appendChild(checkboxElement);
+            this._root.appendChild(checkboxElement);
             this.checkboxElement = checkboxElement;
 
             this.addEventListener("click", toggleCheckbox.bind(this));
@@ -1351,7 +1351,7 @@ function createCheckboxLabel(title, checked)
                     checkboxElement.click();
             }
 
-            root.createChild("content");
+            this._root.createChild("content");
         },
 
         /**
@@ -1360,8 +1360,20 @@ function createCheckboxLabel(title, checked)
          */
         set backgroundColor(color)
         {
-            this.checkboxElement.classList.add("dt-checkbox-colored");
+            this.checkboxElement.classList.add("dt-checkbox-themed");
             this.checkboxElement.style.backgroundColor = color;
+        },
+
+        /**
+         * @param {string} color
+         * @this {Element}
+         */
+        set checkColor(color)
+        {
+            this.checkboxElement.classList.add("dt-checkbox-themed");
+            var stylesheet = createElement("style");
+            stylesheet.textContent = "input.dt-checkbox-themed:checked:after { background-color: " + color + "}";
+            this._root.appendChild(stylesheet);
         },
 
         /**
@@ -1370,7 +1382,7 @@ function createCheckboxLabel(title, checked)
          */
         set borderColor(color)
         {
-            this.checkboxElement.classList.add("dt-checkbox-colored");
+            this.checkboxElement.classList.add("dt-checkbox-themed");
             this.checkboxElement.style.borderColor = color;
         },
 

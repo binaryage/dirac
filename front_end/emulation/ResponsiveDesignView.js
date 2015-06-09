@@ -620,6 +620,7 @@ WebInspector.ResponsiveDesignView.prototype = {
         fieldsetElement = screenElement.createChild("fieldset");
 
         var emulateResolutionCheckbox = WebInspector.SettingsUI.createSettingCheckbox("", WebInspector.overridesSupport.settings.emulateResolution, true, WebInspector.UIString("Emulate screen resolution"));
+        themeCheckbox(emulateResolutionCheckbox);
         fieldsetElement.appendChild(emulateResolutionCheckbox);
 
         var resolutionIcon = fieldsetElement.createChild("div", "responsive-design-icon responsive-design-icon-resolution");
@@ -649,7 +650,19 @@ WebInspector.ResponsiveDesignView.prototype = {
         detailsElement.createChild("div", "responsive-design-suite-separator");
         var fitToWindowElement = detailsElement.createChild("div", "");
         fieldsetElement = fitToWindowElement.createChild("fieldset");
-        fieldsetElement.appendChild(WebInspector.SettingsUI.createSettingCheckbox(WebInspector.UIString("Fit"), WebInspector.overridesSupport.settings.deviceFitWindow, true, WebInspector.UIString("Zoom to fit available space")));
+        var fitCheckbox = WebInspector.SettingsUI.createSettingCheckbox(WebInspector.UIString("Fit"), WebInspector.overridesSupport.settings.deviceFitWindow, true, WebInspector.UIString("Zoom to fit available space"))
+        fieldsetElement.appendChild(fitCheckbox);
+        themeCheckbox(fitCheckbox);
+
+        /**
+         * @param {!Element} checkbox
+         */
+        function themeCheckbox(checkbox)
+        {
+            checkbox.checkColor = "rgb(255, 156, 0)";
+            checkbox.backgroundColor = "rgb(102, 102, 102)";
+            checkbox.borderColor = "rgb(45, 45, 45)";
+        }
     },
 
     _createNetworkSection: function()
