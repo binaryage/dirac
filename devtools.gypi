@@ -205,6 +205,7 @@
             'front_end/emulation/devicesSettingsTab.css',
             'front_end/emulation/overrides.css',
             'front_end/emulation/responsiveDesignView.css',
+            'front_end/emulation/DeviceModeButton.js',
             'front_end/emulation/DevicesSettingsTab.js',
             'front_end/emulation/EmulatedDevices.js',
             'front_end/emulation/InspectedPagePlaceholder.js',

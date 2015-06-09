@@ -8,35 +8,10 @@
  */
 WebInspector.AdvancedApp = function()
 {
-    this._toggleEmulationButton = new WebInspector.ToolbarButton(WebInspector.UIString("Toggle device mode"), "emulation-toolbar-item");
-    this._toggleEmulationButton.setToggled(WebInspector.overridesSupport.emulationEnabled());
-    this._toggleEmulationButton.addEventListener("click", this._toggleEmulationEnabled, this);
-    WebInspector.overridesSupport.addEventListener(WebInspector.OverridesSupport.Events.EmulationStateChanged, this._emulationEnabledChanged, this);
-    WebInspector.overridesSupport.addEventListener(WebInspector.OverridesSupport.Events.OverridesWarningUpdated, this._overridesWarningUpdated, this);
     WebInspector.dockController.addEventListener(WebInspector.DockController.Events.BeforeDockSideChanged, this._openToolboxWindow, this);
 };
 
 WebInspector.AdvancedApp.prototype = {
-    _toggleEmulationEnabled: function()
-    {
-        var enabled = !this._toggleEmulationButton.toggled();
-        WebInspector.overridesSupport.setEmulationEnabled(enabled);
-    },
-
-    _emulationEnabledChanged: function()
-    {
-        this._toggleEmulationButton.setToggled(WebInspector.overridesSupport.emulationEnabled());
-    },
-
-    _overridesWarningUpdated: function()
-    {
-        if (!this._toggleEmulationButton)
-            return;
-        var message = WebInspector.overridesSupport.warningMessage();
-        this._toggleEmulationButton.setTitle(message || WebInspector.UIString("Toggle device mode"));
-        this._toggleEmulationButton.element.classList.toggle("warning", !!message);
-    },
-
     /**
      * @param {!Document} document
      * @override
@@ -59,8 +34,6 @@ WebInspector.AdvancedApp.prototype = {
         WebInspector.dockController.addEventListener(WebInspector.DockController.Events.DockSideChanged, this._onDockSideChange, this);
         WebInspector.dockController.addEventListener(WebInspector.DockController.Events.AfterDockSideChanged, this._onAfterDockSideChange, this);
         this._onDockSideChange();
-
-        this._overridesWarningUpdated();
 
         WebInspector.inspectorView.showInitialPanel();
         console.timeStamp("AdvancedApp.attachToBody");
@@ -237,42 +210,3 @@ WebInspector.AdvancedAppProvider.prototype = {
         return WebInspector.AdvancedApp._instance();
     }
 };
-
-/**
- * @constructor
- * @implements {WebInspector.ToolbarItem.Provider}
- */
-WebInspector.AdvancedApp.EmulationButtonProvider = function()
-{
-}
-
-WebInspector.AdvancedApp.EmulationButtonProvider.prototype = {
-    /**
-     * @override
-     * @return {?WebInspector.ToolbarItem}
-     */
-    item: function()
-    {
-        return WebInspector.AdvancedApp._instance()._toggleEmulationButton;
-    }
-}
-
-/**
- * @constructor
- * @implements {WebInspector.ActionDelegate}
- */
-WebInspector.AdvancedApp.ToggleDeviceModeActionDelegate = function()
-{
-}
-
-WebInspector.AdvancedApp.ToggleDeviceModeActionDelegate.prototype = {
-    /**
-     * @override
-     * @param {!WebInspector.Context} context
-     * @param {string} actionId
-     */
-    handleAction: function(context, actionId)
-    {
-        WebInspector.AdvancedApp._instance()._toggleEmulationEnabled();
-    }
-}

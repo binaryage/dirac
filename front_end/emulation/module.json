@@ -8,6 +8,29 @@
             "className": "WebInspector.OverridesView"
         },
         {
+            "type": "@WebInspector.ToolbarItem.Provider",
+            "className": "WebInspector.DeviceModeButtonProvider",
+            "condition": "can_dock",
+            "order": 1,
+            "location": "main-toolbar-left"
+        },
+        {
+            "type": "@WebInspector.ActionDelegate",
+            "actionId": "emulation.toggle-device-mode",
+            "className": "WebInspector.ToggleDeviceModeActionDelegate",
+            "condition": "can_dock",
+            "bindings": [
+                {
+                    "platform": "windows,linux",
+                    "shortcut": "Shift+Ctrl+M"
+                },
+                {
+                    "platform": "mac",
+                    "shortcut": "Shift+Meta+M"
+                }
+            ]
+        },
+        {
             "type": "@WebInspector.Revealer",
             "contextTypes": ["WebInspector.OverridesSupport"],
             "className": "WebInspector.OverridesView.Revealer"
@@ -30,6 +53,7 @@
         "OverridesSupport.js",
         "EmulatedDevices.js",
         "DevicesSettingsTab.js",
+        "DeviceModeButton.js",
         "OverridesUI.js",
         "InspectedPagePlaceholder.js",
         "MediaQueryInspector.js",

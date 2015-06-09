@@ -143,22 +143,6 @@
             ]
         },
         {
-            "type": "@WebInspector.ActionDelegate",
-            "actionId": "main.toggle-device-mode",
-            "className": "WebInspector.AdvancedApp.ToggleDeviceModeActionDelegate",
-            "condition": "can_dock",
-            "bindings": [
-                {
-                    "platform": "windows,linux",
-                    "shortcut": "Shift+Ctrl+M"
-                },
-                {
-                    "platform": "mac",
-                    "shortcut": "Shift+Meta+M"
-                }
-            ]
-        },
-        {
             "type": "drawer-view",
             "name": "rendering",
             "title": "Rendering",
@@ -171,13 +155,6 @@
             "location": "main-toolbar-left",
             "order": 0,
             "actionId": "main.toggle-element-search"
-        },
-        {
-            "type": "@WebInspector.ToolbarItem.Provider",
-            "className": "WebInspector.AdvancedApp.EmulationButtonProvider",
-            "condition": "can_dock",
-            "order": 1,
-            "location": "main-toolbar-left"
         },
         {
             "type": "@WebInspector.ToolbarItem.Provider",
