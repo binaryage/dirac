@@ -11,7 +11,7 @@
 WebInspector.ElementsSidebarViewWrapperPane = function(title, widget)
 {
     WebInspector.SidebarPane.call(this, title);
-    widget.show(this.bodyElement);
+    widget.show(this.element);
 }
 
 WebInspector.ElementsSidebarViewWrapperPane.prototype = {

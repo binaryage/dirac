@@ -46,13 +46,13 @@ WebInspector.ScopeChainSidebarPane.prototype = {
      */
     update: function(callFrame)
     {
-        this.bodyElement.removeChildren();
+        this.element.removeChildren();
 
         if (!callFrame) {
             var infoElement = createElement("div");
             infoElement.className = "info";
             infoElement.textContent = WebInspector.UIString("Not Paused");
-            this.bodyElement.appendChild(infoElement);
+            this.element.appendChild(infoElement);
             return;
         }
 
@@ -138,7 +138,7 @@ WebInspector.ScopeChainSidebarPane.prototype = {
 
             section.element.classList.add("scope-chain-sidebar-pane-section");
             this._sections.push(section);
-            this.bodyElement.appendChild(section.element);
+            this.element.appendChild(section.element);
         }
     },
 

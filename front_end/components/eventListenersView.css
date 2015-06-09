@@ -8,10 +8,6 @@
     padding: 2px 0 0 5px;
 }
 
-.event-listener-tree {
-    margin-top: 5px;
-}
-
 .event-listener-tree > li {
     border-top: 1px solid #f0f0f0;
 }

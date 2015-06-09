@@ -251,7 +251,7 @@ WebInspector.Widget.prototype = {
         if (this._parentIsShowing())
             this._processWillShow();
 
-        this.element.classList.add("visible");
+        this.element.classList.remove("hidden");
 
         // Reparent
         if (this.element.parentElement !== parentElement) {
@@ -284,7 +284,7 @@ WebInspector.Widget.prototype = {
             this._processWillHide();
 
         if (!overrideHideOnDetach && this._shouldHideOnDetach()) {
-            this.element.classList.remove("visible");
+            this.element.classList.add("hidden");
             this._visible = false;
             if (this._parentIsShowing())
                 this._processWasHidden();

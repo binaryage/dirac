@@ -40,15 +40,13 @@ WebInspector.StylesSidebarPane = function(requestShowCallback)
     WebInspector.moduleSetting("colorFormat").addChangeListener(this.update.bind(this));
     WebInspector.moduleSetting("textEditorIndent").addChangeListener(this.update.bind(this));
 
-    var toolbar = new WebInspector.ExtensibleToolbar("styles-sidebarpane-toolbar", this.titleElement);
+    var toolbar = new WebInspector.ExtensibleToolbar("styles-sidebarpane-toolbar", this.element);
     toolbar.element.classList.add("styles-pane-toolbar");
-    if (!Runtime.experiments.isEnabled("materialDesign"))
-        toolbar.makeNarrow();
 
     this._requestShowCallback = requestShowCallback;
-    var toolbarPaneContainer = this.bodyElement.createChild("div", "styles-sidebar-toolbar-pane-container");
+    var toolbarPaneContainer = this.element.createChild("div", "styles-sidebar-toolbar-pane-container");
     this._toolbarPaneElement = toolbarPaneContainer.createChild("div", "styles-sidebar-toolbar-pane");
-    this._sectionsContainer = this.bodyElement.createChild("div");
+    this._sectionsContainer = this.element.createChild("div");
 
     this._stylesPopoverHelper = new WebInspector.StylesPopoverHelper();
 
@@ -824,6 +822,13 @@ WebInspector.StylesSidebarPane.prototype = {
         if (widget === this._currentToolbarPane)
             return;
 
+        if (widget && this._currentToolbarPane) {
+            this._currentToolbarPane.detach();
+            widget.show(this._toolbarPaneElement);
+            this._currentToolbarPane = widget;
+            return;
+        }
+
         this._animatedToolbarPane = widget;
 
         if (this._currentToolbarPane)
@@ -983,7 +988,7 @@ WebInspector.StylePropertiesSection = function(parentPane, styleRule)
     this.element = createElementWithClass("div", "styles-section matched-styles monospace");
     this.element._section = this;
 
-    this.titleElement = this.element.createChild("div", "styles-section-title " + (rule ? "styles-selector" : ""));
+    this._titleElement = this.element.createChild("div", "styles-section-title " + (rule ? "styles-selector" : ""));
 
     this.propertiesTreeOutline = new TreeOutline();
     this.propertiesTreeOutline.element.classList.add("style-properties", "monospace");
@@ -1027,11 +1032,11 @@ WebInspector.StylePropertiesSection = function(parentPane, styleRule)
     }
 
     this._selectorRefElement = createElementWithClass("div", "styles-section-subtitle");
-    this._mediaListElement = this.titleElement.createChild("div", "media-list media-matches");
+    this._mediaListElement = this._titleElement.createChild("div", "media-list media-matches");
     this._updateMediaList();
     this._updateRuleOrigin();
     selectorContainer.insertBefore(this._selectorRefElement, selectorContainer.firstChild);
-    this.titleElement.appendChild(selectorContainer);
+    this._titleElement.appendChild(selectorContainer);
     this._selectorContainer = selectorContainer;
 
     if (this.navigable)

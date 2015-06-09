@@ -179,7 +179,7 @@ WebInspector.AccessibilitySubPane.prototype = {
         var classNameOrDefault = className || "info";
         var info = createElementWithClass("div", classNameOrDefault);
         info.textContent = textContent;
-        this.bodyElement.appendChild(info);
+        this.element.appendChild(info);
         return info;
     },
 
@@ -193,7 +193,7 @@ WebInspector.AccessibilitySubPane.prototype = {
         treeOutline.registerRequiredCSS("accessibility/accessibilityNode.css");
         treeOutline.registerRequiredCSS("components/objectValue.css");
         treeOutline.element.classList.add("hidden");
-        this.bodyElement.appendChild(treeOutline.element);
+        this.element.appendChild(treeOutline.element);
         return treeOutline;
     },
 
@@ -208,7 +208,7 @@ WebInspector.AXComputedTextSubPane = function()
 {
     WebInspector.AccessibilitySubPane.call(this, WebInspector.UIString("Computed Text"));
 
-    this._computedTextElement = this.bodyElement.createChild("div", "ax-computed-text hidden");
+    this._computedTextElement = this.element.createChild("div", "ax-computed-text hidden");
 
     this._noTextInfo = this.createInfo(WebInspector.UIString("No computed text"));
     this._noNodeInfo = this.createInfo(WebInspector.UIString("No accessibility node"));

@@ -104,10 +104,6 @@
 
 .audit-result-view {
     overflow: auto;
-    display: none;
-}
-
-.audit-result-view.visible {
     display: block;
     flex: auto;
 }

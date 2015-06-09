@@ -37,7 +37,6 @@ WebInspector.Toolbar = function(parentElement)
     /** @type {!Array.<!WebInspector.ToolbarItem>} */
     this._items = [];
     this.element = parentElement ? parentElement.createChild("div", "toolbar") : createElementWithClass("div", "toolbar");
-
     this._shadowRoot = WebInspector.createShadowRootWithCoreStyles(this.element);
     this._shadowRoot.appendChild(WebInspector.Widget.createStyleElement("ui/toolbar.css"));
     this._contentElement = this._shadowRoot.createChild("div", "toolbar-shadow");
@@ -538,7 +537,7 @@ WebInspector.ToolbarButtonBase.prototype = {
             for (var i = 0; i < buttons.length; ++i) {
                 if (buttons[i].element.classList.contains("emulate-active")) {
                     buttons[i].element.classList.remove("emulate-active");
-                    buttons[i]._clicked();
+                    buttons[i]._clicked(e);
                     break;
                 }
             }

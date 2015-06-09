@@ -19,7 +19,7 @@ WebInspector.ThreadsSidebarPane = function()
     /** @type {?WebInspector.UIList.Item} */
     this._selectedListItem = null;
     this.threadList = new WebInspector.UIList();
-    this.threadList.show(this.bodyElement);
+    this.threadList.show(this.element);
     WebInspector.targetManager.addModelListener(WebInspector.DebuggerModel, WebInspector.DebuggerModel.Events.DebuggerPaused, this._onDebuggerStateChanged, this);
     WebInspector.targetManager.addModelListener(WebInspector.DebuggerModel, WebInspector.DebuggerModel.Events.DebuggerResumed, this._onDebuggerStateChanged, this);
     WebInspector.context.addFlavorChangeListener(WebInspector.Target, this._targetChanged, this);

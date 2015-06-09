@@ -128,7 +128,7 @@ body.undocked .inspector-view-close-button {
 }
 
 .panel {
-    display: none !important;
+    display: flex;
     overflow: hidden;
     position: absolute;
     top: 0;
@@ -136,10 +136,6 @@ body.undocked .inspector-view-close-button {
     right: 0;
     bottom: 0;
     z-index: 0;
-}
-
-.panel.visible {
-    display: flex !important;
 }
 
 iframe.extension {

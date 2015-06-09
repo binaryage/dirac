@@ -114,12 +114,8 @@
 }
 
 .cpu-profile-view {
-    display: none;
-    overflow: hidden;
-}
-
-.cpu-profile-view.visible {
     display: flex;
+    overflow: hidden;
 }
 
 .cpu-profile-view .data-grid {

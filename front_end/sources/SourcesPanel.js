@@ -466,7 +466,7 @@ WebInspector.SourcesPanel.prototype = {
         WebInspector.domBreakpointsSidebarPane.clearBreakpointHighlight();
         this.sidebarPanes.eventListenerBreakpoints.clearBreakpointHighlight();
         this.sidebarPanes.xhrBreakpoints.clearBreakpointHighlight();
-        if (Runtime.experiments.isEnabled("stepIntoAsync"))
+        if (this.sidebarPanes.asyncOperationBreakpoints)
             this.sidebarPanes.asyncOperationBreakpoints.clearBreakpointHighlight();
 
         this._sourcesView.clearCurrentExecutionLine();
@@ -752,6 +752,9 @@ WebInspector.SourcesPanel.prototype = {
         this._pauseOnExceptionButton = new WebInspector.ToolbarButton("", "pause-on-exceptions-toolbar-item");
         this._pauseOnExceptionButton.addEventListener("click", this._togglePauseOnExceptions, this);
         debugToolbar.appendToolbarItem(this._pauseOnExceptionButton);
+
+        // Async operations
+        debugToolbar.appendToolbarItem(new WebInspector.ToolbarCheckbox(WebInspector.UIString("Async"), WebInspector.UIString("Capture async stack traces"), WebInspector.moduleSetting("enableAsyncStackTraces")));
 
         return debugToolbar;
     },

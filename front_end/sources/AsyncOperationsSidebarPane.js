@@ -10,12 +10,12 @@
 WebInspector.AsyncOperationsSidebarPane = function()
 {
     WebInspector.BreakpointsSidebarPaneBase.call(this, WebInspector.UIString("Async Operation Breakpoints"));
-    this.bodyElement.classList.add("async-operations");
+    this.element.classList.add("async-operations");
     this._updateEmptyElement();
 
-    var refreshButton = this.titleElement.createChild("button", "pane-title-button refresh");
-    refreshButton.addEventListener("click", this._refreshButtonClicked.bind(this), false);
-    refreshButton.title = WebInspector.UIString("Refresh");
+    var refreshButton = new WebInspector.ToolbarButton(WebInspector.UIString("Refresh"), "refresh-toolbar-item");
+    refreshButton.addEventListener("click", this._refreshButtonClicked.bind(this));
+    this.toolbar().appendToolbarItem(refreshButton);
 
     /** @type {!Map.<!WebInspector.Target, !Map.<number, !DebuggerAgent.AsyncOperation>>} */
     this._asyncOperationsByTarget = new Map();
@@ -25,9 +25,9 @@ WebInspector.AsyncOperationsSidebarPane = function()
     this._revealBlackboxedCallFrames = false;
     this._linkifier = new WebInspector.Linkifier(new WebInspector.Linkifier.DefaultFormatter(30));
 
-    this._popoverHelper = new WebInspector.PopoverHelper(this.bodyElement, this._getPopoverAnchor.bind(this), this._showPopover.bind(this));
+    this._popoverHelper = new WebInspector.PopoverHelper(this.element, this._getPopoverAnchor.bind(this), this._showPopover.bind(this));
     this._popoverHelper.setTimeout(250, 250);
-    this.bodyElement.addEventListener("click", this._hidePopover.bind(this), true);
+    this.element.addEventListener("click", this._hidePopover.bind(this), true);
 
     WebInspector.targetManager.addModelListener(WebInspector.DebuggerModel, WebInspector.DebuggerModel.Events.AsyncOperationStarted, this._onAsyncOperationStarted, this);
     WebInspector.targetManager.addModelListener(WebInspector.DebuggerModel, WebInspector.DebuggerModel.Events.AsyncOperationCompleted, this._onAsyncOperationCompleted, this);
@@ -204,7 +204,7 @@ WebInspector.AsyncOperationsSidebarPane.prototype = {
     },
 
     /**
-     * @param {!Event} event
+     * @param {!WebInspector.Event} event
      */
     _refreshButtonClicked: function(event)
     {
@@ -281,7 +281,6 @@ WebInspector.AsyncOperationsSidebarPane.prototype = {
 
         var title = operation.description || WebInspector.UIString("Async Operation");
         var label = createCheckboxLabel(title, operation[this._checkedSymbol]);
-        label.classList.add("checkbox-elem");
         label.checkboxElement.addEventListener("click", this._checkboxClicked.bind(this, operation.id), false);
         element.appendChild(label);
         var debuggerModel = WebInspector.DebuggerModel.fromTarget(this._target);

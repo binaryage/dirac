@@ -36,28 +36,9 @@ WebInspector.EventListenersWidget = function()
     WebInspector.ThrottledWidget.call(this);
     this.element.classList.add("events-pane");
 
-    this._settingsSelectElement = createElement("select");
-    this._settingsSelectElement.classList.add("select-filter")
-
-    var option = this._settingsSelectElement.createChild("option");
-    option.value = "all";
-    option.label = WebInspector.UIString("All Nodes");
-
-    option = this._settingsSelectElement.createChild("option");
-    option.value = "selected";
-    option.label = WebInspector.UIString("Selected Node Only");
-
-    this._eventListenersFilterSetting = WebInspector.settings.createSetting("eventListenersFilter", "all");
-    var filter = this._eventListenersFilterSetting.get();
-    if (filter === "all")
-        this._settingsSelectElement[0].selected = true;
-    else if (filter === "selected")
-        this._settingsSelectElement[1].selected = true;
-    this._settingsSelectElement.addEventListener("click", consumeEvent, false);
-    this._settingsSelectElement.addEventListener("change", this._changeSetting.bind(this), false);
-
+    this._showForAncestorsSetting = WebInspector.settings.createSetting("showEventListenersForAncestors", true);
+    this._showForAncestorsSetting.addChangeListener(this.update.bind(this));
     this._eventListenersView = new WebInspector.EventListenersView(this.element);
-
     WebInspector.context.addFlavorChangeListener(WebInspector.DOMNode, this.update, this);
 }
 
@@ -67,14 +48,12 @@ WebInspector.EventListenersWidget = function()
 WebInspector.EventListenersWidget.createSidebarWrapper = function()
 {
     var widget = new WebInspector.EventListenersWidget();
-    var sidebarView = new WebInspector.ElementsSidebarViewWrapperPane(WebInspector.UIString("Event Listeners"), widget);
-
-    var refreshButton = sidebarView.titleElement.createChild("button", "pane-title-button refresh");
-    refreshButton.addEventListener("click", widget.update.bind(widget), false);
-    refreshButton.title = WebInspector.UIString("Refresh");
-
-    sidebarView.titleElement.appendChild(widget._settingsSelectElement);
-    return sidebarView;
+    var result = new WebInspector.ElementsSidebarViewWrapperPane(WebInspector.UIString("Event Listeners"), widget);
+    var refreshButton = new WebInspector.ToolbarButton(WebInspector.UIString("Refresh"), "refresh-toolbar-item");
+    refreshButton.addEventListener("click", widget.update.bind(widget));
+    result.toolbar().appendToolbarItem(refreshButton);
+    result.toolbar().appendToolbarItem(new WebInspector.ToolbarCheckbox(WebInspector.UIString("Ancestors"), WebInspector.UIString("Show listeners on the ancestors"), widget._showForAncestorsSetting));
+    return result;
 }
 
 WebInspector.EventListenersWidget._objectGroupName = "event-listeners-panel";
@@ -100,7 +79,7 @@ WebInspector.EventListenersWidget.prototype = {
         }
 
         this._lastRequestedNode = node;
-        var selectedNodeOnly = "selected" === this._eventListenersFilterSetting.get();
+        var selectedNodeOnly = !this._showForAncestorsSetting.get();
         var promises = [];
         var listenersView = this._eventListenersView;
         promises.push(node.resolveToObjectPromise(WebInspector.EventListenersWidget._objectGroupName).then(listenersView.addObjectEventListeners.bind(listenersView)));
@@ -160,13 +139,6 @@ WebInspector.EventListenersWidget.prototype = {
             }
             context.evaluate("self", WebInspector.EventListenersWidget._objectGroupName, false, true, false, false, fulfill);
         }
-    },
-
-    _changeSetting: function()
-    {
-        var selectedOption = this._settingsSelectElement[this._settingsSelectElement.selectedIndex];
-        this._eventListenersFilterSetting.set(selectedOption.value);
-        this.update();
     },
 
     _eventListenersArrivedForTest: function()

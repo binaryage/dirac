@@ -15,9 +15,9 @@ WebInspector.XHRBreakpointsSidebarPane = function()
     /** @type {!Map.<string, !Element>} */
     this._breakpointElements = new Map();
 
-    var addButton = this.titleElement.createChild("button", "pane-title-button add");
-    addButton.title = WebInspector.UIString("Add XHR breakpoint");
-    addButton.addEventListener("click", this._addButtonClicked.bind(this), false);
+    var addButton = new WebInspector.ToolbarButton(WebInspector.UIString("Add breakpoint"), "add-toolbar-item");
+    addButton.addEventListener("click", this._addButtonClicked.bind(this));
+    this.toolbar().appendToolbarItem(addButton);
 
     this.emptyElement.addEventListener("contextmenu", this._emptyElementContextMenu.bind(this), true);
 
@@ -99,7 +99,6 @@ WebInspector.XHRBreakpointsSidebarPane.prototype = {
 
         var title = url ? WebInspector.UIString("URL contains \"%s\"", url) : WebInspector.UIString("Any XHR");
         var label = createCheckboxLabel(title, enabled);
-        label.classList.add("checkbox-elem");
         element.appendChild(label);
         label.checkboxElement.addEventListener("click", this._checkboxClicked.bind(this, url), false);
         element._checkboxElement = label.checkboxElement;

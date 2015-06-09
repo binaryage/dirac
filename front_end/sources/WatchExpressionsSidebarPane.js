@@ -35,23 +35,23 @@
 WebInspector.WatchExpressionsSidebarPane = function()
 {
     WebInspector.SidebarPane.call(this, WebInspector.UIString("Watch"));
+    this.registerRequiredCSS("components/objectValue.css");
 
     this._requiresUpdate = true;
     /** @type {!Array.<!WebInspector.WatchExpression>} */
     this._watchExpressions = [];
     this._watchExpressionsSetting = WebInspector.settings.createLocalSetting("watchExpressions", []);
 
-    this.registerRequiredCSS("components/objectValue.css");
-    this.bodyElement.classList.add("vbox", "watch-expressions");
-    this.bodyElement.addEventListener("contextmenu", this._contextMenu.bind(this), false);
+    var addButton = new WebInspector.ToolbarButton(WebInspector.UIString("Add expression"), "add-toolbar-item");
+    addButton.addEventListener("click", this._addButtonClicked.bind(this));
+    this.toolbar().appendToolbarItem(addButton);
+    var refreshButton = new WebInspector.ToolbarButton(WebInspector.UIString("Refresh"), "refresh-toolbar-item");
+    refreshButton.addEventListener("click", this._refreshButtonClicked.bind(this));
+    this.toolbar().appendToolbarItem(refreshButton);
 
-    var refreshButton = this.titleElement.createChild("button", "pane-title-button refresh");
-    refreshButton.addEventListener("click", this._refreshButtonClicked.bind(this), false);
-    refreshButton.title = WebInspector.UIString("Refresh");
+    this._bodyElement = this.element.createChild("div", "vbox watch-expressions");
+    this._bodyElement.addEventListener("contextmenu", this._contextMenu.bind(this), false);
 
-    var addButton = this.titleElement.createChild("button", "pane-title-button add");
-    addButton.addEventListener("click", this._addButtonClicked.bind(this), false);
-    addButton.title = WebInspector.UIString("Add watch expression");
     WebInspector.context.addFlavorChangeListener(WebInspector.ExecutionContext, this.refreshExpressions, this);
 }
 
@@ -107,18 +107,17 @@ WebInspector.WatchExpressionsSidebarPane.prototype = {
     },
 
     /**
-     * @param {?Event} event
+     * @param {!WebInspector.Event} event
      */
     _addButtonClicked: function(event)
     {
-        if (event)
-            event.consume(true);
+        event.consume(true);
         this.expand();
         this._createWatchExpression(null).startEditing();
     },
 
     /**
-     * @param {!Event} event
+     * @param {!WebInspector.Event} event
      */
     _refreshButtonClicked: function(event)
     {
@@ -128,9 +127,9 @@ WebInspector.WatchExpressionsSidebarPane.prototype = {
 
     _rebuildWatchExpressions: function()
     {
-        this.bodyElement.removeChildren();
+        this._bodyElement.removeChildren();
         this._watchExpressions = [];
-        this._emptyElement = this.bodyElement.createChild("div", "info");
+        this._emptyElement = this._bodyElement.createChild("div", "info");
         this._emptyElement.textContent = WebInspector.UIString("No Watch Expressions");
         var watchExpressionStrings = this._watchExpressionsSetting.get();
         for (var i = 0; i < watchExpressionStrings.length; ++i) {
@@ -151,7 +150,7 @@ WebInspector.WatchExpressionsSidebarPane.prototype = {
         this._emptyElement.classList.add("hidden");
         var watchExpression = new WebInspector.WatchExpression(expression);
         watchExpression.addEventListener(WebInspector.WatchExpression.Events.ExpressionUpdated, this._watchExpressionUpdated.bind(this));
-        this.bodyElement.appendChild(watchExpression.element());
+        this._bodyElement.appendChild(watchExpression.element());
         this._watchExpressions.push(watchExpression);
         return watchExpression;
     },
@@ -164,7 +163,7 @@ WebInspector.WatchExpressionsSidebarPane.prototype = {
         var watchExpression = /** @type {!WebInspector.WatchExpression} */ (event.target);
         if (!watchExpression.expression()) {
             this._watchExpressions.remove(watchExpression);
-            this.bodyElement.removeChild(watchExpression.element());
+            this._bodyElement.removeChild(watchExpression.element());
             this._emptyElement.classList.toggle("hidden", !!this._watchExpressions.length);
         }
 

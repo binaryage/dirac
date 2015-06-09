@@ -10,8 +10,9 @@
 WebInspector.ElementStatePaneWidget = function(toolbarItem)
 {
     WebInspector.StylesSidebarPane.BaseToolbarPaneWidget.call(this, toolbarItem);
-    this.element.className = "styles-element-state-pane source-code";
-    var table = createElement("table");
+    this.element.className = "styles-element-state-pane";
+    this.element.createChild("div").createTextChild(WebInspector.UIString("Force element state"));
+    var table = createElementWithClass("table", "source-code");
 
     var inputs = [];
     this._inputs = inputs;
@@ -122,7 +123,7 @@ WebInspector.ElementStatePaneWidget.prototype = {
  */
 WebInspector.ElementStatePaneWidget.ButtonProvider = function()
 {
-    this._button = new WebInspector.ToolbarButton(WebInspector.UIString("Toggle Element State"), "element-state-toolbar-item");
+    this._button = new WebInspector.ToolbarButton(WebInspector.UIString("Toggle Element State"), "pin-toolbar-item");
     this._button.addEventListener("click", this._clicked, this);
     this._view = new WebInspector.ElementStatePaneWidget(this.item());
 }

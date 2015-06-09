@@ -18,7 +18,7 @@ WebInspector.JavaScriptBreakpointsSidebarPane = function(breakpointManager, show
 
     this.listElement = createElementWithClass("ol", "breakpoint-list");
 
-    this.emptyElement = this.bodyElement.createChild("div", "info");
+    this.emptyElement = this.element.createChild("div", "info");
     this.emptyElement.textContent = WebInspector.UIString("No Breakpoints");
 
     this._items = new Map();
@@ -75,12 +75,9 @@ WebInspector.JavaScriptBreakpointsSidebarPane.prototype = {
         element.addEventListener("contextmenu", this._breakpointContextMenu.bind(this, breakpoint), true);
         element.addEventListener("click", this._breakpointClicked.bind(this, uiLocation), false);
 
-        var checkbox = element.createChild("input", "checkbox-elem");
-        checkbox.type = "checkbox";
-        checkbox.checked = breakpoint.enabled();
+        var checkbox = createCheckboxLabel(uiLocation.linkText(), breakpoint.enabled());
+        element.appendChild(checkbox);
         checkbox.addEventListener("click", this._breakpointCheckboxClicked.bind(this, breakpoint), false);
-
-        element.createTextChild(uiLocation.linkText());
 
         var snippetElement = element.createChild("div", "source-text monospace");
 
@@ -212,8 +209,8 @@ WebInspector.JavaScriptBreakpointsSidebarPane.prototype = {
             this.listElement.insertBefore(element, beforeElement);
         else {
             if (!this.listElement.firstChild) {
-                this.bodyElement.removeChild(this.emptyElement);
-                this.bodyElement.appendChild(this.listElement);
+                this.element.removeChild(this.emptyElement);
+                this.element.appendChild(this.listElement);
             }
             this.listElement.appendChild(element);
         }
@@ -223,8 +220,8 @@ WebInspector.JavaScriptBreakpointsSidebarPane.prototype = {
     {
         this.listElement.removeChild(element);
         if (!this.listElement.firstChild) {
-            this.bodyElement.removeChild(this.listElement);
-            this.bodyElement.appendChild(this.emptyElement);
+            this.element.removeChild(this.listElement);
+            this.element.appendChild(this.emptyElement);
         }
     },
 
@@ -244,8 +241,8 @@ WebInspector.JavaScriptBreakpointsSidebarPane.prototype = {
     {
         this.listElement.removeChildren();
         if (this.listElement.parentElement) {
-            this.bodyElement.removeChild(this.listElement);
-            this.bodyElement.appendChild(this.emptyElement);
+            this.element.removeChild(this.listElement);
+            this.element.appendChild(this.emptyElement);
         }
         this._items.clear();
     },

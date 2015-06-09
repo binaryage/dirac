@@ -9,14 +9,14 @@
 WebInspector.ObjectEventListenersSidebarPane = function()
 {
     WebInspector.SidebarPane.call(this, "Event Listeners");
-    this.bodyElement.classList.add("events-pane");
+    this.element.classList.add("event-listeners-sidebar-pane");
 
-    var refreshButton = this.titleElement.createChild("button", "pane-title-button refresh");
-    refreshButton.addEventListener("click", this._refreshClick.bind(this), false);
-    refreshButton.title = WebInspector.UIString("Refresh");
+    var refreshButton = new WebInspector.ToolbarButton(WebInspector.UIString("Refresh"), "refresh-toolbar-item");
+    refreshButton.addEventListener("click", this._refreshClick.bind(this));
+    this.toolbar().appendToolbarItem(refreshButton);
 
     WebInspector.context.addFlavorChangeListener(WebInspector.ExecutionContext, this.update, this);
-    this._eventListenersView = new WebInspector.EventListenersView(this.bodyElement);
+    this._eventListenersView = new WebInspector.EventListenersView(this.element);
 }
 
 WebInspector.ObjectEventListenersSidebarPane._objectGroupName = "object-event-listeners-sidebar-pane";
@@ -71,7 +71,7 @@ WebInspector.ObjectEventListenersSidebarPane.prototype = {
     },
 
     /**
-     * @param {!Event} event
+     * @param {!WebInspector.Event} event
      */
     _refreshClick: function(event)
     {

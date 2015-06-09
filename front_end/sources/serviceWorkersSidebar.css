@@ -11,6 +11,10 @@
     align-items: center;
 }
 
+.service-worker:last-child {
+    border-bottom: none;
+}
+
 .service-worker-scope {
     color: #777;
     flex: auto;

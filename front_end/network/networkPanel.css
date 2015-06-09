@@ -40,16 +40,12 @@
 }
 
 .network-item-view {
-    display: none;
+    display: flex;
     background: white;
 }
 
-.network-item-view.visible {
-    display: flex;
-}
-
 .resource-timing-view {
-    display: none;
+    display: block;
     margin: 6px;
     color: rgb(30%, 30%, 30%);
 }
@@ -164,10 +160,6 @@
 .network-timing-bar.blocking {
     height: 10px;
     margin: auto;
-}
-
-.resource-timing-view.visible {
-    display: block;
 }
 
 .resource-timing-view .network-timing-table {

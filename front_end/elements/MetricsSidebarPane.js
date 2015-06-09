@@ -54,7 +54,7 @@ WebInspector.MetricsSidebarPane.prototype = {
         var node = this.node();
         var cssModel = this.cssModel();
         if (!node || node.nodeType() !== Node.ELEMENT_NODE || !cssModel) {
-            this.bodyElement.removeChildren();
+            this.element.removeChildren();
             finishedCallback();
             return;
         }
@@ -303,8 +303,8 @@ WebInspector.MetricsSidebarPane.prototype = {
 
         metricsElement.appendChild(previousBox);
         metricsElement.addEventListener("mouseover", this._highlightDOMNode.bind(this, false, "all"), false);
-        this.bodyElement.removeChildren();
-        this.bodyElement.appendChild(metricsElement);
+        this.element.removeChildren();
+        this.element.appendChild(metricsElement);
     },
 
     startEditing: function(targetElement, box, styleProperty, computedStyle)

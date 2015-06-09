@@ -123,8 +123,8 @@ button.toolbar-item {
     width: 32px;
 }
 
-:host-context(.material) button.toolbar-item:hover {
-    background-color: #eee;
+.toolbar-item:hover {
+    background-color: rgba(110, 110, 110, 0.1);
 }
 
 button.toolbar-item.toggled-on .glyph {
@@ -203,9 +203,7 @@ select.toolbar-item {
 }
 
 .toolbar-item.checkbox {
-    margin: auto 6px auto 0;
-    height: auto;
-    display: flex;
+    padding-right: 5px;
 }
 
 .toolbar-item > .glyph {
@@ -450,7 +448,7 @@ button.record-toolbar-item.toggled-on .glyph {
 }
 
 .filter-toolbar-item.toggled-shown {
-    background-color: rgba(105, 105, 105, 0.1);
+    background-color: #eee;
 }
 
 .filter-toolbar-item.toggled-active .glyph {
@@ -473,8 +471,13 @@ button.record-toolbar-item.toggled-on .glyph {
     -webkit-mask-position: -160px -120px;
 }
 
-.element-state-toolbar-item .glyph {
+.pin-toolbar-item .glyph {
     -webkit-mask-position: -256px -120px;
+}
+
+.pin-toolbar-item.toggled-on,
+.animation-toolbar-item.toggled-on {
+    background-color: #eee;
 }
 
 .animation-toolbar-item .glyph {

@@ -17,7 +17,7 @@ WebInspector.EventListenerBreakpointsSidebarPane = function()
     this._categoriesTreeOutline = new TreeOutline();
     this._categoriesTreeOutline.element.tabIndex = 0;
     this._categoriesTreeOutline.element.classList.add("event-listener-breakpoints");
-    this.bodyElement.appendChild(this._categoriesTreeOutline.element);
+    this.element.appendChild(this._categoriesTreeOutline.element);
 
     this._categoryItems = [];
     // FIXME: uncomment following once inspector stops being drop targer in major ports.

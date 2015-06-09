@@ -165,8 +165,12 @@
     background-origin: padding;
     background-clip: padding;
     -webkit-user-select: text;
-    border-bottom: 1px solid rgb(191, 191, 191);
+    border-bottom: 1px solid #ccc;
     position: relative;
+}
+
+.styles-section:last-child {
+    border-bottom: none;
 }
 
 .styles-pane .sidebar-separator {
@@ -410,15 +414,14 @@
 
 .styles-element-state-pane {
     overflow: hidden;
-    padding-top: 18px;
-    height: 56px;
+    height: 60px;
     padding-left: 2px;
     border-bottom: 1px solid rgb(189, 189, 189);
 }
 
 @keyframes styles-element-state-pane-slidein {
     from {
-        margin-top: -56px;
+        margin-top: -60px;
     }
     to {
         margin-top: 0px;
@@ -430,7 +433,7 @@
         margin-top: 0px;
     }
     to {
-        margin-top: -56px;
+        margin-top: -60px;
     }
 }
 
@@ -442,13 +445,19 @@
 
 .styles-sidebar-toolbar-pane-container {
     position: relative;
-    max-height: 56px;
+    max-height: 60px;
     overflow: hidden;
 }
 
-.styles-element-state-pane.visible {
+.styles-element-state-pane {
+    background-color: #eee;
     border-bottom: 1px solid rgb(189, 189, 189);
     margin-top: 0;
+}
+
+
+.styles-element-state-pane > div {
+    margin: 6px 4px 2px;
 }
 
 .styles-element-state-pane > table {
@@ -466,8 +475,9 @@
 
 .styles-animations-controls-pane {
     border-bottom: 1px solid rgb(189, 189, 189);
-    height: 56px;
+    height: 60px;
     overflow: hidden;
+    background-color: #eee;
 }
 
 .animations-controls {
@@ -512,13 +522,17 @@
     position: absolute;
 }
 
-.sidebar-pane.composite > .body {
-    height: 100%;
+.metrics {
+    border-bottom: 1px solid #ccc;
+}
+
+.metrics-and-styles .metrics {
+    border-top: 1px solid #ccc;
+    border-bottom: none;
 }
 
 .sidebar-pane.composite .metrics {
-    border-bottom: 1px solid rgb(64%, 64%, 64%);
-    height: 206px;
+    height: 160px;
     display: flex;
     flex-direction: column;
     -webkit-align-items: center;
@@ -537,11 +551,6 @@
     flex: 1;
     overflow-y: auto;
     position: relative;
-}
-
-.sidebar-pane.composite .metrics-and-computed .sidebar-pane-toolbar,
-.sidebar-pane.composite .metrics-and-styles .sidebar-pane-toolbar {
-    position: absolute;
 }
 
 .sidebar-pane-filter-box {
@@ -563,13 +572,7 @@
     background-color: rgba(255, 255, 0, 0.5);
 }
 
-.sidebar-pane.composite .metrics-and-computed .sidebar-pane-toolbar {
-    margin-top: 4px;
-    margin-bottom: -4px;
-    position: relative;
-}
-
-.sidebar-pane.composite .platform-fonts .body {
+.sidebar-pane.composite .platform-fonts {
     padding: 1ex;
     -webkit-user-select: text;
 }
@@ -594,42 +597,12 @@
     border-bottom: none;
 }
 
-.sidebar-pane > .body > .split-widget {
+.sidebar-pane > .split-widget {
     position: absolute;
     top: 0;
     bottom: 0;
     left: 0;
     right: 0;
-}
-
-.panel.elements .sidebar-pane-toolbar > select {
-    float: right;
-    width: 23px;
-    height: 17px;
-    color: transparent;
-    background-color: transparent;
-    border: none;
-    background-repeat: no-repeat;
-    margin: 1px 0 0 0;
-    padding: 0;
-    border-radius: 0;
-    -webkit-appearance: none;
-}
-
-.panel.elements .sidebar-pane-toolbar > select:hover {
-    background-position: -23px 0;
-}
-
-.panel.elements .sidebar-pane-toolbar > select:active {
-    background-position: -46px 0;
-}
-
-.panel.elements .sidebar-pane-toolbar > select.select-filter {
-    background-image: url(Images/paneFilterButtons.png);
-}
-.panel.elements .sidebar-pane-toolbar > select > option,
-.panel.elements .sidebar-pane-toolbar > select > hr {
-    color: black;
 }
 
 .styles-section:not(.read-only) .style-properties .webkit-css-property.styles-panel-hovered,
@@ -754,12 +727,6 @@ label.checkbox-with-label {
     padding: 3px 6px 8px 18px;
     margin: -1px -6px -8px -6px;
     text-overflow: clip;
-}
-
-.styles-pane-toolbar {
-    float: right;
-    margin-top: -3px;
-    background-color: rgba(255, 255, 255, 0.8);
 }
 
 .properties-widget-section {

@@ -103,12 +103,8 @@ li.selected .base-storage-tree-element-subtitle {
 }
 
 .storage-view {
-    display: none;
-    overflow: hidden;
-}
-
-.storage-view.visible {
     display: flex;
+    overflow: hidden;
 }
 
 .storage-view {

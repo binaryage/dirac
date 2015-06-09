@@ -11,6 +11,7 @@ WebInspector.ServiceWorkersSidebarPane = function()
 {
     WebInspector.SidebarPane.call(this, WebInspector.UIString("\u2699 Service Workers"));
     this.registerRequiredCSS("sources/serviceWorkersSidebar.css");
+    this._bodyElement = this.element.createChild("div", "vbox");
     this.setVisible(false);
 
     /** @type {?WebInspector.ServiceWorkerManager} */
@@ -47,18 +48,18 @@ WebInspector.ServiceWorkersSidebarPane.prototype = {
     _update: function()
     {
         this._updateVisibility();
-        this.bodyElement.removeChildren();
+        this._bodyElement.removeChildren();
 
         if (!this.isShowing() || !this._manager)
             return;
 
         if (!this._manager.hasWorkers()) {
-            this.bodyElement.appendChild(this._placeholderElement);
+            this._bodyElement.appendChild(this._placeholderElement);
             return;
         }
 
         for (var worker of this._manager.workers()) {
-            var workerElement = this.bodyElement.createChild("div", "service-worker");
+            var workerElement = this._bodyElement.createChild("div", "service-worker");
             var leftBox = workerElement.createChild("div", "vbox flex-auto");
             leftBox.appendChild(WebInspector.linkifyURLAsNode(worker.url(), worker.name()));
             var scopeElement = leftBox.createChild("span", "service-worker-scope");

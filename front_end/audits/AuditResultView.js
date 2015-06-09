@@ -62,7 +62,7 @@ WebInspector.AuditCategoryResultPane = function(categoryResult)
     this._treeOutline = new TreeOutlineInShadow();
     this._treeOutline.registerRequiredCSS("audits/auditResultTree.css");
     this._treeOutline.element.classList.add("audit-result-tree");
-    this.bodyElement.appendChild(this._treeOutline.element);
+    this.element.appendChild(this._treeOutline.element);
     this._treeOutline.expandTreeElementsWhenArrowing = true;
 
     function ruleSorter(a, b)

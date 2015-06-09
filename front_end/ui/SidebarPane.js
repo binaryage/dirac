@@ -37,14 +37,25 @@ WebInspector.SidebarPane = function(title)
     this.setMinimumSize(25, 0);
     this.element.className = "sidebar-pane"; // Override
 
-    this.titleElement = createElementWithClass("div", "sidebar-pane-toolbar");
-    this.bodyElement = this.element.createChild("div", "body");
     this._title = title;
     this._expandCallback = null;
     this._paneVisible = true;
 }
 
 WebInspector.SidebarPane.prototype = {
+    /**
+     * @return {!WebInspector.Toolbar}
+     */
+    toolbar: function()
+    {
+        if (!this._toolbar) {
+            this._toolbar = new WebInspector.Toolbar();
+            this._toolbar.element.addEventListener("click", consumeEvent);
+            this.element.insertBefore(this._toolbar.element, this.element.firstChild);
+        }
+        return this._toolbar;
+    },
+
     /**
      * @return {string}
      */
@@ -109,7 +120,6 @@ WebInspector.SidebarPaneTitle = function(container, pane)
     this.element.tabIndex = 0;
     this.element.addEventListener("click", this._toggleExpanded.bind(this), false);
     this.element.addEventListener("keydown", this._onTitleKeyDown.bind(this), false);
-    this.element.appendChild(this._pane.titleElement);
 }
 
 WebInspector.SidebarPaneTitle.prototype = {
@@ -165,6 +175,8 @@ WebInspector.SidebarPaneStack.prototype = {
     {
         var paneTitle = new WebInspector.SidebarPaneTitle(this.element, pane);
         this._titleByPane.set(pane, paneTitle);
+        if (pane._toolbar)
+            paneTitle.element.appendChild(pane._toolbar.element);
         pane._attached(this._setPaneVisible.bind(this, pane), paneTitle._expand.bind(paneTitle));
     },
 
@@ -204,7 +216,8 @@ WebInspector.SidebarTabbedPane.prototype = {
     {
         var title = pane.title();
         this.appendTab(title, title, pane);
-        pane.element.appendChild(pane.titleElement);
+        if (pane._toolbar)
+            pane.element.insertBefore(pane._toolbar.element, pane.element.firstChild);
         pane._attached(this._setPaneVisible.bind(this, pane), this.selectTab.bind(this, title));
     },
 

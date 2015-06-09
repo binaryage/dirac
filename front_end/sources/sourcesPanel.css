@@ -44,6 +44,7 @@
 .scripts-debug-toolbar {
     margin-top: -1px;
     height: 24px;
+    overflow: hidden;
 }
 
 .scripts-debug-toolbar-drawer {
@@ -170,7 +171,6 @@
 }
 
 .watch-expressions {
-    margin-top: 14px;
     overflow-x: hidden;
     padding: 3px 6px 6px 0px;
 }

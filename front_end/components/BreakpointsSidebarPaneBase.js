@@ -31,6 +31,7 @@
 /**
  * @constructor
  * @extends {WebInspector.SidebarPane}
+ * @param {string} title
  */
 WebInspector.BreakpointsSidebarPaneBase = function(title)
 {
@@ -44,7 +45,7 @@ WebInspector.BreakpointsSidebarPaneBase = function(title)
     this.emptyElement.className = "info";
     this.emptyElement.textContent = WebInspector.UIString("No Breakpoints");
 
-    this.bodyElement.appendChild(this.emptyElement);
+    this.element.appendChild(this.emptyElement);
 }
 
 WebInspector.BreakpointsSidebarPaneBase.prototype = {
@@ -59,8 +60,8 @@ WebInspector.BreakpointsSidebarPaneBase.prototype = {
             this.listElement.insertBefore(element, beforeNode);
         } else {
             if (!this.listElement.firstChild) {
-                this.bodyElement.removeChild(this.emptyElement);
-                this.bodyElement.appendChild(this.listElement);
+                this.element.removeChild(this.emptyElement);
+                this.element.appendChild(this.listElement);
             }
             this.listElement.appendChild(element);
         }
@@ -74,8 +75,8 @@ WebInspector.BreakpointsSidebarPaneBase.prototype = {
     {
         this.listElement.removeChild(element);
         if (!this.listElement.firstChild) {
-            this.bodyElement.removeChild(this.listElement);
-            this.bodyElement.appendChild(this.emptyElement);
+            this.element.removeChild(this.listElement);
+            this.element.appendChild(this.emptyElement);
         }
     },
 
@@ -86,8 +87,8 @@ WebInspector.BreakpointsSidebarPaneBase.prototype = {
     {
         this.listElement.removeChildren();
         if (this.listElement.parentElement) {
-            this.bodyElement.removeChild(this.listElement);
-            this.bodyElement.appendChild(this.emptyElement);
+            this.element.removeChild(this.listElement);
+            this.element.appendChild(this.emptyElement);
         }
     },
 

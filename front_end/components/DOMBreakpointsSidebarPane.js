@@ -223,10 +223,7 @@ WebInspector.DOMBreakpointsSidebarPane.prototype = {
         element._type = type;
         element.addEventListener("contextmenu", this._contextMenu.bind(this, node, type), true);
 
-        var checkboxElement = createElement("input");
-        checkboxElement.className = "checkbox-elem";
-        checkboxElement.type = "checkbox";
-        checkboxElement.checked = enabled;
+        var checkboxElement = createCheckboxLabel("", enabled);
         checkboxElement.addEventListener("click", this._checkboxClicked.bind(this, node, type), false);
         element._checkboxElement = checkboxElement;
         element.appendChild(checkboxElement);
@@ -426,16 +423,11 @@ WebInspector.DOMBreakpointsSidebarPane.prototype = {
  */
 WebInspector.DOMBreakpointsSidebarPane.Proxy = function(pane, panel)
 {
-    WebInspector.Widget.__assert(!pane.titleElement.firstChild, "Cannot create proxy for a sidebar pane with a toolbar");
-
     WebInspector.SidebarPane.call(this, pane.title());
     this.registerRequiredCSS("components/breakpointsList.css");
 
     this._wrappedPane = pane;
     this._panel = panel;
-
-    this.bodyElement.remove();
-    this.bodyElement = this._wrappedPane.bodyElement;
 }
 
 WebInspector.DOMBreakpointsSidebarPane.Proxy.prototype = {
@@ -460,8 +452,8 @@ WebInspector.DOMBreakpointsSidebarPane.Proxy.prototype = {
 
     _reattachBody: function()
     {
-        if (this.bodyElement.parentNode !== this.element)
-            this.element.appendChild(this.bodyElement);
+        if (this._wrappedPane.element.parentNode !== this.element)
+            this._wrappedPane.show(this.element);
     },
 
     __proto__: WebInspector.SidebarPane.prototype
