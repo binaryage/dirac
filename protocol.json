@@ -4988,5 +4988,40 @@
                 "hidden": true
             }
         ]
+    },
+    {
+        "domain": "Security",
+        "description": "Security",
+        "hidden": true,
+        "types": [
+            {
+                "id": "SecurityState",
+                "type": "string",
+                "enum": ["unknown", "http", "insecure", "warning", "secure"],
+                "description": "The security level of a page or resource."
+            }
+        ],
+        "commands": [
+            {
+                "name": "enable",
+                "description": "Enables tracking security state changes.",
+                "handlers": ["browser"]
+            },
+            {
+                "name": "disable",
+                "description": "Disables tracking security state changes.",
+                "handlers": ["browser"]
+            }
+        ],
+        "events": [
+            {
+                "name": "securityStateChanged",
+                "description": "The security state of the page changed.",
+                "parameters": [
+                    { "name": "securityState", "$ref": "SecurityState", "description": "Security state." }
+                ],
+                "handlers": ["browser"]
+            }
+        ]
     }]
 }
