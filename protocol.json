@@ -4113,6 +4113,10 @@
                 "enum": ["new", "installing", "installed", "activating", "activated", "redundant"]
             },
             {
+                "id": "TargetID",
+                "type": "string"
+            },
+            {
                 "id": "ServiceWorkerVersion",
                 "type": "object",
                 "description": "ServiceWorker version.",
@@ -4123,7 +4127,8 @@
                     { "name": "runningStatus", "$ref": "ServiceWorkerVersionRunningStatus" },
                     { "name": "status", "$ref": "ServiceWorkerVersionStatus" },
                     { "name": "scriptLastModified", "type": "number", "optional": true, "description": "The Last-Modified header value of the main script." },
-                    { "name": "scriptResponseTime", "type": "number", "optional": true, "description": "The time at which the response headers of the main script were received from the server.  For cached script it is the last time the cache entry was validated." }
+                    { "name": "scriptResponseTime", "type": "number", "optional": true, "description": "The time at which the response headers of the main script were received from the server.  For cached script it is the last time the cache entry was validated." },
+                    { "name": "controlledClients", "type": "array", "optional": true, "items": { "$ref": "TargetID" } }
                 ]
             },
             {
@@ -4137,6 +4142,16 @@
                     { "name": "sourceURL", "type": "string" },
                     { "name": "lineNumber", "type": "integer" },
                     { "name": "columnNumber", "type": "integer" }
+                ]
+            },
+            {
+                "id": "TargetInfo",
+                "type": "object",
+                "properties": [
+                    { "name": "id", "$ref": "TargetID" },
+                    { "name": "type", "type": "string" },
+                    { "name": "title", "type": "string" },
+                    { "name": "url", "type": "string" }
                 ]
             }
         ],
@@ -4219,6 +4234,24 @@
                     { "name": "origin", "type": "string" },
                     { "name": "registrationId", "type": "string" },
                     { "name": "data", "type": "string" }
+                ],
+                "handlers": ["browser"]
+            },
+            {
+                "name": "getTargetInfo",
+                "async": true,
+                "parameters": [
+                    { "name": "targetId", "$ref": "TargetID" }
+                ],
+                "returns": [
+                    { "name": "targetInfo","$ref": "TargetInfo" }
+                ],
+                "handlers": ["browser"]
+            },
+            {
+                "name": "activateTarget",
+                "parameters": [
+                    { "name": "targetId", "$ref": "TargetID" }
                 ],
                 "handlers": ["browser"]
             }
