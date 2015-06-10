@@ -245,15 +245,6 @@ DevToolsAPIImpl.prototype = {
     },
 
     /**
-     * @param {string} backgroundColor
-     * @param {string} color
-     */
-    setToolbarColors: function(backgroundColor, color)
-    {
-        this._dispatchOnInspectorFrontendAPI("setToolbarColors", [backgroundColor, color]);
-    },
-
-    /**
      * @param {boolean} useSoftMenu
      */
     setUseSoftMenu: function(useSoftMenu)

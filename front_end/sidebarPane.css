@@ -98,7 +98,7 @@
 }
 
 .sidebar-pane > .toolbar {
-    border-bottom: 1px solid #ddd;
+    border-bottom: 1px solid #f1f1f1;
 }
 
 .sidebar-pane > .toolbar > * {

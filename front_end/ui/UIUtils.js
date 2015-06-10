@@ -762,46 +762,6 @@ WebInspector.restoreFocusFromElement = function(element)
 }
 
 /**
- * @param {!Document} document
- * @param {string} backgroundColor
- * @param {string} color
- */
-WebInspector.setToolbarColors = function(document, backgroundColor, color)
-{
-    if (!WebInspector._themeStyleElement) {
-        WebInspector._themeStyleElement = createElement("style");
-        document.head.appendChild(WebInspector._themeStyleElement);
-    }
-    var colorWithAlpha = WebInspector.Color.parse(color).setAlpha(0.9).asString(WebInspector.Color.Format.RGBA);
-    var prefix = WebInspector.isMac() ? "body:not(.undocked)" : "body";
-    WebInspector._themeStyleElement.textContent =
-        String.sprintf(
-            "%s .inspector-view-tabbed-pane.tabbed-pane::shadow .tabbed-pane-header {" +
-            "    background-image: none !important;" +
-            "    background-color: %s !important;" +
-            "    color: %s !important;" +
-            "}", prefix, backgroundColor, colorWithAlpha) +
-        String.sprintf(
-            "%s .inspector-view-tabbed-pane.tabbed-pane::shadow .tabbed-pane-header-tab:hover {" +
-             "   color: %s;" +
-             "}", prefix, color) +
-        String.sprintf(
-             "%s .inspector-view-toolbar.toolbar::shadow .toolbar-item {" +
-             "   color: %s;" +
-             "}", prefix, colorWithAlpha) +
-        String.sprintf(
-             "%s .inspector-view-toolbar.toolbar::shadow .toolbar-button-theme {" +
-             "   background-color: %s;" +
-             "}", prefix, colorWithAlpha);
-}
-
-WebInspector.resetToolbarColors = function()
-{
-    if (WebInspector._themeStyleElement)
-        WebInspector._themeStyleElement.textContent = "";
-}
-
-/**
  * @param {!Element} element
  * @param {number} offset
  * @param {number} length

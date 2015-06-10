@@ -27,6 +27,11 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+.panel.network > .toolbar {
+    position: relative;
+    border-bottom: 1px solid #f1f1f1;
+}
+
 .network-details-view {
     background: rgb(203, 203, 203);
 }

@@ -49,8 +49,7 @@ WebInspector.InspectorView = function()
     this._tabbedPane.registerRequiredCSS("components/inspectorViewTabbedPane.css");
     this._tabbedPane.element.classList.add("inspector-view-tabbed-pane");
     this._tabbedPane.setRetainTabOrder(true);
-    if (Runtime.experiments.isEnabled("materialDesign"))
-        this._tabbedPane.setTabSlider(true);
+    this._tabbedPane.setTabSlider(true);
     this._drawerSplitWidget.setMainWidget(this._tabbedPane);
     this._drawer = new WebInspector.Drawer(this._drawerSplitWidget);
 
@@ -119,8 +118,6 @@ WebInspector.InspectorView.prototype = {
         this._leftToolbar = new WebInspector.ExtensibleToolbar("main-toolbar-left");
         this._leftToolbar.element.classList.add("inspector-view-toolbar", "inspector-view-toolbar-left");
 
-        if (!Runtime.experiments.isEnabled("materialDesign"))
-            this._leftToolbar.makeNarrow();
         this._tabbedPane.insertBeforeTabStrip(this._leftToolbar.element);
 
         var rightToolbarContainer = createElementWithClass("div", "hbox flex-none flex-centered");
@@ -129,9 +126,6 @@ WebInspector.InspectorView.prototype = {
         this._rightToolbar = new WebInspector.ExtensibleToolbar("main-toolbar-right");
         this._rightToolbar.element.classList.add("inspector-view-toolbar", "flex-none");
         rightToolbarContainer.appendChild(this._rightToolbar.element);
-
-        var closeButtonElement = rightToolbarContainer.createChild("div", "inspector-view-close-button flex-none", "dt-close-button");
-        closeButtonElement.addEventListener("click", InspectorFrontendHost.closeWindow.bind(InspectorFrontendHost), true);
     },
 
     /**

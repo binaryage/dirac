@@ -175,6 +175,12 @@
             "location": "main-toolbar-right"
         },
         {
+            "type": "@WebInspector.ToolbarItem.Provider",
+            "className": "WebInspector.DockController.CloseButtonProvider",
+            "order": 100,
+            "location": "main-toolbar-right"
+        },
+        {
             "type": "setting",
             "category": "",
             "title": "Disable cache (while DevTools is open)",

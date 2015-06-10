@@ -122,7 +122,7 @@ WebInspector.NetworkPanel.prototype = {
         this._panelToolbar.appendToolbarItem(this._clearButton);
 
         if (Runtime.experiments.isEnabled("filmStripInNetworkAndTimeline")) {
-            var recordFilmStripButton = new WebInspector.ToolbarSettingToggle(this._networkRecordFilmStripSetting, "record-filmstrip-toolbar-item", WebInspector.UIString("Capture screenshots"));
+            var recordFilmStripButton = new WebInspector.ToolbarSettingToggle(this._networkRecordFilmStripSetting, "camera-toolbar-item", WebInspector.UIString("Capture screenshots"));
             this._panelToolbar.appendToolbarItem(recordFilmStripButton);
         }
 

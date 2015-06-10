@@ -181,18 +181,6 @@ WebInspector.Main.prototype = {
         WebInspector.initializeUIUtils(window);
         WebInspector.installComponentRootStyles(/** @type {!Element} */ (document.body));
 
-        if (Runtime.queryParam("toolbarColor") && Runtime.queryParam("textColor"))
-            WebInspector.setToolbarColors(document, /** @type {string} */ (Runtime.queryParam("toolbarColor")), /** @type {string} */ (Runtime.queryParam("textColor")));
-        InspectorFrontendHost.events.addEventListener(InspectorFrontendHostAPI.Events.SetToolbarColors, updateToolbarColors);
-        /**
-         * @param {!WebInspector.Event} event
-         * @suppressGlobalPropertiesCheck
-         */
-        function updateToolbarColors(event)
-        {
-            WebInspector.setToolbarColors(document, /** @type {string} */ (event.data["backgroundColor"]), /** @type {string} */ (event.data["color"]));
-        }
-
         this._addMainEventListeners(document);
 
         var canDock = !!Runtime.queryParam("can_dock");

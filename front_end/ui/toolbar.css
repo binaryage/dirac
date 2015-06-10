@@ -123,7 +123,9 @@ button.toolbar-item {
     width: 32px;
 }
 
-.toolbar-item:hover {
+button.toolbar-item:hover,
+.toolbar-item.checkbox:hover,
+.toolbar-counter:hover {
     background-color: rgba(110, 110, 110, 0.1);
 }
 
@@ -209,11 +211,16 @@ select.toolbar-item {
 .toolbar-item > .glyph {
     -webkit-mask-image: url(Images/toolbarButtonGlyphs.png);
     -webkit-mask-size: 352px 144px;
-    background-color: rgba(0, 0, 0, 0.75);
-    opacity: 0.8;
+    opacity: 0.9;
+    background-color: #595959;
     z-index: 1;
     width: 32px;
     height: 24px;
+}
+
+:host-context(:not(.material)) .toolbar-item > .glyph {
+    position: relative;
+    left: -1px;
 }
 
 
@@ -230,11 +237,7 @@ select.toolbar-item {
 .toolbar-counter {
     cursor: pointer;
     padding: 0 2px;
-}
-
-.toolbar-counter:hover .toolbar-counter-item {
-    border-bottom: 1px solid rgb(96, 96, 96);
-    margin-bottom: -1px;
+    min-width: 30px;
 }
 
 .toolbar-counter-item {
@@ -354,7 +357,7 @@ button.record-toolbar-item.toggled-on .glyph {
     background-color: rgb(216, 0, 0) !important;
 }
 
-.record-filmstrip-toolbar-item .glyph {
+.camera-toolbar-item .glyph {
     -webkit-mask-position: -96px -24px;
 }
 
@@ -448,7 +451,7 @@ button.record-toolbar-item.toggled-on .glyph {
 }
 
 .filter-toolbar-item.toggled-shown {
-    background-color: #eee;
+    background-color: #f3f3f3;
 }
 
 .filter-toolbar-item.toggled-active .glyph {
@@ -477,7 +480,7 @@ button.record-toolbar-item.toggled-on .glyph {
 
 .pin-toolbar-item.toggled-on,
 .animation-toolbar-item.toggled-on {
-    background-color: #eee;
+    background-color: #f3f3f3;
 }
 
 .animation-toolbar-item .glyph {

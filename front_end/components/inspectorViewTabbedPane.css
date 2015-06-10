@@ -5,7 +5,7 @@
  */
 
 .tabbed-pane-header {
-    background-color: #eee;
+    background-color: #f3f3f3;
     flex: 0 0 24px;
 }
 
@@ -24,7 +24,7 @@
     transition: background-color 100ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-:host-context(.material) .tabbed-pane-header-tab:hover {
+.tabbed-pane-header-tab:hover {
     background-color: rgba(105, 105, 105, 0.1);
 }
 
@@ -36,33 +36,14 @@
     padding: 0 3px;
 }
 
-:host-context(.material) .tabbed-pane-header-tab,
-:host-context(.material) .tabbed-pane-header-tab.selected {
+.tabbed-pane-header-tab,
+.tabbed-pane-header-tab.selected {
+    border: none;
     padding: 0 6px;
     transition: background-color 150ms cubic-bezier(0, 0, 0.2, 1);
 }
 
-:host-context(.material) .tabbed-pane-header-tab.selected {
-    border: none;
-    background-color: rgba(105, 105, 105, 0.1);
-}
-
-.tabbed-pane-header-tab.selected {
-    border-width: 0 2px 0 2px;
-    -webkit-border-image: url(Images/toolbarItemSelected.png) 0 2 0 2;
-}
-
-:host-context(.platform-windows) .tabbed-pane-header,
-:host-context(.platform-windows.inactive) .tabbed-pane-header {
-    background-image: none;
-}
-
 :host-context(body.undocked.platform-mac) .tabbed-pane-header {
-    background-image: linear-gradient(to bottom, rgb(208, 208, 208), rgb(200, 200, 200)) !important;
+    background-color: rgb(243, 243, 243);
     color: #333 !important;
-}
-
-:host-context(body.undocked.platform-mac.inactive) .tabbed-pane-header {
-    background-image: linear-gradient(to bottom, rgb(238, 238, 238), rgb(224, 224, 224)) !important;
-    color: #555 !important;
 }

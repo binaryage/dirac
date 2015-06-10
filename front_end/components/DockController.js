@@ -36,6 +36,10 @@
 WebInspector.DockController = function(canDock)
 {
     this._canDock = canDock;
+
+    this._closeButton = new WebInspector.ToolbarButton(WebInspector.UIString("Close"), "delete-toolbar-item");
+    this._closeButton.addEventListener("click", InspectorFrontendHost.closeWindow.bind(InspectorFrontendHost));
+
     if (!canDock) {
         this._dockSide = WebInspector.DockController.State.Undocked;
         this._updateUI();
@@ -153,6 +157,7 @@ WebInspector.DockController.prototype = {
             body.classList.remove("dock-to-bottom");
             break;
         }
+        this._closeButton.setVisible(this._dockSide !== WebInspector.DockController.State.Undocked);
     },
 
     __proto__: WebInspector.Object.prototype
@@ -210,6 +215,25 @@ WebInspector.DockController.ToggleDockActionDelegate.prototype = {
         if (!toggleButton || !toggleButton.enabled())
             return;
         /** @type {!WebInspector.ToolbarStatesSettingButton} */ (toggleButton).toggle();
+    }
+}
+
+/**
+ * @constructor
+ * @implements {WebInspector.ToolbarItem.Provider}
+ */
+WebInspector.DockController.CloseButtonProvider = function()
+{
+}
+
+WebInspector.DockController.CloseButtonProvider.prototype = {
+    /**
+     * @override
+     * @return {?WebInspector.ToolbarItem}
+     */
+    item: function()
+    {
+        return WebInspector.dockController._closeButton;
     }
 }
 

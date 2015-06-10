@@ -84,22 +84,7 @@ fieldset[disabled] label:hover input {
 }
 
 .inspector-view-toolbar-left {
-    padding-left: 2px;
     margin-right: -5px; /* Should compensate for .tabbed-pane-header-contents margin-left. */
-}
-
-.inspector-view-close-button {
-    cursor: default;
-    width: 28px;
-    padding-left: 8px;
-}
-
-.material .inspector-view-close-button {
-    width: 32px;
-}
-
-body.undocked .inspector-view-close-button {
-    display: none;
 }
 
 .bubble-repeat-count {
