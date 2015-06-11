@@ -613,7 +613,6 @@
             'front_end/timeline/TimelineLayersView.js',
             'front_end/timeline/TimelineMemoryOverview.js',
             'front_end/timeline/TimelineModel.js',
-            'front_end/timeline/TimelineOverviewPane.js',
             'front_end/timeline/TimelinePaintProfilerView.js',
             'front_end/timeline/TimelinePanel.js',
             'front_end/timeline/TimelinePresentationModel.js',
@@ -634,6 +633,7 @@
             'front_end/ui_lazy/ShowMoreDataGridNode.js',
             'front_end/ui_lazy/SortableDataGrid.js',
             'front_end/ui_lazy/TimelineGrid.js',
+            'front_end/ui_lazy/TimelineOverviewPane.js',
             'front_end/ui_lazy/ViewportDataGrid.js',
         ],
 

@@ -460,7 +460,7 @@ WebInspector.TimelineView.prototype = {
         var windowEndTime = this._windowEndTime || this._model.maximumRecordTime();
         this._timelinePaddingLeft = this._expandOffset;
         this._calculator.setWindow(windowStartTime, windowEndTime);
-        this._calculator.setDisplayWindow(this._timelinePaddingLeft, this._graphRowsElementWidth);
+        this._calculator.setDisplayWindow(this._graphRowsElementWidth, this._timelinePaddingLeft);
 
         this._refreshRecords();
         if (!this._boundariesAreValid) {
@@ -966,13 +966,13 @@ WebInspector.TimelineCalculator.prototype = {
     },
 
     /**
-     * @param {number} paddingLeft
      * @param {number} clientWidth
+     * @param {number=} paddingLeft
      */
-    setDisplayWindow: function(paddingLeft, clientWidth)
+    setDisplayWindow: function(clientWidth, paddingLeft)
     {
-        this._workingArea = clientWidth - WebInspector.TimelineCalculator._minWidth - paddingLeft;
-        this._paddingLeft = paddingLeft;
+        this._paddingLeft = paddingLeft || 0;
+        this._workingArea = clientWidth - WebInspector.TimelineCalculator._minWidth - this._paddingLeft;
     },
 
     /**

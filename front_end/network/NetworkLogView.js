@@ -33,12 +33,11 @@
  * @implements {WebInspector.Searchable}
  * @implements {WebInspector.TargetManager.Observer}
  * @extends {WebInspector.VBox}
- * @param {!WebInspector.NetworkOverview} overview
  * @param {!WebInspector.FilterBar} filterBar
  * @param {!Element} progressBarContainer
  * @param {!WebInspector.Setting} networkLogLargeRowsSetting
  */
-WebInspector.NetworkLogView = function(overview, filterBar, progressBarContainer, networkLogLargeRowsSetting)
+WebInspector.NetworkLogView = function(filterBar, progressBarContainer, networkLogLargeRowsSetting)
 {
     WebInspector.VBox.call(this);
     this.registerRequiredCSS("network/networkLogView.css");
@@ -49,8 +48,6 @@ WebInspector.NetworkLogView = function(overview, filterBar, progressBarContainer
     this._networkShowPrimaryLoadWaterfallSetting = WebInspector.settings.createSetting("networkShowPrimaryLoadWaterfall", false);
 
     this._filterBar = filterBar;
-    /** @type {!WebInspector.NetworkOverview} */
-    this._overview = overview;
     this._progressBarContainer = progressBarContainer;
     this._networkLogLargeRowsSetting = networkLogLargeRowsSetting;
 
@@ -98,8 +95,6 @@ WebInspector.NetworkLogView = function(overview, filterBar, progressBarContainer
     this._addFilters();
     this._resetSuggestionBuilder();
     this._initializeView();
-
-    this._overview.addEventListener(WebInspector.NetworkOverview.Events.WindowChanged, this._onWindowChanged, this);
 
     WebInspector.moduleSetting("networkColorCodeResourceTypes").addChangeListener(this._invalidateAllItems, this);
     this._networkLogLargeRowsSetting.addChangeListener(this._updateRowsSize, this);
@@ -216,12 +211,11 @@ WebInspector.NetworkLogView.prototype = {
     },
 
     /**
-     * @param {!WebInspector.Event} event
+     * @param {number} start
+     * @param {number} end
      */
-    _onWindowChanged: function(event)
+    setWindow: function(start, end)
     {
-        var start = /** @type {number} */ (event.data.start);
-        var end = /** @type {number} */ (event.data.end);
         if (!start && !end) {
             this._timeFilter = null;
             this._timeCalculator.setWindow(null);
@@ -945,7 +939,6 @@ WebInspector.NetworkLogView.prototype = {
         if (this._popoverHelper)
             this._popoverHelper.hidePopover();
 
-        this._overview.reset();
         this._timeFilter = null;
         this._calculator.reset();
 
@@ -1042,7 +1035,7 @@ WebInspector.NetworkLogView.prototype = {
         }
 
         this._staleRequestIds[request.requestId] = true;
-        this._overview.updateRequest(request);
+        this.dispatchEventToListeners(WebInspector.NetworkLogView.EventTypes.UpdateRequest, request);
         this._scheduleRefresh();
     },
 
@@ -2032,5 +2025,6 @@ WebInspector.NetworkLogView._requestTimeFilter = function(windowStart, windowEnd
 WebInspector.NetworkLogView.EventTypes = {
     RequestSelected: "RequestSelected",
     SearchCountUpdated: "SearchCountUpdated",
-    SearchIndexUpdated: "SearchIndexUpdated"
+    SearchIndexUpdated: "SearchIndexUpdated",
+    UpdateRequest: "UpdateRequest"
 };

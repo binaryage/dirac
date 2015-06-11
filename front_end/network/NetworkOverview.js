@@ -4,20 +4,13 @@
 
 /**
  * @constructor
- * @extends {WebInspector.VBox}
+ * @extends {WebInspector.TimelineOverviewBase}
  */
 WebInspector.NetworkOverview = function()
 {
-    WebInspector.VBox.call(this);
+    WebInspector.TimelineOverviewBase.call(this);
     this.element.classList.add("network-overview");
 
-    /** @type {!WebInspector.OverviewGrid} */
-    this._overviewGrid = new WebInspector.OverviewGrid("network");
-    /** @type {!Element} */
-    this._overviewContainer = this._overviewGrid.element.createChild("div", "network-overview-canvas-container");
-    this._overviewCanvas = this._overviewContainer.createChild("canvas", "network-overview-canvas");
-    /** @type {!WebInspector.NetworkTransferTimeCalculator} */
-    this._calculator = new WebInspector.NetworkTransferTimeCalculator();
     /** @type {number} */
     this._numBands = 1;
     /** @type {number} */
@@ -33,8 +26,6 @@ WebInspector.NetworkOverview = function()
     /** @type {number} */
     this._canvasHeight = 0;
 
-    this._overviewGrid.addEventListener(WebInspector.OverviewGrid.Events.WindowChanged, this._onWindowChanged, this);
-    this.element.appendChild(this._overviewGrid.element);
     WebInspector.targetManager.addModelListener(WebInspector.ResourceTreeModel, WebInspector.ResourceTreeModel.EventTypes.Load, this._loadEventFired, this);
     WebInspector.targetManager.addModelListener(WebInspector.ResourceTreeModel, WebInspector.ResourceTreeModel.EventTypes.DOMContentLoaded, this._domContentLoadedEventFired, this);
 
@@ -47,26 +38,10 @@ WebInspector.NetworkOverview._bandHeight = 3;
 /** @type {number} */
 WebInspector.NetworkOverview._dividersBarHeight = 20;
 
-/** @enum {string} */
-WebInspector.NetworkOverview.Events = {
-    WindowChanged: "WindowChanged"
-}
-
 /** @typedef {{start: number, end: number}} */
 WebInspector.NetworkOverview.Window;
 
 WebInspector.NetworkOverview.prototype = {
-    /**
-     * @param {number} windowStart
-     * @param {number} windowEnd
-     */
-    setWindow: function(windowStart, windowEnd)
-    {
-        var startTime = this._calculator.minimumBoundary();
-        var totalTime = this._calculator.boundarySpan();
-        this._overviewGrid.setWindow(Math.max(windowStart - startTime, 0) / totalTime, (windowEnd - startTime) / totalTime);
-    },
-
     /**
      * @param {?WebInspector.FilmStripModel} filmStripModel
      */
@@ -89,27 +64,6 @@ WebInspector.NetworkOverview.prototype = {
     {
         this._selectedFilmStripTime = -1;
         this.scheduleUpdate();
-    },
-
-    /**
-     * @param {!WebInspector.Event} event
-     */
-    _onWindowChanged: function(event)
-    {
-        if (this._restoringWindow)
-            return;
-        var startTime = this._calculator.minimumBoundary();
-        var totalTime = this._calculator.boundarySpan();
-        var left = this._overviewGrid.windowLeft();
-        var right = this._overviewGrid.windowRight();
-        if (left === 0 && right === 1) {
-            this._windowStart = 0;
-            this._windowEnd = 0;
-        } else {
-            this._windowStart = startTime + left * totalTime;
-            this._windowEnd = startTime + right * totalTime;
-        }
-        this.dispatchEventToListeners(WebInspector.NetworkOverview.Events.WindowChanged, {start: this._windowStart, end: this._windowEnd});
     },
 
     /**
@@ -154,12 +108,6 @@ WebInspector.NetworkOverview.prototype = {
      */
     updateRequest: function(request)
     {
-        if (!this._requestsList.length) {
-            // When events start coming in, we need to reset user-friendly 0 - 1000ms calculator.
-            this._calculator.reset();
-            this.onResize();
-        }
-        this._calculator.updateBoundaries(request);
         if (!this._requestsSet.has(request)) {
             this._requestsSet.add(request);
             this._requestsList.push(request);
@@ -180,20 +128,20 @@ WebInspector.NetworkOverview.prototype = {
      */
     onResize: function()
     {
-        var width = this._overviewContainer.offsetWidth;
-        var height = this._overviewContainer.offsetHeight;
+        var width = this.element.offsetWidth;
+        var height = this.element.offsetHeight;
         this._calculator.setDisplayWindow(width);
-        this._resetCanvas(width, height);
-        var numBands = (((height - WebInspector.NetworkOverview._dividersBarHeight - 1) / WebInspector.NetworkOverview._bandHeight) - 1) | 0;
+        this.resetCanvas();
+        var numBands = (((height - 1) / WebInspector.NetworkOverview._bandHeight) - 1) | 0;
         this._numBands = (numBands > 0) ? numBands : 1;
         this.scheduleUpdate();
     },
 
+    /**
+     * @override
+     */
     reset: function()
     {
-        this._calculator.reset();
-        this._calculator.setInitialUserFriendlyBoundaries();
-        this._overviewGrid.reset();
         this._windowStart = 0;
         this._windowEnd = 0;
         /** @type {?WebInspector.FilmStripModel} */
@@ -201,8 +149,8 @@ WebInspector.NetworkOverview.prototype = {
 
         /** @type {number} */
         this._span = 1;
-        /** @type {!WebInspector.NetworkTimeBoundary} */
-        this._lastBoundary = this._calculator.boundary();
+        /** @type {?WebInspector.NetworkTimeBoundary} */
+        this._lastBoundary = null;
         /** @type {number} */
         this._nextBand = 0;
         /** @type {!Map.<string, number>} */
@@ -217,10 +165,7 @@ WebInspector.NetworkOverview.prototype = {
         this._domContentLoadedEvents = [];
 
         // Clear screen.
-        var width = this._overviewContainer.offsetWidth;
-        var height = this._overviewContainer.offsetHeight;
-        this._resetCanvas(width, height);
-        this._update();
+        this.resetCanvas();
     },
 
     /**
@@ -231,36 +176,37 @@ WebInspector.NetworkOverview.prototype = {
         if (this._updateScheduled || !this.isShowing())
             return;
         this._updateScheduled = true;
-        this.element.window().requestAnimationFrame(this._update.bind(this));
+        this.element.window().requestAnimationFrame(this.update.bind(this));
     },
 
-    _update: function()
+    /**
+     * @override
+     */
+    update: function()
     {
         this._updateScheduled = false;
 
-        var newBoundary = this._calculator.boundary();
-        if (!newBoundary.equals(this._lastBoundary)) {
+        var newBoundary = new WebInspector.NetworkTimeBoundary(this._calculator.minimumBoundary(), this._calculator.maximumBoundary());
+        if (!this._lastBoundary || !newBoundary.equals(this._lastBoundary)) {
             var span = this._calculator.boundarySpan();
             while (this._span < span)
                 this._span *= 1.25;
-            this._calculator.updateBoundariesForEventTime(this._calculator.minimumBoundary() + this._span);
-            this._lastBoundary = this._calculator.boundary();
-            this._overviewGrid.updateDividers(this._calculator);
+            this._calculator.setBounds(this._calculator.minimumBoundary(), this._calculator.minimumBoundary() + this._span);
+            this._lastBoundary = new WebInspector.NetworkTimeBoundary(this._calculator.minimumBoundary(), this._calculator.maximumBoundary());
             if (this._windowStart || this._windowEnd) {
                 this._restoringWindow = true;
                 var startTime = this._calculator.minimumBoundary();
                 var totalTime = this._calculator.boundarySpan();
                 var left = (this._windowStart - startTime) / totalTime;
                 var right = (this._windowEnd - startTime) / totalTime;
-                this._overviewGrid.setWindow(left, right);
                 this._restoringWindow = false;
             }
         }
 
-        var context = this._overviewCanvas.getContext("2d");
+        var context = this._canvas.getContext("2d");
         var calculator = this._calculator;
         var linesByType = {};
-        var paddingTop = WebInspector.NetworkOverview._dividersBarHeight;
+        var paddingTop = 2;
 
         /**
          * @param {string} type
@@ -275,7 +221,7 @@ WebInspector.NetworkOverview.prototype = {
             context.beginPath();
             context.strokeStyle = strokeStyle;
             for (var i = 0; i < n;) {
-                var y = lines[i++] * WebInspector.NetworkOverview._bandHeight + 2 + paddingTop;
+                var y = lines[i++] * WebInspector.NetworkOverview._bandHeight + paddingTop;
                 var startTime = lines[i++];
                 var endTime = lines[i++];
                 if (endTime === Number.MAX_VALUE)
@@ -312,16 +258,13 @@ WebInspector.NetworkOverview.prototype = {
             for (var j = 0; j < timeRanges.length; ++j) {
                 var type = timeRanges[j].name;
                 if (band !== -1 || type === WebInspector.RequestTimeRangeNames.Total)
-                    addLine(type, y, timeRanges[j].start, timeRanges[j].end);
+                    addLine(type, y, timeRanges[j].start * 1000, timeRanges[j].end * 1000);
             }
         }
 
-        context.clearRect(0, 0, this._overviewCanvas.width, this._overviewCanvas.height);
+        context.clearRect(0, 0, this._canvas.width, this._canvas.height);
         context.save();
         context.scale(window.devicePixelRatio, window.devicePixelRatio);
-        context.fillStyle = "white";
-        context.lineWidth = 0;
-        context.fillRect(0, paddingTop, this._canvasWidth, this._canvasHeight - paddingTop);
         context.lineWidth = 2;
         drawLines(WebInspector.RequestTimeRangeNames.Total, "#CCCCCC");
         drawLines(WebInspector.RequestTimeRangeNames.Blocking, "#AAAAAA");
@@ -356,11 +299,12 @@ WebInspector.NetworkOverview.prototype = {
 
         context.strokeStyle = "#063"; // Keep in sync with .network-frame-divider CSS rule.
         context.fillStyle = "#085"; // Keep in sync with .network-frame-divider CSS rule.
+        var /** @const */ radius = 4;
         var frames = this._filmStripModel ? this._filmStripModel.frames() : [];
         for (var i = 0; i < frames.length; ++i) {
-            var x = Math.round(calculator.computePosition(frames[i].timestamp / 1000));
+            var x = Math.round(calculator.computePosition(frames[i].timestamp));
             context.beginPath();
-            context.arc(x, 20, 4, 0, 2*Math.PI, false);
+            context.arc(x, radius, radius, 0, 2*Math.PI, false);
             context.fill();
             context.stroke();
         }
@@ -369,25 +313,12 @@ WebInspector.NetworkOverview.prototype = {
              context.fillStyle = "#FFE3C7"; // Keep in sync with .network-frame-divider CSS rule.
              var x = Math.round(calculator.computePosition(this._selectedFilmStripTime));
              context.beginPath();
-             context.arc(x, 20, 4, 0, 2 * Math.PI, false);
+             context.arc(x, radius, radius, 0, 2 * Math.PI, false);
              context.fill();
              context.stroke();
         }
         context.restore();
     },
 
-    /**
-     * @param {number} width
-     * @param {number} height
-     */
-    _resetCanvas: function(width, height)
-    {
-        this._canvasWidth = width;
-        this._canvasHeight = height;
-        this._overviewCanvas.width = width * window.devicePixelRatio;
-        this._overviewCanvas.height = height * window.devicePixelRatio;
-        this._overviewGrid.updateDividers(this._calculator);
-    },
-
-    __proto__: WebInspector.VBox.prototype
+    __proto__: WebInspector.TimelineOverviewBase.prototype
 }

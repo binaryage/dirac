@@ -136,7 +136,7 @@ WebInspector.CountersGraph.prototype = {
         this._canvas.width = parentElement.clientWidth  * window.devicePixelRatio;
         this._canvas.height = parentElement.clientHeight * window.devicePixelRatio;
         var timelinePaddingLeft = 15;
-        this._calculator.setDisplayWindow(timelinePaddingLeft, this._canvas.width);
+        this._calculator.setDisplayWindow(this._canvas.width, timelinePaddingLeft);
         this.refresh();
     },
 

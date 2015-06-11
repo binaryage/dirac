@@ -516,11 +516,6 @@
     color: white;
 }
 
-#timeline-grid-header {
-    pointer-events: none;
-    height: 20px;
-}
-
 #timeline-graph-records-header {
     pointer-events: none;
     height: 19px;

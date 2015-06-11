@@ -59,7 +59,13 @@ WebInspector.NetworkPanel = function()
     this._searchableView.setPlaceholder(WebInspector.UIString("Find by filename or path"));
     this._searchableView.show(this.element);
 
-    this._overview = new WebInspector.NetworkOverview();
+    // Create top overview component.
+    this._overviewPane = new WebInspector.TimelineOverviewPane("network");
+    this._overviewPane.addEventListener(WebInspector.TimelineOverviewPane.Events.WindowChanged, this._onWindowChanged.bind(this));
+    this._overviewPane.element.id = "network-overview-panel";
+    this._networkOverview = new WebInspector.NetworkOverview();
+    this._overviewPane.setOverviewControls([this._networkOverview]);
+    this._calculator = new WebInspector.NetworkTransferTimeCalculator();
 
     this._splitWidget = new WebInspector.SplitWidget(true, false, "networkPanelSplitViewState");
     this._splitWidget.hideMain();
@@ -70,7 +76,7 @@ WebInspector.NetworkPanel = function()
     this._createToolbarButtons();
 
     /** @type {!WebInspector.NetworkLogView} */
-    this._networkLogView = new WebInspector.NetworkLogView(this._overview, this._filterBar, this._progressBarContainer, this._networkLogLargeRowsSetting);
+    this._networkLogView = new WebInspector.NetworkLogView(this._filterBar, this._progressBarContainer, this._networkLogLargeRowsSetting);
     this._splitWidget.setSidebarWidget(this._networkLogView);
 
     this._detailsWidget = new WebInspector.VBox();
@@ -97,6 +103,7 @@ WebInspector.NetworkPanel = function()
     this._networkLogView.addEventListener(WebInspector.NetworkLogView.EventTypes.RequestSelected, this._onRequestSelected, this);
     this._networkLogView.addEventListener(WebInspector.NetworkLogView.EventTypes.SearchCountUpdated, this._onSearchCountUpdated, this);
     this._networkLogView.addEventListener(WebInspector.NetworkLogView.EventTypes.SearchIndexUpdated, this._onSearchIndexUpdated, this);
+    this._networkLogView.addEventListener(WebInspector.NetworkLogView.EventTypes.UpdateRequest, this._onUpdateRequest, this);
 
     /**
      * @this {WebInspector.NetworkPanel}
@@ -111,6 +118,16 @@ WebInspector.NetworkPanel = function()
 }
 
 WebInspector.NetworkPanel.prototype = {
+    /**
+     * @param {!WebInspector.Event} event
+     */
+    _onWindowChanged: function(event)
+    {
+        var startTime = Math.max(this._calculator.minimumBoundary(), event.data.startTime / 1000);
+        var endTime = Math.min(this._calculator.maximumBoundary(), event.data.endTime / 1000);
+        this._networkLogView.setWindow(startTime, endTime);
+    },
+
     _createToolbarButtons: function()
     {
         this._recordButton = new WebInspector.ToolbarButton("", "record-toolbar-item");
@@ -155,8 +172,8 @@ WebInspector.NetworkPanel.prototype = {
      */
     _onRecordButtonClicked: function(event)
     {
-        if (!this._recordButton.toggled())
-            this._networkLogView.reset();
+        if (!this._preserveLogCheckbox.checked() && !this._recordButton.toggled())
+            this._reset();
         this._toggleRecordButton(!this._recordButton.toggled());
     },
 
@@ -181,7 +198,7 @@ WebInspector.NetworkPanel.prototype = {
             return;
         var calculator = this._networkLogView.timeCalculator();
         this._filmStripView.setModel(filmStripModel, calculator.minimumBoundary() * 1000, calculator.boundarySpan() * 1000);
-        this._overview.setFilmStripModel(filmStripModel);
+        this._networkOverview.setFilmStripModel(filmStripModel);
         for (var frame of filmStripModel.frames())
             this._networkLogView.addFilmStripFrame(frame.timestamp / 1000);
     },
@@ -199,7 +216,13 @@ WebInspector.NetworkPanel.prototype = {
      */
     _onClearButtonClicked: function(event)
     {
-        this._overview.reset();
+        this._reset();
+    },
+
+    _reset: function()
+    {
+        this._calculator.reset();
+        this._overviewPane.reset();
         this._networkLogView.reset();
         if (this._filmStripView)
             this._filmStripView.reset();
@@ -210,9 +233,9 @@ WebInspector.NetworkPanel.prototype = {
      */
     _willReloadPage: function(event)
     {
-        this._toggleRecordButton(true);
         if (!this._preserveLogCheckbox.checked())
-            this._networkLogView.reset();
+            this._reset();
+        this._toggleRecordButton(true);
         if (this.isShowing() && this._filmStripRecorder)
             this._filmStripRecorder.startRecording();
     },
@@ -235,9 +258,9 @@ WebInspector.NetworkPanel.prototype = {
     {
         var toggled = this._networkLogShowOverviewSetting.get();
         if (toggled)
-            this._overview.show(this._searchableView.element, this._splitWidget.element);
+            this._overviewPane.show(this._searchableView.element, this._splitWidget.element);
         else
-            this._overview.detach();
+            this._overviewPane.detach();
         this.doResize();
     },
 
@@ -510,7 +533,7 @@ WebInspector.NetworkPanel.prototype = {
     _onFilmFrameSelected: function(event)
     {
         var timestamp = /** @type {number} */ (event.data);
-        this._overview.setWindow(0, timestamp / 1000);
+        this._overviewPane.requestWindowTimes(0, timestamp);
     },
 
     /**
@@ -519,7 +542,7 @@ WebInspector.NetworkPanel.prototype = {
     _onFilmFrameEnter: function(event)
     {
         var timestamp = /** @type {number} */ (event.data);
-        this._overview.selectFilmStripFrame(timestamp / 1000);
+        this._networkOverview.selectFilmStripFrame(timestamp);
         this._networkLogView.selectFilmStripFrame(timestamp / 1000);
     },
 
@@ -528,8 +551,21 @@ WebInspector.NetworkPanel.prototype = {
      */
     _onFilmFrameExit: function(event)
     {
-        this._overview.clearFilmStripFrame();
+        this._networkOverview.clearFilmStripFrame();
         this._networkLogView.clearFilmStripFrame();
+    },
+
+    /**
+     * @param {!WebInspector.Event} event
+     */
+    _onUpdateRequest: function(event)
+    {
+        var request = /** @type {!WebInspector.NetworkRequest} */ (event.data);
+        this._calculator.updateBoundaries(request);
+        // FIXME: Unify all time units across the frontend!
+        this._overviewPane.setBounds(this._calculator.minimumBoundary() * 1000, this._calculator.maximumBoundary() * 1000);
+        this._networkOverview.updateRequest(request);
+        this._overviewPane.update();
     },
 
     __proto__: WebInspector.Panel.prototype

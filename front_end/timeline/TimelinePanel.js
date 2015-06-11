@@ -79,8 +79,7 @@ WebInspector.TimelinePanel = function()
     topPaneElement.id = "timeline-overview-panel";
 
     // Create top overview component.
-    this._overviewPane = new WebInspector.TimelineOverviewPane();
-    this._overviewPane.addEventListener(WebInspector.TimelineOverviewPane.Events.SelectionChanged, this._onOverviewSelectionChanged.bind(this));
+    this._overviewPane = new WebInspector.TimelineOverviewPane("timeline");
     this._overviewPane.addEventListener(WebInspector.TimelineOverviewPane.Events.WindowChanged, this._onWindowChanged.bind(this));
     this._overviewPane.show(topPaneElement);
 
@@ -604,9 +603,14 @@ WebInspector.TimelinePanel.prototype = {
         this._removeAllModeViews();
         this._overviewControls = [];
 
-        var mainOverview = isFrameMode ? new WebInspector.TimelineFrameOverview(this._model, this._frameModel())
-                                       : new WebInspector.TimelineEventOverview(this._model, this._frameModel());
-        this._overviewControls.push(mainOverview);
+        if (isFrameMode) {
+            this._frameOverview = new WebInspector.TimelineFrameOverview(this._model, this._frameModel());
+            this._frameOverview.addEventListener(WebInspector.TimelineFrameOverview.Events.SelectionChanged, this._onOverviewSelectionChanged, this);
+            this._overviewControls.push(this._frameOverview);
+        } else {
+            this._frameOverview = null;
+            this._overviewControls.push(new WebInspector.TimelineEventOverview(this._model, this._frameModel()));
+        }
         this.element.classList.toggle("timeline-overview-frames-mode", isFrameMode);
 
         if (this._flameChartEnabledSetting.get()) {
@@ -631,7 +635,7 @@ WebInspector.TimelinePanel.prototype = {
         }
 
         if (Runtime.experiments.isEnabled("filmStripInNetworkAndTimeline") && !isFrameMode && this._captureFilmStripSetting.get())
-            this._overviewControls.push(new WebInspector.TimelineFilmStripOverview(this._model, this._tracingModel));
+            this._overviewControls.push(new WebInspector.TimelineFilmStripOverview(this._tracingModel));
 
         var mainTarget = WebInspector.targetManager.mainTarget();
         this._overviewPane.setOverviewControls(this._overviewControls);
@@ -1233,7 +1237,8 @@ WebInspector.TimelinePanel.prototype = {
             var view = this._currentViews[i];
             view.setSelection(selection);
         }
-        this._overviewPane.select(selection);
+        if (this._frameOverview)
+            this._frameOverview.select(selection);
         this._updateSelectionDetails();
     },
 
@@ -1813,12 +1818,11 @@ WebInspector.LoadTimelineHandler.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.TimelineOverviewBase}
- * @param {!WebInspector.TimelineModel} model
  * @param {!WebInspector.TracingModel} tracingModel
  */
-WebInspector.TimelineFilmStripOverview = function(model, tracingModel)
+WebInspector.TimelineFilmStripOverview = function(tracingModel)
 {
-    WebInspector.TimelineOverviewBase.call(this, model);
+    WebInspector.TimelineOverviewBase.call(this);
     this._tracingModel = tracingModel;
     this._filmStripView = new WebInspector.FilmStripView();
     this._filmStripView.show(this.element);

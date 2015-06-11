@@ -36,8 +36,9 @@
  */
 WebInspector.TimelineEventOverview = function(model, frameModel)
 {
-    WebInspector.TimelineOverviewBase.call(this, model);
+    WebInspector.TimelineOverviewBase.call(this);
     this.element.id = "timeline-overview-events";
+    this._model = model;
     this._frameModel = frameModel;
 
     this._fillStyles = {};
@@ -384,6 +385,39 @@ WebInspector.TimelineEventOverview.prototype = {
         var width = end - begin;
         this._context.fillStyle = color;
         this._context.fillRect(x, y, width, height * window.devicePixelRatio);
+    },
+
+    /**
+     * @override
+     * @param {number} windowLeft
+     * @param {number} windowRight
+     * @return {!{startTime: number, endTime: number}}
+     */
+    windowTimes: function(windowLeft, windowRight)
+    {
+        var absoluteMin = this._model.minimumRecordTime();
+        var timeSpan = this._model.maximumRecordTime() - absoluteMin;
+        return {
+            startTime: absoluteMin + timeSpan * windowLeft,
+            endTime: absoluteMin + timeSpan * windowRight
+        };
+    },
+
+    /**
+     * @override
+     * @param {number} startTime
+     * @param {number} endTime
+     * @return {!{left: number, right: number}}
+     */
+    windowBoundaries: function(startTime, endTime)
+    {
+        var absoluteMin = this._model.minimumRecordTime();
+        var timeSpan = this._model.maximumRecordTime() - absoluteMin;
+        var haveRecords = absoluteMin > 0;
+        return {
+            left: haveRecords && startTime ? Math.min((startTime - absoluteMin) / timeSpan, 1) : 0,
+            right: haveRecords && endTime < Infinity ? (endTime - absoluteMin) / timeSpan : 1
+        };
     },
 
     __proto__: WebInspector.TimelineOverviewBase.prototype

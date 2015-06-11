@@ -39,7 +39,7 @@ WebInspector.TimelineGrid = function()
     this._dividersElement = this.element.createChild("div", "resources-dividers");
 
     this._gridHeaderElement = createElement("div");
-    this._gridHeaderElement.id = "timeline-grid-header";
+    this._gridHeaderElement.classList.add("timeline-grid-header");
     this._eventDividersElement = this._gridHeaderElement.createChild("div", "resources-event-dividers");
     this._dividersLabelBarElement = this._gridHeaderElement.createChild("div", "resources-dividers-label-bar");
     this.element.appendChild(this._gridHeaderElement);

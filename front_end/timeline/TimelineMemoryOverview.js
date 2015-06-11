@@ -35,8 +35,9 @@
  */
 WebInspector.TimelineMemoryOverview = function(model)
 {
-    WebInspector.TimelineOverviewBase.call(this, model);
+    WebInspector.TimelineOverviewBase.call(this);
     this.element.id = "timeline-overview-memory";
+    this._model = model;
 
     this._heapSizeLabel = this.element.createChild("div", "memory-graph-label");
 }

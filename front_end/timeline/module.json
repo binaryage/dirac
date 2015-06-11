@@ -35,7 +35,6 @@
         "MemoryCountersGraph.js",
         "TimelineModel.js",
         "TimelineJSProfile.js",
-        "TimelineOverviewPane.js",
         "TimelinePresentationModel.js",
         "TimelineFrameModel.js",
         "TimelineEventOverview.js",

@@ -36,8 +36,9 @@
  */
 WebInspector.TimelineFrameOverview = function(model, frameModel)
 {
-    WebInspector.TimelineOverviewBase.call(this, model);
+    WebInspector.TimelineOverviewBase.call(this);
     this.element.id = "timeline-overview-frames";
+    this._model = model;
     this._frameModel = frameModel;
     this.reset();
 
@@ -60,6 +61,10 @@ WebInspector.TimelineFrameOverview = function(model, frameModel)
 
     this.element.addEventListener("mousemove", this._onMouseMove.bind(this), false);
     this.element.addEventListener("mouseout", this._onMouseOut.bind(this), false);
+}
+
+WebInspector.TimelineFrameOverview.Events = {
+    SelectionChanged: "SelectionChanged"
 }
 
 WebInspector.TimelineFrameOverview.prototype = {
@@ -103,7 +108,6 @@ WebInspector.TimelineFrameOverview.prototype = {
     },
 
     /**
-     * @override
      * @param {?WebInspector.TimelineSelection} selection
      */
     select: function(selection)
@@ -122,14 +126,16 @@ WebInspector.TimelineFrameOverview.prototype = {
     /**
      * @override
      * @param {!Event} event
-     * @return {?WebInspector.TimelineSelection|undefined}
+     * @return {boolean}
      */
-    selectionFromEvent: function(event)
+    onClick: function(event)
     {
         var barIndex = this._screenPositionToBarIndex(event.clientX);
         if (barIndex < 0 || barIndex >= this._visibleFrames.length)
-            return null;
-        return WebInspector.TimelineSelection.fromFrame(this._visibleFrames[barIndex]);
+            return false;
+        var selection = WebInspector.TimelineSelection.fromFrame(this._visibleFrames[barIndex]);
+        this.dispatchEventToListeners(WebInspector.TimelineFrameOverview.Events.SelectionChanged, selection);
+        return true;
     },
 
     /**

@@ -31,16 +31,15 @@
 /**
  * @constructor
  * @extends {WebInspector.VBox}
+ * @param {string} prefix
  */
-WebInspector.TimelineOverviewPane = function()
+WebInspector.TimelineOverviewPane = function(prefix)
 {
     WebInspector.VBox.call(this);
-    this.element.id = "timeline-overview-pane";
+    this.element.id = prefix + "-overview-pane";
 
     this._overviewCalculator = new WebInspector.TimelineOverviewCalculator();
-    this._overviewCalculator._setWindow(0, 1000);
-
-    this._overviewGrid = new WebInspector.OverviewGrid("timeline");
+    this._overviewGrid = new WebInspector.OverviewGrid(prefix);
     this.element.appendChild(this._overviewGrid.element);
 
     this._overviewGrid.setResizeEnabled(false);
@@ -51,8 +50,7 @@ WebInspector.TimelineOverviewPane = function()
 }
 
 WebInspector.TimelineOverviewPane.Events = {
-    WindowChanged: "WindowChanged",
-    SelectionChanged: "SelectionChanged"
+    WindowChanged: "WindowChanged"
 };
 
 WebInspector.TimelineOverviewPane.prototype = {
@@ -81,9 +79,8 @@ WebInspector.TimelineOverviewPane.prototype = {
             this._overviewControls[i].dispose();
 
         for (var i = 0; i < overviewControls.length; ++i) {
+            overviewControls[i].setCalculator(this._overviewCalculator);
             overviewControls[i].show(this._overviewGrid.element);
-            if (this._currentSelection)
-                overviewControls[i].select(this._currentSelection);
         }
         this._overviewControls = overviewControls;
         this.update();
@@ -95,7 +92,7 @@ WebInspector.TimelineOverviewPane.prototype = {
      */
     setBounds: function(minimumBoundary, maximumBoundary)
     {
-        this._overviewCalculator._setWindow(minimumBoundary, maximumBoundary);
+        this._overviewCalculator.setBounds(minimumBoundary, maximumBoundary);
         this._overviewGrid.setResizeEnabled(true);
     },
 
@@ -103,22 +100,12 @@ WebInspector.TimelineOverviewPane.prototype = {
     {
         if (!this.isShowing())
             return;
-        this._overviewCalculator._setDisplayWindow(0, this._overviewGrid.clientWidth());
+        this._overviewCalculator.setDisplayWindow(this._overviewGrid.clientWidth());
         for (var i = 0; i < this._overviewControls.length; ++i)
             this._overviewControls[i].update();
         this._overviewGrid.updateDividers(this._overviewCalculator);
         this._updateMarkers();
         this._updateWindow();
-    },
-
-    /**
-     * @param {?WebInspector.TimelineSelection} selection
-     */
-    select: function(selection)
-    {
-        this._currentSelection = selection;
-        for (var overviewControl of this._overviewControls)
-            overviewControl.select(selection);
     },
 
     /**
@@ -164,16 +151,12 @@ WebInspector.TimelineOverviewPane.prototype = {
     _onClick: function(event)
     {
         var domEvent = /** @type {!Event} */ (event.data);
-        var selection;
         for (var overviewControl of this._overviewControls) {
-            selection = overviewControl.selectionFromEvent(domEvent);
-            if (selection)
-                break;
+            if (overviewControl.onClick(domEvent)) {
+                event.preventDefault();
+                return;
+            }
         }
-        if (typeof selection !== "object")
-            return;
-        event.preventDefault();
-        this.dispatchEventToListeners(WebInspector.TimelineOverviewPane.Events.SelectionChanged, selection);
     },
 
     /**
@@ -225,6 +208,7 @@ WebInspector.TimelineOverviewPane.prototype = {
  */
 WebInspector.TimelineOverviewCalculator = function()
 {
+    this.reset();
 }
 
 WebInspector.TimelineOverviewCalculator.prototype = {
@@ -248,28 +232,28 @@ WebInspector.TimelineOverviewCalculator.prototype = {
     },
 
     /**
-     * @param {number=} minimumRecordTime
-     * @param {number=} maximumRecordTime
+     * @param {number} minimumBoundary
+     * @param {number} maximumBoundary
      */
-    _setWindow: function(minimumRecordTime, maximumRecordTime)
+    setBounds: function(minimumBoundary, maximumBoundary)
     {
-        this._minimumBoundary = minimumRecordTime;
-        this._maximumBoundary = maximumRecordTime;
+        this._minimumBoundary = minimumBoundary;
+        this._maximumBoundary = maximumBoundary;
     },
 
     /**
-     * @param {number} paddingLeft
      * @param {number} clientWidth
+     * @param {number=} paddingLeft
      */
-    _setDisplayWindow: function(paddingLeft, clientWidth)
+    setDisplayWindow: function(clientWidth, paddingLeft)
     {
-        this._workingArea = clientWidth - paddingLeft;
-        this._paddingLeft = paddingLeft;
+        this._paddingLeft = paddingLeft || 0;
+        this._workingArea = clientWidth - this._paddingLeft;
     },
 
     reset: function()
     {
-        this._setWindow(0, 1000);
+        this.setBounds(0, 1000);
     },
 
     /**
@@ -323,7 +307,7 @@ WebInspector.TimelineOverviewCalculator.prototype = {
 /**
  * @interface
  */
-WebInspector.TimelineOverview = function(model)
+WebInspector.TimelineOverview = function()
 {
 }
 
@@ -341,15 +325,10 @@ WebInspector.TimelineOverview.prototype = {
     reset: function() { },
 
     /**
-     * @param {!WebInspector.TimelineSelection} selection
-     */
-    select: function(selection) { },
-
-    /**
      * @param {!Event} event
-     * @return {?WebInspector.TimelineSelection|undefined}
+     * @return {boolean}
      */
-    selectionFromEvent: function(event) { },
+    onClick: function(event) { },
 
     /**
      * @param {number} windowLeft
@@ -374,13 +353,12 @@ WebInspector.TimelineOverview.prototype = {
  * @constructor
  * @extends {WebInspector.VBox}
  * @implements {WebInspector.TimelineOverview}
- * @param {!WebInspector.TimelineModel} model
  */
-WebInspector.TimelineOverviewBase = function(model)
+WebInspector.TimelineOverviewBase = function()
 {
     WebInspector.VBox.call(this);
-
-    this._model = model;
+    /** @type {?WebInspector.TimelineOverviewCalculator} */
+    this._calculator = null;
     this._canvas = this.element.createChild("canvas", "fill");
     this._context = this._canvas.getContext("2d");
 }
@@ -424,19 +402,21 @@ WebInspector.TimelineOverviewBase.prototype = {
     },
 
     /**
-     * @override
-     * @param {!WebInspector.TimelineSelection} selection
+     * @param {!WebInspector.TimelineOverviewCalculator} calculator
      */
-    select: function(selection) { },
+    setCalculator: function(calculator)
+    {
+        this._calculator = calculator;
+    },
 
     /**
      * @override
      * @param {!Event} event
-     * @return {?WebInspector.TimelineSelection|undefined}
+     * @return {boolean}
      */
-    selectionFromEvent: function(event)
+    onClick: function(event)
     {
-        return undefined;
+        return false;
     },
 
     /**
@@ -447,8 +427,8 @@ WebInspector.TimelineOverviewBase.prototype = {
      */
     windowTimes: function(windowLeft, windowRight)
     {
-        var absoluteMin = this._model.minimumRecordTime();
-        var timeSpan = this._model.maximumRecordTime() - absoluteMin;
+        var absoluteMin = this._calculator.minimumBoundary();
+        var timeSpan = this._calculator.maximumBoundary() - absoluteMin;
         return {
             startTime: absoluteMin + timeSpan * windowLeft,
             endTime: absoluteMin + timeSpan * windowRight
@@ -463,8 +443,8 @@ WebInspector.TimelineOverviewBase.prototype = {
      */
     windowBoundaries: function(startTime, endTime)
     {
-        var absoluteMin = this._model.minimumRecordTime();
-        var timeSpan = this._model.maximumRecordTime() - absoluteMin;
+        var absoluteMin = this._calculator.minimumBoundary();
+        var timeSpan = this._calculator.maximumBoundary() - absoluteMin;
         var haveRecords = absoluteMin > 0;
         return {
             left: haveRecords && startTime ? Math.min((startTime - absoluteMin) / timeSpan, 1) : 0,
