@@ -82,7 +82,6 @@ WebInspector.TimelineJSProfileProcessor.generateJSFrameEvents = function(events)
     var jsFrameEvents = [];
     var jsFramesStack = [];
     var lockedJsStackDepth = [];
-    var invocationEventsDepth = 0;
     var currentSamplingIntervalMs = 0.1;
     var lastStackSampleTime = 0;
     var ordinal = 0;
@@ -114,18 +113,17 @@ WebInspector.TimelineJSProfileProcessor.generateJSFrameEvents = function(events)
         extractStackTrace(e);
         // For the duration of the event we cannot go beyond the stack associated with it.
         lockedJsStackDepth.push(jsFramesStack.length);
-        if (isJSInvocationEvent(e))
-            ++invocationEventsDepth;
     }
 
     /**
      * @param {!WebInspector.TracingModel.Event} e
+     * @param {?WebInspector.TracingModel.Event} parent
      */
-    function onInstantEvent(e)
+    function onInstantEvent(e, parent)
     {
         e.ordinal = ++ordinal;
         updateSamplingInterval(e);
-        if (invocationEventsDepth)
+        if (parent && isJSInvocationEvent(parent))
             extractStackTrace(e);
     }
 
@@ -134,8 +132,6 @@ WebInspector.TimelineJSProfileProcessor.generateJSFrameEvents = function(events)
      */
     function onEndEvent(e)
     {
-        if (isJSInvocationEvent(e))
-            --invocationEventsDepth;
         truncateJSStack(lockedJsStackDepth.pop(), e.endTime);
     }
 
