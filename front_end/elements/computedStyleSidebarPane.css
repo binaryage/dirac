@@ -4,11 +4,8 @@
  * found in the LICENSE file.
  */
 
-.computed-style-sidebar-pane {
-    padding: 2px 2px 4px 4px;
-}
-
 .computed-properties {
+    padding: 2px 2px 4px 4px;
     -webkit-user-select: text;
 }
 

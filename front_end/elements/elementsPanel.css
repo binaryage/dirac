@@ -165,7 +165,7 @@
     background-origin: padding;
     background-clip: padding;
     -webkit-user-select: text;
-    border-bottom: 1px solid #ccc;
+    border-bottom: 1px solid #eee;
     position: relative;
 }
 
@@ -450,7 +450,7 @@
 }
 
 .styles-element-state-pane {
-    background-color: #eee;
+    background-color: #f3f3f3;
     border-bottom: 1px solid rgb(189, 189, 189);
     margin-top: 0;
 }
@@ -553,19 +553,21 @@
     position: relative;
 }
 
-.sidebar-pane-filter-box {
-    display: flex;
-    border-top: 1px solid rgb(191, 191, 191);
-    flex-basis: 19px;
-    flex-shrink: 0;
+.styles-sidebar-pane-toolbar {
+    border-bottom: 1px solid #eee;
 }
 
-.sidebar-pane-filter-box > input {
+.styles-sidebar-pane-filter-box {
+    flex: auto;
+    display: flex;
+}
+
+.styles-sidebar-pane-filter-box > input {
     outline: none !important;
     border: none;
     width: 100%;
-    margin: 0 4px;
     background: transparent;
+    margin-left: 4px;
 }
 
 .styles-filter-engaged {
@@ -573,16 +575,19 @@
 }
 
 .sidebar-pane.composite .platform-fonts {
-    padding: 1ex;
     -webkit-user-select: text;
 }
 
 .sidebar-pane.composite .platform-fonts .sidebar-separator {
-    border-top: none;
+    height: 24px;
+    background-color: #f1f1f1;
+    border-color: #ddd;
+    display: flex;
+    align-items: center;
 }
 
 .sidebar-pane.composite .platform-fonts .stats-section {
-    margin-bottom: 5px;
+    margin: 5px 0;
 }
 
 .sidebar-pane.composite .platform-fonts .font-stats-item {
@@ -704,10 +709,6 @@ li.editing .enabled-button {
     background-color: #eee;
     border-bottom: 1px solid rgb(163, 163, 163);
     padding-left: 10px;
-}
-
-label.checkbox-with-label {
-    -webkit-user-select: none;
 }
 
 .events-pane .section:not(:first-of-type) {

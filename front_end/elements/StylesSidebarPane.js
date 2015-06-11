@@ -40,7 +40,12 @@ WebInspector.StylesSidebarPane = function(requestShowCallback)
     WebInspector.moduleSetting("colorFormat").addChangeListener(this.update.bind(this));
     WebInspector.moduleSetting("textEditorIndent").addChangeListener(this.update.bind(this));
 
-    var toolbar = new WebInspector.ExtensibleToolbar("styles-sidebarpane-toolbar", this.element);
+    var hbox = this.element.createChild("div", "hbox styles-sidebar-pane-toolbar");
+    var filterContainerElement = hbox.createChild("div", "styles-sidebar-pane-filter-box");
+    this._filterInput = WebInspector.StylesSidebarPane.createPropertyFilterElement(WebInspector.UIString("Filter"), hbox, this._onFilterChanged.bind(this));
+    filterContainerElement.appendChild(this._filterInput);
+
+    var toolbar = new WebInspector.ExtensibleToolbar("styles-sidebarpane-toolbar", hbox);
     toolbar.element.classList.add("styles-pane-toolbar");
 
     this._requestShowCallback = requestShowCallback;
@@ -257,15 +262,6 @@ WebInspector.StylesSidebarPane.prototype = {
         var contextMenu = new WebInspector.ContextMenu(event);
         contextMenu.appendApplicableItems(/** @type {!Node} */ (event.target));
         contextMenu.show();
-    },
-
-    /**
-     * @param {!Element} matchedStylesElement
-     */
-    setFilterBoxContainer: function(matchedStylesElement)
-    {
-        this._filterInput = WebInspector.StylesSidebarPane.createPropertyFilterElement(WebInspector.UIString("Find in Styles"), this._onFilterChanged.bind(this));
-        matchedStylesElement.appendChild(this._filterInput);
     },
 
     /**
@@ -868,20 +864,20 @@ WebInspector.StylesSidebarPane.prototype = {
 
 /**
  * @param {string} placeholder
- * @return {!Element}
+ * @param {!Element} container
  * @param {function(?RegExp)} filterCallback
+ * @return {!Element}
  */
-WebInspector.StylesSidebarPane.createPropertyFilterElement = function(placeholder, filterCallback)
+WebInspector.StylesSidebarPane.createPropertyFilterElement = function(placeholder, container, filterCallback)
 {
     var input = createElement("input");
-    input.type = "search";
     input.placeholder = placeholder;
 
     function searchHandler()
     {
         var regex = input.value ? new RegExp(input.value.escapeForRegExp(), "i") : null;
         filterCallback(regex);
-        input.parentNode.classList.toggle("styles-filter-engaged", !!input.value);
+        container.classList.toggle("styles-filter-engaged", !!input.value);
     }
     input.addEventListener("input", searchHandler, false);
 

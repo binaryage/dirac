@@ -31,12 +31,13 @@
  * @constructor
  * @param {!WebInspector.StylesSidebarPane} stylesSidebarPane
  * @param {!WebInspector.SharedSidebarModel} sharedModel
- * @param {!Element} filterContainer
  * @extends {WebInspector.ThrottledWidget}
  */
-WebInspector.ComputedStyleWidget = function(stylesSidebarPane, sharedModel, filterContainer)
+WebInspector.ComputedStyleWidget = function(stylesSidebarPane, sharedModel)
 {
     WebInspector.ThrottledWidget.call(this);
+    this.element.classList.add("computed-style-sidebar-pane");
+
     this.registerRequiredCSS("elements/computedStyleSidebarPane.css");
     this._alwaysShowComputedProperties = { "display": true, "height": true, "width": true };
 
@@ -44,30 +45,44 @@ WebInspector.ComputedStyleWidget = function(stylesSidebarPane, sharedModel, filt
     this._sharedModel.addEventListener(WebInspector.SharedSidebarModel.Events.ComputedStyleChanged, this.update, this);
 
     this._showInheritedComputedStylePropertiesSetting = WebInspector.settings.createSetting("showInheritedComputedStyleProperties", false);
-
-    var inheritedCheckBox = WebInspector.SettingsUI.createSettingCheckbox(WebInspector.UIString("Show inherited properties"), this._showInheritedComputedStylePropertiesSetting, true);
-    inheritedCheckBox.classList.add("checkbox-with-label");
-    this.element.appendChild(inheritedCheckBox);
-    this.element.classList.add("computed-style-sidebar-pane");
     this._showInheritedComputedStylePropertiesSetting.addChangeListener(this._showInheritedComputedStyleChanged.bind(this));
+
+    var hbox = this.element.createChild("div", "hbox styles-sidebar-pane-toolbar");
+    var filterContainerElement = hbox.createChild("div", "styles-sidebar-pane-filter-box");
+    var filterInput = WebInspector.StylesSidebarPane.createPropertyFilterElement(WebInspector.UIString("Filter"), hbox, filterCallback.bind(this));
+    filterContainerElement.appendChild(filterInput);
+
+    var toolbar = new WebInspector.Toolbar(hbox);
+    toolbar.element.classList.add("styles-pane-toolbar");
+    toolbar.appendToolbarItem(new WebInspector.ToolbarCheckbox(WebInspector.UIString("Show inherited"),
+                                                               WebInspector.UIString("Show inherited properties"),
+                                                               this._showInheritedComputedStylePropertiesSetting));
 
     this._propertiesContainer = this.element.createChild("div", "monospace");
     this._propertiesContainer.classList.add("computed-properties");
     this._onTracePropertyBound = this._onTraceProperty.bind(this);
 
     this._stylesSidebarPane = stylesSidebarPane;
-    this._installFilter(filterContainer);
+
+    /**
+     * @param {?RegExp} regex
+     * @this {WebInspector.ComputedStyleWidget}
+     */
+    function filterCallback(regex)
+    {
+        this._filterRegex = regex;
+        this._updateFilter(regex);
+    }
 }
 
 /**
  * @param {!WebInspector.StylesSidebarPane} stylesSidebarPane
  * @param {!WebInspector.SharedSidebarModel} sharedModel
- * @param {!Element} filterContainer
  * @return {!WebInspector.ElementsSidebarViewWrapperPane}
  */
-WebInspector.ComputedStyleWidget.createSidebarWrapper = function(stylesSidebarPane, sharedModel, filterContainer)
+WebInspector.ComputedStyleWidget.createSidebarWrapper = function(stylesSidebarPane, sharedModel)
 {
-    var widget = new WebInspector.ComputedStyleWidget(stylesSidebarPane, sharedModel, filterContainer);
+    var widget = new WebInspector.ComputedStyleWidget(stylesSidebarPane, sharedModel);
     return new WebInspector.ElementsSidebarViewWrapperPane(WebInspector.UIString("Computed Style"), widget)
 }
 
@@ -193,24 +208,6 @@ WebInspector.ComputedStyleWidget.prototype = {
             var property = item[WebInspector.ComputedStyleWidget._propertySymbol];
             var matched = !regex || regex.test(property.name) || regex.test(property.value);
             item.classList.toggle("hidden", !matched);
-        }
-    },
-
-    /**
-     * @param {!Element} container
-     */
-    _installFilter: function(container)
-    {
-        container.appendChild(WebInspector.StylesSidebarPane.createPropertyFilterElement(WebInspector.UIString("Filter"), filterCallback.bind(this)));
-
-        /**
-         * @param {?RegExp} regex
-         * @this {WebInspector.ComputedStyleWidget}
-         */
-        function filterCallback(regex)
-        {
-            this._filterRegex = regex;
-            this._updateFilter(regex);
         }
     },
 
