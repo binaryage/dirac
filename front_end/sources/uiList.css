@@ -5,7 +5,7 @@
  */
 
 .list-item {
-    padding: 3px 8px 4px 8px;
+    padding: 2px 8px 3px 8px;
     position: relative;
     min-height: 18px;
     white-space: nowrap;
@@ -16,7 +16,7 @@
 }
 
 .list-item.selected {
-    background-color: rgb(212, 212, 212);
+    background-color: #dadada;
 }
 
 .list-item.selected > .title {

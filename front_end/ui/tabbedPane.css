@@ -54,15 +54,11 @@
 
 .tabbed-pane-header {
     display: flex;
-    flex: 0 0 23px;
+    flex: 0 0 27px;
     border-bottom: 1px solid #dadada;
     overflow: hidden;
     width: 100%;
-    background-color: #eee;
-}
-
-:host-context(.material) .tabbed-pane-header {
-    flex: 0 0 27px;
+    background-color: #f3f3f3;
 }
 
 .tabbed-pane-header-contents {
@@ -80,7 +76,7 @@
     float: left;
     margin-top: 2px;
     padding: 2px 4px 2px 4px;
-    height: 21px;
+    height: 24px;
     border: 1px solid transparent;
     border-bottom: none;
     line-height: 15px;
@@ -95,23 +91,18 @@
     overflow: hidden;
 }
 
-:host-context(.material) .tabbed-pane-header-tab {
-    height: 25px;
-    padding-top: 0;
-}
-
 .tabbed-pane-header-tab.measuring {
     visibility: hidden;
 }
 
 .tabbed-pane-header-tab.selected {
-    border: 1px solid rgb(163, 163, 163);
+    border: 1px solid #ccc;
     border-bottom: none;
 }
 
 .tabbed-pane-header-tab.selected {
     background: white;
-    border-top-color: #bbb;
+    border-top-color: #ccc;
 }
 
 .tabbed-pane-header-tab .tabbed-pane-close-button {
@@ -133,21 +124,13 @@
     float: left;
     position: relative;
     vertical-align: bottom;
-    line-height: 20px;
+    line-height: 24px;
     opacity: 0.8;
     color: inherit;
     font-size: 133%;
     padding: 0 7px;
     cursor: default;
-    height: 23px;
-}
-
-:host-context(.material) .tabbed-pane-header-tabs-drop-down-container {
-    line-height: 25px;
-    height: 28px;
-    width: 28px;
-    text-align: center;
-    padding: 0;
+    height: 25px;
 }
 
 .tabbed-pane-header-tabs-drop-down-container:hover {
@@ -224,7 +207,7 @@
 .tabbed-pane-tab-slider {
     height: 2px;
     position: absolute;
-    bottom: 0;
+    bottom: -1px;
     background-color: #3E82F7;
     left: 0;
     z-index: 50;

@@ -44,11 +44,6 @@ WebInspector.Toolbar = function(parentElement)
 }
 
 WebInspector.Toolbar.prototype = {
-    makeNarrow: function()
-    {
-        this._contentElement.classList.add("narrow");
-    },
-
     makeVertical: function()
     {
         this._contentElement.classList.add("vertical");
@@ -69,11 +64,20 @@ WebInspector.Toolbar.prototype = {
     appendToolbarItem: function(item)
     {
         this._items.push(item);
+        item._toolbar = this;
         this._contentElement.insertBefore(item.element, this._contentElement.lastChild);
+        this._hideSeparatorDupes();
+    },
+
+    appendSeparator: function()
+    {
+        this.appendToolbarItem(new WebInspector.ToolbarSeparator());
     },
 
     removeToolbarItems: function()
     {
+        for (var item of this._items)
+            delete item._toolbar;
         this._items = [];
         this._contentElement.removeChildren();
         this._contentElement.createChild("content");
@@ -97,6 +101,27 @@ WebInspector.Toolbar.prototype = {
         var style = createElement("style");
         style.textContent = "button.toolbar-item.toggled-on .glyph { background-color: " + color + " !important }";
         this._shadowRoot.appendChild(style);
+    },
+
+    _hideSeparatorDupes: function()
+    {
+        // Don't hide first and last separators if they were added explicitly.
+        var previousIsSeparator = true;
+        var lastSeparator;
+        for (var i = 1; i < this._items.length; ++i) {
+            if (this._items[i] instanceof WebInspector.ToolbarSeparator) {
+                this._items[i].setVisible(!previousIsSeparator);
+                previousIsSeparator = true;
+                lastSeparator = this._items[i];
+                continue;
+            }
+            if (this._items[i].visible()) {
+                previousIsSeparator = false;
+                lastSeparator = null;
+            }
+        }
+        if (lastSeparator && lastSeparator !== this._items.peekLast())
+            lastSeparator.setVisible(false);
     }
 }
 
@@ -147,6 +172,8 @@ WebInspector.ToolbarItem.prototype = {
             return;
         this.element.classList.toggle("hidden", !x);
         this._visible = x;
+        if (this._toolbar && !(this instanceof WebInspector.ToolbarSeparator))
+            this._toolbar._hideSeparatorDupes();
     },
 
     __proto__: WebInspector.Object.prototype
@@ -487,7 +514,7 @@ WebInspector.ToolbarButtonBase.prototype = {
 
         optionsBar.element.classList.add("fill");
         optionsBar._contentElement.classList.add("floating");
-        const buttonHeight = 23;
+        const buttonHeight = 26;
 
         var hostButtonPosition = this.element.totalOffset();
 
@@ -952,7 +979,9 @@ WebInspector.ExtensibleToolbar.prototype = {
         function resolveItem(extension)
         {
             var descriptor = extension.descriptor();
-            if (!descriptor.className)
+            if (descriptor["separator"])
+                return Promise.resolve(/** @type {?WebInspector.ToolbarItem} */(new WebInspector.ToolbarSeparator()));
+            if (!descriptor["className"])
                 return Promise.resolve(new WebInspector.ToolbarButton(WebInspector.UIString(descriptor["title"]), descriptor["elementClass"])).then(attachHandler);
             return extension.instancePromise().then(fetchItemFromProvider).then(attachHandler);
 

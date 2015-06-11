@@ -37,7 +37,7 @@ WebInspector.ResponsiveDesignView = function(inspectedPagePlaceholder)
 };
 
 // Measured in DIP.
-WebInspector.ResponsiveDesignView.RulerWidth = 34;
+WebInspector.ResponsiveDesignView.RulerWidth = 26;
 WebInspector.ResponsiveDesignView.RulerHeight = 22;
 WebInspector.ResponsiveDesignView.RulerTopHeight = 11;
 WebInspector.ResponsiveDesignView.RulerBottomHeight = 9;

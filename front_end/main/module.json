@@ -158,6 +158,12 @@
         },
         {
             "type": "@WebInspector.ToolbarItem.Provider",
+            "separator": true,
+            "location": "main-toolbar-left",
+            "order": 100
+        },
+        {
+            "type": "@WebInspector.ToolbarItem.Provider",
             "className": "WebInspector.Main.WarningErrorCounter",
             "order": 1,
             "location": "main-toolbar-right"
@@ -170,8 +176,20 @@
         },
         {
             "type": "@WebInspector.ToolbarItem.Provider",
+            "separator": true,
+            "order": 3,
+            "location": "main-toolbar-right"
+        },
+        {
+            "type": "@WebInspector.ToolbarItem.Provider",
             "className": "WebInspector.DockController.ButtonProvider",
-            "order": 4,
+            "order": 5,
+            "location": "main-toolbar-right"
+        },
+        {
+            "type": "@WebInspector.ToolbarItem.Provider",
+            "separator": true,
+            "order": 90,
             "location": "main-toolbar-right"
         },
         {

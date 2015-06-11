@@ -158,7 +158,7 @@ iframe.panel.extension {
 
 .outline-disclosure li.selected .selection {
     display: block;
-    background-color: rgb(212, 212, 212);
+    background-color: #dadada;
 }
 
 .outline-disclosure li.in-clipboard .highlight {
@@ -283,7 +283,7 @@ ol.outline-disclosure:focus li.selected * {
 
 .sidebar {
     overflow-x: hidden;
-    background-color: #eee;
+    background-color: #f3f3f3;
 }
 
 .pane-title-button {

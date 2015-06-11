@@ -742,6 +742,8 @@ WebInspector.SourcesPanel.prototype = {
         this._stepOutButton = this._createButtonAndRegisterShortcutsForAction("step-out-toolbar-item", title, "debugger.step-out");
         debugToolbar.appendToolbarItem(this._stepOutButton);
 
+        debugToolbar.appendSeparator();
+
         // Toggle Breakpoints
         this._toggleBreakpointsButton = new WebInspector.ToolbarButton(WebInspector.UIString("Deactivate breakpoints."), "breakpoint-toolbar-item");
         this._toggleBreakpointsButton.setToggled(false);
@@ -752,6 +754,8 @@ WebInspector.SourcesPanel.prototype = {
         this._pauseOnExceptionButton = new WebInspector.ToolbarButton("", "pause-on-exceptions-toolbar-item");
         this._pauseOnExceptionButton.addEventListener("click", this._togglePauseOnExceptions, this);
         debugToolbar.appendToolbarItem(this._pauseOnExceptionButton);
+
+        debugToolbar.appendSeparator();
 
         // Async operations
         debugToolbar.appendToolbarItem(new WebInspector.ToolbarCheckbox(WebInspector.UIString("Async"), WebInspector.UIString("Capture async stack traces"), WebInspector.moduleSetting("enableAsyncStackTraces")));

@@ -71,7 +71,7 @@
 
 .elements-disclosure li.selected .selection {
     display: block;
-    background-color: rgb(212, 212, 212);
+    background-color: #dadada;
 }
 
 .elements-disclosure ol {

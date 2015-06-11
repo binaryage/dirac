@@ -31,28 +31,16 @@
     position: absolute;
     top: 0;
     width: 100%;
-    background-color: #eee;
+    background-color: #f3f3f3;
     border-bottom: 1px solid #ddd;
-    height: 23px;
-}
-
-.material .scripts-debug-toolbar {
-    height: 28px;
-    overflow: hidden;
-}
-
-.scripts-debug-toolbar {
-    margin-top: -1px;
-    height: 24px;
     overflow: hidden;
 }
 
 .scripts-debug-toolbar-drawer {
-    flex: 0 0 46px;
+    flex: 0 0 53px;
     -webkit-transition: margin-top 0.1s ease-in-out;
-    margin-top: -23px;
-    padding-top: 22px;
-    border-bottom: 1px solid rgb(202, 202, 202);
+    margin-top: -26px;
+    padding-top: 25px;
     background-color: white;
     overflow: hidden;
 }
@@ -70,8 +58,8 @@
 .scripts-debug-toolbar-drawer > label {
     display: flex;
     padding-left: 3px;
-    border-top: 1px solid rgb(196,196,196);
-    height: 24px;
+    height: 28px;
+    border-bottom: 1px solid #dadada;
 }
 
 .sources-editor-tabstrip-left {

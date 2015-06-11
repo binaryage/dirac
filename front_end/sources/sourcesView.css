@@ -37,7 +37,7 @@
     display: flex;
     position: relative;
     flex: 0 0 20px;
-    background-color: #eee;
+    background-color: #f3f3f3;
     border-top: 1px solid rgb(196,196,196);
     overflow: hidden;
 }

@@ -15,7 +15,7 @@
             "actionId": "settings.show",
             "location": "main-toolbar-right",
             "title": "Settings",
-            "order": 3,
+            "order": 4,
             "elementClass": "settings-toolbar-item"
         },
         {

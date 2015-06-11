@@ -29,7 +29,7 @@
 
 .panel.network > .toolbar {
     position: relative;
-    border-bottom: 1px solid #f1f1f1;
+    border-bottom: 1px solid #dadada;
 }
 
 .network-details-view {

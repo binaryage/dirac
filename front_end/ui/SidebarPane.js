@@ -191,7 +191,7 @@ WebInspector.SidebarPaneStack.prototype = {
             return;
 
         title.element.classList.toggle("hidden", !visible);
-        pane.element.classList.toggle("hidden", !visible);
+        pane.element.classList.toggle("sidebar-pane-hidden", !visible);
     },
 
     __proto__: WebInspector.Widget.prototype

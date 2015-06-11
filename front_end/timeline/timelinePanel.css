@@ -28,7 +28,7 @@
  */
 
 .panel.timeline > .toolbar {
-    border-bottom: 1px solid #f1f1f1;
+    border-bottom: 1px solid #dadada;
 }
 
 #timeline-overview-panel {
@@ -42,7 +42,7 @@
 }
 
 .timeline-records-title, .timeline-records-list {
-    background-color: #eee;
+    background-color: #f3f3f3;
 }
 
 .timeline-records-title {
@@ -619,7 +619,7 @@
     flex: auto;
     overflow: auto;
     position: relative;
-    background-color: #eee;
+    background-color: #f3f3f3;
 }
 
 .timeline-details-view-block {

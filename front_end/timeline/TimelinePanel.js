@@ -310,6 +310,7 @@ WebInspector.TimelinePanel.prototype = {
         var clearButton = new WebInspector.ToolbarButton(WebInspector.UIString("Clear recording"), "clear-toolbar-item");
         clearButton.addEventListener("click", this._onClearButtonClick, this);
         this._panelToolbar.appendToolbarItem(clearButton);
+        this._panelToolbar.appendSeparator();
 
         this._filterBar = this._createFilterBar();
         this._panelToolbar.appendToolbarItem(this._filterBar.filterButton());
@@ -317,6 +318,7 @@ WebInspector.TimelinePanel.prototype = {
         var garbageCollectButton = new WebInspector.ToolbarButton(WebInspector.UIString("Collect garbage"), "garbage-collect-toolbar-item");
         garbageCollectButton.addEventListener("click", this._garbageCollectButtonClicked, this);
         this._panelToolbar.appendToolbarItem(garbageCollectButton);
+        this._panelToolbar.appendSeparator();
 
         var viewModeLabel = new WebInspector.ToolbarText(WebInspector.UIString("View:"), "toolbar-group-label");
         this._panelToolbar.appendToolbarItem(viewModeLabel);
@@ -328,6 +330,7 @@ WebInspector.TimelinePanel.prototype = {
 
         this._flameChartToggleButton = new WebInspector.ToolbarSettingToggle(this._flameChartEnabledSetting, "flame-chart-toolbar-item", WebInspector.UIString("Flame chart view. (Use WASD or time selection to navigate)"));
         this._panelToolbar.appendToolbarItem(this._flameChartToggleButton);
+        this._panelToolbar.appendSeparator();
 
         var captureSettingsLabel = new WebInspector.ToolbarText(WebInspector.UIString("Capture:"), "toolbar-group-label");
         this._panelToolbar.appendToolbarItem(captureSettingsLabel);

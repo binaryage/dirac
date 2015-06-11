@@ -137,6 +137,7 @@ WebInspector.NetworkPanel.prototype = {
         this._clearButton = new WebInspector.ToolbarButton(WebInspector.UIString("Clear"), "clear-toolbar-item");
         this._clearButton.addEventListener("click", this._onClearButtonClicked, this);
         this._panelToolbar.appendToolbarItem(this._clearButton);
+        this._panelToolbar.appendSeparator();
 
         if (Runtime.experiments.isEnabled("filmStripInNetworkAndTimeline")) {
             var recordFilmStripButton = new WebInspector.ToolbarSettingToggle(this._networkRecordFilmStripSetting, "camera-toolbar-item", WebInspector.UIString("Capture screenshots"));
@@ -144,6 +145,7 @@ WebInspector.NetworkPanel.prototype = {
         }
 
         this._panelToolbar.appendToolbarItem(this._filterBar.filterButton());
+        this._panelToolbar.appendSeparator();
 
         var viewModeLabel = new WebInspector.ToolbarText(WebInspector.UIString("View:"), "toolbar-group-label");
         this._panelToolbar.appendToolbarItem(viewModeLabel);
@@ -153,9 +155,7 @@ WebInspector.NetworkPanel.prototype = {
 
         var showOverviewButton = new WebInspector.ToolbarSettingToggle(this._networkLogShowOverviewSetting, "waterfall-toolbar-item", WebInspector.UIString("Show overview"), WebInspector.UIString("Hide overview"));
         this._panelToolbar.appendToolbarItem(showOverviewButton);
-
-        var optionsLabel = new WebInspector.ToolbarText(WebInspector.UIString("Options:"), "toolbar-group-label");
-        this._panelToolbar.appendToolbarItem(optionsLabel);
+        this._panelToolbar.appendSeparator();
 
         this._preserveLogCheckbox = new WebInspector.ToolbarCheckbox(WebInspector.UIString("Preserve log"), WebInspector.UIString("Do not clear log on page reload / navigation"));
         this._preserveLogCheckbox.inputElement.addEventListener("change", this._onPreserveLogCheckboxChanged.bind(this), false);

@@ -120,7 +120,7 @@ WebInspector.ElementsPanel.prototype = {
     {
         var toolbar = new WebInspector.ExtensibleToolbar("elements-toolbar");
         toolbar.element.classList.add("elements-toolbar");
-        toolbar.appendToolbarItem(new WebInspector.ToolbarSeparator());
+        toolbar.appendSeparator();
         return toolbar;
     },
 

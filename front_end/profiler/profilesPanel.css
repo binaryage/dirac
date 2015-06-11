@@ -66,7 +66,7 @@
 
 .profiles-toolbar {
     display: flex;
-    background-color: #eee;
+    background-color: #f3f3f3;
     flex: 0 0 25px;
     flex-direction: row;
     border-bottom: 1px solid rgb(202, 202, 202);
