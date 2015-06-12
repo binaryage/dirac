@@ -92,13 +92,8 @@ WebInspector.ElementStatePaneWidget.prototype = {
     onNodeChanged: function(newNode)
     {
         this._updateTarget(newNode? newNode.target() : null);
-        this.toolbarItem().setEnabled(!!newNode);
-        if (!newNode) {
-            if (this.isShowing())
-                this.detach();
-            return;
-        }
-        this._updateInputs(newNode);
+        if (newNode)
+            this._updateInputs(newNode);
     },
 
     /**
@@ -126,6 +121,8 @@ WebInspector.ElementStatePaneWidget.ButtonProvider = function()
     this._button = new WebInspector.ToolbarButton(WebInspector.UIString("Toggle Element State"), "pin-toolbar-item");
     this._button.addEventListener("click", this._clicked, this);
     this._view = new WebInspector.ElementStatePaneWidget(this.item());
+    WebInspector.context.addFlavorChangeListener(WebInspector.DOMNode, this._nodeChanged, this);
+    this._nodeChanged();
 }
 
 WebInspector.ElementStatePaneWidget.ButtonProvider.prototype = {
@@ -142,5 +139,13 @@ WebInspector.ElementStatePaneWidget.ButtonProvider.prototype = {
     item: function()
     {
         return this._button;
+    },
+
+    _nodeChanged: function()
+    {
+        var enabled = !!WebInspector.context.flavor(WebInspector.DOMNode);
+        this._button.setEnabled(enabled);
+        if (!enabled && this._button.toggled())
+            WebInspector.ElementsPanel.instance().sidebarPanes.styles.showToolbarPane(null);
     }
 }

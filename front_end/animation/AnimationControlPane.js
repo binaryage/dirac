@@ -81,10 +81,8 @@ WebInspector.AnimationControlPane.prototype = {
      */
     onNodeChanged: function(node)
     {
-        if (!node) {
-            this.detach();
+        if (!node)
             return;
-        }
 
         if (this._target)
             this._target.resourceTreeModel.removeEventListener(WebInspector.ResourceTreeModel.EventTypes.MainFrameNavigated, this._updateAnimationsPlaybackRate, this);
@@ -110,34 +108,48 @@ WebInspector.AnimationControlPane.ButtonProvider = function()
 }
 
 WebInspector.AnimationControlPane.ButtonProvider.prototype = {
-    _animationTimelineModeClick: function()
+    /**
+     * @param {boolean} toggleOn
+     */
+    _toggleAnimationTimelineMode: function(toggleOn)
     {
         if (!this._animationTimeline)
             this._animationTimeline = new WebInspector.AnimationTimeline();
-        this._button.setToggled(!this._animationTimeline.isShowing());
+        this._button.setToggled(toggleOn);
         var elementsPanel = WebInspector.ElementsPanel.instance();
-        elementsPanel.setWidgetBelowDOM(!this._animationTimeline.isShowing() ? this._animationTimeline : null);
+        elementsPanel.setWidgetBelowDOM(toggleOn ? this._animationTimeline : null);
     },
 
-    _animationControlPaneModeClick: function()
+    /**
+     * @param {boolean} toggleOn
+     */
+    _toggleAnimationControlPaneMode: function(toggleOn)
     {
         if (!this._animationsControlPane)
             this._animationsControlPane = new WebInspector.AnimationControlPane(this.item());
         var stylesSidebarPane = WebInspector.ElementsPanel.instance().sidebarPanes.styles;
-        stylesSidebarPane.showToolbarPane(!this._animationsControlPane.isShowing() ? this._animationsControlPane : null);
+        stylesSidebarPane.showToolbarPane(toggleOn ? this._animationsControlPane : null);
     },
 
     _clicked: function()
     {
         if (Runtime.experiments.isEnabled("animationInspection"))
-            this._animationTimelineModeClick();
+            this._toggleAnimationTimelineMode(!this._button.toggled());
         else
-            this._animationControlPaneModeClick();
+            this._toggleAnimationControlPaneMode(!this._button.toggled());
     },
 
     _nodeChanged: function()
     {
-        this._button.setEnabled(!!WebInspector.context.flavor(WebInspector.DOMNode));
+        var enabled = !!WebInspector.context.flavor(WebInspector.DOMNode);
+        this._button.setEnabled(enabled);
+        if (enabled)
+            return;
+
+        if (Runtime.experiments.isEnabled("animationInspection"))
+            this._toggleAnimationTimelineMode(false);
+        else
+            this._toggleAnimationControlPaneMode(false);
     },
 
     /**

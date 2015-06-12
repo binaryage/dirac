@@ -47,6 +47,7 @@ WebInspector.StylesSidebarPane = function(requestShowCallback)
 
     var toolbar = new WebInspector.ExtensibleToolbar("styles-sidebarpane-toolbar", hbox);
     toolbar.element.classList.add("styles-pane-toolbar");
+    this._currentToolbarPane = null;
 
     this._requestShowCallback = requestShowCallback;
     var toolbarPaneContainer = this.element.createChild("div", "styles-sidebar-toolbar-pane-container");
@@ -3188,14 +3189,6 @@ WebInspector.StylesSidebarPane.BaseToolbarPaneWidget = function(toolbarItem)
 }
 
 WebInspector.StylesSidebarPane.BaseToolbarPaneWidget.prototype = {
-    /**
-     * @return {!WebInspector.ToolbarItem}
-     */
-    toolbarItem: function()
-    {
-        return this._toolbarItem;
-    },
-
     _nodeChanged: function()
     {
         if (!this.isShowing())
