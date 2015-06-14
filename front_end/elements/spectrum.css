@@ -122,7 +122,6 @@
     line-height: 20px;
     font-size: 11px;
     padding: 0;
-    -webkit-user-modify: read-write-plaintext-only;
     color: #333;
     white-space: nowrap;
 }

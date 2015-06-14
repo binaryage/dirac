@@ -651,6 +651,7 @@ WebInspector.createShadowRootWithCoreStyles = function(element)
     var shadowRoot = element.createShadowRoot();
     shadowRoot.appendChild(WebInspector.Widget.createStyleElement("ui/inspectorCommon.css"));
     shadowRoot.appendChild(WebInspector.Widget.createStyleElement("ui/inspectorSyntaxHighlight.css"));
+    shadowRoot.addEventListener("focus", WebInspector._focusChanged.bind(WebInspector), true);
     return shadowRoot;
 }
 
@@ -691,10 +692,9 @@ WebInspector.currentFocusElement = function()
 }
 
 /**
- * @param {!Document} document
  * @param {!Event} event
  */
-WebInspector._focusChanged = function(document, event)
+WebInspector._focusChanged = function(event)
 {
     var node = event.deepActiveElement();
     WebInspector.setCurrentFocusElement(node);
@@ -1161,7 +1161,7 @@ WebInspector.initializeUIUtils = function(window)
 {
     window.addEventListener("focus", WebInspector._windowFocused.bind(WebInspector, window.document), false);
     window.addEventListener("blur", WebInspector._windowBlurred.bind(WebInspector, window.document), false);
-    window.document.addEventListener("focus", WebInspector._focusChanged.bind(WebInspector, window.document), true);
+    window.document.addEventListener("focus", WebInspector._focusChanged.bind(WebInspector), true);
     window.document.addEventListener("blur", WebInspector._documentBlurred.bind(WebInspector, window.document), true);
 }
 

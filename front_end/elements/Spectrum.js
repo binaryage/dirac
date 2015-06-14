@@ -77,10 +77,9 @@ WebInspector.Spectrum = function()
     this._displayContainer = this.contentElement.createChild("div", "spectrum-text source-code");
     this._textValues = [];
     for (var i = 0; i < 4; ++i) {
-        var inputValue = this._displayContainer.createChild("span", "spectrum-text-value");
+        var inputValue = this._displayContainer.createChild("input", "spectrum-text-value");
         inputValue.maxLength = 4;
         this._textValues.push(inputValue);
-        inputValue.addEventListener("keydown", this._checkForTabEvent.bind(this));
         inputValue.addEventListener("keyup", this._inputChanged.bind(this));
         inputValue.addEventListener("mousewheel", this._inputChanged.bind(this));
     }
@@ -89,7 +88,7 @@ WebInspector.Spectrum = function()
 
     // HEX display.
     this._hexContainer = this.contentElement.createChild("div", "spectrum-text spectrum-text-hex source-code");
-    this._hexValue = this._hexContainer.createChild("span", "spectrum-text-value");
+    this._hexValue = this._hexContainer.createChild("input", "spectrum-text-value");
     this._hexValue.maxLength = 7;
     this._hexValue.addEventListener("keyup", this._inputChanged.bind(this));
     this._hexValue.addEventListener("mousewheel", this._inputChanged.bind(this));
@@ -257,9 +256,9 @@ WebInspector.Spectrum.prototype = {
             this._hexContainer.hidden = false;
             this._displayContainer.hidden = true;
             if (this._currentFormat === cf.ShortHEX && this._color().canBeShortHex())
-                this._hexValue.textContent = this._color().asString(cf.ShortHEX);
+                this._hexValue.value = this._color().asString(cf.ShortHEX);
             else
-                this._hexValue.textContent = this._color().asString(cf.HEX);
+                this._hexValue.value = this._color().asString(cf.HEX);
         } else {
             // RGBA, HSLA display.
             this._hexContainer.hidden = true;
@@ -268,11 +267,11 @@ WebInspector.Spectrum.prototype = {
             this._textLabels.textContent = isRgb ? "RGBA" : "HSLA";
             var colorValues = isRgb ? this._color().canonicalRGBA() : this._color().canonicalHSLA();
             for (var i = 0; i < 3; ++i) {
-                this._textValues[i].textContent = colorValues[i];
+                this._textValues[i].value = colorValues[i];
                 if (!isRgb && (i === 1 || i === 2))
-                    this._textValues[i].textContent += "%";
+                    this._textValues[i].value += "%";
             }
-            this._textValues[3].textContent = Math.round(colorValues[3] * 100) / 100;
+            this._textValues[3].value= Math.round(colorValues[3] * 100) / 100;
         }
     },
 
@@ -303,18 +302,6 @@ WebInspector.Spectrum.prototype = {
     /**
      * @param {!Event} event
      */
-    _checkForTabEvent: function(event)
-    {
-        var sibling = event.shiftKey ? event.target.previousSibling : event.target.nextSibling;
-        if (event.code !== "Tab" || !sibling || !sibling.classList.contains("spectrum-text-value"))
-            return;
-        sibling.getComponentSelection().setBaseAndExtent(sibling, 0, sibling, 1);
-        event.consume(true);
-    },
-
-    /**
-     * @param {!Event} event
-     */
     _inputChanged: function(event)
     {
         /**
@@ -323,7 +310,7 @@ WebInspector.Spectrum.prototype = {
          */
         function elementValue(element)
         {
-            return element.textContent;
+            return element.value;
         }
 
         var element = /** @type {!Element} */(event.currentTarget);
@@ -332,7 +319,7 @@ WebInspector.Spectrum.prototype = {
         const cf = WebInspector.Color.Format;
         var colorString;
         if (this._currentFormat === cf.HEX || this._currentFormat === cf.ShortHEX) {
-            colorString = this._hexValue.textContent;
+            colorString = this._hexValue.value;
         } else {
             var format = this._currentFormat === cf.RGB ? "rgba" : "hsla";
             var values = this._textValues.map(elementValue).join(",");
