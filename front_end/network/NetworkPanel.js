@@ -49,11 +49,8 @@ WebInspector.NetworkPanel = function()
     this._filmStripRecorder = null;
 
     this._panelToolbar = new WebInspector.Toolbar(this.element);
-    this._filterBar = new WebInspector.FilterBar();
-    this._filtersContainer = this.element.createChild("div", "network-filters-header hidden");
-    this._filtersContainer.appendChild(this._filterBar.filtersElement());
-    this._filterBar.addEventListener(WebInspector.FilterBar.Events.FiltersToggled, this._onFiltersToggled, this);
-    this._filterBar.setName("networkPanel", true);
+    this._filterBar = new WebInspector.FilterBar("networkPanel", true);
+    this.element.appendChild(this._filterBar.filtersElement());
 
     this._searchableView = new WebInspector.SearchableView(this);
     this._searchableView.setPlaceholder(WebInspector.UIString("Find by filename or path"));
@@ -297,16 +294,6 @@ WebInspector.NetworkPanel.prototype = {
         var detailsViewAtBottom = this._isDetailsPaneAtBottom();
         this._splitWidget.setVertical(!detailsViewAtBottom);
         this._updateUI();
-    },
-
-    /**
-     * @param {!WebInspector.Event} event
-     */
-    _onFiltersToggled: function(event)
-    {
-        var toggled = /** @type {boolean} */ (event.data);
-        this._filtersContainer.classList.toggle("hidden", !toggled);
-        this.doResize();
     },
 
     /**

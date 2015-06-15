@@ -31,20 +31,21 @@
 /**
  * @constructor
  * @extends {WebInspector.Object}
+ * @param {string} name
+ * @param {boolean=} visibleByDefault
  */
-WebInspector.FilterBar = function()
+WebInspector.FilterBar = function(name, visibleByDefault)
 {
     this._filtersShown = false;
-    this._element = createElementWithClass("div", "filter-bar");
+    this._element = createElementWithClass("div", "filter-bar hidden");
 
     this._filterButton = new WebInspector.ToolbarButton(WebInspector.UIString("Filter"), "filter-toolbar-item", 3);
     this._filterButton.element.addEventListener("click", this._handleFilterButtonClick.bind(this), false);
 
     this._filters = [];
-}
 
-WebInspector.FilterBar.Events = {
-    FiltersToggled: "FiltersToggled"
+    this._stateSetting = WebInspector.settings.createSetting("filterBar-" + name + "-toggled", !!visibleByDefault);
+    this._setState(this._stateSetting.get());
 }
 
 WebInspector.FilterBar.FilterBarState = {
@@ -54,16 +55,6 @@ WebInspector.FilterBar.FilterBarState = {
 };
 
 WebInspector.FilterBar.prototype = {
-    /**
-     * @param {string} name
-     * @param {boolean=} visibleByDefault
-     */
-    setName: function(name, visibleByDefault)
-    {
-        this._stateSetting = WebInspector.settings.createSetting("filterBar-" + name + "-toggled", !!visibleByDefault);
-        this._setState(this._stateSetting.get());
-    },
-
     /**
      * @return {!WebInspector.ToolbarButton}
      */
@@ -148,7 +139,7 @@ WebInspector.FilterBar.prototype = {
             this._stateSetting.set(filtersShown);
 
         this._updateFilterButton();
-        this.dispatchEventToListeners(WebInspector.FilterBar.Events.FiltersToggled, this._filtersShown);
+        this._element.classList.toggle("hidden", !this._filtersShown);
         if (this._filtersShown) {
             for (var i = 0; i < this._filters.length; ++i) {
                 if (this._filters[i] instanceof WebInspector.TextFilterUI) {

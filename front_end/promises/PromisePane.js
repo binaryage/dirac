@@ -22,18 +22,23 @@ WebInspector.PromisePane = function()
     var clearButton = new WebInspector.ToolbarButton(WebInspector.UIString("Clear"), "clear-toolbar-item");
     clearButton.addEventListener("click", this._clearButtonClicked.bind(this));
     toolbar.appendToolbarItem(clearButton);
+    toolbar.appendSeparator();
 
-    this._filter = new WebInspector.PromisePaneFilter(this._refresh.bind(this));
-    toolbar.appendToolbarItem(this._filter.filterButton());
+    this._promiseStatusFiltersSetting = WebInspector.settings.createSetting("promiseStatusFilters", {});
+    this._hideCollectedPromisesSetting = WebInspector.settings.createSetting("hideCollectedPromises", false);
+
+    this._createFilterBar();
+    toolbar.appendToolbarItem(this._filterBar.filterButton());
 
     var garbageCollectButton = new WebInspector.ToolbarButton(WebInspector.UIString("Collect garbage"), "garbage-collect-toolbar-item");
     garbageCollectButton.addEventListener("click", this._garbageCollectButtonClicked, this);
     toolbar.appendToolbarItem(garbageCollectButton);
 
+    toolbar.appendSeparator();
     var asyncCheckbox = new WebInspector.ToolbarCheckbox(WebInspector.UIString("Async"), WebInspector.UIString("Capture async stack traces"), WebInspector.moduleSetting("enableAsyncStackTraces"));
     toolbar.appendToolbarItem(asyncCheckbox);
 
-    this.element.appendChild(this._filter.filtersContainer());
+    this.element.appendChild(this._filterBar.filtersElement());
 
     this._hiddenByFilterCount = 0;
     this._filterStatusMessageElement = this.element.createChild("div", "promises-filter-status hidden");
@@ -121,6 +126,66 @@ WebInspector.PromiseDetails.prototype = {
 
 
 WebInspector.PromisePane.prototype = {
+    _createFilterBar: function()
+    {
+        this._filterBar = new WebInspector.FilterBar("promisePane");
+
+        this._textFilterUI = new WebInspector.TextFilterUI(true);
+        this._textFilterUI.addEventListener(WebInspector.FilterUI.Events.FilterChanged, this._onFilterChanged, this);
+        this._filterBar.addFilter(this._textFilterUI);
+
+        var statuses = [
+            { name: "pending", label: WebInspector.UIString("Pending") },
+            { name: "resolved", label: WebInspector.UIString("Fulfilled") },
+            { name: "rejected", label: WebInspector.UIString("Rejected") }
+        ];
+        this._statusFilterUI = new WebInspector.NamedBitSetFilterUI(statuses, this._promiseStatusFiltersSetting);
+        this._statusFilterUI.addEventListener(WebInspector.FilterUI.Events.FilterChanged, this._onFilterChanged, this);
+        this._filterBar.addFilter(this._statusFilterUI);
+
+        var hideCollectedCheckbox = new WebInspector.CheckboxFilterUI("hide-collected-promises", WebInspector.UIString("Hide collected promises"), true, this._hideCollectedPromisesSetting);
+        hideCollectedCheckbox.addEventListener(WebInspector.FilterUI.Events.FilterChanged, this._onFilterChanged, this);
+        this._filterBar.addFilter(hideCollectedCheckbox);
+    },
+
+    /**
+     * @param {!WebInspector.PromiseDetails} details
+     * @param {!WebInspector.DataGridNode} node
+     * @return {boolean}
+     */
+    _shouldBeVisible: function(details, node)
+    {
+        if (!this._statusFilterUI.accept(details.status))
+            return false;
+
+        if (this._hideCollectedPromisesSetting.get() && details.isGarbageCollected)
+            return false;
+
+        var regex = this._textFilterUI.regex();
+        if (!regex)
+            return true;
+
+        var text = node.dataTextForSearch();
+        regex.lastIndex = 0;
+        return regex.test(text);
+    },
+
+    _onFilterChanged: function()
+    {
+        if (this._filterChangedTimeout)
+            clearTimeout(this._filterChangedTimeout);
+        this._filterChangedTimeout = setTimeout(onTimerFired.bind(this), 100);
+
+        /**
+         * @this {WebInspector.PromisePane}
+         */
+        function onTimerFired()
+        {
+            delete this._filterChangedTimeout;
+            this._refresh();
+        }
+    },
+
     /**
      * @override
      * @return {!Array.<!Element>}
@@ -252,7 +317,9 @@ WebInspector.PromisePane.prototype = {
 
     _resetFilters: function()
     {
-        this._filter.reset();
+        this._hideCollectedPromisesSetting.set(false);
+        this._promiseStatusFiltersSetting.set({});
+        this._textFilterUI.setValue("");
     },
 
     _updateFilterStatus: function()
@@ -340,12 +407,12 @@ WebInspector.PromisePane.prototype = {
             var wasVisible = !node || !node._isPromiseHidden;
 
             // Check for the fast path on GC events.
-            if (eventType === "gc" && node && node.parent && !this._filter.shouldHideCollectedPromises())
+            if (eventType === "gc" && node && node.parent && !this._hideCollectedPromisesSetting.get())
                 node.update(details);
             else
                 this._attachDataGridNode(details);
 
-            var isVisible = this._filter.shouldBeVisible(details, /** @type {!WebInspector.DataGridNode} */(this._promiseIdToNode.get(details.id)));
+            var isVisible = this._shouldBeVisible(details, /** @type {!WebInspector.DataGridNode} */(this._promiseIdToNode.get(details.id)));
             if (wasVisible !== isVisible) {
                 this._hiddenByFilterCount += wasVisible ? 1 : -1;
                 this._updateFilterStatus();
@@ -362,7 +429,7 @@ WebInspector.PromisePane.prototype = {
         var parentNode = this._findVisibleParentNodeDetails(details);
         if (parentNode !== node.parent)
             parentNode.appendChild(node);
-        if (this._filter.shouldBeVisible(details, node))
+        if (this._shouldBeVisible(details, node))
             parentNode.expanded = true;
         else
             node.remove();
@@ -384,7 +451,7 @@ WebInspector.PromisePane.prototype = {
             if (!currentDetails)
                 break;
             var node = this._promiseIdToNode.get(currentDetails.id);
-            if (node && this._filter.shouldBeVisible(currentDetails, node))
+            if (node && this._shouldBeVisible(currentDetails, node))
                 return node;
         }
         return this._dataGrid.rootNode();
@@ -424,7 +491,7 @@ WebInspector.PromisePane.prototype = {
             var id = /** @type {number} */ (pair[0]);
             var details = /** @type {!WebInspector.PromiseDetails} */ (pair[1]);
             var node = this._createDataGridNode(details);
-            node._isPromiseHidden = !this._filter.shouldBeVisible(details, node);
+            node._isPromiseHidden = !this._shouldBeVisible(details, node);
             if (node._isPromiseHidden) {
                 ++this._hiddenByFilterCount;
                 continue;
@@ -727,116 +794,4 @@ WebInspector.PromiseDataGridNode.prototype = {
     },
 
     __proto__: WebInspector.ViewportDataGridNode.prototype
-}
-
-/**
- * @constructor
- * @param {function()} filterChanged
- */
-WebInspector.PromisePaneFilter = function(filterChanged)
-{
-    this._filterChangedCallback = filterChanged;
-    this._filterBar = new WebInspector.FilterBar();
-
-    this._filtersContainer = createElementWithClass("div", "promises-filters-header hidden");
-    this._filtersContainer.appendChild(this._filterBar.filtersElement());
-    this._filterBar.addEventListener(WebInspector.FilterBar.Events.FiltersToggled, this._onFiltersToggled, this);
-    this._filterBar.setName("promisePane");
-
-    this._textFilterUI = new WebInspector.TextFilterUI(true);
-    this._textFilterUI.addEventListener(WebInspector.FilterUI.Events.FilterChanged, this._onFilterChanged, this);
-    this._filterBar.addFilter(this._textFilterUI);
-
-    var statuses = [
-        { name: "pending", label: WebInspector.UIString("Pending") },
-        { name: "resolved", label: WebInspector.UIString("Fulfilled") },
-        { name: "rejected", label: WebInspector.UIString("Rejected") }
-    ];
-    this._promiseStatusFiltersSetting = WebInspector.settings.createSetting("promiseStatusFilters", {});
-    this._statusFilterUI = new WebInspector.NamedBitSetFilterUI(statuses, this._promiseStatusFiltersSetting);
-    this._statusFilterUI.addEventListener(WebInspector.FilterUI.Events.FilterChanged, this._onFilterChanged, this);
-    this._filterBar.addFilter(this._statusFilterUI);
-
-    this._hideCollectedPromisesSetting = WebInspector.settings.createSetting("hideCollectedPromises", false);
-    var hideCollectedCheckbox = new WebInspector.CheckboxFilterUI("hide-collected-promises", WebInspector.UIString("Hide collected promises"), true, this._hideCollectedPromisesSetting);
-    hideCollectedCheckbox.addEventListener(WebInspector.FilterUI.Events.FilterChanged, this._onFilterChanged, this);
-    this._filterBar.addFilter(hideCollectedCheckbox);
-}
-
-WebInspector.PromisePaneFilter.prototype = {
-    /**
-     * @return {!WebInspector.ToolbarButton}
-     */
-    filterButton: function()
-    {
-        return this._filterBar.filterButton();
-    },
-
-    /**
-     * @return {!Element}
-     */
-    filtersContainer: function()
-    {
-        return this._filtersContainer;
-    },
-
-    /**
-     * @return {boolean}
-     */
-    shouldHideCollectedPromises: function()
-    {
-        return this._hideCollectedPromisesSetting.get();
-    },
-
-    /**
-     * @param {!WebInspector.PromiseDetails} details
-     * @param {!WebInspector.DataGridNode} node
-     * @return {boolean}
-     */
-    shouldBeVisible: function(details, node)
-    {
-        if (!this._statusFilterUI.accept(details.status))
-            return false;
-
-        if (this.shouldHideCollectedPromises() && details.isGarbageCollected)
-            return false;
-
-        var regex = this._textFilterUI.regex();
-        if (!regex)
-            return true;
-
-        var text = node.dataTextForSearch();
-        regex.lastIndex = 0;
-        return regex.test(text);
-    },
-
-    /**
-     * @param {!WebInspector.Event} event
-     */
-    _onFiltersToggled: function(event)
-    {
-        var toggled = /** @type {boolean} */ (event.data);
-        this._filtersContainer.classList.toggle("hidden", !toggled);
-    },
-
-    _onFilterChanged: function()
-    {
-        if (this._filterChangedTimeout)
-            clearTimeout(this._filterChangedTimeout);
-        this._filterChangedTimeout = setTimeout(onTimerFired.bind(this), 100);
-
-        /** @this {WebInspector.PromisePaneFilter} */
-        function onTimerFired()
-        {
-            delete this._filterChangedTimeout;
-            this._filterChangedCallback();
-        }
-    },
-
-    reset: function()
-    {
-        this._hideCollectedPromisesSetting.set(false);
-        this._promiseStatusFiltersSetting.set({});
-        this._textFilterUI.setValue("");
-    }
 }

@@ -9,6 +9,10 @@
     flex: 1 1;
 }
 
+.promises > .toolbar {
+    border-bottom: 1px solid #dadada;
+}
+
 .promises .promise-gc {
     opacity: 0.6;
 }
@@ -23,7 +27,6 @@
 
 .promises .data-grid .header-container {
     height: 30px;
-    border-top: 1px solid rgb(205, 205, 205);
 }
 
 .promises .data-grid .data-container {

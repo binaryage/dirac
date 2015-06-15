@@ -68,7 +68,7 @@ WebInspector.ConsoleView = function()
     this._filter = new WebInspector.ConsoleViewFilter(this);
     this._filter.addEventListener(WebInspector.ConsoleViewFilter.Events.FilterChanged, this._updateMessageList.bind(this));
 
-    this._filterBar = new WebInspector.FilterBar();
+    this._filterBar = new WebInspector.FilterBar("consoleView");
 
     this._preserveLogCheckbox = new WebInspector.ToolbarCheckbox(WebInspector.UIString("Preserve log"), WebInspector.UIString("Do not clear log on page reload / navigation."), WebInspector.moduleSetting("preserveConsoleLog"));
     this._progressToolbarItem = new WebInspector.ToolbarItem(createElement("div"));
@@ -80,10 +80,7 @@ WebInspector.ConsoleView = function()
     toolbar.appendToolbarItem(this._preserveLogCheckbox);
     toolbar.appendToolbarItem(this._progressToolbarItem);
 
-    this._filtersContainer = this._contentsElement.createChild("div", "console-filters-header hidden");
-    this._filtersContainer.appendChild(this._filterBar.filtersElement());
-    this._filterBar.addEventListener(WebInspector.FilterBar.Events.FiltersToggled, this._onFiltersToggled, this);
-    this._filterBar.setName("consoleView");
+    this._contentsElement.appendChild(this._filterBar.filtersElement());
     this._filter.addFilters(this._filterBar);
 
     this._viewport = new WebInspector.ViewportControl(this);
@@ -322,12 +319,6 @@ WebInspector.ConsoleView.prototype = {
     defaultFocusedElement: function()
     {
         return this._promptElement;
-    },
-
-    _onFiltersToggled: function(event)
-    {
-        var toggled = /** @type {boolean} */ (event.data);
-        this._filtersContainer.classList.toggle("hidden", !toggled);
     },
 
     _executionContextChanged: function()

@@ -374,10 +374,7 @@ WebInspector.TimelinePanel.prototype = {
         this._progressToolbarItem.setVisible(false);
         this._panelToolbar.appendToolbarItem(this._progressToolbarItem);
 
-        this._filtersContainer = this.element.createChild("div", "timeline-filters-header hidden");
-        this._filtersContainer.appendChild(this._filterBar.filtersElement());
-        this._filterBar.addEventListener(WebInspector.FilterBar.Events.FiltersToggled, this._onFiltersToggled, this);
-        this._filterBar.setName("timelinePanel");
+        this.element.appendChild(this._filterBar.filtersElement());
     },
 
     /**
@@ -385,7 +382,7 @@ WebInspector.TimelinePanel.prototype = {
      */
     _createFilterBar: function()
     {
-        this._filterBar = new WebInspector.FilterBar();
+        this._filterBar = new WebInspector.FilterBar("timelinePanel");
         this._filters = {};
         this._filters._textFilterUI = new WebInspector.TextFilterUI();
         this._filters._textFilterUI.addEventListener(WebInspector.FilterUI.Events.FilterChanged, this._textFilterChanged, this);
@@ -443,13 +440,6 @@ WebInspector.TimelinePanel.prototype = {
         var categories = WebInspector.TimelineUIUtils.categories();
         categories[name].hidden = !this._filters._categoryFiltersUI[name].checked();
         this._categoryFilter.notifyFilterChanged();
-    },
-
-    _onFiltersToggled: function(event)
-    {
-        var toggled = /** @type {boolean} */ (event.data);
-        this._filtersContainer.classList.toggle("hidden", !toggled);
-        this.doResize();
     },
 
     /**
@@ -618,14 +608,14 @@ WebInspector.TimelinePanel.prototype = {
 
         if (this._flameChartEnabledSetting.get()) {
             this._filterBar.filterButton().setEnabled(false);
-            this._filtersContainer.classList.toggle("hidden", true);
+            this._filterBar.filtersElement().classList.toggle("hidden", true);
             this._flameChart = new WebInspector.TimelineFlameChartView(this, this._model, this._frameModel());
             this._flameChart.enableNetworkPane(this._captureNetworkSetting.get());
             this._addModeView(this._flameChart);
         } else {
             this._flameChart = null;
             this._filterBar.filterButton().setEnabled(true);
-            this._filtersContainer.classList.toggle("hidden", !this._filterBar.filtersToggled());
+            this._filterBar.filtersElement().classList.toggle("hidden", !this._filterBar.filtersToggled());
             var timelineView = new WebInspector.TimelineView(this, this._model);
             this._addModeView(timelineView);
             timelineView.setFrameModel(isFrameMode ? this._frameModel() : null);

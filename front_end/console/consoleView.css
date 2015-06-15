@@ -32,6 +32,10 @@
     overflow: hidden;
 }
 
+.console-view > .toolbar {
+    border-bottom: 1px solid #dadada;
+}
+
 .console-view-wrapper {
     background-color: #eee;
 }
@@ -41,18 +45,12 @@
     overflow: hidden;
 }
 
-.console-filters-header {
-    overflow: hidden;
-    flex: none;
-}
-
 #console-messages {
     flex: 1 1;
     padding: 2px 0;
     overflow-y: auto;
     word-wrap: break-word;
     -webkit-user-select: text;
-    border-top: 1px solid rgb(230, 230, 230);
     transform: translateZ(0);
 }
 
