@@ -40,6 +40,7 @@
 WebInspector.NetworkLogView = function(filterBar, progressBarContainer, networkLogLargeRowsSetting)
 {
     WebInspector.VBox.call(this);
+    this.setMinimumSize(50, 64);
     this.registerRequiredCSS("network/networkLogView.css");
     this.registerRequiredCSS("ui/filter.css");
 
