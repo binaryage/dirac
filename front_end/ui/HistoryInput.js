@@ -27,6 +27,16 @@ WebInspector.HistoryInput.prototype = {
         this._history = [""];
         this._historyPosition = 0;
         this.addEventListener("keydown", this._onKeyDown.bind(this), false);
+        this.addEventListener("input", this._onInput.bind(this), false);
+    },
+
+    /**
+     * @param {!Event} event
+     */
+    _onInput: function(event)
+    {
+        if (this._history.length === this._historyPosition + 1)
+            this._history[this._history.length - 1] = this.value;
     },
 
     /**
