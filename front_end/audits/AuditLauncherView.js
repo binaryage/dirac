@@ -201,7 +201,7 @@ WebInspector.AuditLauncherView.prototype = {
     {
         var childNodes = this._categoriesElement.childNodes;
         for (var i = 0, length = childNodes.length; i < length; ++i)
-            childNodes[i].firstChild.checked = checkCategories;
+            childNodes[i].checkboxElement.checked = checkCategories;
         this._currentCategoriesCount = checkCategories ? this._sortedCategories.length : 0;
         this._selectedCategoriesUpdated(userGesture);
     },
