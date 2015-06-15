@@ -32,12 +32,12 @@
     top: 0;
     width: 100%;
     background-color: #f3f3f3;
-    border-bottom: 1px solid #ddd;
+    border-bottom: 1px solid #ccc;
     overflow: hidden;
 }
 
 .scripts-debug-toolbar-drawer {
-    flex: 0 0 53px;
+    flex: 0 0 52px;
     -webkit-transition: margin-top 0.1s ease-in-out;
     margin-top: -26px;
     padding-top: 25px;
@@ -59,7 +59,6 @@
     display: flex;
     padding-left: 3px;
     height: 28px;
-    border-bottom: 1px solid #dadada;
 }
 
 .sources-editor-tabstrip-left {

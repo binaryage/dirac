@@ -35,23 +35,14 @@
 
 #sources-panel-sources-view .sources-toolbar {
     display: flex;
-    position: relative;
-    flex: 0 0 20px;
+    flex: 0 0 27px;
     background-color: #f3f3f3;
-    border-top: 1px solid rgb(196,196,196);
+    border-top: 1px solid #dadada;
     overflow: hidden;
 }
 
-.material #sources-panel-sources-view .sources-toolbar {
-    flex: 0 0 24px;
-}
-
-#sources-panel-sources-view .sources-toolbar .toolbar {
-    margin-top: -2px;
-}
-
-#sources-panel-sources-view .sources-toolbar .toolbar {
-    margin-top: -3px;
+.sources-toolbar .toolbar {
+    cursor: default;
 }
 
 .source-frame-debugger-script {

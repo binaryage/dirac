@@ -105,11 +105,15 @@
     width: 16px;
     border: none;
     z-index: 20;
-    background-color: rgba(0, 0, 0, 0.6);
+    background-color: #5a5a5a;
 }
 
 .shadow-split-widget button.sidebar-show-hide-button:hover {
-    background-color: black;
+    background-color: #333;
+}
+
+.shadow-split-widget button.sidebar-show-hide-button:active {
+    background-color: #5a5a5a;
 }
 
 .shadow-split-widget button.sidebar-show-hide-button:disabled {
@@ -133,12 +137,6 @@
     top: 5px;
 }
 
-.shadow-split-widget button.left-sidebar-show-hide-button:active,
-.shadow-split-widget button.top-sidebar-show-hide-button:active {
-    top: 4px;
-    left: 3px;
-}
-
 .shadow-split-widget button.right-sidebar-show-hide-button {
     top: 5px;
     right:4px;
@@ -149,24 +147,9 @@
     right: 5px;
 }
 
-.shadow-split-widget button.right-sidebar-show-hide-button:active {
-    top: 4px;
-    right: 1px;
-}
-
 .shadow-split-widget button.bottom-sidebar-show-hide-button {
-    bottom: 1px;
-    right: 1px;
-}
-
-:host-context(.material) .shadow-split-widget button.bottom-sidebar-show-hide-button {
-    bottom: 3px;
+    bottom: 5px;
     right: 3px;
-}
-
-.shadow-split-widget button.bottom-sidebar-show-hide-button:active {
-    bottom: 0;
-    right: 0;
 }
 
 .shadow-split-widget button.left-sidebar-show-hide-button.toggled-show {

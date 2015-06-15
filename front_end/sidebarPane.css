@@ -34,6 +34,10 @@
     flex: none;
 }
 
+.sidebar-pane-hidden {
+    display: none;
+}
+
 .sidebar-pane .info {
     text-align: center;
     font-style: italic;
@@ -65,10 +69,6 @@
 .sidebar-pane-title.expanded,
 .sidebar-pane-title:last-child {
     border-bottom: 1px solid #ddd;
-}
-
-.sidebar-pane-title:first-child {
-    border-top: none;
 }
 
 .sidebar-pane-title::before {

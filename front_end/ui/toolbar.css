@@ -46,6 +46,7 @@
     padding: 0;
     height: 26px;
     border: none;
+    color: #5a5a5a;
 }
 
 .toolbar-text {
@@ -61,13 +62,12 @@
 }
 
 .toolbar-item:hover .toolbar-button-text {
-    opacity: 1;
+    color: #333;
 }
 
 .toolbar-item .toolbar-button-text {
     font-weight: bold;
-    color: rgba(0, 0, 0, 0.75);
-    opacity: 0.8;
+    color: #5a5a5a;
 }
 
 .long-click-glyph {
@@ -90,23 +90,21 @@ button.toolbar-item {
     width: 26px;
 }
 
-button.toolbar-item:enabled:hover,
-.toolbar-item.checkbox:hover,
-.toolbar-counter:hover {
-    background-color: rgba(110, 110, 110, 0.1);
-    transition: background-color 150ms cubic-bezier(0, 0, 0.2, 1);
-}
-
 button.toolbar-item.toggled-on .glyph {
     background-color: rgb(66, 129, 235) !important;
 }
 
-button.toolbar-item:hover .glyph {
-    opacity: 1;
+button.toolbar-item:enabled:hover .glyph {
+    background-color: #333;
+}
+
+.toolbar-counter:hover,
+.toolbar-item.checkbox:hover {
+    color: #333;
 }
 
 button.toolbar-item:active .glyph {
-    opacity: 0.8;
+    background-color: #5a5a5a !important;
 }
 
 button.toolbar-item:disabled {
@@ -179,8 +177,7 @@ select.toolbar-item {
 .toolbar-item > .glyph {
     -webkit-mask-image: url(Images/toolbarButtonGlyphs.png);
     -webkit-mask-size: 352px 144px;
-    opacity: 0.9;
-    background-color: #595959;
+    background-color: #5a5a5a;
     z-index: 1;
     width: 32px;
     height: 24px;
@@ -230,7 +227,7 @@ select.toolbar-item {
 .toolbar-divider {
     background-color: #ccc;
     width: 1px;
-    margin: 2px 2px;
+    margin: 2px 4px;
     height: 17px;
 }
 
@@ -267,7 +264,7 @@ select.toolbar-item {
 }
 
 .emulation-toolbar-item .glyph {
-    -webkit-mask-position: -160px 0;
+    -webkit-mask-position: -160px 1px;
 }
 
 .emulation-toolbar-item.warning::after {
@@ -416,7 +413,7 @@ button.record-toolbar-item.toggled-on .glyph {
 }
 
 .filter-toolbar-item.toggled-shown .glyph {
-    background-color: rgb(66, 129, 235);
+    background-color: rgb(66, 129, 235) !important;
 }
 
 .filter-toolbar-item.toggled-shown {

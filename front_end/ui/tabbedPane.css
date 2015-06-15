@@ -55,7 +55,7 @@
 .tabbed-pane-header {
     display: flex;
     flex: 0 0 27px;
-    border-bottom: 1px solid #dadada;
+    border-bottom: 1px solid #ccc;
     overflow: hidden;
     width: 100%;
     background-color: #f3f3f3;
@@ -84,6 +84,11 @@
     cursor: default;
     display: flex;
     align-items: center;
+    color: #5a5a5a;
+}
+
+.tabbed-pane-header-tab:hover {
+    color: #333;
 }
 
 .tabbed-pane-header-tab-title {
@@ -98,6 +103,7 @@
 .tabbed-pane-header-tab.selected {
     border: 1px solid #ccc;
     border-bottom: none;
+    color: #333;
 }
 
 .tabbed-pane-header-tab.selected {

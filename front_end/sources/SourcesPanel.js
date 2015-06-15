@@ -253,9 +253,11 @@ WebInspector.SourcesPanel.prototype = {
             this.sidebarPanes.xhrBreakpoints.highlightBreakpoint(details.auxData["breakpointURL"]);
             this.sidebarPanes.callstack.setStatus(WebInspector.UIString("Paused on a XMLHttpRequest."));
         } else if (details.reason === WebInspector.DebuggerModel.BreakReason.Exception) {
-            this.sidebarPanes.callstack.setStatus(WebInspector.UIString("Paused on exception: '%s'.", details.auxData["description"].split("\n", 1)[0]));
+            var description = details.auxData["description"] || "";
+            this.sidebarPanes.callstack.setStatus(WebInspector.UIString("Paused on exception: '%s'.", description.split("\n", 1)[0]));
         } else if (details.reason === WebInspector.DebuggerModel.BreakReason.PromiseRejection) {
-            this.sidebarPanes.callstack.setStatus(WebInspector.UIString("Paused on promise rejection: '%s'.", details.auxData["description"].split("\n", 1)[0]));
+            var description = details.auxData["description"] || "";
+            this.sidebarPanes.callstack.setStatus(WebInspector.UIString("Paused on promise rejection: '%s'.", description.split("\n", 1)[0]));
         } else if (details.reason === WebInspector.DebuggerModel.BreakReason.Assert) {
             this.sidebarPanes.callstack.setStatus(WebInspector.UIString("Paused on assertion."));
         } else if (details.reason === WebInspector.DebuggerModel.BreakReason.CSPViolation) {
@@ -1149,11 +1151,11 @@ WebInspector.SourcesPanel.prototype = {
         // Create vertical box with stack.
         var vbox = new WebInspector.VBox();
         vbox.element.appendChild(this._debugToolbarDrawer);
-        vbox.element.appendChild(this._debugToolbar.element);
         vbox.setMinimumAndPreferredSizes(25, 25, WebInspector.SourcesPanel.minToolbarWidth, 100);
         var sidebarPaneStack = new WebInspector.SidebarPaneStack();
         sidebarPaneStack.element.classList.add("flex-auto");
         sidebarPaneStack.show(vbox.element);
+        vbox.element.appendChild(this._debugToolbar.element);
 
         if (!vertically) {
             // Populate the only stack.
