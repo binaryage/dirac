@@ -866,15 +866,17 @@ WebInspector.PageDispatcher.prototype = {
     /**
      * @override
      * @param {string} message
+     * @param {string} dialogType
      */
-    javascriptDialogOpening: function(message)
+    javascriptDialogOpening: function(message, dialogType)
     {
     },
 
     /**
      * @override
+     * @param {boolean} result
      */
-    javascriptDialogClosed: function()
+    javascriptDialogClosed: function(result)
     {
     },
 
