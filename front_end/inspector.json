@@ -19,6 +19,7 @@
     { "name": "profiler", "type": "remote" },
     { "name": "resources", "type": "remote" },
     { "name": "audits", "type": "remote" },
+    { "name": "security", "type": "remote" },
     { "name": "console", "type": "remote" },
     { "name": "source_frame", "type": "remote" },
     { "name": "cm_modes", "type": "remote" },

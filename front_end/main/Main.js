@@ -139,6 +139,7 @@ WebInspector.Main.prototype = {
         Runtime.experiments.register("networkRequestsOnTimeline", "Network requests on Timeline");
         Runtime.experiments.register("privateScriptInspection", "Private script inspection");
         Runtime.experiments.register("promiseTracker", "Promise inspector");
+        Runtime.experiments.register("securityPanel", "Security panel", true);
         Runtime.experiments.register("serviceWorkersInPageFrontend", "Service workers in DevTools for page");
         Runtime.experiments.register("serviceWorkersInResources", "Service workers in Resources panel", true);
         Runtime.experiments.register("showPrimaryLoadWaterfallInNetworkTimeline", "Show primary load waterfall in Network timeline", true);
