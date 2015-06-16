@@ -160,6 +160,11 @@ Element.prototype.positionAt = function(x, y, relativeTo)
         this.style.setProperty("top", (shift.y + y) + "px");
     else
         this.style.removeProperty("top");
+
+    if (typeof x === "number" || typeof y === "number")
+        this.style.setProperty("position", "absolute");
+    else
+        this.style.removeProperty("position");
 }
 
 /**
