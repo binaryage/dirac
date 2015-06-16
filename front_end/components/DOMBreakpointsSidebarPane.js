@@ -223,10 +223,10 @@ WebInspector.DOMBreakpointsSidebarPane.prototype = {
         element._type = type;
         element.addEventListener("contextmenu", this._contextMenu.bind(this, node, type), true);
 
-        var checkboxElement = createCheckboxLabel("", enabled);
-        checkboxElement.addEventListener("click", this._checkboxClicked.bind(this, node, type), false);
-        element._checkboxElement = checkboxElement;
-        element.appendChild(checkboxElement);
+        var checkboxLabel = createCheckboxLabel("", enabled);
+        checkboxLabel.addEventListener("click", this._checkboxClicked.bind(this, node, type), false);
+        element._checkboxElement = checkboxLabel.checkboxElement;
+        element.appendChild(checkboxLabel);
 
         var labelElement = createElement("span");
         element.appendChild(labelElement);
