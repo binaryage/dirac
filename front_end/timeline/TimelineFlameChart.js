@@ -574,21 +574,14 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
         var frame = this._entryIndexToFrame[entryIndex];
         if (frame) {
             var /** @const */ vPadding = 1;
-            var /** @const */ hPadding = 2;
+            var /** @const */ hPadding = 1;
             barX += hPadding;
             barWidth -= 2 * hPadding;
             barY += vPadding;
             barHeight -= 2 * vPadding + 1;
 
-            context.fillStyle = frame.idle ? "#eee" : "#ccc";
+            context.fillStyle = frame.hasWarnings() ? "hsl(0, 80%, 70%)" : "white";
             context.fillRect(barX, barY, barWidth, barHeight);
-
-            // Draw frame perforation.
-            context.fillStyle = "white";
-            for (var i = 1; i < barWidth; i += 4) {
-                context.fillRect(barX + i, barY + 1, 2, 2);
-                context.fillRect(barX + i, barY + barHeight - 3, 2, 2);
-            }
 
             var frameDurationText = Number.preciseMillisToString(frame.duration, 1);
             var textWidth = context.measureText(frameDurationText).width;

@@ -572,6 +572,15 @@ WebInspector.TimelineFrame = function(startTime, startTimeOffset)
 
 WebInspector.TimelineFrame.prototype = {
     /**
+     * @return {boolean}
+     */
+    hasWarnings: function()
+    {
+        var /** @const */ longFrameDurationThresholdMs = 18;
+        return !this.idle && this.duration > longFrameDurationThresholdMs;
+    },
+
+    /**
      * @param {number} endTime
      */
     _setEndTime: function(endTime)
