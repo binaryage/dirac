@@ -253,10 +253,9 @@
 #timeline-overview-events,
 #timeline-overview-memory,
 #timeline-overview-power {
-    flex: 0 0 79px;
+    flex: 0 0 100px;
     z-index: 160;
     width: 100%;
-    margin-bottom: 1px;
 }
 
 #timeline-overview-memory {
@@ -264,7 +263,7 @@
 }
 
 #timeline-overview-frames {
-    flex-basis: 100px;
+    flex-basis: 120px;
 }
 
 #timeline-overview-pane {

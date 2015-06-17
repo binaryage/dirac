@@ -52,7 +52,7 @@ WebInspector.TimelineEventOverview = function(model, frameModel)
 }
 
 /** @const */
-WebInspector.TimelineEventOverview._fullStripHeight = 20;
+WebInspector.TimelineEventOverview._fullStripHeight = 24;
 /** @const */
 WebInspector.TimelineEventOverview._smallStripHeight = 8;
 
@@ -73,12 +73,14 @@ WebInspector.TimelineEventOverview.prototype = {
      */
     update: function()
     {
+        var /** @const */ fpsStripHeight = 20;
         this.resetCanvas();
         var threads = this._model.virtualThreads();
         var mainThreadEvents = this._model.mainThreadEvents();
         var networkHeight = this._canvas.clientHeight
-            - 2 * WebInspector.TimelineEventOverview._fullStripHeight
-            - 2 * WebInspector.TimelineEventOverview._smallStripHeight;
+            - WebInspector.TimelineEventOverview._fullStripHeight
+            - fpsStripHeight
+            - 3 * WebInspector.TimelineEventOverview._smallStripHeight;
         var position = 0;
         if (Runtime.experiments.isEnabled("inputEventsOnTimelineOverview")) {
             var inputHeight = this._drawInputEvents(mainThreadEvents, position, WebInspector.TimelineEventOverview._smallStripHeight);
@@ -93,7 +95,8 @@ WebInspector.TimelineEventOverview.prototype = {
         for (var thread of threads.filter(function(thread) { return thread.isWorker(); }))
             this._drawEvents(thread.events, position, WebInspector.TimelineEventOverview._smallStripHeight);
         position += WebInspector.TimelineEventOverview._smallStripHeight;
-        position += this._drawFrames(position, WebInspector.TimelineEventOverview._fullStripHeight);
+        position += this._drawResponsivenessStrip(position, WebInspector.TimelineEventOverview._smallStripHeight);
+        position += this._drawFrames(position, fpsStripHeight);
         console.assert(position === this._canvas.clientHeight);
     },
 
@@ -192,6 +195,8 @@ WebInspector.TimelineEventOverview.prototype = {
      */
     _drawStackedUtilizationChart: function(events, position, height)
     {
+        if (!events.length)
+            return height;
         var /** @const */ quantSizePx = 4 * window.devicePixelRatio;
         var /** @const */ padding = 1;
         var visualHeight = (height - padding) * window.devicePixelRatio;
@@ -211,6 +216,8 @@ WebInspector.TimelineEventOverview.prototype = {
         for (var i = idleIndex + 1; i < categoryOrder.length; ++i)
             categories[categoryOrder[i]]._overviewIndex = i;
         var categoryIndexStack = [];
+
+        this._drawHorizontalGuide(baseLine - visualHeight + 0.5, WebInspector.UIString("100%"));
 
         /**
          * @param {!Array<number>} counters
@@ -320,6 +327,35 @@ WebInspector.TimelineEventOverview.prototype = {
      * @param {number} height
      * @return {number}
      */
+    _drawResponsivenessStrip: function(position, height)
+    {
+        var /** @const */ padding = 1;
+        var visualHeight = (height - padding) * window.devicePixelRatio;
+        var timeOffset = this._model.minimumRecordTime();
+        var timeSpan = this._model.maximumRecordTime() - timeOffset;
+        var scale = this._canvas.width / timeSpan;
+        var frames = this._frameModel.frames();
+        var ctx = this._context;
+        ctx.beginPath();
+        var responsivenessStripY = (position + padding) * window.devicePixelRatio;
+        for (var i = 0; i < frames.length; ++i) {
+            var frame = frames[i];
+            if (!frame.hasWarnings())
+                continue;
+            var x = scale * (frame.startTime - timeOffset);
+            var w = scale * frame.duration;
+            ctx.rect(x, responsivenessStripY, w, visualHeight);
+        }
+        ctx.fillStyle = "hsl(0, 80%, 70%)";
+        ctx.fill();
+        return height;
+    },
+
+    /**
+     * @param {number} position
+     * @param {number} height
+     * @return {number}
+     */
     _drawFrames: function(position, height)
     {
         var /** @const */ padding = 2;
@@ -329,17 +365,22 @@ WebInspector.TimelineEventOverview.prototype = {
         var timeSpan = this._model.maximumRecordTime() - timeOffset;
         var scale = this._canvas.width / timeSpan;
         var frames = this._frameModel.frames();
-        var baseY = (position + height) * window.devicePixelRatio;
-        var y = baseY + 10;
+        var baseY = height * window.devicePixelRatio;
         var ctx = this._context;
+        var y = baseY + 10;
+        if (!frames.length)
+            return height;
+
         ctx.save();
+        ctx.translate(0, position * window.devicePixelRatio);
         ctx.beginPath();
-        ctx.rect(0, position * window.devicePixelRatio, this._canvas.width, height * window.devicePixelRatio);
+        ctx.rect(0, 0, this._canvas.width, height * window.devicePixelRatio);
         ctx.clip();
+        ctx.lineWidth = window.devicePixelRatio;
+
+        this._drawHorizontalGuide(baseY - visualHeight - 0.5, WebInspector.UIString("60\u2009fps"));
+
         ctx.beginPath();
-        ctx.lineWidth = 1 * window.devicePixelRatio;
-        ctx.strokeStyle = "hsl(110, 50%, 60%)";
-        ctx.fillStyle = "hsl(110, 50%, 88%)";
         ctx.moveTo(0, y);
         for (var i = 0; i < frames.length; ++i) {
             var frame = frames[i];
@@ -356,11 +397,32 @@ WebInspector.TimelineEventOverview.prototype = {
             ctx.lineTo(x, y);
         }
         ctx.lineTo(x, baseY + 10);
-        ctx.closePath();
+        ctx.fillStyle = "hsl(110, 50%, 88%)";
+        ctx.strokeStyle = "hsl(110, 50%, 60%)";
         ctx.fill();
         ctx.stroke();
         ctx.restore();
         return height;
+    },
+
+    /**
+     * @param {number} y
+     * @param {string} label
+     */
+    _drawHorizontalGuide: function(y, label)
+    {
+        var ctx = this._context;
+        ctx.save();
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(this._canvas.width, y);
+        ctx.strokeStyle = "hsl(0, 0%, 85%)";
+        ctx.setLineDash([3]);
+        ctx.stroke();
+        ctx.fillStyle = "hsl(0, 0%, 65%)";
+        ctx.font = "9px " + WebInspector.fontFamily();
+        ctx.fillText(label, 4, y + 8);
+        ctx.restore();
     },
 
     _onCategoryVisibilityChanged: function()
