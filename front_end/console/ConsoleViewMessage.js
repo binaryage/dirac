@@ -624,6 +624,7 @@ WebInspector.ConsoleViewMessage.prototype = {
                 span.appendChild(WebInspector.linkifyStringAsFragment(text));
                 event.consume(true);
             }
+            detailedLink._showDetailedForTest = showDetailed.bind(null, new MouseEvent('click'));
             detailedLink.addEventListener("click", showDetailed, false);
         }
     },
