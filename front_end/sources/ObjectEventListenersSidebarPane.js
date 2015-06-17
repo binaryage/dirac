@@ -31,6 +31,7 @@ WebInspector.ObjectEventListenersSidebarPane.prototype = {
         var executionContext = WebInspector.context.flavor(WebInspector.ExecutionContext);
         if (!executionContext) {
             this._eventListenersView.reset();
+            this._eventListenersView.addEmptyHolderIfNeeded();
             return;
         }
         this._lastRequestedContext = executionContext;

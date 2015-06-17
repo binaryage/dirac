@@ -73,6 +73,7 @@ WebInspector.EventListenersWidget.prototype = {
         var node = WebInspector.context.flavor(WebInspector.DOMNode);
         if (!node) {
             this._eventListenersView.reset();
+            this._eventListenersView.addEmptyHolderIfNeeded();
             finishCallback();
             return;
         }

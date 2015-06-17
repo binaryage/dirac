@@ -41,7 +41,7 @@ WebInspector.EventListenersView.prototype = {
         {
             this.reset();
             for (var i = 0; i < listeners.length; ++i)
-                this.addObjectEventListeners(objects[i], listeners[i]);
+                this._addObjectEventListeners(objects[i], listeners[i]);
             this.addEmptyHolderIfNeeded();
             this._eventListenersArrivedForTest();
         }
@@ -51,7 +51,7 @@ WebInspector.EventListenersView.prototype = {
      * @param {!WebInspector.RemoteObject} object
      * @param {?Array<!WebInspector.EventListener>} eventListeners
      */
-    addObjectEventListeners: function(object, eventListeners)
+    _addObjectEventListeners: function(object, eventListeners)
     {
         if (!eventListeners)
             return;
