@@ -333,7 +333,7 @@ WebInspector.VersionController = function()
 }
 
 WebInspector.VersionController._currentVersionName = "inspectorVersion";
-WebInspector.VersionController.currentVersion = 12;
+WebInspector.VersionController.currentVersion = 13;
 
 WebInspector.VersionController.prototype = {
     updateVersion: function()
@@ -579,6 +579,11 @@ WebInspector.VersionController.prototype = {
             window.localStorage.removeItem(key);
             WebInspector.settings._settingsStorage[key] = value;
         }
+    },
+
+    _updateVersionFrom12To13: function()
+    {
+        WebInspector.settings.createSetting("timelineOverviewMode", "").remove();
     },
 
     /**
