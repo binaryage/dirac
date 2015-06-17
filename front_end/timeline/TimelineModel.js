@@ -165,6 +165,8 @@ WebInspector.TimelineModel.Events = {
 
 WebInspector.TimelineModel.MainThreadName = "main";
 
+WebInspector.TimelineModel.WorkerThreadName = "DedicatedWorker Thread";
+
 /**
  * @param {!Array.<!WebInspector.TracingModel.Event>} events
  * @param {function(!WebInspector.TracingModel.Event)} onStartEvent
@@ -241,7 +243,7 @@ WebInspector.TimelineModel.VirtualThread.prototype = {
      */
     isWorker: function()
     {
-        return this.name === "WebCore: Worker";
+        return this.name === WebInspector.TimelineModel.WorkerThreadName;
     }
 }
 
@@ -765,7 +767,7 @@ WebInspector.TimelineModel.prototype = {
             var endTime = i + 1 < length ? metaEvents[i + 1].startTime : Infinity;
             this._currentPage = metaEvent.args["data"] && metaEvent.args["data"]["page"];
             for (var thread of process.sortedThreads()) {
-                if (thread.name() === "WebCore: Worker" && !workerMetadataEvents.some(function(e) { return e.args["data"]["workerThreadId"] === thread.id(); }))
+                if (thread.name() === WebInspector.TimelineModel.WorkerThreadName && !workerMetadataEvents.some(function(e) { return e.args["data"]["workerThreadId"] === thread.id(); }))
                     continue;
                 this._processThreadEvents(startTime, endTime, metaEvent.thread, thread);
             }
