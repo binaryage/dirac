@@ -28,12 +28,13 @@ WebInspector.ObjectEventListenersSidebarPane.prototype = {
             this._lastRequestedContext.target().runtimeAgent().releaseObjectGroup(WebInspector.ObjectEventListenersSidebarPane._objectGroupName);
             delete this._lastRequestedContext;
         }
-        this._eventListenersView.reset();
         var executionContext = WebInspector.context.flavor(WebInspector.ExecutionContext);
-        if (!executionContext)
+        if (!executionContext) {
+            this._eventListenersView.reset();
             return;
+        }
         this._lastRequestedContext = executionContext;
-        this._windowObjectInContext(executionContext).then(this._eventListenersView.addObjectEventListeners.bind(this._eventListenersView));
+        Promise.all([this._windowObjectInContext(executionContext)]).then(this._eventListenersView.addObjects.bind(this._eventListenersView));
     },
 
     expand: function()
@@ -49,7 +50,6 @@ WebInspector.ObjectEventListenersSidebarPane.prototype = {
     _windowObjectInContext: function(executionContext)
     {
         return new Promise(windowObjectInContext);
-
         /**
          * @param {function(?)} fulfill
          * @param {function(*)} reject

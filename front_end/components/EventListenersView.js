@@ -17,7 +17,6 @@ WebInspector.EventListenersView = function(element)
     this._element.appendChild(this._treeOutline.element)
     this._emptyHolder = createElementWithClass("div", "info");
     this._emptyHolder.textContent = WebInspector.UIString("No Event Listeners");
-    this._element.appendChild(this._emptyHolder);
     this._linkifier = new WebInspector.Linkifier();
     /** @type {!Map<string, !WebInspector.EventListenersTreeElement>} */
     this._treeItemMap = new Map();
@@ -25,10 +24,34 @@ WebInspector.EventListenersView = function(element)
 
 WebInspector.EventListenersView.prototype = {
     /**
+     * @param {!Array<!WebInspector.RemoteObject>} objects
+     * @return {!Promise<undefined>}
+     */
+    addObjects: function(objects)
+    {
+        var promises = [];
+        for (var i = 0; i < objects.length; ++i)
+            promises.push(objects[i].eventListeners());
+        return Promise.all(promises).then(listenersCallback.bind(this));
+        /**
+         * @param {!Array<?Array<!WebInspector.EventListener>>} listeners
+         * @this {WebInspector.EventListenersView}
+         */
+        function listenersCallback(listeners)
+        {
+            this.reset();
+            for (var i = 0; i < listeners.length; ++i)
+                this.addObjectEventListeners(objects[i], listeners[i]);
+            this.addEmptyHolderIfNeeded();
+            this._eventListenersArrivedForTest();
+        }
+    },
+
+    /**
      * @param {!WebInspector.RemoteObject} object
      * @param {?Array<!WebInspector.EventListener>} eventListeners
      */
-    _addObjectEventListeners: function(object, eventListeners)
+    addObjectEventListeners: function(object, eventListeners)
     {
         if (!eventListeners)
             return;
@@ -54,21 +77,21 @@ WebInspector.EventListenersView.prototype = {
         return treeItem;
     },
 
-    /**
-     * @param {!WebInspector.RemoteObject} object
-     * @return {!Promise<undefined>}
-     */
-    addObjectEventListeners: function(object)
+    addEmptyHolderIfNeeded: function()
     {
-        return object.eventListeners().then(this._addObjectEventListeners.bind(this, object));
+        if (!this._treeOutline.firstChild() && !this._emptyHolder.parentNode)
+           this._element.appendChild(this._emptyHolder);
     },
 
     reset: function()
     {
         this._treeItemMap = new Map();
         this._treeOutline.removeChildren();
-        this._element.appendChild(this._emptyHolder);
         this._linkifier.reset();
+    },
+
+    _eventListenersArrivedForTest: function()
+    {
     }
 }
 

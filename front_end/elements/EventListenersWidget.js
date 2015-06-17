@@ -70,51 +70,31 @@ WebInspector.EventListenersWidget.prototype = {
             this._lastRequestedNode.target().runtimeAgent().releaseObjectGroup(WebInspector.EventListenersWidget._objectGroupName);
             delete this._lastRequestedNode;
         }
-        this._eventListenersView.reset();
         var node = WebInspector.context.flavor(WebInspector.DOMNode);
         if (!node) {
-            this._eventListenersArrivedForTest();
+            this._eventListenersView.reset();
             finishCallback();
             return;
         }
-
         this._lastRequestedNode = node;
         var selectedNodeOnly = !this._showForAncestorsSetting.get();
         var promises = [];
         var listenersView = this._eventListenersView;
-        promises.push(node.resolveToObjectPromise(WebInspector.EventListenersWidget._objectGroupName).then(listenersView.addObjectEventListeners.bind(listenersView)));
+        promises.push(node.resolveToObjectPromise(WebInspector.EventListenersWidget._objectGroupName));
         if (!selectedNodeOnly) {
             var currentNode = node.parentNode;
             while (currentNode) {
-                promises.push(currentNode.resolveToObjectPromise(WebInspector.EventListenersWidget._objectGroupName).then(listenersView.addObjectEventListeners.bind(listenersView)));
+                promises.push(currentNode.resolveToObjectPromise(WebInspector.EventListenersWidget._objectGroupName));
                 currentNode = currentNode.parentNode;
             }
-            this._windowObjectInNodeContext(node).then(windowObjectCallback.bind(this));
-        } else {
-            Promise.all(promises).then(mycallback.bind(this));
+            promises.push(this._windowObjectInNodeContext(node));
         }
-        /**
-         * @param {!WebInspector.RemoteObject} object
-         * @this {WebInspector.EventListenersWidget}
-         */
-        function windowObjectCallback(object)
-        {
-            promises.push(this._eventListenersView.addObjectEventListeners(object));
-            Promise.all(promises).then(mycallback.bind(this));
-        }
-        /**
-         * @this {WebInspector.EventListenersWidget}
-         */
-        function mycallback()
-        {
-            this._eventListenersArrivedForTest();
-            finishCallback();
-        }
+        Promise.all(promises).then(this._eventListenersView.addObjects.bind(this._eventListenersView)).then(finishCallback.bind(this, undefined));
     },
 
     /**
      * @param {!WebInspector.DOMNode} node
-     * @return {!Promise<!WebInspector.RemoteObject>} object
+     * @return {!Promise<!WebInspector.RemoteObject>}
      */
     _windowObjectInNodeContext: function(node)
     {
