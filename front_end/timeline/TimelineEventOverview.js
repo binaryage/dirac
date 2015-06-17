@@ -77,7 +77,7 @@ WebInspector.TimelineEventOverview.prototype = {
         var threads = this._model.virtualThreads();
         var mainThreadEvents = this._model.mainThreadEvents();
         var networkHeight = this._canvas.clientHeight
-            - WebInspector.TimelineEventOverview._fullStripHeight
+            - 2 * WebInspector.TimelineEventOverview._fullStripHeight
             - 2 * WebInspector.TimelineEventOverview._smallStripHeight;
         var position = 0;
         if (Runtime.experiments.isEnabled("inputEventsOnTimelineOverview")) {
@@ -85,8 +85,6 @@ WebInspector.TimelineEventOverview.prototype = {
             position += inputHeight;
             networkHeight -= inputHeight;
         }
-        if (Runtime.experiments.isEnabled("frameRateOnEventsOverview"))
-            networkHeight -= WebInspector.TimelineEventOverview._fullStripHeight;
         position += this._drawNetwork(mainThreadEvents, position, networkHeight);
         position += this._drawStackedUtilizationChart(mainThreadEvents, position, WebInspector.TimelineEventOverview._fullStripHeight);
         for (var thread of threads.filter(function(thread) { return !thread.isWorker(); }))
@@ -95,8 +93,7 @@ WebInspector.TimelineEventOverview.prototype = {
         for (var thread of threads.filter(function(thread) { return thread.isWorker(); }))
             this._drawEvents(thread.events, position, WebInspector.TimelineEventOverview._smallStripHeight);
         position += WebInspector.TimelineEventOverview._smallStripHeight;
-        if (Runtime.experiments.isEnabled("frameRateOnEventsOverview"))
-            position += this._drawFrames(position, WebInspector.TimelineEventOverview._fullStripHeight);
+        position += this._drawFrames(position, WebInspector.TimelineEventOverview._fullStripHeight);
         console.assert(position === this._canvas.clientHeight);
     },
 
