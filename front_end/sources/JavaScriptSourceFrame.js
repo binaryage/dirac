@@ -225,14 +225,21 @@ WebInspector.JavaScriptSourceFrame.prototype = {
             WebInspector.ConsoleModel.evaluateCommandInConsole(currentExecutionContext, expression);
     },
 
-    // View events
+    /**
+     * @override
+     */
     wasShown: function()
     {
         WebInspector.UISourceCodeFrame.prototype.wasShown.call(this);
-        if (this._executionLocation && this.loaded)
-            this._generateValuesInSource();
+        if (this._executionLocation && this.loaded) {
+            // We need CodeMirrorTextEditor to be initialized prior to this call. @see crbug.com/499889
+            setImmediate(this._generateValuesInSource.bind(this));
+        }
     },
 
+    /**
+     * @override
+     */
     willHide: function()
     {
         WebInspector.UISourceCodeFrame.prototype.willHide.call(this);
