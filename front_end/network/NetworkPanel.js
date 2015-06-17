@@ -266,6 +266,7 @@ WebInspector.NetworkPanel.prototype = {
         var toggled = this._networkRecordFilmStripSetting.get();
         if (toggled && !this._filmStripRecorder) {
             this._filmStripView = new WebInspector.FilmStripView();
+            this._filmStripView.setMode(WebInspector.FilmStripView.Modes.FrameBased);
             this._filmStripView.element.classList.add("network-film-strip");
             this._filmStripRecorder = new WebInspector.NetworkPanel.FilmStripRecorder(this._filmStripView);
             this._filmStripView.show(this._searchableView.element, this._searchableView.element.firstElementChild);
