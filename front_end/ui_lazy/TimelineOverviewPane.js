@@ -38,15 +38,23 @@ WebInspector.TimelineOverviewPane = function(prefix)
     WebInspector.VBox.call(this);
     this.element.id = prefix + "-overview-pane";
 
+    this._currentPositionElement = this.element.createChild("div", "overview-grid-current-position");
     this._overviewCalculator = new WebInspector.TimelineOverviewCalculator();
     this._overviewGrid = new WebInspector.OverviewGrid(prefix);
     this.element.appendChild(this._overviewGrid.element);
+    this.element.addEventListener("mousemove", this._onMouseMove.bind(this), true);
+    this.element.addEventListener("mouseout", this._hideCurrentPosition.bind(this), true);
 
     this._overviewGrid.setResizeEnabled(false);
     this._overviewGrid.addEventListener(WebInspector.OverviewGrid.Events.WindowChanged, this._onWindowChanged, this);
     this._overviewGrid.addEventListener(WebInspector.OverviewGrid.Events.Click, this._onClick, this);
     this._overviewControls = [];
     this._markers = new Map();
+
+    this._popoverHelper = new WebInspector.PopoverHelper(this.contentElement, this._getPopoverAnchor.bind(this), this._showPopover.bind(this), this._onHidePopover.bind(this));
+    this._popoverHelper.setTimeout(0);
+
+    this._cursorEnabled = false;
 }
 
 WebInspector.TimelineOverviewPane.Events = {
@@ -54,6 +62,75 @@ WebInspector.TimelineOverviewPane.Events = {
 };
 
 WebInspector.TimelineOverviewPane.prototype = {
+    /**
+     * @param {!Element} element
+     * @param {!Event} event
+     * @return {!Element|!AnchorBox|undefined}
+     */
+    _getPopoverAnchor: function(element, event)
+    {
+        return this.element;
+    },
+
+    /**
+     * @param {!Element} anchor
+     * @param {!WebInspector.Popover} popover
+     */
+    _showPopover: function(anchor, popover)
+    {
+        this._popover = popover;
+        this._popoverContents = createElement("div");
+        if (!this._populatePopoverContents())
+            return;
+        var content = new WebInspector.TimelineOverviewPane.PopoverContents();
+        content.contentElement.appendChild(this._popoverContents);
+        popover.showView(content, this._currentPositionElement);
+    },
+
+    _onHidePopover: function()
+    {
+        this._popover = null;
+        this._popoverContents = null;
+    },
+
+    /**
+     * @param {!Event} event
+     */
+    _onMouseMove: function(event)
+    {
+        if (!this._cursorEnabled)
+            return;
+        var x = event.offsetX + event.target.offsetLeft;
+        this._currentPositionElement.style.left = x + "px";
+        this._currentPositionElement.style.visibility = "visible";
+        if (!this._popover)
+            return;
+        this._populatePopoverContents();
+        this._popover.positionElement(this._currentPositionElement);
+    },
+
+    _populatePopoverContents: function()
+    {
+        var cursor = this._currentPositionElement;
+        var x = cursor.offsetLeft;
+        var elements = [];
+        for (var control of this._overviewControls) {
+            var element = control.popoverElement(x);
+            if (element)
+                elements.push(element);
+        }
+        this._popoverContents.removeChildren();
+        if (!elements.length)
+            return false;
+        elements.forEach(this._popoverContents.appendChild.bind(this._popoverContents));
+        return true;
+    },
+
+    _hideCurrentPosition: function()
+    {
+        this._currentPositionElement.style.visibility = "hidden";
+    },
+
     /**
      * @override
      */
@@ -94,6 +171,7 @@ WebInspector.TimelineOverviewPane.prototype = {
     {
         this._overviewCalculator.setBounds(minimumBoundary, maximumBoundary);
         this._overviewGrid.setResizeEnabled(true);
+        this._cursorEnabled = true;
     },
 
     update: function()
@@ -139,9 +217,12 @@ WebInspector.TimelineOverviewPane.prototype = {
         this._overviewGrid.reset();
         this._overviewGrid.setResizeEnabled(false);
         this._overviewGrid.updateDividers(this._overviewCalculator);
+        this._cursorEnabled = false;
+        this._hideCurrentPosition();
         this._markers = new Map();
         for (var i = 0; i < this._overviewControls.length; ++i)
             this._overviewControls[i].reset();
+        this._popoverHelper.hidePopover();
         this.update();
     },
 
@@ -204,6 +285,20 @@ WebInspector.TimelineOverviewPane.prototype = {
 
 /**
  * @constructor
+ * @extends {WebInspector.VBox}
+ */
+WebInspector.TimelineOverviewPane.PopoverContents = function()
+{
+    WebInspector.VBox.call(this, true);
+    this.contentElement.classList.add("timeline-overview-popover");
+}
+
+WebInspector.TimelineOverviewPane.PopoverContents.prototype = {
+    __proto__: WebInspector.VBox.prototype
+}
+
+/**
+ * @constructor
  * @implements {WebInspector.TimelineGrid.Calculator}
  */
 WebInspector.TimelineOverviewCalculator = function()
@@ -229,6 +324,15 @@ WebInspector.TimelineOverviewCalculator.prototype = {
     computePosition: function(time)
     {
         return (time - this._minimumBoundary) / this.boundarySpan() * this._workingArea + this._paddingLeft;
+    },
+
+    /**
+     * @param {number} position
+     * @return {number}
+     */
+    positionToTime: function(position)
+    {
+        return (position - this._paddingLeft) / this._workingArea * this.boundarySpan() + this._minimumBoundary;
     },
 
     /**
@@ -325,6 +429,12 @@ WebInspector.TimelineOverview.prototype = {
     reset: function() { },
 
     /**
+     * @param {number} x
+     * @return {?Element}
+     */
+    popoverElement: function(x) { },
+
+    /**
      * @param {!Event} event
      * @return {boolean}
      */
@@ -385,6 +495,16 @@ WebInspector.TimelineOverviewBase.prototype = {
      */
     reset: function()
     {
+    },
+
+    /**
+     * @override
+     * @param {number} x
+     * @return {?Element}
+     */
+    popoverElement: function(x)
+    {
+        return null;
     },
 
     /**

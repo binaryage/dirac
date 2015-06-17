@@ -1819,6 +1819,8 @@ WebInspector.TimelineFilmStripOverview = function(tracingModel)
     this._tracingModel = tracingModel;
     this._filmStripView = new WebInspector.FilmStripView();
     this._filmStripView.show(this.element);
+    this._lastFrame = null;
+    this._lastElement = null;
 }
 
 WebInspector.TimelineFilmStripOverview.prototype = {
@@ -1834,10 +1836,31 @@ WebInspector.TimelineFilmStripOverview.prototype = {
 
     /**
      * @override
+     * @param {number} x
+     * @return {?Element}
+     */
+    popoverElement: function(x)
+    {
+        if (!this._filmStripModel || !this._filmStripModel.frames().length)
+            return null;
+        var time = this._calculator.positionToTime(x);
+        var frame = this._filmStripView.frameByTime(time);
+        if (frame !== this._lastFrame) {
+            this._lastFrame = frame;
+            this._lastElement = this._filmStripView.createFrameElement(frame);
+            this._lastElement.appendChild(WebInspector.Widget.createStyleElement("timeline/timelinePanel.css"));
+        }
+        return this._lastElement;
+    },
+
+    /**
+     * @override
      */
     reset: function()
     {
         this._filmStripView.reset();
+        this._lastFrame = null;
+        this._lastElement = null;
     },
 
     __proto__: WebInspector.TimelineOverviewBase.prototype

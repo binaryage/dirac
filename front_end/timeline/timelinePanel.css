@@ -60,7 +60,6 @@
 }
 
 .timeline-overview-frames-mode #timeline-overview-grid,
-.timeline-overview-frames-mode .overview-grid-window-area,
 .timeline-overview-frames-mode .overview-grid-current-position {
     display: none;
 }
@@ -866,4 +865,12 @@
     max-width: 200px;
     max-height: 200px;
     cursor: pointer;
+}
+
+.timeline-overview-popover .frame .time {
+    display: none;
+}
+
+.timeline-overview-popover .frame .thumbnail img {
+    max-width: 200px;
 }

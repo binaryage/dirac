@@ -11,8 +11,8 @@ WebInspector.FilmStripView = function()
     WebInspector.HBox.call(this, true);
     this.registerRequiredCSS("components_lazy/filmStripView.css");
     this.contentElement.classList.add("film-strip-view");
-    this._mode = WebInspector.FilmStripView.Modes.TimeBased;
     this.reset();
+    this.setMode(WebInspector.FilmStripView.Modes.TimeBased);
 }
 
 WebInspector.FilmStripView.Events = {
@@ -33,6 +33,7 @@ WebInspector.FilmStripView.prototype = {
     setMode: function(mode)
     {
         this._mode = mode;
+        this.contentElement.classList.toggle("time-based", mode === WebInspector.FilmStripView.Modes.TimeBased);
         this.update();
     },
 
@@ -54,55 +55,29 @@ WebInspector.FilmStripView.prototype = {
         this.update();
     },
 
-    update: function()
+    /**
+     * @param {!WebInspector.FilmStripModel.Frame} frame
+     * @return {!Element}
+     */
+    createFrameElement: function(frame)
     {
-        if (!this._model)
-            return;
-        var frames = this._model.frames();
-        if (!frames.length)
-            return;
-        this.contentElement.removeChildren();
-        this._label.remove();
-        var zeroTime = this._zeroTime;
+        var time = frame.timestamp;
+        var element = createElementWithClass("div", "frame");
+        element.createChild("div", "thumbnail").createChild("img").src = "data:image/jpg;base64," + frame.imageData;
+        element.createChild("div", "time").textContent = Number.millisToString(time - this._zeroTime);
+        element.addEventListener("mousedown", this._onMouseEvent.bind(this, WebInspector.FilmStripView.Events.FrameSelected, time), false);
+        element.addEventListener("mouseenter", this._onMouseEvent.bind(this, WebInspector.FilmStripView.Events.FrameEnter, time), false);
+        element.addEventListener("mouseout", this._onMouseEvent.bind(this, WebInspector.FilmStripView.Events.FrameExit, time), false);
+        element.addEventListener("dblclick", this._onDoubleClick.bind(this, frame), false);
+        return element;
+    },
 
-        /**
-         * @param {!WebInspector.FilmStripModel.Frame} frame
-         * @param {boolean=} skipTimeLabel
-         * @return {!Element}
-         * @this {WebInspector.FilmStripView}
-         */
-        function createElementForFrame(frame, skipTimeLabel)
-        {
-            var time = frame.timestamp;
-            var element = createElementWithClass("div", "frame");
-            element.createChild("div", "thumbnail").createChild("img").src = "data:image/jpg;base64," + frame.imageData;
-            if (!skipTimeLabel)
-                element.createChild("div", "time").textContent = Number.millisToString(time - zeroTime);
-            element.addEventListener("mousedown", this._onMouseEvent.bind(this, WebInspector.FilmStripView.Events.FrameSelected, time), false);
-            element.addEventListener("mouseenter", this._onMouseEvent.bind(this, WebInspector.FilmStripView.Events.FrameEnter, time), false);
-            element.addEventListener("mouseout", this._onMouseEvent.bind(this, WebInspector.FilmStripView.Events.FrameExit, time), false);
-            element.addEventListener("dblclick", this._onDoubleClick.bind(this, frame), false);
-            this.contentElement.appendChild(element);
-            return element;
-        }
-
-        if (this._mode === WebInspector.FilmStripView.Modes.FrameBased) {
-            for (var frame of frames)
-                createElementForFrame.call(this, frame);
-            return;
-        }
-
-        /**
-         * @return {!Element}
-         * @this {WebInspector.FilmStripView}
-         */
-        function createEmptyElement()
-        {
-            var element = createElementWithClass("div", "frame");
-            this.contentElement.appendChild(element);
-            return element;
-        }
-
+    /**
+     * @param {number} time
+     * @return {!WebInspector.FilmStripModel.Frame}
+     */
+    frameByTime: function(time)
+    {
         /**
          * @param {number} time
          * @param {!WebInspector.FilmStripModel.Frame} frame
@@ -112,21 +87,39 @@ WebInspector.FilmStripView.prototype = {
         {
             return time - frame.timestamp;
         }
+        // Using the first frame to fill the interval between recording start
+        // and a moment the frame is taken.
+        var frames = this._model.frames();
+        var index = Math.max(frames.upperBound(time, comparator) - 1, 0);
+        return frames[index];
+    },
+
+    update: function()
+    {
+        if (!this._model)
+            return;
+        var frames = this._model.frames();
+        if (!frames.length)
+            return;
+        this.contentElement.removeChildren();
+        this._statusLabel.remove();
+
+        if (this._mode === WebInspector.FilmStripView.Modes.FrameBased) {
+            frames.map(this.createFrameElement.bind(this)).forEach(this.contentElement.appendChild.bind(this.contentElement));
+            return;
+        }
 
         var width = this.contentElement.clientWidth;
         var scale = this._spanTime / width;
-
-        // Calculate frame width basing on the first frame.
-        var tempElement = createElementWithClass("div", "frame");
-        tempElement.createChild("div", "thumbnail").createChild("img").src = "data:image/jpg;base64," + frames[0].imageData;
-        var frameWidth = Math.ceil(WebInspector.measurePreferredSize(tempElement, this.contentElement).width);
+        var element0 = this.createFrameElement(frames[0]);  // Calculate frame width basing on the first frame.
+        var frameWidth = Math.ceil(WebInspector.measurePreferredSize(element0, this.contentElement).width);
         if (!frameWidth)
             return;
 
         for (var pos = frameWidth; pos < width; pos += frameWidth) {
-            var time = pos * scale + zeroTime;
-            var index = frames.upperBound(time, comparator) - 1;
-            var element = index >= 0 ? createElementForFrame.call(this, frames[index], true) : createEmptyElement.call(this);
+            var time = pos * scale + this._zeroTime;
+            var frame = this.frameByTime(time);
+            var element = this.contentElement.appendChild(this.createFrameElement(frame));
             element.style.width = frameWidth + "px";
         }
     },
@@ -162,19 +155,19 @@ WebInspector.FilmStripView.prototype = {
     {
         this._zeroTime = 0;
         this.contentElement.removeChildren();
-        this._label = this.contentElement.createChild("div", "label");
-        this._label.textContent = WebInspector.UIString("No frames recorded. Reload page to start recording.");
+        this._statusLabel = this.contentElement.createChild("div", "label");
+        this._statusLabel.textContent = WebInspector.UIString("No frames recorded. Reload page to start recording.");
     },
 
     setRecording: function()
     {
         this.reset();
-        this._label.textContent = WebInspector.UIString("Recording frames...");
+        this._statusLabel.textContent = WebInspector.UIString("Recording frames...");
     },
 
     setFetching: function()
     {
-        this._label.textContent = WebInspector.UIString("Fetching frames...");
+        this._statusLabel.textContent = WebInspector.UIString("Fetching frames...");
     },
 
     __proto__: WebInspector.HBox.prototype

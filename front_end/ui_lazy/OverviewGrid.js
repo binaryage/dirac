@@ -130,7 +130,7 @@ WebInspector.OverviewGrid.prototype = {
      */
     setResizeEnabled: function(enabled)
     {
-        this._window.setEnabled(!!enabled);
+        this._window.setEnabled(enabled);
     }
 }
 
@@ -165,11 +165,6 @@ WebInspector.OverviewGrid.Window = function(parentElement, dividersLabelBarEleme
     this._overviewWindowElement.appendChild(WebInspector.Widget.createStyleElement("ui_lazy/overviewGrid.css"));
     this._overviewWindowBordersElement = parentElement.createChild("div", "overview-grid-window-rulers");
     parentElement.createChild("div", "overview-grid-dividers-background");
-
-    this._currentPositionElement = parentElement.createChild("div", "overview-grid-current-position");
-    this._currentPositionArea = parentElement.createChild("div", "overview-grid-window-area");
-    this._currentPositionArea.addEventListener("mousemove", this._onMouseMove.bind(this), true);
-    this._currentPositionArea.addEventListener("mouseout", this._hideCurrentPosition.bind(this), true);
 
     this._leftResizeElement = parentElement.createChild("div", "overview-grid-window-resizer");
     this._leftResizeElement.style.left = 0;
@@ -206,30 +201,7 @@ WebInspector.OverviewGrid.Window.prototype = {
      */
     setEnabled: function(enabled)
     {
-        enabled = !!enabled;
-        if (this._enabled === enabled)
-            return;
         this._enabled = enabled;
-        this._currentPositionArea.style.cursor = enabled ? "text" : "";
-        if (!enabled)
-            this._hideCurrentPosition();
-    },
-
-    _hideCurrentPosition: function()
-    {
-        this._currentPositionElement.style.visibility = "hidden";
-    },
-
-    /**
-     * @param {!Event} event
-     */
-    _onMouseMove: function(event)
-    {
-        if (!this._enabled)
-            return;
-        var x = event.offsetX + event.target.offsetLeft;
-        this._currentPositionElement.style.left = x + "px";
-        this._currentPositionElement.style.visibility = "visible";
     },
 
     /**
