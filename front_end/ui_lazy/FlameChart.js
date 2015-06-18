@@ -1493,7 +1493,7 @@ WebInspector.FlameChart.prototype = {
 
     _updateContentElementSize: function()
     {
-        this._offsetWidth = this.contentElement.offsetWidth - (WebInspector.isMac() ? 0 : this._vScrollElement.offsetWidth);
+        this._offsetWidth = this.contentElement.offsetWidth;
         this._offsetHeight = this.contentElement.offsetHeight;
     },
 
