@@ -2611,7 +2611,6 @@ WebInspector.StylePropertyTreeElement.prototype = {
      */
     editingEnded: function(context)
     {
-        delete this._originalPropertyText;
         this._resetMouseDownElement();
 
         this.setExpandable(context.hasChildren);
@@ -2639,12 +2638,14 @@ WebInspector.StylePropertyTreeElement.prototype = {
 
     _revertStyleUponEditingCanceled: function()
     {
-        if (this._propertyHasBeenEditedIncrementally)
+        if (this._propertyHasBeenEditedIncrementally) {
             this.applyStyleText(this._originalPropertyText, false);
-        else if (this._newProperty)
+            delete this._originalPropertyText;
+        } else if (this._newProperty) {
             this.treeOutline.removeChild(this);
-        else
+        } else {
             this.updateTitle();
+        }
     },
 
     /**
