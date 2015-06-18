@@ -413,6 +413,14 @@ WebInspector.SWRegistrationElement.prototype = {
                 scriptResponseTimeDiv.createTextChild(WebInspector.UIString("Server response time: %s", (new Date(version.scriptResponseTime * 1000)).toConsoleTime()));
             }
 
+            for (var i = 0; i < version.controlledClients.length; ++i) {
+                var client = version.controlledClients[i];
+                var clientLabel = scriptURLDiv.createChild("label", "service-workers-info", "dt-icon-label");
+                clientLabel.type = "info-icon";
+                var clientLabelText = clientLabel.createChild("label", "service-worker-client");
+                this._manager.getTargetInfo(client, this._updateClientInfo.bind(this, clientLabelText));
+            }
+
             var errorMessages = version.errorMessages;
             for (var index = 0; index < errorMessages.length; ++index) {
                 var errorDiv = scriptURLDiv.createChild("div", "service-workers-error");
@@ -435,6 +443,30 @@ WebInspector.SWRegistrationElement.prototype = {
             stateRowElement.createChild("div", "service-workers-version-script-url");
         }
         return modeRowElement;
+    },
+
+    /**
+     * @param {!Element} element
+     * @param {?WebInspector.TargetInfo} targetInfo
+     */
+    _updateClientInfo: function(element, targetInfo)
+    {
+        if (!targetInfo)
+            return;
+        element.createTextChild(WebInspector.UIString("Client: %s", targetInfo.url));
+        if (!(targetInfo.isWebContents() || targetInfo.isFrame()))
+            return;
+        var focusLabel = element.createChild("label", "service-worker-client-focus");
+        focusLabel.createTextChild("focus");
+        focusLabel.addEventListener("click", this._activateTarget.bind(this, targetInfo.id), true);
+    },
+
+    /**
+     * @param {string} targetId
+     */
+    _activateTarget: function(targetId)
+    {
+        this._manager.activateTarget(targetId);
     },
 
     /**

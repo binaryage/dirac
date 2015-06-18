@@ -236,6 +236,17 @@
     display: flex;
 }
 
+.service-worker-client {
+   display: inline;
+}
+
+.service-worker-client-focus {
+   color: #00e;
+   cursor: pointer;
+   padding-left: 4px;
+   text-decoration: underline;
+}
+
 .service-workers-color-0 {
     background-color: #003366;
 }

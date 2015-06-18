@@ -162,6 +162,14 @@ WebInspector.ServiceWorkerManager.prototype = {
     },
 
     /**
+     * @param {!ServiceWorkerAgent.TargetID} targetId
+     */
+    activateTarget: function(targetId)
+    {
+        this._agent.activateTarget(targetId);
+    },
+
+    /**
      * @param {string} scope
      */
     _unregister: function(scope)
@@ -199,6 +207,31 @@ WebInspector.ServiceWorkerManager.prototype = {
     skipWaiting: function(versionId)
     {
         this._agent.skipWaiting(versionId);
+    },
+
+    /**
+     * @param {!ServiceWorkerAgent.TargetID} targetId
+     * @param {function(?WebInspector.TargetInfo)=} callback
+     */
+    getTargetInfo: function(targetId, callback)
+    {
+        /**
+         * @param {?Protocol.Error} error
+         * @param {?ServiceWorkerAgent.TargetInfo} targetInfo
+         */
+        function innerCallback(error, targetInfo)
+        {
+            if (error) {
+                console.error(error);
+                callback(null);
+                return;
+            }
+            if (targetInfo)
+                callback(new WebInspector.TargetInfo(targetInfo));
+            else
+                callback(null)
+        }
+        this._agent.getTargetInfo(targetId, innerCallback);
     },
 
     /**
@@ -502,6 +535,35 @@ WebInspector.ServiceWorkerConnection.prototype = {
 
 /**
  * @constructor
+ * @param {!ServiceWorkerAgent.TargetInfo} payload
+ */
+WebInspector.TargetInfo = function(payload)
+{
+    this.id = payload.id;
+    this.type = payload.type;
+    this.title = payload.title;
+    this.url = payload.url;
+}
+
+WebInspector.TargetInfo.prototype = {
+    /**
+     * @return {boolean}
+     */
+    isWebContents: function()
+    {
+        return this.type == "web_contents";
+    },
+    /**
+     * @return {boolean}
+     */
+    isFrame: function()
+    {
+        return this.type == "frame";
+    },
+}
+
+/**
+ * @constructor
  * @param {!ServiceWorkerAgent.ServiceWorkerErrorMessage} payload
  */
 WebInspector.ServiceWorkerErrorMessage = function(payload)
@@ -537,6 +599,10 @@ WebInspector.ServiceWorkerVersion.prototype = {
         this.status = payload.status;
         this.scriptLastModified = payload.scriptLastModified;
         this.scriptResponseTime = payload.scriptResponseTime;
+        this.controlledClients = []
+        for (var i = 0; i < payload.controlledClients.length; ++i) {
+            this.controlledClients.push(payload.controlledClients[i]);
+        }
     },
 
     /**

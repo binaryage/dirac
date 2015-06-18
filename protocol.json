@@ -4250,7 +4250,6 @@
             },
             {
                 "name": "getTargetInfo",
-                "async": true,
                 "parameters": [
                     { "name": "targetId", "$ref": "TargetID" }
                 ],
