@@ -313,8 +313,17 @@ WebInspector.Spectrum.prototype = {
             return element.value;
         }
 
-        var element = /** @type {!Element} */(event.currentTarget);
-        WebInspector.handleElementValueModifications(event, element);
+        var inputElement = /** @type {!Element} */(event.currentTarget);
+        var arrowKeyOrMouseWheelEvent = (event.keyIdentifier === "Up" || event.keyIdentifier === "Down" || event.type === "mousewheel");
+        var pageKeyPressed = (event.keyIdentifier === "PageUp" || event.keyIdentifier === "PageDown");
+        if (arrowKeyOrMouseWheelEvent || pageKeyPressed) {
+            var newValue = WebInspector.createReplacementString(inputElement.value, event);
+            if (newValue) {
+                inputElement.value = newValue;
+                inputElement.selectionStart = 0;
+                inputElement.selectionEnd = newValue.length;
+            }
+        }
 
         const cf = WebInspector.Color.Format;
         var colorString;

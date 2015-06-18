@@ -361,6 +361,42 @@ WebInspector._modifiedFloatNumber = function(number, event)
 }
 
 /**
+ * @param {string} wordString
+ * @param {!Event} event
+ * @param {function(string, number, string):string=} customNumberHandler
+ * @return {?string}
+ */
+WebInspector.createReplacementString = function(wordString, event, customNumberHandler)
+{
+    var replacementString;
+    var prefix, suffix, number;
+
+    var matches;
+    matches = /(.*#)([\da-fA-F]+)(.*)/.exec(wordString);
+    if (matches && matches.length) {
+        prefix = matches[1];
+        suffix = matches[3];
+        number = WebInspector._modifiedHexValue(matches[2], event);
+
+        replacementString = customNumberHandler ? customNumberHandler(prefix, number, suffix) : prefix + number + suffix;
+    } else {
+        matches = /(.*?)(-?(?:\d+(?:\.\d+)?|\.\d+))(.*)/.exec(wordString);
+        if (matches && matches.length) {
+            prefix = matches[1];
+            suffix = matches[3];
+            number = WebInspector._modifiedFloatNumber(parseFloat(matches[2]), event);
+
+            // Need to check for null explicitly.
+            if (number === null)
+                return null;
+
+            replacementString = customNumberHandler ? customNumberHandler(prefix, number, suffix) : prefix + number + suffix;
+        }
+    }
+    return replacementString || null;
+}
+
+/**
  * @param {!Event} event
  * @param {!Element} element
  * @param {function(string,string)=} finishHandler
@@ -399,31 +435,7 @@ WebInspector.handleElementValueModifications = function(event, element, finishHa
     if (suggestionHandler && suggestionHandler(wordString))
         return false;
 
-    var replacementString;
-    var prefix, suffix, number;
-
-    var matches;
-    matches = /(.*#)([\da-fA-F]+)(.*)/.exec(wordString);
-    if (matches && matches.length) {
-        prefix = matches[1];
-        suffix = matches[3];
-        number = WebInspector._modifiedHexValue(matches[2], event);
-
-        replacementString = customNumberHandler ? customNumberHandler(prefix, number, suffix) : prefix + number + suffix;
-    } else {
-        matches = /(.*?)(-?(?:\d+(?:\.\d+)?|\.\d+))(.*)/.exec(wordString);
-        if (matches && matches.length) {
-            prefix = matches[1];
-            suffix = matches[3];
-            number = WebInspector._modifiedFloatNumber(parseFloat(matches[2]), event);
-
-            // Need to check for null explicitly.
-            if (number === null)
-                return false;
-
-            replacementString = customNumberHandler ? customNumberHandler(prefix, number, suffix) : prefix + number + suffix;
-        }
-    }
+    var replacementString = WebInspector.createReplacementString(wordString, event, customNumberHandler);
 
     if (replacementString) {
         var replacementTextNode = createTextNode(replacementString);
