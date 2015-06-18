@@ -2083,7 +2083,7 @@ WebInspector.StylePropertyTreeElement.prototype = {
         }
 
         var stylesPopoverHelper = this._parentPane._stylesPopoverHelper;
-        return new WebInspector.ColowSwatchPopoverIcon(this, stylesPopoverHelper, text).element();
+        return new WebInspector.ColorSwatchPopoverIcon(this, stylesPopoverHelper, text).element();
     },
 
     /**

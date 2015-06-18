@@ -169,6 +169,8 @@ WebInspector.BezierPopoverIcon.prototype = {
         this._iconElement.setAttribute("width", 10);
         this._iconElement.addEventListener("click", this._iconClick.bind(this), false);
         var g = this._iconElement.createSVGChild("g");
+        var title = g.createSVGChild("title");
+        title.textContent = WebInspector.UIString("Click to open a cubic bezier editor.");
         var path = g.createSVGChild("path");
         path.setAttribute("d", "M2,8 C2,3 8,7 8,2");
 
@@ -227,14 +229,14 @@ WebInspector.BezierPopoverIcon.prototype = {
  * @param {!WebInspector.StylesPopoverHelper} stylesPopoverHelper
  * @param {string} colorText
  */
-WebInspector.ColowSwatchPopoverIcon = function(treeElement, stylesPopoverHelper, colorText)
+WebInspector.ColorSwatchPopoverIcon = function(treeElement, stylesPopoverHelper, colorText)
 {
     this._treeElement = treeElement;
     this._stylesPopoverHelper = stylesPopoverHelper;
 
     this._swatch = WebInspector.ColorSwatch.create();
     this._swatch.setColorText(colorText);
-    this._swatch.setFormat(WebInspector.ColowSwatchPopoverIcon._colorFormat(this._swatch.color()));
+    this._swatch.setFormat(WebInspector.ColorSwatchPopoverIcon._colorFormat(this._swatch.color()));
     var shiftClickMessage = WebInspector.UIString("Shift-click to change color format.");
     this._swatch.iconElement().title = String.sprintf("%s\n%s", WebInspector.UIString("Click to open a colorpicker."), shiftClickMessage);
     this._swatch.iconElement().addEventListener("click", this._iconClick.bind(this));
@@ -246,7 +248,7 @@ WebInspector.ColowSwatchPopoverIcon = function(treeElement, stylesPopoverHelper,
  * @param {!WebInspector.Color} color
  * @return {!WebInspector.Color.Format}
  */
-WebInspector.ColowSwatchPopoverIcon._colorFormat = function(color)
+WebInspector.ColorSwatchPopoverIcon._colorFormat = function(color)
 {
     const cf = WebInspector.Color.Format;
     var format;
@@ -265,7 +267,7 @@ WebInspector.ColowSwatchPopoverIcon._colorFormat = function(color)
     return format;
 }
 
-WebInspector.ColowSwatchPopoverIcon.prototype = {
+WebInspector.ColorSwatchPopoverIcon.prototype = {
     /**
      * @return {!Element}
      */
