@@ -280,6 +280,7 @@ WebInspector.DevicesSettingsTab.prototype = {
         this._editDevice.horizontal.height = this._editDevice.vertical.width;
         this._editDevice.deviceScaleFactor = this._editDeviceScale.value ? parseFloat(this._editDeviceScale.value) : 0;
         this._editDevice.userAgent = this._editDeviceUserAgent.value;
+        this._editDevice.createImplicitModes();
 
         this._stopEditing();
         if (this._editDeviceListItem)

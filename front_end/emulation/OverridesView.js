@@ -199,7 +199,10 @@ WebInspector.OverridesView.DeviceTab.prototype = {
         var deviceModelElement = fieldsetElement.createChild("p", "overrides-device-model-section");
         deviceModelElement.createChild("span").textContent = WebInspector.UIString("Model:");
 
-        deviceModelElement.appendChild(WebInspector.OverridesUI.createDeviceSelect());
+        var rotateButton = createElement("button");
+        rotateButton.textContent = " \u21C4 ";
+        var deviceSelect = new WebInspector.DeviceSelect(rotateButton);
+        deviceModelElement.appendChild(deviceSelect.element);
 
         var emulateResolutionCheckbox = WebInspector.SettingsUI.createSettingCheckbox(WebInspector.UIString("Emulate screen resolution"), WebInspector.overridesSupport.settings.emulateResolution, true);
         fieldsetElement.appendChild(emulateResolutionCheckbox);
@@ -214,11 +217,6 @@ WebInspector.OverridesView.DeviceTab.prototype = {
 
         var widthOverrideInput = WebInspector.SettingsUI.createSettingInputField("", WebInspector.overridesSupport.settings.deviceWidth, true, 4, "80px", WebInspector.OverridesSupport.deviceSizeValidator, true, true, WebInspector.UIString("\u2013"));
         cellElement.appendChild(widthOverrideInput);
-        this._swapDimensionsElement = cellElement.createChild("button", "overrides-swap");
-        this._swapDimensionsElement.createTextChild(" \u21C4 "); // RIGHTWARDS ARROW OVER LEFTWARDS ARROW.
-        this._swapDimensionsElement.title = WebInspector.UIString("Swap dimensions");
-        this._swapDimensionsElement.addEventListener("click", WebInspector.overridesSupport.swapDimensions.bind(WebInspector.overridesSupport), false);
-        this._swapDimensionsElement.tabIndex = -1;
         var heightOverrideInput = WebInspector.SettingsUI.createSettingInputField("", WebInspector.overridesSupport.settings.deviceHeight, true, 4, "80px", WebInspector.OverridesSupport.deviceSizeValidator, true, true, WebInspector.UIString("\u2013"));
         cellElement.appendChild(heightOverrideInput);
 

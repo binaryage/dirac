@@ -87,7 +87,8 @@ WebInspector.OverridesSupport.PageResizer = function()
 WebInspector.OverridesSupport.PageResizer.Events = {
     AvailableSizeChanged: "AvailableSizeChanged",
     ResizeRequested: "ResizeRequested",
-    FixedScaleRequested: "FixedScaleRequested"
+    FixedScaleRequested: "FixedScaleRequested",
+    InsetsChanged: "InsetsChanged"
 };
 
 WebInspector.OverridesSupport.PageResizer.prototype = {
@@ -327,8 +328,9 @@ WebInspector.OverridesSupport.prototype = {
     /**
      * @param {?WebInspector.OverridesSupport.PageResizer} pageResizer
      * @param {!Size} availableSize
+     * @param {!Insets} insets
      */
-    setPageResizer: function(pageResizer, availableSize)
+    setPageResizer: function(pageResizer, availableSize, insets)
     {
         if (pageResizer === this._pageResizer)
             return;
@@ -337,13 +339,16 @@ WebInspector.OverridesSupport.prototype = {
             this._pageResizer.removeEventListener(WebInspector.OverridesSupport.PageResizer.Events.AvailableSizeChanged, this._onPageResizerAvailableSizeChanged, this);
             this._pageResizer.removeEventListener(WebInspector.OverridesSupport.PageResizer.Events.ResizeRequested, this._onPageResizerResizeRequested, this);
             this._pageResizer.removeEventListener(WebInspector.OverridesSupport.PageResizer.Events.FixedScaleRequested, this._onPageResizerFixedScaleRequested, this);
+            this._pageResizer.removeEventListener(WebInspector.OverridesSupport.PageResizer.Events.InsetsChanged, this._onPageResizerInsetsChanged, this);
         }
         this._pageResizer = pageResizer;
         this._pageResizerAvailableSize = availableSize;
+        this._pageResizerInsets = insets;
         if (this._pageResizer) {
             this._pageResizer.addEventListener(WebInspector.OverridesSupport.PageResizer.Events.AvailableSizeChanged, this._onPageResizerAvailableSizeChanged, this);
             this._pageResizer.addEventListener(WebInspector.OverridesSupport.PageResizer.Events.ResizeRequested, this._onPageResizerResizeRequested, this);
             this._pageResizer.addEventListener(WebInspector.OverridesSupport.PageResizer.Events.FixedScaleRequested, this._onPageResizerFixedScaleRequested, this);
+            this._pageResizer.addEventListener(WebInspector.OverridesSupport.PageResizer.Events.InsetsChanged, this._onPageResizerInsetsChanged, this);
         }
         this._deviceMetricsChanged();
     },
@@ -490,8 +495,17 @@ WebInspector.OverridesSupport.prototype = {
      */
     _onPageResizerAvailableSizeChanged: function(event)
     {
-        this._pageResizerAvailableSize = /** @type {!Size} */ (event.data);
+        this._pageResizerAvailableSize = /** @type {!Size} */ (event.data.size);
+        this._pageResizerInsets = /** @type {!Insets} */ (event.data.insets);
         this._deviceMetricsChanged();
+    },
+
+    /**
+     * @param {!WebInspector.Event} event
+     */
+    _onPageResizerInsetsChanged: function(event)
+    {
+        this._pageResizerInsets = /** @type {!Insets} */ (event.data);
     },
 
     /**
@@ -545,17 +559,18 @@ WebInspector.OverridesSupport.prototype = {
         var scale = 1;
         if (this._pageResizer) {
             var available = this._pageResizerAvailableSize;
+            var insets = this._pageResizerInsets;
             if (this.settings.deviceFitWindow.get()) {
                 if (this._fixedDeviceScale) {
                     scale = this._deviceScale;
                 } else {
                     scale = 1;
-                    while (available.width < dipWidth * scale || available.height < dipHeight * scale)
+                    while (available.width < (dipWidth + insets.left + insets.right) * scale || available.height < (dipHeight + insets.top + insets.bottom) * scale)
                         scale *= 0.8;
                 }
             }
 
-            this._pageResizer.update(Math.min(dipWidth * scale, available.width), Math.min(dipHeight * scale, available.height), scale);
+            this._pageResizer.update(Math.min(dipWidth * scale, available.width - insets.left * scale), Math.min(dipHeight * scale, available.height - insets.top * scale), scale);
             if (scale === 1 && available.width >= dipWidth && available.height >= dipHeight) {
                 // When we have enough space, no page size override is required. This will speed things up and remove lag.
                 overrideWidth = 0;

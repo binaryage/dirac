@@ -142,8 +142,17 @@
 }
 
 .overrides-device .overrides-device-model-section select {
-    width: 244px;
     height: 20px;
+}
+
+.overrides-device .overrides-device-model-section select.device-select {
+    width: 180px;
+    margin-right: 6px;
+}
+
+.overrides-device .overrides-device-model-section .mode-container {
+    display: inline-block;
+    width: 140px;
 }
 
 /* Media tab */
@@ -198,7 +207,7 @@
 }
 
 .overrides-view input[type=text] {
-    margin: 0;
+    margin-left: 3px;
     min-height: 2em;
     padding: 3px;
 }

@@ -364,6 +364,33 @@ Size.prototype.addHeight = function(size)
 
 /**
  * @constructor
+ * @param {number} left
+ * @param {number} top
+ * @param {number} right
+ * @param {number} bottom
+ */
+function Insets(left, top, right, bottom)
+{
+    this.left = left;
+    this.top = top;
+    this.right = right;
+    this.bottom = bottom;
+}
+
+Insets.prototype = {
+    /**
+     * @param {?Insets} insets
+     * @return {boolean}
+     */
+    isEqual: function(insets)
+    {
+        return !!insets && this.left === insets.left && this.top === insets.top && this.right == insets.right && this.bottom == insets.bottom;
+    }
+}
+
+
+/**
+ * @constructor
  * @param {!Size=} minimum
  * @param {?Size=} preferred
  */

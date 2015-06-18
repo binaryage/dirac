@@ -33,7 +33,7 @@ WebInspector.EmulatedDevice = function()
     this._extension = null;
 }
 
-/** @typedef {!{title: string, orientation: string, pageRect: !WebInspector.Geometry.Rect, images: !WebInspector.EmulatedDevice.Images}} */
+/** @typedef {!{title: string, orientation: string, pageRect: !WebInspector.Geometry.Rect, images: ?WebInspector.EmulatedDevice.Images}} */
 WebInspector.EmulatedDevice.Mode;
 
 /** @typedef {!{width: number, height: number, outlineInsets: ?WebInspector.Geometry.Insets, outlineImages: ?WebInspector.EmulatedDevice.Images}} */
@@ -212,13 +212,15 @@ WebInspector.EmulatedDevice.fromJSONV1 = function(json)
                 mode.pageRect.top + mode.pageRect.height > orientation.height || mode.pageRect.left + mode.pageRect.width > orientation.width) {
                 throw new Error("Emulated device mode '" + mode.title + "'has wrong page rect");
             }
-            mode.images = parseImages(parseValue(modes[i], "images", "object"));
+            if (modes[i].hasOwnProperty("images"))
+                mode.images = parseImages(parseValue(modes[i], "images", "object"));
             result.modes.push(mode);
         }
 
         result._showByDefault = /** @type {boolean} */ (parseValue(json, "show-by-default", "boolean", true));
         result._show = /** @type {string} */ (parseValue(json, "show", "string", WebInspector.EmulatedDevice._Show.Default));
 
+        result.createImplicitModes();
         return result;
     } catch (e) {
         WebInspector.console.error("Failed to update emulated device list. " + String(e));
@@ -248,6 +250,7 @@ WebInspector.EmulatedDevice.fromOverridesDevice = function(device, title, type)
         result.capabilities.push(WebInspector.EmulatedDevice.Capability.Touch);
     if (device.mobile)
         result.capabilities.push(WebInspector.EmulatedDevice.Capability.Mobile);
+    result.createImplicitModes();
     return result;
 }
 
@@ -278,6 +281,30 @@ WebInspector.EmulatedDevice.prototype = {
         this._extension = extension;
     },
 
+    createImplicitModes: function()
+    {
+        // TODO(dgozman): this whole method should be removed once we have modes for all devices.
+        if (this.modes.length)
+            return;
+        this.modes.push({title: "", orientation: WebInspector.EmulatedDevice.Horizontal, pageRect: {top: 0, left: 0, width: this.horizontal.width, height: this.horizontal.height}, images: null});
+        if (this.type === WebInspector.EmulatedDevice.Type.Phone || this.type === WebInspector.EmulatedDevice.Type.Tablet || this.type === WebInspector.EmulatedDevice.Type.Unknown)
+            this.modes.push({title: "", orientation: WebInspector.EmulatedDevice.Vertical, pageRect: {top: 0, left: 0, width: this.vertical.width, height: this.vertical.height}, images: null});
+    },
+
+    /**
+     * @param {string} orientation
+     * @return {!Array.<!WebInspector.EmulatedDevice.Mode>}
+     */
+    modesForOrientation: function(orientation)
+    {
+        var result = [];
+        for (var index = 0; index < this.modes.length; index++) {
+            if (this.modes[index].orientation === orientation)
+                result.push(this.modes[index]);
+        }
+        return result;
+    },
+
     /**
      * @return {*}
      */
@@ -300,7 +327,8 @@ WebInspector.EmulatedDevice.prototype = {
             mode["title"] = this.modes[i].title;
             mode["orientation"] = this.modes[i].orientation;
             mode["page-rect"] = this.modes[i].pageRect;
-            mode["images"] = this.modes[i].images._toJSON();
+            if (this.modes[i].images)
+                mode["images"] = this.modes[i].images._toJSON();
             json["modes"].push(mode);
         }
 
@@ -328,13 +356,14 @@ WebInspector.EmulatedDevice.prototype = {
     },
 
     /**
+     * @param {!WebInspector.EmulatedDevice.Mode} mode
      * @return {!WebInspector.OverridesSupport.Device}
      */
-    toOverridesDevice: function()
+    modeToOverridesDevice: function(mode)
     {
         var result = {};
-        result.width = this.vertical.width;
-        result.height = this.vertical.height;
+        result.width = mode.pageRect.width;
+        result.height = mode.pageRect.height;
         result.deviceScaleFactor = this.deviceScaleFactor;
         result.userAgent = this.userAgent;
         result.touch = this.touch();

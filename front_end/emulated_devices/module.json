@@ -172,7 +172,68 @@
                         "height": 360
                     }
                 },
-                "modes": []
+                "modes": [
+                    {
+                        "title": "default",
+                        "orientation": "vertical",
+                        "page-rect": {
+                            "left": 0,
+                            "top": 25,
+                            "width": 360,
+                            "height": 567
+                        }
+                    },
+                    {
+                        "title": "navigation bar",
+                        "orientation": "vertical",
+                        "page-rect": {
+                            "left": 0,
+                            "top": 80,
+                            "width": 360,
+                            "height": 512
+                        }
+                    },
+                    {
+                        "title": "keyboard",
+                        "orientation": "vertical",
+                        "page-rect": {
+                            "left": 0,
+                            "top": 80,
+                            "width": 360,
+                            "height": 248
+                        }
+                    },
+                    {
+                        "title": "default",
+                        "orientation": "horizontal",
+                        "page-rect": {
+                            "left": 0,
+                            "top": 25,
+                            "width": 598,
+                            "height": 335
+                        }
+                    },
+                    {
+                        "title": "navigation bar",
+                        "orientation": "horizontal",
+                        "page-rect": {
+                            "left": 0,
+                            "top": 80,
+                            "width": 598,
+                            "height": 280
+                        }
+                    },
+                    {
+                        "title": "keyboard",
+                        "orientation": "horizontal",
+                        "page-rect": {
+                            "left": 0,
+                            "top": 80,
+                            "width": 598,
+                            "height": 78
+                        }
+                    }
+                ]
             }
         },
         {
@@ -183,13 +244,13 @@
                 "title": "Google Nexus 6",
                 "screen": {
                     "horizontal": {
-                        "width": 412,
-                        "height": 732
+                        "width": 732,
+                        "height": 412
                     },
                     "device-pixel-ratio": 3.5,
                     "vertical": {
-                        "width": 732,
-                        "height": 412
+                        "width": 412,
+                        "height": 732
                     }
                 },
                 "capabilities": [
@@ -208,13 +269,13 @@
                 "title": "LG Optimus L70",
                 "screen": {
                     "horizontal": {
-                        "width": 384,
-                        "height": 640
+                        "width": 640,
+                        "height": 384
                     },
                     "device-pixel-ratio": 1.25,
                     "vertical": {
-                        "width": 640,
-                        "height": 384
+                        "width": 384,
+                        "height": 640
                     }
                 },
                 "capabilities": [
@@ -233,13 +294,13 @@
                 "title": "Nokia N9",
                 "screen": {
                     "horizontal": {
-                        "width": 360,
-                        "height": 640
+                        "width": 640,
+                        "height": 360
                     },
                     "device-pixel-ratio": 1,
                     "vertical": {
-                        "width": 640,
-                        "height": 360
+                        "width": 360,
+                        "height": 640
                     }
                 },
                 "capabilities": [
@@ -258,13 +319,13 @@
                 "title": "Nokia Lumia 520",
                 "screen": {
                     "horizontal": {
-                        "width": 320,
-                        "height": 533
+                        "width": 533,
+                        "height": 320
                     },
                     "device-pixel-ratio": 1.4,
                     "vertical": {
-                        "width": 533,
-                        "height": 320
+                        "width": 320,
+                        "height": 533
                     }
                 },
                 "capabilities": [
@@ -333,13 +394,13 @@
                 "title": "Amazon Kindle Fire HDX",
                 "screen": {
                     "horizontal": {
-                        "width": 1600,
-                        "height": 2560
+                        "width": 2560,
+                        "height": 1600
                     },
                     "device-pixel-ratio": 2,
                     "vertical": {
-                        "width": 2560,
-                        "height": 1600
+                        "width": 1600,
+                        "height": 2560
                     }
                 },
                 "capabilities": [
@@ -358,13 +419,13 @@
                 "title": "Apple iPad Mini",
                 "screen": {
                     "horizontal": {
-                        "width": 768,
-                        "height": 1024
+                        "width": 1024,
+                        "height": 768
                     },
                     "device-pixel-ratio": 2,
                     "vertical": {
-                        "width": 1024,
-                        "height": 768
+                        "width": 768,
+                        "height": 1024
                     }
                 },
                 "capabilities": [
@@ -383,13 +444,13 @@
                 "title": "Apple iPad",
                 "screen": {
                     "horizontal": {
-                        "width": 768,
-                        "height": 1024
+                        "width": 1024,
+                        "height": 768
                     },
                     "device-pixel-ratio": 2,
                     "vertical": {
-                        "width": 1024,
-                        "height": 768
+                        "width": 768,
+                        "height": 1024
                     }
                 },
                 "capabilities": [
@@ -408,13 +469,13 @@
                 "title": "BlackBerry PlayBook",
                 "screen": {
                     "horizontal": {
-                        "width": 600,
-                        "height": 1024
+                        "width": 1024,
+                        "height": 600
                     },
                     "device-pixel-ratio": 1,
                     "vertical": {
-                        "width": 1024,
-                        "height": 600
+                        "width": 600,
+                        "height": 1024
                     }
                 },
                 "capabilities": [
@@ -433,13 +494,13 @@
                 "title": "Google Nexus 10",
                 "screen": {
                     "horizontal": {
-                        "width": 800,
-                        "height": 1280
+                        "width": 1280,
+                        "height": 800
                     },
                     "device-pixel-ratio": 2,
                     "vertical": {
-                        "width": 1280,
-                        "height": 800
+                        "width": 800,
+                        "height": 1280
                     }
                 },
                 "capabilities": [
@@ -458,13 +519,13 @@
                 "title": "Google Nexus 7",
                 "screen": {
                     "horizontal": {
-                        "width": 600,
-                        "height": 960
+                        "width": 960,
+                        "height": 600
                     },
                     "device-pixel-ratio": 2,
                     "vertical": {
-                        "width": 960,
-                        "height": 600
+                        "width": 600,
+                        "height": 960
                     }
                 },
                 "capabilities": [
