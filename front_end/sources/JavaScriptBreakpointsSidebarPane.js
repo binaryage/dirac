@@ -75,9 +75,9 @@ WebInspector.JavaScriptBreakpointsSidebarPane.prototype = {
         element.addEventListener("contextmenu", this._breakpointContextMenu.bind(this, breakpoint), true);
         element.addEventListener("click", this._breakpointClicked.bind(this, uiLocation), false);
 
-        var checkbox = createCheckboxLabel(uiLocation.linkText(), breakpoint.enabled());
-        element.appendChild(checkbox);
-        checkbox.addEventListener("click", this._breakpointCheckboxClicked.bind(this, breakpoint), false);
+        var checkboxLabel = createCheckboxLabel(uiLocation.linkText(), breakpoint.enabled());
+        element.appendChild(checkboxLabel);
+        checkboxLabel.addEventListener("click", this._breakpointCheckboxClicked.bind(this, breakpoint), false);
 
         var snippetElement = element.createChild("div", "source-text monospace");
 
@@ -108,7 +108,7 @@ WebInspector.JavaScriptBreakpointsSidebarPane.prototype = {
         }
         this._addListElement(element, currentElement);
 
-        var breakpointItem = { element: element, checkbox: checkbox };
+        var breakpointItem = { element: element, checkbox: checkboxLabel.checkboxElement };
         this._items.set(breakpoint, breakpointItem);
 
         this.expand();
