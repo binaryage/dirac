@@ -293,7 +293,7 @@ WebInspector.AuditLauncherView.prototype = {
         var selectedCategories = userGesture ? {} : this._selectedCategoriesSetting.get();
         var childNodes = this._categoriesElement.childNodes;
         for (var i = 0, length = childNodes.length; i < length; ++i)
-            selectedCategories[childNodes[i].__displayName] = childNodes[i].firstChild.checked;
+            selectedCategories[childNodes[i].__displayName] = childNodes[i].checkboxElement.checked;
         selectedCategories[WebInspector.AuditLauncherView.AllCategoriesKey] = this._selectAllCheckboxElement.checked;
         this._selectedCategoriesSetting.set(selectedCategories);
         this._updateButton();
