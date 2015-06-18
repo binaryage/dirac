@@ -55,6 +55,7 @@ WebInspector.TimelineOverviewPane = function(prefix)
     this._popoverHelper.setTimeout(0);
 
     this._cursorEnabled = false;
+    this._lastWidth = 0;
 }
 
 WebInspector.TimelineOverviewPane.Events = {
@@ -144,6 +145,10 @@ WebInspector.TimelineOverviewPane.prototype = {
      */
     onResize: function()
     {
+        var width = this.element.offsetWidth;
+        if (width === this._lastWidth)
+            return;
+        this._lastWidth = width;
         this.update();
     },
 

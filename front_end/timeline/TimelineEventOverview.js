@@ -119,12 +119,14 @@ WebInspector.TimelineEventOverview.prototype = {
             maxPriority = Math.max(maxPriority, descriptor.priority);
         }
 
-        var /** @const */ minWidth = 2 * window.devicePixelRatio;
-        var stripHeight = height - padding;
+        var devicePixelRatio = window.devicePixelRatio;
+        var /** @const */ minWidth = 2 * devicePixelRatio;
+        var stripHeight = (height - padding) * devicePixelRatio;
         var timeOffset = this._model.minimumRecordTime();
         var timeSpan = this._model.maximumRecordTime() - timeOffset;
         var canvasWidth = this._canvas.width;
         var scale = canvasWidth / timeSpan;
+        position = (position + padding) * devicePixelRatio;
 
         for (var priority = 0; priority <= maxPriority; ++priority) {
             for (var i = 0; i < events.length; ++i) {
@@ -137,7 +139,7 @@ WebInspector.TimelineEventOverview.prototype = {
                 var start = Number.constrain(Math.floor((event.startTime - timeOffset) * scale), 0, canvasWidth);
                 var end = Number.constrain(Math.ceil((event.endTime - timeOffset) * scale), 0, canvasWidth);
                 var width = Math.max(end - start, minWidth);
-                this._renderBar(start, start + width, position + padding, stripHeight, descriptor.color);
+                this._renderBar(start, start + width, position, stripHeight, descriptor.color);
             }
         }
 
@@ -155,9 +157,10 @@ WebInspector.TimelineEventOverview.prototype = {
         var /** @const */ padding = 1;
         var /** @const */ maxBandHeight = 4;
         position += padding;
+        var devicePixelRatio = window.devicePixelRatio;
         var bandsCount = WebInspector.TimelineUIUtils.calculateNetworkBandsCount(events);
         var bandInterval = Math.min(maxBandHeight, (height - padding) / (bandsCount || 1));
-        var bandHeight = Math.ceil(bandInterval);
+        var bandHeight = Math.ceil(bandInterval * devicePixelRatio);
         var timeOffset = this._model.minimumRecordTime();
         var timeSpan = this._model.maximumRecordTime() - timeOffset;
         var canvasWidth = this._canvas.width;
@@ -180,7 +183,7 @@ WebInspector.TimelineEventOverview.prototype = {
             var color = !event ||
                 event.name === WebInspector.TimelineModel.RecordType.ResourceReceiveResponse ||
                 event.name === WebInspector.TimelineModel.RecordType.ResourceSendRequest ? waitingColor : processingColor;
-            this._renderBar(Math.floor(start), Math.ceil(end), Math.floor(position + band * bandInterval), bandHeight, color);
+            this._renderBar(Math.floor(start), Math.ceil(end), Math.floor(devicePixelRatio * (position + band * bandInterval)), bandHeight, color);
         }
 
         WebInspector.TimelineUIUtils.iterateNetworkRequestsInRoundRobin(events, bandsCount, drawBar.bind(this));
@@ -269,7 +272,7 @@ WebInspector.TimelineEventOverview.prototype = {
     _drawEvents: function(events, position, stripHeight)
     {
         var /** @const */ padding = 1;
-        var visualHeight = stripHeight - padding;
+        var visualHeight = (stripHeight - padding) * window.devicePixelRatio;
         var timeOffset = this._model.minimumRecordTime();
         var timeSpan = this._model.maximumRecordTime() - timeOffset;
         var scale = this._canvas.width / timeSpan;
@@ -277,6 +280,7 @@ WebInspector.TimelineEventOverview.prototype = {
         var categoryStack = [];
         var lastX = 0;
         position += padding;
+        position *= window.devicePixelRatio;
 
         /**
          * @param {!WebInspector.TracingModel.Event} e
@@ -440,10 +444,9 @@ WebInspector.TimelineEventOverview.prototype = {
     _renderBar: function(begin, end, position, height, color)
     {
         var x = begin;
-        var y = position * window.devicePixelRatio;
         var width = end - begin;
         this._context.fillStyle = color;
-        this._context.fillRect(x, y, width, height * window.devicePixelRatio);
+        this._context.fillRect(x, position, width, height);
     },
 
     /**
