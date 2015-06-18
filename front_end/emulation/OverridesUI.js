@@ -96,70 +96,6 @@ WebInspector.OverridesUI.createDeviceSelect = function()
 }
 
 /**
- * @return {!Element}
- */
-WebInspector.OverridesUI.createNetworkConditionsSelect = function()
-{
-    var networkConditionsSetting = WebInspector.overridesSupport.settings.networkConditions;
-    var conditionsSelectElement = createElement("select");
-    var presets = WebInspector.OverridesUI._networkConditionsPresets;
-    for (var i = 0; i < presets.length; ++i) {
-        var preset = presets[i];
-        var throughput = preset.throughput | 0;
-        var latency = preset.latency | 0;
-        var isThrottling = (throughput > 0) || latency;
-        if (!isThrottling) {
-            conditionsSelectElement.add(new Option(preset.title, preset.id));
-        } else {
-            var throughputText = (throughput < 1024) ? WebInspector.UIString("%d Kbps", throughput) : WebInspector.UIString("%d Mbps", (throughput / 1024) | 0);
-            var title = WebInspector.UIString("%s (%s %dms RTT)", preset.title, throughputText, latency);
-            var option = new Option(title, preset.id);
-            option.title = WebInspector.UIString("Maximum download throughput: %s.\r\nMinimum round-trip time: %dms.", throughputText, latency);
-            conditionsSelectElement.add(option);
-        }
-    }
-
-    settingChanged();
-    networkConditionsSetting.addChangeListener(settingChanged);
-    conditionsSelectElement.addEventListener("change", presetSelected, false);
-
-    function presetSelected()
-    {
-        var selectedOption = conditionsSelectElement.options[conditionsSelectElement.selectedIndex];
-        conditionsSelectElement.title = selectedOption.title;
-        var presetId = selectedOption.value;
-        var preset = presets[presets.length - 1];
-        for (var i = 0; i < presets.length; ++i) {
-            if (presets[i].id === presetId) {
-                preset = presets[i];
-                break;
-            }
-        }
-        var kbps = 1024 / 8;
-        networkConditionsSetting.removeChangeListener(settingChanged);
-        networkConditionsSetting.set({throughput: preset.throughput * kbps, latency: preset.latency});
-        networkConditionsSetting.addChangeListener(settingChanged);
-    }
-
-    function settingChanged()
-    {
-        var conditions = networkConditionsSetting.get();
-        var presetIndex = presets.length - 1;
-        var kbps = 1024 / 8;
-        for (var i = 0; i < presets.length; ++i) {
-            if (presets[i].throughput === conditions.throughput / kbps && presets[i].latency === conditions.latency) {
-                presetIndex = i;
-                break;
-            }
-        }
-        conditionsSelectElement.selectedIndex = presetIndex;
-        conditionsSelectElement.title = conditionsSelectElement.options[presetIndex].title;
-    }
-
-    return conditionsSelectElement;
-}
-
-/**
  * @return {{select: !Element, input: !Element}}
  */
 WebInspector.OverridesUI.createUserAgentSelectAndInput = function()
@@ -246,20 +182,6 @@ WebInspector.OverridesUI.createUserAgentSelectAndInput = function()
 
     return { select: userAgentSelectElement, input: otherUserAgentElement };
 }
-
-/** @type {!Array.<!WebInspector.OverridesSupport.NetworkConditionsPreset>} */
-WebInspector.OverridesUI._networkConditionsPresets = [
-    {id: "offline", title: "Offline", throughput: 0, latency: 0},
-    {id: "gprs", title: "GPRS", throughput: 50, latency: 500},
-    {id: "edge", title: "Regular 2G", throughput: 250, latency: 300},
-    {id: "2g+", title: "Good 2G", throughput: 450, latency: 150},
-    {id: "3g", title: "Regular 3G", throughput: 750, latency: 100},
-    {id: "3g+", title: "Good 3G", throughput: 1.5 * 1024, latency: 40},
-    {id: "4g", title: "Regular 4G", throughput: 4 * 1024, latency: 20},
-    {id: "dsl", title: "DSL", throughput: 2 * 1024, latency: 5},
-    {id: "wifi", title: "WiFi", throughput: 30 * 1024, latency: 2},
-    {id: "online", title: "No throttling", throughput: WebInspector.OverridesSupport.NetworkThroughputUnlimitedValue, latency: 0}
-];
 
 /** @type {!Array.<{title: string, value: string}>} */
 WebInspector.OverridesUI._userAgents = [

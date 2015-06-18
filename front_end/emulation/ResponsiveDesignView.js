@@ -567,8 +567,6 @@ WebInspector.ResponsiveDesignView.prototype = {
         this._createButtonsSection();
         this._createDeviceSection();
         this._toolbarElement.createChild("div", "responsive-design-separator");
-        this._createNetworkSection();
-        this._toolbarElement.createChild("div", "responsive-design-separator");
 
         var moreButtonContainer = this._toolbarElement.createChild("div", "responsive-design-more-button-container");
         var moreButton = moreButtonContainer.createChild("button", "responsive-design-more-button");
@@ -663,25 +661,21 @@ WebInspector.ResponsiveDesignView.prototype = {
             checkbox.backgroundColor = "rgb(102, 102, 102)";
             checkbox.borderColor = "rgb(45, 45, 45)";
         }
-    },
-
-    _createNetworkSection: function()
-    {
-        var networkSection = this._toolbarElement.createChild("div", "responsive-design-section responsive-design-section-network");
-
-        networkSection.createChild("div", "responsive-design-section-decorator");
-
-        // Bandwidth.
-        var bandwidthElement = networkSection.createChild("div", "responsive-design-suite responsive-design-suite-top").createChild("div");
-        var fieldsetElement = bandwidthElement.createChild("fieldset");
-        var networkCheckbox = fieldsetElement.createChild("label");
-        networkCheckbox.textContent = WebInspector.UIString("Network");
-        fieldsetElement.appendChild(WebInspector.OverridesUI.createNetworkConditionsSelect());
 
         // User agent.
-        var userAgentElement = networkSection.createChild("div", "responsive-design-suite").createChild("div");
-        fieldsetElement = userAgentElement.createChild("fieldset");
-        fieldsetElement.appendChild(WebInspector.SettingsUI.createSettingInputField("UA", WebInspector.overridesSupport.settings.userAgent, false, 0, "", undefined, false, false, WebInspector.UIString("No override")));
+        detailsElement.createChild("div", "responsive-design-suite-separator");
+        var userAgentElement = detailsElement.createChild("div").createChild("label", "responsive-design-user-agent");
+        WebInspector.overridesSupport.settings.userAgent.addChangeListener(userAgentChanged);
+        userAgentChanged();
+
+        function userAgentChanged()
+        {
+            var value = WebInspector.overridesSupport.settings.userAgent.get();
+            if (!value)
+                value = WebInspector.UIString("No UA override");
+            userAgentElement.textContent = value;
+            userAgentElement.title = WebInspector.UIString("User agent: %s", value);
+        }
     },
 
     _onToggleMediaInspectorButtonClick: function()

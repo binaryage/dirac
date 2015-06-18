@@ -302,31 +302,12 @@ WebInspector.OverridesView.MediaTab.prototype = {
  */
 WebInspector.OverridesView.NetworkTab = function()
 {
-    WebInspector.OverridesView.Tab.call(this, "network", WebInspector.UIString("Network"), [], [this._userAgentOverrideEnabled.bind(this), this._networkThroughputIsLimited.bind(this)]);
+    WebInspector.OverridesView.Tab.call(this, "network", WebInspector.UIString("Network"), [], [this._userAgentOverrideEnabled.bind(this)]);
     this.element.classList.add("overrides-network");
-    this._createNetworkConditionsElement();
     this._createUserAgentSection();
 }
 
 WebInspector.OverridesView.NetworkTab.prototype = {
-    /**
-     * @return {boolean}
-     */
-    _networkThroughputIsLimited: function()
-    {
-        return WebInspector.overridesSupport.networkThroughputIsLimited();
-    },
-
-    _createNetworkConditionsElement: function()
-    {
-        var fieldsetElement = this.element.createChild("fieldset");
-        fieldsetElement.createChild("span").textContent = WebInspector.UIString("Limit network throughput:");
-        fieldsetElement.createChild("br");
-        fieldsetElement.appendChild(WebInspector.OverridesUI.createNetworkConditionsSelect());
-
-        WebInspector.overridesSupport.settings.networkConditions.addChangeListener(this.updateActiveState, this);
-    },
-
     /**
      * @return {boolean}
      */

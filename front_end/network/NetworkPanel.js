@@ -114,6 +114,20 @@ WebInspector.NetworkPanel = function()
     WebInspector.DataSaverInfobar.maybeShowInPanel(this);
 }
 
+/** @type {!Array.<!{title: string, value: !WebInspector.NetworkManager.Conditions}>} */
+WebInspector.NetworkPanel._networkConditionsPresets = [
+    {title: "Offline", value: {throughput: 0 * 1024 / 8, latency: 0}},
+    {title: "GPRS", value: {throughput: 50 * 1024 / 8, latency: 500}},
+    {title: "Regular 2G", value: {throughput: 250 * 1024 / 8, latency: 300}},
+    {title: "Good 2G", value: {throughput: 450 * 1024 / 8, latency: 150}},
+    {title: "Regular 3G", value: {throughput: 750 * 1024 / 8, latency: 100}},
+    {title: "Good 3G", value: {throughput: 1.5 * 1024 * 1024 / 8, latency: 40}},
+    {title: "Regular 4G", value: {throughput: 4 * 1024 * 1024 / 8, latency: 20}},
+    {title: "DSL", value: {throughput: 2 * 1024 * 1024 / 8, latency: 5}},
+    {title: "WiFi", value: {throughput: 30 * 1024 * 1024 / 8, latency: 2}},
+    {title: "No throttling", value: {throughput: -1, latency: 0}}
+];
+
 WebInspector.NetworkPanel.prototype = {
     /**
      * @param {!WebInspector.Event} event
@@ -161,7 +175,58 @@ WebInspector.NetworkPanel.prototype = {
         this._disableCacheCheckbox = new WebInspector.ToolbarCheckbox(WebInspector.UIString("Disable cache"), WebInspector.UIString("Disable cache (while DevTools is open)"), WebInspector.moduleSetting("cacheDisabled"));
         this._panelToolbar.appendToolbarItem(this._disableCacheCheckbox);
 
+        this._panelToolbar.appendSeparator();
+        this._panelToolbar.appendToolbarItem(this._createNetworkConditionsSelect());
         this._panelToolbar.appendToolbarItem(new WebInspector.ToolbarItem(this._progressBarContainer));
+    },
+
+    /**
+     * @return {!WebInspector.ToolbarComboBox}
+     */
+    _createNetworkConditionsSelect: function()
+    {
+        var presets = WebInspector.NetworkPanel._networkConditionsPresets;
+        var networkConditionsSelect = new WebInspector.ToolbarComboBox(optionSelected);
+        networkConditionsSelect.setMaxWidth(140);
+
+        for (var i = 0; i < presets.length; ++i) {
+            var preset = presets[i];
+            var throughputInKbps = preset.value.throughput / (1024 / 8);
+            var isThrottling = (throughputInKbps > 0) || preset.value.latency;
+            var option;
+            if (!isThrottling) {
+                option = new Option(preset.title, preset.title);
+            } else {
+                var throughputText = (throughputInKbps < 1024) ? WebInspector.UIString("%d Kbps", throughputInKbps) : WebInspector.UIString("%d Mbps", (throughputInKbps / 1024) | 0);
+                var title = WebInspector.UIString("%s (%s %dms RTT)", preset.title, throughputText, preset.value.latency);
+                option = new Option(title, preset.title);
+                option.title = WebInspector.UIString("Maximum download throughput: %s.\r\nMinimum round-trip time: %dms.", throughputText, preset.value.latency);
+            }
+            option.settingValue = preset.value;
+            networkConditionsSelect.addOption(option);
+        }
+
+        var setting = WebInspector.moduleSetting("networkConditions");
+        setting.addChangeListener(settingChanged);
+        settingChanged();
+
+        function optionSelected()
+        {
+            setting.removeChangeListener(settingChanged);
+            setting.set(networkConditionsSelect.selectedOption().settingValue);
+            setting.addChangeListener(settingChanged);
+        }
+
+        function settingChanged()
+        {
+            var value = setting.get();
+            for (var option of networkConditionsSelect.options()) {
+                if (option.settingValue.throughput === value.throughput && option.settingValue.latency === value.latency)
+                    networkConditionsSelect.select(option);
+            }
+        }
+
+        return networkConditionsSelect;
     },
 
     /**

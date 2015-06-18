@@ -353,7 +353,7 @@ div.responsive-design-icon:disabled {
 }
 
 .responsive-design-section-device select {
-    width: 185px;
+    width: 283px;
 }
 
 .responsive-design-section-device input[type='text'],
@@ -366,26 +366,11 @@ div.responsive-design-icon:disabled {
     background: rgb(255, 156, 0);
 }
 
-/* Network section */
-
-.responsive-design-section-network select {
-    width: 185px;
-}
-
-.responsive-design-section-network input[type='text'] {
-    width: 222px;
-    margin-left: 5px;
+.responsive-design-user-agent {
+    overflow: hidden;
     text-overflow: ellipsis;
-}
-
-.responsive-design-section-network input[type='text'],
-.responsive-design-section-network input[type='text']::-webkit-input-placeholder,
-.responsive-design-section-network select {
-    color: rgb(65, 175, 255);
-}
-
-.responsive-design-section-network .responsive-design-section-decorator {
-    background: linear-gradient(to bottom, rgb(77, 170, 243), rgb(0, 130, 255));
+    width: 85px;
+    color: rgb(255, 156, 0);
 }
 
 /* Warning message */

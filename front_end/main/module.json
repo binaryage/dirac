@@ -208,6 +208,12 @@
         },
         {
             "type": "setting",
+            "settingName": "networkConditions",
+            "settingType": "object",
+            "defaultValue": { "throughput": -1, "latency": 0 }
+        },
+        {
+            "type": "setting",
             "category": "",
             "title": "Disable JavaScript",
             "settingName": "javaScriptDisabled",

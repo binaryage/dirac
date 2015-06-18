@@ -66,8 +66,6 @@ WebInspector.OverridesSupport = function()
     this.settings.overrideCSSMedia = WebInspector.settings.createSetting("overrideCSSMedia", false);
     this.settings.emulatedCSSMedia = WebInspector.settings.createSetting("emulatedCSSMedia", "print");
 
-    this.settings.networkConditions = WebInspector.settings.createSetting("networkConditions", {throughput: WebInspector.OverridesSupport.NetworkThroughputUnlimitedValue, latency: 0});
-
     this.settings.javaScriptDisabled = WebInspector.moduleSetting("javaScriptDisabled");
 }
 
@@ -258,11 +256,6 @@ WebInspector.OverridesSupport.deviceScaleFactorValidator = function(value)
     return WebInspector.UIString("Value must be non-negative float");
 }
 
-WebInspector.OverridesSupport.NetworkThroughputUnlimitedValue = -1;
-
-/** @typedef {{id: string, title: string, throughput: number, latency: number}} */
-WebInspector.OverridesSupport.NetworkConditionsPreset;
-
 WebInspector.OverridesSupport._touchEventsScriptIdSymbol = Symbol("OverridesSupport.touchEventsScriptIdSymbol");
 
 WebInspector.OverridesSupport.prototype = {
@@ -391,7 +384,6 @@ WebInspector.OverridesSupport.prototype = {
         this.settings.overrideDeviceOrientation.set(false);
         this.settings.overrideGeolocation.set(false);
         this.settings.overrideCSSMedia.set(false);
-        this.settings.networkConditions.set({throughput: WebInspector.OverridesSupport.NetworkThroughputUnlimitedValue, latency: 0});
         delete this._deviceMetricsChangedListenerMuted;
         delete this._userAgentChangedListenerMuted;
 
@@ -454,9 +446,6 @@ WebInspector.OverridesSupport.prototype = {
         this.settings.overrideCSSMedia.addChangeListener(this._cssMediaChanged, this);
         this.settings.emulatedCSSMedia.addChangeListener(this._cssMediaChanged, this);
 
-        this.settings._emulationEnabled.addChangeListener(this._networkConditionsChanged, this);
-        this.settings.networkConditions.addChangeListener(this._networkConditionsChanged, this);
-
         this.settings.javaScriptDisabled.addChangeListener(this._javaScriptDisabledChanged, this);
         this._javaScriptDisabledChanged();
 
@@ -482,9 +471,6 @@ WebInspector.OverridesSupport.prototype = {
                 this._target.emulationAgent().resetScrollAndPageScaleFactor();
 
             this._userAgentChanged();
-
-            if (this.networkThroughputIsLimited())
-                this._networkConditionsChanged();
         }
     },
 
@@ -713,19 +699,6 @@ WebInspector.OverridesSupport.prototype = {
             cssModel.mediaQueryResultChanged();
     },
 
-    _networkConditionsChanged: function()
-    {
-        if (!this.emulationEnabled() || !this.networkThroughputIsLimited()) {
-            WebInspector.multitargetNetworkManager.emulateNetworkConditions(false, 0, 0);
-        } else {
-            var conditions = this.settings.networkConditions.get();
-            var throughput = conditions.throughput;
-            var latency = conditions.latency;
-            var offline = !throughput && !latency;
-            WebInspector.multitargetNetworkManager.emulateNetworkConditions(offline, latency, throughput);
-        }
-    },
-
     _javaScriptDisabledChanged: function()
     {
         this._target.emulationAgent().setScriptExecutionDisabled(this.settings.javaScriptDisabled.get());
@@ -798,15 +771,6 @@ WebInspector.OverridesSupport.prototype = {
         var height = WebInspector.overridesSupport.settings.deviceHeight.get();
         WebInspector.overridesSupport.settings.deviceWidth.set(height);
         WebInspector.overridesSupport.settings.deviceHeight.set(width);
-    },
-
-    /**
-     * @return {boolean}
-     */
-    networkThroughputIsLimited: function()
-    {
-        var conditions = this.settings.networkConditions.get();
-        return conditions.throughput !== WebInspector.OverridesSupport.NetworkThroughputUnlimitedValue;
     },
 
     __proto__: WebInspector.Object.prototype

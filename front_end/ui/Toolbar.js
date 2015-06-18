@@ -722,6 +722,14 @@ WebInspector.ToolbarComboBox.prototype = {
     },
 
     /**
+     * @return {!Array.<!Element>}
+     */
+    options: function()
+    {
+        return Array.prototype.slice.call(this._selectElement.children, 0);
+    },
+
+    /**
      * @param {!Element} option
      */
     addOption: function(option)
