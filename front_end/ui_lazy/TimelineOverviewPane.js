@@ -38,12 +38,13 @@ WebInspector.TimelineOverviewPane = function(prefix)
     WebInspector.VBox.call(this);
     this.element.id = prefix + "-overview-pane";
 
-    this._currentPositionElement = this.element.createChild("div", "overview-grid-current-position");
     this._overviewCalculator = new WebInspector.TimelineOverviewCalculator();
     this._overviewGrid = new WebInspector.OverviewGrid(prefix);
     this.element.appendChild(this._overviewGrid.element);
-    this.element.addEventListener("mousemove", this._onMouseMove.bind(this), true);
-    this.element.addEventListener("mouseout", this._hideCurrentPosition.bind(this), true);
+    this._cursorArea = this._overviewGrid.element.createChild("div", "overview-grid-cursor-area");
+    this._cursorElement = this._overviewGrid.element.createChild("div", "overview-grid-cursor-position");
+    this._cursorArea.addEventListener("mousemove", this._onMouseMove.bind(this), true);
+    this._cursorArea.addEventListener("mouseleave", this._hideCursor.bind(this), true);
 
     this._overviewGrid.setResizeEnabled(false);
     this._overviewGrid.addEventListener(WebInspector.OverviewGrid.Events.WindowChanged, this._onWindowChanged, this);
@@ -51,7 +52,7 @@ WebInspector.TimelineOverviewPane = function(prefix)
     this._overviewControls = [];
     this._markers = new Map();
 
-    this._popoverHelper = new WebInspector.PopoverHelper(this.contentElement, this._getPopoverAnchor.bind(this), this._showPopover.bind(this), this._onHidePopover.bind(this));
+    this._popoverHelper = new WebInspector.PopoverHelper(this._cursorArea, this._getPopoverAnchor.bind(this), this._showPopover.bind(this), this._onHidePopover.bind(this));
     this._popoverHelper.setTimeout(0);
 
     this._cursorEnabled = false;
@@ -70,7 +71,7 @@ WebInspector.TimelineOverviewPane.prototype = {
      */
     _getPopoverAnchor: function(element, event)
     {
-        return this.element;
+        return this._cursorArea;
     },
 
     /**
@@ -85,7 +86,7 @@ WebInspector.TimelineOverviewPane.prototype = {
             return;
         var content = new WebInspector.TimelineOverviewPane.PopoverContents();
         content.contentElement.appendChild(this._popoverContents);
-        popover.showView(content, this._currentPositionElement);
+        popover.showView(content, this._cursorElement);
     },
 
     _onHidePopover: function()
@@ -102,18 +103,17 @@ WebInspector.TimelineOverviewPane.prototype = {
         if (!this._cursorEnabled)
             return;
         var x = event.offsetX + event.target.offsetLeft;
-        this._currentPositionElement.style.left = x + "px";
-        this._currentPositionElement.style.visibility = "visible";
+        this._cursorElement.style.left = x + "px";
+        this._cursorElement.style.visibility = "visible";
         if (!this._popover)
             return;
         this._populatePopoverContents();
-        this._popover.positionElement(this._currentPositionElement);
+        this._popover.positionElement(this._cursorElement);
     },
 
     _populatePopoverContents: function()
     {
-        var cursor = this._currentPositionElement;
-        var x = cursor.offsetLeft;
+        var x = this._cursorElement.offsetLeft;
         var elements = [];
         for (var control of this._overviewControls) {
             var element = control.popoverElement(x);
@@ -127,9 +127,9 @@ WebInspector.TimelineOverviewPane.prototype = {
         return true;
     },
 
-    _hideCurrentPosition: function()
+    _hideCursor: function()
     {
-        this._currentPositionElement.style.visibility = "hidden";
+        this._cursorElement.style.visibility = "hidden";
     },
 
     /**
@@ -223,7 +223,7 @@ WebInspector.TimelineOverviewPane.prototype = {
         this._overviewGrid.setResizeEnabled(false);
         this._overviewGrid.updateDividers(this._overviewCalculator);
         this._cursorEnabled = false;
-        this._hideCurrentPosition();
+        this._hideCursor();
         this._markers = new Map();
         for (var i = 0; i < this._overviewControls.length; ++i)
             this._overviewControls[i].reset();
