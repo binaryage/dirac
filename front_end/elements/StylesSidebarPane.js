@@ -35,6 +35,7 @@
 WebInspector.StylesSidebarPane = function(requestShowCallback)
 {
     WebInspector.ElementsSidebarPane.call(this, WebInspector.UIString("Styles"));
+    this.setMinimumSize(96, 26);
 
     this.element.addEventListener("contextmenu", this._contextMenuEventFired.bind(this), true);
     WebInspector.moduleSetting("colorFormat").addChangeListener(this.update.bind(this));
