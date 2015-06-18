@@ -380,29 +380,32 @@ WebInspector.TimelineEventOverview.prototype = {
         ctx.beginPath();
         ctx.rect(0, 0, this._canvas.width, height * window.devicePixelRatio);
         ctx.clip();
-        ctx.lineWidth = window.devicePixelRatio;
 
         this._drawHorizontalGuide(baseY - visualHeight - 0.5, WebInspector.UIString("60\u2009fps"));
 
+        var lineWidth = window.devicePixelRatio;
+        var offset = lineWidth & 1 ? 0.5 : 0;
+        var tickDepth = 1.5 * window.devicePixelRatio;
         ctx.beginPath();
         ctx.moveTo(0, y);
         for (var i = 0; i < frames.length; ++i) {
             var frame = frames[i];
-            var x = Math.round((frame.startTime - timeOffset) * scale) + 0.5;
+            var x = Math.round((frame.startTime - timeOffset) * scale) + offset;
             ctx.lineTo(x, y);
-            ctx.lineTo(x, y + 1.5);
-            y = frame.idle ? baseY + 0.5 : Math.round(baseY - visualHeight * Math.min(baseFrameDurationMs / frame.duration, 1)) - 0.5;
-            ctx.lineTo(x, y + 1.5);
+            ctx.lineTo(x, y + tickDepth);
+            y = frame.idle ? baseY + 1 : Math.round(baseY - visualHeight * Math.min(baseFrameDurationMs / frame.duration, 1)) - offset;
+            ctx.lineTo(x, y + tickDepth);
             ctx.lineTo(x, y);
         }
         if (frames.length) {
             var lastFrame = frames.peekLast();
-            var x = Math.round((lastFrame.startTime + lastFrame.duration - timeOffset) * scale) + 0.5;
+            var x = Math.round((lastFrame.startTime + lastFrame.duration - timeOffset) * scale) + offset;
             ctx.lineTo(x, y);
         }
         ctx.lineTo(x, baseY + 10);
         ctx.fillStyle = "hsl(110, 50%, 88%)";
         ctx.strokeStyle = "hsl(110, 50%, 60%)";
+        ctx.lineWidth = lineWidth;
         ctx.fill();
         ctx.stroke();
         ctx.restore();
@@ -417,15 +420,18 @@ WebInspector.TimelineEventOverview.prototype = {
     {
         var ctx = this._context;
         ctx.save();
+        ctx.translate(0, y);
+        ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
         ctx.beginPath();
-        ctx.moveTo(0, y);
-        ctx.lineTo(this._canvas.width, y);
+        ctx.moveTo(0, 0);
+        ctx.lineTo(this._canvas.width, 0);
         ctx.strokeStyle = "hsl(0, 0%, 85%)";
         ctx.setLineDash([3]);
+        ctx.lineWidth = 1;
         ctx.stroke();
-        ctx.fillStyle = "hsl(0, 0%, 65%)";
+        ctx.fillStyle = "hsl(0, 0%, 70%)";
         ctx.font = "9px " + WebInspector.fontFamily();
-        ctx.fillText(label, 4, y + 8);
+        ctx.fillText(label, 4, 9);
         ctx.restore();
     },
 
