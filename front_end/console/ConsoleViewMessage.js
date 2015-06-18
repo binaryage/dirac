@@ -793,7 +793,8 @@ WebInspector.ConsoleViewMessage.prototype = {
             buffer.setAttribute("style", obj.description);
             for (var i = 0; i < buffer.style.length; i++) {
                 var property = buffer.style[i];
-                if (isWhitelistedProperty(property))
+                var value = buffer.style.getPropertyValue(property);
+                if (!value.startsWith("url(") && isWhitelistedProperty(property))
                     currentStyle[property] = buffer.style[property];
             }
         }
