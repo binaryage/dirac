@@ -3027,6 +3027,18 @@
                 "description": "Modifies the rule selector."
             },
             {
+                "name": "setStyleText",
+                "parameters": [
+                    { "name": "styleSheetId", "$ref": "StyleSheetId" },
+                    { "name": "range", "$ref": "SourceRange" },
+                    { "name": "text", "type": "string" }
+                ],
+                "returns": [
+                    { "name": "style", "$ref": "CSSStyle", "description": "The resulting style after the selector modification." }
+                ],
+                "description": "Modifies the style text."
+            },
+            {
                 "name": "setMediaText",
                 "parameters": [
                     { "name": "styleSheetId", "$ref": "StyleSheetId" },
