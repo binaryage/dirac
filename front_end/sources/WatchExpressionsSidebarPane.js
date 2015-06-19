@@ -107,11 +107,12 @@ WebInspector.WatchExpressionsSidebarPane.prototype = {
     },
 
     /**
-     * @param {!WebInspector.Event} event
+     * @param {!WebInspector.Event=} event
      */
     _addButtonClicked: function(event)
     {
-        event.consume(true);
+        if (event)
+            event.consume(true);
         this.expand();
         this._createWatchExpression(null).startEditing();
     },
