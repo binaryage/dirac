@@ -360,20 +360,21 @@ WebInspector.JavaScriptSourceFrame.prototype = {
          */
         function liveEditCallback(error, errorData, script)
         {
+            this._scriptsPanel.setIgnoreExecutionLineEvents(false);
             if (error) {
                 liveEditError = error;
                 liveEditErrorData = errorData;
                 contextScript = script;
-                failedEdits++;
-            } else
-                succeededEdits++;
+                ++failedEdits;
+            } else {
+                ++succeededEdits;
+            }
 
             if (succeededEdits + failedEdits !== scriptFiles.length)
                 return;
 
             if (failedEdits)
                 logLiveEditError.call(this, liveEditError, liveEditErrorData, contextScript);
-            this._scriptsPanel.setIgnoreExecutionLineEvents(false);
         }
 
         /**
