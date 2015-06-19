@@ -160,7 +160,7 @@ WebInspector.JavaScriptBreakpointsSidebarPane.prototype = {
     {
         // Breakpoint element has it's own click handler.
         event.consume();
-        breakpoint.setEnabled(event.target.checked);
+        breakpoint.setEnabled(event.target.checkboxElement.checked);
     },
 
     /**
