@@ -14,6 +14,11 @@
     vertical-align: middle;
 }
 
+.security.panel .security-state {
+    font-weight: bold;
+    font-size: 1.2em;
+}
+
 .security.panel .lock-icon {
     width: 16px;
     height: 16px;
@@ -62,4 +67,24 @@
     .security.panel .lock-icon-secure {
         background-image: url(Images/securityStateSecure_2x.png);
     }
+}
+
+.security.panel .security-explanation {
+    margin: 16px 0px;
+}
+
+.security.panel .security-explanation .lock-icon {
+    display: inline-block;
+    vertical-align: bottom;
+}
+
+.security.panel .security-explanation .explanation-title {
+    display: inline-block;
+    font-weight: bold;
+    font-size: 1.2em;
+    margin-left: 4px;
+}
+
+.security.panel .security-explanation .explanation-text {
+    margin: 4px 0px;
 }

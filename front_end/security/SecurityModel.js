@@ -15,7 +15,7 @@ WebInspector.SecurityModel = function(target)
     target.registerSecurityDispatcher(this._dispatcher);
     this._securityAgent.enable();
 
-    this._securityState = "unknown";
+    this._securityState = SecurityAgent.SecurityState.Unknown;
 }
 
 WebInspector.SecurityModel.EventTypes = {
@@ -59,10 +59,11 @@ WebInspector.SecurityDispatcher.prototype = {
     /**
      * @override
      * @param {!SecurityAgent.SecurityState} securityState
+     * @param {!Array<!SecurityAgent.SecurityStateExplanation>=} explanations
      */
-    securityStateChanged: function(securityState)
+    securityStateChanged: function(securityState, explanations)
     {
-        this._model._securityState = securityState;
-        this._model.dispatchEventToListeners(WebInspector.SecurityModel.EventTypes.SecurityStateChanged, securityState);
+        var data = {"securityState": securityState, "explanations": explanations || []};
+        this._model.dispatchEventToListeners(WebInspector.SecurityModel.EventTypes.SecurityStateChanged, data);
     }
 }
