@@ -3003,18 +3003,6 @@
                 "description": "Sets the new stylesheet text."
             },
             {
-                "name": "setPropertyText",
-                "parameters": [
-                    { "name": "styleSheetId", "$ref": "StyleSheetId" },
-                    { "name": "range", "$ref": "SourceRange", "description": "Either a source range of the property to be edited or an empty range representing a position for the property insertion." },
-                    { "name": "text", "type": "string" }
-                ],
-                "returns": [
-                    { "name": "style", "$ref": "CSSStyle", "description": "The resulting style after the property text modification." }
-                ],
-                "description": "Either replaces a property identified by <code>styleSheetId</code> and <code>range</code> with <code>text</code> or inserts a new property <code>text</code> at the position identified by an empty <code>range</code>."
-            },
-            {
                 "name": "setRuleSelector",
                 "parameters": [
                     { "name": "styleSheetId", "$ref": "StyleSheetId" },

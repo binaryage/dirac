@@ -545,6 +545,12 @@ window.dispatchStandaloneTestRunnerMessages;
 String.prototype.repeat = function(count) {}
 
 /**
+ * @param {string} other
+ * @return {boolean}
+ */
+String.prototype.includes = function(other) {}
+
+/**
  * @param {*} obj
  * @return {boolean}
  */
