@@ -37,7 +37,6 @@ WebInspector.StylesSidebarPane = function(requestShowCallback)
     WebInspector.ElementsSidebarPane.call(this, WebInspector.UIString("Styles"));
     this.setMinimumSize(96, 26);
 
-    this.element.addEventListener("contextmenu", this._contextMenuEventFired.bind(this), true);
     WebInspector.moduleSetting("colorFormat").addChangeListener(this.update.bind(this));
     WebInspector.moduleSetting("textEditorIndent").addChangeListener(this.update.bind(this));
 
@@ -252,18 +251,6 @@ WebInspector.StylesSidebarPane.prototype = {
             for (var section of block.sections)
                 section._styleSheetMediaEdited(oldMedia, newMedia);
         }
-    },
-
-    /**
-     * @param {!Event} event
-     */
-    _contextMenuEventFired: function(event)
-    {
-        // We start editing upon click -> default navigation to resources panel is not available
-        // Hence we add a soft context menu for hrefs.
-        var contextMenu = new WebInspector.ContextMenu(event);
-        contextMenu.appendApplicableItems(/** @type {!Node} */ (event.target));
-        contextMenu.show();
     },
 
     /**

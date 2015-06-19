@@ -314,6 +314,15 @@ WebInspector.Linkifier.prototype = {
 }
 
 /**
+ * @param {!Element} anchor
+ * @return {?WebInspector.UILocation} uiLocation
+ */
+WebInspector.Linkifier.uiLocationByAnchor = function(anchor)
+{
+    return anchor[WebInspector.Linkifier._uiLocationSymbol];
+}
+
+/**
  * @constructor
  * @implements {WebInspector.LinkifierFormatter}
  * @param {number=} maxLength

@@ -176,11 +176,9 @@ WebInspector.HandlerRegistry.prototype = {
         if (!anchorElement)
             return;
 
-        var resourceURL = anchorElement.href;
-        if (!resourceURL)
-            return;
-
-        var uiSourceCode = WebInspector.networkMapping.uiSourceCodeForURLForAnyTarget(resourceURL);
+        var uiLocation = WebInspector.Linkifier.uiLocationByAnchor(anchorElement);
+        var resourceURL = uiLocation ? uiLocation.uiSourceCode.contentURL() : anchorElement.href;
+        var uiSourceCode = uiLocation ? uiLocation.uiSourceCode : (resourceURL ? WebInspector.networkMapping.uiSourceCodeForURLForAnyTarget(resourceURL) : null);
         function open()
         {
             WebInspector.Revealer.reveal(uiSourceCode);
@@ -188,6 +186,8 @@ WebInspector.HandlerRegistry.prototype = {
         if (uiSourceCode)
             contextMenu.appendItem("Open", open);
 
+        if (!resourceURL)
+            return;
         // Add resource-related actions.
         contextMenu.appendItem(WebInspector.openLinkExternallyLabel(), this._openInNewTab.bind(this, resourceURL));
 

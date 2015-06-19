@@ -845,6 +845,7 @@ WebInspector.ElementsPanel.prototype = {
     _sidebarContextMenuEventFired: function(event)
     {
         var contextMenu = new WebInspector.ContextMenu(event);
+        contextMenu.appendApplicableItems(/** @type {!Object} */ (event.deepElementFromPoint()));
         contextMenu.show();
     },
 
