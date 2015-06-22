@@ -60,7 +60,8 @@
 }
 
 .timeline-overview-frames-mode #timeline-overview-grid,
-.timeline-overview-frames-mode .overview-grid-current-position {
+.timeline-overview-frames-mode .overview-grid-cursor-area,
+.timeline-overview-frames-mode .overview-grid-cursor-position {
     display: none;
 }
 
