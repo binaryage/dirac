@@ -1820,6 +1820,7 @@ WebInspector.TimelineFilmStripOverview = function(tracingModel)
     this._filmStripView = new WebInspector.FilmStripView();
     this._filmStripView.show(this.element);
     this._lastFrame = null;
+    /** @type {?Element} */
     this._lastElement = null;
 }
 
@@ -1837,20 +1838,31 @@ WebInspector.TimelineFilmStripOverview.prototype = {
     /**
      * @override
      * @param {number} x
-     * @return {?Element}
+     * @return {!Promise<?Element>}
      */
-    popoverElement: function(x)
+    popoverElementPromise: function(x)
     {
         if (!this._filmStripModel || !this._filmStripModel.frames().length)
-            return null;
+            return Promise.resolve(/** @type {?Element} */ (null));
+
         var time = this._calculator.positionToTime(x);
         var frame = this._filmStripView.frameByTime(time);
-        if (frame !== this._lastFrame) {
+        if (frame === this._lastFrame)
+            return Promise.resolve(this._lastElement);
+
+        return /** @type {!Promise<?Element>} */ (this._filmStripView.createFrameElement(frame).then(onElementCreated.bind(this)));
+        /**
+         * @this {WebInspector.TimelineFilmStripOverview}
+         * @param {!Element} frameElement
+         * @return {!Element}
+         */
+        function onElementCreated(frameElement)
+        {
             this._lastFrame = frame;
-            this._lastElement = this._filmStripView.createFrameElement(frame);
+            this._lastElement = frameElement;
             this._lastElement.appendChild(WebInspector.Widget.createStyleElement("timeline/timelinePanel.css"));
+            return this._lastElement;
         }
-        return this._lastElement;
     },
 
     /**

@@ -1324,7 +1324,7 @@ WebInspector.TimelineUIUtils.generateDetailsContentForFrame = function(frameMode
     var contentHelper = new WebInspector.TimelineDetailsContentHelper(null, null, null, true);
     if (filmStripFrame) {
         var filmStripPreview = createElementWithClass("img", "timeline-filmstrip-preview");
-        filmStripPreview.src = "data:image/jpg;base64," + filmStripFrame.imageData;
+        filmStripFrame.imageDataPromise().then(onGotImageData.bind(null, filmStripPreview));
         contentHelper.appendElementRow(WebInspector.UIString("Screenshot"), filmStripPreview);
         filmStripPreview.addEventListener("click", filmStripClicked.bind(null, filmStripFrame), false);
     }
@@ -1335,6 +1335,16 @@ WebInspector.TimelineUIUtils.generateDetailsContentForFrame = function(frameMode
     if (Runtime.experiments.isEnabled("layersPanel") && frame.layerTree) {
         contentHelper.appendElementRow(WebInspector.UIString("Layer tree"),
                                        WebInspector.Linkifier.linkifyUsingRevealer(frame.layerTree, WebInspector.UIString("show")));
+    }
+
+    /**
+     * @param {!Element} image
+     * @param {?string} data
+     */
+    function onGotImageData(image, data)
+    {
+        if (data)
+            image.src = "data:image/jpg;base64," + data;
     }
 
     /**

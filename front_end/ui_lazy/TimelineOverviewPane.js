@@ -81,12 +81,20 @@ WebInspector.TimelineOverviewPane.prototype = {
     _showPopover: function(anchor, popover)
     {
         this._popover = popover;
-        this._popoverContents = createElement("div");
-        if (!this._populatePopoverContents())
-            return;
-        var content = new WebInspector.TimelineOverviewPane.PopoverContents();
-        content.contentElement.appendChild(this._popoverContents);
-        popover.showView(content, this._cursorElement);
+        this._buildPopoverContents().then(maybeShowPopover.bind(this));
+        /**
+         * @this {WebInspector.TimelineOverviewPane}
+         * @param {!DocumentFragment} fragment
+         */
+        function maybeShowPopover(fragment)
+        {
+            if (!fragment.firstChild)
+                return;
+            var content = new WebInspector.TimelineOverviewPane.PopoverContents();
+            this._popoverContents = content.contentElement.createChild("div");
+            this._popoverContents.appendChild(fragment);
+            popover.showView(content, this._cursorElement);
+        }
     },
 
     _onHidePopover: function()
@@ -107,24 +115,46 @@ WebInspector.TimelineOverviewPane.prototype = {
         this._cursorElement.style.visibility = "visible";
         if (!this._popover)
             return;
-        this._populatePopoverContents();
+        this._buildPopoverContents().then(updatePopover.bind(this));
         this._popover.positionElement(this._cursorElement);
+        /**
+         * @this {WebInspector.TimelineOverviewPane}
+         * @param {!DocumentFragment} fragment
+         */
+        function updatePopover(fragment)
+        {
+            if (!this._popoverContents)
+                return;
+            this._popoverContents.removeChildren();
+            this._popoverContents.appendChild(fragment);
+        }
     },
 
-    _populatePopoverContents: function()
+    /**
+     * @return {!Promise<!DocumentFragment>}
+     */
+    _buildPopoverContents: function()
     {
-        var x = this._cursorElement.offsetLeft;
-        var elements = [];
-        for (var control of this._overviewControls) {
-            var element = control.popoverElement(x);
-            if (element)
-                elements.push(element);
+        var cursor = this._cursorElement;
+        var x = cursor.offsetLeft;
+        var promises = [];
+        for (var control of this._overviewControls)
+            promises.push(control.popoverElementPromise(x))
+
+        return Promise.all(promises).then(buildFragment);
+
+        /**
+         * @param {!Array<?Element>} elements
+         */
+        function buildFragment(elements)
+        {
+            var fragment = cursor.ownerDocument.createDocumentFragment();
+            for (var element of elements) {
+                if (element)
+                    fragment.appendChild(element);
+            }
+            return fragment;
         }
-        this._popoverContents.removeChildren();
-        if (!elements.length)
-            return false;
-        elements.forEach(this._popoverContents.appendChild.bind(this._popoverContents));
-        return true;
     },
 
     _hideCursor: function()
@@ -435,9 +465,9 @@ WebInspector.TimelineOverview.prototype = {
 
     /**
      * @param {number} x
-     * @return {?Element}
+     * @return {!Promise<?Element>}
      */
-    popoverElement: function(x) { },
+    popoverElementPromise: function(x) { },
 
     /**
      * @param {!Event} event
@@ -505,11 +535,11 @@ WebInspector.TimelineOverviewBase.prototype = {
     /**
      * @override
      * @param {number} x
-     * @return {?Element}
+     * @return {!Promise<?Element>}
      */
-    popoverElement: function(x)
+    popoverElementPromise: function(x)
     {
-        return null;
+        return Promise.resolve(/** @type {?Element} */ (null));
     },
 
     /**

@@ -57,19 +57,27 @@ WebInspector.FilmStripView.prototype = {
 
     /**
      * @param {!WebInspector.FilmStripModel.Frame} frame
-     * @return {!Element}
+     * @return {!Promise<!Element>}
      */
     createFrameElement: function(frame)
     {
         var time = frame.timestamp;
         var element = createElementWithClass("div", "frame");
-        element.createChild("div", "thumbnail").createChild("img").src = "data:image/jpg;base64," + frame.imageData;
+        var imageElement = element.createChild("div", "thumbnail").createChild("img");
         element.createChild("div", "time").textContent = Number.millisToString(time - this._zeroTime);
         element.addEventListener("mousedown", this._onMouseEvent.bind(this, WebInspector.FilmStripView.Events.FrameSelected, time), false);
         element.addEventListener("mouseenter", this._onMouseEvent.bind(this, WebInspector.FilmStripView.Events.FrameEnter, time), false);
         element.addEventListener("mouseout", this._onMouseEvent.bind(this, WebInspector.FilmStripView.Events.FrameExit, time), false);
         element.addEventListener("dblclick", this._onDoubleClick.bind(this, frame), false);
-        return element;
+
+        return frame.imageDataPromise().then(WebInspector.FilmStripView._setImageData.bind(null, imageElement)).then(returnElement);
+        /**
+         * @return {!Element}
+         */
+        function returnElement()
+        {
+            return element;
+        }
     },
 
     /**
@@ -101,26 +109,44 @@ WebInspector.FilmStripView.prototype = {
         var frames = this._model.frames();
         if (!frames.length)
             return;
+
         this.contentElement.removeChildren();
         this._statusLabel.remove();
 
         if (this._mode === WebInspector.FilmStripView.Modes.FrameBased) {
-            frames.map(this.createFrameElement.bind(this)).forEach(this.contentElement.appendChild.bind(this.contentElement));
+            Promise.all(frames.map(this.createFrameElement.bind(this))).spread(this.contentElement.appendChildren.bind(this.contentElement));
             return;
         }
 
         var width = this.contentElement.clientWidth;
         var scale = this._spanTime / width;
-        var element0 = this.createFrameElement(frames[0]);  // Calculate frame width basing on the first frame.
-        var frameWidth = Math.ceil(WebInspector.measurePreferredSize(element0, this.contentElement).width);
-        if (!frameWidth)
-            return;
+        this.createFrameElement(frames[0]).then(continueWhenFrameImageLoaded.bind(this));  // Calculate frame width basing on the first frame.
 
-        for (var pos = frameWidth; pos < width; pos += frameWidth) {
-            var time = pos * scale + this._zeroTime;
-            var frame = this.frameByTime(time);
-            var element = this.contentElement.appendChild(this.createFrameElement(frame));
-            element.style.width = frameWidth + "px";
+        /**
+         * @this {WebInspector.FilmStripView}
+         * @param {!Element} element0
+         */
+        function continueWhenFrameImageLoaded(element0)
+        {
+            var frameWidth = Math.ceil(WebInspector.measurePreferredSize(element0, this.contentElement).width);
+            if (!frameWidth)
+                return;
+
+            var promises = [];
+            for (var pos = frameWidth; pos < width; pos += frameWidth) {
+                var time = pos * scale + this._zeroTime;
+                promises.push(this.createFrameElement(this.frameByTime(time)).then(fixWidth));
+            }
+            Promise.all(promises).spread(this.contentElement.appendChildren.bind(this.contentElement));
+            /**
+             * @param {!Element} element
+             * @return {!Element}
+             */
+            function fixWidth(element)
+            {
+                element.style.width = frameWidth + "px";
+                return element;
+            }
         }
     },
 
@@ -171,6 +197,16 @@ WebInspector.FilmStripView.prototype = {
     },
 
     __proto__: WebInspector.HBox.prototype
+}
+
+/**
+ * @param {!Element} imageElement
+ * @param {?string} data
+ */
+WebInspector.FilmStripView._setImageData = function(imageElement, data)
+{
+    if (data)
+        imageElement.src = "data:image/jpg;base64," + data;
 }
 
 /**
@@ -273,7 +309,7 @@ WebInspector.FilmStripView.DialogDelegate.prototype = {
     _render: function()
     {
         var frame = this._frames[this._index];
-        this._imageElement.src = "data:image/jpg;base64," + frame.imageData;
+        frame.imageDataPromise().then(WebInspector.FilmStripView._setImageData.bind(null, this._imageElement));
         this._timeLabel.textContent = Number.millisToString(frame.timestamp - this._zeroTime);
     },
 

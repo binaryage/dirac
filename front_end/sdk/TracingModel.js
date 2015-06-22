@@ -688,7 +688,7 @@ WebInspector.TracingModel.ObjectSnapshot.fromPayload = function(payload, thread)
 
 WebInspector.TracingModel.ObjectSnapshot.prototype = {
     /**
-     * @param {function(?Object)} callback
+     * @param {function(?)} callback
      */
     requestObject: function(callback)
     {
@@ -718,8 +718,18 @@ WebInspector.TracingModel.ObjectSnapshot.prototype = {
     },
 
     /**
+     * @return {!Promise<?>}
+     */
+    objectPromise: function()
+    {
+        if (!this._objectPromise)
+            this._objectPromise = new Promise(this.requestObject.bind(this));
+        return this._objectPromise;
+    },
+
+    /**
      * @override
-     * @param {?function():!Promise.<?string>} backingStorage
+     * @param {?function():!Promise.<?>} backingStorage
      */
     _setBackingStorage: function(backingStorage)
     {
