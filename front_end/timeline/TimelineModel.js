@@ -474,8 +474,11 @@ WebInspector.TimelineModel.prototype = {
             categoriesArray.push(disabledByDefault("toplevel.flow"),
                                  disabledByDefault("ipc.flow"));
         }
-        if (Runtime.experiments.isEnabled("timelineTracingJSProfile") && enableJSSampling)
+        if (Runtime.experiments.isEnabled("timelineTracingJSProfile") && enableJSSampling) {
             categoriesArray.push(disabledByDefault("v8.cpu_profile"));
+            if (WebInspector.moduleSetting("highResolutionCpuProfiling").get())
+                categoriesArray.push(disabledByDefault("v8.cpu_profile.hires"));
+        }
         if (captureCauses || enableJSSampling)
             categoriesArray.push(disabledByDefault("devtools.timeline.stack"));
         if (captureCauses && Runtime.experiments.isEnabled("timelineInvalidationTracking"))
