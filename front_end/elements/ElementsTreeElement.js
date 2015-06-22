@@ -666,16 +666,24 @@ WebInspector.ElementsTreeElement.prototype = {
 
         var config = new WebInspector.InplaceEditor.Config(this._attributeEditingCommitted.bind(this), this._editingCancelled.bind(this), attributeName);
 
-        /**
-         * @param {!Event} event
-         * @return {string}
-         */
-        function postKeyDownFinishHandler(event)
+        function handleKeyDownEvents(event)
         {
-            WebInspector.handleElementValueModifications(event, attribute);
-            return "";
+            var isMetaOrCtrl = WebInspector.isMac() ?
+                event.metaKey && !event.shiftKey && !event.ctrlKey && !event.altKey :
+                event.ctrlKey && !event.shiftKey && !event.metaKey && !event.altKey;
+            if (isEnterKey(event) && (event.isMetaOrCtrlForTest || !config.multiline || isMetaOrCtrl))
+                return "commit";
+            else if (event.keyCode === WebInspector.KeyboardShortcut.Keys.Esc.code || event.keyIdentifier === "U+001B")
+                return "cancel";
+            else if (event.keyIdentifier === "U+0009") // Tab key
+                return "move-" + (event.shiftKey ? "backward" : "forward");
+            else {
+                WebInspector.handleElementValueModifications(event, attribute);
+                return "";
+            }
         }
-        config.setPostKeydownFinishHandler(postKeyDownFinishHandler);
+
+        config.customFinishHandler = handleKeyDownEvents;
 
         this._editing = WebInspector.InplaceEditor.startEditing(attribute, config);
 
@@ -840,20 +848,8 @@ WebInspector.ElementsTreeElement.prototype = {
             this.treeOutline.focus();
         }
 
-        /**
-         * @param {!Event} event
-         * @return {string}
-         */
-        function postKeyDownFinishHandler(event)
-        {
-            if (event.keyCode === WebInspector.KeyboardShortcut.Keys.F2.code)
-                return "commit";
-            return "";
-        }
-
         var config = new WebInspector.InplaceEditor.Config(commit.bind(this), dispose.bind(this));
         config.setMultilineOptions(initialValue, { name: "xml", htmlMode: true }, "web-inspector-html", WebInspector.moduleSetting("domWordWrap").get(), true);
-        config.setPostKeydownFinishHandler(postKeyDownFinishHandler);
         WebInspector.InplaceEditor.startMultilineEditing(this._htmlEditElement, config).then(markAsBeingEdited.bind(this));
 
         /**

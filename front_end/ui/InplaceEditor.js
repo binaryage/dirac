@@ -169,10 +169,6 @@ WebInspector.InplaceEditor.prototype = {
             committedCallback(this, self.editorContent(editingContext), editingContext.oldText, context, moveDirection);
         }
 
-        /**
-         * @param {!Event} event
-         * @return {string}
-         */
         function defaultFinishHandler(event)
         {
             var isMetaOrCtrl = WebInspector.isMac() ?
@@ -184,7 +180,6 @@ WebInspector.InplaceEditor.prototype = {
                 return "cancel";
             else if (!isMultiline && event.keyIdentifier === "U+0009") // Tab key
                 return "move-" + (event.shiftKey ? "backward" : "forward");
-            return "";
         }
 
         function handleEditingResult(result, event)
@@ -202,23 +197,16 @@ WebInspector.InplaceEditor.prototype = {
             }
         }
 
-        /**
-         * @param {!Event} event
-         */
         function pasteEventListener(event)
         {
             var result = pasteCallback(event);
             handleEditingResult(result, event);
         }
 
-        /**
-         * @param {!Event} event
-         */
         function keyDownEventListener(event)
         {
-            var result = defaultFinishHandler(event);
-            if (!result && config.postKeydownFinishHandler)
-                result = config.postKeydownFinishHandler(event);
+            var handler = config.customFinishHandler || defaultFinishHandler;
+            var result = handler(event);
             handleEditingResult(result, event);
         }
 
@@ -253,19 +241,22 @@ WebInspector.InplaceEditor.Config = function(commitHandler, cancelHandler, conte
     this.blurHandler = blurHandler;
 
     /**
-     * @type {function(!Event):string|undefined}
+     * Handles the "paste" event, return values are the same as those for customFinishHandler
+     * @type {function(!Element)|undefined}
      */
     this.pasteHandler;
 
     /**
+     * Whether the edited element is multiline
      * @type {boolean|undefined}
      */
     this.multiline;
 
     /**
-     * @type {function(!Event):string|undefined}
+     * Custom finish handler for the editing session (invoked on keydown)
+     * @type {function(!Element,*)|undefined}
      */
-    this.postKeydownFinishHandler;
+    this.customFinishHandler;
 }
 
 WebInspector.InplaceEditor.Config.prototype = {
@@ -291,11 +282,8 @@ WebInspector.InplaceEditor.Config.prototype = {
         this.smartIndent = smartIndent;
     },
 
-    /**
-     * @param {function(!Event):string} postKeydownFinishHandler
-     */
-    setPostKeydownFinishHandler: function(postKeydownFinishHandler)
+    setCustomFinishHandler: function(customFinishHandler)
     {
-        this.postKeydownFinishHandler = postKeydownFinishHandler;
+        this.customFinishHandler = customFinishHandler;
     }
 }
