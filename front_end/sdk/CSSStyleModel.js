@@ -141,27 +141,33 @@ WebInspector.CSSStyleModel.prototype = {
             }
 
             var result = {};
-            result.matchedCSSRules = WebInspector.CSSStyleModel.parseRuleMatchArrayPayload(this, matchedPayload);
+            // Due to CSSOM inconsistencies, backend might send us illegal data. @see crbug.com/178410
+            try {
+                result.matchedCSSRules = WebInspector.CSSStyleModel.parseRuleMatchArrayPayload(this, matchedPayload);
 
-            result.pseudoElements = [];
-            if (pseudoPayload) {
-                for (var i = 0; i < pseudoPayload.length; ++i) {
-                    var entryPayload = pseudoPayload[i];
-                    result.pseudoElements.push({ pseudoId: entryPayload.pseudoId, rules: WebInspector.CSSStyleModel.parseRuleMatchArrayPayload(this, entryPayload.matches) });
+                result.pseudoElements = [];
+                if (pseudoPayload) {
+                    for (var i = 0; i < pseudoPayload.length; ++i) {
+                        var entryPayload = pseudoPayload[i];
+                        result.pseudoElements.push({ pseudoId: entryPayload.pseudoId, rules: WebInspector.CSSStyleModel.parseRuleMatchArrayPayload(this, entryPayload.matches) });
+                    }
                 }
-            }
 
-            result.inherited = [];
-            if (inheritedPayload) {
-                for (var i = 0; i < inheritedPayload.length; ++i) {
-                    var entryPayload = inheritedPayload[i];
-                    var entry = {};
-                    if (entryPayload.inlineStyle)
-                        entry.inlineStyle = WebInspector.CSSStyleDeclaration.parsePayload(this, entryPayload.inlineStyle);
-                    if (entryPayload.matchedCSSRules)
-                        entry.matchedCSSRules = WebInspector.CSSStyleModel.parseRuleMatchArrayPayload(this, entryPayload.matchedCSSRules);
-                    result.inherited.push(entry);
+                result.inherited = [];
+                if (inheritedPayload) {
+                    for (var i = 0; i < inheritedPayload.length; ++i) {
+                        var entryPayload = inheritedPayload[i];
+                        var entry = {};
+                        if (entryPayload.inlineStyle)
+                            entry.inlineStyle = WebInspector.CSSStyleDeclaration.parsePayload(this, entryPayload.inlineStyle);
+                        if (entryPayload.matchedCSSRules)
+                            entry.matchedCSSRules = WebInspector.CSSStyleModel.parseRuleMatchArrayPayload(this, entryPayload.matchedCSSRules);
+                        result.inherited.push(entry);
+                    }
                 }
+            } catch (e) {
+                console.error(e);
+                result = null;
             }
 
             if (userCallback)
