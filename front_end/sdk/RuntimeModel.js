@@ -481,7 +481,8 @@ WebInspector.ExecutionContext.prototype = {
             if (prefix.length && !property.startsWith(prefix))
                 continue;
 
-            results.push(property);
+            // Substitute actual newlines with newline characters. @see crbug.com/498421
+            results.push(property.split("\n").join("\\n"));
         }
         completionsReadyCallback(results);
     },
