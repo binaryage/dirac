@@ -1158,9 +1158,9 @@ WebInspector.StylePropertiesSection.prototype = {
             var media = mediaRules[i];
             var mediaDataElement = this._mediaListElement.createChild("div", "media");
             if (media.sourceURL) {
-                var refElement = mediaDataElement.createChild("div", "subtitle");
                 var anchor = this._parentPane._linkifier.linkifyMedia(media);
-                refElement.appendChild(anchor);
+                anchor.classList.add("subtitle");
+                mediaDataElement.appendChild(anchor);
             }
 
             var mediaContainerElement = mediaDataElement.createChild("span");
