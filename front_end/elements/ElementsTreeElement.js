@@ -666,24 +666,16 @@ WebInspector.ElementsTreeElement.prototype = {
 
         var config = new WebInspector.InplaceEditor.Config(this._attributeEditingCommitted.bind(this), this._editingCancelled.bind(this), attributeName);
 
-        function handleKeyDownEvents(event)
+        /**
+         * @param {!Event} event
+         * @return {string}
+         */
+        function postKeyDownFinishHandler(event)
         {
-            var isMetaOrCtrl = WebInspector.isMac() ?
-                event.metaKey && !event.shiftKey && !event.ctrlKey && !event.altKey :
-                event.ctrlKey && !event.shiftKey && !event.metaKey && !event.altKey;
-            if (isEnterKey(event) && (event.isMetaOrCtrlForTest || !config.multiline || isMetaOrCtrl))
-                return "commit";
-            else if (event.keyCode === WebInspector.KeyboardShortcut.Keys.Esc.code || event.keyIdentifier === "U+001B")
-                return "cancel";
-            else if (event.keyIdentifier === "U+0009") // Tab key
-                return "move-" + (event.shiftKey ? "backward" : "forward");
-            else {
-                WebInspector.handleElementValueModifications(event, attribute);
-                return "";
-            }
+            WebInspector.handleElementValueModifications(event, attribute);
+            return "";
         }
-
-        config.customFinishHandler = handleKeyDownEvents;
+        config.setPostKeydownFinishHandler(postKeyDownFinishHandler);
 
         this._editing = WebInspector.InplaceEditor.startEditing(attribute, config);
 

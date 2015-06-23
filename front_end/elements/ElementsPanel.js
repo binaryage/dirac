@@ -696,7 +696,7 @@ WebInspector.ElementsPanel.prototype = {
             }
         }
 
-        if (WebInspector.isEditing())
+        if (WebInspector.isEditing() && event.keyCode !== WebInspector.KeyboardShortcut.Keys.F2.code)
             return;
 
         var treeOutline = null;
