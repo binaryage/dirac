@@ -734,7 +734,7 @@ WebInspector.ResponsiveDesignView.prototype = {
     {
         if (device && mode) {
             var orientation = device.orientationByName(mode.orientation);
-            this._deviceInsets = new Insets(mode.pageRect.left, mode.pageRect.top, orientation.width - mode.pageRect.left - mode.pageRect.width, orientation.height - mode.pageRect.top - mode.pageRect.height);
+            this._deviceInsets = mode.insets;
         } else {
             this._deviceInsets = new Insets(0, 0, 0, 0);
         }
