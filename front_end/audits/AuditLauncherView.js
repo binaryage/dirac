@@ -173,7 +173,8 @@ WebInspector.AuditLauncherView.prototype = {
     _toggleUIComponents: function(disable)
     {
         this._selectAllCheckboxElement.disabled = disable;
-        this._categoriesElement.disabled = disable;
+        for (var child = this._categoriesElement.firstChild; child; child = child.nextSibling)
+            child.checkboxElement.disabled = disable;
         this._auditPresentStateElement.disabled = disable;
         this._auditReloadedStateElement.disabled = disable;
     },
