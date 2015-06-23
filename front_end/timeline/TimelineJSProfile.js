@@ -307,56 +307,80 @@ WebInspector.TimelineJSProfileProcessor.CodeMap.prototype = {
 }
 
 /**
+ * @param {string} functionName
+ * @param {string=} url
+ * @param {string=} scriptId
+ * @param {number=} line
+ * @param {number=} column
+ * @return {!ConsoleAgent.CallFrame}
+ */
+WebInspector.TimelineJSProfileProcessor._createFrame = function(functionName, url, scriptId, line, column)
+{
+    return /** @type {!ConsoleAgent.CallFrame} */ ({
+        "functionName": functionName,
+        "url": url || "",
+        "scriptId": scriptId || "0",
+        "lineNumber": line || 0,
+        "columnNumber": column || 0
+    });
+}
+
+/**
+ * @param {string} name
+ * @param {number} scriptId
+ * @return {!ConsoleAgent.CallFrame}
+ */
+WebInspector.TimelineJSProfileProcessor._buildCallFrame = function(name, scriptId)
+{
+    // Code states:
+    // (empty) -> compiled
+    //    ~    -> optimizable
+    //    *    -> optimized
+    var rePrefix = /^(\w*:)?[*~]?(.*)$/m;
+
+    var tokens = rePrefix.exec(name);
+    var prefix = tokens[1];
+    var body = tokens[2];
+    var rawName;
+    var rawUrl;
+    if (prefix === "Script:") {
+        rawName = "";
+        rawUrl = body;
+    } else {
+        var spacePos = body.lastIndexOf(" ");
+        rawName = spacePos !== -1 ? body.substr(0, spacePos) : body;
+        rawUrl = spacePos !== -1 ? body.substr(spacePos + 1) : "";
+    }
+    var functionName = rawName;
+    var urlData = WebInspector.ParsedURL.splitLineAndColumn(rawUrl);
+    var url = urlData.url || "";
+    var line = urlData.lineNumber || 0;
+    var column = urlData.columnNumber || 0;
+    return WebInspector.TimelineJSProfileProcessor._createFrame(functionName, url, String(scriptId), line, column);
+}
+
+/**
  * @param {!Array<!WebInspector.TracingModel.Event>} events
  * @return {!Array<!WebInspector.TracingModel.Event>}
  */
 WebInspector.TimelineJSProfileProcessor.processRawV8Samples = function(events)
 {
-    var unknownFrame = {
-        functionName: "(unknown)",
-        url: "",
-        scriptId: "0",
-        lineNumber: 0,
-        columnNumber: 0
-    };
+    var missingAddesses = new Set();
+
     /**
      * @param {string} address
      * @return {!ConsoleAgent.CallFrame}
      */
     function convertRawFrame(address)
     {
-        return codeMap.lookupEntry(address) || unknownFrame;
-    }
-
-    // Code states:
-    // (empty) -> compiled
-    //    ~    -> optimizable
-    //    *    -> optimized
-    var reName = /^(\S*:)?[*~]?(\S*)(?: (\S*))?$/;
-
-    /**
-     * @param {string} name
-     * @param {number} scriptId
-     * @return {!ConsoleAgent.CallFrame}
-     */
-    function buildCallFrame(name, scriptId)
-    {
-        var parsed = reName.exec(name);
-        if (!parsed)
-            return unknownFrame;
-        var functionName = parsed[2] || "";
-        var urlData = WebInspector.ParsedURL.splitLineAndColumn(parsed[3] || "");
-        var url = urlData && urlData.url || "";
-        var line = urlData && urlData.lineNumber || 0;
-        var column = urlData && urlData.columnNumber || 0;
-        var frame = {
-            "functionName": functionName,
-            "url": url,
-            "scriptId": String(scriptId),
-            "lineNumber": line,
-            "columnNumber": column
-        };
-        return frame;
+        var entry = codeMap.lookupEntry(address);
+        if (entry)
+            return entry;
+        if (!missingAddesses.has(address)) {
+            missingAddesses.add(address);
+            console.error("Address " + address + " has missing code entry");
+        }
+        return WebInspector.TimelineJSProfileProcessor._createFrame(address);
     }
 
     var recordTypes = WebInspector.TimelineModel.RecordType;
@@ -367,7 +391,8 @@ WebInspector.TimelineJSProfileProcessor.processRawV8Samples = function(events)
         var data = e.args["data"];
         switch (e.name) {
         case recordTypes.JitCodeAdded:
-            codeMap.addEntry(data["code_start"], data["code_len"], buildCallFrame(data["name"], data["script_id"]));
+            var frame = WebInspector.TimelineJSProfileProcessor._buildCallFrame(data["name"], data["script_id"]);
+            codeMap.addEntry(data["code_start"], data["code_len"], frame);
             break;
         case recordTypes.JitCodeMoved:
             codeMap.moveEntry(data["code_start"], data["new_code_start"], data["code_len"]);
