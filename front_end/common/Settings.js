@@ -565,6 +565,17 @@ WebInspector.VersionController.prototype = {
 
     _updateVersionFrom11To12: function()
     {
+        this._migrateSettingsFromLocalStorage();
+    },
+
+    _updateVersionFrom12To13: function()
+    {
+        this._migrateSettingsFromLocalStorage();
+        WebInspector.settings.createSetting("timelineOverviewMode", "").remove();
+    },
+
+    _migrateSettingsFromLocalStorage: function()
+    {
         // This step migrates all the settings except for the ones below into the browser profile.
         var localSettings = [ "advancedSearchConfig", "breakpoints", "consoleHistory", "domBreakpoints", "eventListenerBreakpoints",
                               "fileSystemMapping", "lastSelectedSourcesSidebarPaneTab", "previouslyViewedFiles",
@@ -579,11 +590,6 @@ WebInspector.VersionController.prototype = {
             window.localStorage.removeItem(key);
             WebInspector.settings._settingsStorage[key] = value;
         }
-    },
-
-    _updateVersionFrom12To13: function()
-    {
-        WebInspector.settings.createSetting("timelineOverviewMode", "").remove();
     },
 
     /**
