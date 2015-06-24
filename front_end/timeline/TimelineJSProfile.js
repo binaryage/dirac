@@ -366,37 +366,38 @@ WebInspector.TimelineJSProfileProcessor.CodeMap.Bank.prototype = {
 }
 
 /**
- * @param {string} functionName
- * @param {string=} url
- * @param {string=} scriptId
- * @param {number=} line
- * @param {number=} column
- * @return {!ConsoleAgent.CallFrame}
- */
-WebInspector.TimelineJSProfileProcessor._createFrame = function(functionName, url, scriptId, line, column)
-{
-    return /** @type {!ConsoleAgent.CallFrame} */ ({
-        "functionName": functionName,
-        "url": url || "",
-        "scriptId": scriptId || "0",
-        "lineNumber": line || 0,
-        "columnNumber": column || 0
-    });
-}
-
-/**
  * @param {string} name
  * @param {number} scriptId
  * @return {!ConsoleAgent.CallFrame}
  */
 WebInspector.TimelineJSProfileProcessor._buildCallFrame = function(name, scriptId)
 {
+    /**
+     * @param {string} functionName
+     * @param {string=} url
+     * @param {string=} scriptId
+     * @param {number=} line
+     * @param {number=} column
+     * @param {boolean=} isNative
+     * @return {!ConsoleAgent.CallFrame}
+     */
+    function createFrame(functionName, url, scriptId, line, column, isNative)
+    {
+        return /** @type {!ConsoleAgent.CallFrame} */ ({
+            "functionName": functionName,
+            "url": url || "",
+            "scriptId": scriptId || "0",
+            "lineNumber": line || 0,
+            "columnNumber": column || 0,
+            "isNative": isNative || false
+        });
+    }
+
     // Code states:
     // (empty) -> compiled
     //    ~    -> optimizable
     //    *    -> optimized
     var rePrefix = /^(\w*:)?[*~]?(.*)$/m;
-
     var tokens = rePrefix.exec(name);
     var prefix = tokens[1];
     var body = tokens[2];
@@ -410,12 +411,14 @@ WebInspector.TimelineJSProfileProcessor._buildCallFrame = function(name, scriptI
         rawName = spacePos !== -1 ? body.substr(0, spacePos) : body;
         rawUrl = spacePos !== -1 ? body.substr(spacePos + 1) : "";
     }
-    var functionName = rawName;
+    var nativeSuffix = " native";
+    var isNative = rawName.endsWith(nativeSuffix);
+    var functionName = isNative ? rawName.slice(0, -nativeSuffix.length) : rawName;
     var urlData = WebInspector.ParsedURL.splitLineAndColumn(rawUrl);
     var url = urlData.url || "";
     var line = urlData.lineNumber || 0;
     var column = urlData.columnNumber || 0;
-    return WebInspector.TimelineJSProfileProcessor._createFrame(functionName, url, String(scriptId), line, column);
+    return createFrame(functionName, url, String(scriptId), line, column, isNative);
 }
 
 /**
@@ -428,18 +431,18 @@ WebInspector.TimelineJSProfileProcessor.processRawV8Samples = function(events)
 
     /**
      * @param {string} address
-     * @return {!ConsoleAgent.CallFrame}
+     * @return {?ConsoleAgent.CallFrame}
      */
     function convertRawFrame(address)
     {
         var entry = codeMap.lookupEntry(address);
         if (entry)
-            return entry;
+            return entry.isNative ? null : entry;
         if (!missingAddesses.has(address)) {
             missingAddesses.add(address);
             console.error("Address " + address + " has missing code entry");
         }
-        return WebInspector.TimelineJSProfileProcessor._createFrame(address);
+        return null;
     }
 
     var recordTypes = WebInspector.TimelineModel.RecordType;
@@ -463,6 +466,7 @@ WebInspector.TimelineJSProfileProcessor.processRawV8Samples = function(events)
             if (data["vm_state"] === "js" && !rawStack.length)
                 break;
             var stack = rawStack.map(convertRawFrame);
+            stack.remove(null);
             var sampleEvent = new WebInspector.TracingModel.Event(
                 WebInspector.TracingModel.DevToolsTimelineEventCategory,
                 WebInspector.TimelineModel.RecordType.JSSample,
