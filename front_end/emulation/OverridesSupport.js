@@ -556,6 +556,10 @@ WebInspector.OverridesSupport.prototype = {
 
         var overrideWidth = dipWidth;
         var overrideHeight = dipHeight;
+        var screenWidth = dipWidth;
+        var screenHeight = dipHeight;
+        var positionX = 0;
+        var positionY = 0;
         var scale = 1;
         if (this._pageResizer) {
             var available = this._pageResizerAvailableSize;
@@ -580,6 +584,10 @@ WebInspector.OverridesSupport.prototype = {
                 overrideWidth = Math.round(available.width / scale);
             if (dipHeight === 0 && dipWidth !== 0)
                 overrideHeight = Math.round(available.height / scale);
+            screenWidth = dipWidth + insets.left + insets.right;
+            screenHeight = dipHeight + insets.top + insets.bottom;
+            positionX = insets.left;
+            positionY = insets.top;
         }
         this._deviceScale = scale;
 
@@ -594,6 +602,7 @@ WebInspector.OverridesSupport.prototype = {
             this._target.emulationAgent().setDeviceMetricsOverride(
                 overrideWidth, overrideHeight, this.settings.emulateResolution.get() ? this.settings.deviceScaleFactor.get() : 0,
                 this.settings.emulateMobile.get(), this._pageResizer ? false : this.settings.deviceFitWindow.get(), scale, 0, 0,
+                screenWidth, screenHeight, positionX, positionY,
                 apiCallback.bind(this, finishCallback));
         }
 

@@ -7,10 +7,11 @@ WebInspector.OverridesUI = {}
 /**
  * @constructor
  * @param {!Element} rotateButton
+ * @param {?function(!WebInspector.EmulatedDevice, !WebInspector.EmulatedDevice.Mode)} callback
  */
-WebInspector.DeviceSelect = function(rotateButton)
+WebInspector.DeviceSelect = function(rotateButton, callback)
 {
-    this._callback = null;
+    this._callback = callback;
     this._rotateButton = rotateButton;
     this.element = createElement("p");
 
@@ -45,14 +46,6 @@ WebInspector.DeviceSelect = function(rotateButton)
 }
 
 WebInspector.DeviceSelect.prototype = {
-    /**
-     * @param {function(!WebInspector.EmulatedDevice, !WebInspector.EmulatedDevice.Mode)=} callback
-     */
-    setCallback: function(callback)
-    {
-        this._callback = callback;
-    },
-
     _deviceListChanged: function()
     {
         this._deviceSelectElement.removeChildren();

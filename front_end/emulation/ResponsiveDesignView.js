@@ -618,8 +618,7 @@ WebInspector.ResponsiveDesignView.prototype = {
 
         var fieldsetElement = deviceElement.createChild("fieldset");
         fieldsetElement.createChild("label").textContent = WebInspector.UIString("Device");
-        var deviceSelect = new WebInspector.DeviceSelect(createElementWithClass("button", "responsive-design-icon responsive-design-icon-swap"));
-        deviceSelect.setCallback(this._deviceModeSelected.bind(this));
+        var deviceSelect = new WebInspector.DeviceSelect(createElementWithClass("button", "responsive-design-icon responsive-design-icon-swap"), this._deviceModeSelected.bind(this));
         fieldsetElement.appendChild(deviceSelect.element);
         deviceSelect.element.classList.add("responsive-design-device-select");
 

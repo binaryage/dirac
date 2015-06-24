@@ -201,7 +201,7 @@ WebInspector.OverridesView.DeviceTab.prototype = {
 
         var rotateButton = createElement("button");
         rotateButton.textContent = " \u21C4 ";
-        var deviceSelect = new WebInspector.DeviceSelect(rotateButton);
+        var deviceSelect = new WebInspector.DeviceSelect(rotateButton, null);
         deviceModelElement.appendChild(deviceSelect.element);
 
         var emulateResolutionCheckbox = WebInspector.SettingsUI.createSettingCheckbox(WebInspector.UIString("Emulate screen resolution"), WebInspector.overridesSupport.settings.emulateResolution, true);
