@@ -1735,7 +1735,9 @@ WebInspector.DOMModel.prototype = {
     highlightDOMNodeForTwoSeconds: function(nodeId)
     {
         this.highlightDOMNode(nodeId);
-        this._hideDOMNodeHighlightTimeout = setTimeout(WebInspector.DOMModel.hideDOMNodeHighlight.bind(WebInspector.DOMModel), 2000);
+
+        if (!Runtime.experiments.isEnabled("layoutEditor"))
+            this._hideDOMNodeHighlightTimeout = setTimeout(WebInspector.DOMModel.hideDOMNodeHighlight.bind(WebInspector.DOMModel), 2000);
     },
 
     /**
@@ -1798,6 +1800,7 @@ WebInspector.DOMModel.prototype = {
             highlightConfig.eventTargetColor = WebInspector.Color.PageHighlight.EventTarget.toProtocolRGBA();
             highlightConfig.shapeColor = WebInspector.Color.PageHighlight.Shape.toProtocolRGBA();
             highlightConfig.shapeMarginColor = WebInspector.Color.PageHighlight.ShapeMargin.toProtocolRGBA();
+            highlightConfig.showLayoutEditor = Runtime.experiments.isEnabled("layoutEditor");
         }
         return highlightConfig;
     },
