@@ -328,7 +328,7 @@ WebInspector.NetworkPanel.prototype = {
 
     _toggleRecordFilmStrip: function()
     {
-        var toggled = this._networkRecordFilmStripSetting.get();
+        var toggled = Runtime.experiments.isEnabled("filmStripInNetworkAndTimeline") && this._networkRecordFilmStripSetting.get();
         if (toggled && !this._filmStripRecorder) {
             this._filmStripView = new WebInspector.FilmStripView();
             this._filmStripView.setMode(WebInspector.FilmStripView.Modes.FrameBased);
