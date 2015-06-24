@@ -580,7 +580,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
             barY += vPadding;
             barHeight -= 2 * vPadding + 1;
 
-            context.fillStyle = frame.hasWarnings() ? "hsl(0, 80%, 70%)" : "white";
+            context.fillStyle = frame.idle ? "white" : frame.hasWarnings() ? "hsl(0, 80%, 70%)" : "#eee";
             context.fillRect(barX, barY, barWidth, barHeight);
 
             var frameDurationText = Number.preciseMillisToString(frame.duration, 1);
