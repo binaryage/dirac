@@ -769,6 +769,7 @@
             'front_end/Images/thumbHoverHoriz.png',
             'front_end/Images/thumbHoverVert.png',
             'front_end/Images/thumbVert.png',
+            'front_end/Images/toolbarItemSelected.png',
             'front_end/Images/touchCursor.png',
             'front_end/Images/touchCursor_2x.png',
             'front_end/Images/updateServiceWorker.svg',
