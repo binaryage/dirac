@@ -98,12 +98,42 @@
                     {
                         "title": "default",
                         "orientation": "vertical",
-                        "insets": { "left": 0, "top": 0, "right": 0, "bottom": 0 }
+                        "insets": { "left": 0, "top": 40, "right": 0, "bottom": 0 }
+                    },
+                    {
+                        "title": "navigation bar",
+                        "orientation": "vertical",
+                        "insets": { "left": 0, "top": 64, "right": 0, "bottom": 45 }
+                    },
+                    {
+                        "title": "keyboard",
+                        "orientation": "vertical",
+                        "insets": { "left": 0, "top": 40, "right": 0, "bottom": 260 }
+                    },
+                    {
+                        "title": "navigation bar and keyboard",
+                        "orientation": "vertical",
+                        "insets": { "left": 0, "top": 64, "right": 0, "bottom": 260 }
                     },
                     {
                         "title": "default",
                         "orientation": "horizontal",
                         "insets": { "left": 0, "top": 0, "right": 0, "bottom": 0 }
+                    },
+                    {
+                        "title": "navigation bar",
+                        "orientation": "horizontal",
+                        "insets": { "left": 0, "top": 44, "right": 0, "bottom": 0 }
+                    },
+                    {
+                        "title": "keyboard",
+                        "orientation": "horizontal",
+                        "insets": { "left": 0, "top": 0, "right": 0, "bottom": 206 }
+                    },
+                    {
+                        "title": "navigation bar and keyboard",
+                        "orientation": "horizontal",
+                        "insets": { "left": 0, "top": 44, "right": 0, "bottom": 206 }
                     }
                 ]
             }
@@ -206,12 +236,32 @@
                     {
                         "title": "default",
                         "orientation": "vertical",
-                        "insets": { "left": 0, "top": 0, "right": 0, "bottom": 0 }
+                        "insets": { "left": 0, "top": 25, "right": 0, "bottom": 48 }
+                    },
+                    {
+                        "title": "navigation bar",
+                        "orientation": "vertical",
+                        "insets": { "left": 0, "top": 80, "right": 0, "bottom": 48 }
+                    },
+                    {
+                        "title": "keyboard",
+                        "orientation": "vertical",
+                        "insets": { "left": 0, "top": 80, "right": 0, "bottom": 326 }
                     },
                     {
                         "title": "default",
                         "orientation": "horizontal",
-                        "insets": { "left": 0, "top": 0, "right": 0, "bottom": 0 }
+                        "insets": { "left": 0, "top": 25, "right": 42, "bottom": 0 }
+                    },
+                    {
+                        "title": "navigation bar",
+                        "orientation": "horizontal",
+                        "insets": { "left": 0, "top": 80, "right": 42, "bottom": 0 }
+                    },
+                    {
+                        "title": "keyboard",
+                        "orientation": "horizontal",
+                        "insets": { "left": 0, "top": 80, "right": 42, "bottom": 214 }
                     }
                 ]
             }
@@ -298,12 +348,32 @@
                     {
                         "title": "default",
                         "orientation": "vertical",
-                        "insets": { "left": 0, "top": 0, "right": 0, "bottom": 0 }
+                        "insets": { "left": 0, "top": 25, "right": 0, "bottom": 48 }
+                    },
+                    {
+                        "title": "navigation bar",
+                        "orientation": "vertical",
+                        "insets": { "left": 0, "top": 80, "right": 0, "bottom": 48 }
+                    },
+                    {
+                        "title": "keyboard",
+                        "orientation": "vertical",
+                        "insets": { "left": 0, "top": 80, "right": 0, "bottom": 343 }
                     },
                     {
                         "title": "default",
                         "orientation": "horizontal",
-                        "insets": { "left": 0, "top": 0, "right": 0, "bottom": 0 }
+                        "insets": { "left": 0, "top": 25, "right": 42, "bottom": 0 }
+                    },
+                    {
+                        "title": "navigation bar",
+                        "orientation": "horizontal",
+                        "insets": { "left": 0, "top": 80, "right": 42, "bottom": 0 }
+                    },
+                    {
+                        "title": "keyboard",
+                        "orientation": "horizontal",
+                        "insets": { "left": 0, "top": 80, "right": 42, "bottom": 222 }
                     }
                 ]
             }
