@@ -128,7 +128,6 @@ action("generate_devtools_grd") {
     static_files += all_devtools_files + [ "front_end/Runtime.js" ]
   } else {
     # Release: pick compiled non-remote files and lazy-loaded CSS.
-    # TODO(dgozman): remove remote modules from here once experiment is over.
     generated_files = [
       resources_out_dir + "inspector.css",
       resources_out_dir + "inspector.html",
@@ -138,11 +137,9 @@ action("generate_devtools_grd") {
       resources_out_dir + "toolbox.js",
       resources_out_dir + "accessibility_module.js",
       resources_out_dir + "audits_module.js",
-      resources_out_dir + "cm_modes_module.js",
       resources_out_dir + "components_lazy_module.js",
       resources_out_dir + "console_module.js",
       resources_out_dir + "elements_module.js",
-      resources_out_dir + "emulated_devices_module.js",
       resources_out_dir + "heap_snapshot_worker_module.js",
       resources_out_dir + "layers_module.js",
       resources_out_dir + "network_module.js",
@@ -150,7 +147,6 @@ action("generate_devtools_grd") {
       resources_out_dir + "promises_module.js",
       resources_out_dir + "resources_module.js",
       resources_out_dir + "security_module.js",
-      resources_out_dir + "screencast_module.js",
       resources_out_dir + "script_formatter_worker_module.js",
       resources_out_dir + "settings_module.js",
       resources_out_dir + "snippets_module.js",

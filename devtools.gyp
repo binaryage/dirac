@@ -100,7 +100,6 @@
                         'devtools_static_files_list': '<|(devtools_static_grd_files.tmp <@(_static_files))',
                         'generated_files': [
                             # Core and remote modules should not be listed here.
-                            # TODO(dgozman): remove remote modules from here once experiment is over.
                             '<(PRODUCT_DIR)/resources/inspector/inspector.css',
                             '<(PRODUCT_DIR)/resources/inspector/inspector.html',
                             '<(PRODUCT_DIR)/resources/inspector/inspector.js',
@@ -110,11 +109,9 @@
                             '<(PRODUCT_DIR)/resources/inspector/accessibility_module.js',
                             '<(PRODUCT_DIR)/resources/inspector/animation_module.js',
                             '<(PRODUCT_DIR)/resources/inspector/audits_module.js',
-                            '<(PRODUCT_DIR)/resources/inspector/cm_modes_module.js',
                             '<(PRODUCT_DIR)/resources/inspector/components_lazy_module.js',
                             '<(PRODUCT_DIR)/resources/inspector/console_module.js',
                             '<(PRODUCT_DIR)/resources/inspector/elements_module.js',
-                            '<(PRODUCT_DIR)/resources/inspector/emulated_devices_module.js',
                             '<(PRODUCT_DIR)/resources/inspector/heap_snapshot_worker_module.js',
                             '<(PRODUCT_DIR)/resources/inspector/layers_module.js',
                             '<(PRODUCT_DIR)/resources/inspector/network_module.js',
@@ -122,7 +119,6 @@
                             '<(PRODUCT_DIR)/resources/inspector/promises_module.js',
                             '<(PRODUCT_DIR)/resources/inspector/resources_module.js',
                             '<(PRODUCT_DIR)/resources/inspector/security_module.js',
-                            '<(PRODUCT_DIR)/resources/inspector/screencast_module.js',
                             '<(PRODUCT_DIR)/resources/inspector/script_formatter_worker_module.js',
                             '<(PRODUCT_DIR)/resources/inspector/settings_module.js',
                             '<(PRODUCT_DIR)/resources/inspector/snippets_module.js',
