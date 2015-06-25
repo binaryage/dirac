@@ -72,13 +72,13 @@ WebInspector.MetricsSidebarPane.prototype = {
         cssModel.getComputedStyleAsync(node.id, callback.bind(this));
 
         /**
-         * @param {?WebInspector.CSSStyleDeclaration} style
+         * @param {?WebInspector.CSSStyleModel.InlineStyleResult} inlineStyleResult
          * @this {WebInspector.MetricsSidebarPane}
          */
-        function inlineStyleCallback(style)
+        function inlineStyleCallback(inlineStyleResult)
         {
-            if (style && this.node() === node)
-                this.inlineStyle = style;
+            if (inlineStyleResult && this.node() === node)
+                this.inlineStyle = inlineStyleResult.inlineStyle;
             finishedCallback();
         }
         cssModel.getInlineStylesAsync(node.id, inlineStyleCallback.bind(this));

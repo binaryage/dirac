@@ -77,10 +77,9 @@ WebInspector.PlatformFontsWidget.prototype = {
     /**
      * @param {!WebInspector.DOMNode} node
      * @param {!WebInspector.Throttler.FinishCallback} finishedCallback
-     * @param {?string} cssFamilyName
      * @param {?Array.<!CSSAgent.PlatformFontUsage>} platformFonts
      */
-    _refreshUI: function(node, finishedCallback, cssFamilyName, platformFonts)
+    _refreshUI: function(node, finishedCallback, platformFonts)
     {
         if (this._sharedModel.node() !== node) {
             finishedCallback();

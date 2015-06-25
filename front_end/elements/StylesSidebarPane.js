@@ -381,24 +381,25 @@ WebInspector.StylesSidebarPane.prototype = {
         cssModel.getMatchedStylesAsync(node.id, false, false, matchedCallback);
 
         /**
-         * @param {?WebInspector.CSSStyleDeclaration} inlineStyle
-         * @param {?WebInspector.CSSStyleDeclaration} attributesStyle
+         * @param {?WebInspector.CSSStyleModel.InlineStyleResult} inlineStyleResult
          */
-        function inlineCallback(inlineStyle, attributesStyle)
+        function inlineCallback(inlineStyleResult)
         {
-            payload.inlineStyle = /** @type {?WebInspector.CSSStyleDeclaration} */(inlineStyle);
-            payload.attributesStyle = /** @type {?WebInspector.CSSStyleDeclaration} */(attributesStyle);
+            if (!inlineStyleResult)
+                return;
+            payload.inlineStyle = inlineStyleResult.inlineStyle;
+            payload.attributesStyle = inlineStyleResult.attributesStyle;
         }
 
         /**
-         * @param {?*} matchedResult
+         * @param {?WebInspector.CSSStyleModel.MatchedStyleResult} matchedResult
          */
         function matchedCallback(matchedResult)
         {
             if (matchedResult) {
-                payload.matchedCSSRules = /** @type {?Array.<!WebInspector.CSSRule>} */(matchedResult.matchedCSSRules);
-                payload.pseudoElements = /** @type {?Array.<{pseudoId: number, rules: !Array.<!WebInspector.CSSRule>}>} */(matchedResult.pseudoElements);
-                payload.inherited = /** @type {?Array.<{matchedCSSRules: !Array.<!WebInspector.CSSRule>}>} */(matchedResult.inherited);
+                payload.matchedCSSRules = matchedResult.matchedCSSRules;
+                payload.pseudoElements = matchedResult.pseudoElements;
+                payload.inherited = matchedResult.inherited;
             }
             callback(payload);
         }
@@ -3149,9 +3150,9 @@ WebInspector.StylesSidebarPane.MatchedRulesPayload = function()
     this.attributesStyle = null;
     /** @type {?Array.<!WebInspector.CSSRule>} */
     this.matchedCSSRules = null;
-    /** @type {?Array.<{pseudoId: number, rules: !Array.<!WebInspector.CSSRule>}>} */
+    /** @type {?Array.<!WebInspector.CSSStyleModel.PseudoElementMatches>} */
     this.pseudoElements = null;
-    /** @type {?Array.<{matchedCSSRules: !Array.<!WebInspector.CSSRule>}>} */
+    /** @type {?Array.<!WebInspector.CSSStyleModel.InheritedMatches>} */
     this.inherited = null;
 }
 

@@ -986,16 +986,24 @@ WebInspector.AuditRules.ImageDimensionsRule.prototype = {
             }
             var targetResult = {};
 
-            function inlineCallback(inlineStyle, attributesStyle)
+            /**
+             * @param {?WebInspector.CSSStyleModel.InlineStyleResult} inlineStyleResult
+             */
+            function inlineCallback(inlineStyleResult)
             {
-                targetResult.inlineStyle = inlineStyle;
-                targetResult.attributesStyle = attributesStyle;
+                if (!inlineStyleResult)
+                    return;
+                targetResult.inlineStyle = inlineStyleResult.inlineStyle;
+                targetResult.attributesStyle = inlineStyleResult.attributesStyle;
             }
 
-            function matchedCallback(result)
+            /**
+             * @param {?WebInspector.CSSStyleModel.MatchedStyleResult} matchedStyleResult
+             */
+            function matchedCallback(matchedStyleResult)
             {
-                if (result)
-                    targetResult.matchedCSSRules = result.matchedCSSRules;
+                if (matchedStyleResult)
+                    targetResult.matchedCSSRules = matchedStyleResult.matchedCSSRules;
             }
 
             if (!nodeIds || !nodeIds.length)
