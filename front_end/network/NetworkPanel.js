@@ -287,7 +287,7 @@ WebInspector.NetworkPanel.prototype = {
         this._overviewPane.reset();
         this._networkLogView.reset();
         if (this._filmStripView)
-            this._filmStripView.reset();
+            this._resetFilmStripView();
     },
 
     /**
@@ -338,6 +338,7 @@ WebInspector.NetworkPanel.prototype = {
             this._filmStripView.addEventListener(WebInspector.FilmStripView.Events.FrameSelected, this._onFilmFrameSelected, this);
             this._filmStripView.addEventListener(WebInspector.FilmStripView.Events.FrameEnter, this._onFilmFrameEnter, this);
             this._filmStripView.addEventListener(WebInspector.FilmStripView.Events.FrameExit, this._onFilmFrameExit, this);
+            this._resetFilmStripView();
         }
 
         if (!toggled && this._filmStripRecorder) {
@@ -345,6 +346,12 @@ WebInspector.NetworkPanel.prototype = {
             this._filmStripView = null;
             this._filmStripRecorder = null;
         }
+    },
+
+    _resetFilmStripView: function()
+    {
+        this._filmStripView.reset();
+        this._filmStripView.setStatusText(WebInspector.UIString("No frames recorded. Reload page to start recording."));
     },
 
     /**
@@ -769,7 +776,8 @@ WebInspector.NetworkPanel.FilmStripRecorder.prototype = {
         this._target = WebInspector.targetManager.mainTarget();
         this._tracingModel = new WebInspector.TracingModel(new WebInspector.TempFileBackingStorage("tracing"));
         this._target.tracingManager.start(this, "-*,disabled-by-default-devtools.screenshot", "");
-        this._filmStripView.setRecording();
+        this._filmStripView.reset();
+        this._filmStripView.setStatusText(WebInspector.UIString("Recording frames..."));
     },
 
     /**
@@ -791,6 +799,6 @@ WebInspector.NetworkPanel.FilmStripRecorder.prototype = {
         this._target.tracingManager.stop();
         this._target = null;
         this._callback = callback;
-        this._filmStripView.setFetching();
+        this._filmStripView.setStatusText(WebInspector.UIString("Fetching frames..."));
     }
 }

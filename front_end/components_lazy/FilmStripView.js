@@ -11,6 +11,7 @@ WebInspector.FilmStripView = function()
     WebInspector.HBox.call(this, true);
     this.registerRequiredCSS("components_lazy/filmStripView.css");
     this.contentElement.classList.add("film-strip-view");
+    this._statusLabel = this.contentElement.createChild("div", "label");
     this.reset();
     this.setMode(WebInspector.FilmStripView.Modes.TimeBased);
 }
@@ -111,7 +112,6 @@ WebInspector.FilmStripView.prototype = {
             return;
 
         this.contentElement.removeChildren();
-        this._statusLabel.remove();
 
         if (this._mode === WebInspector.FilmStripView.Modes.FrameBased) {
             Promise.all(frames.map(this.createFrameElement.bind(this))).spread(this.contentElement.appendChildren.bind(this.contentElement));
@@ -181,19 +181,15 @@ WebInspector.FilmStripView.prototype = {
     {
         this._zeroTime = 0;
         this.contentElement.removeChildren();
-        this._statusLabel = this.contentElement.createChild("div", "label");
-        this._statusLabel.textContent = WebInspector.UIString("No frames recorded. Reload page to start recording.");
+        this.contentElement.appendChild(this._statusLabel);
     },
 
-    setRecording: function()
+    /**
+     * @param {string} text
+     */
+    setStatusText: function(text)
     {
-        this.reset();
-        this._statusLabel.textContent = WebInspector.UIString("Recording frames...");
-    },
-
-    setFetching: function()
-    {
-        this._statusLabel.textContent = WebInspector.UIString("Fetching frames...");
+        this._statusLabel.textContent = text;
     },
 
     __proto__: WebInspector.HBox.prototype
