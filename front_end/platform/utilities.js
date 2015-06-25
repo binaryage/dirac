@@ -1483,3 +1483,15 @@ Promise.prototype.spread = function(callback)
         return callback.apply(null, arg);
     }
 }
+
+/**
+ * @param {T} defaultValue
+ * @return {!Promise.<T>}
+ * @template T
+ */
+Promise.prototype.catchException = function(defaultValue) {
+    return this.catch(function (error) {
+        console.error(error);
+        return defaultValue;
+    });
+}

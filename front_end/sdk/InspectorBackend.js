@@ -760,6 +760,7 @@ InspectorBackendClass.AgentPrototype = function(domain)
 }
 
 InspectorBackendClass.AgentPrototype.PromisifiedDomains = {
+    "CSS": true,
     "Profiler": true
 }
 
@@ -913,6 +914,7 @@ InspectorBackendClass.AgentPrototype.prototype = {
             console.error(message)
             errorMessage = message;
         }
+        var userCallback = (args.length && typeof args.peekLast() === "function") ? args.pop() : null;
         var params = this._prepareParameters(method, signature, args, false, onError);
         if (errorMessage)
             return Promise.reject(new Error(errorMessage));
@@ -927,17 +929,12 @@ InspectorBackendClass.AgentPrototype.prototype = {
         function promiseAction(resolve, reject)
         {
             /**
-             * @param {?Protocol.Error} error
-             * @param {?Object} result
+             * @param {...*} vararg
              */
-            function callback(error, result)
+            function callback(vararg)
             {
-                if (error) {
-                    console.error(error);
-                    resolve(null);
-                    return;
-                }
-                resolve(replyArgs.length ? result : undefined);
+                var result = userCallback ? userCallback.apply(null, arguments) : undefined;
+                resolve(result);
             }
             this._connection._wrapCallbackAndSendMessageObject(this._domain, method, params, callback);
         }
@@ -963,11 +960,6 @@ InspectorBackendClass.AgentPrototype.prototype = {
         if (messageObject.error && messageObject.error.code !== InspectorBackendClass._DevToolsErrorCode && !InspectorBackendClass.Options.suppressRequestErrors && !this._suppressErrorLogging) {
             var id = InspectorFrontendHost.isUnderTest() ? "##" : messageObject.id;
             console.error("Request with id = " + id + " failed. " + JSON.stringify(messageObject.error));
-        }
-
-        if (this._promisified) {
-            callback(messageObject.error && messageObject.error.message, messageObject.result);
-            return;
         }
 
         var argumentsArray = [];
@@ -1054,7 +1046,6 @@ InspectorBackendClass.DispatcherPrototype.prototype = {
         if (InspectorBackendClass.Options.dumpInspectorTimeStats)
             console.log("time-stats: " + messageObject.method + " = " + (Date.now() - processingStartTime));
     }
-
 }
 
 InspectorBackendClass.Options = {

@@ -123,16 +123,17 @@ WebInspector.CPUProfilerModel.prototype = {
     stopRecording: function()
     {
         /**
-         * @param {?{profile: !ProfilerAgent.CPUProfile}} value
+         * @param {?Protocol.Error} error
+         * @param {?ProfilerAgent.CPUProfile} profile
          * @return {?ProfilerAgent.CPUProfile}
          */
-        function extractProfile(value)
+        function extractProfile(error, profile)
         {
-            return value && value.profile;
+            return !error && profile ? profile : null;
         }
         this._isRecording = false;
         this.dispatchEventToListeners(WebInspector.CPUProfilerModel.EventTypes.ProfileStopped);
-        return this.target().profilerAgent().stop().then(extractProfile);
+        return this.target().profilerAgent().stop(extractProfile);
     },
 
     dispose: function()

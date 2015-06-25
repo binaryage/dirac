@@ -645,14 +645,15 @@ WebInspector.TimelineModel.prototype = {
     _stopProfilingOnTarget: function(target)
     {
         /**
-         * @param {?{profile: !ProfilerAgent.CPUProfile}} value
+         * @param {?Protocol.Error} error
+         * @param {?ProfilerAgent.CPUProfile} profile
          * @return {?ProfilerAgent.CPUProfile}
          */
-        function extractProfile(value)
+        function extractProfile(error, profile)
         {
-            return value && value.profile;
+            return !error && profile ? profile : null;
         }
-        return target.profilerAgent().stop().then(extractProfile).then(this._addCpuProfile.bind(this, target.id()));
+        return target.profilerAgent().stop(extractProfile).then(this._addCpuProfile.bind(this, target.id()));
     },
 
     /**

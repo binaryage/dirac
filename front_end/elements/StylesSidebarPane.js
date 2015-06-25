@@ -344,7 +344,7 @@ WebInspector.StylesSidebarPane.prototype = {
         if (!node)
             return Promise.resolve(/** @type {?{matched: !WebInspector.SectionCascade, pseudo: !Map.<number, !WebInspector.SectionCascade>}} */(null));
         if (!this._matchedCascadePromise)
-            this._matchedCascadePromise = new Promise(this._getMatchedStylesForNode.bind(this, node)).then(buildMatchedCascades.bind(this, node));
+            this._matchedCascadePromise = this._matchedStylesForNode(node).then(buildMatchedCascades.bind(this, node));
         return this._matchedCascadePromise;
 
         /**
@@ -367,18 +367,20 @@ WebInspector.StylesSidebarPane.prototype = {
 
     /**
      * @param {!WebInspector.DOMNode} node
-     * @param {function(!WebInspector.StylesSidebarPane.MatchedRulesPayload)} callback
+     * @return {!Promise.<!WebInspector.StylesSidebarPane.MatchedRulesPayload>}
      */
-    _getMatchedStylesForNode: function(node, callback)
+    _matchedStylesForNode: function(node)
     {
         var payload = new WebInspector.StylesSidebarPane.MatchedRulesPayload();
         var cssModel = this.cssModel();
-        if (!cssModel) {
-            callback(payload);
-            return;
-        }
-        cssModel.getInlineStylesAsync(node.id, inlineCallback);
-        cssModel.getMatchedStylesAsync(node.id, false, false, matchedCallback);
+        if (!cssModel)
+            return Promise.resolve(payload);
+
+        var promises = [
+            cssModel.inlineStylesPromise(node.id).then(inlineCallback),
+            cssModel.matchedStylesPromise(node.id, false, false).then(matchedCallback)
+        ];
+        return Promise.all(promises).then(returnPayload);
 
         /**
          * @param {?WebInspector.CSSStyleModel.InlineStyleResult} inlineStyleResult
@@ -401,7 +403,14 @@ WebInspector.StylesSidebarPane.prototype = {
                 payload.pseudoElements = matchedResult.pseudoElements;
                 payload.inherited = matchedResult.inherited;
             }
-            callback(payload);
+        }
+
+        /**
+         * @return {!WebInspector.StylesSidebarPane.MatchedRulesPayload}
+         */
+        function returnPayload()
+        {
+            return payload;
         }
     },
 
@@ -1550,28 +1559,22 @@ WebInspector.StylePropertiesSection.prototype = {
             newContent = newContent.trim();
 
         /**
-         * @param {!WebInspector.CSSMedia} newMedia
+         * @param {?WebInspector.CSSMedia} newMedia
          * @this {WebInspector.StylePropertiesSection}
          */
-        function successCallback(newMedia)
+        function userCallback(newMedia)
         {
-            this._parentPane._styleSheetMediaEdited(media, newMedia);
-            this._parentPane._refreshUpdate(this);
-            finishOperation.call(this);
-        }
-
-        /**
-         * @this {WebInspector.StylePropertiesSection}
-         */
-        function finishOperation()
-        {
+            if (newMedia) {
+                this._parentPane._styleSheetMediaEdited(media, newMedia);
+                this._parentPane._refreshUpdate(this);
+            }
             delete this._parentPane._userOperation;
             this._editingMediaTextCommittedForTest();
         }
 
         // This gets deleted in finishOperation(), which is called both on success and failure.
         this._parentPane._userOperation = true;
-        this._parentPane._cssModel.setMediaText(media, newContent, successCallback.bind(this), finishOperation.bind(this));
+        this._parentPane._cssModel.setMediaText(media, newContent, userCallback.bind(this));
     },
 
     _editingMediaTextCommittedForTest: function() { },
@@ -1701,38 +1704,31 @@ WebInspector.StylePropertiesSection.prototype = {
         }
 
         /**
-         * @param {!WebInspector.CSSRule} newRule
+         * @param {?WebInspector.CSSRule} newRule
          * @this {WebInspector.StylePropertiesSection}
          */
-        function successCallback(newRule)
+        function finishCallback(newRule)
         {
-            var doesAffectSelectedNode = newRule.matchingSelectors.length > 0;
-            this.element.classList.toggle("no-affect", !doesAffectSelectedNode);
+            if (newRule) {
+                var doesAffectSelectedNode = newRule.matchingSelectors.length > 0;
+                this.element.classList.toggle("no-affect", !doesAffectSelectedNode);
 
-            var oldSelectorRange = this.rule().selectorRange;
-            this.styleRule.updateRule(newRule);
+                var oldSelectorRange = this.rule().selectorRange;
+                this.styleRule.updateRule(newRule);
 
-            this._parentPane._refreshUpdate(this);
-            this._parentPane._styleSheetRuleEdited(newRule, oldSelectorRange, newRule.selectorRange);
+                this._parentPane._refreshUpdate(this);
+                this._parentPane._styleSheetRuleEdited(newRule, oldSelectorRange, newRule.selectorRange);
+            }
 
-            finishOperationAndMoveEditor.call(this, moveDirection);
-        }
-
-        /**
-         * @param {string} direction
-         * @this {WebInspector.StylePropertiesSection}
-         */
-        function finishOperationAndMoveEditor(direction)
-        {
             delete this._parentPane._userOperation;
-            this._moveEditorFromSelector(direction);
+            this._moveEditorFromSelector(moveDirection);
             this._editingSelectorCommittedForTest();
         }
 
         // This gets deleted in finishOperationAndMoveEditor(), which is called both on success and failure.
         this._parentPane._userOperation = true;
         var selectedNode = this._parentPane.node();
-        this._parentPane._cssModel.setRuleSelector(this.rule(), selectedNode ? selectedNode.id : 0, newContent, successCallback.bind(this), finishOperationAndMoveEditor.bind(this, moveDirection));
+        this._parentPane._cssModel.setRuleSelector(this.rule(), selectedNode ? selectedNode.id : 0, newContent, finishCallback.bind(this));
     },
 
     _editingSelectorCommittedForTest: function() { },
@@ -1879,11 +1875,16 @@ WebInspector.BlankStylePropertiesSection.prototype = {
         }
 
         /**
-         * @param {!WebInspector.CSSRule} newRule
+         * @param {?WebInspector.CSSRule} newRule
          * @this {WebInspector.StylePropertiesSection}
          */
-        function successCallback(newRule)
+        function userCallback(newRule)
         {
+            if (!newRule) {
+                this.editingSelectorCancelled();
+                this._editingSelectorCommittedForTest();
+                return;
+            }
             var doesSelectorAffectSelectedNode = newRule.matchingSelectors.length > 0;
             this._makeNormal(newRule);
 
@@ -1907,22 +1908,13 @@ WebInspector.BlankStylePropertiesSection.prototype = {
             this._editingSelectorCommittedForTest();
         }
 
-        /**
-         * @this {WebInspector.StylePropertiesSection}
-         */
-        function failureCallback()
-        {
-            this.editingSelectorCancelled();
-            this._editingSelectorCommittedForTest();
-        }
-
         if (newContent)
             newContent = newContent.trim();
         this._parentPane._userOperation = true;
 
         var cssModel = this._parentPane._cssModel;
         var ruleText = this._rulePrefix() + newContent + " {}";
-        cssModel.addRule(this._styleSheetId, this._parentPane.node(), ruleText, this._ruleLocation, successCallback.bind(this), failureCallback.bind(this));
+        cssModel.addRule(this._styleSheetId, this._parentPane.node(), ruleText, this._ruleLocation, userCallback.bind(this));
     },
 
     editingSelectorCancelled: function()
