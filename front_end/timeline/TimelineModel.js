@@ -361,7 +361,7 @@ WebInspector.TimelineModel.Record.prototype = {
      */
     type: function()
     {
-        if (this._event.category === WebInspector.TracingModel.ConsoleEventCategory)
+        if (this._event.hasCategory(WebInspector.TracingModel.ConsoleEventCategory))
             return WebInspector.TimelineModel.RecordType.ConsoleTime;
         return this._event.name;
     },
@@ -844,7 +844,7 @@ WebInspector.TimelineModel.prototype = {
         if (i >= this._inspectedTargetEvents.length)
             return;
         var drawFrameEvent = this._inspectedTargetEvents[i];
-        var firstPaintEvent = new WebInspector.TracingModel.Event(drawFrameEvent.category, recordTypes.MarkFirstPaint, WebInspector.TracingModel.Phase.Instant, drawFrameEvent.startTime, drawFrameEvent.thread);
+        var firstPaintEvent = new WebInspector.TracingModel.Event(drawFrameEvent.categoriesString, recordTypes.MarkFirstPaint, WebInspector.TracingModel.Phase.Instant, drawFrameEvent.startTime, drawFrameEvent.thread);
         this._mainThreadEvents.splice(insertionIndexForObjectInListSortedByFunction(firstPaintEvent, this._mainThreadEvents, WebInspector.TracingModel.Event.compareStartTime), 0, firstPaintEvent);
         var firstPaintRecord = new WebInspector.TimelineModel.Record(this, firstPaintEvent);
         this._eventDividerRecords.splice(insertionIndexForObjectInListSortedByFunction(firstPaintRecord, this._eventDividerRecords, WebInspector.TimelineModel.Record._compareStartTime), 0, firstPaintRecord);
@@ -1234,7 +1234,7 @@ WebInspector.TimelineModel.prototype = {
     _processAsyncEvent: function(asyncEvent)
     {
         var groups = WebInspector.TimelineUIUtils.asyncEventGroups();
-        if (asyncEvent.category === WebInspector.TracingModel.ConsoleEventCategory)
+        if (asyncEvent.hasCategory(WebInspector.TracingModel.ConsoleEventCategory))
             return groups.console;
 
         return null;
@@ -1570,7 +1570,7 @@ WebInspector.InclusiveTraceEventNameFilter.prototype = {
      */
     accept: function(event)
     {
-        return event.category === WebInspector.TracingModel.ConsoleEventCategory
+        return event.hasCategory(WebInspector.TracingModel.ConsoleEventCategory)
             || !!this._eventNames[event.name];
     },
 

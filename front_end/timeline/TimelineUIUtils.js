@@ -170,7 +170,7 @@ WebInspector.TimelineUIUtils.categoryForRecord = function(record)
 WebInspector.TimelineUIUtils.eventStyle = function(event)
 {
     var eventStyles = WebInspector.TimelineUIUtils._initEventStyles();
-    if (event.category === WebInspector.TracingModel.ConsoleEventCategory)
+    if (event.hasCategory(WebInspector.TracingModel.ConsoleEventCategory))
         return { title: event.name, category: WebInspector.TimelineUIUtils.categories()["scripting"] };
 
     var result = eventStyles[event.name];
@@ -188,7 +188,7 @@ WebInspector.TimelineUIUtils.eventStyle = function(event)
 WebInspector.TimelineUIUtils.eventTitle = function(event)
 {
     var title = WebInspector.TimelineUIUtils.eventStyle(event).title;
-    if (event.category === WebInspector.TracingModel.ConsoleEventCategory)
+    if (event.hasCategory(WebInspector.TracingModel.ConsoleEventCategory))
         return title;
     if (event.name === WebInspector.TimelineModel.RecordType.TimeStamp)
         return WebInspector.UIString("%s: %s", title, event.args["data"]["message"]);
@@ -311,7 +311,7 @@ WebInspector.TimelineUIUtils.buildDetailsTextForTraceEvent = function(event, tar
         break;
 
     default:
-        if (event.category === WebInspector.TracingModel.ConsoleEventCategory)
+        if (event.hasCategory(WebInspector.TracingModel.ConsoleEventCategory))
             detailsText = null;
         else
             detailsText = linkifyTopCallFrameAsText();
@@ -422,7 +422,7 @@ WebInspector.TimelineUIUtils.buildDetailsNodeForTraceEvent = function(event, tar
             details = linkifyLocation("", url, eventData["lineNumber"], 0);
         break;
     default:
-        if (event.category === WebInspector.TracingModel.ConsoleEventCategory)
+        if (event.hasCategory(WebInspector.TracingModel.ConsoleEventCategory))
             detailsText = null;
         else
             details = linkifyTopCallFrame();
@@ -1678,7 +1678,7 @@ WebInspector.TimelineUIUtils.markerStyleForEvent = function(event)
 
     var title = WebInspector.TimelineUIUtils.eventTitle(event)
 
-    if (event.category === WebInspector.TracingModel.ConsoleEventCategory) {
+    if (event.hasCategory(WebInspector.TracingModel.ConsoleEventCategory)) {
         return {
             title: title,
             dashStyle: tallMarkerDashStyle,

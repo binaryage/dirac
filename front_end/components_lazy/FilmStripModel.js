@@ -24,7 +24,7 @@ WebInspector.FilmStripModel = function(tracingModel)
 
     var events = mainThread.events();
     for (var i = 0; i < events.length; ++i) {
-        if (events[i].category !== "disabled-by-default-devtools.screenshot")
+        if (!events[i].hasCategory(WebInspector.FilmStripModel._category))
             continue;
 
         if (events[i].name === WebInspector.FilmStripModel.TraceEvents.CaptureFrame) {
@@ -36,6 +36,8 @@ WebInspector.FilmStripModel = function(tracingModel)
         }
     }
 }
+
+WebInspector.FilmStripModel._category = "disabled-by-default-devtools.screenshot";
 
 WebInspector.FilmStripModel.TraceEvents = {
     CaptureFrame: "CaptureFrame",

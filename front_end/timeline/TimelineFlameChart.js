@@ -545,7 +545,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
         }
         var category = WebInspector.TimelineUIUtils.eventStyle(event).category;
         if (WebInspector.TracingModel.isAsyncPhase(event.phase)) {
-            if (event.category === WebInspector.TracingModel.ConsoleEventCategory)
+            if (event.hasCategory(WebInspector.TracingModel.ConsoleEventCategory))
                 return this._consoleColorGenerator.colorForID(event.name);
             var color = this._asyncColorByCategory[category.name];
             if (color)
