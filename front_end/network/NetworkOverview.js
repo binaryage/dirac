@@ -35,9 +35,6 @@ WebInspector.NetworkOverview = function()
 /** @type {number} */
 WebInspector.NetworkOverview._bandHeight = 3;
 
-/** @type {number} */
-WebInspector.NetworkOverview._dividersBarHeight = 20;
-
 /** @typedef {{start: number, end: number}} */
 WebInspector.NetworkOverview.Window;
 
