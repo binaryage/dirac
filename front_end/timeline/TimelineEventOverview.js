@@ -212,7 +212,7 @@ WebInspector.TimelineEventOverview.prototype = {
         var ctx = this._context;
         var x = 0;
         var categories = WebInspector.TimelineUIUtils.categories();
-        var categoryOrder = ["idle", "scripting", "rendering", "painting", "loading", "other"];
+        var categoryOrder = ["idle", "loading", "painting", "rendering", "scripting", "other"];
         var otherIndex = categoryOrder.indexOf("other");
         var idleIndex = 0;
         console.assert(idleIndex === categoryOrder.indexOf("idle"));
