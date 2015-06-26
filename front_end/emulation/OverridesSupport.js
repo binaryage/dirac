@@ -63,6 +63,8 @@ WebInspector.OverridesSupport = function()
     this.settings.overrideDeviceOrientation = WebInspector.settings.createSetting("overrideDeviceOrientation", false);
     this.settings.deviceOrientationOverride = WebInspector.settings.createSetting("deviceOrientationOverride", "");
 
+    this.settings.screenOrientationOverride = WebInspector.settings.createSetting("screenOrientationOverride", "");
+
     this.settings.overrideCSSMedia = WebInspector.settings.createSetting("overrideCSSMedia", false);
     this.settings.emulatedCSSMedia = WebInspector.settings.createSetting("emulatedCSSMedia", "print");
 
@@ -387,6 +389,7 @@ WebInspector.OverridesSupport.prototype = {
         this.settings.emulateTouch.set(false);
         this.settings.emulateMobile.set(false);
         this.settings.overrideDeviceOrientation.set(false);
+        this.settings.screenOrientationOverride.set("");
         this.settings.overrideGeolocation.set(false);
         this.settings.overrideCSSMedia.set(false);
         delete this._deviceMetricsChangedListenerMuted;
@@ -444,6 +447,9 @@ WebInspector.OverridesSupport.prototype = {
         this.settings.overrideDeviceOrientation.addChangeListener(this._deviceOrientationChanged, this);
         this.settings.deviceOrientationOverride.addChangeListener(this._deviceOrientationChanged, this);
 
+        this.settings._emulationEnabled.addChangeListener(this._screenOrientationChanged, this);
+        this.settings.screenOrientationOverride.addChangeListener(this._screenOrientationChanged, this);
+
         this.settings._emulationEnabled.addChangeListener(this._emulateTouchEventsChanged, this);
         this.settings.emulateTouch.addChangeListener(this._emulateTouchEventsChanged, this);
 
@@ -461,6 +467,9 @@ WebInspector.OverridesSupport.prototype = {
         if (this.emulationEnabled()) {
             if (this.settings.overrideDeviceOrientation.get())
                 this._deviceOrientationChanged();
+
+            if (this.settings.screenOrientationOverride.get())
+                this._screenOrientationChanged();
 
             if (this.settings.overrideGeolocation.get())
                 this._geolocationPositionChanged();
@@ -665,6 +674,17 @@ WebInspector.OverridesSupport.prototype = {
 
         var deviceOrientation = WebInspector.OverridesSupport.DeviceOrientation.parseSetting(this.settings.deviceOrientationOverride.get());
         this._target.deviceOrientationAgent().setDeviceOrientationOverride(deviceOrientation.alpha, deviceOrientation.beta, deviceOrientation.gamma);
+    },
+
+    _screenOrientationChanged: function()
+    {
+        if (!this.emulationEnabled() || !this.settings.screenOrientationOverride.get()) {
+            this._target.screenOrientationAgent().clearScreenOrientationOverride();
+            return;
+        }
+
+        var screenOrientation = this.settings.screenOrientationOverride.get();
+        this._target.screenOrientationAgent().setScreenOrientationOverride(screenOrientation === "landscapePrimary" ? 90 : 0, screenOrientation);
     },
 
     _emulateTouchEventsChanged: function()
