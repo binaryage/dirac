@@ -250,12 +250,23 @@
     background-color: white;
 }
 
-#timeline-overview-events,
-#timeline-overview-memory,
-#timeline-overview-power {
-    flex: 0 0 100px;
-    z-index: 160;
-    width: 100%;
+#timeline-overview-panel .overview-strip {
+    margin-top: 1px;
+}
+
+#timeline-overview-main-thread,
+#timeline-overview-framerate {
+    flex-basis: 20px;
+}
+
+#timeline-overview-input,
+#timeline-overview-other-threads,
+#timeline-overview-responsiveness {
+    flex-basis: 8px;
+}
+
+#timeline-overview-network {
+    flex-basis: 39px;
 }
 
 #timeline-overview-memory {
