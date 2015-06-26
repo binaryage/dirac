@@ -1470,7 +1470,7 @@ WebInspector.FlameChart.prototype = {
 
         this._baseHeight = this._isTopDown ? WebInspector.FlameChart.DividersBarHeight : this._offsetHeight - this._barHeight;
 
-        this._totalHeight = this._levelToHeight(this._dataProvider.maxStackDepth() + 1);
+        this._totalHeight = this._levelToHeight(this._dataProvider.maxStackDepth());
         this._vScrollContent.style.height = this._totalHeight + "px";
         this._updateScrollBar();
     },
