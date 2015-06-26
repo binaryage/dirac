@@ -557,17 +557,18 @@ WebInspector.CSSStyleModel.prototype = {
      * @param {!CSSAgent.StyleSheetId} styleSheetId
      * @param {string} newText
      * @param {boolean} majorChange
-     * @param {?function(?Protocol.Error)} userCallback
+     * @return {!Promise.<?Protocol.Error>}
      */
-    setStyleSheetText: function(styleSheetId, newText, majorChange, userCallback)
+    setStyleSheetText: function(styleSheetId, newText, majorChange)
     {
         var header = this._styleSheetIdToHeader.get(styleSheetId);
         console.assert(header);
         this._pendingCommandsMajorState.push(majorChange);
-        header.setContent(newText, callback.bind(this));
+        return header._setContentPromise(newText).then(callback.bind(this));
 
         /**
          * @param {?Protocol.Error} error
+         * @return {?Protocol.Error}
          * @this {WebInspector.CSSStyleModel}
          */
         function callback(error)
@@ -576,8 +577,7 @@ WebInspector.CSSStyleModel.prototype = {
             if (!error && majorChange)
                 this._domModel.markUndoableState();
 
-            if (!error && userCallback)
-                userCallback(error);
+            return error;
         }
     },
 
@@ -1807,23 +1807,34 @@ WebInspector.CSSStyleSheetHeader.prototype = {
 
     /**
      * @param {string} newText
-     * @param {function(?Protocol.Error)} callback
+     * @return {!Promise.<?Protocol.Error>}
      */
-    setContent: function(newText, callback)
+    _setContentPromise: function(newText)
     {
         newText = this._trimSourceURL(newText);
         if (this.hasSourceURL)
             newText += "\n/*# sourceURL=" + this.sourceURL + " */";
-        this._cssModel._agent.setStyleSheetText(this.id, newText, extractProtocolError)
-            .then(callback);
+        return this._cssModel._agent.setStyleSheetText(this.id, newText, extractProtocolError);
 
         /**
          * @param {?Protocol.Error} error
+         * @return {?Protocol.Error}
          */
         function extractProtocolError(error)
         {
             return error || null;
         }
+    },
+
+    /**
+     * @param {string} newText
+     * @param {function(?Protocol.Error)} callback
+     */
+    setContent: function(newText, callback)
+    {
+        this._setContentPromise(newText)
+            .catchException(null)
+            .then(callback);
     },
 
     /**

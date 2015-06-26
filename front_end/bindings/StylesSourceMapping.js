@@ -247,32 +247,33 @@ WebInspector.StylesSourceMapping.prototype = {
      * @param {!WebInspector.UISourceCode} uiSourceCode
      * @param {string} content
      * @param {boolean} majorChange
-     * @param {function(?string)} userCallback
+     * @return {!Promise<?string>}
      */
-    _setStyleContent: function(uiSourceCode, content, majorChange, userCallback)
+    _setStyleContent: function(uiSourceCode, content, majorChange)
     {
         var networkURL = this._networkMapping.networkURL(uiSourceCode);
         var styleSheetIds = this._cssModel.styleSheetIdsForURL(networkURL);
-        if (!styleSheetIds.length) {
-            userCallback("No stylesheet found: " + networkURL);
-            return;
-        }
+        if (!styleSheetIds.length)
+            return Promise.resolve(/** @type {?string} */("No stylesheet found: " + networkURL));
 
         this._isSettingContent = true;
 
         /**
-         * @param {?Protocol.Error} error
+         * @param {?string} error
          * @this {WebInspector.StylesSourceMapping}
+         * @return {?string}
          */
         function callback(error)
         {
-            userCallback(error);
             delete this._isSettingContent;
+            return error || null;
         }
 
-
+        var promises = [];
         for (var i = 0; i < styleSheetIds.length; ++i)
-            this._cssModel.setStyleSheetText(styleSheetIds[i], content, majorChange, i === styleSheetIds.length - 1 ? callback.bind(this) : null);
+            promises.push(this._cssModel.setStyleSheetText(styleSheetIds[i], content, majorChange));
+
+        return Promise.all(promises).spread(callback.bind(this));
     },
 
     /**
@@ -382,19 +383,20 @@ WebInspector.StyleFile.prototype = {
      */
     _commitIncrementalEdit: function(finishCallback)
     {
-        this._mapping._setStyleContent(this._uiSourceCode, this._uiSourceCode.workingCopy(), this._isMajorChangePending, this._styleContentSet.bind(this, finishCallback));
+        this._mapping._setStyleContent(this._uiSourceCode, this._uiSourceCode.workingCopy(), this._isMajorChangePending)
+            .then(this._styleContentSet.bind(this))
+            .then(finishCallback)
+            .catch(/** @type {function()} */(finishCallback));
         this._isMajorChangePending = false;
     },
 
     /**
-     * @param {!WebInspector.Throttler.FinishCallback} finishCallback
      * @param {?string} error
      */
-    _styleContentSet: function(finishCallback, error)
+    _styleContentSet: function(error)
     {
         if (error)
             WebInspector.console.error(error);
-        finishCallback();
     },
 
     /**
