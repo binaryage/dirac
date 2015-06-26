@@ -333,7 +333,7 @@ WebInspector.VersionController = function()
 }
 
 WebInspector.VersionController._currentVersionName = "inspectorVersion";
-WebInspector.VersionController.currentVersion = 13;
+WebInspector.VersionController.currentVersion = 14;
 
 WebInspector.VersionController.prototype = {
     updateVersion: function()
@@ -572,6 +572,12 @@ WebInspector.VersionController.prototype = {
     {
         this._migrateSettingsFromLocalStorage();
         WebInspector.settings.createSetting("timelineOverviewMode", "").remove();
+    },
+
+    _updateVersionFrom13To14: function()
+    {
+        var defaultValue = { "throughput": -1, "latency": 0 };
+        WebInspector.settings.createSetting("networkConditions", defaultValue).set(defaultValue);
     },
 
     _migrateSettingsFromLocalStorage: function()
