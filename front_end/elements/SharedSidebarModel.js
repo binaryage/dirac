@@ -107,18 +107,9 @@ WebInspector.SharedSidebarModel.prototype = {
             return Promise.resolve(/** @type {?WebInspector.SharedSidebarModel.ComputedStyle} */(null));
 
         if (!this._computedStylePromise)
-            this._computedStylePromise = new Promise(getComputedStyle.bind(null, elementNode)).then(verifyOutdated.bind(this, elementNode));
+            this._computedStylePromise = cssModel.computedStylePromise(elementNode.id).then(verifyOutdated.bind(this, elementNode));
 
         return this._computedStylePromise;
-
-        /**
-         * @param {!WebInspector.DOMNode} elementNode
-         * @param {function(?WebInspector.CSSStyleDeclaration)} resolve
-         */
-        function getComputedStyle(elementNode, resolve)
-        {
-            cssModel.getComputedStyleAsync(elementNode.id, resolve);
-        }
 
         /**
          * @param {!WebInspector.DOMNode} elementNode

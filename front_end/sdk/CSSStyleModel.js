@@ -83,9 +83,9 @@ WebInspector.CSSStyleModel.MediaTypes = ["all", "braille", "embossed", "handheld
 
 WebInspector.CSSStyleModel.prototype = {
     /**
-     * @param {function(!Array.<!WebInspector.CSSMedia>)} userCallback
+     * @return {!Promise.<!Array.<!WebInspector.CSSMedia>>}
      */
-    getMediaQueries: function(userCallback)
+    mediaQueriesPromise: function()
     {
         /**
          * @param {?Protocol.Error} error
@@ -98,9 +98,7 @@ WebInspector.CSSStyleModel.prototype = {
             return !error && payload ? WebInspector.CSSMedia.parseMediaArrayPayload(this, payload) : [];
         }
 
-        this._agent.getMediaQueries(parsePayload.bind(this))
-            .catchException([])
-            .then(userCallback);
+        return this._agent.getMediaQueries(parsePayload.bind(this));
     },
 
     /**
@@ -172,31 +170,18 @@ WebInspector.CSSStyleModel.prototype = {
 
     /**
      * @param {!DOMAgent.NodeId} nodeId
-     * @param {boolean} excludePseudo
-     * @param {boolean} excludeInherited
-     * @param {function(?WebInspector.CSSStyleModel.MatchedStyleResult)} userCallback
+     * @return {!Promise.<?WebInspector.CSSStyleDeclaration>}
      */
-    getMatchedStylesAsync: function(nodeId, excludePseudo, excludeInherited, userCallback)
+    computedStylePromise: function(nodeId)
     {
-        this.matchedStylesPromise(nodeId, excludePseudo, excludeInherited)
-            .catchException(null)
-            .then(userCallback);
-    },
-
-    /**
-     * @param {!DOMAgent.NodeId} nodeId
-     * @param {function(?WebInspector.CSSStyleDeclaration)} userCallback
-     */
-    getComputedStyleAsync: function(nodeId, userCallback)
-    {
-        this._styleLoader.getComputedStyle(nodeId, userCallback);
+        return this._styleLoader.computedStylePromise(nodeId);
     },
 
     /**
      * @param {number} nodeId
-     * @param {function(?Array.<!CSSAgent.PlatformFontUsage>)} callback
+     * @return {!Promise.<?Array.<!CSSAgent.PlatformFontUsage>>}
      */
-    getPlatformFontsForNode: function(nodeId, callback)
+    platformFontsPromise: function(nodeId)
     {
         /**
          * @param {?Protocol.Error} error
@@ -208,9 +193,7 @@ WebInspector.CSSStyleModel.prototype = {
             return !error && fonts ? fonts : null;
         }
 
-        this._agent.getPlatformFontsForNode(nodeId, platformFontsCallback)
-            .catchException(null)
-            .then(callback)
+        return this._agent.getPlatformFontsForNode(nodeId, platformFontsCallback);
     },
 
     /**
@@ -260,17 +243,6 @@ WebInspector.CSSStyleModel.prototype = {
         }
 
         return this._agent.getInlineStylesForNode(nodeId, callback.bind(this));
-    },
-
-    /**
-     * @param {!DOMAgent.NodeId} nodeId
-     * @param {function(?WebInspector.CSSStyleModel.InlineStyleResult)} userCallback
-     */
-    getInlineStylesAsync: function(nodeId, userCallback)
-    {
-        this.inlineStylesPromise(nodeId)
-            .catchException(null)
-            .then(userCallback);
     },
 
     /**
@@ -1917,27 +1889,21 @@ WebInspector.CSSDispatcher.prototype = {
 WebInspector.CSSStyleModel.ComputedStyleLoader = function(cssModel)
 {
     this._cssModel = cssModel;
-    /** @type {!Object.<*, !Array.<function(?WebInspector.CSSStyleDeclaration)>>} */
-    this._nodeIdToCallbackData = {};
+    /** @type {!Map.<!DOMAgent.NodeId, !Promise.<?WebInspector.CSSStyleDeclaration>>} */
+    this._nodeIdToPromise = new Map();
 }
 
 WebInspector.CSSStyleModel.ComputedStyleLoader.prototype = {
     /**
      * @param {!DOMAgent.NodeId} nodeId
-     * @param {function(?WebInspector.CSSStyleDeclaration)} userCallback
+     * @return {!Promise.<?WebInspector.CSSStyleDeclaration>}
      */
-    getComputedStyle: function(nodeId, userCallback)
+    computedStylePromise: function(nodeId)
     {
-        if (this._nodeIdToCallbackData[nodeId]) {
-            this._nodeIdToCallbackData[nodeId].push(userCallback);
-            return;
-        }
+        if (!this._nodeIdToPromise[nodeId])
+            this._nodeIdToPromise[nodeId] = this._cssModel._agent.getComputedStyleForNode(nodeId, parsePayload.bind(this)).then(cleanUp.bind(this));
 
-        this._nodeIdToCallbackData[nodeId] = [userCallback];
-
-        this._cssModel._agent.getComputedStyleForNode(nodeId, parsePayload.bind(this))
-            .catchException(null)
-            .then(broadcast.bind(this, nodeId))
+        return this._nodeIdToPromise[nodeId];
 
         /**
          * @param {?Protocol.Error} error
@@ -1951,21 +1917,14 @@ WebInspector.CSSStyleModel.ComputedStyleLoader.prototype = {
         }
 
         /**
-         * @param {!DOMAgent.NodeId} nodeId
          * @param {?WebInspector.CSSStyleDeclaration} computedStyle
+         * @return {?WebInspector.CSSStyleDeclaration}
          * @this {WebInspector.CSSStyleModel.ComputedStyleLoader}
          */
-        function broadcast(nodeId, computedStyle)
+        function cleanUp(computedStyle)
         {
-            var callbacks = this._nodeIdToCallbackData[nodeId];
-
-            // The loader has been reset.
-            if (!callbacks)
-                return;
-
-            delete this._nodeIdToCallbackData[nodeId];
-            for (var i = 0; i < callbacks.length; ++i)
-                callbacks[i](computedStyle);
+            delete this._nodeIdToPromise[nodeId];
+            return computedStyle;
         }
     }
 }

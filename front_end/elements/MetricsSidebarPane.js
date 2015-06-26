@@ -69,8 +69,6 @@ WebInspector.MetricsSidebarPane.prototype = {
                 return;
             this._updateMetrics(style);
         }
-        cssModel.getComputedStyleAsync(node.id, callback.bind(this));
-
         /**
          * @param {?WebInspector.CSSStyleModel.InlineStyleResult} inlineStyleResult
          * @this {WebInspector.MetricsSidebarPane}
@@ -79,9 +77,15 @@ WebInspector.MetricsSidebarPane.prototype = {
         {
             if (inlineStyleResult && this.node() === node)
                 this.inlineStyle = inlineStyleResult.inlineStyle;
-            finishedCallback();
         }
-        cssModel.getInlineStylesAsync(node.id, inlineStyleCallback.bind(this));
+
+        var promises = [
+            cssModel.computedStylePromise(node.id).then(callback.bind(this)),
+            cssModel.inlineStylesPromise(node.id).then(inlineStyleCallback.bind(this))
+        ];
+        Promise.all(promises)
+            .then(finishedCallback.bind(null, undefined))
+            .catch(/** @type {function()} */(finishedCallback));
     },
 
     /**

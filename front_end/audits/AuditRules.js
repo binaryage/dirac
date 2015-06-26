@@ -917,7 +917,7 @@ WebInspector.AuditRules.ImageDimensionsRule.prototype = {
             callback(entry ? result : null);
         }
 
-        function imageStylesReady(imageId, styles, isLastStyle, computedStyle)
+        function imageStylesReady(imageId, styles)
         {
             if (progress.isCanceled()) {
                 callback(null);
@@ -937,11 +937,8 @@ WebInspector.AuditRules.ImageDimensionsRule.prototype = {
             if (completeSrc)
                 src = completeSrc;
 
-            if (computedStyle.getPropertyValue("position") === "absolute") {
-                if (isLastStyle)
-                    doneCallback();
+            if (styles.computedStyle.getPropertyValue("position") === "absolute")
                 return;
-            }
 
             if (styles.attributesStyle) {
                 var widthFound = !!styles.attributesStyle.getLiveProperty("width");
@@ -970,9 +967,6 @@ WebInspector.AuditRules.ImageDimensionsRule.prototype = {
                 else
                     urlToNoDimensionCount[src] = 1;
             }
-
-            if (isLastStyle)
-                doneCallback();
         }
 
         /**
@@ -1006,14 +1000,30 @@ WebInspector.AuditRules.ImageDimensionsRule.prototype = {
                     targetResult.matchedCSSRules = matchedStyleResult.matchedCSSRules;
             }
 
+            /**
+             * @param {?WebInspector.CSSStyleDeclaration} computedStyle
+             */
+            function computedCallback(computedStyle)
+            {
+                targetResult.computedStyle = computedStyle;
+            }
+
             if (!nodeIds || !nodeIds.length)
                 doneCallback();
 
+            var nodePromises = [];
             for (var i = 0; nodeIds && i < nodeIds.length; ++i) {
-                cssModel.getMatchedStylesAsync(nodeIds[i], false, false, matchedCallback);
-                cssModel.getInlineStylesAsync(nodeIds[i], inlineCallback);
-                cssModel.getComputedStyleAsync(nodeIds[i], imageStylesReady.bind(null, nodeIds[i], targetResult, i === nodeIds.length - 1));
+                var stylePromises = [
+                    cssModel.matchedStylesPromise(nodeIds[i], false, false).then(matchedCallback),
+                    cssModel.inlineStylesPromise(nodeIds[i]).then(inlineCallback),
+                    cssModel.computedStylePromise(nodeIds[i]).then(computedCallback)
+                ];
+                var nodePromise = Promise.all(stylePromises).then(imageStylesReady.bind(null, nodeIds[i], targetResult));
+                nodePromises.push(nodePromise);
             }
+            Promise.all(nodePromises)
+                .catchException(null)
+                .then(doneCallback);
         }
 
         function onDocumentAvailable(root)

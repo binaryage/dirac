@@ -71,29 +71,28 @@ WebInspector.PlatformFontsWidget.prototype = {
             finishedCallback();
             return;
         }
-        cssModel.getPlatformFontsForNode(node.id, this._refreshUI.bind(this, node, finishedCallback));
+        cssModel.platformFontsPromise(node.id)
+            .then(this._refreshUI.bind(this, node))
+            .then(finishedCallback)
+            .catch(/** @type {function()} */(finishedCallback));
     },
 
     /**
      * @param {!WebInspector.DOMNode} node
-     * @param {!WebInspector.Throttler.FinishCallback} finishedCallback
      * @param {?Array.<!CSSAgent.PlatformFontUsage>} platformFonts
      */
-    _refreshUI: function(node, finishedCallback, platformFonts)
+    _refreshUI: function(node, platformFonts)
     {
-        if (this._sharedModel.node() !== node) {
-            finishedCallback();
+        if (this._sharedModel.node() !== node)
             return;
-        }
 
         this._fontStatsSection.removeChildren();
 
         var isEmptySection = !platformFonts || !platformFonts.length;
         this._sectionTitle.classList.toggle("hidden", isEmptySection);
-        if (isEmptySection) {
-            finishedCallback();
+        if (isEmptySection)
             return;
-        }
+
         platformFonts.sort(function (a, b) {
             return b.glyphCount - a.glyphCount;
         });
@@ -110,7 +109,6 @@ WebInspector.PlatformFontsWidget.prototype = {
             var usage = platformFonts[i].glyphCount;
             fontUsageElement.textContent = usage === 1 ? WebInspector.UIString("%d glyph", usage) : WebInspector.UIString("%d glyphs", usage);
         }
-        finishedCallback();
     },
 
     __proto__: WebInspector.ThrottledWidget.prototype

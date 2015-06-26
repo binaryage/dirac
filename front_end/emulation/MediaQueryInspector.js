@@ -185,16 +185,10 @@ WebInspector.MediaQueryInspector.prototype = {
             return;
         }
 
-        /**
-         * @param {!Array.<!WebInspector.CSSMedia>} cssMedias
-         * @this {!WebInspector.MediaQueryInspector}
-         */
-        function callback(cssMedias)
-        {
-            this._rebuildMediaQueries(cssMedias);
-            finishCallback();
-        }
-        this._cssModel.getMediaQueries(callback.bind(this));
+        this._cssModel.mediaQueriesPromise()
+            .then(this._rebuildMediaQueries.bind(this))
+            .then(finishCallback)
+            .catch(finishCallback);
     },
 
     /**
