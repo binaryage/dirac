@@ -210,8 +210,7 @@ WebInspector.AXComputedTextSubPane = function()
 
     this._computedTextElement = this.element.createChild("div", "ax-computed-text hidden");
 
-    this._noTextInfo = this.createInfo(WebInspector.UIString("No computed text"));
-    this._noNodeInfo = this.createInfo(WebInspector.UIString("No accessibility node"));
+    this._noTextInfo = this.createInfo(WebInspector.UIString("Node has no text alternative."));
     this._treeOutline = this.createTreeOutline();
 };
 
@@ -232,15 +231,12 @@ WebInspector.AXComputedTextSubPane.prototype = {
         var target = this.node().target();
 
         if (!axNode || axNode.ignored) {
-            this._noTextInfo.classList.add("hidden");
             this._computedTextElement.classList.add("hidden");
             treeOutline.element.classList.add("hidden");
 
-            this._noNodeInfo.classList.remove("hidden");
+            this._noTextInfo.classList.remove("hidden");
             return;
         }
-        this._noNodeInfo.classList.add("hidden");
-
         this._computedTextElement.removeChildren();
 
         // TODO(aboxhall): include contents where appropriate (requires protocol change)
@@ -256,13 +252,6 @@ WebInspector.AXComputedTextSubPane.prototype = {
         {
             foundProperty = true;
             treeOutline.appendChild(new WebInspector.AXNodePropertyTreeElement(property, target));
-        }
-
-        for (var propertyName of ["name", "description", "help"]) {
-            if (propertyName in axNode) {
-                var defaultProperty = /** @type {!AccessibilityAgent.AXProperty} */ ({name: propertyName, value: axNode[propertyName]});
-                addProperty(defaultProperty);
-            }
         }
 
         if ("value" in axNode && axNode.value.type === "string")
@@ -322,10 +311,13 @@ WebInspector.AXNodeSubPane.prototype = {
             ignoredReasons.element.classList.add("hidden");
 
             this._noNodeInfo.classList.remove("hidden");
+            this.element.classList.add("ax-ignored-node-pane");
+
             return;
         } else if (axNode.ignored) {
             this._noNodeInfo.classList.add("hidden");
             treeOutline.element.classList.add("hidden");
+            this.element.classList.add("ax-ignored-node-pane");
 
             this._ignoredInfo.classList.remove("hidden");
             ignoredReasons.element.classList.remove("hidden");
@@ -343,6 +335,8 @@ WebInspector.AXNodeSubPane.prototype = {
                 ignoredReasons.element.classList.add("hidden");
             return;
         }
+        this.element.classList.remove("ax-ignored-node-pane");
+
         this._ignoredInfo.classList.add("hidden");
         ignoredReasons.element.classList.add("hidden");
         this._noNodeInfo.classList.add("hidden");
@@ -357,15 +351,15 @@ WebInspector.AXNodeSubPane.prototype = {
             treeOutline.appendChild(new WebInspector.AXNodePropertyTreeElement(property, target));
         }
 
-        var roleProperty = /** @type {!AccessibilityAgent.AXProperty} */ ({name: "role", value: axNode.role});
-        addProperty(roleProperty);
-
-        for (var propertyName of ["description", "help", "value"]) {
+        for (var propertyName of ["name", "description", "help", "value"]) {
             if (propertyName in axNode) {
                 var defaultProperty = /** @type {!AccessibilityAgent.AXProperty} */ ({name: propertyName, value: axNode[propertyName]});
                 addProperty(defaultProperty);
             }
         }
+
+        var roleProperty = /** @type {!AccessibilityAgent.AXProperty} */ ({name: "role", value: axNode.role});
+        addProperty(roleProperty);
 
         var propertyMap = {};
         var propertiesArray = /** @type {!Array.<!AccessibilityAgent.AXProperty>} */ (axNode.properties);
@@ -430,6 +424,10 @@ WebInspector.AXNodePropertyTreeElement.prototype = {
                 this.appendChild(child);
             }
             this._valueElement = WebInspector.AXNodePropertyTreeElement.createValueElement(value, this.listItemElement);
+            if (relatedNodes.length <= 3)
+                this.expand();
+            else
+                this.collapse();
         } else {
             this._valueElement = WebInspector.AXNodePropertyTreeElement.createValueElement(value, this.listItemElement);
         }

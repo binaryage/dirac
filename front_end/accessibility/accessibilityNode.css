@@ -8,23 +8,20 @@
     padding: 3px 5px 0;
     background-image: url(Images/speech.png);
     background-repeat: no-repeat;
-    background-position: 2px center;
+    background-position: 16px center;
     padding: 4px 4px 0 4px;
-    padding-left: 22px;
+    padding-left: 36px;
     min-height: 18px;
-    font-style: italic;
 }
 
 .ax-computed-text div {
     display: inline-block;
-    border: solid 1px rgba(128, 128, 128, 0.3);
     padding: 2px;
     width: 100%;
     text-overflow: ellipsis;
     white-space: nowrap;
     overflow: hidden;
     width: 100%;
-    text-align: center;
 }
 
 div.ax-text-alternatives {
@@ -51,7 +48,10 @@ span.ax-internal-role {
 
 .ax-ignored-info {
     padding: 6px;
-    font-style: italic;
+}
+
+.ax-ignored-node-pane {
+    background-color: hsl(0, 0%, 96%);
 }
 
 .tree-outline li {

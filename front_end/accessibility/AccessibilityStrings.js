@@ -159,5 +159,10 @@ WebInspector.AccessibilityStrings.AXAttributes = {
         name: "Value",
         description: "The value of this element; this may be user-provided or developer-provided, depending on the element.",
         group: "Default"
+    },
+    "help": {
+        name: "Help",
+        descrption: "The computed help text for this element.",
+        group: "Default"
     }
 };
