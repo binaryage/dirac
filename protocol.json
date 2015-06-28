@@ -4648,32 +4648,6 @@
         ]
     },
     {
-        "domain": "ScreenOrientation",
-        "hidden": true,
-        "types": [
-            {
-                "id": "OrientationType",
-                "type": "string",
-                "enum": ["portraitPrimary", "portraitSecondary", "landscapePrimary", "landscapeSecondary"],
-                "description": "Orientation type"
-            }
-        ],
-        "commands": [
-            {
-                "name": "setScreenOrientationOverride",
-                "description": "Overrides the Screen Orientation.",
-                "parameters": [
-                    { "name": "angle", "type": "integer", "description": "Orientation angle" },
-                    { "name": "type", "$ref": "OrientationType", "description": "Orientation type" }
-                ]
-            },
-            {
-                "name": "clearScreenOrientationOverride",
-                "description": "Clears the overridden Screen Orientation."
-            }
-        ]
-    },
-    {
         "domain": "Tracing",
         "commands": [
             {
