@@ -709,8 +709,10 @@ WebInspector.ElementsPanel.prototype = {
 
         if (!treeOutline.editing()) {
             handleUndoRedo.call(null, treeOutline);
-            if (event.handled)
+            if (event.handled) {
+                this.sidebarPanes.styles.onUndoOrRedoHappened();
                 return;
+            }
         }
 
         treeOutline.handleShortcut(event);

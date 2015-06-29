@@ -137,6 +137,11 @@ WebInspector.StylesSidebarPane.ignoreErrorsForProperty = function(property) {
 }
 
 WebInspector.StylesSidebarPane.prototype = {
+    onUndoOrRedoHappened: function()
+    {
+        this.setNode(this.node());
+    },
+
     /**
      * @param {!WebInspector.Event} event
      */
