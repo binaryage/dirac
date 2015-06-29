@@ -1249,7 +1249,13 @@ WebInspector.NetworkLogView.prototype = {
                 contextMenu.appendItem(WebInspector.UIString.capitalize("Copy ^response ^headers"), this._copyResponseHeaders.bind(this, request));
             if (request.finished)
                 contextMenu.appendItem(WebInspector.UIString.capitalize("Copy ^response"), this._copyResponse.bind(this, request));
-            contextMenu.appendItem(WebInspector.UIString("Copy as cURL"), this._copyCurlCommand.bind(this, request));
+
+            if (WebInspector.isWin()) {
+                contextMenu.appendItem(WebInspector.UIString("Copy as cURL (cmd)"), this._copyCurlCommand.bind(this, request, "win"));
+                contextMenu.appendItem(WebInspector.UIString("Copy as cURL (bash)"), this._copyCurlCommand.bind(this, request, "unix"));
+            } else {
+                contextMenu.appendItem(WebInspector.UIString("Copy as cURL"), this._copyCurlCommand.bind(this, request, "unix"));
+            }
         }
         contextMenu.appendItem(WebInspector.UIString.capitalize("Copy ^all as HAR"), this._copyAll.bind(this));
 
@@ -1319,10 +1325,11 @@ WebInspector.NetworkLogView.prototype = {
 
     /**
      * @param {!WebInspector.NetworkRequest} request
+     * @param {string} platform
      */
-    _copyCurlCommand: function(request)
+    _copyCurlCommand: function(request, platform)
     {
-        InspectorFrontendHost.copyText(this._generateCurlCommand(request));
+        InspectorFrontendHost.copyText(this._generateCurlCommand(request, platform));
     },
 
     _exportAll: function()
@@ -1711,9 +1718,10 @@ WebInspector.NetworkLogView.prototype = {
 
     /**
      * @param {!WebInspector.NetworkRequest} request
+     * @param {string} platform
      * @return {string}
      */
-    _generateCurlCommand: function(request)
+    _generateCurlCommand: function(request, platform)
     {
         var command = ["curl"];
         // These headers are derived from URL (except "version") and would be added by cURL anyway.
@@ -1769,7 +1777,7 @@ WebInspector.NetworkLogView.prototype = {
 
         // cURL command expected to run on the same platform that DevTools run
         // (it may be different from the inspected page platform).
-        var escapeString = WebInspector.isWin() ? escapeStringWin : escapeStringPosix;
+        var escapeString = platform === "win" ? escapeStringWin : escapeStringPosix;
 
         command.push(escapeString(request.url).replace(/[[{}\]]/g, "\\$&"));
 
