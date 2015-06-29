@@ -69,7 +69,7 @@ WebInspector.CPUProfileView = function(profileHeader)
     this.excludeButton.addEventListener("click", this._excludeClicked, this);
 
     this.resetButton = new WebInspector.ToolbarButton(WebInspector.UIString("Restore all functions."), "refresh-toolbar-item");
-    this.resetButton.setVisible(false);
+    this.resetButton.setEnabled(false);
     this.resetButton.addEventListener("click", this._resetClicked, this);
 
     this._profileHeader = profileHeader;
@@ -331,7 +331,7 @@ WebInspector.CPUProfileView.prototype = {
         if (!this.dataGrid.selectedNode)
             return;
 
-        this.resetButton.setVisible(true);
+        this.resetButton.setEnabled(true);
         this.profileDataGridTree.focus(this.dataGrid.selectedNode);
         this.refresh();
         this.refreshVisibleData();
@@ -346,7 +346,7 @@ WebInspector.CPUProfileView.prototype = {
 
         selectedNode.deselect();
 
-        this.resetButton.setVisible(true);
+        this.resetButton.setEnabled(true);
         this.profileDataGridTree.exclude(selectedNode);
         this.refresh();
         this.refreshVisibleData();
@@ -354,7 +354,7 @@ WebInspector.CPUProfileView.prototype = {
 
     _resetClicked: function(event)
     {
-        this.resetButton.setVisible(false);
+        this.resetButton.setEnabled(false);
         this.profileDataGridTree.restore();
         this._linkifier.reset();
         this.refresh();
