@@ -32,13 +32,15 @@
  * @constructor
  * @extends {WebInspector.TimelineOverviewBase}
  * @param {string} id
+ * @param {string} title
  * @param {!WebInspector.TimelineModel} model
  */
-WebInspector.TimelineEventOverview = function(id, model)
+WebInspector.TimelineEventOverview = function(id, title, model)
 {
     WebInspector.TimelineOverviewBase.call(this);
     this.element.id = "timeline-overview-" + id;
     this.element.classList.add("overview-strip");
+    this.element.createChild("div", "timeline-overview-strip-placeholder").textContent = title;
     this._model = model;
 }
 
@@ -124,7 +126,7 @@ WebInspector.TimelineEventOverview.prototype = {
  */
 WebInspector.TimelineEventOverview.Input = function(model)
 {
-    WebInspector.TimelineEventOverview.call(this, "input", model);
+    WebInspector.TimelineEventOverview.call(this, "input", WebInspector.UIString("Input"), model);
 }
 
 WebInspector.TimelineEventOverview.Input.prototype = {
@@ -178,7 +180,7 @@ WebInspector.TimelineEventOverview.Input.prototype = {
  */
 WebInspector.TimelineEventOverview.Network = function(model)
 {
-    WebInspector.TimelineEventOverview.call(this, "network", model);
+    WebInspector.TimelineEventOverview.call(this, "network", WebInspector.UIString("Net"), model);
 }
 
 WebInspector.TimelineEventOverview.Network.prototype = {
@@ -229,11 +231,12 @@ WebInspector.TimelineEventOverview.Network.prototype = {
  * @constructor
  * @extends {WebInspector.TimelineEventOverview}
  * @param {string} id
+ * @param {string} title
  * @param {!WebInspector.TimelineModel} model
  */
-WebInspector.TimelineEventOverview.Thread = function(id, model)
+WebInspector.TimelineEventOverview.Thread = function(id, title, model)
 {
-    WebInspector.TimelineEventOverview.call(this, id, model)
+    WebInspector.TimelineEventOverview.call(this, id, title, model)
     this._fillStyles = {};
     var categories = WebInspector.TimelineUIUtils.categories();
     for (var category in categories) {
@@ -279,7 +282,7 @@ WebInspector.TimelineEventOverview.Thread.prototype = {
  */
 WebInspector.TimelineEventOverview.MainThread = function(model)
 {
-    WebInspector.TimelineEventOverview.Thread.call(this, "main-thread", model)
+    WebInspector.TimelineEventOverview.Thread.call(this, "main-thread", WebInspector.UIString("CPU"), model)
 }
 
 WebInspector.TimelineEventOverview.MainThread.prototype = {
@@ -363,7 +366,7 @@ WebInspector.TimelineEventOverview.MainThread.prototype = {
  */
 WebInspector.TimelineEventOverview.OtherThreads = function(model)
 {
-    WebInspector.TimelineEventOverview.Thread.call(this, "other-threads", model);
+    WebInspector.TimelineEventOverview.Thread.call(this, "other-threads", WebInspector.UIString("BG"), model);
 }
 
 WebInspector.TimelineEventOverview.OtherThreads.prototype = {
@@ -435,7 +438,7 @@ WebInspector.TimelineEventOverview.OtherThreads.prototype = {
  */
 WebInspector.TimelineEventOverview.Responsiveness = function(model, frameModel)
 {
-    WebInspector.TimelineEventOverview.call(this, "responsiveness", model)
+    WebInspector.TimelineEventOverview.call(this, "responsiveness", WebInspector.UIString("Warn"), model)
     this._frameModel = frameModel;
 }
 
@@ -477,7 +480,7 @@ WebInspector.TimelineEventOverview.Responsiveness.prototype = {
  */
 WebInspector.TimelineEventOverview.Frames = function(model, frameModel)
 {
-    WebInspector.TimelineEventOverview.call(this, "framerate", model);
+    WebInspector.TimelineEventOverview.call(this, "framerate", "FPS", model);
     this._frameModel = frameModel;
 }
 
