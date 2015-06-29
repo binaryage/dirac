@@ -606,8 +606,6 @@ WebInspector.TimelinePanel.prototype = {
                 this._overviewControls.push(new WebInspector.TimelineEventOverview.Input(this._model));
             this._overviewControls.push(new WebInspector.TimelineEventOverview.Network(this._model));
             this._overviewControls.push(new WebInspector.TimelineEventOverview.MainThread(this._model));
-            this._overviewControls.push(new WebInspector.TimelineEventOverview.OtherThreads(this._model));
-            this._overviewControls.push(new WebInspector.TimelineEventOverview.Responsiveness(this._model, this._frameModel()));
             this._overviewControls.push(new WebInspector.TimelineEventOverview.Frames(this._model, this._frameModel()));
         }
         this.element.classList.toggle("timeline-overview-frames-mode", isFrameMode);
