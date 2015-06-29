@@ -1782,7 +1782,7 @@ WebInspector.CSSStyleSheetHeader.prototype = {
          */
         function textCallback(error, text)
         {
-            if (error || !text) {
+            if (error || text === null) {
                 WebInspector.console.error("Failed to get text for stylesheet " + this.id + ": " + error)
                 text = "";
                 // Fall through.
