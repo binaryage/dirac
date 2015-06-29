@@ -11,11 +11,11 @@ WebInspector.ObjectEventListenersSidebarPane = function()
     WebInspector.SidebarPane.call(this, "Event Listeners");
     this.element.classList.add("event-listeners-sidebar-pane");
 
-    var refreshButton = new WebInspector.ToolbarButton(WebInspector.UIString("Refresh"), "refresh-toolbar-item");
-    refreshButton.addEventListener("click", this._refreshClick.bind(this));
-    this.toolbar().appendToolbarItem(refreshButton);
+    this._refreshButton = new WebInspector.ToolbarButton(WebInspector.UIString("Refresh"), "refresh-toolbar-item");
+    this._refreshButton.addEventListener("click", this._refreshClick.bind(this));
+    this._refreshButton.setEnabled(false);
+    this.toolbar().appendToolbarItem(this._refreshButton);
 
-    WebInspector.context.addFlavorChangeListener(WebInspector.ExecutionContext, this.update, this);
     this._eventListenersView = new WebInspector.EventListenersView(this.element);
 }
 
@@ -38,10 +38,19 @@ WebInspector.ObjectEventListenersSidebarPane.prototype = {
         Promise.all([this._windowObjectInContext(executionContext)]).then(this._eventListenersView.addObjects.bind(this._eventListenersView));
     },
 
-    expand: function()
+    wasShown: function()
     {
-        WebInspector.SidebarPane.prototype.expand.call(this);
+        WebInspector.SidebarPane.prototype.wasShown.call(this);
+        WebInspector.context.addFlavorChangeListener(WebInspector.ExecutionContext, this.update, this);
+        this._refreshButton.setEnabled(true);
         this.update();
+    },
+
+    willHide: function()
+    {
+        WebInspector.SidebarPane.prototype.willHide.call(this);
+        WebInspector.context.removeFlavorChangeListener(WebInspector.ExecutionContext, this.update, this);
+        this._refreshButton.setEnabled(false);
     },
 
     /**
