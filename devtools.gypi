@@ -512,6 +512,7 @@
             'front_end/resources/ServiceWorkersView.js',
         ],
         'devtools_security_js_files': [
+            'front_end/security/lockIcon.css',
             'front_end/security/securityPanel.css',
             'front_end/security/SecurityModel.js',
             'front_end/security/SecurityPanel.js',

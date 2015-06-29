@@ -3,88 +3,40 @@
  * found in the LICENSE file.
  */
 
-.security.panel {
+.security-main-view {
     margin: 1em;
 }
 
-.security.panel .lock-icon,
-.security.panel .security-state {
+.security-main-view .lock-icon {
     display: inline-block;
     margin: 0.2em;
     vertical-align: middle;
 }
 
-.security.panel .security-state {
-    font-weight: bold;
+.security-main-view .security-state {
+    display: inline-block;
     font-size: 1.2em;
+    font-weight: bold;
+    margin: 0.2em;
+    vertical-align: middle;
 }
 
-.security.panel .lock-icon {
-    width: 16px;
-    height: 16px;
-    border-radius: 2px;
-    background-size: cover;
-}
-
-.security.panel .lock-icon-unknown {
-    background-image: url(Images/securityStateHttp.png);
-}
-
-.security.panel .lock-icon-http {
-    background-image: url(Images/securityStateHttp.png);
-}
-
-.security.panel .lock-icon-insecure {
-    background-image: url(Images/securityStateInsecure.png);
-}
-
-.security.panel .lock-icon-warning {
-    background-image: url(Images/securityStateWarning.png);
-}
-
-.security.panel .lock-icon-secure {
-    background-image: url(Images/securityStateSecure.png);
-}
-
-
-@media (-webkit-min-device-pixel-ratio: 1.5) {
-    .security.panel .lock-icon-unknown {
-        background-image: url(Images/securityStateHttp_2x.png);
-    }
-
-    .security.panel .lock-icon-http {
-        background-image: url(Images/securityStateHttp_2x.png);
-    }
-
-    .security.panel .lock-icon-insecure {
-        background-image: url(Images/securityStateInsecure_2x.png);
-    }
-
-    .security.panel .lock-icon-warning {
-        background-image: url(Images/securityStateWarning_2x.png);
-    }
-
-    .security.panel .lock-icon-secure {
-        background-image: url(Images/securityStateSecure_2x.png);
-    }
-}
-
-.security.panel .security-explanation {
+.security-explanation {
     margin: 16px 0px;
 }
 
-.security.panel .security-explanation .lock-icon {
+.security-explanation .lock-icon {
     display: inline-block;
     vertical-align: bottom;
 }
 
-.security.panel .security-explanation .explanation-title {
+.security-explanation .explanation-title {
     display: inline-block;
-    font-weight: bold;
     font-size: 1.2em;
+    font-weight: bold;
     margin-left: 4px;
 }
 
-.security.panel .security-explanation .explanation-text {
+.security-explanation .explanation-text {
     margin: 4px 0px;
 }

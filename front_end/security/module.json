@@ -15,6 +15,7 @@
         "SecurityPanel.js"
     ],
     "resources": [
+        "lockIcon.css",
         "securityPanel.css"
     ]
 }
