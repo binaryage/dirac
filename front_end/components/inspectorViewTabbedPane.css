@@ -10,10 +10,6 @@
     overflow: visible;
 }
 
-.tabbed-pane-header-tab:hover {
-    background-color: rgba(105, 105, 105, 0.1) !important;
-}
-
 .tabbed-pane-header-tab,
 .tabbed-pane-header-tab.selected {
     height: 26px;
