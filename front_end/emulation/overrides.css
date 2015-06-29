@@ -52,6 +52,10 @@
     color: transparent !important;
 }
 
+.overrides-view > .tabbed-pane {
+    overflow: hidden;
+}
+
 /* Network tab */
 
 .overrides-network fieldset {
