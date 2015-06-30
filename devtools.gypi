@@ -110,6 +110,7 @@
             'front_end/components/InspectElementModeController.js',
             'front_end/components/InspectorView.js',
             'front_end/components/BreakpointsSidebarPaneBase.js',
+            'front_end/components/NetworkConditionsSelector.js',
             'front_end/components/ObjectPopoverHelper.js',
             'front_end/components/ObjectPropertiesSection.js',
             'front_end/components/RemoteObjectPreviewFormatter.js',

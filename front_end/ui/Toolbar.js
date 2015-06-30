@@ -706,11 +706,11 @@ WebInspector.ToolbarComboBox = function(changeHandler, className)
 
 WebInspector.ToolbarComboBox.prototype = {
     /**
-     * @return {!Element}
+     * @return {!HTMLSelectElement}
      */
     selectElement: function()
     {
-        return this._selectElement;
+        return /** @type {!HTMLSelectElement} */ (this._selectElement);
     },
 
     /**
