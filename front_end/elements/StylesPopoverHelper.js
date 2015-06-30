@@ -1,4 +1,4 @@
- // Copyright (c) 2015 The Chromium Authors. All rights reserved.
+// Copyright (c) 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -163,14 +163,13 @@ WebInspector.BezierPopoverIcon.prototype = {
     _createDOM: function(text)
     {
         this._element = createElement("nobr");
+        this._element.title = WebInspector.UIString("Click to open a cubic bezier editor.");
 
         this._iconElement = this._element.createSVGChild("svg", "popover-icon bezier-icon");
         this._iconElement.setAttribute("height", 10);
         this._iconElement.setAttribute("width", 10);
         this._iconElement.addEventListener("click", this._iconClick.bind(this), false);
         var g = this._iconElement.createSVGChild("g");
-        var title = g.createSVGChild("title");
-        title.textContent = WebInspector.UIString("Click to open a cubic bezier editor.");
         var path = g.createSVGChild("path");
         path.setAttribute("d", "M2,8 C2,3 8,7 8,2");
 
