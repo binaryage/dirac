@@ -662,6 +662,18 @@
     line-height: 24px;
     padding-left: 10px;
     flex: none;
+    position: relative;
+    overflow: hidden;
+}
+
+.timeline-details-view-row-title .marker {
+    width: 16px;
+    height: 16px;
+    background-color: red;
+    position: absolute;
+    right: -8px;
+    top: -8px;
+    transform: rotate(45deg);
 }
 
 .timeline-details-view-row-value {

@@ -1321,7 +1321,10 @@ WebInspector.TimelineUIUtils.generateDetailsContentForFrame = function(frameMode
     var durationText = WebInspector.UIString("%s (at %s)", Number.millisToString(frame.endTime - frame.startTime, true),
         Number.millisToString(frame.startTimeOffset, true));
     var pieChart = WebInspector.TimelineUIUtils.generatePieChart(frame.timeByCategory);
-    var contentHelper = new WebInspector.TimelineDetailsContentHelper(null, null, null, true);
+    var contentHelper = new WebInspector.TimelineDetailsContentHelper(null, null, null, false);
+    var warning = WebInspector.TimelineUIUtils.frameWarning(frame);
+    if (warning)
+        contentHelper.appendElementRow(WebInspector.UIString("Warning"), warning, "red");
     if (filmStripFrame) {
         var filmStripPreview = createElementWithClass("img", "timeline-filmstrip-preview");
         filmStripFrame.imageDataPromise().then(onGotImageData.bind(null, filmStripPreview));
@@ -1356,6 +1359,22 @@ WebInspector.TimelineUIUtils.generateDetailsContentForFrame = function(frameMode
     }
 
     return contentHelper.element;
+}
+
+/**
+ * @param {!WebInspector.TimelineFrame} frame
+ * @return {?Element}
+ */
+WebInspector.TimelineUIUtils.frameWarning = function(frame)
+{
+    if (!frame.hasWarnings())
+        return null;
+    var element = createElement("span");
+    element.createTextChild("This frame was longer than 18 ms. Long frame times are an indication of jank and poor rendering performance. Read more at the ");
+    element.appendChild(WebInspector.linkifyURLAsNode("https://developers.google.com/web/fundamentals/performance/rendering/",
+                                                      "Web Fundamentals guide on Rendering Performance", undefined, true));
+    element.createTextChild(".");
+    return element;
 }
 
 /**
@@ -1855,11 +1874,15 @@ WebInspector.TimelineDetailsContentHelper.prototype = {
     /**
      * @param {string} title
      * @param {!Node|string} content
+     * @param {string=} markerColor
      */
-    appendElementRow: function(title, content)
+    appendElementRow: function(title, content, markerColor)
     {
         var rowElement = this.element.createChild("div", "timeline-details-view-row");
-        rowElement.createChild("div", "timeline-details-view-row-title").textContent = title;
+        var titleElement = rowElement.createChild("div", "timeline-details-view-row-title");
+        titleElement.textContent = title;
+        if (markerColor)
+            titleElement.createChild("div", "marker").style.backgroundColor = markerColor;
         var valueElement = rowElement.createChild("div", "timeline-details-view-row-value timeline-details-view-row-details" + (this._monospaceValues ? " monospace" : ""));
         if (content instanceof Node)
             valueElement.appendChild(content);
