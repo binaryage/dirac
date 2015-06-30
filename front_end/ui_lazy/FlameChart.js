@@ -345,7 +345,7 @@ WebInspector.FlameChart.ColorGenerator.prototype = {
         if (typeof space === "number")
             return space;
         index %= space.count;
-        return space.min + Math.floor(index / space.count * (space.max - space.min));
+        return space.min + Math.floor(index / (space.count - 1) * (space.max - space.min));
     }
 }
 

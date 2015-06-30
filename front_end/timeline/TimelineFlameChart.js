@@ -45,8 +45,8 @@ WebInspector.TimelineFlameChartDataProviderBase = function(model)
     this.addFilter(WebInspector.TimelineUIUtils.hiddenEventsFilter());
     this.addFilter(new WebInspector.ExcludeTopLevelFilter());
     this._jsFramesColorGenerator = new WebInspector.FlameChart.ColorGenerator(
-        { min: 180, max: 310, count: 7 },
-        { min: 50, max: 80, count: 5 },
+        { min: 40, max: 310, count: 10 },
+        { min: 50, max: 80, count: 3 },
         85);
 }
 
