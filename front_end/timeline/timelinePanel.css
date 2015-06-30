@@ -251,7 +251,7 @@
 }
 
 #timeline-overview-panel .overview-strip {
-    margin-top: 1px;
+    margin-top: 2px;
 }
 
 #timeline-overview-panel .overview-strip .timeline-overview-strip-placeholder {
@@ -278,7 +278,7 @@
 }
 
 #timeline-overview-network {
-    flex-basis: 35px;
+    flex-basis: 34px;
 }
 
 #timeline-overview-memory {
@@ -286,7 +286,7 @@
 }
 
 #timeline-overview-frames {
-    flex-basis: 102px;
+    flex-basis: 100px;
 }
 
 #timeline-overview-pane {
