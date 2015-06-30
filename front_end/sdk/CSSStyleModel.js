@@ -1329,6 +1329,7 @@ WebInspector.CSSProperty.prototype = {
         }
 
         var lastWasSemicolon = true;
+        var lastWasMeta = false;
         var insideProperty = false;
         /**
          * @param {string} token
@@ -1361,11 +1362,13 @@ WebInspector.CSSProperty.prototype = {
             if (isSemicolon)
                 insideProperty = false;
 
-            if (tokenType === "css-tag") {
+            if (tokenType === "css-meta" || (tokenType === "css-tag" && !lastWasMeta)) {
                 result += "\n" + indentation;
                 insideProperty = true;
             }
             result += token;
+
+            lastWasMeta = tokenType === "css-meta";
         }
     },
 
