@@ -36,6 +36,7 @@ WebInspector.DOMBreakpointsSidebarPane = function()
 {
     WebInspector.BreakpointsSidebarPaneBase.call(this, WebInspector.UIString("DOM Breakpoints"));
     this._domBreakpointsSetting = WebInspector.settings.createLocalSetting("domBreakpoints", []);
+    this.listElement.classList.add("dom-breakpoints-list");
 
     this._breakpointElements = {};
 
@@ -228,15 +229,15 @@ WebInspector.DOMBreakpointsSidebarPane.prototype = {
         element._checkboxElement = checkboxLabel.checkboxElement;
         element.appendChild(checkboxLabel);
 
-        var labelElement = createElement("span");
+        var labelElement = createElementWithClass("div", "dom-breakpoint");
         element.appendChild(labelElement);
 
         var linkifiedNode = WebInspector.DOMPresentationUtils.linkifyNodeReference(node);
         linkifiedNode.classList.add("monospace");
+        linkifiedNode.style.display = "block";
         labelElement.appendChild(linkifiedNode);
 
         var description = createElement("div");
-        description.className = "source-text";
         description.textContent = this._breakpointTypeLabels[type];
         labelElement.appendChild(description);
 

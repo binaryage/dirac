@@ -160,3 +160,12 @@ li.breakpoint-hit .breakpoint-hit-marker {
     float: right;
     margin: 2px 3px 0 2px;
 }
+
+.dom-breakpoints-list > li {
+    display: flex;
+}
+
+.dom-breakpoints-list .dom-breakpoint > div {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
