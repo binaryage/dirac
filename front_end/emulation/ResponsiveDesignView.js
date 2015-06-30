@@ -734,8 +734,10 @@ WebInspector.ResponsiveDesignView.prototype = {
         if (device && mode) {
             var orientation = device.orientationByName(mode.orientation);
             this._deviceInsets = mode.insets;
+            WebInspector.overridesSupport.settings.screenOrientationOverride.set(mode.orientation == WebInspector.EmulatedDevice.Horizontal ? "landscapePrimary" : "portraitPrimary");
         } else {
             this._deviceInsets = new Insets(0, 0, 0, 0);
+            WebInspector.overridesSupport.settings.screenOrientationOverride.set("");
         }
         this.dispatchEventToListeners(WebInspector.OverridesSupport.PageResizer.Events.InsetsChanged, this._deviceInsets);
     },
