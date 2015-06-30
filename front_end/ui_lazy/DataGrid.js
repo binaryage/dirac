@@ -105,7 +105,7 @@ WebInspector.DataGrid = function(columnsArray, editCallback, deleteCallback, ref
 
         var cell = createElement("th");
         cell.className = columnIdentifier + "-column";
-        cell.columnIdentifier = columnIdentifier;
+        cell.columnIdentifier = String(columnIdentifier);
         this._headerTableHeaders[columnIdentifier] = cell;
 
         var div = createElement("div");
