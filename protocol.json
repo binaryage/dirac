@@ -62,12 +62,6 @@
     {
         "domain": "Page",
         "description": "Actions and events related to the inspected page belong to the page domain.",
-        "capabilities": [
-            {
-                "name": "screencast",
-                "description": "Whether screencast is supported."
-            }
-        ],
         "types": [
             {
                 "id": "ResourceType",
@@ -628,12 +622,6 @@
     {
         "domain": "Emulation",
         "description": "This domain emulates different environments for the page.",
-        "capabilities": [
-            {
-                "name": "deviceMetrics",
-                "description": "Whether device metrics emulation is supported."
-            }
-        ],
         "hidden": true,
         "types": [
             {
