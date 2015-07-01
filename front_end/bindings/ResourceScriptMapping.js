@@ -238,15 +238,13 @@ WebInspector.ResourceScriptMapping.prototype = {
      */
     _bindUISourceCodeToScripts: function(uiSourceCode, scripts)
     {
-        if (this._boundURLs.has(this._networkMapping.networkURL(uiSourceCode)))
-            return;
-        this._boundURLs.add(this._networkMapping.networkURL(uiSourceCode));
         console.assert(scripts.length);
         var scriptFile = new WebInspector.ResourceScriptFile(this, uiSourceCode, scripts);
         this._setScriptFile(uiSourceCode, scriptFile);
         for (var i = 0; i < scripts.length; ++i)
             this._debuggerWorkspaceBinding.updateLocations(scripts[i]);
         this._debuggerWorkspaceBinding.setSourceMapping(this._target, uiSourceCode, this);
+        this._boundURLs.add(this._networkMapping.networkURL(uiSourceCode));
     },
 
     /**
@@ -254,7 +252,6 @@ WebInspector.ResourceScriptMapping.prototype = {
      */
     _unbindUISourceCode: function(uiSourceCode)
     {
-        this._boundURLs.delete(this._networkMapping.networkURL(uiSourceCode));
         var scriptFile = this.scriptFile(uiSourceCode);
         if (scriptFile) {
             scriptFile.dispose();
