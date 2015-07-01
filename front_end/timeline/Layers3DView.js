@@ -38,7 +38,9 @@ WebInspector.Layers3DView = function(layerViewHost)
 {
     WebInspector.VBox.call(this);
     this.element.classList.add("layers-3d-view");
-    this._emptyWidget = new WebInspector.EmptyWidget(WebInspector.UIString("Layer information is not yet available."));
+    this._failBanner = new WebInspector.VBox();
+    this._failBanner.element.classList.add("fail-banner", "fill");
+    this._failBanner.element.createTextChild(WebInspector.UIString("Layer information is not yet available."));
 
     this._layerViewHost = layerViewHost;
     this._layerViewHost.registerView(this);
@@ -62,6 +64,7 @@ WebInspector.Layers3DView = function(layerViewHost)
     this._textureManager.addEventListener(WebInspector.LayerTextureManager.Events.TextureUpdated, this._update, this);
     /** @type Array.<!WebGLTexture|undefined> */
     this._chromeTextures = [];
+    this._rects = [];
 
     WebInspector.moduleSetting("showPaintRects").addChangeListener(this._update, this);
     this._layerViewHost.showInternalLayersSetting().addChangeListener(this._update, this);
@@ -228,11 +231,13 @@ WebInspector.Layers3DView.prototype = {
 
     /**
      * @param {!Element} canvas
-     * @return {!WebGLRenderingContext}
+     * @return {?WebGLRenderingContext}
      */
     _initGL: function(canvas)
     {
         var gl = canvas.getContext("webgl");
+        if (!gl)
+            return null;
         gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
         gl.enable(gl.BLEND);
         gl.clearColor(0.0, 0.0, 0.0, 0.0);
@@ -351,11 +356,16 @@ WebInspector.Layers3DView.prototype = {
         this._textureManager.createTexture(saveChromeTexture.bind(this, WebInspector.Layers3DView.ChromeTexture.Right), "Images/chromeRight.png");
     },
 
+    /**
+     * @return {?WebGLRenderingContext}
+     */
     _initGLIfNecessary: function()
     {
         if (this._gl)
             return this._gl;
         this._gl = this._initGL(this._canvasElement);
+        if (!this._gl)
+            return null;
         this._initShaders();
         this._initWhiteTexture();
         this._initChromeTextures();
@@ -644,12 +654,18 @@ WebInspector.Layers3DView.prototype = {
             return;
         }
         if (!this._layerTree || !this._layerTree.root()) {
-            this._emptyWidget.show(this.element);
+            this._failBanner.show(this.element);
             return;
         }
-        this._emptyWidget.detach();
-
         var gl = this._initGLIfNecessary();
+        if (!gl) {
+            this._failBanner.element.removeChildren();
+            this._failBanner.element.appendChild(this._webglDisabledBanner());
+            this._failBanner.show(this.element);
+            return;
+        }
+        this._failBanner.detach();
+
         this._resizeCanvas();
         this._calculateDepthsAndVisibility();
         this._calculateRects();
@@ -661,6 +677,18 @@ WebInspector.Layers3DView.prototype = {
 
         this._rects.forEach(this._drawViewRect.bind(this));
         this._drawViewportAndChrome();
+    },
+
+    /**
+     * @return {!Node}
+     */
+    _webglDisabledBanner: function()
+    {
+        var fragment = this.element.ownerDocument.createDocumentFragment();
+        fragment.createChild("div").textContent = WebInspector.UIString("Can't display layers,");
+        fragment.createChild("div").textContent = WebInspector.UIString("WebGL support is disabled in your browser.");
+        fragment.appendChild(WebInspector.formatLocalized("Check %s for possible reasons.", [WebInspector.linkifyURLAsNode("about:gpu", undefined, undefined, true)], ""));
+        return fragment;
     },
 
     /**

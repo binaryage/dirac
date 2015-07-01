@@ -773,6 +773,21 @@
     flex: 1 1;
 }
 
+.layers-3d-view .fail-banner {
+    position: absolute;
+    font-size: 24px;
+    color: rgb(75%, 75%, 75%);
+    font-weight: bold;
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.layers-3d-view .fail-banner a {
+    color: inherit;
+}
+
 .transform-control-panel {
     white-space: nowrap;
     flex: none;
