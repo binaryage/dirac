@@ -111,10 +111,8 @@ WebInspector.FilmStripView.prototype = {
         if (!frames.length)
             return;
 
-        this.contentElement.removeChildren();
-
         if (this._mode === WebInspector.FilmStripView.Modes.FrameBased) {
-            Promise.all(frames.map(this.createFrameElement.bind(this))).spread(this.contentElement.appendChildren.bind(this.contentElement));
+            Promise.all(frames.map(this.createFrameElement.bind(this))).then(appendElements.bind(this));
             return;
         }
 
@@ -137,7 +135,7 @@ WebInspector.FilmStripView.prototype = {
                 var time = pos * scale + this._zeroTime;
                 promises.push(this.createFrameElement(this.frameByTime(time)).then(fixWidth));
             }
-            Promise.all(promises).spread(this.contentElement.appendChildren.bind(this.contentElement));
+            Promise.all(promises).then(appendElements.bind(this));
             /**
              * @param {!Element} element
              * @return {!Element}
@@ -147,6 +145,17 @@ WebInspector.FilmStripView.prototype = {
                 element.style.width = frameWidth + "px";
                 return element;
             }
+        }
+
+        /**
+         * @param {!Array.<!Element>} elements
+         * @this {WebInspector.FilmStripView}
+         */
+        function appendElements(elements)
+        {
+            this.contentElement.removeChildren();
+            for (var i = 0; i < elements.length; ++i)
+                this.contentElement.appendChild(elements[i]);
         }
     },
 
