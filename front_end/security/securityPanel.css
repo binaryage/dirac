@@ -4,6 +4,7 @@
  */
 
 .security-main-view {
+    -webkit-user-select: text;
     margin: 1em;
 }
 
