@@ -537,6 +537,14 @@ WebInspector.TimelineUIUtils._buildTraceEventDetailsSynchronously = function(eve
     var relatedNodeLabel;
 
     var contentHelper = new WebInspector.TimelineDetailsContentHelper(model.target(), linkifier, relatedNodesMap, true);
+
+    var warning = event.warning;
+    if (event.warning) {
+        var div = createElement("div");
+        div.textContent = event.warning;
+        contentHelper.appendElementRow(WebInspector.UIString("Warning"), div, true);
+    }
+
     contentHelper.appendTextRow(WebInspector.UIString("Type"), WebInspector.TimelineUIUtils.eventTitle(event));
     contentHelper.appendTextRow(WebInspector.UIString("Total Time"), Number.millisToString(event.duration || 0, true));
     contentHelper.appendTextRow(WebInspector.UIString("Self Time"), Number.millisToString(event.selfTime, true));
@@ -674,13 +682,6 @@ WebInspector.TimelineUIUtils._buildTraceEventDetailsSynchronously = function(eve
 
     if (eventData && eventData["scriptName"] && event.name !== recordTypes.FunctionCall)
         contentHelper.appendLocationRow(WebInspector.UIString("Function Call"), eventData["scriptName"], eventData["scriptLine"]);
-
-    var warning = event.warning;
-    if (warning) {
-        var div = createElement("div");
-        div.textContent = warning;
-        contentHelper.appendElementRow(WebInspector.UIString("Warning"), div);
-    }
 
     var hasChildren = WebInspector.TimelineUIUtils._aggregatedStatsForTraceEvent(stats, model, event);
     if (hasChildren) {
@@ -1324,7 +1325,7 @@ WebInspector.TimelineUIUtils.generateDetailsContentForFrame = function(frameMode
     var contentHelper = new WebInspector.TimelineDetailsContentHelper(null, null, null, false);
     var warning = WebInspector.TimelineUIUtils.frameWarning(frame);
     if (warning)
-        contentHelper.appendElementRow(WebInspector.UIString("Warning"), warning, "red");
+        contentHelper.appendElementRow(WebInspector.UIString("Warning"), warning, true);
     if (filmStripFrame) {
         var filmStripPreview = createElementWithClass("img", "timeline-filmstrip-preview");
         filmStripFrame.imageDataPromise().then(onGotImageData.bind(null, filmStripPreview));
@@ -1370,7 +1371,7 @@ WebInspector.TimelineUIUtils.frameWarning = function(frame)
     if (!frame.hasWarnings())
         return null;
     var element = createElement("span");
-    element.createTextChild("This frame was longer than 18 ms. Long frame times are an indication of jank and poor rendering performance. Read more at the ");
+    element.createTextChild("Long frame times are an indication of jank and poor rendering performance. Read more at the ");
     element.appendChild(WebInspector.linkifyURLAsNode("https://developers.google.com/web/fundamentals/performance/rendering/",
                                                       "Web Fundamentals guide on Rendering Performance", undefined, true));
     element.createTextChild(".");
@@ -1874,15 +1875,15 @@ WebInspector.TimelineDetailsContentHelper.prototype = {
     /**
      * @param {string} title
      * @param {!Node|string} content
-     * @param {string=} markerColor
+     * @param {boolean=} isWarning
      */
-    appendElementRow: function(title, content, markerColor)
+    appendElementRow: function(title, content, isWarning)
     {
         var rowElement = this.element.createChild("div", "timeline-details-view-row");
         var titleElement = rowElement.createChild("div", "timeline-details-view-row-title");
         titleElement.textContent = title;
-        if (markerColor)
-            titleElement.createChild("div", "marker").style.backgroundColor = markerColor;
+        if (isWarning)
+            titleElement.createChild("div", "timeline-details-warning-marker");
         var valueElement = rowElement.createChild("div", "timeline-details-view-row-value timeline-details-view-row-details" + (this._monospaceValues ? " monospace" : ""));
         if (content instanceof Node)
             valueElement.appendChild(content);

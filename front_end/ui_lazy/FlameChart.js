@@ -1062,6 +1062,7 @@ WebInspector.FlameChart.prototype = {
         var textPadding = this._dataProvider.textPadding();
         this._minTextWidth = 2 * textPadding + this._measureWidth(context, "\u2026");
         var minTextWidth = this._minTextWidth;
+        var unclippedWidth = width - (WebInspector.isMac() ? 0 : this._vScrollElement.offsetWidth);
 
         var barHeight = this._barHeight;
 
@@ -1155,7 +1156,7 @@ WebInspector.FlameChart.prototype = {
             var entryIndex = titleIndices[i];
             var entryStartTime = entryStartTimes[entryIndex];
             var barX = this._timeToPositionClipped(entryStartTime);
-            var barRight = Math.min(this._timeToPositionClipped(entryStartTime + entryTotalTimes[entryIndex]), width) + 1;
+            var barRight = Math.min(this._timeToPositionClipped(entryStartTime + entryTotalTimes[entryIndex]), unclippedWidth) + 1;
             var barWidth = barRight - barX;
             var barLevel = entryLevels[entryIndex];
             var barY = this._levelToHeight(barLevel);

@@ -32,7 +32,7 @@
  * @constructor
  * @extends {WebInspector.TimelineOverviewBase}
  * @param {string} id
- * @param {string} title
+ * @param {?string} title
  * @param {!WebInspector.TimelineModel} model
  */
 WebInspector.TimelineEventOverview = function(id, title, model)
@@ -40,7 +40,8 @@ WebInspector.TimelineEventOverview = function(id, title, model)
     WebInspector.TimelineOverviewBase.call(this);
     this.element.id = "timeline-overview-" + id;
     this.element.classList.add("overview-strip");
-    this.element.createChild("div", "timeline-overview-strip-placeholder").textContent = title;
+    if (title)
+        this.element.createChild("div", "timeline-overview-strip-placeholder").textContent = title;
     this._model = model;
 }
 
@@ -64,7 +65,7 @@ WebInspector.TimelineEventOverview.prototype = {
         ctx.stroke();
         ctx.fillStyle = "hsl(0, 0%, 60%)";
         ctx.font = "9px " + WebInspector.fontFamily();
-        ctx.fillText(label, 5, 9);
+        ctx.fillText(label, this._canvas.width / window.devicePixelRatio - 27, 9);
         ctx.restore();
     },
 
@@ -438,7 +439,7 @@ WebInspector.TimelineEventOverview.OtherThreads.prototype = {
  */
 WebInspector.TimelineEventOverview.Responsiveness = function(model, frameModel)
 {
-    WebInspector.TimelineEventOverview.call(this, "responsiveness", WebInspector.UIString("Warn"), model)
+    WebInspector.TimelineEventOverview.call(this, "responsiveness", null, model)
     this._frameModel = frameModel;
 }
 
@@ -455,18 +456,38 @@ WebInspector.TimelineEventOverview.Responsiveness.prototype = {
         var scale = this._canvas.width / timeSpan;
         var frames = this._frameModel.frames();
         var ctx = this._context;
-        ctx.beginPath();
-        var responsivenessStripY = (0 + 0) * window.devicePixelRatio;
         for (var i = 0; i < frames.length; ++i) {
             var frame = frames[i];
             if (!frame.hasWarnings())
                 continue;
-            var x = scale * (frame.startTime - timeOffset);
-            var w = scale * frame.duration;
-            ctx.rect(x, responsivenessStripY, w, height);
+            paintWarningDecoration(frame.startTime, frame.duration);
         }
-        ctx.fillStyle = "hsl(0, 80%, 70%)";
-        ctx.fill();
+
+        var events = this._model.mainThreadEvents();
+        for (var i = 0; i < events.length; ++i) {
+            if (!events[i].warning)
+                continue;
+            paintWarningDecoration(events[i].startTime, events[i].duration);
+        }
+
+        /**
+         * @param {number} time
+         * @param {number} duration
+         */
+        function paintWarningDecoration(time, duration)
+        {
+            var x = Math.round(scale * (time - timeOffset));
+            var w = Math.round(scale * duration);
+
+            ctx.beginPath();
+            ctx.rect(x, 0, w, height);
+            ctx.fillStyle = "hsl(0, 80%, 90%)";
+            ctx.fill();
+            ctx.beginPath();
+            ctx.rect(x + w - 2, 0, 2, height);
+            ctx.fillStyle = "red";
+            ctx.fill();
+        }
     },
 
     __proto__: WebInspector.TimelineEventOverview.prototype

@@ -572,6 +572,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
     decorateEntry: function(entryIndex, context, text, barX, barY, barWidth, barHeight)
     {
         var frame = this._entryIndexToFrame[entryIndex];
+        var /** @const */ triangleSize = 10;
         if (frame) {
             var /** @const */ vPadding = 1;
             var /** @const */ hPadding = 1;
@@ -580,8 +581,13 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
             barY += vPadding;
             barHeight -= 2 * vPadding + 1;
 
-            context.fillStyle = frame.idle ? "white" : frame.hasWarnings() ? "hsl(0, 80%, 70%)" : "#eee";
+            context.fillStyle = frame.idle ? "white" : "#eee";
             context.fillRect(barX, barY, barWidth, barHeight);
+            if (frame.hasWarnings()) {
+                context.save();
+                paintWarningDecoration();
+                context.restore();
+            }
 
             var frameDurationText = Number.preciseMillisToString(frame.duration, 1);
             var textWidth = context.measureText(frameDurationText).width;
@@ -608,16 +614,18 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
 
             context.rect(barX, barY, barWidth, this.barHeight());
             context.clip();
+            paintWarningDecoration();
+            context.restore();
+        }
 
+        function paintWarningDecoration()
+        {
             context.beginPath();
-            var /** @const */ triangleSize = 10;
             context.fillStyle = "red";
             context.moveTo(barX + barWidth - triangleSize, barY + 1);
             context.lineTo(barX + barWidth - 1, barY + 1);
             context.lineTo(barX + barWidth - 1, barY + triangleSize);
             context.fill();
-
-            context.restore();
         }
 
         return true;

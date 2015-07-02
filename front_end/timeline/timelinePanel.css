@@ -256,8 +256,8 @@
 
 #timeline-overview-panel .overview-strip .timeline-overview-strip-placeholder {
     position: absolute;
-    right: 0;
-    bottom: 1px;
+    left: 0;
+    top: 1px;
     color: #888;
     padding: 0 4px;
     font-size: 11px;
@@ -274,11 +274,11 @@
 #timeline-overview-input,
 #timeline-overview-other-threads,
 #timeline-overview-responsiveness {
-    flex-basis: 10px;
+    flex-basis: 7px;
 }
 
 #timeline-overview-network {
-    flex-basis: 34px;
+    flex-basis: 25px;
 }
 
 #timeline-overview-memory {
@@ -666,7 +666,7 @@
     overflow: hidden;
 }
 
-.timeline-details-view-row-title .marker {
+.timeline-details-view-row-title .timeline-details-warning-marker {
     width: 16px;
     height: 16px;
     background-color: red;

@@ -576,7 +576,7 @@ WebInspector.TimelineFrame.prototype = {
      */
     hasWarnings: function()
     {
-        var /** @const */ longFrameDurationThresholdMs = 18;
+        var /** @const */ longFrameDurationThresholdMs = 22;
         return !this.idle && this.duration > longFrameDurationThresholdMs;
     },
 
