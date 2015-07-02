@@ -489,6 +489,101 @@ TestSuite.prototype.testDeviceMetricsOverrides = function()
     this.waitForThrottler(WebInspector.overridesSupport._deviceMetricsThrottler, step1);
 };
 
+TestSuite.prototype.testScreenshotRecording = function()
+{
+    var test = this;
+
+    function performActionsInPage(callback)
+    {
+        var count = 0;
+        var div = document.createElement("div");
+        div.setAttribute("style", "left: 0px; top: 0px; width: 100px; height: 100px; position: absolute;");
+        document.body.appendChild(div);
+        requestAnimationFrame(frame);
+        function frame()
+        {
+            var color = [0, 0, 0];
+            color[count % 3] = 255;
+            div.style.backgroundColor = "rgb(" + color.join(",") + ")";
+            if (++count > 10)
+                requestAnimationFrame(callback);
+            else
+                requestAnimationFrame(frame);
+        }
+    }
+
+    Runtime.experiments.enableForTest("filmStripInNetworkAndTimeline");
+    var captureFilmStripSetting = WebInspector.settings.createSetting("timelineCaptureFilmStrip", false);
+    captureFilmStripSetting.set(true);
+    test.evaluateInConsole_(performActionsInPage.toString(), function() {});
+    test.invokeAsyncWithTimeline_("performActionsInPage", onTimelineDone);
+
+    function onTimelineDone()
+    {
+        captureFilmStripSetting.set(false);
+        var filmStripModel = new WebInspector.FilmStripModel(WebInspector.panels.timeline._tracingModel);
+        var frames = filmStripModel.frames();
+        test.assertTrue(frames.length > 4 && typeof frames.length === "number");
+        loadFrameImages(frames);
+    }
+
+    function loadFrameImages(frames)
+    {
+        var readyImages = [];
+        for (var frame of frames)
+            frame.imageDataPromise().then(onGotImageData)
+
+        function onGotImageData(data)
+        {
+            var image = new Image();
+            test.assertTrue(!!data, "No image data for frame");
+            image.addEventListener("load", onLoad);
+            image.src = "data:image/jpg;base64," + data;
+        }
+
+        function onLoad(event)
+        {
+            readyImages.push(event.target);
+            if (readyImages.length === frames.length)
+                validateImagesAndCompleteTest(readyImages);
+        }
+    }
+
+    function validateImagesAndCompleteTest(images)
+    {
+        var redString = [255, 0, 0, 255].join(",");
+        var greenString = [0, 255, 0, 255].join(",");
+        var blueString = [0, 0, 255, 255].join(",");
+        var redCount = 0;
+        var greenCount = 0;
+        var blueCount = 0;
+
+        var canvas = document.createElement("canvas");
+        var ctx = canvas.getContext("2d");
+        for (var image of images) {
+            test.assertTrue(image.naturalWidth > 10);
+            test.assertTrue(image.naturalHeight > 10);
+            canvas.width = image.naturalWidth;
+            canvas.height = image.naturalHeight;
+            ctx.drawImage(image, 0, 0);
+            var data = ctx.getImageData(0, 0, 1, 1);
+            var color = Array.prototype.join.call(data.data, ",");
+            if (color === redString)
+                redCount++;
+            else if (color === greenString)
+                greenCount++;
+            else if (color === blueString)
+                blueCount++;
+            else
+                test.fail("Unexpected color: " + color);
+        }
+        test.assertTrue(redCount && greenCount && blueCount, "Color sanity check failed");
+        test.releaseControl();
+    }
+
+    test.takeControl();
+}
+
 TestSuite.prototype.testSettings = function()
 {
     var test = this;
@@ -549,6 +644,43 @@ TestSuite.prototype.waitForTestResultsInConsole = function()
 
     WebInspector.multitargetConsoleModel.addEventListener(WebInspector.ConsoleModel.Events.MessageAdded, onConsoleMessage, this);
     this.takeControl();
+};
+
+TestSuite.prototype.invokeAsyncWithTimeline_ = function(functionName, callback)
+{
+    var test = this;
+    test.showPanel("timeline").then(function() {
+        WebInspector.panels.timeline._model.addEventListener(WebInspector.TimelineModel.Events.RecordingStarted, onRecordingStarted);
+        WebInspector.panels.timeline.toggleTimelineButton.element.click();
+    });
+
+    function onRecordingStarted()
+    {
+        WebInspector.panels.timeline._model.removeEventListener(WebInspector.TimelineModel.Events.RecordingStarted, onRecordingStarted);
+        test.evaluateInConsole_(functionName + "(function() { console.log('DONE'); });", function() {});
+        WebInspector.multitargetConsoleModel.addEventListener(WebInspector.ConsoleModel.Events.MessageAdded, onConsoleMessage);
+    }
+
+    function onConsoleMessage(event)
+    {
+        var text = event.data.messageText;
+        if (text === "DONE") {
+            WebInspector.multitargetConsoleModel.removeEventListener(WebInspector.ConsoleModel.Events.MessageAdded, onConsoleMessage);
+            pageActionsDone();
+        }
+    }
+
+    function pageActionsDone()
+    {
+        WebInspector.panels.timeline._model.addEventListener(WebInspector.TimelineModel.Events.RecordingStopped, onRecordingStopped);
+        WebInspector.panels.timeline.toggleTimelineButton.element.click();
+    }
+
+    function onRecordingStopped()
+    {
+        WebInspector.panels.timeline._model.removeEventListener(WebInspector.TimelineModel.Events.RecordingStopped, onRecordingStopped);
+        callback();
+    }
 };
 
 /**
