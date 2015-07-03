@@ -939,7 +939,13 @@ WebInspector.CodeMirrorTextEditor.prototype = {
         else if (whitespaceMode === "trailing")
             mimeType = this._trailingWhitespaceOverlayMode(this._mimeType);
         this._codeMirror.setOption("mode", mimeType);
-        WebInspector.CodeMirrorTextEditor._loadMimeTypeModes(this._mimeType, this._updateCodeMirrorMode.bind(this));
+        WebInspector.CodeMirrorTextEditor._loadMimeTypeModes(this._mimeType, this._mimeTypeModesLoaded.bind(this));
+    },
+
+    _mimeTypeModesLoaded: function()
+    {
+        // Do not remove, this function is sniffed in tests.
+        this._updateCodeMirrorMode();
     },
 
     /**
