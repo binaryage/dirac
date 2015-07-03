@@ -40,33 +40,18 @@ WebInspector.TimelineEventOverview = function(id, title, model)
     WebInspector.TimelineOverviewBase.call(this);
     this.element.id = "timeline-overview-" + id;
     this.element.classList.add("overview-strip");
-    if (title)
-        this.element.createChild("div", "timeline-overview-strip-placeholder").textContent = title;
+    if (title) {
+        this._placeholder = this.element.createChild("div", "timeline-overview-strip-placeholder");
+        this._placeholder.textContent = title;
+    }
     this._model = model;
 }
 
 WebInspector.TimelineEventOverview.prototype = {
-    /**
-     * @param {number} y
-     * @param {string} label
-     */
-    _drawHorizontalGuide: function(y, label)
+    _updatePlaceholder: function()
     {
-        var ctx = this._context;
-        ctx.save();
-        ctx.translate(0, y);
-        ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
-        ctx.beginPath();
-        ctx.moveTo(0, 0);
-        ctx.lineTo(this._canvas.width, 0);
-        ctx.strokeStyle = "hsl(0, 0%, 85%)";
-        ctx.setLineDash([3]);
-        ctx.lineWidth = 1;
-        ctx.stroke();
-        ctx.fillStyle = "hsl(0, 0%, 60%)";
-        ctx.font = "9px " + WebInspector.fontFamily();
-        ctx.fillText(label, this._canvas.width / window.devicePixelRatio - 27, 9);
-        ctx.restore();
+        if (this._placeholder)
+            this._placeholder.classList.toggle("hidden", !this._model.isEmpty());
     },
 
     /**
@@ -181,7 +166,7 @@ WebInspector.TimelineEventOverview.Input.prototype = {
  */
 WebInspector.TimelineEventOverview.Network = function(model)
 {
-    WebInspector.TimelineEventOverview.call(this, "network", WebInspector.UIString("Net"), model);
+    WebInspector.TimelineEventOverview.call(this, "network", WebInspector.UIString("Network"), model);
 }
 
 WebInspector.TimelineEventOverview.Network.prototype = {
@@ -191,6 +176,7 @@ WebInspector.TimelineEventOverview.Network.prototype = {
     update: function()
     {
         this.resetCanvas();
+        this._updatePlaceholder();
         var events = this._model.mainThreadEvents();
         var height = this._canvas.height;
         var /** @const */ maxBandHeight = 4 * window.devicePixelRatio;
@@ -293,6 +279,7 @@ WebInspector.TimelineEventOverview.MainThread.prototype = {
     update: function()
     {
         this.resetCanvas();
+        this._updatePlaceholder();
         var events = this._model.mainThreadEvents();
         if (!events.length)
             return;
@@ -314,8 +301,6 @@ WebInspector.TimelineEventOverview.MainThread.prototype = {
         for (var i = idleIndex + 1; i < categoryOrder.length; ++i)
             categories[categoryOrder[i]]._overviewIndex = i;
         var categoryIndexStack = [];
-
-        this._drawHorizontalGuide(baseLine - height + 0.5, WebInspector.UIString("100%"));
 
         /**
          * @param {!Array<number>} counters
@@ -377,6 +362,7 @@ WebInspector.TimelineEventOverview.OtherThreads.prototype = {
     update: function()
     {
         this.resetCanvas();
+        this._updatePlaceholder();
         this._model.virtualThreads().forEach(this._drawThread.bind(this));
     },
 
@@ -456,6 +442,8 @@ WebInspector.TimelineEventOverview.Responsiveness.prototype = {
         var scale = this._canvas.width / timeSpan;
         var frames = this._frameModel.frames();
         var ctx = this._context;
+        var fillPath = new Path2D();
+        var markersPath = new Path2D();
         for (var i = 0; i < frames.length; ++i) {
             var frame = frames[i];
             if (!frame.hasWarnings())
@@ -470,6 +458,12 @@ WebInspector.TimelineEventOverview.Responsiveness.prototype = {
             paintWarningDecoration(events[i].startTime, events[i].duration);
         }
 
+        ctx.fillStyle = "hsl(0, 80%, 90%)";
+        ctx.strokeStyle = "red";
+        ctx.lineWidth = 2 * window.devicePixelRatio;
+        ctx.fill(fillPath);
+        ctx.stroke(markersPath);
+
         /**
          * @param {number} time
          * @param {number} duration
@@ -478,15 +472,9 @@ WebInspector.TimelineEventOverview.Responsiveness.prototype = {
         {
             var x = Math.round(scale * (time - timeOffset));
             var w = Math.round(scale * duration);
-
-            ctx.beginPath();
-            ctx.rect(x, 0, w, height);
-            ctx.fillStyle = "hsl(0, 80%, 90%)";
-            ctx.fill();
-            ctx.beginPath();
-            ctx.rect(x + w - 2, 0, 2, height);
-            ctx.fillStyle = "red";
-            ctx.fill();
+            fillPath.rect(x, 0, w, height);
+            markersPath.moveTo(x + w, 0);
+            markersPath.lineTo(x + w, height);
         }
     },
 
@@ -501,7 +489,7 @@ WebInspector.TimelineEventOverview.Responsiveness.prototype = {
  */
 WebInspector.TimelineEventOverview.Frames = function(model, frameModel)
 {
-    WebInspector.TimelineEventOverview.call(this, "framerate", "FPS", model);
+    WebInspector.TimelineEventOverview.call(this, "framerate", "Framerate", model);
     this._frameModel = frameModel;
 }
 
@@ -512,6 +500,7 @@ WebInspector.TimelineEventOverview.Frames.prototype = {
     update: function()
     {
         this.resetCanvas();
+        this._updatePlaceholder();
         var height = this._canvas.height;
         var /** @const */ padding = 1 * window.devicePixelRatio;
         var /** @const */ baseFrameDurationMs = 1e3 / 60;
@@ -526,8 +515,6 @@ WebInspector.TimelineEventOverview.Frames.prototype = {
         var y = bottomY;
         if (!frames.length)
             return;
-
-        this._drawHorizontalGuide(baseY - visualHeight - 0.5, WebInspector.UIString("60\u2009fps"));
 
         var lineWidth = window.devicePixelRatio;
         var offset = lineWidth & 1 ? 0.5 : 0;

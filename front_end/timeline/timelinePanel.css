@@ -257,28 +257,63 @@
 #timeline-overview-panel .overview-strip .timeline-overview-strip-placeholder {
     position: absolute;
     left: 0;
-    top: 1px;
-    color: #888;
-    padding: 0 4px;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    color: #ccc;
+    text-align: center;
     font-size: 11px;
+    line-height: 22px;
     font-weight: bold;
     text-transform: uppercase;
-    background-color: hsla(0, 0%, 100%, 0.6);
+    z-index: -100;
 }
 
+#timeline-overview-network,
 #timeline-overview-main-thread,
 #timeline-overview-framerate {
-    flex-basis: 20px;
+    flex-basis: 22px;
+}
+
+#timeline-overview-network::before,
+#timeline-overview-main-thread::before,
+#timeline-overview-framerate::before {
+    content: "";
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    color: #bbb;
+    text-align: right;
+    padding: 1px 4px;
+    font-size: 9px;
+    border-top: 1px dashed hsla(0, 0%, 0%, 0.15);
+    border-bottom: 1px solid hsla(0, 0%, 0%, 0.06);
+    background-color: hsla(0, 0%, 0%, 0.03);
+    z-index: -200;
+}
+
+#timeline-overview-network::before {
+    border-top: 1px solid hsla(0, 0%, 0%, 0.06);
+}
+
+#timeline-overview-main-thread::before {
+    content: "100%";
+}
+
+#timeline-overview-framerate::before {
+    content: "60 fps";
+}
+
+#timeline-overview-responsiveness {
+    flex-basis: 7px;
+    margin-top: 1px !important;
 }
 
 #timeline-overview-input,
-#timeline-overview-other-threads,
-#timeline-overview-responsiveness {
-    flex-basis: 7px;
-}
-
-#timeline-overview-network {
-    flex-basis: 25px;
+#timeline-overview-other-threads {
+    flex-basis: 6px;
 }
 
 #timeline-overview-memory {
