@@ -12,9 +12,9 @@ WebInspector.EmulatedDevice = function()
     /** @type {string} */
     this.type = WebInspector.EmulatedDevice.Type.Unknown;
     /** @type {!WebInspector.EmulatedDevice.Orientation} */
-    this.vertical = {width: 0, height: 0, outlineInsets: null, outlineImages: null};
+    this.vertical = {width: 0, height: 0, outlineInsets: null, outlineImage: null};
     /** @type {!WebInspector.EmulatedDevice.Orientation} */
-    this.horizontal = {width: 0, height: 0, outlineInsets: null, outlineImages: null};
+    this.horizontal = {width: 0, height: 0, outlineInsets: null, outlineImage: null};
     /** @type {number} */
     this.deviceScaleFactor = 1;
     /** @type {!Array.<string>} */
@@ -33,10 +33,10 @@ WebInspector.EmulatedDevice = function()
     this._extension = null;
 }
 
-/** @typedef {!{title: string, orientation: string, insets: !Insets, images: ?WebInspector.EmulatedDevice.Images}} */
+/** @typedef {!{title: string, orientation: string, insets: !Insets, image: ?string}} */
 WebInspector.EmulatedDevice.Mode;
 
-/** @typedef {!{width: number, height: number, outlineInsets: ?Insets, outlineImages: ?WebInspector.EmulatedDevice.Images}} */
+/** @typedef {!{width: number, height: number, outlineInsets: ?Insets, outlineImage: ?string}} */
 WebInspector.EmulatedDevice.Orientation;
 
 WebInspector.EmulatedDevice.Horizontal = "horizontal";
@@ -112,25 +112,6 @@ WebInspector.EmulatedDevice.fromJSONV1 = function(json)
 
         /**
          * @param {*} json
-         * @return {!WebInspector.EmulatedDevice.Images}
-         */
-        function parseImages(json)
-        {
-            if (!Array.isArray(json))
-                throw new Error("Emulated device images is not an array");
-            var result = new WebInspector.EmulatedDevice.Images();
-            for (var i = 0; i < json.length; ++i) {
-                var src = /** @type {string} */ (parseValue(json[i], "src", "string"));
-                var scale = /** @type {number} */ (parseValue(json[i], "scale", "number"));
-                if (scale <= 0)
-                    throw new Error("Emulated device property image scale must be positive");
-                result.addSource(src, scale);
-            }
-            return result;
-        }
-
-        /**
-         * @param {*} json
          * @return {!WebInspector.EmulatedDevice.Orientation}
          */
         function parseOrientation(json)
@@ -150,7 +131,7 @@ WebInspector.EmulatedDevice.fromJSONV1 = function(json)
                 result.outlineInsets = parseInsets(outlineInsets);
                 if (result.outlineInsets.left < 0 || result.outlineInsets.top < 0)
                     throw new Error("Emulated device has wrong outline insets");
-                result.outlineImages = parseImages(parseValue(json["outline"], "images", "object"));
+                result.outlineImage = /** @type {string} */ (parseValue(json["outline"], "image", "string"));
             }
 
             return /** @type {!WebInspector.EmulatedDevice.Orientation} */ (result);
@@ -194,8 +175,7 @@ WebInspector.EmulatedDevice.fromJSONV1 = function(json)
                 mode.insets.top + mode.insets.bottom > orientation.height || mode.insets.left + mode.insets.right > orientation.width) {
                 throw new Error("Emulated device mode '" + mode.title + "'has wrong mode insets");
             }
-            if (modes[i].hasOwnProperty("images"))
-                mode.images = parseImages(parseValue(modes[i], "images", "object"));
+            mode.image = /** @type {string} */ (parseValue(modes[i], "image", "string", null));
             result.modes.push(mode);
         }
 
@@ -301,8 +281,8 @@ WebInspector.EmulatedDevice.prototype = {
             mode["insets"]["top"] = this.modes[i].insets.top;
             mode["insets"]["right"] = this.modes[i].insets.right;
             mode["insets"]["bottom"] = this.modes[i].insets.bottom;
-            if (this.modes[i].images)
-                mode["images"] = this.modes[i].images._toJSON();
+            if (this.modes[i].image)
+                mode["image"] = this.modes[i].image;
             json["modes"].push(mode);
         }
 
@@ -328,7 +308,7 @@ WebInspector.EmulatedDevice.prototype = {
             json["outline"]["insets"]["top"] = orientation.outlineInsets.top;
             json["outline"]["insets"]["right"] = orientation.outlineInsets.right;
             json["outline"]["insets"]["bottom"] = orientation.outlineInsets.bottom;
-            json["outline"]["images"] = orientation.outlineImages._toJSON();
+            json["outline"]["image"] = orientation.outlineImage;
         }
         return json;
     },
@@ -348,6 +328,19 @@ WebInspector.EmulatedDevice.prototype = {
         result.touch = this.touch();
         result.mobile = this.mobile();
         return result;
+    },
+
+    /**
+     * @param {!WebInspector.EmulatedDevice.Mode} mode
+     * @return {string}
+     */
+    modeImage: function(mode)
+    {
+        if (!mode.image)
+            return "";
+        if (!this._extension)
+            return mode.image;
+        return this._extension.module().substituteURL(mode.image);
     },
 
     /**
@@ -407,43 +400,6 @@ WebInspector.EmulatedDevice.prototype = {
  * @constructor
  * @extends {WebInspector.Object}
  */
-WebInspector.EmulatedDevice.Images = function()
-{
-    WebInspector.Object.call(this);
-    this._sources = [];
-    this._scales = [];
-}
-
-WebInspector.EmulatedDevice.Images.prototype = {
-    /**
-     * @return {*}
-     */
-    _toJSON: function()
-    {
-        var result = [];
-        for (var i = 0; i < this._sources.length; ++i)
-            result.push({src: this._sources[i], scale: this._scales[i]});
-        return result;
-    },
-
-    /**
-     * @param {string} src
-     * @param {number} scale
-     */
-    addSource: function(src, scale)
-    {
-        this._sources.push(src);
-        this._scales.push(scale);
-    },
-
-    __proto__: WebInspector.Object.prototype
-}
-
-
-/**
- * @constructor
- * @extends {WebInspector.Object}
- */
 WebInspector.EmulatedDevicesList = function()
 {
     WebInspector.Object.call(this);
@@ -494,8 +450,8 @@ WebInspector.EmulatedDevicesList.prototype = {
             if (device) {
                 result.push(device);
                 if (!device.modes.length) {
-                    device.modes.push({title: "", orientation: WebInspector.EmulatedDevice.Horizontal, insets: new Insets(0, 0, 0, 0), images: null});
-                    device.modes.push({title: "", orientation: WebInspector.EmulatedDevice.Vertical, insets: new Insets(0, 0, 0, 0), images: null});
+                    device.modes.push({title: "", orientation: WebInspector.EmulatedDevice.Horizontal, insets: new Insets(0, 0, 0, 0), image: null});
+                    device.modes.push({title: "", orientation: WebInspector.EmulatedDevice.Vertical, insets: new Insets(0, 0, 0, 0), image: null});
                 }
             }
         }
