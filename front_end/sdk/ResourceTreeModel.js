@@ -107,20 +107,17 @@ WebInspector.ResourceTreeModel.prototype = {
     {
         /** @type {!Object.<string, !WebInspector.ResourceTreeFrame>} */
         this._frames = {};
-
-        if (this.target().isDedicatedWorker()) {
-            this._cachedResourcesProcessed = true;
-            return;
-        }
-
-        delete this._cachedResourcesProcessed;
+        this._cachedResourcesProcessed = false;
         this._agent.getResourceTree(this._processCachedResources.bind(this));
     },
 
     _processCachedResources: function(error, mainFramePayload)
     {
         if (error) {
-            console.error(JSON.stringify(error));
+            // FIXME: support targets that don't have resourceTreeModel.
+            if (this.target().isPage() || this.target().isServiceWorker())
+                console.error(JSON.stringify(error));
+            this._cachedResourcesProcessed = true;
             return;
         }
 
