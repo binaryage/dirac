@@ -483,14 +483,10 @@ WebInspector.CSSStyleModel.prototype = {
      */
     _fireStyleSheetChanged: function(styleSheetId)
     {
-        if (!this._pendingCommandsMajorState.length)
-            return;
-
-        var majorChange = this._pendingCommandsMajorState[this._pendingCommandsMajorState.length - 1];
-
         if (!styleSheetId || !this.hasEventListeners(WebInspector.CSSStyleModel.Events.StyleSheetChanged))
             return;
 
+        var majorChange = this._pendingCommandsMajorState[this._pendingCommandsMajorState.length - 1] || false;
         this.dispatchEventToListeners(WebInspector.CSSStyleModel.Events.StyleSheetChanged, { styleSheetId: styleSheetId, majorChange: majorChange });
     },
 
