@@ -4849,6 +4849,10 @@
                 "description": "Enables animation domain notifications."
             },
             {
+                "name": "disable",
+                "description": "Disables animation domain notifications."
+            },
+            {
                 "name": "getAnimationPlayersForNode",
                 "parameters": [
                     { "name": "nodeId", "$ref": "DOM.NodeId", "description": "Id of the node to get animation players for." },
