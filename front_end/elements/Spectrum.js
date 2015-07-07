@@ -80,8 +80,8 @@ WebInspector.Spectrum = function()
         var inputValue = this._displayContainer.createChild("input", "spectrum-text-value");
         inputValue.maxLength = 4;
         this._textValues.push(inputValue);
-        inputValue.addEventListener("keyup", this._inputChanged.bind(this));
-        inputValue.addEventListener("mousewheel", this._inputChanged.bind(this));
+        inputValue.addEventListener("keydown", this._inputChanged.bind(this), false);
+        inputValue.addEventListener("mousewheel", this._inputChanged.bind(this), false);
     }
 
     this._textLabels = this._displayContainer.createChild("div", "spectrum-text-label");
@@ -90,8 +90,8 @@ WebInspector.Spectrum = function()
     this._hexContainer = this.contentElement.createChild("div", "spectrum-text spectrum-text-hex source-code");
     this._hexValue = this._hexContainer.createChild("input", "spectrum-text-value");
     this._hexValue.maxLength = 7;
-    this._hexValue.addEventListener("keyup", this._inputChanged.bind(this));
-    this._hexValue.addEventListener("mousewheel", this._inputChanged.bind(this));
+    this._hexValue.addEventListener("keydown", this._inputChanged.bind(this), false);
+    this._hexValue.addEventListener("mousewheel", this._inputChanged.bind(this), false);
 
     var label = this._hexContainer.createChild("div", "spectrum-text-label");
     label.textContent = "HEX";
@@ -323,6 +323,7 @@ WebInspector.Spectrum.prototype = {
                 inputElement.selectionStart = 0;
                 inputElement.selectionEnd = newValue.length;
             }
+            event.consume(true);
         }
 
         const cf = WebInspector.Color.Format;
