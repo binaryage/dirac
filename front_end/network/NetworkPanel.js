@@ -573,7 +573,7 @@ WebInspector.NetworkPanel.prototype = {
         // FIXME: Unify all time units across the frontend!
         this._overviewPane.setBounds(this._calculator.minimumBoundary() * 1000, this._calculator.maximumBoundary() * 1000);
         this._networkOverview.updateRequest(request);
-        this._overviewPane.update();
+        this._overviewPane.scheduleUpdate();
     },
 
     __proto__: WebInspector.Panel.prototype

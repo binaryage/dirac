@@ -834,7 +834,7 @@ WebInspector.TimelinePanel.prototype = {
         for (var i = 0; i < this._overviewControls.length; ++i)
             this._overviewControls[i].timelineStopped();
         this._setMarkers();
-        this._overviewPane.update();
+        this._overviewPane.scheduleUpdate();
         this._updateSearchHighlight(false, true);
     },
 

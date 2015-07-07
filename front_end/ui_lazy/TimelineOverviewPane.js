@@ -55,6 +55,8 @@ WebInspector.TimelineOverviewPane = function(prefix)
     this._popoverHelper = new WebInspector.PopoverHelper(this._cursorArea, this._getPopoverAnchor.bind(this), this._showPopover.bind(this), this._onHidePopover.bind(this));
     this._popoverHelper.setTimeout(0);
 
+    this._updateThrottler = new WebInspector.Throttler(100);
+
     this._cursorEnabled = false;
     this._lastWidth = 0;
 }
@@ -167,7 +169,7 @@ WebInspector.TimelineOverviewPane.prototype = {
      */
     wasShown: function()
     {
-        this.update();
+        this._update();
     },
 
     /**
@@ -179,7 +181,7 @@ WebInspector.TimelineOverviewPane.prototype = {
         if (width === this._lastWidth)
             return;
         this._lastWidth = width;
-        this.update();
+        this.scheduleUpdate();
     },
 
     /**
@@ -195,7 +197,7 @@ WebInspector.TimelineOverviewPane.prototype = {
             overviewControls[i].show(this._overviewGrid.element);
         }
         this._overviewControls = overviewControls;
-        this.update();
+        this.scheduleUpdate();
     },
 
     /**
@@ -209,7 +211,21 @@ WebInspector.TimelineOverviewPane.prototype = {
         this._cursorEnabled = true;
     },
 
-    update: function()
+    scheduleUpdate: function()
+    {
+        this._updateThrottler.schedule(process.bind(this));
+        /**
+         * @this {WebInspector.TimelineOverviewPane}
+         * @param {!WebInspector.Throttler.FinishCallback} callback
+         */
+        function process(callback)
+        {
+            this._update();
+            callback();
+        }
+    },
+
+    _update: function()
     {
         if (!this.isShowing())
             return;
@@ -258,7 +274,7 @@ WebInspector.TimelineOverviewPane.prototype = {
         for (var i = 0; i < this._overviewControls.length; ++i)
             this._overviewControls[i].reset();
         this._popoverHelper.hidePopover();
-        this.update();
+        this._update();
     },
 
     /**
