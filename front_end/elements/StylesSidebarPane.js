@@ -282,16 +282,6 @@ WebInspector.StylesSidebarPane.prototype = {
      */
     setNode: function(node)
     {
-        // We should update SSP on main frame navigation only.
-        var mainFrameNavigated = node && this.node() && node.ownerDocument !== this.node().ownerDocument;
-        if (!mainFrameNavigated && node !== this.node()) {
-            this.element.classList.toggle("no-affect", this._isEditingStyle);
-            if (this._isEditingStyle) {
-                this._pendingNode = node;
-                return;
-            }
-        }
-
         this._stylesPopoverHelper.hide();
         node = WebInspector.SharedSidebarModel.elementNode(node);
 
@@ -427,10 +417,6 @@ WebInspector.StylesSidebarPane.prototype = {
         if (this._isEditingStyle === editing)
             return;
         this._isEditingStyle = editing;
-        if (!editing && this._pendingNode) {
-            this.setNode(this._pendingNode);
-            delete this._pendingNode;
-        }
     },
 
     /**
