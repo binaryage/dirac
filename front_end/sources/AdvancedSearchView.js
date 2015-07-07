@@ -24,7 +24,7 @@ WebInspector.AdvancedSearchView = function()
 
     this._search = WebInspector.HistoryInput.create();
     this._searchPanelElement.appendChild(this._search);
-    this._search.placeholder = WebInspector.UIString("Search sources");
+    this._search.placeholder = WebInspector.UIString("Use 'file:' to define search scope");
     this._search.setAttribute("type", "text");
     this._search.classList.add("search-config-search");
     this._search.setAttribute("results", "0");
