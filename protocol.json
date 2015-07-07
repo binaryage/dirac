@@ -3083,6 +3083,16 @@
                 ],
                 "description": "Returns all media queries parsed by the rendering engine.",
                 "hidden": true
+            },
+            {
+                "name": "setEffectivePropertyValueForNode",
+                "parameters": [
+                    { "name": "nodeId", "$ref": "DOM.NodeId", "description": "The element id for which to set property." },
+                    { "name": "propertyName", "type": "string"},
+                    { "name": "value", "type": "string"}
+                ],
+                "description": "Find a rule with the given active property for the given node and set the new value for this property",
+                "hidden": true
             }
         ],
         "events": [
