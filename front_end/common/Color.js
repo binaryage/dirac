@@ -37,14 +37,20 @@ WebInspector.Color = function(rgba, format, originalText)
 {
     this._rgba = rgba;
     this._originalText = originalText || null;
+    this._originalTextIsValid = !!this._originalText;
     this._format = format;
     if (typeof this._rgba[3] === "undefined")
         this._rgba[3] = 1;
+
     for (var i = 0; i < 4; ++i) {
-        if (this._rgba[i] < 0)
+        if (this._rgba[i] < 0) {
             this._rgba[i] = 0;
-        if (this._rgba[i] > 1)
+            this._originalTextIsValid = false;
+        }
+        if (this._rgba[i] > 1) {
             this._rgba[i] = 1;
+            this._originalTextIsValid = false;
+        }
     }
 }
 
@@ -274,6 +280,9 @@ WebInspector.Color.prototype = {
      */
     asString: function(format)
     {
+        if (format === this._format && this._originalTextIsValid)
+            return this._originalText;
+
         if (!format)
             format = this._format;
 

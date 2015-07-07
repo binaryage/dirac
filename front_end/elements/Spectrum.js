@@ -160,6 +160,7 @@ WebInspector.Spectrum.prototype = {
     setColor: function(color)
     {
         this._hsv = color.hsva();
+        this._colorString = "";
         this._update();
     },
 
@@ -190,6 +191,8 @@ WebInspector.Spectrum.prototype = {
      */
     colorString: function()
     {
+        if (this._colorString)
+            return this._colorString;
         var cf = WebInspector.Color.Format;
         var color = this._color();
         var colorString = color.asString(this._currentFormat);
@@ -296,6 +299,7 @@ WebInspector.Spectrum.prototype = {
             this._currentFormat = this._originalFormat === cf.ShortHEX ? cf.ShortHEX : cf.HEX;
         else
             this._currentFormat = cf.RGB;
+        this._colorString = "";
         this._onchange();
     },
 
@@ -340,6 +344,7 @@ WebInspector.Spectrum.prototype = {
         if (!color)
             return;
         this._hsv = color.hsva();
+        this._colorString = colorString;
         if (this._currentFormat === cf.HEX || this._currentFormat === cf.ShortHEX)
             this._currentFormat = color.canBeShortHex() ? cf.ShortHEX : cf.HEX;
 
