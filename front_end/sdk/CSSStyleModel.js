@@ -1320,7 +1320,8 @@ WebInspector.CSSProperty.prototype = {
         function processTokens(tokenizerFactory)
         {
             var tokenize = tokenizerFactory.createTokenizer("text/css");
-            tokenize(styleText, processToken);
+            tokenize("*{" + styleText + "}", processToken);
+            result = result.slice(0, result.length - 1);
             callback(result + (indentation ? "\n" + endIndentation : ""));
         }
 
@@ -1335,10 +1336,12 @@ WebInspector.CSSProperty.prototype = {
          */
         function processToken(token, tokenType, column, newColumn)
         {
+            if (newColumn <= 2)
+                return;
             var isSemicolon = token === ";";
             if (isSemicolon && lastWasSemicolon)
                 return;
-            lastWasSemicolon = isSemicolon || (lastWasSemicolon && tokenType === "css-comment") || (lastWasSemicolon && !token.trim());
+            lastWasSemicolon = isSemicolon || (lastWasSemicolon && tokenType && tokenType.includes("css-comment")) || (lastWasSemicolon && !token.trim());
 
             // No formatting, only remove dupe ;
             if (!indentation) {
@@ -1349,7 +1352,7 @@ WebInspector.CSSProperty.prototype = {
             // Format line breaks.
             if (!insideProperty && !token.trim())
                 return;
-            if (tokenType === "css-comment" && token.includes(":") && token.includes(";")) {
+            if (tokenType && tokenType.includes("css-comment") && token.includes(":") && token.includes(";")) {
                 result += "\n" + indentation + token;
                 insideProperty = false;
                 return;
@@ -1358,13 +1361,13 @@ WebInspector.CSSProperty.prototype = {
             if (isSemicolon)
                 insideProperty = false;
 
-            if (tokenType === "css-meta" || (tokenType === "css-tag" && !lastWasMeta)) {
+            if (tokenType && (tokenType.includes("css-meta") || (tokenType.includes("css-property") && !lastWasMeta))) {
                 result += "\n" + indentation;
                 insideProperty = true;
             }
             result += token;
 
-            lastWasMeta = tokenType === "css-meta";
+            lastWasMeta = tokenType && tokenType.includes("css-meta");
         }
     },
 
