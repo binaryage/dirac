@@ -54,7 +54,8 @@
 }
 
 .source-frame-infobar {
-    flex: 0 1 auto;
+    flex: none;
+    display: flex;
     -webkit-user-select: text;
 }
 

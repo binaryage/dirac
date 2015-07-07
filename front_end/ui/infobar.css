@@ -10,6 +10,7 @@
     white-space: nowrap;
     display: flex;
     align-items: flex-start;
+    flex: auto;
     border-bottom: 1px solid rgb(171, 171, 171);
 }
 
