@@ -217,6 +217,65 @@ WebInspector.TimelineUIUtils.isMarkerEvent = function(event)
 }
 
 /**
+ * @enum {symbol}
+ */
+WebInspector.TimelineUIUtils.NetworkCategory = {
+    HTML: Symbol("HTML"),
+    Script: Symbol("Script"),
+    Style: Symbol("Style"),
+    Media: Symbol("Media"),
+    Other: Symbol("Other")
+}
+
+/**
+ * @param {!WebInspector.TimelineModel.NetworkRequest} request
+ * @return {!WebInspector.TimelineUIUtils.NetworkCategory}
+ */
+WebInspector.TimelineUIUtils.networkRequestCategory = function(request)
+{
+    var categories = WebInspector.TimelineUIUtils.NetworkCategory;
+    switch (request.mimeType) {
+    case "text/html":
+        return categories.HTML;
+    case "application/javascript":
+    case "application/x-javascript":
+    case "text/javascript":
+        return categories.Script;
+    case "text/css":
+        return categories.Style;
+    case "audio/ogg":
+    case "image/gif":
+    case "image/jpeg":
+    case "image/png":
+    case "image/svg+xml":
+    case "image/webp":
+    case "image/x-icon":
+    case "font/opentype":
+    case "font/woff2":
+    case "application/font-woff":
+        return categories.Media;
+    default:
+        return categories.Other;
+    }
+}
+
+/**
+ * @param {!WebInspector.TimelineUIUtils.NetworkCategory} category
+ * @return {string}
+ */
+WebInspector.TimelineUIUtils.networkCategoryColor = function(category)
+{
+    var categories = WebInspector.TimelineUIUtils.NetworkCategory;
+    switch (category) {
+    case categories.HTML: return "hsl(214, 67%, 66%)";
+    case categories.Script: return "hsl(43, 83%, 64%)";
+    case categories.Style: return "hsl(256, 67%, 70%)";
+    case categories.Media: return "hsl(109, 33%, 55%)";
+    default: return "hsl(0, 0%, 70%)";
+    }
+}
+
+/**
  * @param {!WebInspector.TracingModel.Event} event
  * @param {?WebInspector.Target} target
  * @return {?string}

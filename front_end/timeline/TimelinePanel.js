@@ -1474,6 +1474,7 @@ WebInspector.TimelineSelection = function()
 WebInspector.TimelineSelection.Type = {
     Record: "Record",
     Frame: "Frame",
+    NetworkRequest: "NetworkRequest",
     TraceEvent: "TraceEvent",
     Range: "Range"
 };
@@ -1501,6 +1502,20 @@ WebInspector.TimelineSelection.fromFrame = function(frame)
     selection._object = frame;
     selection._startTime = frame.startTime;
     selection._endTime = frame.endTime;
+    return selection;
+}
+
+/**
+ * @param {!WebInspector.TimelineModel.NetworkRequest} request
+ * @return {!WebInspector.TimelineSelection}
+ */
+WebInspector.TimelineSelection.fromNetworkRequest = function(request)
+{
+    var selection = new WebInspector.TimelineSelection();
+    selection._type = WebInspector.TimelineSelection.Type.NetworkRequest;
+    selection._object = request;
+    selection._startTime = request.startTime;
+    selection._endTime = request.endTime || request.startTime;
     return selection;
 }
 
