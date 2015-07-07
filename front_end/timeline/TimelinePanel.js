@@ -342,7 +342,7 @@ WebInspector.TimelinePanel.prototype = {
                                                                           this._captureNetworkSetting,
                                                                           WebInspector.UIString("Capture network requests information")));
         }
-        this._enableJSSamplingSettingSetting = WebInspector.settings.createSetting("timelineEnableJSSampling", false);
+        this._enableJSSamplingSettingSetting = WebInspector.settings.createSetting("timelineEnableJSSampling", true);
         this._panelToolbar.appendToolbarItem(this._createSettingCheckbox(WebInspector.UIString("JS Profile"),
                                                                       this._enableJSSamplingSettingSetting,
                                                                       WebInspector.UIString("Capture JavaScript stacks with sampling profiler. (Has performance overhead)")));
@@ -667,8 +667,7 @@ WebInspector.TimelinePanel.prototype = {
     {
         this._updateProgress(WebInspector.UIString("Initializing recording..."));
         this._autoRecordGeneration = userInitiated ? null : {};
-        var enableJSSampling = this._enableJSSamplingSettingSetting && this._enableJSSamplingSettingSetting.get();
-        this._model.startRecording(true, enableJSSampling, this._captureMemorySetting.get(), this._captureLayersAndPicturesSetting.get(), this._captureFilmStripSetting && this._captureFilmStripSetting.get());
+        this._model.startRecording(true, this._enableJSSamplingSettingSetting.get(), this._captureMemorySetting.get(), this._captureLayersAndPicturesSetting.get(), this._captureFilmStripSetting && this._captureFilmStripSetting.get());
         if (this._lazyFrameModel)
             this._lazyFrameModel.setMergeRecords(false);
 
