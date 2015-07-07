@@ -721,8 +721,10 @@ WebInspector.JavaScriptSourceFrame.prototype = {
             return;
 
         this.textEditor.setExecutionLocation(uiLocation.lineNumber, uiLocation.columnNumber);
-        if (this.isShowing())
-            this._generateValuesInSource();
+        if (this.isShowing()) {
+            // We need CodeMirrorTextEditor to be initialized prior to this call. @see crbug.com/506566
+            setImmediate(this._generateValuesInSource.bind(this));
+        }
     },
 
     _generateValuesInSource: function()
