@@ -28,7 +28,6 @@ WebInspector.ResponsiveDesignView = function(inspectedPagePlaceholder)
     this._viewport = { scrollX: 0, scrollY: 0, contentsWidth: 0, contentsHeight: 0, pageScaleFactor: 1, minimumPageScaleFactor: 1, maximumPageScaleFactor: 1 };
     this._drawContentsSize = true;
     this._deviceInsets = new Insets(0, 0, 0, 0);
-    this._pageContainerSrcset = "";
     this._viewportChangedThrottler = new WebInspector.Throttler(0);
     this._pageScaleFactorThrottler = new WebInspector.Throttler(50);
 
@@ -83,7 +82,6 @@ WebInspector.ResponsiveDesignView.prototype = {
         var cornerSlider = this._slidersContainer.createChild("div", "responsive-design-slider-corner");
         this._createResizer(cornerSlider, true, true);
         this._pageContainer = this._slidersContainer.createChild("div", "vbox flex-auto responsive-design-page-container");
-        this._pageContainerImage = this._pageContainer.createChild("img", "responsive-design-page-container-image");
 
         // Page scale controls.
         this._pageScaleContainer = this._canvasContainer.element.createChild("div", "hbox responsive-design-page-scale-container");
@@ -516,12 +514,6 @@ WebInspector.ResponsiveDesignView.prototype = {
             this._inspectedPagePlaceholder.onResize();
         }
 
-        if (this._pageContainerImage.getAttribute("srcset") !== this._pageContainerSrcset) {
-            this._pageContainerImage.setAttribute("srcset", "");
-            this._pageContainerImage.setAttribute("srcset", this._pageContainerSrcset);
-            this._pageContainerImage.classList.toggle("hidden", !this._pageContainerSrcset);
-        }
-
         var pageScaleVisible = cssWidth + this._pageScaleContainerWidth + WebInspector.ResponsiveDesignView.RulerWidth / zoomFactor <= rect.width;
         this._pageScaleContainer.classList.toggle("hidden", !pageScaleVisible);
 
@@ -743,12 +735,10 @@ WebInspector.ResponsiveDesignView.prototype = {
      */
     _deviceModeSelected: function(device, mode)
     {
-        this._pageContainerSrcset = "";
         if (device && mode) {
             var orientation = device.orientationByName(mode.orientation);
             this._deviceInsets = mode.insets;
             WebInspector.overridesSupport.settings.screenOrientationOverride.set(mode.orientation == WebInspector.EmulatedDevice.Horizontal ? "landscapePrimary" : "portraitPrimary");
-            this._pageContainerSrcset = device.modeImage(mode);
         } else {
             this._deviceInsets = new Insets(0, 0, 0, 0);
             WebInspector.overridesSupport.settings.screenOrientationOverride.set("");

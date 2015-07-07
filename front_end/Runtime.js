@@ -744,8 +744,10 @@ Runtime.Module.prototype = {
         if (!this._descriptor.scripts)
             return Promise.resolve();
 
-        if (Runtime.isReleaseMode())
-            return loadScriptsPromise([this._name + "_module.js"], this._remoteBase());
+        if (Runtime.isReleaseMode()) {
+            var base = this._descriptor.remote && Runtime._remoteBase || undefined;
+            return loadScriptsPromise([this._name + "_module.js"], base);
+        }
 
         return loadScriptsPromise(this._descriptor.scripts.map(this._modularizeURL, this));
     },
@@ -756,29 +758,6 @@ Runtime.Module.prototype = {
     _modularizeURL: function(resourceName)
     {
         return normalizePath(this._name + "/" + resourceName);
-    },
-
-    /**
-     * @return {string|undefined}
-     */
-    _remoteBase: function()
-    {
-        return this._descriptor.remote && Runtime._remoteBase || undefined;
-    },
-
-    /**
-     * @param {string} value
-     * @return {string}
-     */
-    substituteURL: function(value)
-    {
-        var base = this._remoteBase() || "";
-        return value.replace(/@url\(([^\)]*?)\)/g, convertURL.bind(this));
-
-        function convertURL(match, url)
-        {
-            return base + this._modularizeURL(url);
-        }
     },
 
     /**
