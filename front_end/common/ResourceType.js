@@ -201,5 +201,7 @@ WebInspector.ResourceType.mimeTypesForExtensions = {
     "ls": "text/x-livescript",
 
     // ClojureScript
-    "cljs": "text/x-clojure"
+    "cljs": "text/x-clojure",
+    "cljc": "text/x-clojure",
+    "cljx": "text/x-clojure"
 }
