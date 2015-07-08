@@ -129,7 +129,8 @@ WebInspector.AnimationTimeline.prototype = {
             this._setPlaybackRate(this._playbackRate());
             this._playbackLabel.textContent = this._underlyingPlaybackRate + "✕";
             WebInspector.userMetrics.AnimationsPlaybackRateChanged.record();
-            this._updateTimelineAnimations();
+            if (this._scrubberPlayer)
+                this._scrubberPlayer.playbackRate = this._playbackRate();
         }
 
         var container = createElementWithClass("div", "animation-timeline-header");
@@ -190,17 +191,6 @@ WebInspector.AnimationTimeline.prototype = {
         return this._paused ? 0 : this._underlyingPlaybackRate;
     },
 
-    _updateTimelineAnimations: function()
-    {
-        if (this._scrubberPlayer)
-            this._scrubberPlayer.playbackRate = this._playbackRate();
-        if (this._timerSpinnerPlayer) {
-            this._timerSpinnerPlayer.playbackRate = this._playbackRate();
-            this._timerFillerPlayer.playbackRate = this._playbackRate();
-            this._timerMaskPlayer.playbackRate = this._playbackRate();
-        }
-    },
-
     _togglePause: function()
     {
         this._paused = !this._paused;
@@ -208,7 +198,8 @@ WebInspector.AnimationTimeline.prototype = {
         WebInspector.userMetrics.AnimationsPlaybackRateChanged.record();
         this._pauseButton.element.classList.toggle("pause-toolbar-item");
         this._pauseButton.element.classList.toggle("play-toolbar-item");
-        this._updateTimelineAnimations();
+        if (this._scrubberPlayer)
+            this._scrubberPlayer.playbackRate = this._playbackRate();
     },
 
     _replay: function()
@@ -312,8 +303,6 @@ WebInspector.AnimationTimeline.prototype = {
 
         if (this._resizeWindow(animation))
             this.scheduleRedraw();
-        else
-            this._resetTimerAnimation();
 
         var nodeUI = this._nodesMap.get(animation.source().backendNodeId());
         if (!nodeUI) {
@@ -436,56 +425,17 @@ WebInspector.AnimationTimeline.prototype = {
             resized = true;
             this._duration = requiredDuration * 1.5;
             this._timelineScrubber.classList.remove("hidden");
-            this._animateTime(animation.startTime() - this.startTime(), true);
+            this._animateTime(animation.startTime() - this.startTime());
         }
         return resized;
     },
 
-    _startTimerAnimation: function()
-    {
-        var timerDuration = 1000;
-        this._timerSpinnerPlayer = this._timerSpinner.animate([{ transform: "rotate(0deg)" }, { transform: "rotate(360deg)" }], timerDuration);
-        this._timerSpinnerPlayer.playbackRate = this._playbackRate();
-        this._timerSpinnerPlayer.onfinish = this._timerFinished.bind(this, this._timerSpinnerPlayer);
-        var keyframes = [{ opacity: 0 }, { opacity: 1 }];
-        this._timerFillerPlayer = this._timerFiller.animate(keyframes, { duration: timerDuration, easing: "steps(1, middle)" });
-        this._timerFillerPlayer.playbackRate = this._playbackRate();
-        this._timerMaskPlayer = this._timerMask.animate(keyframes, { duration: timerDuration, easing: "steps(1, middle)", direction: "reverse" });
-        this._timerMaskPlayer.playbackRate = this._playbackRate();
-    },
-
-    _resetTimerAnimation: function()
-    {
-        if (!this._timerSpinnerPlayer)
-            return;
-        this._timerSpinnerPlayer.currentTime = 0;
-        this._timerFillerPlayer.currentTime = 0;
-        this._timerMaskPlayer.currentTime = 0;
-    },
-
-    /**
-     * @param {!Object} timerPlayer
-     */
-    _timerFinished: function(timerPlayer)
-    {
-        if (this._timerSpinnerPlayer !== timerPlayer)
-            return;
-        this._timelineScrubber.classList.add("animation-timeline-end");
-        delete this._timerSpinnerPlayer;
-        delete this._timerFillerPlayer;
-        delete this._timerMaskPlayer;
-    },
-
     /**
       * @param {number=} time
-      * @param {boolean=} timelineCapturing
       */
-    _animateTime: function(time, timelineCapturing)
+    _animateTime: function(time)
     {
         var oldPlayer = this._scrubberPlayer;
-        this._timelineScrubber.classList.toggle("animation-timeline-capturing", timelineCapturing);
-        if (timelineCapturing)
-            this._startTimerAnimation();
 
         this._scrubberPlayer = this._timelineScrubber.animate([
             { transform: "translateX(0px)" },
@@ -526,8 +476,7 @@ WebInspector.AnimationTimeline.prototype = {
             this._timelineScrubberHead.window().requestAnimationFrame(this._updateScrubber.bind(this));
         } else if (this._scrubberPlayer.playState === "finished") {
             this._timelineScrubberHead.textContent = WebInspector.UIString(". . .");
-            if (!this._timerSpinnerPlayer)
-                this._timelineScrubber.classList.add("animation-timeline-end");
+            this._timelineScrubber.classList.add("animation-timeline-end");
         }
     },
 
@@ -542,7 +491,6 @@ WebInspector.AnimationTimeline.prototype = {
 
         this._originalScrubberTime = this._scrubberPlayer.currentTime;
         this._timelineScrubber.classList.remove("animation-timeline-end");
-        this._timelineScrubber.classList.remove("animation-timeline-capturing");
         this._scrubberPlayer.pause();
         this._originalMousePosition = new WebInspector.Geometry.Point(event.x, event.y);
 
