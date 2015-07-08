@@ -547,18 +547,15 @@
 }
 
 .network-frame-divider {
-    margin-top: -5px;
-    width: 10px;
-    height: 10px;
-    border: 1px solid #063;
+    width: 1px;
+    height: 100%;
     background-color: #085;
-    border-radius: 5px;
-    z-index: 1;
+    z-index: 10;
+    visibility: hidden;
 }
 
 .network-frame-divider-selected {
-    background-color: #FFE3C7;
-    z-index: 10;
+    visibility: visible;
 }
 
 .network-summary-bar .summary-blue {

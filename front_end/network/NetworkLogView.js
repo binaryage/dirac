@@ -834,7 +834,7 @@ WebInspector.NetworkLogView.prototype = {
         var data = /** @type {number} */ (event.data);
         if (data) {
             this._mainRequestLoadTime = data;
-            this._addEventDivider(data, "network-blue-divider");
+            this._addEventDivider(data, "network-red-divider");
         }
     },
 
@@ -848,7 +848,7 @@ WebInspector.NetworkLogView.prototype = {
         var data = /** @type {number} */ (event.data);
         if (data) {
             this._mainRequestDOMContentLoadedTime = data;
-            this._addEventDivider(data, "network-red-divider");
+            this._addEventDivider(data, "network-blue-divider");
         }
     },
 

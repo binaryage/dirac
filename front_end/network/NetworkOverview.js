@@ -70,7 +70,7 @@ WebInspector.NetworkOverview.prototype = {
     {
         var data = /** @type {number} */ (event.data);
         if (data)
-            this._loadEvents.push(data);
+            this._loadEvents.push(data * 1000);
         this.scheduleUpdate();
     },
 
@@ -81,7 +81,7 @@ WebInspector.NetworkOverview.prototype = {
     {
         var data = /** @type {number} */ (event.data);
         if (data)
-            this._domContentLoadedEvents.push(data);
+            this._domContentLoadedEvents.push(data * 1000);
         this.scheduleUpdate();
     },
 
@@ -275,43 +275,32 @@ WebInspector.NetworkOverview.prototype = {
         drawLines(WebInspector.RequestTimeRangeNames.Waiting, "#00C853");
         drawLines(WebInspector.RequestTimeRangeNames.Receiving, "#03A9F4");
 
+        var height = this.element.offsetHeight;
         context.lineWidth = 1;
         context.beginPath();
         context.strokeStyle = "#8080FF"; // Keep in sync with .network-blue-divider CSS rule.
-        for (var i = this._domContentLoadedEvents.length; i >= 0; --i) {
-            var x = Math.round(calculator.computePosition(this._domContentLoadedEvents[i]));
-            context.moveTo(x + 0.5, 0);
-            context.lineTo(x + 0.5, this._canvasHeight);
+        for (var i = this._domContentLoadedEvents.length - 1; i >= 0; --i) {
+            var x = Math.round(calculator.computePosition(this._domContentLoadedEvents[i])) + 0.5;
+            context.moveTo(x, 0);
+            context.lineTo(x, height);
         }
         context.stroke();
 
         context.beginPath();
         context.strokeStyle = "#FF8080"; // Keep in sync with .network-red-divider CSS rule.
-        for (var i = this._loadEvents.length; i >= 0; --i) {
-            var x = Math.round(calculator.computePosition(this._loadEvents[i]));
-            context.moveTo(x + 0.5, 0);
-            context.lineTo(x + 0.5, this._canvasHeight);
+        for (var i = this._loadEvents.length - 1; i >= 0; --i) {
+            var x = Math.round(calculator.computePosition(this._loadEvents[i])) + 0.5;
+            context.moveTo(x, 0);
+            context.lineTo(x, height);
         }
         context.stroke();
 
-        context.strokeStyle = "#063"; // Keep in sync with .network-frame-divider CSS rule.
-        context.fillStyle = "#085"; // Keep in sync with .network-frame-divider CSS rule.
-        var /** @const */ radius = 4;
-        var frames = this._filmStripModel ? this._filmStripModel.frames() : [];
-        for (var i = 0; i < frames.length; ++i) {
-            var x = Math.round(calculator.computePosition(frames[i].timestamp));
-            context.beginPath();
-            context.arc(x, radius, radius, 0, 2*Math.PI, false);
-            context.fill();
-            context.stroke();
-        }
-
         if (this._selectedFilmStripTime !== -1) {
-             context.fillStyle = "#FFE3C7"; // Keep in sync with .network-frame-divider CSS rule.
-             var x = Math.round(calculator.computePosition(this._selectedFilmStripTime));
              context.beginPath();
-             context.arc(x, radius, radius, 0, 2 * Math.PI, false);
-             context.fill();
+             context.strokeStyle = "#085"; // Keep in sync with .network-frame-divider CSS rule.
+             var x = Math.round(calculator.computePosition(this._selectedFilmStripTime)) + 0.5;
+             context.moveTo(x, 0);
+             context.lineTo(x, height);
              context.stroke();
         }
         context.restore();
