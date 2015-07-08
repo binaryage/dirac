@@ -31,6 +31,7 @@ WebInspector.DeviceSelect = function(rotateButton, callback)
     this._modeLabelElement.title = WebInspector.UIString("Change orientation");
 
     this._emulatedSettingChangedMuted = false;
+    this._lastOrientation = null;
 
     WebInspector.overridesSupport.settings.emulateResolution.addChangeListener(this._emulatedSettingChanged, this);
     WebInspector.overridesSupport.settings.deviceWidth.addChangeListener(this._emulatedSettingChanged, this);
@@ -144,7 +145,14 @@ WebInspector.DeviceSelect.prototype = {
         }
         this._updateRotateModes();
 
-        this._modeSelectElement.selectedIndex = option.lastSelectedIndex;
+        var index = option.lastSelectedIndex;
+        var modeOption = this._modeSelectElement.options[index];
+        if (modeOption.rotateIndex != -1) {
+            var rotateOption = this._modeSelectElement.options[modeOption.rotateIndex];
+            if (rotateOption.mode && rotateOption.mode.orientation === this._lastOrientation)
+                index = modeOption.rotateIndex;
+        }
+        this._modeSelectElement.selectedIndex = index;
         this._updateModeControls();
     },
 
@@ -223,6 +231,10 @@ WebInspector.DeviceSelect.prototype = {
     _saveLastSelectedIndex: function()
     {
         this._deviceSelectElement.options[this._deviceSelectElement.selectedIndex].lastSelectedIndex = this._modeSelectElement.selectedIndex;
+
+        var option = this._modeSelectElement.options[this._modeSelectElement.selectedIndex];
+        if (option.mode && option.rotateIndex != -1)
+            this._lastOrientation = option.mode.orientation;
     },
 
     _rotateButtonClicked: function()
