@@ -195,5 +195,11 @@ WebInspector.ResourceType.mimeTypesForExtensions = {
     "scss": "text/x-scss",
 
     // Video Text Tracks.
-    "vtt": "text/vtt"
+    "vtt": "text/vtt",
+
+    // LiveScript
+    "ls": "text/x-livescript",
+
+    // ClojureScript
+    "cljs": "text/x-clojure"
 }

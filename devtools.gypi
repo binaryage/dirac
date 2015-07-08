@@ -372,6 +372,8 @@
             'front_end/cm_modes/php.js',
             'front_end/cm_modes/python.js',
             'front_end/cm_modes/shell.js',
+            'front_end/cm_modes/livescript.js',
+            'front_end/cm_modes/clojure.js',
             'front_end/cm_modes/DefaultCodeMirrorMimeMode.js',
         ],
         'devtools_components_lazy_js_files': [
