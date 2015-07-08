@@ -269,10 +269,13 @@
     z-index: -100;
 }
 
-#timeline-overview-network,
+#timeline-overview-network {
+    flex-basis: 25px;
+}
+
 #timeline-overview-main-thread,
 #timeline-overview-framerate {
-    flex-basis: 22px;
+    flex-basis: 21px;
 }
 
 #timeline-overview-network::before,
@@ -307,7 +310,7 @@
 }
 
 #timeline-overview-responsiveness {
-    flex-basis: 7px;
+    flex-basis: 6px;
     margin-top: 1px !important;
 }
 

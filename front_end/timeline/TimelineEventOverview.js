@@ -177,38 +177,71 @@ WebInspector.TimelineEventOverview.Network.prototype = {
     {
         this.resetCanvas();
         this._updatePlaceholder();
-        var events = this._model.mainThreadEvents();
         var height = this._canvas.height;
-        var /** @const */ maxBandHeight = 4 * window.devicePixelRatio;
-        var bandsCount = WebInspector.TimelineUIUtils.calculateNetworkBandsCount(events);
-        var bandInterval = Math.min(maxBandHeight, height / (bandsCount || 1));
-        var bandHeight = Math.ceil(bandInterval);
+        var numBands = categoryBand(WebInspector.TimelineUIUtils.NetworkCategory.Other) + 1;
+        var bandHeight = height / numBands;
+        if (bandHeight % 1) {
+            console.error("Network strip height should be a multiple of the categories number");
+            bandHeight = Math.floor(bandHeight);
+        }
+        var devicePixelRatio = window.devicePixelRatio;
         var timeOffset = this._model.minimumRecordTime();
         var timeSpan = this._model.maximumRecordTime() - timeOffset;
         var canvasWidth = this._canvas.width;
         var scale = canvasWidth / timeSpan;
-        var loadingCategory = WebInspector.TimelineUIUtils.categories()["loading"];
-        var waitingColor = loadingCategory.backgroundColor;
-        var processingColor = loadingCategory.fillColorStop1;
-
-        /**
-         * @param {number} band
-         * @param {number} startTime
-         * @param {number} endTime
-         * @param {?WebInspector.TracingModel.Event} event
-         * @this {WebInspector.TimelineEventOverview.Network}
-         */
-        function drawBar(band, startTime, endTime, event)
-        {
-            var start = Number.constrain((startTime - timeOffset) * scale, 0, canvasWidth);
-            var end = Number.constrain((endTime - timeOffset) * scale, 0, canvasWidth);
-            var color = !event ||
-                event.name === WebInspector.TimelineModel.RecordType.ResourceReceiveResponse ||
-                event.name === WebInspector.TimelineModel.RecordType.ResourceSendRequest ? waitingColor : processingColor;
-            this._renderBar(Math.floor(start), Math.ceil(end), Math.floor(band * bandInterval), bandHeight, color);
+        var ctx = this._context;
+        var requests = this._model.networkRequests();
+        /** @type {!Map<string,!{waiting:!Path2D,transfer:!Path2D}>} */
+        var paths = new Map();
+        requests.forEach(drawRequest);
+        for (var path of paths) {
+            ctx.fillStyle = path[0];
+            ctx.globalAlpha = 0.3;
+            ctx.fill(path[1]["waiting"]);
+            ctx.globalAlpha = 1;
+            ctx.fill(path[1]["transfer"]);
         }
 
-        WebInspector.TimelineUIUtils.iterateNetworkRequestsInRoundRobin(events, bandsCount, drawBar.bind(this));
+        /**
+         * @param {!WebInspector.TimelineUIUtils.NetworkCategory} category
+         * @return {number}
+         */
+        function categoryBand(category)
+        {
+            var categories = WebInspector.TimelineUIUtils.NetworkCategory;
+            switch (category) {
+            case categories.HTML: return 0;
+            case categories.Script: return 1;
+            case categories.Style: return 2;
+            case categories.Media: return 3;
+            default: return 4;
+            }
+        }
+
+        /**
+         * @param {!WebInspector.TimelineModel.NetworkRequest} request
+         */
+        function drawRequest(request)
+        {
+            var tickWidth = 2 * devicePixelRatio;
+            var category = WebInspector.TimelineUIUtils.networkRequestCategory(request);
+            var style = WebInspector.TimelineUIUtils.networkCategoryColor(category);
+            var band = categoryBand(category);
+            var y = band * bandHeight;
+            var path = paths.get(style);
+            if (!path) {
+                path = { waiting: new Path2D(), transfer: new Path2D() };
+                paths.set(style, path);
+            }
+            var s = Math.floor((request.startTime - timeOffset) * scale);
+            var e = Math.ceil((request.endTime - timeOffset) * scale);
+            path["waiting"].rect(s, y, e - s, bandHeight - 1);
+            path["transfer"].rect(e - tickWidth / 2, y, tickWidth, bandHeight - 1);
+            if (!request.responseTime)
+                return;
+            var r = Math.ceil((request.responseTime - timeOffset) * scale);
+            path["transfer"].rect(r - tickWidth / 2, y, tickWidth, bandHeight - 1);
+        }
     },
 
     __proto__: WebInspector.TimelineEventOverview.prototype

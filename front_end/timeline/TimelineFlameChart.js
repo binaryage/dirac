@@ -958,7 +958,7 @@ WebInspector.TimelineFlameChartNetworkDataProvider.prototype = {
         this._minimumBoundary = this._model.minimumRecordTime();
         this._maximumBoundary = this._model.maximumRecordTime();
         this._timeSpan = this._model.isEmpty() ? 1000 : this._maximumBoundary - this._minimumBoundary;
-        this._buildNetworkRequests(events).forEach(this._appendEntry.bind(this));
+        this._model.networkRequests().forEach(this._appendEntry.bind(this));
         this._currentLevel = this._requests.length;
     },
 
@@ -977,45 +977,6 @@ WebInspector.TimelineFlameChartNetworkDataProvider.prototype = {
              this._timelineData.entryTotalTimes,
              this._timelineData.entryStartTimes);
         this._currentLevel = index;
-    },
-
-    /**
-     * @param {!Array<!WebInspector.TracingModel.Event>} events
-     * @return {!Array<!WebInspector.TimelineModel.NetworkRequest>}
-     */
-    _buildNetworkRequests: function(events)
-    {
-        /** @type {!Map<string,!WebInspector.TimelineModel.NetworkRequest>} */
-        var requests = new Map();
-        /** @type {!Array<!WebInspector.TimelineModel.NetworkRequest>} */
-        var requestsList = [];
-        /** @type {!Array<!WebInspector.TimelineModel.NetworkRequest>} */
-        var zeroStartRequestsList = [];
-        var types = WebInspector.TimelineModel.RecordType;
-        var resourceTypes = new Set([
-            types.ResourceSendRequest,
-            types.ResourceReceiveResponse,
-            types.ResourceReceivedData,
-            types.ResourceFinish
-        ]);
-        for (var i = 0; i < events.length; ++i) {
-            var e = events[i];
-            if (!resourceTypes.has(e.name))
-                continue;
-            var id = e.args["data"]["requestId"];
-            var request = requests.get(id);
-            if (request) {
-                request.addEvent(e);
-            } else {
-                request = new WebInspector.TimelineModel.NetworkRequest(e);
-                requests.set(id, request);
-                if (request.startTime)
-                    requestsList.push(request);
-                else
-                    zeroStartRequestsList.push(request);
-            }
-        }
-        return zeroStartRequestsList.concat(requestsList);
     },
 
     /**

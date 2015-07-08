@@ -1389,6 +1389,44 @@ WebInspector.TimelineModel.prototype = {
         return this._eventDividerRecords;
     },
 
+    /**
+     * @return {!Array<!WebInspector.TimelineModel.NetworkRequest>}
+     */
+    networkRequests: function()
+    {
+        /** @type {!Map<string,!WebInspector.TimelineModel.NetworkRequest>} */
+        var requests = new Map();
+        /** @type {!Array<!WebInspector.TimelineModel.NetworkRequest>} */
+        var requestsList = [];
+        /** @type {!Array<!WebInspector.TimelineModel.NetworkRequest>} */
+        var zeroStartRequestsList = [];
+        var types = WebInspector.TimelineModel.RecordType;
+        var resourceTypes = new Set([
+            types.ResourceSendRequest,
+            types.ResourceReceiveResponse,
+            types.ResourceReceivedData,
+            types.ResourceFinish
+        ]);
+        var events = this.mainThreadEvents();
+        for (var i = 0; i < events.length; ++i) {
+            var e = events[i];
+            if (!resourceTypes.has(e.name))
+                continue;
+            var id = e.args["data"]["requestId"];
+            var request = requests.get(id);
+            if (request) {
+                request.addEvent(e);
+            } else {
+                request = new WebInspector.TimelineModel.NetworkRequest(e);
+                requests.set(id, request);
+                if (request.startTime)
+                    requestsList.push(request);
+                else
+                    zeroStartRequestsList.push(request);
+            }
+        }
+        return zeroStartRequestsList.concat(requestsList);
+    },
 
     __proto__: WebInspector.Object.prototype
 }
