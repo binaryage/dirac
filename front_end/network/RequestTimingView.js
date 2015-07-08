@@ -185,8 +185,8 @@ WebInspector.RequestTimingView.calculateRequestTimeRanges = function(request)
 
     if (request.fetchedViaServiceWorker) {
         addOffsetRange(WebInspector.RequestTimeRangeNames.Blocking, 0, timing.workerStart);
-        addOffsetRange(WebInspector.RequestTimeRangeNames.ServiceWorker, timing.workerStart, timing.sendEnd);
-        addOffsetRange(WebInspector.RequestTimeRangeNames.ServiceWorkerPreparation, timing.workerStart, timing.sendStart);
+        addOffsetRange(WebInspector.RequestTimeRangeNames.ServiceWorkerPreparation, timing.workerStart, timing.workerReady);
+        addOffsetRange(WebInspector.RequestTimeRangeNames.ServiceWorker, timing.workerReady, timing.sendEnd);
         addOffsetRange(WebInspector.RequestTimeRangeNames.Waiting, timing.sendEnd, timing.receiveHeadersEnd);
     } else {
         var blocking = firstPositive([timing.dnsStart, timing.connectStart, timing.sendStart]) || 0;

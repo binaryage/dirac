@@ -1114,6 +1114,7 @@
                     { "name": "sslStart", "type": "number", "description": "Started SSL handshake." },
                     { "name": "sslEnd", "type": "number", "description": "Finished SSL handshake." },
                     { "name": "workerStart", "type": "number", "description": "Started running ServiceWorker.", "hidden": true },
+                    { "name": "workerReady", "type": "number", "description": "Finished Starting ServiceWorker.", "hidden": true },
                     { "name": "sendStart", "type": "number", "description": "Started sending request." },
                     { "name": "sendEnd", "type": "number", "description": "Finished sending request." },
                     { "name": "receiveHeadersEnd", "type": "number", "description": "Finished receiving response headers." }
