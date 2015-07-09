@@ -53,6 +53,7 @@ WebInspector.DeviceSelect.prototype = {
 
         var selectDeviceOption = new Option(WebInspector.UIString("<Select model>"), WebInspector.UIString("<Select model>"));
         selectDeviceOption.device = null;
+        selectDeviceOption.lastSelectedIndex = 0;
         selectDeviceOption.disabled = true;
         this._deviceSelectElement.appendChild(selectDeviceOption);
 

@@ -146,8 +146,8 @@ WebInspector.ResponsiveDesignView.prototype = {
             WebInspector.userMetrics.DeviceModeEnabled.record();
             this._invalidateCache();
             this._ignoreResize = true;
-            this._enabled = true;
             this._ensureUIInitialized();
+            this._enabled = true;
             this._mediaInspector.setEnabled(true);
             this._inspectedPagePlaceholder.clearMinimumSizeAndMargins();
             this._inspectedPagePlaceholder.show(this._pageContainer);
