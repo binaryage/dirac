@@ -98,7 +98,6 @@ WebInspector.TracingManager.prototype = {
         this._eventsRetrieved = 0;
         this._activeClient.tracingComplete();
         this._activeClient = null;
-        WebInspector.targetManager.resumeAllTargets();
     },
 
     /**
@@ -111,7 +110,6 @@ WebInspector.TracingManager.prototype = {
     {
         if (this._activeClient)
             throw new Error("Tracing is already started");
-        WebInspector.targetManager.suspendAllTargets();
         var bufferUsageReportingIntervalMs = 500;
         this._activeClient = client;
         this._target.tracingAgent().start(categoryFilter, options, bufferUsageReportingIntervalMs, callback);

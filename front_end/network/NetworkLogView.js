@@ -730,11 +730,11 @@ WebInspector.NetworkLogView.prototype = {
     },
 
     /**
-     * @param {number} time
+     * @param {!Array<number>} times
      */
-    addFilmStripFrame: function(time)
+    addFilmStripFrames: function(times)
     {
-        this._addEventDivider(time, "network-frame-divider");
+        this._addEventDividers(times, "network-frame-divider");
     },
 
     /**
@@ -753,14 +753,19 @@ WebInspector.NetworkLogView.prototype = {
     },
 
     /**
-     * @param {number} time
+     * @param {!Array<number>} times
      * @param {string} className
      */
-    _addEventDivider: function(time, className)
+    _addEventDividers: function(times, className)
     {
-        var element = createElementWithClass("div", "network-event-divider " + className);
-        this._timelineGrid.addEventDivider(element);
-        this._eventDividers.push({time: time, element: element});
+        for (var i = 0; i < times.length; ++i) {
+            var element = createElementWithClass("div", "network-event-divider " + className);
+            this._timelineGrid.addEventDivider(element);
+            this._eventDividers.push({time: times[i], element: element});
+        }
+        // Update event dividers immediately
+        this._updateEventDividers();
+        // Schedule refresh in case dividers change the calculator span.
         this._scheduleRefresh();
     },
 
@@ -834,7 +839,7 @@ WebInspector.NetworkLogView.prototype = {
         var data = /** @type {number} */ (event.data);
         if (data) {
             this._mainRequestLoadTime = data;
-            this._addEventDivider(data, "network-red-divider");
+            this._addEventDividers([data], "network-red-divider");
         }
     },
 
@@ -848,7 +853,7 @@ WebInspector.NetworkLogView.prototype = {
         var data = /** @type {number} */ (event.data);
         if (data) {
             this._mainRequestDOMContentLoadedTime = data;
-            this._addEventDivider(data, "network-blue-divider");
+            this._addEventDividers([data], "network-blue-divider");
         }
     },
 
