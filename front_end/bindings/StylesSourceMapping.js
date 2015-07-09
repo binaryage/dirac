@@ -50,7 +50,7 @@ WebInspector.StylesSourceMapping = function(cssModel, workspace, networkMapping)
     this._initialize();
 }
 
-WebInspector.StylesSourceMapping.MinorChangeUpdateTimeoutMs = 1000;
+WebInspector.StylesSourceMapping.ChangeUpdateTimeoutMs = 200;
 
 WebInspector.StylesSourceMapping.prototype = {
     /**
@@ -284,11 +284,6 @@ WebInspector.StylesSourceMapping.prototype = {
         if (this._isSettingContent)
             return;
 
-        if (event.data.majorChange) {
-            this._updateStyleSheetText(event.data.styleSheetId);
-            return;
-        }
-
         this._updateStyleSheetTextSoon(event.data.styleSheetId);
     },
 
@@ -300,7 +295,7 @@ WebInspector.StylesSourceMapping.prototype = {
         if (this._updateStyleSheetTextTimer)
             clearTimeout(this._updateStyleSheetTextTimer);
 
-        this._updateStyleSheetTextTimer = setTimeout(this._updateStyleSheetText.bind(this, styleSheetId), WebInspector.StylesSourceMapping.MinorChangeUpdateTimeoutMs);
+        this._updateStyleSheetTextTimer = setTimeout(this._updateStyleSheetText.bind(this, styleSheetId), WebInspector.StylesSourceMapping.ChangeUpdateTimeoutMs);
     },
 
     /**

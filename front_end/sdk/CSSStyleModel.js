@@ -39,10 +39,7 @@ WebInspector.CSSStyleModel = function(target)
     this._domModel = WebInspector.DOMModel.fromTarget(target);
     this._agent = target.cssAgent();
     WebInspector.targetManager.addEventListener(WebInspector.TargetManager.Events.SuspendStateChanged, this._suspendStateChanged, this);
-    this._pendingCommandsMajorState = [];
     this._styleLoader = new WebInspector.CSSStyleModel.ComputedStyleLoader(this);
-    this._domModel.addEventListener(WebInspector.DOMModel.Events.UndoRedoRequested, this._undoRedoRequested, this);
-    this._domModel.addEventListener(WebInspector.DOMModel.Events.UndoRedoCompleted, this._undoRedoCompleted, this);
     target.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.MainFrameNavigated, this._mainFrameNavigated, this);
     target.registerCSSDispatcher(new WebInspector.CSSDispatcher(this));
     this._agent.enable().then(this._wasEnabled.bind(this));
@@ -288,7 +285,6 @@ WebInspector.CSSStyleModel.prototype = {
          */
         function callback(error, rulePayload)
         {
-            this._pendingCommandsMajorState.pop();
             if (error || !rulePayload)
                 return null;
             this._domModel.markUndoableState();
@@ -298,7 +294,6 @@ WebInspector.CSSStyleModel.prototype = {
         if (!rule.styleSheetId)
             throw "No rule stylesheet id";
         WebInspector.userMetrics.StyleRuleEdited.record();
-        this._pendingCommandsMajorState.push(true);
         this._agent.setRuleSelector(rule.styleSheetId, rule.selectorRange, newSelector, callback.bind(this))
             .then(this._computeMatchingSelectors.bind(this, nodeId))
             .catchException(null)
@@ -320,7 +315,6 @@ WebInspector.CSSStyleModel.prototype = {
          */
         function parsePayload(error, mediaPayload)
         {
-            this._pendingCommandsMajorState.pop();
             if (!mediaPayload)
                 return null;
             this._domModel.markUndoableState();
@@ -329,7 +323,6 @@ WebInspector.CSSStyleModel.prototype = {
 
         console.assert(!!media.parentStyleSheetId);
         WebInspector.userMetrics.StyleRuleEdited.record();
-        this._pendingCommandsMajorState.push(true);
         this._agent.setMediaText(media.parentStyleSheetId, media.range, newMediaText, parsePayload.bind(this))
             .catchException(null)
             .then(userCallback);
@@ -390,7 +383,6 @@ WebInspector.CSSStyleModel.prototype = {
      */
     addRule: function(styleSheetId, node, ruleText, ruleLocation, userCallback)
     {
-        this._pendingCommandsMajorState.push(true);
         this._agent.addRule(styleSheetId, ruleText, ruleLocation, parsePayload.bind(this))
             .then(this._computeMatchingSelectors.bind(this, node.id))
             .catchException(null)
@@ -404,7 +396,6 @@ WebInspector.CSSStyleModel.prototype = {
          */
         function parsePayload(error, rulePayload)
         {
-            this._pendingCommandsMajorState.pop();
             if (error || !rulePayload)
                 return null;
             this._domModel.markUndoableState();
@@ -486,8 +477,7 @@ WebInspector.CSSStyleModel.prototype = {
         if (!styleSheetId || !this.hasEventListeners(WebInspector.CSSStyleModel.Events.StyleSheetChanged))
             return;
 
-        var majorChange = this._pendingCommandsMajorState[this._pendingCommandsMajorState.length - 1] || false;
-        this.dispatchEventToListeners(WebInspector.CSSStyleModel.Events.StyleSheetChanged, { styleSheetId: styleSheetId, majorChange: majorChange });
+        this.dispatchEventToListeners(WebInspector.CSSStyleModel.Events.StyleSheetChanged, { styleSheetId: styleSheetId });
     },
 
     /**
@@ -559,7 +549,6 @@ WebInspector.CSSStyleModel.prototype = {
     {
         var header = this._styleSheetIdToHeader.get(styleSheetId);
         console.assert(header);
-        this._pendingCommandsMajorState.push(majorChange);
         return header._setContentPromise(newText).then(callback.bind(this));
 
         /**
@@ -569,22 +558,11 @@ WebInspector.CSSStyleModel.prototype = {
          */
         function callback(error)
         {
-            this._pendingCommandsMajorState.pop();
             if (!error && majorChange)
                 this._domModel.markUndoableState();
 
             return error;
         }
-    },
-
-    _undoRedoRequested: function()
-    {
-        this._pendingCommandsMajorState.push(true);
-    },
-
-    _undoRedoCompleted: function()
-    {
-        this._pendingCommandsMajorState.pop();
     },
 
     _mainFrameNavigated: function()
@@ -910,7 +888,6 @@ WebInspector.CSSStyleDeclaration.prototype = {
          */
         function parsePayload(error, stylePayload)
         {
-            this._cssModel._pendingCommandsMajorState.pop();
             if (error || !stylePayload)
                 return null;
 
@@ -919,7 +896,6 @@ WebInspector.CSSStyleDeclaration.prototype = {
             return WebInspector.CSSStyleDeclaration.parsePayload(this._cssModel, stylePayload);
         }
 
-        this._cssModel._pendingCommandsMajorState.push(majorChange);
         this._cssModel._agent.setStyleText(this.styleSheetId, this.range.serializeToObject(), text, parsePayload.bind(this))
             .catchException(null)
             .then(userCallback)
