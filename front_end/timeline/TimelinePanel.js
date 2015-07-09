@@ -109,6 +109,7 @@ WebInspector.TimelinePanel = function()
     this._onModeChanged();
     this._detailsSplitWidget.show(this.element);
     WebInspector.targetManager.addEventListener(WebInspector.TargetManager.Events.SuspendStateChanged, this._onSuspendStateChanged, this);
+    this._showRecordingHelpMessage();
 }
 
 WebInspector.TimelinePanel.OverviewMode = {
@@ -743,6 +744,7 @@ WebInspector.TimelinePanel.prototype = {
     {
         this._tracingModel.reset();
         this._model.reset();
+        this._showRecordingHelpMessage();
     },
 
     _onRecordsCleared: function()
@@ -794,6 +796,12 @@ WebInspector.TimelinePanel.prototype = {
     {
         var progress = /** @type {number} */ (event.data);
         this._updateProgress(WebInspector.UIString("Retrieving events\u2026 %d%%", Math.round(progress * 100)));
+    },
+
+    _showRecordingHelpMessage: function()
+    {
+        var modifierKey = WebInspector.isMac() ? WebInspector.UIString("Cmd") : WebInspector.UIString("Ctrl");
+        this._updateProgress(WebInspector.UIString("Hit %s+R to evaluate page load performance.", modifierKey));
     },
 
     /**
