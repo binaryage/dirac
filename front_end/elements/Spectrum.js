@@ -81,6 +81,7 @@ WebInspector.Spectrum = function()
         inputValue.maxLength = 4;
         this._textValues.push(inputValue);
         inputValue.addEventListener("keydown", this._inputChanged.bind(this), false);
+        inputValue.addEventListener("input", this._inputChanged.bind(this), false);
         inputValue.addEventListener("mousewheel", this._inputChanged.bind(this), false);
     }
 
