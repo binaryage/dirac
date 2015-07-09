@@ -299,7 +299,7 @@ WebInspector.NetworkPanel.prototype = {
     _resetFilmStripView: function()
     {
         this._filmStripView.reset();
-        this._filmStripView.setStatusText(WebInspector.UIString("No frames recorded. Reload page to start recording."));
+        this._filmStripView.setStatusText(WebInspector.UIString("Hit %s to capture frames.", WebInspector.isMac() ? WebInspector.UIString("Cmd+R") : WebInspector.UIString("Ctrl+R")));
     },
 
     /**

@@ -30,7 +30,7 @@
 
 .network-log-grid.data-grid {
     border: none;
-    flex: 1 1;
+    flex: auto;
 }
 
 .network-summary-bar {
@@ -519,7 +519,7 @@
 
 .network-event-divider {
     position: absolute;
-    width: 2px;
+    width: 1px;
     margin-left: -1px;
     top: 31px;
     bottom: 0;
@@ -547,9 +547,8 @@
 }
 
 .network-frame-divider {
-    width: 1px;
-    height: 100%;
-    background-color: #085;
+    width: 2px;
+    background-color: #FCCC49;
     z-index: 10;
     visibility: hidden;
 }
@@ -599,8 +598,7 @@
 }
 
 #network-container {
-    overflow-y: auto;
-    overflow-x: hidden;
+    overflow: hidden;
 }
 
 /* Brief mode peculiarities. */

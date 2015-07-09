@@ -64,8 +64,8 @@ WebInspector.FilmStripView.prototype = {
     {
         var time = frame.timestamp;
         var element = createElementWithClass("div", "frame");
-        var imageElement = element.createChild("div", "thumbnail").createChild("img");
         element.createChild("div", "time").textContent = Number.millisToString(time - this._zeroTime);
+        var imageElement = element.createChild("div", "thumbnail").createChild("img");
         element.addEventListener("mousedown", this._onMouseEvent.bind(this, WebInspector.FilmStripView.Events.FrameSelected, time), false);
         element.addEventListener("mouseenter", this._onMouseEvent.bind(this, WebInspector.FilmStripView.Events.FrameEnter, time), false);
         element.addEventListener("mouseout", this._onMouseEvent.bind(this, WebInspector.FilmStripView.Events.FrameExit, time), false);

@@ -296,12 +296,13 @@ WebInspector.NetworkOverview.prototype = {
         context.stroke();
 
         if (this._selectedFilmStripTime !== -1) {
-             context.beginPath();
-             context.strokeStyle = "#085"; // Keep in sync with .network-frame-divider CSS rule.
-             var x = Math.round(calculator.computePosition(this._selectedFilmStripTime)) + 0.5;
-             context.moveTo(x, 0);
-             context.lineTo(x, height);
-             context.stroke();
+            context.lineWidth = 2;
+            context.beginPath();
+            context.strokeStyle = "#FCCC49"; // Keep in sync with .network-frame-divider CSS rule.
+            var x = Math.round(calculator.computePosition(this._selectedFilmStripTime));
+            context.moveTo(x, 0);
+            context.lineTo(x, height);
+            context.stroke();
         }
         context.restore();
     },

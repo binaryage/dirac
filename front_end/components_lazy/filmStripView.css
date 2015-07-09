@@ -8,7 +8,7 @@
     overflow-x: auto;
     overflow-y: hidden;
     align-content: flex-start;
-    min-height: 60px;
+    min-height: 81px;
 }
 
 .film-strip-view.time-based .frame .time {
@@ -25,7 +25,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 4px 0;
+    padding: 4px;
     flex: none;
 }
 
@@ -38,16 +38,18 @@
     flex: none;
 }
 
-.film-strip-view .frame:hover {
-    background-color: #eee;
-}
-
 .film-strip-view .frame .thumbnail {
     min-width: 24px;
     display: flex;
     flex-direction: row;
     align-items: center;
     pointer-events: none;
+    margin: 4px 0 2px;
+    border: 2px solid transparent;
+}
+
+.film-strip-view .frame:hover .thumbnail {
+    border-color: #FBCA46;
 }
 
 .film-strip-view .frame .thumbnail img {
@@ -56,8 +58,12 @@
     max-width: 80px;
     max-height: 50px;
     pointer-events: none;
-    border-right: solid 1px #eee;
+    box-shadow: 0 0 3px #bbb;
     flex: 0 0 auto;
+}
+
+.film-strip-view .frame:hover .thumbnail img {
+    box-shadow: none;
 }
 
 .film-strip-view .frame .time {
