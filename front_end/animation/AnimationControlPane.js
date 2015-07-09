@@ -141,15 +141,15 @@ WebInspector.AnimationControlPane.ButtonProvider.prototype = {
 
     _nodeChanged: function()
     {
-        var enabled = !!WebInspector.context.flavor(WebInspector.DOMNode);
-        this._button.setEnabled(enabled);
-        if (enabled)
-            return;
-
-        if (Runtime.experiments.isEnabled("animationInspection"))
-            this._toggleAnimationTimelineMode(false);
-        else
-            this._toggleAnimationControlPaneMode(false);
+        var node = WebInspector.context.flavor(WebInspector.DOMNode);
+        if (Runtime.experiments.isEnabled("animationInspection")) {
+            if (this._animationTimeline)
+                this._animationTimeline.setNode(node);
+        } else {
+            this._button.setEnabled(!!node);
+            if (!node)
+                this._toggleAnimationControlPaneMode(false);
+        }
     },
 
     /**
