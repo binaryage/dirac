@@ -827,6 +827,7 @@ WebInspector.TimelinePanel.prototype = {
             this._lazyFrameModel.reset();
             this._lazyFrameModel.addTraceEvents(this._model.target(), this._model.inspectedTargetEvents(), this._tracingModel.sessionId());
         }
+        this._overviewPane.reset();
         this._overviewPane.setBounds(this._model.minimumRecordTime(), this._model.maximumRecordTime());
         this.requestWindowTimes(this._model.minimumRecordTime(), this._model.maximumRecordTime());
         this._refreshViews();
@@ -1836,6 +1837,8 @@ WebInspector.TimelineFilmStripOverview = function(tracingModel)
     this._lastFrame = null;
     /** @type {?Element} */
     this._lastElement = null;
+    this._frameToImage = new Map();
+    this._imageWidth = 0;
 }
 
 WebInspector.TimelineFilmStripOverview.prototype = {
@@ -1844,9 +1847,103 @@ WebInspector.TimelineFilmStripOverview.prototype = {
      */
     update: function()
     {
-        var model = this._tracingModel;
-        this._filmStripModel = new WebInspector.FilmStripModel(model);
-        this._filmStripView.setModel(this._filmStripModel, model.minimumRecordTime(), model.maximumRecordTime() - model.minimumRecordTime());
+        this.resetCanvas();
+        if (!this._filmStripModel)
+            return;
+        var frames = this._filmStripModel.frames();
+        if (!frames.length)
+            return;
+
+        if (this._imageWidth) {
+            this._drawFrames();
+            return;
+        }
+
+        Promise.all(frames.map(loadFrameImage.bind(this)))
+            .then(calculateWidth.bind(this))
+            .then(this._drawFrames.bind(this));
+
+        /**
+         * @this {WebInspector.TimelineFilmStripOverview}
+         * @param {!WebInspector.FilmStripModel.Frame} frame
+         * @return {!Promise<!HTMLImageElement>}
+         */
+        function loadFrameImage(frame)
+        {
+            return frame.imageDataPromise().then(gotImageData.bind(this));
+            /**
+             * @this {WebInspector.TimelineFilmStripOverview}
+             * @param {?string} data
+             * @return {!HTMLImageElement}
+             */
+            function gotImageData(data)
+            {
+                var image = /** @type {!HTMLImageElement} */ (createElement("img"));
+                if (data)
+                    image.src = "data:image/jpg;base64," + data;
+                this._frameToImage.set(frame, image);
+                return image;
+            }
+        }
+
+        /**
+         * @this {WebInspector.TimelineFilmStripOverview}
+         * @param {!Array<!HTMLImageElement>} images
+         */
+        function calculateWidth(images)
+        {
+            var imageElement = images[0];
+            var imageHeight = imageElement.naturalHeight;
+            if (!imageHeight)
+                return;
+            var height = this._canvas.height;
+            var imageWidth = imageElement.naturalWidth;
+            imageWidth = Math.floor(height * imageWidth / imageHeight);
+            this._imageWidth = imageWidth;
+        }
+    },
+
+    _drawFrames: function()
+    {
+        if (!this._filmStripModel || !this._imageWidth)
+            return;
+        if (!this._filmStripModel.frames().length)
+            return;
+        var width = this._canvas.width;
+        var height = this._canvas.height;
+        var imageWidth = this._imageWidth;
+        var zeroTime = this._tracingModel.minimumRecordTime();
+        var spanTime = this._tracingModel.maximumRecordTime() - zeroTime;
+        var scale = spanTime / width;
+        var context = this._canvas.getContext("2d");
+
+        for (var x = 0; x < width; x += imageWidth) {
+            var frame = this._frameByTime(zeroTime + x * scale);
+            var image = this._frameToImage.get(frame);
+            context.drawImage(image, x, 0, imageWidth, height);
+        }
+    },
+
+    /**
+     * @param {number} time
+     * @return {!WebInspector.FilmStripModel.Frame}
+     */
+    _frameByTime: function(time)
+    {
+        /**
+         * @param {number} time
+         * @param {!WebInspector.FilmStripModel.Frame} frame
+         * @return {number}
+         */
+        function comparator(time, frame)
+        {
+            return time - frame.timestamp;
+        }
+        // Using the first frame to fill the interval between recording start
+        // and a moment the frame is taken.
+        var frames = this._filmStripModel.frames();
+        var index = Math.max(frames.upperBound(time, comparator) - 1, 0);
+        return frames[index];
     },
 
     /**
@@ -1860,7 +1957,7 @@ WebInspector.TimelineFilmStripOverview.prototype = {
             return Promise.resolve(/** @type {?Element} */ (null));
 
         var time = this._calculator.positionToTime(x);
-        var frame = this._filmStripView.frameByTime(time);
+        var frame = this._frameByTime(time);
         if (frame === this._lastFrame)
             return Promise.resolve(this._lastElement);
 
@@ -1887,6 +1984,9 @@ WebInspector.TimelineFilmStripOverview.prototype = {
         this._filmStripView.reset();
         this._lastFrame = null;
         this._lastElement = null;
+        this._filmStripModel = new WebInspector.FilmStripModel(this._tracingModel);
+        this._frameToImage = new Map();
+        this._imageWidth = 0;
     },
 
     __proto__: WebInspector.TimelineOverviewBase.prototype
