@@ -380,78 +380,6 @@ WebInspector.TimelineEventOverview.MainThread.prototype = {
 
 /**
  * @constructor
- * @extends {WebInspector.TimelineEventOverview.Thread}
- * @param {!WebInspector.TimelineModel} model
- */
-WebInspector.TimelineEventOverview.OtherThreads = function(model)
-{
-    WebInspector.TimelineEventOverview.Thread.call(this, "other-threads", WebInspector.UIString("BG"), model);
-}
-
-WebInspector.TimelineEventOverview.OtherThreads.prototype = {
-    /**
-     * @override
-     */
-    update: function()
-    {
-        this.resetCanvas();
-        this._updatePlaceholder();
-        this._model.virtualThreads().forEach(this._drawThread.bind(this));
-    },
-
-    /**
-     * @param {!WebInspector.TimelineModel.VirtualThread} thread
-     */
-    _drawThread: function(thread)
-    {
-        var events = thread.events;
-        var height = this._canvas.height;
-        var timeOffset = this._model.minimumRecordTime();
-        var timeSpan = this._model.maximumRecordTime() - timeOffset;
-        var scale = this._canvas.width / timeSpan;
-        var ditherer = new WebInspector.Dithering();
-        var categoryStack = [];
-        var lastX = 0;
-
-        /**
-         * @param {!WebInspector.TracingModel.Event} e
-         * @this {WebInspector.TimelineEventOverview}
-         */
-        function onEventStart(e)
-        {
-            var pos = (e.startTime - timeOffset) * scale;
-            if (categoryStack.length) {
-                var category = categoryStack.peekLast();
-                var bar = ditherer.appendInterval(category, lastX, pos);
-                if (bar)
-                    this._renderBar(bar.start, bar.end, 0, height, this._categoryColor(category));
-            }
-            categoryStack.push(WebInspector.TimelineUIUtils.eventStyle(e).category);
-            lastX = pos;
-        }
-
-        /**
-         * @param {!WebInspector.TracingModel.Event} e
-         * @this {WebInspector.TimelineEventOverview}
-         */
-        function onEventEnd(e)
-        {
-            var category = categoryStack.pop();
-            var pos = (e.endTime - timeOffset) * scale;
-            var bar = ditherer.appendInterval(category, lastX, pos);
-            if (bar)
-                this._renderBar(bar.start, bar.end, 0, height, this._categoryColor(category));
-            lastX = pos;
-        }
-
-        WebInspector.TimelineModel.forEachEvent(events, onEventStart.bind(this), onEventEnd.bind(this));
-    },
-
-    __proto__: WebInspector.TimelineEventOverview.Thread.prototype
-}
-
-/**
- * @constructor
  * @extends {WebInspector.TimelineEventOverview}
  * @param {!WebInspector.TimelineModel} model
  * @param {!WebInspector.TimelineFrameModelBase} frameModel
@@ -512,6 +440,175 @@ WebInspector.TimelineEventOverview.Responsiveness.prototype = {
     },
 
     __proto__: WebInspector.TimelineEventOverview.prototype
+}
+
+/**
+ * @constructor
+ * @extends {WebInspector.TimelineOverviewBase}
+ * @param {!WebInspector.TracingModel} tracingModel
+ */
+WebInspector.TimelineFilmStripOverview = function(tracingModel)
+{
+    WebInspector.TimelineOverviewBase.call(this);
+    this._tracingModel = tracingModel;
+    this._filmStripView = new WebInspector.FilmStripView();
+    this._filmStripView.show(this.element);
+    this._lastFrame = null;
+    /** @type {?Element} */
+    this._lastElement = null;
+    this._frameToImage = new Map();
+    this._imageWidth = 0;
+}
+
+WebInspector.TimelineFilmStripOverview.prototype = {
+    /**
+     * @override
+     */
+    update: function()
+    {
+        this.resetCanvas();
+        if (!this._filmStripModel)
+            return;
+        var frames = this._filmStripModel.frames();
+        if (!frames.length)
+            return;
+
+        if (this._imageWidth) {
+            this._drawFrames();
+            return;
+        }
+
+        Promise.all(frames.map(loadFrameImage.bind(this)))
+            .then(calculateWidth.bind(this))
+            .then(this._drawFrames.bind(this));
+
+        /**
+         * @this {WebInspector.TimelineFilmStripOverview}
+         * @param {!WebInspector.FilmStripModel.Frame} frame
+         * @return {!Promise<!HTMLImageElement>}
+         */
+        function loadFrameImage(frame)
+        {
+            return frame.imageDataPromise().then(gotImageData.bind(this));
+            /**
+             * @this {WebInspector.TimelineFilmStripOverview}
+             * @param {?string} data
+             * @return {!HTMLImageElement}
+             */
+            function gotImageData(data)
+            {
+                var image = /** @type {!HTMLImageElement} */ (createElement("img"));
+                if (data)
+                    image.src = "data:image/jpg;base64," + data;
+                this._frameToImage.set(frame, image);
+                return image;
+            }
+        }
+
+        /**
+         * @this {WebInspector.TimelineFilmStripOverview}
+         * @param {!Array<!HTMLImageElement>} images
+         */
+        function calculateWidth(images)
+        {
+            var imageElement = images[0];
+            var imageHeight = imageElement.naturalHeight;
+            if (!imageHeight)
+                return;
+            var height = this._canvas.height;
+            var imageWidth = imageElement.naturalWidth;
+            imageWidth = Math.floor(height * imageWidth / imageHeight);
+            this._imageWidth = imageWidth;
+        }
+    },
+
+    _drawFrames: function()
+    {
+        if (!this._filmStripModel || !this._imageWidth)
+            return;
+        if (!this._filmStripModel.frames().length)
+            return;
+        var width = this._canvas.width;
+        var height = this._canvas.height;
+        var imageWidth = this._imageWidth;
+        var zeroTime = this._tracingModel.minimumRecordTime();
+        var spanTime = this._tracingModel.maximumRecordTime() - zeroTime;
+        var scale = spanTime / width;
+        var context = this._canvas.getContext("2d");
+
+        for (var x = 0; x < width; x += imageWidth) {
+            var frame = this._frameByTime(zeroTime + x * scale);
+            var image = this._frameToImage.get(frame);
+            context.drawImage(image, x, 0, imageWidth, height);
+        }
+    },
+
+    /**
+     * @param {number} time
+     * @return {!WebInspector.FilmStripModel.Frame}
+     */
+    _frameByTime: function(time)
+    {
+        /**
+         * @param {number} time
+         * @param {!WebInspector.FilmStripModel.Frame} frame
+         * @return {number}
+         */
+        function comparator(time, frame)
+        {
+            return time - frame.timestamp;
+        }
+        // Using the first frame to fill the interval between recording start
+        // and a moment the frame is taken.
+        var frames = this._filmStripModel.frames();
+        var index = Math.max(frames.upperBound(time, comparator) - 1, 0);
+        return frames[index];
+    },
+
+    /**
+     * @override
+     * @param {number} x
+     * @return {!Promise<?Element>}
+     */
+    popoverElementPromise: function(x)
+    {
+        if (!this._filmStripModel || !this._filmStripModel.frames().length)
+            return Promise.resolve(/** @type {?Element} */ (null));
+
+        var time = this._calculator.positionToTime(x);
+        var frame = this._frameByTime(time);
+        if (frame === this._lastFrame)
+            return Promise.resolve(this._lastElement);
+
+        return /** @type {!Promise<?Element>} */ (this._filmStripView.createFrameElement(frame).then(onElementCreated.bind(this)));
+        /**
+         * @this {WebInspector.TimelineFilmStripOverview}
+         * @param {!Element} frameElement
+         * @return {!Element}
+         */
+        function onElementCreated(frameElement)
+        {
+            this._lastFrame = frame;
+            this._lastElement = frameElement;
+            this._lastElement.appendChild(WebInspector.Widget.createStyleElement("timeline/timelinePanel.css"));
+            return this._lastElement;
+        }
+    },
+
+    /**
+     * @override
+     */
+    reset: function()
+    {
+        this._filmStripView.reset();
+        this._lastFrame = null;
+        this._lastElement = null;
+        this._filmStripModel = new WebInspector.FilmStripModel(this._tracingModel);
+        this._frameToImage = new Map();
+        this._imageWidth = 0;
+    },
+
+    __proto__: WebInspector.TimelineOverviewBase.prototype
 }
 
 /**
@@ -577,84 +674,6 @@ WebInspector.TimelineEventOverview.Frames.prototype = {
     },
 
     __proto__: WebInspector.TimelineEventOverview.prototype
-}
-
-/**
- * @constructor
- * @template T
- */
-WebInspector.Dithering = function()
-{
-    /** @type {!Map.<?T,number>} */
-    this._groupError = new Map();
-    this._position = 0;
-    this._lastReportedPosition = 0;
-}
-
-WebInspector.Dithering.prototype = {
-    /**
-     * @param {!T} group
-     * @param {number} start
-     * @param {number} end
-     * @return {?{start: number, end: number}}
-     * @template T
-     */
-    appendInterval: function(group, start, end)
-    {
-        this._innerAppend(null, start); // Append an empty space before.
-        return this._innerAppend(group, end); // Append the interval itself.
-    },
-
-    /**
-     * @param {?T} group
-     * @param {number} position
-     * @return {?{start: number, end: number}}
-     * @template T
-     */
-    _innerAppend: function(group, position)
-    {
-        if (position < this._position)
-            return null;
-        var result = null;
-        var length = position - this._position;
-        length += this._groupError.get(group) || 0;
-        if (length >= 1) {
-            if (!group)
-                length -= this._distributeExtraAmount(length - 1);
-            var newReportedPosition = this._lastReportedPosition + Math.floor(length);
-            result = { start: this._lastReportedPosition, end: newReportedPosition };
-            this._lastReportedPosition = newReportedPosition;
-            length %= 1;
-        }
-        this._groupError.set(group, length);
-        this._position = position;
-        return result;
-    },
-
-    /**
-     * @param {number} amount
-     * @return {number}
-     */
-    _distributeExtraAmount: function(amount)
-    {
-        var canConsume = 0;
-        for (var g of this._groupError.keys()) {
-            if (g)
-                canConsume += 1 - this._groupError.get(g);
-        }
-        var toDistribute = Math.min(amount, canConsume);
-        if (toDistribute <= 0)
-            return 0;
-        var ratio = toDistribute / canConsume;
-        for (var g of this._groupError.keys()) {
-            if (!g)
-                continue;
-            var value = this._groupError.get(g);
-            value += (1 - value) * ratio;
-            this._groupError.set(g, value);
-        }
-        return toDistribute;
-    }
 }
 
 /**

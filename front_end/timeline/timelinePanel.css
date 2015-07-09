@@ -314,8 +314,7 @@
     margin-top: 1px !important;
 }
 
-#timeline-overview-input,
-#timeline-overview-other-threads {
+#timeline-overview-input {
     flex-basis: 6px;
 }
 
