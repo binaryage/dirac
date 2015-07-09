@@ -4864,18 +4864,6 @@
                 "description": "Disables animation domain notifications."
             },
             {
-                "name": "getAnimationPlayersForNode",
-                "parameters": [
-                    { "name": "nodeId", "$ref": "DOM.NodeId", "description": "Id of the node to get animation players for." },
-                    { "name": "includeSubtreeAnimations", "type": "boolean", "description": "Include animations from elements subtree." }
-                ],
-                "returns": [
-                    { "name": "animationPlayers", "type": "array", "items": { "$ref": "AnimationPlayer" }, "description": "Array of animation players." }
-                ],
-                "description": "Returns animation players relevant to the node.",
-                "hidden": true
-            },
-            {
                 "name": "getPlaybackRate",
                 "returns": [
                     { "name": "playbackRate", "type": "number", "description": "Playback rate for animations on page."}

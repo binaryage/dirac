@@ -22,30 +22,6 @@ WebInspector.AnimationModel.Events = {
 
 WebInspector.AnimationModel.prototype = {
     /**
-     * @param {!DOMAgent.NodeId} nodeId
-     * @param {boolean} showSubtreeAnimations
-     * @param {function(?Array.<!WebInspector.AnimationModel.AnimationPlayer>)} userCallback
-     */
-    getAnimationPlayers: function(nodeId, showSubtreeAnimations, userCallback)
-    {
-        /**
-         * @param {?Protocol.Error} error
-         * @param {!Array.<!AnimationAgent.AnimationPlayer>} payloads
-         * @this {WebInspector.AnimationModel}
-         */
-        function resultCallback(error, payloads)
-        {
-            if (error) {
-                userCallback(null);
-                return;
-            }
-            userCallback(payloads.map(WebInspector.AnimationModel.AnimationPlayer.parsePayload.bind(null, this.target())));
-        }
-
-        this._agent.getAnimationPlayersForNode(nodeId, showSubtreeAnimations, resultCallback.bind(this));
-    },
-
-    /**
      * @param {!AnimationAgent.AnimationPlayer} payload
      * @param {boolean} resetTimeline
      */
