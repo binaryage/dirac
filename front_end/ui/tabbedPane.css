@@ -72,6 +72,10 @@
     pointer-events: initial;
 }
 
+.tabbed-pane-header-tab-icon {
+    margin-right: 2px;
+}
+
 .tabbed-pane-header-tab {
     float: left;
     margin-top: 2px;

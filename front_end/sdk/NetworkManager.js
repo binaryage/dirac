@@ -71,6 +71,15 @@ WebInspector.NetworkManager._MIMETypes = {
 /** @typedef {{throughput: number, latency: number}} */
 WebInspector.NetworkManager.Conditions;
 
+/**
+ * @param {!WebInspector.NetworkManager.Conditions} conditions
+ * @return {boolean}
+ */
+WebInspector.NetworkManager.IsThrottlingEnabled = function(conditions)
+{
+    return conditions.throughput >= 0;
+}
+
 WebInspector.NetworkManager.prototype = {
     /**
      * @param {string} url

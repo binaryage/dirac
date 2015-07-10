@@ -225,6 +225,7 @@ WebInspector.Main.prototype = {
         new WebInspector.RenderingOptions();
         new WebInspector.Main.PauseListener();
         new WebInspector.Main.InspectedNodeRevealer();
+        new WebInspector.ThrottlingIndicator();
         WebInspector.domBreakpointsSidebarPane = new WebInspector.DOMBreakpointsSidebarPane();
 
         WebInspector.actionRegistry = new WebInspector.ActionRegistry();
@@ -763,6 +764,22 @@ WebInspector.Main.WarningErrorCounter.prototype = {
     item: function()
     {
         return this._counter;
+    }
+}
+
+/**
+ * @constructor
+ */
+WebInspector.ThrottlingIndicator = function()
+{
+    var networkConditionsSetting = WebInspector.moduleSetting("networkConditions");
+    networkConditionsSetting.addChangeListener(updateVisibility);
+    updateVisibility();
+
+    function updateVisibility()
+    {
+        var throttlingEnabled = WebInspector.NetworkManager.IsThrottlingEnabled(networkConditionsSetting.get());
+        WebInspector.inspectorView.setPanelIcon("network", throttlingEnabled ? "warning-icon" : "", WebInspector.UIString("Network throttling is enabled"));
     }
 }
 

@@ -229,6 +229,16 @@ WebInspector.InspectorView.prototype = {
     },
 
     /**
+     * @param {string} panelName
+     * @param {string} iconType
+     * @param {string=} iconTooltip
+     */
+    setPanelIcon: function(panelName, iconType, iconTooltip)
+    {
+        this._tabbedPane.setTabIcon(panelName, iconType, iconTooltip);
+    },
+
+    /**
      * @return {!WebInspector.Panel}
      */
     currentPanel: function()

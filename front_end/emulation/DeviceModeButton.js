@@ -12,8 +12,6 @@ WebInspector.DeviceModeButtonProvider = function()
     button.addEventListener("click", toggleEmulationEnabled);
     WebInspector.overridesSupport.addEventListener(WebInspector.OverridesSupport.Events.EmulationStateChanged, emulationEnabledChanged);
     WebInspector.overridesSupport.addEventListener(WebInspector.OverridesSupport.Events.OverridesWarningUpdated, updateWarning);
-    var networkConditionsSetting = WebInspector.moduleSetting("networkConditions");
-    networkConditionsSetting.addChangeListener(updateWarning);
 
     emulationEnabledChanged();
     updateWarning();
@@ -31,8 +29,6 @@ WebInspector.DeviceModeButtonProvider = function()
     function updateWarning()
     {
         var message = WebInspector.overridesSupport.warningMessage();
-        if (!message && networkConditionsSetting.get().throughput >= 0)
-            message = WebInspector.UIString("Network throttling is enabled");
         button.setTitle(message || WebInspector.UIString("Toggle device mode"));
         button.element.classList.toggle("warning", !!message);
     }

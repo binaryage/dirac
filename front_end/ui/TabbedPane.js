@@ -892,10 +892,8 @@ WebInspector.TabbedPaneTab.prototype = {
             return false;
         this._iconType = iconType;
         this._iconTooltip = iconTooltip;
-        if (this._iconElement)
-            this._iconElement.remove();
-        if (this._iconType && this._tabElement)
-            this._iconElement = this._createIconElement(this._tabElement, this._titleElement);
+        if (this._tabElement)
+            this._createIconElement(this._tabElement, this._titleElement);
         delete this._measuredWidth;
         return true;
     },
@@ -980,14 +978,23 @@ WebInspector.TabbedPaneTab.prototype = {
         this._delegate = delegate;
     },
 
+    /**
+     * @param {!Element} tabElement
+     * @param {!Element} titleElement
+     */
     _createIconElement: function(tabElement, titleElement)
     {
-        var iconElement = createElementWithClass("label", "", "dt-icon-label");
+        if (tabElement.__iconElement)
+            tabElement.__iconElement.remove();
+        if (!this._iconType)
+            return;
+
+        var iconElement = createElementWithClass("label", "tabbed-pane-header-tab-icon", "dt-icon-label");
         iconElement.type = this._iconType;
         if (this._iconTooltip)
             iconElement.title = this._iconTooltip;
         tabElement.insertBefore(iconElement, titleElement);
-        return iconElement;
+        tabElement.__iconElement = iconElement;
     },
 
     /**
@@ -1004,8 +1011,7 @@ WebInspector.TabbedPaneTab.prototype = {
         var titleElement = tabElement.createChild("span", "tabbed-pane-header-tab-title");
         titleElement.textContent = this.title;
         titleElement.title = this.tooltip || "";
-        if (this._iconType)
-            this._createIconElement(tabElement, titleElement);
+        this._createIconElement(tabElement, titleElement);
         if (!measuring)
             this._titleElement = titleElement;
 
