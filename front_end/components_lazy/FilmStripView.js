@@ -183,7 +183,7 @@ WebInspector.FilmStripView.prototype = {
      */
     _onDoubleClick: function(filmStripFrame)
     {
-        WebInspector.Dialog.show(null, new WebInspector.FilmStripView.DialogDelegate(filmStripFrame, this._zeroTime));
+        new WebInspector.FilmStripView.DialogDelegate(filmStripFrame, this._zeroTime);
     },
 
     reset: function()
@@ -242,8 +242,8 @@ WebInspector.FilmStripView.DialogDelegate = function(filmStripFrame, zeroTime)
     footerElement.appendChild(nextButton);
     footerElement.createChild("div", "flex-auto");
 
-    this._render();
     this._contentElement.addEventListener("keydown", this._keyDown.bind(this), false);
+    this._render().then(WebInspector.Dialog.show.bind(null, null, this));
 }
 
 WebInspector.FilmStripView.DialogDelegate.prototype = {
@@ -311,11 +311,14 @@ WebInspector.FilmStripView.DialogDelegate.prototype = {
         this._render();
     },
 
+    /**
+     * @return {!Promise<undefined>}
+     */
     _render: function()
     {
         var frame = this._frames[this._index];
-        frame.imageDataPromise().then(WebInspector.FilmStripView._setImageData.bind(null, this._imageElement));
         this._timeLabel.textContent = Number.millisToString(frame.timestamp - this._zeroTime);
+        return frame.imageDataPromise().then(WebInspector.FilmStripView._setImageData.bind(null, this._imageElement));
     },
 
     __proto__: WebInspector.DialogDelegate.prototype
