@@ -252,21 +252,16 @@
 
 #timeline-overview-panel .overview-strip {
     margin-top: 2px;
+    justify-content: center;
 }
 
 #timeline-overview-panel .overview-strip .timeline-overview-strip-placeholder {
-    position: absolute;
-    left: 0;
-    top: 0;
-    right: 0;
-    bottom: 0;
     color: #ccc;
-    text-align: center;
     font-size: 11px;
-    line-height: 22px;
     font-weight: bold;
     text-transform: uppercase;
     z-index: -100;
+    margin-left: 10px;
 }
 
 #timeline-overview-network {
@@ -278,27 +273,27 @@
     flex-basis: 21px;
 }
 
-#timeline-overview-network::before,
-#timeline-overview-main-thread::before,
-#timeline-overview-framerate::before {
+#timeline-overview-filmstrip {
+    flex-basis: 81px;
+}
+
+.overview-strip::before {
     content: "";
     position: absolute;
     right: 0;
     top: 0;
     bottom: 0;
     left: 0;
-    color: #bbb;
+    color: #888;
     text-align: right;
     padding: 1px 4px;
     font-size: 9px;
-    border-top: 1px dashed hsla(0, 0%, 0%, 0.15);
     border-bottom: 1px solid hsla(0, 0%, 0%, 0.06);
-    background-color: hsla(0, 0%, 0%, 0.03);
     z-index: -200;
 }
 
-#timeline-overview-network::before {
-    border-top: 1px solid hsla(0, 0%, 0%, 0.06);
+#timeline-overview-responsiveness::before {
+    display: none;
 }
 
 #timeline-overview-main-thread::before {
@@ -761,6 +756,7 @@
 
 .timeline-details-view-row-stack-trace {
     padding: 4px 0 4px 20px;
+    line-height: inherit;
 }
 
 .timeline-details-view-row-stack-trace div {

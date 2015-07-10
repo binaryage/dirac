@@ -48,8 +48,13 @@ WebInspector.TimelineEventOverview = function(id, title, model)
 }
 
 WebInspector.TimelineEventOverview.prototype = {
-    _updatePlaceholder: function()
+
+    /**
+     * @override
+     */
+    update: function()
     {
+        WebInspector.TimelineOverviewBase.prototype.update.call(this);
         if (this._placeholder)
             this._placeholder.classList.toggle("hidden", !this._model.isEmpty());
     },
@@ -121,7 +126,7 @@ WebInspector.TimelineEventOverview.Input.prototype = {
      */
     update: function()
     {
-        this.resetCanvas();
+        WebInspector.TimelineEventOverview.prototype.update.call(this);
         var events = this._model.mainThreadEvents();
         var height = this._canvas.height;
         var descriptors = WebInspector.TimelineUIUtils.eventDispatchDesciptors();
@@ -175,8 +180,7 @@ WebInspector.TimelineEventOverview.Network.prototype = {
      */
     update: function()
     {
-        this.resetCanvas();
-        this._updatePlaceholder();
+        WebInspector.TimelineEventOverview.prototype.update.call(this);
         var height = this._canvas.height;
         var numBands = categoryBand(WebInspector.TimelineUIUtils.NetworkCategory.Other) + 1;
         var bandHeight = height / numBands;
@@ -311,8 +315,7 @@ WebInspector.TimelineEventOverview.MainThread.prototype = {
      */
     update: function()
     {
-        this.resetCanvas();
-        this._updatePlaceholder();
+        WebInspector.TimelineEventOverview.prototype.update.call(this);
         var events = this._model.mainThreadEvents();
         if (!events.length)
             return;
@@ -396,7 +399,7 @@ WebInspector.TimelineEventOverview.Responsiveness.prototype = {
      */
     update: function()
     {
-        this.resetCanvas();
+        WebInspector.TimelineEventOverview.prototype.update.call(this);
         var height = this._canvas.height;
         var timeOffset = this._model.minimumRecordTime();
         var timeSpan = this._model.maximumRecordTime() - timeOffset;
@@ -444,20 +447,15 @@ WebInspector.TimelineEventOverview.Responsiveness.prototype = {
 
 /**
  * @constructor
- * @extends {WebInspector.TimelineOverviewBase}
+ * @extends {WebInspector.TimelineEventOverview}
+ * @param {!WebInspector.TimelineModel} model
  * @param {!WebInspector.TracingModel} tracingModel
  */
-WebInspector.TimelineFilmStripOverview = function(tracingModel)
+WebInspector.TimelineFilmStripOverview = function(model, tracingModel)
 {
-    WebInspector.TimelineOverviewBase.call(this);
+    WebInspector.TimelineEventOverview.call(this, "filmstrip", "Screenshots", model);
     this._tracingModel = tracingModel;
-    this._filmStripView = new WebInspector.FilmStripView();
-    this._filmStripView.show(this.element);
-    this._lastFrame = null;
-    /** @type {?Element} */
-    this._lastElement = null;
-    this._frameToImage = new Map();
-    this._imageWidth = 0;
+    this.reset();
 }
 
 WebInspector.TimelineFilmStripOverview.prototype = {
@@ -466,7 +464,7 @@ WebInspector.TimelineFilmStripOverview.prototype = {
      */
     update: function()
     {
-        this.resetCanvas();
+        WebInspector.TimelineEventOverview.prototype.update.call(this);
         if (!this._filmStripModel)
             return;
         var frames = this._filmStripModel.frames();
@@ -512,13 +510,13 @@ WebInspector.TimelineFilmStripOverview.prototype = {
         function calculateWidth(images)
         {
             var imageElement = images[0];
-            var imageHeight = imageElement.naturalHeight;
-            if (!imageHeight)
+            var naturalHeight = imageElement.naturalHeight;
+            if (!naturalHeight)
                 return;
-            var height = this._canvas.height;
-            var imageWidth = imageElement.naturalWidth;
-            imageWidth = Math.floor(height * imageWidth / imageHeight);
-            this._imageWidth = imageWidth;
+            var naturalWidth = imageElement.naturalWidth;
+
+            this._imageHeight = this._canvas.height - 10
+            this._imageWidth = Math.floor(this._imageHeight * naturalWidth / naturalHeight);
         }
     },
 
@@ -529,18 +527,23 @@ WebInspector.TimelineFilmStripOverview.prototype = {
         if (!this._filmStripModel.frames().length)
             return;
         var width = this._canvas.width;
-        var height = this._canvas.height;
-        var imageWidth = this._imageWidth;
         var zeroTime = this._tracingModel.minimumRecordTime();
         var spanTime = this._tracingModel.maximumRecordTime() - zeroTime;
         var scale = spanTime / width;
         var context = this._canvas.getContext("2d");
 
-        for (var x = 0; x < width; x += imageWidth) {
-            var frame = this._frameByTime(zeroTime + x * scale);
+        context.save();
+        context.strokeStyle = "#ddd";
+        for (var x = 0; x < width; x += this._imageWidth + 5) {
+            var time = zeroTime + (x + this._imageWidth / 2)* scale;
+            var frame = this._frameByTime(time);
             var image = this._frameToImage.get(frame);
-            context.drawImage(image, x, 0, imageWidth, height);
+            context.beginPath();
+            context.rect(x + 0.5, 3.5, this._imageWidth + 1, this._imageHeight + 1);
+            context.stroke();
+            context.drawImage(image, x + 1, 4, this._imageWidth, this._imageHeight);
         }
+        context.restore();
     },
 
     /**
@@ -580,7 +583,8 @@ WebInspector.TimelineFilmStripOverview.prototype = {
         if (frame === this._lastFrame)
             return Promise.resolve(this._lastElement);
 
-        return /** @type {!Promise<?Element>} */ (this._filmStripView.createFrameElement(frame).then(onElementCreated.bind(this)));
+        var filmStripView = new WebInspector.FilmStripView();
+        return /** @type {!Promise<?Element>} */ (filmStripView.createFrameElement(frame).then(onElementCreated.bind(this)));
         /**
          * @this {WebInspector.TimelineFilmStripOverview}
          * @param {!Element} frameElement
@@ -600,7 +604,6 @@ WebInspector.TimelineFilmStripOverview.prototype = {
      */
     reset: function()
     {
-        this._filmStripView.reset();
         this._lastFrame = null;
         this._lastElement = null;
         this._filmStripModel = new WebInspector.FilmStripModel(this._tracingModel);
@@ -608,7 +611,7 @@ WebInspector.TimelineFilmStripOverview.prototype = {
         this._imageWidth = 0;
     },
 
-    __proto__: WebInspector.TimelineOverviewBase.prototype
+    __proto__: WebInspector.TimelineEventOverview.prototype
 }
 
 /**
@@ -629,8 +632,7 @@ WebInspector.TimelineEventOverview.Frames.prototype = {
      */
     update: function()
     {
-        this.resetCanvas();
-        this._updatePlaceholder();
+        WebInspector.TimelineEventOverview.prototype.update.call(this);
         var height = this._canvas.height;
         var /** @const */ padding = 1 * window.devicePixelRatio;
         var /** @const */ baseFrameDurationMs = 1e3 / 60;

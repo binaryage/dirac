@@ -119,9 +119,10 @@ WebInspector.TimelineOverviewPane.prototype = {
             return;
         this._buildPopoverContents().then(updatePopover.bind(this));
         this._popover.positionElement(this._cursorElement);
+
         /**
-         * @this {WebInspector.TimelineOverviewPane}
          * @param {!DocumentFragment} fragment
+         * @this {WebInspector.TimelineOverviewPane}
          */
         function updatePopover(fragment)
         {
@@ -141,12 +142,13 @@ WebInspector.TimelineOverviewPane.prototype = {
         var x = cursor.offsetLeft;
         var promises = [];
         for (var control of this._overviewControls)
-            promises.push(control.popoverElementPromise(x))
+            promises.push(control.popoverElementPromise(x));
 
         return Promise.all(promises).then(buildFragment);
 
         /**
          * @param {!Array<?Element>} elements
+         * @return {!DocumentFragment}
          */
         function buildFragment(elements)
         {

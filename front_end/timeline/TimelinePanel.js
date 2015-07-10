@@ -97,7 +97,7 @@ WebInspector.TimelinePanel = function()
     this._detailsSplitWidget.setSidebarWidget(this._detailsView);
 
     this._searchableView = new WebInspector.SearchableView(this);
-    this._searchableView.setMinimumSize(0, 25);
+    this._searchableView.setMinimumSize(0, 50);
     this._searchableView.element.classList.add("searchable-view");
     this._detailsSplitWidget.setMainWidget(this._searchableView);
 
@@ -627,7 +627,7 @@ WebInspector.TimelinePanel.prototype = {
         }
 
         if (!isFrameMode && this._captureFilmStripSetting.get())
-            this._overviewControls.push(new WebInspector.TimelineFilmStripOverview(this._tracingModel));
+            this._overviewControls.push(new WebInspector.TimelineFilmStripOverview(this._model, this._tracingModel));
 
         var mainTarget = WebInspector.targetManager.mainTarget();
         this._overviewPane.setOverviewControls(this._overviewControls);
