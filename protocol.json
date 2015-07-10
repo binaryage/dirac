@@ -4800,40 +4800,40 @@
         "hidden": true,
         "types": [
             {
-                "id": "AnimationPlayer",
+                "id": "Animation",
                 "type": "object",
                 "hidden": true,
                 "properties": [
-                    { "name": "id", "type": "string", "description": "<code>AnimationPlayer</code>'s id." },
-                    { "name": "pausedState", "type": "boolean", "hidden": "true", "description": "<code>AnimationPlayer</code>'s internal paused state." },
-                    { "name": "playState", "type": "string", "description": "<code>AnimationPlayer</code>'s play state." },
-                    { "name": "playbackRate", "type": "number", "description": "<code>AnimationPlayer</code>'s playback rate." },
-                    { "name": "startTime", "type": "number", "description": "<code>AnimationPlayer</code>'s start time." },
-                    { "name": "currentTime", "type": "number", "description": "<code>AnimationPlayer</code>'s current time." },
-                    { "name": "source", "$ref": "AnimationNode", "description": "<code>AnimationPlayer</code>'s source animation node." },
-                    { "name": "type", "type": "string", "enum": ["CSSTransition", "CSSAnimation", "WebAnimation"], "description": "Animation type of <code>AnimationPlayer</code>." }
+                    { "name": "id", "type": "string", "description": "<code>Animation</code>'s id." },
+                    { "name": "pausedState", "type": "boolean", "hidden": "true", "description": "<code>Animation</code>'s internal paused state." },
+                    { "name": "playState", "type": "string", "description": "<code>Animation</code>'s play state." },
+                    { "name": "playbackRate", "type": "number", "description": "<code>Animation</code>'s playback rate." },
+                    { "name": "startTime", "type": "number", "description": "<code>Animation</code>'s start time." },
+                    { "name": "currentTime", "type": "number", "description": "<code>Animation</code>'s current time." },
+                    { "name": "source", "$ref": "AnimationEffect", "description": "<code>Animation</code>'s source animation node." },
+                    { "name": "type", "type": "string", "enum": ["CSSTransition", "CSSAnimation", "WebAnimation"], "description": "Animation type of <code>Animation</code>." }
                 ],
-                "description": "AnimationPlayer instance."
+                "description": "Animation instance."
             },
             {
-                "id": "AnimationNode",
+                "id": "AnimationEffect",
                 "type": "object",
                 "hidden": true,
                 "properties": [
-                    { "name": "delay", "type": "number", "description": "<code>AnimationNode</code>'s delay." },
-                    { "name": "endDelay", "type": "number", "description": "<code>AnimationNode</code>'s end delay." },
-                    { "name": "playbackRate", "type": "number", "description": "<code>AnimationNode</code>'s playbackRate." },
-                    { "name": "iterationStart", "type": "number", "description": "<code>AnimationNode</code>'s iteration start." },
-                    { "name": "iterations", "type": "number", "description": "<code>AnimationNode</code>'s iterations." },
-                    { "name": "duration", "type": "number", "description": "<code>AnimationNode</code>'s iteration duration." },
-                    { "name": "direction", "type": "string", "description": "<code>AnimationNode</code>'s playback direction." },
-                    { "name": "fill", "type": "string", "description": "<code>AnimationNode</code>'s fill mode." },
-                    { "name": "name", "type": "string", "description": "<code>AnimationNode</code>'s name." },
-                    { "name": "backendNodeId", "$ref": "DOM.BackendNodeId", "description": "<code>AnimationNode</code>'s target node." },
-                    { "name": "keyframesRule", "$ref": "KeyframesRule", "optional": true, "description": "<code>AnimationNode</code>'s keyframes." },
-                    { "name": "easing", "type": "string", "description": "<code>AnimationNode</code>'s timing function." }
+                    { "name": "delay", "type": "number", "description": "<code>AnimationEffect</code>'s delay." },
+                    { "name": "endDelay", "type": "number", "description": "<code>AnimationEffect</code>'s end delay." },
+                    { "name": "playbackRate", "type": "number", "description": "<code>AnimationEffect</code>'s playbackRate." },
+                    { "name": "iterationStart", "type": "number", "description": "<code>AnimationEffect</code>'s iteration start." },
+                    { "name": "iterations", "type": "number", "description": "<code>AnimationEffect</code>'s iterations." },
+                    { "name": "duration", "type": "number", "description": "<code>AnimationEffect</code>'s iteration duration." },
+                    { "name": "direction", "type": "string", "description": "<code>AnimationEffect</code>'s playback direction." },
+                    { "name": "fill", "type": "string", "description": "<code>AnimationEffect</code>'s fill mode." },
+                    { "name": "name", "type": "string", "description": "<code>AnimationEffect</code>'s name." },
+                    { "name": "backendNodeId", "$ref": "DOM.BackendNodeId", "description": "<code>AnimationEffect</code>'s target node." },
+                    { "name": "keyframesRule", "$ref": "KeyframesRule", "optional": true, "description": "<code>AnimationEffect</code>'s keyframes." },
+                    { "name": "easing", "type": "string", "description": "<code>AnimationEffect</code>'s timing function." }
                 ],
-                "description": "AnimationNode instance"
+                "description": "AnimationEffect instance"
             },
             {
                 "id": "KeyframesRule",
@@ -4849,7 +4849,7 @@
                 "type": "object",
                 "properties": [
                     { "name": "offset", "type": "string", "description": "Keyframe's time offset." },
-                    { "name": "easing", "type": "string", "description": "<code>AnimationNode</code>'s timing function." }
+                    { "name": "easing", "type": "string", "description": "<code>AnimationEffect</code>'s timing function." }
                 ],
                 "description": "Keyframe Style"
             }
@@ -4896,19 +4896,19 @@
         ],
         "events": [
             {
-                "name": "animationPlayerCreated",
+                "name": "animationCreated",
                 "parameters": [
-                    { "name": "player", "$ref": "AnimationPlayer", "description": "AnimationPlayer that was created." },
+                    { "name": "player", "$ref": "Animation", "description": "Animation that was created." },
                     { "name": "resetTimeline", "type": "boolean", "description": "Whether the timeline should be reset." }
                 ],
                 "description": "Event for each animation player that has been created."
             },
             {
-                "name": "animationPlayerCanceled",
+                "name": "animationCanceled",
                 "parameters": [
-                    { "name": "playerId", "type": "string", "description": "Id of the AnimationPlayer that was cancelled." }
+                    { "name": "id", "type": "string", "description": "Id of the Animation that was cancelled." }
                 ],
-                "description": "Event for AnimationPlayers in the frontend that have been cancelled."
+                "description": "Event for Animations in the frontend that have been cancelled."
             }
         ]
     },

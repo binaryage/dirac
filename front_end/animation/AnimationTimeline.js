@@ -27,7 +27,7 @@ WebInspector.AnimationTimeline = function()
     /** @type {!Map.<!DOMAgent.BackendNodeId, !WebInspector.AnimationTimeline.NodeUI>} */
     this._nodesMap = new Map();
     this._symbol = Symbol("animationTimeline");
-    /** @type {!Map.<string, !WebInspector.AnimationModel.AnimationPlayer>} */
+    /** @type {!Map.<string, !WebInspector.AnimationModel.Animation>} */
     this._animationsMap = new Map();
     WebInspector.targetManager.addModelListener(WebInspector.ResourceTreeModel, WebInspector.ResourceTreeModel.EventTypes.MainFrameNavigated, this._mainFrameNavigated, this);
     WebInspector.targetManager.addModelListener(WebInspector.DOMModel, WebInspector.DOMModel.Events.NodeRemoved, this._nodeRemoved, this);
@@ -76,8 +76,8 @@ WebInspector.AnimationTimeline.prototype = {
     {
         var animationModel = WebInspector.AnimationModel.fromTarget(target);
         animationModel.ensureEnabled();
-        animationModel.addEventListener(WebInspector.AnimationModel.Events.AnimationPlayerCreated, this._animationCreated, this);
-        animationModel.addEventListener(WebInspector.AnimationModel.Events.AnimationPlayerCanceled, this._animationCanceled, this);
+        animationModel.addEventListener(WebInspector.AnimationModel.Events.AnimationCreated, this._animationCreated, this);
+        animationModel.addEventListener(WebInspector.AnimationModel.Events.AnimationCanceled, this._animationCanceled, this);
     },
 
     /**
@@ -86,8 +86,8 @@ WebInspector.AnimationTimeline.prototype = {
     _removeEventListeners: function(target)
     {
         var animationModel = WebInspector.AnimationModel.fromTarget(target);
-        animationModel.removeEventListener(WebInspector.AnimationModel.Events.AnimationPlayerCreated, this._animationCreated, this);
-        animationModel.removeEventListener(WebInspector.AnimationModel.Events.AnimationPlayerCanceled, this._animationCanceled, this);
+        animationModel.removeEventListener(WebInspector.AnimationModel.Events.AnimationCreated, this._animationCreated, this);
+        animationModel.removeEventListener(WebInspector.AnimationModel.Events.AnimationCanceled, this._animationCanceled, this);
     },
 
     /**
@@ -275,11 +275,11 @@ WebInspector.AnimationTimeline.prototype = {
      */
     _animationCreated: function(event)
     {
-        this._addAnimation(/** @type {!WebInspector.AnimationModel.AnimationPlayer} */ (event.data.player), event.data.resetTimeline)
+        this._addAnimation(/** @type {!WebInspector.AnimationModel.Animation} */ (event.data.player), event.data.resetTimeline)
     },
 
     /**
-     * @param {!WebInspector.AnimationModel.AnimationPlayer} animation
+     * @param {!WebInspector.AnimationModel.Animation} animation
      * @param {boolean} resetTimeline
      */
     _addAnimation: function(animation, resetTimeline)
@@ -322,7 +322,7 @@ WebInspector.AnimationTimeline.prototype = {
      */
     _animationCanceled: function(event)
     {
-        this._cancelAnimation(/** @type {string} */ (event.data.playerId));
+        this._cancelAnimation(/** @type {string} */ (event.data.id));
     },
 
     /**
@@ -409,7 +409,7 @@ WebInspector.AnimationTimeline.prototype = {
     },
 
     /**
-     * @param {!WebInspector.AnimationModel.AnimationPlayer} animation
+     * @param {!WebInspector.AnimationModel.Animation} animation
      * @return {boolean}
      */
     _resizeWindow: function(animation)
@@ -538,9 +538,9 @@ WebInspector.AnimationTimeline.prototype = {
 
 /**
  * @constructor
- * @param {!WebInspector.AnimationModel.AnimationNode} animationNode
+ * @param {!WebInspector.AnimationModel.AnimationEffect} animationEffect
  */
-WebInspector.AnimationTimeline.NodeUI = function(animationNode) {
+WebInspector.AnimationTimeline.NodeUI = function(animationEffect) {
     /**
      * @param {?WebInspector.DOMNode} node
      * @this {WebInspector.AnimationTimeline.NodeUI}
@@ -555,7 +555,7 @@ WebInspector.AnimationTimeline.NodeUI = function(animationNode) {
     this._rows = [];
     this.element = createElementWithClass("div", "animation-node-row");
     this._description = this.element.createChild("div", "animation-node-description");
-    animationNode.deferredNode().resolve(nodeResolved.bind(this));
+    animationEffect.deferredNode().resolve(nodeResolved.bind(this));
     this._timelineElement = this.element.createChild("div", "animation-node-timeline");
 }
 
@@ -564,7 +564,7 @@ WebInspector.AnimationTimeline.NodeRow;
 
 WebInspector.AnimationTimeline.NodeUI.prototype = {
     /**
-     * @param {!WebInspector.AnimationModel.AnimationPlayer} animation
+     * @param {!WebInspector.AnimationModel.Animation} animation
      * @return {!WebInspector.AnimationTimeline.NodeRow}
      */
     findRow: function(animation)
@@ -590,7 +590,7 @@ WebInspector.AnimationTimeline.NodeUI.prototype = {
     },
 
     /**
-     * @param {!WebInspector.AnimationModel.AnimationPlayer} animation
+     * @param {!WebInspector.AnimationModel.Animation} animation
      * @return {?WebInspector.AnimationTimeline.NodeRow}
      */
     _collapsibleIntoRow: function(animation)
@@ -648,7 +648,7 @@ WebInspector.AnimationTimeline.StepTimingFunction.parse = function(text) {
 
 /**
  * @constructor
- * @param {!WebInspector.AnimationModel.AnimationPlayer} animation
+ * @param {!WebInspector.AnimationModel.Animation} animation
  * @param {!WebInspector.AnimationTimeline} timeline
  * @param {!Element} parentElement
  */
@@ -688,7 +688,7 @@ WebInspector.AnimationUI.MouseEvents = {
 
 WebInspector.AnimationUI.prototype = {
     /**
-     * @return {!WebInspector.AnimationModel.AnimationPlayer}
+     * @return {!WebInspector.AnimationModel.Animation}
      */
     animation: function()
     {

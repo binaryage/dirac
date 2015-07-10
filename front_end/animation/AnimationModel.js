@@ -16,27 +16,27 @@ WebInspector.AnimationModel = function(target)
 }
 
 WebInspector.AnimationModel.Events = {
-    AnimationPlayerCreated: "AnimationPlayerCreated",
-    AnimationPlayerCanceled: "AnimationPlayerCanceled"
+    AnimationCreated: "AnimationCreated",
+    AnimationCanceled: "AnimationCanceled"
 }
 
 WebInspector.AnimationModel.prototype = {
     /**
-     * @param {!AnimationAgent.AnimationPlayer} payload
+     * @param {!AnimationAgent.Animation} payload
      * @param {boolean} resetTimeline
      */
-    animationPlayerCreated: function(payload, resetTimeline)
+    animationCreated: function(payload, resetTimeline)
     {
-        var player = WebInspector.AnimationModel.AnimationPlayer.parsePayload(this.target(), payload);
-        this.dispatchEventToListeners(WebInspector.AnimationModel.Events.AnimationPlayerCreated, { "player": player, "resetTimeline": resetTimeline });
+        var player = WebInspector.AnimationModel.Animation.parsePayload(this.target(), payload);
+        this.dispatchEventToListeners(WebInspector.AnimationModel.Events.AnimationCreated, { "player": player, "resetTimeline": resetTimeline });
     },
 
     /**
-     * @param {string} playerId
+     * @param {string} id
      */
-    animationPlayerCanceled: function(playerId)
+    animationCanceled: function(id)
     {
-        this.dispatchEventToListeners(WebInspector.AnimationModel.Events.AnimationPlayerCanceled, { "playerId": playerId });
+        this.dispatchEventToListeners(WebInspector.AnimationModel.Events.AnimationCanceled, { "id": id });
     },
 
     /**
@@ -76,28 +76,28 @@ WebInspector.AnimationModel.fromTarget = function(target)
  * @constructor
  * @extends {WebInspector.SDKObject}
  * @param {!WebInspector.Target} target
- * @param {!AnimationAgent.AnimationPlayer} payload
+ * @param {!AnimationAgent.Animation} payload
  */
-WebInspector.AnimationModel.AnimationPlayer = function(target, payload)
+WebInspector.AnimationModel.Animation = function(target, payload)
 {
     WebInspector.SDKObject.call(this, target);
     this._payload = payload;
-    this._source = new WebInspector.AnimationModel.AnimationNode(this.target(), this._payload.source);
+    this._source = new WebInspector.AnimationModel.AnimationEffect(this.target(), this._payload.source);
 }
 
 /**
  * @param {!WebInspector.Target} target
- * @param {!AnimationAgent.AnimationPlayer} payload
- * @return {!WebInspector.AnimationModel.AnimationPlayer}
+ * @param {!AnimationAgent.Animation} payload
+ * @return {!WebInspector.AnimationModel.Animation}
  */
-WebInspector.AnimationModel.AnimationPlayer.parsePayload = function(target, payload)
+WebInspector.AnimationModel.Animation.parsePayload = function(target, payload)
 {
-    return new WebInspector.AnimationModel.AnimationPlayer(target, payload);
+    return new WebInspector.AnimationModel.Animation(target, payload);
 }
 
-WebInspector.AnimationModel.AnimationPlayer.prototype = {
+WebInspector.AnimationModel.Animation.prototype = {
     /**
-     * @return {!AnimationAgent.AnimationPlayer}
+     * @return {!AnimationAgent.Animation}
      */
     payload: function()
     {
@@ -179,7 +179,7 @@ WebInspector.AnimationModel.AnimationPlayer.prototype = {
     },
 
     /**
-     * @return {!WebInspector.AnimationModel.AnimationNode}
+     * @return {!WebInspector.AnimationModel.AnimationEffect}
      */
     source: function()
     {
@@ -195,7 +195,7 @@ WebInspector.AnimationModel.AnimationPlayer.prototype = {
     },
 
     /**
-     * @param {!WebInspector.AnimationModel.AnimationPlayer} animation
+     * @param {!WebInspector.AnimationModel.Animation} animation
      * @return {boolean}
      */
     overlaps: function(animation)
@@ -216,9 +216,9 @@ WebInspector.AnimationModel.AnimationPlayer.prototype = {
  * @constructor
  * @extends {WebInspector.SDKObject}
  * @param {!WebInspector.Target} target
- * @param {!AnimationAgent.AnimationNode} payload
+ * @param {!AnimationAgent.AnimationEffect} payload
  */
-WebInspector.AnimationModel.AnimationNode = function(target, payload)
+WebInspector.AnimationModel.AnimationEffect = function(target, payload)
 {
     WebInspector.SDKObject.call(this, target);
     this._payload = payload;
@@ -228,7 +228,7 @@ WebInspector.AnimationModel.AnimationNode = function(target, payload)
     this._duration = this._payload.duration;
 }
 
-WebInspector.AnimationModel.AnimationNode.prototype = {
+WebInspector.AnimationModel.AnimationEffect.prototype = {
     /**
      * @return {number}
      */
@@ -455,20 +455,20 @@ WebInspector.AnimationDispatcher = function(animationModel)
 WebInspector.AnimationDispatcher.prototype = {
     /**
      * @override
-     * @param {!AnimationAgent.AnimationPlayer} payload
+     * @param {!AnimationAgent.Animation} payload
      * @param {boolean} resetTimeline
      */
-    animationPlayerCreated: function(payload, resetTimeline)
+    animationCreated: function(payload, resetTimeline)
     {
-        this._animationModel.animationPlayerCreated(payload, resetTimeline);
+        this._animationModel.animationCreated(payload, resetTimeline);
     },
 
     /**
      * @override
-     * @param {string} playerId
+     * @param {string} id
      */
-    animationPlayerCanceled: function(playerId)
+    animationCanceled: function(id)
     {
-        this._animationModel.animationPlayerCanceled(playerId);
+        this._animationModel.animationCanceled(id);
     }
 }
