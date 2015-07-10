@@ -2852,7 +2852,8 @@
                 "type": "object",
                 "properties": [
                     { "name": "name", "type": "string", "description": "Shorthand name." },
-                    { "name": "value", "type": "string", "description": "Shorthand value." }
+                    { "name": "value", "type": "string", "description": "Shorthand value." },
+                    { "name": "important", "type": "boolean", "optional": true, "description": "Whether the property has \"!important\" annotation (implies <code>false</code> if absent)." }
                 ]
             },
             {

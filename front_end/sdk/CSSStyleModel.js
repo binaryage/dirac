@@ -634,7 +634,18 @@ WebInspector.CSSStyleDeclaration = function(cssModel, payload)
     this._cssModel = cssModel;
     this.styleSheetId = payload.styleSheetId;
     this.range = payload.range ? WebInspector.TextRange.fromObject(payload.range) : null;
-    this._shorthandValues = WebInspector.CSSStyleDeclaration.buildShorthandValueMap(payload.shorthandEntries);
+
+    var shorthandEntries = payload.shorthandEntries;
+    /** @type {!Map.<string, string>} */
+    this._shorthandValues = new Map();
+    /** @type {!Set.<string>} */
+    this._shorthandIsImportant = new Set();
+    for (var i = 0; i < shorthandEntries.length; ++i) {
+        this._shorthandValues.set(shorthandEntries[i].name, shorthandEntries[i].value);
+        if (shorthandEntries[i].important)
+            this._shorthandIsImportant.add(shorthandEntries[i].name);
+    }
+
     this._livePropertyMap = {}; // LIVE properties (source-based or style-based) : { name -> CSSProperty }
     this._allProperties = []; // ALL properties: [ CSSProperty ]
     this.__disabledProperties = {}; // DISABLED properties: { index -> CSSProperty }
@@ -675,18 +686,6 @@ WebInspector.CSSStyleDeclaration.createDummyStyle = function(cssModel)
         cssProperties: []
     };
     return new WebInspector.CSSStyleDeclaration(cssModel, dummyPayload);
-}
-
-/**
- * @param {!Array.<!CSSAgent.ShorthandEntry>} shorthandEntries
- * @return {!Object}
- */
-WebInspector.CSSStyleDeclaration.buildShorthandValueMap = function(shorthandEntries)
-{
-    var result = {};
-    for (var i = 0; i < shorthandEntries.length; ++i)
-        result[shorthandEntries[i].name] = shorthandEntries[i].value;
-    return result;
 }
 
 /**
@@ -822,7 +821,16 @@ WebInspector.CSSStyleDeclaration.prototype = {
      */
     shorthandValue: function(shorthandProperty)
     {
-        return this._shorthandValues[shorthandProperty];
+        return this._shorthandValues.get(shorthandProperty) || "";
+    },
+
+    /**
+     * @param {string} shorthandProperty
+     * @return {boolean}
+     */
+    shorthandIsImportant: function(shorthandProperty)
+    {
+        return this._shorthandIsImportant.has(shorthandProperty);
     },
 
     /**

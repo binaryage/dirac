@@ -1328,7 +1328,7 @@ WebInspector.StylePropertiesSection.prototype = {
                 }
 
                 // Generate synthetic shorthand we have a value for.
-                var shorthandProperty = new WebInspector.CSSProperty(style, style.allProperties.length, shorthand, style.shorthandValue(shorthand), false, false, true, true);
+                var shorthandProperty = new WebInspector.CSSProperty(style, style.allProperties.length, shorthand, style.shorthandValue(shorthand), style.shorthandIsImportant(shorthand), false, true, true);
                 var overloaded = property.inactive || this.styleRule.isPropertyOverloaded(property.name, true);
                 var item = new WebInspector.StylePropertyTreeElement(this._parentPane, this.styleRule, shorthandProperty,  /* isShorthand */ true, /* inherited */ false, overloaded);
                 this.propertiesTreeOutline.appendChild(item);
