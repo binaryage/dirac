@@ -476,47 +476,48 @@ WebInspector.TimelineFilmStripOverview.prototype = {
             return;
         }
 
-        Promise.all(frames.map(loadFrameImage.bind(this)))
+        this._imageByFrame(frames[0])
             .then(calculateWidth.bind(this))
             .then(this._drawFrames.bind(this));
 
         /**
          * @this {WebInspector.TimelineFilmStripOverview}
-         * @param {!WebInspector.FilmStripModel.Frame} frame
-         * @return {!Promise<!HTMLImageElement>}
+         * @param {!HTMLImageElement} image
          */
-        function loadFrameImage(frame)
+        function calculateWidth(image)
         {
-            return frame.imageDataPromise().then(gotImageData.bind(this));
-            /**
-             * @this {WebInspector.TimelineFilmStripOverview}
-             * @param {?string} data
-             * @return {!HTMLImageElement}
-             */
-            function gotImageData(data)
-            {
-                var image = /** @type {!HTMLImageElement} */ (createElement("img"));
-                if (data)
-                    image.src = "data:image/jpg;base64," + data;
-                this._frameToImage.set(frame, image);
-                return image;
-            }
-        }
-
-        /**
-         * @this {WebInspector.TimelineFilmStripOverview}
-         * @param {!Array<!HTMLImageElement>} images
-         */
-        function calculateWidth(images)
-        {
-            var imageElement = images[0];
-            var naturalHeight = imageElement.naturalHeight;
+            var naturalHeight = image.naturalHeight;
             if (!naturalHeight)
                 return;
-            var naturalWidth = imageElement.naturalWidth;
-
+            var naturalWidth = image.naturalWidth;
             this._imageHeight = this._canvas.height - 10
             this._imageWidth = Math.floor(this._imageHeight * naturalWidth / naturalHeight);
+        }
+    },
+
+    /**
+     * @param {!WebInspector.FilmStripModel.Frame} frame
+     * @return {!Promise<!HTMLImageElement>}
+     */
+    _imageByFrame: function(frame)
+    {
+        var imagePromise = this._frameToImagePromise.get(frame);
+        if (!imagePromise) {
+            imagePromise = frame.imageDataPromise().then(createImage);
+            this._frameToImagePromise.set(frame, imagePromise);
+        }
+        return imagePromise;
+
+        /**
+         * @param {?string} data
+         * @return {!HTMLImageElement}
+         */
+        function createImage(data)
+        {
+            var image = /** @type {!HTMLImageElement} */ (createElement("img"));
+            if (data)
+                image.src = "data:image/jpg;base64," + data;
+            return image;
         }
     },
 
@@ -532,18 +533,26 @@ WebInspector.TimelineFilmStripOverview.prototype = {
         var scale = spanTime / width;
         var context = this._canvas.getContext("2d");
 
-        context.save();
-        context.strokeStyle = "#ddd";
+        context.beginPath();
         for (var x = 0; x < width; x += this._imageWidth + 5) {
             var time = zeroTime + (x + this._imageWidth / 2)* scale;
             var frame = this._frameByTime(time);
-            var image = this._frameToImage.get(frame);
-            context.beginPath();
             context.rect(x + 0.5, 3.5, this._imageWidth + 1, this._imageHeight + 1);
-            context.stroke();
-            context.drawImage(image, x + 1, 4, this._imageWidth, this._imageHeight);
+            this._imageByFrame(frame).then(drawFrameImage.bind(null, x, this._imageWidth, this._imageHeight));
         }
-        context.restore();
+        context.strokeStyle = "#ddd";
+        context.stroke();
+
+        /**
+         * @param {number} x
+         * @param {number} width
+         * @param {number} height
+         * @param {!HTMLImageElement} image
+         */
+        function drawFrameImage(x, width, height, image)
+        {
+            context.drawImage(image, x + 1, 4, width, height);
+        }
     },
 
     /**
@@ -582,20 +591,21 @@ WebInspector.TimelineFilmStripOverview.prototype = {
         var frame = this._frameByTime(time);
         if (frame === this._lastFrame)
             return Promise.resolve(this._lastElement);
+        return this._imageByFrame(frame).then(createFrameElement.bind(this));
 
-        var filmStripView = new WebInspector.FilmStripView();
-        return /** @type {!Promise<?Element>} */ (filmStripView.createFrameElement(frame).then(onElementCreated.bind(this)));
         /**
          * @this {WebInspector.TimelineFilmStripOverview}
-         * @param {!Element} frameElement
-         * @return {!Element}
+         * @param {!HTMLImageElement} image
+         * @return {?Element}
          */
-        function onElementCreated(frameElement)
+        function createFrameElement(image)
         {
+            var element = createElementWithClass("div", "frame");
+            element.createChild("div", "thumbnail").appendChild(image);
+            element.appendChild(WebInspector.Widget.createStyleElement("timeline/timelinePanel.css"));
             this._lastFrame = frame;
-            this._lastElement = frameElement;
-            this._lastElement.appendChild(WebInspector.Widget.createStyleElement("timeline/timelinePanel.css"));
-            return this._lastElement;
+            this._lastElement = element;
+            return element;
         }
     },
 
@@ -607,7 +617,8 @@ WebInspector.TimelineFilmStripOverview.prototype = {
         this._lastFrame = null;
         this._lastElement = null;
         this._filmStripModel = new WebInspector.FilmStripModel(this._tracingModel);
-        this._frameToImage = new Map();
+        /** @type {!Map<!WebInspector.FilmStripModel.Frame,!Promise<!HTMLImageElement>>} */
+        this._frameToImagePromise = new Map();
         this._imageWidth = 0;
     },
 
