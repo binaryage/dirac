@@ -135,11 +135,8 @@ WebInspector.NetworkPanel.prototype = {
         this._clearButton.addEventListener("click", this._onClearButtonClicked, this);
         this._panelToolbar.appendToolbarItem(this._clearButton);
         this._panelToolbar.appendSeparator();
-
-        if (Runtime.experiments.isEnabled("filmStripInNetworkAndTimeline")) {
-            var recordFilmStripButton = new WebInspector.ToolbarSettingToggle(this._networkRecordFilmStripSetting, "camera-toolbar-item", WebInspector.UIString("Capture screenshots"));
-            this._panelToolbar.appendToolbarItem(recordFilmStripButton);
-        }
+        var recordFilmStripButton = new WebInspector.ToolbarSettingToggle(this._networkRecordFilmStripSetting, "camera-toolbar-item", WebInspector.UIString("Capture screenshots"));
+        this._panelToolbar.appendToolbarItem(recordFilmStripButton);
 
         this._panelToolbar.appendToolbarItem(this._filterBar.filterButton());
         this._panelToolbar.appendSeparator();
@@ -276,7 +273,7 @@ WebInspector.NetworkPanel.prototype = {
 
     _toggleRecordFilmStrip: function()
     {
-        var toggled = Runtime.experiments.isEnabled("filmStripInNetworkAndTimeline") && this._networkRecordFilmStripSetting.get();
+        var toggled = this._networkRecordFilmStripSetting.get();
         if (toggled && !this._filmStripRecorder) {
             this._filmStripView = new WebInspector.FilmStripView();
             this._filmStripView.setMode(WebInspector.FilmStripView.Modes.FrameBased);

@@ -512,7 +512,6 @@ TestSuite.prototype.testScreenshotRecording = function()
         }
     }
 
-    Runtime.experiments.enableForTest("filmStripInNetworkAndTimeline");
     var captureFilmStripSetting = WebInspector.settings.createSetting("timelineCaptureFilmStrip", false);
     captureFilmStripSetting.set(true);
     test.evaluateInConsole_(performActionsInPage.toString(), function() {});

@@ -340,31 +340,29 @@ WebInspector.TimelinePanel.prototype = {
         this._captureNetworkSetting.addChangeListener(this._onNetworkChanged, this);
         if (Runtime.experiments.isEnabled("networkRequestsOnTimeline")) {
             this._panelToolbar.appendToolbarItem(this._createSettingCheckbox(WebInspector.UIString("Network"),
-                                                                          this._captureNetworkSetting,
-                                                                          WebInspector.UIString("Capture network requests information")));
+                                                                             this._captureNetworkSetting,
+                                                                             WebInspector.UIString("Capture network requests information")));
         }
         this._enableJSSamplingSettingSetting = WebInspector.settings.createSetting("timelineEnableJSSampling", true);
         this._panelToolbar.appendToolbarItem(this._createSettingCheckbox(WebInspector.UIString("JS Profile"),
-                                                                      this._enableJSSamplingSettingSetting,
-                                                                      WebInspector.UIString("Capture JavaScript stacks with sampling profiler. (Has performance overhead)")));
+                                                                         this._enableJSSamplingSettingSetting,
+                                                                         WebInspector.UIString("Capture JavaScript stacks with sampling profiler. (Has performance overhead)")));
 
         this._captureMemorySetting = WebInspector.settings.createSetting("timelineCaptureMemory", false);
         this._panelToolbar.appendToolbarItem(this._createSettingCheckbox(WebInspector.UIString("Memory"),
-                                                                      this._captureMemorySetting,
-                                                                      WebInspector.UIString("Capture memory information on every timeline event.")));
+                                                                         this._captureMemorySetting,
+                                                                         WebInspector.UIString("Capture memory information on every timeline event.")));
         this._captureMemorySetting.addChangeListener(this._onModeChanged, this);
         this._captureLayersAndPicturesSetting = WebInspector.settings.createSetting("timelineCaptureLayersAndPictures", false);
         this._panelToolbar.appendToolbarItem(this._createSettingCheckbox(WebInspector.UIString("Paint"),
-                                                                      this._captureLayersAndPicturesSetting,
-                                                                      WebInspector.UIString("Capture graphics layer positions and painted pictures.  (Has performance overhead)")));
+                                                                         this._captureLayersAndPicturesSetting,
+                                                                         WebInspector.UIString("Capture graphics layer positions and painted pictures. (Has performance overhead)")));
 
-        if (Runtime.experiments.isEnabled("filmStripInNetworkAndTimeline")) {
-            this._captureFilmStripSetting = WebInspector.settings.createSetting("timelineCaptureFilmStrip", false);
-            this._captureFilmStripSetting.addChangeListener(this._onModeChanged, this);
-            this._panelToolbar.appendToolbarItem(this._createSettingCheckbox(WebInspector.UIString("Screenshots"),
-                                                                             this._captureFilmStripSetting,
-                                                                             WebInspector.UIString("Capture screenshots while recording. (Has performance overhead)")));
-        }
+        this._captureFilmStripSetting = WebInspector.settings.createSetting("timelineCaptureFilmStrip", false);
+        this._captureFilmStripSetting.addChangeListener(this._onModeChanged, this);
+        this._panelToolbar.appendToolbarItem(this._createSettingCheckbox(WebInspector.UIString("Screenshots"),
+                                                                         this._captureFilmStripSetting,
+                                                                         WebInspector.UIString("Capture screenshots while recording. (Has performance overhead)")));
 
         this._progressToolbarItem = new WebInspector.ToolbarItem(createElement("div"));
         this._progressToolbarItem.setVisible(false);
@@ -628,7 +626,7 @@ WebInspector.TimelinePanel.prototype = {
             this._addModeView(new WebInspector.MemoryCountersGraph(this, this._model));
         }
 
-        if (Runtime.experiments.isEnabled("filmStripInNetworkAndTimeline") && !isFrameMode && this._captureFilmStripSetting.get())
+        if (!isFrameMode && this._captureFilmStripSetting.get())
             this._overviewControls.push(new WebInspector.TimelineFilmStripOverview(this._tracingModel));
 
         var mainTarget = WebInspector.targetManager.mainTarget();
@@ -1050,7 +1048,7 @@ WebInspector.TimelinePanel.prototype = {
             break;
         case WebInspector.TimelineSelection.Type.Frame:
             var frame = /** @type {!WebInspector.TimelineFrame} */ (this._selection.object());
-            if (Runtime.experiments.isEnabled("filmStripInNetworkAndTimeline") && !this._filmStripModel)
+            if (!this._filmStripModel)
                 this._filmStripModel = new WebInspector.FilmStripModel(this._tracingModel);
             var filmStripFrame = this._filmStripModel && this._filmStripModel.frameByTimestamp(frame.endTime);
             if (filmStripFrame && filmStripFrame.timestamp - frame.endTime > 10)
