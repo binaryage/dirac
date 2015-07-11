@@ -474,7 +474,7 @@ Number.preciseMillisToString = function(ms, precision)
 }
 
 /** @type {!WebInspector.UIStringFormat} */
-WebInspector._subMillisFormat = new WebInspector.UIStringFormat("%.3f\u2009ms");
+WebInspector._subMillisFormat = new WebInspector.UIStringFormat("%.2f\u2009ms");
 
 /** @type {!WebInspector.UIStringFormat} */
 WebInspector._millisFormat = new WebInspector.UIStringFormat("%.0f\u2009ms");
