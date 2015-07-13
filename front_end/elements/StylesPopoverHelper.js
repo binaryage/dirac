@@ -291,8 +291,7 @@ WebInspector.ColorSwatchPopoverIcon.prototype = {
         if (format === WebInspector.Color.Format.Original)
             format = color.format();
         this._spectrum = new WebInspector.Spectrum();
-        this._spectrum.setColor(color);
-        this._spectrum.setColorFormat(format);
+        this._spectrum.setColor(color, format);
         this._spectrum.addEventListener(WebInspector.Spectrum.Events.ColorChanged, this._boundSpectrumChanged);
         this._stylesPopoverHelper.show(this._spectrum, this._swatch.iconElement(), this._onPopoverHidden.bind(this));
 
