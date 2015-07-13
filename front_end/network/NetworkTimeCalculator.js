@@ -126,7 +126,7 @@ WebInspector.NetworkTimeCalculator.prototype = {
      */
     formatTime: function(value, precision)
     {
-        return Number.secondsToString(value);
+        return Number.secondsToString(value, !!precision);
     },
 
     /**
@@ -377,7 +377,7 @@ WebInspector.NetworkTransferTimeCalculator.prototype = {
      */
     formatTime: function(value, precision)
     {
-        return Number.secondsToString(value - this.zeroTime());
+        return Number.secondsToString(value - this.zeroTime(), !!precision);
     },
 
     /**
@@ -421,7 +421,7 @@ WebInspector.NetworkTransferDurationCalculator.prototype = {
      */
     formatTime: function(value, precision)
     {
-        return Number.secondsToString(value);
+        return Number.secondsToString(value, !!precision);
     },
 
     /**

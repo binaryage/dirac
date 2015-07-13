@@ -545,7 +545,7 @@ WebInspector.CPUProfileFlameChart.OverviewCalculator.prototype = {
      */
     formatTime: function(value, precision)
     {
-        return Number.secondsToString((value - this._minimumBoundaries) / 1000);
+        return Number.secondsToString((value - this._minimumBoundaries) / 1000, !!precision);
     },
 
     /**
