@@ -662,7 +662,7 @@ WebInspector.CSSMetadata.Weight = {
     "animation-play-state": 104,
     "animation-timing-function": 141,
     "backface-visibility": 123,
-    "background": 249,
+    "background": 260,
     "background-attachment": 119,
     "background-clip": 165,
     "background-color": 259,
