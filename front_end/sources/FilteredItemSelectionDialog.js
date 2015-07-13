@@ -757,6 +757,7 @@ WebInspector.SelectUISourceCodeDialog.prototype = {
 
         titleElement.textContent = uiSourceCode.displayName() + (this._queryLineNumberAndColumnNumber || "");
         subtitleElement.textContent = fullDisplayName.trimEnd(100);
+        subtitleElement.title = fullDisplayName;
         var ranges = [];
         for (var i = 0; i < indexes.length; ++i)
             ranges.push({offset: indexes[i], length: 1});
