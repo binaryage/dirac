@@ -2177,9 +2177,10 @@ WebInspector.StylePropertyTreeElement.prototype = {
             this.styleTextAppliedForTest();
         }
 
-        this._parentPane._userOperation = true;
-        this.property.setDisabled(disabled, callback.bind(this));
         event.consume();
+        this._parentPane._userOperation = true;
+        this.property.setDisabled(disabled)
+            .then(callback.bind(this));
     },
 
     /**
@@ -2837,7 +2838,9 @@ WebInspector.StylePropertyTreeElement.prototype = {
         if (styleText.length && !/;\s*$/.test(styleText))
             styleText += ";";
         var overwriteProperty = !this._newProperty || this._propertyHasBeenEditedIncrementally;
-        this.property.setText(styleText, majorChange, overwriteProperty, callback.bind(this));
+        this.property.setText(styleText, majorChange, overwriteProperty)
+            .then(callback.bind(this))
+            .catch(/** @type {function()} */(finishedCallback));
     },
 
     /**

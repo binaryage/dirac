@@ -879,14 +879,12 @@ WebInspector.CSSStyleDeclaration.prototype = {
     /**
      * @param {string} text
      * @param {boolean} majorChange
-     * @param {function(?WebInspector.CSSStyleDeclaration)} userCallback
+     * @return {!Promise.<?WebInspector.CSSStyleDeclaration>}
      */
-    setText: function(text, majorChange, userCallback)
+    setText: function(text, majorChange)
     {
-        if (!this.styleSheetId) {
-            userCallback(null);
-            return;
-        }
+        if (!this.styleSheetId)
+            return Promise.resolve(/** @type {?WebInspector.CSSStyleDeclaration} */(null));
 
         /**
          * @param {?Protocol.Error} error
@@ -904,9 +902,8 @@ WebInspector.CSSStyleDeclaration.prototype = {
             return WebInspector.CSSStyleDeclaration.parsePayload(this._cssModel, stylePayload);
         }
 
-        this._cssModel._agent.setStyleText(this.styleSheetId, this.range.serializeToObject(), text, parsePayload.bind(this))
-            .catchException(null)
-            .then(userCallback)
+        return this._cssModel._agent.setStyleText(this.styleSheetId, this.range.serializeToObject(), text, parsePayload.bind(this))
+            .catchException(/** @type {?WebInspector.CSSStyleDeclaration} */(null));
     },
 
     /**
@@ -917,7 +914,8 @@ WebInspector.CSSStyleDeclaration.prototype = {
      */
     insertPropertyAt: function(index, name, value, userCallback)
     {
-        this.newBlankProperty(index).setText(name + ": " + value + ";", false, true, userCallback);
+        this.newBlankProperty(index).setText(name + ": " + value + ";", false, true)
+            .then(userCallback);
     },
 
     /**
@@ -1228,18 +1226,18 @@ WebInspector.CSSProperty.prototype = {
      * @param {string} propertyText
      * @param {boolean} majorChange
      * @param {boolean} overwrite
-     * @param {function(?WebInspector.CSSStyleDeclaration)=} userCallback
+     * @return {!Promise.<?WebInspector.CSSStyleDeclaration>}
      */
-    setText: function(propertyText, majorChange, overwrite, userCallback)
+    setText: function(propertyText, majorChange, overwrite)
     {
         if (!this.ownerStyle)
-            throw "No ownerStyle for property";
+            return Promise.reject(new Error("No ownerStyle for property"));
 
         if (!this.ownerStyle.styleSheetId)
-            throw "No owner style id";
+            return Promise.reject(new Error("No owner style id"));
 
         if (!this.range || !this.ownerStyle.range)
-            throw "Style not editable";
+            return Promise.reject(new Error("Style not editable"));
 
         if (majorChange)
             WebInspector.userMetrics.StyleRuleEdited.record();
@@ -1247,43 +1245,26 @@ WebInspector.CSSProperty.prototype = {
         if (overwrite && propertyText === this.propertyText) {
             if (majorChange)
                 this.ownerStyle._cssModel._domModel.markUndoableState();
-            if (userCallback)
-                userCallback(this.ownerStyle);
-            return;
+            return Promise.resolve(/** @type {?WebInspector.CSSStyleDeclaration} */(this.ownerStyle));
         }
 
         var range = this.range.relativeTo(this.ownerStyle.range.startLine, this.ownerStyle.range.startColumn);
         var indentation = this.ownerStyle.cssText ? this._detectIndentation(this.ownerStyle.cssText) : WebInspector.moduleSetting("textEditorIndent").get();
-        var endIntentation = this.ownerStyle.cssText ? indentation.substring(0, this.ownerStyle.range.endColumn) : "";
+        var endIndentation = this.ownerStyle.cssText ? indentation.substring(0, this.ownerStyle.range.endColumn) : "";
         var newStyleText = range.replaceInText(this.ownerStyle.cssText || "", ";" + propertyText);
 
-        this._formatStyle(newStyleText, indentation, endIntentation, setStyleText.bind(this));
+        return self.runtime.instancePromise(WebInspector.TokenizerFactory)
+            .then(this._formatStyle.bind(this, newStyleText, indentation, endIndentation))
+            .then(setStyleText.bind(this));
 
         /**
          * @param {string} styleText
          * @this {WebInspector.CSSProperty}
+         * @return {!Promise.<?WebInspector.CSSStyleDeclaration>}
          */
         function setStyleText(styleText)
         {
-            this.ownerStyle.setText(styleText, majorChange, callback);
-        }
-
-        /**
-         * @param {?WebInspector.CSSStyleDeclaration} style
-         */
-        function callback(style)
-        {
-            if (userCallback)
-                userCallback(style);
-        }
-
-        /**
-         * @param {?WebInspector.CSSStyleDeclaration} style
-         */
-        function enabledCallback(style)
-        {
-            if (userCallback)
-                userCallback(style);
+            return this.ownerStyle.setText(styleText, majorChange);
         }
     },
 
@@ -1291,27 +1272,21 @@ WebInspector.CSSProperty.prototype = {
      * @param {string} styleText
      * @param {string} indentation
      * @param {string} endIndentation
-     * @param {function(string)} callback
+     * @param {!WebInspector.TokenizerFactory} tokenizerFactory
+     * @return {string}
      */
-    _formatStyle: function(styleText, indentation, endIndentation, callback)
+    _formatStyle: function(styleText, indentation, endIndentation, tokenizerFactory)
     {
-        self.runtime.instancePromise(WebInspector.TokenizerFactory).then(processTokens);
         var result = "";
-
-        /**
-         * @param {!WebInspector.TokenizerFactory} tokenizerFactory
-         */
-        function processTokens(tokenizerFactory)
-        {
-            var tokenize = tokenizerFactory.createTokenizer("text/css");
-            tokenize("*{" + styleText + "}", processToken);
-            result = result.slice(0, result.length - 1);
-            callback(result + (indentation ? "\n" + endIndentation : ""));
-        }
-
         var lastWasSemicolon = true;
         var lastWasMeta = false;
         var insideProperty = false;
+        var tokenize = tokenizerFactory.createTokenizer("text/css");
+
+        tokenize("*{" + styleText + "}", processToken);
+        result = result.slice(0, result.length - 1);
+        return result + (indentation ? "\n" + endIndentation : "");
+
         /**
          * @param {string} token
          * @param {?string} tokenType
@@ -1376,26 +1351,21 @@ WebInspector.CSSProperty.prototype = {
     setValue: function(newValue, majorChange, overwrite, userCallback)
     {
         var text = this.name + ": " + newValue + (this.important ? " !important" : "") + ";";
-        this.setText(text, majorChange, overwrite, userCallback);
+        this.setText(text, majorChange, overwrite).then(userCallback);
     },
 
     /**
      * @param {boolean} disabled
-     * @param {function(?WebInspector.CSSStyleDeclaration)=} userCallback
+     * @return {!Promise.<?WebInspector.CSSStyleDeclaration>}
      */
-    setDisabled: function(disabled, userCallback)
+    setDisabled: function(disabled)
     {
-        if (!this.ownerStyle && userCallback)
-            userCallback(null);
-        if (disabled === this.disabled) {
-            if (userCallback)
-                userCallback(this.ownerStyle);
-            return;
-        }
-        if (disabled)
-            this.setText("/* " + this.text + " */", true, true, userCallback);
-        else
-            this.setText(this.text.substring(2, this.text.length - 2).trim(), true, true, userCallback);
+        if (!this.ownerStyle)
+            return Promise.resolve(/** @type {?WebInspector.CSSStyleDeclaration} */(null));
+        if (disabled === this.disabled)
+            return Promise.resolve(/** @type {?WebInspector.CSSStyleDeclaration} */(this.ownerStyle));
+        var text = disabled ? "/* " + this.text + " */" : this.text.substring(2, this.text.length - 2).trim();
+        return this.setText(text, true, true);
     }
 }
 
