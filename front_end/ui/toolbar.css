@@ -259,6 +259,10 @@ select.toolbar-item {
     -webkit-mask-position: -160px -24px;
 }
 
+.menu-toolbar-item .glyph {
+    -webkit-mask-position: -192px -24px;
+}
+
 .node-search-toolbar-item .glyph {
     -webkit-mask-position: -224px -24px;
 }
