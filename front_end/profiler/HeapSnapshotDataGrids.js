@@ -166,10 +166,11 @@ WebInspector.HeapSnapshotSortableDataGrid.prototype = {
 
     /**
      * @param {!HeapProfilerAgent.HeapSnapshotObjectId} heapSnapshotObjectId
-     * @param {function(?WebInspector.HeapSnapshotGridNode)} callback
+     * @return {!Promise<?WebInspector.HeapSnapshotGridNode>}
      */
-    revealObjectByHeapSnapshotId: function(heapSnapshotObjectId, callback)
+    revealObjectByHeapSnapshotId: function(heapSnapshotObjectId)
     {
+        return Promise.resolve(/** @type {?WebInspector.HeapSnapshotGridNode} */ (null));
     },
 
     /**
@@ -730,50 +731,44 @@ WebInspector.HeapSnapshotConstructorsDataGrid.prototype = {
     /**
      * @override
      * @param {!HeapProfilerAgent.HeapSnapshotObjectId} id
-     * @param {function(?WebInspector.HeapSnapshotGridNode)} callback
+     * @return {!Promise<?WebInspector.HeapSnapshotGridNode>}
      */
-    revealObjectByHeapSnapshotId: function(id, callback)
+    revealObjectByHeapSnapshotId: function(id)
     {
         if (!this.snapshot) {
             this._objectIdToSelect = id;
-            return;
+            return Promise.resolve(/** @type {?WebInspector.HeapSnapshotGridNode} */ (null));
         }
 
         /**
+         * @param {!Array<!WebInspector.HeapSnapshotGridNode>} nodes
+         * @return {?Promise<!WebInspector.HeapSnapshotGridNode>}
          * @this {WebInspector.HeapSnapshotConstructorsDataGrid}
-         * @param {?WebInspector.HeapSnapshotGridNode} parentNode
-         * @param {?WebInspector.HeapSnapshotGridNode} node
          */
-        function didPopulateNode(parentNode, node)
+        function didPopulateNode(nodes)
         {
-            if (node)
-                this.revealTreeNode([parentNode, node]).then(callback);
-            else
-                callback(node);
+            return nodes.length ? this.revealTreeNode(nodes) : null;
         }
 
         /**
          * @param {?string} className
+         * @return {?Promise<?WebInspector.HeapSnapshotGridNode>}
          * @this {WebInspector.HeapSnapshotConstructorsDataGrid}
          */
         function didGetClassName(className)
         {
-            if (!className) {
-                callback(null);
-                return;
-            }
+            if (!className)
+                return null;
             var constructorNodes = this.topLevelNodes();
             for (var i = 0; i < constructorNodes.length; i++) {
                 var parent = constructorNodes[i];
-                if (parent._name === className) {
-                    parent.populateNodeBySnapshotObjectId(parseInt(id, 10), didPopulateNode.bind(this));
-                    return;
-                }
+                if (parent._name === className)
+                    return parent.populateNodeBySnapshotObjectId(parseInt(id, 10)).then(didPopulateNode.bind(this));
             }
             // There are no visible top level nodes with such className.
-            callback(null);
+            return null;
         }
-        this.snapshot.nodeClassName(parseInt(id, 10), didGetClassName.bind(this));
+        return this.snapshot.nodeClassName(parseInt(id, 10)).then(didGetClassName.bind(this));
     },
 
     clear: function()
@@ -783,6 +778,9 @@ WebInspector.HeapSnapshotConstructorsDataGrid.prototype = {
         this.removeTopLevelNodes();
     },
 
+    /**
+     * @param {!WebInspector.HeapSnapshotProxy} snapshot
+     */
     setDataSource: function(snapshot)
     {
         this.snapshot = snapshot;
@@ -790,7 +788,7 @@ WebInspector.HeapSnapshotConstructorsDataGrid.prototype = {
             this._populateChildren();
 
         if (this._objectIdToSelect) {
-            this.revealObjectByHeapSnapshotId(this._objectIdToSelect, function() {});
+            this.revealObjectByHeapSnapshotId(this._objectIdToSelect);
             this._objectIdToSelect = null;
         }
     },

@@ -338,11 +338,11 @@ WebInspector.HeapSnapshotProxy.prototype = {
     /**
      * @param {!WebInspector.HeapSnapshotCommon.SearchConfig} searchConfig
      * @param {!WebInspector.HeapSnapshotCommon.NodeFilter} filter
-     * @param {function(!Array.<number>)} callback
+     * @return {!Promise<!Array<number>>}
      */
-    search: function(searchConfig, filter, callback)
+    search: function(searchConfig, filter)
     {
-        this.callMethod(callback, "search", searchConfig, filter);
+        return this._callMethodPromise("search", searchConfig, filter);
     },
 
     /**
@@ -364,9 +364,13 @@ WebInspector.HeapSnapshotProxy.prototype = {
         this.callMethod(callback, "calculateSnapshotDiff", baseSnapshotId, baseSnapshotAggregates);
     },
 
-    nodeClassName: function(snapshotObjectId, callback)
+    /**
+     * @param {number} snapshotObjectId
+     * @return {!Promise<?string>}
+     */
+    nodeClassName: function(snapshotObjectId)
     {
-        this.callMethod(callback, "nodeClassName", snapshotObjectId);
+        return this._callMethodPromise("nodeClassName", snapshotObjectId);
     },
 
     /**
@@ -536,11 +540,11 @@ WebInspector.HeapSnapshotProviderProxy.prototype = {
     /**
      * @override
      * @param {number} snapshotObjectId
-     * @param {function(number)} callback
+     * @return {!Promise<number>}
      */
-    nodePosition: function(snapshotObjectId, callback)
+    nodePosition: function(snapshotObjectId)
     {
-        this.callMethod(callback, "nodePosition", snapshotObjectId);
+        return this._callMethodPromise("nodePosition", snapshotObjectId);
     },
 
     /**
@@ -566,11 +570,11 @@ WebInspector.HeapSnapshotProviderProxy.prototype = {
     /**
      * @override
      * @param {!WebInspector.HeapSnapshotCommon.ComparatorConfig} comparator
-     * @param {function()} callback
+     * @return {!Promise<?>}
      */
-    sortAndRewind: function(comparator, callback)
+    sortAndRewind: function(comparator)
     {
-        this.callMethod(callback, "sortAndRewind", comparator);
+        return this._callMethodPromise("sortAndRewind", comparator);
     },
 
     __proto__: WebInspector.HeapSnapshotProxyObject.prototype

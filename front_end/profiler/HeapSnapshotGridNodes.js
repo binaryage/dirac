@@ -77,9 +77,9 @@ WebInspector.HeapSnapshotGridNode.ChildrenProvider.prototype = {
 
     /**
      * @param {number} snapshotObjectId
-     * @param {function(number)} callback
+     * @return {!Promise<number>}
      */
-    nodePosition: function(snapshotObjectId, callback) { },
+    nodePosition: function(snapshotObjectId) { },
 
     /**
      * @param {function(boolean)} callback
@@ -95,9 +95,9 @@ WebInspector.HeapSnapshotGridNode.ChildrenProvider.prototype = {
 
     /**
      * @param {!WebInspector.HeapSnapshotCommon.ComparatorConfig} comparator
-     * @param {function()} callback
+     * @return {!Promise<?>}
      */
-    sortAndRewind: function(comparator, callback) { }
+    sortAndRewind: function(comparator) { }
 }
 
 
@@ -274,23 +274,18 @@ WebInspector.HeapSnapshotGridNode.prototype = {
         if (this._populated)
             return;
         this._populated = true;
-
-        /**
-         * @this {WebInspector.HeapSnapshotGridNode}
-         */
-        function sorted()
-        {
-            this._populateChildren();
-        }
-        this._provider().sortAndRewind(this.comparator(), sorted.bind(this));
+        this._provider().sortAndRewind(this.comparator()).then(this._populateChildren.bind(this));
     },
 
-    expandWithoutPopulate: function(callback)
+    /**
+     * @return {!Promise<?>}
+     */
+    expandWithoutPopulate: function()
     {
         // Make sure default populate won't take action.
         this._populated = true;
         this.expand();
-        this._provider().sortAndRewind(this.comparator(), callback);
+        return this._provider().sortAndRewind(this.comparator());
     },
 
     /**
@@ -488,7 +483,7 @@ WebInspector.HeapSnapshotGridNode.prototype = {
             this._populateChildren(0, instanceCount, afterPopulate.bind(this));
         }
 
-        this._provider().sortAndRewind(this.comparator(), afterSort.bind(this));
+        this._provider().sortAndRewind(this.comparator()).then(afterSort.bind(this));
     },
 
     __proto__: WebInspector.DataGridNode.prototype
@@ -1065,43 +1060,54 @@ WebInspector.HeapSnapshotConstructorNode.prototype = {
 
     /**
      * @param {number} snapshotObjectId
-     * @param {function(?WebInspector.HeapSnapshotGridNode, ?WebInspector.HeapSnapshotGridNode)} callback
+     * @return {!Promise<!Array<!WebInspector.HeapSnapshotGridNode>>}
      */
-    populateNodeBySnapshotObjectId: function(snapshotObjectId, callback)
+    populateNodeBySnapshotObjectId: function(snapshotObjectId)
     {
         /**
          * @this {WebInspector.HeapSnapshotConstructorNode}
          */
         function didExpand()
         {
-            this._provider().nodePosition(snapshotObjectId, didGetNodePosition.bind(this));
+            return this._provider().nodePosition(snapshotObjectId).then(didGetNodePosition.bind(this));
         }
 
         /**
          * @this {WebInspector.HeapSnapshotConstructorNode}
          * @param {number} nodePosition
+         * @return {!Promise<!Array<!WebInspector.HeapSnapshotGridNode>>}
          */
         function didGetNodePosition(nodePosition)
         {
             if (nodePosition === -1) {
                 this.collapse();
-                callback(null, null);
+                return Promise.resolve([]);
             } else {
-                this._populateChildren(nodePosition, null, didPopulateChildren.bind(this, nodePosition));
+                /**
+                 * @param {function(!Array<!WebInspector.HeapSnapshotGridNode>)} fulfill
+                 * @this {WebInspector.HeapSnapshotConstructorNode}
+                 */
+                function action(fulfill)
+                {
+                    this._populateChildren(nodePosition, null, didPopulateChildren.bind(this, nodePosition, fulfill));
+                }
+                return new Promise(action.bind(this));
             }
         }
 
         /**
          * @this {WebInspector.HeapSnapshotConstructorNode}
          * @param {number} nodePosition
+         * @param {function(!Array<!WebInspector.HeapSnapshotGridNode>)} callback
          */
-        function didPopulateChildren(nodePosition)
+        function didPopulateChildren(nodePosition, callback)
         {
-            callback(this, /** @type {?WebInspector.HeapSnapshotGridNode} */(this.childForPosition(nodePosition)));
+            var node = /** @type {?WebInspector.HeapSnapshotGridNode} */ (this.childForPosition(nodePosition));
+            callback(node ? [this, node] : []);
         }
 
         this._dataGrid.resetNameFilter();
-        this.expandWithoutPopulate(didExpand.bind(this));
+        return this.expandWithoutPopulate().then(didExpand.bind(this));
     },
 
     /**
@@ -1203,9 +1209,9 @@ WebInspector.HeapSnapshotDiffNodesProvider.prototype = {
     /**
      * @override
      * @param {number} snapshotObjectId
-     * @param {function(number)} callback
+     * @return {!Promise<number>}
      */
-    nodePosition: function(snapshotObjectId, callback)
+    nodePosition: function(snapshotObjectId)
     {
         throw new Error("Unreachable");
     },
@@ -1282,18 +1288,19 @@ WebInspector.HeapSnapshotDiffNodesProvider.prototype = {
     /**
      * @override
      * @param {!WebInspector.HeapSnapshotCommon.ComparatorConfig} comparator
-     * @param {function()} callback
+     * @return {!Promise<?>}
      */
-    sortAndRewind: function(comparator, callback)
+    sortAndRewind: function(comparator)
     {
         /**
          * @this {WebInspector.HeapSnapshotDiffNodesProvider}
+         * @return {!Promise<?>}
          */
         function afterSort()
         {
-            this._deletedNodesProvider.sortAndRewind(comparator, callback);
+            return this._deletedNodesProvider.sortAndRewind(comparator);
         }
-        this._addedNodesProvider.sortAndRewind(comparator, afterSort.bind(this));
+        return this._addedNodesProvider.sortAndRewind(comparator).then(afterSort.bind(this));
     }
 };
 
