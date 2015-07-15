@@ -781,7 +781,7 @@
     overflow: hidden;
 }
 
-.timeline-progress-pane {
+.timeline-status-pane {
     color: #777;
     background-color: white;
     font-size: 30px;
@@ -794,6 +794,10 @@
     overflow: hidden;
 }
 
+.timeline-status-pane .recording-hint {
+    font-size: 14px;
+    text-align: left;
+}
 
 .layer-tree,
 .profiler-log-view {

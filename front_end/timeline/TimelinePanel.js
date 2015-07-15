@@ -453,7 +453,7 @@ WebInspector.TimelinePanel.prototype = {
         {
             this._setOperationInProgress(null);
             this._updateToggleTimelineButton(false);
-            this._hideProgressPane();
+            this._hideStatusPane();
         }
         var progressIndicator = new WebInspector.ProgressIndicator();
         this._setOperationInProgress(progressIndicator);
@@ -664,7 +664,7 @@ WebInspector.TimelinePanel.prototype = {
      */
     _startRecording: function(userInitiated)
     {
-        this._updateProgress(WebInspector.UIString("Initializing recording..."));
+        this._updateStatus(WebInspector.UIString("Initializing recording\u2026"));
         this._autoRecordGeneration = userInitiated ? null : {};
         this._model.startRecording(true, this._enableJSSamplingSettingSetting.get(), this._captureMemorySetting.get(), this._captureLayersAndPicturesSetting.get(), this._captureFilmStripSetting && this._captureFilmStripSetting.get());
         if (this._lazyFrameModel)
@@ -684,8 +684,8 @@ WebInspector.TimelinePanel.prototype = {
         this._updateToggleTimelineButton(false);
         this._autoRecordGeneration = null;
         this._model.stopRecording();
-        if (this._progressElement)
-            this._updateProgress(WebInspector.UIString("Retrieving events\u2026"));
+        if (this._statusElement)
+            this._updateStatus(WebInspector.UIString("Retrieving events\u2026"));
         this._setUIControlsEnabled(true);
     },
 
@@ -768,9 +768,9 @@ WebInspector.TimelinePanel.prototype = {
     {
         this._updateToggleTimelineButton(true);
         if (event.data && event.data.fromFile)
-            this._updateProgress(WebInspector.UIString("Loading..."));
+            this._updateStatus(WebInspector.UIString("Loading\u2026"));
         else
-            this._updateProgress(WebInspector.UIString("%d events collected", 0));
+            this._updateStatus(WebInspector.UIString("%d events collected", 0));
     },
 
     _recordingInProgress: function()
@@ -784,7 +784,7 @@ WebInspector.TimelinePanel.prototype = {
     _onTracingBufferUsage: function(event)
     {
         var usage = /** @type {number} */ (event.data);
-        this._updateProgress(WebInspector.UIString("Buffer usage %d%%", Math.round(usage * 100)));
+        this._updateStatus(WebInspector.UIString("Buffer usage %d%%", Math.round(usage * 100)));
     },
 
     /**
@@ -793,36 +793,62 @@ WebInspector.TimelinePanel.prototype = {
     _onRetrieveEventsProgress: function(event)
     {
         var progress = /** @type {number} */ (event.data);
-        this._updateProgress(WebInspector.UIString("Retrieving events\u2026 %d%%", Math.round(progress * 100)));
+        this._updateStatus(WebInspector.UIString("Retrieving events\u2026 %d%%", Math.round(progress * 100)));
     },
 
     _showRecordingHelpMessage: function()
     {
-        var modifierKey = WebInspector.isMac() ? WebInspector.UIString("Cmd") : WebInspector.UIString("Ctrl");
-        this._updateProgress(WebInspector.UIString("Hit %s+R to evaluate page load performance.", modifierKey));
+        /**
+         * @param {string} tagName
+         * @param {string} contents
+         * @return {!Element}
+         */
+        function encloseWithTag(tagName, contents)
+        {
+            var e = createElement(tagName);
+            e.textContent = contents;
+            return e;
+        }
+
+        var recordNode = encloseWithTag("b", WebInspector.ShortcutsScreen.TimelinePanelShortcuts.StartStopRecording[0].name);
+        var reloadNode = encloseWithTag("b", WebInspector.ShortcutsScreen.TimelinePanelShortcuts.RecordPageReload[0].name);
+        var navigateNode = encloseWithTag("b", WebInspector.UIString("WASD"));
+        var hintText = createElementWithClass("div", "recording-hint");
+        hintText.appendChild(WebInspector.formatLocalized(WebInspector.UIString("To capture a new timeline, click the record toolbar button or hit %s."), [recordNode], null));
+        hintText.createChild("br");
+        hintText.appendChild(WebInspector.formatLocalized(WebInspector.UIString("To evaluate page load performance, hit %s to record the reload."), [reloadNode], null));
+        hintText.createChild("p");
+        hintText.appendChild(WebInspector.formatLocalized(WebInspector.UIString("After recording, select an area of interest in the overview by dragging."), [], null));
+        hintText.createChild("br");
+        hintText.appendChild(WebInspector.formatLocalized(WebInspector.UIString("Then, zoom and pan the timeline with the mousewheel and %s keys."), [navigateNode], null));
+        this._updateStatus(hintText);
     },
 
     /**
-     * @param {string} progressMessage
+     * @param {string|!Element} statusMessage
      */
-    _updateProgress: function(progressMessage)
+    _updateStatus: function(statusMessage)
     {
-        if (!this._progressElement)
-            this._showProgressPane();
-        this._progressElement.textContent = progressMessage;
+        if (!this._statusElement)
+            this._showStatusPane();
+        this._statusElement.removeChildren();
+        if (typeof statusMessage === "string")
+            this._statusElement.textContent = statusMessage;
+        else
+            this._statusElement.appendChild(statusMessage);
     },
 
-    _showProgressPane: function()
+    _showStatusPane: function()
     {
-        this._hideProgressPane();
-        this._progressElement = this._searchableView.element.createChild("div", "timeline-progress-pane fill");
+        this._hideStatusPane();
+        this._statusElement = this._searchableView.element.createChild("div", "timeline-status-pane fill");
     },
 
-    _hideProgressPane: function()
+    _hideStatusPane: function()
     {
-        if (this._progressElement)
-            this._progressElement.remove();
-        delete this._progressElement;
+        if (this._statusElement)
+            this._statusElement.remove();
+        delete this._statusElement;
     },
 
     _onRecordingStopped: function()
@@ -837,7 +863,7 @@ WebInspector.TimelinePanel.prototype = {
         this._overviewPane.setBounds(this._model.minimumRecordTime(), this._model.maximumRecordTime());
         this.requestWindowTimes(this._model.minimumRecordTime(), this._model.maximumRecordTime());
         this._refreshViews();
-        this._hideProgressPane();
+        this._hideStatusPane();
         for (var i = 0; i < this._overviewControls.length; ++i)
             this._overviewControls[i].timelineStopped();
         this._setMarkers();
