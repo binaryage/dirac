@@ -761,11 +761,11 @@ InspectorBackendClass.AgentPrototype = function(domain)
 
 InspectorBackendClass.AgentPrototype.PromisifiedDomains = {
     "CSS": true,
+    "Emulation": true,
     "Profiler": true
 }
 
 InspectorBackendClass.AgentPrototype.prototype = {
-
     /**
      * @param {!InspectorBackendClass.Connection} connection
      */

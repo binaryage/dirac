@@ -40,8 +40,9 @@ type_traits = {
 }
 
 promisified_domains = {
-    "Profiler",
-    "CSS"
+    "CSS",
+    "Emulation",
+    "Profiler"
 }
 
 ref_types = {}

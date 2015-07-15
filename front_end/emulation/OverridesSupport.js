@@ -303,9 +303,9 @@ WebInspector.OverridesSupport.prototype = {
             canEmulateCallback.call(this, null, false);
 
         /**
-         * @this {WebInspector.OverridesSupport}
          * @param {?Protocol.Error} error
          * @param {boolean} canEmulate
+         * @this {WebInspector.OverridesSupport}
          */
         function canEmulateCallback(error, canEmulate)
         {
@@ -611,8 +611,9 @@ WebInspector.OverridesSupport.prototype = {
             this._target.emulationAgent().setDeviceMetricsOverride(
                 overrideWidth, overrideHeight, this.settings.emulateResolution.get() ? this.settings.deviceScaleFactor.get() : 0,
                 this.settings.emulateMobile.get(), this._pageResizer ? false : this.settings.deviceFitWindow.get(), scale, 0, 0,
-                screenWidth, screenHeight, positionX, positionY,
-                apiCallback.bind(this, finishCallback));
+                screenWidth, screenHeight, positionX, positionY, apiCallback.bind(this))
+                .then(finishCallback)
+                .catch(/** @type {function()} */(finishCallback));
         }
 
         /**
@@ -621,20 +622,20 @@ WebInspector.OverridesSupport.prototype = {
          */
         function clearDeviceMetricsOverride(finishCallback)
         {
-            this._target.emulationAgent().clearDeviceMetricsOverride(apiCallback.bind(this, finishCallback));
+            this._target.emulationAgent().clearDeviceMetricsOverride(apiCallback.bind(this))
+                .then(finishCallback)
+                .catch(/** @type {function()} */(finishCallback));
         }
 
         /**
-         * @param {!WebInspector.Throttler.FinishCallback} finishCallback
          * @param {?Protocol.Error} error
          * @this {WebInspector.OverridesSupport}
          */
-        function apiCallback(finishCallback, error)
+        function apiCallback(error)
         {
             if (error) {
                 this._updateDeviceMetricsWarningMessage(WebInspector.UIString("Screen emulation is not available on this page."));
                 this._deviceMetricsOverrideAppliedForTest();
-                finishCallback();
                 return;
             }
 
@@ -643,7 +644,6 @@ WebInspector.OverridesSupport.prototype = {
                 this._updateDeviceMetricsWarningMessage(WebInspector.UIString("You might need to reload the page for proper user agent spoofing and viewport rendering."));
             this._emulateMobileEnabled = mobileEnabled;
             this._deviceMetricsOverrideAppliedForTest();
-            finishCallback();
         }
     },
 
