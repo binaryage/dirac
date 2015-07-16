@@ -58,6 +58,7 @@ WebInspector.TimelineOverviewPane = function(prefix)
     this._updateThrottler = new WebInspector.Throttler(100);
 
     this._cursorEnabled = false;
+    this._cursorPosition = 0;
     this._lastWidth = 0;
 }
 
@@ -82,7 +83,6 @@ WebInspector.TimelineOverviewPane.prototype = {
      */
     _showPopover: function(anchor, popover)
     {
-        this._popover = popover;
         this._buildPopoverContents().then(maybeShowPopover.bind(this));
         /**
          * @this {WebInspector.TimelineOverviewPane}
@@ -95,6 +95,7 @@ WebInspector.TimelineOverviewPane.prototype = {
             var content = new WebInspector.TimelineOverviewPane.PopoverContents();
             this._popoverContents = content.contentElement.createChild("div");
             this._popoverContents.appendChild(fragment);
+            this._popover = popover;
             popover.showView(content, this._cursorElement);
         }
     },
@@ -112,8 +113,8 @@ WebInspector.TimelineOverviewPane.prototype = {
     {
         if (!this._cursorEnabled)
             return;
-        var x = event.offsetX + event.target.offsetLeft;
-        this._cursorElement.style.left = x + "px";
+        this._cursorPosition = event.offsetX + event.target.offsetLeft;
+        this._cursorElement.style.left = this._cursorPosition + "px";
         this._cursorElement.style.visibility = "visible";
         if (!this._popover)
             return;
@@ -138,12 +139,9 @@ WebInspector.TimelineOverviewPane.prototype = {
      */
     _buildPopoverContents: function()
     {
-        var cursor = this._cursorElement;
-        var x = cursor.offsetLeft;
-        var promises = [];
-        for (var control of this._overviewControls)
-            promises.push(control.popoverElementPromise(x));
-
+        var document = this.element.ownerDocument;
+        var x = this._cursorPosition;
+        var promises = this._overviewControls.map(control => control.popoverElementPromise(x));
         return Promise.all(promises).then(buildFragment);
 
         /**
@@ -152,11 +150,9 @@ WebInspector.TimelineOverviewPane.prototype = {
          */
         function buildFragment(elements)
         {
-            var fragment = cursor.ownerDocument.createDocumentFragment();
-            for (var element of elements) {
-                if (element)
-                    fragment.appendChild(element);
-            }
+            var fragment = document.createDocumentFragment();
+            elements.remove(null);
+            fragment.appendChildren.apply(fragment, elements);
             return fragment;
         }
     },
