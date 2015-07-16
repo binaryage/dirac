@@ -97,7 +97,7 @@ WebInspector.TimelinePanel = function()
     this._detailsSplitWidget.setSidebarWidget(this._detailsView);
 
     this._searchableView = new WebInspector.SearchableView(this);
-    this._searchableView.setMinimumSize(0, 70);
+    this._searchableView.setMinimumSize(0, 100);
     this._searchableView.element.classList.add("searchable-view");
     this._detailsSplitWidget.setMainWidget(this._searchableView);
 

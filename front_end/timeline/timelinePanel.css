@@ -790,8 +790,8 @@
     justify-content: center;
     align-items: center;
     text-align: center;
-    padding: 20px;
-    overflow: hidden;
+    padding: 0 20px;
+    overflow: auto;
 }
 
 .timeline-status-pane .recording-hint {
