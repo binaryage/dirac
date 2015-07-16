@@ -269,7 +269,8 @@
 }
 
 #timeline-overview-main-thread,
-#timeline-overview-framerate {
+#timeline-overview-framerate,
+#timeline-overview-memory {
     flex-basis: 21px;
 }
 
@@ -311,10 +312,6 @@
 
 #timeline-overview-input {
     flex-basis: 6px;
-}
-
-#timeline-overview-memory {
-    flex-basis: 20px;
 }
 
 #timeline-overview-frames {
@@ -422,10 +419,13 @@
 
 .memory-graph-label {
     position: absolute;
-    left: 5px;
+    right: 0;
+    top: 0;
     font-size: 9px;
-    color: rgb(50%, 50%, 50%);
+    color: #888;
     white-space: nowrap;
+    padding: 0 4px;
+    background-color: hsla(0, 0%, 100%, 0.8);
 }
 
 #memory-graphs-canvas-container {

@@ -39,7 +39,6 @@
         "TimelineFrameModel.js",
         "TimelineEventOverview.js",
         "TimelineFrameOverview.js",
-        "TimelineMemoryOverview.js",
         "TimelineFlameChart.js",
         "TimelineUIUtils.js",
         "TimelineView.js",

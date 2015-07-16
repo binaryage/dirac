@@ -622,7 +622,7 @@ WebInspector.TimelinePanel.prototype = {
 
         if (this._captureMemorySetting.get()) {
             if (!isFrameMode)  // Frame mode skews time, don't render aux overviews.
-                this._overviewControls.push(new WebInspector.TimelineMemoryOverview(this._model));
+                this._overviewControls.push(new WebInspector.TimelineEventOverview.Memory(this._model));
             this._addModeView(new WebInspector.MemoryCountersGraph(this, this._model));
         }
 
