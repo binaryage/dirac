@@ -760,6 +760,7 @@ InspectorBackendClass.AgentPrototype = function(domain)
 }
 
 InspectorBackendClass.AgentPrototype.PromisifiedDomains = {
+    "Accessibility": true,
     "CSS": true,
     "Emulation": true,
     "Profiler": true
