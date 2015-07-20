@@ -462,7 +462,7 @@ WebInspector.UISourceCode.prototype = {
         }
         if (this.isDirty())
             return this._workingCopy;
-        return this._content;
+        return this._content || "";
     },
 
     resetWorkingCopy: function()

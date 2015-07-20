@@ -239,6 +239,10 @@ WebInspector.ResourceScriptMapping.prototype = {
     _bindUISourceCodeToScripts: function(uiSourceCode, scripts)
     {
         console.assert(scripts.length);
+        var boundScriptFile = this.scriptFile(uiSourceCode);
+        if (boundScriptFile && boundScriptFile.hasScripts(scripts))
+            return;
+
         var scriptFile = new WebInspector.ResourceScriptFile(this, uiSourceCode, scripts);
         this._setScriptFile(uiSourceCode, scriptFile);
         for (var i = 0; i < scripts.length; ++i)
@@ -309,6 +313,18 @@ WebInspector.ResourceScriptFile.Events = {
 }
 
 WebInspector.ResourceScriptFile.prototype = {
+    /**
+     * @param {!Array.<!WebInspector.Script>} scripts
+     * @return {boolean}
+     */
+    hasScripts: function(scripts)
+    {
+        var script;
+        if (this._uiSourceCode.contentType() === WebInspector.resourceTypes.Script)
+            script = scripts[0];
+        return this._script === script;
+    },
+
     /**
      * @param {function(?string,!DebuggerAgent.SetScriptSourceError=,!WebInspector.Script=)=} callback
      */

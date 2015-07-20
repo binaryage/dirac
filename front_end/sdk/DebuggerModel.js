@@ -125,12 +125,21 @@ WebInspector.DebuggerModel.prototype = {
     {
         if (this._debuggerEnabled)
             return;
-        this._agent.enable();
-        this._debuggerEnabled = true;
+        this._agent.enable(this._wasEnabled.bind(this));
         if (this._hasStaleState) {
             this._globalObjectCleared();
             this._hasStaleState = false;
         }
+    },
+
+    /**
+     * @param {?Protocol.Error} error
+     */
+    _wasEnabled: function(error)
+    {
+        if (error)
+            console.error(error);
+        this._debuggerEnabled = true;
         this._pauseOnExceptionStateChanged();
         this.asyncStackTracesStateChanged();
         this.dispatchEventToListeners(WebInspector.DebuggerModel.Events.DebuggerWasEnabled);

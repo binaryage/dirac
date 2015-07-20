@@ -156,7 +156,6 @@ WebInspector.NetworkProject = function(target, workspace, networkMapping)
     this._processedURLs = {};
     target[WebInspector.NetworkProject._networkProjectSymbol] = this;
 
-    target.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.ResourceAdded, this._resourceAdded, this);
     target.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.MainFrameNavigated, this._mainFrameNavigated, this);
 
     var debuggerModel = WebInspector.DebuggerModel.fromTarget(target);
@@ -169,6 +168,11 @@ WebInspector.NetworkProject = function(target, workspace, networkMapping)
         cssModel.addEventListener(WebInspector.CSSStyleModel.Events.StyleSheetAdded, this._styleSheetAdded, this);
         cssModel.addEventListener(WebInspector.CSSStyleModel.Events.StyleSheetRemoved, this._styleSheetRemoved, this);
     }
+
+    if (debuggerModel && !debuggerModel.debuggerEnabled())
+        debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.DebuggerWasEnabled, this._debuggerEnabled, this);
+    else
+        this._debuggerEnabled();
 }
 
 WebInspector.NetworkProject._networkProjectSymbol = Symbol("networkProject");
@@ -272,6 +276,15 @@ WebInspector.NetworkProject.prototype = {
         var path = splitURL.slice(1).join("/");
         var projectDelegate = this._projectDelegates[WebInspector.NetworkProject.projectId(this.target(), projectURL, false)];
         projectDelegate.removeFile(path);
+    },
+
+    _debuggerEnabled: function()
+    {
+        var debuggerModel = WebInspector.DebuggerModel.fromTarget(this.target());
+        if (debuggerModel)
+            debuggerModel.removeEventListener(WebInspector.DebuggerModel.Events.DebuggerWasEnabled, this._debuggerEnabled, this);
+        this._populate();
+        this.target().resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.ResourceAdded, this._resourceAdded, this);
     },
 
     _populate: function()
@@ -393,6 +406,7 @@ WebInspector.NetworkProject.prototype = {
         target.resourceTreeModel.removeEventListener(WebInspector.ResourceTreeModel.EventTypes.MainFrameNavigated, this._mainFrameNavigated, this);
         var debuggerModel = WebInspector.DebuggerModel.fromTarget(target);
         if (debuggerModel) {
+            debuggerModel.removeEventListener(WebInspector.DebuggerModel.Events.DebuggerWasEnabled, this._debuggerEnabled, this);
             debuggerModel.removeEventListener(WebInspector.DebuggerModel.Events.ParsedScriptSource, this._parsedScriptSource, this);
             debuggerModel.removeEventListener(WebInspector.DebuggerModel.Events.FailedToParseScriptSource, this._parsedScriptSource, this);
         }
@@ -451,46 +465,48 @@ WebInspector.NetworkProject.FallbackResource.prototype = {
     requestContent: function(callback)
     {
         /**
-         * @this {WebInspector.NetworkProject.FallbackResource}
+         * @param {!WebInspector.Target} target
+         * @param {string} url
+         * @return {!Array.<!WebInspector.Script>}
          */
-        function loadFallbackContent()
+        function findScripts(target, url)
         {
-            var debuggerModel = WebInspector.DebuggerModel.fromTarget(this._resource.target());
-            if (!debuggerModel) {
-                callback(null);
-                return;
-            }
-            var scripts = debuggerModel.scriptsForSourceURL(this._resource.url);
-            if (!scripts.length) {
-                callback(null);
-                return;
-            }
-
-            var contentProvider;
-            var type = this._resource.resourceType();
-            if (type === WebInspector.resourceTypes.Document)
-                contentProvider = new WebInspector.ConcatenatedScriptsContentProvider(scripts);
-            else if (type === WebInspector.resourceTypes.Script)
-                contentProvider = scripts[0];
-
-            console.assert(contentProvider, "Resource content request failed. " + this._resource.url);
-
-            contentProvider.requestContent(callback);
+            var debuggerModel = WebInspector.DebuggerModel.fromTarget(target);
+            return debuggerModel ? debuggerModel.scriptsForSourceURL(url) : [];
         }
 
         /**
          * @param {?string} content
          * @this {WebInspector.NetworkProject.FallbackResource}
          */
-        function requestContentLoaded(content)
+        function loadFallbackContent(content)
         {
-            if (content)
-                callback(content)
+            if (content) {
+                callback(content);
+                return;
+            }
+
+            if (this._resource.resourceType() !== WebInspector.resourceTypes.Document) {
+                callback(null);
+                return;
+            }
+
+            var scripts = findScripts(this._resource.target(), this._resource.url);
+            if (scripts.length)
+                new WebInspector.ConcatenatedScriptsContentProvider(scripts).requestContent(callback);
             else
-                loadFallbackContent.call(this);
+                callback(null);
         }
 
-        this._resource.requestContent(requestContentLoaded.bind(this));
+        if (this._resource.resourceType() === WebInspector.resourceTypes.Script) {
+            var scripts = findScripts(this._resource.target(), this._resource.url);
+            if (scripts.length) {
+                scripts[0].requestContent(callback);
+                return;
+            }
+        }
+
+        this._resource.requestContent(loadFallbackContent.bind(this));
     },
 
     /**
