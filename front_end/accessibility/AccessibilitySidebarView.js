@@ -43,12 +43,10 @@ WebInspector.AccessibilitySidebarView.prototype = {
                 this._computedTextSubPane.setAXNode(accessibilityNode);
             if (this._axNodeSubPane)
                 this._axNodeSubPane.setAXNode(accessibilityNode);
+            finishCallback();
         }
         var node = this.node();
-        WebInspector.AccessibilityModel.fromTarget(node.target()).getAXNode(node.id)
-            .then(accessibilityNodeCallback.bind(this))
-            .then(finishCallback)
-            .catch(/** @type {function()} */(finishCallback));
+        WebInspector.AccessibilityModel.fromTarget(node.target()).getAXNode(node.id, accessibilityNodeCallback.bind(this));
     },
 
     /**
