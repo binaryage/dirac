@@ -193,15 +193,14 @@ WebInspector.Script.prototype = {
          * @param {?Protocol.Error} error
          * @param {!DebuggerAgent.SetScriptSourceError=} errorData
          * @param {!Array.<!DebuggerAgent.CallFrame>=} callFrames
-         * @param {!Object=} debugData
+         * @param {boolean=} stackChanged
          * @param {!DebuggerAgent.StackTrace=} asyncStackTrace
          */
-        function didEditScriptSource(error, errorData, callFrames, debugData, asyncStackTrace)
+        function didEditScriptSource(error, errorData, callFrames, stackChanged, asyncStackTrace)
         {
-            // FIXME: support debugData.stack_update_needs_step_in flag by calling WebInspector.debugger_model.callStackModified
             if (!error)
                 this._source = newSource;
-            var needsStepIn = !!debugData && debugData["stack_update_needs_step_in"] === true;
+            var needsStepIn = !!stackChanged;
             callback(error, errorData, callFrames, asyncStackTrace, needsStepIn);
             if (!error)
                 this.dispatchEventToListeners(WebInspector.Script.Events.ScriptEdited, newSource);

@@ -3466,7 +3466,7 @@
                 ],
                 "returns": [
                     { "name": "callFrames", "type": "array", "optional": true, "items": { "$ref": "CallFrame" }, "description": "New stack trace in case editing has happened while VM was stopped." },
-                    { "name": "result", "type": "object", "optional": true, "description": "VM-specific description of the changes applied.", "hidden": true },
+                    { "name": "stackChanged", "type": "boolean", "optional": true, "description": "Whether current call stack  was modified after applying the changes.", "hidden": true },
                     { "name": "asyncStackTrace", "$ref": "StackTrace", "optional": true, "description": "Async stack trace, if any.", "hidden": true }
                 ],
                 "error": {
@@ -3481,7 +3481,6 @@
                 ],
                 "returns": [
                     { "name": "callFrames", "type": "array", "items": { "$ref": "CallFrame" }, "description": "New stack trace." },
-                    { "name": "result", "type": "object", "description": "VM-specific description." },
                     { "name": "asyncStackTrace", "$ref": "StackTrace", "optional": true, "description": "Async stack trace, if any." }
                 ],
                 "hidden": true,

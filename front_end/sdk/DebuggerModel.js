@@ -729,21 +729,6 @@ WebInspector.DebuggerModel.prototype = {
         this.selectedCallFrame().evaluate(code, objectGroup, includeCommandLineAPI, doNotPauseOnExceptionsAndMuteConsole, returnByValue, generatePreview, didEvaluate.bind(this));
     },
 
-    /**
-     * Handles notification from JavaScript VM about updated stack (liveedit or frame restart action).
-     * @param {!Array.<!DebuggerAgent.CallFrame>=} newCallFrames
-     * @param {!Object=} details
-     * @param {!DebuggerAgent.StackTrace=} asyncStackTrace
-     */
-    callStackModified: function(newCallFrames, details, asyncStackTrace)
-    {
-        // FIXME: declare this property in protocol and in JavaScript.
-        if (details && details["stack_update_needs_step_in"])
-            this.stepInto();
-        else if (newCallFrames && newCallFrames.length)
-            this._pausedScript(newCallFrames, this._debuggerPausedDetails.reason, this._debuggerPausedDetails.auxData, this._debuggerPausedDetails.breakpointIds, asyncStackTrace);
-    },
-
     _applySkipStackFrameSettings: function()
     {
         this._agent.skipStackFrames(WebInspector.moduleSetting("skipStackFramesPattern").get(), WebInspector.moduleSetting("skipContentScripts").get());
@@ -1281,14 +1266,13 @@ WebInspector.DebuggerModel.CallFrame.prototype = {
         /**
          * @param {?Protocol.Error} error
          * @param {!Array.<!DebuggerAgent.CallFrame>=} callFrames
-         * @param {!Object=} details
          * @param {!DebuggerAgent.StackTrace=} asyncStackTrace
          * @this {WebInspector.DebuggerModel.CallFrame}
          */
-        function protocolCallback(error, callFrames, details, asyncStackTrace)
+        function protocolCallback(error, callFrames, asyncStackTrace)
         {
             if (!error)
-                this.debuggerModel.callStackModified(callFrames, details, asyncStackTrace);
+                this.debuggerModel.stepInto();
             if (callback)
                 callback(error);
         }
