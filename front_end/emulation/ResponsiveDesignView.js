@@ -597,7 +597,7 @@ WebInspector.ResponsiveDesignView.prototype = {
         buttonsToolbar.setToggledColor("rgb(105, 194, 236)");
         buttonsToolbar.element.classList.add("responsive-design-section", "responsive-design-section-buttons");
 
-        var resetButton = new WebInspector.ToolbarButton(WebInspector.UIString("Reset all overrides."), "clear-toolbar-item");
+        var resetButton = new WebInspector.ToolbarButton(WebInspector.UIString("Reset all overrides"), "clear-toolbar-item");
         buttonsToolbar.appendToolbarItem(resetButton);
         resetButton.addEventListener("click", WebInspector.overridesSupport.reset, WebInspector.overridesSupport);
 

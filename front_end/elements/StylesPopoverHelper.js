@@ -163,7 +163,7 @@ WebInspector.BezierPopoverIcon.prototype = {
     _createDOM: function(text)
     {
         this._element = createElement("nobr");
-        this._element.title = WebInspector.UIString("Click to open a cubic bezier editor.");
+        this._element.title = WebInspector.UIString("Open cubic bezier editor");
 
         this._iconElement = this._element.createSVGChild("svg", "popover-icon bezier-icon");
         this._iconElement.setAttribute("height", 10);
@@ -236,8 +236,8 @@ WebInspector.ColorSwatchPopoverIcon = function(treeElement, stylesPopoverHelper,
     this._swatch = WebInspector.ColorSwatch.create();
     this._swatch.setColorText(colorText);
     this._swatch.setFormat(WebInspector.ColorSwatchPopoverIcon._colorFormat(this._swatch.color()));
-    var shiftClickMessage = WebInspector.UIString("Shift-click to change color format.");
-    this._swatch.iconElement().title = String.sprintf("%s\n%s", WebInspector.UIString("Click to open a colorpicker."), shiftClickMessage);
+    var shiftClickMessage = WebInspector.UIString("Shift-click to change color format");
+    this._swatch.iconElement().title = String.sprintf("%s\n%s", WebInspector.UIString("Open color picker"), shiftClickMessage);
     this._swatch.iconElement().addEventListener("click", this._iconClick.bind(this));
 
     this._boundSpectrumChanged = this._spectrumChanged.bind(this);

@@ -426,7 +426,7 @@ WebInspector.SourcesPanel.prototype = {
     {
         var enabled = WebInspector.moduleSetting("pauseOnExceptionEnabled").get();
         this._pauseOnExceptionButton.setToggled(enabled);
-        this._pauseOnExceptionButton.setTitle(WebInspector.UIString(enabled ? "Don't pause on exceptions." : "Pause on exceptions."));
+        this._pauseOnExceptionButton.setTitle(WebInspector.UIString(enabled ? "Don't pause on exceptions" : "Pause on exceptions"));
         this._debugToolbarDrawer.classList.toggle("expanded", enabled);
     },
 
@@ -440,7 +440,7 @@ WebInspector.SourcesPanel.prototype = {
             this._stepIntoButton.setEnabled(false);
             this._stepOutButton.setEnabled(false);
         } else if (this._paused) {
-            this._updateButtonTitle(this._pauseButton, WebInspector.UIString("Resume script execution (%s)."));
+            this._updateButtonTitle(this._pauseButton, WebInspector.UIString("Resume script execution (%s)"));
             this._pauseButton.setToggled(true);
             this._pauseButton.setLongClickOptionsEnabled((function() { return [ this._longResumeButton ]; }).bind(this));
 
@@ -449,7 +449,7 @@ WebInspector.SourcesPanel.prototype = {
             this._stepIntoButton.setEnabled(true);
             this._stepOutButton.setEnabled(true);
         } else {
-            this._updateButtonTitle(this._pauseButton, WebInspector.UIString("Pause script execution (%s)."))
+            this._updateButtonTitle(this._pauseButton, WebInspector.UIString("Pause script execution (%s)"))
             this._pauseButton.setToggled(false);
             this._pauseButton.setLongClickOptionsEnabled(null);
 
@@ -700,9 +700,9 @@ WebInspector.SourcesPanel.prototype = {
         this.sidebarPanes.jsBreakpoints.listElement.classList.toggle("breakpoints-list-deactivated", !active);
         this._sourcesView.toggleBreakpointsActiveState(active);
         if (active)
-            this._toggleBreakpointsButton.setTitle(WebInspector.UIString("Deactivate breakpoints."));
+            this._toggleBreakpointsButton.setTitle(WebInspector.UIString("Deactivate breakpoints"));
         else
-            this._toggleBreakpointsButton.setTitle(WebInspector.UIString("Activate breakpoints."));
+            this._toggleBreakpointsButton.setTitle(WebInspector.UIString("Activate breakpoints"));
     },
 
     /**
@@ -716,7 +716,7 @@ WebInspector.SourcesPanel.prototype = {
         var title, handler;
 
         // Run snippet.
-        title = WebInspector.UIString("Run snippet (%s).");
+        title = WebInspector.UIString("Run snippet (%s)");
         handler = this._runSnippet.bind(this);
         this._runSnippetButton = this._createButtonAndRegisterShortcutsForAction("play-toolbar-item", title, "debugger.run-snippet");
         debugToolbar.appendToolbarItem(this._runSnippetButton);
@@ -732,24 +732,24 @@ WebInspector.SourcesPanel.prototype = {
         this._longResumeButton.addEventListener("click", this._longResume.bind(this), this);
 
         // Step over.
-        title = WebInspector.UIString("Step over next function call (%s).");
+        title = WebInspector.UIString("Step over next function call (%s)");
         this._stepOverButton = this._createButtonAndRegisterShortcutsForAction("step-over-toolbar-item", title, "debugger.step-over");
         debugToolbar.appendToolbarItem(this._stepOverButton);
 
         // Step into.
-        title = WebInspector.UIString("Step into next function call (%s).");
+        title = WebInspector.UIString("Step into next function call (%s)");
         this._stepIntoButton = this._createButtonAndRegisterShortcutsForAction("step-in-toolbar-item", title, "debugger.step-into");
         debugToolbar.appendToolbarItem(this._stepIntoButton);
 
         // Step out.
-        title = WebInspector.UIString("Step out of current function (%s).");
+        title = WebInspector.UIString("Step out of current function (%s)");
         this._stepOutButton = this._createButtonAndRegisterShortcutsForAction("step-out-toolbar-item", title, "debugger.step-out");
         debugToolbar.appendToolbarItem(this._stepOutButton);
 
         debugToolbar.appendSeparator();
 
         // Toggle Breakpoints
-        this._toggleBreakpointsButton = new WebInspector.ToolbarButton(WebInspector.UIString("Deactivate breakpoints."), "breakpoint-toolbar-item");
+        this._toggleBreakpointsButton = new WebInspector.ToolbarButton(WebInspector.UIString("Deactivate breakpoints"), "breakpoint-toolbar-item");
         this._toggleBreakpointsButton.setToggled(false);
         this._toggleBreakpointsButton.addEventListener("click", this._toggleBreakpointsClicked, this);
         debugToolbar.appendToolbarItem(this._toggleBreakpointsButton);

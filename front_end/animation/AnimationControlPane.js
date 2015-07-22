@@ -101,7 +101,7 @@ WebInspector.AnimationControlPane.prototype = {
  */
 WebInspector.AnimationControlPane.ButtonProvider = function()
 {
-    this._button = new WebInspector.ToolbarButton(WebInspector.UIString("Animations Controls"), "animation-toolbar-item");
+    this._button = new WebInspector.ToolbarButton(WebInspector.UIString("Toggle animation controls"), "animation-toolbar-item");
     this._button.addEventListener("click", this._clicked, this);
     WebInspector.context.addFlavorChangeListener(WebInspector.DOMNode, this._nodeChanged, this);
     this._nodeChanged();

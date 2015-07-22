@@ -209,11 +209,11 @@ WebInspector.IDBDataView.prototype = {
         var editorToolbar = new WebInspector.Toolbar(this.element);
         editorToolbar.element.classList.add("data-view-toolbar");
 
-        this._pageBackButton = new WebInspector.ToolbarButton(WebInspector.UIString("Show previous page."), "play-backwards-toolbar-item");
+        this._pageBackButton = new WebInspector.ToolbarButton(WebInspector.UIString("Show previous page"), "play-backwards-toolbar-item");
         this._pageBackButton.addEventListener("click", this._pageBackButtonClicked, this);
         editorToolbar.appendToolbarItem(this._pageBackButton);
 
-        this._pageForwardButton = new WebInspector.ToolbarButton(WebInspector.UIString("Show next page."), "play-toolbar-item");
+        this._pageForwardButton = new WebInspector.ToolbarButton(WebInspector.UIString("Show next page"), "play-toolbar-item");
         this._pageForwardButton.setEnabled(false);
         this._pageForwardButton.addEventListener("click", this._pageForwardButtonClicked, this);
         editorToolbar.appendToolbarItem(this._pageForwardButton);

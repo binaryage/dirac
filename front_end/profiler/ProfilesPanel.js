@@ -467,7 +467,7 @@ WebInspector.ProfilesPanel = function()
     this.recordButton.addEventListener("click", this.toggleRecordButton, this);
     toolbar.appendToolbarItem(this.recordButton);
 
-    this.clearResultsButton = new WebInspector.ToolbarButton(WebInspector.UIString("Clear all profiles."), "clear-toolbar-item");
+    this.clearResultsButton = new WebInspector.ToolbarButton(WebInspector.UIString("Clear all profiles"), "clear-toolbar-item");
     this.clearResultsButton.addEventListener("click", this._reset, this);
     toolbar.appendToolbarItem(this.clearResultsButton);
 

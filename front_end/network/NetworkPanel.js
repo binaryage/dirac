@@ -190,7 +190,7 @@ WebInspector.NetworkPanel.prototype = {
     _toggleRecordButton: function(toggled)
     {
         this._recordButton.setToggled(toggled);
-        this._recordButton.setTitle(toggled ? WebInspector.UIString("Stop Recording Network Log") : WebInspector.UIString("Record Network Log"));
+        this._recordButton.setTitle(toggled ? WebInspector.UIString("Stop recording network log") : WebInspector.UIString("Record network log"));
         this._networkLogView.setRecording(toggled);
         if (!toggled && this._filmStripRecorder)
             this._filmStripRecorder.stopRecording(this._filmStripAvailable.bind(this));
