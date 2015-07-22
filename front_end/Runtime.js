@@ -762,9 +762,10 @@ Runtime.Module.prototype = {
 
     /**
      * @param {string} className
+     * @param {!Runtime.Extension} extension
      * @return {?Object}
      */
-    _instance: function(className)
+    _instance: function(className, extension)
     {
         if (className in this._instanceMap)
             return this._instanceMap[className];
@@ -775,7 +776,7 @@ Runtime.Module.prototype = {
             return null;
         }
 
-        var instance = new constructorFunction();
+        var instance = new constructorFunction(extension);
         this._instanceMap[className] = instance;
         return instance;
     }
@@ -869,7 +870,7 @@ Runtime.Extension.prototype = {
          */
         function constructInstance()
         {
-            var result = this._module._instance(className);
+            var result = this._module._instance(className, this);
             if (!result)
                 return Promise.reject("Could not instantiate: " + className);
             return result;
@@ -882,6 +883,7 @@ Runtime.Extension.prototype = {
      */
     title: function(platform)
     {
+        // FIXME: should be WebInspector.UIString() but runtime is not l10n aware yet.
         return this._descriptor["title-" + platform] || this._descriptor["title"];
     }
 }

@@ -11,7 +11,7 @@
     border-bottom: 1px solid rgba(150, 150, 150, 0.9);
     padding: 4px 0 4px 0;
     border-radius: 4px;
-    background-color: white;
+    background-color: rgb(240, 240, 240);
     box-shadow: 0 5px 10px rgba(0, 0, 0, 0.25);
 }
 
@@ -24,6 +24,7 @@
     padding: 2px 7px 2px 6px;
     margin: 0 13px 0 0;
     white-space: nowrap;
+    min-width: 160px;
 }
 
 .soft-context-menu-separator {
@@ -34,7 +35,7 @@
 .soft-context-menu-separator > .separator-line {
     margin: 0;
     height: 5px;
-    border-bottom: 1px solid rgb(227, 227, 227);
+    border-bottom: 1px solid rgb(222, 222, 222);
     pointer-events: none;
 }
 
@@ -46,9 +47,13 @@
 }
 
 :host-context(.platform-mac) .soft-context-menu-item-mouse-over {
-    border-top: 1px solid rgb(90, 131, 236);
-    border-bottom: 1px solid rgb(18, 88, 233);
-    background-image: linear-gradient(to bottom, rgb(100, 140, 243), rgb(36, 101, 243));
+    border-top: 1px solid transparent;
+    border-bottom: 1px solid transparent;
+    background-image: linear-gradient(to right, hsl(214, 81%, 60%), hsl(214, 100%, 56%));
+}
+
+:host-context(.platform-mac) .separator-line {
+    border-width: 2px;
 }
 
 .soft-context-menu-item-checkmark {
@@ -60,6 +65,7 @@
     color: #222;
     float: right;
     pointer-events: none;
+    font-size: 11px;
 }
 
 .soft-context-menu-item-mouse-over .soft-context-menu-item-checkmark {

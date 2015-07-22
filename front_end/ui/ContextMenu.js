@@ -44,7 +44,7 @@ WebInspector.ContextMenuItem = function(topLevelMenu, type, label, disabled, che
     this._checked = checked;
     this._contextMenu = topLevelMenu;
     if (type === "item" || type === "checkbox")
-        this._id = topLevelMenu.nextId();
+        this._id = topLevelMenu._nextId();
 }
 
 WebInspector.ContextMenuItem.prototype = {
@@ -128,6 +128,16 @@ WebInspector.ContextSubMenuItem.prototype = {
 
     /**
      * @param {string} label
+     * @param {string} actionId
+     * @return {!WebInspector.ContextMenuItem}
+     */
+    appendAction: function(label, actionId)
+    {
+        return this.appendItem(label, WebInspector.actionRegistry.execute.bind(WebInspector.actionRegistry, actionId));
+    },
+
+    /**
+     * @param {string} label
      * @param {boolean=} disabled
      * @return {!WebInspector.ContextSubMenuItem}
      */
@@ -198,8 +208,11 @@ WebInspector.ContextSubMenuItem.prototype = {
  * @constructor
  * @extends {WebInspector.ContextSubMenuItem}
  * @param {!Event} event
+ * @param {boolean=} useSoftMenu
+ * @param {number=} x
+ * @param {number=} y
  */
-WebInspector.ContextMenu = function(event)
+WebInspector.ContextMenu = function(event, useSoftMenu, x, y)
 {
     WebInspector.ContextSubMenuItem.call(this, this, "");
     /** @type {!Array.<!Promise.<!Array.<!WebInspector.ContextMenu.Provider>>>} */
@@ -207,8 +220,9 @@ WebInspector.ContextMenu = function(event)
     /** @type {!Array.<!Promise.<!Object>>} */
     this._pendingTargets = [];
     this._event = event;
-    this._x = event.x;
-    this._y = event.y;
+    this._useSoftMenu = !!useSoftMenu;
+    this._x = x === undefined ? event.x : x;
+    this._y = y === undefined ? event.y : y;
     this._handlers = {};
     this._id = 0;
 }
@@ -247,7 +261,7 @@ WebInspector.ContextMenu.prototype = {
     /**
      * @return {number}
      */
-    nextId: function()
+    _nextId: function()
     {
         return this._id++;
     },
@@ -292,7 +306,7 @@ WebInspector.ContextMenu.prototype = {
         var menuObject = this._buildDescriptors();
 
         WebInspector._contextMenu = this;
-        if (WebInspector.ContextMenu._useSoftMenu || InspectorFrontendHost.isHostedMode()) {
+        if (this._useSoftMenu || WebInspector.ContextMenu._useSoftMenu || InspectorFrontendHost.isHostedMode()) {
             var softMenu = new WebInspector.SoftContextMenu(menuObject, this._itemSelected.bind(this));
             softMenu.show(this._event.target.ownerDocument, this._x, this._y);
         } else {
@@ -354,6 +368,19 @@ WebInspector.ContextMenu.prototype = {
     {
         this._pendingPromises.push(self.runtime.instancesPromise(WebInspector.ContextMenu.Provider, target));
         this._pendingTargets.push(target);
+    },
+
+    /**
+     * @param {string} location
+     */
+    appendItemsAtLocation: function(location)
+    {
+        var extensions = self.runtime.extensions("context-menu-item");
+        for (var extension of extensions) {
+            if (extension.descriptor()["location"] !== location)
+                continue;
+            this.appendAction(extension.title(), extension.descriptor()["actionId"]);
+        }
     },
 
     __proto__: WebInspector.ContextSubMenuItem.prototype

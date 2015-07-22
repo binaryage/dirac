@@ -133,6 +133,7 @@ WebInspector.Main.prototype = {
         Runtime.experiments.register("inputEventsOnTimelineOverview", "Input events on Timeline overview", true);
         Runtime.experiments.register("layersPanel", "Layers panel");
         Runtime.experiments.register("layoutEditor", "Layout editor", true);
+        Runtime.experiments.register("mainMenu", "Main menu", true);
         Runtime.experiments.register("materialDesign", "Material design");
         Runtime.experiments.register("networkRequestHeadersFilterInDetailsView", "Network request headers filter in details view", true);
         Runtime.experiments.register("networkRequestsOnTimeline", "Network requests on Timeline", true);
@@ -764,6 +765,40 @@ WebInspector.Main.WarningErrorCounter.prototype = {
     item: function()
     {
         return this._counter;
+    }
+}
+
+/**
+ * @constructor
+ * @implements {WebInspector.ToolbarItem.Provider}
+ */
+WebInspector.Main.MainMenuItem = function()
+{
+    this._item = new WebInspector.ToolbarButton(WebInspector.UIString("Customize and control DevTools"), "menu-toolbar-item");
+    this._item.addEventListener("click", this._click, this);
+}
+
+WebInspector.Main.MainMenuItem.prototype = {
+    /**
+     * @override
+     * @return {?WebInspector.ToolbarItem}
+     */
+    item: function()
+    {
+        return this._item;
+    },
+
+    /**
+     * @param {!WebInspector.Event} event
+     */
+    _click: function(event)
+    {
+        var contextMenu = new WebInspector.ContextMenu(/** @type {!Event} */(event.data),
+            true,
+            this._item.element.totalOffsetLeft(),
+            this._item.element.totalOffsetTop() + this._item.element.offsetHeight);
+        contextMenu.appendItemsAtLocation("mainMenu");
+        contextMenu.show();
     }
 }
 

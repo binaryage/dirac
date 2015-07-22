@@ -182,8 +182,15 @@
         },
         {
             "type": "@WebInspector.ToolbarItem.Provider",
+            "className": "WebInspector.Main.MainMenuItem",
+            "order": 6,
+            "location": "main-toolbar-right",
+            "experiment": "mainMenu"
+        },
+        {
+            "type": "@WebInspector.ToolbarItem.Provider",
             "className": "WebInspector.DockController.ButtonProvider",
-            "order": 5,
+            "order": 7,
             "location": "main-toolbar-right"
         },
         {

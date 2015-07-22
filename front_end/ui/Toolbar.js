@@ -248,7 +248,7 @@ WebInspector.ToolbarCounter.prototype = {
      */
     _clicked: function(event)
     {
-        this.dispatchEventToListeners("click");
+        this.dispatchEventToListeners("click", event);
     },
 
     __proto__: WebInspector.ToolbarItem.prototype
@@ -374,9 +374,12 @@ WebInspector.ToolbarButtonBase.prototype = {
         this.dispatchEventToListeners("longPressDown", nativeEvent);
     },
 
-    _clicked: function()
+    /**
+     * @param {!Event} event
+     */
+    _clicked: function(event)
     {
-        this.dispatchEventToListeners("click");
+        this.dispatchEventToListeners("click", event);
         this._longClickController.reset();
     },
 
@@ -502,7 +505,17 @@ WebInspector.ToolbarButtonBase.prototype = {
     {
         var buttons = this._longClickOptionsData.buttonsProvider();
         var mainButtonClone = new WebInspector.ToolbarButton(this.title(), this.className, this._states);
-        mainButtonClone.addEventListener("click", this._clicked, this);
+        mainButtonClone.addEventListener("click", clicked.bind(this));
+
+        /**
+         * @param {!WebInspector.Event} event
+         * @this {WebInspector.ToolbarButtonBase}
+         */
+        function clicked(event)
+        {
+            this._clicked(/** @type {!Event} */ (event.data));
+        }
+
         mainButtonClone.setState(this.state());
         buttons.push(mainButtonClone);
 
@@ -629,11 +642,12 @@ WebInspector.ToolbarSettingToggle.prototype = {
 
     /**
      * @override
+     * @param {!Event} event
      */
-    _clicked: function()
+    _clicked: function(event)
     {
         this._setting.set(!this.toggled());
-        WebInspector.ToolbarButton.prototype._clicked.call(this);
+        WebInspector.ToolbarButton.prototype._clicked.call(this, event);
     },
 
     __proto__: WebInspector.ToolbarButton.prototype
