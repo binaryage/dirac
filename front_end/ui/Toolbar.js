@@ -248,7 +248,18 @@ WebInspector.ToolbarCounter.prototype = {
      */
     _clicked: function(event)
     {
-        this.dispatchEventToListeners("click", event);
+        if (this._actionId)
+            WebInspector.actionRegistry.execute(this._actionId);
+        else
+            this.dispatchEventToListeners("click", event);
+    },
+
+    /**
+     * @param {string} actionId
+     */
+    setAction: function(actionId)
+    {
+        this._actionId = actionId;
     },
 
     __proto__: WebInspector.ToolbarItem.prototype
@@ -379,8 +390,19 @@ WebInspector.ToolbarButtonBase.prototype = {
      */
     _clicked: function(event)
     {
-        this.dispatchEventToListeners("click", event);
         this._longClickController.reset();
+        if (this._actionId)
+            WebInspector.actionRegistry.execute(this._actionId);
+        else
+            this.dispatchEventToListeners("click", event);
+    },
+
+    /**
+     * @param {string} actionId
+     */
+    setAction: function(actionId)
+    {
+        this._actionId = actionId;
     },
 
     /**
@@ -1024,14 +1046,12 @@ WebInspector.ExtensibleToolbar.prototype = {
              */
             function attachHandler(item)
             {
-                if (extension.descriptor()["actionId"] && item)
-                    item.addEventListener("click", handler);
+                var actionId = extension.descriptor()["actionId"];
+                if (actionId && item && (item instanceof WebInspector.ToolbarButtonBase || item instanceof WebInspector.ToolbarCounter))
+                    item.setAction(actionId);
+                else if (actionId)
+                    console.error("Can only set action " + actionId + " for a button or counter.");
                 return item;
-            }
-
-            function handler()
-            {
-                WebInspector.actionRegistry.execute(extension.descriptor()["actionId"]);
             }
         }
 

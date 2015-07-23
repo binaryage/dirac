@@ -42,7 +42,7 @@ WebInspector.Drawer = function(splitWidget)
     splitWidget.setSidebarWidget(this);
 
     this._toggleDrawerButton = new WebInspector.ToolbarButton(WebInspector.UIString("Show drawer"), "console-toolbar-item");
-    this._toggleDrawerButton.addEventListener("click", this.toggle, this);
+    this._toggleDrawerButton.setAction("main.toggle-drawer");
 
     this._tabbedPane = new WebInspector.TabbedPane();
     this._tabbedPane.element.id = "drawer-tabbed-pane";
@@ -163,14 +163,6 @@ WebInspector.Drawer.prototype = {
         var tabId = this._tabbedPane.selectedTabId;
         if (tabId && event.data["isUserGesture"] && !this._tabbedPane.isTabCloseable(tabId))
             this._lastSelectedViewSetting.set(tabId);
-    },
-
-    toggle: function()
-    {
-        if (this._toggleDrawerButton.toggled())
-            this.closeDrawer();
-        else
-            this.showDrawer();
     },
 
     /**

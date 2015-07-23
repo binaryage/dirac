@@ -799,12 +799,8 @@ WebInspector.SourcesPanel.prototype = {
      */
     _createButtonAndRegisterShortcutsForAction: function(buttonId, buttonTitle, actionId)
     {
-        function handler()
-        {
-            WebInspector.actionRegistry.execute(actionId);
-        }
         var button = new WebInspector.ToolbarButton(buttonTitle, buttonId);
-        button.element.addEventListener("click", handler, false);
+        button.setAction(actionId);
         button._shortcuts = WebInspector.shortcutRegistry.shortcutDescriptorsForAction(actionId);
         this._updateButtonTitle(button, buttonTitle);
         return button;
