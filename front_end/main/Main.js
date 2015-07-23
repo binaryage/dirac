@@ -147,6 +147,7 @@ WebInspector.Main.prototype = {
         Runtime.experiments.register("timelineInvalidationTracking", "Timeline invalidation tracking", true);
         Runtime.experiments.register("timelineTracingJSProfile", "Timeline tracing based JS profiler", true);
         Runtime.experiments.register("timelineFlowEvents", "Timeline flow events", true);
+        Runtime.experiments.register("tooltips", "Tooltips", true);
         Runtime.experiments.register("inlineVariableValues", "Display variable values inline while debugging");
 
         Runtime.experiments.cleanUpStaleExperiments();
@@ -189,6 +190,8 @@ WebInspector.Main.prototype = {
         WebInspector.inspectorView = new WebInspector.InspectorView();
         WebInspector.ContextMenu.initialize();
         WebInspector.ContextMenu.installHandler(document);
+        if (Runtime.experiments.isEnabled("tooltips"))
+            WebInspector.Tooltip.installHandler(document);
         WebInspector.dockController = new WebInspector.DockController(canDock);
         WebInspector.overridesSupport = new WebInspector.OverridesSupport();
         WebInspector.emulatedDevicesList = new WebInspector.EmulatedDevicesList();

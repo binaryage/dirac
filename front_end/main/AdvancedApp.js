@@ -64,6 +64,8 @@ WebInspector.AdvancedApp.prototype = {
         WebInspector.initializeUIUtils(toolboxDocument.defaultView);
         WebInspector.installComponentRootStyles(/** @type {!Element} */ (toolboxDocument.body));
         WebInspector.ContextMenu.installHandler(toolboxDocument);
+        if (Runtime.experiments.isEnabled("tooltips"))
+            WebInspector.Tooltip.installHandler(toolboxDocument);
 
         var rootView = new WebInspector.RootView();
         var inspectedPagePlaceholder = new WebInspector.InspectedPagePlaceholder();

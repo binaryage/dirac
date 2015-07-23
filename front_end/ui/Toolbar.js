@@ -416,7 +416,10 @@ WebInspector.ToolbarButtonBase.prototype = {
         if (this._title === x)
             return;
         this._title = x;
-        this.element.title = x;
+        if (Runtime.experiments.isEnabled("tooltips"))
+            WebInspector.Tooltip.install(this.element, x);
+        else
+            this.element.title = x;
     },
 
     /**

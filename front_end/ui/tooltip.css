@@ -1,0 +1,46 @@
+/*
+ * Copyright (c) 2015 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+.tooltip {
+    background: hsl(0, 0%, 20%);
+    border-radius: 2px;
+    color: white;
+    padding: 6px 8px;
+    font-size: 12px;
+    line-height: 16px;
+}
+
+.tooltip,
+.tooltip-arrow {
+    position: absolute;
+    visibility: hidden;
+    transition: visibility 0s 100ms;
+    z-index: 3000;
+    top: 0;
+    left: 0;
+}
+
+.tooltip.shown,
+.tooltip.shown + .tooltip-arrow {
+    visibility: visible;
+    transition-delay: 400ms;
+}
+
+.tooltip.shown.instant,
+.tooltip.shown.instant + .tooltip-arrow {
+    transition-delay: 0s;
+}
+
+.tooltip-arrow {
+    border: solid;
+    border-color: hsl(0, 0%, 20%) transparent;
+    border-width: 0 4px 4px 4px;
+    margin-left: -4px;
+}
+
+.tooltip-arrow.tooltip-arrow-top {
+    border-width: 4px 4px 0 4px;
+}
