@@ -15,6 +15,10 @@
     overflow-y: auto;
 }
 
+.request-headers-view .outline-disclosure > ol {
+    padding-bottom: 5px;
+}
+
 .request-headers-view .outline-disclosure > .parent {
     -webkit-user-select: none;
     font-weight: bold;
@@ -45,6 +49,11 @@
 
 .request-headers-view .outline-disclosure .children li {
     white-space: nowrap;
+    margin-left: 10px;
+}
+
+.request-headers-view .outline-disclosure .children li::before {
+    display: none;
 }
 
 .request-headers-view .outline-disclosure .caution {
