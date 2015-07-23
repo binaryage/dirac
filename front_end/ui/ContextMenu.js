@@ -87,7 +87,10 @@ WebInspector.ContextMenuItem.prototype = {
     {
         switch (this._type) {
         case "item":
-            return { type: "item", id: this._id, label: this._label, enabled: !this._disabled };
+            var result = { type: "item", id: this._id, label: this._label, enabled: !this._disabled };
+            if (this._customElement)
+                result.element = this._customElement;
+            return result;
         case "separator":
             return { type: "separator" };
         case "checkbox":
@@ -123,6 +126,18 @@ WebInspector.ContextSubMenuItem.prototype = {
         var item = new WebInspector.ContextMenuItem(this._contextMenu, "item", label, disabled);
         this._pushItem(item);
         this._contextMenu._setHandler(item.id(), handler);
+        return item;
+    },
+
+    /**
+     * @param {!Element} element
+     * @return {!WebInspector.ContextMenuItem}
+     */
+    appendCustomItem: function(element)
+    {
+        var item = new WebInspector.ContextMenuItem(this._contextMenu, "item", "<custom>");
+        item._customElement = element;
+        this._pushItem(item);
         return item;
     },
 
@@ -301,14 +316,19 @@ WebInspector.ContextMenu.prototype = {
         this._event.consume(true);
     },
 
+    discard: function()
+    {
+        this._softMenu.discard();
+    },
+
     _innerShow: function()
     {
         var menuObject = this._buildDescriptors();
 
         WebInspector._contextMenu = this;
         if (this._useSoftMenu || WebInspector.ContextMenu._useSoftMenu || InspectorFrontendHost.isHostedMode()) {
-            var softMenu = new WebInspector.SoftContextMenu(menuObject, this._itemSelected.bind(this));
-            softMenu.show(this._event.target.ownerDocument, this._x, this._y);
+            this._softMenu = new WebInspector.SoftContextMenu(menuObject, this._itemSelected.bind(this));
+            this._softMenu.show(this._event.target.ownerDocument, this._x, this._y);
         } else {
             InspectorFrontendHost.showContextMenuAtPoint(this._x, this._y, menuObject, this._event.target.ownerDocument);
             InspectorFrontendHost.events.addEventListener(InspectorFrontendHostAPI.Events.ContextMenuCleared, this._menuCleared, this);
@@ -375,11 +395,33 @@ WebInspector.ContextMenu.prototype = {
      */
     appendItemsAtLocation: function(location)
     {
+        // Hard-coded named groups for elements to maintain generic order.
+        var groupWeights = ["new", "open", "clipboard", "navigate", "footer"];
+
+        var groups = new Map();
         var extensions = self.runtime.extensions("context-menu-item");
         for (var extension of extensions) {
-            if (extension.descriptor()["location"] !== location)
+            var itemLocation = extension.descriptor()["location"] || "";
+            if (itemLocation !== location && !itemLocation.startsWith(location + "/"))
                 continue;
-            this.appendAction(extension.title(), extension.descriptor()["actionId"]);
+
+            var itemGroup = itemLocation.includes("/") ? itemLocation.substr(location.length + 1) : "misc";
+            var group = groups.get(itemGroup);
+            if (!group) {
+                group = [];
+                groups.set(itemGroup, group);
+                if (groupWeights.indexOf(itemGroup) === -1)
+                    groupWeights.splice(4, 0, itemGroup);
+            }
+            group.push(extension);
+        }
+        for (var groupName of groupWeights) {
+            var group = groups.get(groupName);
+            if (!group)
+                continue;
+            for (var extension of group)
+                this.appendAction(extension.title(), extension.descriptor()["actionId"]);
+            this.appendSeparator();
         }
     },
 

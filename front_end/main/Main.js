@@ -801,6 +801,35 @@ WebInspector.Main.MainMenuItem.prototype = {
             true,
             this._item.element.totalOffsetLeft(),
             this._item.element.totalOffsetTop() + this._item.element.offsetHeight);
+        var dockItemElement = createElementWithClass("div", "flex-centered");
+        dockItemElement.createTextChild(WebInspector.UIString("Dock side"));
+        var dockItemToolbar = new WebInspector.Toolbar(dockItemElement);
+        dockItemToolbar.element.style.paddingLeft = "10px";
+        var undock = new WebInspector.ToolbarButton( WebInspector.UIString("Undock into separate window"), "dock-toolbar-item-undock");
+        var bottom = new WebInspector.ToolbarButton(WebInspector.UIString("Dock to bottom"), "dock-toolbar-item-bottom");
+        var right = new WebInspector.ToolbarButton(WebInspector.UIString("Dock to right"), "dock-toolbar-item-right");
+        undock.addEventListener("click", setDockSide.bind(null, WebInspector.DockController.State.Undocked));
+        bottom.addEventListener("click", setDockSide.bind(null, WebInspector.DockController.State.DockedToBottom));
+        right.addEventListener("click", setDockSide.bind(null, WebInspector.DockController.State.DockedToRight));
+        undock.setToggled(WebInspector.dockController.dockSide() === WebInspector.DockController.State.Undocked);
+        bottom.setToggled(WebInspector.dockController.dockSide() === WebInspector.DockController.State.DockedToBottom);
+        right.setToggled(WebInspector.dockController.dockSide() === WebInspector.DockController.State.DockedToRight);
+
+        /**
+         * @param {string} side
+         */
+        function setDockSide(side)
+        {
+            WebInspector.dockController.setDockSide(side);
+            contextMenu.discard();
+        }
+
+        dockItemToolbar.appendToolbarItem(undock);
+        dockItemToolbar.appendToolbarItem(bottom);
+        dockItemToolbar.appendToolbarItem(right);
+
+        contextMenu.appendCustomItem(dockItemElement);
+        contextMenu.appendSeparator();
         contextMenu.appendItemsAtLocation("mainMenu");
         contextMenu.show();
     }

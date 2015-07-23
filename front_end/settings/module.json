@@ -11,6 +11,11 @@
             ]
         },
         {
+            "type": "@WebInspector.ActionDelegate",
+            "actionId": "help.show",
+            "className": "WebInspector.SettingsController.ActionDelegate"
+        },
+        {
             "type": "@WebInspector.ToolbarItem.Provider",
             "actionId": "settings.show",
             "location": "main-toolbar-right",
@@ -25,9 +30,15 @@
         },
         {
             "type": "context-menu-item",
-            "location": "mainMenu",
+            "location": "mainMenu/footer",
             "title": "Settings",
             "actionId": "settings.show"
+        },
+        {
+            "type": "context-menu-item",
+            "location": "mainMenu/footer",
+            "title": "Help",
+            "actionId": "help.show"
         }
     ],
     "dependencies": [

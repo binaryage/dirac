@@ -88,6 +88,11 @@ WebInspector.SoftContextMenu.prototype = {
             this.element.style.top = Math.max(0, document.body.offsetHeight - this.element.offsetHeight) + "px";
     },
 
+    discard: function()
+    {
+        this._discardMenu(true);
+    },
+
     _parentGlassPaneElement: function()
     {
         if (this._glassPaneElement)
@@ -110,6 +115,12 @@ WebInspector.SoftContextMenu.prototype = {
         checkMarkElement.textContent = "\u2713 "; // Checkmark Unicode symbol
         if (!item.checked)
             checkMarkElement.style.opacity = "0";
+
+        if (item.element) {
+            var wrapper = menuItemElement.createChild("div", "soft-context-menu-custom-item");
+            wrapper.appendChild(item.element);
+            return menuItemElement;
+        }
 
         menuItemElement.createTextChild(item.label);
 

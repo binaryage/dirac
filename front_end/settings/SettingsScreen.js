@@ -585,7 +585,10 @@ WebInspector.SettingsController.ActionDelegate.prototype = {
      */
     handleAction: function(context, actionId)
     {
-        WebInspector._settingsController.showSettingsScreen();
+        if (actionId === "settings.show")
+            WebInspector._settingsController.showSettingsScreen();
+        else if (actionId === "help.show")
+            InspectorFrontendHost.openInNewTab("https://developer.chrome.com/devtools");
     }
 }
 

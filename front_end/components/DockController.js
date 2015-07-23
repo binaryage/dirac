@@ -78,7 +78,7 @@ WebInspector.DockController.prototype = {
         this._titles = [WebInspector.UIString("Dock to right"), WebInspector.UIString("Dock to bottom"), WebInspector.UIString("Undock into separate window")];
         var initialState = this._currentDockStateSetting.get();
         initialState = this._states.indexOf(initialState) >= 0 ? initialState : this._states[0];
-        this._dockSideChanged(initialState);
+        this.setDockSide(initialState);
     },
 
     /**
@@ -108,7 +108,7 @@ WebInspector.DockController.prototype = {
     /**
      * @param {string} dockSide
      */
-    _dockSideChanged: function(dockSide)
+    setDockSide: function(dockSide)
     {
         if (this._dockSide === dockSide)
             return;
@@ -189,7 +189,7 @@ WebInspector.DockController.ButtonProvider.prototype = {
                     WebInspector.dockController.dockSide(),
                     WebInspector.dockController._currentDockStateSetting,
                     WebInspector.dockController._lastDockStateSetting,
-                    WebInspector.dockController._dockSideChanged.bind(WebInspector.dockController));
+                    WebInspector.dockController.setDockSide.bind(WebInspector.dockController));
         }
         return WebInspector.dockController._dockToggleButton;
     }

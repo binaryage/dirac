@@ -239,15 +239,18 @@ select.toolbar-item {
 
 /* Predefined items */
 
-.dock-toolbar-item.toggled-undocked .glyph {
+.dock-toolbar-item.toggled-undocked .glyph,
+.dock-toolbar-item-undock .glyph {
     -webkit-mask-position: 0 -48px;
 }
 
-.dock-toolbar-item.toggled-bottom .glyph {
+.dock-toolbar-item.toggled-bottom .glyph,
+.dock-toolbar-item-bottom .glyph {
     -webkit-mask-position: -32px -24px;
 }
 
-.dock-toolbar-item.toggled-right .glyph {
+.dock-toolbar-item.toggled-right .glyph,
+.dock-toolbar-item-right .glyph {
     -webkit-mask-position: -256px -48px;
 }
 
