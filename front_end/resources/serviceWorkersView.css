@@ -35,132 +35,145 @@
 }
 
 .service-workers-registration {
-    padding: 5px;
+    border-right: 1px solid #e1e1e1;
+    margin-top: 5px;
+    margin-bottom: 10px;
+    padding: 0;
 }
 
 .service-workers-registration-header {
+    border-left: 1px solid #e1e1e1;
+    border-top: 1px solid #e1e1e1;
     display: flex;
+    flex-wrap: wrap;
+    overflow: hidden;
     position: relative;
 }
 
 .service-workers-registration-title {
-    font-size: 18px;
+    flex: none;
+    font-size: 15px;
+    padding: 4px;
 }
 
-.service-workers-versions-table {
-    border-left: 1px solid #e1e1e1;
-    border-right: 1px solid #e1e1e1;
-    border-top: 1px solid #e1e1e1;
-    margin: 5px;
+.service-workers-registration-buttons {
+    flex: 1 1 0;
+    padding: 1px;
 }
 
-.service-workers-version-mode-row {
+.service-workers-registration-content {
+    border: 0;
+    padding: 0;
+}
+
+.service-workers-versions-mode-tab-list {
     display: flex;
 }
 
-.service-workers-version-mode-row-installing {
-    background-color: #eee;
-}
-
-.service-workers-version-mode-row-active {
-    background-color: #eee;
-}
-
-.service-workers-version-mode {
+.service-workers-versions-mode-tab {
     border-bottom: 1px solid #e1e1e1;
+    border-left: 1px solid #e1e1e1;
+    border-top: 1px solid #e1e1e1;
     display: flex;
     flex: 1 1 0;
-    min-width: 100px;
+    flex-wrap: wrap;
     overflow: hidden;
-    position: relative;
-    text-overflow: ellipsis;
+    padding: 3px;
 }
 
-.service-workers-version-mode-text {
-    font-weight: bold;
-    left: 4px;
-    position: absolute;
-    top: 4px;
+.service-workers-versions-mode-tab-disabled {
+    background-color: #eee;
 }
 
-.service-workers-versions {
-    display: flex;
-    flex: 6 6 0;
-    flex-direction: column;
+.service-workers-versions-mode-tab-selected {
+    border-bottom: 0;
 }
 
-.service-workers-version-row {
-    border-bottom: 1px solid #e1e1e1;
-    display: flex;
-    min-height: 41px;
-    width: 100%;
-}
-
-.service-workers-version-status {
-    border-left: 1px solid #e1e1e1;
-    display: flex;
-    flex: 0.7 0.7 0;
-    overflow: hidden;
-    position: relative;
-    text-overflow: ellipsis;
-}
-
-.service-workers-version-status-icon {
-    position: absolute;
+.service-workers-versions-mode-tab-icon {
+    height: 16px;
+    margin: 1px;
     -webkit-mask-image: url(Images/serviceWorker.svg);
-    -webkit-mask-size: 20px 20px;
-    height: 20px;
-    left: 4px;
-    top: 10px;
-    width: 20px;
+    -webkit-mask-size: 16px 16px;
+    width: 16px;
 }
 
-.service-workers-version-status-text {
-    position: absolute;
-    left: 28px;
-    top: 12px;
+.service-workers-versions-mode-tab-text {
+    margin: 2px;
 }
 
-.service-workers-version-running-status {
+.service-workers-versions-mode-tab-text-disabled {
+    color: #888;
+}
+
+.service-workers-versions-mode-tab-text-selected {
+    font-weight: bold;
+}
+
+.service-workers-versions-panel {
+    border-bottom: 1px solid #e1e1e1;
     border-left: 1px solid #e1e1e1;
     display: flex;
-    flex: 0.7 0.7 0;
-    overflow: hidden;
-    position: relative;
-    text-overflow: ellipsis;
 }
 
-.service-workers-version-running-status-inspectable {
-    min-height: 39px;
-}
-
-.service-workers-version-running-status-button {
-    position: absolute;
-    left: 0px;
-    top: 6px;
-}
-
-.service-workers-version-running-status-text {
-    left: 32px;
-    position: absolute;
-    top: 10px;
-}
-
-.service-workers-version-inspect {
-    color: #00e;
-    cursor: pointer;
-    left: 32px;
-    position: absolute;
-    text-decoration: underline;
-    top: 22px;
-}
-
-.service-workers-version-script-url {
-    border-left: 1px solid #e1e1e1;
-    display: block;
+.service-workers-versions-panel-left {
     flex: 3 3 0;
     overflow: hidden;
+    padding: 3px;
+}
+.service-workers-versions-panel-right {
+    flex: 5 5 0;
+    padding: 3px;
+}
+
+.service-workers-versions-table-row {
+    display: flex;
+}
+
+.service-workers-versions-table-row-title {
+    color: #888;
+    flex: 1 1 0;
+    overflow: hidden;
+    padding: 8px;
+}
+
+.service-workers-versions-table-row-content {
+    flex: 2 2 0;
+    padding: 8px;
     text-overflow: ellipsis;
+}
+
+.service-workers-versions-table-messages-title {
+    color: #888;
+    padding: 8px 8px 3px 8px;
+}
+
+.service-workers-versions-table-messages-content {
+    overflow: auto;
+    padding: 3px 3px 3px 10px;
+}
+
+.service-workers-versions-table-clients-title {
+    color: #888;
+    padding: 8px 8px 3px 8px;
+}
+
+.service-workers-versions-table-clients-content {
+    overflow: auto;
+    padding: 3px 3px 3px 10px;
+}
+
+.service-workers-versions-table-worker-running-status-cell {
+    display: flex;
+}
+
+.service-workers-versions-table-running-status-right-cell {
+    padding: 3px;
+}
+
+.service-workers-versions-table-running-status-inspect {
+    color: #00e;
+    cursor: pointer;
+    text-decoration: underline;
 }
 
 .service-workers-button {
@@ -201,7 +214,9 @@
 }
 
 .service-workers-delete-button {
+    float: right;
     -webkit-mask-position: -128px -24px;
+    position: relative;
 }
 
 .service-workers-update-button {
@@ -218,10 +233,14 @@
     -webkit-mask-size: 18px 18px;
 }
 
+.service-workers-versions-option-panel {
+    border-bottom: 1px solid #e1e1e1;
+    border-left: 1px solid #e1e1e1;
+    display: flex;
+}
+
 .service-workers-skip-waiting-checkbox-label {
-    left: 10px;
-    position: absolute;
-    top: 20px;
+    margin-left: 0px;
 }
 
 .service-workers-error {
@@ -234,10 +253,6 @@
 
 .service-workers-info {
     display: flex;
-}
-
-.service-worker-client {
-   display: inline;
 }
 
 .service-worker-client-focus {

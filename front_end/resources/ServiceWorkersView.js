@@ -276,20 +276,21 @@ WebInspector.SWRegistrationElement = function(manager, originElement, registrati
     this._originElement = originElement;
     this._registration = registration;
     this._element = createElementWithClass("div", "service-workers-registration");
-    var headerNode = this._element.createChild("li").createChild("div", "service-workers-registration-header");
+    var headerNode = this._element.createChild("div", "service-workers-registration-header");
     this._titleNode = headerNode.createChild("div", "service-workers-registration-title");
-    this._deleteButton = headerNode.createChild("button", "service-workers-button service-workers-delete-button");
-    this._deleteButton.addEventListener("click", this._deleteButtonClicked.bind(this), false);
-    this._deleteButton.title = WebInspector.UIString("Delete");
-    this._updateButton = headerNode.createChild("button", "service-workers-button service-workers-update-button");
+    var buttonsNode = headerNode.createChild("div", "service-workers-registration-buttons");
+    this._updateButton = buttonsNode.createChild("button", "service-workers-button service-workers-update-button");
     this._updateButton.addEventListener("click", this._updateButtonClicked.bind(this), false);
     this._updateButton.title = WebInspector.UIString("Update");
     this._updateButton.disabled = true
-    this._pushButton = headerNode.createChild("button", "service-workers-button service-workers-push-button");
+    this._pushButton = buttonsNode.createChild("button", "service-workers-button service-workers-push-button");
     this._pushButton.addEventListener("click", this._pushButtonClicked.bind(this), false);
     this._pushButton.title = WebInspector.UIString("Emulate push event");
     this._pushButton.disabled = true
-    this._childrenListNode = this._element.createChild("ol");
+    this._deleteButton = buttonsNode.createChild("button", "service-workers-button service-workers-delete-button");
+    this._deleteButton.addEventListener("click", this._deleteButtonClicked.bind(this), false);
+    this._deleteButton.title = WebInspector.UIString("Delete");
+    this._childrenListNode = this._element.createChild("div", "service-workers-registration-content");
 
     this._skipWaitingCheckboxLabel = createCheckboxLabel(WebInspector.UIString("Skip waiting"));
     this._skipWaitingCheckboxLabel.title = WebInspector.UIString("Simulate skipWaiting()");
@@ -298,6 +299,20 @@ WebInspector.SWRegistrationElement = function(manager, originElement, registrati
     this._skipWaitingCheckbox.checked = true;
     this._skipWaitingCheckbox.classList.add("service-workers-skip-waiting-checkbox");
     this._skipWaitingCheckbox.addEventListener("change", this._skipWaitingCheckboxChanged.bind(this), false);
+
+    /**
+     * @type {!Object.<string, !Array.<!WebInspector.ServiceWorkerVersion>>}
+     */
+    this._categorizedVersions = {};
+    for (var mode in WebInspector.ServiceWorkerVersion.Modes)
+        this._categorizedVersions[WebInspector.ServiceWorkerVersion.Modes[mode]] = [];
+
+    this._selectedMode = WebInspector.ServiceWorkerVersion.Modes.Active;
+
+    /**
+     * @type {!Array.<!WebInspector.SWVersionElement>}
+     */
+    this._versionElements = [];
 
     this._updateRegistration(registration);
 }
@@ -313,6 +328,33 @@ WebInspector.SWRegistrationElement.prototype = {
         this._updateButton.disabled = !!registration.isDeleted;
         this._deleteButton.disabled = !!registration.isDeleted;
         this._skipWaitingCheckboxLabel.remove();
+
+        var lastFocusedVersionId = undefined;
+        if (this._categorizedVersions[this._selectedMode].length)
+            lastFocusedVersionId = this._categorizedVersions[this._selectedMode][0].id;
+        for (var mode in WebInspector.ServiceWorkerVersion.Modes)
+            this._categorizedVersions[WebInspector.ServiceWorkerVersion.Modes[mode]] = [];
+        for (var version of registration.versions.valuesArray()) {
+            if (version.isStoppedAndRedundant() && !version.errorMessages.length)
+                continue;
+            var mode = version.mode();
+            this._categorizedVersions[mode].push(version);
+            if (version.id === lastFocusedVersionId)
+                this._selectedMode = mode;
+        }
+        if (!this._categorizedVersions[this._selectedMode].length && this._selectedMode != WebInspector.ServiceWorkerVersion.Modes.Waiting) {
+            for (var mode of [WebInspector.ServiceWorkerVersion.Modes.Active,
+                              WebInspector.ServiceWorkerVersion.Modes.Waiting,
+                              WebInspector.ServiceWorkerVersion.Modes.Installing,
+                              WebInspector.ServiceWorkerVersion.Modes.Redundant]) {
+                if (this._categorizedVersions[mode].length) {
+                    this._selectedMode = mode;
+                    break;
+                }
+            }
+        }
+        this._pushButton.disabled = !this._categorizedVersions[WebInspector.ServiceWorkerVersion.Modes.Active].length || !!this._registration.isDeleted;
+
         this._updateVersionList();
 
         if (this._visible() && this._skipWaitingCheckbox.checked) {
@@ -333,140 +375,84 @@ WebInspector.SWRegistrationElement.prototype = {
     _updateVersionList: function()
     {
         var fragment = createDocumentFragment();
-        var tableElement = createElementWithClass("div", "service-workers-versions-table");
-        var versions = this._registration.versions.valuesArray();
-        versions = versions.filter(function(version) {
-            return !version.isStoppedAndRedundant() || version.errorMessages.length;
-        });
-        var activeVersions = versions.filter(function(version) { return version.isActivating() || version.isActivated(); });
-        this._pushButton.disabled = !activeVersions.length || !!this._registration.isDeleted;
-
-        tableElement.appendChild(this._createVersionModeRow(
-            versions.filter(function(version) { return version.isNew() || version.isInstalling(); }),
-            "installing",
-            WebInspector.UIString("installing")));
-        tableElement.appendChild(this._createVersionModeRow(
-            versions.filter(function(version) { return version.isInstalled(); }),
-            "waiting",
-            WebInspector.UIString("waiting")));
-        tableElement.appendChild(this._createVersionModeRow(
-            activeVersions,
-            "active",
-            WebInspector.UIString("active")));
-        tableElement.appendChild(this._createVersionModeRow(
-            versions.filter(function(version) { return version.isRedundant(); }),
-            "redundant",
-            WebInspector.UIString("redundant")));
-        fragment.appendChild(tableElement);
+        var modeTabList = createElementWithClass("div", "service-workers-versions-mode-tab-list");
+        modeTabList.appendChild(this._createVersionModeTab(WebInspector.ServiceWorkerVersion.Modes.Installing));
+        modeTabList.appendChild(this._createVersionModeTab(WebInspector.ServiceWorkerVersion.Modes.Waiting));
+        modeTabList.appendChild(this._createVersionModeTab(WebInspector.ServiceWorkerVersion.Modes.Active));
+        modeTabList.appendChild(this._createVersionModeTab(WebInspector.ServiceWorkerVersion.Modes.Redundant));
+        fragment.appendChild(modeTabList);
+        fragment.appendChild(this._createSelectedModeVersionsPanel(this._selectedMode));
         this._childrenListNode.removeChildren();
         this._childrenListNode.appendChild(fragment);
     },
 
     /**
-     * @param {!Array.<!WebInspector.ServiceWorkerVersion>} versions
-     * @param {string} modeClass
-     * @param {string} modeTitle
+     * @param {string} mode
+     * @return {!Element}
      */
-    _createVersionModeRow: function(versions, modeClass, modeTitle)
+    _createVersionModeTab: function(mode)
     {
-        var modeRowElement = createElementWithClass("div", "service-workers-version-mode-row  service-workers-version-mode-row-" + modeClass);
-        var modeTitleDiv = modeRowElement.createChild("div", "service-workers-version-mode");
-        modeTitleDiv.createChild("div", "service-workers-version-mode-text").createTextChild(modeTitle);
-        if (modeClass == "waiting") {
-          modeTitleDiv.appendChild(this._skipWaitingCheckboxLabel);
-        }
-        var versionsElement = modeRowElement.createChild("div", "service-workers-versions");
+        var versions = this._categorizedVersions[mode];
+        var modeTitle = WebInspector.UIString(mode);
+        var selected = this._selectedMode == mode;
+        var modeTab = createElementWithClass("div", "service-workers-versions-mode-tab");
         for (var version of versions) {
-            var stateRowElement = versionsElement.createChild("div", "service-workers-version-row");
-            var statusDiv = stateRowElement.createChild("div", "service-workers-version-status");
-            var icon = statusDiv.createChild("div", "service-workers-version-status-icon service-workers-color-" + (version.id % 10));
+            var icon = modeTab.createChild("div", "service-workers-versions-mode-tab-icon service-workers-color-" + (version.id % 10));
             icon.title = WebInspector.UIString("ID: %s", version.id);
-            statusDiv.createChild("div", "service-workers-version-status-text").createTextChild(version.status);
-            var runningStatusDiv = stateRowElement.createChild("div", "service-workers-version-running-status");
-            if (version.isRunning() || version.isStarting()) {
-                var stopButton = runningStatusDiv.createChild("button", "service-workers-button service-workers-stop-button service-workers-version-running-status-button");
-                stopButton.addEventListener("click", this._stopButtonClicked.bind(this, version.id), false);
-                stopButton.title = WebInspector.UIString("Stop");
-            } else if (version.isStartable()) {
-                var startButton = runningStatusDiv.createChild("button", "service-workers-button service-workers-start-button service-workers-version-running-status-button");
-                startButton.addEventListener("click", this._startButtonClicked.bind(this), false);
-                startButton.title = WebInspector.UIString("Start");
-            }
-            if (version.isRunning() || version.isStarting()) {
-                runningStatusDiv.classList.add("service-workers-version-running-status-inspectable");
-                var inspectButton = runningStatusDiv.createChild("div", "service-workers-version-inspect");
-                inspectButton.createTextChild(WebInspector.UIString("inspect"));
-                inspectButton.addEventListener("click", this._inspectButtonClicked.bind(this, version.id), false);
-            }
-
-            runningStatusDiv.createChild("div", "service-workers-version-running-status-text").createTextChild(version.runningStatus);
-            var scriptURLDiv = stateRowElement.createChild("div", "service-workers-version-script-url");
-            scriptURLDiv.createChild("div", "service-workers-version-script-url-text").createTextChild(WebInspector.UIString("Script: %s", version.scriptURL.asParsedURL().path));
-            if (version.scriptLastModified) {
-                var scriptLastModifiedLabel = scriptURLDiv.createChild("label", " service-workers-info service-worker-script-last-modified", "dt-icon-label");
-                scriptLastModifiedLabel.type = "info-icon";
-                scriptLastModifiedLabel.createTextChild(WebInspector.UIString("Last-Modified: %s", (new Date(version.scriptLastModified * 1000)).toConsoleTime()));
-            }
-            if (version.scriptResponseTime) {
-                var scriptResponseTimeDiv = scriptURLDiv.createChild("label", " service-workers-info service-worker-script-response-time", "dt-icon-label");
-                scriptResponseTimeDiv.type = "info-icon";
-                scriptResponseTimeDiv.createTextChild(WebInspector.UIString("Server response time: %s", (new Date(version.scriptResponseTime * 1000)).toConsoleTime()));
-            }
-
-            for (var i = 0; i < version.controlledClients.length; ++i) {
-                var client = version.controlledClients[i];
-                var clientLabel = scriptURLDiv.createChild("label", "service-workers-info", "dt-icon-label");
-                clientLabel.type = "info-icon";
-                var clientLabelText = clientLabel.createChild("label", "service-worker-client");
-                this._manager.getTargetInfo(client, this._updateClientInfo.bind(this, clientLabelText));
-            }
-
-            var errorMessages = version.errorMessages;
-            for (var index = 0; index < errorMessages.length; ++index) {
-                var errorDiv = scriptURLDiv.createChild("div", "service-workers-error");
-                errorDiv.createChild("label", "", "dt-icon-label").type = "error-icon";
-                errorDiv.createChild("div", "service-workers-error-message").createTextChild(errorMessages[index].errorMessage);
-                var script_path = errorMessages[index].sourceURL;
-                var script_url;
-                if (script_url = script_path.asParsedURL())
-                    script_path = script_url.displayName;
-                if (script_path.length && errorMessages[index].lineNumber != -1)
-                    script_path = String.sprintf("(%s:%d)", script_path, errorMessages[index].lineNumber);
-                errorDiv.createChild("div", "service-workers-error-line").createTextChild(script_path);
-            }
-
         }
-        if (!versions.length) {
-            var stateRowElement = versionsElement.createChild("div", "service-workers-version-row");
-            stateRowElement.createChild("div", "service-workers-version-status");
-            stateRowElement.createChild("div", "service-workers-version-running-status");
-            stateRowElement.createChild("div", "service-workers-version-script-url");
+        var modeTabText = modeTab.createChild("div", "service-workers-versions-mode-tab-text");
+        modeTabText.createTextChild(WebInspector.UIString(modeTitle));
+        if (selected) {
+            modeTab.classList.add("service-workers-versions-mode-tab-selected");
+            modeTabText.classList.add("service-workers-versions-mode-tab-text-selected");
         }
-        return modeRowElement;
+        if (versions.length || mode == WebInspector.ServiceWorkerVersion.Modes.Waiting) {
+            modeTab.addEventListener("click", this._modeTabClicked.bind(this, mode), false);
+        } else {
+            modeTab.classList.add("service-workers-versions-mode-tab-disabled");
+            modeTabText.classList.add("service-workers-versions-mode-tab-text-disabled");
+        }
+        return modeTab;
     },
 
     /**
-     * @param {!Element} element
-     * @param {?WebInspector.TargetInfo} targetInfo
+     * @param {string} mode
+     * @return {!Element}
      */
-    _updateClientInfo: function(element, targetInfo)
+    _createSelectedModeVersionsPanel: function(mode)
     {
-        if (!targetInfo)
-            return;
-        element.createTextChild(WebInspector.UIString("Client: %s", targetInfo.url));
-        if (!(targetInfo.isWebContents() || targetInfo.isFrame()))
-            return;
-        var focusLabel = element.createChild("label", "service-worker-client-focus");
-        focusLabel.createTextChild("focus");
-        focusLabel.addEventListener("click", this._activateTarget.bind(this, targetInfo.id), true);
+        var versions = this._categorizedVersions[mode];
+        var panelContainer = createElementWithClass("div", "service-workers-versions-panel-container");
+        if (mode == WebInspector.ServiceWorkerVersion.Modes.Waiting) {
+            var panel = createElementWithClass("div", "service-workers-versions-option-panel");
+            panel.appendChild(this._skipWaitingCheckboxLabel);
+            panelContainer.appendChild(panel);
+        }
+        var index = 0;
+        var versionElement;
+        for (var i = 0; i < versions.length; ++i) {
+            if (i < this._versionElements.length) {
+                versionElement = this._versionElements[i];
+                versionElement._updateVersion(versions[i]);
+            } else {
+                versionElement = new WebInspector.SWVersionElement(this._manager, this._registration.scopeURL, versions[i]);
+                this._versionElements.push(versionElement);
+            }
+            panelContainer.appendChild(versionElement._element);
+        }
+        this._versionElements.splice(versions.length);
+        return panelContainer;
     },
 
     /**
-     * @param {string} targetId
+     * @param {string} mode
      */
-    _activateTarget: function(targetId)
+    _modeTabClicked: function(mode)
     {
-        this._manager.activateTarget(targetId);
+        if (this._selectedMode == mode)
+            return;
+        this._selectedMode = mode;
+        this._updateVersionList();
     },
 
     /**
@@ -494,32 +480,6 @@ WebInspector.SWRegistrationElement.prototype = {
         this._manager.deliverPushMessage(this._registration.id, data);
     },
 
-    /**
-     * @param {!Event} event
-     */
-    _startButtonClicked: function(event)
-    {
-        this._manager.startWorker(this._registration.scopeURL);
-    },
-
-    /**
-     * @param {string} versionId
-     * @param {!Event} event
-     */
-    _stopButtonClicked: function(versionId, event)
-    {
-        this._manager.stopWorker(versionId);
-    },
-
-    /**
-     * @param {string} versionId
-     * @param {!Event} event
-     */
-    _inspectButtonClicked: function(versionId, event)
-    {
-        this._manager.inspectWorker(versionId);
-    },
-
     _skipWaitingCheckboxChanged: function()
     {
         if (!this._skipWaitingCheckbox.checked)
@@ -543,5 +503,204 @@ WebInspector.SWRegistrationElement.prototype = {
     _visible: function()
     {
         return this._originElement._visible();
+    },
+}
+
+/**
+ * @constructor
+ * @param {!WebInspector.ServiceWorkerManager} manager
+ * @param {string} scopeURL
+ * @param {!WebInspector.ServiceWorkerVersion} version
+ */
+WebInspector.SWVersionElement = function(manager, scopeURL, version)
+{
+    this._manager = manager;
+    this._scopeURL = scopeURL;
+    this._version = version;
+    this._element = createElementWithClass("div", "service-workers-version");
+
+    /**
+     * @type {!Object.<string, !WebInspector.TargetInfo>}
+     */
+    this._clientInfoCache = {};
+    this._createElements();
+    this._updateVersion(version);
+}
+
+WebInspector.SWVersionElement.prototype = {
+    _createElements: function()
+    {
+        var panel = createElementWithClass("div", "service-workers-versions-panel");
+        var leftPanel = panel.createChild("div", "service-workers-versions-panel-left");
+        var rightPanel = panel.createChild("div", "service-workers-versions-panel-right");
+        this._stateCell = this._addTableRow(leftPanel, WebInspector.UIString("State"));
+        this._workerCell = this._addTableRow(leftPanel, WebInspector.UIString("Worker"));
+        this._scriptCell = this._addTableRow(leftPanel, WebInspector.UIString("Script URL"));
+        this._updatedCell = this._addTableRow(leftPanel, WebInspector.UIString("Updated"));
+        this._updatedCell.classList.add("service-worker-script-response-time");
+        this._scriptLastModifiedCell = this._addTableRow(leftPanel, WebInspector.UIString("Last-Modified"));
+        this._scriptLastModifiedCell.classList.add("service-worker-script-last-modified");
+        rightPanel.createChild("div", "service-workers-versions-table-messages-title").createTextChild(WebInspector.UIString("Recent messages"));
+        this._messagesPanel = rightPanel.createChild("div", "service-workers-versions-table-messages-content");
+        this._clientsTitle = rightPanel.createChild("div", "service-workers-versions-table-clients-title");
+        this._clientsTitle.createTextChild(WebInspector.UIString("Controlled clients"));
+        this._clientsPanel = rightPanel.createChild("div", "service-workers-versions-table-clients-content");
+        this._element.appendChild(panel);
+    },
+
+    /**
+     * @param {!WebInspector.ServiceWorkerVersion} version
+     */
+    _updateVersion: function(version)
+    {
+        this._stateCell.removeChildren();
+        this._stateCell.createTextChild(version.status);
+
+        this._workerCell.removeChildren();
+        if (version.isRunning() || version.isStarting() || version.isStartable()) {
+            var runningStatusCell = this._workerCell.createChild("div", "service-workers-versions-table-worker-running-status-cell");
+            var runningStatusLeftCell = runningStatusCell.createChild("div", "service-workers-versions-table-running-status-left-cell");
+            var runningStatusRightCell = runningStatusCell.createChild("div", "service-workers-versions-table-running-status-right-cell");
+            if (version.isRunning() || version.isStarting()) {
+                var stopButton = runningStatusLeftCell.createChild("button", "service-workers-button service-workers-stop-button");
+                stopButton.addEventListener("click", this._stopButtonClicked.bind(this, version.id), false);
+                stopButton.title = WebInspector.UIString("Stop");
+            } else if (version.isStartable()) {
+                var startButton = runningStatusLeftCell.createChild("button", "service-workers-button service-workers-start-button");
+                startButton.addEventListener("click", this._startButtonClicked.bind(this), false);
+                startButton.title = WebInspector.UIString("Start");
+            }
+            runningStatusRightCell.createTextChild(version.runningStatus);
+            if (version.isRunning() || version.isStarting()) {
+                var inspectButton = runningStatusRightCell.createChild("div", "service-workers-versions-table-running-status-inspect");
+                inspectButton.createTextChild(WebInspector.UIString("inspect"));
+                inspectButton.addEventListener("click", this._inspectButtonClicked.bind(this, version.id), false);
+            }
+        } else {
+            this._workerCell.createTextChild(version.runningStatus);
+        }
+
+        this._scriptCell.removeChildren();
+        this._scriptCell.createTextChild(version.scriptURL.asParsedURL().path);
+
+        this._updatedCell.removeChildren();
+        if (version.scriptResponseTime)
+            this._updatedCell.createTextChild((new Date(version.scriptResponseTime * 1000)).toConsoleTime());
+        this._scriptLastModifiedCell.removeChildren();
+        if (version.scriptLastModified)
+            this._scriptLastModifiedCell.createTextChild((new Date(version.scriptLastModified * 1000)).toConsoleTime());
+
+        this._messagesPanel.removeChildren();
+        if (version.scriptLastModified) {
+            var scriptLastModifiedLabel = this._messagesPanel.createChild("label", " service-workers-info service-worker-script-last-modified", "dt-icon-label");
+            scriptLastModifiedLabel.type = "info-icon";
+            scriptLastModifiedLabel.createTextChild(WebInspector.UIString("Last-Modified: %s", (new Date(version.scriptLastModified * 1000)).toConsoleTime()));
+        }
+        if (version.scriptResponseTime) {
+            var scriptResponseTimeDiv = this._messagesPanel.createChild("label", " service-workers-info service-worker-script-response-time", "dt-icon-label");
+            scriptResponseTimeDiv.type = "info-icon";
+            scriptResponseTimeDiv.createTextChild(WebInspector.UIString("Server response time: %s", (new Date(version.scriptResponseTime * 1000)).toConsoleTime()));
+        }
+
+        var errorMessages = version.errorMessages;
+        for (var index = 0; index < errorMessages.length; ++index) {
+            var errorDiv = this._messagesPanel.createChild("div", "service-workers-error");
+            errorDiv.createChild("label", "", "dt-icon-label").type = "error-icon";
+            errorDiv.createChild("div", "service-workers-error-message").createTextChild(errorMessages[index].errorMessage);
+            var script_path = errorMessages[index].sourceURL;
+            var script_url;
+            if (script_url = script_path.asParsedURL())
+                script_path = script_url.displayName;
+            if (script_path.length && errorMessages[index].lineNumber != -1)
+                script_path = String.sprintf("(%s:%d)", script_path, errorMessages[index].lineNumber);
+            errorDiv.createChild("div", "service-workers-error-line").createTextChild(script_path);
+        }
+
+        this._clientsTitle.classList.toggle("hidden", version.controlledClients.length == 0);
+
+        this._clientsPanel.removeChildren();
+        for (var i = 0; i < version.controlledClients.length; ++i) {
+            var client = version.controlledClients[i];
+            var clientLabelText = this._clientsPanel.createChild("div", "service-worker-client");
+            if (this._clientInfoCache[client]) {
+                this._updateClientInfo(clientLabelText, this._clientInfoCache[client]);
+            }
+            this._manager.getTargetInfo(client, this._onClientInfo.bind(this, clientLabelText));
+        }
+    },
+
+    /**
+     * @param {!Element} tableElement
+     * @param {string} title
+     * @return {!Element}
+     */
+    _addTableRow: function(tableElement, title)
+    {
+        var rowElement = tableElement.createChild("div", "service-workers-versions-table-row");
+        rowElement.createChild("div", "service-workers-versions-table-row-title").createTextChild(title);
+        return rowElement.createChild("div", "service-workers-versions-table-row-content");
+    },
+
+    /**
+     * @param {!Element} element
+     * @param {?WebInspector.TargetInfo} targetInfo
+     */
+    _onClientInfo: function(element, targetInfo)
+    {
+        if (!targetInfo)
+            return;
+        this._clientInfoCache[targetInfo.id] = targetInfo;
+        this._updateClientInfo(element, targetInfo);
+    },
+
+    /**
+     * @param {!Element} element
+     * @param {!WebInspector.TargetInfo} targetInfo
+     */
+    _updateClientInfo: function(element, targetInfo)
+    {
+        if (!(targetInfo.isWebContents() || targetInfo.isFrame())) {
+            element.createTextChild(WebInspector.UIString("Worker: %s", targetInfo.url));
+            return;
+        }
+        element.removeChildren();
+        element.createTextChild(WebInspector.UIString("Tab: %s", targetInfo.url));
+        var focusLabel = element.createChild("label", "service-worker-client-focus");
+        focusLabel.createTextChild("focus");
+        focusLabel.addEventListener("click", this._activateTarget.bind(this, targetInfo.id), true);
+    },
+
+    /**
+     * @param {string} targetId
+     */
+    _activateTarget: function(targetId)
+    {
+        this._manager.activateTarget(targetId);
+    },
+
+    /**
+     * @param {!Event} event
+     */
+    _startButtonClicked: function(event)
+    {
+        this._manager.startWorker(this._scopeURL);
+    },
+
+    /**
+     * @param {string} versionId
+     * @param {!Event} event
+     */
+    _stopButtonClicked: function(versionId, event)
+    {
+        this._manager.stopWorker(versionId);
+    },
+
+    /**
+     * @param {string} versionId
+     * @param {!Event} event
+     */
+    _inspectButtonClicked: function(versionId, event)
+    {
+        this._manager.inspectWorker(versionId);
     },
 }

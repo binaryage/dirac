@@ -587,6 +587,16 @@ WebInspector.ServiceWorkerVersion = function(registration, payload)
     this.errorMessages = [];
 }
 
+/**
+ * @enum {string}
+ */
+WebInspector.ServiceWorkerVersion.Modes = {
+    Installing: "installing",
+    Waiting: "waiting",
+    Active: "active",
+    Redundant: "redundant"
+}
+
 WebInspector.ServiceWorkerVersion.prototype = {
     /**
      * @param {!ServiceWorkerAgent.ServiceWorkerVersion} payload
@@ -699,6 +709,20 @@ WebInspector.ServiceWorkerVersion.prototype = {
     isRedundant: function()
     {
         return this.status == ServiceWorkerAgent.ServiceWorkerVersionStatus.Redundant;
+    },
+
+    /**
+     * @return {string}
+     */
+    mode: function()
+    {
+        if (this.isNew() || this.isInstalling())
+            return WebInspector.ServiceWorkerVersion.Modes.Installing;
+        else if (this.isInstalled())
+            return WebInspector.ServiceWorkerVersion.Modes.Waiting;
+        else if (this.isActivating() || this.isActivated())
+            return WebInspector.ServiceWorkerVersion.Modes.Active;
+        return WebInspector.ServiceWorkerVersion.Modes.Redundant;
     },
 
     /**
