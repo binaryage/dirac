@@ -100,6 +100,12 @@ WebInspector.Spectrum = function()
     WebInspector.installDragHandle(this._alphaElement, dragStart.bind(this, positionAlpha.bind(this)), positionAlpha.bind(this), null, "default");
     WebInspector.installDragHandle(this._colorElement, dragStart.bind(this, positionColor.bind(this)), positionColor.bind(this), null, "default");
 
+    if (Runtime.experiments.isEnabled("colorPalettes")) {
+        this.element.classList.add("palettes-enabled");
+        this._paletteContainer = this.contentElement.createChild("div", "spectrum-palettes");
+        new WebInspector.Spectrum.PaletteGenerator(this._generatedPaletteLoaded.bind(this));
+    }
+
     /**
      * @param {function(!Event)} callback
      * @param {!Event} event
@@ -164,6 +170,31 @@ WebInspector.Spectrum.Events = {
 };
 
 WebInspector.Spectrum.prototype = {
+    /**
+     * @param {!Array.<string>} colors
+     */
+    _generatedPaletteLoaded: function(colors)
+    {
+        var palette = this._paletteContainer.createChild("div", "spectrum-palette");
+        for (var i in colors) {
+            var element = palette.createChild("div", "spectrum-palette-color");
+            element.style.background = String.sprintf("linear-gradient(%s, %s), url(Images/checker.png)", colors[i], colors[i]);
+            element.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 100, delay: i * 15, fill: "backwards" });
+            element.addEventListener("click", this._paletteColorSelected.bind(this, colors[i]));
+        }
+    },
+
+    /**
+     * @param {string} text
+     */
+    _paletteColorSelected: function(text)
+    {
+        var color = WebInspector.Color.parse(text);
+        if (!color)
+            return;
+        this._innerSetColor(color.hsva(), text, color.format(), WebInspector.Spectrum._ChangeSource.Other);
+    },
+
     /**
      * @param {!WebInspector.Color} color
      * @param {string} colorFormat
@@ -400,4 +431,77 @@ WebInspector.Spectrum.prototype = {
 
 
     __proto__: WebInspector.VBox.prototype
+}
+
+/**
+ * @constructor
+ * @param {function(!Array.<string>)} callback
+ */
+WebInspector.Spectrum.PaletteGenerator = function(callback)
+{
+    this._callback = callback;
+    var target = WebInspector.targetManager.mainTarget();
+    if (!target)
+        return;
+    var cssModel = WebInspector.CSSStyleModel.fromTarget(target);
+    /** @type {!Map.<string, number>} */
+    this._frequencyMap = new Map();
+    var stylesheetPromises = [];
+    for (var stylesheet of cssModel.allStyleSheets())
+        stylesheetPromises.push(new Promise(this._processStylesheet.bind(this, stylesheet)));
+    Promise.all(stylesheetPromises)
+        .catchException(null)
+        .then(this._finish.bind(this));
+}
+
+WebInspector.Spectrum.PaletteGenerator.prototype = {
+    /**
+     * @param {string} a
+     * @param {string} b
+     * @return {number}
+     */
+    _frequencyComparator: function(a, b)
+    {
+        return this._frequencyMap.get(b) - this._frequencyMap.get(a);
+    },
+
+    _finish: function()
+    {
+        var colors = this._frequencyMap.keysArray();
+        colors = colors.sort(this._frequencyComparator.bind(this));
+        var palette = [];
+        var colorsPerRow = 9;
+        while (palette.length < colorsPerRow && colors.length) {
+            var colorText = colors.shift();
+            var color = WebInspector.Color.parse(colorText);
+            if (!color || color.nickname() === "white" || color.nickname() === "black")
+                continue;
+            palette.push(colorText);
+        }
+        this._callback(palette);
+    },
+
+    /**
+     * @param {!WebInspector.CSSStyleSheetHeader} stylesheet
+     * @param {function(?)} resolve
+     * @this {WebInspector.Spectrum.PaletteGenerator}
+     */
+    _processStylesheet: function(stylesheet, resolve)
+    {
+        /**
+         * @param {?string} text
+         * @this {WebInspector.Spectrum.PaletteGenerator}
+         */
+        function parseContent(text)
+        {
+            var regexResult = text.match(/((?:rgb|hsl)a?\([^)]+\)|#[0-9a-fA-F]{6}|#[0-9a-fA-F]{3})/g) || [];
+            for (var c of regexResult) {
+                var frequency = this._frequencyMap.get(c) || 0;
+                this._frequencyMap.set(c, ++frequency);
+            }
+            resolve(null);
+        }
+
+        stylesheet.requestContent(parseContent.bind(this));
+    }
 }

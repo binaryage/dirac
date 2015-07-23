@@ -1,13 +1,17 @@
 /* https://github.com/bgrins/spectrum */
 :host {
-    width: 226px;
+    width: 228px;
     height: 240px;
     -webkit-user-select: none;
 }
 
+:host(.palettes-enabled) {
+    height: 271px;
+}
+
 .spectrum-color {
     position: relative;
-    width: 226px;
+    width: 228px;
     height: 124px;
     border-radius: 2px 2px 0 0;
     overflow: hidden;
@@ -155,11 +159,6 @@
     display: inline-block;
 }
 
-.spectrum-palette-container {
-    position: absolute;
-    top: 244px;
-}
-
 .spectrum-display-switcher {
     top: 196px;
     position: absolute;
@@ -178,4 +177,25 @@
     position: absolute;
     left: 12px;
     top: 144px;
+    cursor: pointer;
+}
+
+.spectrum-palettes {
+    border-top: 1px solid #dadada;
+    position: absolute;
+    top: 235px;
+    width: 100%;
+}
+
+.spectrum-palette {
+    margin-top: 12px;
+}
+
+.spectrum-palette-color {
+    height: 12px;
+    width: 12px;
+    display: inline-block;
+    border-radius: 2px;
+    margin-left: 12px;
+    cursor: pointer;
 }
