@@ -801,10 +801,11 @@ WebInspector.Main.MainMenuItem.prototype = {
             true,
             this._item.element.totalOffsetLeft(),
             this._item.element.totalOffsetTop() + this._item.element.offsetHeight);
-        var dockItemElement = createElementWithClass("div", "flex-centered");
-        dockItemElement.createTextChild(WebInspector.UIString("Dock side"));
+        var dockItemElement = createElementWithClass("div", "flex-centered flex-auto");
+        var titleElement = dockItemElement.createChild("span", "flex-auto");
+        titleElement.textContent = WebInspector.UIString("Dock side");
+        dockItemElement.appendChild(titleElement);
         var dockItemToolbar = new WebInspector.Toolbar(dockItemElement);
-        dockItemToolbar.element.style.paddingLeft = "10px";
         var undock = new WebInspector.ToolbarButton( WebInspector.UIString("Undock into separate window"), "dock-toolbar-item-undock");
         var bottom = new WebInspector.ToolbarButton(WebInspector.UIString("Dock to bottom"), "dock-toolbar-item-bottom");
         var right = new WebInspector.ToolbarButton(WebInspector.UIString("Dock to right"), "dock-toolbar-item-right");

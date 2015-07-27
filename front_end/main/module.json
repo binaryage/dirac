@@ -191,6 +191,7 @@
             "type": "@WebInspector.ToolbarItem.Provider",
             "className": "WebInspector.DockController.ButtonProvider",
             "order": 7,
+            "experiment": "!mainMenu",
             "location": "main-toolbar-right"
         },
         {
@@ -204,6 +205,12 @@
             "className": "WebInspector.DockController.CloseButtonProvider",
             "order": 100,
             "location": "main-toolbar-right"
+        },
+        {
+            "type": "context-menu-item",
+            "location": "mainMenu/navigate",
+            "title": "Toggle Console",
+            "actionId": "main.toggle-drawer"
         },
         {
             "type": "setting",

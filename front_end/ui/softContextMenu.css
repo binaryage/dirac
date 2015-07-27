@@ -16,8 +16,9 @@
 }
 
 .soft-context-menu-item {
+    display: flex;
     width: 100%;
-    line-height: 13px;
+    line-height: 15px;
     font-size: 14px;
     border-top: 1px solid transparent;
     border-bottom: 1px solid transparent;
@@ -74,6 +75,18 @@
 
 .soft-context-menu-custom-item {
     display: inline-flex;
-    align-itens: center;
     justify-content: center;
+    align-items: center;
+    flex: auto;
+}
+
+.soft-context-menu-shortcut {
+    color: gray;
+    pointer-events: none;
+    flex: 1 1 auto;
+    text-align: right;
+}
+
+.soft-context-menu-item-mouse-over .soft-context-menu-shortcut {
+    color: inherit;
 }

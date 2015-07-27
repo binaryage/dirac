@@ -12,7 +12,8 @@
             "name": "sources.search",
             "title": "Search",
             "order": "1",
-            "className": "WebInspector.AdvancedSearchView"
+            "className": "WebInspector.AdvancedSearchView",
+            "experiment": "!mainMenu"
         },
         {
             "type": "@WebInspector.ContextMenu.Provider",
@@ -130,6 +131,12 @@
                     "shortcut": "Ctrl+Shift+F"
                 }
             ]
+        },
+        {
+            "type": "context-menu-item",
+            "location": "mainMenu/navigate",
+            "title": "Search in sources",
+            "actionId": "sources.search.toggle"
         },
         {
             "type": "@WebInspector.Revealer",

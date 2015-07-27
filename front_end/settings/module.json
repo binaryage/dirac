@@ -21,6 +21,7 @@
             "location": "main-toolbar-right",
             "title": "Settings",
             "order": 4,
+            "experiment": "!mainMenu",
             "elementClass": "settings-toolbar-item"
         },
         {

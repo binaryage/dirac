@@ -61,6 +61,17 @@ WebInspector.ShortcutRegistry.prototype = {
     },
 
     /**
+     * @param {string} actionId
+     * @return {string|undefined}
+     */
+    shortcutTitleForAction: function(actionId)
+    {
+        var descriptors = this.shortcutDescriptorsForAction(actionId);
+        if (descriptors.length)
+            return descriptors[0].name;
+    },
+
+    /**
      * @param {!KeyboardEvent} event
      */
     handleShortcut: function(event)

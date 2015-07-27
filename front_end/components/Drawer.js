@@ -104,6 +104,7 @@ WebInspector.Drawer.prototype = {
         }
         this._innerShow();
         this._tabbedPane.selectTab(id, true);
+        this._lastSelectedViewSetting.set(id);
     },
 
     showDrawer: function()

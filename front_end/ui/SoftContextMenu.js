@@ -123,6 +123,7 @@ WebInspector.SoftContextMenu.prototype = {
         }
 
         menuItemElement.createTextChild(item.label);
+        menuItemElement.createChild("span", "soft-context-menu-shortcut").textContent = item.shortcut;
 
         menuItemElement.addEventListener("mousedown", this._menuItemMouseDown.bind(this), false);
         menuItemElement.addEventListener("mouseup", this._menuItemMouseUp.bind(this), false);

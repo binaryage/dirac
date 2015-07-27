@@ -845,7 +845,9 @@ Runtime.Extension.prototype = {
     enabled: function()
     {
         var activatorExperiment = this.descriptor()["experiment"];
-        if (activatorExperiment && !Runtime.experiments.isEnabled(activatorExperiment))
+        if (activatorExperiment && activatorExperiment.startsWith("!") && Runtime.experiments.isEnabled(activatorExperiment.substring(1)))
+            return false;
+        if (activatorExperiment && !activatorExperiment.startsWith("!") && !Runtime.experiments.isEnabled(activatorExperiment))
             return false;
         var condition = this.descriptor()["condition"];
         if (condition && !Runtime.queryParam(condition))

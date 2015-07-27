@@ -90,6 +90,8 @@ WebInspector.ContextMenuItem.prototype = {
             var result = { type: "item", id: this._id, label: this._label, enabled: !this._disabled };
             if (this._customElement)
                 result.element = this._customElement;
+            if (this._shortcut)
+                result.shortcut = this._shortcut;
             return result;
         case "separator":
             return { type: "separator" };
@@ -97,6 +99,14 @@ WebInspector.ContextMenuItem.prototype = {
             return { type: "checkbox", id: this._id, label: this._label, checked: !!this._checked, enabled: !this._disabled };
         }
         throw new Error("Invalid item type:"  + this._type);
+    },
+
+    /**
+     * @param {string} shortcut
+     */
+    setShortcut: function(shortcut)
+    {
+        this._shortcut = shortcut;
     }
 }
 
@@ -148,7 +158,11 @@ WebInspector.ContextSubMenuItem.prototype = {
      */
     appendAction: function(label, actionId)
     {
-        return this.appendItem(label, WebInspector.actionRegistry.execute.bind(WebInspector.actionRegistry, actionId));
+        var result = this.appendItem(label, WebInspector.actionRegistry.execute.bind(WebInspector.actionRegistry, actionId));
+        var shortcut = WebInspector.shortcutRegistry.shortcutTitleForAction(actionId);
+        if (shortcut)
+            result.setShortcut(shortcut);
+        return result;
     },
 
     /**

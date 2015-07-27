@@ -550,6 +550,8 @@ WebInspector.InspectorView.ToggleDrawerButtonProvider.prototype = {
      */
     item: function()
     {
-        return WebInspector.inspectorView._drawer.toggleButton();
+        if (!Runtime.experiments.isEnabled("mainMenu"))
+            return WebInspector.inspectorView._drawer.toggleButton();
+        return null;
     }
 }
