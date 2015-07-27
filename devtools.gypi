@@ -420,6 +420,20 @@
         ],
         'devtools_emulated_devices_js_files': [
         ],
+        'devtools_emulated_devices_images': [
+            'front_end/emulated_devices/google-nexus-5-horizontal-default-1x.png',
+            'front_end/emulated_devices/google-nexus-5-horizontal-default-2x.png',
+            'front_end/emulated_devices/google-nexus-5-horizontal-keyboard-1x.png',
+            'front_end/emulated_devices/google-nexus-5-horizontal-keyboard-2x.png',
+            'front_end/emulated_devices/google-nexus-5-horizontal-navigation-1x.png',
+            'front_end/emulated_devices/google-nexus-5-horizontal-navigation-2x.png',
+            'front_end/emulated_devices/google-nexus-5-vertical-default-1x.png',
+            'front_end/emulated_devices/google-nexus-5-vertical-default-2x.png',
+            'front_end/emulated_devices/google-nexus-5-vertical-keyboard-1x.png',
+            'front_end/emulated_devices/google-nexus-5-vertical-keyboard-2x.png',
+            'front_end/emulated_devices/google-nexus-5-vertical-navigation-1x.png',
+            'front_end/emulated_devices/google-nexus-5-vertical-navigation-2x.png',
+        ],
         'devtools_extensions_js_files': [
             'front_end/extensions/ExtensionAuditCategory.js',
             'front_end/extensions/ExtensionPanel.js',

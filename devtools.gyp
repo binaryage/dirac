@@ -57,6 +57,12 @@
                     ],
                 },
                 {
+                    'destination': '<(PRODUCT_DIR)/resources/inspector/emulated_devices',
+                    'files': [
+                        '<@(devtools_emulated_devices_images)',
+                    ],
+                },
+                {
                     'destination': '<(PRODUCT_DIR)/resources/inspector/',
                     'files': [
                         '<@(devtools_compatibility_scripts)',

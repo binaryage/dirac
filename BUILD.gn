@@ -82,6 +82,7 @@ group("devtools_frontend_resources") {
   deps = [
     ":copy_compatibility_scripts",
     ":copy_inspector_images",
+    ":copy_emulated_devices_images",
     ":devtools_extension_api",
     ":frontend_protocol_sources",
     ":supported_css_properties",
@@ -106,6 +107,11 @@ copy("copy_compatibility_scripts") {
 copy("copy_inspector_images") {
   sources = gypi_values.devtools_image_files
   outputs = [ resources_out_dir + "Images/{{source_file_part}}" ]
+}
+
+copy("copy_emulated_devices_images") {
+  sources = gypi_values.devtools_emulated_devices_images
+  outputs = [ resources_out_dir + "emulated_devices/{{source_file_part}}" ]
 }
 
 action("generate_devtools_grd") {
