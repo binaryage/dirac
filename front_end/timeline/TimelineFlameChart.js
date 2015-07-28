@@ -933,7 +933,11 @@ WebInspector.TimelineFlameChartNetworkDataProvider.prototype = {
         var startTime = request.startTime;
         var responseTime = request.responseTime || request.endTime;
         var requestDuration = request.endTime - startTime;
-        var waitingWidth = requestDuration ? (responseTime - startTime) / requestDuration * barWidth : 0;
+        var waitingWidth;
+        if (isFinite(requestDuration))
+            waitingWidth = requestDuration ? (responseTime - startTime) / requestDuration * barWidth : 0;
+        else
+            waitingWidth = barWidth;
         waitingWidth = Math.min(waitingWidth, barWidth - minTransferWidthPx);
         context.fillStyle = "hsla(0, 0%, 100%, 0.5)";
         context.fillRect(barX, barY, waitingWidth, barHeight);

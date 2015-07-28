@@ -1357,7 +1357,7 @@ WebInspector.FlameChart.prototype = {
      */
     _timeToPositionClipped: function(time)
     {
-        return Math.max(0, this._timeToPosition(time));
+        return Number.constrain(this._timeToPosition(time), 0, this._canvas.width);
     },
 
     /**

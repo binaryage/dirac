@@ -237,8 +237,8 @@ WebInspector.TimelineEventOverview.Network.prototype = {
                 path = { waiting: new Path2D(), transfer: new Path2D() };
                 paths.set(style, path);
             }
-            var s = Math.floor((request.startTime - timeOffset) * scale);
-            var e = Math.ceil((request.endTime - timeOffset) * scale);
+            var s = Math.max(Math.floor((request.startTime - timeOffset) * scale), 0);
+            var e = Math.min(Math.ceil((request.endTime - timeOffset) * scale), canvasWidth);
             path["waiting"].rect(s, y, e - s, bandHeight - 1);
             path["transfer"].rect(e - tickWidth / 2, y, tickWidth, bandHeight - 1);
             if (!request.responseTime)

@@ -1438,7 +1438,7 @@ WebInspector.TimelineModel.prototype = {
 WebInspector.TimelineModel.NetworkRequest = function(event)
 {
     this.startTime = event.name === WebInspector.TimelineModel.RecordType.ResourceSendRequest ? event.startTime : 0;
-    this.endTime = 0;
+    this.endTime = Infinity;
     this.addEvent(event);
 }
 
@@ -1448,12 +1448,14 @@ WebInspector.TimelineModel.NetworkRequest.prototype = {
      */
     addEvent: function(event)
     {
+        var recordType = WebInspector.TimelineModel.RecordType;
         this.startTime = Math.min(this.startTime, event.startTime);
-        this.endTime = Math.max(this.endTime, event.endTime || event.startTime);
         var eventData = event.args["data"];
         if (eventData["mimeType"])
             this.mimeType = eventData["mimeType"];
-        if (!this.responseTime && (event.name === WebInspector.TimelineModel.RecordType.ResourceReceiveResponse || event.name === WebInspector.TimelineModel.RecordType.ResourceReceivedData))
+        if (event.name === recordType.ResourceFinish)
+            this.endTime = event.startTime;
+        if (!this.responseTime && (event.name === recordType.ResourceReceiveResponse || event.name === recordType.ResourceReceivedData))
             this.responseTime = event.startTime;
         if (!this.url)
             this.url = eventData["url"];
