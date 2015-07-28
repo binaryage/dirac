@@ -15,7 +15,7 @@ WebInspector.StylesPopoverHelper = function()
 
     this._hideProxy = this.hide.bind(this, true);
     this._boundOnKeyDown = this._onKeyDown.bind(this);
-    this._repositionBound = this._reposition.bind(this);
+    this._repositionBound = this.reposition.bind(this);
     this._boundFocusOut = this._onFocusOut.bind(this);
 }
 
@@ -57,7 +57,7 @@ WebInspector.StylesPopoverHelper.prototype = {
         this._anchorElement = anchorElement;
         this._view = view;
         this._hiddenCallback = hiddenCallback;
-        this._reposition();
+        this.reposition();
 
         var document = this._popover.element.ownerDocument;
         document.addEventListener("mousedown", this._hideProxy, false);
@@ -72,7 +72,7 @@ WebInspector.StylesPopoverHelper.prototype = {
     /**
      * @param {!Event=} event
      */
-    _reposition: function(event)
+    reposition: function(event)
     {
         if (!this._previousFocusElement)
             this._previousFocusElement = WebInspector.currentFocusElement();
@@ -292,11 +292,20 @@ WebInspector.ColorSwatchPopoverIcon.prototype = {
             format = color.format();
         this._spectrum = new WebInspector.Spectrum();
         this._spectrum.setColor(color, format);
+        this._spectrum.addEventListener(WebInspector.Spectrum.Events.SizeChanged, this._spectrumResized, this);
         this._spectrum.addEventListener(WebInspector.Spectrum.Events.ColorChanged, this._boundSpectrumChanged);
         this._stylesPopoverHelper.show(this._spectrum, this._swatch.iconElement(), this._onPopoverHidden.bind(this));
 
         this._originalPropertyText = this._treeElement.property.propertyText;
         this._treeElement.parentPane().setEditingStyle(true);
+    },
+
+    /**
+     * @param {!WebInspector.Event} event
+     */
+    _spectrumResized: function(event)
+    {
+        this._stylesPopoverHelper.reposition();
     },
 
     /**

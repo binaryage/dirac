@@ -1,6 +1,6 @@
 /* https://github.com/bgrins/spectrum */
 :host {
-    width: 228px;
+    width: 232px;
     height: 240px;
     -webkit-user-select: none;
 }
@@ -11,7 +11,7 @@
 
 .spectrum-color {
     position: relative;
-    width: 228px;
+    width: 232px;
     height: 124px;
     border-radius: 2px 2px 0 0;
     overflow: hidden;
@@ -117,7 +117,7 @@
 
 .spectrum-text-value {
     display: inline-block;
-    width: 36px;
+    width: 39px;
     overflow: hidden;
     text-align: center;
     border: 1px solid #dadada;
@@ -131,16 +131,16 @@
 }
 
 .spectrum-text-label {
-    letter-spacing: 35.5px;
+    letter-spacing: 38.5px;
     margin-top: 8px;
     display: block;
     color: #969696;
-    margin-left: 15px;
-    width: 162px;
+    margin-left: 16px;
+    width: 174px;
 }
 
 .spectrum-text-hex > .spectrum-text-value {
-    width: 162px;
+    width: 174px;
 }
 
 .spectrum-text-hex > .spectrum-text-label {
@@ -159,15 +159,20 @@
     display: inline-block;
 }
 
+.spectrum-switcher {
+    border-radius: 2px;
+    height: 20px;
+    width: 20px;
+    padding: 2px;
+}
+
 .spectrum-display-switcher {
     top: 196px;
     position: absolute;
-    right: 16px;
-    padding: 2px;
-    border-radius: 2px;
+    right: 10px;
 }
 
-.spectrum-display-switcher:hover {
+.spectrum-switcher:hover {
     background-color: #EEEEEE;
 }
 
@@ -180,15 +185,12 @@
     cursor: pointer;
 }
 
-.spectrum-palettes {
+.spectrum-palette {
     border-top: 1px solid #dadada;
     position: absolute;
     top: 235px;
     width: 100%;
-}
-
-.spectrum-palette {
-    margin-top: 12px;
+    padding-right: 24px;
 }
 
 .spectrum-palette-color {
@@ -198,4 +200,74 @@
     border-radius: 2px;
     margin-left: 12px;
     cursor: pointer;
+    margin-top: 12px;
+}
+
+.spectrum-palette-switcher {
+    right: 10px;
+    top: 235px;
+    margin-top: 9px;
+    position: absolute;
+}
+
+.palette-panel {
+    height: 100%;
+    width: 100%;
+    position: absolute;
+    top: 100%;
+    display: flex;
+    flex-direction: column;
+    background-color: white;
+    z-index: 13;
+    transition: transform 200ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.palette-panel > div.toolbar {
+    position: absolute;
+    right: 6px;
+    top: 6px;
+}
+
+.palette-panel > div:not(.toolbar) {
+    flex: 0 0 38px;
+    border-bottom: 1px solid #dadada;
+    padding: 12px;
+    line-height: 14px;
+    color: #333;
+}
+
+.palette-panel > .palette-title {
+    font-size: 14px;
+    line-height: 16px;
+    color: #333;
+    flex-basis: 40px;
+}
+
+.palette-panel > div.palette-preview {
+    padding-left: 72px;
+}
+
+.palette-preview-title {
+    font-size: 12px;
+    display: inline-block;
+    line-height: 14px;
+    position: absolute;
+    left: 12px;
+    width: 65px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.palette-preview > .spectrum-palette-color {
+    margin-top: 1px;
+    cursor: default;
+}
+
+.palette-preview:hover {
+    background-color: #eee;
+}
+
+.palette-panel-showing {
+    transform: translateY(-100%);
 }
