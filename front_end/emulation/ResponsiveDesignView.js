@@ -29,6 +29,8 @@ WebInspector.ResponsiveDesignView = function(inspectedPagePlaceholder)
     this._drawContentsSize = true;
     this._deviceInsets = new Insets(0, 0, 0, 0);
     this._pageContainerSrcset = "";
+    this._onPageContainerImageLoadedBound = this._onPageContainerImageLoaded.bind(this, true);
+    this._onPageContainerImageErrorBound = this._onPageContainerImageLoaded.bind(this, false);
     this._viewportChangedThrottler = new WebInspector.Throttler(0);
     this._pageScaleFactorThrottler = new WebInspector.Throttler(50);
 
@@ -83,7 +85,9 @@ WebInspector.ResponsiveDesignView.prototype = {
         var cornerSlider = this._slidersContainer.createChild("div", "responsive-design-slider-corner");
         this._createResizer(cornerSlider, true, true);
         this._pageContainer = this._slidersContainer.createChild("div", "vbox flex-auto responsive-design-page-container");
-        this._pageContainerImage = this._pageContainer.createChild("img", "responsive-design-page-container-image");
+        this._pageContainerImage = this._pageContainer.createChild("div", "responsive-design-page-container-image");
+        this._currentPageContainerImage = this._pageContainerImage.createChild("img", "responsive-design-page-container-image hidden");
+        this._pendingPageContainerImage = this._pageContainerImage.createChild("img", "responsive-design-page-container-image hidden");
 
         // Page scale controls.
         this._pageScaleContainer = this._canvasContainer.element.createChild("div", "hbox responsive-design-page-scale-container");
@@ -516,11 +520,7 @@ WebInspector.ResponsiveDesignView.prototype = {
             this._inspectedPagePlaceholder.onResize();
         }
 
-        if (this._pageContainerImage.getAttribute("srcset") !== this._pageContainerSrcset) {
-            this._pageContainerImage.setAttribute("srcset", "");
-            this._pageContainerImage.setAttribute("srcset", this._pageContainerSrcset);
-            this._pageContainerImage.classList.toggle("hidden", !this._pageContainerSrcset);
-        }
+        this._loadPageContainerImage();
 
         var pageScaleVisible = cssWidth + this._pageScaleContainerWidth + WebInspector.ResponsiveDesignView.RulerWidth / zoomFactor <= rect.width;
         this._pageScaleContainer.classList.toggle("hidden", !pageScaleVisible);
@@ -557,6 +557,43 @@ WebInspector.ResponsiveDesignView.prototype = {
         this._cachedViewport = this._viewport;
         this._cachedDrawContentsSize = this._drawContentsSize;
         this._cachedMediaInspectorHeight = mediaInspectorHeight;
+    },
+
+    _loadPageContainerImage: function()
+    {
+        if (this._currentPageContainerImage.getAttribute("srcset") === this._pageContainerSrcset)
+            return;
+        if (this._pageContainerSrcset && this._pendingPageContainerImage.getAttribute("srcset") === this._pageContainerSrcset)
+            return;
+
+        this._pendingPageContainerImage.removeEventListener("load", this._onPageContainerImageLoadedBound, false);
+        this._pendingPageContainerImage.removeEventListener("error", this._onPageContainerImageErrorBound, false);
+        this._pendingPageContainerImage.setAttribute("srcset", "");
+
+        if (!this._pageContainerSrcset) {
+            this._currentPageContainerImage.classList.toggle("hidden", true);
+            this._currentPageContainerImage.setAttribute("srcset", "");
+            this._pendingPageContainerImage.setAttribute("srcset", "");
+            return;
+        }
+
+        this._pendingPageContainerImage.addEventListener("load", this._onPageContainerImageLoadedBound, false);
+        this._pendingPageContainerImage.addEventListener("error", this._onPageContainerImageErrorBound, false);
+        this._pendingPageContainerImage.setAttribute("srcset", this._pageContainerSrcset);
+    },
+
+    /**
+     * @param {boolean} success
+     */
+    _onPageContainerImageLoaded: function(success)
+    {
+        this._currentPageContainerImage.classList.toggle("hidden", true);
+        this._pendingPageContainerImage.classList.toggle("hidden", !success);
+        this._pendingPageContainerImage.removeEventListener("load", this._onPageContainerImageLoadedBound, false);
+        this._pendingPageContainerImage.removeEventListener("error", this._onPageContainerImageErrorBound, false);
+        var img = this._currentPageContainerImage;
+        this._currentPageContainerImage = this._pendingPageContainerImage;
+        this._pendingPageContainerImage = img;
     },
 
     onResize: function()
