@@ -4758,6 +4758,16 @@
                     { "name": "categories", "type": "array", "items": { "type": "string" }, "description": "A list of supported tracing categories." }
                 ],
                 "handlers": ["browser"]
+            },
+            {
+                "name": "requestMemoryDump",
+                "async": true,
+                "description": "Request a global memory dump.",
+                "returns": [
+                    { "name": "dumpGuid", "type": "string", "description": "GUID of the resulting global memory dump." },
+                    { "name": "success", "type": "boolean", "description": "True iff the global memory dump succeeded." }
+                ],
+                "handlers": ["browser"]
             }
         ],
         "events": [
