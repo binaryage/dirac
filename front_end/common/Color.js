@@ -118,7 +118,8 @@ WebInspector.Color.parse = function(text)
             var hsla = [ WebInspector.Color._parseHueNumeric(hslString[0]),
                          WebInspector.Color._parseSatLightNumeric(hslString[1]),
                          WebInspector.Color._parseSatLightNumeric(hslString[2]), 1 ];
-            var rgba = WebInspector.Color._hsl2rgb(hsla);
+            var rgba = [];
+            WebInspector.Color._hsl2rgb(hsla, rgba);
             return new WebInspector.Color(rgba, WebInspector.Color.Format.HSL, text);
         }
 
@@ -144,7 +145,8 @@ WebInspector.Color.parse = function(text)
                          WebInspector.Color._parseSatLightNumeric(hslaString[1]),
                          WebInspector.Color._parseSatLightNumeric(hslaString[2]),
                          WebInspector.Color._parseAlphaNumeric(hslaString[3]) ];
-            var rgba = WebInspector.Color._hsl2rgb(hsla);
+            var rgba = [];
+            WebInspector.Color._hsl2rgb(hsla, rgba);
             return new WebInspector.Color(rgba, WebInspector.Color.Format.HSLA, text);
         }
     }
@@ -167,18 +169,9 @@ WebInspector.Color.fromRGBA = function(rgba)
  */
 WebInspector.Color.fromHSVA = function(hsva)
 {
-    var h = hsva[0];
-    var s = hsva[1];
-    var v = hsva[2];
-
-    var t = (2 - s) * v;
-    if (v === 0 || s === 0)
-        s = 0;
-    else
-        s *= v / (t < 1 ? t : 2 - t);
-    var hsla = [h, s, t / 2, hsva[3]];
-
-    return new WebInspector.Color(WebInspector.Color._hsl2rgb(hsla), WebInspector.Color.Format.HSLA);
+    var rgba = [];
+    WebInspector.Color.hsva2rgba(hsva, rgba);
+    return new WebInspector.Color(rgba, WebInspector.Color.Format.HSLA);
 }
 
 WebInspector.Color.prototype = {
@@ -346,6 +339,15 @@ WebInspector.Color.prototype = {
         return this._originalText;
     },
 
+
+    /**
+     * @return {!Array<number>}
+     */
+    rgba: function()
+    {
+        return this._rgba.slice();
+    },
+
     /**
      * @return {!Array.<number>}
      */
@@ -455,10 +457,32 @@ WebInspector.Color._parseAlphaNumeric = function(value)
 }
 
 /**
- * @param {!Array.<number>} hsl
- * @return {!Array.<number>}
+ * @param {!Array.<number>} hsva
+ * @param {!Array.<number>} out_hsla
  */
-WebInspector.Color._hsl2rgb = function(hsl)
+WebInspector.Color._hsva2hsla = function(hsva, out_hsla)
+{
+    var h = hsva[0];
+    var s = hsva[1];
+    var v = hsva[2];
+
+    var t = (2 - s) * v;
+    if (v === 0 || s === 0)
+        s = 0;
+    else
+        s *= v / (t < 1 ? t : 2 - t);
+
+    out_hsla[0] = h;
+    out_hsla[1] = s;
+    out_hsla[2] = t/2;
+    out_hsla[3] = hsva[3];
+}
+
+/**
+ * @param {!Array.<number>} hsl
+ * @param {!Array.<number>} out_rgb
+ */
+WebInspector.Color._hsl2rgb = function(hsl, out_rgb)
 {
     var h = hsl[0];
     var s = hsl[1];
@@ -495,11 +519,88 @@ WebInspector.Color._hsl2rgb = function(hsl)
     var tg = h;
     var tb = h - (1 / 3);
 
-    var r = hue2rgb(p, q, tr);
-    var g = hue2rgb(p, q, tg);
-    var b = hue2rgb(p, q, tb);
-    return [r, g, b, hsl[3]];
+    out_rgb[0] = hue2rgb(p, q, tr);
+    out_rgb[1] = hue2rgb(p, q, tg);
+    out_rgb[2] = hue2rgb(p, q, tb);
+    out_rgb[3] = hsl[3];
 }
+
+/**
+ * @param {!Array<number>} hsva
+ * @param {!Array<number>} out_rgba
+ */
+WebInspector.Color.hsva2rgba = function(hsva, out_rgba)
+{
+    WebInspector.Color._hsva2hsla(hsva, WebInspector.Color.hsva2rgba._tmpHSLA);
+    WebInspector.Color._hsl2rgb(WebInspector.Color.hsva2rgba._tmpHSLA, out_rgba);
+
+    for (var i = 0; i < WebInspector.Color.hsva2rgba._tmpHSLA.length; i++)
+        WebInspector.Color.hsva2rgba._tmpHSLA[i] = 0;
+};
+
+/** @type {!Array<number>} */
+WebInspector.Color.hsva2rgba._tmpHSLA = [0, 0, 0, 0];
+
+
+/**
+ * Calculate the luminance of this color using the WCAG algorithm.
+ * See http://www.w3.org/TR/2008/REC-WCAG20-20081211/#relativeluminancedef
+ * @param {!Array<number>} rgba
+ * @return {number}
+ */
+WebInspector.Color.luminance = function(rgba)
+{
+    var rSRGB = rgba[0];
+    var gSRGB = rgba[1];
+    var bSRGB = rgba[2];
+
+    var r = rSRGB <= 0.03928 ? rSRGB / 12.92 : Math.pow(((rSRGB + 0.055)/1.055), 2.4);
+    var g = gSRGB <= 0.03928 ? gSRGB / 12.92 : Math.pow(((gSRGB + 0.055)/1.055), 2.4);
+    var b = bSRGB <= 0.03928 ? bSRGB / 12.92 : Math.pow(((bSRGB + 0.055)/1.055), 2.4);
+
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+}
+
+/**
+ * Combine the two given color according to alpha blending.
+ * @param {!Array<number>} fgRGBA
+ * @param {!Array<number>} bgRGBA
+ * @param {!Array<number>} out_flattened
+ */
+WebInspector.Color.flattenColors = function(fgRGBA, bgRGBA, out_flattened)
+{
+    var alpha = fgRGBA[3];
+
+    out_flattened[0] = ((1 - alpha) * bgRGBA[0]) + (alpha * fgRGBA[0]);
+    out_flattened[1] = ((1 - alpha) * bgRGBA[1]) + (alpha * fgRGBA[1]);
+    out_flattened[2] = ((1 - alpha) * bgRGBA[2]) + (alpha * fgRGBA[2]);
+    out_flattened[3] = alpha + (bgRGBA[3] * (1 - alpha));
+}
+
+/**
+ * Calculate the contrast ratio between a foreground and a background color.
+ * Returns the ratio to 1, for example for two two colors with a contrast ratio of 21:1, this function will return 21.
+ * See http://www.w3.org/TR/2008/REC-WCAG20-20081211/#contrast-ratiodef
+ * @param {!Array<number>} fgRGBA
+ * @param {!Array<number>} bgRGBA
+ * @return {number}
+ */
+WebInspector.Color.calculateContrastRatio = function(fgRGBA, bgRGBA)
+{
+    WebInspector.Color.flattenColors(fgRGBA, bgRGBA, WebInspector.Color.calculateContrastRatio._flattenedFg);
+
+    var fgLuminance = WebInspector.Color.luminance(WebInspector.Color.calculateContrastRatio._flattenedFg);
+    var bgLuminance = WebInspector.Color.luminance(bgRGBA);
+    var contrastRatio = (Math.max(fgLuminance, bgLuminance) + 0.05) /
+        (Math.min(fgLuminance, bgLuminance) + 0.05);
+
+    for (var i = 0; i < WebInspector.Color.calculateContrastRatio._flattenedFg.length; i++)
+        WebInspector.Color.calculateContrastRatio._flattenedFg[i] = 0;
+
+    return contrastRatio;
+}
+
+WebInspector.Color.calculateContrastRatio._flattenedFg = [0, 0, 0, 0];
 
 WebInspector.Color.Nicknames = {
     "aliceblue":          [240,248,255],
