@@ -51,8 +51,6 @@ WebInspector.Spectrum = function()
 
     this._colorElement = this.contentElement.createChild("div", "spectrum-color");
     this._colorDragElement = this._colorElement.createChild("div", "spectrum-sat fill").createChild("div", "spectrum-val fill").createChild("div", "spectrum-dragger");
-    var contrastRatioSVG = this._colorElement.createSVGChild("svg", "spectrum-contrast-container fill");
-    this._contrastRatioLine = contrastRatioSVG.createSVGChild("path", "spectrum-contrast-line");
 
     var toolbar = new WebInspector.Toolbar(this.contentElement);
     toolbar.element.classList.add("spectrum-eye-dropper");
@@ -323,15 +321,6 @@ WebInspector.Spectrum.prototype = {
     },
 
     /**
-     * @param {!WebInspector.Color} color
-     */
-    setContrastColor: function(color)
-    {
-        this._contrastColor = color;
-        this._updateUI();
-    },
-
-    /**
      * @return {!WebInspector.Color}
      */
     _color: function()
@@ -413,98 +402,10 @@ WebInspector.Spectrum.prototype = {
         }
     },
 
-    /**
-     * @param {number} requiredContrast
-     */
-    _drawContrastRatioLine: function(requiredContrast)
-    {
-        if (!this._contrastColor || !this.dragWidth || !this.dragHeight)
-            return;
-
-        /** const */ var width = this.dragWidth;
-        /** const */ var height = this.dragHeight;
-        /** const */ var dS = 0.02;
-        /** const */ var epsilon = 0.01;
-
-        var fgRGBA = [];
-        WebInspector.Color.hsva2rgba(this._hsv, fgRGBA);
-        var fgLuminance = WebInspector.Color.luminance(fgRGBA);
-        var bgRGBA = this._contrastColor.rgba();
-        var bgLuminance = WebInspector.Color.luminance(bgRGBA);
-        var delta = fgLuminance < bgLuminance ? 1 : -1;
-
-        var lastV = this._hsv[2];
-        var currentSlope = 0;
-        var candidateHSVA = [this._hsv[0], 0, 0, this._hsv[3]];
-        var pathBuilder = [];
-        var candidateRGBA = [];
-        WebInspector.Color.hsva2rgba(candidateHSVA, candidateRGBA);
-        var flattenedRGBA = [];
-        WebInspector.Color.flattenColors(candidateRGBA, bgRGBA, flattenedRGBA);
-
-        /**
-         * Approach the desired contrast ratio by modifying the given component
-         * from the given starting value.
-         * @param {number} index
-         * @param {number} x
-         * @return {?number}
-         */
-        function approach(index, x)
-        {
-            while (0 <= x && x <= 1) {
-                candidateHSVA[index] = x;
-                WebInspector.Color.hsva2rgba(candidateHSVA, candidateRGBA);
-                WebInspector.Color.flattenColors(candidateRGBA, bgRGBA, flattenedRGBA);
-                var contrast = WebInspector.Color.calculateContrastRatio(flattenedRGBA, bgRGBA);
-                var dContrast = contrast - requiredContrast;
-                if (Math.abs(dContrast) < epsilon) {
-                    return x;
-                } else {
-                    // 21 is the maximum possible value for contrast ratio:
-                    // http://www.w3.org/TR/UNDERSTANDING-WCAG20/visual-audio-contrast-contrast.html#contrast-ratiodef
-                    x += delta * (dContrast / 21);
-                }
-            }
-            return null;
-        }
-
-        for (var s = 0; s < 1 + dS; s += dS) {
-            s = Math.min(1, s);
-            candidateHSVA[1] = s;
-            var v = lastV;
-            v = lastV + currentSlope * dS;
-
-            v = approach(2, v);
-            if (v === null)
-                break;
-
-            currentSlope = (v - lastV) / dS;
-
-            pathBuilder.push(pathBuilder.length ? "L" : "M");
-            pathBuilder.push(s * width);
-            pathBuilder.push((1 - v) * height);
-        }
-
-        if (s < 1 + dS) {
-            s -= dS;
-            delta = -delta;
-            candidateHSVA[2] = 1;
-            s = approach(1, s);
-            if (s !== null)
-                pathBuilder = pathBuilder.concat(["L", s * width, 0])
-        }
-
-        this._contrastRatioLine.setAttribute("d", pathBuilder.join(" "));
-    },
-
     _updateUI: function()
     {
         var h = WebInspector.Color.fromHSVA([this._hsv[0], 1, 1, 1]);
         this._colorElement.style.backgroundColor = /** @type {string} */ (h.asString(WebInspector.Color.Format.RGB));
-        if (Runtime.experiments.isEnabled("colorContrastRatio")) {
-            // TODO(samli): Determine size of text and switch between AA/AAA ratings.
-            this._drawContrastRatioLine(4.5);
-        }
         this._swatchInnerElement.style.backgroundColor = /** @type {string} */ (this._color().asString(WebInspector.Color.Format.RGBA));
         // Show border if the swatch is white.
         this._swatchInnerElement.classList.toggle("swatch-inner-white", this._color().hsla()[2] > 0.9);
