@@ -1459,6 +1459,8 @@ WebInspector.TimelineModel.NetworkRequest.prototype = {
             this.responseTime = event.startTime;
         if (!this.url)
             this.url = eventData["url"];
+        if (!this.requestMethod)
+            this.requestMethod = eventData["requestMethod"];
     }
 }
 
