@@ -1087,11 +1087,6 @@ WebInspector.TimelinePanel.prototype = {
                     this._detailsView.appendTab(WebInspector.TimelinePanel.DetailsTab.LayerViewer, WebInspector.UIString("Layers"), layersView);
             }
             break;
-        case WebInspector.TimelineSelection.Type.NetworkRequest:
-            var request = /** @type {!WebInspector.TimelineModel.NetworkRequest} */ (this._selection.object());
-            WebInspector.TimelineUIUtils.buildNetworkRequestDetails(request, this._model, this._detailsLinkifier)
-                .then(this.showInDetails.bind(this));
-            break;
         case WebInspector.TimelineSelection.Type.Range:
             this._updateSelectedRangeStats(this._selection._startTime, this._selection._endTime);
             break;
