@@ -141,7 +141,7 @@ WebInspector.TimelineFlameChartDataProviderBase.prototype = {
     /**
      * @override
      * @param {number} entryIndex
-     * @return {?Array.<!{title: string, text: string}>}
+     * @return {?Array.<!{title: string, value: (string|!Element)}>}
      */
     prepareHighlightedEntryInfo: function(entryIndex)
     {
@@ -823,6 +823,15 @@ WebInspector.TimelineFlameChartNetworkDataProvider = function(model)
 WebInspector.TimelineFlameChartNetworkDataProvider.prototype = {
     /**
      * @override
+     * @return {number}
+     */
+    barHeight: function()
+    {
+        return 5;
+    },
+
+    /**
+     * @override
      * @return {!WebInspector.FlameChart.TimelineData}
      */
     timelineData: function()
@@ -897,17 +906,6 @@ WebInspector.TimelineFlameChartNetworkDataProvider.prototype = {
      * @param {number} index
      * @return {string}
      */
-    entryTitle: function(index)
-    {
-        var event = this._requests[index];
-        return event && event.url || "";
-    },
-
-    /**
-     * @override
-     * @param {number} index
-     * @return {string}
-     */
     entryColor: function(index)
     {
         var request = /** @type {!WebInspector.TimelineModel.NetworkRequest} */ (this._requests[index]);
@@ -952,6 +950,17 @@ WebInspector.TimelineFlameChartNetworkDataProvider.prototype = {
     forceDecoration: function(index)
     {
         return true;
+    },
+
+    /**
+     * @override
+     * @param {number} index
+     * @return {?Array.<!{title: string, value: (string|!Element)}>}
+     */
+    prepareHighlightedEntryInfo: function(index)
+    {
+        var request = /** @type {!WebInspector.TimelineModel.NetworkRequest} */ (this._requests[index]);
+        return WebInspector.TimelineUIUtils.buildNetworkRequestInfo(request);
     },
 
     /**

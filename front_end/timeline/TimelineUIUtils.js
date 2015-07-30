@@ -756,6 +756,25 @@ WebInspector.TimelineUIUtils._buildTraceEventDetailsSynchronously = function(eve
 
 /**
  * @param {!WebInspector.TimelineModel.NetworkRequest} request
+ * @return {!Array<!{title: string, value: (string|!Element)}>}
+ */
+WebInspector.TimelineUIUtils.buildNetworkRequestInfo = function(request)
+{
+    var duration = request.endTime - (request.startTime || -Infinity);
+    var items = [];
+    if (request.url)
+        items.push({ title: WebInspector.UIString("URL"), value: WebInspector.linkifyURLAsNode(request.url) });
+    if (isFinite(duration))
+        items.push({ title: WebInspector.UIString("Duration"), value: Number.millisToString(duration, true) });
+    if (request.requestMethod)
+        items.push({ title: WebInspector.UIString("Request Method"), value: request.requestMethod });
+    if (request.mimeType)
+        items.push({ title: WebInspector.UIString("Mime Type"), value: request.mimeType });
+    return items;
+}
+
+/**
+ * @param {!WebInspector.TimelineModel.NetworkRequest} request
  * @param {!WebInspector.TimelineModel} model
  * @param {!WebInspector.Linkifier} linkifier
  * @return {!Promise<!DocumentFragment>}
@@ -765,16 +784,14 @@ WebInspector.TimelineUIUtils.buildNetworkRequestDetails = function(request, mode
     var fragment = createDocumentFragment();
     var target = model.target();
     var contentHelper = new WebInspector.TimelineDetailsContentHelper(target, linkifier, null, true);
-    var duration = request.endTime - (request.startTime || -Infinity);
 
-    if (request.url)
-        contentHelper.appendElementRow(WebInspector.UIString("URL"), WebInspector.linkifyURLAsNode(request.url));
-    if (isFinite(duration))
-        contentHelper.appendTextRow(WebInspector.UIString("Duration"), Number.millisToString(duration, true));
-    if (request.requestMethod)
-        contentHelper.appendTextRow(WebInspector.UIString("Request Method"), request.requestMethod);
-    if (request.mimeType)
-        contentHelper.appendTextRow(WebInspector.UIString("Mime Type"), request.mimeType);
+    var info = WebInspector.TimelineUIUtils.buildNetworkRequestInfo(request);
+    for (var item of info) {
+        if (typeof item.value === "string")
+            contentHelper.appendTextRow(item.title, item.value);
+        else
+            contentHelper.appendElementRow(item.title, item.value);
+    }
 
     /**
      * @param {function(?Element)} fulfill

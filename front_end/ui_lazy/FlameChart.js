@@ -171,7 +171,7 @@ WebInspector.FlameChartDataProvider.prototype = {
 
     /**
      * @param {number} entryIndex
-     * @return {?Array.<!{title: string, text: string}>}
+     * @return {?Array.<!{title: string, value: (string|!Element)}>}
      */
     prepareHighlightedEntryInfo: function(entryIndex) { },
 
@@ -1379,16 +1379,16 @@ WebInspector.FlameChart.prototype = {
     },
 
     /**
-     * @param {!Array.<!{title: string, text: string}>} entryInfo
+     * @param {!Array<!{title: string, value: (string|!Element)}>} entryInfo
      * @return {!Element}
      */
     _buildEntryInfo: function(entryInfo)
     {
         var infoTable = createElementWithClass("table", "info-table");
-        for (var i = 0; i < entryInfo.length; ++i) {
+        for (var entry of entryInfo) {
             var row = infoTable.createChild("tr");
-            row.createChild("td", "title").textContent = entryInfo[i].title;
-            row.createChild("td").textContent = entryInfo[i].text;
+            row.createChild("td", "title").textContent = entry.title;
+            row.createChild("td").textContent = typeof entry.value === "string" ? entry.value : entry.value.textContent;
         }
         return infoTable;
     },
