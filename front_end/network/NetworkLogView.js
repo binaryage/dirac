@@ -245,16 +245,14 @@ WebInspector.NetworkLogView.prototype = {
         this._dataURLFilterUI.addEventListener(WebInspector.FilterUI.Events.FilterChanged, this._filterChanged.bind(this), this);
         this._filterBar.addFilter(this._dataURLFilterUI);
 
-        var types = [];
-        for (var typeId in WebInspector.resourceTypes) {
-            var resourceType = WebInspector.resourceTypes[typeId];
-            if (resourceType === WebInspector.resourceTypes.TextTrack)
-                continue;
-            types.push({name: resourceType.name(), label: resourceType.shortCategoryTitle(), title: resourceType.categoryTitle()});
+        var filterItems = [];
+        for (var categoryId in WebInspector.resourceCategories) {
+            var category = WebInspector.resourceCategories[categoryId];
+            filterItems.push({name: category.title, label: category.shortTitle, title: category.title});
         }
-        this._resourceTypeFilterUI = new WebInspector.NamedBitSetFilterUI(types, this._networkResourceTypeFiltersSetting);
-        this._resourceTypeFilterUI.addEventListener(WebInspector.FilterUI.Events.FilterChanged, this._filterChanged.bind(this), this);
-        this._filterBar.addFilter(this._resourceTypeFilterUI);
+        this._resourceCategoryFilterUI = new WebInspector.NamedBitSetFilterUI(filterItems, this._networkResourceTypeFiltersSetting);
+        this._resourceCategoryFilterUI.addEventListener(WebInspector.FilterUI.Events.FilterChanged, this._filterChanged.bind(this), this);
+        this._filterBar.addFilter(this._resourceCategoryFilterUI);
     },
 
     _resetSuggestionBuilder: function()
@@ -1523,10 +1521,8 @@ WebInspector.NetworkLogView.prototype = {
         var request = node.request();
         if (this._timeFilter && !this._timeFilter(request))
             return false;
-        var resourceType = request.resourceType();
-        if (resourceType === WebInspector.resourceTypes.TextTrack)
-            resourceType = WebInspector.resourceTypes.Other;
-        if (!this._resourceTypeFilterUI.accept(resourceType.name()))
+        var categoryName = request.resourceType().category().title;
+        if (!this._resourceCategoryFilterUI.accept(categoryName))
             return false;
         if (this._dataURLFilterUI.checked() && request.parsedURL.isDataURL())
             return false;

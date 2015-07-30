@@ -31,18 +31,14 @@
  * @constructor
  * @param {string} name
  * @param {string} title
- * @param {string} categoryTitle
- * @param {string} shortCategoryTitle
- * @param {string} color
+ * @param {!WebInspector.ResourceCategory} category
  * @param {boolean} isTextType
  */
-WebInspector.ResourceType = function(name, title, categoryTitle, shortCategoryTitle, color, isTextType)
+WebInspector.ResourceType = function(name, title, category, isTextType)
 {
     this._name = name;
     this._title = title;
-    this._categoryTitle = categoryTitle;
-    this._shortCategoryTitle = shortCategoryTitle;
-    this._color = color;
+    this._category = category;
     this._isTextType = isTextType;
 }
 
@@ -64,27 +60,11 @@ WebInspector.ResourceType.prototype = {
     },
 
     /**
-     * @return {string}
+     * @return {!WebInspector.ResourceCategory}
      */
-    categoryTitle: function()
+    category: function()
     {
-        return this._categoryTitle;
-    },
-
-    /**
-     * @return {string}
-     */
-    shortCategoryTitle: function()
-    {
-        return this._shortCategoryTitle;
-    },
-
-    /**
-     * @return {string}
-     */
-    color: function()
-    {
-        return this._color;
+        return this._category;
     },
 
     /**
@@ -120,20 +100,45 @@ WebInspector.ResourceType.prototype = {
 }
 
 /**
+ * @constructor
+ * @param {string} title
+ * @param {string} shortTitle
+ */
+WebInspector.ResourceCategory = function(title, shortTitle)
+{
+    this.title = title;
+    this.shortTitle = shortTitle;
+}
+
+WebInspector.resourceCategories = {
+    XHR: new WebInspector.ResourceCategory("XHR and Fetch", "XHR"),
+    Script: new WebInspector.ResourceCategory("Scripts", "JS"),
+    Stylesheet: new WebInspector.ResourceCategory("Stylesheets", "CSS"),
+    Image: new WebInspector.ResourceCategory("Images", "Img"),
+    Media: new WebInspector.ResourceCategory("Media", "Media"),
+    Font: new WebInspector.ResourceCategory("Fonts", "Font"),
+    Document: new WebInspector.ResourceCategory("Documents", "Doc"),
+    WebSocket: new WebInspector.ResourceCategory("WebSockets", "WS"),
+    Other: new WebInspector.ResourceCategory("Other", "Other")
+}
+
+/**
  * Keep these in sync with WebCore::InspectorPageAgent::resourceTypeJson
  * @enum {!WebInspector.ResourceType}
  */
 WebInspector.resourceTypes = {
-    XHR: new WebInspector.ResourceType("xhr", "XHR", "XHR", "XHR", "rgb(231,231,10)", true),
-    Script: new WebInspector.ResourceType("script", "Script", "Scripts", "JS", "rgb(255,121,0)", true),
-    Stylesheet: new WebInspector.ResourceType("stylesheet", "Stylesheet", "Stylesheets", "CSS", "rgb(157,231,119)", true),
-    Image: new WebInspector.ResourceType("image", "Image", "Images", "Img", "rgb(164,60,255)", false),
-    Media: new WebInspector.ResourceType("media", "Media", "Media", "Media", "rgb(164,60,255)", false), // FIXME: Decide the color.
-    Font: new WebInspector.ResourceType("font", "Font", "Fonts", "Font", "rgb(255,82,62)", false),
-    Document: new WebInspector.ResourceType("document", "Document", "Documents", "Doc", "rgb(47,102,236)", true),
-    TextTrack: new WebInspector.ResourceType("texttrack", "TextTrack", "TextTracks", "TextTracks", "rgb(164,60,255)", true), // FIXME: Decide the color.
-    WebSocket: new WebInspector.ResourceType("websocket", "WebSocket", "WebSockets", "WS", "rgb(186,186,186)", false), // FIXME: Decide the color.
-    Other: new WebInspector.ResourceType("other", "Other", "Other", "Other", "rgb(186,186,186)", false)
+    XHR: new WebInspector.ResourceType("xhr", "XHR", WebInspector.resourceCategories.XHR, true),
+    Fetch: new WebInspector.ResourceType("fetch", "Fetch", WebInspector.resourceCategories.XHR, true),
+    EventSource: new WebInspector.ResourceType("eventsource", "EventSource", WebInspector.resourceCategories.XHR, true),
+    Script: new WebInspector.ResourceType("script", "Script", WebInspector.resourceCategories.Script, true),
+    Stylesheet: new WebInspector.ResourceType("stylesheet", "Stylesheet", WebInspector.resourceCategories.Stylesheet, true),
+    Image: new WebInspector.ResourceType("image", "Image", WebInspector.resourceCategories.Image, false),
+    Media: new WebInspector.ResourceType("media", "Media", WebInspector.resourceCategories.Media, false),
+    Font: new WebInspector.ResourceType("font", "Font", WebInspector.resourceCategories.Font, false),
+    Document: new WebInspector.ResourceType("document", "Document", WebInspector.resourceCategories.Document, true),
+    TextTrack: new WebInspector.ResourceType("texttrack", "TextTrack", WebInspector.resourceCategories.Other, true),
+    WebSocket: new WebInspector.ResourceType("websocket", "WebSocket", WebInspector.resourceCategories.WebSocket, false),
+    Other: new WebInspector.ResourceType("other", "Other", WebInspector.resourceCategories.Other, false)
 }
 
 WebInspector.ResourceType.mimeTypesForExtensions = {
