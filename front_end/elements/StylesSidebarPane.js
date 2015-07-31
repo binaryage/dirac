@@ -2055,7 +2055,29 @@ WebInspector.StylePropertyTreeElement.prototype = {
         }
 
         var stylesPopoverHelper = this._parentPane._stylesPopoverHelper;
-        return new WebInspector.ColorSwatchPopoverIcon(this, stylesPopoverHelper, text).element();
+        var swatchIcon = new WebInspector.ColorSwatchPopoverIcon(this, stylesPopoverHelper, text);
+
+        /**
+         * @param {?WebInspector.CSSStyleDeclaration} styles
+         */
+        function computedCallback(styles)
+        {
+            if (!styles)
+                return;
+            var bgColorText = styles.getPropertyValue("background-color") || "";
+            var bgColor = WebInspector.Color.parse(bgColorText);
+            // TODO(aboxhall): for background color with alpha, compute the actual
+            // visible background color (blended with content underneath).
+            if (bgColor && !bgColor.hasAlpha())
+                swatchIcon.setContrastColor(bgColor);
+        }
+
+        if (this.property.name === "color" && this._parentPane.cssModel() && this.node()) {
+            var cssModel = this._parentPane.cssModel();
+            cssModel.computedStylePromise(this.node().id).then(computedCallback);
+        }
+
+        return swatchIcon.element();
     },
 
     /**

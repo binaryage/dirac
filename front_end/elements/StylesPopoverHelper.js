@@ -239,6 +239,7 @@ WebInspector.ColorSwatchPopoverIcon = function(treeElement, stylesPopoverHelper,
     var shiftClickMessage = WebInspector.UIString("Shift + Click to change color format.");
     WebInspector.Tooltip.install(this._swatch.iconElement(), WebInspector.UIString("Open color picker. %s", shiftClickMessage));
     this._swatch.iconElement().addEventListener("click", this._iconClick.bind(this));
+    this._contrastColor = null;
 
     this._boundSpectrumChanged = this._spectrumChanged.bind(this);
 }
@@ -276,6 +277,16 @@ WebInspector.ColorSwatchPopoverIcon.prototype = {
     },
 
     /**
+     * @param {!WebInspector.Color} color
+     */
+    setContrastColor: function(color)
+    {
+        this._contrastColor = color;
+        if (this._spectrum)
+            this._spectrum.setContrastColor(this._contrastColor);
+    },
+
+    /**
      * @param {!Event} event
      */
     _iconClick: function(event)
@@ -292,6 +303,9 @@ WebInspector.ColorSwatchPopoverIcon.prototype = {
             format = color.format();
         this._spectrum = new WebInspector.Spectrum();
         this._spectrum.setColor(color, format);
+        if (this._contrastColor)
+            this._spectrum.setContrastColor(this._contrastColor);
+
         this._spectrum.addEventListener(WebInspector.Spectrum.Events.SizeChanged, this._spectrumResized, this);
         this._spectrum.addEventListener(WebInspector.Spectrum.Events.ColorChanged, this._boundSpectrumChanged);
         this._stylesPopoverHelper.show(this._spectrum, this._swatch.iconElement(), this._onPopoverHidden.bind(this));
