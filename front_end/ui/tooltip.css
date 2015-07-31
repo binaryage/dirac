@@ -11,6 +11,8 @@
     padding: 6px 8px;
     font-size: 11px;
     line-height: 14px;
+    display: flex;
+    align-items: center;
 }
 
 .tooltip,
@@ -43,4 +45,11 @@
 
 .tooltip-arrow.tooltip-arrow-top {
     border-width: 4px 4px 0 4px;
+}
+
+.tooltip-shortcut {
+    color: hsl(0, 0%, 80%);
+    display: inline-block;
+    margin-left: 10px;
+    flex: 0 0 auto;
 }

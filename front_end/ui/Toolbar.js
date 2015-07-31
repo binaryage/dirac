@@ -240,7 +240,7 @@ WebInspector.ToolbarCounter.prototype = {
             }
         }
         this.element.classList.toggle("hidden", !total);
-        WebInspector.Tooltip.install(this.element, title);
+        WebInspector.Tooltip.install(this.element, title, undefined, this._actionId);
     },
 
     /**
@@ -260,6 +260,7 @@ WebInspector.ToolbarCounter.prototype = {
     setAction: function(actionId)
     {
         this._actionId = actionId;
+        this._update();
     },
 
     __proto__: WebInspector.ToolbarItem.prototype
@@ -403,6 +404,7 @@ WebInspector.ToolbarButtonBase.prototype = {
     setAction: function(actionId)
     {
         this._actionId = actionId;
+        WebInspector.Tooltip.install(this.element, this._title, undefined, this._actionId);
     },
 
     /**
@@ -431,14 +433,14 @@ WebInspector.ToolbarButtonBase.prototype = {
     },
 
     /**
-     * @param {string} x
+     * @param {string} title
      */
-    setTitle: function(x)
+    setTitle: function(title)
     {
-        if (this._title === x)
+        if (this._title === title)
             return;
-        this._title = x;
-        WebInspector.Tooltip.install(this.element, x);
+        this._title = title;
+        WebInspector.Tooltip.install(this.element, title, undefined, this._actionId);
     },
 
     /**

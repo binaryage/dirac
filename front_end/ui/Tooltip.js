@@ -63,6 +63,15 @@ WebInspector.Tooltip.prototype = {
             this._tooltipElement.textContent = tooltip.content;
         else
             this._tooltipElement.appendChild(tooltip.content);
+
+        if (tooltip.actionId) {
+            var shortcuts = WebInspector.shortcutRegistry.shortcutDescriptorsForAction(tooltip.actionId);
+            if (shortcuts && shortcuts.length) {
+                var shortcutElement = this._tooltipElement.createChild("div", "tooltip-shortcut");
+                shortcutElement.textContent = shortcuts[0].name;
+            }
+        }
+
         this._tooltipElement.classList.add("shown");
         // Reposition to ensure text doesn't overflow unnecessarily.
         this._tooltipElement.positionAt(0, 0);
@@ -125,11 +134,12 @@ WebInspector.Tooltip.installHandler = function(doc)
  * @param {!Element} element
  * @param {!Element|string} tooltipContent
  * @param {string=} alignment
+ * @param {string=} actionId
  */
-WebInspector.Tooltip.install = function(element, tooltipContent, alignment)
+WebInspector.Tooltip.install = function(element, tooltipContent, alignment, actionId)
 {
     if (Runtime.experiments.isEnabled("tooltips"))
-        element[WebInspector.Tooltip._symbol] =  { content: tooltipContent, alignment: alignment };
+        element[WebInspector.Tooltip._symbol] =  { content: tooltipContent, alignment: alignment, actionId: actionId };
     else if (typeof tooltipContent === "string")
         element.title = tooltipContent;
     else

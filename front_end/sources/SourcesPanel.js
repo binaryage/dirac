@@ -440,7 +440,7 @@ WebInspector.SourcesPanel.prototype = {
             this._stepIntoButton.setEnabled(false);
             this._stepOutButton.setEnabled(false);
         } else if (this._paused) {
-            this._updateButtonTitle(this._pauseButton, WebInspector.UIString("Resume script execution (%s)"));
+            this._updateButtonTitle(this._pauseButton, WebInspector.UIString("Resume script execution"));
             this._pauseButton.setToggled(true);
             this._pauseButton.setLongClickOptionsEnabled((function() { return [ this._longResumeButton ]; }).bind(this));
 
@@ -449,7 +449,7 @@ WebInspector.SourcesPanel.prototype = {
             this._stepIntoButton.setEnabled(true);
             this._stepOutButton.setEnabled(true);
         } else {
-            this._updateButtonTitle(this._pauseButton, WebInspector.UIString("Pause script execution (%s)"))
+            this._updateButtonTitle(this._pauseButton, WebInspector.UIString("Pause script execution"));
             this._pauseButton.setToggled(false);
             this._pauseButton.setLongClickOptionsEnabled(null);
 
@@ -716,7 +716,7 @@ WebInspector.SourcesPanel.prototype = {
         var title, handler;
 
         // Run snippet.
-        title = WebInspector.UIString("Run snippet (%s)");
+        title = WebInspector.UIString("Run snippet");
         handler = this._runSnippet.bind(this);
         this._runSnippetButton = this._createButtonAndRegisterShortcutsForAction("play-toolbar-item", title, "debugger.run-snippet");
         debugToolbar.appendToolbarItem(this._runSnippetButton);
@@ -732,17 +732,17 @@ WebInspector.SourcesPanel.prototype = {
         this._longResumeButton.addEventListener("click", this._longResume.bind(this), this);
 
         // Step over.
-        title = WebInspector.UIString("Step over next function call (%s)");
+        title = WebInspector.UIString("Step over next function call");
         this._stepOverButton = this._createButtonAndRegisterShortcutsForAction("step-over-toolbar-item", title, "debugger.step-over");
         debugToolbar.appendToolbarItem(this._stepOverButton);
 
         // Step into.
-        title = WebInspector.UIString("Step into next function call (%s)");
+        title = WebInspector.UIString("Step into next function call");
         this._stepIntoButton = this._createButtonAndRegisterShortcutsForAction("step-in-toolbar-item", title, "debugger.step-into");
         debugToolbar.appendToolbarItem(this._stepIntoButton);
 
         // Step out.
-        title = WebInspector.UIString("Step out of current function (%s)");
+        title = WebInspector.UIString("Step out of current function");
         this._stepOutButton = this._createButtonAndRegisterShortcutsForAction("step-out-toolbar-item", title, "debugger.step-out");
         debugToolbar.appendToolbarItem(this._stepOutButton);
 
@@ -785,8 +785,10 @@ WebInspector.SourcesPanel.prototype = {
     _updateButtonTitle: function(button, buttonTitle)
     {
         var hasShortcuts = button._shortcuts && button._shortcuts.length;
-        if (hasShortcuts)
-            button.setTitle(String.vsprintf(buttonTitle, [button._shortcuts[0].name]));
+        if (hasShortcuts && Runtime.experiments.isEnabled("tooltips"))
+            button.setTitle(buttonTitle);
+        else if (hasShortcuts)
+            button.setTitle(WebInspector.UIString(buttonTitle + " (%s)", button._shortcuts[0].name));
         else
             button.setTitle(buttonTitle);
     },
