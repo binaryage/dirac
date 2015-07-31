@@ -24,6 +24,10 @@ WebInspector.Tooltip.Timing = {
     "OpeningDelay": 400
 }
 
+WebInspector.Tooltip.AlignmentOverride = {
+    Right: "Right"
+}
+
 WebInspector.Tooltip.prototype = {
     /**
      * @param {!Event} event
@@ -34,14 +38,13 @@ WebInspector.Tooltip.prototype = {
         if (!path)
             return;
 
-        if (this._anchorElement && path.indexOf(this._anchorElement) !== -1)
-            return;
-
-        if (this._anchorElement)
+        if (this._anchorElement && path.indexOf(this._anchorElement) === -1)
             this._hide();
 
         for (var element of path) {
-            if (element[WebInspector.Tooltip._symbol]) {
+            if (element === this._anchorElement) {
+                return;
+            } else if (element[WebInspector.Tooltip._symbol]) {
                 this._show(element);
                 return;
             }
@@ -53,13 +56,13 @@ WebInspector.Tooltip.prototype = {
      */
     _show: function(anchorElement)
     {
-        var content = anchorElement[WebInspector.Tooltip._symbol];
+        var tooltip = anchorElement[WebInspector.Tooltip._symbol];
         this._anchorElement = anchorElement;
         this._tooltipElement.removeChildren();
-        if (typeof content === "string")
-            this._tooltipElement.textContent = content;
+        if (typeof tooltip.content === "string")
+            this._tooltipElement.textContent = tooltip.content;
         else
-            this._tooltipElement.appendChild(content);
+            this._tooltipElement.appendChild(tooltip.content);
         this._tooltipElement.classList.add("shown");
         // Reposition to ensure text doesn't overflow unnecessarily.
         this._tooltipElement.positionAt(0, 0);
@@ -70,8 +73,12 @@ WebInspector.Tooltip.prototype = {
         this._tooltipElement.classList.toggle("instant", instant);
         this._tooltipLastOpened = instant ? now : now + WebInspector.Tooltip.Timing.OpeningDelay;
 
-        // Posititon tooltip based on the anchor element.
+        // Get container element.
         var container = WebInspector.Dialog.modalHostView().element;
+        if (!anchorElement.isDescendant(container))
+            container = this.element.parentElement;
+
+        // Posititon tooltip based on the anchor element.
         var containerOffset = container.offsetRelativeToWindow(this.element.window());
         var containerOffsetWidth = container.offsetWidth;
         var anchorBox = this._anchorElement.boxInWindow(this.element.window());
@@ -80,8 +87,10 @@ WebInspector.Tooltip.prototype = {
         this._tooltipElement.style.maxWidth = (containerOffsetWidth - pageMargin * 2) + "px";
         var tooltipWidth = this._tooltipElement.offsetWidth;
         var tooltipHeight = this._tooltipElement.offsetHeight;
-
-        var tooltipX = Number.constrain(anchorBox.x + anchorBox.width / 2 - tooltipWidth / 2,
+        var tooltipX = anchorBox.x + anchorBox.width / 2 - tooltipWidth / 2;
+        if (tooltip.alignment === WebInspector.Tooltip.AlignmentOverride.Right)
+            tooltipX = anchorBox.x;
+        tooltipX = Number.constrain(tooltipX,
             containerOffset.x + pageMargin,
             containerOffset.x + containerOffsetWidth - tooltipWidth - pageMargin);
         var onBottom = anchorBox.y - arrowSize - anchorBox.height < containerOffset.y;
@@ -115,8 +124,14 @@ WebInspector.Tooltip.installHandler = function(doc)
 /**
  * @param {!Element} element
  * @param {!Element|string} tooltipContent
+ * @param {string=} alignment
  */
-WebInspector.Tooltip.install = function(element, tooltipContent)
+WebInspector.Tooltip.install = function(element, tooltipContent, alignment)
 {
-    element[WebInspector.Tooltip._symbol] = tooltipContent;
+    if (Runtime.experiments.isEnabled("tooltips"))
+        element[WebInspector.Tooltip._symbol] =  { content: tooltipContent, alignment: alignment };
+    else if (typeof tooltipContent === "string")
+        element.title = tooltipContent;
+    else
+        console.assert("Cannot set an element without custom tooltips enabled");
 }

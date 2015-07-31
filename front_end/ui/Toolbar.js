@@ -240,7 +240,7 @@ WebInspector.ToolbarCounter.prototype = {
             }
         }
         this.element.classList.toggle("hidden", !total);
-        this.element.title = title;
+        WebInspector.Tooltip.install(this.element, title);
     },
 
     /**
@@ -438,10 +438,7 @@ WebInspector.ToolbarButtonBase.prototype = {
         if (this._title === x)
             return;
         this._title = x;
-        if (Runtime.experiments.isEnabled("tooltips"))
-            WebInspector.Tooltip.install(this.element, x);
-        else
-            this.element.title = x;
+        WebInspector.Tooltip.install(this.element, x);
     },
 
     /**
@@ -872,7 +869,7 @@ WebInspector.ToolbarCheckbox = function(text, title, setting)
     this.element.classList.add("checkbox");
     this.inputElement = this.element.checkboxElement;
     if (title)
-        this.element.title = title;
+        WebInspector.Tooltip.install(this.element, title);
     if (setting)
         WebInspector.SettingsUI.bindCheckbox(this.inputElement, setting);
 }

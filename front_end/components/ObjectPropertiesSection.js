@@ -258,7 +258,7 @@ WebInspector.ObjectPropertyTreeElement.prototype = {
         } else {
             this.valueElement = createElementWithClass("span", "object-value-undefined");
             this.valueElement.textContent = WebInspector.UIString("<unreadable>");
-            this.valueElement.title = WebInspector.UIString("No property getter");
+            WebInspector.Tooltip.install(this.valueElement, WebInspector.UIString("No property getter"));
         }
 
         this.listItemElement.removeChildren();

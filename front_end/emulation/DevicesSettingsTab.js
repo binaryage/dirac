@@ -95,14 +95,13 @@ WebInspector.DevicesSettingsTab.prototype = {
         item.createChild("div", "devices-list-title").textContent = device.title;
         item.addEventListener("click", onItemClicked.bind(this), false);
         item.classList.toggle("device-list-item-show", device.show());
-
         if (custom) {
             var editButton = item.createChild("div", "devices-list-edit");
-            editButton.title = WebInspector.UIString("Edit");
+            WebInspector.Tooltip.install(editButton, WebInspector.UIString("Edit"));
             editButton.addEventListener("click", onEditClicked.bind(this), false);
 
             var removeButton = item.createChild("div", "devices-list-remove");
-            removeButton.title = WebInspector.UIString("Remove");
+            WebInspector.Tooltip.install(removeButton, WebInspector.UIString("Remove"));
             removeButton.addEventListener("click", onRemoveClicked, false);
         }
 

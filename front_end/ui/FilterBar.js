@@ -455,7 +455,7 @@ WebInspector.TextFilterUI.SuggestionBuilder.prototype = {
 WebInspector.NamedBitSetFilterUI = function(items, setting)
 {
     this._filtersElement = createElementWithClass("div", "filter-bitset-filter");
-    this._filtersElement.title = WebInspector.UIString("Use %s Click to select multiple types.", WebInspector.KeyboardShortcut.shortcutToString("", WebInspector.KeyboardShortcut.Modifiers.CtrlOrMeta));
+    WebInspector.Tooltip.install(this._filtersElement, WebInspector.UIString("%sClick to select multiple types", WebInspector.KeyboardShortcut.shortcutToString("", WebInspector.KeyboardShortcut.Modifiers.CtrlOrMeta)));
 
     this._allowedTypes = {};
     this._typeFilterElements = {};
@@ -540,7 +540,7 @@ WebInspector.NamedBitSetFilterUI.prototype = {
         typeFilterElement.typeName = name;
         typeFilterElement.createTextChild(label);
         if (title)
-            typeFilterElement.title = title;
+            WebInspector.Tooltip.install(typeFilterElement, title);
         typeFilterElement.addEventListener("click", this._onTypeFilterClicked.bind(this), false);
         this._typeFilterElements[name] = typeFilterElement;
     },

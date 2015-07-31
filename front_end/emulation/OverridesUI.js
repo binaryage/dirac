@@ -21,14 +21,14 @@ WebInspector.DeviceSelect = function(rotateButton, callback)
     var container = this.element.createChild("div", "mode-container");
     container.appendChild(this._rotateButton);
     this._rotateButton.addEventListener("click", this._rotateButtonClicked.bind(this), false);
-    this._rotateButton.title = WebInspector.UIString("Change orientation");
+    WebInspector.Tooltip.install(this._rotateButton, WebInspector.UIString("Change orientation"));
 
     var modeSelectContainer = container.createChild("span", "mode-select");
     this._modeSelectElement = modeSelectContainer.createChild("select");
     this._modeSelectElement.addEventListener("change", this._modeSelected.bind(this), false);
     this._modeLabelElement = modeSelectContainer.createChild("label");
     this._modeLabelElement.addEventListener("click", this._rotateButtonClicked.bind(this), false);
-    this._modeLabelElement.title = WebInspector.UIString("Change orientation");
+    WebInspector.Tooltip.install(this._modeLabelElement, WebInspector.UIString("Change orientation"));
 
     this._emulatedSettingChangedMuted = false;
     this._lastOrientation = null;

@@ -97,7 +97,7 @@ WebInspector.ResponsiveDesignView.prototype = {
         this._decreasePageScaleButton.addEventListener("click", this._pageScaleButtonClicked.bind(this, false), false);
 
         this._pageScaleLabel = this._pageScaleContainer.createChild("label", "responsive-design-page-scale-label");
-        this._pageScaleLabel.title = WebInspector.UIString("For a simpler way to change the current page scale, hold down Shift and drag with your mouse.");
+        WebInspector.Tooltip.install(this._pageScaleLabel, WebInspector.UIString("Shift + drag to change page scale"), WebInspector.Tooltip.AlignmentOverride.Right);
         this._pageScaleLabel.addEventListener("dblclick", this._resetPageScale.bind(this), false);
 
         this._increasePageScaleButton = this._pageScaleContainer.createChild("button", "responsive-design-page-scale-button responsive-design-page-scale-increase");
@@ -541,9 +541,9 @@ WebInspector.ResponsiveDesignView.prototype = {
 
         if (viewportChanged) {
             this._pageScaleLabel.textContent = WebInspector.UIString("%.1f", this._viewport.pageScaleFactor);
-            this._decreasePageScaleButton.title = WebInspector.UIString("Scale down (minimum %.1f)", this._viewport.minimumPageScaleFactor);
+            WebInspector.Tooltip.install(this._decreasePageScaleButton, WebInspector.UIString("Scale down (minimum %.1f)", this._viewport.minimumPageScaleFactor), WebInspector.Tooltip.AlignmentOverride.Right);
             this._decreasePageScaleButton.disabled = this._viewport.pageScaleFactor <= this._viewport.minimumPageScaleFactor;
-            this._increasePageScaleButton.title = WebInspector.UIString("Scale up (maximum %.1f)", this._viewport.maximumPageScaleFactor);
+            WebInspector.Tooltip.install(this._increasePageScaleButton, WebInspector.UIString("Scale up (maximum %.1f)", this._viewport.maximumPageScaleFactor), WebInspector.Tooltip.AlignmentOverride.Right);
             this._increasePageScaleButton.disabled = this._viewport.pageScaleFactor >= this._viewport.maximumPageScaleFactor;
         }
 
@@ -629,7 +629,7 @@ WebInspector.ResponsiveDesignView.prototype = {
 
         var moreButtonContainer = this._toolbarElement.createChild("div", "responsive-design-more-button-container");
         var moreButton = moreButtonContainer.createChild("button", "responsive-design-more-button");
-        moreButton.title = WebInspector.UIString("More overrides");
+        WebInspector.Tooltip.install(moreButton, WebInspector.UIString("More overrides"));
         moreButton.addEventListener("click", this._showEmulationInDrawer.bind(this), false);
         moreButton.textContent = "\u2026";
     },
@@ -694,7 +694,7 @@ WebInspector.ResponsiveDesignView.prototype = {
         var resolutionFieldset2 = WebInspector.SettingsUI.createSettingFieldset(WebInspector.overridesSupport.settings.emulateResolution);
         dprElement.appendChild(resolutionFieldset2);
         var dprButton = resolutionFieldset2.createChild("div", "responsive-design-icon responsive-design-icon-dpr");
-        dprButton.title = WebInspector.UIString("Device pixel ratio");
+        WebInspector.Tooltip.install(dprButton, WebInspector.UIString("Device pixel ratio"));
         resolutionFieldset2.appendChild(WebInspector.SettingsUI.createSettingInputField("", WebInspector.overridesSupport.settings.deviceScaleFactor, true, 4, "1.9em", WebInspector.OverridesSupport.deviceScaleFactorValidator, true, true, WebInspector.UIString("\u2013")));
 
         // Fit to window.

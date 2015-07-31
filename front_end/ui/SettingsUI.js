@@ -41,7 +41,7 @@ WebInspector.SettingsUI.createSettingCheckbox = function(name, setting, omitPara
 {
     var label = createCheckboxLabel(name);
     if (tooltip)
-        label.title = tooltip;
+        WebInspector.Tooltip.install(label, tooltip);
 
     var input = label.checkboxElement;
     input.name = name;
