@@ -305,7 +305,7 @@ WebInspector.TracingModel.prototype = {
             // The trace is probably coming not from DevTools. Make a mock Metadata event.
             var pageMetaEvent = this._loadedFromFile ? this._makeMockPageMetadataEvent() : null;
             if (!pageMetaEvent) {
-                console.error(WebInspector.TracingModel.DevToolsMetadataEvent.TracingStartedInPage + " event not found.");
+                WebInspector.console.error(WebInspector.TracingModel.DevToolsMetadataEvent.TracingStartedInPage + " event not found.");
                 return;
             }
             this._devtoolsPageMetadataEvents.push(pageMetaEvent);
