@@ -387,7 +387,7 @@ WebInspector.NetworkTransferTimeCalculator.prototype = {
      */
     _lowerBound: function(request)
     {
-        return request.startTime;
+        return request.issueTime();
     },
 
     /**
