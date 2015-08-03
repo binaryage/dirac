@@ -117,7 +117,8 @@ WebInspector.NetworkRequest.prototype = {
      * @param {!WebInspector.NetworkRequest} other
      * @return {number}
      */
-    indentityCompare: function(other) {
+    indentityCompare: function(other)
+    {
         if (this._requestId > other._requestId)
             return 1;
         if (this._requestId < other._requestId)
