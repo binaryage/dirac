@@ -288,9 +288,6 @@ WebInspector.NetworkLogView.prototype = {
         this._updateRowsSize();
 
         this._popoverHelper = new WebInspector.PopoverHelper(this.element, this._getPopoverAnchor.bind(this), this._showPopover.bind(this), this._onHidePopover.bind(this));
-        // Enable faster hint.
-        this._popoverHelper.setTimeout(250, 250);
-
         this.switchViewMode(true);
     },
 
@@ -319,14 +316,12 @@ WebInspector.NetworkLogView.prototype = {
             id: "name",
             titleDOMFragment: this._makeHeaderFragment(WebInspector.UIString("Name"), WebInspector.UIString("Path")),
             title: WebInspector.NetworkLogView._columnTitles["name"],
-            sortable: true,
             weight: 20
         });
 
         columns.push({
             id: "method",
             title: WebInspector.NetworkLogView._columnTitles["method"],
-            sortable: true,
             weight: 6
         });
 
@@ -334,35 +329,30 @@ WebInspector.NetworkLogView.prototype = {
             id: "status",
             titleDOMFragment: this._makeHeaderFragment(WebInspector.UIString("Status"), WebInspector.UIString("Text")),
             title: WebInspector.NetworkLogView._columnTitles["status"],
-            sortable: true,
             weight: 6
         });
 
         columns.push({
             id: "protocol",
             title: WebInspector.NetworkLogView._columnTitles["protocol"],
-            sortable: true,
             weight: 6
         });
 
         columns.push({
             id: "scheme",
             title: WebInspector.NetworkLogView._columnTitles["scheme"],
-            sortable: true,
             weight: 6
         });
 
         columns.push({
             id: "domain",
             title: WebInspector.NetworkLogView._columnTitles["domain"],
-            sortable: true,
             weight: 6
         });
 
         columns.push({
             id: "remoteAddress",
             title: WebInspector.NetworkLogView._columnTitles["remoteAddress"],
-            sortable: true,
             weight: 10,
             align: WebInspector.DataGrid.Align.Right
         });
@@ -370,21 +360,18 @@ WebInspector.NetworkLogView.prototype = {
         columns.push({
             id: "type",
             title: WebInspector.NetworkLogView._columnTitles["type"],
-            sortable: true,
             weight: 6
         });
 
         columns.push({
             id: "initiator",
             title: WebInspector.NetworkLogView._columnTitles["initiator"],
-            sortable: true,
             weight: 10
         });
 
         columns.push({
             id: "cookies",
             title: WebInspector.NetworkLogView._columnTitles["cookies"],
-            sortable: true,
             weight: 6,
             align: WebInspector.DataGrid.Align.Right
         });
@@ -392,7 +379,6 @@ WebInspector.NetworkLogView.prototype = {
         columns.push({
             id: "setCookies",
             title: WebInspector.NetworkLogView._columnTitles["setCookies"],
-            sortable: true,
             weight: 6,
             align: WebInspector.DataGrid.Align.Right
         });
@@ -401,7 +387,6 @@ WebInspector.NetworkLogView.prototype = {
             id: "size",
             titleDOMFragment: this._makeHeaderFragment(WebInspector.UIString("Size"), WebInspector.UIString("Content")),
             title: WebInspector.NetworkLogView._columnTitles["size"],
-            sortable: true,
             weight: 6,
             align: WebInspector.DataGrid.Align.Right
         });
@@ -410,7 +395,6 @@ WebInspector.NetworkLogView.prototype = {
             id: "time",
             titleDOMFragment: this._makeHeaderFragment(WebInspector.UIString("Time"), WebInspector.UIString("Latency")),
             title: WebInspector.NetworkLogView._columnTitles["time"],
-            sortable: true,
             weight: 6,
             align: WebInspector.DataGrid.Align.Right
         });
@@ -418,7 +402,6 @@ WebInspector.NetworkLogView.prototype = {
         columns.push({
             id: "connectionId",
             title: WebInspector.NetworkLogView._columnTitles["connectionId"],
-            sortable: true,
             weight: 6
         });
 
@@ -442,6 +425,11 @@ WebInspector.NetworkLogView.prototype = {
             weight: 40,
             sort: WebInspector.DataGrid.Order.Ascending
         });
+
+        for (var column of columns) {
+            column.sortable = column.id !== "timeline";
+            column.nonSelectable = column.id !== "name";
+        }
 
         this._dataGrid = new WebInspector.SortableDataGrid(columns);
         this._dataGrid.setStickToBottom(true);
@@ -1097,12 +1085,6 @@ WebInspector.NetworkLogView.prototype = {
 
         this.element.classList.toggle("brief-mode", !gridMode);
         this._updateColumns();
-    },
-
-    revealSelectedItem: function()
-    {
-        if (this._dataGrid.selectedNode)
-            this._dataGrid.selectedNode.reveal();
     },
 
     /**

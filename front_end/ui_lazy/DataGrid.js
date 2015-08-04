@@ -81,9 +81,9 @@ WebInspector.DataGrid = function(columnsArray, editCallback, deleteCallback, ref
     this._dataTableColumnGroup = createElement("colgroup");
 
     /** @type {!Element} */
-    this._topFillerRow = createElementWithClass("tr", "revealed");
+    this._topFillerRow = createElementWithClass("tr", "data-grid-filler-row revealed");
     /** @type {!Element} */
-    this._bottomFillerRow = createElementWithClass("tr", "revealed");
+    this._bottomFillerRow = createElementWithClass("tr", "data-grid-filler-row revealed");
     this.setVerticalPadding(0, 0);
 
     /** @type {!Array.<!WebInspector.DataGrid.ColumnDescriptor>} */
@@ -158,7 +158,7 @@ WebInspector.DataGrid = function(columnsArray, editCallback, deleteCallback, ref
 // Keep in sync with .data-grid col.corner style rule.
 WebInspector.DataGrid.CornerWidth = 14;
 
-/** @typedef {!{id: ?string, editable: boolean, longText: ?boolean, sort: !WebInspector.DataGrid.Order, sortable: boolean, align: !WebInspector.DataGrid.Align}} */
+/** @typedef {!{id: ?string, editable: boolean, longText: ?boolean, sort: !WebInspector.DataGrid.Order, sortable: boolean, align: !WebInspector.DataGrid.Align, nonSelectable: boolean}} */
 WebInspector.DataGrid.ColumnDescriptor;
 
 WebInspector.DataGrid.Events = {
@@ -230,6 +230,7 @@ WebInspector.DataGrid.prototype = {
             this._bottomFillerRow.style.height = bottom + "px";
         else
             this._bottomFillerRow.style.height = "auto";
+        this.element.classList.toggle("data-grid-fits-viewport", top + bottom === 0);
     },
 
     /**
@@ -899,6 +900,10 @@ WebInspector.DataGrid.prototype = {
             return;
 
         if (gridNode.isEventWithinDisclosureTriangle(event))
+            return;
+
+        var columnIdentifier = this.columnIdentifierFromNode(event.target);
+        if (columnIdentifier && this._columns[columnIdentifier].nonSelectable)
             return;
 
         if (event.metaKey) {

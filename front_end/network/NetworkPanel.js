@@ -91,10 +91,8 @@ WebInspector.NetworkPanel = function()
     this._toggleShowOverview();
     this._toggleLargerRequests();
     this._toggleRecordFilmStrip();
-    this._dockSideChanged();
+    this._updateUI();
 
-    WebInspector.dockController.addEventListener(WebInspector.DockController.Events.DockSideChanged, this._dockSideChanged.bind(this));
-    WebInspector.moduleSetting("splitVerticallyWhenDockedToRight").addChangeListener(this._dockSideChanged.bind(this));
     WebInspector.targetManager.addModelListener(WebInspector.ResourceTreeModel, WebInspector.ResourceTreeModel.EventTypes.WillReloadPage, this._willReloadPage, this);
     WebInspector.targetManager.addModelListener(WebInspector.ResourceTreeModel, WebInspector.ResourceTreeModel.EventTypes.Load, this._load, this);
     this._networkLogView.addEventListener(WebInspector.NetworkLogView.EventTypes.RequestSelected, this._onRequestSelected, this);
@@ -300,21 +298,6 @@ WebInspector.NetworkPanel.prototype = {
     },
 
     /**
-     * @return {boolean}
-     */
-    _isDetailsPaneAtBottom: function()
-    {
-        return WebInspector.moduleSetting("splitVerticallyWhenDockedToRight").get() && WebInspector.dockController.isVertical();
-    },
-
-    _dockSideChanged: function()
-    {
-        var detailsViewAtBottom = this._isDetailsPaneAtBottom();
-        this._splitWidget.setVertical(!detailsViewAtBottom);
-        this._updateUI();
-    },
-
-    /**
      * @override
      * @return {!Array.<!Element>}
      */
@@ -412,7 +395,6 @@ WebInspector.NetworkPanel.prototype = {
             this._networkItemView.insertBeforeTabStrip(this._closeButtonElement);
             this._networkItemView.show(this._detailsWidget.element);
             this._splitWidget.showBoth();
-            this._networkLogView.revealSelectedItem();
         } else {
             this._splitWidget.hideMain();
             this._networkLogView.clearSelection();
@@ -422,9 +404,8 @@ WebInspector.NetworkPanel.prototype = {
 
     _updateUI: function()
     {
-        var detailsPaneAtBottom = this._isDetailsPaneAtBottom();
-        this._detailsWidget.element.classList.toggle("network-details-view-tall-header", this._networkLogLargeRowsSetting.get() && !detailsPaneAtBottom);
-        this._networkLogView.switchViewMode(!this._splitWidget.isResizable() || detailsPaneAtBottom);
+        this._detailsWidget.element.classList.toggle("network-details-view-tall-header", this._networkLogLargeRowsSetting.get());
+        this._networkLogView.switchViewMode(!this._splitWidget.isResizable());
     },
 
     /**

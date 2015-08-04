@@ -42,6 +42,11 @@
     display: none;
 }
 
+.platform-mac .data-grid .corner,
+.data-grid.data-grid-fits-viewport .corner {
+    display: none;
+}
+
 .data-grid .corner {
     width: 14px;
     padding-right: 0;

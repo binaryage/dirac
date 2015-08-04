@@ -53,7 +53,7 @@
 }
 
 .network-log-grid .odd {
-    background: #eee;
+    background: #f5f5f5;
 }
 
 .network-log-grid .network-navigation-row,
@@ -87,11 +87,11 @@
 }
 
 .network-log-grid.data-grid.small .header-container {
-    height: 23px;
+    height: 27px;
 }
 
 .network-log-grid.data-grid.small .data-container {
-    top: 23px;
+    top: 27px;
 }
 
 .network-log-grid.data-grid select {
@@ -604,4 +604,8 @@
 /* Brief mode peculiarities. */
 #network-container.brief-mode .network-timeline-grid {
     display: none;
+}
+
+.network-log-grid.data-grid .data-container tr:not(.data-grid-filler-row):not(.selected):hover {
+    background-color: rgba(56, 121, 217, 0.1);
 }
