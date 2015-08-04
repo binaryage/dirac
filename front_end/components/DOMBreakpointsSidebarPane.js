@@ -71,8 +71,9 @@ WebInspector.DOMBreakpointsSidebarPane.prototype = {
     /**
      * @param {!WebInspector.DOMNode} node
      * @param {!WebInspector.ContextMenu} contextMenu
+     * @param {boolean} createSubMenu
      */
-    populateNodeContextMenu: function(node, contextMenu)
+    populateNodeContextMenu: function(node, contextMenu, createSubMenu)
     {
         if (node.pseudoType())
             return;
@@ -97,11 +98,11 @@ WebInspector.DOMBreakpointsSidebarPane.prototype = {
             this._saveBreakpoints();
         }
 
-        var breakPointSubMenu = contextMenu.appendSubMenuItem(WebInspector.UIString("Break on..."));
+        var breakpointsMenu = createSubMenu ? contextMenu.appendSubMenuItem(WebInspector.UIString("Break on...")) : contextMenu;
         for (var key in this._breakpointTypes) {
             var type = this._breakpointTypes[key];
             var label = this._contextMenuLabels[type];
-            breakPointSubMenu.appendCheckboxItem(label, toggleBreakpoint.bind(this, type), nodeBreakpoints[type]);
+            breakpointsMenu.appendCheckboxItem(label, toggleBreakpoint.bind(this, type), nodeBreakpoints[type]);
         }
     },
 

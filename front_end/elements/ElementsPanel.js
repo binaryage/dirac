@@ -127,6 +127,11 @@ WebInspector.ElementsPanel.prototype = {
         this._editAsHTMLButton = new WebInspector.ToolbarButton(WebInspector.UIString("Edit as HTML"), "edit-toolbar-item");
         this._editAsHTMLButton.setAction("elements.edit-as-html");
         toolbar.appendToolbarItem(this._editAsHTMLButton);
+
+        this._breakpointsButton = new WebInspector.ToolbarButton(WebInspector.UIString("Toggle breakpoints"), "breakpoint-toolbar-item");
+        this._breakpointsButton.addEventListener("click", this._showBreakpointsMenu.bind(this));
+        toolbar.appendToolbarItem(this._breakpointsButton);
+
         toolbar.appendSeparator();
         return toolbar;
     },
@@ -153,6 +158,7 @@ WebInspector.ElementsPanel.prototype = {
         this._hideElementButton.element.classList.toggle("visibility-off-toolbar-item", this._hideElementButton.toggled());
         this._hideElementButton.element.classList.toggle("visibility-toolbar-item", !this._hideElementButton.toggled());
         this._editAsHTMLButton.setToggled(false);
+        this._breakpointsButton.setEnabled(!node.pseudoType());
     },
 
     _toggleEditAsHTML: function()
@@ -164,6 +170,22 @@ WebInspector.ElementsPanel.prototype = {
         var startEditing = !this._editAsHTMLButton.toggled();
         treeOutline.toggleEditAsHTML(node, startEditing, this._updateToolbarButtons.bind(this));
         this._editAsHTMLButton.setToggled(startEditing);
+    },
+
+    /**
+     * @param {!WebInspector.Event} event
+     */
+    _showBreakpointsMenu: function(event)
+    {
+        var node = this.selectedDOMNode();
+        if (!node)
+            return;
+        var contextMenu = new WebInspector.ContextMenu(/** @type {!Event} */(event.data),
+            true,
+            this._breakpointsButton.element.totalOffsetLeft(),
+            this._breakpointsButton.element.totalOffsetTop() + this._breakpointsButton.element.offsetHeight);
+        WebInspector.domBreakpointsSidebarPane.populateNodeContextMenu(node, contextMenu, false);
+        contextMenu.show();
     },
 
     _loadSidebarViews: function()
@@ -877,7 +899,7 @@ WebInspector.ElementsPanel.prototype = {
         // Add debbuging-related actions
         if (object instanceof WebInspector.DOMNode) {
             contextMenu.appendSeparator();
-            WebInspector.domBreakpointsSidebarPane.populateNodeContextMenu(object, contextMenu);
+            WebInspector.domBreakpointsSidebarPane.populateNodeContextMenu(object, contextMenu, true);
         }
 
         // Skip adding "Reveal..." menu item for our own tree outline.
