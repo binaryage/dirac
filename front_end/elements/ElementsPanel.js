@@ -120,8 +120,50 @@ WebInspector.ElementsPanel.prototype = {
     {
         var toolbar = new WebInspector.ExtensibleToolbar("elements-toolbar");
         toolbar.element.classList.add("elements-toolbar");
+        this._hideElementButton = new WebInspector.ToolbarButton(WebInspector.UIString("Hide element"), "visibility-toolbar-item");
+        this._hideElementButton.setAction("elements.hide-element");
+        toolbar.appendToolbarItem(this._hideElementButton);
+
+        this._editAsHTMLButton = new WebInspector.ToolbarButton(WebInspector.UIString("Edit as HTML"), "edit-toolbar-item");
+        this._editAsHTMLButton.setAction("elements.edit-as-html");
+        toolbar.appendToolbarItem(this._editAsHTMLButton);
         toolbar.appendSeparator();
         return toolbar;
+    },
+
+    _toggleHideElement: function()
+    {
+        var node = this.selectedDOMNode();
+        var treeOutline = this._treeOutlineForNode(node);
+        if (!node || !treeOutline)
+            return;
+        treeOutline.toggleHideElement(node);
+        this._hideElementButton.setToggled(!this._hideElementButton.toggled());
+        this._hideElementButton.element.classList.toggle("visibility-off-toolbar-item", this._hideElementButton.toggled());
+        this._hideElementButton.element.classList.toggle("visibility-toolbar-item", !this._hideElementButton.toggled());
+    },
+
+    _updateToolbarButtons: function()
+    {
+        var node = this.selectedDOMNode();
+        if (!node)
+            return;
+        var classText = node.getAttribute("class");
+        this._hideElementButton.setToggled(classText && classText.match(/__web-inspector-hide/));
+        this._hideElementButton.element.classList.toggle("visibility-off-toolbar-item", this._hideElementButton.toggled());
+        this._hideElementButton.element.classList.toggle("visibility-toolbar-item", !this._hideElementButton.toggled());
+        this._editAsHTMLButton.setToggled(false);
+    },
+
+    _toggleEditAsHTML: function()
+    {
+        var node = this.selectedDOMNode();
+        var treeOutline = this._treeOutlineForNode(node);
+        if (!node || !treeOutline)
+            return;
+        var startEditing = !this._editAsHTMLButton.toggled();
+        treeOutline.toggleEditAsHTML(node, startEditing, this._updateToolbarButtons.bind(this));
+        this._editAsHTMLButton.setToggled(startEditing);
     },
 
     _loadSidebarViews: function()
@@ -323,6 +365,8 @@ WebInspector.ElementsPanel.prototype = {
         }
         WebInspector.notifications.dispatchEventToListeners(WebInspector.NotificationService.Events.SelectedNodeChanged);
         this._selectedNodeChangedForTest();
+        if (Runtime.experiments.isEnabled("materialDesign"))
+            this._updateToolbarButtons();
     },
 
     _selectedNodeChangedForTest: function() { },
@@ -1127,5 +1171,27 @@ WebInspector.ElementsPanelFactory.prototype = {
     createPanel: function()
     {
         return WebInspector.ElementsPanel.instance();
+    }
+}
+
+/**
+ * @constructor
+ * @implements {WebInspector.ActionDelegate}
+ */
+WebInspector.ElementsActionDelegate = function() { }
+
+WebInspector.ElementsActionDelegate.prototype = {
+    /**
+     * @override
+     * @param {!WebInspector.Context} context
+     * @param {string} actionId
+     */
+    handleAction: function(context, actionId)
+    {
+        var elementsPanel = WebInspector.ElementsPanel.instance();
+        if (actionId === "elements.hide-element")
+            elementsPanel._toggleHideElement();
+        else if (actionId === "elements.edit-as-html")
+            elementsPanel._toggleEditAsHTML();
     }
 }

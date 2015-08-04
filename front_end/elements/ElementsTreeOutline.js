@@ -57,7 +57,6 @@ WebInspector.ElementsTreeOutline = function(domModel, omitRootDOMNode, selectEna
     this._element.addEventListener("dragleave", this._ondragleave.bind(this), false);
     this._element.addEventListener("drop", this._ondrop.bind(this), false);
     this._element.addEventListener("dragend", this._ondragend.bind(this), false);
-    this._element.addEventListener("keydown", this._onkeydown.bind(this), false);
     this._element.addEventListener("webkitAnimationEnd", this._onAnimationEnd.bind(this), false);
     this._element.addEventListener("contextmenu", this._contextMenuEventFired.bind(this), false);
 
@@ -897,25 +896,6 @@ WebInspector.ElementsTreeOutline.prototype = {
         }
     },
 
-    /**
-     * @param {!Event} event
-     */
-    _onkeydown: function(event)
-    {
-        var keyboardEvent = /** @type {!KeyboardEvent} */ (event);
-        var node = /** @type {!WebInspector.DOMNode} */ (this.selectedDOMNode());
-        console.assert(node);
-        var treeElement = node[this._treeElementSymbol];
-        if (!treeElement)
-            return;
-
-        if (!treeElement.isEditing() && WebInspector.KeyboardShortcut.hasNoModifiers(keyboardEvent) && keyboardEvent.keyCode === WebInspector.KeyboardShortcut.Keys.H.code) {
-            this._toggleHideShortcut(node);
-            event.consume(true);
-            return;
-        }
-    },
-
     _contextMenuEventFired: function(event)
     {
         var treeElement = this._treeElementFromEvent(event);
@@ -961,12 +941,6 @@ WebInspector.ElementsTreeOutline.prototype = {
         if (!treeElement)
             return;
 
-        if (event.keyIdentifier === "F2" && treeElement.hasEditableNode()) {
-            this._toggleEditAsHTML(node);
-            event.handled = true;
-            return;
-        }
-
         if (WebInspector.KeyboardShortcut.eventHasCtrlOrMeta(event) && node.parentNode) {
             if (event.keyIdentifier === "Up" && node.previousSibling) {
                 node.moveTo(node.parentNode, node.previousSibling, this.selectNodeAfterEdit.bind(this, treeElement.expanded));
@@ -983,11 +957,13 @@ WebInspector.ElementsTreeOutline.prototype = {
 
     /**
      * @param {!WebInspector.DOMNode} node
+     * @param {boolean=} startEditing
+     * @param {function()=} callback
      */
-    _toggleEditAsHTML: function(node)
+    toggleEditAsHTML: function(node, startEditing, callback)
     {
         var treeElement = node[this._treeElementSymbol];
-        if (!treeElement)
+        if (!treeElement || !treeElement.hasEditableNode())
             return;
 
         if (node.pseudoType())
@@ -997,7 +973,7 @@ WebInspector.ElementsTreeOutline.prototype = {
         var index = node.index;
         var wasExpanded = treeElement.expanded;
 
-        treeElement.toggleEditAsHTML(editingFinished.bind(this));
+        treeElement.toggleEditAsHTML(editingFinished.bind(this), startEditing);
 
         /**
          * @this {WebInspector.ElementsTreeOutline}
@@ -1005,6 +981,8 @@ WebInspector.ElementsTreeOutline.prototype = {
          */
         function editingFinished(success)
         {
+            if (callback)
+                callback();
             if (!success)
                 return;
 
@@ -1062,7 +1040,7 @@ WebInspector.ElementsTreeOutline.prototype = {
      * @param {!WebInspector.DOMNode} node
      * @param {function(?WebInspector.RemoteObject, boolean=)=} userCallback
      */
-    _toggleHideShortcut: function(node, userCallback)
+    toggleHideElement: function(node, userCallback)
     {
         var pseudoType = node.pseudoType();
         var effectiveNode = pseudoType ? node.parentNode : node;

@@ -79,6 +79,26 @@
             "className": "WebInspector.ElementStatePaneWidget.ButtonProvider",
             "order": 1,
             "location": "styles-sidebarpane-toolbar"
+        },
+        {
+            "type": "@WebInspector.ActionDelegate",
+            "actionId": "elements.hide-element",
+            "className": "WebInspector.ElementsActionDelegate",
+            "bindings": [
+                {
+                    "shortcut": "H"
+                }
+            ]
+        },
+        {
+            "type": "@WebInspector.ActionDelegate",
+            "actionId": "elements.edit-as-html",
+            "className": "WebInspector.ElementsActionDelegate",
+            "bindings": [
+                {
+                    "shortcut": "F2"
+                }
+            ]
         }
     ],
     "dependencies": [

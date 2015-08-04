@@ -1437,13 +1437,17 @@ WebInspector.ElementsTreeElement.prototype = {
 
     /**
      * @param {function(boolean)=} callback
+     * @param {boolean=} startEditing
      */
-    toggleEditAsHTML: function(callback)
+    toggleEditAsHTML: function(callback, startEditing)
     {
         if (this._editing && this._htmlEditElement && WebInspector.isBeingEdited(this._htmlEditElement)) {
             this._editing.commit();
             return;
         }
+
+        if (startEditing === false)
+            return;
 
         /**
          * @param {?Protocol.Error} error

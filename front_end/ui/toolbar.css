@@ -305,8 +305,12 @@ select.toolbar-item {
     -webkit-mask-position: 0 0;
 }
 
-.focus-toolbar-item .glyph {
+.visibility-toolbar-item .glyph {
     -webkit-mask-position: -96px 0;
+}
+
+.visibility-off-toolbar-item .glyph {
+    -webkit-mask-position: -192px 0;
 }
 
 .console-toolbar-item .glyph {
@@ -315,6 +319,10 @@ select.toolbar-item {
 
 .large-list-toolbar-item .glyph {
     -webkit-mask-position: -224px 0;
+}
+
+.edit-toolbar-item .glyph {
+    -webkit-mask-position: -224px -72px;
 }
 
 .screencast-toolbar-item .glyph {
