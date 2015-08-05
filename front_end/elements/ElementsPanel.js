@@ -128,9 +128,11 @@ WebInspector.ElementsPanel.prototype = {
         this._editAsHTMLButton.setAction("elements.edit-as-html");
         toolbar.appendToolbarItem(this._editAsHTMLButton);
 
-        this._breakpointsButton = new WebInspector.ToolbarButton(WebInspector.UIString("Toggle breakpoints"), "breakpoint-toolbar-item");
-        this._breakpointsButton.addEventListener("click", this._showBreakpointsMenu.bind(this));
+        this._breakpointsButton = new WebInspector.ToolbarMenuButton(WebInspector.UIString("Toggle breakpoints"), "breakpoint-toolbar-item", this._showBreakpointsMenu.bind(this));
         toolbar.appendToolbarItem(this._breakpointsButton);
+
+        this._forceElementStateButton = new WebInspector.ToolbarMenuButton(WebInspector.UIString("Force element state"), "pin-toolbar-item", this._showForceElementStateMenu.bind(this));
+        toolbar.appendToolbarItem(this._forceElementStateButton);
 
         toolbar.appendSeparator();
         return toolbar;
@@ -159,6 +161,7 @@ WebInspector.ElementsPanel.prototype = {
         this._hideElementButton.element.classList.toggle("visibility-toolbar-item", !this._hideElementButton.toggled());
         this._editAsHTMLButton.setToggled(false);
         this._breakpointsButton.setEnabled(!node.pseudoType());
+        this._forceElementStateButton.setEnabled(node.nodeType() === Node.ELEMENT_NODE && !node.pseudoType());
     },
 
     _toggleEditAsHTML: function()
@@ -173,19 +176,25 @@ WebInspector.ElementsPanel.prototype = {
     },
 
     /**
-     * @param {!WebInspector.Event} event
+     * @param {!WebInspector.ContextMenu} contextMenu
      */
-    _showBreakpointsMenu: function(event)
+    _showBreakpointsMenu: function(contextMenu)
     {
         var node = this.selectedDOMNode();
         if (!node)
             return;
-        var contextMenu = new WebInspector.ContextMenu(/** @type {!Event} */(event.data),
-            true,
-            this._breakpointsButton.element.totalOffsetLeft(),
-            this._breakpointsButton.element.totalOffsetTop() + this._breakpointsButton.element.offsetHeight);
         WebInspector.domBreakpointsSidebarPane.populateNodeContextMenu(node, contextMenu, false);
-        contextMenu.show();
+    },
+
+    /**
+     * @param {!WebInspector.ContextMenu} contextMenu
+     */
+    _showForceElementStateMenu: function(contextMenu)
+    {
+        var node = this.selectedDOMNode();
+        if (!node)
+            return;
+        WebInspector.ElementsTreeElement.populateForcedPseudoStateItems(contextMenu, node);
     },
 
     _loadSidebarViews: function()

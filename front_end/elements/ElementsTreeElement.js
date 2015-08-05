@@ -110,6 +110,29 @@ WebInspector.ElementsTreeElement.canShowInlineText = function(node)
     return false;
 }
 
+/**
+ * @param {!WebInspector.ContextSubMenuItem} subMenu
+ * @param {!WebInspector.DOMNode} node
+ */
+WebInspector.ElementsTreeElement.populateForcedPseudoStateItems = function(subMenu, node)
+{
+    const pseudoClasses = ["active", "hover", "focus", "visited"];
+    var forcedPseudoState = node.getUserProperty(WebInspector.CSSStyleModel.PseudoStatePropertyName) || [];
+    for (var i = 0; i < pseudoClasses.length; ++i) {
+        var pseudoClassForced = forcedPseudoState.indexOf(pseudoClasses[i]) >= 0;
+        subMenu.appendCheckboxItem(":" + pseudoClasses[i], setPseudoStateCallback.bind(null, pseudoClasses[i], !pseudoClassForced), pseudoClassForced, false);
+    }
+
+    /**
+     * @param {string} pseudoState
+     * @param {boolean} enabled
+     */
+    function setPseudoStateCallback(pseudoState, enabled)
+    {
+        WebInspector.CSSStyleModel.fromNode(node).forcePseudoState(node, pseudoState, enabled);
+    }
+}
+
 WebInspector.ElementsTreeElement.prototype = {
     /**
      * @return {boolean}
@@ -499,7 +522,7 @@ WebInspector.ElementsTreeElement.prototype = {
             contextMenu.appendItem(WebInspector.UIString.capitalize("Edit ^attribute"), this._startEditingAttribute.bind(this, attribute, event.target));
         contextMenu.appendSeparator();
         var pseudoSubMenu = contextMenu.appendSubMenuItem(WebInspector.UIString.capitalize("Force ^element ^state"));
-        this._populateForcedPseudoStateItems(pseudoSubMenu, treeElement.node());
+        WebInspector.ElementsTreeElement.populateForcedPseudoStateItems(pseudoSubMenu, treeElement.node());
         contextMenu.appendSeparator();
         this.populateNodeContextMenu(contextMenu);
         this.populateScrollIntoView(contextMenu);
@@ -512,29 +535,6 @@ WebInspector.ElementsTreeElement.prototype = {
     {
         contextMenu.appendSeparator();
         contextMenu.appendItem(WebInspector.UIString.capitalize("Scroll into ^view"), this._scrollIntoView.bind(this));
-    },
-
-    /**
-     * @param {!WebInspector.ContextSubMenuItem} subMenu
-     * @param {!WebInspector.DOMNode} node
-     */
-    _populateForcedPseudoStateItems: function(subMenu, node)
-    {
-        const pseudoClasses = ["active", "hover", "focus", "visited"];
-        var forcedPseudoState = node.getUserProperty(WebInspector.CSSStyleModel.PseudoStatePropertyName) || [];
-        for (var i = 0; i < pseudoClasses.length; ++i) {
-            var pseudoClassForced = forcedPseudoState.indexOf(pseudoClasses[i]) >= 0;
-            subMenu.appendCheckboxItem(":" + pseudoClasses[i], setPseudoStateCallback.bind(null, pseudoClasses[i], !pseudoClassForced), pseudoClassForced, false);
-        }
-
-        /**
-         * @param {string} pseudoState
-         * @param {boolean} enabled
-         */
-        function setPseudoStateCallback(pseudoState, enabled)
-        {
-            WebInspector.CSSStyleModel.fromNode(node).forcePseudoState(node, pseudoState, enabled);
-        }
     },
 
     populateTextContextMenu: function(contextMenu, textNode)
