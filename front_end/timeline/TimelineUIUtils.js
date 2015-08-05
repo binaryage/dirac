@@ -1453,15 +1453,15 @@ WebInspector.TimelineUIUtils.generateDetailsContentForFrame = function(frameMode
         Number.millisToString(frame.startTimeOffset, true));
     var pieChart = WebInspector.TimelineUIUtils.generatePieChart(frame.timeByCategory);
     var contentHelper = new WebInspector.TimelineDetailsContentHelper(null, null, null, false);
+    var warning = WebInspector.TimelineUIUtils.frameWarning(frame);
+    if (warning)
+        contentHelper.appendElementRow(WebInspector.UIString("Warning"), warning, true);
     if (filmStripFrame) {
         var filmStripPreview = createElementWithClass("img", "timeline-filmstrip-preview");
         filmStripFrame.imageDataPromise().then(onGotImageData.bind(null, filmStripPreview));
         contentHelper.appendElementRow(WebInspector.UIString("Screenshot"), filmStripPreview);
         filmStripPreview.addEventListener("click", filmStripClicked.bind(null, filmStripFrame), false);
     }
-    var warning = WebInspector.TimelineUIUtils.frameWarning(frame);
-    if (warning)
-        contentHelper.appendElementRow(WebInspector.UIString("Warning"), warning, true);
     contentHelper.appendTextRow(WebInspector.UIString("Duration"), durationText);
     contentHelper.appendTextRow(WebInspector.UIString("FPS"), Math.floor(1000 / durationInMillis));
     contentHelper.appendTextRow(WebInspector.UIString("CPU time"), Number.millisToString(frame.cpuTime, true));
