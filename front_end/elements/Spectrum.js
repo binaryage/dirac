@@ -231,6 +231,8 @@ WebInspector.Spectrum.prototype = {
         for (var i = 0; i < palette.colors.length; i++) {
             var colorElement = this._createPaletteColor(palette.colors[i], i * 100 / palette.colors.length);
             colorElement.addEventListener("click", this._paletteColorSelected.bind(this, palette.colors[i]));
+            colorElement.addEventListener("mouseover", this._liveApplyStart.bind(this, palette.colors[i]));
+            colorElement.addEventListener("mouseout", this._liveApplyEnd.bind(this));
             this._paletteContainer.appendChild(colorElement);
         }
         this._togglePalettePanel(false);
@@ -240,6 +242,30 @@ WebInspector.Spectrum.prototype = {
         var paletteMargin = 12;
         this.element.style.height = (this._paletteContainer.offsetTop + paletteMargin + (paletteColorHeight + paletteMargin) * rowsNeeded) + "px";
         this.dispatchEventToListeners(WebInspector.Spectrum.Events.SizeChanged);
+    },
+
+    /**
+     * @param {string} colorText
+     */
+    _liveApplyStart: function(colorText)
+    {
+        this._underlyingHSV = this._hsv;
+        this._underlyingFormat = this._colorFormat;
+        this._underlyingColorString = this._colorString;
+        var color = WebInspector.Color.parse(colorText);
+        if (!color)
+            return;
+        this._innerSetColor(color.hsva(), colorText, color.format(), WebInspector.Spectrum._ChangeSource.Other);
+    },
+
+    _liveApplyEnd: function()
+    {
+        if (!this._underlyingHSV)
+            return;
+        this._innerSetColor(this._underlyingHSV, this._underlyingColorString, this._underlyingFormat, WebInspector.Spectrum._ChangeSource.Other);
+        delete this._underlyingHSV;
+        delete this._underlyingFormat;
+        delete this._underlyingColorString;
     },
 
     /**
@@ -280,6 +306,7 @@ WebInspector.Spectrum.prototype = {
         if (!color)
             return;
         this._innerSetColor(color.hsva(), colorText, color.format(), WebInspector.Spectrum._ChangeSource.Other);
+        delete this._underlyingHSV;
     },
 
     /**
