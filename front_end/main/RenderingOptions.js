@@ -113,3 +113,45 @@ WebInspector.RenderingOptions.View = function()
 WebInspector.RenderingOptions.View.prototype = {
     __proto__: WebInspector.VBox.prototype
 }
+
+/**
+ * @constructor
+ * @implements {WebInspector.ToolbarItem.Provider}
+ */
+WebInspector.RenderingOptions.ButtonProvider = function()
+{
+    this._button = new WebInspector.ToolbarMenuButton(WebInspector.UIString("Rendering performance options"), "timer-toolbar-item", this._appendItems.bind(this));
+    this._renderingOptions = [{ label: WebInspector.UIString("Show paint rectangles"), setting: WebInspector.moduleSetting("showPaintRects") },
+        { label: WebInspector.UIString("Show composited layer borders"), setting: WebInspector.moduleSetting("showDebugBorders") },
+        { label: WebInspector.UIString("Show FPS meter"), setting: WebInspector.moduleSetting("showFPSCounter") },
+        { label: WebInspector.UIString("Enable continuous page repainting"), setting: WebInspector.moduleSetting("continuousPainting") },
+        { label: WebInspector.UIString("Show potential scroll bottlenecks"), setting: WebInspector.moduleSetting("showScrollBottleneckRects") }];
+}
+
+WebInspector.RenderingOptions.ButtonProvider.prototype = {
+    /**
+     * @override
+     * @return {?WebInspector.ToolbarItem}
+     */
+    item: function()
+    {
+        return this._button;
+    },
+
+    /**
+     * @param {!WebInspector.ContextMenu} contextMenu
+     */
+    _appendItems: function(contextMenu)
+    {
+        for (var option of this._renderingOptions)
+            contextMenu.appendCheckboxItem(option.label, this._toggleSetting.bind(this, option.setting), option.setting.get());
+    },
+
+    /**
+     * @param {!WebInspector.Setting} setting
+     */
+    _toggleSetting: function(setting)
+    {
+        setting.set(!setting.get());
+    }
+}

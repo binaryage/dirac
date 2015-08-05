@@ -147,7 +147,8 @@
             "name": "rendering",
             "title": "Rendering",
             "order": "11",
-            "className": "WebInspector.RenderingOptions.View"
+            "className": "WebInspector.RenderingOptions.View",
+            "experiment": "!materialDesign"
         },
         {
             "type": "@WebInspector.ToolbarItem.Provider",
@@ -279,6 +280,13 @@
             "type": "@WebInspector.SettingUI",
             "category": "Extensions",
             "className": "WebInspector.HandlerRegistry.OpenAnchorLocationSettingUI"
+        },
+        {
+            "type": "@WebInspector.ToolbarItem.Provider",
+            "className": "WebInspector.RenderingOptions.ButtonProvider",
+            "order": 1,
+            "location": "elements-toolbar",
+            "experiment": "materialDesign"
         },
         {
             "type": "setting",

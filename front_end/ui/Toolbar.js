@@ -641,6 +641,37 @@ WebInspector.ToolbarButton.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.ToolbarButton}
+ * @param {string} title
+ * @param {string} className
+ * @param {function(!WebInspector.ContextMenu)} contextMenuHandler
+ */
+WebInspector.ToolbarMenuButton = function(title, className, contextMenuHandler)
+{
+    WebInspector.ToolbarButton.call(this, title, className);
+    this._contextMenuHandler = contextMenuHandler;
+}
+
+WebInspector.ToolbarMenuButton.prototype = {
+    /**
+     * @override
+     * @param {!Event} event
+     */
+    _clicked: function(event)
+    {
+        var contextMenu = new WebInspector.ContextMenu(event,
+            true,
+            this.element.totalOffsetLeft(),
+            this.element.totalOffsetTop() + this.element.offsetHeight);
+        this._contextMenuHandler(contextMenu);
+        contextMenu.show();
+    },
+
+    __proto__: WebInspector.ToolbarButton.prototype
+}
+
+/**
+ * @constructor
+ * @extends {WebInspector.ToolbarButton}
  * @param {!WebInspector.Setting} setting
  * @param {string} className
  * @param {string} title
