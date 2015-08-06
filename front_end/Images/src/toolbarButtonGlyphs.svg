@@ -21,9 +21,9 @@
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" /></cc:Work></rdf:RDF></metadata><sodipodi:namedview
      showgrid="true"
      id="namedview3397"
-     inkscape:zoom="3.9999998"
-     inkscape:cx="323.36021"
-     inkscape:cy="50.070967"
+     inkscape:zoom="7.9999996"
+     inkscape:cx="343.64995"
+     inkscape:cy="28.326694"
      inkscape:window-width="1859"
      inkscape:window-height="1176"
      inkscape:window-x="1981"
@@ -41,10 +41,7 @@
        spacingx="32px"
        spacingy="24px"
        type="xygrid"
-       visible="true" /><sodipodi:guide
-       orientation="0,1"
-       position="31.250002,132.00001"
-       id="guide3227" /></sodipodi:namedview><defs
+       visible="true" /></sodipodi:namedview><defs
      id="defs3400"><linearGradient
        id="a"><stop
          offset="0"
@@ -959,4 +956,10 @@
      id="path3224" /><path
      d="m 338.33036,76.323224 h -4.57143 v 1.52381 h 4.57143 v -1.52381 z m -3.04762,9.904762 h 1.52381 v -4.571428 h -1.52381 v 4.571428 z m 6.11809,-5.036191 1.08191,-1.081904 c -0.32762,-0.388571 -0.68572,-0.754286 -1.07429,-1.074286 l -1.0819,1.081905 c -1.18095,-0.944762 -2.66667,-1.508571 -4.28191,-1.508571 -3.78667,0 -6.85714,3.070475 -6.85714,6.857142 0,3.786667 3.06285,6.857143 6.85714,6.857143 3.79429,0 6.85715,-3.070476 6.85715,-6.857143 0,-1.615237 -0.56382,-3.100952 -1.50096,-4.274286 z m -5.35619,9.607619 c -2.94857,0 -5.33333,-2.384761 -5.33333,-5.333333 0,-2.948571 2.38476,-5.333333 5.33333,-5.333333 2.94857,0 5.33333,2.384762 5.33333,5.333333 0,2.948572 -2.38476,5.333333 -5.33333,5.333333 z"
      id="path3226"
-     inkscape:connector-curvature="0" /></svg>
+     inkscape:connector-curvature="0" /><path
+     d="m 333.64706,114.1941 h 4.70588 v -5.64706 h -4.70588 v 5.64706 z m -5.64706,0 h 4.70588 V 101.95881 H 328 v 12.23529 z m 11.29412,0 H 344 v -5.64706 h -4.70588 v 5.64706 z m -5.64706,-12.23529 v 5.64705 H 344 v -5.64705 h -10.35294 z"
+     id="path3227"
+     inkscape:connector-curvature="0" /><path
+     d="M0 0h24v24H0z"
+     fill="none"
+     id="path3229" /></svg>
