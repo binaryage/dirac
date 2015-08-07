@@ -195,7 +195,7 @@ WebInspector.TimelineOverviewPane.prototype = {
             overviewControls[i].show(this._overviewGrid.element);
         }
         this._overviewControls = overviewControls;
-        this.scheduleUpdate();
+        this._update();
     },
 
     /**
