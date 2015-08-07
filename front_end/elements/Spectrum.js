@@ -104,14 +104,22 @@ WebInspector.Spectrum = function()
 
     if (Runtime.experiments.isEnabled("colorPalettes")) {
         this.element.classList.add("palettes-enabled");
-        /** @type {!Array.<!WebInspector.Spectrum.Palette>} */
-        this._palettes = [];
-        this._palettePanel = this._createPalettePanel();
+        /** @type {!Map.<string, !WebInspector.Spectrum.Palette>} */
+        this._palettes = new Map();
+        this._palettePanel = this.contentElement.createChild("div", "palette-panel");
         this._palettePanelShowing = false;
         this._paletteContainer = this.contentElement.createChild("div", "spectrum-palette");
         var paletteSwitcher = this.contentElement.createChild("div", "spectrum-palette-switcher spectrum-switcher");
         appendSwitcherIcon(paletteSwitcher);
         paletteSwitcher.addEventListener("click", this._togglePalettePanel.bind(this, true));
+        var overlay = this.contentElement.createChild("div", "spectrum-overlay fill");
+        overlay.addEventListener("click", this._togglePalettePanel.bind(this, false));
+
+        this._addColorToolbar = new WebInspector.Toolbar();
+        var addColorButton = new WebInspector.ToolbarButton(WebInspector.UIString("Add to palette"), "add-toolbar-item");
+        addColorButton.addEventListener("click", this._addColorToCustomPalette.bind(this));
+        this._addColorToolbar.appendToolbarItem(addColorButton);
+
         new WebInspector.Spectrum.PaletteGenerator(this._generatedPaletteLoaded.bind(this));
     }
 
@@ -180,19 +188,17 @@ WebInspector.Spectrum.Events = {
 };
 
 WebInspector.Spectrum.prototype = {
-    /**
-     * @return {!Element}
-     */
-    _createPalettePanel: function()
+    _updatePalettePanel: function()
     {
-        var panel = this.contentElement.createChild("div", "palette-panel");
-        var title = panel.createChild("div", "palette-title");
+        this._palettePanel.removeChildren();
+        var title = this._palettePanel.createChild("div", "palette-title");
         title.textContent = WebInspector.UIString("Color Palettes");
-        var toolbar = new WebInspector.Toolbar(panel);
+        var toolbar = new WebInspector.Toolbar(this._palettePanel);
         var closeButton = new WebInspector.ToolbarButton("Return to color picker", "delete-toolbar-item");
         closeButton.addEventListener("click", this._togglePalettePanel.bind(this, false));
         toolbar.appendToolbarItem(closeButton);
-        return panel;
+        for (var palette of this._palettes.values())
+            this._palettePanel.appendChild(this._createPreviewPaletteElement(palette));
     },
 
     /**
@@ -202,8 +208,10 @@ WebInspector.Spectrum.prototype = {
     {
         if (this._palettePanelShowing === show)
             return;
+        if (show)
+            this._updatePalettePanel();
         this._palettePanelShowing = show;
-        this._palettePanel.classList.toggle("palette-panel-showing", show);
+        this.contentElement.classList.toggle("palette-panel-showing", show);
     },
 
     /**
@@ -223,21 +231,33 @@ WebInspector.Spectrum.prototype = {
 
     /**
      * @param {!WebInspector.Spectrum.Palette} palette
+     * @param {boolean} animate
      * @param {!Event=} event
      */
-    _showPalette: function(palette, event)
+    _showPalette: function(palette, animate, event)
     {
         this._paletteContainer.removeChildren();
         for (var i = 0; i < palette.colors.length; i++) {
-            var colorElement = this._createPaletteColor(palette.colors[i], i * 100 / palette.colors.length);
+            var animationDelay = animate ? i * 100 / palette.colors.length : 0;
+            var colorElement = this._createPaletteColor(palette.colors[i], animationDelay);
             colorElement.addEventListener("click", this._paletteColorSelected.bind(this, palette.colors[i]));
             colorElement.addEventListener("mouseover", this._liveApplyStart.bind(this, palette.colors[i]));
             colorElement.addEventListener("mouseout", this._liveApplyEnd.bind(this));
+            if (palette.mutable)
+                colorElement.addEventListener("contextmenu", this._showPaletteColorContextMenu.bind(this, i));
             this._paletteContainer.appendChild(colorElement);
         }
-        this._togglePalettePanel(false);
 
-        var rowsNeeded = Math.max(1, Math.ceil(palette.colors.length / 8));
+        var numItems = palette.colors.length;
+        if (palette.mutable)
+            numItems++;
+        var rowsNeeded = Math.max(1, Math.ceil(numItems / 8));
+        for (var i = 0; palette.mutable && i < rowsNeeded * 8 - numItems; i++)
+            this._paletteContainer.createChild("div", "spectrum-palette-color empty-color");
+        if (palette.mutable)
+            this._paletteContainer.appendChild(this._addColorToolbar.element);
+
+        this._togglePalettePanel(false);
         var paletteColorHeight = 12;
         var paletteMargin = 12;
         this.element.style.height = (this._paletteContainer.offsetTop + paletteMargin + (paletteColorHeight + paletteMargin) * rowsNeeded) + "px";
@@ -273,12 +293,19 @@ WebInspector.Spectrum.prototype = {
      */
     _generatedPaletteLoaded: function(generatedPalette)
     {
-        this._palettes.push(generatedPalette);
-        this._palettes.push(WebInspector.Spectrum.MaterialPalette);
-        // TODO(samli): Load custom palettes.
-        for (var palette of this._palettes)
-            this._palettePanel.appendChild(this._createPreviewPaletteElement(palette));
-        this._showPalette(this._palettes[0].colors.length ? this._palettes[0] : this._palettes[1]);
+        if (generatedPalette.colors.length)
+            this._palettes.set(generatedPalette.title, generatedPalette);
+        this._palettes.set(WebInspector.Spectrum.MaterialPalette.title, WebInspector.Spectrum.MaterialPalette);
+        /** @type {!WebInspector.Spectrum.Palette} */
+        var defaultCustomPalette = { title: "Custom", colors: [], mutable: true };
+        this._customPaletteSetting = WebInspector.settings.createSetting("customColorPalette", defaultCustomPalette);
+        this._palettes.set(this._customPaletteSetting.get().title, this._customPaletteSetting.get());
+
+        this._selectedColorPalette = WebInspector.settings.createSetting("selectedColorPalette", WebInspector.Spectrum.GeneratedPaletteTitle);
+        var paletteToShow = this._palettes.get(this._selectedColorPalette.get() || WebInspector.Spectrum.GeneratedPaletteTitle)
+            || this._palettes.get("Material");
+        if (paletteToShow)
+            this._showPalette(paletteToShow, true);
     },
 
     /**
@@ -293,8 +320,19 @@ WebInspector.Spectrum.prototype = {
         titleElement.textContent = palette.title;
         for (var i = 0; i < colorsPerPreviewRow && i < palette.colors.length; i++)
             previewElement.appendChild(this._createPaletteColor(palette.colors[i]));
-        previewElement.addEventListener("click", this._showPalette.bind(this, palette));
+        for (; i < colorsPerPreviewRow; i++)
+            previewElement.createChild("div", "spectrum-palette-color empty-color");
+        previewElement.addEventListener("click", this._paletteSelected.bind(this, palette));
         return previewElement;
+    },
+
+    /**
+     * @param {!WebInspector.Spectrum.Palette} palette
+     */
+    _paletteSelected: function(palette)
+    {
+        this._selectedColorPalette.set(palette.title);
+        this._showPalette(palette, true);
     },
 
     /**
@@ -307,6 +345,40 @@ WebInspector.Spectrum.prototype = {
             return;
         this._innerSetColor(color.hsva(), colorText, color.format(), WebInspector.Spectrum._ChangeSource.Other);
         delete this._underlyingHSV;
+    },
+
+    _addColorToCustomPalette: function()
+    {
+        var palette = this._customPaletteSetting.get();
+        palette.colors.push(this.colorString());
+        this._customPaletteSetting.set(palette);
+        this._showPalette(this._customPaletteSetting.get(), false);
+    },
+
+    /**
+     * @param {number} colorIndex
+     * @param {!Event} event
+     */
+    _showPaletteColorContextMenu: function(colorIndex, event)
+    {
+        var contextMenu = new WebInspector.ContextMenu(event);
+        contextMenu.appendItem(WebInspector.UIString("Remove color"), this._deletePaletteColor.bind(this, colorIndex));
+        contextMenu.appendItem(WebInspector.UIString("Clear palette"), this._deletePaletteColor.bind(this, undefined));
+        contextMenu.show();
+    },
+
+    /**
+     * @param {number=} colorIndex
+     */
+    _deletePaletteColor: function(colorIndex)
+    {
+        var palette = this._customPaletteSetting.get();
+        if (colorIndex !== undefined)
+            palette.colors.splice(colorIndex, 1);
+        else
+            palette.colors = [];
+        this._customPaletteSetting.set(palette);
+        this._showPalette(this._customPaletteSetting.get(), false);
     },
 
     /**
@@ -644,8 +716,9 @@ WebInspector.Spectrum.prototype = {
     __proto__: WebInspector.VBox.prototype
 }
 
-/** @typedef {{ title: string, colors: !Array.<string> }} */
+/** @typedef {{ title: string, colors: !Array.<string>, mutable: boolean }} */
 WebInspector.Spectrum.Palette;
+WebInspector.Spectrum.GeneratedPaletteTitle = "Page colors";
 
 /**
  * @constructor
@@ -692,7 +765,7 @@ WebInspector.Spectrum.PaletteGenerator.prototype = {
                 continue;
             paletteColors.push(colorText);
         }
-        this._callback({ title: "Page colors", colors: paletteColors });
+        this._callback({ title: WebInspector.Spectrum.GeneratedPaletteTitle, colors: paletteColors, mutable: false });
     },
 
     /**
@@ -720,7 +793,7 @@ WebInspector.Spectrum.PaletteGenerator.prototype = {
     }
 }
 
-WebInspector.Spectrum.MaterialPalette = { title: "Material", colors: [
+WebInspector.Spectrum.MaterialPalette = { title: "Material", mutable: false, colors: [
     "#F44336",
     "#E91E63",
     "#9C27B0",
