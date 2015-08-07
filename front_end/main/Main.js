@@ -126,6 +126,7 @@ WebInspector.Main.prototype = {
         Runtime.experiments.register("applyCustomStylesheet", "Allow custom UI themes");
         Runtime.experiments.register("blackboxJSFramesOnTimeline", "Blackbox JavaScript frames on Timeline", true);
         Runtime.experiments.register("colorContrastRatio", "Contrast ratio line in color picker", true);
+        Runtime.experiments.register("timelineTreeView", "Costly functions tree view on the Timeline", true);
         Runtime.experiments.register("timelineDetailsChart", "Costly functions view in Timeline details", true);
         Runtime.experiments.register("colorPalettes", "Color palettes");
         Runtime.experiments.register("customObjectFormatters", "Custom object formatters", true);

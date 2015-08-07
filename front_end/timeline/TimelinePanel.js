@@ -611,6 +611,10 @@ WebInspector.TimelinePanel.prototype = {
             this._flameChart = new WebInspector.TimelineFlameChartView(this, this._model, this._frameModel());
             this._flameChart.enableNetworkPane(this._captureNetworkSetting.get());
             this._addModeView(this._flameChart);
+            if (Runtime.experiments.isEnabled("timelineTreeView")) {
+                var treeView = new WebInspector.TimelineTreeView(this._model);
+                this._addModeView(treeView);
+            }
         } else {
             this._flameChart = null;
             this._filterBar.filterButton().setEnabled(true);

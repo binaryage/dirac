@@ -1610,6 +1610,193 @@ WebInspector.TimelineUIUtils.eventDispatchDesciptors = function()
 }
 
 /**
+ * @param {!Array<!WebInspector.TracingModel.Event>} events
+ * @param {number} startTime
+ * @param {number} endTime
+ * @param {!Array<!WebInspector.TraceEventFilter>} filters
+ * @return {!WebInspector.TimelineModel.ProfileTreeNode}
+ */
+WebInspector.TimelineUIUtils.buildTopDownTree = function(events, startTime, endTime, filters)
+{
+    // Temporarily deposit a big enough value that exceeds the max recording time.
+    var /** @const */ initialTime = 1e7;
+    var root = new WebInspector.TimelineModel.ProfileTreeNode();
+    root.totalTime = initialTime;
+    root.selfTime = initialTime;
+    root.name = WebInspector.UIString("Top-Down Chart");
+    var parent = root;
+
+    /**
+     * @param {!WebInspector.TracingModel.Event} e
+     * @return {boolean}
+     */
+    function filter(e)
+    {
+        if (!e.endTime && e.phase !== WebInspector.TracingModel.Phase.Instant)
+            return false;
+        if (e.endTime <= startTime || e.startTime >= endTime)
+            return false;
+        if (WebInspector.TracingModel.isAsyncPhase(e.phase))
+            return false;
+        for (var filter of filters) {
+            if (!filter.accept(e))
+                return false;
+        }
+        return true;
+    }
+
+    /**
+     * @param {!WebInspector.TracingModel.Event} e
+     */
+    function onStartEvent(e)
+    {
+        if (!filter(e))
+            return;
+        var time = Math.min(endTime, e.endTime) - Math.max(startTime, e.startTime);
+        var id = eventId(e);
+        if (!parent.children)
+            parent.children = {};
+        var node = parent.children[id];
+        if (node) {
+            node.selfTime += time;
+            node.totalTime += time;
+        } else {
+            node = new WebInspector.TimelineModel.ProfileTreeNode();
+            node.totalTime = time;
+            node.selfTime = time;
+            node.parent = parent;
+            node.name = eventName(e);
+            node.id = id;
+            node.event = e;
+            parent.children[id] = node;
+        }
+        parent.selfTime -= time;
+        if (parent.selfTime < 0) {
+            console.log("Error: Negative self of " + parent.selfTime, e);
+            parent.selfTime = 0;
+        }
+        parent = node;
+    }
+
+    /**
+     * @param {!WebInspector.TracingModel.Event} e
+     */
+    function onEndEvent(e)
+    {
+        if (!filter(e))
+            return;
+        parent = parent.parent;
+    }
+
+    /**
+     * @param {!WebInspector.TracingModel.Event} e
+     * @return {string}
+     */
+    function eventId(e)
+    {
+        if (e.name === "JSFrame")
+            return "f:" + (e.args.data.callUID || (e.args.data.functionName + "@" + e.args.data.url));
+        return e.name;
+    }
+
+    /**
+     * @param {!WebInspector.TracingModel.Event} e
+     * @return {string}
+     */
+    function eventName(e)
+    {
+        if (e.name === "JSFrame")
+            return WebInspector.beautifyFunctionName(e.args.data.functionName);
+        if (e.name === "EventDispatch")
+            return WebInspector.UIString("Event%s", e.args.data ? " (" + e.args.data.type + ")" : "");
+        return e.name;
+    }
+
+    WebInspector.TimelineModel.forEachEvent(events, onStartEvent, onEndEvent);
+    root.totalTime -= root.selfTime;
+    root.selfTime = 0;
+    return root;
+}
+
+/**
+ * @param {!WebInspector.TimelineModel.ProfileTreeNode} topDownTree
+ * @param {boolean=} groupByCategories
+ * @return {!WebInspector.TimelineModel.ProfileTreeNode}
+ */
+WebInspector.TimelineUIUtils.buildBottomUpTree = function(topDownTree, groupByCategories)
+{
+    var buRoot = new WebInspector.TimelineModel.ProfileTreeNode();
+    buRoot.totalTime = 0;
+    buRoot.name = WebInspector.UIString("Bottom-Up Chart");
+    buRoot.children = {};
+
+    if (groupByCategories) {
+        var categories = WebInspector.TimelineUIUtils.categories();
+        for (var categoryName in categories) {
+            var category = categories[categoryName];
+            var node = new WebInspector.TimelineModel.ProfileTreeNode();
+            node.totalTime = 0;
+            node.name = category.title;
+            node.color = category.fillColorStop1;
+            buRoot.children[categoryName] = node;
+        }
+    }
+
+    for (var id in topDownTree.children)
+        processNode(topDownTree.children[id]);
+
+    for (var id in buRoot.children) {
+        var buNode = buRoot.children[id];
+        buRoot.totalTime += buNode.totalTime;
+    }
+
+    /**
+     * @param {!WebInspector.TimelineModel.ProfileTreeNode} tdNode
+     */
+    function processNode(tdNode)
+    {
+        if (tdNode.selfTime > 0) {
+            var category = WebInspector.TimelineUIUtils.eventStyle(tdNode.event).category;
+            var buNode = buRoot.children[category.name] || buRoot;
+            var time = tdNode.selfTime;
+            buNode.totalTime += time;
+            appendNode(tdNode, buNode, time);
+        }
+        for (var id in tdNode.children)
+            processNode(tdNode.children[id]);
+    }
+
+    /**
+     * @param {!WebInspector.TimelineModel.ProfileTreeNode} tdNode
+     * @param {!WebInspector.TimelineModel.ProfileTreeNode} buParent
+     * @param {number} time
+     */
+    function appendNode(tdNode, buParent, time)
+    {
+        while (tdNode.parent) {
+            if (!buParent.children)
+                buParent.children = {};
+            var id = tdNode.id;
+            var buNode = buParent.children[id];
+            if (!buNode) {
+                buNode = new WebInspector.TimelineModel.ProfileTreeNode();
+                buNode.totalTime = time;
+                buNode.name = tdNode.name;
+                buNode.event = tdNode.event;
+                buNode.id = id;
+                buParent.children[id] = buNode;
+            } else {
+                buNode.totalTime += time;
+            }
+            tdNode = tdNode.parent;
+            buParent = buNode;
+        }
+    }
+
+    return buRoot;
+}
+
+/**
  * @constructor
  * @extends {WebInspector.Object}
  * @param {string} name

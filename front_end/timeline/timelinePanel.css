@@ -965,3 +965,66 @@
 .timeline-overview-popover .frame .thumbnail img {
     max-width: 200px;
 }
+
+.timeline-tree-view {
+    display: flex;
+    overflow: hidden;
+}
+
+.timeline-tree-view .data-grid {
+    border: none;
+    flex: auto;
+}
+
+.timeline-tree-view .data-grid table.data {
+    background: white;
+}
+
+.timeline-tree-view .data-grid tr:not(.selected) .highlight {
+    background-color: rgb(255, 230, 179);
+}
+
+.timeline-tree-view .data-grid tr:hover td:not(.bottom-filler-td) {
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
+.timeline-tree-view .data-grid td.numeric-column {
+    text-align: right;
+}
+
+.timeline-tree-view .data-grid div.profile-multiple-values {
+    float: right;
+}
+
+.timeline-tree-view .data-grid span.percent-column {
+    color: #999;
+    width: 48px;
+    display: inline-block;
+}
+
+.timeline-tree-view .data-grid tr.selected span {
+    color: inherit;
+}
+
+.timeline-tree-view .data-grid .name-container {
+    display: flex;
+    align-items: center;
+}
+
+.timeline-tree-view .data-grid .name-container div {
+    flex: none;
+}
+
+.timeline-tree-view .data-grid .name-container .activity-icon {
+    width: 8px;
+    height: 8px;
+    margin: 0 4px 0 2px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.timeline-tree-view .data-grid .name-container .activity-link {
+    flex: auto;
+    text-align: right;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}

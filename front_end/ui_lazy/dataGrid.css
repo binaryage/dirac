@@ -186,9 +186,10 @@
     color: inherit;
 }
 
-.data-grid tr.parent td.disclosure::before {
+.data-grid td.disclosure::before {
     -webkit-user-select: none;
     -webkit-mask-image: url(Images/toolbarButtonGlyphs.png);
+    -webkit-mask-position: -4px -96px;
     -webkit-mask-size: 352px 144px;
     float: left;
     width: 8px;
@@ -198,11 +199,11 @@
     color: transparent;
     position: relative;
     top: 1px;
+    background-color: rgb(110, 110, 110);
 }
 
-.data-grid tr.parent td.disclosure::before {
-    background-color: rgb(110, 110, 110);
-    -webkit-mask-position: -4px -96px;
+.data-grid tr:not(.parent) td.disclosure::before {
+    background-color: transparent;
 }
 
 @media (-webkit-min-device-pixel-ratio: 1.5) {
@@ -237,10 +238,6 @@
 .data-grid:focus tr.expanded.selected td.disclosure::before {
     background-color: white;
     -webkit-mask-position: -20px -96px;
-}
-
-.data-grid tr:not(.parent) td.disclosure {
-    text-indent: 10px;
 }
 
 .data-grid-resizer {

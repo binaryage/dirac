@@ -1433,6 +1433,29 @@ WebInspector.TimelineModel.prototype = {
 
 /**
  * @constructor
+ */
+WebInspector.TimelineModel.ProfileTreeNode = function()
+{
+    /** @type {number} */
+    this.totalTime;
+    /** @type {number} */
+    this.selfTime;
+    /** @type {string} */
+    this.name;
+    /** @type {string} */
+    this.color;
+    /** @type {string} */
+    this.id;
+    /** @type {!WebInspector.TracingModel.Event} */
+    this.event;
+    /** @type {?Object<string,!WebInspector.TimelineModel.ProfileTreeNode>} */
+    this.children;
+    /** @type {?WebInspector.TimelineModel.ProfileTreeNode} */
+    this.parent;
+}
+
+/**
+ * @constructor
  * @param {!WebInspector.TracingModel.Event} event
  */
 WebInspector.TimelineModel.NetworkRequest = function(event)
