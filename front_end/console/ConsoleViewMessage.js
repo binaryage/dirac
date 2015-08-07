@@ -434,7 +434,7 @@ WebInspector.ConsoleViewMessage.prototype = {
             }
         }
         var note = titleElement.createChild("span", "object-info-state-note");
-        WebInspector.Tooltip.install(note, WebInspector.UIString("Object state below is captured upon first expansion"));
+        WebInspector.Tooltip.install(note, WebInspector.UIString("Object value at left was snapshotted when logged, value below was evaluated just now."));
         var section = new WebInspector.ObjectPropertiesSection(obj, titleElement);
         section.enableContextMenu();
         elem.appendChild(section.element);
