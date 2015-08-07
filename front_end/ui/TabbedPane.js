@@ -340,11 +340,8 @@ WebInspector.TabbedPane.prototype = {
         var tab = this._tabsById[id];
         if (!tab)
             return false;
-        if (this._currentTab && this._currentTab.id === id) {
-            if (userGesture)
-                this.focus();
+        if (this._currentTab && this._currentTab.id === id)
             return true;
-        }
 
         this._hideCurrentTab();
         this._showTab(tab);
@@ -354,7 +351,7 @@ WebInspector.TabbedPane.prototype = {
         this._tabsHistory.splice(0, 0, tab);
 
         this._updateTabElements();
-        if (focused || userGesture)
+        if (focused)
             this.focus();
 
         var eventData = { tabId: id, view: tab.view, isUserGesture: userGesture };

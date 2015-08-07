@@ -361,6 +361,7 @@ WebInspector.AdvancedSearchView.ActionDelegate.prototype = {
             WebInspector.inspectorView.setCurrentPanel(WebInspector.SourcesPanel.instance());
             this._searchView._toggle(queryCandidate);
             WebInspector.inspectorView.showCloseableViewInDrawer("sources.search", WebInspector.UIString("Search"), this._searchView);
+            this._searchView.focus();
         }
     }
 }
