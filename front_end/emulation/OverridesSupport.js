@@ -352,7 +352,7 @@ WebInspector.OverridesSupport.prototype = {
             this._pageResizer.addEventListener(WebInspector.OverridesSupport.PageResizer.Events.FixedScaleRequested, this._onPageResizerFixedScaleRequested, this);
             this._pageResizer.addEventListener(WebInspector.OverridesSupport.PageResizer.Events.InsetsChanged, this._onPageResizerInsetsChanged, this);
         }
-        this._deviceMetricsChanged();
+        this._deviceMetricsChanged(false);
     },
 
     /**
@@ -373,9 +373,8 @@ WebInspector.OverridesSupport.prototype = {
         delete this._userAgentChangedListenerMuted;
 
         if (this._initialized) {
-            this._deviceMetricsChanged();
+            this._deviceMetricsChanged(true);
             this._userAgentChanged();
-            this._target.emulationAgent().resetScrollAndPageScaleFactor();
         }
     },
 
@@ -396,7 +395,7 @@ WebInspector.OverridesSupport.prototype = {
         delete this._userAgentChangedListenerMuted;
 
         if (this._initialized) {
-            this._deviceMetricsChanged();
+            this._deviceMetricsChanged(false);
             this._userAgentChanged();
         }
     },
@@ -431,13 +430,13 @@ WebInspector.OverridesSupport.prototype = {
         this.settings._emulationEnabled.addChangeListener(this._userAgentChanged, this);
         this.settings.userAgent.addChangeListener(this._userAgentChanged, this);
 
-        this.settings._emulationEnabled.addChangeListener(this._deviceMetricsChanged, this);
-        this.settings.emulateResolution.addChangeListener(this._deviceMetricsChanged, this);
-        this.settings.deviceWidth.addChangeListener(this._deviceMetricsChanged, this);
-        this.settings.deviceHeight.addChangeListener(this._deviceMetricsChanged, this);
-        this.settings.deviceScaleFactor.addChangeListener(this._deviceMetricsChanged, this);
-        this.settings.emulateMobile.addChangeListener(this._deviceMetricsChanged, this);
-        this.settings.deviceFitWindow.addChangeListener(this._deviceMetricsChanged, this);
+        this.settings._emulationEnabled.addChangeListener(this._deviceMetricsChanged.bind(this, false));
+        this.settings.emulateResolution.addChangeListener(this._deviceMetricsChanged.bind(this, false));
+        this.settings.deviceWidth.addChangeListener(this._deviceMetricsChanged.bind(this, false));
+        this.settings.deviceHeight.addChangeListener(this._deviceMetricsChanged.bind(this, false));
+        this.settings.deviceScaleFactor.addChangeListener(this._deviceMetricsChanged.bind(this, false));
+        this.settings.emulateMobile.addChangeListener(this._deviceMetricsChanged.bind(this, false));
+        this.settings.deviceFitWindow.addChangeListener(this._deviceMetricsChanged.bind(this, false));
 
         this.settings._emulationEnabled.addChangeListener(this._geolocationPositionChanged, this);
         this.settings.overrideGeolocation.addChangeListener(this._geolocationPositionChanged, this);
@@ -480,9 +479,7 @@ WebInspector.OverridesSupport.prototype = {
             if (this.settings.overrideCSSMedia.get())
                 this._cssMediaChanged();
 
-            this._deviceMetricsChanged();
-            if (this.settings.emulateResolution.get())
-                this._target.emulationAgent().resetScrollAndPageScaleFactor();
+            this._deviceMetricsChanged(true);
 
             this._userAgentChanged();
         }
@@ -506,7 +503,7 @@ WebInspector.OverridesSupport.prototype = {
     {
         this._pageResizerAvailableSize = /** @type {!Size} */ (event.data.size);
         this._pageResizerInsets = /** @type {!Insets} */ (event.data.insets);
-        this._deviceMetricsChanged();
+        this._deviceMetricsChanged(false);
     },
 
     /**
@@ -540,10 +537,13 @@ WebInspector.OverridesSupport.prototype = {
     _onPageResizerFixedScaleRequested: function(event)
     {
         this._fixedDeviceScale = /** @type {boolean} */ (event.data);
-        this._deviceMetricsChanged();
+        this._deviceMetricsChanged(false);
     },
 
-    _deviceMetricsChanged: function()
+    /**
+     * @param {boolean} resetScrollAndPageScale
+     */
+    _deviceMetricsChanged: function(resetScrollAndPageScale)
     {
         if (!this._initialized)
             return;
@@ -614,6 +614,8 @@ WebInspector.OverridesSupport.prototype = {
                 screenWidth, screenHeight, positionX, positionY, apiCallback.bind(this))
                 .then(finishCallback)
                 .catch(/** @type {function()} */(finishCallback));
+            if (resetScrollAndPageScale)
+                this._target.emulationAgent().resetScrollAndPageScaleFactor();
         }
 
         /**
@@ -766,7 +768,7 @@ WebInspector.OverridesSupport.prototype = {
 
     _onMainFrameNavigated: function()
     {
-        this._deviceMetricsChanged();
+        this._deviceMetricsChanged(false);
         this._updateUserAgentWarningMessage("");
         this._updateDeviceMetricsWarningMessage("");
     },
