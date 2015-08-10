@@ -289,6 +289,13 @@
             "experiment": "materialDesign"
         },
         {
+            "type": "@WebInspector.ToolbarItem.Provider",
+            "separator": "true",
+            "order": 2,
+            "location": "elements-toolbar",
+            "experiment": "materialDesign"
+        },
+        {
             "type": "setting",
             "settingName": "showPaintRects",
             "settingType": "boolean",

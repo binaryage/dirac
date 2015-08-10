@@ -58,9 +58,9 @@
 }
 
 .material #elements-crumbs {
-    flex: 1 0 28px;
+    flex: auto;
     border: none;
-    height: 100%;
+    height: 26px;
 }
 
 .metrics {

@@ -87,7 +87,7 @@
 } /* media */
 
 button.toolbar-item {
-    width: 26px;
+    width: 28px;
 }
 
 button.toolbar-item.toggled-on .glyph {
@@ -395,7 +395,8 @@ button.record-toolbar-item.toggled-on .glyph {
     -webkit-mask-position: 0 -72px;
 }
 
-.breakpoint-toolbar-item.toggled-on .glyph {
+.breakpoint-toolbar-item.toggled-on .glyph,
+.plain-breakpoint-toolbar-item .glyph {
     -webkit-mask-position: -32px 0;
 }
 
@@ -459,8 +460,8 @@ button.record-toolbar-item.toggled-on .glyph {
     -webkit-mask-position: -256px -120px;
 }
 
-.pin-toolbar-item.toggled-on,
-.animation-toolbar-item.toggled-on {
+:host(.toolbar-gray-toggled) .pin-toolbar-item.toggled-on,
+:host(.toolbar-gray-toggled) .animation-toolbar-item.toggled-on {
     background-color: #f3f3f3;
 }
 

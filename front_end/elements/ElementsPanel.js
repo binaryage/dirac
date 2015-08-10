@@ -53,8 +53,8 @@ WebInspector.ElementsPanel = function()
     if (Runtime.experiments.isEnabled("materialDesign")) {
         this._toolbar = this._createElementsToolbar();
         var toolbar = stackElement.createChild("div", "elements-topbar hbox");
-        toolbar.appendChild(crumbsContainer);
         toolbar.appendChild(this._toolbar.element);
+        toolbar.appendChild(crumbsContainer);
         stackElement.appendChild(this._contentElement);
     } else {
         stackElement.appendChild(this._contentElement);
@@ -109,7 +109,7 @@ WebInspector.ElementsPanel = function()
     WebInspector.targetManager.observeTargets(this);
     WebInspector.moduleSetting("showUAShadowDOM").addChangeListener(this._showUAShadowDOMChanged.bind(this));
     WebInspector.targetManager.addModelListener(WebInspector.DOMModel, WebInspector.DOMModel.Events.DocumentUpdated, this._documentUpdatedEvent, this);
-    WebInspector.targetManager.addModelListener(WebInspector.CSSStyleModel, WebInspector.CSSStyleModel.Events.PseudoStateForced, this._pseudoStateForced, this);
+    WebInspector.targetManager.addModelListener(WebInspector.CSSStyleModel, WebInspector.CSSStyleModel.Events.PseudoStateForced, this._decoratorsChanged, this);
     WebInspector.extensionServer.addEventListener(WebInspector.ExtensionServer.Events.SidebarPaneAdded, this._extensionSidebarPaneAdded, this);
 }
 
@@ -123,19 +123,19 @@ WebInspector.ElementsPanel.prototype = {
     {
         var toolbar = new WebInspector.ExtensibleToolbar("elements-toolbar");
         toolbar.element.classList.add("elements-toolbar");
-        this._hideElementButton = new WebInspector.ToolbarButton(WebInspector.UIString("Hide element"), "visibility-toolbar-item");
+        this._hideElementButton = new WebInspector.ToolbarButton(WebInspector.UIString("Hide element"), "visibility-off-toolbar-item");
         this._hideElementButton.setAction("elements.hide-element");
         toolbar.appendToolbarItem(this._hideElementButton);
 
         this._editAsHTMLButton = new WebInspector.ToolbarButton(WebInspector.UIString("Edit as HTML"), "edit-toolbar-item");
         this._editAsHTMLButton.setAction("elements.edit-as-html");
         toolbar.appendToolbarItem(this._editAsHTMLButton);
-
-        this._breakpointsButton = new WebInspector.ToolbarMenuButton(WebInspector.UIString("Toggle breakpoints"), "breakpoint-toolbar-item", this._showBreakpointsMenu.bind(this));
-        toolbar.appendToolbarItem(this._breakpointsButton);
+        toolbar.appendSeparator();
 
         this._forceElementStateButton = new WebInspector.ToolbarMenuButton(WebInspector.UIString("Force element state"), "pin-toolbar-item", this._showForceElementStateMenu.bind(this));
         toolbar.appendToolbarItem(this._forceElementStateButton);
+        this._breakpointsButton = new WebInspector.ToolbarMenuButton(WebInspector.UIString("Toggle breakpoints"), "plain-breakpoint-toolbar-item", this._showBreakpointsMenu.bind(this));
+        toolbar.appendToolbarItem(this._breakpointsButton);
 
         toolbar.appendSeparator();
 
@@ -152,22 +152,21 @@ WebInspector.ElementsPanel.prototype = {
             return;
         treeOutline.toggleHideElement(node);
         this._hideElementButton.setToggled(!this._hideElementButton.toggled());
-        this._hideElementButton.element.classList.toggle("visibility-off-toolbar-item", this._hideElementButton.toggled());
-        this._hideElementButton.element.classList.toggle("visibility-toolbar-item", !this._hideElementButton.toggled());
     },
 
     _updateToolbarButtons: function()
     {
+        if (!Runtime.experiments.isEnabled("materialDesign"))
+            return;
         var node = this.selectedDOMNode();
         if (!node)
             return;
         var classText = node.getAttribute("class");
         this._hideElementButton.setToggled(classText && classText.match(/__web-inspector-hide/));
-        this._hideElementButton.element.classList.toggle("visibility-off-toolbar-item", this._hideElementButton.toggled());
-        this._hideElementButton.element.classList.toggle("visibility-toolbar-item", !this._hideElementButton.toggled());
         this._editAsHTMLButton.setToggled(false);
         this._breakpointsButton.setEnabled(!node.pseudoType());
         this._forceElementStateButton.setEnabled(node.nodeType() === Node.ELEMENT_NODE && !node.pseudoType());
+        this._forceElementStateButton.setToggled(!!node.getUserProperty(WebInspector.CSSStyleModel.PseudoStatePropertyName));
     },
 
     _toggleEditAsHTML: function()
@@ -367,10 +366,11 @@ WebInspector.ElementsPanel.prototype = {
     /**
      * @param {!WebInspector.Event} event
      */
-    _pseudoStateForced: function(event)
+    _decoratorsChanged: function(event)
     {
         var node = /** @type {!WebInspector.DOMNode} */ (event.data["node"]);
         this._treeOutlineForNode(node).updateOpenCloseTags(node);
+        this._updateToolbarButtons();
     },
 
     /**

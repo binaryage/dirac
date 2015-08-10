@@ -24,9 +24,13 @@
     padding: 0px 4px 0px 11px;
     cursor: pointer;
     line-height: 18px;
-    margin: 5px 0px;
+    margin: 4px 0px;
     position: relative;
     color: hsl(0, 0%, 35%);
+}
+
+:host-context(.material) .crumb:not(.collapsed):first-child {
+    padding-left: 2px;
 }
 
 :host-context(.material) .crumb:not(.collapsed):not(:first-child):before {

@@ -46,7 +46,7 @@ WebInspector.StylesSidebarPane = function(requestShowCallback)
     filterContainerElement.appendChild(this._filterInput);
 
     var toolbar = new WebInspector.ExtensibleToolbar("styles-sidebarpane-toolbar", hbox);
-    toolbar.element.classList.add("styles-pane-toolbar");
+    toolbar.element.classList.add("styles-pane-toolbar", "toolbar-gray-toggled");
     this._currentToolbarPane = null;
 
     this._requestShowCallback = requestShowCallback;
