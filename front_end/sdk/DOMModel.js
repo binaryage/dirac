@@ -62,8 +62,8 @@ WebInspector.DOMNode = function(domModel, doc, isInShadowTree, payload)
     if (payload.attributes)
         this._setAttributesPayload(payload.attributes);
 
-    this._userProperties = {};
-    this._descendantUserPropertyCounters = {};
+    this._markers = {};
+    this._subtreeMarkerCount = 0;
 
     this._childNodeCount = payload.childNodeCount || 0;
     this._children = null;
@@ -649,7 +649,9 @@ WebInspector.DOMNode.prototype = {
             }
         }
         node.parentNode = null;
-        node._updateChildUserPropertyCountsOnRemoval(this);
+        this._subtreeMarkerCount -= node._subtreeMarkerCount;
+        if (node._subtreeMarkerCount)
+            this._domModel.dispatchEventToListeners(WebInspector.DOMModel.Events.MarkersChanged, this);
         this._renumber();
     },
 
@@ -784,57 +786,31 @@ WebInspector.DOMNode.prototype = {
         return !!this.ownerDocument && !!this.ownerDocument.xmlVersion;
     },
 
-    _updateChildUserPropertyCountsOnRemoval: function(parentNode)
-    {
-        var result = {};
-        if (this._userProperties) {
-            for (var name in this._userProperties)
-                result[name] = (result[name] || 0) + 1;
-        }
-
-        if (this._descendantUserPropertyCounters) {
-            for (var name in this._descendantUserPropertyCounters) {
-                var counter = this._descendantUserPropertyCounters[name];
-                result[name] = (result[name] || 0) + counter;
-            }
-        }
-
-        for (var name in result)
-            parentNode._updateDescendantUserPropertyCount(name, -result[name]);
-    },
-
-    _updateDescendantUserPropertyCount: function(name, delta)
-    {
-        if (!this._descendantUserPropertyCounters.hasOwnProperty(name))
-            this._descendantUserPropertyCounters[name] = 0;
-        this._descendantUserPropertyCounters[name] += delta;
-        if (!this._descendantUserPropertyCounters[name])
-            delete this._descendantUserPropertyCounters[name];
-        if (this.parentNode)
-            this.parentNode._updateDescendantUserPropertyCount(name, delta);
-    },
-
-    setUserProperty: function(name, value)
+    /**
+     * @param {string} name
+     * @param {?*} value
+     */
+    setMarker: function(name, value)
     {
         if (value === null) {
-            this.removeUserProperty(name);
+            if (!this._markers.hasOwnProperty(name))
+                return;
+
+            delete this._markers[name];
+            for (var node = this; node; node = node.parentNode)
+                --node._subtreeMarkerCount;
+            for (var node = this; node; node = node.parentNode)
+                this._domModel.dispatchEventToListeners(WebInspector.DOMModel.Events.MarkersChanged, node);
             return;
         }
 
-        if (this.parentNode && !this._userProperties.hasOwnProperty(name))
-            this.parentNode._updateDescendantUserPropertyCount(name, 1);
-
-        this._userProperties[name] = value;
-    },
-
-    removeUserProperty: function(name)
-    {
-        if (!this._userProperties.hasOwnProperty(name))
-            return;
-
-        delete this._userProperties[name];
-        if (this.parentNode)
-            this.parentNode._updateDescendantUserPropertyCount(name, -1);
+        if (this.parentNode && !this._markers.hasOwnProperty(name)) {
+            for (var node = this; node; node = node.parentNode)
+                ++node._subtreeMarkerCount;
+        }
+        this._markers[name] = value;
+        for (var node = this; node; node = node.parentNode)
+            this._domModel.dispatchEventToListeners(WebInspector.DOMModel.Events.MarkersChanged, node);
     },
 
     /**
@@ -842,18 +818,39 @@ WebInspector.DOMNode.prototype = {
      * @return {?T}
      * @template T
      */
-    getUserProperty: function(name)
+    marker: function(name)
     {
-        return (this._userProperties && this._userProperties[name]) || null;
+        return this._markers[name] || null;
     },
 
     /**
-     * @param {string} name
-     * @return {number}
+     * @return {!Array<string>}
      */
-    descendantUserPropertyCount: function(name)
+    markers: function()
     {
-        return this._descendantUserPropertyCounters && this._descendantUserPropertyCounters[name] ? this._descendantUserPropertyCounters[name] : 0;
+        return Object.values(this._markers);
+    },
+
+    /**
+     * @param {function(!WebInspector.DOMNode, string)} visitor
+     */
+    traverseMarkers: function(visitor)
+    {
+        /**
+         * @param {!WebInspector.DOMNode} node
+         */
+        function traverse(node)
+        {
+            if (!node._subtreeMarkerCount)
+                return;
+            for (var marker in node._markers)
+                visitor(node, marker);
+            if (!node._children)
+                return;
+            for (var child of node._children)
+                traverse(child);
+        }
+        traverse(this);
     },
 
     /**
@@ -1086,7 +1083,8 @@ WebInspector.DOMModel.Events = {
     UndoRedoCompleted: "UndoRedoCompleted",
     DistributedNodesChanged: "DistributedNodesChanged",
     ModelSuspended: "ModelSuspended",
-    InspectModeWillBeToggled: "InspectModeWillBeToggled"
+    InspectModeWillBeToggled: "InspectModeWillBeToggled",
+    MarkersChanged: "MarkersChanged"
 }
 
 

@@ -40,6 +40,9 @@ WebInspector.ElementsTreeElement = function(node, elementCloseTag)
     TreeElement.call(this);
     this._node = node;
 
+    this._decorationsElement = createElementWithClass("div");
+    this.listItemElement.appendChild(this._decorationsElement);
+
     this._elementCloseTag = elementCloseTag;
 
     if (this._node.nodeType() == Node.ELEMENT_NODE && !elementCloseTag)
@@ -117,7 +120,7 @@ WebInspector.ElementsTreeElement.canShowInlineText = function(node)
 WebInspector.ElementsTreeElement.populateForcedPseudoStateItems = function(subMenu, node)
 {
     const pseudoClasses = ["active", "hover", "focus", "visited"];
-    var forcedPseudoState = node.getUserProperty(WebInspector.CSSStyleModel.PseudoStatePropertyName) || [];
+    var forcedPseudoState = WebInspector.CSSStyleModel.fromNode(node).pseudoState(node);
     for (var i = 0; i < pseudoClasses.length; ++i) {
         var pseudoClassForced = forcedPseudoState.indexOf(pseudoClasses[i]) >= 0;
         subMenu.appendCheckboxItem(":" + pseudoClasses[i], setPseudoStateCallback.bind(null, pseudoClasses[i], !pseudoClassForced), pseudoClassForced, false);
@@ -1061,7 +1064,8 @@ WebInspector.ElementsTreeElement.prototype = {
             highlightElement.className = "highlight";
             highlightElement.appendChild(nodeInfo);
             this.title = highlightElement;
-            this._updateDecorations();
+            this.updateDecorations();
+            this.listItemElement.insertBefore(this._decorationsElement, this.listItemElement.firstChild);
             delete this._highlightResult;
         }
 
@@ -1072,48 +1076,62 @@ WebInspector.ElementsTreeElement.prototype = {
         this._highlightSearchResults();
     },
 
-    /**
-     * @return {?Element}
-     */
-    _createDecoratorElement: function()
+    updateDecorations: function()
     {
+        if (this.isClosingTag())
+            return;
         var node = this._node;
-        var decoratorMessages = [];
-        var parentDecoratorMessages = [];
-        var decorators = this.treeOutline.nodeDecorators();
-        for (var i = 0; i < decorators.length; ++i) {
-            var decorator = decorators[i];
-            var message = decorator.decorate(node);
-            if (message) {
-                decoratorMessages.push(message);
-                continue;
-            }
+        if (node.nodeType() !== Node.ELEMENT_NODE)
+            return;
 
-            if (this.expanded || this._elementCloseTag)
-                continue;
+        var extensions = runtime.extensions(WebInspector.DOMPresentationUtils.MarkerDecorator);
+        var markerToExtension = new Map();
+        for (var extension of extensions)
+            markerToExtension.set(extension.descriptor()["marker"], extension);
 
-            message = decorator.decorateAncestor(node);
-            if (message)
-                parentDecoratorMessages.push(message)
+        var promises = [];
+        var decorations = [];
+        var descendantDecorations = [];
+        node.traverseMarkers(visitor);
+
+        /**
+         * @param {!WebInspector.DOMNode} n
+         * @param {string} marker
+         */
+        function visitor(n, marker)
+        {
+            var extension = markerToExtension.get(marker);
+            if (!extension)
+                return;
+            promises.push(extension.instancePromise().then(collectDecoration.bind(null, n)));
         }
-        if (!decoratorMessages.length && !parentDecoratorMessages.length)
-            return null;
 
-        var decoratorElement = createElement("div");
-        decoratorElement.classList.add("elements-gutter-decoration");
-        if (!decoratorMessages.length)
-            decoratorElement.classList.add("elements-has-decorated-children");
-        decoratorElement.title = decoratorMessages.concat(parentDecoratorMessages).join("\n");
-        return decoratorElement;
-    },
+        /**
+         * @param {!WebInspector.DOMNode} n
+         * @param {!WebInspector.DOMPresentationUtils.MarkerDecorator} decorator
+         */
+        function collectDecoration(n, decorator)
+        {
+            var decoration = decorator.decorate(n);
+            if (!decoration)
+                return;
+            (n === node ? decorations : descendantDecorations).push(decoration);
+        }
 
-    _updateDecorations: function()
-    {
-        if (this._decoratorElement)
-            this._decoratorElement.remove();
-        this._decoratorElement = this._createDecoratorElement();
-        if (this._decoratorElement && this.listItemElement)
-            this.listItemElement.insertBefore(this._decoratorElement, this.listItemElement.firstChild);
+        Promise.all(promises).then(setTitle.bind(this));
+
+        /**
+         * @this {WebInspector.ElementsTreeElement}
+         */
+        function setTitle()
+        {
+            this._decorationsElement.classList.toggle("elements-gutter-decoration", decorations.length || (descendantDecorations.length && !this.expanded));
+            this._decorationsElement.classList.toggle("elements-has-decorated-children", descendantDecorations.length && !this.expanded);
+            var title = decorations.join("\n");
+            if (descendantDecorations.length)
+                title += WebInspector.UIString("\nChildren:\n") + descendantDecorations.join("\n");
+            this._decorationsElement.title = title;
+        }
     },
 
     /**

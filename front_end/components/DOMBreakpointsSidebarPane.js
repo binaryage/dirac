@@ -59,6 +59,8 @@ WebInspector.DOMBreakpointsSidebarPane = function()
     WebInspector.targetManager.addModelListener(WebInspector.DOMModel, WebInspector.DOMModel.Events.NodeRemoved, this._nodeRemoved, this);
 }
 
+WebInspector.DOMBreakpointsSidebarPane.Marker = "breakpoint-marker";
+
 WebInspector.DOMBreakpointsSidebarPane.prototype = {
     _inspectedURLChanged: function(event)
     {
@@ -78,12 +80,7 @@ WebInspector.DOMBreakpointsSidebarPane.prototype = {
         if (node.pseudoType())
             return;
 
-        var nodeBreakpoints = {};
-        for (var id in this._breakpointElements) {
-            var element = this._breakpointElements[id];
-            if (element._node === node && element._checkboxElement.checked)
-                nodeBreakpoints[element._type] = true;
-        }
+        var nodeBreakpoints = this._nodeBreakpoints(node);
 
         /**
          * @param {!DOMDebuggerAgent.DOMBreakpointType} type
@@ -104,6 +101,35 @@ WebInspector.DOMBreakpointsSidebarPane.prototype = {
             var label = this._contextMenuLabels[type];
             breakpointsMenu.appendCheckboxItem(label, toggleBreakpoint.bind(this, type), nodeBreakpoints[type]);
         }
+    },
+
+    /**
+     * @param {!WebInspector.DOMNode} node
+     * @return {!Object<string, boolean>}
+     */
+    _nodeBreakpoints: function(node)
+    {
+        var nodeBreakpoints = {};
+        for (var id in this._breakpointElements) {
+            var element = this._breakpointElements[id];
+            if (element._node === node && element._checkboxElement.checked)
+                nodeBreakpoints[element._type] = true;
+        }
+        return nodeBreakpoints;
+    },
+
+    /**
+     * @param {!WebInspector.DOMNode} node
+     * @return {boolean}
+     */
+    hasBreakpoints: function(node)
+    {
+        for (var id in this._breakpointElements) {
+            var element = this._breakpointElements[id];
+            if (element._node === node && element._checkboxElement.checked)
+                return true;
+        }
+        return false;
     },
 
     /**
@@ -211,6 +237,7 @@ WebInspector.DOMBreakpointsSidebarPane.prototype = {
         }
         if (enabled)
             node.target().domdebuggerAgent().setDOMBreakpoint(node.id, type);
+        node.setMarker(WebInspector.DOMBreakpointsSidebarPane.Marker, true);
     },
 
     /**
@@ -276,6 +303,7 @@ WebInspector.DOMBreakpointsSidebarPane.prototype = {
         delete this._breakpointElements[breakpointId];
         if (element._checkboxElement.checked)
             node.target().domdebuggerAgent().removeDOMBreakpoint(node.id, type);
+        node.setMarker(WebInspector.DOMBreakpointsSidebarPane.Marker, this.hasBreakpoints(node) ? true : null);
     },
 
     /**
@@ -459,6 +487,26 @@ WebInspector.DOMBreakpointsSidebarPane.Proxy.prototype = {
     },
 
     __proto__: WebInspector.SidebarPane.prototype
+}
+
+/**
+ * @constructor
+ * @implements {WebInspector.DOMPresentationUtils.MarkerDecorator}
+ */
+WebInspector.DOMBreakpointsSidebarPane.MarkerDecorator = function()
+{
+}
+
+WebInspector.DOMBreakpointsSidebarPane.MarkerDecorator.prototype = {
+    /**
+     * @override
+     * @param {!WebInspector.DOMNode} node
+     * @return {?string}
+     */
+    decorate: function(node)
+    {
+        return WebInspector.UIString("DOM Breakpoint");
+    }
 }
 
 /**

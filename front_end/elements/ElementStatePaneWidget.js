@@ -101,7 +101,7 @@ WebInspector.ElementStatePaneWidget.prototype = {
      */
     _updateInputs: function(node)
     {
-        var nodePseudoState = node.getUserProperty(WebInspector.CSSStyleModel.PseudoStatePropertyName) || [];
+        var nodePseudoState = this._target.cssModel.pseudoState(node);
         var inputs = this._inputs;
         for (var i = 0; i < inputs.length; ++i) {
             inputs[i].disabled = !!node.pseudoType();

@@ -49,8 +49,6 @@ WebInspector.CSSStyleModel = function(target)
     this._styleSheetIdsForURL = new Map();
 }
 
-WebInspector.CSSStyleModel.PseudoStatePropertyName = "pseudoState";
-
 /**
  * @param {!WebInspector.CSSStyleModel} cssModel
  * @param {!Array.<!CSSAgent.RuleMatch>|undefined} matchArray
@@ -77,6 +75,8 @@ WebInspector.CSSStyleModel.Events = {
 }
 
 WebInspector.CSSStyleModel.MediaTypes = ["all", "braille", "embossed", "handheld", "print", "projection", "screen", "speech", "tty", "tv"];
+
+WebInspector.CSSStyleModel.PseudoStateMarker = "pseudo-state-marker";
 
 WebInspector.CSSStyleModel.prototype = {
     /**
@@ -250,23 +250,32 @@ WebInspector.CSSStyleModel.prototype = {
      */
     forcePseudoState: function(node, pseudoClass, enable)
     {
-        var pseudoClasses = node.getUserProperty(WebInspector.CSSStyleModel.PseudoStatePropertyName) || [];
+        var pseudoClasses = node.marker(WebInspector.CSSStyleModel.PseudoStateMarker) || [];
         if (enable) {
             if (pseudoClasses.indexOf(pseudoClass) >= 0)
                 return false;
             pseudoClasses.push(pseudoClass);
-            node.setUserProperty(WebInspector.CSSStyleModel.PseudoStatePropertyName, pseudoClasses);
+            node.setMarker(WebInspector.CSSStyleModel.PseudoStateMarker, pseudoClasses);
         } else {
             if (pseudoClasses.indexOf(pseudoClass) < 0)
                 return false;
             pseudoClasses.remove(pseudoClass);
             if (!pseudoClasses.length)
-                node.removeUserProperty(WebInspector.CSSStyleModel.PseudoStatePropertyName);
+                node.setMarker(WebInspector.CSSStyleModel.PseudoStateMarker, null);
         }
 
         this._agent.forcePseudoState(node.id, pseudoClasses);
         this.dispatchEventToListeners(WebInspector.CSSStyleModel.Events.PseudoStateForced, { node: node, pseudoClass: pseudoClass, enable: enable });
         return true;
+    },
+
+    /**
+     * @param {!WebInspector.DOMNode} node
+     * @return {?Array<string>} state
+     */
+    pseudoState: function(node)
+    {
+        return node.marker(WebInspector.CSSStyleModel.PseudoStateMarker) || [];
     },
 
     /**

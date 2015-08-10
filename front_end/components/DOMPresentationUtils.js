@@ -609,3 +609,18 @@ WebInspector.DOMNodePathStep.prototype = {
         return this.value;
     }
 }
+
+/**
+ * @interface
+ */
+WebInspector.DOMPresentationUtils.MarkerDecorator = function()
+{
+}
+
+WebInspector.DOMPresentationUtils.MarkerDecorator.prototype = {
+    /**
+     * @param {!WebInspector.DOMNode} node
+     * @return {?string}
+     */
+    decorate: function(node) { }
+}

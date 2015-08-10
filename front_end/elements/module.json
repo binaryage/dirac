@@ -108,6 +108,16 @@
                     "shortcut": "F2"
                 }
             ]
+        },
+        {
+            "type": "@WebInspector.DOMPresentationUtils.MarkerDecorator",
+            "className": "WebInspector.ElementsPanel.PseudoStateMarkerDecorator",
+            "marker": "pseudo-state-marker"
+        },
+        {
+            "type": "@WebInspector.DOMPresentationUtils.MarkerDecorator",
+            "className": "WebInspector.ElementsPanel.HiddenMarkerDecorator",
+            "marker": "hidden-marker"
         }
     ],
     "dependencies": [

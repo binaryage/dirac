@@ -8,6 +8,11 @@
             "settingType": "boolean",
             "defaultValue": false,
             "experiment": "customObjectFormatters"
+        },
+        {
+            "type": "@WebInspector.DOMPresentationUtils.MarkerDecorator",
+            "className": "WebInspector.DOMBreakpointsSidebarPane.MarkerDecorator",
+            "marker": "breakpoint-marker"
         }
     ],
     "dependencies": [

@@ -109,7 +109,8 @@ WebInspector.ElementsPanel = function()
     WebInspector.targetManager.observeTargets(this);
     WebInspector.moduleSetting("showUAShadowDOM").addChangeListener(this._showUAShadowDOMChanged.bind(this));
     WebInspector.targetManager.addModelListener(WebInspector.DOMModel, WebInspector.DOMModel.Events.DocumentUpdated, this._documentUpdatedEvent, this);
-    WebInspector.targetManager.addModelListener(WebInspector.CSSStyleModel, WebInspector.CSSStyleModel.Events.PseudoStateForced, this._decoratorsChanged, this);
+    if (Runtime.experiments.isEnabled("materialDesign"))
+        WebInspector.targetManager.addModelListener(WebInspector.DOMModel, WebInspector.DOMModel.Events.MarkersChanged, this._updateToolbarButtons, this);
     WebInspector.extensionServer.addEventListener(WebInspector.ExtensionServer.Events.SidebarPaneAdded, this._extensionSidebarPaneAdded, this);
 }
 
@@ -151,7 +152,6 @@ WebInspector.ElementsPanel.prototype = {
         if (!node || !treeOutline)
             return;
         treeOutline.toggleHideElement(node);
-        this._hideElementButton.setToggled(!this._hideElementButton.toggled());
     },
 
     _updateToolbarButtons: function()
@@ -162,11 +162,13 @@ WebInspector.ElementsPanel.prototype = {
         if (!node)
             return;
         var classText = node.getAttribute("class");
-        this._hideElementButton.setToggled(classText && classText.match(/__web-inspector-hide/));
+        var treeOutline = this._treeOutlineForNode(node);
+        this._hideElementButton.setToggled(treeOutline && treeOutline.isToggledToHidden(node));
         this._editAsHTMLButton.setToggled(false);
         this._breakpointsButton.setEnabled(!node.pseudoType());
+        this._breakpointsButton.setToggled(WebInspector.domBreakpointsSidebarPane.hasBreakpoints(node));
         this._forceElementStateButton.setEnabled(node.nodeType() === Node.ELEMENT_NODE && !node.pseudoType());
-        this._forceElementStateButton.setToggled(!!node.getUserProperty(WebInspector.CSSStyleModel.PseudoStatePropertyName));
+        this._forceElementStateButton.setToggled(!!WebInspector.CSSStyleModel.fromNode(node).pseudoState(node).length);
     },
 
     _toggleEditAsHTML: function()
@@ -361,16 +363,6 @@ WebInspector.ElementsPanel.prototype = {
     onResize: function()
     {
         this._updateTreeOutlineVisibleWidth();
-    },
-
-    /**
-     * @param {!WebInspector.Event} event
-     */
-    _decoratorsChanged: function(event)
-    {
-        var node = /** @type {!WebInspector.DOMNode} */ (event.data["node"]);
-        this._treeOutlineForNode(node).updateOpenCloseTags(node);
-        this._updateToolbarButtons();
     },
 
     /**
@@ -1241,5 +1233,45 @@ WebInspector.ElementsActionDelegate.prototype = {
             elementsPanel._toggleHideElement();
         else if (actionId === "elements.edit-as-html")
             elementsPanel._toggleEditAsHTML();
+    }
+}
+
+/**
+ * @constructor
+ * @implements {WebInspector.DOMPresentationUtils.MarkerDecorator}
+ */
+WebInspector.ElementsPanel.PseudoStateMarkerDecorator = function()
+{
+}
+
+WebInspector.ElementsPanel.PseudoStateMarkerDecorator.prototype = {
+    /**
+     * @override
+     * @param {!WebInspector.DOMNode} node
+     * @return {?string}
+     */
+    decorate: function(node)
+    {
+        return WebInspector.UIString("Element state: %s", ":" + WebInspector.CSSStyleModel.fromNode(node).pseudoState(node).join(", :"));
+    }
+}
+
+/**
+ * @constructor
+ * @implements {WebInspector.DOMPresentationUtils.MarkerDecorator}
+ */
+WebInspector.ElementsPanel.HiddenMarkerDecorator = function()
+{
+}
+
+WebInspector.ElementsPanel.HiddenMarkerDecorator.prototype = {
+    /**
+     * @override
+     * @param {!WebInspector.DOMNode} node
+     * @return {?string}
+     */
+    decorate: function(node)
+    {
+        return WebInspector.UIString("Element is hidden");
     }
 }

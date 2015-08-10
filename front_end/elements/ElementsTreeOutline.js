@@ -73,8 +73,6 @@ WebInspector.ElementsTreeOutline = function(domModel, omitRootDOMNode, selectEna
     this._visible = false;
     this._pickNodeMode = false;
 
-    this._createNodeDecorators();
-
     this._popoverHelper = new WebInspector.PopoverHelper(this._element, this._getPopoverAnchor.bind(this), this._showPopover.bind(this));
     this._popoverHelper.setTimeout(0);
 
@@ -82,6 +80,8 @@ WebInspector.ElementsTreeOutline = function(domModel, omitRootDOMNode, selectEna
     this._updateRecords = new Map();
     /** @type {!Set<!WebInspector.ElementsTreeElement>} */
     this._treeElementsBeingUpdated = new Set();
+
+    this._domModel.addEventListener(WebInspector.DOMModel.Events.MarkersChanged, this._markersChanged, this);
 }
 
 /** @typedef {{node: !WebInspector.DOMNode, isCut: boolean}} */
@@ -227,20 +227,6 @@ WebInspector.ElementsTreeOutline.prototype = {
         this._visibleWidth = width;
         if (this._multilineEditing)
             this._multilineEditing.setWidth(this._visibleWidth);
-    },
-
-    /**
-     * @return {!Array<!WebInspector.ElementsTreeOutline.ElementDecorator>}
-     */
-    nodeDecorators: function()
-    {
-        return this._nodeDecorators;
-    },
-
-    _createNodeDecorators: function()
-    {
-        this._nodeDecorators = [];
-        this._nodeDecorators.push(new WebInspector.ElementsTreeOutline.PseudoStateDecorator());
     },
 
     /**
@@ -1047,6 +1033,8 @@ WebInspector.ElementsTreeOutline.prototype = {
         if (!effectiveNode)
             return;
 
+        var hidden = node.marker("hidden-marker");
+
         function resolvedNode(object)
         {
             if (!object)
@@ -1054,11 +1042,12 @@ WebInspector.ElementsTreeOutline.prototype = {
 
             /**
              * @param {?string} pseudoType
+             * @param {boolean} hidden
              * @suppressGlobalPropertiesCheck
              * @suppressReceiverCheck
              * @this {!Element}
              */
-            function toggleClassAndInjectStyleRule(pseudoType)
+            function toggleClassAndInjectStyleRule(pseudoType, hidden)
             {
                 const classNamePrefix = "__web-inspector-hide";
                 const classNameSuffix = "-shortcut__";
@@ -1072,7 +1061,7 @@ WebInspector.ElementsTreeOutline.prototype = {
                 var ruleBody = "    visibility: hidden !important;";
                 var rule = "\n" + selector + "\n{\n" + ruleBody + "\n}\n";
                 var className = classNamePrefix + (pseudoType || "") + classNameSuffix;
-                this.classList.toggle(className);
+                this.classList.toggle(className, hidden);
 
                 var localRoot = this;
                 while (localRoot.parentNode)
@@ -1092,11 +1081,21 @@ WebInspector.ElementsTreeOutline.prototype = {
                 localRoot.appendChild(style);
             }
 
-            object.callFunction(toggleClassAndInjectStyleRule, [{ value: pseudoType }], userCallback);
+            object.callFunction(toggleClassAndInjectStyleRule, [{ value: pseudoType }, { value: !hidden}], userCallback);
             object.release();
+            node.setMarker("hidden-marker", hidden ? null : true);
         }
 
         effectiveNode.resolveToObject("", resolvedNode);
+    },
+
+    /**
+     * @param {!WebInspector.DOMNode} node
+     * @return {boolean}
+     */
+    isToggledToHidden: function(node)
+    {
+        return !!node.marker("hidden-marker");
     },
 
     _reset: function()
@@ -1582,76 +1581,18 @@ WebInspector.ElementsTreeOutline.prototype = {
         this._treeElementsBeingUpdated.delete(treeElement);
     },
 
+    /**
+     * @param {!WebInspector.Event} event
+     */
+    _markersChanged: function(event)
+    {
+        var node = /** @type {!WebInspector.DOMNode} */ (event.data);
+        var treeElement = node[this._treeElementSymbol];
+        if (treeElement)
+            treeElement.updateDecorations();
+    },
+
     __proto__: TreeOutline.prototype
-}
-
-/**
- * @interface
- */
-WebInspector.ElementsTreeOutline.ElementDecorator = function()
-{
-}
-
-WebInspector.ElementsTreeOutline.ElementDecorator.prototype = {
-    /**
-     * @param {!WebInspector.DOMNode} node
-     * @return {?string}
-     */
-    decorate: function(node)
-    {
-    },
-
-    /**
-     * @param {!WebInspector.DOMNode} node
-     * @return {?string}
-     */
-    decorateAncestor: function(node)
-    {
-    }
-}
-
-/**
- * @constructor
- * @implements {WebInspector.ElementsTreeOutline.ElementDecorator}
- */
-WebInspector.ElementsTreeOutline.PseudoStateDecorator = function()
-{
-    WebInspector.ElementsTreeOutline.ElementDecorator.call(this);
-}
-
-WebInspector.ElementsTreeOutline.PseudoStateDecorator.prototype = {
-    /**
-     * @override
-     * @param {!WebInspector.DOMNode} node
-     * @return {?string}
-     */
-    decorate: function(node)
-    {
-        if (node.nodeType() !== Node.ELEMENT_NODE)
-            return null;
-        var propertyValue = node.getUserProperty(WebInspector.CSSStyleModel.PseudoStatePropertyName);
-        if (!propertyValue)
-            return null;
-        return WebInspector.UIString("Element state: %s", ":" + propertyValue.join(", :"));
-    },
-
-    /**
-     * @override
-     * @param {!WebInspector.DOMNode} node
-     * @return {?string}
-     */
-    decorateAncestor: function(node)
-    {
-        if (node.nodeType() !== Node.ELEMENT_NODE)
-            return null;
-
-        var descendantCount = node.descendantUserPropertyCount(WebInspector.CSSStyleModel.PseudoStatePropertyName);
-        if (!descendantCount)
-            return null;
-        if (descendantCount === 1)
-            return WebInspector.UIString("%d descendant with forced state", descendantCount);
-        return WebInspector.UIString("%d descendants with forced state", descendantCount);
-    }
 }
 
 /**
