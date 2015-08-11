@@ -275,11 +275,11 @@ select.toolbar-item {
 }
 
 .node-search-toolbar-item .glyph {
-    -webkit-mask-position: -224px -24px;
+    -webkit-mask-position: -320px -120px;
 }
 
 .emulation-toolbar-item .glyph {
-    -webkit-mask-position: -160px 1px;
+    -webkit-mask-position: -160px 0;
 }
 
 .emulation-toolbar-item.warning::after {
@@ -399,9 +399,12 @@ button.record-toolbar-item.toggled-on .glyph {
     -webkit-mask-position: 0 -72px;
 }
 
-.breakpoint-toolbar-item.toggled-on .glyph,
-.plain-breakpoint-toolbar-item .glyph {
+.breakpoint-toolbar-item.toggled-on .glyph {
     -webkit-mask-position: -32px 0;
+}
+
+.add-breakpoint-toolbar-item .glyph {
+    -webkit-mask-position: -64px -24px;
 }
 
 .breakpoint-toolbar-item .glyph {

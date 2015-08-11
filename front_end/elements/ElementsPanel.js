@@ -135,7 +135,7 @@ WebInspector.ElementsPanel.prototype = {
 
         this._forceElementStateButton = new WebInspector.ToolbarMenuButton(WebInspector.UIString("Force element state"), "pin-toolbar-item", this._showForceElementStateMenu.bind(this));
         toolbar.appendToolbarItem(this._forceElementStateButton);
-        this._breakpointsButton = new WebInspector.ToolbarMenuButton(WebInspector.UIString("Toggle breakpoints"), "plain-breakpoint-toolbar-item", this._showBreakpointsMenu.bind(this));
+        this._breakpointsButton = new WebInspector.ToolbarMenuButton(WebInspector.UIString("Toggle breakpoints"), "add-breakpoint-toolbar-item", this._showBreakpointsMenu.bind(this));
         toolbar.appendToolbarItem(this._breakpointsButton);
 
         toolbar.appendSeparator();
