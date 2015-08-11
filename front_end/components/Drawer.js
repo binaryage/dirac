@@ -41,9 +41,6 @@ WebInspector.Drawer = function(splitWidget)
     splitWidget.hideDefaultResizer();
     splitWidget.setSidebarWidget(this);
 
-    this._toggleDrawerButton = new WebInspector.ToolbarButton(WebInspector.UIString("Show drawer"), "console-toolbar-item");
-    this._toggleDrawerButton.setAction("main.toggle-drawer");
-
     this._tabbedPane = new WebInspector.TabbedPane();
     this._tabbedPane.element.id = "drawer-tabbed-pane";
     this._tabbedPane.setCloseableTabs(false);
@@ -56,14 +53,6 @@ WebInspector.Drawer = function(splitWidget)
 }
 
 WebInspector.Drawer.prototype = {
-    /**
-     * @return {!WebInspector.ToolbarButton}
-     */
-    toggleButton: function()
-    {
-        return this._toggleDrawerButton;
-    },
-
     /**
      * @param {string} id
      */
@@ -115,14 +104,10 @@ WebInspector.Drawer.prototype = {
     wasShown: function()
     {
         this.showView(this._lastSelectedViewSetting.get());
-        this._toggleDrawerButton.setToggled(true);
-        this._toggleDrawerButton.setTitle(WebInspector.UIString("Hide drawer"));
     },
 
     willHide: function()
     {
-        this._toggleDrawerButton.setToggled(false);
-        this._toggleDrawerButton.setTitle(WebInspector.UIString("Show drawer"));
     },
 
     /**
@@ -164,14 +149,6 @@ WebInspector.Drawer.prototype = {
         var tabId = this._tabbedPane.selectedTabId;
         if (tabId && event.data["isUserGesture"] && !this._tabbedPane.isTabCloseable(tabId))
             this._lastSelectedViewSetting.set(tabId);
-    },
-
-    /**
-     * @return {boolean}
-     */
-    visible: function()
-    {
-        return this._toggleDrawerButton.toggled();
     },
 
     /**

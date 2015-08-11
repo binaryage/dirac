@@ -136,7 +136,6 @@ WebInspector.Main.prototype = {
         Runtime.experiments.register("inputEventsOnTimelineOverview", "Input events on Timeline overview", true);
         Runtime.experiments.register("layersPanel", "Layers panel");
         Runtime.experiments.register("layoutEditor", "Layout editor", true);
-        Runtime.experiments.register("mainMenu", "Main menu", true);
         Runtime.experiments.register("materialDesign", "Material design");
         Runtime.experiments.register("networkRequestHeadersFilterInDetailsView", "Network request headers filter in details view", true);
         Runtime.experiments.register("networkRequestsOnTimeline", "Network requests on Timeline", true);
@@ -781,7 +780,7 @@ WebInspector.Main.WarningErrorCounter.prototype = {
 WebInspector.Main.MainMenuItem = function()
 {
     this._item = new WebInspector.ToolbarButton(WebInspector.UIString("Customize and control DevTools"), "menu-toolbar-item");
-    this._item.addEventListener("click", this._click, this);
+    this._item.addEventListener("mousedown", this._mouseDown, this);
 }
 
 WebInspector.Main.MainMenuItem.prototype = {
@@ -797,7 +796,7 @@ WebInspector.Main.MainMenuItem.prototype = {
     /**
      * @param {!WebInspector.Event} event
      */
-    _click: function(event)
+    _mouseDown: function(event)
     {
         var contextMenu = new WebInspector.ContextMenu(/** @type {!Event} */(event.data),
             true,
@@ -808,12 +807,13 @@ WebInspector.Main.MainMenuItem.prototype = {
         titleElement.textContent = WebInspector.UIString("Dock side");
         dockItemElement.appendChild(titleElement);
         var dockItemToolbar = new WebInspector.Toolbar(dockItemElement);
+        dockItemToolbar.makeBlueOnHover();
         var undock = new WebInspector.ToolbarButton( WebInspector.UIString("Undock into separate window"), "dock-toolbar-item-undock");
         var bottom = new WebInspector.ToolbarButton(WebInspector.UIString("Dock to bottom"), "dock-toolbar-item-bottom");
         var right = new WebInspector.ToolbarButton(WebInspector.UIString("Dock to right"), "dock-toolbar-item-right");
-        undock.addEventListener("click", setDockSide.bind(null, WebInspector.DockController.State.Undocked));
-        bottom.addEventListener("click", setDockSide.bind(null, WebInspector.DockController.State.DockedToBottom));
-        right.addEventListener("click", setDockSide.bind(null, WebInspector.DockController.State.DockedToRight));
+        undock.addEventListener("mouseup", setDockSide.bind(null, WebInspector.DockController.State.Undocked));
+        bottom.addEventListener("mouseup", setDockSide.bind(null, WebInspector.DockController.State.DockedToBottom));
+        right.addEventListener("mouseup", setDockSide.bind(null, WebInspector.DockController.State.DockedToRight));
         undock.setToggled(WebInspector.dockController.dockSide() === WebInspector.DockController.State.Undocked);
         bottom.setToggled(WebInspector.dockController.dockSide() === WebInspector.DockController.State.DockedToBottom);
         right.setToggled(WebInspector.dockController.dockSide() === WebInspector.DockController.State.DockedToRight);
@@ -831,8 +831,11 @@ WebInspector.Main.MainMenuItem.prototype = {
         dockItemToolbar.appendToolbarItem(bottom);
         dockItemToolbar.appendToolbarItem(right);
 
-        contextMenu.appendCustomItem(dockItemElement);
-        contextMenu.appendSeparator();
+        if (WebInspector.dockController.canDock()) {
+            contextMenu.appendCustomItem(dockItemElement);
+            contextMenu.appendSeparator();
+        }
+        contextMenu.appendAction(WebInspector.inspectorView.drawerVisible() ? WebInspector.UIString("Hide console") : WebInspector.UIString("Show console"), "main.toggle-drawer");
         contextMenu.appendItemsAtLocation("mainMenu");
         contextMenu.show();
     }

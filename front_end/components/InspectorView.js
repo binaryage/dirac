@@ -534,24 +534,3 @@ WebInspector.InspectorView.DrawerToggleActionDelegate.prototype = {
             WebInspector.inspectorView.showDrawer();
     }
 }
-
-/**
- * @constructor
- * @implements {WebInspector.ToolbarItem.Provider}
- */
-WebInspector.InspectorView.ToggleDrawerButtonProvider = function()
-{
-}
-
-WebInspector.InspectorView.ToggleDrawerButtonProvider.prototype = {
-    /**
-     * @override
-     * @return {?WebInspector.ToolbarItem}
-     */
-    item: function()
-    {
-        if (!Runtime.experiments.isEnabled("mainMenu"))
-            return WebInspector.inspectorView._drawer.toggleButton();
-        return null;
-    }
-}

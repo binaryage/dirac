@@ -1088,8 +1088,7 @@ WebInspector.LongClickController = function(element)
  * @enum {string}
  */
 WebInspector.LongClickController.Events = {
-    LongClick: "LongClick",
-    LongPress: "LongPress"
+    LongClick: "LongClick"
 };
 
 WebInspector.LongClickController.prototype = {
@@ -1114,8 +1113,6 @@ WebInspector.LongClickController.prototype = {
         this._element.addEventListener("mouseup", boundMouseUp, false);
         this._element.addEventListener("click", boundReset, true);
 
-        var longClicks = 0;
-
         this._longClickData = { mouseUp: boundMouseUp, mouseDown: boundMouseDown, reset: boundReset };
 
         /**
@@ -1126,8 +1123,7 @@ WebInspector.LongClickController.prototype = {
         {
             if (e.which !== 1)
                 return;
-            longClicks = 0;
-            this._longClickInterval = setInterval(longClicked.bind(this, e), 200);
+            this._longClickInterval = setTimeout(longClicked.bind(this, e), 200);
         }
 
         /**
@@ -1147,8 +1143,7 @@ WebInspector.LongClickController.prototype = {
          */
         function longClicked(e)
         {
-            ++longClicks;
-            this.dispatchEventToListeners(longClicks === 1 ? WebInspector.LongClickController.Events.LongClick : WebInspector.LongClickController.Events.LongPress, e);
+            this.dispatchEventToListeners(WebInspector.LongClickController.Events.LongClick, e);
         }
     },
 

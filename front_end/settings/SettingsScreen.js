@@ -74,6 +74,14 @@ WebInspector.SettingsScreen.prototype = {
     },
 
     /**
+     * @param {string} name
+     */
+    selectTab: function(name)
+    {
+        this._tabbedPane.selectTab(name);
+    },
+
+    /**
      * @override
      * @return {boolean}
      */
@@ -553,12 +561,16 @@ WebInspector.SettingsController.prototype = {
         delete this._settingsScreenVisible;
     },
 
-    showSettingsScreen: function()
+    /**
+     * @param {string=} name
+     */
+    showSettingsScreen: function(name)
     {
         if (!this._settingsScreen)
             this._settingsScreen = new WebInspector.SettingsScreen(this._onHideSettingsScreen.bind(this));
-
         this._settingsScreen.showModal();
+        if (name)
+            this._settingsScreen.selectTab(name);
         this._settingsScreenVisible = true;
         var window = this._settingsScreen.element.ownerDocument.defaultView;
         window.addEventListener("resize", this._resizeBound, false);
@@ -587,8 +599,10 @@ WebInspector.SettingsController.ActionDelegate.prototype = {
     {
         if (actionId === "settings.show")
             WebInspector._settingsController.showSettingsScreen();
-        else if (actionId === "help.show")
-            InspectorFrontendHost.openInNewTab("https://developer.chrome.com/devtools");
+        else if (actionId === "settings.help")
+            InspectorFrontendHost.openInNewTab("https://developers.google.com/web/tools/chrome-devtools/");
+        else if (actionId === "settings.shortcuts")
+            WebInspector._settingsController.showSettingsScreen("shortcuts");
     }
 }
 

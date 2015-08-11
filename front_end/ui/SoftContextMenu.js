@@ -323,7 +323,7 @@ WebInspector.SoftContextMenu.prototype = {
     _glassPaneMouseUp: function(event)
     {
         // Return if this is simple 'click', since dispatched on glass pane, can't use 'click' event.
-        if (event.x === this._x && event.y === this._y && new Date().getTime() - this._time < 300)
+        if (new Date().getTime() - this._time < 300)
             return;
         this._discardMenu(true, event);
         event.consume();

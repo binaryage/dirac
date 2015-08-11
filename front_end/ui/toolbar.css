@@ -61,7 +61,7 @@
     z-index: 200;
 }
 
-.toolbar-item:hover .toolbar-button-text {
+.toolbar-item.hover .toolbar-button-text {
     color: #333;
 }
 
@@ -94,16 +94,24 @@ button.toolbar-item.toggled-on .glyph {
     background-color: rgb(66, 129, 235) !important;
 }
 
-button.toolbar-item:enabled:hover .glyph {
+button.toolbar-item:enabled.hover .glyph {
     background-color: #333;
 }
 
-.toolbar-counter:hover,
-.toolbar-item.checkbox:hover {
+.blue-on-hover .toolbar-item:not(.toggled-on):enabled.hover {
+    background-color: rgb(56, 121, 217);
+}
+
+.blue-on-hover .toolbar-item:not(.toggled-on):enabled.hover .glyph {
+    background-color: white;
+}
+
+.toolbar-counter.hover,
+.toolbar-item.checkbox.hover {
     color: #333;
 }
 
-button.toolbar-item:active .glyph {
+:not(.blue-on-hover) button.toolbar-item:active .glyph {
     background-color: #5a5a5a !important;
 }
 
@@ -153,7 +161,7 @@ input.toolbar-item {
 }
 
 input.toolbar-item:focus,
-input.toolbar-item:hover {
+input.toolbar-item.hover {
     border: solid 1px rgb(202, 202, 202);
 }
 
@@ -199,7 +207,7 @@ select.toolbar-item {
 } /* media */
 
 .toolbar-item.emulate-active {
-    background-color: rgb(163,163,163);
+    background-color: rgb(163, 163, 163);
 }
 
 .toolbar-counter {
@@ -311,10 +319,6 @@ select.toolbar-item {
 
 .visibility-off-toolbar-item .glyph {
     -webkit-mask-position: -192px 0;
-}
-
-.console-toolbar-item .glyph {
-    -webkit-mask-position: -64px -24px;
 }
 
 .large-list-toolbar-item .glyph {

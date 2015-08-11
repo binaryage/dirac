@@ -49,6 +49,11 @@ WebInspector.Toolbar.prototype = {
         this._contentElement.classList.add("vertical");
     },
 
+    makeBlueOnHover: function()
+    {
+        this._contentElement.classList.add("blue-on-hover");
+    },
+
     /**
      * @param {boolean} enabled
      */
@@ -105,8 +110,10 @@ WebInspector.Toolbar.prototype = {
 
     _hideSeparatorDupes: function()
     {
+        if (!this._items.length)
+            return;
         // Don't hide first and last separators if they were added explicitly.
-        var previousIsSeparator = true;
+        var previousIsSeparator = this._items[0] instanceof WebInspector.ToolbarSeparator;
         var lastSeparator;
         for (var i = 1; i < this._items.length; ++i) {
             if (this._items[i] instanceof WebInspector.ToolbarSeparator) {
@@ -136,9 +143,21 @@ WebInspector.ToolbarItem = function(element)
     this.element.classList.add("toolbar-item");
     this._enabled = true;
     this._visible = true;
+    this.element.addEventListener("mouseenter", this._mouseEnter.bind(this), false);
+    this.element.addEventListener("mouseleave", this._mouseLeave.bind(this), false);
 }
 
 WebInspector.ToolbarItem.prototype = {
+    _mouseEnter: function()
+    {
+        this.element.classList.add("hover");
+    },
+
+    _mouseLeave: function()
+    {
+        this.element.classList.remove("hover");
+    },
+
     /**
      * @param {boolean} value
      */
@@ -350,9 +369,10 @@ WebInspector.ToolbarButtonBase = function(title, className, states)
 {
     WebInspector.ToolbarItem.call(this, createElementWithClass("button", className + " toolbar-item"));
     this.element.addEventListener("click", this._clicked.bind(this), false);
+    this.element.addEventListener("mousedown", this._mouseDown.bind(this), false);
+    this.element.addEventListener("mouseup", this._mouseUp.bind(this), false);
     this._longClickController = new WebInspector.LongClickController(this.element);
     this._longClickController.addEventListener(WebInspector.LongClickController.Events.LongClick, this._onLongClick.bind(this));
-    this._longClickController.addEventListener(WebInspector.LongClickController.Events.LongPress, this._onLongPress.bind(this));
 
     this._states = states;
     if (!states)
@@ -378,15 +398,6 @@ WebInspector.ToolbarButtonBase.prototype = {
     },
 
     /**
-     * @param {!WebInspector.Event} event
-     */
-    _onLongPress: function(event)
-    {
-        var nativeEvent = event.data;
-        this.dispatchEventToListeners("longPressDown", nativeEvent);
-    },
-
-    /**
      * @param {!Event} event
      */
     _clicked: function(event)
@@ -396,6 +407,22 @@ WebInspector.ToolbarButtonBase.prototype = {
             WebInspector.actionRegistry.execute(this._actionId);
         else
             this.dispatchEventToListeners("click", event);
+    },
+
+    /**
+     * @param {!Event} event
+     */
+    _mouseDown: function(event)
+    {
+        this.dispatchEventToListeners("mousedown", event);
+    },
+
+    /**
+     * @param {!Event} event
+     */
+    _mouseUp: function(event)
+    {
+        this.dispatchEventToListeners("mouseup", event);
     },
 
     /**
@@ -917,110 +944,6 @@ WebInspector.ToolbarCheckbox.prototype = {
     },
 
     __proto__: WebInspector.ToolbarItem.prototype
-}
-
-/**
- * @constructor
- * @extends {WebInspector.ToolbarButton}
- * @param {string} className
- * @param {!Array.<string>} states
- * @param {!Array.<string>} titles
- * @param {string} initialState
- * @param {!WebInspector.Setting} currentStateSetting
- * @param {!WebInspector.Setting} lastStateSetting
- * @param {?function(string)} stateChangedCallback
- */
-WebInspector.ToolbarStatesSettingButton = function(className, states, titles, initialState, currentStateSetting, lastStateSetting, stateChangedCallback)
-{
-    WebInspector.ToolbarButton.call(this, "", className, states.length);
-
-    var onClickBound = this._onClick.bind(this);
-    this.addEventListener("click", onClickBound, this);
-
-    this._states = states;
-    /** @type {!Array.<!WebInspector.ToolbarButton>} */
-    this._buttons = [];
-    for (var index = 0; index < states.length; index++) {
-        var button = new WebInspector.ToolbarButton(titles[index], className, states.length);
-        button.setState(this._states[index]);
-        button.addEventListener("click", onClickBound, this);
-        this._buttons.push(button);
-    }
-
-    this._currentStateSetting = currentStateSetting;
-    this._lastStateSetting = lastStateSetting;
-    this._stateChangedCallback = stateChangedCallback;
-    this.setLongClickOptionsEnabled(this._createOptions.bind(this));
-
-    this._currentState = null;
-    this._toggleState(initialState);
-}
-
-WebInspector.ToolbarStatesSettingButton.prototype = {
-    /**
-     * @param {!WebInspector.Event} e
-     */
-    _onClick: function(e)
-    {
-        this._toggleState(e.target.state());
-    },
-
-    /**
-     * @param {string} state
-     */
-    _toggleState: function(state)
-    {
-        if (this._currentState === state)
-            return;
-
-        if (this._currentState)
-            this._lastStateSetting.set(this._currentState);
-        this._currentState = state;
-        this._currentStateSetting.set(this._currentState);
-
-        if (this._stateChangedCallback)
-            this._stateChangedCallback(state);
-
-        var defaultState = this._defaultState();
-        this.setState(defaultState);
-        this.setTitle(this._buttons[this._states.indexOf(defaultState)].title());
-    },
-
-    /**
-     * Toggle state similarly to user click.
-     */
-    toggle: function()
-    {
-        this._toggleState(this.state());
-    },
-
-    /**
-     * @return {string}
-     */
-    _defaultState: function()
-    {
-        var lastState = this._lastStateSetting.get();
-        if (lastState && this._states.indexOf(lastState) >= 0 && lastState != this._currentState)
-            return lastState;
-        if (this._states.length > 1 && this._currentState === this._states[0])
-            return this._states[1];
-        return this._states[0];
-    },
-
-    /**
-     * @return {!Array.<!WebInspector.ToolbarButton>}
-     */
-    _createOptions: function()
-    {
-        var options = [];
-        for (var index = 0; index < this._states.length; index++) {
-            if (this._states[index] !== this.state() && this._states[index] !== this._currentState)
-                options.push(this._buttons[index]);
-        }
-        return options;
-    },
-
-    __proto__: WebInspector.ToolbarButton.prototype
 }
 
 /**
