@@ -122,6 +122,7 @@ WebInspector.TimelinePanel.OverviewMode = {
  */
 WebInspector.TimelinePanel.DetailsTab = {
     Details: "Details",
+    BottomUpTree: "BottomUpTree",
     BottomUpChart: "BottomUpChart",
     PaintProfiler: "PaintProfiler",
     LayerViewer: "LayerViewer"
@@ -602,7 +603,7 @@ WebInspector.TimelinePanel.prototype = {
             this._overviewControls.push(new WebInspector.TimelineEventOverview.Frames(this._model, this._frameModel()));
             this._overviewControls.push(new WebInspector.TimelineEventOverview.MainThread(this._model));
             this._overviewControls.push(new WebInspector.TimelineEventOverview.Network(this._model));
-          }
+        }
         this.element.classList.toggle("timeline-overview-frames-mode", isFrameMode);
 
         if (this._flameChartEnabledSetting.get()) {
@@ -611,10 +612,6 @@ WebInspector.TimelinePanel.prototype = {
             this._flameChart = new WebInspector.TimelineFlameChartView(this, this._model, this._frameModel());
             this._flameChart.enableNetworkPane(this._captureNetworkSetting.get());
             this._addModeView(this._flameChart);
-            if (Runtime.experiments.isEnabled("timelineTreeView")) {
-                var treeView = new WebInspector.TimelineTreeView(this._model);
-                this._addModeView(treeView);
-            }
         } else {
             this._flameChart = null;
             this._filterBar.filterButton().setEnabled(true);
@@ -1351,13 +1348,18 @@ WebInspector.TimelineDetailsView = function(timelineModel)
     this.appendTab(WebInspector.TimelinePanel.DetailsTab.Details, WebInspector.UIString("Summary"), this._defaultDetailsWidget);
     this.setPreferredTab(WebInspector.TimelinePanel.DetailsTab.Details);
 
+    if (Runtime.experiments.isEnabled("timelineTreeView")) {
+        this._heavyTreeView = new WebInspector.TimelineTreeView(timelineModel);
+        this.appendTab(WebInspector.TimelinePanel.DetailsTab.BottomUpTree, WebInspector.UIString("Costly Functions Tree"), this._heavyTreeView);
+    }
     if (Runtime.experiments.isEnabled("timelineDetailsChart")) {
         this._heavyChartView = new WebInspector.TimelineDetailsView.BottomUpChartView(timelineModel);
-        this.appendTab(WebInspector.TimelinePanel.DetailsTab.BottomUpChart, WebInspector.UIString("Costly Functions"), this._heavyChartView);
+        this.appendTab(WebInspector.TimelinePanel.DetailsTab.BottomUpChart, WebInspector.UIString("Costly Functions Chart"), this._heavyChartView);
     }
 
     this._staticTabs = [
         WebInspector.TimelinePanel.DetailsTab.Details,
+        WebInspector.TimelinePanel.DetailsTab.BottomUpTree,
         WebInspector.TimelinePanel.DetailsTab.BottomUpChart
     ];
 
@@ -1388,6 +1390,8 @@ WebInspector.TimelineDetailsView.prototype = {
         this._selection = selection;
         if (this.selectedTabId === WebInspector.TimelinePanel.DetailsTab.BottomUpChart && this._heavyChartView)
             this._heavyChartView.updateContents(selection);
+        if (this.selectedTabId === WebInspector.TimelinePanel.DetailsTab.BottomUpTree && this._heavyTreeView)
+            this._heavyTreeView.updateContents(selection);
     },
 
     /**
@@ -1505,9 +1509,17 @@ WebInspector.TimelineDetailsView.BottomUpChartView.prototype = {
 
 /**
  * @constructor
+ * @param {!WebInspector.TimelineSelection.Type} type
+ * @param {number} startTime
+ * @param {number} endTime
+ * @param {!Object=} object
  */
-WebInspector.TimelineSelection = function()
+WebInspector.TimelineSelection = function(type, startTime, endTime, object)
 {
+    this._type = type;
+    this._startTime = startTime;
+    this._endTime = endTime;
+    this._object = object || null;
 }
 
 /**
@@ -1527,10 +1539,10 @@ WebInspector.TimelineSelection.Type = {
  */
 WebInspector.TimelineSelection.fromRecord = function(record)
 {
-    var selection = new WebInspector.TimelineSelection();
-    selection._type = WebInspector.TimelineSelection.Type.Record;
-    selection._object = record;
-    return selection;
+    return new WebInspector.TimelineSelection(
+        WebInspector.TimelineSelection.Type.Record,
+        record.startTime(), record.endTime(),
+        record);
 }
 
 /**
@@ -1539,12 +1551,10 @@ WebInspector.TimelineSelection.fromRecord = function(record)
  */
 WebInspector.TimelineSelection.fromFrame = function(frame)
 {
-    var selection = new WebInspector.TimelineSelection();
-    selection._type = WebInspector.TimelineSelection.Type.Frame;
-    selection._object = frame;
-    selection._startTime = frame.startTime;
-    selection._endTime = frame.endTime;
-    return selection;
+    return new WebInspector.TimelineSelection(
+        WebInspector.TimelineSelection.Type.Frame,
+        frame.startTime, frame.endTime,
+        frame);
 }
 
 /**
@@ -1553,12 +1563,10 @@ WebInspector.TimelineSelection.fromFrame = function(frame)
  */
 WebInspector.TimelineSelection.fromNetworkRequest = function(request)
 {
-    var selection = new WebInspector.TimelineSelection();
-    selection._type = WebInspector.TimelineSelection.Type.NetworkRequest;
-    selection._object = request;
-    selection._startTime = request.startTime;
-    selection._endTime = request.endTime || request.startTime;
-    return selection;
+    return new WebInspector.TimelineSelection(
+        WebInspector.TimelineSelection.Type.NetworkRequest,
+        request.startTime, request.endTime || request.startTime,
+        request);
 }
 
 /**
@@ -1567,12 +1575,10 @@ WebInspector.TimelineSelection.fromNetworkRequest = function(request)
  */
 WebInspector.TimelineSelection.fromTraceEvent = function(event)
 {
-    var selection = new WebInspector.TimelineSelection();
-    selection._type = WebInspector.TimelineSelection.Type.TraceEvent;
-    selection._object = event;
-    selection._startTime = event.startTime;
-    selection._endTime = event.endTime || (event.startTime + 1);
-    return selection;
+    return new WebInspector.TimelineSelection(
+        WebInspector.TimelineSelection.Type.TraceEvent,
+        event.startTime, event.endTime || (event.startTime + 1),
+        event);
 }
 
 /**
@@ -1582,11 +1588,9 @@ WebInspector.TimelineSelection.fromTraceEvent = function(event)
  */
 WebInspector.TimelineSelection.fromRange = function(startTime, endTime)
 {
-    var selection = new WebInspector.TimelineSelection();
-    selection._type = WebInspector.TimelineSelection.Type.Range;
-    selection._startTime = startTime;
-    selection._endTime = endTime;
-    return selection;
+    return new WebInspector.TimelineSelection(
+        WebInspector.TimelineSelection.Type.Range,
+        startTime, endTime);
 }
 
 WebInspector.TimelineSelection.prototype = {
@@ -1599,11 +1603,27 @@ WebInspector.TimelineSelection.prototype = {
     },
 
     /**
-     * @return {!Object}
+     * @return {?Object}
      */
     object: function()
     {
         return this._object;
+    },
+
+    /**
+     * @return {number}
+     */
+    startTime: function()
+    {
+        return this._startTime;
+    },
+
+    /**
+     * @return {number}
+     */
+    endTime: function()
+    {
+        return this._endTime;
     }
 };
 

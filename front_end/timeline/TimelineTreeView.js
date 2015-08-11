@@ -5,7 +5,6 @@
 /**
  * @constructor
  * @extends {WebInspector.VBox}
- * @implements {WebInspector.TimelineModeView}
  * @param {!WebInspector.TimelineModel} model
  */
 WebInspector.TimelineTreeView = function(model)
@@ -31,21 +30,16 @@ WebInspector.TimelineTreeView = function(model)
 
 WebInspector.TimelineTreeView.prototype = {
     /**
-     * @override
-     * @param {number} startTime
-     * @param {number} endTime
+     * @param {!WebInspector.TimelineSelection} selection
      */
-    setWindowTimes: function(startTime, endTime)
+    updateContents: function(selection)
     {
-        this._startTime = startTime;
-        this._endTime = endTime;
-        this.refreshRecords();
+        this._startTime = selection.startTime();
+        this._endTime = selection.endTime();
+        this._refreshRecords();
     },
 
-    /**
-     * @override
-     */
-    refreshRecords: function()
+    _refreshRecords: function()
     {
         var topDown = WebInspector.TimelineUIUtils.buildTopDownTree(this._model.mainThreadEvents(), this._startTime, this._endTime, this._filters);
         var rootNode = WebInspector.TimelineUIUtils.buildBottomUpTree(topDown);
@@ -56,50 +50,6 @@ WebInspector.TimelineTreeView.prototype = {
             this.dataGrid.insertChild(gridNode);
         }
         this._sortingChanged();
-    },
-
-    /**
-     * @override
-     */
-    dispose: function()
-    {
-    },
-
-    /**
-     * @override
-     * @return {!WebInspector.Widget}
-     */
-    view: function()
-    {
-        return this;
-    },
-
-    /**
-     * @override
-     */
-    reset: function()
-    {
-    },
-
-    /**
-     * @override
-     */
-    highlightSearchResult: function()
-    {
-    },
-
-    /**
-     * @override
-     */
-    setSelection: function(selection)
-    {
-    },
-
-    /**
-     * @override
-     */
-    setSidebarSize: function()
-    {
     },
 
     _sortingChanged: function()
