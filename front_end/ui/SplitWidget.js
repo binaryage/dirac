@@ -892,7 +892,7 @@ WebInspector.SplitWidget.prototype = {
         this._showHideSidebarButton.classList.toggle("right-sidebar-show-hide-button", this.isVertical() && this.isSidebarSecond());
         this._showHideSidebarButton.classList.toggle("bottom-sidebar-show-hide-button", !this.isVertical() && this.isSidebarSecond());
         this._showHideSidebarButton.classList.toggle("left-sidebar-show-hide-button", this.isVertical() && !this.isSidebarSecond());
-        this._showHideSidebarButton.title = sidebarHidden ? WebInspector.UIString("Show %s", this._showHideSidebarButtonTitle) : WebInspector.UIString("Hide %s", this._showHideSidebarButtonTitle);
+        WebInspector.Tooltip.install(this._showHideSidebarButton, sidebarHidden ? WebInspector.UIString("Show %s", this._showHideSidebarButtonTitle) : WebInspector.UIString("Hide %s", this._showHideSidebarButtonTitle));
     },
 
     __proto__: WebInspector.Widget.prototype

@@ -13,15 +13,15 @@ WebInspector.Tooltip = function(doc)
     this._shadowRoot.appendChild(WebInspector.Widget.createStyleElement("ui/tooltip.css"));
 
     this._tooltipElement = this._shadowRoot.createChild("div", "tooltip");
-    this._arrowElement = this._shadowRoot.createChild("div", "tooltip-arrow");
     doc.addEventListener("mousemove", this._mouseMove.bind(this), false);
+    doc.addEventListener("mousedown", this._hide.bind(this), false);
 }
 
 WebInspector.Tooltip.Timing = {
     // Max time between tooltips showing that no opening delay is required.
     "InstantThreshold": 300,
     // Wait time before opening a tooltip.
-    "OpeningDelay": 400
+    "OpeningDelay": 600
 }
 
 WebInspector.Tooltip.AlignmentOverride = {
@@ -35,7 +35,7 @@ WebInspector.Tooltip.prototype = {
     _mouseMove: function(event)
     {
         var path = event.deepPath ? event.deepPath : event.path;
-        if (!path)
+        if (!path || event.buttons !== 0)
             return;
 
         if (this._anchorElement && path.indexOf(this._anchorElement) === -1)
@@ -90,25 +90,20 @@ WebInspector.Tooltip.prototype = {
         // Posititon tooltip based on the anchor element.
         var containerOffset = container.offsetRelativeToWindow(this.element.window());
         var containerOffsetWidth = container.offsetWidth;
+        var containerOffsetHeight = container.offsetHeight;
         var anchorBox = this._anchorElement.boxInWindow(this.element.window());
-        const arrowSize = 4;
+        const anchorOffset = 2;
         const pageMargin = 2;
         this._tooltipElement.style.maxWidth = (containerOffsetWidth - pageMargin * 2) + "px";
         var tooltipWidth = this._tooltipElement.offsetWidth;
         var tooltipHeight = this._tooltipElement.offsetHeight;
-        var tooltipX = anchorBox.x + anchorBox.width / 2 - tooltipWidth / 2;
-        if (tooltip.alignment === WebInspector.Tooltip.AlignmentOverride.Right)
-            tooltipX = anchorBox.x;
+        var tooltipX = anchorBox.x;
         tooltipX = Number.constrain(tooltipX,
             containerOffset.x + pageMargin,
             containerOffset.x + containerOffsetWidth - tooltipWidth - pageMargin);
-        var onBottom = anchorBox.y - arrowSize - anchorBox.height < containerOffset.y;
-        var tooltipY = onBottom ? anchorBox.y + anchorBox.height + arrowSize : anchorBox.y - tooltipHeight - arrowSize;
+        var onBottom = anchorBox.y + anchorOffset + anchorBox.height < containerOffset.y + containerOffsetHeight;
+        var tooltipY = onBottom ? anchorBox.y + anchorBox.height + anchorOffset : anchorBox.y - tooltipHeight - anchorOffset;
         this._tooltipElement.positionAt(tooltipX, tooltipY);
-
-        // Position arrow next to anchor element.
-        this._arrowElement.positionAt(anchorBox.x + anchorBox.width / 2, onBottom ? anchorBox.y + anchorBox.height : anchorBox.y - arrowSize);
-        this._arrowElement.classList.toggle("tooltip-arrow-top", !onBottom);
     },
 
     _hide: function()
@@ -133,13 +128,14 @@ WebInspector.Tooltip.installHandler = function(doc)
 /**
  * @param {!Element} element
  * @param {!Element|string} tooltipContent
- * @param {string=} alignment
  * @param {string=} actionId
  */
-WebInspector.Tooltip.install = function(element, tooltipContent, alignment, actionId)
+WebInspector.Tooltip.install = function(element, tooltipContent, actionId)
 {
+    if (Runtime.experiments.isEnabled("tooltips") && typeof tooltipContent === "string" && tooltipContent === "")
+        return;
     if (Runtime.experiments.isEnabled("tooltips"))
-        element[WebInspector.Tooltip._symbol] =  { content: tooltipContent, alignment: alignment, actionId: actionId };
+        element[WebInspector.Tooltip._symbol] =  { content: tooltipContent, actionId: actionId };
     else if (typeof tooltipContent === "string")
         element.title = tooltipContent;
     else

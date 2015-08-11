@@ -240,7 +240,7 @@ WebInspector.ToolbarCounter.prototype = {
             }
         }
         this.element.classList.toggle("hidden", !total);
-        WebInspector.Tooltip.install(this.element, title, undefined, this._actionId);
+        WebInspector.Tooltip.install(this.element, title, this._actionId);
     },
 
     /**
@@ -404,7 +404,7 @@ WebInspector.ToolbarButtonBase.prototype = {
     setAction: function(actionId)
     {
         this._actionId = actionId;
-        WebInspector.Tooltip.install(this.element, this._title, undefined, this._actionId);
+        WebInspector.Tooltip.install(this.element, this._title, this._actionId);
     },
 
     /**
@@ -440,7 +440,7 @@ WebInspector.ToolbarButtonBase.prototype = {
         if (this._title === title)
             return;
         this._title = title;
-        WebInspector.Tooltip.install(this.element, title, undefined, this._actionId);
+        WebInspector.Tooltip.install(this.element, title, this._actionId);
     },
 
     /**

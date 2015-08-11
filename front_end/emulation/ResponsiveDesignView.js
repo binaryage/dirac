@@ -95,7 +95,7 @@ WebInspector.ResponsiveDesignView.prototype = {
         this._decreasePageScaleButton.addEventListener("click", this._pageScaleButtonClicked.bind(this, false), false);
 
         this._pageScaleLabel = this._pageScaleContainer.createChild("label", "responsive-design-page-scale-label");
-        WebInspector.Tooltip.install(this._pageScaleLabel, WebInspector.UIString("Shift + drag to change page scale"), WebInspector.Tooltip.AlignmentOverride.Right);
+        WebInspector.Tooltip.install(this._pageScaleLabel, WebInspector.UIString("Shift + drag to change page scale"));
         this._pageScaleLabel.addEventListener("dblclick", this._resetPageScale.bind(this), false);
 
         this._increasePageScaleButton = this._pageScaleContainer.createChild("button", "responsive-design-page-scale-button responsive-design-page-scale-increase");
@@ -539,9 +539,9 @@ WebInspector.ResponsiveDesignView.prototype = {
 
         if (viewportChanged) {
             this._pageScaleLabel.textContent = WebInspector.UIString("%.1f", this._viewport.pageScaleFactor);
-            WebInspector.Tooltip.install(this._decreasePageScaleButton, WebInspector.UIString("Scale down (minimum %.1f)", this._viewport.minimumPageScaleFactor), WebInspector.Tooltip.AlignmentOverride.Right);
+            WebInspector.Tooltip.install(this._decreasePageScaleButton, WebInspector.UIString("Scale down (minimum %.1f)", this._viewport.minimumPageScaleFactor));
             this._decreasePageScaleButton.disabled = this._viewport.pageScaleFactor <= this._viewport.minimumPageScaleFactor;
-            WebInspector.Tooltip.install(this._increasePageScaleButton, WebInspector.UIString("Scale up (maximum %.1f)", this._viewport.maximumPageScaleFactor), WebInspector.Tooltip.AlignmentOverride.Right);
+            WebInspector.Tooltip.install(this._increasePageScaleButton, WebInspector.UIString("Scale up (maximum %.1f)", this._viewport.maximumPageScaleFactor));
             this._increasePageScaleButton.disabled = this._viewport.pageScaleFactor >= this._viewport.maximumPageScaleFactor;
         }
 
