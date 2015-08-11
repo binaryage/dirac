@@ -13,6 +13,19 @@
             "type": "@WebInspector.DOMPresentationUtils.MarkerDecorator",
             "className": "WebInspector.DOMBreakpointsSidebarPane.MarkerDecorator",
             "marker": "breakpoint-marker"
+        },
+        {
+            "type": "setting",
+            "settingName": "networkConditionsCustomProfiles",
+            "settingType": "array",
+            "defaultValue": []
+        },
+        {
+            "type": "settings-view",
+            "name": "network-conditions",
+            "title": "Throttling",
+            "order": "35",
+            "className": "WebInspector.NetworkConditionsSettingsTab"
         }
     ],
     "dependencies": [
@@ -47,6 +60,7 @@
         "eventListenersView.css",
         "domUtils.css",
         "inspectorViewTabbedPane.css",
+        "networkConditionsSettingsTab.css",
         "objectPropertiesSection.css",
         "objectValue.css"
     ]
