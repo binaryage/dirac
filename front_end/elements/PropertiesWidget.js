@@ -82,7 +82,10 @@ WebInspector.PropertiesWidget.prototype = {
         }
 
         this._lastRequestedNode = this._node;
-        this._node.resolveToObject(WebInspector.PropertiesWidget._objectGroupName, nodeResolved.bind(this));
+        this._node.resolveToObjectPromise(WebInspector.PropertiesWidget._objectGroupName)
+            .then(nodeResolved.bind(this))
+            .then(finishCallback)
+            .catch(/** @type {function()} */(finishCallback));
 
         /**
          * @param {?WebInspector.RemoteObject} object
@@ -90,10 +93,8 @@ WebInspector.PropertiesWidget.prototype = {
          */
         function nodeResolved(object)
         {
-            if (!object) {
-                finishCallback();
+            if (!object)
                 return;
-            }
 
             /**
              * @suppressReceiverCheck
@@ -110,36 +111,35 @@ WebInspector.PropertiesWidget.prototype = {
                 }
                 return result;
             }
-            object.callFunction(protoList, undefined, nodePrototypesReady.bind(this));
+            var promise = object.callFunctionPromise(protoList).then(nodePrototypesReady.bind(this));
             object.release();
+            return promise;
         }
 
         /**
-         * @param {?WebInspector.RemoteObject} object
-         * @param {boolean=} wasThrown
+         * @param {!{object: ?WebInspector.RemoteObject, wasThrown: (boolean|undefined)}} result
          * @this {WebInspector.PropertiesWidget}
          */
-        function nodePrototypesReady(object, wasThrown)
+        function nodePrototypesReady(result)
         {
-            if (!object || wasThrown) {
-                finishCallback();
+            if (!result.object || result.wasThrown)
                 return;
-            }
-            object.getOwnProperties(fillSection.bind(this));
-            object.release();
+
+            var promise = result.object.getOwnPropertiesPromise().then(fillSection.bind(this));
+            result.object.release();
+            return promise;
         }
 
         /**
-         * @param {?Array.<!WebInspector.RemoteObjectProperty>} prototypes
+         * @param {!{properties: ?Array.<!WebInspector.RemoteObjectProperty>, internalProperties: ?Array.<!WebInspector.RemoteObjectProperty>}} result
          * @this {WebInspector.PropertiesWidget}
          */
-        function fillSection(prototypes)
+        function fillSection(result)
         {
-            if (!prototypes) {
-                finishCallback();
+            if (!result || !result.properties)
                 return;
-            }
 
+            var properties = result.properties;
             var expanded = [];
             var sections = this.sections || [];
             for (var i = 0; i < sections.length; ++i)
@@ -148,22 +148,20 @@ WebInspector.PropertiesWidget.prototype = {
             this.element.removeChildren();
             this.sections = [];
 
-            // Get array of prototype user-friendly names.
-            for (var i = 0; i < prototypes.length; ++i) {
-                if (!parseInt(prototypes[i].name, 10))
+            // Get array of property user-friendly names.
+            for (var i = 0; i < properties.length; ++i) {
+                if (!parseInt(properties[i].name, 10))
                     continue;
-                var prototype = prototypes[i].value;
-                var title = prototype.description;
+                var property = properties[i].value;
+                var title = property.description;
                 title = title.replace(/Prototype$/, "");
-                var section = new WebInspector.ObjectPropertiesSection(prototype, title);
+                var section = new WebInspector.ObjectPropertiesSection(property, title);
                 section.element.classList.add("properties-widget-section");
                 this.sections.push(section);
                 this.element.appendChild(section.element);
                 if (expanded[this.sections.length - 1])
                     section.expand();
             }
-
-            finishCallback();
         }
     },
 

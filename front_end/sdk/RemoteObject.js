@@ -86,6 +86,36 @@ WebInspector.RemoteObject.prototype = {
     },
 
     /**
+     * @return {!Promise.<!{properties: ?Array.<!WebInspector.RemoteObjectProperty>, internalProperties: ?Array.<!WebInspector.RemoteObjectProperty>}>}
+     */
+    getOwnPropertiesPromise: function()
+    {
+        return new Promise(promiseConstructor.bind(this));
+
+        /**
+         * @param {function(!{properties: ?Array.<!WebInspector.RemoteObjectProperty>, internalProperties: ?Array.<!WebInspector.RemoteObjectProperty>})} success
+         * @this {WebInspector.RemoteObject}
+         */
+        function promiseConstructor(success)
+        {
+            this.getOwnProperties(getOwnPropertiesCallback.bind(null, success));
+        }
+
+        /**
+         * @param {function(!{properties: ?Array.<!WebInspector.RemoteObjectProperty>, internalProperties: ?Array.<!WebInspector.RemoteObjectProperty>})} callback
+         * @param {?Array.<!WebInspector.RemoteObjectProperty>} properties
+         * @param {?Array.<!WebInspector.RemoteObjectProperty>} internalProperties
+         */
+        function getOwnPropertiesCallback(callback, properties, internalProperties)
+        {
+            callback({
+                properties: properties,
+                internalProperties: internalProperties
+            });
+        }
+    },
+
+    /**
      * @param {boolean} accessorPropertiesOnly
      * @param {function(?Array.<!WebInspector.RemoteObjectProperty>, ?Array.<!WebInspector.RemoteObjectProperty>)} callback
      */
@@ -119,6 +149,38 @@ WebInspector.RemoteObject.prototype = {
     callFunction: function(functionDeclaration, args, callback)
     {
         throw "Not implemented";
+    },
+
+    /**
+     * @param {function(this:Object, ...)} functionDeclaration
+     * @param {!Array.<!RuntimeAgent.CallArgument>=} args
+     * @return {!Promise.<!{object: ?WebInspector.RemoteObject, wasThrown: (boolean|undefined)}>}
+     */
+    callFunctionPromise: function(functionDeclaration, args)
+    {
+        return new Promise(promiseConstructor.bind(this));
+
+        /**
+         * @param {function(!{object: ?WebInspector.RemoteObject, wasThrown: (boolean|undefined)})} success
+         * @this {WebInspector.RemoteObject}
+         */
+        function promiseConstructor(success)
+        {
+            this.callFunction(functionDeclaration, args, callFunctionCallback.bind(null, success));
+        }
+
+        /**
+         * @param {function(!{object: ?WebInspector.RemoteObject, wasThrown: (boolean|undefined)})} callback
+         * @param {?WebInspector.RemoteObject} object
+         * @param {boolean=} wasThrown
+         */
+        function callFunctionCallback(callback, object, wasThrown)
+        {
+            callback({
+                object: object,
+                wasThrown: wasThrown
+            });
+        }
     },
 
     /**
