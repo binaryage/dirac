@@ -287,21 +287,25 @@ WebInspector.NetworkConditionsSettingsTab.prototype = {
         var input = createElement("input");
         input.type = "text";
         input.placeholder = placeholder;
-        input.addEventListener("input", this._validateInputs.bind(this), false);
+        input.addEventListener("input", this._validateInputs.bind(this, false), false);
+        input.addEventListener("blur", this._validateInputs.bind(this, false), false);
         return input;
     },
 
-    _validateInputs: function()
+    /**
+     * @param {boolean} forceValid
+     */
+    _validateInputs: function(forceValid)
     {
         var trimmedTitle = this._editConditionsTitle.value.trim();
         var titleValid = trimmedTitle.length > 0 && trimmedTitle.length < 50;
-        this._editConditionsTitle.classList.toggle("error-input", !titleValid);
+        this._editConditionsTitle.classList.toggle("error-input", !titleValid && !forceValid);
 
         var throughputValid = !WebInspector.NetworkConditionsSelector.throughputValidator(this._editConditionsThroughput.value);
-        this._editConditionsThroughput.classList.toggle("error-input", !throughputValid);
+        this._editConditionsThroughput.classList.toggle("error-input", !throughputValid && !forceValid);
 
         var latencyValid = !WebInspector.NetworkConditionsSelector.latencyValidator(this._editConditionsLatency.value);
-        this._editConditionsLatency.classList.toggle("error-input", !latencyValid);
+        this._editConditionsLatency.classList.toggle("error-input", !latencyValid && !forceValid);
 
         var allValid = titleValid && throughputValid && latencyValid;
         this._editConditionsCommitButton.disabled = !allValid;
@@ -331,7 +335,7 @@ WebInspector.NetworkConditionsSettingsTab.prototype = {
             this._editConditionsThroughput.value = "";
             this._editConditionsLatency.value = "";
         }
-        this._validateInputs();
+        this._validateInputs(true);
 
         if (listItem && listItem.nextElementSibling)
             this._conditionsList.insertBefore(this._editConditionsElement, listItem.nextElementSibling);
