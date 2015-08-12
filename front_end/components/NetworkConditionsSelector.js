@@ -71,6 +71,7 @@ WebInspector.NetworkConditionsSelector._networkConditionsPresets = [
 WebInspector.NetworkConditionsSelector.prototype = {
     _populateOptions: function()
     {
+        this._selectElement.removeChildren();
         var presets = this._customSetting.get().concat(WebInspector.NetworkConditionsSelector._networkConditionsPresets);
         for (var i = 0; i < presets.length; ++i) {
             var preset = presets[i];
