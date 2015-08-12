@@ -44,10 +44,6 @@ WebInspector.TimelineFlameChartDataProviderBase = function(model)
     this._filters = [];
     this.addFilter(WebInspector.TimelineUIUtils.hiddenEventsFilter());
     this.addFilter(new WebInspector.ExcludeTopLevelFilter());
-    this._jsFramesColorGenerator = new WebInspector.FlameChart.ColorGenerator(
-        { min: 40, max: 310, count: 10 },
-        { min: 50, max: 80, count: 3 },
-        85);
 }
 
 WebInspector.TimelineFlameChartDataProviderBase.prototype = {
@@ -539,10 +535,8 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
         var event = this._entryEvents[entryIndex];
         if (!event)
             return this._entryIndexToFrame[entryIndex] ? "white" : "#aaa";
-        if (event.name === WebInspector.TimelineModel.RecordType.JSFrame) {
-            var colorId = event.args["data"]["url"];
-            return this._jsFramesColorGenerator.colorForID(colorId);
-        }
+        if (event.name === WebInspector.TimelineModel.RecordType.JSFrame)
+            return WebInspector.TimelineUIUtils.colorForURL(event.args["data"]["url"]);
         var category = WebInspector.TimelineUIUtils.eventStyle(event).category;
         if (WebInspector.TracingModel.isAsyncPhase(event.phase)) {
             if (event.hasCategory(WebInspector.TracingModel.ConsoleEventCategory))
@@ -1074,10 +1068,8 @@ WebInspector.TimelineFlameChartBottomUpDataProvider.prototype = {
         var event = entry.event;
         if (!event)
             return "#aaa";
-        if (event.name === WebInspector.TimelineModel.RecordType.JSFrame) {
-            var colorId = event.args["data"]["url"];
-            return this._jsFramesColorGenerator.colorForID(colorId);
-        }
+        if (event.name === WebInspector.TimelineModel.RecordType.JSFrame)
+            return WebInspector.TimelineUIUtils.colorForURL(event.args["data"]["url"]);
         return WebInspector.TimelineUIUtils.eventStyle(event).category.fillColorStop1;
     },
 

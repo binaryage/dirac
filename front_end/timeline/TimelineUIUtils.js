@@ -1922,6 +1922,21 @@ WebInspector.TimelineUIUtils.markerStyleForFrame = function()
 }
 
 /**
+ * @param {string} url
+ * @return {string}
+ */
+WebInspector.TimelineUIUtils.colorForURL = function(url)
+{
+    if (!WebInspector.TimelineUIUtils.colorForURL._colorGenerator) {
+        WebInspector.TimelineUIUtils.colorForURL._colorGenerator = new WebInspector.FlameChart.ColorGenerator(
+            { min: 40, max: 310, count: 10 },
+            { min: 50, max: 80, count: 3 },
+            85);
+    }
+    return WebInspector.TimelineUIUtils.colorForURL._colorGenerator.colorForID(url);
+}
+
+/**
  * @constructor
  * @param {string} title
  */
