@@ -1077,7 +1077,8 @@ WebInspector.TimelinePanel.prototype = {
             var frame = /** @type {!WebInspector.TimelineFrame} */ (this._selection.object());
             if (!this._filmStripModel)
                 this._filmStripModel = new WebInspector.FilmStripModel(this._tracingModel);
-            var filmStripFrame = this._filmStripModel && this._filmStripModel.frameByTimestamp(frame.endTime);
+            var screenshotTime = frame.idle ? frame.startTime : frame.endTime; // For idle frames, look at the state at the beginning of the frame.
+            var filmStripFrame = this._filmStripModel && this._filmStripModel.frameByTimestamp(screenshotTime);
             if (filmStripFrame && filmStripFrame.timestamp - frame.endTime > 10)
                 filmStripFrame = null;
             this.showInDetails(WebInspector.TimelineUIUtils.generateDetailsContentForFrame(this._lazyFrameModel, frame, filmStripFrame));
