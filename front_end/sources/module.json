@@ -284,6 +284,7 @@
         }
     ],
     "dependencies": [
+        "components",
         "source_frame",
         "snippets",
         "extensions"

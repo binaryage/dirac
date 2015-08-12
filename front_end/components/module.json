@@ -47,6 +47,7 @@
         "HandlerRegistry.js",
         "InspectElementModeController.js",
         "InspectorView.js",
+        "Linkifier.js",
         "NetworkConditionsSelector.js",
         "ObjectPopoverHelper.js",
         "ObjectPropertiesSection.js",

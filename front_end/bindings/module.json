@@ -14,7 +14,6 @@
         "FileSystemWorkspaceBinding.js",
         "FileUtils.js",
         "BlackboxSupport.js",
-        "Linkifier.js",
         "NetworkMapping.js",
         "NetworkProject.js",
         "PresentationConsoleMessageHelper.js",
