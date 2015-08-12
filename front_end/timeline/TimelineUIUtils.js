@@ -1448,21 +1448,17 @@ WebInspector.TimelineUIUtils.generatePieChart = function(aggregatedStats, selfCa
  */
 WebInspector.TimelineUIUtils.generateDetailsContentForFrame = function(frameModel, frame, filmStripFrame)
 {
-    var durationInMillis = frame.endTime - frame.startTime;
-    var durationText = WebInspector.UIString("%s (at %s)", Number.millisToString(frame.endTime - frame.startTime, true),
-        Number.millisToString(frame.startTimeOffset, true));
     var pieChart = WebInspector.TimelineUIUtils.generatePieChart(frame.timeByCategory);
     var contentHelper = new WebInspector.TimelineDetailsContentHelper(null, null, null, false);
-    var warning = WebInspector.TimelineUIUtils.frameWarning(frame);
-    if (warning)
-        contentHelper.appendElementRow(WebInspector.UIString("Warning"), warning, true);
+    var duration = WebInspector.TimelineUIUtils.frameDuration(frame);
+    contentHelper.appendElementRow(WebInspector.UIString("Duration"), duration, frame.hasWarnings());
     if (filmStripFrame) {
         var filmStripPreview = createElementWithClass("img", "timeline-filmstrip-preview");
         filmStripFrame.imageDataPromise().then(onGotImageData.bind(null, filmStripPreview));
         contentHelper.appendElementRow(WebInspector.UIString("Screenshot"), filmStripPreview);
         filmStripPreview.addEventListener("click", filmStripClicked.bind(null, filmStripFrame), false);
     }
-    contentHelper.appendTextRow(WebInspector.UIString("Duration"), durationText);
+    var durationInMillis = frame.endTime - frame.startTime;
     contentHelper.appendTextRow(WebInspector.UIString("FPS"), Math.floor(1000 / durationInMillis));
     contentHelper.appendTextRow(WebInspector.UIString("CPU time"), Number.millisToString(frame.cpuTime, true));
     contentHelper.appendElementRow(WebInspector.UIString("Aggregated Time"), pieChart);
@@ -1494,16 +1490,19 @@ WebInspector.TimelineUIUtils.generateDetailsContentForFrame = function(frameMode
 
 /**
  * @param {!WebInspector.TimelineFrame} frame
- * @return {?Element}
+ * @return {!Element}
  */
-WebInspector.TimelineUIUtils.frameWarning = function(frame)
+WebInspector.TimelineUIUtils.frameDuration = function(frame)
 {
-    if (!frame.hasWarnings())
-        return null;
+    var durationText = WebInspector.UIString("%s (at %s)", Number.millisToString(frame.endTime - frame.startTime, true),
+        Number.millisToString(frame.startTimeOffset, true));
     var element = createElement("span");
-    element.createTextChild("Long frame times are an indication of jank and poor rendering performance. Read more at the ");
+    element.createTextChild(durationText);
+    if (!frame.hasWarnings())
+        return element;
+    element.createTextChild(WebInspector.UIString(". Long frame times are an indication of "));
     element.appendChild(WebInspector.linkifyURLAsNode("https://developers.google.com/web/fundamentals/performance/rendering/",
-                                                      "Web Fundamentals guide on Rendering Performance", undefined, true));
+                                                      WebInspector.UIString("jank"), undefined, true));
     element.createTextChild(".");
     return element;
 }
@@ -2049,10 +2048,10 @@ WebInspector.TimelineDetailsContentHelper.prototype = {
     appendElementRow: function(title, content, isWarning)
     {
         var rowElement = this.element.createChild("div", "timeline-details-view-row");
+        if (isWarning)
+            rowElement.classList.add("timeline-details-warning");
         var titleElement = rowElement.createChild("div", "timeline-details-view-row-title");
         titleElement.textContent = title;
-        if (isWarning)
-            titleElement.createChild("div", "timeline-details-warning-marker");
         var valueElement = rowElement.createChild("div", "timeline-details-view-row-value timeline-details-view-row-details" + (this._monospaceValues ? " monospace" : ""));
         if (content instanceof Node)
             valueElement.appendChild(content);

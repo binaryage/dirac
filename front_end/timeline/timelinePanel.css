@@ -698,7 +698,7 @@
     overflow: hidden;
 }
 
-.timeline-details-view-row-title .timeline-details-warning-marker {
+.timeline-details-warning .timeline-details-view-row-title::after {
     width: 16px;
     height: 16px;
     background-color: red;
@@ -706,6 +706,13 @@
     right: -8px;
     top: -8px;
     transform: rotate(45deg);
+    content: "";
+}
+
+.timeline-details-warning .timeline-details-view-row-value {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .timeline-details-view-row-value {
@@ -722,6 +729,12 @@
 
 .timeline-details-view-row-details {
     padding-left: 10px;
+}
+
+.timeline-details-view-row-details .timeline-details-warning-marker {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
 }
 
 .timeline-details-view-pie-chart-wrapper {
