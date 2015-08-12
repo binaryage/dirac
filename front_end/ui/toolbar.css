@@ -99,7 +99,7 @@ button.toolbar-item:enabled.hover .glyph {
 }
 
 .blue-on-hover .toolbar-item:not(.toggled-on):enabled.hover {
-    background-color: rgb(56, 121, 217);
+    background-color: rgb(66, 129, 235);
 }
 
 .blue-on-hover .toolbar-item:not(.toggled-on):enabled.hover .glyph {
