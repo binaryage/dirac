@@ -609,3 +609,11 @@
 .network-log-grid.data-grid .data-container tr:not(.data-grid-filler-row):not(.selected):hover {
     background-color: rgba(56, 121, 217, 0.1);
 }
+
+.network-log-grid .network-node-on-initiator-path {
+    background-color: hsla(120, 68%, 54%, 0.2) !important;
+}
+
+.network-log-grid .network-node-on-initiated-path {
+    background-color: hsla(0, 68%, 54%, 0.2) !important;
+}

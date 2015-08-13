@@ -1015,6 +1015,32 @@ WebInspector.NetworkRequest.prototype = {
     },
 
     /**
+     * @return {?WebInspector.NetworkRequest}
+     */
+    initiatorRequest: function()
+    {
+        if (this._initiatorRequest === undefined)
+            this._initiatorRequest = this.target().networkLog.requestForURL(this.initiatorInfo().url);
+        return this._initiatorRequest;
+    },
+
+    /**
+     * @return {!Set<!WebInspector.NetworkRequest>}
+     */
+    initiatorChain: function()
+    {
+        if (this._initiatorChain)
+            return this._initiatorChain;
+        this._initiatorChain = new Set();
+        var request = this;
+        while (request) {
+            this._initiatorChain.add(request);
+            request = request.initiatorRequest();
+        }
+        return this._initiatorChain;
+    },
+
+    /**
      * @return {!Array.<!WebInspector.NetworkRequest.WebSocketFrame>}
      */
     frames: function()

@@ -439,6 +439,8 @@ WebInspector.NetworkLogView.prototype = {
         this._dataGrid.element.classList.add("network-log-grid");
         this._dataGrid.element.addEventListener("contextmenu", this._contextMenu.bind(this), true);
         this._dataGrid.element.addEventListener("mousedown", this._dataGridMouseDown.bind(this), true);
+        this._dataGrid.element.addEventListener("mousemove", this._dataGridMouseMove.bind(this), true);
+        this._dataGrid.element.addEventListener("mouseleave", this._highlightInitiatorChain.bind(this, null), true);
         this._dataGrid.show(this.element);
 
         // Event listeners need to be added _after_ we attach to the document, so that owner document is properly update.
@@ -456,6 +458,51 @@ WebInspector.NetworkLogView.prototype = {
     {
         if ((!this._dataGrid.selectedNode && event.button) || event.target.enclosingNodeOrSelfWithNodeName("a"))
             event.consume();
+    },
+
+    /**
+     * @param {!Event} event
+     */
+    _dataGridMouseMove: function(event)
+    {
+        var node = event.shiftKey ? this._dataGrid.dataGridNodeFromNode(event.target) : null;
+        this._highlightInitiatorChain(node ? node.request() : null);
+    },
+
+    /**
+     * @param {?WebInspector.NetworkRequest} request
+     */
+    _highlightInitiatorChain: function(request)
+    {
+        if (this._requestWithHighlightedInitiators === request)
+            return;
+        this._requestWithHighlightedInitiators = request;
+
+        if (!request) {
+            for (var node of this._nodesByRequestId.values()) {
+                if (!node.dataGrid)
+                    continue;
+                node.element().classList.remove("network-node-on-initiator-path", "network-node-on-initiated-path");
+            }
+            return;
+        }
+
+        var initiators = request.initiatorChain();
+        var initiated = new Set();
+        for (var node of this._nodesByRequestId.values()) {
+            if (!node.dataGrid)
+                continue;
+            var localInitiators = node.request().initiatorChain();
+            if (localInitiators.has(request))
+                initiated.add(node.request());
+        }
+
+        for (var node of this._nodesByRequestId.values()) {
+            if (!node.dataGrid)
+                continue;
+            node.element().classList.toggle("network-node-on-initiator-path", node.request() !== request && initiators.has(node.request()));
+            node.element().classList.toggle("network-node-on-initiated-path", node.request() !== request && initiated.has(node.request()));
+        }
     },
 
     /**
@@ -922,6 +969,7 @@ WebInspector.NetworkLogView.prototype = {
 
     reset: function()
     {
+        this._requestWithHighlightedInitiators = null;
         this.dispatchEventToListeners(WebInspector.NetworkLogView.EventTypes.RequestSelected, null);
 
         /** @type {boolean} */
