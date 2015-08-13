@@ -1613,9 +1613,10 @@ WebInspector.TimelineUIUtils.eventDispatchDesciptors = function()
  * @param {number} startTime
  * @param {number} endTime
  * @param {!Array<!WebInspector.TraceEventFilter>} filters
+ * @param {function(!WebInspector.TracingModel.Event):string} eventIdCallback
  * @return {!WebInspector.TimelineModel.ProfileTreeNode}
  */
-WebInspector.TimelineUIUtils.buildTopDownTree = function(events, startTime, endTime, filters)
+WebInspector.TimelineUIUtils.buildTopDownTree = function(events, startTime, endTime, filters, eventIdCallback)
 {
     // Temporarily deposit a big enough value that exceeds the max recording time.
     var /** @const */ initialTime = 1e7;
@@ -1652,7 +1653,7 @@ WebInspector.TimelineUIUtils.buildTopDownTree = function(events, startTime, endT
         if (!filter(e))
             return;
         var time = Math.min(endTime, e.endTime) - Math.max(startTime, e.startTime);
-        var id = eventId(e);
+        var id = eventIdCallback(e);
         if (!parent.children)
             parent.children = {};
         var node = parent.children[id];
@@ -1691,17 +1692,6 @@ WebInspector.TimelineUIUtils.buildTopDownTree = function(events, startTime, endT
      * @param {!WebInspector.TracingModel.Event} e
      * @return {string}
      */
-    function eventId(e)
-    {
-        if (e.name === "JSFrame")
-            return "f:" + (e.args.data.callUID || (e.args.data.functionName + "@" + e.args.data.url));
-        return e.name;
-    }
-
-    /**
-     * @param {!WebInspector.TracingModel.Event} e
-     * @return {string}
-     */
     function eventName(e)
     {
         if (e.name === "JSFrame")
@@ -1719,35 +1709,17 @@ WebInspector.TimelineUIUtils.buildTopDownTree = function(events, startTime, endT
 
 /**
  * @param {!WebInspector.TimelineModel.ProfileTreeNode} topDownTree
- * @param {boolean=} groupByCategories
+ * @param {function(!WebInspector.TimelineModel.ProfileTreeNode):?WebInspector.TimelineModel.ProfileTreeNode=} groupingCallback
  * @return {!WebInspector.TimelineModel.ProfileTreeNode}
  */
-WebInspector.TimelineUIUtils.buildBottomUpTree = function(topDownTree, groupByCategories)
+WebInspector.TimelineUIUtils.buildBottomUpTree = function(topDownTree, groupingCallback)
 {
     var buRoot = new WebInspector.TimelineModel.ProfileTreeNode();
     buRoot.totalTime = 0;
     buRoot.name = WebInspector.UIString("Bottom-Up Chart");
     buRoot.children = {};
-
-    if (groupByCategories) {
-        var categories = WebInspector.TimelineUIUtils.categories();
-        for (var categoryName in categories) {
-            var category = categories[categoryName];
-            var node = new WebInspector.TimelineModel.ProfileTreeNode();
-            node.totalTime = 0;
-            node.name = category.title;
-            node.color = category.fillColorStop1;
-            buRoot.children[categoryName] = node;
-        }
-    }
-
     for (var id in topDownTree.children)
         processNode(topDownTree.children[id]);
-
-    for (var id in buRoot.children) {
-        var buNode = buRoot.children[id];
-        buRoot.totalTime += buNode.totalTime;
-    }
 
     /**
      * @param {!WebInspector.TimelineModel.ProfileTreeNode} tdNode
@@ -1755,11 +1727,10 @@ WebInspector.TimelineUIUtils.buildBottomUpTree = function(topDownTree, groupByCa
     function processNode(tdNode)
     {
         if (tdNode.selfTime > 0) {
-            var category = WebInspector.TimelineUIUtils.eventStyle(tdNode.event).category;
-            var buNode = buRoot.children[category.name] || buRoot;
+            var buParent = groupingCallback && groupingCallback(tdNode) || buRoot;
             var time = tdNode.selfTime;
-            buNode.totalTime += time;
-            appendNode(tdNode, buNode, time);
+            buParent.totalTime += time;
+            appendNode(tdNode, buParent, time);
         }
         for (var id in tdNode.children)
             processNode(tdNode.children[id]);

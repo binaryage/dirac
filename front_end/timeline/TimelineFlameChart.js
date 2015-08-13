@@ -1078,8 +1078,42 @@ WebInspector.TimelineFlameChartBottomUpDataProvider.prototype = {
      */
     _appendTimelineData: function(events)
     {
-        var topDownTree = WebInspector.TimelineUIUtils.buildTopDownTree(events, this._startTime, this._endTime, this._filters);
-        var bottomUpTree = WebInspector.TimelineUIUtils.buildBottomUpTree(topDownTree, true);
+        /**
+         * @param {!WebInspector.TracingModel.Event} e
+         * @return {string}
+         */
+        function eventId(e)
+        {
+            if (e.name === WebInspector.TimelineModel.RecordType.JSFrame) {
+                var data = e.args["data"];
+                return "f:" + (data["CallUID"] || (data["functionName"] + "@" + data["url"]));
+            }
+            return e.name;
+        }
+        var categoryGroupNodes = new Map();
+        /**
+         * @param {!WebInspector.TimelineModel.ProfileTreeNode} node
+         * @return {!WebInspector.TimelineModel.ProfileTreeNode}
+         */
+        function groupNode(node)
+        {
+            var category = WebInspector.TimelineUIUtils.eventStyle(node.event).category;
+            var groupNode = categoryGroupNodes.get(category.title);
+            if (!groupNode) {
+                groupNode = new WebInspector.TimelineModel.ProfileTreeNode();
+                groupNode.totalTime = 0;
+                groupNode.name = category.title;
+                groupNode.color = category.fillColorStop1;
+                categoryGroupNodes.set(category.title, groupNode);
+            }
+            return groupNode;
+        }
+        var topDownTree = WebInspector.TimelineUIUtils.buildTopDownTree(events, this._startTime, this._endTime, this._filters, eventId);
+        var bottomUpTree = WebInspector.TimelineUIUtils.buildBottomUpTree(topDownTree, groupNode);
+        for (var group of categoryGroupNodes) {
+            bottomUpTree.children[group[0]] = group[1];
+            bottomUpTree.totalTime += group[1].totalTime;
+        }
         this._flowEventIndexById = {};
         this._minimumBoundary = 0;
         this._currentLevel = 0;

@@ -1351,7 +1351,7 @@ WebInspector.TimelineDetailsView = function(timelineModel)
 
     if (Runtime.experiments.isEnabled("timelineTreeView")) {
         this._heavyTreeView = new WebInspector.TimelineTreeView(timelineModel);
-        this.appendTab(WebInspector.TimelinePanel.DetailsTab.BottomUpTree, WebInspector.UIString("Costly Functions Tree"), this._heavyTreeView);
+        this.appendTab(WebInspector.TimelinePanel.DetailsTab.BottomUpTree, WebInspector.UIString("Costly Functions"), this._heavyTreeView);
     }
     if (Runtime.experiments.isEnabled("timelineDetailsChart")) {
         this._heavyChartView = new WebInspector.TimelineDetailsView.BottomUpChartView(timelineModel);

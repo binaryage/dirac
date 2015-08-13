@@ -22,10 +22,23 @@ WebInspector.TimelineTreeView = function(model)
         new WebInspector.ExcludeTopLevelFilter()
     ];
 
+    this._groupBySetting = WebInspector.settings.createSetting("timelineTreeGroupBy", WebInspector.TimelineTreeView.GroupBy.None);
+
     this.dataGrid = new WebInspector.SortableDataGrid(columns);
     this.dataGrid.addEventListener(WebInspector.DataGrid.Events.SortingChanged, this._sortingChanged, this);
 
+    this._createToolbar();
+
     this.dataGrid.show(this.element);
+}
+
+/**
+ * @enum {string}
+ */
+WebInspector.TimelineTreeView.GroupBy = {
+    None: "None",
+    Domain: "Domain",
+    URL: "URL"
 }
 
 WebInspector.TimelineTreeView.prototype = {
@@ -39,10 +52,94 @@ WebInspector.TimelineTreeView.prototype = {
         this._refreshRecords();
     },
 
+    _createToolbar: function()
+    {
+        this._panelToolbar = new WebInspector.Toolbar(this.element);
+        this._groupByCombobox = new WebInspector.ToolbarComboBox(this._onGroupByChanged.bind(this));
+        var optionNames = /** @type {!Map<!WebInspector.TimelineTreeView.GroupBy,string>} */ (new Map([
+            [WebInspector.TimelineTreeView.GroupBy.None, WebInspector.UIString("No Grouping")],
+            [WebInspector.TimelineTreeView.GroupBy.URL, WebInspector.UIString("Group by URL")]
+        ]));
+        var optionsOrder = [WebInspector.TimelineTreeView.GroupBy.None, WebInspector.TimelineTreeView.GroupBy.URL];
+        for (var id of optionsOrder) {
+            var name = /** @type {string} */ (optionNames.get(id));
+            var option = this._groupByCombobox.createOption(name, "", id);
+            this._groupByCombobox.addOption(option);
+            if (id === this._groupBySetting.get())
+                this._groupByCombobox.select(option);
+        }
+        this._panelToolbar.appendToolbarItem(this._groupByCombobox);
+    },
+
+    _onGroupByChanged: function()
+    {
+        this._groupBySetting.set(this._groupByCombobox.selectedOption().value);
+        this._refreshRecords();
+    },
+
     _refreshRecords: function()
     {
-        var topDown = WebInspector.TimelineUIUtils.buildTopDownTree(this._model.mainThreadEvents(), this._startTime, this._endTime, this._filters);
-        var rootNode = WebInspector.TimelineUIUtils.buildBottomUpTree(topDown);
+        var groupBy = this._groupBySetting.get();
+        var groupNodes = new Map();
+
+        /**
+         * @param {string} id
+         * @return {!WebInspector.TimelineModel.ProfileTreeNode}
+         */
+        function groupNodeById(id)
+        {
+            var node = groupNodes.get(id);
+            if (!node) {
+                node = new WebInspector.TimelineModel.ProfileTreeNode();
+                node.name = id || WebInspector.UIString("(unknown)");
+                node.totalTime = 0;
+                groupNodes.set(id, node);
+            }
+            return node;
+        }
+
+        /**
+         * @return {?WebInspector.TimelineModel.ProfileTreeNode}
+         */
+        function groupByNone()
+        {
+            return null;
+        }
+
+        /**
+         * @param {!WebInspector.TimelineModel.ProfileTreeNode} node
+         * @return {?WebInspector.TimelineModel.ProfileTreeNode}
+         */
+        function groupByURL(node)
+        {
+            return groupNodeById(WebInspector.TimelineTreeView.eventURL(node.event) || "");
+        }
+
+        /**
+         * @param {!WebInspector.TracingModel.Event} e
+         * @return {string}
+         */
+        function eventId(e)
+        {
+            // Function call frames are always groupped by the URL
+            if (e.name === "JSFrame") {
+                var data = e.args["data"];
+                return "f:" + (data["callUID"] || WebInspector.TimelineTreeView.eventURL(e));
+            }
+            // While the rest of events are groupped by the event type
+            // unless the group by URL/Domain mode is on.
+            if (groupBy === WebInspector.TimelineTreeView.GroupBy.URL)
+                return e.name + ":@" + WebInspector.TimelineTreeView.eventURL(e);
+            return e.name;
+        }
+
+        var groupByMapper = groupByNone;
+        if (groupBy === WebInspector.TimelineTreeView.GroupBy.URL)
+            groupByMapper = groupByURL;
+        var topDown = WebInspector.TimelineUIUtils.buildTopDownTree(this._model.mainThreadEvents(), this._startTime, this._endTime, this._filters, eventId);
+        var rootNode = WebInspector.TimelineUIUtils.buildBottomUpTree(topDown, groupByMapper);
+        for (var group of groupNodes)
+            rootNode.children[group[0]] = group[1];
         this.dataGrid.rootNode().removeChildren();
         for (var child of Object.values(rootNode.children || [])) {
             // Exclude the idle time off the total calculation.
@@ -77,6 +174,20 @@ WebInspector.TimelineTreeView.prototype = {
     },
 
     __proto__: WebInspector.VBox.prototype
+}
+
+/**
+ * @param {!WebInspector.TracingModel.Event} event
+ * @return {?string}
+ */
+WebInspector.TimelineTreeView.eventURL = function(event)
+{
+    var data = event.args["data"] || event.args["beginData"];
+    var url = data && data["url"];
+    if (url)
+        return url;
+    var topFrame = event.stackTrace && event.stackTrace[0];
+    return topFrame && topFrame["url"] || null;
 }
 
 /**
@@ -142,12 +253,18 @@ WebInspector.TimelineTreeView.GridNode.prototype = {
         var name = container.createChild("div", "activity-name");
         var link = container.createChild("div", "activity-link");
         name.textContent = this._profileNode.name;
-        var category = WebInspector.TimelineUIUtils.eventStyle(this._profileNode.event).category;
-        icon.style.backgroundColor = category.fillColorStop1;
-        var data = this._profileNode.event.args["data"];
-        var url = data && (data.url || data.styleSheetUrl);
-        if (url)
-            link.appendChild(WebInspector.linkifyResourceAsNode(url));
+        var color;
+        var event = this._profileNode.event;
+        if (event) {
+            var url = WebInspector.TimelineTreeView.eventURL(event);
+            if (url)
+                link.appendChild(WebInspector.linkifyResourceAsNode(url));
+            var category = WebInspector.TimelineUIUtils.eventStyle(event).category;
+            color = category.fillColorStop1;
+        } else {
+            color = WebInspector.TimelineUIUtils.colorForURL(this._profileNode.name);
+        }
+        icon.style.backgroundColor = color || "lightGrey";
         return cell;
     },
 

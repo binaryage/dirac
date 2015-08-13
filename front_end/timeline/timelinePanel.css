@@ -984,6 +984,10 @@
     overflow: hidden;
 }
 
+.timeline-tree-view > .toolbar {
+    border-bottom: 1px solid #dadada;
+}
+
 .timeline-tree-view .data-grid {
     border: none;
     flex: auto;
