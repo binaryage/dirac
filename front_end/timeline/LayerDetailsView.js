@@ -88,7 +88,6 @@ WebInspector.LayerDetailsView.CompositingReasonDetail = {
     "layerForBackground": WebInspector.UIString("Layer for background."),
     "layerForMask": WebInspector.UIString("Layer for mask."),
     "layerForVideoOverlay": WebInspector.UIString("Layer for video overlay."),
-    "scrollBlocksOn": WebInspector.UIString("Composition due to association with an element with a CSS \"scroll-blocks-on\" property applied."),
 };
 
 WebInspector.LayerDetailsView.prototype = {
