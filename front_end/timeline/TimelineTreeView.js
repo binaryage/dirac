@@ -38,6 +38,7 @@ WebInspector.TimelineTreeView = function(model)
 WebInspector.TimelineTreeView.GroupBy = {
     None: "None",
     Domain: "Domain",
+    DomainSecondLevel: "DomainSecondLevel",
     URL: "URL"
 }
 
@@ -70,6 +71,7 @@ WebInspector.TimelineTreeView.prototype = {
         }
         addOption.call(this, WebInspector.UIString("No Grouping"), WebInspector.TimelineTreeView.GroupBy.None);
         addOption.call(this, WebInspector.UIString("Group by Domain"), WebInspector.TimelineTreeView.GroupBy.Domain);
+        addOption.call(this, WebInspector.UIString("Group by Domain (2nd Level)"), WebInspector.TimelineTreeView.GroupBy.DomainSecondLevel);
         addOption.call(this, WebInspector.UIString("Group by URL"), WebInspector.TimelineTreeView.GroupBy.URL);
         this._panelToolbar.appendToolbarItem(this._groupByCombobox);
     },
@@ -130,6 +132,21 @@ WebInspector.TimelineTreeView.prototype = {
         }
 
         /**
+         * @param {!WebInspector.TimelineModel.ProfileTreeNode} node
+         * @return {?WebInspector.TimelineModel.ProfileTreeNode}
+         */
+        function groupByDomainSecondLevel(node)
+        {
+            var parsedURL = (WebInspector.TimelineTreeView.eventURL(node.event) || "").asParsedURL();
+            if (!parsedURL)
+                return groupNodeById("");
+            if (/^[.0-9]+$/.test(parsedURL.host))
+                return groupNodeById(parsedURL.host)
+            var domainMatch = /([^.]*\.)?[^.]*$/.exec(parsedURL.host);
+            return groupNodeById(domainMatch && domainMatch[0] || "");
+        }
+
+        /**
          * @param {!WebInspector.TracingModel.Event} e
          * @return {string}
          */
@@ -150,6 +167,7 @@ WebInspector.TimelineTreeView.prototype = {
         var groupByMapper = new Map([
             [WebInspector.TimelineTreeView.GroupBy.None, groupByNone],
             [WebInspector.TimelineTreeView.GroupBy.Domain, groupByDomain],
+            [WebInspector.TimelineTreeView.GroupBy.DomainSecondLevel, groupByDomainSecondLevel],
             [WebInspector.TimelineTreeView.GroupBy.URL, groupByURL]
         ]);
         var topDown = WebInspector.TimelineUIUtils.buildTopDownTree(this._model.mainThreadEvents(), this._startTime, this._endTime, this._filters, eventId);
