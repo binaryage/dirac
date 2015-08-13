@@ -56,18 +56,21 @@ WebInspector.TimelineTreeView.prototype = {
     {
         this._panelToolbar = new WebInspector.Toolbar(this.element);
         this._groupByCombobox = new WebInspector.ToolbarComboBox(this._onGroupByChanged.bind(this));
-        var optionNames = /** @type {!Map<!WebInspector.TimelineTreeView.GroupBy,string>} */ (new Map([
-            [WebInspector.TimelineTreeView.GroupBy.None, WebInspector.UIString("No Grouping")],
-            [WebInspector.TimelineTreeView.GroupBy.URL, WebInspector.UIString("Group by URL")]
-        ]));
-        var optionsOrder = [WebInspector.TimelineTreeView.GroupBy.None, WebInspector.TimelineTreeView.GroupBy.URL];
-        for (var id of optionsOrder) {
-            var name = /** @type {string} */ (optionNames.get(id));
+        /**
+         * @param {string} name
+         * @param {string} id
+         * @this {WebInspector.TimelineTreeView}
+         */
+        function addOption(name, id)
+        {
             var option = this._groupByCombobox.createOption(name, "", id);
             this._groupByCombobox.addOption(option);
             if (id === this._groupBySetting.get())
                 this._groupByCombobox.select(option);
         }
+        addOption.call(this, WebInspector.UIString("No Grouping"), WebInspector.TimelineTreeView.GroupBy.None);
+        addOption.call(this, WebInspector.UIString("Group by Domain"), WebInspector.TimelineTreeView.GroupBy.Domain);
+        addOption.call(this, WebInspector.UIString("Group by URL"), WebInspector.TimelineTreeView.GroupBy.URL);
         this._panelToolbar.appendToolbarItem(this._groupByCombobox);
     },
 
@@ -116,6 +119,17 @@ WebInspector.TimelineTreeView.prototype = {
         }
 
         /**
+         * @param {!WebInspector.TimelineModel.ProfileTreeNode} node
+         * @return {?WebInspector.TimelineModel.ProfileTreeNode}
+         */
+        function groupByDomain(node)
+        {
+            var parsedURL = (WebInspector.TimelineTreeView.eventURL(node.event) || "").asParsedURL();
+            var domain = parsedURL && parsedURL.host || "";
+            return groupNodeById(domain);
+        }
+
+        /**
          * @param {!WebInspector.TracingModel.Event} e
          * @return {string}
          */
@@ -133,11 +147,13 @@ WebInspector.TimelineTreeView.prototype = {
             return e.name;
         }
 
-        var groupByMapper = groupByNone;
-        if (groupBy === WebInspector.TimelineTreeView.GroupBy.URL)
-            groupByMapper = groupByURL;
+        var groupByMapper = new Map([
+            [WebInspector.TimelineTreeView.GroupBy.None, groupByNone],
+            [WebInspector.TimelineTreeView.GroupBy.Domain, groupByDomain],
+            [WebInspector.TimelineTreeView.GroupBy.URL, groupByURL]
+        ]);
         var topDown = WebInspector.TimelineUIUtils.buildTopDownTree(this._model.mainThreadEvents(), this._startTime, this._endTime, this._filters, eventId);
-        var rootNode = WebInspector.TimelineUIUtils.buildBottomUpTree(topDown, groupByMapper);
+        var rootNode = WebInspector.TimelineUIUtils.buildBottomUpTree(topDown, groupByMapper.get(groupBy));
         for (var group of groupNodes)
             rootNode.children[group[0]] = group[1];
         this.dataGrid.rootNode().removeChildren();
