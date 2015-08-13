@@ -94,12 +94,8 @@ WebInspector.ElementsPanel = function()
     this.sidebarPanes.domBreakpoints = WebInspector.domBreakpointsSidebarPane.createProxy(this);
     this.sidebarPanes.eventListeners = WebInspector.EventListenersWidget.createSidebarWrapper();
 
-    WebInspector.dockController.addEventListener(WebInspector.DockController.Events.DockSideChanged, this._dockSideChanged.bind(this));
-    if (Runtime.experiments.isEnabled("materialDesign"))
-        WebInspector.moduleSetting("elementsSplitVertically").addChangeListener(this._dockSideChanged.bind(this));
-    else
-        WebInspector.moduleSetting("splitVerticallyWhenDockedToRight").addChangeListener(this._dockSideChanged.bind(this));
-    this._dockSideChanged();
+    WebInspector.moduleSetting("sidebarPosition").addChangeListener(this._updateSidebarPosition.bind(this));
+    this._updateSidebarPosition();
     this._loadSidebarViews();
 
     /** @type {!Array.<!WebInspector.ElementsTreeOutline>} */
@@ -139,9 +135,6 @@ WebInspector.ElementsPanel.prototype = {
         toolbar.appendToolbarItem(this._breakpointsButton);
 
         toolbar.appendSeparator();
-
-        this._paneSplitButton = new WebInspector.ToolbarSettingToggle(WebInspector.moduleSetting("elementsSplitVertically"), "view-quilt-toolbar-item", WebInspector.UIString("Switch pane layout"));
-        toolbar.appendToolbarItem(this._paneSplitButton);
         return toolbar;
     },
 
@@ -202,11 +195,6 @@ WebInspector.ElementsPanel.prototype = {
         if (!node)
             return;
         WebInspector.ElementsTreeElement.populateForcedPseudoStateItems(contextMenu, node);
-    },
-
-    _switchLayout: function()
-    {
-        this._splitVertically(!this._splitWidget.isVertical());
     },
 
     _loadSidebarViews: function()
@@ -362,6 +350,8 @@ WebInspector.ElementsPanel.prototype = {
 
     onResize: function()
     {
+        if (WebInspector.moduleSetting("sidebarPosition").get() === "auto")
+            this.element.window().requestAnimationFrame(this._updateSidebarPosition.bind(this));  // Do not force layout.
         this._updateTreeOutlineVisibleWidth();
     },
 
@@ -929,18 +919,6 @@ WebInspector.ElementsPanel.prototype = {
         contextMenu.show();
     },
 
-    _dockSideChanged: function()
-    {
-        if (Runtime.experiments.isEnabled("materialDesign")) {
-            var dockedToBottom = WebInspector.dockController.dockSide() === WebInspector.DockController.State.DockedToBottom;
-            this._paneSplitButton.element.classList.toggle("hidden", dockedToBottom);
-            this._splitVertically(dockedToBottom || WebInspector.moduleSetting("elementsSplitVertically").get());
-        } else {
-            var vertically = WebInspector.dockController.isVertical() && WebInspector.moduleSetting("splitVerticallyWhenDockedToRight").get();
-            this._splitVertically(!vertically);
-        }
-    },
-
     _showUAShadowDOMChanged: function()
     {
         for (var i = 0; i < this._treeOutlines.length; ++i)
@@ -952,12 +930,18 @@ WebInspector.ElementsPanel.prototype = {
         this.sidebarPaneView.selectTab(this.sidebarPanes.styles.title());
     },
 
-    /**
-     * @param {boolean} vertically
-     */
-    _splitVertically: function(vertically)
+    _updateSidebarPosition: function()
     {
-        if (this.sidebarPaneView && vertically === this._splitWidget.isVertical())
+        var vertically;
+        var position = WebInspector.moduleSetting("sidebarPosition").get();
+        if (position === "right")
+            vertically = false;
+        else if (position === "bottom")
+            vertically = true;
+        else
+            vertically = WebInspector.inspectorView.element.offsetWidth < 680;
+
+        if (this.sidebarPaneView && vertically === !this._splitWidget.isVertical())
             return;
 
         var extensionSidebarPanes = WebInspector.extensionServer.sidebarPanes();
@@ -969,7 +953,7 @@ WebInspector.ElementsPanel.prototype = {
             this._splitWidget.uninstallResizer(this.sidebarPaneView.headerElement());
         }
 
-        this._splitWidget.setVertical(vertically);
+        this._splitWidget.setVertical(!vertically);
 
         var computedPane = new WebInspector.SidebarPane(WebInspector.UIString("Computed"));
         computedPane.element.classList.add("composite");
@@ -1014,7 +998,7 @@ WebInspector.ElementsPanel.prototype = {
         this._popoverHelper = new WebInspector.PopoverHelper(this.sidebarPaneView.element, this._getPopoverAnchor.bind(this), this._showPopover.bind(this));
         this._popoverHelper.setTimeout(0);
 
-        if (!vertically) {
+        if (vertically) {
             this._splitWidget.installResizer(this.sidebarPaneView.headerElement());
 
             var compositePane = new WebInspector.SidebarPane(this.sidebarPanes.styles.title());
@@ -1044,7 +1028,7 @@ WebInspector.ElementsPanel.prototype = {
 
         this.sidebarPanes.styles.show(matchedStylePanesWrapper.element);
         this.sidebarPanes.computedStyle.show(computedStylePanesWrapper.element);
-        showMetrics.call(this, !vertically);
+        showMetrics.call(this, vertically);
         this.sidebarPanes.platformFonts.show(computedStylePanesWrapper.element);
 
         this.sidebarPaneView.addPane(this.sidebarPanes.eventListeners);

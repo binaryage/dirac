@@ -89,9 +89,8 @@ WebInspector.SourcesPanel = function(workspaceForTest)
 
     this._installDebuggerSidebarController();
 
-    WebInspector.dockController.addEventListener(WebInspector.DockController.Events.DockSideChanged, this._dockSideChanged.bind(this));
-    WebInspector.moduleSetting("splitVerticallyWhenDockedToRight").addChangeListener(this._dockSideChanged.bind(this));
-    this._dockSideChanged();
+    WebInspector.moduleSetting("sidebarPosition").addChangeListener(this._updateSidebarPosition.bind(this));
+    this._updateSidebarPosition();
 
     this._updateDebuggerButtons();
     this._pauseOnExceptionEnabledChanged();
@@ -173,6 +172,12 @@ WebInspector.SourcesPanel.prototype = {
     {
         WebInspector.Panel.prototype.willHide.call(this);
         WebInspector.context.setFlavor(WebInspector.SourcesPanel, null);
+    },
+
+    onResize: function()
+    {
+        if (WebInspector.moduleSetting("sidebarPosition").get() === "auto")
+            this.element.window().requestAnimationFrame(this._updateSidebarPosition.bind(this));  // Do not force layout.
     },
 
     /**
@@ -1123,17 +1128,17 @@ WebInspector.SourcesPanel.prototype = {
         this._sourcesView.showOpenResourceDialog();
     },
 
-    _dockSideChanged: function()
+    _updateSidebarPosition: function()
     {
-        var vertically = WebInspector.dockController.isVertical() && WebInspector.moduleSetting("splitVerticallyWhenDockedToRight").get();
-        this._splitVertically(vertically);
-    },
+        var vertically;
+        var position = WebInspector.moduleSetting("sidebarPosition").get();
+        if (position === "right")
+            vertically = false;
+        else if (position === "bottom")
+            vertically = true;
+        else
+            vertically = WebInspector.inspectorView.element.offsetWidth < 680;
 
-    /**
-     * @param {boolean} vertically
-     */
-    _splitVertically: function(vertically)
-    {
         if (this.sidebarPaneView && vertically === !this._splitWidget.isVertical())
             return;
 

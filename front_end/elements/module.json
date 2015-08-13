@@ -69,15 +69,6 @@
             "defaultValue": true
         },
         {
-            "type": "setting",
-            "category": "Elements",
-            "title": "Split panels vertically when docked to right or undocked",
-            "settingName": "elementsSplitVertically",
-            "settingType": "boolean",
-            "defaultValue": false,
-            "experiment": "materialDesign"
-        },
-        {
             "type": "@WebInspector.ToolbarItem.Provider",
             "className": "WebInspector.StylesSidebarPane.AddNewRuleButtonProvider",
             "order": 0,

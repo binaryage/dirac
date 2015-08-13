@@ -212,10 +212,15 @@
         {
             "type": "setting",
             "category": "Appearance",
-            "title": "Split panels vertically when docked to right",
-            "settingName": "splitVerticallyWhenDockedToRight",
-            "settingType": "boolean",
-            "defaultValue": true
+            "title": "Panel layout:",
+            "settingName": "sidebarPosition",
+            "settingType": "enum",
+            "defaultValue": "auto",
+            "options": [
+                ["horizontal", "bottom"],
+                ["vertical", "right"],
+                ["auto", "auto"]
+            ]
         },
         {
             "type": "setting",

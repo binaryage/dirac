@@ -28,14 +28,14 @@
         {
             "type": "context-menu-item",
             "location": "mainMenu/footer",
-            "title": "Settings",
-            "actionId": "settings.show"
+            "title": "Shortcuts",
+            "actionId": "settings.shortcuts"
         },
         {
             "type": "context-menu-item",
             "location": "mainMenu/footer",
-            "title": "Shortcuts",
-            "actionId": "settings.shortcuts"
+            "title": "Settings",
+            "actionId": "settings.show"
         },
         {
             "type": "context-menu-item",
