@@ -802,21 +802,29 @@ WebInspector.Main.MainMenuItem.prototype = {
             true,
             this._item.element.totalOffsetLeft(),
             this._item.element.totalOffsetTop() + this._item.element.offsetHeight);
-        var dockItemElement = createElementWithClass("div", "flex-centered flex-auto");
-        var titleElement = dockItemElement.createChild("span", "flex-auto");
-        titleElement.textContent = WebInspector.UIString("Dock side");
-        dockItemElement.appendChild(titleElement);
-        var dockItemToolbar = new WebInspector.Toolbar(dockItemElement);
-        dockItemToolbar.makeBlueOnHover();
-        var undock = new WebInspector.ToolbarButton( WebInspector.UIString("Undock into separate window"), "dock-toolbar-item-undock");
-        var bottom = new WebInspector.ToolbarButton(WebInspector.UIString("Dock to bottom"), "dock-toolbar-item-bottom");
-        var right = new WebInspector.ToolbarButton(WebInspector.UIString("Dock to right"), "dock-toolbar-item-right");
-        undock.addEventListener("mouseup", setDockSide.bind(null, WebInspector.DockController.State.Undocked));
-        bottom.addEventListener("mouseup", setDockSide.bind(null, WebInspector.DockController.State.DockedToBottom));
-        right.addEventListener("mouseup", setDockSide.bind(null, WebInspector.DockController.State.DockedToRight));
-        undock.setToggled(WebInspector.dockController.dockSide() === WebInspector.DockController.State.Undocked);
-        bottom.setToggled(WebInspector.dockController.dockSide() === WebInspector.DockController.State.DockedToBottom);
-        right.setToggled(WebInspector.dockController.dockSide() === WebInspector.DockController.State.DockedToRight);
+
+        if (WebInspector.dockController.canDock()) {
+            var dockItemElement = createElementWithClass("div", "flex-centered flex-auto");
+            var titleElement = dockItemElement.createChild("span", "flex-auto");
+            titleElement.textContent = WebInspector.UIString("Dock side");
+            dockItemElement.appendChild(titleElement);
+            var dockItemToolbar = new WebInspector.Toolbar(dockItemElement);
+            dockItemToolbar.makeBlueOnHover();
+            var undock = new WebInspector.ToolbarButton( WebInspector.UIString("Undock into separate window"), "dock-toolbar-item-undock");
+            var bottom = new WebInspector.ToolbarButton(WebInspector.UIString("Dock to bottom"), "dock-toolbar-item-bottom");
+            var right = new WebInspector.ToolbarButton(WebInspector.UIString("Dock to right"), "dock-toolbar-item-right");
+            undock.addEventListener("mouseup", setDockSide.bind(null, WebInspector.DockController.State.Undocked));
+            bottom.addEventListener("mouseup", setDockSide.bind(null, WebInspector.DockController.State.DockedToBottom));
+            right.addEventListener("mouseup", setDockSide.bind(null, WebInspector.DockController.State.DockedToRight));
+            undock.setToggled(WebInspector.dockController.dockSide() === WebInspector.DockController.State.Undocked);
+            bottom.setToggled(WebInspector.dockController.dockSide() === WebInspector.DockController.State.DockedToBottom);
+            right.setToggled(WebInspector.dockController.dockSide() === WebInspector.DockController.State.DockedToRight);
+            dockItemToolbar.appendToolbarItem(undock);
+            dockItemToolbar.appendToolbarItem(bottom);
+            dockItemToolbar.appendToolbarItem(right);
+            contextMenu.appendCustomItem(dockItemElement);
+            contextMenu.appendSeparator();
+        }
 
         /**
          * @param {string} side
@@ -827,14 +835,6 @@ WebInspector.Main.MainMenuItem.prototype = {
             contextMenu.discard();
         }
 
-        dockItemToolbar.appendToolbarItem(undock);
-        dockItemToolbar.appendToolbarItem(bottom);
-        dockItemToolbar.appendToolbarItem(right);
-
-        if (WebInspector.dockController.canDock()) {
-            contextMenu.appendCustomItem(dockItemElement);
-            contextMenu.appendSeparator();
-        }
         contextMenu.appendAction(WebInspector.inspectorView.drawerVisible() ? WebInspector.UIString("Hide console") : WebInspector.UIString("Show console"), "main.toggle-drawer");
         contextMenu.appendItemsAtLocation("mainMenu");
         contextMenu.show();

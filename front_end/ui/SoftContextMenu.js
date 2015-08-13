@@ -60,6 +60,10 @@ WebInspector.SoftContextMenu.prototype = {
         this.element.style.top = y + "px";
         this.element.style.left = x + "px";
 
+        var maxHeight = WebInspector.Dialog.modalHostView().element.offsetHeight;
+        maxHeight -= y - WebInspector.Dialog.modalHostView().element.totalOffsetTop();
+        this.element.style.maxHeight = maxHeight + "px";
+
         this._contextMenuElement.tabIndex = 0;
         this._contextMenuElement.addEventListener("mouseup", consumeEvent, false);
         this._contextMenuElement.addEventListener("keydown", this._menuKeyDown.bind(this), false);

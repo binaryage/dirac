@@ -332,7 +332,8 @@ WebInspector.ContextMenu.prototype = {
 
     discard: function()
     {
-        this._softMenu.discard();
+        if (this._softMenu)
+            this._softMenu.discard();
     },
 
     _innerShow: function()

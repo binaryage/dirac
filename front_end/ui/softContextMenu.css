@@ -12,6 +12,7 @@
     border-radius: 4px;
     background-color: rgb(240, 240, 240);
     box-shadow: 0 5px 10px rgba(0, 0, 0, 0.25);
+    overflow-y: auto;
 }
 
 .soft-context-menu-item {
@@ -79,6 +80,7 @@
     pointer-events: none;
     flex: 1 1 auto;
     text-align: right;
+    padding-left: 10px;
 }
 
 .soft-context-menu-item-mouse-over .soft-context-menu-shortcut {
