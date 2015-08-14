@@ -1448,7 +1448,7 @@ WebInspector.TimelineModel.ProfileTreeNode = function()
     this.id;
     /** @type {!WebInspector.TracingModel.Event} */
     this.event;
-    /** @type {?Object<string,!WebInspector.TimelineModel.ProfileTreeNode>} */
+    /** @type {?Map<string,!WebInspector.TimelineModel.ProfileTreeNode>} */
     this.children;
     /** @type {?WebInspector.TimelineModel.ProfileTreeNode} */
     this.parent;

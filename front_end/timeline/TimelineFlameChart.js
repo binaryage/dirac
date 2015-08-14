@@ -1111,7 +1111,7 @@ WebInspector.TimelineFlameChartBottomUpDataProvider.prototype = {
         var topDownTree = WebInspector.TimelineUIUtils.buildTopDownTree(events, this._startTime, this._endTime, this._filters, eventId);
         var bottomUpTree = WebInspector.TimelineUIUtils.buildBottomUpTree(topDownTree, groupNode);
         for (var group of categoryGroupNodes) {
-            bottomUpTree.children[group[0]] = group[1];
+            bottomUpTree.children.set(group[0], group[1]);
             bottomUpTree.totalTime += group[1].totalTime;
         }
         this._flowEventIndexById = {};
@@ -1139,7 +1139,7 @@ WebInspector.TimelineFlameChartBottomUpDataProvider.prototype = {
             this._currentLevel = Math.max(this._currentLevel, level);
             this._appendNode(node, level, position);
             if (node.children)
-                Object.values(node.children).sort(sortFunction).reduce(appendTree.bind(this, level + 1), position);
+                Array.from(node.children.values()).sort(sortFunction).reduce(appendTree.bind(this, level + 1), position);
             return position + node.totalTime;
         }
     },

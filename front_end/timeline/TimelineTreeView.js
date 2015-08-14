@@ -171,11 +171,11 @@ WebInspector.TimelineTreeView.prototype = {
             [WebInspector.TimelineTreeView.GroupBy.URL, groupByURL]
         ]);
         var topDown = WebInspector.TimelineUIUtils.buildTopDownTree(this._model.mainThreadEvents(), this._startTime, this._endTime, this._filters, eventId);
-        var rootNode = WebInspector.TimelineUIUtils.buildBottomUpTree(topDown, groupByMapper.get(groupBy));
+        var bottomUpRoot = WebInspector.TimelineUIUtils.buildBottomUpTree(topDown, groupByMapper.get(groupBy));
         for (var group of groupNodes)
-            rootNode.children[group[0]] = group[1];
+            bottomUpRoot.children.set(group[0], group[1]);
         this.dataGrid.rootNode().removeChildren();
-        for (var child of Object.values(rootNode.children || [])) {
+        for (var child of bottomUpRoot.children.values()) {
             // Exclude the idle time off the total calculation.
             var gridNode = new WebInspector.TimelineTreeView.GridNode(child, topDown.totalTime);
             this.dataGrid.insertChild(gridNode);
@@ -258,7 +258,7 @@ WebInspector.TimelineTreeView.GridNode = function(profileNode, grandTotalTime)
         "self-percent": formatPercent(selfPercent),
         "self": formatMilliseconds(selfTime),
     };
-    var hasChildren = this._profileNode.children ? Object.keys(this._profileNode.children).length > 0 : false;
+    var hasChildren = this._profileNode.children ? this._profileNode.children.size > 0 : false;
     WebInspector.SortableDataGridNode.call(this, data, hasChildren);
 }
 
@@ -334,7 +334,9 @@ WebInspector.TimelineTreeView.GridNode.prototype = {
      */
     populate: function()
     {
-        for (var node of Object.values(this._profileNode.children || [])) {
+        if (!this._profileNode.children)
+            return;
+        for (var node of this._profileNode.children.values()) {
             var gridNode = new WebInspector.TimelineTreeView.GridNode(node, this._totalTime);
             this.insertChildOrdered(gridNode);
         }
