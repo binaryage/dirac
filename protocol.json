@@ -1461,6 +1461,17 @@
                 ],
                 "description": "For testing.",
                 "hidden": true
+            },
+            {
+                "name": "getCertificateDetails",
+                "description": "Returns details for the given certificate.",
+                "parameters": [
+                    { "name": "certificateId", "$ref": "CertificateId", "description": "ID of the certificate to get details for." }
+                ],
+                "returns": [
+                    { "name": "result", "$ref": "CertificateDetails", "description": "Certificate details." }
+                ],
+                "handlers": ["browser"]
             }
         ],
         "events": [
@@ -1498,14 +1509,6 @@
                     { "name": "type", "$ref": "Page.ResourceType", "description": "Resource type." },
                     { "name": "response", "$ref": "Response", "description": "Response data." }
                 ]
-            },
-            {
-                "name": "_CertificateDetailsEvent",
-                "description": "This event makes the CertificateDetails type available in the browser-side Network domain handler. It should be removed with https://codereview.chromium.org/1258513002",
-                "parameters": [
-                    { "name": "result", "$ref": "CertificateDetails", "description": "Certificate details." }
-                ],
-                "handlers": ["browser"]
             },
             {
                 "name": "dataReceived",
