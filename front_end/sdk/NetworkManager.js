@@ -353,6 +353,14 @@ WebInspector.NetworkDispatcher.prototype = {
 
     /**
      * @override
+     * @param {!NetworkAgent.CertificateDetails} certificateDetails
+     */
+    _CertificateDetailsEvent: function(certificateDetails)
+    {
+    },
+
+    /**
+     * @override
      * @param {!NetworkAgent.RequestId} requestId
      * @param {!NetworkAgent.Timestamp} time
      * @param {number} dataLength

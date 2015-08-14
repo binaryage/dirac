@@ -1196,6 +1196,27 @@
                 "description": "An internal certificate ID value."
             },
             {
+                "id": "CertificateSubject",
+                "type": "object",
+                "description": "Subject of a certificate.",
+                "properties": [
+                    { "name": "name", "type": "string", "description": "Certificate subject name." },
+                    { "name": "sanDnsNames", "type": "array", "items": { "type": "string" }, "description": "Subject Alternative Name (SAN) DNS names." },
+                    { "name": "sanIpAddresses", "type": "array", "items": { "type": "string" }, "description": "Subject Alternative Name (SAN) IP addresses." }
+                ]
+            },
+            {
+                "id": "CertificateDetails",
+                "type": "object",
+                "description": "Details about a request's certificate.",
+                "properties": [
+                    { "name": "subject", "$ref": "CertificateSubject", "description": "Certificate subject." },
+                    { "name": "issuer", "type": "string", "description": "Name of the issuing CA." },
+                    { "name": "validFrom", "$ref": "Timestamp", "description": "Certificate valid from date." },
+                    { "name": "validTo", "$ref": "Timestamp", "description": "Certificate valid to (expiration) date" }
+                ]
+            },
+            {
                 "id": "SecurityDetails",
                 "type": "object",
                 "description": "Security details about a request.",
@@ -1477,6 +1498,14 @@
                     { "name": "type", "$ref": "Page.ResourceType", "description": "Resource type." },
                     { "name": "response", "$ref": "Response", "description": "Response data." }
                 ]
+            },
+            {
+                "name": "_CertificateDetailsEvent",
+                "description": "This event makes the CertificateDetails type available in the browser-side Network domain handler. It should be removed with https://codereview.chromium.org/1258513002",
+                "parameters": [
+                    { "name": "result", "$ref": "CertificateDetails", "description": "Certificate details." }
+                ],
+                "handlers": ["browser"]
             },
             {
                 "name": "dataReceived",
