@@ -603,30 +603,27 @@ WebInspector.OverridesSupport.prototype = {
         this._deviceMetricsThrottler.schedule(setDeviceMetricsOverride.bind(this));
 
         /**
-         * @param {!WebInspector.Throttler.FinishCallback} finishCallback
          * @this {WebInspector.OverridesSupport}
+         * @return {!Promise.<undefined>}
          */
-        function setDeviceMetricsOverride(finishCallback)
+        function setDeviceMetricsOverride()
         {
-            this._target.emulationAgent().setDeviceMetricsOverride(
+            var promise = this._target.emulationAgent().setDeviceMetricsOverride(
                 overrideWidth, overrideHeight, this.settings.emulateResolution.get() ? this.settings.deviceScaleFactor.get() : 0,
                 this.settings.emulateMobile.get(), this._pageResizer ? false : this.settings.deviceFitWindow.get(), scale, 0, 0,
                 screenWidth, screenHeight, positionX, positionY, apiCallback.bind(this))
-                .then(finishCallback)
-                .catch(/** @type {function()} */(finishCallback));
             if (resetScrollAndPageScale)
                 this._target.emulationAgent().resetScrollAndPageScaleFactor();
+            return promise;
         }
 
         /**
-         * @param {!WebInspector.Throttler.FinishCallback} finishCallback
          * @this {WebInspector.OverridesSupport}
+         * @return {!Promise.<undefined>}
          */
-        function clearDeviceMetricsOverride(finishCallback)
+        function clearDeviceMetricsOverride()
         {
-            this._target.emulationAgent().clearDeviceMetricsOverride(apiCallback.bind(this))
-                .then(finishCallback)
-                .catch(/** @type {function()} */(finishCallback));
+            return this._target.emulationAgent().clearDeviceMetricsOverride(apiCallback.bind(this))
         }
 
         /**

@@ -175,20 +175,13 @@ WebInspector.MediaQueryInspector.prototype = {
         this._mediaThrottler.schedule(this._refetchMediaQueries.bind(this));
     },
 
-    /**
-     * @param {!WebInspector.Throttler.FinishCallback} finishCallback
-     */
-    _refetchMediaQueries: function(finishCallback)
+    _refetchMediaQueries: function()
     {
-        if (!this._enabled || !this._cssModel) {
-            finishCallback();
-            return;
-        }
+        if (!this._enabled || !this._cssModel)
+            return Promise.resolve();
 
-        this._cssModel.mediaQueriesPromise()
+        return this._cssModel.mediaQueriesPromise()
             .then(this._rebuildMediaQueries.bind(this))
-            .then(finishCallback)
-            .catch(finishCallback);
     },
 
     /**

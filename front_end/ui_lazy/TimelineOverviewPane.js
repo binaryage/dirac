@@ -224,12 +224,12 @@ WebInspector.TimelineOverviewPane.prototype = {
         this._updateThrottler.schedule(process.bind(this));
         /**
          * @this {WebInspector.TimelineOverviewPane}
-         * @param {!WebInspector.Throttler.FinishCallback} callback
+         * @return {!Promise.<undefined>}
          */
-        function process(callback)
+        function process()
         {
             this._update();
-            callback();
+            return Promise.resolve();
         }
     },
 

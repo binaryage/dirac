@@ -38,25 +38,22 @@ WebInspector.MetricsSidebarPane = function()
 WebInspector.MetricsSidebarPane.prototype = {
     /**
      * @override
-     * @param {!WebInspector.Throttler.FinishCallback} finishedCallback
      * @protected
+     * @return {!Promise.<?>}
      */
-    doUpdate: function(finishedCallback)
+    doUpdate: function()
     {
         // "style" attribute might have changed. Update metrics unless they are being edited
         // (if a CSS property is added, a StyleSheetChanged event is dispatched).
-        if (this._isEditingMetrics) {
-            finishedCallback();
-            return;
-        }
+        if (this._isEditingMetrics)
+            return Promise.resolve();
 
         // FIXME: avoid updates of a collapsed pane.
         var node = this.node();
         var cssModel = this.cssModel();
         if (!node || node.nodeType() !== Node.ELEMENT_NODE || !cssModel) {
             this.element.removeChildren();
-            finishedCallback();
-            return;
+            return Promise.resolve();
         }
 
         /**
@@ -83,9 +80,7 @@ WebInspector.MetricsSidebarPane.prototype = {
             cssModel.computedStylePromise(node.id).then(callback.bind(this)),
             cssModel.inlineStylesPromise(node.id).then(inlineStyleCallback.bind(this))
         ];
-        Promise.all(promises)
-            .then(finishedCallback.bind(null, undefined))
-            .catch(/** @type {function()} */(finishedCallback));
+        return Promise.all(promises);
     },
 
     /**

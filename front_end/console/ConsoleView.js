@@ -373,10 +373,10 @@ WebInspector.ConsoleView.prototype = {
     _scheduleViewportRefresh: function()
     {
         /**
-         * @param {!WebInspector.Throttler.FinishCallback} finishCallback
          * @this {WebInspector.ConsoleView}
+         * @return {!Promise.<undefined>}
          */
-        function invalidateViewport(finishCallback)
+        function invalidateViewport()
         {
             if (this._needsFullUpdate) {
                 this._updateMessageList();
@@ -384,7 +384,7 @@ WebInspector.ConsoleView.prototype = {
             } else {
                 this._viewport.invalidate();
             }
-            finishCallback();
+            return Promise.resolve();
         }
         this._viewportThrottler.schedule(invalidateViewport.bind(this));
     },

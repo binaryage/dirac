@@ -1422,6 +1422,23 @@ CallbackBarrier.prototype = {
     },
 
     /**
+     * @return {!Promise.<undefined>}
+     */
+    donePromise: function()
+    {
+        return new Promise(promiseConstructor.bind(this));
+
+        /**
+         * @param {function()} success
+         * @this {CallbackBarrier}
+         */
+        function promiseConstructor(success)
+        {
+            this.callWhenDone(success);
+        }
+    },
+
+    /**
      * @param {function(...)=} userCallback
      */
     _incomingCallback: function(userCallback)

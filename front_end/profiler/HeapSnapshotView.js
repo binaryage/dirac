@@ -630,17 +630,7 @@ WebInspector.HeapSnapshotView.prototype = {
             jumpBackwards || false
         );
 
-        // FIXME: remove this function once the Throttler becomes promisified.
-        /**
-         * @param {!WebInspector.HeapSnapshotCommon.SearchConfig} nextQuery
-         * @param {function()} callback
-         * @this {WebInspector.HeapSnapshotView}
-         */
-        function performSearchWrapper(nextQuery, callback)
-        {
-            this._performSearch(nextQuery).then(callback);
-        }
-        this._searchThrottler.schedule(performSearchWrapper.bind(this, nextQuery));
+        this._searchThrottler.schedule(this._performSearch.bind(this, nextQuery));
     },
 
     /**
@@ -686,16 +676,6 @@ WebInspector.HeapSnapshotView.prototype = {
     },
 
     /**
-     * @param {number} searchResultIndex
-     * @param {function()} callback
-     */
-    _jumpToSearchResultWrapper: function(searchResultIndex, callback)
-    {
-        // FIXME: remove this function once the Throttler becomes promisified.
-        this._jumpToSearchResult(searchResultIndex).then(callback);
-    },
-
-    /**
      * @override
      */
     jumpToNextSearchResult: function()
@@ -703,7 +683,7 @@ WebInspector.HeapSnapshotView.prototype = {
         if (!this._searchResults.length)
             return;
         this._currentSearchResultIndex = (this._currentSearchResultIndex + 1) % this._searchResults.length;
-        this._searchThrottler.schedule(this._jumpToSearchResultWrapper.bind(this, this._currentSearchResultIndex));
+        this._searchThrottler.schedule(this._jumpToSearchResult.bind(this, this._currentSearchResultIndex));
     },
 
     /**
@@ -714,7 +694,7 @@ WebInspector.HeapSnapshotView.prototype = {
         if (!this._searchResults.length)
             return;
         this._currentSearchResultIndex = (this._currentSearchResultIndex + this._searchResults.length - 1) % this._searchResults.length;
-        this._searchThrottler.schedule(this._jumpToSearchResultWrapper.bind(this, this._currentSearchResultIndex));
+        this._searchThrottler.schedule(this._jumpToSearchResult.bind(this, this._currentSearchResultIndex));
     },
 
     /**

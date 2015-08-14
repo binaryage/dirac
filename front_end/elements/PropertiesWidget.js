@@ -64,10 +64,10 @@ WebInspector.PropertiesWidget.prototype = {
 
     /**
      * @override
-     * @param {!WebInspector.Throttler.FinishCallback} finishCallback
      * @protected
+     * @return {!Promise.<?>}
      */
-    doUpdate: function(finishCallback)
+    doUpdate: function()
     {
         if (this._lastRequestedNode) {
             this._lastRequestedNode.target().runtimeAgent().releaseObjectGroup(WebInspector.PropertiesWidget._objectGroupName);
@@ -77,15 +77,12 @@ WebInspector.PropertiesWidget.prototype = {
         if (!this._node) {
             this.element.removeChildren();
             this.sections = [];
-            finishCallback();
-            return;
+            return Promise.resolve();
         }
 
         this._lastRequestedNode = this._node;
-        this._node.resolveToObjectPromise(WebInspector.PropertiesWidget._objectGroupName)
+        return this._node.resolveToObjectPromise(WebInspector.PropertiesWidget._objectGroupName)
             .then(nodeResolved.bind(this))
-            .then(finishCallback)
-            .catch(/** @type {function()} */(finishCallback));
 
         /**
          * @param {?WebInspector.RemoteObject} object

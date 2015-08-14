@@ -373,16 +373,12 @@ WebInspector.StyleFile.prototype = {
         this._commitThrottler.schedule(this._commitIncrementalEdit.bind(this), false);
     },
 
-    /**
-     * @param {!WebInspector.Throttler.FinishCallback} finishCallback
-     */
-    _commitIncrementalEdit: function(finishCallback)
+    _commitIncrementalEdit: function()
     {
-        this._mapping._setStyleContent(this._uiSourceCode, this._uiSourceCode.workingCopy(), this._isMajorChangePending)
+        var promise = this._mapping._setStyleContent(this._uiSourceCode, this._uiSourceCode.workingCopy(), this._isMajorChangePending)
             .then(this._styleContentSet.bind(this))
-            .then(finishCallback)
-            .catch(/** @type {function()} */(finishCallback));
         this._isMajorChangePending = false;
+        return promise;
     },
 
     /**

@@ -15,12 +15,12 @@ WebInspector.ThrottledWidget = function()
 
 WebInspector.ThrottledWidget.prototype = {
     /**
-     * @param {!WebInspector.Throttler.FinishCallback} finishedCallback
      * @protected
+     * @return {!Promise.<?>}
      */
-    doUpdate: function(finishedCallback)
+    doUpdate: function()
     {
-        finishedCallback();
+        return Promise.resolve();
     },
 
     update: function()
@@ -31,16 +31,16 @@ WebInspector.ThrottledWidget.prototype = {
         this._updateThrottler.schedule(innerUpdate.bind(this));
 
         /**
-         * @param {!WebInspector.Throttler.FinishCallback} finishedCallback
          * @this {WebInspector.ThrottledWidget}
+         * @return {!Promise.<?>}
          */
-        function innerUpdate(finishedCallback)
+        function innerUpdate()
         {
             if (this.isShowing()) {
-                this.doUpdate(finishedCallback);
+                return this.doUpdate();
             } else {
                 this._updateWhenVisible = true;
-                finishedCallback();
+                return Promise.resolve();
             }
         }
     },

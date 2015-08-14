@@ -28,10 +28,10 @@ WebInspector.AccessibilitySidebarView.prototype = {
 
     /**
      * @override
-     * @param {!WebInspector.Throttler.FinishCallback} finishCallback
      * @protected
+     * @return {!Promise.<?>}
      */
-    doUpdate: function(finishCallback)
+    doUpdate: function()
     {
         /**
          * @param {?AccessibilityAgent.AXNode} accessibilityNode
@@ -45,10 +45,8 @@ WebInspector.AccessibilitySidebarView.prototype = {
                 this._axNodeSubPane.setAXNode(accessibilityNode);
         }
         var node = this.node();
-        WebInspector.AccessibilityModel.fromTarget(node.target()).getAXNode(node.id)
+        return WebInspector.AccessibilityModel.fromTarget(node.target()).getAXNode(node.id)
             .then(accessibilityNodeCallback.bind(this))
-            .then(finishCallback)
-            .catch(/** @type {function()} */(finishCallback));
     },
 
     /**

@@ -60,21 +60,18 @@ WebInspector.PlatformFontsWidget.createSidebarWrapper = function(sharedModel)
 WebInspector.PlatformFontsWidget.prototype = {
     /**
      * @override
-     * @param {!WebInspector.Throttler.FinishCallback} finishedCallback
      * @protected
+     * @return {!Promise.<?>}
      */
-    doUpdate: function(finishedCallback)
+    doUpdate: function()
     {
         var cssModel = this._sharedModel.cssModel();
         var node = this._sharedModel.node();
-        if (!node || !cssModel) {
-            finishedCallback();
-            return;
-        }
-        cssModel.platformFontsPromise(node.id)
+        if (!node || !cssModel)
+            return Promise.resolve();
+
+        return cssModel.platformFontsPromise(node.id)
             .then(this._refreshUI.bind(this, node))
-            .then(finishedCallback)
-            .catch(/** @type {function()} */(finishedCallback));
     },
 
     /**

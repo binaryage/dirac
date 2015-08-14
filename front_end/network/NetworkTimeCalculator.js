@@ -252,7 +252,17 @@ WebInspector.NetworkTimeCalculator.prototype = {
 
     _boundaryChanged: function()
     {
-        this._boundryChangedEventThrottler.schedule(this.dispatchEventToListeners.bind(this, WebInspector.NetworkTimeCalculator.Events.BoundariesChanged));
+        this._boundryChangedEventThrottler.schedule(dispatchEvent.bind(this));
+
+        /**
+         * @return {!Promise.<undefined>}
+         * @this {WebInspector.NetworkTimeCalculator}
+         */
+        function dispatchEvent()
+        {
+            this.dispatchEventToListeners(WebInspector.NetworkTimeCalculator.Events.BoundariesChanged);
+            return Promise.resolve();
+        }
     },
 
     /**

@@ -108,17 +108,16 @@ WebInspector.ComputedStyleWidget.prototype = {
 
     /**
      * @override
-     * @param {!WebInspector.Throttler.FinishCallback} finishedCallback
+     * @return {!Promise.<?>}
      */
-    doUpdate: function(finishedCallback)
+    doUpdate: function()
     {
         var promises = [
             this._sharedModel.fetchComputedStyle(),
             this._stylesSidebarPane.fetchMatchedCascade()
         ];
-        Promise.all(promises)
-            .spread(this._innerRebuildUpdate.bind(this))
-            .then(finishedCallback);
+        return Promise.all(promises)
+            .spread(this._innerRebuildUpdate.bind(this));
     },
 
     /**

@@ -61,10 +61,10 @@ WebInspector.EventListenersWidget._objectGroupName = "event-listeners-panel";
 WebInspector.EventListenersWidget.prototype = {
     /**
      * @override
-     * @param {!WebInspector.Throttler.FinishCallback} finishCallback
      * @protected
+     * @return {!Promise.<?>}
      */
-    doUpdate: function(finishCallback)
+    doUpdate: function()
     {
         if (this._lastRequestedNode) {
             this._lastRequestedNode.target().runtimeAgent().releaseObjectGroup(WebInspector.EventListenersWidget._objectGroupName);
@@ -74,8 +74,7 @@ WebInspector.EventListenersWidget.prototype = {
         if (!node) {
             this._eventListenersView.reset();
             this._eventListenersView.addEmptyHolderIfNeeded();
-            finishCallback();
-            return;
+            return Promise.resolve();
         }
         this._lastRequestedNode = node;
         var selectedNodeOnly = !this._showForAncestorsSetting.get();
@@ -90,7 +89,7 @@ WebInspector.EventListenersWidget.prototype = {
             }
             promises.push(this._windowObjectInNodeContext(node));
         }
-        Promise.all(promises).then(this._eventListenersView.addObjects.bind(this._eventListenersView)).then(finishCallback.bind(this, undefined));
+        return Promise.all(promises).then(this._eventListenersView.addObjects.bind(this._eventListenersView));
     },
 
     /**

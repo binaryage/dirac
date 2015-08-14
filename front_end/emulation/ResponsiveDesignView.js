@@ -787,12 +787,12 @@ WebInspector.ResponsiveDesignView.prototype = {
     },
 
     /**
-     * @param {!WebInspector.Throttler.FinishCallback} finishCallback
+     * @return {!Promise.<?>}
      */
-    _updateUIThrottled: function(finishCallback)
+    _updateUIThrottled: function()
     {
         this._updateUI();
-        finishCallback();
+        return Promise.resolve();
     },
 
     /**
@@ -804,10 +804,10 @@ WebInspector.ResponsiveDesignView.prototype = {
         this._pageScaleFactorThrottler.schedule(updatePageScaleFactor.bind(this));
 
         /**
-         * @param {!WebInspector.Throttler.FinishCallback} finishCallback
+         * @return {!Promise.<?>}
          * @this {WebInspector.ResponsiveDesignView}
          */
-        function updatePageScaleFactor(finishCallback)
+        function updatePageScaleFactor()
         {
             if (this._target && this._viewport) {
                 var value = this._viewport.pageScaleFactor;
@@ -816,7 +816,7 @@ WebInspector.ResponsiveDesignView.prototype = {
                 value = Math.max(this._viewport.minimumPageScaleFactor, value);
                 this._target.emulationAgent().setPageScaleFactor(value);
             }
-            finishCallback();
+            return Promise.resolve();
         }
     },
 
@@ -825,14 +825,14 @@ WebInspector.ResponsiveDesignView.prototype = {
         this._pageScaleFactorThrottler.schedule(updatePageScaleFactor.bind(this));
 
         /**
-         * @param {!WebInspector.Throttler.FinishCallback} finishCallback
+         * @return {!Promise.<?>}
          * @this {WebInspector.ResponsiveDesignView}
          */
-        function updatePageScaleFactor(finishCallback)
+        function updatePageScaleFactor()
         {
             if (this._target && this._viewport && this._viewport.minimumPageScaleFactor <= 1 && this._viewport.maximumPageScaleFactor >= 1)
                 this._target.emulationAgent().setPageScaleFactor(1);
-            finishCallback();
+            return Promise.resolve();
         }
     },
 

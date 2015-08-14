@@ -51,12 +51,12 @@ WebInspector.ElementsSidebarPane.prototype = {
     },
 
     /**
-     * @param {!WebInspector.Throttler.FinishCallback} finishedCallback
      * @protected
+     * @return {!Promise.<?>}
      */
-    doUpdate: function(finishedCallback)
+    doUpdate: function()
     {
-        finishedCallback();
+        return Promise.resolve();
     },
 
     update: function()
@@ -134,7 +134,7 @@ WebInspector.ElementsSidebarPane.prototype = {
 /**
  * @constructor
  * @param {!WebInspector.Widget} view
- * @param {function(!WebInspector.Throttler.FinishCallback)} doUpdate
+ * @param {function():!Promise.<?>} doUpdate
  */
 WebInspector.ElementsSidebarPane._UpdateController = function(view, doUpdate)
 {
@@ -153,15 +153,12 @@ WebInspector.ElementsSidebarPane._UpdateController.prototype = {
         this._updateThrottler.schedule(innerUpdate.bind(this));
 
         /**
-         * @param {!WebInspector.Throttler.FinishCallback} finishedCallback
          * @this {WebInspector.ElementsSidebarPane._UpdateController}
+         * @return {!Promise.<?>}
          */
-        function innerUpdate(finishedCallback)
+        function innerUpdate()
         {
-            if (this._view.isShowing())
-                this._doUpdate.call(null, finishedCallback);
-            else
-                finishedCallback();
+            return this._view.isShowing() ? this._doUpdate.call(null) : Promise.resolve();
         }
     },
 
