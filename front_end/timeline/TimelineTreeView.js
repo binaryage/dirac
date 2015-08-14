@@ -249,6 +249,7 @@ WebInspector.TimelineTreeView.GridNode = function(profileNode, grandTotalTime)
         return WebInspector.UIString("%.2f\u2009%%", value);
     }
 
+    this._populated = false;
     this._profileNode = profileNode;
     this._totalTime = grandTotalTime;
     var selfTime = profileNode.totalTime;
@@ -334,6 +335,9 @@ WebInspector.TimelineTreeView.GridNode.prototype = {
      */
     populate: function()
     {
+        if (this._populated)
+            return;
+        this._populated = true;
         if (!this._profileNode.children)
             return;
         for (var node of this._profileNode.children.values()) {
