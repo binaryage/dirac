@@ -183,9 +183,8 @@ WebInspector.ProfileType.prototype = {
     loadFromFile: function(file)
     {
         var name = file.name;
-        var fileExtension = this.fileExtension();
-        if (fileExtension && name.endsWith(fileExtension))
-            name = name.substr(0, name.length - fileExtension.length);
+        if (name.endsWith(this.fileExtension()))
+            name = name.substr(0, name.length - this.fileExtension().length);
         var profile = this.createProfileLoadedFromFile(name);
         profile.setFromFile();
         this.setProfileBeingRecorded(profile);

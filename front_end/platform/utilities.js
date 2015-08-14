@@ -279,6 +279,22 @@ String.prototype.removeURLFragment = function()
 }
 
 /**
+ * @return {boolean}
+ */
+String.prototype.startsWith = function(substring)
+{
+    return !this.lastIndexOf(substring, 0);
+}
+
+/**
+ * @return {boolean}
+ */
+String.prototype.endsWith = function(substring)
+{
+    return this.indexOf(substring, this.length - substring.length) !== -1;
+}
+
+/**
  * @param {string|undefined} string
  * @return {number}
  */

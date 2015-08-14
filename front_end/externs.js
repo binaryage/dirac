@@ -276,6 +276,8 @@ function Panel() {}
 /** @constructor */
 function PanelWithSidebar() {}
 /** @constructor */
+function Request() {}
+/** @constructor */
 function Resource() {}
 /** @constructor */
 function Timeline() {}
@@ -556,6 +558,19 @@ CodeMirror.doc;
 
 /** @type {boolean} */
 window.dispatchStandaloneTestRunnerMessages;
+
+// FIXME: This should be removed once transpilation is not required for closure compiler ES6
+/**
+ * @param {number} count
+ * @return {string}
+ */
+String.prototype.repeat = function(count) {}
+
+/**
+ * @param {string} other
+ * @return {boolean}
+ */
+String.prototype.includes = function(other) {}
 
 /**
  * @param {*} obj
