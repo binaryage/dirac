@@ -300,7 +300,6 @@ WebInspector.ResourceScriptFile = function(resourceScriptMapping, uiSourceCode, 
         this._script = scripts[0];
 
     this._uiSourceCode.addEventListener(WebInspector.UISourceCode.Events.WorkingCopyChanged, this._workingCopyChanged, this);
-    this._update();
 }
 
 WebInspector.ResourceScriptFile.Events = {
