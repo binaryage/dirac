@@ -292,7 +292,16 @@ WebInspector.KeyboardShortcut._modifiersToString = function(modifiers)
         [m.Shift, isMac ? "\u21e7" : "Shift\u200A+\u200A"],
         [m.Meta, isMac ? "\u2318" : "Win\u200A+\u200A"]
     ]);
-    return [m.Ctrl, m.Alt, m.Shift, m.Meta].map(m => modifiers & m ? modifierNames.get(m) : "").join("");
+    return [m.Ctrl, m.Alt, m.Shift, m.Meta].map(mapModifiers).join("");
+
+    /**
+     * @param {number} m
+     * @return {string}
+     */
+    function mapModifiers(m)
+    {
+        return modifiers & m ? /** @type {string} */ (modifierNames.get(m)) : "";
+    }
 };
 
 WebInspector.KeyboardShortcut.SelectAll = WebInspector.KeyboardShortcut.makeKey("a", WebInspector.KeyboardShortcut.Modifiers.CtrlOrMeta);

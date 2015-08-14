@@ -204,7 +204,17 @@ WebInspector.NetworkPanel.prototype = {
         var calculator = this._networkLogView.timeCalculator();
         this._filmStripView.setModel(filmStripModel, calculator.minimumBoundary() * 1000, calculator.boundarySpan() * 1000);
         this._networkOverview.setFilmStripModel(filmStripModel);
-        var timestamps = filmStripModel.frames().map((frame) => frame.timestamp / 1000);
+        var timestamps = filmStripModel.frames().map(mapTimestamp);
+
+        /**
+         * @param {!WebInspector.FilmStripModel.Frame} frame
+         * @return {number}
+         */
+        function mapTimestamp(frame)
+        {
+            return frame.timestamp / 1000;
+        }
+
         this._networkLogView.addFilmStripFrames(timestamps);
     },
 
