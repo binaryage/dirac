@@ -604,22 +604,23 @@ WebInspector.OverridesSupport.prototype = {
 
         /**
          * @this {WebInspector.OverridesSupport}
-         * @return {!Promise.<undefined>}
+         * @return {!Promise.<?>}
          */
         function setDeviceMetricsOverride()
         {
-            var promise = this._target.emulationAgent().setDeviceMetricsOverride(
+            var setDevicePromise = this._target.emulationAgent().setDeviceMetricsOverride(
                 overrideWidth, overrideHeight, this.settings.emulateResolution.get() ? this.settings.deviceScaleFactor.get() : 0,
                 this.settings.emulateMobile.get(), this._pageResizer ? false : this.settings.deviceFitWindow.get(), scale, 0, 0,
                 screenWidth, screenHeight, positionX, positionY, apiCallback.bind(this))
+            var allPromises = [ setDevicePromise ];
             if (resetScrollAndPageScale)
-                this._target.emulationAgent().resetScrollAndPageScaleFactor();
-            return promise;
+                allPromises.push(this._target.emulationAgent().resetScrollAndPageScaleFactor());
+            return Promise.all(allPromises);
         }
 
         /**
          * @this {WebInspector.OverridesSupport}
-         * @return {!Promise.<undefined>}
+         * @return {!Promise.<?>}
          */
         function clearDeviceMetricsOverride()
         {
