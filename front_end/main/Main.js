@@ -334,6 +334,7 @@ WebInspector.Main.prototype = {
         this._registerShortcuts();
 
         this._mainTarget.registerInspectorDispatcher(this);
+        InspectorFrontendHost.events.addEventListener(InspectorFrontendHostAPI.Events.ReloadInspectedPage, this._reloadInspectedPage, this);
 
         if (this._mainTarget.isServiceWorker())
             this._mainTarget.runtimeAgent().run();
@@ -558,6 +559,15 @@ WebInspector.Main.prototype = {
         document.addEventListener("paste", this._documentPaste.bind(this), false);
         document.addEventListener("contextmenu", this._contextMenuEventFired.bind(this), true);
         document.addEventListener("click", this._documentClick.bind(this), false);
+    },
+
+    /**
+     * @param {!WebInspector.Event} event
+     */
+    _reloadInspectedPage: function(event)
+    {
+        var hard = /** @type {boolean} */ (event.data);
+        WebInspector.Main._reloadPage(hard);
     },
 
     /**

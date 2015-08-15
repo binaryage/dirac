@@ -205,6 +205,14 @@ DevToolsAPIImpl.prototype = {
     },
 
     /**
+     * @param {boolean} hard
+     */
+    reloadInspectedPage: function(hard)
+    {
+        this._dispatchOnInspectorFrontendAPI("reloadInspectedPage", [hard]);
+    },
+
+    /**
      * @param {string} url
      * @param {number} lineNumber
      * @param {number} columnNumber
