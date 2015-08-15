@@ -15,6 +15,7 @@ WebInspector.TimelineTreeView = function(model)
     this._model = model;
     var columns = [];
     columns.push({id: "self", title: WebInspector.UIString("Self Time"), width: "120px", sort: WebInspector.DataGrid.Order.Descending, sortable: true});
+    columns.push({id: "total", title: WebInspector.UIString("Total Time"), width: "120px", sort: WebInspector.DataGrid.Order.Descending, sortable: true});
     columns.push({id: "activity", title: WebInspector.UIString("Activity"), disclosure: true, sortable: true});
 
     this._filters = [
@@ -97,6 +98,7 @@ WebInspector.TimelineTreeView.prototype = {
             if (!node) {
                 node = new WebInspector.TimelineModel.ProfileTreeNode();
                 node.name = id || WebInspector.UIString("(unknown)");
+                node.selfTime = 0;
                 node.totalTime = 0;
                 groupNodes.set(id, node);
             }
@@ -201,7 +203,8 @@ WebInspector.TimelineTreeView.prototype = {
             return valueA === valueB ? 0 : valueA > valueB ? 1 : -1;
         }
         var field = {
-            "self": "totalTime",
+            "self": "selfTime",
+            "total": "totalTime",
             "activity": "name"
         }[columnIdentifier];
         this.dataGrid.sortNodes(compareField.bind(null, field), !this.dataGrid.isSortOrderAscending());
@@ -252,12 +255,16 @@ WebInspector.TimelineTreeView.GridNode = function(profileNode, grandTotalTime)
     this._populated = false;
     this._profileNode = profileNode;
     this._totalTime = grandTotalTime;
-    var selfTime = profileNode.totalTime;
+    var selfTime = profileNode.selfTime;
     var selfPercent = selfTime / grandTotalTime * 100;
+    var totalTime = profileNode.totalTime;
+    var totalPercent = totalTime / grandTotalTime * 100;
     var data = {
         "activity": profileNode.name,
         "self-percent": formatPercent(selfPercent),
         "self": formatMilliseconds(selfTime),
+        "total-percent": formatPercent(totalPercent),
+        "total": formatMilliseconds(totalTime),
     };
     var hasChildren = this._profileNode.children ? this._profileNode.children.size > 0 : false;
     WebInspector.SortableDataGridNode.call(this, data, hasChildren);
