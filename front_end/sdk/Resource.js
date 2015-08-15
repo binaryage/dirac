@@ -310,11 +310,6 @@ WebInspector.Resource.prototype = {
             callback(searchMatches || []);
         }
 
-        if (this.resourceType() === WebInspector.resourceTypes.Document) {
-            callback([]);
-            return;
-        }
-
         if (this.frameId)
             this.target().pageAgent().searchInResource(this.frameId, this.url, query, caseSensitive, isRegex, callbackWrapper);
         else

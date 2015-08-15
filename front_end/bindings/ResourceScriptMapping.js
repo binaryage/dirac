@@ -239,6 +239,12 @@ WebInspector.ResourceScriptMapping.prototype = {
     _bindUISourceCodeToScripts: function(uiSourceCode, scripts)
     {
         console.assert(scripts.length);
+        // Due to different listeners order, a script file could be created just before uiSourceCode
+        // for the corresponding script was created. Check that we don't create scriptFile twice.
+        var boundScriptFile = this.scriptFile(uiSourceCode);
+        if (boundScriptFile && boundScriptFile.hasScripts(scripts))
+            return;
+
         var scriptFile = new WebInspector.ResourceScriptFile(this, uiSourceCode, scripts);
         this._setScriptFile(uiSourceCode, scriptFile);
         for (var i = 0; i < scripts.length; ++i)
@@ -308,6 +314,15 @@ WebInspector.ResourceScriptFile.Events = {
 }
 
 WebInspector.ResourceScriptFile.prototype = {
+    /**
+     * @param {!Array.<!WebInspector.Script>} scripts
+     * @return {boolean}
+     */
+    hasScripts: function(scripts)
+    {
+        return this._script && this._script === scripts[0];
+    },
+
     /**
      * @param {function(?string,!DebuggerAgent.SetScriptSourceError=,!WebInspector.Script=)=} callback
      */

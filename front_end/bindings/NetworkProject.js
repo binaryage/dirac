@@ -287,7 +287,7 @@ WebInspector.NetworkProject.prototype = {
 
             var resources = frame.resources();
             for (var i = 0; i < resources.length; ++i)
-                this._addFile(resources[i].url, new WebInspector.NetworkProject.FallbackResource(resources[i]));
+                this._addResource(resources[i]);
         }
 
         var mainFrame = this.target().resourceTreeModel.mainFrame;
@@ -342,7 +342,16 @@ WebInspector.NetworkProject.prototype = {
     _resourceAdded: function(event)
     {
         var resource = /** @type {!WebInspector.Resource} */ (event.data);
-        this._addFile(resource.url, new WebInspector.NetworkProject.FallbackResource(resource));
+        this._addResource(resource);
+    },
+
+    /**
+     * @param {!WebInspector.Resource} resource
+     */
+    _addResource: function(resource)
+    {
+        if (resource.resourceType() === WebInspector.resourceTypes.Document)
+            this._addFile(resource.url, resource);
     },
 
     /**
@@ -412,115 +421,4 @@ WebInspector.NetworkProject.prototype = {
     },
 
     __proto__: WebInspector.SDKObject.prototype
-}
-
-/**
- * @constructor
- * @implements {WebInspector.ContentProvider}
- * @param {!WebInspector.Resource} resource
- */
-WebInspector.NetworkProject.FallbackResource = function(resource)
-{
-    this._resource = resource;
-}
-
-WebInspector.NetworkProject.FallbackResource.prototype = {
-
-    /**
-     * @override
-     * @return {string}
-     */
-    contentURL: function()
-    {
-        return this._resource.contentURL();
-    },
-
-    /**
-     * @override
-     * @return {!WebInspector.ResourceType}
-     */
-    contentType: function()
-    {
-        return this._resource.resourceType();
-    },
-
-    /**
-     * @override
-     * @param {function(?string)} callback
-     */
-    requestContent: function(callback)
-    {
-        /**
-         * @this {WebInspector.NetworkProject.FallbackResource}
-         */
-        function loadFallbackContent()
-        {
-            var debuggerModel = WebInspector.DebuggerModel.fromTarget(this._resource.target());
-            if (!debuggerModel) {
-                callback(null);
-                return;
-            }
-            var scripts = debuggerModel.scriptsForSourceURL(this._resource.url);
-            if (!scripts.length) {
-                callback(null);
-                return;
-            }
-
-            var contentProvider;
-            var type = this._resource.resourceType();
-            if (type === WebInspector.resourceTypes.Document)
-                contentProvider = new WebInspector.ConcatenatedScriptsContentProvider(scripts);
-            else if (type === WebInspector.resourceTypes.Script)
-                contentProvider = scripts[0];
-
-            console.assert(contentProvider, "Resource content request failed. " + this._resource.url);
-
-            contentProvider.requestContent(callback);
-        }
-
-        /**
-         * @param {?string} content
-         * @this {WebInspector.NetworkProject.FallbackResource}
-         */
-        function requestContentLoaded(content)
-        {
-            if (content)
-                callback(content)
-            else
-                loadFallbackContent.call(this);
-        }
-
-        this._resource.requestContent(requestContentLoaded.bind(this));
-    },
-
-    /**
-     * @override
-     * @param {string} query
-     * @param {boolean} caseSensitive
-     * @param {boolean} isRegex
-     * @param {function(!Array.<!WebInspector.ContentProvider.SearchMatch>)} callback
-     */
-    searchInContent: function(query, caseSensitive, isRegex, callback)
-    {
-        /**
-         * @param {?string} content
-         */
-        function documentContentLoaded(content)
-        {
-            if (content === null) {
-                callback([]);
-                return;
-            }
-
-            var result = WebInspector.ContentProvider.performSearchInContent(content, query, caseSensitive, isRegex);
-            callback(result);
-        }
-
-        if (this.contentType() === WebInspector.resourceTypes.Document) {
-            this.requestContent(documentContentLoaded);
-            return;
-        }
-
-        this._resource.searchInContent(query, caseSensitive, isRegex, callback);
-    }
 }
