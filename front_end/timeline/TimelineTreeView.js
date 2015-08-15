@@ -170,8 +170,8 @@ WebInspector.TimelineTreeView.prototype = {
             [WebInspector.TimelineTreeView.GroupBy.DomainSecondLevel, groupByDomainSecondLevel],
             [WebInspector.TimelineTreeView.GroupBy.URL, groupByURL]
         ]);
-        var topDown = WebInspector.TimelineUIUtils.buildTopDownTree(this._model.mainThreadEvents(), this._startTime, this._endTime, this._filters, eventId);
-        var bottomUpRoot = WebInspector.TimelineUIUtils.buildBottomUpTree(topDown, groupByMapper.get(groupBy));
+        var topDown = WebInspector.TimelineModel.buildTopDownTree(this._model.mainThreadEvents(), this._startTime, this._endTime, this._filters, eventId);
+        var bottomUpRoot = WebInspector.TimelineModel.buildBottomUpTree(topDown, groupByMapper.get(groupBy));
         for (var group of groupNodes)
             bottomUpRoot.children.set(group[0], group[1]);
         this.dataGrid.rootNode().removeChildren();

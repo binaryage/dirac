@@ -1455,6 +1455,163 @@ WebInspector.TimelineModel.ProfileTreeNode = function()
 }
 
 /**
+ * @param {!Array<!WebInspector.TracingModel.Event>} events
+ * @param {number} startTime
+ * @param {number} endTime
+ * @param {!Array<!WebInspector.TraceEventFilter>} filters
+ * @param {function(!WebInspector.TracingModel.Event):string} eventIdCallback
+ * @return {!WebInspector.TimelineModel.ProfileTreeNode}
+ */
+WebInspector.TimelineModel.buildTopDownTree = function(events, startTime, endTime, filters, eventIdCallback)
+{
+    // Temporarily deposit a big enough value that exceeds the max recording time.
+    var /** @const */ initialTime = 1e7;
+    var root = new WebInspector.TimelineModel.ProfileTreeNode();
+    root.totalTime = initialTime;
+    root.selfTime = initialTime;
+    root.name = WebInspector.UIString("Top-Down Chart");
+    var parent = root;
+
+    /**
+     * @param {!WebInspector.TracingModel.Event} e
+     * @return {boolean}
+     */
+    function filter(e)
+    {
+        if (!e.endTime && e.phase !== WebInspector.TracingModel.Phase.Instant)
+            return false;
+        if (e.endTime <= startTime || e.startTime >= endTime)
+            return false;
+        if (WebInspector.TracingModel.isAsyncPhase(e.phase))
+            return false;
+        for (var filter of filters) {
+            if (!filter.accept(e))
+                return false;
+        }
+        return true;
+    }
+
+    /**
+     * @param {!WebInspector.TracingModel.Event} e
+     */
+    function onStartEvent(e)
+    {
+        if (!filter(e))
+            return;
+        var time = Math.min(endTime, e.endTime) - Math.max(startTime, e.startTime);
+        var id = eventIdCallback(e);
+        if (!parent.children)
+            parent.children = /** @type {!Map<string,!WebInspector.TimelineModel.ProfileTreeNode>} */ (new Map());
+        var node = parent.children.get(id);
+        if (node) {
+            node.selfTime += time;
+            node.totalTime += time;
+        } else {
+            node = new WebInspector.TimelineModel.ProfileTreeNode();
+            node.totalTime = time;
+            node.selfTime = time;
+            node.parent = parent;
+            node.name = eventName(e);
+            node.id = id;
+            node.event = e;
+            parent.children.set(id, node);
+        }
+        parent.selfTime -= time;
+        if (parent.selfTime < 0) {
+            console.log("Error: Negative self of " + parent.selfTime, e);
+            parent.selfTime = 0;
+        }
+        parent = node;
+    }
+
+    /**
+     * @param {!WebInspector.TracingModel.Event} e
+     */
+    function onEndEvent(e)
+    {
+        if (!filter(e))
+            return;
+        parent = parent.parent;
+    }
+
+    /**
+     * @param {!WebInspector.TracingModel.Event} e
+     * @return {string}
+     */
+    function eventName(e)
+    {
+        if (e.name === "JSFrame")
+            return WebInspector.beautifyFunctionName(e.args.data.functionName);
+        if (e.name === "EventDispatch")
+            return WebInspector.UIString("Event%s", e.args.data ? " (" + e.args.data.type + ")" : "");
+        return e.name;
+    }
+
+    WebInspector.TimelineModel.forEachEvent(events, onStartEvent, onEndEvent);
+    root.totalTime -= root.selfTime;
+    root.selfTime = 0;
+    return root;
+}
+
+/**
+ * @param {!WebInspector.TimelineModel.ProfileTreeNode} topDownTree
+ * @param {function(!WebInspector.TimelineModel.ProfileTreeNode):?WebInspector.TimelineModel.ProfileTreeNode=} groupingCallback
+ * @return {!WebInspector.TimelineModel.ProfileTreeNode}
+ */
+WebInspector.TimelineModel.buildBottomUpTree = function(topDownTree, groupingCallback)
+{
+    var buRoot = new WebInspector.TimelineModel.ProfileTreeNode();
+    buRoot.totalTime = 0;
+    buRoot.name = WebInspector.UIString("Bottom-Up Chart");
+    /** @type {!Map<string,!WebInspector.TimelineModel.ProfileTreeNode>} */
+    buRoot.children = new Map();
+    processNode(topDownTree);
+
+    /**
+     * @param {!WebInspector.TimelineModel.ProfileTreeNode} tdNode
+     */
+    function processNode(tdNode)
+    {
+        if (tdNode.selfTime > 0) {
+            var buParent = groupingCallback && groupingCallback(tdNode) || buRoot;
+            appendNode(tdNode, buParent);
+        }
+        if (tdNode.children)
+            tdNode.children.forEach(processNode);
+    }
+
+    /**
+     * @param {!WebInspector.TimelineModel.ProfileTreeNode} tdNode
+     * @param {!WebInspector.TimelineModel.ProfileTreeNode} buParent
+     */
+    function appendNode(tdNode, buParent)
+    {
+        var time = tdNode.selfTime;
+        buParent.totalTime += time;
+        while (tdNode.parent) {
+            if (!buParent.children)
+                buParent.children = /** @type {!Map<string,!WebInspector.TimelineModel.ProfileTreeNode>} */ (new Map());
+            var id = tdNode.id;
+            var buNode = buParent.children.get(id);
+            if (!buNode) {
+                buNode = new WebInspector.TimelineModel.ProfileTreeNode();
+                buNode.totalTime = time;
+                buNode.name = tdNode.name;
+                buNode.event = tdNode.event;
+                buNode.id = id;
+                buParent.children.set(id, buNode);
+            } else {
+                buNode.totalTime += time;
+            }
+            tdNode = tdNode.parent;
+            buParent = buNode;
+        }
+    }
+
+    return buRoot;
+}
+
+/**
  * @constructor
  * @param {!WebInspector.TracingModel.Event} event
  */
