@@ -38,7 +38,7 @@ WebInspector.NetworkConditionsSelector.throughputText = function(conditions)
  */
 WebInspector.NetworkConditionsSelector.throughputValidator = function(value)
 {
-    if (!value || (/^[\d]+(\.\d+)?|\.\d+$/.test(value) && value >= 0))
+    if (!value || (/^[\d]+(\.\d+)?|\.\d+$/.test(value) && value >= 0 && value <= 10000000))
         return "";
     return WebInspector.UIString("Value must be non-negative float");
 }
@@ -49,7 +49,7 @@ WebInspector.NetworkConditionsSelector.throughputValidator = function(value)
  */
 WebInspector.NetworkConditionsSelector.latencyValidator = function(value)
 {
-    if (!value || (/^[\d]+$/.test(value) && value >= 0))
+    if (!value || (/^[\d]+$/.test(value) && value >= 0 && value <= 1000000))
         return "";
     return WebInspector.UIString("Value must be non-negative integer");
 }
