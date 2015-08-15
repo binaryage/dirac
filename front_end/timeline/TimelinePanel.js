@@ -123,7 +123,6 @@ WebInspector.TimelinePanel.OverviewMode = {
 WebInspector.TimelinePanel.DetailsTab = {
     Details: "Details",
     BottomUpTree: "BottomUpTree",
-    BottomUpChart: "BottomUpChart",
     PaintProfiler: "PaintProfiler",
     LayerViewer: "LayerViewer"
 };
@@ -1353,16 +1352,11 @@ WebInspector.TimelineDetailsView = function(timelineModel)
         this._heavyTreeView = new WebInspector.TimelineTreeView(timelineModel);
         this.appendTab(WebInspector.TimelinePanel.DetailsTab.BottomUpTree, WebInspector.UIString("Costly Functions"), this._heavyTreeView);
     }
-    if (Runtime.experiments.isEnabled("timelineDetailsChart")) {
-        this._heavyChartView = new WebInspector.TimelineDetailsView.BottomUpChartView(timelineModel);
-        this.appendTab(WebInspector.TimelinePanel.DetailsTab.BottomUpChart, WebInspector.UIString("Costly Functions Chart"), this._heavyChartView);
-    }
 
-    this._staticTabs = [
+    this._staticTabs = new Set([
         WebInspector.TimelinePanel.DetailsTab.Details,
-        WebInspector.TimelinePanel.DetailsTab.BottomUpTree,
-        WebInspector.TimelinePanel.DetailsTab.BottomUpChart
-    ];
+        WebInspector.TimelinePanel.DetailsTab.BottomUpTree
+    ]);
 
     this.addEventListener(WebInspector.TabbedPane.EventTypes.TabSelected, this._tabSelected, this);
 }
@@ -1376,7 +1370,7 @@ WebInspector.TimelineDetailsView.prototype = {
         var allTabs = this.allTabs();
         for (var i = 0; i < allTabs.length; ++i) {
             var tabId = allTabs[i].id;
-            if (this._staticTabs.indexOf(tabId) !== -1)
+            if (this._staticTabs.has(tabId))
                 this.closeTab(tabId);
         }
         this._defaultDetailsContentElement.removeChildren();
@@ -1389,8 +1383,6 @@ WebInspector.TimelineDetailsView.prototype = {
     updateContents: function(selection)
     {
         this._selection = selection;
-        if (this.selectedTabId === WebInspector.TimelinePanel.DetailsTab.BottomUpChart && this._heavyChartView)
-            this._heavyChartView.updateContents(selection);
         if (this.selectedTabId === WebInspector.TimelinePanel.DetailsTab.BottomUpTree && this._heavyTreeView)
             this._heavyTreeView.updateContents(selection);
     },
@@ -1432,81 +1424,6 @@ WebInspector.TimelineDetailsView.prototype = {
 
     __proto__: WebInspector.TabbedPane.prototype
 }
-
-/**
- * @constructor
- * @implements {WebInspector.TimelineModeViewDelegate}
- * @implements {WebInspector.FlameChartDelegate}
- * @extends {WebInspector.VBox}
- */
-WebInspector.TimelineDetailsView.BottomUpChartView = function(model) {
-    WebInspector.VBox.call(this);
-    this._model = model;
-}
-
-WebInspector.TimelineDetailsView.BottomUpChartView.prototype = {
-    _init: function()
-    {
-        if (this._heavyChart)
-            return;
-        this._dataProvider = new WebInspector.TimelineFlameChartBottomUpDataProvider(this._model);
-        this._heavyChart = new WebInspector.FlameChart(this._dataProvider, this, true);
-        this._heavyChart.show(this.element);
-    },
-
-    /**
-     * @param {!WebInspector.TimelineSelection} selection
-     */
-    updateContents: function(selection)
-    {
-        this._init();
-        this._heavyChart.reset();
-        this._dataProvider.setWindowTimes(selection._startTime, selection._endTime);
-        this._dataProvider.timelineData();
-        this._heavyChart.setWindowTimes(0, this._dataProvider.totalTime());
-    },
-
-    /**
-     * @override
-     * @param {number} startTime
-     * @param {number} endTime
-     */
-    requestWindowTimes: function(startTime, endTime)
-    {
-        this._heavyChart.setWindowTimes(startTime, endTime);
-    },
-
-    /**
-     * @override
-     * @param {?WebInspector.TimelineSelection} selection
-     * @param {!WebInspector.TimelinePanel.DetailsTab=} preferredTab
-     */
-    select: function(selection, preferredTab) {},
-
-    /**
-     * @override
-     * @param {!WebInspector.TimelineModel.Record} record
-     */
-    showNestedRecordDetails: function(record) {},
-
-    /**
-     * @override
-     * @param {!Node} node
-     */
-    showInDetails: function(node) {},
-
-    /**
-     * @override
-     * @param {number} startTime
-     * @param {number} endTime
-     */
-    updateRangeSelection: function(startTime, endTime)
-    {
-    },
-
-    __proto__: WebInspector.VBox.prototype
-}
-
 
 /**
  * @constructor
