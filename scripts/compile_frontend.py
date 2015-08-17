@@ -246,7 +246,6 @@ common_closure_args = [
     '--warning_level', 'VERBOSE',
     '--language_in=ES6_STRICT',
     '--language_out=ES5_STRICT',
-    '--accept_const_keyword',
     '--extra_annotation_name', 'suppressReceiverCheck',
     '--extra_annotation_name', 'suppressGlobalPropertiesCheck',
     '--module_output_path_prefix', to_platform_path_exact(modules_dir + path.sep)
