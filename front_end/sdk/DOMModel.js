@@ -1799,6 +1799,7 @@ WebInspector.DOMModel.prototype = {
             highlightConfig.shapeColor = WebInspector.Color.PageHighlight.Shape.toProtocolRGBA();
             highlightConfig.shapeMarginColor = WebInspector.Color.PageHighlight.ShapeMargin.toProtocolRGBA();
             highlightConfig.showLayoutEditor = Runtime.experiments.isEnabled("layoutEditor");
+            highlightConfig.displayAsMaterial = Runtime.experiments.isEnabled("materialDesign");
         }
         return highlightConfig;
     },
