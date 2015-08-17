@@ -435,6 +435,7 @@ var InspectorFrontendHost = window.InspectorFrontendHost || null;
 
         /**
          * @param {string} name
+         * @return {?}
          */
         function stub(name)
         {
