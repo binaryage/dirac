@@ -41,7 +41,6 @@ WebInspector.RenderingOptions = function()
     this._mapSettingToSetter(WebInspector.moduleSetting("showPaintRects"), "setShowPaintRects");
     this._mapSettingToSetter(WebInspector.moduleSetting("showDebugBorders"), "setShowDebugBorders");
     this._mapSettingToSetter(WebInspector.moduleSetting("showFPSCounter"), "setShowFPSCounter");
-    this._mapSettingToSetter(WebInspector.moduleSetting("continuousPainting"), "setContinuousPaintingEnabled");
     this._mapSettingToSetter(WebInspector.moduleSetting("showScrollBottleneckRects"), "setShowScrollBottleneckRects");
 
     WebInspector.targetManager.observeTargets(this, WebInspector.Target.Type.Page);
@@ -104,7 +103,6 @@ WebInspector.RenderingOptions.View = function()
     div.appendChild(WebInspector.SettingsUI.createSettingCheckbox(WebInspector.UIString("Enable paint flashing"), WebInspector.moduleSetting("showPaintRects")));
     div.appendChild(WebInspector.SettingsUI.createSettingCheckbox(WebInspector.UIString("Show layer borders"), WebInspector.moduleSetting("showDebugBorders")));
     div.appendChild(WebInspector.SettingsUI.createSettingCheckbox(WebInspector.UIString("Show FPS meter"), WebInspector.moduleSetting("showFPSCounter")));
-    div.appendChild(WebInspector.SettingsUI.createSettingCheckbox(WebInspector.UIString("Enable continuous repainting"), WebInspector.moduleSetting("continuousPainting")));
     var child = WebInspector.SettingsUI.createSettingCheckbox(WebInspector.UIString("Show scrolling perf issues"), WebInspector.moduleSetting("showScrollBottleneckRects"));
     child.title = WebInspector.UIString("Shows areas of the page that slow down scrolling:\nTouch and mousewheel event listeners can delay scrolling.\nSome areas need to repaint their content when scrolled.");
     div.appendChild(child);
@@ -124,8 +122,7 @@ WebInspector.RenderingOptions.ButtonProvider = function()
     this._renderingOptions = [{ label: WebInspector.UIString("Enable paint flashing"), setting: WebInspector.moduleSetting("showPaintRects") },
         { label: WebInspector.UIString("Show layer borders"), setting: WebInspector.moduleSetting("showDebugBorders") },
         { label: WebInspector.UIString("Show scrolling perf issues"), setting: WebInspector.moduleSetting("showScrollBottleneckRects") },
-        { label: WebInspector.UIString("Show FPS meter"), setting: WebInspector.moduleSetting("showFPSCounter") },
-        { label: WebInspector.UIString("Enable continuous repainting"), setting: WebInspector.moduleSetting("continuousPainting") }];
+        { label: WebInspector.UIString("Show FPS meter"), setting: WebInspector.moduleSetting("showFPSCounter") }];
 }
 
 WebInspector.RenderingOptions.ButtonProvider.prototype = {

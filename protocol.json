@@ -604,13 +604,6 @@
                 ]
             },
             {
-                "name": "setContinuousPaintingEnabled",
-                "description": "Requests that backend enables continuous painting",
-                "parameters": [
-                    { "name": "enabled", "type": "boolean", "description": "True for enabling cointinuous painting" }
-                ]
-            },
-            {
                 "name": "setShowScrollBottleneckRects",
                 "description": "Requests that backend shows scroll bottleneck rects",
                 "parameters": [

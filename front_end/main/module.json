@@ -294,12 +294,6 @@
         },
         {
             "type": "setting",
-            "settingName": "continuousPainting",
-            "settingType": "boolean",
-            "defaultValue": false
-        },
-        {
-            "type": "setting",
             "settingName": "showScrollBottleneckRects",
             "settingType": "boolean",
             "defaultValue": false
