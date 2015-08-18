@@ -39,6 +39,7 @@
 WebInspector.ExtensionView = function(server, id, src, className)
 {
     WebInspector.Widget.call(this);
+    this.setHideOnDetach();
     this.element.className = "vbox flex-auto"; // Override
 
     this._server = server;

@@ -944,10 +944,10 @@ WebInspector.ElementsPanel.prototype = {
         if (this.sidebarPaneView && vertically === !this._splitWidget.isVertical())
             return;
 
-        var extensionSidebarPanes = WebInspector.extensionServer.sidebarPanes();
-        if (this.sidebarPaneView && extensionSidebarPanes.length)
+        if (this.sidebarPaneView && this.sidebarPaneView.shouldHideOnDetach())
             return; // We can't reparent extension iframes.
 
+        var extensionSidebarPanes = WebInspector.extensionServer.sidebarPanes();
         if (this.sidebarPaneView) {
             this.sidebarPaneView.detach();
             this._splitWidget.uninstallResizer(this.sidebarPaneView.headerElement());
@@ -1061,10 +1061,8 @@ WebInspector.ElementsPanel.prototype = {
      */
     _addExtensionSidebarPane: function(pane)
     {
-        if (pane.panelName() === this.name) {
-            this.setHideOnDetach();
+        if (pane.panelName() === this.name)
             this._extensionSidebarPanesContainer.addPane(pane);
-        }
     },
 
     /**

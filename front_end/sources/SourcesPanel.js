@@ -1142,6 +1142,9 @@ WebInspector.SourcesPanel.prototype = {
         if (this.sidebarPaneView && vertically === !this._splitWidget.isVertical())
             return;
 
+        if (this.sidebarPaneView && this.sidebarPaneView.shouldHideOnDetach())
+            return; // We can't reparent extension iframes.
+
         if (this.sidebarPaneView)
             this.sidebarPaneView.detach();
 
@@ -1230,10 +1233,8 @@ WebInspector.SourcesPanel.prototype = {
      */
     _addExtensionSidebarPane: function(pane)
     {
-        if (pane.panelName() === this.name) {
-            this.setHideOnDetach();
+        if (pane.panelName() === this.name)
             this._extensionSidebarPanesContainer.addPane(pane);
-        }
     },
 
     /**

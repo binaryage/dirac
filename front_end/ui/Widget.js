@@ -106,12 +106,12 @@ WebInspector.Widget.prototype = {
     /**
      * @return {boolean}
      */
-    _shouldHideOnDetach: function()
+    shouldHideOnDetach: function()
     {
         if (this._hideOnDetach)
             return true;
         for (var child of this._children) {
-            if (child._shouldHideOnDetach())
+            if (child.shouldHideOnDetach())
                 return true;
         }
         return false;
@@ -283,7 +283,7 @@ WebInspector.Widget.prototype = {
         if (this._parentIsShowing())
             this._processWillHide();
 
-        if (!overrideHideOnDetach && this._shouldHideOnDetach()) {
+        if (!overrideHideOnDetach && this.shouldHideOnDetach()) {
             this.element.classList.add("hidden");
             this._visible = false;
             if (this._parentIsShowing())

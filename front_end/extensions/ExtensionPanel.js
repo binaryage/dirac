@@ -191,7 +191,6 @@ WebInspector.ExtensionButton.prototype = {
 WebInspector.ExtensionSidebarPane = function(server, panelName, title, id)
 {
     WebInspector.SidebarPane.call(this, title);
-    this.setHideOnDetach();
     this._panelName = panelName;
     this._server = server;
     this._id = id;
