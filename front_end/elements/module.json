@@ -61,14 +61,6 @@
             "defaultValue": false
         },
         {
-            "type": "setting",
-            "category": "Elements",
-            "title": "Highlight DOM updates",
-            "settingName": "highlightDOMUpdates",
-            "settingType": "boolean",
-            "defaultValue": true
-        },
-        {
             "type": "@WebInspector.ToolbarItem.Provider",
             "className": "WebInspector.StylesSidebarPane.AddNewRuleButtonProvider",
             "order": 0,
