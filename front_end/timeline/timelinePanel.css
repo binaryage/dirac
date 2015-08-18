@@ -1007,6 +1007,7 @@
 
 .timeline-tree-view .data-grid td.numeric-column {
     text-align: right;
+    position: relative;
 }
 
 .timeline-tree-view .data-grid div.profile-multiple-values {
@@ -1014,7 +1015,7 @@
 }
 
 .timeline-tree-view .data-grid span.percent-column {
-    color: #999;
+    color: #888;
     width: 48px;
     display: inline-block;
 }
@@ -1044,4 +1045,18 @@
     text-align: right;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+.timeline-tree-view .data-grid .background-bar {
+    height: 15px;
+    background-color: hsla(0, 100%, 74%, 0.1);
+    position: absolute;
+    right: -2px;
+    bottom: 0px;
+    border-bottom: 1px solid hsl(0, 100%, 74%);
+}
+
+.timeline-tree-view .data-grid .selected .background-bar {
+    background-color: rgba(255,255,255,0.25);
+    border-bottom-color: transparent;
 }

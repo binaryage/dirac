@@ -118,9 +118,15 @@ WebInspector.TimelineTreeView.prototype = {
         var tree = this._modeCombobox.selectedOption().value === WebInspector.TimelineTreeView.Mode.TopDown
             ? this._preformTopDownTreeGrouping(topDown)
             : this._buildBottomUpTree(topDown);
+        var maxSelfTime = 0;
+        var maxTotalTime = 0;
+        for (var child of tree.children.values()) {
+            maxSelfTime = Math.max(maxSelfTime, child.selfTime);
+            maxTotalTime = Math.max(maxTotalTime, child.totalTime);
+        }
         for (var child of tree.children.values()) {
             // Exclude the idle time off the total calculation.
-            var gridNode = new WebInspector.TimelineTreeView.GridNode(child, topDown.totalTime);
+            var gridNode = new WebInspector.TimelineTreeView.GridNode(child, topDown.totalTime, maxSelfTime, maxTotalTime);
             this.dataGrid.insertChild(gridNode);
         }
         this._sortingChanged();
@@ -288,10 +294,12 @@ WebInspector.TimelineTreeView.eventURL = function(event)
 /**
  * @constructor
  * @extends {WebInspector.SortableDataGridNode}
- * @param {?} profileNode
+ * @param {!WebInspector.TimelineModel.ProfileTreeNode} profileNode
  * @param {number} grandTotalTime
+ * @param {number} maxSelfTime
+ * @param {number} maxTotalTime
  */
-WebInspector.TimelineTreeView.GridNode = function(profileNode, grandTotalTime)
+WebInspector.TimelineTreeView.GridNode = function(profileNode, grandTotalTime, maxSelfTime, maxTotalTime)
 {
     /**
      * @param {number} time
@@ -313,6 +321,7 @@ WebInspector.TimelineTreeView.GridNode = function(profileNode, grandTotalTime)
     this._populated = false;
     this._profileNode = profileNode;
     this._totalTime = grandTotalTime;
+    this._maxTimes = { self: maxSelfTime, total: maxTotalTime };
     var selfTime = profileNode.selfTime;
     var selfPercent = selfTime / grandTotalTime * 100;
     var totalTime = profileNode.totalTime;
@@ -377,22 +386,16 @@ WebInspector.TimelineTreeView.GridNode.prototype = {
     {
         if (columnIdentifier !== "self" && columnIdentifier !== "total")
             return null;
-
         var cell = this.createTD(columnIdentifier);
         cell.className = "numeric-column";
-        var div = createElement("div");
-        var valueSpan = createElement("span");
-        valueSpan.textContent = this.data[columnIdentifier];
-        div.appendChild(valueSpan);
+        var textDiv = cell.createChild("div");
+        textDiv.createChild("span").textContent = this.data[columnIdentifier];
         var percentColumn = columnIdentifier + "-percent";
         if (percentColumn in this.data) {
-            var percentSpan = createElement("span");
-            percentSpan.className = "percent-column";
-            percentSpan.textContent = this.data[percentColumn];
-            div.appendChild(percentSpan);
-            div.classList.add("profile-multiple-values");
+            textDiv.createChild("span", "percent-column").textContent = this.data[percentColumn];
+            textDiv.classList.add("profile-multiple-values");
         }
-        cell.appendChild(div);
+        cell.createChild("div", "background-bar").style.width = (this._profileNode[columnIdentifier + "Time"] * 100 / this._maxTimes[columnIdentifier]).toFixed(1) + "%";
         return cell;
     },
 
@@ -407,7 +410,7 @@ WebInspector.TimelineTreeView.GridNode.prototype = {
         if (!this._profileNode.children)
             return;
         for (var node of this._profileNode.children.values()) {
-            var gridNode = new WebInspector.TimelineTreeView.GridNode(node, this._totalTime);
+            var gridNode = new WebInspector.TimelineTreeView.GridNode(node, this._totalTime, this._maxTimes.self, this._maxTimes.total);
             this.insertChildOrdered(gridNode);
         }
     },
