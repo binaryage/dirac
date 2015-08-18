@@ -314,7 +314,7 @@ WebInspector.Spectrum.prototype = {
      */
     _createPreviewPaletteElement: function(palette)
     {
-        var colorsPerPreviewRow = 6;
+        var colorsPerPreviewRow = 5;
         var previewElement = createElementWithClass("div", "palette-preview");
         var titleElement = previewElement.createChild("div", "palette-preview-title");
         titleElement.textContent = palette.title;
@@ -754,18 +754,30 @@ WebInspector.Spectrum.PaletteGenerator.prototype = {
 
     _finish: function()
     {
+        /**
+         * @param {string} a
+         * @param {string} b
+         * @return {number}
+         */
+        function hueComparator(a, b)
+        {
+            return paletteColors.get(b).hsva()[0] - paletteColors.get(a).hsva()[0];
+        }
+
         var colors = this._frequencyMap.keysArray();
         colors = colors.sort(this._frequencyComparator.bind(this));
-        var paletteColors = [];
-        var colorsPerRow = 8;
-        while (paletteColors.length < colorsPerRow && colors.length) {
+        /** @type {!Map.<string, !WebInspector.Color>} */
+        var paletteColors = new Map();
+        var colorsPerRow = 24;
+        while (paletteColors.size < colorsPerRow && colors.length) {
             var colorText = colors.shift();
             var color = WebInspector.Color.parse(colorText);
             if (!color || color.nickname() === "white" || color.nickname() === "black")
                 continue;
-            paletteColors.push(colorText);
+            paletteColors.set(colorText, color);
         }
-        this._callback({ title: WebInspector.Spectrum.GeneratedPaletteTitle, colors: paletteColors, mutable: false });
+
+        this._callback({ title: WebInspector.Spectrum.GeneratedPaletteTitle, colors: paletteColors.keysArray().sort(hueComparator), mutable: false });
     },
 
     /**
