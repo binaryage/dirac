@@ -1230,11 +1230,11 @@ WebInspector.ElementsPanel.PseudoStateMarkerDecorator.prototype = {
     /**
      * @override
      * @param {!WebInspector.DOMNode} node
-     * @return {?string}
+     * @return {?{title: string, color: string}}
      */
     decorate: function(node)
     {
-        return WebInspector.UIString("Element state: %s", ":" + WebInspector.CSSStyleModel.fromNode(node).pseudoState(node).join(", :"));
+        return { color: "orange", title: WebInspector.UIString("Element state: %s", ":" + WebInspector.CSSStyleModel.fromNode(node).pseudoState(node).join(", :")) };
     }
 }
 
@@ -1250,10 +1250,10 @@ WebInspector.ElementsPanel.HiddenMarkerDecorator.prototype = {
     /**
      * @override
      * @param {!WebInspector.DOMNode} node
-     * @return {?string}
+     * @return {?{title: string, color: string}}
      */
     decorate: function(node)
     {
-        return WebInspector.UIString("Element is hidden");
+        return { color: "#555", title: WebInspector.UIString("Element is hidden") };
     }
 }

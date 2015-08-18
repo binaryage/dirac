@@ -1127,12 +1127,51 @@ WebInspector.ElementsTreeElement.prototype = {
          */
         function setTitle()
         {
-            this._decorationsElement.classList.toggle("elements-gutter-decoration", decorations.length || (descendantDecorations.length && !this.expanded));
-            this._decorationsElement.classList.toggle("elements-has-decorated-children", descendantDecorations.length && !this.expanded);
-            var title = decorations.join("\n");
-            if (descendantDecorations.length)
-                title += WebInspector.UIString("\nChildren:\n") + descendantDecorations.join("\n");
-            this._decorationsElement.title = title;
+            this._decorationsElement.removeChildren();
+            if (!decorations.length && !descendantDecorations.length)
+                return;
+
+            var colors = new Set();
+            var titles = [];
+
+            for (var decoration of decorations) {
+                titles.push(decoration.title);
+                colors.add(decoration.color);
+            }
+            if (this.expanded && !decorations.length)
+                return;
+
+            var descendantColors = new Set();
+            if (descendantDecorations.length) {
+                titles.push(WebInspector.UIString("Children:"));
+                for (var decoration of descendantDecorations) {
+                    titles.push(decoration.title);
+                    descendantColors.add(decoration.color);
+                }
+            }
+
+            var offset = 0;
+            processColors.call(this, colors, "elements-gutter-decoration");
+            if (!this.expanded)
+                processColors.call(this, descendantColors, "elements-gutter-decoration elements-has-decorated-children");
+            WebInspector.Tooltip.install(this._decorationsElement, titles.join("\n"));
+
+            /**
+             * @param {!Set<string>} colors
+             * @param {string} className
+             * @this {WebInspector.ElementsTreeElement}
+             */
+            function processColors(colors, className)
+            {
+                for (var color of colors) {
+                    var child = this._decorationsElement.createChild("div", className);
+                    child.style.backgroundColor = color;
+                    child.style.borderColor = color;
+                    if (offset)
+                        child.style.marginLeft = offset + "px";
+                    offset += 3;
+                }
+            }
         }
     },
 

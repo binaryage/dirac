@@ -501,11 +501,11 @@ WebInspector.DOMBreakpointsSidebarPane.MarkerDecorator.prototype = {
     /**
      * @override
      * @param {!WebInspector.DOMNode} node
-     * @return {?string}
+     * @return {?{title: string, color: string}}
      */
     decorate: function(node)
     {
-        return WebInspector.UIString("DOM Breakpoint");
+        return { title: WebInspector.UIString("DOM Breakpoint"), color: "rgb(105, 140, 254)" };
     }
 }
 

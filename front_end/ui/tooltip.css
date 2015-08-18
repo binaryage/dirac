@@ -17,6 +17,7 @@
     border: 1px solid hsla(0, 0%, 0%, 0.1);
     background-clip: padding-box;
     box-sizing: border-box;
+    white-space: pre;
 }
 
 .tooltip {

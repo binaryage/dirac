@@ -620,7 +620,7 @@ WebInspector.DOMPresentationUtils.MarkerDecorator = function()
 WebInspector.DOMPresentationUtils.MarkerDecorator.prototype = {
     /**
      * @param {!WebInspector.DOMNode} node
-     * @return {?string}
+     * @return {?{title: string, color: string}}
      */
     decorate: function(node) { }
 }
