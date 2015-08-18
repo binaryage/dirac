@@ -4557,7 +4557,10 @@
                     { "name": "yOverscroll", "type": "integer", "optional": true, "description": "The number of additional pixels to scroll back along the Y axis, in addition to the given distance." },
                     { "name": "preventFling", "type": "boolean", "optional": true, "description": "Prevent fling (default: true)." },
                     { "name": "speed", "type": "integer", "optional": true, "description": "Swipe speed in pixels per second (default: 800)." },
-                    { "name": "gestureSourceType", "$ref": "GestureSourceType", "optional": true, "description": "Which type of input events to be generated (default: 'default', which queries the platform for the preferred input type)." }
+                    { "name": "gestureSourceType", "$ref": "GestureSourceType", "optional": true, "description": "Which type of input events to be generated (default: 'default', which queries the platform for the preferred input type)." },
+                    { "name": "repeatCount", "type": "integer", "optional": true, "description": "The number of times to repeat the gesture (default: 0)." },
+                    { "name": "repeatDelayMs", "type": "integer", "optional": true, "description": "The number of milliseconds delay between each repeat. (default: 250)." },
+                    { "name": "interactionMarkerName", "type": "string", "optional": true, "description": "The name of the interaction markers to generate, if not empty (default: \"\")." }
                 ],
                 "description": "Synthesizes a scroll gesture over a time period by issuing appropriate touch events.",
                 "hidden": true,
