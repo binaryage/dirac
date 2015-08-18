@@ -1511,7 +1511,6 @@ WebInspector.TimelineModel.buildTopDownTree = function(events, startTime, endTim
             node.totalTime = time;
             node.selfTime = time;
             node.parent = parent;
-            node.name = eventName(e);
             node.id = id;
             node.event = e;
             parent.children.set(id, node);
@@ -1532,19 +1531,6 @@ WebInspector.TimelineModel.buildTopDownTree = function(events, startTime, endTim
         if (!filter(e))
             return;
         parent = parent.parent;
-    }
-
-    /**
-     * @param {!WebInspector.TracingModel.Event} e
-     * @return {string}
-     */
-    function eventName(e)
-    {
-        if (e.name === "JSFrame")
-            return WebInspector.beautifyFunctionName(e.args.data.functionName);
-        if (e.name === "EventDispatch")
-            return WebInspector.UIString("Event%s", e.args.data ? " (" + e.args.data.type + ")" : "");
-        return e.name;
     }
 
     WebInspector.TimelineModel.forEachEvent(events, onStartEvent, onEndEvent);

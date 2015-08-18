@@ -352,19 +352,20 @@ WebInspector.TimelineTreeView.GridNode.prototype = {
         var icon = container.createChild("div", "activity-icon");
         var name = container.createChild("div", "activity-name");
         var link = container.createChild("div", "activity-link");
-        name.textContent = this._profileNode.name;
-        var color;
         var event = this._profileNode.event;
         if (event) {
+            name.textContent = event.name === WebInspector.TimelineModel.RecordType.JSFrame
+                ? WebInspector.beautifyFunctionName(event.args["data"]["functionName"])
+                : WebInspector.TimelineUIUtils.eventTitle(event);
             var url = WebInspector.TimelineTreeView.eventURL(event);
             if (url)
                 link.appendChild(WebInspector.linkifyResourceAsNode(url));
             var category = WebInspector.TimelineUIUtils.eventStyle(event).category;
-            color = category.fillColorStop1;
+            icon.style.backgroundColor = category.fillColorStop1;
         } else {
-            color = WebInspector.TimelineUIUtils.colorForURL(this._profileNode.name);
+            name.textContent = this._profileNode.name;
+            icon.style.backgroundColor = WebInspector.TimelineUIUtils.colorForURL(this._profileNode.name);
         }
-        icon.style.backgroundColor = color || "lightGrey";
         return cell;
     },
 
