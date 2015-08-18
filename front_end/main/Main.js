@@ -148,7 +148,7 @@ WebInspector.Main.prototype = {
         Runtime.experiments.register("timelineInvalidationTracking", "Timeline invalidation tracking", true);
         Runtime.experiments.register("timelineTracingJSProfile", "Timeline tracing based JS profiler", true);
         Runtime.experiments.register("timelineFlowEvents", "Timeline flow events", true);
-        Runtime.experiments.register("tooltips", "Tooltips", true);
+        Runtime.experiments.register("tooltips", "Tooltips");
         Runtime.experiments.register("inlineVariableValues", "Display variable values inline while debugging");
 
         Runtime.experiments.cleanUpStaleExperiments();
@@ -170,7 +170,8 @@ WebInspector.Main.prototype = {
 
         Runtime.experiments.setDefaultExperiments([
             "inlineVariableValues",
-            "serviceWorkersInPageFrontend"
+            "serviceWorkersInPageFrontend",
+            "tooltips"
         ]);
     },
 
