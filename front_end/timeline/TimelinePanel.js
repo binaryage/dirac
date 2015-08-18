@@ -1350,7 +1350,7 @@ WebInspector.TimelineDetailsView = function(timelineModel)
 
     if (Runtime.experiments.isEnabled("timelineTreeView")) {
         this._heavyTreeView = new WebInspector.TimelineTreeView(timelineModel);
-        this.appendTab(WebInspector.TimelinePanel.DetailsTab.BottomUpTree, WebInspector.UIString("Costly Functions"), this._heavyTreeView);
+        this.appendTab(WebInspector.TimelinePanel.DetailsTab.BottomUpTree, WebInspector.UIString("Aggregated Details"), this._heavyTreeView);
     }
 
     this._staticTabs = new Set([

@@ -15,11 +15,17 @@ WebInspector.TimelineTreeView = function(model)
     this._model = model;
     var columns = [];
     columns.push({id: "self", title: WebInspector.UIString("Self Time"), width: "120px", sort: WebInspector.DataGrid.Order.Descending, sortable: true});
-    columns.push({id: "total", title: WebInspector.UIString("Total Time"), width: "120px", sort: WebInspector.DataGrid.Order.Descending, sortable: true});
+    columns.push({id: "total", title: WebInspector.UIString("Total Time"), width: "120px", sortable: true});
     columns.push({id: "activity", title: WebInspector.UIString("Activity"), disclosure: true, sortable: true});
 
+    var nonessentialEvents = [
+        WebInspector.TimelineModel.RecordType.EventDispatch,
+        WebInspector.TimelineModel.RecordType.FunctionCall,
+        WebInspector.TimelineModel.RecordType.TimerFire
+    ];
     this._filters = [
         WebInspector.TimelineUIUtils.hiddenEventsFilter(),
+        new WebInspector.ExclusiveTraceEventNameFilter(nonessentialEvents),
         new WebInspector.ExcludeTopLevelFilter()
     ];
 
@@ -31,6 +37,14 @@ WebInspector.TimelineTreeView = function(model)
     this._createToolbar();
 
     this.dataGrid.show(this.element);
+}
+
+/**
+ * @enum {string}
+ */
+WebInspector.TimelineTreeView.Mode = {
+    TopDown: "TopDown",
+    BottomUp: "BottomUp"
 }
 
 /**
@@ -51,138 +65,169 @@ WebInspector.TimelineTreeView.prototype = {
     {
         this._startTime = selection.startTime();
         this._endTime = selection.endTime();
-        this._refreshRecords();
+        this._refreshTree();
     },
 
     _createToolbar: function()
     {
-        this._panelToolbar = new WebInspector.Toolbar(this.element);
+        var panelToolbar = new WebInspector.Toolbar(this.element);
+        panelToolbar.appendToolbarItem(new WebInspector.ToolbarText(WebInspector.UIString("View")));
+
+        this._modeCombobox = new WebInspector.ToolbarComboBox(this._onTreeModeChanged.bind(this));
+        this._modeCombobox.addOption(this._modeCombobox.createOption(WebInspector.UIString("Costly Functions"), "", WebInspector.TimelineTreeView.Mode.BottomUp));
+        this._modeCombobox.addOption(this._modeCombobox.createOption(WebInspector.UIString("Costly Entrypoints"), "", WebInspector.TimelineTreeView.Mode.TopDown));
+        panelToolbar.appendToolbarItem(this._modeCombobox);
+
         this._groupByCombobox = new WebInspector.ToolbarComboBox(this._onGroupByChanged.bind(this));
         /**
          * @param {string} name
          * @param {string} id
          * @this {WebInspector.TimelineTreeView}
          */
-        function addOption(name, id)
+        function addGroupingOption(name, id)
         {
             var option = this._groupByCombobox.createOption(name, "", id);
             this._groupByCombobox.addOption(option);
             if (id === this._groupBySetting.get())
                 this._groupByCombobox.select(option);
         }
-        addOption.call(this, WebInspector.UIString("No Grouping"), WebInspector.TimelineTreeView.GroupBy.None);
-        addOption.call(this, WebInspector.UIString("Group by Domain"), WebInspector.TimelineTreeView.GroupBy.Domain);
-        addOption.call(this, WebInspector.UIString("Group by Domain (2nd Level)"), WebInspector.TimelineTreeView.GroupBy.DomainSecondLevel);
-        addOption.call(this, WebInspector.UIString("Group by URL"), WebInspector.TimelineTreeView.GroupBy.URL);
-        this._panelToolbar.appendToolbarItem(this._groupByCombobox);
+        panelToolbar.appendToolbarItem(new WebInspector.ToolbarText(WebInspector.UIString("Group by")));
+        addGroupingOption.call(this, WebInspector.UIString("Function"), WebInspector.TimelineTreeView.GroupBy.None);
+        addGroupingOption.call(this, WebInspector.UIString("Domain"), WebInspector.TimelineTreeView.GroupBy.Domain);
+        addGroupingOption.call(this, WebInspector.UIString("Domain (2nd Level)"), WebInspector.TimelineTreeView.GroupBy.DomainSecondLevel);
+        addGroupingOption.call(this, WebInspector.UIString("URL"), WebInspector.TimelineTreeView.GroupBy.URL);
+        panelToolbar.appendToolbarItem(this._groupByCombobox);
+    },
+
+    _onTreeModeChanged: function()
+    {
+        this._refreshTree();
     },
 
     _onGroupByChanged: function()
     {
         this._groupBySetting.set(this._groupByCombobox.selectedOption().value);
-        this._refreshRecords();
+        this._refreshTree();
     },
 
-    _refreshRecords: function()
+    _refreshTree: function()
     {
-        var groupBy = this._groupBySetting.get();
-        var groupNodes = new Map();
-
-        /**
-         * @param {string} id
-         * @return {!WebInspector.TimelineModel.ProfileTreeNode}
-         */
-        function groupNodeById(id)
-        {
-            var node = groupNodes.get(id);
-            if (!node) {
-                node = new WebInspector.TimelineModel.ProfileTreeNode();
-                node.name = id || WebInspector.UIString("(unknown)");
-                node.selfTime = 0;
-                node.totalTime = 0;
-                groupNodes.set(id, node);
-            }
-            return node;
-        }
-
-        /**
-         * @return {?WebInspector.TimelineModel.ProfileTreeNode}
-         */
-        function groupByNone()
-        {
-            return null;
-        }
-
-        /**
-         * @param {!WebInspector.TimelineModel.ProfileTreeNode} node
-         * @return {?WebInspector.TimelineModel.ProfileTreeNode}
-         */
-        function groupByURL(node)
-        {
-            return groupNodeById(WebInspector.TimelineTreeView.eventURL(node.event) || "");
-        }
-
-        /**
-         * @param {!WebInspector.TimelineModel.ProfileTreeNode} node
-         * @return {?WebInspector.TimelineModel.ProfileTreeNode}
-         */
-        function groupByDomain(node)
-        {
-            var parsedURL = (WebInspector.TimelineTreeView.eventURL(node.event) || "").asParsedURL();
-            var domain = parsedURL && parsedURL.host || "";
-            return groupNodeById(domain);
-        }
-
-        /**
-         * @param {!WebInspector.TimelineModel.ProfileTreeNode} node
-         * @return {?WebInspector.TimelineModel.ProfileTreeNode}
-         */
-        function groupByDomainSecondLevel(node)
-        {
-            var parsedURL = (WebInspector.TimelineTreeView.eventURL(node.event) || "").asParsedURL();
-            if (!parsedURL)
-                return groupNodeById("");
-            if (/^[.0-9]+$/.test(parsedURL.host))
-                return groupNodeById(parsedURL.host)
-            var domainMatch = /([^.]*\.)?[^.]*$/.exec(parsedURL.host);
-            return groupNodeById(domainMatch && domainMatch[0] || "");
-        }
-
-        /**
-         * @param {!WebInspector.TracingModel.Event} e
-         * @return {string}
-         */
-        function eventId(e)
-        {
-            // Function call frames are always groupped by the URL
-            if (e.name === "JSFrame") {
-                var data = e.args["data"];
-                return "f:" + (data["callUID"] || WebInspector.TimelineTreeView.eventURL(e));
-            }
-            // While the rest of events are groupped by the event type
-            // unless the group by URL/Domain mode is on.
-            if (groupBy === WebInspector.TimelineTreeView.GroupBy.URL)
-                return e.name + ":@" + WebInspector.TimelineTreeView.eventURL(e);
-            return e.name;
-        }
-
-        var groupByMapper = new Map([
-            [WebInspector.TimelineTreeView.GroupBy.None, groupByNone],
-            [WebInspector.TimelineTreeView.GroupBy.Domain, groupByDomain],
-            [WebInspector.TimelineTreeView.GroupBy.DomainSecondLevel, groupByDomainSecondLevel],
-            [WebInspector.TimelineTreeView.GroupBy.URL, groupByURL]
-        ]);
-        var topDown = WebInspector.TimelineModel.buildTopDownTree(this._model.mainThreadEvents(), this._startTime, this._endTime, this._filters, eventId);
-        var bottomUpRoot = WebInspector.TimelineModel.buildBottomUpTree(topDown, groupByMapper.get(groupBy));
-        for (var group of groupNodes)
-            bottomUpRoot.children.set(group[0], group[1]);
         this.dataGrid.rootNode().removeChildren();
-        for (var child of bottomUpRoot.children.values()) {
+        var topDown = WebInspector.TimelineModel.buildTopDownTree(
+            this._model.mainThreadEvents(), this._startTime, this._endTime, this._filters, WebInspector.TimelineTreeView.eventId);
+        var tree = this._modeCombobox.selectedOption().value === WebInspector.TimelineTreeView.Mode.TopDown
+            ? this._preformTopDownTreeGrouping(topDown)
+            : this._buildBottomUpTree(topDown);
+        for (var child of tree.children.values()) {
             // Exclude the idle time off the total calculation.
             var gridNode = new WebInspector.TimelineTreeView.GridNode(child, topDown.totalTime);
             this.dataGrid.insertChild(gridNode);
         }
         this._sortingChanged();
+    },
+
+    /**
+     * @param {!WebInspector.TimelineModel.ProfileTreeNode} topDownTree
+     * @return {!WebInspector.TimelineModel.ProfileTreeNode}
+     */
+    _preformTopDownTreeGrouping: function(topDownTree)
+    {
+        var nodeToGroupId = this._nodeToGroupIdFunction();
+        if (nodeToGroupId) {
+            this._groupNodes = new Map();
+            for (var node of topDownTree.children.values()) {
+                var groupNode = this._nodeToGroupNode(nodeToGroupId, node);
+                groupNode.selfTime += node.selfTime;
+                groupNode.totalTime += node.totalTime;
+                groupNode.children.set(node.id, node);
+            }
+            topDownTree.children = this._groupNodes;
+            this._groupNodes = null;
+        }
+        return topDownTree;
+    },
+
+    /**
+     * @param {!WebInspector.TimelineModel.ProfileTreeNode} topDownTree
+     * @return {!WebInspector.TimelineModel.ProfileTreeNode}
+     */
+    _buildBottomUpTree: function(topDownTree)
+    {
+        this._groupNodes = new Map();
+        var nodeToGroupId = this._nodeToGroupIdFunction();
+        var nodeToGroupNode = nodeToGroupId ? this._nodeToGroupNode.bind(this, nodeToGroupId) : null;
+        var bottomUpRoot = WebInspector.TimelineModel.buildBottomUpTree(topDownTree, nodeToGroupNode);
+        for (var group of this._groupNodes)
+            bottomUpRoot.children.set(group[0], group[1]);
+        return bottomUpRoot;
+    },
+
+    /**
+     * @return {?function(!WebInspector.TimelineModel.ProfileTreeNode):string}
+     */
+    _nodeToGroupIdFunction: function()
+    {
+        /**
+         * @param {!WebInspector.TimelineModel.ProfileTreeNode} node
+         * @return {string}
+         */
+        function groupByURL(node)
+        {
+            return WebInspector.TimelineTreeView.eventURL(node.event) || "";
+        }
+
+        /**
+         * @param {!WebInspector.TimelineModel.ProfileTreeNode} node
+         * @return {string}
+         */
+        function groupByDomain(node)
+        {
+            var parsedURL = (WebInspector.TimelineTreeView.eventURL(node.event) || "").asParsedURL();
+            return parsedURL && parsedURL.host || "";
+        }
+
+        /**
+         * @param {!WebInspector.TimelineModel.ProfileTreeNode} node
+         * @return {string}
+         */
+        function groupByDomainSecondLevel(node)
+        {
+            var parsedURL = (WebInspector.TimelineTreeView.eventURL(node.event) || "").asParsedURL();
+            if (!parsedURL)
+                return "";
+            if (/^[.0-9]+$/.test(parsedURL.host))
+                return parsedURL.host;
+            var domainMatch = /([^.]*\.)?[^.]*$/.exec(parsedURL.host);
+            return domainMatch && domainMatch[0] || "";
+        }
+
+        var groupByMap = /** @type {!Map<!WebInspector.TimelineTreeView.GroupBy,?function(!WebInspector.TimelineModel.ProfileTreeNode):string>} */ (new Map([
+            [WebInspector.TimelineTreeView.GroupBy.None, null],
+            [WebInspector.TimelineTreeView.GroupBy.Domain, groupByDomain],
+            [WebInspector.TimelineTreeView.GroupBy.DomainSecondLevel, groupByDomainSecondLevel],
+            [WebInspector.TimelineTreeView.GroupBy.URL, groupByURL]
+        ]));
+        return groupByMap.get(this._groupBySetting.get()) || null;
+    },
+
+    /**
+     * @param {function(!WebInspector.TimelineModel.ProfileTreeNode):string} nodeToGroupId
+     * @param {!WebInspector.TimelineModel.ProfileTreeNode} node
+     * @return {!WebInspector.TimelineModel.ProfileTreeNode}
+     */
+    _nodeToGroupNode: function(nodeToGroupId, node)
+    {
+        var id = nodeToGroupId(node);
+        var groupNode = this._groupNodes.get(id);
+        if (!groupNode) {
+            groupNode = new WebInspector.TimelineModel.ProfileTreeNode();
+            groupNode.name = id || WebInspector.UIString("(unattributed)");
+            groupNode.selfTime = 0;
+            groupNode.totalTime = 0;
+            groupNode.children = new Map();
+            this._groupNodes.set(id, groupNode);
+        }
+        return groupNode;
     },
 
     _sortingChanged: function()
@@ -211,6 +256,19 @@ WebInspector.TimelineTreeView.prototype = {
     },
 
     __proto__: WebInspector.VBox.prototype
+}
+
+/**
+ * @param {!WebInspector.TracingModel.Event} event
+ * @return {string}
+ */
+WebInspector.TimelineTreeView.eventId = function(event)
+{
+    if (event.name === WebInspector.TimelineModel.RecordType.JSFrame) {
+        var data = event.args["data"];
+        return "f:" + (data["callUID"] || WebInspector.TimelineTreeView.eventURL(event));
+    }
+    return event.name + ":@" + WebInspector.TimelineTreeView.eventURL(event);
 }
 
 /**

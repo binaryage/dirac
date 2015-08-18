@@ -1555,7 +1555,7 @@ WebInspector.TimelineModel.buildTopDownTree = function(events, startTime, endTim
 
 /**
  * @param {!WebInspector.TimelineModel.ProfileTreeNode} topDownTree
- * @param {function(!WebInspector.TimelineModel.ProfileTreeNode):?WebInspector.TimelineModel.ProfileTreeNode=} groupingCallback
+ * @param {?function(!WebInspector.TimelineModel.ProfileTreeNode):!WebInspector.TimelineModel.ProfileTreeNode=} groupingCallback
  * @return {!WebInspector.TimelineModel.ProfileTreeNode}
  */
 WebInspector.TimelineModel.buildBottomUpTree = function(topDownTree, groupingCallback)
@@ -1828,6 +1828,30 @@ WebInspector.InclusiveTraceEventNameFilter.prototype = {
     {
         return event.hasCategory(WebInspector.TracingModel.ConsoleEventCategory)
             || !!this._eventNames[event.name];
+    },
+
+    __proto__: WebInspector.TraceEventNameFilter.prototype
+}
+
+/**
+ * @constructor
+ * @extends {WebInspector.TraceEventNameFilter}
+ * @param {!Array<string>} excludeNames
+ */
+WebInspector.ExclusiveTraceEventNameFilter = function(excludeNames)
+{
+    WebInspector.TraceEventNameFilter.call(this, excludeNames);
+}
+
+WebInspector.ExclusiveTraceEventNameFilter.prototype = {
+    /**
+     * @override
+     * @param {!WebInspector.TracingModel.Event} event
+     * @return {boolean}
+     */
+    accept: function(event)
+    {
+        return !this._eventNames[event.name];
     },
 
     __proto__: WebInspector.TraceEventNameFilter.prototype
