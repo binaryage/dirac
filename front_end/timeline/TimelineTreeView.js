@@ -266,7 +266,7 @@ WebInspector.TimelineTreeView.eventId = function(event)
 {
     if (event.name === WebInspector.TimelineModel.RecordType.JSFrame) {
         var data = event.args["data"];
-        return "f:" + (data["callUID"] || WebInspector.TimelineTreeView.eventURL(event));
+        return "f:" + data["functionName"] + "@" + (data["scriptId"] || data["url"] || "");
     }
     return event.name + ":@" + WebInspector.TimelineTreeView.eventURL(event);
 }
