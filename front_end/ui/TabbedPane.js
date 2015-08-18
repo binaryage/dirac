@@ -759,7 +759,7 @@ WebInspector.TabbedPane.prototype = {
         if (!this._sliderEnabled)
             return;
         var left = 0;
-        for (var i = 0; this._currentTab !== this._tabs[i] && this._tabs[i]._shown && i < this._tabs.length; i++)
+        for (var i = 0; i < this._tabs.length && this._currentTab !== this._tabs[i] && this._tabs[i]._shown; i++)
             left += this._tabs[i]._measuredWidth;
         var sliderWidth = this._currentTab._shown ? this._currentTab._measuredWidth : this._dropDownButton.offsetWidth;
         this._tabSlider.style.transform = "translateX(" + left + "px)";
