@@ -818,10 +818,12 @@ WebInspector.Main.MainMenuItem.prototype = {
             var dockItemElement = createElementWithClass("div", "flex-centered flex-auto");
             var titleElement = dockItemElement.createChild("span", "flex-auto");
             titleElement.textContent = WebInspector.UIString("Dock side");
+            var toggleDockSideShorcuts = WebInspector.shortcutRegistry.shortcutDescriptorsForAction("main.toggle-dock");
+            WebInspector.Tooltip.install(titleElement, WebInspector.UIString("Placement of DevTools relative to the page. (%s to restore last position)", toggleDockSideShorcuts[0].name));
             dockItemElement.appendChild(titleElement);
             var dockItemToolbar = new WebInspector.Toolbar(dockItemElement);
             dockItemToolbar.makeBlueOnHover();
-            var undock = new WebInspector.ToolbarButton( WebInspector.UIString("Undock into separate window"), "dock-toolbar-item-undock");
+            var undock = new WebInspector.ToolbarButton(WebInspector.UIString("Undock into separate window"), "dock-toolbar-item-undock");
             var bottom = new WebInspector.ToolbarButton(WebInspector.UIString("Dock to bottom"), "dock-toolbar-item-bottom");
             var right = new WebInspector.ToolbarButton(WebInspector.UIString("Dock to right"), "dock-toolbar-item-right");
             undock.addEventListener("mouseup", setDockSide.bind(null, WebInspector.DockController.State.Undocked));
