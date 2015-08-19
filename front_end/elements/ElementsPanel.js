@@ -170,9 +170,13 @@ WebInspector.ElementsPanel.prototype = {
         var treeOutline = this._treeOutlineForNode(node);
         if (!node || !treeOutline)
             return;
-        var startEditing = !this._editAsHTMLButton.toggled();
+
+        var startEditing = true;
+        if (Runtime.experiments.isEnabled("materialDesign")) {
+            startEditing = !this._editAsHTMLButton.toggled();
+            this._editAsHTMLButton.setToggled(startEditing);
+        }
         treeOutline.toggleEditAsHTML(node, startEditing, this._updateToolbarButtons.bind(this));
-        this._editAsHTMLButton.setToggled(startEditing);
     },
 
     /**
