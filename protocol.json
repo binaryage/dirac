@@ -1076,7 +1076,7 @@
             {
                 "id": "SecurityState",
                 "type": "string",
-                "enum": ["unknown", "http", "neutral", "insecure", "warning", "secure"],
+                "enum": ["unknown", "neutral", "insecure", "warning", "secure"],
                 "description": "The security level of a page or resource."
             },
             {
