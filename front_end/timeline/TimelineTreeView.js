@@ -183,34 +183,38 @@ WebInspector.TimelineTreeView.prototype = {
         }
 
         /**
+         * @param {boolean} groupSubdomains
          * @param {!WebInspector.TimelineModel.ProfileTreeNode} node
          * @return {string}
          */
-        function groupByDomain(node)
-        {
-            var parsedURL = (WebInspector.TimelineTreeView.eventURL(node.event) || "").asParsedURL();
-            return parsedURL && parsedURL.host || "";
-        }
-
-        /**
-         * @param {!WebInspector.TimelineModel.ProfileTreeNode} node
-         * @return {string}
-         */
-        function groupByDomainSecondLevel(node)
+        function groupByDomain(groupSubdomains, node)
         {
             var parsedURL = (WebInspector.TimelineTreeView.eventURL(node.event) || "").asParsedURL();
             if (!parsedURL)
                 return "";
+            if (parsedURL.scheme === "chrome-extension") {
+                var url = parsedURL.scheme + "://" + parsedURL.host;
+                var displayName = executionContextNamesByOrigin.get(url);
+                return displayName ? WebInspector.UIString("Chrome Extension: %s", displayName) : url;
+            }
+            if (!groupSubdomains)
+                return parsedURL.host;
             if (/^[.0-9]+$/.test(parsedURL.host))
                 return parsedURL.host;
             var domainMatch = /([^.]*\.)?[^.]*$/.exec(parsedURL.host);
             return domainMatch && domainMatch[0] || "";
         }
 
+        var executionContextNamesByOrigin = new Map();
+        var mainTarget = WebInspector.targetManager.mainTarget();
+        if (mainTarget) {
+            for (var context of mainTarget.runtimeModel.executionContexts())
+                executionContextNamesByOrigin.set(context.origin, context.name);
+        }
         var groupByMap = /** @type {!Map<!WebInspector.TimelineTreeView.GroupBy,?function(!WebInspector.TimelineModel.ProfileTreeNode):string>} */ (new Map([
             [WebInspector.TimelineTreeView.GroupBy.None, null],
-            [WebInspector.TimelineTreeView.GroupBy.Domain, groupByDomain],
-            [WebInspector.TimelineTreeView.GroupBy.DomainSecondLevel, groupByDomainSecondLevel],
+            [WebInspector.TimelineTreeView.GroupBy.Domain, groupByDomain.bind(null, false)],
+            [WebInspector.TimelineTreeView.GroupBy.DomainSecondLevel, groupByDomain.bind(null, true)],
             [WebInspector.TimelineTreeView.GroupBy.URL, groupByURL]
         ]));
         return groupByMap.get(this._groupBySetting.get()) || null;
