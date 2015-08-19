@@ -132,12 +132,7 @@ WebInspector.Tooltip.installHandler = function(doc)
  */
 WebInspector.Tooltip.install = function(element, tooltipContent, actionId)
 {
-    if (Runtime.experiments.isEnabled("tooltips") && typeof tooltipContent === "string" && tooltipContent === "")
+    if (typeof tooltipContent === "string" && tooltipContent === "")
         return;
-    if (Runtime.experiments.isEnabled("tooltips"))
-        element[WebInspector.Tooltip._symbol] =  { content: tooltipContent, actionId: actionId };
-    else if (typeof tooltipContent === "string")
-        element.title = tooltipContent;
-    else
-        console.assert("Cannot set an element without custom tooltips enabled");
+    element[WebInspector.Tooltip._symbol] =  { content: tooltipContent, actionId: actionId };
 }

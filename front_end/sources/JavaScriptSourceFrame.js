@@ -729,7 +729,7 @@ WebInspector.JavaScriptSourceFrame.prototype = {
 
     _generateValuesInSource: function()
     {
-        if (!Runtime.experiments.isEnabled("inlineVariableValues") || !WebInspector.moduleSetting("inlineVariableValues").get())
+        if (!WebInspector.moduleSetting("inlineVariableValues").get())
             return;
         var executionContext = WebInspector.context.flavor(WebInspector.ExecutionContext);
         if (!executionContext)

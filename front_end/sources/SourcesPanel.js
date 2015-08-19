@@ -75,8 +75,7 @@ WebInspector.SourcesPanel = function(workspaceForTest)
     this.sidebarPanes.callstack.registerShortcuts(this.registerShortcuts.bind(this));
 
     this.sidebarPanes.scopechain = new WebInspector.ScopeChainSidebarPane();
-    if (Runtime.experiments.isEnabled("serviceWorkersInPageFrontend"))
-        this.sidebarPanes.serviceWorkers = new WebInspector.ServiceWorkersSidebarPane();
+    this.sidebarPanes.serviceWorkers = new WebInspector.ServiceWorkersSidebarPane();
     this.sidebarPanes.jsBreakpoints = new WebInspector.JavaScriptBreakpointsSidebarPane(WebInspector.breakpointManager, this.showUISourceCode.bind(this));
     this.sidebarPanes.domBreakpoints = WebInspector.domBreakpointsSidebarPane.createProxy(this);
     this.sidebarPanes.xhrBreakpoints = new WebInspector.XHRBreakpointsSidebarPane();
@@ -445,7 +444,7 @@ WebInspector.SourcesPanel.prototype = {
             this._stepIntoButton.setEnabled(false);
             this._stepOutButton.setEnabled(false);
         } else if (this._paused) {
-            this._updateButtonTitle(this._pauseButton, WebInspector.UIString("Resume script execution"));
+            this._pauseButton.setTitle(WebInspector.UIString("Resume script execution"));
             this._pauseButton.setToggled(true);
             this._pauseButton.setLongClickOptionsEnabled((function() { return [ this._longResumeButton ]; }).bind(this));
 
@@ -454,7 +453,7 @@ WebInspector.SourcesPanel.prototype = {
             this._stepIntoButton.setEnabled(true);
             this._stepOutButton.setEnabled(true);
         } else {
-            this._updateButtonTitle(this._pauseButton, WebInspector.UIString("Pause script execution"));
+            this._pauseButton.setTitle(WebInspector.UIString("Pause script execution"));
             this._pauseButton.setToggled(false);
             this._pauseButton.setLongClickOptionsEnabled(null);
 
@@ -784,21 +783,6 @@ WebInspector.SourcesPanel.prototype = {
     },
 
     /**
-     * @param {!WebInspector.ToolbarButton} button
-     * @param {string} buttonTitle
-     */
-    _updateButtonTitle: function(button, buttonTitle)
-    {
-        var hasShortcuts = button._shortcuts && button._shortcuts.length;
-        if (hasShortcuts && Runtime.experiments.isEnabled("tooltips"))
-            button.setTitle(buttonTitle);
-        else if (hasShortcuts)
-            button.setTitle(WebInspector.UIString(buttonTitle + " (%s)", button._shortcuts[0].name));
-        else
-            button.setTitle(buttonTitle);
-    },
-
-    /**
      * @param {string} buttonId
      * @param {string} buttonTitle
      * @param {string} actionId
@@ -809,7 +793,7 @@ WebInspector.SourcesPanel.prototype = {
         var button = new WebInspector.ToolbarButton(buttonTitle, buttonId);
         button.setAction(actionId);
         button._shortcuts = WebInspector.shortcutRegistry.shortcutDescriptorsForAction(actionId);
-        this._updateButtonTitle(button, buttonTitle);
+        button.setTitle(buttonTitle);
         return button;
     },
 

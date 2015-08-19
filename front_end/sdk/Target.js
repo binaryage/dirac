@@ -139,7 +139,7 @@ WebInspector.Target.prototype = {
 
         this.tracingManager = new WebInspector.TracingManager(this);
 
-        if (this.isPage() && (Runtime.experiments.isEnabled("serviceWorkersInPageFrontend") || Runtime.experiments.isEnabled("serviceWorkersInResources")))
+        if (this.isPage())
             this.serviceWorkerManager = new WebInspector.ServiceWorkerManager(this);
 
         if (callback)
