@@ -40,7 +40,11 @@
             "name": "devices",
             "title": "Devices",
             "order": "30",
-            "className": "WebInspector.DevicesSettingsTab"
+            "className": "WebInspector.DevicesSettingsTab",
+            "settings": [
+                "standardEmulatedDeviceList",
+                "customEmulatedDeviceList"
+            ]
         }
     ],
     "dependencies": [

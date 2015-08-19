@@ -201,18 +201,29 @@ WebInspector.GenericSettingsTab = function()
     }
 }
 
+/**
+ * @param {!Runtime.Extension} extension
+ * @return {boolean}
+ */
+WebInspector.GenericSettingsTab.isSettingVisible = function(extension)
+{
+    var descriptor = extension.descriptor();
+    if (!("title" in descriptor))
+        return false;
+    if (!(("category" in descriptor) || ("parentSettingName" in descriptor)))
+        return false;
+    return true;
+}
+
 WebInspector.GenericSettingsTab.prototype = {
     /**
      * @param {!Runtime.Extension} extension
      */
     _addSetting: function(extension)
     {
+        if (!WebInspector.GenericSettingsTab.isSettingVisible(extension))
+            return;
         var descriptor = extension.descriptor();
-        if (!("title" in descriptor))
-            return;
-        if (!(("category" in descriptor) || ("parentSettingName" in descriptor)))
-            return;
-
         var sectionName = descriptor["category"];
         var settingName = descriptor["settingName"];
         var setting = WebInspector.moduleSetting(settingName);
@@ -603,6 +614,70 @@ WebInspector.SettingsController.ActionDelegate.prototype = {
             InspectorFrontendHost.openInNewTab("https://developers.google.com/web/tools/chrome-devtools/");
         else if (actionId === "settings.shortcuts")
             WebInspector._settingsController.showSettingsScreen("shortcuts");
+    }
+}
+
+/**
+ * @constructor
+ * @implements {WebInspector.Revealer}
+ */
+WebInspector.SettingsController.Revealer = function() { }
+
+WebInspector.SettingsController.Revealer.prototype = {
+    /**
+     * @override
+     * @param {!Object} object
+     * @param {number=} lineNumber
+     * @return {!Promise}
+     */
+    reveal: function(object, lineNumber)
+    {
+        console.assert(object instanceof WebInspector.Setting);
+        var setting = /** @type {!WebInspector.Setting} */ (object);
+        var success = false;
+
+        self.runtime.extensions("setting").forEach(revealModuleSetting);
+        self.runtime.extensions(WebInspector.SettingUI).forEach(revealSettingUI);
+        self.runtime.extensions("settings-view").forEach(revealSettingsView);
+
+        return success ? Promise.resolve() : Promise.reject();
+
+        /**
+         * @param {!Runtime.Extension} extension
+         */
+        function revealModuleSetting(extension)
+        {
+            if (!WebInspector.GenericSettingsTab.isSettingVisible(extension))
+                return;
+            if (extension.descriptor()["settingName"] === setting.name) {
+                WebInspector._settingsController.showSettingsScreen("general");
+                success = true;
+            }
+        }
+
+        /**
+         * @param {!Runtime.Extension} extension
+         */
+        function revealSettingUI(extension)
+        {
+            var settings = extension.descriptor()["settings"];
+            if (settings && settings.indexOf(setting.name) !== -1) {
+                WebInspector._settingsController.showSettingsScreen("general");
+                success = true;
+            }
+        }
+
+        /**
+         * @param {!Runtime.Extension} extension
+         */
+        function revealSettingsView(extension)
+        {
+            var settings = extension.descriptor()["settings"];
+            if (settings && settings.indexOf(setting.name) !== -1) {
+                WebInspector._settingsController.showSettingsScreen(extension.descriptor()["name"]);
+                success = true;
+            }
+        }
     }
 }
 

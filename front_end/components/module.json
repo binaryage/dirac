@@ -25,7 +25,10 @@
             "name": "network-conditions",
             "title": "Throttling",
             "order": "35",
-            "className": "WebInspector.NetworkConditionsSettingsTab"
+            "className": "WebInspector.NetworkConditionsSettingsTab",
+            "settings": [
+                "networkConditionsCustomProfiles"
+            ]
         }
     ],
     "dependencies": [

@@ -23,7 +23,16 @@
         {
             "type": "@WebInspector.SettingUI",
             "category": "Sources",
-            "className": "WebInspector.SettingsScreen.SkipStackFramePatternSettingUI"
+            "className": "WebInspector.SettingsScreen.SkipStackFramePatternSettingUI",
+            "settings": [
+                "skipContentScripts",
+                "skipStackFramesPattern"
+            ]
+        },
+        {
+            "type": "@WebInspector.Revealer",
+            "contextTypes": ["WebInspector.Setting"],
+            "className": "WebInspector.SettingsController.Revealer"
         },
         {
             "type": "context-menu-item",
