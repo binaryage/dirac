@@ -115,9 +115,9 @@ WebInspector.TimelineTreeView.prototype = {
         this.dataGrid.rootNode().removeChildren();
         var topDown = WebInspector.TimelineModel.buildTopDownTree(
             this._model.mainThreadEvents(), this._startTime, this._endTime, this._filters, WebInspector.TimelineTreeView.eventId);
-        var tree = this._modeCombobox.selectedOption().value === WebInspector.TimelineTreeView.Mode.TopDown
-            ? this._preformTopDownTreeGrouping(topDown)
-            : this._buildBottomUpTree(topDown);
+        var isTopDown = this._modeCombobox.selectedOption().value === WebInspector.TimelineTreeView.Mode.TopDown;
+        var tree = isTopDown ? this._preformTopDownTreeGrouping(topDown) : this._buildBottomUpTree(topDown);
+        this.dataGrid.markColumnAsSortedBy(isTopDown ? "total" : "self", WebInspector.DataGrid.Order.Descending);
         var maxSelfTime = 0;
         var maxTotalTime = 0;
         for (var child of tree.children.values()) {
