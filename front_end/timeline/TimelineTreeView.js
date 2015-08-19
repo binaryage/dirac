@@ -29,7 +29,7 @@ WebInspector.TimelineTreeView = function(model)
         new WebInspector.ExcludeTopLevelFilter()
     ];
 
-    this._groupBySetting = WebInspector.settings.createSetting("timelineTreeGroupBy", WebInspector.TimelineTreeView.GroupBy.None);
+    this._groupBySetting = WebInspector.settings.createSetting("timelineTreeGroupBy", WebInspector.TimelineTreeView.GroupBy.Domain);
 
     this.dataGrid = new WebInspector.SortableDataGrid(columns);
     this.dataGrid.addEventListener(WebInspector.DataGrid.Events.SortingChanged, this._sortingChanged, this);
@@ -53,7 +53,7 @@ WebInspector.TimelineTreeView.Mode = {
 WebInspector.TimelineTreeView.GroupBy = {
     None: "None",
     Domain: "Domain",
-    DomainSecondLevel: "DomainSecondLevel",
+    Subdomain: "Subdomain",
     URL: "URL"
 }
 
@@ -91,11 +91,10 @@ WebInspector.TimelineTreeView.prototype = {
             if (id === this._groupBySetting.get())
                 this._groupByCombobox.select(option);
         }
-        panelToolbar.appendToolbarItem(new WebInspector.ToolbarText(WebInspector.UIString("Group by")));
-        addGroupingOption.call(this, WebInspector.UIString("Function"), WebInspector.TimelineTreeView.GroupBy.None);
-        addGroupingOption.call(this, WebInspector.UIString("Domain"), WebInspector.TimelineTreeView.GroupBy.Domain);
-        addGroupingOption.call(this, WebInspector.UIString("Domain (2nd Level)"), WebInspector.TimelineTreeView.GroupBy.DomainSecondLevel);
-        addGroupingOption.call(this, WebInspector.UIString("URL"), WebInspector.TimelineTreeView.GroupBy.URL);
+        addGroupingOption.call(this, WebInspector.UIString("No Grouping"), WebInspector.TimelineTreeView.GroupBy.None);
+        addGroupingOption.call(this, WebInspector.UIString("Group by Domain"), WebInspector.TimelineTreeView.GroupBy.Domain);
+        addGroupingOption.call(this, WebInspector.UIString("Group by Subdomain"), WebInspector.TimelineTreeView.GroupBy.Subdomain);
+        addGroupingOption.call(this, WebInspector.UIString("Group by URL"), WebInspector.TimelineTreeView.GroupBy.URL);
         panelToolbar.appendToolbarItem(this._groupByCombobox);
     },
 
@@ -213,8 +212,8 @@ WebInspector.TimelineTreeView.prototype = {
         }
         var groupByMap = /** @type {!Map<!WebInspector.TimelineTreeView.GroupBy,?function(!WebInspector.TimelineModel.ProfileTreeNode):string>} */ (new Map([
             [WebInspector.TimelineTreeView.GroupBy.None, null],
-            [WebInspector.TimelineTreeView.GroupBy.Domain, groupByDomain.bind(null, false)],
-            [WebInspector.TimelineTreeView.GroupBy.DomainSecondLevel, groupByDomain.bind(null, true)],
+            [WebInspector.TimelineTreeView.GroupBy.Subdomain, groupByDomain.bind(null, false)],
+            [WebInspector.TimelineTreeView.GroupBy.Domain, groupByDomain.bind(null, true)],
             [WebInspector.TimelineTreeView.GroupBy.URL, groupByURL]
         ]));
         return groupByMap.get(this._groupBySetting.get()) || null;
