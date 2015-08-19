@@ -287,12 +287,12 @@ WebInspector.KeyboardShortcut._modifiersToString = function(modifiers)
     var isMac = WebInspector.isMac();
     var m = WebInspector.KeyboardShortcut.Modifiers;
     var modifierNames = new Map([
-        [m.Ctrl, isMac ? "\u2303" : "Ctrl\u200A+\u200A"],
-        [m.Alt, isMac ? "\u2325" : "Alt\u200A+\u200A"],
-        [m.Shift, isMac ? "\u21e7" : "Shift\u200A+\u200A"],
-        [m.Meta, isMac ? "\u2318" : "Win\u200A+\u200A"]
+        [m.Ctrl, isMac ? "Ctrl\u2004" : "Ctrl\u200A+\u200A"],
+        [m.Alt, isMac ? "opt\u2004" : "Alt\u200A+\u200A"],
+        [m.Shift, isMac ? "\u21e7\u2004" : "Shift\u200A+\u200A"],
+        [m.Meta, isMac ? "\u2318\u2004" : "Win\u200A+\u200A"]
     ]);
-    return [m.Ctrl, m.Alt, m.Shift, m.Meta].map(mapModifiers).join("");
+    return [m.Meta, m.Ctrl, m.Alt, m.Shift].map(mapModifiers).join("");
 
     /**
      * @param {number} m
