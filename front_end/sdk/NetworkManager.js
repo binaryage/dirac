@@ -54,7 +54,8 @@ WebInspector.NetworkManager.EventTypes = {
     RequestStarted: "RequestStarted",
     RequestUpdated: "RequestUpdated",
     RequestFinished: "RequestFinished",
-    RequestUpdateDropped: "RequestUpdateDropped"
+    RequestUpdateDropped: "RequestUpdateDropped",
+    ResponseReceivedSecurityDetails: "ResponseReceivedSecurityDetails"
 }
 
 WebInspector.NetworkManager._MIMETypes = {
@@ -349,6 +350,41 @@ WebInspector.NetworkDispatcher.prototype = {
         this._updateNetworkRequestWithResponse(networkRequest, response);
 
         this._updateNetworkRequest(networkRequest);
+
+        this._dispatchResponseReceivedSecurityDetails(requestId, response);
+    },
+
+    /**
+     * @param {!NetworkAgent.RequestId} requestId
+     * @param {!NetworkAgent.Response} response
+     */
+    _dispatchResponseReceivedSecurityDetails: function(requestId, response)
+    {
+        var eventData = {};
+        eventData.requestId = requestId;
+        eventData.origin = WebInspector.ParsedURL.splitURLIntoPathComponents(response.url)[0];
+        eventData.securityState = response.securityState;
+        if (response.securityDetails) {
+            /**
+             * @this {WebInspector.NetworkDispatcher}
+             * @param {?Protocol.Error} error
+             * @param {!NetworkAgent.CertificateDetails} certificateDetails
+             */
+            function callback(error, certificateDetails)
+            {
+                if (error)
+                    console.error("Unable to get certificate details from the browser (for certificate ID ", response.securityDetails.certificateId, "): ", error);
+                else
+                    eventData.securityDetails.certificateDetails = certificateDetails;
+
+                this._manager.dispatchEventToListeners(WebInspector.NetworkManager.EventTypes.ResponseReceivedSecurityDetails, eventData);
+            }
+
+            eventData.securityDetails = response.securityDetails;
+            this._manager._networkAgent.getCertificateDetails(response.securityDetails.certificateId, callback.bind(this));
+        } else {
+            this._manager.dispatchEventToListeners(WebInspector.NetworkManager.EventTypes.ResponseReceivedSecurityDetails, eventData);
+        }
     },
 
     /**

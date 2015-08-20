@@ -24,6 +24,12 @@ WebInspector.SecurityPanel = function() {
     this._mainView = new WebInspector.SecurityMainView();
     this.showMainView();
 
+    /** @type {!Map<string, !{securityState: !SecurityAgent.SecurityState, securityDetails: ?NetworkAgent.SecurityDetails}>} */
+    this._origins = new Map();
+    WebInspector.targetManager.addEventListener(WebInspector.ResourceTreeModel.EventTypes.InspectedURLChanged, this._clear, this);
+    WebInspector.targetManager.addEventListener(WebInspector.ResourceTreeModel.EventTypes.WillReloadPage, this._clear, this);
+    WebInspector.targetManager.addEventListener(WebInspector.ResourceTreeModel.EventTypes.MainFrameNavigated, this._clear, this);
+
     WebInspector.targetManager.observeTargets(this);
 }
 
@@ -72,6 +78,40 @@ WebInspector.SecurityPanel.prototype = {
     },
 
     /**
+     * @param {!WebInspector.Event} event
+     */
+    _onResponseReceivedSecurityDetails: function(event)
+    {
+        var data = event.data;
+        var origin = /** @type {string} */ (data.origin);
+        var securityState = /** @type {!SecurityAgent.SecurityState} */ (data.securityState);
+
+        if (this._origins.has(origin)) {
+            var originData = this._origins.get(origin);
+            originData.securityState = this._securityStateMin(originData.securityState, securityState);
+        } else {
+            // TODO(lgarron): Store a (deduplicated) list of different security details we have seen.
+            var originData = {};
+            originData.securityState = securityState;
+            if (data.securityDetails)
+                originData.securityDetails = data.securityDetails;
+
+            this._origins.set(origin, originData);
+        }
+    },
+
+    /**
+     * @param {!SecurityAgent.SecurityState} stateA
+     * @param {!SecurityAgent.SecurityState} stateB
+     * @return {!SecurityAgent.SecurityState}
+     */
+    _securityStateMin: function(stateA, stateB)
+    {
+        var ordering = ["unknown", "insecure", "neutral", "warning", "secure"];
+        return (ordering.indexOf(stateA) < ordering.indexOf(stateB)) ? stateA : stateB;
+    },
+
+    /**
      * @override
      * @param {!WebInspector.Target} target
      */
@@ -82,6 +122,10 @@ WebInspector.SecurityPanel.prototype = {
             this._securityModel = WebInspector.SecurityModel.fromTarget(target);
             this._securityModel.addEventListener(WebInspector.SecurityModel.EventTypes.SecurityStateChanged, this._onSecurityStateChanged, this);
             this._updateSecurityState(this._securityModel.securityState(), []);
+
+            this._origins.clear();
+            this._networkManager = target.networkManager;
+            this._networkManager.addEventListener(WebInspector.NetworkManager.EventTypes.ResponseReceivedSecurityDetails, this._onResponseReceivedSecurityDetails, this);
         }
     },
 
@@ -94,9 +138,17 @@ WebInspector.SecurityPanel.prototype = {
         if (target === this._target) {
             this._securityModel.removeEventListener(WebInspector.SecurityModel.EventTypes.SecurityStateChanged, this._onSecurityStateChanged, this);
             delete this._securityModel;
+            this._networkManager.removeEventListener(WebInspector.NetworkManager.EventTypes.ResponseReceivedSecurityDetails, this._onResponseReceivedSecurityDetails, this);
+            delete this._networkManager;
             delete this._target;
-            this._updateSecurityState(SecurityAgent.SecurityState.Unknown, []);
+            this._clear();
         }
+    },
+
+    _clear: function()
+    {
+        this._updateSecurityState(SecurityAgent.SecurityState.Unknown, []);
+        this._origins.clear();
     },
 
     __proto__: WebInspector.PanelWithSidebar.prototype
