@@ -1180,7 +1180,8 @@
                     { "name": "url", "type": "string", "description": "Request URL." },
                     { "name": "method", "type": "string", "description": "HTTP request method." },
                     { "name": "headers", "$ref": "Headers", "description": "HTTP request headers." },
-                    { "name": "postData", "type": "string", "optional": true, "description": "HTTP POST request data." }
+                    { "name": "postData", "type": "string", "optional": true, "description": "HTTP POST request data." },
+                    { "name": "mixedContentType", "optional": true, "type": "string", "enum": ["blockable", "optionally-blockable", "none"], "description": "The mixed content status of the request, as defined in http://www.w3.org/TR/mixed-content/" }
                 ]
             },
             {
