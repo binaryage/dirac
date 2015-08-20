@@ -225,7 +225,7 @@ WebInspector.Spectrum.prototype = {
         element.style.background = String.sprintf("linear-gradient(%s, %s), url(Images/checker.png)", colorText, colorText);
         if (animationDelay)
             element.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 100, delay: animationDelay, fill: "backwards" });
-        WebInspector.Tooltip.install(element, colorText);
+        element.title = colorText;
         return element;
     },
 

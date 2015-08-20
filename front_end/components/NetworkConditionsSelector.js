@@ -209,7 +209,7 @@ WebInspector.NetworkConditionsSettingsTab.prototype = {
         var title = item.createChild("div", "conditions-list-text conditions-list-title");
         var titleText = title.createChild("div", "conditions-list-title-text");
         titleText.textContent = conditions.title;
-        WebInspector.Tooltip.install(titleText, conditions.title);
+        titleText.title = conditions.title;
         item.createChild("div", "conditions-list-separator");
         item.createChild("div", "conditions-list-text").textContent = WebInspector.NetworkConditionsSelector.throughputText(conditions.value);
         item.createChild("div", "conditions-list-separator");

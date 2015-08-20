@@ -929,7 +929,7 @@ WebInspector.ToolbarCheckbox = function(text, title, setting)
     this.element.classList.add("checkbox");
     this.inputElement = this.element.checkboxElement;
     if (title)
-        WebInspector.Tooltip.install(this.element, title);
+        this.element.title = title;
     if (setting)
         WebInspector.SettingsUI.bindCheckbox(this.inputElement, setting);
 }

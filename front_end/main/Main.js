@@ -813,7 +813,7 @@ WebInspector.Main.MainMenuItem.prototype = {
             var titleElement = dockItemElement.createChild("span", "flex-auto");
             titleElement.textContent = WebInspector.UIString("Dock side");
             var toggleDockSideShorcuts = WebInspector.shortcutRegistry.shortcutDescriptorsForAction("main.toggle-dock");
-            WebInspector.Tooltip.install(titleElement, WebInspector.UIString("Placement of DevTools relative to the page. (%s to restore last position)", toggleDockSideShorcuts[0].name));
+            titleElement.title = WebInspector.UIString("Placement of DevTools relative to the page. (%s to restore last position)", toggleDockSideShorcuts[0].name);
             dockItemElement.appendChild(titleElement);
             var dockItemToolbar = new WebInspector.Toolbar(dockItemElement);
             dockItemToolbar.makeBlueOnHover();

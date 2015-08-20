@@ -461,7 +461,7 @@ WebInspector.AXNodePropertyTreeElement.createNameElement = function(name)
     var AXAttributes = WebInspector.AccessibilityStrings.AXAttributes;
     if (name in AXAttributes) {
         nameElement.textContent = WebInspector.UIString(AXAttributes[name].name);
-        WebInspector.Tooltip.install(nameElement, AXAttributes[name].description);
+        nameElement.title = AXAttributes[name].description;
         nameElement.classList.add("ax-readable-name");
     } else {
         nameElement.textContent = name;

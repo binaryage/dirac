@@ -225,12 +225,12 @@ WebInspector.OverridesView.DeviceTab.prototype = {
         cellElement.colSpan = 4;
 
         rowElement = tableElement.createChild("tr");
-        WebInspector.Tooltip.install(rowElement, WebInspector.UIString("Ratio between a device's physical pixels and device-independent pixels"));
+        rowElement.title = WebInspector.UIString("Ratio between a device's physical pixels and device-independent pixels");
         rowElement.createChild("td").createTextChild(WebInspector.UIString("Device pixel ratio:"));
         rowElement.createChild("td").appendChild(WebInspector.SettingsUI.createSettingInputField("", WebInspector.overridesSupport.settings.deviceScaleFactor, true, 4, "80px", WebInspector.OverridesSupport.deviceScaleFactorValidator, true, true, WebInspector.UIString("\u2013")));
 
         var mobileCheckbox = this._createSettingCheckbox(WebInspector.UIString("Emulate mobile"), WebInspector.overridesSupport.settings.emulateMobile);
-        WebInspector.Tooltip.install(mobileCheckbox, WebInspector.UIString("Enable meta viewport, overlay scrollbars, text autosizing and default 980px body width"));
+        mobileCheckbox.title = WebInspector.UIString("Enable meta viewport, overlay scrollbars, text autosizing and default 980px body width");
         fieldsetElement.appendChild(mobileCheckbox);
 
         fieldsetElement.appendChild(this._createSettingCheckbox(WebInspector.UIString("Shrink to fit"), WebInspector.overridesSupport.settings.deviceFitWindow));

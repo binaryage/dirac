@@ -598,7 +598,7 @@ TreeElement.prototype = {
      */
     set tooltip(x)
     {
-        WebInspector.Tooltip.install(this._listItemNode, x);
+        this._listItemNode.title = x;
     },
 
     /**

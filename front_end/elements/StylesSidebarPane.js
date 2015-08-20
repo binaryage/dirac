@@ -92,7 +92,7 @@ WebInspector.StylesSidebarPane.createExclamationMark = function(property)
     exclamationElement.className = "exclamation-mark";
     if (!WebInspector.StylesSidebarPane.ignoreErrorsForProperty(property))
         exclamationElement.type = "warning-icon";
-    WebInspector.Tooltip.install(exclamationElement, WebInspector.CSSMetadata.cssPropertiesMetainfo.keySet()[property.name.toLowerCase()] ? WebInspector.UIString("Invalid property value") : WebInspector.UIString("Unknown property name"));
+    exclamationElement.title = WebInspector.CSSMetadata.cssPropertiesMetainfo.keySet()[property.name.toLowerCase()] ? WebInspector.UIString("Invalid property value") : WebInspector.UIString("Unknown property name");
     return exclamationElement;
 }
 
@@ -996,7 +996,7 @@ WebInspector.StylePropertiesSection = function(parentPane, styleRule)
 
     if (this.editable && rule) {
         var newRuleButton = closeBrace.createChild("div", "sidebar-pane-button-new-rule");
-        WebInspector.Tooltip.install(newRuleButton, WebInspector.UIString("Insert Style Rule"));
+        newRuleButton.title = WebInspector.UIString("Insert Style Rule");
         newRuleButton.addEventListener("click", this._onNewRuleClick.bind(this), false);
     }
 

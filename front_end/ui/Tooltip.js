@@ -132,7 +132,30 @@ WebInspector.Tooltip.installHandler = function(doc)
  */
 WebInspector.Tooltip.install = function(element, tooltipContent, actionId)
 {
-    if (typeof tooltipContent === "string" && tooltipContent === "")
+    if (typeof tooltipContent === "string" && tooltipContent === "") {
+        delete element[WebInspector.Tooltip._symbol];
         return;
+    }
     element[WebInspector.Tooltip._symbol] =  { content: tooltipContent, actionId: actionId };
 }
+
+Object.defineProperty(HTMLElement.prototype, "title", {
+    /**
+     * @return {!Element|string}
+     * @this {!Element}
+     */
+    get: function()
+    {
+        var tooltip = this[WebInspector.Tooltip._symbol];
+        return tooltip ? tooltip.content : "";
+    },
+
+    /**
+     * @param {!Element|string} x
+     * @this {!Element}
+     */
+    set: function(x)
+    {
+        WebInspector.Tooltip.install(this, x);
+    }
+});
