@@ -93,7 +93,7 @@
 .network-conditions-settings-tab .conditions-list-remove,
 .network-conditions-settings-tab .conditions-list-edit {
     background-image: url(Images/toolbarButtonGlyphs.png);
-    background-size: 352px 144px;
+    background-size: 352px 168px;
     width: 32px;
     height: 24px;
     opacity: 0.5;

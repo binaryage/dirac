@@ -44,7 +44,7 @@ input.dt-checkbox-themed:checked:after {
 
 input.dt-checkbox-themed:after {
     -webkit-mask-image: url(Images/toolbarButtonGlyphs.png);
-    -webkit-mask-size: 352px 144px;
+    -webkit-mask-size: 352px 168px;
     -webkit-mask-position: -128px -110px;
 }
 

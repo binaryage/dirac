@@ -140,7 +140,7 @@
     display: inline-block;
     -webkit-user-select: none;
     -webkit-mask-image: url(Images/toolbarButtonGlyphs.png);
-    -webkit-mask-size: 352px 144px;
+    -webkit-mask-size: 352px 168px;
     width: 10px;
     height: 10px;
     content: "";
@@ -166,7 +166,7 @@
 
 .timeline-expandable-arrow {
     background-image: url(Images/toolbarButtonGlyphs.png);
-    background-size: 352px 144px;
+    background-size: 352px 168px;
     opacity: 0.5;
     width: 10px;
     height: 10px;
@@ -216,7 +216,7 @@
 .timeline-tree-item-warning {
     display: block;
     background-image: url(Images/toolbarButtonGlyphs.png);
-    background-size: 352px 144px;
+    background-size: 352px 168px;
     width: 10px;
     height: 10px;
     float: right;

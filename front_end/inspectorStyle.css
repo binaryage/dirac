@@ -211,7 +211,7 @@ ol.outline-disclosure:focus li.selected * {
     float: left;
     -webkit-user-select: none;
     -webkit-mask-image: url(Images/toolbarButtonGlyphs.png);
-    -webkit-mask-size: 352px 144px;
+    -webkit-mask-size: 352px 168px;
     content: "a";
     color: transparent;
     text-shadow: none;
@@ -365,7 +365,7 @@ ol.outline-disclosure:focus li.selected * {
     height: 10px;
     border: 0;
     -webkit-mask-image: url(Images/toolbarButtonGlyphs.png);
-    -webkit-mask-size: 352px 144px;
+    -webkit-mask-size: 352px 168px;
     -webkit-appearance: none;
     background-color: rgba(0, 0, 0, 0.75);
     position: relative;
