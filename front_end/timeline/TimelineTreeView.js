@@ -75,7 +75,7 @@ WebInspector.TimelineTreeView.prototype = {
 
         this._modeCombobox = new WebInspector.ToolbarComboBox(this._onTreeModeChanged.bind(this));
         this._modeCombobox.addOption(this._modeCombobox.createOption(WebInspector.UIString("Costly Functions"), "", WebInspector.TimelineTreeView.Mode.BottomUp));
-        this._modeCombobox.addOption(this._modeCombobox.createOption(WebInspector.UIString("Costly Entrypoints"), "", WebInspector.TimelineTreeView.Mode.TopDown));
+        this._modeCombobox.addOption(this._modeCombobox.createOption(WebInspector.UIString("Call Tree"), "", WebInspector.TimelineTreeView.Mode.TopDown));
         panelToolbar.appendToolbarItem(this._modeCombobox);
 
         this._groupByCombobox = new WebInspector.ToolbarComboBox(this._onGroupByChanged.bind(this));
