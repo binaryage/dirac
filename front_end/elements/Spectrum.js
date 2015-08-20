@@ -241,8 +241,6 @@ WebInspector.Spectrum.prototype = {
             var animationDelay = animate ? i * 100 / palette.colors.length : 0;
             var colorElement = this._createPaletteColor(palette.colors[i], animationDelay);
             colorElement.addEventListener("click", this._paletteColorSelected.bind(this, palette.colors[i]));
-            colorElement.addEventListener("mouseover", this._liveApplyStart.bind(this, palette.colors[i]));
-            colorElement.addEventListener("mouseout", this._liveApplyEnd.bind(this));
             if (palette.mutable)
                 colorElement.addEventListener("contextmenu", this._showPaletteColorContextMenu.bind(this, i));
             this._paletteContainer.appendChild(colorElement);
@@ -262,30 +260,6 @@ WebInspector.Spectrum.prototype = {
         var paletteMargin = 12;
         this.element.style.height = (this._paletteContainer.offsetTop + paletteMargin + (paletteColorHeight + paletteMargin) * rowsNeeded) + "px";
         this.dispatchEventToListeners(WebInspector.Spectrum.Events.SizeChanged);
-    },
-
-    /**
-     * @param {string} colorText
-     */
-    _liveApplyStart: function(colorText)
-    {
-        this._underlyingHSV = this._hsv;
-        this._underlyingFormat = this._colorFormat;
-        this._underlyingColorString = this._colorString;
-        var color = WebInspector.Color.parse(colorText);
-        if (!color)
-            return;
-        this._innerSetColor(color.hsva(), colorText, color.format(), WebInspector.Spectrum._ChangeSource.Other);
-    },
-
-    _liveApplyEnd: function()
-    {
-        if (!this._underlyingHSV)
-            return;
-        this._innerSetColor(this._underlyingHSV, this._underlyingColorString, this._underlyingFormat, WebInspector.Spectrum._ChangeSource.Other);
-        delete this._underlyingHSV;
-        delete this._underlyingFormat;
-        delete this._underlyingColorString;
     },
 
     /**
@@ -343,8 +317,7 @@ WebInspector.Spectrum.prototype = {
         var color = WebInspector.Color.parse(colorText);
         if (!color)
             return;
-        this._innerSetColor(color.hsva(), colorText, color.format(), WebInspector.Spectrum._ChangeSource.Other);
-        delete this._underlyingHSV;
+        this._innerSetColor(color.hsva(), colorText, undefined, WebInspector.Spectrum._ChangeSource.Other);
     },
 
     _addColorToCustomPalette: function()
@@ -761,7 +734,22 @@ WebInspector.Spectrum.PaletteGenerator.prototype = {
          */
         function hueComparator(a, b)
         {
-            return paletteColors.get(b).hsva()[0] - paletteColors.get(a).hsva()[0];
+            var hsva = paletteColors.get(a).hsva();
+            var hsvb = paletteColors.get(b).hsva();
+
+            // First trim the shades of gray
+            if (hsvb[1] < 0.12 && hsva[1] < 0.12)
+                return hsvb[2]*hsvb[3] - hsva[2]*hsva[3];
+            if (hsvb[1] < 0.12)
+                return -1;
+            if (hsva[1] < 0.12)
+                return 1;
+
+            // Equal hue -> sort by sat
+            if (hsvb[0] === hsva[0])
+                return hsvb[1]*hsvb[3] - hsva[1]*hsva[3];
+
+            return (hsvb[0] + 0.94) % 1 - (hsva[0] + 0.94) % 1;
         }
 
         var colors = this._frequencyMap.keysArray();
@@ -793,7 +781,8 @@ WebInspector.Spectrum.PaletteGenerator.prototype = {
          */
         function parseContent(text)
         {
-            var regexResult = text.match(/((?:rgb|hsl)a?\([^)]+\)|#[0-9a-fA-F]{6}|#[0-9a-fA-F]{3})/g) || [];
+            text = text.toLowerCase();
+            var regexResult = text.match(/((?:rgb|hsl)a?\([^)]+\)|#[0-9a-f]{6}|#[0-9a-f]{3})/g) || [];
             for (var c of regexResult) {
                 var frequency = this._frequencyMap.get(c) || 0;
                 this._frequencyMap.set(c, ++frequency);
