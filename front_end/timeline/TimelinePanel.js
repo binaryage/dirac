@@ -1348,10 +1348,8 @@ WebInspector.TimelineDetailsView = function(timelineModel)
     this.appendTab(WebInspector.TimelinePanel.DetailsTab.Details, WebInspector.UIString("Summary"), this._defaultDetailsWidget);
     this.setPreferredTab(WebInspector.TimelinePanel.DetailsTab.Details);
 
-    if (Runtime.experiments.isEnabled("timelineTreeView")) {
-        this._heavyTreeView = new WebInspector.TimelineTreeView(timelineModel);
-        this.appendTab(WebInspector.TimelinePanel.DetailsTab.BottomUpTree, WebInspector.UIString("Aggregated Details"), this._heavyTreeView);
-    }
+    this._heavyTreeView = new WebInspector.TimelineTreeView(timelineModel);
+    this.appendTab(WebInspector.TimelinePanel.DetailsTab.BottomUpTree, WebInspector.UIString("Aggregated Details"), this._heavyTreeView);
 
     this._staticTabs = new Set([
         WebInspector.TimelinePanel.DetailsTab.Details,
