@@ -10,11 +10,11 @@
 }
 
 .lock-icon-unknown {
-    background-image: url(Images/securityStateHttp.png);
+    background-image: url(Images/securityStateNeutral.png);
 }
 
-.lock-icon-http {
-    background-image: url(Images/securityStateHttp.png);
+.lock-icon-neutral {
+    background-image: url(Images/securityStateNeutral.png);
 }
 
 .lock-icon-insecure {
@@ -32,11 +32,11 @@
 
 @media (-webkit-min-device-pixel-ratio: 1.5) {
     .lock-icon-unknown {
-        background-image: url(Images/securityStateHttp_2x.png);
+        background-image: url(Images/securityStateNeutral_2x.png);
     }
 
-    .lock-icon-http {
-        background-image: url(Images/securityStateHttp_2x.png);
+    .lock-icon-neutral {
+        background-image: url(Images/securityStateNeutral_2x.png);
     }
 
     .lock-icon-insecure {
