@@ -152,7 +152,7 @@ WebInspector.RequestJSONView.parseJSON = function(text)
     text = text.substring(inner.start, inner.end + 1);
 
     // Only process valid JSONP.
-    if (suffix.length && !(suffix.trim().startsWith(")") && prefix.trim().endsWith("(")))
+    if (suffix.trim().length && !(suffix.trim().startsWith(")") && prefix.trim().endsWith("(")))
         return null;
 
     try {
