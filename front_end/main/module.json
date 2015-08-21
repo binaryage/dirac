@@ -69,7 +69,6 @@
         {
             "type": "@WebInspector.ActionDelegate",
             "actionId": "main.toggle-element-search",
-            "contextTypes": ["WebInspector.InspectElementModeController"],
             "className": "WebInspector.InspectElementModeController.ToggleSearchActionDelegate",
             "bindings": [
                 {
