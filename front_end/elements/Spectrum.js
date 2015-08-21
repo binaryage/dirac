@@ -102,26 +102,27 @@ WebInspector.Spectrum = function()
     WebInspector.installDragHandle(this._alphaElement, dragStart.bind(this, positionAlpha.bind(this)), positionAlpha.bind(this), null, "default");
     WebInspector.installDragHandle(this._colorElement, dragStart.bind(this, positionColor.bind(this)), positionColor.bind(this), null, "default");
 
-    if (Runtime.experiments.isEnabled("colorPalettes")) {
-        this.element.classList.add("palettes-enabled");
-        /** @type {!Map.<string, !WebInspector.Spectrum.Palette>} */
-        this._palettes = new Map();
-        this._palettePanel = this.contentElement.createChild("div", "palette-panel");
-        this._palettePanelShowing = false;
-        this._paletteContainer = this.contentElement.createChild("div", "spectrum-palette");
-        var paletteSwitcher = this.contentElement.createChild("div", "spectrum-palette-switcher spectrum-switcher");
-        appendSwitcherIcon(paletteSwitcher);
-        paletteSwitcher.addEventListener("click", this._togglePalettePanel.bind(this, true));
-        var overlay = this.contentElement.createChild("div", "spectrum-overlay fill");
-        overlay.addEventListener("click", this._togglePalettePanel.bind(this, false));
+    this.element.classList.add("palettes-enabled");
+    /** @type {!Map.<string, !WebInspector.Spectrum.Palette>} */
+    this._palettes = new Map();
+    this._palettePanel = this.contentElement.createChild("div", "palette-panel");
+    this._palettePanelShowing = false;
+    this._paletteContainer = this.contentElement.createChild("div", "spectrum-palette");
+    this._paletteContainer.addEventListener("contextmenu", this._showPaletteColorContextMenu.bind(this, -1));
+    WebInspector.installDragHandle(this._paletteContainer, this._paletteDragStart.bind(this), this._paletteDrag.bind(this), this._paletteDragEnd.bind(this), "default");
+    var paletteSwitcher = this.contentElement.createChild("div", "spectrum-palette-switcher spectrum-switcher");
+    appendSwitcherIcon(paletteSwitcher);
+    paletteSwitcher.addEventListener("click", this._togglePalettePanel.bind(this, true));
+    var overlay = this.contentElement.createChild("div", "spectrum-overlay fill");
+    overlay.addEventListener("click", this._togglePalettePanel.bind(this, false));
 
-        this._addColorToolbar = new WebInspector.Toolbar();
-        var addColorButton = new WebInspector.ToolbarButton(WebInspector.UIString("Add to palette"), "add-toolbar-item");
-        addColorButton.addEventListener("click", this._addColorToCustomPalette.bind(this));
-        this._addColorToolbar.appendToolbarItem(addColorButton);
+    this._addColorToolbar = new WebInspector.Toolbar();
+    this._addColorToolbar.element.classList.add("add-color-toolbar");
+    var addColorButton = new WebInspector.ToolbarButton(WebInspector.UIString("Add to palette"), "add-toolbar-item");
+    addColorButton.addEventListener("click", this._addColorToCustomPalette.bind(this));
+    this._addColorToolbar.appendToolbarItem(addColorButton);
 
-        new WebInspector.Spectrum.PaletteGenerator(this._generatedPaletteLoaded.bind(this));
-    }
+    new WebInspector.Spectrum.PaletteGenerator(this._generatedPaletteLoaded.bind(this));
 
     /**
      * @param {function(!Event)} callback
@@ -187,6 +188,9 @@ WebInspector.Spectrum.Events = {
     SizeChanged: "SizeChanged"
 };
 
+WebInspector.Spectrum._colorChipSize = 24;
+WebInspector.Spectrum._itemsPerPaletteRow = 8;
+
 WebInspector.Spectrum.prototype = {
     _updatePalettePanel: function()
     {
@@ -240,26 +244,102 @@ WebInspector.Spectrum.prototype = {
         for (var i = 0; i < palette.colors.length; i++) {
             var animationDelay = animate ? i * 100 / palette.colors.length : 0;
             var colorElement = this._createPaletteColor(palette.colors[i], animationDelay);
-            colorElement.addEventListener("click", this._paletteColorSelected.bind(this, palette.colors[i]));
-            if (palette.mutable)
+            colorElement.addEventListener("mousedown", this._paletteColorSelected.bind(this, palette.colors[i]));
+            if (palette.mutable) {
+                colorElement.__mutable = true;
+                colorElement.__color = palette.colors[i];
                 colorElement.addEventListener("contextmenu", this._showPaletteColorContextMenu.bind(this, i));
+            }
             this._paletteContainer.appendChild(colorElement);
         }
+        this._paletteContainerMutable = palette.mutable;
 
         var numItems = palette.colors.length;
         if (palette.mutable)
             numItems++;
-        var rowsNeeded = Math.max(1, Math.ceil(numItems / 8));
-        for (var i = 0; palette.mutable && i < rowsNeeded * 8 - numItems; i++)
+        var rowsNeeded = Math.max(1, Math.ceil(numItems / WebInspector.Spectrum._itemsPerPaletteRow));
+        for (var i = 0; palette.mutable && i < rowsNeeded * WebInspector.Spectrum._itemsPerPaletteRow - numItems; i++)
             this._paletteContainer.createChild("div", "spectrum-palette-color empty-color");
         if (palette.mutable)
-            this._paletteContainer.appendChild(this._addColorToolbar.element);
+            this.contentElement.appendChild(this._addColorToolbar.element);
+        else
+            this._addColorToolbar.element.remove();
 
         this._togglePalettePanel(false);
         var paletteColorHeight = 12;
         var paletteMargin = 12;
         this.element.style.height = (this._paletteContainer.offsetTop + paletteMargin + (paletteColorHeight + paletteMargin) * rowsNeeded) + "px";
         this.dispatchEventToListeners(WebInspector.Spectrum.Events.SizeChanged);
+    },
+
+    /**
+     * @param {!Event} e
+     * @return {number}
+     */
+    _slotIndexForEvent: function(e)
+    {
+        var localX = e.pageX - this._paletteContainer.totalOffsetLeft();
+        var localY = e.pageY - this._paletteContainer.totalOffsetTop();
+        var col = Math.min(localX / WebInspector.Spectrum._colorChipSize | 0, WebInspector.Spectrum._itemsPerPaletteRow - 1);
+        var row = (localY / WebInspector.Spectrum._colorChipSize) | 0;
+        return Math.min(row * WebInspector.Spectrum._itemsPerPaletteRow + col, this._paletteContainer.children.length - 1);
+    },
+
+    /**
+     * @param {!Event} e
+     * @return {boolean}
+     */
+    _paletteDragStart: function(e)
+    {
+        var element = e.deepElementFromPoint();
+        if (!element.__mutable)
+            return false;
+
+        var index = this._slotIndexForEvent(e);
+        this._dragElement = element;
+        this._dragHotSpotX = e.pageX - (index % WebInspector.Spectrum._itemsPerPaletteRow) * WebInspector.Spectrum._colorChipSize;
+        this._dragHotSpotY = e.pageY - (index / WebInspector.Spectrum._itemsPerPaletteRow | 0) * WebInspector.Spectrum._colorChipSize;
+        return true;
+    },
+
+    /**
+     * @param {!Event} e
+     */
+    _paletteDrag: function(e)
+    {
+        if (e.pageX < this._paletteContainer.totalOffsetLeft() || e.pageY < this._paletteContainer.totalOffsetTop())
+            return;
+        var newIndex = this._slotIndexForEvent(e);
+        var offsetX = e.pageX - (newIndex % WebInspector.Spectrum._itemsPerPaletteRow) * WebInspector.Spectrum._colorChipSize;
+        var offsetY = e.pageY - (newIndex / WebInspector.Spectrum._itemsPerPaletteRow | 0) * WebInspector.Spectrum._colorChipSize;
+
+        this._dragElement.style.position = "relative";
+        this._dragElement.style.left = (offsetX - this._dragHotSpotX) + "px";
+        this._dragElement.style.top = (offsetY - this._dragHotSpotY) + "px";
+        var children = Array.prototype.slice.call(this._paletteContainer.children);
+        var index = children.indexOf(this._dragElement);
+        if (index !== newIndex)
+            this._paletteContainer.insertBefore(this._dragElement, children[newIndex > index ? newIndex + 1 : newIndex]);
+    },
+
+    /**
+     * @param {!Event} e
+     */
+    _paletteDragEnd: function(e)
+    {
+        this._dragElement.style.removeProperty("position");
+        this._dragElement.style.removeProperty("left");
+        this._dragElement.style.removeProperty("top");
+        var children = this._paletteContainer.children;
+        var colors = [];
+        for (var i = 0; i < children.length; ++i) {
+            if (children[i].__color)
+                colors.push(children[i].__color);
+        }
+        var palette = this._customPaletteSetting.get();
+        palette.colors = colors;
+        this._customPaletteSetting.set(palette);
+        this._showPalette(this._customPaletteSetting.get(), false);
     },
 
     /**
@@ -334,22 +414,28 @@ WebInspector.Spectrum.prototype = {
      */
     _showPaletteColorContextMenu: function(colorIndex, event)
     {
+        if (!this._paletteContainerMutable)
+            return;
         var contextMenu = new WebInspector.ContextMenu(event);
-        contextMenu.appendItem(WebInspector.UIString("Remove color"), this._deletePaletteColor.bind(this, colorIndex));
-        contextMenu.appendItem(WebInspector.UIString("Clear palette"), this._deletePaletteColor.bind(this, undefined));
+        if (colorIndex !== -1) {
+            contextMenu.appendItem(WebInspector.UIString("Remove color"), this._deletePaletteColors.bind(this, colorIndex, false));
+            contextMenu.appendItem(WebInspector.UIString("Remove all to the right"), this._deletePaletteColors.bind(this, colorIndex, true));
+        }
+        contextMenu.appendItem(WebInspector.UIString("Clear palette"), this._deletePaletteColors.bind(this, -1, true));
         contextMenu.show();
     },
 
     /**
-     * @param {number=} colorIndex
+     * @param {number} colorIndex
+     * @param {boolean} toRight
      */
-    _deletePaletteColor: function(colorIndex)
+    _deletePaletteColors: function(colorIndex, toRight)
     {
         var palette = this._customPaletteSetting.get();
-        if (colorIndex !== undefined)
-            palette.colors.splice(colorIndex, 1);
+        if (toRight)
+            palette.colors.splice(colorIndex + 1, palette.colors.length - colorIndex - 1);
         else
-            palette.colors = [];
+            palette.colors.splice(colorIndex, 1);
         this._customPaletteSetting.set(palette);
         this._showPalette(this._customPaletteSetting.get(), false);
     },

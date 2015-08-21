@@ -13,8 +13,8 @@ WebInspector.Tooltip = function(doc)
     this._shadowRoot.appendChild(WebInspector.Widget.createStyleElement("ui/tooltip.css"));
 
     this._tooltipElement = this._shadowRoot.createChild("div", "tooltip");
-    doc.addEventListener("mousemove", this._mouseMove.bind(this), false);
-    doc.addEventListener("mousedown", this._hide.bind(this), false);
+    doc.addEventListener("mousemove", this._mouseMove.bind(this), true);
+    doc.addEventListener("mousedown", this._hide.bind(this), true);
 }
 
 WebInspector.Tooltip.Timing = {
