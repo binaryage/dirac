@@ -57,6 +57,10 @@
 }
 
 .webkit-html-tag {
+    color: rgb(168, 148, 166);
+}
+
+.webkit-html-tag-name, .webkit-html-close-tag-name {
     /* Keep this in sync with view-source.css (.webkit-html-tag) */
     color: rgb(136, 18, 128);
 }

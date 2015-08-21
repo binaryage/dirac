@@ -1305,7 +1305,7 @@ WebInspector.ElementsTreeElement.prototype = {
             classes.push("close");
         var tagElement = parentElement.createChild("span", classes.join(" "));
         tagElement.createTextChild("<");
-        var tagNameElement = tagElement.createChild("span", isClosingTag ? "" : "webkit-html-tag-name");
+        var tagNameElement = tagElement.createChild("span", isClosingTag ? "webkit-html-close-tag-name" : "webkit-html-tag-name");
         tagNameElement.textContent = (isClosingTag ? "/" : "") + tagName;
         if (!isClosingTag) {
             if (node.hasAttributes()) {
