@@ -747,7 +747,7 @@ WebInspector.AuditRules.CacheControlRule.prototype = {
     _isExplicitlyNonCacheable: function(request)
     {
         var hasExplicitExp = this.hasExplicitExpiration(request);
-        return !!this.responseHeaderMatch(request, "Cache-Control", "(no-cache|no-store|must-revalidate)") ||
+        return !!this.responseHeaderMatch(request, "Cache-Control", "(no-cache|no-store)") ||
             !!this.responseHeaderMatch(request, "Pragma", "no-cache") ||
             (hasExplicitExp && !this.freshnessLifetimeGreaterThan(request, 0)) ||
             (!hasExplicitExp && !!request.url && request.url.indexOf("?") >= 0) ||
@@ -830,46 +830,6 @@ WebInspector.AuditRules.BrowserCacheControlRule.prototype = {
             !this.hasResponseHeader(request, "Set-Cookie") &&
             !this.freshnessLifetimeGreaterThan(request, 11 * WebInspector.AuditRules.CacheControlRule.MillisPerMonth) &&
             this.freshnessLifetimeGreaterThan(request, WebInspector.AuditRules.CacheControlRule.MillisPerMonth);
-    },
-
-    __proto__: WebInspector.AuditRules.CacheControlRule.prototype
-}
-
-/**
- * @constructor
- * @extends {WebInspector.AuditRules.CacheControlRule}
- */
-WebInspector.AuditRules.ProxyCacheControlRule = function() {
-    WebInspector.AuditRules.CacheControlRule.call(this, "http-proxycache", WebInspector.UIString("Leverage proxy caching"));
-}
-
-WebInspector.AuditRules.ProxyCacheControlRule.prototype = {
-    runChecks: function(requests, result, callback)
-    {
-        this.execCheck(WebInspector.UIString("Resources with a \"?\" in the URL are not cached by most proxy caching servers:"),
-            this._questionMarkCheck, requests, result);
-        this.execCheck(WebInspector.UIString("Consider adding a \"Cache-Control: public\" header to the following resources:"),
-            this._publicCachingCheck, requests, result);
-        this.execCheck(WebInspector.UIString("The following publicly cacheable resources contain a Set-Cookie header. This security vulnerability can cause cookies to be shared by multiple users."),
-            this._setCookieCacheableCheck, requests, result);
-    },
-
-    _questionMarkCheck: function(request)
-    {
-        return request.url.indexOf("?") >= 0 && !this.hasResponseHeader(request, "Set-Cookie") && this.isPubliclyCacheable(request);
-    },
-
-    _publicCachingCheck: function(request)
-    {
-        return this.isCacheableResource(request) &&
-            !this.isCompressible(request) &&
-            !this.responseHeaderMatch(request, "Cache-Control", "public") &&
-            !this.hasResponseHeader(request, "Set-Cookie");
-    },
-
-    _setCookieCacheableCheck: function(request)
-    {
-        return this.hasResponseHeader(request, "Set-Cookie") && this.isPubliclyCacheable(request);
     },
 
     __proto__: WebInspector.AuditRules.CacheControlRule.prototype
