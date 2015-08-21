@@ -122,6 +122,7 @@
         "MetricsSidebarPane.js",
         "PlatformFontsWidget.js",
         "PropertiesWidget.js",
+        "PropertyChangeHighlighter.js",
         "StylesSectionModel.js",
         "StylesSidebarPane.js",
         "ComputedStyleWidget.js",

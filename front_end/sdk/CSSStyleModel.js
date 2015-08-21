@@ -64,8 +64,8 @@ WebInspector.CSSStyleModel.parseRuleMatchArrayPayload = function(cssModel, match
         result.push(WebInspector.CSSRule.parsePayload(cssModel, matchArray[i].rule, matchArray[i].matchingSelectors));
     return result;
 }
-
 WebInspector.CSSStyleModel.Events = {
+    LayoutEditorChange: "LayoutEditorChange",
     MediaQueryResultChanged: "MediaQueryResultChanged",
     ModelWasEnabled: "ModelWasEnabled",
     PseudoStateForced: "PseudoStateForced",
@@ -597,6 +597,15 @@ WebInspector.CSSStyleModel.prototype = {
             this._resetStyleSheets();
             this._agent.enable().then(this._wasEnabled.bind(this));
         }
+    },
+
+    /**
+     * @param {!CSSAgent.StyleSheetId} id
+     * @param {!CSSAgent.SourceRange} range
+     */
+    _layoutEditorChange: function(id, range)
+    {
+        this.dispatchEventToListeners(WebInspector.CSSStyleModel.Events.LayoutEditorChange, {id: id, range: range});
     },
 
     __proto__: WebInspector.SDKModel.prototype
@@ -1855,6 +1864,16 @@ WebInspector.CSSDispatcher.prototype = {
     styleSheetRemoved: function(id)
     {
         this._cssModel._styleSheetRemoved(id);
+    },
+
+    /**
+     * @override
+     * @param {!CSSAgent.StyleSheetId} id
+     * @param {!CSSAgent.SourceRange} range
+     */
+    layoutEditorChange: function(id, range)
+    {
+        this._cssModel._layoutEditorChange(id, range);
     },
 }
 

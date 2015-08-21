@@ -62,6 +62,7 @@ WebInspector.StylesSidebarPane = function(requestShowCallback)
     this.element.addEventListener("mousemove", this._mouseMovedOverElement.bind(this), false);
     this._keyDownBound = this._keyDown.bind(this);
     this._keyUpBound = this._keyUp.bind(this);
+    new WebInspector.PropertyChangeHighlighter(this);
 }
 
 // Keep in sync with ComputedStyleConstants.h PseudoId enum. Array below contains pseudo id names for corresponding enum indexes.
@@ -845,6 +846,14 @@ WebInspector.StylesSidebarPane.prototype = {
                 delete this._pendingWidget;
             }
         }
+    },
+
+    /**
+     * @return {!Array<!WebInspector.SectionBlock>}
+     */
+    sectionBlocks: function()
+    {
+        return this._sectionBlocks || [];
     },
 
     __proto__: WebInspector.ElementsSidebarPane.prototype
