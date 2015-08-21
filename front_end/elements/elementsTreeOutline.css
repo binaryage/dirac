@@ -304,3 +304,19 @@ ol:hover > li > .elements-tree-shortcut-link {
     color: rgb(87, 87, 87);
     display: none;
 }
+
+ol:focus li.selected .webkit-html-tag {
+    color: #a5a5a5;
+}
+
+ol:focus li.selected .webkit-html-tag-name,
+ol:focus li.selected .webkit-html-close-tag-name,
+ol:focus li.selected .webkit-html-attribute-value,
+ol:focus li.selected .webkit-html-external-link,
+ol:focus li.selected .webkit-html-resource-link {
+    color: white;
+}
+
+ol:focus li.selected .webkit-html-attribute-name {
+    color: #ccc;
+}
