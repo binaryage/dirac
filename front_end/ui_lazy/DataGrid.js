@@ -230,7 +230,6 @@ WebInspector.DataGrid.prototype = {
             this._bottomFillerRow.style.height = bottom + "px";
         else
             this._bottomFillerRow.style.height = "auto";
-        this.element.classList.toggle("data-grid-fits-viewport", top + bottom === 0);
     },
 
     /**

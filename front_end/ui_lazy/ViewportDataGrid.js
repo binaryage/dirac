@@ -143,13 +143,13 @@ WebInspector.ViewportDataGrid.prototype = {
     /**
      * @param {number} clientHeight
      * @param {number} scrollTop
-     * @return {{topPadding: number, bottomPadding: number, visibleNodes: !Array.<!WebInspector.ViewportDataGridNode>, offset: number}}
+     * @return {{topPadding: number, bottomPadding: number, contentHeight: number, visibleNodes: !Array.<!WebInspector.ViewportDataGridNode>, offset: number}}
      */
     _calculateVisibleNodes: function(clientHeight, scrollTop)
     {
         var nodes = this._flatNodesList();
         if (this._inline)
-            return {topPadding: 0, bottomPadding: 0, visibleNodes: nodes, offset: 0};
+            return {topPadding: 0, bottomPadding: 0, contentHeight: 0, visibleNodes: nodes, offset: 0};
 
         var size = nodes.length;
         var i = 0;
@@ -168,7 +168,7 @@ WebInspector.ViewportDataGrid.prototype = {
         for (; i < size; ++i)
             bottomPadding += nodes[i].nodeSelfHeight();
 
-        return {topPadding: topPadding, bottomPadding: bottomPadding, visibleNodes: nodes.slice(start, end), offset: start};
+        return {topPadding: topPadding, bottomPadding: bottomPadding, contentHeight: y - topPadding, visibleNodes: nodes.slice(start, end), offset: start};
     },
 
     /**
@@ -232,6 +232,8 @@ WebInspector.ViewportDataGrid.prototype = {
         }
 
         this.setVerticalPadding(viewportState.topPadding, viewportState.bottomPadding);
+        var contentFits = viewportState.contentHeight <= clientHeight;
+        this.element.classList.toggle("data-grid-fits-viewport", contentFits && viewportState.topPadding + viewportState.bottomPadding === 0);
         this._lastScrollTop = scrollTop;
         if (scrollTop !== currentScrollTop)
             this._scrollContainer.scrollTop = scrollTop;
