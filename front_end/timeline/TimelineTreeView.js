@@ -188,11 +188,14 @@ WebInspector.TimelineTreeView.prototype = {
          */
         function groupByDomain(groupSubdomains, node)
         {
-            var parsedURL = (WebInspector.TimelineTreeView.eventURL(node.event) || "").asParsedURL();
+            var url = WebInspector.TimelineTreeView.eventURL(node.event) || "";
+            if (url.startsWith("extensions::"))
+                return groupSubdomains ? WebInspector.UIString("Chrome Extensions Overhead") : url;
+            var parsedURL = url.asParsedURL();
             if (!parsedURL)
                 return "";
             if (parsedURL.scheme === "chrome-extension") {
-                var url = parsedURL.scheme + "://" + parsedURL.host;
+                url = parsedURL.scheme + "://" + parsedURL.host;
                 var displayName = executionContextNamesByOrigin.get(url);
                 return displayName ? WebInspector.UIString("Chrome Extension: %s", displayName) : url;
             }
