@@ -294,7 +294,12 @@ WebInspector.TimelineTreeView.eventURL = function(event)
     if (url)
         return url;
     var topFrame = event.stackTrace && event.stackTrace[0];
-    return topFrame && topFrame["url"] || null;
+    url = topFrame && topFrame["url"];
+    if (url)
+        return url;
+    var initiator = event.initiator;
+    var initiatorTopFrame = initiator && initiator.stackTrace && initiator.stackTrace[0];
+    return initiatorTopFrame && initiatorTopFrame["url"] || null;
 }
 
 /**
