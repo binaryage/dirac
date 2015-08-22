@@ -296,7 +296,6 @@ WebInspector.SWRegistrationElement = function(manager, originElement, registrati
     this._skipWaitingCheckboxLabel.title = WebInspector.UIString("Simulate skipWaiting()");
     this._skipWaitingCheckboxLabel.classList.add("service-workers-skip-waiting-checkbox-label");
     this._skipWaitingCheckbox = this._skipWaitingCheckboxLabel.checkboxElement;
-    this._skipWaitingCheckbox.checked = true;
     this._skipWaitingCheckbox.classList.add("service-workers-skip-waiting-checkbox");
     this._skipWaitingCheckbox.addEventListener("change", this._skipWaitingCheckboxChanged.bind(this), false);
 
