@@ -859,7 +859,9 @@ WebInspector.SourceFrame.RowMessageBucket.prototype = {
      */
     _updateWavePosition: function(lineNumber, columnNumber)
     {
+        lineNumber = Math.min(lineNumber, this._textEditor.linesCount - 1);
         var lineText = this._textEditor.line(lineNumber);
+        columnNumber = Math.min(columnNumber, lineText.length);
         var lineIndent = WebInspector.TextUtils.lineIndent(lineText).length;
         var base = this._textEditor.cursorPositionToCoordinates(lineNumber, 0);
 
