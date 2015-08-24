@@ -1552,19 +1552,23 @@ WebInspector.TimelineModel.buildBottomUpTree = function(topDownTree, groupingCal
     buRoot.name = WebInspector.UIString("Bottom-Up Chart");
     /** @type {!Map<string,!WebInspector.TimelineModel.ProfileTreeNode>} */
     buRoot.children = new Map();
-    processNode(topDownTree);
+    var nodesOnStack = /** @type {!Set<string>} */ (new Set());
+    topDownTree.children.forEach(processNode);
 
     /**
      * @param {!WebInspector.TimelineModel.ProfileTreeNode} tdNode
      */
     function processNode(tdNode)
     {
-        if (tdNode.selfTime > 0) {
-            var buParent = groupingCallback && groupingCallback(tdNode) || buRoot;
-            appendNode(tdNode, buParent);
-        }
+        var buParent = groupingCallback && groupingCallback(tdNode) || buRoot;
+        appendNode(tdNode, buParent);
+        var hadNode = nodesOnStack.has(tdNode.id);
+        if (!hadNode)
+            nodesOnStack.add(tdNode.id);
         if (tdNode.children)
             tdNode.children.forEach(processNode);
+        if (!hadNode)
+            nodesOnStack.delete(tdNode.id);
     }
 
     /**
@@ -1592,11 +1596,19 @@ WebInspector.TimelineModel.buildBottomUpTree = function(topDownTree, groupingCal
                 buParent.children.set(id, buNode);
             } else {
                 buNode.selfTime += selfTime;
-                buNode.totalTime += totalTime;
+                if (!nodesOnStack.has(id))
+                    buNode.totalTime += totalTime;
             }
             tdNode = tdNode.parent;
             buParent = buNode;
         }
+    }
+
+    // Purge zero self time nodes.
+    var rootChildren = buRoot.children;
+    for (var item of rootChildren.entries()) {
+        if (item[1].selfTime === 0)
+            rootChildren.delete(item[0]);
     }
 
     return buRoot;
