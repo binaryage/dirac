@@ -113,7 +113,7 @@ WebInspector.SharedSidebarModel.prototype = {
 
         /**
          * @param {!WebInspector.DOMNode} elementNode
-         * @param {?WebInspector.CSSStyleDeclaration} style
+         * @param {?Map.<string, string>} style
          * @return {?WebInspector.SharedSidebarModel.ComputedStyle}
          * @this {WebInspector.SharedSidebarModel}
          */
@@ -135,7 +135,7 @@ WebInspector.SharedSidebarModel.prototype = {
 /**
  * @constructor
  * @param {!WebInspector.DOMNode} node
- * @param {!WebInspector.CSSStyleDeclaration} computedStyle
+ * @param {!Map.<string, string>} computedStyle
  */
 WebInspector.SharedSidebarModel.ComputedStyle = function(node, computedStyle)
 {

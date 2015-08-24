@@ -167,7 +167,7 @@ WebInspector.CSSStyleModel.prototype = {
 
     /**
      * @param {!DOMAgent.NodeId} nodeId
-     * @return {!Promise.<?WebInspector.CSSStyleDeclaration>}
+     * @return {!Promise.<?Map.<string, string>>}
      */
     computedStylePromise: function(nodeId)
     {
@@ -714,20 +714,6 @@ WebInspector.CSSStyleDeclaration.createDummyStyle = function(cssModel)
 WebInspector.CSSStyleDeclaration.parsePayload = function(cssModel, payload)
 {
     return new WebInspector.CSSStyleDeclaration(cssModel, payload);
-}
-
-/**
- * @param {!WebInspector.CSSStyleModel} cssModel
- * @param {!Array.<!CSSAgent.CSSComputedStyleProperty>} payload
- * @return {!WebInspector.CSSStyleDeclaration}
- */
-WebInspector.CSSStyleDeclaration.parseComputedStylePayload = function(cssModel, payload)
-{
-    var newPayload = /** @type {!CSSAgent.CSSStyle} */ ({ cssProperties: [], shorthandEntries: [], width: "", height: "" });
-    if (payload)
-        newPayload.cssProperties = /** @type {!Array.<!CSSAgent.CSSProperty>} */ (payload);
-
-    return new WebInspector.CSSStyleDeclaration(cssModel, newPayload);
 }
 
 WebInspector.CSSStyleDeclaration.prototype = {
@@ -1891,29 +1877,33 @@ WebInspector.CSSStyleModel.ComputedStyleLoader = function(cssModel)
 WebInspector.CSSStyleModel.ComputedStyleLoader.prototype = {
     /**
      * @param {!DOMAgent.NodeId} nodeId
-     * @return {!Promise.<?WebInspector.CSSStyleDeclaration>}
+     * @return {!Promise.<?Map.<string, string>>}
      */
     computedStylePromise: function(nodeId)
     {
         if (!this._nodeIdToPromise[nodeId])
-            this._nodeIdToPromise[nodeId] = this._cssModel._agent.getComputedStyleForNode(nodeId, parsePayload.bind(this)).then(cleanUp.bind(this));
+            this._nodeIdToPromise[nodeId] = this._cssModel._agent.getComputedStyleForNode(nodeId, parsePayload).then(cleanUp.bind(this));
 
         return this._nodeIdToPromise[nodeId];
 
         /**
          * @param {?Protocol.Error} error
          * @param {!Array.<!CSSAgent.CSSComputedStyleProperty>} computedPayload
-         * @return {?WebInspector.CSSStyleDeclaration}
-         * @this {WebInspector.CSSStyleModel.ComputedStyleLoader}
+         * @return {?Map.<string, string>}
          */
         function parsePayload(error, computedPayload)
         {
-            return !error && computedPayload ? WebInspector.CSSStyleDeclaration.parseComputedStylePayload(this._cssModel, computedPayload) : null;
+            if (error || !computedPayload)
+                return null;
+            var result = new Map();
+            for (var property of computedPayload)
+                result.set(property.name, property.value);
+            return result;
         }
 
         /**
-         * @param {?WebInspector.CSSStyleDeclaration} computedStyle
-         * @return {?WebInspector.CSSStyleDeclaration}
+         * @param {?Map.<string, string>} computedStyle
+         * @return {?Map.<string, string>}
          * @this {WebInspector.CSSStyleModel.ComputedStyleLoader}
          */
         function cleanUp(computedStyle)

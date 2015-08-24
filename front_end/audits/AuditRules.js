@@ -897,7 +897,7 @@ WebInspector.AuditRules.ImageDimensionsRule.prototype = {
             if (completeSrc)
                 src = completeSrc;
 
-            if (styles.computedStyle.getPropertyValue("position") === "absolute")
+            if (styles.computedStyle.get("position") === "absolute")
                 return;
 
             if (styles.attributesStyle) {
@@ -961,7 +961,7 @@ WebInspector.AuditRules.ImageDimensionsRule.prototype = {
             }
 
             /**
-             * @param {?WebInspector.CSSStyleDeclaration} computedStyle
+             * @param {?Map.<string, string>} computedStyle
              */
             function computedCallback(computedStyle)
             {

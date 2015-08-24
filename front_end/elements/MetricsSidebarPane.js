@@ -57,7 +57,7 @@ WebInspector.MetricsSidebarPane.prototype = {
         }
 
         /**
-         * @param {?WebInspector.CSSStyleDeclaration} style
+         * @param {?Map.<string, string>} style
          * @this {WebInspector.MetricsSidebarPane}
          */
         function callback(style)
@@ -107,11 +107,20 @@ WebInspector.MetricsSidebarPane.prototype = {
         this.update();
     },
 
+    /**
+     * @param {!Map.<string, string>} style
+     * @param {string} propertyName
+     * @return {number}
+     */
     _getPropertyValueAsPx: function(style, propertyName)
     {
-        return Number(style.getPropertyValue(propertyName).replace(/px$/, "") || 0);
+        return Number(style.get(propertyName).replace(/px$/, "") || 0);
     },
 
+    /**
+     * @param {!Map.<string, string>} computedStyle
+     * @param {string} componentName
+     */
     _getBox: function(computedStyle, componentName)
     {
         var suffix = componentName === "border" ? "-width" : "";
@@ -150,7 +159,7 @@ WebInspector.MetricsSidebarPane.prototype = {
     },
 
     /**
-     * @param {!WebInspector.CSSStyleDeclaration} style
+     * @param {!Map.<string, string>} style
      */
     _updateMetrics: function(style)
     {
@@ -160,7 +169,7 @@ WebInspector.MetricsSidebarPane.prototype = {
         var self = this;
 
         /**
-         * @param {!WebInspector.CSSStyleDeclaration} style
+         * @param {!Map.<string, string>} style
          * @param {string} name
          * @param {string} side
          * @param {string} suffix
@@ -169,7 +178,7 @@ WebInspector.MetricsSidebarPane.prototype = {
         function createBoxPartElement(style, name, side, suffix)
         {
             var propertyName = (name !== "position" ? name + "-" : "") + side + suffix;
-            var value = style.getPropertyValue(propertyName);
+            var value = style.get(propertyName);
             if (value === "" || (name !== "position" && value === "0px"))
                 value = "\u2012";
             else if (name === "position" && value === "auto")
@@ -184,30 +193,38 @@ WebInspector.MetricsSidebarPane.prototype = {
             return element;
         }
 
+        /**
+         * @param {!Map.<string, string>} style
+         * @return {string}
+         */
         function getContentAreaWidthPx(style)
         {
-            var width = style.getPropertyValue("width").replace(/px$/, "");
-            if (!isNaN(width) && style.getPropertyValue("box-sizing") === "border-box") {
+            var width = style.get("width").replace(/px$/, "");
+            if (!isNaN(width) && style.get("box-sizing") === "border-box") {
                 var borderBox = self._getBox(style, "border");
                 var paddingBox = self._getBox(style, "padding");
 
                 width = width - borderBox.left - borderBox.right - paddingBox.left - paddingBox.right;
             }
 
-            return Number.toFixedIfFloating(width);
+            return Number.toFixedIfFloating(width.toString());
         }
 
+        /**
+         * @param {!Map.<string, string>} style
+         * @return {string}
+         */
         function getContentAreaHeightPx(style)
         {
-            var height = style.getPropertyValue("height").replace(/px$/, "");
-            if (!isNaN(height) && style.getPropertyValue("box-sizing") === "border-box") {
+            var height = style.get("height").replace(/px$/, "");
+            if (!isNaN(height) && style.get("box-sizing") === "border-box") {
                 var borderBox = self._getBox(style, "border");
                 var paddingBox = self._getBox(style, "padding");
 
                 height = height - borderBox.top - borderBox.bottom - paddingBox.top - paddingBox.bottom;
             }
 
-            return Number.toFixedIfFloating(height);
+            return Number.toFixedIfFloating(height.toString());
         }
 
         // Display types for which margin is ignored.
@@ -250,11 +267,11 @@ WebInspector.MetricsSidebarPane.prototype = {
         for (var i = 0; i < boxes.length; ++i) {
             var name = boxes[i];
 
-            if (name === "margin" && noMarginDisplayType[style.getPropertyValue("display")])
+            if (name === "margin" && noMarginDisplayType[style.get("display")])
                 continue;
-            if (name === "padding" && noPaddingDisplayType[style.getPropertyValue("display")])
+            if (name === "padding" && noPaddingDisplayType[style.get("display")])
                 continue;
-            if (name === "position" && noPositionType[style.getPropertyValue("position")])
+            if (name === "position" && noPositionType[style.get("position")])
                 continue;
 
             var boxElement = createElement("div");
@@ -306,6 +323,12 @@ WebInspector.MetricsSidebarPane.prototype = {
         this.element.appendChild(metricsElement);
     },
 
+    /**
+     * @param {!Element} targetElement
+     * @param {string} box
+     * @param {string} styleProperty
+     * @param {!Map.<string, string>} computedStyle
+     */
     startEditing: function(targetElement, box, styleProperty, computedStyle)
     {
         if (WebInspector.isBeingEdited(targetElement))
@@ -400,7 +423,7 @@ WebInspector.MetricsSidebarPane.prototype = {
         var styleProperty = context.styleProperty;
         var computedStyle = context.computedStyle;
 
-        if (computedStyle.getPropertyValue("box-sizing") === "border-box" && (styleProperty === "width" || styleProperty === "height")) {
+        if (computedStyle.get("box-sizing") === "border-box" && (styleProperty === "width" || styleProperty === "height")) {
             if (!userInput.match(/px$/)) {
                 WebInspector.console.error("For elements with box-sizing: border-box, only absolute content area dimensions can be applied");
                 return;

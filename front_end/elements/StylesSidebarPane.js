@@ -2065,13 +2065,13 @@ WebInspector.StylePropertyTreeElement.prototype = {
         var swatchIcon = new WebInspector.ColorSwatchPopoverIcon(this, stylesPopoverHelper, text);
 
         /**
-         * @param {?WebInspector.CSSStyleDeclaration} styles
+         * @param {?Map.<string, string>} styles
          */
         function computedCallback(styles)
         {
             if (!styles)
                 return;
-            var bgColorText = styles.getPropertyValue("background-color") || "";
+            var bgColorText = styles.get("background-color") || "";
             var bgColor = WebInspector.Color.parse(bgColorText);
             // TODO(aboxhall): for background color with alpha, compute the actual
             // visible background color (blended with content underneath).

@@ -136,7 +136,7 @@ WebInspector.ComputedStyleWidget.prototype = {
 
     /**
      * @param {?WebInspector.SharedSidebarModel.ComputedStyle} nodeStyle
-       @param {?{matched: !WebInspector.SectionCascade, pseudo: !Map.<number, !WebInspector.SectionCascade>}} cascades
+     * @param {?{matched: !WebInspector.SectionCascade, pseudo: !Map.<number, !WebInspector.SectionCascade>}} cascades
      */
     _innerRebuildUpdate: function(nodeStyle, cascades)
     {
@@ -144,22 +144,26 @@ WebInspector.ComputedStyleWidget.prototype = {
         if (!nodeStyle || !cascades)
             return;
 
-        var uniqueProperties = nodeStyle.computedStyle.allProperties.slice();
+        var uniqueProperties = nodeStyle.computedStyle.keysArray();
         uniqueProperties.sort(propertySorter);
 
         var showInherited = this._showInheritedComputedStylePropertiesSetting.get();
         for (var i = 0; i < uniqueProperties.length; ++i) {
-            var property = uniqueProperties[i];
-            var inherited = this._isPropertyInherited(cascades.matched, property.name);
-            if (!showInherited && inherited && !(property.name in this._alwaysShowComputedProperties))
+            var propertyName = uniqueProperties[i];
+            var propertyValue = nodeStyle.computedStyle.get(propertyName);
+            var inherited = this._isPropertyInherited(cascades.matched, propertyName);
+            if (!showInherited && inherited && !(propertyName in this._alwaysShowComputedProperties))
                 continue;
-            var canonicalName = WebInspector.CSSMetadata.canonicalPropertyName(property.name);
-            if (property.name !== canonicalName && property.value === nodeStyle.computedStyle.getPropertyValue(canonicalName))
+            var canonicalName = WebInspector.CSSMetadata.canonicalPropertyName(propertyName);
+            if (propertyName !== canonicalName && propertyValue === nodeStyle.computedStyle.get(canonicalName))
                 continue;
             var item = this._propertiesContainer.createChild("div", "computed-style-property");
-            item[WebInspector.ComputedStyleWidget._propertySymbol] = property;
+            item[WebInspector.ComputedStyleWidget._propertySymbol] = {
+                name: propertyName,
+                value: propertyValue
+            };
             item.classList.toggle("computed-style-property-inherited", inherited);
-            var renderer = new WebInspector.StylesSidebarPropertyRenderer(null, nodeStyle.node, property.name, property.value);
+            var renderer = new WebInspector.StylesSidebarPropertyRenderer(null, nodeStyle.node, propertyName, /** @type {string} */(propertyValue));
             renderer.setColorHandler(this._processColor.bind(this));
 
             if (!inherited) {
@@ -177,13 +181,13 @@ WebInspector.ComputedStyleWidget.prototype = {
         this._updateFilter(this._filterRegex);
 
         /**
-         * @param {!WebInspector.CSSProperty} a
-         * @param {!WebInspector.CSSProperty} b
+         * @param {string} a
+         * @param {string} b
          */
         function propertySorter(a, b)
         {
             var canonicalName = WebInspector.CSSMetadata.canonicalPropertyName;
-            return canonicalName(a.name).compareTo(canonicalName(b.name));
+            return canonicalName(a).compareTo(canonicalName(b));
         }
     },
 
