@@ -304,7 +304,7 @@ WebInspector.NetworkPanel.prototype = {
     _resetFilmStripView: function()
     {
         this._filmStripView.reset();
-        this._filmStripView.setStatusText(WebInspector.UIString("Hit %s to capture frames.", WebInspector.isMac() ? WebInspector.UIString("Cmd+R") : WebInspector.UIString("Ctrl+R")));
+        this._filmStripView.setStatusText(WebInspector.UIString("Hit %s to reload and capture filmstrip.", WebInspector.ShortcutsScreen.TimelinePanelShortcuts.RecordPageReload[0].name));
     },
 
     /**
