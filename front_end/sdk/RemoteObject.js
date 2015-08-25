@@ -555,7 +555,11 @@ WebInspector.RemoteObjectImpl.prototype = {
              */
             function createEventListener(payload)
             {
-                return new WebInspector.EventListener(this._debuggerModel, payload, this._objectId);
+                return new WebInspector.EventListener(this._target,
+                                                      payload.type,
+                                                      payload.useCapture,
+                                                      payload.handler ? this.target().runtimeModel.createRemoteObject(payload.handler) : null,
+                                                      WebInspector.DebuggerModel.Location.fromPayload(this._debuggerModel, payload.location));
             }
         }
     },

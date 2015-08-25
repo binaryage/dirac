@@ -170,7 +170,7 @@ WebInspector.ObjectEventListenerBar.prototype = {
     {
         var title = this.listItemElement.createChild("span");
         var subtitle = this.listItemElement.createChild("span", "event-listener-tree-subtitle");
-        subtitle.appendChild(linkifier.linkifyRawLocation(this._eventListener.location(), this._eventListener.sourceName()));
+        subtitle.appendChild(linkifier.linkifyRawLocation(this._eventListener.location(), this._eventListener.sourceURL()));
         title.appendChild(WebInspector.ObjectPropertiesSection.createValueElement(object, false));
     },
 

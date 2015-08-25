@@ -493,20 +493,20 @@ WebInspector.ExecutionContext.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.SDKObject}
- * @param {!WebInspector.DebuggerModel} debuggerModel
- * @param {!DOMDebuggerAgent.EventListener} payload
- * @param {!RuntimeAgent.RemoteObjectId} objectId
+ * @param {!WebInspector.Target} target
+ * @param {string} type
+ * @param {boolean} useCapture
+ * @param {?WebInspector.RemoteObject} handler
+ * @param {!WebInspector.DebuggerModel.Location} location
  */
-WebInspector.EventListener = function(debuggerModel, payload, objectId)
+WebInspector.EventListener = function(target, type, useCapture, handler, location)
 {
-    WebInspector.SDKObject.call(this, debuggerModel.target());
-    this._type = payload.type;
-    this._useCapture = payload.useCapture;
-    this._location = WebInspector.DebuggerModel.Location.fromPayload(debuggerModel, payload.location);
-    this._handler = payload.handler ? this.target().runtimeModel.createRemoteObject(payload.handler) : null;
-    var script = debuggerModel.scriptForId(payload.location.scriptId);
-    this._sourceName = script ? script.contentURL() : "";
-    this._objectId = objectId;
+    WebInspector.SDKObject.call(this, target);
+    this._type = type;
+    this._useCapture = useCapture;
+    this._handler = handler;
+    this._location = location;
+    this._sourceURL = location.script().contentURL();
 }
 
 WebInspector.EventListener.prototype = {
@@ -527,14 +527,6 @@ WebInspector.EventListener.prototype = {
     },
 
     /**
-     * @return {!WebInspector.DebuggerModel.Location}
-     */
-    location: function()
-    {
-        return this._location;
-    },
-
-    /**
      * @return {?WebInspector.RemoteObject}
      */
     handler: function()
@@ -543,20 +535,20 @@ WebInspector.EventListener.prototype = {
     },
 
     /**
-     * @return {string}
+     * @return {!WebInspector.DebuggerModel.Location}
      */
-    sourceName: function()
+    location: function()
     {
-        return this._sourceName;
+        return this._location;
     },
 
     /**
-     * @return {!RuntimeAgent.RemoteObjectId}
+     * @return {string}
      */
-     objectId: function()
-     {
-        return this._objectId;
-     },
+    sourceURL: function()
+    {
+        return this._sourceURL;
+    },
 
     __proto__: WebInspector.SDKObject.prototype
 }
