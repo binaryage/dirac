@@ -666,11 +666,20 @@ WebInspector.NetworkDispatcher.prototype = {
 
 /**
  * @constructor
+ * @extends {WebInspector.Object}
  * @implements {WebInspector.TargetManager.Observer}
  */
 WebInspector.MultitargetNetworkManager = function()
 {
+    WebInspector.Object.call(this);
     WebInspector.targetManager.observeTargets(this);
+
+    /** @type {!Set<string>} */
+    this._blockedURLs = new Set();
+}
+
+WebInspector.MultitargetNetworkManager.EventTypes = {
+    BlockedURLsChanged: "BlockedURLsChanged"
 }
 
 WebInspector.MultitargetNetworkManager.prototype = {
@@ -685,6 +694,8 @@ WebInspector.MultitargetNetworkManager.prototype = {
             networkAgent.setExtraHTTPHeaders(this._extraHeaders);
         if (typeof this._userAgent !== "undefined")
             networkAgent.setUserAgentOverride(this._userAgent);
+        for (var url of this._blockedURLs)
+            networkAgent.addBlockedURL(url);
     },
 
     /**
@@ -714,7 +725,34 @@ WebInspector.MultitargetNetworkManager.prototype = {
         this._userAgent = userAgent;
         for (var target of WebInspector.targetManager.targets())
             target.networkAgent().setUserAgentOverride(this._userAgent);
-    }
+    },
+
+    /**
+     * @param {string} url
+     */
+    toggleURLBlocked: function(url)
+    {
+        if (this._blockedURLs.has(url)) {
+            this._blockedURLs.delete(url);
+            for (var target of WebInspector.targetManager.targets())
+                target.networkAgent().removeBlockedURL(url);
+        } else {
+            this._blockedURLs.add(url);
+            for (var target of WebInspector.targetManager.targets())
+                target.networkAgent().addBlockedURL(url);
+        }
+        this.dispatchEventToListeners(WebInspector.MultitargetNetworkManager.EventTypes.BlockedURLsChanged);
+    },
+
+    /**
+     * @return {!Set<string>}
+     */
+    blockedURLs: function()
+    {
+        return this._blockedURLs;
+    },
+
+    __proto__: WebInspector.Object.prototype
 }
 
 /**

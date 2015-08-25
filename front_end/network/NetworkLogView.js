@@ -1299,6 +1299,12 @@ WebInspector.NetworkLogView.prototype = {
         contextMenu.appendItem(WebInspector.UIString.capitalize("Clear ^browser ^cache"), this._clearBrowserCache.bind(this));
         contextMenu.appendItem(WebInspector.UIString.capitalize("Clear ^browser ^cookies"), this._clearBrowserCookies.bind(this));
 
+        var manager = WebInspector.multitargetNetworkManager;
+        if (Runtime.experiments.isEnabled("blockedURLs") && request && !manager.blockedURLs().has(request.url)) {
+            contextMenu.appendSeparator();
+            contextMenu.appendItem(WebInspector.UIString.capitalize("Block ^request URL"), manager.toggleURLBlocked.bind(manager, request.url));
+        }
+
         if (request && request.resourceType() === WebInspector.resourceTypes.XHR) {
             contextMenu.appendSeparator();
             contextMenu.appendItem(WebInspector.UIString("Replay XHR"), request.replayXHR.bind(request));

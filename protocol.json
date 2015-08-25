@@ -1359,6 +1359,22 @@
                 ]
             },
             {
+                "name": "addBlockedURL",
+                "description": "Blocks specific URL from loading.",
+                "parameters": [
+                    { "name": "url", "type": "string", "description": "URL to block." }
+                ],
+                "hidden": true
+            },
+            {
+                "name": "removeBlockedURL",
+                "description": "Cancels blocking of a specific URL from loading.",
+                "parameters": [
+                    { "name": "url", "type": "string", "description": "URL to stop blocking." }
+                ],
+                "hidden": true
+            },
+            {
                 "name": "replayXHR",
                 "description": "This method sends a new XMLHttpRequest which is identical to the original one. The following parameters should be identical: method, url, async, request body, extra headers, withCredentials attribute, user, password.",
                 "parameters": [
