@@ -782,6 +782,9 @@ window.InspectorFrontendHost = new InspectorFrontendHostImpl();
  */
 function installBackwardsCompatibility()
 {
+    if (window.location.search.indexOf("remoteFrontend") === -1)
+        return;
+
     /**
      * @this {CSSStyleDeclaration}
      */
