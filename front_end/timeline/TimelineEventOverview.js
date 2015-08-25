@@ -254,13 +254,11 @@ WebInspector.TimelineEventOverview.Network.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.TimelineEventOverview}
- * @param {string} id
- * @param {string} title
  * @param {!WebInspector.TimelineModel} model
  */
-WebInspector.TimelineEventOverview.Thread = function(id, title, model)
+WebInspector.TimelineEventOverview.CPUActivity = function(model)
 {
-    WebInspector.TimelineEventOverview.call(this, id, title, model)
+    WebInspector.TimelineEventOverview.call(this, "cpu-activity", WebInspector.UIString("CPU"), model);
     this._fillStyles = {};
     var categories = WebInspector.TimelineUIUtils.categories();
     for (var category in categories) {
@@ -268,9 +266,10 @@ WebInspector.TimelineEventOverview.Thread = function(id, title, model)
         categories[category].addEventListener(WebInspector.TimelineCategory.Events.VisibilityChanged, this._onCategoryVisibilityChanged, this);
     }
     this._disabledCategoryFillStyle = "hsl(0, 0%, 67%)";
+    this._backgroundCanvas = this.element.createChild("canvas", "fill background");
 }
 
-WebInspector.TimelineEventOverview.Thread.prototype = {
+WebInspector.TimelineEventOverview.CPUActivity.prototype = {
     /**
      * @override
      */
@@ -296,29 +295,22 @@ WebInspector.TimelineEventOverview.Thread.prototype = {
         return category.hidden ? this._disabledCategoryFillStyle : this._fillStyles[category.name];
     },
 
-    __proto__: WebInspector.TimelineEventOverview.prototype
-}
+    /**
+     * @override
+     */
+    resetCanvas: function()
+    {
+        WebInspector.TimelineEventOverview.prototype.resetCanvas.call(this);
+        this._backgroundCanvas.width = this.element.clientWidth * window.devicePixelRatio;
+        this._backgroundCanvas.height = this.element.clientHeight * window.devicePixelRatio;
+    },
 
-/**
- * @constructor
- * @extends {WebInspector.TimelineEventOverview.Thread}
- * @param {!WebInspector.TimelineModel} model
- */
-WebInspector.TimelineEventOverview.MainThread = function(model)
-{
-    WebInspector.TimelineEventOverview.Thread.call(this, "main-thread", WebInspector.UIString("CPU"), model)
-}
-
-WebInspector.TimelineEventOverview.MainThread.prototype = {
     /**
      * @override
      */
     update: function()
     {
         WebInspector.TimelineEventOverview.prototype.update.call(this);
-        var events = this._model.mainThreadEvents();
-        if (!events.length)
-            return;
         var /** @const */ quantSizePx = 4 * window.devicePixelRatio;
         var height = this._canvas.height;
         var baseLine = height;
@@ -326,9 +318,6 @@ WebInspector.TimelineEventOverview.MainThread.prototype = {
         var timeSpan = this._model.maximumRecordTime() - timeOffset;
         var scale = this._canvas.width / timeSpan;
         var quantTime = quantSizePx / scale;
-        var quantizer = new WebInspector.Quantizer(timeOffset, quantTime, drawSample.bind(this));
-        var ctx = this._context;
-        var x = 0;
         var categories = WebInspector.TimelineUIUtils.categories();
         var categoryOrder = ["idle", "loading", "painting", "rendering", "scripting", "other"];
         var otherIndex = categoryOrder.indexOf("other");
@@ -336,49 +325,64 @@ WebInspector.TimelineEventOverview.MainThread.prototype = {
         console.assert(idleIndex === categoryOrder.indexOf("idle"));
         for (var i = idleIndex + 1; i < categoryOrder.length; ++i)
             categories[categoryOrder[i]]._overviewIndex = i;
-        var categoryIndexStack = [];
+
+        for (var thread of this._model.virtualThreads())
+            drawThreadEvents.call(this, this._backgroundCanvas.getContext("2d"), thread.events);
+        drawThreadEvents.call(this, this._context, this._model.mainThreadEvents());
 
         /**
-         * @param {!Array<number>} counters
+         * @param {!CanvasRenderingContext2D} ctx
+         * @param {!Array<!WebInspector.TracingModel.Event>} events
          * @this {WebInspector.TimelineEventOverview}
          */
-        function drawSample(counters)
+        function drawThreadEvents(ctx, events)
         {
-            var y = baseLine;
-            for (var i = idleIndex + 1; i < counters.length; ++i) {
-                if (!counters[i])
-                    continue;
-                var h = counters[i] / quantTime * height;
-                ctx.fillStyle = this._categoryColor(categories[categoryOrder[i]]);
-                ctx.fillRect(x, y - h, quantSizePx, h);
-                y -= h;
+            var quantizer = new WebInspector.Quantizer(timeOffset, quantTime, drawSample.bind(this));
+            var x = 0;
+            var categoryIndexStack = [];
+
+            /**
+             * @param {!Array<number>} counters
+             * @this {WebInspector.TimelineEventOverview}
+             */
+            function drawSample(counters)
+            {
+                var y = baseLine;
+                for (var i = idleIndex + 1; i < counters.length; ++i) {
+                    if (!counters[i])
+                        continue;
+                    var h = counters[i] / quantTime * height;
+                    ctx.fillStyle = this._categoryColor(categories[categoryOrder[i]]);
+                    ctx.fillRect(x, y - h, quantSizePx, h);
+                    y -= h;
+                }
+                x += quantSizePx;
             }
-            x += quantSizePx;
-        }
 
-        /**
-         * @param {!WebInspector.TracingModel.Event} e
-         */
-        function onEventStart(e)
-        {
-            var index = categoryIndexStack.length ? categoryIndexStack.peekLast() : idleIndex;
-            quantizer.appendInterval(e.startTime, index);
-            categoryIndexStack.push(WebInspector.TimelineUIUtils.eventStyle(e).category._overviewIndex || otherIndex);
-        }
+            /**
+             * @param {!WebInspector.TracingModel.Event} e
+             */
+            function onEventStart(e)
+            {
+                var index = categoryIndexStack.length ? categoryIndexStack.peekLast() : idleIndex;
+                quantizer.appendInterval(e.startTime, index);
+                categoryIndexStack.push(WebInspector.TimelineUIUtils.eventStyle(e).category._overviewIndex || otherIndex);
+            }
 
-        /**
-         * @param {!WebInspector.TracingModel.Event} e
-         */
-        function onEventEnd(e)
-        {
-            quantizer.appendInterval(e.endTime, categoryIndexStack.pop());
-        }
+            /**
+             * @param {!WebInspector.TracingModel.Event} e
+             */
+            function onEventEnd(e)
+            {
+                quantizer.appendInterval(e.endTime, categoryIndexStack.pop());
+            }
 
-        WebInspector.TimelineModel.forEachEvent(events, onEventStart, onEventEnd);
-        quantizer.appendInterval(timeOffset + timeSpan + quantTime, idleIndex);  // Kick drawing the last bucket.
+            WebInspector.TimelineModel.forEachEvent(events, onEventStart, onEventEnd);
+            quantizer.appendInterval(timeOffset + timeSpan + quantTime, idleIndex);  // Kick drawing the last bucket.
+        }
     },
 
-    __proto__: WebInspector.TimelineEventOverview.Thread.prototype
+    __proto__: WebInspector.TimelineEventOverview.prototype
 }
 
 /**

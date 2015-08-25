@@ -268,7 +268,7 @@
     flex-basis: 25px;
 }
 
-#timeline-overview-main-thread,
+#timeline-overview-cpu-activity,
 #timeline-overview-framerate,
 #timeline-overview-memory {
     flex-basis: 21px;
@@ -297,8 +297,13 @@
     display: none;
 }
 
-#timeline-overview-main-thread::before {
+#timeline-overview-cpu-activity::before {
     content: "100%";
+}
+
+#timeline-overview-cpu-activity .background {
+    opacity: 0.15;
+    z-index: -10;
 }
 
 #timeline-overview-framerate::before {
