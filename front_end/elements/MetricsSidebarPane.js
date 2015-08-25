@@ -447,7 +447,7 @@ WebInspector.MetricsSidebarPane.prototype = {
         var allProperties = this.inlineStyle.allProperties;
         for (var i = 0; i < allProperties.length; ++i) {
             var property = allProperties[i];
-            if (property.name !== context.styleProperty || property.inactive)
+            if (property.name !== context.styleProperty || !property.activeInStyle())
                 continue;
 
             this.previousPropertyDataCandidate = property;

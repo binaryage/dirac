@@ -901,8 +901,8 @@ WebInspector.AuditRules.ImageDimensionsRule.prototype = {
                 return;
 
             if (styles.attributesStyle) {
-                var widthFound = !!styles.attributesStyle.getLiveProperty("width");
-                var heightFound = !!styles.attributesStyle.getLiveProperty("height");
+                var widthFound = !!styles.attributesStyle.getPropertyValue("width");
+                var heightFound = !!styles.attributesStyle.getPropertyValue("height");
             }
 
             var inlineStyle = styles.inlineStyle;

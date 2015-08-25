@@ -664,31 +664,22 @@ WebInspector.CSSStyleDeclaration = function(cssModel, payload)
             this._shorthandIsImportant.add(shorthandEntries[i].name);
     }
 
-    this._livePropertyMap = {}; // LIVE properties (source-based or style-based) : { name -> CSSProperty }
-    this._allProperties = []; // ALL properties: [ CSSProperty ]
-    this.__disabledProperties = {}; // DISABLED properties: { index -> CSSProperty }
-    var payloadPropertyCount = payload.cssProperties.length;
-
-    for (var i = 0; i < payloadPropertyCount; ++i) {
+    this._allProperties = [];
+    for (var i = 0; i < payload.cssProperties.length; ++i) {
         var property = WebInspector.CSSProperty.parsePayload(this, i, payload.cssProperties[i]);
         this._allProperties.push(property);
     }
 
-    this._computeActiveProperties();
+    this._generateSyntheticPropertiesIfNeeded();
+    this._computeInactiveProperties();
 
-    var propertyIndex = 0;
-    for (var i = 0; i < this._allProperties.length; ++i) {
-        var property = this._allProperties[i];
-        if (property.disabled)
-            this.__disabledProperties[i] = property;
-        if (!property.active && !property.styleBased)
+    this._activePropertyMap = new Map();
+    for (var property of this._allProperties) {
+        if (!property.activeInStyle())
             continue;
-        var name = property.name;
-        this[propertyIndex] = name;
-        this._livePropertyMap[name] = property;
-        ++propertyIndex;
+        this._activePropertyMap.set(property.name, property);
     }
-    this.length = propertyIndex;
+
     if ("cssText" in payload)
         this.cssText = payload.cssText;
 }
@@ -717,6 +708,74 @@ WebInspector.CSSStyleDeclaration.parsePayload = function(cssModel, payload)
 }
 
 WebInspector.CSSStyleDeclaration.prototype = {
+    _generateSyntheticPropertiesIfNeeded: function()
+    {
+        if (this.range)
+            return;
+
+        if (!this._shorthandValues.size)
+            return;
+
+        var propertiesSet = new Set();
+        for (var property of this._allProperties)
+            propertiesSet.add(property.name);
+
+        var generatedProperties = [];
+        // For style-based properties, generate shorthands with values when possible.
+        for (var property of this._allProperties) {
+            // For style-based properties, try generating shorthands.
+            var shorthands = WebInspector.CSSMetadata.cssPropertiesMetainfo.shorthands(property.name) || [];
+            for (var shorthand of shorthands) {
+                if (propertiesSet.has(shorthand))
+                    continue;  // There already is a shorthand this longhands falls under.
+                var shorthandValue = this._shorthandValues.get(shorthand);
+                if (!shorthandValue)
+                    continue;  // Never generate synthetic shorthands when no value is available.
+
+                // Generate synthetic shorthand we have a value for.
+                var shorthandImportance = !!this._shorthandIsImportant.has(shorthand);
+                var shorthandProperty = new WebInspector.CSSProperty(this, this.allProperties.length, shorthand, shorthandValue, shorthandImportance, false, true, false);
+                generatedProperties.push(shorthandProperty);
+                propertiesSet.add(shorthand);
+            }
+        }
+        this._allProperties = this._allProperties.concat(generatedProperties);
+    },
+
+    /**
+     * @return {!Array.<!WebInspector.CSSProperty>}
+     */
+    leadingProperties: function()
+    {
+        /**
+         * @param {!WebInspector.CSSProperty} property
+         * @return {boolean}
+         */
+        function propertyHasRange(property)
+        {
+            return !!property.range;
+        }
+
+        if (this.range)
+            return this._allProperties.filter(propertyHasRange);
+
+        var leadingProperties = [];
+        for (var property of this._allProperties) {
+            var shorthands = WebInspector.CSSMetadata.cssPropertiesMetainfo.shorthands(property.name) || [];
+            var belongToAnyShorthand = false;
+            for (var shorthand of shorthands) {
+                if (this._shorthandValues.get(shorthand)) {
+                    belongToAnyShorthand = true;
+                    break;
+                }
+            }
+            if (!belongToAnyShorthand)
+                leadingProperties.push(property);
+        }
+
+        return leadingProperties;
+    },
+
     /**
      * @return {!WebInspector.Target}
      */
@@ -748,24 +807,25 @@ WebInspector.CSSStyleDeclaration.prototype = {
             this._allProperties[i].sourceStyleSheetEdited(styleSheetId, oldRange, newRange);
     },
 
-    _computeActiveProperties: function()
+    _computeInactiveProperties: function()
     {
         var activeProperties = {};
-        for (var i = this._allProperties.length - 1; i >= 0; --i) {
+        for (var i = 0; i < this._allProperties.length; ++i) {
             var property = this._allProperties[i];
-            if (property.styleBased || property.disabled)
+            if (property.disabled || !property.parsedOk) {
+                property._setActive(false);
                 continue;
-            property._setActive(false);
-            if (!property.parsedOk)
-                continue;
+            }
             var canonicalName = WebInspector.CSSMetadata.canonicalPropertyName(property.name);
             var activeProperty = activeProperties[canonicalName];
-            if (!activeProperty || (!activeProperty.important && property.important))
+            if (!activeProperty) {
                 activeProperties[canonicalName] = property;
-        }
-        for (var propertyName in activeProperties) {
-            var property = activeProperties[propertyName];
-            property._setActive(true);
+            } else if (!activeProperty.important || property.important) {
+                activeProperty._setActive(false);
+                activeProperties[canonicalName] = property;
+            } else {
+                property._setActive(false);
+            }
         }
     },
 
@@ -776,20 +836,11 @@ WebInspector.CSSStyleDeclaration.prototype = {
 
     /**
      * @param {string} name
-     * @return {?WebInspector.CSSProperty}
-     */
-    getLiveProperty: function(name)
-    {
-        return this._livePropertyMap[name] || null;
-    },
-
-    /**
-     * @param {string} name
      * @return {string}
      */
     getPropertyValue: function(name)
     {
-        var property = this._livePropertyMap[name];
+        var property = this._activePropertyMap.get(name);
         return property ? property.value : "";
     },
 
@@ -799,7 +850,7 @@ WebInspector.CSSStyleDeclaration.prototype = {
      */
     isPropertyImplicit: function(name)
     {
-        var property = this._livePropertyMap[name];
+        var property = this._activePropertyMap.get(name);
         return property ? property.implicit : "";
     },
 
@@ -812,29 +863,11 @@ WebInspector.CSSStyleDeclaration.prototype = {
         var longhands = WebInspector.CSSMetadata.cssPropertiesMetainfo.longhands(name);
         var result = [];
         for (var i = 0; longhands && i < longhands.length; ++i) {
-            var property = this._livePropertyMap[longhands[i]];
+            var property = this._activePropertyMap.get(longhands[i]);
             if (property)
                 result.push(property);
         }
         return result;
-    },
-
-    /**
-     * @param {string} shorthandProperty
-     * @return {string}
-     */
-    shorthandValue: function(shorthandProperty)
-    {
-        return this._shorthandValues.get(shorthandProperty) || "";
-    },
-
-    /**
-     * @param {string} shorthandProperty
-     * @return {boolean}
-     */
-    shorthandIsImportant: function(shorthandProperty)
-    {
-        return this._shorthandIsImportant.has(shorthandProperty);
     },
 
     /**
@@ -876,7 +909,6 @@ WebInspector.CSSStyleDeclaration.prototype = {
     {
         index = (typeof index === "undefined") ? this.pastLastSourcePropertyIndex() : index;
         var property = new WebInspector.CSSProperty(this, index, "", "", false, false, true, false, "", this._insertionRange(index));
-        property._setActive(true);
         return property;
     },
 
@@ -1151,9 +1183,10 @@ WebInspector.CSSProperty = function(ownerStyle, index, name, value, important, d
     this.important = important;
     this.disabled = disabled;
     this.parsedOk = parsedOk;
-    this.implicit = implicit;
+    this.implicit = implicit; // A longhand, implicitly set by missing values of shorthand.
     this.text = text;
     this.range = range ? WebInspector.TextRange.fromObject(range) : null;
+    this._active = true;
 }
 
 /**
@@ -1206,24 +1239,12 @@ WebInspector.CSSProperty.prototype = {
         return this.name + ": " + this.value + (this.important ? " !important" : "") + ";";
     },
 
-    get isLive()
+    /**
+     * @return {boolean}
+     */
+    activeInStyle: function()
     {
-        return this.active || this.styleBased;
-    },
-
-    get active()
-    {
-        return typeof this._active === "boolean" && this._active;
-    },
-
-    get styleBased()
-    {
-        return !this.range;
-    },
-
-    get inactive()
-    {
-        return typeof this._active === "boolean" && !this._active;
+        return this._active;
     },
 
     /**

@@ -328,7 +328,7 @@ WebInspector.SectionCascade._computeUsedProperties = function(styleRules, allUse
         var allProperties = style.allProperties;
         for (var j = 0; j < allProperties.length; ++j) {
             var property = allProperties[j];
-            if (!property.isLive || !property.parsedOk)
+            if (!property.activeInStyle())
                 continue;
 
             // Do not pick non-inherited properties from inherited styles.
