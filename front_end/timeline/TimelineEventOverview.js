@@ -312,11 +312,12 @@ WebInspector.TimelineEventOverview.CPUActivity.prototype = {
     {
         WebInspector.TimelineEventOverview.prototype.update.call(this);
         var /** @const */ quantSizePx = 4 * window.devicePixelRatio;
+        var width = this._canvas.width;
         var height = this._canvas.height;
         var baseLine = height;
         var timeOffset = this._model.minimumRecordTime();
         var timeSpan = this._model.maximumRecordTime() - timeOffset;
-        var scale = this._canvas.width / timeSpan;
+        var scale = width / timeSpan;
         var quantTime = quantSizePx / scale;
         var categories = WebInspector.TimelineUIUtils.categories();
         var categoryOrder = ["idle", "loading", "painting", "rendering", "scripting", "other"];
@@ -337,24 +338,28 @@ WebInspector.TimelineEventOverview.CPUActivity.prototype = {
          */
         function drawThreadEvents(ctx, events)
         {
-            var quantizer = new WebInspector.Quantizer(timeOffset, quantTime, drawSample.bind(this));
+            var quantizer = new WebInspector.Quantizer(timeOffset, quantTime, drawSample);
             var x = 0;
             var categoryIndexStack = [];
+            var paths = [];
+            var lastY = [];
+            for (var i = 0; i < categoryOrder.length; ++i) {
+                paths[i] = new Path2D();
+                paths[i].moveTo(0, height);
+                lastY[i] = height;
+            }
 
             /**
              * @param {!Array<number>} counters
-             * @this {WebInspector.TimelineEventOverview}
              */
             function drawSample(counters)
             {
                 var y = baseLine;
-                for (var i = idleIndex + 1; i < counters.length; ++i) {
-                    if (!counters[i])
-                        continue;
-                    var h = counters[i] / quantTime * height;
-                    ctx.fillStyle = this._categoryColor(categories[categoryOrder[i]]);
-                    ctx.fillRect(x, y - h, quantSizePx, h);
+                for (var i = idleIndex + 1; i < categoryOrder.length; ++i) {
+                    var h = (counters[i] || 0) / quantTime * height;
                     y -= h;
+                    paths[i].bezierCurveTo(x, lastY[i], x, y, x + quantSizePx / 2, y);
+                    lastY[i] = y;
                 }
                 x += quantSizePx;
             }
@@ -379,6 +384,11 @@ WebInspector.TimelineEventOverview.CPUActivity.prototype = {
 
             WebInspector.TimelineModel.forEachEvent(events, onEventStart, onEventEnd);
             quantizer.appendInterval(timeOffset + timeSpan + quantTime, idleIndex);  // Kick drawing the last bucket.
+            for (var i = categoryOrder.length - 1; i > 0; --i) {
+                paths[i].lineTo(width, height);
+                ctx.fillStyle = this._categoryColor(categories[categoryOrder[i]]);
+                ctx.fill(paths[i]);
+            }
         }
     },
 
