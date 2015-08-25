@@ -268,6 +268,8 @@ FormatterWorker.JavaScriptFormatter.prototype = {
                 return "";
             if (node.parent && node.parent.type === "FunctionExpression" && node.parent.parent && node.parent.parent.type === "Property")
                 return "";
+            if (node.parent && node.parent.type === "FunctionExpression" && node.parent.parent && node.parent.parent.type === "CallExpression")
+                return "";
             if (node.parent && node.parent.type === "DoWhileStatement")
                 return "";
             if (node.parent && node.parent.type === "TryStatement" && node.parent.block == node)
