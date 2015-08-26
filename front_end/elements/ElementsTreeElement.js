@@ -91,7 +91,7 @@ WebInspector.ElementsTreeElement.visibleShadowRoots = function(node)
      */
     function filter(root)
     {
-        return root.shadowRootType() === WebInspector.DOMNode.ShadowRootTypes.Author;
+        return root.shadowRootType() !== WebInspector.DOMNode.ShadowRootTypes.UserAgent;
     }
     return roots;
 }

@@ -2256,7 +2256,7 @@
             {
                 "id": "ShadowRootType",
                 "type": "string",
-                "enum": ["user-agent", "author"],
+                "enum": ["user-agent", "open", "closed"],
                 "description": "Shadow root type."
             },
             {

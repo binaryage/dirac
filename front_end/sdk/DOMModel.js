@@ -136,7 +136,8 @@ WebInspector.DOMNode.PseudoElementNames = {
  */
 WebInspector.DOMNode.ShadowRootTypes = {
     UserAgent: "user-agent",
-    Author: "author"
+    Open: "open",
+    Closed: "closed"
 }
 
 WebInspector.DOMNode.prototype = {
@@ -345,7 +346,7 @@ WebInspector.DOMNode.prototype = {
     {
         var shadowRootType = this.shadowRootType();
         if (shadowRootType)
-            return "#shadow-root" + (shadowRootType === WebInspector.DOMNode.ShadowRootTypes.UserAgent ? " (user-agent)" : "");
+            return "#shadow-root (" + shadowRootType + ")";
         return this.isXMLNode() ? this.nodeName() : this.nodeName().toLowerCase();
     },
 
