@@ -122,6 +122,7 @@ WebInspector.SoftContextMenu.prototype = {
         if (item.element) {
             var wrapper = menuItemElement.createChild("div", "soft-context-menu-custom-item");
             wrapper.appendChild(item.element);
+            menuItemElement._isCustom = true;
             return menuItemElement;
         }
 
@@ -273,7 +274,7 @@ WebInspector.SoftContextMenu.prototype = {
     _highlightPrevious: function()
     {
         var menuItemElement = this._highlightedMenuItemElement ? this._highlightedMenuItemElement.previousSibling : this._contextMenuElement.lastChild;
-        while (menuItemElement && menuItemElement._isSeparator)
+        while (menuItemElement && (menuItemElement._isSeparator || menuItemElement._isCustom))
             menuItemElement = menuItemElement.previousSibling;
         if (menuItemElement)
             this._highlightMenuItem(menuItemElement);
@@ -282,7 +283,7 @@ WebInspector.SoftContextMenu.prototype = {
     _highlightNext: function()
     {
         var menuItemElement = this._highlightedMenuItemElement ? this._highlightedMenuItemElement.nextSibling : this._contextMenuElement.firstChild;
-        while (menuItemElement && menuItemElement._isSeparator)
+        while (menuItemElement && (menuItemElement._isSeparator || menuItemElement._isCustom))
             menuItemElement = menuItemElement.nextSibling;
         if (menuItemElement)
             this._highlightMenuItem(menuItemElement);
