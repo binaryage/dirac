@@ -159,7 +159,7 @@ WebInspector.Spectrum = function()
         var hsva = this._hsv.slice();
         hsva[3] = Number.constrain(newAlpha, 0, 1);
         var colorFormat = undefined;
-        if (this._color().hasAlpha() && (this._colorFormat === WebInspector.Color.Format.ShortHEX || this._colorFormat === WebInspector.Color.Format.HEX || this._colorFormat === WebInspector.Color.Format.Nickname))
+        if (hsva[3] !== 1 && (this._colorFormat === WebInspector.Color.Format.ShortHEX || this._colorFormat === WebInspector.Color.Format.HEX || this._colorFormat === WebInspector.Color.Format.Nickname))
             colorFormat = WebInspector.Color.Format.RGB;
         this._innerSetColor(hsva, "", colorFormat, WebInspector.Spectrum._ChangeSource.Other);
     }
