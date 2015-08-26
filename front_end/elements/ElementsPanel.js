@@ -967,6 +967,8 @@ WebInspector.ElementsPanel.prototype = {
         if (this.sidebarPaneView && this.sidebarPaneView.shouldHideOnDetach())
             return; // We can't reparent extension iframes.
 
+        var selectedTabId = this.sidebarPaneView ? this.sidebarPaneView.selectedTabId : null;
+
         var extensionSidebarPanes = WebInspector.extensionServer.sidebarPanes();
         if (this.sidebarPaneView) {
             this.sidebarPaneView.detach();
@@ -1065,6 +1067,9 @@ WebInspector.ElementsPanel.prototype = {
 
         this._splitWidget.setSidebarWidget(this.sidebarPaneView);
         this.sidebarPanes.styles.expand();
+
+        if (selectedTabId)
+            this.sidebarPaneView.selectTab(selectedTabId);
     },
 
     /**
