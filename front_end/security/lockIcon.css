@@ -3,7 +3,8 @@
  * found in the LICENSE file.
  */
 
-.lock-icon {
+.lock-icon,
+.security-property {
     background-size: cover;
     height: 16px;
     width: 16px;
@@ -52,7 +53,18 @@
     }
 }
 
-.sidebar-tree-item .lock-icon {
-    float: left;
-    margin-right: 2px;
+.security-property-insecure {
+    background-image: url(Images/securityPropertyInsecure.svg);
+}
+
+.security-property-neutral {
+    background-image: url(Images/securityPropertyWarning.svg);
+}
+
+.security-property-warning {
+    background-image: url(Images/securityPropertyWarning.svg);
+}
+
+.security-property-secure {
+    background-image: url(Images/securityPropertySecure.svg);
 }
