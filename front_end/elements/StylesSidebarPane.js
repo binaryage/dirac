@@ -1269,7 +1269,7 @@ WebInspector.StylePropertiesSection.prototype = {
         } else {
             var child = this.propertiesTreeOutline.firstChild();
             while (child) {
-                child.setOverloaded(this.styleRule.isPropertyOverloaded(child.name, child.isShorthand));
+                child.setOverloaded(this.styleRule.isPropertyOverloaded(child.name));
                 child = child.traverseNextTreeElement(false, null, true);
             }
         }
@@ -1295,7 +1295,7 @@ WebInspector.StylePropertiesSection.prototype = {
         for (var property of style.leadingProperties()) {
             var isShorthand = !!WebInspector.CSSMetadata.cssPropertiesMetainfo.longhands(property.name);
             var inherited = this.isPropertyInherited(property.name);
-            var overloaded = this.styleRule.isPropertyOverloaded(property.name, isShorthand);
+            var overloaded = this.styleRule.isPropertyOverloaded(property.name);
             var item = new WebInspector.StylePropertyTreeElement(this._parentPane, this.styleRule, property, isShorthand, inherited, overloaded);
             this.propertiesTreeOutline.appendChild(item);
         }

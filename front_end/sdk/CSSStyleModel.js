@@ -745,7 +745,7 @@ WebInspector.CSSStyleDeclaration.prototype = {
     /**
      * @return {!Array.<!WebInspector.CSSProperty>}
      */
-    leadingProperties: function()
+    _computeLeadingProperties: function()
     {
         /**
          * @param {!WebInspector.CSSProperty} property
@@ -774,6 +774,16 @@ WebInspector.CSSStyleDeclaration.prototype = {
         }
 
         return leadingProperties;
+    },
+
+    /**
+     * @return {!Array.<!WebInspector.CSSProperty>}
+     */
+    leadingProperties: function()
+    {
+        if (!this._leadingProperties)
+            this._leadingProperties = this._computeLeadingProperties();
+        return this._leadingProperties;
     },
 
     /**
