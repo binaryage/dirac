@@ -1553,7 +1553,8 @@ WebInspector.TimelineModel.buildBottomUpTree = function(topDownTree, groupingCal
     /** @type {!Map<string,!WebInspector.TimelineModel.ProfileTreeNode>} */
     buRoot.children = new Map();
     var nodesOnStack = /** @type {!Set<string>} */ (new Set());
-    topDownTree.children.forEach(processNode);
+    if (topDownTree.children)
+        topDownTree.children.forEach(processNode);
 
     /**
      * @param {!WebInspector.TimelineModel.ProfileTreeNode} tdNode
