@@ -705,19 +705,17 @@ WebInspector.OverridesSupport.prototype = {
                         Object.defineProperty(recepients[j], touchEvents[i], { value: null, writable: true, configurable: true, enumerable: true });
                 }
             }
-        }
+        };
 
         var symbol = WebInspector.OverridesSupport._touchEventsScriptIdSymbol;
 
-        if (emulationEnabled && target[symbol] !== -1) {
-            target[symbol] = -1;
-            target.pageAgent().addScriptToEvaluateOnLoad("(" + injectedFunction.toString() + ")()", scriptAddedCallback);
-        } else {
-            if (typeof target[symbol] !== "undefined") {
-                target.pageAgent().removeScriptToEvaluateOnLoad(target[symbol]);
-                delete target[symbol];
-            }
+        if (typeof target[symbol] !== "undefined") {
+            target.pageAgent().removeScriptToEvaluateOnLoad(target[symbol]);
+            delete target[symbol];
         }
+
+        if (emulationEnabled)
+            target.pageAgent().addScriptToEvaluateOnLoad("(" + injectedFunction.toString() + ")()", scriptAddedCallback);
 
         /**
          * @param {?Protocol.Error} error
