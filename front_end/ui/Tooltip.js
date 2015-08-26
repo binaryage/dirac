@@ -101,7 +101,7 @@ WebInspector.Tooltip.prototype = {
         tooltipX = Number.constrain(tooltipX,
             containerOffset.x + pageMargin,
             containerOffset.x + containerOffsetWidth - tooltipWidth - pageMargin);
-        var onBottom = anchorBox.y + anchorOffset + anchorBox.height < containerOffset.y + containerOffsetHeight;
+        var onBottom = anchorBox.y + anchorOffset + anchorBox.height + tooltipHeight < containerOffset.y + containerOffsetHeight;
         var tooltipY = onBottom ? anchorBox.y + anchorBox.height + anchorOffset : anchorBox.y - tooltipHeight - anchorOffset;
         this._tooltipElement.positionAt(tooltipX, tooltipY);
     },
