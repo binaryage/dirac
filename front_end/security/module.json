@@ -16,8 +16,8 @@
     ],
     "resources": [
         "lockIcon.css",
+        "mainView.css",
         "originView.css",
-        "securityPanel.css",
         "sidebar.css"
     ]
 }

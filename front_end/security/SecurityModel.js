@@ -60,10 +60,27 @@ WebInspector.SecurityDispatcher.prototype = {
      * @override
      * @param {!SecurityAgent.SecurityState} securityState
      * @param {!Array<!SecurityAgent.SecurityStateExplanation>=} explanations
+     * @param {!SecurityAgent.MixedContentStatus=} mixedContentStatus
+     * @param {boolean=} schemeIsCryptographic
      */
-    securityStateChanged: function(securityState, explanations)
+    securityStateChanged: function(securityState, explanations, mixedContentStatus, schemeIsCryptographic)
     {
         var data = {"securityState": securityState, "explanations": explanations || []};
+        if (schemeIsCryptographic && mixedContentStatus) {
+            if (mixedContentStatus.ranInsecureContent) {
+                explanations.push({
+                    "securityState": mixedContentStatus.ranInsecureContentStyle,
+                    "summary": WebInspector.UIString("Active Mixed Content"),
+                    "description": WebInspector.UIString("You have recently allowed insecure content (such as scripts or iframes) to run on this site.")
+                });
+            } else if (mixedContentStatus.displayedInsecureContent) {
+                explanations.push({
+                    "securityState": mixedContentStatus.displayedInsecureContentStyle,
+                    "summary": WebInspector.UIString("Mixed Content"),
+                    "description": WebInspector.UIString("The site includes HTTP resources.")
+                });
+            }
+        }
         this._model.dispatchEventToListeners(WebInspector.SecurityModel.EventTypes.SecurityStateChanged, data);
     }
 }

@@ -10,7 +10,7 @@
 WebInspector.SecurityPanel = function()
 {
     WebInspector.PanelWithSidebar.call(this, "security");
-    this.registerRequiredCSS("security/securityPanel.css");
+    this.registerRequiredCSS("security/mainView.css");
     this.registerRequiredCSS("security/lockIcon.css");
 
     var sidebarTree = new TreeOutlineInShadow();
@@ -330,11 +330,16 @@ WebInspector.SecurityMainView = function()
     this.element.classList.add("security-main-view");
 
     // Create security state section.
-    var securityStateSection = this.element.createChild("div");
-    this._lockIcon = securityStateSection.createChild("div", "lock-icon");
-    this._securityStateText = securityStateSection.createChild("div", "security-state");
-    securityStateSection.createChild("hr");
-    this._securityExplanations = securityStateSection.createChild("div", "security-explanations");
+    var summarySection = this.element.createChild("div", "security-section");
+    summarySection.classList.add("security-summary");
+
+    this._summarylockIcon = summarySection.createChild("div", "lock-icon");
+
+    var text = summarySection.createChild("div", "security-section-text");
+    text.createChild("div", "security-summary-section-title").textContent = WebInspector.UIString("Security Overview");
+    this._summaryExplanation = text.createChild("div", "security-explanation");
+
+    this._securityExplanations = this.element.createChild("div", "security-explanation-list");
 
 }
 
@@ -344,12 +349,13 @@ WebInspector.SecurityMainView.prototype = {
      */
     _addExplanation: function(explanation)
     {
-        var explanationDiv = this._securityExplanations.createChild("div", "security-explanation");
+        var explanationSection = this._securityExplanations.createChild("div", "security-section");
+        explanationSection.classList.add("security-explanation");
 
-        var explanationLockIcon = explanationDiv.createChild("div", "lock-icon");
-        explanationLockIcon.classList.add("lock-icon-" + explanation.securityState);
-        explanationDiv.createChild("div", "explanation-title").textContent = WebInspector.UIString(explanation.summary);
-        explanationDiv.createChild("div", "explanation-text").textContent = WebInspector.UIString(explanation.description);
+        explanationSection.createChild("div", "lock-icon").classList.add("lock-icon-" + explanation.securityState);
+        var text = explanationSection.createChild("div", "security-section-text");
+        text.createChild("div", "security-section-title").textContent = explanation.summary;
+        text.createChild("div", "security-explanation").textContent = explanation.description;
     },
 
     /**
@@ -360,12 +366,20 @@ WebInspector.SecurityMainView.prototype = {
     {
         // Remove old state.
         // It's safe to call this even when this._securityState is undefined.
-        this._lockIcon.classList.remove("lock-icon-" + this._securityState);
+        this._summarylockIcon.classList.remove("lock-icon-" + this._securityState);
+        this._summaryExplanation.classList.remove("security-state-" + this._securityState);
 
         // Add new state.
         this._securityState = newSecurityState;
-        this._lockIcon.classList.add("lock-icon-" + this._securityState);
-        this._securityStateText.textContent = WebInspector.UIString("Page security state: %s", this._securityState);
+        this._summarylockIcon.classList.add("lock-icon-" + this._securityState);
+        this._summaryExplanation.classList.add("security-state-" + this._securityState);
+        var summaryExplanationStrings = {
+            "unknown":  WebInspector.UIString("This security of this page is unknown."),
+            "insecure": WebInspector.UIString("This page is insecure (broken HTTPS)."),
+            "neutral":  WebInspector.UIString("This page is not secure."),
+            "secure":   WebInspector.UIString("This page is secure (valid HTTPS).")
+        }
+        this._summaryExplanation.textContent = summaryExplanationStrings[this._securityState];
 
         this._securityExplanations.removeChildren();
         for (var explanation of explanations)
