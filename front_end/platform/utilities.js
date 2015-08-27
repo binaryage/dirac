@@ -959,7 +959,10 @@ String.tokenizeFormatString = function(format, formatters)
 
     function addStringToken(str)
     {
-        tokens.push({ type: "string", value: str });
+        if (tokens.length && tokens[tokens.length - 1].type === "string")
+            tokens[tokens.length - 1].value += str;
+        else
+            tokens.push({ type: "string", value: str });
     }
 
     function addSpecifierToken(specifier, precision, substitutionIndex)
