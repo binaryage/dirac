@@ -388,6 +388,19 @@ WebInspector.NetworkRequest.prototype = {
     /**
      * @return {boolean}
      */
+    get blocked()
+    {
+        return this._blocked;
+    },
+
+    set blocked(x)
+    {
+        this._blocked = x;
+    },
+
+    /**
+     * @return {boolean}
+     */
     cached: function()
     {
         return (!!this._fromMemoryCache || !!this._fromDiskCache) && !this._transferSize;

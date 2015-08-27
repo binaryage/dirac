@@ -260,7 +260,7 @@ WebInspector.NetworkDataGridNode.prototype = {
     {
         cell.classList.toggle("network-dim-cell", !this._isFailed() && (this._request.cached() || !this._request.statusCode));
 
-        if (this._request.failed && !this._request.canceled) {
+        if (this._request.failed && !this._request.canceled && !this._request.blocked) {
             var failText = WebInspector.UIString("(failed)");
             if (this._request.localizedFailDescription) {
                 cell.createTextChild(failText);
@@ -278,6 +278,8 @@ WebInspector.NetworkDataGridNode.prototype = {
             cell.setTextAndTitle(WebInspector.UIString("(data)"));
         } else if (this._request.canceled) {
             cell.setTextAndTitle(WebInspector.UIString("(canceled)"));
+        } else if (this._request.blocked) {
+            cell.setTextAndTitle(WebInspector.UIString("(blocked)"));
         } else if (this._request.finished) {
             cell.setTextAndTitle(WebInspector.UIString("Finished"));
         } else {
