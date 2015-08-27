@@ -14,7 +14,7 @@ WebInspector.Tooltip = function(doc)
 
     this._tooltipElement = this._shadowRoot.createChild("div", "tooltip");
     doc.addEventListener("mousemove", this._mouseMove.bind(this), true);
-    doc.addEventListener("mousedown", this._hide.bind(this), true);
+    doc.addEventListener("mousedown", this._hide.bind(this, true), true);
 }
 
 WebInspector.Tooltip.Timing = {
@@ -106,12 +106,17 @@ WebInspector.Tooltip.prototype = {
         this._tooltipElement.positionAt(tooltipX, tooltipY);
     },
 
-    _hide: function()
+    /**
+     * @param {boolean=} removeInstant
+     */
+    _hide: function(removeInstant)
     {
         delete this._anchorElement;
         this._tooltipElement.classList.remove("shown");
         if (Date.now() > this._tooltipLastOpened)
             this._tooltipLastClosed = Date.now();
+        if (removeInstant)
+            delete this._tooltipLastClosed;
     }
 }
 
