@@ -3255,6 +3255,42 @@
         ]
     },
     {
+        "domain": "IO",
+        "description": "Input/Output operations for streams produced by DevTools.",
+        "hidden": true,
+        "types": [
+            {
+                "id": "StreamHandle",
+                "type": "string"
+            }
+        ],
+        "commands": [
+            {
+                "name": "read",
+                "description": "Read a chunk of the stream",
+                "async": true,
+                "parameters": [
+                    { "name": "handle", "$ref": "StreamHandle", "description": "Handle of the stream to read." },
+                    { "name": "offset", "type": "integer", "optional": true, "description": "Seek to the specified offset before reading (if not specificed, proceed with offset following the last read)." },
+                    { "name": "size", "type": "integer", "optional": true,  "description": "Maximum number of bytes to read (left upon the agent discretion if not specified)." }
+                ],
+                "returns": [
+                    { "name": "data", "type": "string", "description": "Data that were read." },
+                    { "name": "eof", "type": "boolean", "description": "Set if the end-of-file condition occured while reading." }
+                ],
+                "handlers": ["browser"]
+            },
+            {
+                "name": "close",
+                "description": "Close the stream, discard any temporary backing storage.",
+                "parameters": [
+                    { "name": "handle", "$ref": "StreamHandle", "description": "Handle of the stream to close." }
+                ],
+                "handlers": ["browser"]
+            }
+        ]
+    },
+    {
         "domain": "Timeline",
         "description": "Timeline domain is deprecated. Please use Tracing instead.",
         "types": [
@@ -4826,7 +4862,8 @@
                 "parameters": [
                     { "name": "categories", "type": "string", "optional": true, "description": "Category/tag filter" },
                     { "name": "options", "type": "string", "optional": true, "description": "Tracing options" },
-                    { "name": "bufferUsageReportingInterval", "type": "number", "optional": true, "description": "If set, the agent will issue bufferUsage events at this interval, specified in milliseconds" }
+                    { "name": "bufferUsageReportingInterval", "type": "number", "optional": true, "description": "If set, the agent will issue bufferUsage events at this interval, specified in milliseconds" },
+                    { "name": "transferMode", "type": "string", "enum": ["ReportEvents", "ReturnAsStream"], "optional": true, "description": "Whether to report trace events as series of dataCollected events or to save trace to a stream (defaults to <code>ReportEvents</code>)." }
                 ],
                 "handlers": ["browser", "renderer"]
             },
@@ -4868,6 +4905,9 @@
             {
                 "name": "tracingComplete",
                 "description": "Signals that tracing is stopped and there is no trace buffers pending flush, all data were delivered via dataCollected events.",
+                "parameters": [
+                    { "name": "stream", "$ref": "IO.StreamHandle", "optional": true, "description": "A handle of the stream that holds resulting trace data." }
+                ],
                 "handlers": ["browser"]
             },
             {

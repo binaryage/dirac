@@ -58,6 +58,11 @@ WebInspector.TracingManager = function(target)
  */
 WebInspector.TracingManager.EventPayload;
 
+WebInspector.TracingManager.TransferMode = {
+    ReportEvents: "ReportEvents",
+    ReturnAsStream: "ReturnAsStream"
+};
+
 WebInspector.TracingManager.prototype = {
     /**
      * @return {?WebInspector.Target}
@@ -112,7 +117,7 @@ WebInspector.TracingManager.prototype = {
             throw new Error("Tracing is already started");
         var bufferUsageReportingIntervalMs = 500;
         this._activeClient = client;
-        this._target.tracingAgent().start(categoryFilter, options, bufferUsageReportingIntervalMs, callback);
+        this._target.tracingAgent().start(categoryFilter, options, bufferUsageReportingIntervalMs, WebInspector.TracingManager.TransferMode.ReportEvents, callback);
         this._activeClient.tracingStarted();
     },
 
