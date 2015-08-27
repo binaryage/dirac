@@ -258,8 +258,6 @@ WebInspector.Spectrum.prototype = {
         if (palette.mutable)
             numItems++;
         var rowsNeeded = Math.max(1, Math.ceil(numItems / WebInspector.Spectrum._itemsPerPaletteRow));
-        for (var i = 0; palette.mutable && i < rowsNeeded * WebInspector.Spectrum._itemsPerPaletteRow - numItems; i++)
-            this._paletteContainer.createChild("div", "spectrum-palette-color empty-color");
         if (palette.mutable)
             this.contentElement.appendChild(this._addColorToolbar.element);
         else
@@ -313,13 +311,28 @@ WebInspector.Spectrum.prototype = {
         var offsetX = e.pageX - (newIndex % WebInspector.Spectrum._itemsPerPaletteRow) * WebInspector.Spectrum._colorChipSize;
         var offsetY = e.pageY - (newIndex / WebInspector.Spectrum._itemsPerPaletteRow | 0) * WebInspector.Spectrum._colorChipSize;
 
-        this._dragElement.style.position = "relative";
-        this._dragElement.style.left = (offsetX - this._dragHotSpotX) + "px";
-        this._dragElement.style.top = (offsetY - this._dragHotSpotY) + "px";
+        this._dragElement.style.transform = "translateX(" + (offsetX - this._dragHotSpotX) + "px) translateY(" + (offsetY - this._dragHotSpotY) + "px)";
         var children = Array.prototype.slice.call(this._paletteContainer.children);
         var index = children.indexOf(this._dragElement);
+        /** @type {!Map.<!Element, {left: number, top: number}>} */
+        var swatchOffsets = new Map();
+        for (var swatch of children)
+            swatchOffsets.set(swatch, swatch.totalOffset());
+
         if (index !== newIndex)
             this._paletteContainer.insertBefore(this._dragElement, children[newIndex > index ? newIndex + 1 : newIndex]);
+
+        for (var swatch of children) {
+            if (swatch === this._dragElement)
+                continue;
+            var before = swatchOffsets.get(swatch);
+            var after = swatch.totalOffset();
+            if (before.left !== after.left || before.top !== after.top) {
+                swatch.animate([
+                    { transform: "translateX(" + (before.left - after.left) + "px) translateY(" + (before.top - after.top) + "px)" },
+                    { transform: "none" }], { duration: 100, easing: "cubic-bezier(0, 0, 0.2, 1)" });
+            }
+        }
     },
 
     /**
@@ -327,9 +340,7 @@ WebInspector.Spectrum.prototype = {
      */
     _paletteDragEnd: function(e)
     {
-        this._dragElement.style.removeProperty("position");
-        this._dragElement.style.removeProperty("left");
-        this._dragElement.style.removeProperty("top");
+        this._dragElement.style.removeProperty("transform");
         var children = this._paletteContainer.children;
         var colors = [];
         for (var i = 0; i < children.length; ++i) {
