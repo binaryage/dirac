@@ -1199,6 +1199,9 @@ WebInspector.ElementsTreeOutline.prototype = {
     {
         var node = /** @type {!WebInspector.DOMNode} */ (event.data);
         this._addUpdateRecord(node).charDataModified();
+        // Text could be large and force us to render itself as the child in the tree outline.
+        if (node.parentNode && node.parentNode.firstChild === node.parentNode.lastChild)
+            this._addUpdateRecord(node.parentNode).childrenModified();
         this._updateModifiedNodesSoon();
     },
 
@@ -1386,14 +1389,9 @@ WebInspector.ElementsTreeOutline.prototype = {
      */
     _hasVisibleChildren: function(node)
     {
-        if (WebInspector.ElementsTreeElement.canShowInlineText(node))
-            return false;
-
         if (node.importedDocument())
             return true;
         if (node.templateContent())
-            return true;
-        if (node.childNodeCount())
             return true;
         if (WebInspector.ElementsTreeElement.visibleShadowRoots(node).length)
             return true;
@@ -1401,7 +1399,7 @@ WebInspector.ElementsTreeOutline.prototype = {
             return true;
         if (node.isInsertionPoint())
             return true;
-        return false;
+        return !!node.childNodeCount() && !WebInspector.ElementsTreeElement.canShowInlineText(node);
     },
 
     /**
