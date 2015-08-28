@@ -30,9 +30,8 @@
 /**
  * @constructor
  * @extends {WebInspector.ElementsSidebarPane}
- * @param {function()} requestShowCallback
  */
-WebInspector.StylesSidebarPane = function(requestShowCallback)
+WebInspector.StylesSidebarPane = function()
 {
     WebInspector.ElementsSidebarPane.call(this, WebInspector.UIString("Styles"));
     this.setMinimumSize(96, 26);
@@ -49,7 +48,6 @@ WebInspector.StylesSidebarPane = function(requestShowCallback)
     toolbar.element.classList.add("styles-pane-toolbar", "toolbar-gray-toggled");
     this._currentToolbarPane = null;
 
-    this._requestShowCallback = requestShowCallback;
     var toolbarPaneContainer = this.element.createChild("div", "styles-sidebar-toolbar-pane-container");
     this._toolbarPaneElement = toolbarPaneContainer.createChild("div", "styles-sidebar-toolbar-pane");
     this._sectionsContainer = this.element.createChild("div");
@@ -257,15 +255,6 @@ WebInspector.StylesSidebarPane.prototype = {
             for (var section of block.sections)
                 section._styleSheetMediaEdited(oldMedia, newMedia);
         }
-    },
-
-    /**
-     * @param {string} propertyName
-     */
-    tracePropertyName: function(propertyName)
-    {
-        this._requestShowCallback();
-        this._filterInput.setFilterValue(WebInspector.CSSMetadata.canonicalPropertyName(propertyName));
     },
 
     /**

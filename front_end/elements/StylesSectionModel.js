@@ -160,13 +160,23 @@ WebInspector.StylesSectionModel.prototype = {
      * @param {string} propertyName
      * @return {boolean}
      */
-    isPropertyOverloaded: function(propertyName)
+    isPropertyInCascade: function(propertyName)
     {
         if (!this.hasMatchingSelectors())
             return false;
         if (this.inherited() && !WebInspector.CSSMetadata.isPropertyInherited(propertyName))
             return false;
+        return true;
+    },
 
+    /**
+     * @param {string} propertyName
+     * @return {boolean}
+     */
+    isPropertyOverloaded: function(propertyName)
+    {
+        if (!this.isPropertyInCascade(propertyName))
+            return false;
         var usedProperties = this._cascade._usedPropertiesForModel(this);
         var canonicalName = WebInspector.CSSMetadata.canonicalPropertyName(propertyName);
         return !usedProperties.has(canonicalName);

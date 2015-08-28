@@ -83,7 +83,7 @@ WebInspector.ElementsPanel = function()
     this._elementsSidebarViewWrappers = [];
     var sharedSidebarModel = new WebInspector.SharedSidebarModel();
     this.sidebarPanes.platformFonts = WebInspector.PlatformFontsWidget.createSidebarWrapper(sharedSidebarModel);
-    this.sidebarPanes.styles = new WebInspector.StylesSidebarPane(this._showStylesSidebar.bind(this));
+    this.sidebarPanes.styles = new WebInspector.StylesSidebarPane();
 
     this.sidebarPanes.computedStyle = WebInspector.ComputedStyleWidget.createSidebarWrapper(this.sidebarPanes.styles, sharedSidebarModel);
 
@@ -943,11 +943,6 @@ WebInspector.ElementsPanel.prototype = {
     {
         for (var i = 0; i < this._treeOutlines.length; ++i)
             this._treeOutlines[i].update();
-    },
-
-    _showStylesSidebar: function()
-    {
-        this.sidebarPaneView.selectTab(this.sidebarPanes.styles.title());
     },
 
     _updateSidebarPosition: function()
