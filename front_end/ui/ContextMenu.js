@@ -152,12 +152,14 @@ WebInspector.ContextSubMenuItem.prototype = {
     },
 
     /**
-     * @param {string} label
      * @param {string} actionId
+     * @param {string=} label
      * @return {!WebInspector.ContextMenuItem}
      */
-    appendAction: function(label, actionId)
+    appendAction: function(actionId, label)
     {
+        if (!label)
+            label = WebInspector.actionRegistry.actionTitle(actionId);
         var result = this.appendItem(label, WebInspector.actionRegistry.execute.bind(WebInspector.actionRegistry, actionId));
         var shortcut = WebInspector.shortcutRegistry.shortcutTitleForAction(actionId);
         if (shortcut)
@@ -435,7 +437,7 @@ WebInspector.ContextMenu.prototype = {
             if (!group)
                 continue;
             for (var extension of group)
-                this.appendAction(extension.title(), extension.descriptor()["actionId"]);
+                this.appendAction(extension.descriptor()["actionId"]);
             this.appendSeparator();
         }
     },

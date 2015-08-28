@@ -200,6 +200,13 @@ WebInspector.ConsoleModel.evaluateCommandInConsole = function(executionContext, 
     WebInspector.userMetrics.ConsoleEvaluated.record();
 }
 
+WebInspector.ConsoleModel.clearConsole = function()
+{
+    var targets = WebInspector.targetManager.targets();
+    for (var i = 0; i < targets.length; ++i)
+        targets[i].consoleModel.requestClearMessages();
+}
+
 
 /**
  * @constructor

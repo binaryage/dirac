@@ -65,6 +65,28 @@ WebInspector.ActionRegistry.prototype = {
         {
             /** @type {!WebInspector.ActionDelegate} */(actionDelegate).handleAction(WebInspector.context, actionId);
         }
+    },
+
+    /**
+     * @param {string} actionId
+     * @return {string}
+     */
+    actionTitle: function(actionId)
+    {
+        var extension = this._actionsById.get(actionId);
+        console.assert(extension, "No action found for actionId '" + actionId + "'");
+        return extension.descriptor()["title"] || "";
+    },
+
+    /**
+     * @param {string} actionId
+     * @return {string}
+     */
+    actionIcon: function(actionId)
+    {
+        var extension = this._actionsById.get(actionId);
+        console.assert(extension, "No action found for actionId '" + actionId + "'");
+        return extension.descriptor()["iconClass"] || "";
     }
 }
 

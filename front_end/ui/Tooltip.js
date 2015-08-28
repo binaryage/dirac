@@ -66,9 +66,9 @@ WebInspector.Tooltip.prototype = {
 
         if (tooltip.actionId) {
             var shortcuts = WebInspector.shortcutRegistry.shortcutDescriptorsForAction(tooltip.actionId);
-            if (shortcuts && shortcuts.length) {
+            for (var shortcut of shortcuts) {
                 var shortcutElement = this._tooltipElement.createChild("div", "tooltip-shortcut");
-                shortcutElement.textContent = shortcuts[0].name;
+                shortcutElement.textContent = shortcut.name;
             }
         }
 

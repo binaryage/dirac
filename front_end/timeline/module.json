@@ -19,6 +19,18 @@
             "type": "@WebInspector.QueryParamHandler",
             "name": "loadTimelineFromURL",
             "className": "WebInspector.LoadTimelineHandler"
+        },
+        {
+            "type": "@WebInspector.ActionDelegate",
+            "actionId": "timeline.toggle-recording",
+            "iconClass": "record-toolbar-item",
+            "contextTypes": ["WebInspector.TimelinePanel"],
+            "className": "WebInspector.TimelinePanel.RecordActionDelegate",
+            "bindings": [
+                {
+                    "shortcut": "Ctrl+E"
+                }
+            ]
         }
     ],
     "dependencies": [

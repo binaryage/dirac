@@ -35,6 +35,18 @@
             "settingName": "highResolutionCpuProfiling",
             "settingType": "boolean",
             "defaultValue": false
+        },
+        {
+            "type": "@WebInspector.ActionDelegate",
+            "actionId": "profiler.toggle-recording",
+            "iconClass": "record-toolbar-item",
+            "contextTypes": ["WebInspector.ProfilesPanel"],
+            "className": "WebInspector.ProfilesPanel.RecordActionDelegate",
+            "bindings": [
+                {
+                    "shortcut": "Ctrl+E"
+                }
+            ]
         }
     ],
     "dependencies": [

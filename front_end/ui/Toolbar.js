@@ -666,6 +666,18 @@ WebInspector.ToolbarButton.prototype = {
 }
 
 /**
+ * @param {string} actionId
+ * @return {!WebInspector.ToolbarButton}
+ */
+WebInspector.ToolbarButton.createActionButton = function(actionId)
+{
+    var registry = WebInspector.actionRegistry;
+    var button = new WebInspector.ToolbarButton(registry.actionTitle(actionId), registry.actionIcon(actionId));
+    button.setAction(actionId);
+    return button;
+}
+
+/**
  * @constructor
  * @extends {WebInspector.ToolbarButton}
  * @param {string} title

@@ -66,7 +66,7 @@ WebInspector.KeyboardShortcut.Keys = {
     Enter: { code: 13, name: { mac: "\u21a9", other: "Enter" } },
     Shift: { code: 16, name: { mac: "\u21e7", other: "Shift" } },
     Ctrl: { code: 17, name: "Ctrl" },
-    Esc: { code: 27, name: { mac: "\u238b", other: "Esc" } },
+    Esc: { code: 27, name: "Esc" },
     Space: { code: 32, name: "Space" },
     PageUp: { code: 33,  name: { mac: "\u21de", other: "PageUp" } },      // also NUM_NORTH_EAST
     PageDown: { code: 34, name: { mac: "\u21df", other: "PageDown" } },   // also NUM_SOUTH_EAST

@@ -3,6 +3,7 @@
         {
             "type": "@WebInspector.ActionDelegate",
             "actionId": "settings.show",
+            "title": "Settings",
             "className": "WebInspector.SettingsController.ActionDelegate",
             "bindings": [
                 {
@@ -13,11 +14,13 @@
         {
             "type": "@WebInspector.ActionDelegate",
             "actionId": "settings.help",
+            "title": "Help",
             "className": "WebInspector.SettingsController.ActionDelegate"
         },
         {
             "type": "@WebInspector.ActionDelegate",
             "actionId": "settings.shortcuts",
+            "title": "Shortcuts",
             "className": "WebInspector.SettingsController.ActionDelegate"
         },
         {
@@ -37,19 +40,16 @@
         {
             "type": "context-menu-item",
             "location": "mainMenu/footer",
-            "title": "Shortcuts",
             "actionId": "settings.shortcuts"
         },
         {
             "type": "context-menu-item",
             "location": "mainMenu/footer",
-            "title": "Settings",
             "actionId": "settings.show"
         },
         {
             "type": "context-menu-item",
             "location": "mainMenu/footer",
-            "title": "Help",
             "actionId": "settings.help"
         }
     ],

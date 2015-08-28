@@ -112,6 +112,7 @@
         {
             "type": "@WebInspector.ActionDelegate",
             "actionId": "sources.search.toggle",
+            "title": "Search all files",
             "className": "WebInspector.AdvancedSearchView.ActionDelegate",
             "bindings": [
                 {
@@ -127,7 +128,6 @@
         {
             "type": "context-menu-item",
             "location": "mainMenu/navigate",
-            "title": "Search all files",
             "actionId": "sources.search.toggle"
         },
         {
