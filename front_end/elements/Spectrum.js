@@ -113,6 +113,12 @@ WebInspector.Spectrum = function()
     var paletteSwitcher = this.contentElement.createChild("div", "spectrum-palette-switcher spectrum-switcher");
     appendSwitcherIcon(paletteSwitcher);
     paletteSwitcher.addEventListener("click", this._togglePalettePanel.bind(this, true));
+
+    this._deleteIconToolbar = new WebInspector.Toolbar();
+    this._deleteIconToolbar.element.classList.add("delete-color-toolbar");
+    this._deleteButton = new WebInspector.ToolbarButton("", "garbage-collect-toolbar-item");
+    this._deleteIconToolbar.appendToolbarItem(this._deleteButton);
+
     var overlay = this.contentElement.createChild("div", "spectrum-overlay fill");
     overlay.addEventListener("click", this._togglePalettePanel.bind(this, false));
 
@@ -258,10 +264,13 @@ WebInspector.Spectrum.prototype = {
         if (palette.mutable)
             numItems++;
         var rowsNeeded = Math.max(1, Math.ceil(numItems / WebInspector.Spectrum._itemsPerPaletteRow));
-        if (palette.mutable)
-            this.contentElement.appendChild(this._addColorToolbar.element);
-        else
+        if (palette.mutable) {
+            this._paletteContainer.appendChild(this._addColorToolbar.element);
+            this._paletteContainer.appendChild(this._deleteIconToolbar.element);
+        } else {
             this._addColorToolbar.element.remove();
+            this._deleteIconToolbar.element.remove();
+        }
 
         this._togglePalettePanel(false);
         var paletteColorHeight = 12;
@@ -280,7 +289,16 @@ WebInspector.Spectrum.prototype = {
         var localY = e.pageY - this._paletteContainer.totalOffsetTop();
         var col = Math.min(localX / WebInspector.Spectrum._colorChipSize | 0, WebInspector.Spectrum._itemsPerPaletteRow - 1);
         var row = (localY / WebInspector.Spectrum._colorChipSize) | 0;
-        return Math.min(row * WebInspector.Spectrum._itemsPerPaletteRow + col, this._paletteContainer.children.length - 1);
+        return Math.min(row * WebInspector.Spectrum._itemsPerPaletteRow + col, this._customPaletteSetting.get().colors.length - 1);
+    },
+
+    /**
+     * @param {!Event} e
+     * @return {boolean}
+     */
+    _isDraggingToBin: function(e)
+    {
+        return e.pageX > this._deleteIconToolbar.element.totalOffsetLeft();
     },
 
     /**
@@ -290,13 +308,15 @@ WebInspector.Spectrum.prototype = {
     _paletteDragStart: function(e)
     {
         var element = e.deepElementFromPoint();
-        if (!element.__mutable)
+        if (!element || !element.__mutable)
             return false;
 
         var index = this._slotIndexForEvent(e);
         this._dragElement = element;
         this._dragHotSpotX = e.pageX - (index % WebInspector.Spectrum._itemsPerPaletteRow) * WebInspector.Spectrum._colorChipSize;
         this._dragHotSpotY = e.pageY - (index / WebInspector.Spectrum._itemsPerPaletteRow | 0) * WebInspector.Spectrum._colorChipSize;
+
+        this._deleteIconToolbar.element.classList.add("dragging");
         return true;
     },
 
@@ -311,7 +331,10 @@ WebInspector.Spectrum.prototype = {
         var offsetX = e.pageX - (newIndex % WebInspector.Spectrum._itemsPerPaletteRow) * WebInspector.Spectrum._colorChipSize;
         var offsetY = e.pageY - (newIndex / WebInspector.Spectrum._itemsPerPaletteRow | 0) * WebInspector.Spectrum._colorChipSize;
 
-        this._dragElement.style.transform = "translateX(" + (offsetX - this._dragHotSpotX) + "px) translateY(" + (offsetY - this._dragHotSpotY) + "px)";
+        var isDeleting = this._isDraggingToBin(e);
+        this._deleteIconToolbar.element.classList.toggle("delete-color-toolbar-active", isDeleting);
+        var dragElementTransform = "translateX(" + (offsetX - this._dragHotSpotX) + "px) translateY(" + (offsetY - this._dragHotSpotY) + "px)";
+        this._dragElement.style.transform = isDeleting ? dragElementTransform + " scale(0.8)" : dragElementTransform;
         var children = Array.prototype.slice.call(this._paletteContainer.children);
         var index = children.indexOf(this._dragElement);
         /** @type {!Map.<!Element, {left: number, top: number}>} */
@@ -340,6 +363,8 @@ WebInspector.Spectrum.prototype = {
      */
     _paletteDragEnd: function(e)
     {
+        if (this._isDraggingToBin(e))
+            this._dragElement.remove();
         this._dragElement.style.removeProperty("transform");
         var children = this._paletteContainer.children;
         var colors = [];
@@ -351,6 +376,10 @@ WebInspector.Spectrum.prototype = {
         palette.colors = colors;
         this._customPaletteSetting.set(palette);
         this._showPalette(this._customPaletteSetting.get(), false);
+
+        this._deleteIconToolbar.element.classList.remove("dragging");
+        this._deleteIconToolbar.element.classList.remove("delete-color-toolbar-active");
+        this._deleteButton.setToggled(false);
     },
 
     /**
