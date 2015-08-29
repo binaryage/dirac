@@ -58,7 +58,7 @@ WebInspector.InspectElementModeController.prototype = {
         if (!this.enabled())
             return;
         var domModel = WebInspector.DOMModel.fromTarget(target);
-        domModel.setInspectModeEnabled(true, WebInspector.moduleSetting("showUAShadowDOM").get());
+        domModel.setInspectMode(WebInspector.moduleSetting("showUAShadowDOM").get() ? DOMAgent.InspectMode.SearchForUAShadowDOM : DOMAgent.InspectMode.SearchForNode);
     },
 
     /**
@@ -88,8 +88,17 @@ WebInspector.InspectElementModeController.prototype = {
         var enabled = !this.enabled();
         this._toggleSearchButton.setToggled(enabled);
 
-        for (var domModel of WebInspector.DOMModel.instances())
-            domModel.setInspectModeEnabled(enabled, WebInspector.moduleSetting("showUAShadowDOM").get());
+        for (var domModel of WebInspector.DOMModel.instances()) {
+            var mode;
+            if (!enabled)
+                mode = DOMAgent.InspectMode.None;
+            else if (WebInspector.moduleSetting("showUAShadowDOM").get())
+                mode = DOMAgent.InspectMode.SearchForUAShadowDOM;
+            else
+                mode = DOMAgent.InspectMode.SearchForNode;
+
+            domModel.setInspectMode(mode);
+        }
     },
 
     _suspendStateChanged: function()

@@ -2368,6 +2368,16 @@
                     { "name": "shapeMarginColor", "$ref": "RGBA", "optional": true, "hidden": true, "description": "The shape margin fill color (default: transparent)." }
                 ],
                 "description": "Configuration data for the highlighting of page elements."
+            },
+            {
+                "id": "InspectMode",
+                "type": "string",
+                "hidden": true,
+                "enum": [
+                    "searchForNode",
+                    "searchForUAShadowDOM",
+                    "none"
+                ]
             }
         ],
         "commands": [
@@ -2531,11 +2541,10 @@
                 "description": "Requests that the node is sent to the caller given the JavaScript node object reference. All nodes that form the path from the node to the root are also sent to the client as a series of <code>setChildNodes</code> notifications."
             },
             {
-                "name": "setInspectModeEnabled",
+                "name": "setInspectMode",
                 "hidden": true,
                 "parameters": [
-                    { "name": "enabled", "type": "boolean", "description": "True to enable inspection mode, false to disable it." },
-                    { "name": "inspectUAShadowDOM", "type": "boolean", "optional": true, "description": "True to enable inspection mode for user agent shadow DOM." },
+                    { "name": "mode", "$ref": "InspectMode", "description": "Set an inspection mode." },
                     { "name": "highlightConfig", "$ref": "HighlightConfig", "optional": true, "description": "A descriptor for the highlight appearance of hovered-over nodes. May be omitted if <code>enabled == false</code>." }
                 ],
                 "description": "Enters the 'inspect' mode. In this mode, elements that user is hovering over are highlighted. Backend then generates 'inspectNodeRequested' event upon element selection."
@@ -2751,7 +2760,7 @@
                 "parameters": [
                     { "name": "backendNodeId", "$ref": "BackendNodeId", "description": "Id of the node to inspect." }
                 ],
-                "description": "Fired when the node should be inspected. This happens after call to <code>setInspectModeEnabled</code>.",
+                "description": "Fired when the node should be inspected. This happens after call to <code>setInspectMode</code>.",
                 "hidden" : true
             },
             {

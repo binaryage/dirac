@@ -1116,7 +1116,7 @@ WebInspector.ElementsPanel.prototype = {
 
             // We need to correct (turn on/off layout editor) the config which is used by inspect element mode, so we re-enable it.
             if (WebInspector.inspectElementModeController && WebInspector.inspectElementModeController.enabled())
-                domModel.setInspectModeEnabled(true, WebInspector.moduleSetting("showUAShadowDOM").get());
+                domModel.setInspectMode(WebInspector.moduleSetting("showUAShadowDOM").get() ? DOMAgent.InspectMode.SearchForUAShadowDOM : DOMAgent.InspectMode.SearchForNode);
         }
         WebInspector.DOMModel.hideDOMNodeHighlight();
     },
@@ -1333,17 +1333,16 @@ WebInspector.ElementsPanel.LayoutEditorNodeHighlighter.prototype = {
 
     /**
      * @override
-     * @param {boolean} enabled
-     * @param {boolean} inspectUAShadowDOM
+     * @param {!DOMAgent.InspectMode} mode
      * @param {!DOMAgent.HighlightConfig} config
      * @param {function(?Protocol.Error)=} callback
      */
-    setInspectModeEnabled: function(enabled, inspectUAShadowDOM, config, callback)
+    setInspectMode: function(mode, config, callback)
     {
         config.showLayoutEditor = config.showInfo;
-        WebInspector.DefaultDOMNodeHighlighter.prototype.setInspectModeEnabled.call(this, enabled, inspectUAShadowDOM, config, callback);
+        WebInspector.DefaultDOMNodeHighlighter.prototype.setInspectMode.call(this, mode, config, callback);
 
-        if (enabled)
+        if (mode !== DOMAgent.InspectMode.None)
             return;
 
         var selectedNode = this._treeOutline.selectedDOMNode();

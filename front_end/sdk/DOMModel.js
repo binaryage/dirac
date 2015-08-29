@@ -1746,19 +1746,18 @@ WebInspector.DOMModel.prototype = {
     },
 
     /**
-     * @param {boolean} enabled
-     * @param {boolean} inspectUAShadowDOM
+     * @param {!DOMAgent.InspectMode} mode
      * @param {function(?Protocol.Error)=} callback
      */
-    setInspectModeEnabled: function(enabled, inspectUAShadowDOM, callback)
+    setInspectMode: function(mode, callback)
     {
         /**
          * @this {WebInspector.DOMModel}
          */
         function onDocumentAvailable()
         {
-            this.dispatchEventToListeners(WebInspector.DOMModel.Events.InspectModeWillBeToggled, enabled);
-            this._highlighter.setInspectModeEnabled(enabled, inspectUAShadowDOM, this._buildHighlightConfig(), callback);
+            this.dispatchEventToListeners(WebInspector.DOMModel.Events.InspectModeWillBeToggled, mode !== DOMAgent.InspectMode.None);
+            this._highlighter.setInspectMode(mode, this._buildHighlightConfig(), callback);
         }
         this.requestDocument(onDocumentAvailable.bind(this));
     },
@@ -2101,12 +2100,11 @@ WebInspector.DOMNodeHighlighter.prototype = {
     highlightDOMNode: function(node, config, backendNodeId, objectId) {},
 
     /**
-     * @param {boolean} enabled
-     * @param {boolean} inspectUAShadowDOM
+     * @param {!DOMAgent.InspectMode} mode
      * @param {!DOMAgent.HighlightConfig} config
      * @param {function(?Protocol.Error)=} callback
      */
-    setInspectModeEnabled: function(enabled, inspectUAShadowDOM, config, callback) {},
+    setInspectMode: function(mode, config, callback) {},
 
     /**
      * @param {!PageAgent.FrameId} frameId
@@ -2142,14 +2140,13 @@ WebInspector.DefaultDOMNodeHighlighter.prototype = {
 
     /**
      * @override
-     * @param {boolean} enabled
-     * @param {boolean} inspectUAShadowDOM
+     * @param {!DOMAgent.InspectMode} mode
      * @param {!DOMAgent.HighlightConfig} config
      * @param {function(?Protocol.Error)=} callback
      */
-    setInspectModeEnabled: function(enabled, inspectUAShadowDOM, config, callback)
+    setInspectMode: function(mode, config, callback)
     {
-        this._agent.setInspectModeEnabled(enabled, inspectUAShadowDOM, config, callback);
+        this._agent.setInspectMode(mode, config, callback);
     },
 
     /**
