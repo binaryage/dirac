@@ -126,6 +126,23 @@
             ]
         },
         {
+            "type": "@WebInspector.ActionDelegate",
+            "actionId": "debugger.toggle-breakpoints-active",
+            "iconClass": "breakpoint-toolbar-item",
+            "className": "WebInspector.SourcesPanel.DebuggingActionDelegate",
+            "contextTypes": ["WebInspector.SourcesPanel"],
+            "bindings": [
+                {
+                    "platform": "windows,linux",
+                    "shortcut": "Ctrl+F8"
+                },
+                {
+                    "platform": "mac",
+                    "shortcut": "Meta+F8"
+                }
+            ]
+        },
+        {
             "type": "context-menu-item",
             "location": "mainMenu/navigate",
             "actionId": "sources.search.toggle"

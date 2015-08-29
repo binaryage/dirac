@@ -352,7 +352,7 @@ WebInspector.Main.prototype = {
 
     _registerForwardedShortcuts: function()
     {
-        /** @const */ var forwardedActions = ["main.reload", "main.hard-reload", "main.toggle-dock"];
+        /** @const */ var forwardedActions = ["main.reload", "main.hard-reload", "main.toggle-dock", "debugger.toggle-breakpoints-active"];
         var actionKeys = WebInspector.shortcutRegistry.keysForActions(forwardedActions).map(WebInspector.KeyboardShortcut.keyCodeAndModifiersFromKey);
 
         actionKeys.push({keyCode: WebInspector.KeyboardShortcut.Keys.F8.code});

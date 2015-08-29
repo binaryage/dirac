@@ -692,7 +692,7 @@ WebInspector.SourcesPanel.prototype = {
         rawLocation.continueToLocation();
     },
 
-    _toggleBreakpointsClicked: function(event)
+    _toggleBreakpointsActive: function()
     {
         WebInspector.breakpointManager.setBreakpointsActive(!WebInspector.breakpointManager.breakpointsActive());
     },
@@ -753,9 +753,8 @@ WebInspector.SourcesPanel.prototype = {
         debugToolbar.appendSeparator();
 
         // Toggle Breakpoints
-        this._toggleBreakpointsButton = new WebInspector.ToolbarButton(WebInspector.UIString("Deactivate breakpoints"), "breakpoint-toolbar-item");
+        this._toggleBreakpointsButton = WebInspector.ToolbarButton.createActionButton("debugger.toggle-breakpoints-active");
         this._toggleBreakpointsButton.setToggled(false);
-        this._toggleBreakpointsButton.addEventListener("click", this._toggleBreakpointsClicked, this);
         debugToolbar.appendToolbarItem(this._toggleBreakpointsButton);
 
         // Pause on Exception
@@ -1417,7 +1416,9 @@ WebInspector.SourcesPanel.DebuggingActionDelegate.prototype = {
         case "debugger.run-snippet":
             panel._runSnippet();
             break;
-
+        case "debugger.toggle-breakpoints-active":
+            panel._toggleBreakpointsActive();
+            break;
         }
     }
 }
