@@ -63,6 +63,7 @@
     ],
     "resources": [
         "invalidationsTree.css",
-        "timelinePanel.css"
+        "timelinePanel.css",
+        "timelineStatusDialog.css"
     ]
 }

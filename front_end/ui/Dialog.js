@@ -32,11 +32,13 @@
  * @constructor
  * @param {!Element} relativeToElement
  * @param {!WebInspector.DialogDelegate} delegate
+ * @param {boolean=} modal
  */
-WebInspector.Dialog = function(relativeToElement, delegate)
+WebInspector.Dialog = function(relativeToElement, delegate, modal)
 {
     this._delegate = delegate;
     this._relativeToElement = relativeToElement;
+    this._modal = modal;
 
     this._glassPane = new WebInspector.GlassPane(/** @type {!Document} */ (relativeToElement.ownerDocument));
     WebInspector.GlassPane.DefaultFocusedViewStack.push(this);
@@ -71,12 +73,14 @@ WebInspector.Dialog.currentInstance = function()
 /**
  * @param {?Element} relativeToElement
  * @param {!WebInspector.DialogDelegate} delegate
+ * @param {boolean=} modal
  */
-WebInspector.Dialog.show = function(relativeToElement, delegate)
+WebInspector.Dialog.show = function(relativeToElement, delegate, modal)
 {
     if (WebInspector.Dialog._instance)
         return;
-    WebInspector.Dialog._instance = new WebInspector.Dialog(relativeToElement || WebInspector.Dialog.modalHostView().element, delegate);
+    WebInspector.Dialog._instance = new WebInspector.Dialog(relativeToElement || WebInspector.Dialog.modalHostView().element, delegate, modal);
+    WebInspector.Dialog._instance.focus();
 }
 
 WebInspector.Dialog.hide = function()
@@ -105,8 +109,13 @@ WebInspector.Dialog.prototype = {
         this._glassPane.dispose();
     },
 
+    /**
+     * @param {!Event} event
+     */
     _onGlassPaneFocus: function(event)
     {
+        if (this._modal)
+            return;
         this._hide();
     },
 
@@ -129,6 +138,8 @@ WebInspector.Dialog.prototype = {
 
         if (event.keyCode === WebInspector.KeyboardShortcut.Keys.Enter.code)
             this._delegate.onEnter(event);
+
+        this._delegate.onKeyDown(event);
 
         if (!event.handled && this._closeKeys.indexOf(event.keyCode) >= 0) {
             this._hide();
@@ -178,7 +189,15 @@ WebInspector.DialogDelegate.prototype = {
 
     focus: function() { },
 
+    /**
+     * @param {!KeyboardEvent} event
+     */
     onEnter: function(event) { },
+
+    /**
+     * @param {!KeyboardEvent} event
+     */
+    onKeyDown: function(event) { },
 
     willHide: function() { },
 

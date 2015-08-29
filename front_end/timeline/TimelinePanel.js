@@ -458,7 +458,7 @@ WebInspector.TimelinePanel.prototype = {
         {
             this._setOperationInProgress(null);
             this._updateToggleTimelineButton(false);
-            this._hideStatusPane();
+            this._hideRecordingHelpMessage();
         }
         var progressIndicator = new WebInspector.ProgressIndicator();
         this._setOperationInProgress(progressIndicator);
@@ -668,7 +668,12 @@ WebInspector.TimelinePanel.prototype = {
      */
     _startRecording: function(userInitiated)
     {
+        console.assert(!this._statusDialog, "Status dialog is already opened.");
+        this._statusDialog = new WebInspector.TimelinePanel.StatusDialog();
+        this._statusDialog.addEventListener(WebInspector.TimelinePanel.StatusDialog.Events.Finish, this._stopRecording, this);
+        WebInspector.Dialog.show(null, this._statusDialog, true);
         this._updateStatus(WebInspector.UIString("Initializing recording\u2026"));
+
         this._autoRecordGeneration = userInitiated ? null : {};
         this._model.startRecording(true, this._enableJSSamplingSettingSetting.get(), this._captureMemorySetting.get(), this._captureLayersAndPicturesSetting.get(), this._captureFilmStripSetting && this._captureFilmStripSetting.get());
         if (this._lazyFrameModel)
@@ -680,16 +685,18 @@ WebInspector.TimelinePanel.prototype = {
         if (userInitiated)
             WebInspector.userMetrics.TimelineStarted.record();
         this._setUIControlsEnabled(false);
+        this._hideRecordingHelpMessage();
     },
 
     _stopRecording: function()
     {
+        if (this._statusDialog)
+            this._statusDialog.finish();
+        this._updateStatus(WebInspector.UIString("Retrieving timeline\u2026"));
         this._stopPending = true;
         this._updateToggleTimelineButton(false);
         this._autoRecordGeneration = null;
         this._model.stopRecording();
-        if (this._statusElement)
-            this._updateStatus(WebInspector.UIString("Retrieving events\u2026"));
         this._setUIControlsEnabled(true);
     },
 
@@ -771,10 +778,10 @@ WebInspector.TimelinePanel.prototype = {
     _onRecordingStarted: function(event)
     {
         this._updateToggleTimelineButton(true);
-        if (event.data && event.data.fromFile)
-            this._updateStatus(WebInspector.UIString("Loading\u2026"));
-        else
-            this._updateStatus(WebInspector.UIString("%d events collected", 0));
+        var message = event.data && event.data.fromFile ? WebInspector.UIString("Loading\u2026") : WebInspector.UIString("Recording\u2026");
+        this._updateStatus(message);
+        if (this._statusDialog)
+            this._statusDialog.startTimer();
     },
 
     _recordingInProgress: function()
@@ -788,16 +795,22 @@ WebInspector.TimelinePanel.prototype = {
     _onTracingBufferUsage: function(event)
     {
         var usage = /** @type {number} */ (event.data);
-        this._updateStatus(WebInspector.UIString("Buffer usage %d%%", Math.round(usage * 100)));
+        if (this._statusDialog)
+            this._statusDialog.updateBufferUsage(usage * 100);
+    },
+
+    _onRetrieveEventsProgress: function()
+    {
+        this._updateStatus(WebInspector.UIString("Retrieving timeline\u2026"));
     },
 
     /**
-     * @param {!WebInspector.Event} event
+     * @param {string} statusMessage
      */
-    _onRetrieveEventsProgress: function(event)
+    _updateStatus: function(statusMessage)
     {
-        var progress = /** @type {number} */ (event.data);
-        this._updateStatus(WebInspector.UIString("Retrieving events\u2026 %d%%", Math.round(progress * 100)));
+        if (this._statusDialog)
+            this._statusDialog.updateStatus(statusMessage);
     },
 
     _showRecordingHelpMessage: function()
@@ -825,34 +838,16 @@ WebInspector.TimelinePanel.prototype = {
         hintText.appendChild(WebInspector.formatLocalized(WebInspector.UIString("After recording, select an area of interest in the overview by dragging."), [], null));
         hintText.createChild("br");
         hintText.appendChild(WebInspector.formatLocalized(WebInspector.UIString("Then, zoom and pan the timeline with the mousewheel and %s keys."), [navigateNode], null));
-        this._updateStatus(hintText);
+        this._hideRecordingHelpMessage();
+        this._helpMessageElement = this._searchableView.element.createChild("div", "timeline-status-pane fill");
+        this._helpMessageElement.appendChild(hintText);
     },
 
-    /**
-     * @param {string|!Element} statusMessage
-     */
-    _updateStatus: function(statusMessage)
+    _hideRecordingHelpMessage: function()
     {
-        if (!this._statusElement)
-            this._showStatusPane();
-        this._statusElement.removeChildren();
-        if (typeof statusMessage === "string")
-            this._statusElement.textContent = statusMessage;
-        else
-            this._statusElement.appendChild(statusMessage);
-    },
-
-    _showStatusPane: function()
-    {
-        this._hideStatusPane();
-        this._statusElement = this._searchableView.element.createChild("div", "timeline-status-pane fill");
-    },
-
-    _hideStatusPane: function()
-    {
-        if (this._statusElement)
-            this._statusElement.remove();
-        delete this._statusElement;
+        if (this._helpMessageElement)
+            this._helpMessageElement.remove();
+        delete this._helpMessageElement;
     },
 
     _onRecordingStopped: function()
@@ -867,12 +862,15 @@ WebInspector.TimelinePanel.prototype = {
         this._overviewPane.setBounds(this._model.minimumRecordTime(), this._model.maximumRecordTime());
         this.requestWindowTimes(this._model.minimumRecordTime(), this._model.maximumRecordTime());
         this._refreshViews();
-        this._hideStatusPane();
         for (var i = 0; i < this._overviewControls.length; ++i)
             this._overviewControls[i].timelineStopped();
         this._setMarkers();
         this._overviewPane.scheduleUpdate();
         this._updateSearchHighlight(false, true);
+        if (this._statusDialog) {
+            this._statusDialog.hide();
+            delete this._statusDialog;
+        }
     },
 
     _setMarkers: function()
@@ -1748,6 +1746,114 @@ WebInspector.TimelineStaticFilter.prototype = {
     },
 
     __proto__: WebInspector.TimelineModel.Filter.prototype
+}
+
+/**
+ * @constructor
+ * @extends {WebInspector.DialogDelegate}
+ */
+WebInspector.TimelinePanel.StatusDialog = function()
+{
+    WebInspector.DialogDelegate.call(this);
+    var shadowRoot = WebInspector.createShadowRootWithCoreStyles(this.element);
+    shadowRoot.appendChild(WebInspector.Widget.createStyleElement("timeline/timelineStatusDialog.css"));
+    this._contentElement = shadowRoot.createChild("div", "timeline-status-dialog");
+    this._contentElement.createChild("div", "title").textContent = WebInspector.UIString("Recording Timeline");
+    this._status = this._contentElement.createChild("div", "status");
+    this._time = this._contentElement.createChild("div", "time");
+    this._bufferUsage = this._contentElement.createChild("div", "buffer-usage").createChild("div", "indicator-container").createChild("div", "indicator");
+    this._stopButton = createTextButton(WebInspector.UIString("Finish"), this._onFinish.bind(this));
+    this._contentElement.createChild("div", "stop-button").appendChild(this._stopButton);
+    this._finishKeys = new Set([
+        WebInspector.KeyboardShortcut.makeDescriptor(WebInspector.KeyboardShortcut.Keys.Space).key,
+        WebInspector.KeyboardShortcut.makeDescriptor(WebInspector.KeyboardShortcut.Keys.Enter).key,
+        WebInspector.ShortcutsScreen.TimelinePanelShortcuts.StartStopRecording[0].key
+    ]);
+}
+
+WebInspector.TimelinePanel.StatusDialog.Events = {
+    Finish: "Finish"
+}
+
+WebInspector.TimelinePanel.StatusDialog.prototype = {
+    /**
+     * @override
+     */
+    willHide: function()
+    {
+        this._stopTimer();
+    },
+
+    finish: function()
+    {
+        this._stopButton.disabled = true;
+        this._stopTimer();
+    },
+
+    hide: function()
+    {
+        WebInspector.Dialog.hide();
+    },
+
+    /**
+     * @param {string} text
+     */
+    updateStatus: function(text)
+    {
+        this._status.textContent = text;
+    },
+
+    /**
+     * @param {number} percent
+     */
+    updateBufferUsage: function(percent)
+    {
+        this._bufferUsage.style.width = percent.toFixed(1) + "%";
+        this._updateTimer();
+    },
+
+    /**
+     * @override
+     * @param {!KeyboardEvent} event
+     */
+    onKeyDown: function(event)
+    {
+        var key = WebInspector.KeyboardShortcut.makeKeyFromEvent(event);
+        if (this._finishKeys.has(key))
+            this._onFinish();
+        event.consume();
+    },
+
+    _onFinish: function()
+    {
+        this.dispatchEventToListeners(WebInspector.TimelinePanel.StatusDialog.Events.Finish);
+    },
+
+    startTimer: function()
+    {
+        this._startTime = Date.now();
+        this._timeUpdateTimer = setInterval(this._updateTimer.bind(this, false), 1000);
+    },
+
+    _stopTimer: function()
+    {
+        if (!this._timeUpdateTimer)
+            return;
+        clearInterval(this._timeUpdateTimer);
+        this._updateTimer(true);
+        delete this._timeUpdateTimer;
+    },
+
+    /**
+     * @param {boolean=} precise
+     */
+    _updateTimer: function(precise)
+    {
+        var elapsed = (Date.now() - this._startTime) / 1000;
+        this._time.textContent = WebInspector.UIString("%s\u2009sec", elapsed.toFixed(precise ? 1 : 0));
+    },
+
+    __proto__: WebInspector.DialogDelegate.prototype
 }
 
 WebInspector.TimelinePanel.show = function()
