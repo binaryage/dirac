@@ -188,9 +188,12 @@ WebInspector.ComputedStyleWidget.prototype = {
         /**
          * @param {string} a
          * @param {string} b
+         * @return {number}
          */
         function propertySorter(a, b)
         {
+            if (a.startsWith("-webkit") ^ b.startsWith("-webkit"))
+                return a.startsWith("-webkit") ? 1 : -1;
             var canonicalName = WebInspector.CSSMetadata.canonicalPropertyName;
             return canonicalName(a).compareTo(canonicalName(b));
         }
