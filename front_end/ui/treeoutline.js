@@ -186,6 +186,38 @@ TreeOutline.prototype = {
     },
 
     /**
+     * @return {boolean}
+     */
+    selectPrevious: function()
+    {
+        var nextSelectedElement = this.selectedTreeElement.traversePreviousTreeElement(true);
+        while (nextSelectedElement && !nextSelectedElement.selectable)
+            nextSelectedElement = nextSelectedElement.traversePreviousTreeElement(!this.expandTreeElementsWhenArrowing);
+        if (nextSelectedElement) {
+            nextSelectedElement.reveal();
+            nextSelectedElement.select(false, true);
+            return true;
+        }
+        return false;
+    },
+
+    /**
+     * @return {boolean}
+     */
+    selectNext: function()
+    {
+        var nextSelectedElement = this.selectedTreeElement.traverseNextTreeElement(true);
+        while (nextSelectedElement && !nextSelectedElement.selectable)
+            nextSelectedElement = nextSelectedElement.traverseNextTreeElement(!this.expandTreeElementsWhenArrowing);
+        if (nextSelectedElement) {
+            nextSelectedElement.reveal();
+            nextSelectedElement.select(false, true);
+            return true;
+        }
+        return false;
+    },
+
+    /**
      * @param {!Event} event
      */
     _treeKeyDown: function(event)
@@ -199,15 +231,9 @@ TreeOutline.prototype = {
         var handled = false;
         var nextSelectedElement;
         if (event.keyIdentifier === "Up" && !event.altKey) {
-            nextSelectedElement = this.selectedTreeElement.traversePreviousTreeElement(true);
-            while (nextSelectedElement && !nextSelectedElement.selectable)
-                nextSelectedElement = nextSelectedElement.traversePreviousTreeElement(!this.expandTreeElementsWhenArrowing);
-            handled = nextSelectedElement ? true : false;
+            handled = this.selectPrevious();
         } else if (event.keyIdentifier === "Down" && !event.altKey) {
-            nextSelectedElement = this.selectedTreeElement.traverseNextTreeElement(true);
-            while (nextSelectedElement && !nextSelectedElement.selectable)
-                nextSelectedElement = nextSelectedElement.traverseNextTreeElement(!this.expandTreeElementsWhenArrowing);
-            handled = nextSelectedElement ? true : false;
+            handled = this.selectNext();
         } else if (event.keyIdentifier === "Left") {
             if (this.selectedTreeElement.expanded) {
                 if (event.altKey)

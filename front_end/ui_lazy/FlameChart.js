@@ -104,6 +104,8 @@ WebInspector.FlameChart = function(dataProvider, flameChartDelegate, isTopDown)
     this._selectedEntryIndex = -1;
     this._rawTimelineDataLength = 0;
     this._textWidth = {};
+
+    this._lastMouseOffsetX = 0;
 }
 
 WebInspector.FlameChart.DividersBarHeight = 18;

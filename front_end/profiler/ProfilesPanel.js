@@ -490,10 +490,26 @@ WebInspector.ProfilesPanel = function()
     this._createFileSelectorElement();
     this.element.addEventListener("contextmenu", this._handleContextMenuEvent.bind(this), true);
 
+    this.contentElement.addEventListener("keydown", this._onKeyDown.bind(this), false);
+
     WebInspector.targetManager.addEventListener(WebInspector.TargetManager.Events.SuspendStateChanged, this._onSuspendStateChanged, this);
 }
 
 WebInspector.ProfilesPanel.prototype = {
+    /**
+     * @param {!Event} event
+     */
+    _onKeyDown: function(event)
+    {
+        var handled = false;
+        if (event.keyIdentifier === "Down" && !event.altKey)
+            handled = this._sidebarTree.selectNext();
+        else if (event.keyIdentifier === "Up" && !event.altKey)
+            handled = this._sidebarTree.selectPrevious();
+        if (handled)
+            event.consume(true);
+    },
+
     /**
      * @override
      * @return {?WebInspector.SearchableView}
