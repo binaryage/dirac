@@ -28,7 +28,12 @@
             "className": "WebInspector.TimelinePanel.RecordActionDelegate",
             "bindings": [
                 {
+                    "platform": "windows,linux",
                     "shortcut": "Ctrl+E"
+                },
+                {
+                    "platform": "mac",
+                    "shortcut": "Meta+E"
                 }
             ]
         }
