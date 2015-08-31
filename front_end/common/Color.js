@@ -127,7 +127,7 @@ WebInspector.Color.parse = function(text)
     }
 
     // Advanced - rgba(), hsla()
-    var advanced = /^(?:rgba\(((?:-?\d+%?,){3}-?\d+(?:\.\d+)?)\)|hsla\((-?\d+\.?\d*(?:,-?\d+\.?\d*%){2},-?\d+(?:\.\d+)?)\))$/;
+    var advanced = /^(?:rgba\(((?:-?\d+%?,){3}-?(?:\d+|\d*\.\d+))\)|hsla\((-?(?:\d+|\d*\.\d+)(?:,-?(?:\d+|\d*\.\d+)*%){2},-?(?:\d+|\d*\.\d+))\))$/;
     match = value.match(advanced);
     if (match) {
         if (match[1]) { // rgba
