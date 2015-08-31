@@ -315,7 +315,7 @@ WebInspector.HandlerRegistry.OpenAnchorLocationSettingUI.prototype = {
             return null;
 
         var handlerSelector = new WebInspector.HandlerSelector(WebInspector.openAnchorLocationRegistry);
-        return WebInspector.SettingsUI.createCustomSetting(WebInspector.UIString("Open links in"), handlerSelector.element);
+        return WebInspector.SettingsUI.createCustomSetting(WebInspector.UIString("Link handling:"), handlerSelector.element);
     }
 }
 

@@ -215,7 +215,7 @@ WebInspector.Main.prototype = {
         new WebInspector.ContentScriptProjectDecorator();
         new WebInspector.ExecutionContextSelector(WebInspector.targetManager, WebInspector.context);
 
-        var autoselectPanel = WebInspector.UIString("a panel chosen automatically");
+        var autoselectPanel = WebInspector.UIString("auto");
         var openAnchorLocationSetting = WebInspector.settings.createSetting("openLinkHandler", autoselectPanel);
         WebInspector.openAnchorLocationRegistry = new WebInspector.HandlerRegistry(openAnchorLocationSetting);
         WebInspector.openAnchorLocationRegistry.registerHandler(autoselectPanel, function() { return false; });
