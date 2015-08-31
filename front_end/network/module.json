@@ -33,6 +33,23 @@
             "settingName": "networkColorCodeResourceTypes",
             "settingType": "boolean",
             "defaultValue": false
+        },
+        {
+            "type": "@WebInspector.ActionDelegate",
+            "actionId": "network.toggle-recording",
+            "iconClass": "record-toolbar-item",
+            "contextTypes": ["WebInspector.NetworkPanel"],
+            "className": "WebInspector.NetworkPanel.RecordActionDelegate",
+            "bindings": [
+                {
+                    "platform": "windows,linux",
+                    "shortcut": "Ctrl+E"
+                },
+                {
+                    "platform": "mac",
+                    "shortcut": "Meta+E"
+                }
+            ]
         }
     ],
     "dependencies": [

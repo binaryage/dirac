@@ -130,8 +130,7 @@ WebInspector.NetworkPanel.prototype = {
 
     _createToolbarButtons: function()
     {
-        this._recordButton = new WebInspector.ToolbarButton("", "record-toolbar-item");
-        this._recordButton.addEventListener("click", this._onRecordButtonClicked, this);
+        this._recordButton = WebInspector.ToolbarButton.createActionButton("network.toggle-recording");
         this._panelToolbar.appendToolbarItem(this._recordButton);
 
         this._clearButton = new WebInspector.ToolbarButton(WebInspector.UIString("Clear"), "clear-toolbar-item");
@@ -179,10 +178,7 @@ WebInspector.NetworkPanel.prototype = {
         return toolbarItem;
     },
 
-    /**
-     * @param {!WebInspector.Event} event
-     */
-    _onRecordButtonClicked: function(event)
+    _toggleRecording: function()
     {
         if (!this._preserveLogCheckbox.checked() && !this._recordButton.toggled())
             this._reset();
@@ -349,7 +345,12 @@ WebInspector.NetworkPanel.prototype = {
 
     wasShown: function()
     {
-        WebInspector.Panel.prototype.wasShown.call(this);
+        WebInspector.context.setFlavor(WebInspector.NetworkPanel, this);
+    },
+
+    willHide: function()
+    {
+        WebInspector.context.setFlavor(WebInspector.NetworkPanel, null);
     },
 
     /**
@@ -801,5 +802,26 @@ WebInspector.BlockedURLsBar.prototype = {
     toolbarButton: function()
     {
         return this._toolbarButton;
+    }
+}
+
+/**
+ * @constructor
+ * @implements {WebInspector.ActionDelegate}
+ */
+WebInspector.NetworkPanel.RecordActionDelegate = function()
+{
+}
+WebInspector.NetworkPanel.RecordActionDelegate.prototype = {
+    /**
+     * @override
+     * @param {!WebInspector.Context} context
+     * @param {string} actionId
+     */
+    handleAction: function(context, actionId)
+    {
+        var panel = WebInspector.context.flavor(WebInspector.NetworkPanel);
+        console.assert(panel && panel instanceof WebInspector.NetworkPanel);
+        panel._toggleRecording();
     }
 }
