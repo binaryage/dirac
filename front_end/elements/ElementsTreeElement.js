@@ -40,7 +40,7 @@ WebInspector.ElementsTreeElement = function(node, elementCloseTag)
     TreeElement.call(this);
     this._node = node;
 
-    this._decorationsElement = createElementWithClass("div");
+    this._decorationsElement = createElementWithClass("div", "hidden");
     this.listItemElement.appendChild(this._decorationsElement);
 
     this._elementCloseTag = elementCloseTag;
@@ -1128,6 +1128,7 @@ WebInspector.ElementsTreeElement.prototype = {
         function setTitle()
         {
             this._decorationsElement.removeChildren();
+            this._decorationsElement.classList.add("hidden");
             if (!decorations.length && !descendantDecorations.length)
                 return;
 
@@ -1165,6 +1166,7 @@ WebInspector.ElementsTreeElement.prototype = {
             {
                 for (var color of colors) {
                     var child = this._decorationsElement.createChild("div", className);
+                    this._decorationsElement.classList.remove("hidden");
                     child.style.backgroundColor = color;
                     child.style.borderColor = color;
                     if (offset)
