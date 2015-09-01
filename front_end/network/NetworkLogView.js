@@ -184,6 +184,7 @@ WebInspector.NetworkLogView.prototype = {
     setRecording: function(recording)
     {
         this._recording = recording;
+        this._updateSummaryBar();
     },
 
     /**
@@ -289,6 +290,33 @@ WebInspector.NetworkLogView.prototype = {
 
         this._popoverHelper = new WebInspector.PopoverHelper(this.element, this._getPopoverAnchor.bind(this), this._showPopover.bind(this), this._onHidePopover.bind(this));
         this.switchViewMode(true);
+    },
+
+    _showRecordingHint: function()
+    {
+        this._hideRecordingHint();
+        this._recordingHint = this.element.createChild("div", "network-status-pane fill");
+        var hintText = this._recordingHint.createChild("div", "recording-hint");
+        var reloadShortcutNode = this._recordingHint.createChild("b");
+        reloadShortcutNode.textContent = WebInspector.ShortcutsScreen.TimelinePanelShortcuts.RecordPageReload[0].name;
+
+        if (this._recording) {
+            var recordingText = hintText.createChild("span");
+            recordingText.textContent = WebInspector.UIString("Recording network activity\u2026");
+            hintText.createChild("br");
+            hintText.appendChild(WebInspector.formatLocalized(WebInspector.UIString("Perform a request or hit %s to record the reload."), [reloadShortcutNode], null));
+        } else {
+            var recordNode = hintText.createChild("b");
+            recordNode.textContent = WebInspector.shortcutRegistry.shortcutTitleForAction("network.toggle-recording");
+            hintText.appendChild(WebInspector.formatLocalized(WebInspector.UIString("Record (%s) or reload (%s) to display network activity."), [recordNode, reloadShortcutNode], null));
+        }
+    },
+
+    _hideRecordingHint: function()
+    {
+        if (this._recordingHint)
+            this._recordingHint.remove();
+        delete this._recordingHint;
     },
 
     /**
@@ -651,17 +679,10 @@ WebInspector.NetworkLogView.prototype = {
         var requestsNumber = this._nodesByRequestId.size;
 
         if (!requestsNumber) {
-            if (this._summaryBarElement._isDisplayingWarning)
-                return;
-            this._summaryBarElement._isDisplayingWarning = true;
-            this._summaryBarElement.removeChildren();
-            this._summaryBarElement.createChild("label", "", "dt-icon-label").type = "warning-icon";
-            var text = WebInspector.UIString("No requests captured. Reload the page to see detailed information on the network activity.");
-            this._summaryBarElement.createTextChild(text);
-            this._summaryBarElement.title = text;
+            this._showRecordingHint();
             return;
         }
-        delete this._summaryBarElement._isDisplayingWarning;
+        this._hideRecordingHint();
 
         var transferSize = 0;
         var selectedRequestsNumber = 0;

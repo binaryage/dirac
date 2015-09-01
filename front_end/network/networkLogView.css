@@ -617,3 +617,21 @@
 .network-log-grid .network-node-on-initiated-path {
     background-color: hsla(0, 68%, 54%, 0.2) !important;
 }
+
+.network-status-pane {
+    color: #777;
+    background-color: white;
+    z-index: 500;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 0 20px;
+    overflow: auto;
+}
+
+.network-status-pane > .recording-hint {
+    font-size: 14px;
+    text-align: center;
+    line-height: 28px;
+}
