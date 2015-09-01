@@ -64,11 +64,11 @@ WebInspector.RequestHeadersView = function(request)
 
     var generalCategory = new WebInspector.RequestHeadersView.Category(root, "general", WebInspector.UIString("General"));
     generalCategory.hidden = false;
-    this._remoteAddressItem = generalCategory.createLeaf();
-    this._remoteAddressItem.hidden = true;
     this._urlItem = generalCategory.createLeaf();
     this._requestMethodItem = generalCategory.createLeaf();
     this._statusCodeItem = generalCategory.createLeaf();
+    this._remoteAddressItem = generalCategory.createLeaf();
+    this._remoteAddressItem.hidden = true;
 
     this._responseHeadersCategory = new WebInspector.RequestHeadersView.Category(root, "responseHeaders", "");
     this._requestHeadersCategory = new WebInspector.RequestHeadersView.Category(root, "requestHeaders", "");
