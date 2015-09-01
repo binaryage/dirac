@@ -1299,10 +1299,24 @@ WebInspector.NetworkLogView.prototype = {
         contextMenu.appendItem(WebInspector.UIString.capitalize("Clear ^browser ^cache"), this._clearBrowserCache.bind(this));
         contextMenu.appendItem(WebInspector.UIString.capitalize("Clear ^browser ^cookies"), this._clearBrowserCookies.bind(this));
 
-        var manager = WebInspector.multitargetNetworkManager;
-        if (Runtime.experiments.isEnabled("blockedURLs") && request && !manager.blockedURLs().has(request.url)) {
+        var blockedSetting = WebInspector.moduleSetting("blockedURLs");
+        if (request) {
             contextMenu.appendSeparator();
-            contextMenu.appendItem(WebInspector.UIString.capitalize("Block ^request URL"), manager.toggleURLBlocked.bind(manager, request.url));
+
+            var urlWithoutScheme = request.parsedURL.urlWithoutScheme();
+            if (urlWithoutScheme && blockedSetting.get().indexOf(urlWithoutScheme) === -1)
+                contextMenu.appendItem(WebInspector.UIString.capitalize("Block ^request URL"), addBlockedURL.bind(null, urlWithoutScheme));
+
+            var domain = request.parsedURL.domain();
+            if (domain && blockedSetting.get().indexOf(domain) === -1)
+                contextMenu.appendItem(WebInspector.UIString.capitalize("Block ^request ^domain"), addBlockedURL.bind(null, domain));
+
+            function addBlockedURL(url)
+            {
+                var list = blockedSetting.get();
+                list.push(url);
+                blockedSetting.set(list);
+            }
         }
 
         if (request && request.resourceType() === WebInspector.resourceTypes.XHR) {

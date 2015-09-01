@@ -54,6 +54,10 @@ WebInspector.FilterBar.FilterBarState = {
     Shown : "shown"
 };
 
+WebInspector.FilterBar.Events = {
+    Toggled: "Toggled"
+};
+
 WebInspector.FilterBar.prototype = {
     /**
      * @return {!WebInspector.ToolbarButton}
@@ -148,6 +152,7 @@ WebInspector.FilterBar.prototype = {
                 }
             }
         }
+        this.dispatchEventToListeners(WebInspector.FilterBar.Events.Toggled);
     },
 
     clear: function()

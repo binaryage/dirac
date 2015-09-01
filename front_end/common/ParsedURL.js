@@ -254,7 +254,25 @@ WebInspector.ParsedURL.prototype = {
     lastPathComponentWithFragment: function()
     {
        return this.lastPathComponent + (this.fragment ? "#" + this.fragment : "");
-    }
+    },
+
+    /**
+     * @return {string}
+     */
+    domain: function()
+    {
+        return this.host + (this.port ? ":" + this.port : "");
+    },
+
+    /**
+     * @return {string}
+     */
+    urlWithoutScheme: function()
+    {
+        if (this.scheme && this.url.startsWith(this.scheme + "://"))
+            return this.url.substring(this.scheme.length + 3);
+        return this.url;
+    },
 }
 
 /**

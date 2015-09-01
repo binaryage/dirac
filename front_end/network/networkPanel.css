@@ -230,38 +230,7 @@
     flex: none !important;
 }
 
-.blocked-urls-bar {
-    background-color: #f3f3f3;
-    flex: none;
-    border-bottom: 1px solid #dadada;
-    flex-wrap: wrap;
-    max-height: 127px;
-    overflow-y: auto;
-    overflow-x: hidden;
-}
-
-.blocked-urls-bar .blocked-url-container {
-    display: inline-flex;
-    padding: 2px;
-    margin: 2px;
-    background-color: #dadada;
-}
-
-.blocked-urls-bar .blocked-url-text {
-    max-width: 140px;
-    margin-right: 5px;
-    overflow: hidden;
-    flex: none;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.blocked-urls-bar .blocked-urls-empty {
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    overflow: hidden;
-    height: 24px;
-    display: flex;
-    align-items: center;
-    padding: 5px;
+.network-blocked-urls {
+    border-top: 1px solid #dadada;
+    flex: 104px 0 0;
 }

@@ -59,6 +59,7 @@
         "ui_lazy"
     ],
     "scripts": [
+        "BlockedURLsPane.js",
         "EventSourceMessagesView.js",
         "FilterSuggestionBuilder.js",
         "HARWriter.js",
@@ -80,6 +81,7 @@
         "XMLView.js"
     ],
     "resources": [
+        "blockedURLsPane.css",
         "eventSourceMessagesView.css",
         "networkLogView.css",
         "networkPanel.css",

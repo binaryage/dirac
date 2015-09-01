@@ -7,6 +7,12 @@
     "extensions": [
         {
             "type": "setting",
+            "settingName": "blockedURLs",
+            "settingType": "array",
+            "defaultValue": []
+        },
+        {
+            "type": "setting",
             "settingName": "skipStackFramesPattern",
             "settingType": "regex",
             "defaultValue": ""

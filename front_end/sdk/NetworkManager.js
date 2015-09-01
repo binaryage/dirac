@@ -678,10 +678,9 @@ WebInspector.MultitargetNetworkManager = function()
 
     /** @type {!Set<string>} */
     this._blockedURLs = new Set();
-}
-
-WebInspector.MultitargetNetworkManager.EventTypes = {
-    BlockedURLsChanged: "BlockedURLsChanged"
+    this._blockedSetting = WebInspector.moduleSetting("blockedURLs");
+    this._blockedSetting.addChangeListener(this._updateBlockedURLs, this);
+    this._updateBlockedURLs();
 }
 
 WebInspector.MultitargetNetworkManager.prototype = {
@@ -729,29 +728,37 @@ WebInspector.MultitargetNetworkManager.prototype = {
             target.networkAgent().setUserAgentOverride(this._userAgent);
     },
 
-    /**
-     * @param {string} url
-     */
-    toggleURLBlocked: function(url)
+    _updateBlockedURLs: function()
     {
-        if (this._blockedURLs.has(url)) {
-            this._blockedURLs.delete(url);
-            for (var target of WebInspector.targetManager.targets())
-                target.networkAgent().removeBlockedURL(url);
-        } else {
-            this._blockedURLs.add(url);
-            for (var target of WebInspector.targetManager.targets())
-                target.networkAgent().addBlockedURL(url);
+        var blocked = this._blockedSetting.get();
+        for (var url of blocked) {
+            if (!this._blockedURLs.has(url))
+                this._addBlockedURL(url);
         }
-        this.dispatchEventToListeners(WebInspector.MultitargetNetworkManager.EventTypes.BlockedURLsChanged);
+        for (var url of this._blockedURLs) {
+            if (blocked.indexOf(url) === -1)
+                this._removeBlockedURL(url);
+        }
     },
 
     /**
-     * @return {!Set<string>}
+     * @param {string} url
      */
-    blockedURLs: function()
+    _addBlockedURL: function(url)
     {
-        return this._blockedURLs;
+        this._blockedURLs.add(url);
+        for (var target of WebInspector.targetManager.targets())
+            target.networkAgent().addBlockedURL(url);
+    },
+
+    /**
+     * @param {string} url
+     */
+    _removeBlockedURL: function(url)
+    {
+        this._blockedURLs.delete(url);
+        for (var target of WebInspector.targetManager.targets())
+            target.networkAgent().removeBlockedURL(url);
     },
 
     __proto__: WebInspector.Object.prototype

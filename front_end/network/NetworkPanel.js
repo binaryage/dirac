@@ -52,11 +52,6 @@ WebInspector.NetworkPanel = function()
     this._filterBar = new WebInspector.FilterBar("networkPanel", true);
     this.element.appendChild(this._filterBar.filtersElement());
 
-    if (Runtime.experiments.isEnabled("blockedURLs")) {
-        this._blockedURLsBar = new WebInspector.BlockedURLsBar();
-        this.element.appendChild(this._blockedURLsBar.element);
-    }
-
     this._searchableView = new WebInspector.SearchableView(this);
     this._searchableView.setPlaceholder(WebInspector.UIString("Find by filename or path"));
     this._searchableView.show(this.element);
@@ -87,6 +82,12 @@ WebInspector.NetworkPanel = function()
 
     this._closeButtonElement = createElementWithClass("div", "network-close-button", "dt-close-button");
     this._closeButtonElement.addEventListener("click", this._showRequest.bind(this, null), false);
+
+    this._blockedURLsPane = new WebInspector.BlockedURLsPane();
+    this._blockedURLsPane.element.classList.add("network-blocked-urls");
+    this._filterBar.addFilter(this._blockedURLsPane.filterUI());
+    this._filterBar.addEventListener(WebInspector.FilterBar.Events.Toggled, this._toggleBlockedURLsSidebarPane, this);
+    this._toggleBlockedURLsSidebarPane();
 
     this._networkLogShowOverviewSetting.addChangeListener(this._toggleShowOverview, this);
     this._networkLogLargeRowsSetting.addChangeListener(this._toggleLargerRequests, this);
@@ -161,8 +162,6 @@ WebInspector.NetworkPanel.prototype = {
         this._panelToolbar.appendToolbarItem(this._disableCacheCheckbox);
 
         this._panelToolbar.appendSeparator();
-        if (Runtime.experiments.isEnabled("blockedURLs"))
-             this._panelToolbar.appendToolbarItem(this._blockedURLsBar.toolbarButton());
         this._panelToolbar.appendToolbarItem(this._createNetworkConditionsSelect());
         this._panelToolbar.appendToolbarItem(new WebInspector.ToolbarItem(this._progressBarContainer));
     },
@@ -242,6 +241,7 @@ WebInspector.NetworkPanel.prototype = {
         this._calculator.reset();
         this._overviewPane.reset();
         this._networkLogView.reset();
+        this._blockedURLsPane.reset();
         if (this._filmStripView)
             this._resetFilmStripView();
     },
@@ -279,6 +279,16 @@ WebInspector.NetworkPanel.prototype = {
             this._overviewPane.show(this._searchableView.element, this._splitWidget.element);
         else
             this._overviewPane.detach();
+        this.doResize();
+    },
+
+    _toggleBlockedURLsSidebarPane: function()
+    {
+        var toggled = this._filterBar.filtersToggled();
+        if (toggled)
+            this._blockedURLsPane.show(this._searchableView.element);
+        else
+            this._blockedURLsPane.detach();
         this.doResize();
     },
 
@@ -744,64 +754,6 @@ WebInspector.NetworkPanel.FilmStripRecorder.prototype = {
         this._target = null;
         this._callback = callback;
         this._filmStripView.setStatusText(WebInspector.UIString("Fetching frames..."));
-    }
-}
-
-/**
- * @constructor
- */
-WebInspector.BlockedURLsBar = function()
-{
-    this.element = createElementWithClass("div", "blocked-urls-bar");
-
-    this._toolbarButton = new WebInspector.ToolbarButton(WebInspector.UIString("Manage blocked URLs"), "filter-toolbar-item", 3);
-    this._toolbarButton.addEventListener("click", this._toggleVisibility, this);
-
-    this._manager = WebInspector.multitargetNetworkManager;
-    this._manager.addEventListener(WebInspector.MultitargetNetworkManager.EventTypes.BlockedURLsChanged, this._update, this);
-
-    this._visible = true;
-    this._toggleVisibility();
-    this._update();
-}
-
-WebInspector.BlockedURLsBar.prototype = {
-    _updateToolbarButton: function()
-    {
-        this._toolbarButton.setState(this._visible ? "shown" : (this._manager.blockedURLs().size ? "active" : "inactive"));
-    },
-
-    _update: function()
-    {
-        this._updateToolbarButton();
-
-        this.element.removeChildren();
-        for (var url of this._manager.blockedURLs()) {
-            var container = this.element.createChild("div", "blocked-url-container");
-            var text = container.createChild("div", "blocked-url-text");
-            text.textContent = url;
-            text.title = url;
-            var closeButton = container.createChild("div", "close-button", "dt-close-button");
-            closeButton.addEventListener("click", this._manager.toggleURLBlocked.bind(this._manager, url), false);
-            closeButton.gray = true;
-        }
-        if (!this._manager.blockedURLs().size)
-            this.element.createChild("div", "blocked-urls-empty").textContent = WebInspector.UIString("No blocked URLs.");
-    },
-
-    _toggleVisibility: function()
-    {
-        this._visible = !this._visible;
-        this.element.classList.toggle("hidden", !this._visible);
-        this._updateToolbarButton();
-    },
-
-    /**
-     * @return {!WebInspector.ToolbarButton}
-     */
-    toolbarButton: function()
-    {
-        return this._toolbarButton;
     }
 }
 
