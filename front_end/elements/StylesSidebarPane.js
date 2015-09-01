@@ -2223,7 +2223,6 @@ WebInspector.StylePropertyTreeElement.prototype = {
 
         this.listItemElement.removeChildren();
         this.nameElement = propertyRenderer.renderName();
-        this.nameElement.title = this.property.propertyText;
         this.valueElement = propertyRenderer.renderValue();
         if (!this.treeOutline)
             return;

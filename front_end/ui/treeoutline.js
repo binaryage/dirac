@@ -338,8 +338,6 @@ function TreeElement(title, expandable)
     this._listItemNode.treeElement = this;
     if (title)
         this.title = title;
-    if (typeof title === "string")
-        this.tooltip = title;
     this._listItemNode.addEventListener("mousedown", this._handleMouseDown.bind(this), false);
     this._listItemNode.addEventListener("selectstart", this._treeElementSelectStart.bind(this), false);
     this._listItemNode.addEventListener("click", this._treeElementToggled.bind(this), false);

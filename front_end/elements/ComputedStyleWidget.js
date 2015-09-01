@@ -54,9 +54,7 @@ WebInspector.ComputedStyleWidget = function(stylesSidebarPane, sharedModel)
 
     var toolbar = new WebInspector.Toolbar(hbox);
     toolbar.element.classList.add("styles-pane-toolbar");
-    toolbar.appendToolbarItem(new WebInspector.ToolbarCheckbox(WebInspector.UIString("Show inherited"),
-                                                               WebInspector.UIString("Show inherited properties"),
-                                                               this._showInheritedComputedStylePropertiesSetting));
+    toolbar.appendToolbarItem(new WebInspector.ToolbarCheckbox(WebInspector.UIString("Show all"), undefined, this._showInheritedComputedStylePropertiesSetting));
 
     this._propertiesOutline = new TreeOutlineInShadow();
     this._propertiesOutline.registerRequiredCSS("elements/computedStyleSidebarPane.css");

@@ -510,9 +510,9 @@ WebInspector.linkifyURLAsNode = function(url, linkText, classes, isExternal, too
     if (href !== null)
         a.href = href;
     a.className = classes;
-    if (typeof tooltipText === "undefined")
+    if (!tooltipText && linkText !== url)
         a.title = url;
-    else if (typeof tooltipText !== "string" || tooltipText.length)
+    else if (tooltipText)
         a.title = tooltipText;
     a.textContent = linkText.trimMiddle(WebInspector.Linkifier.MaxLengthForDisplayedURLs);
     if (isExternal)
