@@ -13,6 +13,7 @@ WebInspector.TimelineTreeView = function(model)
     this.element.classList.add("timeline-tree-view");
 
     this._model = model;
+    this._linkifier = new WebInspector.Linkifier();
     var columns = [];
     columns.push({id: "self", title: WebInspector.UIString("Self Time"), width: "120px", sort: WebInspector.DataGrid.Order.Descending, sortable: true});
     columns.push({id: "total", title: WebInspector.UIString("Total Time"), width: "120px", sortable: true});
@@ -98,6 +99,18 @@ WebInspector.TimelineTreeView.prototype = {
         panelToolbar.appendToolbarItem(this._groupByCombobox);
     },
 
+    /**
+     * @param {?string} scriptId
+     * @param {string} url
+     * @param {number} lineNumber
+     * @param {number=} columnNumber
+     * @return {!Element}
+     */
+    linkifyLocation: function(scriptId, url, lineNumber, columnNumber)
+    {
+        return this._linkifier.linkifyScriptLocation(this._model.target(), scriptId, url, lineNumber, columnNumber);
+    },
+
     _onTreeModeChanged: function()
     {
         this._refreshTree();
@@ -111,6 +124,7 @@ WebInspector.TimelineTreeView.prototype = {
 
     _refreshTree: function()
     {
+        this._linkifier.reset();
         this.dataGrid.rootNode().removeChildren();
         var topDown = WebInspector.TimelineModel.buildTopDownTree(
             this._model.mainThreadEvents(), this._startTime, this._endTime, this._filters, WebInspector.TimelineTreeView.eventId);
@@ -125,7 +139,7 @@ WebInspector.TimelineTreeView.prototype = {
         }
         for (var child of tree.children.values()) {
             // Exclude the idle time off the total calculation.
-            var gridNode = new WebInspector.TimelineTreeView.GridNode(child, topDown.totalTime, maxSelfTime, maxTotalTime);
+            var gridNode = new WebInspector.TimelineTreeView.GridNode(child, topDown.totalTime, maxSelfTime, maxTotalTime, this);
             this.dataGrid.insertChild(gridNode);
         }
         this._sortingChanged();
@@ -285,21 +299,28 @@ WebInspector.TimelineTreeView.eventId = function(event)
 
 /**
  * @param {!WebInspector.TracingModel.Event} event
+ * @return {?Object}
+ */
+WebInspector.TimelineTreeView.eventStackFrame = function(event)
+{
+    var data = event.args["data"] || event.args["beginData"];
+    if (data)
+        return data;
+    var topFrame = event.stackTrace && event.stackTrace[0];
+    if (topFrame)
+        return topFrame;
+    var initiator = event.initiator;
+    return initiator && initiator.stackTrace && initiator.stackTrace[0] || null;
+}
+
+/**
+ * @param {!WebInspector.TracingModel.Event} event
  * @return {?string}
  */
 WebInspector.TimelineTreeView.eventURL = function(event)
 {
-    var data = event.args["data"] || event.args["beginData"];
-    var url = data && data["url"];
-    if (url)
-        return url;
-    var topFrame = event.stackTrace && event.stackTrace[0];
-    url = topFrame && topFrame["url"];
-    if (url)
-        return url;
-    var initiator = event.initiator;
-    var initiatorTopFrame = initiator && initiator.stackTrace && initiator.stackTrace[0];
-    return initiatorTopFrame && initiatorTopFrame["url"] || null;
+    var frame = WebInspector.TimelineTreeView.eventStackFrame(event);
+    return frame && frame["url"] || null;
 }
 
 /**
@@ -309,8 +330,9 @@ WebInspector.TimelineTreeView.eventURL = function(event)
  * @param {number} grandTotalTime
  * @param {number} maxSelfTime
  * @param {number} maxTotalTime
+ * @param {!WebInspector.TimelineTreeView} treeView
  */
-WebInspector.TimelineTreeView.GridNode = function(profileNode, grandTotalTime, maxSelfTime, maxTotalTime)
+WebInspector.TimelineTreeView.GridNode = function(profileNode, grandTotalTime, maxSelfTime, maxTotalTime, treeView)
 {
     /**
      * @param {number} time
@@ -331,6 +353,7 @@ WebInspector.TimelineTreeView.GridNode = function(profileNode, grandTotalTime, m
 
     this._populated = false;
     this._profileNode = profileNode;
+    this._treeView = treeView;
     this._totalTime = grandTotalTime;
     this._maxTimes = { self: maxSelfTime, total: maxTotalTime };
     var selfTime = profileNode.selfTime;
@@ -377,9 +400,13 @@ WebInspector.TimelineTreeView.GridNode.prototype = {
             name.textContent = event.name === WebInspector.TimelineModel.RecordType.JSFrame
                 ? WebInspector.beautifyFunctionName(event.args["data"]["functionName"])
                 : WebInspector.TimelineUIUtils.eventTitle(event);
-            var url = WebInspector.TimelineTreeView.eventURL(event);
+            var frame = WebInspector.TimelineTreeView.eventStackFrame(event);
+            var scriptId = frame && frame["scriptId"];
+            var url = frame && frame["url"];
+            var lineNumber = frame && frame["lineNumber"] || 1;
+            var columnNumber = frame && frame["columnNumber"];
             if (url)
-                link.appendChild(WebInspector.linkifyResourceAsNode(url));
+                link.appendChild(this._treeView.linkifyLocation(scriptId, url, lineNumber, columnNumber));
             var category = WebInspector.TimelineUIUtils.eventStyle(event).category;
             icon.style.backgroundColor = category.fillColorStop1;
         } else {
@@ -421,7 +448,7 @@ WebInspector.TimelineTreeView.GridNode.prototype = {
         if (!this._profileNode.children)
             return;
         for (var node of this._profileNode.children.values()) {
-            var gridNode = new WebInspector.TimelineTreeView.GridNode(node, this._totalTime, this._maxTimes.self, this._maxTimes.total);
+            var gridNode = new WebInspector.TimelineTreeView.GridNode(node, this._totalTime, this._maxTimes.self, this._maxTimes.total, this._treeView);
             this.insertChildOrdered(gridNode);
         }
     },

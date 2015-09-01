@@ -1484,8 +1484,8 @@ WebInspector.TimelineModel.buildTopDownTree = function(events, startTime, endTim
             return false;
         if (WebInspector.TracingModel.isAsyncPhase(e.phase))
             return false;
-        for (var filter of filters) {
-            if (!filter.accept(e))
+        for (var i = 0, l = filters.length; i < l; ++i) {
+            if (!filters[i].accept(e))
                 return false;
         }
         return true;
