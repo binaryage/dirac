@@ -46,9 +46,6 @@ WebInspector.RuntimeModel = function(target)
      */
     this._executionContextById = {};
 
-    if (!Runtime.experiments.isEnabled("customObjectFormatters"))
-        return;
-
     if (WebInspector.moduleSetting("customFormatters").get())
         this._agent.setCustomObjectFormatterEnabled(true);
 

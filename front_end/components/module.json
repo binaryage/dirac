@@ -6,8 +6,7 @@
             "title": "Enable custom formatters",
             "settingName": "customFormatters",
             "settingType": "boolean",
-            "defaultValue": false,
-            "experiment": "customObjectFormatters"
+            "defaultValue": false
         },
         {
             "type": "@WebInspector.DOMPresentationUtils.MarkerDecorator",
