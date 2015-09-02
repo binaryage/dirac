@@ -11,7 +11,7 @@ WebInspector.BlackboxSupport = {}
 WebInspector.BlackboxSupport._urlToRegExpString = function(url)
 {
     var parsedURL = new WebInspector.ParsedURL(url);
-    if (parsedURL.isAboutBlank() || parsedURL.isDataURL() || !url)
+    if (parsedURL.isAboutBlank() || parsedURL.isDataURL())
         return "";
     if (!parsedURL.isValid)
         return "^" + url.escapeForRegExp() + "$";
@@ -104,7 +104,7 @@ WebInspector.BlackboxSupport.unblackbox = function(url, isContentScript)
 WebInspector.BlackboxSupport.isBlackboxedURL = function(url)
 {
     var regex = WebInspector.moduleSetting("skipStackFramesPattern").asRegExp();
-    return (url && regex) ? regex.test(url) : false;
+    return regex && regex.test(url);
 }
 
 /**
