@@ -164,8 +164,8 @@ WebInspector.TimelineModel.Events = {
 }
 
 WebInspector.TimelineModel.MainThreadName = "main";
-
 WebInspector.TimelineModel.WorkerThreadName = "DedicatedWorker Thread";
+WebInspector.TimelineModel.RendererMainThreadName = "CrRendererMain";
 
 /**
  * @param {!Array.<!WebInspector.TracingModel.Event>} events
@@ -223,6 +223,11 @@ WebInspector.TimelineModel.forAllRecords = function(recordsArray, preOrderCallba
 }
 
 WebInspector.TimelineModel.TransferChunkLengthBytes = 5000000;
+
+WebInspector.TimelineModel.DevToolsMetadataEvent = {
+    TracingStartedInPage: "TracingStartedInPage",
+    TracingSessionIdForWorker: "TracingSessionIdForWorker",
+};
 
 /**
  * @constructor
@@ -295,7 +300,9 @@ WebInspector.TimelineModel.Record.prototype = {
      */
     target: function()
     {
-        return this._event.thread.target();
+        var threadName = this._event.thread.name();
+        //FIXME: correctly specify target
+        return threadName === WebInspector.TimelineModel.RendererMainThreadName ? WebInspector.targetManager.targets()[0] || null : null;
     },
 
     /**
@@ -327,7 +334,7 @@ WebInspector.TimelineModel.Record.prototype = {
      */
     thread: function()
     {
-        if (this._event.thread.name() === "CrRendererMain")
+        if (this._event.thread.name() === WebInspector.TimelineModel.RendererMainThreadName)
             return WebInspector.TimelineModel.MainThreadName;
         return this._event.thread.name();
     },
@@ -447,6 +454,9 @@ WebInspector.TimelineModel.Record.prototype = {
         return this._model;
     }
 }
+
+/** @typedef {!{page: !Array<!WebInspector.TracingModel.Event>, workers: !Array<!WebInspector.TracingModel.Event>}} */
+WebInspector.TimelineModel.MetadataEvents;
 
 WebInspector.TimelineModel.prototype = {
     /**
@@ -575,6 +585,14 @@ WebInspector.TimelineModel.prototype = {
     records: function()
     {
         return this._records;
+    },
+
+    /**
+     * @return {?string}
+     */
+    sessionId: function()
+    {
+        return this._sessionId;
     },
 
     /**
@@ -757,21 +775,19 @@ WebInspector.TimelineModel.prototype = {
 
     _didStopRecordingTraceEvents: function()
     {
-        this._injectCpuProfileEvents();
+        var metadataEvents = this._processMetadataEvents();
+        this._injectCpuProfileEvents(metadataEvents);
         this._tracingModel.tracingComplete();
-
-        var metaEvents = this._tracingModel.devtoolsPageMetadataEvents();
-        var workerMetadataEvents = this._tracingModel.devtoolsWorkerMetadataEvents();
 
         this._resetProcessingState();
         var startTime = 0;
-        for (var i = 0, length = metaEvents.length; i < length; i++) {
-            var metaEvent = metaEvents[i];
+        for (var i = 0, length = metadataEvents.page.length; i < length; i++) {
+            var metaEvent = metadataEvents.page[i];
             var process = metaEvent.thread.process();
-            var endTime = i + 1 < length ? metaEvents[i + 1].startTime : Infinity;
+            var endTime = i + 1 < length ? metadataEvents.page[i + 1].startTime : Infinity;
             this._currentPage = metaEvent.args["data"] && metaEvent.args["data"]["page"];
             for (var thread of process.sortedThreads()) {
-                if (thread.name() === WebInspector.TimelineModel.WorkerThreadName && !workerMetadataEvents.some(function(e) { return e.args["data"]["workerThreadId"] === thread.id(); }))
+                if (thread.name() === WebInspector.TimelineModel.WorkerThreadName && !metadataEvents.workers.some(function(e) { return e.args["data"]["workerThreadId"] === thread.id(); }))
                     continue;
                 this._processThreadEvents(startTime, endTime, metaEvent.thread, thread);
             }
@@ -786,6 +802,79 @@ WebInspector.TimelineModel.prototype = {
         this._resetProcessingState();
 
         this.dispatchEventToListeners(WebInspector.TimelineModel.Events.RecordingStopped);
+    },
+
+    /**
+     * @return {!WebInspector.TimelineModel.MetadataEvents}
+     */
+    _processMetadataEvents: function()
+    {
+        var metadataEvents = this._tracingModel.devToolsMetadataEvents();
+
+        var pageDevToolsMetadataEvents = [];
+        var workersDevToolsMetadataEvents = [];
+        for (var event of metadataEvents) {
+            if (event.name === WebInspector.TimelineModel.DevToolsMetadataEvent.TracingStartedInPage)
+                pageDevToolsMetadataEvents.push(event);
+            else if (event.name === WebInspector.TimelineModel.DevToolsMetadataEvent.TracingSessionIdForWorker)
+                workersDevToolsMetadataEvents.push(event);
+        }
+        if (!pageDevToolsMetadataEvents.length) {
+            // The trace is probably coming not from DevTools. Make a mock Metadata event.
+            var pageMetaEvent = this._loadedFromFile ? this._makeMockPageMetadataEvent() : null;
+            if (!pageMetaEvent) {
+                console.error(WebInspector.TimelineModel.DevToolsMetadataEvent.TracingStartedInPage + " event not found.");
+                return {page: [], workers: []};
+            }
+            pageDevToolsMetadataEvents.push(pageMetaEvent);
+        }
+        var sessionId = pageDevToolsMetadataEvents[0].args["sessionId"] || pageDevToolsMetadataEvents[0].args["data"]["sessionId"];
+        this._sessionId = sessionId;
+
+        var mismatchingIds = new Set();
+        /**
+         * @param {!WebInspector.TracingModel.Event} event
+         * @return {boolean}
+         */
+        function checkSessionId(event)
+        {
+            var args = event.args;
+            // FIXME: put sessionId into args["data"] for TracingStartedInPage event.
+            if (args["data"])
+                args = args["data"];
+            var id = args["sessionId"];
+            if (id === sessionId)
+                return true;
+            mismatchingIds.add(id);
+            return false;
+        }
+        var result = {
+            page: pageDevToolsMetadataEvents.filter(checkSessionId).sort(WebInspector.TracingModel.Event.compareStartTime),
+            workers: workersDevToolsMetadataEvents.filter(checkSessionId).sort(WebInspector.TracingModel.Event.compareStartTime)
+        };
+        if (mismatchingIds.size)
+            WebInspector.console.error("Timeline recording was started in more than one page simultaneously. Session id mismatch: " + this._sessionId + " and " + mismatchingIds.valuesArray() + ".");
+        return result;
+    },
+
+    /**
+     * @return {?WebInspector.TracingModel.Event}
+     */
+    _makeMockPageMetadataEvent: function()
+    {
+        var rendererMainThreadName = WebInspector.TimelineModel.RendererMainThreadName;
+        // FIXME: pick up the first renderer process for now.
+        var process = Object.values(this._tracingModel.sortedProcesses()).filter(function(p) { return p.threadByName(rendererMainThreadName); })[0];
+        var thread = process && process.threadByName(rendererMainThreadName);
+        if (!thread)
+            return null;
+        var pageMetaEvent = new WebInspector.TracingModel.Event(
+            WebInspector.TracingModel.DevToolsMetadataEventCategory,
+            WebInspector.TimelineModel.DevToolsMetadataEvent.TracingStartedInPage,
+            WebInspector.TracingModel.Phase.Metadata,
+            this._tracingModel.minimumRecordTime(), thread);
+        pageMetaEvent.addArgs({"data": {"sessionId": "mockSessionId"}});
+        return pageMetaEvent;
     },
 
     /**
@@ -809,19 +898,21 @@ WebInspector.TimelineModel.prototype = {
         this._tracingModel.addEvents([cpuProfileEvent]);
     },
 
-    _injectCpuProfileEvents: function()
+    /**
+     * @param {!WebInspector.TimelineModel.MetadataEvents} metadataEvents
+     */
+    _injectCpuProfileEvents: function(metadataEvents)
     {
         if (!this._cpuProfiles)
             return;
-        var mainMetaEvent = this._tracingModel.devtoolsPageMetadataEvents().peekLast();
+        var mainMetaEvent = metadataEvents.page.peekLast();
         if (!mainMetaEvent)
             return;
         var pid = mainMetaEvent.thread.process().id();
         var mainTarget = this._targets[0];
         var mainCpuProfile = this._cpuProfiles.get(mainTarget.id());
         this._injectCpuProfileEvent(pid, mainMetaEvent.thread.id(), mainCpuProfile);
-        var workerMetadataEvents = this._tracingModel.devtoolsWorkerMetadataEvents();
-        for (var metaEvent of workerMetadataEvents) {
+        for (var metaEvent of metadataEvents.workers) {
             var workerId = metaEvent.args["data"]["workerId"];
             var target = mainTarget.workerManager ? mainTarget.workerManager.targetByWorkerId(workerId) : null;
             if (!target)
@@ -1298,6 +1389,9 @@ WebInspector.TimelineModel.prototype = {
         this._gpuTasks = [];
         /** @type {!Array.<!WebInspector.TimelineModel.Record>} */
         this._eventDividerRecords = [];
+        /** @type {?string} */
+        this._sessionId = null;
+        this._loadedFromFile = false;
         this.dispatchEventToListeners(WebInspector.TimelineModel.Events.RecordsCleared);
     },
 
@@ -1886,7 +1980,6 @@ WebInspector.ExcludeTopLevelFilter.prototype = {
 WebInspector.TracingModelLoader = function(model, progress, canceledCallback)
 {
     this._model = model;
-    this._loader = new WebInspector.TracingModel.Loader(model._tracingModel);
 
     this._canceledCallback = canceledCallback;
     this._progress = progress;
@@ -1983,7 +2076,7 @@ WebInspector.TracingModelLoader.prototype = {
         }
 
         try {
-            this._loader.loadNextChunk(items);
+            this._model._tracingModel.addEvents(items);
         } catch(e) {
             this._reportErrorAndCancelLoading(WebInspector.UIString("Malformed timeline data: %s", e.toString()));
             return;
@@ -2014,7 +2107,7 @@ WebInspector.TracingModelLoader.prototype = {
      */
     close: function()
     {
-        this._loader.finish();
+        this._model._loadedFromFile = true;
         this._model.tracingComplete();
         if (this._progress)
             this._progress.done();
