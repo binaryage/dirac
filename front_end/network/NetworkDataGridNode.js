@@ -106,6 +106,7 @@ WebInspector.NetworkDataGridNode.prototype = {
         case "remoteAddress": cell.setTextAndTitle(this._request.remoteAddress()); break;
         case "cookies": cell.setTextAndTitle(this._arrayLength(this._request.requestCookies)); break;
         case "setCookies": cell.setTextAndTitle(this._arrayLength(this._request.responseCookies)); break;
+        case "priority": cell.setTextAndTitle(this._uiLabelForPriority(this._request.initialPriority())); break;
         case "connectionId": cell.setTextAndTitle(this._request.connectionId); break;
         case "type": this._renderTypeCell(cell); break;
         case "initiator": this._renderInitiatorCell(cell); break;
@@ -531,6 +532,24 @@ WebInspector.NetworkDataGridNode.prototype = {
         }
     },
 
+    /**
+     * @param {?NetworkAgent.ResourcePriority} priority
+     */
+    _uiLabelForPriority: function(priority)
+    {
+        var labelMap = WebInspector.NetworkDataGridNode._priorityToUILabel;
+        if (!labelMap) {
+            WebInspector.NetworkDataGridNode._priorityToUILabel = new Map();
+            labelMap = WebInspector.NetworkDataGridNode._priorityToUILabel;
+            labelMap.set(NetworkAgent.ResourcePriority.VeryLow, WebInspector.UIString("Lowest"));
+            labelMap.set(NetworkAgent.ResourcePriority.Low, WebInspector.UIString("Low"));
+            labelMap.set(NetworkAgent.ResourcePriority.Medium, WebInspector.UIString("Medium"));
+            labelMap.set(NetworkAgent.ResourcePriority.High, WebInspector.UIString("High"));
+            labelMap.set(NetworkAgent.ResourcePriority.VeryHigh, WebInspector.UIString("Highest"));
+        }
+        return priority ? labelMap.get(priority) : WebInspector.UIString("Unknown");
+    },
+
     __proto__: WebInspector.SortableDataGridNode.prototype
 }
 
@@ -640,6 +659,29 @@ WebInspector.NetworkDataGridNode.ResponseCookiesCountComparator = function(a, b)
     var aScore = a._request.responseCookies ? a._request.responseCookies.length : 0;
     var bScore = b._request.responseCookies ? b._request.responseCookies.length : 0;
     return (aScore - bScore) || a._request.indentityCompare(b._request);
+}
+
+/**
+ * @param {!WebInspector.NetworkDataGridNode} a
+ * @param {!WebInspector.NetworkDataGridNode} b
+ * @return {number}
+ */
+WebInspector.NetworkDataGridNode.InitialPriorityComparator = function(a, b)
+{
+    var priorityMap = WebInspector.NetworkDataGridNode._symbolicToNumericPriority;
+    if (!priorityMap) {
+        WebInspector.NetworkDataGridNode._symbolicToNumericPriority = new Map();
+        priorityMap = WebInspector.NetworkDataGridNode._symbolicToNumericPriority;
+        priorityMap.set(NetworkAgent.ResourcePriority.VeryLow, 1);
+        priorityMap.set(NetworkAgent.ResourcePriority.Low, 2);
+        priorityMap.set(NetworkAgent.ResourcePriority.Medium, 3);
+        priorityMap.set(NetworkAgent.ResourcePriority.High, 4);
+        priorityMap.set(NetworkAgent.ResourcePriority.VeryHigh, 5);
+    }
+    var aScore = priorityMap.get(a._request.initialPriority()) || 0;
+    var bScore = priorityMap.get(b._request.initialPriority()) || 0;
+
+    return aScore - bScore || a._request.indentityCompare(b._request);
 }
 
 /**

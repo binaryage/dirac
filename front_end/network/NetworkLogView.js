@@ -116,7 +116,7 @@ WebInspector.NetworkLogView._isMatchingSearchQuerySymbol = Symbol("isMatchingSea
 WebInspector.NetworkLogView.HTTPSchemas = {"http": true, "https": true, "ws": true, "wss": true};
 WebInspector.NetworkLogView._responseHeaderColumns = ["Cache-Control", "Connection", "Content-Encoding", "Content-Length", "ETag", "Keep-Alive", "Last-Modified", "Server", "Vary"];
 WebInspector.NetworkLogView._defaultColumnsVisibility = {
-    method: false, status: true, protocol: false, scheme: false, domain: false, remoteAddress: false, type: true, initiator: true, cookies: false, setCookies: false, size: true, time: true, connectionId: false,
+    method: false, status: true, protocol: false, scheme: false, domain: false, remoteAddress: false, type: true, initiator: true, cookies: false, setCookies: false, size: true, time: true, priority: false, connectionId: false,
     "Cache-Control": false, "Connection": false, "Content-Encoding": false, "Content-Length": false, "ETag": false, "Keep-Alive": false, "Last-Modified": false, "Server": false, "Vary": false
 };
 WebInspector.NetworkLogView._defaultRefreshDelay = 200;
@@ -164,6 +164,7 @@ WebInspector.NetworkLogView._columnTitles = {
     "size": WebInspector.UIString("Size"),
     "time": WebInspector.UIString("Time"),
     "connectionId": WebInspector.UIString("Connection Id"),
+    "priority": WebInspector.UIString("Priority"),
     "timeline": WebInspector.UIString("Timeline"),
 
     // Response header columns
@@ -429,6 +430,12 @@ WebInspector.NetworkLogView.prototype = {
         });
 
         columns.push({
+            id: "priority",
+            title: WebInspector.NetworkLogView._columnTitles["priority"],
+            weight: 6
+        });
+
+        columns.push({
             id: "connectionId",
             title: WebInspector.NetworkLogView._columnTitles["connectionId"],
             weight: 6
@@ -615,6 +622,7 @@ WebInspector.NetworkLogView.prototype = {
         this._sortingFunctions.size = WebInspector.NetworkDataGridNode.SizeComparator;
         this._sortingFunctions.time = WebInspector.NetworkDataGridNode.RequestPropertyComparator.bind(null, "duration", false);
         this._sortingFunctions.connectionId = WebInspector.NetworkDataGridNode.RequestPropertyComparator.bind(null, "connectionId", false);
+        this._sortingFunctions.priority = WebInspector.NetworkDataGridNode.InitialPriorityComparator;
         this._sortingFunctions.timeline = WebInspector.NetworkDataGridNode.RequestPropertyComparator.bind(null, "startTime", false);
         this._sortingFunctions.startTime = WebInspector.NetworkDataGridNode.RequestPropertyComparator.bind(null, "startTime", false);
         this._sortingFunctions.endTime = WebInspector.NetworkDataGridNode.RequestPropertyComparator.bind(null, "endTime", false);
