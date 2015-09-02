@@ -61,6 +61,9 @@ WebInspector.NetworkRequest = function(target, requestId, url, documentURL, fram
     this.requestTime = 0;
     this.protocol = "";
 
+    /** @type {?NetworkAgent.ResourcePriority} */
+    this._initialPriority = null;
+
     /** @type {!WebInspector.ResourceType} */
     this._resourceType = WebInspector.resourceTypes.Other;
     this._contentEncoded = false;
@@ -932,6 +935,22 @@ WebInspector.NetworkRequest.prototype = {
     hasErrorStatusCode: function()
     {
         return this.statusCode >= 400;
+    },
+
+    /**
+     * @param {!NetworkAgent.ResourcePriority} priority
+     */
+    setInitialPriority: function(priority)
+    {
+        this._initialPriority = priority;
+    },
+
+    /**
+     * @return {?NetworkAgent.ResourcePriority}
+     */
+    initialPriority: function()
+    {
+        return this._initialPriority;
     },
 
     /**

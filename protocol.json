@@ -1173,6 +1173,12 @@
                 ]
             },
             {
+                "id": "ResourcePriority",
+                "type": "string",
+                "enum": ["VeryLow", "Low", "Medium", "High", "VeryHigh"],
+                "description": "Loading priority of a resource request."
+            },
+            {
                 "id": "Request",
                 "type": "object",
                 "description": "HTTP request data.",
@@ -1181,7 +1187,8 @@
                     { "name": "method", "type": "string", "description": "HTTP request method." },
                     { "name": "headers", "$ref": "Headers", "description": "HTTP request headers." },
                     { "name": "postData", "type": "string", "optional": true, "description": "HTTP POST request data." },
-                    { "name": "mixedContentType", "optional": true, "type": "string", "enum": ["blockable", "optionally-blockable", "none"], "description": "The mixed content status of the request, as defined in http://www.w3.org/TR/mixed-content/" }
+                    { "name": "mixedContentType", "optional": true, "type": "string", "enum": ["blockable", "optionally-blockable", "none"], "description": "The mixed content status of the request, as defined in http://www.w3.org/TR/mixed-content/" },
+                    { "name": "initialPriority", "$ref": "ResourcePriority", "description": "Priority of the resource request at the time request is sent."}
                 ]
             },
             {

@@ -194,6 +194,7 @@ WebInspector.NetworkDispatcher.prototype = {
         networkRequest.requestMethod = request.method;
         networkRequest.setRequestHeaders(this._headersMapToHeadersArray(request.headers));
         networkRequest.requestFormData = request.postData;
+        networkRequest.setInitialPriority(request.initialPriority);
     },
 
     /**
