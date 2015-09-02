@@ -410,6 +410,7 @@ WebInspector.NetworkProject.prototype = {
             cssModel.removeEventListener(WebInspector.CSSStyleModel.Events.StyleSheetAdded, this._styleSheetAdded, this);
             cssModel.removeEventListener(WebInspector.CSSStyleModel.Events.StyleSheetRemoved, this._styleSheetRemoved, this);
         }
+        delete target[WebInspector.NetworkProject._networkProjectSymbol];
     },
 
     _reset: function()

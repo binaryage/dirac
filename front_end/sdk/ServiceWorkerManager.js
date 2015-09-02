@@ -376,10 +376,11 @@ WebInspector.ServiceWorker = function(manager, workerId, url)
      */
     function targetCreated(target)
     {
-        if (!target) {
+        if (!this._connection || !target) {
             this._manager._workers.delete(workerId);
             return;
         }
+        this._target = target;
         this._manager.dispatchEventToListeners(WebInspector.ServiceWorkerManager.Events.WorkersUpdated);
         target.runtimeAgent().run();
     }
@@ -419,7 +420,10 @@ WebInspector.ServiceWorker.prototype = {
 
     _closeConnection: function()
     {
+        if (!this._target)
+            return;
         this._connection._close();
+        delete this._connection;
     }
 }
 
