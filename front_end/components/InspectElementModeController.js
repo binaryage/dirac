@@ -55,7 +55,7 @@ WebInspector.InspectElementModeController.prototype = {
     {
         // When DevTools are opening in the inspect element mode, the first target comes in
         // much later than the InspectorFrontendAPI.enterInspectElementMode event.
-        if (!this.enabled())
+        if (!this.started())
             return;
         var domModel = WebInspector.DOMModel.fromTarget(target);
         domModel.setInspectMode(WebInspector.moduleSetting("showUAShadowDOM").get() ? DOMAgent.InspectMode.SearchForUAShadowDOM : DOMAgent.InspectMode.SearchForNode);
@@ -72,25 +72,39 @@ WebInspector.InspectElementModeController.prototype = {
     /**
      * @return {boolean}
      */
-    enabled: function()
+    started: function()
     {
         return this._toggleSearchButton.toggled();
     },
 
+    stop: function()
+    {
+        if (this.started())
+            this._toggleSearch();
+    },
+
     disable: function()
     {
-        if (this.enabled())
-            this._toggleSearch();
+        this.stop();
+        this._toggleSearchButton.setEnabled(false);
+    },
+
+    enable: function()
+    {
+        this._toggleSearchButton.setEnabled(true);
     },
 
     _toggleSearch: function()
     {
-        var enabled = !this.enabled();
-        this._toggleSearchButton.setToggled(enabled);
+        if (!this._toggleSearchButton.enabled())
+            return;
+
+        var shouldEnable = !this.started();
+        this._toggleSearchButton.setToggled(shouldEnable);
 
         for (var domModel of WebInspector.DOMModel.instances()) {
             var mode;
-            if (!enabled)
+            if (!shouldEnable)
                 mode = DOMAgent.InspectMode.None;
             else if (WebInspector.moduleSetting("showUAShadowDOM").get())
                 mode = DOMAgent.InspectMode.SearchForUAShadowDOM;

@@ -281,9 +281,10 @@ WebInspector.InspectorView.prototype = {
 
     /**
      * @param {!WebInspector.Panel} panel
+     * @param {boolean=} suppressBringToFront
      * @return {!WebInspector.Panel}
      */
-    setCurrentPanel: function(panel)
+    setCurrentPanel: function(panel, suppressBringToFront)
     {
         delete this._panelForShowPromise;
 
@@ -291,7 +292,9 @@ WebInspector.InspectorView.prototype = {
             console.error("Current panel is locked");
             return this._currentPanel;
         }
-        InspectorFrontendHost.bringToFront();
+
+        if (!suppressBringToFront)
+            InspectorFrontendHost.bringToFront();
 
         if (this._currentPanel === panel)
             return panel;
