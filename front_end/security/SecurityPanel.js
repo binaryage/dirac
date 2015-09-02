@@ -34,6 +34,9 @@ WebInspector.SecurityPanel = function()
     this._origins = new Map();
     // TODO(lgarron): add event listeners to call _clear() once we figure out how to clear the panel properly (https://crbug.com/522762).
 
+    WebInspector.targetManager.addModelListener(WebInspector.NetworkManager, WebInspector.NetworkManager.EventTypes.ResponseReceivedSecurityDetails, this._onResponseReceivedSecurityDetails, this);
+    WebInspector.targetManager.addModelListener(WebInspector.SecurityModel, WebInspector.SecurityModel.EventTypes.SecurityStateChanged, this._onSecurityStateChanged, this);
+
     WebInspector.targetManager.observeTargets(this);
 }
 
@@ -164,16 +167,7 @@ WebInspector.SecurityPanel.prototype = {
      */
     targetAdded: function(target)
     {
-        if (!this._target) {
-            this._target = target;
-            this._securityModel = WebInspector.SecurityModel.fromTarget(target);
-            this._securityModel.addEventListener(WebInspector.SecurityModel.EventTypes.SecurityStateChanged, this._onSecurityStateChanged, this);
-            this._updateSecurityState(this._securityModel.securityState(), []);
-
-            this._origins.clear();
-            this._networkManager = target.networkManager;
-            this._networkManager.addEventListener(WebInspector.NetworkManager.EventTypes.ResponseReceivedSecurityDetails, this._onResponseReceivedSecurityDetails, this);
-        }
+        WebInspector.SecurityModel.fromTarget(target);
     },
 
     /**
@@ -182,14 +176,6 @@ WebInspector.SecurityPanel.prototype = {
      */
     targetRemoved: function(target)
     {
-        if (target === this._target) {
-            this._securityModel.removeEventListener(WebInspector.SecurityModel.EventTypes.SecurityStateChanged, this._onSecurityStateChanged, this);
-            delete this._securityModel;
-            this._networkManager.removeEventListener(WebInspector.NetworkManager.EventTypes.ResponseReceivedSecurityDetails, this._onResponseReceivedSecurityDetails, this);
-            delete this._networkManager;
-            delete this._target;
-            this._clear();
-        }
     },
 
     _clear: function()
