@@ -132,6 +132,7 @@ WebInspector.NetworkLogView.FilterType = {
     LargerThan: "larger-than",
     Method: "method",
     MimeType: "mime-type",
+    MixedContent: "mixed-content",
     Scheme: "scheme",
     SetCookieDomain: "set-cookie-domain",
     SetCookieName: "set-cookie-name",
@@ -1084,6 +1085,19 @@ WebInspector.NetworkLogView.prototype = {
         this._suggestionBuilder.addItem(WebInspector.NetworkLogView.FilterType.Scheme, "" + request.scheme);
         this._suggestionBuilder.addItem(WebInspector.NetworkLogView.FilterType.StatusCode, "" + request.statusCode);
 
+        if (request.mixedContentType !== "none") {
+            this._suggestionBuilder.addItem(WebInspector.NetworkLogView.FilterType.MixedContent, "all");
+        }
+
+        if (request.mixedContentType === "optionally-blockable") {
+            this._suggestionBuilder.addItem(WebInspector.NetworkLogView.FilterType.MixedContent, "displayed");
+        }
+
+        if (request.mixedContentType === "blockable") {
+            var suggestion = request.blocked ? "blocked" : "block-overridden";
+            this._suggestionBuilder.addItem(WebInspector.NetworkLogView.FilterType.MixedContent, suggestion);
+        }
+
         var responseHeaders = request.responseHeaders;
         for (var i = 0, l = responseHeaders.length; i < l; ++i)
             this._suggestionBuilder.addItem(WebInspector.NetworkLogView.FilterType.HasResponseHeader, responseHeaders[i].name);
@@ -1681,6 +1695,9 @@ WebInspector.NetworkLogView.prototype = {
         case WebInspector.NetworkLogView.FilterType.MimeType:
             return WebInspector.NetworkLogView._requestMimeTypeFilter.bind(null, value);
 
+        case WebInspector.NetworkLogView.FilterType.MixedContent:
+            return WebInspector.NetworkLogView._requestMixedContentFilter.bind(null, value);
+
         case WebInspector.NetworkLogView.FilterType.Scheme:
             return WebInspector.NetworkLogView._requestSchemeFilter.bind(null, value);
 
@@ -1993,6 +2010,25 @@ WebInspector.NetworkLogView._requestMethodFilter = function(value, request)
 WebInspector.NetworkLogView._requestMimeTypeFilter = function(value, request)
 {
     return request.mimeType === value;
+}
+
+/**
+ * @param {string} value
+ * @param {!WebInspector.NetworkRequest} request
+ * @return {boolean}
+ */
+WebInspector.NetworkLogView._requestMixedContentFilter = function(value, request)
+{
+    if (value === "displayed") {
+        return request.mixedContentType === "optionally-blockable";
+    } else if (value === "blocked") {
+        return request.mixedContentType === "blockable" && request.blocked;
+    } else if (value === "block-overridden") {
+        return request.mixedContentType === "blockable" && !request.blocked;
+    } else if (value === "all") {
+        return request.mixedContentType !== "none";
+    }
+    return false;
 }
 
 /**

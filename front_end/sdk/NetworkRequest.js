@@ -60,6 +60,7 @@ WebInspector.NetworkRequest = function(target, requestId, url, documentURL, fram
     this.requestMethod = "";
     this.requestTime = 0;
     this.protocol = "";
+    this.mixedContentType = "";
 
     /** @type {?NetworkAgent.ResourcePriority} */
     this._initialPriority = null;
