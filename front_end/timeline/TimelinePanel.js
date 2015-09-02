@@ -275,7 +275,7 @@ WebInspector.TimelinePanel.prototype = {
     {
         modeView.setWindowTimes(this.windowStartTime(), this.windowEndTime());
         modeView.refreshRecords(this._textFilter._regex);
-        this._stackView.appendView(modeView.view(), "timelinePanelTimelineStackSplitViewState");
+        this._stackView.appendView(modeView.view(), "timelinePanelTimelineStackSplitViewState", undefined, 112);
         modeView.view().addEventListener(WebInspector.SplitWidget.Events.SidebarSizeChanged, this._sidebarResized, this);
         this._currentViews.push(modeView);
     },

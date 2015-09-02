@@ -717,6 +717,14 @@ WebInspector.CheckboxFilterUI.prototype = {
         return this._filterElement;
     },
 
+    /**
+     * @return {!Element}
+     */
+    labelElement: function()
+    {
+        return this._label;
+    },
+
     _fireUpdated: function()
     {
         this.dispatchEventToListeners(WebInspector.FilterUI.Events.FilterChanged, null);
