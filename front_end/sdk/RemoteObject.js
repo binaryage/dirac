@@ -28,6 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+ /**
+ * @typedef {{object: ?WebInspector.RemoteObject, wasThrown: (boolean|undefined)}}
+ */
+WebInspector.CallFunctionResult;
+
 /**
  * This may not be an interface due to "instanceof WebInspector.RemoteObject" checks in the code.
  *
@@ -174,7 +179,7 @@ WebInspector.RemoteObject.prototype = {
 
     /**
      * @param {function(this:Object, ...)} functionDeclaration
-     * @param {!Array.<!RuntimeAgent.CallArgument>=} args
+     * @param {!Array<!RuntimeAgent.CallArgument>=} args
      * @param {function(?WebInspector.RemoteObject, boolean=)=} callback
      */
     callFunction: function(functionDeclaration, args, callback)
@@ -184,15 +189,15 @@ WebInspector.RemoteObject.prototype = {
 
     /**
      * @param {function(this:Object, ...)} functionDeclaration
-     * @param {!Array.<!RuntimeAgent.CallArgument>=} args
-     * @return {!Promise.<!{object: ?WebInspector.RemoteObject, wasThrown: (boolean|undefined)}>}
+     * @param {!Array<!RuntimeAgent.CallArgument>=} args
+     * @return {!Promise<!WebInspector.CallFunctionResult>}
      */
     callFunctionPromise: function(functionDeclaration, args)
     {
         return new Promise(promiseConstructor.bind(this));
 
         /**
-         * @param {function(!{object: ?WebInspector.RemoteObject, wasThrown: (boolean|undefined)})} success
+         * @param {function(!WebInspector.CallFunctionResult)} success
          * @this {WebInspector.RemoteObject}
          */
         function promiseConstructor(success)
@@ -201,7 +206,7 @@ WebInspector.RemoteObject.prototype = {
         }
 
         /**
-         * @param {function(!{object: ?WebInspector.RemoteObject, wasThrown: (boolean|undefined)})} callback
+         * @param {function(!WebInspector.CallFunctionResult)} callback
          * @param {?WebInspector.RemoteObject} object
          * @param {boolean=} wasThrown
          */
@@ -215,7 +220,7 @@ WebInspector.RemoteObject.prototype = {
     },
 
     /**
-     * @param {function(this:Object)} functionDeclaration
+     * @param {function(this:Object, ...)} functionDeclaration
      * @param {!Array<!RuntimeAgent.CallArgument>|undefined} args
      * @param {function(*)} callback
      */
@@ -225,7 +230,7 @@ WebInspector.RemoteObject.prototype = {
     },
 
     /**
-     * @param {function(this:Object)} functionDeclaration
+     * @param {function(this:Object, ...)} functionDeclaration
      * @param {!Array<!RuntimeAgent.CallArgument>|undefined} args
      * @return {!Promise<*>}
      */
@@ -1334,6 +1339,180 @@ WebInspector.LocalJSONObject.prototype = {
     },
 
     __proto__: WebInspector.RemoteObject.prototype
+}
+
+/**
+ * @constructor
+ * @param {!WebInspector.RemoteObject} object
+ */
+WebInspector.RemoteArray = function(object)
+{
+    this._object = object;
+};
+
+/**
+ * @param {?WebInspector.RemoteObject} object
+ * @return {!WebInspector.RemoteArray}
+ */
+WebInspector.RemoteArray.objectAsArray = function(object)
+{
+    if (!object || object.subtype !== "array")
+        throw new Error("Object is empty or not an array");
+    return new WebInspector.RemoteArray(object);
+}
+
+/**
+ * @param {!Array<!WebInspector.RemoteObject>} objects
+ * @return {!Promise<!WebInspector.RemoteArray>}
+ */
+WebInspector.RemoteArray.createFromRemoteObjects = function(objects)
+{
+    if (!objects.length)
+        throw new Error("Input array is empty");
+    var objectArguments = [];
+    for (var i = 0; i < objects.length; ++i)
+        objectArguments.push(WebInspector.RemoteObject.toCallArgument(objects[i]))
+    return objects[0].callFunctionPromise(createArray, objectArguments).then(returnRemoteArray);
+
+    /**
+     * @return {!Array<*>}
+     */
+    function createArray()
+    {
+        if (arguments.length > 1)
+            return new Array(arguments);
+        return [arguments[0]];
+    }
+
+    /**
+     * @param {!WebInspector.CallFunctionResult} result
+     * @return {!WebInspector.RemoteArray}
+     */
+    function returnRemoteArray(result)
+    {
+        if (result.wasThrown || !result.object)
+            throw new Error("Call function throws exceptions or returns empty value");
+        return WebInspector.RemoteArray.objectAsArray(result.object);
+    }
+}
+
+WebInspector.RemoteArray.prototype = {
+    /**
+     * @param {number} index
+     * @return {!Promise<!WebInspector.RemoteObject>}
+     */
+    at: function(index)
+    {
+        if (index < 0 || index > this._object.arrayLength())
+            throw new Error("Out of range");
+        return this._object.callFunctionPromise(at, [WebInspector.RemoteObject.toCallArgument(index)]).then(assertCallFunctionResult);
+
+        /**
+         * @suppressReceiverCheck
+         * @param {number} index
+         * @return {*}
+         * @this {!Object}
+         */
+        function at(index)
+        {
+            return this[index];
+        }
+
+        /**
+         * @param {!WebInspector.CallFunctionResult} result
+         * @return {!WebInspector.RemoteObject}
+         */
+        function assertCallFunctionResult(result)
+        {
+            if (result.wasThrown || !result.object)
+                throw new Error("Exception in callFunction or result value is empty");
+            return result.object;
+        }
+    },
+
+    /**
+     * @return {number}
+     */
+    length: function()
+    {
+        return this._object.arrayLength();
+    },
+
+    /**
+     * @param {function(!WebInspector.RemoteObject):!Promise<T>} func
+     * @return {!Promise<!Array<T>>}
+     * @template T
+     */
+    map: function(func)
+    {
+        var promises = [];
+        for (var i = 0; i < this.length(); ++i)
+            promises.push(this.at(i).then(func));
+        return Promise.all(promises);
+    },
+
+    /**
+     * @return {!WebInspector.RemoteObject}
+     */
+    object: function()
+    {
+        return this._object;
+    }
+}
+
+/**
+ * @constructor
+ * @param {!WebInspector.RemoteObject} object
+ */
+WebInspector.RemoteFunction = function(object)
+{
+    this._object = object;
+}
+
+/**
+ * @param {?WebInspector.RemoteObject} object
+ * @return {!WebInspector.RemoteFunction}
+ */
+WebInspector.RemoteFunction.objectAsFunction = function(object)
+{
+    if (!object || object.type !== "function")
+        throw new Error("Object is empty or not a function");
+    return new WebInspector.RemoteFunction(object);
+}
+
+WebInspector.RemoteFunction.prototype = {
+    /**
+     * @return {!Promise<!WebInspector.RemoteObject>}
+     */
+    targetFunction: function()
+    {
+        return this._object.getOwnPropertiesPromise().then(targetFunction.bind(this));
+
+        /**
+         * @param {!{properties: ?Array<!WebInspector.RemoteObjectProperty>, internalProperties: ?Array<!WebInspector.RemoteObjectProperty>}} ownProperties
+         * @return {!WebInspector.RemoteObject}
+         * @this {WebInspector.RemoteFunction}
+         */
+        function targetFunction(ownProperties)
+        {
+            if (!ownProperties.internalProperties)
+                return this._object;
+            var internalProperties = ownProperties.internalProperties;
+            for (var property of internalProperties) {
+                if (property.name === "[[TargetFunction]]")
+                    return property.value;
+            }
+            return this._object;
+        }
+    },
+
+    /**
+     * @return {!WebInspector.RemoteObject}
+     */
+    object: function()
+    {
+        return this._object;
+    }
 }
 
 /**
