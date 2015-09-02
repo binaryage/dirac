@@ -61,6 +61,7 @@ WebInspector.ResponsiveDesignView.prototype = {
         this._canvas = this._canvasContainer.element.createChild("canvas", "fill responsive-design-canvas");
 
         this._mediaInspectorContainer = this._canvasContainer.element.createChild("div", "responsive-design-media-container");
+        WebInspector.Tooltip.addNativeOverrideContainer(this._mediaInspectorContainer);
         this._mediaInspector = new WebInspector.MediaQueryInspector();
         this._updateMediaQueryInspector();
 

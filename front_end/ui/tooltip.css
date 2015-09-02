@@ -17,10 +17,6 @@
     border: 1px solid hsla(0, 0%, 0%, 0.1);
     background-clip: padding-box;
     box-sizing: border-box;
-    white-space: pre;
-}
-
-.tooltip {
     position: absolute;
     visibility: hidden;
     transition: visibility 0s 100ms, opacity 150ms cubic-bezier(0, 0, .2, 1);
@@ -28,6 +24,8 @@
     top: 0;
     left: 0;
     opacity: 0;
+    text-overflow: ellipsis;
+    overflow: hidden;
 }
 
 .tooltip.shown {
