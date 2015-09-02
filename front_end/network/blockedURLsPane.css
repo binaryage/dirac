@@ -42,6 +42,7 @@
     text-overflow: ellipsis;
     overflow: hidden;
     flex: auto;
+    margin-right: 5px;
 }
 
 .blocked-url .remove-button {
