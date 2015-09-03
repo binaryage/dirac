@@ -46,6 +46,8 @@ WebInspector.Dialog = function(relativeToElement, delegate, modal)
     // Install glass pane capturing events.
     this._glassPane.element.tabIndex = 0;
     this._glassPane.element.addEventListener("focus", this._onGlassPaneFocus.bind(this), false);
+    if (this._modal)
+        this._glassPane.element.classList.add("tinted");
 
     this._element = this._glassPane.element.createChild("div");
     this._element.tabIndex = 0;
