@@ -1230,6 +1230,13 @@
                 ]
             },
             {
+                "id": "BlockedReason",
+                "type": "string",
+                "description": "The reason why request was blocked.",
+                "enum": ["csp", "mixed-content", "origin", "inspector", "other"],
+                "hidden": true
+            },
+            {
                 "id": "Response",
                 "type": "object",
                 "description": "HTTP response data.",
@@ -1555,7 +1562,7 @@
                     { "name": "type", "$ref": "Page.ResourceType", "description": "Resource type." },
                     { "name": "errorText", "type": "string", "description": "User friendly error message." },
                     { "name": "canceled", "type": "boolean", "optional": true, "description": "True if loading was canceled." },
-                    { "name": "blocked", "type": "boolean", "optional": true, "description": "True if loading was blocked by inspector." }
+                    { "name": "blockedReason", "$ref": "BlockedReason", "optional": true, "description": "The reason why loading was blocked, if any.", "hidden": true }
                 ]
             },
             {

@@ -437,9 +437,9 @@ WebInspector.NetworkDispatcher.prototype = {
      * @param {!PageAgent.ResourceType} resourceType
      * @param {string} localizedDescription
      * @param {boolean=} canceled
-     * @param {boolean=} blocked
+     * @param {!NetworkAgent.BlockedReason=} blockedReason
      */
-    loadingFailed: function(requestId, time, resourceType, localizedDescription, canceled, blocked)
+    loadingFailed: function(requestId, time, resourceType, localizedDescription, canceled, blockedReason)
     {
         var networkRequest = this._inflightRequestsById[requestId];
         if (!networkRequest)
@@ -448,7 +448,8 @@ WebInspector.NetworkDispatcher.prototype = {
         networkRequest.failed = true;
         networkRequest.setResourceType(WebInspector.resourceTypes[resourceType]);
         networkRequest.canceled = canceled;
-        networkRequest.blocked = blocked;
+        if (blockedReason)
+            networkRequest.setBlockedReason(blockedReason);
         networkRequest.localizedFailDescription = localizedDescription;
         this._finishNetworkRequest(networkRequest, time, -1);
     },

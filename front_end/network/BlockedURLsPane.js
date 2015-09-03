@@ -236,7 +236,7 @@ WebInspector.BlockedURLsPane.prototype = {
     _onRequestFinished: function(event)
     {
         var request = /** @type {!WebInspector.NetworkRequest} */ (event.data);
-        if (request.blocked) {
+        if (request.wasBlocked()) {
             var count = this._blockedCountForUrl.get(request.url) || 0;
             this._blockedCountForUrl.set(request.url, count + 1);
             this._updateThrottler.schedule(this._update.bind(this));

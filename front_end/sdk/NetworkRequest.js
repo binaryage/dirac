@@ -54,6 +54,8 @@ WebInspector.NetworkRequest = function(target, requestId, url, documentURL, fram
     this._issueTime = -1;
     this._startTime = -1;
     this._endTime = -1;
+    /** @type {!NetworkAgent.BlockedReason|undefined} */
+    this._blockedReason = undefined;
 
     this.statusCode = 0;
     this.statusText = "";
@@ -390,16 +392,27 @@ WebInspector.NetworkRequest.prototype = {
     },
 
     /**
-     * @return {boolean}
+     * @return {!NetworkAgent.BlockedReason|undefined}
      */
-    get blocked()
+    blockedReason: function()
     {
-        return this._blocked;
+        return this._blockedReason;
     },
 
-    set blocked(x)
+    /**
+     * @param {!NetworkAgent.BlockedReason} reason
+     */
+    setBlockedReason: function(reason)
     {
-        this._blocked = x;
+        this._blockedReason = reason;
+    },
+
+    /**
+     * @return {boolean}
+     */
+    wasBlocked: function()
+    {
+        return !!this._blockedReason;
     },
 
     /**

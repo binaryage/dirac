@@ -1102,7 +1102,7 @@ WebInspector.NetworkLogView.prototype = {
         }
 
         if (request.mixedContentType === "blockable") {
-            var suggestion = request.blocked ? "blocked" : "block-overridden";
+            var suggestion = request.wasBlocked() ? "blocked" : "block-overridden";
             this._suggestionBuilder.addItem(WebInspector.NetworkLogView.FilterType.MixedContent, suggestion);
         }
 
@@ -2030,9 +2030,9 @@ WebInspector.NetworkLogView._requestMixedContentFilter = function(value, request
     if (value === "displayed") {
         return request.mixedContentType === "optionally-blockable";
     } else if (value === "blocked") {
-        return request.mixedContentType === "blockable" && request.blocked;
+        return request.mixedContentType === "blockable" && request.wasBlocked();
     } else if (value === "block-overridden") {
-        return request.mixedContentType === "blockable" && !request.blocked;
+        return request.mixedContentType === "blockable" && !request.wasBlocked();
     } else if (value === "all") {
         return request.mixedContentType !== "none";
     }
