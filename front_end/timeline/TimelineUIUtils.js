@@ -620,6 +620,14 @@ WebInspector.TimelineUIUtils._buildTraceEventDetailsSynchronously = function(eve
         var delta = event.args["usedHeapSizeBefore"] - event.args["usedHeapSizeAfter"];
         contentHelper.appendTextRow(WebInspector.UIString("Collected"), Number.bytesToString(delta));
         break;
+    case recordTypes.JSFrame:
+        var detailsNode = WebInspector.TimelineUIUtils.buildDetailsNodeForTraceEvent(event, model.target(), linkifier);
+        if (detailsNode)
+            contentHelper.appendElementRow(WebInspector.UIString("Function"), detailsNode);
+        var deoptReason = eventData["deoptReason"];
+        if (deoptReason && deoptReason != "no reason")
+            contentHelper.appendTextRow(WebInspector.UIString("Warning"), WebInspector.UIString("Not optimized: %s", deoptReason), true);
+        break;
     case recordTypes.TimerFire:
     case recordTypes.TimerInstall:
     case recordTypes.TimerRemove:
@@ -1860,10 +1868,13 @@ WebInspector.TimelineDetailsContentHelper.prototype = {
     /**
      * @param {string} title
      * @param {string|number|boolean} value
+     * @param {boolean=} isWarning
      */
-    appendTextRow: function(title, value)
+    appendTextRow: function(title, value, isWarning)
     {
         var rowElement = this.element.createChild("div", "timeline-details-view-row");
+        if (isWarning)
+            rowElement.classList.add("timeline-details-warning");
         rowElement.createChild("div", "timeline-details-view-row-title").textContent = title;
         rowElement.createChild("div", "timeline-details-view-row-value" + (this._monospaceValues ? " monospace" : "")).textContent = value;
     },
@@ -1932,5 +1943,4 @@ WebInspector.TimelineDetailsContentHelper.prototype = {
 
         stackTraceElement.appendChild(callFrameElem);
     }
-
 }
