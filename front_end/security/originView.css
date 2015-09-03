@@ -65,3 +65,7 @@
 .security-origin-view .details-table .san-entry {
     display: block;
 }
+
+.security-origin-view .truncated-san .truncated-entry {
+    display: none;
+}

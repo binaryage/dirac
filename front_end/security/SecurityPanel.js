@@ -458,9 +458,30 @@ WebInspector.SecurityOriginView.prototype = {
         if (sanList.length === 0) {
             sanDiv.textContent = WebInspector.UIString("(N/A)");
         } else {
-            for (var sanEntry of sanList) {
+            var truncatedNumToShow = 2;
+            var listIsTruncated = sanList.length > truncatedNumToShow;
+            for (var i = 0; i < sanList.length; i++) {
                 var span = sanDiv.createChild("span", "san-entry");
-                span.textContent = WebInspector.UIString(sanEntry);
+                span.textContent = sanList[i];
+                if (listIsTruncated && i >= truncatedNumToShow)
+                    span.classList.add("truncated-entry");
+            }
+            if (listIsTruncated) {
+                var truncatedSANToggle = sanDiv.createChild("div", "link");
+                truncatedSANToggle.href = "";
+
+                function toggleSANTruncation()
+                {
+                    if (sanDiv.classList.contains("truncated-san")) {
+                        sanDiv.classList.remove("truncated-san")
+                        truncatedSANToggle.textContent = WebInspector.UIString("Show less");
+                    } else {
+                        sanDiv.classList.add("truncated-san");
+                        truncatedSANToggle.textContent = WebInspector.UIString("Show more (%d total)", sanList.length);
+                    }
+                }
+                truncatedSANToggle.addEventListener("click", toggleSANTruncation, false);
+                toggleSANTruncation();
             }
         }
         return sanDiv;
