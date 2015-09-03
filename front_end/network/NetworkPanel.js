@@ -299,7 +299,7 @@ WebInspector.NetworkPanel.prototype = {
             this._filmStripView = new WebInspector.FilmStripView();
             this._filmStripView.setMode(WebInspector.FilmStripView.Modes.FrameBased);
             this._filmStripView.element.classList.add("network-film-strip");
-            this._filmStripRecorder = new WebInspector.NetworkPanel.FilmStripRecorder(this._filmStripView);
+            this._filmStripRecorder = new WebInspector.NetworkPanel.FilmStripRecorder(this._networkLogView.timeCalculator(), this._filmStripView);
             this._filmStripView.show(this._searchableView.element, this._searchableView.element.firstElementChild);
             this._filmStripView.addEventListener(WebInspector.FilmStripView.Events.FrameSelected, this._onFilmFrameSelected, this);
             this._filmStripView.addEventListener(WebInspector.FilmStripView.Events.FrameEnter, this._onFilmFrameEnter, this);
@@ -670,10 +670,12 @@ WebInspector.NetworkPanelFactory.prototype = {
 /**
  * @constructor
  * @implements {WebInspector.TracingManagerClient}
+ * @param {!WebInspector.NetworkTimeCalculator} timeCalculator
  * @param {!WebInspector.FilmStripView} filmStripView
  */
-WebInspector.NetworkPanel.FilmStripRecorder = function(filmStripView)
+WebInspector.NetworkPanel.FilmStripRecorder = function(timeCalculator, filmStripView)
 {
+    this._timeCalculator = timeCalculator;
     this._filmStripView = filmStripView;
 }
 
@@ -703,7 +705,7 @@ WebInspector.NetworkPanel.FilmStripRecorder.prototype = {
         if (!this._tracingModel)
             return;
         this._tracingModel.tracingComplete();
-        this._callback(new WebInspector.FilmStripModel(this._tracingModel));
+        this._callback(new WebInspector.FilmStripModel(this._tracingModel, this._timeCalculator.minimumBoundary() * 1000));
         delete this._callback;
     },
 

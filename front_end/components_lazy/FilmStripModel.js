@@ -7,10 +7,12 @@
 /**
  * @constructor
  * @param {!WebInspector.TracingModel} tracingModel
+ * @param {number=} zeroTime
  */
-WebInspector.FilmStripModel = function(tracingModel)
+WebInspector.FilmStripModel = function(tracingModel, zeroTime)
 {
     this._tracingModel = tracingModel;
+    this._zeroTime = zeroTime || tracingModel.minimumRecordTime();
 
     /** @type {!Array<!WebInspector.FilmStripModel.Frame>} */
     this._frames = [];
@@ -24,15 +26,17 @@ WebInspector.FilmStripModel = function(tracingModel)
 
     var events = mainThread.events();
     for (var i = 0; i < events.length; ++i) {
-        if (!events[i].hasCategory(WebInspector.FilmStripModel._category))
+        var event = events[i];
+        if (event.startTime < this._zeroTime)
             continue;
-
-        if (events[i].name === WebInspector.FilmStripModel.TraceEvents.CaptureFrame) {
-            var data = events[i].args["data"];
+        if (!event.hasCategory(WebInspector.FilmStripModel._category))
+            continue;
+        if (event.name === WebInspector.FilmStripModel.TraceEvents.CaptureFrame) {
+            var data = event.args["data"];
             if (data)
-                this._frames.push(WebInspector.FilmStripModel.Frame._fromEvent(this, events[i], this._frames.length));
-        } else if (events[i].name === WebInspector.FilmStripModel.TraceEvents.Screenshot) {
-            this._frames.push(WebInspector.FilmStripModel.Frame._fromSnapshot(this, /** @type {!WebInspector.TracingModel.ObjectSnapshot} */ (events[i]), this._frames.length));
+                this._frames.push(WebInspector.FilmStripModel.Frame._fromEvent(this, event, this._frames.length));
+        } else if (event.name === WebInspector.FilmStripModel.TraceEvents.Screenshot) {
+            this._frames.push(WebInspector.FilmStripModel.Frame._fromSnapshot(this, /** @type {!WebInspector.TracingModel.ObjectSnapshot} */ (event), this._frames.length));
         }
     }
 }
@@ -58,7 +62,7 @@ WebInspector.FilmStripModel.prototype = {
      */
     zeroTime: function()
     {
-        return this._tracingModel.minimumRecordTime();
+        return this._zeroTime;
     },
 
     /**
