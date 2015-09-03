@@ -206,9 +206,9 @@ WebInspector.AnimationTimeline.prototype = {
     {
         if (this.startTime() === undefined)
             return;
-        var targets = WebInspector.targetManager.targets();
-        for (var target of targets)
+        for (var target of WebInspector.targetManager.targets(WebInspector.Target.Type.Page))
             target.animationAgent().setCurrentTime(/** @type {number} */(this.startTime()));
+
         this._animateTime(0);
     },
 
@@ -507,8 +507,7 @@ WebInspector.AnimationTimeline.prototype = {
         this._scrubberPlayer.currentTime = Math.min(this._originalScrubberTime + delta / this.pixelMsRatio(), this.duration() - this._scrubberRadius / this.pixelMsRatio());
         var currentTime = Math.max(0, Math.round(this._scrubberPlayer.currentTime));
         this._timelineScrubberHead.textContent = WebInspector.UIString(Number.millisToString(currentTime));
-        var targets = WebInspector.targetManager.targets();
-        for (var target of targets)
+        for (var target of WebInspector.targetManager.targets(WebInspector.Target.Type.Page))
             target.animationAgent().setCurrentTime(/** @type {number} */(this.startTime() + currentTime));
     },
 
