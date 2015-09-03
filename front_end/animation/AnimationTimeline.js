@@ -21,9 +21,14 @@ WebInspector.AnimationTimeline = function()
     this._underlyingPlaybackRate = 1;
     this.contentElement.appendChild(this._createHeader());
     this._animationsContainer = this.contentElement.createChild("div", "animation-timeline-rows");
+
+    this._emptyTimelineMessage = this._animationsContainer.createChild("div", "animation-timeline-empty-message");
+    var message = this._emptyTimelineMessage.createChild("div");
+    message.textContent = WebInspector.UIString("Trigger animations on the page to view and tweak them on the animation timeline.");
+
     this._duration = this._defaultDuration();
-    this._scrubberRadius = 25;
-    this._timelineControlsWidth = 200;
+    this._scrubberRadius = 30;
+    this._timelineControlsWidth = 230;
     /** @type {!Map.<!DOMAgent.BackendNodeId, !WebInspector.AnimationTimeline.NodeUI>} */
     this._nodesMap = new Map();
     this._symbol = Symbol("animationTimeline");
@@ -126,11 +131,7 @@ WebInspector.AnimationTimeline.prototype = {
         function playbackSliderInputHandler(event)
         {
             this._underlyingPlaybackRate = WebInspector.AnimationTimeline.GlobalPlaybackRates[event.target.value];
-            this._setPlaybackRate(this._playbackRate());
-            this._playbackLabel.textContent = this._underlyingPlaybackRate + "✕";
-            WebInspector.userMetrics.AnimationsPlaybackRateChanged.record();
-            if (this._scrubberPlayer)
-                this._scrubberPlayer.playbackRate = this._playbackRate();
+            this._updatePlaybackControls();
         }
 
         var container = createElementWithClass("div", "animation-timeline-header");
@@ -139,14 +140,11 @@ WebInspector.AnimationTimeline.prototype = {
 
         var toolbar = new WebInspector.Toolbar(controls);
         toolbar.element.classList.add("animation-controls-toolbar");
-        this._pauseButton = new WebInspector.ToolbarButton(WebInspector.UIString("Pause timeline"), "pause-toolbar-item");
-        this._pauseButton.addEventListener("click", this._togglePause.bind(this));
-        toolbar.appendToolbarItem(this._pauseButton);
-        var replayButton = new WebInspector.ToolbarButton(WebInspector.UIString("Replay timeline"), "replay-toolbar-item");
-        replayButton.addEventListener("click", this._replay.bind(this));
-        toolbar.appendToolbarItem(replayButton);
+        this._controlButton = new WebInspector.ToolbarButton(WebInspector.UIString("Replay timeline"), "replay-outline-toolbar-item");
+        this._controlButton.addEventListener("click", this._controlButtonToggle.bind(this));
+        toolbar.appendToolbarItem(this._controlButton);
 
-        this._playbackLabel = controls.createChild("div", "animation-playback-label");
+        this._playbackLabel = controls.createChild("span", "animation-playback-label");
         this._playbackLabel.createTextChild("1x");
 
         this._playbackSlider = controls.createChild("input", "animation-playback-slider");
@@ -160,6 +158,53 @@ WebInspector.AnimationTimeline.prototype = {
         return container;
     },
 
+    _updatePlaybackControls: function()
+    {
+        this._playbackLabel.textContent = this._underlyingPlaybackRate + "x";
+        var playbackSliderValue = 0;
+        for (var rate of WebInspector.AnimationTimeline.GlobalPlaybackRates) {
+            if (this._underlyingPlaybackRate > rate)
+                playbackSliderValue++;
+        }
+        this._playbackSlider.value = playbackSliderValue;
+
+        for (var target of WebInspector.targetManager.targets(WebInspector.Target.Type.Page))
+            WebInspector.AnimationModel.fromTarget(target).setPlaybackRate(this._playbackRate());
+        WebInspector.userMetrics.AnimationsPlaybackRateChanged.record();
+        if (this._scrubberPlayer)
+            this._scrubberPlayer.playbackRate = this._playbackRate();
+    },
+
+    _controlButtonToggle: function()
+    {
+        if (this._emptyTimelineMessage)
+            return;
+        if (this._controlButton.element.classList.contains("play-outline-toolbar-item"))
+            this._togglePause(false);
+        else if (this._controlButton.element.classList.contains("replay-outline-toolbar-item"))
+            this._replay();
+        else
+            this._togglePause(true);
+        this._updateControlButton();
+    },
+
+    _updateControlButton: function()
+    {
+        this._controlButton.element.classList.remove("play-outline-toolbar-item");
+        this._controlButton.element.classList.remove("replay-outline-toolbar-item");
+        this._controlButton.element.classList.remove("pause-outline-toolbar-item");
+        if (this._paused) {
+            this._controlButton.element.classList.add("play-outline-toolbar-item");
+            this._controlButton.setTitle(WebInspector.UIString("Play timeline"));
+        } else if (!this._scrubberPlayer || this._scrubberPlayer.currentTime >= this.duration() - this._scrubberRadius / this.pixelMsRatio()) {
+            this._controlButton.element.classList.add("replay-outline-toolbar-item");
+            this._controlButton.setTitle(WebInspector.UIString("Replay timeline"));
+        } else {
+            this._controlButton.element.classList.add("pause-outline-toolbar-item");
+            this._controlButton.setTitle(WebInspector.UIString("Pause timeline"));
+        }
+    },
+
     _updateAnimationsPlaybackRate: function()
     {
         /**
@@ -171,15 +216,15 @@ WebInspector.AnimationTimeline.prototype = {
         {
             if (playbackRate === 0) {
                 playbackRate = 1;
-                target.animationAgent().setPlaybackRate(1);
+                if (target)
+                    WebInspector.AnimationModel.fromTarget(target).setPlaybackRate(1);
             }
             this._underlyingPlaybackRate = playbackRate;
-            this._playbackSlider.value = WebInspector.AnimationTimeline.GlobalPlaybackRates.indexOf(playbackRate);
-            this._playbackLabel.textContent = playbackRate + "✕";
+            this._updatePlaybackControls();
         }
 
-        var target = WebInspector.targetManager.mainTarget();
-        if (target)
+        delete this._paused;
+        for (var target of WebInspector.targetManager.targets(WebInspector.Target.Type.Page))
             target.animationAgent().getPlaybackRate(setPlaybackRate.bind(this));
     },
 
@@ -191,13 +236,15 @@ WebInspector.AnimationTimeline.prototype = {
         return this._paused ? 0 : this._underlyingPlaybackRate;
     },
 
-    _togglePause: function()
+    /**
+     * @param {boolean} pause
+     */
+    _togglePause: function(pause)
     {
-        this._paused = !this._paused;
-        this._setPlaybackRate(this._playbackRate());
+        this._paused = pause;
+        for (var target of WebInspector.targetManager.targets(WebInspector.Target.Type.Page))
+            WebInspector.AnimationModel.fromTarget(target).setPlaybackRate(this._playbackRate());
         WebInspector.userMetrics.AnimationsPlaybackRateChanged.record();
-        this._pauseButton.element.classList.toggle("pause-toolbar-item");
-        this._pauseButton.element.classList.toggle("play-toolbar-item");
         if (this._scrubberPlayer)
             this._scrubberPlayer.playbackRate = this._playbackRate();
     },
@@ -268,6 +315,7 @@ WebInspector.AnimationTimeline.prototype = {
             this._scrubberPlayer.cancel();
         delete this._scrubberPlayer;
         this._timelineScrubberHead.textContent = WebInspector.UIString(Number.millisToString(0));
+        this._updateControlButton();
     },
 
     /**
@@ -290,8 +338,15 @@ WebInspector.AnimationTimeline.prototype = {
          */
         function nodeResolved(node)
         {
+            if (!node)
+                return;
             uiAnimation.setNode(node);
             node[this._symbol] = nodeUI;
+        }
+
+        if (this._emptyTimelineMessage) {
+            this._emptyTimelineMessage.remove();
+            delete this._emptyTimelineMessage;
         }
 
         if (resetTimeline)
@@ -364,7 +419,7 @@ WebInspector.AnimationTimeline.prototype = {
         }
         for (var time = 0; time < this.duration(); time += gridSize) {
             var gridWidth = time * this.pixelMsRatio();
-            if (time && (!lastDraw || gridWidth - lastDraw > 50)) {
+            if (!lastDraw || gridWidth - lastDraw > 50) {
                 lastDraw = gridWidth;
                 var label = this._grid.createSVGChild("text", "animation-timeline-grid-label");
                 label.setAttribute("x", gridWidth + 5);
@@ -442,6 +497,8 @@ WebInspector.AnimationTimeline.prototype = {
             { transform: "translateX(" +  (this.width() - this._scrubberRadius) + "px)" }
         ], { duration: this.duration() - this._scrubberRadius / this.pixelMsRatio(), fill: "forwards" });
         this._scrubberPlayer.playbackRate = this._playbackRate();
+        this._scrubberPlayer.onfinish = this._updateControlButton.bind(this);
+        this._updateControlButton();
 
         if (time !== undefined)
             this._scrubberPlayer.currentTime = time;
@@ -494,7 +551,8 @@ WebInspector.AnimationTimeline.prototype = {
         this._scrubberPlayer.pause();
         this._originalMousePosition = new WebInspector.Geometry.Point(event.x, event.y);
 
-        this._setPlaybackRate(0);
+        this._togglePause(true);
+        this._updateControlButton();
         return true;
     },
 
@@ -516,20 +574,10 @@ WebInspector.AnimationTimeline.prototype = {
      */
     _scrubberDragEnd: function(event)
     {
-        if (this._scrubberPlayer.currentTime < this.duration() - this._scrubberRadius / this.pixelMsRatio())
-            this._scrubberPlayer.play();
+        var currentTime = Math.max(0, this._scrubberPlayer.currentTime);
+        this._scrubberPlayer.play();
+        this._scrubberPlayer.currentTime = currentTime;
         this._timelineScrubberHead.window().requestAnimationFrame(this._updateScrubber.bind(this));
-        this._setPlaybackRate(this._playbackRate());
-    },
-
-    /**
-     * @param {number} playbackRate
-     */
-    _setPlaybackRate: function(playbackRate)
-    {
-        var target = WebInspector.targetManager.mainTarget();
-        if (target)
-            WebInspector.AnimationModel.fromTarget(target).setPlaybackRate(playbackRate);
     },
 
     __proto__: WebInspector.VBox.prototype
@@ -546,8 +594,10 @@ WebInspector.AnimationTimeline.NodeUI = function(animationEffect) {
      */
     function nodeResolved(node)
     {
+        if (!node)
+            return;
         this._node = node;
-        this._description.appendChild(WebInspector.DOMPresentationUtils.linkifyNodeReference(node));
+        WebInspector.DOMPresentationUtils.decorateNodeLabel(node, this._description);
         this.element.addEventListener("click", WebInspector.Revealer.reveal.bind(WebInspector.Revealer, node, undefined), false);
     }
 
@@ -982,8 +1032,7 @@ WebInspector.AnimationUI.prototype = {
             this._setDelay(delay);
             this._setDuration(duration);
             if (this._animation.type() !== "CSSAnimation") {
-                var target = WebInspector.targetManager.mainTarget();
-                if (target)
+                for (var target of WebInspector.targetManager.targets(WebInspector.Target.Type.Page))
                     target.animationAgent().setTiming(this._animation.id(), duration, delay);
             }
         }
@@ -1091,7 +1140,6 @@ WebInspector.AnimationUI.Colors = {
     "Deep Orange": WebInspector.Color.parse("#FF5722"),
     "Blue": WebInspector.Color.parse("#5677FC"),
     "Lime": WebInspector.Color.parse("#CDDC39"),
-    "Blue Grey": WebInspector.Color.parse("#607D8B"),
     "Pink": WebInspector.Color.parse("#E91E63"),
     "Green": WebInspector.Color.parse("#0F9D58"),
     "Brown": WebInspector.Color.parse("#795548"),
