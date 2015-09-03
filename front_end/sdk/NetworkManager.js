@@ -362,9 +362,15 @@ WebInspector.NetworkDispatcher.prototype = {
      */
     _dispatchResponseReceivedSecurityDetails: function(requestId, response)
     {
+        var origin = WebInspector.ParsedURL.splitURLIntoPathComponents(response.url)[0];
+        if (!origin) {
+            // We don't handle resources like data: URIs. Most of them don't affect the lock icon.
+            return;
+        }
+
         var eventData = {};
         eventData.requestId = requestId;
-        eventData.origin = WebInspector.ParsedURL.splitURLIntoPathComponents(response.url)[0];
+        eventData.origin = origin;
         eventData.securityState = response.securityState;
         if (response.securityDetails) {
             /**
