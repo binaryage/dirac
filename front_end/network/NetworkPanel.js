@@ -730,7 +730,10 @@ WebInspector.NetworkPanel.FilmStripRecorder.prototype = {
             return;
 
         this._target = WebInspector.targetManager.mainTarget();
-        this._tracingModel = new WebInspector.TracingModel(new WebInspector.TempFileBackingStorage("tracing"));
+        if (this._tracingModel)
+            this._tracingModel.reset();
+        else
+            this._tracingModel = new WebInspector.TracingModel(new WebInspector.TempFileBackingStorage("tracing"));
         this._target.tracingManager.start(this, "-*,disabled-by-default-devtools.screenshot", "");
         this._filmStripView.reset();
         this._filmStripView.setStatusText(WebInspector.UIString("Recording frames..."));

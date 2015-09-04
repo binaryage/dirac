@@ -382,6 +382,7 @@ WebInspector.DeferredTempFile.prototype = {
         }
         if (this._tempFile)
             this._tempFile.remove();
+        this._tempFile = null;
     }
 }
 
