@@ -1085,7 +1085,8 @@
                 "properties": [
                     { "name": "securityState", "$ref": "SecurityState", "description": "Security state representing the severity of the factor being explained." },
                     { "name": "summary", "type": "string", "description": "Short phrase describing the type of factor." },
-                    { "name": "description", "type": "string", "description": "Full text explanation of the factor." }
+                    { "name": "description", "type": "string", "description": "Full text explanation of the factor." },
+                    { "name": "certificateId", "$ref": "Network.CertificateId", "optional": true, "description": "Associated certificate id." }
                 ],
                 "description": "An explanation of an factor contributing to the security state."
             },
@@ -1494,6 +1495,14 @@
                 ],
                 "returns": [
                     { "name": "result", "$ref": "CertificateDetails", "description": "Certificate details." }
+                ],
+                "handlers": ["browser"]
+            },
+            {
+                "name": "showCertificateViewer",
+                "description": "Displays native dialog with the certificate details.",
+                "parameters": [
+                    { "name": "certificateId", "$ref": "CertificateId", "description": "Certificate id." }
                 ],
                 "handlers": ["browser"]
             }

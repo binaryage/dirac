@@ -155,6 +155,14 @@ WebInspector.NetworkManager.prototype = {
         this._updateNetworkConditions(/** @type {!WebInspector.NetworkManager.Conditions} */ (event.data));
     },
 
+    /**
+     * @param {!NetworkAgent.CertificateId} certificateId
+     */
+    showCertificateViewer: function(certificateId)
+    {
+        this._networkAgent.showCertificateViewer(certificateId);
+    },
+
     __proto__: WebInspector.SDKModel.prototype
 }
 
