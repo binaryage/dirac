@@ -38,6 +38,8 @@ WebInspector.EventListenersWidget = function()
 
     this._showForAncestorsSetting = WebInspector.settings.createSetting("showEventListenersForAncestors", true);
     this._showForAncestorsSetting.addChangeListener(this.update.bind(this));
+    this._showFrameworkListenersSetting = WebInspector.settings.createSetting("showFrameowkrListeners", true);
+    this._showFrameworkListenersSetting.addChangeListener(this._showFrameworkListenersChanged.bind(this));
     this._eventListenersView = new WebInspector.EventListenersView(this.element);
     WebInspector.context.addFlavorChangeListener(WebInspector.DOMNode, this.update, this);
 }
@@ -53,6 +55,7 @@ WebInspector.EventListenersWidget.createSidebarWrapper = function()
     refreshButton.addEventListener("click", widget.update.bind(widget));
     result.toolbar().appendToolbarItem(refreshButton);
     result.toolbar().appendToolbarItem(new WebInspector.ToolbarCheckbox(WebInspector.UIString("Ancestors"), WebInspector.UIString("Show listeners on the ancestors"), widget._showForAncestorsSetting));
+    result.toolbar().appendToolbarItem(new WebInspector.ToolbarCheckbox(WebInspector.UIString("Framework listeners"), WebInspector.UIString("Resolve event listeners bound with framework"), widget._showFrameworkListenersSetting));
     return result;
 }
 
@@ -89,7 +92,13 @@ WebInspector.EventListenersWidget.prototype = {
             }
             promises.push(this._windowObjectInNodeContext(node));
         }
-        return Promise.all(promises).then(this._eventListenersView.addObjects.bind(this._eventListenersView));
+        return Promise.all(promises).then(this._eventListenersView.addObjects.bind(this._eventListenersView)).then(this._showFrameworkListenersChanged.bind(this));
+    },
+
+
+    _showFrameworkListenersChanged: function()
+    {
+        this._eventListenersView.showFrameworkListeners(this._showFrameworkListenersSetting.get());
     },
 
     /**

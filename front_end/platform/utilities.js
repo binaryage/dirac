@@ -1499,16 +1499,3 @@ Promise.prototype.catchException = function(defaultValue) {
         return defaultValue;
     });
 }
-
-/**
- * @param {!Object} object
- * @param {*} propertyName
- * @param {T} result
- * @return {T}
- * @template T
- */
-function storeResultTo(object, propertyName, result)
-{
-    object[propertyName] = result;
-    return result;
-}

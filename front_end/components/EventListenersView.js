@@ -3,6 +3,11 @@
 // found in the LICENSE file.
 
 /**
+* @typedef {Array<{object: !WebInspector.RemoteObject, eventListeners: ?Array<!WebInspector.EventListener>, frameworkEventListeners: ?{eventListeners: ?Array<!WebInspector.EventListener>, internalHandlers: ?WebInspector.RemoteArray}, isInternal: ?Array<boolean>}>}
+*/
+WebInspector.EventListenersResult;
+
+/**
  * @constructor
  * @param {!Element} element
  */
@@ -29,21 +34,96 @@ WebInspector.EventListenersView.prototype = {
      */
     addObjects: function(objects)
     {
+        this.reset();
         var promises = [];
-        for (var i = 0; i < objects.length; ++i)
-            promises.push(objects[i].eventListeners());
-        return Promise.all(promises).then(listenersCallback.bind(this));
+        for (var object of objects)
+            promises.push(this._addObject(object));
+        return Promise.all(promises).then(this.addEmptyHolderIfNeeded.bind(this)).then(this._eventListenersArrivedForTest.bind(this));
+     },
+
+    /**
+     * @param {!WebInspector.RemoteObject} object
+     * @return {!Promise<undefined>}
+     */
+    _addObject: function(object)
+    {
+        /** @type {?Array<!WebInspector.EventListener>} */
+        var eventListeners = null;
+        /** @type {?WebInspector.FrameworkEventListenersObject}*/
+        var frameworkEventListenersObject = null;
+
+        var promises = [];
+        promises.push(object.eventListeners().then(storeEventListeners));
+        promises.push(WebInspector.EventListener.frameworkEventListeners(object).then(storeFrameworkEventListenersObject));
+        return Promise.all(promises).then(markInternalEventListeners).then(addEventListeners.bind(this));
+
         /**
-         * @param {!Array<?Array<!WebInspector.EventListener>>} listeners
+         * @param {?Array<!WebInspector.EventListener>} result
+         */
+        function storeEventListeners(result)
+        {
+            eventListeners = result;
+        }
+
+        /**
+         * @param {?WebInspector.FrameworkEventListenersObject} result
+         */
+        function storeFrameworkEventListenersObject(result)
+        {
+            frameworkEventListenersObject = result;
+        }
+
+        /**
+         * @return {!Promise<undefined>}
+         */
+        function markInternalEventListeners()
+        {
+            if (!eventListeners || !frameworkEventListenersObject.internalHandlers)
+                return Promise.resolve(undefined);
+            return frameworkEventListenersObject.internalHandlers.object().callFunctionJSONPromise(isInternalEventListener, eventListeners.map(handlerArgument)).then(setIsInternal);
+
+            /**
+             * @param {!WebInspector.EventListener} listener
+             * @return {!RuntimeAgent.CallArgument}
+             */
+            function handlerArgument(listener)
+            {
+                return WebInspector.RemoteObject.toCallArgument(listener.handler());
+            }
+
+            /**
+             * @suppressReceiverCheck
+             * @return {!Array<boolean>}
+             * @this {Array<*>}
+             */
+            function isInternalEventListener()
+            {
+                var isInternal = [];
+                var internalHandlersSet = new Set(this);
+                for (var handler of arguments)
+                    isInternal.push(internalHandlersSet.has(handler));
+                return isInternal;
+            }
+
+            /**
+             * @param {!Array<boolean>} isInternal
+             */
+            function setIsInternal(isInternal)
+            {
+                for (var i = 0; i < eventListeners.length; ++i) {
+                    if (isInternal[i])
+                        eventListeners[i].setListenerType("frameworkInternal");
+                }
+            }
+        }
+
+        /**
          * @this {WebInspector.EventListenersView}
          */
-        function listenersCallback(listeners)
+        function addEventListeners()
         {
-            this.reset();
-            for (var i = 0; i < listeners.length; ++i)
-                this._addObjectEventListeners(objects[i], listeners[i]);
-            this.addEmptyHolderIfNeeded();
-            this._eventListenersArrivedForTest();
+            this._addObjectEventListeners(object, eventListeners);
+            this._addObjectEventListeners(object, frameworkEventListenersObject.eventListeners);
         }
     },
 
@@ -58,6 +138,25 @@ WebInspector.EventListenersView.prototype = {
         for (var eventListener of eventListeners) {
             var treeItem = this._getOrCreateTreeElementForType(eventListener.type());
             treeItem.addObjectEventListener(eventListener, object);
+        }
+    },
+
+    /**
+     * @param {boolean} showFramework
+     */
+    showFrameworkListeners: function(showFramework)
+    {
+        var eventTypes = this._treeOutline.rootElement().children();
+        for (var eventType of eventTypes) {
+            for (var listenerElement of eventType.children()) {
+                var listenerType = listenerElement.eventListener().listenerType();
+                var hidden = false;
+                if (listenerType === "frameworkUser" && !showFramework)
+                    hidden = true;
+                if (listenerType === "frameworkInternal" && showFramework)
+                    hidden = true;
+                listenerElement.hidden = hidden;
+            }
         }
     },
 
@@ -172,6 +271,14 @@ WebInspector.ObjectEventListenerBar.prototype = {
         var subtitle = this.listItemElement.createChild("span", "event-listener-tree-subtitle");
         subtitle.appendChild(linkifier.linkifyRawLocation(this._eventListener.location(), this._eventListener.sourceURL()));
         title.appendChild(WebInspector.ObjectPropertiesSection.createValueElement(object, false));
+    },
+
+    /**
+     * @return {!WebInspector.EventListener}
+     */
+    eventListener: function()
+    {
+        return this._eventListener;
     },
 
     __proto__: TreeElement.prototype

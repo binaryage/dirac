@@ -55,6 +55,7 @@
         "ObjectPropertiesSection.js",
         "RemoteObjectPreviewFormatter.js",
         "ShortcutsScreen.js",
+        "EventListenersUtils.js",
         "EventListenersView.js"
     ],
     "resources": [

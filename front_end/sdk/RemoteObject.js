@@ -91,7 +91,7 @@ WebInspector.RemoteObject.prototype = {
     },
 
     /**
-     * @return {!Promise.<!{properties: ?Array.<!WebInspector.RemoteObjectProperty>, internalProperties: ?Array.<!WebInspector.RemoteObjectProperty>}>}
+     * @return {!Promise<!{properties: ?Array.<!WebInspector.RemoteObjectProperty>, internalProperties: ?Array.<!WebInspector.RemoteObjectProperty>}>}
      */
     getOwnPropertiesPromise: function()
     {
@@ -230,9 +230,10 @@ WebInspector.RemoteObject.prototype = {
     },
 
     /**
-     * @param {function(this:Object, ...)} functionDeclaration
+     * @param {function(this:Object, ...):T} functionDeclaration
      * @param {!Array<!RuntimeAgent.CallArgument>|undefined} args
-     * @return {!Promise<*>}
+     * @return {!Promise<T>}
+     * @template T
      */
     callFunctionJSONPromise: function(functionDeclaration, args)
     {

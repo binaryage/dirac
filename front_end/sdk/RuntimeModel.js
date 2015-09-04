@@ -495,8 +495,9 @@ WebInspector.ExecutionContext.prototype = {
  * @param {boolean} useCapture
  * @param {?WebInspector.RemoteObject} handler
  * @param {!WebInspector.DebuggerModel.Location} location
+ * @param {string=} listenerType
  */
-WebInspector.EventListener = function(target, type, useCapture, handler, location)
+WebInspector.EventListener = function(target, type, useCapture, handler, location, listenerType)
 {
     WebInspector.SDKObject.call(this, target);
     this._type = type;
@@ -504,6 +505,7 @@ WebInspector.EventListener = function(target, type, useCapture, handler, locatio
     this._handler = handler;
     this._location = location;
     this._sourceURL = location.script().contentURL();
+    this._listenerType = listenerType || "normal";
 }
 
 WebInspector.EventListener.prototype = {
@@ -545,6 +547,22 @@ WebInspector.EventListener.prototype = {
     sourceURL: function()
     {
         return this._sourceURL;
+    },
+
+    /**
+     * @return {string}
+     */
+    listenerType: function()
+    {
+        return this._listenerType;
+    },
+
+    /**
+     * @param {string} listenerType
+     */
+    setListenerType: function(listenerType)
+    {
+        this._listenerType = listenerType;
     },
 
     __proto__: WebInspector.SDKObject.prototype
