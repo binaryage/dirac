@@ -4,7 +4,7 @@
             "type": "@WebInspector.PanelFactory",
             "name": "profiles",
             "title": "Profiles",
-            "order": 4,
+            "order": 60,
             "className": "WebInspector.ProfilesPanelFactory"
         },
         {

@@ -4,7 +4,7 @@
             "type": "@WebInspector.PanelFactory",
             "name": "security",
             "title": "Security",
-            "order": 7,
+            "order": 80,
             "className": "WebInspector.SecurityPanelFactory"
         }
     ],

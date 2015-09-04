@@ -4,7 +4,7 @@
             "type": "@WebInspector.PanelFactory",
             "name": "sources",
             "title": "Sources",
-            "order": 2,
+            "order": 30,
             "className": "WebInspector.SourcesPanelFactory"
         },
         {

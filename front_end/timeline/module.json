@@ -4,7 +4,7 @@
             "type": "@WebInspector.PanelFactory",
             "name": "timeline",
             "title": "Timeline",
-            "order": 3,
+            "order": 50,
             "className": "WebInspector.TimelinePanelFactory"
         },
         {

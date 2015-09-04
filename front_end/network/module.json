@@ -4,7 +4,7 @@
             "type": "@WebInspector.PanelFactory",
             "name": "network",
             "title": "Network",
-            "order": 1,
+            "order": 40,
             "className": "WebInspector.NetworkPanelFactory"
         },
         {

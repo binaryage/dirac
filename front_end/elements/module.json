@@ -4,7 +4,7 @@
             "type": "@WebInspector.PanelFactory",
             "name": "elements",
             "title": "Elements",
-            "order": 0,
+            "order": 10,
             "className": "WebInspector.ElementsPanelFactory"
         },
         {
