@@ -342,6 +342,20 @@ WebInspector.SecurityMainView.prototype = {
         var text = explanationSection.createChild("div", "security-section-text");
         text.createChild("div", "security-section-title").textContent = explanation.summary;
         text.createChild("div", "security-explanation").textContent = explanation.description;
+        if ("certificateId" in explanation) {
+            var certificateAnchor = text.createChild("div", "security-certificate-id link");
+            certificateAnchor.textContent = WebInspector.UIString("View certificate");
+            certificateAnchor.href = "";
+            certificateAnchor.addEventListener("click", showCertificateViewer, false);
+        }
+        /**
+         * @param {!Event} e
+         */
+        function showCertificateViewer(e)
+        {
+            e.consume();
+            WebInspector.targetManager.mainTarget().networkManager.showCertificateViewer(/** @type {number} */ (explanation.certificateId));
+        }
     },
 
     /**
