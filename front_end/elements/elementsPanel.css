@@ -49,18 +49,11 @@
 }
 
 #elements-crumbs {
-    flex: 0 0 19px;
+    flex: 0 0 26px;
     background-color: white;
     border-top: 1px solid #ccc;
     overflow: hidden;
-    height: 19px;
     width: 100%;
-}
-
-.material #elements-crumbs {
-    flex: auto;
-    border: none;
-    height: 26px;
 }
 
 .metrics {

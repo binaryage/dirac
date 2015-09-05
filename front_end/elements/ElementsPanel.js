@@ -55,12 +55,9 @@ WebInspector.ElementsPanel = function()
         this._toolbar = this._createElementsToolbar();
         var toolbar = stackElement.createChild("div", "elements-topbar hbox");
         toolbar.appendChild(this._toolbar.element);
-        toolbar.appendChild(crumbsContainer);
-        stackElement.appendChild(this._contentElement);
-    } else {
-        stackElement.appendChild(this._contentElement);
-        stackElement.appendChild(crumbsContainer);
     }
+    stackElement.appendChild(this._contentElement);
+    stackElement.appendChild(crumbsContainer);
 
     this._elementsPanelTreeOutilneSplit = new WebInspector.SplitWidget(false, true, "treeOutlineAnimationTimelineWidget", 300, 300);
     this._elementsPanelTreeOutilneSplit.hideSidebar();

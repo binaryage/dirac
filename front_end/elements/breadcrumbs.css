@@ -9,37 +9,28 @@
     pointer-events: auto;
     cursor: default;
     font-size: 11px;
-    line-height: 17px;
     white-space: nowrap;
 }
 
 .crumbs .crumb {
     display: inline-block;
-    padding: 0 7px;
-    height: 18px;
     white-space: nowrap;
-}
-
-:host-context(.material) .crumb {
-    padding: 0px 4px 0px 11px;
+    padding: 0px 4px;
+    border-radius: 2px;
     cursor: pointer;
     line-height: 18px;
-    margin: 4px 0px;
+    margin: 4px;
     position: relative;
     color: hsl(0, 0%, 35%);
 }
 
-:host-context(.material) .crumb:not(.collapsed):first-child {
-    padding-left: 2px;
-}
-
-:host-context(.material) .crumb:not(.collapsed):not(:first-child):before {
-    content: "\27E9";
+.crumb:not(.collapsed):not(:first-child):before {
+    content: "\276D";
     position: absolute;
-    left: 0px;
-    color: hsl(0, 0%, 35%);
-    width: 7px;
+    left: -7.5px;
+    font-size: 9px;
     text-align: center;
+    color: hsl(0, 0%, 60%);
 }
 
 .crumbs .crumb.collapsed > * {
@@ -56,25 +47,10 @@
 }
 
 .crumbs .crumb.selected, .crumbs .crumb.selected:hover {
-    background-color: rgb(56, 121, 217);
     color: white;
-    text-shadow: rgba(255, 255, 255, 0.5) 0 0 0;
-}
-
-:host-context(.material) .crumb.selected {
-    color: hsl(0, 0%, 35%);
-    background-color: transparent !important;
-}
-
-:host-context(.material) .crumb.selected:before {
-    color: hsl(217, 89%, 61%) !important;
+    background-color: hsl(217, 89%, 61%) !important;
 }
 
 .crumbs .crumb:hover {
-    background-color: rgb(216, 216, 216);
-}
-
-:host-context(.material) .crumb:hover {
-    background-color: transparent;
-    color: hsl(0, 0%, 20%) !important;
+    background-color: hsl(211, 100%, 95%);
 }
