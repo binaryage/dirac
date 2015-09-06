@@ -97,13 +97,12 @@ WebInspector.CompilerScriptMapping.prototype = {
         var lineNumber = debuggerModelLocation.lineNumber;
         var columnNumber = debuggerModelLocation.columnNumber || 0;
         var entry = sourceMap.findEntry(lineNumber, columnNumber);
-        if (!entry || entry.length === 2)
+        if (!entry || !entry.sourceURL)
             return null;
-        var url = /** @type {string} */ (entry[2]);
-        var uiSourceCode = this._networkMapping.uiSourceCodeForURL(url, this._target);
+        var uiSourceCode = this._networkMapping.uiSourceCodeForURL(/** @type {string} */ (entry.sourceURL), this._target);
         if (!uiSourceCode)
             return null;
-        return uiSourceCode.uiLocation(/** @type {number} */ (entry[3]), /** @type {number} */ (entry[4]));
+        return uiSourceCode.uiLocation(/** @type {number} */ (entry.sourceLineNumber), /** @type {number} */ (entry.sourceColumnNumber));
     },
 
     /**
@@ -125,12 +124,10 @@ WebInspector.CompilerScriptMapping.prototype = {
             return null;
         var script = /** @type {!WebInspector.Script} */ (this._scriptForSourceMap.get(sourceMap));
         console.assert(script);
-        var mappingSearchLinesCount = 5;
-        // We do not require precise (breakpoint) location but limit the number of lines to search or mapping.
-        var entry = sourceMap.findEntryReversed(networkURL, lineNumber, mappingSearchLinesCount);
+        var entry = sourceMap.firstSourceLineMapping(networkURL, lineNumber);
         if (!entry)
             return null;
-        return this._debuggerModel.createRawLocation(script, /** @type {number} */ (entry[0]), /** @type {number} */ (entry[1]));
+        return this._debuggerModel.createRawLocation(script, entry.lineNumber, entry.columnNumber);
     },
 
     /**
@@ -252,7 +249,7 @@ WebInspector.CompilerScriptMapping.prototype = {
         var sourceMap = this._sourceMapForURL.get(networkURL);
         if (!sourceMap)
             return true;
-        return !!sourceMap.findEntryReversed(networkURL, lineNumber, 0);
+        return !!sourceMap.firstSourceLineMapping(networkURL, lineNumber);
     },
 
     /**

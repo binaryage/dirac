@@ -555,17 +555,16 @@ WebInspector.SASSSourceMapping.prototype = {
      */
     rawLocationToUILocation: function(rawLocation)
     {
-        var entry;
         var sourceMap = this._sourceMapByStyleSheetURL[rawLocation.url];
         if (!sourceMap)
             return null;
-        entry = sourceMap.findEntry(rawLocation.lineNumber, rawLocation.columnNumber);
-        if (!entry || entry.length === 2)
+        var entry = sourceMap.findEntry(rawLocation.lineNumber, rawLocation.columnNumber);
+        if (!entry || !entry.sourceURL)
             return null;
-        var uiSourceCode = this._networkMapping.uiSourceCodeForURL(entry[2], rawLocation.target());
+        var uiSourceCode = this._networkMapping.uiSourceCodeForURL(entry.sourceURL, rawLocation.target());
         if (!uiSourceCode)
             return null;
-        return uiSourceCode.uiLocation(entry[3], entry[4]);
+        return uiSourceCode.uiLocation(entry.sourceLineNumber, entry.sourceColumnNumber);
     },
 
     /**
