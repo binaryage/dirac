@@ -53,7 +53,6 @@
     white-space: nowrap;
     overflow: hidden;
     margin-left: 6px;
-    -webkit-user-select: text;
 }
 
 .toolbar-item:active {
@@ -443,7 +442,7 @@ button.record-toolbar-item.toggled-on .glyph {
 }
 
 .filter-toolbar-item.toggled-active .glyph {
-    background-color: rgb(216, 0, 0);
+    background-color: rgb(216, 0, 0) !important;
 }
 
 .waterfall-toolbar-item .glyph {
