@@ -158,9 +158,9 @@ WebInspector.DevicesSettingsTab.prototype = {
         fields.appendChild(this._editDeviceTitle);
 
         var screen = fields.createChild("div", "hbox");
-        this._editDeviceWidth = this._createInput(WebInspector.UIString("Width"), "120px");
+        this._editDeviceWidth = this._createInput(WebInspector.UIString("Width"), "80px");
         screen.appendChild(this._editDeviceWidth);
-        this._editDeviceHeight = this._createInput(WebInspector.UIString("Height"), "120px");
+        this._editDeviceHeight = this._createInput(WebInspector.UIString("Height"), "80px");
         screen.appendChild(this._editDeviceHeight);
         this._editDeviceScale = this._createInput(WebInspector.UIString("Device pixel ratio"));
         screen.appendChild(this._editDeviceScale);
