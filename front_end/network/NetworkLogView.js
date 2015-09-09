@@ -1035,6 +1035,15 @@ WebInspector.NetworkLogView.prototype = {
     },
 
     /**
+      * @param {!WebInspector.NetworkLogView.FilterType} filterType
+      * @param {string} filterValue
+      */
+    setTextFilterValue: function(filterType, filterValue)
+    {
+        this._textFilterUI.setValue(filterType + ":" + filterValue);
+    },
+
+    /**
      * @param {!WebInspector.Event} event
      */
     _onRequestStarted: function(event)

@@ -639,6 +639,17 @@ WebInspector.NetworkPanel.show = function()
 }
 
 /**
+  * @param {!WebInspector.NetworkLogView.FilterType} filterType
+  * @param {string} filterValue
+  */
+WebInspector.NetworkPanel.revealAndFilter = function(filterType, filterValue)
+{
+    var panel = WebInspector.NetworkPanel._instance();
+    panel._networkLogView.setTextFilterValue(filterType, filterValue);
+    WebInspector.inspectorView.setCurrentPanel(panel);
+}
+
+/**
  * @return {!WebInspector.NetworkPanel}
  */
 WebInspector.NetworkPanel._instance = function()

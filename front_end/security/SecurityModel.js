@@ -48,6 +48,20 @@ WebInspector.SecurityModel.fromTarget = function(target)
 
 /**
  * @constructor
+ * @param {!SecurityAgent.SecurityState} securityState
+ * @param {!Array<!SecurityAgent.SecurityStateExplanation>} explanations
+ * @param {?SecurityAgent.MixedContentStatus} mixedContentStatus
+ * @param {boolean} schemeIsCryptographic
+ */
+WebInspector.PageSecurityState = function (securityState, explanations, mixedContentStatus, schemeIsCryptographic) {
+    this.securityState = securityState;
+    this.explanations = explanations;
+    this.mixedContentStatus = mixedContentStatus;
+    this.schemeIsCryptographic = schemeIsCryptographic;
+}
+
+/**
+ * @constructor
  * @implements {SecurityAgent.Dispatcher}
  */
 WebInspector.SecurityDispatcher = function(model)
@@ -65,22 +79,7 @@ WebInspector.SecurityDispatcher.prototype = {
      */
     securityStateChanged: function(securityState, explanations, mixedContentStatus, schemeIsCryptographic)
     {
-        var data = {"securityState": securityState, "explanations": explanations || []};
-        if (schemeIsCryptographic && mixedContentStatus) {
-            if (mixedContentStatus.ranInsecureContent) {
-                explanations.push({
-                    "securityState": mixedContentStatus.ranInsecureContentStyle,
-                    "summary": WebInspector.UIString("Active Mixed Content"),
-                    "description": WebInspector.UIString("You have recently allowed insecure content (such as scripts or iframes) to run on this site.")
-                });
-            } else if (mixedContentStatus.displayedInsecureContent) {
-                explanations.push({
-                    "securityState": mixedContentStatus.displayedInsecureContentStyle,
-                    "summary": WebInspector.UIString("Mixed Content"),
-                    "description": WebInspector.UIString("The site includes HTTP resources.")
-                });
-            }
-        }
-        this._model.dispatchEventToListeners(WebInspector.SecurityModel.EventTypes.SecurityStateChanged, data);
+        var pageSecurityState = new WebInspector.PageSecurityState(securityState, explanations || [], mixedContentStatus || null, schemeIsCryptographic || false);
+        this._model.dispatchEventToListeners(WebInspector.SecurityModel.EventTypes.SecurityStateChanged, pageSecurityState);
     }
 }

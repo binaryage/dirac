@@ -57,11 +57,13 @@ WebInspector.SecurityPanel.prototype = {
     /**
      * @param {!SecurityAgent.SecurityState} newSecurityState
      * @param {!Array<!SecurityAgent.SecurityStateExplanation>} explanations
+     * @param {?SecurityAgent.MixedContentStatus} mixedContentStatus
+     * @param {boolean} schemeIsCryptographic
      */
-    _updateSecurityState: function(newSecurityState, explanations)
+    _updateSecurityState: function(newSecurityState, explanations, mixedContentStatus, schemeIsCryptographic)
     {
         this._sidebarMainViewElement.setSecurityState(newSecurityState);
-        this._mainView.updateSecurityState(newSecurityState, explanations);
+        this._mainView.updateSecurityState(newSecurityState, explanations, mixedContentStatus, schemeIsCryptographic);
     },
 
     /**
@@ -69,9 +71,12 @@ WebInspector.SecurityPanel.prototype = {
      */
     _onSecurityStateChanged: function(event)
     {
-        var securityState = /** @type {!SecurityAgent.SecurityState} */ (event.data.securityState);
-        var explanations = /** @type {!Array<!SecurityAgent.SecurityStateExplanation>} */ (event.data.explanations);
-        this._updateSecurityState(securityState, explanations);
+        var data = /** @type {!WebInspector.PageSecurityState} */ (event.data);
+        var securityState = /** @type {!SecurityAgent.SecurityState} */ (data.securityState);
+        var explanations = /** @type {!Array<!SecurityAgent.SecurityStateExplanation>} */ (data.explanations);
+        var mixedContentStatus = /** @type {?SecurityAgent.MixedContentStatus} */ (data.mixedContentStatus);
+        var schemeIsCryptographic = /** @type {boolean} */ (data.schemeIsCryptographic);
+        this._updateSecurityState(securityState, explanations, mixedContentStatus, schemeIsCryptographic);
     },
 
     showMainView: function()
@@ -180,7 +185,7 @@ WebInspector.SecurityPanel.prototype = {
 
     _clear: function()
     {
-        this._updateSecurityState(SecurityAgent.SecurityState.Unknown, []);
+        this._updateSecurityState(SecurityAgent.SecurityState.Unknown, [], null, false);
         this._sidebarMainViewElement.select();
         this._sidebarOriginSection.removeChildren();
         this._origins.clear();
@@ -332,6 +337,7 @@ WebInspector.SecurityMainView = function()
 WebInspector.SecurityMainView.prototype = {
     /**
      * @param {!SecurityAgent.SecurityStateExplanation} explanation
+     * @return {!Element}
      */
     _addExplanation: function(explanation)
     {
@@ -348,6 +354,9 @@ WebInspector.SecurityMainView.prototype = {
             certificateAnchor.href = "";
             certificateAnchor.addEventListener("click", showCertificateViewer, false);
         }
+
+        return text;
+
         /**
          * @param {!Event} e
          */
@@ -361,8 +370,10 @@ WebInspector.SecurityMainView.prototype = {
     /**
      * @param {!SecurityAgent.SecurityState} newSecurityState
      * @param {!Array<!SecurityAgent.SecurityStateExplanation>} explanations
+     * @param {?SecurityAgent.MixedContentStatus} mixedContentStatus
+     * @param {boolean} schemeIsCryptographic
      */
-    updateSecurityState: function(newSecurityState, explanations)
+    updateSecurityState: function(newSecurityState, explanations, mixedContentStatus, schemeIsCryptographic)
     {
         // Remove old state.
         // It's safe to call this even when this._securityState is undefined.
@@ -384,6 +395,47 @@ WebInspector.SecurityMainView.prototype = {
         this._securityExplanations.removeChildren();
         for (var explanation of explanations)
             this._addExplanation(explanation);
+
+        if (schemeIsCryptographic && mixedContentStatus && (mixedContentStatus.ranInsecureContent || mixedContentStatus.displayedInsecureContent)) {
+            /** @type {!SecurityAgent.SecurityStateExplanation} */
+            var mixedContentExplanation;
+            if (mixedContentStatus.ranInsecureContent) {
+                mixedContentExplanation = /** @type {!SecurityAgent.SecurityStateExplanation} */ ({
+                    "securityState": mixedContentStatus.ranInsecureContentStyle,
+                    "summary": WebInspector.UIString("Active Mixed Content"),
+                    "description": WebInspector.UIString("You have recently allowed insecure content (such as scripts or iframes) to run on this site.")
+                });
+            } else if (mixedContentStatus.displayedInsecureContent) {
+                mixedContentExplanation = /** @type {!SecurityAgent.SecurityStateExplanation} */ ({
+                    "securityState": mixedContentStatus.displayedInsecureContentStyle,
+                    "summary": WebInspector.UIString("Mixed Content"),
+                    "description": WebInspector.UIString("The site includes HTTP resources.")
+                });
+            }
+
+            var requestsAnchor = this._addExplanation(mixedContentExplanation).createChild("div", "security-mixed-content link");
+            requestsAnchor.textContent = WebInspector.UIString("View requests in Network Panel");
+            requestsAnchor.href = "";
+            requestsAnchor.addEventListener("click", mixedContentStatus.ranInsecureContent ? showBlockOverriddenMixedContentInNetworkPanel : showDisplayedMixedContentInNetworkPanel, false);
+        }
+
+        /**
+         * @param {!Event} e
+         */
+        function showDisplayedMixedContentInNetworkPanel(e)
+        {
+            e.consume();
+            WebInspector.NetworkPanel.revealAndFilter(WebInspector.NetworkLogView.FilterType.MixedContent, "displayed");
+        }
+
+        /**
+         * @param {!Event} e
+         */
+        function showBlockOverriddenMixedContentInNetworkPanel(e)
+        {
+            e.consume();
+            WebInspector.NetworkPanel.revealAndFilter(WebInspector.NetworkLogView.FilterType.MixedContent, "block-overridden");
+        }
     },
 
     __proto__: WebInspector.VBox.prototype

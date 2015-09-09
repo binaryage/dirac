@@ -60,3 +60,7 @@
     color: rgb(90, 90, 90);
     margin-bottom: 8px;
 }
+
+.security-main-view .security-mixed-content {
+    margin-top: 8px;
+}

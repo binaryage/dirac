@@ -8,7 +8,7 @@
             "className": "WebInspector.SecurityPanelFactory"
         }
     ],
-    "dependencies": ["platform", "ui", "sdk"],
+    "dependencies": ["network", "platform", "ui", "sdk"],
     "experiment": "securityPanel",
     "scripts": [
         "SecurityModel.js",
