@@ -308,6 +308,7 @@
     "scripts": [
         "HelpScreenUntilReload.js",
         "AdvancedApp.js",
+        "FrontendWebSocketAPI.js",
         "RenderingOptions.js",
         "SimpleApp.js",
         "TestController.js",

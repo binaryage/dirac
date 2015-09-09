@@ -322,6 +322,7 @@ WebInspector.Main.prototype = {
         console.timeStamp("Main._mainTargetCreated");
         this._mainTarget = /** @type {!WebInspector.Target} */(target);
         this._registerShortcuts();
+        var main = this;
 
         this._mainTarget.registerInspectorDispatcher(this);
         InspectorFrontendHost.events.addEventListener(InspectorFrontendHostAPI.Events.ReloadInspectedPage, this._reloadInspectedPage, this);
@@ -344,7 +345,13 @@ WebInspector.Main.prototype = {
             console.timeStamp("Main.inspectorAgentEnableCallback");
             WebInspector.notifications.dispatchEventToListeners(WebInspector.NotificationService.Events.InspectorAgentEnabledForTests);
             // Asynchronously run the extensions.
-            setTimeout(function() { WebInspector.extensionServer.initializeExtensions(); }, 0);
+            setTimeout(lateInitialization, 0);
+        }
+
+        function lateInitialization()
+        {
+            WebInspector.extensionServer.initializeExtensions();
+            new WebInspector.FrontendWebSocketAPI();
         }
     },
 

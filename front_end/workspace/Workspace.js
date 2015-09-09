@@ -574,6 +574,7 @@ WebInspector.Workspace.Events = {
     UISourceCodeAdded: "UISourceCodeAdded",
     UISourceCodeRemoved: "UISourceCodeRemoved",
     UISourceCodeContentCommitted: "UISourceCodeContentCommitted",
+    UISourceCodeWorkingCopyChanged: "UISourceCodeWorkingCopyChanged",
     ProjectAdded: "ProjectAdded",
     ProjectRemoved: "ProjectRemoved"
 }
@@ -620,6 +621,22 @@ WebInspector.Workspace.prototype = {
     {
         var projects = this.projectsForType(WebInspector.projectTypes.Network);
         projects = projects.concat(this.projectsForType(WebInspector.projectTypes.ContentScripts));
+        for (var i = 0; i < projects.length; ++i) {
+            var project = projects[i];
+            var uiSourceCode = project.uiSourceCodeForOriginURL(originURL);
+            if (uiSourceCode)
+                return uiSourceCode;
+        }
+        return null;
+    },
+
+    /**
+     * @param {string} originURL
+     * @return {?WebInspector.UISourceCode}
+     */
+    filesystemUISourceCode: function(originURL)
+    {
+        var projects = this.projectsForType(WebInspector.projectTypes.FileSystem);
         for (var i = 0; i < projects.length; ++i) {
             var project = projects[i];
             var uiSourceCode = project.uiSourceCodeForOriginURL(originURL);

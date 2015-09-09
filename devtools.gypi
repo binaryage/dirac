@@ -289,6 +289,7 @@
         ],
         'devtools_main_js_files': [
             'front_end/main/AdvancedApp.js',
+            'front_end/main/FrontendWebSocketAPI.js',
             'front_end/main/HelpScreenUntilReload.js',
             'front_end/main/Main.js',
             'front_end/main/OverlayController.js',
