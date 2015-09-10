@@ -224,7 +224,7 @@ WebInspector.Main.prototype = {
         new WebInspector.RenderingOptions();
         new WebInspector.Main.PauseListener();
         new WebInspector.Main.InspectedNodeRevealer();
-        new WebInspector.ThrottlingIndicator();
+        new WebInspector.NetworkPanelIndicator();
         WebInspector.domBreakpointsSidebarPane = new WebInspector.DOMBreakpointsSidebarPane();
 
         WebInspector.actionRegistry = new WebInspector.ActionRegistry();
@@ -876,16 +876,23 @@ WebInspector.Main.MainMenuItem.prototype = {
 /**
  * @constructor
  */
-WebInspector.ThrottlingIndicator = function()
+WebInspector.NetworkPanelIndicator = function()
 {
     var networkConditionsSetting = WebInspector.moduleSetting("networkConditions");
     networkConditionsSetting.addChangeListener(updateVisibility);
+    var blockedURLsSetting = WebInspector.moduleSetting("blockedURLs");
+    blockedURLsSetting.addChangeListener(updateVisibility);
     updateVisibility();
 
     function updateVisibility()
     {
-        var throttlingEnabled = WebInspector.NetworkManager.IsThrottlingEnabled(networkConditionsSetting.get());
-        WebInspector.inspectorView.setPanelIcon("network", throttlingEnabled ? "warning-icon" : "", WebInspector.UIString("Network throttling is enabled"));
+        if (WebInspector.NetworkManager.IsThrottlingEnabled(networkConditionsSetting.get())) {
+            WebInspector.inspectorView.setPanelIcon("network", "warning-icon", WebInspector.UIString("Network throttling is enabled"));
+        } else if (blockedURLsSetting.get().length) {
+            WebInspector.inspectorView.setPanelIcon("network", "warning-icon", WebInspector.UIString("Requests may be blocked"));
+        } else {
+            WebInspector.inspectorView.setPanelIcon("network", "", "");
+        }
     }
 }
 

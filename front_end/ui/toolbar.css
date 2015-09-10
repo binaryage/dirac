@@ -526,3 +526,12 @@ button.playback-rate-button {
 .layout-editor-toolbar-item .glyph {
     -webkit-mask-position: 0 -144px;
 }
+
+.block-toolbar-item .glyph {
+    -webkit-mask-position: -32px -144px;
+}
+
+.block-toolbar-item.toggled-active .glyph {
+    background-color: rgb(216, 0, 0) !important;
+}
+

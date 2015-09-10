@@ -83,12 +83,6 @@ WebInspector.NetworkPanel = function()
     this._closeButtonElement = createElementWithClass("div", "network-close-button", "dt-close-button");
     this._closeButtonElement.addEventListener("click", this._showRequest.bind(this, null), false);
 
-    this._blockedURLsPane = new WebInspector.BlockedURLsPane();
-    this._blockedURLsPane.element.classList.add("network-blocked-urls");
-    this._filterBar.addFilter(this._blockedURLsPane.filterUI());
-    this._filterBar.addEventListener(WebInspector.FilterBar.Events.Toggled, this._toggleBlockedURLsSidebarPane, this);
-    this._toggleBlockedURLsSidebarPane();
-
     this._networkLogShowOverviewSetting.addChangeListener(this._toggleShowOverview, this);
     this._networkLogLargeRowsSetting.addChangeListener(this._toggleLargerRequests, this);
     this._networkRecordFilmStripSetting.addChangeListener(this._toggleRecordFilmStrip, this);
@@ -162,8 +156,27 @@ WebInspector.NetworkPanel.prototype = {
         this._panelToolbar.appendToolbarItem(this._disableCacheCheckbox);
 
         this._panelToolbar.appendSeparator();
+        this._panelToolbar.appendToolbarItem(this._createBlockedURLsButton());
         this._panelToolbar.appendToolbarItem(this._createNetworkConditionsSelect());
         this._panelToolbar.appendToolbarItem(new WebInspector.ToolbarItem(this._progressBarContainer));
+    },
+
+    /**
+     * @return {!WebInspector.ToolbarItem}
+     */
+    _createBlockedURLsButton: function()
+    {
+        var setting = WebInspector.moduleSetting("blockedURLs");
+        setting.addChangeListener(updateButton);
+        var button = new WebInspector.ToolbarButton(WebInspector.UIString("Block network requests"), "block-toolbar-item", 2);
+        button.setAction("network.blocked-urls.show");
+        updateButton();
+        return button;
+
+        function updateButton()
+        {
+            button.setState(setting.get().length ? "active" : "inactive");
+        }
     },
 
     /**
@@ -241,7 +254,7 @@ WebInspector.NetworkPanel.prototype = {
         this._calculator.reset();
         this._overviewPane.reset();
         this._networkLogView.reset();
-        this._blockedURLsPane.reset();
+        WebInspector.BlockedURLsPane.reset();
         if (this._filmStripView)
             this._resetFilmStripView();
     },
@@ -279,16 +292,6 @@ WebInspector.NetworkPanel.prototype = {
             this._overviewPane.show(this._searchableView.element, this._splitWidget.element);
         else
             this._overviewPane.detach();
-        this.doResize();
-    },
-
-    _toggleBlockedURLsSidebarPane: function()
-    {
-        var toggled = this._filterBar.filtersToggled();
-        if (toggled)
-            this._blockedURLsPane.show(this._searchableView.element);
-        else
-            this._blockedURLsPane.detach();
         this.doResize();
     },
 

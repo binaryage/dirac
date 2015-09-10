@@ -36,6 +36,11 @@
         },
         {
             "type": "@WebInspector.ActionDelegate",
+            "actionId": "network.blocked-urls.show",
+            "className": "WebInspector.BlockedURLsPane.ActionDelegate"
+        },
+        {
+            "type": "@WebInspector.ActionDelegate",
             "actionId": "network.toggle-recording",
             "iconClass": "record-toolbar-item",
             "contextTypes": ["WebInspector.NetworkPanel"],

@@ -1368,6 +1368,7 @@ WebInspector.NetworkLogView.prototype = {
                 var list = blockedSetting.get();
                 list.push(url);
                 blockedSetting.set(list);
+                WebInspector.BlockedURLsPane.reveal();
             }
         }
 
