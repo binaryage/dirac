@@ -433,7 +433,8 @@ WebInspector.TimelineTreeView.GridNode.prototype = {
             textDiv.createChild("span", "percent-column").textContent = this.data[percentColumn];
             textDiv.classList.add("profile-multiple-values");
         }
-        cell.createChild("div", "background-bar").style.width = (this._profileNode[columnIdentifier + "Time"] * 100 / this._maxTimes[columnIdentifier]).toFixed(1) + "%";
+        var bar = cell.createChild("div", "background-bar-container").createChild("div", "background-bar");
+        bar.style.width = (this._profileNode[columnIdentifier + "Time"] * 100 / this._maxTimes[columnIdentifier]).toFixed(1) + "%";
         return cell;
     },
 
