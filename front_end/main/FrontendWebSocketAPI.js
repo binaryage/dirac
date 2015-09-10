@@ -4,6 +4,7 @@
 
 /**
  * @constructor
+ * @implements {WebInspector.Linkifier.LinkHandler}
  */
 WebInspector.FrontendWebSocketAPI = function()
 {
@@ -17,12 +18,33 @@ WebInspector.FrontendWebSocketAPI.prototype = {
     {
         WebInspector.workspace.addEventListener(WebInspector.Workspace.Events.UISourceCodeContentCommitted, this._workingCopyChanged, this);
         WebInspector.workspace.addEventListener(WebInspector.Workspace.Events.UISourceCodeWorkingCopyChanged, this._workingCopyChanged, this);
+        WebInspector.Linkifier.setLinkHandler(this);
     },
 
     _onDetach: function()
     {
         WebInspector.workspace.removeEventListener(WebInspector.Workspace.Events.UISourceCodeContentCommitted, this._workingCopyChanged, this);
         WebInspector.workspace.removeEventListener(WebInspector.Workspace.Events.UISourceCodeWorkingCopyChanged, this._workingCopyChanged, this);
+        WebInspector.Linkifier.setLinkHandler(null);
+    },
+
+    /**
+     * @override
+     * @param {string} url
+     * @param {number=} lineNumber
+     * @return {boolean}
+     */
+    handleLink: function(url, lineNumber)
+    {
+        var uiSourceCode = WebInspector.networkMapping.uiSourceCodeForURLForAnyTarget(url);
+        if (uiSourceCode)
+            url = uiSourceCode.originURL();
+        if (url.startsWith("file://")) {
+            var file = url.substring(7);
+            this._issueFrontendAPINotification("Frontend.revealLocation", { file: file, line: lineNumber });
+            return true;
+        }
+        return false;
     },
 
     /**

@@ -57,7 +57,7 @@ WebInspector.Linkifier = function(formatter)
 }
 
 /**
- * @param {!WebInspector.Linkifier.LinkHandler} handler
+ * @param {?WebInspector.Linkifier.LinkHandler} handler
  */
 WebInspector.Linkifier.setLinkHandler = function(handler)
 {
