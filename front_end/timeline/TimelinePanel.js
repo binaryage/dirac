@@ -877,10 +877,11 @@ WebInspector.TimelinePanel.prototype = {
     {
         var markers = new Map();
         var recordTypes = WebInspector.TimelineModel.RecordType;
+        var zeroTime = this._model.minimumRecordTime();
         for (var record of this._model.eventDividerRecords()) {
             if (record.type() === recordTypes.TimeStamp || record.type() === recordTypes.ConsoleTime)
                 continue;
-            markers.set(record.startTime(), WebInspector.TimelineUIUtils.createDividerForRecord(record, 0));
+            markers.set(record.startTime(), WebInspector.TimelineUIUtils.createDividerForRecord(record, zeroTime, 0));
         }
         this._overviewPane.setMarkers(markers);
     },

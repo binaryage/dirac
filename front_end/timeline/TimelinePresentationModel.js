@@ -477,7 +477,7 @@ WebInspector.TimelinePresentationModel.ActualRecord.prototype = {
      */
     selfTime: function()
     {
-        return this._record.selfTime();
+        return this._record.traceEvent().selfTime;
     },
 
     /**
@@ -495,7 +495,7 @@ WebInspector.TimelinePresentationModel.ActualRecord.prototype = {
      */
     hasWarnings: function()
     {
-        return !!this._record.warnings();
+        return !!this._record.traceEvent().warning;
     },
 
     __proto__: WebInspector.TimelinePresentationModel.Record.prototype

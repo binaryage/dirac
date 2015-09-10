@@ -47,6 +47,9 @@ WebInspector.TimelineModel = function(tracingModel, recordFilter)
     WebInspector.targetManager.observeTargets(this);
 }
 
+/**
+ * @enum {string}
+ */
 WebInspector.TimelineModel.RecordType = {
     Task: "Task",
     Program: "Program",
@@ -254,14 +257,11 @@ WebInspector.TimelineModel.VirtualThread.prototype = {
 
 /**
  * @constructor
- * @param {!WebInspector.TimelineModel} model
  * @param {!WebInspector.TracingModel.Event} traceEvent
  */
-WebInspector.TimelineModel.Record = function(model, traceEvent)
+WebInspector.TimelineModel.Record = function(traceEvent)
 {
-    this._model = model;
     this._event = traceEvent;
-    traceEvent._timelineRecord = this;
     this._children = [];
 }
 
@@ -278,24 +278,6 @@ WebInspector.TimelineModel.Record._compareStartTime = function(a, b)
 
 WebInspector.TimelineModel.Record.prototype = {
     /**
-     * @return {?Array.<!ConsoleAgent.CallFrame>}
-     */
-    callSiteStackTrace: function()
-    {
-        var initiator = this._event.initiator;
-        return initiator ? initiator.stackTrace : null;
-    },
-
-    /**
-     * @return {?WebInspector.TimelineModel.Record}
-     */
-    initiator: function()
-    {
-        var initiator = this._event.initiator;
-        return initiator ? initiator._timelineRecord : null;
-    },
-
-    /**
      * @return {?WebInspector.Target}
      */
     target: function()
@@ -303,14 +285,6 @@ WebInspector.TimelineModel.Record.prototype = {
         var threadName = this._event.thread.name();
         //FIXME: correctly specify target
         return threadName === WebInspector.TimelineModel.RendererMainThreadName ? WebInspector.targetManager.targets()[0] || null : null;
-    },
-
-    /**
-     * @return {number}
-     */
-    selfTime: function()
-    {
-        return this._event.selfTime;
     },
 
     /**
@@ -330,6 +304,14 @@ WebInspector.TimelineModel.Record.prototype = {
     },
 
     /**
+     * @return {number}
+     */
+    endTime: function()
+    {
+        return this._event.endTime || this._event.startTime;
+    },
+
+    /**
      * @return {string}
      */
     thread: function()
@@ -340,61 +322,13 @@ WebInspector.TimelineModel.Record.prototype = {
     },
 
     /**
-     * @return {number}
-     */
-    endTime: function()
-    {
-        return this._endTime || this._event.endTime || this._event.startTime;
-    },
-
-    /**
-     * @param {number} endTime
-     */
-    setEndTime: function(endTime)
-    {
-        this._endTime = endTime;
-    },
-
-    /**
-     * @return {!Object}
-     */
-    data: function()
-    {
-        return this._event.args["data"];
-    },
-
-    /**
-     * @return {string}
+     * @return {!WebInspector.TimelineModel.RecordType}
      */
     type: function()
     {
         if (this._event.hasCategory(WebInspector.TracingModel.ConsoleEventCategory))
             return WebInspector.TimelineModel.RecordType.ConsoleTime;
-        return this._event.name;
-    },
-
-    /**
-     * @return {string}
-     */
-    frameId: function()
-    {
-        switch (this._event.name) {
-        case WebInspector.TimelineModel.RecordType.UpdateLayoutTree:
-        case WebInspector.TimelineModel.RecordType.RecalculateStyles:
-        case WebInspector.TimelineModel.RecordType.Layout:
-            return this._event.args["beginData"]["frame"];
-        default:
-            var data = this._event.args["data"];
-            return (data && data["frame"]) || "";
-        }
-    },
-
-    /**
-     * @return {?Array.<!ConsoleAgent.CallFrame>}
-     */
-    stackTrace: function()
-    {
-        return this._event.stackTrace;
+        return /** @type !WebInspector.TimelineModel.RecordType */ (this._event.name);
     },
 
     /**
@@ -420,16 +354,6 @@ WebInspector.TimelineModel.Record.prototype = {
     },
 
     /**
-     * @return {?Array.<string>}
-     */
-    warnings: function()
-    {
-        if (this._event.warning)
-            return [this._event.warning];
-        return null;
-    },
-
-    /**
      * @return {!WebInspector.TracingModel.Event}
      */
     traceEvent: function()
@@ -445,14 +369,6 @@ WebInspector.TimelineModel.Record.prototype = {
         this._children.push(child);
         child.parent = this;
     },
-
-    /**
-     * @return {!WebInspector.TimelineModel}
-     */
-    timelineModel: function()
-    {
-        return this._model;
-    }
 }
 
 /** @typedef {!{page: !Array<!WebInspector.TracingModel.Event>, workers: !Array<!WebInspector.TracingModel.Event>}} */
@@ -937,7 +853,7 @@ WebInspector.TimelineModel.prototype = {
         var drawFrameEvent = this._inspectedTargetEvents[i];
         var firstPaintEvent = new WebInspector.TracingModel.Event(drawFrameEvent.categoriesString, recordTypes.MarkFirstPaint, WebInspector.TracingModel.Phase.Instant, drawFrameEvent.startTime, drawFrameEvent.thread);
         this._mainThreadEvents.splice(insertionIndexForObjectInListSortedByFunction(firstPaintEvent, this._mainThreadEvents, WebInspector.TracingModel.Event.compareStartTime), 0, firstPaintEvent);
-        var firstPaintRecord = new WebInspector.TimelineModel.Record(this, firstPaintEvent);
+        var firstPaintRecord = new WebInspector.TimelineModel.Record(firstPaintEvent);
         this._eventDividerRecords.splice(insertionIndexForObjectInListSortedByFunction(firstPaintRecord, this._eventDividerRecords, WebInspector.TimelineModel.Record._compareStartTime), 0, firstPaintRecord);
     },
 
@@ -975,7 +891,7 @@ WebInspector.TimelineModel.prototype = {
         var recordTypes = WebInspector.TimelineModel.RecordType;
         for (var i = 0; i < events.length; ++i) {
             if (events[i].name === recordTypes.GPUTask)
-                this._gpuTasks.push(new WebInspector.TimelineModel.Record(this, events[i]));
+                this._gpuTasks.push(new WebInspector.TimelineModel.Record(events[i]));
         }
     },
 
@@ -998,7 +914,7 @@ WebInspector.TimelineModel.prototype = {
             // Maintain the back-end logic of old timeline, skip console.time() / console.timeEnd() that are not properly nested.
             if (WebInspector.TracingModel.isAsyncBeginPhase(event.phase) && parentRecord && event.endTime > parentRecord._event.endTime)
                 continue;
-            var record = new WebInspector.TimelineModel.Record(this, event);
+            var record = new WebInspector.TimelineModel.Record(event);
             if (WebInspector.TimelineUIUtils.isMarkerEvent(event))
                 this._eventDividerRecords.push(record);
             if (!this._recordFilter.accept(record) && !WebInspector.TracingModel.isTopLevelEvent(event))

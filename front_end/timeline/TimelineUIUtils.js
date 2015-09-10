@@ -1134,13 +1134,12 @@ WebInspector.TimelineUIUtils.InvalidationsGroupElement.prototype = {
 
 /**
  * @param {!Object} total
+ * @param {!WebInspector.TimelineModel} model
  * @param {!WebInspector.TimelineModel.Record} record
  */
-WebInspector.TimelineUIUtils.aggregateTimeForRecord = function(total, record)
+WebInspector.TimelineUIUtils.aggregateTimeForRecord = function(total, model, record)
 {
-    var traceEvent = record.traceEvent();
-    var model = record.timelineModel();
-    WebInspector.TimelineUIUtils._aggregatedStatsForTraceEvent(total, model, traceEvent);
+    WebInspector.TimelineUIUtils._aggregatedStatsForTraceEvent(total, model, record.traceEvent());
 }
 
 /**
@@ -1243,7 +1242,7 @@ WebInspector.TimelineUIUtils.buildPicturePreviewContent = function(event, target
 }
 
 /**
- * @param {string} recordType
+ * @param {!WebInspector.TimelineModel.RecordType} recordType
  * @param {?string} title
  * @param {number} position
  * @return {!Element}
@@ -1273,12 +1272,13 @@ WebInspector.TimelineUIUtils.createEventDivider = function(recordType, title, po
 
 /**
  * @param {!WebInspector.TimelineModel.Record} record
+ * @param {number} zeroTime
  * @param {number} position
  * @return {!Element}
  */
-WebInspector.TimelineUIUtils.createDividerForRecord = function(record, position)
+WebInspector.TimelineUIUtils.createDividerForRecord = function(record, zeroTime, position)
 {
-    var startTime = Number.millisToString(record.startTime() - record.timelineModel().minimumRecordTime());
+    var startTime = Number.millisToString(record.startTime() - zeroTime);
     var title = WebInspector.UIString("%s at %s", WebInspector.TimelineUIUtils.eventTitle(record.traceEvent()), startTime);
     return WebInspector.TimelineUIUtils.createEventDivider(record.type(), title, position);
 }
