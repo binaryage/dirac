@@ -142,6 +142,12 @@
             ]
         },
         {
+            "type": "@WebInspector.ActionDelegate",
+            "actionId": "main.inspect-devices",
+            "title": "Inspect devices\u2026",
+            "className": "WebInspector.Main.InspectDevicesActionDelegate"
+        },
+        {
             "type": "drawer-view",
             "name": "rendering",
             "title": "Rendering",
@@ -272,6 +278,12 @@
             "order": 2,
             "location": "elements-toolbar",
             "experiment": "materialDesign"
+        },
+        {
+            "type": "context-menu-item",
+            "location": "mainMenu/navigate",
+            "order": 100,
+            "actionId": "main.inspect-devices"
         },
         {
             "type": "setting",

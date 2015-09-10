@@ -710,6 +710,26 @@ WebInspector.Main.ZoomActionDelegate.prototype = {
 }
 
 /**
+ * @constructor
+ * @implements {WebInspector.ActionDelegate}
+ */
+WebInspector.Main.InspectDevicesActionDelegate = function()
+{
+}
+
+WebInspector.Main.InspectDevicesActionDelegate.prototype = {
+    /**
+     * @override
+     * @param {!WebInspector.Context} context
+     * @param {string} actionId
+     */
+    handleAction: function(context, actionId)
+    {
+        InspectorFrontendHost.openInNewTab("chrome://inspect#devices");
+    }
+}
+
+/**
  * @param {boolean} hard
  */
 WebInspector.Main._reloadPage = function(hard)

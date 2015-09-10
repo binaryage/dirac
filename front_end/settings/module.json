@@ -40,16 +40,19 @@
         {
             "type": "context-menu-item",
             "location": "mainMenu/footer",
+            "order": 10,
             "actionId": "settings.shortcuts"
         },
         {
             "type": "context-menu-item",
             "location": "mainMenu/footer",
+            "order": 20,
             "actionId": "settings.show"
         },
         {
             "type": "context-menu-item",
             "location": "mainMenu/footer",
+            "order": 30,
             "actionId": "settings.help"
         }
     ],
