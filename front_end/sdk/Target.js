@@ -291,11 +291,14 @@ WebInspector.TargetManager = function()
     /** @type {!Array.<!WebInspector.TargetManager.Observer>} */
     this._observers = [];
     this._observerTypeSymbol = Symbol("observerType");
-    /** @type {!Object.<string, !Array.<{modelClass: !Function, thisObject: (!Object|undefined), listener: function(!WebInspector.Event)}>>} */
-    this._modelListeners = {};
+    /** @type {!Map.<string, !WebInspector.TargetManager.ModelListenerList>} */
+    this._modelListeners = new Map();
     /** @type {number} */
     this._suspendCount = 0;
 }
+
+/** @typedef {!Array.<{modelClass: !Function, thisObject: (!Object|undefined), listener: function(!WebInspector.Event)}>} */
+WebInspector.TargetManager.ModelListenerList;
 
 WebInspector.TargetManager.Events = {
     InspectedURLChanged: "InspectedURLChanged",
@@ -377,14 +380,14 @@ WebInspector.TargetManager.prototype = {
      */
     addModelListener: function(modelClass, eventType, listener, thisObject)
     {
-        for (var i = 0; i < this._targets.length; ++i) {
-            var model = this._targets[i]._modelByConstructor.get(modelClass);
+        for (var target of this._targets) {
+            var model = target._modelByConstructor.get(modelClass);
             if (model)
                 model.addEventListener(eventType, listener, thisObject);
         }
-        if (!this._modelListeners[eventType])
-            this._modelListeners[eventType] = [];
-        this._modelListeners[eventType].push({ modelClass: modelClass, thisObject: thisObject, listener: listener });
+        if (!this._modelListeners.has(eventType))
+            this._modelListeners.set(eventType, []);
+        this._modelListeners.get(eventType).push({ modelClass: modelClass, thisObject: thisObject, listener: listener });
     },
 
     /**
@@ -395,22 +398,22 @@ WebInspector.TargetManager.prototype = {
      */
     removeModelListener: function(modelClass, eventType, listener, thisObject)
     {
-        if (!this._modelListeners[eventType])
+        if (!this._modelListeners.get(eventType))
             return;
 
-        for (var i = 0; i < this._targets.length; ++i) {
-            var model = this._targets[i]._modelByConstructor.get(modelClass);
+        for (var target of this._targets) {
+            var model = target._modelByConstructor.get(modelClass);
             if (model)
                 model.removeEventListener(eventType, listener, thisObject);
         }
 
-        var listeners = this._modelListeners[eventType];
+        var listeners = this._modelListeners.get(eventType);
         for (var i = 0; i < listeners.length; ++i) {
             if (listeners[i].modelClass === modelClass && listeners[i].listener === listener && listeners[i].thisObject === thisObject)
                 listeners.splice(i--, 1);
         }
         if (!listeners.length)
-            delete this._modelListeners[eventType];
+            this._modelListeners.delete(eventType);
     },
 
     /**
@@ -485,16 +488,14 @@ WebInspector.TargetManager.prototype = {
             target.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.Load, this._redispatchEvent, this);
             target.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.WillReloadPage, this._redispatchEvent, this);
         }
-        var copy = this._observersByType(target._type);
-        for (var i = 0; i < copy.length; ++i)
-            copy[i].targetAdded(target);
+        for (var observer of this._observersByType(target._type))
+            observer.targetAdded(target);
 
-        for (var eventType in this._modelListeners) {
-            var listeners = this._modelListeners[eventType];
-            for (var i = 0; i < listeners.length; ++i) {
-                var model = target._modelByConstructor.get(listeners[i].modelClass);
+        for (var eventType of this._modelListeners.keys()) {
+            for (var listener of /** @type {!WebInspector.TargetManager.ModelListenerList} */ (this._modelListeners.get(eventType))) {
+                var model = target._modelByConstructor.get(listener.modelClass);
                 if (model)
-                    model.addEventListener(eventType, listeners[i].listener, listeners[i].thisObject);
+                    model.addEventListener(eventType, listener.listener, listener.thisObject);
             }
         }
     },
@@ -511,16 +512,14 @@ WebInspector.TargetManager.prototype = {
             target.resourceTreeModel.removeEventListener(WebInspector.ResourceTreeModel.EventTypes.Load, this._redispatchEvent, this);
             target.resourceTreeModel.removeEventListener(WebInspector.ResourceTreeModel.EventTypes.WillReloadPage, this._redispatchEvent, this);
         }
-        var copy = this._observersByType(target._type);
-        for (var i = 0; i < copy.length; ++i)
-            copy[i].targetRemoved(target);
+        for (var observer of this._observersByType(target._type))
+            observer.targetRemoved(target);
 
-        for (var eventType in this._modelListeners) {
-            var listeners = this._modelListeners[eventType];
-            for (var i = 0; i < listeners.length; ++i) {
-                var model = target._modelByConstructor.get(listeners[i].modelClass);
+        for (var eventType of this._modelListeners.keys()) {
+            for (var listener of /** @type {!WebInspector.TargetManager.ModelListenerList} */ (this._modelListeners.get(eventType))) {
+                var model = target._modelByConstructor.get(listener.modelClass);
                 if (model)
-                    model.removeEventListener(eventType, listeners[i].listener, listeners[i].thisObject);
+                    model.removeEventListener(eventType, listener.listener, listener.thisObject);
             }
         }
     },
@@ -571,9 +570,9 @@ WebInspector.TargetManager.prototype = {
      */
     targetById: function(id)
     {
-        for (var i = 0; i < this._targets.length; ++i) {
-            if (this._targets[i].id() === id)
-                return this._targets[i];
+        for (var target of this._targets) {
+            if (target.id() === id)
+                return target;
         }
         return null;
     },
