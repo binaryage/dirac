@@ -34,7 +34,7 @@ WebInspector.SecurityPanel = function()
     this._origins = new Map();
     // TODO(lgarron): add event listeners to call _clear() once we figure out how to clear the panel properly (https://crbug.com/522762).
 
-    WebInspector.targetManager.observeTargets(this);
+    WebInspector.targetManager.observeTargets(this, WebInspector.Target.Type.Page);
 
     WebInspector.targetManager.addModelListener(WebInspector.NetworkManager, WebInspector.NetworkManager.EventTypes.ResponseReceivedSecurityDetails, this._onResponseReceivedSecurityDetails, this);
     WebInspector.targetManager.addModelListener(WebInspector.SecurityModel, WebInspector.SecurityModel.EventTypes.SecurityStateChanged, this._onSecurityStateChanged, this);
