@@ -14,8 +14,6 @@ WebInspector.SecurityModel = function(target)
     this._securityAgent = target.securityAgent();
     target.registerSecurityDispatcher(this._dispatcher);
     this._securityAgent.enable();
-
-    this._securityState = SecurityAgent.SecurityState.Unknown;
 }
 
 WebInspector.SecurityModel.EventTypes = {
@@ -23,14 +21,6 @@ WebInspector.SecurityModel.EventTypes = {
 }
 
 WebInspector.SecurityModel.prototype = {
-    /**
-     * @return {!SecurityAgent.SecurityState} securityState
-     */
-    securityState: function()
-    {
-        return /** @type {!SecurityAgent.SecurityState} */ (this._securityState);
-    },
-
     __proto__: WebInspector.SDKModel.prototype
 }
 
