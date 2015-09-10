@@ -73,6 +73,7 @@ WebInspector.TimelinePanel = function()
 
     this._overviewModeSetting = WebInspector.settings.createSetting("timelineOverviewMode", WebInspector.TimelinePanel.OverviewMode.Events);
     this._flameChartEnabledSetting = WebInspector.settings.createSetting("timelineFlameChartEnabled", true);
+    this._viewModeSetting = WebInspector.settings.createSetting("timelineViewMode", WebInspector.TimelinePanel.ViewMode.FlameChart);
     this._createToolbarItems();
 
     var topPaneElement = this.element.createChild("div", "hbox");
@@ -102,11 +103,19 @@ WebInspector.TimelinePanel = function()
     this._detailsSplitWidget.setMainWidget(this._searchableView);
 
     this._stackView = new WebInspector.StackView(false);
-    this._stackView.show(this._searchableView.element);
     this._stackView.element.classList.add("timeline-view-stack");
-
+    if (Runtime.experiments.isEnabled("multipleTimelineViews")) {
+        this._tabbedPane = new WebInspector.TabbedPane();
+        this._tabbedPane.appendTab(WebInspector.TimelinePanel.ViewMode.FlameChart, WebInspector.UIString("Flame Chart"), new WebInspector.VBox());
+        this._tabbedPane.appendTab(WebInspector.TimelinePanel.ViewMode.Waterfall, WebInspector.UIString("Waterfall"), new WebInspector.VBox());
+        this._tabbedPane.appendTab(WebInspector.TimelinePanel.ViewMode.TreeView, WebInspector.UIString("Tree View"), new WebInspector.VBox());
+        this._tabbedPane.addEventListener(WebInspector.TabbedPane.EventTypes.TabSelected, this._onMainViewChanged.bind(this));
+        this._tabbedPane.show(this._searchableView.element);
+    } else {
+        this._stackView.show(this._searchableView.element);
+        this._onModeChanged();
+    }
     this._flameChartEnabledSetting.addChangeListener(this._onModeChanged, this);
-    this._onModeChanged();
     this._detailsSplitWidget.show(this.element);
     WebInspector.targetManager.addEventListener(WebInspector.TargetManager.Events.SuspendStateChanged, this._onSuspendStateChanged, this);
     this._showRecordingHelpMessage();
@@ -116,6 +125,15 @@ WebInspector.TimelinePanel.OverviewMode = {
     Events: "Events",
     Frames: "Frames"
 };
+
+/**
+ * @enum {string}
+ */
+WebInspector.TimelinePanel.ViewMode = {
+    Waterfall: "Waterfall",
+    FlameChart: "FlameChart",
+    TreeView: "TreeView"
+}
 
 /**
  * @enum {string}
@@ -205,6 +223,12 @@ WebInspector.TimelinePanel.prototype = {
 
         if (!this._selection || this._selection.type() === WebInspector.TimelineSelection.Type.Range)
             this.select(null);
+    },
+
+    _onMainViewChanged: function()
+    {
+        this._viewModeSetting.set(this._tabbedPane.selectedTabId);
+        this._onModeChanged();
     },
 
     /**
@@ -334,8 +358,10 @@ WebInspector.TimelinePanel.prototype = {
         framesToggleButton.addEventListener("click", this._overviewModeChanged.bind(this, framesToggleButton));
         this._panelToolbar.appendToolbarItem(framesToggleButton);
 
-        this._flameChartToggleButton = new WebInspector.ToolbarSettingToggle(this._flameChartEnabledSetting, "flame-chart-toolbar-item", WebInspector.UIString("Flame chart view. (Use WASD or time selection to navigate)"));
-        this._panelToolbar.appendToolbarItem(this._flameChartToggleButton);
+        if (!Runtime.experiments.isEnabled("multipleTimelineViews")) {
+            this._flameChartToggleButton = new WebInspector.ToolbarSettingToggle(this._flameChartEnabledSetting, "flame-chart-toolbar-item", WebInspector.UIString("Flame chart view. (Use WASD or time selection to navigate)"));
+            this._panelToolbar.appendToolbarItem(this._flameChartToggleButton);
+        }
         this._panelToolbar.appendSeparator();
 
         var captureSettingsLabel = new WebInspector.ToolbarText(WebInspector.UIString("Capture:"), "toolbar-group-label");
@@ -588,12 +614,10 @@ WebInspector.TimelinePanel.prototype = {
 
     _onModeChanged: function()
     {
-        this._stackView.detach();
-
         var isFrameMode = this._overviewModeSetting.get() === WebInspector.TimelinePanel.OverviewMode.Frames;
-        this._removeAllModeViews();
-        this._overviewControls = [];
 
+        // Set up overview controls.
+        this._overviewControls = [];
         if (isFrameMode) {
             this._frameOverview = new WebInspector.TimelineFrameOverview(this._model, this._frameModel());
             this._frameOverview.addEventListener(WebInspector.TimelineFrameOverview.Events.SelectionChanged, this._onOverviewSelectionChanged, this);
@@ -607,39 +631,50 @@ WebInspector.TimelinePanel.prototype = {
             this._overviewControls.push(new WebInspector.TimelineEventOverview.CPUActivity(this._model));
             this._overviewControls.push(new WebInspector.TimelineEventOverview.Network(this._model));
         }
+        if (!isFrameMode && this._captureFilmStripSetting.get())
+            this._overviewControls.push(new WebInspector.TimelineFilmStripOverview(this._model, this._tracingModel));
+        if (this._captureMemorySetting.get() && !isFrameMode)  // Frame mode skews time, don't render aux overviews.
+            this._overviewControls.push(new WebInspector.TimelineEventOverview.Memory(this._model));
         this.element.classList.toggle("timeline-overview-frames-mode", isFrameMode);
+        this._overviewPane.setOverviewControls(this._overviewControls);
 
-        if (this._flameChartEnabledSetting.get()) {
+        // Set up the main view.
+        this._stackView.detach();
+        this._removeAllModeViews();
+        var viewMode = this._flameChartEnabledSetting.get() ? WebInspector.TimelinePanel.ViewMode.FlameChart : WebInspector.TimelinePanel.ViewMode.Waterfall;
+        if (Runtime.experiments.isEnabled("multipleTimelineViews") && this._tabbedPane) {
+            viewMode = this._tabbedPane.selectedTabId;
+            this._stackView.show(this._tabbedPane.visibleView.element);
+        } else {
+            this._stackView.show(this._searchableView.element);
+        }
+        this._flameChart = null;
+        if (viewMode === WebInspector.TimelinePanel.ViewMode.FlameChart) {
             this._filterBar.filterButton().setEnabled(false);
             this._filterBar.filtersElement().classList.toggle("hidden", true);
             this._flameChart = new WebInspector.TimelineFlameChartView(this, this._model, this._frameModel());
             this._flameChart.enableNetworkPane(this._captureNetworkSetting.get());
             this._addModeView(this._flameChart);
-        } else {
-            this._flameChart = null;
+        } else if (viewMode === WebInspector.TimelinePanel.ViewMode.Waterfall) {
             this._filterBar.filterButton().setEnabled(true);
             this._filterBar.filtersElement().classList.toggle("hidden", !this._filterBar.filtersToggled());
             var timelineView = new WebInspector.TimelineView(this, this._model);
             this._addModeView(timelineView);
             timelineView.setFrameModel(isFrameMode ? this._frameModel() : null);
+        } else if (viewMode === WebInspector.TimelinePanel.ViewMode.TreeView) {
+            this._filterBar.filterButton().setEnabled(false);
+            this._filterBar.filtersElement().classList.toggle("hidden", true);
+            var treeView = new WebInspector.TimelineTreeModeView(this, this._model);
+            this._addModeView(treeView);
         }
 
-        if (this._captureMemorySetting.get()) {
-            if (!isFrameMode)  // Frame mode skews time, don't render aux overviews.
-                this._overviewControls.push(new WebInspector.TimelineEventOverview.Memory(this._model));
+        if (this._captureMemorySetting.get() && viewMode !== WebInspector.TimelinePanel.ViewMode.TreeView)
             this._addModeView(new WebInspector.MemoryCountersGraph(this, this._model));
-        }
-
-        if (!isFrameMode && this._captureFilmStripSetting.get())
-            this._overviewControls.push(new WebInspector.TimelineFilmStripOverview(this._model, this._tracingModel));
 
         var mainTarget = WebInspector.targetManager.mainTarget();
-        this._overviewPane.setOverviewControls(this._overviewControls);
         this.doResize();
         this._selection = null;
         this._updateSelectionDetails();
-
-        this._stackView.show(this._searchableView.element);
     },
 
     _onNetworkChanged: function()
@@ -1337,6 +1372,85 @@ WebInspector.TimelinePanel.prototype = {
 
 /**
  * @constructor
+ * @extends {WebInspector.VBox}
+ * @implements {WebInspector.TimelineModeView}
+ * @param {!WebInspector.TimelineModeViewDelegate} delegate
+ * @param {!WebInspector.TimelineModel} model
+ */
+WebInspector.TimelineTreeModeView = function(delegate, model)
+{
+    WebInspector.VBox.call(this);
+    this._treeView = new WebInspector.TimelineTreeView(model);
+    this._treeView.show(this.element);
+}
+
+WebInspector.TimelineTreeModeView.prototype = {
+    /**
+     * @override
+     */
+    dispose: function()
+    {
+    },
+
+    /**
+     * @override
+     */
+    highlightSearchResult: function()
+    {
+    },
+
+    /**
+     * @override
+     */
+    refreshRecords: function()
+    {
+    },
+
+    /**
+     * @override
+     */
+    reset: function()
+    {
+    },
+
+    /**
+     * @override
+     */
+    setSelection: function()
+    {
+    },
+
+    /**
+     * @override
+     */
+    setSidebarSize: function()
+    {
+    },
+
+    /**
+     * @override
+     * @param {number} startTime
+     * @param {number} endTime
+     */
+    setWindowTimes: function(startTime, endTime)
+    {
+        this._treeView.setRange(startTime, endTime);
+    },
+
+    /**
+     * @override
+     * @return {!WebInspector.Widget}
+     */
+    view: function()
+    {
+        return this;
+    },
+
+    __proto__: WebInspector.VBox.prototype
+}
+
+/**
+ * @constructor
  * @extends {WebInspector.TabbedPane}
  * @param {!WebInspector.TimelineModel} timelineModel
  */
@@ -1351,8 +1465,10 @@ WebInspector.TimelineDetailsView = function(timelineModel)
     this.appendTab(WebInspector.TimelinePanel.DetailsTab.Details, WebInspector.UIString("Summary"), this._defaultDetailsWidget);
     this.setPreferredTab(WebInspector.TimelinePanel.DetailsTab.Details);
 
-    this._heavyTreeView = new WebInspector.TimelineTreeView(timelineModel);
-    this.appendTab(WebInspector.TimelinePanel.DetailsTab.BottomUpTree, WebInspector.UIString("Aggregated Details"), this._heavyTreeView);
+    if (!Runtime.experiments.isEnabled("multipleTimelineViews")) {
+        this._heavyTreeView = new WebInspector.TimelineTreeView(timelineModel);
+        this.appendTab(WebInspector.TimelinePanel.DetailsTab.BottomUpTree, WebInspector.UIString("Aggregated Details"), this._heavyTreeView);
+    }
 
     this._staticTabs = new Set([
         WebInspector.TimelinePanel.DetailsTab.Details,

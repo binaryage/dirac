@@ -64,8 +64,17 @@ WebInspector.TimelineTreeView.prototype = {
      */
     updateContents: function(selection)
     {
-        this._startTime = selection.startTime();
-        this._endTime = selection.endTime();
+        this.setRange(selection.startTime(), selection.endTime());
+    },
+
+    /**
+     * @param {number} startTime
+     * @param {number} endTime
+     */
+    setRange: function(startTime, endTime)
+    {
+        this._startTime = startTime;
+        this._endTime = endTime;
         this._refreshTree();
     },
 
