@@ -4326,7 +4326,8 @@
                 "properties": [
                     { "name": "registrationId", "type": "string" },
                     { "name": "scopeURL", "type": "string" },
-                    { "name": "isDeleted", "type": "boolean", "optional": true }
+                    { "name": "isDeleted", "type": "boolean" },
+                    { "name": "forceUpdateOnPageLoad", "type": "boolean", "optional": true }
                 ]
             },
             {
@@ -4487,7 +4488,8 @@
                 "name": "workerCreated",
                 "parameters": [
                     { "name": "workerId", "type": "string" },
-                    { "name": "url", "type": "string" }
+                    { "name": "url", "type": "string" },
+                    { "name": "versionId", "type": "string", "optional": true }
                 ],
                 "handlers": ["browser"]
             },
