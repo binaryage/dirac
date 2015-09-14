@@ -159,6 +159,20 @@ WebInspector.TimelineJSProfileProcessor.generateJSFrameEvents = function(events)
     }
 
     /**
+     * @param {!Array<!ConsoleAgent.CallFrame>} stack
+     */
+    function filterStackFrames(stack)
+    {
+        for (var i = 0, j = 0; i < stack.length; ++i) {
+            var url = stack[i].url;
+            if (url && url.startsWith("native "))
+                continue;
+            stack[j++] = stack[i];
+        }
+        stack.length = j;
+    }
+
+    /**
      * @param {!WebInspector.TracingModel.Event} e
      */
     function extractStackTrace(e)
@@ -171,6 +185,7 @@ WebInspector.TimelineJSProfileProcessor.generateJSFrameEvents = function(events)
             stackTrace = jsFramesStack.map(function(frameEvent) { return frameEvent.args["data"]; }).reverse();
         if (!stackTrace)
             return;
+        filterStackFrames(stackTrace);
         var endTime = eventEndTime(e);
         var numFrames = stackTrace.length;
         var minFrames = Math.min(numFrames, jsFramesStack.length);
