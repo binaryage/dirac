@@ -626,6 +626,13 @@ WebInspector.CPUProfileFlameChart.OverviewPane.prototype = {
     },
 
     /**
+     * @override
+     */
+    endRangeSelection: function()
+    {
+    },
+
+    /**
      * @param {number} timeLeft
      * @param {number} timeRight
      */

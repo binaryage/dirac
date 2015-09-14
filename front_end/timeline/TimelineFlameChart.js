@@ -1155,6 +1155,15 @@ WebInspector.TimelineFlameChartView.prototype = {
 
     /**
      * @override
+     */
+    endRangeSelection: function()
+    {
+        if (Runtime.experiments.isEnabled("multipleTimelineViews"))
+            this._delegate.select(null);
+    },
+
+    /**
+     * @override
      * @param {?RegExp} textFilter
      */
     refreshRecords: function(textFilter)

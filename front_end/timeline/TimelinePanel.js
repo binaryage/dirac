@@ -673,8 +673,7 @@ WebInspector.TimelinePanel.prototype = {
 
         var mainTarget = WebInspector.targetManager.mainTarget();
         this.doResize();
-        this._selection = null;
-        this._updateSelectionDetails();
+        this.select(null);
     },
 
     _onNetworkChanged: function()
@@ -802,8 +801,7 @@ WebInspector.TimelinePanel.prototype = {
             this._currentViews[i].reset();
         for (var i = 0; i < this._overviewControls.length; ++i)
             this._overviewControls[i].reset();
-        this._selection = null;
-        this._updateSelectionDetails();
+        this.select(null);
         delete this._filmStripModel;
     },
 
@@ -1097,9 +1095,6 @@ WebInspector.TimelinePanel.prototype = {
 
     _updateSelectionDetails: function()
     {
-        if (!this._selection)
-            this._selection = WebInspector.TimelineSelection.fromRange(this._windowStartTime, this._windowEndTime);
-
         switch (this._selection.type()) {
         case WebInspector.TimelineSelection.Type.Record:
             var record = /** @type {!WebInspector.TimelineModel.Record} */ (this._selection.object());
@@ -1297,8 +1292,10 @@ WebInspector.TimelinePanel.prototype = {
      */
     select: function(selection, preferredTab)
     {
-        this._detailsLinkifier.reset();
+        if (!selection)
+            selection = WebInspector.TimelineSelection.fromRange(this._windowStartTime, this._windowEndTime);
         this._selection = selection;
+        this._detailsLinkifier.reset();
         if (preferredTab)
             this._detailsView.setPreferredTab(preferredTab);
 

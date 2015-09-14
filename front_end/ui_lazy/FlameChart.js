@@ -44,7 +44,9 @@ WebInspector.FlameChartDelegate.prototype = {
      * @param {number} startTime
      * @param {number} endTime
      */
-    updateRangeSelection: function(startTime, endTime) { }
+    updateRangeSelection: function(startTime, endTime) { },
+
+    endRangeSelection: function() { }
 }
 
 /**
@@ -638,6 +640,7 @@ WebInspector.FlameChart.prototype = {
     _endRangeSelection: function()
     {
         this._isDragging = false;
+        this._flameChartDelegate.endRangeSelection();
     },
 
     _hideRangeSelection: function()
@@ -1314,6 +1317,8 @@ WebInspector.FlameChart.prototype = {
      */
     setSelectedEntry: function(entryIndex)
     {
+        if (entryIndex === -1 && !this._isDragging)
+            this._hideRangeSelection();
         if (this._selectedEntryIndex === entryIndex)
             return;
         this._selectedEntryIndex = entryIndex;
