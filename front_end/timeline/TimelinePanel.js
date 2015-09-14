@@ -51,7 +51,7 @@ WebInspector.TimelinePanel = function()
     // Create model.
     this._tracingModelBackingStorage = new WebInspector.TempFileBackingStorage("tracing");
     this._tracingModel = new WebInspector.TracingModel(this._tracingModelBackingStorage);
-    this._model = new WebInspector.TimelineModel(this._tracingModel, WebInspector.TimelineUIUtils.visibleRecordsFilter());
+    this._model = new WebInspector.TimelineModel(this._tracingModel, WebInspector.TimelineUIUtils.visibleEventsFilter());
 
     this._model.addEventListener(WebInspector.TimelineModel.Events.RecordingStarted, this._onRecordingStarted, this);
     this._model.addEventListener(WebInspector.TimelineModel.Events.RecordingStopped, this._onRecordingStopped, this);
@@ -1048,7 +1048,7 @@ WebInspector.TimelinePanel.prototype = {
             if (record.endTime() < this._windowStartTime ||
                 record.startTime() > this._windowEndTime)
                 return;
-            if (WebInspector.TimelineUIUtils.testContentMatching(record, searchRegExp))
+            if (WebInspector.TimelineUIUtils.testContentMatching(record.traceEvent(), searchRegExp))
                 matches.push(record);
         }
         this._model.forAllFilteredRecords(processRecord.bind(this));
@@ -1747,12 +1747,12 @@ WebInspector.TimelineCategoryFilter = function()
 WebInspector.TimelineCategoryFilter.prototype = {
     /**
      * @override
-     * @param {!WebInspector.TimelineModel.Record} record
+     * @param {!WebInspector.TracingModel.Event} event
      * @return {boolean}
      */
-    accept: function(record)
+    accept: function(event)
     {
-        return !WebInspector.TimelineUIUtils.categoryForRecord(record).hidden;
+        return !WebInspector.TimelineUIUtils.eventStyle(event).category.hidden;
     },
 
     __proto__: WebInspector.TimelineModel.Filter.prototype
@@ -1780,12 +1780,13 @@ WebInspector.TimelineIsLongFilter.prototype = {
 
     /**
      * @override
-     * @param {!WebInspector.TimelineModel.Record} record
+     * @param {!WebInspector.TracingModel.Event} event
      * @return {boolean}
      */
-    accept: function(record)
+    accept: function(event)
     {
-        return this._minimumRecordDuration ? ((record.endTime() - record.startTime()) >= this._minimumRecordDuration) : true;
+        var duration = event.endTime ? event.endTime - event.startTime : 0;
+        return duration >= this._minimumRecordDuration;
     },
 
     __proto__: WebInspector.TimelineModel.Filter.prototype
@@ -1821,12 +1822,12 @@ WebInspector.TimelineTextFilter.prototype = {
 
     /**
      * @override
-     * @param {!WebInspector.TimelineModel.Record} record
+     * @param {!WebInspector.TracingModel.Event} event
      * @return {boolean}
      */
-    accept: function(record)
+    accept: function(event)
     {
-        return !this._regex || WebInspector.TimelineUIUtils.testContentMatching(record, this._regex);
+        return !this._regex || WebInspector.TimelineUIUtils.testContentMatching(event, this._regex);
     },
 
     __proto__: WebInspector.TimelineModel.Filter.prototype
@@ -1844,14 +1845,14 @@ WebInspector.TimelineStaticFilter = function()
 WebInspector.TimelineStaticFilter.prototype = {
     /**
      * @override
-     * @param {!WebInspector.TimelineModel.Record} record
+     * @param {!WebInspector.TracingModel.Event} event
      * @return {boolean}
      */
-    accept: function(record)
+    accept: function(event)
     {
-        switch(record.type()) {
+        switch (event.name) {
         case WebInspector.TimelineModel.RecordType.EventDispatch:
-            return record.children().length !== 0;
+            return event.hasChildren;
         case WebInspector.TimelineModel.RecordType.JSFrame:
             return false;
         default:

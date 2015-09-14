@@ -135,13 +135,12 @@ WebInspector.TimelineUIUtils.isCoalescable = function(recordType)
 }
 
 /**
- * @param {!WebInspector.TimelineModel.Record} record
+ * @param {!WebInspector.TracingModel.Event} traceEvent
  * @param {!RegExp} regExp
  * @return {boolean}
  */
-WebInspector.TimelineUIUtils.testContentMatching = function(record, regExp)
+WebInspector.TimelineUIUtils.testContentMatching = function(traceEvent, regExp)
 {
-    var traceEvent = record.traceEvent();
     var title = WebInspector.TimelineUIUtils.eventStyle(traceEvent).title;
     var tokens = [title];
     if (traceEvent.url)
@@ -1300,17 +1299,9 @@ WebInspector.TimelineUIUtils._visibleTypes = function()
 /**
  * @return {!WebInspector.TimelineModel.Filter}
  */
-WebInspector.TimelineUIUtils.visibleRecordsFilter = function()
+WebInspector.TimelineUIUtils.visibleEventsFilter = function()
 {
-    return new WebInspector.TimelineVisibleRecordsFilter(WebInspector.TimelineUIUtils._visibleTypes());
-}
-
-/**
- * @return {!WebInspector.TraceEventFilter}
- */
-WebInspector.TimelineUIUtils.hiddenEventsFilter = function()
-{
-    return new WebInspector.InclusiveTraceEventNameFilter(WebInspector.TimelineUIUtils._visibleTypes());
+    return new WebInspector.TimelineVisibleEventsFilter(WebInspector.TimelineUIUtils._visibleTypes());
 }
 
 /**

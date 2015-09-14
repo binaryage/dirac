@@ -31,17 +31,17 @@
 /**
  * @constructor
  * @param {!WebInspector.TracingModel} tracingModel
- * @param {!WebInspector.TimelineModel.Filter} recordFilter
+ * @param {!WebInspector.TimelineModel.Filter} eventFilter
  * @extends {WebInspector.Object}
  * @implements {WebInspector.TargetManager.Observer}
  * @implements {WebInspector.TracingManagerClient}
  */
-WebInspector.TimelineModel = function(tracingModel, recordFilter)
+WebInspector.TimelineModel = function(tracingModel, eventFilter)
 {
     WebInspector.Object.call(this);
     this._filters = [];
     this._tracingModel = tracingModel;
-    this._recordFilter = recordFilter;
+    this._eventFilter = eventFilter;
     this._targets = [];
     this.reset();
     WebInspector.targetManager.observeTargets(this);
@@ -326,9 +326,7 @@ WebInspector.TimelineModel.Record.prototype = {
      */
     type: function()
     {
-        if (this._event.hasCategory(WebInspector.TracingModel.ConsoleEventCategory))
-            return WebInspector.TimelineModel.RecordType.ConsoleTime;
-        return /** @type !WebInspector.TimelineModel.RecordType */ (this._event.name);
+        return WebInspector.TimelineModel._eventType(this._event);
     },
 
     /**
@@ -368,11 +366,21 @@ WebInspector.TimelineModel.Record.prototype = {
     {
         this._children.push(child);
         child.parent = this;
-    },
+    }
 }
 
 /** @typedef {!{page: !Array<!WebInspector.TracingModel.Event>, workers: !Array<!WebInspector.TracingModel.Event>}} */
 WebInspector.TimelineModel.MetadataEvents;
+
+/**
+ * @return {!WebInspector.TimelineModel.RecordType}
+ */
+WebInspector.TimelineModel._eventType = function(event)
+{
+    if (event.hasCategory(WebInspector.TracingModel.ConsoleEventCategory))
+        return WebInspector.TimelineModel.RecordType.ConsoleTime;
+    return /** @type !WebInspector.TimelineModel.RecordType */ (event.name);
+}
 
 WebInspector.TimelineModel.prototype = {
     /**
@@ -444,7 +452,7 @@ WebInspector.TimelineModel.prototype = {
     addFilter: function(filter)
     {
         this._filters.push(filter);
-        filter._model = this;
+        filter.addEventListener(WebInspector.TimelineModel.Filter.Events.Changed, this._filterChanged, this);
     },
 
     /**
@@ -460,7 +468,7 @@ WebInspector.TimelineModel.prototype = {
          */
         function processRecord(record, depth)
         {
-            var visible = this.isVisible(record);
+            var visible = this.isVisible(record.traceEvent());
             if (visible) {
                 if (callback(record, depth))
                     return true;
@@ -478,13 +486,13 @@ WebInspector.TimelineModel.prototype = {
     },
 
     /**
-     * @param {!WebInspector.TimelineModel.Record} record
+     * @param {!WebInspector.TracingModel.Event} event
      * @return {boolean}
      */
-    isVisible: function(record)
+    isVisible: function(event)
     {
         for (var i = 0; i < this._filters.length; ++i) {
-            if (!this._filters[i].accept(record))
+            if (!this._filters[i].accept(event))
                 return false;
         }
         return true;
@@ -917,7 +925,7 @@ WebInspector.TimelineModel.prototype = {
             var record = new WebInspector.TimelineModel.Record(event);
             if (WebInspector.TimelineUIUtils.isMarkerEvent(event))
                 this._eventDividerRecords.push(record);
-            if (!this._recordFilter.accept(record) && !WebInspector.TracingModel.isTopLevelEvent(event))
+            if (!this._eventFilter.accept(event) && !WebInspector.TracingModel.isTopLevelEvent(event))
                 continue;
             if (parentRecord)
                 parentRecord._addChild(record);
@@ -1038,6 +1046,8 @@ WebInspector.TimelineModel.prototype = {
         if (eventData && eventData["stackTrace"])
             event.stackTrace = eventData["stackTrace"];
 
+        if (eventStack.length && eventStack.peekLast().name === recordTypes.EventDispatch)
+            eventStack.peekLast().hasChildren = true;
         switch (event.name) {
         case recordTypes.ResourceSendRequest:
             this._sendRequestEvents[event.args["data"]["requestId"]] = event;
@@ -1468,7 +1478,7 @@ WebInspector.TimelineModel.ProfileTreeNode = function()
  * @param {!Array<!WebInspector.TracingModel.Event>} events
  * @param {number} startTime
  * @param {number} endTime
- * @param {!Array<!WebInspector.TraceEventFilter>} filters
+ * @param {!Array<!WebInspector.TimelineModel.Filter>} filters
  * @param {function(!WebInspector.TracingModel.Event):string} eventIdCallback
  * @return {!WebInspector.TimelineModel.ProfileTreeNode}
  */
@@ -1660,27 +1670,33 @@ WebInspector.TimelineModel.NetworkRequest.prototype = {
 
 /**
  * @constructor
+ * @extends {WebInspector.Object}
  */
 WebInspector.TimelineModel.Filter = function()
 {
-    /** @type {!WebInspector.TimelineModel} */
-    this._model;
+    WebInspector.Object.call(this);
+}
+
+WebInspector.TimelineModel.Filter.Events = {
+    Changed: "Changed"
 }
 
 WebInspector.TimelineModel.Filter.prototype = {
     /**
-     * @param {!WebInspector.TimelineModel.Record} record
+     * @param {!WebInspector.TracingModel.Event} event
      * @return {boolean}
      */
-    accept: function(record)
+    accept: function(event)
     {
         return true;
     },
 
     notifyFilterChanged: function()
     {
-        this._model._filterChanged();
-    }
+        this.dispatchEventToListeners(WebInspector.TimelineModel.Filter.Events.Changed, this);
+    },
+
+    __proto__: WebInspector.Object.prototype
 }
 
 /**
@@ -1688,21 +1704,21 @@ WebInspector.TimelineModel.Filter.prototype = {
  * @extends {WebInspector.TimelineModel.Filter}
  * @param {!Array.<string>} visibleTypes
  */
-WebInspector.TimelineVisibleRecordsFilter = function(visibleTypes)
+WebInspector.TimelineVisibleEventsFilter = function(visibleTypes)
 {
     WebInspector.TimelineModel.Filter.call(this);
-    this._visibleTypes = visibleTypes.keySet();
+    this._visibleTypes = new Set(visibleTypes);
 }
 
-WebInspector.TimelineVisibleRecordsFilter.prototype = {
+WebInspector.TimelineVisibleEventsFilter.prototype = {
     /**
      * @override
-     * @param {!WebInspector.TimelineModel.Record} record
+     * @param {!WebInspector.TracingModel.Event} event
      * @return {boolean}
      */
-    accept: function(record)
+    accept: function(event)
     {
-        return !!this._visibleTypes[record.type()];
+        return this._visibleTypes.has(WebInspector.TimelineModel._eventType(event));
     },
 
     __proto__: WebInspector.TimelineModel.Filter.prototype
@@ -1781,78 +1797,18 @@ WebInspector.TimelineModelLoadFromFileDelegate.prototype = {
     }
 }
 
-
-/**
- * @interface
- */
-WebInspector.TraceEventFilter = function() { }
-
-WebInspector.TraceEventFilter.prototype = {
-    /**
-     * @param {!WebInspector.TracingModel.Event} event
-     * @return {boolean}
-     */
-    accept: function(event) { }
-}
-
 /**
  * @constructor
- * @implements {WebInspector.TraceEventFilter}
- * @param {!Array.<string>} eventNames
- */
-WebInspector.TraceEventNameFilter = function(eventNames)
-{
-    this._eventNames = eventNames.keySet();
-}
-
-WebInspector.TraceEventNameFilter.prototype = {
-    /**
-     * @override
-     * @param {!WebInspector.TracingModel.Event} event
-     * @return {boolean}
-     */
-    accept: function(event)
-    {
-        throw new Error("Not implemented.");
-    }
-}
-
-/**
- * @constructor
- * @extends {WebInspector.TraceEventNameFilter}
- * @param {!Array.<string>} includeNames
- */
-WebInspector.InclusiveTraceEventNameFilter = function(includeNames)
-{
-    WebInspector.TraceEventNameFilter.call(this, includeNames);
-}
-
-WebInspector.InclusiveTraceEventNameFilter.prototype = {
-    /**
-     * @override
-     * @param {!WebInspector.TracingModel.Event} event
-     * @return {boolean}
-     */
-    accept: function(event)
-    {
-        return event.hasCategory(WebInspector.TracingModel.ConsoleEventCategory)
-            || !!this._eventNames[event.name];
-    },
-
-    __proto__: WebInspector.TraceEventNameFilter.prototype
-}
-
-/**
- * @constructor
- * @extends {WebInspector.TraceEventNameFilter}
+ * @extends {WebInspector.TimelineModel.Filter}
  * @param {!Array<string>} excludeNames
  */
-WebInspector.ExclusiveTraceEventNameFilter = function(excludeNames)
+WebInspector.ExclusiveNameFilter = function(excludeNames)
 {
-    WebInspector.TraceEventNameFilter.call(this, excludeNames);
+    WebInspector.TimelineModel.Filter.call(this);
+    this._excludeNames = new Set(excludeNames);
 }
 
-WebInspector.ExclusiveTraceEventNameFilter.prototype = {
+WebInspector.ExclusiveNameFilter.prototype = {
     /**
      * @override
      * @param {!WebInspector.TracingModel.Event} event
@@ -1860,18 +1816,19 @@ WebInspector.ExclusiveTraceEventNameFilter.prototype = {
      */
     accept: function(event)
     {
-        return !this._eventNames[event.name];
+        return !this._excludeNames.has(event.name);
     },
 
-    __proto__: WebInspector.TraceEventNameFilter.prototype
+    __proto__: WebInspector.TimelineModel.Filter.prototype
 }
 
 /**
  * @constructor
- * @implements {WebInspector.TraceEventFilter}
+ * @extends {WebInspector.TimelineModel.Filter}
  */
 WebInspector.ExcludeTopLevelFilter = function()
 {
+    WebInspector.TimelineModel.Filter.call(this);
 }
 
 WebInspector.ExcludeTopLevelFilter.prototype = {
@@ -1883,7 +1840,9 @@ WebInspector.ExcludeTopLevelFilter.prototype = {
     accept: function(event)
     {
         return !WebInspector.TracingModel.isTopLevelEvent(event);
-    }
+    },
+
+    __proto__: WebInspector.TimelineModel.Filter.prototype
 }
 
 /**

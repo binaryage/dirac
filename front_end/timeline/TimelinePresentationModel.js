@@ -246,7 +246,7 @@ WebInspector.TimelinePresentationModel.prototype = {
                 var record = records[entry.index];
                 ++entry.index;
                 if (record.startTime() < this._windowEndTime && record.endTime() > this._windowStartTime) {
-                    if (this._model.isVisible(record.record())) {
+                    if (this._model.isVisible(record.record().traceEvent())) {
                         record._presentationParent._expandable = true;
                         if (this._textFilter)
                             revealRecordsInStack();

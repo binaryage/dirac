@@ -205,7 +205,7 @@ WebInspector.CountersGraph.prototype = {
          */
         function findRecordToReveal(record)
         {
-            if (!this._model.isVisible(record))
+            if (!this._model.isVisible(record.traceEvent()))
                 return false;
             if (record.startTime() <= time && time <= record.endTime()) {
                 recordToReveal = record;

@@ -25,8 +25,8 @@ WebInspector.TimelineTreeView = function(model)
         WebInspector.TimelineModel.RecordType.TimerFire
     ];
     this._filters = [
-        WebInspector.TimelineUIUtils.hiddenEventsFilter(),
-        new WebInspector.ExclusiveTraceEventNameFilter(nonessentialEvents),
+        WebInspector.TimelineUIUtils.visibleEventsFilter(),
+        new WebInspector.ExclusiveNameFilter(nonessentialEvents),
         new WebInspector.ExcludeTopLevelFilter()
     ];
 

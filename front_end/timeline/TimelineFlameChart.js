@@ -42,7 +42,7 @@ WebInspector.TimelineFlameChartDataProviderBase = function(model)
     this._timelineData;
     this._font = "11px " + WebInspector.fontFamily();
     this._filters = [];
-    this.addFilter(WebInspector.TimelineUIUtils.hiddenEventsFilter());
+    this.addFilter(WebInspector.TimelineUIUtils.visibleEventsFilter());
     this.addFilter(new WebInspector.ExcludeTopLevelFilter());
 }
 
@@ -100,7 +100,7 @@ WebInspector.TimelineFlameChartDataProviderBase.prototype = {
     },
 
     /**
-     * @param {!WebInspector.TraceEventFilter} filter
+     * @param {!WebInspector.TimelineModel.Filter} filter
      */
     addFilter: function(filter)
     {
