@@ -388,6 +388,7 @@ WebInspector.ResponsiveDesignView.prototype = {
 
         // Draw vertical ruler.
         context.save();
+        context.translate(0, this._deviceInsets.top);
         var minYIndex = Math.ceil(dipScrollY / rulerSubStep);
         var maxYIndex = Math.floor((dipScrollY + dipGridHeight) / rulerSubStep);
         context.translate(0, -dipScrollY);
@@ -416,8 +417,8 @@ WebInspector.ResponsiveDesignView.prototype = {
         context.restore();
 
         // Draw grid.
-        drawGrid(dipScrollX, dipScrollY, darkLineColor, gridSubStep);
-        drawGrid(dipScrollX, dipScrollY, lightLineColor, gridStep);
+        drawGrid(dipScrollX, dipScrollY + this._deviceInsets.top, darkLineColor, gridSubStep);
+        drawGrid(dipScrollX, dipScrollY + this._deviceInsets.top, lightLineColor, gridStep);
 
         /**
          * @param {number} scrollX
@@ -459,10 +460,13 @@ WebInspector.ResponsiveDesignView.prototype = {
         // Draw contents size.
         var pageScaleAvailable = WebInspector.overridesSupport.settings.emulateMobile.get() || WebInspector.overridesSupport.settings.emulateTouch.get();
         if (this._drawContentsSize && pageScaleAvailable) {
+            context.save();
             context.fillStyle = contentsSizeColor;
             var visibleContentsWidth = Math.max(0, Math.min(dipGridWidth, this._viewport.contentsWidth * scale - dipScrollX));
-            var visibleContentsHeight = Math.max(0, Math.min(dipGridHeight, this._viewport.contentsHeight * scale - dipScrollY));
-            context.fillRect(0, 0, visibleContentsWidth, visibleContentsHeight);
+            var visibleContentsHeight = Math.max(0, Math.min(dipGridHeight, this._viewport.contentsHeight * scale - dipScrollY + this._deviceInsets.top));
+            context.translate(0, this._deviceInsets.top);
+            context.fillRect(0, Math.max(-this._deviceInsets.top, -dipScrollY), visibleContentsWidth, visibleContentsHeight);
+            context.restore();
         }
     },
 
@@ -509,7 +513,8 @@ WebInspector.ResponsiveDesignView.prototype = {
         var deviceInsets = new Insets(this._deviceInsets.left * this._scale / zoomFactor, this._deviceInsets.top * this._scale / zoomFactor, this._deviceInsets.right * this._scale / zoomFactor, this._deviceInsets.bottom * this._scale / zoomFactor);
         cssWidth += deviceInsets.left + deviceInsets.right;
         cssHeight += deviceInsets.top + deviceInsets.bottom;
-        if (this._cachedCssWidth !== cssWidth || this._cachedCssHeight !== cssHeight || !deviceInsets.isEqual(this._cachedDeviceInsets)) {
+        var insetsChanged = !deviceInsets.isEqual(this._cachedDeviceInsets);
+        if (this._cachedCssWidth !== cssWidth || this._cachedCssHeight !== cssHeight || insetsChanged) {
             this._slidersContainer.style.width = cssWidth + "px";
             this._slidersContainer.style.height = cssHeight + "px";
             this._pageContainer.style.paddingLeft = deviceInsets.left + "px";
@@ -533,7 +538,7 @@ WebInspector.ResponsiveDesignView.prototype = {
 
         var canvasInvalidated = viewportChanged || this._drawContentsSize !== this._cachedDrawContentsSize || this._cachedScale !== this._scale ||
             this._cachedCssCanvasWidth !== cssCanvasWidth || this._cachedCssCanvasHeight !== cssCanvasHeight || this._cachedZoomFactor !== zoomFactor ||
-            this._cachedMediaInspectorHeight !== mediaInspectorHeight;
+            this._cachedMediaInspectorHeight !== mediaInspectorHeight || insetsChanged;
 
         if (canvasInvalidated)
             this._drawCanvas(cssCanvasWidth, cssCanvasHeight, rulerTotalHeight);
