@@ -21,6 +21,7 @@ WebInspector.CPUProfileDataModel = function(profile)
         this._fixMissingSamples();
         this._fixLineAndColumnNumbers();
     }
+    this._filterNativeFrames();
     this._calculateTimes(profile);
 }
 
@@ -51,6 +52,67 @@ WebInspector.CPUProfileDataModel.prototype = {
             return totalHitCount;
         }
         calculateTimesForNode(profile.head);
+    },
+
+    _filterNativeFrames: function()
+    {
+        if (this.samples) {
+            for (var i = 0; i < this.samples.length; ++i) {
+                var node = this.nodeByIndex(i);
+                while (isNativeNode(node))
+                    node = node.parent;
+                this.samples[i] = node.id;
+            }
+        }
+        processSubtree(this.profileHead);
+
+        /**
+         * @param {!ProfilerAgent.CPUProfileNode} node
+         * @return {boolean}
+         */
+        function isNativeNode(node)
+        {
+            return !!node.url && node.url.startsWith("native ");
+        }
+
+        /**
+         * @param {!ProfilerAgent.CPUProfileNode} node
+         */
+        function processSubtree(node)
+        {
+            var nativeChildren = [];
+            var children = node.children;
+            for (var i = 0, j = 0; i < children.length; ++i) {
+                var child = children[i];
+                if (isNativeNode(child)) {
+                    nativeChildren.push(child);
+                } else {
+                    children[j++] = child;
+                    processSubtree(child);
+                }
+            }
+            children.length = j;
+            nativeChildren.forEach(mergeChildren.bind(null, node));
+        }
+
+        /**
+         * @param {!ProfilerAgent.CPUProfileNode} node
+         * @param {!ProfilerAgent.CPUProfileNode} nativeNode
+         */
+        function mergeChildren(node, nativeNode)
+        {
+            node.hitCount += nativeNode.hitCount;
+            for (var i = 0; i < nativeNode.children.length; ++i) {
+                var child = nativeNode.children[i];
+                if (isNativeNode(child)) {
+                    mergeChildren(node, child);
+                } else {
+                    node.children.push(child);
+                    child.parent = node;
+                    processSubtree(child);
+                }
+            }
+        }
     },
 
     _fixLineAndColumnNumbers: function()
