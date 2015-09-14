@@ -250,7 +250,7 @@ WebInspector.Spectrum.prototype = {
         for (var i = 0; i < palette.colors.length; i++) {
             var animationDelay = animate ? i * 100 / palette.colors.length : 0;
             var colorElement = this._createPaletteColor(palette.colors[i], animationDelay);
-            colorElement.addEventListener("mousedown", this._paletteColorSelected.bind(this, palette.colors[i]));
+            colorElement.addEventListener("mousedown", this._paletteColorSelected.bind(this, palette.colors[i], palette.matchUserFormat));
             if (palette.mutable) {
                 colorElement.__mutable = true;
                 colorElement.__color = palette.colors[i];
@@ -431,13 +431,14 @@ WebInspector.Spectrum.prototype = {
 
     /**
      * @param {string} colorText
+     * @param {boolean} matchUserFormat
      */
-    _paletteColorSelected: function(colorText)
+    _paletteColorSelected: function(colorText, matchUserFormat)
     {
         var color = WebInspector.Color.parse(colorText);
         if (!color)
             return;
-        this._innerSetColor(color.hsva(), colorText, undefined, WebInspector.Spectrum._ChangeSource.Other);
+        this._innerSetColor(color.hsva(), colorText, matchUserFormat ? this._colorFormat :  color.format(), WebInspector.Spectrum._ChangeSource.Other);
     },
 
     _addColorToCustomPalette: function()
@@ -920,7 +921,7 @@ WebInspector.Spectrum.PaletteGenerator.prototype = {
     }
 }
 
-WebInspector.Spectrum.MaterialPalette = { title: "Material", mutable: false, colors: [
+WebInspector.Spectrum.MaterialPalette = { title: "Material", mutable: false, matchUserFormat: true, colors: [
     "#F44336",
     "#E91E63",
     "#9C27B0",
