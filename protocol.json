@@ -5114,10 +5114,16 @@
             {
                 "name": "animationCreated",
                 "parameters": [
-                    { "name": "player", "$ref": "Animation", "description": "Animation that was created." },
-                    { "name": "resetTimeline", "type": "boolean", "description": "Whether the timeline should be reset." }
+                    { "name": "id", "type": "string", "description": "Id of the animation that was created." }
                 ],
-                "description": "Event for each animation player that has been created."
+                "description": "Event for each animation that has been created."
+            },
+            {
+                "name": "animationStarted",
+                "parameters": [
+                    { "name": "animation", "$ref": "Animation", "description": "Animation that was started." }
+                ],
+                "description": "Event for animation that has been started."
             },
             {
                 "name": "animationCanceled",

@@ -13,6 +13,12 @@ WebInspector.AnimationModel = function(target)
     WebInspector.SDKModel.call(this, WebInspector.AnimationModel, target);
     this._agent = target.animationAgent();
     target.registerAnimationDispatcher(new WebInspector.AnimationDispatcher(this));
+    /** @type {!Map.<string, !WebInspector.AnimationModel.Animation>} */
+    this._animationsById = new Map();
+    /** @type {!Map.<string, !WebInspector.AnimationModel.AnimationGroup>} */
+    this._animationGroups = new Map();
+    /** @type {!Array.<string>} */
+    this._pendingAnimations = [];
 }
 
 WebInspector.AnimationModel.Events = {
@@ -22,13 +28,52 @@ WebInspector.AnimationModel.Events = {
 
 WebInspector.AnimationModel.prototype = {
     /**
-     * @param {!AnimationAgent.Animation} payload
-     * @param {boolean} resetTimeline
+     * @param {string} id
      */
-    animationCreated: function(payload, resetTimeline)
+    animationCreated: function(id)
     {
-        var player = WebInspector.AnimationModel.Animation.parsePayload(this.target(), payload);
-        this.dispatchEventToListeners(WebInspector.AnimationModel.Events.AnimationCreated, { "player": player, "resetTimeline": resetTimeline });
+        this._pendingAnimations.push(id);
+    },
+
+    /**
+     * @param {!AnimationAgent.Animation} payload
+     */
+    animationStarted: function(payload)
+    {
+        var animation = WebInspector.AnimationModel.Animation.parsePayload(this.target(), payload);
+        this._animationsById.set(animation.id(), animation);
+
+        for (var id of this._pendingAnimations) {
+            if (!this._animationsById.get(id))
+                return;
+        }
+
+        while (this._pendingAnimations.length) {
+            var group = this._createGroupFromPendingAnimations();
+            this._animationGroups.set(group.id(), group);
+            // TODO(samli): Dispatch single group event.
+            for (var anim of group.animations())
+                this.dispatchEventToListeners(WebInspector.AnimationModel.Events.AnimationCreated, { "player": anim, "resetTimeline": anim.id() === group.id() });
+        }
+    },
+
+    /**
+     * @return {!WebInspector.AnimationModel.AnimationGroup}
+     */
+    _createGroupFromPendingAnimations: function()
+    {
+        console.assert(this._pendingAnimations.length);
+        var groupedAnimations = [this._animationsById.get(this._pendingAnimations.shift())];
+        var remainingAnimations = [];
+        for (var id of this._pendingAnimations) {
+            var anim = this._animationsById.get(id);
+            if (anim.startTime() === groupedAnimations[0].startTime())
+                groupedAnimations.push(anim);
+            else
+                remainingAnimations.push(id);
+        }
+        this._pendingAnimations = remainingAnimations;
+        return new WebInspector.AnimationModel.AnimationGroup(this.target(), groupedAnimations[0].id(), groupedAnimations);
     },
 
     /**
@@ -445,6 +490,41 @@ WebInspector.AnimationModel.KeyframeStyle.prototype = {
 
 /**
  * @constructor
+ * @extends {WebInspector.SDKObject}
+ * @param {!WebInspector.Target} target
+ * @param {string} id
+ * @param {!Array.<!WebInspector.AnimationModel.Animation>} animations
+ */
+WebInspector.AnimationModel.AnimationGroup = function(target, id, animations)
+{
+    WebInspector.SDKObject.call(this, target);
+    this._id = id;
+    this._animations = animations;
+}
+
+WebInspector.AnimationModel.AnimationGroup.prototype = {
+    /**
+     * @return {string}
+     */
+    id: function()
+    {
+        return this._id;
+    },
+
+    /**
+     * @return {!Array.<!WebInspector.AnimationModel.Animation>}
+     */
+    animations: function()
+    {
+        return this._animations;
+    },
+
+    __proto__: WebInspector.SDKObject.prototype
+}
+
+
+/**
+ * @constructor
  * @implements {AnimationAgent.Dispatcher}
  */
 WebInspector.AnimationDispatcher = function(animationModel)
@@ -455,12 +535,20 @@ WebInspector.AnimationDispatcher = function(animationModel)
 WebInspector.AnimationDispatcher.prototype = {
     /**
      * @override
-     * @param {!AnimationAgent.Animation} payload
-     * @param {boolean} resetTimeline
+     * @param {string} id
      */
-    animationCreated: function(payload, resetTimeline)
+    animationCreated: function(id)
     {
-        this._animationModel.animationCreated(payload, resetTimeline);
+        this._animationModel.animationCreated(id);
+    },
+
+    /**
+     * @override
+     * @param {!AnimationAgent.Animation} payload
+     */
+    animationStarted: function(payload)
+    {
+        this._animationModel.animationStarted(payload);
     },
 
     /**
