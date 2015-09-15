@@ -114,7 +114,7 @@ WebInspector.Tooltip.prototype = {
             containerOffset.x + containerOffsetWidth - tooltipWidth - pageMargin);
         var tooltipY;
         if (!anchorTooltipAtElement) {
-            tooltipY = event.y + cursorOffset;
+            tooltipY = event.y + cursorOffset + tooltipHeight < containerOffset.y + containerOffsetHeight ? event.y + cursorOffset : event.y - tooltipHeight;
         } else {
             var onBottom = anchorBox.y + anchorOffset + anchorBox.height + tooltipHeight < containerOffset.y + containerOffsetHeight;
             tooltipY = onBottom ? anchorBox.y + anchorBox.height + anchorOffset : anchorBox.y - tooltipHeight - anchorOffset;
