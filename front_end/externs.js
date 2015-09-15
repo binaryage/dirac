@@ -307,12 +307,21 @@ Adb.Browser;
 /** @typedef {{id: string, adbModel: string, adbSerial: string, browsers: !Array.<!Adb.Browser>, adbPortStatus: !Array.<number>, adbConnected: boolean}} */
 Adb.Device;
 
-/* jsdifflib API */
-var difflib = {};
-difflib.stringAsLines = function(text) { return []; }
-/** @constructor */
-difflib.SequenceMatcher = function(baseText, newText) { }
-difflib.SequenceMatcher.prototype.get_opcodes = function() { return []; }
+/**
+ * @constructor
+ */
+function diff_match_patch()
+{
+}
+
+diff_match_patch.prototype = {
+    /**
+     * @param {string} text1
+     * @param {string} text2
+     * @return {!Array.<!{0: number, 1: string}>}
+     */
+    diff_main: function(text1, text2) { }
+}
 
 /** @constructor */
 function Path2D() {}

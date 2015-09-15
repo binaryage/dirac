@@ -467,16 +467,16 @@ WebInspector.SelectionDialogContentProvider.prototype = {
          */
         function rangesForMatch(text, query)
         {
-            var sm = new difflib.SequenceMatcher(query, text);
-            var opcodes = sm.get_opcodes();
+            var opcodes = WebInspector.Diff.charDiff(query, text);
+            var offset = 0;
             var ranges = [];
-
             for (var i = 0; i < opcodes.length; ++i) {
                 var opcode = opcodes[i];
-                if (opcode[0] === "equal")
-                    ranges.push(new WebInspector.SourceRange(opcode[3], opcode[4] - opcode[3]));
-                else if (opcode[0] !== "insert")
+                if (opcode[0] === WebInspector.Diff.Operation.Equal)
+                    ranges.push(new WebInspector.SourceRange(offset, opcode[1].length));
+                else if (opcode[0] !== WebInspector.Diff.Operation.Insert)
                     return null;
+                offset += opcode[1].length;
             }
             return ranges;
         }

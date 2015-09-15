@@ -39,6 +39,7 @@ devtools_modules_js_files =
   gypi_values.devtools_components_lazy_js_files +
   gypi_values.devtools_console_js_files +
   gypi_values.devtools_devices_js_files +
+  gypi_values.devtools_diff_js_files +
   gypi_values.devtools_elements_js_files +
   gypi_values.devtools_emulated_devices_js_files +
   devtools_extensions_js_files +
@@ -149,6 +150,7 @@ action("generate_devtools_grd") {
       resources_out_dir + "components_lazy_module.js",
       resources_out_dir + "console_module.js",
       resources_out_dir + "devices_module.js",
+      resources_out_dir + "diff_module.js",
       resources_out_dir + "elements_module.js",
       resources_out_dir + "heap_snapshot_worker_module.js",
       resources_out_dir + "layers_module.js",
@@ -263,6 +265,7 @@ action("build_applications") {
       resources_out_dir + "components_lazy_module.js",
       resources_out_dir + "console_module.js",
       resources_out_dir + "devices_module.js",
+      resources_out_dir + "diff_module.js",
       resources_out_dir + "elements_module.js",
       resources_out_dir + "emulated_devices_module.js",
       resources_out_dir + "heap_snapshot_worker_module.js",

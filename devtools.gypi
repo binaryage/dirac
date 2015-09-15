@@ -400,6 +400,10 @@
             'front_end/devices/DevicesDialog.js',
             'front_end/devices/DevicesView.js',
         ],
+        'devtools_diff_js_files': [
+            'front_end/diff/Diff.js',
+            'front_end/diff/diff_match_patch.js',
+        ],
         'devtools_elements_js_files': [
             'front_end/elements/bezierEditor.css',
             'front_end/elements/breadcrumbs.css',
@@ -606,7 +610,6 @@
             'front_end/sources/JavaScriptBreakpointsSidebarPane.js',
             'front_end/sources/JavaScriptCompiler.js',
             'front_end/sources/JavaScriptSourceFrame.js',
-            'front_end/sources/jsdifflib.js',
             'front_end/sources/NavigatorView.js',
             'front_end/sources/ObjectEventListenersSidebarPane.js',
             'front_end/sources/RevisionHistoryView.js',
@@ -708,6 +711,7 @@
             '<@(devtools_components_lazy_js_files)',
             '<@(devtools_console_js_files)',
             '<@(devtools_devices_js_files)',
+            '<@(devtools_diff_js_files)',
             '<@(devtools_elements_js_files)',
             '<@(devtools_emulated_devices_js_files)',
             '<@(devtools_extensions_js_files)',

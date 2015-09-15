@@ -302,12 +302,12 @@
     ],
     "dependencies": [
         "components",
+        "diff",
         "source_frame",
         "snippets",
         "extensions"
     ],
     "scripts": [
-        "jsdifflib.js",
         "UIList.js",
         "AddSourceMapURLDialog.js",
         "AsyncOperationsSidebarPane.js",
@@ -342,9 +342,6 @@
         "XHRBreakpointsSidebarPane.js",
         "JavaScriptCompiler.js",
         "ObjectEventListenersSidebarPane.js"
-    ],
-    "skip_compilation": [
-        "jsdifflib.js"
     ],
     "resources": [
         "filteredItemSelectionDialog.css",
