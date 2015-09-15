@@ -56,6 +56,7 @@ WebInspector.TabbedEditorContainer = function(delegate, setting, placeholderText
     this._tabbedPane.setTabDelegate(new WebInspector.EditorContainerTabDelegate(this));
 
     this._tabbedPane.setCloseableTabs(true);
+    this._tabbedPane.setAllowTabReorder(true, true);
     this._tabbedPane.insertBeforeTabStrip(createElementWithClass("div", "sources-editor-tabstrip-left"));
     this._tabbedPane.appendAfterTabStrip(createElementWithClass("div", "sources-editor-tabstrip-right"));
 

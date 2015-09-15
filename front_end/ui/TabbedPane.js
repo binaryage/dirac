@@ -133,16 +133,6 @@ WebInspector.TabbedPane.prototype = {
     },
 
     /**
-     * @param {boolean} retainTabOrder
-     * @param {function(string, string):number=} tabOrderComparator
-     */
-    setRetainTabOrder: function(retainTabOrder, tabOrderComparator)
-    {
-        this._retainTabOrder = retainTabOrder;
-        this._tabOrderComparator = tabOrderComparator;
-    },
-
-    /**
      * @override
      * @return {!Element}
      */
@@ -202,28 +192,10 @@ WebInspector.TabbedPane.prototype = {
         var tab = new WebInspector.TabbedPaneTab(this, id, tabTitle, isCloseable, view, tabTooltip);
         tab.setDelegate(this._delegate);
         this._tabsById[id] = tab;
-
-        /**
-         * @param {!WebInspector.TabbedPaneTab} tab1
-         * @param {!WebInspector.TabbedPaneTab} tab2
-         * @this {WebInspector.TabbedPane}
-         * @return {number}
-         */
-        function comparator(tab1, tab2)
-        {
-            return this._tabOrderComparator(tab1.id, tab2.id);
-        }
-
-        if (this._tabOrderComparator)
-            this._tabs.splice(insertionIndexForObjectInListSortedByFunction(tab, this._tabs, comparator.bind(this)), 0, tab);
-        else
-            this._tabs.push(tab);
-
+        this._tabs.push(tab);
         this._tabsHistory.push(tab);
-
         if (this._tabsHistory[0] === tab && this.isShowing())
             this.selectTab(tab.id, userGesture);
-
         this._updateTabElements();
     },
 
@@ -596,13 +568,6 @@ WebInspector.TabbedPane.prototype = {
                 continue;
         }
 
-        function compareFunction(tab1, tab2)
-        {
-            return tab1.title.localeCompare(tab2.title);
-        }
-        if (!this._retainTabOrder)
-            tabsToShow.sort(compareFunction);
-
         var selectedId = null;
         for (var i = 0; i < tabsToShow.length; ++i) {
             var tab = tabsToShow[i];
@@ -718,7 +683,7 @@ WebInspector.TabbedPane.prototype = {
         if (this._currentTab !== undefined)
             tabsToLookAt.unshift(tabsToLookAt.splice(tabsToLookAt.indexOf(this._currentTab), 1)[0]);
         for (var i = 0; i < tabCount; ++i) {
-            var tab = this._retainTabOrder ? tabsToLookAt[i] : tabsHistory[i];
+            var tab = this._automaticReorder ? tabsHistory[i] : tabsToLookAt[i];
             totalTabsWidth += tab.width();
             var minimalRequiredWidth = totalTabsWidth;
             if (i !== tabCount - 1)
@@ -819,6 +784,16 @@ WebInspector.TabbedPane.prototype = {
     renderWithNoHeaderBackground: function()
     {
         this._headerElement.classList.add("tabbed-pane-no-header-background");
+    },
+
+    /**
+     * @param {boolean} allow
+     * @param {boolean=} automatic
+     */
+    setAllowTabReorder: function(allow, automatic)
+    {
+        this._allowTabReorder = allow;
+        this._automaticReorder = automatic;
     },
 
     __proto__: WebInspector.VBox.prototype
@@ -1026,7 +1001,7 @@ WebInspector.TabbedPaneTab.prototype = {
             tabElement.addEventListener("mouseup", this._tabMouseUp.bind(this), false);
 
             tabElement.addEventListener("contextmenu", this._tabContextMenu.bind(this), false);
-            if (this._closeable)
+            if (this._tabbedPane._allowTabReorder)
                 WebInspector.installDragHandle(tabElement, this._startTabDragging.bind(this), this._tabDragging.bind(this), this._endTabDragging.bind(this), "pointer");
         }
 
@@ -1228,7 +1203,6 @@ WebInspector.ExtensibleTabbedPaneController = function(tabbedPane, extensionPoin
     /** @type {!Object.<string, !Promise.<?WebInspector.Widget>>} */
     this._promiseForId = {};
 
-    this._tabbedPane.setRetainTabOrder(true, this._tabOrderComparator.bind(this));
     this._tabbedPane.addEventListener(WebInspector.TabbedPane.EventTypes.TabSelected, this._tabSelected, this);
     /** @type {!Map.<string, ?WebInspector.Widget>} */
     this._views = new Map();
@@ -1251,19 +1225,6 @@ WebInspector.ExtensibleTabbedPaneController.prototype = {
             this._extensions.set(id, extensions[i]);
             this._tabbedPane.appendTab(id, title, new WebInspector.Widget());
         }
-    },
-
-    /**
-     * @param {string} id
-     * @param {string} title
-     * @param {number} order
-     * @param {!WebInspector.Widget} view
-     */
-    appendView: function(id, title, order, view)
-    {
-        this._tabOrders[id] = order;
-        this._views.set(id, view);
-        this._tabbedPane.appendTab(id, title, new WebInspector.Widget());
     },
 
     /**
@@ -1327,17 +1288,5 @@ WebInspector.ExtensibleTabbedPaneController.prototype = {
                 this._viewCallback(id, view);
             return view;
         }
-    },
-
-    /**
-     * @param {string} id1
-     * @param {string} id2
-     * @return {number}
-     */
-    _tabOrderComparator: function(id1, id2)
-    {
-        var weight1 = id1 in this._tabOrders ? this._tabOrders[id1] : 1000000;
-        var weight2 = id2 in this._tabOrders ? this._tabOrders[id2] : 1000000;
-        return weight1 - weight2;
     }
 }

@@ -50,13 +50,12 @@ WebInspector.SettingsScreen = function(onHide)
     this._tabbedPane.insertBeforeTabStrip(settingsLabelElement);
     this._tabbedPane.setShrinkableTabs(false);
     this._tabbedPane.setVerticalTabLayout(true);
-
-    this._tabbedPaneController = new WebInspector.ExtensibleTabbedPaneController(this._tabbedPane, "settings-view");
-    this._tabbedPaneController.appendView("general", WebInspector.UIString("General"), 0, new WebInspector.GenericSettingsTab());
-    this._tabbedPaneController.appendView("workspace", WebInspector.UIString("Workspace"), 10, new WebInspector.WorkspaceSettingsTab());
+    this._tabbedPane.appendTab("general", WebInspector.UIString("General"), new WebInspector.GenericSettingsTab());
+    this._tabbedPane.appendTab("workspace", WebInspector.UIString("Workspace"), new WebInspector.WorkspaceSettingsTab());
     if (Runtime.experiments.supportEnabled())
-        this._tabbedPaneController.appendView("experiments", WebInspector.UIString("Experiments"), 100, new WebInspector.ExperimentsSettingsTab());
-    this._tabbedPaneController.appendView("shortcuts", WebInspector.UIString("Shortcuts"), 101, WebInspector.shortcutsScreen.createShortcutsTabView());
+        this._tabbedPane.appendTab("experiments", WebInspector.UIString("Experiments"), new WebInspector.ExperimentsSettingsTab());
+    this._tabbedPaneController = new WebInspector.ExtensibleTabbedPaneController(this._tabbedPane, "settings-view");
+    this._tabbedPane.appendTab("shortcuts", WebInspector.UIString("Shortcuts"), WebInspector.shortcutsScreen.createShortcutsTabView());
 
     this.element.addEventListener("keydown", this._keyDown.bind(this), false);
     this._developerModeCounter = 0;
