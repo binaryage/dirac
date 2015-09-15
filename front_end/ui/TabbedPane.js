@@ -515,8 +515,7 @@ WebInspector.TabbedPane.prototype = {
     _createDropDownButton: function()
     {
         var dropDownContainer = createElementWithClass("div", "tabbed-pane-header-tabs-drop-down-container");
-        dropDownContainer.createTextChild("\u00bb");
-
+        dropDownContainer.createChild("div", "glyph");
         this._dropDownMenu = new WebInspector.DropDownMenu(dropDownContainer);
         this._dropDownMenu.addEventListener(WebInspector.DropDownMenu.Events.ItemSelected, this._dropDownMenuItemSelected, this);
 
@@ -727,7 +726,7 @@ WebInspector.TabbedPane.prototype = {
         for (var i = 0; i < this._tabs.length && this._currentTab !== this._tabs[i] && this._tabs[i]._shown; i++)
             left += this._tabs[i]._measuredWidth;
         var sliderWidth = this._currentTab._shown ? this._currentTab._measuredWidth : this._dropDownButton.offsetWidth;
-        this._tabSlider.style.transform = "translateX(" + left + "px)";
+        this._tabSlider.style.transform = "translateX(" + left + "px) scaleY(0.75)";
         this._tabSlider.style.width = sliderWidth + "px";
     },
 
@@ -1154,6 +1153,7 @@ WebInspector.TabbedPaneTab.prototype = {
 
         this._tabElement.style.setProperty("position", "relative");
         this._tabElement.style.setProperty("left", (event.pageX - this._dragStartX) + "px");
+        this._tabbedPane._updateTabSlider();
     },
 
     /**
@@ -1164,6 +1164,7 @@ WebInspector.TabbedPaneTab.prototype = {
         this._tabElement.style.removeProperty("position");
         this._tabElement.style.removeProperty("left");
         delete this._dragStartX;
+        this._tabbedPane._updateTabSlider();
     }
 }
 

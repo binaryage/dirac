@@ -21,6 +21,10 @@
     padding: 0 6px;
 }
 
+.tabbed-pane-header-tab:hover {
+    background: rgba(105, 105, 105, 0.1);
+}
+
 .tabbed-pane-header-tab {
     color: #5a5a5a;
 }
@@ -28,5 +32,4 @@
 .tabbed-pane-header-tab.selected {
     color: #333;
     border-width: 0 2px 0 2px;
-    -webkit-border-image: url(Images/toolbarItemSelected.png) 0 2 0 2;
 }

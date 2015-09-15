@@ -48,6 +48,7 @@ WebInspector.InspectorView = function()
     this._tabbedPane = new WebInspector.TabbedPane();
     this._tabbedPane.registerRequiredCSS("components/inspectorViewTabbedPane.css");
     this._tabbedPane.element.classList.add("inspector-view-tabbed-pane");
+    this._tabbedPane.setTabSlider(true);
     this._drawerSplitWidget.setMainWidget(this._tabbedPane);
     this._drawer = new WebInspector.Drawer(this._drawerSplitWidget);
 
