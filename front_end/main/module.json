@@ -145,7 +145,8 @@
             "type": "@WebInspector.ActionDelegate",
             "actionId": "main.inspect-devices",
             "title": "Inspect devices\u2026",
-            "className": "WebInspector.Main.InspectDevicesActionDelegate"
+            "className": "WebInspector.Main.InspectDevicesActionDelegate",
+            "experiment": "!inspectDevicesDialog"
         },
         {
             "type": "drawer-view",
@@ -283,7 +284,8 @@
             "type": "context-menu-item",
             "location": "mainMenu/navigate",
             "order": 100,
-            "actionId": "main.inspect-devices"
+            "actionId": "main.inspect-devices",
+            "experiment": "!inspectDevicesDialog"
         },
         {
             "type": "setting",

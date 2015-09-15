@@ -19,6 +19,7 @@
     { "name": "profiler" },
     { "name": "resources" },
     { "name": "audits" },
+    { "name": "devices" },
     { "name": "security" },
     { "name": "console" },
     { "name": "source_frame" },

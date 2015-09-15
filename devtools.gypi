@@ -308,6 +308,7 @@
             'front_end/components/module.json',
             'front_end/components_lazy/module.json',
             'front_end/console/module.json',
+            'front_end/devices/module.json',
             'front_end/elements/module.json',
             'front_end/emulated_devices/module.json',
             'front_end/emulation/module.json',
@@ -393,6 +394,11 @@
             'front_end/console/ConsolePanel.js',
             'front_end/console/ConsoleView.js',
             'front_end/console/ConsoleViewMessage.js',
+        ],
+        'devtools_devices_js_files': [
+            'front_end/devices/devicesView.css',
+            'front_end/devices/DevicesDialog.js',
+            'front_end/devices/DevicesView.js',
         ],
         'devtools_elements_js_files': [
             'front_end/elements/bezierEditor.css',
@@ -701,6 +707,7 @@
             '<@(devtools_cm_modes_js_files)',
             '<@(devtools_components_lazy_js_files)',
             '<@(devtools_console_js_files)',
+            '<@(devtools_devices_js_files)',
             '<@(devtools_elements_js_files)',
             '<@(devtools_emulated_devices_js_files)',
             '<@(devtools_extensions_js_files)',

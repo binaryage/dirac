@@ -300,7 +300,9 @@ function ExtensionReloadOptions() {
 }
 
 var Adb = {};
-/** @typedef {{id: string, adbBrowserChromeVersion: string, compatibleVersion: boolean, adbBrowserName: string, source: string, adbBrowserVersion: string}} */
+/** @typedef {{id: string, name: string, url: string, adbAttachedForeign: boolean}} */
+Adb.Page;
+/** @typedef {{id: string, adbBrowserChromeVersion: string, compatibleVersion: boolean, adbBrowserName: string, source: string, adbBrowserVersion: string, pages: !Array<!Adb.Page>}} */
 Adb.Browser;
 /** @typedef {{id: string, adbModel: string, adbSerial: string, browsers: !Array.<!Adb.Browser>, adbPortStatus: !Array.<number>, adbConnected: boolean}} */
 Adb.Device;
