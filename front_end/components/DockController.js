@@ -115,7 +115,8 @@ WebInspector.DockController.prototype = {
         if (this._dockSide === dockSide)
             return;
 
-        this._lastDockStateSetting.set(this._dockSide);
+        if (this._dockSide)
+            this._lastDockStateSetting.set(this._dockSide);
         this._currentDockStateSetting.set(dockSide);
         var eventData = { from: this._dockSide, to: dockSide };
         this.dispatchEventToListeners(WebInspector.DockController.Events.BeforeDockSideChanged, eventData);
