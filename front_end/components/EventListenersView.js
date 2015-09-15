@@ -148,6 +148,7 @@ WebInspector.EventListenersView.prototype = {
     {
         var eventTypes = this._treeOutline.rootElement().children();
         for (var eventType of eventTypes) {
+            var hiddenEventType = true;
             for (var listenerElement of eventType.children()) {
                 var listenerType = listenerElement.eventListener().listenerType();
                 var hidden = false;
@@ -156,7 +157,9 @@ WebInspector.EventListenersView.prototype = {
                 if (listenerType === "frameworkInternal" && showFramework)
                     hidden = true;
                 listenerElement.hidden = hidden;
+                hiddenEventType = hiddenEventType && hidden;
             }
+            eventType.hidden = hiddenEventType;
         }
     },
 

@@ -45,6 +45,8 @@ WebInspector.EventListener.frameworkEventListeners = function(object)
                 promises.push(convertToEventListeners(property.value).then(storeEventListeners));
             if (property.name === "internalHandlers" && property.value)
                 promises.push(convertToInternalHandlers(property.value).then(storeInternalHandlers));
+            if (property.name === "errorString" && property.value)
+                printErrorString(property.value);
         }
         return /** @type {!Promise<undefined>} */(Promise.all(promises));
     }
@@ -73,7 +75,7 @@ WebInspector.EventListener.frameworkEventListeners = function(object)
             var location = null;
 
             var promises = [];
-            promises.push(listenerObject.callFunctionJSONPromise(truncatePageEventListener, undefined).then(storeTrunkatedListener));
+            promises.push(listenerObject.callFunctionJSONPromise(truncatePageEventListener, undefined).then(storeTruncatedListener));
 
             /**
              * @suppressReceiverCheck
@@ -88,7 +90,7 @@ WebInspector.EventListener.frameworkEventListeners = function(object)
             /**
              * @param {!{type:string, useCapture: boolean}} truncatedListener
              */
-            function storeTrunkatedListener(truncatedListener)
+            function storeTruncatedListener(truncatedListener)
             {
                 type = truncatedListener.type;
                 useCapture = truncatedListener.useCapture;
@@ -174,6 +176,14 @@ WebInspector.EventListener.frameworkEventListeners = function(object)
     }
 
     /**
+     * @param {!WebInspector.RemoteObject} errorString
+     */
+    function printErrorString(errorString)
+    {
+        WebInspector.console.error(errorString.value);
+    }
+
+    /**
      * @return {!WebInspector.FrameworkEventListenersObject}
      */
     function returnResult()
@@ -239,27 +249,37 @@ WebInspector.EventListener.frameworkEventListeners = function(object)
      */
     function frameworkEventListeners()
     {
+        var errorLines = [];
         var eventListeners = [];
         var internalHandlers = [];
         var fetchers = [jQueryFetcher];
         try {
-            if (self.devtoolsPageEventListeners && isArrayLike(self.devtoolsPageEventListeners))
-                fetchers = fetchers.concat(self.devtoolsPageEventListeners);
+            if (self.devtoolsFrameworkEventListeners && isArrayLike(self.devtoolsFrameworkEventListeners))
+                fetchers = fetchers.concat(self.devtoolsFrameworkEventListeners);
         } catch (e) {
+            errorLines.push("devtoolsFrameworkEventListeners call produced error: " + toString(e));
         }
 
         for (var i = 0; i < fetchers.length; ++i) {
             try {
                 var fetcherResult = fetchers[i](this);
-                eventListeners = eventListeners.concat(fetcherResult.eventListeners);
-                if (fetcherResult.internalHandlers)
-                    internalHandlers = internalHandlers.concat(fetcherResult.internalHandlers);
+                if (fetcherResult.eventListeners && isArrayLike(fetcherResult.eventListeners)) {
+                    eventListeners = eventListeners.concat(fetcherResult.eventListeners.map(checkEventListener).filter(nonEmptyObject));
+                }
+                if (fetcherResult.internalHandlers && isArrayLike(fetcherResult.internalHandlers))
+                    internalHandlers = internalHandlers.concat(fetcherResult.internalHandlers.map(checkInternalHandler).filter(nonEmptyObject));
             } catch (e) {
+                errorLines.push("fetcher call produced error: " + toString(e));
             }
         }
         var result = {eventListeners: eventListeners};
         if (internalHandlers.length)
             result.internalHandlers = internalHandlers;
+        if (errorLines.length) {
+            var errorString = "Framework Event Listeners API Errors:\n\t" + errorLines.join("\n\t");
+            errorString = errorString.substr(0, errorString.length - 1);
+            result.errorString = errorString;
+        }
         return result;
 
         /**
@@ -278,6 +298,72 @@ WebInspector.EventListener.frameworkEventListeners = function(object)
             } catch (e) {
             }
             return false;
+        }
+
+        /**
+         * @param {*} eventListener
+         * @return {?WebInspector.EventListenerObjectInInspectedPage}
+         */
+        function checkEventListener(eventListener)
+        {
+            try {
+                var errorString = "";
+                if (!eventListener)
+                    errorString += "empty event listener, ";
+                var type = eventListener.type;
+                if (!type || (typeof type !== "string"))
+                    errorString += "event listener's type isn't string or empty, ";
+                var useCapture = eventListener.useCapture;
+                if (typeof useCapture !== "boolean")
+                    errorString += "event listener's useCapture isn't boolean or undefined, ";
+                var handler = eventListener.handler;
+                if (!handler || (typeof handler !== "function"))
+                    errorString += "event listener's handler isn't a function or empty, ";
+                if (!errorString){
+                    return {type: type, useCapture: useCapture, handler: handler};
+                } else {
+                    errorLines.push(errorString.substr(0, errorString.length - 2));
+                    return null;
+                }
+            } catch (e) {
+                errorLines.push(toString(e));
+                return null;
+            }
+        }
+
+        /**
+         * @param {*} handler
+         * @return {function()|null}
+         */
+        function checkInternalHandler(handler)
+        {
+            if (handler && (typeof handler === "function"))
+                return handler;
+            errorLines.push("internal handler isn't a function or empty");
+            return null;
+        }
+
+        /**
+         * @param {*} obj
+         * @return {string}
+         * @suppress {uselessCode}
+         */
+        function toString(obj)
+        {
+            try {
+                return "" + obj;
+            } catch (e) {
+                return "<error>";
+            }
+        }
+
+        /**
+         * @param {*} obj
+         * @return {boolean}
+         */
+        function nonEmptyObject(obj)
+        {
+            return !!obj;
         }
 
         function jQueryFetcher(node)

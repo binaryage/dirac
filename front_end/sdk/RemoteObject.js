@@ -1357,7 +1357,7 @@ WebInspector.RemoteArray = function(object)
  */
 WebInspector.RemoteArray.objectAsArray = function(object)
 {
-    if (!object || object.subtype !== "array")
+    if (!object || object.type !== "object" || object.subtype !== "array")
         throw new Error("Object is empty or not an array");
     return new WebInspector.RemoteArray(object);
 }
