@@ -93,7 +93,7 @@ WebInspector.SASSSourceMapping.prototype = {
     _fileSaveFinished: function(event)
     {
         var sassURL = /** @type {string} */ (event.data);
-        var cssURLs = this._cssURLsForSASSURL[sassURL];
+        var cssURLs = this._sassURLToCSSURLs.get(sassURL).valuesArray();
         this._sassFileSaved(sassURL, cssURLs, false);
     },
 
@@ -383,8 +383,7 @@ WebInspector.SASSSourceMapping.prototype = {
         var headers = [];
         for (var i = 0; i < ids.length; ++i)
             headers.push(this._cssModel.styleSheetHeaderForId(ids[i]));
-        for (var i = 0; i < ids.length; ++i)
-            this._loadSourceMapAndBindUISourceCode(headers, true, completeSourceMapURL);
+        this._loadSourceMapAndBindUISourceCode(headers, true, completeSourceMapURL);
         return true;
     },
 
@@ -410,14 +409,13 @@ WebInspector.SASSSourceMapping.prototype = {
         var sourceURL = header.sourceURL;
         if (!sourceURL || !header.sourceMapURL || !this._completeSourceMapURLForCSSURL[sourceURL])
             return;
+        var sourceMap = this._sourceMapByStyleSheetURL[sourceURL];
+        var sources = sourceMap.sources();
+        for (var i = 0; i < sources.length; ++i)
+            this._sassURLToCSSURLs.remove(sources[i], sourceURL);
         delete this._sourceMapByStyleSheetURL[sourceURL];
         delete this._completeSourceMapURLForCSSURL[sourceURL];
-        for (var sassURL in this._cssURLsForSASSURL) {
-            var urls = this._cssURLsForSASSURL[sassURL];
-            urls.remove(sourceURL);
-            if (!urls.length)
-                delete this._cssURLsForSASSURL[sassURL];
-        }
+
         var completeSourceMapURL = WebInspector.ParsedURL.completeURL(sourceURL, header.sourceMapURL);
         if (completeSourceMapURL)
             delete this._sourceMapByURL[completeSourceMapURL];
@@ -452,23 +450,6 @@ WebInspector.SASSSourceMapping.prototype = {
                     this._bindUISourceCode(headersWithSameSourceURL[i], sourceMap);
             }
         }
-    },
-
-    /**
-     * @param {string} cssURL
-     * @param {string} sassURL
-     */
-    _addCSSURLforSASSURL: function(cssURL, sassURL)
-    {
-        var cssURLs;
-        if (this._cssURLsForSASSURL.hasOwnProperty(sassURL))
-            cssURLs = this._cssURLsForSASSURL[sassURL];
-        else {
-            cssURLs = [];
-            this._cssURLsForSASSURL[sassURL] = cssURLs;
-        }
-        if (cssURLs.indexOf(cssURL) === -1)
-            cssURLs.push(cssURL);
     },
 
     /**
@@ -522,14 +503,14 @@ WebInspector.SASSSourceMapping.prototype = {
     _bindUISourceCode: function(header, sourceMap)
     {
         WebInspector.cssWorkspaceBinding.pushSourceMapping(header, this);
-        var rawURL = header.sourceURL;
+        var cssURL = header.sourceURL;
         var sources = sourceMap.sources();
         for (var i = 0; i < sources.length; ++i) {
-            var url = sources[i];
-            this._addCSSURLforSASSURL(rawURL, url);
-            if (!this._networkMapping.hasMappingForURL(url) && !this._networkMapping.uiSourceCodeForURL(url, header.target())) {
-                var contentProvider = sourceMap.sourceContentProvider(url, WebInspector.resourceTypes.Stylesheet);
-                this._networkProject.addFileForURL(url, contentProvider);
+            var sassURL = sources[i];
+            this._sassURLToCSSURLs.set(sassURL, cssURL);
+            if (!this._networkMapping.hasMappingForURL(sassURL) && !this._networkMapping.uiSourceCodeForURL(sassURL, header.target())) {
+                var contentProvider = sourceMap.sourceContentProvider(sassURL, WebInspector.resourceTypes.Stylesheet);
+                this._networkProject.addFileForURL(sassURL, contentProvider);
             }
         }
     },
@@ -600,7 +581,7 @@ WebInspector.SASSSourceMapping.prototype = {
     {
         var uiSourceCode = /** @type {!WebInspector.UISourceCode} */ (event.data);
         var networkURL = this._networkMapping.networkURL(uiSourceCode);
-        var cssURLs = this._cssURLsForSASSURL[networkURL];
+        var cssURLs = this._sassURLToCSSURLs.get(networkURL).valuesArray();
         if (!cssURLs)
             return;
         for (var i = 0; i < cssURLs.length; ++i) {
@@ -621,7 +602,7 @@ WebInspector.SASSSourceMapping.prototype = {
         var uiSourceCode = /** @type {!WebInspector.UISourceCode} */ (event.data.uiSourceCode);
         if (uiSourceCode.project().type() === WebInspector.projectTypes.FileSystem) {
             var networkURL = this._networkMapping.networkURL(uiSourceCode);
-            var cssURLs = this._cssURLsForSASSURL[networkURL];
+            var cssURLs = this._sassURLToCSSURLs.get(networkURL).valuesArray();
             this._sassFileSaved(networkURL, cssURLs, true);
         }
     },
@@ -630,7 +611,8 @@ WebInspector.SASSSourceMapping.prototype = {
     {
         this._addingRevisionCounter = 0;
         this._completeSourceMapURLForCSSURL = {};
-        this._cssURLsForSASSURL = {};
+        /** @type {!Multimap<string, string>} */
+        this._sassURLToCSSURLs = new Multimap();
         /** @type {!Object.<string, !Array.<function(?WebInspector.SourceMap)>>} */
         this._pendingSourceMapLoadingCallbacks = {};
         /** @type {!Object.<string, !{deadlineMs: number, dataByURL: !Object.<string, !{timer: number, previousPoll: number}>}>} */
