@@ -1,4 +1,7 @@
 {
+    "dependencies": [
+        "common"
+    ],
     "scripts": [
         "Diff.js",
         "diff_match_patch.js"
