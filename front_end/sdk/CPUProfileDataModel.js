@@ -22,6 +22,7 @@ WebInspector.CPUProfileDataModel = function(profile)
         this._fixLineAndColumnNumbers();
     }
     this._filterNativeFrames();
+    this._assignDepthsInProfile();
     this._calculateTimes(profile);
 }
 
@@ -134,6 +135,23 @@ WebInspector.CPUProfileDataModel.prototype = {
     {
         var head = this.profileHead;
         head.parent = null;
+        var nodesToTraverse = [ head ];
+        while (nodesToTraverse.length) {
+            var parent = nodesToTraverse.pop();
+            var children = parent.children;
+            var length = children.length;
+            for (var i = 0; i < length; ++i) {
+                var child = children[i];
+                child.parent = parent;
+                if (child.children.length)
+                    nodesToTraverse.push(child);
+            }
+        }
+    },
+
+    _assignDepthsInProfile: function()
+    {
+        var head = this.profileHead;
         head.depth = -1;
         this.maxDepth = 0;
         var nodesToTraverse = [ head ];
@@ -146,7 +164,6 @@ WebInspector.CPUProfileDataModel.prototype = {
             var length = children.length;
             for (var i = 0; i < length; ++i) {
                 var child = children[i];
-                child.parent = parent;
                 child.depth = depth;
                 if (child.children.length)
                     nodesToTraverse.push(child);
