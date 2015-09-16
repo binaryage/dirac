@@ -692,7 +692,7 @@ TreeElement.prototype = {
         if (!this.treeOutline || !this.treeOutline._renderSelection)
             return;
         if (!this._selectionElement)
-            this._selectionElement = createElementWithClass("div", "selection fill");
+            this._selectionElement = createElementWithClass("div", "selection");
         this._listItemNode.insertBefore(this._selectionElement, this.listItemElement.firstChild);
     },
 
@@ -912,6 +912,8 @@ TreeElement.prototype = {
             return false;
         this.treeOutline.selectedTreeElement = this;
         this._listItemNode.classList.add("selected");
+        if (this._selectionElement)
+            this._selectionElement.style.height = this._listItemNode.offsetHeight + "px";
         return this.onselect(selectedByUser);
     },
 

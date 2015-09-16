@@ -669,7 +669,7 @@ WebInspector.BaseNavigatorTreeElement.prototype = {
                 this.listItemElement.classList.add(this._iconClasses[i]);
         }
 
-        this.listItemElement.createChild("div", "selection fill");
+        this.listItemElement.createChild("div", "selection");
 
         if (!this._noIcon)
             this.imageElement = this.listItemElement.createChild("img", "icon");

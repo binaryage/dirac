@@ -262,9 +262,11 @@ WebInspector.ElementsTreeElement.prototype = {
 
         if (!this.selectionElement) {
             this.selectionElement = createElement("div");
-            this.selectionElement.className = "selection fill";
+            this.selectionElement.className = "selection selected";
             listItemElement.insertBefore(this.selectionElement, listItemElement.firstChild);
         }
+
+        this.selectionElement.style.height = listItemElement.offsetHeight + "px";
     },
 
     /**
