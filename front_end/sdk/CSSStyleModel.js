@@ -1319,7 +1319,7 @@ WebInspector.CSSProperty.prototype = {
         var tokenize = tokenizerFactory.createTokenizer("text/css");
 
         tokenize("*{" + styleText + "}", processToken);
-        result = result.slice(0, result.length - 1);
+
         return result + (indentation ? "\n" + endIndentation : "");
 
         /**
@@ -1330,6 +1330,10 @@ WebInspector.CSSProperty.prototype = {
          */
         function processToken(token, tokenType, column, newColumn)
         {
+            if (token === "}" || token === ";")
+                result = result.trimRight();  // collect trailing space before } and ;
+            if (token === "}")
+                return;
             if (newColumn <= 2)
                 return;
             var isSemicolon = token === ";";
