@@ -61,7 +61,8 @@ WebInspector.TabbedPane = function()
 
 WebInspector.TabbedPane.EventTypes = {
     TabSelected: "TabSelected",
-    TabClosed: "TabClosed"
+    TabClosed: "TabClosed",
+    TabOrderChanged: "TabOrderChanged"
 }
 
 WebInspector.TabbedPane.prototype = {
@@ -528,6 +529,7 @@ WebInspector.TabbedPane.prototype = {
     _dropDownMenuItemSelected: function(event)
     {
         var tabId = /** @type {string} */ (event.data);
+        this._lastSelectedOverflowTab = this._tabsById[tabId];
         this.selectTab(tabId, true);
     },
 
@@ -536,9 +538,27 @@ WebInspector.TabbedPane.prototype = {
         return this._headerContentsElement.getBoundingClientRect().width;
     },
 
+    /**
+     * @return {number}
+     */
+    _numberOfTabsShown: function()
+    {
+        var numTabsShown = 0;
+        for (var tab of this._tabs) {
+            if (tab._shown)
+                numTabsShown++;
+        }
+        return numTabsShown;
+    },
+
     _updateTabsDropDown: function()
     {
         var tabsToShowIndexes = this._tabsToShowIndexes(this._tabs, this._tabsHistory, this._totalWidth(), this._measuredDropDownButtonWidth);
+        if (this._lastSelectedOverflowTab && this._numberOfTabsShown() !== tabsToShowIndexes.length) {
+            delete this._lastSelectedOverflowTab;
+            this._updateTabsDropDown();
+            return;
+        }
 
         for (var i = 0; i < this._tabs.length; ++i) {
             if (this._tabs[i]._shown && tabsToShowIndexes.indexOf(i) === -1)
@@ -681,6 +701,8 @@ WebInspector.TabbedPane.prototype = {
         var tabsToLookAt = tabsOrdered.slice(0);
         if (this._currentTab !== undefined)
             tabsToLookAt.unshift(tabsToLookAt.splice(tabsToLookAt.indexOf(this._currentTab), 1)[0]);
+        if (this._lastSelectedOverflowTab !== undefined)
+            tabsToLookAt.unshift(tabsToLookAt.splice(tabsToLookAt.indexOf(this._lastSelectedOverflowTab), 1)[0]);
         for (var i = 0; i < tabCount; ++i) {
             var tab = this._automaticReorder ? tabsHistory[i] : tabsToLookAt[i];
             totalTabsWidth += tab.width();
@@ -760,6 +782,7 @@ WebInspector.TabbedPane.prototype = {
         if (oldIndex < index)
             --index;
         this._tabs.splice(index, 0, tab);
+        this.dispatchEventToListeners(WebInspector.TabbedPane.EventTypes.TabOrderChanged, this._tabs);
     },
 
     /**
@@ -1001,7 +1024,7 @@ WebInspector.TabbedPaneTab.prototype = {
 
             tabElement.addEventListener("contextmenu", this._tabContextMenu.bind(this), false);
             if (this._tabbedPane._allowTabReorder)
-                WebInspector.installDragHandle(tabElement, this._startTabDragging.bind(this), this._tabDragging.bind(this), this._endTabDragging.bind(this), "pointer");
+                WebInspector.installDragHandle(tabElement, this._startTabDragging.bind(this), this._tabDragging.bind(this), this._endTabDragging.bind(this), "-webkit-grabbing", "pointer");
         }
 
         return tabElement;
@@ -1151,7 +1174,7 @@ WebInspector.TabbedPaneTab.prototype = {
             return;
         }
 
-        this._tabElement.style.setProperty("position", "relative");
+        this._tabElement.classList.add("dragging");
         this._tabElement.style.setProperty("left", (event.pageX - this._dragStartX) + "px");
         this._tabbedPane._updateTabSlider();
     },
@@ -1161,7 +1184,7 @@ WebInspector.TabbedPaneTab.prototype = {
      */
     _endTabDragging: function(event)
     {
-        this._tabElement.style.removeProperty("position");
+        this._tabElement.classList.remove("dragging");
         this._tabElement.style.removeProperty("left");
         delete this._dragStartX;
         this._tabbedPane._updateTabSlider();

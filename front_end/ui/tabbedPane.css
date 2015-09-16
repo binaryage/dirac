@@ -115,6 +115,10 @@
     border-top-color: #ccc;
 }
 
+.tabbed-pane-header-tab.dragging {
+    position: relative;
+}
+
 .tabbed-pane-header-tab .tabbed-pane-close-button {
     display: inline-block;
     position: relative;
@@ -157,7 +161,7 @@
 } /* media */
 
 .tabbed-pane-header-tabs-drop-down-container:hover {
-    background-color: rgba(105, 105, 105, 0.1);
+    background-color: rgb(229, 229, 229);
 }
 
 .tabbed-pane-header-tabs-drop-down-container.measuring {

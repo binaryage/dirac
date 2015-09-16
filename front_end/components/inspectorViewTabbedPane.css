@@ -21,8 +21,13 @@
     padding: 0 6px;
 }
 
+.tabbed-pane-header-tab.dragging {
+    box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.37);
+    background: rgb(229, 229, 229);
+}
+
 .tabbed-pane-header-tab:hover {
-    background: rgba(105, 105, 105, 0.1);
+    background: rgb(229, 229, 229);
 }
 
 .tabbed-pane-header-tab {
