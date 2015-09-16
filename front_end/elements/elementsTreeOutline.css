@@ -15,6 +15,7 @@
     margin-top: 1px;
     margin-left: -2px;
     word-wrap: break-word;
+    position: relative;
 }
 
 .elements-disclosure li.parent {
@@ -54,11 +55,8 @@
 
 .elements-disclosure li .selection {
     display: none;
-    position: absolute;
-    left: 0;
-    right: 0;
-    height: 15px;
     z-index: -1;
+    margin-left: -10000px;
 }
 
 .elements-disclosure li.hovered:not(.selected) .selection {
