@@ -456,8 +456,20 @@ WebInspector.NetworkDispatcher.prototype = {
         networkRequest.failed = true;
         networkRequest.setResourceType(WebInspector.resourceTypes[resourceType]);
         networkRequest.canceled = canceled;
-        if (blockedReason)
+        if (blockedReason) {
             networkRequest.setBlockedReason(blockedReason);
+            if (blockedReason === NetworkAgent.BlockedReason.Inspector) {
+                var consoleModel = this._manager._target.consoleModel;
+                consoleModel.addMessage(new WebInspector.ConsoleMessage(consoleModel.target(), WebInspector.ConsoleMessage.MessageSource.Network,
+                    WebInspector.ConsoleMessage.MessageLevel.Warning,
+                    WebInspector.UIString("Request was blocked by DevTools: \"%s\".", networkRequest.url),
+                    WebInspector.ConsoleMessage.MessageType.Log,
+                    "",
+                    0,
+                    0,
+                    networkRequest.requestId));
+            }
+        }
         networkRequest.localizedFailDescription = localizedDescription;
         this._finishNetworkRequest(networkRequest, time, -1);
     },
