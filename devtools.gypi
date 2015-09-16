@@ -309,6 +309,7 @@
             'front_end/components_lazy/module.json',
             'front_end/console/module.json',
             'front_end/devices/module.json',
+            'front_end/diff/module.json',
             'front_end/elements/module.json',
             'front_end/emulated_devices/module.json',
             'front_end/emulation/module.json',
