@@ -173,13 +173,18 @@ FormatterWorker.CSSParserStates = {
     Style: "Style",
     PropertyName: "PropertyName",
     PropertyValue: "PropertyValue",
-    AtRule: "AtRule",
+    AtRule: "AtRule"
 };
 
 FormatterWorker.parseCSS = function(params)
 {
+    FormatterWorker._innerParseCSS(params.content, postMessage);
+}
+
+FormatterWorker._innerParseCSS = function(text, chunkCallback)
+{
     var chunkSize = 100000; // characters per data chunk
-    var lines = params.content.split("\n");
+    var lines = text.split("\n");
     var rules = [];
     var processedChunkCharacters = 0;
 
@@ -187,6 +192,12 @@ FormatterWorker.parseCSS = function(params)
     var rule;
     var property;
     var UndefTokenType = {};
+
+    var disabledRules = [];
+    function disabledRulesCallback(chunk)
+    {
+        disabledRules = disabledRules.concat(chunk.chunk);
+    }
 
     /**
      * @param {string} tokenValue
@@ -238,31 +249,66 @@ FormatterWorker.parseCSS = function(params)
                 property = {
                     name: tokenValue,
                     value: "",
+                    range: createRange(lineNumber, column),
+                    nameRange: createRange(lineNumber, column)
                 };
                 state = FormatterWorker.CSSParserStates.PropertyName;
             } else if (tokenValue === "}" && tokenType === UndefTokenType) {
                 rules.push(rule);
                 state = FormatterWorker.CSSParserStates.Initial;
+            } else if (tokenType["comment"]) {
+                // The |processToken| is called per-line, so no token spans more then one line.
+                // Support only a one-line comments.
+                if (tokenValue.substring(0, 2) !== "/*" || tokenValue.substring(tokenValue.length - 2) !== "*/")
+                    break;
+                var uncommentedText = tokenValue.substring(2, tokenValue.length - 2);
+                var fakeRule = "a{\n" + uncommentedText + "}";
+                disabledRules = [];
+                FormatterWorker._innerParseCSS(fakeRule, disabledRulesCallback);
+                if (disabledRules.length === 1 && disabledRules[0].properties.length === 1) {
+                    var disabledProperty = disabledRules[0].properties[0];
+                    disabledProperty.disabled = true;
+                    disabledProperty.range = createRange(lineNumber, column);
+                    disabledProperty.range.endColumn = newColumn;
+                    var lineOffset = lineNumber - 1;
+                    var columnOffset = column + 2;
+                    disabledProperty.nameRange.startLine += lineOffset;
+                    disabledProperty.nameRange.startColumn += columnOffset;
+                    disabledProperty.nameRange.endLine += lineOffset;
+                    disabledProperty.nameRange.endColumn += columnOffset;
+                    disabledProperty.valueRange.startLine += lineOffset;
+                    disabledProperty.valueRange.startColumn += columnOffset;
+                    disabledProperty.valueRange.endLine += lineOffset;
+                    disabledProperty.valueRange.endColumn += columnOffset;
+                    rule.properties.push(disabledProperty);
+                }
             }
             break;
         case FormatterWorker.CSSParserStates.PropertyName:
             if (tokenValue === ":" && tokenType === UndefTokenType) {
                 property.name = property.name.trim();
+                property.nameRange.endLine = lineNumber;
+                property.nameRange.endColumn = column;
+                property.valueRange = createRange(lineNumber, newColumn);
                 state = FormatterWorker.CSSParserStates.PropertyValue;
             } else if (tokenType["property"]) {
                 property.name += tokenValue;
             }
             break;
         case FormatterWorker.CSSParserStates.PropertyValue:
-            if (tokenValue === ";" && tokenType === UndefTokenType) {
+            if ((tokenValue === ";" || tokenValue === "}") && tokenType === UndefTokenType) {
                 property.value = property.value.trim();
+                property.valueRange.endLine = lineNumber;
+                property.valueRange.endColumn = column;
+                property.range.endLine = lineNumber;
+                property.range.endColumn = tokenValue === ";" ? newColumn : column;
                 rule.properties.push(property);
-                state = FormatterWorker.CSSParserStates.Style;
-            } else if (tokenValue === "}" && tokenType === UndefTokenType) {
-                property.value = property.value.trim();
-                rule.properties.push(property);
-                rules.push(rule);
-                state = FormatterWorker.CSSParserStates.Initial;
+                if (tokenValue === "}") {
+                    rules.push(rule);
+                    state = FormatterWorker.CSSParserStates.Initial;
+                } else {
+                    state = FormatterWorker.CSSParserStates.Style;
+                }
             } else if (!tokenType["comment"]) {
                 property.value += tokenValue;
             }
@@ -272,7 +318,7 @@ FormatterWorker.parseCSS = function(params)
         }
         processedChunkCharacters += newColumn - column;
         if (processedChunkCharacters > chunkSize) {
-            postMessage({ chunk: rules, isLastChunk: false });
+            chunkCallback({ chunk: rules, isLastChunk: false });
             rules = [];
             processedChunkCharacters = 0;
         }
@@ -283,7 +329,20 @@ FormatterWorker.parseCSS = function(params)
         var line = lines[lineNumber];
         tokenizer(line, processToken);
     }
-    postMessage({ chunk: rules, isLastChunk: true });
+    chunkCallback({ chunk: rules, isLastChunk: true });
+
+    /**
+     * @return {!{startLine: number, startColumn: number, endLine: number, endColumn: number}}
+     */
+    function createRange(lineNumber, columnNumber)
+    {
+        return {
+            startLine: lineNumber,
+            startColumn: columnNumber,
+            endLine: lineNumber,
+            endColumn: columnNumber
+        };
+    }
 }
 
 /**
