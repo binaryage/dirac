@@ -16,14 +16,14 @@ WebInspector.FrontendWebSocketAPI = function()
 WebInspector.FrontendWebSocketAPI.prototype = {
     _onAttach: function()
     {
-        WebInspector.workspace.addEventListener(WebInspector.Workspace.Events.UISourceCodeContentCommitted, this._workingCopyChanged, this);
+        WebInspector.workspace.addEventListener(WebInspector.Workspace.Events.UISourceCodeContentCommitted, this._workingCopyCommitted, this);
         WebInspector.workspace.addEventListener(WebInspector.Workspace.Events.UISourceCodeWorkingCopyChanged, this._workingCopyChanged, this);
         WebInspector.Linkifier.setLinkHandler(this);
     },
 
     _onDetach: function()
     {
-        WebInspector.workspace.removeEventListener(WebInspector.Workspace.Events.UISourceCodeContentCommitted, this._workingCopyChanged, this);
+        WebInspector.workspace.removeEventListener(WebInspector.Workspace.Events.UISourceCodeContentCommitted, this._workingCopyCommitted, this);
         WebInspector.workspace.removeEventListener(WebInspector.Workspace.Events.UISourceCodeWorkingCopyChanged, this._workingCopyChanged, this);
         WebInspector.Linkifier.setLinkHandler(null);
     },
@@ -68,15 +68,13 @@ WebInspector.FrontendWebSocketAPI.prototype = {
         case "Frontend.updateBuffer":
             var file = params["file"];
             var buffer = params["buffer"];
-            var save = params["save"];
+            var saved = params["saved"];
             var uiSourceCode = WebInspector.workspace.filesystemUISourceCode("file://" + file);
             if (uiSourceCode) {
                 if (buffer !== uiSourceCode.workingCopy())
                     uiSourceCode.setWorkingCopy(buffer);
-                if (save && uiSourceCode.workingCopy())
-                    uiSourceCode.commitWorkingCopy();
-                else if (uiSourceCode.workingCopy() === uiSourceCode.content())
-                    uiSourceCode.resetWorkingCopy();
+                if (saved)
+                    uiSourceCode.checkContentUpdated();
             }
             this._issueResponse(id);
             break;
@@ -88,8 +86,9 @@ WebInspector.FrontendWebSocketAPI.prototype = {
 
     /**
      * @param {!WebInspector.Event} event
+     * @param {boolean=} saved
      */
-    _workingCopyChanged: function(event)
+    _workingCopyChanged: function(event, saved)
     {
         if (this._dispatchingFrontendMessage)
             return;
@@ -97,7 +96,18 @@ WebInspector.FrontendWebSocketAPI.prototype = {
         var url = uiSourceCode.originURL();
         if (url.startsWith("file://"))
             url = url.substring(7);
-        this._issueFrontendAPINotification("Frontend.bufferUpdated", { file: url, buffer: uiSourceCode.workingCopy() });
+        var params = { file: url, buffer: uiSourceCode.workingCopy() };
+        if (saved)
+            params.saved = true;
+        this._issueFrontendAPINotification("Frontend.bufferUpdated", params);
+    },
+
+    /**
+     * @param {!WebInspector.Event} event
+     */
+    _workingCopyCommitted: function(event)
+    {
+        this._workingCopyChanged(event, true);
     },
 
     /**

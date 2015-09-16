@@ -297,13 +297,14 @@ WebInspector.UISourceCode.prototype = {
                 this._terminateContentCheck();
                 return;
             }
-            if (this._content === updatedContent) {
+
+            if (this._content === updatedContent && !this.isDirty()) {
                 delete this._lastAcceptedContent;
                 this._terminateContentCheck();
                 return;
             }
 
-            if (!this.isDirty()) {
+            if (!this.isDirty() || this._workingCopy === updatedContent) {
                 this._commitContent(updatedContent, false);
                 this._terminateContentCheck();
                 return;
