@@ -267,6 +267,10 @@ WebInspector.NetworkPanel.prototype = {
         if (!this._preserveLogCheckbox.checked())
             this._reset();
         this._toggleRecordButton(true);
+        if (this._pendingStopTimer) {
+            clearTimeout(this._pendingStopTimer);
+            delete this._pendingStopTimer;
+        }
         if (this.isShowing() && this._filmStripRecorder)
             this._filmStripRecorder.startRecording();
     },
@@ -277,7 +281,7 @@ WebInspector.NetworkPanel.prototype = {
     _load: function(event)
     {
         if (this._filmStripRecorder && this._filmStripRecorder.isRecording())
-            setTimeout(this._toggleRecordButton.bind(this, false), 1000);
+            this._pendingStopTimer = setTimeout(this._toggleRecordButton.bind(this, false), 1000);
     },
 
     _toggleLargerRequests: function()
