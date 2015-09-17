@@ -93,7 +93,8 @@ WebInspector.ElementsTreeOutline.ClipboardData;
 WebInspector.ElementsTreeOutline.Events = {
     NodePicked: "NodePicked",
     SelectedNodeChanged: "SelectedNodeChanged",
-    ElementsTreeUpdated: "ElementsTreeUpdated"
+    ElementsTreeUpdated: "ElementsTreeUpdated",
+    DecorationsClicked: "DecorationsClicked"
 }
 
 /**

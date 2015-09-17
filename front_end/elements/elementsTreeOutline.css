@@ -218,6 +218,7 @@ button, input, select {
     border-radius: 5px;
     border: 1px solid orange;
     background-color: orange;
+    cursor: pointer;
 }
 
 .elements-gutter-decoration.elements-has-decorated-children {
@@ -319,4 +320,53 @@ ol:focus li.selected .webkit-html-resource-link {
 
 ol:focus li.selected .webkit-html-attribute-name {
     color: #ccc;
+}
+
+.elements-disclosure li.selected .selection > .node-actions-container {
+    visibility: visible;
+}
+
+.node-actions-container {
+    position: absolute;
+    z-index: 10000;
+    left: 0px;
+    height: 13px;
+    background-color: hsla(0,100%,100%,0.3);
+}
+
+.node-actions-toolbar {
+    position: absolute;
+    top: -30px;
+    left: 2px;
+    background: white;
+    border-radius: 3px;
+    border: 1px solid #B1B1B1;
+    visibility: hidden;
+    box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.37)
+
+}
+
+.node-actions-toggle {
+    -webkit-mask-position: -201px -26px;
+    width: 16.25px;
+    height: 20px;
+    transform: scale(0.8) rotate(90deg);
+    -webkit-mask-image: url(Images/toolbarButtonGlyphs.png);
+    -webkit-mask-size: 352px 168px;
+    background-color: #FFFFFF;
+    z-index: 1;
+    margin-top: -3px;
+    cursor: pointer;
+}
+
+.gutter-container.has-decorations .node-actions-toggle {
+    opacity: 0;
+}
+
+.node-actions-container.expanded > .node-actions-toolbar {
+    visibility: visible;
+}
+
+.node-actions-toolbar-below {
+    margin-top: 2px;
 }

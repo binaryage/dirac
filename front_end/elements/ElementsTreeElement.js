@@ -40,8 +40,9 @@ WebInspector.ElementsTreeElement = function(node, elementCloseTag)
     TreeElement.call(this);
     this._node = node;
 
-    this._decorationsElement = createElementWithClass("div", "hidden");
-    this.listItemElement.appendChild(this._decorationsElement);
+    this._gutterContainer = this.listItemElement.createChild("div", "gutter-container");
+    this._decorationsElement = this._gutterContainer.createChild("div", "hidden");
+    this._decorationsElement.addEventListener("mousedown", this._decorationsClicked.bind(this));
 
     this._elementCloseTag = elementCloseTag;
 
@@ -161,6 +162,19 @@ WebInspector.ElementsTreeElement.prototype = {
     isEditing: function()
     {
         return !!this._editing;
+    },
+
+    /**
+     * @return {!Element}
+     */
+    gutterElement: function()
+    {
+        return this._gutterContainer;
+    },
+
+    _decorationsClicked: function()
+    {
+        this.treeOutline.dispatchEventToListeners(WebInspector.ElementsTreeOutline.Events.DecorationsClicked, this._node);
     },
 
     /**
@@ -772,10 +786,11 @@ WebInspector.ElementsTreeElement.prototype = {
 
     /**
      * @param {function(string, string)} commitCallback
+     * @param {function()} disposeCallback
      * @param {?Protocol.Error} error
      * @param {string} initialValue
      */
-    _startEditingAsHTML: function(commitCallback, error, initialValue)
+    _startEditingAsHTML: function(commitCallback, disposeCallback, error, initialValue)
     {
         if (error)
             return;
@@ -824,6 +839,7 @@ WebInspector.ElementsTreeElement.prototype = {
          */
         function dispose()
         {
+            disposeCallback();
             delete this._editing;
             this.treeOutline.setMultilineEditing(null);
 
@@ -1067,7 +1083,7 @@ WebInspector.ElementsTreeElement.prototype = {
             highlightElement.appendChild(nodeInfo);
             this.title = highlightElement;
             this.updateDecorations();
-            this.listItemElement.insertBefore(this._decorationsElement, this.listItemElement.firstChild);
+            this.listItemElement.insertBefore(this._gutterContainer, this.listItemElement.firstChild);
             delete this._highlightResult;
         }
 
@@ -1120,12 +1136,12 @@ WebInspector.ElementsTreeElement.prototype = {
             (n === node ? decorations : descendantDecorations).push(decoration);
         }
 
-        Promise.all(promises).then(setTitle.bind(this));
+        Promise.all(promises).then(updateDecorationsUI.bind(this));
 
         /**
          * @this {WebInspector.ElementsTreeElement}
          */
-        function setTitle()
+        function updateDecorationsUI()
         {
             this._decorationsElement.removeChildren();
             this._decorationsElement.classList.add("hidden");
@@ -1160,6 +1176,8 @@ WebInspector.ElementsTreeElement.prototype = {
             if (!this.expanded)
                 processColors.call(this, descendantColors, "elements-gutter-decoration elements-has-decorated-children");
             WebInspector.Tooltip.install(this._decorationsElement, titles);
+
+            this._gutterContainer.classList.toggle("has-decorations", this._decorationsElement.hasChildNodes());
 
             /**
              * @param {!Set<string>} colors
@@ -1533,8 +1551,14 @@ WebInspector.ElementsTreeElement.prototype = {
                 node.setOuterHTML(value, selectNode);
         }
 
+        function disposeCallback()
+        {
+            if (callback)
+                callback(false);
+        }
+
         var node = this._node;
-        node.getOuterHTML(this._startEditingAsHTML.bind(this, commitChange));
+        node.getOuterHTML(this._startEditingAsHTML.bind(this, commitChange, disposeCallback));
     },
 
     _copyCSSPath: function()
