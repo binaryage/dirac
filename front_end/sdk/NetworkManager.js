@@ -241,6 +241,8 @@ WebInspector.NetworkDispatcher.prototype = {
 
         networkRequest.protocol = response.protocol;
 
+        networkRequest.setSecurityState(response.securityState);
+
         if (!this._mimeTypeIsConsistentWithType(networkRequest)) {
             var consoleModel = this._manager._target.consoleModel;
             consoleModel.addMessage(new WebInspector.ConsoleMessage(consoleModel.target(), WebInspector.ConsoleMessage.MessageSource.Network,

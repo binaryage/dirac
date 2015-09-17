@@ -162,7 +162,14 @@ WebInspector.SecurityPanel.prototype = {
      */
     _securityStateMin: function(stateA, stateB)
     {
-        var ordering = ["unknown", "insecure", "neutral", "warning", "secure"];
+        /** @type {!Array<!SecurityAgent.SecurityState>} */
+        var ordering = [
+            SecurityAgent.SecurityState.Unknown,
+            SecurityAgent.SecurityState.Insecure,
+            SecurityAgent.SecurityState.Neutral,
+            SecurityAgent.SecurityState.Warning,
+            SecurityAgent.SecurityState.Secure
+        ];
         return (ordering.indexOf(stateA) < ordering.indexOf(stateB)) ? stateA : stateB;
     },
 
@@ -605,4 +612,3 @@ WebInspector.SecurityDetailsTable.prototype = {
         }
     }
 }
-

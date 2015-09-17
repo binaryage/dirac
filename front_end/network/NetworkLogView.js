@@ -1919,6 +1919,9 @@ WebInspector.NetworkLogView.prototype = {
         }
         command = command.concat(data);
         command.push("--compressed");
+
+        if (request.securityState() === SecurityAgent.SecurityState.Insecure)
+            command.push("--insecure");
         return command.join(" ");
     },
 

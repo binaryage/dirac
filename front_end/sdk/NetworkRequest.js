@@ -80,6 +80,9 @@ WebInspector.NetworkRequest = function(target, requestId, url, documentURL, fram
 
     this._remoteAddress = "";
 
+    /** @type {?SecurityAgent.SecurityState} */
+    this._securityState = null;
+
     /** @type {string} */
     this.connectionId = "0";
 }
@@ -213,6 +216,22 @@ WebInspector.NetworkRequest.prototype = {
     remoteAddress: function()
     {
         return this._remoteAddress;
+    },
+
+    /**
+     * @return {?SecurityAgent.SecurityState}
+     */
+    securityState: function()
+    {
+        return this._securityState;
+    },
+
+    /**
+     * @param {!SecurityAgent.SecurityState} securityState
+     */
+    setSecurityState: function(securityState)
+    {
+        this._securityState = securityState;
     },
 
     /**
