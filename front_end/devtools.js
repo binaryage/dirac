@@ -113,6 +113,16 @@ DevToolsAPIImpl.prototype = {
     },
 
     /**
+     * @param {boolean} discoverUsbDevices
+     * @param {boolean} portForwardingEnabled
+     * @param {!Adb.PortForwardingConfig} portForwardingConfig
+     */
+    devicesDiscoveryConfigChanged: function(discoverUsbDevices, portForwardingEnabled, portForwardingConfig)
+    {
+        this._dispatchOnInspectorFrontendAPI("devicesDiscoveryConfigChanged", [discoverUsbDevices, portForwardingEnabled, portForwardingConfig]);
+    },
+
+    /**
      * @param {!Array.<!Adb.Device>} devices
      */
     devicesUpdated: function(devices)
@@ -649,11 +659,32 @@ InspectorFrontendHostImpl.prototype = {
 
     /**
      * @override
+     * @param {boolean} discoverUsbDevices
+     * @param {boolean} portForwardingEnabled
+     * @param {!Adb.PortForwardingConfig} portForwardingConfig
+     */
+    setDevicesDiscoveryConfig: function(discoverUsbDevices, portForwardingEnabled, portForwardingConfig)
+    {
+        DevToolsAPI.sendMessageToEmbedder("setDevicesDiscoveryConfig", [discoverUsbDevices, portForwardingEnabled, JSON.stringify(portForwardingConfig)], null);
+    },
+
+    /**
+     * @override
      * @param {boolean} enabled
      */
     setDevicesUpdatesEnabled: function(enabled)
     {
         DevToolsAPI.sendMessageToEmbedder("setDevicesUpdatesEnabled", [enabled], null);
+    },
+
+    /**
+     * @override
+     * @param {string} pageId
+     * @param {string} action
+     */
+    performActionOnRemotePage: function(pageId, action)
+    {
+        DevToolsAPI.sendMessageToEmbedder("performActionOnRemotePage", [pageId, action], null);
     },
 
     /**

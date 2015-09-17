@@ -10,8 +10,8 @@
     padding-top: 1px;
 }
 
-.tabbed-pane {
-    padding: 0 10px;
+.view-title {
+    font-size: 16px;
 }
 
 .devices-footer {
@@ -26,7 +26,6 @@
 }
 
 .usb-checkbox {
-    border-bottom: 1px solid #cdcdcd;
     padding-bottom: 8px;
 }
 
@@ -36,7 +35,7 @@
 
 .port-forwarding-footer {
     overflow: hidden;
-    margin: 15px 0 0 4px;
+    margin: 15px 0 0 25px;
 }
 
 .port-forwarding-footer > * {
@@ -50,11 +49,7 @@
 
 .device-text-row {
     align-items: baseline;
-    margin-bottom: 23px;
-}
-
-.device-title {
-    font-size: 16px;
+    margin-bottom: 20px;
 }
 
 .device-serial {
@@ -72,8 +67,7 @@
 }
 
 .device-page-list {
-    border: 1px solid #dadada;
-    margin-top: 5px;
+    margin-top: 10px;
     overflow-x: auto;
     align-items: stretch;
     flex: none;
@@ -82,16 +76,19 @@
 .device-page-list > div {
     padding: 5px;
     overflow: visible;
-    border-bottom: 1px solid #dadada;
     flex: none;
 }
 
 .device-page-list > div:hover {
-    background-color: #dadada;
+    background-color: #f3f3f3;
 }
 
 .device-page-actions {
     justify-content: flex-start;
+}
+
+.device-page-actions > .link {
+    margin-right: 8px;
 }
 
 .device-page-url {

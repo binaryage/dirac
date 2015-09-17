@@ -306,6 +306,8 @@ Adb.Page;
 Adb.Browser;
 /** @typedef {{id: string, adbModel: string, adbSerial: string, browsers: !Array.<!Adb.Browser>, adbPortStatus: !Array.<number>, adbConnected: boolean}} */
 Adb.Device;
+/** @typedef {!Object.<string, string>} */
+Adb.PortForwardingConfig;
 
 /**
  * @constructor

@@ -33,6 +33,7 @@ InspectorFrontendHostAPI.Events = {
     ContextMenuCleared: "contextMenuCleared",
     ContextMenuItemSelected: "contextMenuItemSelected",
     DeviceCountUpdated: "deviceCountUpdated",
+    DevicesDiscoveryConfigChanged: "devicesDiscoveryConfigChanged",
     DevicesUpdated: "devicesUpdated",
     DispatchMessage: "dispatchMessage",
     DispatchMessageChunk: "dispatchMessageChunk",
@@ -63,6 +64,7 @@ InspectorFrontendHostAPI.EventDescriptors = [
     [InspectorFrontendHostAPI.Events.ContextMenuCleared, []],
     [InspectorFrontendHostAPI.Events.ContextMenuItemSelected, ["id"]],
     [InspectorFrontendHostAPI.Events.DeviceCountUpdated, ["count"]],
+    [InspectorFrontendHostAPI.Events.DevicesDiscoveryConfigChanged, ["discoverUsbDevices", "portForwardingEnabled", "portForwardingConfig"]],
     [InspectorFrontendHostAPI.Events.DevicesUpdated, ["devices"]],
     [InspectorFrontendHostAPI.Events.DispatchMessage, ["messageObject"]],
     [InspectorFrontendHostAPI.Events.DispatchMessageChunk, ["messageChunk", "messageSize"]],
@@ -224,9 +226,22 @@ InspectorFrontendHostAPI.prototype = {
     sendMessageToBackend: function(message) { },
 
     /**
+     * @param {boolean} discoverUsbDevices
+     * @param {boolean} portForwardingEnabled
+     * @param {!Adb.PortForwardingConfig} portForwardingConfig
+     */
+    setDevicesDiscoveryConfig: function(discoverUsbDevices, portForwardingEnabled, portForwardingConfig) { },
+
+    /**
      * @param {boolean} enabled
      */
     setDevicesUpdatesEnabled: function(enabled) { },
+
+    /**
+     * @param {string} pageId
+     * @param {string} action
+     */
+    performActionOnRemotePage: function(pageId, action) { },
 
     /**
      * @param {string} origin
