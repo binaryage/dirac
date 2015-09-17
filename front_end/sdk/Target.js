@@ -301,6 +301,7 @@ WebInspector.TargetManager.Events = {
     InspectedURLChanged: "InspectedURLChanged",
     MainFrameNavigated: "MainFrameNavigated",
     Load: "Load",
+    PageReloadRequested: "PageReloadRequested",
     WillReloadPage: "WillReloadPage",
     SuspendStateChanged: "SuspendStateChanged",
     TargetDisposed: "TargetDisposed"
@@ -483,6 +484,7 @@ WebInspector.TargetManager.prototype = {
             target.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.InspectedURLChanged, this._redispatchEvent, this);
             target.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.MainFrameNavigated, this._redispatchEvent, this);
             target.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.Load, this._redispatchEvent, this);
+            target.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.PageReloadRequested, this._redispatchEvent, this);
             target.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.WillReloadPage, this._redispatchEvent, this);
         }
         var copy = this._observersByType(target._type);

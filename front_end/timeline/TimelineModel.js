@@ -622,8 +622,19 @@ WebInspector.TimelineModel.prototype = {
             this._startProfilingOnAllTargets() : Promise.resolve();
         var samplingFrequencyHz = WebInspector.moduleSetting("highResolutionCpuProfiling").get() ? 10000 : 1000;
         var options = "sampling-frequency=" + samplingFrequencyHz;
-        var tracingManager = this._targets[0].tracingManager;
-        profilingStartedPromise.then(tracingManager.start.bind(tracingManager, this, categories, options, callback));
+        var mainTarget = this._targets[0];
+        var tracingManager = mainTarget.tracingManager;
+        mainTarget.resourceTreeModel.suspendReload();
+        profilingStartedPromise.then(tracingManager.start.bind(tracingManager, this, categories, options, onTraceStarted));
+        /**
+         * @param {?string} error
+         */
+        function onTraceStarted(error)
+        {
+            mainTarget.resourceTreeModel.resumeReload();
+            if (callback)
+                callback(error);
+        }
     },
 
     /**

@@ -87,7 +87,7 @@ WebInspector.TimelinePanel = function()
     this._createFileSelector();
     this._registerShortcuts();
 
-    WebInspector.targetManager.addEventListener(WebInspector.TargetManager.Events.WillReloadPage, this._willReloadPage, this);
+    WebInspector.targetManager.addEventListener(WebInspector.TargetManager.Events.PageReloadRequested, this._pageReloadRequested, this);
     WebInspector.targetManager.addEventListener(WebInspector.TargetManager.Events.Load, this._loadEventFired, this);
 
     // Create top level properties splitter.
@@ -922,7 +922,7 @@ WebInspector.TimelinePanel.prototype = {
     /**
      * @param {!WebInspector.Event} event
      */
-    _willReloadPage: function(event)
+    _pageReloadRequested: function(event)
     {
         if (this._operationInProgress || this._recordingInProgress() || !this.isShowing())
             return;

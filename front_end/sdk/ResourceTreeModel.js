@@ -68,6 +68,7 @@ WebInspector.ResourceTreeModel.EventTypes = {
     CachedResourcesLoaded: "CachedResourcesLoaded",
     DOMContentLoaded: "DOMContentLoaded",
     Load: "Load",
+    PageReloadRequested: "PageReloadRequested",
     WillReloadPage: "WillReloadPage",
     InspectedURLChanged: "InspectedURLChanged",
     SecurityOriginAdded: "SecurityOriginAdded",
@@ -518,6 +519,9 @@ WebInspector.ResourceTreeModel.prototype = {
      */
     reloadPage: function(ignoreCache, scriptToEvaluateOnLoad)
     {
+        // Only dispatch PageReloadRequested upon first reload request to simplify client logic.
+        if (!this._pendingReloadOptions)
+            this.dispatchEventToListeners(WebInspector.ResourceTreeModel.EventTypes.PageReloadRequested);
         if (this._reloadSuspensionCount) {
             this._pendingReloadOptions = [ignoreCache, scriptToEvaluateOnLoad];
             return;
