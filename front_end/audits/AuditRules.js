@@ -974,7 +974,7 @@ WebInspector.AuditRules.ImageDimensionsRule.prototype = {
             var nodePromises = [];
             for (var i = 0; nodeIds && i < nodeIds.length; ++i) {
                 var stylePromises = [
-                    cssModel.matchedStylesPromise(nodeIds[i], false, false).then(matchedCallback),
+                    cssModel.matchedStylesPromise(nodeIds[i]).then(matchedCallback),
                     cssModel.inlineStylesPromise(nodeIds[i]).then(inlineCallback),
                     cssModel.computedStylePromise(nodeIds[i]).then(computedCallback)
                 ];

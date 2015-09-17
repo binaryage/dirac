@@ -121,11 +121,9 @@ WebInspector.CSSStyleModel.prototype = {
 
     /**
      * @param {!DOMAgent.NodeId} nodeId
-     * @param {boolean} excludePseudo
-     * @param {boolean} excludeInherited
      * @return {!Promise.<?WebInspector.CSSStyleModel.MatchedStyleResult>}
      */
-    matchedStylesPromise: function(nodeId, excludePseudo, excludeInherited)
+    matchedStylesPromise: function(nodeId)
     {
         /**
          * @param {?Protocol.Error} error
@@ -162,7 +160,7 @@ WebInspector.CSSStyleModel.prototype = {
             return new WebInspector.CSSStyleModel.MatchedStyleResult(matchedRules, inherited, pseudoElements);
         }
 
-        return this._agent.getMatchedStylesForNode(nodeId, excludePseudo, excludeInherited, callback.bind(this));
+        return this._agent.getMatchedStylesForNode(nodeId, callback.bind(this));
     },
 
     /**

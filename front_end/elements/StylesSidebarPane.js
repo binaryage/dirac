@@ -361,7 +361,7 @@ WebInspector.StylesSidebarPane.prototype = {
 
         var promises = [
             cssModel.inlineStylesPromise(node.id).then(inlineCallback),
-            cssModel.matchedStylesPromise(node.id, false, false).then(matchedCallback)
+            cssModel.matchedStylesPromise(node.id).then(matchedCallback)
         ];
         return Promise.all(promises).then(returnPayload);
 
