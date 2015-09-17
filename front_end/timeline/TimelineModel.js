@@ -940,13 +940,10 @@ WebInspector.TimelineModel.prototype = {
 
     _resetProcessingState: function()
     {
-        this._sendRequestEvents = {};
-        this._timerEvents = {};
-        this._requestAnimationFrameEvents = {};
+        this._asyncEventTracker = new WebInspector.TimelineAsyncEventTracker();
         this._invalidationTracker = new WebInspector.InvalidationTracker();
         this._layoutInvalidate = {};
         this._lastScheduleStyleRecalculation = {};
-        this._webSocketCreateEvents = {};
         this._paintImageEventByPixelRefId = {};
         this._lastPaintForLayer = {};
         this._lastRecalculateStylesEvent = null;
@@ -1048,36 +1045,10 @@ WebInspector.TimelineModel.prototype = {
 
         if (eventStack.length && eventStack.peekLast().name === recordTypes.EventDispatch)
             eventStack.peekLast().hasChildren = true;
+        this._asyncEventTracker.processEvent(event);
+        if (event.initiator && event.initiator.url)
+            event.url = event.initiator.url;
         switch (event.name) {
-        case recordTypes.ResourceSendRequest:
-            this._sendRequestEvents[event.args["data"]["requestId"]] = event;
-            event.url = event.args["data"]["url"];
-            break;
-
-        case recordTypes.ResourceReceiveResponse:
-        case recordTypes.ResourceReceivedData:
-        case recordTypes.ResourceFinish:
-            event.initiator = this._sendRequestEvents[event.args["data"]["requestId"]];
-            if (event.initiator)
-                event.url = event.initiator.url;
-            break;
-
-        case recordTypes.TimerInstall:
-            this._timerEvents[event.args["data"]["timerId"]] = event;
-            break;
-
-        case recordTypes.TimerFire:
-            event.initiator = this._timerEvents[event.args["data"]["timerId"]];
-            break;
-
-        case recordTypes.RequestAnimationFrame:
-            this._requestAnimationFrameEvents[event.args["data"]["id"]] = event;
-            break;
-
-        case recordTypes.FireAnimationFrame:
-            event.initiator = this._requestAnimationFrameEvents[event.args["data"]["id"]];
-            break;
-
         case recordTypes.ScheduleStyleRecalculation:
             this._lastScheduleStyleRecalculation[event.args["data"]["frame"]] = event;
             break;
@@ -1122,16 +1093,6 @@ WebInspector.TimelineModel.prototype = {
             this._layoutInvalidate[frameId] = null;
             if (this._currentScriptEvent)
                 event.warning = WebInspector.UIString("Forced synchronous layout is a possible performance bottleneck.");
-            break;
-
-        case recordTypes.WebSocketCreate:
-            this._webSocketCreateEvents[event.args["data"]["identifier"]] = event;
-            break;
-
-        case recordTypes.WebSocketSendHandshakeRequest:
-        case recordTypes.WebSocketReceiveHandshakeResponse:
-        case recordTypes.WebSocketDestroy:
-            event.initiator = this._webSocketCreateEvents[event.args["data"]["identifier"]];
             break;
 
         case recordTypes.EvaluateScript:
@@ -2336,5 +2297,62 @@ WebInspector.InvalidationTracker.prototype = {
         this._lastRecalcStyle = undefined;
         this._lastPaintWithLayer = undefined;
         this._didPaint = false;
+    }
+}
+
+/**
+ * @constructor
+ */
+WebInspector.TimelineAsyncEventTracker = function()
+{
+    WebInspector.TimelineAsyncEventTracker._initialize();
+    /** @type {!Map<!WebInspector.TimelineModel.RecordType, !Map<string, !WebInspector.TracingModel.Event>>} */
+    this._initiatorByType = new Map();
+    for (var initiator of WebInspector.TimelineAsyncEventTracker._asyncEvents.keys())
+        this._initiatorByType.set(initiator, new Map());
+}
+
+WebInspector.TimelineAsyncEventTracker._initialize = function()
+{
+    if (WebInspector.TimelineAsyncEventTracker._asyncEvents)
+        return;
+    var events = new Map();
+    var type = WebInspector.TimelineModel.RecordType;
+    events.set(type.TimerInstall, {causes: [type.TimerFire], joinBy: "timerId"});
+    events.set(type.ResourceSendRequest, {causes: [type.ResourceReceiveResponse, type.ResourceReceivedData, type.ResourceFinish], joinBy: "requestId"});
+    events.set(type.RequestAnimationFrame, {causes: [type.FireAnimationFrame], joinBy: "id"});
+    events.set(type.WebSocketCreate, {causes: [type.WebSocketSendHandshakeRequest, type.WebSocketReceiveHandshakeResponse, type.WebSocketDestroy], joinBy: "identifier"});
+    WebInspector.TimelineAsyncEventTracker._asyncEvents = events;
+    /** @type {!Map<!WebInspector.TimelineModel.RecordType, !WebInspector.TimelineModel.RecordType>} */
+    WebInspector.TimelineAsyncEventTracker._typeToInitiator = new Map();
+    for (var entry of events) {
+        var types = entry[1].causes;
+        for (type of types)
+            WebInspector.TimelineAsyncEventTracker._typeToInitiator.set(type, entry[0]);
+    }
+}
+
+WebInspector.TimelineAsyncEventTracker.prototype = {
+    /**
+     * @param {!WebInspector.TracingModel.Event} event
+     */
+    processEvent: function(event)
+    {
+        var initiatorType = WebInspector.TimelineAsyncEventTracker._typeToInitiator.get(/** @type {!WebInspector.TimelineModel.RecordType} */ (event.name));
+        var isInitiator = !initiatorType;
+        if (!initiatorType)
+            initiatorType = /** @type {!WebInspector.TimelineModel.RecordType} */ (event.name);
+        var initiatorInfo = WebInspector.TimelineAsyncEventTracker._asyncEvents.get(initiatorType);
+        if (!initiatorInfo)
+            return;
+        var id = event.args["data"][initiatorInfo.joinBy];
+        if (!id)
+            return;
+        /** @type {!Map<string, !WebInspector.TracingModel.Event>|undefined} */
+        var initiatorMap = this._initiatorByType.get(initiatorType);
+        if (isInitiator)
+            initiatorMap.set(id, event);
+        else
+            event.initiator = initiatorMap.get(id) || null;
     }
 }
