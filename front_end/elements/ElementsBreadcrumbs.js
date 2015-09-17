@@ -222,11 +222,10 @@ WebInspector.ElementsBreadcrumbs.prototype = {
 
         // Layout 1: Measure total and normal crumb sizes
         var contentElementWidth = this.contentElement.offsetWidth;
-        var margin = parseInt(window.getComputedStyle(/** @type {!Element} */(crumbs.firstChild)).marginLeft, 10) * 2;
         var normalSizes = [];
         for (var i = 0; i < crumbs.childNodes.length; ++i) {
             var crumb = crumbs.childNodes[i];
-            normalSizes[i] = crumb.offsetWidth + margin;
+            normalSizes[i] = crumb.offsetWidth;
         }
 
         // Layout 2: Measure collapsed crumb sizes
@@ -237,12 +236,12 @@ WebInspector.ElementsBreadcrumbs.prototype = {
         }
         for (var i = 0; i < crumbs.childNodes.length; ++i) {
             var crumb = crumbs.childNodes[i];
-            compactSizes[i] = crumb.offsetWidth + margin;
+            compactSizes[i] = crumb.offsetWidth;
         }
 
         // Layout 3: Measure collapsed crumb size
         crumbs.firstChild.classList.add("collapsed");
-        var collapsedSize = crumbs.firstChild.offsetWidth + margin;
+        var collapsedSize = crumbs.firstChild.offsetWidth;
 
         // Clean up.
         for (var i = 0; i < crumbs.childNodes.length; ++i) {
@@ -263,7 +262,7 @@ WebInspector.ElementsBreadcrumbs.prototype = {
                 }
                 totalSize += crumb.classList.contains("compact") ? compactSizes[i] : normalSizes[i];
             }
-            const rightPadding = 4;
+            const rightPadding = 10;
             return totalSize + rightPadding < contentElementWidth;
         }
 
