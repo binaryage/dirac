@@ -37,6 +37,14 @@
             "defaultValue": false
         },
         {
+            "type": "setting",
+            "category": "Profiler",
+            "title": "Show native functions in JS Profile",
+            "settingName": "showNativeFunctionsInJSProfile",
+            "settingType": "boolean",
+            "defaultValue": false
+        },
+        {
             "type": "@WebInspector.ActionDelegate",
             "actionId": "profiler.toggle-recording",
             "iconClass": "record-toolbar-item",

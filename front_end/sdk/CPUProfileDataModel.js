@@ -21,7 +21,8 @@ WebInspector.CPUProfileDataModel = function(profile)
         this._fixMissingSamples();
         this._fixLineAndColumnNumbers();
     }
-    this._filterNativeFrames();
+    if (!WebInspector.moduleSetting("showNativeFunctionsInJSProfile").get())
+        this._filterNativeFrames();
     this._assignDepthsInProfile();
     this._calculateTimes(profile);
 }

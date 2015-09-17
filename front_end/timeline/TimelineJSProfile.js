@@ -85,6 +85,7 @@ WebInspector.TimelineJSProfileProcessor.generateJSFrameEvents = function(events)
     var currentSamplingIntervalMs = 0.1;
     var lastStackSampleTime = 0;
     var ordinal = 0;
+    var filterNativeFunctions = !WebInspector.moduleSetting("showNativeFunctionsInJSProfile").get();
 
     /**
      * @param {!WebInspector.TracingModel.Event} e
@@ -185,7 +186,8 @@ WebInspector.TimelineJSProfileProcessor.generateJSFrameEvents = function(events)
             stackTrace = jsFramesStack.map(function(frameEvent) { return frameEvent.args["data"]; }).reverse();
         if (!stackTrace)
             return;
-        filterStackFrames(stackTrace);
+        if (filterNativeFunctions)
+            filterStackFrames(stackTrace);
         var endTime = eventEndTime(e);
         var numFrames = stackTrace.length;
         var minFrames = Math.min(numFrames, jsFramesStack.length);
