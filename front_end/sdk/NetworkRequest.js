@@ -1065,8 +1065,8 @@ WebInspector.NetworkRequest.prototype = {
                 url = initiator.url ? initiator.url : url;
                 lineNumber = initiator.lineNumber ? initiator.lineNumber : lineNumber;
             } else if (initiator.type === NetworkAgent.InitiatorType.Script) {
-                var topFrame = initiator.stackTrace[0];
-                if (topFrame.url) {
+                var topFrame = initiator.stackTrace ? initiator.stackTrace[0] : null;
+                if (topFrame && topFrame.url) {
                     type = WebInspector.NetworkRequest.InitiatorType.Script;
                     url = topFrame.url;
                     lineNumber = topFrame.lineNumber;
