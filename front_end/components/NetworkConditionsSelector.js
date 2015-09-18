@@ -29,7 +29,7 @@ WebInspector.NetworkConditionsSelector.throughputText = function(conditions)
     if (conditions.throughput < 0)
         return "";
     var throughputInKbps = conditions.throughput / (1024 / 8);
-    return (throughputInKbps < 1024) ? WebInspector.UIString("%d KB/s", throughputInKbps) : WebInspector.UIString("%d MB/s", (throughputInKbps / 1024) | 0);
+    return (throughputInKbps < 1024) ? WebInspector.UIString("%d kb/s", throughputInKbps) : WebInspector.UIString("%d Mb/s", (throughputInKbps / 1024) | 0);
 }
 
 /**
@@ -274,7 +274,7 @@ WebInspector.NetworkConditionsSettingsTab.prototype = {
         fields.createChild("div", "conditions-list-text conditions-list-title").appendChild(this._editConditionsTitle);
         fields.createChild("div", "conditions-list-separator conditions-list-separator-invisible");
 
-        this._editConditionsThroughput = this._createInput(WebInspector.UIString("KB/s"));
+        this._editConditionsThroughput = this._createInput(WebInspector.UIString("kb/s"));
         var cell = fields.createChild("div", "conditions-list-text");
         cell.appendChild(this._editConditionsThroughput);
         cell.createChild("div", "conditions-edit-optional").textContent = WebInspector.UIString("optional");
