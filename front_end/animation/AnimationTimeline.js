@@ -146,6 +146,8 @@ WebInspector.AnimationTimeline.prototype = {
 
         this._playbackLabel = controls.createChild("span", "animation-playback-label");
         this._playbackLabel.createTextChild("1x");
+        this._playbackLabel.addEventListener("keydown", this._playbackLabelInput.bind(this));
+        this._playbackLabel.addEventListener("focusout", this._playbackLabelInput.bind(this));
 
         this._playbackSlider = controls.createChild("input", "animation-playback-slider");
         this._playbackSlider.type = "range";
@@ -156,6 +158,22 @@ WebInspector.AnimationTimeline.prototype = {
         this._updateAnimationsPlaybackRate();
 
         return container;
+    },
+
+    /**
+     * @param {!Event} event
+     */
+    _playbackLabelInput: function(event)
+    {
+        var element = /** @type {!Element} */(event.currentTarget);
+        if (event.type !== "focusout" && !WebInspector.handleElementValueModifications(event, element) && !isEnterKey(event))
+            return;
+
+        var value = parseFloat(this._playbackLabel.textContent);
+        if (!isNaN(value))
+            this._underlyingPlaybackRate = Math.max(0, value);
+        this._updatePlaybackControls();
+        event.consume(true);
     },
 
     _updatePlaybackControls: function()

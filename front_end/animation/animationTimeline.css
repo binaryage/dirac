@@ -175,6 +175,7 @@ input[type=range].animation-playback-slider::-webkit-slider-thumb {
     color: #333;
     white-space: nowrap;
     overflow: hidden;
+    -webkit-user-modify: read-write-plaintext-only;
 }
 
 .animation-scrubber {
