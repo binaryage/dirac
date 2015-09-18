@@ -173,22 +173,29 @@ WebInspector.EventListenersView.prototype = {
         if (!treeItem) {
             treeItem = new WebInspector.EventListenersTreeElement(type, this._linkifier);
             this._treeItemMap.set(type, treeItem);
+            treeItem.hidden = true;
             this._treeOutline.appendChild(treeItem);
-            this._emptyHolder.remove();
         }
+        this._emptyHolder.remove();
         return treeItem;
     },
 
     addEmptyHolderIfNeeded: function()
     {
-        if (!this._treeOutline.firstChild() && !this._emptyHolder.parentNode)
+        var allHidden = true;
+        for (var eventType of this._treeOutline.rootElement().children()) {
+            eventType.hidden = !eventType.firstChild();
+            allHidden = allHidden && eventType.hidden;
+        }
+        if (allHidden && !this._emptyHolder.parentNode)
            this._element.appendChild(this._emptyHolder);
     },
 
     reset: function()
     {
-        this._treeItemMap = new Map();
-        this._treeOutline.removeChildren();
+        var eventTypes = this._treeOutline.rootElement().children();
+        for (var eventType of eventTypes)
+            eventType.removeChildren();
         this._linkifier.reset();
     },
 
