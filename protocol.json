@@ -4455,6 +4455,14 @@
                 "handlers": ["browser"]
             },
             {
+                "name": "setForceUpdateOnPageLoad",
+                "parameters": [
+                    { "name": "registrationId", "type": "string" },
+                    { "name": "forceUpdateOnPageLoad", "type": "boolean" }
+                ],
+                "handlers": ["browser"]
+            },
+            {
                 "name": "deliverPushMessage",
                 "parameters": [
                     { "name": "origin", "type": "string" },
@@ -4487,7 +4495,7 @@
                 "parameters": [
                     { "name": "workerId", "type": "string" },
                     { "name": "url", "type": "string" },
-                    { "name": "versionId", "type": "string", "optional": true }
+                    { "name": "versionId", "type": "string" }
                 ],
                 "handlers": ["browser"]
             },
