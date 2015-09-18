@@ -565,7 +565,7 @@ WebInspector.StylesSidebarPane.prototype = {
         var addedAttributesStyle;
         for (var i = styles.matchedCSSRules.length - 1; i >= 0; --i) {
             var rule = styles.matchedCSSRules[i];
-            if ((rule.isInjected || rule.isUserAgent) && !addedAttributesStyle) {
+            if ((rule.isInjected() || rule.isUserAgent()) && !addedAttributesStyle) {
                 // Show element's Style Attributes after all author rules.
                 addedAttributesStyle = true;
                 addAttributesStyle();
@@ -1027,7 +1027,7 @@ WebInspector.StylePropertiesSection = function(parentPane, styleRule)
 
     if (rule) {
         // Prevent editing the user agent and user rules.
-        if (rule.isUserAgent || rule.isInjected) {
+        if (rule.isUserAgent() || rule.isInjected()) {
             this.editable = false;
         } else {
             // Check this is a real CSSRule, not a bogus object coming from WebInspector.BlankStylePropertiesSection.
@@ -1732,11 +1732,11 @@ WebInspector.StylePropertiesSection.createRuleOriginNode = function(cssModel, li
     if (ruleLocation && rule.styleSheetId && header && header.resourceURL())
         return WebInspector.StylePropertiesSection._linkifyRuleLocation(cssModel, linkifier, rule.styleSheetId, ruleLocation);
 
-    if (rule.isUserAgent)
+    if (rule.isUserAgent())
         return createTextNode(WebInspector.UIString("user agent stylesheet"));
-    if (rule.isInjected)
+    if (rule.isInjected())
         return createTextNode(WebInspector.UIString("injected stylesheet"));
-    if (rule.isViaInspector)
+    if (rule.isViaInspector())
         return createTextNode(WebInspector.UIString("via inspector"));
 
     if (header && header.ownerNode) {

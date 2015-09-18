@@ -1041,7 +1041,6 @@ WebInspector.CSSRule = function(cssModel, payload, matchingSelectors)
     this.style.parentRule = this;
     if (payload.media)
         this.media = WebInspector.CSSMedia.parseMediaArrayPayload(cssModel, payload.media);
-    this._setFrameId();
 }
 
 /**
@@ -1102,14 +1101,6 @@ WebInspector.CSSRule.prototype = {
         this._sourceStyleSheetEditedWithMedia(/** @type {string} */ (oldMedia.parentStyleSheetId), oldMedia.range, newMedia.range, oldMedia, newMedia);
     },
 
-    _setFrameId: function()
-    {
-        if (!this.styleSheetId)
-            return;
-        var styleSheetHeader = this._cssModel.styleSheetHeaderForId(this.styleSheetId);
-        this.frameId = styleSheetHeader.frameId;
-    },
-
     /**
      * @return {string}
      */
@@ -1148,24 +1139,36 @@ WebInspector.CSSRule.prototype = {
         return styleSheetHeader.columnNumberInSource(selector.range.startLine, selector.range.startColumn);
     },
 
-    get isUserAgent()
+    /**
+     * @return {boolean}
+     */
+    isUserAgent: function()
     {
-        return this.origin === "user-agent";
+        return this.origin === CSSAgent.StyleSheetOrigin.UserAgent;
     },
 
-    get isInjected()
+    /**
+     * @return {boolean}
+     */
+    isInjected: function()
     {
-        return this.origin === "injected";
+        return this.origin === CSSAgent.StyleSheetOrigin.Injected;
     },
 
-    get isViaInspector()
+    /**
+     * @return {boolean}
+     */
+    isViaInspector: function()
     {
-        return this.origin === "inspector";
+        return this.origin === CSSAgent.StyleSheetOrigin.Inspector;
     },
 
-    get isRegular()
+    /**
+     * @return {boolean}
+     */
+    isRegular: function()
     {
-        return this.origin === "regular";
+        return this.origin === CSSAgent.StyleSheetOrigin.Regular;
     }
 }
 
