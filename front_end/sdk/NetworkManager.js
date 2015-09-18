@@ -47,6 +47,9 @@ WebInspector.NetworkManager = function(target)
     this._initNetworkConditions();
     this._networkAgent.enable();
 
+    /** @type {!Map<!NetworkAgent.CertificateId, !Promise<!NetworkAgent.CertificateDetails>>} */
+    this._certificateDetailsCache = new Map();
+
     WebInspector.moduleSetting("cacheDisabled").addChangeListener(this._cacheDisabledSettingChanged, this);
 }
 
@@ -55,7 +58,7 @@ WebInspector.NetworkManager.EventTypes = {
     RequestUpdated: "RequestUpdated",
     RequestFinished: "RequestFinished",
     RequestUpdateDropped: "RequestUpdateDropped",
-    ResponseReceivedSecurityDetails: "ResponseReceivedSecurityDetails"
+    ResponseReceived: "ResponseReceived"
 }
 
 WebInspector.NetworkManager._MIMETypes = {
@@ -163,6 +166,44 @@ WebInspector.NetworkManager.prototype = {
         this._networkAgent.showCertificateViewer(certificateId);
     },
 
+    /**
+     * @param {!NetworkAgent.CertificateId} certificateId
+     * @return {!Promise<!NetworkAgent.CertificateDetails>}
+     */
+    certificateDetailsPromise: function(certificateId)
+    {
+        var cachedPromise = this._certificateDetailsCache.get(certificateId);
+        if (cachedPromise)
+            return cachedPromise;
+
+        /**
+         * @this {WebInspector.NetworkManager}
+         * @param {function(?NetworkAgent.CertificateDetails)} resolve
+         * @param {function()} reject
+         */
+        function executor(resolve, reject) {
+            /**
+             * @param {?Protocol.Error} error
+             * @param {?NetworkAgent.CertificateDetails} certificateDetails
+             */
+            function innerCallback(error, certificateDetails)
+            {
+                if (error) {
+                    console.error("Unable to get certificate details from the browser (for certificate ID ", certificateId, "): ", error);
+                    reject();
+                } else {
+                    resolve(certificateDetails);
+                }
+            }
+            this._networkAgent.getCertificateDetails(certificateId, innerCallback);
+        }
+
+        var promise = new Promise(executor.bind(this));
+
+        this._certificateDetailsCache.set(certificateId, promise);
+        return promise;
+    },
+
     __proto__: WebInspector.SDKModel.prototype
 }
 
@@ -254,6 +295,10 @@ WebInspector.NetworkDispatcher.prototype = {
                 0,
                 networkRequest.requestId));
         }
+
+        networkRequest.setSecurityState(response.securityState);
+        if (response.securityDetails)
+            networkRequest.setSecurityDetails(response.securityDetails);
     },
 
     /**
@@ -362,47 +407,7 @@ WebInspector.NetworkDispatcher.prototype = {
         this._updateNetworkRequestWithResponse(networkRequest, response);
 
         this._updateNetworkRequest(networkRequest);
-
-        this._dispatchResponseReceivedSecurityDetails(requestId, response);
-    },
-
-    /**
-     * @param {!NetworkAgent.RequestId} requestId
-     * @param {!NetworkAgent.Response} response
-     */
-    _dispatchResponseReceivedSecurityDetails: function(requestId, response)
-    {
-        var origin = WebInspector.ParsedURL.splitURLIntoPathComponents(response.url)[0];
-        if (!origin) {
-            // We don't handle resources like data: URIs. Most of them don't affect the lock icon.
-            return;
-        }
-
-        var eventData = {};
-        eventData.requestId = requestId;
-        eventData.origin = origin;
-        eventData.securityState = response.securityState;
-        if (response.securityDetails) {
-            /**
-             * @this {WebInspector.NetworkDispatcher}
-             * @param {?Protocol.Error} error
-             * @param {!NetworkAgent.CertificateDetails} certificateDetails
-             */
-            function callback(error, certificateDetails)
-            {
-                if (error)
-                    console.error("Unable to get certificate details from the browser (for certificate ID ", response.securityDetails.certificateId, "): ", error);
-                else
-                    eventData.securityDetails.certificateDetails = certificateDetails;
-
-                this._manager.dispatchEventToListeners(WebInspector.NetworkManager.EventTypes.ResponseReceivedSecurityDetails, eventData);
-            }
-
-            eventData.securityDetails = response.securityDetails;
-            this._manager._networkAgent.getCertificateDetails(response.securityDetails.certificateId, callback.bind(this));
-        } else {
-            this._manager.dispatchEventToListeners(WebInspector.NetworkManager.EventTypes.ResponseReceivedSecurityDetails, eventData);
-        }
+        this._manager.dispatchEventToListeners(WebInspector.NetworkManager.EventTypes.ResponseReceived, networkRequest);
     },
 
     /**

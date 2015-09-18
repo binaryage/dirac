@@ -36,7 +36,7 @@ WebInspector.SecurityPanel = function()
 
     WebInspector.targetManager.observeTargets(this, WebInspector.Target.Type.Page);
 
-    WebInspector.targetManager.addModelListener(WebInspector.NetworkManager, WebInspector.NetworkManager.EventTypes.ResponseReceivedSecurityDetails, this._onResponseReceivedSecurityDetails, this);
+    WebInspector.targetManager.addModelListener(WebInspector.NetworkManager, WebInspector.NetworkManager.EventTypes.ResponseReceived, this._onResponseReceived, this);
     WebInspector.targetManager.addModelListener(WebInspector.SecurityModel, WebInspector.SecurityModel.EventTypes.SecurityStateChanged, this._onSecurityStateChanged, this);
 }
 
@@ -47,7 +47,7 @@ WebInspector.SecurityPanel.Origin;
  * @typedef {Object}
  * @property {!SecurityAgent.SecurityState} securityState - Current security state of the origin.
  * @property {?NetworkAgent.SecurityDetails} securityDetails - Security details of the origin, if available.
- * @property {?NetworkAgent.CertificateDetails} securityDetails.certificateDetails - Certificate details of the origin (attached to security details), if available.
+ * @property {?Promise<!NetworkAgent.CertificateDetails>} certificateDetailsPromise - Certificate details of the origin. Only available if securityDetails are available.
  * @property {?WebInspector.SecurityOriginView} originView - Current SecurityOriginView corresponding to origin.
  */
 WebInspector.SecurityPanel.OriginState;
@@ -91,7 +91,7 @@ WebInspector.SecurityPanel.prototype = {
     {
         var originState = this._origins.get(origin);
         if (!originState.originView)
-            originState.originView = new WebInspector.SecurityOriginView(this, origin, originState.securityState, originState.securityDetails);
+            originState.originView = new WebInspector.SecurityOriginView(this, origin, originState);
 
         this._setVisibleView(originState.originView);
     },
@@ -123,11 +123,24 @@ WebInspector.SecurityPanel.prototype = {
     /**
      * @param {!WebInspector.Event} event
      */
-    _onResponseReceivedSecurityDetails: function(event)
+    _onResponseReceived: function(event)
     {
-        var data = event.data;
-        var origin = /** @type {string} */ (data.origin);
-        var securityState = /** @type {!SecurityAgent.SecurityState} */ (data.securityState);
+        var request = /** @type {!WebInspector.NetworkRequest} */ (event.data);
+        var origin = WebInspector.ParsedURL.splitURLIntoPathComponents(request.url)[0];
+        if (!origin) {
+            // We don't handle resources like data: URIs. Most of them don't affect the lock icon.
+            return;
+        }
+        this._processResponse(request);
+    },
+
+    /**
+     * @param {!WebInspector.NetworkRequest} request
+     */
+    _processResponse: function(request)
+    {
+        var origin = WebInspector.ParsedURL.splitURLIntoPathComponents(request.url)[0];
+        var securityState = /** @type {!SecurityAgent.SecurityState} */ (request.securityState());
 
         if (this._origins.has(origin)) {
             var originState = this._origins.get(origin);
@@ -142,8 +155,12 @@ WebInspector.SecurityPanel.prototype = {
             // TODO(lgarron): Store a (deduplicated) list of different security details we have seen. https://crbug.com/503170
             var originState = {};
             originState.securityState = securityState;
-            if (data.securityDetails)
-                originState.securityDetails = data.securityDetails;
+
+            var securityDetails = request.securityDetails();
+            if (securityDetails) {
+                originState.securityDetails = securityDetails;
+                originState.certificateDetailsPromise = request.target().networkManager.certificateDetailsPromise(securityDetails.certificateId);
+            }
 
             this._origins.set(origin, originState);
 
@@ -453,10 +470,9 @@ WebInspector.SecurityMainView.prototype = {
  * @extends {WebInspector.VBox}
  * @param {!WebInspector.SecurityPanel} panel
  * @param {!WebInspector.SecurityPanel.Origin} origin
- * @param {!SecurityAgent.SecurityState} securityState
- * @param {?NetworkAgent.SecurityDetails} securityDetails
+ * @param {!WebInspector.SecurityPanel.OriginState} originState
  */
-WebInspector.SecurityOriginView = function(panel, origin, securityState, securityDetails)
+WebInspector.SecurityOriginView = function(panel, origin, originState)
 {
     this._panel = panel;
     WebInspector.VBox.call(this);
@@ -470,47 +486,56 @@ WebInspector.SecurityOriginView = function(panel, origin, securityState, securit
     titleSection.createChild("div", "origin-view-title").textContent = WebInspector.UIString("Origin");
     var originDisplay = titleSection.createChild("div", "origin-display");
     this._originLockIcon = originDisplay.createChild("span", "security-property");
-    this._originLockIcon.classList.add("security-property-" + securityState);
+    this._originLockIcon.classList.add("security-property-" + originState.securityState);
     // TODO(lgarron): Highlight the origin scheme. https://crbug.com/523589
     originDisplay.createChild("span", "origin").textContent = origin;
 
-    if (securityDetails && securityDetails.certificateDetails) {
+    if (originState.securityDetails) {
         var connectionSection = this.element.createChild("div", "origin-view-section");
         connectionSection.createChild("div", "origin-view-section-title").textContent = WebInspector.UIString("Connection");
 
         var table = new WebInspector.SecurityDetailsTable();
         connectionSection.appendChild(table.element());
-        table.addRow("Protocol", securityDetails.protocol);
-        table.addRow("Key Exchange", securityDetails.keyExchange);
-        table.addRow("Cipher Suite", securityDetails.cipher + (securityDetails.mac ? " with " + securityDetails.mac : ""));
-    }
+        table.addRow("Protocol", originState.securityDetails.protocol);
+        table.addRow("Key Exchange", originState.securityDetails.keyExchange);
+        table.addRow("Cipher Suite", originState.securityDetails.cipher + (originState.securityDetails.mac ? " with " + originState.securityDetails.mac : ""));
 
-    if (securityDetails) {
+        // Create the certificate section outside the callback, so that it appears in the right place.
         var certificateSection = this.element.createChild("div", "origin-view-section");
         certificateSection.createChild("div", "origin-view-section-title").textContent = WebInspector.UIString("Certificate");
 
-        var sanDiv = this._createSanDiv(securityDetails);
-        var validFromString = new Date(1000 * securityDetails.certificateDetails.validFrom).toUTCString();
-        var validUntilString = new Date(1000 * securityDetails.certificateDetails.validTo).toUTCString();
+        /**
+         * @this {WebInspector.SecurityOriginView}
+         * @param {?NetworkAgent.CertificateDetails} certificateDetails
+         */
+        function displayCertificateDetails(certificateDetails)
+        {
+            var sanDiv = this._createSanDiv(certificateDetails.subject);
+            var validFromString = new Date(1000 * certificateDetails.validFrom).toUTCString();
+            var validUntilString = new Date(1000 * certificateDetails.validTo).toUTCString();
 
-        var table = new WebInspector.SecurityDetailsTable();
-        certificateSection.appendChild(table.element());
-        table.addRow("Subject", securityDetails.certificateDetails.subject.name);
-        table.addRow("SAN", sanDiv);
-        table.addRow("Valid From", validFromString);
-        table.addRow("Valid Until", validUntilString);
-        table.addRow("Issuer", securityDetails.certificateDetails.issuer);
-        // TODO(lgarron): Make SCT status available in certificate details and show it here.
+            var table = new WebInspector.SecurityDetailsTable();
+            certificateSection.appendChild(table.element());
+            table.addRow("Subject", certificateDetails.subject.name);
+            table.addRow("SAN", sanDiv);
+            table.addRow("Valid From", validFromString);
+            table.addRow("Valid Until", validUntilString);
+            table.addRow("Issuer", certificateDetails.issuer);
+            // TODO(lgarron): Make SCT status available in certificate details and show it here.
+        }
 
-        // TODO(lgarron): Implement a link to get certificateDetails. https://crbug.com/506468
+        function displayCertificateDetailsUnavailable ()
+        {
+            certificateSection.createChild("div").textContent = WebInspector.UIString("Certificate details unavailable.");
+        }
+
+        originState.certificateDetailsPromise.then(displayCertificateDetails.bind(this), displayCertificateDetailsUnavailable);
 
         var noteSection = this.element.createChild("div", "origin-view-section");
         noteSection.createChild("div", "origin-view-section-title").textContent = WebInspector.UIString("Development Note");
         // TODO(lgarron): Fix the issue and then remove this section. See comment in _onResponseReceivedSecurityDetails
         noteSection.createChild("div").textContent = WebInspector.UIString("At the moment, this view only shows security details from the first connection made to %s", origin);
-    }
-
-    if (!securityDetails) {
+    } else {
         var notSecureSection = this.element.createChild("div", "origin-view-section");
         notSecureSection.createChild("div", "origin-view-section-title").textContent = WebInspector.UIString("Not Secure");
         notSecureSection.createChild("div").textContent = WebInspector.UIString("Your connection to this origin is not secure.");
@@ -520,14 +545,14 @@ WebInspector.SecurityOriginView = function(panel, origin, securityState, securit
 WebInspector.SecurityOriginView.prototype = {
 
     /**
-     * @param {!NetworkAgent.SecurityDetails} securityDetails
+     * @param {!NetworkAgent.CertificateSubject} certificateSubject
      * *return {!Element}
      */
-    _createSanDiv: function(securityDetails)
+    _createSanDiv: function(certificateSubject)
     {
         // TODO(lgarron): Truncate the display of SAN entries and add a button to toggle the full list. https://crbug.com/523591
         var sanDiv = createElement("div");
-        var sanList = securityDetails.certificateDetails.subject.sanDnsNames.concat(securityDetails.certificateDetails.subject.sanIpAddresses);
+        var sanList = certificateSubject.sanDnsNames.concat(certificateSubject.sanIpAddresses);
         if (sanList.length === 0) {
             sanDiv.textContent = WebInspector.UIString("(N/A)");
         } else {

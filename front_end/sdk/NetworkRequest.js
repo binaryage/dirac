@@ -82,6 +82,8 @@ WebInspector.NetworkRequest = function(target, requestId, url, documentURL, fram
 
     /** @type {?SecurityAgent.SecurityState} */
     this._securityState = null;
+    /** @type {?NetworkAgent.SecurityDetails} */
+    this._securityDetails = null;
 
     /** @type {string} */
     this.connectionId = "0";
@@ -232,6 +234,22 @@ WebInspector.NetworkRequest.prototype = {
     setSecurityState: function(securityState)
     {
         this._securityState = securityState;
+    },
+
+    /**
+     * @return {?NetworkAgent.SecurityDetails}
+     */
+    securityDetails: function()
+    {
+        return this._securityDetails;
+    },
+
+    /**
+     * @param {!NetworkAgent.SecurityDetails} securityDetails
+     */
+    setSecurityDetails: function(securityDetails)
+    {
+        this._securityDetails = securityDetails;
     },
 
     /**
