@@ -82,7 +82,7 @@ generated_scripts = [
 visibility = [ "//third_party/WebKit/*" ]
 
 group("devtools_frontend_resources") {
-  deps = [
+  public_deps = [
     ":copy_compatibility_scripts",
     ":copy_inspector_images",
     ":copy_emulated_devices_images",
@@ -95,7 +95,7 @@ group("devtools_frontend_resources") {
   if (!debug_devtools) {
     # This overwrites application-specific core CSS (devtools.css),
     # and thus should be guarded out in Debug builds.
-    deps += [
+    public_deps += [
       ":concatenated_inspector_css",
       ":concatenated_toolbox_css",
     ]
@@ -300,7 +300,7 @@ action("build_applications") {
 if (debug_devtools) {
   # Debug: copy non-module directories and core into resources_out_dir as-is.
   group("copy_debug_non_modules") {
-    deps = [
+    public_deps = [
       ":copy_runtime_core",
       ":copy_acorn_js_files",
       ":copy_codemirror_files",
