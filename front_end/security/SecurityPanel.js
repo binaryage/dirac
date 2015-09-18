@@ -30,9 +30,12 @@ WebInspector.SecurityPanel = function()
 
     this._mainView = new WebInspector.SecurityMainView();
 
+    /** @type {!Map<!NetworkAgent.LoaderId, !WebInspector.NetworkRequest>} */
+    this._lastResponseReceivedForLoaderId = new Map();
+
     /** @type {!Map<!WebInspector.SecurityPanel.Origin, !WebInspector.SecurityPanel.OriginState>} */
     this._origins = new Map();
-    // TODO(lgarron): add event listeners to call _clear() once we figure out how to clear the panel properly (https://crbug.com/522762).
+    WebInspector.targetManager.addModelListener(WebInspector.ResourceTreeModel, WebInspector.ResourceTreeModel.EventTypes.MainFrameNavigated, this._onMainFrameNavigated, this);
 
     WebInspector.targetManager.observeTargets(this, WebInspector.Target.Type.Page);
 
@@ -131,6 +134,8 @@ WebInspector.SecurityPanel.prototype = {
             // We don't handle resources like data: URIs. Most of them don't affect the lock icon.
             return;
         }
+        if (request.resourceType() == WebInspector.resourceTypes.Document)
+            this._lastResponseReceivedForLoaderId.set(request.loaderId, request);
         this._processResponse(request);
     },
 
@@ -207,12 +212,24 @@ WebInspector.SecurityPanel.prototype = {
     {
     },
 
-    _clear: function()
+    _clearOrigins: function()
     {
-        this._updateSecurityState(SecurityAgent.SecurityState.Unknown, [], null, false);
         this._sidebarMainViewElement.select();
         this._sidebarOriginSection.removeChildren();
         this._origins.clear();
+        this._lastResponseReceivedForLoaderId.clear();
+    },
+
+    /**
+     * @param {!WebInspector.Event} event
+     */
+    _onMainFrameNavigated: function(event) {
+
+        var frame = /** type {!PageAgent.Frame}*/ (event.data);
+        var request = this._lastResponseReceivedForLoaderId.get(frame.loaderId);
+        this._clearOrigins();
+        if (request)
+            this._processResponse(request);
     },
 
     __proto__: WebInspector.PanelWithSidebar.prototype
