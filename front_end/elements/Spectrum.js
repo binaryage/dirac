@@ -93,6 +93,7 @@ WebInspector.Spectrum = function()
     this._hexValue = this._hexContainer.createChild("input", "spectrum-text-value");
     this._hexValue.maxLength = 7;
     this._hexValue.addEventListener("keydown", this._inputChanged.bind(this), false);
+    this._hexValue.addEventListener("input", this._inputChanged.bind(this), false);
     this._hexValue.addEventListener("mousewheel", this._inputChanged.bind(this), false);
 
     var label = this._hexContainer.createChild("div", "spectrum-text-label");
