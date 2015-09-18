@@ -550,7 +550,7 @@ WebInspector.SecurityOriginView = function(panel, origin, originState)
 
         var noteSection = this.element.createChild("div", "origin-view-section");
         noteSection.createChild("div", "origin-view-section-title").textContent = WebInspector.UIString("Development Note");
-        // TODO(lgarron): Fix the issue and then remove this section. See comment in _onResponseReceivedSecurityDetails
+        // TODO(lgarron): Fix the issue and then remove this section. See comment in SecurityPanel. _processResponse().
         noteSection.createChild("div").textContent = WebInspector.UIString("At the moment, this view only shows security details from the first connection made to %s", origin);
     } else {
         var notSecureSection = this.element.createChild("div", "origin-view-section");
@@ -567,7 +567,6 @@ WebInspector.SecurityOriginView.prototype = {
      */
     _createSanDiv: function(certificateSubject)
     {
-        // TODO(lgarron): Truncate the display of SAN entries and add a button to toggle the full list. https://crbug.com/523591
         var sanDiv = createElement("div");
         var sanList = certificateSubject.sanDnsNames.concat(certificateSubject.sanIpAddresses);
         if (sanList.length === 0) {
