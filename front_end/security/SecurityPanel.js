@@ -28,7 +28,7 @@ WebInspector.SecurityPanel = function()
     this._sidebarOriginSection.listItemElement.classList.add("security-sidebar-origins");
     sidebarTree.appendChild(this._sidebarOriginSection);
 
-    this._mainView = new WebInspector.SecurityMainView();
+    this._mainView = new WebInspector.SecurityMainView(this);
 
     /** @type {!Map<!NetworkAgent.LoaderId, !WebInspector.NetworkRequest>} */
     this._lastResponseReceivedForLoaderId = new Map();
@@ -37,9 +37,13 @@ WebInspector.SecurityPanel = function()
     this._origins = new Map();
     WebInspector.targetManager.addModelListener(WebInspector.ResourceTreeModel, WebInspector.ResourceTreeModel.EventTypes.MainFrameNavigated, this._onMainFrameNavigated, this);
 
+    /** @type {!Map<!WebInspector.NetworkLogView.MixedContentFilterValues, number>} */
+    this._filterRequestCounts = new Map();
+
     WebInspector.targetManager.observeTargets(this, WebInspector.Target.Type.Page);
 
     WebInspector.targetManager.addModelListener(WebInspector.NetworkManager, WebInspector.NetworkManager.EventTypes.ResponseReceived, this._onResponseReceived, this);
+    WebInspector.targetManager.addModelListener(WebInspector.NetworkManager, WebInspector.NetworkManager.EventTypes.RequestFinished, this._onRequestFinished, this);
     WebInspector.targetManager.addModelListener(WebInspector.SecurityModel, WebInspector.SecurityModel.EventTypes.SecurityStateChanged, this._onSecurityStateChanged, this);
 }
 
@@ -178,6 +182,49 @@ WebInspector.SecurityPanel.prototype = {
     },
 
     /**
+     * @param {!WebInspector.Event} event
+     */
+    _onRequestFinished: function(event)
+    {
+        var request = /** @type {!WebInspector.NetworkRequest} */ (event.data);
+        this._updateFilterRequestCounts(request);
+    },
+
+    /**
+     * @param {!WebInspector.NetworkRequest} request
+     */
+    _updateFilterRequestCounts: function(request)
+    {
+        if (!request.mixedContentType || request.mixedContentType === "none")
+            return;
+
+        /** @type {!WebInspector.NetworkLogView.MixedContentFilterValues} */
+        var filterKey = WebInspector.NetworkLogView.MixedContentFilterValues.All;
+        if (request.blocked)
+            filterKey = WebInspector.NetworkLogView.MixedContentFilterValues.Blocked;
+        else if (request.mixedContentType === "blockable")
+            filterKey = WebInspector.NetworkLogView.MixedContentFilterValues.BlockOverridden;
+        else if (request.mixedContentType === "optionally-blockable")
+            filterKey = WebInspector.NetworkLogView.MixedContentFilterValues.Displayed;
+
+        if (!this._filterRequestCounts.has(filterKey))
+            this._filterRequestCounts.set(filterKey, 1);
+        else
+            this._filterRequestCounts.set(filterKey, this._filterRequestCounts.get(filterKey) + 1);
+
+        this._mainView.refreshExplanations();
+    },
+
+    /**
+     * @param {!WebInspector.NetworkLogView.MixedContentFilterValues} filterKey
+     * @return {number}
+     */
+    filterRequestCount: function(filterKey)
+    {
+        return this._filterRequestCounts.get(filterKey) || 0;
+    },
+
+    /**
      * @param {!SecurityAgent.SecurityState} stateA
      * @param {!SecurityAgent.SecurityState} stateB
      * @return {!SecurityAgent.SecurityState}
@@ -218,6 +265,7 @@ WebInspector.SecurityPanel.prototype = {
         this._sidebarOriginSection.removeChildren();
         this._origins.clear();
         this._lastResponseReceivedForLoaderId.clear();
+        this._filterRequestCounts.clear();
     },
 
     /**
@@ -353,13 +401,16 @@ WebInspector.SecurityPanelFactory.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.VBox}
+ * @param {!WebInspector.SecurityPanel} panel
  */
-WebInspector.SecurityMainView = function()
+WebInspector.SecurityMainView = function(panel)
 {
     WebInspector.VBox.call(this);
     this.setMinimumSize(100, 100);
 
     this.element.classList.add("security-main-view");
+
+    this._panel = panel;
 
     // Create security state section.
     var summarySection = this.element.createChild("div", "security-section");
@@ -433,31 +484,24 @@ WebInspector.SecurityMainView.prototype = {
         }
         this._summaryExplanation.textContent = summaryExplanationStrings[this._securityState];
 
+        this._explanations = explanations,
+        this._mixedContentStatus = mixedContentStatus;
+        this._schemeIsCryptographic = schemeIsCryptographic;
+
+        this.refreshExplanations();
+    },
+
+    refreshExplanations: function ()
+    {
         this._securityExplanations.removeChildren();
-        for (var explanation of explanations)
+        for (var explanation of this._explanations)
             this._addExplanation(explanation);
 
-        if (schemeIsCryptographic && mixedContentStatus && (mixedContentStatus.ranInsecureContent || mixedContentStatus.displayedInsecureContent)) {
-            /** @type {!SecurityAgent.SecurityStateExplanation} */
-            var mixedContentExplanation;
-            if (mixedContentStatus.ranInsecureContent) {
-                mixedContentExplanation = /** @type {!SecurityAgent.SecurityStateExplanation} */ ({
-                    "securityState": mixedContentStatus.ranInsecureContentStyle,
-                    "summary": WebInspector.UIString("Active Mixed Content"),
-                    "description": WebInspector.UIString("You have recently allowed insecure content (such as scripts or iframes) to run on this site.")
-                });
-            } else if (mixedContentStatus.displayedInsecureContent) {
-                mixedContentExplanation = /** @type {!SecurityAgent.SecurityStateExplanation} */ ({
-                    "securityState": mixedContentStatus.displayedInsecureContentStyle,
-                    "summary": WebInspector.UIString("Mixed Content"),
-                    "description": WebInspector.UIString("The site includes HTTP resources.")
-                });
-            }
-
-            var requestsAnchor = this._addExplanation(mixedContentExplanation).createChild("div", "security-mixed-content link");
-            requestsAnchor.textContent = WebInspector.UIString("View requests in Network Panel");
-            requestsAnchor.href = "";
-            requestsAnchor.addEventListener("click", mixedContentStatus.ranInsecureContent ? showBlockOverriddenMixedContentInNetworkPanel : showDisplayedMixedContentInNetworkPanel, false);
+        if (this._schemeIsCryptographic && this._mixedContentStatus && (this._mixedContentStatus.ranInsecureContent || this._mixedContentStatus.displayedInsecureContent)) {
+            if (this._mixedContentStatus.ranInsecureContent)
+                this._addMixedContentExplanation(this._mixedContentStatus.ranInsecureContentStyle, WebInspector.UIString("Active Mixed Content"), WebInspector.UIString("You have recently allowed insecure content (such as scripts or iframes) to run on this site."), WebInspector.NetworkLogView.MixedContentFilterValues.BlockOverridden, showBlockOverriddenMixedContentInNetworkPanel);
+            if (this._mixedContentStatus.displayedInsecureContent)
+                this._addMixedContentExplanation(this._mixedContentStatus.displayedInsecureContentStyle, WebInspector.UIString("Mixed Content"), WebInspector.UIString("The site includes HTTP resources."), WebInspector.NetworkLogView.MixedContentFilterValues.Displayed, showDisplayedMixedContentInNetworkPanel);
         }
 
         /**
@@ -466,7 +510,7 @@ WebInspector.SecurityMainView.prototype = {
         function showDisplayedMixedContentInNetworkPanel(e)
         {
             e.consume();
-            WebInspector.NetworkPanel.revealAndFilter(WebInspector.NetworkLogView.FilterType.MixedContent, "displayed");
+            WebInspector.NetworkPanel.revealAndFilter(WebInspector.NetworkLogView.FilterType.MixedContent, WebInspector.NetworkLogView.MixedContentFilterValues.Displayed);
         }
 
         /**
@@ -475,8 +519,35 @@ WebInspector.SecurityMainView.prototype = {
         function showBlockOverriddenMixedContentInNetworkPanel(e)
         {
             e.consume();
-            WebInspector.NetworkPanel.revealAndFilter(WebInspector.NetworkLogView.FilterType.MixedContent, "block-overridden");
+            WebInspector.NetworkPanel.revealAndFilter(WebInspector.NetworkLogView.FilterType.MixedContent, WebInspector.NetworkLogView.MixedContentFilterValues.BlockOverridden);
         }
+    },
+
+    /**
+     * @param {!SecurityAgent.SecurityState} securityState
+     * @param {string} summary
+     * @param {string} description
+     * @param {!WebInspector.NetworkLogView.MixedContentFilterValues} filterKey
+     * @param {!Function} networkFilterFn
+     */
+    _addMixedContentExplanation: function(securityState, summary, description, filterKey, networkFilterFn)
+    {
+        var mixedContentExplanation = /** @type {!SecurityAgent.SecurityStateExplanation} */ ({
+            "securityState": securityState,
+            "summary": summary,
+            "description": description
+        });
+
+        var filterRequestCount = this._panel.filterRequestCount(filterKey);
+        var requestsAnchor = this._addExplanation(mixedContentExplanation).createChild("div", "security-mixed-content link");
+        if (filterRequestCount > 0) {
+            requestsAnchor.textContent = WebInspector.UIString("View %d request%s in Network Panel", filterRequestCount, (filterRequestCount > 1 ? "s" : ""));
+        } else {
+            // Network instrumentation might not have been enabled for the page load, so the security panel does not necessarily know a count of individual mixed requests at this point. Point the user at the Network Panel which prompts them to refresh.
+            requestsAnchor.textContent = WebInspector.UIString("View requests in Network Panel");
+        }
+        requestsAnchor.href = "";
+        requestsAnchor.addEventListener("click", networkFilterFn);
     },
 
     __proto__: WebInspector.VBox.prototype

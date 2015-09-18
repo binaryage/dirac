@@ -141,6 +141,14 @@ WebInspector.NetworkLogView.FilterType = {
 };
 
 /** @enum {string} */
+WebInspector.NetworkLogView.MixedContentFilterValues = {
+    All: "all",
+    Displayed: "displayed",
+    Blocked: "blocked",
+    BlockOverridden: "block-overridden"
+}
+
+/** @enum {string} */
 WebInspector.NetworkLogView.IsFilterType = {
     Running: "running"
 };
@@ -1103,15 +1111,15 @@ WebInspector.NetworkLogView.prototype = {
         this._suggestionBuilder.addItem(WebInspector.NetworkLogView.FilterType.StatusCode, "" + request.statusCode);
 
         if (request.mixedContentType !== "none") {
-            this._suggestionBuilder.addItem(WebInspector.NetworkLogView.FilterType.MixedContent, "all");
+            this._suggestionBuilder.addItem(WebInspector.NetworkLogView.FilterType.MixedContent, WebInspector.NetworkLogView.MixedContentFilterValues.All);
         }
 
         if (request.mixedContentType === "optionally-blockable") {
-            this._suggestionBuilder.addItem(WebInspector.NetworkLogView.FilterType.MixedContent, "displayed");
+            this._suggestionBuilder.addItem(WebInspector.NetworkLogView.FilterType.MixedContent, WebInspector.NetworkLogView.MixedContentFilterValues.Displayed);
         }
 
         if (request.mixedContentType === "blockable") {
-            var suggestion = request.wasBlocked() ? "blocked" : "block-overridden";
+            var suggestion = request.wasBlocked() ? WebInspector.NetworkLogView.MixedContentFilterValues.Blocked : WebInspector.NetworkLogView.MixedContentFilterValues.BlockOverridden;
             this._suggestionBuilder.addItem(WebInspector.NetworkLogView.FilterType.MixedContent, suggestion);
         }
 
@@ -1714,7 +1722,7 @@ WebInspector.NetworkLogView.prototype = {
             return WebInspector.NetworkLogView._requestMimeTypeFilter.bind(null, value);
 
         case WebInspector.NetworkLogView.FilterType.MixedContent:
-            return WebInspector.NetworkLogView._requestMixedContentFilter.bind(null, value);
+            return WebInspector.NetworkLogView._requestMixedContentFilter.bind(null, /** @type {!WebInspector.NetworkLogView.MixedContentFilterValues} */ (value));
 
         case WebInspector.NetworkLogView.FilterType.Scheme:
             return WebInspector.NetworkLogView._requestSchemeFilter.bind(null, value);
@@ -2034,19 +2042,19 @@ WebInspector.NetworkLogView._requestMimeTypeFilter = function(value, request)
 }
 
 /**
- * @param {string} value
+ * @param {!WebInspector.NetworkLogView.MixedContentFilterValues} value
  * @param {!WebInspector.NetworkRequest} request
  * @return {boolean}
  */
 WebInspector.NetworkLogView._requestMixedContentFilter = function(value, request)
 {
-    if (value === "displayed") {
+    if (value === WebInspector.NetworkLogView.MixedContentFilterValues.Displayed) {
         return request.mixedContentType === "optionally-blockable";
-    } else if (value === "blocked") {
+    } else if (value === WebInspector.NetworkLogView.MixedContentFilterValues.Blocked) {
         return request.mixedContentType === "blockable" && request.wasBlocked();
-    } else if (value === "block-overridden") {
+    } else if (value === WebInspector.NetworkLogView.MixedContentFilterValues.BlockOverridden) {
         return request.mixedContentType === "blockable" && !request.wasBlocked();
-    } else if (value === "all") {
+    } else if (value === WebInspector.NetworkLogView.MixedContentFilterValues.All) {
         return request.mixedContentType !== "none";
     }
     return false;
