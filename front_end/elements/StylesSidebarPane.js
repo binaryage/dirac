@@ -355,69 +355,34 @@ WebInspector.StylesSidebarPane.prototype = {
 
         /**
          * @param {!WebInspector.DOMNode} node
-         * @param {!WebInspector.StylesSidebarPane.MatchedRulesPayload} payload
+         * @param {?WebInspector.CSSStyleModel.MatchedStyleResult} matchedStyles
          * @return {?{matched: !WebInspector.SectionCascade, pseudo: !Map.<number, !WebInspector.SectionCascade>}}
          * @this {WebInspector.StylesSidebarPane}
          */
-        function buildMatchedCascades(node, payload)
+        function buildMatchedCascades(node, matchedStyles)
         {
-            if (node !== this.node() || !payload.fulfilled())
+            if (!matchedStyles || node !== this.node())
+                return null;
+            if (!matchedStyles.matchedCSSRules || !matchedStyles.pseudoElements || !matchedStyles.inherited)
                 return null;
 
             return {
-                matched: this._buildMatchedRulesSectionCascade(node, payload),
-                pseudo: this._buildPseudoCascades(node, payload)
+                matched: this._buildMatchedRulesSectionCascade(node, matchedStyles),
+                pseudo: this._buildPseudoCascades(node, matchedStyles)
             };
         }
     },
 
     /**
      * @param {!WebInspector.DOMNode} node
-     * @return {!Promise.<!WebInspector.StylesSidebarPane.MatchedRulesPayload>}
+     * @return {!Promise.<?WebInspector.CSSStyleModel.MatchedStyleResult>}
      */
     _matchedStylesForNode: function(node)
     {
-        var payload = new WebInspector.StylesSidebarPane.MatchedRulesPayload();
         var cssModel = this.cssModel();
         if (!cssModel)
-            return Promise.resolve(payload);
-
-        var promises = [
-            cssModel.inlineStylesPromise(node.id).then(inlineCallback),
-            cssModel.matchedStylesPromise(node.id).then(matchedCallback)
-        ];
-        return Promise.all(promises).then(returnPayload);
-
-        /**
-         * @param {?WebInspector.CSSStyleModel.InlineStyleResult} inlineStyleResult
-         */
-        function inlineCallback(inlineStyleResult)
-        {
-            if (!inlineStyleResult)
-                return;
-            payload.inlineStyle = inlineStyleResult.inlineStyle;
-            payload.attributesStyle = inlineStyleResult.attributesStyle;
-        }
-
-        /**
-         * @param {?WebInspector.CSSStyleModel.MatchedStyleResult} matchedResult
-         */
-        function matchedCallback(matchedResult)
-        {
-            if (matchedResult) {
-                payload.matchedCSSRules = matchedResult.matchedCSSRules;
-                payload.pseudoElements = matchedResult.pseudoElements;
-                payload.inherited = matchedResult.inherited;
-            }
-        }
-
-        /**
-         * @return {!WebInspector.StylesSidebarPane.MatchedRulesPayload}
-         */
-        function returnPayload()
-        {
-            return payload;
-        }
+            return Promise.resolve(/** @type {?WebInspector.CSSStyleModel.MatchedStyleResult} */(null));
+        return cssModel.matchedStylesPromise(node.id)
     },
 
     /**
@@ -508,7 +473,7 @@ WebInspector.StylesSidebarPane.prototype = {
 
     /**
      * @param {!WebInspector.DOMNode} node
-     * @param {!WebInspector.StylesSidebarPane.MatchedRulesPayload} styles
+     * @param {!WebInspector.CSSStyleModel.MatchedStyleResult} styles
      * @return {!Map<number, !WebInspector.SectionCascade>}
      */
     _buildPseudoCascades: function(node, styles)
@@ -540,7 +505,7 @@ WebInspector.StylesSidebarPane.prototype = {
 
     /**
      * @param {!WebInspector.DOMNode} node
-     * @param {!WebInspector.StylesSidebarPane.MatchedRulesPayload} styles
+     * @param {!WebInspector.CSSStyleModel.MatchedStyleResult} styles
      * @return {!WebInspector.SectionCascade}
      */
     _buildMatchedRulesSectionCascade: function(node, styles)
@@ -3093,33 +3058,6 @@ WebInspector.StylesSidebarPropertyRenderer.prototype = {
         container.appendChild(WebInspector.linkifyURLAsNode(hrefUrl || url, url, undefined, !hasResource));
         container.createTextChild(")");
         return container;
-    }
-}
-
-/**
- * @constructor
- */
-WebInspector.StylesSidebarPane.MatchedRulesPayload = function()
-{
-    /** @type {?WebInspector.CSSStyleDeclaration} */
-    this.inlineStyle = null;
-    /** @type {?WebInspector.CSSStyleDeclaration} */
-    this.attributesStyle = null;
-    /** @type {?Array.<!WebInspector.CSSRule>} */
-    this.matchedCSSRules = null;
-    /** @type {?Array.<!WebInspector.CSSStyleModel.PseudoElementMatches>} */
-    this.pseudoElements = null;
-    /** @type {?Array.<!WebInspector.CSSStyleModel.InheritedMatches>} */
-    this.inherited = null;
-}
-
-WebInspector.StylesSidebarPane.MatchedRulesPayload.prototype = {
-    /**
-     * @return {boolean}
-     */
-    fulfilled: function()
-    {
-        return !!(this.matchedCSSRules && this.pseudoElements && this.inherited);
     }
 }
 

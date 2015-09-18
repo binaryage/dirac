@@ -941,23 +941,15 @@ WebInspector.AuditRules.ImageDimensionsRule.prototype = {
             var targetResult = {};
 
             /**
-             * @param {?WebInspector.CSSStyleModel.InlineStyleResult} inlineStyleResult
-             */
-            function inlineCallback(inlineStyleResult)
-            {
-                if (!inlineStyleResult)
-                    return;
-                targetResult.inlineStyle = inlineStyleResult.inlineStyle;
-                targetResult.attributesStyle = inlineStyleResult.attributesStyle;
-            }
-
-            /**
              * @param {?WebInspector.CSSStyleModel.MatchedStyleResult} matchedStyleResult
              */
             function matchedCallback(matchedStyleResult)
             {
-                if (matchedStyleResult)
-                    targetResult.matchedCSSRules = matchedStyleResult.matchedCSSRules;
+                if (!matchedStyleResult)
+                    return;
+                targetResult.matchedCSSRules = matchedStyleResult.matchedCSSRules;
+                targetResult.inlineStyle = matchedStyleResult.inlineStyle;
+                targetResult.attributesStyle = matchedStyleResult.attributesStyle;
             }
 
             /**
@@ -975,7 +967,6 @@ WebInspector.AuditRules.ImageDimensionsRule.prototype = {
             for (var i = 0; nodeIds && i < nodeIds.length; ++i) {
                 var stylePromises = [
                     cssModel.matchedStylesPromise(nodeIds[i]).then(matchedCallback),
-                    cssModel.inlineStylesPromise(nodeIds[i]).then(inlineCallback),
                     cssModel.computedStylePromise(nodeIds[i]).then(computedCallback)
                 ];
                 var nodePromise = Promise.all(stylePromises).then(imageStylesReady.bind(null, nodeIds[i], targetResult));
