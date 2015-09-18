@@ -16,7 +16,6 @@ WebInspector.StylesSectionModel = function(cascade, rule, style, customSelectorT
     this._rule = rule;
     this._style = style;
     this._customSelectorText = customSelectorText;
-    this._isAttribute = false;
     this._editable = !!(this._style && this._style.styleSheetId);
     this._inheritedFromNode = inheritedFromNode || null;
 }
@@ -115,22 +114,6 @@ WebInspector.StylesSectionModel.prototype = {
     media: function()
     {
         return this.rule() ? this.rule().media : null;
-    },
-
-    /**
-     * @return {boolean}
-     */
-    isAttribute: function()
-    {
-        return this._isAttribute;
-    },
-
-    /**
-     * @param {boolean} isAttribute
-     */
-    setIsAttribute: function(isAttribute)
-    {
-        this._isAttribute = isAttribute;
     },
 
     /**

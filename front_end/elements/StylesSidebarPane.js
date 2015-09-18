@@ -556,10 +556,8 @@ WebInspector.StylesSidebarPane.prototype = {
         }
 
         // Inline style has the greatest specificity.
-        if (styles.inlineStyle && node.nodeType() === Node.ELEMENT_NODE) {
-            var model = cascade.appendModelFromStyle(styles.inlineStyle, "element.style");
-            model.setIsAttribute(true);
-        }
+        if (styles.inlineStyle && node.nodeType() === Node.ELEMENT_NODE)
+            cascade.appendModelFromStyle(styles.inlineStyle, "element.style");
 
         // Add rules in reverse order to match the cascade order.
         var addedAttributesStyle;
@@ -581,12 +579,8 @@ WebInspector.StylesSidebarPane.prototype = {
 
         for (var parentOrdinal = 0; parentOrdinal < styles.inherited.length; ++parentOrdinal) {
             var parentStyles = styles.inherited[parentOrdinal];
-            if (parentStyles.inlineStyle) {
-                if (this._containsInherited(parentStyles.inlineStyle)) {
-                    var model = cascade.appendModelFromStyle(parentStyles.inlineStyle, WebInspector.UIString("Style Attribute"), parentNode);
-                    model.setIsAttribute(true);
-                }
-            }
+            if (parentStyles.inlineStyle && this._containsInherited(parentStyles.inlineStyle))
+                cascade.appendModelFromStyle(parentStyles.inlineStyle, WebInspector.UIString("Style Attribute"), parentNode);
 
             for (var i = parentStyles.matchedCSSRules.length - 1; i >= 0; --i) {
                 var rulePayload = parentStyles.matchedCSSRules[i];
@@ -1321,9 +1315,6 @@ WebInspector.StylePropertiesSection.prototype = {
         var hasMatchingChild = false;
         for (var child of this.propertiesTreeOutline.rootElement().children())
             hasMatchingChild |= child._updateFilter();
-
-        if (this.styleRule.isAttribute())
-            return true;
 
         var regex = this._parentPane.filterRegex();
         var hideRule = !hasMatchingChild && regex && !regex.test(this.element.textContent);
