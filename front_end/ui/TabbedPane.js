@@ -42,7 +42,7 @@ WebInspector.TabbedPane = function()
     this._headerElement = this.contentElement.createChild("div", "tabbed-pane-header toolbar-colors");
     this._headerElement.createChild("content").select = ".tabbed-pane-header-before";
     this._headerContentsElement = this._headerElement.createChild("div", "tabbed-pane-header-contents");
-    this._tabSlider = this._headerContentsElement.createChild("div", "tabbed-pane-tab-slider");
+    this._tabSlider = createElementWithClass("div", "tabbed-pane-tab-slider");
     this._headerElement.createChild("content").select = ".tabbed-pane-header-after";
     this._tabsElement = this._headerContentsElement.createChild("div", "tabbed-pane-header-tabs");
     this._contentElement = this.contentElement.createChild("div", "tabbed-pane-content");
@@ -740,9 +740,7 @@ WebInspector.TabbedPane.prototype = {
 
     _updateTabSlider: function()
     {
-        if (!this._currentTab)
-            return;
-        if (!this._sliderEnabled)
+        if (!this._currentTab || !this._sliderEnabled)
             return;
         var left = 0;
         for (var i = 0; i < this._tabs.length && this._currentTab !== this._tabs[i] && this._tabs[i]._shown; i++)
@@ -750,6 +748,9 @@ WebInspector.TabbedPane.prototype = {
         var sliderWidth = this._currentTab._shown ? this._currentTab._measuredWidth : this._dropDownButton.offsetWidth;
         this._tabSlider.style.transform = "translateX(" + left + "px) scaleY(0.75)";
         this._tabSlider.style.width = sliderWidth + "px";
+
+        if (this._tabSlider.parentElement !== this._headerContentsElement)
+            this._headerContentsElement.appendChild(this._tabSlider);
     },
 
     /**
@@ -1176,7 +1177,7 @@ WebInspector.TabbedPaneTab.prototype = {
 
         this._tabElement.classList.add("dragging");
         this._tabElement.style.setProperty("left", (event.pageX - this._dragStartX) + "px");
-        this._tabbedPane._updateTabSlider();
+        this._tabbedPane._tabSlider.remove();
     },
 
     /**
