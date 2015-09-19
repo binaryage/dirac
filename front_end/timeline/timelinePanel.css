@@ -59,19 +59,8 @@
     background-color: rgb(255, 255, 255);
 }
 
-.timeline-overview-frames-mode #timeline-overview-grid,
-.timeline-overview-frames-mode .overview-grid-cursor-area,
-.timeline-overview-frames-mode .overview-grid-cursor-position {
-    display: none;
-}
-
 #timeline-overview-grid .resources-dividers-label-bar {
     pointer-events: auto;
-}
-
-.timeline-overview-frames-mode .overview-grid-window,
-.timeline-overview-frames-mode .overview-grid-dividers-background {
-    height: 100%;
 }
 
 #timeline-container {
@@ -319,10 +308,6 @@
     flex-basis: 6px;
 }
 
-#timeline-overview-frames {
-    flex-basis: 100px;
-}
-
 #timeline-overview-pane {
     flex: auto;
     position: relative;
@@ -340,12 +325,6 @@
 #timeline-overview-container canvas {
     width: 100%;
     height: 100%;
-}
-
-#timeline-overview-frames canvas {
-    z-index: 200;
-    opacity: 0.8;
-    background-color: rgb(255, 255, 255);
 }
 
 #timeline-graphs {

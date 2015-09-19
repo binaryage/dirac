@@ -55,7 +55,6 @@
         "TimelinePresentationModel.js",
         "TimelineFrameModel.js",
         "TimelineEventOverview.js",
-        "TimelineFrameOverview.js",
         "TimelineFlameChart.js",
         "TimelineTreeView.js",
         "TimelineUIUtils.js",

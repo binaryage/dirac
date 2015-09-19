@@ -652,7 +652,6 @@
             'front_end/timeline/TimelineEventOverview.js',
             'front_end/timeline/TimelineFlameChart.js',
             'front_end/timeline/TimelineFrameModel.js',
-            'front_end/timeline/TimelineFrameOverview.js',
             'front_end/timeline/TimelineJSProfile.js',
             'front_end/timeline/TimelineLayersView.js',
             'front_end/timeline/TimelineModel.js',

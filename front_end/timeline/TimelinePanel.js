@@ -71,7 +71,6 @@ WebInspector.TimelinePanel = function()
     /** @type {!Array.<!WebInspector.TimelineModeView>} */
     this._currentViews = [];
 
-    this._overviewModeSetting = WebInspector.settings.createSetting("timelineOverviewMode", WebInspector.TimelinePanel.OverviewMode.Events);
     this._flameChartEnabledSetting = WebInspector.settings.createSetting("timelineFlameChartEnabled", true);
     this._viewModeSetting = WebInspector.settings.createSetting("timelineViewMode", WebInspector.TimelinePanel.ViewMode.FlameChart);
     this._createToolbarItems();
@@ -120,11 +119,6 @@ WebInspector.TimelinePanel = function()
     WebInspector.targetManager.addEventListener(WebInspector.TargetManager.Events.SuspendStateChanged, this._onSuspendStateChanged, this);
     this._showRecordingHelpMessage();
 }
-
-WebInspector.TimelinePanel.OverviewMode = {
-    Events: "Events",
-    Frames: "Frames"
-};
 
 /**
  * @enum {string}
@@ -237,15 +231,6 @@ WebInspector.TimelinePanel.prototype = {
     _onOverviewSelectionChanged: function(event)
     {
         var selection = /** @type {!WebInspector.TimelineSelection} */ (event.data);
-        if (selection && selection.type() === WebInspector.TimelineSelection.Type.Frame) {
-            var frameDuration = selection._endTime - selection._startTime;
-            // Only readjust the window if the frame does not fit entirely or if the zoom level is too small.
-            var needAdjustWindow = selection._startTime < this._windowStartTime ||
-                selection._endTime > this._windowEndTime ||
-                (this._windowEndTime - this._windowStartTime) / frameDuration > 4;
-            if (needAdjustWindow)
-                this.requestWindowTimes(selection._startTime - frameDuration, selection._endTime + frameDuration);
-        }
         this.select(selection);
     },
 
@@ -350,19 +335,14 @@ WebInspector.TimelinePanel.prototype = {
         this._panelToolbar.appendToolbarItem(garbageCollectButton);
         this._panelToolbar.appendSeparator();
 
-        var viewModeLabel = new WebInspector.ToolbarText(WebInspector.UIString("View:"), "toolbar-group-label");
-        this._panelToolbar.appendToolbarItem(viewModeLabel);
-
-        var framesToggleButton = new WebInspector.ToolbarButton(WebInspector.UIString("Frames view. (Activity split into frames)"), "histogram-toolbar-item");
-        framesToggleButton.setToggled(this._overviewModeSetting.get() === WebInspector.TimelinePanel.OverviewMode.Frames);
-        framesToggleButton.addEventListener("click", this._overviewModeChanged.bind(this, framesToggleButton));
-        this._panelToolbar.appendToolbarItem(framesToggleButton);
-
         if (!Runtime.experiments.isEnabled("multipleTimelineViews")) {
+            var viewModeLabel = new WebInspector.ToolbarText(WebInspector.UIString("View:"), "toolbar-group-label");
+            this._panelToolbar.appendToolbarItem(viewModeLabel);
+
             this._flameChartToggleButton = new WebInspector.ToolbarSettingToggle(this._flameChartEnabledSetting, "flame-chart-toolbar-item", WebInspector.UIString("Flame chart view. (Use WASD or time selection to navigate)"));
             this._panelToolbar.appendToolbarItem(this._flameChartToggleButton);
+            this._panelToolbar.appendSeparator();
         }
-        this._panelToolbar.appendSeparator();
 
         var captureSettingsLabel = new WebInspector.ToolbarText(WebInspector.UIString("Capture:"), "toolbar-group-label");
         this._panelToolbar.appendToolbarItem(captureSettingsLabel);
@@ -596,46 +576,20 @@ WebInspector.TimelinePanel.prototype = {
         this._updateSelectionDetails();
     },
 
-    /**
-     * @param {!WebInspector.ToolbarButton} button
-     */
-    _overviewModeChanged: function(button)
-    {
-        var oldMode = this._overviewModeSetting.get();
-        if (oldMode === WebInspector.TimelinePanel.OverviewMode.Events) {
-            this._overviewModeSetting.set(WebInspector.TimelinePanel.OverviewMode.Frames);
-            button.setToggled(true);
-        } else {
-            this._overviewModeSetting.set(WebInspector.TimelinePanel.OverviewMode.Events);
-            button.setToggled(false);
-        }
-        this._onModeChanged();
-    },
-
     _onModeChanged: function()
     {
-        var isFrameMode = this._overviewModeSetting.get() === WebInspector.TimelinePanel.OverviewMode.Frames;
-
         // Set up overview controls.
         this._overviewControls = [];
-        if (isFrameMode) {
-            this._frameOverview = new WebInspector.TimelineFrameOverview(this._model, this._frameModel());
-            this._frameOverview.addEventListener(WebInspector.TimelineFrameOverview.Events.SelectionChanged, this._onOverviewSelectionChanged, this);
-            this._overviewControls.push(this._frameOverview);
-        } else {
-            this._frameOverview = null;
-            if (Runtime.experiments.isEnabled("inputEventsOnTimelineOverview"))
-                this._overviewControls.push(new WebInspector.TimelineEventOverview.Input(this._model));
-            this._overviewControls.push(new WebInspector.TimelineEventOverview.Responsiveness(this._model, this._frameModel()));
-            this._overviewControls.push(new WebInspector.TimelineEventOverview.Frames(this._model, this._frameModel()));
-            this._overviewControls.push(new WebInspector.TimelineEventOverview.CPUActivity(this._model));
-            this._overviewControls.push(new WebInspector.TimelineEventOverview.Network(this._model));
-        }
-        if (!isFrameMode && this._captureFilmStripSetting.get())
+        if (Runtime.experiments.isEnabled("inputEventsOnTimelineOverview"))
+            this._overviewControls.push(new WebInspector.TimelineEventOverview.Input(this._model));
+        this._overviewControls.push(new WebInspector.TimelineEventOverview.Responsiveness(this._model, this._frameModel()));
+        this._overviewControls.push(new WebInspector.TimelineEventOverview.Frames(this._model, this._frameModel()));
+        this._overviewControls.push(new WebInspector.TimelineEventOverview.CPUActivity(this._model));
+        this._overviewControls.push(new WebInspector.TimelineEventOverview.Network(this._model));
+        if (this._captureFilmStripSetting.get())
             this._overviewControls.push(new WebInspector.TimelineFilmStripOverview(this._model, this._tracingModel));
-        if (this._captureMemorySetting.get() && !isFrameMode)  // Frame mode skews time, don't render aux overviews.
+        if (this._captureMemorySetting.get())
             this._overviewControls.push(new WebInspector.TimelineEventOverview.Memory(this._model));
-        this.element.classList.toggle("timeline-overview-frames-mode", isFrameMode);
         this._overviewPane.setOverviewControls(this._overviewControls);
 
         // Set up the main view.
@@ -660,7 +614,7 @@ WebInspector.TimelinePanel.prototype = {
             this._filterBar.filtersElement().classList.toggle("hidden", !this._filterBar.filtersToggled());
             var timelineView = new WebInspector.TimelineView(this, this._model);
             this._addModeView(timelineView);
-            timelineView.setFrameModel(isFrameMode ? this._frameModel() : null);
+            timelineView.setFrameModel(this._frameModel());
         } else if (viewMode === WebInspector.TimelinePanel.ViewMode.TreeView) {
             this._filterBar.filterButton().setEnabled(false);
             this._filterBar.filtersElement().classList.toggle("hidden", true);
@@ -1303,8 +1257,6 @@ WebInspector.TimelinePanel.prototype = {
             var view = this._currentViews[i];
             view.setSelection(selection);
         }
-        if (this._frameOverview)
-            this._frameOverview.select(selection);
         this._updateSelectionDetails();
     },
 
