@@ -541,7 +541,22 @@ WebInspector.RemoteObjectImpl.prototype = {
                 reject(null);
                 return;
             }
-            this.target().domdebuggerAgent().getEventListeners(this._objectId, mycallback.bind(this));
+
+            /** @type {?WebInspector.RemoteObject} */
+            var removeFunction = null;
+
+            this.callFunctionPromise(nodeRemoveEventListener).then(storeRemoveFunction.bind(this));
+
+            /**
+             * @param {!WebInspector.CallFunctionResult} result
+             * @this {WebInspector.RemoteObject}
+             */
+            function storeRemoveFunction(result) {
+                if (!result.wasThrown && result.object)
+                    removeFunction = result.object;
+                this.target().domdebuggerAgent().getEventListeners(this._objectId, mycallback.bind(this));
+            }
+
             /**
              * @this {!WebInspector.RemoteObject}
              * @param {?Protocol.Error} error
@@ -555,6 +570,29 @@ WebInspector.RemoteObjectImpl.prototype = {
                 }
                 fulfill(payloads.map(createEventListener.bind(this)));
             }
+
+            /**
+             * @suppressReceiverCheck
+             * @this {Node}
+             * @return {function(this:Node, string, function(), boolean=): undefined}
+             */
+            function nodeRemoveEventListener()
+            {
+                return removeEventListenerWrapper.bind(this);
+                /**
+                 * @param {string} type
+                 * @param {function()} handler
+                 * @param {boolean=} useCapture
+                 * @this {Node}
+                 */
+                function removeEventListenerWrapper(type, handler, useCapture)
+                {
+                    this.removeEventListener(type, handler, useCapture);
+                    if (this["on" + type])
+                        this["on" + type] = null;
+                }
+            }
+
             /**
              * @this {!WebInspector.RemoteObject}
              * @param {!DOMDebuggerAgent.EventListener} payload
@@ -565,7 +603,9 @@ WebInspector.RemoteObjectImpl.prototype = {
                                                       payload.type,
                                                       payload.useCapture,
                                                       payload.handler ? this.target().runtimeModel.createRemoteObject(payload.handler) : null,
-                                                      WebInspector.DebuggerModel.Location.fromPayload(this._debuggerModel, payload.location));
+                                                      payload.originalHandler ? this.target().runtimeModel.createRemoteObject(payload.originalHandler) : null,
+                                                      WebInspector.DebuggerModel.Location.fromPayload(this._debuggerModel, payload.location),
+                                                      removeFunction);
             }
         }
     },

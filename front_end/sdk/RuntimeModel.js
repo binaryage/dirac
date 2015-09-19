@@ -494,17 +494,21 @@ WebInspector.ExecutionContext.prototype = {
  * @param {string} type
  * @param {boolean} useCapture
  * @param {?WebInspector.RemoteObject} handler
+ * @param {?WebInspector.RemoteObject} originalHandler
  * @param {!WebInspector.DebuggerModel.Location} location
+ * @param {?WebInspector.RemoteObject} removeFunction
  * @param {string=} listenerType
  */
-WebInspector.EventListener = function(target, type, useCapture, handler, location, listenerType)
+WebInspector.EventListener = function(target, type, useCapture, handler, originalHandler, location, removeFunction, listenerType)
 {
     WebInspector.SDKObject.call(this, target);
     this._type = type;
     this._useCapture = useCapture;
     this._handler = handler;
+    this._originalHandler = originalHandler || handler;
     this._location = location;
     this._sourceURL = location.script().contentURL();
+    this._removeFunction = removeFunction;
     this._listenerType = listenerType || "normal";
 }
 
@@ -547,6 +551,57 @@ WebInspector.EventListener.prototype = {
     sourceURL: function()
     {
         return this._sourceURL;
+    },
+
+    /**
+     * @return {?WebInspector.RemoteObject}
+     */
+    originalHandler: function()
+    {
+        return this._originalHandler;
+    },
+
+    /**
+     * @return {?WebInspector.RemoteObject}
+     */
+    removeFunction: function()
+    {
+        return this._removeFunction;
+    },
+
+    /**
+     * @return {!Promise<undefined>}
+     */
+    remove: function()
+    {
+        if (!this._removeFunction)
+            return Promise.resolve();
+        return new Promise(promiseConstructor.bind(this));
+
+        /**
+         * @param {function()} success
+         * @this {WebInspector.EventListener}
+         */
+        function promiseConstructor(success)
+        {
+            this._removeFunction.callFunction(callCustomRemove, [
+                WebInspector.RemoteObject.toCallArgument(this._removeFunction),
+                WebInspector.RemoteObject.toCallArgument(this._type),
+                WebInspector.RemoteObject.toCallArgument(this._originalHandler),
+                WebInspector.RemoteObject.toCallArgument(this._useCapture)
+            ], success);
+
+            /**
+             * @param {function(string, function(), boolean)} func
+             * @param {string} type
+             * @param {function()} listener
+             * @param {boolean} useCapture
+             */
+            function callCustomRemove(func, type, listener, useCapture)
+            {
+                func.call(null, type, listener, useCapture);
+            }
+        }
     },
 
     /**

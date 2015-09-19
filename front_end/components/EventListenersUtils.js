@@ -71,8 +71,12 @@ WebInspector.EventListener.frameworkEventListeners = function(object)
             var useCapture;
             /** @type {?WebInspector.RemoteObject} */
             var handler = null;
+            /** @type {?WebInspector.RemoteObject} */
+            var originalHandler = null;
             /** @type {?WebInspector.DebuggerModel.Location} */
             var location = null;
+            /** @type {?WebInspector.RemoteObject} */
+            var removeFunctionObject = null;
 
             var promises = [];
             promises.push(listenerObject.callFunctionJSONPromise(truncatePageEventListener, undefined).then(storeTruncatedListener));
@@ -96,7 +100,7 @@ WebInspector.EventListener.frameworkEventListeners = function(object)
                 useCapture = truncatedListener.useCapture;
             }
 
-            promises.push(listenerObject.callFunctionPromise(handlerFunction).then(assertCallFunctionResult).then(toTargetFunction).then(storeFunctionWithDetails));
+            promises.push(listenerObject.callFunctionPromise(handlerFunction).then(assertCallFunctionResult).then(storeOriginalHandler).then(toTargetFunction).then(storeFunctionWithDetails));
 
             /**
              * @suppressReceiverCheck
@@ -106,6 +110,16 @@ WebInspector.EventListener.frameworkEventListeners = function(object)
             function handlerFunction()
             {
                 return this.handler;
+            }
+
+            /**
+             * @param {!WebInspector.RemoteObject} functionObject
+             * @return {!WebInspector.RemoteObject}
+             */
+            function storeOriginalHandler(functionObject)
+            {
+                originalHandler = functionObject;
+                return originalHandler;
             }
 
             /**
@@ -126,6 +140,28 @@ WebInspector.EventListener.frameworkEventListeners = function(object)
                 location = functionDetails ? functionDetails.location : null;
             }
 
+            promises.push(listenerObject.callFunctionPromise(getRemoveFunction).then(assertCallFunctionResult).then(storeRemoveFunction));
+
+            /**
+             * @suppressReceiverCheck
+             * @return {function()}
+             * @this {WebInspector.EventListenerObjectInInspectedPage}
+             */
+            function getRemoveFunction()
+            {
+                return this.remove;
+            }
+
+            /**
+             * @param {!WebInspector.RemoteObject} functionObject
+             */
+            function storeRemoveFunction(functionObject)
+            {
+                if (functionObject.type !== "function")
+                    return;
+                removeFunctionObject = functionObject;
+            }
+
             return Promise.all(promises).then(createEventListener).catchException(/** @type {?WebInspector.EventListener} */(null));
 
             /**
@@ -135,7 +171,7 @@ WebInspector.EventListener.frameworkEventListeners = function(object)
             {
                 if (!location)
                     throw new Error("Empty event listener's location");
-                return new WebInspector.EventListener(handler._target, type, useCapture, handler, location, "frameworkUser");
+                return new WebInspector.EventListener(handler._target, type, useCapture, handler, originalHandler, location, removeFunctionObject, "frameworkUser");
             }
         }
     }
@@ -230,7 +266,8 @@ WebInspector.EventListener.frameworkEventListeners = function(object)
             {
               "handler": function(),
               "useCapture": true,
-              "type": "change"
+              "type": "change",
+              "remove": function(type, handler, useCapture)
             },
             ...
           ],
@@ -319,8 +356,11 @@ WebInspector.EventListener.frameworkEventListeners = function(object)
                 var handler = eventListener.handler;
                 if (!handler || (typeof handler !== "function"))
                     errorString += "event listener's handler isn't a function or empty, ";
+                var remove = eventListener.remove;
+                if (remove && (typeof remove !== "function"))
+                    errorString += "event listener's remove isn't a function, ";
                 if (!errorString){
-                    return {type: type, useCapture: useCapture, handler: handler};
+                    return {type: type, useCapture: useCapture, handler: handler, remove: remove};
                 } else {
                     errorLines.push(errorString.substr(0, errorString.length - 2));
                     return null;
@@ -390,12 +430,13 @@ WebInspector.EventListener.frameworkEventListeners = function(object)
                                 useCapture: true,
                                 type: type
                             };
+                            listener.remove = jQueryRemove.bind(node, frameworkListener.selector);
                             eventListeners.push(listener);
                         }
                     }
                 }
                 var nodeData = data(node);
-                if (typeof nodeData.handle === "function")
+                if (nodeData && typeof nodeData.handle === "function")
                     internalHandlers.push(nodeData.handle);
             }
             var entry = jQueryFunction(node)[0];
@@ -410,6 +451,7 @@ WebInspector.EventListener.frameworkEventListeners = function(object)
                                 useCapture: true,
                                 type: type
                             };
+                            // We don't support removing for old version < 1.4 of jQuery because it doesn't provide API for getting "selector".
                             eventListeners.push(listener);
                         }
                     }
@@ -418,6 +460,24 @@ WebInspector.EventListener.frameworkEventListeners = function(object)
                     internalHandlers.push(entry["$handle"]);
             }
             return {eventListeners: eventListeners, internalHandlers: internalHandlers};
+        }
+
+        /**
+         * @param {string} selector
+         * @param {string} type
+         * @param {function()} handler
+         * @this {?Object}
+         */
+        function jQueryRemove(selector, type, handler)
+        {
+            if (!this || !(this instanceof Node))
+                return;
+            var node = /** @type {!Node} */(this);
+            var jQuery = /** @type {?{fn,data,_data}}*/(window["jQuery"]);
+            if (!jQuery || !jQuery.fn)
+                return;
+            var jQueryFunction = /** @type {function(!Node)} */(jQuery);
+            jQueryFunction(node).off(type, selector, handler);
         }
     }
 }

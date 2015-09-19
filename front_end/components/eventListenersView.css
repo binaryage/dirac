@@ -32,3 +32,20 @@
 .event-listener-tree-subtitle {
     float: right;
 }
+
+.event-listener-delete-button {
+    padding: 0 3px;
+    background-color: #f2f2f2;
+    border-radius: 3px;
+    border: 1px solid #c3c3c3;
+    margin-left: 10px;
+    display: none;
+}
+
+.event-listener-delete-button:hover {
+    background-color: #e0e0e0;
+}
+
+.event-listener-tree li:hover .event-listener-delete-button {
+    display: inline;
+}

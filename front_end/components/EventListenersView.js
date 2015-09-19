@@ -280,7 +280,42 @@ WebInspector.ObjectEventListenerBar.prototype = {
         var title = this.listItemElement.createChild("span");
         var subtitle = this.listItemElement.createChild("span", "event-listener-tree-subtitle");
         subtitle.appendChild(linkifier.linkifyRawLocation(this._eventListener.location(), this._eventListener.sourceURL()));
+
         title.appendChild(WebInspector.ObjectPropertiesSection.createValueElement(object, false));
+
+        if (this._eventListener.removeFunction()) {
+            var deleteButton = title.createChild("span", "event-listener-delete-button");
+            deleteButton.textContent = WebInspector.UIString("Remove");
+            deleteButton.title = WebInspector.UIString("Delete event listener");
+            deleteButton.addEventListener("click", removeListener.bind(this), false);
+            title.appendChild(deleteButton);
+        }
+
+        /**
+         * @param {!WebInspector.Event} event
+         * @this {WebInspector.ObjectEventListenerBar}
+         */
+        function removeListener(event)
+        {
+            event.consume();
+            this._removeListenerBar();
+            this._eventListener.remove();
+        }
+    },
+
+    _removeListenerBar: function()
+    {
+        var parent = this.parent;
+        parent.removeChild(this);
+        if (!parent.childCount()) {
+            parent.parent.removeChild(parent);
+            return;
+        }
+        var allHidden = true;
+        for (var i = 0; i < parent.childCount(); ++i)
+            if (!parent.childAt(i).hidden)
+                allHidden = false;
+        parent.hidden = allHidden;
     },
 
     /**
