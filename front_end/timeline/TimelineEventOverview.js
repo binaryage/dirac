@@ -327,8 +327,10 @@ WebInspector.TimelineEventOverview.CPUActivity.prototype = {
         for (var i = idleIndex + 1; i < categoryOrder.length; ++i)
             categories[categoryOrder[i]]._overviewIndex = i;
 
+        var backgroundContext = this._backgroundCanvas.getContext("2d");
         for (var thread of this._model.virtualThreads())
-            drawThreadEvents.call(this, this._backgroundCanvas.getContext("2d"), thread.events);
+            drawThreadEvents.call(this, backgroundContext, thread.events);
+        applyPattern(backgroundContext);
         drawThreadEvents.call(this, this._context, this._model.mainThreadEvents());
 
         /**
@@ -389,6 +391,23 @@ WebInspector.TimelineEventOverview.CPUActivity.prototype = {
                 ctx.fillStyle = this._categoryColor(categories[categoryOrder[i]]);
                 ctx.fill(paths[i]);
             }
+        }
+
+        /**
+         * @param {!CanvasRenderingContext2D} ctx
+         */
+        function applyPattern(ctx)
+        {
+            var step = 4 * window.devicePixelRatio;
+            ctx.save();
+            ctx.lineWidth = step / 2;
+            for (var i = 0; i < width + height; i += step) {
+                ctx.moveTo(i, 0);
+                ctx.lineTo(i - height, height);
+            }
+            ctx.globalCompositeOperation = "destination-out";
+            ctx.stroke();
+            ctx.restore();
         }
     },
 
