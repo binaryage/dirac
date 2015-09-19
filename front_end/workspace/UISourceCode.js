@@ -298,7 +298,7 @@ WebInspector.UISourceCode.prototype = {
                 return;
             }
 
-            if (this._content === updatedContent && !this.isDirty()) {
+            if (this._content === updatedContent) {
                 delete this._lastAcceptedContent;
                 this._terminateContentCheck();
                 return;
