@@ -1365,7 +1365,7 @@ WebInspector.CSSProperty.prototype = {
             if (isSemicolon)
                 insideProperty = false;
 
-            if (tokenType && (tokenType.includes("css-meta") || (tokenType.includes("css-property") && !lastWasMeta))) {
+            if (!insideProperty && tokenType && (tokenType.includes("css-meta") || (tokenType.includes("css-property") && !lastWasMeta))) {
                 result += "\n" + indentation;
                 insideProperty = true;
             }
