@@ -126,16 +126,8 @@ WebInspector.StylesSectionModel.prototype = {
         this._cascade._resetUsedProperties();
     },
 
-    /**
-     * @param {!WebInspector.CSSStyleDeclaration} style
-     */
-    updateStyleDeclaration: function(style)
+    resetCachedData: function()
     {
-        this._style = style;
-        if (this._rule) {
-            style.parentRule = this._rule;
-            this._rule.style = style;
-        }
         this._cascade._resetUsedProperties();
     },
 

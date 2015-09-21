@@ -458,14 +458,13 @@ WebInspector.MetricsSidebarPane.prototype = {
         this.inlineStyle.appendProperty(context.styleProperty, userInput, callback.bind(this));
 
         /**
-         * @param {?WebInspector.CSSStyleDeclaration} style
+         * @param {boolean} success
          * @this {WebInspector.MetricsSidebarPane}
          */
-        function callback(style)
+        function callback(success)
         {
-            if (!style)
+            if (!success)
                 return;
-            this.inlineStyle = style;
             if (!("originalPropertyData" in this))
                 this.originalPropertyData = this.previousPropertyDataCandidate;
 

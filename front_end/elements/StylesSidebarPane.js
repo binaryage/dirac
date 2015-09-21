@@ -2089,13 +2089,12 @@ WebInspector.StylePropertyTreeElement.prototype = {
     },
 
     /**
-     * @param {!WebInspector.CSSStyleDeclaration} newStyle
+     * @param {!WebInspector.TextRange} oldStyleRange
      */
-    _applyNewStyle: function(newStyle)
+    _styleTextEdited: function(oldStyleRange)
     {
-        var oldStyleRange = /** @type {!WebInspector.TextRange} */ (this.style().range);
-        var newStyleRange = /** @type {!WebInspector.TextRange} */ (newStyle.range);
-        this._styleRule.updateStyleDeclaration(newStyle);
+        var newStyleRange = /** @type {!WebInspector.TextRange} */ (this.style().range);
+        this._styleRule.resetCachedData();
         if (this._styleRule.rule())
             this._parentPane._styleSheetRuleEdited(/** @type {!WebInspector.CSSRule} */(this._styleRule.rule()), oldStyleRange, newStyleRange);
     },
@@ -2106,19 +2105,21 @@ WebInspector.StylePropertyTreeElement.prototype = {
     _toggleEnabled: function(event)
     {
         var disabled = !event.target.checked;
+        var oldStyleRange = this.style().range;
+        if (!oldStyleRange)
+            return;
 
         /**
-         * @param {?WebInspector.CSSStyleDeclaration} newStyle
+         * @param {boolean} success
          * @this {WebInspector.StylePropertyTreeElement}
          */
-        function callback(newStyle)
+        function callback(success)
         {
             delete this._parentPane._userOperation;
 
-            if (!newStyle)
+            if (!success)
                 return;
-            this._applyNewStyle(newStyle);
-
+            this._styleTextEdited(oldStyleRange);
             this._updatePane();
             this.styleTextAppliedForTest();
         }
@@ -2730,6 +2731,10 @@ WebInspector.StylePropertyTreeElement.prototype = {
         if (!this.treeOutline)
             return Promise.resolve();
 
+        var oldStyleRange = this.style().range;
+        if (!oldStyleRange)
+            return Promise.resolve();
+
         styleText = styleText.replace(/\s/g, " ").trim(); // Replace &nbsp; with whitespace.
         if (!styleText.length && majorChange && this._newProperty && !this._propertyHasBeenEditedIncrementally) {
             // The user deleted everything and never applied a new property value via Up/Down scrolling/live editing, so remove the tree element and update.
@@ -2743,14 +2748,14 @@ WebInspector.StylePropertyTreeElement.prototype = {
         this._parentPane._userOperation = true;
 
         /**
-         * @param {?WebInspector.CSSStyleDeclaration} newStyle
+         * @param {boolean} success
          * @this {WebInspector.StylePropertyTreeElement}
          */
-        function callback(newStyle)
+        function callback(success)
         {
             delete this._parentPane._userOperation;
 
-            if (!newStyle) {
+            if (!success) {
                 if (majorChange) {
                     // It did not apply, cancel editing.
                     this._revertStyleUponEditingCanceled();
@@ -2758,10 +2763,10 @@ WebInspector.StylePropertyTreeElement.prototype = {
                 this.styleTextAppliedForTest();
                 return;
             }
-            this._applyNewStyle(newStyle);
+            this._styleTextEdited(oldStyleRange);
 
             this._propertyHasBeenEditedIncrementally = true;
-            this.property = newStyle.propertyAt(this.property.index);
+            this.property = this.style().propertyAt(this.property.index);
 
             // We are happy to update UI if user is not editing.
             if (!this._parentPane._isEditingStyle && currentNode === this.node())
