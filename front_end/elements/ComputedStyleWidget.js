@@ -237,7 +237,7 @@ WebInspector.ComputedStyleWidget.prototype = {
             }
 
             var selectorElement = trace.createChild("span", "property-trace-selector");
-            selectorElement.textContent = rule ? rule.selectorText : "element.style";
+            selectorElement.textContent = rule ? rule.selectorText() : "element.style";
             selectorElement.title = selectorElement.textContent;
 
             var traceTreeElement = new TreeElement();

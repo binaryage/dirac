@@ -284,7 +284,7 @@ WebInspector.CSSStyleModel.prototype = {
         if (!rule.styleSheetId)
             throw "No rule stylesheet id";
         WebInspector.userMetrics.StyleRuleEdited.record();
-        this._agent.setRuleSelector(rule.styleSheetId, rule.selectorRange, newSelector, callback.bind(this))
+        this._agent.setRuleSelector(rule.styleSheetId, rule.selectorRange(), newSelector, callback.bind(this))
             .then(this._computeMatchingSelectors.bind(this, nodeId))
             .catchException(null)
             .then(userCallback);
@@ -969,12 +969,17 @@ WebInspector.CSSRuleSelector = function(payload)
 }
 
 /**
- * @param {!CSSAgent.Selector} payload
- * @return {!WebInspector.CSSRuleSelector}
+ * @param {!CSSAgent.SelectorList} selectorList
+ * @return {!Array<!WebInspector.CSSRuleSelector>}
  */
-WebInspector.CSSRuleSelector.parsePayload = function(payload)
+WebInspector.CSSRuleSelector.parseSelectorListPayload = function(selectorList)
 {
-    return new WebInspector.CSSRuleSelector(payload);
+    var selectors = [];
+    for (var i = 0; i < selectorList.selectors.length; ++i) {
+        var selectorPayload = selectorList.selectors[i];
+        selectors.push(new WebInspector.CSSRuleSelector(selectorPayload));
+    }
+    return selectors;
 }
 
 WebInspector.CSSRuleSelector.prototype = {
@@ -1004,18 +1009,8 @@ WebInspector.CSSRule = function(cssModel, payload, matchingSelectors)
         this.matchingSelectors = matchingSelectors;
 
     /** @type {!Array.<!WebInspector.CSSRuleSelector>} */
-    this.selectors = [];
-    for (var i = 0; i < payload.selectorList.selectors.length; ++i) {
-        var selectorPayload = payload.selectorList.selectors[i];
-        this.selectors.push(WebInspector.CSSRuleSelector.parsePayload(selectorPayload));
-    }
-    this.selectorText = this.selectors.select("value").join(", ");
+    this.selectors = WebInspector.CSSRuleSelector.parseSelectorListPayload(payload.selectorList);
 
-    var firstRange = this.selectors[0].range;
-    if (firstRange) {
-        var lastRange = this.selectors.peekLast().range;
-        this.selectorRange = new WebInspector.TextRange(firstRange.startLine, firstRange.startColumn, lastRange.endLine, lastRange.endColumn);
-    }
     if (this.styleSheetId) {
         var styleSheetHeader = cssModel.styleSheetHeaderForId(this.styleSheetId);
         this.sourceURL = styleSheetHeader.sourceURL;
@@ -1039,6 +1034,26 @@ WebInspector.CSSRule.parsePayload = function(cssModel, payload, matchingIndices)
 
 WebInspector.CSSRule.prototype = {
     /**
+     * @return {string}
+     */
+    selectorText: function()
+    {
+        return this.selectors.select("value").join(", ");
+    },
+
+    /**
+     * @return {?WebInspector.TextRange}
+     */
+    selectorRange: function()
+    {
+        var firstRange = this.selectors[0].range;
+        if (!firstRange)
+            return null;
+        var lastRange = this.selectors.peekLast().range;
+        return new WebInspector.TextRange(firstRange.startLine, firstRange.startColumn, lastRange.endLine, lastRange.endColumn);
+    },
+
+    /**
      * @param {string} styleSheetId
      * @param {!WebInspector.TextRange} oldRange
      * @param {!WebInspector.TextRange} newRange
@@ -1058,8 +1073,6 @@ WebInspector.CSSRule.prototype = {
     _sourceStyleSheetEditedWithMedia: function(styleSheetId, oldRange, newRange, oldMedia, newMedia)
     {
         if (this.styleSheetId === styleSheetId) {
-            if (this.selectorRange)
-                this.selectorRange = this.selectorRange.rebaseAfterTextEdit(oldRange, newRange);
             for (var i = 0; i < this.selectors.length; ++i)
                 this.selectors[i].sourceStyleRuleEdited(oldRange, newRange);
         }

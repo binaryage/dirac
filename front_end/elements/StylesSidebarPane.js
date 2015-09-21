@@ -1618,11 +1618,12 @@ WebInspector.StylePropertiesSection.prototype = {
                 var doesAffectSelectedNode = newRule.matchingSelectors.length > 0;
                 this.element.classList.toggle("no-affect", !doesAffectSelectedNode);
 
-                var oldSelectorRange = this.rule().selectorRange;
+                var oldSelectorRange = /** @type {!WebInspector.TextRange} */(this.rule().selectorRange());
+                var newSelectorRange = /** @type {!WebInspector.TextRange} */(newRule.selectorRange());
                 this.styleRule.updateRule(newRule);
 
                 this._parentPane._refreshUpdate(this);
-                this._parentPane._styleSheetRuleEdited(newRule, oldSelectorRange, newRule.selectorRange);
+                this._parentPane._styleSheetRuleEdited(newRule, oldSelectorRange, newSelectorRange);
             }
 
             delete this._parentPane._userOperation;

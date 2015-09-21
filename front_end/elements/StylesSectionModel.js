@@ -73,7 +73,7 @@ WebInspector.StylesSectionModel.prototype = {
     {
         if (this._customSelectorText)
             return this._customSelectorText;
-        return this.rule() ? this.rule().selectorText : "";
+        return this.rule() ? this.rule().selectorText() : "";
     },
 
     /**
