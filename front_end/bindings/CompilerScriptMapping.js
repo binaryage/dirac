@@ -65,6 +65,8 @@ WebInspector.CompilerScriptMapping = function(debuggerModel, workspace, networkM
     debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.GlobalObjectCleared, this._debuggerReset, this);
 }
 
+WebInspector.CompilerScriptMapping.StubProjectID = "compiler-script-project";
+
 WebInspector.CompilerScriptMapping.prototype = {
     /**
      * @param {!WebInspector.DebuggerModel.Location} rawLocation

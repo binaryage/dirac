@@ -83,6 +83,7 @@ WebInspector.JavaScriptBreakpointsSidebarPane.prototype = {
 
         /**
          * @param {?string} content
+         * @this {WebInspector.JavaScriptBreakpointsSidebarPane}
          */
         function didRequestContent(content)
         {
@@ -95,9 +96,10 @@ WebInspector.JavaScriptBreakpointsSidebarPane.prototype = {
                 var snippetStartIndex = columnNumber > 100 ? columnNumber : 0;
                 snippetElement.textContent = lineText.substr(snippetStartIndex).trimEnd(maxSnippetLength);
             }
+            this.didReceiveBreakpointLineForTest(uiLocation.uiSourceCode);
         }
 
-        uiLocation.uiSourceCode.requestContent(didRequestContent);
+        uiLocation.uiSourceCode.requestContent(didRequestContent.bind(this));
 
         element._data = uiLocation;
         var currentElement = this.listElement.firstChild;
@@ -112,6 +114,13 @@ WebInspector.JavaScriptBreakpointsSidebarPane.prototype = {
         this._items.set(breakpoint, breakpointItem);
 
         this.expand();
+    },
+
+    /**
+     * @param {!WebInspector.UISourceCode} uiSourceCode
+     */
+    didReceiveBreakpointLineForTest: function(uiSourceCode)
+    {
     },
 
     /**
