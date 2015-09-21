@@ -454,9 +454,6 @@ WebInspector.StylesSidebarPane.prototype = {
             this._sectionBlocks.push(block);
         }
 
-        if (!!node.pseudoType())
-            this._appendTopPadding();
-
         for (var block of this._sectionBlocks) {
             var titleElement = block.titleElement();
             if (titleElement)
@@ -556,13 +553,6 @@ WebInspector.StylesSidebarPane.prototype = {
             parentNode = parentNode.parentNode;
         }
         return cascade;
-    },
-
-    _appendTopPadding: function()
-    {
-        var separatorElement = createElement("div");
-        separatorElement.className = "styles-sidebar-placeholder";
-        this._sectionsContainer.appendChild(separatorElement);
     },
 
     /**
