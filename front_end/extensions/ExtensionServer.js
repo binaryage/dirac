@@ -267,7 +267,9 @@ WebInspector.ExtensionServer.prototype = {
             return this._status.E_EXISTS(id);
 
         var page = this._expandResourcePath(port._extensionOrigin, message.page);
-        var panelDescriptor = new WebInspector.ExtensionServerPanelDescriptor(id, message.title, new WebInspector.ExtensionPanel(this, id, page));
+        var persistentId = port._extensionOrigin + message.title;
+        persistentId = persistentId.replace(/\s/g, "");
+        var panelDescriptor = new WebInspector.ExtensionServerPanelDescriptor(persistentId, message.title, new WebInspector.ExtensionPanel(this, persistentId, id, page));
         this._clientObjects[id] = panelDescriptor;
         WebInspector.inspectorView.addPanel(panelDescriptor);
         return this._status.OK();
@@ -275,7 +277,11 @@ WebInspector.ExtensionServer.prototype = {
 
     _onShowPanel: function(message)
     {
-        WebInspector.inspectorView.showPanel(message.id);
+        var panelName = message.id;
+        var panelDescriptor = this._clientObjects[message.id];
+        if (panelDescriptor && panelDescriptor instanceof WebInspector.ExtensionServerPanelDescriptor)
+            panelName = panelDescriptor.name();
+        WebInspector.inspectorView.showPanel(panelName);
     },
 
     _onCreateToolbarButton: function(message, port)

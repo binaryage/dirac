@@ -125,7 +125,7 @@ WebInspector.InspectorView.prototype = {
         for (var order of sortedPanelOrders) {
             var panelDescriptor = panelsByWeight.get(order);
             if (panelDescriptor)
-                this.addPanel(panelDescriptor);
+                this._innerAddPanel(panelDescriptor);
         }
         WebInspector.endBatchUpdate();
     },
@@ -147,14 +147,24 @@ WebInspector.InspectorView.prototype = {
 
     /**
      * @param {!WebInspector.PanelDescriptor} panelDescriptor
+     * @param {number=} index
      */
-    addPanel: function(panelDescriptor)
+    _innerAddPanel: function(panelDescriptor, index)
     {
         var panelName = panelDescriptor.name();
         this._panelDescriptors[panelName] = panelDescriptor;
-        this._tabbedPane.appendTab(panelName, panelDescriptor.title(), new WebInspector.Widget());
+        this._tabbedPane.appendTab(panelName, panelDescriptor.title(), new WebInspector.Widget(), undefined, undefined, undefined, index);
         if (this._lastActivePanelSetting.get() === panelName)
             this._tabbedPane.selectTab(panelName);
+    },
+
+    /**
+     * @param {!WebInspector.PanelDescriptor} panelDescriptor
+     */
+    addPanel: function(panelDescriptor)
+    {
+        var weight = this._tabOrderSetting.get()[panelDescriptor.name()];
+        this._innerAddPanel(panelDescriptor, weight);
     },
 
     /**
@@ -531,7 +541,7 @@ WebInspector.InspectorView.prototype = {
     _persistPanelOrder: function(event)
     {
         var tabs = /** @type {!Array.<!WebInspector.TabbedPaneTab>} */(event.data);
-        var tabOrders = {};
+        var tabOrders = this._tabOrderSetting.get();
         for (var i = 0; i < tabs.length; i++)
             tabOrders[tabs[i].id] = i;
         this._tabOrderSetting.set(tabOrders);

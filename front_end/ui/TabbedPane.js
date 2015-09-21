@@ -186,14 +186,18 @@ WebInspector.TabbedPane.prototype = {
      * @param {string=} tabTooltip
      * @param {boolean=} userGesture
      * @param {boolean=} isCloseable
+     * @param {number=} index
      */
-    appendTab: function(id, tabTitle, view, tabTooltip, userGesture, isCloseable)
+    appendTab: function(id, tabTitle, view, tabTooltip, userGesture, isCloseable, index)
     {
         isCloseable = typeof isCloseable === "boolean" ? isCloseable : this._closeableTabs;
         var tab = new WebInspector.TabbedPaneTab(this, id, tabTitle, isCloseable, view, tabTooltip);
         tab.setDelegate(this._delegate);
         this._tabsById[id] = tab;
-        this._tabs.push(tab);
+        if (index !== undefined)
+            this._tabs.splice(index, 0, tab);
+        else
+            this._tabs.push(tab);
         this._tabsHistory.push(tab);
         if (this._tabsHistory[0] === tab && this.isShowing())
             this.selectTab(tab.id, userGesture);

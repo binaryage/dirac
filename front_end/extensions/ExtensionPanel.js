@@ -33,13 +33,15 @@
  * @implements {WebInspector.Searchable}
  * @extends {WebInspector.Panel}
  * @param {!WebInspector.ExtensionServer} server
+ * @param {string} panelName
  * @param {string} id
  * @param {string} pageURL
  */
-WebInspector.ExtensionPanel = function(server, id, pageURL)
+WebInspector.ExtensionPanel = function(server, panelName, id, pageURL)
 {
-    WebInspector.Panel.call(this, id);
+    WebInspector.Panel.call(this, panelName);
     this._server = server;
+    this._id = id;
     this.setHideOnDetach();
     this._panelToolbar = new WebInspector.Toolbar(this.element);
     this._panelToolbar.element.classList.add("hidden");
@@ -47,7 +49,7 @@ WebInspector.ExtensionPanel = function(server, id, pageURL)
     this._searchableView = new WebInspector.SearchableView(this);
     this._searchableView.show(this.element);
 
-    var extensionView = new WebInspector.ExtensionView(server, id, pageURL, "extension");
+    var extensionView = new WebInspector.ExtensionView(server, this._id, pageURL, "extension");
     extensionView.show(this._searchableView.element);
     this.setDefaultFocusedElement(extensionView.defaultFocusedElement());
 }
@@ -76,7 +78,7 @@ WebInspector.ExtensionPanel.prototype = {
      */
     searchCanceled: function()
     {
-        this._server.notifySearchAction(this.name, WebInspector.extensionAPI.panels.SearchAction.CancelSearch);
+        this._server.notifySearchAction(this._id, WebInspector.extensionAPI.panels.SearchAction.CancelSearch);
         this._searchableView.updateSearchMatchesCount(0);
     },
 
@@ -98,7 +100,7 @@ WebInspector.ExtensionPanel.prototype = {
     performSearch: function(searchConfig, shouldJump, jumpBackwards)
     {
         var query = searchConfig.query;
-        this._server.notifySearchAction(this.name, WebInspector.extensionAPI.panels.SearchAction.PerformSearch, query);
+        this._server.notifySearchAction(this._id, WebInspector.extensionAPI.panels.SearchAction.PerformSearch, query);
     },
 
     /**
@@ -106,7 +108,7 @@ WebInspector.ExtensionPanel.prototype = {
      */
     jumpToNextSearchResult: function()
     {
-        this._server.notifySearchAction(this.name, WebInspector.extensionAPI.panels.SearchAction.NextSearchResult);
+        this._server.notifySearchAction(this._id, WebInspector.extensionAPI.panels.SearchAction.NextSearchResult);
     },
 
     /**
@@ -114,7 +116,7 @@ WebInspector.ExtensionPanel.prototype = {
      */
     jumpToPreviousSearchResult: function()
     {
-        this._server.notifySearchAction(this.name, WebInspector.extensionAPI.panels.SearchAction.PreviousSearchResult);
+        this._server.notifySearchAction(this._id, WebInspector.extensionAPI.panels.SearchAction.PreviousSearchResult);
     },
 
     /**
