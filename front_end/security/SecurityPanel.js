@@ -200,7 +200,7 @@ WebInspector.SecurityPanel.prototype = {
 
         /** @type {!WebInspector.NetworkLogView.MixedContentFilterValues} */
         var filterKey = WebInspector.NetworkLogView.MixedContentFilterValues.All;
-        if (request.blocked)
+        if (request.wasBlocked())
             filterKey = WebInspector.NetworkLogView.MixedContentFilterValues.Blocked;
         else if (request.mixedContentType === "blockable")
             filterKey = WebInspector.NetworkLogView.MixedContentFilterValues.BlockOverridden;
@@ -234,6 +234,7 @@ WebInspector.SecurityPanel.prototype = {
         /** @type {!Array<!SecurityAgent.SecurityState>} */
         var ordering = [
             SecurityAgent.SecurityState.Unknown,
+            SecurityAgent.SecurityState.Info,
             SecurityAgent.SecurityState.Insecure,
             SecurityAgent.SecurityState.Neutral,
             SecurityAgent.SecurityState.Warning,
@@ -497,12 +498,23 @@ WebInspector.SecurityMainView.prototype = {
         for (var explanation of this._explanations)
             this._addExplanation(explanation);
 
-        if (this._schemeIsCryptographic && this._mixedContentStatus && (this._mixedContentStatus.ranInsecureContent || this._mixedContentStatus.displayedInsecureContent)) {
+        this._addMixedContentExplanations();
+    },
+
+    _addMixedContentExplanations: function ()
+    {
+        if (!this._schemeIsCryptographic)
+            return;
+
+        if (this._mixedContentStatus && (this._mixedContentStatus.ranInsecureContent || this._mixedContentStatus.displayedInsecureContent)) {
             if (this._mixedContentStatus.ranInsecureContent)
                 this._addMixedContentExplanation(this._mixedContentStatus.ranInsecureContentStyle, WebInspector.UIString("Active Mixed Content"), WebInspector.UIString("You have recently allowed insecure content (such as scripts or iframes) to run on this site."), WebInspector.NetworkLogView.MixedContentFilterValues.BlockOverridden, showBlockOverriddenMixedContentInNetworkPanel);
             if (this._mixedContentStatus.displayedInsecureContent)
                 this._addMixedContentExplanation(this._mixedContentStatus.displayedInsecureContentStyle, WebInspector.UIString("Mixed Content"), WebInspector.UIString("The site includes HTTP resources."), WebInspector.NetworkLogView.MixedContentFilterValues.Displayed, showDisplayedMixedContentInNetworkPanel);
         }
+
+        if (this._panel.filterRequestCount(WebInspector.NetworkLogView.MixedContentFilterValues.Blocked) > 0)
+            this._addMixedContentExplanation(SecurityAgent.SecurityState.Info, WebInspector.UIString("Blocked mixed content"), WebInspector.UIString("Your page requested insecure resources that were blocked."), WebInspector.NetworkLogView.MixedContentFilterValues.Blocked, showBlockedMixedContentInNetworkPanel);
 
         /**
          * @param {!Event} e
@@ -520,6 +532,15 @@ WebInspector.SecurityMainView.prototype = {
         {
             e.consume();
             WebInspector.NetworkPanel.revealAndFilter(WebInspector.NetworkLogView.FilterType.MixedContent, WebInspector.NetworkLogView.MixedContentFilterValues.BlockOverridden);
+        }
+
+         /**
+         * @param {!Event} e
+         */
+        function showBlockedMixedContentInNetworkPanel(e)
+        {
+            e.consume();
+            WebInspector.NetworkPanel.revealAndFilter(WebInspector.NetworkLogView.FilterType.MixedContent, WebInspector.NetworkLogView.MixedContentFilterValues.Blocked);
         }
     },
 

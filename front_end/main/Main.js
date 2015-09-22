@@ -162,6 +162,8 @@ WebInspector.Main.prototype = {
                 Runtime.experiments.enableForTest("serviceWorkersInResources");
             if (testPath.indexOf("timeline/") !== -1 || testPath.indexOf("layers/") !== -1)
                 Runtime.experiments.enableForTest("layersPanel");
+            if (testPath.indexOf("security/") !== -1)
+                Runtime.experiments.enableForTest("securityPanel");
         }
 
         Runtime.experiments.setDefaultExperiments([
