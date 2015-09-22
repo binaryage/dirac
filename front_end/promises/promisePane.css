@@ -62,6 +62,12 @@
     width: 20px;
 }
 
+@media (-webkit-min-device-pixel-ratio: 1.5) {
+.promises .status {
+    -webkit-mask-image: url(Images/toolbarButtonGlyphs_2x.png);
+}
+} /* media */
+
 .promises .status.rejected {
     background-color: rgb(216, 0, 0);
 }
