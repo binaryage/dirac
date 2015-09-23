@@ -17,19 +17,18 @@ WebInspector.AddSourceMapURLDialog = function(callback)
     this._input.setAttribute("type", "text");
 
     this._goButton = this.element.createChild("button");
-    this._goButton.textContent = WebInspector.UIString("Go");
+    this._goButton.textContent = WebInspector.UIString("Add");
     this._goButton.addEventListener("click", this._onGoClick.bind(this), false);
 
     this._callback = callback;
 }
 
 /**
- * @param {!Element} element
  * @param {function(string)} callback
  */
-WebInspector.AddSourceMapURLDialog.show = function(element, callback)
+WebInspector.AddSourceMapURLDialog.show = function(callback)
 {
-    WebInspector.Dialog.show(element, new WebInspector.AddSourceMapURLDialog(callback));
+    WebInspector.Dialog.show(new WebInspector.AddSourceMapURLDialog(callback));
 }
 
 WebInspector.AddSourceMapURLDialog.prototype = {

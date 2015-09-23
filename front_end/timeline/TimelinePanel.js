@@ -659,7 +659,7 @@ WebInspector.TimelinePanel.prototype = {
         console.assert(!this._statusDialog, "Status dialog is already opened.");
         this._statusDialog = new WebInspector.TimelinePanel.StatusDialog();
         this._statusDialog.addEventListener(WebInspector.TimelinePanel.StatusDialog.Events.Finish, this._stopRecording, this);
-        WebInspector.Dialog.show(null, this._statusDialog, true);
+        WebInspector.Dialog.show(this._statusDialog, true);
         this._updateStatus(WebInspector.UIString("Initializing recording\u2026"));
 
         this._autoRecordGeneration = userInitiated ? null : {};

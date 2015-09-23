@@ -30,17 +30,15 @@
 
 /**
  * @constructor
- * @param {!Element} relativeToElement
  * @param {!WebInspector.DialogDelegate} delegate
  * @param {boolean=} modal
  */
-WebInspector.Dialog = function(relativeToElement, delegate, modal)
+WebInspector.Dialog = function(delegate, modal)
 {
     this._delegate = delegate;
-    this._relativeToElement = relativeToElement;
     this._modal = modal;
 
-    this._glassPane = new WebInspector.GlassPane(/** @type {!Document} */ (relativeToElement.ownerDocument));
+    this._glassPane = new WebInspector.GlassPane(/** @type {!Document} */ (WebInspector.Dialog._modalHostView.element.ownerDocument));
     WebInspector.GlassPane.DefaultFocusedViewStack.push(this);
 
     // Install glass pane capturing events.
@@ -73,15 +71,14 @@ WebInspector.Dialog.currentInstance = function()
 }
 
 /**
- * @param {?Element} relativeToElement
  * @param {!WebInspector.DialogDelegate} delegate
  * @param {boolean=} modal
  */
-WebInspector.Dialog.show = function(relativeToElement, delegate, modal)
+WebInspector.Dialog.show = function(delegate, modal)
 {
     if (WebInspector.Dialog._instance)
         return;
-    WebInspector.Dialog._instance = new WebInspector.Dialog(relativeToElement || WebInspector.Dialog.modalHostView().element, delegate, modal);
+    WebInspector.Dialog._instance = new WebInspector.Dialog(delegate, modal);
     WebInspector.Dialog._instance.focus();
 }
 
@@ -128,7 +125,7 @@ WebInspector.Dialog.prototype = {
 
     _position: function()
     {
-        this._delegate.position(this._element, this._relativeToElement);
+        this._delegate.position(this._element, WebInspector.Dialog._modalHostView.element);
     },
 
     _onKeyDown: function(event)
@@ -172,17 +169,14 @@ WebInspector.DialogDelegate.prototype = {
 
     /**
      * @param {!Element} element
-     * @param {!Element} relativeToElement
+     * @param {!Element} container
      */
-    position: function(element, relativeToElement)
+    position: function(element, container)
     {
-        var container = WebInspector.Dialog._modalHostView.element;
-        var box = relativeToElement.boxInWindow(window).relativeToElement(container);
-
-        var positionX = box.x + (relativeToElement.offsetWidth - element.offsetWidth) / 2;
+        var positionX = (container.offsetWidth - element.offsetWidth) / 2;
         positionX = Number.constrain(positionX, 0, container.offsetWidth - element.offsetWidth);
 
-        var positionY = box.y + (relativeToElement.offsetHeight - element.offsetHeight) / 2;
+        var positionY = (container.offsetHeight - element.offsetHeight) / 2;
         positionY = Number.constrain(positionY, 0, container.offsetHeight - element.offsetHeight);
 
         element.style.position = "absolute";

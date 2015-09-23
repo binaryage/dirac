@@ -26,7 +26,7 @@ WebInspector.DevicesDialog.show = function()
 {
     if (!WebInspector.DevicesDialog._instance)
         WebInspector.DevicesDialog._instance = new WebInspector.DevicesDialog();
-    WebInspector.Dialog.show(null, WebInspector.DevicesDialog._instance);
+    WebInspector.Dialog.show(WebInspector.DevicesDialog._instance);
 }
 
 WebInspector.DevicesDialog.prototype = {

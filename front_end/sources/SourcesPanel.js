@@ -840,7 +840,7 @@ WebInspector.SourcesPanel.prototype = {
      */
     mapFileSystemToNetwork: function(uiSourceCode)
     {
-        WebInspector.SelectUISourceCodeForProjectTypesDialog.show(uiSourceCode.name(), [WebInspector.projectTypes.Network, WebInspector.projectTypes.ContentScripts], mapFileSystemToNetwork.bind(this), this._sourcesView.element);
+        WebInspector.SelectUISourceCodeForProjectTypesDialog.show(uiSourceCode.name(), [WebInspector.projectTypes.Network, WebInspector.projectTypes.ContentScripts], mapFileSystemToNetwork.bind(this));
 
         /**
          * @param {?WebInspector.UISourceCode} networkUISourceCode
@@ -860,7 +860,7 @@ WebInspector.SourcesPanel.prototype = {
      */
     mapNetworkToFileSystem: function(networkUISourceCode)
     {
-        WebInspector.SelectUISourceCodeForProjectTypesDialog.show(networkUISourceCode.name(), [WebInspector.projectTypes.FileSystem], mapNetworkToFileSystem.bind(this), this._sourcesView.element);
+        WebInspector.SelectUISourceCodeForProjectTypesDialog.show(networkUISourceCode.name(), [WebInspector.projectTypes.FileSystem], mapNetworkToFileSystem.bind(this));
 
         /**
          * @param {?WebInspector.UISourceCode} uiSourceCode

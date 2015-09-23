@@ -244,7 +244,7 @@ WebInspector.FilmStripView.DialogDelegate = function(filmStripFrame, zeroTime)
     footerElement.createChild("div", "flex-auto");
 
     this._contentElement.addEventListener("keydown", this._keyDown.bind(this), false);
-    this._render().then(WebInspector.Dialog.show.bind(null, null, this));
+    this._render().then(WebInspector.Dialog.show.bind(null, this));
 }
 
 WebInspector.FilmStripView.DialogDelegate.prototype = {

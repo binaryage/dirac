@@ -294,12 +294,11 @@ WebInspector.JavaScriptSourceFrame.prototype = {
         }
 
         /**
-         * @this {WebInspector.JavaScriptSourceFrame}
          * @param {!WebInspector.ResourceScriptFile} scriptFile
          */
         function addSourceMapURL(scriptFile)
         {
-            WebInspector.AddSourceMapURLDialog.show(this.element, addSourceMapURLDialogCallback.bind(null, scriptFile));
+            WebInspector.AddSourceMapURLDialog.show(addSourceMapURLDialogCallback.bind(null, scriptFile));
         }
 
         /**
@@ -319,7 +318,7 @@ WebInspector.JavaScriptSourceFrame.prototype = {
             if (this._scriptFileForTarget.size) {
                 var scriptFile = this._scriptFileForTarget.valuesArray()[0];
                 var addSourceMapURLLabel = WebInspector.UIString.capitalize("Add ^source ^map\u2026");
-                contextMenu.appendItem(addSourceMapURLLabel, addSourceMapURL.bind(this, scriptFile));
+                contextMenu.appendItem(addSourceMapURLLabel, addSourceMapURL.bind(null, scriptFile));
                 contextMenu.appendSeparator();
             }
         }

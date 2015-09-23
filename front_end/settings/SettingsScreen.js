@@ -325,7 +325,7 @@ WebInspector.SettingsScreen.SkipStackFramePatternSettingUI.prototype = {
 
     _onManageButtonClick: function()
     {
-        WebInspector.FrameworkBlackboxDialog.show(WebInspector.inspectorView.element);
+        WebInspector.FrameworkBlackboxDialog.show();
     }
 }
 
@@ -424,7 +424,7 @@ WebInspector.WorkspaceSettingsTab.prototype = {
      */
     _editFileSystem: function(id)
     {
-        WebInspector.EditFileSystemDialog.show(WebInspector.inspectorView.element, id);
+        WebInspector.EditFileSystemDialog.show(id);
     },
 
     /**

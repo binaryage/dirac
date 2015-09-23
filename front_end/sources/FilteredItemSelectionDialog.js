@@ -64,23 +64,22 @@ WebInspector.FilteredItemSelectionDialog.prototype = {
     /**
      * @override
      * @param {!Element} element
-     * @param {!Element} relativeToElement
+     * @param {!Element} container
      */
-    position: function(element, relativeToElement)
+    position: function(element, container)
     {
         const shadow = 10;
         const shadowPadding = 20; // shadow + padding
-        var container = WebInspector.Dialog.modalHostView().element;
-        var preferredWidth = Math.max(relativeToElement.offsetWidth * 2 / 3, 500);
+        var preferredWidth = Math.max(container.offsetWidth * 2 / 3, 500);
         var width = Math.min(preferredWidth, container.offsetWidth - 2 * shadowPadding);
-        var preferredHeight = Math.max(relativeToElement.offsetHeight * 2 / 3, 204);
+        var preferredHeight = Math.max(container.offsetHeight * 2 / 3, 204);
         var height = Math.min(preferredHeight, container.offsetHeight - 2 * shadowPadding);
 
         this.element.style.width = width + "px";
-        var box = relativeToElement.boxInWindow(window).relativeToElement(container);
-        var positionX = box.x + Math.max((box.width - width - 2 * shadowPadding) / 2, shadow);
+        var box = container.boxInWindow(window);
+        var positionX = Math.max((box.width - width - 2 * shadowPadding) / 2, shadow);
         positionX = Math.max(shadow, Math.min(container.offsetWidth - width - 2 * shadowPadding, positionX));
-        var positionY = box.y + Math.max((box.height - height - 2 * shadowPadding) / 2, shadow);
+        var positionY = Math.max((box.height - height - 2 * shadowPadding) / 2, shadow);
         positionY = Math.max(shadow, Math.min(container.offsetHeight - height - 2 * shadowPadding, positionY));
         element.positionAt(positionX, positionY, container);
         this._dialogHeight = height;
@@ -537,16 +536,15 @@ WebInspector.JavaScriptOutlineDialog = function(uiSourceCode, selectItemCallback
 }
 
 /**
- * @param {!WebInspector.Widget} view
  * @param {!WebInspector.UISourceCode} uiSourceCode
  * @param {function(number, number)} selectItemCallback
  */
-WebInspector.JavaScriptOutlineDialog.show = function(view, uiSourceCode, selectItemCallback)
+WebInspector.JavaScriptOutlineDialog.show = function(uiSourceCode, selectItemCallback)
 {
     if (WebInspector.Dialog.currentInstance())
         return;
     var filteredItemSelectionDialog = new WebInspector.FilteredItemSelectionDialog(new WebInspector.JavaScriptOutlineDialog(uiSourceCode, selectItemCallback));
-    WebInspector.Dialog.show(view.element, filteredItemSelectionDialog);
+    WebInspector.Dialog.show(filteredItemSelectionDialog);
 }
 
 WebInspector.JavaScriptOutlineDialog.prototype = {
@@ -882,18 +880,17 @@ WebInspector.OpenResourceDialog.prototype = {
 
 /**
  * @param {!WebInspector.SourcesView} sourcesView
- * @param {!Element} relativeToElement
  * @param {string=} query
  * @param {!Map.<!WebInspector.UISourceCode, number>=} defaultScores
  */
-WebInspector.OpenResourceDialog.show = function(sourcesView, relativeToElement, query, defaultScores)
+WebInspector.OpenResourceDialog.show = function(sourcesView, query, defaultScores)
 {
     if (WebInspector.Dialog.currentInstance())
         return;
 
     var filteredItemSelectionDialog = new WebInspector.FilteredItemSelectionDialog(new WebInspector.OpenResourceDialog(sourcesView, defaultScores));
     filteredItemSelectionDialog.renderAsTwoRows();
-    WebInspector.Dialog.show(relativeToElement, filteredItemSelectionDialog);
+    WebInspector.Dialog.show(filteredItemSelectionDialog);
     if (query)
         filteredItemSelectionDialog.setQuery(query);
 }
@@ -940,9 +937,8 @@ WebInspector.SelectUISourceCodeForProjectTypesDialog.prototype = {
  * @param {string} name
  * @param {!Array.<string>} types
  * @param {function(?WebInspector.UISourceCode)} callback
- * @param {!Element} relativeToElement
  */
-WebInspector.SelectUISourceCodeForProjectTypesDialog.show = function(name, types, callback, relativeToElement)
+WebInspector.SelectUISourceCodeForProjectTypesDialog.show = function(name, types, callback)
 {
     if (WebInspector.Dialog.currentInstance())
         return;
@@ -950,7 +946,7 @@ WebInspector.SelectUISourceCodeForProjectTypesDialog.show = function(name, types
     var filteredItemSelectionDialog = new WebInspector.FilteredItemSelectionDialog(new WebInspector.SelectUISourceCodeForProjectTypesDialog(types, callback));
     filteredItemSelectionDialog.setQuery(name);
     filteredItemSelectionDialog.renderAsTwoRows();
-    WebInspector.Dialog.show(relativeToElement, filteredItemSelectionDialog);
+    WebInspector.Dialog.show(filteredItemSelectionDialog);
 }
 
 /**
