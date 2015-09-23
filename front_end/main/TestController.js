@@ -42,5 +42,6 @@ WebInspector.evaluateForTestInFrontend = function(callId, script)
             console.error(e.stack);
         }
     }
-    InspectorBackend.connection().runAfterPendingDispatches(invokeMethod);
+
+    WebInspector.targetManager.mainTarget()._connection.runAfterPendingDispatches(invokeMethod);
 }

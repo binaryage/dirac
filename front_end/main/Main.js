@@ -313,7 +313,6 @@ WebInspector.Main.prototype = {
             new WebInspector.RemoteDebuggingTerminatedScreen(event.data.reason).showModal();
         }
 
-        InspectorBackend.setConnection(connection);
         var targetType = Runtime.queryParam("isSharedWorker") ? WebInspector.Target.Type.ServiceWorker : WebInspector.Target.Type.Page;
         WebInspector.targetManager.createTarget(WebInspector.UIString("Main"), targetType, connection, null, this._mainTargetCreated.bind(this));
     },

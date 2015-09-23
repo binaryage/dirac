@@ -160,7 +160,7 @@ Protocol.Error;
                 output_file.write("/** @param {function(%s):void=} opt_callback */\n" % ", ".join(returns))
                 output_file.write("Protocol.%sAgent.prototype.invoke_%s = function(obj, opt_callback) {}\n" % (domain_name, command["name"]))
 
-        output_file.write("\n\n\nvar %sAgent = {};\n" % domain_name)
+        output_file.write("\n\n\nvar %sAgent = function(){};\n" % domain_name)
 
         if "types" in domain:
             for type in domain["types"]:

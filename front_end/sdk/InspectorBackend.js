@@ -33,11 +33,9 @@
  */
 function InspectorBackendClass()
 {
-    this._connection = null;
     this._agentPrototypes = {};
     this._dispatcherPrototypes = {};
     this._initialized = false;
-    this._enums = {};
     this._initProtocolAgentsConstructor();
 }
 
@@ -100,30 +98,6 @@ InspectorBackendClass.prototype = {
     },
 
     /**
-     * @return {!InspectorBackendClass.Connection}
-     */
-    connection: function()
-    {
-        if (!this._connection)
-            throw "Main connection was not initialized";
-        return this._connection;
-    },
-
-    /**
-     * @param {!InspectorBackendClass.MainConnection} connection
-     */
-    setConnection: function(connection)
-    {
-        this._connection = connection;
-
-        this._connection.registerAgentsOn(window);
-        for (var type in this._enums) {
-            var domainAndMethod = type.split(".");
-            window[domainAndMethod[0] + "Agent"][domainAndMethod[1]] = this._enums[type];
-        }
-    },
-
-    /**
      * @param {string} domain
      * @return {!InspectorBackendClass.AgentPrototype}
      */
@@ -167,7 +141,12 @@ InspectorBackendClass.prototype = {
      */
     registerEnum: function(type, values)
     {
-        this._enums[type] = values;
+        var domainAndMethod = type.split(".");
+        var agentName = domainAndMethod[0] + "Agent";
+        if (!window[agentName])
+            window[agentName] = {};
+
+        window[agentName][domainAndMethod[1]] = values;
         this._initialized = true;
     },
 
@@ -363,15 +342,6 @@ InspectorBackendClass.Connection.prototype = {
         for (var domain in dispatcherPrototypes)
             this._dispatchers[domain] = Object.create(dispatcherPrototypes[domain]);
 
-    },
-
-    /**
-     * @param {!Object} object
-     */
-    registerAgentsOn: function(object)
-    {
-        for (var domain in this._agents)
-            object[domain + "Agent"]  = {};
     },
 
     /**

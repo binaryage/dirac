@@ -331,7 +331,8 @@
         "Main.js"
     ],
     "skip_compilation": [
-        "Tests.js"
+        "Tests.js",
+        "TestController.js"
     ],
     "resources": [
     ]
