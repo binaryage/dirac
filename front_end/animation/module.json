@@ -12,6 +12,7 @@
     ],
     "scripts": [
         "AnimationModel.js",
+        "AnimationGroupPreviewUI.js",
         "AnimationTimeline.js",
         "AnimationControlPane.js"
     ],

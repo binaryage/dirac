@@ -31,6 +31,10 @@ WebInspector.AnimationTimeline = function()
     this._timelineControlsWidth = 230;
     /** @type {!Map.<!DOMAgent.BackendNodeId, !WebInspector.AnimationTimeline.NodeUI>} */
     this._nodesMap = new Map();
+    this._groupBuffer = [];
+    this._groupBufferSize = 8;
+    /** @type {!Map.<!WebInspector.AnimationModel.AnimationGroup, !WebInspector.AnimationGroupPreviewUI>} */
+    this._previewMap = new Map();
     this._symbol = Symbol("animationTimeline");
     /** @type {!Map.<string, !WebInspector.AnimationModel.Animation>} */
     this._animationsMap = new Map();
@@ -81,7 +85,7 @@ WebInspector.AnimationTimeline.prototype = {
     {
         var animationModel = WebInspector.AnimationModel.fromTarget(target);
         animationModel.ensureEnabled();
-        animationModel.addEventListener(WebInspector.AnimationModel.Events.AnimationCreated, this._animationCreated, this);
+        animationModel.addEventListener(WebInspector.AnimationModel.Events.AnimationGroupStarted, this._animationGroupStarted, this);
         animationModel.addEventListener(WebInspector.AnimationModel.Events.AnimationCanceled, this._animationCanceled, this);
     },
 
@@ -91,7 +95,7 @@ WebInspector.AnimationTimeline.prototype = {
     _removeEventListeners: function(target)
     {
         var animationModel = WebInspector.AnimationModel.fromTarget(target);
-        animationModel.removeEventListener(WebInspector.AnimationModel.Events.AnimationCreated, this._animationCreated, this);
+        animationModel.removeEventListener(WebInspector.AnimationModel.Events.AnimationGroupStarted, this._animationGroupStarted, this);
         animationModel.removeEventListener(WebInspector.AnimationModel.Events.AnimationCanceled, this._animationCanceled, this);
     },
 
@@ -136,7 +140,7 @@ WebInspector.AnimationTimeline.prototype = {
 
         var container = createElementWithClass("div", "animation-timeline-header");
         var controls = container.createChild("div", "animation-controls");
-        container.createChild("div", "animation-timeline-markers");
+        this._previewContainer = container.createChild("div", "animation-timeline-buffer");
 
         var toolbar = new WebInspector.Toolbar(controls);
         toolbar.element.classList.add("animation-controls-toolbar");
@@ -334,21 +338,82 @@ WebInspector.AnimationTimeline.prototype = {
         delete this._scrubberPlayer;
         this._timelineScrubberHead.textContent = WebInspector.UIString(Number.millisToString(0));
         this._updateControlButton();
+        this._groupBuffer = [];
+        this._previewMap.clear();
+        this._previewContainer.removeChildren();
     },
 
     /**
      * @param {!WebInspector.Event} event
      */
-    _animationCreated: function(event)
+    _animationGroupStarted: function(event)
     {
-        this._addAnimation(/** @type {!WebInspector.AnimationModel.Animation} */ (event.data.player), event.data.resetTimeline)
+        this._addAnimationGroup(/** @type {!WebInspector.AnimationModel.AnimationGroup} */(event.data));
+    },
+
+    /**
+     * @param {!WebInspector.AnimationModel.AnimationGroup} group
+     */
+    _addAnimationGroup: function(group)
+    {
+        /**
+         * @param {!WebInspector.AnimationModel.AnimationGroup} left
+         * @param {!WebInspector.AnimationModel.AnimationGroup} right
+         */
+        function startTimeComparator(left, right)
+        {
+            return left.startTime() > right.startTime();
+        }
+
+        this._groupBuffer.push(group);
+        this._groupBuffer.sort(startTimeComparator);
+        // Discard oldest groups from buffer if necessary
+        var groupsToDiscard = [];
+        while (this._groupBuffer.length > this._groupBufferSize) {
+            var toDiscard = this._groupBuffer.splice(this._groupBuffer[0] === this._selectedGroup ? 1 : 0, 1);
+            groupsToDiscard.push(toDiscard[0]);
+        }
+        for (var g of groupsToDiscard) {
+            this._previewMap.get(g).element.remove();
+            this._previewMap.delete(g);
+            // TODO(samli): needs to discard model too
+        }
+        // Generate preview
+        var preview = new WebInspector.AnimationGroupPreviewUI(group);
+        this._previewMap.set(group, preview);
+        this._previewContainer.appendChild(preview.element);
+        preview.element.addEventListener("click", this._selectAnimationGroup.bind(this, group));
+    },
+
+    /**
+     * @param {!WebInspector.AnimationModel.AnimationGroup} group
+     */
+    _selectAnimationGroup: function(group)
+    {
+        /**
+         * @param {!WebInspector.AnimationGroupPreviewUI} ui
+         * @param {!WebInspector.AnimationModel.AnimationGroup} group
+         * @this {!WebInspector.AnimationTimeline}
+         */
+        function applySelectionClass(ui, group)
+        {
+            ui.element.classList.toggle("selected", this._selectedGroup === group);
+        }
+
+        if (this._selectedGroup === group)
+            return;
+        this._selectedGroup = group;
+        this._previewMap.forEach(applySelectionClass, this);
+        this._reset();
+        for (var anim of group.animations())
+            this._addAnimation(anim);
+        this.scheduleRedraw();
     },
 
     /**
      * @param {!WebInspector.AnimationModel.Animation} animation
-     * @param {boolean} resetTimeline
      */
-    _addAnimation: function(animation, resetTimeline)
+    _addAnimation: function(animation)
     {
         /**
          * @param {?WebInspector.DOMNode} node
@@ -367,15 +432,11 @@ WebInspector.AnimationTimeline.prototype = {
             delete this._emptyTimelineMessage;
         }
 
-        if (resetTimeline)
-            this._reset();
-
         // Ignore Web Animations custom effects & groups
         if (animation.type() === "WebAnimation" && animation.source().keyframesRule().keyframes().length === 0)
             return;
 
-        if (this._resizeWindow(animation))
-            this.scheduleRedraw();
+        this._resizeWindow(animation);
 
         var nodeUI = this._nodesMap.get(animation.source().backendNodeId());
         if (!nodeUI) {
@@ -441,7 +502,7 @@ WebInspector.AnimationTimeline.prototype = {
                 lastDraw = gridWidth;
                 var label = this._grid.createSVGChild("text", "animation-timeline-grid-label");
                 label.setAttribute("x", gridWidth + 5);
-                label.setAttribute("y", 35);
+                label.setAttribute("y", 15);
                 label.textContent = WebInspector.UIString(Number.millisToString(time));
             }
         }
@@ -605,7 +666,8 @@ WebInspector.AnimationTimeline.prototype = {
  * @constructor
  * @param {!WebInspector.AnimationModel.AnimationEffect} animationEffect
  */
-WebInspector.AnimationTimeline.NodeUI = function(animationEffect) {
+WebInspector.AnimationTimeline.NodeUI = function(animationEffect)
+{
     /**
      * @param {?WebInspector.DOMNode} node
      * @this {WebInspector.AnimationTimeline.NodeUI}
@@ -740,7 +802,7 @@ WebInspector.AnimationUI = function(animation, timeline, parentElement) {
     this._cachedElements = [];
 
     this._movementInMs = 0;
-    this.redraw();
+    this._color = WebInspector.AnimationUI.Color(this._animation);
 }
 
 /**
@@ -780,7 +842,7 @@ WebInspector.AnimationUI.prototype = {
         line.setAttribute("x1", WebInspector.AnimationUI.Options.AnimationMargin);
         line.setAttribute("y1", WebInspector.AnimationUI.Options.AnimationHeight);
         line.setAttribute("y2", WebInspector.AnimationUI.Options.AnimationHeight);
-        line.style.stroke = this._color();
+        line.style.stroke = this._color;
         return line;
     },
 
@@ -830,11 +892,11 @@ WebInspector.AnimationUI.prototype = {
         var circle = parentElement.createSVGChild("circle", keyframeIndex <= 0 ? "animation-endpoint" : "animation-keyframe-point");
         circle.setAttribute("cx", x.toFixed(2));
         circle.setAttribute("cy", WebInspector.AnimationUI.Options.AnimationHeight);
-        circle.style.stroke = this._color();
+        circle.style.stroke = this._color;
         circle.setAttribute("r", WebInspector.AnimationUI.Options.AnimationMargin / 2);
 
         if (keyframeIndex <= 0)
-            circle.style.fill = this._color();
+            circle.style.fill = this._color;
 
         this._cachedElements[iteration].keyframePoints[keyframeIndex] = circle;
 
@@ -883,7 +945,7 @@ WebInspector.AnimationUI.prototype = {
         group.style.transform = "translateX(" + leftDistance.toFixed(2) + "px)";
 
         if (bezier) {
-            group.style.fill = this._color();
+            group.style.fill = this._color;
             WebInspector.BezierUI.drawVelocityChart(bezier, group, width);
         } else {
             var stepFunction = WebInspector.AnimationTimeline.StepTimingFunction.parse(easing);
@@ -891,7 +953,7 @@ WebInspector.AnimationUI.prototype = {
             const offsetMap = {"start": 0, "middle": 0.5, "end": 1};
             const offsetWeight = offsetMap[stepFunction.stepAtPosition];
             for (var i = 0; i < stepFunction.steps; i++)
-                createStepLine(group, (i + offsetWeight) * width / stepFunction.steps, this._color());
+                createStepLine(group, (i + offsetWeight) * width / stepFunction.steps, this._color);
         }
     },
 
@@ -1050,7 +1112,8 @@ WebInspector.AnimationUI.prototype = {
             this._setDelay(delay);
             this._setDuration(duration);
             if (this._animation.type() !== "CSSAnimation") {
-                for (var target of WebInspector.targetManager.targets(WebInspector.Target.Type.Page))
+                var target = WebInspector.targetManager.mainTarget();
+                if (target)
                     target.animationAgent().setTiming(this._animation.id(), duration, delay);
             }
         }
@@ -1116,31 +1179,6 @@ WebInspector.AnimationUI.prototype = {
             style = style.replace(new RegExp("\\s*(-webkit-)?" + name + ":[^;]*;?\\s*", "g"), "");
         var valueString = name + ": " + value;
         this._node.setAttributeValue("style", style + " " + valueString + "; -webkit-" + valueString + ";");
-    },
-
-    /**
-     * @return {string}
-     */
-    _color: function()
-    {
-        /**
-         * @param {string} string
-         * @return {number}
-         */
-        function hash(string)
-        {
-            var hash = 0;
-            for (var i = 0; i < string.length; i++)
-                hash = (hash << 5) + hash + string.charCodeAt(i);
-            return Math.abs(hash);
-        }
-
-        if (!this._selectedColor) {
-            var names = Object.keys(WebInspector.AnimationUI.Colors);
-            var color = WebInspector.AnimationUI.Colors[names[hash(this._animation.name() || this._animation.id()) % names.length]];
-            this._selectedColor = color.asString(WebInspector.Color.Format.RGB);
-        }
-        return this._selectedColor;
     }
 }
 
@@ -1158,8 +1196,33 @@ WebInspector.AnimationUI.Colors = {
     "Deep Orange": WebInspector.Color.parse("#FF5722"),
     "Blue": WebInspector.Color.parse("#5677FC"),
     "Lime": WebInspector.Color.parse("#CDDC39"),
+    "Blue Grey": WebInspector.Color.parse("#607D8B"),
     "Pink": WebInspector.Color.parse("#E91E63"),
     "Green": WebInspector.Color.parse("#0F9D58"),
     "Brown": WebInspector.Color.parse("#795548"),
     "Cyan": WebInspector.Color.parse("#00BCD4")
+}
+
+
+/**
+ * @param {!WebInspector.AnimationModel.Animation} animation
+ * @return {string}
+ */
+WebInspector.AnimationUI.Color = function(animation)
+{
+    /**
+     * @param {string} string
+     * @return {number}
+     */
+    function hash(string)
+    {
+        var hash = 0;
+        for (var i = 0; i < string.length; i++)
+            hash = (hash << 5) + hash + string.charCodeAt(i);
+        return Math.abs(hash);
+    }
+
+    var names = Object.keys(WebInspector.AnimationUI.Colors);
+    var color = WebInspector.AnimationUI.Colors[names[hash(animation.name() || animation.id()) % names.length]];
+    return color.asString(WebInspector.Color.Format.RGB);
 }

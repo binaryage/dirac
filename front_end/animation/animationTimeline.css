@@ -10,6 +10,14 @@
     border-bottom: 1px dashed #ccc;
 }
 
+.animation-node-row:first-child > .animation-node-description {
+    line-height: 45px;
+}
+
+.animation-node-row:first-child > .animation-node-timeline {
+    padding-top: 5px;
+}
+
 .animation-node-description {
     display: inline-block;
     min-width: 200px;
@@ -86,6 +94,7 @@ circle.animation-keyframe-point {
     height: 44px;
     border-bottom: 1px solid #ccc;
     flex-shrink: 0;
+    display: flex;
 }
 
 .animation-timeline-header:after {
@@ -100,8 +109,7 @@ circle.animation-keyframe-point {
 }
 
 .animation-controls {
-    width: 201px;
-    max-width: 201px;
+    flex: 0 0 200px;
     padding: 10px;
     height: 100%;
     line-height: 22px;
@@ -109,10 +117,12 @@ circle.animation-keyframe-point {
     border-right: 1px solid hsl(0, 0%, 90%);
 }
 
-.animation-timeline-markers {
+.animation-timeline-buffer {
     height: 100%;
-    width: calc(100% - 200px);
-    display: inline-block;
+    flex-grow: 1;
+    border-left: 1px solid #ccc;
+    display: flex;
+    padding: 0 2px;
 }
 
 .animation-time-overlay {
@@ -186,6 +196,7 @@ input[type=range].animation-playback-slider::-webkit-slider-thumb {
     width: calc(100% - 200px);
     top: 43px;
     border-left: 1px solid rgba(0,0,0,0.5);
+    display: none;
 }
 
 .animation-scrubber.animation-timeline-end {
@@ -247,6 +258,7 @@ input[type=range].animation-playback-slider::-webkit-slider-thumb {
 svg.animation-timeline-grid {
     position: absolute;
     left: 230px;
+    top: 43px;
 }
 
 rect.animation-timeline-grid-line {
@@ -325,4 +337,23 @@ text.animation-timeline-grid-label {
     width: 100%;
     height: calc(100% - 44px);
     display: flex;
+}
+
+.animation-buffer-preview {
+    height: 35px;
+    margin: 4px 2px;
+    background-color: #F3F3F3;
+    border-radius: 2px;
+    flex: 1 1;
+    padding: 4px;
+    max-width: 100px;
+}
+.animation-buffer-preview.selected {
+    background-color: hsl(217, 89%, 61%);
+}
+.animation-buffer-preview.selected > svg > line {
+    stroke: white !important;
+}
+.animation-buffer-preview > svg > line {
+    stroke-width: 1px;
 }

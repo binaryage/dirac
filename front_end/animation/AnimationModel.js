@@ -22,7 +22,7 @@ WebInspector.AnimationModel = function(target)
 }
 
 WebInspector.AnimationModel.Events = {
-    AnimationCreated: "AnimationCreated",
+    AnimationGroupStarted: "AnimationGroupStarted",
     AnimationCanceled: "AnimationCanceled"
 }
 
@@ -51,9 +51,7 @@ WebInspector.AnimationModel.prototype = {
         while (this._pendingAnimations.length) {
             var group = this._createGroupFromPendingAnimations();
             this._animationGroups.set(group.id(), group);
-            // TODO(samli): Dispatch single group event.
-            for (var anim of group.animations())
-                this.dispatchEventToListeners(WebInspector.AnimationModel.Events.AnimationCreated, { "player": anim, "resetTimeline": anim.id() === group.id() });
+            this.dispatchEventToListeners(WebInspector.AnimationModel.Events.AnimationGroupStarted, group);
         }
     },
 
@@ -517,6 +515,14 @@ WebInspector.AnimationModel.AnimationGroup.prototype = {
     animations: function()
     {
         return this._animations;
+    },
+
+    /**
+     * @return {number}
+     */
+    startTime: function()
+    {
+        return this._animations[0].startTime();
     },
 
     __proto__: WebInspector.SDKObject.prototype
