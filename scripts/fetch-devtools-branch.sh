@@ -26,10 +26,12 @@ fi
 
 # fresh splitting..., it should do the job incrementally from last run
 pushd "$CHROMIUM_MIRROR_DIR"
-git fetch chromium/master
+git fetch chromium master
 git checkout tracker
 git merge chromium/master
-git subtree split --rejoin --prefix="$DEVTOOLS_DIRAC_PREFIX" --branch "$DEVTOOLS_BRANCH"
+
+git subtree split --rejoin --prefix="$DEVTOOLS_CHROMIUM_PREFIX" --branch "$DEVTOOLS_BRANCH"
+
 git push dirac devtools
 popd
 
