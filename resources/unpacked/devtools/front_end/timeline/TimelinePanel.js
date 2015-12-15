@@ -47,6 +47,7 @@ WebInspector.TimelinePanel = function()
     this._windowStartTime = 0;
     this._windowEndTime = Infinity;
     this._millisecondsToRecordAfterLoadEvent = 3000;
+    this._toggleRecordAction = WebInspector.actionRegistry.action("timeline.toggle-recording");
 
     // Create models.
     this._tracingModelBackingStorage = new WebInspector.TempFileBackingStorage("tracing");
@@ -59,6 +60,9 @@ WebInspector.TimelinePanel = function()
     this._model.addEventListener(WebInspector.TimelineModel.Events.RecordsCleared, this._onRecordsCleared, this);
     this._model.addEventListener(WebInspector.TimelineModel.Events.BufferUsage, this._onTracingBufferUsage, this);
     this._model.addEventListener(WebInspector.TimelineModel.Events.RetrieveEventsProgress, this._onRetrieveEventsProgress, this);
+
+    if (Runtime.experiments.isEnabled("cpuThrottling"))
+        this._cpuThrottlingManager = new WebInspector.CPUThrottlingManager();
 
     this._waterfallFilters = [new WebInspector.TimelineStaticFilter()];
     if (!Runtime.experiments.isEnabled("timelineEventsTreeView")) {
@@ -336,8 +340,7 @@ WebInspector.TimelinePanel.prototype = {
     {
         this._panelToolbar = new WebInspector.Toolbar("", this.element);
 
-        this._toggleTimelineButton = WebInspector.ToolbarButton.createActionButton("timeline.toggle-recording");
-        this._panelToolbar.appendToolbarItem(this._toggleTimelineButton);
+        this._panelToolbar.appendToolbarItem(WebInspector.Toolbar.createActionButton(this._toggleRecordAction));
         this._updateTimelineControls();
 
         var clearButton = new WebInspector.ToolbarButton(WebInspector.UIString("Clear recording"), "clear-toolbar-item");
@@ -392,6 +395,27 @@ WebInspector.TimelinePanel.prototype = {
         this._panelToolbar.appendToolbarItem(this._createSettingCheckbox(WebInspector.UIString("Screenshots"),
                                                                          this._captureFilmStripSetting,
                                                                          WebInspector.UIString("Capture screenshots while recording. (Has performance overhead)")));
+
+        if (Runtime.experiments.isEnabled("cpuThrottling")) {
+            this._panelToolbar.appendSeparator();
+            this._cpuThrottlingCombobox = new WebInspector.ToolbarComboBox(this._onCPUThrottlingChanged.bind(this));
+            /**
+             * @param {string} name
+             * @param {number} value
+             * @this {WebInspector.TimelinePanel}
+             */
+            function addGroupingOption(name, value)
+            {
+                var option = this._cpuThrottlingCombobox.createOption(name, "", String(value));
+                this._cpuThrottlingCombobox.addOption(option);
+                if (value === this._cpuThrottlingManager.rate())
+                    this._cpuThrottlingCombobox.select(option);
+            }
+            addGroupingOption.call(this, WebInspector.UIString("No CPU throttling"), 1);
+            for (var rate of [1.2, 1.5, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 15, 20, 30, 50])
+                addGroupingOption.call(this, WebInspector.UIString("%fx slowdown", rate), rate);
+            this._panelToolbar.appendToolbarItem(this._cpuThrottlingCombobox);
+        }
 
         this._progressToolbarItem = new WebInspector.ToolbarItem(createElement("div"));
         this._progressToolbarItem.setVisible(false);
@@ -567,6 +591,14 @@ WebInspector.TimelinePanel.prototype = {
             this._flameChart.enableNetworkPane(this._captureNetworkSetting.get(), true);
     },
 
+    _onCPUThrottlingChanged: function()
+    {
+        if (!this._cpuThrottlingManager)
+            return;
+        var value = Number.parseFloat(this._cpuThrottlingCombobox.selectedOption().value);
+        this._cpuThrottlingManager.setRate(value);
+    },
+
     /**
      * @param {boolean} enabled
      */
@@ -628,14 +660,14 @@ WebInspector.TimelinePanel.prototype = {
         var title =
             this._state === state.Idle ? WebInspector.UIString("Record") :
             this._state === state.Recording ? WebInspector.UIString("Stop") : "";
-        this._toggleTimelineButton.setTitle(title);
-        this._toggleTimelineButton.setToggled(this._state === state.Recording);
-        this._toggleTimelineButton.setEnabled(this._state === state.Recording || this._state === state.Idle);
+        this._toggleRecordAction.setTitle(title);
+        this._toggleRecordAction.setToggled(this._state === state.Recording);
+        this._toggleRecordAction.setEnabled(this._state === state.Recording || this._state === state.Idle);
         this._panelToolbar.setEnabled(this._state !== state.Loading);
         this._dropTarget.setEnabled(this._state === state.Idle);
     },
 
-    _toggleTimelineButtonClicked: function()
+    _toggleRecording: function()
     {
         if (this._state === WebInspector.TimelinePanel.State.Idle)
             this._startRecording(true);
@@ -1884,7 +1916,7 @@ WebInspector.TimelinePanel.ActionDelegate.prototype = {
         console.assert(panel && panel instanceof WebInspector.TimelinePanel);
         switch (actionId) {
         case "timeline.toggle-recording":
-            panel._toggleTimelineButtonClicked();
+            panel._toggleRecording();
             return true;
         case "timeline.save-to-file":
             panel._saveToFile();
@@ -2037,3 +2069,55 @@ WebInspector.TimelineFilters.prototype = {
 
     __proto__: WebInspector.Object.prototype
 };
+
+/**
+ * @constructor
+ * @extends {WebInspector.Object}
+ * @implements {WebInspector.TargetManager.Observer}
+ */
+WebInspector.CPUThrottlingManager = function()
+{
+    this._targets = [];
+    this._throttlingRate = 1.; // No throttling
+    WebInspector.targetManager.observeTargets(this);
+}
+
+WebInspector.CPUThrottlingManager.prototype = {
+    /**
+     * @param {number} value
+     */
+    setRate: function(value)
+    {
+        this._throttlingRate = value;
+        this._targets.forEach(target => target.emulationAgent().setCPUThrottlingRate(value));
+    },
+
+    /**
+     * @return {number}
+     */
+    rate: function()
+    {
+        return this._throttlingRate;
+    },
+
+    /**
+     * @override
+     * @param {!WebInspector.Target} target
+     */
+    targetAdded: function(target)
+    {
+        this._targets.push(target);
+        target.emulationAgent().setCPUThrottlingRate(this._throttlingRate);
+    },
+
+    /**
+     * @override
+     * @param {!WebInspector.Target} target
+     */
+    targetRemoved: function(target)
+    {
+        this._targets.remove(target, true);
+    },
+
+    __proto__: WebInspector.Object.prototype
+}

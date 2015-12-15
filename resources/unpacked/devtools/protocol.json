@@ -715,6 +715,13 @@
                 "description": "Emulates the given media for CSS media queries."
             },
             {
+                "name": "setCPUThrottlingRate",
+                "parameters": [
+                    { "name": "rate", "type": "number", "description": "Throttling rate as a slowdown factor (1 is no throttle, 2 is 2x slowdown, etc)." }
+                ],
+                "description": "Enables CPU throttling to emulate slow CPUs."
+            },
+            {
                 "name": "canEmulate",
                 "description": "Tells whether emulation is supported.",
                 "returns": [
@@ -3949,6 +3956,7 @@
                     { "name": "startColumn", "type": "integer", "description": "Column offset of the script within the resource with given URL." },
                     { "name": "endLine", "type": "integer", "description": "Last line of the script." },
                     { "name": "endColumn", "type": "integer", "description": "Length of the last line of the script." },
+                    { "name": "executionContextId", "$ref": "Runtime.ExecutionContextId", "description": "Specifies script creation context.", "hidden": true },
                     { "name": "isContentScript", "type": "boolean", "optional": true, "description": "Determines whether this script is a user extension script." },
                     { "name": "isInternalScript", "type": "boolean", "optional": true, "description": "Determines whether this script is an internal script.", "hidden": true },
                     { "name": "isLiveEdit", "type": "boolean", "optional": true, "description": "True, if this script is generated as a result of the live edit operation.", "hidden": true },
@@ -3966,6 +3974,7 @@
                     { "name": "startColumn", "type": "integer", "description": "Column offset of the script within the resource with given URL." },
                     { "name": "endLine", "type": "integer", "description": "Last line of the script." },
                     { "name": "endColumn", "type": "integer", "description": "Length of the last line of the script." },
+                    { "name": "executionContextId", "$ref": "Runtime.ExecutionContextId", "description": "Specifies script creation context.", "hidden": true },
                     { "name": "isContentScript", "type": "boolean", "optional": true, "description": "Determines whether this script is a user extension script." },
                     { "name": "isInternalScript", "type": "boolean", "optional": true, "description": "Determines whether this script is an internal script.", "hidden": true },
                     { "name": "sourceMapURL", "type": "string", "optional": true, "description": "URL of source map associated with script (if any)." },
