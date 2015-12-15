@@ -598,7 +598,7 @@ WebInspector.ConsoleView.prototype = {
         // This method is sniffed in tests.
     },
 
-    _createDiracViewMessage: function(message) {
+    _alterDiracViewMessage: function(message) {
         var nestingLevel = this._currentGroup.nestingLevel();
 
         message.messageText = "";
@@ -615,6 +615,10 @@ WebInspector.ConsoleView.prototype = {
             kind = message.parameters.shift().value;
         } catch (e) {}
 
+        if (kind == "result") {
+            message.type = WebInspector.ConsoleMessage.MessageType.Result;
+        }
+
         var originatingMessage = this._pendingDiracCommands[requestId];
         if (originatingMessage) {
             message.setOriginatingMessage(originatingMessage);
@@ -622,19 +626,38 @@ WebInspector.ConsoleView.prototype = {
         }
 
         var extraClass = kind?("dirac-"+kind):null;
-        return new WebInspector.ConsoleCLJSCommandResult(message, this._linkifier, nestingLevel, extraClass);
+        return extraClass;
+    },
+
+    _createViewMessage: function(message)
+    {
+        // this is a HACK to treat REPL messages as Dirac results
+        var isDiracFlavoredMessage = message.messageText == "~~$DIRAC-LOG$~~";
+        var extraClasss = null;
+
+        if (isDiracFlavoredMessage) {
+            extraClasss = this._alterDiracViewMessage(message);
+        }
+
+        var result = this._createViewMessage2(message);
+
+        if (isDiracFlavoredMessage) {
+            var wraperElement = result.element();
+            wraperElement.classList.add("dirac-flavor");
+            if (extraClasss) {
+                wraperElement.classList.add(extraClasss);
+            }
+        }
+
+        return result;
     },
 
     /**
      * @param {!WebInspector.ConsoleMessage} message
      * @return {!WebInspector.ConsoleViewMessage}
      */
-    _createViewMessage: function(message)
+    _createViewMessage2: function(message)
     {
-        // this is a HACK to treat REPL messages as CLJS results
-        if (message.messageText == "~~$DIRAC-LOG$~~") {
-            return this._createDiracViewMessage(message);
-        }
         var nestingLevel = this._currentGroup.nestingLevel();
         switch (message.type) {
         case WebInspector.ConsoleMessage.MessageType.Command:
@@ -1446,7 +1469,7 @@ WebInspector.ConsoleCLJSCommand.prototype = {
 
             CodeMirror.runMode(this.text, "clojure-parinfer", this._formattedCommand);
 
-            this.element().classList.add("cljs-flavor"); // applied to wrapper element
+            this.element().classList.add("dirac-flavor"); // applied to wrapper element
         }
         return this._element;
     },
@@ -1491,38 +1514,6 @@ WebInspector.ConsoleCommandResult.prototype = {
     },
 
     __proto__: WebInspector.ConsoleViewMessage.prototype
-}
-
-/**
- * @constructor
- * @extends {WebInspector.ConsoleViewMessage}
- * @param {!WebInspector.ConsoleMessage} message
- * @param {!WebInspector.Linkifier} linkifier
- * @param {number} nestingLevel
- */
-WebInspector.ConsoleCLJSCommandResult = function(message, linkifier, nestingLevel, extraClass)
-{
-    WebInspector.ConsoleCommandResult.call(this, message, linkifier, nestingLevel);
-    this._extraClass = extraClass;
-}
-
-WebInspector.ConsoleCLJSCommandResult.prototype = {
-
-    /**
-     * @override
-     * @return {!Element}
-     */
-    contentElement: function()
-    {
-        var element = WebInspector.ConsoleCommandResult.prototype.contentElement.call(this);
-        this.element().classList.add("cljs-flavor"); // applied to wrapper element
-        if (this._extraClass) {
-            this.element().classList.add(this._extraClass); // applied to wrapper element
-        }
-        return element;
-    },
-
-    __proto__: WebInspector.ConsoleCommandResult.prototype
 }
 
 /**

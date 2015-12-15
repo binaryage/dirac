@@ -2,11 +2,11 @@
   background-color:rgba(100, 255, 100, 0.08);
 }
 
-.cljs-flavor {
+.dirac-flavor {
   background-color:rgba(100, 255, 100, 0.08);
 }
 
-.cljs-flavor::before {
+.dirac-flavor::before {
     background-position: -192px -96px;
     -webkit-filter: hue-rotate(280deg);
 }
