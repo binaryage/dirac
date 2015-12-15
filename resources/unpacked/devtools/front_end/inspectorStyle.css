@@ -554,6 +554,20 @@ body.inactive .sidebar-tree-item.selected {
     bottom: 0;
 }
 
+.root-view:after {
+    content: 'dirac';
+    position: absolute;
+    top: 3px;
+    right: 50px;
+    background-color: rgba(100, 255, 100, 0.2);
+    font-weight: bold;
+    border-radius: 2px;
+    border: 1px solid rgba(100, 255, 100, 0.1);
+    color: #999;
+    opacity: 0.5;
+    padding: 2px 6px;
+}
+
 .viewport-control-gap-element {
     color: transparent;
 }
