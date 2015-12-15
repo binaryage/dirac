@@ -1,3 +1,4 @@
+/resources/unpacked/devtools/front_end/_cljs
 /.lein-env
 .lein*
 /resources/unpacked/compiled
@@ -9,4 +10,4 @@
 /target
 /checkouts
 /.tmp
-figwheel_server.log
+.figwheel_server.log
