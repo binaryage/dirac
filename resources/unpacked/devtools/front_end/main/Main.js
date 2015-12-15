@@ -103,7 +103,6 @@ WebInspector.Main.prototype = {
     _initializeExperiments: function(prefs)
     {
         Runtime.experiments.register("accessibilityInspection", "Accessibility Inspection");
-        Runtime.experiments.register("animationInspection", "Animation Inspection");
         Runtime.experiments.register("applyCustomStylesheet", "Allow custom UI themes");
         Runtime.experiments.register("blackboxJSFramesOnTimeline", "Blackbox JavaScript frames on Timeline", true);
         Runtime.experiments.register("colorContrastRatio", "Contrast ratio line in color picker", true);
@@ -149,7 +148,6 @@ WebInspector.Main.prototype = {
         }
 
         Runtime.experiments.setDefaultExperiments([
-            "animationInspection",
             "deviceMode",
             "securityPanel"
         ]);
@@ -946,16 +944,15 @@ WebInspector.Main.MainMenuItem.prototype = {
  */
 WebInspector.NetworkPanelIndicator = function()
 {
-    var networkConditionsSetting = WebInspector.moduleSetting("networkConditions");
-    networkConditionsSetting.set({ "throughput": -1, "latency": 0 });
-    networkConditionsSetting.addChangeListener(updateVisibility);
+    var manager = WebInspector.multitargetNetworkManager;
+    manager.addEventListener(WebInspector.MultitargetNetworkManager.Events.ConditionsChanged, updateVisibility);
     var blockedURLsSetting = WebInspector.moduleSetting("blockedURLs");
     blockedURLsSetting.addChangeListener(updateVisibility);
     updateVisibility();
 
     function updateVisibility()
     {
-        if (WebInspector.NetworkManager.IsThrottlingEnabled(networkConditionsSetting.get())) {
+        if (manager.isThrottling()) {
             WebInspector.inspectorView.setPanelIcon("network", "warning-icon", WebInspector.UIString("Network throttling is enabled"));
         } else if (blockedURLsSetting.get().length) {
             WebInspector.inspectorView.setPanelIcon("network", "warning-icon", WebInspector.UIString("Requests may be blocked"));
