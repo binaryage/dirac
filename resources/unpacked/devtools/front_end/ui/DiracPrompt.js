@@ -1,11 +1,11 @@
-WebInspector.CLJSPromptWithHistory = function(codeMirrorInstance, completions, stopCharacters)
+WebInspector.DiracPromptWithHistory = function(codeMirrorInstance, completions, stopCharacters)
 {
     WebInspector.TextPromptWithHistory.call(this, completions, stopCharacters);
 
     this._codeMirror = codeMirrorInstance;
 };
 
-WebInspector.CLJSPromptWithHistory.prototype = {
+WebInspector.DiracPromptWithHistory.prototype = {
 
     text: function()
     {

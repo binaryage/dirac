@@ -1,4 +1,4 @@
-.console-prompt-cljs-wrapper {
+.console-prompt-dirac-wrapper {
   background-color:rgba(100, 255, 100, 0.08);
 }
 
@@ -41,7 +41,7 @@
   padding-right: 4px !important;
 }
 
-#console-prompt-cljs {
+#console-prompt-dirac {
     clear: right;
     position: relative;
     padding: 3px 22px 1px 0;
@@ -51,7 +51,7 @@
     min-height: 18px;  /* Sync with ConsoleViewMessage.js */
 }
 
-#console-prompt-cljs::before {
+#console-prompt-dirac::before {
     background-position: -192px -96px;
     -webkit-filter: hue-rotate(280deg);
 }
@@ -60,7 +60,7 @@
     display: none;
 }
 
-#console-prompt-cljs::before{
+#console-prompt-dirac::before{
     position: absolute;
     display: block;
     content: "";
@@ -75,7 +75,7 @@
 }
 
 @media (-webkit-min-device-pixel-ratio: 1.5) {
-#console-prompt-cljs::before {
+#console-prompt-dirac::before {
     background-image: url(Images/toolbarButtonGlyphs_2x.png);
 }
 } /* media */

@@ -46,9 +46,9 @@ WebInspector.ConsoleView = function()
     WebInspector.VBox.call(this);
     this.setMinimumSize(0, 35);
     this.registerRequiredCSS("console/consoleView.css");
-    this.registerRequiredCSS("console/cljs-codemirror.css");
-    this.registerRequiredCSS("console/cljs-theme.css");
-    this.registerRequiredCSS("console/cljs-prompt.css");
+    this.registerRequiredCSS("console/dirac-codemirror.css");
+    this.registerRequiredCSS("console/dirac-theme.css");
+    this.registerRequiredCSS("console/dirac-prompt.css");
 
     this._searchableView = new WebInspector.SearchableView(this);
     this._searchableView.setPlaceholder(WebInspector.UIString("Find string in logs"));
@@ -117,17 +117,17 @@ WebInspector.ConsoleView = function()
 
     this._searchableView.setDefaultFocusedElement(this._promptElement);
 
-    var cljsPromptElement = this._messagesElement.createChild("div", "source-code");
-    cljsPromptElement.id = "console-prompt-cljs";
-    cljsPromptElement.spellcheck = false;
-    var cljsPromptCodeMirrorInstance = dirac.implant.api.adopt_prompt_element(cljsPromptElement);
-    cljsPromptElement.focus = function() {
+    var diracPromptElement = this._messagesElement.createChild("div", "source-code");
+    diracPromptElement.id = "console-prompt-dirac";
+    diracPromptElement.spellcheck = false;
+    var diracPromptCodeMirrorInstance = dirac.implant.api.adopt_prompt_element(diracPromptElement);
+    diracPromptElement.focus = function() {
       // delegate focus calls to code mirror
-      cljsPromptCodeMirrorInstance.focus();
-      cljsPromptCodeMirrorInstance.refresh(); // HACK: this is needed to properly display cursor in empty codemirror, http://stackoverflow.com/questions/10575833/codemirror-has-content-but-wont-display-until-keypress
+      diracPromptCodeMirrorInstance.focus();
+      diracPromptCodeMirrorInstance.refresh(); // HACK: this is needed to properly display cursor in empty codemirror, http://stackoverflow.com/questions/10575833/codemirror-has-content-but-wont-display-until-keypress
     };
 
-    cljsPromptElement.classList.add("inactive-prompt");
+    diracPromptElement.classList.add("inactive-prompt");
 
     // FIXME: This is a workaround for the selection machinery bug. See crbug.com/410899
     var selectAllFixer = this._messagesElement.createChild("div", "console-view-fix-select-all");
@@ -168,19 +168,19 @@ WebInspector.ConsoleView = function()
                         proxy: proxyElement});
     this._activePromptIndex = 0;
 
-    var cljsPrompt = new WebInspector.CLJSPromptWithHistory(cljsPromptCodeMirrorInstance);
-    cljsPrompt.setSuggestBoxEnabled(false);
-    cljsPrompt.setAutocompletionTimeout(0);
-    cljsPrompt.renderAsBlock();
-    var cljsProxyElement = cljsPrompt.attach(cljsPromptElement);
-    cljsProxyElement.classList.add("console-prompt-cljs-wrapper");
-    cljsProxyElement.addEventListener("keydown", this._promptKeyDown.bind(this), true);
+    var diracPrompt = new WebInspector.DiracPromptWithHistory(diracPromptCodeMirrorInstance);
+    diracPrompt.setSuggestBoxEnabled(false);
+    diracPrompt.setAutocompletionTimeout(0);
+    diracPrompt.renderAsBlock();
+    var diracProxyElement = diracPrompt.attach(diracPromptElement);
+    diracProxyElement.classList.add("console-prompt-dirac-wrapper");
+    diracProxyElement.addEventListener("keydown", this._promptKeyDown.bind(this), true);
 
-    this._prompts.push({id: "cljs",
-                        prompt: cljsPrompt,
-                        element: cljsPromptElement,
-                        proxy: cljsProxyElement,
-                        codeMirror: cljsPromptCodeMirrorInstance});
+    this._prompts.push({id: "dirac",
+                        prompt: diracPrompt,
+                        element: diracPromptElement,
+                        proxy: diracProxyElement,
+                        codeMirror: diracPromptCodeMirrorInstance});
 
     this._consoleHistorySetting = WebInspector.settings.createLocalSetting("consoleHistory", []);
     var historyData = this._consoleHistorySetting.get();
@@ -447,7 +447,7 @@ WebInspector.ConsoleView.prototype = {
 
     _refreshNs: function () {
         var promptDescriptor = this._prompts[this._activePromptIndex];
-        if (promptDescriptor.id != "cljs") {
+        if (promptDescriptor.id != "dirac") {
             return;
         }
 
@@ -662,8 +662,8 @@ WebInspector.ConsoleView.prototype = {
         switch (message.type) {
         case WebInspector.ConsoleMessage.MessageType.Command:
             return new WebInspector.ConsoleCommand(message, this._linkifier, nestingLevel);
-        case WebInspector.ConsoleMessage.MessageType.CLJSCommand:
-            return new WebInspector.ConsoleCLJSCommand(message, this._linkifier, nestingLevel);
+        case WebInspector.ConsoleMessage.MessageType.DiracCommand:
+            return new WebInspector.ConsoleDiracCommand(message, this._linkifier, nestingLevel);
         case WebInspector.ConsoleMessage.MessageType.Result:
             return new WebInspector.ConsoleCommandResult(message, this._linkifier, nestingLevel);
         case WebInspector.ConsoleMessage.MessageType.StartGroupCollapsed:
@@ -908,7 +908,7 @@ WebInspector.ConsoleView.prototype = {
 
     _switchPromptIfAvail: function(oldPromptIndex, newPromptIndex) {
         var newPromptDescriptor = this._prompts[this._safePromptIndex(newPromptIndex)];
-        if (newPromptDescriptor.id != "cljs") {
+        if (newPromptDescriptor.id != "dirac") {
           return this._switchPrompt(oldPromptIndex, newPromptIndex);
         }
 
@@ -980,24 +980,24 @@ WebInspector.ConsoleView.prototype = {
             return;
 
         var promptDescriptor = this._prompts[this._activePromptIndex];
-        if (promptDescriptor.id == "cljs") {
-           this._appendCLJSCommand(str);
+        if (promptDescriptor.id == "dirac") {
+           this._appendDiracCommand(str);
         } else {
             this._appendCommand(str, true);
         }
     },
 
-    _prepareCLJSCommand: function(inputText, commandId) {
+    _prepareDiracCommand: function(inputText, commandId) {
         var reQuote = new RegExp("'", 'g');
         var reNewLine = new RegExp("\n", 'g');
         var codeString = "'" + inputText.replace(reQuote, "\\'").replace(reNewLine, "\\n") + "'";
         return "devtools.api.eval(" + commandId + ", " + codeString + ")";
     },
 
-    _appendCLJSCommand: function (text) {
+    _appendDiracCommand: function (text) {
         this._lastDiracCommandId++;
         var commandId = this._lastDiracCommandId;
-        var command = this._prepareCLJSCommand(text, commandId);
+        var command = this._prepareDiracCommand(text, commandId);
         if (!command)
             return;
 
@@ -1005,7 +1005,7 @@ WebInspector.ConsoleView.prototype = {
         if (executionContext) {
             this._prompt.setText("");
             var target = executionContext.target();
-            var type = WebInspector.ConsoleMessage.MessageType.CLJSCommand;
+            var type = WebInspector.ConsoleMessage.MessageType.DiracCommand;
             var commandMessage = new WebInspector.ConsoleMessage(target, WebInspector.ConsoleMessage.MessageSource.JS, null, text, type);
             commandMessage.setExecutionContextId(executionContext.id);
             target.consoleModel.addMessage(commandMessage);
@@ -1447,12 +1447,12 @@ WebInspector.ConsoleCommand.prototype = {
  * @param {!WebInspector.Linkifier} linkifier
  * @param {number} nestingLevel
  */
-WebInspector.ConsoleCLJSCommand = function(message, linkifier, nestingLevel)
+WebInspector.ConsoleDiracCommand = function(message, linkifier, nestingLevel)
 {
     WebInspector.ConsoleCommand.call(this, message, linkifier, nestingLevel);
 }
 
-WebInspector.ConsoleCLJSCommand.prototype = {
+WebInspector.ConsoleDiracCommand.prototype = {
 
     /**
      * @override

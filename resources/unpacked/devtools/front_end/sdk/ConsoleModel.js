@@ -461,7 +461,7 @@ WebInspector.ConsoleMessage.MessageType = {
     Result: "result",
     Profile: "profile",
     ProfileEnd: "profileEnd",
-    CLJSCommand: "cljsCommand",
+    DiracCommand: "diracCommand",
     Command: "command"
 }
 

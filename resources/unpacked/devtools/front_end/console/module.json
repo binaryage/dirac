@@ -91,8 +91,8 @@
     ],
     "resources": [
         "consoleView.css",
-        "cljs-codemirror.css",
-        "cljs-theme.css",
-        "cljs-prompt.css"
+        "dirac-codemirror.css",
+        "dirac-theme.css",
+        "dirac-prompt.css"
     ]
 }
