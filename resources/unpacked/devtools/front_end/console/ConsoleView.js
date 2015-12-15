@@ -176,6 +176,10 @@ WebInspector.ConsoleView = function()
     diracProxyElement.classList.add("console-prompt-dirac-wrapper");
     diracProxyElement.addEventListener("keydown", this._promptKeyDown.bind(this), true);
 
+    this._diracHistorySetting = WebInspector.settings.createLocalSetting("diracHistory", []);
+    var diracHistoryData = this._diracHistorySetting.get();
+    diracPrompt.setHistoryData(diracHistoryData);
+
     this._prompts.push({id: "dirac",
                         prompt: diracPrompt,
                         element: diracPromptElement,
@@ -1011,7 +1015,7 @@ WebInspector.ConsoleView.prototype = {
             target.consoleModel.addMessage(commandMessage);
 
             this._prompt.pushHistoryItem(text);
-            this._consoleHistorySetting.set(this._prompt.historyData().slice(-WebInspector.ConsoleView.persistedHistorySize));
+            this._diracHistorySetting.set(this._prompt.historyData().slice(-WebInspector.ConsoleView.persistedHistorySize));
 
             var callback = function(result, wasThrown, valueResult, exceptionDetails) {
               // no-op
