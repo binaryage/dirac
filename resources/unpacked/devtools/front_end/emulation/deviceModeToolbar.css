@@ -1,0 +1,46 @@
+/*
+ * Copyright 2015 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+.device-mode-size-input {
+    background: hsl(0, 0%, 100%);
+    border: none;
+    padding: 2px 0;
+    width: 39px !important;
+    margin: 0 3px;
+    text-align: center;
+}
+
+.device-mode-size-input.error-input {
+    outline: auto 2px red;
+}
+
+.device-mode-size-input:disabled {
+    background: transparent;
+    -webkit-user-select: none;
+}
+
+.device-mode-x {
+    margin: 0 1px;
+    font-size: 16px;
+}
+
+.device-mode-device-select {
+    background: none;
+    box-shadow: none;
+    border: none;
+    outline: none;
+    padding: 0 2px;
+    -webkit-appearance: menulist;
+    margin: 0;
+    width: 120px;
+}
+
+.device-mode-checkbox {
+    width: 120px;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+}

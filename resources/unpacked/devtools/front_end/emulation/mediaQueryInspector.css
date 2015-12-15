@@ -1,0 +1,99 @@
+/*
+ * Copyright 2015 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+/* Media query bars */
+
+.media-inspector-view {
+    height: 50px;
+}
+
+.media-inspector-marker-container {
+    position: relative;
+    height: 14px;
+    margin: 2px 0;
+}
+
+.media-inspector-marker {
+    position: absolute;
+    top: 1px;
+    bottom: 1px;
+    white-space: nowrap;
+    z-index: auto;
+}
+
+.media-inspector-marker:hover {
+    top: -1px;
+    bottom: -1px;
+    opacity: 1;
+}
+
+.media-inspector-marker-max-width {
+    background-color: hsl(207, 90%, 77%);
+    border-right: 2px solid hsl(207, 90%, 61%);
+}
+
+.media-inspector-marker-max-width.media-inspector-marker-inactive:not(:hover) {
+    background-color: hsl(199, 94%, 94%);
+}
+
+.media-inspector-marker-min-max-width {
+    background-color: hsl(88, 50%, 76%);
+    border-left: 2px solid #689F38;
+    border-right: 2px solid hsl(92, 48%, 42%);
+}
+
+.media-inspector-marker-min-max-width.media-inspector-marker-inactive:not(:hover) {
+    background-color: hsl(125, 39%, 94%);
+}
+
+.media-inspector-marker-min-max-width:hover {
+    z-index: 1;
+}
+
+.media-inspector-marker-min-width {
+    background-color: hsl(36, 100%, 75%);
+    border-left: 2px solid hsl(30, 100%, 48%);
+}
+
+.media-inspector-marker-min-width.media-inspector-marker-inactive:not(:hover) {
+    background-color: hsl(37, 100%, 94%);
+}
+
+/* Media query labels */
+
+.media-inspector-marker:not(:hover) .media-inspector-marker-label-container {
+    display: none;
+}
+
+.media-inspector-marker-label-container {
+    position: absolute;
+    z-index: 1;
+}
+
+.media-inspector-marker-label-container-left {
+    left: -2px;
+}
+
+.media-inspector-marker-label-container-right {
+    right: -2px;
+}
+
+.media-inspector-marker-label {
+    color: #222;
+    position: absolute;
+    top: 1px;
+    bottom: 0;
+    font-size: 12px;
+    pointer-events: none;
+}
+
+.media-inspector-label-right {
+    right: 4px;
+}
+
+.media-inspector-label-left {
+    left: 4px;
+}
