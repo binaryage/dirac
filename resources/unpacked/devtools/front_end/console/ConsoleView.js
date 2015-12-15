@@ -200,6 +200,8 @@ WebInspector.ConsoleView = function()
     this._initConsoleMessages();
 
     WebInspector.context.addFlavorChangeListener(WebInspector.ExecutionContext, this._executionContextChanged, this);
+
+    this._consolePromptIndexSetting = WebInspector.settings.createLocalSetting("consolePromptIndex", 0);
 }
 
 WebInspector.ConsoleView.persistedHistorySize = 300;
@@ -367,8 +369,14 @@ WebInspector.ConsoleView.prototype = {
         return this._promptElement;
     },
 
+    _switchToLastPrompt: function()
+    {
+        this._switchPromptIfAvail(this._activePromptIndex, this._consolePromptIndexSetting.get());
+    },
+
     _executionContextChanged: function()
     {
+        this._switchToLastPrompt();
         this._prompt.clearAutoComplete(true);
         if (!this._showAllMessagesCheckbox.checked())
             this._updateMessageList();
@@ -902,7 +910,7 @@ WebInspector.ConsoleView.prototype = {
         this._prompt.setText("");
     },
 
-    _safePromptIndex: function(index) {
+    _normalizePromptIndex: function(index) {
         var count = this._prompts.length;
         while (index<0) {
             index += count;
@@ -911,14 +919,20 @@ WebInspector.ConsoleView.prototype = {
     },
 
     _switchPromptIfAvail: function(oldPromptIndex, newPromptIndex) {
-        var newPromptDescriptor = this._prompts[this._safePromptIndex(newPromptIndex)];
+        var oldIndex = this._normalizePromptIndex(oldPromptIndex);
+        var newIndex = this._normalizePromptIndex(newPromptIndex);
+        if (oldIndex == newIndex) {
+          return; // nothing to do
+        }
+
+        var newPromptDescriptor = this._prompts[newIndex];
         if (newPromptDescriptor.id != "dirac") {
-          return this._switchPrompt(oldPromptIndex, newPromptIndex);
+          return this._switchPrompt(oldIndex, newIndex);
         }
 
         var callback = function(result, wasThrown, valueResult, exceptionDetails) {
             if (result && result.value === true) {
-                return this._switchPrompt(oldPromptIndex, newPromptIndex);
+                return this._switchPrompt(oldIndex, newIndex);
             }
         };
 
@@ -927,15 +941,16 @@ WebInspector.ConsoleView.prototype = {
 
     _switchPrompt: function(oldPromptIndex, newPromptIndex)
     {
-        var oldPromptDescriptor = this._prompts[this._safePromptIndex(oldPromptIndex)];
-        var newPromptDescriptor = this._prompts[this._safePromptIndex(newPromptIndex)];
+        var oldPromptDescriptor = this._prompts[this._normalizePromptIndex(oldPromptIndex)];
+        var newPromptDescriptor = this._prompts[this._normalizePromptIndex(newPromptIndex)];
 
         newPromptDescriptor.element.classList.remove("inactive-prompt");
         WebInspector.restoreFocusFromElement(oldPromptDescriptor.element);
 
         this._prompt = newPromptDescriptor.prompt;
         this._promptElement = newPromptDescriptor.element;
-        this._activePromptIndex = this._safePromptIndex(newPromptIndex);
+        this._activePromptIndex = this._normalizePromptIndex(newPromptIndex);
+        this._consolePromptIndexSetting.set(this._activePromptIndex);
         this._searchableView.setDefaultFocusedElement(this._promptElement);
 
         oldPromptDescriptor.element.classList.add("inactive-prompt");
