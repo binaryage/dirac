@@ -1,0 +1,81 @@
+.console-prompt-cljs-wrapper {
+  background-color:rgba(100, 255, 100, 0.08);
+}
+
+.cljs-flavor {
+  background-color:rgba(100, 255, 100, 0.08);
+}
+
+.cljs-flavor::before {
+    background-position: -192px -96px;
+    -webkit-filter: hue-rotate(280deg);
+}
+
+.console-message, .console-user-command {
+  padding-left: 4px !important;
+  padding-right: 4px !important;
+}
+
+.CodeMirror-placeholder {
+  color: rgba(102, 200, 102, 0.6) !important;
+}
+
+.dirac-stderr > .console-message {
+  background-color: rgba(255, 0, 0, 0.15) !important;
+}
+
+.dirac-stdout > .console-message {
+  background-color: rgba(0, 0, 0, 0.05) !important;
+}
+
+.console-error-level {
+    background-color: hsl(0, 100%, 97%);
+}
+
+.console-warning-level {
+    background-color: hsl(50, 100%, 95%);
+}
+
+#console-prompt {
+  padding-left: 4px !important;
+  padding-right: 4px !important;
+}
+
+#console-prompt-cljs {
+    clear: right;
+    position: relative;
+    padding: 3px 22px 1px 0;
+    padding-left: 4px !important;
+    padding-right: 4px !important;
+    margin-left: 24px;
+    min-height: 18px;  /* Sync with ConsoleViewMessage.js */
+}
+
+#console-prompt-cljs::before {
+    background-position: -192px -96px;
+    -webkit-filter: hue-rotate(280deg);
+}
+
+.inactive-prompt {
+    display: none;
+}
+
+#console-prompt-cljs::before{
+    position: absolute;
+    display: block;
+    content: "";
+    left: -17px;
+    top: 9px;
+    width: 10px;
+    height: 10px;
+    margin-top: -4px;
+    -webkit-user-select: none;
+    background-image: url(Images/toolbarButtonGlyphs.png);
+    background-size: 352px 168px;
+}
+
+@media (-webkit-min-device-pixel-ratio: 1.5) {
+#console-prompt-cljs::before {
+    background-image: url(Images/toolbarButtonGlyphs_2x.png);
+}
+} /* media */

@@ -5,6 +5,7 @@
                  [binaryage/chromex "0.2.0"]
                  [binaryage/devtools "0.4.1"]
                  [figwheel "0.5.0-1"]
+                 [parinfer "0.2.3"]
                  [environ "1.0.1"]]
 
   :plugins [[lein-cljsbuild "1.1.1"]
@@ -14,8 +15,7 @@
             [lein-cooper "1.1.2"]]
 
   :figwheel
-  {:server-port    7000
-   :nrepl-port     7777
+  {:server-port    7100
    :server-logfile ".figwheel_server.log"
    :css-dirs       []}
 
@@ -33,9 +33,9 @@
                           {:implant
                            {:source-paths ["src/implant"]
                             :compiler     {:main                  dirac.implant.main
-                                           :output-to             "resources/unpacked/devtools/front_end/_cljs/shell.js"
+                                           :output-to             "resources/unpacked/devtools/front_end/_cljs/implant.js"
                                            :output-dir            "resources/unpacked/devtools/front_end/_cljs"
-                                           :asset-path            "resources/unpacked/_cljs"
+                                           :asset-path            "_cljs"
                                            :optimizations         :none
                                            :anon-fn-naming-policy :unmapped
                                            :compiler-stats        true

@@ -81,14 +81,18 @@
         }
     ],
     "dependencies": [
-        "components", "ui_lazy"
+        "components", "ui_lazy", "source_frame"
     ],
     "scripts": [
+        "clojure-parinfer.js",
         "ConsoleViewMessage.js",
         "ConsoleView.js",
         "ConsolePanel.js"
     ],
     "resources": [
-        "consoleView.css"
+        "consoleView.css",
+        "cljs-codemirror.css",
+        "cljs-theme.css",
+        "cljs-prompt.css"
     ]
 }

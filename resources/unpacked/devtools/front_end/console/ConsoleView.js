@@ -27,6 +27,13 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+function evalInCurrentContext(code, callback) {
+  var currentExecutionContext = WebInspector.context.flavor(WebInspector.ExecutionContext);
+  if (currentExecutionContext) {
+     currentExecutionContext.evaluate(code, "console", false, false, false, true, callback);
+  }
+}
+
 /**
  * @constructor
  * @extends {WebInspector.VBox}
@@ -39,6 +46,9 @@ WebInspector.ConsoleView = function()
     WebInspector.VBox.call(this);
     this.setMinimumSize(0, 35);
     this.registerRequiredCSS("console/consoleView.css");
+    this.registerRequiredCSS("console/cljs-codemirror.css");
+    this.registerRequiredCSS("console/cljs-theme.css");
+    this.registerRequiredCSS("console/cljs-prompt.css");
 
     this._searchableView = new WebInspector.SearchableView(this);
     this._searchableView.setPlaceholder(WebInspector.UIString("Find string in logs"));
@@ -107,6 +117,18 @@ WebInspector.ConsoleView = function()
 
     this._searchableView.setDefaultFocusedElement(this._promptElement);
 
+    var cljsPromptElement = this._messagesElement.createChild("div", "source-code");
+    cljsPromptElement.id = "console-prompt-cljs";
+    cljsPromptElement.spellcheck = false;
+    var cljsPromptCodeMirrorInstance = dirac.implant.api.adopt_prompt_element(cljsPromptElement);
+    cljsPromptElement.focus = function() {
+      // delegate focus calls to code mirror
+      cljsPromptCodeMirrorInstance.focus();
+      cljsPromptCodeMirrorInstance.refresh(); // HACK: this is needed to properly display cursor in empty codemirror, http://stackoverflow.com/questions/10575833/codemirror-has-content-but-wont-display-until-keypress
+    };
+
+    cljsPromptElement.classList.add("inactive-prompt");
+
     // FIXME: This is a workaround for the selection machinery bug. See crbug.com/410899
     var selectAllFixer = this._messagesElement.createChild("div", "console-view-fix-select-all");
     selectAllFixer.textContent = ".";
@@ -136,6 +158,29 @@ WebInspector.ConsoleView = function()
     this._prompt.renderAsBlock();
     var proxyElement = this._prompt.attach(this._promptElement);
     proxyElement.addEventListener("keydown", this._promptKeyDown.bind(this), false);
+
+    this._pendingDiracCommands = {};
+    this._lastDiracCommandId = 0;
+    this._prompts = [];
+    this._prompts.push({id: "js",
+                        prompt: this._prompt,
+                        element: this._promptElement,
+                        proxy: proxyElement});
+    this._activePromptIndex = 0;
+
+    var cljsPrompt = new WebInspector.CLJSPromptWithHistory(cljsPromptCodeMirrorInstance);
+    cljsPrompt.setSuggestBoxEnabled(false);
+    cljsPrompt.setAutocompletionTimeout(0);
+    cljsPrompt.renderAsBlock();
+    var cljsProxyElement = cljsPrompt.attach(cljsPromptElement);
+    cljsProxyElement.classList.add("console-prompt-cljs-wrapper");
+    cljsProxyElement.addEventListener("keydown", this._promptKeyDown.bind(this), true);
+
+    this._prompts.push({id: "cljs",
+                        prompt: cljsPrompt,
+                        element: cljsPromptElement,
+                        proxy: cljsProxyElement,
+                        codeMirror: cljsPromptCodeMirrorInstance});
 
     this._consoleHistorySetting = WebInspector.settings.createLocalSetting("consoleHistory", []);
     var historyData = this._consoleHistorySetting.get();
@@ -199,6 +244,7 @@ WebInspector.ConsoleView.prototype = {
     {
         WebInspector.multitargetConsoleModel.addEventListener(WebInspector.ConsoleModel.Events.ConsoleCleared, this._consoleCleared, this);
         WebInspector.multitargetConsoleModel.addEventListener(WebInspector.ConsoleModel.Events.MessageAdded, this._onConsoleMessageAdded, this);
+        WebInspector.multitargetConsoleModel.addEventListener(WebInspector.ConsoleModel.Events.DiracMessage, this._onConsoleDiracMessage, this);
         WebInspector.multitargetConsoleModel.addEventListener(WebInspector.ConsoleModel.Events.MessageUpdated, this._onConsoleMessageUpdated, this);
         WebInspector.multitargetConsoleModel.addEventListener(WebInspector.ConsoleModel.Events.CommandEvaluated, this._commandEvaluated, this);
         WebInspector.multitargetConsoleModel.messages().forEach(this._addConsoleMessage, this);
@@ -399,6 +445,52 @@ WebInspector.ConsoleView.prototype = {
         this._filterStatusMessageElement.style.display = this._hiddenByFilterCount ? "" : "none";
     },
 
+    _refreshNs: function () {
+        var promptDescriptor = this._prompts[this._activePromptIndex];
+        if (promptDescriptor.id != "cljs") {
+            return;
+        }
+
+        var label = this._currentNs?this._currentNs:"";
+        promptDescriptor.codeMirror.setOption("placeholder", label);
+    },
+
+    _setCurrentNs: function(name)
+    {
+        this._currentNs = name;
+        this._refreshNs();
+    },
+
+    _onJobStarted: function(requestId) {
+        // no op
+    },
+
+    _onJobEnded: function(requestId) {
+        delete this._pendingDiracCommands[requestId];
+    },
+
+    _onConsoleDiracMessage: function(event)
+    {
+        var message = (event.data);
+        var command = message.parameters[1];
+        if (command)
+            command = command.value;
+
+        switch (command) {
+            case "repl-ns":
+                this._setCurrentNs(message.parameters[2].value);
+                break;
+            case "job-start":
+                this._onJobStarted(message.parameters[2].value);
+                break;
+            case "job-end":
+                this._onJobEnded(message.parameters[2].value);
+                break;
+            default:
+                throw ("unrecognized Dirac message: " + command);
+        };
+    },
+
     /**
      * @param {!WebInspector.Event} event
      */
@@ -506,16 +598,49 @@ WebInspector.ConsoleView.prototype = {
         // This method is sniffed in tests.
     },
 
+    _createDiracViewMessage: function(message) {
+        var nestingLevel = this._currentGroup.nestingLevel();
+
+        message.messageText = "";
+        message.parameters.shift(); // "~~$DIRAC-LOG$~~"
+
+        // do not display location link
+        message.url = undefined;
+        message.stackTrace = undefined;
+
+        var requestId = null
+        var kind = null;
+        try {
+            requestId = message.parameters.shift().value; // request-id
+            kind = message.parameters.shift().value;
+        } catch (e) {}
+
+        var originatingMessage = this._pendingDiracCommands[requestId];
+        if (originatingMessage) {
+            message.setOriginatingMessage(originatingMessage);
+            this._pendingDiracCommands[requestId] = message;
+        }
+
+        var extraClass = kind?("dirac-"+kind):null;
+        return new WebInspector.ConsoleCLJSCommandResult(message, this._linkifier, nestingLevel, extraClass);
+    },
+
     /**
      * @param {!WebInspector.ConsoleMessage} message
      * @return {!WebInspector.ConsoleViewMessage}
      */
     _createViewMessage: function(message)
     {
+        // this is a HACK to treat REPL messages as CLJS results
+        if (message.messageText == "~~$DIRAC-LOG$~~") {
+            return this._createDiracViewMessage(message);
+        }
         var nestingLevel = this._currentGroup.nestingLevel();
         switch (message.type) {
         case WebInspector.ConsoleMessage.MessageType.Command:
             return new WebInspector.ConsoleCommand(message, this._linkifier, nestingLevel);
+        case WebInspector.ConsoleMessage.MessageType.CLJSCommand:
+            return new WebInspector.ConsoleCLJSCommand(message, this._linkifier, nestingLevel);
         case WebInspector.ConsoleMessage.MessageType.Result:
             return new WebInspector.ConsoleCommandResult(message, this._linkifier, nestingLevel);
         case WebInspector.ConsoleMessage.MessageType.StartGroupCollapsed:
@@ -735,11 +860,72 @@ WebInspector.ConsoleView.prototype = {
         }
 
         section.addKey(shortcut.makeDescriptor(shortcut.Keys.Enter), WebInspector.UIString("Execute command"));
+
+        keys = [
+            shortcut.makeDescriptor(shortcut.Keys.PageDown),
+            shortcut.makeDescriptor(shortcut.Keys.PageUp)
+        ];
+        this._shortcuts[keys[0].key] = this._selectNextPrompt.bind(this);
+        this._shortcuts[keys[1].key] = this._selectPrevPrompt.bind(this);
+        section.addRelatedKeys(keys, WebInspector.UIString("Next/previous prompt"));
     },
 
     _clearPromptBackwards: function()
     {
         this._prompt.setText("");
+    },
+
+    _safePromptIndex: function(index) {
+        var count = this._prompts.length;
+        while (index<0) {
+            index += count;
+        }
+        return index % count;
+    },
+
+    _switchPromptIfAvail: function(oldPromptIndex, newPromptIndex) {
+        var newPromptDescriptor = this._prompts[this._safePromptIndex(newPromptIndex)];
+        if (newPromptDescriptor.id != "cljs") {
+          return this._switchPrompt(oldPromptIndex, newPromptIndex);
+        }
+
+        var callback = function(result, wasThrown, valueResult, exceptionDetails) {
+            if (result && result.value === true) {
+                return this._switchPrompt(oldPromptIndex, newPromptIndex);
+            }
+        };
+
+        evalInCurrentContext("devtools.api.warm_up_repl_connection()", callback.bind(this));
+    },
+
+    _switchPrompt: function(oldPromptIndex, newPromptIndex)
+    {
+        var oldPromptDescriptor = this._prompts[this._safePromptIndex(oldPromptIndex)];
+        var newPromptDescriptor = this._prompts[this._safePromptIndex(newPromptIndex)];
+
+        newPromptDescriptor.element.classList.remove("inactive-prompt");
+        WebInspector.restoreFocusFromElement(oldPromptDescriptor.element);
+
+        this._prompt = newPromptDescriptor.prompt;
+        this._promptElement = newPromptDescriptor.element;
+        this._activePromptIndex = this._safePromptIndex(newPromptIndex);
+        this._searchableView.setDefaultFocusedElement(this._promptElement);
+
+        oldPromptDescriptor.element.classList.add("inactive-prompt");
+
+        this._refreshNs();
+        this._prompt.setText(""); // clear prompt when switching
+        this.focus();
+    },
+
+    _selectNextPrompt: function()
+    {
+        this._switchPromptIfAvail(this._activePromptIndex, this._activePromptIndex+1);
+    },
+
+    _selectPrevPrompt: function()
+    {
+        this._switchPromptIfAvail(this._activePromptIndex, this._activePromptIndex-1);
     },
 
     _promptKeyDown: function(event)
@@ -769,7 +955,48 @@ WebInspector.ConsoleView.prototype = {
         var str = this._prompt.text();
         if (!str.length)
             return;
-        this._appendCommand(str, true);
+
+        var promptDescriptor = this._prompts[this._activePromptIndex];
+        if (promptDescriptor.id == "cljs") {
+           this._appendCLJSCommand(str);
+        } else {
+            this._appendCommand(str, true);
+        }
+    },
+
+    _prepareCLJSCommand: function(inputText, commandId) {
+        var reQuote = new RegExp("'", 'g');
+        var reNewLine = new RegExp("\n", 'g');
+        var codeString = "'" + inputText.replace(reQuote, "\\'").replace(reNewLine, "\\n") + "'";
+        return "devtools.api.eval(" + commandId + ", " + codeString + ")";
+    },
+
+    _appendCLJSCommand: function (text) {
+        this._lastDiracCommandId++;
+        var commandId = this._lastDiracCommandId;
+        var command = this._prepareCLJSCommand(text, commandId);
+        if (!command)
+            return;
+
+        var executionContext = WebInspector.context.flavor(WebInspector.ExecutionContext);
+        if (executionContext) {
+            this._prompt.setText("");
+            var target = executionContext.target();
+            var type = WebInspector.ConsoleMessage.MessageType.CLJSCommand;
+            var commandMessage = new WebInspector.ConsoleMessage(target, WebInspector.ConsoleMessage.MessageSource.JS, null, text, type);
+            commandMessage.setExecutionContextId(executionContext.id);
+            target.consoleModel.addMessage(commandMessage);
+
+            this._prompt.pushHistoryItem(text);
+            this._consoleHistorySetting.set(this._prompt.historyData().slice(-WebInspector.ConsoleView.persistedHistorySize));
+
+            var callback = function(result, wasThrown, valueResult, exceptionDetails) {
+              // no-op
+            };
+
+            this._pendingDiracCommands[commandId] = commandMessage;
+            evalInCurrentContext(command, callback.bind(this));
+        }
     },
 
     /**
@@ -1197,6 +1424,44 @@ WebInspector.ConsoleCommand.prototype = {
  * @param {!WebInspector.Linkifier} linkifier
  * @param {number} nestingLevel
  */
+WebInspector.ConsoleCLJSCommand = function(message, linkifier, nestingLevel)
+{
+    WebInspector.ConsoleCommand.call(this, message, linkifier, nestingLevel);
+}
+
+WebInspector.ConsoleCLJSCommand.prototype = {
+
+    /**
+     * @override
+     * @return {!Element}
+     */
+    contentElement: function()
+    {
+        if (!this._element) {
+            this._element = createElementWithClass("div", "console-user-command");
+            this._element.message = this;
+
+            this._formattedCommand = createElementWithClass("span", "console-message-text source-code cm-s-github");
+            this._element.appendChild(this._formattedCommand);
+
+            CodeMirror.runMode(this.text, "clojure-parinfer", this._formattedCommand);
+
+            this.element().classList.add("cljs-flavor"); // applied to wrapper element
+        }
+        return this._element;
+    },
+
+    __proto__: WebInspector.ConsoleCommand.prototype
+}
+
+
+/**
+ * @constructor
+ * @extends {WebInspector.ConsoleViewMessage}
+ * @param {!WebInspector.ConsoleMessage} message
+ * @param {!WebInspector.Linkifier} linkifier
+ * @param {number} nestingLevel
+ */
 WebInspector.ConsoleCommandResult = function(message, linkifier, nestingLevel)
 {
     WebInspector.ConsoleViewMessage.call(this, message, linkifier, nestingLevel);
@@ -1226,6 +1491,38 @@ WebInspector.ConsoleCommandResult.prototype = {
     },
 
     __proto__: WebInspector.ConsoleViewMessage.prototype
+}
+
+/**
+ * @constructor
+ * @extends {WebInspector.ConsoleViewMessage}
+ * @param {!WebInspector.ConsoleMessage} message
+ * @param {!WebInspector.Linkifier} linkifier
+ * @param {number} nestingLevel
+ */
+WebInspector.ConsoleCLJSCommandResult = function(message, linkifier, nestingLevel, extraClass)
+{
+    WebInspector.ConsoleCommandResult.call(this, message, linkifier, nestingLevel);
+    this._extraClass = extraClass;
+}
+
+WebInspector.ConsoleCLJSCommandResult.prototype = {
+
+    /**
+     * @override
+     * @return {!Element}
+     */
+    contentElement: function()
+    {
+        var element = WebInspector.ConsoleCommandResult.prototype.contentElement.call(this);
+        this.element().classList.add("cljs-flavor"); // applied to wrapper element
+        if (this._extraClass) {
+            this.element().classList.add(this._extraClass); // applied to wrapper element
+        }
+        return element;
+    },
+
+    __proto__: WebInspector.ConsoleCommandResult.prototype
 }
 
 /**

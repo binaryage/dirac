@@ -11,3 +11,4 @@
 /checkouts
 /.tmp
 .figwheel_server.log
+.profiles/

@@ -30,6 +30,13 @@
             match: found && found.ch == match.charAt(0), forward: dir > 0};
   }
 
+  // Parinfer edit:
+  // (we add style classes to closing brackets, so we ignore them here)
+  function bracketStylesMatch(a, b) {
+    var valid = function(x) { return x.indexOf("bracket") == 0; }
+    return (a == b || valid(a) && valid(b));
+  }
+
   // bracketRegex is used to specify which type of bracket to scan
   // should be a regexp, e.g. /[[\]]/
   //
@@ -53,7 +60,7 @@
       if (lineNo == where.line) pos = where.ch - (dir < 0 ? 1 : 0);
       for (; pos != end; pos += dir) {
         var ch = line.charAt(pos);
-        if (re.test(ch) && (style === undefined || cm.getTokenTypeAt(Pos(lineNo, pos + 1)) == style)) {
+        if (re.test(ch) && (style === undefined || bracketStylesMatch(cm.getTokenTypeAt(Pos(lineNo, pos + 1)), style))) {
           var match = matching[ch];
           if ((match.charAt(1) == ">") == (dir > 0)) stack.push(ch);
           else if (!stack.length) return {pos: Pos(lineNo, pos), ch: ch};
@@ -81,7 +88,7 @@
     if (marks.length) {
       // Kludge to work around the IE bug from issue #1193, where text
       // input stops going to the textare whever this fires.
-      if (ie_lt8 && cm.state.focused) cm.display.input.focus();
+      if (ie_lt8 && cm.state.focused) cm.focus();
 
       var clear = function() {
         cm.operation(function() {
@@ -93,11 +100,13 @@
     }
   }
 
-  var currentlyHighlighted = null;
+  // Parinfer edit:
+  // (currentlyHighlighted should be local state if we want each editor to have their own highlighted brackets)
   function doMatchBrackets(cm) {
     cm.operation(function() {
-      if (currentlyHighlighted) {currentlyHighlighted(); currentlyHighlighted = null;}
-      currentlyHighlighted = matchBrackets(cm, false, cm.state.matchBrackets);
+      var state = cm.state.matchBrackets;
+      if (state.currentlyHighlighted) {state.currentlyHighlighted(); state.currentlyHighlighted = null;}
+      state.currentlyHighlighted = matchBrackets(cm, false, state);
     });
   }
 
