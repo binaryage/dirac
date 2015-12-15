@@ -6,8 +6,7 @@
   "name": "dirac-dev",
   "version": "0.1.0",
   "browser_action": {
-    "default_title": "Show the popup",
-    "default_popup": "popup.html",
+    "default_title": "Open Dirac DevTools",
     "default_icon": {
       "19": "images/icon19.png",
       "38": "images/icon38.png"
@@ -19,21 +18,29 @@
     "128": "images/icon128.png"
   },
   "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'",
-  "content_scripts": [
-    {
-      "matches": [
-        "<all_urls>"
-      ],
-      "js": [
-        "compiled/content_script/dirac.js",
-        "content-script.js"
-      ],
-      "run_at": "document_end"
-    }
-  ],
   "background": {
     "page": "background.html",
-    "persistent": false
+    "persistent": true
   },
+  "commands": {
+    "open-dirac-devtools": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+I"
+      },
+      "description": "Open Dirac DevTools"
+    }
+  },
+  "optional_permissions": [
+  ],
+  "options_ui": {
+    "page": "options.html",
+    "chrome_style": true
+  },
+  /* this is needed to get around CORS when fetching /json from target chrome */
+  "permissions": [
+    "webRequest",
+    "http://*/json",
+    "tabs"
+  ],
   "manifest_version": 2
 }

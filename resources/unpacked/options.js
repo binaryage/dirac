@@ -1,3 +1,3 @@
 goog.require("dirac.dev");
 goog.require("dirac.figwheel");
-goog.require("dirac.background");
+goog.require("dirac.options");

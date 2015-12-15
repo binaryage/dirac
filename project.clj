@@ -4,6 +4,7 @@
                  [org.clojure/core.async "0.2.374"]
                  [binaryage/chromex "0.2.0"]
                  [binaryage/devtools "0.4.1"]
+                 [cljs-http "0.1.38"]
                  [figwheel "0.5.0-1"]
                  [parinfer "0.2.3"]
                  [environ "1.0.1"]]
@@ -32,8 +33,7 @@
              {:cljsbuild {:builds
                           {:implant
                            {:source-paths ["src/implant"]
-                            :compiler     {:main                  dirac.implant.main
-                                           :output-to             "resources/unpacked/devtools/front_end/_cljs/implant.js"
+                            :compiler     {:output-to             "resources/unpacked/devtools/front_end/_cljs/implant.js"
                                            :output-dir            "resources/unpacked/devtools/front_end/_cljs"
                                            :asset-path            "_cljs"
                                            :optimizations         :none
@@ -44,6 +44,7 @@
                            :background
                            {:source-paths ["src/dev"
                                            "src/figwheel"
+                                           "src/shared"
                                            "src/background"]
                             :compiler     {:output-to             "resources/unpacked/compiled/background/dirac.js"
                                            :output-dir            "resources/unpacked/compiled/background"
@@ -54,13 +55,14 @@
                                            :cache-analysis        true
                                            :source-map            true
                                            :source-map-timestamp  true}}
-                           :popup
+                           :options
                            {:source-paths ["src/dev"
                                            "src/figwheel"
-                                           "src/popup"]
-                            :compiler     {:output-to             "resources/unpacked/compiled/popup/dirac.js"
-                                           :output-dir            "resources/unpacked/compiled/popup"
-                                           :asset-path            "compiled/popup"
+                                           "src/shared"
+                                           "src/options"]
+                            :compiler     {:output-to             "resources/unpacked/compiled/options/dirac.js"
+                                           :output-dir            "resources/unpacked/compiled/options"
+                                           :asset-path            "compiled/options"
                                            :optimizations         :none
                                            :anon-fn-naming-policy :unmapped
                                            :compiler-stats        true
@@ -93,9 +95,9 @@
                                            :elide-asserts  true
                                            :compiler-stats true}}}}}}
 
-  :aliases {"dev-build" ["with-profile" "+unpacked" "cljsbuild" "once" "background" "popup" "implant"]
-            "fig"       ["with-profile" "+unpacked" "figwheel" "background" "popup" "implant"]
+  :aliases {"dev-build" ["with-profile" "+unpacked" "cljsbuild" "once" "background" "options" "implant"]
+            "fig"       ["with-profile" "+unpacked" "figwheel" "background" "options" "implant"]
             "content"   ["with-profile" "+unpacked" "cljsbuild" "auto"]
             "devel"     ["do" "clean," "cooper"]
-            "release"   ["with-profile" "+release" "do" "clean," "cljsbuild" "once" "background" "popup"]
+            "release"   ["with-profile" "+release" "do" "clean," "cljsbuild" "once" "background" "options"]
             "package"   ["shell" "scripts/package.sh"]})
