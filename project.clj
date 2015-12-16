@@ -73,24 +73,36 @@
              {:cljsbuild {:builds
                           {:background {:source-paths ["checkouts/chromex/src/lib"
                                                        "checkouts/chromex/src/exts"]}
-                           :popup      {:source-paths ["checkouts/chromex/src/lib"
+                           :options    {:source-paths ["checkouts/chromex/src/lib"
                                                        "checkouts/chromex/src/exts"]}}}}
              :release
              {:env       {:chromex-elide-verbose-logging true}
               :cljsbuild {:builds
-                          {:background
-                           {:source-paths ["src/background"]
+                          {:implant
+                           {:source-paths ["src/implant"]
+                            :compiler     {:output-to      "resources/unpacked/devtools/front_end/_cljs/implant.js"
+                                           :output-dir     "resources/unpacked/devtools/front_end/_cljs"
+                                           :asset-path     "_cljs"
+                                           :optimizations  :advanced
+                                           :pseudo-names true
+                                           :elide-asserts  true
+                                           :compiler-stats true}}
+                           :background
+                           {:source-paths ["src/shared"
+                                           "src/background"]
                             :compiler     {:output-to      "resources/release/compiled/background.js"
                                            :output-dir     "resources/release/compiled/background"
                                            :asset-path     "compiled/background"
                                            :optimizations  :advanced
+                                           :pseudo-names true
                                            :elide-asserts  true
                                            :compiler-stats true}}
-                           :popup
-                           {:source-paths ["src/popup"]
-                            :compiler     {:output-to      "resources/release/compiled/popup.js"
-                                           :output-dir     "resources/release/compiled/popup"
-                                           :asset-path     "compiled/popup"
+                           :options
+                           {:source-paths ["src/shared"
+                                           "src/options"]
+                            :compiler     {:output-to      "resources/release/compiled/options.js"
+                                           :output-dir     "resources/release/compiled/options"
+                                           :asset-path     "compiled/options"
                                            :optimizations  :advanced
                                            :elide-asserts  true
                                            :compiler-stats true}}}}}}
@@ -99,5 +111,5 @@
             "fig"       ["with-profile" "+unpacked" "figwheel" "background" "options" "implant"]
             "content"   ["with-profile" "+unpacked" "cljsbuild" "auto"]
             "devel"     ["do" "clean," "cooper"]
-            "release"   ["with-profile" "+release" "do" "clean," "cljsbuild" "once" "background" "options"]
+            "release"   ["with-profile" "+release" "do" "clean," "cljsbuild" "once" "implant" "background" "options"]
             "package"   ["shell" "scripts/package.sh"]})
