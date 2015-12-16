@@ -84,7 +84,7 @@
                                            :output-dir     "resources/unpacked/devtools/front_end/_cljs"
                                            :asset-path     "_cljs"
                                            :optimizations  :advanced
-                                           :pseudo-names true
+                                           ;:pseudo-names   true
                                            :elide-asserts  true
                                            :compiler-stats true}}
                            :background
@@ -94,7 +94,7 @@
                                            :output-dir     "resources/release/compiled/background"
                                            :asset-path     "compiled/background"
                                            :optimizations  :advanced
-                                           :pseudo-names true
+                                           ;:pseudo-names   true
                                            :elide-asserts  true
                                            :compiler-stats true}}
                            :options
@@ -107,9 +107,10 @@
                                            :elide-asserts  true
                                            :compiler-stats true}}}}}}
 
-  :aliases {"dev-build" ["with-profile" "+unpacked" "cljsbuild" "once" "background" "options" "implant"]
-            "fig"       ["with-profile" "+unpacked" "figwheel" "background" "options" "implant"]
-            "content"   ["with-profile" "+unpacked" "cljsbuild" "auto"]
-            "devel"     ["do" "clean," "cooper"]
-            "release"   ["with-profile" "+release" "do" "clean," "cljsbuild" "once" "implant" "background" "options"]
-            "package"   ["shell" "scripts/package.sh"]})
+  :aliases {"dev-build"  ["with-profile" "+unpacked" "cljsbuild" "once" "background" "options" "implant"]
+            "fig"        ["with-profile" "+unpacked" "figwheel" "background" "options" "implant"]
+            "content"    ["with-profile" "+unpacked" "cljsbuild" "auto"]
+            "devel"      ["do" "clean," "cooper"]
+            "release"    ["with-profile" "+release" "do" "clean," "cljsbuild" "once" "implant" "background" "options"]
+            "package"    ["shell" "scripts/package.sh"]
+            "regenerate" ["shell" "scripts/regenerate.sh"]})
