@@ -1,4 +1,5 @@
 /resources/unpacked/devtools/front_end/_cljs
+/resources/unpacked/devtools/front_end/SupportedCSSProperties.js
 /resources/unpacked/devtools/front_end/InspectorBackendCommands.js
 /.lein-env
 .lein*
