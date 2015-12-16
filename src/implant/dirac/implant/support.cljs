@@ -1,8 +1,8 @@
 ; taken from https://github.com/shaunlebron/parinfer
-(ns dirac.implant.editor-support
+(ns dirac.implant.support
   "Connects parinfer mode functions to CodeMirror"
   (:require
-    [clojure.string :as string :refer [join]]
+    [clojure.string :refer [join]]
     [parinfer.indent-mode :as indent-mode]
     [parinfer.paren-mode :as paren-mode]
     [dirac.implant.state :refer [state]]))
@@ -13,9 +13,7 @@
   (cm-key [this])
   (get-prev-state [this])
   (frame-updated? [this])
-  (set-frame-updated! [this value])
-  ;(record-change! [this thing])
-  )
+  (set-frame-updated! [this value]))
 
 ;;----------------------------------------------------------------------
 ;; Operations
@@ -57,7 +55,7 @@
 
 
 (defn compute-cursor-dx
-  [cursor change]
+  [_cursor change]
   (when change
     (let [;; This is a hack for codemirror.
           ;; For some reason codemirror triggers an "+input" change after the
@@ -75,7 +73,7 @@
           (- end-x start-x))))))
 
 (defn compute-cm-change
-  [cm change options prev-state]
+  [cm change _options prev-state]
   (let [{:keys [start-line end-line num-new-lines]}
         (if change
           {:start-line (.. change -from -line)
