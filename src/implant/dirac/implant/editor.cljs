@@ -3,6 +3,7 @@
   "Glues Parinfer's formatter to a CodeMirror editor"
   (:require
     [clojure.string :refer [join]]
+    [chromex.support :refer-macros [oget ocall oapply]]
     [dirac.implant.state :refer [state empty-editor-state]]
     [dirac.implant.support :refer [update-cursor! fix-text! cm-key IEditor get-prev-state frame-updated? set-frame-updated!]]))
 
@@ -24,14 +25,14 @@
   [cm change]
   ;; keep CodeMirror from reacting to a change from "setValue"
   ;; if it is not a new value.
-  (when (and (= "setValue" (.-origin change))
-             (= (.getValue cm) (join "\n" (.-text change))))
-    (.cancel change)))
+  (when (and (= "setValue" (oget change "origin"))
+             (= (ocall cm "getValue") (join "\n" (oget change "text"))))
+    (ocall change "cancel")))
 
 (defn on-change
   "Called after any change is applied to the editor."
   [cm change]
-  (when (not= "setValue" (.-origin change))
+  (when (not= "setValue" (oget change "origin"))
     (fix-text! cm :change change)
     (update-cursor! cm change)
     (set-frame-updated! cm true)))
@@ -47,11 +48,11 @@
   "Indent selection or insert two spaces when tab is pressed.
   from: https://github.com/codemirror/CodeMirror/issues/988#issuecomment-14921785"
   [cm]
-  (if (.somethingSelected cm)
-    (.indentSelection cm)
-    (let [n (.getOption cm "indentUnit")
+  (if (ocall cm "somethingSelected")
+    (ocall cm "indentSelection")
+    (let [n (ocall cm "getOption" "indentUnit")
           spaces (apply str (repeat n " "))]
-      (.replaceSelection cm spaces))))
+      (ocall cm "replaceSelection" spaces))))
 
 ;;----------------------------------------------------------------------
 ;; Setup
@@ -73,9 +74,10 @@
   ([element key] (create-editor! element key {}))
   ([element key opts]
    (when-not (get @state key)
-     (let [element-id (.-id element)
-           cm (js/CodeMirror. element (clj->js (merge editor-opts opts)))
-           wrapper (.getWrapperElement cm)
+     (let [element-id (oget element "id")
+           cm-class (oget js/window "CodeMirror")
+           cm (cm-class. element (clj->js (merge editor-opts opts)))
+           wrapper (ocall cm "getWrapperElement")
            initial-state (assoc empty-editor-state
                            :mode (:parinfer-mode opts))
            prev-editor-state (atom nil)]
@@ -99,9 +101,9 @@
          (set-frame-updated! [_this value] (swap! frame-updates assoc-in [key :frame-updated?] value)))
 
        ;; handle code mirror events
-       (.on cm "change" on-change)
-       (.on cm "beforeChange" before-change)
-       (.on cm "cursorActivity" on-cursor-activity)
+       (ocall cm "on" "change" on-change)
+       (ocall cm "on" "beforeChange" before-change)
+       (ocall cm "on" "cursorActivity" on-cursor-activity)
 
        cm))))
 
@@ -113,13 +115,13 @@
   "Called everytime the state changes to sync the code editor."
   [_ _ _ new-state]
   (doseq [[_ {:keys [cm text]}] new-state]
-    (let [changed? (not= text (.getValue cm))]
+    (let [changed? (not= text (ocall cm "getValue"))]
       (when changed?
-        (.setValue cm text)))))
+        (ocall cm "setValue" text)))))
 
 (defn force-editor-sync! []
   (doseq [[_ {:keys [cm text]}] @state]
-    (.setValue cm text)))
+    (ocall cm "setValue" text)))
 
 ;; sync state changes to the editor
 (defn start-editor-sync! []
