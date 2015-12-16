@@ -1483,7 +1483,7 @@ WebInspector.ConsoleDiracCommand.prototype = {
             this._element = createElementWithClass("div", "console-user-command");
             this._element.message = this;
 
-            this._formattedCommand = createElementWithClass("span", "console-message-text source-code cm-s-github");
+            this._formattedCommand = createElementWithClass("span", "console-message-text source-code cm-s-dirac");
             this._element.appendChild(this._formattedCommand);
 
             CodeMirror.runMode(this.text, "clojure-parinfer", this._formattedCommand);

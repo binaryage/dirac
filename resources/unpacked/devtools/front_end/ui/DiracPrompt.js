@@ -57,6 +57,11 @@ WebInspector.DiracPromptWithHistory.prototype = {
        this._codeMirror.setCursor(pos);
     },
 
+    complete: function(force, reverse)
+    {
+      // HACK: temporary override to prevent exceptions
+    },
+
 
     __proto__: WebInspector.TextPromptWithHistory.prototype
 };

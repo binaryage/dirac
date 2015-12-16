@@ -40,7 +40,8 @@
 
 CodeMirror.defineMode("clojure-parinfer", function (options) {
     var BUILTIN = "builtin", COMMENT = "comment", STRING = "string", CHARACTER = "string-2",
-        ATOM = "atom", NUMBER = "number", BRACKET = "bracket", KEYWORD = "keyword", VAR = "variable",
+        NUMBER = "number", BRACKET = "bracket", SPECIAL = "special", VAR = "variable", KEYWORD="keyword",
+        BOOL = "bool", NIL = "nil",
         SOL = "sol", EOL = "eol", MOL = "mol", // close-paren styles
         DEF = "def";
     var INDENT_WORD_SKIP = options.indentUnit || 2;
@@ -52,12 +53,14 @@ CodeMirror.defineMode("clojure-parinfer", function (options) {
         return obj;
     }
 
-    var atoms = makeKeywords("true false nil");
+    var nils = makeKeywords("nil");
+
+    var bools = makeKeywords("true false");
 
     var defs = makeKeywords(
         "defn defn- def defonce defmulti defmethod defmacro defstruct deftype ns");
 
-    var keywords = makeKeywords(
+    var specials = makeKeywords(
       "defn defn- def def- defonce defmulti defmethod defmacro defstruct deftype defprotocol defrecord defproject deftest slice defalias defhinted defmacro- defn-memo defnk defnk defonce- defunbound defunbound- defvar defvar- let letfn do case cond condp for loop recur when when-not when-let when-first if if-let if-not . .. -> ->> doto and or dosync doseq dotimes dorun doall load import unimport ns in-ns refer try catch finally throw with-open with-local-vars binding gen-class gen-and-load-class gen-and-save-class handler-case handle");
 
     var builtins = makeKeywords(
@@ -202,7 +205,7 @@ CodeMirror.defineMode("clojure-parinfer", function (options) {
                         eatCharacter(stream);
                         returnType = CHARACTER;
                     } else if (ch == "'" && !( tests.digit_or_colon.test(stream.peek()) )) {
-                        returnType = ATOM;
+                        returnType = KEYWORD;
                     } else if (ch == ";") { // comment
                         stream.skipToEnd(); // rest of the line is a comment
                         returnType = COMMENT;
@@ -261,16 +264,18 @@ CodeMirror.defineMode("clojure-parinfer", function (options) {
                         }
                     } else if ( ch == ":" ) {
                         stream.eatWhile(tests.symbol);
-                        return ATOM;
+                        return KEYWORD;
                     } else {
                         stream.eatWhile(tests.symbol);
 
-                        if (keywords && keywords.propertyIsEnumerable(stream.current())) {
-                            returnType = KEYWORD;
+                        if (specials && specials.propertyIsEnumerable(stream.current())) {
+                            returnType = SPECIAL;
                         } else if (builtins && builtins.propertyIsEnumerable(stream.current())) {
                             returnType = BUILTIN;
-                        } else if (atoms && atoms.propertyIsEnumerable(stream.current())) {
-                            returnType = ATOM;
+                        } else if (bools && bools.propertyIsEnumerable(stream.current())) {
+                            returnType = BOOL;
+                        } else if (nils && nils.propertyIsEnumerable(stream.current())) {
+                            returnType = NIL;
                         } else if (state.previousToken == "def" || state.previousToken == "(") {
                             returnType = DEF;
                         } else {

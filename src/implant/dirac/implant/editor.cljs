@@ -60,7 +60,7 @@
 
 (def editor-opts
   {:mode          "clojure-parinfer"
-   :theme         "github"
+   :theme         "dirac"
    :matchBrackets true
    :height        "auto"
    :extraKeys     {"Tab"         on-tab
