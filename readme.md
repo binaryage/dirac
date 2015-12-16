@@ -6,13 +6,6 @@ and [figwheel](https://github.com/bhauman/lein-figwheel) for some of its feature
 
 ![REPL](https://dl.dropboxusercontent.com/u/559047/dirac-teaser.png)
 
-I don't have ambition for Dirac to be merged upstream into official DevTools.
-The changes are too specific for ClojureScript and not generally useful for Javascript devs.
-Instead the idea is to maintain a set of patches rolling on top of official DevTools code.
-
-We also provide a Chrome extension which wraps Dirac just to make the life a bit easier for Dirac users.
-You should use latest Chrome Canary with Dirac to prevent any compatibility issues.
-
 #### Features
 
   * REPL integrated into DevTools Javascript console (with [Parinfer](https://shaunlebron.github.io/parinfer) goodness)
@@ -20,19 +13,33 @@ You should use latest Chrome Canary with Dirac to prevent any compatibility issu
   * (planned) reasonable display of ClojureScript variables inlined in source code during code stepping
   * (planned) reasonable display of ClojureScript variables in Scope panels and similar
 
+#### A divergent fork?
+
+I don't have ambition for Dirac code to be merged upstream into official DevTools.
+The changes are too specific for ClojureScript and not generally useful for Javascript devs.
+Instead the idea is to maintain a set of patches rolling on top of official DevTools branch.
+
+I also provide a Chrome extension which wraps Dirac just to make life a bit easier for Dirac users.
+You should use latest Chrome Canary with Dirac to prevent compatibility issues.
+
 #### A demo project
 
-You can take [cljs-devtools-sample](https://github.com/binaryage/cljs-devtools-sample) and run it easily with Dirac:
+You can take [cljs-devtools-sample](https://github.com/binaryage/cljs-devtools-sample) and test it easily with Dirac:
 
 ![cljs-devtools-sample with Dirac](https://dl.dropboxusercontent.com/u/559047/dirac-cljs-devtools-sample.png)
 
 ##### Initial setup
+
+Note: you want to create a workspace folder, some scripts depend on it.
 
     mkdir demo-workspace
     cd demo-workspace
     git clone https://github.com/binaryage/cljs-devtools-sample.git
     cd cljs-devtools-sample
     lein prepare-checkouts
+
+Note: right now, Dirac depends on [a fork of lein-figwheel](https://github.com/darwin/lein-figwheel/tree/devtools) and latest version of cljs-devtools. `prepare-checkouts` is a
+convenience script which will clone those forks and [prepares checkouts folders](https://gist.github.com/darwin/d6dfe3863c0749e7d848) for leiningen.
 
 In first terminal session run figwheel with example site for dirac:
 
@@ -43,27 +50,30 @@ In a second terminal session run development web server:
     lein server
 
 Now you should have working demo site at [http://localhost:3000](http://localhost:3000). Second terminal should have figwheel
-connected with REPL available. Now close your browser tab (we will use Canary instead, but first we have to build the Dirac extension).
-
-Now compile Dirac extension:
+connected with REPL available. Now close your browser tab - we will use Canary instead, but first we have to build the Dirac extension:
 
     cd demo-workspace
     git clone https://github.com/binaryage/dirac
     cd dirac
     lein regenerate
     lein release
+    lein package
 
 This should build extension into `releases` name of the extension folder will be `dirac-VERSION`, where version
 is current version fetched from Dirac's `project.clj`.
 
 Launch latest Chrome Canary from command-line. We want to install Dirac extension there, so it is better to run it
-with a clean/dedicated user profile. Also you have to run it with [remote debugging](https://developer.chrome.com/devtools/docs/debugger-protocol)
+with a clean/dedicated user profile.
+
+    mkdir .dev-chrome-profile
+
+Also you have to run it with [remote debugging](https://developer.chrome.com/devtools/docs/debugger-protocol)
 enabled on port 9222 (better make an alias of this command):
 
     /Applications/Google\ Chrome\ Canary.app/Contents/MacOS/Google\ Chrome\ Canary \
           --remote-debugging-port=9222 \
           --no-first-run \
-          --user-data-dir=~/.dev-chrome-profile
+          --user-data-dir=.dev-chrome-profile
 
 Now install Dirac extension. For now, you have to switch to Developer mode and [load it as unpacked extension](https://developer.chrome.com/extensions/getstarted#unpacked).
 Folder with your compiled Dirac is `demo-workspace/dirac/releases/dirac-0.1.0-SNAPSHOT` or similar.
@@ -82,13 +92,19 @@ see there also
 
 That means REPL should work.
 
-Focus Console prompt and press `PageUp`. This should switch you to green-ish prompt with "cljs.user" as placeholder.
-Now you can type REPL commands and they will be sent to figwheel for compilation. The experience should be similar
-to entering commands directly to terminal running figwheel REPL prompt. To switch back to Javascript prompt, hit `PageDown` or
-`PageUp` again (it cycles between those two prompts).
+Focus Console prompt and press `PageUp`. This should switch you to green-ish prompt with "cljs.user" as a placeholder.
+Now you can type REPL commands and they will be sent to figwheel for compilation. Try:
+
+    (+ 1 2)
+    (filter odd? (range 42))
+    (doc filter)
+    (fig-status)
+
+The experience should be similar to entering commands directly to terminal running figwheel REPL prompt.
+To switch back to Javascript prompt, hit `PageDown` or `PageUp` again (it cycles between those two prompts).
 
 The installation is still a bit involved. Later I will probably provide Chrome extension via Chrome Web Store. But integration
- of figwheel and cljs-devtools will have to be done on per-project basis.
+of figwheel and cljs-devtools will have to be done on per-project basis.
 
 ### Credits
 

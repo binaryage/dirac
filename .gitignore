@@ -3,6 +3,7 @@
 /resources/unpacked/devtools/front_end/InspectorBackendCommands.js
 /.lein-env
 .lein*
+.dev-chrome-profile
 /resources/unpacked/compiled
 /resources/release.crx
 /resources/release.pem
