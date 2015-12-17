@@ -26,13 +26,31 @@ fi
 
 # fresh splitting..., it should do the job incrementally from last run
 pushd "$CHROMIUM_MIRROR_DIR"
-git fetch chromium master
-git checkout tracker
-git merge chromium/master
 
-git subtree split --rejoin --prefix="$DEVTOOLS_CHROMIUM_PREFIX" --branch "$DEVTOOLS_BRANCH"
+git fetch chromium master
+
+# this dance is here to avoid error "Branch '$branch' is not an ancestor of commit '<SHA>'"
+# more info here: http://permalink.gmane.org/gmane.comp.version-control.git/239012
+# instead of merging upstream changes, we rebase them onto our current tracker branch
+# ...that should avoid git-subtree confusion
+#
+# if it fails, the workaround is to run full rescan:
+#
+#   ./scripts/fetch-devtools-branch.sh --ignore-joins
+#
+# git checkout tracker
+# git merge --commit --no-edit chromium/master
+#
+git rebase --onto tracker tracker chromium/master
+git branch -d old-tracker
+git branch -m tracker old-tracker
+git checkout -b tracker
+
+# note: my-subtree is just my patched version of subtree command with github-friendly commit messages (SHAs are clickable)
+git my-subtree split --rejoin --prefix="$DEVTOOLS_CHROMIUM_PREFIX" --branch "$DEVTOOLS_BRANCH" "$@"
 
 git push dirac devtools
+
 popd
 
 popd

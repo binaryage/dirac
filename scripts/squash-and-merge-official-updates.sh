@@ -21,6 +21,7 @@ pushd "$ROOT"
 #
 # read more docs here: https://github.com/apenwarr/git-subtree/blob/master/git-subtree.txt
 
-git subtree merge --prefix="$DEVTOOLS_DIRAC_PREFIX" --squash "$DEVTOOLS_BRANCH"
+# note: my-subtree is just my patched version of subtree command with github-friendly commit messages (SHAs are clickable)
+git my-subtree merge --prefix="$DEVTOOLS_DIRAC_PREFIX" --squash "$DEVTOOLS_BRANCH" -m "merge updates from official devtools" "$@"
 
 popd
