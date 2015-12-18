@@ -255,17 +255,18 @@
 
 .CodeMirror .text-editor-value-decoration {
     position: absolute;
-    bottom: 0;
+    top: -14px; /* we have to use top here for decoration widget to expand down */
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     max-width: 1000px;
-    opacity: 0.8;
+    /* opacity: 0.8; */ /* opacity does not play well with expandable widgets */
     background-color: #FFE3C7;
     margin-left: 10px;
     padding-left: 5px;
     color: #222;
     -webkit-user-select: text;
+    border-radius: 2px;
 }
 
 .CodeMirror .cm-execution-line .text-editor-value-decoration {
@@ -323,6 +324,7 @@
 /** @see crbug.com/358161 */
 .CodeMirror .CodeMirror-vscrollbar, .CodeMirror .CodeMirror-hscrollbar {
   transform: translateZ(0);
+  z-index: 2147483647; /* this is needed to appear above code lines, see _reverseZOrder */
 }
 
 .CodeMirror .CodeMirror-activeline-background {

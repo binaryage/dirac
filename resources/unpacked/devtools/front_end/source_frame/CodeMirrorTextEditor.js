@@ -156,6 +156,7 @@ WebInspector.CodeMirrorTextEditor = function(url, delegate)
     this._enableAutocompletionIfNeeded();
 
     this._codeMirror.on("changes", this._changes.bind(this));
+    this._codeMirror.on("update", this._update.bind(this));
     this._codeMirror.on("gutterClick", this._gutterClick.bind(this));
     this._codeMirror.on("cursorActivity", this._cursorActivity.bind(this));
     this._codeMirror.on("beforeSelectionChange", this._beforeSelectionChange.bind(this));
@@ -1347,6 +1348,33 @@ WebInspector.CodeMirrorTextEditor.prototype = {
             if (!this._muteTextChangedEvent)
                 this._delegate.onTextChanged(editInfo.oldRange, editInfo.newRange);
         }
+    },
+
+    _reverseZOrder: function(element, startIndex) {
+       if (!element) {
+           return;
+       }
+       var childNodes = element.childNodes;
+       if (!childNodes) {
+           return;
+       }
+       var zindex = startIndex + childNodes.length - 1;
+       for (var i = 0; i < childNodes.length; i++) {
+           var child = childNodes[i];
+           if (child) {
+             child.style.zIndex = zindex;
+           }
+           zindex--;
+       }
+    },
+
+    _update: function(codeMirror)
+    {
+       var linesDiv = codeMirror.display.lineDiv;
+       // custom formatters can provide expandable decoration widgets,
+       // they expand below and overlay following lines
+       // for this to work nicely, we have to make sure that z-order of code mirror lines is descending
+       this._reverseZOrder(linesDiv, 1);
     },
 
     _cursorActivity: function()
