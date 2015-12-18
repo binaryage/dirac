@@ -38,9 +38,9 @@ git fetch chromium
 #
 #   ./scripts/fetch-devtools-branch.sh --ignore-joins
 #
-# git checkout tracker
 # git merge --commit --no-edit chromium/master
 #
+git checkout tracker
 git rebase --onto tracker tracker chromium/master
 git branch -d old-tracker || true # old-tracker branch may not exist during first run
 git branch -m tracker old-tracker
