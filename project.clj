@@ -19,7 +19,8 @@
    :server-logfile ".figwheel_server.log"
    :css-dirs       []}
 
-  :source-paths []
+  :source-paths ["src"
+                 "scripts"]
 
   :clean-targets ^{:protect false} ["target"
                                     "resources/unpacked/compiled"
