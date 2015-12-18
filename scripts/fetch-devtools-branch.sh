@@ -42,9 +42,7 @@ git fetch chromium
 # git merge --commit --no-edit chromium/master
 #
 git rebase --onto tracker tracker chromium/master
-set +e # old-tracker branch may not exist during first run
-git branch -d old-tracker
-set -e
+git branch -d old-tracker || true # old-tracker branch may not exist during first run
 git branch -m tracker old-tracker
 git checkout -b tracker
 
