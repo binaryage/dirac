@@ -27,7 +27,7 @@ fi
 # fresh splitting..., it should do the job incrementally from last run
 pushd "$CHROMIUM_MIRROR_DIR"
 
-git fetch chromium master
+git fetch chromium
 
 # this dance is here to avoid error "Branch '$branch' is not an ancestor of commit '<SHA>'"
 # more info here: http://permalink.gmane.org/gmane.comp.version-control.git/239012
