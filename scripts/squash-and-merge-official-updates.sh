@@ -4,7 +4,25 @@ set -e
 
 . "$(dirname "${BASH_SOURCE[0]}")/config.sh"
 
+die_if_dirty_working_copy () {
+  git add --all
+  set +e
+  git diff-index --exit-code HEAD > /dev/null
+  if [ $? -ne 0 ] ; then
+    echo "working copy is not clean in '$(pwd)'"
+    exit 1
+  fi
+  set -e
+}
+
 pushd "$ROOT"
+
+die_if_dirty_working_copy
+
+git fetch origin
+git checkout "$DEVTOOLS_BRANCH"
+git merge --ff-only "origin/$DEVTOOLS_BRANCH"
+git checkout master
 
 # at this point we should have latest upstream changes in devtools branch
 # (run ./fetch-devtools-branch.sh to update it)
