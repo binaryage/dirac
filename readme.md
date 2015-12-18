@@ -6,12 +6,14 @@ and [figwheel](https://github.com/bhauman/lein-figwheel) for some of its feature
 
 ![REPL](https://dl.dropboxusercontent.com/u/559047/dirac-teaser.png)
 
+![Inline custom formatters](https://dl.dropboxusercontent.com/u/559047/dirac-inline-custom-formatters.png)
+
 #### Features
 
   * REPL integrated into DevTools Javascript console (with [Parinfer](https://shaunlebron.github.io/parinfer) goodness)
   * Custom Formatters enabled by default (for [cljs-devtools](https://github.com/binaryage/cljs-devtools))
-  * (planned) reasonable display of ClojureScript variables inlined in source code during code stepping
-  * (planned) reasonable display of ClojureScript variables in Scope panels and similar
+  * Custom Formatters get inlined in source code during debugging
+  * (planned) reasonable display of ClojureScript values in Scope panels and similar
 
 #### A divergent fork?
 
