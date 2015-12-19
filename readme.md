@@ -13,15 +13,15 @@ and [figwheel](https://github.com/bhauman/lein-figwheel) for some of its feature
   * REPL integrated into DevTools Javascript console
     * [Parinfer](https://shaunlebron.github.io/parinfer) goodness
     * (planned) eval ClojureScript in the context of activated breakpoint
-  * Custom Formatters enabled by default (for [cljs-devtools](https://github.com/binaryage/cljs-devtools))
-  * Custom Formatters get inlined in source code during debugging
-  * Friendly display of ClojureScript values in 'Object Properties' panels
-    * names are grouped into clusters, the most important values at the top
-      * values with nice names go first
-      * then macro-generated name
+  * custom formatters enabled by default (for [cljs-devtools](https://github.com/binaryage/cljs-devtools))
+  * custom formatters get inlined in source code during debugging
+  * friendly display of ClojureScript values in 'Object Properties' panels
+    * macro-generated names are renamed to friendly names using sub-indexes
+    * properties are grouped into clusters, the most important properties at the top
+      * properties with nice names go first
+      * then macro-generated names
       * then null values
       * then undefined values
-    * macro-generated names are renamed to more friendly names with sub-indexes
 
 #### A divergent fork?
 
