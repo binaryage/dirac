@@ -117,6 +117,32 @@ WebInspector.ObjectPropertiesSection.prototype = {
     __proto__: TreeOutlineInShadow.prototype
 }
 
+WebInspector.ObjectPropertiesSection.PropertyCluster = function(property) {
+    // we want normal nice names to go first
+    // then all generated variable names with double underscores
+    // then all null values
+    // then all undefined values
+    try {
+        var value = property.value
+        if (!value) {
+            return 3;
+        }
+        if (value.type === "undefined") {
+            return 3;
+        }
+        if (value.subtype === "null") {
+            return 2;
+        }
+        var name = property.name;
+        if (name.indexOf("__")!=-1) {
+            return 1;
+        }
+        return 0;
+    } catch (e) {
+        return 4;
+    }
+}
+
 /**
  * @param {!WebInspector.RemoteObjectProperty} propertyA
  * @param {!WebInspector.RemoteObjectProperty} propertyB
@@ -124,6 +150,16 @@ WebInspector.ObjectPropertiesSection.prototype = {
  */
 WebInspector.ObjectPropertiesSection.CompareProperties = function(propertyA, propertyB)
 {
+    var clusterA = WebInspector.ObjectPropertiesSection.PropertyCluster(propertyA);
+    var clusterB = WebInspector.ObjectPropertiesSection.PropertyCluster(propertyB);
+
+    if (clusterA > clusterB) {
+      return 1;
+    }
+    if (clusterA < clusterB) {
+      return -1;
+    }
+
     var a = propertyA.name;
     var b = propertyB.name;
     if (a === "__proto__")
@@ -261,6 +297,17 @@ WebInspector.ObjectPropertyTreeElement.prototype = {
             this.valueElement = createElementWithClass("span", "object-value-undefined");
             this.valueElement.textContent = WebInspector.UIString("<unreadable>");
             this.valueElement.title = WebInspector.UIString("No property getter");
+        }
+
+        if (this.property._cluster !== undefined) {
+            var clusterClass = "cluster-"+this.property._cluster;
+            this.listItemElement.classList.add(clusterClass);
+        }
+        if (this.property._beforeClusterBoundary) {
+            this.listItemElement.classList.add("before-cluster-boundary");
+        }
+        if (this.property._afterClusterBoundary) {
+            this.listItemElement.classList.add("after-cluster-boundary");
         }
 
         this.listItemElement.removeChildren();
@@ -464,8 +511,16 @@ WebInspector.ObjectPropertyTreeElement._populate = function(treeElement, value, 
 WebInspector.ObjectPropertyTreeElement.populateWithProperties = function(treeNode, properties, internalProperties, skipProto, value, emptyPlaceholder) {
     properties.sort(WebInspector.ObjectPropertiesSection.CompareProperties);
 
+    var previousProperty = null;
     for (var i = 0; i < properties.length; ++i) {
         var property = properties[i];
+
+        property._cluster = WebInspector.ObjectPropertiesSection.PropertyCluster(property);
+        if (previousProperty && property._cluster != previousProperty._cluster) {
+            property._afterClusterBoundary = true;
+            previousProperty._beforeClusterBoundary = true;
+        }
+
         if (skipProto && property.name === "__proto__")
             continue;
         if (property.isAccessorProperty()) {
@@ -489,6 +544,7 @@ WebInspector.ObjectPropertyTreeElement.populateWithProperties = function(treeNod
             property.parentObject = value;
             treeNode.appendChild(new WebInspector.ObjectPropertyTreeElement(property));
         }
+        previousProperty = property;
     }
     if (internalProperties) {
         for (var i = 0; i < internalProperties.length; i++) {
