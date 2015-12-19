@@ -9,6 +9,10 @@
     flex-shrink: 0;
 }
 
+.object-properties-section .name.friendly-name .friendly-num {
+    color: #999;
+}
+
 .object-properties-section-separator {
     flex-shrink: 0;
     padding-right: 5px;
