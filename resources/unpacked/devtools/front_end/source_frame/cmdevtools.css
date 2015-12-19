@@ -267,6 +267,7 @@
     color: #222;
     -webkit-user-select: text;
     border-radius: 2px;
+    cursor: default;
 }
 
 .CodeMirror .cm-execution-line .text-editor-value-decoration {
