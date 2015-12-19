@@ -9,6 +9,11 @@
     flex-direction: column;
 }
 
+.custom-expandable-section-header {
+    cursor: pointer;
+    -webkit-user-select: none;
+}
+
 .custom-expandable-section-header::before {
     -webkit-user-select: none;
     background-image: url(Images/toolbarButtonGlyphs.png);
