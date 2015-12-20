@@ -20,20 +20,9 @@
 (defn get-devtools-url [backend-url]
   (runtime/get-url (str "devtools/front_end/inspector.html?ws=" backend-url)))
 
-(defn get-first-tab [window-id]
-  (go
-    (if-let [[tabs] (<! (tabs/query #js {"windowId" window-id}))]
-      (first tabs))))
-
 (defn open-devtools [url]
-  (windows/create #js {"url" url}))
-
-#_(defn open-devtools [url]
-  (go
-    (if-let [[window] (<! (windows/create #js {"url" url}))]
-      #_(if-let [tab (<! (get-first-tab (oget window "id")))]
-          (log "XXX" url (oget tab "id"))
-          (tabs/update (oget tab "id") #js {"url" url})))))
+  (windows/create #js {"url" url
+                       "type" "popup"}))
 
 (defn open-dirac! [tab]
   (go
