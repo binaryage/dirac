@@ -25,4 +25,5 @@
     (if-let [context-list (<! (fetch-target-context-list target-url))]
       (if-let [context (first (matching-contexts-by-url context-list context-url))]
         (if-let [devtools-frontend-url (:devtoolsFrontendUrl context)]
-          (extract-backend-url devtools-frontend-url))))))
+          (extract-backend-url devtools-frontend-url)
+          :not-attachable)))))
