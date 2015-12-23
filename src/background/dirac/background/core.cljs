@@ -18,7 +18,7 @@
             [dirac.target.core :refer [resolve-backend-url]]
             [dirac.utils :as utils]
             [dirac.i18n :as i18n]
-            [dirac.chrome :as chrome]
+            [dirac.sugar :as sugar]
             [dirac.background.helpers :as helpers :refer [report-error-in-tab report-warning-in-tab]]
             [dirac.background.state :refer [state]]
             [dirac.background.connections :as connections]
@@ -42,16 +42,17 @@
 (defn create-dirac-window! [tab-id url]
   {:pre [tab-id url]}
   (go
-    (if-let [[window] (<! (windows/create #js {"url" url "type" "popup"}))]
+    (if-let [[window] (<! (windows/create #js {"url"  url
+                                               "type" "popup"}))]
       (let [tabs (oget window "tabs")
             first-tab (aget tabs 0)
-            first-tab-id (oget first-tab "id")]
+            first-tab-id (sugar/get-tab-id first-tab)]
         (if first-tab-id
           (register-connection! first-tab-id tab-id)
           (report-error-in-tab tab-id (i18n/unable-to-extract-first-tab)))))))
 
 (defn open-dirac-window! [tab]
-  (let [tab-id (chrome/get-tab-id tab)
+  (let [tab-id (sugar/get-tab-id tab)
         tab-url (oget tab "url")
         target-url (get-option :target-url)]
     (assert tab-id)
@@ -69,7 +70,7 @@
   (go
     (let [{:keys [dirac-tab-id]} (connections/find-backend-connection tab-id)
           _ (assert dirac-tab-id)
-          dirac-window-id (<! (chrome/lookup-tab-window-id dirac-tab-id))]
+          dirac-window-id (<! (sugar/fetch-tab-window-id dirac-tab-id))]
       (if dirac-window-id
         (windows/update dirac-window-id #js {"focused"       true
                                              "drawAttention" true}))
