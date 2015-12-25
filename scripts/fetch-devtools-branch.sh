@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -e
+set -ex
 
 . "$(dirname "${BASH_SOURCE[0]}")/config.sh"
 
@@ -40,14 +40,21 @@ git fetch chromium
 #
 # git merge --commit --no-edit chromium/master
 #
+#
+# UPDATE: this DOES NOT WORK, after a while git rebase ends up in massive conflicts
+# git checkout tracker
+# git rebase --onto tracker tracker chromium/master
+# git branch -d old-tracker || true # old-tracker branch may not exist during first run
+# git branch -m tracker old-tracker
+# git checkout -b tracker
+
+# let's do it slow, but reliable way
 git checkout tracker
-git rebase --onto tracker tracker chromium/master
-git branch -d old-tracker || true # old-tracker branch may not exist during first run
-git branch -m tracker old-tracker
-git checkout -b tracker
+git reset --hard chromium/master
+git clean -fd
 
 # note: my-subtree is just my patched version of subtree command with github-friendly commit messages (SHAs are clickable)
-git my-subtree split --rejoin --prefix="$DEVTOOLS_CHROMIUM_PREFIX" --branch "$DEVTOOLS_BRANCH" "$@"
+git my-subtree split --prefix="$DEVTOOLS_CHROMIUM_PREFIX" --branch "$DEVTOOLS_BRANCH" --ignore-joins # "$@"
 
 git push dirac devtools
 
