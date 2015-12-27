@@ -12,7 +12,7 @@ WebInspector.DevicesView = function()
     this.registerRequiredCSS("devices/devicesView.css");
     this.contentElement.classList.add("devices-view");
 
-    var hbox = this.contentElement.createChild("div", "hbox flex-auto");
+    var hbox = this.contentElement.createChild("div", "hbox devices-container");
     var sidebar = hbox.createChild("div", "devices-sidebar");
     sidebar.createChild("div", "devices-view-title").createTextChild(WebInspector.UIString("Devices"));
     this._sidebarList = sidebar.createChild("div", "devices-sidebar-list");
@@ -74,7 +74,7 @@ WebInspector.DevicesView.prototype = {
      */
     _devicesUpdated: function(event)
     {
-        this._devices = /** @type {!Array.<!Adb.Device>} */ (event.data).slice();
+        this._devices = /** @type {!Array.<!Adb.Device>} */ (event.data).slice().filter(d => d.adbSerial.toUpperCase() !== "WEBRTC");
         for (var device of this._devices) {
             if (!device.adbConnected)
                 device.adbModel = WebInspector.UIString("Unknown");
@@ -593,7 +593,7 @@ WebInspector.DevicesView.DeviceView.prototype = {
         titleRow.appendChild(inspect);
 
         var toolbar = new WebInspector.Toolbar("");
-        toolbar.appendToolbarItem(new WebInspector.ToolbarMenuButton("", "menu-toolbar-item", appendActions));
+        toolbar.appendToolbarItem(new WebInspector.ToolbarMenuButton(appendActions));
         titleRow.appendChild(toolbar.element);
 
         var url = element.createChild("div", "device-page-url");
