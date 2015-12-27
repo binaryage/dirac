@@ -734,7 +734,7 @@ WebInspector.SourcesPanel.prototype = {
         debugToolbar.appendSeparator();
         debugToolbar.appendToolbarItem(WebInspector.Toolbar.createActionButton(this._toggleBreakpointsActiveAction));
 
-        this._pauseOnExceptionButton = new WebInspector.ToolbarButton("", "pause-on-exceptions-toolbar-item");
+        this._pauseOnExceptionButton = new WebInspector.ToolbarToggle("", "pause-on-exceptions-toolbar-item");
         this._pauseOnExceptionButton.addEventListener("click", this._togglePauseOnExceptions, this);
         debugToolbar.appendToolbarItem(this._pauseOnExceptionButton);
 
@@ -1320,7 +1320,8 @@ WebInspector.SourcesPanel.RevealingActionDelegate.prototype = {
     handleAction: function(context, actionId)
     {
         var panel = WebInspector.SourcesPanel.instance();
-        WebInspector.inspectorView.setCurrentPanel(panel);
+        if (panel !== WebInspector.inspectorView.setCurrentPanel(panel))
+            return false;
         switch (actionId) {
         case "debugger.toggle-pause":
             panel._togglePause();

@@ -103,7 +103,7 @@ WebInspector.FormatterScriptMapping.FormatData = function(projectId, path, mappi
 WebInspector.ScriptFormatterEditorAction = function()
 {
     this._projectId = "formatter:";
-    this._project = new WebInspector.ContentProviderBasedProject(WebInspector.workspace, this._projectId, WebInspector.projectTypes.Formatter, "", "formatter");
+    this._project = new WebInspector.ContentProviderBasedProject(WebInspector.workspace, this._projectId, WebInspector.projectTypes.Formatter, "formatter");
 
     /** @type {!Map.<!WebInspector.Script, !WebInspector.UISourceCode>} */
     this._uiSourceCodes = new Map();
@@ -199,7 +199,6 @@ WebInspector.ScriptFormatterEditorAction.prototype = {
         this._sourcesView.addEventListener(WebInspector.SourcesView.Events.EditorClosed, this._editorClosed.bind(this));
 
         this._button = new WebInspector.ToolbarButton(WebInspector.UIString("Pretty print"), "format-toolbar-item");
-        this._button.setToggled(false);
         this._button.addEventListener("click", this._toggleFormatScriptSource, this);
         this._updateButton(sourcesView.currentUISourceCode());
 
@@ -370,16 +369,8 @@ WebInspector.ScriptFormatterEditorAction.prototype = {
         function innerCallback(formattedContent, formatterMapping)
         {
             var scripts = this._scriptsForUISourceCode(uiSourceCode);
-            var name;
-            if (uiSourceCode.contentType() === WebInspector.resourceTypes.Document)
-                name = uiSourceCode.displayName();
-            else
-                name = uiSourceCode.name() || (scripts.length ? scripts[0].scriptId : "");
-
-            var networkURL = WebInspector.networkMapping.networkURL(uiSourceCode);
-
             var contentProvider = new WebInspector.StaticContentProvider(uiSourceCode.contentType(), formattedContent);
-            var formattedUISourceCode = this._project.addContentProvider(networkURL, name + ":formatted", networkURL, contentProvider);
+            var formattedUISourceCode = this._project.addContentProvider(uiSourceCode.path() + ":formatted", contentProvider);
             var formattedPath = formattedUISourceCode.path();
             var formatData = new WebInspector.FormatterScriptMapping.FormatData(uiSourceCode.project().id(), uiSourceCode.path(), formatterMapping, scripts);
             this._formatData.set(formattedUISourceCode, formatData);

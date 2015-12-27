@@ -44,8 +44,6 @@ WebInspector.DeviceModeView.prototype = {
         this._screenImage.addEventListener("load", this._onScreenImageLoaded.bind(this, true), false);
         this._screenImage.addEventListener("error", this._onScreenImageLoaded.bind(this, false), false);
 
-        this._screenArea.appendChild(this._toolbar.screenOptionsElement());
-
         this._cornerResizerElement = this._screenArea.createChild("div", "device-mode-resizer device-mode-corner-resizer");
         this._cornerResizerElement.createChild("div", "");
         this._createResizer(this._cornerResizerElement, true, true);
@@ -136,6 +134,17 @@ WebInspector.DeviceModeView.prototype = {
     {
         delete this._resizeStart;
         this._model.resumeScaleChanges();
+        WebInspector.userMetrics.actionTaken(WebInspector.UserMetrics.Action.ResizedViewInResponsiveMode);
+    },
+
+    /**
+     * @param {number} width
+     * @param {number} height
+     */
+    _resizeTo: function(width, height)
+    {
+        this._model.widthSetting().set(width);
+        this._model.heightSetting().set(height);
     },
 
     _updateUI: function()
@@ -147,9 +156,10 @@ WebInspector.DeviceModeView.prototype = {
         var resizePagePlaceholder = false;
         var resizeSelf = false;
 
-        if (this._cachedModelType !== this._model.type()) {
+        if (this._cachedModelType !== this._model.type() || this._cachedModelScale !== this._model.scale()) {
             this._updateBlueprints();
             this._cachedModelType = this._model.type();
+            this._cachedModelScale = this._model.scale();
         }
 
         var cssScreenRect = this._model.screenRect().scale(1 / zoomFactor);
@@ -195,7 +205,7 @@ WebInspector.DeviceModeView.prototype = {
         this._loadScreenImage(this._model.screenImage());
         if (resizePagePlaceholder)
             this._pageResizeCallback.call(null);
-        this._mediaInspector.setAxisTransform(-cssScreenRect.left / this._model.scale(), this._model.scale());
+        this._mediaInspector.setAxisTransform(-cssScreenRect.left * zoomFactor / this._model.scale(), this._model.scale());
         if (resizeSelf)
             this.onResize();
     },
@@ -207,14 +217,16 @@ WebInspector.DeviceModeView.prototype = {
             return;
         var devices = WebInspector.emulatedDevicesList.standard();
         devices.sort((device1, device2) => device2.vertical.width * device2.vertical.height - device1.vertical.width * device1.vertical.height);
+        var scale = this._model.scale();
         for (var device of devices) {
             if (!device.show())
                 continue;
             var blueprintContainer = this._deviceBlueprints.createChild("div", "device-mode-blueprint-container fill");
             var blueprint = blueprintContainer.createChild("div", "device-mode-blueprint");
-            blueprint.style.width = device.vertical.width + "px";
-            blueprint.style.height = device.vertical.height + "px";
+            blueprint.style.width = device.vertical.width * scale + "px";
+            blueprint.style.height = device.vertical.height * scale + "px";
             blueprint.createChild("span").textContent = device.title;
+            blueprint.addEventListener("dblclick", this._resizeTo.bind(this, device.vertical.width, device.vertical.height), false);
         }
     },
 
@@ -284,79 +296,44 @@ WebInspector.DeviceModeView.Toolbar = function(model, showMediaInspectorSetting)
     this._lastMode = new Map();
     /** @type {?WebInspector.EmulatedDevice} */
     this._lastDevice = null;
-
-    this._modeToolbar = new WebInspector.Toolbar("device-mode-screen-options");
-    var modeButton = new WebInspector.ToolbarButton(WebInspector.UIString("Screen options"), "rotate-screen-toolbar-item");
-    modeButton.addEventListener("click", this._modeMenuClicked, this);
-    this._modeToolbar.appendToolbarItem(modeButton);
+    /** @type {!Array<!WebInspector.ToolbarTextGlyphItem>} */
+    this._appliedSizeItems = [];
+    /** @type {?Element} */
+    this._visibleToolbar = null;
 
     this._element = createElementWithClass("div", "device-mode-toolbar");
 
-    var buttonsToolbarContainer = this._element.createChild("div", "device-mode-buttons-toolbar");
-    buttonsToolbarContainer.createChild("div", "flex-auto");
-    var buttonsToolbar = new WebInspector.Toolbar("", buttonsToolbarContainer);
-    this._noneItem = new WebInspector.ToolbarButton(WebInspector.UIString("Full"), "desktop-toolbar-item");
-    buttonsToolbar.appendToolbarItem(this._noneItem);
+    var leftContainer = this._element.createChild("div", "device-mode-toolbar-left");
+    var leftToolbar = new WebInspector.Toolbar("", leftContainer);
+    this._noneItem = new WebInspector.ToolbarToggle(WebInspector.UIString("Full"), "enter-fullscreen-toolbar-item");
+    leftToolbar.appendToolbarItem(this._noneItem);
     this._noneItem.addEventListener("click", this._noneButtonClick, this);
-    this._responsiveItem = new WebInspector.ToolbarButton(WebInspector.UIString("Responsive"), "enter-fullscreen-toolbar-item");
-    buttonsToolbar.appendToolbarItem(this._responsiveItem);
+    this._responsiveItem = new WebInspector.ToolbarToggle(WebInspector.UIString("Responsive"), "responsive-toolbar-item");
+    leftToolbar.appendToolbarItem(this._responsiveItem);
     this._responsiveItem.addEventListener("click", this._responsiveButtonClick, this);
-    this._deviceItem = new WebInspector.ToolbarButton(WebInspector.UIString("Device"), "emulation-toolbar-item");
-    buttonsToolbar.appendToolbarItem(this._deviceItem);
+    this._deviceItem = new WebInspector.ToolbarToggle(WebInspector.UIString("Device"), "phone-toolbar-item");
+    leftToolbar.appendToolbarItem(this._deviceItem);
     this._deviceItem.addEventListener("click", this._deviceButtonClick, this);
+    leftToolbar.appendSeparator();
 
-    var optionsContainer = this._element.createChild("div", "device-mode-options-toolbar");
-    var optionsToolbar = new WebInspector.Toolbar("", optionsContainer);
-    optionsToolbar.appendSeparator();
+    var middle = this._element.createChild("div", "device-mode-toolbar-middle-container");
+    this._noneToolbar = this._wrapMiddleToolbar(middle, this._createNoneToolbar());
+    this._responsiveToolbar = this._wrapMiddleToolbar(middle, this._createResponsiveToolbar());
+    this._deviceToolbar = this._wrapMiddleToolbar(middle, this._createDeviceToolbar());
 
-    this._deviceSelect = this._createDeviceSelect();
-    this._deviceSelectItem = this._wrapToolbarItem(this._deviceSelect);
-    optionsToolbar.appendToolbarItem(this._deviceSelectItem);
-
-    var widthInput = createElementWithClass("input", "device-mode-size-input");
-    widthInput.maxLength = 5;
-    widthInput.title = WebInspector.UIString("Width");
-    WebInspector.SettingsUI.bindSettingInputField(widthInput, this._model.widthSetting(), true, WebInspector.DeviceModeModel.deviceSizeValidator, true);
-    this._widthItem = this._wrapToolbarItem(widthInput);
-    optionsToolbar.appendToolbarItem(this._widthItem);
-
-    this._appliedWidthInput = createElementWithClass("input", "device-mode-size-input");
-    this._appliedWidthInput.title = WebInspector.UIString("Width");
-    this._appliedWidthInput.disabled = true;
-    this._appliedWidthItem = this._wrapToolbarItem(this._appliedWidthInput);
-    optionsToolbar.appendToolbarItem(this._appliedWidthItem);
-
-    var xElement = createElementWithClass("div", "device-mode-x");
-    xElement.textContent = "\u00D7";
-    optionsToolbar.appendToolbarItem(this._wrapToolbarItem(xElement));
-
-    var heightInput = createElementWithClass("input", "device-mode-size-input");
-    heightInput.maxLength = 5;
-    heightInput.title = WebInspector.UIString("Height");
-    WebInspector.SettingsUI.bindSettingInputField(heightInput, this._model.heightSetting(), true, WebInspector.DeviceModeModel.deviceSizeValidator, true);
-    this._heightItem = this._wrapToolbarItem(heightInput);
-    optionsToolbar.appendToolbarItem(this._heightItem);
-
-    this._appliedHeightInput = createElementWithClass("input", "device-mode-size-input");
-    this._appliedHeightInput.title = WebInspector.UIString("Height");
-    this._appliedHeightInput.disabled = true;
-    this._appliedHeightItem = this._wrapToolbarItem(this._appliedHeightInput);
-    optionsToolbar.appendToolbarItem(this._appliedHeightItem);
-
-    this._deviceScaleFactorItem = new WebInspector.ToolbarText("", "resize-toolbar-item");
-    this._deviceScaleFactorItem.element.title = WebInspector.UIString("Device pixel ratio");
-    this._deviceScaleFactorItem.showGlyph();
-    optionsToolbar.appendToolbarItem(this._deviceScaleFactorItem);
-
-    optionsToolbar.appendSeparator();
-
-    optionsToolbar.appendToolbarItem(new WebInspector.ToolbarMenuButton(WebInspector.UIString("More options"), "menu-toolbar-item", this._appendMenuItems.bind(this)));
-
-    optionsContainer.createChild("div", "device-mode-toolbar-spacer");
-    var rightToolbar = new WebInspector.Toolbar("", optionsContainer);
-    this._scaleItem = new WebInspector.ToolbarText(WebInspector.UIString("Zoom"), "");
-    this._scaleItem.makeDimmed();
+    var rightContainer = this._element.createChild("div", "device-mode-toolbar-right");
+    rightContainer.createChild("div", "device-mode-toolbar-spacer");
+    var rightToolbar = new WebInspector.Toolbar("", rightContainer);
+    rightToolbar.makeWrappable(true);
+    this._scaleItem = new WebInspector.ToolbarMenuButton(this._appendScaleMenuItems.bind(this));
+    this._scaleItem.setTitle(WebInspector.UIString("Click to change zoom"));
+    this._scaleItem.setGlyph("");
+    this._scaleItem.setBold(false);
     rightToolbar.appendToolbarItem(this._scaleItem);
+    rightToolbar.appendSeparator();
+    var moreOptionsButton = new WebInspector.ToolbarMenuButton(this._appendMenuItems.bind(this));
+    moreOptionsButton.setTitle(WebInspector.UIString("More options"));
+    rightToolbar.appendToolbarItem(moreOptionsButton);
 
     this._persistenceSetting = WebInspector.settings.createSetting("emulation.deviceModeViewPersistence", {type: WebInspector.DeviceModeModel.Type.None, device: "", orientation: "", mode: ""});
     this._restored = false;
@@ -364,15 +341,95 @@ WebInspector.DeviceModeView.Toolbar = function(model, showMediaInspectorSetting)
 
 WebInspector.DeviceModeView.Toolbar.prototype = {
     /**
+     * @param {!Element} parent
+     * @param {!WebInspector.Toolbar} toolbar
+     * @return {!Element}
+     */
+    _wrapMiddleToolbar: function(parent, toolbar)
+    {
+        toolbar.makeWrappable();
+        var container = parent.createChild("div", "device-mode-toolbar-middle fill");
+        container.createChild("div", "device-mode-toolbar-spacer");
+        container.appendChild(toolbar.element);
+        container.createChild("div", "device-mode-toolbar-spacer");
+        container.classList.add("hidden");
+        return container;
+    },
+
+    /**
+     * @return {!WebInspector.Toolbar}
+     */
+    _createNoneToolbar: function()
+    {
+        var toolbar = new WebInspector.Toolbar("");
+        this._appendAppliedSizeItems(toolbar);
+        return toolbar;
+    },
+
+    /**
+     * @return {!WebInspector.Toolbar}
+     */
+    _createResponsiveToolbar: function()
+    {
+        var toolbar = new WebInspector.Toolbar("");
+
+        var widthInput = createElementWithClass("input", "device-mode-size-input");
+        widthInput.maxLength = 5;
+        widthInput.title = WebInspector.UIString("Width");
+        WebInspector.SettingsUI.bindSettingInputField(widthInput, this._model.widthSetting(), true, WebInspector.DeviceModeModel.deviceSizeValidator, true);
+        toolbar.appendToolbarItem(this._wrapToolbarItem(widthInput));
+
+        var xElement = createElementWithClass("div", "device-mode-x");
+        xElement.textContent = "\u00D7";
+        toolbar.appendToolbarItem(this._wrapToolbarItem(xElement));
+
+        var heightInput = createElementWithClass("input", "device-mode-size-input");
+        heightInput.maxLength = 5;
+        heightInput.title = WebInspector.UIString("Height");
+        WebInspector.SettingsUI.bindSettingInputField(heightInput, this._model.heightSetting(), true, WebInspector.DeviceModeModel.deviceSizeValidator, true);
+        toolbar.appendToolbarItem(this._wrapToolbarItem(heightInput));
+
+        return toolbar;
+    },
+
+    /**
+     * @return {!WebInspector.Toolbar}
+     */
+    _createDeviceToolbar: function()
+    {
+        var toolbar = new WebInspector.Toolbar("");
+
+        this._deviceSelect = this._createDeviceSelect();
+        toolbar.appendToolbarItem(this._wrapToolbarItem(this._deviceSelect));
+
+        this._modeButton = new WebInspector.ToolbarButton("", "rotate-screen-toolbar-item");
+        this._modeButton.addEventListener("click", this._modeMenuClicked, this);
+        toolbar.appendToolbarItem(this._modeButton);
+
+        toolbar.appendSeparator();
+        this._appendAppliedSizeItems(toolbar);
+
+        return toolbar;
+    },
+
+    /**
+     * @param {!WebInspector.Toolbar} toolbar
+     */
+    _appendAppliedSizeItems: function(toolbar)
+    {
+        var item = new WebInspector.ToolbarTextGlyphItem();
+        this._appliedSizeItems.push(item);
+        toolbar.appendToolbarItem(item);
+    },
+
+    /**
      * @param {!WebInspector.ContextMenu} contextMenu
      */
-    _appendMenuItems: function(contextMenu)
+    _appendScaleMenuItems: function(contextMenu)
     {
-        var zoomDisabled = this._model.type() === WebInspector.DeviceModeModel.Type.None;
-        var zoomSubmenu = contextMenu.appendSubMenuItem(WebInspector.UIString("Zoom"), false);
         var scaleSetting = this._model.scaleSetting();
         appendScaleItem(WebInspector.UIString("Fit"), 0);
-        zoomSubmenu.appendSeparator();
+        contextMenu.appendSeparator();
         appendScaleItem(WebInspector.UIString("25%"), 0.25);
         appendScaleItem(WebInspector.UIString("50%"), 0.5);
         appendScaleItem(WebInspector.UIString("100%"), 1);
@@ -385,9 +442,15 @@ WebInspector.DeviceModeView.Toolbar.prototype = {
          */
         function appendScaleItem(title, value)
         {
-            zoomSubmenu.appendCheckboxItem(title, scaleSetting.set.bind(scaleSetting, value), scaleSetting.get() === value, zoomDisabled);
+            contextMenu.appendCheckboxItem(title, scaleSetting.set.bind(scaleSetting, value), scaleSetting.get() === value, false);
         }
+    },
 
+    /**
+     * @param {!WebInspector.ContextMenu} contextMenu
+     */
+    _appendMenuItems: function(contextMenu)
+    {
         var uaDisabled = this._model.type() !== WebInspector.DeviceModeModel.Type.Responsive;
         var uaSetting = this._model.uaSetting();
         var uaSubmenu = contextMenu.appendSubMenuItem(WebInspector.UIString("User agent type"), false);
@@ -484,14 +547,14 @@ WebInspector.DeviceModeView.Toolbar.prototype = {
         var select = createElementWithClass("select", "device-mode-device-select");
         WebInspector.emulatedDevicesList.addEventListener(WebInspector.EmulatedDevicesList.Events.CustomDevicesUpdated, deviceListChanged, this);
         WebInspector.emulatedDevicesList.addEventListener(WebInspector.EmulatedDevicesList.Events.StandardDevicesUpdated, deviceListChanged, this);
-        deviceListChanged.call(this);
+        populateDeviceList.call(this);
         select.addEventListener("change", optionSelected.bind(this), false);
         return select;
 
         /**
          * @this {WebInspector.DeviceModeView.Toolbar}
          */
-        function deviceListChanged()
+        function populateDeviceList()
         {
             select.removeChildren();
 
@@ -505,6 +568,19 @@ WebInspector.DeviceModeView.Toolbar.prototype = {
             var editCustomOption = new Option(WebInspector.UIString("Edit\u2026"), WebInspector.UIString("Edit\u2026"));
             editCustomOption.edit = true;
             customGroup.appendChild(editCustomOption);
+        }
+
+        /**
+         * @this {WebInspector.DeviceModeView.Toolbar}
+         */
+        function deviceListChanged()
+        {
+            populateDeviceList.call(this);
+            if (!this._updateDeviceSelectedIndex() && this._model.type() === WebInspector.DeviceModeModel.Type.Device) {
+                select.selectedIndex = 0;
+                if (!select.options[0].edit)
+                    this._emulateDevice(select.options[0].device);
+            }
         }
 
         /**
@@ -550,12 +626,18 @@ WebInspector.DeviceModeView.Toolbar.prototype = {
         }
     },
 
+    /**
+     * @return {boolean}
+     */
     _updateDeviceSelectedIndex: function()
     {
         for (var i = 0; i < this._deviceSelect.options.length; ++i) {
-            if (this._deviceSelect.options[i].device === this._model.device())
+            if (this._deviceSelect.options[i].device === this._model.device()) {
                 this._deviceSelect.selectedIndex = i;
+                return true;
+            }
         }
+        return false;
     },
 
     /**
@@ -622,14 +704,6 @@ WebInspector.DeviceModeView.Toolbar.prototype = {
         return this._element;
     },
 
-    /**
-     * @return {!Element}
-     */
-    screenOptionsElement: function()
-    {
-        return this._modeToolbar.element;
-    },
-
     update: function()
     {
         var updatePersistence = false;
@@ -638,68 +712,54 @@ WebInspector.DeviceModeView.Toolbar.prototype = {
             this._noneItem.setToggled(this._model.type() === WebInspector.DeviceModeModel.Type.None);
             this._responsiveItem.setToggled(this._model.type() === WebInspector.DeviceModeModel.Type.Responsive);
             this._deviceItem.setToggled(this._model.type() === WebInspector.DeviceModeModel.Type.Device);
-            this._deviceSelectItem.setVisible(this._model.type() === WebInspector.DeviceModeModel.Type.Device);
+            this._scaleItem.setVisible(this._model.type() !== WebInspector.DeviceModeModel.Type.None);
+
+            var toolbar = null;
+            if (this._model.type() === WebInspector.DeviceModeModel.Type.None)
+                toolbar = this._noneToolbar;
+            else if (this._model.type() === WebInspector.DeviceModeModel.Type.Responsive)
+                toolbar = this._responsiveToolbar;
+            else if (this._model.type() === WebInspector.DeviceModeModel.Type.Device)
+                toolbar = this._deviceToolbar;
+
+            if (this._visibleToolbar !== toolbar) {
+                if (this._visibleToolbar)
+                    this._visibleToolbar.classList.add("hidden");
+                if (toolbar) {
+                    toolbar.classList.remove("hidden");
+                    toolbar.animate([{opacity: "0"}, {opacity: "1"}], {duration: 100});
+                }
+                this._visibleToolbar = toolbar;
+            }
+
             this._previousModelType = this._cachedModelType;
             this._cachedModelType = this._model.type();
             updatePersistence = true;
         }
 
-        var resizable = this._model.type() === WebInspector.DeviceModeModel.Type.Responsive;
-        if (resizable !== this._cachedResizable) {
-            this._widthItem.setVisible(resizable);
-            this._heightItem.setVisible(resizable);
-            this._appliedWidthItem.setVisible(!resizable);
-            this._appliedHeightItem.setVisible(!resizable);
-            this._cachedResizable = resizable;
-        }
-
-        if (!resizable) {
-            var width = this._model.appliedDeviceSize().width;
-            if (width !== this._cachedWidth) {
-                this._appliedWidthInput.value = width;
-                this._cachedWidth = width;
-            }
-            var height = this._model.appliedDeviceSize().height;
-            if (height !== this._cachedHeight) {
-                this._appliedHeightInput.value = height;
-                this._cachedHeight = height;
+        if (this._model.type() !== WebInspector.DeviceModeModel.Type.Responsive) {
+            var size = this._model.appliedDeviceSize();
+            if (!size.isEqual(this._cachedSize)) {
+                for (var item of this._appliedSizeItems)
+                    item.setText(WebInspector.UIString("%d \u00D7 %d", size.width, size.height));
+                this._cachedSize = size;
             }
         }
 
-        var showDeviceScale = this._model.type() !== WebInspector.DeviceModeModel.Type.None &&
-            (!!this._model.deviceScaleFactorSetting().get() || this._model.type() === WebInspector.DeviceModeModel.Type.Device);
-        if (showDeviceScale !== this._cachedShowDeviceScale) {
-            this._deviceScaleFactorItem.setVisible(showDeviceScale);
-            this._cachedShowDeviceScale = showDeviceScale;
-        }
-
-        if (showDeviceScale) {
-            var deviceScaleFactor = this._model.appliedDeviceScaleFactor();
-            if (deviceScaleFactor !== this._cachedDeviceScaleFactor) {
-                this._deviceScaleFactorItem.setText(String(deviceScaleFactor));
-                this._cachedDeviceScaleFactor = deviceScaleFactor;
-            }
-        }
-
-        var showScale = this._model.scale() !== 1;
-        if (showScale !== this._cachedShowScale) {
-            this._scaleItem.setVisible(showScale);
-            this._cachedShowScale = showScale;
-        }
-
-        if (showScale) {
-            var scale = this._model.scale();
-            if (scale !== this._cachedScale) {
-                this._scaleItem.setText(WebInspector.UIString("Zoom: %.2f", scale));
-                this._cachedScale = scale;
-            }
+        if (this._model.scale() !== this._cachedScale) {
+            this._scaleItem.setText(WebInspector.UIString("Zoom: %.0f%%", this._model.scale() * 100));
+            this._scaleItem.setDimmed(this._model.scale() === 1);
+            this._cachedScale = this._model.scale();
         }
 
         if (this._model.device() !== this._cachedModelDevice) {
             var device = this._model.device();
 
-            var modeCount = device ? device.modes.length : 0;
-            this._modeToolbar.element.classList.toggle("hidden", modeCount < 2);
+            if (device) {
+                var modeCount = device ? device.modes.length : 0;
+                this._modeButton.setEnabled(modeCount >= 2);
+                this._modeButton.setTitle(modeCount === 2 ? WebInspector.UIString("Rotate") : WebInspector.UIString("Screen options"));
+            }
             this._updateDeviceSelectedIndex();
 
             this._cachedModelDevice = device;

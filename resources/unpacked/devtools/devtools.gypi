@@ -128,6 +128,7 @@
             'front_end/host/UserMetrics.js',
         ],
         'devtools_sass_js_files': [
+            'front_end/sass/SASSLiveSourceMap.js',
             'front_end/sass/SASSSupport.js',
         ],
         'devtools_screencast_js_files': [
@@ -692,10 +693,8 @@
             'front_end/timeline/TimelineModel.js',
             'front_end/timeline/TimelinePaintProfilerView.js',
             'front_end/timeline/TimelinePanel.js',
-            'front_end/timeline/TimelinePresentationModel.js',
             'front_end/timeline/TimelineTreeView.js',
             'front_end/timeline/TimelineUIUtils.js',
-            'front_end/timeline/TimelineView.js',
             'front_end/timeline/TransformController.js',
         ],
         'devtools_ui_lazy_js_files': [
@@ -790,6 +789,11 @@
             'front_end/Images/errorWave.png',
             'front_end/Images/errorWave_2x.png',
             'front_end/Images/fileSystem.png',
+            'front_end/Images/ic_cloud_queue_black_18dp.svg',
+            'front_end/Images/ic_drive_file_black_18dp.svg',
+            'front_end/Images/ic_folder_black_18dp.svg',
+            'front_end/Images/ic_folder_open_black_18dp.svg',
+            'front_end/Images/ic_web_asset_black_18dp.svg',
             'front_end/Images/forward.png',
             'front_end/Images/frame.png',
             'front_end/Images/graphLabelCalloutLeft.png',
