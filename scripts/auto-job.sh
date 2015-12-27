@@ -49,7 +49,7 @@ git checkout master
 git reset --hard origin/master
 git clean -fd
 
-./scripts/fetch-devtools-branch.sh
+time ./scripts/fetch-devtools-branch.sh
 
 popd
 
