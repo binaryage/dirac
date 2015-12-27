@@ -28,34 +28,13 @@ fi
 pushd "$CHROMIUM_MIRROR_DIR"
 
 git fetch chromium
-
-# this dance is here to avoid error "Branch '$branch' is not an ancestor of commit '<SHA>'"
-# more info here: http://permalink.gmane.org/gmane.comp.version-control.git/239012
-# instead of merging upstream changes, we rebase them onto our current tracker branch
-# ...that should avoid git-subtree confusion
-#
-# if it fails, the workaround is to run full rescan:
-#
-#   ./scripts/fetch-devtools-branch.sh --ignore-joins
-#
-# git merge --commit --no-edit chromium/master
-#
-#
-# UPDATE: this DOES NOT WORK, after a while git rebase ends up in massive conflicts
-# git checkout tracker
-# git rebase --onto tracker tracker chromium/master
-# git branch -d old-tracker || true # old-tracker branch may not exist during first run
-# git branch -m tracker old-tracker
-# git checkout -b tracker
-
-# let's do it slow, but reliable way
 git checkout tracker
 git reset --hard chromium/master
 git clean -fd
+git filter-branch --prune-empty --subdirectory-filter third_party/WebKit/Source/devtools tracker
 
-# note: my-subtree is just my patched version of subtree command with github-friendly commit messages (SHAs are clickable)
-git my-subtree split --prefix="$DEVTOOLS_CHROMIUM_PREFIX" --branch "$DEVTOOLS_BRANCH" --ignore-joins # "$@"
-
+git checkout devtools
+git reset --hard tracker
 git push dirac devtools
 
 popd
