@@ -31,7 +31,7 @@ git fetch chromium
 git checkout tracker
 git reset --hard chromium/master
 git clean -fd
-git filter-branch --prune-empty --subdirectory-filter third_party/WebKit/Source/devtools tracker
+git filter-branch -f --prune-empty --subdirectory-filter third_party/WebKit/Source/devtools tracker
 
 git checkout devtools
 git reset --hard tracker
