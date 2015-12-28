@@ -5,7 +5,7 @@ echo "running auto-job.sh on $(date)"
 
 export CHROMIUM_MIRROR_DIR=~/tasks/chromium/src/
 
-set -e
+set -ex
 
 pushd () {
     command pushd "$@" > /dev/null

@@ -8,7 +8,7 @@
 	<array>
 		<string>sh</string>
 		<string>-c</string>
-		<string>/Users/darwin/tasks/dirac/scripts/auto-job.sh</string>
+		<string>/Users/darwin/tasks/dirac/scripts/auto-job-launcher.sh</string>
 	</array>
 	<key>StartCalendarInterval</key>
 	<dict>
