@@ -156,7 +156,9 @@ WebInspector.CodeMirrorTextEditor = function(url, delegate)
     this._enableAutocompletionIfNeeded();
 
     this._codeMirror.on("changes", this._changes.bind(this));
-    this._codeMirror.on("update", this._update.bind(this));
+    if (dirac.hasInlineCFs) {
+        this._codeMirror.on("update", this._update.bind(this));
+    }
     this._codeMirror.on("gutterClick", this._gutterClick.bind(this));
     this._codeMirror.on("cursorActivity", this._cursorActivity.bind(this));
     this._codeMirror.on("beforeSelectionChange", this._beforeSelectionChange.bind(this));

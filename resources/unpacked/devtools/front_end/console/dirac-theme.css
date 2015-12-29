@@ -12,8 +12,12 @@
 .cm-s-dirac .cm-bracket {color: #333333;}       /* clojure brackets */
 .cm-s-dirac .cm-comment {color: #aaaaaa;}    /* clojure comment */
 
+.CodeMirror pre {
+  line-height: 14px;
+}
+
 div.CodeMirror span.CodeMirror-matchingbracket {
-  background: #e8f2ff;
+  background: #FFFF90;
   color: inherit;
   border-bottom: 1px solid #111;
 }
@@ -24,6 +28,6 @@ div.CodeMirror span.CodeMirror-nonmatchingbracket {
 .CodeMirror-selected { background:  #d7d4f0; }
 .CodeMirror-focused .CodeMirror-selected { background: #d7d4f0; }
 
-.CodeMirror .cm-bracket.cm-eol {
+.CodeMirror.cm-x-parinfer .cm-bracket.cm-eol {
   opacity: 0.4;
 }

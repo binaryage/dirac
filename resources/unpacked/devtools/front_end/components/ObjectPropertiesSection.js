@@ -150,14 +150,16 @@ WebInspector.ObjectPropertiesSection.PropertyCluster = function(property) {
  */
 WebInspector.ObjectPropertiesSection.CompareProperties = function(propertyA, propertyB)
 {
-    var clusterA = WebInspector.ObjectPropertiesSection.PropertyCluster(propertyA);
-    var clusterB = WebInspector.ObjectPropertiesSection.PropertyCluster(propertyB);
+    if (dirac.hasClusteredLocals) {
+        var clusterA = WebInspector.ObjectPropertiesSection.PropertyCluster(propertyA);
+        var clusterB = WebInspector.ObjectPropertiesSection.PropertyCluster(propertyB);
 
-    if (clusterA > clusterB) {
-      return 1;
-    }
-    if (clusterA < clusterB) {
-      return -1;
+        if (clusterA > clusterB) {
+          return 1;
+        }
+        if (clusterA < clusterB) {
+          return -1;
+        }
     }
 
     var a = propertyA.name;
@@ -527,20 +529,24 @@ WebInspector.ObjectPropertyTreeElement.populateWithProperties = function(treeNod
     for (var i = 0; i < properties.length; ++i) {
         var property = properties[i];
 
-        property._cluster = WebInspector.ObjectPropertiesSection.PropertyCluster(property);
-        if (previousProperty && property._cluster != previousProperty._cluster) {
-            property._afterClusterBoundary = true;
-            previousProperty._beforeClusterBoundary = true;
+        if (dirac.hasClusteredLocals) {
+            property._cluster = WebInspector.ObjectPropertiesSection.PropertyCluster(property);
+            if (previousProperty && property._cluster != previousProperty._cluster) {
+                property._afterClusterBoundary = true;
+                previousProperty._beforeClusterBoundary = true;
+            }
         }
 
-        var friendlyName = getFriendlyName(property.name);
-        if (friendlyName) {
-            property._friendlyName = friendlyName;
-            var num = friendlyNamesTable[friendlyName];
-            if (!num) num = 0;
-            num += 1;
-            property._friendlyNameNum = num;
-            friendlyNamesTable[friendlyName] = num;
+        if (dirac.hasFriendlyLocals) {
+            var friendlyName = getFriendlyName(property.name);
+            if (friendlyName) {
+                property._friendlyName = friendlyName;
+                var num = friendlyNamesTable[friendlyName];
+                if (!num) num = 0;
+                num += 1;
+                property._friendlyNameNum = num;
+                friendlyNamesTable[friendlyName] = num;
+            }
         }
 
         if (skipProto && property.name === "__proto__")

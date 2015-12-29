@@ -820,7 +820,7 @@ WebInspector.JavaScriptSourceFrame.prototype = {
                 var propertyCount = value.preview ? value.preview.properties.length : 0;
                 var entryCount = value.preview && value.preview.entries ? value.preview.entries.length : 0;
 
-                if (value.customPreview()) {
+                if (dirac.hasInlineCFs && value.customPreview()) {
                     var customValueEl = (new WebInspector.CustomPreviewComponent(value)).element;
                     nameValuePair.appendChild(customValueEl);
                 } else if (value.preview && propertyCount + entryCount < 10)

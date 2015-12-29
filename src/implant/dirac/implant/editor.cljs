@@ -58,7 +58,17 @@
 ;; Setup
 ;;----------------------------------------------------------------------
 
-(def editor-opts
+(def basic-editor-opts
+  {:mode          "clojure-parinfer"
+   :theme         "dirac"
+   :matchBrackets true
+   :height        "auto"
+   :extraKeys     {"Shift-Tab"   "indentLess"
+                   "Shift-Enter" "newlineAndIndent"
+                   "Alt-Enter"   "newlineAndIndent"
+                   "Ctrl-Enter"  "newlineAndIndent"}})
+
+(def parinfer-editor-opts
   {:mode          "clojure-parinfer"
    :theme         "dirac"
    :matchBrackets true
@@ -69,43 +79,42 @@
                    "Alt-Enter"   "newlineAndIndent"
                    "Ctrl-Enter"  "newlineAndIndent"}})
 
-(defn create-editor!
-  "Create a parinfer editor."
-  ([element key] (create-editor! element key {}))
-  ([element key opts]
-   (when-not (get @state key)
-     (let [element-id (oget element "id")
-           cm-class (oget js/window "CodeMirror")
-           cm (cm-class. element (clj->js (merge editor-opts opts)))
-           wrapper (ocall cm "getWrapperElement")
-           initial-state (assoc empty-editor-state
-                           :mode (:parinfer-mode opts))
-           prev-editor-state (atom nil)]
+(defn create-editor! [element key parinfer?]
+  (when-not (get @state key)
+    (let [element-id (oget element "id")
+          cm-class (oget js/window "CodeMirror")
+          effective-opts (if parinfer? parinfer-editor-opts basic-editor-opts)
+          cm (cm-class. element (clj->js effective-opts))
+          wrapper (ocall cm "getWrapperElement")
+          initial-state empty-editor-state
+          prev-editor-state (atom nil)
+          class (if parinfer? "cm-x-parinfer" "cm-x-basic")]
 
+      (set! (.-id wrapper) (str "cm-" element-id))
+      (set! (.-className wrapper) (str (.-className wrapper) " " class))
 
-       (set! (.-id wrapper) (str "cm-" element-id))
+      (when-not (get @state key)
+        (swap! frame-updates assoc key {}))
 
-       (when-not (get @state key)
-         (swap! frame-updates assoc key {}))
+      (swap! state update key
+             #(-> (or % initial-state)
+                  (assoc :cm cm)))
 
-       (swap! state update-in [key]
-              #(-> (or % initial-state)
-                   (assoc :cm cm)))
+      (when parinfer?
+        ;; Extend the code mirror object with some utility methods.
+        (specify! cm
+          IEditor
+          (get-prev-state [_this] prev-editor-state)
+          (cm-key [_this] key)
+          (frame-updated? [_this] (get-in @frame-updates [key :frame-updated?]))
+          (set-frame-updated! [_this value] (swap! frame-updates assoc-in [key :frame-updated?] value)))
 
-       ;; Extend the code mirror object with some utility methods.
-       (specify! cm
-         IEditor
-         (get-prev-state [_this] prev-editor-state)
-         (cm-key [_this] key)
-         (frame-updated? [_this] (get-in @frame-updates [key :frame-updated?]))
-         (set-frame-updated! [_this value] (swap! frame-updates assoc-in [key :frame-updated?] value)))
+        ;; handle code mirror events
+        (ocall cm "on" "change" on-change)
+        (ocall cm "on" "beforeChange" before-change)
+        (ocall cm "on" "cursorActivity" on-cursor-activity))
 
-       ;; handle code mirror events
-       (ocall cm "on" "change" on-change)
-       (ocall cm "on" "beforeChange" before-change)
-       (ocall cm "on" "cursorActivity" on-cursor-activity)
-
-       cm))))
+      cm)))
 
 ;;----------------------------------------------------------------------
 ;; Setup

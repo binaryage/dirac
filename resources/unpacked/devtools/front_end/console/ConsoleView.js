@@ -120,7 +120,7 @@ WebInspector.ConsoleView = function()
     var diracPromptElement = this._messagesElement.createChild("div", "source-code");
     diracPromptElement.id = "console-prompt-dirac";
     diracPromptElement.spellcheck = false;
-    var diracPromptCodeMirrorInstance = dirac.implant.api.adopt_prompt_element(diracPromptElement);
+    var diracPromptCodeMirrorInstance = dirac.implant.api.adopt_prompt_element(diracPromptElement, dirac.hasParinfer);
     diracPromptElement.focus = function() {
       // delegate focus calls to code mirror
       diracPromptCodeMirrorInstance.focus();
@@ -168,23 +168,25 @@ WebInspector.ConsoleView = function()
                         proxy: proxyElement});
     this._activePromptIndex = 0;
 
-    var diracPrompt = new WebInspector.DiracPromptWithHistory(diracPromptCodeMirrorInstance);
-    diracPrompt.setSuggestBoxEnabled(false);
-    diracPrompt.setAutocompletionTimeout(0);
-    diracPrompt.renderAsBlock();
-    var diracProxyElement = diracPrompt.attach(diracPromptElement);
-    diracProxyElement.classList.add("console-prompt-dirac-wrapper");
-    diracProxyElement.addEventListener("keydown", this._promptKeyDown.bind(this), true);
+    if (dirac.hasREPL) {
+        var diracPrompt = new WebInspector.DiracPromptWithHistory(diracPromptCodeMirrorInstance);
+        diracPrompt.setSuggestBoxEnabled(false);
+        diracPrompt.setAutocompletionTimeout(0);
+        diracPrompt.renderAsBlock();
+        var diracProxyElement = diracPrompt.attach(diracPromptElement);
+        diracProxyElement.classList.add("console-prompt-dirac-wrapper");
+        diracProxyElement.addEventListener("keydown", this._promptKeyDown.bind(this), true);
 
-    this._diracHistorySetting = WebInspector.settings.createLocalSetting("diracHistory", []);
-    var diracHistoryData = this._diracHistorySetting.get();
-    diracPrompt.setHistoryData(diracHistoryData);
+        this._diracHistorySetting = WebInspector.settings.createLocalSetting("diracHistory", []);
+        var diracHistoryData = this._diracHistorySetting.get();
+        diracPrompt.setHistoryData(diracHistoryData);
 
-    this._prompts.push({id: "dirac",
-                        prompt: diracPrompt,
-                        element: diracPromptElement,
-                        proxy: diracProxyElement,
-                        codeMirror: diracPromptCodeMirrorInstance});
+        this._prompts.push({id: "dirac",
+                            prompt: diracPrompt,
+                            element: diracPromptElement,
+                            proxy: diracProxyElement,
+                            codeMirror: diracPromptCodeMirrorInstance});
+    }
 
     this._consoleHistorySetting = WebInspector.settings.createLocalSetting("consoleHistory", []);
     var historyData = this._consoleHistorySetting.get();
@@ -896,13 +898,15 @@ WebInspector.ConsoleView.prototype = {
 
         section.addKey(shortcut.makeDescriptor(shortcut.Keys.Enter), WebInspector.UIString("Execute command"));
 
-        keys = [
-            shortcut.makeDescriptor(shortcut.Keys.PageDown),
-            shortcut.makeDescriptor(shortcut.Keys.PageUp)
-        ];
-        this._shortcuts[keys[0].key] = this._selectNextPrompt.bind(this);
-        this._shortcuts[keys[1].key] = this._selectPrevPrompt.bind(this);
-        section.addRelatedKeys(keys, WebInspector.UIString("Next/previous prompt"));
+        if (dirac.hasREPL) {
+            keys = [
+                shortcut.makeDescriptor(shortcut.Keys.PageDown),
+                shortcut.makeDescriptor(shortcut.Keys.PageUp)
+            ];
+            this._shortcuts[keys[0].key] = this._selectNextPrompt.bind(this);
+            this._shortcuts[keys[1].key] = this._selectPrevPrompt.bind(this);
+            section.addRelatedKeys(keys, WebInspector.UIString("Next/previous prompt"));
+        }
     },
 
     _clearPromptBackwards: function()
