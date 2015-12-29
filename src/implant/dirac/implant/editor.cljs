@@ -69,15 +69,8 @@
                    "Ctrl-Enter"  "newlineAndIndent"}})
 
 (def parinfer-editor-opts
-  {:mode          "clojure-parinfer"
-   :theme         "dirac"
-   :matchBrackets true
-   :height        "auto"
-   :extraKeys     {"Tab"         on-tab
-                   "Shift-Tab"   "indentLess"
-                   "Shift-Enter" "newlineAndIndent"
-                   "Alt-Enter"   "newlineAndIndent"
-                   "Ctrl-Enter"  "newlineAndIndent"}})
+  (merge basic-editor-opts
+         {:extraKeys {"Tab" on-tab}}))
 
 (defn create-editor! [element key parinfer?]
   (when-not (get @state key)
