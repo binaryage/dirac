@@ -41,6 +41,10 @@
 
 (defn set-options! [options]
   {:pre [*initialized*]}
+  (swap! cached-options merge options))                                                                                       ; will trigger on-cached-options-change!
+
+(defn reset-options! [options]
+  {:pre [*initialized*]}
   (reset! cached-options options))                                                                                            ; will trigger on-cached-options-change!
 
 ; -- serialization ----------------------------------------------------------------------------------------------------------
@@ -61,7 +65,7 @@
   (info "write options:" options)
   (let [serialized-options (serialize-options options)
         local-storage (storage/get-local)]
-    (set local-storage #js {"options" serialized-options})))                                                                  ; note: this will trigger on-changed event and call to reload-options!, which is fine
+    (set local-storage #js {"options" serialized-options})))                                                                  ; will trigger on-changed event and a call to reload-options!, which is fine
 
 (defn on-cached-options-change! []
   (if *auto-sync*

@@ -11,7 +11,7 @@
 ; -- supporting functions ---------------------------------------------------------------------------------------------------
 
 (defn save-state! []
-  (model/set-options! (:options @state)))
+  (model/reset-options! (:options @state)))
 
 (defn load-state! []
   (swap! state assoc :options (model/get-options)))
