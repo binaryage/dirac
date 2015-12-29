@@ -8,8 +8,8 @@
             [dirac.background.action :as action]
             [dirac.utils :as utils]))
 
-(defn get-devtools-url [backend-url]
-  (runtime/get-url (str "devtools/front_end/inspector.html?ws=" backend-url)))
+(defn get-devtools-url [backend-url flags]
+  (runtime/get-url (str "devtools/front_end/inspector.html?dirac_flags=" flags "&ws=" backend-url)))
 
 (defn tab-log-prefix [tab-id]
   (str "TAB #" tab-id ":"))
