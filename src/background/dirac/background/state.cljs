@@ -3,6 +3,6 @@
             [chromex.logging :refer-macros [log info warn error group group-end]]))
 
 (def initial-state
-  {:connections {}})                                                                                                          ; pairings between dirac instances and connected tabs
+  {:connections {}})                                                                                                          ; pairings between dirac instances and connected backend tabs
 
 (def state (atom initial-state))

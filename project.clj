@@ -6,6 +6,9 @@
                  [binaryage/devtools "0.4.1"]
                  [cljs-http "0.1.38"]
                  [figwheel "0.5.0-1"]
+                 [reforms "0.4.3"]
+                 [rum "0.6.0" :scope "provided"]
+                 [rum-reforms "0.4.3"]
                  [parinfer "0.2.3"]
                  [environ "1.0.1"]]
 
@@ -37,7 +40,6 @@
                                            :output-dir            "resources/unpacked/devtools/front_end/_cljs"
                                            :asset-path            "_cljs"
                                            :optimizations         :none
-                                           :anon-fn-naming-policy :unmapped
                                            :compiler-stats        true
                                            :source-map            true
                                            :source-map-timestamp  true}}
@@ -50,9 +52,7 @@
                                            :output-dir            "resources/unpacked/compiled/background"
                                            :asset-path            "compiled/background"
                                            :optimizations         :none
-                                           :anon-fn-naming-policy :unmapped
                                            :compiler-stats        true
-                                           :cache-analysis        true
                                            :source-map            true
                                            :source-map-timestamp  true}}
                            :options
@@ -64,9 +64,7 @@
                                            :output-dir            "resources/unpacked/compiled/options"
                                            :asset-path            "compiled/options"
                                            :optimizations         :none
-                                           :anon-fn-naming-policy :unmapped
                                            :compiler-stats        true
-                                           :cache-analysis        true
                                            :source-map            true
                                            :source-map-timestamp  true}}}}}
              :checkouts
@@ -84,6 +82,7 @@
                                            :output-dir     "resources/unpacked/devtools/front_end/_cljs"
                                            :asset-path     "_cljs"
                                            :optimizations  :advanced
+                                           ;:anon-fn-naming-policy :unmapped
                                            ;:pseudo-names   true
                                            :elide-asserts  true
                                            :compiler-stats true}}
@@ -94,6 +93,7 @@
                                            :output-dir     "resources/release/compiled/background"
                                            :asset-path     "compiled/background"
                                            :optimizations  :advanced
+                                           ;:anon-fn-naming-policy :unmapped
                                            ;:pseudo-names   true
                                            :elide-asserts  true
                                            :compiler-stats true}}
@@ -104,11 +104,13 @@
                                            :output-dir     "resources/release/compiled/options"
                                            :asset-path     "compiled/options"
                                            :optimizations  :advanced
+                                           ;:anon-fn-naming-policy :unmapped
+                                           ;:pseudo-names   true
                                            :elide-asserts  true
                                            :compiler-stats true}}}}}}
 
   :aliases {"dev-build"  ["with-profile" "+unpacked" "cljsbuild" "once" "background" "options" "implant"]
-            "fig"        ["with-profile" "+unpacked" "figwheel" "background" "options" "implant"]
+            "fig"        ["with-profile" "+unpacked" "do" "clean," "figwheel" "background" "options" "implant"]
             "content"    ["with-profile" "+unpacked" "cljsbuild" "auto"]
             "release"    ["with-profile" "+release" "do" "clean," "cljsbuild" "once" "implant" "background" "options"]
             "package"    ["shell" "scripts/package.sh"]

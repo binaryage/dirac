@@ -5,8 +5,8 @@
             [chromex.logging :refer-macros [log info warn error group group-end]]
             [clojure.string :as string]))
 
-(defn unable-to-extract-first-tab []
-  "Unable to extract first tab id from newly created DevTools window.")
+(defn unable-to-create-dirac-tab []
+  "Unable to create a new tab for Dirac DevTools.")
 
 (defn cannot-attach-dirac [target-url tab-url]
   (str "Cannot attach Dirac DevTools. "

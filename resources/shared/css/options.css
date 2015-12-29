@@ -1,0 +1,70 @@
+#options-form {
+   min-height: 207px;
+   min-width: 400px;
+   overflow: hidden;
+}
+
+#options-form .panel {
+  border: none;
+  border-radius: 0;
+  margin: 0px;
+  box-shadow: none;
+}
+
+#options-form .panel-heading {
+  border-radius: 0;
+}
+
+#options-form .panel-body {
+  padding: 0px 10px 20px 10px;
+}
+
+#options-form .panel-body .form-group {
+  text-align: right;
+}
+
+#options-form .form-group {
+  margin-bottom: 0px;
+  margin-top: 15px;
+}
+
+#options-form .switches {
+  margin-top: 15px;
+}
+
+#options-form .switches .form-group {
+  margin-top: 0px;
+}
+
+#options-form .panel-title {
+  font-size: 12px;
+}
+
+#options-form .form-control {
+  height: auto;
+  padding: 2px 6px;
+  font-size: 12px;
+}
+
+#options-form .btn {
+  font-size: 12px;
+  padding: 2px 6px;
+  text-shadow: none;
+  border-width: 1px;
+  border-style: solid;
+  border-color: rgba(0, 0, 0, 0.247059);
+  border-radius: 2px;
+  background-image: linear-gradient(rgb(237, 237, 237), rgb(237, 237, 237) 38%, rgb(222, 222, 222));
+  margin-left: 6px;
+}
+
+#options-form .checkbox {
+  min-height: none;
+  padding-top: 0px;
+}
+
+#options-form input[type="radio"],
+#options-form input[type="checkbox"] {
+  margin-top: 0px;
+  position: static;
+}

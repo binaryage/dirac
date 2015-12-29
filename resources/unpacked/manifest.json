@@ -36,6 +36,7 @@
   },
   /* this is needed to get around CORS when fetching /json from target chrome */
   "permissions": [
+    "storage",
     "webRequest",
     "http://*/json",
     "tabs"

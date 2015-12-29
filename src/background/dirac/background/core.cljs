@@ -11,60 +11,73 @@
             [chromex.ext.tabs :as tabs]
             [chromex.ext.browser-action :as browser-action]
             [chromex.ext.runtime :as runtime]
-            [chromex.ext.extension :as extension]
             [chromex.ext.commands :as commands]
             [dirac.background.cors :refer [setup-cors-rewriting!]]
-            [dirac.options.model :refer [get-option]]
             [dirac.target.core :refer [resolve-backend-url]]
-            [dirac.utils :as utils]
             [dirac.i18n :as i18n]
             [dirac.sugar :as sugar]
             [dirac.background.helpers :as helpers :refer [report-error-in-tab report-warning-in-tab]]
             [dirac.background.state :refer [state]]
             [dirac.background.connections :as connections]
             [dirac.background.action :as action]
-            [clojure.string :as string]))
+            [dirac.options.model :as options]))
 
 (defn update-action-button-according-to-connection-state! [backend-tab-id]
+  {:pre [(number? backend-tab-id)]}
   (if (connections/backend-connected? backend-tab-id)
     (action/update-action-button backend-tab-id :connected "Dirac is connected")
     (action/update-action-button backend-tab-id :waiting "Click to open Dirac DevTools")))
 
 (defn register-connection! [dirac-tab-id backend-tab-id]
+  {:pre [(number? dirac-tab-id)
+         (number? backend-tab-id)]}
   (connections/add! dirac-tab-id backend-tab-id)
   (update-action-button-according-to-connection-state! backend-tab-id))
 
 (defn unregister-connection! [dirac-tab-id]
+  {:pre [(number? dirac-tab-id)]}
   (when-let [{:keys [backend-tab-id]} (connections/get-dirac-connection dirac-tab-id)]
     (connections/remove! dirac-tab-id)
     (update-action-button-according-to-connection-state! backend-tab-id)))
 
-(defn create-dirac-window! [tab-id url]
-  {:pre [tab-id url]}
+(defn create-dirac-window! [url panel?]
+  {:pre [url]}
   (go
     (if-let [[window] (<! (windows/create #js {"url"  url
-                                               "type" "popup"}))]
+                                               "type" (if panel? "popup" "normal")}))]
       (let [tabs (oget window "tabs")
-            first-tab (aget tabs 0)
-            first-tab-id (sugar/get-tab-id first-tab)]
-        (if first-tab-id
-          (register-connection! first-tab-id tab-id)
-          (report-error-in-tab tab-id (i18n/unable-to-extract-first-tab)))))))
+            first-tab (aget tabs 0)]
+        (sugar/get-tab-id first-tab)))))
 
-(defn open-dirac-window! [tab]
-  (let [tab-id (sugar/get-tab-id tab)
+(defn create-dirac-tab! [url]
+  {:pre [url]}
+  (go
+    (if-let [[tab] (<! (tabs/create #js {"url" url}))]
+      (sugar/get-tab-id tab))))
+
+(defn create-dirac! [backend-tab-id url open-as]
+  {:pre [backend-tab-id url]}
+  (go
+    (if-let [dirac-tab-id (<! (if (keyword-identical? open-as :tab)
+                                (create-dirac-tab! url)
+                                (create-dirac-window! url (keyword-identical? open-as :panel))))]
+      (register-connection! dirac-tab-id backend-tab-id)
+      (report-error-in-tab backend-tab-id (i18n/unable-to-create-dirac-tab)))))
+
+(defn open-dirac! [tab open-as]
+  (let [backend-tab-id (sugar/get-tab-id tab)
         tab-url (oget tab "url")
-        target-url (get-option :target-url)]
-    (assert tab-id)
+        target-url (options/get-option :target-url)]
+    (assert backend-tab-id)
     (cond
-      (not tab-url) (report-error-in-tab tab-id (i18n/tab-cannot-be-debugged tab))
-      (not target-url) (report-error-in-tab tab-id (i18n/target-url-not-specified))
+      (not tab-url) (report-error-in-tab backend-tab-id (i18n/tab-cannot-be-debugged tab))
+      (not target-url) (report-error-in-tab backend-tab-id (i18n/target-url-not-specified))
       :else (go
               (if-let [backend-url (<! (resolve-backend-url target-url tab-url))]
                 (if (keyword-identical? backend-url :not-attachable)
-                  (report-warning-in-tab tab-id (i18n/cannot-attach-dirac target-url tab-url))
-                  (create-dirac-window! tab-id (helpers/get-devtools-url backend-url)))
-                (report-error-in-tab tab-id (i18n/unable-to-resolve-backend-url target-url tab-url)))))))
+                  (report-warning-in-tab backend-tab-id (i18n/cannot-attach-dirac target-url tab-url))
+                  (create-dirac! backend-tab-id (helpers/get-devtools-url backend-url) open-as))
+                (report-error-in-tab backend-tab-id (i18n/unable-to-resolve-backend-url target-url tab-url)))))))
 
 (defn activate-dirac! [tab-id]
   (go
@@ -76,18 +89,25 @@
                                              "drawAttention" true}))
       (tabs/update dirac-tab-id #js {"active" true}))))
 
-(defn open-dirac! [tab]
+(defn get-dirac-open-as-setting []
+  (let [setting (options/get-option :open-as)]
+    (case setting
+      "window" :window
+      "tab" :tab
+      :panel)))
+
+(defn activate-or-open-dirac! [tab]
   (let [tab-id (oget tab "id")]
     (if (connections/backend-connected? tab-id)
       (activate-dirac! tab-id)
-      (open-dirac-window! tab))))
+      (open-dirac! tab (get-dirac-open-as-setting)))))
 
 (defn open-dirac-in-active-tab! []
   (go
     (let [[tabs] (<! (tabs/query #js {"lastFocusedWindow" true
                                       "active"            true}))]
       (if-let [tab (first tabs)]
-        (open-dirac! tab)
+        (activate-or-open-dirac! tab)
         (warn "No active tab?")))))
 
 (defn handle-command! [command]
@@ -108,7 +128,7 @@
   (log (gstring/format "BACKGROUND: got chrome event (%05d)" event-num) event)
   (let [[event-id event-args] event]
     (case event-id
-      ::browser-action/on-clicked (apply open-dirac! event-args)
+      ::browser-action/on-clicked (apply activate-or-open-dirac! event-args)
       ::commands/on-command (apply handle-command! event-args)
       ::tabs/on-removed (apply on-tab-removed! event-args)
       ::tabs/on-updated (apply on-tab-updated! event-args)
@@ -135,4 +155,6 @@
 (defn init! []
   (log "BACKGROUND: init")
   (setup-cors-rewriting!)
-  (boot-chrome-event-loop!))
+  (go
+    (<! (options/init!))
+    (boot-chrome-event-loop!)))
