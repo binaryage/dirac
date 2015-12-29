@@ -1,22 +1,9 @@
 (ns dirac.background.action
   (:require-macros [cljs.core.async.macros :refer [go go-loop]])
-  (:require [goog.string :as gstring]
-            [goog.string.format]
-            [cljs.core.async :refer [<! chan]]
+  (:require [cljs.core.async :refer [<! chan]]
             [chromex.support :refer-macros [oget ocall oapply]]
             [chromex.logging :refer-macros [log info warn error group group-end]]
-            [chromex.chrome-event-channel :refer [make-chrome-event-channel]]
-            [chromex.protocols :refer [post-message! get-sender]]
-            [chromex.ext.windows :as windows]
-            [chromex.ext.tabs :as tabs]
-            [chromex.ext.browser-action :as browser-action]
-            [chromex.ext.runtime :as runtime]
-            [chromex.ext.extension :as extension]
-            [chromex.ext.commands :as commands]
-            [dirac.background.cors :refer [setup-cors-rewriting!]]
-            [dirac.options.model :refer [get-option]]
-            [dirac.target.core :refer [resolve-backend-url]]
-            [clojure.string :as string]))
+            [chromex.ext.browser-action :as browser-action]))
 
 (def state-table
   {:waiting       {}
