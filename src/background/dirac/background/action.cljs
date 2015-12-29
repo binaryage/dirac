@@ -1,8 +1,5 @@
 (ns dirac.background.action
-  (:require-macros [cljs.core.async.macros :refer [go go-loop]])
-  (:require [cljs.core.async :refer [<! chan]]
-            [chromex.support :refer-macros [oget ocall oapply]]
-            [chromex.logging :refer-macros [log info warn error group group-end]]
+  (:require [chromex.logging :refer-macros [log info warn error group group-end]]
             [chromex.ext.browser-action :as browser-action]))
 
 (def state-table
