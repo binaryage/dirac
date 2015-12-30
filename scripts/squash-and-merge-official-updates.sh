@@ -5,14 +5,10 @@ set -e
 . "$(dirname "${BASH_SOURCE[0]}")/config.sh"
 
 die_if_dirty_working_copy () {
-  git add --all
-  set +e
-  git diff-index --exit-code HEAD > /dev/null
-  if [ $? -ne 0 ] ; then
+  if [ -n "$(git status -uno --porcelain)" ] ; then
     echo "working copy is not clean in '$(pwd)'"
     exit 1
   fi
-  set -e
 }
 
 pushd "$ROOT"

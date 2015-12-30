@@ -8,22 +8,18 @@ export CHROMIUM_MIRROR_DIR=~/tasks/chromium/src/
 set -ex
 
 pushd () {
-    command pushd "$@" > /dev/null
+  command pushd "$@" > /dev/null
 }
 
 popd () {
-    command popd "$@" > /dev/null
+  command popd "$@" > /dev/null
 }
 
 die_if_dirty_working_copy () {
-  git add --all
-  set +e
-  git diff-index --exit-code HEAD > /dev/null
-  if [ $? -ne 0 ] ; then
+  if [ -n "$(git status -uno --porcelain)" ] ; then
     echo "working copy is not clean in '$(pwd)'"
     exit 1
   fi
-  set -e
 }
 
 #############################################################################################################################
