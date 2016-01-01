@@ -27,13 +27,6 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-function evalInCurrentContext(code, callback) {
-  var currentExecutionContext = WebInspector.context.flavor(WebInspector.ExecutionContext);
-  if (currentExecutionContext) {
-     currentExecutionContext.evaluate(code, "console", false, false, false, true, callback);
-  }
-}
-
 /**
  * @constructor
  * @extends {WebInspector.VBox}
@@ -483,6 +476,10 @@ WebInspector.ConsoleView.prototype = {
         delete this._pendingDiracCommands[requestId];
     },
 
+    _onDiracEvalJS: function(requestId, code) {
+        dirac.evalInCurrentContext(code);
+    },
+
     _onConsoleDiracMessage: function(event)
     {
         var message = (event.data);
@@ -499,6 +496,9 @@ WebInspector.ConsoleView.prototype = {
                 break;
             case "job-end":
                 this._onJobEnded(message.parameters[2].value);
+                break;
+            case "eval-js":
+                this._onDiracEvalJS(message.parameters[2].value, message.parameters[3].value);
                 break;
             default:
                 throw ("unrecognized Dirac message: " + command);
@@ -940,7 +940,7 @@ WebInspector.ConsoleView.prototype = {
             }
         };
 
-        evalInCurrentContext("devtools.api.warm_up_repl_connection()", callback.bind(this));
+        dirac.evalInCurrentContext("devtools.api.warm_up_repl_connection()", callback.bind(this));
     },
 
     _switchPrompt: function(oldPromptIndex, newPromptIndex)
@@ -1011,10 +1011,7 @@ WebInspector.ConsoleView.prototype = {
     },
 
     _prepareDiracCommand: function(inputText, commandId) {
-        var reQuote = new RegExp("'", 'g');
-        var reNewLine = new RegExp("\n", 'g');
-        var codeString = "'" + inputText.replace(reQuote, "\\'").replace(reNewLine, "\\n") + "'";
-        return "devtools.api.eval(" + commandId + ", " + codeString + ")";
+        return "devtools.api.eval(" + commandId + ", " + dirac.codeAsString(inputText) + ")";
     },
 
     _appendDiracCommand: function (text) {
@@ -1036,12 +1033,13 @@ WebInspector.ConsoleView.prototype = {
             this._prompt.pushHistoryItem(text);
             this._diracHistorySetting.set(this._prompt.historyData().slice(-WebInspector.ConsoleView.persistedHistorySize));
 
-            var callback = function(result, wasThrown, valueResult, exceptionDetails) {
-              // no-op
-            };
-
             this._pendingDiracCommands[commandId] = commandMessage;
-            evalInCurrentContext(command, callback.bind(this));
+
+            dirac.implant.api.open_direct_connection(commandId, function(msg) {
+              WebInspector.console.log("CONN", msg);
+            });
+
+            dirac.evalInCurrentContext(command);
         }
     },
 
