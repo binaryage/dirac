@@ -1,3 +1,5 @@
+; taken from https://github.com/tomjakubowski/weasel/tree/8bfeb29dbaf903e299b2a3296caed52b5761318f
+
 ;;  Copyright (c) Rich Hickey. All rights reserved.
 ;;  The use and distribution terms for this software are covered by the
 ;;  Eclipse Public License 1.0 (http://opensource.org/licenses/eclipse-1.0.php)
@@ -6,7 +8,7 @@
 ;;  the terms of this license.
 ;;  You must not remove this notice, or any other, from this software.
 
-(ns weasel.impls.websocket
+(ns dirac.implant.websocket
   (:require [clojure.browser.net :as net :refer [IConnection connect transmit]]
             [clojure.browser.event :as event :refer [event-types]]
             [goog.net.WebSocket :as gwebsocket]))

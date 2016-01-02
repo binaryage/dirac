@@ -36,6 +36,8 @@
  */
 WebInspector.ConsoleView = function()
 {
+    dirac.implant.api.init();
+
     WebInspector.VBox.call(this);
     this.setMinimumSize(0, 35);
     this.registerRequiredCSS("console/consoleView.css");
@@ -940,7 +942,7 @@ WebInspector.ConsoleView.prototype = {
             }
         };
 
-        dirac.evalInCurrentContext("devtools.api.warm_up_repl_connection()", callback.bind(this));
+        // TODO: dirac.evalInCurrentContext("devtools.api.warm_up_repl_connection()", callback.bind(this));
     },
 
     _switchPrompt: function(oldPromptIndex, newPromptIndex)
@@ -1035,11 +1037,7 @@ WebInspector.ConsoleView.prototype = {
 
             this._pendingDiracCommands[commandId] = commandMessage;
 
-            dirac.implant.api.open_direct_connection(commandId, function(msg) {
-              WebInspector.console.log("CONN", msg);
-            });
-
-            dirac.evalInCurrentContext(command);
+            // TODO: dirac.evalInCurrentContext(command);
         }
     },
 

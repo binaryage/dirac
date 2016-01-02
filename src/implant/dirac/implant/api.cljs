@@ -1,8 +1,16 @@
 (ns dirac.implant.api
   (:require [dirac.implant.editor :as editor]
             [dirac.implant.client :as client]
+            [dirac.implant.slave :as slave]
             [chromex.logging :refer-macros [log warn error]]
             [clojure.string :as string]))
+
+(def ^:dynamic *initialized* false)
+
+(defn ^:export init []
+  (when-not *initialized*
+    (set! *initialized* true)
+    (slave/connect-master "ws://localhost:9001")))
 
 (def direct-connections (atom {}))
 

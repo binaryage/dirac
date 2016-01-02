@@ -36,13 +36,14 @@
              {:cljsbuild {:builds
                           {:implant
                            {:source-paths ["src/implant"]
-                            :compiler     {:output-to             "resources/unpacked/devtools/front_end/_cljs/implant.js"
-                                           :output-dir            "resources/unpacked/devtools/front_end/_cljs"
-                                           :asset-path            "_cljs"
+                            :compiler     {:output-to             "resources/unpacked/devtools/front_end/_cljs/implant/implant.js"
+                                           :output-dir            "resources/unpacked/devtools/front_end/_cljs/implant"
+                                           :asset-path            "_cljs/implant"
                                            :optimizations         :none
                                            :compiler-stats        true
                                            :source-map            true
                                            :source-map-timestamp  true}}
+
                            :background
                            {:source-paths ["src/dev"
                                            "src/figwheel"
@@ -111,7 +112,6 @@
 
   :aliases {"dev-build"  ["with-profile" "+unpacked" "cljsbuild" "once" "background" "options" "implant"]
             "fig"        ["with-profile" "+unpacked" "do" "clean," "figwheel" "background" "options" "implant"]
-            "content"    ["with-profile" "+unpacked" "cljsbuild" "auto"]
             "release"    ["with-profile" "+release" "do" "clean," "cljsbuild" "once" "implant" "background" "options"]
             "package"    ["shell" "scripts/package.sh"]
             "regenerate" ["shell" "scripts/regenerate.sh"]})
