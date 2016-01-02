@@ -22,13 +22,13 @@
    :server-logfile ".figwheel_server.log"
    :css-dirs       []}
 
-  :source-paths ["src"
+  :source-paths ["src/agent"
                  "scripts"]
 
   :clean-targets ^{:protect false} ["target"
                                     "resources/unpacked/compiled"
                                     "resources/release/compiled"
-                                    "resources/unpacked/devtools/front_end/_cljs"]
+                                    "resources/unpacked/devtools/front_end/dirac/_compiled"]
 
   :cljsbuild {:builds {}}                                                                                                     ; prevent https://github.com/emezeske/lein-cljsbuild/issues/413
 
@@ -36,38 +36,38 @@
              {:cljsbuild {:builds
                           {:implant
                            {:source-paths ["src/implant"]
-                            :compiler     {:output-to             "resources/unpacked/devtools/front_end/_cljs/implant/implant.js"
-                                           :output-dir            "resources/unpacked/devtools/front_end/_cljs/implant"
-                                           :asset-path            "_cljs/implant"
-                                           :optimizations         :none
-                                           :compiler-stats        true
-                                           :source-map            true
-                                           :source-map-timestamp  true}}
+                            :compiler     {:output-to            "resources/unpacked/devtools/front_end/dirac/_compiled/implant/implant.js"
+                                           :output-dir           "resources/unpacked/devtools/front_end/dirac/_compiled/implant"
+                                           :asset-path           "dirac/_compiled/implant"
+                                           :optimizations        :none
+                                           :compiler-stats       true
+                                           :source-map           true
+                                           :source-map-timestamp true}}
 
                            :background
                            {:source-paths ["src/dev"
                                            "src/figwheel"
                                            "src/shared"
                                            "src/background"]
-                            :compiler     {:output-to             "resources/unpacked/compiled/background/dirac.js"
-                                           :output-dir            "resources/unpacked/compiled/background"
-                                           :asset-path            "compiled/background"
-                                           :optimizations         :none
-                                           :compiler-stats        true
-                                           :source-map            true
-                                           :source-map-timestamp  true}}
+                            :compiler     {:output-to            "resources/unpacked/compiled/background/dirac.js"
+                                           :output-dir           "resources/unpacked/compiled/background"
+                                           :asset-path           "compiled/background"
+                                           :optimizations        :none
+                                           :compiler-stats       true
+                                           :source-map           true
+                                           :source-map-timestamp true}}
                            :options
                            {:source-paths ["src/dev"
                                            "src/figwheel"
                                            "src/shared"
                                            "src/options"]
-                            :compiler     {:output-to             "resources/unpacked/compiled/options/dirac.js"
-                                           :output-dir            "resources/unpacked/compiled/options"
-                                           :asset-path            "compiled/options"
-                                           :optimizations         :none
-                                           :compiler-stats        true
-                                           :source-map            true
-                                           :source-map-timestamp  true}}}}}
+                            :compiler     {:output-to            "resources/unpacked/compiled/options/dirac.js"
+                                           :output-dir           "resources/unpacked/compiled/options"
+                                           :asset-path           "compiled/options"
+                                           :optimizations        :none
+                                           :compiler-stats       true
+                                           :source-map           true
+                                           :source-map-timestamp true}}}}}
              :checkouts
              {:cljsbuild {:builds
                           {:background {:source-paths ["checkouts/chromex/src/lib"
@@ -79,9 +79,9 @@
               :cljsbuild {:builds
                           {:implant
                            {:source-paths ["src/implant"]
-                            :compiler     {:output-to      "resources/unpacked/devtools/front_end/_cljs/implant.js"
-                                           :output-dir     "resources/unpacked/devtools/front_end/_cljs"
-                                           :asset-path     "_cljs"
+                            :compiler     {:output-to      "resources/unpacked/devtools/front_end/dirac/_compiled/implant.js"
+                                           :output-dir     "resources/unpacked/devtools/front_end/dirac/_compiled"
+                                           :asset-path     "dirac/_compiled/implant"
                                            :optimizations  :advanced
                                            ;:anon-fn-naming-policy :unmapped
                                            ;:pseudo-names   true
