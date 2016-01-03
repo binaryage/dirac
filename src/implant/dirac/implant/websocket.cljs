@@ -11,7 +11,8 @@
 (ns dirac.implant.websocket
   (:require [clojure.browser.net :as net :refer [IConnection connect transmit]]
             [clojure.browser.event :as event :refer [event-types]]
-            [goog.net.WebSocket :as gwebsocket]))
+            [chromex.logging :refer-macros [log warn error]]
+            [goog.net.WebSocket]))
 
 (defprotocol IWebSocket
   (open? [this]))
@@ -43,7 +44,7 @@
     (.close this ()))
 
   event/IEventType
-  (event-types [this]
+  (event-types [_this]
     (into {}
       (map
         (fn [[k v]]

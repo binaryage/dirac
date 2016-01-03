@@ -10,7 +10,9 @@
                  [rum "0.6.0" :scope "provided"]
                  [rum-reforms "0.4.3"]
                  [parinfer "0.2.3"]
-                 [environ "1.0.1"]]
+                 [environ "1.0.1"]
+                 [http-kit "2.1.18"]
+                 [org.clojure/tools.nrepl "0.2.10"]]
 
   :plugins [[lein-cljsbuild "1.1.1"]
             [lein-figwheel "0.5.0-2"]
@@ -23,7 +25,9 @@
    :css-dirs       []}
 
   :source-paths ["src/agent"
-                 "scripts"]
+                 "src/nrepl"]
+
+  :resource-paths []
 
   :clean-targets ^{:protect false} ["target"
                                     "resources/unpacked/compiled"

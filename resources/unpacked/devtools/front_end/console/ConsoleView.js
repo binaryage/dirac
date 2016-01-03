@@ -36,7 +36,7 @@
  */
 WebInspector.ConsoleView = function()
 {
-    dirac.implant.api.init();
+    dirac.implant.init();
 
     WebInspector.VBox.call(this);
     this.setMinimumSize(0, 35);
@@ -115,7 +115,7 @@ WebInspector.ConsoleView = function()
     var diracPromptElement = this._messagesElement.createChild("div", "source-code");
     diracPromptElement.id = "console-prompt-dirac";
     diracPromptElement.spellcheck = false;
-    var diracPromptCodeMirrorInstance = dirac.implant.api.adopt_prompt_element(diracPromptElement, dirac.hasParinfer);
+    var diracPromptCodeMirrorInstance = dirac.implant.adopt_prompt_element(diracPromptElement, dirac.hasParinfer);
     diracPromptElement.focus = function() {
       // delegate focus calls to code mirror
       diracPromptCodeMirrorInstance.focus();
@@ -478,10 +478,6 @@ WebInspector.ConsoleView.prototype = {
         delete this._pendingDiracCommands[requestId];
     },
 
-    _onDiracEvalJS: function(requestId, code) {
-        dirac.evalInCurrentContext(code);
-    },
-
     _onConsoleDiracMessage: function(event)
     {
         var message = (event.data);
@@ -498,9 +494,6 @@ WebInspector.ConsoleView.prototype = {
                 break;
             case "job-end":
                 this._onJobEnded(message.parameters[2].value);
-                break;
-            case "eval-js":
-                this._onDiracEvalJS(message.parameters[2].value, message.parameters[3].value);
                 break;
             default:
                 throw ("unrecognized Dirac message: " + command);
@@ -943,6 +936,7 @@ WebInspector.ConsoleView.prototype = {
         };
 
         // TODO: dirac.evalInCurrentContext("devtools.api.warm_up_repl_connection()", callback.bind(this));
+        return this._switchPrompt(oldIndex, newIndex);
     },
 
     _switchPrompt: function(oldPromptIndex, newPromptIndex)
@@ -1012,16 +1006,12 @@ WebInspector.ConsoleView.prototype = {
         }
     },
 
-    _prepareDiracCommand: function(inputText, commandId) {
-        return "devtools.api.eval(" + commandId + ", " + dirac.codeAsString(inputText) + ")";
-    },
-
     _appendDiracCommand: function (text) {
-        this._lastDiracCommandId++;
-        var commandId = this._lastDiracCommandId;
-        var command = this._prepareDiracCommand(text, commandId);
-        if (!command)
+        if (!text)
             return;
+        this._lastDiracCommandId++;
+        var command = text + "\n";
+        var commandId = this._lastDiracCommandId;
 
         var executionContext = WebInspector.context.flavor(WebInspector.ExecutionContext);
         if (executionContext) {
@@ -1036,8 +1026,7 @@ WebInspector.ConsoleView.prototype = {
             this._diracHistorySetting.set(this._prompt.historyData().slice(-WebInspector.ConsoleView.persistedHistorySize));
 
             this._pendingDiracCommands[commandId] = commandMessage;
-
-            // TODO: dirac.evalInCurrentContext(command);
+            dirac.implant.send_eval_request(commandId, command);
         }
     },
 
