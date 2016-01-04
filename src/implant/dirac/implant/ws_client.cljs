@@ -66,9 +66,9 @@
 (defn on-open-handler [client]
   (let [{:keys [verbose on-open]} (get-options client)]
     (mark-as-ready! client)
-    (send! client {:op :ready})
     (if (and verbose (ready? client))
       (info client "Opened websocket connection"))
+    (send! client {:op :ready})
     (if on-open
       (on-open))))
 

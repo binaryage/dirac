@@ -1,62 +1,55 @@
 (ns dirac.agent.nrepl-tunnel-server
-  (:require [dirac.agent.ws-server :as server]
-            [dirac.agent.nrepl-state :refer [client->server-chan server->client-chan]]
-            [clojure.core.async :refer [chan <!! <! >!! put! alts!! timeout close! go go-loop]]))
+  (:require [clojure.core.async :refer [chan <!! <! >!! put! alts!! timeout close! go go-loop]]
+            [dirac.agent.ws-server :as server]))
 
 (def default-opts {:ip   "127.0.0.1"
                    :port 9001})
 
-(def client-response (atom nil))                                                                                              ; stores a promise fulfilled by a client's eval response
-
-(def tunnel-server (atom nil))
-
 ; -- message sending --------------------------------------------------------------------------------------------------------\
 
-(defn send! [msg]
-  (if-let [server @tunnel-server]
-    (server/send! server msg)
-    (println "no server?")))
+(defn send! [server msg]
+  {:pre [server]}
+  (server/send! server msg))
 
 ; -- message processing -----------------------------------------------------------------------------------------------------
 
-(defmulti process-message (fn [_ msg] (:op msg)))
+(defmulti process-message (fn [_server msg] (:op msg)))
 
-(defmethod process-message :result [_ message]
-  (let [result (:value message)]
-    (when-not (nil? @client-response)
-      (deliver @client-response result))))
+(defmethod process-message :default [_server message]
+  (println "Received unrecognized message from tunnel client" message))
 
-(defmethod process-message :ready [_ _])
+(defmethod process-message :ready [server _message]
+  ; tunnel-client is ready, send him init message to init repl env
+  (send! server {:op :init}))
 
-(defmethod process-message :error [_ message]
+(defmethod process-message :init-done [_server _message])
+
+(defmethod process-message :error [_server message]
   (println "DevTools reported error" message))
 
-(defmethod process-message :nrepl-message [_ message]
-  (if-let [envelope (:envelope message)]
-    (put! client->server-chan envelope)))
+(defmethod process-message :nrepl-message [server message]
+  (let [{:keys [messages-channel]} (server/get-options server)]
+    (assert messages-channel)
+    (if-let [envelope (:envelope message)]
+      (put! messages-channel envelope))))
 
 ; -- request handling -------------------------------------------------------------------------------------------------------
 
 (defn response-handler [server-atom data]
-  (process-message @server-atom data))
+  (let [server @server-atom]
+    (assert server "Server atom must be set before handling responses")
+    (process-message server data)))
+
+(defn sanitize-server-options [options]
+  (assert (:messages-channel options) "options must specify message channel")
+  options)
 
 (defn start! [options]
-  (let [server-options (select-keys options [:ip :port])
-        server (server/start! (partial response-handler tunnel-server) server-options)
-        {:keys [ip]} options]
-    (reset! tunnel-server server)
-    (let [port (-> (server/get-http-server server) meta :local-port)]
-      (println (str "<< started Dirac nREPL tunnel server on ws://" ip ":" port " >>")))
-    (flush)
-    (server/wait-for-client server)
-    (println "a client connected to nREPL tunnel")
-    (send! {:op :init})))
-
-(defn run-message-loop! []
-  (go-loop []
-    (if-let [msg (<! server->client-chan)]
-      (do
-        (println "sending message to client" msg)
-        (send! msg)
-        (recur))
-      (println "exitting nrepl-client message loop"))))
+  (let [server-options (sanitize-server-options options)
+        server-atom (atom nil)
+        server (server/start! (partial response-handler server-atom) server-options)]
+    (reset! server-atom server)
+    (let [port (-> (server/get-http-server server) meta :local-port)
+          ip (:ip options)]
+      (println (str "started Dirac nREPL tunnel server on ws://" ip ":" port)))
+    server))

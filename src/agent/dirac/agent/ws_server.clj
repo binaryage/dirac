@@ -8,10 +8,11 @@
 
 ; -- server state helpers ---------------------------------------------------------------------------------------------------
 
-(defn make-server [http-server channel-promise response-handler]
+(defn make-server [http-server channel-promise response-handler options]
   {:http-server      http-server
    :channel-promise  channel-promise                                                                                          ; after server starts, a promise that derefs to a channel when a client connected
-   :response-handler response-handler})
+   :response-handler response-handler
+   :options          options})
 
 (defn get-channel-promise [server]
   (:channel-promise @server))
@@ -24,6 +25,9 @@
 
 (defn get-http-server [server]
   (:http-server @server))
+
+(defn get-options [server]
+  (:options @server))
 
 (defn started? [server]
   (not (nil? (get-channel-promise server))))
@@ -41,7 +45,10 @@
 
 ; -- request handling -------------------------------------------------------------------------------------------------------
 
-(defn on-close [server]
+(defn on-close [server status]
+  (let [{:keys [on-close]} (get-options server)]
+    (if on-close
+      (on-close server status)))
   (set-channel-promise server (promise)))
 
 (defn on-receive [server serialized-msg]
@@ -64,13 +71,13 @@
   "Handler gets called for every new client connection.
   We currently support only one client."
   [server request]
-  (println "WEASEL-SERVER HANDLE:" request)
+  ;(println "WEASEL-SERVER HANDLE:" request)
   (http/with-channel request channel
-                     (if-not (http/websocket? channel)
-                       {:status 200 :body "Please connect with a websocket!"}
-                       (if (connected? server)
-                         (send-occupied-response-and-close! channel server)
-                         (accept-client channel server)))))
+    (if-not (http/websocket? channel)
+      {:status 200 :body "Please connect with a websocket!"}
+      (if (connected? server)
+        (send-occupied-response-and-close! channel server)
+        (accept-client channel server)))))
 
 ; -- sending ----------------------------------------------------------------------------------------------------------------
 
@@ -91,7 +98,7 @@
   {:pre [(ifn? response-handler)]}
   (let [server-atom (atom nil)
         connection-handler (partial client-connection-handler server-atom)
-        server (make-server (http/run-server connection-handler opts) (promise) response-handler)]
+        server (make-server (http/run-server connection-handler opts) (promise) response-handler opts)]
     (reset! server-atom server)
     server-atom))
 

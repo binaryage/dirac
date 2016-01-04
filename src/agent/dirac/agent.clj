@@ -1,22 +1,28 @@
 (ns dirac.agent
   (:require [clojure.core.async :refer [chan <!! <! >!! put! alts!! timeout close! go go-loop]]
             [dirac.agent.weasel-server :as weasel-server]
-            [dirac.agent.nrepl-client :as nrepl-client]
-            [dirac.agent.nrepl-tunnel-server :as nrepl-tunnel-server]
+            [dirac.agent.nrepl-tunnel :as nrepl-tunnel]
             [dirac.nrepl.piggieback :as piggieback]))
 
-(defn start! []
-  (nrepl-tunnel-server/run-message-loop!)
-  (future (nrepl-tunnel-server/start! {:ip "0.0.0.0"
-                                       :port 9050}))
-  (when (nrepl-client/connect! {:host "0.0.0.0"
-                                :port 9010})
-    (println "nrepl-client connected!")
-    (nrepl-client/run-message-loop!))
-  (println "running weasel server")
-  #_(let [repl-env (weasel-server/repl-env :ip "0.0.0.0" :port 9001)]
-    (piggieback/cljs-repl repl-env)))
+(def current-tunnel (atom nil))
+
+(def nrepl-tunnel-server-default-options
+  {:ip   "0.0.0.0"
+   :port 9050})
+
+(def nrepl-client-default-options
+  {:host "0.0.0.0"
+   :port 9010})
+
+(defn start-tunnel! [& [nrepl-client-options nrepl-tunnel-server-options]]
+  (let [nrepl-client-options (merge nrepl-client-default-options nrepl-client-options)
+        nrepl-tunnel-server-options (merge nrepl-tunnel-server-default-options nrepl-tunnel-server-options)]
+    (if-let [tunnel (nrepl-tunnel/start! nrepl-client-options nrepl-tunnel-server-options)]
+      (reset! current-tunnel tunnel))))
 
 (defn run-cljs-repl! []
   (let [repl-env (weasel-server/repl-env :ip "0.0.0.0" :port 9001)]
     (piggieback/cljs-repl repl-env)))
+
+(defn start! []
+  (start-tunnel!))

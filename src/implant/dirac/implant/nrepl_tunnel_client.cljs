@@ -41,7 +41,7 @@
 (defmethod process-message :init [_message]
   (boostrap-cljs-repl!)
   (go
-    {:op :ready}))
+    {:op :init-done}))
 
 #_(defmethod process-message :eval-js [message]
     (go
