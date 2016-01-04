@@ -49,7 +49,8 @@
       (println (str "<< started Dirac nREPL tunnel server on ws://" ip ":" port " >>")))
     (flush)
     (server/wait-for-client server)
-    (println "a client connected to nREPL tunnel")))
+    (println "a client connected to nREPL tunnel")
+    (send! {:op :init})))
 
 (defn run-message-loop! []
   (go-loop []

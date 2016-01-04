@@ -14,5 +14,9 @@
     (println "nrepl-client connected!")
     (nrepl-client/run-message-loop!))
   (println "running weasel server")
+  #_(let [repl-env (weasel-server/repl-env :ip "0.0.0.0" :port 9001)]
+    (piggieback/cljs-repl repl-env)))
+
+(defn run-cljs-repl! []
   (let [repl-env (weasel-server/repl-env :ip "0.0.0.0" :port 9001)]
     (piggieback/cljs-repl repl-env)))

@@ -82,7 +82,7 @@
                 channel (get-channel-promise server)]
             (http/send! @channel serialized-msg))))
 
-; -- life-cycle -------------------------------------------------------------------------------------------------------------
+; -- life cycle -------------------------------------------------------------------------------------------------------------
 
 (defn start!
   "Starts a new server and returns atom holding server state.

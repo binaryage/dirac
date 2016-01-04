@@ -13,11 +13,8 @@
 (defn connect-to-nrepl-tunnel-server [url]
   (nrepl-tunnel-client/connect! url weasel-options))
 
-(defn send-to-nrepl-tunnel! [tunnel-op msg]
-  (nrepl-tunnel-client/send! {:op       tunnel-op
-                              :envelope msg}))
-
 (defn send-eval-request! [command-id code]
-  (send-to-nrepl-tunnel! :nrepl-message {:op   "eval"
-                                         :id   command-id
-                                         :code code}))
+  (nrepl-tunnel-client/tunnel-message! {:op    "eval"
+                                        :dirac "wrap"
+                                        :id    command-id
+                                        :code  code}))

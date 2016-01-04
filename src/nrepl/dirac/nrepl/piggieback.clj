@@ -8,7 +8,7 @@
 ; the idea is to insert just few hooks and implement them elsewhere
 
 (ns dirac.nrepl.piggieback
-  (:require [dirac.nrepl.piggieback :as hacks]
+  (:require [dirac.nrepl.piggieback-hacks :as hacks]
             [clojure.tools.nrepl :as nrepl]
             (clojure.tools.nrepl [transport :as transport]
                                  [misc :refer (response-for returning)]
@@ -259,12 +259,12 @@
 ; bound. Thus, we're not going through interruptible-eval, and the user's
 ; Clojure session (dynamic environment) is not in place, so we need to go
 ; through the `session` atom to access/update its vars. Same goes for load-file.
-(defn- evaluate [{:keys [session transport ^String code] :as msg}]
+(defn- evaluate [{:keys [session transport ^String code dirac] :as msg}]
   ; we append a :cljs/quit to every chunk of code evaluated so we can break out of cljs.repl/repl*'s loop,
   ; so we need to go a gnarly little stringy check here to catch any actual user-supplied exit
   (if-not (.. code trim (endsWith ":cljs/quit"))
-    (apply run-cljs-repl msg code
-           (map @session [#'*cljs-repl-env* #'*cljs-compiler-env* #'*cljs-repl-options*]))
+    (let [code (if dirac (hacks/wrap-code-for-dirac code) code)]
+      (apply run-cljs-repl msg code (map @session [#'*cljs-repl-env* #'*cljs-compiler-env* #'*cljs-repl-options*])))
     (let [actual-repl-env (.-repl-env (@session #'*cljs-repl-env*))]
       (if (rhino-repl-env? actual-repl-env)
         (with-rhino-context (cljs.repl/-tear-down actual-repl-env))

@@ -13,7 +13,18 @@
     (ws-client/send! client msg)
     (error "No client! => dropping msg" msg)))
 
+(defn send-to-nrepl-tunnel! [tunnel-op msg]
+  (send! {:op       tunnel-op
+          :envelope msg}))
+
+(defn tunnel-message! [msg]
+  (send-to-nrepl-tunnel! :nrepl-message msg))
+
 ; -- message processing -----------------------------------------------------------------------------------------------------
+
+(defn boostrap-cljs-repl! []
+  (tunnel-message! {:op   "eval"
+                    :code "(do (require 'dirac.agent) (dirac.agent/run-cljs-repl!))"}))
 
 (defmulti process-message :op)
 
@@ -26,6 +37,11 @@
   (go
     {:op      :error
      :message (:type message)}))
+
+(defmethod process-message :init [_message]
+  (boostrap-cljs-repl!)
+  (go
+    {:op :ready}))
 
 #_(defmethod process-message :eval-js [message]
     (go

@@ -49,10 +49,11 @@
 ; -- sending ----------------------------------------------------------------------------------------------------------------
 
 (defn really-send! [client msg]
-  (if verbose
-    (log client "Sending websocket message" msg))
-  (let [serialized-msg (serialize-message msg)]
-    (net/transmit (get-connection client) serialized-msg)))
+  (let [{:keys [verbose]} (get-options client)]
+    (if verbose
+      (log client "Sending websocket message" msg))
+    (let [serialized-msg (serialize-message msg)]
+      (net/transmit (get-connection client) serialized-msg))))
 
 (defn send! [client msg]
   (cond

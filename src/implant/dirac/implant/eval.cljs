@@ -30,5 +30,8 @@
                          (let [value (aget result "value")]
                            (assert value "wrapped code must return a js object with \"value\" key defined")
                            (put! result-chan value)))]
-    (js/dirac.evalInCurrentContext wrapped-code result-handler)
+    (try
+      (js/dirac.evalInCurrentContext wrapped-code result-handler)
+      (catch :default e
+        (error "failed executing" wrapped-code "\n\n" e)))
     result-chan))
