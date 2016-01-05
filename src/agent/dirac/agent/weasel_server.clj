@@ -41,12 +41,10 @@
         {:keys [ip pre-connect]} this]
     (reset! weasel-server server)
     (let [port (-> (server/get-http-server server) meta :local-port)]
-      (println (str "<< started Dirac Weasel Server on ws://" ip ":" port " >>")))
-    (print "<< waiting for DevTools to connect ... ")
-    (flush)
+      (println (str "started Dirac Weasel Server on ws://" ip ":" port " and waiting for DevTools to connect"))
+      (flush))
     (when pre-connect (pre-connect))
-    (server/wait-for-client server)
-    (println " connected! >>")))
+    (server/wait-for-client server)))
 
 (defn websocket-tear-down-env []
   (reset! repl-out nil)

@@ -50,7 +50,7 @@
 
 (defmethod process-message :eval-js [message]
   (go
-    (let [result (<! (eval/eval-debugger-context-and-postprocess (:code message)))]                                           ; posprocessing step will prepare suitable result structure for us
+    (let [result (<! (eval/wrap-with-postprocess-and-eval-in-debugger-context (:code message)))]                              ; posprocessing step will prepare suitable result structure for us
       {:op    :result
        :value (massage-result result)})))
 

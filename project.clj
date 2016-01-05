@@ -12,6 +12,7 @@
                  [parinfer "0.2.3"]
                  [environ "1.0.1"]
                  [http-kit "2.1.18"]
+                 [com.lucasbradstreet/cljs-uuid-utils "1.0.2"]
                  [org.clojure/tools.nrepl "0.2.10"]]
 
   :plugins [[lein-cljsbuild "1.1.1"]

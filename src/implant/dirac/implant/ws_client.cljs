@@ -77,7 +77,7 @@
         serialized-msg (.-message event)
         message (unserialize-message serialized-msg)]
     (if verbose
-      (log client "Got websocket message" message))
+      (log client "Received websocket message" message))
     (if on-message
       (on-message message))))
 

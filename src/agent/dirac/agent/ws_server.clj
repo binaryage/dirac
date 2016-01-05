@@ -84,7 +84,9 @@
 (defn send! [server msg]
   (cond
     (not (started? server)) (throw (IOException. "WebSocket server not started!"))
-    (not (connected? server)) (throw (IOException. "WebSocket channel has no client connected"))
+    (not (connected? server)) (throw (IOException. (str "WebSocket channel has no client connected\n"
+                                                        "While sending message:\n"
+                                                        msg)))
     :else (let [serialized-msg (serialize-msg msg)
                 channel (get-channel-promise server)]
             (http/send! @channel serialized-msg))))

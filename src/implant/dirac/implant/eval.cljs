@@ -1,37 +1,71 @@
 (ns dirac.implant.eval
-  (:require [cljs.core.async :refer [put! chan]]
+  (:require-macros [cljs.core.async.macros :refer [go go-loop]])
+  (:require [cljs.core.async :refer [put! <! chan]]
             [clojure.string :as string]))
 
-; -- fancy evaluation in the context of a debugger --------------------------------------------------------------------------
+(def ^:dynamic out-template
+  "devtools.dirac.present_output(0, 'out', {text})")
 
-(def ^:dynamic code-wrapping-template
+(def ^:dynamic err-template
+  "devtools.dirac.present_output(0, 'err', {text})")
+
+(def ^:dynamic postprocess-template
   "try{
     devtools.dirac.postprocess_successful_eval(eval({code}))
    } catch (e) {
     devtools.dirac.postprocess_unsuccessful_eval(e)
    }")
 
-(defn eval-debugger-context-and-postprocess [code]
-  (let [result-chan (chan)
-        wrapped-code (string/replace code-wrapping-template "{code}" (js/dirac.codeAsString code))
-        result-handler (fn [result thrown? exception-details]
-                         ; for result structure refer to
-                         ;   devtools.api.postprocess_successful_eval and devtools.api.postprocess_unsuccessful_eval
-                         (assert (not thrown?)
-                                 (str "wrapped code must never throw!\n"
-                                      (pr-str exception-details)
-                                      "---------\n"
-                                      wrapped-code))
-                         (assert (not (nil? result))
-                                 (str "wrapped code must return non-null postprocessed result"
-                                      "result: '" (pr-str result) "' type: " (type result)))
-                         (assert (= (aget result "type") "object")
-                                 "wrapped code must return a js object with type key set to \"object\"")
-                         (let [value (aget result "value")]
-                           (assert value "wrapped code must return a js object with \"value\" key defined")
-                           (put! result-chan value)))]
-    (try
-      (js/dirac.evalInCurrentContext wrapped-code result-handler)
-      (catch :default e
-        (error "failed executing" wrapped-code "\n\n" e)))
-    result-chan))
+(defn thrown-assert-msg [exception-details code]
+  (str "postprocessed code must never throw!\n"
+       exception-details
+       "---------\n"
+       code))
+
+(defn null-result-assert-msg [result]
+  (str "postprocessed code must return non-null postprocessed result"
+       "result: '" result "' "
+       "type: " (type result)))
+
+(defn invalid-type-key-assert-msg []
+  "postprocessed code must return a js object with type key set to \"object\"")
+
+(defn missing-value-key-assert-msg []
+  "postprocessed code must return a js object with \"value\" key defined")
+
+; -- fancy evaluation in a debugger context ---------------------------------------------------------------------------------
+
+(defn result-handler [result-chan result thrown? exception-details]
+  (put! result-chan {:result            result
+                     :thrown?           thrown?
+                     :exception-details exception-details}))
+
+(defn eval-in-debugger-context [code]
+  (try
+    (let [result-chan (chan)]
+      (js/dirac.evalInCurrentContext code (partial result-handler result-chan))
+      result-chan)
+    (catch :default e
+      ; this should never happen unless our code is broken
+      (.error js/console "failed eval-in-debugger-context\n" e "\n\n-------- code:\n" code)                                   ; TODO: this should be reported in a better way
+      (throw e))))
+
+(defn wrap-with-postprocess-and-eval-in-debugger-context [code]
+  (go
+    ; for result structure refer to devtools.api.postprocess_successful_eval and devtools.api.postprocess_unsuccessful_eval
+    (let [code (string/replace postprocess-template "{code}" (js/dirac.codeAsString code))
+          {:keys [thrown? result exception-details]} (<! (eval-in-debugger-context code))]
+      (assert (not thrown?) (thrown-assert-msg exception-details code))
+      (assert (not (nil? result)) (null-result-assert-msg result))
+      (assert (= (aget result "type") "object") (invalid-type-key-assert-msg))
+      (let [value (aget result "value")]
+        (assert value (missing-value-key-assert-msg))
+        value))))
+
+(defn present-out-message [text]
+  (let [code (string/replace out-template "{text}" (js/dirac.codeAsString text))]
+    (eval-in-debugger-context code)))
+
+(defn present-err-message [text]
+  (let [code (string/replace err-template "{text}" (js/dirac.codeAsString text))]
+    (eval-in-debugger-context code)))

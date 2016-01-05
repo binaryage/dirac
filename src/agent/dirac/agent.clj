@@ -18,11 +18,13 @@
   (let [nrepl-client-options (merge nrepl-client-default-options nrepl-client-options)
         nrepl-tunnel-server-options (merge nrepl-tunnel-server-default-options nrepl-tunnel-server-options)]
     (if-let [tunnel (nrepl-tunnel/start! nrepl-client-options nrepl-tunnel-server-options)]
-      (reset! current-tunnel tunnel))))
+      (reset! current-tunnel tunnel)))
+  nil)
 
 (defn run-cljs-repl! []
   (let [repl-env (weasel-server/repl-env :ip "0.0.0.0" :port 9001)]
     (piggieback/cljs-repl repl-env)))
 
 (defn start! []
-  (start-tunnel!))
+  (start-tunnel!)
+  nil)
