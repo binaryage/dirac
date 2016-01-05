@@ -1,82 +1,114 @@
-; taken from https://github.com/tomjakubowski/weasel/tree/8bfeb29dbaf903e299b2a3296caed52b5761318f
+; original code taken from https://github.com/tomjakubowski/weasel/tree/8bfeb29dbaf903e299b2a3296caed52b5761318f
 (ns dirac.agent.weasel-server
   (:refer-clojure :exclude [loaded-libs])
   (:require [cljs.repl]
             [cljs.compiler :as cmp]
-            [dirac.agent.ws-server :as server]))
+            [dirac.agent.ws-server :as server])
+  (:import (clojure.lang IDeref Atom)))
+
+(declare get-client-response-promise-atom)
 
 (def default-opts {:ip   "127.0.0.1"
                    :port 9001})
 
-(def repl-out (atom nil))                                                                                                     ; stores the value of *out* when the server is started
-
-(def client-response (atom nil))                                                                                              ; stores a promise fulfilled by a client's eval response
-
-(def weasel-server (atom nil))
+(defn get-real-port [server]
+  (-> (server/get-http-server server) meta :local-port))
 
 ; -- message processing -----------------------------------------------------------------------------------------------------
 
-(defmulti process-message (fn [_ msg] (:op msg)))
+(defmulti process-message (fn [_env msg] (:op msg)))
 
-(defmethod process-message :result [_ message]
-  (let [result (:value message)]
-    (when-not (nil? @client-response)
-      (deliver @client-response result))))
+(defmethod process-message :default [_env message]
+  (println "dirac.agent.weasel-server: Received unrecognized message" message))
 
-(defmethod process-message :print [_ message]
-  (let [string (:value message)]
-    (binding [*out* (or @repl-out *out*)]
-      (print (read-string string)))))
+(defmethod process-message :result [env message]
+  (let [result (:value message)
+        client-response-promise @(get-client-response-promise-atom env)]
+    (when-not (nil? client-response-promise)                                                                                  ; silently ignore results delivered after timeout, TODO: implement id matching or something here
+      (assert (instance? IDeref client-response-promise))
+      (deliver client-response-promise result))))
 
-(defmethod process-message :ready [_ _])
+(defmethod process-message :ready [_env _message])
 
-(defmethod process-message :error [_ message]
-  (println "DevTools reported error" message))
+(defmethod process-message :error [_env message]
+  (println "dirac.agent.weasel-server: DevTools reported error" message))
 
-; -- request handling -------------------------------------------------------------------------------------------------------
+; -- env helpers ------------------------------------------------------------------------------------------------------------
 
-(defn websocket-setup-env [this _opts]
-  (reset! repl-out *out*)
-  (let [server (server/start! (fn [data] (process-message this data)) (select-keys this [:ip :port]))
-        {:keys [ip pre-connect]} this]
-    (reset! weasel-server server)
-    (let [port (-> (server/get-http-server server) meta :local-port)]
-      (println (str "started Dirac Weasel Server on ws://" ip ":" port " and waiting for DevTools to connect"))
-      (flush))
-    (when pre-connect (pre-connect))
-    (server/wait-for-client server)))
+(defn get-server-atom [env]
+  (let [server-atom (:server-atom env)]
+    (assert server-atom)
+    (assert (instance? Atom server-atom))
+    server-atom))
 
-(defn websocket-tear-down-env []
-  (reset! repl-out nil)
-  (server/stop! @weasel-server)
+(defn get-server [env]
+  (let [server @(get-server-atom env)]
+    (assert server)
+    server))
+
+(defn set-server! [env server]
+  (let [server-atom (get-server-atom env)]
+    (reset! server-atom server)))
+
+(defn get-client-response-promise-atom [env]
+  (let [client-response-promise-atom (:client-response-promise-atom env)]
+    (assert client-response-promise-atom)
+    (assert (instance? Atom client-response-promise-atom))
+    client-response-promise-atom))
+
+(defn promise-new-client-response! [env]
+  (let [response-promise-atom (get-client-response-promise-atom env)]
+    (assert (instance? Atom response-promise-atom))
+    (assert (nil? @response-promise-atom) "promise-new-client-response! previous response promise pending")
+    (reset! response-promise-atom (promise))))
+
+(defn wait-for-promised-response! [env]
+  (let [response-promise-atom (get-client-response-promise-atom env)]
+    (assert (instance? Atom response-promise-atom))
+    (let [response-promise @response-promise-atom]
+      (assert response-promise "wait-for-promised-response! expected non-nil pending promise")
+      (assert (instance? IDeref response-promise))
+      (let [response @response-promise]                                                                                       ; <===== WILL BLOCK! TODO: implement a timeout
+        (reset! response-promise-atom nil)
+        response))))
+
+(defn setup-env [env _opts]
+  (let [message-handler (fn [data] (process-message env data))
+        server (server/start! message-handler (select-keys env [:ip :port]))
+        {:keys [ip pre-connect]} env]
+    (set-server! env server)
+    (let [port (get-real-port server)]
+      (println (str "Started Dirac Weasel Server on ws://" ip ":" port " and waiting for DevTools to connect..."))
+      (flush)
+      (if pre-connect
+        (pre-connect env ip port))
+      (server/wait-for-client server)
+      env)))
+
+(defn tear-down-env [env]
+  (server/stop! (get-server env))
   (println "<< stopped server >>"))
 
-(defn send-for-eval! [js]
-  (server/send! @weasel-server {:op :eval-js, :code js}))
+(defn request-eval [env js]
+  (promise-new-client-response! env)
+  (server/send! (get-server env) {:op :eval-js, :code js})
+  (wait-for-promised-response! env))                                                                                          ; <===== WILL BLOCK!
 
-(defn websocket-eval [js]
-  (reset! client-response (promise))
-  (send-for-eval! js)
-  (let [ret @@client-response]
-    (reset! client-response nil)
-    ret))
+(defn load-javascript [env provides _]
+  (request-eval env (str "goog.require('" (cmp/munge (first provides)) "')")))
 
-(defn load-javascript [_ provides _]
-  (websocket-eval
-    (str "goog.require('" (cmp/munge (first provides)) "')")))
+; -- WeaselREPLEnv ----------------------------------------------------------------------------------------------------------
 
-; -- request handling -------------------------------------------------------------------------------------------------------
-
-(defrecord WebsocketEnv []
+(defrecord WeaselREPLEnv [server-atom client-response-promise-atom]
   cljs.repl/IJavaScriptEnv
-  (-setup [this opts] (websocket-setup-env this opts))
-  (-evaluate [_ _ _ js] (websocket-eval js))
+  (-setup [this opts] (setup-env this opts))
+  (-evaluate [this _ _ js] (request-eval this js))
   (-load [this ns url] (load-javascript this ns url))
-  (-tear-down [_] (websocket-tear-down-env)))
+  (-tear-down [this] (tear-down-env this)))
 
 ; -- REPL env ---------------------------------------------------------------------------------------------------------------
 
 (defn repl-env
-  "Returns a JS environment to pass to repl or piggieback"
-  [& {:as opts}]
-  (merge (WebsocketEnv.) default-opts opts))
+  "Returns a JS environment to be passed to REPL or Piggieback."
+  [opts]
+  (merge (WeaselREPLEnv. (atom nil) (atom nil)) default-opts opts))

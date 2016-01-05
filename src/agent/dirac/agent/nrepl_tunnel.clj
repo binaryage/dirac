@@ -107,7 +107,7 @@
     (let [messages-chan (get-server-messages-channel tunnel)]
       (if-let [message (<! messages-chan)]
         (let [client (get-nrepl-client tunnel)]
-          (println "sending message " message " to client " client)
+          ;(println "sending message " message " to client " client)
           (nrepl-client/send! client message)
           (recur))
         (println "exitting server-messages-channel-processing-loop")))))
@@ -118,7 +118,7 @@
     (let [messages-chan (get-client-messages-channel tunnel)]
       (if-let [message (<! messages-chan)]
         (let [server (get-nrepl-tunnel-server tunnel)]
-          (println "sending message " message " to server " server)
+          ;(println "sending message " message " to server " server)
           (nrepl-tunnel-server/send! server message)
           (recur))
         (println "exitting client-messages-channel-processing-loop")))))
@@ -138,3 +138,12 @@
       (set-nrepl-client! tunnel nrepl-client)
       (set-nrepl-tunnel-server! tunnel nrepl-tunnel-server)
       tunnel)))
+
+(defn url-for [ip port]
+  (str "ws://" ip ":" port))
+
+(defn request-weasel-connection [tunnel ip port]
+  (let [server (get-nrepl-tunnel-server tunnel)
+        message {:op         :connect-weasel
+                 :server-url (url-for ip port)}]
+    (nrepl-tunnel-server/send! server message)))

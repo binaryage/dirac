@@ -104,9 +104,9 @@
     (reset! server-atom server)
     server-atom))
 
-(defn stop! [server]
+(defn stop! [server & [timeout]]
   (when-let [http-server (get-http-server server)]
-    (http-server)
+    (http-server :timeout (or timeout 100))                                                                                   ; this will stop http-server created via http/run-server
     (reset! server nil)))
 
 (defn wait-for-client [server]

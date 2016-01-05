@@ -62,7 +62,9 @@
 
 (defn boostrap-cljs-repl-message []
   {:op   "eval"
-   :code "(do (require 'dirac.agent) (dirac.agent/run-cljs-repl!))"})
+   :code "(do
+            (require 'dirac.agent)
+            (dirac.agent/run-cljs-repl!))"})
 
 (defmulti process-message :op)
 

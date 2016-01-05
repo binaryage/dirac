@@ -37,18 +37,11 @@
 
 (defn poll-for-responses [tunnel options connection]
   (loop []
-    (if (try
-          (when-let [{:keys [out err] :as resp} (nrepl.transport/recv connection 100)]
-            (println "RESP" resp)
-            (nrepl-protocols/deliver-client-message! tunnel resp))
-          true
-          (catch Throwable t
-            (println "problem processing response")
-            ;(notify-all-queues-of-error t)
-            ;(when (System/getenv "DEBUG") (clojure.repl/pst t))
-            false))
-      (recur)
-      (println "leaving poll-for-responses"))))
+    (if-let [response (nrepl.transport/recv connection)]
+      (do
+        (nrepl-protocols/deliver-client-message! tunnel response)
+        (recur))
+      (println "leaving poll-for-responses loop"))))
 
 (defn connect! [tunnel options]
   (let [connection (connect-with-options options)

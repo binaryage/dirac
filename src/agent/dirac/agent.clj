@@ -21,8 +21,13 @@
       (reset! current-tunnel tunnel)))
   nil)
 
+(defn pre-connect [repl-env ip port]
+  (nrepl-tunnel/request-weasel-connection @current-tunnel ip port))
+
 (defn run-cljs-repl! []
-  (let [repl-env (weasel-server/repl-env :ip "0.0.0.0" :port 9001)]
+  (let [repl-env (weasel-server/repl-env {:ip          "0.0.0.0"
+                                          :port        9001
+                                          :pre-connect pre-connect})]
     (piggieback/cljs-repl repl-env)))
 
 (defn start! []

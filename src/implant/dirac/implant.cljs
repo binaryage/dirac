@@ -9,7 +9,7 @@
 (defn ^:export init []
   (when-not *initialized*
     (set! *initialized* true)
-    (intercom/connect-to-weasel-server "ws://localhost:9001")                                                                 ; TODO: customize URL
+    ;(intercom/connect-to-weasel-server "ws://localhost:9001")                                                                 ; TODO: customize URL
     (intercom/connect-to-nrepl-tunnel-server "ws://localhost:9050")))                                                         ; TODO: customize URL
 
 (defn ^:export adopt-prompt-element [text-area-element use-parinfer?]

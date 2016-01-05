@@ -8,7 +8,7 @@
 
 (def defaults {:name              "WebSocket Client"
                :verbose           true
-               :auto-reconnect?   true
+               :auto-reconnect?   false
                :next-reconnect-fn (fn [_attempts] 10000)})                                                                    ; once every 10 seconds
 
 ; -- constructor ------------------------------------------------------------------------------------------------------------
