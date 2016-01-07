@@ -238,7 +238,7 @@
       ; interruptible-eval is in charge of emitting the final :ns response in this context
       (set! *original-clj-ns* *ns*)
       (set! *ns* (find-ns ana/*cljs-ns*))
-      (println "To quit, type:" :cljs/quit))
+      #_(println "To quit, type:" :cljs/quit))
     (catch Exception e
       (set! *cljs-repl-env* nil)
       (throw e))))

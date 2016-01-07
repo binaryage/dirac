@@ -3,7 +3,8 @@
   (:refer-clojure :exclude [loaded-libs])
   (:require [cljs.repl]
             [cljs.compiler :as cmp]
-            [dirac.agent.ws-server :as server])
+            [dirac.agent.ws-server :as server]
+            [org.httpkit.server :as http])
   (:import (clojure.lang IDeref Atom)))
 
 (declare get-client-response-promise-atom)
@@ -72,17 +73,33 @@
         (reset! response-promise-atom nil)
         response))))
 
+(defn send-occupied-response-and-close! [channel]
+  (http/send! channel (server/serialize-msg {:op :error, :type :occupied}))
+  (http/close channel))
+
+(defn on-client-connection [server channel]
+  ; we allow only one client connection at a time
+  (when (server/has-clients? server)
+    (send-occupied-response-and-close! channel)
+    false)
+  true)
+
 (defn setup-env [env _opts]
-  (let [message-handler (fn [data] (process-message env data))
-        server (server/start! message-handler (select-keys env [:ip :port]))
+  (let [server-options (merge
+                         (select-keys env [:ip :port])
+                         {:port-range           10
+                          :on-message           (fn [_server _client message]
+                                                  (process-message env message))
+                          :on-client-connection on-client-connection})
+        server (server/start! server-options)
         {:keys [ip pre-connect]} env]
     (set-server! env server)
     (let [port (get-real-port server)]
-      (println (str "Started Dirac Weasel Server on ws://" ip ":" port " and waiting for DevTools to connect..."))
+      (println (str "Started Dirac Weasel Server on ws://" ip ":" port " and waiting for Dirac DevTools to connect..."))
       (flush)
       (if pre-connect
         (pre-connect env ip port))
-      (server/wait-for-client server)
+      (server/wait-for-first-client server)
       env)))
 
 (defn tear-down-env [env]
@@ -91,8 +108,8 @@
 
 (defn request-eval [env js]
   (promise-new-client-response! env)
-  (server/send! (get-server env) {:op :eval-js, :code js})
-  (wait-for-promised-response! env))                                                                                          ; <===== WILL BLOCK!
+  (server/send! @(server/get-first-client-promise (get-server env)) {:op :eval-js, :code js})                                 ; <===== MIGHT BLOCK if there is currently no client connected TODO: implement timeout
+  (wait-for-promised-response! env))                                                                                          ; <===== WILL BLOCK! until client responds
 
 (defn load-javascript [env provides _]
   (request-eval env (str "goog.require('" (cmp/munge (first provides)) "')")))

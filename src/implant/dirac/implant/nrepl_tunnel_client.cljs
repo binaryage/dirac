@@ -60,11 +60,11 @@
 
 ; -- message processing -----------------------------------------------------------------------------------------------------
 
-(defn boostrap-cljs-repl-message []
+(defn boostrap-cljs-repl-message [session]
   {:op   "eval"
-   :code "(do
+   :code (str "(do
             (require 'dirac.agent)
-            (dirac.agent/run-cljs-repl!))"})
+            (dirac.agent/boot-cljs-repl! \"" session "\"))")})
 
 (defmulti process-message :op)
 
@@ -90,9 +90,10 @@
 ; Tunnel does not close nREPL client connection after DevTools disconnection, so bootstrapping is needed only once.
 ; Tunnel keeps track if nREPL client was already bootstrapped and asks us to bootstrap it if we are the first connected
 ; tunnel client.
-(defmethod process-message :bootstrap [_message]
+(defmethod process-message :bootstrap [message]
   (go
-    (let [response (<! (tunnel-message-with-response! (boostrap-cljs-repl-message)))]
+    (let [session (:session message)
+          response (<! (tunnel-message-with-response! (boostrap-cljs-repl-message session)))]
       (case (:status response)
         ["done"] {:op :bootstrap-done}
         ["timeout"] {:op :bootstrap-timeout}

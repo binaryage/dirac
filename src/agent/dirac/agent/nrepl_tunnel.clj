@@ -2,7 +2,8 @@
   (require [clojure.core.async :refer [chan <!! <! >!! put! alts!! timeout close! go go-loop]]
            [dirac.agent.nrepl-protocols :refer [NREPLTunnelService]]
            [dirac.agent.nrepl-tunnel-server :as nrepl-tunnel-server]
-           [dirac.agent.nrepl-client :as nrepl-client]))
+           [dirac.agent.nrepl-client :as nrepl-client]
+           [clojure.tools.nrepl :as nrepl]))
 
 ; Unfortunately, we cannot easily implement full-blown nREPL client in Dirac DevTools.
 ; First, we don't have real sockets API, we can use only websockets from javascript.
@@ -36,14 +37,20 @@
 
 (declare do-deliver-server-message!)
 (declare do-deliver-client-message!)
+(declare do-open-session!)
+(declare do-close-session!)
 
 (defrecord NREPLTunnel []
   NREPLTunnelService                                                                                                          ; in some cases nrepl-client and nrepl-tunnel-server need to talk to their tunnel
+  (open-session [this]
+    (do-open-session! this))
+  (close-session [this session]
+    (do-close-session! this session))
   (bootstrapped? [this]
     false)
-  (deliver-server-message! [this message]
+  (deliver-message-to-server! [this message]
     (do-deliver-server-message! this message))
-  (deliver-client-message! [this message]
+  (deliver-message-to-client! [this message]
     (do-deliver-client-message! this message)))
 
 (defn make-tunnel []
@@ -73,9 +80,12 @@
   (reset! (:nrepl-tunnel-server tunnel) server))
 
 (defn get-nrepl-client [tunnel]
+  {:pre  [tunnel]
+   :post [%]}
   @(:nrepl-client tunnel))
 
 (defn set-nrepl-client! [tunnel client]
+  {:pre [tunnel client]}
   (reset! (:nrepl-client tunnel) client))
 
 ; -- tunnel message channels ------------------------------------------------------------------------------------------------
@@ -94,32 +104,45 @@
 ;
 
 (defn do-deliver-server-message! [tunnel message]
-  (let [channel (get-server-messages-channel tunnel)]
-    (put! channel message)))
+  (let [channel (get-server-messages-channel tunnel)
+        receipt (promise)]
+    (put! channel [message receipt])
+    receipt))
 
 (defn do-deliver-client-message! [tunnel message]
-  (let [channel (get-client-messages-channel tunnel)]
-    (put! channel message)))
+  (let [channel (get-client-messages-channel tunnel)
+        receipt (promise)]
+    (put! channel [message receipt])
+    receipt))
+
+(defn do-open-session! [tunnel]
+  (let [nrepl-client (get-nrepl-client tunnel)
+        new-session (nrepl-client/open-session nrepl-client)]
+    new-session))
+
+(defn do-close-session! [tunnel session]
+  (let [nrepl-client (get-nrepl-client tunnel)]
+    (nrepl-client/close-session nrepl-client session)))
 
 (defn run-server-messages-channel-processing-loop! [tunnel]
-  (println "starting server-messages-channel-processing-loop")
+  ;(println "starting server-messages-channel-processing-loop")
   (go-loop []
     (let [messages-chan (get-server-messages-channel tunnel)]
-      (if-let [message (<! messages-chan)]
+      (if-let [[message receipt] (<! messages-chan)]
         (let [client (get-nrepl-client tunnel)]
           ;(println "sending message " message " to client " client)
-          (nrepl-client/send! client message)
+          (deliver receipt (nrepl-client/send! client message))
           (recur))
         (println "exitting server-messages-channel-processing-loop")))))
 
 (defn run-client-messages-channel-processing-loop! [tunnel]
-  (println "starting client-messages-channel-processing-loop")
+  ;(println "starting client-messages-channel-processing-loop")
   (go-loop []
     (let [messages-chan (get-client-messages-channel tunnel)]
-      (if-let [message (<! messages-chan)]
+      (if-let [[message receipt] (<! messages-chan)]
         (let [server (get-nrepl-tunnel-server tunnel)]
           ;(println "sending message " message " to server " server)
-          (nrepl-tunnel-server/send! server message)
+          (deliver receipt (nrepl-tunnel-server/dispatch-message! server message))
           (recur))
         (println "exitting client-messages-channel-processing-loop")))))
 
@@ -142,8 +165,9 @@
 (defn url-for [ip port]
   (str "ws://" ip ":" port))
 
-(defn request-weasel-connection [tunnel ip port]
+(defn request-weasel-connection [tunnel session ip port]
   (let [server (get-nrepl-tunnel-server tunnel)
         message {:op         :connect-weasel
-                 :server-url (url-for ip port)}]
-    (nrepl-tunnel-server/send! server message)))
+                 :server-url (url-for ip port)}
+        client (nrepl-tunnel-server/get-client-for-session server session)]
+    (nrepl-tunnel-server/send! client message)))
