@@ -2,8 +2,7 @@
   (require [clojure.core.async :refer [chan <!! <! >!! put! alts!! timeout close! go go-loop]]
            [dirac.agent.nrepl-protocols :refer [NREPLTunnelService]]
            [dirac.agent.nrepl-tunnel-server :as nrepl-tunnel-server]
-           [dirac.agent.nrepl-client :as nrepl-client]
-           [clojure.tools.nrepl :as nrepl]))
+           [dirac.agent.nrepl-client :as nrepl-client]))
 
 ; Unfortunately, we cannot easily implement full-blown nREPL client in Dirac DevTools.
 ; First, we don't have real sockets API, we can use only websockets from javascript.
@@ -30,28 +29,27 @@
 ; Tunnel implementation should be robust, client-side (Dirac) endpoint can connect and go-away at any point (browser refresh).
 ; nREPL client session should persist between reconnections.
 ;
+; TODO: document multiple clients
 ; Currently tunnel-server can accept only one client connection. You cannot have two or more instances of DevTools connected
 ; to the same tunnel. You would have to start multiple tunnels on different ports.
 
 ; -- tunnel constructor -----------------------------------------------------------------------------------------------------
 
-(declare do-deliver-server-message!)
-(declare do-deliver-client-message!)
-(declare do-open-session!)
-(declare do-close-session!)
+(declare deliver-server-message!)
+(declare deliver-client-message!)
+(declare open-session!)
+(declare close-session!)
 
 (defrecord NREPLTunnel []
   NREPLTunnelService                                                                                                          ; in some cases nrepl-client and nrepl-tunnel-server need to talk to their tunnel
   (open-session [this]
-    (do-open-session! this))
+    (open-session! this))
   (close-session [this session]
-    (do-close-session! this session))
-  (bootstrapped? [this]
-    false)
+    (close-session! this session))
   (deliver-message-to-server! [this message]
-    (do-deliver-server-message! this message))
+    (deliver-server-message! this message))
   (deliver-message-to-client! [this message]
-    (do-deliver-client-message! this message)))
+    (deliver-client-message! this message)))
 
 (defn make-tunnel []
   (merge (NREPLTunnel.) {:nrepl-client            (atom nil)
@@ -80,12 +78,11 @@
   (reset! (:nrepl-tunnel-server tunnel) server))
 
 (defn get-nrepl-client [tunnel]
-  {:pre  [tunnel]
-   :post [%]}
+  {:pre [tunnel]}
   @(:nrepl-client tunnel))
 
 (defn set-nrepl-client! [tunnel client]
-  {:pre [tunnel client]}
+  {:pre [tunnel]}
   (reset! (:nrepl-client tunnel) client))
 
 ; -- tunnel message channels ------------------------------------------------------------------------------------------------
@@ -103,24 +100,24 @@
 ; 2) channels have buffering controls
 ;
 
-(defn do-deliver-server-message! [tunnel message]
+(defn deliver-server-message! [tunnel message]
   (let [channel (get-server-messages-channel tunnel)
         receipt (promise)]
     (put! channel [message receipt])
     receipt))
 
-(defn do-deliver-client-message! [tunnel message]
+(defn deliver-client-message! [tunnel message]
   (let [channel (get-client-messages-channel tunnel)
         receipt (promise)]
     (put! channel [message receipt])
     receipt))
 
-(defn do-open-session! [tunnel]
+(defn open-session! [tunnel]
   (let [nrepl-client (get-nrepl-client tunnel)
         new-session (nrepl-client/open-session nrepl-client)]
     new-session))
 
-(defn do-close-session! [tunnel session]
+(defn close-session! [tunnel session]
   (let [nrepl-client (get-nrepl-client tunnel)]
     (nrepl-client/close-session nrepl-client session)))
 
@@ -161,6 +158,16 @@
       (set-nrepl-client! tunnel nrepl-client)
       (set-nrepl-tunnel-server! tunnel nrepl-tunnel-server)
       tunnel)))
+
+(defn stop! [tunnel]
+  (close! (get-client-messages-channel tunnel))
+  (when-let [nrepl-tunnel-server (get-nrepl-tunnel-server tunnel)]
+    (nrepl-tunnel-server/stop! nrepl-tunnel-server)
+    (set-nrepl-tunnel-server! tunnel nil))
+  (close! (get-server-messages-channel tunnel))
+  (when-let [nrepl-client (get-nrepl-client tunnel)]
+    (nrepl-client/disconnect! nrepl-client)
+    (set-nrepl-client! tunnel nil)))
 
 (defn url-for [ip port]
   (str "ws://" ip ":" port))

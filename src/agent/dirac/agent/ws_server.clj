@@ -14,13 +14,14 @@
          :first-client-promise (promise)
          :clients              []}))
 
-(defn make-client [channel]
-  {:channel channel})
+; -- access -----------------------------------------------------------------------------------------------------------------
 
 (defn get-http-server [server]
+  {:post [%]}
   (:http-server @server))
 
 (defn get-options [server]
+  {:post [%]}
   (:options @server))
 
 (defn get-first-client-promise [server]
@@ -43,8 +44,28 @@
   (if-not (has-clients? server)
     (reset-first-client-promise! server (promise))))
 
+(defn get-local-port [server]
+  (-> (get-http-server server) meta :local-port))
+
+(defn get-ip [server]
+  (:ip (get-options server)))
+
+; -- client data ------------------------------------------------------------------------------------------------------------
+
+(defn make-client [channel]
+  {:channel       channel
+   :ready-promise (promise)})
+
 (defn get-channel [client]
   (:channel client))
+
+(defn get-ready-promise [client]
+  (:ready-promise client))
+
+; http server is multithreaded and we can potentially enter handlers before accept-client finishes
+; this is a guard to wait for full client initialization after executing potentially long running on-incoming-client
+(defn wait-for-client-to-be-ready [client]
+  @(get-ready-promise client))
 
 ; -- serialization  ---------------------------------------------------------------------------------------------------------
 
@@ -57,6 +78,7 @@
 ; -- request handling -------------------------------------------------------------------------------------------------------
 
 (defn on-close [server client status]
+  (wait-for-client-to-be-ready client)
   (let [{:keys [on-client-disconnection on-leaving-client]} (get-options server)]
     (if on-client-disconnection
       (on-client-disconnection server client status))
@@ -65,6 +87,7 @@
     (remove-client! server client)))
 
 (defn on-receive [server client serialized-msg]
+  (wait-for-client-to-be-ready client)
   (let [{:keys [on-receive on-message]} (get-options server)]
     (if on-receive
       (on-receive server client serialized-msg))
@@ -80,7 +103,8 @@
     (http/on-close channel (partial on-close server client))
     (http/on-receive channel (partial on-receive server client))
     (if on-incoming-client
-      (on-incoming-client server client))))
+      (on-incoming-client server client))
+    (deliver (get-ready-promise client) true)))
 
 (defn client-connection-handler
   "Handler gets called for every new client connection."
@@ -90,8 +114,9 @@
       {:status 200 :body "Please connect with a websocket!"}
       (let [{:keys [on-client-connection]} (get-options server)
             accept? (or (not on-client-connection) (on-client-connection server channel))]
-        (if accept?
-          (accept-client server channel))))))
+        (when accept?
+          (accept-client server channel)
+          nil)))))
 
 ; -- sending ----------------------------------------------------------------------------------------------------------------
 
@@ -103,20 +128,20 @@
 ; -- life cycle -------------------------------------------------------------------------------------------------------------
 
 (defn start!
-  "Starts a new server and returns atom holding server state.
-  This server atom can be used for subsequent stop!, send! or wait-for-client calls."
+  "Starts a new server and returns an atom holding server state.
+  This server atom can be used for subsequent stop! and wait-for-first-client calls."
   [options]
   (let [server (atom nil)
         connection-handler (partial client-connection-handler server)
         port-range (or (:port-range options) 1)
         first-port (:port options)
-        last-port (+ first-port port-range -1)]
+        last-port-to-try (+ first-port port-range -1)]
     (loop [port first-port]
       (let [effective-options (assoc options :port port)
             http-server (try
                           (http/run-server connection-handler effective-options)
                           (catch BindException e
-                            (if (= port last-port)
+                            (if (= port last-port-to-try)
                               (throw e))))]
         (if-not http-server
           (recur (inc port))
@@ -126,7 +151,7 @@
 
 (defn stop! [server & [timeout]]
   (when-let [http-server (get-http-server server)]
-    (http-server :timeout (or timeout 100))                                                                                   ; this will stop http-server created via http/run-server
+    (http-server :timeout (or timeout 100))                                                                                   ; this will stop the http-server created via http/run-server
     (reset! server nil)))
 
 (defn wait-for-first-client [server]

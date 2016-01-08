@@ -1,44 +1,62 @@
 (ns dirac.agent.nrepl-tunnel-server
   (:require [clojure.core.async :refer [chan <!! <! >!! put! alts!! timeout close! go go-loop]]
             [dirac.agent.nrepl-protocols :as nrepl-protocols]
-            [dirac.agent.ws-server :as server]))
+            [dirac.agent.ws-server :as ws-server]))
 
-(def default-opts {:ip   "127.0.0.1"
-                   :port 9001})
+; -- constructor ------------------------------------------------------------------------------------------------------------
 
-; -- helpers ----------------------------------------------------------------------------------------------------------------
+(defn make-server [tunnel]
+  {:tunnel                  tunnel
+   :ws-server               (atom nil)
+   :client->session-promise (atom {})})
+
+; -- access -----------------------------------------------------------------------------------------------------------------
+
+(defn get-ws-server [server]
+  {:pre  [server]
+   :post [%]}
+  @(:ws-server server))
+
+(defn set-ws-server! [server ws-server]
+  {:pre [server]}
+  (reset! (:ws-server server) ws-server))
 
 (defn get-tunnel [server]
-  (let [tunnel (:tunnel (meta server))]
+  {:pre [server]}
+  (let [tunnel (:tunnel server)]
     (assert tunnel "Tunnel not specified!")
     (assert (satisfies? nrepl-protocols/NREPLTunnelService tunnel) "Tunnel must satisfy NREPLTunnelService protocol")
     tunnel))
 
-(defn get-client-session [server client]
-  {:post [% (string? %)]}
-  (let [session->clients (get (meta server) :client-sessions)]
-    (first (first (filter #(= (second %) client) session->clients)))))
-
-(defn set-client-session! [server client session]
-  {:pre [server client session (string? session)]}
-  (alter-meta! server update :client-sessions assoc session client))
-
-(defn remove-client-session! [server session]
-  {:pre [server session (string? session)]}
-  (alter-meta! server update :client-sessions dissoc session))
-
 (defn get-client-for-session [server session]
-  {:pre [server session (string? session)]}
-  (get-in (meta server) [:client-sessions session]))
+  {:pre [server (string? session)]}
+  (first (first (filter #(= session @(second %)) @(:client->session-promise server)))))                                       ; this may block until session promise gets delivered
+
+(defn get-client-session [server client]
+  {:post [(string? %)]}
+  (println "get client session\n" client)
+  @(get @(:client->session-promise server) client))
+
+(defn set-client-session-promise! [server client session-promise]
+  {:pre [server client session-promise]}
+  (println "set client session" session-promise "\n" client)
+  (swap! (:client->session-promise server) assoc client session-promise))
+
+(defn remove-client! [server client]
+  {:pre [server client]}
+  (swap! (:client->session-promise server) dissoc client))
+
+(defn get-clients [server]
+  (keys @(:client->session-promise server)))
 
 ; -- message sending --------------------------------------------------------------------------------------------------------
 
 (defn send! [client message]
   {:pre [client]}
-  (server/send! client message))
+  (ws-server/send! client message))
 
 (defn dispatch-message! [server message]
-  (if-let [session (:session message)]                                                                                        ; ignore messages without session
+  (if-let [session (:session message)]                                                                                        ; ignore messages without session TODO: warn maybe?
     (if-let [client (get-client-for-session server session)]                                                                  ; client may be already disconnected
       ;(println "sending message " message " to server " server)
       (send! client message))))
@@ -51,8 +69,9 @@
   (println "Received unrecognized message from tunnel client" message))
 
 (defmethod process-message :ready [server client _message]
-  ; tunnel's client is ready after connection
-  ; ask him to bootstrap nREPL environment if it wasn't done already
+  (println "got ready!")
+  ; a new client is ready after connection
+  ; ask him to bootstrap nREPL environment
   (let [session (get-client-session server client)]
     (send! client {:op      :bootstrap
                    :session session})))
@@ -64,41 +83,69 @@
 
 (defmethod process-message :nrepl-message [server client message]
   (if-let [envelope (:envelope message)]
-    (let [session (get-client-session server client)
+    (let [tunnel (get-tunnel server)
+          session (get-client-session server client)
           envelope-with-session (assoc envelope :session session)]
-      (nrepl-protocols/deliver-message-to-server! (get-tunnel server) envelope-with-session))))
+      (nrepl-protocols/deliver-message-to-server! tunnel envelope-with-session))))
+
+; -- utilities --------------------------------------------------------------------------------------------------------------
+
+(defn make-cljs-quit-message [session]
+  {:op      "eval"
+   :session session
+   :code    ":cljs/quit"})
+
+(defn quit-client! [server client]
+  (let [tunnel (get-tunnel server)
+        session (get-client-session server client)]
+    @(nrepl-protocols/deliver-message-to-server! tunnel (make-cljs-quit-message session))))                                   ; blocks until delivered
+
+(defn disconnect-client! [server client]
+  (let [tunnel (get-tunnel server)
+        session (get-client-session server client)]
+    (quit-client! server client)
+    (nrepl-protocols/close-session tunnel session)
+    (remove-client! server session)))
+
+(defn disconnect-all-clients! [server]
+  (let [clients (get-clients server)]
+    (doseq [client clients]
+      (disconnect-client! server client))))
+
+(defn open-client-session [server client]
+  (let [session-promise (promise)]
+    (set-client-session-promise! server client session-promise)
+    (let [tunnel (get-tunnel server)
+          session (nrepl-protocols/open-session tunnel)]                                                                      ; blocking!
+      (deliver session-promise session)
+      (println "new client initialized" session))))
 
 ; -- request handling -------------------------------------------------------------------------------------------------------
 
-(defn on-message [server client message]
+(defn on-message [server _ws-server client message]
   (process-message server client message))
 
-(defn on-incoming-client [server client]
+(defn on-incoming-client [server _ws-server client]
   (println "new client connected to tunnel" client)
-  (let [tunnel (get-tunnel server)
-        session (nrepl-protocols/open-session tunnel)]
-    (set-client-session! server client session)))
+  (open-client-session server client))
 
-(defn on-leaving-client [server client]
+(defn on-leaving-client [server _ws-server client]
   (println "client disconnected from tunnel" client)
-  (let [tunnel (get-tunnel server)
-        session (get-client-session server client)]
-    @(nrepl-protocols/deliver-message-to-server! (get-tunnel server) {:op "eval" :session session :code ":cljs/quit"})        ; blocks until delivered
-    (nrepl-protocols/close-session tunnel session)
-    (remove-client-session! server session)))
+  (disconnect-client! server client))
 
 (defn start! [tunnel options]
-  (let [server-options (assoc options
-                         :on-message on-message
-                         :on-incoming-client on-incoming-client
-                         :on-leaving-client on-leaving-client)
-        server (server/start! server-options)]
-    (let [port (-> (server/get-http-server server) meta :local-port)
-          ip (:ip options)]
+  (let [server (make-server tunnel)
+        server-options (assoc options
+                         :on-message (partial on-message server)
+                         :on-incoming-client (partial on-incoming-client server)
+                         :on-leaving-client (partial on-leaving-client server))]
+    (set-ws-server! server (ws-server/start! server-options))
+    (let [ws-server (get-ws-server server)
+          ip (ws-server/get-ip ws-server)
+          port (ws-server/get-local-port ws-server)]
       (println (str "Started Dirac nREPL tunnel server on ws://" ip ":" port))
-      (alter-meta! server assoc
-                   :tunnel tunnel
-                   :ip ip
-                   :port port
-                   :client-sessions {})
       server)))
+
+(defn stop! [server]
+  (disconnect-all-clients! server)
+  (ws-server/stop! (get-ws-server server)))
