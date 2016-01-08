@@ -15,10 +15,7 @@ pushd "$ROOT"
 
 die_if_dirty_working_copy
 
-git fetch origin
-git checkout "$DEVTOOLS_BRANCH"
-git merge --ff-only "origin/$DEVTOOLS_BRANCH"
-git checkout master
+git fetch origin devtools
 
 # at this point we should have latest upstream changes in devtools branch
 # (run ./fetch-devtools-branch.sh to update it)
