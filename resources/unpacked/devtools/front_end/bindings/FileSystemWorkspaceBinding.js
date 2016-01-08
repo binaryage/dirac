@@ -42,16 +42,6 @@ WebInspector.FileSystemWorkspaceBinding = function(isolatedFileSystemManager, wo
     this._isolatedFileSystemManager.addEventListener(WebInspector.IsolatedFileSystemManager.Events.FileSystemFilesChanged, this._fileSystemFilesChanged, this);
     /** @type {!Map.<string, !WebInspector.FileSystemWorkspaceBinding.FileSystem>} */
     this._boundFileSystems = new Map();
-
-    /** @type {!Object.<number, function(!Array.<string>)>} */
-    this._callbacks = {};
-    /** @type {!Object.<number, !WebInspector.Progress>} */
-    this._progresses = {};
-
-    InspectorFrontendHost.events.addEventListener(InspectorFrontendHostAPI.Events.IndexingTotalWorkCalculated, this._onIndexingTotalWorkCalculated, this);
-    InspectorFrontendHost.events.addEventListener(InspectorFrontendHostAPI.Events.IndexingWorked, this._onIndexingWorked, this);
-    InspectorFrontendHost.events.addEventListener(InspectorFrontendHostAPI.Events.IndexingDone, this._onIndexingDone, this);
-    InspectorFrontendHost.events.addEventListener(InspectorFrontendHostAPI.Events.SearchCompleted, this._onSearchCompleted, this);
 }
 
 WebInspector.FileSystemWorkspaceBinding._styleSheetExtensions = new Set(["css", "scss", "sass", "less"]);
@@ -60,15 +50,13 @@ WebInspector.FileSystemWorkspaceBinding._scriptExtensions = new Set(["asp", "asp
 
 WebInspector.FileSystemWorkspaceBinding._imageExtensions = WebInspector.IsolatedFileSystem.ImageExtensions;
 
-WebInspector.FileSystemWorkspaceBinding._lastRequestId = 0;
-
 /**
  * @param {string} fileSystemPath
  * @return {string}
  */
 WebInspector.FileSystemWorkspaceBinding.projectId = function(fileSystemPath)
 {
-    return "file://" + fileSystemPath;
+    return fileSystemPath;
 }
 
 /**
@@ -125,7 +113,7 @@ WebInspector.FileSystemWorkspaceBinding.prototype = {
     {
         var fileSystem = /** @type {!WebInspector.IsolatedFileSystem} */ (event.data);
         var boundFileSystem = new WebInspector.FileSystemWorkspaceBinding.FileSystem(this, fileSystem, this._workspace);
-        this._boundFileSystems.set(fileSystem.normalizedPath(), boundFileSystem);
+        this._boundFileSystems.set(fileSystem.path(), boundFileSystem);
     },
 
     /**
@@ -134,9 +122,9 @@ WebInspector.FileSystemWorkspaceBinding.prototype = {
     _fileSystemRemoved: function(event)
     {
         var fileSystem = /** @type {!WebInspector.IsolatedFileSystem} */ (event.data);
-        var boundFileSystem = this._boundFileSystems.get(fileSystem.normalizedPath());
+        var boundFileSystem = this._boundFileSystems.get(fileSystem.path());
         boundFileSystem.dispose();
-        this._boundFileSystems.remove(fileSystem.normalizedPath());
+        this._boundFileSystems.remove(fileSystem.path());
     },
 
     /**
@@ -146,11 +134,10 @@ WebInspector.FileSystemWorkspaceBinding.prototype = {
     {
         var paths = /** @type {!Array<string>} */ (event.data);
         for (var path of paths) {
-            var normalizedPath = WebInspector.IsolatedFileSystem.normalizePath(path);
             for (var key of this._boundFileSystems.keys()) {
-                if (!normalizedPath.startsWith(key))
+                if (!path.startsWith(key))
                     continue;
-                this._boundFileSystems.get(key)._fileChanged(normalizedPath.substr(key.length + 1));
+                this._boundFileSystems.get(key)._fileChanged(path);
             }
         }
     },
@@ -161,111 +148,17 @@ WebInspector.FileSystemWorkspaceBinding.prototype = {
      */
     fileSystemPath: function(projectId)
     {
-        return projectId.substr("file://".length);
-    },
-
-    /**
-     * @return {number}
-     */
-    _nextId: function()
-    {
-        return ++WebInspector.FileSystemWorkspaceBinding._lastRequestId;
-    },
-
-    /**
-     * @param {function(!Array.<string>)} callback
-     * @return {number}
-     */
-    registerCallback: function(callback)
-    {
-        var requestId = this._nextId();
-        this._callbacks[requestId] = callback;
-        return requestId;
-    },
-
-    /**
-     * @param {!WebInspector.Progress} progress
-     * @return {number}
-     */
-    registerProgress: function(progress)
-    {
-        var requestId = this._nextId();
-        this._progresses[requestId] = progress;
-        return requestId;
-    },
-
-    /**
-     * @param {!WebInspector.Event} event
-     */
-    _onIndexingTotalWorkCalculated: function(event)
-    {
-        var requestId = /** @type {number} */ (event.data["requestId"]);
-        var totalWork = /** @type {number} */ (event.data["totalWork"]);
-
-        var progress = this._progresses[requestId];
-        if (!progress)
-            return;
-        progress.setTotalWork(totalWork);
-    },
-
-    /**
-     * @param {!WebInspector.Event} event
-     */
-    _onIndexingWorked: function(event)
-    {
-        var requestId = /** @type {number} */ (event.data["requestId"]);
-        var worked = /** @type {number} */ (event.data["worked"]);
-
-        var progress = this._progresses[requestId];
-        if (!progress)
-            return;
-        progress.worked(worked);
-        if (progress.isCanceled()) {
-            InspectorFrontendHost.stopIndexing(requestId);
-            this._onIndexingDone(event);
-        }
-    },
-
-    /**
-     * @param {!WebInspector.Event} event
-     */
-    _onIndexingDone: function(event)
-    {
-        var requestId = /** @type {number} */ (event.data["requestId"]);
-
-        var progress = this._progresses[requestId];
-        if (!progress)
-            return;
-        progress.done();
-        delete this._progresses[requestId];
-    },
-
-    /**
-     * @param {!WebInspector.Event} event
-     */
-    _onSearchCompleted: function(event)
-    {
-        var requestId = /** @type {number} */ (event.data["requestId"]);
-        var files = /** @type {!Array.<string>} */ (event.data["files"]);
-
-        var callback = this._callbacks[requestId];
-        if (!callback)
-            return;
-        callback.call(null, files);
-        delete this._callbacks[requestId];
+        return projectId;
     },
 
     dispose: function()
     {
         this._isolatedFileSystemManager.removeEventListener(WebInspector.IsolatedFileSystemManager.Events.FileSystemAdded, this._fileSystemAdded, this);
         this._isolatedFileSystemManager.removeEventListener(WebInspector.IsolatedFileSystemManager.Events.FileSystemRemoved, this._fileSystemRemoved, this);
-        InspectorFrontendHost.events.removeEventListener(InspectorFrontendHostAPI.Events.IndexingTotalWorkCalculated, this._onIndexingTotalWorkCalculated, this);
-        InspectorFrontendHost.events.removeEventListener(InspectorFrontendHostAPI.Events.IndexingWorked, this._onIndexingWorked, this);
-        InspectorFrontendHost.events.removeEventListener(InspectorFrontendHostAPI.Events.IndexingDone, this._onIndexingDone, this);
-        InspectorFrontendHost.events.removeEventListener(InspectorFrontendHostAPI.Events.SearchCompleted, this._onSearchCompleted, this);
+        this._isolatedFileSystemManager.dispose();
         for (var fileSystem of this._boundFileSystems.values()) {
             fileSystem.dispose();
-            this._boundFileSystems.remove(fileSystem._fileSystem.normalizedPath());
+            this._boundFileSystems.remove(fileSystem._fileSystem.path());
         }
     }
 }
@@ -282,15 +175,13 @@ WebInspector.FileSystemWorkspaceBinding.FileSystem = function(fileSystemWorkspac
 {
     this._fileSystemWorkspaceBinding = fileSystemWorkspaceBinding;
     this._fileSystem = isolatedFileSystem;
-    this._fileSystemBaseURL = "file://" + this._fileSystem.normalizedPath() + "/";
+    this._fileSystemBaseURL = this._fileSystem.path() + "/";
     this._fileSystemPath = this._fileSystem.path();
 
     var id = WebInspector.FileSystemWorkspaceBinding.projectId(this._fileSystemPath);
     console.assert(!workspace.project(id));
 
-    var normalizedPath = isolatedFileSystem.normalizedPath();
-    var displayName = normalizedPath.substr(normalizedPath.lastIndexOf("/") + 1);
-
+    var displayName = this._fileSystemPath.substr(this._fileSystemPath.lastIndexOf("/") + 1);
     WebInspector.ProjectStore.call(this, workspace, id, WebInspector.projectTypes.FileSystem, displayName);
 
     workspace.addProject(this);
@@ -312,7 +203,7 @@ WebInspector.FileSystemWorkspaceBinding.FileSystem.prototype = {
      */
     _filePathForUISourceCode: function(uiSourceCode)
     {
-        return uiSourceCode.path().substring(("file:// " + this._fileSystemPath).length);
+        return uiSourceCode.path().substring(this._fileSystemPath.length);
     },
 
     /**
@@ -463,7 +354,7 @@ WebInspector.FileSystemWorkspaceBinding.FileSystem.prototype = {
                 return;
             }
             var query = queriesToRun.shift();
-            this._searchInPath(searchConfig.isRegex() ? "" : query, progress, innerCallback.bind(this));
+            this._fileSystem.searchInPath(searchConfig.isRegex() ? "" : query, progress, innerCallback.bind(this));
         }
 
         /**
@@ -480,47 +371,12 @@ WebInspector.FileSystemWorkspaceBinding.FileSystem.prototype = {
     },
 
     /**
-     * @param {string} query
-     * @param {!WebInspector.Progress} progress
-     * @param {function(!Array.<string>)} callback
-     */
-    _searchInPath: function(query, progress, callback)
-    {
-        var requestId = this._fileSystemWorkspaceBinding.registerCallback(innerCallback);
-        InspectorFrontendHost.searchInPath(requestId, this._fileSystem.path(), query);
-
-        /**
-         * @param {!Array.<string>} files
-         */
-        function innerCallback(files)
-        {
-            /**
-             * @param {string} fullPath
-             * @return {string}
-             */
-            function trimAndNormalizeFileSystemPath(fullPath)
-            {
-                fullPath = "file://" + fullPath;
-                if (WebInspector.isWin())
-                    fullPath = fullPath.replace(/\\/g, "/");
-                return fullPath;
-            }
-
-            files = files.map(trimAndNormalizeFileSystemPath);
-            progress.worked(1);
-            callback(files);
-        }
-    },
-
-    /**
      * @override
      * @param {!WebInspector.Progress} progress
      */
     indexContent: function(progress)
     {
-        progress.setTotalWork(1);
-        var requestId = this._fileSystemWorkspaceBinding.registerProgress(progress);
-        InspectorFrontendHost.indexPath(requestId, this._fileSystem.path());
+        this._fileSystem.indexContent(progress);
     },
 
     /**
@@ -625,7 +481,7 @@ WebInspector.FileSystemWorkspaceBinding.FileSystem.prototype = {
      */
     remove: function()
     {
-        this._fileSystemWorkspaceBinding._isolatedFileSystemManager.removeFileSystem(this._fileSystem.path());
+        this._fileSystemWorkspaceBinding._isolatedFileSystemManager.removeFileSystem(this._fileSystem);
     },
 
     /**

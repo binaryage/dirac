@@ -32,12 +32,14 @@
  * @constructor
  * @param {!WebInspector.IsolatedFileSystemManager} manager
  * @param {string} path
+ * @param {string} embedderPath
  * @param {!DOMFileSystem} domFileSystem
  */
-WebInspector.IsolatedFileSystem = function(manager, path, domFileSystem)
+WebInspector.IsolatedFileSystem = function(manager, path, embedderPath, domFileSystem)
 {
     this._manager = manager;
     this._path = path;
+    this._embedderPath = embedderPath;
     this._domFileSystem = domFileSystem;
     this._excludedFoldersSetting = WebInspector.settings.createLocalSetting("workspaceExcludedFolders", {});
     /** @type {!Set<string>} */
@@ -52,11 +54,12 @@ WebInspector.IsolatedFileSystem.ImageExtensions = new Set(["jpeg", "jpg", "svg",
  * @constructor
  * @param {!WebInspector.IsolatedFileSystemManager} manager
  * @param {string} path
+ * @param {string} embedderPath
  * @param {string} name
  * @param {string} rootURL
  * @return {!Promise<?WebInspector.IsolatedFileSystem>}
  */
-WebInspector.IsolatedFileSystem.create = function(manager, path, name, rootURL)
+WebInspector.IsolatedFileSystem.create = function(manager, path, embedderPath, name, rootURL)
 {
     return new Promise(promiseBody);
 
@@ -71,7 +74,7 @@ WebInspector.IsolatedFileSystem.create = function(manager, path, name, rootURL)
             resolve(null);
             return;
         }
-        var fileSystem = new WebInspector.IsolatedFileSystem(manager, path, domFileSystem);
+        var fileSystem = new WebInspector.IsolatedFileSystem(manager, path, embedderPath, domFileSystem);
         fileSystem.requestFileContent(".devtools", onConfigAvailable);
 
         /**
@@ -101,17 +104,6 @@ WebInspector.IsolatedFileSystem.errorMessage = function(error)
     return WebInspector.UIString("File system error: %s", error.message);
 }
 
-/**
- * @param {string} fileSystemPath
- * @return {string}
- */
-WebInspector.IsolatedFileSystem.normalizePath = function(fileSystemPath)
-{
-    if (WebInspector.isWin())
-        return fileSystemPath.replace(/\\/g, "/");
-    return fileSystemPath;
-}
-
 WebInspector.IsolatedFileSystem.prototype = {
     /**
      * @return {string}
@@ -124,12 +116,9 @@ WebInspector.IsolatedFileSystem.prototype = {
     /**
      * @return {string}
      */
-    normalizedPath: function()
+    embedderPath: function()
     {
-        if (this._normalizedPath)
-            return this._normalizedPath;
-        this._normalizedPath = WebInspector.IsolatedFileSystem.normalizePath(this._path);
-        return this._normalizedPath;
+        return this._embedderPath;
     },
 
     /**
@@ -592,5 +581,37 @@ WebInspector.IsolatedFileSystem.prototype = {
     nonConfigurableExcludedFolders: function()
     {
         return this._nonConfigurableExcludedFolders;
+    },
+
+
+    /**
+     * @param {string} query
+     * @param {!WebInspector.Progress} progress
+     * @param {function(!Array.<string>)} callback
+     */
+    searchInPath: function(query, progress, callback)
+    {
+        var requestId = this._manager.registerCallback(innerCallback);
+        InspectorFrontendHost.searchInPath(requestId, this._embedderPath, query);
+
+        /**
+         * @param {!Array.<string>} files
+         */
+        function innerCallback(files)
+        {
+            files = files.map(embedderPath => WebInspector.IsolatedFileSystemManager.normalizePath(embedderPath));
+            progress.worked(1);
+            callback(files);
+        }
+    },
+
+    /**
+     * @param {!WebInspector.Progress} progress
+     */
+    indexContent: function(progress)
+    {
+        progress.setTotalWork(1);
+        var requestId = this._manager.registerProgress(progress);
+        InspectorFrontendHost.indexPath(requestId, this._embedderPath);
     }
 }
