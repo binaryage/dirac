@@ -18,7 +18,9 @@
 
 (defn setup-logging! []
   (config/set-loggers!
-    "dirac.agent" (make-options {:level :debug})
+    "dirac.agent" (make-options)
+    "dirac.agent.logging" (make-options)
+    "dirac.agent.config" (make-options)
     "dirac.agent.nrepl-client" (make-options)
     "dirac.agent.nrepl-tunnel" (make-options)
     "dirac.agent.nrepl-tunnel-server" (make-options)

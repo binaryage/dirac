@@ -51,8 +51,9 @@
   (deliver-message-to-client! [this message]
     (deliver-client-message! this message)))
 
-(defn make-tunnel []
-  (merge (NREPLTunnel.) {:nrepl-client            (atom nil)
+(defn make-tunnel [options]
+  (merge (NREPLTunnel.) {:options                 options
+                         :nrepl-client            (atom nil)
                          :nrepl-tunnel-server     (atom nil)
                          :server-messages-channel (atom nil)                                                                  ; a channel for incoming messages from server, to be forwarded to client
                          :client-messages-channel (atom nil)}))                                                               ; a channel for incoming messages from client, to be forwarded to server
@@ -145,16 +146,16 @@
 
 ; -- tunnel -----------------------------------------------------------------------------------------------------------------
 
-(defn start! [nrepl-client-options nrepl-tunnel-server-options]
-  (let [tunnel (make-tunnel)
+(defn start! [options]
+  (let [tunnel (make-tunnel options)
         server-messages (chan)
         client-messages (chan)]
     (set-server-messages-channel! tunnel server-messages)
     (set-client-messages-channel! tunnel client-messages)
     (run-server-messages-channel-processing-loop! tunnel)
     (run-client-messages-channel-processing-loop! tunnel)
-    (let [nrepl-client (nrepl-client/connect! tunnel nrepl-client-options)
-          nrepl-tunnel-server (nrepl-tunnel-server/start! tunnel nrepl-tunnel-server-options)]
+    (let [nrepl-client (nrepl-client/connect! tunnel (:nrepl-server options))
+          nrepl-tunnel-server (nrepl-tunnel-server/start! tunnel (:nrepl-tunnel options))]
       (set-nrepl-client! tunnel nrepl-client)
       (set-nrepl-tunnel-server! tunnel nrepl-tunnel-server)
       tunnel)))

@@ -1,32 +1,12 @@
 (ns dirac.agent
   (:require [clojure.core.async :refer [chan <!! <! >!! put! alts!! timeout close! go go-loop]]
             [clojure.tools.logging :as log]
-            [dirac.agent.logging :refer [setup-logging!]]
+            [dirac.agent.logging :as logging]
+            [dirac.agent.config :as config]
             [dirac.agent.weasel-server :as weasel-server]
             [dirac.agent.nrepl-tunnel :as nrepl-tunnel]
             [dirac.nrepl.piggieback :as piggieback])
   (:import (java.net ConnectException)))
-
-(def boot-default-options
-  {:max-trials           10
-   :delay-between-trials 500})
-
-(def nrepl-tunnel-server-default-options
-  {:ip   "localhost"
-   :port 9050})
-
-(def nrepl-client-default-options
-  {:host "localhost"
-   :port 9010})
-
-(defn get-effective-nrepl-client-options [nrepl-client-options]
-  (merge nrepl-client-default-options nrepl-client-options))
-
-(defn get-effective-nrepl-tunnel-server-options [nrepl-tunnel-server-options]
-  (merge nrepl-tunnel-server-default-options nrepl-tunnel-server-options))
-
-(defn get-effective-boot-options [boot-options]
-  (merge boot-default-options boot-options))
 
 (defn get-nrepl-server-url [nrepl-client-options]
   (let [{:keys [host port]} nrepl-client-options]
@@ -42,16 +22,15 @@
 
 ; -- lower-level api --------------------------------------------------------------------------------------------------------
 
-(defn start-tunnel! [& [nrepl-client-options nrepl-tunnel-server-options]]
-  (let [nrepl-client-options (get-effective-nrepl-client-options nrepl-client-options)
-        nrepl-tunnel-server-options (get-effective-nrepl-tunnel-server-options nrepl-tunnel-server-options)]
-    (nrepl-tunnel/start! nrepl-client-options nrepl-tunnel-server-options)))
+(defn start-tunnel! [config]
+  (let [effective-config (config/get-effective-config config)]
+    (nrepl-tunnel/start! effective-config)))
 
 (defn stop-tunnel! [tunnel]
   (nrepl-tunnel/stop! tunnel))
 
-(defn start-agent! [& args]
-  (let [tunnel (apply start-tunnel! args)
+(defn start-agent! [config]
+  (let [tunnel (start-tunnel! config)
         agent (make-agent tunnel)]
     agent))
 
@@ -69,8 +48,8 @@
 (defn live? []
   (not (nil? @current-agent)))
 
-(defn start! [& args]
-  (reset! current-agent (apply start-agent! args))
+(defn start! [config]
+  (reset! current-agent (start-agent! config))
   (live?))
 
 (defn stop! []
@@ -78,15 +57,14 @@
   (reset! current-agent nil)
   (not (live?)))
 
-(defn direct-boot! [& [boot-options nrepl-client-options nrepl-tunnel-server-options]]
-  (let [effective-boot-options (get-effective-boot-options boot-options)
-        effective-nrepl-client-options (get-effective-nrepl-client-options nrepl-client-options)
-        {:keys [max-trials delay-between-trials]} effective-boot-options]
+(defn direct-boot! [config]
+  (let [effective-config (config/get-effective-config config)
+        {:keys [max-boot-trials delay-between-boot-trials]} effective-config]
     (loop [trial 1]
-      (if (<= trial max-trials)
+      (if (<= trial max-boot-trials)
         (let [result (try
                        (log/info (str "Starting Dirac Agent (attempt #" trial ")"))
-                       (start! nrepl-client-options nrepl-tunnel-server-options)
+                       (start! config)
                        (catch ConnectException _
                          ::retry)                                                                                             ; server might not be online yet
                        (catch Throwable e
@@ -99,13 +77,13 @@
                     false)
             ::error false                                                                                                     ; error was already reported by ***
             ::retry (do
-                      (Thread/sleep delay-between-trials)
+                      (Thread/sleep delay-between-boot-trials)
                       (recur (inc trial)))))
-        (let [nrepl-server-url (get-nrepl-server-url effective-nrepl-client-options)
-              trial-period-in-seconds (/ (* max-trials delay-between-trials) 1000)]
+        (let [nrepl-server-url (get-nrepl-server-url (:nrepl-server effective-config))
+              trial-period-in-seconds (/ (* max-boot-trials delay-between-boot-trials) 1000)]
           (log/error (str "Failed to start Dirac nREPL Agent. "
                           "Reason: nREPL server didn't come online in time. "
-                          "Made " max-trials " connection attempts to " nrepl-server-url
+                          "Made " max-boot-trials " connection attempts to " nrepl-server-url
                           " over last " (format "%.2f" (double trial-period-in-seconds)) " seconds. "
                           "Did you really start your nREPL server? Maybe a firewall problem?"))
           false)))))
@@ -118,10 +96,11 @@
 
   The problem with `lein repl` :init config is that it is evaluated before nREPL fully starts. It waits for
   this init code to fully evaluate before starting nREPL server."
-  [& args]
-  (setup-logging!)
+  [& [config]]
+  (if-not (or (:skip-logging-setup config) (config/env-val :dirac-agent-skip-logging-setup))
+    (logging/setup-logging!))
   (log/info "Booting Dirac Agent...")
-  (future (apply direct-boot! args))
+  (future (direct-boot! config))
   true)
 
 ; -- support for booting into CLJS REPL -------------------------------------------------------------------------------------

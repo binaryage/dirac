@@ -135,10 +135,11 @@
 
 (defn start! [tunnel options]
   (let [server (make-server tunnel)
-        server-options (assoc options
-                         :on-message (partial on-message server)
-                         :on-incoming-client (partial on-incoming-client server)
-                         :on-leaving-client (partial on-leaving-client server))]
+        server-options (merge options {:ip                 (get options :host "localhost")
+                                       :port               (get options :port 9010)
+                                       :on-message         (partial on-message server)
+                                       :on-incoming-client (partial on-incoming-client server)
+                                       :on-leaving-client  (partial on-leaving-client server)})]
     (set-ws-server! server (ws-server/start! server-options))
     (let [ws-server (get-ws-server server)
           ip (ws-server/get-ip ws-server)
