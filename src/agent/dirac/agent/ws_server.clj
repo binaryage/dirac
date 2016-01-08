@@ -1,6 +1,7 @@
 ; taken from https://github.com/tomjakubowski/weasel/tree/8bfeb29dbaf903e299b2a3296caed52b5761318f
 (ns dirac.agent.ws-server
-  (:require [org.httpkit.server :as http])
+  (:require [org.httpkit.server :as http]
+            [clojure.tools.logging :as log])
   (:import (java.net BindException)))
 
 ; in following methods `server` is an atom holding server state
@@ -47,8 +48,8 @@
 (defn get-local-port [server]
   (-> (get-http-server server) meta :local-port))
 
-(defn get-ip [server]
-  (:ip (get-options server)))
+(defn get-host [server]
+  (:host (get-options server)))
 
 ; -- client data ------------------------------------------------------------------------------------------------------------
 
@@ -127,11 +128,18 @@
 
 ; -- life cycle -------------------------------------------------------------------------------------------------------------
 
+; allow both :host and :ip keys for consistence
+(defn sanitize-options [options]
+  (if (and (:host options) (not (:ip options)))
+    (assoc options :ip (:host options))
+    options))
+
 (defn start!
   "Starts a new server and returns an atom holding server state.
   This server atom can be used for subsequent stop! and wait-for-first-client calls."
   [options]
-  (let [server (atom nil)
+  (let [options (sanitize-options options)
+        server (atom nil)
         connection-handler (partial client-connection-handler server)
         port-range (or (:port-range options) 1)
         first-port (:port options)

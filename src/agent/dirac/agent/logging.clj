@@ -9,6 +9,7 @@
 
 (def base-options
   {:level   :error
+   ;:level   :trace
    :pattern (str (wrap-with-ansi-color BLUE "# %m") "%n")})
 
 (defn make-options [& [options]]

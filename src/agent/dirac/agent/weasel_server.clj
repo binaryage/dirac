@@ -3,8 +3,9 @@
   (:refer-clojure :exclude [loaded-libs])
   (:require [cljs.repl]
             [cljs.compiler :as cmp]
-            [dirac.agent.ws-server :as server]
-            [org.httpkit.server :as http])
+            [clojure.tools.logging :as log]
+            [org.httpkit.server :as http]
+            [dirac.agent.ws-server :as server])
   (:import (clojure.lang IDeref Atom)))
 
 (declare get-client-response-promise-atom)

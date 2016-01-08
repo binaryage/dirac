@@ -1,6 +1,7 @@
 (ns dirac.agent.nrepl-client
   (require [clojure.tools.nrepl :as nrepl]
            [clojure.tools.nrepl.transport :as nrepl.transport]
+           [clojure.tools.logging :as log]
            [dirac.agent.nrepl-protocols :as nrepl-protocols])
   (:import (java.net SocketException)))
 
@@ -14,16 +15,16 @@
 ; -- constructor ------------------------------------------------------------------------------------------------------------
 
 (defn make-client [tunnel connection raw-nrepl-client]
-  {:tunnel                       tunnel
-   :connection                   connection
-   :raw-nrepl-client             raw-nrepl-client
-   :response-poller              (atom nil)
-   :response-poller-exit-promise (promise)})
+  (vary-meta {:connection                   connection
+               :raw-nrepl-client             raw-nrepl-client
+               :response-poller              (atom nil)
+               :response-poller-exit-promise (promise)}
+              assoc :tunnel tunnel))
 
 ; -- access -----------------------------------------------------------------------------------------------------------------
 
 (defn get-tunnel [client]
-  (:tunnel client))
+  (:tunnel (meta client)))
 
 (defn get-connenction [client]
   (:connection client))

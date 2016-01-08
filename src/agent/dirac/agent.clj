@@ -3,14 +3,11 @@
             [clojure.tools.logging :as log]
             [dirac.agent.logging :as logging]
             [dirac.agent.config :as config]
+            [dirac.agent.utils :as utils]
             [dirac.agent.weasel-server :as weasel-server]
             [dirac.agent.nrepl-tunnel :as nrepl-tunnel]
             [dirac.nrepl.piggieback :as piggieback])
   (:import (java.net ConnectException)))
-
-(defn get-nrepl-server-url [nrepl-client-options]
-  (let [{:keys [host port]} nrepl-client-options]
-    (str "nrepl://" host ":" port)))
 
 ; -- agent construction / access --------------------------------------------------------------------------------------------
 
@@ -24,10 +21,10 @@
 
 (defn start-tunnel! [config]
   (let [effective-config (config/get-effective-config config)]
-    (nrepl-tunnel/start! effective-config)))
+    (nrepl-tunnel/create! effective-config)))
 
 (defn stop-tunnel! [tunnel]
-  (nrepl-tunnel/stop! tunnel))
+  (nrepl-tunnel/destroy! tunnel))
 
 (defn start-agent! [config]
   (let [tunnel (start-tunnel! config)
@@ -59,7 +56,7 @@
 
 (defn direct-boot! [config]
   (let [effective-config (config/get-effective-config config)
-        {:keys [max-boot-trials delay-between-boot-trials]} effective-config]
+        {:keys [max-boot-trials delay-between-boot-trials host port]} effective-config]
     (loop [trial 1]
       (if (<= trial max-boot-trials)
         (let [result (try
@@ -79,11 +76,10 @@
             ::retry (do
                       (Thread/sleep delay-between-boot-trials)
                       (recur (inc trial)))))
-        (let [nrepl-server-url (get-nrepl-server-url (:nrepl-server effective-config))
-              trial-period-in-seconds (/ (* max-boot-trials delay-between-boot-trials) 1000)]
+        (let [trial-period-in-seconds (/ (* max-boot-trials delay-between-boot-trials) 1000)]
           (log/error (str "Failed to start Dirac nREPL Agent. "
                           "Reason: nREPL server didn't come online in time. "
-                          "Made " max-boot-trials " connection attempts to " nrepl-server-url
+                          "Made " max-boot-trials " connection attempts to " (utils/get-nrepl-server-url host port)
                           " over last " (format "%.2f" (double trial-period-in-seconds)) " seconds. "
                           "Did you really start your nREPL server? Maybe a firewall problem?"))
           false)))))
