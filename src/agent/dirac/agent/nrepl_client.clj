@@ -29,7 +29,7 @@
 (defn make-client [tunnel options connection raw-nrepl-client response-poller]
   (let [client (NREPLClient. (next-id!) options connection raw-nrepl-client response-poller)
         client (vary-meta client assoc :tunnel tunnel)]
-    (log/trace "made" (str client))
+    (log/trace "Made" (str client))
     client))
 
 ; -- access -----------------------------------------------------------------------------------------------------------------
@@ -107,9 +107,9 @@
   (loop []
     (let [response (read-next-response connection)]
       (case response
-        ::interrupted (log/debug "leaving poll-for-responses loop - interrupted")
-        ::socket-closed (log/debug "leaving poll-for-responses loop - connection closed")
-        '(::error) (log/error "leaving poll-for-responses loop - error:\n" (:exception (meta response)))
+        ::interrupted (log/debug (str tunnel) "Leaving poll-for-responses loop - interrupted")
+        ::socket-closed (log/debug (str tunnel) "Leaving poll-for-responses loop - connection closed")
+        '(::error) (log/error (str tunnel) "Leaving poll-for-responses loop - error:\n" (:exception (meta response)))
         (do
           (nrepl-protocols/deliver-message-to-client! tunnel response)
           (recur))))))
@@ -117,7 +117,7 @@
 (defn wait-for-response-poller-shutdown [client timeout]
   (let [response-poller (get-response-poller client)]
     (when (= (deref response-poller timeout ::timeout) ::timeout)
-      (log/error "response-poller didn't shut down gracefully => forcibly cancelling")
+      (log/error (str client) "The response-poller didn't shut down gracefully => forcibly cancelling")
       (future-cancel response-poller))))
 
 (defn spawn-response-poller! [tunnel options connection]
@@ -130,13 +130,13 @@
         raw-nrepl-client (nrepl/client connection Long/MAX_VALUE)
         response-poller (spawn-response-poller! tunnel connection options)
         client (make-client tunnel options connection raw-nrepl-client response-poller)]
-    (log/debug "created" (str client))
+    (log/debug "Created" (str client))
     client))
 
 (defn destroy! [client & opts]
   (let [{:keys [timeout] :or {timeout 1000}} opts
         connection (get-connenction client)]
-    (log/trace "destroying" (str client))
+    (log/trace "Destroying" (str client))
     (.close connection)                                                                                                       ; poll-for-responses should gracefully leave its loop
     (wait-for-response-poller-shutdown client timeout)
-    (log/trace "destroyed" (str client))))
+    (log/debug "Destroyed" (str client))))

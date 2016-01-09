@@ -5,8 +5,8 @@
 (defn get-nrepl-server-url [host port]
   (str "nrepl://" host ":" port))
 
-(defn get-ws-url [ip port]
-  (str "ws://" ip ":" port))
+(defn get-ws-url [host port]
+  (str "ws://" host ":" port))
 
 (defn pp [v]
   (with-out-str (pprint v)))

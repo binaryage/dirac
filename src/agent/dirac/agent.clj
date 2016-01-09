@@ -114,11 +114,11 @@
 
 ; -- support for booting into CLJS REPL -------------------------------------------------------------------------------------
 
-(defn pre-connect [session repl-env ip port]
-  (nrepl-tunnel/request-weasel-connection (get-tunnel @current-agent) session ip port))                                       ; TODO: this must be done without dependency on global state
+(defn pre-connect [session _repl-env url]
+  (nrepl-tunnel/request-weasel-connection (get-tunnel @current-agent) session url))                                           ; TODO: this must be done without dependency on global state
 
 (defn boot-cljs-repl! [session]
-  (let [repl-env (weasel-server/repl-env {:ip          "0.0.0.0"
-                                          :port        9001
-                                          :pre-connect (partial pre-connect session)})]
+  (let [repl-env (weasel-server/make-weasel-repl-env {:host        "localhost"
+                                                      :port        9001
+                                                      :pre-connect (partial pre-connect session)})]
     (piggieback/cljs-repl repl-env)))

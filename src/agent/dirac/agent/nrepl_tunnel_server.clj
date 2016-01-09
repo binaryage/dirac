@@ -21,7 +21,7 @@
 (defn make-server [tunnel]
   (let [server (NREPLTunnelServer. (next-id!) (atom nil) (atom {}))
         server (vary-meta server assoc :tunnel tunnel)]
-    (log/trace "made" (str server))
+    (log/trace "Made" (str server))
     server))
 
 ; -- access -----------------------------------------------------------------------------------------------------------------
@@ -70,7 +70,7 @@
 
 (defn send! [client message]
   {:pre [client]}
-  (log/trace (str "sending message " (utils/sid message) " to tunnel client " (str client)))
+  (log/trace (str "Sending message " (utils/sid message) " to client " (str client)))
   (ws-server/send! client message))
 
 (defn dispatch-message! [server message]
@@ -78,15 +78,14 @@
   (if-let [session (:session message)]                                                                                        ; ignore messages without session
     (if-let [client (get-client-for-session server session)]                                                                  ; client may be already disconnected
       (send! client message))
-    (log/trace (str "message " (utils/sid message) " cannot be dispatched because it does not have a session"))))
+    (log/trace (str server) (str "Message " (utils/sid message) " cannot be dispatched because it does not have a session"))))
 
 ; -- message processing -----------------------------------------------------------------------------------------------------
 
 (defmulti process-message (fn [_server _client msg] (:op msg)))
 
-(defmethod process-message :default [_server _client message]
-  (log/debug "received unrecognized message from tunnel client\n"
-             (utils/pp message)))
+(defmethod process-message :default [server client message]
+  (log/debug (str server) "Received unrecognized message from client" (str client) ":\n" (utils/pp message)))
 
 (defmethod process-message :ready [server client _message]
   ; a new client is ready after connection
@@ -95,9 +94,8 @@
     (send! client {:op      :bootstrap
                    :session session})))
 
-(defmethod process-message :error [_server _client message]
-  (log/error "received error\n"
-             (utils/pp message)))
+(defmethod process-message :error [server client message]
+  (log/error (str server) "Received an error from client" (str client) ":\n" (utils/pp message)))
 
 (defmethod process-message :nrepl-message [server client message]
   (if-let [envelope (:envelope message)]
@@ -124,7 +122,7 @@
     (quit-client! server client)
     (nrepl-protocols/close-session tunnel session)
     (remove-client! server session)
-    (log/debug (str "removed client " (utils/sid session) " from " (str server)))))
+    (log/debug (str "Removed client " (utils/sid session) " from " (str server)))))
 
 (defn disconnect-all-clients! [server]
   (let [clients (get-clients server)]
@@ -136,7 +134,7 @@
     (set-client-session-promise! server client session-promise)
     (let [tunnel (get-tunnel server)
           session (nrepl-protocols/open-session tunnel)]                                                                      ; blocking!
-      (log/debug (str "new client initialized " (utils/sid session) " in " (str server)))
+      (log/debug (str server) (str "New client initialized " (utils/sid session)))
       (deliver session-promise session))))
 
 (defn get-server-url [server]
@@ -152,11 +150,11 @@
   (process-message server client message))
 
 (defn on-incoming-client [server _ws-server client]
-  (log/info "new client" (str client) "connected to tunnel server" (str server))
+  (log/info (str server) "A new client" (str client) "connected to tunnel server" (str server))
   (open-client-session server client))
 
 (defn on-leaving-client [server _ws-server client]
-  (log/info "client" (str client) "disconnected from tunnel server" (str server))
+  (log/info (str server) "Client" (str client) "disconnected from tunnel server" (str server))
   (disconnect-client! server client))
 
 (defn create! [tunnel options]
@@ -167,12 +165,12 @@
                                        :on-incoming-client (partial on-incoming-client server)
                                        :on-leaving-client  (partial on-leaving-client server)})]
     (set-ws-server! server (ws-server/create! server-options))
-    (log/info (str "started Dirac nREPL tunnel server on " (get-server-url server)))
-    (log/debug "created" (str server))
+    (log/info (str (str server) "Started Dirac nREPL tunnel server on " (get-server-url server)))
+    (log/debug "Created" (str server))
     server))
 
 (defn destroy! [server]
-  (log/trace "destroying" (str server))
+  (log/trace "Destroying" (str server))
   (disconnect-all-clients! server)
   (ws-server/destroy! (get-ws-server server))
-  (log/debug "destroyed" (str server)))
+  (log/debug "Destroyed" (str server)))

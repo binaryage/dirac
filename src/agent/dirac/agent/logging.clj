@@ -9,7 +9,7 @@
 
 (def base-options
   {;:level   :error
-   :level   :trace
+   :level   :debug
    :pattern (str (wrap-with-ansi-color BLUE "# %m") "%n")})
 
 (defn make-options [& [options]]
