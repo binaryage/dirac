@@ -11,7 +11,7 @@
   Object
   (toString [this]
     (let [tunnel (:tunnel (meta this))]
-      (str "NREPLTunnelServer#" (:id this) "(of " (str tunnel) ")"))))
+      (str "NREPLTunnelServer#" (:id this) " of " (str tunnel)))))
 
 (def last-id (volatile! 0))
 
@@ -19,10 +19,9 @@
   (vswap! last-id inc))
 
 (defn make-server [tunnel]
-  (let [server (vary-meta
-                 (NREPLTunnelServer. (next-id!) (atom nil) (atom {}))
-                 assoc :tunnel tunnel)]
-    (log/debug "created" (str server))
+  (let [server (NREPLTunnelServer. (next-id!) (atom nil) (atom {}))
+        server (vary-meta server assoc :tunnel tunnel)]
+    (log/trace "made" (str server))
     server))
 
 ; -- access -----------------------------------------------------------------------------------------------------------------
@@ -46,7 +45,7 @@
 (defn get-client-for-session [server session]
   {:pre [(instance? NREPLTunnelServer server)
          (string? session)]}
-  (first (first (filter #(= session @(second %)) @(:client->session-promise server)))))                                        ; this may block until session promise gets delivered
+  (first (first (filter #(= session @(second %)) @(:client->session-promise server)))))                                       ; this may block until session promise gets delivered
 
 (defn get-client-session [server client]
   {:post [(string? %)]}
@@ -140,17 +139,24 @@
       (log/debug (str "new client initialized " (utils/sid session) " in " (str server)))
       (deliver session-promise session))))
 
+(defn get-server-url [server]
+  (let [ws-server (get-ws-server server)
+        host (ws-server/get-host ws-server)
+        port (ws-server/get-local-port ws-server)
+        url (utils/get-ws-url host port)]
+    url))
+
 ; -- request handling -------------------------------------------------------------------------------------------------------
 
 (defn on-message [server _ws-server client message]
   (process-message server client message))
 
 (defn on-incoming-client [server _ws-server client]
-  (log/debug "new client connected to tunnel server" (str server) (str client))
+  (log/info "new client" (str client) "connected to tunnel server" (str server))
   (open-client-session server client))
 
 (defn on-leaving-client [server _ws-server client]
-  (log/debug "client disconnected from tunnel server" (str server) (str client))
+  (log/info "client" (str client) "disconnected from tunnel server" (str server))
   (disconnect-client! server client))
 
 (defn create! [tunnel options]
@@ -161,14 +167,12 @@
                                        :on-incoming-client (partial on-incoming-client server)
                                        :on-leaving-client  (partial on-leaving-client server)})]
     (set-ws-server! server (ws-server/create! server-options))
-    (let [ws-server (get-ws-server server)
-          host (ws-server/get-host ws-server)
-          port (ws-server/get-local-port ws-server)
-          url (utils/get-ws-url host port)]
-      (println (str "Started Dirac nREPL tunnel server on " url))
-      server)))
+    (log/info (str "started Dirac nREPL tunnel server on " (get-server-url server)))
+    (log/debug "created" (str server))
+    server))
 
 (defn destroy! [server]
-  (log/debug "destroying " (str server))
+  (log/trace "destroying" (str server))
   (disconnect-all-clients! server)
-  (ws-server/destroy! (get-ws-server server)))
+  (ws-server/destroy! (get-ws-server server))
+  (log/debug "destroyed" (str server)))

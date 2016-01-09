@@ -17,6 +17,10 @@
 (defn get-tunnel [agent]
   (:tunnel agent))
 
+(defn get-agent-info [agent]
+  (let [tunnel (get-tunnel agent)]
+    (nrepl-tunnel/get-tunnel-info tunnel)))
+
 ; -- lower-level api --------------------------------------------------------------------------------------------------------
 
 (defn create-tunnel! [config]
@@ -45,18 +49,21 @@
 (defn live? []
   (not (nil? @current-agent)))
 
+(defn destroy! []
+  (when (live?)
+    (destroy-agent! @current-agent)
+    (reset! current-agent nil)
+    (not (live?))))
+
 (defn create! [config]
+  (when (live?)
+    (destroy!))
   (reset! current-agent (create-agent! config))
   (live?))
 
-(defn destroy! []
-  (destroy-agent! @current-agent)
-  (reset! current-agent nil)
-  (not (live?)))
-
-(defn init! [config]
+(defn boot-now! [config]
   (let [effective-config (config/get-effective-config config)
-        {:keys [max-boot-trials delay-between-boot-trials host port]} effective-config]
+        {:keys [max-boot-trials delay-between-boot-trials]} effective-config]
     (loop [trial 1]
       (if (<= trial max-boot-trials)
         (let [result (try
@@ -65,23 +72,29 @@
                        (catch ConnectException _
                          ::retry)                                                                                             ; server might not be online yet
                        (catch Throwable e
-                         (log/error "Failed to boot Dirac Agent:" e)                                                          ; ***
+                         (log/error "Failed to create Dirac Agent:" e)                                                        ; ***
                          ::error))]
           (case result
-            true true                                                                                                         ; success
+            true (let [agent @current-agent]
+                   (assert agent)
+                   (log/info "Started Dirac Agent" (str agent))
+                   (println (str "Started Dirac Agent: " (get-agent-info agent)))
+                   true)                                                                                                      ; success
             false (do
-                    (log/error "Failed to start Dirac nREPL Agent.")
+                    (log/error "Failed to start Dirac Agent.")
                     false)
             ::error false                                                                                                     ; error was already reported by ***
             ::retry (do
                       (Thread/sleep delay-between-boot-trials)
                       (recur (inc trial)))))
-        (let [trial-period-in-seconds (/ (* max-boot-trials delay-between-boot-trials) 1000)]
-          (log/error (str "Failed to start Dirac nREPL Agent. "
+        (let [trial-period-in-seconds (/ (* max-boot-trials delay-between-boot-trials) 1000)
+              {:keys [host port]} (:nrepl-server effective-config)]
+          (log/error (str "Failed to start Dirac Agent. "
                           "Reason: nREPL server didn't come online in time. "
-                          "Made " max-boot-trials " connection attempts to " (utils/get-nrepl-server-url host port)
-                          " over last " (format "%.2f" (double trial-period-in-seconds)) " seconds. "
-                          "Did you really start your nREPL server? Maybe a firewall problem?"))
+                          "Made " max-boot-trials " connection attempts over last "
+                          (format "%.2f" (double trial-period-in-seconds)) " seconds. "
+                          "Did you really start your nREPL server on " (utils/get-nrepl-server-url host port) "? "
+                          "Maybe a firewall problem?"))
           false)))))
 
 (defn boot!
@@ -96,7 +109,7 @@
   (if-not (or (:skip-logging-setup config) (config/env-val :dirac-agent-skip-logging-setup))
     (logging/setup-logging!))
   (log/info "Booting Dirac Agent...")
-  (future (init! config))
+  (future (boot-now! config))
   true)
 
 ; -- support for booting into CLJS REPL -------------------------------------------------------------------------------------

@@ -12,7 +12,7 @@
   (with-out-str (pprint v)))
 
 (defn first-part [s]
-  (or (first (string/split s #"-" 2)) "?"))
+  (first (string/split s #"-" 2)))
 
 (defn sid [thing]
   (str "#" (first-part (cond

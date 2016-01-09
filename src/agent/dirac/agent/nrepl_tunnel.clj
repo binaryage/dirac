@@ -63,43 +63,53 @@
   (vswap! last-id inc))
 
 (defn make-tunnel! [options]
-  (let [tunnel (NREPLTunnel.
-                 (next-id!)
-                 options
-                 (atom nil)
-                 (atom nil)
-                 (atom nil)                                                                                                   ; a channel for incoming messages from server, to be forwarded to client
-                 (atom nil))]                                                                                                 ; a channel for incoming messages from client, to be forwarded to server
-    (log/debug "created" (str tunnel))
+  (let [tunnel (NREPLTunnel. (next-id!) options (atom nil) (atom nil) (atom nil) (atom nil))]
+    (log/trace "made" (str tunnel))
     tunnel))
 
-; -- tunnel manipulation ----------------------------------------------------------------------------------------------------
+; -- tunnel access ----------------------------------------------------------------------------------------------------------
 
 (defn get-server-messages-channel [tunnel]
+  {:pre [(instance? NREPLTunnel tunnel)]}
   @(:server-messages-channel tunnel))
 
 (defn set-server-messages-channel! [tunnel channel]
+  {:pre [(instance? NREPLTunnel tunnel)]}
   (reset! (:server-messages-channel tunnel) channel))
 
 (defn get-client-messages-channel [tunnel]
+  {:pre [(instance? NREPLTunnel tunnel)]}
   @(:client-messages-channel tunnel))
 
 (defn set-client-messages-channel! [tunnel channel]
+  {:pre [(instance? NREPLTunnel tunnel)]}
   (reset! (:client-messages-channel tunnel) channel))
 
 (defn get-nrepl-tunnel-server [tunnel]
+  {:pre [(instance? NREPLTunnel tunnel)]}
   @(:nrepl-tunnel-server tunnel))
 
 (defn set-nrepl-tunnel-server! [tunnel server]
+  {:pre [(instance? NREPLTunnel tunnel)]}
   (reset! (:nrepl-tunnel-server tunnel) server))
 
 (defn get-nrepl-client [tunnel]
-  {:pre [tunnel]}
+  {:pre [(instance? NREPLTunnel tunnel)]}
   @(:nrepl-client tunnel))
 
 (defn set-nrepl-client! [tunnel client]
-  {:pre [tunnel]}
+  {:pre [(instance? NREPLTunnel tunnel)]}
   (reset! (:nrepl-client tunnel) client))
+
+; -- helpers ----------------------------------------------------------------------------------------------------------------
+
+(defn get-tunnel-info [tunnel]
+  {:pre [(instance? NREPLTunnel tunnel)]}
+  (let [tunnel-server (get-nrepl-tunnel-server tunnel)
+        tunnel-url (nrepl-tunnel-server/get-server-url tunnel-server)
+        nrepl-client (get-nrepl-client tunnel)
+        client-info (nrepl-client/get-client-info nrepl-client)]
+    (str client-info " Tunnel is accepting connections on " tunnel-url ".")))
 
 ; -- tunnel message channels ------------------------------------------------------------------------------------------------
 ;
@@ -177,9 +187,11 @@
       (set-nrepl-tunnel-server! tunnel nrepl-tunnel-server)
       (run-server-messages-channel-processing-loop! tunnel)
       (run-client-messages-channel-processing-loop! tunnel)
+      (log/debug "created" (str tunnel))
       tunnel)))
 
 (defn destroy! [tunnel]
+  (log/trace "destroying" (str tunnel))
   (close! (get-client-messages-channel tunnel))
   (when-let [nrepl-tunnel-server (get-nrepl-tunnel-server tunnel)]
     (nrepl-tunnel-server/destroy! nrepl-tunnel-server)
@@ -190,7 +202,7 @@
     (set-nrepl-client! tunnel nil))
   (set-client-messages-channel! tunnel nil)
   (set-server-messages-channel! tunnel nil)
-  (log/debug "destroyed nREPL tunnel:" (str tunnel))
+  (log/debug "destroyed" (str tunnel))
   true)
 
 (defn request-weasel-connection [tunnel session ip port]

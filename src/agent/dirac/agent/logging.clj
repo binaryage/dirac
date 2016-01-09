@@ -8,8 +8,8 @@
   (str "\u001b[0;" color "m" s "\u001b[m"))
 
 (def base-options
-  {:level   :error
-   ;:level   :trace
+  {;:level   :error
+   :level   :trace
    :pattern (str (wrap-with-ansi-color BLUE "# %m") "%n")})
 
 (defn make-options [& [options]]
