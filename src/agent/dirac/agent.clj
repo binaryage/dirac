@@ -19,21 +19,21 @@
 
 ; -- lower-level api --------------------------------------------------------------------------------------------------------
 
-(defn start-tunnel! [config]
+(defn create-tunnel! [config]
   (let [effective-config (config/get-effective-config config)]
     (nrepl-tunnel/create! effective-config)))
 
-(defn stop-tunnel! [tunnel]
+(defn destroy-tunnel! [tunnel]
   (nrepl-tunnel/destroy! tunnel))
 
-(defn start-agent! [config]
-  (let [tunnel (start-tunnel! config)
+(defn create-agent! [config]
+  (let [tunnel (create-tunnel! config)
         agent (make-agent tunnel)]
     agent))
 
-(defn stop-agent! [agent]
+(defn destroy-agent! [agent]
   (let [tunnel (get-tunnel agent)]
-    (stop-tunnel! tunnel)))
+    (destroy-tunnel! tunnel)))
 
 ; -- high-level api ---------------------------------------------------------------------------------------------------------
 
@@ -45,23 +45,23 @@
 (defn live? []
   (not (nil? @current-agent)))
 
-(defn start! [config]
-  (reset! current-agent (start-agent! config))
+(defn create! [config]
+  (reset! current-agent (create-agent! config))
   (live?))
 
-(defn stop! []
-  (stop-agent! @current-agent)
+(defn destroy! []
+  (destroy-agent! @current-agent)
   (reset! current-agent nil)
   (not (live?)))
 
-(defn direct-boot! [config]
+(defn init! [config]
   (let [effective-config (config/get-effective-config config)
         {:keys [max-boot-trials delay-between-boot-trials host port]} effective-config]
     (loop [trial 1]
       (if (<= trial max-boot-trials)
         (let [result (try
                        (log/info (str "Starting Dirac Agent (attempt #" trial ")"))
-                       (start! config)
+                       (create! config)
                        (catch ConnectException _
                          ::retry)                                                                                             ; server might not be online yet
                        (catch Throwable e
@@ -90,13 +90,13 @@
   We want to make this function robust and safe to be called by :repl-options :init (Leiningen).
   It runs on a separate thread and waits there for nREPL server to come online.
 
-  The problem with `lein repl` :init config is that it is evaluated before nREPL fully starts. It waits for
-  this init code to fully evaluate before starting nREPL server."
+  The problem with `lein repl` :init config is that it is evaluated before nREPL fully starts.
+  Actually it waits for this init code to fully evaluate before starting nREPL server."
   [& [config]]
   (if-not (or (:skip-logging-setup config) (config/env-val :dirac-agent-skip-logging-setup))
     (logging/setup-logging!))
   (log/info "Booting Dirac Agent...")
-  (future (direct-boot! config))
+  (future (init! config))
   true)
 
 ; -- support for booting into CLJS REPL -------------------------------------------------------------------------------------

@@ -171,7 +171,7 @@
         client-messages (chan)]
     (set-server-messages-channel! tunnel server-messages)
     (set-client-messages-channel! tunnel client-messages)
-    (let [nrepl-client (nrepl-client/connect! tunnel (:nrepl-server options))
+    (let [nrepl-client (nrepl-client/create! tunnel (:nrepl-server options))
           nrepl-tunnel-server (nrepl-tunnel-server/create! tunnel (:nrepl-tunnel options))]
       (set-nrepl-client! tunnel nrepl-client)
       (set-nrepl-tunnel-server! tunnel nrepl-tunnel-server)
@@ -186,7 +186,7 @@
     (set-nrepl-tunnel-server! tunnel nil))
   (close! (get-server-messages-channel tunnel))
   (when-let [nrepl-client (get-nrepl-client tunnel)]
-    (nrepl-client/disconnect! nrepl-client)
+    (nrepl-client/destroy! nrepl-client)
     (set-nrepl-client! tunnel nil))
   (set-client-messages-channel! tunnel nil)
   (set-server-messages-channel! tunnel nil)

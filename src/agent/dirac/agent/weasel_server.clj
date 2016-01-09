@@ -75,15 +75,17 @@
         response))))
 
 (defn send-occupied-response-and-close! [channel]
-  (http/send! channel (server/serialize-msg {:op :error, :type :occupied}))
+  (http/send! channel (server/serialize-msg {:op   :error
+                                             :type :occupied}))
   (http/close channel))
 
 (defn on-client-connection [server channel]
   ; we allow only one client connection at a time
-  (when (server/has-clients? server)
-    (send-occupied-response-and-close! channel)
-    false)
-  true)
+  (if-not (server/has-clients? server)
+    true
+    (do
+      (send-occupied-response-and-close! channel)
+      false)))
 
 (defn setup-env [env _opts]
   (let [server-options (merge
@@ -92,7 +94,7 @@
                           :on-message           (fn [_server _client message]
                                                   (process-message env message))
                           :on-client-connection on-client-connection})
-        server (server/start! server-options)
+        server (server/create! server-options)
         {:keys [ip pre-connect]} env]
     (set-server! env server)
     (let [port (get-real-port server)]
@@ -104,7 +106,7 @@
       env)))
 
 (defn tear-down-env [env]
-  (server/stop! (get-server env))
+  (server/destroy! (get-server env))
   (println "<< stopped server >>"))
 
 (defn request-eval [env js]

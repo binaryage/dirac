@@ -160,7 +160,7 @@
                                        :on-message         (partial on-message server)
                                        :on-incoming-client (partial on-incoming-client server)
                                        :on-leaving-client  (partial on-leaving-client server)})]
-    (set-ws-server! server (ws-server/start! server-options))
+    (set-ws-server! server (ws-server/create! server-options))
     (let [ws-server (get-ws-server server)
           host (ws-server/get-host ws-server)
           port (ws-server/get-local-port ws-server)
@@ -171,4 +171,4 @@
 (defn destroy! [server]
   (log/debug "destroying " (str server))
   (disconnect-all-clients! server)
-  (ws-server/stop! (get-ws-server server)))
+  (ws-server/destroy! (get-ws-server server)))

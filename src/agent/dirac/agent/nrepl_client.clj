@@ -103,7 +103,7 @@
 
 ; -- life cycle -------------------------------------------------------------------------------------------------------------
 
-(defn connect! [tunnel options]
+(defn create! [tunnel options]
   (let [connection (connect-with-options options)
         raw-nrepl-client (nrepl/client connection Long/MAX_VALUE)
         client (make-client tunnel connection raw-nrepl-client)
@@ -111,7 +111,7 @@
     (set-response-poller! client response-poller)
     client))
 
-(defn disconnect! [client & opts]
+(defn destroy! [client & opts]
   (let [{:keys [timeout] :or {timeout 1000}} opts
         connection (get-connenction client)
         response-poller (get-response-poller client)]

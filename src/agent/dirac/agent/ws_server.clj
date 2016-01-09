@@ -128,13 +128,13 @@
 
 ; -- life cycle -------------------------------------------------------------------------------------------------------------
 
-; allow both :host and :ip keys for consistence
+; :host is an alias for :ip (for convenience)
 (defn sanitize-options [options]
   (if (and (:host options) (not (:ip options)))
     (assoc options :ip (:host options))
     options))
 
-(defn start!
+(defn create!
   "Starts a new server and returns an atom holding server state.
   This server atom can be used for subsequent stop! and wait-for-first-client calls."
   [options]
@@ -157,7 +157,7 @@
             (reset! server @(make-server http-server effective-options))
             server))))))
 
-(defn stop! [server & [timeout]]
+(defn destroy! [server & [timeout]]
   (when-let [http-server (get-http-server server)]
     (http-server :timeout (or timeout 100))                                                                                   ; this will stop the http-server created via http/run-server
     (reset! server nil)))
