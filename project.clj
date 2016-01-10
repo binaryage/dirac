@@ -27,7 +27,8 @@
    :server-logfile ".figwheel_server.log"
    :css-dirs       []}
 
-  :source-paths ["src/agent"
+  :source-paths ["src/lib"
+                 "src/agent"
                  "src/nrepl"]
 
   :resource-paths []

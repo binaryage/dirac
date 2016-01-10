@@ -60,16 +60,18 @@
 
 ; -- message processing -----------------------------------------------------------------------------------------------------
 
-(defn boostrap-cljs-repl-message [session]
+(defn boostrap-cljs-repl-message []
   {:op   "eval"
-   :code (str "(do
-            (require 'dirac.agent)
-            (dirac.agent/boot-cljs-repl! \"" session "\"))")})
+   :code (str "(do"
+              "  (require 'dirac.nrepl)"
+              "  (dirac.nrepl/boot-cljs-repl!))")})
 
-(defmulti process-message :op)
+(defmulti process-message (fn [_client message] (:op message)))
 
-(defmethod process-message :default [message]
-  (let [{:keys [out err ns status id]} message]
+(defmethod process-message :default [client message]
+  (let [{:keys [out err ns status id value]} message]
+    (if value
+      (alter-meta! client assoc :last-value value))
     (cond
       out (eval/present-out-message out)
       err (eval/present-err-message err)
@@ -80,32 +82,23 @@
               (warn "received unrecognized nREPL message" message))))
   nil)
 
-(defmethod process-message :error [message]
+(defmethod process-message :error [_client message]
   (error "Received error message" message)
   (go
     {:op      :error
      :message (:type message)}))
 
-; When we connect to freshly open nREPL session, cljs REPL is not boostrapped (google "nREPL piggieback" for more details).
-; Tunnel does not close nREPL client connection after DevTools disconnection, so bootstrapping is needed only once.
-; Tunnel keeps track if nREPL client was already bootstrapped and asks us to bootstrap it if we are the first connected
-; tunnel client.
-(defmethod process-message :bootstrap [message]
-  (go
-    (let [session (:session message)
-          response (<! (tunnel-message-with-response! (boostrap-cljs-repl-message session)))]
-      (case (:status response)
-        ["done"] {:op :bootstrap-done}
-        ["timeout"] {:op :bootstrap-timeout}
-        {:op :bootstrap-error}))))
-
 ; -- connection -------------------------------------------------------------------------------------------------------------
 
-(defn on-message-handler [message]
+(defn sanitize-message [message]
+  (update message :op keyword))
+
+(defn on-message-handler [client message]
   (go
-    (if-let [message-chan (process-message message)]
-      (if-let [result (<! message-chan)]
-        (send! result)))))
+    (let [sanitized-message (sanitize-message message)]
+      (if-let [message-chan (process-message client sanitized-message)]
+        (if-let [result (<! message-chan)]
+          (send! result))))))
 
 (defn connect! [server-url opts]
   (let [default-opts {:name       "nREPL Tunnel Client"

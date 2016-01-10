@@ -1010,7 +1010,7 @@ WebInspector.ConsoleView.prototype = {
         if (!text)
             return;
         this._lastDiracCommandId++;
-        var command = text + "\n";
+        var command = text;
         var commandId = this._lastDiracCommandId;
 
         var executionContext = WebInspector.context.flavor(WebInspector.ExecutionContext);

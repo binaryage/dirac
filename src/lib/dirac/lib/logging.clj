@@ -1,12 +1,11 @@
-(ns dirac.agent.logging
+(ns dirac.lib.logging
   (require [clj-logging-config.log4j :as config]
-           [dirac.lib.logging :as logging]
            [dirac.lib.utils :as utils]))
 
 (def base-options
   {;:level   :error
    :level   :trace
-   :pattern (str (utils/wrap-with-ansi-color utils/ANSI_YELLOW "# %m") "%n")})
+   :pattern (str (utils/wrap-with-ansi-color utils/ANSI_BLUE "# %m") "%n")})
 
 (defn make-options [& [options]]
   (merge base-options options))
@@ -14,8 +13,9 @@
 ; -- our default setup ------------------------------------------------------------------------------------------------------
 
 (defn setup-logging! []
-  (logging/setup-logging!)
   (config/set-loggers!
-    "dirac.agent" (make-options)
-    "dirac.agent.logging" (make-options)
-    "dirac.agent.config" (make-options)))
+    "dirac.lib.nrepl-client" (make-options)
+    "dirac.lib.nrepl-tunnel" (make-options)
+    "dirac.lib.nrepl-tunnel-server" (make-options)
+    "dirac.lib.weasel-server" (make-options)
+    "dirac.lib.ws-server" (make-options)))

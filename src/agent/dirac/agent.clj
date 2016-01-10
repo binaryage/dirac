@@ -3,10 +3,8 @@
             [clojure.tools.logging :as log]
             [dirac.agent.logging :as logging]
             [dirac.agent.config :as config]
-            [dirac.agent.utils :as utils]
-            [dirac.agent.weasel-server :as weasel-server]
-            [dirac.agent.nrepl-tunnel :as nrepl-tunnel]
-            [dirac.nrepl.piggieback :as piggieback])
+            [dirac.lib.nrepl-tunnel :as nrepl-tunnel]
+            [dirac.lib.utils :as utils])
   (:import (java.net ConnectException)))
 
 ; -- agent construction / access --------------------------------------------------------------------------------------------
@@ -97,6 +95,8 @@
                           "Maybe a firewall problem?"))
           false)))))
 
+; -- entry point ------------------------------------------------------------------------------------------------------------
+
 (defn boot!
   "Attempts to boot the Dirac Agent.
 
@@ -106,19 +106,8 @@
   The problem with `lein repl` :init config is that it is evaluated before nREPL fully starts.
   Actually it waits for this init code to fully evaluate before starting nREPL server."
   [& [config]]
-  (if-not (or (:skip-logging-setup config) (config/env-val :dirac-agent-skip-logging-setup))
+  (if-not (or (:skip-logging-setup config) (utils/env-val :dirac-agent-skip-logging-setup))
     (logging/setup-logging!))
   (log/info "Booting Dirac Agent...")
   (future (boot-now! config))
   true)
-
-; -- support for booting into CLJS REPL -------------------------------------------------------------------------------------
-
-(defn pre-connect [session _repl-env url]
-  (nrepl-tunnel/request-weasel-connection (get-tunnel @current-agent) session url))                                           ; TODO: this must be done without dependency on global state
-
-(defn boot-cljs-repl! [session]
-  (let [repl-env (weasel-server/make-weasel-repl-env {:host        "localhost"
-                                                      :port        9001
-                                                      :pre-connect (partial pre-connect session)})]
-    (piggieback/cljs-repl repl-env)))

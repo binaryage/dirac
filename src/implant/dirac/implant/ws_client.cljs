@@ -70,7 +70,7 @@
       (info client "Opened websocket connection"))
     (send! client {:op :ready})
     (if on-open
-      (on-open))))
+      (on-open client))))
 
 (defn on-message-handler [client event]
   (let [{:keys [on-message verbose]} (get-options client)
@@ -79,14 +79,14 @@
     (if verbose
       (log client "Received websocket message" message))
     (if on-message
-      (on-message message))))
+      (on-message client message))))
 
 (defn on-closed-handler [client]
   (let [{:keys [on-close verbose]} (get-options client)]
     (if (and verbose (ready? client))
       (info client "Closed websocket connection"))
     (if on-close
-      (on-close))
+      (on-close client))
     (mark-as-not-ready! client)))
 
 (defn on-error-handler [client event]
@@ -95,7 +95,7 @@
       (if verbose
         (error client "Encountered websocket error" event)))
     (if on-error
-      (on-error event))))
+      (on-error client event))))
 
 (defn sanitize-opts [opts]
   (merge defaults opts))

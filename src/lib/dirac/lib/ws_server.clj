@@ -1,8 +1,8 @@
 ; taken from https://github.com/tomjakubowski/weasel/tree/8bfeb29dbaf903e299b2a3296caed52b5761318f
-(ns dirac.agent.ws-server
+(ns dirac.lib.ws-server
   (:require [org.httpkit.server :as http]
             [clojure.tools.logging :as log]
-            [dirac.agent.utils :as utils])
+            [dirac.lib.utils :as utils])
   (:import (java.net BindException)))
 
 (defrecord WebSocketServer [id options http-server first-client-promise clients]

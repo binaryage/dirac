@@ -1,9 +1,9 @@
-(ns dirac.agent.nrepl-client
+(ns dirac.lib.nrepl-client
   (require [clojure.tools.nrepl :as nrepl]
            [clojure.tools.nrepl.transport :as nrepl.transport]
            [clojure.tools.logging :as log]
-           [dirac.agent.nrepl-protocols :as nrepl-protocols]
-           [dirac.agent.utils :as utils])
+           [dirac.lib.nrepl-protocols :as nrepl-protocols]
+           [dirac.lib.utils :as utils])
   (:import (java.net SocketException)
            (java.util.concurrent Future)))
 

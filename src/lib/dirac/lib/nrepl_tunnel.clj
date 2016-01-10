@@ -1,10 +1,10 @@
-(ns dirac.agent.nrepl-tunnel
+(ns dirac.lib.nrepl-tunnel
   (require [clojure.core.async :refer [chan <!! <! >!! put! alts!! timeout close! go go-loop]]
            [clojure.tools.logging :as log]
-           [dirac.agent.nrepl-protocols :refer [NREPLTunnelService]]
-           [dirac.agent.nrepl-tunnel-server :as nrepl-tunnel-server]
-           [dirac.agent.nrepl-client :as nrepl-client]
-           [dirac.agent.utils :as utils]))
+           [dirac.lib.nrepl-protocols :refer [NREPLTunnelService]]
+           [dirac.lib.nrepl-tunnel-server :as nrepl-tunnel-server]
+           [dirac.lib.nrepl-client :as nrepl-client]
+           [dirac.lib.utils :as utils]))
 
 ; Unfortunately, we cannot easily implement full-blown nREPL client in Dirac DevTools.
 ; First, we don't have real sockets API, we can use only websockets from javascript.
@@ -205,10 +205,10 @@
   (log/debug "Destroyed" (str tunnel))
   true)
 
-(defn request-weasel-connection [tunnel session url]
-  (log/debug (str tunnel) "Request weasel connection from client" session)
-  (let [server (get-nrepl-tunnel-server tunnel)
-        message {:op         :connect-weasel
-                 :server-url url}
-        client (nrepl-tunnel-server/get-client-for-session server session)]
-    (nrepl-tunnel-server/send! client message)))
+;(defn request-weasel-connection [tunnel session url]
+;  (log/debug (str tunnel) "Request weasel connection from client" session)
+;  (let [server (get-nrepl-tunnel-server tunnel)
+;        message {:op         :connect-weasel
+;                 :server-url url}
+;        client (nrepl-tunnel-server/get-client-for-session server session)]
+;    (nrepl-tunnel-server/send! client message)))

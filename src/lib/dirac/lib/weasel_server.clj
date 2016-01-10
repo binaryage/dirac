@@ -1,12 +1,12 @@
 ; original code taken from https://github.com/tomjakubowski/weasel/tree/8bfeb29dbaf903e299b2a3296caed52b5761318f
-(ns dirac.agent.weasel-server
+(ns dirac.lib.weasel-server
   (:refer-clojure :exclude [loaded-libs])
   (:require [cljs.repl]
             [cljs.compiler :as cmp]
             [clojure.tools.logging :as log]
             [org.httpkit.server :as http]
-            [dirac.agent.ws-server :as server]
-            [dirac.agent.utils :as utils])
+            [dirac.lib.ws-server :as server]
+            [dirac.lib.utils :as utils])
   (:import (clojure.lang IDeref Atom)))
 
 (def default-opts {:host       "localhost"
@@ -20,11 +20,17 @@
 (declare load-javascript)
 (declare tear-down-env)
 
-(defrecord WeaselREPLEnv [id options server client-response-promise]
+; normally cljs-repl driven by piggiback calls setup/tear-down for each evaluation
+; piggieback works around it by wrapping env and doing -setup only once and ignoring -tear-down calls
+; this complicated the piggieback implementation so I decided to to this here instead and simplify our version of piggieback
+(defrecord WeaselREPLEnv [id options server client-response-promise cached-setup]
   cljs.repl/IJavaScriptEnv
   (-setup [this opts]
-    (log/trace (str this) "-setup called" opts)
-    (setup-env this opts))
+    (let [cached-setup-value @(:cached-setup this)]
+      (log/trace (str this) "-setup called, cached setup" cached-setup-value)
+      (if (= ::uninitialized cached-setup-value)
+        (reset! (:cached-setup this) (setup-env this opts))
+        cached-setup-value)))
   (-evaluate [this filename line js]
     (log/trace (str this) "-evaluate called" filename line "\n" js)
     (request-eval this js))
@@ -32,8 +38,10 @@
     (log/trace (str this) "-load called" (str this) provides url)
     (load-javascript this provides url))
   (-tear-down [this]
-    (log/trace (str this) "-tear-down called" (str this))
-    (tear-down-env this))
+    (log/trace (str this) "-tear-down called => ignoring")
+    (when false
+      (reset! cached-setup ::uninitialized)
+      (tear-down-env this)))
 
   Object
   (toString [this]
@@ -50,7 +58,7 @@
   "Returns a JS environment to be passed to REPL or Piggieback."
   [options]
   (let [effective-options (merge default-opts options)
-        repl-env (WeaselREPLEnv. (next-env-id!) effective-options (atom nil) (atom nil))]
+        repl-env (WeaselREPLEnv. (next-env-id!) effective-options (atom nil) (atom nil) (atom ::uninitialized))]
     (log/trace "Made" (str repl-env))
     repl-env))
 
@@ -153,8 +161,7 @@
     (set-server! env server)
     (if pre-connect
       (pre-connect env (server/get-url server)))
-    (server/wait-for-first-client server)
-    env))
+    nil))
 
 (defn tear-down-env [env]
   (log/trace "Destroying" (str env))

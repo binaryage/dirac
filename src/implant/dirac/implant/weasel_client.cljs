@@ -56,7 +56,7 @@
 
 ; -- connection -------------------------------------------------------------------------------------------------------------
 
-(defn on-message-handler [message]
+(defn on-message-handler [_client message]
   (go
     (if-let [result (<! (process-message message))]
       (send! result))))

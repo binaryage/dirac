@@ -1,9 +1,9 @@
-(ns dirac.agent.nrepl-tunnel-server
+(ns dirac.lib.nrepl-tunnel-server
   (:require [clojure.core.async :refer [chan <!! <! >!! put! alts!! timeout close! go go-loop]]
             [clojure.tools.logging :as log]
-            [dirac.agent.nrepl-protocols :as nrepl-protocols]
-            [dirac.agent.ws-server :as ws-server]
-            [dirac.agent.utils :as utils]))
+            [dirac.lib.nrepl-protocols :as nrepl-protocols]
+            [dirac.lib.ws-server :as ws-server]
+            [dirac.lib.utils :as utils]))
 
 ; -- constructor ------------------------------------------------------------------------------------------------------------
 

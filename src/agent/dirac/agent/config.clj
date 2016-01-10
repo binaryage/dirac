@@ -1,7 +1,6 @@
 (ns dirac.agent.config
-  (require [environ.core :as environ]
-           [clojure.string :as string]
-           [clojure.tools.logging :as log]))
+  (require [clojure.tools.logging :as log]
+           [dirac.lib.utils :refer [assoc-env-val]]))
 
 (def nrepl-server-default-config
   {:host "localhost"
@@ -19,21 +18,6 @@
    :nrepl-tunnel              nrepl-tunnel-default-config})
 
 ; -- environment ------------------------------------------------------------------------------------------------------------
-
-(defn env-val [key & [type]]
-  (if-let [val (environ/env key)]
-    (case type
-      :bool (or (= val "1")
-                (= (string/lower-case val) "true")
-                (= (string/lower-case val) "yes"))
-      :int (int val)
-      (str val))))
-
-
-(defn assoc-env-val [config ks key & [type]]
-  (if-let [val (env-val key type)]
-    (assoc-in config ks val)
-    config))
 
 (defn get-environ-config []
   (-> {}
@@ -54,7 +38,7 @@
     (apply merge-with deep-merge vals)
     (last vals)))
 
-(defn get-effective-config* [config]
+(defn get-effective-config* [& [config]]
   (let [environ-config (get-environ-config)]
     (log/debug "default config:" default-config)
     (log/debug "environ config:" environ-config)
@@ -64,4 +48,4 @@
       (log/debug "effective config: " effective-config)
       effective-config)))
 
-(def ^:dynamic get-effective-config (memoize get-effective-config*))
+(def ^:dynamic get-effective-config (memoize get-effective-config*))                                                          ; assuming environ-config is constant
