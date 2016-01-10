@@ -464,17 +464,17 @@ WebInspector.ConsoleView.prototype = {
         promptDescriptor.codeMirror.setOption("placeholder", label);
     },
 
-    _setCurrentNs: function(name)
+    setDiracReplNS: function(name)
     {
         this._currentNs = name;
         this._refreshNs();
     },
 
-    _onJobStarted: function(requestId) {
+    onJobStarted: function(requestId) {
         // no op
     },
 
-    _onJobEnded: function(requestId) {
+    onJobEnded: function(requestId) {
         delete this._pendingDiracCommands[requestId];
     },
 
@@ -486,15 +486,15 @@ WebInspector.ConsoleView.prototype = {
             command = command.value;
 
         switch (command) {
-            case "repl-ns":
-                this._setCurrentNs(message.parameters[2].value);
-                break;
-            case "job-start":
-                this._onJobStarted(message.parameters[2].value);
-                break;
-            case "job-end":
-                this._onJobEnded(message.parameters[2].value);
-                break;
+//            case "repl-ns":
+//                this.setDiracReplNS(message.parameters[2].value);
+//                break;
+//            case "job-start":
+//                this._onJobStarted(message.parameters[2].value);
+//                break;
+//            case "job-end":
+//                this._onJobEnded(message.parameters[2].value);
+//                break;
             default:
                 throw ("unrecognized Dirac message: " + command);
         };
@@ -935,7 +935,6 @@ WebInspector.ConsoleView.prototype = {
             }
         };
 
-        // TODO: dirac.evalInCurrentContext("devtools.api.warm_up_repl_connection()", callback.bind(this));
         return this._switchPrompt(oldIndex, newIndex);
     },
 
@@ -955,9 +954,12 @@ WebInspector.ConsoleView.prototype = {
 
         oldPromptDescriptor.element.classList.add("inactive-prompt");
 
-        this._refreshNs();
         this._prompt.setText(""); // clear prompt when switching
         this.focus();
+
+        if (newPromptDescriptor.id == "dirac") {
+            dirac.implant.init_repl();
+        }
     },
 
     _selectNextPrompt: function()

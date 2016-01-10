@@ -4,10 +4,14 @@
   (:require [cljs.core.async :refer [<! chan put! timeout close!]]
             [cljs-uuid-utils.core :as uuid]
             [dirac.implant.eval :as eval]
-            [dirac.implant.ws-client :as ws-client]))
+            [dirac.implant.ws-client :as ws-client]
+            [dirac.implant.console :as console]))
 
 (def current-client (atom nil))
 (def pending-messages (atom {}))
+
+(defn connected? []
+  (not (nil? (@current-client))))
 
 ; -- pending messages -------------------------------------------------------------------------------------------------------
 
@@ -75,9 +79,12 @@
     (cond
       out (eval/present-out-message out)
       err (eval/present-err-message err)
-      ns nil                                                                                                                  ; TODO
-      status (if id
-               (deliver-response message))                                                                                    ; TODO
+      ns (do
+           (console/set-repl-ns! ns))
+      status (when id
+               (deliver-response message)
+               (case status
+                 ["done"] (console/announce-job-end! id)))
       :else (do
               (warn "received unrecognized nREPL message" message))))
   nil)
@@ -94,15 +101,26 @@
   (update message :op keyword))
 
 (defn on-message-handler [client message]
+  (assert (= @current-client client))
   (go
     (let [sanitized-message (sanitize-message message)]
       (if-let [message-chan (process-message client sanitized-message)]
         (if-let [result (<! message-chan)]
           (send! result))))))
 
+(defn on-error-handler [client event]
+  (assert (= @current-client client)))
+
+(defn on-close-handler [client]
+  (assert (= @current-client client))
+  (reset! current-client nil))
+
 (defn connect! [server-url opts]
+  (assert (nil? @current-client))
   (let [default-opts {:name       "nREPL Tunnel Client"
-                      :on-message on-message-handler}
+                      :on-message on-message-handler
+                      :on-close   on-close-handler
+                      :on-error   on-error-handler}
         effective-opts (merge default-opts opts)
         client (ws-client/connect! server-url effective-opts)]
     (reset! current-client client)))
