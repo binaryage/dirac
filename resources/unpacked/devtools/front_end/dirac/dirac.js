@@ -59,7 +59,7 @@ function codeAsString(code) {
 function evalInCurrentContext(code, callback) {
   var currentExecutionContext = WebInspector.context.flavor(WebInspector.ExecutionContext);
   if (currentExecutionContext) {
-    var result = function(result, wasThrown, value, exceptionDetails) {
+    var resultCallback = function(result, wasThrown, value, exceptionDetails) {
       if (wasThrown) {
         console.error("evalInCurrentContext: ", exceptionDetails);
       }
@@ -67,8 +67,7 @@ function evalInCurrentContext(code, callback) {
         callback(value, wasThrown, exceptionDetails);
       }
     };
-
-    currentExecutionContext.evaluate(code, "console", true, false, true, false, result);
+    currentExecutionContext.evaluate(code, "console", true, true, true, false, resultCallback);
   }
 }
 
