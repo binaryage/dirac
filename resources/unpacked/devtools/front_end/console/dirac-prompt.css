@@ -22,10 +22,12 @@
 
 .dirac-stderr > .console-message {
   background-color: rgba(255, 0, 0, 0.15) !important;
+  margin-right: 24px;
 }
 
 .dirac-stdout > .console-message {
   background-color: rgba(0, 0, 0, 0.05) !important;
+  margin-right: 24px;
 }
 
 .console-error-level {
