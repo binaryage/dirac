@@ -116,11 +116,6 @@ WebInspector.ConsoleView = function()
     diracPromptElement.id = "console-prompt-dirac";
     diracPromptElement.spellcheck = false;
     var diracPromptCodeMirrorInstance = dirac.implant.adopt_prompt_element(diracPromptElement, dirac.hasParinfer);
-    diracPromptElement.focus = function() {
-      // delegate focus calls to code mirror
-      diracPromptCodeMirrorInstance.focus();
-      diracPromptCodeMirrorInstance.refresh(); // HACK: this is needed to properly display cursor in empty codemirror, http://stackoverflow.com/questions/10575833/codemirror-has-content-but-wont-display-until-keypress
-    };
 
     diracPromptElement.classList.add("inactive-prompt");
 
@@ -176,11 +171,32 @@ WebInspector.ConsoleView = function()
         var diracHistoryData = this._diracHistorySetting.get();
         diracPrompt.setHistoryData(diracHistoryData);
 
-        this._prompts.push({id: "dirac",
-                            prompt: diracPrompt,
-                            element: diracPromptElement,
-                            proxy: diracProxyElement,
-                            codeMirror: diracPromptCodeMirrorInstance});
+        var statusElement = diracPromptElement.createChild("div", "source-code");
+        statusElement.id = "console-status-dirac";
+
+        var statusBannerElement = statusElement.createChild("div", "status-banner");
+        var statusContentElement = statusElement.createChild("div", "status-content");
+        statusContentElement.tabIndex = 0; // focusable for page-up/down
+
+        diracPromptElement.focus = function() {
+          // delegate focus calls to code mirror or status
+          if (diracPromptElement.classList.contains("dirac-prompt-mode-edit")) {
+            diracPromptCodeMirrorInstance.focus();
+            diracPromptCodeMirrorInstance.refresh(); // HACK: this is needed to properly display cursor in empty codemirror, http://stackoverflow.com/questions/10575833/codemirror-has-content-but-wont-display-until-keypress
+          } else {
+            statusContentElement.focus();
+          }
+        };
+
+        this._diracPromptDescriptor = {id: "dirac",
+                                       prompt: diracPrompt,
+                                       element: diracPromptElement,
+                                       proxy: diracProxyElement,
+                                       status: statusElement,
+                                       statusContent: statusContentElement,
+                                       statusBanner: statusBannerElement,
+                                       codeMirror: diracPromptCodeMirrorInstance};
+        this._prompts.push(this._diracPromptDescriptor);
     }
 
     this._consoleHistorySetting = WebInspector.settings.createLocalSetting("consoleHistory", []);
@@ -454,6 +470,23 @@ WebInspector.ConsoleView.prototype = {
         this._filterStatusMessageElement.style.display = this._hiddenByFilterCount ? "" : "none";
     },
 
+    updateDiracPromptStatus: function(s) {
+        this._diracPromptDescriptor.statusContent.textContent = s;
+    },
+
+    updateDiracPromptBanner: function(s) {
+        this._diracPromptDescriptor.statusBanner.textContent = s;
+    },
+
+    setDiracPromptMode: function(mode) {
+       var knownModes = ["edit", "status"];
+       for (var i = 0; i < knownModes.length; i++) {
+         var m = knownModes[i];
+         this._diracPromptDescriptor.element.classList.toggle("dirac-prompt-mode-"+m, mode==m);
+       }
+       this._diracPromptDescriptor.element.focus();
+    },
+
     _refreshNs: function () {
         var promptDescriptor = this._prompts[this._activePromptIndex];
         if (promptDescriptor.id != "dirac") {
@@ -486,15 +519,6 @@ WebInspector.ConsoleView.prototype = {
             command = command.value;
 
         switch (command) {
-//            case "repl-ns":
-//                this.setDiracReplNS(message.parameters[2].value);
-//                break;
-//            case "job-start":
-//                this._onJobStarted(message.parameters[2].value);
-//                break;
-//            case "job-end":
-//                this._onJobEnded(message.parameters[2].value);
-//                break;
             default:
                 throw ("unrecognized Dirac message: " + command);
         };

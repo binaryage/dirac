@@ -62,7 +62,15 @@
     display: none;
 }
 
-#console-prompt-dirac::before{
+.dirac-prompt-mode-status #cm-console-prompt-dirac {
+    display: none;
+}
+
+.dirac-prompt-mode-edit #console-status-dirac {
+    display: none;
+}
+
+#console-prompt-dirac::before {
     position: absolute;
     display: block;
     content: "";
@@ -74,6 +82,16 @@
     -webkit-user-select: none;
     background-image: url(Images/toolbarButtonGlyphs.png);
     background-size: 352px 168px;
+}
+
+#console-status-dirac .status-banner {
+   float: right;
+   color: #aaa;
+}
+
+#console-status-dirac .status-content {
+   font-weight: bold;
+   color: #f00;
 }
 
 @media (-webkit-min-device-pixel-ratio: 1.5) {

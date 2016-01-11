@@ -17,3 +17,15 @@
   (.groupEnd js/console)
   (if-let [console-view (get-console-view)]
     (.onJobEnded console-view job-id)))
+
+(defn set-prompt-mode! [mode]
+  (if-let [console-view (get-console-view)]
+    (.setDiracPromptMode console-view mode)))
+
+(defn set-prompt-status! [status]
+  (if-let [console-view (get-console-view)]
+    (.updateDiracPromptStatus console-view status)))
+
+(defn set-prompt-banner! [banner]
+  (if-let [console-view (get-console-view)]
+    (.updateDiracPromptBanner console-view banner)))

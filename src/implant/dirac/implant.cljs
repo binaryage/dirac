@@ -10,11 +10,11 @@
 (defn ^:export init []
   (when-not *initialized*
     (set! *initialized* true)
+    (intercom/init!)
     (eval/start-eval-request-queue-processing!)))
 
 (defn ^:export init-repl []
-  (.log js/console "init-repl")
-  (when-not (intercom/repl-connected?)
+  (when-not (intercom/repl-ready?)
     (intercom/connect-to-nrepl-tunnel-server "ws://localhost:9050")))                                                         ; TODO: customize url
 
 (defn ^:export adopt-prompt-element [text-area-element use-parinfer?]

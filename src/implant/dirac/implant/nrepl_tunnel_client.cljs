@@ -112,19 +112,23 @@
         (if-let [result (<! message-chan)]
           (send! result))))))
 
+(defn on-open-handler [client]
+  (reset! current-client client))
+
 (defn on-error-handler [client event]
   (assert (= @current-client client)))
 
 (defn on-close-handler [client]
-  (assert (= @current-client client))
+  ;(assert (= @current-client client))
   (reset! current-client nil))
 
 (defn connect! [server-url opts]
   (assert (nil? @current-client))
   (let [default-opts {:name       "nREPL Tunnel Client"
                       :on-message on-message-handler
+                      :on-open    on-open-handler
                       :on-close   on-close-handler
                       :on-error   on-error-handler}
         effective-opts (merge default-opts opts)
         client (ws-client/connect! server-url effective-opts)]
-    (reset! current-client client)))
+    true))
