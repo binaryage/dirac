@@ -4,10 +4,10 @@
             [clojure.string :as string]))
 
 (def ^:dynamic out-template
-  "devtools.dirac.present_output(0, 'out', {text})")
+  "devtools.dirac.present_output({job-id}, 'stdout', {text})")
 
 (def ^:dynamic err-template
-  "devtools.dirac.present_output(0, 'err', {text})")
+  "devtools.dirac.present_output({job-id}, 'stderr', {text})")
 
 (def ^:dynamic postprocess-template
   "try{
@@ -62,10 +62,16 @@
         (assert value (missing-value-key-assert-msg))
         value))))
 
-(defn present-out-message [text]
-  (let [code (string/replace out-template "{text}" (js/dirac.codeAsString text))]
+(defn present-out-message [job-id text]
+  (let [id (int job-id)
+        code (-> out-template
+                 (string/replace "{job-id}" id)
+                 (string/replace "{text}" (js/dirac.codeAsString text)))]
     (eval-in-debugger-context code)))
 
-(defn present-err-message [text]
-  (let [code (string/replace err-template "{text}" (js/dirac.codeAsString text))]
+(defn present-err-message [job-id text]
+  (let [id (int job-id)
+        code (-> err-template
+                 (string/replace "{job-id}" id)
+                 (string/replace "{text}" (js/dirac.codeAsString text)))]
     (eval-in-debugger-context code)))

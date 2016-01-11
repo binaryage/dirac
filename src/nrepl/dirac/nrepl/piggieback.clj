@@ -7,8 +7,7 @@
 ; removed generic code for supporting arbitrary repl environment, supports only Dirac's WeaselREPLEnv
 
 (ns dirac.nrepl.piggieback
-  (:require [dirac.nrepl.piggieback-hacks :as hacks]
-            [clojure.tools.nrepl :as nrepl]
+  (:require [clojure.tools.nrepl :as nrepl]
             (clojure.tools.nrepl [transport :as transport]
                                  [misc :refer (response-for returning)]
                                  [middleware :refer (set-descriptor!)])
@@ -29,25 +28,38 @@
 (def ^:private ^:dynamic *original-clj-ns* nil)
 
 (defn wrap-fn [form]
-  (cond
-    (and (seq? form) (= 'ns (first form))) identity
-    ('#{*1 *2 *3 *e} form) (fn [x] `(binding [cljs.core/*print-level* 1
-                                              cljs.core/*print-length* 10]
-                                      (cljs.core.pr-str ~x)))
-    :else
-    (fn [x]
-      `(try
-         (binding [cljs.core/*print-level* 1
-                   cljs.core/*print-length* 10]
-           (let [ret# ~x]
-             (set! *3 *2)
-             (set! *2 *1)
-             (set! *1 ret#)
-             (cljs.core.pr-str ret#)
-             ret#))
-         (catch :default e#
-           (set! *e e#)
-           (throw e#))))))
+  (let [current-repl-msg ieval/*msg*
+        dirac-mode (:dirac current-repl-msg)
+        job-id (or (:id current-repl-msg) 0)
+        dirac-wrap (case dirac-mode
+                     "wrap" (fn [x]
+                              `(try
+                                 (js/devtools.dirac.present_repl_result ~job-id ~x)
+                                 (catch :default e#
+                                   (js/devtools.dirac.present_repl_exception ~job-id e#)
+                                   (throw e#))))
+                     identity)]
+    (cond
+      (and (seq? form) (= 'ns (first form))) identity
+      ('#{*1 *2 *3 *e} form) (fn [x] `(binding [cljs.core/*print-level* 1
+                                                cljs.core/*print-length* 10]
+                                        (cljs.core.pr-str ~(dirac-wrap x))))
+      :else
+      (fn [x]
+        `(try
+           (binding [cljs.core/*print-newline* false
+                     cljs.core/*print-fn* (partial js/devtools.dirac.present-output ~job-id "stdout")
+                     cljs.core/*print-err-fn* (partial js/devtools.dirac.present-output ~job-id "stderr")]
+             (let [ret# ~(dirac-wrap x)]
+               (set! *3 *2)
+               (set! *2 *1)
+               (set! *1 ret#)
+               (binding [cljs.core/*print-level* 1
+                         cljs.core/*print-length* 10]
+                 (cljs.core.pr-str ret#))))
+           (catch :default e#
+             (set! *e e#)
+             (throw e#)))))))
 
 (defn eval-cljs
   "Given a REPL evaluation environment, an analysis environment, and a
@@ -166,8 +178,7 @@
   ; we append a :cljs/quit to every chunk of code evaluated so we can break out of cljs.repl/repl*'s loop,
   ; so we need to go a gnarly little stringy check here to catch any actual user-supplied exit
   (if-not (.. code trim (endsWith ":cljs/quit"))
-    (let [code (if dirac (hacks/wrap-code-for-dirac code) code)]
-      (apply run-cljs-repl msg code (map @session [#'*cljs-repl-env* #'*cljs-compiler-env* #'*cljs-repl-options*])))
+    (apply run-cljs-repl msg code (map @session [#'*cljs-repl-env* #'*cljs-compiler-env* #'*cljs-repl-options*]))
     (let [actual-repl-env (.-repl-env (@session #'*cljs-repl-env*))]
       (cljs.repl/-tear-down actual-repl-env)
       (swap! session assoc

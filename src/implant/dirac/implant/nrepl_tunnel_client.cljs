@@ -11,7 +11,7 @@
 (def pending-messages (atom {}))
 
 (defn connected? []
-  (not (nil? (@current-client))))
+  (not (nil? @current-client)))
 
 ; -- pending messages -------------------------------------------------------------------------------------------------------
 
@@ -77,14 +77,13 @@
     (if value
       (alter-meta! client assoc :last-value value))
     (cond
-      out (eval/present-out-message out)
-      err (eval/present-err-message err)
+      out (eval/present-out-message id out)
+      err (eval/present-err-message id err)
       ns (do
            (console/set-repl-ns! ns))
       status (when id
                (deliver-response message)
-               (case status
-                 ["done"] (console/announce-job-end! id)))
+               (console/announce-job-end! id))
       :else (do
               (warn "received unrecognized nREPL message" message))))
   nil)
