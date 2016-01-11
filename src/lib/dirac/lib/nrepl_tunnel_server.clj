@@ -150,11 +150,11 @@
   (process-message server client message))
 
 (defn on-incoming-client [server _ws-server client]
-  (log/info (str server) "A new client" (str client) "connected to tunnel server" (str server))
+  (log/info (str server) "A new client" (str client) "connected")
   (open-client-session server client))
 
 (defn on-leaving-client [server _ws-server client]
-  (log/info (str server) "Client" (str client) "disconnected from tunnel server" (str server))
+  (log/info (str server) "Client" (str client) "disconnected")
   (disconnect-client! server client))
 
 (defn create! [tunnel options]
@@ -165,7 +165,7 @@
                                        :on-incoming-client (partial on-incoming-client server)
                                        :on-leaving-client  (partial on-leaving-client server)})]
     (set-ws-server! server (ws-server/create! server-options))
-    (log/info (str (str server) "Started Dirac nREPL tunnel server on " (get-server-url server)))
+    (log/info (str (str server) "Started Dirac nREPL tunnel server at " (get-server-url server)))
     (log/debug "Created" (str server))
     server))
 

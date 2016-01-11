@@ -22,7 +22,7 @@
 
 ; normally cljs-repl driven by piggiback calls setup/tear-down for each evaluation
 ; piggieback works around it by wrapping env and doing -setup only once and ignoring -tear-down calls
-; this complicated the piggieback implementation so I decided to to this here instead and simplify our version of piggieback
+; this complicated the piggieback implementation so I decided to do it here instead and simplify our version of piggieback
 (defrecord WeaselREPLEnv [id options server client-response-promise cached-setup]
   cljs.repl/IJavaScriptEnv
   (-setup [this opts]

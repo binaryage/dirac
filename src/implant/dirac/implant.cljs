@@ -2,13 +2,15 @@
   (:require [dirac.dev]
             [dirac.implant.editor :as editor]
             [dirac.implant.intercom :as intercom]
-            [chromex.logging :refer-macros [log warn error]]))
+            [chromex.logging :refer-macros [log warn error]]
+            [dirac.implant.eval :as eval]))
 
 (def ^:dynamic *initialized* false)
 
 (defn ^:export init []
   (when-not *initialized*
-    (set! *initialized* true)))
+    (set! *initialized* true)
+    (eval/start-eval-request-queue-processing!)))
 
 (defn ^:export init-repl []
   (.log js/console "init-repl")

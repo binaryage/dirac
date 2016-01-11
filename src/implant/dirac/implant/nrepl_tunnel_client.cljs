@@ -77,19 +77,24 @@
     (if value
       (alter-meta! client assoc :last-value value))
     (cond
-      out (eval/present-out-message id out)
-      err (eval/present-err-message id err)
-      ns (do
-           (console/set-repl-ns! ns))
+      ; :out and :err messages are being sent by session middleware,
+      ; we have our own output recoding based on recording driver, sent via :print-output message
+      out (when false (eval/present-output id "stdout" out))
+      err (when false (eval/present-output id "stderr" err))
+      ns (console/set-repl-ns! ns)
       status (when id
                (deliver-response message)
                (console/announce-job-end! id))
-      :else (do
-              (warn "received unrecognized nREPL message" message))))
+      :else (warn "received an unrecognized message from nREPL server" message)))
+  nil)
+
+(defmethod process-message :print-output [_client message]
+  (let [{:keys [id content kind]} message]
+    (eval/present-output id kind content))
   nil)
 
 (defmethod process-message :error [_client message]
-  (error "Received error message" message)
+  (error "Received an error message from nREPL server" message)
   (go
     {:op      :error
      :message (:type message)}))

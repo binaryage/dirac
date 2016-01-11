@@ -15,10 +15,12 @@
             cljs.repl
             [cljs.env :as env]
             [cljs.analyzer :as ana]
+            [dirac.nrepl.driver :as driver]
             [clojure.tools.logging :as log])
   (:import clojure.lang.LineNumberingPushbackReader
            java.io.StringReader
-           java.io.Writer)
+           java.io.Writer
+           (clojure.lang IExceptionInfo))
   (:refer-clojure :exclude (load-file)))
 
 ; this is the var that is checked by the middleware to determine whether an active CLJS REPL is in flight
@@ -68,6 +70,7 @@
   ([repl-env env form]
    (eval-cljs repl-env env form cljs.repl/*repl-opts*))
   ([repl-env env form opts]
+   (log/trace "eval-cljs" form)
    (cljs.repl/evaluate-form repl-env
                             (assoc env :ns (ana/get-namespace ana/*cljs-ns*))
                             "<dirac repl>"
@@ -81,54 +84,58 @@
                       code repl-env compiler-env options]
   (let [initns (if ns (symbol ns) (@session #'ana/*cljs-ns*))
         repl cljs.repl/repl*
-        flush (fn []
+        flush (fn [driver]
+                (log/trace "before flush")
                 (.flush ^Writer (@session #'*out*))
-                (.flush ^Writer (@session #'*err*)))]
+                (.flush ^Writer (@session #'*err*))
+                (driver/flush! driver)
+                (log/trace "after flush"))
+        send-response-fn (fn [response-msg]
+                           (transport/send transport (response-for nrepl-msg response-msg)))
+        print-fn (fn [driver result & rest]
+                   ; make sure that all *printed* output is flushed before sending results of evaluation
+                   (flush driver)
+                   (when (or (not ns)
+                             (not= initns ana/*cljs-ns*))
+                     (swap! session assoc #'ana/*cljs-ns* ana/*cljs-ns*))
+                   (log/trace "before send value" result)
+                   (if (::first-cljs-repl nrepl-msg)
+                     ; the first run through the cljs REPL is effectively part
+                     ; of setup; loading core, (ns cljs.user ...), etc, should
+                     ; not yield a value. But, we do capture the compiler
+                     ; environment now (instead of attempting to create one to
+                     ; begin with, because we can't reliably replicate what
+                     ; cljs.repl/repl* does in terms of options munging
+                     (set! *cljs-compiler-env* env/*compiler*)
+                     ; if the CLJS evaluated result is nil, then we can assume
+                     ; what was evaluated was a cljs.repl special fn (e.g. in-ns,
+                     ; require, etc)
+                     (send-response-fn {:value         (or result "nil")
+                                        :printed-value 1
+                                        :ns            (@session #'ana/*cljs-ns*)})))
+        start-repl (fn [driver repl-env repl-opts]
+                     (let [effective-repl-opts (assoc repl-opts
+                                                 :flush (partial flush driver)
+                                                 :print (partial print-fn driver))]
+                       (driver/start-job! driver (:id ieval/*msg*))
+                       (repl repl-env effective-repl-opts)
+                       (driver/stop-job! driver)))]
     ; MAJOR TRICK HERE! we append :cljs/quit to our code which needs to be evaluated,
     ; this will cause cljs.repl's loop to exit after the first eval
     (binding [*in* (-> (str code " :cljs/quit") StringReader. LineNumberingPushbackReader.)
               *out* (@session #'*out*)
               *err* (@session #'*err*)
               ana/*cljs-ns* initns]
-      (repl repl-env
-            (merge
-              {:need-prompt  (constantly false)
-               :bind-err     false
-               :quit-prompt  (fn [])
-               :init         (fn [])
-               :prompt       (fn [])
-               :eval         eval-cljs
-               :compiler-env compiler-env
-               :flush        flush
-               :print        (fn [result & rest]
-                               ; make sure that all *printed* output is flushed before sending results of evaluation
-                               (flush)
-                               (when (or (not ns)
-                                         (not= initns ana/*cljs-ns*))
-                                 (swap! session assoc #'ana/*cljs-ns* ana/*cljs-ns*))
-                               (if (::first-cljs-repl nrepl-msg)
-                                 ; the first run through the cljs REPL is effectively part
-                                 ; of setup; loading core, (ns cljs.user ...), etc, should
-                                 ; not yield a value. But, we do capture the compiler
-                                 ; environment now (instead of attempting to create one to
-                                 ; begin with, because we can't reliably replicate what
-                                 ; cljs.repl/repl* does in terms of options munging
-                                 (set! *cljs-compiler-env* env/*compiler*)
-                                 ; if the CLJS evaluated result is nil, then we can assume
-                                 ; what was evaluated was a cljs.repl special fn (e.g. in-ns,
-                                 ; require, etc)
-                                 (transport/send transport (response-for nrepl-msg
-                                                                         {:value         (or result "nil")
-                                                                          :printed-value 1
-                                                                          :ns            (@session #'ana/*cljs-ns*)}))))
-               :caught       (fn [err repl-env repl-options]
-                               (let [root-ex (#'clojure.main/root-cause err)]
-                                 (when-not (instance? ThreadDeath root-ex)
-                                   (transport/send transport (response-for nrepl-msg {:status  :eval-error
-                                                                                      :ex      (-> err class str)
-                                                                                      :root-ex (-> root-ex class str)}))
-                                   (cljs.repl/repl-caught err repl-env repl-options))))}
-              options)))))
+      (let [repl-opts (merge
+                        {:need-prompt  (constantly false)
+                         :bind-err     false
+                         :quit-prompt  (fn [])
+                         :init         (fn [])
+                         :prompt       (fn [])
+                         :eval         eval-cljs
+                         :compiler-env compiler-env}
+                        options)]
+        (driver/start-repl-with-driver repl-env repl-opts start-repl send-response-fn)))))
 
 ; This function always executes when the nREPL session is evaluating Clojure,
 ; via interruptible-eval, etc. This means our dynamic environment is in place,
@@ -174,7 +181,7 @@
 ; bound. Thus, we're not going through interruptible-eval, and the user's
 ; Clojure session (dynamic environment) is not in place, so we need to go
 ; through the `session` atom to access/update its vars. Same goes for load-file.
-(defn- evaluate [{:keys [session transport ^String code dirac] :as msg}]
+(defn- evaluate [{:keys [session transport ^String code] :as msg}]
   ; we append a :cljs/quit to every chunk of code evaluated so we can break out of cljs.repl/repl*'s loop,
   ; so we need to go a gnarly little stringy check here to catch any actual user-supplied exit
   (if-not (.. code trim (endsWith ":cljs/quit"))

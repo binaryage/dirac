@@ -16,7 +16,7 @@
 (ns dirac.implant.weasel-client
   (:require-macros [cljs.core.async.macros :refer [go go-loop]]
                    [dirac.implant.weasel-client :refer [log warn info error]])
-  (:require [cljs.core.async :refer [<! chan put!]]
+  (:require [cljs.core.async :refer [<! chan put! timeout]]
             [dirac.implant.eval :as eval]
             [dirac.implant.ws-client :as ws-client]))
 
@@ -50,6 +50,8 @@
 
 (defmethod process-message :eval-js [message]
   (go
+    ; there might be some output printing messages in flight in the tunnel, so we give the tunnel some time to process them TODO: make this configurable
+    (<! (timeout 100))
     (let [result (<! (eval/wrap-with-postprocess-and-eval-in-debugger-context (:code message)))]                              ; posprocessing step will prepare suitable result structure for us
       {:op    :result
        :value (massage-result result)})))
