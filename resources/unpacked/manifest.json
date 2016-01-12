@@ -3,7 +3,8 @@
    also we allow unsafe eval for figwheel
 */
 {
-  "name": "dirac-dev",
+  "short_name": "Dirac",
+  "name": "Dirac DevTools",
   "version": "0.1.0",
   "browser_action": {
     "default_title": "Click to open Dirac DevTools",

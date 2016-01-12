@@ -37,7 +37,9 @@ fi
 VERSION_WITH_QUOTES=`cat project.clj | grep "defproject" | cut -d' ' -f3`
 VERSION=`echo "${VERSION_WITH_QUOTES//\"}"`
 
-PACKAGE_DIR="$RELEASES/dirac-$VERSION"
+PACKAGE_NAME="dirac-$VERSION"
+PACKAGE_DIR="$RELEASES/$PACKAGE_NAME"
+ZIP_NAME="$RELEASES/$PACKAGE_NAME.zip"
 
 if [ -d "$PACKAGE_DIR" ] ; then
   rm -rf "$PACKAGE_DIR"
@@ -58,8 +60,18 @@ mv "$PACKAGE_DIR/devtools/front_end/dirac/implant.js" "$PACKAGE_DIR/devtools/fro
 rm "$PACKAGE_DIR/devtools/front_end/dirac/goog-base-setup.js"
 rm "$PACKAGE_DIR/devtools/front_end/dirac/require-implant.js"
 
-echo "'$PACKAGE_DIR' prepared for packing"
-echo "  use Chrome's Window -> Extensions -> 'Pack extension...' to package it"
-echo "  or => https://developer.chrome.com/extensions/packaging#packaging"
+#echo "'$PACKAGE_DIR' prepared for packing"
+#echo "  use Chrome's Window -> Extensions -> 'Pack extension...' to package it"
+#echo "  or => https://developer.chrome.com/extensions/packaging#packaging"
+
+pushd "$PACKAGE_DIR"
+
+# "$SCRIPTS/crxmake.sh" "$PACKAGE_DIR" ""
+
+(cd "$dir" && zip -qr -9 -X "$ZIP_NAME" .)
+
+echo "'$ZIP_NAME' ready for upload => https://chrome.google.com/webstore/developer/dashboard"
+
+popd
 
 popd
