@@ -47,7 +47,7 @@
 
   Object
   (toString [this]
-    (str "WeaselREPLEnv#" (:id this))))
+    (str "[WeaselREPLEnv#" (:id this) "]")))
 
 ; -- WeaselREPLEnv construction ---------------------------------------------------------------------------------------------
 
@@ -136,7 +136,7 @@
         response))))
 
 (defn send-occupied-response-close-channel-and-reject-client! [env channel]
-  (log/debug (str env) "Client already connected. Rejecting new client with occupied message on channel" channel)
+  (log/info (str env) "Client already connected. Rejecting new client with occupied message on channel" channel)
   (http/send! channel (server/serialize-msg (make-occupied-error-message)))
   (http/close channel)
   :reject)
@@ -144,7 +144,8 @@
 (defn on-client-connection [env server channel]
   ; we allow only one client connection at a time
   (if (server/has-clients? server)
-    (send-occupied-response-close-channel-and-reject-client! env channel)))
+    (send-occupied-response-close-channel-and-reject-client! env channel)
+    (log/info (str env) "A client connected")))
 
 (defn on-message [env _server _client message]
   ; we don't need to pass server and client into process-message
@@ -159,16 +160,18 @@
         server-options (assoc options
                          :on-message (partial on-message env)
                          :on-client-connection (partial on-client-connection env))
-        server (server/create! server-options)]
+        server (server/create! server-options)
+        server-url (server/get-url server)]
     (set-server! env server)
+    (log/info (str env) (str "Weasel server started at " server-url "."))
     (if after-launch
-      (after-launch env (server/get-url server)))
+      (after-launch env server-url))
     nil))
 
 (defn tear-down-env [env]
   (log/trace "Destroying" (str env))
   (server/destroy! (get-server env))
-  (log/debug "Destroyed" (str env)))
+  (log/info (str env) "Weasel server stopped."))
 
 (defn request-eval [env js]
   (promise-new-client-response! env)

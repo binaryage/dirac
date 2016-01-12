@@ -8,7 +8,7 @@
 (defrecord WebSocketServer [id options http-server first-client-promise clients]
   Object
   (toString [this]
-    (str "WebSocketServer#" (:id this))))
+    (str "[WebSocketServer#" (:id this) "]")))
 
 ; -- WebSocketServer construction -------------------------------------------------------------------------------------------
 
@@ -82,7 +82,7 @@
 (defrecord WebSocketServerClient [id channel ready-promise]
   Object
   (toString [this]
-    (str "WebSocketServerClient#" (:id this))))
+    (str "[WebSocketServerClient#" (:id this) "]")))
 
 ; -- WebSocketServerClient construction -------------------------------------------------------------------------------------
 

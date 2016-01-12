@@ -6,7 +6,6 @@
             [dirac.implant.weasel-client :as weasel-client]
             [dirac.implant.nrepl-tunnel-client :as nrepl-tunnel-client]
             [chromex.logging :refer-macros [log info warn error]]
-            [goog.net.WebSocket :as ws]
             [dirac.implant.eval :as eval]))
 
 (def required-dirac-api-version 1)
@@ -17,7 +16,6 @@
 (def ^:dynamic *last-prompt-banner* "")
 (def ^:dynamic *last-connection-url* nil)
 (def ^:dynamic *last-connect-fn-id* 0)
-(def ^:dynamic *prev-time* 0)
 
 (def weasel-options
   {:verbose true})
@@ -37,6 +35,12 @@
 
 (defn ^:dynamic failed-to-retrieve-client-config-message []
   (str "Failed to retrive client-side Dirac config. This is an unexpected error."))
+
+(def ^:const EXPONENTIAL_BACKOFF_CEILING (* 60 1000))
+
+(defn exponential-backoff-ceiling [attempt]
+  (let [time (* (js/Math.pow 2 attempt) 1000)]
+    (js/Math.min time EXPONENTIAL_BACKOFF_CEILING)))
 
 (defn repl-ready? []
   (and *repl-connected*
@@ -84,16 +88,16 @@
   (set! *last-connect-fn-id* (inc *last-connect-fn-id*))
   (let [id *last-connect-fn-id*
         step 1000
-        time-in-seconds (int (/ *prev-time* step))]
+        time (exponential-backoff-ceiling attempt)
+        prev-time (exponential-backoff-ceiling (dec attempt))
+        time-in-seconds (int (/ prev-time step))]
     (go-loop [remaining-time time-in-seconds]
       (when (pos? remaining-time)
         (update-prompt-banner (str "will try reconnect in " remaining-time " seconds"))
         (<! (timeout step))
         (if (= id *last-connect-fn-id*)
           (recur (dec remaining-time)))))
-    (let [time (ws/EXPONENTIAL_BACKOFF_ attempt)]
-      (set! *prev-time* time)                                                                                                 ; for some reason websocket fetches one value ahead
-      time)))
+    time))
 
 (defn connect-to-nrepl-tunnel-server [url]
   {:pre [(string? url)]}
@@ -105,7 +109,8 @@
                       :next-reconnect-fn next-connect-fn)]
         (nrepl-tunnel-client/connect! url options))
       (catch :default e
-        (display-prompt-status (str "Unable to connect to Dirac Agent at " url ":\n" e))))))
+        (display-prompt-status (str "Unable to connect to Dirac Agent at " url ":\n" e))
+        (throw e)))))
 
 (defn send-eval-request! [job-id code]
   (when (repl-ready?)

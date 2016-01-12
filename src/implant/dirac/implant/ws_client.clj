@@ -4,7 +4,7 @@
 ; logging - these need to be macros to preserve source location for devtools
 
 (defn prefix [client]
-  `(str (get-in(deref ~client) [:options :name]) ":"))
+  `(str (get-in ~client [:options :name]) ":"))
 
 (defmacro log [client & args]
   `(do (.log js/console ~(prefix client) ~@args) nil))

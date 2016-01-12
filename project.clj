@@ -36,7 +36,7 @@
   :clean-targets ^{:protect false} ["target"
                                     "resources/unpacked/compiled"
                                     "resources/release/compiled"
-                                    "resources/unpacked/devtools/front_end/dirac/_compiled"]
+                                    "resources/unpacked/devtools/front_end/dirac/compiled"]
 
   :cljsbuild {:builds {}}                                                                                                     ; prevent https://github.com/emezeske/lein-cljsbuild/issues/413
 
@@ -44,8 +44,8 @@
              {:cljsbuild {:builds
                           {:implant
                            {:source-paths ["src/implant"]
-                            :compiler     {:output-to            "resources/unpacked/devtools/front_end/dirac/_compiled/implant/implant.js"
-                                           :output-dir           "resources/unpacked/devtools/front_end/dirac/_compiled/implant"
+                            :compiler     {:output-to            "resources/unpacked/devtools/front_end/dirac/compiled/implant/implant.js"
+                                           :output-dir           "resources/unpacked/devtools/front_end/dirac/compiled/implant"
                                            :asset-path           "dirac/_compiled/implant"
                                            :optimizations        :none
                                            :compiler-stats       true
@@ -89,39 +89,51 @@
               :cljsbuild {:builds
                           {:implant
                            {:source-paths ["src/implant"]
-                            :compiler     {:output-to      "resources/unpacked/devtools/front_end/dirac/_compiled/implant.js"
-                                           :output-dir     "resources/unpacked/devtools/front_end/dirac/_compiled"
+                            :compiler     {:output-to      "resources/unpacked/devtools/front_end/dirac/compiled/implant.js"
+                                           :output-dir     "resources/unpacked/devtools/front_end/dirac/compiled"
                                            :asset-path     "dirac/_compiled/implant"
                                            :optimizations  :advanced
-                                           ;:anon-fn-naming-policy :unmapped
-                                           ;:pseudo-names   true
                                            :elide-asserts  true
                                            :compiler-stats true}}
                            :background
-                           {:source-paths ["src/shared"
+                           {:source-paths ["src/rel"
+                                           "src/shared"
                                            "src/background"]
                             :compiler     {:output-to      "resources/release/compiled/background.js"
                                            :output-dir     "resources/release/compiled/background"
                                            :asset-path     "compiled/background"
                                            :optimizations  :advanced
-                                           ;:anon-fn-naming-policy :unmapped
-                                           ;:pseudo-names   true
                                            :elide-asserts  true
                                            :compiler-stats true}}
                            :options
-                           {:source-paths ["src/shared"
+                           {:source-paths ["src/rel"
+                                           "src/shared"
                                            "src/options"]
                             :compiler     {:output-to      "resources/release/compiled/options.js"
                                            :output-dir     "resources/release/compiled/options"
                                            :asset-path     "compiled/options"
                                            :optimizations  :advanced
-                                           ;:anon-fn-naming-policy :unmapped
-                                           ;:pseudo-names   true
                                            :elide-asserts  true
-                                           :compiler-stats true}}}}}}
+                                           :compiler-stats true}}}}}
 
-  :aliases {"dev-build"  ["with-profile" "+unpacked" "cljsbuild" "once" "background" "options" "implant"]
-            "fig"        ["with-profile" "+unpacked" "do" "clean," "figwheel" "background" "options" "implant"]
-            "release"    ["with-profile" "+release" "do" "clean," "cljsbuild" "once" "implant" "background" "options"]
-            "package"    ["shell" "scripts/package.sh"]
-            "regenerate" ["shell" "scripts/regenerate.sh"]})
+             :pseudo-names
+             {:cljsbuild {:builds
+                          {:implant
+                           {:compiler {:pseudo-names true}}
+                           :background
+                           {:compiler {:pseudo-names true}}
+                           :options
+                           {:compiler {:pseudo-names true}}}}}}
+
+  :aliases {"dev-build"            ["with-profile" "+unpacked"
+                                    "cljsbuild" "once" "background" "options" "implant"]
+            "fig"                  ["with-profile" "+unpacked"
+                                    "do" "clean," "figwheel" "background" "options" "implant"]
+            "release"              ["with-profile" "+release"
+                                    "do" "clean,"
+                                    "cljsbuild" "once" "implant" "background" "options"]
+            "release-pseudo-names" ["with-profile" "+release,+pseudo-names"
+                                    "do" "clean,"
+                                    "cljsbuild" "once" "implant" "background" "options"]
+            "package"              ["shell" "scripts/package.sh"]
+            "regenerate"           ["shell" "scripts/regenerate.sh"]})

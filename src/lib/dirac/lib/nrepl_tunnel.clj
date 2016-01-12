@@ -55,7 +55,7 @@
 
   Object
   (toString [this]
-    (str "NREPLTunnel#" (:id this))))
+    (str "[NREPLTunnel#" (:id this) "]")))
 
 (def last-id (volatile! 0))
 

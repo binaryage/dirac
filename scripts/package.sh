@@ -50,8 +50,13 @@ rm -rf "$PACKAGE_DIR/compiled/background"
 rm -rf "$PACKAGE_DIR/compiled/options"
 
 mv "$PACKAGE_DIR/devtools/front_end/inspector-release.html" "$PACKAGE_DIR/devtools/front_end/inspector.html"
-mv "$PACKAGE_DIR/devtools/front_end/_cljs/implant.js" "$PACKAGE_DIR/devtools/front_end/dirac.js"
-rm -rf "$PACKAGE_DIR/devtools/front_end/_cljs"
+mv "$PACKAGE_DIR/devtools/front_end/dirac/compiled/implant.js" "$PACKAGE_DIR/devtools/front_end/dirac/implant.js"
+rm -rf "$PACKAGE_DIR/devtools/front_end/dirac/compiled"
+mkdir "$PACKAGE_DIR/devtools/front_end/dirac/compiled"
+mv "$PACKAGE_DIR/devtools/front_end/dirac/implant.js" "$PACKAGE_DIR/devtools/front_end/dirac/compiled/implant.js"
+
+rm "$PACKAGE_DIR/devtools/front_end/dirac/goog-base-setup.js"
+rm "$PACKAGE_DIR/devtools/front_end/dirac/require-implant.js"
 
 echo "'$PACKAGE_DIR' prepared for packing"
 echo "  use Chrome's Window -> Extensions -> 'Pack extension...' to package it"

@@ -1,6 +1,8 @@
 (ns dirac.implant.eval
   (:require-macros [cljs.core.async.macros :refer [go go-loop]])
   (:require [cljs.core.async :refer [put! <! chan]]
+            [chromex.support :refer-macros [oget ocall oapply]]
+            [chromex.logging :refer-macros [log warn error]]
             [clojure.string :as string]))
 
 (def ^:dynamic output-template
@@ -30,6 +32,17 @@
 (defn ^:dynamic missing-value-key-assert-msg []
   "postprocessed code must return a js object with \"value\" key defined")
 
+(defn call-eval-in-current-context [& args]
+  (if-let [eval-fn (oget js/window "dirac" "evalInCurrentContext")]
+    (.apply eval-fn nil (to-array args))
+    (error "dirac.evalInCurrentContext not found")))
+
+(defn call-code-as-string [& args]
+  (if-let [eval-fn (oget js/window "dirac" "codeAsString")]
+    (.apply eval-fn nil (to-array args))
+    (error "dirac.codeAsString not found")))
+
+
 ; -- serialization of evaluations -------------------------------------------------------------------------------------------
 
 ; We want to serialize all eval requests. In other words: we don't want to have two or more evaluations "in-flight".
@@ -56,15 +69,14 @@
                                   (put! wait-chan :next)
                                   res))]                                                                                      ; TODO: timeout?
           (try
-            (js/dirac.evalInCurrentContext code wrapped-handler)
+            (call-eval-in-current-context code wrapped-handler)
             (catch :default e
               ; this should never happen unless our code templating is broken
-              (.error js/console
-                      "failed dirac.evalInCurrentContext\n" e
-                      "\n\n-------- code:\n" code)))                                                                          ; TODO: this should be reported in a better way
+              (error "failed dirac.evalInCurrentContext\n" e
+                     "\n\n-------- code:\n" code)))                                                                           ; TODO: this should be reported in a better way
           (<! wait-chan)
           (recur)))                                                                                                           ; wait for task to complete
-      (.log js/console "Leaving eval-request-queue-processing"))))
+      (log "Leaving eval-request-queue-processing"))))
 
 (defn queue-eval-request [code handler]
   (put! eval-requests-chan [code handler]))
@@ -84,7 +96,7 @@
 (defn wrap-with-postprocess-and-eval-in-debugger-context [code]
   (go
     ; for result structure refer to devtools.api.postprocess_successful_eval and devtools.api.postprocess_unsuccessful_eval
-    (let [code (string/replace postprocess-template "{code}" (js/dirac.codeAsString code))
+    (let [code (string/replace postprocess-template "{code}" (call-code-as-string code))
           {:keys [thrown? result exception-details]} (<! (eval-in-debugger-context code))]
       (assert (not thrown?) (thrown-assert-msg exception-details code))
       (assert (not (nil? result)) (null-result-assert-msg result))
@@ -98,7 +110,7 @@
         code (-> output-template
                  (string/replace "{job-id}" id)
                  (string/replace "{kind}" kind)
-                 (string/replace "{text}" (js/dirac.codeAsString text)))]
+                 (string/replace "{text}" (call-code-as-string text)))]
     (eval-in-debugger-context code)))
 
 (defn is-devtools-present? []

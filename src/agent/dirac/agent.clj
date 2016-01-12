@@ -75,7 +75,7 @@
           (case result
             true (let [agent @current-agent]
                    (assert agent)
-                   (log/info "Started Dirac Agent" (str agent))
+                   (log/debug "Started Dirac Agent" (str agent))
                    (println (str "Started Dirac Agent: " (get-agent-info agent)))
                    true)                                                                                                      ; success
             false (do

@@ -11,7 +11,7 @@
   Object
   (toString [this]
     (let [tunnel (:tunnel (meta this))]
-      (str "NREPLTunnelServer#" (:id this) " of " (str tunnel)))))
+      (str "[NREPLTunnelServer#" (:id this) " of " (str tunnel) "]"))))
 
 (def last-id (volatile! 0))
 
@@ -165,7 +165,7 @@
                                        :on-incoming-client (partial on-incoming-client server)
                                        :on-leaving-client  (partial on-leaving-client server)})]
     (set-ws-server! server (ws-server/create! server-options))
-    (log/info (str (str server) "Started Dirac nREPL tunnel server at " (get-server-url server)))
+    (log/info (str server) (str "Started Dirac nREPL tunnel server at " (get-server-url server)))
     (log/debug "Created" (str server))
     server))
 

@@ -1,42 +1,40 @@
 ; initial version taken from https://github.com/tomjakubowski/weasel/tree/8bfeb29dbaf903e299b2a3296caed52b5761318f
 (ns dirac.implant.ws-client
   (:require-macros [dirac.implant.ws-client :refer [log warn info error]])
-  (:require [clojure.browser.event :as event]
-            [clojure.browser.net :as net]
-            [cljs.reader :refer [read-string]]
-            [dirac.implant.websocket :as ws]))
+  (:require [cljs.reader :refer [read-string]]
+            [goog.net.WebSocket :as gws]))
 
 (def defaults {:name              "WebSocket Client"
                :verbose           true
                :auto-reconnect?   false
-               :next-reconnect-fn (fn [_attempts] 10000)})                                                                    ; once every 10 seconds
+               :next-reconnect-fn (fn [_attempt] (* 10 1000))})
 
 ; -- constructor ------------------------------------------------------------------------------------------------------------
 
 (defn make-client [connection options]
-  (atom {:ready?     false
-         :connection connection
-         :options    options}))
+  {:ready?     (volatile! false)
+   :connection connection
+   :options    options})
 
 ; -- state helpers ----------------------------------------------------------------------------------------------------------
 
 (defn get-connection [client]
-  (:connection @client))
+  (:connection client))
 
 (defn ready? [client]
-  (:ready? @client))
+  @(:ready? client))
 
 (defn get-options [client]
-  (:options @client))
+  (:options client))
 
 (defn connected? [client]
   (not (nil? (get-connection client))))
 
 (defn mark-as-not-ready! [client]
-  (swap! client assoc :ready? false))
+  (vreset! (:ready? client) false))
 
 (defn mark-as-ready! [client]
-  (swap! client assoc :ready? true))
+  (vreset! (:ready? client) true))
 
 ; -- message serialization --------------------------------------------------------------------------------------------------
 
@@ -53,12 +51,12 @@
     (if verbose
       (log client "Sending websocket message" msg))
     (let [serialized-msg (serialize-message msg)]
-      (net/transmit (get-connection client) serialized-msg))))
+      (.send (get-connection client) serialized-msg))))
 
 (defn send! [client msg]
   (cond
-    (not (connected? client)) (warn client "Connection is not estabilished, dropping message" msg "client:" @client)          ; did you call connect! ?
-    (not (ready? client)) (warn client "Client is not ready, dropping message" msg "client:" @client)                         ; channel is not open
+    (not (connected? client)) (warn client "Connection is not estabilished, dropping message" msg "client:" client)           ; did you call connect! ?
+    (not (ready? client)) (warn client "Client is not ready, dropping message" msg "client:" client)                          ; channel is not open
     :else (really-send! client msg)))
 
 ; -- connection -------------------------------------------------------------------------------------------------------------
@@ -103,13 +101,13 @@
 (defn connect! [server-url & [opts]]
   (let [sanitized-opts (sanitize-opts opts)
         {:keys [verbose auto-reconnect? next-reconnect-fn]} sanitized-opts
-        conn (ws/websocket-connection auto-reconnect? next-reconnect-fn)
-        client (make-client conn sanitized-opts)]
-    (event/listen conn :opened (partial on-open-handler client))
-    (event/listen conn :message (partial on-message-handler client))
-    (event/listen conn :closed (partial on-closed-handler client))
-    (event/listen conn :error (partial on-error-handler client))
+        web-socket (goog.net.WebSocket. auto-reconnect? next-reconnect-fn)
+        client (make-client web-socket sanitized-opts)]
+    (.listen web-socket gws/EventType.OPENED (partial on-open-handler client))
+    (.listen web-socket gws/EventType.MESSAGE (partial on-message-handler client))
+    (.listen web-socket gws/EventType.CLOSED (partial on-closed-handler client))
+    (.listen web-socket gws/EventType.ERROR (partial on-error-handler client))
     (if verbose
       (info client "Connecting to server:" server-url "with options:" sanitized-opts))
-    (net/connect conn server-url)
+    (.open web-socket server-url)
     client))

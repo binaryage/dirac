@@ -1,31 +1,32 @@
-(ns dirac.implant.console)
+(ns dirac.implant.console
+  (:require [chromex.support :refer-macros [oget ocall oapply]]
+            [chromex.logging :refer-macros [log warn error group group-end]]))
 
 (defn get-console-view []
-  (if js/WebInspector.ConsolePanel._instanceObject
-    js/WebInspector.ConsolePanel._instanceObject._view))                                                                      ; TODO: do some sanity checks here
+  (oget js/window "WebInspector" "ConsolePanel" "_instanceObject" "_view"))                                                   ; TODO: do some sanity checks here
 
 (defn set-repl-ns! [ns-name]
   (if-let [console-view (get-console-view)]
-    (.setDiracReplNS console-view ns-name)))
+    (ocall console-view "setDiracReplNS" ns-name)))
 
 (defn announce-job-start! [job-id]
-  (.group js/console (str "nREPL JOB #" job-id))
+  (group (str "nREPL JOB #" job-id))
   (if-let [console-view (get-console-view)]
-    (.onJobStarted console-view job-id)))
+    (ocall console-view "onJobStarted" job-id)))
 
 (defn announce-job-end! [job-id]
-  (.groupEnd js/console)
+  (group-end)
   (if-let [console-view (get-console-view)]
-    (.onJobEnded console-view job-id)))
+    (ocall console-view "onJobEnded" job-id)))
 
 (defn set-prompt-mode! [mode]
   (if-let [console-view (get-console-view)]
-    (.setDiracPromptMode console-view mode)))
+    (ocall console-view "setDiracPromptMode" mode)))
 
 (defn set-prompt-status! [status]
   (if-let [console-view (get-console-view)]
-    (.updateDiracPromptStatus console-view status)))
+    (ocall console-view "updateDiracPromptStatus" status)))
 
 (defn set-prompt-banner! [banner]
   (if-let [console-view (get-console-view)]
-    (.updateDiracPromptBanner console-view banner)))
+    (ocall console-view "updateDiracPromptBanner" banner)))

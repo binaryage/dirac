@@ -19,7 +19,7 @@
   Object
   (toString [this]
     (let [tunnel (:tunnel (meta this))]
-      (str "NREPLClient#" (:id this) " of " (str tunnel)))))
+      (str "[NREPLClient#" (:id this) " of " (str tunnel) "]"))))
 
 (def last-id (volatile! 0))
 

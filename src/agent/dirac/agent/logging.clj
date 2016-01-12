@@ -4,8 +4,7 @@
            [dirac.lib.utils :as utils]))
 
 (def base-options
-  {;:level   :error
-   :level   :trace
+  {:level   :info
    :pattern (str (utils/wrap-with-ansi-color utils/ANSI_YELLOW "# %m") "%n")})
 
 (defn make-options [& [options]]
