@@ -215,6 +215,11 @@ WebInspector.ConsoleView = function()
     WebInspector.context.addFlavorChangeListener(WebInspector.ExecutionContext, this._executionContextChanged, this);
 
     this._consolePromptIndexSetting = WebInspector.settings.createLocalSetting("consolePromptIndex", 0);
+
+    var that = this;
+    setTimeout(function() {
+        that._switchToLastPrompt();
+    }, 200);
 }
 
 WebInspector.ConsoleView.persistedHistorySize = 300;
@@ -389,6 +394,7 @@ WebInspector.ConsoleView.prototype = {
 
     _executionContextChanged: function()
     {
+        console.log("!!!", this._consolePromptIndexSetting.get());
         this._switchToLastPrompt();
         this._prompt.clearAutoComplete(true);
         if (!this._showAllMessagesCheckbox.checked())

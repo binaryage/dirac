@@ -19,8 +19,7 @@
             [clojure.tools.logging :as log])
   (:import clojure.lang.LineNumberingPushbackReader
            java.io.StringReader
-           java.io.Writer
-           (clojure.lang IExceptionInfo))
+           java.io.Writer)
   (:refer-clojure :exclude (load-file)))
 
 ; this is the var that is checked by the middleware to determine whether an active CLJS REPL is in flight
@@ -85,11 +84,9 @@
   (let [initns (if ns (symbol ns) (@session #'ana/*cljs-ns*))
         repl cljs.repl/repl*
         flush (fn [driver]
-                (log/trace "before flush")
                 (.flush ^Writer (@session #'*out*))
                 (.flush ^Writer (@session #'*err*))
-                (driver/flush! driver)
-                (log/trace "after flush"))
+                (driver/flush! driver))
         send-response-fn (fn [response-msg]
                            (transport/send transport (response-for nrepl-msg response-msg)))
         print-fn (fn [driver result & rest]
@@ -98,7 +95,6 @@
                    (when (or (not ns)
                              (not= initns ana/*cljs-ns*))
                      (swap! session assoc #'ana/*cljs-ns* ana/*cljs-ns*))
-                   (log/trace "before send value" result)
                    (if (::first-cljs-repl nrepl-msg)
                      ; the first run through the cljs REPL is effectively part
                      ; of setup; loading core, (ns cljs.user ...), etc, should
@@ -186,7 +182,8 @@
   ; so we need to go a gnarly little stringy check here to catch any actual user-supplied exit
   (if-not (.. code trim (endsWith ":cljs/quit"))
     (apply run-cljs-repl msg code (map @session [#'*cljs-repl-env* #'*cljs-compiler-env* #'*cljs-repl-options*]))
-    (let [actual-repl-env (.-repl-env (@session #'*cljs-repl-env*))]
+    (let [actual-repl-env (@session #'*cljs-repl-env*)]
+      (reset! (:cached-setup actual-repl-env) :tear-down)                                                                     ; TODO: find a better way
       (cljs.repl/-tear-down actual-repl-env)
       (swap! session assoc
              #'*ns* (@session #'*original-clj-ns*)

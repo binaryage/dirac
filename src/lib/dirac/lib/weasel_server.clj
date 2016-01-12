@@ -38,10 +38,12 @@
     (log/trace (str this) "-load called" (str this) provides url)
     (load-javascript this provides url))
   (-tear-down [this]
-    (log/trace (str this) "-tear-down called => ignoring")
-    (when false
-      (reset! cached-setup ::uninitialized)
-      (tear-down-env this)))
+    (if (= :tear-down @(:cached-setup this))
+      (do
+        (log/trace (str this) "-tear-down called => shutting down the env")
+        (reset! cached-setup ::uninitialized)
+        (tear-down-env this))
+      (log/trace (str this) "-tear-down called => ignoring")))
 
   Object
   (toString [this]
@@ -153,14 +155,14 @@
 
 (defn setup-env [env _opts]
   (let [options (:options env)
-        {:keys [pre-connect]} options
+        {:keys [after-launch]} options
         server-options (assoc options
                          :on-message (partial on-message env)
                          :on-client-connection (partial on-client-connection env))
         server (server/create! server-options)]
     (set-server! env server)
-    (if pre-connect
-      (pre-connect env (server/get-url server)))
+    (if after-launch
+      (after-launch env (server/get-url server)))
     nil))
 
 (defn tear-down-env [env]

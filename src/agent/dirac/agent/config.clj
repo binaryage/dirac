@@ -4,11 +4,11 @@
 
 (def nrepl-server-default-config
   {:host "localhost"
-   :port 9010})
+   :port 8230})
 
 (def nrepl-tunnel-default-config
   {:host "localhost"
-   :port 9050})
+   :port 8231})
 
 (def default-config
   {:max-boot-trials           10

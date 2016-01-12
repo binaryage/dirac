@@ -3,22 +3,22 @@
                  [org.clojure/clojurescript "1.7.170"]
                  [org.clojure/core.async "0.2.374"]
                  [org.clojure/tools.logging "0.3.1"]
+                 [environ "1.0.1"]
                  [clj-logging-config "1.9.12"]
                  [binaryage/chromex "0.2.0"]
                  [binaryage/devtools "0.4.1"]
-                 [cljs-http "0.1.38"]
-                 [figwheel "0.5.0-1"]
+                 [cljs-http "0.1.39"]
+                 [figwheel "0.5.0-3"]
                  [reforms "0.4.3"]
                  [rum "0.6.0" :scope "provided"]
                  [rum-reforms "0.4.3"]
                  [parinfer "0.2.3"]
-                 [environ "1.0.1"]
                  [http-kit "2.1.21-alpha2"]
                  [com.lucasbradstreet/cljs-uuid-utils "1.0.2"]
-                 [org.clojure/tools.nrepl "0.2.10"]]
+                 [org.clojure/tools.nrepl "0.2.12"]]
 
   :plugins [[lein-cljsbuild "1.1.1"]
-            [lein-figwheel "0.5.0-2"]
+            [lein-figwheel "0.5.0-3"]
             [lein-shell "0.4.2"]
             [lein-environ "1.0.1"]]
 
@@ -78,9 +78,11 @@
                                            :source-map-timestamp true}}}}}
              :checkouts
              {:cljsbuild {:builds
-                          {:background {:source-paths ["checkouts/chromex/src/lib"
+                          {:background {:source-paths ["checkouts/cljs-devtools/src"
+                                                       "checkouts/chromex/src/lib"
                                                        "checkouts/chromex/src/exts"]}
-                           :options    {:source-paths ["checkouts/chromex/src/lib"
+                           :options    {:source-paths ["checkouts/cljs-devtools/src"
+                                                       "checkouts/chromex/src/lib"
                                                        "checkouts/chromex/src/exts"]}}}}
              :release
              {:env       {:chromex-elide-verbose-logging true}

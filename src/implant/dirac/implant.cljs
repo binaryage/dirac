@@ -14,8 +14,7 @@
     (eval/start-eval-request-queue-processing!)))
 
 (defn ^:export init-repl []
-  (when-not (intercom/repl-ready?)
-    (intercom/connect-to-nrepl-tunnel-server "ws://localhost:9050")))                                                         ; TODO: customize url
+  (intercom/init-repl!))
 
 (defn ^:export adopt-prompt-element [text-area-element use-parinfer?]
   (let [editor (editor/create-editor! text-area-element :prompt use-parinfer?)]

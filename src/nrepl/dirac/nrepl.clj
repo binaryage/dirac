@@ -7,17 +7,17 @@
             [dirac.lib.utils :as utils]))
 
 (def weasel-repl-options {:host  "localhost"
-                          :port  9001
+                          :port  8232
                           :range 10})
 
 ; -- support for booting into CLJS REPL -------------------------------------------------------------------------------------
 
-(defn pre-connect [repl-env url]
-  (log/trace "pre-connect" repl-env)
+(defn after-launch [repl-env url]
+  (log/trace "after-launch" repl-env)
   (piggieback/send-bootstrap-info! url))
 
 (defn bootstrap! []
-  (let [repl-opts (assoc weasel-repl-options :pre-connect pre-connect)
+  (let [repl-opts (assoc weasel-repl-options :after-launch after-launch)
         repl-env (weasel-server/make-weasel-repl-env repl-opts)]
     (log/trace "starting cljs-repl with " repl-env)
     (piggieback/cljs-repl repl-env)))
@@ -29,4 +29,4 @@
     (logging/setup-logging!))
   (log/debug "boot-cljs-repl!")
   (bootstrap!)
-  "boot-cljs-repl done")
+  true)

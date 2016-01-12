@@ -5,8 +5,11 @@
             [dirac.implant.console :as console]
             [dirac.implant.weasel-client :as weasel-client]
             [dirac.implant.nrepl-tunnel-client :as nrepl-tunnel-client]
-            [chromex.logging :refer-macros [log warn error]]
-            [goog.net.WebSocket :as ws]))
+            [chromex.logging :refer-macros [log info warn error]]
+            [goog.net.WebSocket :as ws]
+            [dirac.implant.eval :as eval]))
+
+(def required-dirac-api-version 1)
 
 (def ^:dynamic *repl-connected* false)
 (def ^:dynamic *repl-bootstrapped* false)
@@ -22,6 +25,18 @@
 (def tunnel-options
   {:verbose         true
    :auto-reconnect? true})
+
+(defn ^:dynamic missing-cljs-devtools-message []
+  (str "Dirac DevTools requires runtime support from the page context.\n"
+       "Please install cljs-devtools into your app => https://github.com/binaryage/dirac#installation."))
+
+(defn ^:dynamic old-cljs-devtools-message [current-api required-api]
+  (str "Obsolete cljs-devtools version detected. Dirac DevTools requires Dirac API v" required-api
+       ", but your cljs-devtools is v" current-api ".\n"
+       "Please ugrade your cljs-devtools installation in page => https://github.com/binaryage/cljs-devtools."))
+
+(defn ^:dynamic failed-to-retrieve-client-config-message []
+  (str "Failed to retrive client-side Dirac config. This is an unexpected error."))
 
 (defn repl-ready? []
   (and *repl-connected*
@@ -99,6 +114,29 @@
                                           :dirac "wrap"
                                           :id    job-id
                                           :code  code})))
+
+(defn ws-url [host port]
+  (str "ws://" host ":" port))
+
+(defn start-repl! []
+  (go
+    (if-let [client-config (<! (eval/get-dirac-client-config))]
+      (do
+        (info "Starting REPL support. Dirac client-side config is " client-config)
+        (let [{:keys [dirac-agent-host dirac-agent-port]} client-config
+              agent-url (ws-url dirac-agent-host dirac-agent-port)]
+          (connect-to-nrepl-tunnel-server agent-url)))
+      (display-prompt-status (failed-to-retrieve-client-config-message)))))
+
+(defn init-repl! []
+  (when-not *last-connection-url*
+    (go
+      (if (<! (eval/is-devtools-present?))
+        (let [api-version (<! (eval/get-dirac-api-version))]
+          (if-not (< api-version required-dirac-api-version)
+            (start-repl!)
+            (display-prompt-status (old-cljs-devtools-message api-version required-dirac-api-version))))
+        (display-prompt-status (missing-cljs-devtools-message))))))
 
 ; -- message processing -----------------------------------------------------------------------------------------------------
 

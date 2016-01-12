@@ -160,7 +160,7 @@
 (defn create! [tunnel options]
   (let [server (make-server tunnel)
         server-options (merge options {:ip                 (get options :host "localhost")
-                                       :port               (get options :port 9010)
+                                       :port               (get options :port 8231)
                                        :on-message         (partial on-message server)
                                        :on-incoming-client (partial on-incoming-client server)
                                        :on-leaving-client  (partial on-leaving-client server)})]

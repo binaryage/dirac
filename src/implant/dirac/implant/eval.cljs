@@ -100,3 +100,21 @@
                  (string/replace "{kind}" kind)
                  (string/replace "{text}" (js/dirac.codeAsString text)))]
     (eval-in-debugger-context code)))
+
+(defn is-devtools-present? []
+  (go
+    (let [{:keys [thrown? result exception-details]} (<! (eval-in-debugger-context "devtools.dirac"))]
+      (if-let [value (aget result "value")]
+        true))))
+
+(defn get-dirac-api-version []
+  (go
+    (let [{:keys [thrown? result exception-details]} (<! (eval-in-debugger-context "devtools.dirac.get_api_version()"))]
+      (if-let [value (aget result "value")]
+        (int value)))))
+
+(defn get-dirac-client-config []
+  (go
+    (let [{:keys [thrown? result exception-details]} (<! (eval-in-debugger-context "devtools.dirac.get_effective_config()"))]
+      (if-let [value (aget result "value")]
+        (js->clj value :keywordize-keys true)))))
