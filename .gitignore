@@ -15,4 +15,4 @@
 /.tmp
 .figwheel_server.log
 .profiles/
-pom.xml
+pom.xml*

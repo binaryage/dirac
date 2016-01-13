@@ -65,7 +65,7 @@
   (if (connected? client)
     (let [{:keys [host port]} (get-options client)
           url (utils/get-nrepl-server-url host port)]
-      (str "Connected to nREPL server on " url "."))
+      (str "Connected to nREPL server at " url "."))
     (str "Not connected to nREPL server.")))
 
 (defn connect-with-options [options]

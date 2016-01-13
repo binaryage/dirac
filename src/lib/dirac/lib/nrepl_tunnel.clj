@@ -109,7 +109,7 @@
         tunnel-url (nrepl-tunnel-server/get-server-url tunnel-server)
         nrepl-client (get-nrepl-client tunnel)
         client-info (nrepl-client/get-client-info nrepl-client)]
-    (str client-info " Tunnel is accepting connections on " tunnel-url ".")))
+    (str client-info " Tunnel is accepting connections at " tunnel-url ".")))
 
 ; -- tunnel message channels ------------------------------------------------------------------------------------------------
 ;
