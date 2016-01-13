@@ -27,12 +27,6 @@
 (defn set-sniffer! [driver sniffer-key sniffer]
   (vreset! (get-in driver [:sniffers sniffer-key]) sniffer))
 
-;(defn set-last-ns [driver name]
-;  (vreset! (:last-ns driver) name))
-;
-;(defn get-last-ns [driver]
-;  @(:last-ns driver))
-
 (defn get-send-response-fn [driver]
   (:send-response-fn driver))
 
@@ -123,12 +117,6 @@
   (f)
   (unsuppress-flushing driver :stderr)
   (flush-sniffer! driver :stderr :java-trace))
-
-;(defn extract-and-report-java-trace! [driver request-id e]
-;  (let [string-writer (StringWriter.)
-;        writer (PrintWriter. string-writer)]
-;    (.printStackTrace e writer)
-;    (messaging/report-output (:server driver) request-id :java-trace (.toString string-writer))))
 
 ; -- REPL handler factories -------------------------------------------------------------------------------------------------
 

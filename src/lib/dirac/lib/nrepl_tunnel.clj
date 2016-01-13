@@ -204,11 +204,3 @@
   (set-server-messages-channel! tunnel nil)
   (log/debug "Destroyed" (str tunnel))
   true)
-
-;(defn request-weasel-connection [tunnel session url]
-;  (log/debug (str tunnel) "Request weasel connection from client" session)
-;  (let [server (get-nrepl-tunnel-server tunnel)
-;        message {:op         :connect-weasel
-;                 :server-url url}
-;        client (nrepl-tunnel-server/get-client-for-session server session)]
-;    (nrepl-tunnel-server/send! client message)))
