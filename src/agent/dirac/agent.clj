@@ -7,6 +7,12 @@
             [dirac.lib.utils :as utils])
   (:import (java.net ConnectException)))
 
+(defn ^:dynamic failed-to-start-dirac-agent-message [max-boot-trials trial-display nrepl-server-url]
+  (str "Failed to start Dirac Agent. "
+       "The nREPL server didn't come online in time. Made " max-boot-trials " connection attempts "
+       "over last " trial-display " seconds. Did you really start your nREPL server at " nrepl-server-url "? "
+       "Maybe a firewall problem?"))
+
 ; -- agent construction / access --------------------------------------------------------------------------------------------
 
 (defn make-agent [tunnel]
@@ -85,14 +91,11 @@
             ::retry (do
                       (Thread/sleep delay-between-boot-trials)
                       (recur (inc trial)))))
-        (let [trial-period-in-seconds (/ (* max-boot-trials delay-between-boot-trials) 1000)
-              {:keys [host port]} (:nrepl-server effective-config)]
-          (log/error (str "Failed to start Dirac Agent. "
-                          "Reason: nREPL server didn't come online in time. "
-                          "Made " max-boot-trials " connection attempts over last "
-                          (format "%.2f" (double trial-period-in-seconds)) " seconds. "
-                          "Did you really start your nREPL server on " (utils/get-nrepl-server-url host port) "? "
-                          "Maybe a firewall problem?"))
+        (let [{:keys [host port]} (:nrepl-server effective-config)
+              nrepl-server-url (utils/get-nrepl-server-url host port)
+              trial-period-in-seconds (/ (* max-boot-trials delay-between-boot-trials) 1000)
+              trial-display (format "%.2f" (double trial-period-in-seconds))]
+          (log/error (failed-to-start-dirac-agent-message max-boot-trials trial-display nrepl-server-url))
           false)))))
 
 ; -- entry point ------------------------------------------------------------------------------------------------------------
