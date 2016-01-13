@@ -120,8 +120,37 @@ REPL is ready for your input at this point. You can try:
     js/window
     (doc filter)
     (filter odd? (range 42))
+    (in-ns)
+    (in-ns 'my.ns)
 
-Congratulations!
+If you see something very similar to the first screenshot at the top, you have Dirac running properly. **Congratulations!**
+
+You can also test evaluation of ClojureScript in the context of selected stack frame when paused on a breakpoint:
+
+1. set breakpoint to line 40 of `more.cljs` (on Mac, you can use use CMD+P to quickly open a file at source panel)
+2. click the "breakpoint test" button on the page
+3. debugger should pause on the line (similar to the second screenshot at the top)
+
+You could notice that custom formatters are presented everywhere including inlined values in the source code.
+Also property names in the scope panel are sorted and displayed in a more friendly way.
+
+Now hit ESC to bring up console drawer. Make sure you are switched to Dirac REPL and then enter:
+
+    js/rng
+
+You should see actual value of `rng` variable from local scope (formatted by custom formatters from cljs-devtools).
+Same way as you would expect when evaluating a Javascript command. Actually you can try it.
+Hit "Page Up" to switch to Javascript console prompt and enter:
+
+    rng
+
+This should return the same value.
+
+And now return back to Dirac REPL by pressing "Page Up" again and enter:
+
+    (take 3 js/rng)
+
+This is a proof that Dirac REPL can execute arbitrary ClojureScript code in the context of selected stack frame.
 
 ##### Installation
 
