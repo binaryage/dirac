@@ -1,4 +1,12 @@
 (defproject binaryage/dirac "0.1.0"
+  :description "Dirac DevTools - a Chrome DevTools fork for ClojureScript developers."
+  :url "https://github.com/binaryage/dirac"
+  :license {:name         "MIT License"
+            :url          "http://opensource.org/licenses/MIT"
+            :distribution :repo}
+  :scm {:name "git"
+        :url  "https://github.com/binaryage/dirac"}
+
   :dependencies [[org.clojure/clojure "1.7.0"]
                  [org.clojure/clojurescript "1.7.170"]
                  [org.clojure/core.async "0.2.374"]
