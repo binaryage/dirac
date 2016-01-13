@@ -88,25 +88,11 @@ WebInspector.ParsedURL = function(url)
 
 /**
  * @param {string} url
- * @return {string}
- */
-WebInspector.ParsedURL._decodeIfPossible = function(url)
-{
-    var decodedURL = url;
-    try {
-        decodedURL = decodeURI(url);
-    } catch (e) { }
-    return decodedURL;
-}
-
-/**
- * @param {string} url
  * @return {!Array.<string>}
  */
 WebInspector.ParsedURL.splitURLIntoPathComponents = function(url)
 {
-    var decodedURL = WebInspector.ParsedURL._decodeIfPossible(url);
-    var parsedURL = new WebInspector.ParsedURL(decodedURL);
+    var parsedURL = new WebInspector.ParsedURL(url);
     var origin;
     var folderPath;
     var name;
@@ -132,6 +118,22 @@ WebInspector.ParsedURL.splitURLIntoPathComponents = function(url)
     }
     result.push(name);
     return result;
+}
+
+/**
+ * @param {string} url
+ * @return {string}
+ */
+WebInspector.ParsedURL.extractOrigin = function(url)
+{
+    var parsedURL = new WebInspector.ParsedURL(url);
+    if (!parsedURL.isValid)
+        return "";
+
+    var origin = parsedURL.scheme + "://" + parsedURL.host;
+    if (parsedURL.port)
+        origin += ":" + parsedURL.port;
+    return origin;
 }
 
 /**
