@@ -51,14 +51,6 @@ WebInspector.StylesSidebarPane = function()
 }
 
 /**
- * @enum {string}
- */
-WebInspector.StylesSidebarPane.Events = {
-    SelectorEditingStarted: "SelectorEditingStarted",
-    SelectorEditingEnded: "SelectorEditingEnded"
-};
-
-/**
  * @param {!WebInspector.CSSProperty} property
  * @return {!Element}
  */
@@ -1188,7 +1180,7 @@ WebInspector.StylePropertiesSection.prototype = {
             selectorElement.className = "simple-selector" + matchingSelectorClass;
             if (rule.styleSheetId)
                 selectorElement._selectorIndex = i;
-            selectorElement.textContent = selectors[i].value;
+            selectorElement.textContent = selectors[i].text;
 
             fragment.appendChild(selectorElement);
         }

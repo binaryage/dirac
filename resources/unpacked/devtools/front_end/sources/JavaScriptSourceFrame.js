@@ -112,7 +112,7 @@ WebInspector.JavaScriptSourceFrame.prototype = {
         var infobar = new WebInspector.UISourceCodeFrame.Infobar(WebInspector.Infobar.Type.Warning, WebInspector.UIString("Workspace mapping mismatch"));
         this._divergedInfobar = infobar;
 
-        var fileURL = this.uiSourceCode().originURL();
+        var fileURL = this.uiSourceCode().url();
         infobar.createDetailsRowMessage(WebInspector.UIString("The content of this file on the file system:\u00a0")).appendChild(
             WebInspector.linkifyURLAsNode(fileURL, fileURL, "source-frame-infobar-details-url", true));
 
@@ -148,7 +148,7 @@ WebInspector.JavaScriptSourceFrame.prototype = {
         if (projectType === WebInspector.projectTypes.Snippets)
             return;
         var networkURL = WebInspector.networkMapping.networkURL(this.uiSourceCode());
-        var url = projectType === WebInspector.projectTypes.Formatter ? this.uiSourceCode().originURL() : networkURL;
+        var url = projectType === WebInspector.projectTypes.Formatter ? this.uiSourceCode().url() : networkURL;
         var isContentScript = projectType === WebInspector.projectTypes.ContentScripts;
         if (!WebInspector.BlackboxSupport.isBlackboxed(url, isContentScript)) {
             this._hideBlackboxInfobar();
@@ -266,9 +266,8 @@ WebInspector.JavaScriptSourceFrame.prototype = {
 
     onTextChanged: function(oldRange, newRange)
     {
-        this._scriptsPanel.setIgnoreExecutionLineEvents(true);
+        this._scriptsPanel.updateLastModificationTime();
         WebInspector.UISourceCodeFrame.prototype.onTextChanged.call(this, oldRange, newRange);
-        this._scriptsPanel.setIgnoreExecutionLineEvents(false);
         if (this._compiler)
             this._compiler.scheduleCompile();
     },
@@ -371,20 +370,16 @@ WebInspector.JavaScriptSourceFrame.prototype = {
 
     _workingCopyCommitted: function(event)
     {
+        this._scriptsPanel.updateLastModificationTime();
         if (this._supportsEnabledBreakpointsWhileEditing())
             return;
 
-        if (!this._scriptFileForTarget.size) {
+        if (!this._scriptFileForTarget.size)
             this._restoreBreakpointsAfterEditing();
-            return;
-        }
-
-        this._scriptsPanel.setIgnoreExecutionLineEvents(true);
     },
 
     _didMergeToVM: function()
     {
-        this._scriptsPanel.setIgnoreExecutionLineEvents(false);
         if (this._supportsEnabledBreakpointsWhileEditing())
             return;
         this._updateDivergedInfobar();
@@ -393,7 +388,6 @@ WebInspector.JavaScriptSourceFrame.prototype = {
 
     _didDivergeFromVM: function()
     {
-        this._scriptsPanel.setIgnoreExecutionLineEvents(false);
         if (this._supportsEnabledBreakpointsWhileEditing())
             return;
         this._updateDivergedInfobar();
