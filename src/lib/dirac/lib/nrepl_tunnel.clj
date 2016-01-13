@@ -35,7 +35,7 @@
 ; Currently tunnel-server can accept only one client connection. You cannot have two or more instances of DevTools connected
 ; to the same tunnel. You would have to start multiple tunnels on different ports.
 
-; -- tunnel constructor -----------------------------------------------------------------------------------------------------
+; -- NREPLTunnel constructor ------------------------------------------------------------------------------------------------
 
 (declare deliver-server-message!)
 (declare deliver-client-message!)
@@ -67,7 +67,7 @@
     (log/trace "Made" (str tunnel))
     tunnel))
 
-; -- tunnel access ----------------------------------------------------------------------------------------------------------
+; -- NREPLTunnel getters/setters --------------------------------------------------------------------------------------------
 
 (defn get-server-messages-channel [tunnel]
   {:pre [(instance? NREPLTunnel tunnel)]}

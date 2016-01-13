@@ -13,7 +13,7 @@
 ; but underlying nREPL client created via clojure.tools.nrepl/client can be also called nrepl-client
 ; so we decided to call underlying client "raw-nrepl-client" instead
 
-; -- constructor ------------------------------------------------------------------------------------------------------------
+; -- NREPLClient constructor ------------------------------------------------------------------------------------------------
 
 (defrecord NREPLClient [id options connection raw-nrepl-client response-poller]
   Object
@@ -32,7 +32,7 @@
     (log/trace "Made" (str client))
     client))
 
-; -- access -----------------------------------------------------------------------------------------------------------------
+; -- NREPLClient getters/setters --------------------------------------------------------------------------------------------
 
 (defn get-tunnel [client]
   {:pre [(instance? NREPLClient client)]}

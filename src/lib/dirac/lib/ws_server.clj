@@ -22,7 +22,7 @@
     (log/trace "Made" (str server))
     server))
 
-; -- WebSocketServer access -------------------------------------------------------------------------------------------------
+; -- WebSocketServer getters/setters ----------------------------------------------------------------------------------------
 
 (defn get-http-server [server]
   {:pre  [(instance? WebSocketServer server)]

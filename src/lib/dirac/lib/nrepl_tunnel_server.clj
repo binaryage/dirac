@@ -5,7 +5,7 @@
             [dirac.lib.ws-server :as ws-server]
             [dirac.lib.utils :as utils]))
 
-; -- constructor ------------------------------------------------------------------------------------------------------------
+; -- NREPLTunnelServer constructor ------------------------------------------------------------------------------------------
 
 (defrecord NREPLTunnelServer [id ws-server client->session-promise]
   Object
@@ -24,7 +24,7 @@
     (log/trace "Made" (str server))
     server))
 
-; -- access -----------------------------------------------------------------------------------------------------------------
+; -- NREPLTunnelServer getters/setters --------------------------------------------------------------------------------------
 
 (defn get-ws-server [server]
   {:pre  [(instance? NREPLTunnelServer server)]

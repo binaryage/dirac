@@ -64,7 +64,7 @@
     (log/trace "Made" (str repl-env))
     repl-env))
 
-; -- WeaselREPLEnv access ---------------------------------------------------------------------------------------------------
+; -- WeaselREPLEnv getters/setters ------------------------------------------------------------------------------------------
 
 (defn get-server [env]
   {:pre [(instance? WeaselREPLEnv env)]}
