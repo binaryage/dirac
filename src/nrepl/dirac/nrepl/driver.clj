@@ -1,10 +1,8 @@
 (ns dirac.nrepl.driver
-  (:require
-    [clojure.core.async :refer [chan <!! <! >!! put! alts!! timeout close! go go-loop]]
-    [cljs.repl :as cljs-repl]
-    [dirac.nrepl.sniffer :as sniffer])
-  (:import (clojure.lang IExceptionInfo)
-           (java.io PrintWriter StringWriter)))
+  (:require [clojure.core.async :refer [chan <!! <! >!! put! alts!! timeout close! go go-loop]]
+            [cljs.repl :as cljs-repl]
+            [dirac.nrepl.sniffer :as sniffer])
+  (:import (clojure.lang IExceptionInfo)))
 
 ; -- driver construction ----------------------------------------------------------------------------------------------------
 

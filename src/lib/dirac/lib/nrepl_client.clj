@@ -4,8 +4,7 @@
            [clojure.tools.logging :as log]
            [dirac.lib.nrepl-protocols :as nrepl-protocols]
            [dirac.lib.utils :as utils])
-  (:import (java.net SocketException)
-           (java.util.concurrent Future)))
+  (:import (java.net SocketException)))
 
 ; this is a thin wrapper of clojure.tools.nrepl/client which cooperates with parent nREPL tunnel
 
