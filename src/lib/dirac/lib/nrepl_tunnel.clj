@@ -118,6 +118,17 @@
         client-info (nrepl-client/get-client-info nrepl-client)]
     (str client-info " Tunnel is accepting connections at " tunnel-url ".")))
 
+; -- sessions ---------------------------------------------------------------------------------------------------------------
+
+(defn open-session! [tunnel]
+  (let [nrepl-client (get-nrepl-client tunnel)
+        new-session (nrepl-client/open-session nrepl-client)]
+    new-session))
+
+(defn close-session! [tunnel session]
+  (let [nrepl-client (get-nrepl-client tunnel)]
+    (nrepl-client/close-session nrepl-client session)))
+
 ; -- tunnel message channels ------------------------------------------------------------------------------------------------
 ;
 ; When nREPL client receives a message fron nREPL server, we don't send the message immediatelly through the tunnel.
@@ -141,23 +152,6 @@
     (put! channel [message receipt])
     receipt))
 
-(defn deliver-client-message! [tunnel message]
-  (let [channel (get-client-messages-channel tunnel)
-        receipt (promise)]
-    (log/trace (str tunnel) (str "Enqueue message " (utils/sid message) " to be sent to a DevTools client via tunnel:\n")
-               (utils/pp message))
-    (put! channel [message receipt])
-    receipt))
-
-(defn open-session! [tunnel]
-  (let [nrepl-client (get-nrepl-client tunnel)
-        new-session (nrepl-client/open-session nrepl-client)]
-    new-session))
-
-(defn close-session! [tunnel session]
-  (let [nrepl-client (get-nrepl-client tunnel)]
-    (nrepl-client/close-session nrepl-client session)))
-
 (defn run-server-messages-channel-processing-loop! [tunnel]
   (log/debug (str tunnel) "Starting server-messages-channel-processing-loop")
   (go-loop []
@@ -168,6 +162,14 @@
           (log/trace (str tunnel) (str "Sent message " (utils/sid message) " to nREPL server"))
           (recur))
         (log/debug (str tunnel) "Exitting server-messages-channel-processing-loop")))))
+
+(defn deliver-client-message! [tunnel message]
+  (let [channel (get-client-messages-channel tunnel)
+        receipt (promise)]
+    (log/trace (str tunnel) (str "Enqueue message " (utils/sid message) " to be sent to a DevTools client via tunnel:\n")
+               (utils/pp message))
+    (put! channel [message receipt])
+    receipt))
 
 (defn run-client-messages-channel-processing-loop! [tunnel]
   (log/debug (str tunnel) "Starting client-messages-channel-processing-loop")
@@ -180,7 +182,7 @@
           (recur))
         (log/debug (str tunnel) "Exitting client-messages-channel-processing-loop")))))
 
-; -- tunnel -----------------------------------------------------------------------------------------------------------------
+; -- NREPLTunnel life cycle -------------------------------------------------------------------------------------------------
 
 (defn create! [options]
   (let [tunnel (make-tunnel! options)
