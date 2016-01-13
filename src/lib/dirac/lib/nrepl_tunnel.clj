@@ -31,9 +31,16 @@
 ; Tunnel implementation should be robust, client-side (Dirac) endpoint can connect and go-away at any point (browser refresh).
 ; nREPL client session should persist between reconnections.
 ;
-; TODO: document multiple clients
-; Currently tunnel-server can accept only one client connection. You cannot have two or more instances of DevTools connected
-; to the same tunnel. You would have to start multiple tunnels on different ports.
+; Tunnel allows one-to-many scenario, where multiple Dirac DevTools instances can connect to a singe Dirac Agent which talks
+; to a single nREPL server. Each Dirac DevTools instance is assigned its own nREPL session, so they can use a single nREPL
+; server and they don't step on each others' toes. Thanks to this you can open multiple pages with different Dirac DevTools
+; and they all can have their own independent REPLs.
+;
+; So the multi-client scenario can look like this:
+;                                                                       <-ws->  [ nREPL tunnel client #1 ]
+;       ...        <-s->  [ nREPL client ] <-> [ nREPL tunnel server ]  <-ws->  [ nREPL tunnel client #2 ]
+;                                                                       <-ws->  [ nREPL tunnel client #3 ]
+
 
 ; -- NREPLTunnel constructor ------------------------------------------------------------------------------------------------
 
