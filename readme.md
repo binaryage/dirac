@@ -63,13 +63,15 @@ It will look almost the same as stock DevTools, but you can tell the difference 
 will be green instead of blue (see the screenshots above).
 
 Ok, now you can switch to Javascript Console in Dirac DevTools. Focus prompt field and press `PageUp` or `PageDown`.
-This will switch prompt from Javascript REPL to ClojureScript REPL.
+This will switch prompt from Javascript REPL to ClojureScript REPL. (Note you might need to refresh the page once to see
+custom formatters - DevTools do not render them first time for some reason).
 
 You should see a red message on a green background: `Dirac Agent is disconnected. Check your nREPL tunnel at ws://localhost:8231.`
 
 That's correct. Dirac REPL uses nREPL protocol, so we have to provide it with some nREPL server.
 Luckily enough leiningen offers nREPL server by simply running:
 
+    cd demo-workspace/cljs-devtools-sample
     lein repl
 
 After your nREPL starts your Dirac DevTools should eventually reconnect. Or close Dirac window and open it again if
