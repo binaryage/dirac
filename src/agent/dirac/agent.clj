@@ -111,8 +111,10 @@
   The problem with `lein repl` :init config is that it is evaluated before nREPL fully starts.
   Actually it waits for this init code to fully evaluate before starting nREPL server."
   [& [config]]
-  (if-not (or (:skip-logging-setup config) (utils/env-val :dirac-agent-skip-logging-setup))
-    (logging/setup-logging!))
-  (log/info "Booting Dirac Agent...")
-  (future (boot-now! config))
+  (let [effective-config (config/get-effective-config config)]
+    (if-not (:skip-logging-setup effective-config)
+      (logging/setup-logging! effective-config))
+    (log/info "Booting Dirac Agent...")
+    (log/debug "effective config: " effective-config)
+    (future (boot-now! config)))
   true)

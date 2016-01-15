@@ -11,10 +11,10 @@
 
 ; -- our default setup ------------------------------------------------------------------------------------------------------
 
-(defn setup-logging! []
+(defn setup-logging! [options]
   (config/set-loggers!
-    "dirac.lib.nrepl-client" (make-options)
-    "dirac.lib.nrepl-tunnel" (make-options)
-    "dirac.lib.nrepl-tunnel-server" (make-options)
-    "dirac.lib.weasel-server" (make-options)
-    "dirac.lib.ws-server" (make-options)))
+    "dirac.lib.nrepl-client" (make-options options)
+    "dirac.lib.nrepl-tunnel" (make-options options)
+    "dirac.lib.nrepl-tunnel-server" (make-options options)
+    "dirac.lib.weasel-server" (make-options options)
+    "dirac.lib.ws-server" (make-options options)))

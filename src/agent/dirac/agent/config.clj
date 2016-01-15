@@ -1,6 +1,5 @@
 (ns dirac.agent.config
-  (require [clojure.tools.logging :as log]
-           [dirac.lib.utils :refer [assoc-env-val]]))
+  (require [dirac.lib.utils :refer [assoc-env-val]]))
 
 (def nrepl-server-default-config
   {:host "localhost"
@@ -11,7 +10,8 @@
    :port 8231})
 
 (def default-config
-  {:max-boot-trials           10
+  {:log-level                 "WARN"                                                                                          ; OFF, FATAL, ERROR, WARN, INFO, DEBUG, TRACE, ALL
+   :max-boot-trials           10
    :initial-boot-delay        1000
    :delay-between-boot-trials 500
    :skip-logging-setup        false
@@ -22,10 +22,11 @@
 
 (defn get-environ-config []
   (-> {}
+      (assoc-env-val [:log-level] :dirac-agent-log-level)
+      (assoc-env-val [:skip-logging-setup] :dirac-agent-skip-logging-setup :bool)
       (assoc-env-val [:max-boot-trials] :dirac-agent-max-boot-trials :int)
       (assoc-env-val [:initial-boot-delay] :dirac-agent-initial-boot-delay :int)
       (assoc-env-val [:delay-between-boot-trials] :dirac-agent-delay-between-boot-trials :int)
-      (assoc-env-val [:skip-logging-setup] :dirac-agent-skip-logging-setup :bool)
       (assoc-env-val [:nrepl-server :host] :dirac-nrepl-server-host)
       (assoc-env-val [:nrepl-server :port] :dirac-nrepl-server-port :int)
       (assoc-env-val [:nrepl-tunnel :host] :dirac-nrepl-tunnel-host)
@@ -42,12 +43,7 @@
 
 (defn get-effective-config* [& [config]]
   (let [environ-config (get-environ-config)]
-    (log/debug "default config:" default-config)
-    (log/debug "environ config:" environ-config)
-    (log/debug "ad-hoc config:" config)
-    (log/debug "---------------")
     (let [effective-config (deep-merge default-config environ-config (or config {}))]
-      (log/debug "effective config: " effective-config)
       effective-config)))
 
 (def ^:dynamic get-effective-config (memoize get-effective-config*))                                                          ; assuming environ-config is constant

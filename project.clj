@@ -11,6 +11,7 @@
                  [org.clojure/clojurescript "1.7.170"]
                  [org.clojure/core.async "0.2.374"]
                  [org.clojure/tools.logging "0.3.1"]
+                 [org.clojure/tools.cli "0.3.3"]
                  [environ "1.0.1"]
                  [clj-logging-config "1.9.12"]
                  [binaryage/chromex "0.2.0"]
@@ -29,6 +30,8 @@
             [lein-figwheel "0.5.0-3"]
             [lein-shell "0.4.2"]
             [lein-environ "1.0.1"]]
+
+  :main dirac.agent-cli
 
   :figwheel
   {:server-port    7100
