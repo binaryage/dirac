@@ -12,6 +12,7 @@
 
 (def default-config
   {:max-boot-trials           10
+   :initial-boot-delay        1000
    :delay-between-boot-trials 500
    :skip-logging-setup        false
    :nrepl-server              nrepl-server-default-config
@@ -22,6 +23,7 @@
 (defn get-environ-config []
   (-> {}
       (assoc-env-val [:max-boot-trials] :dirac-agent-max-boot-trials :int)
+      (assoc-env-val [:initial-boot-delay] :dirac-agent-initial-boot-delay :int)
       (assoc-env-val [:delay-between-boot-trials] :dirac-agent-delay-between-boot-trials :int)
       (assoc-env-val [:skip-logging-setup] :dirac-agent-skip-logging-setup :bool)
       (assoc-env-val [:nrepl-server :host] :dirac-nrepl-server-host)

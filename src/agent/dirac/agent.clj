@@ -67,7 +67,9 @@
 
 (defn boot-now! [config]
   (let [effective-config (config/get-effective-config config)
-        {:keys [max-boot-trials delay-between-boot-trials]} effective-config]
+        {:keys [max-boot-trials delay-between-boot-trials initial-boot-delay]} effective-config]
+    (if (pos? initial-boot-delay)
+      (Thread/sleep initial-boot-delay))
     (loop [trial 1]
       (if (<= trial max-boot-trials)
         (let [result (try
