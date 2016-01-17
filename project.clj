@@ -146,10 +146,11 @@
   :aliases {"jar"                  ["shell" "scripts/lein-without-checkouts.sh" "jar"]
             "install"              ["shell" "scripts/lein-without-checkouts.sh" "install"]
             "uberjar"              ["shell" "scripts/lein-without-checkouts.sh" "uberjar"]
-            "dev-build"            ["with-profile" "+unpacked,+cljs"
+            "dev-build"            ["with-profile" "+unpacked,+cljs,+checkouts"
                                     "cljsbuild" "once" "background" "options" "implant"]
-            "fig"                  ["with-profile" "+unpacked,+cljs"
-                                    "do" "clean," "figwheel" "background" "options" "implant"]
+            "fig"                  ["with-profile" "+unpacked,+cljs,+checkouts"
+                                    "do" "clean,"
+                                    "figwheel" "background" "options" "implant"]
             "release"              ["with-profile" "+packed,+cljs"
                                     "do" "clean,"
                                     "cljsbuild" "once" "implant" "background" "options"]
