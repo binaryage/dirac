@@ -61,7 +61,7 @@ Also I view Dirac as an experimental test ground where new DevTools features can
 Not only for ClojureScript but maybe for other compile-to-js languages as well. It could serve as a proof-of-concept
 implementation of some niche features or extension points requested or planned in the official DevTools.
 
-In future some Dirac features could move into official DevTools eventually, because there will be a way how to implement
+In future some Dirac features could move into official DevTools eventually, because there could be a way how to implement
 them using newly introduced extension points. But until then we want to maintain a live fork so we don't have to wait
 for Chrome developers to add "our" requested features.
 
@@ -233,7 +233,6 @@ If you run into issues, it is pretty difficult to troubleshoot it without deeper
 how [Weasel](https://github.com/tomjakubowski/weasel) comes into play and how Dirac Agent orchestrates all this.
 
 If you hit a wall, you can try to ask for help in the `#dirac` channel at http://clojurians.slack.com ([ask for an invitation here](http://clojurians.net/)).
-Chances are there is someone able to help.
 
 Ok, back to launching the Dirac Agent. You can wrap it as a command-line tool and run it. The source for cli tool is [here](https://github.com/binaryage/dirac/blob/master/src/agent/dirac/agent_cli.clj).
 Here is a custom launcher script which uses maven to download dirac jar and execute `agent-cli` with your current java env from command-line:
@@ -270,6 +269,45 @@ The last line should remind you that Dirac Agent started successfully and listen
 Now you should be able to use REPL from any of your Dirac DevTools instances.
 
 Good job! :thumbsup:
+
+#### Custom configuration
+
+Installation instructions above relied on default settings. Depending on your setup you might need to provide your custom
+configuration.
+
+There are three areas where custom configuration can be provided:
+
+1. Dirac Agent
+2. Dirac nREPL middleware
+3. page-specific configuration of a DevTools instance
+
+In general configuration can come from different sources:
+
+1. hard-coded defaults
+2. environment
+3. a config map provided as an argument.
+
+Configuration options from later source override settings from previous sources.
+
+Environmental variables have always prefix DIRAC_ and are named after option key in the config map.
+
+##### Dirac Agent configuration
+
+Please consult [this file](https://github.com/binaryage/dirac/blob/master/src/agent/dirac/agent/config.clj) for possible
+defaults and their env variable counterparts.
+
+If you are invoking [`dirac.agent/boot!`](https://github.com/binaryage/dirac/blob/master/src/agent/dirac/agent.clj) from code
+ you can finally override config options with a config map specified via an argument. Actually this is what
+ [`dirac.agent-cli`](https://github.com/binaryage/dirac/blob/master/src/agent/dirac/agent_cli.clj) does by reading
+command-line arguments and converting some of them to config options.
+
+##### Dirac nREPL middleware configuration
+
+TODO:
+
+##### DevTools page-specific configuration
+
+TODO:
 
 ### Credits
 
