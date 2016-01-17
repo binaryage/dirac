@@ -298,20 +298,31 @@ Please refer to their docs, you can for example use `lein-environ` plugin to spe
 ##### Dirac Agent configuration
 
 Please consult [this file](https://github.com/binaryage/dirac/blob/master/src/agent/dirac/agent/config.clj) for possible
-defaults and their env variable counterparts.
+defaults and their environmental counterparts.
 
 If you are invoking [`dirac.agent/boot!`](https://github.com/binaryage/dirac/blob/master/src/agent/dirac/agent.clj) from code
- you can finally override config options with a config map specified via an argument. Actually this is what
+ you can override config options with a config map specified as an argument. Actually this is what
  [`dirac.agent-cli`](https://github.com/binaryage/dirac/blob/master/src/agent/dirac/agent_cli.clj) does by reading
 command-line arguments and converting some of them to config options.
 
 ##### Dirac nREPL middleware configuration
 
-TODO:
+Please consult [this file](https://github.com/binaryage/dirac/blob/master/src/nrepl/dirac/nrepl/config.clj) for possible
+defaults and their environmental counterparts.
+
+If you are invoking [`dirac.nrepl/boot-cljs-repl!`](https://github.com/binaryage/dirac/blob/master/src/nrepl/dirac/nrepl.clj) from code
+ you can override config options with a config map specified as an argument.
 
 ##### DevTools page-specific configuration
 
-TODO:
+When you open/refresh Dirac DevTools, it asks current page for effective page-specific Dirac config
+(see [`devtools.dirac/get-effective-config`](https://github.com/binaryage/cljs-devtools/blob/master/src/devtools/dirac.cljs).
+The most important setting is a connection info for Dirac Agent. This allows flexibility of configuring individual
+ClojureScript projects with their own settings instead of providing one system-wide configuration. In theory
+you can have different projects connecting do different Dirac Agents (which are connected to different nREPL servers).
+
+Please consult [this file](https://github.com/binaryage/cljs-devtools/blob/master/src/devtools/dirac.clj) for possible
+defaults and their environmental counterparts.
 
 ### Credits
 
