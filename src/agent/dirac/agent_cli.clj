@@ -10,15 +10,15 @@
 ; -- options ----------------------------------------------------------------------------------------------------------------
 
 (def cli-options
-  [["-p" "--nrepl-tunnel-port PORT" "nREPL tunnel port number (listen)"
+  [["-p" "--nrepl-tunnel-port PORT" "nREPL tunnel port (will listen)"
     :parse-fn port-parser
     :validate port-validator]
-   ["-H" "--nrepl-tunnel-host HOST" "nREPL tunnel host (bind)"
+   ["-H" "--nrepl-tunnel-host HOST" "nREPL tunnel host (will bind)"
     :default-desc "localhost"]
-   ["-q" "--nrepl-server-port PORT" "nREPL server port number"
+   ["-q" "--nrepl-server-port PORT" "nREPL server port (will connect)"
     :parse-fn port-parser
     :validate port-validator]
-   ["-I" "--nrepl-server-host HOST" "nREPL server host"
+   ["-I" "--nrepl-server-host HOST" "nREPL server host (will connect)"
     :default-desc "localhost"]
    ["-v" nil "Verbosity level; may be specified multiple times to increase value"
     :id :verbosity
