@@ -36,7 +36,6 @@
 
 (defn get-effective-config* [& [config]]
   (let [environ-config (get-environ-config)]
-    (let [effective-config (deep-merge-ignoring-nils default-config environ-config config)]
-      (or effective-config {}))))
+    (or (deep-merge-ignoring-nils default-config environ-config config) {})))
 
 (def ^:dynamic get-effective-config (memoize get-effective-config*))                                                          ; assuming environ-config is constant
