@@ -35,19 +35,17 @@ Traditionally one has been able to implement a Chrome extension which could regi
 Actually Suprematic have implemented their [ClojureScript REPL extension](http://blog.suprematic.net/2014/02/chrome-devtools-repl-for-clojurescript_26.html) this way back in 2014.
 Also more recently [React Developer Tools](https://github.com/facebook/react-devtools) used this approach.
 
-The problem with extra panels is that that they don't integrate well with existing panels. They are separate "apps" injected
-into DevTools UI. For example for best user experience the ClojureScript REPL should be very closely integrated with
-Javascript Console in my opinion. There should be no switching between panels.
+The problem with extra panels is that that they don't integrate well with existing panels. They are separate islands, separate web "apps" injected
+into DevTools UI. In my opinion. for best user experience the ClojureScript REPL should be very closely integrated with
+Javascript Console. Ideally, there should be no switching between panels.
 
 A big improvement was an introduction of [custom formatters](https://docs.google.com/document/d/1FTascZXT9cxfetuPRT2eXPQKXui4nWFivUnS_335T3U) in early 2015.
-This allowed to enhance presentation of ClojureScript values directly in Javascript Console and without the need to install an extension.
-I have implemented the [cljs-devtools](https://github.com/binaryage/cljs-devtools) library which leveraged this feature.
+This allowed to enhance presentation of ClojureScript values directly in Javascript Console and without the need to install a Chrome extension.
+I have implemented the [cljs-devtools](https://github.com/binaryage/cljs-devtools) library which leverages this feature.
 
 Also I have filled a [request for a new extension point](https://code.google.com/p/chromium/issues/detail?id=484261) which would
-potentially allow me to implement REPL functionality in a similar way how custom formatters work. Unfortunately existing DevTools extension
-APIs weren't suitable for what I wanted to do.
-
-There has been some progress made on that issue but after six months of waiting I decided to fork the DevTools.
+potentially allow me to implement REPL functionality in a similar way to custom formatters. Unfortunately existing DevTools extension
+APIs weren't suitable for what I wanted to do. There has been some progress made on that issue but after six months of waiting I decided to fork the DevTools.
 
 ##### A divergent fork?
 
@@ -63,10 +61,9 @@ Also I view Dirac as an experimental test ground where new DevTools features can
 Not only for ClojureScript but maybe for other compile-to-js languages as well. It could serve as a proof-of-concept
 implementation of some niche features or extension points requested or planned in the official DevTools.
 
-I'm pretty sure DevTools will evolve and will be adding new extension points in the future.
-That means some Dirac features could move into official DevTools at some point eventually.
-The main benefit of having a live fork in place today is that "we" as ClojureScript community don't have to wait
-for "them" (Google) to add "our" features, so we can move quickly.
+In future some Dirac features could move into official DevTools eventually, because there will be a way how to implement
+them using newly introduced extension points. But until then we want to maintain a live fork so we don't have to wait
+for Chrome developers to add "our" requested features.
 
 #### A demo time!
 
@@ -80,7 +77,10 @@ so I recommend to run it with a dedicated user profile:
 Also you have to run it with [remote debugging](https://developer.chrome.com/devtools/docs/debugger-protocol)
 enabled on port 9222 (better make an alias of this command):
 
-    /Applications/Google\ Chrome\ Canary.app/Contents/MacOS/Google\ Chrome\ Canary --remote-debugging-port=9222 --no-first-run --user-data-dir=.dirac-chrome-profile
+    /Applications/Google\ Chrome\ Canary.app/Contents/MacOS/Google\ Chrome\ Canary \
+      --remote-debugging-port=9222 \
+      --no-first-run \
+      --user-data-dir=.dirac-chrome-profile
 
 Now you can install [Dirac DevTools Chrome extension](https://chrome.google.com/webstore/detail/dirac-devtools/kbkdngfljkchidcjpnfcgcokkbhlkogi).
 After installation, should see a new extension icon next to your address bar.
@@ -219,44 +219,39 @@ Dirac Agent is a piece of server software which connects to an existing nREPL se
 provides nREPL connections to the browser.
 
 Please note that Dirac DevTools is "just" a web app. It cannot open a classic socket connection and talk to nREPL server directly.
-Instead it connects to Dirac Agent which listens for web socket connections on port 8231. Dirac Agent has also an open connection
+Instead it connects to a Dirac Agent which listens for web socket connections on port 8231. Dirac Agent has also an open connection
 to your nREPL server at port 8230 so it can bridge messages between those two.
 
 Actually Dirac Agent is a bit smarter than that. It allows one-to-many scenario, where multiple Dirac DevTools instances
 can connect to a singe Dirac Agent which talks to a single nREPL server. Each Dirac DevTools instance is assigned its own nREPL session,
-so they can use a single nREPL server and they don't step on each others' toes. Thanks to this you can open multiple pages
-with different Dirac DevTools and they all can have their own independent REPLs.
+so they don't step on each others' toes. Thanks to this you can open multiple pages with different Dirac DevTools and
+they all can have their own independent REPLs.
 
 Unfortunately this is the hardest part of the setup and most fragile.
-If you run into issues, it is pretty difficult to troubleshoot it without deep understanding
+If you run into issues, it is pretty difficult to troubleshoot it without deeper understanding
 [how nREPL works internally](https://github.com/clojure/tools.nrepl), what [Piggieback](https://github.com/cemerick/piggieback) is,
 how [Weasel](https://github.com/tomjakubowski/weasel) comes into play and how Dirac Agent orchestrates all this.
 
-If you hit wall, you can try to ask for help in the `#dirac` channel at http://clojurians.slack.com. Chances are there will
-be someone able to help.
+If you hit a wall, you can try to ask for help in the `#dirac` channel at http://clojurians.slack.com ([ask for an invitation here](http://clojurians.net/)).
+Chances are there is someone able to help.
 
-Ok, back to launching the Dirac Agent. You can wrap it as a command-line tool and run it (pseudo-code):
+Ok, back to launching the Dirac Agent. You can wrap it as a command-line tool and run it. The source for cli tool is [here](https://github.com/binaryage/dirac/blob/master/src/agent/dirac/agent_cli.clj).
+Here is a custom launcher script which uses maven to download dirac jar and execute `agent-cli` with your current java env from command-line:
 
-    (ns
-      (:require [dirac.agent :as agent]))
-
-    (agent/boot!)
+[https://github.com/binaryage/dirac/blob/master/scripts/agent-launcher.sh](https://github.com/binaryage/dirac/blob/master/scripts/agent-launcher.sh)
 
 But I have a better idea. Why to spin yet another JVM just to run this tiny server? Let's use our existing nREPL process
-and start the Dirac Agent there.
+and start the Dirac Agent there. This will effectively run nREPL server and Dirac Agent in one process.
 
-Actually you can configure it as `:init` code which will be executed every time you start your REPL. Simply add this to your
+You can configure it as `:init` command which will be executed every time you start your REPL. Simply add this to your
 `:repl-options` for Leiningen:
 
-    :repl-options {
-                   :init (do
+    :repl-options {:init (do
                            (require 'dirac.agent)
                            (dirac.agent/boot!))}
 
 Now when you start `lein repl` from command-line, you should see something like this:
 
-    # Booting Dirac Agent...
-    # Starting Dirac Agent (attempt #1)
     nREPL server started on port 8230 on host 127.0.0.1 - nrepl://127.0.0.1:8230
     REPL-y 0.3.7, nREPL 0.2.12
     Clojure 1.7.0
@@ -268,15 +263,13 @@ Now when you start `lein repl` from command-line, you should see something like 
         Exit: Control+D or (exit) or (quit)
      Results: Stored in vars *1, *2, *3, an exception in *e
 
-    user=> # Starting Dirac Agent (attempt #2)
-    # [NREPLTunnelServer#1 of [NREPLTunnel#2]] Started Dirac nREPL tunnel server at ws://localhost:8231
-    Started Dirac Agent: Connected to nREPL server on nrepl://localhost:8230. Tunnel is accepting connections on ws://localhost:8231.
+    user=> Started Dirac Agent: Connected to nREPL server at nrepl://localhost:8230. Tunnel is accepting connections at ws://localhost:8231.
 
 The last line should remind you that Dirac Agent started successfully and listens for browser connections on the port 8231.
 
 Now you should be able to use REPL from any of your Dirac DevTools instances.
 
-Good job!
+Good job! :thumbsup:
 
 ### Credits
 
