@@ -8,30 +8,19 @@
         :url  "https://github.com/binaryage/dirac"}
 
   :dependencies [[org.clojure/clojure "1.7.0"]
-                 [org.clojure/clojurescript "1.7.170"]
                  [org.clojure/core.async "0.2.374"]
                  [org.clojure/tools.logging "0.3.1"]
                  [org.clojure/tools.cli "0.3.3"]
-                 [environ "1.0.1"]
+                 [org.clojure/tools.nrepl "0.2.12"]
                  [clj-logging-config "1.9.12"]
-                 [binaryage/chromex "0.2.0"]
-                 [binaryage/devtools "0.4.1"]
-                 [cljs-http "0.1.39"]
-                 [figwheel "0.5.0-3"]
-                 [reforms "0.4.3"]
-                 [rum "0.6.0" :scope "provided"]
-                 [rum-reforms "0.4.3"]
-                 [parinfer "0.2.3"]
-                 [http-kit "2.1.21-alpha2"]
-                 [com.lucasbradstreet/cljs-uuid-utils "1.0.2"]
-                 [org.clojure/tools.nrepl "0.2.12"]]
+                 [environ "1.0.1"]
+                 [http-kit "2.1.21-alpha2"]]
 
-  :plugins [[lein-cljsbuild "1.1.1"]
-            [lein-figwheel "0.5.0-3"]
-            [lein-shell "0.4.2"]
+  :plugins [[lein-shell "0.4.2"]
             [lein-environ "1.0.1"]]
 
   :main dirac.agent-cli
+  :aot [dirac.agent-cli]
 
   :figwheel
   {:server-port    7100
@@ -49,9 +38,24 @@
                                     "resources/release/compiled"
                                     "resources/unpacked/devtools/front_end/dirac/compiled"]
 
+  :checkout-deps-shares ^:replace []
+
   :cljsbuild {:builds {}}                                                                                                     ; prevent https://github.com/emezeske/lein-cljsbuild/issues/413
 
-  :profiles {:unpacked
+  :profiles {:cljs
+             {:dependencies [[org.clojure/clojurescript "1.7.170"]
+                             [binaryage/chromex "0.2.0"]
+                             [binaryage/devtools "0.4.1"]
+                             [cljs-http "0.1.39"]
+                             [figwheel "0.5.0-3"]
+                             [reforms "0.4.3"]
+                             [rum "0.6.0" :scope "provided"]
+                             [rum-reforms "0.4.3"]
+                             [parinfer "0.2.3"]
+                             [com.lucasbradstreet/cljs-uuid-utils "1.0.2"]]
+              :plugins      [[lein-cljsbuild "1.1.0"]
+                             [lein-figwheel "0.5.0-3"]]}
+             :unpacked
              {:cljsbuild {:builds
                           {:implant
                            {:source-paths ["src/implant"]
@@ -95,7 +99,7 @@
                            :options    {:source-paths ["checkouts/cljs-devtools/src"
                                                        "checkouts/chromex/src/lib"
                                                        "checkouts/chromex/src/exts"]}}}}
-             :release
+             :packed
              {:env       {:chromex-elide-verbose-logging true}
               :cljsbuild {:builds
                           {:implant
@@ -134,16 +138,22 @@
                            :background
                            {:compiler {:pseudo-names true}}
                            :options
-                           {:compiler {:pseudo-names true}}}}}}
+                           {:compiler {:pseudo-names true}}}}}
 
-  :aliases {"dev-build"            ["with-profile" "+unpacked"
+             :nuke-aliases
+             {:aliases ^:replace {}}}
+
+  :aliases {"jar"                  ["shell" "scripts/lein-without-checkouts.sh" "jar"]
+            "install"              ["shell" "scripts/lein-without-checkouts.sh" "install"]
+            "uberjar"              ["shell" "scripts/lein-without-checkouts.sh" "uberjar"]
+            "dev-build"            ["with-profile" "+unpacked,+cljs"
                                     "cljsbuild" "once" "background" "options" "implant"]
-            "fig"                  ["with-profile" "+unpacked"
+            "fig"                  ["with-profile" "+unpacked,+cljs"
                                     "do" "clean," "figwheel" "background" "options" "implant"]
-            "release"              ["with-profile" "+release"
+            "release"              ["with-profile" "+packed,+cljs"
                                     "do" "clean,"
                                     "cljsbuild" "once" "implant" "background" "options"]
-            "release-pseudo-names" ["with-profile" "+release,+pseudo-names"
+            "release-pseudo-names" ["with-profile" "+packed,+cljs,+pseudo-names"
                                     "do" "clean,"
                                     "cljsbuild" "once" "implant" "background" "options"]
             "package"              ["shell" "scripts/package.sh"]

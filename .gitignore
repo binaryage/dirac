@@ -11,7 +11,7 @@
 /releases
 /.idea
 /target
-/checkouts
+/checkouts*
 /.tmp
 .figwheel_server.log
 .profiles/
