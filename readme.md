@@ -281,7 +281,7 @@ There are three areas where custom configuration can be provided:
 2. Dirac nREPL middleware
 3. page-specific configuration of a DevTools instance
 
-In general configuration can come from different sources:
+In general, the configuration can come from different sources:
 
 1. hard-coded defaults
 2. environment
@@ -289,7 +289,11 @@ In general configuration can come from different sources:
 
 Configuration options from later source override settings from previous sources.
 
-Environmental variables have always prefix DIRAC_ and are named after option key in the config map.
+Environmental variables have always a prefix "DIRAC" and are named after option key in the config map.
+We use [environ library](https://github.com/weavejester/environ) for reading environmental settings, so you have multiple
+ways where to define them: environmental variables, Java system properties or `.lein-env` file.
+Please refer to their docs, you can for example use `lein-environ` plugin to specify environmental variables directly in
+ `project.clj` (in your leiningen profiles). Alternatively `lein-boot` for boot scenario.
 
 ##### Dirac Agent configuration
 
