@@ -34,16 +34,17 @@
 
 ; -- config evaluation ------------------------------------------------------------------------------------------------------
 
-(defn deep-merge
-  "Recursively merges maps. If keys are not maps, the last value wins."
+(defn deep-merge-ignoring-nils
+  "Recursively merges maps. If keys are not maps, the last value wins. Nils are ignored."
   [& vals]
-  (if (every? map? vals)
-    (apply merge-with deep-merge vals)
-    (last vals)))
+  (let [non-nil-vals (remove nil? vals)]
+    (if (every? map? non-nil-vals)
+      (apply merge-with deep-merge-ignoring-nils non-nil-vals)
+      (last non-nil-vals))))
 
 (defn get-effective-config* [& [config]]
   (let [environ-config (get-environ-config)]
-    (let [effective-config (deep-merge default-config environ-config (or config {}))]
-      effective-config)))
+    (let [effective-config (deep-merge-ignoring-nils default-config environ-config config)]
+      (or effective-config {}))))
 
 (def ^:dynamic get-effective-config (memoize get-effective-config*))                                                          ; assuming environ-config is constant
