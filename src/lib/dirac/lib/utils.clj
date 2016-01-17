@@ -48,3 +48,11 @@
 
 (defn wrap-with-ansi-color [color s]
   (str "\u001b[0;" color "m" s "\u001b[m"))
+
+(defn deep-merge-ignoring-nils
+  "Recursively merges maps. If keys are not maps, the last value wins. Nils are ignored."
+  [& vals]
+  (let [non-nil-vals (remove nil? vals)]
+    (if (every? map? non-nil-vals)
+      (apply merge-with deep-merge-ignoring-nils non-nil-vals)
+      (last non-nil-vals))))

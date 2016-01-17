@@ -1,5 +1,5 @@
 (ns dirac.agent.config
-  (require [dirac.lib.utils :refer [assoc-env-val]]))
+  (require [dirac.lib.utils :refer [assoc-env-val deep-merge-ignoring-nils]]))
 
 (def nrepl-server-default-config
   {:host "localhost"
@@ -33,14 +33,6 @@
       (assoc-env-val [:nrepl-tunnel :port] :dirac-nrepl-tunnel-port :int)))
 
 ; -- config evaluation ------------------------------------------------------------------------------------------------------
-
-(defn deep-merge-ignoring-nils
-  "Recursively merges maps. If keys are not maps, the last value wins. Nils are ignored."
-  [& vals]
-  (let [non-nil-vals (remove nil? vals)]
-    (if (every? map? non-nil-vals)
-      (apply merge-with deep-merge-ignoring-nils non-nil-vals)
-      (last non-nil-vals))))
 
 (defn get-effective-config* [& [config]]
   (let [environ-config (get-environ-config)]
