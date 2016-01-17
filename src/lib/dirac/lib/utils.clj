@@ -1,7 +1,8 @@
 (ns dirac.lib.utils
   (:require [clojure.pprint :refer [pprint]]
             [clojure.string :as string]
-            [environ.core :as environ]))
+            [environ.core :as environ])
+  (:import (org.apache.log4j Level)))
 
 (defn get-nrepl-server-url [host port]
   (str "nrepl://" host ":" port))
@@ -56,3 +57,11 @@
     (if (every? map? non-nil-vals)
       (apply merge-with deep-merge-ignoring-nils non-nil-vals)
       (last non-nil-vals))))
+
+(defn config->options [config]
+  (if-let [log-level (:log-level config)]
+    (let [level (Level/toLevel log-level Level/INFO)]
+      {:level level})))
+
+(defn make-options [& option-maps]
+  (or (deep-merge-ignoring-nils option-maps) {}))

@@ -7,15 +7,13 @@
   {:level   :info
    :pattern (str (utils/wrap-with-ansi-color utils/ANSI_GREEN "# %m") "%n")})
 
-(defn make-options [& [options]]
-  (merge base-options options))
-
 ; -- our default setup ------------------------------------------------------------------------------------------------------
 
-(defn setup-logging! []
-  (logging/setup-logging!)
-  (config/set-loggers!
-    "dirac.nrepl" (make-options)
-    "dirac.nrepl.middleware" (make-options)
-    "dirac.nrepl.piggieback" (make-options)
-    "dirac.nrepl.piggieback-hacks" (make-options)))
+(defn setup-logging! [& [config]]
+  (let [options (utils/config->options config)]
+    (logging/setup-logging! options)
+    (config/set-loggers!
+      "dirac.nrepl" (utils/make-options base-options options)
+      "dirac.nrepl.middleware" (utils/make-options base-options options)
+      "dirac.nrepl.piggieback" (utils/make-options base-options options)
+      "dirac.nrepl.piggieback-hacks" (utils/make-options base-options options))))
