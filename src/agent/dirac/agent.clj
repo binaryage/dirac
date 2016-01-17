@@ -13,10 +13,24 @@
        "over last " trial-display " seconds. Did you really start your nREPL server at " nrepl-server-url "? "
        "Maybe a firewall problem?"))
 
-; -- agent construction / access --------------------------------------------------------------------------------------------
+; -- DiracAgent construction  -----------------------------------------------------------------------------------------------
 
-(defn make-agent [tunnel]
-  {:tunnel tunnel})
+(defrecord DiracAgent [id options tunnel]
+  Object
+  (toString [this]
+    (str "[DiracAgent#" (:id this) "]")))
+
+(def last-id (volatile! 0))
+
+(defn next-id! []
+  (vswap! last-id inc))
+
+(defn make-agent! [options tunnel]
+  (let [tunnel (DiracAgent. (next-id!) options tunnel)]
+    (log/trace "Made" (str tunnel))
+    tunnel))
+
+; -- DiracAgent access ------------------------------------------------------------------------------------------------------
 
 (defn get-tunnel [agent]
   (:tunnel agent))
@@ -35,9 +49,8 @@
   (nrepl-tunnel/destroy! tunnel))
 
 (defn create-agent! [config]
-  (let [tunnel (create-tunnel! config)
-        agent (make-agent tunnel)]
-    agent))
+  (let [tunnel (create-tunnel! config)]
+    (make-agent! config tunnel)))
 
 (defn destroy-agent! [agent]
   (let [tunnel (get-tunnel agent)]
