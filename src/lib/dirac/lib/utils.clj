@@ -1,6 +1,7 @@
 (ns dirac.lib.utils
   (:require [clojure.pprint :refer [pprint]]
             [clojure.string :as string]
+            [clojure.set :refer [rename-keys]]
             [environ.core :as environ])
   (:import (org.apache.log4j Level)))
 
@@ -58,10 +59,16 @@
       (apply merge-with deep-merge-ignoring-nils non-nil-vals)
       (last non-nil-vals))))
 
-(defn config->options [config]
-  (if-let [log-level (:log-level config)]
-    (let [level (Level/toLevel log-level Level/INFO)]
-      {:level level})))
+(defn remove-keys-with-nil-val [m]
+  (into {} (remove (comp nil? second) m)))
 
-(defn make-options [& option-maps]
-  (or (deep-merge-ignoring-nils option-maps) {}))
+(defn config->logging-options [config]
+  (-> config
+      (select-keys [:log-out :log-level])
+      (rename-keys {:log-out   :out
+                    :log-level :level})
+      (update :level #(if % (Level/toLevel % Level/INFO)))
+      (remove-keys-with-nil-val)))
+
+(defn make-logging-options [& option-maps]
+  (or (apply deep-merge-ignoring-nils option-maps) {}))

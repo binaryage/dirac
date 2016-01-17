@@ -23,6 +23,7 @@
 (defn get-environ-config []
   (-> {}
       (assoc-env-val [:log-level] :dirac-agent-log-level)
+      (assoc-env-val [:log-out] :dirac-agent-log-out)
       (assoc-env-val [:skip-logging-setup] :dirac-agent-skip-logging-setup :bool)
       (assoc-env-val [:max-boot-trials] :dirac-agent-max-boot-trials :int)
       (assoc-env-val [:initial-boot-delay] :dirac-agent-initial-boot-delay :int)
