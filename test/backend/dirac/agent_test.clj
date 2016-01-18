@@ -8,7 +8,7 @@
             [clojure.tools.logging :as log]))
 
 (def test-nrepl-tunnel-port 8121)
-(def log-level "ALL") ; ALL
+(def log-level "ALL")                                                                                                         ; INFO, DEBUG, TRACE, ALL
 
 ; -- helpers ----------------------------------------------------------------------------------------------------------------
 
