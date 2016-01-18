@@ -19,6 +19,8 @@
   :plugins [[lein-shell "0.4.2"]
             [lein-environ "1.0.1"]]
 
+  ;:jvm-opts ["-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5005"]
+
   :main dirac.agent-cli
   :aot [dirac.agent-cli]
 
@@ -32,6 +34,9 @@
                  "src/nrepl"]
 
   :resource-paths []
+
+  :test-paths ["test/support"
+               "test/backend"]
 
   :clean-targets ^{:protect false} ["target"
                                     "resources/unpacked/compiled"
@@ -55,6 +60,12 @@
                              [com.lucasbradstreet/cljs-uuid-utils "1.0.2"]]
               :plugins      [[lein-cljsbuild "1.1.0"]
                              [lein-figwheel "0.5.0-3"]]}
+
+             :test
+             {:dependencies [[org.clojure/clojurescript "1.7.170"]
+                             [http.async.client "1.1.0"]
+                             [org.slf4j/slf4j-log4j12 "1.7.13"]]}
+
              :unpacked
              {:cljsbuild {:builds
                           {:implant

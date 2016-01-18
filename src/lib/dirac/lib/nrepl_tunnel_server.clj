@@ -70,8 +70,9 @@
 
 (defn send! [client message]
   {:pre [client]}
-  (log/trace (str "Sending message " (utils/sid message) " to client " (str client)))
-  (ws-server/send! client message))
+  (let [message (update message :id #(or % (name (:op message))))]
+    (log/trace (str "Sending message " (utils/sid message) " to client " (str client)))
+    (ws-server/send! client message)))
 
 (defn dispatch-message! [server message]
   {:pre [(instance? NREPLTunnelServer server)]}

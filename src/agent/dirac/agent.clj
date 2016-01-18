@@ -129,5 +129,4 @@
       (logging/setup-logging! effective-config))
     (log/info "Booting Dirac Agent...")
     (log/debug "effective config: " effective-config)
-    (future (boot-now! config)))
-  true)
+    (future (boot-now! config))))
