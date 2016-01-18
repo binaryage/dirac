@@ -1,43 +1,16 @@
 (ns dirac.agent-test
   (:require [clojure.core.async :refer [chan <!! <! >!! put! alts!! timeout close! go go-loop]]
             [clojure.test :refer :all]
-            [clojure.tools.nrepl.ack :as nrepl.ack]
-            [clojure.tools.nrepl.server :as nrepl.server]
+            [dirac.test.nrepl-server-helpers :refer [start-nrepl-server! stop-nrepl-server! test-nrepl-server-port]]
             [dirac.agent :as agent]
-            [dirac.nrepl.middleware :as middleware]
             [dirac.test.mock-tunnel-client :as tunnel-client]
             [dirac.test.logging :as logging]
             [clojure.tools.logging :as log]))
 
-(def default-server-timeout (* 60 1000))
-(def test-nrepl-server-port 8120)                                                                                             ; -100 from defaults
 (def test-nrepl-tunnel-port 8121)
+(def log-level "ALL") ; ALL
 
 ; -- helpers ----------------------------------------------------------------------------------------------------------------
-
-(defn get-nrepl-server-handler-with-dirac-middleware []
-  (nrepl.server/default-handler #'middleware/dirac-repl))
-
-(defn start-ack-server! []
-  (nrepl.server/start-server
-    :bind "localhost"
-    :handler (nrepl.ack/handle-ack nrepl.server/unknown-op)))
-
-(defn start-nrepl-server! [& [port]]
-  (nrepl.ack/reset-ack-port!)
-  (let [ack-server (start-ack-server!)
-        ack-port (:port ack-server)
-        nrepl-server (nrepl.server/start-server
-                       :bind "localhost"
-                       :port (or port test-nrepl-server-port)
-                       :ack-port ack-port
-                       :handler (get-nrepl-server-handler-with-dirac-middleware))]
-    (when-let [repl-port (nrepl.ack/wait-for-ack default-server-timeout)]
-      (nrepl.server/stop-server ack-server)
-      [nrepl-server repl-port])))
-
-(defn stop-nrepl-server! [server]
-  (nrepl.server/stop-server server))
 
 (defn expect-msg! [client expected-op]
   (let [channel (tunnel-client/get-channel client)
@@ -52,7 +25,7 @@
 
 (defn setup-tests []
   (logging/setup-logging! {:log-out   :console
-                           :log-level "ALL"})
+                           :log-level log-level})
   (if-let [[server port] (start-nrepl-server!)]
     (do
       (log/info "nrepl server started on" port)
@@ -77,16 +50,17 @@
 ; -- test -------------------------------------------------------------------------------------------------------------------
 
 (deftest simple-interaction
-  (let [out (with-out-str
-              @(agent/boot! {:log-level    "ALL"
-                             :nrepl-server {:port test-nrepl-server-port}
-                             :nrepl-tunnel {:port test-nrepl-tunnel-port}}))
-        expected-out #"(?s).*Connected to nREPL server at nrepl://localhost:8120. Tunnel is accepting connections at ws://localhost:8121.*"]
-    (is (not (nil? (re-matches expected-out out))))
-    (log/info "dirac agent started at" test-nrepl-tunnel-port)
-    (let [client (tunnel-client/create! (str "ws://localhost:" test-nrepl-tunnel-port))
-          channel (tunnel-client/get-channel client)]
-      (is (= :open (first (<!! channel))))
-      (tunnel-client/send! client {:op :ready})
-      (expect-msg! client :bootstrap)
-      (agent/destroy!))))
+  (testing "happy path"
+    (let [out (with-out-str
+                @(agent/boot! {:log-level    log-level
+                               :nrepl-server {:port test-nrepl-server-port}
+                               :nrepl-tunnel {:port test-nrepl-tunnel-port}}))
+          expected-out #"(?s).*Connected to nREPL server at nrepl://localhost:8120. Tunnel is accepting connections at ws://localhost:8121.*"]
+      (is (not (nil? (re-matches expected-out out))))
+      (log/info "dirac agent started at" test-nrepl-tunnel-port)
+      (let [client (tunnel-client/create! (str "ws://localhost:" test-nrepl-tunnel-port))
+            channel (tunnel-client/get-channel client)]
+        (is (= :open (first (<!! channel))))
+        (tunnel-client/send! client {:op :ready})
+        (expect-msg! client :bootstrap)
+        (agent/destroy!)))))
