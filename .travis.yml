@@ -1,6 +1,9 @@
+sudo: true
 language: clojure
 
-jdk:
-  - oraclejdk8
+# we need lein 2.5.3 because of https://github.com/technomancy/leiningen/issues/1762
+
+# https://github.com/technomancy/leiningen/issues/2014#issuecomment-153829977
+before_install: yes y | sudo lein upgrade
 
 script: scripts/test.sh
