@@ -154,7 +154,8 @@
              :nuke-aliases
              {:aliases ^:replace {}}}
 
-  :aliases {"jar"                  ["shell" "scripts/lein-without-checkouts.sh" "jar"]
+  :aliases {"test"                 ["test" "dirac.tests"]
+            "jar"                  ["shell" "scripts/lein-without-checkouts.sh" "jar"]
             "install"              ["shell" "scripts/lein-without-checkouts.sh" "install"]
             "uberjar"              ["shell" "scripts/lein-without-checkouts.sh" "uberjar"]
             "dev-build"            ["with-profile" "+unpacked,+cljs,+checkouts"
