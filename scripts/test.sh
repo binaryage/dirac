@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 
-set -ex
+set -e
 
 . "$(dirname "${BASH_SOURCE[0]}")/config.sh"
 
 pushd "$ROOT"
 
-lein deps :tree
+# lein deps :tree
 
 lein test
 
