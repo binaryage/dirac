@@ -1,7 +1,7 @@
 (ns dirac.lib.nrepl-tunnel-server
   (:require [clojure.core.async :refer [chan <!! <! >!! put! alts!! timeout close! go go-loop]]
             [clojure.tools.logging :as log]
-            [dirac.lib.nrepl-protocols :as nrepl-protocols]
+            [dirac.lib.nrepl-protocols :refer :all]
             [dirac.lib.ws-server :as ws-server]
             [dirac.lib.utils :as utils]))
 
@@ -39,7 +39,7 @@
   {:pre [(instance? NREPLTunnelServer server)]}
   (let [tunnel (:tunnel (meta server))]
     (assert tunnel "Tunnel not specified!")
-    (assert (satisfies? nrepl-protocols/NREPLTunnelService tunnel) "Tunnel must satisfy NREPLTunnelService protocol")
+    (assert (satisfies? NREPLTunnelService tunnel) "Tunnel must satisfy NREPLTunnelService protocol")
     tunnel))
 
 (defn get-client-for-session [server session]
@@ -103,7 +103,7 @@
     (let [tunnel (get-tunnel server)
           session (get-client-session server client)
           envelope-with-session (assoc envelope :session session)]
-      (nrepl-protocols/deliver-message-to-server! tunnel envelope-with-session))))
+      (deliver-message-to-server! tunnel envelope-with-session))))
 
 ; -- utilities --------------------------------------------------------------------------------------------------------------
 
@@ -115,7 +115,7 @@
 (defn quit-client! [server client]
   (let [tunnel (get-tunnel server)
         session (get-client-session server client)]
-    @(nrepl-protocols/deliver-message-to-server! tunnel (prepare-cljs-quit-message session))))                                ; blocks until delivered
+    @(deliver-message-to-server! tunnel (prepare-cljs-quit-message session))))                                ; blocks until delivered
 
 (defn disconnect-client! [server client]
   (let [tunnel (get-tunnel server)
@@ -135,7 +135,7 @@
   (let [session-promise (promise)]
     (set-client-session-promise! server client session-promise)
     (let [tunnel (get-tunnel server)
-          session (nrepl-protocols/open-session tunnel)]                                                                      ; blocking!
+          session (open-session tunnel)]                                                                      ; blocking!
       (log/debug (str server) (str "New client initialized " (utils/sid session)))
       (deliver session-promise session))))
 
