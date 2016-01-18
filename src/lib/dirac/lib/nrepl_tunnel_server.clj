@@ -121,8 +121,9 @@
   (let [tunnel (get-tunnel server)
         session (get-client-session server client)]
     (quit-client! server client)
-    (nrepl-protocols/close-session tunnel session)
+    (close-session tunnel session)
     (remove-client! server session)
+    (ws-server/close! client)
     (log/debug (str "Removed client " (utils/sid session) " from " (str server)))))
 
 (defn disconnect-all-clients! [server]

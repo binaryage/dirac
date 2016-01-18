@@ -167,6 +167,12 @@
         channel (get-channel client)]
     (http/send! channel serialized-msg)))
 
+; -- closing client connection ----------------------------------------------------------------------------------------------
+
+(defn close! [client]
+  (let [channel (get-channel client)]
+    (http/close channel)))
+
 ; -- life cycle -------------------------------------------------------------------------------------------------------------
 
 (defn sanitize-options [options]
