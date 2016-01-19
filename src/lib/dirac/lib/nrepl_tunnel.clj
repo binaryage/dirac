@@ -1,5 +1,6 @@
 (ns dirac.lib.nrepl-tunnel
   (require [clojure.core.async :refer [chan <!! <! >!! put! alts!! timeout close! go go-loop]]
+           [clojure.core.async.impl.protocols :as core-async]
            [clojure.tools.logging :as log]
            [dirac.lib.nrepl-protocols :refer [NREPLTunnelService]]
            [dirac.lib.nrepl-tunnel-server :as nrepl-tunnel-server]
@@ -49,7 +50,8 @@
 (declare open-session!)
 (declare close-session!)
 
-(defrecord NREPLTunnel [id options nrepl-client nrepl-tunnel-server server-messages-channel client-messages-channel]
+(defrecord NREPLTunnel [id options nrepl-client nrepl-tunnel-server server-messages-channel client-messages-channel
+                        server-messages-done-promise client-messages-done-promise]
   NREPLTunnelService                                                                                                          ; in some cases nrepl-client and nrepl-tunnel-server need to talk to their tunnel
   (open-session [this]
     (open-session! this))
@@ -70,7 +72,7 @@
   (vswap! last-id inc))
 
 (defn make-tunnel! [options]
-  (let [tunnel (NREPLTunnel. (next-id!) options (atom nil) (atom nil) (atom nil) (atom nil))]
+  (let [tunnel (NREPLTunnel. (next-id!) options (atom nil) (atom nil) (atom nil) (atom nil) (promise) (promise))]
     (log/trace "Made" (str tunnel))
     tunnel))
 
@@ -108,6 +110,14 @@
   {:pre [(instance? NREPLTunnel tunnel)]}
   (reset! (:nrepl-client tunnel) client))
 
+(defn get-client-messages-done-promise [tunnel]
+  {:pre [(instance? NREPLTunnel tunnel)]}
+  (:client-messages-done-promise tunnel))
+
+(defn get-server-messages-done-promise [tunnel]
+  {:pre [(instance? NREPLTunnel tunnel)]}
+  (:server-messages-done-promise tunnel))
+
 ; -- helpers ----------------------------------------------------------------------------------------------------------------
 
 (defn get-tunnel-info [tunnel]
@@ -121,9 +131,8 @@
 ; -- sessions ---------------------------------------------------------------------------------------------------------------
 
 (defn open-session! [tunnel]
-  (let [nrepl-client (get-nrepl-client tunnel)
-        new-session (nrepl-client/open-session nrepl-client)]
-    new-session))
+  (let [nrepl-client (get-nrepl-client tunnel)]
+    (nrepl-client/open-session nrepl-client)))
 
 (defn close-session! [tunnel session]
   (let [nrepl-client (get-nrepl-client tunnel)]
@@ -147,8 +156,11 @@
 (defn deliver-server-message! [tunnel message]
   (let [channel (get-server-messages-channel tunnel)
         receipt (promise)]
-    (log/trace (str tunnel) (str "Enqueue message " (utils/sid message) " to be sent to nREPL server:\n")
-               (utils/pp message))
+    (if (core-async/closed? channel)
+      (log/warn (str tunnel) (str "An attempt to enqueue a message for nREPL server, but channel was already closed! => ignored\n")
+                (utils/pp message))
+      (log/trace (str tunnel) (str "Enqueue message " (utils/sid message) " to be sent to nREPL server:\n")
+                 (utils/pp message)))
     (put! channel [message receipt])
     receipt))
 
@@ -161,13 +173,18 @@
           (deliver receipt (nrepl-client/send! client message))
           (log/trace (str tunnel) (str "Sent message " (utils/sid message) " to nREPL server"))
           (recur))
-        (log/debug (str tunnel) "Exitting server-messages-channel-processing-loop")))))
+        (do
+          (log/debug (str tunnel) "Exitting server-messages-channel-processing-loop")
+          (deliver (get-server-messages-done-promise tunnel) true))))))
 
 (defn deliver-client-message! [tunnel message]
   (let [channel (get-client-messages-channel tunnel)
         receipt (promise)]
-    (log/trace (str tunnel) (str "Enqueue message " (utils/sid message) " to be sent to a DevTools client via tunnel:\n")
-               (utils/pp message))
+    (if (core-async/closed? channel)
+      (log/warn (str tunnel) (str "An attempt to enqueue a message for DevTools client, but channel was already closed! => ignored\n")
+                (utils/pp message))
+      (log/trace (str tunnel) (str "Enqueue message " (utils/sid message) " to be sent to a DevTools client via tunnel:\n")
+                 (utils/pp message)))
     (put! channel [message receipt])
     receipt))
 
@@ -180,7 +197,9 @@
           (deliver receipt (nrepl-tunnel-server/dispatch-message! server message))
           (log/trace (str tunnel) (str "Dispatched message " (utils/sid message) " to tunnel"))
           (recur))
-        (log/debug (str tunnel) "Exitting client-messages-channel-processing-loop")))))
+        (do
+          (log/debug (str tunnel) "Exitting client-messages-channel-processing-loop")
+          (deliver (get-client-messages-done-promise tunnel) true))))))
 
 ; -- NREPLTunnel life cycle -------------------------------------------------------------------------------------------------
 
@@ -201,11 +220,16 @@
 
 (defn destroy! [tunnel]
   (log/trace "Destroying" (str tunnel))
-  (close! (get-client-messages-channel tunnel))
   (when-let [nrepl-tunnel-server (get-nrepl-tunnel-server tunnel)]
+    (nrepl-tunnel-server/disconnect-all-clients! nrepl-tunnel-server)
+    (close! (get-client-messages-channel tunnel))
+    @(get-client-messages-done-promise tunnel)
+    (Thread/sleep 1000)                                                                                                         ; give networking code some time to send outstanding messages
     (nrepl-tunnel-server/destroy! nrepl-tunnel-server)
     (set-nrepl-tunnel-server! tunnel nil))
   (close! (get-server-messages-channel tunnel))
+  @(get-server-messages-done-promise tunnel)
+  (Thread/sleep 1000)                                                                                                         ; give networking code some time to send outstanding messages
   (when-let [nrepl-client (get-nrepl-client tunnel)]
     (nrepl-client/destroy! nrepl-client)
     (set-nrepl-client! tunnel nil))
