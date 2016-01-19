@@ -1,4 +1,4 @@
-(ns dirac.test.mock-tunnel-client
+(ns dirac.test.mock-nrepl-tunnel-client
   (:require [clojure.core.async :refer [chan <!! <! >!! put! alts!! timeout close! go go-loop]]
             [http.async.client :as http]
             [clojure.tools.logging :as log]))
