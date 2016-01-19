@@ -1,5 +1,6 @@
 (ns dirac.lib.utils
-  (:require [clojure.pprint :refer [pprint]]
+  (:require [clojure.core.async :refer [chan <!! <! >!! put! alts!! timeout close! go go-loop]]
+            [clojure.pprint :refer [pprint]]
             [clojure.string :as string]
             [clojure.set :refer [rename-keys]]
             [environ.core :as environ])
@@ -72,3 +73,12 @@
 
 (defn make-logging-options [& option-maps]
   (or (apply deep-merge-ignoring-nils option-maps) {}))
+
+(defn get-status-set [message]
+  (let [status (:status message)]
+    (into #{} status)))
+
+(defn wait-for-all-responses! [responses-channel]
+  (loop []
+    (if (<!! responses-channel)
+      (recur))))
