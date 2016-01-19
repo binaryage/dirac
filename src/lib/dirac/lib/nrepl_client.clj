@@ -1,9 +1,11 @@
 (ns dirac.lib.nrepl-client
-  (require [clojure.tools.nrepl :as nrepl]
-           [clojure.tools.nrepl.transport :as nrepl.transport]
-           [clojure.tools.logging :as log]
-           [dirac.lib.nrepl-protocols :as nrepl-protocols]
-           [dirac.lib.utils :as utils])
+  (:require [clojure.core.async :refer [chan <!! <! >!! put! alts!! timeout close! go go-loop]]
+            [clojure.tools.nrepl :as nrepl]
+            [clojure.tools.nrepl.transport :as nrepl.transport]
+            [clojure.tools.logging :as log]
+            [dirac.lib.nrepl-protocols :as nrepl-protocols]
+            [dirac.lib.utils :as utils])
+  (:use [clojure.tools.nrepl.misc :only (uuid)])
   (:import (java.net SocketException)))
 
 ; this is a thin wrapper of clojure.tools.nrepl/client which cooperates with parent nREPL tunnel
@@ -14,7 +16,7 @@
 
 ; -- NREPLClient constructor ------------------------------------------------------------------------------------------------
 
-(defrecord NREPLClient [id options connection raw-nrepl-client response-poller]
+(defrecord NREPLClient [id options connection raw-nrepl-client response-poller response-table]
   Object
   (toString [this]
     (let [tunnel (:tunnel (meta this))]
@@ -25,8 +27,8 @@
 (defn next-id! []
   (vswap! last-id inc))
 
-(defn make-client [tunnel options connection raw-nrepl-client response-poller]
-  (let [client (NREPLClient. (next-id!) options connection raw-nrepl-client response-poller)
+(defn make-client [tunnel options connection raw-nrepl-client response-poller response-table]
+  (let [client (NREPLClient. (next-id!) options connection raw-nrepl-client response-poller response-table)
         client (vary-meta client assoc :tunnel tunnel)]
     (log/trace "Made" (str client))
     client))
@@ -53,6 +55,10 @@
   {:pre [(instance? NREPLClient client)]}
   (:options client))
 
+(defn get-response-table [client]
+  {:pre [(instance? NREPLClient client)]}
+  (:response-table client))
+
 ; -- helpers ----------------------------------------------------------------------------------------------------------------
 
 (defn connected? [client]
@@ -75,20 +81,26 @@
 ; -- sending ----------------------------------------------------------------------------------------------------------------
 
 (defn send! [client message]
-  (let [raw-nrepl-client (get-raw-nrepl-client client)]
-    (nrepl/message raw-nrepl-client message)))
+  (let [raw-nrepl-client (get-raw-nrepl-client client)
+        response-table (get-response-table client)
+        id (uuid)
+        channel (chan)
+        msg (assoc message :id id)]
+    (swap! response-table assoc id channel)
+    (nrepl/message raw-nrepl-client msg)
+    channel))
 
 ; -- session management -----------------------------------------------------------------------------------------------------
 
 (defn open-session [client]
   {:pre [(instance? NREPLClient client)]}
-  (let [raw-nrepl-client (get-raw-nrepl-client client)]
-    (nrepl/new-session raw-nrepl-client)))
+  (log/trace (str client) "open session")
+  (send! client {:op "clone"}))
 
 (defn close-session [client session]
   {:pre [(instance? NREPLClient client)]}
-  (let [raw-nrepl-client (get-raw-nrepl-client client)]
-    (nrepl/message raw-nrepl-client {:op "close" :session session})))
+  (log/trace (str client) "close session #" (utils/sid session))
+  (send! client {:op "close" :session session}))
 
 ; -- polling for responses --------------------------------------------------------------------------------------------------
 
@@ -102,7 +114,18 @@
     (catch Throwable e
       (vary-meta '(::error) assoc :exception e))))                                                                            ; keywords cannot carry metadata
 
-(defn poll-for-responses [tunnel connection _options]
+(defn submit-response-to-table! [response response-table]
+  (if-let [id (:id response)]
+    (if-let [channel (get @response-table id)]
+      (do
+        (put! channel response)
+        (when (:status response)
+          (close! channel)
+          (swap! response-table dissoc id)))
+      (log/trace "no channel" id "in" @response-table "?"))
+    (log/trace "no message id?" response)))
+
+(defn poll-for-responses [tunnel connection response-table _options]
   (loop []
     (let [response (read-next-response connection)]
       (case response
@@ -110,6 +133,7 @@
         ::socket-closed (log/debug (str tunnel) "Leaving poll-for-responses loop - connection closed")
         '(::error) (log/error (str tunnel) "Leaving poll-for-responses loop - error:\n" (:exception (meta response)))
         (do
+          (submit-response-to-table! response response-table)
           (nrepl-protocols/deliver-message-to-client! tunnel response)
           (recur))))))
 
@@ -119,16 +143,17 @@
       (log/error (str client) "The response-poller didn't shut down gracefully => forcibly cancelling")
       (future-cancel response-poller))))
 
-(defn spawn-response-poller! [tunnel options connection]
-  (future (poll-for-responses tunnel options connection)))
+(defn spawn-response-poller! [tunnel options response-table connection]
+  (future (poll-for-responses tunnel options response-table connection)))
 
 ; -- life cycle -------------------------------------------------------------------------------------------------------------
 
 (defn create! [tunnel options]
   (let [connection (connect-with-options options)
         raw-nrepl-client (nrepl/client connection Long/MAX_VALUE)
-        response-poller (spawn-response-poller! tunnel connection options)
-        client (make-client tunnel options connection raw-nrepl-client response-poller)]
+        response-table (atom {})
+        response-poller (spawn-response-poller! tunnel connection response-table options)
+        client (make-client tunnel options connection raw-nrepl-client response-poller response-table)]
     (log/debug "Created" (str client))
     client))
 

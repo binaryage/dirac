@@ -46,6 +46,10 @@
   {:pre [(instance? WebSocketServer server)]}
   (swap! (:first-client-promise server) new-promise))
 
+(defn get-clients [server]
+  {:pre [(instance? WebSocketServer server)]}
+  @(:clients server))
+
 (defn add-client! [server client]
   {:pre [(instance? WebSocketServer server)]}
   (swap! (:clients server) conj client)
@@ -170,6 +174,7 @@
 ; -- closing client connection ----------------------------------------------------------------------------------------------
 
 (defn close! [client]
+  (log/trace (str client) "Closing client connection")
   (let [channel (get-channel client)]
     (http/close channel)))
 
@@ -213,6 +218,8 @@
 
 (defn destroy! [server & [timeout]]
   (log/trace "Destroying" (str server))
+  (doseq [client (get-clients server)]
+    (close! client))
   (when-let [http-server (get-http-server server)]
     (http-server :timeout (or timeout 100))                                                                                   ; this will stop the http-server created via http/run-server
     (set-http-server! server nil))

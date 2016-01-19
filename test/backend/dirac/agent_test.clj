@@ -3,20 +3,38 @@
             [clojure.test :refer :all]
             [dirac.test.nrepl-server-helpers :refer [start-nrepl-server! stop-nrepl-server! test-nrepl-server-port]]
             [dirac.agent :as agent]
-            [dirac.test.mock-tunnel-client :as tunnel-client]
+            [dirac.test.mock-nrepl-tunnel-client :as tunnel-client]
+            [dirac.test.mock-weasel-client :as weasel-client]
             [dirac.test.logging :as logging]
             [clojure.tools.logging :as log]))
 
 (def test-nrepl-tunnel-port 8121)
 (def log-level "ALL")                                                                                                         ; INFO, DEBUG, TRACE, ALL
+(def last-msg (volatile! nil))
 
 ; -- helpers ----------------------------------------------------------------------------------------------------------------
 
-(defn expect-msg! [client expected-op]
-  (let [channel (tunnel-client/get-channel client)
-        [event & [{:keys [op]}]] (<!! channel)]
+(defn expect-event! [client expected-event]
+  (let [[event] (<!! (:channel client))]
+    (is (= event expected-event))))
+
+(defn expect-op-msg! [client expected-op]
+  (let [[event & [{:keys [op] :as msg}]] (<!! (:channel client))]
     (is (= event :msg))
-    (is (= op expected-op))))
+    (vreset! last-msg msg)
+    (is (= (keyword op) expected-op))))
+
+(defn expect-status-msg! [client expected-status]
+  (let [[event & [{:keys [status]} :as msg]] (<!! (:channel client))]
+    (is (= event :msg))
+    (vreset! last-msg msg)
+    (is (= status expected-status))))
+
+(defn expect-ns-msg! [client expected-ns]
+  (let [[event & [{:keys [ns]} :as msg]] (<!! (:channel client))]
+    (is (= event :msg))
+    (vreset! last-msg msg)
+    (is (= ns expected-ns))))
 
 ; -- fixtures ---------------------------------------------------------------------------------------------------------------
 
@@ -26,17 +44,19 @@
 (defn setup-tests []
   (logging/setup-logging! {:log-out   :console
                            :log-level log-level})
+  (log/info "setup")
   (if-let [[server port] (start-nrepl-server!)]
     (do
       (log/info "nrepl server started on" port)
       (reset! current-nrepl-server server)
       (reset! current-nrepl-server-port port))
-    (println "nREPL server start timeouted/failed")))
+    (log/error "nREPL server start timeouted/failed")))
 
 (defn teardown-tests []
+  (log/info "teardown")
   (when-let [current-server @current-nrepl-server]
     (stop-nrepl-server! current-server)
-    (log/info "nrepl server stopped on" @current-nrepl-server-port)
+    (log/info "nrepl server on" @current-nrepl-server-port "stopped")
     (reset! current-nrepl-server nil)
     (reset! current-nrepl-server-port nil)))
 
@@ -46,6 +66,16 @@
   (teardown-tests))
 
 (use-fixtures :once setup)
+
+(defn boostrap-cljs-repl-message []
+  {:op   "eval"
+   :code (str "(do"
+              "  (require 'dirac.nrepl)"
+              "  (dirac.nrepl/boot-cljs-repl! {:log-level \"" log-level "\"}))")})
+
+(defn nrepl-message [envelope]
+  {:op       :nrepl-message
+   :envelope envelope})
 
 ; -- test -------------------------------------------------------------------------------------------------------------------
 
@@ -58,9 +88,22 @@
           expected-out #"(?s).*Connected to nREPL server at nrepl://localhost:8120. Tunnel is accepting connections at ws://localhost:8121.*"]
       (is (not (nil? (re-matches expected-out out))))
       (log/info "dirac agent started at" test-nrepl-tunnel-port)
-      (let [client (tunnel-client/create! (str "ws://localhost:" test-nrepl-tunnel-port))
-            channel (tunnel-client/get-channel client)]
-        (is (= :open (first (<!! channel))))
-        (tunnel-client/send! client {:op :ready})
-        (expect-msg! client :bootstrap)
-        (agent/destroy!)))))
+      (let [tunnel (tunnel-client/create! (str "ws://localhost:" test-nrepl-tunnel-port))]
+        (expect-event! tunnel :open)
+        (tunnel-client/send! tunnel {:op :ready})
+        (expect-op-msg! tunnel :bootstrap)
+        (tunnel-client/send! tunnel (nrepl-message (boostrap-cljs-repl-message)))
+        (expect-op-msg! tunnel :bootstrap-info)
+        (let [weasel (weasel-client/create! (:server-url @last-msg))]
+          (expect-event! weasel :open)
+          (expect-op-msg! weasel :eval-js)
+          (weasel-client/send! weasel {:op :result :value {:status :success
+                                                           :value  ""}})
+          (expect-op-msg! weasel :eval-js)
+          (weasel-client/send! weasel {:op :result :value {:status :success
+                                                           :value  ""}})
+          (expect-ns-msg! tunnel "cljs.user")
+          (expect-status-msg! tunnel ["done"])
+          (tunnel-client/send! tunnel {:op :bootstrap-done})
+          ()))
+      (agent/destroy!))))

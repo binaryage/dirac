@@ -15,4 +15,5 @@
     (config/set-loggers!
       :root (utils/make-logging-options root-options options)
       "dirac.agent-test" (utils/make-logging-options base-options options)
-      "dirac.test.mock-tunnel-client" (utils/make-logging-options base-options options))))
+      "dirac.test.mock-nrepl-tunnel-client" (utils/make-logging-options base-options options)
+      "dirac.test.mock-weasel-client" (utils/make-logging-options base-options options))))

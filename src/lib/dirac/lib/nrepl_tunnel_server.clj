@@ -49,17 +49,21 @@
 
 (defn get-client-session [server client]
   {:post [(string? %)]}
-  @(get @(:client->session-promise server) client))
+  (let [session-promise-table @(:client->session-promise server)
+        client-session-promise (get session-promise-table client)]
+    (assert client-session-promise "client already removed?")
+    @client-session-promise))
 
 (defn set-client-session-promise! [server client session-promise]
   {:pre [(instance? NREPLTunnelServer server)
          client
-         session-promise]}
+         (not (get @(:client->session-promise server) client))]}
   (swap! (:client->session-promise server) assoc client session-promise))
 
 (defn remove-client! [server client]
   {:pre [(instance? NREPLTunnelServer server)
-         client]}
+         client
+         (get @(:client->session-promise server) client)]}
   (swap! (:client->session-promise server) dissoc client))
 
 (defn get-clients [server]
@@ -114,28 +118,25 @@
 
 (defn quit-client! [server client]
   (let [tunnel (get-tunnel server)
-        session (get-client-session server client)]
-    @(deliver-message-to-server! tunnel (prepare-cljs-quit-message session))))                                ; blocks until delivered
+        session (get-client-session server client)
+        responses-channel @(deliver-message-to-server! tunnel (prepare-cljs-quit-message session))]
+    (utils/wait-for-all-responses! responses-channel)))
 
-(defn disconnect-client! [server client]
+(defn teardown-client! [server client]
   (let [tunnel (get-tunnel server)
         session (get-client-session server client)]
+    (log/trace (str client) (str "Teardown session " (utils/sid session) " from " (str server)))
     (quit-client! server client)
-    (close-session tunnel session)
-    (remove-client! server session)
-    (ws-server/close! client)
-    (log/debug (str "Removed client " (utils/sid session) " from " (str server)))))
-
-(defn disconnect-all-clients! [server]
-  (let [clients (get-clients server)]
-    (doseq [client clients]
-      (disconnect-client! server client))))
+    (utils/wait-for-all-responses! (close-session tunnel session))))
 
 (defn open-client-session [server client]
   (let [session-promise (promise)]
     (set-client-session-promise! server client session-promise)
     (let [tunnel (get-tunnel server)
-          session (open-session tunnel)]                                                                      ; blocking!
+          responses-channel (open-session tunnel)
+          session-message (<!! responses-channel)
+          session (:new-session session-message)]
+      (assert session (str "expected session id in " session-message))
       (log/debug (str server) (str "New client initialized " (utils/sid session)))
       (deliver session-promise session))))
 
@@ -157,7 +158,9 @@
 
 (defn on-leaving-client [server _ws-server client]
   (log/info (str server) "Client" (str client) "disconnected")
-  (disconnect-client! server client))
+  (teardown-client! server client)
+  (remove-client! server client)
+  (log/debug (str client) (str "Removed client from " (str server))))
 
 (defn create! [tunnel options]
   (let [server (make-server tunnel)
@@ -171,8 +174,12 @@
     (log/debug "Created" (str server))
     server))
 
+(defn disconnect-all-clients! [server]
+  (let [clients (get-clients server)]
+    (doseq [client clients]
+      (ws-server/close! client))))                                                                                            ; will trigger on-leaving-client call
+
 (defn destroy! [server]
   (log/trace "Destroying" (str server))
-  (disconnect-all-clients! server)
   (ws-server/destroy! (get-ws-server server))
   (log/debug "Destroyed" (str server)))
