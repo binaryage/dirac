@@ -17,3 +17,4 @@
 .figwheel_server.log
 .profiles/
 pom.xml*
+/out/
