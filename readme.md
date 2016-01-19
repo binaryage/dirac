@@ -1,4 +1,4 @@
-# Dirac [![Clojars Project](https://img.shields.io/clojars/v/binaryage/dirac.svg)](https://clojars.org/binaryage/dirac) [![Build Status](https://travis-ci.org/binaryage/dirac.svg?branch=master)](https://travis-ci.org/binaryage/dirac)
+# Dirac [![Clojars Project](https://img.shields.io/clojars/v/binaryage/dirac.svg)](https://clojars.org/binaryage/dirac) [![Build Status](https://travis-ci.org/binaryage/dirac.svg?branch=master)](https://travis-ci.org/binaryage/dirac) [![MIT License](https://img.shields.io/badge/license-MIT-007EC7.svg?style=flat-square)](/license.txt)
 
 Dirac is a [Chrome DevTools](https://developer.chrome.com/devtools) fork with extra features to aid development in ClojureScript.
 
@@ -328,7 +328,3 @@ defaults and their environmental counterparts.
 
 * [Antonin Hildebrand](https://github.com/darwin) - [cljs-devtools](https://github.com/binaryage/cljs-devtools), [chromex](https://github.com/binaryage/chromex)
 * [Shaun LeBron](https://github.com/shaunlebron) - [parinfer](https://github.com/shaunlebron/parinfer)
-
----
-
-#### License [MIT](license.txt)
