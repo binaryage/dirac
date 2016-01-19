@@ -8,6 +8,7 @@
         :url  "https://github.com/binaryage/dirac"}
 
   :dependencies [[org.clojure/clojure "1.7.0"]
+                 [org.clojure/clojurescript "1.7.170"]
                  [org.clojure/core.async "0.2.374"]
                  [org.clojure/tools.logging "0.3.1"]
                  [org.clojure/tools.cli "0.3.3"]
@@ -19,7 +20,7 @@
   :plugins [[lein-shell "0.4.2"]
             [lein-environ "1.0.1"]]
 
-  ;:jvm-opts ["-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5005"]
+;  :jvm-opts ["-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5005"]
 
   :main dirac.agent-cli
   :aot [dirac.agent-cli]
@@ -48,8 +49,7 @@
   :cljsbuild {:builds {}}                                                                                                     ; prevent https://github.com/emezeske/lein-cljsbuild/issues/413
 
   :profiles {:cljs
-             {:dependencies [[org.clojure/clojurescript "1.7.170"]
-                             [binaryage/chromex "0.2.0"]
+             {:dependencies [[binaryage/chromex "0.2.0"]
                              [binaryage/devtools "0.4.1"]
                              [cljs-http "0.1.39"]
                              [figwheel "0.5.0-3"]
@@ -62,8 +62,7 @@
                              [lein-figwheel "0.5.0-3"]]}
 
              :test
-             {:dependencies [[org.clojure/clojurescript "1.7.170"]
-                             [http.async.client "1.1.0"]
+             {:dependencies [[http.async.client "1.1.0"]
                              [org.slf4j/slf4j-log4j12 "1.7.13"]]}
 
              :unpacked
