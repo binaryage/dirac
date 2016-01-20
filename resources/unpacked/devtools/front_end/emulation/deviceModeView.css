@@ -8,53 +8,33 @@
     overflow: hidden;
     align-items: stretch;
     flex: auto;
-    background-color: #fcfcfc;
+    background-color: hsl(0, 0%, 98%);
 }
 
 .device-mode-toolbar {
     flex: none;
-    background-color: #f3f3f3;
+    background-color: hsl(0, 0%, 98%);
     border-bottom: 1px solid #ccc;
     display: flex;
     flex-direction: row;
     align-items: stretch;
-    padding: 0 4px;
 }
 
 .device-mode-toolbar .toolbar {
-    padding: 0;
     overflow: hidden;
-    flex: auto;
+    flex: 0 100000 auto;
+    padding: 0 5px;
 }
 
-.device-mode-toolbar-left {
-    flex: 0 1000 115px;
-    min-width: 93px;
-}
-
-.device-mode-toolbar-right {
-    flex: 0 1000 115px;
-    min-width: 40px;
-    display: flex;
-}
-
-.device-mode-toolbar-middle-container {
-    flex: 1 1 120px;
-    position: relative;
-}
-
-.device-mode-toolbar-middle {
-    display: flex;
-    justify-content: flex-start;
-    overflow: hidden;
-}
-
-.device-mode-toolbar-middle .toolbar {
+.device-mode-toolbar .toolbar.device-mode-toolbar-fixed-size {
     flex: 0 1 auto;
 }
 
 .device-mode-toolbar-spacer {
-    flex: auto;
+    flex: 1 1 0;
+    display: flex;
+    flex-direction: row;
+    overflow: hidden;
 }
 
 .device-mode-content-clip {
@@ -66,6 +46,67 @@
     flex: none;
     overflow: hidden;
     box-shadow: inset 0 -1px #ccc;
+}
+
+.device-mode-content-clip:not(.device-mode-rulers-visible) .device-mode-media-container {
+    margin-bottom: 20px;
+}
+
+.device-mode-presets-container {
+    flex: 0 0 20px;
+    display: flex;
+}
+
+.device-mode-presets-container-inner {
+    flex: auto;
+    justify-content: center;
+    position: relative;
+    background-color: hsl(0, 0%, 90%);
+    border: 2px solid hsl(0, 0%, 98%);
+    border-bottom: 2px solid hsl(0, 0%, 98%);
+ }
+
+.device-mode-presets-container:hover {
+    transition: opacity 0.1s;
+    transition-delay: 50ms;
+    opacity: 1;
+}
+
+.device-mode-preset-bar-outer {
+    pointer-events: none;
+    display: flex;
+    justify-content: center;
+}
+
+.device-mode-preset-bar {
+    border-left: 2px solid hsl(0, 0%, 98%);
+    border-right: 2px solid hsl(0, 0%, 98%);
+    pointer-events: auto;
+    text-align: center;
+    flex: none;
+    cursor: pointer;
+    color: #5A5A5A;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+    margin-bottom: 1px;
+}
+
+.device-mode-preset-bar:hover {
+    transition: background-color 0.1s;
+    transition-delay: 50ms;
+    background-color: #d6d6d6;
+}
+
+.device-mode-preset-bar > span {
+    visibility: hidden;
+}
+
+.device-mode-preset-bar:hover > span {
+    transition: visibility 0.1s;
+    transition-delay: 50ms;
+    visibility: visible;
 }
 
 .device-mode-content-area {
@@ -97,6 +138,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    overflow: hidden;
     transition: background-color 0.1s ease;
 }
 
@@ -105,44 +147,66 @@
 }
 
 .device-mode-resizer > div {
-    content: url(Images/toolbarResizerHorizontal.png);
     pointer-events: none;
-    margin: 0 0 0 1px;
 }
 
 .device-mode-width-resizer {
     top: 0;
-    bottom: 0;
-    right: -14px;
-    width: 14px;
+    bottom: -2px;
+    right: -20px;
+    width: 20px;
 }
 
 .device-mode-height-resizer {
     left: 0;
-    right: 0;
-    bottom: -14px;
-    height: 14px;
-}
-
-.device-mode-height-resizer > div {
-    transform: rotate(90deg);
-    margin: 1px 0 0 0;
+    right: -2px;
+    bottom: -20px;
+    height: 20px;
 }
 
 .device-mode-corner-resizer {
     left: 0;
     top: 0;
-    right: -14px;
-    bottom: -14px;
+    right: -20px;
+    bottom: -20px;
     background-color: hsla(0, 0%, 0%, 0.02);
+}
+
+.device-mode-width-resizer > div {
+    content: url(Images/resizeHorizontal.png);
+    width: 6px;
+    height: 26px;
+}
+
+.device-mode-height-resizer > div {
+    content: url(Images/resizeVertical.png);
+    margin-bottom: -2px;
+    width: 26px;
+    height: 6px;
 }
 
 .device-mode-corner-resizer > div {
     position: absolute;
-    right: 2px;
-    bottom: 2px;
-    transform: rotate(45deg);
+    bottom: 3px;
+    right: 3px;
+    width: 13px;
+    height: 13px;
+    content: url(Images/resizeDiagonal.png);
 }
+
+@media (-webkit-min-device-pixel-ratio: 1.5) {
+    .device-mode-width-resizer > div {
+        content: url(Images/resizeHorizontal_2x.png);
+    }
+
+    .device-mode-height-resizer > div {
+        content: url(Images/resizeVertical_2x.png);
+    }
+
+    .device-mode-corner-resizer > div {
+        content: url(Images/resizeDiagonal_2x.png);
+    }
+} /* media */
 
 .device-mode-page-area {
     position: absolute;
@@ -152,56 +216,6 @@
     height: 0;
     display: flex;
     background-color: #fcfcfc;
-}
-
-.device-mode-blueprint-container {
-    display: flex;
-    justify-content: center;
-    pointer-events: none;
-}
-
-.device-mode-blueprint {
-    flex-direction: column;
-    justify-content: flex-end;
-    flex: none;
-    position: relative;
-    pointer-events: auto;
-}
-
-.device-mode-blueprint-border {
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: 0;
-    bottom: 0;
-    display: flex;
-    align-items: flex-end;
-    justify-content: flex-end;
-    color: #aaa;
-    border: 1px solid #dcdcdc;
-    margin-top: -1px;
-}
-
-.device-mode-blueprint-border:hover {
-    border-color: #aaa;
-}
-
-.device-mode-blueprint-border > span {
-    transition: opacity 150ms;
-    opacity: 0;
-    padding: 3px;
-}
-
-.device-mode-blueprint-border:hover > span {
-    opacity: 1;
-}
-
-.device-mode-blueprint-inside {
-    position: absolute;
-    left: 20px;
-    right: 20px;
-    top: 20px;
-    bottom: 20px;
 }
 
 .device-mode-ruler {

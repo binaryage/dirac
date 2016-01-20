@@ -47,9 +47,28 @@
     color: #5a5a5a;
 }
 
-/* Text-glyph item */
+.toolbar-dropdown-arrow {
+    -webkit-mask-image: url(Images/toolbarButtonGlyphs.png);
+    -webkit-mask-size: 352px 168px;
+    -webkit-mask-position: -18px -96px;
+    background-color: #6D6D6D;
+    width: 12px;
+    height: 12px;
+    display: inline-block;
+    pointer-events: none;
+    margin: auto 0;
+    flex: none;
+}
 
-.toolbar-text-glyph {
+@media (-webkit-min-device-pixel-ratio: 1.5) {
+    .toolbar-dropdown-arrow {
+        -webkit-mask-image: url(Images/toolbarButtonGlyphs_2x.png);
+    }
+} /* media */
+
+/* Toolbar item */
+
+.toolbar-button {
     white-space: nowrap;
     overflow: hidden;
     min-width: 28px;
@@ -62,16 +81,28 @@
     color: #5a5a5a;
 }
 
+.toolbar-has-dropdown {
+    justify-content: space-between;
+}
+
+.toolbar-has-dropdown .toolbar-text {
+    margin: 0 4px 0 0;
+    text-overflow: ellipsis;
+    flex: auto;
+    overflow: hidden;
+    text-align: right;
+}
+
 .toolbar-has-glyph .toolbar-text {
     margin-left: 0;
 }
 
-.toolbar-bold .toolbar-text {
+.toolbar-button:not(.toolbar-has-glyph):not(.toolbar-has-dropdown):not(.menu-toolbar-item) {
     font-weight: bold;
 }
 
-.toolbar-dimmed .toolbar-text {
-    color: #999;
+.toolbar-button:not(.toolbar-has-glyph):not(.toolbar-has-dropdown):not(.menu-toolbar-item).hover {
+    background-color: #f3f3f3;
 }
 
 .toolbar-glyph {
@@ -96,7 +127,8 @@
     opacity: 0.5;
 }
 
-.toolbar-button:enabled.hover:not(:active) .toolbar-glyph {
+.toolbar-button:enabled.hover:not(:active) .toolbar-glyph,
+.toolbar-button:enabled.hover:not(:active) .toolbar-dropdown-arrow {
     background-color: #333;
 }
 
@@ -155,24 +187,6 @@
     flex-shrink: 0;
     margin-right: 6px;
 }
-
-.toolbar-select-arrow {
-    -webkit-mask-image: url(Images/toolbarButtonGlyphs.png);
-    -webkit-mask-size: 352px 168px;
-    -webkit-mask-position: -18px -96px;
-    background-color: #444;
-    width: 12px;
-    height: 12px;
-    display: inline-block;
-    pointer-events: none;
-    margin: auto 0;
-}
-
-@media (-webkit-min-device-pixel-ratio: 1.5) {
-.toolbar-select-arrow {
-    -webkit-mask-image: url(Images/toolbarButtonGlyphs_2x.png);
-}
-} /* media */
 
 select.toolbar-item {
     min-width: 48px;
@@ -257,10 +271,6 @@ input.toolbar-item.hover {
     -webkit-mask-position: -256px -48px;
 }
 
-.settings-toolbar-item.toolbar-glyph {
-    -webkit-mask-position: -160px -24px;
-}
-
 .menu-toolbar-item.toolbar-glyph {
     -webkit-mask-position: -192px -24px;
 }
@@ -285,10 +295,6 @@ input.toolbar-item.hover {
     -webkit-mask-position: -96px 0;
 }
 
-.visibility-off-toolbar-item.toolbar-glyph {
-    -webkit-mask-position: -192px 0;
-}
-
 .large-list-toolbar-item.toolbar-glyph {
     -webkit-mask-position: -224px 0;
 }
@@ -305,17 +311,6 @@ input.toolbar-item.hover {
     -webkit-mask-position: -96px -24px;
 }
 
-.last-step-toolbar-item.toolbar-glyph {
-    -webkit-mask-position: 0 -72px;
-}
-
-.first-step-toolbar-item.toolbar-glyph {
-    -webkit-mask-position: 0 -72px;
-    transform: rotate(180deg);
-    top: 0;
-    bottom: 0;
-}
-
 .step-in-toolbar-item.toolbar-glyph {
     -webkit-mask-position: -64px -72px;
 }
@@ -326,11 +321,6 @@ input.toolbar-item.hover {
 
 .step-over-toolbar-item.toolbar-glyph {
     -webkit-mask-position: -128px -72px;
-}
-
-.step-backwards-toolbar-item.toolbar-glyph {
-    -webkit-mask-position: -128px -72px;
-    transform: scaleX(-1);
 }
 
 .play-toolbar-item.toolbar-glyph {
@@ -358,10 +348,6 @@ input.toolbar-item.hover {
     -webkit-mask-position: -32px 0;
 }
 
-.add-breakpoint-toolbar-item.toolbar-glyph {
-    -webkit-mask-position: -64px -24px;
-}
-
 .breakpoint-toolbar-item.toolbar-glyph {
     -webkit-mask-position: 0 -24px;
 }
@@ -372,14 +358,6 @@ input.toolbar-item.hover {
 
 .garbage-collect-toolbar-item.toolbar-glyph {
     -webkit-mask-position: -128px -24px;
-}
-
-.histogram-toolbar-item.toolbar-glyph {
-    -webkit-mask-position: -160px -48px;
-}
-
-.flame-chart-toolbar-item.toolbar-glyph {
-    -webkit-mask-position: -192px -48px;
 }
 
 .filter-toolbar-item.toolbar-glyph {
@@ -432,14 +410,6 @@ input.toolbar-item.hover {
     background-color: rgb(66, 129, 235) !important;
 }
 
-.timer-toolbar-item.toolbar-glyph {
-    -webkit-mask-position: -320px -72px;
-}
-
-.view-quilt-toolbar-item.toolbar-glyph {
-    -webkit-mask-position: -320px -96px;
-}
-
 .background-color-toolbar-item.toolbar-glyph {
     -webkit-mask-position: -96px -144px;
 }
@@ -457,7 +427,7 @@ input.toolbar-item.hover {
 }
 
 .phone-toolbar-item.toolbar-glyph {
-    -webkit-mask-position: -288px -144px;
+    -webkit-mask-position: -320px -96px;
 }
 
 .rotate-screen-toolbar-item.toolbar-glyph {

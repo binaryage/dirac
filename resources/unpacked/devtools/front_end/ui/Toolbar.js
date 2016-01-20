@@ -106,7 +106,7 @@ WebInspector.Toolbar.prototype = {
      */
     appendText: function(text)
     {
-        this.appendToolbarItem(new WebInspector.ToolbarLabel(text));
+        this.appendToolbarItem(new WebInspector.ToolbarText(text));
     },
 
     removeToolbarItems: function()
@@ -182,6 +182,17 @@ WebInspector.ToolbarItem = function(element)
 }
 
 WebInspector.ToolbarItem.prototype = {
+    /**
+     * @param {string} title
+     */
+    setTitle: function(title)
+    {
+        if (this._title === title)
+            return;
+        this._title = title;
+        WebInspector.Tooltip.install(this.element, title);
+    },
+
     _mouseEnter: function()
     {
         this.element.classList.add("hover");
@@ -236,21 +247,52 @@ WebInspector.ToolbarItem.prototype = {
  * @constructor
  * @extends {WebInspector.ToolbarItem}
  * @param {string=} text
- * @param {string=} glyph
  */
-WebInspector.ToolbarLabel = function(text, glyph)
+WebInspector.ToolbarText = function(text)
 {
-    WebInspector.ToolbarItem.call(this, createElementWithClass("button", "toolbar-text-glyph"));
+    WebInspector.ToolbarItem.call(this, createElementWithClass("div", "toolbar-text"));
+    this.element.classList.add("toolbar-text");
+    this.setText(text || "");
+}
+
+WebInspector.ToolbarText.prototype = {
+     /**
+     * @param {string} text
+     */
+    setText: function(text)
+    {
+        this.element.textContent = text;
+    },
+
+    __proto__: WebInspector.ToolbarItem.prototype
+}
+
+/**
+ * @constructor
+ * @extends {WebInspector.ToolbarItem}
+ * @param {string} title
+ * @param {string=} glyph
+ * @param {string=} text
+ */
+WebInspector.ToolbarButton = function(title, glyph, text)
+{
+    WebInspector.ToolbarItem.call(this, createElementWithClass("button", "toolbar-button"));
+    this.element.addEventListener("click", this._clicked.bind(this), false);
+    this.element.addEventListener("mousedown", this._mouseDown.bind(this), false);
+    this.element.addEventListener("mouseup", this._mouseUp.bind(this), false);
+
     this._glyphElement = this.element.createChild("div", "toolbar-glyph hidden");
     this._textElement = this.element.createChild("div", "toolbar-text hidden");
-    this.setText(text || "");
+
+    this.setTitle(title);
     if (glyph)
         this.setGlyph(glyph);
+    this.setText(text || "");
     this._state = "";
     this._title = "";
 }
 
-WebInspector.ToolbarLabel.prototype = {
+WebInspector.ToolbarButton.prototype = {
     /**
      * @param {string} text
      */
@@ -308,54 +350,16 @@ WebInspector.ToolbarLabel.prototype = {
     },
 
     /**
-     * @param {string} title
+     * @param {number=} width
      */
-    setTitle: function(title)
+    turnIntoSelect: function(width)
     {
-        if (this._title === title)
-            return;
-        this._title = title;
-        WebInspector.Tooltip.install(this.element, title);
+        this.element.classList.add("toolbar-has-dropdown");
+        this.element.createChild("div", "toolbar-dropdown-arrow");
+        if (width)
+            this.element.style.width = width + "px";
     },
 
-    /**
-     * @param {boolean} bold
-     */
-    setBold: function(bold)
-    {
-        this.element.classList.toggle("toolbar-bold", bold);
-    },
-
-    /**
-     * @param {boolean} dimmed
-     */
-    setDimmed: function(dimmed)
-    {
-        this.element.classList.toggle("toolbar-dimmed", dimmed);
-    },
-
-    __proto__: WebInspector.ToolbarItem.prototype
-}
-
-/**
- * @constructor
- * @extends {WebInspector.ToolbarLabel}
- * @param {string} title
- * @param {string} glyph
- */
-WebInspector.ToolbarButton = function(title, glyph)
-{
-    WebInspector.ToolbarLabel.call(this);
-    this.element.classList.add("toolbar-button");
-    this.element.addEventListener("click", this._clicked.bind(this), false);
-    this.element.addEventListener("mousedown", this._mouseDown.bind(this), false);
-    this.element.addEventListener("mouseup", this._mouseUp.bind(this), false);
-    this.setBold(true);
-    this.setTitle(title);
-    this.setGlyph(glyph);
-}
-
-WebInspector.ToolbarButton.prototype = {
     /**
      * @param {!Event} event
      */
@@ -381,7 +385,7 @@ WebInspector.ToolbarButton.prototype = {
         this.dispatchEventToListeners("mouseup", event);
     },
 
-    __proto__: WebInspector.ToolbarLabel.prototype
+    __proto__: WebInspector.ToolbarItem.prototype
 }
 
 /**
@@ -434,10 +438,13 @@ WebInspector.ToolbarInput.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.ToolbarButton}
+ * @param {string} title
+ * @param {string=} glyph
+ * @param {string=} text
  */
-WebInspector.ToolbarToggle = function(title, glyph)
+WebInspector.ToolbarToggle = function(title, glyph, text)
 {
-    WebInspector.ToolbarButton.call(this, title, glyph);
+    WebInspector.ToolbarButton.call(this, title, glyph, text);
     this._toggled = false;
     this.setState("off");
 }
@@ -720,7 +727,7 @@ WebInspector.ToolbarComboBox = function(changeHandler, className)
     WebInspector.ToolbarItem.call(this, createElementWithClass("span", "toolbar-select-container"));
 
     this._selectElement = this.element.createChild("select", "toolbar-item");
-    this.element.createChild("div", "toolbar-select-arrow");
+    this.element.createChild("div", "toolbar-dropdown-arrow");
     if (changeHandler)
         this._selectElement.addEventListener("change", changeHandler, false);
     if (className)
@@ -897,7 +904,7 @@ WebInspector.ExtensibleToolbar.prototype = {
             if (extensions[i].descriptor()["location"] === location)
                 promises.push(resolveItem(extensions[i]));
         }
-        Promise.all(promises).then(appendItemsInOrder.bind(this));
+        this._promise = Promise.all(promises).then(appendItemsInOrder.bind(this));
 
         /**
          * @param {!Runtime.Extension} extension
@@ -933,6 +940,14 @@ WebInspector.ExtensibleToolbar.prototype = {
                     this.appendToolbarItem(item);
             }
         }
+    },
+
+    /**
+     * @return {!Promise}
+     */
+    onLoad: function()
+    {
+        return this._promise;
     },
 
     __proto__: WebInspector.Toolbar.prototype

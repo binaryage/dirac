@@ -17,11 +17,22 @@
     margin-left: -2px;
     word-wrap: break-word;
     position: relative;
+    min-height: 14px;
 }
 
 .elements-disclosure li.parent {
     /** Keep it in sync with ElementsTreeElements.updateDecorators **/
     margin-left: -13px;
+}
+
+.elements-disclosure li.selected:after {
+    font-style: italic;
+    content: " == $0";
+    color: #555;
+}
+
+.elements-disclosure ol:focus li.selected:after {
+    color: white;
 }
 
 .elements-disclosure li.parent::before {
