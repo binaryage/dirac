@@ -1,22 +1,16 @@
 (ns dirac.agent.config
   (require [dirac.lib.utils :refer [assoc-env-val deep-merge-ignoring-nils]]))
 
-(def nrepl-server-default-config
-  {:host "localhost"
-   :port 8230})
-
-(def nrepl-tunnel-default-config
-  {:host "localhost"
-   :port 8231})
-
 (def default-config
   {:log-level                 "WARN"                                                                                          ; OFF, FATAL, ERROR, WARN, INFO, DEBUG, TRACE, ALL
    :max-boot-trials           10
    :initial-boot-delay        1000
    :delay-between-boot-trials 500
    :skip-logging-setup        false
-   :nrepl-server              nrepl-server-default-config
-   :nrepl-tunnel              nrepl-tunnel-default-config})
+   :nrepl-server              {:host "localhost"
+                               :port 8230}
+   :nrepl-tunnel              {:host "localhost"
+                               :port 8231}})
 
 ; -- environment ------------------------------------------------------------------------------------------------------------
 
