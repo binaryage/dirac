@@ -91,7 +91,7 @@ WebInspector.JavaScriptSourceFrame.prototype = {
         if (originURL) {
             var parsedURL = originURL.asParsedURL();
             if (parsedURL)
-                result.push(new WebInspector.ToolbarLabel(WebInspector.UIString("(source mapped from %s)", parsedURL.displayName)));
+                result.push(new WebInspector.ToolbarText(WebInspector.UIString("(source mapped from %s)", parsedURL.displayName)));
         }
         return result;
     },
@@ -109,7 +109,7 @@ WebInspector.JavaScriptSourceFrame.prototype = {
         if (this._divergedInfobar)
             this._divergedInfobar.dispose();
 
-        var infobar = new WebInspector.UISourceCodeFrame.Infobar(WebInspector.Infobar.Type.Warning, WebInspector.UIString("Workspace mapping mismatch"));
+        var infobar = new WebInspector.Infobar(WebInspector.Infobar.Type.Warning, WebInspector.UIString("Workspace mapping mismatch"));
         this._divergedInfobar = infobar;
 
         var fileURL = this.uiSourceCode().url();
@@ -158,7 +158,7 @@ WebInspector.JavaScriptSourceFrame.prototype = {
         if (this._blackboxInfobar)
             this._blackboxInfobar.dispose();
 
-        var infobar = new WebInspector.UISourceCodeFrame.Infobar(WebInspector.Infobar.Type.Warning, WebInspector.UIString("This script is blackboxed in debugger"));
+        var infobar = new WebInspector.Infobar(WebInspector.Infobar.Type.Warning, WebInspector.UIString("This script is blackboxed in debugger"));
         this._blackboxInfobar = infobar;
 
         infobar.createDetailsRowMessage(WebInspector.UIString("Debugger will skip stepping through this script, and will not stop on exceptions"));
@@ -288,16 +288,17 @@ WebInspector.JavaScriptSourceFrame.prototype = {
             var breakpoint = this._breakpointManager.findBreakpointOnLine(this.uiSourceCode(), lineNumber);
             if (!breakpoint) {
                 // This row doesn't have a breakpoint: We want to show Add Breakpoint and Add and Edit Breakpoint.
-                contextMenu.appendItem(WebInspector.UIString.capitalize("Add ^breakpoint"), this._createNewBreakpoint.bind(this, lineNumber, 0, "", true));
-                contextMenu.appendItem(WebInspector.UIString.capitalize("Add ^conditional ^breakpoint…"), this._editBreakpointCondition.bind(this, lineNumber));
+                contextMenu.appendItem(WebInspector.UIString("Add breakpoint"), this._createNewBreakpoint.bind(this, lineNumber, 0, "", true));
+                contextMenu.appendItem(WebInspector.UIString("Add conditional breakpoint…"), this._editBreakpointCondition.bind(this, lineNumber));
+                contextMenu.appendItem(WebInspector.UIString("Never pause here"), this._createNewBreakpoint.bind(this, lineNumber, 0, "false", true));
             } else {
                 // This row has a breakpoint, we want to show edit and remove breakpoint, and either disable or enable.
-                contextMenu.appendItem(WebInspector.UIString.capitalize("Remove ^breakpoint"), breakpoint.remove.bind(breakpoint));
-                contextMenu.appendItem(WebInspector.UIString.capitalize("Edit ^breakpoint…"), this._editBreakpointCondition.bind(this, lineNumber, breakpoint));
+                contextMenu.appendItem(WebInspector.UIString("Remove breakpoint"), breakpoint.remove.bind(breakpoint));
+                contextMenu.appendItem(WebInspector.UIString("Edit breakpoint…"), this._editBreakpointCondition.bind(this, lineNumber, breakpoint));
                 if (breakpoint.enabled())
-                    contextMenu.appendItem(WebInspector.UIString.capitalize("Disable ^breakpoint"), breakpoint.setEnabled.bind(breakpoint, false));
+                    contextMenu.appendItem(WebInspector.UIString("Disable breakpoint"), breakpoint.setEnabled.bind(breakpoint, false));
                 else
-                    contextMenu.appendItem(WebInspector.UIString.capitalize("Enable ^breakpoint"), breakpoint.setEnabled.bind(breakpoint, true));
+                    contextMenu.appendItem(WebInspector.UIString("Enable breakpoint"), breakpoint.setEnabled.bind(breakpoint, true));
             }
             resolve();
         }
@@ -964,6 +965,14 @@ WebInspector.JavaScriptSourceFrame.prototype = {
             newScriptFile.addEventListener(WebInspector.ResourceScriptFile.Events.DidDivergeFromVM, this._didDivergeFromVM, this);
             if (this.loaded)
                 newScriptFile.checkMapping();
+            if (newScriptFile.hasSourceMapURL()) {
+                var sourceMapInfobar = WebInspector.Infobar.create(WebInspector.Infobar.Type.Info, WebInspector.UIString("Source Map detected."), WebInspector.settings.createSetting("sourceMapInfobarDisabled", false));
+                if (sourceMapInfobar) {
+                    sourceMapInfobar.createDetailsRowMessage(WebInspector.UIString("Associated files should be added to the file tree. You can debug these resolved source files as regular JavaScript files."));
+                    sourceMapInfobar.createDetailsRowMessage(WebInspector.UIString("Associated files are available via file tree or %s.", WebInspector.shortcutRegistry.shortcutTitleForAction("sources.go-to-source")));
+                    this.attachInfobars([sourceMapInfobar]);
+                }
+            }
         }
     },
 
@@ -985,6 +994,45 @@ WebInspector.JavaScriptSourceFrame.prototype = {
             scriptFiles[i].checkMapping();
 
         this._updateLinesWithoutMappingHighlight();
+        this._detectMinified();
+    },
+
+    _detectMinified: function()
+    {
+        if (this._prettyPrintInfobar)
+            return;
+
+        var minified = false;
+        for (var i = 0; i < 10 && i < this.textEditor.linesCount; ++i) {
+            var line = this.textEditor.line(i);
+            if (line.startsWith("//#")) // mind source map.
+                continue;
+            if (line.length > 500) {
+                minified = true;
+                break;
+            }
+        }
+        if (!minified)
+            return;
+
+        this._prettyPrintInfobar = WebInspector.Infobar.create(
+            WebInspector.Infobar.Type.Info,
+            WebInspector.UIString("Pretty-print this minified file?"),
+            WebInspector.settings.createSetting("prettyPrintInfobarDisabled", false));
+        if (!this._prettyPrintInfobar)
+            return;
+
+        this._prettyPrintInfobar.setCloseCallback(() => delete this._prettyPrintInfobar);
+        var toolbar = new WebInspector.Toolbar("");
+        var button = new WebInspector.ToolbarButton("", "format-toolbar-item")
+        toolbar.appendToolbarItem(button);
+        toolbar.element.style.display = "inline-block";
+        toolbar.element.style.verticalAlign = "middle";
+        toolbar.element.style.marginBottom = "3px";
+        toolbar.element.style.pointerEvents = "none";
+        var element = this._prettyPrintInfobar.createDetailsRowMessage();
+        element.appendChild(WebInspector.formatLocalized("You can click the %s button on the bottom status bar, and continue debugging with the new formatted source.", [toolbar.element]));
+        this.attachInfobars([this._prettyPrintInfobar]);
     },
 
     /**

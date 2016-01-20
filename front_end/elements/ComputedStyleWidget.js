@@ -56,6 +56,7 @@ WebInspector.ComputedStyleWidget = function(stylesSidebarPane, sharedModel)
     toolbar.appendToolbarItem(new WebInspector.ToolbarCheckbox(WebInspector.UIString("Show all"), undefined, this._showInheritedComputedStylePropertiesSetting));
 
     this._propertiesOutline = new TreeOutlineInShadow();
+    this._propertiesOutline.hideOverflow();
     this._propertiesOutline.registerRequiredCSS("elements/computedStyleSidebarPane.css");
     this._propertiesOutline.element.classList.add("monospace", "computed-properties");
     this.element.appendChild(this._propertiesOutline.element);
@@ -158,9 +159,18 @@ WebInspector.ComputedStyleWidget.prototype = {
             var propertyNameElement = renderer.renderName();
             propertyNameElement.classList.add("property-name");
             propertyElement.appendChild(propertyNameElement);
+
+            var colon = createElementWithClass("span", "delimeter");
+            colon.textContent = ":";
+            propertyNameElement.appendChild(colon);
+
             var propertyValueElement = renderer.renderValue();
             propertyValueElement.classList.add("property-value");
             propertyElement.appendChild(propertyValueElement);
+
+            var semicolon = createElementWithClass("span", "delimeter");
+            semicolon.textContent = ";";
+            propertyValueElement.appendChild(semicolon);
 
             var treeElement = new TreeElement();
             treeElement.selectable = false;
