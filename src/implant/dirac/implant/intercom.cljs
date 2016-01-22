@@ -149,16 +149,16 @@
 (defmethod nrepl-tunnel-client/process-message :bootstrap [_client _message]
   (go
     (let [response (<! (nrepl-tunnel-client/tunnel-message-with-response! (nrepl-tunnel-client/boostrap-cljs-repl-message)))]
-      (case (:status response)
-        ["done"] (do
-                   (set! *repl-bootstrapped* true)
-                   (update-repl-mode!)
-                   {:op :bootstrap-done})
-        ["timeout"] (do
-                      (display-prompt-status (str "Unable to bootstrap CLJS REPL. Bootstrapping timeout. "
-                                                  "This is usually a case when server side process "
-                                                  "raised an exception or crashed. Check your nREPL console."))
-                      {:op :bootstrap-timeout})
+      (case (first (:status response))
+        "done" (do
+                 (set! *repl-bootstrapped* true)
+                 (update-repl-mode!)
+                 {:op :bootstrap-done})
+        "timeout" (do
+                    (display-prompt-status (str "Unable to bootstrap CLJS REPL due to a timeout. "
+                                                "This is usually a case when server side process "
+                                                "raised an exception or crashed. Check your nREPL console."))
+                    {:op :bootstrap-timeout})
         (do
           (display-prompt-status (str "Unable to bootstrap CLJS REPL due to an error. Check your nREPL console."))
           {:op :bootstrap-error})))))
