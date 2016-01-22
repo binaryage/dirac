@@ -15,13 +15,13 @@
 
 ; -- pending messages -------------------------------------------------------------------------------------------------------
 
-(defn register-pending-message-handler [id handler]
+(defn register-pending-message-handler! [id handler]
   (swap! pending-messages assoc id handler))
 
 (defn lookup-pending-message-handler [id]
   (get @pending-messages id))
 
-(defn remove-pending-message-handler [id]
+(defn remove-pending-message-handler! [id]
   (swap! pending-messages dissoc id))
 
 ; -- deliver ----------------------------------------------------------------------------------------------------------------
@@ -30,7 +30,7 @@
   (let [id (:id message)]
     (when-let [handler (lookup-pending-message-handler id)]
       (handler message)
-      (remove-pending-message-handler id))))
+      (remove-pending-message-handler! id))))
 
 ; -- message sending --------------------------------------------------------------------------------------------------------
 
@@ -54,7 +54,7 @@
         handler (fn [response-message]
                   (put! response response-message)
                   (close! timeout))]
-    (register-pending-message-handler id handler)
+    (register-pending-message-handler! id handler)
     (go
       (<! timeout)
       (deliver-response {:status ["timeout"]
