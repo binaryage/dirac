@@ -13,6 +13,11 @@
 (defn connected? []
   (not (nil? @current-client)))
 
+(defn get-current-options []
+  (let [client @current-client]
+    (assert client)
+    (ws-client/get-options client)))
+
 ; -- pending messages -------------------------------------------------------------------------------------------------------
 
 (defn register-pending-message-handler! [id handler]
@@ -50,7 +55,7 @@
   (let [id (uuid/uuid-string (uuid/make-random-uuid))
         msg-with-id (assoc msg :id id)
         response (chan)
-        timeout (timeout 5000)                                                                                                ; TODO: make timeout configurable
+        timeout (timeout (:response-timeout (get-current-options)))
         handler (fn [response-message]
                   (put! response response-message)
                   (close! timeout))]
@@ -123,11 +128,12 @@
 
 (defn connect! [server-url opts]
   (assert (nil? @current-client))
-  (let [default-opts {:name       "nREPL Tunnel Client"
-                      :on-message on-message-handler
-                      :on-open    on-open-handler
-                      :on-close   on-close-handler
-                      :on-error   on-error-handler}
+  (let [default-opts {:name             "nREPL Tunnel Client"
+                      :on-message       on-message-handler
+                      :on-open          on-open-handler
+                      :on-close         on-close-handler
+                      :on-error         on-error-handler
+                      :response-timeout 5000}
         effective-opts (merge default-opts opts)
         _client (ws-client/connect! server-url effective-opts)]                                                               ; client will be set into current-client in on-open-handler
     true))

@@ -5,6 +5,7 @@
             [dirac.implant.console :as console]
             [dirac.implant.weasel-client :as weasel-client]
             [dirac.implant.nrepl-tunnel-client :as nrepl-tunnel-client]
+            [dirac.utils :as utils]
             [chromex.logging :refer-macros [log info warn error]]
             [dirac.implant.eval :as eval]))
 
@@ -19,10 +20,6 @@
 
 (def weasel-options
   {:verbose true})
-
-(def tunnel-options
-  {:verbose         true
-   :auto-reconnect? true})
 
 (defn ^:dynamic missing-cljs-devtools-message []
   (str "Dirac DevTools requires runtime support from the page context.\n"
@@ -99,15 +96,17 @@
           (recur (dec remaining-time)))))
     time))
 
-(defn connect-to-nrepl-tunnel-server [url]
+(defn connect-to-nrepl-tunnel-server [url verbose? auto-connect? response-timeout]
   {:pre [(string? url)]}
   (when-not *last-connection-url*
     (set! *last-connection-url* url)
     (try
-      (let [options (assoc tunnel-options
-                      :on-error (partial on-error-handler url)
-                      :next-reconnect-fn next-connect-fn)]
-        (nrepl-tunnel-client/connect! url options))
+      (let [options {:on-error          (partial on-error-handler url)
+                     :next-reconnect-fn next-connect-fn
+                     :verbose           verbose?
+                     :auto-connect      auto-connect?
+                     :response-timeout  response-timeout}]
+        (nrepl-tunnel-client/connect! url (utils/remove-nil-values options)))
       (catch :default e
         (display-prompt-status (str "Unable to connect to Dirac Agent at " url ":\n" e))
         (throw e)))))
@@ -129,8 +128,11 @@
       (do
         (info "Starting REPL support. Dirac client-side config is " client-config)
         (let [{:keys [dirac-agent-host dirac-agent-port]} client-config
-              agent-url (ws-url dirac-agent-host dirac-agent-port)]
-          (connect-to-nrepl-tunnel-server agent-url)))
+              agent-url (ws-url dirac-agent-host dirac-agent-port)
+              verbose? (:dirac-agent-verbose client-config)
+              auto-connect? (:dirac-agent-auto-connect client-config)
+              response-timeout (:dirac-agent-response-timeout client-config)]
+          (connect-to-nrepl-tunnel-server agent-url verbose? auto-connect? response-timeout)))
       (display-prompt-status (failed-to-retrieve-client-config-message)))))
 
 (defn init-repl! []

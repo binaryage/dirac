@@ -7,3 +7,6 @@
 
 (defn escape-double-quotes [s]
   (.replace s #"\"" "\\\""))
+
+(defn remove-nil-values [m]
+  (into {} (remove (comp nil? second) m)))
