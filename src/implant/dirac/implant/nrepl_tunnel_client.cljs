@@ -7,8 +7,8 @@
             [dirac.implant.ws-client :as ws-client]
             [dirac.implant.console :as console]))
 
-(def current-client (atom nil))
-(def pending-messages (atom {}))
+(def current-client (atom nil))                                                                                               ; only one client can be connected as a time
+(def pending-messages (atom {}))                                                                                              ; a map of 'msg-id -> handler' for messages in flight where we wait for status responses, see ***
 
 (defn connected? []
   (not (nil? @current-client)))
@@ -79,11 +79,11 @@
     (cond
       ; :out and :err messages are being sent by session middleware,
       ; we have our own output recoding based on recording driver, sent via :print-output message
-      out (when false (eval/present-output id "stdout" out))
-      err (when false (eval/present-output id "stderr" err))
+      out nil                                                                                                                 ; (eval/present-output id "stdout" out)
+      err nil                                                                                                                 ; (eval/present-output id "stderr" err)
       ns (console/set-repl-ns! ns)
       status (when id
-               (deliver-response message)
+               (deliver-response message)                                                                                     ; *** (see pending-messages above)
                (console/announce-job-end! id))
       :else (warn "received an unrecognized message from nREPL server" message)))
   nil)
@@ -115,11 +115,10 @@
 (defn on-open-handler [client]
   (reset! current-client client))
 
-(defn on-error-handler [client event]
+(defn on-error-handler [client _event]
   (assert (= @current-client client)))
 
-(defn on-close-handler [client]
-  ;(assert (= @current-client client))
+(defn on-close-handler [_client]
   (reset! current-client nil))
 
 (defn connect! [server-url opts]
@@ -130,5 +129,5 @@
                       :on-close   on-close-handler
                       :on-error   on-error-handler}
         effective-opts (merge default-opts opts)
-        client (ws-client/connect! server-url effective-opts)]
+        _client (ws-client/connect! server-url effective-opts)]                                                               ; client will be set into current-client in on-open-handler
     true))
