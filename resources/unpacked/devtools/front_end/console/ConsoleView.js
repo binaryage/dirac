@@ -41,6 +41,7 @@ WebInspector.ConsoleView = function()
     WebInspector.VBox.call(this);
     this.setMinimumSize(0, 35);
     this.registerRequiredCSS("console/consoleView.css");
+    this.registerRequiredCSS("console/dirac-hacks.css");
     this.registerRequiredCSS("console/dirac-codemirror.css");
     this.registerRequiredCSS("console/dirac-theme.css");
     this.registerRequiredCSS("console/dirac-prompt.css");
@@ -394,7 +395,6 @@ WebInspector.ConsoleView.prototype = {
 
     _executionContextChanged: function()
     {
-        console.log("!!!", this._consolePromptIndexSetting.get());
         this._switchToLastPrompt();
         this._prompt.clearAutoComplete(true);
         if (!this._showAllMessagesCheckbox.checked())

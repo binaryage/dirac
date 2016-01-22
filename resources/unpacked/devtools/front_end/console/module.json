@@ -91,6 +91,7 @@
     ],
     "resources": [
         "consoleView.css",
+        "dirac-hacks.css",
         "dirac-codemirror.css",
         "dirac-theme.css",
         "dirac-prompt.css"

@@ -1,0 +1,13 @@
+/* let's try to keep our css overrides here to avoid conflicts upstream */
+
+.console-message-text > * {
+    z-index: 10;
+    position: relative;
+    background-color: rgba(255, 255, 255, 0.8);
+}
+
+.console-message-url {
+    position: absolute;
+    right: 0px;
+    z-index: 0;
+}
