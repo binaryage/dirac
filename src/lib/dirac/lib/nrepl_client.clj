@@ -83,10 +83,9 @@
 (defn send! [client message]
   (let [raw-nrepl-client (get-raw-nrepl-client client)
         response-table (get-response-table client)
-        id (uuid)
         channel (chan)
-        msg (assoc message :id id)]
-    (swap! response-table assoc id channel)
+        msg (update message :id #(or % (uuid)))]
+    (swap! response-table assoc (:id msg) channel)
     (nrepl/message raw-nrepl-client msg)
     channel))
 
