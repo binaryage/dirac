@@ -13,8 +13,8 @@
   (if-let [console-view (get-console-view)]
     (ocall console-view "setDiracReplNS" ns-name)))
 
-(defn announce-job-start! [job-id]
-  (group (str "nREPL JOB #" job-id))
+(defn announce-job-start! [job-id info]
+  (group (str "nREPL JOB #" job-id) info)
   (if-let [console-view (get-console-view)]
     (ocall console-view "onJobStarted" job-id)))
 

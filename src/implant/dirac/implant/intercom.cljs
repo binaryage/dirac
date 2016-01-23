@@ -119,7 +119,7 @@
 
 (defn send-eval-request! [job-id code]
   (when (repl-ready?)
-    (console/announce-job-start! job-id)
+    (console/announce-job-start! job-id (str "eval: " code))
     (nrepl-tunnel-client/tunnel-message! {:op    "eval"
                                           :dirac "wrap"
                                           :id    job-id
