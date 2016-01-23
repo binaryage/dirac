@@ -198,12 +198,13 @@ WebInspector.TimelineFrameModelBase.prototype = {
         this._frameById = {};
         this._lastFrame = null;
         this._lastLayerTree = null;
-        this._hasThreadedCompositing = false;
         this._mainFrameCommitted = false;
         this._mainFrameRequested = false;
         this._framePendingCommit = null;
         this._lastBeginFrame = null;
         this._lastNeedsBeginFrame = null;
+        this._framePendingActivation = null;
+        this._lastTaskBeginTime = null;
     },
 
     /**
@@ -212,7 +213,7 @@ WebInspector.TimelineFrameModelBase.prototype = {
     handleBeginFrame: function(startTime)
     {
         if (!this._lastFrame)
-            this._startBackgroundFrame(startTime);
+            this._startFrame(startTime);
         this._lastBeginFrame = startTime;
     },
 
@@ -222,7 +223,7 @@ WebInspector.TimelineFrameModelBase.prototype = {
     handleDrawFrame: function(startTime)
     {
         if (!this._lastFrame) {
-            this._startBackgroundFrame(startTime);
+            this._startFrame(startTime);
             return;
         }
 
@@ -230,15 +231,17 @@ WebInspector.TimelineFrameModelBase.prototype = {
         // - only show frames that either did not wait for the main thread frame or had one committed.
         if (this._mainFrameCommitted || !this._mainFrameRequested) {
             if (this._lastNeedsBeginFrame) {
-                this._lastFrame.idle = true;
                 var idleTimeEnd = this._framePendingActivation ? this._framePendingActivation.triggerTime : (this._lastBeginFrame || this._lastNeedsBeginFrame);
-                this._startBackgroundFrame(idleTimeEnd);
-                if (this._framePendingActivation)
-                    this._commitPendingFrame();
+                if (idleTimeEnd > this._lastFrame.startTime) {
+                    this._lastFrame.idle = true;
+                    this._startFrame(idleTimeEnd);
+                    if (this._framePendingActivation)
+                        this._commitPendingFrame();
+                    this._lastBeginFrame = null;
+                }
                 this._lastNeedsBeginFrame = null;
-                this._lastBeginFrame = null;
             }
-            this._startBackgroundFrame(startTime);
+            this._startFrame(startTime);
         }
         this._mainFrameCommitted = false;
     },
@@ -260,7 +263,7 @@ WebInspector.TimelineFrameModelBase.prototype = {
 
     handleCompositeLayers: function()
     {
-        if (!this._hasThreadedCompositing || !this._framePendingCommit)
+        if (!this._framePendingCommit)
             return;
         this._framePendingActivation = this._framePendingCommit;
         this._framePendingCommit = null;
@@ -289,28 +292,11 @@ WebInspector.TimelineFrameModelBase.prototype = {
     /**
      * @param {number} startTime
      */
-    _startBackgroundFrame: function(startTime)
-    {
-        if (!this._hasThreadedCompositing) {
-            this._lastFrame = null;
-            this._hasThreadedCompositing = true;
-        }
-        if (this._lastFrame)
-            this._flushFrame(this._lastFrame, startTime);
-
-        this._lastFrame = new WebInspector.TimelineFrame(startTime, startTime - this._minimumRecordTime);
-    },
-
-    /**
-     * @param {number} startTime
-     * @param {number=} frameId
-     */
-    _startMainThreadFrame: function(startTime, frameId)
+    _startFrame: function(startTime)
     {
         if (this._lastFrame)
             this._flushFrame(this._lastFrame, startTime);
         this._lastFrame = new WebInspector.TimelineFrame(startTime, startTime - this._minimumRecordTime);
-        this._lastFrame._mainFrameId = frameId;
     },
 
     /**
@@ -321,6 +307,8 @@ WebInspector.TimelineFrameModelBase.prototype = {
     {
         frame._setLayerTree(this._lastLayerTree);
         frame._setEndTime(endTime);
+        if (this._frames.length && (frame.startTime !== this._frames.peekLast().endTime || frame.startTime > frame.endTime))
+            console.assert(false, `Inconsistent frame time for frame ${this._frames.length} (${frame.startTime} - ${frame.endTime})`);
         this._frames.push(frame);
         if (typeof frame._mainFrameId === "number")
             this._frameById[frame._mainFrameId] = frame;
@@ -412,21 +400,21 @@ WebInspector.TracingTimelineFrameModel.prototype = {
         } else if (event.phase === WebInspector.TracingModel.Phase.SnapshotObject && event.name === eventNames.LayerTreeHostImplSnapshot && parseInt(event.id, 0) === this._layerTreeId) {
             var snapshot = /** @type {!WebInspector.TracingModel.ObjectSnapshot} */ (event);
             this.handleLayerTreeSnapshot(new WebInspector.DeferredTracingLayerTree(snapshot, this._target));
-        } else if (event.thread === this._mainThread) {
-            this._addMainThreadTraceEvent(event);
         } else {
-            this._addBackgroundTraceEvent(event);
+            this._processCompositorEvents(event);
+            if (event.thread === this._mainThread)
+                this._addMainThreadTraceEvent(event);
+            else if (this._lastFrame && event.selfTime && !WebInspector.TracingModel.isTopLevelEvent(event))
+                this._lastFrame._addTimeForCategory(WebInspector.TimelineUIUtils.eventStyle(event).category.name, event.selfTime);
         }
     },
 
     /**
      * @param {!WebInspector.TracingModel.Event} event
      */
-    _addBackgroundTraceEvent: function(event)
+    _processCompositorEvents: function(event)
     {
         var eventNames = WebInspector.TimelineModel.RecordType;
-        if (this._lastFrame && event.selfTime && !WebInspector.TracingModel.isTopLevelEvent(event))
-            this._lastFrame._addTimeForCategory(WebInspector.TimelineUIUtils.eventStyle(event).category.name, event.selfTime);
 
         if (event.args["layerTreeId"] !== this._layerTreeId)
             return;
@@ -453,27 +441,12 @@ WebInspector.TracingTimelineFrameModel.prototype = {
         var timestamp = event.startTime;
         var selfTime = event.selfTime || 0;
 
-        if (!this._hasThreadedCompositing) {
-            if (event.name === eventNames.BeginMainThreadFrame)
-                this._startMainThreadFrame(timestamp, event.args["data"] && event.args["data"]["frameId"]);
-            if (!this._lastFrame)
-                return;
-            if (!selfTime)
-                return;
-
-            var categoryName = WebInspector.TimelineUIUtils.eventStyle(event).category.name;
-            this._lastFrame._addTimeForCategory(categoryName, selfTime);
-            if (event.name === eventNames.Paint && event.args["data"]["layerId"] && event.picture && this._target)
-                this._lastFrame.paints.push(new WebInspector.LayerPaintEvent(event, this._target));
-            return;
-        }
-
         if (WebInspector.TracingModel.isTopLevelEvent(event)) {
             this._currentTaskTimeByCategory = {};
             this._lastTaskBeginTime = event.startTime;
         }
         if (!this._framePendingCommit && WebInspector.TracingTimelineFrameModel._mainFrameMarkers.indexOf(event.name) >= 0)
-            this._framePendingCommit = new WebInspector.PendingFrame(this._lastTaskBeginTime, this._currentTaskTimeByCategory);
+            this._framePendingCommit = new WebInspector.PendingFrame(this._lastTaskBeginTime || event.startTime, this._currentTaskTimeByCategory);
         if (!this._framePendingCommit) {
             this._addTimeForCategory(this._currentTaskTimeByCategory, event);
             return;

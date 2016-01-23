@@ -1194,6 +1194,12 @@ WebInspector.initializeUIUtils = function(document, themeSetting)
     if (!WebInspector.themeSupport)
         WebInspector.themeSupport = new WebInspector.ThemeSupport(themeSetting);
     WebInspector.themeSupport.applyTheme(document);
+
+    var body = /** @type {!Element} */ (document.body);
+    WebInspector.appendStyle(body, "ui/inspectorStyle.css");
+    WebInspector.appendStyle(body, "ui/popover.css");
+    WebInspector.appendStyle(body, "ui/sidebarPane.css");
+
 }
 
 /**
