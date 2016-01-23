@@ -768,6 +768,11 @@ WebInspector._isTextEditingElement = function(element)
  */
 WebInspector.setCurrentFocusElement = function(x)
 {
+    // this is an edge case of restoring focus to already removed element from document
+    if (!document.body.contains(x)) {
+        x = null;
+    }
+
     if (WebInspector._glassPane && x && !WebInspector._glassPane.element.isAncestor(x))
         return;
     if (WebInspector._currentFocusElement !== x)
