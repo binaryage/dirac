@@ -49,12 +49,13 @@
      :message (:type message)}))
 
 (defmethod process-message :eval-js [message]
-  (go
-    ; there might be some output printing messages in flight in the tunnel, so we give the tunnel some time to process them TODO: make this configurable
-    (<! (timeout 100))
-    (let [result (<! (eval/wrap-with-postprocess-and-eval-in-debugger-context (:code message)))]                              ; posprocessing step will prepare suitable result structure for us
-      {:op    :result
-       :value (massage-result result)})))
+  (let [options (ws-client/get-options @current-client)]
+    (go
+      ; there might be some output printing messages in flight in the tunnel, so we give the tunnel some time to process them
+      (<! (timeout (or (:pre-eval-delay options) 100)))
+      (let [result (<! (eval/wrap-with-postprocess-and-eval-in-debugger-context (:code message)))]                            ; posprocessing step will prepare suitable result structure for us
+        {:op    :result
+         :value (massage-result result)}))))
 
 ; -- connection -------------------------------------------------------------------------------------------------------------
 

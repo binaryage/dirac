@@ -18,9 +18,6 @@
 (def ^:dynamic *last-connection-url* nil)
 (def ^:dynamic *last-connect-fn-id* 0)
 
-(def weasel-options
-  {:verbose true})
-
 (defn ^:dynamic missing-cljs-devtools-message []
   (str "Dirac DevTools requires runtime support from the page context.\n"
        "Please install cljs-devtools into your app => https://github.com/binaryage/dirac#installation."))
@@ -30,8 +27,8 @@
        ", but your cljs-devtools is v" current-api ".\n"
        "Please ugrade your cljs-devtools installation in page => https://github.com/binaryage/cljs-devtools."))
 
-(defn ^:dynamic failed-to-retrieve-client-config-message []
-  (str "Failed to retrive client-side Dirac config. This is an unexpected error."))
+(defn ^:dynamic failed-to-retrieve-client-config-message [where]
+  (str "Failed to retrive client-side Dirac config (" where "). This is an unexpected error."))
 
 (def ^:const EXPONENTIAL_BACKOFF_CEILING (* 60 1000))
 
@@ -75,8 +72,16 @@
   (set! *last-prompt-banner* banner)
   (console/set-prompt-banner! *last-prompt-banner*))
 
-(defn connect-to-weasel-server [url]
-  (weasel-client/connect! url weasel-options))
+(defn connect-to-weasel-server! [url]
+  (go
+    (if-let [client-config (<! (eval/get-dirac-client-config))]
+      (do
+        (let [weasel-options (utils/remove-nil-values {:verbose        (:dirac-weasel-verbose client-config)
+                                                       :auto-connect   (:dirac-weasel-auto-connect client-config)
+                                                       :pre-eval-delay (:dirac-weasel-pre-eval-delay client-config)})]
+          (info (str "Connecting to a weasel server at " url ". Weasel options:") weasel-options)
+          (weasel-client/connect! url weasel-options)))
+      (display-prompt-status (failed-to-retrieve-client-config-message "in connect-to-weasel-server!")))))
 
 (defn on-error-handler [url _client event]
   (display-prompt-status (str "Unable to connect to Dirac Agent at " url)))
@@ -101,12 +106,13 @@
   (when-not *last-connection-url*
     (set! *last-connection-url* url)
     (try
-      (let [options {:on-error          (partial on-error-handler url)
-                     :next-reconnect-fn next-connect-fn
-                     :verbose           verbose?
-                     :auto-connect      auto-connect?
-                     :response-timeout  response-timeout}]
-        (nrepl-tunnel-client/connect! url (utils/remove-nil-values options)))
+      (let [tunnel-options (utils/remove-nil-values {:on-error          (partial on-error-handler url)
+                                                     :next-reconnect-fn next-connect-fn
+                                                     :verbose           verbose?
+                                                     :auto-connect      auto-connect?
+                                                     :response-timeout  response-timeout})]
+        (info (str "Connecting to a nREPL tunnel at " url ". Tunnel options:") tunnel-options)
+        (nrepl-tunnel-client/connect! url tunnel-options))
       (catch :default e
         (display-prompt-status (str "Unable to connect to Dirac Agent at " url ":\n" e))
         (throw e)))))
@@ -133,7 +139,7 @@
               auto-connect? (:dirac-agent-auto-connect client-config)
               response-timeout (:dirac-agent-response-timeout client-config)]
           (connect-to-nrepl-tunnel-server agent-url verbose? auto-connect? response-timeout)))
-      (display-prompt-status (failed-to-retrieve-client-config-message)))))
+      (display-prompt-status (failed-to-retrieve-client-config-message "in start-repl!")))))
 
 (defn init-repl! []
   (when-not *last-connection-url*
@@ -169,6 +175,6 @@
   (let [{:keys [server-url ns]} message]
     (assert server-url (str "expected :server-url in :bootstrap-info message" message))
     (assert ns (str "expected :ns in :bootstrap-info message" message))
-    (connect-to-weasel-server server-url)
-    (console/set-repl-ns! ns))
+    (console/set-repl-ns! ns)
+    (connect-to-weasel-server! server-url))
   nil)

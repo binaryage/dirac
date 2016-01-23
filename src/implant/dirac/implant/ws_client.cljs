@@ -5,7 +5,7 @@
             [goog.net.WebSocket :as gws]))
 
 (def defaults {:name              "WebSocket Client"
-               :verbose           true
+               :verbose           false
                :auto-reconnect?   false
                :next-reconnect-fn (fn [_attempt] (* 10 1000))})
 
