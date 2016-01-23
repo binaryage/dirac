@@ -27,10 +27,9 @@ RELEASES="$ROOT/releases"
 RELEASE_BUILD="$ROOT/resources/release"
 RELEASE_BUILD_COMPILED="$RELEASE_BUILD/compiled"
 CSS_PROPERTIES_SOURCE="$CHROMIUM_MIRROR_DEVTOOLS_DIR/../core/css/CSSProperties.in"
-CSS_PROPERTIES_COPY="$DEVTOOLS_ROOT/CSSProperties.in"
 CSS_PROPERTIES_OUTPUT_FILE="$DEVTOOLS_ROOT/front_end/SupportedCSSProperties.js"
 INSPECTOR_BACKEND_COMMANDS_OUTPUT_FILE="$DEVTOOLS_ROOT/front_end/InspectorBackendCommands.js"
 SCRIPTS="$ROOT/scripts"
 DIFF_WORK_DIR="$ROOT/../diff-upstream"
 
-popd .
+popd
