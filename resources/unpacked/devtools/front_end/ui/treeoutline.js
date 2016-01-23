@@ -323,6 +323,7 @@ function TreeOutlineInShadow()
     // Redefine element to the external one.
     this.element = createElement("div");
     this._shadowRoot = WebInspector.createShadowRootWithCoreStyles(this.element, "ui/treeoutline.css");
+    WebInspector.appendStyle(this._shadowRoot, "ui/treeoutline-dirac.css");
     this._disclosureElement = this._shadowRoot.createChild("div", "tree-outline-disclosure");
     this._disclosureElement.appendChild(innerElement);
     this._renderSelection = true;

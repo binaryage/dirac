@@ -1,0 +1,16 @@
+:host-context(.console-message) .tree-outline li {
+    min-height: 10px; /* min-height: 16px; was causing fat line in console if tree-outline was used */
+}
+
+/* do not apply padding to tree-outline when hosted in .console-message */
+:host-context(.console-message) {
+   padding: 0px;
+}
+
+:host-context(.console-message) .object-properties-section-root-element::before {
+    -webkit-mask-position: -4px -96px !important;
+}
+
+:host-context(.console-message) .object-properties-section-root-element.expanded::before {
+    -webkit-mask-position: -20px -96px !important;
+}
