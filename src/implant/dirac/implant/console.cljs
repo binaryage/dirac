@@ -3,7 +3,11 @@
             [chromex.logging :refer-macros [log warn error group group-end]]))
 
 (defn get-console-view []
-  (oget js/window "WebInspector" "ConsolePanel" "_instanceObject" "_view"))                                                   ; TODO: do some sanity checks here
+  (if-let [console-panel (oget js/window "WebInspector" "ConsolePanel")]
+    (if-let [console-view (ocall console-panel "_view")]
+      console-view
+      (warn "Dirac: Unable to obtain console view from DevTools"))
+    (warn "Dirac: Unable to obtain console panel from DevTools")))
 
 (defn set-repl-ns! [ns-name]
   (if-let [console-view (get-console-view)]
