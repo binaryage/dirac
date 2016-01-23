@@ -30,5 +30,6 @@ CSS_PROPERTIES_COPY="$DEVTOOLS_ROOT/CSSProperties.in"
 CSS_PROPERTIES_OUTPUT_FILE="$DEVTOOLS_ROOT/front_end/SupportedCSSProperties.js"
 INSPECTOR_BACKEND_COMMANDS_OUTPUT_FILE="$DEVTOOLS_ROOT/front_end/InspectorBackendCommands.js"
 SCRIPTS="$ROOT/scripts"
+DIFF_WORK_DIR="$ROOT/../diff-upstream"
 
 popd .
