@@ -2,6 +2,7 @@
 /resources/unpacked/devtools/front_end/dirac/compiled
 /resources/unpacked/devtools/front_end/SupportedCSSProperties.js
 /resources/unpacked/devtools/front_end/InspectorBackendCommands.js
+/resources/unpacked/devtools/CSSProperties.in
 /.lein-env
 .lein*
 .dev-chrome-profile
