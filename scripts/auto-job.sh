@@ -47,6 +47,8 @@ git clean -fd
 
 time ./scripts/fetch-devtools-branch.sh
 
+time ./scripts/diff-upstream.sh HEAD 1
+
 popd
 
 popd
