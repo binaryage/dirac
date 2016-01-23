@@ -5,7 +5,7 @@
             [goog.net.WebSocket :as gws]))
 
 (def defaults {:name              "WebSocket Client"
-               :verbose           false
+               :verbose?          false
                :auto-reconnect?   false
                :next-reconnect-fn (fn [_attempt] (* 10 1000))})
 
@@ -47,8 +47,8 @@
 ; -- sending ----------------------------------------------------------------------------------------------------------------
 
 (defn really-send! [client msg]
-  (let [{:keys [verbose]} (get-options client)]
-    (if verbose
+  (let [{:keys [verbose?]} (get-options client)]
+    (if verbose?
       (log client "Sending websocket message" msg))
     (let [serialized-msg (serialize-message msg)]
       (.send (get-connection client) serialized-msg))))
@@ -62,35 +62,35 @@
 ; -- connection -------------------------------------------------------------------------------------------------------------
 
 (defn on-open-handler [client]
-  (let [{:keys [verbose on-open]} (get-options client)]
+  (let [{:keys [verbose? on-open]} (get-options client)]
     (mark-as-ready! client)
-    (if (and verbose (ready? client))
+    (if (and verbose? (ready? client))
       (info client "Opened websocket connection"))
     (send! client {:op :ready})
     (if on-open
       (on-open client))))
 
 (defn on-message-handler [client event]
-  (let [{:keys [on-message verbose]} (get-options client)
+  (let [{:keys [on-message verbose?]} (get-options client)
         serialized-msg (.-message event)
         message (unserialize-message serialized-msg)]
-    (if verbose
+    (if verbose?
       (log client "Received websocket message" message))
     (if on-message
       (on-message client message))))
 
 (defn on-closed-handler [client]
-  (let [{:keys [on-close verbose]} (get-options client)]
-    (if (and verbose (ready? client))
+  (let [{:keys [on-close verbose?]} (get-options client)]
+    (if (and verbose? (ready? client))
       (info client "Closed websocket connection"))
     (if on-close
       (on-close client))
     (mark-as-not-ready! client)))
 
 (defn on-error-handler [client event]
-  (let [{:keys [on-error verbose]} (get-options client)]
+  (let [{:keys [on-error verbose?]} (get-options client)]
     (when (ready? client)
-      (if verbose
+      (if verbose?
         (error client "Encountered websocket error" event)))
     (if on-error
       (on-error client event))))
@@ -100,14 +100,14 @@
 
 (defn connect! [server-url & [opts]]
   (let [sanitized-opts (sanitize-opts opts)
-        {:keys [verbose auto-reconnect? next-reconnect-fn]} sanitized-opts
+        {:keys [verbose? auto-reconnect? next-reconnect-fn]} sanitized-opts
         web-socket (goog.net.WebSocket. auto-reconnect? next-reconnect-fn)
         client (make-client web-socket sanitized-opts)]
     (.listen web-socket gws/EventType.OPENED (partial on-open-handler client))
     (.listen web-socket gws/EventType.MESSAGE (partial on-message-handler client))
     (.listen web-socket gws/EventType.CLOSED (partial on-closed-handler client))
     (.listen web-socket gws/EventType.ERROR (partial on-error-handler client))
-    (if verbose
+    (if verbose?
       (info client "Connecting to server:" server-url "with options:" sanitized-opts))
     (.open web-socket server-url)
     client))

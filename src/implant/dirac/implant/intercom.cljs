@@ -76,9 +76,9 @@
   (go
     (if-let [client-config (<! (eval/get-dirac-client-config))]
       (do
-        (let [weasel-options (utils/remove-nil-values {:verbose        (:dirac-weasel-verbose client-config)
-                                                       :auto-connect   (:dirac-weasel-auto-connect client-config)
-                                                       :pre-eval-delay (:dirac-weasel-pre-eval-delay client-config)})]
+        (let [weasel-options (utils/remove-nil-values {:verbose?        (:dirac-weasel-verbose client-config)
+                                                       :auto-reconnect? (:dirac-weasel-auto-reconnect client-config)
+                                                       :pre-eval-delay  (:dirac-weasel-pre-eval-delay client-config)})]
           (info (str "Connecting to a weasel server at " url ". Weasel options:") weasel-options)
           (weasel-client/connect! url weasel-options)))
       (display-prompt-status (failed-to-retrieve-client-config-message "in connect-to-weasel-server!")))))
@@ -101,15 +101,15 @@
           (recur (dec remaining-time)))))
     time))
 
-(defn connect-to-nrepl-tunnel-server [url verbose? auto-connect? response-timeout]
+(defn connect-to-nrepl-tunnel-server [url verbose? auto-reconnect? response-timeout]
   {:pre [(string? url)]}
   (when-not *last-connection-url*
     (set! *last-connection-url* url)
     (try
       (let [tunnel-options (utils/remove-nil-values {:on-error          (partial on-error-handler url)
                                                      :next-reconnect-fn next-connect-fn
-                                                     :verbose           verbose?
-                                                     :auto-connect      auto-connect?
+                                                     :verbose?          verbose?
+                                                     :auto-reconnect?   auto-reconnect?
                                                      :response-timeout  response-timeout})]
         (info (str "Connecting to a nREPL tunnel at " url ". Tunnel options:") tunnel-options)
         (nrepl-tunnel-client/connect! url tunnel-options))
@@ -136,9 +136,9 @@
         (let [{:keys [dirac-agent-host dirac-agent-port]} client-config
               agent-url (ws-url dirac-agent-host dirac-agent-port)
               verbose? (:dirac-agent-verbose client-config)
-              auto-connect? (:dirac-agent-auto-connect client-config)
+              auto-reconnect? (:dirac-agent-auto-reconnect client-config)
               response-timeout (:dirac-agent-response-timeout client-config)]
-          (connect-to-nrepl-tunnel-server agent-url verbose? auto-connect? response-timeout)))
+          (connect-to-nrepl-tunnel-server agent-url verbose? auto-reconnect? response-timeout)))
       (display-prompt-status (failed-to-retrieve-client-config-message "in start-repl!")))))
 
 (defn init-repl! []

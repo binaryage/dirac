@@ -133,6 +133,7 @@
                       :on-open          on-open-handler
                       :on-close         on-close-handler
                       :on-error         on-error-handler
+                      :auto-reconnect?  true
                       :response-timeout 5000}
         effective-opts (merge default-opts opts)
         _client (ws-client/connect! server-url effective-opts)]                                                               ; client will be set into current-client in on-open-handler
