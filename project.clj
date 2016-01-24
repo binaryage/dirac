@@ -52,14 +52,14 @@
              {:dependencies [[binaryage/chromex "0.2.0"]
                              [binaryage/devtools "0.4.1"]
                              [cljs-http "0.1.39"]
-                             [figwheel "0.5.0-3"]
+                             [figwheel "0.5.0-4"]
                              [reforms "0.4.3"]
                              [rum "0.6.0" :scope "provided"]
                              [rum-reforms "0.4.3"]
                              [parinfer "0.2.3"]
                              [com.lucasbradstreet/cljs-uuid-utils "1.0.2"]]
               :plugins      [[lein-cljsbuild "1.1.0"]
-                             [lein-figwheel "0.5.0-3"]]}
+                             [lein-figwheel "0.5.0-4"]]}
 
              :test
              {:dependencies [[http.async.client "1.1.0"]
