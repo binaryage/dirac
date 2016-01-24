@@ -185,11 +185,16 @@ Now install [Dirac Chrome Extension](https://chrome.google.com/webstore/detail/d
 
 Chrome should keep it up-to-date for you.
 
-##### Make sure you have cljs-devtools installed in your page
+##### Install cljs-devtools with dirac feature enabled
 
 Please follow [cljs-devtools](https://github.com/binaryage/cljs-devtools) installation instructions to include the latest version in your page.
 Also make sure that you call `(devtools/enable-feature! :dirac)` before `(devtools/install!)` - Dirac feature is not
 enabled by default!
+
+```clojure
+(devtools/enable-feature! :dirac)
+(devtools/install!)
+```
 
 ##### Start nREPL server
 
