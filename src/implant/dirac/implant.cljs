@@ -11,7 +11,7 @@
   (when-not *initialized*
     (set! *initialized* true)
     (intercom/init!)
-    (eval/start-eval-request-queue-processing!)))
+    (eval/start-eval-request-queue-processing-loop!)))
 
 (defn ^:export init-repl []
   (intercom/init-repl!))

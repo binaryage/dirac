@@ -9,7 +9,7 @@
             [chromex.logging :refer-macros [log info warn error]]
             [dirac.implant.eval :as eval]))
 
-(def required-dirac-api-version 1)
+(def required-dirac-api-version 2)
 
 (def ^:dynamic *repl-connected* false)
 (def ^:dynamic *repl-bootstrapped* false)
@@ -19,37 +19,36 @@
 (def ^:dynamic *last-connection-url* nil)
 (def ^:dynamic *last-connect-fn-id* 0)
 
-(defn ^:dynamic missing-cljs-devtools-message []
-  (str "Dirac DevTools requires runtime support from the page context.\n"
-       "Please <a href=\"https://github.com/binaryage/dirac#installation\">install cljs-devtools</a> into your app."))
-
-(defn ^:dynamic old-cljs-devtools-message [current-api required-api]
+(defn ^:dynamic old-cljs-devtools-msg [current-api required-api]
   (str "Obsolete cljs-devtools version detected. Dirac DevTools requires Dirac API v" required-api ", "
        "but your cljs-devtools is v" current-api ".\n"
-       "Please ugrade your cljs-devtools installation in page => https://github.com/binaryage/cljs-devtools."))
+       "Please <a href=\"https://github.com/binaryage/cljs-devtools\">ugrade your cljs-devtools</a> in your app."))
 
-(defn ^:dynamic failed-to-retrieve-client-config-message [where]
+(defn ^:dynamic failed-to-retrieve-client-config-msg [where]
   (str "Failed to retrive client-side Dirac config (" where "). This is an unexpected error."))
 
-(defn ^:dynamice unable-to-bootstrap-message []
-  (str "Unable to bootstrap CLJS REPL due to a timeout. This is usually a case when server side process "
-       "raised an exception or crashed. Check your nREPL console."))
+(defn ^:dynamice unable-to-bootstrap-msg []
+  (str "Unable to bootstrap ClojureScript REPL due to a timeout.\n"
+       "This is usually a case when server side process raised an exception or crashed.\n"
+       "Check your Dirac Agent server console."))
 
-(defn ^:dynamic bootstrap-error-message []
-  (str "Unable to bootstrap CLJS REPL due to an error. Check your nREPL console."))
+(defn ^:dynamic bootstrap-error-msg []
+  (str "Unable to bootstrap ClojureScript REPL due to an error.\n"
+       "Check your Dirac Agent server console."))
 
-(defn ^:dynamic unable-to-connect-exception-message [url e]
-  (str "Unable to connect to Dirac Agent at " url ":\n" e))
+(defn ^:dynamic unable-to-connect-exception-msg [url e]
+  (str "Unable to connect to Dirac Agent at " url ":\n"
+       e))
 
-(defn ^:dynamic will-reconnect-banner-message [remaining-time]
-  (str "will try reconnect in " remaining-time " seconds"))
-
-(defn ^:dynamic dirac-agent-disconnected-message [tunnel-url]
+(defn ^:dynamic dirac-agent-disconnected-msg [tunnel-url]
   (str "<b>Dirac Agent is not listening</b> at " tunnel-url " "
        "(<a href=\"https://github.com/binaryage/dirac#start-dirac-agent\">need help?</a>)."))
 
-(defn ^:dynamic dirac-agent-connected-message []
-  (str "Dirac Agent connected. Bootstrapping cljs REPL..."))
+(defn ^:dynamic dirac-agent-connected-msg []
+  (str "Dirac Agent connected. Bootstrapping ClojureScript REPL..."))
+
+(defn ^:dynamic will-reconnect-banner-msg [remaining-time]
+  (str "will try reconnect in " remaining-time " seconds"))
 
 ; -- prompt status ----------------------------------------------------------------------------------------------------------
 
@@ -81,29 +80,35 @@
 (defn on-client-change [_key _ref _old new]
   (if (nil? new)
     (do
-      (display-prompt-status (dirac-agent-disconnected-message *last-connection-url*))
+      (display-prompt-status (dirac-agent-disconnected-msg *last-connection-url*))
       (set! *repl-bootstrapped* false)
       (set! *repl-connected* false))
     (do
-      (display-prompt-status (dirac-agent-connected-message) :info)
+      (display-prompt-status (dirac-agent-connected-msg) :info)
       (set! *repl-connected* true)))
   (update-repl-mode!))
 
 ; -- message processing -----------------------------------------------------------------------------------------------------
 
+(defn configure-eval! [client-config]
+  (eval/update-config! (assoc client-config
+                         :display-user-info-fn eval/console-info
+                         :display-user-error-fn eval/console-error)))
+
 (defn init! []
-  (add-watch nrepl-tunnel-client/current-client ::client-observer on-client-change))
+  (add-watch nrepl-tunnel-client/current-client ::client-observer on-client-change)
+  (configure-eval! {}))
 
 (defn connect-to-weasel-server! [url]
   (go
     (if-let [client-config (<! (eval/get-dirac-client-config))]
       (do
-        (let [weasel-options (utils/remove-nil-values {:verbose?        (:dirac-weasel-verbose client-config)
-                                                       :auto-reconnect? (:dirac-weasel-auto-reconnect client-config)
-                                                       :pre-eval-delay  (:dirac-weasel-pre-eval-delay client-config)})]
+        (let [weasel-options (utils/remove-nil-values {:verbose?        (:weasel-verbose client-config)
+                                                       :auto-reconnect? (:weasel-auto-reconnect client-config)
+                                                       :pre-eval-delay  (:weasel-pre-eval-delay client-config)})]
           (info (str "Connecting to a weasel server at " url ". Weasel options:") weasel-options)
           (weasel-client/connect! url weasel-options)))
-      (display-prompt-status (failed-to-retrieve-client-config-message "in connect-to-weasel-server!")))))
+      (display-prompt-status (failed-to-retrieve-client-config-msg "in connect-to-weasel-server!")))))
 
 (defn on-error-handler [url _client _event]
   (display-prompt-status (str "Unable to connect to Dirac Agent at " url)))
@@ -117,7 +122,7 @@
         time-in-seconds (int (/ prev-time step))]
     (go-loop [remaining-time time-in-seconds]
       (when (pos? remaining-time)
-        (update-prompt-banner (will-reconnect-banner-message remaining-time))
+        (update-prompt-banner (will-reconnect-banner-msg remaining-time))
         (<! (timeout step))
         (if (= id *last-connect-fn-id*)
           (recur (dec remaining-time)))))
@@ -136,7 +141,7 @@
         (info (str "Connecting to a nREPL tunnel at " url ". Tunnel options:") tunnel-options)
         (nrepl-tunnel-client/connect! url tunnel-options))
       (catch :default e
-        (display-prompt-status (unable-to-connect-exception-message url e))
+        (display-prompt-status (unable-to-connect-exception-msg url e))
         (throw e)))))
 
 (defn send-eval-request! [job-id code]
@@ -155,13 +160,13 @@
     (if-let [client-config (<! (eval/get-dirac-client-config))]
       (do
         (info "Starting REPL support. Dirac client-side config is " client-config)
-        (let [{:keys [dirac-agent-host dirac-agent-port]} client-config
-              agent-url (ws-url dirac-agent-host dirac-agent-port)
-              verbose? (:dirac-agent-verbose client-config)
-              auto-reconnect? (:dirac-agent-auto-reconnect client-config)
-              response-timeout (:dirac-agent-response-timeout client-config)]
+        (configure-eval! client-config)
+        (let [agent-url (ws-url (:agent-host client-config) (:agent-port client-config))
+              verbose? (:agent-verbose client-config)
+              auto-reconnect? (:agent-auto-reconnect client-config)
+              response-timeout (:agent-response-timeout client-config)]
           (connect-to-nrepl-tunnel-server agent-url verbose? auto-reconnect? response-timeout)))
-      (display-prompt-status (failed-to-retrieve-client-config-message "in start-repl!")))))
+      (display-prompt-status (failed-to-retrieve-client-config-msg "in start-repl!")))))
 
 (defn init-repl! []
   (when-not *last-connection-url*
@@ -170,8 +175,8 @@
         (let [api-version (<! (eval/get-dirac-api-version))]
           (if-not (< api-version required-dirac-api-version)
             (start-repl!)
-            (display-prompt-status (old-cljs-devtools-message api-version required-dirac-api-version))))
-        (display-prompt-status (missing-cljs-devtools-message))))))
+            (display-prompt-status (old-cljs-devtools-msg api-version required-dirac-api-version))))
+        (display-prompt-status (eval/missing-cljs-devtools-message))))))
 
 ; -- message processing -----------------------------------------------------------------------------------------------------
 
@@ -185,10 +190,10 @@
                  (update-repl-mode!)
                  {:op :bootstrap-done})
         "timeout" (do
-                    (display-prompt-status (unable-to-bootstrap-message))
+                    (display-prompt-status (unable-to-bootstrap-msg))
                     {:op :bootstrap-timeout})
         (do
-          (display-prompt-status (bootstrap-error-message))
+          (display-prompt-status (bootstrap-error-msg))
           {:op :bootstrap-error})))))
 
 (defmethod nrepl-tunnel-client/process-message :bootstrap-info [_client message]
