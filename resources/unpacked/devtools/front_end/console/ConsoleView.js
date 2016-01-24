@@ -217,6 +217,7 @@ WebInspector.ConsoleView = function()
 
     this._consolePromptIndexSetting = WebInspector.settings.createLocalSetting("consolePromptIndex", 0);
 
+    this.setDiracPromptMode("status");
     var that = this;
     setTimeout(function() {
         that._switchToLastPrompt();
