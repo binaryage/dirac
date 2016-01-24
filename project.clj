@@ -73,7 +73,6 @@
                                            :output-dir           "resources/unpacked/devtools/front_end/dirac/compiled/implant"
                                            :asset-path           "dirac/_compiled/implant"
                                            :optimizations        :none
-                                           :parallel-build       true
                                            :compiler-stats       true
                                            :source-map           true
                                            :source-map-timestamp true}}
@@ -87,7 +86,6 @@
                                            :output-dir           "resources/unpacked/compiled/background"
                                            :asset-path           "compiled/background"
                                            :optimizations        :none
-                                           :parallel-build       true
                                            :compiler-stats       true
                                            :source-map           true
                                            :source-map-timestamp true}}
@@ -100,7 +98,6 @@
                                            :output-dir           "resources/unpacked/compiled/options"
                                            :asset-path           "compiled/options"
                                            :optimizations        :none
-                                           :parallel-build       true
                                            :compiler-stats       true
                                            :source-map           true
                                            :source-map-timestamp true}}}}}
@@ -121,7 +118,6 @@
                                            :output-dir     "resources/unpacked/devtools/front_end/dirac/compiled"
                                            :asset-path     "dirac/_compiled/implant"
                                            :optimizations  :advanced
-                                           :parallel-build true
                                            :elide-asserts  true
                                            :compiler-stats true}}
                            :background
@@ -132,7 +128,6 @@
                                            :output-dir     "resources/release/compiled/background"
                                            :asset-path     "compiled/background"
                                            :optimizations  :advanced
-                                           :parallel-build true
                                            :elide-asserts  true
                                            :compiler-stats true}}
                            :options
@@ -143,7 +138,6 @@
                                            :output-dir     "resources/release/compiled/options"
                                            :asset-path     "compiled/options"
                                            :optimizations  :advanced
-                                           :parallel-build true
                                            :elide-asserts  true
                                            :compiler-stats true}}}}}
 
