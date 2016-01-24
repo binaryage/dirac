@@ -7,8 +7,8 @@
   :scm {:name "git"
         :url  "https://github.com/binaryage/dirac"}
 
-  :dependencies [[org.clojure/clojure "1.8.0"]
-                 [org.clojure/clojurescript "1.7.228"]
+  :dependencies [[org.clojure/clojure "1.8.0" :scope "provided"]
+                 [org.clojure/clojurescript "1.7.228" :scope "provided"]
                  [org.clojure/core.async "0.2.374"]
                  [org.clojure/tools.logging "0.3.1"]
                  [org.clojure/tools.cli "0.3.3"]
@@ -50,16 +50,17 @@
 
   :profiles {:cljs
              {:dependencies [[binaryage/chromex "0.2.0"]
-                             [binaryage/devtools "0.4.1"]
+                             [binaryage/devtools "0.5.2"]
                              [cljs-http "0.1.39"]
                              [figwheel "0.5.0-4"]
                              [reforms "0.4.3"]
-                             [rum "0.6.0" :scope "provided"]
+                             [rum "0.6.0"]
                              [rum-reforms "0.4.3"]
                              [parinfer "0.2.3"]
                              [com.lucasbradstreet/cljs-uuid-utils "1.0.2"]]
-              :plugins      [[lein-cljsbuild "1.1.0"]
-                             [lein-figwheel "0.5.0-4"]]}
+              :plugins      [[lein-cljsbuild "1.1.2"]
+                             [lein-figwheel "0.5.0-4"]]
+              :hooks        [leiningen.cljsbuild]}
 
              :test
              {:dependencies [[http.async.client "1.1.0"]
@@ -164,7 +165,7 @@
                                     "figwheel" "background" "options" "implant"]
             "release"              ["with-profile" "+packed,+cljs"
                                     "do" "clean,"
-                                    "cljsbuild" "once" "implant" "background" "options"]
+                                    "cljsbuild" "once" "background" "options" "implant"]
             "release-pseudo-names" ["with-profile" "+packed,+cljs,+pseudo-names"
                                     "do" "clean,"
                                     "cljsbuild" "once" "implant" "background" "options"]
