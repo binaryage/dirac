@@ -157,12 +157,12 @@ This is a proof that Dirac REPL can execute arbitrary ClojureScript code in the 
 Dirac integration with your project requires some effort and can be configured in many ways. I will first document
 standard configuration with Leiningen. In later sections we will discuss alternative and/or optional setups.
 
-Ingredients you definitely need:
+Here are the ingredients you are going to need:
 
 1. the [Dirac Chrome Extension](https://chrome.google.com/webstore/detail/dirac-devtools/kbkdngfljkchidcjpnfcgcokkbhlkogi) installed in your Chrome Canary
-1. the [cljs-devtools](https://github.com/binaryage/cljs-devtools), they must be installed in your page with `:dirac` feature installed
-1. an nREPL server and it has to be configured to include the Dirac nREPL middleware
-1. then you have to launch the Dirac Agent
+1. the [cljs-devtools](https://github.com/binaryage/cljs-devtools), the library must be installed in your page with `:dirac` feature enabled
+1. an nREPL server (+ Dirac nREPL middleware)
+1. the Dirac Agent
 
 I assume you went through the [demo section](#a-demo-time) above, so you roughly know what to expect.
 
@@ -178,7 +178,8 @@ As I wrote in the demo section, you probably want to run your Chrome Canary with
       --no-first-run \
       --user-data-dir=$A_PATH_TO_YOUR_USER_PROFILE_DIRECTORY
 
-Please note that `--remote-debugging-port` should be 9222 by default. But you can reconfigure it in the Dirac Extension `options page` if needed.
+Please note that `--remote-debugging-port` should be 9222 by default.
+But you can change it in the Dirac Extension `options page` if needed.
 
 Now install [Dirac Chrome Extension](https://chrome.google.com/webstore/detail/dirac-devtools/kbkdngfljkchidcjpnfcgcokkbhlkogi).
 
@@ -190,7 +191,7 @@ Please follow [cljs-devtools](https://github.com/binaryage/cljs-devtools) instal
 Also make sure that you call `(devtools/enable-feature! :dirac)` before `(devtools/install!)` - Dirac feature is not
 enabled by default!
 
-##### Configure and start an nREPL server
+##### Start nREPL server
 
 There are many ways how to start an nREPL server. We will use Leiningen's nREPL server here.
 
@@ -213,7 +214,7 @@ project dependencies. The configuration snippet could look something like this:
 I tend to put this extra config under `:dev` profile in my `project.clj` files
 (see an [example here](https://github.com/binaryage/cljs-devtools-sample/blob/master/project.clj)).
 
-##### Start the Dirac Agent
+##### Start Dirac Agent
 
 Dirac Agent is a piece of server software which connects to an existing nREPL server and acts as a proxy which
 provides nREPL connections to the browser.

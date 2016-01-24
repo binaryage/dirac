@@ -172,7 +172,7 @@ WebInspector.ConsoleView = function()
         var diracHistoryData = this._diracHistorySetting.get();
         diracPrompt.setHistoryData(diracHistoryData);
 
-        var statusElement = diracPromptElement.createChild("div", "source-code");
+        var statusElement = diracPromptElement.createChild("div");
         statusElement.id = "console-status-dirac";
 
         var statusBannerElement = statusElement.createChild("div", "status-banner");
@@ -476,16 +476,30 @@ WebInspector.ConsoleView.prototype = {
         this._filterStatusMessageElement.style.display = this._hiddenByFilterCount ? "" : "none";
     },
 
-    updateDiracPromptStatus: function(s) {
-        this._diracPromptDescriptor.statusContent.textContent = s;
+    setDiracPromptStatusContent: function(s) {
+        this._diracPromptDescriptor.statusContent.innerHTML = s;
     },
 
-    updateDiracPromptBanner: function(s) {
-        this._diracPromptDescriptor.statusBanner.textContent = s;
+    setDiracPromptStatusBanner: function(s) {
+        this._diracPromptDescriptor.statusBanner.innerHTML = s;
+    },
+
+    setDiracPromptStatusStyle: function(style) {
+       var knownStyles = ["error", "info"];
+       if (knownStyles.indexOf(style)==-1) {
+         console.warn("unknown style passed to setDiracPromptStatusStyle:", style);
+       }
+       for (var i = 0; i < knownStyles.length; i++) {
+         var s = knownStyles[i];
+         this._diracPromptDescriptor.status.classList.toggle("dirac-prompt-status-"+s, style==s);
+       }
     },
 
     setDiracPromptMode: function(mode) {
        var knownModes = ["edit", "status"];
+       if (knownModes.indexOf(mode)==-1) {
+         console.warn("unknown mode passed to setDiracPromptMode:", mode);
+       }
        for (var i = 0; i < knownModes.length; i++) {
          var m = knownModes[i];
          this._diracPromptDescriptor.element.classList.toggle("dirac-prompt-mode-"+m, mode==m);
@@ -503,7 +517,7 @@ WebInspector.ConsoleView.prototype = {
         promptDescriptor.codeMirror.setOption("placeholder", label);
     },
 
-    setDiracReplNS: function(name)
+    setDiracPromptNS: function(name)
     {
         this._currentNs = name;
         this._refreshNs();

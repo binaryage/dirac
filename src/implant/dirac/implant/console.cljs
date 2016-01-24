@@ -9,10 +9,6 @@
       (warn "Dirac: Unable to obtain console view from DevTools"))
     (warn "Dirac: Unable to obtain console panel from DevTools")))
 
-(defn set-repl-ns! [ns-name]
-  (if-let [console-view (get-console-view)]
-    (ocall console-view "setDiracReplNS" ns-name)))
-
 (defn announce-job-start! [job-id info]
   (group (str "nREPL JOB #" job-id) info)
   (if-let [console-view (get-console-view)]
@@ -23,14 +19,30 @@
   (if-let [console-view (get-console-view)]
     (ocall console-view "onJobEnded" job-id)))
 
+(defn set-prompt-ns! [ns-name]
+  (if-let [console-view (get-console-view)]
+    (ocall console-view "setDiracPromptNS" ns-name)))
+
 (defn set-prompt-mode! [mode]
-  (if-let [console-view (get-console-view)]
-    (ocall console-view "setDiracPromptMode" mode)))
+  (let [mode (name mode)]
+    (assert (#{"status" "edit"} mode))
+    (if-let [console-view (get-console-view)]
+      (ocall console-view "setDiracPromptMode" (name mode)))))
 
-(defn set-prompt-status! [status]
+;
+(defn set-prompt-status-content! [status]
+  {:pre [(string? status)]}
   (if-let [console-view (get-console-view)]
-    (ocall console-view "updateDiracPromptStatus" status)))
+    (ocall console-view "setDiracPromptStatusContent" status)))
 
-(defn set-prompt-banner! [banner]
+; banner is an overlay text on the right side of prompt in "status" mode
+(defn set-prompt-status-banner! [banner]
+  {:pre [(string? banner)]}
   (if-let [console-view (get-console-view)]
-    (ocall console-view "updateDiracPromptBanner" banner)))
+    (ocall console-view "setDiracPromptStatusBanner" banner)))
+
+(defn set-prompt-status-style! [style]
+  (let [style (name style)]
+    (assert (#{"error" "info"} style))
+    (if-let [console-view (get-console-view)]
+      (ocall console-view "setDiracPromptStatusStyle" style))))

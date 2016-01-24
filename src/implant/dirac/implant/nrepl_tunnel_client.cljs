@@ -86,7 +86,7 @@
       ; we have our own output recoding based on recording driver, sent via :print-output message
       out nil                                                                                                                 ; (eval/present-output id "stdout" out)
       err nil                                                                                                                 ; (eval/present-output id "stderr" err)
-      ns (console/set-repl-ns! ns)
+      ns (console/set-prompt-ns! ns)
       status (when id
                (deliver-response message)                                                                                     ; *** (see pending-messages above)
                (console/announce-job-end! id))

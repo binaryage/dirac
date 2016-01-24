@@ -90,9 +90,19 @@
 }
 
 #console-status-dirac .status-content {
-   font-weight: bold;
+  font-style: italic;
+}
+
+#console-status-dirac.dirac-prompt-status-info .status-content,
+#console-status-dirac.dirac-prompt-status-info .status-content a {
+   color: #00f;
+}
+
+#console-status-dirac.dirac-prompt-status-error .status-content,
+#console-status-dirac.dirac-prompt-status-error .status-content a {
    color: #f00;
 }
+
 
 @media (-webkit-min-device-pixel-ratio: 1.5) {
 #console-prompt-dirac::before {
