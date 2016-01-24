@@ -60,9 +60,6 @@ function evalInCurrentContext(code, callback) {
   var currentExecutionContext = WebInspector.context.flavor(WebInspector.ExecutionContext);
   if (currentExecutionContext) {
     var resultCallback = function(result, wasThrown, value, exceptionDetails) {
-      if (wasThrown) {
-        console.error("evalInCurrentContext: ", exceptionDetails);
-      }
       if (callback) {
         callback(value, wasThrown, exceptionDetails);
       }
