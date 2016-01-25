@@ -60,13 +60,9 @@ mv "$PACKAGE_DIR/devtools/front_end/dirac/implant.js" "$PACKAGE_DIR/devtools/fro
 rm "$PACKAGE_DIR/devtools/front_end/dirac/goog-base-setup.js"
 rm "$PACKAGE_DIR/devtools/front_end/dirac/require-implant.js"
 
-#echo "'$PACKAGE_DIR' prepared for packing"
-#echo "  use Chrome's Window -> Extensions -> 'Pack extension...' to package it"
-#echo "  or => https://developer.chrome.com/extensions/packaging#packaging"
+sed -i "" -e "s/\"version\"\: \"0\.0\.1\"/\"version\": \"$VERSION\"/g" "$PACKAGE_DIR/manifest.json"
 
 pushd "$PACKAGE_DIR"
-
-# "$SCRIPTS/crxmake.sh" "$PACKAGE_DIR" ""
 
 (cd "$dir" && zip -qr -9 -X "$ZIP_NAME" .)
 
