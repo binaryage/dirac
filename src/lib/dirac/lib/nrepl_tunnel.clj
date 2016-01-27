@@ -55,13 +55,13 @@
 (defn ^:dynamic old-nrepl-middleware-msg [expected-version reported-version]
   (str "WARNING: The version of Dirac nREPL middleware is old. "
        "Expected '" expected-version "', got '" reported-version "'.\n"
-       "You probably want to review your nREPL server setup and bump binaryage/dirac version to '" expected-version "'.\n"
+       "You should review your nREPL server setup and bump binaryage/dirac version to '" expected-version "'.\n"
        "Please follow Dirac installation instructions: " nrepl-setup-doc-url "."))
 
 (defn ^:dynamic unknown-nrepl-middleware-msg [expected-version reported-version]
-  (str "WARNING: The version of Dirac nREPL middleware is unknown (too recent). "
+  (str "WARNING: The version of Dirac nREPL middleware is unexpectedly recent. "
        "Expected '" expected-version "', got '" reported-version "'.\n"
-       "You probably want to review your Dirac Agent setup and bump binaryage/dirac version to '" reported-version "'.\n"
+       "You should review your Dirac Agent setup and bump binaryage/dirac version to '" reported-version "'.\n"
        "Please follow Dirac installation instructions: " agent-setup-doc-url "."))
 
 ; -- NREPLTunnel constructor ------------------------------------------------------------------------------------------------
@@ -231,9 +231,9 @@
         {:keys [version]} identify-response]
     (log/debug "identify-dirac-nrepl-middleware response:" identify-response)
     (if version
-      (case (version-compare version lib/version)
-        -1 [:old (old-nrepl-middleware-msg lib/version version)]
-        1 [:unknown (unknown-nrepl-middleware-msg lib/version version)]
+      (case (version-compare lib/version version)
+        -1 [:unknown (unknown-nrepl-middleware-msg lib/version version)]
+        1 [:old (old-nrepl-middleware-msg lib/version version)]
         0 [:ok])
       [:missing (missing-nrepl-middleware-msg (nrepl-client/get-server-connection-url nrepl-client))])))
 
@@ -245,7 +245,7 @@
       (let [[status message] (check-nrepl-middleware! nrepl-client)]
         (case status
           :missing (throw (ex-info message {}))
-          (:old, :unknown) (log/warn message)
+          (:old :unknown) (log/warn message)
           nil))
       (let [nrepl-tunnel-server (nrepl-tunnel-server/create! tunnel (:nrepl-tunnel options))]
         (set-nrepl-client! tunnel nrepl-client)
