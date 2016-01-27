@@ -5,6 +5,7 @@
             [cljs-uuid-utils.core :as uuid]
             [dirac.implant.eval :as eval]
             [dirac.implant.ws-client :as ws-client]
+            [dirac.implant.version :as implant-version]
             [dirac.implant.console :as console]))
 
 (def current-client (atom nil))                                                                                               ; only one client can be connected as a time
@@ -133,6 +134,7 @@
                       :on-open          on-open-handler
                       :on-close         on-close-handler
                       :on-error         on-error-handler
+                      :ready-msg        {:version implant-version/version}
                       :auto-reconnect?  true
                       :response-timeout 5000}
         effective-opts (merge default-opts opts)
