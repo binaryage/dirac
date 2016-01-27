@@ -15,13 +15,13 @@
     true
     (catch Throwable e
       (let [message (.getMessage e)
-            _ (println message)
-            groups (re-matches #".*FileNotFoundException: Could not locate (.*).*" message)
-            filename (second groups)]
+            groups (if message (re-matches #".*FileNotFoundException: Could not locate (.*).*" message))
+            filename (if groups (second groups))]
+        (if message (println ">" message))
         (if filename
           (let [lib-name (first (string/split filename #"/"))]
             (println (str (dirac-require-failure-msg)
-                          "The problem is likely in missing library '" lib-name "' in your dependencies."
+                          "The problem is likely in missing library '" lib-name "' in your dependencies. "
                           "Also make sure you are using a recent version.\n")))
           (println (dirac-require-failure-msg) e "\n")))
       false)))
