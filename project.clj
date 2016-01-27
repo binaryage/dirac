@@ -164,11 +164,12 @@
             "fig"                  ["with-profile" "+unpacked,+cljs,+checkouts"
                                     "do" "clean,"
                                     "figwheel" "background" "options" "implant"]
-            "release"              ["with-profile" "+packed,+cljs"
+            "compile-release"              ["with-profile" "+packed,+cljs"
                                     "do" "clean,"
                                     "cljsbuild" "once" "background" "options" "implant"]
-            "release-pseudo-names" ["with-profile" "+packed,+cljs,+pseudo-names"
+            "compile-release-pseudo-names" ["with-profile" "+packed,+cljs,+pseudo-names"
                                     "do" "clean,"
                                     "cljsbuild" "once" "implant" "background" "options"]
+            "release"              ["shell" "scripts/release.sh"]
             "package"              ["shell" "scripts/package.sh"]
             "regenerate"           ["shell" "scripts/regenerate.sh"]})

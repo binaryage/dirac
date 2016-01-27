@@ -31,5 +31,9 @@ CSS_PROPERTIES_OUTPUT_FILE="$DEVTOOLS_ROOT/front_end/SupportedCSSProperties.js"
 INSPECTOR_BACKEND_COMMANDS_OUTPUT_FILE="$DEVTOOLS_ROOT/front_end/InspectorBackendCommands.js"
 SCRIPTS="$ROOT/scripts"
 DIFF_WORK_DIR="$ROOT/../diff-upstream"
+PROJECT_VERSION_FILE="src/project/dirac/version.clj"
+UNPACKED_MANIFEST_FILE="resources/unpacked/manifest.json"
+RELEASE_MANIFEST_FILE="resources/release/manifest.json"
+PROJECT_FILE="project.clj"
 
 popd
