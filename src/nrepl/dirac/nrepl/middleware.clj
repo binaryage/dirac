@@ -8,4 +8,8 @@
                  {:requires #{"clone"}
                   ; piggieback unconditionally hijacks eval and load-file
                   :expects  #{"eval" "load-file"}
-                  :handles  {}})
+                  :handles  {"identify-dirac-nrepl-middleware"
+                             {:doc "Checks for presence of Dirac nREPL middleware"
+                              :requires {}
+                              :optional {}
+                              :returns {"version" "Version of Dirac nREPL middleware."}}}})

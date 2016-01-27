@@ -6,12 +6,14 @@
             [dirac.agent.version :refer [version]]
             [dirac.lib.nrepl-tunnel :as nrepl-tunnel]
             [dirac.lib.utils :as utils])
-  (:import (java.net ConnectException)))
+  (:import (java.net ConnectException)
+           (clojure.lang ExceptionInfo)))
 
 (defn ^:dynamic failed-to-start-dirac-agent-message [max-boot-trials trial-display nrepl-server-url]
   (str "Failed to start Dirac Agent. "
-       "The nREPL server didn't come online in time. Made " max-boot-trials " connection attempts "
-       "over last " trial-display " seconds. Did you really start your nREPL server at " nrepl-server-url "? "
+       "The nREPL server didn't come online in time. "
+       "Made " max-boot-trials " connection attempts over last " trial-display " seconds.\n"
+       "Did you really start your nREPL server at " nrepl-server-url "? "
        "Maybe a firewall problem?"))
 
 ; -- DiracAgent construction  -----------------------------------------------------------------------------------------------
@@ -90,10 +92,13 @@
         (let [result (try
                        (log/info (str "Starting Dirac Agent (attempt #" trial ")"))
                        (create! config)
+                       (catch ExceptionInfo e                                                                                 ; for example missing nREPL middleware
+                         (log/error "ERROR:" (.getMessage e))
+                         :error)
                        (catch ConnectException _
                          ::retry)                                                                                             ; server might not be online yet
                        (catch Throwable e
-                         (log/error "Failed to create Dirac Agent:" e)                                                        ; ***
+                         (log/error "ERROR:" "Failed to create Dirac Agent:\n" e)                                             ; ***
                          ::error))]
           (case result
             true (let [agent @current-agent]
@@ -103,7 +108,7 @@
                    (println (get-agent-info agent))
                    true)                                                                                                      ; success
             false (do
-                    (log/error "Failed to start Dirac Agent.")
+                    (log/error "ERROR:" "Failed to start Dirac Agent.")
                     false)
             ::error false                                                                                                     ; error was already reported by ***
             ::retry (do

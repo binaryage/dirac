@@ -14,6 +14,7 @@
                  [org.clojure/tools.cli "0.3.3"]
                  [org.clojure/tools.nrepl "0.2.12"]
                  [clj-logging-config "1.9.12"]
+                 [version-clj "0.1.2"]
                  [environ "1.0.1"]
                  [http-kit "2.1.21-alpha2"]]
 

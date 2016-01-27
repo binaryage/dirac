@@ -16,6 +16,7 @@
             [cljs.env :as env]
             [cljs.analyzer :as ana]
             [dirac.nrepl.driver :as driver]
+            [dirac.nrepl.version :refer [version]]
             [clojure.tools.logging :as log])
   (:import clojure.lang.LineNumberingPushbackReader
            java.io.StringReader
@@ -207,20 +208,27 @@
 (defn- load-file [{:keys [session transport file-path] :as msg}]
   (evaluate (assoc msg :code (format "(load-file %s)" (pr-str file-path)))))
 
+(defn identify-dirac-nrepl-middleware [msg]
+  (let [{:keys [transport]} msg]
+    (transport/send transport (response-for msg
+                                            :version version))))
+
 (defn wrap-cljs-repl [handler]
   (fn [{:keys [session op] :as msg}]
-    (let [handler (or (when-let [f (and (@session #'*cljs-repl-env*)
-                                        ({"eval" #'evaluate "load-file" #'load-file} op))]
-                        (fn [msg] (enqueue msg #(f msg))))
-                      handler)]
-      ; ensure that bindings exist so cljs-repl can set!
-      (when-not (contains? @session #'*cljs-repl-env*)
-        (swap! session (partial merge {#'*cljs-repl-env*     *cljs-repl-env*
-                                       #'*cljs-compiler-env* *cljs-compiler-env*
-                                       #'*cljs-repl-options* *cljs-repl-options*
-                                       #'*original-clj-ns*   *original-clj-ns*
-                                       #'ana/*cljs-ns*       ana/*cljs-ns*})))
-      (handler msg))))
+    (case op
+      "identify-dirac-nrepl-middleware" (identify-dirac-nrepl-middleware msg)
+      (let [handler (or (when-let [f (and (@session #'*cljs-repl-env*)
+                                          ({"eval" #'evaluate "load-file" #'load-file} op))]
+                          (fn [msg] (enqueue msg #(f msg))))
+                        handler)]
+        ; ensure that bindings exist so cljs-repl can set!
+        (when-not (contains? @session #'*cljs-repl-env*)
+          (swap! session (partial merge {#'*cljs-repl-env*     *cljs-repl-env*
+                                         #'*cljs-compiler-env* *cljs-compiler-env*
+                                         #'*cljs-repl-options* *cljs-repl-options*
+                                         #'*original-clj-ns*   *original-clj-ns*
+                                         #'ana/*cljs-ns*       ana/*cljs-ns*})))
+        (handler msg)))))
 
 (defn send-bootstrap-info! [server-url]
   (log/trace "send-bootstrap-info!" server-url)

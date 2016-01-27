@@ -2,9 +2,11 @@
   (require [clojure.core.async :refer [chan <!! <! >!! put! alts!! timeout close! go go-loop]]
            [clojure.core.async.impl.protocols :as core-async]
            [clojure.tools.logging :as log]
+           [version-clj.core :refer [version-compare]]
            [dirac.lib.nrepl-protocols :refer [NREPLTunnelService]]
            [dirac.lib.nrepl-tunnel-server :as nrepl-tunnel-server]
            [dirac.lib.nrepl-client :as nrepl-client]
+           [dirac.lib.version :as lib]
            [dirac.lib.utils :as utils]))
 
 ; Unfortunately, we cannot easily implement full-blown nREPL client in Dirac DevTools.
@@ -42,6 +44,25 @@
 ;       ...        <-s->  [ nREPL client ] <-> [ nREPL tunnel server ]  <-ws->  [ nREPL tunnel client #2 ]
 ;                                                                       <-ws->  [ nREPL tunnel client #3 ]
 
+(def nrepl-setup-doc-url "https://github.com/binaryage/dirac#start-nrepl-server")
+(def agent-setup-doc-url "https://github.com/binaryage/dirac#start-dirac-agent")
+
+(defn ^:dynamic missing-nrepl-middleware-msg [url]
+  (str "Dirac nREPL middleware is not present in nREPL server at " url "!\n"
+       "Didn't you forget to add :nrepl-middleware [dirac.nrepl.middleware/dirac-repl] to your :repl-options?\n"
+       "Please follow Dirac installation instructions: " nrepl-setup-doc-url "."))
+
+(defn ^:dynamic old-nrepl-middleware-msg [expected-version reported-version]
+  (str "WARNING: The version of Dirac nREPL middleware is old. "
+       "Expected '" expected-version "', got '" reported-version "'.\n"
+       "You probably want to review your nREPL server setup and bump binaryage/dirac version to '" expected-version "'.\n"
+       "Please follow Dirac installation instructions: " nrepl-setup-doc-url "."))
+
+(defn ^:dynamic unknown-nrepl-middleware-msg [expected-version reported-version]
+  (str "WARNING: The version of Dirac nREPL middleware is unknown (too recent). "
+       "Expected '" expected-version "', got '" reported-version "'.\n"
+       "You probably want to review your Dirac Agent setup and bump binaryage/dirac version to '" reported-version "'.\n"
+       "Please follow Dirac installation instructions: " agent-setup-doc-url "."))
 
 ; -- NREPLTunnel constructor ------------------------------------------------------------------------------------------------
 
@@ -155,15 +176,15 @@
 ;
 
 (defn deliver-server-message! [tunnel message]
-  (let [channel (get-server-messages-channel tunnel)
-        receipt (promise)]
-    (if (core-async/closed? channel)
-      (log/warn (str tunnel) (str "An attempt to enqueue a message for nREPL server, but channel was already closed! => ignored\n")
-                (utils/pp message))
-      (log/trace (str tunnel) (str "Enqueue message " (utils/sid message) " to be sent to nREPL server:\n")
-                 (utils/pp message)))
-    (put! channel [message receipt])
-    receipt))
+  (if-let [channel (get-server-messages-channel tunnel)]                                                                      ; we silently ignore messages when channel is not yet set (during initialization)
+    (let [receipt (promise)]
+      (if (core-async/closed? channel)
+        (log/warn (str tunnel) (str "An attempt to enqueue a message for nREPL server, but channel was already closed! => ignored\n")
+                  (utils/pp message))
+        (log/trace (str tunnel) (str "Enqueue message " (utils/sid message) " to be sent to nREPL server:\n")
+                   (utils/pp message)))
+      (put! channel [message receipt])
+      receipt)))
 
 (defn run-server-messages-channel-processing-loop! [tunnel]
   (log/debug (str tunnel) "Starting server-messages-channel-processing-loop")
@@ -179,15 +200,15 @@
           (deliver (get-server-messages-done-promise tunnel) true))))))
 
 (defn deliver-client-message! [tunnel message]
-  (let [channel (get-client-messages-channel tunnel)
-        receipt (promise)]
-    (if (core-async/closed? channel)
-      (log/warn (str tunnel) (str "An attempt to enqueue a message for DevTools client, but channel was already closed! => ignored\n")
-                (utils/pp message))
-      (log/trace (str tunnel) (str "Enqueue message " (utils/sid message) " to be sent to a DevTools client via tunnel:\n")
-                 (utils/pp message)))
-    (put! channel [message receipt])
-    receipt))
+  (if-let [channel (get-client-messages-channel tunnel)]                                                                      ; we silently ignore messages when channel is not yet set (during initialization)
+    (let [receipt (promise)]
+      (if (core-async/closed? channel)
+        (log/warn (str tunnel) (str "An attempt to enqueue a message for DevTools client, but channel was already closed! => ignored\n")
+                  (utils/pp message))
+        (log/trace (str tunnel) (str "Enqueue message " (utils/sid message) " to be sent to a DevTools client via tunnel:\n")
+                   (utils/pp message)))
+      (put! channel [message receipt])
+      receipt)))
 
 (defn run-client-messages-channel-processing-loop! [tunnel]
   (log/debug (str tunnel) "Starting client-messages-channel-processing-loop")
@@ -204,20 +225,38 @@
 
 ; -- NREPLTunnel life cycle -------------------------------------------------------------------------------------------------
 
+(defn check-nrepl-middleware! [nrepl-client]
+  (log/trace "check-nrepl-middleware! lib-version" lib/version)
+  (let [identify-response (<!! (nrepl-client/send! nrepl-client {:op "identify-dirac-nrepl-middleware"}))
+        {:keys [version]} identify-response]
+    (log/debug "identify-dirac-nrepl-middleware response:" identify-response)
+    (if version
+      (case (version-compare version lib/version)
+        -1 [:old (old-nrepl-middleware-msg lib/version version)]
+        1 [:unknown (unknown-nrepl-middleware-msg lib/version version)]
+        0 [:ok])
+      [:missing (missing-nrepl-middleware-msg (nrepl-client/get-server-connection-url nrepl-client))])))
+
 (defn create! [options]
   (let [tunnel (make-tunnel! options)
         server-messages (chan)
         client-messages (chan)]
-    (set-server-messages-channel! tunnel server-messages)
-    (set-client-messages-channel! tunnel client-messages)
-    (let [nrepl-client (nrepl-client/create! tunnel (:nrepl-server options))
-          nrepl-tunnel-server (nrepl-tunnel-server/create! tunnel (:nrepl-tunnel options))]
-      (set-nrepl-client! tunnel nrepl-client)
-      (set-nrepl-tunnel-server! tunnel nrepl-tunnel-server)
-      (run-server-messages-channel-processing-loop! tunnel)
-      (run-client-messages-channel-processing-loop! tunnel)
-      (log/debug "Created" (str tunnel))
-      tunnel)))
+    (let [nrepl-client (nrepl-client/create! tunnel (:nrepl-server options))]
+      (let [[status message] (check-nrepl-middleware! nrepl-client)]
+        (case status
+          :missing (throw (ex-info message {}))
+          (:old, :unknown) (log/warn message)
+          nil))
+      (let [nrepl-tunnel-server (nrepl-tunnel-server/create! tunnel (:nrepl-tunnel options))]
+        (set-nrepl-client! tunnel nrepl-client)
+        (set-server-messages-channel! tunnel server-messages)
+        (set-client-messages-channel! tunnel client-messages)
+        (set-nrepl-client! tunnel nrepl-client)
+        (set-nrepl-tunnel-server! tunnel nrepl-tunnel-server)
+        (run-server-messages-channel-processing-loop! tunnel)
+        (run-client-messages-channel-processing-loop! tunnel)
+        (log/debug "Created" (str tunnel))
+        tunnel))))
 
 (defn destroy! [tunnel]
   (log/trace "Destroying" (str tunnel))
@@ -225,7 +264,7 @@
     (nrepl-tunnel-server/disconnect-all-clients! nrepl-tunnel-server)
     (close! (get-client-messages-channel tunnel))
     @(get-client-messages-done-promise tunnel)
-    (Thread/sleep 1000)                                                                                                         ; give networking code some time to send outstanding messages
+    (Thread/sleep 1000)                                                                                                       ; give networking code some time to send outstanding messages
     (nrepl-tunnel-server/destroy! nrepl-tunnel-server)
     (set-nrepl-tunnel-server! tunnel nil))
   (close! (get-server-messages-channel tunnel))

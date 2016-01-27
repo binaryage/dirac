@@ -65,18 +65,22 @@
   {:pre [(instance? NREPLClient client)]}
   (not (nil? (get-raw-nrepl-client client))))
 
+(defn get-connection-url [options]
+  (let [{:keys [host port]} options]
+    (utils/get-nrepl-server-url host port)))
+
+(defn get-server-connection-url [client]
+  (get-connection-url (get-options client)))
+
 (defn get-client-info [client]
   {:pre [(instance? NREPLClient client)]}
   (if (connected? client)
-    (let [{:keys [host port]} (get-options client)
-          url (utils/get-nrepl-server-url host port)]
+    (let [url (get-server-connection-url client)]
       (str "Connected to nREPL server at " url "."))
     (str "Not connected to nREPL server.")))
 
 (defn connect-with-options [options]
-  (let [{:keys [host port]} options
-        url (utils/get-nrepl-server-url host port)]
-    (nrepl/url-connect url)))
+  (nrepl/url-connect (get-connection-url options)))
 
 ; -- sending ----------------------------------------------------------------------------------------------------------------
 
@@ -149,7 +153,7 @@
 
 (defn create! [tunnel options]
   (let [connection (connect-with-options options)
-        raw-nrepl-client (nrepl/client connection Long/MAX_VALUE)
+        raw-nrepl-client (nrepl/client connection Long/MAX_VALUE)                                                             ; TODO: response timeout should be configurable
         response-table (atom {})
         response-poller (spawn-response-poller! tunnel connection response-table options)
         client (make-client tunnel options connection raw-nrepl-client response-poller response-table)]
