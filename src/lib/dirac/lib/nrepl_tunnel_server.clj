@@ -1,9 +1,31 @@
 (ns dirac.lib.nrepl-tunnel-server
   (:require [clojure.core.async :refer [chan <!! <! >!! put! alts!! timeout close! go go-loop]]
             [clojure.tools.logging :as log]
+            [version-clj.core :refer [version-compare]]
             [dirac.lib.nrepl-protocols :refer :all]
             [dirac.lib.ws-server :as ws-server]
+            [dirac.lib.version :as lib-version]
             [dirac.lib.utils :as utils]))
+
+(def install-doc-url "https://github.com/binaryage/dirac#installation")
+
+(defn ^:dynamic old-devtools-client-msg [expected-version reported-version]
+  (str "WARNING: The version of connected DevTools client is old. "
+       "Expected '" expected-version "', got '" reported-version "'.\n"
+       "You should update your Dirac DevTools extension to version '" expected-version "' (to match your Dirac Agent).\n"
+       "Please follow Dirac installation instructions: " install-doc-url "."))
+
+(defn ^:dynamic unknown-devtools-client-msg [expected-version reported-version]
+  (str "WARNING: The version of connected DevTools client is unexpectedly recent. "
+       "Expected '" expected-version "', got '" reported-version "'.\n"
+       "You should update your Dirac Agent to version '" expected-version "' (to match your Dirac DevTools extension).\n"
+       "Please follow Dirac installation instructions: " install-doc-url "."))
+
+(defn version-check! [version]
+  (case (version-compare lib-version/version version)
+    -1 (log/warn (unknown-devtools-client-msg lib-version/version version))
+    1 (log/warn (old-devtools-client-msg lib-version/version version))
+    0 true))
 
 ; -- NREPLTunnelServer constructor ------------------------------------------------------------------------------------------
 
@@ -92,7 +114,8 @@
 (defmethod process-message :default [server client message]
   (log/debug (str server) "Received unrecognized message from client" (str client) ":\n" (utils/pp message)))
 
-(defmethod process-message :ready [server client _message]
+(defmethod process-message :ready [server client message]
+  (version-check! (:version message))
   ; a new client is ready after connection
   ; ask him to bootstrap nREPL environment
   (let [session (get-client-session server client)]
