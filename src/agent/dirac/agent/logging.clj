@@ -13,5 +13,6 @@
     (logging/setup-logging! options)
     (config/set-loggers!
       "dirac.agent" (utils/make-logging-options base-options options)
+      "dirac.agent-impl" (utils/make-logging-options base-options options)
       "dirac.agent.logging" (utils/make-logging-options base-options options)
       "dirac.agent.config" (utils/make-logging-options base-options options))))

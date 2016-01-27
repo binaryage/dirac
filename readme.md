@@ -204,14 +204,9 @@ By default you should run it on port `8230` and with `dirac.nrepl.middleware/dir
 was implemented as a [Piggieback middleware](https://github.com/cemerick/piggieback) fork, so you cannot run both.
 Think of Dirac middleware as Piggieback middleware replacement with some extra features specific for Dirac DevTools.
 
-Also for some reason (maybe a Leiningen's limitation?) you have to know all middleware dependencies and add them into your
-project dependencies. The configuration snippet could look something like this:
+The configuration snippet could look something like this:
 
-    :dependencies [[org.clojure/tools.logging "0.3.1"]
-                   [clj-logging-config "1.9.12"]
-                   [http-kit "2.1.21-alpha2"]
-                   [org.clojure/tools.nrepl "0.2.12"]
-                   [binaryage/dirac "<DIRAC-VERSION>"]]
+    :dependencies [[binaryage/dirac "<DIRAC-VERSION>"]]
 
     :repl-options {:port 8230
                    :nrepl-middleware [dirac.nrepl.middleware/dirac-repl]}
@@ -227,12 +222,12 @@ Dirac Agent is a piece of server software which connects to an existing nREPL se
 provides nREPL connections to the browser.
 
 Please note that Dirac DevTools is "just" a web app. It cannot open a classic socket connection and talk to nREPL server directly.
-Instead it connects to a Dirac Agent which listens for web socket connections on port 8231. Dirac Agent has also an open connection
-to your nREPL server at port 8230 so it can bridge messages between those two.
+Instead it connects to an Dirac Agent instance which listens for web socket connections on port 8231. Dirac Agent has also an open connection
+to your nREPL server at port 8230 so it can bridge messages between those two. It tunneling messages between the browser and the nREPL server.
 
 Actually Dirac Agent is a bit smarter than that. It allows one-to-many scenario, where multiple Dirac DevTools instances
 can connect to a singe Dirac Agent which talks to a single nREPL server. Each Dirac DevTools instance is assigned its own nREPL session,
-so they don't step on each others' toes. Thanks to this you can open multiple pages with different Dirac DevTools and
+so they don't step on each others' toes. Thanks to sessions you can open multiple pages with different Dirac DevTools and
 they all can have their own independent REPLs.
 
 Unfortunately this is the hardest part of the setup and most fragile.
