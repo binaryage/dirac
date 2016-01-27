@@ -218,12 +218,13 @@ I tend to put this extra config under `:dev` profile in my `project.clj` files
 
 ##### Start Dirac Agent
 
-Dirac Agent is a piece of server software which connects to an existing nREPL server and acts as a proxy which
-provides nREPL connections to the browser.
+Dirac Agent is a program which connects to an existing nREPL server and acts as a proxy providing nREPL connections to the browser.
 
-Please note that Dirac DevTools is "just" a web app. It cannot open a classic socket connection and talk to nREPL server directly.
-Instead it connects to an Dirac Agent instance which listens for web socket connections on port 8231. Dirac Agent has also an open connection
-to your nREPL server at port 8230 so it can bridge messages between those two. It tunneling messages between the browser and the nREPL server.
+Please note that Dirac DevTools is "just" a web app. It cannot open classic socket connection and talk to the nREPL server directly.
+Instead it connects to a Dirac Agent instance which listens for web socket connections on port 8231. Dirac Agent has also an open connection
+to your nREPL server at port 8230 so it can bridge messages between those two. Tunneling messages between
+the browser and the nREPL server is the main feature of Dirac Agent, sometimes you might see messages mentioning "nREPL Tunnel",
+which is the main component of Dirac Agent.
 
 Actually Dirac Agent is a bit smarter than that. It allows one-to-many scenario, where multiple Dirac DevTools instances
 can connect to a singe Dirac Agent which talks to a single nREPL server. Each Dirac DevTools instance is assigned its own nREPL session,
@@ -237,7 +238,7 @@ how [Weasel](https://github.com/tomjakubowski/weasel) comes into play and how Di
 
 If you hit a wall, you can try to ask for help in the `#dirac` channel at http://clojurians.slack.com ([ask for an invitation here](http://clojurians.net/)).
 
-Ok, back to launching the Dirac Agent. You can wrap it as a command-line tool and run it. The source for cli tool is [here](https://github.com/binaryage/dirac/blob/master/src/agent/dirac/agent_cli.clj).
+Now let's get back to launching the Dirac Agent. You can wrap it as a command-line tool and run it. The source for cli tool is [here](https://github.com/binaryage/dirac/blob/master/src/agent/dirac/agent_cli.clj).
 Here is a custom launcher script which uses maven to download dirac jar and execute `agent-cli` with your current java env from command-line:
 
 [https://github.com/binaryage/dirac/blob/master/scripts/agent-launcher.sh](https://github.com/binaryage/dirac/blob/master/scripts/agent-launcher.sh)
