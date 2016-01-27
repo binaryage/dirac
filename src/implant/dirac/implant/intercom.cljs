@@ -5,6 +5,7 @@
             [dirac.implant.console :as console]
             [dirac.implant.weasel-client :as weasel-client]
             [dirac.implant.nrepl-tunnel-client :as nrepl-tunnel-client]
+            [dirac.implant.version :as implant-version]
             [dirac.utils :as utils]
             [chromex.logging :refer-macros [log info warn error]]
             [dirac.implant.eval :as eval]))
@@ -49,6 +50,22 @@
 
 (defn ^:dynamic will-reconnect-banner-msg [remaining-time]
   (str "will try reconnect in " remaining-time " seconds"))
+
+(defn ^:dynamic version-mismatch-msg [devtools-version agent-version]
+  (str "Version mismatch: "
+       "Dirac Agent has different version (" agent-version ") "
+       "than Dirac DevTools Extension (" devtools-version ").\n"
+       "To avoid compatibility issues, please upgrade all Dirac components to the same version.\n"
+       "=> https://github.com/binaryage/dirac#installation"))
+
+(defn ^:dynamic warn-version-mismatch [our-version agent-version]
+  (let [msg (version-mismatch-msg our-version agent-version)]
+    (warn msg)
+    (eval/console-warn msg)))
+
+(defn check-version! [version]
+  (if-not (= version implant-version/version)
+    (warn-version-mismatch implant-version/version version)))
 
 ; -- prompt status ----------------------------------------------------------------------------------------------------------
 
@@ -181,7 +198,8 @@
 ; -- message processing -----------------------------------------------------------------------------------------------------
 
 ; When we connect to freshly open nREPL session, cljs REPL is not boostrapped (google "nREPL piggieback" for more details).
-(defmethod nrepl-tunnel-client/process-message :bootstrap [_client _message]
+(defmethod nrepl-tunnel-client/process-message :bootstrap [_client message]
+  (check-version! (:version message))
   (go
     (let [response (<! (nrepl-tunnel-client/tunnel-message-with-response! (nrepl-tunnel-client/boostrap-cljs-repl-message)))]
       (case (first (:status response))
