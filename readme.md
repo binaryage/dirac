@@ -256,8 +256,8 @@ You can configure it as `:init` command which will be executed every time you st
 Now when you start `lein repl` from command-line, you should see something like this:
 
     nREPL server started on port 8230 on host 127.0.0.1 - nrepl://127.0.0.1:8230
-    REPL-y 0.3.7, nREPL 0.2.12
-    Clojure 1.7.0
+    REPL-y 0.3.7, nREPL 0.2.10
+    Clojure 1.8.0
     Java HotSpot(TM) 64-Bit Server VM 1.8.0_60-b27
         Docs: (doc function-name-here)
               (find-doc "part-of-name-here")
@@ -266,9 +266,12 @@ Now when you start `lein repl` from command-line, you should see something like 
         Exit: Control+D or (exit) or (quit)
      Results: Stored in vars *1, *2, *3, an exception in *e
 
-    user=> Started Dirac Agent: Connected to nREPL server at nrepl://localhost:8230. Tunnel is accepting connections at ws://localhost:8231.
+    user=>
+    Dirac Agent v0.1.2
+    Connected to nREPL server at nrepl://localhost:8230.
+    Tunnel is accepting connections at ws://localhost:8231.
 
-The last line should remind you that Dirac Agent started successfully and listens for browser connections on the port 8231.
+The last line should remind you that Dirac Agent started successfully and listens for browser connections on port 8231.
 
 Now you should be able to use REPL from any of your Dirac DevTools instances.
 
