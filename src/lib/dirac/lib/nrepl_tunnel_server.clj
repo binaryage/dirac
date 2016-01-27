@@ -97,6 +97,7 @@
   ; ask him to bootstrap nREPL environment
   (let [session (get-client-session server client)]
     (send! client {:op      :bootstrap
+                   :version lib-version/version
                    :session session})))
 
 (defmethod process-message :error [server client message]
