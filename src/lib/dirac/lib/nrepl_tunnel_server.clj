@@ -22,7 +22,7 @@
        "Please follow Dirac installation instructions: " install-doc-url "."))
 
 (defn version-check! [version]
-  (case (version-compare lib-version/version version)
+  (case (version-compare lib-version/version (or version ""))
     -1 (log/warn (unknown-devtools-client-msg lib-version/version version))
     1 (log/warn (old-devtools-client-msg lib-version/version version))
     0 true))
