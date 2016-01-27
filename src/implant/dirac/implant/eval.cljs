@@ -142,6 +142,9 @@
 (defn console-error [msg]
   (call-eval-with-callback (console-log-template "error" msg)))
 
+(defn console-warn [msg]
+  (call-eval-with-callback (console-log-template "warn" msg)))
+
 (defn console-log [msg]
   (call-eval-with-callback (console-log-template "log" msg)))
 
