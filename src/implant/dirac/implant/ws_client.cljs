@@ -66,7 +66,7 @@
     (mark-as-ready! client)
     (if (and verbose? (ready? client))
       (info client "Opened websocket connection"))
-    (send! client {:op :ready})
+    (send! client (merge {:op :ready} (:ready-msg (get-options client))))
     (if on-open
       (on-open client))))
 
