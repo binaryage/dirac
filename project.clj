@@ -32,7 +32,8 @@
 
   :source-paths ["src/lib"
                  "src/agent"
-                 "src/nrepl"]
+                 "src/nrepl"
+                 "src/project"]
 
   :resource-paths []
 

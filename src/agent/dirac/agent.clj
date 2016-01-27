@@ -3,6 +3,7 @@
             [clojure.tools.logging :as log]
             [dirac.agent.logging :as logging]
             [dirac.agent.config :as config]
+            [dirac.agent.version :refer [version]]
             [dirac.lib.nrepl-tunnel :as nrepl-tunnel]
             [dirac.lib.utils :as utils])
   (:import (java.net ConnectException)))
@@ -37,7 +38,8 @@
 
 (defn get-agent-info [agent]
   (let [tunnel (get-tunnel agent)]
-    (nrepl-tunnel/get-tunnel-info tunnel)))
+    (str "Dirac Agent v" version "\n"
+         (nrepl-tunnel/get-tunnel-info tunnel))))
 
 ; -- lower-level api --------------------------------------------------------------------------------------------------------
 
@@ -97,7 +99,8 @@
             true (let [agent @current-agent]
                    (assert agent)
                    (log/debug "Started Dirac Agent" (str agent))
-                   (println (str "Started Dirac Agent: " (get-agent-info agent)))
+                   (println)
+                   (println (get-agent-info agent))
                    true)                                                                                                      ; success
             false (do
                     (log/error "Failed to start Dirac Agent.")
