@@ -4,4 +4,4 @@
 ; but with leiningen design it is non-trivial
 ; the problem is when dirac is used as a checkouts dependency
 
-(def version "0.1.3")
+(def version "0.1.4")
