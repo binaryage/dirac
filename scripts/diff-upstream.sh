@@ -84,6 +84,7 @@ popd
 pushd "$THEIRS"
 git checkout -b "$DIFF_BRANCH"
 git reset --hard "$LAST_MERGED_DEVTOOLS_SHA"
+git rm -rf *
 cp -R "$OURS/$DEVTOOLS_DIRAC_PREFIX"/* .
 git add -A
 git commit -m "devtools -> dirac as of $FULL_SHA"
