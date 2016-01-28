@@ -8,6 +8,6 @@ pushd "$ROOT"
 
 # lein deps :tree
 
-lein test
+lein test-backend
 
 popd

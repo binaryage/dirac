@@ -1,4 +1,4 @@
-(ns dirac.agent-test
+(ns dirac.agent-tests
   (:require [clojure.core.async :refer [chan <!! <! >!! put! alts!! timeout close! go go-loop]]
             [clojure.test :refer :all]
             [dirac.test.nrepl-server-helpers :refer [start-nrepl-server! stop-nrepl-server! test-nrepl-server-port]]
@@ -85,7 +85,7 @@
                 @(agent/boot! {:log-level    log-level
                                :nrepl-server {:port test-nrepl-server-port}
                                :nrepl-tunnel {:port test-nrepl-tunnel-port}}))
-          expected-out #"(?s).*Connected to nREPL server at nrepl://localhost:8120. Tunnel is accepting connections at ws://localhost:8121.*"]
+          expected-out #"(?s).*Connected to nREPL server at nrepl://localhost:8120.\nTunnel is accepting connections at ws://localhost:8121.*"]
       (is (not (nil? (re-matches expected-out out))))
       (log/info "dirac agent started at" test-nrepl-tunnel-port)
       (let [tunnel (tunnel-client/create! (str "ws://localhost:" test-nrepl-tunnel-port))]
@@ -104,6 +104,5 @@
                                                            :value  ""}})
           (expect-ns-msg! tunnel "cljs.user")
           (expect-status-msg! tunnel ["done"])
-          (tunnel-client/send! tunnel {:op :bootstrap-done})
-          ()))
+          (tunnel-client/send! tunnel {:op :bootstrap-done})))
       (agent/destroy!))))

@@ -35,8 +35,7 @@
 
   :resource-paths []
 
-  :test-paths ["test/support"
-               "test/backend"]
+  :test-paths []
 
   :clean-targets ^{:protect false} ["target"
                                     "resources/unpacked/compiled"
@@ -61,9 +60,18 @@
                              [lein-figwheel "0.5.0-4"]]
               :hooks        [leiningen.cljsbuild]}
 
-             :test
+             :backend-tests
              {:dependencies [[http.async.client "1.1.0"]
-                             [org.slf4j/slf4j-log4j12 "1.7.13"]]}
+                             [org.slf4j/slf4j-log4j12 "1.7.13"]]
+              :test-paths   ["test/support"
+                             "test/backend"]}
+
+             :browser-tests
+             {:dependencies [[clj-webdriver "0.7.2"]
+                             [org.seleniumhq.selenium/selenium-java "2.50.0"]
+                             [org.seleniumhq.selenium/selenium-chrome-driver "2.50.0"]
+                             [org.seleniumhq.selenium/selenium-support "2.50.0"]]
+              :test-paths   ["test/browser"]}
 
              :unpacked
              {:cljsbuild {:builds
@@ -153,21 +161,25 @@
              :nuke-aliases
              {:aliases ^:replace {}}}
 
-  :aliases {"test"                 ["test" "dirac.tests"]
-            "jar"                  ["shell" "scripts/lein-without-checkouts.sh" "jar"]
-            "install"              ["shell" "scripts/lein-without-checkouts.sh" "install"]
-            "uberjar"              ["shell" "scripts/lein-without-checkouts.sh" "uberjar"]
-            "dev-build"            ["with-profile" "+unpacked,+cljs,+checkouts"
-                                    "cljsbuild" "once" "background" "options" "implant"]
-            "fig"                  ["with-profile" "+unpacked,+cljs,+checkouts"
-                                    "do" "clean,"
-                                    "figwheel" "background" "options" "implant"]
+  :aliases {"test"                         ["test-backend"]
+            "test-backend"                 ["with-profile" "+backend-tests"
+                                            "run" "-m" "dirac.backend-tests-runner"]
+            "test-browser"                 ["with-profile" "+browser-tests"
+                                            "run" "-m" "dirac.browser-tests-runner"]
+            "jar"                          ["shell" "scripts/lein-without-checkouts.sh" "jar"]
+            "install"                      ["shell" "scripts/lein-without-checkouts.sh" "install"]
+            "uberjar"                      ["shell" "scripts/lein-without-checkouts.sh" "uberjar"]
+            "dev-build"                    ["with-profile" "+unpacked,+cljs,+checkouts"
+                                            "cljsbuild" "once" "background" "options" "implant"]
+            "fig"                          ["with-profile" "+unpacked,+cljs,+checkouts"
+                                            "do" "clean,"
+                                            "figwheel" "background" "options" "implant"]
             "compile-release"              ["with-profile" "+packed,+cljs"
-                                    "do" "clean,"
-                                    "cljsbuild" "once" "background" "options" "implant"]
+                                            "do" "clean,"
+                                            "cljsbuild" "once" "background" "options" "implant"]
             "compile-release-pseudo-names" ["with-profile" "+packed,+cljs,+pseudo-names"
-                                    "do" "clean,"
-                                    "cljsbuild" "once" "implant" "background" "options"]
-            "release"              ["shell" "scripts/release.sh"]
-            "package"              ["shell" "scripts/package.sh"]
-            "regenerate"           ["shell" "scripts/regenerate.sh"]})
+                                            "do" "clean,"
+                                            "cljsbuild" "once" "implant" "background" "options"]
+            "release"                      ["shell" "scripts/release.sh"]
+            "package"                      ["shell" "scripts/package.sh"]
+            "regenerate"                   ["shell" "scripts/regenerate.sh"]})
