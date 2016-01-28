@@ -23,9 +23,6 @@
 
   ;  :jvm-opts ["-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5005"]
 
-  :main dirac.agent-cli
-  :aot [dirac.agent-cli]
-
   :figwheel
   {:server-port    7100
    :server-logfile ".figwheel_server.log"
