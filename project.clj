@@ -84,11 +84,19 @@
               :hooks   [leiningen.cljsbuild]}
 
              :backend-tests
-             {:test-paths ["test/support"
+             {:source-paths ^:replace ["src/lib"
+                                       "src/agent"
+                                       "src/nrepl"
+                                       "src/project"]
+              :test-paths ["test/support"
                            "test/backend"]}
 
              :browser-tests
-             {:test-paths ["test/support"
+             {:source-paths ^:replace ["src/lib"
+                                       "src/agent"
+                                       "src/nrepl"
+                                       "src/project"]
+              :test-paths ["test/support"
                            "test/browser"]
               :resource-paths ["test"]}
 
