@@ -35,5 +35,6 @@ PROJECT_VERSION_FILE="src/project/dirac/version.clj"
 UNPACKED_MANIFEST_FILE="resources/unpacked/manifest.json"
 RELEASE_MANIFEST_FILE="resources/release/manifest.json"
 PROJECT_FILE="project.clj"
+DEVTOOLS_WORKTREE="$ROOT/../devtools"
 
 popd
