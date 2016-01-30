@@ -9,5 +9,6 @@ pushd "$ROOT"
 # lein deps :tree
 
 lein test-backend
+lein test-browser
 
 popd

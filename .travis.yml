@@ -6,4 +6,19 @@ language: clojure
 # https://github.com/technomancy/leiningen/issues/2014#issuecomment-153829977
 before_install: yes y | sudo lein upgrade
 
+addons:
+  apt:
+    packages:
+      - chromium-browser
+env:
+  - DISPLAY=':99.0'
+
+before_script:
+  - export DISPLAY=:99.0
+  - sh -e /etc/init.d/xvfb start
+  - wget https://chromedriver.storage.googleapis.com/2.12/chromedriver_linux64.zip
+  - unzip chromedriver_linux64.zip
+  - mv chromedriver test/chromedriver
+  - export CHROME_DRIVER_PATH=`pwd`/test/chromedriver
+
 script: scripts/test.sh
