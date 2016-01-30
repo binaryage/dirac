@@ -24,6 +24,6 @@ if [ -d "checkouts" ] ; then
   trap move_checkouts_back EXIT
 fi
 
-lein with-profile "+nuke-aliases" "$@"
+lein with-profile "lib" "$@"
 
 popd

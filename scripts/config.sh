@@ -36,5 +36,7 @@ UNPACKED_MANIFEST_FILE="resources/unpacked/manifest.json"
 RELEASE_MANIFEST_FILE="resources/release/manifest.json"
 PROJECT_FILE="project.clj"
 DEVTOOLS_WORKTREE="$ROOT/../devtools"
+FIXTURES_SERVER_ROOT="$ROOT/test/browser-fixtures"
+FIXTURES_SERVER_PORT="9080"
 
 popd
