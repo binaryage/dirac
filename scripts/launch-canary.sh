@@ -10,7 +10,13 @@ if [ ! -d "$DIRAC_USER_PROFILE" ] ; then
   mkdir -p "$DIRAC_USER_PROFILE"
 fi
 
-/Applications/Google\ Chrome\ Canary.app/Contents/MacOS/Google\ Chrome\ Canary \
+if [ ! -z "$1" ] ; then
+  EXE="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+else
+  EXE="/Applications/Google Chrome Canary.app/Contents/MacOS/Google Chrome Canary"
+fi
+
+"$EXE" \
       --remote-debugging-port=9222 \
       --no-first-run \
       --user-data-dir="$DIRAC_USER_PROFILE" \

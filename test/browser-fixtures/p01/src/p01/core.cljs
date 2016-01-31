@@ -1,3 +1,6 @@
-(ns p01.core)
+(ns p01.core
+  (:require [devtools.core :as devtools]))
 
-(.log js/console "hello from p01!")
+(defn ^:export start []
+  (devtools/enable-feature! :dirac :sanity-hints)
+  (devtools/install!))

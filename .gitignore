@@ -1,3 +1,4 @@
+/test/marion/resources/unpacked/compiled
 /test/browser-fixtures/p01/resources/compiled
 /.nrepl-port
 /resources/unpacked/devtools/front_end/dirac/compiled
@@ -19,4 +20,5 @@
 .figwheel_server.log
 .profiles/
 pom.xml*
+/test/chromedriver
 /out/
