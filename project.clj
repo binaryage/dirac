@@ -144,7 +144,8 @@
              :unpacked
              {:cljsbuild {:builds
                           {:dirac-implant
-                           {:source-paths ["src/implant"]
+                           {:source-paths ["src/implant"
+                                           "src/project"]
                             :compiler     {:output-to     "resources/unpacked/devtools/front_end/dirac/compiled/implant/implant.js"
                                            :output-dir    "resources/unpacked/devtools/front_end/dirac/compiled/implant"
                                            :asset-path    "dirac/compiled/implant"
@@ -155,6 +156,7 @@
                            {:source-paths ["src/dev"
                                            "src/figwheel"
                                            "src/shared"
+                                           "src/project"
                                            "src/background"]
                             :compiler     {:output-to     "resources/unpacked/compiled/background/dirac.js"
                                            :output-dir    "resources/unpacked/compiled/background"
@@ -165,6 +167,7 @@
                            {:source-paths ["src/dev"
                                            "src/figwheel"
                                            "src/shared"
+                                           "src/project"
                                            "src/options"]
                             :compiler     {:output-to     "resources/unpacked/compiled/options/dirac.js"
                                            :output-dir    "resources/unpacked/compiled/options"
