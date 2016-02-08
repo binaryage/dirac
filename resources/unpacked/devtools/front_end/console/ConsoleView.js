@@ -217,11 +217,13 @@ WebInspector.ConsoleView = function()
 
     this._consolePromptIndexSetting = WebInspector.settings.createLocalSetting("consolePromptIndex", 0);
 
-    this.setDiracPromptMode("status");
-    var that = this;
-    setTimeout(function() {
-        that._switchToLastPrompt();
-    }, 200);
+    if (dirac.hasREPL) {
+        this.setDiracPromptMode("status");
+        var that = this;
+        setTimeout(function() {
+            that._switchToLastPrompt();
+        }, 200);
+    }
 }
 
 WebInspector.ConsoleView.persistedHistorySize = 300;
