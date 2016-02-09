@@ -462,7 +462,7 @@ WebInspector.TracingModel.Event = function(categories, name, phase, startTime, t
     this.warning = null;
     /** @type {?WebInspector.TracingModel.Event} */
     this.initiator = null;
-    /** @type {?Array.<!ConsoleAgent.CallFrame>} */
+    /** @type {?Array.<!RuntimeAgent.CallFrame>} */
     this.stackTrace = null;
     /** @type {?Element} */
     this.previewElement = null;
@@ -491,6 +491,9 @@ WebInspector.TracingModel.Event.fromPayload = function(payload, thread)
         event.setEndTime((payload.ts + payload.dur) / 1000);
     if (payload.id)
         event.id = payload.id;
+    if (payload.bind_id)
+        event.bind_id = payload.bind_id;
+
     return event;
 }
 

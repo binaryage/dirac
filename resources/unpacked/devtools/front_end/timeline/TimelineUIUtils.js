@@ -175,8 +175,11 @@ WebInspector.TimelineUIUtils.eventStyle = function(event)
  */
 WebInspector.TimelineUIUtils.eventColor = function(event)
 {
-    if (event.name === WebInspector.TimelineModel.RecordType.JSFrame)
-        return WebInspector.TimelineUIUtils.colorForURL(event.args["data"]["url"]);
+    if (event.name === WebInspector.TimelineModel.RecordType.JSFrame) {
+        var frame = event.args["data"];
+        if (WebInspector.TimelineUIUtils.isUserFrame(frame))
+            return WebInspector.TimelineUIUtils.colorForURL(frame.url);
+    }
     return WebInspector.TimelineUIUtils.eventStyle(event).category.color;
 }
 
@@ -196,6 +199,45 @@ WebInspector.TimelineUIUtils.eventTitle = function(event)
     return title;
 }
 
+
+/**
+ * !Map<!WebInspector.TimelineIRModel.Phases, !{color: string, label: string}>
+ */
+WebInspector.TimelineUIUtils._interactionPhaseStyles = function()
+{
+    var map = WebInspector.TimelineUIUtils._interactionPhaseStylesMap;
+    if (!map) {
+         map = new Map([
+            [WebInspector.TimelineIRModel.Phases.Idle, {color: "white", label: "Idle"}],
+            [WebInspector.TimelineIRModel.Phases.Response, {color: "hsl(43, 83%, 64%)", label: WebInspector.UIString("Response")}],
+            [WebInspector.TimelineIRModel.Phases.Scroll, {color: "hsl(256, 67%, 70%)", label: WebInspector.UIString("Scroll")}],
+            [WebInspector.TimelineIRModel.Phases.Fling, {color: "hsl(256, 67%, 70%)", label: WebInspector.UIString("Fling")}],
+            [WebInspector.TimelineIRModel.Phases.Drag, {color: "hsl(256, 67%, 70%)", label: WebInspector.UIString("Drag")}],
+            [WebInspector.TimelineIRModel.Phases.Animation, {color: "hsl(256, 67%, 70%)", label: WebInspector.UIString("Animation")}]
+        ]);
+        WebInspector.TimelineUIUtils._interactionPhaseStylesMap = map;
+    }
+    return map;
+}
+
+/**
+ * @param {!WebInspector.TimelineIRModel.Phases} phase
+ * @return {string}
+ */
+WebInspector.TimelineUIUtils.interactionPhaseColor = function(phase)
+{
+    return WebInspector.TimelineUIUtils._interactionPhaseStyles().get(phase).color;
+}
+
+/**
+ * @param {!WebInspector.TimelineIRModel.Phases} phase
+ * @return {string}
+ */
+WebInspector.TimelineUIUtils.interactionPhaseLabel = function(phase)
+{
+    return WebInspector.TimelineUIUtils._interactionPhaseStyles().get(phase).label;
+}
+
 /**
  * @param {!WebInspector.TracingModel.Event} event
  * @return {boolean}
@@ -213,6 +255,25 @@ WebInspector.TimelineUIUtils.isMarkerEvent = function(event)
     default:
         return false;
     }
+}
+
+/**
+ * @param {!RuntimeAgent.CallFrame} frame
+ * @return {boolean}
+ */
+WebInspector.TimelineUIUtils.isUserFrame = function(frame)
+{
+    return frame.scriptId !== "0" && !frame.url.startsWith("native ");
+}
+
+/**
+ * @param {!WebInspector.TracingModel.Event} event
+ * @return {?RuntimeAgent.CallFrame}
+ */
+WebInspector.TimelineUIUtils.topStackFrame = function(event)
+{
+    var stackTrace = event.stackTrace || event.initiator && event.initiator.stackTrace;
+    return stackTrace && stackTrace.length ? stackTrace[0] : null;
 }
 
 /**
@@ -383,16 +444,8 @@ WebInspector.TimelineUIUtils.buildDetailsTextForTraceEvent = function(event, tar
      */
     function linkifyTopCallFrameAsText()
     {
-        var stackTrace = event.stackTrace;
-        if (!stackTrace) {
-            var initiator = event.initiator;
-            if (initiator)
-                stackTrace = initiator.stackTrace;
-        }
-        if (!stackTrace || !stackTrace.length)
-            return null;
-        var callFrame = stackTrace[0];
-        return linkifyLocationAsText(callFrame.scriptId, callFrame.lineNumber, callFrame.columnNumber);
+        var frame = WebInspector.TimelineUIUtils.topStackFrame(event);
+        return frame ? linkifyLocationAsText(frame.scriptId, frame.lineNumber, frame.columnNumber) : null;
     }
 }
 
@@ -487,15 +540,8 @@ WebInspector.TimelineUIUtils.buildDetailsNodeForTraceEvent = function(event, tar
      */
     function linkifyTopCallFrame()
     {
-        var stackTrace = event.stackTrace;
-        if (!stackTrace) {
-            var initiator = event.initiator;
-            if (initiator)
-                stackTrace = initiator.stackTrace;
-        }
-        if (!stackTrace || !stackTrace.length)
-            return null;
-        return linkifier.linkifyConsoleCallFrame(target, stackTrace[0], "timeline-details");
+        var frame = WebInspector.TimelineUIUtils.topStackFrame(event);
+        return frame ? linkifier.linkifyConsoleCallFrame(target, frame, "timeline-details") : null;
     }
 }
 
@@ -913,6 +959,15 @@ WebInspector.TimelineUIUtils.buildNetworkRequestDetails = function(request, mode
 }
 
 /**
+ * @param {!Array<!RuntimeAgent.CallFrame>} callFrames
+ * @return {!RuntimeAgent.StackTrace}
+ */
+WebInspector.TimelineUIUtils._stackTraceFromCallFrames = function(callFrames)
+{
+    return /** @type {!RuntimeAgent.StackTrace} */ ({ callFrames: callFrames });
+}
+
+/**
  * @param {!WebInspector.TracingModel.Event} event
  * @param {?WebInspector.Target} target
  * @param {?Map<number, ?WebInspector.DOMNode>} relatedNodesMap
@@ -949,7 +1004,7 @@ WebInspector.TimelineUIUtils._generateCauses = function(event, target, relatedNo
     // Direct cause.
     if (event.stackTrace && event.stackTrace.length) {
         contentHelper.addSection(WebInspector.UIString("Call Stacks"));
-        contentHelper.appendStackTrace(stackLabel || WebInspector.UIString("Stack Trace"), event.stackTrace);
+        contentHelper.appendStackTrace(stackLabel || WebInspector.UIString("Stack Trace"), WebInspector.TimelineUIUtils._stackTraceFromCallFrames(event.stackTrace));
     }
 
     // Indirect causes.
@@ -957,7 +1012,7 @@ WebInspector.TimelineUIUtils._generateCauses = function(event, target, relatedNo
         contentHelper.addSection(WebInspector.UIString("Invalidations"));
         WebInspector.TimelineUIUtils._generateInvalidations(event, target, relatedNodesMap, contentHelper);
     } else if (initiator && initiator.stackTrace) { // Partial invalidation tracking.
-        contentHelper.appendStackTrace(callSiteStackLabel || WebInspector.UIString("First Invalidated"), initiator.stackTrace);
+        contentHelper.appendStackTrace(callSiteStackLabel || WebInspector.UIString("First Invalidated"), WebInspector.TimelineUIUtils._stackTraceFromCallFrames(initiator.stackTrace));
     }
 }
 
@@ -1125,7 +1180,7 @@ WebInspector.TimelineUIUtils.InvalidationsGroupElement.prototype = {
         if (first.cause.stackTrace) {
             var stack = content.createChild("div");
             stack.createTextChild(WebInspector.UIString("Stack trace:"));
-            this._contentHelper.createChildStackTraceElement(stack, first.cause.stackTrace);
+            this._contentHelper.createChildStackTraceElement(stack, WebInspector.TimelineUIUtils._stackTraceFromCallFrames(first.cause.stackTrace));
         }
 
         content.createTextChild(this._invalidations.length > 1 ? WebInspector.UIString("Nodes:") : WebInspector.UIString("Node:"));
@@ -1413,6 +1468,7 @@ WebInspector.TimelineUIUtils.asyncEventGroups = function()
     if (WebInspector.TimelineUIUtils._asyncEventGroups)
         return WebInspector.TimelineUIUtils._asyncEventGroups;
     WebInspector.TimelineUIUtils._asyncEventGroups = {
+        animation: new WebInspector.AsyncEventGroup(WebInspector.UIString("Animation")),
         console: new WebInspector.AsyncEventGroup(WebInspector.UIString("Console")),
         userTiming: new WebInspector.AsyncEventGroup(WebInspector.UIString("User Timing")),
         input: new WebInspector.AsyncEventGroup(WebInspector.UIString("Input Events"))
@@ -1945,7 +2001,7 @@ WebInspector.TimelineDetailsContentHelper.prototype = {
 
     /**
      * @param {string} title
-     * @param {!Array.<!ConsoleAgent.CallFrame>} stackTrace
+     * @param {!RuntimeAgent.StackTrace} stackTrace
      */
     appendStackTrace: function(title, stackTrace)
     {
@@ -1959,7 +2015,7 @@ WebInspector.TimelineDetailsContentHelper.prototype = {
 
     /**
      * @param {!Element} parentElement
-     * @param {!Array.<!ConsoleAgent.CallFrame>} stackTrace
+     * @param {!RuntimeAgent.StackTrace} stackTrace
      */
     createChildStackTraceElement: function(parentElement, stackTrace)
     {

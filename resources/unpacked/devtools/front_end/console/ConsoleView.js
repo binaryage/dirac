@@ -1083,7 +1083,7 @@ WebInspector.ConsoleView.prototype = {
      * @param {?WebInspector.RemoteObject} result
      * @param {boolean} wasThrown
      * @param {!WebInspector.ConsoleMessage} originatingConsoleMessage
-     * @param {?DebuggerAgent.ExceptionDetails=} exceptionDetails
+     * @param {?RuntimeAgent.ExceptionDetails=} exceptionDetails
      */
     _printResult: function(result, wasThrown, originatingConsoleMessage, exceptionDetails)
     {
@@ -1095,7 +1095,7 @@ WebInspector.ConsoleView.prototype = {
         if (!wasThrown)
             message = new WebInspector.ConsoleMessage(result.target(), WebInspector.ConsoleMessage.MessageSource.JS, level, "", WebInspector.ConsoleMessage.MessageType.Result, undefined, undefined, undefined, undefined, [result]);
         else
-            message = new WebInspector.ConsoleMessage(result.target(), WebInspector.ConsoleMessage.MessageSource.JS, level, exceptionDetails.text, WebInspector.ConsoleMessage.MessageType.Result, exceptionDetails.url, exceptionDetails.line, exceptionDetails.column, undefined, [WebInspector.UIString("Uncaught"), result], exceptionDetails.stackTrace, undefined, undefined, undefined, exceptionDetails.scriptId);
+            message = new WebInspector.ConsoleMessage(result.target(), WebInspector.ConsoleMessage.MessageSource.JS, level, exceptionDetails.text, WebInspector.ConsoleMessage.MessageType.Result, exceptionDetails.url, exceptionDetails.line, exceptionDetails.column, undefined, [WebInspector.UIString("Uncaught"), result], exceptionDetails.stack, undefined, undefined, exceptionDetails.scriptId);
         message.setOriginatingMessage(originatingConsoleMessage);
         result.target().consoleModel.addMessage(message);
     },

@@ -986,6 +986,25 @@ Promise.prototype.then = function(opt_onFulfilled, opt_onRejected) {};
 Promise.prototype.catch = function(onRejected) {};
 
 
+/**
+ * @param {T} value
+ * @param {number=} start
+ * @param {number=} end
+ * @this {!Array<T>}
+ * @template T
+ */
+Array.prototype.fill = function(value, start, end) {}
+
+
+/**
+ * @param {function(this:S,T,number,!Array<T>)} callback
+ * @param {?S=} thisArg
+ * @this {!Array<T>}
+ * @template T,S
+ */
+Array.prototype.find = function(callback, thisArg) {}
+
+
 /** @return {!Array<number>} */
 Array.prototype.keys;
 
@@ -994,7 +1013,6 @@ Array.prototype.keys;
  * @return {!Array<!Array>} An array of [key, value] pairs.
  */
 Array.prototype.entries;
-
 
 /** @return {!Array<symbol>} */
 Object.getOwnPropertySymbols;
