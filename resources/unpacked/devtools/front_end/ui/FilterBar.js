@@ -545,7 +545,7 @@ WebInspector.NamedBitSetFilterUI.prototype = {
             this._allowedTypes[WebInspector.NamedBitSetFilterUI.ALL_TYPES] = true;
         }
         for (var typeName in this._typeFilterElements)
-            this._typeFilterElements[typeName].classList.toggle("selected", this._allowedTypes[typeName]);
+            this._typeFilterElements[typeName].classList.toggle("selected", this._allowedTypes[typeName]?true:false);
         this.dispatchEventToListeners(WebInspector.FilterUI.Events.FilterChanged, null);
     },
 
