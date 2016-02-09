@@ -104,6 +104,7 @@ WebInspector.Main.prototype = {
     {
         Runtime.experiments.register("accessibilityInspection", "Accessibility Inspection");
         Runtime.experiments.register("applyCustomStylesheet", "Allow custom UI themes");
+        Runtime.experiments.register("appBanner", "App banner support", true);
         Runtime.experiments.register("blackboxJSFramesOnTimeline", "Blackbox JavaScript frames on Timeline", true);
         Runtime.experiments.register("colorContrastRatio", "Contrast ratio line in color picker", true);
         Runtime.experiments.register("cpuThrottling", "CPU throttling", true);
@@ -113,7 +114,7 @@ WebInspector.Main.prototype = {
         Runtime.experiments.register("inputEventsOnTimelineOverview", "Input events on Timeline overview", true);
         Runtime.experiments.register("layersPanel", "Layers panel");
         Runtime.experiments.register("layoutEditor", "Layout editor", true);
-        Runtime.experiments.register("materialDesign", "Material design");
+        Runtime.experiments.register("inspectTooltip", "Dark inspect element tooltip");
         Runtime.experiments.register("multipleTimelineViews", "Multiple main views on Timeline", true);
         Runtime.experiments.register("networkRequestHeadersFilterInDetailsView", "Network request headers filter in details view", true);
         Runtime.experiments.register("networkRequestsOnTimeline", "Network requests on Timeline", true);
@@ -146,6 +147,7 @@ WebInspector.Main.prototype = {
         }
 
         Runtime.experiments.setDefaultExperiments([
+            "inspectTooltip",
             "securityPanel"
         ]);
     },
@@ -202,6 +204,7 @@ WebInspector.Main.prototype = {
 
         new WebInspector.OverlayController();
         new WebInspector.ExecutionContextSelector(WebInspector.targetManager, WebInspector.context);
+        new WebInspector.BlackboxManager();
 
         var autoselectPanel = WebInspector.UIString("auto");
         var openAnchorLocationSetting = WebInspector.settings.createSetting("openLinkHandler", autoselectPanel);
@@ -213,6 +216,7 @@ WebInspector.Main.prototype = {
         new WebInspector.Main.InspectedNodeRevealer();
         new WebInspector.NetworkPanelIndicator();
         new WebInspector.SourcesPanelIndicator();
+        new WebInspector.AutoAttachToCreatedPagesSync();
         WebInspector.domBreakpointsSidebarPane = new WebInspector.DOMBreakpointsSidebarPane();
 
         WebInspector.actionRegistry = new WebInspector.ActionRegistry();
@@ -317,7 +321,7 @@ WebInspector.Main.prototype = {
         this._mainTarget.registerInspectorDispatcher(this);
         InspectorFrontendHost.events.addEventListener(InspectorFrontendHostAPI.Events.ReloadInspectedPage, this._reloadInspectedPage, this);
 
-        if (this._mainTarget.isServiceWorker())
+        if (this._mainTarget.isServiceWorker() || this._mainTarget.isPage())
             this._mainTarget.runtimeAgent().run();
 
         if (this._appUIPresented)
@@ -1086,6 +1090,43 @@ WebInspector.TargetCrashedScreen.prototype = {
     },
 
     __proto__: WebInspector.VBox.prototype
+}
+
+/**
+ * @constructor
+ * @implements {WebInspector.TargetManager.Observer}
+ */
+WebInspector.AutoAttachToCreatedPagesSync = function()
+{
+    this._setting = WebInspector.settings.moduleSetting("autoAttachToCreatedPages");
+    this._setting.addChangeListener(this._update, this);
+    WebInspector.targetManager.observeTargets(this, WebInspector.Target.Type.Page);
+}
+
+WebInspector.AutoAttachToCreatedPagesSync.prototype = {
+    _update: function()
+    {
+        var value = this._setting.get();
+        for (var target of WebInspector.targetManager.targets(WebInspector.Target.Type.Page))
+            target.pageAgent().setAutoAttachToCreatedPages(value);
+    },
+
+    /**
+     * @param {!WebInspector.Target} target
+     * @override
+     */
+    targetAdded: function(target)
+    {
+        target.pageAgent().setAutoAttachToCreatedPages(this._setting.get());
+    },
+
+    /**
+     * @param {!WebInspector.Target} target
+     * @override
+     */
+    targetRemoved: function(target)
+    {
+    }
 }
 
 new WebInspector.Main();

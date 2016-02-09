@@ -77,6 +77,10 @@ WebInspector.DevicesSettingsTab.prototype = {
     {
         var device = new WebInspector.EmulatedDevice();
         device.deviceScaleFactor = 0;
+        device.horizontal.width = 700;
+        device.horizontal.height = 400;
+        device.vertical.width = 400;
+        device.vertical.height = 700;
         this._list.addNewItem(WebInspector.emulatedDevicesList.custom().length, device);
     },
 
@@ -221,7 +225,7 @@ WebInspector.DevicesSettingsTab.prototype = {
          */
         function sizeValidator(item, index, input)
         {
-            return !WebInspector.DeviceModeModel.deviceSizeValidator(input.value);
+            return WebInspector.DeviceModeModel.deviceSizeValidator(input.value);
         }
 
         /**
@@ -232,7 +236,7 @@ WebInspector.DevicesSettingsTab.prototype = {
          */
         function scaleValidator(item, index, input)
         {
-            return !WebInspector.DeviceModeModel.deviceScaleFactorValidator(input.value);
+            return WebInspector.DeviceModeModel.deviceScaleFactorValidator(input.value);
         }
 
         /**

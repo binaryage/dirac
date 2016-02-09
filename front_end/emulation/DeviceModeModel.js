@@ -18,7 +18,6 @@ WebInspector.DeviceModeModel = function(updateCallback)
     this._deviceMetricsThrottler = new WebInspector.Throttler(0);
     this._appliedDeviceSize = new Size(1, 1);
     this._currentDeviceScaleFactor = window.devicePixelRatio;
-    this._appliedDeviceScaleFactor = 0;
 
     this._scaleSetting = WebInspector.settings.createSetting("emulation.deviceScale", 1);
     // We've used to allow zero before.
@@ -86,24 +85,24 @@ WebInspector.DeviceModeModel.MaxDeviceSize = 9999;
 
 /**
  * @param {string} value
- * @return {string}
+ * @return {boolean}
  */
 WebInspector.DeviceModeModel.deviceSizeValidator = function(value)
 {
     if (/^[\d]+$/.test(value) && value >= WebInspector.DeviceModeModel.MinDeviceSize && value <= WebInspector.DeviceModeModel.MaxDeviceSize)
-        return "";
-    return WebInspector.UIString("Value must be positive integer");
+        return true;
+    return false;
 }
 
 /**
  * @param {string} value
- * @return {string}
+ * @return {boolean}
  */
 WebInspector.DeviceModeModel.deviceScaleFactorValidator = function(value)
 {
     if (!value || (/^[\d]+(\.\d+)?|\.\d+$/.test(value) && value >= 0 && value <= 10))
-        return "";
-    return WebInspector.UIString("Value must be non-negative float");
+        return true;
+    return false;
 }
 
 WebInspector.DeviceModeModel._touchEventsScriptIdSymbol = Symbol("DeviceModeModel.touchEventsScriptIdSymbol");
@@ -284,14 +283,6 @@ WebInspector.DeviceModeModel.prototype = {
     },
 
     /**
-     * @return {number}
-     */
-    appliedDeviceScaleFactor: function()
-    {
-        return this._appliedDeviceScaleFactor;
-    },
-
-    /**
      * @return {!WebInspector.Setting}
      */
     scaleSetting: function()
@@ -382,11 +373,6 @@ WebInspector.DeviceModeModel.prototype = {
     {
         if (this._target === target)
             this._target = null;
-    },
-
-    requestAppBanner: function()
-    {
-        this._target.pageAgent().requestAppBanner();
     },
 
     _scaleSettingChanged: function()
@@ -528,7 +514,6 @@ WebInspector.DeviceModeModel.prototype = {
             Math.min(pageWidth * scale, this._availableSize.width - this._screenRect.left - positionX * scale),
             Math.min(pageHeight * scale, this._availableSize.height - this._screenRect.top - positionY * scale));
         this._scale = scale;
-        this._appliedDeviceScaleFactor = deviceScaleFactor;
 
         if (scale === 1 && this._availableSize.width >= screenSize.width && this._availableSize.height >= screenSize.height) {
             // When we have enough space, no page size override is required. This will speed things up and remove lag.
@@ -553,12 +538,13 @@ WebInspector.DeviceModeModel.prototype = {
                 return Promise.resolve();
 
             var clear = !pageWidth && !pageHeight && !mobile && !deviceScaleFactor && scale === 1;
+            var allPromises = [];
+            if (resetPageScaleFactor)
+                allPromises.push(this._target.emulationAgent().resetPageScaleFactor());
             var setDevicePromise = clear ?
                 this._target.emulationAgent().clearDeviceMetricsOverride(this._deviceMetricsOverrideAppliedForTest.bind(this)) :
                 this._target.emulationAgent().setDeviceMetricsOverride(pageWidth, pageHeight, deviceScaleFactor, mobile, false, scale, 0, 0, screenSize.width, screenSize.height, positionX, positionY, this._deviceMetricsOverrideAppliedForTest.bind(this));
-            var allPromises = [ setDevicePromise ];
-            if (resetPageScaleFactor)
-                allPromises.push(this._target.emulationAgent().resetPageScaleFactor());
+            allPromises.push(setDevicePromise);
             return Promise.all(allPromises);
         }
     },

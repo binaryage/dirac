@@ -628,7 +628,7 @@ WebInspector.NetworkLogView.prototype = {
         this._sortingFunctions.scheme = WebInspector.NetworkDataGridNode.RequestPropertyComparator.bind(null, "scheme", false);
         this._sortingFunctions.domain = WebInspector.NetworkDataGridNode.RequestPropertyComparator.bind(null, "domain", false);
         this._sortingFunctions.remoteAddress = WebInspector.NetworkDataGridNode.RemoteAddressComparator;
-        this._sortingFunctions.type = WebInspector.NetworkDataGridNode.RequestPropertyComparator.bind(null, "mimeType", false);
+        this._sortingFunctions.type = WebInspector.NetworkDataGridNode.TypeComparator;
         this._sortingFunctions.initiator = WebInspector.NetworkDataGridNode.InitiatorComparator;
         this._sortingFunctions.cookies = WebInspector.NetworkDataGridNode.RequestCookiesCountComparator;
         this._sortingFunctions.setCookies = WebInspector.NetworkDataGridNode.ResponseCookiesCountComparator;
@@ -1231,7 +1231,7 @@ WebInspector.NetworkLogView.prototype = {
         anchor = element.enclosingNodeOrSelfWithClass("network-script-initiated");
         if (anchor && anchor.request) {
             var initiator = /** @type {!WebInspector.NetworkRequest} */ (anchor.request).initiator();
-            if (initiator && (initiator.stackTrace || initiator.asyncStackTrace))
+            if (initiator && initiator.stack)
                 return anchor;
         }
     },
@@ -1246,7 +1246,7 @@ WebInspector.NetworkLogView.prototype = {
         if (anchor.classList.contains("network-script-initiated")) {
             var request = /** @type {!WebInspector.NetworkRequest} */ (anchor.request);
             var initiator = /** @type {!NetworkAgent.Initiator} */ (request.initiator());
-            content = WebInspector.DOMPresentationUtils.buildStackTracePreviewContents(request.target(), this._popupLinkifier, initiator.stackTrace, initiator.asyncStackTrace);
+            content = WebInspector.DOMPresentationUtils.buildStackTracePreviewContents(request.target(), this._popupLinkifier, initiator.stack);
             popover.setCanShrink(true);
         } else {
             content = WebInspector.RequestTimingView.createTimingTable(anchor.parentElement.request, this._timeCalculator.minimumBoundary());
