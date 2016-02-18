@@ -60,7 +60,7 @@ SourceMapV3.Offset = function()
 }
 
 /**
- * Implements Source Map V3 model. See http://code.google.com/p/closure-compiler/wiki/SourceMaps
+ * Implements Source Map V3 model. See https://github.com/google/closure-compiler/wiki/Source-Maps
  * for format description.
  * @constructor
  * @param {string} compiledURL
@@ -238,6 +238,14 @@ WebInspector.SourceMap.prototype = {
         {
             return lineNumber - mapping.sourceLineNumber;
         }
+    },
+
+    /**
+     * @return {!Array<!WebInspector.SourceMap.Entry>}
+     */
+    mappings: function()
+    {
+        return this._mappings;
     },
 
     /**
