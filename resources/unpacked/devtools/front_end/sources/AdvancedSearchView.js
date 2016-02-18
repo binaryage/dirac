@@ -28,7 +28,7 @@ WebInspector.AdvancedSearchView = function()
     this._search.setAttribute("type", "text");
     this._search.classList.add("search-config-search");
     this._search.setAttribute("results", "0");
-    this._search.setAttribute("size", 30);
+    this._search.setAttribute("size", 42);
 
     this._ignoreCaseLabel = createCheckboxLabel(WebInspector.UIString("Ignore case"));
     this._ignoreCaseLabel.classList.add("search-config-label");
@@ -45,7 +45,6 @@ WebInspector.AdvancedSearchView = function()
     this._searchToolbarElement = this.contentElement.createChild("div", "search-toolbar-summary");
     this._searchMessageElement = this._searchToolbarElement.createChild("div", "search-message");
     this._searchProgressPlaceholderElement = this._searchToolbarElement.createChild("div", "flex-centered");
-    this._searchToolbarElement.createChild("div", "search-message-spacer");
     this._searchResultsMessageElement = this._searchToolbarElement.createChild("div", "search-message");
 
     this._advancedSearchConfig = WebInspector.settings.createLocalSetting("advancedSearchConfig", new WebInspector.SearchConfig("", true, false).toPlainObject());

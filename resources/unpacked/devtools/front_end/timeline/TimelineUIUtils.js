@@ -120,6 +120,11 @@ WebInspector.TimelineUIUtils._initEventStyles = function()
     eventStyles[recordTypes.ResizeImage] = new WebInspector.TimelineRecordStyle(WebInspector.UIString("Image Resize"), categories["painting"]);
     eventStyles[recordTypes.GPUTask] = new WebInspector.TimelineRecordStyle(WebInspector.UIString("GPU"), categories["gpu"]);
     eventStyles[recordTypes.LatencyInfo] = new WebInspector.TimelineRecordStyle(WebInspector.UIString("Input Latency"), categories["scripting"]);
+
+    eventStyles[recordTypes.GCIdleLazySweep] = new WebInspector.TimelineRecordStyle(WebInspector.UIString("DOM GC"), categories["scripting"]);
+    eventStyles[recordTypes.GCCompleteSweep] = new WebInspector.TimelineRecordStyle(WebInspector.UIString("DOM GC"), categories["scripting"]);
+    eventStyles[recordTypes.GCCollectGarbage] = new WebInspector.TimelineRecordStyle(WebInspector.UIString("DOM GC"), categories["scripting"]);
+
     WebInspector.TimelineUIUtils._eventStylesMap = eventStyles;
     return eventStyles;
 }
@@ -151,6 +156,7 @@ WebInspector.TimelineUIUtils.categoryForRecord = function(record)
     return WebInspector.TimelineUIUtils.eventStyle(record.traceEvent()).category;
 }
 
+
 /**
  * @param {!WebInspector.TracingModel.Event} event
  * @return {!{title: string, category: !WebInspector.TimelineCategory}}
@@ -158,9 +164,15 @@ WebInspector.TimelineUIUtils.categoryForRecord = function(record)
 WebInspector.TimelineUIUtils.eventStyle = function(event)
 {
     var eventStyles = WebInspector.TimelineUIUtils._initEventStyles();
-    if (event.hasCategory(WebInspector.TimelineModel.Category.Console) || event.hasCategory(WebInspector.TimelineModel.Category.UserTiming) || event.hasCategory(WebInspector.TimelineModel.Category.LatencyInfo))
+    if (event.hasCategory(WebInspector.TimelineModel.Category.Console) || event.hasCategory(WebInspector.TimelineModel.Category.UserTiming))
         return { title: event.name, category: WebInspector.TimelineUIUtils.categories()["scripting"] };
 
+    if (event.hasCategory(WebInspector.TimelineModel.Category.LatencyInfo)) {
+        /** @const */
+        var prefix = "InputLatency::";
+        var name = event.name.startsWith(prefix) ? event.name.substr(prefix.length) : event.name;
+        return { title: name, category: WebInspector.TimelineUIUtils.categories()["scripting"] };
+    }
     var result = eventStyles[event.name];
     if (!result) {
         result = new WebInspector.TimelineRecordStyle(event.name,  WebInspector.TimelineUIUtils.categories()["other"], true);
@@ -412,6 +424,18 @@ WebInspector.TimelineUIUtils.buildDetailsTextForTraceEvent = function(event, tar
         detailsText = eventData && eventData["name"];
         break;
 
+    case recordType.GCIdleLazySweep:
+        detailsText = WebInspector.UIString("idle sweep");
+        break;
+
+    case recordType.GCCompleteSweep:
+        detailsText = WebInspector.UIString("complete sweep");
+        break;
+
+    case recordType.GCCollectGarbage:
+        detailsText = WebInspector.UIString("collect");
+        break;
+
     default:
         if (event.hasCategory(WebInspector.TimelineModel.Category.Console))
             detailsText = null;
@@ -474,6 +498,9 @@ WebInspector.TimelineUIUtils.buildDetailsNodeForTraceEvent = function(event, tar
     case recordType.WebSocketSendHandshakeRequest:
     case recordType.WebSocketReceiveHandshakeResponse:
     case recordType.WebSocketDestroy:
+    case recordType.GCIdleLazySweep:
+    case recordType.GCCompleteSweep:
+    case recordType.GCCollectGarbage:
         detailsText = WebInspector.TimelineUIUtils.buildDetailsTextForTraceEvent(event, target);
         break;
     case recordType.PaintImage:
@@ -1807,7 +1834,7 @@ WebInspector.TimelineUIUtils.colorForURL = function(url)
 {
     if (!WebInspector.TimelineUIUtils.colorForURL._colorGenerator) {
         WebInspector.TimelineUIUtils.colorForURL._colorGenerator = new WebInspector.FlameChart.ColorGenerator(
-            { min: 40, max: 310, count: 10 },
+            { min: 30, max: 330 },
             { min: 50, max: 80, count: 3 },
             85);
     }

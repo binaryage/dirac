@@ -211,9 +211,11 @@ WebInspector.FlameChartDataProvider.prototype = {
      * @param {number} barY
      * @param {number} barWidth
      * @param {number} barHeight
+     * @param {number} unclippedBarX
+     * @param {number} timeToPixels
      * @return {boolean}
      */
-    decorateEntry: function(entryIndex, context, text, barX, barY, barWidth, barHeight) { },
+    decorateEntry: function(entryIndex, context, text, barX, barY, barWidth, barHeight, unclippedBarX, timeToPixels) { },
 
     /**
      * @param {number} entryIndex
@@ -287,28 +289,29 @@ WebInspector.FlameChart.Events = {
 
 /**
  * @constructor
- * @param {!{min: number, max: number, count: number}|number=} hueSpace
+ * @param {!{min: number, max: number}|number=} hueSpace
  * @param {!{min: number, max: number, count: number}|number=} satSpace
  * @param {!{min: number, max: number, count: number}|number=} lightnessSpace
  * @param {!{min: number, max: number, count: number}|number=} alphaSpace
  */
 WebInspector.FlameChart.ColorGenerator = function(hueSpace, satSpace, lightnessSpace, alphaSpace)
 {
-    this._hueSpace = hueSpace || { min: 0, max: 360, count: 20 };
+    this._hueSpace = hueSpace || { min: 0, max: 360 };
     this._satSpace = satSpace || 67;
     this._lightnessSpace = lightnessSpace || 80;
     this._alphaSpace = alphaSpace || 1;
-    this._colors = {};
+    /** @type {!Map<string, string>} */
+    this._colors = new Map();
 }
 
 WebInspector.FlameChart.ColorGenerator.prototype = {
     /**
      * @param {string} id
-     * @param {string|!CanvasGradient} color
+     * @param {string} color
      */
     setColorForID: function(id, color)
     {
-        this._colors[id] = color;
+        this._colors.set(id, color);
     },
 
     /**
@@ -317,10 +320,10 @@ WebInspector.FlameChart.ColorGenerator.prototype = {
      */
     colorForID: function(id)
     {
-        var color = this._colors[id];
+        var color = this._colors.get(id);
         if (!color) {
             color = this._generateColorForID(id);
-            this._colors[id] = color;
+            this._colors.set(id, color);
         }
         return color;
     },
@@ -331,8 +334,8 @@ WebInspector.FlameChart.ColorGenerator.prototype = {
      */
     _generateColorForID: function(id)
     {
-        var hash = Math.abs(String.hashCode(id));
-        var h = this._indexToValueInSpace(hash, this._hueSpace);
+        var hash = String.hashCode(id);
+        var h = this._indexToDistinctValueInSpace(this._colors.size, this._hueSpace);
         var s = this._indexToValueInSpace(hash, this._satSpace);
         var l = this._indexToValueInSpace(hash, this._lightnessSpace);
         var a = this._indexToValueInSpace(hash, this._alphaSpace);
@@ -350,6 +353,28 @@ WebInspector.FlameChart.ColorGenerator.prototype = {
             return space;
         index %= space.count;
         return space.min + Math.floor(index / (space.count - 1) * (space.max - space.min));
+    },
+
+    /**
+     * @param {number} index
+     * @param {!{min: number, max: number}|number} space
+     * @return {number}
+     */
+    _indexToDistinctValueInSpace: function(index, space)
+    {
+        if (typeof space === "number")
+            return space;
+        index |= 0;
+        var result = 0;
+        var count = 0;
+        // Reverse bits in index.
+        do {
+            result = (result << 1) | (index & 1);
+            index >>= 1;
+            ++count;
+        } while (index);
+        result /= 1 << count;
+        return space.min + Math.floor(result * (space.max - space.min));
     }
 }
 
@@ -1124,7 +1149,6 @@ WebInspector.FlameChart.prototype = {
 
         var barHeight = this._barHeight;
 
-        var textBaseHeight = this._baseHeight + barHeight - this._dataProvider.textBaseline();
         var colorBuckets = {};
         var minVisibleBarLevel = Math.max(Math.floor((this._scrollTop - this._baseHeight) / barHeight), 0);
         var maxVisibleBarLevel = Math.min(Math.floor((this._scrollTop - this._baseHeight + height) / barHeight), this._dataProvider.maxStackDepth());
@@ -1209,6 +1233,7 @@ WebInspector.FlameChart.prototype = {
         context.stroke();
 
         context.textBaseline = "alphabetic";
+        var textBaseHeight = this._barHeight - this._dataProvider.textBaseline();
 
         for (var i = 0; i < nextTitleIndex; ++i) {
             var entryIndex = titleIndices[i];
@@ -1223,13 +1248,13 @@ WebInspector.FlameChart.prototype = {
                 context.font = this._dataProvider.entryFont(entryIndex);
                 text = this._prepareText(context, text, barWidth - 2 * textPadding);
             }
-            if (this._dataProvider.decorateEntry(entryIndex, context, text, barX, barY, barWidth, barHeight))
+            var unclippedBarX = this._timeToPosition(entryStartTime);
+            if (this._dataProvider.decorateEntry(entryIndex, context, text, barX, barY, barWidth, barHeight, unclippedBarX, this._timeToPixel))
                 continue;
             if (!text || !text.length)
                 continue;
-
             context.fillStyle = this._dataProvider.textColor(entryIndex);
-            context.fillText(text, barX + textPadding, textBaseHeight - barLevel * this._barHeightDelta);
+            context.fillText(text, barX + textPadding, barY + textBaseHeight);
         }
 
         this._drawFlowEvents(context, width, height);

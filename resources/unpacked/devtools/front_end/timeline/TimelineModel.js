@@ -161,6 +161,9 @@ WebInspector.TimelineModel.RecordType = {
     InputLatencyMouseMove: "InputLatency::MouseMove",
     InputLatencyMouseWheel: "InputLatency::MouseWheel",
     ImplSideFling: "InputHandlerProxy::HandleGestureFling::started",
+    GCIdleLazySweep: "ThreadState::performIdleLazySweep",
+    GCCompleteSweep: "ThreadState::completeSweep",
+    GCCollectGarbage: "Heap::collectGarbage",
 
     // CpuProfile is a virtual event created on frontend to support
     // serialization of CPU Profiles within tracing timeline data.
@@ -261,6 +264,7 @@ WebInspector.TimelineModel.forAllRecords = function(recordsArray, preOrderCallba
 WebInspector.TimelineModel.TransferChunkLengthBytes = 5000000;
 
 WebInspector.TimelineModel.DevToolsMetadataEvent = {
+    TracingStartedInBrowser: "TracingStartedInBrowser",
     TracingStartedInPage: "TracingStartedInPage",
     TracingSessionIdForWorker: "TracingSessionIdForWorker",
 };
@@ -764,10 +768,14 @@ WebInspector.TimelineModel.prototype = {
         var pageDevToolsMetadataEvents = [];
         var workersDevToolsMetadataEvents = [];
         for (var event of metadataEvents) {
-            if (event.name === WebInspector.TimelineModel.DevToolsMetadataEvent.TracingStartedInPage)
+            if (event.name === WebInspector.TimelineModel.DevToolsMetadataEvent.TracingStartedInPage) {
                 pageDevToolsMetadataEvents.push(event);
-            else if (event.name === WebInspector.TimelineModel.DevToolsMetadataEvent.TracingSessionIdForWorker)
+            } else if (event.name === WebInspector.TimelineModel.DevToolsMetadataEvent.TracingSessionIdForWorker) {
                 workersDevToolsMetadataEvents.push(event);
+            } else if (event.name === WebInspector.TimelineModel.DevToolsMetadataEvent.TracingStartedInBrowser) {
+                console.assert(!this._mainFrameNodeId, "Multiple sessions in trace");
+                this._mainFrameNodeId = event.args["frameTreeNodeId"];
+            }
         }
         if (!pageDevToolsMetadataEvents.length) {
             // The trace is probably coming not from DevTools. Make a mock Metadata event.
@@ -896,6 +904,8 @@ WebInspector.TimelineModel.prototype = {
         var browserMain = this._tracingModel.threadByName("Browser", "CrBrowserMain");
         if (!browserMain)
             return;
+        // Disregard regular events, we don't need them yet, but still process to get proper metadata.
+        browserMain.events().forEach(this._processBrowserEvent, this);
         /** @type {!Map<!WebInspector.AsyncEventGroup, !Array<!WebInspector.TracingModel.AsyncEvent>>} */
         var asyncEventsByGroup = new Map();
         this._processAsyncEvents(asyncEventsByGroup, browserMain.asyncEvents());
@@ -1245,15 +1255,6 @@ WebInspector.TimelineModel.prototype = {
                 event.warning = WebInspector.TimelineModel.WarningType.IdleDeadlineExceeded;
             }
             break;
-
-        case recordTypes.LatencyInfoFlow:
-            if (typeof event.args["layerTreeId"] !== "undefined" && event.args["layerTreeId"] !== this._inspectedTargetLayerTreeId)
-                break;
-            this._knownInputEvents.add(event.bind_id);
-            break;
-
-        case recordTypes.Animation:
-            break;
         }
         if (WebInspector.TracingModel.isAsyncPhase(event.phase))
             return true;
@@ -1273,6 +1274,18 @@ WebInspector.TimelineModel.prototype = {
         event.selfTime = duration;
         eventStack.push(event);
         return true;
+    },
+
+    /**
+     * @param {!WebInspector.TracingModel.Event} event
+     */
+    _processBrowserEvent: function(event)
+    {
+        if (event.name !== WebInspector.TimelineModel.RecordType.LatencyInfoFlow)
+            return;
+        var frameId = event.args["frameTreeNodeId"];
+        if (typeof frameId === "number" && frameId === this._mainFrameNodeId)
+            this._knownInputEvents.add(event.bind_id);
     },
 
     /**
@@ -1297,14 +1310,11 @@ WebInspector.TimelineModel.prototype = {
                 return null;
             var data = lastStep.args["data"];
             asyncEvent.causedFrame = !!(data && data["INPUT_EVENT_LATENCY_RENDERER_SWAP_COMPONENT"]);
-            if (asyncEvent.name === WebInspector.TimelineModel.RecordType.InputLatencyMouseMove) {
-                // Skip events that don't belong to this renderer.
-                // FIXME: this should eventually be applied to all input latencies, but it only works for certain events now.
+            if (asyncEvent.hasCategory(WebInspector.TimelineModel.Category.LatencyInfo)) {
                 if (!this._knownInputEvents.has(lastStep.id))
                     return null;
-                if (!asyncEvent.causedFrame)
+                if (asyncEvent.name === WebInspector.TimelineModel.RecordType.InputLatencyMouseMove && !asyncEvent.causedFrame)
                     return null;
-
             }
             return groups.input;
         }
@@ -1384,6 +1394,8 @@ WebInspector.TimelineModel.prototype = {
         this._eventDividerRecords = [];
         /** @type {?string} */
         this._sessionId = null;
+        /** @type {?number} */
+        this._mainFrameNodeId = null;
         this._loadedFromFile = false;
         this.dispatchEventToListeners(WebInspector.TimelineModel.Events.RecordsCleared);
     },
@@ -1540,6 +1552,8 @@ WebInspector.TimelineModel.NetworkRequest = function(event)
 {
     this.startTime = event.name === WebInspector.TimelineModel.RecordType.ResourceSendRequest ? event.startTime : 0;
     this.endTime = Infinity;
+    /** @type {!Array<!WebInspector.TracingModel.Event>} */
+    this.children = [];
     this.addEvent(event);
 }
 
@@ -1549,6 +1563,7 @@ WebInspector.TimelineModel.NetworkRequest.prototype = {
      */
     addEvent: function(event)
     {
+        this.children.push(event);
         var recordType = WebInspector.TimelineModel.RecordType;
         this.startTime = Math.min(this.startTime, event.startTime);
         var eventData = event.args["data"];

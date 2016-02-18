@@ -178,7 +178,6 @@ WebInspector.Main.prototype = {
         WebInspector.ContextMenu.installHandler(document);
         WebInspector.Tooltip.installHandler(document);
         WebInspector.dockController = new WebInspector.DockController(canDock);
-        WebInspector.emulatedDevicesList = new WebInspector.EmulatedDevicesList();
         WebInspector.multitargetConsoleModel = new WebInspector.MultitargetConsoleModel();
         WebInspector.multitargetNetworkManager = new WebInspector.MultitargetNetworkManager();
 
@@ -204,7 +203,7 @@ WebInspector.Main.prototype = {
 
         new WebInspector.OverlayController();
         new WebInspector.ExecutionContextSelector(WebInspector.targetManager, WebInspector.context);
-        new WebInspector.BlackboxManager();
+        WebInspector.blackboxManager = new WebInspector.BlackboxManager(WebInspector.debuggerWorkspaceBinding, WebInspector.networkMapping);
 
         var autoselectPanel = WebInspector.UIString("auto");
         var openAnchorLocationSetting = WebInspector.settings.createSetting("openLinkHandler", autoselectPanel);
@@ -239,7 +238,7 @@ WebInspector.Main.prototype = {
         // It is important to kick controller lifetime after apps are instantiated.
         WebInspector.dockController.initialize();
         console.timeStamp("Main._presentUI");
-        app.presentUI(document, this._didPresentAppUI.bind(this));
+        app.presentUI(document);
 
         var toggleSearchNodeAction = WebInspector.actionRegistry.action("elements.toggle-element-search");
         InspectorFrontendHost.events.addEventListener(InspectorFrontendHostAPI.Events.EnterInspectElementMode, toggleSearchNodeAction.execute.bind(toggleSearchNodeAction), this);
@@ -261,8 +260,8 @@ WebInspector.Main.prototype = {
         {
             handler.handleQueryParam(value);
         }
-        this._appUIShown = true;
 
+        this._appUIShown = true;
         if (this._fileSystemManagerInitialized) {
             // Allow UI cycles to repaint prior to creating connection.
             setTimeout(this._createConnection.bind(this), 0);
@@ -324,19 +323,6 @@ WebInspector.Main.prototype = {
         if (this._mainTarget.isServiceWorker() || this._mainTarget.isPage())
             this._mainTarget.runtimeAgent().run();
 
-        if (this._appUIPresented)
-            this._loadingDone();
-    },
-
-    _didPresentAppUI: function()
-    {
-        this._appUIPresented = true;
-        if (this._mainTarget)
-            this._loadingDone();
-    },
-
-    _loadingDone: function()
-    {
         this._mainTarget.inspectorAgent().enable(inspectorAgentEnableCallback);
 
         function inspectorAgentEnableCallback()
