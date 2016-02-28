@@ -8,8 +8,17 @@
             [dirac.background.action :as action]
             [dirac.utils :as utils]))
 
+(defn dirac-dev? []
+  (boolean (oget js/window "diracDev")))
+
+(defn get-dirac-main-html-file-path []
+  (if (dirac-dev?)
+    "devtools/front_end/dirac-dev.html"
+    "devtools/front_end/dirac-rel.html"))
+
 (defn get-devtools-url [backend-url flags]
-  (runtime/get-url (str "devtools/front_end/inspector.html?dirac_flags=" flags "&ws=" backend-url)))
+  (let [html-file-path (get-dirac-main-html-file-path)]
+    (runtime/get-url (str html-file-path "?dirac_flags=" flags "&ws=" backend-url))))
 
 (defn tab-log-prefix [tab-id]
   (str "TAB #" tab-id ":"))
