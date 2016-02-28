@@ -21,6 +21,7 @@
     { "name": "audits" },
     { "name": "devices" },
     { "name": "security" },
+    { "name": "dirac", "type": "autostart" },
     { "name": "console" },
     { "name": "source_frame" },
     { "name": "cm_modes", "type": "remote" },

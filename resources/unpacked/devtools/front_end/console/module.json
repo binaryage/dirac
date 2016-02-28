@@ -81,7 +81,7 @@
         }
     ],
     "dependencies": [
-        "components", "ui_lazy", "source_frame"
+        "components", "ui_lazy", "source_frame", "dirac"
     ],
     "scripts": [
         "clojure-parinfer.js",

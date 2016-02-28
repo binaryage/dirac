@@ -13,8 +13,8 @@
 
 (defn get-dirac-main-html-file-path []
   (if (dirac-dev?)
-    "devtools/front_end/dirac-dev.html"
-    "devtools/front_end/dirac-rel.html"))
+    "devtools/front_end/inspector.html"
+    "devtools/inspector.html"))
 
 (defn get-devtools-url [backend-url flags]
   (let [html-file-path (get-dirac-main-html-file-path)]

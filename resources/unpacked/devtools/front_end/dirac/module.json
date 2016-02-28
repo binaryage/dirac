@@ -1,0 +1,11 @@
+{
+    "dependencies": [
+    ],
+    "scripts": [
+        "dirac.js",
+        "compiled/implant/implant.js",
+        "require-implant.js"
+    ],
+    "resources": [
+    ]
+}
