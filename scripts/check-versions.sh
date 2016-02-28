@@ -52,6 +52,6 @@ if [ ! "$LEIN_VERSION" = "$RELEASE_MANIFEST_VERSION" ] ; then
   exit 6
 fi
 
-echo "All versions are consistent: '$LEIN_VERSION'"
+echo "All version strings are consistent: '$LEIN_VERSION'"
 
 popd
