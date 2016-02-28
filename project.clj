@@ -246,7 +246,8 @@
   ;
   ; fixtures server is running at http://localhost:9080 => /p01/resources/index.html
 
-  :aliases {"test"                         ["shell" "scripts/test-all.sh"]
+  :aliases {"check"                        ["shell" "scripts/check-code.sh"]
+            "test"                         ["shell" "scripts/test-all.sh"]
             "test-backend"                 ["with-profile" "+backend-tests"
                                             "run" "-m" "dirac.backend-tests-runner"]
             "test-browser"                 ["with-profile" "+cljs,+browser-tests,+browser-fixtures,+marion,+packed"

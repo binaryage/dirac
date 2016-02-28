@@ -6,6 +6,11 @@
         "compiled/implant/implant.js",
         "require-implant.js"
     ],
+    "skip_compilation": [
+        "dirac.js",
+        "compiled/implant/implant.js",
+        "require-implant.js"
+    ],
     "resources": [
     ]
 }
