@@ -16,14 +16,14 @@
                  [http-kit "2.1.21-alpha2"]
                  [clj-logging-config "1.9.12"]
                  [version-clj "0.1.2"]
-                 [environ "1.0.1"]
+                 [environ "1.0.2"]
 
                  ; we cannot use :dependencies under individual profiles because Cursive recognizes only root level
                  ; thus we mark extra deps with :scope "test" and filter them later when producing jar library
                  [binaryage/chromex "0.2.0" :scope "test"]
                  [binaryage/devtools "0.5.2" :scope "test"]
                  [cljs-http "0.1.39" :scope "test"]
-                 [figwheel "0.5.0-4" :scope "test"]
+                 [figwheel "0.5.0-6" :scope "test"]
                  [reforms "0.4.3" :scope "test"]
                  [rum "0.6.0" :scope "test"]
                  [rum-reforms "0.4.3" :scope "test"]
@@ -31,12 +31,12 @@
                  [com.lucasbradstreet/cljs-uuid-utils "1.0.2" :scope "test"]
 
                  [http.async.client "1.1.0" :scope "test"]
-                 [org.slf4j/slf4j-log4j12 "1.7.13" :scope "test"]
+                 [org.slf4j/slf4j-log4j12 "1.7.18" :scope "test"]
 
                  [clj-webdriver "0.7.2" :scope "test"]
-                 [org.seleniumhq.selenium/selenium-java "2.50.0" :scope "test"]
-                 [org.seleniumhq.selenium/selenium-chrome-driver "2.50.0" :scope "test"]
-                 [org.seleniumhq.selenium/selenium-support "2.50.0" :scope "test"]
+                 [org.seleniumhq.selenium/selenium-java "2.52.0" :scope "test"]
+                 [org.seleniumhq.selenium/selenium-chrome-driver "2.52.0" :scope "test"]
+                 [org.seleniumhq.selenium/selenium-support "2.52.0" :scope "test"]
 
                  [ring/ring-core "1.4.0" :scope "test"]
                  [ring/ring-devel "1.4.0" :scope "test"]
@@ -95,7 +95,7 @@
 
              :cljs
              {:plugins [[lein-cljsbuild "1.1.2"]
-                        [lein-figwheel "0.5.0-4"]]
+                        [lein-figwheel "0.5.0-6"]]
               :hooks   [leiningen.cljsbuild]}
 
              :backend-tests
