@@ -21,4 +21,4 @@ before_script:
   - mv chromedriver test/chromedriver
   - export CHROME_DRIVER_PATH=`pwd`/test/chromedriver
 
-script: scripts/test.sh
+script: scripts/test-all.sh
