@@ -71,8 +71,9 @@ def to_platform_path_exact(filepath):
 
 scripts_path = path.dirname(path.abspath(__file__))
 devtools_path = path.dirname(scripts_path)
-inspector_path = path.join(path.dirname(devtools_path), 'core', 'inspector')
-v8_inspector_path = path.join(path.dirname(devtools_path), 'platform', 'v8_inspector')
+webkit_path = path.join(devtools_path, '..', '..', '..', '..', 'chromium-mirror', 'third_party', 'WebKit', 'Source')
+inspector_path = path.join(webkit_path, 'core', 'inspector')
+v8_inspector_path = path.join(webkit_path, 'platform', 'v8_inspector')
 devtools_frontend_path = path.join(devtools_path, 'front_end')
 patched_es6_externs_file = to_platform_path(path.join(devtools_frontend_path, 'es6.js'))
 global_externs_file = to_platform_path(path.join(devtools_frontend_path, 'externs.js'))
