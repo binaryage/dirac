@@ -189,7 +189,7 @@
                                                        "checkouts/chromex/src/lib"
                                                        "checkouts/chromex/src/exts"]}}}}
              :packed
-             {:env       {:chromex-elide-verbose-logging true}
+             {:env       {:chromex-elide-verbose-logging "true"}
               :cljsbuild {:builds
                           {:dirac-implant
                            {:source-paths ["src/implant"
