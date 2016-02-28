@@ -12,6 +12,7 @@
 /resources/release.crx
 /resources/release.pem
 /resources/release/compiled
+/resources/release/devtools
 /releases
 /.idea
 /target
