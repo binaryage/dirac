@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+# this task is to be run after running release.sh script
+# it copies release files and packages them into a zip file with versioned filename
+
 set -e
 
 . "$(dirname "${BASH_SOURCE[0]}")/config.sh"
@@ -44,19 +47,7 @@ if [ -d "$PACKAGE_DIR" ] ; then
   rm -rf "$PACKAGE_DIR"
 fi
 
-cp -r "$RELEASE_BUILD" "$PACKAGE_DIR" # this will copy actual files, not symlinks
-
-# prune release directory from extra files/folders
-rm -rf "$PACKAGE_DIR/compiled/background"
-rm -rf "$PACKAGE_DIR/compiled/options"
-rm "$PACKAGE_DIR/devtools/front_end/dirac/goog-base-setup.js"
-rm "$PACKAGE_DIR/devtools/front_end/dirac/require-implant.js"
-
-# we want to keep just compiled/implant.js => move implant.js out, remove whole compiled and return implant.js back
-mv "$PACKAGE_DIR/devtools/front_end/dirac/compiled/implant.js" "$PACKAGE_DIR/devtools/front_end/dirac/implant.js"
-rm -rf "$PACKAGE_DIR/devtools/front_end/dirac/compiled"
-mkdir "$PACKAGE_DIR/devtools/front_end/dirac/compiled"
-mv "$PACKAGE_DIR/devtools/front_end/dirac/implant.js" "$PACKAGE_DIR/devtools/front_end/dirac/compiled/implant.js"
+cp -r "$RELEASE_BUILD" "$PACKAGE_DIR" # this will copy actual files, not symlinks (if any)
 
 pushd "$PACKAGE_DIR"
 
