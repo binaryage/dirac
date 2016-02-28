@@ -47,7 +47,13 @@
 
   ;  :jvm-opts ["-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5005"]
 
-  :source-paths ["src"]                                                                                                       ; this is for Cursive, will be redefined by profiles
+  :source-paths ["src"
+                 "test/backend"
+                 "test/browser-fixtures"
+                 "test/browser"
+                 "test/backend"
+                 "test/marion/src"
+                 "test/support"]                                                                                              ; this is for Cursive, will be redefined by profiles
   :resource-paths ["resources"]                                                                                               ; this is for Cursive, will be redefined by profiles
   :test-paths ["test"]                                                                                                        ; this is for Cursive, will be redefined by profiles
 
@@ -186,15 +192,17 @@
              {:env       {:chromex-elide-verbose-logging true}
               :cljsbuild {:builds
                           {:dirac-implant
-                           {:source-paths ["src/implant"]
-                            :compiler     {:output-to     "resources/unpacked/devtools/front_end/dirac/compiled/implant.js"
-                                           :output-dir    "resources/unpacked/devtools/front_end/dirac/compiled"
-                                           :asset-path    "dirac/_compiled/implant"
+                           {:source-paths ["src/implant"
+                                           "src/project"]
+                            :compiler     {:output-to     "resources/release/devtools/front_end/dirac/compiled/implant.js"
+                                           :output-dir    "resources/release/devtools/front_end/dirac/compiled"
+                                           :asset-path    "dirac/compiled/implant"
                                            :optimizations :advanced
                                            :elide-asserts true}}
                            :dirac-background
                            {:source-paths ["src/rel"
                                            "src/shared"
+                                           "src/project"
                                            "src/background"]
                             :compiler     {:output-to     "resources/release/compiled/background.js"
                                            :output-dir    "resources/release/compiled/background"
@@ -204,6 +212,7 @@
                            :dirac-options
                            {:source-paths ["src/rel"
                                            "src/shared"
+                                           "src/project"
                                            "src/options"]
                             :compiler     {:output-to     "resources/release/compiled/options.js"
                                            :output-dir    "resources/release/compiled/options"
@@ -223,15 +232,27 @@
              :nuke-aliases
              {:aliases ^:replace {}}}
 
+  ; to develop browser tests:
+  ;
+  ; terminal session1: ./scripts/fixtures-server.sh
+  ; terminal session2: ./scripts/launch-browser-tests-canary.sh
+  ;
+  ; don't forget to load unpacked extensions
+  ;   * dirac: resources/unpacked
+  ;   * marion: test/marion/resources/unpacked
+  ;
+  ; terminal session3: lein fig
+  ; terminal session4: lein dev-browser-tests
+  ;
+  ; fixtures server is running at http://localhost:9080 => /p01/resources/index.html
+
   :aliases {"test"                         ["test-backend"]
             "test-backend"                 ["with-profile" "+backend-tests"
                                             "run" "-m" "dirac.backend-tests-runner"]
-            "test-browser"                 ["with-profile" "+cljs,+browser-tests,+browser-fixtures,+marion,+unpacked,+checkouts"
+            "test-browser"                 ["with-profile" "+cljs,+browser-tests,+browser-fixtures,+marion,+packed"
                                             "do"
-                                            "cljsbuild" "once"
-                                            "marion-background" "marion-content-script"
-                                            "dirac-background" "dirac-implant" "dirac-options"
-                                            "p01,"
+                                            "release,"
+                                            "cljsbuild" "once" "marion-background" "marion-content-script" "p01,"
                                             "run" "-m" "dirac.browser-tests-runner"]
             "test-browser-dev"             ["with-profile" "+cljs,+browser-tests,+browser-fixtures,+marion,+unpacked,+checkouts"
                                             "do"
@@ -239,7 +260,11 @@
                                             "marion-background" "marion-content-script"
                                             "dirac-background" "dirac-implant" "dirac-options"
                                             "p01,"
-                                            "run" "-m" "dirac.browser-tests-runner"]
+                                            "run" "-m" "dirac.browser-tests-runner/-dev-main"]
+            "dev-browser-tests"            ["with-profile" "+cljs,+browser-tests,+browser-fixtures,+marion,+unpacked,+checkouts"
+                                            "cljsbuild" "auto"
+                                            "marion-background" "marion-content-script"
+                                            "p01"]
             "jar"                          ["shell" "scripts/lein-lib-without-checkouts.sh" "jar"]
             "install"                      ["shell" "scripts/lein-lib-without-checkouts.sh" "install"]
             "uberjar"                      ["shell" "scripts/lein-lib-without-checkouts.sh" "uberjar"]

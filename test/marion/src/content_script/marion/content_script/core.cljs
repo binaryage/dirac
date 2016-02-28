@@ -1,6 +1,7 @@
 (ns marion.content-script.core
   (:require-macros [cljs.core.async.macros :refer [go-loop]])
   (:require [cljs.core.async :refer [<!]]
+            [marion.content-script.embedcom :as embedcom]
             [chromex.logging :refer-macros [log info warn error group group-end]]
             [chromex.protocols :refer [post-message!]]
             [chromex.ext.runtime :as runtime :refer-macros [connect]]))
@@ -18,21 +19,14 @@
       (recur))
     (log "CONTENT SCRIPT: leaving message loop")))
 
-; -- a simple page analysis  ------------------------------------------------------------------------------------------------
-
-(defn do-page-analysis! [background-port]
-  (let [script-elements (.getElementsByTagName js/document "script")
-        script-count (.-length script-elements)
-        title (.-title js/document)
-        msg (str "CONTENT SCRIPT: document '" title "' contains " script-count " script tags.")]
-    (log msg)
-    (post-message! background-port msg)))
+(defn page-event-handler [background-port page-event]
+  (log "CONTENT SCRIPT: received page event" page-event)
+  (post-message! background-port page-event))
 
 (defn connect-to-background-page! []
   (let [background-port (runtime/connect)]
-    (post-message! background-port "hello from CONTENT SCRIPT!")
-    (run-message-loop! background-port)
-    (do-page-analysis! background-port)))
+    (embedcom/install! (partial page-event-handler background-port))
+    (run-message-loop! background-port)))
 
 ; -- main entry point -------------------------------------------------------------------------------------------------------
 

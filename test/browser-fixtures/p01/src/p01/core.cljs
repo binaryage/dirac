@@ -1,6 +1,14 @@
 (ns p01.core
-  (:require [devtools.core :as devtools]))
+  (:refer-clojure :exclude [run!])
+  (:require [dirac.fixtures :as fixtures]))
 
-(defn ^:export start []
-  (devtools/enable-feature! :dirac :sanity-hints)
-  (devtools/install!))
+(defn setup! []
+  (fixtures/init-devtools!)
+  (fixtures/init-transcript! "transcript-box"))
+
+(defn run! []
+  (setup!)
+  (fixtures/do! {:command      :fire-synthetic-chrome-event
+                 :chrome-event [:chromex.ext.commands/on-command ["open-dirac-devtools"]]}))
+
+(run!)

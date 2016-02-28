@@ -12,7 +12,8 @@
     "persistent": true
   },
   "permissions": [
-    "experimental"
+    "experimental",
+    "management"
   ],
   "content_scripts": [
     {

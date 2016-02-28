@@ -17,3 +17,7 @@
     (require-namespaces test-namespaces)                                                                                      ; we want to require namespaces dynamically for our loggging configuration to take effect
     (let [summary (apply run-tests test-namespaces)]
       (System/exit (if (successful? summary) 0 1)))))
+
+(defn -dev-main []
+  (System/setProperty "dirac-dev" "true")
+  (-main))

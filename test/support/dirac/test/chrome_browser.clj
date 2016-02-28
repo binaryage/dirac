@@ -5,7 +5,7 @@
             [clojure.string :as string]
             [clojure.java.io :as io])
   (:import (org.openqa.selenium.chrome ChromeDriver ChromeOptions ChromeDriverService$Builder)
-           (org.openqa.selenium.remote RemoteWebDriver DesiredCapabilities)
+           (org.openqa.selenium.remote DesiredCapabilities)
            (java.nio.file Paths)))
 
 (def current-chrome-driver-service (atom nil))
@@ -24,23 +24,30 @@
       (.usingAnyFreePort builder))
     (.build builder)))
 
+(defn get-dirac-extension-path [dirac-root dev?]
+  (if dev?
+    [dirac-root "resources" "unpacked"]
+    [dirac-root "resources" "release"]))
+
+(defn get-marion-extension-path [dirac-root]
+  [dirac-root "test" "marion" "resources" "unpacked"])                                                                        ; note: we always use dev version, it is just a helper extension, no need for advanced compliation here
+
 (defn prepare-caps [attaching? options]
-  (let [caps (DesiredCapabilities/chrome)
+  (let [{:keys [dirac-root dirac-dev travis debugger-port]} options
+        caps (DesiredCapabilities/chrome)
         chrome-options (ChromeOptions.)
-        dirac-root (:dirac-root options)
-        extension-paths [[dirac-root "resources" "unpacked"]
-                         [dirac-root "test" "marion" "resources" "unpacked"]]
+        extension-paths [(get-dirac-extension-path dirac-root dirac-dev)
+                         (get-marion-extension-path dirac-root)]
         absolute-extension-paths (map #(.toAbsolutePath (Paths/get "" (into-array String %))) extension-paths)
         load-extensions-arg (str "load-extension=" (string/join "," absolute-extension-paths))
         args ["--enable-experimental-extension-apis"
               "--no-first-run"
               load-extensions-arg]]
-    ;(.setBinary chrome-options "/Applications/Google Chrome Canary.app/Contents/MacOS/Google Chrome Canary")
     (if attaching?
-      (.setExperimentalOption chrome-options "debuggerAddress" (str "127.0.0.1:" (:debugger-port options)))
+      (.setExperimentalOption chrome-options "debuggerAddress" (str "127.0.0.1:" debugger-port))
       (.setExperimentalOption chrome-options "detach" true))
     (.addArguments chrome-options args)
-    (when (:travis options)
+    (when travis
       (.addArguments chrome-options ["--disable-setuid-sandbox"]))
     (.setCapability caps ChromeOptions/CAPABILITY chrome-options)
     caps))
@@ -53,13 +60,13 @@
     (init-driver chrome-driver)))
 
 (defn prepare-options []
-  (let [env-settings (select-keys env [:dirac-root :travis :chrome-driver-path])
-        dirac-root (:dirac-root env-settings)
-        dirac-test-chromedriver-file (io/file dirac-root "test" "chromedriver")
+  (let [env-settings (select-keys env [:dirac-root :travis :chrome-driver-path :dirac-dev])
+        ; when testing with travis we place chrome driver binary under test/chromedriver
+        ; detect that case here and use the binary explicitely
+        dirac-test-chromedriver-file (io/file (:dirac-root env-settings) "test" "chromedriver")
         overrides (if (.exists dirac-test-chromedriver-file)
                     {:chrome-driver-path (.getAbsolutePath dirac-test-chromedriver-file)})]
-    (merge env-settings overrides {;:port    8222
-                                   :verbose false})))
+    (merge env-settings overrides {:verbose false})))
 
 (defn retrieve-remote-debugging-port []
   (to "chrome://version")
@@ -72,7 +79,7 @@
   (if-let [debug-port (retrieve-remote-debugging-port)]
     (reset! current-chrome-remote-debugging-port debug-port)
     (do
-      (println "unable toretrieve-remote-debugging-port")
+      (println "unable to retrieve-remote-debugging-port")
       (System/exit 1))))
 
 (defn disconnect-browser! []

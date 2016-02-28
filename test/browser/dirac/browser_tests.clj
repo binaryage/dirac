@@ -10,11 +10,11 @@
   (to "http://localhost:9090")
   (is (= (text "body") "fixtures web-server ready")))
 
+(def expected-p01-transcript
+  "exec{:command :fire-synthetic-chrome-event, :chrome-event [:chromex.ext.commands/on-command [\"open-dirac-devtools\"]]}")
+
 (deftest p01
   (to "http://localhost:9090/p01/resources/index.html")
-  (is (= (text "body") "P01"))
   (disconnect-browser!)
   (reconnect-browser!)
-  (to "http://localhost:9090")
-  (is (= (text "body") "fixtures web-server ready"))
-  )
+  (is (= (text "body") expected-p01-transcript)))
