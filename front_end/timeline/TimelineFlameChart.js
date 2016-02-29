@@ -77,6 +77,15 @@ WebInspector.TimelineFlameChartDataProviderBase.prototype = {
     },
 
     /**
+     * @return {number}
+     * @override
+     */
+    groupSeparatorHeight: function()
+    {
+        return 3;
+    },
+
+    /**
      * @override
      * @param {number} entryIndex
      * @return {string}
@@ -358,7 +367,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
         if (this._timelineData)
             return this._timelineData;
 
-        this._timelineData = new WebInspector.FlameChart.TimelineData([], [], []);
+        this._timelineData = new WebInspector.FlameChart.TimelineData([], [], [], []);
 
         this._flowEventIndexById = {};
         this._minimumBoundary = this._model.minimumRecordTime();
@@ -436,7 +445,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
                 e._blackboxRoot = true;
             }
             if (headerName) {
-                this._appendHeaderRecord(headerName);
+                this._appendHeader(headerName);
                 headerName = null;
             }
 
@@ -502,7 +511,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
             if (!this._isVisible(asyncEvent))
                 continue;
             if (!groupHeaderAppended) {
-                this._appendHeaderRecord(header);
+                this._appendHeader(header);
                 groupHeaderAppended = true;
             }
             var startTime = asyncEvent.startTime;
@@ -712,6 +721,17 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
     /**
      * @param {string} title
      */
+    _appendHeader: function(title)
+    {
+        if (Runtime.experiments.isEnabled("timelineCollapsible"))
+            this._timelineData.groups.push({startLevel: this._currentLevel, name: title, expanded: true});
+        else
+            this._appendHeaderRecord(title)
+    },
+
+    /**
+     * @param {string} title
+     */
     _appendHeaderRecord: function(title)
     {
         var index = this._entryData.length;
@@ -818,7 +838,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
     },
 
     /**
-     * @param {!WebInspector.Segment} segment
+     * @param {!Segment} segment
      */
     _appendSegment: function(segment)
     {
@@ -892,7 +912,7 @@ WebInspector.TimelineFlameChartNetworkDataProvider.prototype = {
             return this._timelineData;
         /** @type {!Array<!WebInspector.TimelineModel.NetworkRequest>} */
         this._requests = [];
-        this._timelineData = new WebInspector.FlameChart.TimelineData([], [], []);
+        this._timelineData = new WebInspector.FlameChart.TimelineData([], [], [], []);
         this._appendTimelineData(this._model.mainThreadEvents());
         return this._timelineData;
     },
@@ -1112,7 +1132,8 @@ WebInspector.TimelineFlameChartNetworkDataProvider.prototype = {
         this._timelineData = new WebInspector.FlameChart.TimelineData(
              this._timelineData.entryLevels,
              this._timelineData.entryTotalTimes,
-             this._timelineData.entryStartTimes);
+             this._timelineData.entryStartTimes,
+             null);
         this._currentLevel = index;
     },
 
@@ -1231,10 +1252,10 @@ WebInspector.TimelineFlameChartView = function(delegate, timelineModel, frameMod
     this._splitWidget = new WebInspector.SplitWidget(false, false, "timelineFlamechartMainView", 150);
 
     this._dataProvider = new WebInspector.TimelineFlameChartDataProvider(this._model, frameModel, irModel);
-    this._mainView = new WebInspector.FlameChart(this._dataProvider, this, true);
+    this._mainView = new WebInspector.FlameChart(this._dataProvider, this);
 
     this._networkDataProvider = new WebInspector.TimelineFlameChartNetworkDataProvider(this._model);
-    this._networkView = new WebInspector.FlameChart(this._networkDataProvider, this, true);
+    this._networkView = new WebInspector.FlameChart(this._networkDataProvider, this);
 
     if (Runtime.experiments.isEnabled("networkRequestsOnTimeline")) {
         this._splitWidget.setMainWidget(this._mainView);

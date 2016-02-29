@@ -72,6 +72,15 @@ WebInspector.CPUFlameChartDataProvider.prototype = {
     },
 
     /**
+     * @return {number}
+     * @override
+     */
+    groupSeparatorHeight: function()
+    {
+        return 5;
+    },
+
+    /**
      * @override
      * @param {number} startTime
      * @param {number} endTime
@@ -180,7 +189,7 @@ WebInspector.CPUFlameChartDataProvider.prototype = {
 
         this._maxStackDepth = maxDepth;
 
-        this._timelineData = new WebInspector.FlameChart.TimelineData(entryLevels, entryTotalTimes, entryStartTimes);
+        this._timelineData = new WebInspector.FlameChart.TimelineData(entryLevels, entryTotalTimes, entryStartTimes, null);
 
         /** @type {!Array.<!ProfilerAgent.CPUProfileNode>} */
         this._entryNodes = entryNodes;
@@ -385,7 +394,7 @@ WebInspector.CPUProfileFlameChart = function(dataProvider)
     this._overviewPane = new WebInspector.CPUProfileFlameChart.OverviewPane(dataProvider);
     this._overviewPane.show(this.element);
 
-    this._mainPane = new WebInspector.FlameChart(dataProvider, this._overviewPane, true);
+    this._mainPane = new WebInspector.FlameChart(dataProvider, this._overviewPane);
     this._mainPane.show(this.element);
     this._mainPane.addEventListener(WebInspector.FlameChart.Events.EntrySelected, this._onEntrySelected, this);
     this._overviewPane.addEventListener(WebInspector.OverviewGrid.Events.WindowChanged, this._onWindowChanged, this);

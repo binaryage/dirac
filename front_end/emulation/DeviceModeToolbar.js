@@ -13,6 +13,16 @@ WebInspector.DeviceModeToolbar = function(model, showMediaInspectorSetting, show
     this._model = model;
     this._showMediaInspectorSetting = showMediaInspectorSetting;
     this._showRulersSetting = showRulersSetting;
+
+    this._showDeviceScaleFactorSetting = WebInspector.settings.createSetting("emulation.showDeviceScaleFactor", false);
+    this._showDeviceScaleFactorSetting.addChangeListener(this._updateDeviceScaleFactorVisibility, this);
+
+    this._showUserAgentTypeSetting = WebInspector.settings.createSetting("emulation.showUserAgentType", false);
+    this._showUserAgentTypeSetting.addChangeListener(this._updateUserAgentTypeVisibility, this);
+
+    this._showNetworkConditionsSetting = WebInspector.settings.createSetting("emulation.showNetworkConditions", false);
+    this._showNetworkConditionsSetting.addChangeListener(this._updateNetworkConditionsVisibility, this);
+
     /** @type {!Map<!WebInspector.EmulatedDevice, !WebInspector.EmulatedDevice.Mode>} */
     this._lastMode = new Map();
 
@@ -129,6 +139,24 @@ WebInspector.DeviceModeToolbar.prototype = {
         this._scaleItem.setGlyph("");
         this._scaleItem.turnIntoSelect();
         toolbar.appendToolbarItem(this._scaleItem);
+
+        toolbar.appendToolbarItem(this._wrapToolbarItem(createElementWithClass("div", "device-mode-empty-toolbar-element")));
+        this._deviceScaleItem = new WebInspector.ToolbarMenuButton(this._appendDeviceScaleMenuItems.bind(this));
+        this._deviceScaleItem.setVisible(this._showDeviceScaleFactorSetting.get());
+        this._deviceScaleItem.setTitle(WebInspector.UIString("Device pixel ratio"));
+        this._deviceScaleItem.setGlyph("");
+        this._deviceScaleItem.turnIntoSelect();
+        this._deviceScaleItem.element.style.padding = "0 5px";
+        toolbar.appendToolbarItem(this._deviceScaleItem);
+
+        toolbar.appendToolbarItem(this._wrapToolbarItem(createElementWithClass("div", "device-mode-empty-toolbar-element")));
+        this._uaItem = new WebInspector.ToolbarMenuButton(this._appendUserAgentMenuItems.bind(this));
+        this._uaItem.setVisible(this._showUserAgentTypeSetting.get());
+        this._uaItem.setTitle(WebInspector.UIString("Device type"));
+        this._uaItem.setGlyph("");
+        this._uaItem.turnIntoSelect();
+        this._uaItem.element.style.padding = "0 5px";
+        toolbar.appendToolbarItem(this._uaItem);
     },
 
     /**
@@ -147,17 +175,12 @@ WebInspector.DeviceModeToolbar.prototype = {
      */
     _fillOptionsToolbar: function(toolbar)
     {
-        this._uaItem = new WebInspector.ToolbarText();
-        this._uaItem.setVisible(false);
-        this._uaItem.setTitle(WebInspector.UIString("User agent type"));
-        this._uaItem.element.style.opacity = "0.5";
-        toolbar.appendToolbarItem(this._uaItem);
-
-        this._deviceScaleItem = new WebInspector.ToolbarText();
-        this._deviceScaleItem.setVisible(false);
-        this._deviceScaleItem.setTitle(WebInspector.UIString("Device pixel ratio"));
-        this._deviceScaleItem.element.style.opacity = "0.5";
-        toolbar.appendToolbarItem(this._deviceScaleItem);
+        this._networkConditionsItem = WebInspector.NetworkConditionsSelector.createToolbarMenuButton();
+        this._networkConditionsItem.setVisible(this._showNetworkConditionsSetting.get());
+        this._networkConditionsItem.setTitle(WebInspector.UIString("Network throttling"));
+        this._networkConditionsItem.element.style.padding = "0 5px";
+        this._networkConditionsItem.element.style.maxWidth = "140px";
+        toolbar.appendToolbarItem(this._networkConditionsItem);
 
         var moreOptionsButton = new WebInspector.ToolbarMenuButton(this._appendOptionsMenuItems.bind(this));
         moreOptionsButton.setTitle(WebInspector.UIString("More options"));
@@ -196,35 +219,12 @@ WebInspector.DeviceModeToolbar.prototype = {
     /**
      * @param {!WebInspector.ContextMenu} contextMenu
      */
-    _appendOptionsMenuItems: function(contextMenu)
+    _appendDeviceScaleMenuItems: function(contextMenu)
     {
-        var uaDisabled = this._model.type() !== WebInspector.DeviceModeModel.Type.Responsive;
-        var uaSetting = this._model.uaSetting();
-        var uaSubmenu = contextMenu.appendSubMenuItem(WebInspector.UIString("User agent type"), false);
-        var uaValue = this._model.uaSetting().get();
-        if (this._model.type() === WebInspector.DeviceModeModel.Type.None)
-            uaValue = WebInspector.DeviceModeModel.UA.Desktop;
-        if (this._model.type() === WebInspector.DeviceModeModel.Type.Device)
-            uaValue = this._model.device().mobile() ? WebInspector.DeviceModeModel.UA.Mobile : this._model.device().touch() ? WebInspector.DeviceModeModel.UA.DesktopTouch : WebInspector.DeviceModeModel.UA.Desktop;
-        appendUAItem(WebInspector.UIString("Mobile (default)"), WebInspector.DeviceModeModel.UA.Mobile);
-        appendUAItem(WebInspector.UIString("Desktop"), WebInspector.DeviceModeModel.UA.Desktop);
-        appendUAItem(WebInspector.UIString("Desktop with touch"), WebInspector.DeviceModeModel.UA.DesktopTouch);
-
-        /**
-         * @param {string} title
-         * @param {!WebInspector.DeviceModeModel.UA} value
-         */
-        function appendUAItem(title, value)
-        {
-            uaSubmenu.appendCheckboxItem(title, uaSetting.set.bind(uaSetting, value), uaValue === value, uaDisabled);
-        }
-
-        var deviceScaleFactorDisabled = this._model.type() !== WebInspector.DeviceModeModel.Type.Responsive;
-        var deviceScaleFactorSubmenu = contextMenu.appendSubMenuItem(WebInspector.UIString("Device pixel ratio"), false);
         var deviceScaleFactorSetting = this._model.deviceScaleFactorSetting();
-        var deviceScaleFactorValue = deviceScaleFactorDisabled ? 0 : deviceScaleFactorSetting.get();
-        appendDeviceScaleFactorItem(WebInspector.UIString("Default: %f", this._model.defaultDeviceScaleFactor()), 0);
-        deviceScaleFactorSubmenu.appendSeparator();
+        var defaultValue = this._model.uaSetting().get() === WebInspector.DeviceModeModel.UA.Mobile || this._model.uaSetting().get() === WebInspector.DeviceModeModel.UA.MobileNoTouch ? WebInspector.DeviceModeModel.defaultMobileScaleFactor : window.devicePixelRatio;
+        appendDeviceScaleFactorItem(WebInspector.UIString("Default: %.1f", defaultValue), 0);
+        contextMenu.appendSeparator();
         appendDeviceScaleFactorItem(WebInspector.UIString("1"), 1);
         appendDeviceScaleFactorItem(WebInspector.UIString("2"), 2);
         appendDeviceScaleFactorItem(WebInspector.UIString("3"), 3);
@@ -235,16 +235,55 @@ WebInspector.DeviceModeToolbar.prototype = {
          */
         function appendDeviceScaleFactorItem(title, value)
         {
-            deviceScaleFactorSubmenu.appendCheckboxItem(title, deviceScaleFactorSetting.set.bind(deviceScaleFactorSetting, value), deviceScaleFactorValue === value, deviceScaleFactorDisabled);
+            contextMenu.appendCheckboxItem(title, deviceScaleFactorSetting.set.bind(deviceScaleFactorSetting, value), deviceScaleFactorSetting.get() === value);
         }
+    },
 
-        contextMenu.appendItem(WebInspector.UIString("Reset to defaults"), this._model.reset.bind(this._model), this._model.type() !== WebInspector.DeviceModeModel.Type.Responsive);
-        contextMenu.appendSeparator();
+    /**
+     * @param {!WebInspector.ContextMenu} contextMenu
+     */
+    _appendUserAgentMenuItems: function(contextMenu)
+    {
+        var uaSetting = this._model.uaSetting();
+        appendUAItem(WebInspector.DeviceModeModel.UA.Mobile, WebInspector.DeviceModeModel.UA.Mobile);
+        appendUAItem(WebInspector.DeviceModeModel.UA.MobileNoTouch, WebInspector.DeviceModeModel.UA.MobileNoTouch);
+        appendUAItem(WebInspector.DeviceModeModel.UA.Desktop, WebInspector.DeviceModeModel.UA.Desktop);
+        appendUAItem(WebInspector.DeviceModeModel.UA.DesktopTouch, WebInspector.DeviceModeModel.UA.DesktopTouch);
 
+        /**
+         * @param {string} title
+         * @param {!WebInspector.DeviceModeModel.UA} value
+         */
+        function appendUAItem(title, value)
+        {
+            contextMenu.appendCheckboxItem(title, uaSetting.set.bind(uaSetting, value), uaSetting.get() === value);
+        }
+    },
+
+    /**
+     * @param {!WebInspector.ContextMenu} contextMenu
+     */
+    _appendOptionsMenuItems: function(contextMenu)
+    {
+        contextMenu.appendCheckboxItem(WebInspector.UIString("Show device pixel ratio"), this._toggleDeviceScaleFactor.bind(this), this._showDeviceScaleFactorSetting.get(), this._model.type() === WebInspector.DeviceModeModel.Type.None);
+        contextMenu.appendCheckboxItem(WebInspector.UIString("Show device type"), this._toggleUserAgentType.bind(this), this._showUserAgentTypeSetting.get(), this._model.type() === WebInspector.DeviceModeModel.Type.None);
+        contextMenu.appendCheckboxItem(WebInspector.UIString("Show throttling"), this._toggleNetworkConditions.bind(this), this._showNetworkConditionsSetting.get(), this._model.type() === WebInspector.DeviceModeModel.Type.None);
         contextMenu.appendCheckboxItem(WebInspector.UIString("Show media queries"), this._toggleMediaInspector.bind(this), this._showMediaInspectorSetting.get(), this._model.type() === WebInspector.DeviceModeModel.Type.None);
         contextMenu.appendCheckboxItem(WebInspector.UIString("Show rulers"), this._toggleRulers.bind(this), this._showRulersSetting.get(), this._model.type() === WebInspector.DeviceModeModel.Type.None);
-        contextMenu.appendItem(WebInspector.UIString("Configure network\u2026"), this._openNetworkConfig.bind(this), false);
+        contextMenu.appendSeparator();
         contextMenu.appendItemsAtLocation("deviceModeMenu");
+        contextMenu.appendSeparator();
+        contextMenu.appendItem(WebInspector.UIString("Reset to defaults"), this._reset.bind(this));
+    },
+
+    _toggleDeviceScaleFactor: function()
+    {
+        this._showDeviceScaleFactorSetting.set(!this._showDeviceScaleFactorSetting.get());
+    },
+
+    _toggleUserAgentType: function()
+    {
+        this._showUserAgentTypeSetting.set(!this._showUserAgentTypeSetting.get());
     },
 
     _toggleMediaInspector: function()
@@ -257,11 +296,19 @@ WebInspector.DeviceModeToolbar.prototype = {
         this._showRulersSetting.set(!this._showRulersSetting.get());
     },
 
-    _openNetworkConfig: function()
+    _toggleNetworkConditions: function()
     {
-        InspectorFrontendHost.bringToFront();
-        // TODO(dgozman): make it explicit.
-        WebInspector.actionRegistry.action("network.show-config").execute();
+        this._showNetworkConditionsSetting.set(!this._showNetworkConditionsSetting.get());
+    },
+
+    _reset: function()
+    {
+        this._showDeviceScaleFactorSetting.set(false);
+        this._showUserAgentTypeSetting.set(false);
+        this._showMediaInspectorSetting.set(false);
+        this._showRulersSetting.set(false);
+        this._showNetworkConditionsSetting.set(false);
+        this._model.reset();
     },
 
     /**
@@ -366,6 +413,21 @@ WebInspector.DeviceModeToolbar.prototype = {
         }
     },
 
+    _updateDeviceScaleFactorVisibility: function()
+    {
+        this._deviceScaleItem.setVisible(this._showDeviceScaleFactorSetting.get());
+    },
+
+    _updateUserAgentTypeVisibility: function()
+    {
+        this._uaItem.setVisible(this._showUserAgentTypeSetting.get());
+    },
+
+    _updateNetworkConditionsVisibility: function()
+    {
+        this._networkConditionsItem.setVisible(this._showNetworkConditionsSetting.get());
+    },
+
     /**
      * @param {!WebInspector.Event} event
      */
@@ -436,6 +498,8 @@ WebInspector.DeviceModeToolbar.prototype = {
             this._cachedModelType = this._model.type();
             this._widthInput.disabled = this._model.type() !== WebInspector.DeviceModeModel.Type.Responsive;
             this._heightInput.disabled = this._model.type() !== WebInspector.DeviceModeModel.Type.Responsive;
+            this._deviceScaleItem.setEnabled(this._model.type() === WebInspector.DeviceModeModel.Type.Responsive);
+            this._uaItem.setEnabled(this._model.type() === WebInspector.DeviceModeModel.Type.Responsive);
         }
 
         var size = this._model.appliedDeviceSize();
@@ -445,21 +509,18 @@ WebInspector.DeviceModeToolbar.prototype = {
 
         if (this._model.scale() !== this._cachedScale) {
             this._scaleItem.setText(WebInspector.UIString("%.0f%%", this._model.scale() * 100));
-            this._scaleItem.setState(this._model.scale() === 1 ? "off" : "on");
             this._cachedScale = this._model.scale();
         }
 
-        var deviceScale = this._model.deviceScaleFactorSetting().get();
-        this._deviceScaleItem.setVisible(this._model.type() === WebInspector.DeviceModeModel.Type.Responsive && !!deviceScale);
+        var deviceScale = this._model.appliedDeviceScaleFactor();
         if (deviceScale !== this._cachedDeviceScale) {
             this._deviceScaleItem.setText(WebInspector.UIString("DPR: %.1f", deviceScale));
             this._cachedDeviceScale = deviceScale;
         }
 
-        var uaType = this._model.type() === WebInspector.DeviceModeModel.Type.Responsive ? this._model.uaSetting().get() : WebInspector.DeviceModeModel.UA.Mobile;
-        this._uaItem.setVisible(this._model.type() === WebInspector.DeviceModeModel.Type.Responsive && uaType !== WebInspector.DeviceModeModel.UA.Mobile);
+        var uaType = this._model.appliedUserAgentType();
         if (uaType !== this._cachedUaType) {
-            this._uaItem.setText(uaType === WebInspector.DeviceModeModel.UA.Desktop ? WebInspector.UIString("Desktop") : WebInspector.UIString("Touch"));
+            this._uaItem.setText(uaType);
             this._cachedUaType = uaType;
         }
 

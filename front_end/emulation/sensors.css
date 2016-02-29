@@ -17,7 +17,7 @@
     width: 80px;
 }
 
-.sensors-view input[type=text]:enabled:focus,
+.sensors-view input[type=text]:not(.error-input):enabled:focus,
 .sensors-view select:enabled:focus {
     border-color: rgb(77, 144, 254);
     outline: none;
@@ -149,4 +149,12 @@ fieldset.device-orientation-override-section[disabled] .accelerometer-stage {
 
 fieldset.device-orientation-override-section {
     display: flex;
+}
+
+.touch-label {
+    margin-top: 10px;
+}
+
+.touch-label select {
+    margin-left: 10px;
 }

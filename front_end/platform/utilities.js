@@ -92,6 +92,16 @@ String.prototype.findAll = function(string)
 }
 
 /**
+ * @return {string}
+ */
+String.prototype.replaceControlCharacters = function()
+{
+    // Replace C0 and C1 control character sets with printable character.
+    // Do not replace '\t', \n' and '\r'.
+    return this.replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u0080-\u009f]/g, "�");
+}
+
+/**
  * @return {boolean}
  */
 String.prototype.isWhitespace = function()
@@ -1273,6 +1283,16 @@ Set.prototype.valuesArray = function()
 }
 
 /**
+ * @param {!Iterable<T>} iterable
+ * @template T
+ */
+Set.prototype.addAll = function(iterable)
+{
+    for (var e of iterable)
+        this.add(e);
+}
+
+/**
  * @return {T}
  * @template T
  */
@@ -1539,4 +1559,113 @@ Promise.prototype.catchException = function(defaultValue) {
         console.error(error);
         return defaultValue;
     });
+}
+
+/**
+ * @constructor
+ * @param {(function(!Segment, !Segment): ?Segment)=} mergeCallback
+ */
+function SegmentedRange(mergeCallback)
+{
+    /** @type {!Array<!Segment>} */
+    this._segments = [];
+    this._mergeCallback = mergeCallback;
+}
+
+/**
+ * @constructor
+ * @param {number} begin
+ * @param {number} end
+ * @param {*} data
+ */
+function Segment(begin, end, data)
+{
+    if (begin > end)
+        console.assert(false, "Invalid segment");
+    this.begin = begin;
+    this.end = end;
+    this.data = data;
+}
+
+Segment.prototype = {
+    /**
+     * @param {!Segment} that
+     * @return {boolean}
+     */
+    intersects: function(that)
+    {
+        return this.begin < that.end && that.begin < this.end;
+    }
+};
+
+SegmentedRange.prototype = {
+    /**
+     * @param {!Segment} newSegment
+     */
+    append: function(newSegment)
+    {
+        // 1. Find the proper insertion point for new segment
+        var startIndex = this._segments.lowerBound(newSegment, (a, b) => a.begin - b.begin);
+        var endIndex = startIndex;
+        var merged = null;
+        if (startIndex > 0) {
+            // 2. Try mering the preceding segment
+            var precedingSegment = this._segments[startIndex - 1];
+            merged = this._tryMerge(precedingSegment, newSegment);
+            if (merged) {
+                --startIndex;
+                newSegment = merged;
+            } else if (this._segments[startIndex - 1].end >= newSegment.begin) {
+                // 2a. If merge failed and segments overlap, adjust preceding segment.
+                // If an old segment entirely contains new one, split it in two.
+                if (newSegment.end < precedingSegment.end)
+                    this._segments.splice(startIndex, 0, new Segment(newSegment.end, precedingSegment.end, precedingSegment.data));
+                precedingSegment.end = newSegment.begin;
+            }
+        }
+        // 3. Consume all segments that are entirely covered by the new one.
+        while (endIndex < this._segments.length && this._segments[endIndex].end <= newSegment.end)
+            ++endIndex;
+        // 4. Merge or adjust the succeeding segment if it overlaps.
+        if (endIndex < this._segments.length) {
+            merged = this._tryMerge(newSegment, this._segments[endIndex]);
+            if (merged) {
+                endIndex++;
+                newSegment = merged;
+            } else if (newSegment.intersects(this._segments[endIndex]))
+                this._segments[endIndex].begin = newSegment.end;
+        }
+        this._segments.splice(startIndex, endIndex - startIndex, newSegment);
+    },
+
+    /**
+     * @param {!SegmentedRange} that
+     */
+    appendRange: function(that)
+    {
+        that.segments().forEach(segment => this.append(segment));
+    },
+
+    /**
+     * @return {!Array<!Segment>}
+     */
+    segments: function()
+    {
+        return this._segments;
+    },
+
+    /**
+     * @param {!Segment} first
+     * @param {!Segment} second
+     * @return {?Segment}
+     */
+    _tryMerge: function(first, second)
+    {
+        var merged = this._mergeCallback && this._mergeCallback(first, second);
+        if (!merged)
+            return null;
+        merged.begin = first.begin;
+        merged.end = Math.max(first.end, second.end);
+        return merged;
+    }
 }
