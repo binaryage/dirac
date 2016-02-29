@@ -530,6 +530,12 @@ WebInspector.ConsoleDispatcher.prototype = {
     }
 }
 
+/**
+ * @constructor
+ * @extends {WebInspector.ConsoleDispatcher}
+ * @implements {ConsoleAgent.Dispatcher}
+ * @param {!WebInspector.ConsoleModel} console
+ */
 WebInspector.DiracAwareConsoleDispatcher = function(console)
 {
     WebInspector.ConsoleDispatcher.call(this, console);
@@ -537,12 +543,16 @@ WebInspector.DiracAwareConsoleDispatcher = function(console)
 
 WebInspector.DiracAwareConsoleDispatcher.prototype = {
 
+    /**
+     * @override
+     * @param {!ConsoleAgent.ConsoleMessage} payload
+     */
     messageAdded: function(payload)
     {
         if (payload.parameters) {
             var firstParam = payload.parameters[0];
             if (firstParam && firstParam.value == "~~$DIRAC-MSG$~~") {
-                return this._console.dispatchDiracMessage(payload);
+                this._console.dispatchDiracMessage(payload);
             }
         }
 

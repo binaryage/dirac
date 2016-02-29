@@ -118,6 +118,9 @@ WebInspector.ObjectPropertiesSection.prototype = {
     __proto__: TreeOutlineInShadow.prototype
 }
 
+/**
+ * @return {number}
+ */
 WebInspector.ObjectPropertiesSection.PropertyCluster = function(property) {
     // we want normal nice names to go first
     // then all generated variable names with double underscores
@@ -503,7 +506,11 @@ WebInspector.ObjectPropertyTreeElement._populate = function(treeElement, value, 
         WebInspector.RemoteObject.loadFromObjectPerProto(value, callback);
 }
 
-var getFriendlyName = function(name) {
+/**
+  * @param {string} name
+  * @return {?string}
+  */
+function getFriendlyName(name) {
     var duIndex = name.indexOf("__");
     if (duIndex != -1) {
         return name.substring(0, duIndex);
@@ -512,6 +519,7 @@ var getFriendlyName = function(name) {
     if (suMatch) {
         return suMatch[1];
     }
+    return null;
 }
 
 /**
@@ -1121,6 +1129,8 @@ WebInspector.ObjectPropertyPrompt.prototype = {
 
 /**
  * @param {?string} name
+ * @param {?string} friendlyName
+ * @param {?string} friendlyNameNum
  * @return {!Element}
  */
 WebInspector.ObjectPropertiesSection.createNameElement = function(name, friendlyName, friendlyNameNum)
@@ -1134,10 +1144,14 @@ WebInspector.ObjectPropertiesSection.createNameElement = function(name, friendly
 
     if (friendlyName) {
         nameElement.classList.add("friendly-name");
-        var sub = createElementWithClass("sub", "friendly-num");
-        sub.textContent = friendlyNameNum;
-        nameElement.appendChild(sub);
-        nameElement.title = name;
+        if (friendlyNameNum) {
+            var sub = createElementWithClass("sub", "friendly-num");
+            sub.textContent = friendlyNameNum;
+            nameElement.appendChild(sub);
+        }
+        if (name) {
+          nameElement.title = name;
+        }
     }
 
     return nameElement;

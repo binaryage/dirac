@@ -89,6 +89,9 @@
         "ConsoleView.js",
         "ConsolePanel.js"
     ],
+    "skip_compilation": [
+        "clojure-parinfer.js"
+    ],
     "resources": [
         "consoleView.css",
         "dirac-hacks.css",

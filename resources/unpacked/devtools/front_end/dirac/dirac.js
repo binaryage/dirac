@@ -68,6 +68,7 @@ function evalInCurrentContext(code, callback) {
   }
 }
 
+// don't forget to update externs.js too
 window.dirac = {
   hasFeature: hasFeature,
   hasREPL: hasFeature("enable-repl"),

@@ -5,6 +5,8 @@
             [chromex.logging :refer-macros [log warn error]]
             [dirac.implant.eval :as eval]))
 
+; don't forget to update externs.js when touching this API
+
 (def ^:dynamic *initialized* false)
 
 (defn ^:export init []

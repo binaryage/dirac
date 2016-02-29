@@ -338,6 +338,51 @@ diff_match_patch.prototype = {
     diff_main: function(text1, text2) { }
 }
 
+var dirac = {
+    /** @type {boolean} */
+    hasFeature: true,
+    /** @type {boolean} */
+    hasREPL: true,
+    /** @type {boolean} */
+    hasParinfer: true,
+    /** @type {boolean} */
+    hasFriendlyLocals: true,
+    /** @type {boolean} */
+    hasClusteredLocals: true,
+    /** @type {boolean} */
+    hasInlineCFs: true,
+    /**
+    * @param {string} code
+    * @return {string}
+    */
+    codeAsString: function (code) {},
+    /**
+    * @param {string} string
+    * @return {string}
+    */
+    stringEscape: function (string) {},
+    /**
+    * @param {string} code
+    * @param {?} callback
+    */
+    evalInCurrentContext: function(code, callback) {},
+    implant: {
+        init_repl: function() {},
+        /**
+        * @param {Element} textAreaElement
+        * @param {boolean} useParinfer
+        * @returns {!CodeMirror}
+        */
+        adopt_prompt_element: function(textAreaElement, useParinfer) {},
+        /**
+        * @param {number} requestId
+        * @param {string} code
+        */
+        send_eval_request: function(requestId, code) {}
+    }
+}
+
+
 /** @constructor */
 function Path2D() {}
 Path2D.prototype = {
@@ -513,7 +558,7 @@ CodeMirror.prototype = {
     undo: function() { },
     unlinkDoc: function(other) { }
 }
-/** @type {!{cursorDiv: Element}} */
+/** @type {!{cursorDiv: Element, lineDiv: Element}} */
 CodeMirror.prototype.display;
 /** @type {!Object} */
 CodeMirror.Pass;
@@ -525,6 +570,7 @@ CodeMirror.getMode = function(options, spec) { };
 CodeMirror.overlayMode = function(mode1, mode2, squashSpans) { };
 CodeMirror.defineMode = function(modeName, modeConstructor) { };
 CodeMirror.startState = function(mode) { };
+CodeMirror.runMode = function(string, modespec, callback, options) { };
 
 /** @typedef {{canceled: boolean, from: !CodeMirror.Pos, to: !CodeMirror.Pos, text: string, origin: string, cancel: function()}} */
 CodeMirror.BeforeChangeObject;

@@ -159,8 +159,12 @@ WebInspector.ConsoleView = function()
                         proxy: proxyElement});
     this._activePromptIndex = 0;
 
+    var dummyCompletionsFn = function(proxyElement, text, cursorOffset, wordRange, force, completionsReadyCallback) {
+    };
+
+
     if (dirac.hasREPL) {
-        var diracPrompt = new WebInspector.DiracPromptWithHistory(diracPromptCodeMirrorInstance);
+        var diracPrompt = new WebInspector.DiracPromptWithHistory(diracPromptCodeMirrorInstance, dummyCompletionsFn, undefined);
         diracPrompt.setSuggestBoxEnabled(false);
         diracPrompt.setAutocompletionTimeout(0);
         diracPrompt.renderAsBlock();
@@ -976,9 +980,10 @@ WebInspector.ConsoleView.prototype = {
           return this._switchPrompt(oldIndex, newIndex);
         }
 
+        var that = this;
         var callback = function(result, wasThrown, valueResult, exceptionDetails) {
             if (result && result.value === true) {
-                return this._switchPrompt(oldIndex, newIndex);
+                return that._switchPrompt(oldIndex, newIndex);
             }
         };
 
@@ -1499,7 +1504,7 @@ WebInspector.ConsoleCommand.prototype = {
 
 /**
  * @constructor
- * @extends {WebInspector.ConsoleViewMessage}
+ * @extends {WebInspector.ConsoleCommand}
  * @param {!WebInspector.ConsoleMessage} message
  * @param {!WebInspector.Linkifier} linkifier
  * @param {number} nestingLevel
@@ -1524,7 +1529,7 @@ WebInspector.ConsoleDiracCommand.prototype = {
             this._formattedCommand = createElementWithClass("span", "console-message-text source-code cm-s-dirac");
             this._element.appendChild(this._formattedCommand);
 
-            CodeMirror.runMode(this.text, "clojure-parinfer", this._formattedCommand);
+            CodeMirror.runMode(this.text, "clojure-parinfer", this._formattedCommand, undefined);
 
             this.element().classList.add("dirac-flavor"); // applied to wrapper element
         }
