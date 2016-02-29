@@ -1129,8 +1129,8 @@ WebInspector.ObjectPropertyPrompt.prototype = {
 
 /**
  * @param {?string} name
- * @param {?string} friendlyName
- * @param {?string} friendlyNameNum
+ * @param {?string=} friendlyName
+ * @param {?string=} friendlyNameNum
  * @return {!Element}
  */
 WebInspector.ObjectPropertiesSection.createNameElement = function(name, friendlyName, friendlyNameNum)
