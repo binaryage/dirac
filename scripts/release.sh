@@ -26,15 +26,15 @@ pushd "$ROOT"
 ./scripts/check-versions.sh
 
 if [ -z "$RELEASE_BUILD_DEVTOOLS" ] ; then
-  echo "invalid config: RELEASE_BUILD_DEVTOOLS is empty"
+  echo "invalid config: RELEASE_BUILD is empty"
   exit 111
 fi
 
 if [ -d "$RELEASE_BUILD_DEVTOOLS" ] ; then
-  rm -rf "$RELEASE_BUILD_DEVTOOLS"/*
+  rm -rf "$RELEASE_BUILD_DEVTOOLS"
 fi
-if [ ! -d "$RELEASE_BUILD_DEVTOOLS" ] ; then
-  mkdir -p "$RELEASE_BUILD_DEVTOOLS"
+if [ ! -d "$RELEASE_BUILD_DEVTOOLS_FRONTEND" ] ; then
+  mkdir -p "$RELEASE_BUILD_DEVTOOLS_FRONTEND"
 fi
 
 FRONTEND="$DEVTOOLS_ROOT/front_end"
@@ -69,11 +69,11 @@ trap cleanup EXIT
 mkdir -p "$WORK_DIR"
 
 cp -r "$FRONTEND"/* "$WORK_DIR"
-cp -r "$RELEASE_BUILD_DEVTOOLS/dirac" "$WORK_DIR"
+cp -r "$RELEASE_BUILD_DEVTOOLS_FRONTEND/dirac" "$WORK_DIR"
 
 echo -n "" > "$WORK_DIR/dirac/require-implant.js" # when doing advanced build, all implant files are required automatically
 
-./scripts/build_applications.py inspector toolbox --input_path "$WORK_DIR" --output_path "$RELEASE_BUILD_DEVTOOLS" --debug 0
+./scripts/build_applications.py inspector toolbox --input_path "$WORK_DIR" --output_path "$RELEASE_BUILD_DEVTOOLS_FRONTEND" --debug 0
 
 popd
 
@@ -81,13 +81,13 @@ pushd "$ROOT"
 
 # copy static resources
 # this should be kept in sync with devtools_frontend_resources target of devtools.gyp
-cp -r "$FRONTEND/Images" "$RELEASE_BUILD_DEVTOOLS"
-cp -r "$FRONTEND/emulated_devices" "$RELEASE_BUILD_DEVTOOLS"
-cp "$FRONTEND/devtools.js" "$RELEASE_BUILD_DEVTOOLS"
+cp -r "$FRONTEND/Images" "$RELEASE_BUILD_DEVTOOLS_FRONTEND"
+cp -r "$FRONTEND/emulated_devices" "$RELEASE_BUILD_DEVTOOLS_FRONTEND"
+cp "$FRONTEND/devtools.js" "$RELEASE_BUILD_DEVTOOLS_FRONTEND"
 
 # ad-hoc cleanup
-rm -rf "$RELEASE_BUILD_DEVTOOLS/dirac"
-rm -rf "$RELEASE_BUILD_DEVTOOLS/Images/src"
+rm -rf "$RELEASE_BUILD_DEVTOOLS_FRONTEND/dirac"
+rm -rf "$RELEASE_BUILD_DEVTOOLS_FRONTEND/Images/src"
 
 rm -rf "$RELEASE_BUILD/compiled/background"
 rm -rf "$RELEASE_BUILD/compiled/options"

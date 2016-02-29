@@ -194,8 +194,8 @@
                           {:dirac-implant
                            {:source-paths ["src/implant"
                                            "src/project"]
-                            :compiler     {:output-to     "resources/release/devtools/dirac/compiled/implant/implant.js"
-                                           :output-dir    "resources/release/devtools/dirac/compiled/implant"
+                            :compiler     {:output-to     "resources/release/devtools/front_end/dirac/compiled/implant/implant.js"
+                                           :output-dir    "resources/release/devtools/front_end/dirac/compiled/implant"
                                            :asset-path    "dirac/compiled/implant"
                                            :optimizations :advanced
                                            :elide-asserts true}}

@@ -8,13 +8,8 @@
             [dirac.background.action :as action]
             [dirac.utils :as utils]))
 
-(defn dirac-dev? []
-  (boolean (oget js/window "diracDev")))
-
 (defn get-dirac-main-html-file-path []
-  (if (dirac-dev?)
-    "devtools/front_end/inspector.html"
-    "devtools/inspector.html"))
+  "devtools/front_end/inspector.html")
 
 (defn get-devtools-url [backend-url flags]
   (let [html-file-path (get-dirac-main-html-file-path)]
