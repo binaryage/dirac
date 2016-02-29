@@ -1,8 +1,9 @@
 {
-    "dependencies": ["platform", "common", "diff", "sdk", "workspace", "bindings"],
+    "dependencies": ["platform", "common", "diff", "sdk"],
     "scripts": [
         "SASSSupport.js",
-        "SASSWorkspaceAdapter.js",
-        "SASSLiveSourceMap.js"
+        "ASTService.js",
+        "SASSProcessor.js",
+        "ASTSourceMap.js"
     ]
 }

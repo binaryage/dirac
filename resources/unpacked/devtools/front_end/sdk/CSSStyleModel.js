@@ -70,8 +70,7 @@ WebInspector.CSSStyleModel.Events = {
     PseudoStateForced: "PseudoStateForced",
     StyleSheetAdded: "StyleSheetAdded",
     StyleSheetChanged: "StyleSheetChanged",
-    StyleSheetRemoved: "StyleSheetRemoved",
-    ExternalRangeEdit: "ExternalRangeEdit"
+    StyleSheetRemoved: "StyleSheetRemoved"
 }
 
 WebInspector.CSSStyleModel.MediaTypes = ["all", "braille", "embossed", "handheld", "print", "projection", "screen", "speech", "tty", "tv"];
@@ -79,6 +78,48 @@ WebInspector.CSSStyleModel.MediaTypes = ["all", "braille", "embossed", "handheld
 WebInspector.CSSStyleModel.PseudoStateMarker = "pseudo-state-marker";
 
 WebInspector.CSSStyleModel.prototype = {
+    /**
+     * @param {!Array<!CSSAgent.StyleSheetId>} styleSheetIds
+     * @param {!Array<!WebInspector.TextRange>} ranges
+     * @param {!Array<string>} texts
+     * @param {boolean} majorChange
+     * @return {!Promise<?Array<!CSSAgent.CSSStyle>>}
+     */
+    setStyleTexts: function(styleSheetIds, ranges, texts, majorChange)
+    {
+        /**
+         * @param {?Protocol.Error} error
+         * @param {?Array<!CSSAgent.CSSStyle>} stylePayloads
+         * @return {?Array<!CSSAgent.CSSStyle>}
+         * @this {WebInspector.CSSStyleModel}
+         */
+        function parsePayload(error, stylePayloads)
+        {
+            if (error || !stylePayloads || !stylePayloads.length)
+                return null;
+
+            if (majorChange)
+                this._domModel.markUndoableState();
+            var uniqueIDs = new Set(styleSheetIds);
+            for (var styleSheetId of uniqueIDs)
+                this._fireStyleSheetChanged(styleSheetId);
+            return stylePayloads;
+        }
+
+        console.assert(styleSheetIds.length === ranges.length && ranges.length === texts.length, "Array lengths must be equal");
+        var edits = [];
+        for (var i = 0; i < styleSheetIds.length; ++i) {
+            edits.push({
+                styleSheetId: styleSheetIds[i],
+                range: ranges[i].serializeToObject(),
+                text: texts[i]
+            });
+        }
+
+        return this._agent.setStyleTexts(edits, parsePayload.bind(this))
+            .catchException(/** @type {?Array<!CSSAgent.CSSStyle>} */(null));
+    },
+
     /**
      * @return {!Promise.<!Array.<!WebInspector.CSSMedia>>}
      */
@@ -946,28 +987,21 @@ WebInspector.CSSStyleDeclaration.prototype = {
      */
     setText: function(text, majorChange)
     {
-        if (!this.styleSheetId)
-            return Promise.resolve(false);
-
         /**
-         * @param {?Protocol.Error} error
-         * @param {?CSSAgent.CSSStyle} stylePayload
+         * @param {?Array<!CSSAgent.CSSStyle>} stylePayloads
          * @return {boolean}
          * @this {WebInspector.CSSStyleDeclaration}
          */
-        function parsePayload(error, stylePayload)
+        function onPayload(stylePayloads)
         {
-            if (error || !stylePayload)
+            if (!stylePayloads)
                 return false;
-
-            if (majorChange)
-                this._cssModel._domModel.markUndoableState();
-            this._reinitialize(stylePayload);
-            this._cssModel._fireStyleSheetChanged(this.styleSheetId);
+            this._reinitialize(stylePayloads[0]);
             return true;
         }
 
-        return this._cssModel._agent.setStyleText(this.styleSheetId, this.range.serializeToObject(), text, parsePayload.bind(this))
+        return this._cssModel.setStyleTexts([this.styleSheetId], [this.range], [text], majorChange)
+            .then(onPayload.bind(this))
             .catchException(false);
     },
 
@@ -1567,7 +1601,7 @@ WebInspector.CSSProperty.prototype = {
         {
             if (!insideProperty) {
                 var disabledProperty = tokenType && tokenType.includes("css-comment") && isDisabledProperty(token);
-                var isPropertyStart = tokenType && (tokenType.includes("css-meta") || tokenType.includes("css-property") || tokenType.includes("css-variable-2"));
+                var isPropertyStart = tokenType && (tokenType.includes("css-string") || tokenType.includes("css-meta") || tokenType.includes("css-property") || tokenType.includes("css-variable-2"));
                 if (disabledProperty) {
                     result = result.trimRight() + indentation + token;
                 } else if (isPropertyStart) {
@@ -1992,13 +2026,16 @@ WebInspector.CSSStyleSheetHeader.prototype = {
     _trimSourceURL: function(text)
     {
         var sourceURLIndex = text.lastIndexOf("/*# sourceURL=");
-        if (sourceURLIndex === -1)
-            return text;
+        if (sourceURLIndex === -1) {
+            sourceURLIndex = text.lastIndexOf("/*@ sourceURL=");
+            if (sourceURLIndex === -1)
+                return text;
+        }
         var sourceURLLineIndex = text.lastIndexOf("\n", sourceURLIndex);
         if (sourceURLLineIndex === -1)
             return text;
         var sourceURLLine = text.substr(sourceURLLineIndex + 1).split("\n", 1)[0];
-        var sourceURLRegex = /[\040\t]*\/\*# sourceURL=[\040\t]*([^\s]*)[\040\t]*\*\/[\040\t]*$/;
+        var sourceURLRegex = /[\040\t]*\/\*[#@] sourceURL=[\040\t]*([^\s]*)[\040\t]*\*\/[\040\t]*$/;
         if (sourceURLLine.search(sourceURLRegex) === -1)
             return text;
         return text.substr(0, sourceURLLineIndex) + text.substr(sourceURLLineIndex + sourceURLLine.length + 1);

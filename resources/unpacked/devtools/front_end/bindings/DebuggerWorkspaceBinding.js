@@ -121,7 +121,7 @@ WebInspector.DebuggerWorkspaceBinding.prototype = {
 
     /**
      * @param {!WebInspector.DebuggerModel.Location} rawLocation
-     * @param {function(!WebInspector.UILocation):(boolean|undefined)} updateDelegate
+     * @param {function(!WebInspector.LiveLocation)} updateDelegate
      * @return {!WebInspector.DebuggerWorkspaceBinding.Location}
      */
     createLiveLocation: function(rawLocation, updateDelegate)
@@ -134,8 +134,21 @@ WebInspector.DebuggerWorkspaceBinding.prototype = {
     },
 
     /**
+     * @param {!Array<!WebInspector.DebuggerModel.Location>} rawLocations
+     * @param {function(!WebInspector.LiveLocation)} updateDelegate
+     * @return {!WebInspector.LiveLocation}
+     */
+    createStackTraceTopFrameLiveLocation: function(rawLocations, updateDelegate)
+    {
+        console.assert(rawLocations.length);
+        var location = new WebInspector.DebuggerWorkspaceBinding.StackTraceTopFrameLocation(rawLocations, this, updateDelegate);
+        location.update();
+        return location;
+    },
+
+    /**
      * @param {!WebInspector.DebuggerModel.CallFrame} callFrame
-     * @param {function(!WebInspector.UILocation):(boolean|undefined)} updateDelegate
+     * @param {function(!WebInspector.LiveLocation)} updateDelegate
      * @return {!WebInspector.DebuggerWorkspaceBinding.Location}
      */
     createCallFrameLiveLocation: function(callFrame, updateDelegate)
@@ -240,6 +253,17 @@ WebInspector.DebuggerWorkspaceBinding.prototype = {
         if (!targetData)
             return null;
         return targetData._compilerMapping.sourceMapForScript(script);
+    },
+
+    /**
+     * @param {!WebInspector.Script} script
+     */
+    maybeLoadSourceMap: function(script)
+    {
+        var targetData = this._targetToData.get(script.target());
+        if (!targetData)
+            return;
+        targetData._compilerMapping.maybeLoadSourceMap(script);
     },
 
     /**
@@ -512,7 +536,7 @@ WebInspector.DebuggerWorkspaceBinding.ScriptInfo.prototype = {
  * @param {!WebInspector.Script} script
  * @param {!WebInspector.DebuggerModel.Location} rawLocation
  * @param {!WebInspector.DebuggerWorkspaceBinding} binding
- * @param {function(!WebInspector.UILocation):(boolean|undefined)} updateDelegate
+ * @param {function(!WebInspector.LiveLocation)} updateDelegate
  */
 WebInspector.DebuggerWorkspaceBinding.Location = function(script, rawLocation, binding, updateDelegate)
 {
@@ -533,10 +557,97 @@ WebInspector.DebuggerWorkspaceBinding.Location.prototype = {
         return this._binding.rawLocationToUILocation(debuggerModelLocation);
     },
 
+    /**
+     * @override
+     */
     dispose: function()
     {
         WebInspector.LiveLocation.prototype.dispose.call(this);
         this._binding._removeLiveLocation(this);
+    },
+
+    /**
+     * @override
+     * @return {boolean}
+     */
+    isBlackboxed: function()
+    {
+        return WebInspector.blackboxManager.isBlackboxedRawLocation(this._rawLocation);
+    },
+
+    __proto__: WebInspector.LiveLocation.prototype
+}
+
+/**
+ * @constructor
+ * @extends {WebInspector.LiveLocation}
+ * @param {!Array<!WebInspector.DebuggerModel.Location>} rawLocations
+ * @param {!WebInspector.DebuggerWorkspaceBinding} binding
+ * @param {function(!WebInspector.LiveLocation)} updateDelegate
+ */
+WebInspector.DebuggerWorkspaceBinding.StackTraceTopFrameLocation = function(rawLocations, binding, updateDelegate)
+{
+    WebInspector.LiveLocation.call(this, updateDelegate);
+
+    this._updateScheduled = true;
+    /** @type {!Array<!WebInspector.DebuggerWorkspaceBinding.Location>} */
+    this._locations = [];
+    for (var location of rawLocations)
+        this._locations.push(binding.createLiveLocation(location, this._scheduleUpdate.bind(this)));
+    this._updateLocation();
+}
+
+WebInspector.DebuggerWorkspaceBinding.StackTraceTopFrameLocation.prototype = {
+    /**
+     * @override
+     * @return {!WebInspector.UILocation}
+     */
+    uiLocation: function()
+    {
+        return this._currentLocation().uiLocation();
+    },
+
+    /**
+     * @override
+     */
+    dispose: function()
+    {
+        for (var location of this._locations)
+            location.dispose();
+    },
+
+    /**
+     * @override
+     * @return {boolean}
+     */
+    isBlackboxed: function()
+    {
+        return this._currentLocation().isBlackboxed();
+    },
+
+    _scheduleUpdate: function()
+    {
+        if (!this._updateScheduled) {
+            this._updateScheduled = true;
+            setImmediate(this._updateLocation.bind(this));
+        }
+    },
+
+    /**
+     * @return {!WebInspector.DebuggerWorkspaceBinding.Location}
+     */
+    _currentLocation: function()
+    {
+        return this._locations[this._current < this._locations.length ? this._current : 0];
+    },
+
+    _updateLocation: function()
+    {
+        this._updateScheduled = false;
+        this._current = 0;
+        while (this._current < this._locations.length && this._locations[this._current].isBlackboxed())
+            ++this._current;
+        this.update();
     },
 
     __proto__: WebInspector.LiveLocation.prototype

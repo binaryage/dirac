@@ -39,8 +39,9 @@ WebInspector.LinkifierFormatter.prototype = {
     /**
      * @param {!Element} anchor
      * @param {!WebInspector.UILocation} uiLocation
+     * @param {boolean} isBlackboxed
      */
-    formatLiveAnchor: function(anchor, uiLocation) { }
+    formatLiveAnchor: function(anchor, uiLocation, isBlackboxed) { }
 }
 
 /**
@@ -199,18 +200,33 @@ WebInspector.Linkifier.prototype = {
      */
     linkifyConsoleCallFrame: function(target, callFrame, classes)
     {
-        // FIXME(62725): console stack trace line/column numbers are one-based.
-        var lineNumber = callFrame.lineNumber ? callFrame.lineNumber - 1 : 0;
-        var columnNumber = callFrame.columnNumber ? callFrame.columnNumber - 1 : 0;
-        var anchor = this.linkifyScriptLocation(target, callFrame.scriptId, callFrame.url, lineNumber, columnNumber, classes);
-        var debuggerModel = WebInspector.DebuggerModel.fromTarget(target);
-        var location = debuggerModel && debuggerModel.createRawLocationByScriptId(callFrame.scriptId, callFrame.lineNumber, callFrame.columnNumber);
-        var blackboxed = location ?
-            WebInspector.blackboxManager.isBlackboxedRawLocation(location) :
-            WebInspector.blackboxManager.isBlackboxedURL(callFrame.url);
-        if (blackboxed)
-            anchor.classList.add("webkit-html-blackbox-link");
+        return this.linkifyScriptLocation(target, callFrame.scriptId, callFrame.url, WebInspector.DebuggerModel.fromOneBased(callFrame.lineNumber), WebInspector.DebuggerModel.fromOneBased(callFrame.columnNumber), classes);
+    },
 
+    /**
+     * @param {!WebInspector.Target} target
+     * @param {!RuntimeAgent.StackTrace} stackTrace
+     * @param {string=} classes
+     * @return {!Element}
+     */
+    linkifyStackTraceTopFrame: function(target, stackTrace, classes)
+    {
+        console.assert(stackTrace.callFrames && stackTrace.callFrames.length);
+
+        var topFrame = stackTrace.callFrames[0];
+        var fallbackAnchor = WebInspector.linkifyResourceAsNode(topFrame.url, WebInspector.DebuggerModel.fromOneBased(topFrame.lineNumber), WebInspector.DebuggerModel.fromOneBased(topFrame.columnNumber), classes);
+        if (target.isDetached())
+            return fallbackAnchor;
+
+        var debuggerModel = WebInspector.DebuggerModel.fromTarget(target);
+        var rawLocations = debuggerModel.createRawLocationsByStackTrace(stackTrace);
+        if (rawLocations.length === 0)
+            return fallbackAnchor;
+
+        var anchor = this._createAnchor(classes);
+        var liveLocation = WebInspector.debuggerWorkspaceBinding.createStackTraceTopFrameLiveLocation(rawLocations, this._updateAnchor.bind(this, anchor));
+        this._liveLocationsByTarget.get(target).set(anchor, liveLocation);
+        anchor[WebInspector.Linkifier._fallbackAnchorSymbol] = fallbackAnchor;
         return anchor;
     },
 
@@ -290,12 +306,15 @@ WebInspector.Linkifier.prototype = {
 
     /**
      * @param {!Element} anchor
-     * @param {!WebInspector.UILocation} uiLocation
+     * @param {!WebInspector.LiveLocation} liveLocation
      */
-    _updateAnchor: function(anchor, uiLocation)
+    _updateAnchor: function(anchor, liveLocation)
     {
+        var uiLocation = liveLocation.uiLocation();
+        if (!uiLocation)
+            return;
         anchor[WebInspector.Linkifier._uiLocationSymbol] = uiLocation;
-        this._formatter.formatLiveAnchor(anchor, uiLocation);
+        this._formatter.formatLiveAnchor(anchor, uiLocation, liveLocation.isBlackboxed());
     }
 }
 
@@ -323,8 +342,9 @@ WebInspector.Linkifier.DefaultFormatter.prototype = {
      * @override
      * @param {!Element} anchor
      * @param {!WebInspector.UILocation} uiLocation
+     * @param {boolean} isBlackboxed
      */
-    formatLiveAnchor: function(anchor, uiLocation)
+    formatLiveAnchor: function(anchor, uiLocation, isBlackboxed)
     {
         var text = uiLocation.linkText();
         text = text.replace(/([a-f0-9]{7})[a-f0-9]{13}[a-f0-9]*/g, "$1\u2026");
@@ -336,6 +356,8 @@ WebInspector.Linkifier.DefaultFormatter.prototype = {
         if (typeof uiLocation.lineNumber === "number")
             titleText += ":" + (uiLocation.lineNumber + 1);
         anchor.title = titleText;
+
+        anchor.classList.toggle("webkit-html-blackbox-link", isBlackboxed);
     }
 }
 
@@ -355,10 +377,11 @@ WebInspector.Linkifier.DefaultCSSFormatter.prototype = {
      * @override
      * @param {!Element} anchor
      * @param {!WebInspector.UILocation} uiLocation
+     * @param {boolean} isBlackboxed
      */
-    formatLiveAnchor: function(anchor, uiLocation)
+    formatLiveAnchor: function(anchor, uiLocation, isBlackboxed)
     {
-        WebInspector.Linkifier.DefaultFormatter.prototype.formatLiveAnchor.call(this, anchor, uiLocation);
+        WebInspector.Linkifier.DefaultFormatter.prototype.formatLiveAnchor.call(this, anchor, uiLocation, isBlackboxed);
         anchor.classList.add("webkit-html-resource-link");
         anchor.setAttribute("data-uncopyable", anchor.textContent);
         anchor.textContent = "";

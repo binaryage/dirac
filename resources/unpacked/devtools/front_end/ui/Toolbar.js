@@ -637,14 +637,27 @@ WebInspector.ToolbarMenuButton.prototype = {
      * @override
      * @param {!Event} event
      */
-    _clicked: function(event)
+    _mouseDown: function(event)
     {
+        if (event.buttons !== 1) {
+            WebInspector.ToolbarButton.prototype._mouseDown.call(this, event);
+            return;
+        }
+
         var contextMenu = new WebInspector.ContextMenu(event,
             this._useSoftMenu,
             this.element.totalOffsetLeft(),
             this.element.totalOffsetTop() + this.element.offsetHeight);
         this._contextMenuHandler(contextMenu);
         contextMenu.show();
+    },
+
+    /**
+     * @override
+     * @param {!Event} event
+     */
+    _clicked: function(event)
+    {
     },
 
     __proto__: WebInspector.ToolbarButton.prototype

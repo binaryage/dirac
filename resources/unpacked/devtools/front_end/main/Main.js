@@ -106,10 +106,10 @@ WebInspector.Main.prototype = {
         Runtime.experiments.register("applyCustomStylesheet", "Allow custom UI themes");
         Runtime.experiments.register("appBanner", "App banner support", true);
         Runtime.experiments.register("blackboxJSFramesOnTimeline", "Blackbox JavaScript frames on Timeline", true);
+        Runtime.experiments.register("timelineCollapsible", "Collapsbile row groups in Timeline");
         Runtime.experiments.register("colorContrastRatio", "Contrast ratio line in color picker", true);
         Runtime.experiments.register("cpuThrottling", "CPU throttling", true);
         Runtime.experiments.register("emptySourceMapAutoStepping", "Empty sourcemap auto-stepping");
-        Runtime.experiments.register("fileSystemInspection", "FileSystem inspection");
         Runtime.experiments.register("gpuTimeline", "GPU data on timeline", true);
         Runtime.experiments.register("inputEventsOnTimelineOverview", "Input events on Timeline overview", true);
         Runtime.experiments.register("layersPanel", "Layers panel");
@@ -215,7 +215,7 @@ WebInspector.Main.prototype = {
         new WebInspector.Main.InspectedNodeRevealer();
         new WebInspector.NetworkPanelIndicator();
         new WebInspector.SourcesPanelIndicator();
-        new WebInspector.AutoAttachToCreatedPagesSync();
+        new WebInspector.BackendSettingsSync();
         WebInspector.domBreakpointsSidebarPane = new WebInspector.DOMBreakpointsSidebarPane();
 
         WebInspector.actionRegistry = new WebInspector.ActionRegistry();
@@ -1082,19 +1082,22 @@ WebInspector.TargetCrashedScreen.prototype = {
  * @constructor
  * @implements {WebInspector.TargetManager.Observer}
  */
-WebInspector.AutoAttachToCreatedPagesSync = function()
+WebInspector.BackendSettingsSync = function()
 {
-    this._setting = WebInspector.settings.moduleSetting("autoAttachToCreatedPages");
-    this._setting.addChangeListener(this._update, this);
+    this._autoAttachSetting = WebInspector.settings.moduleSetting("autoAttachToCreatedPages");
+    this._autoAttachSetting.addChangeListener(this._update, this);
+    this._disableJavascriptSetting = WebInspector.settings.moduleSetting("javaScriptDisabled");
+    this._disableJavascriptSetting.addChangeListener(this._update, this);
     WebInspector.targetManager.observeTargets(this, WebInspector.Target.Type.Page);
 }
 
-WebInspector.AutoAttachToCreatedPagesSync.prototype = {
+WebInspector.BackendSettingsSync.prototype = {
     _update: function()
     {
-        var value = this._setting.get();
-        for (var target of WebInspector.targetManager.targets(WebInspector.Target.Type.Page))
-            target.pageAgent().setAutoAttachToCreatedPages(value);
+        for (var target of WebInspector.targetManager.targets(WebInspector.Target.Type.Page)) {
+            target.pageAgent().setAutoAttachToCreatedPages(this._autoAttachSetting.get());
+            target.emulationAgent().setScriptExecutionDisabled(this._disableJavascriptSetting.get());
+        }
     },
 
     /**
@@ -1103,7 +1106,8 @@ WebInspector.AutoAttachToCreatedPagesSync.prototype = {
      */
     targetAdded: function(target)
     {
-        target.pageAgent().setAutoAttachToCreatedPages(this._setting.get());
+        target.pageAgent().setAutoAttachToCreatedPages(this._autoAttachSetting.get());
+        target.emulationAgent().setScriptExecutionDisabled(this._disableJavascriptSetting.get());
     },
 
     /**
@@ -1114,5 +1118,25 @@ WebInspector.AutoAttachToCreatedPagesSync.prototype = {
     {
     }
 }
+
+/**
+ * @constructor
+ * @implements {WebInspector.SettingUI}
+ */
+WebInspector.ShowMetricsRulersSettingUI = function()
+{
+}
+
+WebInspector.ShowMetricsRulersSettingUI.prototype = {
+    /**
+     * @override
+     * @return {?Element}
+     */
+    settingElement: function()
+    {
+        return WebInspector.SettingsUI.createSettingCheckbox(WebInspector.UIString("Show rulers"), WebInspector.moduleSetting("showMetricsRulers"));
+    }
+}
+
 
 new WebInspector.Main();

@@ -109,6 +109,7 @@
         "TimelineModel.js",
         "TimelineIRModel.js",
         "TimelineJSProfile.js",
+        "TimelineLoader.js",
         "TimelineFrameModel.js",
         "TimelineEventOverview.js",
         "TimelineFlameChart.js",
@@ -116,6 +117,7 @@
         "TimelineUIUtils.js",
         "TimelineLayersView.js",
         "TimelinePaintProfilerView.js",
+        "TimelineProfileTree.js",
         "TransformController.js",
         "PaintProfilerView.js",
         "TimelinePanel.js"

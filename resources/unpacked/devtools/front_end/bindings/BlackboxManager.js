@@ -17,14 +17,13 @@ WebInspector.BlackboxManager = function(debuggerWorkspaceBinding, networkMapping
     WebInspector.moduleSetting("skipStackFramesPattern").addChangeListener(this._patternChanged.bind(this));
     WebInspector.moduleSetting("skipContentScripts").addChangeListener(this._patternChanged.bind(this));
 
-    /** @type {!Map<string, !Array<!DebuggerAgent.ScriptPosition>>} */
-    this._scriptIdToPositions = new Map();
+    /** @type {!Map<!WebInspector.DebuggerModel, !Map<string, !Array<!DebuggerAgent.ScriptPosition>>>} */
+    this._debuggerModelData = new Map();
     /** @type {!Map<string, boolean>} */
     this._isBlackboxedURLCache = new Map();
 }
 
 WebInspector.BlackboxManager.prototype = {
-
     /**
      * @param {function(!WebInspector.Event)} listener
      * @param {!Object=} thisObject
@@ -49,9 +48,9 @@ WebInspector.BlackboxManager.prototype = {
      */
     isBlackboxedRawLocation: function(location)
     {
-        if (!this._scriptIdToPositions.has(location.scriptId))
-            return false;
-        var positions = this._scriptIdToPositions.get(location.scriptId);
+        var positions = this._scriptPositions(location.script());
+        if (!positions)
+            return this._isBlackboxedScript(location.script());
         var index = positions.lowerBound(location, comparator);
         return !!(index % 2);
 
@@ -78,19 +77,21 @@ WebInspector.BlackboxManager.prototype = {
         var isContentScript = projectType === WebInspector.projectTypes.ContentScripts;
         if (isContentScript && WebInspector.moduleSetting("skipContentScripts").get())
             return true;
-        var networkURL = this._networkMapping.networkURL(uiSourceCode);
-        var url = projectType === WebInspector.projectTypes.Formatter ? uiSourceCode.url() : networkURL;
-        return this.isBlackboxedURL(url);
+        var url = this._uiSourceCodeURL(uiSourceCode);
+        return url ? this.isBlackboxedURL(url) : false;
     },
 
     /**
      * @param {string} url
+     * @param {boolean=} isContentScript
      * @return {boolean}
      */
-    isBlackboxedURL: function(url)
+    isBlackboxedURL: function(url, isContentScript)
     {
         if (this._isBlackboxedURLCache.has(url))
             return !!this._isBlackboxedURLCache.get(url);
+        if (isContentScript && WebInspector.moduleSetting("skipContentScripts").get())
+            return true;
         var regex = WebInspector.moduleSetting("skipStackFramesPattern").asRegExp();
         var isBlackboxed = regex && regex.test(url);
         this._isBlackboxedURLCache.set(url, isBlackboxed);
@@ -106,13 +107,13 @@ WebInspector.BlackboxManager.prototype = {
     {
         if (!sourceMap)
             return Promise.resolve();
-        if (!this._scriptIdToPositions.has(script.scriptId))
+        var previousScriptState = this._scriptPositions(script);
+        if (!previousScriptState)
             return Promise.resolve();
 
         var mappings = sourceMap.mappings().slice();
         mappings.sort(mappingComparator);
 
-        var previousScriptState = this._scriptIdToPositions.get(script.scriptId);
         if (!mappings.length) {
             if (previousScriptState.length > 0)
                 return this._setScriptState(script, []).then(this._sourceMapLoadedForTest);
@@ -153,18 +154,63 @@ WebInspector.BlackboxManager.prototype = {
     },
 
     /**
-     * @param {string} url
+     * @param {!WebInspector.UISourceCode} uiSourceCode
+     * @return {?string}
+     */
+    _uiSourceCodeURL: function(uiSourceCode)
+    {
+        var networkURL = this._networkMapping.networkURL(uiSourceCode);
+        var projectType = uiSourceCode.project().type();
+        if (projectType === WebInspector.projectTypes.Debugger)
+            return null;
+        var url = projectType === WebInspector.projectTypes.Formatter ? uiSourceCode.url() : networkURL;
+        return url ? url : null;
+    },
+
+    /**
+     * @param {!WebInspector.UISourceCode} uiSourceCode
      * @return {boolean}
      */
-    canBlackboxURL: function(url)
+    canBlackboxUISourceCode: function(uiSourceCode)
     {
-        return !!this._urlToRegExpString(url);
+        var url = this._uiSourceCodeURL(uiSourceCode);
+        return url ? !!this._urlToRegExpString(url) : false;
+    },
+
+    /**
+     * @param {!WebInspector.UISourceCode} uiSourceCode
+     */
+    blackboxUISourceCode: function(uiSourceCode)
+    {
+        var url = this._uiSourceCodeURL(uiSourceCode);
+        if (url)
+            this._blackboxURL(url);
+    },
+
+    /**
+     * @param {!WebInspector.UISourceCode} uiSourceCode
+     */
+    unblackboxUISourceCode: function(uiSourceCode)
+    {
+        var url = this._uiSourceCodeURL(uiSourceCode);
+        if (url)
+            this._unblackboxURL(url);
+    },
+
+    blackboxContentScripts: function()
+    {
+        WebInspector.moduleSetting("skipContentScripts").set(true);
+    },
+
+    unblackboxContentScripts: function()
+    {
+        WebInspector.moduleSetting("skipContentScripts").set(false);
     },
 
     /**
      * @param {string} url
      */
-    blackboxURL: function(url)
+    _blackboxURL: function(url)
     {
         var regexPatterns = WebInspector.moduleSetting("skipStackFramesPattern").getAsArray();
         var regexValue = this._urlToRegExpString(url);
@@ -186,13 +232,9 @@ WebInspector.BlackboxManager.prototype = {
 
     /**
      * @param {string} url
-     * @param {boolean} isContentScript
      */
-    unblackbox: function(url, isContentScript)
+    _unblackboxURL: function(url)
     {
-        if (isContentScript)
-            WebInspector.moduleSetting("skipContentScripts").set(false);
-
         var regexPatterns = WebInspector.moduleSetting("skipStackFramesPattern").getAsArray();
         var regexValue = WebInspector.blackboxManager._urlToRegExpString(url);
         if (!regexValue)
@@ -221,9 +263,8 @@ WebInspector.BlackboxManager.prototype = {
         var promises = [];
         for (var debuggerModel of WebInspector.DebuggerModel.instances()) {
             for (var scriptId in debuggerModel.scripts) {
-                let script = debuggerModel.scripts[scriptId];
+                var script = debuggerModel.scripts[scriptId];
                 promises.push(this._addScript(script)
-                                  .then(() => this._debuggerWorkspaceBinding.sourceMapForScript(script))
                                   .then(loadSourceMap.bind(this, script)));
             }
         }
@@ -231,13 +272,12 @@ WebInspector.BlackboxManager.prototype = {
 
         /**
          * @param {!WebInspector.Script} script
-         * @param {?WebInspector.SourceMap} sourceMap
          * @return {!Promise<undefined>}
          * @this {WebInspector.BlackboxManager}
          */
-        function loadSourceMap(script, sourceMap)
+        function loadSourceMap(script)
         {
-            return this.sourceMapLoaded(script, sourceMap);
+            return this.sourceMapLoaded(script, this._debuggerWorkspaceBinding.sourceMapForScript(script));
         }
     },
 
@@ -246,9 +286,13 @@ WebInspector.BlackboxManager.prototype = {
         // This method is sniffed in tests.
     },
 
-    _globalObjectCleared: function()
+    /**
+     * @param {!WebInspector.Event} event
+     */
+    _globalObjectCleared: function(event)
     {
-        this._scriptIdToPositions.clear();
+        var debuggerModel = /** @type {!WebInspector.DebuggerModel} */ (event.target);
+        this._debuggerModelData.delete(debuggerModel);
         this._isBlackboxedURLCache.clear();
     },
 
@@ -277,9 +321,30 @@ WebInspector.BlackboxManager.prototype = {
      */
     _isBlackboxedScript: function(script)
     {
-        if (script.isContentScript() && WebInspector.moduleSetting("skipContentScripts").get())
-            return true;
-        return this.isBlackboxedURL(script.sourceURL);
+        return this.isBlackboxedURL(script.sourceURL, script.isContentScript());
+    },
+
+    /**
+     * @param {!WebInspector.Script} script
+     * @return {?Array<!DebuggerAgent.ScriptPosition>}
+     */
+    _scriptPositions: function(script)
+    {
+        if (this._debuggerModelData.has(script.debuggerModel))
+            return this._debuggerModelData.get(script.debuggerModel).get(script.scriptId) || null;
+        return null;
+    },
+
+    /**
+     * @param {!WebInspector.Script} script
+     * @param {!Array<!DebuggerAgent.ScriptPosition>} positions
+     */
+    _setScriptPositions: function(script, positions)
+    {
+        var debuggerModel = script.debuggerModel;
+        if (!this._debuggerModelData.has(debuggerModel))
+            this._debuggerModelData.set(debuggerModel, new Map());
+        this._debuggerModelData.get(debuggerModel).set(script.scriptId, positions);
     },
 
     /**
@@ -289,9 +354,9 @@ WebInspector.BlackboxManager.prototype = {
      */
     _setScriptState: function(script, positions)
     {
-        if (this._scriptIdToPositions.has(script.scriptId)) {
+        var previousScriptState = this._scriptPositions(script);
+        if (previousScriptState) {
             var hasChanged = false;
-            var previousScriptState = this._scriptIdToPositions.get(script.scriptId);
             hasChanged = previousScriptState.length !== positions.length;
             for (var i = 0; !hasChanged && i < positions.length; ++i)
                 hasChanged = positions[i].line !== previousScriptState[i].line || positions[i].column !== previousScriptState[i].column;
@@ -310,10 +375,17 @@ WebInspector.BlackboxManager.prototype = {
          */
         function updateState(success)
         {
-            if (success)
-                this._scriptIdToPositions.set(script.scriptId, positions);
-            else if (!this._scriptIdToPositions.has(script.scriptId))
-                this._scriptIdToPositions.set(script.scriptId, []);
+            if (success) {
+                this._setScriptPositions(script, positions);
+                this._debuggerWorkspaceBinding.updateLocations(script);
+                var isBlackboxed = positions.length !== 0;
+                if (!isBlackboxed && script.sourceMapURL)
+                    this._debuggerWorkspaceBinding.maybeLoadSourceMap(script);
+            } else {
+                var hasPositions = !!this._scriptPositions(script);
+                if (!hasPositions)
+                    this._setScriptPositions(script, []);
+            }
         }
     },
 

@@ -316,18 +316,42 @@ WebInspector.SourceRange = function(offset, length)
     this.length = length;
 }
 
+WebInspector.SourceRange.prototype = {
+    /**
+     * @param {string} text
+     * @return {!WebInspector.TextRange}
+     */
+    toTextRange: function(text)
+    {
+        var p1 = fromOffset(text, this.offset);
+        var p2 = fromOffset(text, this.offset + this.length);
+        return new WebInspector.TextRange(p1.lineNumber, p1.columnNumber, p2.lineNumber, p2.columnNumber);
+
+        /**
+         * @param {string} text
+         * @param {number} offset
+         * @return {!{lineNumber: number, columnNumber: number}}
+         */
+        function fromOffset(text, offset)
+        {
+            var lineEndings = text.lineEndings();
+            var lineNumber = lineEndings.lowerBound(offset);
+            var columnNumber = lineNumber === 0 ? offset : offset - lineEndings[lineNumber - 1] - 1;
+            return {lineNumber: lineNumber, columnNumber: columnNumber};
+        }
+    }
+}
+
 /**
  * @constructor
  * @param {string} sourceURL
  * @param {!WebInspector.TextRange} oldRange
- * @param {string} oldText
  * @param {string} newText
  */
-WebInspector.SourceEdit = function(sourceURL, oldRange, oldText, newText)
+WebInspector.SourceEdit = function(sourceURL, oldRange, newText)
 {
     this.sourceURL = sourceURL;
     this.oldRange = oldRange;
-    this.oldText = oldText;
     this.newText = newText;
 }
 
