@@ -54,7 +54,7 @@ InspectorBackend.registerCommand("Page.getResourceTree", [], ["frameTree"], fals
 InspectorBackend.registerCommand("Page.getResourceContent", [{"name": "frameId", "type": "string", "optional": false}, {"name": "url", "type": "string", "optional": false}], ["content", "base64Encoded"], false);
 InspectorBackend.registerCommand("Page.searchInResource", [{"name": "frameId", "type": "string", "optional": false}, {"name": "url", "type": "string", "optional": false}, {"name": "query", "type": "string", "optional": false}, {"name": "caseSensitive", "type": "boolean", "optional": true}, {"name": "isRegex", "type": "boolean", "optional": true}], ["result"], false);
 InspectorBackend.registerCommand("Page.setDocumentContent", [{"name": "frameId", "type": "string", "optional": false}, {"name": "html", "type": "string", "optional": false}], [], false);
-InspectorBackend.registerCommand("Page.setDeviceMetricsOverride", [{"name": "width", "type": "number", "optional": false}, {"name": "height", "type": "number", "optional": false}, {"name": "deviceScaleFactor", "type": "number", "optional": false}, {"name": "mobile", "type": "boolean", "optional": false}, {"name": "fitWindow", "type": "boolean", "optional": false}, {"name": "scale", "type": "number", "optional": true}, {"name": "offsetX", "type": "number", "optional": true}, {"name": "offsetY", "type": "number", "optional": true}, {"name": "screenWidth", "type": "number", "optional": true}, {"name": "screenHeight", "type": "number", "optional": true}, {"name": "positionX", "type": "number", "optional": true}, {"name": "positionY", "type": "number", "optional": true}], [], false);
+InspectorBackend.registerCommand("Page.setDeviceMetricsOverride", [{"name": "width", "type": "number", "optional": false}, {"name": "height", "type": "number", "optional": false}, {"name": "deviceScaleFactor", "type": "number", "optional": false}, {"name": "mobile", "type": "boolean", "optional": false}, {"name": "fitWindow", "type": "boolean", "optional": false}, {"name": "scale", "type": "number", "optional": true}, {"name": "offsetX", "type": "number", "optional": true}, {"name": "offsetY", "type": "number", "optional": true}, {"name": "screenWidth", "type": "number", "optional": true}, {"name": "screenHeight", "type": "number", "optional": true}, {"name": "positionX", "type": "number", "optional": true}, {"name": "positionY", "type": "number", "optional": true}, {"name": "screenOrientation", "type": "object", "optional": true}], [], false);
 InspectorBackend.registerCommand("Page.clearDeviceMetricsOverride", [], [], false);
 InspectorBackend.registerCommand("Page.setGeolocationOverride", [{"name": "latitude", "type": "number", "optional": true}, {"name": "longitude", "type": "number", "optional": true}, {"name": "accuracy", "type": "number", "optional": true}], [], false);
 InspectorBackend.registerCommand("Page.clearGeolocationOverride", [], [], false);
@@ -75,9 +75,11 @@ InspectorBackend.registerCommand("Rendering.setShowPaintRects", [{"name": "resul
 InspectorBackend.registerCommand("Rendering.setShowDebugBorders", [{"name": "show", "type": "boolean", "optional": false}], [], false);
 InspectorBackend.registerCommand("Rendering.setShowFPSCounter", [{"name": "show", "type": "boolean", "optional": false}], [], false);
 InspectorBackend.registerCommand("Rendering.setShowScrollBottleneckRects", [{"name": "show", "type": "boolean", "optional": false}], [], false);
+InspectorBackend.registerCommand("Rendering.setShowViewportSizeOnResize", [{"name": "show", "type": "boolean", "optional": false}], [], false);
 
 // Emulation.
-InspectorBackend.registerCommand("Emulation.setDeviceMetricsOverride", [{"name": "width", "type": "number", "optional": false}, {"name": "height", "type": "number", "optional": false}, {"name": "deviceScaleFactor", "type": "number", "optional": false}, {"name": "mobile", "type": "boolean", "optional": false}, {"name": "fitWindow", "type": "boolean", "optional": false}, {"name": "scale", "type": "number", "optional": true}, {"name": "offsetX", "type": "number", "optional": true}, {"name": "offsetY", "type": "number", "optional": true}, {"name": "screenWidth", "type": "number", "optional": true}, {"name": "screenHeight", "type": "number", "optional": true}, {"name": "positionX", "type": "number", "optional": true}, {"name": "positionY", "type": "number", "optional": true}], [], false);
+InspectorBackend.registerEnum("Emulation.ScreenOrientationType", {PortraitPrimary: "portraitPrimary", PortraitSecondary: "portraitSecondary", LandscapePrimary: "landscapePrimary", LandscapeSecondary: "landscapeSecondary"});
+InspectorBackend.registerCommand("Emulation.setDeviceMetricsOverride", [{"name": "width", "type": "number", "optional": false}, {"name": "height", "type": "number", "optional": false}, {"name": "deviceScaleFactor", "type": "number", "optional": false}, {"name": "mobile", "type": "boolean", "optional": false}, {"name": "fitWindow", "type": "boolean", "optional": false}, {"name": "scale", "type": "number", "optional": true}, {"name": "offsetX", "type": "number", "optional": true}, {"name": "offsetY", "type": "number", "optional": true}, {"name": "screenWidth", "type": "number", "optional": true}, {"name": "screenHeight", "type": "number", "optional": true}, {"name": "positionX", "type": "number", "optional": true}, {"name": "positionY", "type": "number", "optional": true}, {"name": "screenOrientation", "type": "object", "optional": true}], [], false);
 InspectorBackend.registerCommand("Emulation.clearDeviceMetricsOverride", [], [], false);
 InspectorBackend.registerCommand("Emulation.resetPageScaleFactor", [], [], false);
 InspectorBackend.registerCommand("Emulation.setPageScaleFactor", [{"name": "pageScaleFactor", "type": "number", "optional": false}], [], false);
@@ -108,10 +110,9 @@ InspectorBackend.registerCommand("Runtime.releaseObjectGroup", [{"name": "object
 InspectorBackend.registerCommand("Runtime.run", [], [], false);
 InspectorBackend.registerCommand("Runtime.enable", [], [], false);
 InspectorBackend.registerCommand("Runtime.disable", [], [], false);
-InspectorBackend.registerCommand("Runtime.isRunRequired", [], ["result"], false);
 InspectorBackend.registerCommand("Runtime.setCustomObjectFormatterEnabled", [{"name": "enabled", "type": "boolean", "optional": false}], [], false);
 InspectorBackend.registerCommand("Runtime.compileScript", [{"name": "expression", "type": "string", "optional": false}, {"name": "sourceURL", "type": "string", "optional": false}, {"name": "persistScript", "type": "boolean", "optional": false}, {"name": "executionContextId", "type": "number", "optional": false}], ["scriptId", "exceptionDetails"], false);
-InspectorBackend.registerCommand("Runtime.runScript", [{"name": "scriptId", "type": "string", "optional": false}, {"name": "executionContextId", "type": "number", "optional": false}, {"name": "objectGroup", "type": "string", "optional": true}, {"name": "doNotPauseOnExceptionsAndMuteConsole", "type": "boolean", "optional": true}], ["result", "exceptionDetails"], false);
+InspectorBackend.registerCommand("Runtime.runScript", [{"name": "scriptId", "type": "string", "optional": false}, {"name": "executionContextId", "type": "number", "optional": false}, {"name": "objectGroup", "type": "string", "optional": true}, {"name": "doNotPauseOnExceptionsAndMuteConsole", "type": "boolean", "optional": true}, {"name": "includeCommandLineAPI", "type": "boolean", "optional": true}], ["result", "exceptionDetails"], false);
 
 // Console.
 InspectorBackend.registerEnum("Console.ConsoleMessageSource", {XML: "xml", Javascript: "javascript", Network: "network", ConsoleAPI: "console-api", Storage: "storage", Appcache: "appcache", Rendering: "rendering", Security: "security", Other: "other", Deprecation: "deprecation"});
@@ -213,15 +214,6 @@ InspectorBackend.registerCommand("ApplicationCache.enable", [], [], false);
 InspectorBackend.registerCommand("ApplicationCache.getManifestForFrame", [{"name": "frameId", "type": "string", "optional": false}], ["manifestURL"], false);
 InspectorBackend.registerCommand("ApplicationCache.getApplicationCacheForFrame", [{"name": "frameId", "type": "string", "optional": false}], ["applicationCache"], false);
 
-// FileSystem.
-InspectorBackend.registerCommand("FileSystem.enable", [], [], false);
-InspectorBackend.registerCommand("FileSystem.disable", [], [], false);
-InspectorBackend.registerCommand("FileSystem.requestFileSystemRoot", [{"name": "origin", "type": "string", "optional": false}, {"name": "type", "type": "string", "optional": false}], ["errorCode", "root"], false);
-InspectorBackend.registerCommand("FileSystem.requestDirectoryContent", [{"name": "url", "type": "string", "optional": false}], ["errorCode", "entries"], false);
-InspectorBackend.registerCommand("FileSystem.requestMetadata", [{"name": "url", "type": "string", "optional": false}], ["errorCode", "metadata"], false);
-InspectorBackend.registerCommand("FileSystem.requestFileContent", [{"name": "url", "type": "string", "optional": false}, {"name": "readAsText", "type": "boolean", "optional": false}, {"name": "start", "type": "number", "optional": true}, {"name": "end", "type": "number", "optional": true}, {"name": "charset", "type": "string", "optional": true}], ["errorCode", "content", "charset"], false);
-InspectorBackend.registerCommand("FileSystem.deleteEntry", [{"name": "url", "type": "string", "optional": false}], ["errorCode"], false);
-
 // DOM.
 InspectorBackend.registerEnum("DOM.PseudoType", {FirstLine: "first-line", FirstLetter: "first-letter", Before: "before", After: "after", Backdrop: "backdrop", Selection: "selection", FirstLineInherited: "first-line-inherited", Scrollbar: "scrollbar", ScrollbarThumb: "scrollbar-thumb", ScrollbarButton: "scrollbar-button", ScrollbarTrack: "scrollbar-track", ScrollbarTrackPiece: "scrollbar-track-piece", ScrollbarCorner: "scrollbar-corner", Resizer: "resizer", InputListButton: "input-list-button"});
 InspectorBackend.registerEnum("DOM.ShadowRootType", {UserAgent: "user-agent", Open: "open", Closed: "closed"});
@@ -301,7 +293,7 @@ InspectorBackend.registerCommand("CSS.getStyleSheetText", [{"name": "styleSheetI
 InspectorBackend.registerCommand("CSS.setStyleSheetText", [{"name": "styleSheetId", "type": "string", "optional": false}, {"name": "text", "type": "string", "optional": false}], ["sourceMapURL"], false);
 InspectorBackend.registerCommand("CSS.setRuleSelector", [{"name": "styleSheetId", "type": "string", "optional": false}, {"name": "range", "type": "object", "optional": false}, {"name": "selector", "type": "string", "optional": false}], ["selectorList"], false);
 InspectorBackend.registerCommand("CSS.setKeyframeKey", [{"name": "styleSheetId", "type": "string", "optional": false}, {"name": "range", "type": "object", "optional": false}, {"name": "keyText", "type": "string", "optional": false}], ["keyText"], false);
-InspectorBackend.registerCommand("CSS.setStyleText", [{"name": "styleSheetId", "type": "string", "optional": false}, {"name": "range", "type": "object", "optional": false}, {"name": "text", "type": "string", "optional": false}], ["style"], false);
+InspectorBackend.registerCommand("CSS.setStyleTexts", [{"name": "edits", "type": "object", "optional": false}], ["styles"], false);
 InspectorBackend.registerCommand("CSS.setMediaText", [{"name": "styleSheetId", "type": "string", "optional": false}, {"name": "range", "type": "object", "optional": false}, {"name": "text", "type": "string", "optional": false}], ["media"], false);
 InspectorBackend.registerCommand("CSS.createStyleSheet", [{"name": "frameId", "type": "string", "optional": false}], ["styleSheetId"], false);
 InspectorBackend.registerCommand("CSS.addRule", [{"name": "styleSheetId", "type": "string", "optional": false}, {"name": "ruleText", "type": "string", "optional": false}, {"name": "location", "type": "object", "optional": false}], ["rule"], false);
@@ -319,8 +311,8 @@ InspectorBackend.registerEnum("Debugger.GeneratorObjectDetailsStatus", {Running:
 InspectorBackend.registerEnum("Debugger.ScopeType", {Global: "global", Local: "local", With: "with", Closure: "closure", Catch: "catch", Block: "block", Script: "script"});
 InspectorBackend.registerEnum("Debugger.PromiseDetailsStatus", {Pending: "pending", Resolved: "resolved", Rejected: "rejected"});
 InspectorBackend.registerEvent("Debugger.globalObjectCleared", []);
-InspectorBackend.registerEvent("Debugger.scriptParsed", ["scriptId", "url", "startLine", "startColumn", "endLine", "endColumn", "executionContextId", "isContentScript", "isInternalScript", "isLiveEdit", "sourceMapURL", "hasSourceURL"]);
-InspectorBackend.registerEvent("Debugger.scriptFailedToParse", ["scriptId", "url", "startLine", "startColumn", "endLine", "endColumn", "executionContextId", "isContentScript", "isInternalScript", "sourceMapURL", "hasSourceURL"]);
+InspectorBackend.registerEvent("Debugger.scriptParsed", ["scriptId", "url", "startLine", "startColumn", "endLine", "endColumn", "executionContextId", "hash", "isContentScript", "isInternalScript", "isLiveEdit", "sourceMapURL", "hasSourceURL", "deprecatedCommentWasUsed"]);
+InspectorBackend.registerEvent("Debugger.scriptFailedToParse", ["scriptId", "url", "startLine", "startColumn", "endLine", "endColumn", "executionContextId", "hash", "isContentScript", "isInternalScript", "sourceMapURL", "hasSourceURL", "deprecatedCommentWasUsed"]);
 InspectorBackend.registerEvent("Debugger.breakpointResolved", ["breakpointId", "location"]);
 InspectorBackend.registerEvent("Debugger.paused", ["callFrames", "reason", "data", "hitBreakpoints", "asyncStackTrace"]);
 InspectorBackend.registerEvent("Debugger.resumed", []);
@@ -352,7 +344,6 @@ InspectorBackend.registerCommand("Debugger.getCollectionEntries", [{"name": "obj
 InspectorBackend.registerCommand("Debugger.setPauseOnExceptions", [{"name": "state", "type": "string", "optional": false}], [], false);
 InspectorBackend.registerCommand("Debugger.evaluateOnCallFrame", [{"name": "callFrameId", "type": "string", "optional": false}, {"name": "expression", "type": "string", "optional": false}, {"name": "objectGroup", "type": "string", "optional": true}, {"name": "includeCommandLineAPI", "type": "boolean", "optional": true}, {"name": "doNotPauseOnExceptionsAndMuteConsole", "type": "boolean", "optional": true}, {"name": "returnByValue", "type": "boolean", "optional": true}, {"name": "generatePreview", "type": "boolean", "optional": true}], ["result", "wasThrown", "exceptionDetails"], false);
 InspectorBackend.registerCommand("Debugger.setVariableValue", [{"name": "scopeNumber", "type": "number", "optional": false}, {"name": "variableName", "type": "string", "optional": false}, {"name": "newValue", "type": "object", "optional": false}, {"name": "callFrameId", "type": "string", "optional": true}, {"name": "functionObjectId", "type": "string", "optional": true}], [], false);
-InspectorBackend.registerCommand("Debugger.getStepInPositions", [{"name": "callFrameId", "type": "string", "optional": false}], ["stepInPositions"], false);
 InspectorBackend.registerCommand("Debugger.getBacktrace", [], ["callFrames", "asyncStackTrace"], false);
 InspectorBackend.registerCommand("Debugger.setAsyncCallStackDepth", [{"name": "maxDepth", "type": "number", "optional": false}], [], false);
 InspectorBackend.registerCommand("Debugger.enablePromiseTracker", [{"name": "captureStacks", "type": "boolean", "optional": true}], [], false);
@@ -403,15 +394,13 @@ InspectorBackend.registerCommand("HeapProfiler.startSampling", [], [], false);
 InspectorBackend.registerCommand("HeapProfiler.stopSampling", [], ["profile"], false);
 
 // Worker.
-InspectorBackend.registerEvent("Worker.workerCreated", ["workerId", "url", "inspectorConnected"]);
+InspectorBackend.registerEvent("Worker.workerCreated", ["workerId", "url", "waitingForDebugger"]);
 InspectorBackend.registerEvent("Worker.workerTerminated", ["workerId"]);
 InspectorBackend.registerEvent("Worker.dispatchMessageFromWorker", ["workerId", "message"]);
 InspectorBackend.registerCommand("Worker.enable", [], [], false);
 InspectorBackend.registerCommand("Worker.disable", [], [], false);
 InspectorBackend.registerCommand("Worker.sendMessageToWorker", [{"name": "workerId", "type": "string", "optional": false}, {"name": "message", "type": "string", "optional": false}], [], false);
-InspectorBackend.registerCommand("Worker.connectToWorker", [{"name": "workerId", "type": "string", "optional": false}], [], false);
-InspectorBackend.registerCommand("Worker.disconnectFromWorker", [{"name": "workerId", "type": "string", "optional": false}], [], false);
-InspectorBackend.registerCommand("Worker.setAutoconnectToWorkers", [{"name": "value", "type": "boolean", "optional": false}], [], false);
+InspectorBackend.registerCommand("Worker.setWaitForDebuggerOnStart", [{"name": "value", "type": "boolean", "optional": false}], [], false);
 
 // ServiceWorker.
 InspectorBackend.registerEnum("ServiceWorker.ServiceWorkerVersionRunningStatus", {Stopped: "stopped", Starting: "starting", Running: "running", Stopping: "stopping"});
@@ -466,11 +455,6 @@ InspectorBackend.registerCommand("LayerTree.snapshotCommandLog", [{"name": "snap
 // DeviceOrientation.
 InspectorBackend.registerCommand("DeviceOrientation.setDeviceOrientationOverride", [{"name": "alpha", "type": "number", "optional": false}, {"name": "beta", "type": "number", "optional": false}, {"name": "gamma", "type": "number", "optional": false}], [], false);
 InspectorBackend.registerCommand("DeviceOrientation.clearDeviceOrientationOverride", [], [], false);
-
-// ScreenOrientation.
-InspectorBackend.registerEnum("ScreenOrientation.OrientationType", {PortraitPrimary: "portraitPrimary", PortraitSecondary: "portraitSecondary", LandscapePrimary: "landscapePrimary", LandscapeSecondary: "landscapeSecondary"});
-InspectorBackend.registerCommand("ScreenOrientation.setScreenOrientationOverride", [{"name": "angle", "type": "number", "optional": false}, {"name": "type", "type": "string", "optional": false}], [], false);
-InspectorBackend.registerCommand("ScreenOrientation.clearScreenOrientationOverride", [], [], false);
 
 // Tracing.
 InspectorBackend.registerEvent("Tracing.dataCollected", ["value"]);
