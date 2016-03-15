@@ -7,8 +7,8 @@
   (fixtures/init-transcript! "transcript-box"))
 
 (defn run! []
-  (setup!)
   (fixtures/do! {:command      :fire-synthetic-chrome-event
                  :chrome-event [:chromex.ext.commands/on-command ["open-dirac-devtools"]]}))
 
+(setup!)
 (run!)
