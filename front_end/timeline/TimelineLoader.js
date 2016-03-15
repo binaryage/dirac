@@ -5,51 +5,58 @@
 /**
  * @constructor
  * @implements {WebInspector.OutputStream}
- * @param {!WebInspector.TimelineModel} model
- * @param {!WebInspector.Progress} progress
- * @param {function()=} canceledCallback
+ * @implements {WebInspector.OutputStreamDelegate}
+ * @param {!WebInspector.TracingModel} model
+ * @param {!WebInspector.TimelineLifecycleDelegate} delegate
  */
-WebInspector.TimelineLoader = function(model, progress, canceledCallback)
+WebInspector.TimelineLoader = function(model, delegate)
 {
     this._model = model;
+    this._delegate = delegate;
 
-    this._canceledCallback = canceledCallback;
-    this._progress = progress;
-    this._progress.setTitle(WebInspector.UIString("Loading"));
-    this._progress.setTotalWork(WebInspector.TimelineLoader._totalProgress);  // Unknown, will loop the values.
+    /** @type {?function()} */
+    this._canceledCallback = null;
 
     this._state = WebInspector.TimelineLoader.State.Initial;
     this._buffer = "";
     this._firstChunk = true;
-    this._wasCanceledOnce = false;
 
     this._loadedBytes = 0;
+    /** @type {number} */
+    this._totalSize;
     this._jsonTokenizer = new WebInspector.TextUtils.BalancedJSONTokenizer(this._writeBalancedJSON.bind(this), true);
 }
 
 /**
- * @param {!WebInspector.TimelineModel} model
+ * @param {!WebInspector.TracingModel} model
  * @param {!File} file
- * @param {!WebInspector.Progress} progress
+ * @param {!WebInspector.TimelineLifecycleDelegate} delegate
+ * @return {!WebInspector.TimelineLoader}
  */
-WebInspector.TimelineLoader.loadFromFile = function(model, file, progress)
+WebInspector.TimelineLoader.loadFromFile = function(model, file, delegate)
 {
-    var delegate = new WebInspector.TimelineModelLoadFromFileDelegate(model, progress);
-    var fileReader = WebInspector.TimelineLoader._createFileReader(file, delegate);
-    var loader = new WebInspector.TimelineLoader(model, new WebInspector.ProgressProxy(null), fileReader.cancel.bind(fileReader));
+    var loader = new WebInspector.TimelineLoader(model, delegate);
+    var fileReader = WebInspector.TimelineLoader._createFileReader(file, loader);
+    loader._canceledCallback = fileReader.cancel.bind(fileReader);
+    loader._totalSize = file.size;
     fileReader.start(loader);
+    return loader;
 }
 
 /**
- * @param {!WebInspector.TimelineModel} model
+ * @param {!WebInspector.TracingModel} model
  * @param {string} url
- * @param {!WebInspector.Progress} progress
+ * @param {!WebInspector.TimelineLifecycleDelegate} delegate
+ * @return {!WebInspector.TimelineLoader}
  */
-WebInspector.TimelineLoader.loadFromURL = function(model, url, progress)
+WebInspector.TimelineLoader.loadFromURL = function(model, url, delegate)
 {
-    var stream = new WebInspector.TimelineLoader(model, progress);
+    var stream = new WebInspector.TimelineLoader(model, delegate);
     WebInspector.ResourceLoader.loadAsStream(url, null, stream);
+    return stream;
 }
+
+WebInspector.TimelineLoader.TransferChunkLengthBytes = 5000000;
 
 /**
  * @param {!File} file
@@ -58,11 +65,8 @@ WebInspector.TimelineLoader.loadFromURL = function(model, url, progress)
  */
 WebInspector.TimelineLoader._createFileReader = function(file, delegate)
 {
-    return new WebInspector.ChunkedFileReader(file, WebInspector.TimelineModel.TransferChunkLengthBytes, delegate);
+    return new WebInspector.ChunkedFileReader(file, WebInspector.TimelineLoader.TransferChunkLengthBytes, delegate);
 }
-
-
-WebInspector.TimelineLoader._totalProgress = 100000;
 
 WebInspector.TimelineLoader.State = {
     Initial: "Initial",
@@ -71,20 +75,27 @@ WebInspector.TimelineLoader.State = {
 }
 
 WebInspector.TimelineLoader.prototype = {
+    cancel: function()
+    {
+        this._model.reset();
+        this._delegate.loadingComplete(false);
+        this._delegate = null;
+        if (this._canceledCallback)
+            this._canceledCallback();
+    },
+
     /**
      * @override
      * @param {string} chunk
      */
     write: function(chunk)
     {
-        this._loadedBytes += chunk.length;
-        if (this._progress.isCanceled() && !this._wasCanceledOnce) {
-            this._wasCanceled = true;
-            this._reportErrorAndCancelLoading();
+        if (!this._delegate)
             return;
-        }
-        this._progress.setWorked(this._loadedBytes % WebInspector.TimelineLoader._totalProgress,
-                                 WebInspector.UIString("Loaded %s", Number.bytesToString(this._loadedBytes)));
+        this._loadedBytes += chunk.length;
+        if (!this._firstChunk)
+            this._delegate.loadingProgress(this._totalSize ? this._loadedBytes / this._totalSize : undefined);
+
         if (this._state === WebInspector.TimelineLoader.State.Initial) {
             if (chunk[0] === "{")
                 this._state = WebInspector.TimelineLoader.State.LookingForEvents;
@@ -118,7 +129,7 @@ WebInspector.TimelineLoader.prototype = {
         var json = data + "]";
 
         if (this._firstChunk) {
-            this._model.startCollectingTraceEvents(true);
+            this._delegate.loadingStarted();
         } else {
             var commaIndex = json.indexOf(",");
             if (commaIndex !== -1)
@@ -136,6 +147,7 @@ WebInspector.TimelineLoader.prototype = {
 
         if (this._firstChunk) {
             this._firstChunk = false;
+            this._model.reset();
             if (this._looksLikeAppVersion(items[0])) {
                 this._reportErrorAndCancelLoading(WebInspector.UIString("Legacy Timeline format is not supported."));
                 return;
@@ -143,7 +155,7 @@ WebInspector.TimelineLoader.prototype = {
         }
 
         try {
-            this._model.traceEventsCollected(items);
+            this._model.addEvents(items);
         } catch(e) {
             this._reportErrorAndCancelLoading(WebInspector.UIString("Malformed timeline data: %s", e.toString()));
             return;
@@ -157,11 +169,7 @@ WebInspector.TimelineLoader.prototype = {
     {
         if (message)
             WebInspector.console.error(message);
-        this._model.tracingComplete();
-        this._model.reset();
-        if (this._canceledCallback)
-            this._canceledCallback();
-        this._progress.done();
+        this.cancel();
     },
 
     /**
@@ -178,61 +186,26 @@ WebInspector.TimelineLoader.prototype = {
      */
     close: function()
     {
-        this._model._loadedFromFile = true;
         this._model.tracingComplete();
-        if (this._progress)
-            this._progress.done();
-    }
-}
+        if (this._delegate)
+            this._delegate.loadingComplete(true);
+    },
 
-/**
- * @constructor
- * @implements {WebInspector.OutputStreamDelegate}
- * @param {!WebInspector.TimelineModel} model
- * @param {!WebInspector.Progress} progress
- */
-WebInspector.TimelineModelLoadFromFileDelegate = function(model, progress)
-{
-    this._model = model;
-    this._progress = progress;
-}
-
-WebInspector.TimelineModelLoadFromFileDelegate.prototype = {
     /**
      * @override
      */
-    onTransferStarted: function()
-    {
-        this._progress.setTitle(WebInspector.UIString("Loading\u2026"));
-    },
+    onTransferStarted: function() {},
 
     /**
      * @override
      * @param {!WebInspector.ChunkedReader} reader
      */
-    onChunkTransferred: function(reader)
-    {
-        if (this._progress.isCanceled()) {
-            reader.cancel();
-            this._progress.done();
-            this._model.reset();
-            return;
-        }
-
-        var totalSize = reader.fileSize();
-        if (totalSize) {
-            this._progress.setTotalWork(totalSize);
-            this._progress.setWorked(reader.loadedSize());
-        }
-    },
+    onChunkTransferred: function(reader) {},
 
     /**
      * @override
      */
-    onTransferFinished: function()
-    {
-        this._progress.done();
-    },
+    onTransferFinished: function() {},
 
     /**
      * @override
@@ -241,49 +214,39 @@ WebInspector.TimelineModelLoadFromFileDelegate.prototype = {
      */
     onError: function(reader, event)
     {
-        this._progress.done();
-        this._model.reset();
         switch (event.target.error.code) {
         case FileError.NOT_FOUND_ERR:
-            WebInspector.console.error(WebInspector.UIString("File \"%s\" not found.", reader.fileName()));
+            this._reportErrorAndCancelLoading(WebInspector.UIString("File \"%s\" not found.", reader.fileName()));
             break;
         case FileError.NOT_READABLE_ERR:
-            WebInspector.console.error(WebInspector.UIString("File \"%s\" is not readable", reader.fileName()));
+            this._reportErrorAndCancelLoading(WebInspector.UIString("File \"%s\" is not readable", reader.fileName()));
             break;
         case FileError.ABORT_ERR:
             break;
         default:
-            WebInspector.console.error(WebInspector.UIString("An error occurred while reading the file \"%s\"", reader.fileName()));
+            this._reportErrorAndCancelLoading(WebInspector.UIString("An error occurred while reading the file \"%s\"", reader.fileName()));
         }
     }
 }
 
 /**
  * @constructor
- * @param {!WebInspector.OutputStream} stream
  * @implements {WebInspector.OutputStreamDelegate}
  */
-WebInspector.TracingTimelineSaver = function(stream)
+WebInspector.TracingTimelineSaver = function()
 {
-    this._stream = stream;
 }
 
 WebInspector.TracingTimelineSaver.prototype = {
     /**
      * @override
      */
-    onTransferStarted: function()
-    {
-        this._stream.write("[");
-    },
+    onTransferStarted: function() { },
 
     /**
      * @override
      */
-    onTransferFinished: function()
-    {
-        this._stream.write("]");
-    },
+    onTransferFinished: function() { },
 
     /**
      * @override
@@ -296,5 +259,9 @@ WebInspector.TracingTimelineSaver.prototype = {
      * @param {!WebInspector.ChunkedReader} reader
      * @param {!Event} event
      */
-    onError: function(reader, event) { }
+    onError: function(reader, event)
+    {
+        var error = event.target.error;
+        WebInspector.console.error(WebInspector.UIString("Failed to save timeline: %s (%s, %s)", error.message, error.name, error.code));
+    }
 }

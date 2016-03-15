@@ -42,9 +42,6 @@ Event.prototype.isMetaOrCtrlForTest;
 /** @type {string} */
 Event.prototype.code;
 
-/** @type {function():!Array<!EventTarget>|undefined} */
-Event.prototype.deepPath;
-
 /**
  * @type {number}
  */
@@ -81,27 +78,27 @@ Array.prototype.rotate = function(index) {}
  */
 Array.prototype.sortNumbers = function() {}
 /**
- * @param {!T} object
- * @param {function(!T,!S):number=} comparator
+ * @param {!S} object
+ * @param {function(!S,!T):number=} comparator
  * @return {number}
- * @this {Array.<S>}
- * @template T,S
+ * @this {Array.<T>}
+ * @template S
  */
 Array.prototype.lowerBound = function(object, comparator) {}
 /**
- * @param {!T} object
- * @param {function(!T,!S):number=} comparator
+ * @param {!S} object
+ * @param {function(!S,!T):number=} comparator
  * @return {number}
- * @this {Array.<S>}
- * @template T,S
+ * @this {Array.<T>}
+ * @template S
  */
 Array.prototype.upperBound = function(object, comparator) {}
 /**
- * @param {!T} value
- * @param {function(!T,!S):number} comparator
+ * @param {!S} value
+ * @param {function(!S,!T):number} comparator
  * @return {number}
- * @this {Array.<S>}
- * @template T,S
+ * @this {Array.<T>}
+ * @template S
  */
 Array.prototype.binaryIndexOf = function(value, comparator) {}
 /**
@@ -201,12 +198,6 @@ DevToolsHost.ContextMenuDescriptor;
  * @return {number}
  */
 DevToolsHost.zoomFactor = function() { }
-
-/**
- * @param {number} length
- * @return {number}
- */
-DevToolsHost.convertLengthForEmbedder = function(length) { }
 
 /**
  * @param {string} origin
@@ -686,6 +677,12 @@ ESTree.Node = function()
     this.properties;
     /** @type {(!ESTree.Node|undefined)} */
     this.init;
+    /** @type {(!Array.<!ESTree.Node>|undefined)} */
+    this.params;
+    /** @type {(string|undefined)} */
+    this.name;
+    /** @type {(?ESTree.Node|undefined)} */
+    this.id;
 }
 
 /**

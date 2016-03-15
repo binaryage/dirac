@@ -35,13 +35,14 @@
  * @param {number} endLine
  * @param {number} endColumn
  * @param {!RuntimeAgent.ExecutionContextId} executionContextId
+ * @param {string} hash
  * @param {boolean} isContentScript
  * @param {boolean} isInternalScript
  * @param {boolean} isLiveEdit
  * @param {string=} sourceMapURL
  * @param {boolean=} hasSourceURL
  */
-WebInspector.Script = function(debuggerModel, scriptId, sourceURL, startLine, startColumn, endLine, endColumn, executionContextId, isContentScript, isInternalScript, isLiveEdit, sourceMapURL, hasSourceURL)
+WebInspector.Script = function(debuggerModel, scriptId, sourceURL, startLine, startColumn, endLine, endColumn, executionContextId, hash, isContentScript, isInternalScript, isLiveEdit, sourceMapURL, hasSourceURL)
 {
     WebInspector.SDKObject.call(this, debuggerModel.target());
     this.debuggerModel = debuggerModel;
@@ -52,6 +53,7 @@ WebInspector.Script = function(debuggerModel, scriptId, sourceURL, startLine, st
     this.endLine = endLine;
     this.endColumn = endColumn;
     this._executionContextId = executionContextId;
+    this.hash = hash;
     this._isContentScript = isContentScript;
     this._isInternalScript = isInternalScript;
     this._isLiveEdit = isLiveEdit;
@@ -216,7 +218,7 @@ WebInspector.Script.prototype = {
 
     /**
      * @param {string} newSource
-     * @param {function(?Protocol.Error, !DebuggerAgent.SetScriptSourceError=, !Array.<!DebuggerAgent.CallFrame>=, !DebuggerAgent.StackTrace=, boolean=)} callback
+     * @param {function(?Protocol.Error, !DebuggerAgent.SetScriptSourceError=, !Array.<!DebuggerAgent.CallFrame>=, !RuntimeAgent.StackTrace=, boolean=)} callback
      */
     editSource: function(newSource, callback)
     {
@@ -225,7 +227,7 @@ WebInspector.Script.prototype = {
          * @param {?Protocol.Error} error
          * @param {!Array.<!DebuggerAgent.CallFrame>=} callFrames
          * @param {boolean=} stackChanged
-         * @param {!DebuggerAgent.StackTrace=} asyncStackTrace
+         * @param {!RuntimeAgent.StackTrace=} asyncStackTrace
          * @param {!DebuggerAgent.SetScriptSourceError=} compileError
          */
         function didEditScriptSource(error, callFrames, stackChanged, asyncStackTrace, compileError)

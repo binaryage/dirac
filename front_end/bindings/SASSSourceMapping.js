@@ -31,7 +31,7 @@
 /**
  * @constructor
  * @implements {WebInspector.CSSSourceMapping}
- * @param {!WebInspector.CSSStyleModel} cssModel
+ * @param {!WebInspector.CSSModel} cssModel
  * @param {!WebInspector.NetworkMapping} networkMapping
  * @param {!WebInspector.NetworkProject} networkProject
  */
@@ -41,7 +41,7 @@ WebInspector.SASSSourceMapping = function(cssModel, networkMapping, networkProje
     this._networkProject = networkProject;
     this._reset();
     WebInspector.moduleSetting("cssSourceMapsEnabled").addChangeListener(this._toggleSourceMapSupport, this);
-    this._cssModel.addEventListener(WebInspector.CSSStyleModel.Events.StyleSheetChanged, this._styleSheetChanged, this);
+    this._cssModel.addEventListener(WebInspector.CSSModel.Events.StyleSheetChanged, this._styleSheetChanged, this);
     cssModel.target().resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.MainFrameNavigated, this._reset, this);
     this._networkMapping = networkMapping;
 }
@@ -85,18 +85,14 @@ WebInspector.SASSSourceMapping.prototype = {
         var completeSourceMapURL = WebInspector.ParsedURL.completeURL(header.sourceURL, header.sourceMapURL);
         if (!completeSourceMapURL)
             return;
-        this._loadSourceMap(completeSourceMapURL, header, sourceMapLoaded.bind(this));
+        this._loadSourceMap(completeSourceMapURL, header)
+            .then(sourceMapLoaded.bind(this));
 
         /**
-         * @param {?WebInspector.SourceMap} sourceMap
          * @this {WebInspector.SASSSourceMapping}
          */
-        function sourceMapLoaded(sourceMap)
+        function sourceMapLoaded()
         {
-            if (sourceMap)
-                this._sourceMapByStyleSheetURL[header.sourceURL] = sourceMap;
-            else
-                delete this._sourceMapByStyleSheetURL[header.sourceURL];
             WebInspector.cssWorkspaceBinding.pushSourceMapping(header, this);
         }
 
@@ -109,33 +105,25 @@ WebInspector.SASSSourceMapping.prototype = {
     {
         if (!header.sourceURL)
             return;
-        delete this._sourceMapByStyleSheetURL[header.sourceURL];
+        this._sourceMapByStyleSheetURL.delete(header.sourceURL);
         WebInspector.cssWorkspaceBinding.updateLocations(header);
     },
 
     /**
      * @param {string} completeSourceMapURL
      * @param {!WebInspector.CSSStyleSheetHeader} header
-     * @param {function(?WebInspector.SourceMap)} callback
+     * @return {!Promise}
      */
-    _loadSourceMap: function(completeSourceMapURL, header, callback)
+    _loadSourceMap: function(completeSourceMapURL, header)
     {
-        var sourceMap = this._sourceMapByURL[completeSourceMapURL];
-        if (sourceMap) {
-            callback(sourceMap);
-            return;
+        var loadingPromise = this._sourceMapLoadingPromises.get(completeSourceMapURL);
+        if (!loadingPromise) {
+            loadingPromise = WebInspector.SourceMap.load(completeSourceMapURL, header.sourceURL)
+                .then(sourceMapLoaded.bind(this));
+            this._sourceMapLoadingPromises.set(completeSourceMapURL, loadingPromise);
         }
 
-        var pendingCallbacks = this._pendingSourceMapLoadingCallbacks[completeSourceMapURL];
-        if (pendingCallbacks) {
-            pendingCallbacks.push(callback);
-            return;
-        }
-
-        pendingCallbacks = [callback];
-        this._pendingSourceMapLoadingCallbacks[completeSourceMapURL] = pendingCallbacks;
-
-        WebInspector.SourceMap.load(completeSourceMapURL, header.sourceURL, sourceMapLoaded.bind(this));
+        return loadingPromise;
 
         /**
          * @param {?WebInspector.SourceMap} sourceMap
@@ -143,26 +131,22 @@ WebInspector.SASSSourceMapping.prototype = {
          */
         function sourceMapLoaded(sourceMap)
         {
-            var callbacks = this._pendingSourceMapLoadingCallbacks[completeSourceMapURL];
-            delete this._pendingSourceMapLoadingCallbacks[completeSourceMapURL];
+            if (!sourceMap) {
+                this._sourceMapLoadingPromises.delete(completeSourceMapURL);
+                this._sourceMapByStyleSheetURL.delete(header.sourceURL);
+                return;
+            }
 
-            if (sourceMap)
-                this._sourceMapByURL[completeSourceMapURL] = sourceMap;
-            else
-                delete this._sourceMapByURL[completeSourceMapURL];
+            this._sourceMapByStyleSheetURL.set(header.sourceURL, sourceMap);
 
-            // Then report sources.
-            var sources = sourceMap ? sourceMap.sources() : [];
-            for (var i = 0; i < sources.length; ++i) {
-                var sassURL = sources[i];
+            // Report sources.
+            var sources = sourceMap.sources();
+            for (var sassURL of sourceMap.sources()) {
                 if (!this._networkMapping.hasMappingForNetworkURL(sassURL)) {
                     var contentProvider = sourceMap.sourceContentProvider(sassURL, WebInspector.resourceTypes.SourceMapStyleSheet);
                     this._networkProject.addFileForURL(sassURL, contentProvider, WebInspector.ResourceTreeFrame.fromStyleSheet(header));
                 }
             }
-
-            for (var i = 0; callbacks && i < callbacks.length; ++i)
-                callbacks[i](sourceMap);
         }
     },
 
@@ -173,7 +157,7 @@ WebInspector.SASSSourceMapping.prototype = {
      */
     rawLocationToUILocation: function(rawLocation)
     {
-        var sourceMap = this._sourceMapByStyleSheetURL[rawLocation.url];
+        var sourceMap = this._sourceMapByStyleSheetURL.get(rawLocation.url);
         if (!sourceMap)
             return null;
         var entry = sourceMap.findEntry(rawLocation.lineNumber, rawLocation.columnNumber);
@@ -182,7 +166,7 @@ WebInspector.SASSSourceMapping.prototype = {
         var uiSourceCode = this._networkMapping.uiSourceCodeForStyleURL(entry.sourceURL, rawLocation.header());
         if (!uiSourceCode)
             return null;
-        return uiSourceCode.uiLocation(entry.sourceLineNumber, entry.sourceColumnNumber);
+        return uiSourceCode.uiLocation(entry.sourceLineNumber || 0, entry.sourceColumnNumber);
     },
 
     /**
@@ -227,10 +211,9 @@ WebInspector.SASSSourceMapping.prototype = {
 
     _reset: function()
     {
-        /** @type {!Object.<string, !Array.<function(?WebInspector.SourceMap)>>} */
-        this._pendingSourceMapLoadingCallbacks = {};
-        /** @type {!Object.<string, !WebInspector.SourceMap>} */
-        this._sourceMapByURL = {};
-        this._sourceMapByStyleSheetURL = {};
+        /** @type {!Map<string, !Promise>} */
+        this._sourceMapLoadingPromises = new Map();
+        /** @type {!Map<string, !WebInspector.SourceMap>} */
+        this._sourceMapByStyleSheetURL = new Map();
     }
 }

@@ -199,7 +199,7 @@ WebInspector.TempFile.prototype = {
      * @param {!WebInspector.OutputStream} outputStream
      * @param {!WebInspector.OutputStreamDelegate} delegate
      */
-    writeToOutputSteam: function(outputStream, delegate)
+    copyToOutputStream: function(outputStream, delegate)
     {
         /**
          * @param {!File} file
@@ -233,7 +233,7 @@ WebInspector.TempFile.prototype = {
  */
 WebInspector.DeferredTempFile = function(dirPath, name)
 {
-    /** @type {!Array.<!{strings: !Array.<string>, callback: function(number)}>} */
+    /** @type {!Array.<!{strings: !Array.<string>, callback: ?function(number)}>} */
     this._chunks = [];
     this._tempFile = null;
     this._isWriting = false;
@@ -252,11 +252,9 @@ WebInspector.DeferredTempFile.prototype = {
      */
     write: function(strings, callback)
     {
-        if (!this._chunks)
-            return;
         if (this._finishCallback)
             throw new Error("No writes are allowed after close.");
-        this._chunks.push({strings: strings, callback: callback});
+        this._chunks.push({strings: strings, callback: callback || null});
         if (this._tempFile && !this._isWriting)
             this._writeNextChunk();
     },
@@ -367,14 +365,14 @@ WebInspector.DeferredTempFile.prototype = {
      * @param {!WebInspector.OutputStream} outputStream
      * @param {!WebInspector.OutputStreamDelegate} delegate
      */
-    writeToOutputStream: function(outputStream, delegate)
+    copyToOutputStream: function(outputStream, delegate)
     {
-        if (this._callsPendingOpen) {
-            this._callsPendingOpen.push(this.writeToOutputStream.bind(this, outputStream, delegate));
+        if (!this._finishedWriting) {
+            this._pendingReads.push(this.copyToOutputStream.bind(this, outputStream, delegate));
             return;
         }
         if (this._tempFile)
-            this._tempFile.writeToOutputSteam(outputStream, delegate);
+            this._tempFile.copyToOutputStream(outputStream, delegate);
     },
 
     remove: function()
@@ -590,6 +588,6 @@ WebInspector.TempFileBackingStorage.prototype = {
      */
     writeToStream: function(outputStream, delegate)
     {
-        this._file.writeToOutputStream(outputStream, delegate);
+        this._file.copyToOutputStream(outputStream, delegate);
     }
 }
