@@ -99,8 +99,8 @@ FormatterWorker.javaScriptOutline = function(params)
     var isReadingArguments = false;
     var argumentsText = "";
     var currentFunction = null;
-    var tokenizer = new FormatterWorker.AcornTokenizer(params.content);
-    var AT = FormatterWorker.AcornTokenizer;
+    var tokenizer = new WebInspector.AcornTokenizer(params.content);
+    var AT = WebInspector.AcornTokenizer;
 
     while (tokenizer.peekToken()) {
         var token = /** @type {!Acorn.TokenOrComment} */(tokenizer.nextToken());
@@ -363,7 +363,7 @@ FormatterWorker._formatScript = function(content, mapping, offset, formattedOffs
 {
     var formattedContent;
     try {
-        var builder = new FormatterWorker.JavaScriptFormattedContentBuilder(content, mapping, offset, formattedOffset, indentString);
+        var builder = new FormatterWorker.FormattedContentBuilder(mapping, offset, formattedOffset, indentString);
         var formatter = new FormatterWorker.JavaScriptFormatter(content, builder);
         formatter.format();
         formattedContent = builder.content();
@@ -386,7 +386,7 @@ FormatterWorker._formatCSS = function(content, mapping, offset, formattedOffset,
 {
     var formattedContent;
     try {
-        var builder = new FormatterWorker.CSSFormattedContentBuilder(content, mapping, offset, formattedOffset, indentString);
+        var builder = new FormatterWorker.FormattedContentBuilder(mapping, offset, formattedOffset, indentString);
         var formatter = new FormatterWorker.CSSFormatter(content, builder);
         formatter.format();
         formattedContent = builder.content();
@@ -522,3 +522,14 @@ FormatterWorker.HTMLFormatter.prototype = {
         this._position = cursor;
     }
 }
+
+// A dummy javascript mode which is used only by htmlmixed mode to advance
+// stream until a </script> is found.
+CodeMirror.defineMode("javascript", function(config, parserConfig) {
+    return {
+        token: function(stream, state)
+        {
+            return stream.next();
+        }
+    }
+});

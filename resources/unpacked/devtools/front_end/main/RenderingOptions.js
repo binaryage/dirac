@@ -46,7 +46,6 @@ WebInspector.RenderingOptionsView = function()
     this._appendCheckbox(WebInspector.UIString("Show FPS meter"), "setShowFPSCounter");
     var scrollingTitle = WebInspector.UIString("Shows areas of the page that slow down scrolling:\nTouch and mousewheel event listeners can delay scrolling.\nSome areas need to repaint their content when scrolled.");
     this._appendCheckbox(WebInspector.UIString("Show scrolling perf issues"), "setShowScrollBottleneckRects", scrollingTitle);
-    this._appendCheckbox(WebInspector.UIString("Show page size on resize"), "setShowViewportSizeOnResize");
 
     // CSS media.
     var mediaRow = this.contentElement.createChild("div", "media-row");
@@ -118,7 +117,7 @@ WebInspector.RenderingOptionsView.prototype = {
     _applyPrintMediaOverride: function(target)
     {
         target.emulationAgent().setEmulatedMedia(this._mediaCheckbox.checked ? this._mediaSelect.value : "");
-        var cssModel = WebInspector.CSSStyleModel.fromTarget(target);
+        var cssModel = WebInspector.CSSModel.fromTarget(target);
         if (cssModel)
             cssModel.mediaQueryResultChanged();
     },

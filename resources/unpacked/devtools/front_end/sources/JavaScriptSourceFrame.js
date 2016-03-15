@@ -570,8 +570,18 @@ WebInspector.JavaScriptSourceFrame.prototype = {
             }
         }
         var evaluationText = line.substring(startHighlight, endHighlight + 1);
-        var selectedCallFrame = debuggerModel.selectedCallFrame();
-        selectedCallFrame.evaluate(evaluationText, objectGroupName, false, true, false, false, showObjectPopover.bind(this));
+        var selectedCallFrame = /** @type {!WebInspector.DebuggerModel.CallFrame}*/ (debuggerModel.selectedCallFrame());
+
+        WebInspector.SourceMapNamesResolver.resolveExpression(selectedCallFrame, evaluationText, this.uiSourceCode(), lineNumber, startHighlight, endHighlight).then(onResolve.bind(this));
+
+        /**
+         * @param {?string=} text
+         * @this {WebInspector.JavaScriptSourceFrame}
+         */
+        function onResolve(text)
+        {
+            selectedCallFrame.evaluate(text || evaluationText, objectGroupName, false, true, false, false, showObjectPopover.bind(this));
+        }
 
         /**
          * @param {?RuntimeAgent.RemoteObject} result
@@ -719,7 +729,7 @@ WebInspector.JavaScriptSourceFrame.prototype = {
         var localScope = callFrame.localScope();
         var functionLocation = callFrame.functionLocation();
         if (localScope && functionLocation)
-            localScope.object().getAllProperties(false, this._prepareScopeVariables.bind(this, callFrame));
+            WebInspector.SourceMapNamesResolver.resolveScopeInObject(localScope).getAllProperties(false, this._prepareScopeVariables.bind(this, callFrame));
 
         if (this._clearValueWidgetsTimer) {
             clearTimeout(this._clearValueWidgetsTimer);

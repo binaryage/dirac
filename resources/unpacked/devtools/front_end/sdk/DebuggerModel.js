@@ -500,7 +500,7 @@ WebInspector.DebuggerModel.prototype = {
      * @param {?Protocol.Error} error
      * @param {!DebuggerAgent.SetScriptSourceError=} errorData
      * @param {!Array.<!DebuggerAgent.CallFrame>=} callFrames
-     * @param {!DebuggerAgent.StackTrace=} asyncStackTrace
+     * @param {!RuntimeAgent.StackTrace=} asyncStackTrace
      * @param {boolean=} needsStepIn
      */
     _didEditScriptSource: function(scriptId, newSource, callback, error, errorData, callFrames, asyncStackTrace, needsStepIn)
@@ -560,7 +560,7 @@ WebInspector.DebuggerModel.prototype = {
      * @param {string} reason
      * @param {!Object|undefined} auxData
      * @param {!Array.<string>} breakpointIds
-     * @param {!DebuggerAgent.StackTrace=} asyncStackTrace
+     * @param {!RuntimeAgent.StackTrace=} asyncStackTrace
      */
     _pausedScript: function(callFrames, reason, auxData, breakpointIds, asyncStackTrace)
     {
@@ -590,6 +590,7 @@ WebInspector.DebuggerModel.prototype = {
      * @param {number} endLine
      * @param {number} endColumn
      * @param {!RuntimeAgent.ExecutionContextId} executionContextId
+     * @param {string} hash
      * @param {boolean} isContentScript
      * @param {boolean} isInternalScript
      * @param {boolean} isLiveEdit
@@ -599,9 +600,9 @@ WebInspector.DebuggerModel.prototype = {
      * @param {boolean=} hasSyntaxError
      * @return {!WebInspector.Script}
      */
-    _parsedScriptSource: function(scriptId, sourceURL, startLine, startColumn, endLine, endColumn, executionContextId, isContentScript, isInternalScript, isLiveEdit, sourceMapURL, hasSourceURL, deprecatedCommentWasUsed, hasSyntaxError)
+    _parsedScriptSource: function(scriptId, sourceURL, startLine, startColumn, endLine, endColumn, executionContextId, hash, isContentScript, isInternalScript, isLiveEdit, sourceMapURL, hasSourceURL, deprecatedCommentWasUsed, hasSyntaxError)
     {
-        var script = new WebInspector.Script(this, scriptId, sourceURL, startLine, startColumn, endLine, endColumn, executionContextId, isContentScript, isInternalScript, isLiveEdit, sourceMapURL, hasSourceURL);
+        var script = new WebInspector.Script(this, scriptId, sourceURL, startLine, startColumn, endLine, endColumn, executionContextId, hash, isContentScript, isInternalScript, isLiveEdit, sourceMapURL, hasSourceURL);
         this._registerScript(script);
         if (!hasSyntaxError)
             this.dispatchEventToListeners(WebInspector.DebuggerModel.Events.ParsedScriptSource, script);
@@ -954,7 +955,7 @@ WebInspector.DebuggerDispatcher.prototype = {
      * @param {string} reason
      * @param {!Object=} auxData
      * @param {!Array.<string>=} breakpointIds
-     * @param {!DebuggerAgent.StackTrace=} asyncStackTrace
+     * @param {!RuntimeAgent.StackTrace=} asyncStackTrace
      */
     paused: function(callFrames, reason, auxData, breakpointIds, asyncStackTrace)
     {
@@ -986,6 +987,7 @@ WebInspector.DebuggerDispatcher.prototype = {
      * @param {number} endLine
      * @param {number} endColumn
      * @param {!RuntimeAgent.ExecutionContextId} executionContextId
+     * @param {string} hash
      * @param {boolean=} isContentScript
      * @param {boolean=} isInternalScript
      * @param {boolean=} isLiveEdit
@@ -993,9 +995,9 @@ WebInspector.DebuggerDispatcher.prototype = {
      * @param {boolean=} hasSourceURL
      * @param {boolean=} deprecatedCommentWasUsed
      */
-    scriptParsed: function(scriptId, sourceURL, startLine, startColumn, endLine, endColumn, executionContextId, isContentScript, isInternalScript, isLiveEdit, sourceMapURL, hasSourceURL, deprecatedCommentWasUsed)
+    scriptParsed: function(scriptId, sourceURL, startLine, startColumn, endLine, endColumn, executionContextId, hash, isContentScript, isInternalScript, isLiveEdit, sourceMapURL, hasSourceURL, deprecatedCommentWasUsed)
     {
-        this._debuggerModel._parsedScriptSource(scriptId, sourceURL, startLine, startColumn, endLine, endColumn, executionContextId, !!isContentScript, !!isInternalScript, !!isLiveEdit, sourceMapURL, hasSourceURL, deprecatedCommentWasUsed, false);
+        this._debuggerModel._parsedScriptSource(scriptId, sourceURL, startLine, startColumn, endLine, endColumn, executionContextId, hash, !!isContentScript, !!isInternalScript, !!isLiveEdit, sourceMapURL, hasSourceURL, deprecatedCommentWasUsed, false);
     },
 
     /**
@@ -1007,15 +1009,16 @@ WebInspector.DebuggerDispatcher.prototype = {
      * @param {number} endLine
      * @param {number} endColumn
      * @param {!RuntimeAgent.ExecutionContextId} executionContextId
+     * @param {string} hash
      * @param {boolean=} isContentScript
      * @param {boolean=} isInternalScript
      * @param {string=} sourceMapURL
      * @param {boolean=} hasSourceURL
      * @param {boolean=} deprecatedCommentWasUsed
      */
-    scriptFailedToParse: function(scriptId, sourceURL, startLine, startColumn, endLine, endColumn, executionContextId, isContentScript, isInternalScript, sourceMapURL, hasSourceURL, deprecatedCommentWasUsed)
+    scriptFailedToParse: function(scriptId, sourceURL, startLine, startColumn, endLine, endColumn, executionContextId, hash, isContentScript, isInternalScript, sourceMapURL, hasSourceURL, deprecatedCommentWasUsed)
     {
-        this._debuggerModel._parsedScriptSource(scriptId, sourceURL, startLine, startColumn, endLine, endColumn, executionContextId, !!isContentScript, !!isInternalScript, false, sourceMapURL, hasSourceURL, deprecatedCommentWasUsed, true);
+        this._debuggerModel._parsedScriptSource(scriptId, sourceURL, startLine, startColumn, endLine, endColumn, executionContextId, hash, !!isContentScript, !!isInternalScript, false, sourceMapURL, hasSourceURL, deprecatedCommentWasUsed, true);
     },
 
     /**
@@ -1123,9 +1126,8 @@ WebInspector.DebuggerModel.Location.prototype = {
  * @param {!WebInspector.DebuggerModel} debuggerModel
  * @param {!WebInspector.Script} script
  * @param {!DebuggerAgent.CallFrame} payload
- * @param {boolean=} isAsync
  */
-WebInspector.DebuggerModel.CallFrame = function(debuggerModel, script, payload, isAsync)
+WebInspector.DebuggerModel.CallFrame = function(debuggerModel, script, payload)
 {
     var target = debuggerModel.target();
     WebInspector.SDKObject.call(this, target);
@@ -1133,7 +1135,6 @@ WebInspector.DebuggerModel.CallFrame = function(debuggerModel, script, payload, 
     this._debuggerAgent = debuggerModel._agent;
     this._script = script;
     this._payload = payload;
-    this._isAsync = isAsync;
     this._location = WebInspector.DebuggerModel.Location.fromPayload(debuggerModel, payload.location);
     this._scopeChain = [];
     this._localScope = null;
@@ -1150,17 +1151,16 @@ WebInspector.DebuggerModel.CallFrame = function(debuggerModel, script, payload, 
 /**
  * @param {!WebInspector.DebuggerModel} debuggerModel
  * @param {!Array.<!DebuggerAgent.CallFrame>} callFrames
- * @param {boolean=} isAsync
  * @return {!Array.<!WebInspector.DebuggerModel.CallFrame>}
  */
-WebInspector.DebuggerModel.CallFrame.fromPayloadArray = function(debuggerModel, callFrames, isAsync)
+WebInspector.DebuggerModel.CallFrame.fromPayloadArray = function(debuggerModel, callFrames)
 {
     var result = [];
     for (var i = 0; i < callFrames.length; ++i) {
         var callFrame = callFrames[i];
         var script = debuggerModel.scriptForId(callFrame.location.scriptId);
         if (script)
-            result.push(new WebInspector.DebuggerModel.CallFrame(debuggerModel, script, callFrame, isAsync));
+            result.push(new WebInspector.DebuggerModel.CallFrame(debuggerModel, script, callFrame));
     }
     return result;
 }
@@ -1240,14 +1240,6 @@ WebInspector.DebuggerModel.CallFrame.prototype = {
     },
 
     /**
-     * @return {boolean}
-     */
-    isAsync: function()
-    {
-        return !!this._isAsync;
-    },
-
-    /**
      * @param {string} code
      * @param {string} objectGroup
      * @param {boolean} includeCommandLineAPI
@@ -1284,7 +1276,7 @@ WebInspector.DebuggerModel.CallFrame.prototype = {
         /**
          * @param {?Protocol.Error} error
          * @param {!Array.<!DebuggerAgent.CallFrame>=} callFrames
-         * @param {!DebuggerAgent.StackTrace=} asyncStackTrace
+         * @param {!RuntimeAgent.StackTrace=} asyncStackTrace
          * @this {WebInspector.DebuggerModel.CallFrame}
          */
         function protocolCallback(error, callFrames, asyncStackTrace)
@@ -1336,6 +1328,8 @@ WebInspector.DebuggerModel.Scope = function(callFrame, ordinal)
     this._type = this._payload.type;
     this._name = this._payload.name;
     this._ordinal = ordinal;
+    this._startLocation = this._payload.startLocation ? WebInspector.DebuggerModel.Location.fromPayload(callFrame.debuggerModel, this._payload.startLocation) : null;
+    this._endLocation = this._payload.endLocation ? WebInspector.DebuggerModel.Location.fromPayload(callFrame.debuggerModel, this._payload.endLocation) : null;
 }
 
 WebInspector.DebuggerModel.Scope.prototype = {
@@ -1356,6 +1350,22 @@ WebInspector.DebuggerModel.Scope.prototype = {
     },
 
     /**
+     * @return {?WebInspector.DebuggerModel.Location}
+     */
+    startLocation: function()
+    {
+        return this._startLocation;
+    },
+
+    /**
+     * @return {?WebInspector.DebuggerModel.Location}
+     */
+    endLocation: function()
+    {
+        return this._endLocation;
+    },
+
+    /**
      * @return {!WebInspector.RemoteObject}
      */
     object: function()
@@ -1370,7 +1380,7 @@ WebInspector.DebuggerModel.Scope.prototype = {
         else
             this._object = runtimeModel.createRemoteObject(this._payload.object);
 
-        return this._callFrame.target().runtimeModel.createRemoteObject(this._payload.object);
+        return this._object;
     },
 
     /**
@@ -1385,43 +1395,13 @@ WebInspector.DebuggerModel.Scope.prototype = {
 
 /**
  * @constructor
- * @param {!Array.<!WebInspector.DebuggerModel.CallFrame>} callFrames
- * @param {?WebInspector.DebuggerModel.StackTrace} asyncStackTrace
- * @param {string=} description
- */
-WebInspector.DebuggerModel.StackTrace = function(callFrames, asyncStackTrace, description)
-{
-    this.callFrames = callFrames;
-    this.asyncStackTrace = asyncStackTrace;
-    this.description = description;
-}
-
-/**
- * @param {!WebInspector.DebuggerModel} debuggerModel
- * @param {!DebuggerAgent.StackTrace=} payload
- * @param {boolean=} isAsync
- * @return {?WebInspector.DebuggerModel.StackTrace}
- */
-WebInspector.DebuggerModel.StackTrace.fromPayload = function(debuggerModel, payload, isAsync)
-{
-    if (!payload)
-        return null;
-    var callFrames = WebInspector.DebuggerModel.CallFrame.fromPayloadArray(debuggerModel, payload.callFrames, isAsync);
-    if (!callFrames.length)
-        return null;
-    var asyncStackTrace = WebInspector.DebuggerModel.StackTrace.fromPayload(debuggerModel, payload.asyncStackTrace, true);
-    return new WebInspector.DebuggerModel.StackTrace(callFrames, asyncStackTrace, payload.description);
-}
-
-/**
- * @constructor
  * @extends {WebInspector.SDKObject}
  * @param {!WebInspector.DebuggerModel} debuggerModel
  * @param {!Array.<!DebuggerAgent.CallFrame>} callFrames
  * @param {string} reason
  * @param {!Object|undefined} auxData
  * @param {!Array.<string>} breakpointIds
- * @param {!DebuggerAgent.StackTrace=} asyncStackTrace
+ * @param {!RuntimeAgent.StackTrace=} asyncStackTrace
  */
 WebInspector.DebuggerPausedDetails = function(debuggerModel, callFrames, reason, auxData, breakpointIds, asyncStackTrace)
 {
@@ -1431,7 +1411,7 @@ WebInspector.DebuggerPausedDetails = function(debuggerModel, callFrames, reason,
     this.reason = reason;
     this.auxData = auxData;
     this.breakpointIds = breakpointIds;
-    this.asyncStackTrace = WebInspector.DebuggerModel.StackTrace.fromPayload(debuggerModel, asyncStackTrace, true);
+    this.asyncStackTrace = asyncStackTrace;
 }
 
 WebInspector.DebuggerPausedDetails.prototype = {

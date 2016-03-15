@@ -994,13 +994,6 @@
                 "description": "Disables reporting of execution contexts creation."
             },
             {
-                "name": "isRunRequired",
-                "returns": [
-                    { "name": "result", "type": "boolean", "description": "True if the Runtime is in paused on start state." }
-                ],
-                "hidden": true
-            },
-            {
                 "name": "setCustomObjectFormatterEnabled",
                 "parameters": [
                     {
@@ -3066,6 +3059,7 @@
                 "type": "object",
                 "properties": [
                     { "name": "familyName", "type": "string", "description": "Font's family name reported by platform."},
+                    { "name": "isCustomFont", "type": "boolean", "description": "Indicates if the font was downloaded or resolved locally."},
                     { "name": "glyphCount", "type": "number", "description": "Amount of glyphs that were rendered with this font."}
                 ],
                 "description": "Information about amount of glyphs that were rendered with given font.",
@@ -3439,23 +3433,14 @@
                 "description": "JavaScript call frame. Array of call frames form the call stack."
             },
             {
-                "id": "StackTrace",
-                "type": "object",
-                "properties": [
-                    { "name": "callFrames", "type": "array", "items": { "$ref": "CallFrame" }, "description": "Call frames of the stack trace." },
-                    { "name": "description", "type": "string", "optional": true, "description": "String label of this stack trace. For async traces this may be a name of the function that initiated the async call." },
-                    { "name": "asyncStackTrace", "$ref": "StackTrace", "optional": true, "description": "Async stack trace, if any." }
-                ],
-                "description": "JavaScript call stack, including async stack traces.",
-                "hidden": true
-            },
-            {
                 "id": "Scope",
                 "type": "object",
                 "properties": [
                     { "name": "type", "type": "string", "enum": ["global", "local", "with", "closure", "catch", "block", "script"], "description": "Scope type." },
                     { "name": "object", "$ref": "Runtime.RemoteObject", "description": "Object representing the scope. For <code>global</code> and <code>with</code> scopes it represents the actual object; for the rest of the scopes, it is artificial transient object enumerating scope variables as its properties." },
-                    { "name": "name", "type": "string", "optional": true, "hidden": true }
+                    { "name": "name", "type": "string", "optional": true, "hidden": true },
+                    { "name": "startLocation", "$ref": "Location", "optional": true, "hidden": true, "description": "Location in the source code where scope starts" },
+                    { "name": "endLocation", "$ref": "Location", "optional": true, "hidden": true, "description": "Location in the source code where scope ends" }
                 ],
                 "description": "Scope description."
             },
@@ -3627,7 +3612,7 @@
                 "returns": [
                     { "name": "callFrames", "type": "array", "optional": true, "items": { "$ref": "CallFrame" }, "description": "New stack trace in case editing has happened while VM was stopped." },
                     { "name": "stackChanged", "type": "boolean", "optional": true, "description": "Whether current call stack  was modified after applying the changes.", "hidden": true },
-                    { "name": "asyncStackTrace", "$ref": "StackTrace", "optional": true, "description": "Async stack trace, if any.", "hidden": true },
+                    { "name": "asyncStackTrace", "$ref": "Runtime.StackTrace", "optional": true, "description": "Async stack trace, if any.", "hidden": true },
                     { "name": "compileError", "optional": true, "$ref": "SetScriptSourceError", "description": "Error data if any." }
                 ],
                 "description": "Edits JavaScript source live."
@@ -3639,7 +3624,7 @@
                 ],
                 "returns": [
                     { "name": "callFrames", "type": "array", "items": { "$ref": "CallFrame" }, "description": "New stack trace." },
-                    { "name": "asyncStackTrace", "$ref": "StackTrace", "optional": true, "description": "Async stack trace, if any." }
+                    { "name": "asyncStackTrace", "$ref": "Runtime.StackTrace", "optional": true, "description": "Async stack trace, if any." }
                 ],
                 "hidden": true,
                 "description": "Restarts particular call frame from the beginning."
@@ -3725,21 +3710,10 @@
                 "description": "Changes value of variable in a callframe or a closure. Either callframe or function must be specified. Object-based scopes are not supported and must be mutated manually."
             },
             {
-                "name": "getStepInPositions",
-                "parameters": [
-                    { "name": "callFrameId", "$ref": "CallFrameId", "description": "Id of a call frame where the current statement should be analized" }
-                ],
-                "returns": [
-                    { "name": "stepInPositions", "type": "array", "items": { "$ref": "Location" }, "optional": true, "description": "experimental" }
-                ],
-                "hidden": true,
-                "description": "Lists all positions where step-in is possible for a current statement in a specified call frame"
-            },
-            {
                 "name": "getBacktrace",
                 "returns": [
                     { "name": "callFrames", "type": "array", "items": { "$ref": "CallFrame" }, "description": "Call stack the virtual machine stopped on." },
-                    { "name": "asyncStackTrace", "$ref": "StackTrace", "optional": true, "description": "Async stack trace, if any." }
+                    { "name": "asyncStackTrace", "$ref": "Runtime.StackTrace", "optional": true, "description": "Async stack trace, if any." }
                 ],
                 "hidden": true,
                 "description": "Returns call stack including variables changed since VM was paused. VM must be paused."
@@ -3823,6 +3797,7 @@
                     { "name": "endLine", "type": "integer", "description": "Last line of the script." },
                     { "name": "endColumn", "type": "integer", "description": "Length of the last line of the script." },
                     { "name": "executionContextId", "$ref": "Runtime.ExecutionContextId", "description": "Specifies script creation context.", "hidden": true },
+                    { "name": "hash", "type": "string", "hidden": true, "description": "Content hash of the script."},
                     { "name": "isContentScript", "type": "boolean", "optional": true, "description": "Determines whether this script is a user extension script." },
                     { "name": "isInternalScript", "type": "boolean", "optional": true, "description": "Determines whether this script is an internal script.", "hidden": true },
                     { "name": "isLiveEdit", "type": "boolean", "optional": true, "description": "True, if this script is generated as a result of the live edit operation.", "hidden": true },
@@ -3842,6 +3817,7 @@
                     { "name": "endLine", "type": "integer", "description": "Last line of the script." },
                     { "name": "endColumn", "type": "integer", "description": "Length of the last line of the script." },
                     { "name": "executionContextId", "$ref": "Runtime.ExecutionContextId", "description": "Specifies script creation context.", "hidden": true },
+                    { "name": "hash", "type": "string", "hidden": true, "description": "Content hash of the script."},
                     { "name": "isContentScript", "type": "boolean", "optional": true, "description": "Determines whether this script is a user extension script." },
                     { "name": "isInternalScript", "type": "boolean", "optional": true, "description": "Determines whether this script is an internal script.", "hidden": true },
                     { "name": "sourceMapURL", "type": "string", "optional": true, "description": "URL of source map associated with script (if any)." },
@@ -3865,7 +3841,7 @@
                     { "name": "reason", "type": "string", "enum": [ "XHR", "DOM", "EventListener", "exception", "assert", "CSPViolation", "debugCommand", "promiseRejection", "AsyncOperation", "other" ], "description": "Pause reason." },
                     { "name": "data", "type": "object", "optional": true, "description": "Object containing break-specific auxiliary properties." },
                     { "name": "hitBreakpoints", "type": "array", "optional": true, "items": { "type": "string" }, "description": "Hit breakpoints IDs", "hidden": true },
-                    { "name": "asyncStackTrace", "$ref": "StackTrace", "optional": true, "description": "Async stack trace, if any.", "hidden": true }
+                    { "name": "asyncStackTrace", "$ref": "Runtime.StackTrace", "optional": true, "description": "Async stack trace, if any.", "hidden": true }
                 ],
                 "description": "Fired when the virtual machine stopped on breakpoint or exception or any other stop criteria."
             },
@@ -4241,19 +4217,7 @@
                 ]
             },
             {
-                "name": "connectToWorker",
-                "parameters": [
-                    { "name": "workerId", "type": "string" }
-                ]
-            },
-            {
-                "name": "disconnectFromWorker",
-                "parameters": [
-                    { "name": "workerId", "type": "string" }
-                ]
-            },
-            {
-                "name": "setAutoconnectToWorkers",
+                "name": "setWaitForDebuggerOnStart",
                 "parameters": [
                     { "name": "value", "type": "boolean" }
                 ]
@@ -4265,7 +4229,7 @@
                 "parameters": [
                     { "name": "workerId", "type": "string" },
                     { "name": "url", "type": "string" },
-                    { "name": "inspectorConnected", "type": "boolean" }
+                    { "name": "waitingForDebugger", "type": "boolean" }
                 ]
             },
             {

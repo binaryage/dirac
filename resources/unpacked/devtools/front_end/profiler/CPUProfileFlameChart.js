@@ -72,15 +72,6 @@ WebInspector.CPUFlameChartDataProvider.prototype = {
     },
 
     /**
-     * @return {number}
-     * @override
-     */
-    groupSeparatorHeight: function()
-    {
-        return 5;
-    },
-
-    /**
      * @override
      * @param {number} startTime
      * @param {number} endTime
@@ -214,7 +205,7 @@ WebInspector.CPUFlameChartDataProvider.prototype = {
     /**
      * @override
      * @param {number} entryIndex
-     * @return {?Array<!{title: string, value: (string,!Element)}>}
+     * @return {?Array<!{title: string, value: (string|!Element)}>}
      */
     prepareHighlightedEntryInfo: function(entryIndex)
     {

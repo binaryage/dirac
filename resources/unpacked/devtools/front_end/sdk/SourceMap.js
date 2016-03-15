@@ -39,6 +39,7 @@ function SourceMapV3()
     /** @type {!Array.<!SourceMapV3.Section>|undefined} */ this.sections;
     /** @type {string} */ this.mappings;
     /** @type {string|undefined} */ this.sourceRoot;
+    /** @type {!Array.<string>|undefined} */ this.names;
 }
 
 /**
@@ -88,12 +89,15 @@ WebInspector.SourceMap = function(compiledURL, sourceMappingURL, payload)
 /**
  * @param {string} sourceMapURL
  * @param {string} compiledURL
- * @param {function(?WebInspector.SourceMap)} callback
+ * @return {!Promise<?WebInspector.SourceMap>}
  * @this {WebInspector.SourceMap}
  */
-WebInspector.SourceMap.load = function(sourceMapURL, compiledURL, callback)
+WebInspector.SourceMap.load = function(sourceMapURL, compiledURL)
 {
+    var callback;
+    var promise = new Promise(fulfill => callback = fulfill);
     WebInspector.multitargetNetworkManager.loadResource(sourceMapURL, contentLoaded);
+    return promise;
 
     /**
      * @param {number} statusCode
@@ -112,6 +116,7 @@ WebInspector.SourceMap.load = function(sourceMapURL, compiledURL, callback)
         try {
             var payload = /** @type {!SourceMapV3} */ (JSON.parse(content));
             var baseURL = sourceMapURL.startsWith("data:") ? compiledURL : sourceMapURL;
+
             callback(new WebInspector.SourceMap(compiledURL, baseURL, payload));
         } catch(e) {
             console.error(e);
@@ -138,7 +143,7 @@ WebInspector.SourceMap.prototype = {
         return this._sourceMappingURL;
     },
 
-   /**
+    /**
      * @return {!Array.<string>}
      */
     sources: function()
@@ -272,7 +277,13 @@ WebInspector.SourceMap.prototype = {
         {
             if (a.sourceLineNumber !== b.sourceLineNumber)
                 return a.sourceLineNumber - b.sourceLineNumber;
-            return a.sourceColumnNumber - b.sourceColumnNumber;
+            if (a.sourceColumnNumber !== b.sourceColumnNumber)
+                return a.sourceColumnNumber - b.sourceColumnNumber;
+
+            if (a.lineNumber !== b.lineNumber)
+                return a.lineNumber - b.lineNumber;
+
+            return a.columnNumber - b.columnNumber;
         }
     },
 
@@ -289,6 +300,7 @@ WebInspector.SourceMap.prototype = {
         var nameIndex = 0;
 
         var sources = [];
+        var names = map.names || [];
         var sourceRoot = map.sourceRoot || "";
         if (sourceRoot && !sourceRoot.endsWith("/"))
             sourceRoot += "/";
@@ -337,7 +349,7 @@ WebInspector.SourceMap.prototype = {
             if (!this._isSeparator(stringCharIterator.peek()))
                 nameIndex += this._decodeVLQ(stringCharIterator);
 
-            this._mappings.push(new WebInspector.SourceMap.Entry(lineNumber, columnNumber, sourceURL, sourceLineNumber, sourceColumnNumber));
+            this._mappings.push(new WebInspector.SourceMap.Entry(lineNumber, columnNumber, sourceURL, sourceLineNumber, sourceColumnNumber, names[nameIndex]));
         }
 
         for (var i = 0; i < this._mappings.length; ++i) {
@@ -380,6 +392,35 @@ WebInspector.SourceMap.prototype = {
         var negative = result & 1;
         result >>= 1;
         return negative ? -result : result;
+    },
+
+    /**
+     * @param {string} url
+     * @param {!WebInspector.TextRange} textRange
+     * @return {!WebInspector.TextRange}
+     */
+    reverseMapTextRange: function(url, textRange)
+    {
+        /**
+         * @param {!{lineNumber: number, columnNumber: number}} position
+         * @param {!WebInspector.SourceMap.Entry} mapping
+         * @return {number}
+         */
+        function comparator(position, mapping)
+        {
+            if (position.lineNumber !== mapping.sourceLineNumber)
+                return position.lineNumber - mapping.sourceLineNumber;
+
+            return position.columnNumber - mapping.sourceColumnNumber;
+        }
+
+        var mappings = this._reversedMappings(url);
+        var startIndex = mappings.lowerBound({lineNumber: textRange.startLine, columnNumber: textRange.startColumn}, comparator);
+        var endIndex = mappings.upperBound({lineNumber: textRange.endLine, columnNumber: textRange.endColumn}, comparator);
+
+        var startMapping = mappings[startIndex];
+        var endMapping = mappings[endIndex];
+        return new WebInspector.TextRange(startMapping.lineNumber, startMapping.columnNumber, endMapping.lineNumber, endMapping.columnNumber);
     },
 
     _VLQ_BASE_SHIFT: 5,
@@ -430,12 +471,14 @@ WebInspector.SourceMap.StringCharIterator.prototype = {
  * @param {string=} sourceURL
  * @param {number=} sourceLineNumber
  * @param {number=} sourceColumnNumber
+ * @param {string=} name
  */
-WebInspector.SourceMap.Entry = function(lineNumber, columnNumber, sourceURL, sourceLineNumber, sourceColumnNumber)
+WebInspector.SourceMap.Entry = function(lineNumber, columnNumber, sourceURL, sourceLineNumber, sourceColumnNumber, name)
 {
     this.lineNumber = lineNumber;
     this.columnNumber = columnNumber;
     this.sourceURL = sourceURL;
     this.sourceLineNumber = sourceLineNumber;
     this.sourceColumnNumber = sourceColumnNumber;
+    this.name = name;
 }

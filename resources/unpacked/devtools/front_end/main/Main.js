@@ -121,10 +121,10 @@ WebInspector.Main.prototype = {
         Runtime.experiments.register("privateScriptInspection", "Private script inspection");
         Runtime.experiments.register("promiseTracker", "Promise inspector");
         Runtime.experiments.register("requestBlocking", "Request blocking", true);
+        Runtime.experiments.register("resolveVariableNames", "Resolve variable names", true);
         Runtime.experiments.register("timelineShowAllEvents", "Show all events on Timeline", true);
         Runtime.experiments.register("timelineLatencyInfo", "Show input latency events on the Timeline", true);
         Runtime.experiments.register("securityPanel", "Security panel");
-        Runtime.experiments.register("showPrimaryLoadWaterfallInNetworkTimeline", "Show primary load waterfall in Network timeline", true);
         Runtime.experiments.register("stepIntoAsync", "Step into async");
         Runtime.experiments.register("timelineFlowEvents", "Timeline flow events", true);
         Runtime.experiments.register("timelineInvalidationTracking", "Timeline invalidation tracking", true);
@@ -180,6 +180,7 @@ WebInspector.Main.prototype = {
         WebInspector.dockController = new WebInspector.DockController(canDock);
         WebInspector.multitargetConsoleModel = new WebInspector.MultitargetConsoleModel();
         WebInspector.multitargetNetworkManager = new WebInspector.MultitargetNetworkManager();
+        WebInspector.targetManager.addEventListener(WebInspector.TargetManager.Events.SuspendStateChanged, this._onSuspendStateChanged.bind(this));
 
         WebInspector.shortcutsScreen = new WebInspector.ShortcutsScreen();
         // set order of some sections explicitly
@@ -341,7 +342,7 @@ WebInspector.Main.prototype = {
 
     _registerForwardedShortcuts: function()
     {
-        /** @const */ var forwardedActions = ["main.toggle-dock", "debugger.toggle-breakpoints-active", "debugger.toggle-pause"];
+        /** @const */ var forwardedActions = ["main.toggle-dock", "debugger.toggle-breakpoints-active", "debugger.toggle-pause", "commandMenu.show"];
         var actionKeys = WebInspector.shortcutRegistry.keysForActions(forwardedActions).map(WebInspector.KeyboardShortcut.keyCodeAndModifiersFromKey);
         InspectorFrontendHost.setWhitelistedShortcuts(JSON.stringify(actionKeys));
     },
@@ -603,6 +604,12 @@ WebInspector.Main.prototype = {
         var debuggerModel = WebInspector.DebuggerModel.fromTarget(this._mainTarget);
         if (debuggerModel)
             WebInspector.TargetCrashedScreen.show(debuggerModel);
+    },
+
+    _onSuspendStateChanged: function()
+    {
+        var suspended = WebInspector.targetManager.allTargetsSuspended();
+        WebInspector.inspectorView.onSuspendStateChanged(suspended);
     },
 
     /**
@@ -1108,6 +1115,7 @@ WebInspector.BackendSettingsSync.prototype = {
     {
         target.pageAgent().setAutoAttachToCreatedPages(this._autoAttachSetting.get());
         target.emulationAgent().setScriptExecutionDisabled(this._disableJavascriptSetting.get());
+        target.renderingAgent().setShowViewportSizeOnResize(true);
     },
 
     /**
