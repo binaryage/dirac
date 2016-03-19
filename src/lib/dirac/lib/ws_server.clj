@@ -225,8 +225,16 @@
     (set-http-server! server nil))
   (log/debug "Destroyed" (str server)))
 
-(defn wait-for-first-client [server]
-  (log/debug (str server) "Waiting for first client...")
-  @(get-first-client-promise server)                                                                                          ; <== will block!
-  (log/debug (str server) "First client connected")
-  nil)
+(defn wait-for-first-client
+  ([server]
+   (wait-for-first-client server nil))
+  ([server timeout-ms]
+   (log/debug (str server) "Waiting for first client...")
+   (let [promise (get-first-client-promise server)
+         result (if timeout-ms
+                  (deref promise timeout-ms ::timeout)                                                                        ; <== will block!
+                  (deref promise))]                                                                                           ; <== will block!
+     (if (= result ::timeout)
+       (log/debug (str server) "Timeout while waiting for first client connection")
+       (log/debug (str server) "First client connected"))
+     result)))
