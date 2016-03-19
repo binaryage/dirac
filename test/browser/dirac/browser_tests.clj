@@ -67,8 +67,11 @@
           (println)
           (println "-------------------------------------------------------------------------------------------------------")
           (println "! expected and actual transcripts differ for" name "test:")
-          (println (str "> diff expected/" name ".txt actual/" name ".txt"))
+          (println (str "> diff -U 5 expected/" name ".txt actual/" name ".txt"))
           (println (:out (shell/sh "diff" "-U" "5" expected-path actual-path)))
+          (println "-------------------------------------------------------------------------------------------------------")
+          (println (str "> cat actual/" name ".txt"))
+          (println actual-transcript)
           false)
         true))))
 
