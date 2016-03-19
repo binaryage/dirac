@@ -14,19 +14,28 @@
 (def actual-transcripts-root-path "test/browser/transcripts/actual/")
 (def expected-transcripts-root-path "test/browser/transcripts/expected/")
 
+(def ^:const SECOND 1000)
+(def ^:const MINUTE (* 60 SECOND))
+(def ^:const DEFAULT_TASK_TIMEOUT (* 5 MINUTE))                                                                               ; 5min
+
 (defn navigate-transcript-test! [name]
   (let [debugging-port (get-debugging-port)
         test-url (str "http://localhost:9090/" name "/resources/index.html?debugging_port=" debugging-port)]
     (println "navigating to" test-url)
     (to test-url)))
 
-(defn wait-for-task-to-finish []
-  (let [server (server/create! {:name "Task signaller"
-                                :host "localhost"
-                                :port 22555})
-        server-url (server/get-url server)]
-    (println (str "Waiting for task signals at " server-url "."))
-    (server/wait-for-first-client server)))
+(defn wait-for-task-to-finish
+  ([]
+   (wait-for-task-to-finish DEFAULT_TASK_TIMEOUT))
+  ([timeout-ms]
+   (let [server (server/create! {:name "Task signaller"
+                                 :host "localhost"
+                                 :port 22555})
+         server-url (server/get-url server)]
+     (println (str "Waiting for task signals at " server-url "."))
+     (if (= ::server/timeout (server/wait-for-first-client server timeout-ms))
+       (println (str "Timeout while waiting for task signal (after " timeout-ms " ms)."))
+       (println (str "Got 'task finished' signal"))))))
 
 ; -- transcript helpers -----------------------------------------------------------------------------------------------------
 
@@ -73,6 +82,6 @@
 (deftest p01
   (navigate-transcript-test! "p01")
   (disconnect-browser!)
-  (wait-for-task-to-finish)
+  (wait-for-task-to-finish (* 1 MINUTE))                                                                                      ; TODO: increase
   (reconnect-browser!)
   (is (write-transcript-and-compare "p01")))
