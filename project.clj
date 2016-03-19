@@ -20,13 +20,14 @@
 
                  ; we cannot use :dependencies under individual profiles because Cursive recognizes only root level
                  ; thus we mark extra deps with :scope "test" and filter them later when producing jar library
-                 [binaryage/chromex "0.2.0" :scope "test"]
+                 [binaryage/chromex "0.3.0" :scope "test"]
                  [binaryage/devtools "0.5.2" :scope "test"]
                  [cljs-http "0.1.39" :scope "test"]
                  [figwheel "0.5.0-6" :scope "test"]
                  [reforms "0.4.3" :scope "test"]
                  [rum "0.6.0" :scope "test"]
                  [rum-reforms "0.4.3" :scope "test"]
+                 [funcool/cuerdas "0.7.1" :scope "test"]
                  [parinfer "0.2.3" :scope "test"]
                  [com.lucasbradstreet/cljs-uuid-utils "1.0.2" :scope "test"]
 
@@ -118,7 +119,8 @@
              :browser-fixtures
              {:cljsbuild {:builds
                           {:p01
-                           {:source-paths ["test/browser-fixtures/shared/src"
+                           {:source-paths ["src/lib"
+                                           "test/browser-fixtures/shared/src"
                                            "test/browser-fixtures/p01/src"]
                             :compiler     {:output-to     "test/browser-fixtures/p01/resources/compiled/core.js"
                                            :output-dir    "test/browser-fixtures/p01/resources/compiled"
@@ -151,6 +153,7 @@
              {:cljsbuild {:builds
                           {:dirac-implant
                            {:source-paths ["src/implant"
+                                           "src/lib"
                                            "src/project"]
                             :compiler     {:output-to     "resources/unpacked/devtools/front_end/dirac/compiled/implant/implant.js"
                                            :output-dir    "resources/unpacked/devtools/front_end/dirac/compiled/implant"
@@ -160,6 +163,7 @@
 
                            :dirac-background
                            {:source-paths ["src/dev"
+                                           "src/lib"
                                            "src/figwheel"
                                            "src/shared"
                                            "src/project"
@@ -171,6 +175,7 @@
                                            :source-map    true}}
                            :dirac-options
                            {:source-paths ["src/dev"
+                                           "src/lib"
                                            "src/figwheel"
                                            "src/shared"
                                            "src/project"
@@ -193,6 +198,7 @@
               :cljsbuild {:builds
                           {:dirac-implant
                            {:source-paths ["src/implant"
+                                           "src/lib"
                                            "src/project"]
                             :compiler     {:output-to     "resources/release/devtools/front_end/dirac/compiled/implant/implant.js"
                                            :output-dir    "resources/release/devtools/front_end/dirac/compiled/implant"
@@ -201,6 +207,7 @@
                                            :elide-asserts true}}
                            :dirac-background
                            {:source-paths ["src/rel"
+                                           "src/lib"
                                            "src/shared"
                                            "src/project"
                                            "src/background"]
@@ -208,9 +215,11 @@
                                            :output-dir    "resources/release/compiled/background"
                                            :asset-path    "compiled/background"
                                            :optimizations :advanced
+                                           :pseudo-names  true
                                            :elide-asserts true}}
                            :dirac-options
                            {:source-paths ["src/rel"
+                                           "src/lib"
                                            "src/shared"
                                            "src/project"
                                            "src/options"]
@@ -250,7 +259,7 @@
             "test"                         ["shell" "scripts/test-all.sh"]
             "test-backend"                 ["with-profile" "+backend-tests"
                                             "run" "-m" "dirac.backend-tests-runner"]
-            "test-browser"                 ["with-profile" "+cljs,+browser-tests,+browser-fixtures,+marion,+packed"
+            "test-browser"                 ["with-profile" "+browser-tests,+browser-fixtures,+marion,+packed,+cljs,+pseudo-names"
                                             "do"
                                             "release,"
                                             "cljsbuild" "once" "marion-background" "marion-content-script" "p01,"

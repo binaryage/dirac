@@ -11,6 +11,9 @@
 (def current-chrome-driver-service (atom nil))
 (def current-chrome-remote-debugging-port (atom nil))
 
+(defn get-debugging-port []
+  @current-chrome-remote-debugging-port)
+
 (defn build-chrome-driver-service [options]
   (let [{:keys [port verbose chrome-driver-path]} options
         builder (ChromeDriverService$Builder.)]

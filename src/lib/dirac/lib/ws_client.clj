@@ -1,4 +1,4 @@
-(ns dirac.implant.ws-client)
+(ns dirac.lib.ws-client)
 
 ; ---------------------------------------------------------------------------------------------------------------------------
 ; logging - these need to be macros to preserve source location for devtools

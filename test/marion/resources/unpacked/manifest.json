@@ -27,5 +27,8 @@
       "run_at": "document_end"
     }
   ],
+  "web_accessible_resources": [
+    "compiled/*"
+  ],
   "manifest_version": 2
 }

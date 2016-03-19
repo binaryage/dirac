@@ -15,17 +15,19 @@
             [chromex.ext.commands :as commands]
             [dirac.background.cors :refer [setup-cors-rewriting!]]
             [dirac.target.core :refer [resolve-backend-url]]
-            [dirac.background.state :refer [state]]
+            [dirac.background.state :as state]
             [dirac.background.connections :as connections]
             [dirac.options.model :as options]
-            [dirac.background.tools :as tools]))
+            [dirac.background.tools :as tools]
+            [dirac.background.marion :as marion]))
 
-(defonce chrome-event-channel (atom nil))
-
-(defn handle-command! [command]
+(defn handle-command! [command & args]
+  (log "handling marion command" command args)
+  (marion/post-feedback-event! (str "handling command: " command))
   (case command
     "open-dirac-devtools" (tools/open-dirac-in-active-tab!)
-    (warn "Received unrecognized command:" command)))
+    "close-dirac-devtools" (apply tools/close-dirac-connection! args)
+    (warn "received unrecognized command:" command)))
 
 (defn on-tab-removed! [tab-id _remove-info]
   (if (connections/dirac-connected? tab-id)
@@ -34,37 +36,12 @@
 (defn on-tab-updated! [tab-id _change-info _tab]
   (connections/update-action-button-according-to-connection-state! tab-id))
 
-; -- marion event loop ------------------------------------------------------------------------------------------------------
-
-(defonce marion-port (atom nil))
-
-(defn register-marion! [port]
-  (log "BACKGROUND: marion connected" (get-sender port))
-  (reset! marion-port port))
-
-(defn unregister-marion! []
-  (log "BACKGROUND: marion disconnected")
-  (reset! marion-port nil))
-
-(defn process-marion-message [serialized-message]
-  {:pre [@chrome-event-channel]}
-  (log "got marion message" serialized-message)
-  (let [message (reader/read-string serialized-message)]
-    (case (:command message)
-      :fire-synthetic-chrome-event (put! @chrome-event-channel (:chrome-event message)))))
-
-(defn run-marion-message-loop! [marion-port]
-  (go-loop []
-    (when-let [message (<! marion-port)]
-      (process-marion-message message)
-      (recur))
-    (unregister-marion!)))
-
 ; -- event handlers ---------------------------------------------------------------------------------------------------------
 
 (defn handle-external-client-connection! [client-port]
-  (register-marion! client-port)
-  (run-marion-message-loop! client-port))
+  (case (get-name client-port)
+    "Dirac Marionettist" (marion/handle-marion-client-connection! client-port)
+    (warn "external connection attempt from unrecognized client" client-port)))
 
 ; -- main event loop --------------------------------------------------------------------------------------------------------
 
@@ -89,7 +66,7 @@
 
 (defn boot-chrome-event-loop! []
   (let [channel (make-chrome-event-channel (chan))]
-    (reset! chrome-event-channel channel)
+    (state/set-chrome-event-channel! channel)
     (tabs/tap-all-events channel)
     (runtime/tap-all-events channel)
     (browser-action/tap-on-clicked-events channel)

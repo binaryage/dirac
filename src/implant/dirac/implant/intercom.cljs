@@ -8,12 +8,14 @@
             [dirac.implant.version :as implant-version]
             [dirac.utils :as utils]
             [chromex.logging :refer-macros [log info warn error]]
-            [dirac.implant.eval :as eval]))
+            [dirac.implant.eval :as eval])
+  (:import goog.net.WebSocket.ErrorEvent))
 
 (def required-dirac-api-version 2)
 
 (def ^:dynamic *repl-connected* false)
 (def ^:dynamic *repl-bootstrapped* false)
+(def ^:dynamic *last-prompt-mode* :status)
 (def ^:dynamic *last-prompt-status-content* "")
 (def ^:dynamic *last-prompt-status-style* "")
 (def ^:dynamic *last-prompt-status-banner* "")
@@ -61,7 +63,7 @@
 (defn ^:dynamic warn-version-mismatch [our-version agent-version]
   (let [msg (version-mismatch-msg our-version agent-version)]
     (warn msg)
-    (eval/console-warn msg)))
+    (eval/console-warn! msg)))
 
 (defn check-version! [version]
   (if-not (= version implant-version/version)
@@ -73,26 +75,40 @@
   (and *repl-connected*
        *repl-bootstrapped*))
 
+(defn set-prompt-mode-if-needed! [mode]
+  (when-not (= *last-prompt-mode* mode)
+    (set! *last-prompt-mode* mode)
+    (console/set-prompt-mode! mode)))
+
+(defn set-prompt-status-banner-if-needed! [banner]
+  (when-not (= *last-prompt-status-banner* banner)
+    (set! *last-prompt-status-banner* banner)
+    (console/set-prompt-status-banner! banner)))
+
+(defn set-prompt-status-content-if-needed! [content]
+  (when-not (= *last-prompt-status-content* content)
+    (set! *last-prompt-status-content* content)
+    (console/set-prompt-status-content! content)))
+
+(defn set-prompt-status-style-if-needed! [style]
+  (when-not (= *last-prompt-status-style* style)
+    (set! *last-prompt-status-style* style)
+    (console/set-prompt-status-style! style)))
+
 (defn update-repl-mode! []
   (if (repl-ready?)
-    (console/set-prompt-mode! :edit)
-    (console/set-prompt-mode! :status))
-  (console/set-prompt-status-content! *last-prompt-status-content*)
-  (console/set-prompt-status-style! *last-prompt-status-style*)
-  (console/set-prompt-status-banner! *last-prompt-status-banner*))
-
-(defn update-prompt-banner [banner]
-  (set! *last-prompt-status-banner* banner)
-  (console/set-prompt-status-banner! *last-prompt-status-banner*))
+    (set-prompt-mode-if-needed! :edit)
+    (set-prompt-mode-if-needed! :status))
+  (set-prompt-status-banner-if-needed! *last-prompt-status-banner*)
+  (set-prompt-status-content-if-needed! *last-prompt-status-content*)
+  (set-prompt-status-style-if-needed! *last-prompt-status-style*))
 
 (defn display-prompt-status [status & [style]]
   (let [effective-style (or style :error)]
-    (update-prompt-banner "")
-    (set! *last-prompt-status-content* status)
-    (set! *last-prompt-status-style* effective-style)
-    (console/set-prompt-status-content! *last-prompt-status-content*)
-    (console/set-prompt-status-style! effective-style)
-    (console/set-prompt-mode! :status)))
+    (set-prompt-mode-if-needed! :status)
+    (set-prompt-status-banner-if-needed! "")
+    (set-prompt-status-content-if-needed! status)
+    (set-prompt-status-style-if-needed! effective-style)))
 
 (defn on-client-change [_key _ref _old new]
   (if (nil? new)
@@ -109,8 +125,8 @@
 
 (defn configure-eval! [client-config]
   (eval/update-config! (assoc client-config
-                         :display-user-info-fn eval/console-info
-                         :display-user-error-fn eval/console-error)))
+                         :display-user-info-fn eval/console-info!
+                         :display-user-error-fn eval/console-error!)))
 
 (defn init! []
   (add-watch nrepl-tunnel-client/current-client ::client-observer on-client-change)
@@ -139,7 +155,7 @@
         time-in-seconds (int (/ prev-time step))]
     (go-loop [remaining-time time-in-seconds]
       (when (pos? remaining-time)
-        (update-prompt-banner (will-reconnect-banner-msg remaining-time))
+        (set-prompt-status-banner-if-needed! (will-reconnect-banner-msg remaining-time))
         (<! (timeout step))
         (if (= id *last-connect-fn-id*)
           (recur (dec remaining-time)))))

@@ -36,7 +36,7 @@
  */
 WebInspector.ConsoleView = function()
 {
-    dirac.implant.init();
+    dirac.implant.init_console();
 
     WebInspector.VBox.call(this);
     this.setMinimumSize(0, 35);
@@ -422,6 +422,7 @@ WebInspector.ConsoleView.prototype = {
 
     focus: function()
     {
+        dirac.implant.feedback("console prompt focused");
         if (this._promptElement === WebInspector.currentFocusElement())
             return;
         WebInspector.setCurrentFocusElement(this._promptElement);
@@ -484,14 +485,17 @@ WebInspector.ConsoleView.prototype = {
     },
 
     setDiracPromptStatusContent: function(s) {
+        dirac.implant.feedback("setDiracPromptStatusContent('"+s+"')");
         this._diracPromptDescriptor.statusContent.innerHTML = s;
     },
 
     setDiracPromptStatusBanner: function(s) {
+        dirac.implant.feedback("setDiracPromptStatusBanner('"+s+"')");
         this._diracPromptDescriptor.statusBanner.innerHTML = s;
     },
 
     setDiracPromptStatusStyle: function(style) {
+       dirac.implant.feedback("setDiracPromptStatusStyle('"+style+"')");
        var knownStyles = ["error", "info"];
        if (knownStyles.indexOf(style)==-1) {
          console.warn("unknown style passed to setDiracPromptStatusStyle:", style);
@@ -503,6 +507,7 @@ WebInspector.ConsoleView.prototype = {
     },
 
     setDiracPromptMode: function(mode) {
+       dirac.implant.feedback("setDiracPromptMode('"+mode+"')");
        var knownModes = ["edit", "status"];
        if (knownModes.indexOf(mode)==-1) {
          console.warn("unknown mode passed to setDiracPromptMode:", mode);
@@ -526,6 +531,7 @@ WebInspector.ConsoleView.prototype = {
 
     setDiracPromptNS: function(name)
     {
+        dirac.implant.feedback("setDiracPromptNS('"+name+"')");
         this._currentNs = name;
         this._refreshNs();
     },
@@ -976,6 +982,9 @@ WebInspector.ConsoleView.prototype = {
         }
 
         var newPromptDescriptor = this._prompts[newIndex];
+
+        dirac.implant.feedback("switch console prompt to " + newPromptDescriptor.id);
+
         if (newPromptDescriptor.id != "dirac") {
           return this._switchPrompt(oldIndex, newIndex);
         }
@@ -1024,10 +1033,33 @@ WebInspector.ConsoleView.prototype = {
         this._switchPromptIfAvail(this._activePromptIndex, this._activePromptIndex-1);
     },
 
+    _findPromptIndexById: function(id) {
+        for (var i=0; i<this._prompts.length; i++) {
+            var promptDescriptor = this._prompts[i];
+            if (promptDescriptor.id == id) {
+                return i;
+            }
+        }
+        return null;
+    },
+
+    switchPrompt: function(promptId) {
+        var selectedPromptIndex = this._findPromptIndexById(promptId);
+        if (!selectedPromptIndex) {
+            console.warn("switchPrompt: unknown prompt id ", promptId);
+            return;
+        }
+        this._switchPromptIfAvail(this._activePromptIndex, selectedPromptIndex);
+    },
+
     _promptKeyDown: function(event)
     {
         if (isEnterKey(event)) {
-            this._enterKeyPressed(event);
+            if (event.altKey || event.ctrlKey || event.shiftKey) {
+                return;
+            }
+            event.consume(true);
+            this._enterKeyPressed();
             return;
         }
 
@@ -1039,13 +1071,8 @@ WebInspector.ConsoleView.prototype = {
         }
     },
 
-    _enterKeyPressed: function(event)
+    _enterKeyPressed: function()
     {
-        if (event.altKey || event.ctrlKey || event.shiftKey)
-            return;
-
-        event.consume(true);
-
         this._prompt.clearAutoComplete(true);
 
         var str = this._prompt.text();

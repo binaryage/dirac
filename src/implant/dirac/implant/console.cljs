@@ -1,13 +1,7 @@
 (ns dirac.implant.console
   (:require [chromex.support :refer-macros [oget ocall oapply]]
-            [chromex.logging :refer-macros [log warn error group group-end]]))
-
-(defn get-console-view []
-  (if-let [console-panel (oget js/window "WebInspector" "ConsolePanel")]
-    (if-let [console-view (ocall console-panel "_view")]
-      console-view
-      (warn "Dirac: Unable to obtain console view from DevTools"))
-    (warn "Dirac: Unable to obtain console panel from DevTools")))
+            [chromex.logging :refer-macros [log warn error group group-end]]
+            [dirac.implant.helpers :refer [get-console-view]]))
 
 (defn announce-job-start! [job-id info]
   (group (str "nREPL JOB #" job-id) info)
@@ -24,12 +18,11 @@
     (ocall console-view "setDiracPromptNS" ns-name)))
 
 (defn set-prompt-mode! [mode]
-  (let [mode (name mode)]
-    (assert (#{"status" "edit"} mode))
+  (let [mode-str (name mode)]
+    (assert (#{"status" "edit"} mode-str))
     (if-let [console-view (get-console-view)]
-      (ocall console-view "setDiracPromptMode" (name mode)))))
+      (ocall console-view "setDiracPromptMode" mode-str))))
 
-;
 (defn set-prompt-status-content! [status]
   {:pre [(string? status)]}
   (if-let [console-view (get-console-view)]

@@ -1,15 +1,23 @@
 (ns marion.content-script.core
   (:require-macros [cljs.core.async.macros :refer [go-loop]])
-  (:require [cljs.core.async :refer [<!]]
+  (:require [cljs.core.async :refer [<! chan]]
             [marion.content-script.embedcom :as embedcom]
             [chromex.logging :refer-macros [log info warn error group group-end]]
+            [chromex.support :refer-macros [oget ocall oapply]]
             [chromex.protocols :refer [post-message!]]
-            [chromex.ext.runtime :as runtime :refer-macros [connect]]))
+            [chromex.chrome-event-channel :refer [make-chrome-event-channel]]
+            [chromex.ext.runtime :as runtime]))
 
 ; -- a message loop ---------------------------------------------------------------------------------------------------------
 
+(defn relay-message-to-page! [message]
+  (.postMessage js/window message "*"))
+
 (defn process-message! [message]
-  (log "CONTENT SCRIPT: got message:" message))
+  (let [type (oget message "type")]
+    (case type
+      "dirac-extension-feedback-event" (relay-message-to-page! message)
+      (warn "got unknown message type" type message))))
 
 (defn run-message-loop! [message-channel]
   (log "CONTENT SCRIPT: starting message loop...")

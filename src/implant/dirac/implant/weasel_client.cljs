@@ -18,7 +18,7 @@
                    [dirac.implant.weasel-client :refer [log warn info error]])
   (:require [cljs.core.async :refer [<! chan put! timeout]]
             [dirac.implant.eval :as eval]
-            [dirac.implant.ws-client :as ws-client]))
+            [dirac.lib.ws-client :as ws-client]))
 
 (def current-client (atom nil))
 
@@ -53,14 +53,13 @@
     (go
       ; there might be some output printing messages in flight in the tunnel, so we give the tunnel some time to process them
       (<! (timeout (or (:pre-eval-delay options) 100)))
-      (let [result (<! (eval/wrap-with-postprocess-and-eval-in-debugger-context (:code message)))]                            ; posprocessing step will prepare suitable result structure for us
+      (let [result (<! (eval/wrap-with-postprocess-and-eval-in-current-context! (:code message)))]                            ; posprocessing step will prepare suitable result structure for us
         (if result
           {:op    :result
            :value (massage-result result)}
           {:op    :result
            :value (massage-result #js {:status "exception"
                                        :value  "Evaluation timeout."})})))))
-
 
 ; -- connection -------------------------------------------------------------------------------------------------------------
 

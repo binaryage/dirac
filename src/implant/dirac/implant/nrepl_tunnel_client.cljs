@@ -4,7 +4,7 @@
   (:require [cljs.core.async :refer [<! chan put! timeout close!]]
             [cljs-uuid-utils.core :as uuid]
             [dirac.implant.eval :as eval]
-            [dirac.implant.ws-client :as ws-client]
+            [dirac.lib.ws-client :as ws-client]
             [dirac.implant.version :as implant-version]
             [dirac.implant.console :as console]))
 

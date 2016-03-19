@@ -1,29 +1,33 @@
 (ns dirac.background.connections
   (:require [chromex.support :refer-macros [oget ocall oapply]]
             [chromex.logging :refer-macros [log info warn error group group-end]]
-            [dirac.background.state :refer [state]]
-            [dirac.background.action :as action]))
+            [dirac.background.action :as action]
+            [dirac.background.marion :as marion]
+            [dirac.background.state :as state]))
 
-(defn add! [dirac-tab-id backend-tab-id]
-  (swap! state update :connections assoc dirac-tab-id {:dirac-tab-id   dirac-tab-id
-                                                       :backend-tab-id backend-tab-id}))
+(defn add! [id dirac-tab-id backend-tab-id]
+  {:pre [id]}
+  (state/add-connection! id {:id             id
+                             :dirac-tab-id   dirac-tab-id
+                             :backend-tab-id backend-tab-id}))
 
-(defn remove! [dirac-tab-id]
-  (swap! state update :connections dissoc dirac-tab-id))
+(defn remove! [id]
+  {:pre [id]}
+  (state/remove-connection! id))
 
 (defn find-backend-connection [backend-tab-id]
-  (let [connections (get @state :connections)]
+  (let [connections (state/get-connections)]
     (some #(if (= (:backend-tab-id %) backend-tab-id) %) (vals connections))))
 
-(defn get-dirac-connection [dirac-tab-id]
-  (let [connections (get @state :connections)]
-    (get connections dirac-tab-id)))
+(defn find-dirac-connection [dirac-tab-id]
+  (let [connections (state/get-connections)]
+    (some #(if (= (:dirac-tab-id %) dirac-tab-id) %) (vals connections))))
 
 (defn backend-connected? [backend-tab-id]
-  (not (nil? (find-backend-connection backend-tab-id))))
+  (some? (find-backend-connection backend-tab-id)))
 
 (defn dirac-connected? [dirac-tab-id]
-  (not (nil? (get-dirac-connection dirac-tab-id))))
+  (some? (find-dirac-connection dirac-tab-id)))
 
 ; -- high-level API ---------------------------------------------------------------------------------------------------------
 
@@ -36,11 +40,17 @@
 (defn register-connection! [dirac-tab-id backend-tab-id]
   {:pre [(number? dirac-tab-id)
          (number? backend-tab-id)]}
-  (add! dirac-tab-id backend-tab-id)
-  (update-action-button-according-to-connection-state! backend-tab-id))
+  (let [id (state/get-next-connection-id!)]
+    (add! id dirac-tab-id backend-tab-id)
+    (marion/post-feedback-event! (str "register dirac connection #" id))
+    (update-action-button-according-to-connection-state! backend-tab-id)
+    id))
 
 (defn unregister-connection! [dirac-tab-id]
   {:pre [(number? dirac-tab-id)]}
-  (when-let [{:keys [backend-tab-id]} (get-dirac-connection dirac-tab-id)]
-    (remove! dirac-tab-id)
-    (update-action-button-according-to-connection-state! backend-tab-id)))
+  (if-let [connection (find-dirac-connection dirac-tab-id)]
+    (let [{:keys [id backend-tab-id]} connection]
+      (remove! id)
+      (marion/post-feedback-event! (str "unregister dirac connection #" id))
+      (update-action-button-according-to-connection-state! backend-tab-id))
+    (warn "attempt to unregister non-existent dirac connection with dirac-tab-id:" dirac-tab-id)))

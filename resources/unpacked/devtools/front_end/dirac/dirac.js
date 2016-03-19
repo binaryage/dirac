@@ -56,16 +56,54 @@ function codeAsString(code) {
   return "'" + stringEscape(code) + "'";
 }
 
-function evalInCurrentContext(code, callback) {
-  var currentExecutionContext = WebInspector.context.flavor(WebInspector.ExecutionContext);
-  if (currentExecutionContext) {
-    var resultCallback = function(result, wasThrown, value, exceptionDetails) {
-      if (callback) {
-        callback(value, wasThrown, exceptionDetails);
-      }
-    };
-    currentExecutionContext.evaluate(code, "console", true, true, true, false, resultCallback);
+function evalInContext(context, code, callback) {
+  if (!context) {
+    console.warn("Requested evalInContext with null context:", code);
+    return;
   }
+  var resultCallback = function(result, wasThrown, value, exceptionDetails) {
+    if (callback) {
+      callback(value, wasThrown, exceptionDetails);
+    }
+  };
+  context.evaluate(code, "console", true, true, true, false, resultCallback);
+}
+
+function lookupCurrentContext() {
+  return WebInspector.context.flavor(WebInspector.ExecutionContext);
+}
+
+function hasCurrentContext() {
+  return lookupCurrentContext()?true:false;
+}
+
+function evalInCurrentContext(code, callback) {
+  evalInContext(lookupCurrentContext(), code, callback);
+}
+
+function lookupMainWorldContext() {
+  if (!WebInspector.targetManager) {
+    return null;
+  }
+  var target = WebInspector.targetManager.mainTarget();
+  if (!target) {
+    return null;
+  }
+  var executionContexts = target.runtimeModel.executionContexts();
+  for (var i = 0; i < executionContexts.length; ++i) {
+    var executionContext = executionContexts[i];
+    if (executionContext.isMainWorldContext) {
+      return executionContext;
+    }
+  }
+}
+
+function hasMainWorldContext() {
+  return lookupMainWorldContext()?true:false;
+}
+
+function evalInMainWorldContext(code, callback) {
+  evalInContext(lookupMainWorldContext(), code, callback);
 }
 
 // don't forget to update externs.js too
@@ -78,7 +116,10 @@ window.dirac = {
   hasInlineCFs: hasFeature("inline-custom-formatters"),
   codeAsString: codeAsString,
   stringEscape: stringEscape,
-  evalInCurrentContext: evalInCurrentContext
+  evalInCurrentContext: evalInCurrentContext,
+  hasCurrentContext: hasCurrentContext,
+  evalInMainWorldContext: evalInMainWorldContext,
+  hasMainWorldContext: hasMainWorldContext
 };
 
 })();

@@ -1,6 +1,6 @@
 ; initial version taken from https://github.com/tomjakubowski/weasel/tree/8bfeb29dbaf903e299b2a3296caed52b5761318f
-(ns dirac.implant.ws-client
-  (:require-macros [dirac.implant.ws-client :refer [log warn info error]])
+(ns dirac.lib.ws-client
+  (:require-macros [dirac.lib.ws-client :refer [log warn info error]])
   (:require [cljs.reader :refer [read-string]]
             [goog.net.WebSocket :as gws]))
 

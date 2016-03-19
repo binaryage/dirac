@@ -360,7 +360,22 @@ var dirac = {
     * @param {?} callback
     */
     evalInCurrentContext: function(code, callback) {},
+    /**
+    * @param {string} code
+    * @param {?} callback
+    */
+    evalInMainWorldContext: function(code, callback) {},
+    /**
+    * @return {boolean}
+    */
+    hasCurrentContext: function() {},
+    /**
+    * @return {boolean}
+    */
+    hasMainWorldContext: function() {},
     implant: {
+        init: function() {},
+        init_console: function() {},
         init_repl: function() {},
         /**
         * @param {Element} textAreaElement
@@ -372,7 +387,11 @@ var dirac = {
         * @param {number} requestId
         * @param {string} code
         */
-        send_eval_request: function(requestId, code) {}
+        send_eval_request: function(requestId, code) {},
+        /**
+        * @param {string} text
+        */
+        feedback: function(text) {}
     }
 }
 
