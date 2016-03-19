@@ -1,4 +1,5 @@
-sudo: true
+sudo: required
+dist: trusty
 language: clojure
 
 # we need lein 2.5.3 because of https://github.com/technomancy/leiningen/issues/1762
