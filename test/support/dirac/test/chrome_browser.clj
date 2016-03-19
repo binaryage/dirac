@@ -43,8 +43,17 @@
                          (get-marion-extension-path dirac-root)]
         absolute-extension-paths (map #(.toAbsolutePath (Paths/get "" (into-array String %))) extension-paths)
         load-extensions-arg (str "load-extension=" (string/join "," absolute-extension-paths))
-        args [;"--enable-experimental-extension-apis"
+        args [; we need robust startup, chrome tends to display first-run dialogs on clean systems and blocks the driver
+              ; but there are still some bugs: https://bugs.chromium.org/p/chromium/issues/detail?id=348426
+              "--disable-hang-monitor"
+              "--disable-prompt-on-repost"
+              "--dom-automation"
+              "--full-memory-crash-report"
+              "--no-default-browser-check"
               "--no-first-run"
+              "--ignore-certificate-errors"
+              ;"--enable-experimental-extension-apis"
+              "--homepage=about:blank"
               load-extensions-arg]]
     (if attaching?
       (.setExperimentalOption chrome-options "debuggerAddress" (str "127.0.0.1:" debugger-port))
