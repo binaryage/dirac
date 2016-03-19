@@ -43,7 +43,7 @@
                          (get-marion-extension-path dirac-root)]
         absolute-extension-paths (map #(.toAbsolutePath (Paths/get "" (into-array String %))) extension-paths)
         load-extensions-arg (str "load-extension=" (string/join "," absolute-extension-paths))
-        args ["--enable-experimental-extension-apis"
+        args [;"--enable-experimental-extension-apis"
               "--no-first-run"
               load-extensions-arg]]
     (if attaching?
