@@ -50,7 +50,10 @@
       (string/trim)))
 
 (defn obtain-transcript []
-  (text "pre.transcript"))
+  (try
+    (text "pre.transcript")
+    (catch Exception e
+      (str "unable to read transcript:" e))))
 
 (defn write-transcript-and-compare [name]
   (let [actual-transcript (normalize-transcript (obtain-transcript))
