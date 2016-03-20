@@ -77,3 +77,8 @@
     (doseq [view matching-views]
       (when-let [automate-fn (oget view "automateDirac")]
         (automate-fn (pr-str action))))))
+
+(defn close-all-extension-tabs! []
+  (let [views (extension/get-views #js {:type "tab"})]
+    (doseq [view views]
+      (.close view))))

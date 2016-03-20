@@ -98,12 +98,12 @@
   {:pre [(has-transcript?)]}
   (transcript/read-transcript @current-transcript))
 
-(defn post-raw-command! [event]
+(defn post-marion-command! [event]
   (embedcom/post-page-event! event))
 
 (defn post-with-transcript! [command]
   (append-to-transcript! (format-transcript-line "exec" (pr-str command)))
-  (post-raw-command! command))
+  (post-marion-command! command))
 
 (defn fire-chrome-event! [event]
   (post-with-transcript! {:command      :fire-synthetic-chrome-event
@@ -142,19 +142,20 @@
   (let [url (str (.-location js/document))]
     (if-let [debugging-port (get-query-param url "debugging_port")]
       (let [target-url (str "http://localhost:" debugging-port)]
-        (post-raw-command! {:command :set-option
-                            :key     :target-url
-                            :value   target-url})))))
+        (post-marion-command! {:command :set-option
+                               :key     :target-url
+                               :value   target-url})))))
 
 (defn setup! []
   (init-devtools!)
   (init-transcript! "transcript-box")
   (init-feedback!)
   (setup-debugging-port!)
-  (post-raw-command! {:command :set-option
-                      :key     :open-as
-                      :value   "window"}))
+  (post-marion-command! {:command :set-option
+                         :key     :open-as
+                         :value   "window"}))
 
 (defn task-finished! []
   ; this signals to the task runner that he can reconnect chrome driver and check the results
-  (let [client (ws-client/connect! "ws://localhost:22555" {:name "Signaller"})]))
+  (post-marion-command! {:command :tear-down})                                                                                ; to fight https://bugs.chromium.org/p/chromium/issues/detail?id=355075
+  (ws-client/connect! "ws://localhost:22555" {:name "Signaller"}))

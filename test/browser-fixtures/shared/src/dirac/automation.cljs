@@ -2,7 +2,7 @@
   (:require-macros [cljs.core.async.macros :refer [go go-loop]])
   (:require [cljs.core.async :refer [put! <! chan timeout alts! close!]]
             [dirac.fixtures :refer [setup! last-dirac-frontend-id fire-chrome-event! automate-dirac-frontend!
-                                    wait-for-transcript-match post-raw-command!]
+                                    wait-for-transcript-match post-marion-command!]
              :refer-macros [without-transcript]]))
 
 ; -- automation commands ----------------------------------------------------------------------------------------------------
@@ -14,7 +14,7 @@
   (fire-chrome-event! [:chromex.ext.commands/on-command ["close-dirac-devtools" @last-dirac-frontend-id]]))
 
 (defn reset-connection-id-counter! []
-  (post-raw-command! {:command :reset-connection-id-counter}))
+  (post-marion-command! {:command :reset-connection-id-counter}))
 
 (defn switch-inspector-panel! [panel]
   (automate-dirac-frontend! {:action :switch-inspector-panel

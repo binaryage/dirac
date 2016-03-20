@@ -27,6 +27,12 @@
     (put! chrome-event-channel (:chrome-event message))
     (warn "no chrome event channel while receiving marion message" message)))
 
+(defn tear-down! []
+  ; we want to close all tabs/windows opened(owned) by our extension
+  ; chrome driver does not have access to those windows and fails to switch back to its own tab
+  ; https://bugs.chromium.org/p/chromium/issues/detail?id=355075
+  (helpers/close-all-extension-tabs!))
+
 ; -- marion event loop ------------------------------------------------------------------------------------------------------
 
 (defn register-marion! [marion-port]
@@ -46,7 +52,8 @@
       :set-option (options/set-option! (:key message) (:value message))
       :reset-connection-id-counter (state/reset-connection-id-counter!)
       :fire-synthetic-chrome-event (fire-synthetic-chrome-event! message)
-      :automate-dirac-frontend (automate-dirac-frontend! message))))
+      :automate-dirac-frontend (automate-dirac-frontend! message)
+      :tear-down (tear-down!))))
 
 (defn run-marion-message-loop! [marion-port]
   (go-loop []
