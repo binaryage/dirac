@@ -334,6 +334,8 @@ diff_match_patch.prototype = {
 
 var dirac = {
     /** @type {boolean} */
+    _DEBUG_EVAL: true,
+    /** @type {boolean} */
     hasFeature: true,
     /** @type {boolean} */
     hasREPL: true,
@@ -364,7 +366,7 @@ var dirac = {
     * @param {string} code
     * @param {?} callback
     */
-    evalInMainWorldContext: function(code, callback) {},
+    evalInDefaultContext: function(code, callback) {},
     /**
     * @return {boolean}
     */
@@ -372,7 +374,7 @@ var dirac = {
     /**
     * @return {boolean}
     */
-    hasMainWorldContext: function() {},
+    hasDefaultContext: function() {},
     implant: {
         init: function() {},
         init_console: function() {},

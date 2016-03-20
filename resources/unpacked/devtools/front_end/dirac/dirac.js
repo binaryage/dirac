@@ -78,36 +78,62 @@ function hasCurrentContext() {
 }
 
 function evalInCurrentContext(code, callback) {
+  if (dirac._DEBUG_EVAL) {
+    console.log("evalInCurrentContext called:", code, callback);
+  }
   evalInContext(lookupCurrentContext(), code, callback);
 }
 
-function lookupMainWorldContext() {
+function lookupDefaultContext() {
+  if (dirac._DEBUG_EVAL) {
+    console.log("lookupDefaultContext called");
+  }
   if (!WebInspector.targetManager) {
+    if (dirac._DEBUG_EVAL) {
+      console.log("  !WebInspector.targetManager => bail out");
+    }
     return null;
   }
   var target = WebInspector.targetManager.mainTarget();
   if (!target) {
+    if (dirac._DEBUG_EVAL) {
+      console.log("  !target => bail out");
+    }
     return null;
   }
   var executionContexts = target.runtimeModel.executionContexts();
+  if (dirac._DEBUG_EVAL) {
+    console.log("  execution contexts:", executionContexts);
+  }
   for (var i = 0; i < executionContexts.length; ++i) {
     var executionContext = executionContexts[i];
     if (executionContext.isDefault) {
+      if (dirac._DEBUG_EVAL) {
+        console.log("  execution context #"+i+" isDefault:", executionContext);
+      }
       return executionContext;
     }
   }
+  if (dirac._DEBUG_EVAL) {
+    console.log("  lookupDefaultContext failed to failed to find valid context => bail out");
+  }
+  return null;
 }
 
-function hasMainWorldContext() {
-  return lookupMainWorldContext()?true:false;
+function hasDefaultContext() {
+  return lookupDefaultContext()?true:false;
 }
 
-function evalInMainWorldContext(code, callback) {
-  evalInContext(lookupMainWorldContext(), code, callback);
+function evalInDefaultContext(code, callback) {
+  if (dirac._DEBUG_EVAL) {
+    console.log("evalInDefaultContext called:", code, callback);
+  }
+  evalInContext(lookupDefaultContext(), code, callback);
 }
 
 // don't forget to update externs.js too
 window.dirac = {
+  _DEBUG_EVAL: false,
   hasFeature: hasFeature,
   hasREPL: hasFeature("enable-repl"),
   hasParinfer: hasFeature("enable-parinfer"),
@@ -118,8 +144,8 @@ window.dirac = {
   stringEscape: stringEscape,
   evalInCurrentContext: evalInCurrentContext,
   hasCurrentContext: hasCurrentContext,
-  evalInMainWorldContext: evalInMainWorldContext,
-  hasMainWorldContext: hasMainWorldContext
+  evalInDefaultContext: evalInDefaultContext,
+  hasDefaultContext: hasDefaultContext
 };
 
 })();

@@ -30,39 +30,42 @@
 
 (defn call-code-as-string [& args]
   (if-let [eval-fn (oget js/window "dirac" "codeAsString")]
-    (.apply eval-fn nil (to-array args))
+    (.apply eval-fn nil (into-array args))
     (error "dirac.codeAsString not found")))
 
-(defn has-context-fn-name [context]
+(defn get-has-context-fn-name [context]
   (case context
-    :main "hasMainWorldContext"
+    :default "hasDefaultContext"
     :current "hasCurrentContext"))
 
-(defn get-context-fn-name [context]
+(defn get-eval-in-context-fn-name [context]
   (case context
-    :main "evalInMainWorldContext"
+    :default "evalInDefaultContext"
     :current "evalInCurrentContext"))
 
+(defn get-current-time []
+  (.getTime (js/Date.)))
+
 (defn call-when-avail-or-call-timeout-fn [check-fn call-fn timeout-fn next-trial-time total-time-limit]
-  (let [start-time (.getTime (js/Date.))]
+  (let [start-time (get-current-time)]
     (go-loop []
-      (let [current-time (.getTime (js/Date.))]
-        (if (< (- current-time start-time) total-time-limit)
-          (if (check-fn)
-            (call-fn)
-            (do
-              (<! (timeout next-trial-time))
-              (recur)))
-          (timeout-fn))))))
+             (let [current-time (get-current-time)]
+               (if (< (- current-time start-time) total-time-limit)
+                 (if (check-fn)
+                   (call-fn)
+                   (do
+                     (<! (timeout next-trial-time))
+                     (recur)))
+                 (timeout-fn))))))
 
 (defn call-eval-with-callback!
   ([context code]
    (call-eval-with-callback! context code nil))
   ([context code callback]
    (let [dirac (oget js/window "dirac")
-         has-context-fn-name (has-context-fn-name context)]
+         has-context-fn-name (get-has-context-fn-name context)]
      (if-let [has-context-fn (oget dirac has-context-fn-name)]
-       (let [eval-fn-name (get-context-fn-name context)]
+       (let [eval-fn-name (get-eval-in-context-fn-name context)]
          (if-let [eval-fn (oget dirac eval-fn-name)]
            (call-when-avail-or-call-timeout-fn has-context-fn
                                                #(eval-fn code callback)
@@ -160,36 +163,36 @@
                  (update-banner! "")
                  val)]
     (go-loop []
-      (if (core-async/closed? timeout-chan)                                                                                   ; timeout might close outside of alts! we must have this test here
-        (return ::timeout)
-        (let [result-chan (call-eval-with-timeout :main installation-test-code installation-test-eval-time-limit)
-              [[value]] (alts! [result-chan timeout-chan])]
-          (cond
-            (nil? value) (return ::timeout)
-            (true? (oget value "value")) (return true)
-            :else (do
-                    (update-banner! "cljs-devtools: waiting for installation of :dirac feature...")
-                    (<! (timeout (pref :install-check-next-trial-waiting-time)))                                              ; don't DoS the VM, wait between installation tests
-                    (recur))))))))
+             (if (core-async/closed? timeout-chan)                                                                            ; timeout might close outside of alts! we must have this test here
+               (return ::timeout)
+               (let [result-chan (call-eval-with-timeout :default installation-test-code installation-test-eval-time-limit)
+                     [[value]] (alts! [result-chan timeout-chan])]
+                 (cond
+                   (nil? value) (return ::timeout)
+                   (true? (oget value "value")) (return true)
+                   :else (do
+                           (update-banner! "cljs-devtools: waiting for installation of :dirac feature...")
+                           (<! (timeout (pref :install-check-next-trial-waiting-time)))                                       ; don't DoS the VM, wait between installation tests
+                           (recur))))))))
 
 ; -- simple evaluation for page-context console logging ---------------------------------------------------------------------
 
 (defn console-info! [msg]
-  (call-eval-with-callback! :main (console-log-template "info" msg)))
+  (call-eval-with-callback! :default (console-log-template "info" msg)))
 
 (defn console-error! [msg]
-  (call-eval-with-callback! :main (console-log-template "error" msg)))
+  (call-eval-with-callback! :default (console-log-template "error" msg)))
 
 (defn console-warn! [msg]
-  (call-eval-with-callback! :main (console-log-template "warn" msg)))
+  (call-eval-with-callback! :default (console-log-template "warn" msg)))
 
 (defn console-log! [msg]
-  (call-eval-with-callback! :main (console-log-template "log" msg)))
+  (call-eval-with-callback! :default (console-log-template "log" msg)))
 
 ; -- simple evaluation for marion automation --------------------------------------------------------------------------------
 
 (defn post-feedback-event! [text]
-  (call-eval-with-callback! :main (feedback-event-template text)))
+  (call-eval-with-callback! :default (feedback-event-template text)))
 
 ; -- serialization of evaluations -------------------------------------------------------------------------------------------
 
@@ -209,21 +212,21 @@
 
 (defn start-eval-request-queue-processing-loop! []
   (go-loop []
-    (if-let [[context code handler] (<! eval-requests-chan)]
-      (let [call-handler (fn [args & errors]
-                           (if-not (empty? errors)
-                             (apply display-user-error! errors))
-                           (apply handler args))
-            installation-result (<! (wait-for-dirac-installed))]
-        (if (= installation-result ::timeout)
-          (call-handler [::timeout] (missing-cljs-devtools-message) (installation-test-template))
-          (let [eval-result (<! (call-eval-with-timeout context code (pref :eval-time-limit)))]
-            (case (first eval-result)
-              ::exception (call-handler [::exception] "Internal eval error" (second eval-result))
-              ::timeout (call-handler [::timeout] "Evaluation timeout" code)
-              (call-handler eval-result))))
-        (recur))
-      (log "Leaving start-eval-request-queue-processing-loop!"))))
+           (if-let [[context code handler] (<! eval-requests-chan)]
+             (let [call-handler (fn [args & errors]
+                                  (if-not (empty? errors)
+                                    (apply display-user-error! errors))
+                                  (apply handler args))
+                   installation-result (<! (wait-for-dirac-installed))]
+               (if (= installation-result ::timeout)
+                 (call-handler [::timeout] (missing-cljs-devtools-message) (installation-test-template))
+                 (let [eval-result (<! (call-eval-with-timeout context code (pref :eval-time-limit)))]
+                   (case (first eval-result)
+                     ::exception (call-handler [::exception] "Internal eval error" (second eval-result))
+                     ::timeout (call-handler [::timeout] "Evaluation timeout" code)
+                     (call-handler eval-result))))
+               (recur))
+             (log "Leaving start-eval-request-queue-processing-loop!"))))
 
 ; -- queued evaluation in context -------------------------------------------------------------------------------------------
 
@@ -246,24 +249,24 @@
 
 (defn is-devtools-present? []
   (go
-    (let [[value] (<! (eval-in-context! :main "devtools.dirac"))]
+    (let [[value] (<! (eval-in-context! :default "devtools.dirac"))]
       value)))
 
 (defn get-dirac-api-version []
   (go
-    (let [[value] (<! (eval-in-context! :main "devtools.dirac.get_api_version()"))]
+    (let [[value] (<! (eval-in-context! :default "devtools.dirac.get_api_version()"))]
       (int value))))
 
 (defn get-dirac-client-config []
   (go
-    (let [[value] (<! (eval-in-context! :main "devtools.dirac.get_effective_config()"))]
+    (let [[value] (<! (eval-in-context! :default "devtools.dirac.get_effective_config()"))]
       (js->clj value :keywordize-keys true))))
 
 ; -- printing captured server-side output -----------------------------------------------------------------------------------
 
 (defn present-output! [job-id kind text]
   (let [code (output-template (int job-id) kind text)]
-    (eval-in-context! :main code)))
+    (eval-in-context! :default code)))
 
 ; -- fancy evaluation in currently selected context -------------------------------------------------------------------------
 
