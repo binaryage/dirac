@@ -63,7 +63,7 @@
     (if test-window-handle
       (try
         (switch-to-window test-window-handle)
-        (text "pre.transcript")
+        (text "#transcript")
         (catch Exception _e
           (throw (ex-info "unable to read transcript" {:body (str "===== DOC BODY =====\n"
                                                                   (text "body")

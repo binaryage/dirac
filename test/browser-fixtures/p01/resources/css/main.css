@@ -1,0 +1,35 @@
+html {
+}
+
+.status {
+  font-size: 12px;
+  font-weight: bold;
+  font-family: courier;
+  margin: 10px 0px;
+}
+
+#transcript-box {
+  display: flex;
+}
+
+.transcript {
+  font-size: 10px;
+  min-width: 100px;
+  margin: 10px 0px;
+  border: 1px solid #ccc;
+  background-color: #eee;
+  padding: 4px 8px;
+  border-radius: 2px;
+}
+
+.transcript-running {
+  background-color: #eef;
+}
+
+.transcript-timeout {
+  background-color: #fee;
+}
+
+.transcript-finished {
+  background-color: #efe;
+}

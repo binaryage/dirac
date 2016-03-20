@@ -3,6 +3,7 @@
   (:require [cljs.core.async :refer [put! <! chan timeout alts! close!]]
             [cljs.core.async.impl.protocols :as core-async]
             [dirac.fixtures.transcript :as transcript]
+            [dirac.fixtures.status :as status]
             [dirac.fixtures.embedcom :as embedcom]
             [chromex.support :refer-macros [oget oset ocall oapply]]
             [cuerdas.core :as cuerdas]
@@ -13,6 +14,7 @@
 (def ^:const DEFAULT_TRANSCRIPT_MATCH_TIMEOUT 5000)
 
 (defonce current-transcript (atom nil))
+(defonce current-status (atom nil))
 (defonce last-dirac-frontend-id (atom nil))
 (defonce transcript-observers (atom #{}))
 (defonce sniffer-enabled (atom true))
@@ -43,6 +45,15 @@
 
 (defn disable-transcript! []
   (set! *transcript-enabled* false))
+
+(defn set-status! [text & [style]]
+  (status/set-status! @current-status text)
+  (transcript/set-style! @current-transcript style))
+
+(defn init-status! [id]
+  (let [status-el (status/create-status! (get-el-by-id id))]
+    (reset! current-status status-el)
+    (set-status! "ready to run")))
 
 (defn sniffer-enabled? []
   @sniffer-enabled)
@@ -94,7 +105,9 @@
              (close! channel))
            (do
              (disable-sniffer!)
-             (append-to-transcript! (format-transcript-line "timeout" (str "while waiting for transcript match: " re)))))))
+             (append-to-transcript! (format-transcript-line "timeout" (str "while waiting for transcript match: " re)))
+             (disable-transcript!)
+             (set-status! "task timeouted" "timeout")))))
      channel)))
 
 (defn read-transcript []
@@ -160,6 +173,7 @@
   (init-devtools!)
   ; transcript is a fancy name for "log of interesting events"
   (init-transcript! "transcript-box")
+  (init-status! "status-box")
   ; feedback subsystem is responsible for intercepting messages to be presented in transcript
   (init-feedback!)
   ; when launched from test runner, chrome driver is in charge of selecting debugging port, we have to propagate this
@@ -170,6 +184,13 @@
                          :key     :open-as
                          :value   "window"}))
 
+(defn reset-connection-id-counter! []
+  (post-marion-command! {:command :reset-connection-id-counter}))
+
+(defn task-started! []
+  (set-status! "task running..." "running")
+  (reset-connection-id-counter!))
+
 (defn task-finished!
   ([]
     ; under manual test development we don't want to execute tear-down
@@ -178,8 +199,7 @@
    (task-finished! (is-test-runner-present?)))
   ([really?]
    (disable-transcript!)
-   (if really?
-     (do
-       (post-marion-command! {:command :tear-down})                                                                           ; to fight https://bugs.chromium.org/p/chromium/issues/detail?id=355075
-       (ws-client/connect! "ws://localhost:22555" {:name "Signaller"}))                                                       ; this signals to the task runner that he can reconnect chrome driver and check the results
-     (append-to-transcript! "---------------- TASK FINISHED ----------------" true))))
+   (set-status! "task finished" "finished")
+   (when really?
+     (post-marion-command! {:command :tear-down})                                                                             ; to fight https://bugs.chromium.org/p/chromium/issues/detail?id=355075
+     (ws-client/connect! "ws://localhost:22555" {:name "Signaller"}))))                                                       ; this signals to the task runner that he can reconnect chrome driver and check the results

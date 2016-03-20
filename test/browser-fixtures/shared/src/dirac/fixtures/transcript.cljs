@@ -7,9 +7,16 @@
 
 ; individual transcripts are checked against expected transcripts, see test/browser/transcripts
 
+(defn set-style! [transcript-el style]
+  {:pre [transcript-el]}
+  (set! (.-className transcript-el) (if-not (empty? style)
+                                      (str "transcript transcript-" style)
+                                      "transcript")))
+
 (defn make-transcript []
   (let [transcript-el (.createElement js/document "pre")]
-    (set! (.-className transcript-el) "transcript")
+    (set! (.-id transcript-el) "transcript")
+    (set-style! transcript-el nil)
     transcript-el))
 
 (defn create-transcript! [parent-el]
@@ -30,3 +37,4 @@
 (defn read-transcript [transcript-el]
   {:pre [transcript-el]}
   (.-textContent transcript-el))
+

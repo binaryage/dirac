@@ -13,9 +13,6 @@
 (defn close-dirac-devtools! []
   (fire-chrome-event! [:chromex.ext.commands/on-command ["close-dirac-devtools" @last-dirac-frontend-id]]))
 
-(defn reset-connection-id-counter! []
-  (post-marion-command! {:command :reset-connection-id-counter}))
-
 (defn switch-inspector-panel! [panel]
   (automate-dirac-frontend! {:action :switch-inspector-panel
                              :panel  panel}))
