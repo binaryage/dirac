@@ -102,8 +102,8 @@ InspectorBackend.registerEnum("Runtime.CallArgumentType", {Object: "object", Fun
 InspectorBackend.registerEvent("Runtime.executionContextCreated", ["context"]);
 InspectorBackend.registerEvent("Runtime.executionContextDestroyed", ["executionContextId"]);
 InspectorBackend.registerEvent("Runtime.executionContextsCleared", []);
-InspectorBackend.registerCommand("Runtime.evaluate", [{"name": "expression", "type": "string", "optional": false}, {"name": "objectGroup", "type": "string", "optional": true}, {"name": "includeCommandLineAPI", "type": "boolean", "optional": true}, {"name": "doNotPauseOnExceptionsAndMuteConsole", "type": "boolean", "optional": true}, {"name": "contextId", "type": "number", "optional": true}, {"name": "returnByValue", "type": "boolean", "optional": true}, {"name": "generatePreview", "type": "boolean", "optional": true}], ["result", "wasThrown", "exceptionDetails"], false);
-InspectorBackend.registerCommand("Runtime.callFunctionOn", [{"name": "objectId", "type": "string", "optional": false}, {"name": "functionDeclaration", "type": "string", "optional": false}, {"name": "arguments", "type": "object", "optional": true}, {"name": "doNotPauseOnExceptionsAndMuteConsole", "type": "boolean", "optional": true}, {"name": "returnByValue", "type": "boolean", "optional": true}, {"name": "generatePreview", "type": "boolean", "optional": true}], ["result", "wasThrown"], false);
+InspectorBackend.registerCommand("Runtime.evaluate", [{"name": "expression", "type": "string", "optional": false}, {"name": "objectGroup", "type": "string", "optional": true}, {"name": "includeCommandLineAPI", "type": "boolean", "optional": true}, {"name": "doNotPauseOnExceptionsAndMuteConsole", "type": "boolean", "optional": true}, {"name": "contextId", "type": "number", "optional": true}, {"name": "returnByValue", "type": "boolean", "optional": true}, {"name": "generatePreview", "type": "boolean", "optional": true}, {"name": "userGesture", "type": "boolean", "optional": true}], ["result", "wasThrown", "exceptionDetails"], false);
+InspectorBackend.registerCommand("Runtime.callFunctionOn", [{"name": "objectId", "type": "string", "optional": false}, {"name": "functionDeclaration", "type": "string", "optional": false}, {"name": "arguments", "type": "object", "optional": true}, {"name": "doNotPauseOnExceptionsAndMuteConsole", "type": "boolean", "optional": true}, {"name": "returnByValue", "type": "boolean", "optional": true}, {"name": "generatePreview", "type": "boolean", "optional": true}, {"name": "userGesture", "type": "boolean", "optional": true}], ["result", "wasThrown"], false);
 InspectorBackend.registerCommand("Runtime.getProperties", [{"name": "objectId", "type": "string", "optional": false}, {"name": "ownProperties", "type": "boolean", "optional": true}, {"name": "accessorPropertiesOnly", "type": "boolean", "optional": true}, {"name": "generatePreview", "type": "boolean", "optional": true}], ["result", "internalProperties", "exceptionDetails"], false);
 InspectorBackend.registerCommand("Runtime.releaseObject", [{"name": "objectId", "type": "string", "optional": false}], [], false);
 InspectorBackend.registerCommand("Runtime.releaseObjectGroup", [{"name": "objectGroup", "type": "string", "optional": false}], [], false);
@@ -310,7 +310,6 @@ InspectorBackend.registerCommand("IO.close", [{"name": "handle", "type": "string
 InspectorBackend.registerEnum("Debugger.GeneratorObjectDetailsStatus", {Running: "running", Suspended: "suspended", Closed: "closed"});
 InspectorBackend.registerEnum("Debugger.ScopeType", {Global: "global", Local: "local", With: "with", Closure: "closure", Catch: "catch", Block: "block", Script: "script"});
 InspectorBackend.registerEnum("Debugger.PromiseDetailsStatus", {Pending: "pending", Resolved: "resolved", Rejected: "rejected"});
-InspectorBackend.registerEvent("Debugger.globalObjectCleared", []);
 InspectorBackend.registerEvent("Debugger.scriptParsed", ["scriptId", "url", "startLine", "startColumn", "endLine", "endColumn", "executionContextId", "hash", "isContentScript", "isInternalScript", "isLiveEdit", "sourceMapURL", "hasSourceURL", "deprecatedCommentWasUsed"]);
 InspectorBackend.registerEvent("Debugger.scriptFailedToParse", ["scriptId", "url", "startLine", "startColumn", "endLine", "endColumn", "executionContextId", "hash", "isContentScript", "isInternalScript", "sourceMapURL", "hasSourceURL", "deprecatedCommentWasUsed"]);
 InspectorBackend.registerEvent("Debugger.breakpointResolved", ["breakpointId", "location"]);
@@ -343,7 +342,7 @@ InspectorBackend.registerCommand("Debugger.getGeneratorObjectDetails", [{"name":
 InspectorBackend.registerCommand("Debugger.getCollectionEntries", [{"name": "objectId", "type": "string", "optional": false}], ["entries"], false);
 InspectorBackend.registerCommand("Debugger.setPauseOnExceptions", [{"name": "state", "type": "string", "optional": false}], [], false);
 InspectorBackend.registerCommand("Debugger.evaluateOnCallFrame", [{"name": "callFrameId", "type": "string", "optional": false}, {"name": "expression", "type": "string", "optional": false}, {"name": "objectGroup", "type": "string", "optional": true}, {"name": "includeCommandLineAPI", "type": "boolean", "optional": true}, {"name": "doNotPauseOnExceptionsAndMuteConsole", "type": "boolean", "optional": true}, {"name": "returnByValue", "type": "boolean", "optional": true}, {"name": "generatePreview", "type": "boolean", "optional": true}], ["result", "wasThrown", "exceptionDetails"], false);
-InspectorBackend.registerCommand("Debugger.setVariableValue", [{"name": "scopeNumber", "type": "number", "optional": false}, {"name": "variableName", "type": "string", "optional": false}, {"name": "newValue", "type": "object", "optional": false}, {"name": "callFrameId", "type": "string", "optional": true}, {"name": "functionObjectId", "type": "string", "optional": true}], [], false);
+InspectorBackend.registerCommand("Debugger.setVariableValue", [{"name": "scopeNumber", "type": "number", "optional": false}, {"name": "variableName", "type": "string", "optional": false}, {"name": "newValue", "type": "object", "optional": false}, {"name": "callFrameId", "type": "string", "optional": false}], [], false);
 InspectorBackend.registerCommand("Debugger.getBacktrace", [], ["callFrames", "asyncStackTrace"], false);
 InspectorBackend.registerCommand("Debugger.setAsyncCallStackDepth", [{"name": "maxDepth", "type": "number", "optional": false}], [], false);
 InspectorBackend.registerCommand("Debugger.enablePromiseTracker", [{"name": "captureStacks", "type": "boolean", "optional": true}], [], false);
@@ -457,10 +456,12 @@ InspectorBackend.registerCommand("DeviceOrientation.setDeviceOrientationOverride
 InspectorBackend.registerCommand("DeviceOrientation.clearDeviceOrientationOverride", [], [], false);
 
 // Tracing.
+InspectorBackend.registerEnum("Tracing.MemoryDumpTriggerMode", {Light: "light", Detailed: "detailed"});
+InspectorBackend.registerEnum("Tracing.TraceConfigRecordMode", {RecordUntilFull: "recordUntilFull", RecordContinuously: "recordContinuously", RecordAsMuchAsPossible: "recordAsMuchAsPossible", EchoToConsole: "echoToConsole"});
 InspectorBackend.registerEvent("Tracing.dataCollected", ["value"]);
 InspectorBackend.registerEvent("Tracing.tracingComplete", ["stream"]);
 InspectorBackend.registerEvent("Tracing.bufferUsage", ["percentFull", "eventCount", "value"]);
-InspectorBackend.registerCommand("Tracing.start", [{"name": "categories", "type": "string", "optional": true}, {"name": "options", "type": "string", "optional": true}, {"name": "bufferUsageReportingInterval", "type": "number", "optional": true}, {"name": "transferMode", "type": "string", "optional": true}], [], false);
+InspectorBackend.registerCommand("Tracing.start", [{"name": "categories", "type": "string", "optional": true}, {"name": "options", "type": "string", "optional": true}, {"name": "bufferUsageReportingInterval", "type": "number", "optional": true}, {"name": "transferMode", "type": "string", "optional": true}, {"name": "traceConfig", "type": "object", "optional": true}], [], false);
 InspectorBackend.registerCommand("Tracing.end", [], [], false);
 InspectorBackend.registerCommand("Tracing.getCategories", [], ["categories"], false);
 InspectorBackend.registerCommand("Tracing.requestMemoryDump", [], ["dumpGuid", "success"], false);
