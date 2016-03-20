@@ -100,10 +100,16 @@
      (merge defaults env-settings chrome-driver-path overrides))))
 
 (defn retrieve-remote-debugging-port []
-  (to "chrome://version")
-  (let [body-text (text "body")]
-    (when-let [m (re-matches #"(?s).*--remote-debugging-port=(\d+).*" body-text)]
-      (Integer/parseInt (second m)))))
+  (try
+    (to "chrome://version")
+    (let [body-text (text "body")]
+      (when-let [m (re-matches #"(?s).*--remote-debugging-port=(\d+).*" body-text)]
+        (Integer/parseInt (second m))))
+    (catch Exception e
+      (println (str "Chrome Driver: got an exception when trying to retrieve remote debugging port:\n" e))
+      nil)))
+
+; -- high-level api ---------------------------------------------------------------------------------------------------------
 
 (defn start-browser! []
   (set-driver! (prepare-chrome-driver (prepare-options)))
