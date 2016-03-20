@@ -11,21 +11,22 @@
 (def current-chrome-driver-service (atom nil))
 (def current-chrome-remote-debugging-port (atom nil))
 
+; -- helpers ----------------------------------------------------------------------------------------------------------------
+
 (defn get-debugging-port []
   @current-chrome-remote-debugging-port)
 
-(defn build-chrome-driver-service [options]
-  (let [{:keys [port verbose chrome-driver-path]} options
-        builder (ChromeDriverService$Builder.)]
-    (if chrome-driver-path
-      (let [chrome-driver-exe (io/file chrome-driver-path)]
-        (println (str "Chrome Driver: setting chrome driver path to '" chrome-driver-exe "'"))
-        (.usingDriverExecutable builder chrome-driver-exe)))
-    (.withVerbose builder (boolean verbose))
-    (if port
-      (.usingPort builder port)
-      (.usingAnyFreePort builder))
-    (.build builder)))
+(defn set-debugging-port! [port]
+  (reset! current-chrome-remote-debugging-port port))
+
+(defn get-current-chrome-driver-service []
+  @current-chrome-driver-service)
+
+(defn set-current-chrome-driver-service! [service]
+  (reset! current-chrome-driver-service service))
+
+(defn log [& args]
+  (apply println "Chrome Driver:" args))
 
 (defn get-dirac-extension-path [dirac-root dev?]
   (if dev?
@@ -41,9 +42,29 @@
     "Linux" "/usr/bin/google-chrome-unstable"
     nil))
 
+(defn print-current-driver-info []
+  (if-let [service (get-current-chrome-driver-service)]
+    (log (str "driver service info: " service))
+    (log (str "driver service info: <no service>"))))
+
+; -- helpers ----------------------------------------------------------------------------------------------------------------
+
+(defn build-chrome-driver-service [options]
+  (let [{:keys [port dirac-chrome-driver-verbose chrome-driver-path]} options
+        builder (ChromeDriverService$Builder.)]
+    (if chrome-driver-path
+      (let [chrome-driver-exe (io/file chrome-driver-path)]
+        (log (str "setting chrome driver path to '" chrome-driver-exe "'"))
+        (.usingDriverExecutable builder chrome-driver-exe)))
+    (.withVerbose builder (boolean dirac-chrome-driver-verbose))
+    (if port
+      (.usingPort builder port)
+      (.usingAnyFreePort builder))
+    (.build builder)))
+
 (defn tweak-os-specific-options [chrome-options options]
   (when-let [chrome-binary-path (pick-chrome-binary-path (:dirac-host-os options))]
-    (println (str "Chrome Driver: setting chrome binary path to '" chrome-binary-path "'"))
+    (log (str "setting chrome binary path to '" chrome-binary-path "'"))
     (.setBinary chrome-options chrome-binary-path)))
 
 (defn tweak-travis-specific-options [chrome-options options]
@@ -87,7 +108,7 @@
   (let [chrome-driver-service (build-chrome-driver-service options)
         chrome-caps (prepare-chrome-caps options)
         chrome-driver (ChromeDriver. chrome-driver-service chrome-caps)]
-    (reset! current-chrome-driver-service chrome-driver-service)
+    (set-current-chrome-driver-service! chrome-driver-service)
     (init-driver chrome-driver)))
 
 (defn prepare-options
@@ -95,14 +116,14 @@
    (prepare-options false))
   ([attaching?]
    (let [defaults {:dirac-host-os (System/getProperty "os.name")}
-         env-settings (select-keys env [:dirac-root :travis :chrome-driver-path :dirac-dev :dirac-host-os])
+         env-settings (select-keys env [:dirac-root :travis :chrome-driver-path :dirac-dev :dirac-host-os
+                                        :dirac-chrome-driver-verbose])
          ; when testing with travis we place chrome driver binary under test/chromedriver
          ; detect that case here and use the binary explicitely
          dirac-test-chromedriver-file (io/file (:dirac-root env-settings) "test" "chromedriver")
          chrome-driver-path (if (.exists dirac-test-chromedriver-file)
                               {:chrome-driver-path (.getAbsolutePath dirac-test-chromedriver-file)})
-         overrides {:verbose    false
-                    :attaching? attaching?}]
+         overrides {:attaching? attaching?}]
      (merge defaults env-settings chrome-driver-path overrides))))
 
 (defn retrieve-remote-debugging-port []
@@ -112,7 +133,7 @@
       (when-let [m (re-matches #"(?s).*--remote-debugging-port=(\d+).*" body-text)]
         (Integer/parseInt (second m))))
     (catch Exception e
-      (println (str "Chrome Driver: got an exception when trying to retrieve remote debugging port:\n" e))
+      (log (str "got an exception when trying to retrieve remote debugging port:\n" e))
       nil)))
 
 ; -- high-level api ---------------------------------------------------------------------------------------------------------
@@ -120,19 +141,20 @@
 (defn start-browser! []
   (set-driver! (prepare-chrome-driver (prepare-options)))
   (if-let [debug-port (retrieve-remote-debugging-port)]
-    (reset! current-chrome-remote-debugging-port debug-port)
+    (set-debugging-port! debug-port)
     (do
-      (println "Chrome Driver: unable to retrieve-remote-debugging-port")
-      (System/exit 1))))
+      (log "unable to retrieve-remote-debugging-port")
+      (System/exit 1)))
+  (print-current-driver-info))
 
 (defn disconnect-browser! []
-  {:pre [@current-chrome-driver-service]}
-  (.stop @current-chrome-driver-service)
-  (Thread/sleep 1000))
+  (when-let [service (get-current-chrome-driver-service)]
+    (.stop service)
+    (set-current-chrome-driver-service! nil)
+    (Thread/sleep 1000)))
 
 (defn reconnect-browser! []
-  (let [debugger-port @current-chrome-remote-debugging-port
-        options (assoc (prepare-options true) :debugger-port debugger-port)]
+  (let [options (assoc (prepare-options true) :debugger-port (get-debugging-port))]
     (set-driver! (prepare-chrome-driver options))))
 
 (defn stop-browser! []
