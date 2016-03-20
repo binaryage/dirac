@@ -52,28 +52,34 @@
 (defn obtain-transcript []
   (try
     (text "pre.transcript")
-    (catch Exception e
-      (str "unable to read transcript:" e))))
+    (catch Exception _e
+      (throw (ex-info "unable to read transcript" {:body (str "===== DOC BODY =====\n"
+                                                              (text "body")
+                                                              "\n====================\n")})))))
 
 (defn write-transcript-and-compare [name]
-  (let [actual-transcript (normalize-transcript (obtain-transcript))
-        actual-path (get-actual-transcript-path name)]
-    (io/make-parents actual-path)
-    (spit actual-path actual-transcript)
-    (let [expected-path (get-expected-transcript-path name)
-          expected-transcript (normalize-transcript (slurp expected-path))]
-      (if-not (= actual-transcript expected-transcript)
-        (do
-          (println)
-          (println "-------------------------------------------------------------------------------------------------------")
-          (println "! expected and actual transcripts differ for" name "test:")
-          (println (str "> diff -U 5 expected/" name ".txt actual/" name ".txt"))
-          (println (:out (shell/sh "diff" "-U" "5" expected-path actual-path)))
-          (println "-------------------------------------------------------------------------------------------------------")
-          (println (str "> cat actual/" name ".txt"))
-          (println actual-transcript)
-          false)
-        true))))
+  (try
+    (let [actual-transcript (normalize-transcript (obtain-transcript))
+          actual-path (get-actual-transcript-path name)]
+      (io/make-parents actual-path)
+      (spit actual-path actual-transcript)
+      (let [expected-path (get-expected-transcript-path name)
+            expected-transcript (normalize-transcript (slurp expected-path))]
+        (if-not (= actual-transcript expected-transcript)
+          (do
+            (println)
+            (println "-------------------------------------------------------------------------------------------------------")
+            (println "! expected and actual transcripts differ for" name "test:")
+            (println (str "> diff -U 5 expected/" name ".txt actual/" name ".txt"))
+            (println (:out (shell/sh "diff" "-U" "5" expected-path actual-path)))
+            (println "-------------------------------------------------------------------------------------------------------")
+            (println (str "> cat actual/" name ".txt"))
+            (println actual-transcript)
+            false)
+          true)))
+    (catch Exception e
+      (println "unable to read transcript" e)
+      false)))
 
 ; -- fixtures ---------------------------------------------------------------------------------------------------------------
 
@@ -88,7 +94,7 @@
 (defn p01 []
   (navigate-transcript-test! "p01")
   (disconnect-browser!)
-  (wait-for-task-to-finish (* 1 MINUTE))                    ; TODO: increase
+  (wait-for-task-to-finish (* 1 MINUTE))                                                                                      ; TODO: increase
   (reconnect-browser!)
   (is (write-transcript-and-compare "p01")))
 
