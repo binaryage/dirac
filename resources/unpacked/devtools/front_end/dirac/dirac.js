@@ -66,7 +66,7 @@ function evalInContext(context, code, callback) {
       callback(value, wasThrown, exceptionDetails);
     }
   };
-  context.evaluate(code, "console", true, true, true, false, resultCallback);
+  context.evaluate(code, "console", true, true, true, false, false, resultCallback);
 }
 
 function lookupCurrentContext() {
