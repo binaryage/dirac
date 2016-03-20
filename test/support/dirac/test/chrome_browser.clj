@@ -19,7 +19,7 @@
         builder (ChromeDriverService$Builder.)]
     (if chrome-driver-path
       (let [chrome-driver-exe (io/file chrome-driver-path)]
-        (println (str "setting chrome driver path to '" chrome-driver-exe "'"))
+        (println (str "Chrome Driver: setting chrome driver path to '" chrome-driver-exe "'"))
         (.usingDriverExecutable builder chrome-driver-exe)))
     (.withVerbose builder (boolean verbose))
     (if port
@@ -35,10 +35,16 @@
 (defn get-marion-extension-path [dirac-root]
   [dirac-root "test" "marion" "resources" "unpacked"])                                                                        ; note: we always use dev version, it is just a helper extension, no need for advanced compliation here
 
-(defn tweak-os-specific-options [chrome-options options]
-  (case (:dirac-host-os options)
-    "Mac OS X" (.setBinary chrome-options "/Applications/Google Chrome Canary.app/Contents/MacOS/Google Chrome Canary")
+(defn pick-chrome-binary-path [os]
+  (case os
+    "Mac OS X" "/Applications/Google Chrome Canary.app/Contents/MacOS/Google Chrome Canary"
+    "Linux" "/usr/bin/google-chrome-unstable"
     nil))
+
+(defn tweak-os-specific-options [chrome-options options]
+  (when-let [chrome-binary-path (pick-chrome-binary-path (:dirac-host-os options))]
+    (println (str "Chrome Driver: setting chrome binary path to '" chrome-binary-path "'"))
+    (.setBinary chrome-options chrome-binary-path)))
 
 (defn tweak-travis-specific-options [chrome-options options]
   (when (:travis options)
@@ -78,10 +84,10 @@
     caps))
 
 (defn prepare-chrome-driver [options]
-  (let [service (build-chrome-driver-service options)
+  (let [chrome-driver-service (build-chrome-driver-service options)
         chrome-caps (prepare-chrome-caps options)
-        chrome-driver (ChromeDriver. service chrome-caps)]
-    (reset! current-chrome-driver-service service)
+        chrome-driver (ChromeDriver. chrome-driver-service chrome-caps)]
+    (reset! current-chrome-driver-service chrome-driver-service)
     (init-driver chrome-driver)))
 
 (defn prepare-options
@@ -116,7 +122,7 @@
   (if-let [debug-port (retrieve-remote-debugging-port)]
     (reset! current-chrome-remote-debugging-port debug-port)
     (do
-      (println "unable to retrieve-remote-debugging-port")
+      (println "Chrome Driver: unable to retrieve-remote-debugging-port")
       (System/exit 1))))
 
 (defn disconnect-browser! []
