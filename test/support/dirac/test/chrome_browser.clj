@@ -8,6 +8,8 @@
            (org.openqa.selenium.remote DesiredCapabilities)
            (java.nio.file Paths)))
 
+(def ^:const CHROME_VERSION_PAGE "chrome://version")
+
 (def current-chrome-driver-service (atom nil))
 (def current-chrome-remote-debugging-port (atom nil))
 
@@ -42,10 +44,8 @@
     "Linux" "/usr/bin/google-chrome-unstable"
     nil))
 
-(defn print-current-driver-info []
-  (if-let [service (get-current-chrome-driver-service)]
-    (log (str "driver service info: " service))
-    (log (str "driver service info: <no service>"))))
+(defn beautify-command-line [raw-command-line-text]
+  (string/join (interpose "\\\n                     --" (string/split raw-command-line-text #" --"))))
 
 ; -- helpers ----------------------------------------------------------------------------------------------------------------
 
@@ -128,12 +128,33 @@
 
 (defn retrieve-remote-debugging-port []
   (try
-    (to "chrome://version")
+    (to CHROME_VERSION_PAGE)
+    (wait-until #(exists? "#executable_path"))
     (let [body-text (text "body")]
       (when-let [m (re-matches #"(?s).*--remote-debugging-port=(\d+).*" body-text)]
         (Integer/parseInt (second m))))
     (catch Exception e
       (log (str "got an exception when trying to retrieve remote debugging port:\n" e))
+      nil)))
+
+(defn retrieve-chrome-info []
+  (try
+    (to CHROME_VERSION_PAGE)
+    (wait-until #(exists? "#executable_path"))
+    (let [version-text (text "#version")
+          os-type-text (text "#os_type")
+          blink-version-text (text "#blink_version")
+          js-engine-text (text "#js_engine")
+          command-line-text (text "#command_line")
+          executable-path-text (text "#executable_path")]
+      (str "    Google Chrome: " version-text "\n"
+           "               OS: " os-type-text "\n"
+           "            Blink: " blink-version-text "\n"
+           "       JavaScript: " js-engine-text "\n"
+           "  Executable Path: " executable-path-text "\n"
+           "     Command Line: " (beautify-command-line command-line-text) "\n"))
+    (catch Exception e
+      (log (str "got an exception when trying to retrieve chrome info:\n" e))
       nil)))
 
 ; -- high-level api ---------------------------------------------------------------------------------------------------------
@@ -145,7 +166,11 @@
     (do
       (log "unable to retrieve-remote-debugging-port")
       (System/exit 1)))
-  (print-current-driver-info))
+  (if-let [chrome-info (retrieve-chrome-info)]
+    (log (str "== CHROME INFO ==============================================================================\n" chrome-info))
+    (do
+      (log "unable to retrieve-chrome-info")
+      (System/exit 2))))
 
 (defn disconnect-browser! []
   (when-let [service (get-current-chrome-driver-service)]
