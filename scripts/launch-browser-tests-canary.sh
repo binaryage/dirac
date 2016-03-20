@@ -20,7 +20,7 @@ fi
       --remote-debugging-port=9222 \
       --no-first-run \
       --user-data-dir="$DIRAC_BROWSER_TESTS_USER_PROFILE" \
-      #--enable-experimental-extension-apis \
+      --enable-experimental-extension-apis \
       localhost:9222/json
 
 popd

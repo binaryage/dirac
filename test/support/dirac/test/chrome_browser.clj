@@ -52,8 +52,8 @@
               "--no-default-browser-check"
               "--no-first-run"
               "--ignore-certificate-errors"
-              ;"--enable-experimental-extension-apis"
               "--homepage=about:blank"
+              "--enable-experimental-extension-apis"
               load-extensions-arg]]
     (if attaching?
       (.setExperimentalOption chrome-options "debuggerAddress" (str "127.0.0.1:" debugger-port))
