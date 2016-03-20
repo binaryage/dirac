@@ -92,7 +92,7 @@ function lookupMainWorldContext() {
   var executionContexts = target.runtimeModel.executionContexts();
   for (var i = 0; i < executionContexts.length; ++i) {
     var executionContext = executionContexts[i];
-    if (executionContext.isMainWorldContext) {
+    if (executionContext.isDefault) {
       return executionContext;
     }
   }
