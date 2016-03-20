@@ -16,7 +16,7 @@
 
 (def ^:const SECOND 1000)
 (def ^:const MINUTE (* 60 SECOND))
-(def ^:const DEFAULT_TASK_TIMEOUT (* 5 MINUTE))                                                                               ; 5min
+(def ^:const DEFAULT_TASK_TIMEOUT (* 5 MINUTE))
 
 (defn navigate-transcript-test! [name]
   (let [debugging-port (get-debugging-port)
@@ -81,13 +81,17 @@
 
 ; -- individual tests -------------------------------------------------------------------------------------------------------
 
-(deftest fixtures-web-server-check
+(defn fixtures-web-server-check []
   (to "http://localhost:9090")
   (is (= (text "body") "fixtures web-server ready")))
 
-(deftest p01
+(defn p01 []
   (navigate-transcript-test! "p01")
   (disconnect-browser!)
-  (wait-for-task-to-finish (* 1 MINUTE))                                                                                      ; TODO: increase
+  (wait-for-task-to-finish (* 1 MINUTE))                    ; TODO: increase
   (reconnect-browser!)
   (is (write-transcript-and-compare "p01")))
+
+(deftest test-all
+  (fixtures-web-server-check)
+  (p01))
