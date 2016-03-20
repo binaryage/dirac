@@ -32,7 +32,7 @@ WebInspector.ExecutionContextModel.prototype = {
     _titleFor: function(executionContext)
     {
         var result;
-        if (executionContext.isMainWorldContext) {
+        if (executionContext.isDefault) {
             if (executionContext.frameId) {
                 var frame = executionContext.target().resourceTreeModel.frameForId(executionContext.frameId);
                 result =  frame ? frame.displayName() : (executionContext.origin || executionContext.name);
@@ -65,7 +65,7 @@ WebInspector.ExecutionContextModel.prototype = {
         this._optionByExecutionContext.set(executionContext, newOption);
         var options = this._selectElement.options;
         var contexts = Array.prototype.map.call(options, mapping);
-        var index = insertionIndexForObjectInListSortedByFunction(executionContext, contexts, WebInspector.ExecutionContext.comparator);
+        var index = contexts.lowerBound(executionContext, WebInspector.ExecutionContext.comparator)
         this._selectElement.insertBefore(newOption, options[index]);
 
         if (executionContext === WebInspector.context.flavor(WebInspector.ExecutionContext))

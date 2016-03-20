@@ -158,7 +158,7 @@ WebInspector.DebuggerModel.prototype = {
         this._debuggerEnabled = false;
         this._isPausing = false;
         this.asyncStackTracesStateChanged();
-        this._globalObjectCleared();
+        this.globalObjectCleared();
         this.dispatchEventToListeners(WebInspector.DebuggerModel.Events.DebuggerWasDisabled);
     },
 
@@ -418,10 +418,11 @@ WebInspector.DebuggerModel.prototype = {
         this._breakpointResolvedEventTarget.dispatchEventToListeners(breakpointId, WebInspector.DebuggerModel.Location.fromPayload(this, location));
     },
 
-    _globalObjectCleared: function()
+    globalObjectCleared: function()
     {
         this._setDebuggerPausedDetails(null);
         this._reset();
+        // TODO(dgozman): move clients to ExecutionContextDestroyed/ScriptCollected events.
         this.dispatchEventToListeners(WebInspector.DebuggerModel.Events.GlobalObjectCleared);
     },
 
@@ -808,12 +809,11 @@ WebInspector.DebuggerModel.prototype = {
      * @param {string} variableName
      * @param {!RuntimeAgent.CallArgument} newValue
      * @param {string} callFrameId
-     * @param {string} functionObjectId
      * @param {function(string=)=} callback
      */
-    setVariableValue: function(scopeNumber, variableName, newValue, callFrameId, functionObjectId, callback)
+    setVariableValue: function(scopeNumber, variableName, newValue, callFrameId, callback)
     {
-        this._agent.setVariableValue(scopeNumber, variableName, newValue, callFrameId, functionObjectId, innerCallback);
+        this._agent.setVariableValue(scopeNumber, variableName, newValue, callFrameId, innerCallback);
 
         /**
          * @param {?Protocol.Error} error
@@ -968,14 +968,6 @@ WebInspector.DebuggerDispatcher.prototype = {
     resumed: function()
     {
         this._debuggerModel._resumedScript();
-    },
-
-    /**
-     * @override
-     */
-    globalObjectCleared: function()
-    {
-        this._debuggerModel._globalObjectCleared();
     },
 
     /**
@@ -1376,7 +1368,7 @@ WebInspector.DebuggerModel.Scope.prototype = {
 
         var declarativeScope = this._type !== DebuggerAgent.ScopeType.With && this._type !== DebuggerAgent.ScopeType.Global;
         if (declarativeScope)
-            this._object = runtimeModel.createScopeRemoteObject(this._payload.object, new WebInspector.ScopeRef(this._ordinal, this._callFrame.id, undefined));
+            this._object = runtimeModel.createScopeRemoteObject(this._payload.object, new WebInspector.ScopeRef(this._ordinal, this._callFrame.id));
         else
             this._object = runtimeModel.createRemoteObject(this._payload.object);
 

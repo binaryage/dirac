@@ -120,13 +120,13 @@ WebInspector.EventListenersWidget.prototype = {
             if (node.frameId()) {
                 for (var i = 0; i < executionContexts.length; ++i) {
                     var executionContext = executionContexts[i];
-                    if (executionContext.frameId === node.frameId() && executionContext.isMainWorldContext)
+                    if (executionContext.frameId === node.frameId() && executionContext.isDefault)
                         context = executionContext;
                 }
             } else {
                 context = executionContexts[0];
             }
-            context.evaluate("self", WebInspector.EventListenersWidget._objectGroupName, false, true, false, false, fulfill);
+            context.evaluate("self", WebInspector.EventListenersWidget._objectGroupName, false, true, false, false, false, fulfill);
         }
     },
 
