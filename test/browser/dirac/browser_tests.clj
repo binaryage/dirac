@@ -25,7 +25,7 @@
 
 (defn make-test-index-url [test-name]
   (let [debugging-port (get-debugging-port)]
-    (str "http://localhost:9090/" test-name "/resources/index.html?debugging_port=" debugging-port)))
+    (str "http://localhost:9090/" test-name "/resources/index.html?test_runner=1&debugging_port=" debugging-port)))
 
 (defn navigate-transcript-test! [test-name]
   (let [test-index-url (make-test-index-url test-name)]

@@ -41,6 +41,9 @@
 (defn has-transcript? []
   (not (nil? @current-transcript)))
 
+(defn disable-transcript! []
+  (set! *transcript-enabled* false))
+
 (defn sniffer-enabled? []
   @sniffer-enabled)
 
@@ -58,11 +61,11 @@
   (doseq [observer @transcript-observers]
     (observer text)))
 
-(defn append-to-transcript! [text]
+(defn append-to-transcript! [text & [force?]]
   {:pre [(has-transcript?)]}
   (if (sniffer-enabled?)
     (call-transcript-sniffer text))
-  (if *transcript-enabled*                                                                                                    ;*transcript-enabled*
+  (if (or *transcript-enabled* force?)
     (transcript/append-to-transcript! @current-transcript (str text "\n"))))
 
 (defn format-transcript-line [type text]
@@ -116,7 +119,7 @@
                           :action        action}))
 
 (defn process-event! [event]
-  (if (= (.-source event) js/window)
+  (if (= (.-source event) js/window)                                                                                          ; not sure if we need it here
     (if-let [data (.-data event)]
       (case (.-type data)
         "dirac-frontend-feedback-event" (append-to-transcript! (format-transcript-line "dirac frontend" (.-text data)))
@@ -138,24 +141,45 @@
   (let [uri (make-uri-object url)]
     (.getParameterValue uri param)))
 
+(defn get-document-url []
+  (str (.-location js/document)))
+
 (defn setup-debugging-port! []
-  (let [url (str (.-location js/document))]
+  (let [url (get-document-url)]
     (if-let [debugging-port (get-query-param url "debugging_port")]
       (let [target-url (str "http://localhost:" debugging-port)]
         (post-marion-command! {:command :set-option
                                :key     :target-url
                                :value   target-url})))))
 
+(defn is-test-runner-present? []
+  (let [url (get-document-url)]
+    (boolean (get-query-param url "test_runner"))))
+
 (defn setup! []
   (init-devtools!)
+  ; transcript is a fancy name for "log of interesting events"
   (init-transcript! "transcript-box")
+  ; feedback subsystem is responsible for intercepting messages to be presented in transcript
   (init-feedback!)
+  ; when launched from test runner, chrome driver is in charge of selecting debugging port, we have to propagate this
+  ; information to our dirac extension settings
   (setup-debugging-port!)
+  ; open-as window is handy for debugging, becasue we can open internal devtools to inspect dirac frontend in case of errors
   (post-marion-command! {:command :set-option
                          :key     :open-as
                          :value   "window"}))
 
-(defn task-finished! []
-  ; this signals to the task runner that he can reconnect chrome driver and check the results
-  (post-marion-command! {:command :tear-down})                                                                                ; to fight https://bugs.chromium.org/p/chromium/issues/detail?id=355075
-  (ws-client/connect! "ws://localhost:22555" {:name "Signaller"}))
+(defn task-finished!
+  ([]
+    ; under manual test development we don't want to execute tear-down
+    ; - closing existing tabs would interfere with our ability to inspect test results
+    ; also we don't want to signal "task finished", because  there is no test runner listening
+   (task-finished! (is-test-runner-present?)))
+  ([really?]
+   (disable-transcript!)
+   (if really?
+     (do
+       (post-marion-command! {:command :tear-down})                                                                           ; to fight https://bugs.chromium.org/p/chromium/issues/detail?id=355075
+       (ws-client/connect! "ws://localhost:22555" {:name "Signaller"}))                                                       ; this signals to the task runner that he can reconnect chrome driver and check the results
+     (append-to-transcript! "---------------- TASK FINISHED ----------------" true))))

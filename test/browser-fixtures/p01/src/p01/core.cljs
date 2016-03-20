@@ -18,5 +18,4 @@
   (<! (wait-switch-to-console))
   (switch-to-dirac-prompt!)
   (<! (wait-for-transcript-match #".*will try reconnect in 4 seconds.*" (* 60 1000)))
-  (close-dirac-devtools!)
   (task-finished!))

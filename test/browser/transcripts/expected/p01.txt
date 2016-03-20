@@ -20,6 +20,3 @@ dirac frontend   setDiracPromptStatusBanner('')
 dirac frontend   setDiracPromptStatusContent('Unable to connect to Dirac Agent at ws://localhost:8231')
 dirac frontend   setDiracPromptStatusContent('<b>Dirac Agent is not listening</b> at ws://localhost:8231 (<a href="https://github.com/binaryage/dirac#start-dirac-agent">need help?</a>).')
 dirac frontend   setDiracPromptStatusBanner('will try reconnect in 4 seconds')
-exec             {:command :fire-synthetic-chrome-event, :chrome-event [:chromex.ext.commands/on-command ["close-dirac-devtools" "1"]]}
-dirac extension  handling command: close-dirac-devtools
-dirac extension  unregister dirac connection #1
