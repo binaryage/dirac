@@ -3,14 +3,15 @@ dist: trusty
 language: clojure
 
 before_install:
+  # - export DIRAC_CHROME_DRIVER_VERBOSE=1
+  #
   # we need lein 2.5.3+ because of https://github.com/technomancy/leiningen/issues/1762
   # update lein to latest, https://github.com/technomancy/leiningen/issues/2014#issuecomment-153829977
   - yes y | sudo lein upgrade
-  # install "unstable" chrome for Google's PPA: http://www.tecmint.com/install-google-chrome-in-debian-ubuntu-linux-mint/
-  - export CHROME_BIN=/usr/bin/google-chrome
+  # install xvfb (for chrome tests)
   - export DISPLAY=:99.0
-  - export DIRAC_CHROME_DRIVER_VERBOSE=1
   - sh -e /etc/init.d/xvfb start
+  # install "unstable" chrome for Google's PPA: http://www.tecmint.com/install-google-chrome-in-debian-ubuntu-linux-mint/
   - wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
   - sudo sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list'
   - sudo apt-get update
