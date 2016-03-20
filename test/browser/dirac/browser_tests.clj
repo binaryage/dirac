@@ -18,11 +18,17 @@
 (def ^:const MINUTE (* 60 SECOND))
 (def ^:const DEFAULT_TASK_TIMEOUT (* 5 MINUTE))
 
-(defn navigate-transcript-test! [name]
-  (let [debugging-port (get-debugging-port)
-        test-url (str "http://localhost:9090/" name "/resources/index.html?debugging_port=" debugging-port)]
-    (println "navigating to" test-url)
-    (to test-url)))
+(defn log [& args]
+  (apply println "Tests Runner:" args))
+
+(defn make-test-index-url [test-name]
+  (let [debugging-port (get-debugging-port)]
+    (str "http://localhost:9090/" test-name "/resources/index.html?debugging_port=" debugging-port)))
+
+(defn navigate-transcript-test! [test-name]
+  (let [test-index-url (make-test-index-url test-name)]
+    (println "navigating to" test-index-url)
+    (to test-index-url)))
 
 (defn wait-for-task-to-finish
   ([]
@@ -32,7 +38,7 @@
                                  :host "localhost"
                                  :port 22555})
          server-url (server/get-url server)]
-     (println (str "Waiting for task signals at " server-url "(" timeout-ms " ms)."))
+     (println (str "Waiting for task signals at " server-url " (timeout " timeout-ms " ms)."))
      (if (= ::server/timeout (server/wait-for-first-client server timeout-ms))
        (println (str "Timeout while waiting for task signal (after " timeout-ms " ms)."))
        (println (str "Got 'task finished' signal"))))))
@@ -49,36 +55,41 @@
   (-> transcript
       (string/trim)))
 
-(defn obtain-transcript []
-  (try
-    (text "pre.transcript")
-    (catch Exception _e
-      (throw (ex-info "unable to read transcript" {:body (str "===== DOC BODY =====\n"
-                                                              (text "body")
-                                                              "\n====================\n")})))))
+(defn obtain-transcript [test-name]
+  (let [test-index-url (make-test-index-url test-name)
+        test-window-handle (find-window {:url test-index-url})]
+    (if test-window-handle
+      (try
+        (switch-to-window test-window-handle)
+        (text "pre.transcript")
+        (catch Exception _e
+          (throw (ex-info "unable to read transcript" {:body (str "===== DOC BODY =====\n"
+                                                                  (text "body")
+                                                                  "\n====================\n")}))))
+      (throw (ex-info "unable to find window with transcript" {:test-index-url test-index-url})))))
 
-(defn write-transcript-and-compare [name]
+(defn write-transcript-and-compare [test-name]
   (try
-    (let [actual-transcript (normalize-transcript (obtain-transcript))
-          actual-path (get-actual-transcript-path name)]
+    (let [actual-transcript (normalize-transcript (obtain-transcript test-name))
+          actual-path (get-actual-transcript-path test-name)]
       (io/make-parents actual-path)
       (spit actual-path actual-transcript)
-      (let [expected-path (get-expected-transcript-path name)
+      (let [expected-path (get-expected-transcript-path test-name)
             expected-transcript (normalize-transcript (slurp expected-path))]
         (if-not (= actual-transcript expected-transcript)
           (do
             (println)
             (println "-------------------------------------------------------------------------------------------------------")
-            (println "! expected and actual transcripts differ for" name "test:")
-            (println (str "> diff -U 5 expected/" name ".txt actual/" name ".txt"))
+            (println "! expected and actual transcripts differ for" test-name "test:")
+            (println (str "> diff -U 5 expected/" test-name ".txt actual/" test-name ".txt"))
             (println (:out (shell/sh "diff" "-U" "5" expected-path actual-path)))
             (println "-------------------------------------------------------------------------------------------------------")
-            (println (str "> cat actual/" name ".txt"))
+            (println (str "> cat actual/" test-name ".txt"))
             (println actual-transcript)
             false)
           true)))
     (catch Exception e
-      (println "unable to read transcript" e)
+      (log "unable to write-transcript-and-compare" e)
       false)))
 
 ; -- fixtures ---------------------------------------------------------------------------------------------------------------
