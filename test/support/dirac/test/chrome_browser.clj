@@ -58,6 +58,9 @@
     (if attaching?
       (.setExperimentalOption chrome-options "debuggerAddress" (str "127.0.0.1:" debugger-port))
       (.setExperimentalOption chrome-options "detach" true))
+    (case (System/getProperty "os.name")
+      "Mac OS X" (.setBinary chrome-options "/Applications/Google Chrome Canary.app/Contents/MacOS/Google Chrome Canary")
+      nil)
     (.addArguments chrome-options args)
     (when travis
       (.addArguments chrome-options ["--disable-setuid-sandbox"]))
