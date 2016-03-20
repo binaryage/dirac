@@ -251,43 +251,42 @@
   ;   * marion: test/marion/resources/unpacked
   ;
   ; terminal session3: lein fig
-  ; terminal session4: lein dev-browser-tests
+  ; terminal session4: lein auto-compile-dev-browser-tests
   ;
   ; fixtures server is running at http://localhost:9080 => /p01/resources/index.html
 
-  :aliases {"check"                        ["shell" "scripts/check-code.sh"]
-            "test"                         ["shell" "scripts/test-all.sh"]
-            "test-backend"                 ["with-profile" "+backend-tests"
-                                            "run" "-m" "dirac.backend-tests-runner"]
-            "test-browser"                 ["with-profile" "+browser-tests,+browser-fixtures,+marion,+packed,+cljs,+pseudo-names"
-                                            "do"
-                                            "release,"
-                                            "cljsbuild" "once" "marion-background" "marion-content-script" "p01,"
-                                            "run" "-m" "dirac.browser-tests-runner"]
-            "test-browser-dev"             ["with-profile" "+cljs,+browser-tests,+browser-fixtures,+marion,+unpacked,+checkouts"
-                                            "do"
-                                            "cljsbuild" "once"
-                                            "marion-background" "marion-content-script"
-                                            "dirac-background" "dirac-implant" "dirac-options"
-                                            "p01,"
-                                            "run" "-m" "dirac.browser-tests-runner/-dev-main"]
-            "dev-browser-tests"            ["with-profile" "+cljs,+browser-tests,+browser-fixtures,+marion,+unpacked,+checkouts"
-                                            "cljsbuild" "auto"
-                                            "marion-background" "marion-content-script"
-                                            "p01"]
-            "jar"                          ["shell" "scripts/lein-lib-without-checkouts.sh" "jar"]
-            "install"                      ["shell" "scripts/lein-lib-without-checkouts.sh" "install"]
-            "uberjar"                      ["shell" "scripts/lein-lib-without-checkouts.sh" "uberjar"]
-            "dev-build"                    ["with-profile" "+unpacked,+cljs,+checkouts"
-                                            "cljsbuild" "once" "dirac-background" "dirac-options" "dirac-implant"]
-            "fig"                          ["with-profile" "+unpacked,+cljs,+checkouts"
-                                            "figwheel" "dirac-background" "dirac-options" "dirac-implant"]
-            "compile-release"              ["with-profile" "+packed,+cljs"
-                                            "do" "clean,"
-                                            "cljsbuild" "once" "dirac-background" "dirac-options" "dirac-implant"]
-            "compile-release-pseudo-names" ["with-profile" "+packed,+cljs,+pseudo-names"
-                                            "do" "clean,"
-                                            "cljsbuild" "once" "dirac-implant" "dirac-background" "dirac-options"]
-            "release"                      ["shell" "scripts/release.sh"]
-            "package"                      ["shell" "scripts/package.sh"]
-            "regenerate"                   ["shell" "scripts/regenerate.sh"]})
+  :aliases {"check"                          ["shell" "scripts/check-code.sh"]
+            "test"                           ["shell" "scripts/test-all.sh"]
+            "test-backend"                   ["do" "run-backend-tests"]
+            "test-browser"                   ["do" "make-release," "compile-browser-tests," "run-browser-tests"]
+            "test-dev-browser"               ["do" "compile-dev," "compile-dev-browser-tests," "run-dev-browser-tests"]
+            "run-backend-tests"              ["with-profile" "+backend-tests"
+                                              "run" "-m" "dirac.backend-tests-runner"]
+            "run-browser-tests"              ["with-profile" "+browser-tests"
+                                              "run" "-m" "dirac.browser-tests-runner"]
+            "run-dev-browser-tests"          ["with-profile" "+browser-tests,+checkouts"
+                                              "run" "-m" "dirac.browser-tests-runner/-dev-main"]
+            "compile-browser-tests"          ["with-profile" "+browser-tests,+browser-fixtures,+marion,+packed,+cljs,+pseudo-names"
+                                              "do"
+                                              "cljsbuild" "once" "marion-background" "marion-content-script" "p01"]
+            "compile-dev-browser-tests"      ["with-profile" "+cljs,+browser-tests,+browser-fixtures,+marion,+unpacked,+checkouts"
+                                              "do"
+                                              "cljsbuild" "once" "marion-background" "marion-content-script" "p01"]
+            "auto-compile-dev-browser-tests" ["with-profile" "+cljs,+browser-tests,+browser-fixtures,+marion,+unpacked,+checkouts"
+                                              "cljsbuild" "auto" "marion-background" "marion-content-script" "p01"]
+            "fig"                            ["with-profile" "+unpacked,+cljs,+checkouts"
+                                              "figwheel" "dirac-background" "dirac-options" "dirac-implant"]
+            "comile-dev"                     ["with-profile" "+unpacked,+cljs,+checkouts"
+                                              "cljsbuild" "once" "dirac-background" "dirac-options" "dirac-implant"]
+            "compile-release"                ["with-profile" "+packed,+cljs"
+                                              "do" "clean,"
+                                              "cljsbuild" "once" "dirac-background" "dirac-options" "dirac-implant"]
+            "compile-release-pseudo-names"   ["with-profile" "+packed,+cljs,+pseudo-names"
+                                              "do" "clean,"
+                                              "cljsbuild" "once" "dirac-implant" "dirac-background" "dirac-options"]
+            "make-release"                   ["shell" "scripts/release.sh"]
+            "package"                        ["shell" "scripts/package.sh"]
+            "jar"                            ["shell" "scripts/lein-lib-without-checkouts.sh" "jar"]
+            "install"                        ["shell" "scripts/lein-lib-without-checkouts.sh" "install"]
+            "uberjar"                        ["shell" "scripts/lein-lib-without-checkouts.sh" "uberjar"]
+            "regenerate"                     ["shell" "scripts/regenerate.sh"]})
