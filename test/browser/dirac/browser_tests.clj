@@ -2,7 +2,9 @@
   (:require [clojure.test :refer :all]
             [clojure.java.io :as io]
             [dirac.test.fixtures-web-server :refer [with-fixtures-web-server]]
-            [dirac.test.chrome-browser :refer [with-chrome-browser disconnect-browser! reconnect-browser! get-debugging-port]]
+            [dirac.test.chrome-browser :refer [with-chrome-browser disconnect-browser!
+                                               reconnect-browser! get-debugging-port
+                                               extract-javascript-logs]]
             [dirac.lib.ws-server :as server]
             [clj-webdriver.taxi :refer :all]
             [clojure.string :as string]
@@ -90,6 +92,8 @@
           true)))
     (catch Exception e
       (log "unable to write-transcript-and-compare" e)
+      (if-let [logs (extract-javascript-logs)]
+        (log (str "*************** JAVASCRIPT LOGS ***************\n" logs)))
       false)))
 
 ; -- fixtures ---------------------------------------------------------------------------------------------------------------

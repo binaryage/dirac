@@ -41,7 +41,8 @@
 
                  [ring/ring-core "1.4.0" :scope "test"]
                  [ring/ring-devel "1.4.0" :scope "test"]
-                 [ring/ring-jetty-adapter "1.4.0" :scope "test"]]
+                 [ring/ring-jetty-adapter "1.4.0" :scope "test"]
+                 [clj-time "0.11.0" :scope "test"]]
 
   :plugins [[lein-shell "0.4.2"]
             [lein-environ "1.0.1"]]

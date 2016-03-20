@@ -3,15 +3,20 @@
             [clj-webdriver.taxi :refer :all]
             [clj-webdriver.driver :refer [init-driver]]
             [clojure.string :as string]
-            [clojure.java.io :as io])
+            [clojure.java.io :as io]
+            [clj-time.format :as time-format]
+            [clj-time.coerce :as time-coerce])
   (:import (org.openqa.selenium.chrome ChromeDriver ChromeOptions ChromeDriverService$Builder)
-           (org.openqa.selenium.remote DesiredCapabilities)
-           (java.nio.file Paths)))
+           (org.openqa.selenium.logging LoggingPreferences LogType)
+           (org.openqa.selenium.remote DesiredCapabilities CapabilityType)
+           (java.nio.file Paths)
+           (java.util.logging Level)))
 
 (def ^:const CHROME_VERSION_PAGE "chrome://version")
 
 (def current-chrome-driver-service (atom nil))
 (def current-chrome-remote-debugging-port (atom nil))
+(def current-chrome-driver (atom nil))
 
 ; -- helpers ----------------------------------------------------------------------------------------------------------------
 
@@ -26,6 +31,12 @@
 
 (defn set-current-chrome-driver-service! [service]
   (reset! current-chrome-driver-service service))
+
+(defn get-current-chrome-driver []
+  @current-chrome-driver)
+
+(defn set-current-chrome-driver! [driver]
+  (reset! current-chrome-driver driver))
 
 (defn log [& args]
   (apply println "Chrome Driver:" args))
@@ -47,7 +58,31 @@
 (defn beautify-command-line [raw-command-line-text]
   (string/join (interpose "\\\n                     --" (string/split raw-command-line-text #" --"))))
 
-; -- helpers ----------------------------------------------------------------------------------------------------------------
+(defn extract-javascript-log-lines [driver]
+  {:pre [driver]}
+  (let [entries (.get (.logs (.manage driver)) LogType/BROWSER)]
+    (for [entry entries]
+      (let [timestamp (time-format/unparse (time-format/formatters :hour-minute-second-ms)
+                                           (time-coerce/from-long (.getTimestamp entry)))
+            message (.getMessage entry)]
+        (str timestamp " | " message)))))
+
+(defn extract-javascript-logs []
+  (if-let [driver (get-current-chrome-driver)]
+    (let [lines (extract-javascript-log-lines driver)]
+      (if-not (empty? lines)
+        (string/join "\n" lines)))))
+
+(defn parse-log-level [level-str]
+  (if (empty? level-str)
+    Level/OFF
+    (try
+      (Level/parse level-str)
+      (catch Exception e
+        (log (str "unable to parse log level: " level-str ". " e))
+        Level/OFF))))
+
+; -- chrome driver / service ------------------------------------------------------------------------------------------------
 
 (defn build-chrome-driver-service [options]
   (let [{:keys [port dirac-chrome-driver-verbose chrome-driver-path]} options
@@ -61,6 +96,11 @@
       (.usingPort builder port)
       (.usingAnyFreePort builder))
     (.build builder)))
+
+(defn prepare-chrome-logging-preferences [options]
+  (let [logging-prefs (LoggingPreferences.)]
+    (.enable logging-prefs LogType/BROWSER (parse-log-level (:dirac-chrome-driver-browser-log-level options)))
+    logging-prefs))
 
 (defn tweak-os-specific-options [chrome-options options]
   (when-let [chrome-binary-path (pick-chrome-binary-path (:dirac-host-os options))]
@@ -91,6 +131,7 @@
               "--enable-experimental-extension-apis"
               load-extensions-arg]]
     (.addArguments chrome-options args)
+
     (tweak-travis-specific-options chrome-options options)
     (tweak-os-specific-options chrome-options options)
     (if attaching?
@@ -100,8 +141,10 @@
 
 (defn prepare-chrome-caps [options]
   (let [caps (DesiredCapabilities/chrome)
-        chrome-options (prepare-chrome-options options)]
+        chrome-options (prepare-chrome-options options)
+        chrome-logging-preferences (prepare-chrome-logging-preferences options)]
     (.setCapability caps ChromeOptions/CAPABILITY chrome-options)
+    (.setCapability caps CapabilityType/LOGGING_PREFS chrome-logging-preferences)
     caps))
 
 (defn prepare-chrome-driver [options]
@@ -109,15 +152,17 @@
         chrome-caps (prepare-chrome-caps options)
         chrome-driver (ChromeDriver. chrome-driver-service chrome-caps)]
     (set-current-chrome-driver-service! chrome-driver-service)
+    (set-current-chrome-driver! chrome-driver)
     (init-driver chrome-driver)))
 
 (defn prepare-options
   ([]
    (prepare-options false))
   ([attaching?]
-   (let [defaults {:dirac-host-os (System/getProperty "os.name")}
+   (let [defaults {:dirac-host-os                         (System/getProperty "os.name")
+                   :dirac-chrome-driver-browser-log-level "SEVERE"}
          env-settings (select-keys env [:dirac-root :travis :chrome-driver-path :dirac-dev :dirac-host-os
-                                        :dirac-chrome-driver-verbose])
+                                        :dirac-chrome-driver-verbose :dirac-chrome-driver-browser-log-level])
          ; when testing with travis we place chrome driver binary under test/chromedriver
          ; detect that case here and use the binary explicitely
          dirac-test-chromedriver-file (io/file (:dirac-root env-settings) "test" "chromedriver")
@@ -160,17 +205,18 @@
 ; -- high-level api ---------------------------------------------------------------------------------------------------------
 
 (defn start-browser! []
-  (set-driver! (prepare-chrome-driver (prepare-options)))
-  (if-let [debug-port (retrieve-remote-debugging-port)]
-    (set-debugging-port! debug-port)
-    (do
-      (log "unable to retrieve-remote-debugging-port")
-      (System/exit 1)))
-  (if-let [chrome-info (retrieve-chrome-info)]
-    (log (str "== CHROME INFO ==============================================================================\n" chrome-info))
-    (do
-      (log "unable to retrieve-chrome-info")
-      (System/exit 2))))
+  (let [driver (prepare-chrome-driver (prepare-options))]
+    (set-driver! driver)
+    (if-let [debug-port (retrieve-remote-debugging-port)]
+      (set-debugging-port! debug-port)
+      (do
+        (log "unable to retrieve-remote-debugging-port")
+        (System/exit 1)))
+    (if-let [chrome-info (retrieve-chrome-info)]
+      (log (str "== CHROME INFO ==============================================================================\n" chrome-info))
+      (do
+        (log "unable to retrieve-chrome-info")
+        (System/exit 2)))))
 
 (defn disconnect-browser! []
   (when-let [service (get-current-chrome-driver-service)]
