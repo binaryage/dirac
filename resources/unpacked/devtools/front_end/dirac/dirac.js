@@ -107,7 +107,7 @@ function lookupDefaultContext() {
   }
   for (var i = 0; i < executionContexts.length; ++i) {
     var executionContext = executionContexts[i];
-    if (executionContext.isDefault) {
+    if (executionContext.isDefault || executionContext.isMainWorldContext) {  // isMainWorldContext for backward compatibility
       if (dirac._DEBUG_EVAL) {
         console.log("  execution context #"+i+" isDefault:", executionContext);
       }
