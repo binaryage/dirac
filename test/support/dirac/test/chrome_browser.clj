@@ -35,9 +35,17 @@
 (defn get-marion-extension-path [dirac-root]
   [dirac-root "test" "marion" "resources" "unpacked"])                                                                        ; note: we always use dev version, it is just a helper extension, no need for advanced compliation here
 
-(defn prepare-caps [attaching? options]
-  (let [{:keys [dirac-root dirac-dev travis debugger-port]} options
-        caps (DesiredCapabilities/chrome)
+(defn tweak-os-specific-options [chrome-options options]
+  (case (:dirac-host-os options)
+    "Mac OS X" (.setBinary chrome-options "/Applications/Google Chrome Canary.app/Contents/MacOS/Google Chrome Canary")
+    nil))
+
+(defn tweak-travis-specific-options [chrome-options options]
+  (when (:travis options)
+    (.addArguments chrome-options ["--disable-setuid-sandbox"])))
+
+(defn prepare-chrome-options [options]
+  (let [{:keys [attaching? dirac-root dirac-dev debugger-port]} options
         chrome-options (ChromeOptions.)
         extension-paths [(get-dirac-extension-path dirac-root dirac-dev)
                          (get-marion-extension-path dirac-root)]
@@ -55,33 +63,41 @@
               "--homepage=about:blank"
               "--enable-experimental-extension-apis"
               load-extensions-arg]]
+    (.addArguments chrome-options args)
+    (tweak-travis-specific-options chrome-options options)
+    (tweak-os-specific-options chrome-options options)
     (if attaching?
       (.setExperimentalOption chrome-options "debuggerAddress" (str "127.0.0.1:" debugger-port))
       (.setExperimentalOption chrome-options "detach" true))
-    (case (System/getProperty "os.name")
-      "Mac OS X" (.setBinary chrome-options "/Applications/Google Chrome Canary.app/Contents/MacOS/Google Chrome Canary")
-      nil)
-    (.addArguments chrome-options args)
-    (when travis
-      (.addArguments chrome-options ["--disable-setuid-sandbox"]))
+    chrome-options))
+
+(defn prepare-chrome-caps [options]
+  (let [caps (DesiredCapabilities/chrome)
+        chrome-options (prepare-chrome-options options)]
     (.setCapability caps ChromeOptions/CAPABILITY chrome-options)
     caps))
 
-(defn prepare-chrome-driver [attaching? options]
+(defn prepare-chrome-driver [options]
   (let [service (build-chrome-driver-service options)
-        caps (prepare-caps attaching? options)
-        chrome-driver (ChromeDriver. service caps)]
+        chrome-caps (prepare-chrome-caps options)
+        chrome-driver (ChromeDriver. service chrome-caps)]
     (reset! current-chrome-driver-service service)
     (init-driver chrome-driver)))
 
-(defn prepare-options []
-  (let [env-settings (select-keys env [:dirac-root :travis :chrome-driver-path :dirac-dev])
-        ; when testing with travis we place chrome driver binary under test/chromedriver
-        ; detect that case here and use the binary explicitely
-        dirac-test-chromedriver-file (io/file (:dirac-root env-settings) "test" "chromedriver")
-        overrides (if (.exists dirac-test-chromedriver-file)
-                    {:chrome-driver-path (.getAbsolutePath dirac-test-chromedriver-file)})]
-    (merge env-settings overrides {:verbose false})))
+(defn prepare-options
+  ([]
+   (prepare-options false))
+  ([attaching?]
+   (let [defaults {:dirac-host-os (System/getProperty "os.name")}
+         env-settings (select-keys env [:dirac-root :travis :chrome-driver-path :dirac-dev :dirac-host-os])
+         ; when testing with travis we place chrome driver binary under test/chromedriver
+         ; detect that case here and use the binary explicitely
+         dirac-test-chromedriver-file (io/file (:dirac-root env-settings) "test" "chromedriver")
+         chrome-driver-path (if (.exists dirac-test-chromedriver-file)
+                              {:chrome-driver-path (.getAbsolutePath dirac-test-chromedriver-file)})
+         overrides {:verbose    false
+                    :attaching? attaching?}]
+     (merge defaults env-settings chrome-driver-path overrides))))
 
 (defn retrieve-remote-debugging-port []
   (to "chrome://version")
@@ -90,7 +106,7 @@
       (Integer/parseInt (second m)))))
 
 (defn start-browser! []
-  (set-driver! (prepare-chrome-driver false (prepare-options)))
+  (set-driver! (prepare-chrome-driver (prepare-options)))
   (if-let [debug-port (retrieve-remote-debugging-port)]
     (reset! current-chrome-remote-debugging-port debug-port)
     (do
@@ -104,9 +120,8 @@
 
 (defn reconnect-browser! []
   (let [debugger-port @current-chrome-remote-debugging-port
-        options (assoc (prepare-options)
-                  :debugger-port debugger-port)]
-    (set-driver! (prepare-chrome-driver true options))))
+        options (assoc (prepare-options true) :debugger-port debugger-port)]
+    (set-driver! (prepare-chrome-driver options))))
 
 (defn stop-browser! []
   (quit))
