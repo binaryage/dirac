@@ -55,10 +55,7 @@ WebInspector.TimelinePanel = function()
     this._tracingModel = new WebInspector.TracingModel(this._tracingModelBackingStorage);
     this._model = new WebInspector.TimelineModel(WebInspector.TimelineUIUtils.visibleEventsFilter());
     this._frameModel = new WebInspector.TracingTimelineFrameModel();
-    if (Runtime.experiments.isEnabled("timelineLatencyInfo"))
-        this._irModel = new WebInspector.TimelineIRModel();
-
-    this._controller = new WebInspector.TimelineController(this, this._tracingModel);
+    this._irModel = new WebInspector.TimelineIRModel();
 
     if (Runtime.experiments.isEnabled("cpuThrottling"))
         this._cpuThrottlingManager = new WebInspector.CPUThrottlingManager();
@@ -614,10 +611,14 @@ WebInspector.TimelinePanel.prototype = {
     _startRecording: function(userInitiated)
     {
         console.assert(!this._statusPane, "Status pane is already opened.");
+        var mainTarget = WebInspector.targetManager.mainTarget();
+        if (!mainTarget)
+            return;
         this._setState(WebInspector.TimelinePanel.State.StartPending);
         this._showRecordingStarted();
 
         this._autoRecordGeneration = userInitiated ? null : Symbol("Generation");
+        this._controller = new WebInspector.TimelineController(mainTarget, this, this._tracingModel);
         this._controller.startRecording(true, this._captureJSProfileSetting.get(), this._captureMemorySetting.get(), this._captureLayersAndPicturesSetting.get(), this._captureFilmStripSetting && this._captureFilmStripSetting.get());
 
         for (var i = 0; i < this._overviewControls.length; ++i)
@@ -639,6 +640,7 @@ WebInspector.TimelinePanel.prototype = {
         this._setState(WebInspector.TimelinePanel.State.StopPending);
         this._autoRecordGeneration = null;
         this._controller.stopRecording();
+        this._controller = null;
         this._setUIControlsEnabled(true);
     },
 
@@ -805,8 +807,7 @@ WebInspector.TimelinePanel.prototype = {
         this._model.setEvents(this._tracingModel, loadedFromFile);
         this._frameModel.reset();
         this._frameModel.addTraceEvents(this._model.target(), this._model.inspectedTargetEvents(), this._model.sessionId() || "");
-        if (this._irModel)
-            this._irModel.populate(this._model);
+        this._irModel.populate(this._model);
         this._setLineLevelCPUProfile(this._model.lineLevelCPUProfile());
         if (this._statusPane)
             this._statusPane.hide();

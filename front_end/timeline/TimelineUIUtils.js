@@ -854,7 +854,7 @@ WebInspector.TimelineUIUtils.buildRangeStats = function(model, startTime, endTim
         return value < task.endTime() ? -1 : 1;
     }
     var mainThreadTasks = model.mainThreadTasks();
-    var taskIndex = insertionIndexForObjectInListSortedByFunction(startTime, mainThreadTasks, compareEndTime);
+    var taskIndex = mainThreadTasks.lowerBound(startTime, compareEndTime);
     for (; taskIndex < mainThreadTasks.length; ++taskIndex) {
         var task = mainThreadTasks[taskIndex];
         if (task.startTime() > endTime)
@@ -1477,7 +1477,7 @@ WebInspector.TimelineUIUtils.categories = function()
         scripting: new WebInspector.TimelineCategory("scripting", WebInspector.UIString("Scripting"), true, "hsl(43, 83%, 72%)", "hsl(43, 83%, 64%) "),
         rendering: new WebInspector.TimelineCategory("rendering", WebInspector.UIString("Rendering"), true, "hsl(256, 67%, 76%)", "hsl(256, 67%, 70%)"),
         painting: new WebInspector.TimelineCategory("painting", WebInspector.UIString("Painting"), true, "hsl(109, 33%, 64%)", "hsl(109, 33%, 55%)"),
-        gpu: new WebInspector.TimelineCategory("gpu", WebInspector.UIString("GPU"), false, "hsl(240, 24%, 73%)", "hsl(240, 24%, 66%)"),
+        gpu: new WebInspector.TimelineCategory("gpu", WebInspector.UIString("GPU"), false, "hsl(109, 33%, 64%)", "hsl(109, 33%, 55%)"),
         other: new WebInspector.TimelineCategory("other", WebInspector.UIString("Other"), false, "hsl(0, 0%, 87%)", "hsl(0, 0%, 79%)"),
         idle: new WebInspector.TimelineCategory("idle", WebInspector.UIString("Idle"), false, "hsl(0, 100%, 100%)", "hsl(0, 100%, 100%)")
     };
@@ -2135,7 +2135,7 @@ WebInspector.TimelineUIUtils.PerformanceLineDecorator.prototype = {
             var intensity = Number.constrain(Math.log10(1 + 2 * time) / 5, 0.02, 1);
             var element = createElementWithClass("div", "text-editor-line-marker-performance");
             element.textContent = text;
-            element.style.backgroundColor = `rgba(255, 0, 0, ${intensity.toFixed(3)})`;
+            element.style.backgroundColor = `hsla(44, 100%, 50%, ${intensity.toFixed(3)})`;
             textEditor.setGutterDecoration(decoration.line(), decoration.type(), element);
         }
     }

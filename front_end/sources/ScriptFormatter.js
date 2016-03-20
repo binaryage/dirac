@@ -89,7 +89,7 @@ WebInspector.ScriptFormatter = function(mimeType, content, callback)
     this._callback = callback;
     this._originalContent = content;
 
-    this._worker = new WorkerRuntime.Worker("script_formatter_worker");
+    this._worker = new WorkerRuntime.Worker("formatter_worker");
     this._worker.onmessage = this._didFormatContent.bind(this);
 
     var parameters = {
@@ -110,7 +110,7 @@ WebInspector.ScriptFormatter.prototype = {
         var originalContent = this._originalContent;
         var formattedContent = event.data.content;
         var mapping = event.data["mapping"];
-        var sourceMapping = new WebInspector.FormatterSourceMappingImpl(originalContent.lineEndings(), formattedContent.lineEndings(), mapping);
+        var sourceMapping = new WebInspector.FormatterSourceMappingImpl(originalContent.computeLineEndings(), formattedContent.computeLineEndings(), mapping);
         this._callback(formattedContent, sourceMapping);
     }
 }

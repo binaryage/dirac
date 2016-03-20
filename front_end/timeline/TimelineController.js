@@ -4,16 +4,20 @@
 
 /**
  * @constructor
+ * @param {!WebInspector.Target} target
  * @param {!WebInspector.TimelineLifecycleDelegate} delegate
  * @param {!WebInspector.TracingModel} tracingModel
  * @implements {WebInspector.TargetManager.Observer}
  * @implements {WebInspector.TracingManagerClient}
  */
-WebInspector.TimelineController = function(delegate, tracingModel)
+WebInspector.TimelineController = function(target, delegate, tracingModel)
 {
     this._delegate = delegate;
+    this._target = target;
     this._tracingModel = tracingModel;
     this._targets = [];
+    this._allProfilesStoppedPromise = Promise.resolve();
+    this._targetsResumedPromise = Promise.resolve();
     WebInspector.targetManager.observeTargets(this);
 }
 
@@ -40,8 +44,7 @@ WebInspector.TimelineController.prototype = {
             WebInspector.TimelineModel.Category.Console,
             WebInspector.TimelineModel.Category.UserTiming
         ];
-        if (Runtime.experiments.isEnabled("timelineLatencyInfo"))
-            categoriesArray.push(WebInspector.TimelineModel.Category.LatencyInfo)
+        categoriesArray.push(WebInspector.TimelineModel.Category.LatencyInfo)
 
         if (Runtime.experiments.isEnabled("timelineFlowEvents")) {
             categoriesArray.push(disabledByDefault("toplevel.flow"),
@@ -70,10 +73,9 @@ WebInspector.TimelineController.prototype = {
 
     stopRecording: function()
     {
-        WebInspector.targetManager.resumeAllTargets();
         this._allProfilesStoppedPromise = this._stopProfilingOnAllTargets();
-        if (this._targets[0])
-            this._targets[0].tracingManager.stop();
+        this._target.tracingManager.stop();
+        this._targetsResumedPromise = WebInspector.targetManager.resumeAllTargets();
         this._delegate.loadingStarted();
     },
 
@@ -114,7 +116,7 @@ WebInspector.TimelineController.prototype = {
     _startProfilingOnAllTargets: function()
     {
         var intervalUs = WebInspector.moduleSetting("highResolutionCpuProfiling").get() ? 100 : 1000;
-        this._targets[0].profilerAgent().setSamplingInterval(intervalUs);
+        this._target.profilerAgent().setSamplingInterval(intervalUs);
         this._profiling = true;
         return Promise.all(this._targets.map(this._startProfilingOnTarget));
     },
@@ -125,16 +127,23 @@ WebInspector.TimelineController.prototype = {
      */
     _stopProfilingOnTarget: function(target)
     {
-        /**
-         * @param {?Protocol.Error} error
-         * @param {?ProfilerAgent.CPUProfile} profile
-         * @return {?ProfilerAgent.CPUProfile}
-         */
-        function extractProfile(error, profile)
-        {
-            return !error && profile ? profile : null;
+        return target.profilerAgent().stop(this._addCpuProfile.bind(this, target.id()));
+    },
+
+    /**
+     * @param {number} targetId
+     * @param {?Protocol.Error} error
+     * @param {?ProfilerAgent.CPUProfile} cpuProfile
+     */
+    _addCpuProfile: function(targetId, error, cpuProfile)
+    {
+        if (!cpuProfile) {
+            WebInspector.console.warn(WebInspector.UIString("CPU profile for a target is not available. %s", error || ""));
+            return;
         }
-        return target.profilerAgent().stop(extractProfile).then(this._addCpuProfile.bind(this, target.id()));
+        if (!this._cpuProfiles)
+            this._cpuProfiles = new Map();
+        this._cpuProfiles.set(targetId, cpuProfile);
     },
 
     /**
@@ -154,23 +163,21 @@ WebInspector.TimelineController.prototype = {
      */
     _startRecordingWithCategories: function(categories, enableJSSampling, callback)
     {
-        if (!this._targets.length)
-            return;
         WebInspector.targetManager.suspendAllTargets();
         var profilingStartedPromise = enableJSSampling && !Runtime.experiments.isEnabled("timelineTracingJSProfile") ?
             this._startProfilingOnAllTargets() : Promise.resolve();
         var samplingFrequencyHz = WebInspector.moduleSetting("highResolutionCpuProfiling").get() ? 10000 : 1000;
         var options = "sampling-frequency=" + samplingFrequencyHz;
-        var mainTarget = this._targets[0];
-        var tracingManager = mainTarget.tracingManager;
-        mainTarget.resourceTreeModel.suspendReload();
+        var target = this._target;
+        var tracingManager = target.tracingManager;
+        target.resourceTreeModel.suspendReload();
         profilingStartedPromise.then(tracingManager.start.bind(tracingManager, this, categories, options, onTraceStarted));
         /**
          * @param {?string} error
          */
         function onTraceStarted(error)
         {
-            mainTarget.resourceTreeModel.resumeReload();
+            target.resourceTreeModel.resumeReload();
             if (callback)
                 callback(error);
         }
@@ -199,12 +206,8 @@ WebInspector.TimelineController.prototype = {
      */
     tracingComplete: function()
     {
-        if (!this._allProfilesStoppedPromise) {
-            this._didStopRecordingTraceEvents();
-            return;
-        }
-        this._allProfilesStoppedPromise.then(this._didStopRecordingTraceEvents.bind(this));
-        this._allProfilesStoppedPromise = null;
+        Promise.all([this._allProfilesStoppedPromise, this._targetsResumedPromise])
+            .then(this._didStopRecordingTraceEvents.bind(this));
     },
 
     _didStopRecordingTraceEvents: function()
@@ -247,17 +250,16 @@ WebInspector.TimelineController.prototype = {
             return;
 
         var pid = mainMetaEvent.thread.process().id();
-        var mainTarget = this._targets[0];
-        var mainCpuProfile = this._cpuProfiles.get(mainTarget.id());
+        var mainCpuProfile = this._cpuProfiles.get(this._target.id());
         this._injectCpuProfileEvent(pid, mainMetaEvent.thread.id(), mainCpuProfile);
 
         var workerMetaEvents = metadataEvents.filter(event => event.name === metadataEventTypes.TracingSessionIdForWorker);
         for (var metaEvent of workerMetaEvents) {
             var workerId = metaEvent.args["data"]["workerId"];
-            var target = mainTarget.workerManager ? mainTarget.workerManager.targetByWorkerId(workerId) : null;
-            if (!target)
+            var workerTarget = this._target.workerManager ? this._target.workerManager.targetByWorkerId(workerId) : null;
+            if (!workerTarget)
                 continue;
-            var cpuProfile = this._cpuProfiles.get(target.id());
+            var cpuProfile = this._cpuProfiles.get(workerTarget.id());
             this._injectCpuProfileEvent(pid, metaEvent.args["data"]["workerThreadId"], cpuProfile);
         }
         this._cpuProfiles = null;
@@ -279,18 +281,5 @@ WebInspector.TimelineController.prototype = {
     eventsRetrievalProgress: function(progress)
     {
         this._delegate.loadingProgress(progress);
-    },
-
-    /**
-     * @param {number} targetId
-     * @param {?ProfilerAgent.CPUProfile} cpuProfile
-     */
-    _addCpuProfile: function(targetId, cpuProfile)
-    {
-        if (!cpuProfile)
-            return;
-        if (!this._cpuProfiles)
-            this._cpuProfiles = new Map();
-        this._cpuProfiles.set(targetId, cpuProfile);
     }
 }

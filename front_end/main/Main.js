@@ -106,11 +106,9 @@ WebInspector.Main.prototype = {
         Runtime.experiments.register("applyCustomStylesheet", "Allow custom UI themes");
         Runtime.experiments.register("appBanner", "App banner support", true);
         Runtime.experiments.register("blackboxJSFramesOnTimeline", "Blackbox JavaScript frames on Timeline", true);
-        Runtime.experiments.register("timelineCollapsible", "Collapsbile row groups in Timeline");
         Runtime.experiments.register("colorContrastRatio", "Contrast ratio line in color picker", true);
         Runtime.experiments.register("cpuThrottling", "CPU throttling", true);
         Runtime.experiments.register("emptySourceMapAutoStepping", "Empty sourcemap auto-stepping");
-        Runtime.experiments.register("gpuTimeline", "GPU data on timeline", true);
         Runtime.experiments.register("inputEventsOnTimelineOverview", "Input events on Timeline overview", true);
         Runtime.experiments.register("layersPanel", "Layers panel");
         Runtime.experiments.register("layoutEditor", "Layout editor", true);
