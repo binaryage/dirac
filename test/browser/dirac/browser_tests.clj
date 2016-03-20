@@ -32,7 +32,7 @@
                                  :host "localhost"
                                  :port 22555})
          server-url (server/get-url server)]
-     (println (str "Waiting for task signals at " server-url "."))
+     (println (str "Waiting for task signals at " server-url "(" timeout-ms " ms)."))
      (if (= ::server/timeout (server/wait-for-first-client server timeout-ms))
        (println (str "Timeout while waiting for task signal (after " timeout-ms " ms)."))
        (println (str "Got 'task finished' signal"))))))
