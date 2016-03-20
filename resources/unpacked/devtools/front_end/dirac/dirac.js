@@ -62,11 +62,21 @@ function evalInContext(context, code, callback) {
     return;
   }
   var resultCallback = function(result, wasThrown, value, exceptionDetails) {
+    if (dirac._DEBUG_EVAL) {
+      console.log("evalInContext/resultCallback: result", result, "wasThrown", wasThrown, "value", value, "exceptionDetails", exceptionDetails);
+    }
     if (callback) {
       callback(value, wasThrown, exceptionDetails);
     }
   };
-  context.evaluate(code, "console", true, true, true, false, false, resultCallback);
+  try {
+    if (dirac._DEBUG_EVAL) {
+      console.log("evalInContext", context, code);
+    }
+    context.evaluate(code, "console", true, true, true, false, false, resultCallback);
+  } catch (e) {
+    console.error("failed js evaluation in context:", context, "code", code);
+  }
 }
 
 function lookupCurrentContext() {
@@ -114,8 +124,14 @@ function lookupDefaultContext() {
       return executionContext;
     }
   }
+  if (executionContexts.length>0) {
+    if (dirac._DEBUG_EVAL) {
+      console.log("  lookupDefaultContext failed to find valid context => return the first one");
+    }
+    return executionContexts[0];
+  }
   if (dirac._DEBUG_EVAL) {
-    console.log("  lookupDefaultContext failed to failed to find valid context => bail out");
+    console.log("  lookupDefaultContext failed to find valid context => no context avail");
   }
   return null;
 }

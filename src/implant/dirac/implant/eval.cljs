@@ -49,14 +49,14 @@
 (defn call-when-avail-or-call-timeout-fn [check-fn call-fn timeout-fn next-trial-time total-time-limit]
   (let [start-time (get-current-time)]
     (go-loop []
-             (let [current-time (get-current-time)]
-               (if (< (- current-time start-time) total-time-limit)
-                 (if (check-fn)
-                   (call-fn)
-                   (do
-                     (<! (timeout next-trial-time))
-                     (recur)))
-                 (timeout-fn))))))
+      (let [current-time (get-current-time)]
+        (if (< (- current-time start-time) total-time-limit)
+          (if (check-fn)
+            (call-fn)
+            (do
+              (<! (timeout next-trial-time))
+              (recur)))
+          (timeout-fn))))))
 
 (defn call-eval-with-callback!
   ([context code]
@@ -163,17 +163,17 @@
                  (update-banner! "")
                  val)]
     (go-loop []
-             (if (core-async/closed? timeout-chan)                                                                            ; timeout might close outside of alts! we must have this test here
-               (return ::timeout)
-               (let [result-chan (call-eval-with-timeout :default installation-test-code installation-test-eval-time-limit)
-                     [[value]] (alts! [result-chan timeout-chan])]
-                 (cond
-                   (nil? value) (return ::timeout)
-                   (true? (oget value "value")) (return true)
-                   :else (do
-                           (update-banner! "cljs-devtools: waiting for installation of :dirac feature...")
-                           (<! (timeout (pref :install-check-next-trial-waiting-time)))                                       ; don't DoS the VM, wait between installation tests
-                           (recur))))))))
+      (if (core-async/closed? timeout-chan)                                                                                   ; timeout might close outside of alts! we must have this test here
+        (return ::timeout)
+        (let [result-chan (call-eval-with-timeout :default installation-test-code installation-test-eval-time-limit)
+              [[value]] (alts! [result-chan timeout-chan])]
+          (cond
+            (nil? value) (return ::timeout)
+            (true? (oget value "value")) (return true)
+            :else (do
+                    (update-banner! "cljs-devtools: waiting for installation of :dirac feature...")
+                    (<! (timeout (pref :install-check-next-trial-waiting-time)))                                              ; don't DoS the VM, wait between installation tests
+                    (recur))))))))
 
 ; -- simple evaluation for page-context console logging ---------------------------------------------------------------------
 
@@ -212,21 +212,21 @@
 
 (defn start-eval-request-queue-processing-loop! []
   (go-loop []
-           (if-let [[context code handler] (<! eval-requests-chan)]
-             (let [call-handler (fn [args & errors]
-                                  (if-not (empty? errors)
-                                    (apply display-user-error! errors))
-                                  (apply handler args))
-                   installation-result (<! (wait-for-dirac-installed))]
-               (if (= installation-result ::timeout)
-                 (call-handler [::timeout] (missing-cljs-devtools-message) (installation-test-template))
-                 (let [eval-result (<! (call-eval-with-timeout context code (pref :eval-time-limit)))]
-                   (case (first eval-result)
-                     ::exception (call-handler [::exception] "Internal eval error" (second eval-result))
-                     ::timeout (call-handler [::timeout] "Evaluation timeout" code)
-                     (call-handler eval-result))))
-               (recur))
-             (log "Leaving start-eval-request-queue-processing-loop!"))))
+    (if-let [[context code handler] (<! eval-requests-chan)]
+      (let [call-handler (fn [args & errors]
+                           (if-not (empty? errors)
+                             (apply display-user-error! errors))
+                           (apply handler args))
+            installation-result (<! (wait-for-dirac-installed))]
+        (if (= installation-result ::timeout)
+          (call-handler [::timeout] (missing-cljs-devtools-message) (installation-test-template))
+          (let [eval-result (<! (call-eval-with-timeout context code (pref :eval-time-limit)))]
+            (case (first eval-result)
+              ::exception (call-handler [::exception] "Internal eval error" (second eval-result))
+              ::timeout (call-handler [::timeout] "Evaluation timeout" code)
+              (call-handler eval-result))))
+        (recur))
+      (log "Leaving start-eval-request-queue-processing-loop!"))))
 
 ; -- queued evaluation in context -------------------------------------------------------------------------------------------
 
