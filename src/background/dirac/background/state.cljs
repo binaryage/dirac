@@ -1,6 +1,7 @@
 (ns dirac.background.state
   (:require [chromex.support :refer-macros [oget ocall oapply]]
-            [chromex.logging :refer-macros [log info warn error group group-end]]))
+            [chromex.logging :refer-macros [log info warn error group group-end]]
+            [chromex.protocols :refer [post-message! get-sender get-name]]))
 
 (def initial-state
   {:last-connection-id   0
@@ -44,3 +45,8 @@
     (warn "request to reset connection id counter while having connections present" (get-connections)))
   (swap! state assoc :last-connection-id 0))
 
+; -- marion feedback --------------------------------------------------------------------------------------------------------
+
+(defn post-feedback-event! [text]
+  (if-let [marion-port (get-marion-port)]
+    (post-message! marion-port #js {:type "dirac-extension-feedback-event" :text text})))

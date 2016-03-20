@@ -7,6 +7,7 @@
             [chromex.ext.extension :as extension]
             [chromex.ext.runtime :as runtime]
             [dirac.background.action :as action]
+            [dirac.background.state :as state]
             [dirac.utils :as utils])
   (:import goog.Uri
            goog.Uri.QueryData))
@@ -55,11 +56,13 @@
 (defn report-error-in-tab [tab-id msg]
   (log-in-tab tab-id "error" msg)
   (error (tab-log-prefix tab-id) msg)
+  (state/post-feedback-event! (str "ERROR "(tab-log-prefix tab-id) " " msg))
   (action/update-action-button tab-id :error msg))
 
 (defn report-warning-in-tab [tab-id msg]
   (log-in-tab tab-id "warn" msg)
   (warn (tab-log-prefix tab-id) msg)
+  (state/post-feedback-event! (str "WARNING "(tab-log-prefix tab-id) " " msg))
   (action/update-action-button tab-id :warning msg))
 
 ; -- automation support -----------------------------------------------------------------------------------------------------
