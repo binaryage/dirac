@@ -40,19 +40,18 @@
     :panel (create-dirac-window! true)
     :window (create-dirac-window! false)))
 
-(defn connect-and-navigate-dirac-frontend! [dirac-tab-id backend-tab-id backend-url flags]
+(defn connect-and-navigate-dirac-frontend! [dirac-tab-id backend-tab-id options]
   (let [connection-id (connections/register-connection! dirac-tab-id backend-tab-id)
-        dirac-frontend-url (helpers/make-dirac-frontend-url backend-url connection-id flags)]
+        dirac-frontend-url (helpers/make-dirac-frontend-url connection-id options)]
     (tabs/update dirac-tab-id #js {:url dirac-frontend-url})))
 
-(defn create-dirac! [backend-tab-id backend-url flags open-as]
-  {:pre [backend-tab-id backend-url flags]}
+(defn create-dirac! [backend-tab-id options]
   (go
-    (if-let [dirac-tab-id (<! (open-dirac-frontend! open-as))]
-      (connect-and-navigate-dirac-frontend! dirac-tab-id backend-tab-id backend-url flags)
+    (if-let [dirac-tab-id (<! (open-dirac-frontend! (:open-as options)))]
+      (connect-and-navigate-dirac-frontend! dirac-tab-id backend-tab-id options)
       (report-error-in-tab backend-tab-id (i18n/unable-to-create-dirac-tab)))))
 
-(defn open-dirac! [tab open-as flags]
+(defn open-dirac! [tab options]
   (let [backend-tab-id (sugar/get-tab-id tab)
         tab-url (oget tab "url")
         target-url (options/get-option :target-url)]
@@ -64,7 +63,7 @@
               (if-let [backend-url (<! (resolve-backend-url target-url tab-url))]
                 (if (keyword-identical? backend-url :not-attachable)
                   (report-warning-in-tab backend-tab-id (i18n/cannot-attach-dirac target-url tab-url))
-                  (create-dirac! backend-tab-id backend-url flags open-as))
+                  (create-dirac! backend-tab-id (assoc options :backend-url backend-url)))
                 (report-error-in-tab backend-tab-id (i18n/unable-to-resolve-backend-url target-url tab-url)))))))
 
 (defn activate-dirac! [tab-id]
@@ -88,19 +87,21 @@
         flags (map #(get options %) flag-keys)]
     (apply str (map #(if % "1" "0") flags))))
 
-(defn activate-or-open-dirac! [tab]
+(defn activate-or-open-dirac! [tab & [options-overrides]]
   (let [tab-id (oget tab "id")]
     (if (connections/backend-connected? tab-id)
       (activate-dirac! tab-id)
-      (open-dirac! tab (get-dirac-open-as-setting) (get-dirac-flags)))))
+      (let [options {:open-as (get-dirac-open-as-setting)
+                     :flags   (get-dirac-flags)}]
+        (open-dirac! tab (merge options options-overrides))))))                                                               ; options come from dirac extension settings, but we can override them
 
-(defn open-dirac-in-active-tab! []
+(defn open-dirac-in-active-tab! [& [options-overrides]]
   (go
     (let [[tabs] (<! (tabs/query #js {"lastFocusedWindow" true
                                       "active"            true}))]
       (if-let [tab (first tabs)]
-        (activate-or-open-dirac! tab)
-        (warn "No active tab?")))))
+        (activate-or-open-dirac! tab options-overrides)
+        (warn "no active tab?")))))
 
 (defn close-tab-with-id! [tab-id-or-ids]
   (let [ids (if (coll? tab-id-or-ids) (into-array tab-id-or-ids) (int tab-id-or-ids))]

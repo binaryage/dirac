@@ -22,7 +22,9 @@
     (.getParameterValue uri param)))
 
 (defn make-relative-url [path params]
-  (str path "?" (.toDecodedString (.createFromMap QueryData (clj->js params)))))
+  {:pre [(map? params)]}
+  (let [non-empty-params (into {} (filter second params))]
+    (str path "?" (.toDecodedString (.createFromMap QueryData (clj->js non-empty-params))))))
 
 ; -- dirac frontend url -----------------------------------------------------------------------------------------------------
 
@@ -34,12 +36,16 @@
 
 ; example result:
 ; chrome-extension://mjdnckdilfjoenmikegbbenflgjcmbid/devtools/front_end/inspector.html?connection_id=1&dirac_flags=11111&ws=localhost:9222/devtools/page/76BE0A6D-412C-4592-BC3C-ED3ECB5DFF8C
-(defn make-dirac-frontend-url [backend-url connection-id flags]
-  {:pre [backend-url connection-id flags]}
-  (let [html-file-path (get-dirac-main-html-file-path)]
-    (runtime/get-url (make-relative-url html-file-path {"connection_id" connection-id
-                                                        "dirac_flags"   flags
-                                                        "ws"            backend-url}))))
+(defn make-dirac-frontend-url [connection-id options]
+  {:pre [connection-id]}
+  (let [{:keys [backend-url flags reset-settings]} options
+        html-file-path (get-dirac-main-html-file-path)]
+    (assert backend-url)
+    (assert flags)
+    (runtime/get-url (make-relative-url html-file-path {"connection_id"  connection-id
+                                                        "dirac_flags"    flags
+                                                        "reset_settings" reset-settings
+                                                        "ws"             backend-url}))))
 
 (defn extract-connection-id-from-url [url]
   (int (get-query-param (str url) "connection_id")))
@@ -56,13 +62,13 @@
 (defn report-error-in-tab [tab-id msg]
   (log-in-tab tab-id "error" msg)
   (error (tab-log-prefix tab-id) msg)
-  (state/post-feedback-event! (str "ERROR "(tab-log-prefix tab-id) " " msg))
+  (state/post-feedback-event! (str "ERROR " (tab-log-prefix tab-id) " " msg))
   (action/update-action-button tab-id :error msg))
 
 (defn report-warning-in-tab [tab-id msg]
   (log-in-tab tab-id "warn" msg)
   (warn (tab-log-prefix tab-id) msg)
-  (state/post-feedback-event! (str "WARNING "(tab-log-prefix tab-id) " " msg))
+  (state/post-feedback-event! (str "WARNING " (tab-log-prefix tab-id) " " msg))
   (action/update-action-button tab-id :warning msg))
 
 ; -- automation support -----------------------------------------------------------------------------------------------------

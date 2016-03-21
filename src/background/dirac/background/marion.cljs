@@ -17,7 +17,7 @@
   (log "automate!" (pr-str message))
   (let [{:keys [action]} message
         connection-id (int (:connection-id message))]
-    (if-let [connection (state/get-connection connection-id)]
+    (if (state/get-connection connection-id)
       (helpers/automate-dirac-connection! connection-id action)
       (warn "dirac automation request for missing connection:" connection-id message
             "existing connections:" (state/get-connections)))))

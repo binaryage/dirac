@@ -22,10 +22,10 @@
             [dirac.background.marion :as marion]))
 
 (defn handle-command! [command & args]
-  (log "handling marion command" command args)
+  (log "handling command" command args)
   (marion/post-feedback-event! (str "handling command: " command))
   (case command
-    "open-dirac-devtools" (tools/open-dirac-in-active-tab!)
+    "open-dirac-devtools" (apply tools/open-dirac-in-active-tab! args)
     "close-dirac-devtools" (apply tools/close-dirac-connection! args)
     (warn "received unrecognized command:" command)))
 
