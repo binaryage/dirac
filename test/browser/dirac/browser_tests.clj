@@ -124,6 +124,10 @@
   (let [test-name *current-transcript-test*
         suite-name *current-transcript-suite*]
     (try
+      (when-let [logs (extract-javascript-logs)]
+        (println)
+        (println (str "*************** JAVASCRIPT LOGS ***************\n" logs))
+        (println))
       (let [actual-transcript (canonic-transcript (obtain-transcript))
             actual-path (get-actual-transcript-path suite-name test-name)]
         (write-transcript! actual-path actual-transcript)
@@ -150,9 +154,6 @@
                     :message  (str (get-transcript-test-label test-name) " failed with an exception.")
                     :expected "no exception"
                     :actual   (str e)})
-        (when-let [logs (extract-javascript-logs)]
-          (println (str "*************** JAVASCRIPT LOGS ***************\n" logs))
-          (println))
         (stacktrace/print-stack-trace e)))))
 
 (defn launch-transcript-test-after-delay [delay-ms]
