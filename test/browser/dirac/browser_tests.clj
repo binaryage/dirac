@@ -3,10 +3,9 @@
             [clojure.java.io :as io]
             [clojure.stacktrace :as stacktrace]
             [dirac.test.fixtures-web-server :refer [with-fixtures-web-server]]
-            [dirac.test.chrome-browser :refer [with-chrome-browser disconnect-browser!
-                                               reconnect-browser! get-debugging-port
-                                               extract-javascript-logs
-                                               get-safe-delay-for-script-runner-to-launch-transcript-test]]
+            [dirac.test.chrome-browser :refer [with-chrome-browser disconnect-browser! reconnect-browser!]]
+            [dirac.test.chrome-driver :refer [get-debugging-port extract-javascript-logs
+                                              get-safe-delay-for-script-runner-to-launch-transcript-test]]
             [dirac.lib.ws-server :as server]
             [clj-webdriver.taxi :refer :all]
             [clojure.string :as string]
