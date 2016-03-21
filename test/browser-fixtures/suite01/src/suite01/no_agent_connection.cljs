@@ -11,6 +11,8 @@
                                       wait-switch-to-console]]))
 
 (go-test
+  ; force wrong agent port, so the connection can't be estabilished
+  {:devtools-prefs {:agent-port 9999}}
   (open-dirac-devtools!)
   (<! (wait-for-dirac-frontend-initialization))
   (<! (wait-for-implant-initialization))

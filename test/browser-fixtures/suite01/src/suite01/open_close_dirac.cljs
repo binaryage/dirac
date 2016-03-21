@@ -14,5 +14,4 @@
   (open-dirac-devtools!)
   (<! (wait-for-dirac-frontend-initialization))
   (<! (wait-for-implant-initialization))
-  (<! (wait-switch-to-console))
   (close-dirac-devtools!))

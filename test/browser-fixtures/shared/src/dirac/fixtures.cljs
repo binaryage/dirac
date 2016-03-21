@@ -1,6 +1,7 @@
 (ns dirac.fixtures
   (:require-macros [cljs.core.async.macros :refer [go go-loop]]
-                   [dirac.fixtures :refer [log info error warn get-launch-transcript-test-key]])
+                   [dirac.fixtures :refer [log info error warn get-launch-transcript-test-key]]
+                   [dirac.test.settings :refer [get-test-dirac-agent-port]])
   (:require [cljs.core.async :refer [put! <! chan timeout alts! close!]]
             [cljs.core.async.impl.protocols :as core-async]
             [dirac.fixtures.transcript :as transcript]
@@ -9,7 +10,8 @@
             [chromex.support :refer-macros [oget oset ocall oapply]]
             [cuerdas.core :as cuerdas]
             [dirac.lib.ws-client :as ws-client]
-            [devtools.core :as devtools])
+            [devtools.core :as devtools]
+            [devtools.prefs :as devtools-prefs])
   (:import goog.Uri))
 
 (def ^:const SECOND 1000)
@@ -29,9 +31,23 @@
 (defn remove-transcript-observer! [observer]
   (swap! transcript-observers disj observer))
 
-(defn init-devtools! []
-  (devtools/enable-feature! :dirac :sanity-hints)
-  (devtools/install!))
+(defn init-devtools! [config]
+  (devtools/set-pref! :agent-port (get-test-dirac-agent-port))
+  ; override devtools prefs
+  (when-let [devtools-prefs (:devtools-prefs config)]
+    (log "devtools override: set prefs " devtools-prefs)
+    (devtools-prefs/merge-prefs! devtools-prefs))
+  ; override devtools features/installation
+  (if-not (:do-not-install-devtools config)
+    (do
+      (if-not (:do-not-enable-dirac config)
+        (devtools/enable-feature! :dirac)
+        (log "devtools override: do not enable :dirac feature"))
+      (if-not (:do-not-enabled-sanity-hints config)
+        (devtools/enable-feature! :sanity-hints)
+        (log "devtools override: do not enable :sanity-hints feature"))
+      (devtools/install!))
+    (log "devtools override: do not install")))
 
 (defn get-body-el []
   (-> js/document (.getElementsByTagName "body") (.item 0)))
@@ -157,8 +173,8 @@
   (let [url (get-document-url)]
     (boolean (get-query-param url "test_runner"))))
 
-(defn setup! []
-  (init-devtools!)
+(defn setup! [& [config]]
+  (init-devtools! config)
   ; transcript is a fancy name for "log of interesting events"
   (init-transcript! "transcript-box")
   (init-status! "status-box")

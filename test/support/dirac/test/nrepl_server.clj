@@ -3,11 +3,11 @@
             [clojure.test :refer :all]
             [dirac.test.nrepl-server-helpers :refer [start-nrepl-server! stop-nrepl-server! test-nrepl-server-port]]
             [dirac.test.logging :as logging]
+            [dirac.test.settings :refer [get-test-nrepl-server-port]]
             [clojure.tools.logging :as log]))
 
 (def log-level "INFO")                                                                                                        ; INFO, DEBUG, TRACE, ALL
 (def last-msg (volatile! nil))
-(def test-runner-nrepl-server-port 8020)
 
 ; -- fixtures ---------------------------------------------------------------------------------------------------------------
 
@@ -18,7 +18,7 @@
   (logging/setup-logging! {:log-out   :console
                            :log-level log-level})
   (log/info "setup-nrepl-server")
-  (if-let [[server port] (start-nrepl-server! test-runner-nrepl-server-port)]
+  (if-let [[server port] (start-nrepl-server! (get-test-nrepl-server-port))]
     (do
       (log/info "nrepl server started on" port)
       (reset! current-nrepl-server server)

@@ -8,14 +8,17 @@
 (defmacro without-transcript [& body]
   `(dirac.fixtures/without-transcript-work (fn [] ~@body)))
 
-(defmacro go-test [& body]
-  `(let [test-thunk# (fn []
-                       (cljs.core.async.macros/go
-                         (task-started!)
-                         ~@body
-                         (task-finished!)))]
-     (chromex.support/oset ~'js/window [(get-launch-transcript-test-key)] test-thunk#)
-     (setup!)))
+(defmacro go-test [& args]
+  (let [first-arg (first args)
+        config (if (map? first-arg) first-arg)
+        commands (if config (rest args) args)]
+    `(let [test-thunk# (fn []
+                         (cljs.core.async.macros/go
+                           (task-started!)
+                           ~@commands
+                           (task-finished!)))]
+       (chromex.support/oset ~'js/window [(get-launch-transcript-test-key)] test-thunk#)
+       (setup! ~config))))
 
 ; ---------------------------------------------------------------------------------------------------------------------------
 ; logging - these need to be macros to preserve source location for devtools

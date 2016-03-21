@@ -9,7 +9,7 @@
   {:port  9090
    :join? false})
 
-(defn handler [request]
+(defn handler [_request]
   {:status  200
    :headers {"Content-Type" "text/plain"}
    :body    "fixtures web-server ready"})
