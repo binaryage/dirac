@@ -3,6 +3,7 @@
             [clojure.java.io :as io]
             [clojure.stacktrace :as stacktrace]
             [dirac.test.fixtures-web-server :refer [with-fixtures-web-server]]
+            [dirac.test.nrepl-server :refer [with-nrepl-server]]
             [dirac.test.chrome-browser :refer [with-chrome-browser disconnect-browser! reconnect-browser!]]
             [dirac.test.chrome-driver :refer [get-debugging-port extract-javascript-logs
                                               get-safe-delay-for-script-runner-to-launch-transcript-test]]
@@ -171,7 +172,7 @@
 
 ; -- fixtures ---------------------------------------------------------------------------------------------------------------
 
-(use-fixtures :once with-chrome-browser with-fixtures-web-server)
+(use-fixtures :once with-chrome-browser with-fixtures-web-server with-nrepl-server)
 
 ; -- individual tests -------------------------------------------------------------------------------------------------------
 
