@@ -1,14 +1,18 @@
 (ns dirac.browser-tests
   (:require [clojure.test :refer :all]
             [clojure.java.io :as io]
+            [clojure.stacktrace :as stacktrace]
             [dirac.test.fixtures-web-server :refer [with-fixtures-web-server]]
             [dirac.test.chrome-browser :refer [with-chrome-browser disconnect-browser!
                                                reconnect-browser! get-debugging-port
-                                               extract-javascript-logs]]
+                                               extract-javascript-logs
+                                               get-safe-delay-for-script-runner-to-launch-transcript-test]]
             [dirac.lib.ws-server :as server]
             [clj-webdriver.taxi :refer :all]
             [clojure.string :as string]
-            [clojure.java.shell :as shell]))
+            [clojure.java.shell :as shell]
+            [clj-time.format :as time-format]
+            [clj-time.coerce :as time-coerce]))
 
 ; note: we expect current working directory to be dirac root directory ($root)
 ; $root/test/browser/transcripts/expected/*.txt should contain expected transcripts
@@ -19,29 +23,53 @@
 (def ^:const SECOND 1000)
 (def ^:const MINUTE (* 60 SECOND))
 (def ^:const DEFAULT_TASK_TIMEOUT (* 5 MINUTE))
+(def ^:const DEFAULT_TEST_HTML_LOAD_TIMEOUT (* 1 SECOND))
 
 (defonce ^:dynamic *current-transcript-test* nil)
 (defonce ^:dynamic *current-transcript-suite* nil)
 
 (defmacro with-transcript-test [test-name & body]
-  `(binding [*current-transcript-test* ~test-name]
-     ~@body))
+  `(try
+     (binding [*current-transcript-test* ~test-name]
+       ~@body)
+     (catch Throwable e#
+       (do-report {:type     :fail
+                   :message  (str (get-transcript-test-label ~test-name) " failed.")
+                   :expected "no exception"
+                   :actual   (str e#)})
+       (stacktrace/print-stack-trace e#))))
 
 (defmacro with-transcript-suite [suite-name & body]
   `(binding [*current-transcript-suite* ~suite-name]
      ~@body))
 
 (defn log [& args]
-  (apply println "Tests Runner:" args))
+  (apply println "*** RUNNER:" args))
+
+(defn get-transcript-test-label [test-name]
+  (str "Transcript test '" test-name "'"))
+
+(defn format-friendly-timeout [timeout-ms]
+  (time-format/unparse (time-format/formatters :hour-minute-second-ms)
+                       (time-coerce/from-long timeout-ms)))
+
+(defn navigation-timeout-message [_test-name load-timeout test-index-url]
+  (str "failed to navigate to index page in time (" load-timeout " ms): " test-index-url))
 
 (defn make-test-index-url [suite-name test-name]
   (let [debugging-port (get-debugging-port)]
     (str "http://localhost:9090/" suite-name "/resources/" test-name ".html?test_runner=1&debugging_port=" debugging-port)))
 
 (defn navigate-transcript-test! []
-  (let [test-index-url (make-test-index-url *current-transcript-suite* *current-transcript-test*)]
-    (println "navigating to" test-index-url)
-    (to test-index-url)))
+  (let [test-index-url (make-test-index-url *current-transcript-suite* *current-transcript-test*)
+        load-timeout DEFAULT_TEST_HTML_LOAD_TIMEOUT]
+    (log "navigating to" test-index-url)
+    (to test-index-url)
+    (try
+      (wait-until #(exists? "#status-box") load-timeout)
+      (catch Exception e
+        (log (navigation-timeout-message *current-transcript-test* load-timeout test-index-url))
+        (throw e)))))
 
 (defn wait-for-task-to-finish
   ([]
@@ -50,11 +78,13 @@
    (let [server (server/create! {:name "Task signaller"
                                  :host "localhost"
                                  :port 22555})
-         server-url (server/get-url server)]
-     (println (str "Waiting for task signals at " server-url " (timeout " timeout-ms " ms)."))
+         server-url (server/get-url server)
+         friendly-timeout (format-friendly-timeout timeout-ms)]
+     (log (str "waiting for task signals at " server-url " (timeout " friendly-timeout ")."))
      (if (= ::server/timeout (server/wait-for-first-client server timeout-ms))
-       (println (str "Timeout while waiting for task signal (after " timeout-ms " ms)."))
-       (println (str "Got 'task finished' signal"))))))
+       (log (str "timeouted while waiting for task signal."))
+       (log (str "received 'task finished' signal.")))
+     (server/destroy! server))))
 
 ; -- transcript helpers -----------------------------------------------------------------------------------------------------
 
@@ -91,31 +121,53 @@
   (spit path transcript))
 
 (defn write-transcript-and-compare []
-  (try
-    (let [test-name *current-transcript-test*
-          suite-name *current-transcript-suite*
-          actual-transcript (canonic-transcript (obtain-transcript))
-          actual-path (get-actual-transcript-path suite-name test-name)]
-      (write-transcript! actual-path actual-transcript)
-      (let [expected-path (get-expected-transcript-path suite-name test-name)
-            expected-transcript (canonic-transcript (slurp expected-path))]
-        (if-not (= actual-transcript expected-transcript)
-          (do
-            (println)
-            (println "-----------------------------------------------------------------------------------------------------")
-            (println (str "! actual transcript differs for " test-name " test:"))
-            (println (str "> diff -U 5 " expected-path " " actual-path))
-            (println (:out (shell/sh "diff" "-U" "5" expected-path actual-path)))
-            (println "-----------------------------------------------------------------------------------------------------")
-            (println (str "> cat " actual-path))
-            (println actual-transcript)
-            false)
-          true)))
-    (catch Exception e
-      (log "unable to write-transcript-and-compare" e)
-      (if-let [logs (extract-javascript-logs)]
-        (log (str "*************** JAVASCRIPT LOGS ***************\n" logs)))
-      false)))
+  (let [test-name *current-transcript-test*
+        suite-name *current-transcript-suite*]
+    (try
+      (let [actual-transcript (canonic-transcript (obtain-transcript))
+            actual-path (get-actual-transcript-path suite-name test-name)]
+        (write-transcript! actual-path actual-transcript)
+        (let [expected-path (get-expected-transcript-path suite-name test-name)
+              expected-transcript (canonic-transcript (slurp expected-path))]
+          (if-not (= actual-transcript expected-transcript)
+            (do
+              (println)
+              (println "-----------------------------------------------------------------------------------------------------")
+              (println (str "! actual transcript differs for " test-name " test:"))
+              (println (str "> diff -U 5 " expected-path " " actual-path))
+              (println (:out (shell/sh "diff" "-U" "5" expected-path actual-path)))
+              (println "-----------------------------------------------------------------------------------------------------")
+              (println (str "> cat " actual-path))
+              (println actual-transcript)
+              (do-report {:type     :fail
+                          :message  (str (get-transcript-test-label test-name) " failed to match expected transcript.")
+                          :expected (str "to match expected transcript " expected-path)
+                          :actual   (str "didn't match, see " actual-path)}))
+            (do-report {:type    :pass
+                        :message (str (get-transcript-test-label test-name) " passed.")}))))
+      (catch Throwable e
+        (do-report {:type     :fail
+                    :message  (str (get-transcript-test-label test-name) " failed with an exception.")
+                    :expected "no exception"
+                    :actual   (str e)})
+        (when-let [logs (extract-javascript-logs)]
+          (println (str "*************** JAVASCRIPT LOGS ***************\n" logs))
+          (println))
+        (stacktrace/print-stack-trace e)))))
+
+(defn launch-transcript-test-after-delay [delay-ms]
+  {:pre [(integer? delay-ms) (not (neg? delay-ms))]}
+  (let [script (str "window.postMessage({type:'launch-transcript-test', delay: " delay-ms "}, '*')")]
+    (execute-script script)))
+
+(defn execute-transcript-test! [test-name]
+  (with-transcript-test test-name
+    (navigate-transcript-test!)
+    (launch-transcript-test-after-delay (get-safe-delay-for-script-runner-to-launch-transcript-test))
+    (disconnect-browser!)
+    (wait-for-task-to-finish (* 5 MINUTE))
+    (reconnect-browser!)
+    (write-transcript-and-compare)))
 
 ; -- fixtures ---------------------------------------------------------------------------------------------------------------
 
@@ -127,15 +179,8 @@
   (to "http://localhost:9090")
   (is (= (text "body") "fixtures web-server ready")))
 
-(defn no-agent-connection []
-  (with-transcript-test "no-agent-connection"
-    (navigate-transcript-test!)
-    (disconnect-browser!)
-    (wait-for-task-to-finish (* 5 MINUTE))
-    (reconnect-browser!)
-    (is (write-transcript-and-compare))))
-
 (deftest test-all
   (fixtures-web-server-check)
   (with-transcript-suite "suite01"
-    (no-agent-connection)))
+    (execute-transcript-test! "no-agent-connection")
+    (execute-transcript-test! "open-close-dirac")))

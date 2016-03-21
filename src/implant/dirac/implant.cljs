@@ -32,6 +32,8 @@
     (feedback "console initialized")))
 
 (defn ^:export init-repl []
+  (assert *implant-initialized*)
+  (assert *console-initialized*)
   (intercom/init-repl!)
   (feedback "repl initialized"))
 

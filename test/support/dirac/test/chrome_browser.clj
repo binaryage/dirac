@@ -4,8 +4,11 @@
             [clj-webdriver.driver :refer [init-driver]]
             [clojure.string :as string]
             [clojure.java.io :as io]
+            [clojure.core.async :refer [timeout <!!]]
+            [clojure.core.async.impl.protocols :refer [closed?]]
             [clj-time.format :as time-format]
-            [clj-time.coerce :as time-coerce])
+            [clj-time.coerce :as time-coerce]
+            [clj-time.local :as time-local])
   (:import (org.openqa.selenium.chrome ChromeDriver ChromeOptions ChromeDriverService$Builder)
            (org.openqa.selenium.logging LoggingPreferences LogType)
            (org.openqa.selenium.remote DesiredCapabilities CapabilityType)
@@ -13,10 +16,13 @@
            (java.util.logging Level)))
 
 (def ^:const CHROME_VERSION_PAGE "chrome://version")
+(def ^:const BROWSER_CONNECTION_MINIMAL_COOLDOWN 4000)
+(def ^:const SCRIPT_RUNNER_LAUNCH_DELAY 1000)
 
 (def current-chrome-driver-service (atom nil))
 (def current-chrome-remote-debugging-port (atom nil))
 (def current-chrome-driver (atom nil))
+(def connection-cooldown (atom nil))
 
 ; -- helpers ----------------------------------------------------------------------------------------------------------------
 
@@ -62,8 +68,10 @@
   {:pre [driver]}
   (let [entries (.get (.logs (.manage driver)) LogType/BROWSER)]
     (for [entry entries]
-      (let [timestamp (time-format/unparse (time-format/formatters :hour-minute-second-ms)
-                                           (time-coerce/from-long (.getTimestamp entry)))
+      (let [formatter (time-format/formatters :hour-minute-second-ms)
+            local-time (time-local/to-local-date-time
+                         (time-coerce/from-long (.getTimestamp entry)))
+            timestamp (time-format/unparse formatter local-time)
             message (.getMessage entry)]
         (str timestamp " | " message)))))
 
@@ -81,6 +89,12 @@
       (catch Exception e
         (log (str "unable to parse log level: " level-str ". " e))
         Level/OFF))))
+
+(defn get-safe-delay-for-script-runner-to-launch-transcript-test []
+  ; chrome driver needs some time to cooldown after disconnection
+  ; to prevent random org.openqa.selenium.SessionNotCreatedException exceptions
+  ; also we want to run our transcript test safely after debugger port is available for devtools after driver disconnection
+  SCRIPT_RUNNER_LAUNCH_DELAY)
 
 ; -- chrome driver / service ------------------------------------------------------------------------------------------------
 
@@ -218,20 +232,31 @@
         (log "unable to retrieve-chrome-info")
         (System/exit 2)))))
 
-(defn disconnect-browser! []
-  (when-let [service (get-current-chrome-driver-service)]
-    (.stop service)
-    (set-current-chrome-driver-service! nil)
-    (Thread/sleep 1000)))
-
-(defn reconnect-browser! []
-  (let [options (assoc (prepare-options true) :debugger-port (get-debugging-port))]
-    (set-driver! (prepare-chrome-driver options))))
-
 (defn stop-browser! []
   (quit))
 
 (defn with-chrome-browser [f]
-  (start-browser!)
-  (f)
-  (stop-browser!))
+  (try
+    (start-browser!)
+    (f)
+    (finally
+      (stop-browser!))))
+
+(defn wait-for-reconnection-cooldown! []
+  (when-let [channel @connection-cooldown]
+    (when-not (closed? channel)
+      (log "waiting for connection to cool down...")
+      (<!! channel))
+    (reset! connection-cooldown nil)))
+
+(defn disconnect-browser! []
+  (wait-for-reconnection-cooldown!)
+  (when-let [service (get-current-chrome-driver-service)]
+    (.stop service)
+    (set-current-chrome-driver-service! nil)
+    (reset! connection-cooldown (timeout BROWSER_CONNECTION_MINIMAL_COOLDOWN))))
+
+(defn reconnect-browser! []
+  (wait-for-reconnection-cooldown!)
+  (let [options (assoc (prepare-options true) :debugger-port (get-debugging-port))]
+    (set-driver! (prepare-chrome-driver options))))

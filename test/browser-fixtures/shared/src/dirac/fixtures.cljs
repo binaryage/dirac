@@ -1,5 +1,6 @@
 (ns dirac.fixtures
-  (:require-macros [cljs.core.async.macros :refer [go go-loop]])
+  (:require-macros [cljs.core.async.macros :refer [go go-loop]]
+                   [dirac.fixtures :refer [log info error warn get-launch-transcript-test-key]])
   (:require [cljs.core.async :refer [put! <! chan timeout alts! close!]]
             [cljs.core.async.impl.protocols :as core-async]
             [dirac.fixtures.transcript :as transcript]
@@ -85,33 +86,6 @@
   (let [padded-type (cuerdas/pad type {:length 16 :type :right})]
     (str padded-type " " text)))
 
-(defn wait-for-transcript-match
-  ([re]
-   (wait-for-transcript-match re nil))
-  ([re time-limit]
-   (wait-for-transcript-match re time-limit false))
-  ([re time-limit silent?]
-   (let [channel (chan)
-         observer (fn [self text]
-                    (when-let [match (re-matches re text)]
-                      (remove-transcript-observer! self)
-                      (put! channel match)
-                      (close! channel)))]
-     (add-transcript-observer! (partial observer observer))
-     (go
-       (<! (timeout (or time-limit DEFAULT_TRANSCRIPT_MATCH_TIMEOUT)))
-       (when-not (core-async/closed? channel)
-         (if silent?
-           (do
-             (put! channel :timeout)
-             (close! channel))
-           (do
-             (disable-sniffer!)
-             (append-to-transcript! (format-transcript-line "timeout" (str "while waiting for transcript match: " re)))
-             (disable-transcript!)
-             (set-status! "task timeouted" "timeout")))))
-     channel)))
-
 (defn read-transcript []
   {:pre [(has-transcript?)]}
   (transcript/read-transcript @current-transcript))
@@ -127,6 +101,17 @@
   (post-with-transcript! {:command      :fire-synthetic-chrome-event
                           :chrome-event event}))
 
+(defn launch-transcript-test! []
+  (log "launching transcript test...")
+  (ocall js/window (get-launch-transcript-test-key)))                                                                         ; see go-task
+
+(defn launch-transcript-test-after-delay! [delay-ms]
+  (log "test runner scheduled transcript test launch after " delay-ms "ms...")
+  (go
+    (if (pos? delay-ms)
+      (<! (timeout delay-ms)))
+    (launch-transcript-test!)))
+
 (defn automate-dirac-frontend! [action]
   {:pre [@last-dirac-frontend-id]}
   (post-with-transcript! {:command       :automate-dirac-frontend
@@ -139,6 +124,7 @@
       (case (.-type data)
         "dirac-frontend-feedback-event" (append-to-transcript! (format-transcript-line "dirac frontend" (.-text data)))
         "dirac-extension-feedback-event" (append-to-transcript! (format-transcript-line "dirac extension" (.-text data)))
+        "launch-transcript-test" (launch-transcript-test-after-delay! (int (.-delay data)))
         nil))))
 
 (defn init-feedback! []
@@ -184,7 +170,11 @@
   ; open-as window is handy for debugging, becasue we can open internal devtools to inspect dirac frontend in case of errors
   (post-marion-command! {:command :set-option
                          :key     :open-as
-                         :value   "window"}))
+                         :value   "window"})
+  ; if test runner is present, we will wait for test runner to launch the test
+  ; it needs to disconnect the driver first
+  (if-not (is-test-runner-present?)
+    (launch-transcript-test!)))
 
 (defn reset-connection-id-counter! []
   (post-marion-command! {:command :reset-connection-id-counter}))
@@ -199,9 +189,36 @@
     ; - closing existing tabs would interfere with our ability to inspect test results
     ; also we don't want to signal "task finished", because  there is no test runner listening
    (task-finished! (is-test-runner-present?)))
-  ([really?]
+  ([tear-down?]
    (disable-transcript!)
    (set-status! "task finished" "finished")
-   (when really?
+   (when tear-down?
      (post-marion-command! {:command :tear-down})                                                                             ; to fight https://bugs.chromium.org/p/chromium/issues/detail?id=355075
      (ws-client/connect! "ws://localhost:22555" {:name "Signaller"}))))                                                       ; this signals to the task runner that he can reconnect chrome driver and check the results
+
+(defn wait-for-transcript-match
+  ([re]
+   (wait-for-transcript-match re nil))
+  ([re time-limit]
+   (wait-for-transcript-match re time-limit false))
+  ([re time-limit silent?]
+   (let [channel (chan)
+         observer (fn [self text]
+                    (when-let [match (re-matches re text)]
+                      (remove-transcript-observer! self)
+                      (put! channel match)
+                      (close! channel)))]
+     (add-transcript-observer! (partial observer observer))
+     (go
+       (<! (timeout (or time-limit DEFAULT_TRANSCRIPT_MATCH_TIMEOUT)))
+       (when-not (core-async/closed? channel)
+         (if silent?
+           (do
+             (put! channel :timeout)
+             (close! channel))
+           (do
+             (disable-sniffer!)
+             (append-to-transcript! (format-transcript-line "timeout" (str "while waiting for transcript match: " re)))
+             (task-finished!)
+             (set-status! "task timeouted" "timeout")))))
+     channel)))

@@ -1,0 +1,6 @@
+exec             {:command :fire-synthetic-chrome-event, :chrome-event [:chromex.ext.commands/on-command ["open-dirac-devtools"]]}
+dirac extension  handling command: open-dirac-devtools
+dirac extension  register dirac connection #1
+dirac frontend   implant initialized
+dirac frontend   console initialized
+exec             {:command :fire-synthetic-chrome-event, :chrome-event [:chromex.ext.commands/on-command ["close-dirac-devtools" "1"]]}

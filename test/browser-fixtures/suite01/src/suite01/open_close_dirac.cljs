@@ -1,4 +1,4 @@
-(ns suite01.no-agent-connection
+(ns suite01.open-close-dirac
   (:require-macros [cljs.core.async.macros :refer [go go-loop]]
                    [dirac.fixtures :refer [go-test]])
   (:require [cljs.core.async :refer [put! <! chan timeout alts! close!]]
@@ -15,5 +15,4 @@
   (<! (wait-for-dirac-frontend-initialization))
   (<! (wait-for-implant-initialization))
   (<! (wait-switch-to-console))
-  (switch-to-dirac-prompt!)
-  (<! (wait-for-transcript-match #".*will try reconnect in 4 seconds.*" (* 1 MINUTE))))
+  (close-dirac-devtools!))
