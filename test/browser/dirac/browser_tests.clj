@@ -20,15 +20,26 @@
 (def ^:const MINUTE (* 60 SECOND))
 (def ^:const DEFAULT_TASK_TIMEOUT (* 5 MINUTE))
 
+(defonce ^:dynamic *current-transcript-test* nil)
+(defonce ^:dynamic *current-transcript-suite* nil)
+
+(defmacro with-transcript-test [test-name & body]
+  `(binding [*current-transcript-test* ~test-name]
+     ~@body))
+
+(defmacro with-transcript-suite [suite-name & body]
+  `(binding [*current-transcript-suite* ~suite-name]
+     ~@body))
+
 (defn log [& args]
   (apply println "Tests Runner:" args))
 
-(defn make-test-index-url [test-name]
+(defn make-test-index-url [suite-name test-name]
   (let [debugging-port (get-debugging-port)]
-    (str "http://localhost:9090/" test-name "/resources/index.html?test_runner=1&debugging_port=" debugging-port)))
+    (str "http://localhost:9090/" suite-name "/resources/" test-name ".html?test_runner=1&debugging_port=" debugging-port)))
 
-(defn navigate-transcript-test! [test-name]
-  (let [test-index-url (make-test-index-url test-name)]
+(defn navigate-transcript-test! []
+  (let [test-index-url (make-test-index-url *current-transcript-suite* *current-transcript-test*)]
     (println "navigating to" test-index-url)
     (to test-index-url)))
 
@@ -47,20 +58,25 @@
 
 ; -- transcript helpers -----------------------------------------------------------------------------------------------------
 
-(defn get-actual-transcript-path [name]
-  (str actual-transcripts-root-path name ".txt"))
+(defn get-actual-transcript-path-filename [suite-name test-name]
+  (str suite-name "-" test-name ".txt"))
 
-(defn get-expected-transcript-path [name]
-  (str expected-transcripts-root-path name ".txt"))
+(defn get-actual-transcript-path [suite-name test-name]
+  (str actual-transcripts-root-path (get-actual-transcript-path-filename suite-name test-name)))
 
-(defn normalize-transcript [transcript]
+(defn get-expected-transcript-filename [suite-name test-name]
+  (str suite-name "-" test-name ".txt"))
+
+(defn get-expected-transcript-path [suite-name test-name]
+  (str expected-transcripts-root-path (get-expected-transcript-filename suite-name test-name)))
+
+(defn canonic-transcript [transcript]
   (-> transcript
       (string/trim)))
 
-(defn obtain-transcript [test-name]
-  (let [test-index-url (make-test-index-url test-name)
-        test-window-handle (find-window {:url test-index-url})]
-    (if test-window-handle
+(defn obtain-transcript []
+  (let [test-index-url (make-test-index-url *current-transcript-suite* *current-transcript-test*)]
+    (if-let [test-window-handle (find-window {:url test-index-url})]
       (try
         (switch-to-window test-window-handle)
         (text "#transcript")
@@ -70,23 +86,28 @@
                                                                   "\n====================\n")}))))
       (throw (ex-info "unable to find window with transcript" {:test-index-url test-index-url})))))
 
-(defn write-transcript-and-compare [test-name]
+(defn write-transcript! [path transcript]
+  (io/make-parents path)
+  (spit path transcript))
+
+(defn write-transcript-and-compare []
   (try
-    (let [actual-transcript (normalize-transcript (obtain-transcript test-name))
-          actual-path (get-actual-transcript-path test-name)]
-      (io/make-parents actual-path)
-      (spit actual-path actual-transcript)
-      (let [expected-path (get-expected-transcript-path test-name)
-            expected-transcript (normalize-transcript (slurp expected-path))]
+    (let [test-name *current-transcript-test*
+          suite-name *current-transcript-suite*
+          actual-transcript (canonic-transcript (obtain-transcript))
+          actual-path (get-actual-transcript-path suite-name test-name)]
+      (write-transcript! actual-path actual-transcript)
+      (let [expected-path (get-expected-transcript-path suite-name test-name)
+            expected-transcript (canonic-transcript (slurp expected-path))]
         (if-not (= actual-transcript expected-transcript)
           (do
             (println)
-            (println "-------------------------------------------------------------------------------------------------------")
-            (println "! expected and actual transcripts differ for" test-name "test:")
-            (println (str "> diff -U 5 expected/" test-name ".txt actual/" test-name ".txt"))
+            (println "-----------------------------------------------------------------------------------------------------")
+            (println (str "! actual transcript differs for " test-name " test:"))
+            (println (str "> diff -U 5 " expected-path " " actual-path))
             (println (:out (shell/sh "diff" "-U" "5" expected-path actual-path)))
-            (println "-------------------------------------------------------------------------------------------------------")
-            (println (str "> cat actual/" test-name ".txt"))
+            (println "-----------------------------------------------------------------------------------------------------")
+            (println (str "> cat " actual-path))
             (println actual-transcript)
             false)
           true)))
@@ -106,13 +127,15 @@
   (to "http://localhost:9090")
   (is (= (text "body") "fixtures web-server ready")))
 
-(defn p01 []
-  (navigate-transcript-test! "p01")
-  (disconnect-browser!)
-  (wait-for-task-to-finish (* 1 MINUTE))                                                                                      ; TODO: increase
-  (reconnect-browser!)
-  (is (write-transcript-and-compare "p01")))
+(defn no-agent-connection []
+  (with-transcript-test "no-agent-connection"
+    (navigate-transcript-test!)
+    (disconnect-browser!)
+    (wait-for-task-to-finish (* 5 MINUTE))
+    (reconnect-browser!)
+    (is (write-transcript-and-compare))))
 
 (deftest test-all
   (fixtures-web-server-check)
-  (p01))
+  (with-transcript-suite "suite01"
+    (no-agent-connection)))

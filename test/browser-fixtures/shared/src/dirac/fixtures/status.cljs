@@ -1,6 +1,6 @@
 (ns dirac.fixtures.status)
 
-; transcript is a <div> tag which shows status of fixtures page
+; status is a <div> tag which shows status of fixtures page
 
 (defn make-status []
   (let [status-el (.createElement js/document "div")]

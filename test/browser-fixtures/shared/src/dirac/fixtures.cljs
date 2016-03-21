@@ -11,7 +11,9 @@
             [devtools.core :as devtools])
   (:import goog.Uri))
 
-(def ^:const DEFAULT_TRANSCRIPT_MATCH_TIMEOUT 5000)
+(def ^:const SECOND 1000)
+(def ^:const MINUTE (* 60 SECOND))
+(def ^:const DEFAULT_TRANSCRIPT_MATCH_TIMEOUT (* 5 SECOND))
 
 (defonce current-transcript (atom nil))
 (defonce current-status (atom nil))

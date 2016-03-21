@@ -68,7 +68,7 @@
                                     "resources/unpacked/compiled"
                                     "resources/unpacked/devtools/front_end/dirac/compiled"
                                     "resources/release/compiled"
-                                    "test/browser-fixtures/p01/resources/compiled"
+                                    "test/browser-fixtures/suite01/resources/compiled"
                                     "test/marion/resources/unpacked/compiled"]
 
   :checkout-deps-shares ^:replace []
@@ -121,13 +121,13 @@
 
              :browser-fixtures
              {:cljsbuild {:builds
-                          {:p01
+                          {:suite01
                            {:source-paths ["src/lib"
                                            "test/browser-fixtures/shared/src"
-                                           "test/browser-fixtures/p01/src"]
-                            :compiler     {:output-to     "test/browser-fixtures/p01/resources/compiled/core.js"
-                                           :output-dir    "test/browser-fixtures/p01/resources/compiled"
-                                           :asset-path    "compiled/p01"
+                                           "test/browser-fixtures/suite01/src"]
+                            :compiler     {:output-to     "test/browser-fixtures/suite01/resources/compiled/suite01.js"
+                                           :output-dir    "test/browser-fixtures/suite01/resources/compiled"
+                                           :asset-path    "compiled/suite01"
                                            :optimizations :none
                                            :source-map    true}}}}}
 
@@ -256,7 +256,7 @@
   ; terminal session3: lein fig
   ; terminal session4: lein auto-compile-dev-browser-tests
   ;
-  ; fixtures server is running at http://localhost:9080 => /p01/resources/index.html
+  ; fixtures server is running at http://localhost:9080/suite01/resources
 
   :aliases {"check"                          ["shell" "scripts/check-code.sh"]
             "test"                           ["shell" "scripts/test-all.sh"]
@@ -271,21 +271,22 @@
                                               "run" "-m" "dirac.browser-tests-runner/-dev-main"]
             "compile-browser-tests"          ["with-profile" "+browser-tests,+browser-fixtures,+marion,+packed,+cljs,+pseudo-names"
                                               "do"
-                                              "cljsbuild" "once" "marion-background" "marion-content-script" "p01"]
+                                              "cljsbuild" "once" "marion-background" "marion-content-script"
+                                              "suite01"]
             "compile-dev-browser-tests"      ["with-profile" "+cljs,+browser-tests,+browser-fixtures,+marion,+unpacked,+checkouts"
                                               "do"
-                                              "cljsbuild" "once" "marion-background" "marion-content-script" "p01"]
+                                              "cljsbuild" "once" "marion-background" "marion-content-script"
+                                              "suite01"]
             "auto-compile-dev-browser-tests" ["with-profile" "+cljs,+browser-tests,+browser-fixtures,+marion,+unpacked,+checkouts"
-                                              "cljsbuild" "auto" "marion-background" "marion-content-script" "p01"]
+                                              "cljsbuild" "auto" "marion-background" "marion-content-script"
+                                              "suite01"]
             "fig"                            ["with-profile" "+unpacked,+cljs,+checkouts"
                                               "figwheel" "dirac-background" "dirac-options" "dirac-implant"]
             "comile-dev"                     ["with-profile" "+unpacked,+cljs,+checkouts"
                                               "cljsbuild" "once" "dirac-background" "dirac-options" "dirac-implant"]
             "compile-release"                ["with-profile" "+packed,+cljs"
-                                              "do" "clean,"
                                               "cljsbuild" "once" "dirac-background" "dirac-options" "dirac-implant"]
             "compile-release-pseudo-names"   ["with-profile" "+packed,+cljs,+pseudo-names"
-                                              "do" "clean,"
                                               "cljsbuild" "once" "dirac-implant" "dirac-background" "dirac-options"]
             "make-release"                   ["shell" "scripts/release.sh"]
             "package"                        ["shell" "scripts/package.sh"]
