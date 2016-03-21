@@ -8,7 +8,7 @@
 ; -- automation commands ----------------------------------------------------------------------------------------------------
 
 (defn open-dirac-devtools! []
-  (fire-chrome-event! [:chromex.ext.commands/on-command ["open-dirac-devtools"]]))
+  (fire-chrome-event! [:chromex.ext.commands/on-command ["open-dirac-devtools" {:reset-settings 1}]]))                        ; we want to always start with clear devtools for reproducibility
 
 (defn close-dirac-devtools! []
   (fire-chrome-event! [:chromex.ext.commands/on-command ["close-dirac-devtools" @last-dirac-frontend-id]]))
@@ -39,11 +39,5 @@
 
 (defn wait-switch-to-console []
   (go
-    ; panel selection history may perform automatic console switch
-    ; wait for it here
-    (let [res (<! (wait-for-console-initialization 1000 true))]
-      (when (= res :timeout)
-        ; console panel wasn't switched => perform it by hand and wait for result
-        (without-transcript
-          (switch-inspector-panel! :console))
-        (<! (wait-for-console-initialization))))))
+    (switch-inspector-panel! :console)
+    (<! (wait-for-console-initialization))))
