@@ -123,6 +123,7 @@
              {:cljsbuild {:builds
                           {:suite01
                            {:source-paths ["src/lib"
+                                           "test/support"
                                            "test/browser-fixtures/shared/src"
                                            "test/browser-fixtures/suite01/src"]
                             :compiler     {:output-to     "test/browser-fixtures/suite01/resources/compiled/suite01.js"
