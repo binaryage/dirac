@@ -6,7 +6,7 @@
             [dirac.nrepl.middleware :as middleware]))
 
 (def nrepl-server-timeout (* 60 1000))
-(def test-nrepl-server-port 8120)                                                                                             ; -100 from defaults
+(def test-nrepl-server-port 7230)                                                                                             ; -1000 from defaults
 
 ; -- helpers ----------------------------------------------------------------------------------------------------------------
 

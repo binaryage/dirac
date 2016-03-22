@@ -9,7 +9,8 @@
             [dirac.test.logging :as logging]
             [clojure.tools.logging :as log]))
 
-(def test-nrepl-tunnel-port 8121)
+(def test-nrepl-tunnel-port 7231)                                                                                             ; -1000 from defaults
+(def test-weasel-port 7232)                                                                                                   ; -1000 from defaults
 (def log-level "INFO")                                                                                                        ; INFO, DEBUG, TRACE, ALL
 (def last-msg (volatile! nil))
 
@@ -72,7 +73,9 @@
   {:op   "eval"
    :code (str "(do"
               "  (require 'dirac.nrepl)"
-              "  (dirac.nrepl/boot-cljs-repl! {:log-level \"" log-level "\"}))")})
+              "  (dirac.nrepl/boot-cljs-repl! {:log-level \"" log-level "\""
+              "                                :weasel-repl {:host \"localhost\""
+              "                                              :port " test-weasel-port "}}))")})
 
 (defn nrepl-message [envelope]
   {:op       :nrepl-message
@@ -82,12 +85,12 @@
 
 (deftest simple-interaction
   (testing "happy path"
-    (let [out (with-out-str
-                @(agent/boot! {:log-level    log-level
-                               :nrepl-server {:port test-nrepl-server-port}
-                               :nrepl-tunnel {:port test-nrepl-tunnel-port}}))
-          expected-out #"(?s).*Connected to nREPL server at nrepl://localhost:8120.\nTunnel is accepting connections at ws://localhost:8121.*"]
-      (is (not (nil? (re-matches expected-out out))))
+    (let [actual-out (with-out-str
+                       @(agent/boot! {:log-level    log-level
+                                      :nrepl-server {:port test-nrepl-server-port}
+                                      :nrepl-tunnel {:port test-nrepl-tunnel-port}}))
+          expected-out #"(?s).*Connected to nREPL server at nrepl://localhost:7230.\nTunnel is accepting connections at ws://localhost:7231.*"]
+      (is (some? (re-matches expected-out actual-out)))
       (log/info "dirac agent started at" test-nrepl-tunnel-port)
       (let [tunnel (tunnel-client/create! (str "ws://localhost:" test-nrepl-tunnel-port))]
         (expect-event! tunnel :open)
