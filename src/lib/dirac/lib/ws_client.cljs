@@ -111,3 +111,8 @@
       (info client "Connecting to server:" server-url "with options:" sanitized-opts))
     (.open web-socket server-url)
     client))
+
+(defn close! [client]
+  (when (connected? client)
+    (.close (get-connection client))
+    true))
