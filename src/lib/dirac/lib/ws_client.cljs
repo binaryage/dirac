@@ -28,7 +28,7 @@
   (:options client))
 
 (defn connected? [client]
-  (not (nil? (get-connection client))))
+  (.isOpen (get-connection client)))
 
 (defn mark-as-not-ready! [client]
   (vreset! (:ready? client) false))
