@@ -25,6 +25,7 @@
 (def ^:const MINUTE (* 60 SECOND))
 (def ^:const DEFAULT_TASK_TIMEOUT (* 5 MINUTE))
 (def ^:const DEFAULT_TEST_HTML_LOAD_TIMEOUT (* 1 SECOND))
+(def ^:const SIGNAL_SERVER_CLOSE_WAIT_TIMEOUT (* 1 SECOND))
 
 (defonce ^:dynamic *current-transcript-test* nil)
 (defonce ^:dynamic *current-transcript-suite* nil)
@@ -85,6 +86,9 @@
      (if (= ::server/timeout (server/wait-for-first-client server timeout-ms))
        (log (str "timeouted while waiting for task signal."))
        (log (str "received 'task finished' signal.")))
+     ; this is here to give client some time to disconnet before destroying server
+     ; devtools would spit "Close received after close" errors in js console
+     (Thread/sleep SIGNAL_SERVER_CLOSE_WAIT_TIMEOUT)
      (server/destroy! server))))
 
 ; -- transcript helpers -----------------------------------------------------------------------------------------------------
