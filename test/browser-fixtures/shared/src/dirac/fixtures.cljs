@@ -210,7 +210,9 @@
    (set-status! "task finished" "finished")
    (when tear-down?
      (post-marion-command! {:command :tear-down})                                                                             ; to fight https://bugs.chromium.org/p/chromium/issues/detail?id=355075
-     (ws-client/connect! "ws://localhost:22555" {:name "Signaller"}))))                                                       ; this signals to the task runner that he can reconnect chrome driver and check the results
+     (ws-client/connect! "ws://localhost:22555" {:name    "Signaller"
+                                                 :on-open #(ws-client/close! %)}))))                                          ; this signals to the task runner that he can reconnect chrome driver and check the results
+
 
 (defn wait-for-transcript-match
   ([re]
