@@ -6,7 +6,6 @@
             [cljs.core.async.impl.protocols :as core-async]
             [dirac.fixtures.transcript :as transcript]
             [dirac.fixtures.status :as status]
-            [dirac.fixtures.embedcom :as embedcom]
             [chromex.support :refer-macros [oget oset ocall oapply]]
             [cuerdas.core :as cuerdas]
             [dirac.lib.ws-client :as ws-client]
@@ -106,8 +105,10 @@
   {:pre [(has-transcript?)]}
   (transcript/read-transcript @current-transcript))
 
-(defn post-marion-command! [event]
-  (embedcom/post-page-event! event))
+; for communication between tested page and marionette extension
+; see https://developer.chrome.com/extensions/content_scripts#host-page-communication
+(defn post-marion-command! [command]
+  (.postMessage js/window #js {:type "marion-command" :payload (pr-str command)} "*"))
 
 (defn post-with-transcript! [command]
   (append-to-transcript! (format-transcript-line "exec" (pr-str command)))
