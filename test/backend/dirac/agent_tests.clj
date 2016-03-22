@@ -3,6 +3,7 @@
             [clojure.test :refer :all]
             [dirac.test.nrepl-server-helpers :refer [start-nrepl-server! stop-nrepl-server! test-nrepl-server-port]]
             [dirac.agent :as agent]
+            [dirac.version :refer [version]]
             [dirac.test.mock-nrepl-tunnel-client :as tunnel-client]
             [dirac.test.mock-weasel-client :as weasel-client]
             [dirac.test.logging :as logging]
@@ -90,7 +91,8 @@
       (log/info "dirac agent started at" test-nrepl-tunnel-port)
       (let [tunnel (tunnel-client/create! (str "ws://localhost:" test-nrepl-tunnel-port))]
         (expect-event! tunnel :open)
-        (tunnel-client/send! tunnel {:op :ready})
+        (tunnel-client/send! tunnel {:op      :ready
+                                     :version version})
         (expect-op-msg! tunnel :bootstrap)
         (tunnel-client/send! tunnel (nrepl-message (boostrap-cljs-repl-message)))
         (expect-op-msg! tunnel :bootstrap-info)
