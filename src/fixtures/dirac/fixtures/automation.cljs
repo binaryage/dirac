@@ -22,11 +22,11 @@
 
 ; -- automation commands ----------------------------------------------------------------------------------------------------
 
-(defn get-plain-url []
-  (str (oget js/location "protocol") "//" (oget js/location "host") "/" (oget js/location "pathname")))
+(defn get-base-url []
+  (str (oget js/location "protocol") "//" (oget js/location "host")))
 
 (defn get-scenario-url [name]
-  (string/replace (get-plain-url) #"runner.html" (str "scenarios/" name ".html")))
+  (str (get-base-url) "/scenarios/" name ".html"))
 
 (defn open-tab-with-scenario! [name]
   (append-to-transcript! (str "open-tab-with-scenario! " name))
