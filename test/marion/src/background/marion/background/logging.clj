@@ -6,20 +6,22 @@
 (def enabled? true)
 
 (defn prefix []
-  "MARION BACKGROUND PAGE:")
+  ["%cmarion%cbackground"
+   "background-color:purple;color:white;font-weight:bold;padding:0px 3px;border-radius:2px 0px 0px 2px;"
+   "background-color:blue;color:white;font-weight:bold;padding:0px 3px;border-radius:0px 2px 2px 0px;"])
 
 (defmacro log [& args]
   (if enabled?
-    `(do (.log js/console ~(prefix) ~@args) nil)))
+    `(do (.log js/console ~@(prefix) ~@args) nil)))
 
 (defmacro info [& args]
   (if enabled?
-    `(do (.info js/console ~(prefix) ~@args) nil)))
+    `(do (.info js/console ~@(prefix) ~@args) nil)))
 
 (defmacro error [& args]
   (if enabled?
-    `(do (.error js/console ~(prefix) ~@args) nil)))
+    `(do (.error js/console ~@(prefix) ~@args) nil)))
 
 (defmacro warn [& args]
   (if enabled?
-    `(do (.warn js/console ~(prefix) ~@args) nil)))
+    `(do (.warn js/console ~@(prefix) ~@args) nil)))
