@@ -89,24 +89,40 @@
   (let [scenario-url (oget message "url")]                                                                                    ; something like http://localhost:9080/suite01/resources/scenarios/normal.html
     (create-tab-with-url! scenario-url)))
 
-(defn activate-tab! [tab-id]
-  (go
-    (if-let [window-id (<! (sugar/fetch-tab-window-id tab-id))]
-      (windows/update window-id #js {"focused"       true
-                                     "drawAttention" true}))
-    (tabs/update tab-id #js {"active" true})))
+(defn focus-window-with-tab-id! [tab-id]
+  (if-let [window-id (<! (sugar/fetch-tab-window-id tab-id))]
+    (windows/update window-id #js {"focused"       true
+                                   "drawAttention" true})))
 
-(defn switch-to-task-runner! []
+(defn activate-tab! [tab-id]
+  (tabs/update tab-id #js {"active" true}))
+
+(defn find-task-runner-tab! []
   (go
     (let [[tabs] (<! (tabs/query #js {:title "TASK RUNNER"}))]
       (if-let [tab (first tabs)]
-        (activate-tab! (sugar/get-tab-id tab))
+        tab
         (warn "no TASK RUNNER tab?")))))
+
+(defn find-task-runner-tab-id! []
+  (go
+    (if-let [tab (<! (find-task-runner-tab!))]
+      (sugar/get-tab-id tab))))
+
+(defn switch-to-task-runner! []
+  (go
+    (if-let [tab-id (<! (find-task-runner-tab-id!))]
+      (activate-tab! tab-id))))
+
+(defn focus-task-runner-window! []
+  (go
+    (if-let [tab-id (<! (find-task-runner-tab-id!))]
+      (focus-window-with-tab-id! tab-id))))
 
 (defn close-all-scenario-tabs! []
   (log "close-all-extension-tabs")
   (go
-    (let [[tabs] (<! (tabs/query #js {:url "http://*/*/resources/scenarios/*"}))]
+    (let [[tabs] (<! (tabs/query #js {:url "http://*/scenarios/*"}))]
       (doseq [tab tabs]
         (log "remove" tab)
         (tabs/remove (sugar/get-tab-id tab))))))
@@ -118,6 +134,7 @@
     "marion-unsubscribe-transcript" (unsubscribe-client-from-transcript! client)
     "marion-open-tab-with-scenario" (open-tab-with-scenario! message)
     "marion-switch-to-task-runner-tab" (switch-to-task-runner!)
+    "marion-focus-task-runner-window" (focus-task-runner-window!)
     "marion-close-all-tabs" (close-all-scenario-tabs!)
     "marion-extension-command" (forward-command-to-dirac-extension! (oget message "payload"))))
 

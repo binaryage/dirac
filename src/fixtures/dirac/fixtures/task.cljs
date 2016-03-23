@@ -38,19 +38,27 @@
   (messages/close-all-marion-tabs!)
   (messages/post-extension-command! {:command :tear-down}))                                                                   ; to fight https://bugs.chromium.org/p/chromium/issues/detail?id=355075
 
+(defn signal-task-finished! []
+  ; this signals to the task runner that he can reconnect chrome driver and check the results
+  (ws-client/connect! "ws://localhost:22555" {:name    "Signaller"
+                                              :on-open #(ws-client/close! %)}))
+
 (defn task-teardown!
   ([]
     ; under manual test development we don't want to execute tear-down
     ; - closing existing tabs would interfere with our ability to inspect test results
     ; also we don't want to signal "task finished", because  there is no test runner listening
    (task-teardown! (helpers/is-test-runner-present?)))
-  ([tear-down?]
+  ([runner-present?]
    (transcript-host/disable-transcript!)
-   (messages/switch-to-task-runner-tab!)
-   (when tear-down?
-     (cleanup!)
-     (ws-client/connect! "ws://localhost:22555" {:name    "Signaller"
-                                                 :on-open #(ws-client/close! %)}))))                                          ; this signals to the task runner that he can reconnect chrome driver and check the results
+   (if runner-present?
+     (do
+       (cleanup!)
+       (signal-task-finished!))
+     (do
+       ; this is for a convenience when running tests manually
+       (messages/switch-to-task-runner-tab!)
+       (messages/focus-task-runner-window!)))))
 
 (defn task-finished! []
   (status-host/set-status! "task finished")

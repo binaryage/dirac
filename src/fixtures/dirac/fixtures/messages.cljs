@@ -31,5 +31,8 @@
 (defn switch-to-task-runner-tab! []
   (post-message! #js {:type "marion-switch-to-task-runner-tab"}))
 
+(defn focus-task-runner-window! []
+  (post-message! #js {:type "marion-focus-task-runner-window"}))
+
 (defn close-all-marion-tabs! []
   (post-message! #js {:type "marion-close-all-tabs"}))
