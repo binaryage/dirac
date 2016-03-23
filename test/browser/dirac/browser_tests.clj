@@ -2,7 +2,7 @@
   (:require [clojure.test :refer :all]
             [clojure.java.io :as io]
             [clojure.stacktrace :as stacktrace]
-            [dirac.test.settings :refer [get-launch-transcript-task-message]]
+            [dirac.test.settings :refer [get-launch-task-message]]
             [dirac.test.fixtures-web-server :refer [with-fixtures-web-server]]
             [dirac.test.nrepl-server :refer [with-nrepl-server]]
             [dirac.test.agent :refer [with-dirac-agent]]
@@ -167,7 +167,7 @@
 
 (defn launch-transcript-test-after-delay [delay-ms]
   {:pre [(integer? delay-ms) (not (neg? delay-ms))]}
-  (let [script (str "window.postMessage({type:'" (get-launch-transcript-task-message) "', delay: " delay-ms "}, '*')")]
+  (let [script (str "window.postMessage({type:'" (get-launch-task-message) "', delay: " delay-ms "}, '*')")]
     (execute-script script)))
 
 (defn execute-transcript-test! [test-name]

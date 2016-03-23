@@ -32,7 +32,7 @@
   ; if test runner is present, we will wait for test runner to launch the test
   ; it needs to disconnect the driver first
   (if-not (helpers/is-test-runner-present?)
-    (launcher/launch-transcript-task!)))
+    (launcher/launch-task!)))
 
 (defn cleanup! []
   (messages/close-all-marion-tabs!)

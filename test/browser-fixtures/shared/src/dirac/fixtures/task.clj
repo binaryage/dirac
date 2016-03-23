@@ -13,7 +13,7 @@
                            ~@commands
                            (dirac.fixtures.task/task-finished!)
                            (dirac.fixtures.task/task-teardown!)))]
-       (dirac.fixtures.launcher/register-transcript-task! test-thunk#)
+       (dirac.fixtures.launcher/register-task! test-thunk#)
        (dirac.fixtures.task/task-setup! ~config))))
 
 ; ---------------------------------------------------------------------------------------------------------------------------
