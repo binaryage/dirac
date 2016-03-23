@@ -1,6 +1,6 @@
 (ns dirac.tests.tasks.suite01.open-close-dirac
-  (:require [dirac.fixtures.task :refer-macros [go-task]]
-            [cljs.core.async :refer [<!]]
+  (:require [cljs.core.async :refer [<!]]
+            [dirac.fixtures.task :refer-macros [go-task]]
             [dirac.fixtures.constants :refer [SECOND MINUTE]]
             [dirac.fixtures.automation :refer [wait-for-dirac-frontend-initialization wait-for-implant-initialization
                                                wait-for-console-initialization switch-inspector-panel!
