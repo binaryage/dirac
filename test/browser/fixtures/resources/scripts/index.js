@@ -2,6 +2,10 @@
 // we rely on the fact that we are running unoptimized clojurescript code here
 // so all namespaces are present with original names
 
+function pathToNamespace(path) {
+  return path.replace(/_/g, "-").replace(/\//g, ".");
+}
+
 function getIndex(re) {
   var index = [];
   var container = goog.dependencies_.requires;
@@ -9,9 +13,8 @@ function getIndex(re) {
     if (container.hasOwnProperty(item)) {
       var m = item.match(re);
       if (m) {
-        var ns = m[1];
-        var demunged = ns.replace(/_/g, "-");
-        index.push(demunged);
+        var path = m[1];
+        index.push(pathToNamespace(path));
       }
     }
   }
@@ -30,7 +33,7 @@ function genList(runnerUrl, index) {
   return lines.join("");
 }
 
-var index = getIndex(/suite01\/([^/]*)\.js/);
-var markup = genList("/suite01/resources/runner.html", index);
+var index = getIndex(/tasks\/(.*)\.js/);
+var markup = genList("runner.html", index);
 
 document.body.innerHTML = markup;

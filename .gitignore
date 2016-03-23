@@ -1,6 +1,6 @@
 /test/browser/transcripts/actual
 /test/marion/resources/unpacked/compiled
-/test/browser-fixtures/suite01/resources/compiled
+/test/browser/fixtures/resources/compiled
 /.nrepl-port
 /resources/unpacked/devtools/front_end/dirac/compiled
 /resources/unpacked/devtools/CSSProperties.in

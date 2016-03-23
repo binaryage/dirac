@@ -1,4 +1,4 @@
-(ns suite01.scenarios.normal
+(ns dirac.tests.scenarios.normal
   (:require [dirac.fixtures.devtools :refer [init-devtools!]]))
 
 (init-devtools!)

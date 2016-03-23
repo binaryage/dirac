@@ -78,10 +78,15 @@ function displayTaskName(task) {
   nameEl.innerText = task;
 }
 
+function taskNamespaceToJavascriptNamespace(taskNs) {
+  return taskNs.replace(/-/g, "_");
+}
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 goog.require("dirac.fixtures.runner");
 
+var taskRootNamespace = "dirac.tests.tasks";
 var task = getParameterByName("task");
 if (!task) {
   var msg = "Please specify task parameter in the url. e.g. http://localhost:9080/suite01/resources/runner.html?task=open-close-dirac.";
@@ -89,7 +94,7 @@ if (!task) {
   document.body.innerHTML = msg;
 } else {
   displayTaskName(task);
-  var ns = 'suite01.'+task.replace(/-/g, "_");
+  var ns = taskRootNamespace + "." + taskNamespaceToJavascriptNamespace(task);
   console.info("loading task namespace '" + ns + "'");
   goog.require(ns);
 }

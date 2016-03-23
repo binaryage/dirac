@@ -59,15 +59,15 @@
 (defn navigation-timeout-message [_test-name load-timeout test-index-url]
   (str "failed to navigate to index page in time (" load-timeout " ms): " test-index-url))
 
-(defn make-test-index-url [suite-name test-name]
+(defn make-test-runner-url [suite-name test-name]
   (let [debugging-port (get-debugging-port)]
-    (str "http://localhost:9090/" suite-name "/resources/runner.html?"
-         "task=" test-name
+    (str "http://localhost:9090/runner.html?"
+         "task=" suite-name "." test-name
          "&test_runner=1"
          "&debugging_port=" debugging-port)))
 
-(defn navigate-transcript-test! []
-  (let [test-index-url (make-test-index-url *current-transcript-suite* *current-transcript-test*)
+(defn navigate-transcript-runner! []
+  (let [test-index-url (make-test-runner-url *current-transcript-suite* *current-transcript-test*)
         load-timeout DEFAULT_TEST_HTML_LOAD_TIMEOUT]
     (log "navigating to" test-index-url)
     (to test-index-url)
@@ -114,7 +114,7 @@
       (string/trim)))
 
 (defn obtain-transcript []
-  (let [test-index-url (make-test-index-url *current-transcript-suite* *current-transcript-test*)]
+  (let [test-index-url (make-test-runner-url *current-transcript-suite* *current-transcript-test*)]
     (if-let [test-window-handle (find-window {:url test-index-url})]
       (try
         (switch-to-window test-window-handle)
@@ -172,7 +172,7 @@
 
 (defn execute-transcript-test! [test-name]
   (with-transcript-test test-name
-    (navigate-transcript-test!)
+    (navigate-transcript-runner!)
     (launch-transcript-test-after-delay (get-safe-delay-for-script-runner-to-launch-transcript-test))
     (disconnect-browser!)
     (wait-for-task-to-finish (* 5 MINUTE))

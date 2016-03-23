@@ -1,4 +1,4 @@
-(ns suite01.scenarios.no-agent
+(ns dirac.tests.scenarios.no-agent
   (:require [dirac.fixtures.devtools :refer [init-devtools!]]))
 
 ; deliberately misconfigure agent port to simulate "agent not listening on port" situation

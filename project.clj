@@ -52,10 +52,9 @@
   ;  :jvm-opts ["-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5005"]
 
   :source-paths ["src"
-                 "test/backend"
-                 "test/browser-fixtures"
-                 "test/browser"
-                 "test/backend"
+                 "test/backend/src"
+                 "test/browser/fixtures"
+                 "test/browser/src"
                  "test/marion/src"
                  "test/support"]                                                                                              ; this is for Cursive, will be redefined by profiles
   :resource-paths ["resources"]                                                                                               ; this is for Cursive, will be redefined by profiles
@@ -68,7 +67,7 @@
                                     "resources/unpacked/compiled"
                                     "resources/unpacked/devtools/front_end/dirac/compiled"
                                     "resources/release/compiled"
-                                    "test/browser-fixtures/suite01/resources/compiled"
+                                    "test/browser/fixtures/resources/compiled"
                                     "test/marion/resources/unpacked/compiled"]
 
   :checkout-deps-shares ^:replace []
@@ -108,7 +107,7 @@
                                        "src/nrepl"
                                        "src/project"]
               :test-paths   ["test/support"
-                             "test/backend"]}
+                             "test/backend/src"]}
 
              :browser-tests
              {:source-paths   ^:replace ["src/lib"
@@ -116,20 +115,20 @@
                                          "src/nrepl"
                                          "src/project"]
               :test-paths     ["test/support"
-                               "test/browser"]
+                               "test/browser/src"]
               :resource-paths ["test"]}
 
              :browser-fixtures
              {:cljsbuild {:builds
-                          {:suite01
+                          {:tests
                            {:source-paths ["src/lib"
                                            "test/support"
-                                           "test/browser-fixtures/shared/src"
-                                           "test/browser-fixtures/suite01/src"]
-                            :compiler     {:output-to     "test/browser-fixtures/suite01/resources/compiled/suite01.js"
-                                           :output-dir    "test/browser-fixtures/suite01/resources/compiled"
-                                           :asset-path    "compiled/suite01"
-                                           :optimizations :none
+                                           "test/browser/fixtures/shared/src"
+                                           "test/browser/fixtures/src/tests"]
+                            :compiler     {:output-to     "test/browser/fixtures/resources/compiled/tests/tests.js"
+                                           :output-dir    "test/browser/fixtures/resources/compiled/tests"
+                                           :asset-path    "compiled/tests"
+                                           :optimizations :none                                                               ; we rely on no optimizations in test runner
                                            :source-map    true}}}}}
 
              :marion
@@ -249,17 +248,17 @@
 
   ; to develop browser tests:
   ;
-  ; terminal session1: ./scripts/fixtures-server.sh
+  ; terminal session1: ./scripts/dev-fixtures-server.sh
   ; terminal session2: ./scripts/launch-browser-tests-canary.sh
   ;
-  ; don't forget to load unpacked extensions
-  ;   * dirac: resources/unpacked
-  ;   * marion: test/marion/resources/unpacked
+  ; don't forget to load unpacked extensions:
+  ;   * 'dirac' from resources/unpacked
+  ;   * 'marion' from test/marion/resources/unpacked
   ;
   ; terminal session3: lein fig
   ; terminal session4: lein auto-compile-dev-browser-tests
   ;
-  ; fixtures server is running at http://localhost:9080/suite01/resources
+  ; dev fixtures server is running at http://localhost:9080
 
   :aliases {"check"                          ["shell" "scripts/check-code.sh"]
             "test"                           ["shell" "scripts/test-all.sh"]
@@ -275,14 +274,14 @@
             "compile-browser-tests"          ["with-profile" "+browser-tests,+browser-fixtures,+marion,+packed,+cljs,+pseudo-names"
                                               "do"
                                               "cljsbuild" "once" "marion-background" "marion-content-script"
-                                              "suite01"]
+                                              "tests"]
             "compile-dev-browser-tests"      ["with-profile" "+cljs,+browser-tests,+browser-fixtures,+marion,+unpacked,+checkouts"
                                               "do"
                                               "cljsbuild" "once" "marion-background" "marion-content-script"
-                                              "suite01"]
+                                              "tests"]
             "auto-compile-dev-browser-tests" ["with-profile" "+cljs,+browser-tests,+browser-fixtures,+marion,+unpacked,+checkouts"
                                               "cljsbuild" "auto" "marion-background" "marion-content-script"
-                                              "suite01"]
+                                              "tests"]
             "fig"                            ["with-profile" "+unpacked,+cljs,+checkouts"
                                               "figwheel" "dirac-background" "dirac-options" "dirac-implant"]
             "comile-dev"                     ["with-profile" "+unpacked,+cljs,+checkouts"

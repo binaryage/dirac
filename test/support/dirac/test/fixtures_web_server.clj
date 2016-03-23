@@ -16,7 +16,7 @@
 
 (def fixtures-server
   (-> handler
-      (wrap-resource "browser-fixtures")
+      (wrap-resource "browser/fixtures/resources")
       (wrap-content-type)
       (wrap-not-modified)))
 
