@@ -2,7 +2,7 @@
 <html>
 <head>
     <title>TASK RUNNER</title>
-    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/runner.css">
     <script src="compiled/goog/base.js" type="text/javascript"></script>
     <script src="compiled/suite01.js" type="text/javascript"></script>
 </head>
@@ -11,6 +11,7 @@
 <div id="buttons">
     <button id="run-again-button" onclick="dirac.fixtures.runner.reload()">run again!</button>
     <button id="reset-button" onclick="dirac.fixtures.runner.reset()">reset!</button>
+    <button id="index-button" onclick="document.location='/suite01/resources'">go to index</button>
     <button id="copy-button" data-clipboard-target="transcript">copy transcript!</button>
 </div>
 <div id="transcript-box"></div>
