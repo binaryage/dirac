@@ -1,5 +1,6 @@
 (ns marion.background.core
   (:require-macros [cljs.core.async.macros :refer [go go-loop]]
+                   [dirac.settings :refer [get-marion-initial-wait-time get-marion-reconnection-attempt-delay]]
                    [marion.background.logging :refer [log info warn error]])
   (:require [goog.string :as gstring]
             [goog.string.format]
@@ -13,9 +14,6 @@
             [chromex.ext.management :as management]
             [chromex.ext.windows :as windows]
             [dirac.sugar :as sugar]))
-
-(defonce ^:const MARION_INITIAL_WAIT_TIME 1000)
-(defonce ^:const MARION_RECONNECTION_ATTEMPT_DELAY 200)
 
 (defonce clients (atom []))                                                                                                   ; ports of content scripts
 (defonce transcript-subscribers (atom []))                                                                                    ; ports of content scripts
@@ -225,12 +223,12 @@
       (if-let [port (<! (connect-to-dirac-extension!))]
         (run-dirac-extension-background-page-message-loop! port)
         (error "unable to find a dirac extension to instrument")))
-    (<! (timeout MARION_RECONNECTION_ATTEMPT_DELAY))                                                                          ; do not starve this thread
+    (<! (timeout (get-marion-reconnection-attempt-delay)))                                                                    ; do not starve this thread
     (recur)))
 
 (defn init! []
   (log "init!")
   (boot-chrome-event-loop!)
   (go
-    (<! (timeout MARION_INITIAL_WAIT_TIME))                                                                                   ; marion should connect after dirac extension boots up
+    (<! (timeout (get-marion-initial-wait-time)))                                                                             ; marion should connect after dirac extension boots up
     (maintain-robust-connection-with-dirac-extension!)))

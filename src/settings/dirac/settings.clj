@@ -9,6 +9,9 @@
 (def ^:const LAUNCH_TASK_MESSAGE "dirac-launch-task")
 (def ^:const TRANSCRIPT_MATCH_TIMEOUT 5000)
 
+(def ^:const MARION_INITIAL_WAIT_TIME 1000)
+(def ^:const MARION_RECONNECTION_ATTEMPT_DELAY 200)
+
 ; -- cljs access ------------------------------------------------------------------------------------------------------------
 
 (defmacro get-test-dirac-agent-port []
@@ -28,3 +31,9 @@
 
 (defmacro get-transcript-match-timeout []
   TRANSCRIPT_MATCH_TIMEOUT)
+
+(defmacro get-marion-initial-wait-time []
+  MARION_INITIAL_WAIT_TIME)
+
+(defmacro get-marion-reconnection-attempt-delay []
+  MARION_RECONNECTION_ATTEMPT_DELAY)
