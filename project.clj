@@ -55,8 +55,7 @@
                  "test/backend/src"
                  "test/browser/fixtures"
                  "test/browser/src"
-                 "test/marion/src"
-                 "test/support"]                                                                                              ; this is for Cursive, will be redefined by profiles
+                 "test/marion/src"]
   :resource-paths ["resources"]                                                                                               ; this is for Cursive, will be redefined by profiles
   :test-paths ["test"]                                                                                                        ; this is for Cursive, will be redefined by profiles
 
@@ -106,7 +105,7 @@
                                        "src/agent"
                                        "src/nrepl"
                                        "src/project"]
-              :test-paths   ["test/support"
+              :test-paths   ["src/test"
                              "test/backend/src"]}
 
              :browser-tests
@@ -114,16 +113,15 @@
                                          "src/agent"
                                          "src/nrepl"
                                          "src/project"]
-              :test-paths     ["test/support"
-                               "test/browser/src"]
-              :resource-paths ["test"]}
+              :test-paths     ["src/test"
+                               "test/browser/src"]}
 
              :browser-fixtures
              {:cljsbuild {:builds
                           {:tests
                            {:source-paths ["src/lib"
                                            "src/fixtures"
-                                           "test/support"
+                                           "src/test"
                                            "test/browser/fixtures/src/tests"]
                             :compiler     {:output-to     "test/browser/fixtures/resources/compiled/tests/tests.js"
                                            :output-dir    "test/browser/fixtures/resources/compiled/tests"
