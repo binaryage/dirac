@@ -14,6 +14,9 @@
             [chromex.ext.windows :as windows]
             [dirac.sugar :as sugar]))
 
+(defonce ^:const MARION_INITIAL_WAIT_TIME 1000)
+(defonce ^:const MARION_RECONNECTION_ATTEMPT_DELAY 200)
+
 (defonce clients (atom []))                                                                                                   ; ports of content scripts
 (defonce dirac-port (atom nil))
 (defonce pending-dirac-messages (atom []))
@@ -175,7 +178,7 @@
     (runtime/tap-all-events chrome-event-channel)
     (run-chrome-event-loop! chrome-event-channel)))
 
-; -- dirac extension event loop -------------------------------------------------------------------------------------------------------
+; -- dirac extension event loop ---------------------------------------------------------------------------------------------
 
 (defn process-dirac-extension-message! [message]
   (log "process-dirac-extension-message!" message)
@@ -216,14 +219,16 @@
 
 (defn maintain-robust-connection-with-dirac-extension! []
   (go-loop []
-    (<! (timeout 1000))                                                                                                       ; marion should connect after dirac extension boots up
     (if-not (dirac-port-connected?)
       (if-let [port (<! (connect-to-dirac-extension!))]
         (run-dirac-extension-background-page-message-loop! port)
         (error "unable to find dirac extension to instrument")))
+    (<! (timeout MARION_RECONNECTION_ATTEMPT_DELAY))                                                                          ; do not starve this thread
     (recur)))
 
 (defn init! []
   (log "BACKGROUND: init")
   (boot-chrome-event-loop!)
-  (maintain-robust-connection-with-dirac-extension!))
+  (go
+    (<! (timeout MARION_INITIAL_WAIT_TIME))                                                                                   ; marion should connect after dirac extension boots up
+    (maintain-robust-connection-with-dirac-extension!)))
