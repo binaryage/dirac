@@ -34,6 +34,13 @@ function getParameterByName(name, url) {
 
 goog.require("dirac.fixtures.runner");
 
-var ns = 'suite01.'+getParameterByName("task").replace(/-/g, "_");
-console.info("loading task namespace '"+ns+"'");
-goog.require(ns);
+var task = getParameterByName("task");
+if (!task) {
+  var msg = "Please specify task parameter in the url. e.g. http://localhost:9080/suite01/resources/runner.html?task=open-close-dirac.";
+  console.error(msg);
+  document.body.innerHTML = msg;
+} else {
+  var ns = 'suite01.'+task.replace(/-/g, "_");
+  console.info("loading task namespace '"+ns+"'");
+  goog.require(ns);
+}
