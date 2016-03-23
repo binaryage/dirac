@@ -122,8 +122,8 @@
              {:cljsbuild {:builds
                           {:tests
                            {:source-paths ["src/lib"
+                                           "src/fixtures"
                                            "test/support"
-                                           "test/browser/fixtures/shared/src"
                                            "test/browser/fixtures/src/tests"]
                             :compiler     {:output-to     "test/browser/fixtures/resources/compiled/tests/tests.js"
                                            :output-dir    "test/browser/fixtures/resources/compiled/tests"
