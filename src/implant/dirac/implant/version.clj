@@ -1,7 +1,7 @@
 (ns dirac.implant.version
-  (:require [dirac.version]))
+  (:require [dirac.project]))
 
-(def version dirac.version/version)
+(def version dirac.project/version)
 
 (defmacro get-version []
   version)

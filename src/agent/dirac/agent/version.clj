@@ -1,4 +1,4 @@
 (ns dirac.agent.version
-  (:require [dirac.version]))
+  (:require [dirac.project]))
 
-(def ^:dynamic version dirac.version/version)
+(def ^:dynamic version dirac.project/version)

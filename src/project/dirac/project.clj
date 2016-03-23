@@ -1,4 +1,4 @@
-(ns dirac.version)
+(ns dirac.project)
 
 ; ideally this file should be generated from project.clj
 ; but with leiningen design it is non-trivial

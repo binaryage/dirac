@@ -3,7 +3,7 @@
             [clojure.test :refer :all]
             [dirac.test.nrepl-server-helpers :refer [start-nrepl-server! stop-nrepl-server! test-nrepl-server-port]]
             [dirac.agent :as agent]
-            [dirac.version :refer [version]]
+            [dirac.project :refer [version]]
             [dirac.test.mock-nrepl-tunnel-client :as tunnel-client]
             [dirac.test.mock-weasel-client :as weasel-client]
             [dirac.test.logging :as logging]

@@ -10,7 +10,7 @@ pushd "$ROOT"
 
 LEIN_VERSION=`cat "$PROJECT_FILE" | grep "defproject" | cut -d' ' -f3 | cut -d\" -f2`
 
-# same version must be in src/project/dirac/version.clj
+# same version must be in src/project/dirac/project.clj
 # and in manifest files resources/unpacked/manifest.json, resources/release/manifest.json
 
 PROJECT_VERSION=`cat "$PROJECT_VERSION_FILE" | grep "(def version" | cut -d" " -f3 | cut -d\" -f2`
