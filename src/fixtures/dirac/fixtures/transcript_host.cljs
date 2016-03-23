@@ -1,6 +1,6 @@
 (ns dirac.fixtures.transcript-host
   (:require-macros [cljs.core.async.macros :refer [go go-loop]]
-                   [dirac.test.settings :refer [get-test-dirac-agent-port get-transcript-match-timeout]])
+                   [dirac.settings :refer [get-test-dirac-agent-port get-transcript-match-timeout]])
   (:require [cljs.core.async :refer [put! <! chan timeout alts! close!]]
             [cljs.core.async.impl.protocols :as core-async]
             [dirac.fixtures.transcript :as transcript]

@@ -2,7 +2,7 @@
   (:require [clojure.core.async :refer [chan <!! <! >!! put! alts!! timeout close! go go-loop]]
             [clojure.test :refer :all]
             [dirac.agent-impl :as agent]
-            [dirac.test.settings :refer [get-test-dirac-agent-port get-dirac-agent-boot-time
+            [dirac.settings :refer [get-test-dirac-agent-port get-dirac-agent-boot-time
                                          get-test-nrepl-server-port]]
             [clojure.tools.logging :as log]))
 

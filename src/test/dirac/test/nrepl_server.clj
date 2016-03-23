@@ -3,7 +3,7 @@
             [clojure.test :refer :all]
             [dirac.test.nrepl-server-helpers :refer [start-nrepl-server! stop-nrepl-server! test-nrepl-server-port]]
             [dirac.test.logging :as logging]
-            [dirac.test.settings :refer [get-test-nrepl-server-port]]
+            [dirac.settings :refer [get-test-nrepl-server-port]]
             [clojure.tools.logging :as log]))
 
 (def log-level "INFO")                                                                                                        ; INFO, DEBUG, TRACE, ALL

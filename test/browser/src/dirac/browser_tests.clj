@@ -2,7 +2,7 @@
   (:require [clojure.test :refer :all]
             [clojure.java.io :as io]
             [clojure.stacktrace :as stacktrace]
-            [dirac.test.settings :refer [get-launch-task-message]]
+            [dirac.settings :refer [get-launch-task-message]]
             [dirac.test.fixtures-web-server :refer [with-fixtures-web-server]]
             [dirac.test.nrepl-server :refer [with-nrepl-server]]
             [dirac.test.agent :refer [with-dirac-agent]]

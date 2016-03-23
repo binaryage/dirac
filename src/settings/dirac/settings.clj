@@ -1,4 +1,4 @@
-(ns dirac.test.settings)
+(ns dirac.settings)
 
 ; we want this stuff to be accessible both from clojure and clojurescript
 

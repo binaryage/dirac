@@ -101,7 +101,8 @@
               :hooks   [leiningen.cljsbuild]}
 
              :backend-tests
-             {:source-paths ^:replace ["src/lib"
+             {:source-paths ^:replace ["src/settings"
+                                       "src/lib"
                                        "src/agent"
                                        "src/nrepl"
                                        "src/project"]
@@ -109,7 +110,8 @@
                              "test/backend/src"]}
 
              :browser-tests
-             {:source-paths   ^:replace ["src/lib"
+             {:source-paths   ^:replace ["src/settings"
+                                         "src/lib"
                                          "src/agent"
                                          "src/nrepl"
                                          "src/project"]
@@ -119,7 +121,8 @@
              :browser-fixtures
              {:cljsbuild {:builds
                           {:tests
-                           {:source-paths ["src/lib"
+                           {:source-paths ["src/settings"
+                                           "src/lib"
                                            "src/fixtures"
                                            "src/test"
                                            "test/browser/fixtures/src/tests"]
@@ -132,7 +135,8 @@
              :marion
              {:cljsbuild {:builds
                           {:marion-background
-                           {:source-paths ["src/shared"
+                           {:source-paths ["src/settings"
+                                           "src/shared"
                                            "test/marion/src/dev"
                                            "test/marion/src/background"]
                             :compiler     {:output-to     "test/marion/resources/unpacked/compiled/background/background.js"
@@ -142,7 +146,8 @@
                                            :source-map    true}}
 
                            :marion-content-script
-                           {:source-paths ["src/shared"
+                           {:source-paths ["src/settings"
+                                           "src/shared"
                                            "test/marion/src/content_script"]
                             :compiler     {:output-to             "test/marion/resources/unpacked/compiled/content_script/content_script.js"
                                            :output-dir            "test/marion/resources/unpacked/compiled/content_script"
@@ -155,7 +160,8 @@
              :unpacked
              {:cljsbuild {:builds
                           {:dirac-implant
-                           {:source-paths ["src/implant"
+                           {:source-paths ["src/settings"
+                                           "src/implant"
                                            "src/lib"
                                            "src/project"]
                             :compiler     {:output-to     "resources/unpacked/devtools/front_end/dirac/compiled/implant/implant.js"
@@ -165,7 +171,8 @@
                                            :source-map    true}}
 
                            :dirac-background
-                           {:source-paths ["src/dev"
+                           {:source-paths ["src/settings"
+                                           "src/dev"
                                            "src/lib"
                                            "src/figwheel"
                                            "src/shared"
@@ -177,7 +184,8 @@
                                            :optimizations :none
                                            :source-map    true}}
                            :dirac-options
-                           {:source-paths ["src/dev"
+                           {:source-paths ["src/settings"
+                                           "src/dev"
                                            "src/lib"
                                            "src/figwheel"
                                            "src/shared"
@@ -200,7 +208,8 @@
              {:env       {:chromex-elide-verbose-logging "true"}
               :cljsbuild {:builds
                           {:dirac-implant
-                           {:source-paths ["src/implant"
+                           {:source-paths ["src/settings"
+                                           "src/implant"
                                            "src/lib"
                                            "src/project"]
                             :compiler     {:output-to     "resources/release/devtools/front_end/dirac/compiled/implant/implant.js"
@@ -209,7 +218,8 @@
                                            :optimizations :advanced
                                            :elide-asserts true}}
                            :dirac-background
-                           {:source-paths ["src/rel"
+                           {:source-paths ["src/settings"
+                                           "src/rel"
                                            "src/lib"
                                            "src/shared"
                                            "src/project"
@@ -221,7 +231,8 @@
                                            :pseudo-names  true
                                            :elide-asserts true}}
                            :dirac-options
-                           {:source-paths ["src/rel"
+                           {:source-paths ["src/settings"
+                                           "src/rel"
                                            "src/lib"
                                            "src/shared"
                                            "src/project"

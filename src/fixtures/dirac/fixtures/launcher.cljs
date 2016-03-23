@@ -1,6 +1,6 @@
 (ns dirac.fixtures.launcher
   (:require-macros [cljs.core.async.macros :refer [go go-loop]]
-                   [dirac.test.settings :refer [get-launch-task-key get-launch-task-message]])
+                   [dirac.settings :refer [get-launch-task-key get-launch-task-message]])
   (:require [cljs.core.async :refer [put! <! chan timeout alts! close!]]
             [chromex.support :refer-macros [oget oset ocall oapply]]
             [chromex.logging :refer-macros [log warn error info]]))
