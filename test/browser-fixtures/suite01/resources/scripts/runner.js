@@ -30,6 +30,11 @@ function getParameterByName(name, url) {
     return decodeURIComponent(results[2].replace(/\+/g, " "));
 }
 
+function displayTaskName(task) {
+  var nameEl = document.getElementById("task-name");
+  nameEl.innerText = task;
+}
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 goog.require("dirac.fixtures.runner");
@@ -40,7 +45,8 @@ if (!task) {
   console.error(msg);
   document.body.innerHTML = msg;
 } else {
+  displayTaskName(task);
   var ns = 'suite01.'+task.replace(/-/g, "_");
-  console.info("loading task namespace '"+ns+"'");
+  console.info("loading task namespace '" + ns + "'");
   goog.require(ns);
 }

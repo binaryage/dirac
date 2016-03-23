@@ -1,12 +1,27 @@
 html {
   font-family: courier;
+  font-size: 12px;
+}
+
+#task-name {
+  display: inline-block;
+  font-weight: bold;
+  color: blue;
+}
+
+#task-name:after {
+  content: ':';
+}
+
+#status-box {
+  margin: 10px 0px;
 }
 
 .status {
-  font-size: 12px;
+  display: inline-block;
   font-weight: bold;
   font-family: courier;
-  margin: 10px 0px;
+  margin-left: 10px;
 }
 
 #transcript-box {
