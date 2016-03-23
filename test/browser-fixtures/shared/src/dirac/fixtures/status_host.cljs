@@ -1,7 +1,5 @@
 (ns dirac.fixtures.status-host
-  (:require-macros [cljs.core.async.macros :refer [go go-loop]])
-  (:require [cljs.core.async :refer [put! <! chan timeout alts! close!]]
-            [chromex.support :refer-macros [oget oset ocall oapply]]
+  (:require [chromex.support :refer-macros [oget oset ocall oapply]]
             [chromex.logging :refer-macros [log warn error info]]
             [dirac.fixtures.helpers :as helpers]
             [dirac.fixtures.status :as status]))

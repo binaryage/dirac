@@ -32,6 +32,7 @@
   (set! *transcript-enabled* false))
 
 (defn set-style! [style]
+  (ocall js/window "setRunnerFavicon" style)
   (transcript/set-style! @current-transcript style))
 
 (defn sniffer-enabled? []
