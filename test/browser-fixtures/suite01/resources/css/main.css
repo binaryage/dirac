@@ -27,9 +27,13 @@ html {
 }
 
 .transcript-timeout {
-  background-color: #fee;
+  background-color: #ffe;
 }
 
 .transcript-finished {
   background-color: #efe;
+}
+
+.transcript-exception {
+  background-color: #fee;
 }

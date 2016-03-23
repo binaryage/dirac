@@ -1,5 +1,6 @@
-exec             {:command :fire-synthetic-chrome-event, :chrome-event [:chromex.ext.commands/on-command ["open-dirac-devtools" {:reset-settings 1}]]}
-dirac extension  handling command: open-dirac-devtools
-dirac extension  register dirac connection #1
-dirac frontend   implant initialized
-exec             {:command :fire-synthetic-chrome-event, :chrome-event [:chromex.ext.commands/on-command ["close-dirac-devtools" "1"]]}
+automate         open-tab-with-scenario! normal
+automate         [:chromex.ext.commands/on-command ["open-dirac-devtools" {:reset-settings 1}]]
+extension        handling command: open-dirac-devtools
+extension        register dirac frontend connection #1
+frontend #1      implant initialized
+automate         [:chromex.ext.commands/on-command ["close-dirac-devtools" 1]]

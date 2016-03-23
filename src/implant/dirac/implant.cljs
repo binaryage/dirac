@@ -6,7 +6,8 @@
             [cljs.reader :as reader]
             [chromex.support :refer-macros [oget oset ocall oapply]]
             [chromex.logging :refer-macros [log warn error]]
-            [dirac.implant.eval :as eval]))
+            [dirac.implant.eval :as eval]
+            [dirac.implant.feedback-support :as feedback-support]))
 
 (def ^:dynamic *console-initialized* false)
 (def ^:dynamic *implant-initialized* false)
@@ -15,7 +16,7 @@
 ; don't forget to update externs.js when touching this API
 
 (defn ^:export feedback [text]
-  (eval/post-feedback-event! text))
+  (feedback-support/post! text))
 
 (defn ^:export automate [command]
   (try
@@ -62,6 +63,7 @@
     (set! *implant-initialized* true)
     (assert (not *console-initialized*))
     (install-automation-support!)
+    (feedback-support/install!)
     (eval/start-eval-request-queue-processing-loop!)
     (feedback "implant initialized")))
 

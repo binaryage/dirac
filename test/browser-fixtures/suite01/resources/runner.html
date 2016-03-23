@@ -1,0 +1,35 @@
+<!doctype html>
+<html>
+<head>
+    <title>TASK RUNNER</title>
+    <link rel="stylesheet" href="css/main.css">
+    <script src="compiled/goog/base.js" type="text/javascript"></script>
+    <script src="compiled/suite01.js" type="text/javascript"></script>
+</head>
+<body>
+<div id="status-box"></div>
+<div id="buttons">
+    <button id="run-again-button" onclick="dirac.fixtures.task.reload_task()">run again!</button>
+    <button id="copy-button" data-clipboard-target="transcript">copy transcript!</button>
+</div>
+<div id="transcript-box"></div>
+<script>
+// quick and dirty, from http://stackoverflow.com/a/901144/84283
+function getParameterByName(name, url) {
+    if (!url) url = window.location.href;
+    url = url.toLowerCase(); // This is just to avoid case sensitiveness
+    name = name.replace(/[\[\]]/g, "\\$&").toLowerCase();// This is just to avoid case sensitiveness for query parameter name
+    var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+        results = regex.exec(url);
+    if (!results) return null;
+    if (!results[2]) return '';
+    return decodeURIComponent(results[2].replace(/\+/g, " "));
+}
+var ns = 'suite01.'+getParameterByName("task").replace(/-/g, "_");
+console.log("loading namespace", ns);
+goog.require(ns);
+</script>
+<script src="scripts/ZeroClipboard.js"></script>
+<script src="scripts/clipboard.js"></script>
+</body>
+</html>

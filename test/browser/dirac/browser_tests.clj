@@ -2,6 +2,7 @@
   (:require [clojure.test :refer :all]
             [clojure.java.io :as io]
             [clojure.stacktrace :as stacktrace]
+            [dirac.test.settings :refer [get-launch-transcript-task-message]]
             [dirac.test.fixtures-web-server :refer [with-fixtures-web-server]]
             [dirac.test.nrepl-server :refer [with-nrepl-server]]
             [dirac.test.agent :refer [with-dirac-agent]]
@@ -60,7 +61,10 @@
 
 (defn make-test-index-url [suite-name test-name]
   (let [debugging-port (get-debugging-port)]
-    (str "http://localhost:9090/" suite-name "/resources/" test-name ".html?test_runner=1&debugging_port=" debugging-port)))
+    (str "http://localhost:9090/" suite-name "/resources/runner.html?"
+         "task=" test-name
+         "&test_runner=1"
+         "&debugging_port=" debugging-port)))
 
 (defn navigate-transcript-test! []
   (let [test-index-url (make-test-index-url *current-transcript-suite* *current-transcript-test*)
@@ -163,7 +167,7 @@
 
 (defn launch-transcript-test-after-delay [delay-ms]
   {:pre [(integer? delay-ms) (not (neg? delay-ms))]}
-  (let [script (str "window.postMessage({type:'launch-transcript-test', delay: " delay-ms "}, '*')")]
+  (let [script (str "window.postMessage({type:'" (get-launch-transcript-task-message) "', delay: " delay-ms "}, '*')")]
     (execute-script script)))
 
 (defn execute-transcript-test! [test-name]

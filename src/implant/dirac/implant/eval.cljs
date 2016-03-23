@@ -3,7 +3,8 @@
   (:require [cljs.core.async :refer [put! <! chan timeout alts! close!]]
             [cljs.core.async.impl.protocols :as core-async]
             [chromex.support :refer-macros [oget ocall oapply]]
-            [chromex.logging :refer-macros [log warn error]]))
+            [chromex.logging :refer-macros [log warn error]]
+            [dirac.implant.helpers :as helpers]))
 
 ; -- configuration ----------------------------------------------------------------------------------------------------------
 
@@ -28,7 +29,7 @@
 
 ; -- helpers ----------------------------------------------------------------------------------------------------------------
 
-(defn call-code-as-string [& args]
+(defn code-as-string [& args]
   (if-let [eval-fn (oget js/window "dirac" "codeAsString")]
     (.apply eval-fn nil (into-array args))
     (error "dirac.codeAsString not found")))
@@ -58,9 +59,9 @@
               (recur)))
           (timeout-fn))))))
 
-(defn call-eval-with-callback!
+(defn eval-with-callback!
   ([context code]
-   (call-eval-with-callback! context code nil))
+   (eval-with-callback! context code nil))
   ([context code callback]
    (let [dirac (oget js/window "dirac")
          has-context-fn-name (get-has-context-fn-name context)]
@@ -94,22 +95,17 @@
   (str "devtools.dirac.installed_QMARK_()"))
 
 (defn ^:dynamic output-template [job-id kind text]
-  (str "devtools.dirac.present_output(" job-id ", '" kind "', " (call-code-as-string text) ")"))
+  (str "devtools.dirac.present_output(" job-id ", '" kind "', " (code-as-string text) ")"))
 
 (defn ^:dynamic postprocess-template [code]
   (str "try{"
-       "  devtools.dirac.postprocess_successful_eval(eval(" (call-code-as-string code) "))"
+       "  devtools.dirac.postprocess_successful_eval(eval(" (code-as-string code) "))"
        "} catch (e) {"
        "  devtools.dirac.postprocess_unsuccessful_eval(e)"
        "}"))
 
 (defn console-log-template [method text]
-  (str "console." method "(" (call-code-as-string text) ")"))
-
-(defn feedback-event-template [text]
-  (str "if (window.marionFeedbackPresent) {"
-       "  window.postMessage({type: 'dirac-frontend-feedback-event', text: " (call-code-as-string text) "}, '*')"
-       "}"))
+  (str "console." method "(" (code-as-string text) ")"))
 
 ; -- message templates ------------------------------------------------------------------------------------------------------
 
@@ -146,7 +142,7 @@
                    (put! result-chan [value thrown? exception-details]))]
     (go
       (try
-        (call-eval-with-callback! context code callback)
+        (eval-with-callback! context code callback)
         (catch :default ex
           (put! result-chan [::exception ex])))
       (let [[result] (alts! [result-chan timeout-chan])]                                                                      ; when timeout channel closes, the result is nil
@@ -178,21 +174,16 @@
 ; -- simple evaluation for page-context console logging ---------------------------------------------------------------------
 
 (defn console-info! [msg]
-  (call-eval-with-callback! :default (console-log-template "info" msg)))
+  (eval-with-callback! :default (console-log-template "info" msg)))
 
 (defn console-error! [msg]
-  (call-eval-with-callback! :default (console-log-template "error" msg)))
+  (eval-with-callback! :default (console-log-template "error" msg)))
 
 (defn console-warn! [msg]
-  (call-eval-with-callback! :default (console-log-template "warn" msg)))
+  (eval-with-callback! :default (console-log-template "warn" msg)))
 
 (defn console-log! [msg]
-  (call-eval-with-callback! :default (console-log-template "log" msg)))
-
-; -- simple evaluation for marion automation --------------------------------------------------------------------------------
-
-(defn post-feedback-event! [text]
-  (call-eval-with-callback! :default (feedback-event-template text)))
+  (eval-with-callback! :default (console-log-template "log" msg)))
 
 ; -- serialization of evaluations -------------------------------------------------------------------------------------------
 

@@ -1,7 +1,7 @@
 (ns dirac.background.helpers
   (:require-macros [cljs.core.async.macros :refer [go go-loop]])
   (:require [cljs.core.async :refer [<! chan]]
-            [chromex.support :refer-macros [oget ocall oapply]]
+            [chromex.support :refer-macros [oget oset ocall oapply]]
             [chromex.logging :refer-macros [log info warn error group group-end]]
             [chromex.ext.tabs :as tabs]
             [chromex.ext.extension :as extension]
@@ -62,13 +62,13 @@
 (defn report-error-in-tab [tab-id msg]
   (log-in-tab tab-id "error" msg)
   (error (tab-log-prefix tab-id) msg)
-  (state/post-feedback-event! (str "ERROR " (tab-log-prefix tab-id) " " msg))
+  (state/post-feedback! (str "ERROR " (tab-log-prefix tab-id) " " msg))
   (action/update-action-button tab-id :error msg))
 
 (defn report-warning-in-tab [tab-id msg]
   (log-in-tab tab-id "warn" msg)
   (warn (tab-log-prefix tab-id) msg)
-  (state/post-feedback-event! (str "WARNING " (tab-log-prefix tab-id) " " msg))
+  (state/post-feedback! (str "WARNING " (tab-log-prefix tab-id) " " msg))
   (action/update-action-button tab-id :warning msg))
 
 ; -- automation support -----------------------------------------------------------------------------------------------------
@@ -91,3 +91,12 @@
   (let [views (extension/get-views #js {:type "tab"})]
     (doseq [view views]
       (.close view))))
+
+(defn install-intercom! [connection-id handler]
+  (let [matching-views (get-views-matching-connection connection-id)]
+    (if (= (count matching-views) 1)
+      (let [view (first matching-views)]
+        (oset view ["diracExtensionIntercom"] handler)
+        (when-let [flush-fn (oget view "diracFlushPendingFeedbackMessages")]
+          (flush-fn)))
+      (error "unable to install intercom from dirac extension to dirac frontend" connection-id))))

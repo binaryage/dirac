@@ -9,11 +9,15 @@
             [chromex.protocols :refer [post-message! get-sender]]
             [chromex.ext.tabs :as tabs]
             [chromex.ext.runtime :as runtime]
-            [chromex.ext.management :as management]))
+            [chromex.ext.extension :as extension]
+            [chromex.ext.management :as management]
+            [chromex.ext.windows :as windows]
+            [dirac.sugar :as sugar]))
 
 (defonce clients (atom []))                                                                                                   ; ports of content scripts
 (defonce dirac-port (atom nil))
 (defonce pending-dirac-messages (atom []))
+(defonce transcript-subscribers (atom []))                                                                                    ; ports of content scripts
 
 (defn flush-pending-dirac-messages! [port]
   (let [messages @pending-dirac-messages]
@@ -40,42 +44,97 @@
 
 ; -- clients manipulation ---------------------------------------------------------------------------------------------------
 
+(defn subscribe-client-to-transcript! [client]
+  (log "client subscribed to transcript" client)
+  (swap! transcript-subscribers conj client))
+
+(defn unsubscribe-client-from-transcript! [client]
+  (log "client unsubscribed to transcript" client)
+  (let [remove-item (fn [coll item] (remove #(identical? item %) coll))]
+    (swap! transcript-subscribers remove-item client)))
+
+(defn is-client-subscribed-to-transcript? [client]
+  (boolean (some #{client} @transcript-subscribers)))
+
 (defn add-client! [client]
   (log "BACKGROUND: client connected" (get-sender client))
   (swap! clients conj client))
 
 (defn remove-client! [client]
   (log "BACKGROUND: client disconnected" (get-sender client))
+  (if (is-client-subscribed-to-transcript? client)
+    (unsubscribe-client-from-transcript! client))
   (let [remove-item (fn [coll item] (remove #(identical? item %) coll))]
     (swap! clients remove-item client)))
 
-(defn process-client-message [message]
-  (log "process-client-message:" message)
+(defn forward-command-to-dirac-extension! [command]
   (if-let [port @dirac-port]
-    (post-message! port message)
+    (post-message! port command)
     (do
-      (register-pending-message! message)
+      (register-pending-message! command)
       (warn "dirac extension is not connected with marion => queing"))))
 
-(defn broadcast-to-all-clients! [message]
-  (log "broadcast-to-all-clients!" message)
-  (doseq [client @clients]
+(defn send-feedback-to-subscribed-clients! [message]
+  (log "send-transcript-subscribed-clients!" message)
+  (doseq [client @transcript-subscribers]
     (post-message! client message)))
+
+(defn create-tab-with-url! [url]
+  (go
+    (if-let [[tab] (<! (tabs/create #js {:url url}))]
+      (sugar/get-tab-id tab))))
+
+(defn open-tab-with-scenario! [message]
+  (log "open-dirac-with-scenario!" message)
+  (let [scenario-url (oget message "url")]                                                                                    ; something like http://localhost:9080/suite01/resources/scenarios/normal.html
+    (create-tab-with-url! scenario-url)))
+
+(defn activate-tab! [tab-id]
+  (go
+    (if-let [window-id (<! (sugar/fetch-tab-window-id tab-id))]
+      (windows/update window-id #js {"focused"       true
+                                     "drawAttention" true}))
+    (tabs/update tab-id #js {"active" true})))
+
+(defn switch-to-task-runner! []
+  (go
+    (let [[tabs] (<! (tabs/query #js {:title "TASK RUNNER"}))]
+      (if-let [tab (first tabs)]
+        (activate-tab! (sugar/get-tab-id tab))
+        (warn "no TASK RUNNER tab?")))))
+
+(defn close-all-scenario-tabs! []
+  (log "close-all-extension-tabs")
+  (go
+    (let [[tabs] (<! (tabs/query #js {:url "http://*/*/resources/scenarios/*"}))]
+      (doseq [tab tabs]
+        (log "remove" tab)
+        (tabs/remove (sugar/get-tab-id tab))))))
+
+(defn process-content-script-message [client message]
+  (log "process-client-message:" message client)
+  (case (oget message "type")
+    "marion-subscribe-transcript" (subscribe-client-to-transcript! client)
+    "marion-unsubscribe-transcript" (unsubscribe-client-from-transcript! client)
+    "marion-open-tab-with-scenario" (open-tab-with-scenario! message)
+    "marion-switch-to-task-runner-tab" (switch-to-task-runner!)
+    "marion-close-all-tabs" (close-all-scenario-tabs!)
+    "marion-extension-command" (forward-command-to-dirac-extension! (oget message "payload"))))
 
 ; -- client event loop ------------------------------------------------------------------------------------------------------
 
-(defn run-client-message-loop! [client]
+(defn run-content-script-message-loop! [client]
   (go-loop []
     (when-let [message (<! client)]
-      (process-client-message message)
+      (process-content-script-message client message)
       (recur))
     (remove-client! client)))
 
 ; -- event handlers ---------------------------------------------------------------------------------------------------------
 
-(defn handle-client-connection! [client]
+(defn handle-content-script-connection! [client]
   (add-client! client)
-  (run-client-message-loop! client))
+  (run-content-script-message-loop! client))
 
 ; -- main event loop --------------------------------------------------------------------------------------------------------
 
@@ -83,7 +142,7 @@
   (log (gstring/format "BACKGROUND: got chrome event (%05d)" event-num) event)
   (let [[event-id event-args] event]
     (case event-id
-      ::runtime/on-connect (apply handle-client-connection! event-args)
+      ::runtime/on-connect (apply handle-content-script-connection! event-args)
       nil)))
 
 (defn run-chrome-event-loop! [chrome-event-channel]
@@ -99,13 +158,14 @@
     (runtime/tap-all-events chrome-event-channel)
     (run-chrome-event-loop! chrome-event-channel)))
 
-; -- dirac event loop -------------------------------------------------------------------------------------------------------
+; -- dirac extension event loop -------------------------------------------------------------------------------------------------------
 
-(defn process-dirac-message! [message]
-  (log "process-dirac-message!" message)
+(defn process-dirac-extension-message! [message]
+  (log "process-dirac-extension-message!" message)
   (let [type (oget message "type")]
     (case type
-      "dirac-extension-feedback-event" (broadcast-to-all-clients! message)
+      "feedback-from-dirac-extension" (send-feedback-to-subscribed-clients! message)
+      "feedback-from-dirac-frontend" (send-feedback-to-subscribed-clients! message)
       (warn "received unknown dirac message type:" type, message))))
 
 (defn run-dirac-extension-background-page-message-loop! [dirac-port]
@@ -113,7 +173,7 @@
   (go-loop []
     (if-let [message (<! dirac-port)]
       (do
-        (process-dirac-message! message)
+        (process-dirac-extension-message! message)
         (recur))
       (unregister-dirac-port!))))
 

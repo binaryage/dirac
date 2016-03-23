@@ -47,6 +47,10 @@
 
 ; -- marion feedback --------------------------------------------------------------------------------------------------------
 
-(defn post-feedback-event! [text]
+(defn post-to-marion! [message]
   (if-let [marion-port (get-marion-port)]
-    (post-message! marion-port #js {:type "dirac-extension-feedback-event" :text text})))
+    (post-message! marion-port message)))
+
+(defn post-feedback! [text]
+  (post-to-marion! #js {:type "feedback-from-dirac-extension" :transcript text}))
+

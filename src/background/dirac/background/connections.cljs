@@ -42,7 +42,7 @@
          (number? backend-tab-id)]}
   (let [id (state/get-next-connection-id!)]
     (add! id dirac-tab-id backend-tab-id)
-    (marion/post-feedback-event! (str "register dirac connection #" id))
+    (marion/post-feedback-event! (str "register dirac frontend connection #" id))
     (update-action-button-according-to-connection-state! backend-tab-id)
     id))
 
@@ -51,6 +51,6 @@
   (if-let [connection (find-dirac-connection dirac-tab-id)]
     (let [{:keys [id backend-tab-id]} connection]
       (remove! id)
-      (marion/post-feedback-event! (str "unregister dirac connection #" id))
+      (marion/post-feedback-event! (str "unregister dirac frontend connection #" id))
       (update-action-button-according-to-connection-state! backend-tab-id))
     (warn "attempt to unregister non-existent dirac connection with dirac-tab-id:" dirac-tab-id)))

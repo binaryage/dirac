@@ -2,7 +2,7 @@
   (:require [chromex.support :refer-macros [oget ocall oapply]]
             [chromex.logging :refer-macros [log warn error group group-end]]
             [dirac.implant.helpers :refer [get-console-view]]
-            [dirac.implant.eval :as eval]))
+            [dirac.implant.feedback-support :as feedback-support]))
 
 (defn announce-job-start! [job-id info]
   (group (str "nREPL JOB #" job-id) info)
@@ -21,7 +21,7 @@
 (defn set-prompt-mode! [mode]
   (let [mode-str (name mode)]
     (assert (#{"status" "edit"} mode-str))
-    (eval/post-feedback-event! (str "setDiracPromptMode('" mode-str "')"))
+    (feedback-support/post! (str "setDiracPromptMode('" mode-str "')"))
     (if-let [console-view (get-console-view)]
       (ocall console-view "setDiracPromptMode" mode-str))))
 

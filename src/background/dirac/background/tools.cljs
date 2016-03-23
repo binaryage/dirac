@@ -1,6 +1,6 @@
 (ns dirac.background.tools
   (:require-macros [cljs.core.async.macros :refer [go go-loop]])
-  (:require [cljs.core.async :refer [<! chan]]
+  (:require [cljs.core.async :refer [<! chan timeout]]
             [chromex.support :refer-macros [oget ocall oapply]]
             [chromex.logging :refer-macros [log info warn error group group-end]]
             [chromex.ext.windows :as windows]
@@ -40,10 +40,17 @@
     :panel (create-dirac-window! true)
     :window (create-dirac-window! false)))
 
+(defn intercom-handler [message]
+  (case (oget message "type")
+    "marion-deliver-feedback" (state/post-to-marion! (oget message "envelope"))))
+
 (defn connect-and-navigate-dirac-frontend! [dirac-tab-id backend-tab-id options]
   (let [connection-id (connections/register-connection! dirac-tab-id backend-tab-id)
         dirac-frontend-url (helpers/make-dirac-frontend-url connection-id options)]
-    (tabs/update dirac-tab-id #js {:url dirac-frontend-url})))
+    (go
+      (<! (tabs/update dirac-tab-id #js {:url dirac-frontend-url}))
+      (<! (timeout 500))                                                                                                      ; give the page some time load the document
+      (helpers/install-intercom! connection-id intercom-handler))))
 
 (defn create-dirac! [backend-tab-id options]
   (go

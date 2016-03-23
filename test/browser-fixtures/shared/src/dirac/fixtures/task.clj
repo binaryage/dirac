@@ -1,30 +1,26 @@
-(ns dirac.fixtures)
-
-(def ^:const LAUNCH_TRANSCRIPT_TEST_KEY "launchTranscriptTest")
-
-(defmacro get-launch-transcript-test-key []
-  LAUNCH_TRANSCRIPT_TEST_KEY)
+(ns dirac.fixtures.task)
 
 (defmacro without-transcript [& body]
-  `(dirac.fixtures/without-transcript-work (fn [] ~@body)))
+  `(dirac.fixtures.transcript-host/without-transcript-work (fn [] ~@body)))
 
-(defmacro go-test [& args]
+(defmacro go-task [& args]
   (let [first-arg (first args)
         config (if (map? first-arg) first-arg)
         commands (if config (rest args) args)]
     `(let [test-thunk# (fn []
                          (cljs.core.async.macros/go
-                           (task-started!)
+                           (dirac.fixtures.task/task-started!)
                            ~@commands
-                           (task-finished!)))]
-       (chromex.support/oset ~'js/window [(get-launch-transcript-test-key)] test-thunk#)
-       (setup! ~config))))
+                           (dirac.fixtures.task/task-finished!)
+                           (dirac.fixtures.task/task-teardown!)))]
+       (dirac.fixtures.launcher/register-transcript-task! test-thunk#)
+       (dirac.fixtures.task/task-setup! ~config))))
 
 ; ---------------------------------------------------------------------------------------------------------------------------
 ; logging - these need to be macros to preserve source location for devtools
 
 (defn prefix []
-  "FIXTURE:")
+  "TASK:")
 
 (defmacro log [& args]
   `(do (.log js/console ~(prefix) ~@args) nil))

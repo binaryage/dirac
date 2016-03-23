@@ -135,7 +135,8 @@
              :marion
              {:cljsbuild {:builds
                           {:marion-background
-                           {:source-paths ["test/marion/src/dev"
+                           {:source-paths ["src/shared"
+                                           "test/marion/src/dev"
                                            "test/marion/src/background"]
                             :compiler     {:output-to     "test/marion/resources/unpacked/compiled/background/background.js"
                                            :output-dir    "test/marion/resources/unpacked/compiled/background"
@@ -144,7 +145,8 @@
                                            :source-map    true}}
 
                            :marion-content-script
-                           {:source-paths ["test/marion/src/content_script"]
+                           {:source-paths ["src/shared"
+                                           "test/marion/src/content_script"]
                             :compiler     {:output-to             "test/marion/resources/unpacked/compiled/content_script/content_script.js"
                                            :output-dir            "test/marion/resources/unpacked/compiled/content_script"
                                            :asset-path            "compiled/content_script"

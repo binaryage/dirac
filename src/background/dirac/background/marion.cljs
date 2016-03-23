@@ -28,7 +28,7 @@
     (warn "no chrome event channel while receiving marion message" message)))
 
 (defn tear-down! []
-  ; we want to close all tabs/windows opened(owned) by our extension
+  ; we want to close all tabs/windows opened (owned) by our extension
   ; chrome driver does not have access to those windows and fails to switch back to its own tab
   ; https://bugs.chromium.org/p/chromium/issues/detail?id=355075
   (helpers/close-all-extension-tabs!))
@@ -68,4 +68,4 @@
   (register-marion! marion-port)
   (run-marion-message-loop! marion-port))
 
-(def post-feedback-event! state/post-feedback-event!)
+(def post-feedback-event! state/post-feedback!)
