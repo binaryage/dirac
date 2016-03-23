@@ -23,6 +23,5 @@
       (System/exit (if (successful? summary) 0 1)))))
 
 (defn -dev-main []
-  (set-test-runner-present!)
   (System/setProperty "dirac-dev" "true")
   (-main))
