@@ -9,7 +9,8 @@
 <body>
 <div id="status-box"></div>
 <div id="buttons">
-    <button id="run-again-button" onclick="dirac.fixtures.task.reload_task()">run again!</button>
+    <button id="run-again-button" onclick="dirac.fixtures.runner.reload()">run again!</button>
+    <button id="reset-button" onclick="dirac.fixtures.runner.reset()">reset!</button>
     <button id="copy-button" data-clipboard-target="transcript">copy transcript!</button>
 </div>
 <div id="transcript-box"></div>
@@ -29,6 +30,7 @@ var ns = 'suite01.'+getParameterByName("task").replace(/-/g, "_");
 console.log("loading namespace", ns);
 goog.require(ns);
 </script>
+<script>goog.require("dirac.fixtures.runner")</script>
 <script src="scripts/ZeroClipboard.js"></script>
 <script src="scripts/clipboard.js"></script>
 </body>

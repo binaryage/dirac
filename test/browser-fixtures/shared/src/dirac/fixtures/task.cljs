@@ -80,9 +80,3 @@
   (status-host/set-status! "task running...")
   (transcript-host/set-style! "running")
   (messages/reset-connection-id-counter!))
-
-(defn ^:export reload-task []
-  (cleanup!)
-  (go
-    (<! (timeout 200))
-    (ocall (oget js/document "location") "reload")))
