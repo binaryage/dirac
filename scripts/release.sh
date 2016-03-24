@@ -39,11 +39,8 @@ fi
 
 FRONTEND="$DEVTOOLS_ROOT/front_end"
 
-if [ -z "$1" ] ; then
-  lein compile-release
-else
-  lein compile-release-pseudo-names
-fi
+echo "Building dirac extension in advanced mode..."
+lein compile-dirac
 
 popd
 
@@ -73,6 +70,7 @@ cp -r "$RELEASE_BUILD_DEVTOOLS_FRONTEND/dirac" "$WORK_DIR"
 
 echo -n "" > "$WORK_DIR/dirac/require-implant.js" # when doing advanced build, all implant files are required automatically
 
+echo "Building devtools in advanced mode..."
 ./scripts/build_applications.py inspector toolbox --input_path "$WORK_DIR" --output_path "$RELEASE_BUILD_DEVTOOLS_FRONTEND" --debug 0
 
 popd

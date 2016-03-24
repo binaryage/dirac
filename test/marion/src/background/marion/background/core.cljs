@@ -17,3 +17,4 @@
     ; attempt first connection after dirac extension is likely to be ready
     (<! (timeout (get-marion-initial-wait-time)))
     (dirac/maintain-robust-connection-with-dirac-extension!)))
+

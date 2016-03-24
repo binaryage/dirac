@@ -23,7 +23,7 @@
                  [binaryage/chromex "0.3.0" :scope "test"]
                  [binaryage/devtools "0.5.2" :scope "test"]
                  [cljs-http "0.1.39" :scope "test"]
-                 [figwheel "0.5.0-6" :scope "test"]
+                 [figwheel "0.5.1" :scope "test"]
                  [reforms "0.4.3" :scope "test"]
                  [rum "0.6.0" :scope "test"]
                  [rum-reforms "0.4.3" :scope "test"]
@@ -73,11 +73,6 @@
 
   :cljsbuild {:builds {}}                                                                                                     ; prevent https://github.com/emezeske/lein-cljsbuild/issues/413
 
-  :figwheel
-  {:server-port    7100
-   :server-logfile ".figwheel_server.log"
-   :css-dirs       []}
-
   :env {:dirac-root ~(System/getProperty "user.dir")}
 
   :profiles {:lib
@@ -95,33 +90,29 @@
                :resource-paths ^:replace []
                :test-paths     ^:replace []}]
 
+             :cooper
+             {:plugins [[lein-cooper "1.2.1"]]}
+
              :cljs
              {:plugins [[lein-cljsbuild "1.1.2"]
-                        [lein-figwheel "0.5.0-6"]]
+                        [lein-figwheel "0.5.1"]]
               :hooks   [leiningen.cljsbuild]}
 
-             :backend-tests
+             :test-runner
              {:source-paths ^:replace ["src/settings"
                                        "src/lib"
                                        "src/agent"
                                        "src/nrepl"
                                        "src/project"]
               :test-paths   ["src/test"
+                             "test/browser/src"
                              "test/backend/src"]}
 
              :browser-tests
-             {:source-paths ^:replace ["src/settings"
-                                       "src/lib"
-                                       "src/agent"
-                                       "src/nrepl"
-                                       "src/project"]
-              :test-paths   ["src/test"
-                             "test/browser/src"]}
-
-             :browser-fixtures
              {:cljsbuild {:builds
                           {:tests
                            {:source-paths ["src/settings"
+                                           "src/project"
                                            "src/lib"
                                            "src/fixtures"
                                            "src/test"
@@ -129,11 +120,14 @@
                             :compiler     {:output-to     "test/browser/fixtures/resources/compiled/tests/tests.js"
                                            :output-dir    "test/browser/fixtures/resources/compiled/tests"
                                            :asset-path    "compiled/tests"
-                                           :optimizations :none                                                               ; we rely on no optimizations in test runner
+                                           :optimizations :none                                                               ; we rely on optimizations :none in test runner
                                            :source-map    true}}}}}
 
              :marion
-             {:cljsbuild {:builds
+             {:figwheel  {:server-port    7200
+                          :server-logfile ".figwheel_marion.log"
+                          :repl           false}
+              :cljsbuild {:builds
                           {:marion-background
                            {:source-paths ["src/settings"
                                            "src/shared"
@@ -157,8 +151,11 @@
                                            :pretty-print          true
                                            :source-map            "test/marion/resources/unpacked/compiled/content_script/content_script.js.map"}}}}}
 
-             :unpacked
-             {:cljsbuild {:builds
+             :dirac-unpacked
+             {:figwheel  {:server-port    7100
+                          :server-logfile ".figwheel_dirac.log"
+                          :repl           false}
+              :cljsbuild {:builds
                           {:dirac-implant
                            {:source-paths ["src/settings"
                                            "src/implant"
@@ -196,7 +193,7 @@
                                            :asset-path    "compiled/options"
                                            :optimizations :none
                                            :source-map    true}}}}}
-             :packed
+             :dirac-packed
              {:env       {:chromex-elide-verbose-logging "true"}
               :cljsbuild {:builds
                           {:dirac-implant
@@ -263,78 +260,108 @@
                           {:dirac-implant
                            {:source-paths ["checkouts/cljs-devtools/src"
                                            "checkouts/chromex/src/lib"
-                                           "checkouts/chromex/src/exts"]}
+                                           "checkouts/chromex/src/exts"]
+                            :compiler     {}}
                            :dirac-background
                            {:source-paths ["checkouts/cljs-devtools/src"
                                            "checkouts/chromex/src/lib"
-                                           "checkouts/chromex/src/exts"]}
+                                           "checkouts/chromex/src/exts"]
+                            :compiler     {}}
                            :dirac-options
                            {:source-paths ["checkouts/cljs-devtools/src"
                                            "checkouts/chromex/src/lib"
-                                           "checkouts/chromex/src/exts"]}
+                                           "checkouts/chromex/src/exts"]
+                            :compiler     {}}
                            :marion-background
                            {:source-paths ["checkouts/cljs-devtools/src"
                                            "checkouts/chromex/src/lib"
-                                           "checkouts/chromex/src/exts"]}
+                                           "checkouts/chromex/src/exts"]
+                            :compiler     {}}
                            :marion-content-script
                            {:source-paths ["checkouts/cljs-devtools/src"
                                            "checkouts/chromex/src/lib"
-                                           "checkouts/chromex/src/exts"]}
+                                           "checkouts/chromex/src/exts"]
+                            :compiler     {}}
                            :tests
                            {:source-paths ["checkouts/cljs-devtools/src"
                                            "checkouts/chromex/src/lib"
-                                           "checkouts/chromex/src/exts"]}}}}
+                                           "checkouts/chromex/src/exts"]
+                            :compiler     {}}}}}
 
              :nuke-aliases
-             {:aliases ^:replace {}}}
+             {:aliases ^:replace {}}
+
+             :dev-browser-tests
+             {:cooper {"fixtures-server"            ["scripts/launch-fixtures-server.sh"]
+                       "canary-for-browser-tests"   ["scripts/launch-canary-for-browser-tests.sh"]
+                       "fig-dirac"                  ["lein" "fig-dirac"]
+                       "fig-marion"                 ["lein" "fig-marion"]
+                       "auto-compile-marion-cs"     ["lein" "auto-compile-marion-cs"]
+                       "auto-compile-browser-tests" ["lein" "auto-compile-browser-tests"]}}}
 
   ; to develop browser tests:
   ;
-  ; terminal session1: ./scripts/dev-fixtures-server.sh
-  ; terminal session2: ./scripts/launch-browser-tests-canary.sh
+  ; ./scripts/dev-browser-tests.sh
   ;
-  ; don't forget to load unpacked extensions:
-  ;   * 'dirac' from resources/unpacked
-  ;   * 'marion' from test/marion/resources/unpacked
-  ;
-  ; terminal session3: lein fig
-  ; terminal session4: lein auto-compile-dev-browser-tests
+  ; after first launch you might need to reload extensions at chrome://extensions
+  ; because initial cljs compilation is slower than chrome launch
+  ;   * 'dirac' should point to 'resources/unpacked'
+  ;   * 'marion' should point to 'test/marion/resources/unpacked'
   ;
   ; dev fixtures server is running at http://localhost:9080
 
-  :aliases {"check"                          ["shell" "scripts/check-code.sh"]
-            "test"                           ["shell" "scripts/test-all.sh"]
-            "test-backend"                   ["do" "run-backend-tests"]
-            "test-browser"                   ["do" "make-release," "compile-browser-tests," "run-browser-tests"]
-            "test-dev-browser"               ["do" "compile-dev," "compile-dev-browser-tests," "run-dev-browser-tests"]
-            "run-backend-tests"              ["with-profile" "+backend-tests"
-                                              "run" "-m" "dirac.backend-tests-runner"]
-            "run-browser-tests"              ["with-profile" "+browser-tests"
-                                              "run" "-m" "dirac.browser-tests-runner"]
-            "run-dev-browser-tests"          ["with-profile" "+browser-tests,+checkouts"
-                                              "run" "-m" "dirac.browser-tests-runner/-dev-main"]
-            "compile-browser-tests"          ["with-profile" "+browser-tests,+browser-fixtures,+marion,+packed,+cljs,+pseudo-names,+parallel-build"
-                                              "do"
-                                              "cljsbuild" "once" "marion-background" "marion-content-script"
-                                              "tests"]
-            "compile-dev-browser-tests"      ["with-profile" "+cljs,+browser-tests,+browser-fixtures,+marion,+unpacked,+checkouts,+parallel-build"
-                                              "do"
-                                              "cljsbuild" "once" "marion-background" "marion-content-script"
-                                              "tests"]
-            "auto-compile-dev-browser-tests" ["with-profile" "+cljs,+browser-tests,+browser-fixtures,+marion,+unpacked,+checkouts"
-                                              "cljsbuild" "auto" "marion-background" "marion-content-script"
-                                              "tests"]
-            "fig"                            ["with-profile" "+unpacked,+cljs,+checkouts"
-                                              "figwheel" "dirac-background" "dirac-options" "dirac-implant"]
-            "comile-dev"                     ["with-profile" "+unpacked,+cljs,+checkouts,+parallel-build"
-                                              "cljsbuild" "once" "dirac-background" "dirac-options" "dirac-implant"]
-            "compile-release"                ["with-profile" "+packed,+cljs,+parallel-build"
-                                              "cljsbuild" "once" "dirac-background" "dirac-options" "dirac-implant"]
-            "compile-release-pseudo-names"   ["with-profile" "+packed,+cljs,+pseudo-names,+parallel-build"
-                                              "cljsbuild" "once" "dirac-implant" "dirac-background" "dirac-options"]
-            "make-release"                   ["shell" "scripts/release.sh"]
-            "package"                        ["shell" "scripts/package.sh"]
-            "jar"                            ["shell" "scripts/lein-lib-without-checkouts.sh" "jar"]
-            "install"                        ["shell" "scripts/lein-lib-without-checkouts.sh" "install"]
-            "uberjar"                        ["shell" "scripts/lein-lib-without-checkouts.sh" "uberjar"]
-            "regenerate"                     ["shell" "scripts/regenerate.sh"]})
+
+  :aliases {"check"                      ["shell" "scripts/check-code.sh"]
+            "test"                       ["shell" "scripts/test-all.sh"]
+
+            "test-backend"               ["run-backend-tests"]
+            "test-browser"               ["do"                                                                                ; this will run browser tests against fully optimized dirac extension (release build)
+                                          "compile-browser-tests,"
+                                          "release,"                                                                          ; = compile-dirac and devtools plus some cleanup, see scripts/release.sh
+                                          "compile-marion,"
+                                          "run-browser-tests"]
+            "test-browser-dev"           ["do"                                                                                ; this will run browser tests against unpacked dirac extension
+                                          "compile-browser-tests,"
+                                          "compile-dirac-dev,"
+                                          "compile-marion,"
+                                          "run-browser-tests-dev"]
+            "dev-browser-tests"          ["with-profile" "+cooper,+dev-browser-tests" "cooper"]
+
+            "run-backend-tests"          ["with-profile" "+test-runner" "run" "-m" "dirac.backend-tests-runner"]
+            "run-browser-tests"          ["with-profile" "+test-runner" "run" "-m" "dirac.browser-tests-runner"]
+            "run-browser-tests-dev"      ["with-profile" "+test-runner" "run" "-m" "dirac.browser-tests-runner/-dev-main"]
+
+            "fig-dirac"                  ["with-profile" "+dirac-unpacked,+cljs,+checkouts"
+                                          "figwheel"
+                                          "dirac-background" "dirac-options" "dirac-implant"]
+            "compile-dirac-dev"          ["with-profile" "+cljs,+dirac-unpacked,+checkouts,+parallel-build"
+                                          "cljsbuild" "once"
+                                          "dirac-background" "dirac-options" "dirac-implant"]
+            "auto-compile-dirac-dev"     ["with-profile" "+cljs,+dirac-unpacked,+checkouts,+parallel-build"
+                                          "cljsbuild" "auto"
+                                          "dirac-background" "dirac-options" "dirac-implant"]
+            "compile-dirac"              ["with-profile" "+dirac-packed,+cljs,+parallel-build"
+                                          "cljsbuild" "once"
+                                          "dirac-background" "dirac-options" "dirac-implant"]
+            "fig-marion"                 ["with-profile" "+cljs,+marion,+checkouts"
+                                          "figwheel"
+                                          "marion-background"]
+            "compile-marion"             ["with-profile" "+cljs,+marion,+checkouts"
+                                          "cljsbuild" "once"
+                                          "marion-background" "marion-content-script"]
+            "auto-compile-marion"        ["with-profile" "+cljs,+marion,+checkouts"
+                                          "cljsbuild" "auto"
+                                          "marion-background" "marion-content-script"]
+            "auto-compile-marion-cs"     ["with-profile" "+cljs,+marion,+checkouts"
+                                          "cljsbuild" "auto"
+                                          "marion-content-script"]
+
+            "compile-browser-tests"      ["with-profile" "+cljs,+browser-tests" "cljsbuild" "once" "tests"]
+            "auto-compile-browser-tests" ["with-profile" "+cljs,+browser-tests" "cljsbuild" "auto" "tests"]
+
+            "release"                    ["shell" "scripts/release.sh"]
+            "package"                    ["shell" "scripts/package.sh"]
+            "jar"                        ["shell" "scripts/lein-lib-without-checkouts.sh" "jar"]
+            "install"                    ["shell" "scripts/lein-lib-without-checkouts.sh" "install"]
+            "uberjar"                    ["shell" "scripts/lein-lib-without-checkouts.sh" "uberjar"]
+            "regenerate"                 ["shell" "scripts/regenerate.sh"]})

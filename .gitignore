@@ -18,6 +18,8 @@
 /checkouts*
 /.tmp
 .figwheel_server.log
+.figwheel_dirac.log
+.figwheel_marion.log
 .profiles/
 pom.xml*
 /test/chromedriver

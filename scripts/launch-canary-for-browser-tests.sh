@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -ex
+set -e
 
 . "$(dirname "${BASH_SOURCE[0]}")/config.sh"
 
@@ -16,11 +16,21 @@ else
   EXE="/Applications/Google Chrome Canary.app/Contents/MacOS/Google Chrome Canary"
 fi
 
+set -x
 "$EXE" \
       --remote-debugging-port=9222 \
-      --no-first-run \
       --user-data-dir="$DIRAC_BROWSER_TESTS_USER_PROFILE" \
+      --no-first-run \
       --enable-experimental-extension-apis \
-      localhost:9222/json
+      --disk-cache-dir=/dev/null \
+      --media-cache-dir=/dev/null \
+      --disable-hang-monitor \
+      --disable-prompt-on-repost \
+      --dom-automation \
+      --full-memory-crash-report \
+      --no-default-browser-check \
+      --load-extension="$DEV_DIRAC_EXTENSION_PATH,$DEV_MARION_EXTENSION_PATH" \
+      http://localhost:$DEV_FIXTURES_SERVER_PORT
+set +x
 
 popd
