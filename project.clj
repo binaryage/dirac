@@ -110,13 +110,13 @@
                              "test/backend/src"]}
 
              :browser-tests
-             {:source-paths   ^:replace ["src/settings"
-                                         "src/lib"
-                                         "src/agent"
-                                         "src/nrepl"
-                                         "src/project"]
-              :test-paths     ["src/test"
-                               "test/browser/src"]}
+             {:source-paths ^:replace ["src/settings"
+                                       "src/lib"
+                                       "src/agent"
+                                       "src/nrepl"
+                                       "src/project"]
+              :test-paths   ["src/test"
+                             "test/browser/src"]}
 
              :browser-fixtures
              {:cljsbuild {:builds
