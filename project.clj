@@ -251,6 +251,21 @@
                            :dirac-options
                            {:compiler {:pseudo-names true}}}}}
 
+             :parallel-build
+             {:cljsbuild {:builds
+                          {:dirac-implant
+                           {:compiler {:parallel-build true}}
+                           :dirac-background
+                           {:compiler {:parallel-build true}}
+                           :dirac-options
+                           {:compiler {:parallel-build true}}
+                           :marion-background
+                           {:compiler {:parallel-build true}}
+                           :marion-content-script
+                           {:compiler {:parallel-build true}}
+                           :tests
+                           {:compiler {:parallel-build true}}}}}
+
              :nuke-aliases
              {:aliases ^:replace {}}}
 
@@ -279,11 +294,11 @@
                                               "run" "-m" "dirac.browser-tests-runner"]
             "run-dev-browser-tests"          ["with-profile" "+browser-tests,+checkouts"
                                               "run" "-m" "dirac.browser-tests-runner/-dev-main"]
-            "compile-browser-tests"          ["with-profile" "+browser-tests,+browser-fixtures,+marion,+packed,+cljs,+pseudo-names"
+            "compile-browser-tests"          ["with-profile" "+browser-tests,+browser-fixtures,+marion,+packed,+cljs,+pseudo-names,+parallel-build"
                                               "do"
                                               "cljsbuild" "once" "marion-background" "marion-content-script"
                                               "tests"]
-            "compile-dev-browser-tests"      ["with-profile" "+cljs,+browser-tests,+browser-fixtures,+marion,+unpacked,+checkouts"
+            "compile-dev-browser-tests"      ["with-profile" "+cljs,+browser-tests,+browser-fixtures,+marion,+unpacked,+checkouts,+parallel-build"
                                               "do"
                                               "cljsbuild" "once" "marion-background" "marion-content-script"
                                               "tests"]
@@ -292,11 +307,11 @@
                                               "tests"]
             "fig"                            ["with-profile" "+unpacked,+cljs,+checkouts"
                                               "figwheel" "dirac-background" "dirac-options" "dirac-implant"]
-            "comile-dev"                     ["with-profile" "+unpacked,+cljs,+checkouts"
+            "comile-dev"                     ["with-profile" "+unpacked,+cljs,+checkouts,+parallel-build"
                                               "cljsbuild" "once" "dirac-background" "dirac-options" "dirac-implant"]
-            "compile-release"                ["with-profile" "+packed,+cljs"
+            "compile-release"                ["with-profile" "+packed,+cljs,+parallel-build"
                                               "cljsbuild" "once" "dirac-background" "dirac-options" "dirac-implant"]
-            "compile-release-pseudo-names"   ["with-profile" "+packed,+cljs,+pseudo-names"
+            "compile-release-pseudo-names"   ["with-profile" "+packed,+cljs,+pseudo-names,+parallel-build"
                                               "cljsbuild" "once" "dirac-implant" "dirac-background" "dirac-options"]
             "make-release"                   ["shell" "scripts/release.sh"]
             "package"                        ["shell" "scripts/package.sh"]
