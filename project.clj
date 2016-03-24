@@ -196,14 +196,6 @@
                                            :asset-path    "compiled/options"
                                            :optimizations :none
                                            :source-map    true}}}}}
-             :checkouts
-             {:cljsbuild {:builds
-                          {:background {:source-paths ["checkouts/cljs-devtools/src"
-                                                       "checkouts/chromex/src/lib"
-                                                       "checkouts/chromex/src/exts"]}
-                           :options    {:source-paths ["checkouts/cljs-devtools/src"
-                                                       "checkouts/chromex/src/lib"
-                                                       "checkouts/chromex/src/exts"]}}}}
              :packed
              {:env       {:chromex-elide-verbose-logging "true"}
               :cljsbuild {:builds
@@ -265,6 +257,33 @@
                            {:compiler {:parallel-build true}}
                            :tests
                            {:compiler {:parallel-build true}}}}}
+
+             :checkouts
+             {:cljsbuild {:builds
+                          {:dirac-implant
+                           {:source-paths ["checkouts/cljs-devtools/src"
+                                           "checkouts/chromex/src/lib"
+                                           "checkouts/chromex/src/exts"]}
+                           :dirac-background
+                           {:source-paths ["checkouts/cljs-devtools/src"
+                                           "checkouts/chromex/src/lib"
+                                           "checkouts/chromex/src/exts"]}
+                           :dirac-options
+                           {:source-paths ["checkouts/cljs-devtools/src"
+                                           "checkouts/chromex/src/lib"
+                                           "checkouts/chromex/src/exts"]}
+                           :marion-background
+                           {:source-paths ["checkouts/cljs-devtools/src"
+                                           "checkouts/chromex/src/lib"
+                                           "checkouts/chromex/src/exts"]}
+                           :marion-content-script
+                           {:source-paths ["checkouts/cljs-devtools/src"
+                                           "checkouts/chromex/src/lib"
+                                           "checkouts/chromex/src/exts"]}
+                           :tests
+                           {:source-paths ["checkouts/cljs-devtools/src"
+                                           "checkouts/chromex/src/lib"
+                                           "checkouts/chromex/src/exts"]}}}}
 
              :nuke-aliases
              {:aliases ^:replace {}}}
