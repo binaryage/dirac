@@ -10,7 +10,7 @@
 (def ^:const TRANSCRIPT_MATCH_TIMEOUT 5000)
 
 (def ^:const MARION_INITIAL_WAIT_TIME 1000)
-(def ^:const MARION_RECONNECTION_ATTEMPT_DELAY 200)
+(def ^:const MARION_RECONNECTION_ATTEMPT_DELAY 2000)
 
 ; -- cljs access ------------------------------------------------------------------------------------------------------------
 
