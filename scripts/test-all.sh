@@ -6,6 +6,8 @@ set -e
 
 pushd "$ROOT"
 
+./scripts/ensure-checkouts.sh
+
 echo "Running all backend tests..."
 lein test-backend
 

@@ -116,6 +116,8 @@
                                            "src/lib"
                                            "src/fixtures"
                                            "src/test"
+                                           "src/agent"
+                                           "src/nrepl"
                                            "test/browser/fixtures/src/tests"]
                             :compiler     {:output-to     "test/browser/fixtures/resources/compiled/tests/tests.js"
                                            :output-dir    "test/browser/fixtures/resources/compiled/tests"
@@ -255,6 +257,7 @@
                            :tests
                            {:compiler {:parallel-build true}}}}}
 
+             ; DON'T FORGET TO UPDATE scripts/ensure-checkouts.sh
              :checkouts
              {:cljsbuild {:builds
                           {:dirac-implant
