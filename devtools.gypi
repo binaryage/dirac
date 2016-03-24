@@ -48,8 +48,9 @@
             '<@(devtools_ui_js_files)',
             '<@(devtools_workspace_js_files)',
         ],
-        'devtools_compatibility_scripts': [
+        'devtools_embedder_scripts': [
             'front_end/devtools.js',
+            'front_end/Tests.js',
         ],
         'devtools_core_base_files': [
             'front_end/inspector.js',
@@ -73,7 +74,6 @@
             'front_end/common/StaticContentProvider.js',
             'front_end/common/OutputStream.js',
             'front_end/common/SegmentedRange.js',
-            'front_end/common/TestBase.js',
             'front_end/common/Text.js',
             'front_end/common/TextDictionary.js',
             'front_end/common/TextRange.js',
@@ -122,6 +122,7 @@
             'front_end/sass/ASTSourceMap.js',
             'front_end/sass/SASSProcessor.js',
             'front_end/sass/SASSSupport.js',
+            'front_end/sass/SASSSourceMapFactory.js',
         ],
         'devtools_screencast_js_files': [
             'front_end/screencast/screencastView.css',
@@ -307,12 +308,10 @@
             'front_end/main/renderingOptions.css',
             'front_end/main/targetCrashedScreen.css',
             'front_end/main/Connections.js',
-            'front_end/main/FrontendWebSocketAPI.js',
             'front_end/main/Main.js',
             'front_end/main/OverlayController.js',
             'front_end/main/RenderingOptions.js',
             'front_end/main/SimpleApp.js',
-            'front_end/main/Tests.js',
         ],
         'devtools_module_json_files': [
             'front_end/accessibility/module.json',
@@ -598,7 +597,6 @@
             'front_end/acorn/acorn.js',
             'front_end/cm/css.js',
             'front_end/cm/headlesscodemirror.js',
-            'front_end/cm/htmlmixed.js',
             'front_end/cm/xml.js',
             'front_end/es_tree/AcornTokenizer.js',
             'front_end/es_tree/ESTreeWalker.js',
@@ -606,6 +604,10 @@
             'front_end/formatter_worker/CSSFormatter.js',
             'front_end/formatter_worker/FormattedContentBuilder.js',
             'front_end/formatter_worker/JavaScriptFormatter.js',
+            'front_end/formatter_worker/CSSRuleParser.js',
+            'front_end/formatter_worker/HTMLFormatter.js',
+            'front_end/formatter_worker/IdentityFormatter.js',
+            'front_end/formatter_worker/JavaScriptOutline.js',
             'front_end/formatter_worker/FormatterWorker.js',
         ],
         'devtools_settings_js_files': [

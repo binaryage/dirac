@@ -127,13 +127,13 @@ WebInspector.CSSModel.prototype = {
         }
         if (this._sourceMapLoadingPromises.has(sourceMapURL))
             return;
-        var loadingPromise = WebInspector.SourceMap.load(sourceMapURL, header.sourceURL)
+        var loadingPromise = WebInspector.TextSourceMap.load(sourceMapURL, header.sourceURL)
             .then(onSourceMapLoaded.bind(this, sourceMapURL));
         this._sourceMapLoadingPromises.set(sourceMapURL, loadingPromise);
 
         /**
          * @param {string} sourceMapURL
-         * @param {?WebInspector.SourceMap} sourceMap
+         * @param {?WebInspector.TextSourceMap} sourceMap
          * @this {WebInspector.CSSModel}
          */
         function onSourceMapLoaded(sourceMapURL, sourceMap)
@@ -455,7 +455,9 @@ WebInspector.CSSModel.prototype = {
             if (pseudoClasses.indexOf(pseudoClass) < 0)
                 return false;
             pseudoClasses.remove(pseudoClass);
-            if (!pseudoClasses.length)
+            if (pseudoClasses.length)
+                node.setMarker(WebInspector.CSSModel.PseudoStateMarker, pseudoClasses);
+            else
                 node.setMarker(WebInspector.CSSModel.PseudoStateMarker, null);
         }
 
