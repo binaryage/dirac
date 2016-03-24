@@ -161,6 +161,15 @@ DevToolsAPIImpl.prototype = {
     },
 
     /**
+     * @param {number} callId
+     * @param {string} script
+     */
+    evaluateForTestInFrontend: function(callId, script)
+    {
+        this._dispatchOnInspectorFrontendAPI("evaluateForTestInFrontend", [callId, script]);
+    },
+
+    /**
      * @param {!Array.<!{fileSystemName: string, rootURL: string, fileSystemPath: string}>} fileSystems
      */
     fileSystemsLoaded: function(fileSystems)
@@ -297,24 +306,6 @@ DevToolsAPIImpl.prototype = {
     streamWrite: function(id, chunk)
     {
         this._dispatchOnInspectorFrontendAPI("streamWrite", [id, chunk]);
-    },
-
-    frontendAPIAttached: function()
-    {
-        this._dispatchOnInspectorFrontendAPI("frontendAPIAttached", []);
-    },
-
-    frontendAPIDetached: function()
-    {
-        this._dispatchOnInspectorFrontendAPI("frontendAPIDetached", []);
-    },
-
-    /**
-     * @param {string} command
-     */
-    dispatchFrontendAPIMessage: function(command)
-    {
-        this._dispatchOnInspectorFrontendAPI("dispatchFrontendAPIMessage", [command]);
     }
 }
 
@@ -539,15 +530,6 @@ InspectorFrontendHostImpl.prototype = {
 
     /**
      * @override
-     * @param {string} message
-     */
-    sendFrontendAPINotification: function(message)
-    {
-        DevToolsAPI.sendMessageToEmbedder("sendFrontendAPINotification", [message], null);
-    },
-
-    /**
-     * @override
      */
     requestFileSystems: function()
     {
@@ -675,6 +657,14 @@ InspectorFrontendHostImpl.prototype = {
 
     /**
      * @override
+     */
+    readyForTest: function()
+    {
+        DevToolsAPI.sendMessageToEmbedder("readyForTest", [], null);
+    },
+
+    /**
+     * @override
      * @param {boolean} discoverUsbDevices
      * @param {boolean} portForwardingEnabled
      * @param {!Adb.PortForwardingConfig} portForwardingConfig
@@ -735,6 +725,14 @@ InspectorFrontendHostImpl.prototype = {
     },
 
     // Backward-compatible methods below this line --------------------------------------------
+
+    /**
+     * Support for legacy front-ends (<M50).
+     * @param {string} message
+     */
+    sendFrontendAPINotification: function(message)
+    {
+    },
 
     /**
      * Support for legacy front-ends (<M41).
@@ -1019,35 +1017,6 @@ if (window.document.head && (window.document.readyState === "complete" || window
     installBackwardsCompatibility();
 else
     window.addEventListener("DOMContentLoaded", windowLoaded, false);
-
-// UITests ------------------------------------------------------------------
-
-if (window.domAutomationController) {
-    var uiTests = {};
-
-    uiTests._dispatchIfReady = function()
-    {
-        if (uiTests._testSuite && uiTests._pendingDispatchArgs) {
-            var args = uiTests._pendingDispatchArgs;
-            delete uiTests._pendingDispatchArgs;
-            uiTests._testSuite.dispatch(args);
-        }
-    }
-
-    uiTests.dispatchOnTestSuite = function(args)
-    {
-        uiTests._pendingDispatchArgs = args;
-        uiTests._dispatchIfReady();
-    };
-
-    uiTests.testSuiteReady = function(testSuiteConstructor)
-    {
-        uiTests._testSuite = testSuiteConstructor(window.domAutomationController);
-        uiTests._dispatchIfReady();
-    };
-
-    window.uiTests = uiTests;
-}
 
 })(window);
 

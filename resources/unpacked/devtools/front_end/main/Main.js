@@ -58,7 +58,6 @@ WebInspector.Main.prototype = {
         if (InspectorFrontendHost.isUnderTest())
             self.runtime.useTestBase();
         InspectorFrontendHost.getPreferences(this._gotPreferences.bind(this));
-        new WebInspector.FrontendWebSocketAPI();
     },
 
     /**
@@ -125,6 +124,7 @@ WebInspector.Main.prototype = {
         Runtime.experiments.register("networkRequestsOnTimeline", "Network requests on Timeline", true);
         Runtime.experiments.register("privateScriptInspection", "Private script inspection");
         Runtime.experiments.register("promiseTracker", "Promise inspector");
+        Runtime.experiments.register("reducedIndentation", "Reduced indentation in Elements DOM tree");
         Runtime.experiments.register("requestBlocking", "Request blocking", true);
         Runtime.experiments.register("resolveVariableNames", "Resolve variable names", true);
         Runtime.experiments.register("timelineShowAllEvents", "Show all events on Timeline", true);
@@ -325,22 +325,20 @@ WebInspector.Main.prototype = {
 
         this._mainTarget.registerInspectorDispatcher(this);
         InspectorFrontendHost.events.addEventListener(InspectorFrontendHostAPI.Events.ReloadInspectedPage, this._reloadInspectedPage, this);
+        InspectorFrontendHost.events.addEventListener(InspectorFrontendHostAPI.Events.EvaluateForTestInFrontend, this._evaluateForTestInFrontend, this);
 
         if (this._mainTarget.isServiceWorker() || this._mainTarget.isPage())
             this._mainTarget.runtimeAgent().run();
 
-        this._mainTarget.inspectorAgent().enable(inspectorAgentEnableCallback);
+        this._mainTarget.inspectorAgent().enable();
+        InspectorFrontendHost.readyForTest();
 
-        function inspectorAgentEnableCallback()
-        {
-            console.timeStamp("Main.inspectorAgentEnableCallback");
-            WebInspector.notifications.dispatchEventToListeners(WebInspector.NotificationService.Events.InspectorAgentEnabledForTests);
-            // Asynchronously run the extensions.
-            setTimeout(lateInitialization, 0);
-        }
+        // Asynchronously run the extensions.
+        setTimeout(lateInitialization, 0);
 
         function lateInitialization()
         {
+            console.timeStamp("Main.lateInitialization");
             WebInspector.extensionServer.initializeExtensions();
         }
     },
@@ -618,14 +616,15 @@ WebInspector.Main.prototype = {
     },
 
     /**
-     * @override
-     * @param {number} callId
-     * @param {string} script
+     * @param {!WebInspector.Event} event
      */
-    evaluateForTestInFrontend: function(callId, script)
+    _evaluateForTestInFrontend: function(event)
     {
         if (!InspectorFrontendHost.isUnderTest())
             return;
+
+        var callId = /** @type {number} */ (event.data["callId"]);
+        var script = /** @type {number} */ (event.data["script"]);
 
         /**
          * @suppressGlobalPropertiesCheck

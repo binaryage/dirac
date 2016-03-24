@@ -352,16 +352,11 @@
         "sdk"
     ],
     "scripts": [
-        "FrontendWebSocketAPI.js",
         "RenderingOptions.js",
         "SimpleApp.js",
-        "Tests.js",
         "OverlayController.js",
         "Connections.js",
         "Main.js"
-    ],
-    "skip_compilation": [
-        "Tests.js"
     ],
     "resources": [
         "errorWarningCounter.css",
