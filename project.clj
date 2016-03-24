@@ -228,7 +228,6 @@
                                            :output-dir    "resources/release/compiled/background"
                                            :asset-path    "compiled/background"
                                            :optimizations :advanced
-                                           :pseudo-names  true
                                            :elide-asserts true}}
                            :dirac-options
                            {:source-paths ["src/settings"
