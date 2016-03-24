@@ -9,4 +9,4 @@
 
 (defn init! []
   (log "init")
-  (background/connect-to-background-page!))
+  (background/connect!))

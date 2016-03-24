@@ -6,20 +6,32 @@
             [chromex.protocols :refer [post-message!]]
             [chromex.chrome-event-channel :refer [make-chrome-event-channel]]))
 
-(defn send-message-to-page! [message]
+; this code is responsible for communication between content script and hosting page
+; see https://developer.chrome.com/extensions/content_scripts#host-page-communication
+
+; -- send messages to page --------------------------------------------------------------------------------------------------
+
+(defn send-message! [message]
   (.postMessage js/window message "*"))
 
-(defn page-event-handler [background-port page-event]
-  (log "received page event" page-event)
-  (post-message! background-port page-event))
+; -- handle incoming messages from page -------------------------------------------------------------------------------------
 
-; see https://developer.chrome.com/extensions/content_scripts#host-page-communication
+(defn handle-marion-message! [port message]
+  (log "received page message, posting it to marion's background page" message)
+  (post-message! port message))
+
+(defn marion-message? [message]
+  (let [type (oget message "type")]
+    (and (string? type) (re-matches #"^marion-.*" type))))
+
 ; forward all marion-* messages to marion's background page
-(defn process-page-message [handler event]
-  (if-let [data (oget event "data")]
-    (let [type (oget data "type")]
-      (if (and (string? type) (re-matches #"^marion-.*" type))
-        (handler data)))))
+(defn process-page-message [port dom-event]
+  {:pre [port dom-event]}
+  (if-let [message (oget dom-event "data")]
+    (if (marion-message? message)
+      (handle-marion-message! port message))))
+
+; -- installation -----------------------------------------------------------------------------------------------------------
 
 (defn install! [port]
-  (.addEventListener js/window "message" (partial process-page-message (partial page-event-handler port))))
+  (.addEventListener js/window "message" (partial process-page-message port)))

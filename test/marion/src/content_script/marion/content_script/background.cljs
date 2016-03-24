@@ -10,7 +10,7 @@
 ; -- message handlers -------------------------------------------------------------------------------------------------------
 
 (defn relay-message-to-page! [message]
-  (page/send-message-to-page! message))
+  (page/send-message! message))
 
 ; -- message dispatch -------------------------------------------------------------------------------------------------------
 
@@ -34,7 +34,7 @@
 
 ; -- initialization ---------------------------------------------------------------------------------------------------------
 
-(defn connect-to-background-page! []
+(defn connect! []
   (let [background-port (runtime/connect)]                                                                                    ; connects to marion's background page
     (page/install! background-port)
     (run-message-loop! background-port)))
