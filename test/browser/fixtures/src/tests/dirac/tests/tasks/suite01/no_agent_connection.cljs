@@ -1,5 +1,5 @@
 (ns dirac.tests.tasks.suite01.no-agent-connection
-  (:require [cljs.core.async :refer [<!]]
+  (:require [cljs.core.async :refer [<! timeout]]
             [dirac.fixtures.task :refer-macros [go-task]]
             [dirac.fixtures.constants :refer [SECOND MINUTE]]
             [dirac.fixtures.automation :refer [wait-for-dirac-frontend-initialization wait-for-implant-initialization
@@ -11,6 +11,7 @@
 
 (go-task
   (open-tab-with-scenario! "no-agent")
+  (<! (timeout 1000))                                                                                                         ; TODO: implement reply system
   (open-dirac-devtools!)
   (<! (wait-for-dirac-frontend-initialization))
   (<! (wait-for-implant-initialization))
