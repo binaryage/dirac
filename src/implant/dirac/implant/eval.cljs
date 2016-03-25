@@ -162,12 +162,11 @@
       (if (core-async/closed? timeout-chan)                                                                                   ; timeout might close outside of alts! we must have this test here
         (return ::timeout)
         (let [result-chan (call-eval-with-timeout :default installation-test-code installation-test-eval-time-limit)
-              [[value]] (alts! [result-chan timeout-chan])]
+              [[value thrown?]] (alts! [result-chan timeout-chan])]
           (cond
-            (nil? value) (return ::timeout)
+            (and (not thrown?) (nil? value)) (return ::timeout)
             (true? (oget value "value")) (return true)
             :else (do
-                    (update-banner! "cljs-devtools: waiting for installation of :dirac feature...")
                     (<! (timeout (pref :install-check-next-trial-waiting-time)))                                              ; don't DoS the VM, wait between installation tests
                     (recur))))))))
 
