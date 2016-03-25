@@ -6,7 +6,6 @@
 
 
 // Inspector.
-InspectorBackend.registerEvent("Inspector.evaluateForTestInFrontend", ["testCallId", "script"]);
 InspectorBackend.registerEvent("Inspector.inspect", ["object", "hints"]);
 InspectorBackend.registerEvent("Inspector.detached", ["reason"]);
 InspectorBackend.registerEvent("Inspector.targetCrashed", []);
@@ -150,7 +149,7 @@ InspectorBackend.registerEvent("Network.webSocketFrameReceived", ["requestId", "
 InspectorBackend.registerEvent("Network.webSocketFrameError", ["requestId", "timestamp", "errorMessage"]);
 InspectorBackend.registerEvent("Network.webSocketFrameSent", ["requestId", "timestamp", "response"]);
 InspectorBackend.registerEvent("Network.eventSourceMessageReceived", ["requestId", "timestamp", "eventName", "eventId", "data"]);
-InspectorBackend.registerCommand("Network.enable", [], [], false);
+InspectorBackend.registerCommand("Network.enable", [{"name": "maxTotalBufferSize", "type": "number", "optional": true}, {"name": "maxResourceBufferSize", "type": "number", "optional": true}], [], false);
 InspectorBackend.registerCommand("Network.disable", [], [], false);
 InspectorBackend.registerCommand("Network.setUserAgentOverride", [{"name": "userAgent", "type": "string", "optional": false}], [], false);
 InspectorBackend.registerCommand("Network.setExtraHTTPHeaders", [{"name": "headers", "type": "object", "optional": false}], [], false);
