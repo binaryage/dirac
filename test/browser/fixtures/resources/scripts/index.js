@@ -21,11 +21,11 @@ function getIndex(re) {
   return index;
 }
 
-function genList(runnerUrl, index) {
+function genTaskList(runnerUrl, tasks) {
   var lines = ["<b>AVAILABLE TASKS:</b><ul>"];
 
-  for (var i=0; i<index.length; i++) {
-    var ns = index[i];
+  for (var i=0; i<tasks.length; i++) {
+    var ns = tasks[i];
     var line = "<li><a href=\""+ runnerUrl +"?task="+ ns +"\">"+ns+"</a></li>";
     lines.push(line);
   }
@@ -33,7 +33,9 @@ function genList(runnerUrl, index) {
   return lines.join("");
 }
 
-var index = getIndex(/tasks\/(.*)\.js/);
-var markup = genList("runner.html", index);
+var tasks = getIndex(/tasks\/(.*)\.js/);
+var tasksMarkup = genTaskList("runner.html", tasks);
 
-document.body.innerHTML = markup;
+var scenariosMarkup = "<b><a href=\"scenarios\">AVAILABLE SCENARIOS</a></b>";
+
+document.body.innerHTML = [tasksMarkup, scenariosMarkup].join("<br>");

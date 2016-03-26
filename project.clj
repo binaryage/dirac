@@ -83,10 +83,12 @@
                                       test-dep? #(->> % (drop 2) (apply hash-map) :scope (= "test"))
                                       non-test-deps (remove test-dep? (:dependencies project))]
                                   (with-meta (vec non-test-deps) {:replace true}))                                            ; so ugly!
-               :source-paths   ^:replace ["src/lib"
+               :source-paths   ^:replace ["src/project"
+                                          "src/settings"
+                                          "src/runtime"
+                                          "src/lib"
                                           "src/agent"
-                                          "src/nrepl"
-                                          "src/project"]
+                                          "src/nrepl"]
                :resource-paths ^:replace []
                :test-paths     ^:replace []}]
 
@@ -115,6 +117,7 @@
                                            "src/project"
                                            "src/lib"
                                            "src/fixtures"
+                                           "src/runtime"
                                            "src/test"
                                            "src/agent"
                                            "src/nrepl"

@@ -1,4 +1,4 @@
 (ns dirac.tests.scenarios.normal
-  (:require [dirac.fixtures.devtools :refer [init-devtools!]]))
+  (:require [dirac.fixtures.runtime :refer [init-runtime!]]))
 
-(init-devtools!)
+(init-runtime!)
