@@ -362,8 +362,10 @@
                                           "cljsbuild" "auto"
                                           "marion-content-script"]
 
-            "compile-browser-tests"      ["with-profile" "+cljs,+browser-tests" "cljsbuild" "once" "tests"]
-            "auto-compile-browser-tests" ["with-profile" "+cljs,+browser-tests" "cljsbuild" "auto" "tests"]
+            "compile-browser-tests"      ["with-profile" "+cljs,+browser-tests,+checkouts,+parallel-build"
+                                          "cljsbuild" "once" "tests"]
+            "auto-compile-browser-tests" ["with-profile" "+cljs,+browser-tests,+checkouts,+parallel-build"
+                                          "cljsbuild" "auto" "tests"]
 
             "release"                    ["shell" "scripts/release.sh"]
             "package"                    ["shell" "scripts/package.sh"]
