@@ -8,7 +8,7 @@
         :url  "https://github.com/binaryage/dirac"}
 
   :dependencies [[org.clojure/clojure "1.8.0" :scope "provided"]
-                 [org.clojure/clojurescript "1.8.40" :scope "provided"]
+                 [org.clojure/clojurescript "1.7.228" :scope "provided"]
                  [org.clojure/core.async "0.2.374"]
                  [org.clojure/tools.logging "0.3.1"]
                  [org.clojure/tools.cli "0.3.3"]
