@@ -15,12 +15,8 @@
     (devtools-prefs/merge-prefs! devtools-prefs))
   ; override devtools features/installation
   (if-not (:do-not-install-devtools config)
-    (do
-      (if-not (:do-not-enable-dirac config)
-        (devtools/enable-feature! :dirac)
-        (log "devtools override: do not enable :dirac feature"))
-      (if-not (:do-not-enabled-sanity-hints config)
-        (devtools/enable-feature! :sanity-hints)
-        (log "devtools override: do not enable :sanity-hints feature"))
-      (devtools/install!))
+    (let [features-to-enable (cond-> []
+                                     (not (:do-not-enable-custom-formatters config)) (conj :custom-formatters)
+                                     (not (:do-not-enable-sanity-hints config)) (conj :sanity-hints))]
+      (devtools/install! features-to-enable))
     (log "devtools override: do not install")))
