@@ -246,7 +246,8 @@
                            {:compiler {:pseudo-names true}}}}}
 
              :parallel-build
-             {:cljsbuild {:builds
+             {}
+             #_{:cljsbuild {:builds
                           {:dirac-implant
                            {:compiler {:parallel-build true}}
                            :dirac-background
