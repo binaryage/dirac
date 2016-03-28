@@ -16,6 +16,10 @@ else
   EXE="/Applications/Google Chrome Canary.app/Contents/MacOS/Google Chrome Canary"
 fi
 
+# we want to pre-compile our extensions, so that --load-extension param does not fail
+lein compile-marion
+lein compile-dirac-dev
+
 set -x
 "$EXE" \
       --remote-debugging-port=9222 \
