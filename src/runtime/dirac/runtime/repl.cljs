@@ -1,9 +1,9 @@
 (ns dirac.runtime.repl
-  (:require-macros [devtools.util :refer [oget ocall oapply]]
-                   [devtools.dirac :refer [gen-config]])
+  (:require-macros [dirac.runtime.repl :refer [gen-config]])
   (:require [goog.object]
+            [chromex.support :refer-macros [oget oset ocall oapply]]
             [clojure.browser.repl :as brepl]
-            [devtools.prefs :refer [pref]]
+            [dirac.runtime.prefs :refer [pref]]
             [clojure.string :as string]
             [goog.labs.userAgent.browser :as ua]))
 
@@ -124,13 +124,6 @@
   "Called by our nREPL boilerplate when we capture REPL evaluation exception."
   [request-id exception]
   (error request-id "exception" exception))
-
-(defn present-in-dirac-repl [request-id value]
-  (try
-    (js/devtools.dirac.present_repl_result request-id value)
-    (catch :default e
-      (js/devtools.dirac.present_repl_exception request-id e)
-      (throw e))))
 
 (defn present-output [request-id kind text]
   (case kind

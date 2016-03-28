@@ -323,7 +323,7 @@ If you are invoking [`dirac.nrepl/boot-cljs-repl!`](https://github.com/binaryage
 ##### DevTools page-specific configuration
 
 When you open/refresh Dirac DevTools, it asks current page for effective page-specific Dirac config
-(see [`devtools.dirac/get-effective-config`](https://github.com/binaryage/cljs-devtools/blob/master/src/devtools/dirac.cljs).
+(see [`dirac.runtime.repl/get-effective-config`](https://github.com/binaryage/cljs-devtools/blob/master/src/devtools/dirac.cljs).
 The most important setting is a connection info for Dirac Agent. This allows flexibility of configuring individual
 ClojureScript projects with their own settings instead of providing one system-wide configuration. In theory
 you can have different projects connecting do different Dirac Agents (which are connected to different nREPL servers).

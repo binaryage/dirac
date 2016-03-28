@@ -5,3 +5,6 @@
 ; the problem is when dirac is used as a checkouts dependency
 
 (def version "0.1.4")
+
+(defmacro get-current-version []
+  version)

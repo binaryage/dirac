@@ -13,8 +13,7 @@
   ; override devtools features/installation
   (if-not (:do-not-install-runtime config)
     (do
-      (when (:do-not-enable-repl config)
-        (warn "dirac runtime override: do not enable :repl feature")
-        (runtime/disable-features! :repl))
-      (runtime/install!))
-    (warn "dirac runtime override: do not install")))
+      (let [features-to-enable (cond-> []
+                                       (not (:do-not-enable-repl config)) (conj :repl))]
+        (runtime/install! features-to-enable))
+      (warn "dirac runtime override: do not install"))))

@@ -134,7 +134,7 @@
 
 (defn connect-to-weasel-server! [url]
   (go
-    (if-let [client-config (<! (eval/get-dirac-client-config))]
+    (if-let [client-config (<! (eval/get-runtime-config))]
       (do
         (let [weasel-options (utils/remove-nil-values {:verbose?        (:weasel-verbose client-config)
                                                        :auto-reconnect? (:weasel-auto-reconnect client-config)
@@ -190,7 +190,7 @@
 
 (defn start-repl! []
   (go
-    (if-let [client-config (<! (eval/get-dirac-client-config))]
+    (if-let [client-config (<! (eval/get-runtime-config))]
       (do
         (info "Starting REPL support. Dirac client-side config is " client-config)
         (configure-eval! client-config)
@@ -204,8 +204,8 @@
 (defn init-repl! []
   (when-not *last-connection-url*
     (go
-      (if (<! (eval/is-devtools-present?))
-        (let [api-version (<! (eval/get-dirac-api-version))]
+      (if (<! (eval/is-runtime-present?))
+        (let [api-version (<! (eval/get-runtime-api-version))]
           (if-not (< api-version required-dirac-api-version)
             (start-repl!)
             (display-prompt-status (old-cljs-devtools-msg api-version required-dirac-api-version))))

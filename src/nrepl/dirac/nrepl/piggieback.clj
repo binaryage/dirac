@@ -36,9 +36,9 @@
         dirac-wrap (case dirac-mode
                      "wrap" (fn [x]
                               `(try
-                                 (js/devtools.dirac.present_repl_result ~job-id ~x)
+                                 (js/dirac.runtime.repl.present_repl_result ~job-id ~x)
                                  (catch :default e#
-                                   (js/devtools.dirac.present_repl_exception ~job-id e#)
+                                   (js/dirac.runtime.repl.present_repl_exception ~job-id e#)
                                    (throw e#))))
                      identity)]
     (cond
@@ -50,8 +50,8 @@
       (fn [x]
         `(try
            (binding [cljs.core/*print-newline* false
-                     cljs.core/*print-fn* (partial js/devtools.dirac.present-output ~job-id "stdout")
-                     cljs.core/*print-err-fn* (partial js/devtools.dirac.present-output ~job-id "stderr")]
+                     cljs.core/*print-fn* (partial js/dirac.runtime.repl.present-output ~job-id "stdout")
+                     cljs.core/*print-err-fn* (partial js/dirac.runtime.repl.present-output ~job-id "stderr")]
              (let [ret# ~(dirac-wrap x)]
                (set! *3 *2)
                (set! *2 *1)

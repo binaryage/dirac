@@ -1,8 +1,7 @@
 (ns dirac.runtime.prefs)
 
 (def default-prefs
-  {:install-repl        true
-   :dont-display-banner false
+  {:dont-display-banner false
    :dirac-print-level   1
    :dirac-print-length  10})
 

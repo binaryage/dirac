@@ -92,16 +92,16 @@
 ; -- code templates ---------------------------------------------------------------------------------------------------------
 
 (defn installation-test-template []
-  (str "devtools.dirac.installed_QMARK_()"))
+  (str "dirac.runtime.repl.installed_QMARK_()"))
 
 (defn ^:dynamic output-template [job-id kind text]
-  (str "devtools.dirac.present_output(" job-id ", '" kind "', " (code-as-string text) ")"))
+  (str "dirac.runtime.repl.present_output(" job-id ", '" kind "', " (code-as-string text) ")"))
 
 (defn ^:dynamic postprocess-template [code]
   (str "try{"
-       "  devtools.dirac.postprocess_successful_eval(eval(" (code-as-string code) "))"
+       "  dirac.runtime.repl.postprocess_successful_eval(eval(" (code-as-string code) "))"
        "} catch (e) {"
-       "  devtools.dirac.postprocess_unsuccessful_eval(e)"
+       "  dirac.runtime.repl.postprocess_unsuccessful_eval(e)"
        "}"))
 
 (defn console-log-template [method text]
@@ -237,19 +237,19 @@
 
 ; -- probing of page context ------------------------------------------------------------------------------------------------
 
-(defn is-devtools-present? []
+(defn is-runtime-present? []
   (go
-    (let [[value] (<! (eval-in-context! :default "devtools.dirac"))]
+    (let [[value] (<! (eval-in-context! :default "dirac.runtime.repl"))]
       value)))
 
-(defn get-dirac-api-version []
+(defn get-runtime-api-version []
   (go
-    (let [[value] (<! (eval-in-context! :default "devtools.dirac.get_api_version()"))]
+    (let [[value] (<! (eval-in-context! :default "dirac.runtime.repl.get_api_version()"))]
       (int value))))
 
-(defn get-dirac-client-config []
+(defn get-runtime-config []
   (go
-    (let [[value] (<! (eval-in-context! :default "devtools.dirac.get_effective_config()"))]
+    (let [[value] (<! (eval-in-context! :default "dirac.runtime.repl.get_effective_config()"))]
       (js->clj value :keywordize-keys true))))
 
 ; -- printing captured server-side output -----------------------------------------------------------------------------------

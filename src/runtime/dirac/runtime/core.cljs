@@ -1,19 +1,26 @@
 (ns dirac.runtime.core
-  (:require [dirac.runtime.prefs :as prefs]
+  (:require [dirac.project :refer [get-current-version]]
+            [dirac.runtime.prefs :as prefs]
             [dirac.runtime.repl :as repl]
-            [dirac.runtime.util :as util]
+            [dirac.runtime.util :refer-macros [display-banner]]
             [goog.userAgent :as ua]))
 
-(def known-features
-  [:repl])
+(def known-features [:repl])
+(def features-to-install-by-default [:repl])
+
+(defn ^:dynamic make-version-info []
+  (let [version (get-current-version)]
+    (str "v" version)))
+
+(defn ^:dynamic make-lib-info []
+  (str "Dirac Runtime " (make-version-info)))
 
 (defn ^:dynamic missing-feature-warning [feature known-features]
-  (str "No such feature '" feature "' is currently available in Dirac runtime. "
+  (str "No such feature " feature " is currently available in " (make-lib-info) ". "
        "The list of supported features is " (pr-str known-features)))
 
 (defn ^:dynamic warn-feature-not-available [feature]
-  (.warn js/console (str "Dirac runtime feature '" feature
-                         "' cannot be installed. Unsupported browser " (ua/getUserAgentString) ".")))
+  (.warn js/console (str "Feature " feature " cannot be installed. Unsupported browser " (ua/getUserAgentString) ".")))
 
 ; -- CORE API ---------------------------------------------------------------------------------------------------------------
 
@@ -26,39 +33,20 @@
 (defn set-pref! [pref val]
   (prefs/set-pref! pref val))
 
-(defn set-feature! [feature val]
-  (if (some #{feature} known-features)
-    (set-pref! (util/feature-installation-pref-key feature) val)
-    (.warn js/console (missing-feature-warning feature known-features))))
-
-(defn enable-feature! [feature]
-  (set-feature! feature true))
-
-(defn disable-feature! [feature]
-  (set-feature! feature false))
-
-(defn enable-features! [& features]
-  (doseq [feature features]
-    (enable-feature! feature)))
-
-(defn disable-features! [& features]
-  (doseq [feature features]
-    (disable-feature! feature)))
-
-(defn feature-available? [feature]
+(defn is-feature-available? [feature]
   (case feature
     :repl (repl/available?)))
 
-(defn features-available? [& features]
-  (every? feature-available? features))
-
-(defn install! [& features]
-  (apply enable-features! features)
-  (util/display-banner "Installing Dirac runtime:" known-features)
-  (if (prefs/pref (util/feature-installation-pref-key :repl))
-    (if (repl/available?)
-      (repl/install!)
-      (warn-feature-not-available :repl))))
+(defn install! [features-to-install]
+  (let [banner (str "Installing %c%s%c and enabling features")
+        lib-info (make-lib-info)
+        lib-info-style "color:black;font-weight:bold;"
+        reset-style "color:black"]
+    (display-banner features-to-install known-features banner lib-info-style lib-info reset-style)
+    (if (some #{:repl} features-to-install)
+      (if (is-feature-available? :repl)
+        (repl/install!)
+        (warn-feature-not-available :repl)))))
 
 (defn uninstall! []
   (repl/uninstall!))
