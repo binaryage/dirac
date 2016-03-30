@@ -1,7 +1,7 @@
 (ns dirac.options.model
-  (:require-macros [cljs.core.async.macros :refer [go go-loop]])
+  (:require-macros [cljs.core.async.macros :refer [go go-loop]]
+                   [dirac.options.logging :refer [log warn error info]])
   (:require [cljs.core.async :refer [<! chan close!]]
-            [chromex.logging :refer-macros [log info warn error group group-end]]
             [chromex.support :refer-macros [oget ocall oapply]]
             [chromex.chrome-event-channel :refer [make-chrome-event-channel]]
             [chromex.protocols :refer [get set]]
@@ -99,7 +99,7 @@
     (reload-options!)))
 
 (defn process-chrome-event [event]
-  (log "OPTIONS MODEL: got chrome event" event)
+  (log "got chrome event" event)
   (let [[event-id event-args] event]
     (case event-id
       ::storage/on-changed (apply process-on-changed! event-args)
@@ -111,13 +111,13 @@
     (when-let [event (<! chrome-event-channel)]
       (process-chrome-event event)
       (recur))
-    (log "OPTIONS MODEL: leaving event loop")))
+    (log "leaving event loop")))
 
 ; -- init/deinit ------------------------------------------------------------------------------------------------------------
 
 (defn init! []
   {:pre [(not *initialized*)]}
-  (log "OPTIONS MODEL: init!")
+  (log "init!")
   (go
     (let [options (<! (read-options))]
       (set! *initialized* true)
@@ -128,7 +128,7 @@
 
 (defn deinit! []
   {:pre [*initialized*]}
-  (log "OPTIONS MODEL: deinit!")
+  (log "deinit!")
   (remove-watch cached-options ::watch)
   (close! chrome-event-channel)
   (set! *initialized* false))
