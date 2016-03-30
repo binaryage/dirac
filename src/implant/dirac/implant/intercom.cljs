@@ -11,7 +11,7 @@
             [dirac.implant.eval :as eval])
   (:import goog.net.WebSocket.ErrorEvent))
 
-(def required-dirac-api-version 2)
+(def required-repl-api-version 3)
 
 (def ^:dynamic *repl-connected* false)
 (def ^:dynamic *repl-bootstrapped* false)
@@ -22,9 +22,9 @@
 (def ^:dynamic *last-connection-url* nil)
 (def ^:dynamic *last-connect-fn-id* 0)
 
-(defn ^:dynamic old-cljs-devtools-msg [current-api required-api]
-  (str "Obsolete Dirac Runtime version detected. Dirac DevTools requires Dirac API v" required-api ", "
-       "but your Dirac Runtime is v" current-api ".\n"
+(defn ^:dynamic repl-api-mismatch-msg [current-api required-api]
+  (str "Dirac Runtime version mismatch detected. Dirac DevTools requires Dirac Runtime REPL API v" required-api ", "
+       "but your version is v" current-api ".\n"
        "Please <a href=\"https://github.com/binaryage/dirac\">ugrade Dirac Runtime</a> in your app."))
 
 (defn ^:dynamic failed-to-retrieve-client-config-msg [where]
@@ -196,7 +196,7 @@
   (go
     (if-let [client-config (<! (eval/get-runtime-config))]
       (do
-        (info "Starting REPL support. Dirac client-side config is " client-config)
+        (info "Starting REPL support. Dirac Runtime config is " client-config)
         (configure-eval! client-config)
         (let [agent-url (ws-url (:agent-host client-config) (:agent-port client-config))
               verbose? (:agent-verbose client-config)
@@ -209,13 +209,13 @@
   (when-not *last-connection-url*
     (go
       (if (<! (eval/is-runtime-present?))
-        (let [api-version (<! (eval/get-runtime-api-version))]
-          (if-not (< api-version required-dirac-api-version)
-            (if (<! (eval/is-runtime-repl-support-installed?))
+        (if (<! (eval/is-runtime-repl-support-installed?))
+          (let [repl-api-version (<! (eval/get-runtime-repl-api-version))]
+            (if (= repl-api-version required-repl-api-version)
               (start-repl!)
-              (display-prompt-status (repl-support-not-enabled-msg)))
-            (display-prompt-status (old-cljs-devtools-msg api-version required-dirac-api-version))))
-        (display-prompt-status (eval/missing-cljs-devtools-message))))))
+              (display-prompt-status (repl-api-mismatch-msg repl-api-version required-repl-api-version))))
+          (display-prompt-status (repl-support-not-enabled-msg)))
+        (display-prompt-status (eval/missing-runtime-msg))))))
 
 ; -- message processing -----------------------------------------------------------------------------------------------------
 

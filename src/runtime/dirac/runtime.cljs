@@ -1,13 +1,11 @@
 (ns dirac.runtime
-  (:require [dirac.runtime.core :as core]
+  (:require [dirac.project :refer [get-current-version]]
+            [dirac.runtime.core :as core]
             [dirac.runtime.prefs :as prefs]))
-
-(def api-version 2)
 
 ; -- PUBLIC API -------------------------------------------------------------------------------------------------------------
 
-(defn ^:export get-api-version []
-  api-version)
+(def ^:export get-version get-current-version)
 
 (def ^:export is-feature-available? core/is-feature-available?)
 (def ^:export install! core/install!)

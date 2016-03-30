@@ -122,12 +122,12 @@
   (str "postprocessed code must return a js object with \"value\" key defined:\n"
        (pr-str value)))
 
-(defn ^:dynamic missing-cljs-devtools-message []
+(defn ^:dynamic missing-runtime-msg []
   (str "Dirac requires runtime support from the page context.\n"
-       "Please <a href=\"https://github.com/binaryage/dirac#installation\">install cljs-devtools</a> "
+       "Please <a href=\"https://github.com/binaryage/dirac#installation\">install Dirac Runtime</a> "
        "into your app and "
-       "<a href=\"https://github.com/binaryage/dirac#install-cljs-devtools-with-dirac-feature-enabled\">"
-       "enable the :dirac feature</a>."))
+       "<a href=\"https://github.com/binaryage/dirac#install-dirac-runtime\">"
+       "enable the :repl feature</a>."))
 
 ; -- convenient eval wrapper ------------------------------------------------------------------------------------------------
 
@@ -209,7 +209,7 @@
                            (apply handler args))
             installation-result (<! (wait-for-dirac-installed))]
         (if (= installation-result ::timeout)
-          (call-handler [::timeout] (missing-cljs-devtools-message) (installation-test-template))
+          (call-handler [::timeout] (missing-runtime-msg) (installation-test-template))
           (let [eval-result (<! (call-eval-with-timeout context code (pref :eval-time-limit)))]
             (case (first eval-result)
               ::exception (call-handler [::exception] "Internal eval error" (second eval-result))
@@ -247,9 +247,9 @@
     (let [[value] (<! (eval-in-context! :default "dirac.runtime.repl.installed_QMARK_()"))]
       value)))
 
-(defn get-runtime-api-version []
+(defn get-runtime-repl-api-version []
   (go
-    (let [[value] (<! (eval-in-context! :default "dirac.runtime.get_api_version()"))]
+    (let [[value] (<! (eval-in-context! :default "dirac.runtime.repl.get_api_version()"))]
       (int value))))
 
 (defn get-runtime-config []

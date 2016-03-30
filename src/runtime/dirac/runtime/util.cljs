@@ -2,6 +2,12 @@
   (:require [goog.userAgent :as ua]
             [dirac.runtime.prefs :as prefs]))
 
+(defn ^:dynamic make-version-info [version]
+  (str "v" version))
+
+(defn ^:dynamic make-lib-info [version]
+  (str "Dirac Runtime " (make-version-info version)))
+
 (defn ^:dynamic unknown-feature-msg [feature known-features lib-info]
   (str "No such feature " feature " is currently available in " lib-info ". "
        "The list of supported features is " (pr-str known-features)))
@@ -24,8 +30,9 @@
     (reduce * (first labels) (rest labels))))
 
 (defn display-banner! [installed-features known-features fmt & params]
-  (let [[fmt-str fmt-params] (feature-list-display installed-features known-features)]
-    (.apply (.-info js/console) js/console (into-array (concat [(str fmt " " fmt-str) params] fmt-params)))))
+  (let [[fmt-str fmt-params] (feature-list-display installed-features known-features)
+        items (concat [(str fmt " " fmt-str)] params fmt-params)]
+    (.apply (.-info js/console) js/console (into-array items))))
 
 (defn display-banner-if-needed! [features-to-install known-features lib-info]
   (when-not (prefs/pref :dont-display-banner)

@@ -77,23 +77,28 @@
         (log request-id :stderr rest-content)
         (group-end)))))
 
-; -- public API -------------------------------------------------------------------------------------------------------------
+; -- REPL API ---------------------------------------------------------------------------------------------------------------
 
-(defn get-effective-config []
+(def api-version 3)                                                                                                           ; version of REPL API
+
+(defn ^:export get-api-version []
+  api-version)
+
+(defn ^:export get-effective-config []
   (clj->js (get-prefs)))
 
-(defn present-repl-result
+(defn ^:export present-repl-result
   "Called by our nREPL boilerplate when we capture REPL evaluation result."
   [request-id value]
   (log request-id "result" value)
   value)
 
-(defn present-repl-exception
+(defn ^:export present-repl-exception
   "Called by our nREPL boilerplate when we capture REPL evaluation exception."
   [request-id exception]
   (error request-id "exception" exception))
 
-(defn present-output [request-id kind text]
+(defn ^:export present-output [request-id kind text]
   (case kind
     "java-trace" (present-java-trace request-id text)
     (if-let [warning-msg (detect-and-strip "WARNING:" text)]
@@ -102,7 +107,7 @@
         (error request-id "error" error-msg)
         (log request-id kind text)))))
 
-(defn postprocess-successful-eval
+(defn ^:export postprocess-successful-eval
   "This is a postprocessing function wrapping weasel javascript evaluation attempt.
   This structure is needed for building response to nREPL server (see dirac.implant.weasel in Dirac project)
   In our case weasel is running in the context of Dirac DevTools and could potentially have different version of cljs runtime.
@@ -116,7 +121,7 @@
     #js {:status "success"
          :value  (str value)}))
 
-(defn postprocess-unsuccessful-eval [ex]
+(defn ^:export postprocess-unsuccessful-eval [ex]
   "Same as postprocess-successful-eval but prepares response for evaluation attempt with exception."
   #js {:status     "exception"
        :value      (pr-str ex)
