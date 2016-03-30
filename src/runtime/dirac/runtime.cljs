@@ -5,20 +5,20 @@
 
 ; -- PUBLIC API -------------------------------------------------------------------------------------------------------------
 
-(defn install! [features]
+(defn ^:export install! [features]
   (core/install! features))
 
-(defn uninstall! []
+(defn ^:export uninstall! []
   (core/uninstall!))
 
-(defn set-prefs! [new-prefs]
+(defn ^:export set-prefs! [new-prefs]
   (core/set-prefs! new-prefs))
 
-(defn get-prefs []
+(defn ^:export get-prefs []
   (core/get-prefs))
 
-(defn set-pref! [pref val]
+(defn ^:export set-pref! [pref val]
   (core/set-pref! pref val))
 
-(defn get-api-version []
+(defn ^:export get-api-version []
   api-version)
