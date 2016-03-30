@@ -239,12 +239,12 @@
 
 (defn is-runtime-present? []
   (go
-    (let [[value] (<! (eval-in-context! :default "dirac.runtime.repl"))]
+    (let [[value] (<! (eval-in-context! :default "dirac.runtime"))]
       value)))
 
 (defn get-runtime-api-version []
   (go
-    (let [[value] (<! (eval-in-context! :default "dirac.runtime.repl.get_api_version()"))]
+    (let [[value] (<! (eval-in-context! :default "dirac.runtime.get_api_version()"))]
       (int value))))
 
 (defn get-runtime-config []

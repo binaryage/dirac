@@ -21,8 +21,6 @@
 
 (def ^:dynamic *installed?* false)
 
-(def api-version 2)                                                                                                           ; internal API version
-
 (def default-config
   {:agent-host                                  "localhost"
    :agent-port                                  "8231"
@@ -110,9 +108,6 @@
 
 (defn get-effective-config []
   (clj->js (build-effective-config default-config static-config)))
-
-(defn get-api-version []
-  api-version)
 
 (defn present-repl-result
   "Called by our nREPL boilerplate when we capture REPL evaluation result."

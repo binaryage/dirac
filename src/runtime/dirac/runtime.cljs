@@ -1,6 +1,8 @@
 (ns dirac.runtime
   (:require [dirac.runtime.core :as core]))
 
+(def api-version 2)
+
 ; -- PUBLIC API -------------------------------------------------------------------------------------------------------------
 
 (defn install! [features]
@@ -17,3 +19,6 @@
 
 (defn set-pref! [pref val]
   (core/set-pref! pref val))
+
+(defn get-api-version []
+  api-version)
