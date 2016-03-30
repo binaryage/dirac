@@ -9,8 +9,10 @@
 (defn ^:export get-api-version []
   api-version)
 
+(def ^:export is-feature-available? core/is-feature-available?)
 (def ^:export install! core/install!)
 (def ^:export uninstall! core/uninstall!)
+
 (def ^:export set-prefs! prefs/set-prefs!)
 (def ^:export get-prefs prefs/get-prefs)
 (def ^:export set-pref! prefs/set-pref!)
