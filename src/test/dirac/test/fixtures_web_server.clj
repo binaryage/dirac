@@ -1,6 +1,5 @@
 (ns dirac.test.fixtures-web-server
-  (:use ring.adapter.jetty
-        ring.middleware.resource
+  (:use ring.middleware.resource
         ring.middleware.content-type
         ring.middleware.not-modified
         ring.middleware.reload))
@@ -14,14 +13,16 @@
    :headers {"Content-Type" "text/plain"}
    :body    "fixtures web-server ready"})
 
-(def fixtures-server
+(defn get-fixtures-server []
   (-> handler
       (wrap-resource "browser/fixtures/resources")
       (wrap-content-type)
       (wrap-not-modified)))
 
 (defn start-fixtures-web-server [& [options]]
-  (run-jetty (wrap-reload fixtures-server) (merge default-options options)))
+  (require 'ring.adapter.jetty)
+  (let [run-jetty (resolve 'ring.adapter.jetty/run-jetty)]
+    (run-jetty (wrap-reload (get-fixtures-server)) (merge default-options options))))
 
 (defn stop-fixtures-web-server [server]
   (.stop server))
