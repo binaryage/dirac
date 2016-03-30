@@ -23,12 +23,12 @@
 (def ^:dynamic *last-connect-fn-id* 0)
 
 (defn ^:dynamic old-cljs-devtools-msg [current-api required-api]
-  (str "Obsolete cljs-devtools version detected. Dirac DevTools requires Dirac API v" required-api ", "
-       "but your cljs-devtools is v" current-api ".\n"
-       "Please <a href=\"https://github.com/binaryage/cljs-devtools\">ugrade your cljs-devtools</a> in your app."))
+  (str "Obsolete Dirac Runtime version detected. Dirac DevTools requires Dirac API v" required-api ", "
+       "but your Dirac Runtime is v" current-api ".\n"
+       "Please <a href=\"https://github.com/binaryage/dirac\">ugrade Dirac Runtime</a> in your app."))
 
 (defn ^:dynamic failed-to-retrieve-client-config-msg [where]
-  (str "Failed to retrive client-side Dirac config (" where "). This is an unexpected error."))
+  (str "Failed to retrive Dirac Runtime config (" where "). This is an unexpected error."))
 
 (defn ^:dynamice unable-to-bootstrap-msg []
   (str "Unable to bootstrap ClojureScript REPL due to a timeout.\n"
@@ -59,6 +59,10 @@
        "than Dirac DevTools Extension (" devtools-version ").\n"
        "To avoid compatibility issues, please upgrade all Dirac components to the same version.\n"
        "=> https://github.com/binaryage/dirac#installation"))
+
+(defn ^:dynamic repl-support-not-enabled-msg []
+  (str "Dirac Runtime is present, but the :repl feature hasn't been enabled. "
+       "Please install Dirac Runtime with REPL support."))
 
 (defn ^:dynamic warn-version-mismatch [our-version agent-version]
   (let [msg (version-mismatch-msg our-version agent-version)]
@@ -207,7 +211,9 @@
       (if (<! (eval/is-runtime-present?))
         (let [api-version (<! (eval/get-runtime-api-version))]
           (if-not (< api-version required-dirac-api-version)
-            (start-repl!)
+            (if (<! (eval/is-runtime-repl-support-installed?))
+              (start-repl!)
+              (display-prompt-status (repl-support-not-enabled-msg)))
             (display-prompt-status (old-cljs-devtools-msg api-version required-dirac-api-version))))
         (display-prompt-status (eval/missing-cljs-devtools-message))))))
 

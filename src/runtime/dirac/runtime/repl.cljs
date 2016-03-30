@@ -1,9 +1,8 @@
 (ns dirac.runtime.repl
-  (:require-macros [dirac.runtime.repl :refer [gen-config]])
   (:require [goog.object]
             [chromex.support :refer-macros [oget oset ocall oapply]]
             [clojure.browser.repl :as brepl]
-            [dirac.runtime.prefs :refer [pref]]
+            [dirac.runtime.prefs :refer [get-prefs pref]]
             [clojure.string :as string]
             [goog.labs.userAgent.browser :as ua]))
 
@@ -20,24 +19,6 @@
   (and (ua/isChrome) (ua/isVersionOrHigher 47)))                                                                              ; Chrome 47+
 
 (def ^:dynamic *installed?* false)
-
-(def default-config
-  {:agent-host                                  "localhost"
-   :agent-port                                  "8231"
-   :agent-verbose                               false
-   :agent-auto-reconnect                        true
-   :agent-response-timeout                      5000
-   :weasel-verbose                              false
-   :weasel-auto-reconnect                       false
-   :weasel-pre-eval-delay                       100
-   :install-check-total-time-limit              5000
-   :install-check-next-trial-waiting-time       500
-   :install-check-eval-time-limit               300
-   :context-availablity-total-time-limit        3000
-   :context-availablity-next-trial-waiting-time 10
-   :eval-time-limit                             10000})
-
-(def static-config (gen-config))                                                                                              ; this config is comming from environment and system properties
 
 ; keep in mind that we want to avoid any state at all
 ; javascript running this code can be reloaded anytime, same with devtools front-end
@@ -96,18 +77,10 @@
         (log request-id :stderr rest-content)
         (group-end)))))
 
-(defn build-effective-config [default-config static-config]
-  (let [static-keys (keys default-config)
-        * (fn [key]
-            (if-let [val (pref key)]
-              [key val]))
-        dynamic-config (into {} (map * static-keys))]
-    (merge default-config static-config dynamic-config)))
-
 ; -- public API -------------------------------------------------------------------------------------------------------------
 
 (defn get-effective-config []
-  (clj->js (build-effective-config default-config static-config)))
+  (clj->js (get-prefs)))
 
 (defn present-repl-result
   "Called by our nREPL boilerplate when we capture REPL evaluation result."

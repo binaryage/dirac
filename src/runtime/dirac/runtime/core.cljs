@@ -1,6 +1,5 @@
 (ns dirac.runtime.core
   (:require [dirac.project :refer [get-current-version]]
-            [dirac.runtime.prefs :as prefs]
             [dirac.runtime.repl :as repl]
             [dirac.runtime.util :refer-macros [display-banner]]
             [goog.userAgent :as ua]))
@@ -23,15 +22,6 @@
   (.warn js/console (str "Feature " feature " cannot be installed. Unsupported browser " (ua/getUserAgentString) ".")))
 
 ; -- CORE API ---------------------------------------------------------------------------------------------------------------
-
-(defn set-prefs! [new-prefs]
-  (prefs/set-prefs! new-prefs))
-
-(defn get-prefs []
-  (prefs/get-prefs))
-
-(defn set-pref! [pref val]
-  (prefs/set-pref! pref val))
 
 (defn is-feature-available? [feature]
   (case feature

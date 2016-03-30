@@ -1,11 +1,30 @@
-(ns dirac.runtime.prefs)
+(ns dirac.runtime.prefs
+  (:require-macros [dirac.runtime.prefs :refer [gen-static-prefs]]))
 
 (def default-prefs
-  {:dont-display-banner false
-   :dirac-print-level   1
-   :dirac-print-length  10})
+  {:dont-display-banner                         false
+   :dirac-print-level                           1
+   :dirac-print-length                          10
+   :agent-host                                  "localhost"
+   :agent-port                                  "8231"
+   :agent-verbose                               false
+   :agent-auto-reconnect                        true
+   :agent-response-timeout                      5000
+   :weasel-verbose                              false
+   :weasel-auto-reconnect                       false
+   :weasel-pre-eval-delay                       100
+   :install-check-total-time-limit              5000
+   :install-check-next-trial-waiting-time       500
+   :install-check-eval-time-limit               300
+   :context-availablity-total-time-limit        3000
+   :context-availablity-next-trial-waiting-time 10
+   :eval-time-limit                             10000})
 
-(def current-prefs (atom default-prefs))
+(def static-prefs (gen-static-prefs))                                                                                         ; this config is comming from environment and system properties
+
+(def current-prefs (atom (merge default-prefs static-prefs)))
+
+; -- PUBLIC API -------------------------------------------------------------------------------------------------------------
 
 (defn get-prefs []
   @current-prefs)

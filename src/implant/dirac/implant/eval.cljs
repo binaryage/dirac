@@ -242,6 +242,11 @@
     (let [[value] (<! (eval-in-context! :default "dirac.runtime"))]
       value)))
 
+(defn is-runtime-repl-support-installed? []
+  (go
+    (let [[value] (<! (eval-in-context! :default "dirac.runtime.repl.installed_QMARK_()"))]
+      value)))
+
 (defn get-runtime-api-version []
   (go
     (let [[value] (<! (eval-in-context! :default "dirac.runtime.get_api_version()"))]

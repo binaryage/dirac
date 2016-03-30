@@ -1,24 +1,16 @@
 (ns dirac.runtime
-  (:require [dirac.runtime.core :as core]))
+  (:require [dirac.runtime.core :as core]
+            [dirac.runtime.prefs :as prefs]))
 
 (def api-version 2)
 
 ; -- PUBLIC API -------------------------------------------------------------------------------------------------------------
 
-(defn ^:export install! [features]
-  (core/install! features))
-
-(defn ^:export uninstall! []
-  (core/uninstall!))
-
-(defn ^:export set-prefs! [new-prefs]
-  (core/set-prefs! new-prefs))
-
-(defn ^:export get-prefs []
-  (core/get-prefs))
-
-(defn ^:export set-pref! [pref val]
-  (core/set-pref! pref val))
-
 (defn ^:export get-api-version []
   api-version)
+
+(def ^:export install! core/install!)
+(def ^:export uninstall! core/uninstall!)
+(def ^:export set-prefs! prefs/set-prefs!)
+(def ^:export get-prefs prefs/get-prefs)
+(def ^:export set-pref! prefs/set-pref!)
