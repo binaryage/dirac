@@ -43,5 +43,7 @@ DEV_FIXTURES_SERVER_ROOT="$ROOT/test/browser/fixtures/resources"
 DEV_FIXTURES_SERVER_PORT="9080"
 DEV_DIRAC_EXTENSION_PATH="$ROOT/resources/unpacked"
 DEV_MARION_EXTENSION_PATH="$ROOT/test/marion/resources/unpacked"
+TMP_DIR="/tmp/dirac-tmp"
+TEST_CANARY_FLAG_FILE="$TMP_DIR/canary-flag"
 
 popd

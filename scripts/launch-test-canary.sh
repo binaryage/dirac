@@ -6,6 +6,11 @@ set -e
 
 pushd "$ROOT"
 
+# see launch-after-test-canary.sh
+if [ -f "$TEST_CANARY_FLAG_FILE" ]; then
+  rm "$TEST_CANARY_FLAG_FILE"
+fi
+
 if [ ! -d "$DIRAC_BROWSER_TESTS_USER_PROFILE" ] ; then
   mkdir -p "$DIRAC_BROWSER_TESTS_USER_PROFILE"
 fi
@@ -19,6 +24,11 @@ fi
 # we want to pre-compile our extensions, so that --load-extension param does not fail
 lein compile-marion
 lein compile-dirac-dev
+lein compile-browser-tests
+
+# see launch-after-test-canary.sh
+mkdir -p "$(dirname "$TEST_CANARY_FLAG_FILE")"
+touch "$TEST_CANARY_FLAG_FILE"
 
 set -x
 "$EXE" \

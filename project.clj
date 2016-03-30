@@ -248,18 +248,18 @@
              :parallel-build
              {}
              #_{:cljsbuild {:builds
-                          {:dirac-implant
-                           {:compiler {:parallel-build true}}
-                           :dirac-background
-                           {:compiler {:parallel-build true}}
-                           :dirac-options
-                           {:compiler {:parallel-build true}}
-                           :marion-background
-                           {:compiler {:parallel-build true}}
-                           :marion-content-script
-                           {:compiler {:parallel-build true}}
-                           :tests
-                           {:compiler {:parallel-build true}}}}}
+                            {:dirac-implant
+                             {:compiler {:parallel-build true}}
+                             :dirac-background
+                             {:compiler {:parallel-build true}}
+                             :dirac-options
+                             {:compiler {:parallel-build true}}
+                             :marion-background
+                             {:compiler {:parallel-build true}}
+                             :marion-content-script
+                             {:compiler {:parallel-build true}}
+                             :tests
+                             {:compiler {:parallel-build true}}}}}
 
              ; DON'T FORGET TO UPDATE scripts/ensure-checkouts.sh
              :checkouts
@@ -299,12 +299,16 @@
              {:aliases ^:replace {}}
 
              :dev-browser-tests
-             {:cooper {"fixtures-server"            ["scripts/launch-fixtures-server.sh"]
-                       "canary-for-browser-tests"   ["scripts/launch-canary-for-browser-tests.sh"]
-                       "fig-dirac"                  ["lein" "fig-dirac"]
-                       "fig-marion"                 ["lein" "fig-marion"]
-                       "auto-compile-marion-cs"     ["lein" "auto-compile-marion-cs"]
-                       "auto-compile-browser-tests" ["lein" "auto-compile-browser-tests"]}}}
+             {:cooper {"fixtures-server" ["scripts/launch-fixtures-server.sh"]
+                       "test-canary"     ["scripts/launch-test-canary.sh"]
+                       "fig-dirac"       ["scripts/launch-after-test-canary.sh"
+                                          "lein fig-dirac"]
+                       "fig-marion"      ["scripts/launch-after-test-canary.sh"
+                                          "lein fig-marion"]
+                       "marion-cs"       ["scripts/launch-after-test-canary.sh"
+                                          "lein auto-compile-marion-cs"]
+                       "browser-tests"   ["scripts/launch-after-test-canary.sh"
+                                          "lein auto-compile-browser-tests"]}}}
 
   ; to develop browser tests:
   ;
