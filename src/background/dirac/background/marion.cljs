@@ -1,22 +1,19 @@
 (ns dirac.background.marion
-  (:require-macros [cljs.core.async.macros :refer [go go-loop]])
+  (:require-macros [cljs.core.async.macros :refer [go go-loop]]
+                   [dirac.background.logging :refer [log info warn error]])
   (:require [cljs.core.async :refer [<! chan put!]]
             [chromex.support :refer-macros [oget ocall oapply]]
-            [chromex.logging :refer-macros [log info warn error]]
-            [chromex.ext.tabs :as tabs]
-            [chromex.ext.runtime :as runtime]
             [chromex.protocols :refer [post-message! get-sender get-name]]
-            [dirac.background.action :as action]
+            [devtools.toolbox :refer [envelope]]
             [dirac.background.state :as state]
-            [dirac.utils :as utils]
             [cljs.reader :as reader]
             [dirac.background.helpers :as helpers]
             [dirac.options.model :as options]))
 
 (defn automate-dirac-frontend! [message]
-  (log "automate!" (pr-str message))
   (let [{:keys [action]} message
         connection-id (int (:connection-id message))]
+    (log "automate-dirac-frontend!" action (envelope message))
     (if (state/get-connection connection-id)
       (helpers/automate-dirac-connection! connection-id action)
       (warn "dirac automation request for missing connection:" connection-id message
@@ -36,19 +33,23 @@
 ; -- marion event loop ------------------------------------------------------------------------------------------------------
 
 (defn register-marion! [marion-port]
-  (log "BACKGROUND: marion connected" (get-sender marion-port))
+  (log "marion connected" (envelope (get-sender marion-port)))
   (if (state/get-marion-port)
     (warn "overwriting previous marion port!"))
   (state/set-marion-port! marion-port))
 
 (defn unregister-marion! []
-  (log "BACKGROUND: marion disconnected")
-  (state/set-marion-port! nil))
+  (if-let [port (state/get-marion-port)]
+    (do
+      (log "marion disconnected" (envelope (get-sender port)))
+      (state/set-marion-port! nil))
+    (warn "unregister-marion! called when no previous marion port!")))
 
 (defn process-marion-message [serialized-message]
-  (log "process-marion-message" serialized-message)
-  (let [message (reader/read-string serialized-message)]
-    (case (:command message)
+  (let [message (reader/read-string serialized-message)
+        command (:command message)]
+    (log "process-marion-message" command (envelope message))
+    (case command
       :set-option (options/set-option! (:key message) (:value message))
       :reset-connection-id-counter (state/reset-connection-id-counter!)
       :fire-synthetic-chrome-event (fire-synthetic-chrome-event! message)

@@ -1,11 +1,8 @@
 (ns dirac.background.core
-  (:require-macros [cljs.core.async.macros :refer [go go-loop]])
-  (:require [goog.string :as gstring]
-            [goog.string.format]
-            [cljs.reader :as reader]
-            [cljs.core.async :refer [<! chan put!]]
+  (:require-macros [cljs.core.async.macros :refer [go go-loop]]
+                   [dirac.background.logging :refer [log info warn error]])
+  (:require [cljs.core.async :refer [<! chan put!]]
             [chromex.support :refer-macros [oget ocall oapply]]
-            [chromex.logging :refer-macros [log info warn error group group-end]]
             [chromex.chrome-event-channel :refer [make-chrome-event-channel]]
             [chromex.protocols :refer [post-message! get-sender get-name]]
             [chromex.ext.runtime :as runtime]
@@ -45,8 +42,8 @@
 
 ; -- main event loop --------------------------------------------------------------------------------------------------------
 
-(defn process-chrome-event [event-num event]
-  (log (gstring/format "BACKGROUND: got chrome event (%05d)" event-num) event)
+(defn process-chrome-event [event]
+  (log "got chrome event" event)
   (let [[event-id event-args] event]
     (case event-id
       ::browser-action/on-clicked (apply tools/activate-or-open-dirac! event-args)
@@ -57,12 +54,12 @@
       nil)))
 
 (defn run-chrome-event-loop! [chrome-event-channel]
-  (log "BACKGROUND: starting main event loop...")
-  (go-loop [event-num 1]
+  (log "starting main event loop...")
+  (go-loop []
     (when-let [event (<! chrome-event-channel)]
-      (process-chrome-event event-num event)
-      (recur (inc event-num)))
-    (log "BACKGROUND: leaving main event loop")))
+      (process-chrome-event event)
+      (recur))
+    (log "leaving main event loop")))
 
 (defn boot-chrome-event-loop! []
   (let [channel (make-chrome-event-channel (chan))]
@@ -76,7 +73,7 @@
 ; -- main entry point -------------------------------------------------------------------------------------------------------
 
 (defn init! []
-  (log "BACKGROUND: init")
+  (log "init")
   (setup-cors-rewriting!)
   (go
     (<! (options/init!))
