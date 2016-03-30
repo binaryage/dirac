@@ -10,7 +10,7 @@
 ; -- chrome event loop ------------------------------------------------------------------------------------------------------
 
 (defn process-event! [event]
-  (log "got chrome event:" event)
+  (log "dispatch chrome event" event)
   (let [[event-id event-args] event]
     (case event-id
       ::runtime/on-connect (apply content-script/handle-new-connection! event-args)                                           ; a connection from content script

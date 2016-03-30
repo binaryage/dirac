@@ -53,7 +53,7 @@
 
 (defn process-message! [message]
   (let [message-type (oget message "type")]
-    (log "process-message!" message-type (envelope message))
+    (log "dispatch dirac extension message" message-type (envelope message))
     (case message-type
       "feedback-from-dirac-extension" (feedback/broadcast-feedback! message)
       "feedback-from-dirac-frontend" (feedback/broadcast-feedback! message)

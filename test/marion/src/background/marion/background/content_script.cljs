@@ -2,6 +2,7 @@
   (:require-macros [cljs.core.async.macros :refer [go go-loop]]
                    [marion.background.logging :refer [log info warn error]])
   (:require [cljs.core.async :refer [<! chan timeout]]
+            [devtools.toolbox :refer [envelope]]
             [chromex.support :refer-macros [oget ocall oapply]]
             [chromex.protocols :refer [post-message! get-sender]]
             [marion.background.helpers :as helpers]
@@ -41,7 +42,7 @@
 
 (defn process-message! [client message]
   (let [message-type (oget message "type")]
-    (log "dispatch content script message" message-type message)
+    (log "dispatch content script message" message-type (envelope message))
     (case message-type
       "marion-subscribe-transcript" (subscribe-client-to-transcript! client)
       "marion-unsubscribe-transcript" (unsubscribe-client-from-transcript! client)
