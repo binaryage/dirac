@@ -16,6 +16,7 @@
     (case (oget data "type")
       "feedback-from-dirac-frontend" (transcript-append! "frontend" (oget data "transcript") (oget data "connectionId"))
       "feedback-from-dirac-extension" (transcript-append! "extension" (oget data "transcript"))
+      "reply" (messages/process-reply! data)
       nil)))
 
 (defn init-feedback! []

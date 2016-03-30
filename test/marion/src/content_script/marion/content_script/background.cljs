@@ -2,6 +2,7 @@
   (:require-macros [cljs.core.async.macros :refer [go-loop]]
                    [marion.content-script.logging :refer [log info warn error]])
   (:require [cljs.core.async :refer [<! chan]]
+            [devtools.toolbox :refer [envelope]]
             [chromex.support :refer-macros [oget ocall oapply]]
             [chromex.protocols :refer [post-message!]]
             [chromex.ext.runtime :as runtime]
@@ -16,10 +17,11 @@
 
 (defn process-message! [message]
   (let [type (oget message "type")]
-    (log "process background page message" type message)
+    (log "process background page message" type (envelope message))
     (case type
       "feedback-from-dirac-extension" (relay-message-to-page! message)
       "feedback-from-dirac-frontend" (relay-message-to-page! message)
+      "reply" (relay-message-to-page! message)
       (warn "got unknown message from background page" type message))))
 
 ; -- message loop -----------------------------------------------------------------------------------------------------------

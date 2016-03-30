@@ -10,30 +10,47 @@
             [marion.background.dirac :as dirac]
             [marion.background.clients :as clients]))
 
+(defn post-reply!
+  ([message-id]
+   (feedback/broadcast-feedback! #js {:type "reply" :id message-id}))
+  ([message-id data]
+   (feedback/broadcast-feedback! #js {:type "reply" :id message-id :data (pr-str data)})))
+
+(defn reply-to-message! [message]
+  (post-reply! (oget message "id")))
+
 ; -- message handlers -------------------------------------------------------------------------------------------------------
 
-(defn subscribe-client-to-transcript! [client]
-  (feedback/subscribe-client! client))
+(defn subscribe-client-to-transcript! [message client]
+  (feedback/subscribe-client! client)
+  (reply-to-message! message))
 
-(defn unsubscribe-client-from-transcript! [client]
-  (feedback/unsubscribe-client! client))
+(defn unsubscribe-client-from-transcript! [message client]
+  (feedback/unsubscribe-client! client)
+  (reply-to-message! message))
 
 (defn open-tab-with-scenario! [message]
   (let [scenario-url (oget message "url")]                                                                                    ; something like http://localhost:9080/scenarios/normal.html
-    (helpers/create-tab-with-url! scenario-url)))
+    (go
+      (<! (helpers/create-tab-with-url! scenario-url))
+      (reply-to-message! message))))
 
-(defn switch-to-task-runner! []
+(defn switch-to-task-runner! [message]
   (go
-    (if-let [tab-id (<! (helpers/find-task-runner-tab-id!))]
-      (helpers/activate-tab! tab-id))))
+    (when-let [tab-id (<! (helpers/find-task-runner-tab-id!))]
+      (<! (helpers/activate-tab! tab-id))
+      (reply-to-message! message))))
 
-(defn focus-task-runner-window! []
+(defn focus-task-runner-window! [message]
   (go
-    (if-let [tab-id (<! (helpers/find-task-runner-tab-id!))]
-      (helpers/focus-window-with-tab-id! tab-id))))
+    (when-let [tab-id (<! (helpers/find-task-runner-tab-id!))]
+      (<! (helpers/focus-window-with-tab-id! tab-id))
+      (reply-to-message! message))))
 
-(defn close-all-tabs! []
-  (helpers/close-all-scenario-tabs!))
+(defn close-all-tabs! [message]
+  (go
+    (<! (helpers/close-all-scenario-tabs!))
+    (reply-to-message! message)))
 
 (defn handle-extension-command! [message]
   (dirac/post-message-to-dirac-extension! message))
@@ -44,13 +61,13 @@
   (let [message-type (oget message "type")]
     (log "dispatch content script message" message-type (envelope message))
     (case message-type
-      "marion-subscribe-transcript" (subscribe-client-to-transcript! client)
-      "marion-unsubscribe-transcript" (unsubscribe-client-from-transcript! client)
+      "marion-subscribe-transcript" (subscribe-client-to-transcript! message client)
+      "marion-unsubscribe-transcript" (unsubscribe-client-from-transcript! message client)
       "marion-open-tab-with-scenario" (open-tab-with-scenario! message)
-      "marion-switch-to-task-runner-tab" (switch-to-task-runner!)
-      "marion-focus-task-runner-window" (focus-task-runner-window!)
-      "marion-close-all-tabs" (close-all-tabs!)
-      "marion-extension-command" (handle-extension-command! (oget message "payload")))))
+      "marion-switch-to-task-runner-tab" (switch-to-task-runner! message)
+      "marion-focus-task-runner-window" (focus-task-runner-window! message)
+      "marion-close-all-tabs" (close-all-tabs! message)
+      "marion-extension-command" (handle-extension-command! message))))
 
 ; -- content script message loop --------------------------------------------------------------------------------------------
 

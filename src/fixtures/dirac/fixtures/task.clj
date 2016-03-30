@@ -6,11 +6,12 @@
 (defmacro go-task [& args]
   (let [first-arg (first args)
         config (if (map? first-arg) first-arg)
-        commands (if config (rest args) args)]
+        commands (if config (rest args) args)
+        serialized-commands (map (fn [command] `(cljs.core.async/<! ~command)) commands)]
     `(let [test-thunk# (fn []
                          (cljs.core.async.macros/go
                            (dirac.fixtures.task/task-started!)
-                           ~@commands
+                           ~@serialized-commands
                            (dirac.fixtures.task/task-finished!)
                            (dirac.fixtures.task/task-teardown!)))]
        (dirac.fixtures.launcher/register-task! test-thunk#)

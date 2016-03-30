@@ -29,8 +29,8 @@
 (defn focus-window-with-tab-id! [tab-id]
   (go
     (if-let [window-id (<! (sugar/fetch-tab-window-id tab-id))]
-      (windows/update window-id #js {"focused"       true
-                                     "drawAttention" true}))))
+      (<! (windows/update window-id #js {"focused"       true
+                                         "drawAttention" true})))))
 
 (defn activate-tab! [tab-id]
   (tabs/update tab-id #js {"active" true}))
@@ -51,7 +51,7 @@
   (go
     (let [[tabs] (<! (tabs/query #js {:url "http://*/scenarios/*"}))]
       (doseq [tab tabs]
-        (tabs/remove (sugar/get-tab-id tab))))))
+        (<! (tabs/remove (sugar/get-tab-id tab)))))))
 
 (defn connect-to-dirac-extension! []
   (go

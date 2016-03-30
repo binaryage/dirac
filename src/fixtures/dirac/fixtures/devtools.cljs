@@ -9,14 +9,12 @@
 
 (defn init-devtools! [& [config]]
   (devtools/set-pref! :agent-port (get-test-dirac-agent-port))
-  ; override devtools prefs
-  (when-let [devtools-prefs (:devtools-prefs config)]
+  (when-let [devtools-prefs (:devtools-prefs config)]                                                                         ; override devtools prefs
     (log "devtools override: set prefs " devtools-prefs)
     (devtools-prefs/merge-prefs! devtools-prefs))
-  ; override devtools features/installation
-  (if-not (:do-not-install-devtools config)
+  (if-not (:do-not-install-devtools config)                                                                                   ; override devtools features/installation
     (let [features-to-enable (cond-> []
-                                     (not (:do-not-enable-custom-formatters config)) (conj :custom-formatters)
-                                     (not (:do-not-enable-sanity-hints config)) (conj :sanity-hints))]
+                               (not (:do-not-enable-custom-formatters config)) (conj :custom-formatters)
+                               (not (:do-not-enable-sanity-hints config)) (conj :sanity-hints))]
       (devtools/install! features-to-enable))
     (log "devtools override: do not install")))

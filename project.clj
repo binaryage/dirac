@@ -116,6 +116,7 @@
                            {:source-paths ["src/settings"
                                            "src/project"
                                            "src/lib"
+                                           "src/dev"
                                            "src/fixtures"
                                            "src/runtime"
                                            "src/test"
@@ -147,6 +148,7 @@
                            :marion-content-script
                            {:source-paths ["src/settings"
                                            "src/shared"
+                                           "test/marion/src/dev"
                                            "test/marion/src/content_script"]
                             :compiler     {:output-to             "test/marion/resources/unpacked/compiled/content_script/content_script.js"
                                            :output-dir            "test/marion/resources/unpacked/compiled/content_script"

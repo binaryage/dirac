@@ -11,6 +11,7 @@
 
 (def ^:const MARION_INITIAL_WAIT_TIME 1000)
 (def ^:const MARION_RECONNECTION_ATTEMPT_DELAY 2000)
+(def ^:const MARION_MESSAGE_REPLY_TIME 2000)
 
 ; -- cljs access ------------------------------------------------------------------------------------------------------------
 
@@ -37,3 +38,6 @@
 
 (defmacro get-marion-reconnection-attempt-delay []
   MARION_RECONNECTION_ATTEMPT_DELAY)
+
+(defmacro get-marion-message-reply-time []
+  MARION_MESSAGE_REPLY_TIME)

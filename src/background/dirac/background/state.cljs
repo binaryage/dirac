@@ -54,3 +54,9 @@
 (defn post-feedback! [text]
   (post-to-marion! #js {:type "feedback-from-dirac-extension" :transcript text}))
 
+(defn post-reply!
+  ([message-id]
+   (post-to-marion! #js {:type "reply" :id message-id}))
+  ([message-id data]
+   (post-to-marion! #js {:type "reply" :id message-id :data (pr-str data)})))
+

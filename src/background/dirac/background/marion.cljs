@@ -46,7 +46,9 @@
     (warn "unregister-marion! called when no previous marion port!")))
 
 (defn process-marion-message [serialized-message]
-  (let [message (reader/read-string serialized-message)
+  (let [id (oget serialized-message "id")
+        payload (oget serialized-message "payload")
+        message (reader/read-string payload)
         command (:command message)]
     (log "process-marion-message" command (envelope message))
     (case command
@@ -54,7 +56,8 @@
       :reset-connection-id-counter (state/reset-connection-id-counter!)
       :fire-synthetic-chrome-event (fire-synthetic-chrome-event! message)
       :automate-dirac-frontend (automate-dirac-frontend! message)
-      :tear-down (tear-down!))))
+      :tear-down (tear-down!))
+    (state/post-reply! id)))
 
 (defn run-marion-message-loop! [marion-port]
   (go-loop []

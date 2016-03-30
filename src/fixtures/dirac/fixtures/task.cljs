@@ -11,6 +11,8 @@
             [dirac.fixtures.launcher :as launcher]
             [dirac.fixtures.helpers :as helpers]))
 
+(defonce setup-done (volatile! false))
+
 (defn setup-debugging-port! []
   (let [url (helpers/get-document-url)]
     (if-let [debugging-port (helpers/get-query-param url "debugging_port")]
@@ -18,21 +20,23 @@
         (messages/set-option! :target-url target-url)))))
 
 (defn task-setup! [& [config]]
-  ; transcript is a fancy name for "log of interesting events"
-  (transcript-host/init-transcript! "transcript-box")
-  (status-host/init-status! "status-box")
-  ; feedback subsystem is responsible for intercepting messages to be presented in transcript
-  (feedback/init-feedback!)
-  (launcher/init!)
-  ; when launched from test runner, chrome driver is in charge of selecting debugging port, we have to propagate this
-  ; information to our dirac extension settings
-  (setup-debugging-port!)
-  ; open-as window is handy for debugging, becasue we can open internal devtools to inspect dirac frontend in case of errors
-  (messages/set-option! :open-as "window")
-  ; if test runner is present, we will wait for test runner to launch the test
-  ; it needs to disconnect the driver first
-  (if-not (helpers/is-test-runner-present?)
-    (launcher/launch-task!)))
+  (when-not @setup-done                                                                                                       ; this is here to support figwheel's hot-reloading
+    (vreset! setup-done true)
+    ; transcript is a fancy name for "log of interesting events"
+    (transcript-host/init-transcript! "transcript-box")
+    (status-host/init-status! "status-box")
+    ; feedback subsystem is responsible for intercepting messages to be presented in transcript
+    (feedback/init-feedback!)
+    (launcher/init!)
+    ; when launched from test runner, chrome driver is in charge of selecting debugging port, we have to propagate this
+    ; information to our dirac extension settings
+    (setup-debugging-port!)
+    ; open-as window is handy for debugging, becasue we can open internal devtools to inspect dirac frontend in case of errors
+    (messages/set-option! :open-as "window")
+    ; if test runner is present, we will wait for test runner to launch the test
+    ; it needs to disconnect the driver first
+    (if-not (helpers/is-test-runner-present?)
+      (launcher/launch-task!))))
 
 (defn cleanup! []
   (messages/close-all-marion-tabs!)
@@ -64,21 +68,22 @@
   (status-host/set-status! "task finished")
   (transcript-host/set-style! "finished"))
 
-(defn task-timeouted! []
-  (status-host/set-status! "task timeouted!")
-  (transcript-host/set-style! "timeout"))
+(defn task-timeouted! [data]
+  (if-let [transcript (:transcript data)]
+    (transcript-host/append-to-transcript! "timeout" transcript))
+  (status-host/set-status! (or (:status data) "task timeouted!"))
+  (transcript-host/set-style! (or (:style data) "timeout")))
 
 (defn task-thrown-exception! [e]
   (status-host/set-status! (str "task has thrown an exception: " e))
   (transcript-host/set-style! "exception"))
 
-(defn task-exception-handler [e]
-  (case e
-    "Uncaught :task-timeout" (task-timeouted!)
-    (do
-      (error e)
-      (task-thrown-exception! e)))
-  (task-teardown!))
+(defn task-exception-handler [message _source _lineno _colno error]
+  (case (ex-message error)
+    :task-timeout (task-timeouted! (ex-data error))
+    (task-thrown-exception! message))
+  (task-teardown!)
+  false)
 
 (defn register-global-exception-handler! [handler]
   (oset js/window ["onerror"] handler))

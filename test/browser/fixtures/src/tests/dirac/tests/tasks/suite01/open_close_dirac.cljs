@@ -11,8 +11,7 @@
 
 (go-task
   (open-tab-with-scenario! "normal")
-  (<! (timeout 1000))                                                                                                         ; TODO: implement reply system
   (open-dirac-devtools!)
-  (<! (wait-for-dirac-frontend-initialization))
-  (<! (wait-for-implant-initialization))
+  (wait-for-dirac-frontend-initialization)
+  (wait-for-implant-initialization)
   (close-dirac-devtools! 1))

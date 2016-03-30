@@ -13,7 +13,7 @@
 (defonce last-dirac-frontend-id (atom nil))
 (defonce transcript-observers (atom #{}))
 (defonce sniffer-enabled (atom true))
-(def ^:dynamic *transcript-enabled* true)
+(defonce ^:dynamic *transcript-enabled* true)
 
 (defn add-transcript-observer! [observer]
   (swap! transcript-observers conj observer))
@@ -97,6 +97,5 @@
              (close! channel))
            (do
              (disable-sniffer!)
-             (append-to-transcript! "timeout" (str "while waiting for transcript match: " re))
-             (throw :task-timeout)))))
+             (ex-info :task-timeout {:transcript (str "while waiting for transcript match: " re)})))))
      channel)))

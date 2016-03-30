@@ -11,10 +11,9 @@
 
 (go-task
   (open-tab-with-scenario! "no-agent")
-  (<! (timeout 1000))                                                                                                         ; TODO: implement reply system
   (open-dirac-devtools!)
-  (<! (wait-for-dirac-frontend-initialization))
-  (<! (wait-for-implant-initialization))
-  (<! (wait-switch-to-console 1))
+  (wait-for-dirac-frontend-initialization)
+  (wait-for-implant-initialization)
+  (wait-switch-to-console 1)
   (switch-to-dirac-prompt! 1)
-  (<! (wait-for-transcript-match #".*will try reconnect in 4 seconds.*" (* 20 SECOND))))
+  (wait-for-transcript-match #".*will try reconnect in 4 seconds.*" (* 20 SECOND)))
