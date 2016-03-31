@@ -1,8 +1,10 @@
 (ns dirac.fixtures.messages
   (:require-macros [cljs.core.async.macros :refer [go go-loop]])
   (:require [cljs.core.async :refer [put! <! chan timeout alts! close!]]
+            [dirac.settings :refer-macros [get-marion-message-reply-time]]
             [chromex.support :refer-macros [oget oset ocall oapply]]
-            [chromex.logging :refer-macros [log info warn error]]))
+            [chromex.logging :refer-macros [log info warn error]]
+            [cljs.core.async.impl.protocols :as core-async]))
 
 (defonce last-message-id (volatile! 0))
 (defonce reply-subscribers (atom {}))                                                                                         ; message-id -> list of callbacks
@@ -23,6 +25,25 @@
     (doseq [subscriber subscribers]
       (subscriber reply))
     (swap! reply-subscribers dissoc message-id)))
+
+(defn wait-for-reply!
+  ([message]
+   (wait-for-reply! message (get-marion-message-reply-time)))
+  ([message time]
+   (let [message-id (oget message "id")
+         _ (assert (number? message-id))
+         channel (chan)
+         interceptor (fn [reply]
+                       (put! channel reply)
+                       (close! channel))]
+     (subscribe-to-reply! message-id interceptor)
+     (when time
+       (assert (number? time))
+       (go
+         (<! (timeout time))
+         (when-not (core-async/closed? channel)
+           (throw (ex-info :task-timeout {:transcript (str "timeout while waiting for reply to " (pr-str message))})))))
+     channel)))
 
 ; for communication between tested page and marionette extension
 ; see https://developer.chrome.com/extensions/content_scripts#host-page-communication

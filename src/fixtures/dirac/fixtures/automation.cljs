@@ -2,29 +2,8 @@
   (:require-macros [cljs.core.async.macros :refer [go go-loop]])
   (:require [cljs.core.async :refer [put! <! chan timeout alts! close!]]
             [chromex.support :refer-macros [oget oset ocall oapply]]
-            [dirac.settings :refer-macros [get-marion-message-reply-time]]
             [dirac.fixtures.messages :as messages]
-            [dirac.fixtures.transcript-host :as transcript-host]
-            [cljs.core.async.impl.protocols :as core-async]))
-
-(defn wait-for-reply!
-  ([message]
-   (wait-for-reply! message (get-marion-message-reply-time)))
-  ([message time]
-   (let [message-id (oget message "id")
-         _ (assert (number? message-id))
-         channel (chan)
-         interceptor (fn [reply]
-                       (put! channel reply)
-                       (close! channel))]
-     (messages/subscribe-to-reply! message-id interceptor)
-     (when time
-       (assert (number? time))
-       (go
-         (<! (timeout time))
-         (when-not (core-async/closed? channel)
-           (throw (ex-info :task-timeout {:transcript (str "timeout while waiting for reply to " (pr-str message))})))))
-     channel)))
+            [dirac.fixtures.transcript-host :as transcript-host]))
 
 (def label "automate")
 
@@ -34,12 +13,12 @@
 
 (defn automate-dirac-frontend! [connection-id data]
   (append-to-transcript! (pr-str data) connection-id)
-  (wait-for-reply!
+  (messages/wait-for-reply!
     (messages/automate-dirac-frontend! connection-id data)))
 
 (defn fire-chrome-event! [data]
   (append-to-transcript! data)
-  (wait-for-reply!
+  (messages/wait-for-reply!
     (messages/fire-chrome-event! data)))
 
 ; -- automation commands ----------------------------------------------------------------------------------------------------
@@ -52,7 +31,7 @@
 
 (defn open-tab-with-scenario! [name]
   (append-to-transcript! (str "open-tab-with-scenario! " name))
-  (wait-for-reply!
+  (messages/wait-for-reply!
     (messages/post-message! #js {:type "marion-open-tab-with-scenario" :url (get-scenario-url name)})))
 
 (defn open-dirac-devtools! []
@@ -62,10 +41,8 @@
   (fire-chrome-event! [:chromex.ext.commands/on-command ["close-dirac-devtools" connection-id]]))
 
 (defn switch-inspector-panel! [connection-id panel]
-  (go
-    (<! (timeout 300))                                                                                                        ; TODO: remove
-    (automate-dirac-frontend! connection-id {:action :switch-inspector-panel
-                                             :panel  panel})))
+  (automate-dirac-frontend! connection-id {:action :switch-inspector-panel
+                                           :panel  panel}))
 
 (defn focus-console-prompt! [connection-id]
   (automate-dirac-frontend! connection-id {:action :focus-console-prompt}))
