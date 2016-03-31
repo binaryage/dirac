@@ -11,11 +11,11 @@
   (or (int (get-query-param "connection_id")) 0))
 
 (defn get-console-view []
-  (if-let [console-panel (oget js/window "WebInspector" "ConsolePanel")]
-    (if-let [console-view (ocall console-panel "_view")]
+  (if-let [console-view-class (oget js/window "WebInspector" "ConsoleView")]
+    (if-let [console-view (ocall console-view-class "instance")]
       console-view
-      (throw (ex-info "Unable to obtain console view from DevTools" nil)))
-    (throw (ex-info "Unable to obtain console panel from DevTools" nil))))
+      (throw (ex-info "Unable to obtain ConsoleView instance from DevTools" nil)))
+    (throw (ex-info "Unable to obtain WebInspector.ConsoleView from DevTools" nil))))
 
 (defn get-inspector-view []
   (if-let [inspector-view (oget js/window "WebInspector" "inspectorView")]
