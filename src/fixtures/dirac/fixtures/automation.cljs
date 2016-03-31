@@ -64,6 +64,14 @@
 (defn wait-for-implant-initialization []
   (wait-for-transcript-match #".*implant initialized.*"))
 
+(defn wait-for-devtools-ready []
+  (wait-for-transcript-match #".*DevTools ready.*"))
+
+(defn wait-for-devtools []
+  (wait-for-dirac-frontend-initialization)
+  (wait-for-implant-initialization)
+  (wait-for-devtools-ready))
+
 (defn wait-for-console-initialization [& [timeout silent?]]
   (wait-for-transcript-match #".*console initialized.*" timeout silent?))
 
