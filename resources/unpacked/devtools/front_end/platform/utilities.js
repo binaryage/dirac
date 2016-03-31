@@ -1240,6 +1240,20 @@ Set.prototype.addAll = function(iterable)
 }
 
 /**
+ * @param {!Iterable<T>|!Array<!T>} iterable
+ * @return {boolean}
+ * @template T
+ */
+Set.prototype.containsAll = function(iterable)
+{
+    for (var e of iterable) {
+        if (!this.has(e))
+            return false;
+    }
+    return true;
+}
+
+/**
  * @return {T}
  * @template T
  */
@@ -1310,6 +1324,19 @@ Multimap.prototype = {
     has: function(key)
     {
         return this._map.has(key);
+    },
+
+    /**
+     * @param {K} key
+     * @param {V} value
+     * @return {boolean}
+     */
+    hasValue: function(key, value)
+    {
+        var set = this._map.get(key);
+        if (!set)
+            return false;
+        return set.has(value);
     },
 
     /**

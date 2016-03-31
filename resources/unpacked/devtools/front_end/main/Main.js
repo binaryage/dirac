@@ -110,7 +110,6 @@ WebInspector.Main.prototype = {
     {
         Runtime.experiments.register("accessibilityInspection", "Accessibility Inspection");
         Runtime.experiments.register("applyCustomStylesheet", "Allow custom UI themes");
-        Runtime.experiments.register("appBanner", "App banner support", true);
         Runtime.experiments.register("blackboxJSFramesOnTimeline", "Blackbox JavaScript frames on Timeline", true);
         Runtime.experiments.register("colorContrastRatio", "Contrast ratio line in color picker", true);
         Runtime.experiments.register("cpuThrottling", "CPU throttling", true);
@@ -119,11 +118,11 @@ WebInspector.Main.prototype = {
         Runtime.experiments.register("layersPanel", "Layers panel");
         Runtime.experiments.register("layoutEditor", "Layout editor", true);
         Runtime.experiments.register("inspectTooltip", "Dark inspect element tooltip");
+        Runtime.experiments.register("liveSASS", "Live SASS", true);
         Runtime.experiments.register("multipleTimelineViews", "Multiple main views on Timeline", true);
         Runtime.experiments.register("networkRequestHeadersFilterInDetailsView", "Network request headers filter in details view", true);
         Runtime.experiments.register("networkRequestsOnTimeline", "Network requests on Timeline", true);
         Runtime.experiments.register("privateScriptInspection", "Private script inspection");
-        Runtime.experiments.register("promiseTracker", "Promise inspector");
         Runtime.experiments.register("reducedIndentation", "Reduced indentation in Elements DOM tree");
         Runtime.experiments.register("requestBlocking", "Request blocking", true);
         Runtime.experiments.register("resolveVariableNames", "Resolve variable names", true);
@@ -141,8 +140,6 @@ WebInspector.Main.prototype = {
         if (InspectorFrontendHost.isUnderTest()) {
             var testPath = JSON.parse(prefs["testPath"] || "\"\"");
             // Enable experiments for testing.
-            if (testPath.indexOf("debugger/promise") !== -1)
-                Runtime.experiments.enableForTest("promiseTracker");
             if (testPath.indexOf("layers/") !== -1)
                 Runtime.experiments.enableForTest("layersPanel");
             if (testPath.indexOf("timeline/") !== -1 || testPath.indexOf("layers/") !== -1)

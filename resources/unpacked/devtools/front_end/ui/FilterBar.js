@@ -265,6 +265,14 @@ WebInspector.TextFilterUI.prototype = {
     },
 
     /**
+     * @return {boolean}
+     */
+    isRegexChecked: function()
+    {
+        return this._supportRegex ? this._regexCheckBox.checked : false;
+    },
+
+    /**
      * @return {string}
      */
     value: function()
@@ -341,6 +349,11 @@ WebInspector.TextFilterUI.prototype = {
     {
         if (!this._suggestionBuilder)
             return;
+        if (this.isRegexChecked()) {
+            if (this._suggestBox.visible())
+                this._suggestBox.hide();
+            return;
+        }
         var suggestions = this._suggestionBuilder.buildSuggestions(this._filterInputElement);
         if (suggestions && suggestions.length) {
             if (this._suppressSuggestion)
@@ -348,7 +361,7 @@ WebInspector.TextFilterUI.prototype = {
             else
                 this._suggestionBuilder.applySuggestion(this._filterInputElement, suggestions[0], true);
             var anchorBox = this._filterInputElement.boxInWindow().relativeTo(new AnchorBox(-3, 0));
-            this._suggestBox.updateSuggestions(anchorBox, suggestions, 0, true, "");
+            this._suggestBox.updateSuggestions(anchorBox, suggestions.map(item => ({title: item})), 0, true, "");
         } else {
             this._suggestBox.hide();
         }
@@ -369,7 +382,7 @@ WebInspector.TextFilterUI.prototype = {
         this._regex = null;
         this._filterInputElement.classList.remove("filter-text-invalid");
         if (filterQuery) {
-            if (this._supportRegex && this._regexCheckBox.checked) {
+            if (this.isRegexChecked()) {
                 try {
                     this._regex = new RegExp(filterQuery, "i");
                 } catch (e) {

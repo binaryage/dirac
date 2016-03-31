@@ -197,15 +197,6 @@ WebInspector.TextRange.prototype = {
     },
 
     /**
-     * @param {number} lineOffset
-     * @return {!WebInspector.TextRange}
-     */
-    shift: function(lineOffset)
-    {
-        return new WebInspector.TextRange(this.startLine + lineOffset, this.startColumn, this.endLine + lineOffset, this.endColumn);
-    },
-
-    /**
      * @param {number} line
      * @param {number} column
      * @return {!WebInspector.TextRange}
@@ -355,3 +346,12 @@ WebInspector.SourceEdit.prototype = {
     },
 }
 
+/**
+ * @param {!WebInspector.SourceEdit} edit1
+ * @param {!WebInspector.SourceEdit} edit2
+ * @return {number}
+ */
+WebInspector.SourceEdit.comparator = function(edit1, edit2)
+{
+    return WebInspector.TextRange.comparator(edit1.oldRange, edit2.oldRange);
+}

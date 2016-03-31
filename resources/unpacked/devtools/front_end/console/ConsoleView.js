@@ -241,6 +241,12 @@ WebInspector.ConsoleView.prototype = {
         return this._searchableView;
     },
 
+    _clearHistory: function()
+    {
+        this._consoleHistorySetting.set([]);
+        this._prompt.setHistoryData([]);
+    },
+
     /**
      * @param {!WebInspector.Event} event
      */
@@ -791,6 +797,7 @@ WebInspector.ConsoleView.prototype = {
 
         contextMenu.appendSeparator();
         contextMenu.appendAction("console.clear");
+        contextMenu.appendAction("console.clear.history");
         contextMenu.appendItem(WebInspector.UIString("Save as..."), this._saveConsole.bind(this));
 
         var request = consoleMessage ? consoleMessage.request : null;
@@ -1651,6 +1658,16 @@ WebInspector.ConsoleGroup.prototype = {
 }
 
 /**
+ * @return {!WebInspector.ConsoleView}
+ */
+WebInspector.ConsoleView.instance = function()
+{
+    if (!WebInspector.ConsoleView._instance)
+        WebInspector.ConsoleView._instance = new WebInspector.ConsoleView();
+    return WebInspector.ConsoleView._instance;
+}
+
+/**
  * @constructor
  * @implements {WebInspector.ActionDelegate}
  */
@@ -1673,6 +1690,9 @@ WebInspector.ConsoleView.ActionDelegate.prototype = {
             return true;
         case "console.clear":
             WebInspector.ConsoleModel.clearConsole();
+            return true;
+        case "console.clear.history":
+            WebInspector.ConsoleView.instance()._clearHistory();
             return true;
         }
         return false;

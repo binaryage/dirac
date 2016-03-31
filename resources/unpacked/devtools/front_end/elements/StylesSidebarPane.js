@@ -218,10 +218,11 @@ WebInspector.StylesSidebarPane.prototype = {
         if (!node)
             return;
 
+        var fullRefresh = Runtime.experiments.isEnabled("liveSASS");
         for (var section of this.allSections()) {
             if (section.isBlank)
                 continue;
-            section.update(section === editedSection);
+            section.update(fullRefresh || section === editedSection);
         }
 
         if (this._filterRegex)
@@ -2391,7 +2392,10 @@ WebInspector.StylePropertyTreeElement.prototype = {
                 if (!isEditingName && this._parentPane._mouseDownTreeElementIsName)
                     moveDirection = "backward";
             }
-            this.editingCommitted((context.isEditingName ? this.name : this.value) || event.target.textContent, context, moveDirection);
+            var text = event.target.textContent;
+            if (!context.isEditingName)
+                text = this.value || text;
+            this.editingCommitted(text, context, moveDirection);
         }
 
         this._originalPropertyText = this.property.propertyText;
