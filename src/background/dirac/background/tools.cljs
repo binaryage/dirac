@@ -5,7 +5,6 @@
             [chromex.logging :refer-macros [log info warn error group group-end]]
             [chromex.ext.windows :as windows]
             [chromex.ext.tabs :as tabs]
-            [dirac.background.cors :refer [setup-cors-rewriting!]]
             [dirac.target.core :refer [resolve-backend-url]]
             [dirac.i18n :as i18n]
             [dirac.sugar :as sugar]

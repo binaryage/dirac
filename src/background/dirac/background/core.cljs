@@ -74,7 +74,6 @@
 
 (defn init! []
   (log "init")
-  (setup-cors-rewriting!)
   (go
     (<! (options/init!))
     (boot-chrome-event-loop!)))
