@@ -18,7 +18,7 @@ die_if_dirty_working_copy
 git fetch origin devtools
 
 # at this point we should have latest upstream changes in devtools branch
-# (run ./fetch-devtools-branch.sh to update it)
+echo "hint: to update devtools branch to the latest version run: ./scripts/pull-devtools-branch.sh"
 
 # A note about initial setup
 #
