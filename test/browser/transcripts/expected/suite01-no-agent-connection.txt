@@ -3,7 +3,8 @@ automate         [:chromex.ext.commands/on-command ["open-dirac-devtools" {:rese
 extension        handling command: open-dirac-devtools
 extension        register dirac frontend connection #1
 frontend #1      implant initialized
-automate #1      {:panel :console, :action :switch-inspector-panel}
+frontend #1      DevTools ready
+automate #1      {:action :switch-inspector-panel, :panel :console}
 frontend #1      console initialized
 automate #1      {:action :switch-to-dirac-prompt}
 frontend #1      switch console prompt to dirac
