@@ -22,7 +22,7 @@
                  ; thus we mark extra deps with :scope "test" and filter them later when producing jar library
                  [binaryage/chromex "0.3.0" :scope "test"]
                  [binaryage/devtools "0.6.0" :scope "test"]
-                 [cljs-http "0.1.39" :scope "test"]
+                 [cljs-http "0.1.40" :scope "test"]
                  [figwheel "0.5.2" :scope "test"]
                  [reforms "0.4.3" :scope "test"]
                  [rum "0.6.0" :scope "test"]
