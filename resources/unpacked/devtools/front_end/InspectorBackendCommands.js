@@ -67,7 +67,7 @@ InspectorBackend.registerCommand("Page.screencastFrameAck", [{"name": "sessionId
 InspectorBackend.registerCommand("Page.handleJavaScriptDialog", [{"name": "accept", "type": "boolean", "optional": false}, {"name": "promptText", "type": "string", "optional": true}], [], false);
 InspectorBackend.registerCommand("Page.setColorPickerEnabled", [{"name": "enabled", "type": "boolean", "optional": false}], [], false);
 InspectorBackend.registerCommand("Page.setOverlayMessage", [{"name": "message", "type": "string", "optional": true}], [], false);
-InspectorBackend.registerCommand("Page.requestAppBanner", [], ["result"], false);
+InspectorBackend.registerCommand("Page.requestAppBanner", [], [], false);
 
 // Rendering.
 InspectorBackend.registerCommand("Rendering.setShowPaintRects", [{"name": "result", "type": "boolean", "optional": false}], [], false);
@@ -308,13 +308,11 @@ InspectorBackend.registerCommand("IO.close", [{"name": "handle", "type": "string
 // Debugger.
 InspectorBackend.registerEnum("Debugger.GeneratorObjectDetailsStatus", {Running: "running", Suspended: "suspended", Closed: "closed"});
 InspectorBackend.registerEnum("Debugger.ScopeType", {Global: "global", Local: "local", With: "with", Closure: "closure", Catch: "catch", Block: "block", Script: "script"});
-InspectorBackend.registerEnum("Debugger.PromiseDetailsStatus", {Pending: "pending", Resolved: "resolved", Rejected: "rejected"});
 InspectorBackend.registerEvent("Debugger.scriptParsed", ["scriptId", "url", "startLine", "startColumn", "endLine", "endColumn", "executionContextId", "hash", "isContentScript", "isInternalScript", "isLiveEdit", "sourceMapURL", "hasSourceURL", "deprecatedCommentWasUsed"]);
 InspectorBackend.registerEvent("Debugger.scriptFailedToParse", ["scriptId", "url", "startLine", "startColumn", "endLine", "endColumn", "executionContextId", "hash", "isContentScript", "isInternalScript", "sourceMapURL", "hasSourceURL", "deprecatedCommentWasUsed"]);
 InspectorBackend.registerEvent("Debugger.breakpointResolved", ["breakpointId", "location"]);
 InspectorBackend.registerEvent("Debugger.paused", ["callFrames", "reason", "data", "hitBreakpoints", "asyncStackTrace"]);
 InspectorBackend.registerEvent("Debugger.resumed", []);
-InspectorBackend.registerEvent("Debugger.promiseUpdated", ["eventType", "promise"]);
 InspectorBackend.registerEvent("Debugger.asyncOperationStarted", ["operation"]);
 InspectorBackend.registerEvent("Debugger.asyncOperationCompleted", ["id"]);
 InspectorBackend.registerCommand("Debugger.enable", [], [], false);
@@ -344,9 +342,6 @@ InspectorBackend.registerCommand("Debugger.evaluateOnCallFrame", [{"name": "call
 InspectorBackend.registerCommand("Debugger.setVariableValue", [{"name": "scopeNumber", "type": "number", "optional": false}, {"name": "variableName", "type": "string", "optional": false}, {"name": "newValue", "type": "object", "optional": false}, {"name": "callFrameId", "type": "string", "optional": false}], [], false);
 InspectorBackend.registerCommand("Debugger.getBacktrace", [], ["callFrames", "asyncStackTrace"], false);
 InspectorBackend.registerCommand("Debugger.setAsyncCallStackDepth", [{"name": "maxDepth", "type": "number", "optional": false}], [], false);
-InspectorBackend.registerCommand("Debugger.enablePromiseTracker", [{"name": "captureStacks", "type": "boolean", "optional": true}], [], false);
-InspectorBackend.registerCommand("Debugger.disablePromiseTracker", [], [], false);
-InspectorBackend.registerCommand("Debugger.getPromiseById", [{"name": "promiseId", "type": "number", "optional": false}, {"name": "objectGroup", "type": "string", "optional": true}], ["promise"], false);
 InspectorBackend.registerCommand("Debugger.flushAsyncOperationEvents", [], [], false);
 InspectorBackend.registerCommand("Debugger.setAsyncOperationBreakpoint", [{"name": "operationId", "type": "number", "optional": false}], [], false);
 InspectorBackend.registerCommand("Debugger.removeAsyncOperationBreakpoint", [{"name": "operationId", "type": "number", "optional": false}], [], false);
