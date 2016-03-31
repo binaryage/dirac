@@ -21,6 +21,3 @@
   (if-let [inspector-view (oget js/window "WebInspector" "inspectorView")]
     inspector-view
     (throw (ex-info "Unable to obtain WebInspector.inspectorView" nil))))
-
-(defn get-el-by-id [id]
-  (.getElementById js/document id))
