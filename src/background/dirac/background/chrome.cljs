@@ -15,46 +15,53 @@
             [dirac.background.tools :as tools]
             [dirac.background.marion :as marion]))
 
-(defn handle-command! [command & args]
-  (log "handling command" command args)
-  (marion/post-feedback-event! (str "handling command: " command))
-  (case command
-    "open-dirac-devtools" (apply tools/open-dirac-in-active-tab! args)
-    "close-dirac-devtools" (apply tools/close-dirac-connection! args)
-    (warn "received unrecognized command:" command)))
-
-(defn on-tab-removed! [tab-id _remove-info]
-  (if (connections/dirac-connected? tab-id)
-    (connections/unregister-connection! tab-id)))
-
-(defn on-tab-updated! [tab-id _change-info _tab]
-  (connections/update-action-button-according-to-connection-state! tab-id))
+(declare process-chrome-event!)
 
 ; -- event handlers ---------------------------------------------------------------------------------------------------------
 
+(defn handle-command! [command & args]
+  (log "handling command" command args)
+  (marion/post-feedback-event! (str "handling command: " command))
+  (go
+    (case command
+      "open-dirac-devtools" (<! (apply tools/open-dirac-in-active-tab! args))
+      "close-dirac-devtools" (<! (apply tools/close-dirac-connection! args))
+      (warn "received unrecognized command:" command))))
+
+(defn on-tab-removed! [tab-id _remove-info]
+  (go
+    (if (connections/dirac-connected? tab-id)
+      (connections/unregister-connection! tab-id))))
+
+(defn on-tab-updated! [tab-id _change-info _tab]
+  (go
+    (connections/update-action-button-according-to-connection-state! tab-id)))
+
 (defn handle-external-client-connection! [client-port]
-  (case (get-name client-port)
-    "Dirac Marionettist" (marion/handle-marion-client-connection! client-port)
-    (warn "external connection attempt from unrecognized client" client-port)))
+  (go
+    (case (get-name client-port)
+      "Dirac Marionettist" (marion/handle-marion-client-connection! {:process-chrome-event process-chrome-event!} client-port)
+      (warn "external connection attempt from unrecognized client" client-port))))
 
 ; -- main event loop --------------------------------------------------------------------------------------------------------
 
-(defn process-chrome-event [event]
+(defn process-chrome-event! [event]
   (log "dispatch chrome event" event)
-  (let [[event-id event-args] event]
-    (case event-id
-      ::browser-action/on-clicked (apply tools/activate-or-open-dirac! event-args)
-      ::commands/on-command (apply handle-command! event-args)
-      ::tabs/on-removed (apply on-tab-removed! event-args)
-      ::tabs/on-updated (apply on-tab-updated! event-args)
-      ::runtime/on-connect-external (apply handle-external-client-connection! event-args)
-      nil)))
+  (go
+    (let [[event-id event-args] event]
+      (case event-id
+        ::browser-action/on-clicked (<! (apply tools/activate-or-open-dirac! event-args))
+        ::commands/on-command (<! (apply handle-command! event-args))
+        ::tabs/on-removed (<! (apply on-tab-removed! event-args))
+        ::tabs/on-updated (<! (apply on-tab-updated! event-args))
+        ::runtime/on-connect-external (<! (apply handle-external-client-connection! event-args))
+        nil))))
 
 (defn run-chrome-event-loop! [chrome-event-channel]
   (log "starting main event loop...")
   (go-loop []
     (when-let [event (<! chrome-event-channel)]
-      (process-chrome-event event)
+      (<! (process-chrome-event! event))
       (recur))
     (log "leaving main event loop")))
 

@@ -20,11 +20,11 @@
   (state/reset-connection-id-counter!)
   (state/post-reply! message-id))
 
-(defn fire-synthetic-chrome-event! [message-id message]
-  (if-let [chrome-event-channel (state/get-chrome-event-channel)]
-    (put! chrome-event-channel (:chrome-event message))
-    (warn "no chrome event channel while receiving marion message" message))
-  (state/post-reply! message-id))
+(defn fire-synthetic-chrome-event! [context message-id message]
+  (assert (fn? (:process-chrome-event context)))
+  (go
+    (<! ((:process-chrome-event context) (:chrome-event message)))
+    (state/post-reply! message-id)))
 
 (defn automate-dirac-frontend! [message-id message]
   (let [{:keys [action]} message
@@ -36,7 +36,7 @@
             "existing connections:" (state/get-connections)))
     (state/post-reply! message-id)))
 
-(defn tear-down! [message-id message]
+(defn tear-down! [message-id _message]
   ; we want to close all tabs/windows opened (owned) by our extension
   ; chrome driver does not have access to those windows and fails to switch back to its own tab
   ; https://bugs.chromium.org/p/chromium/issues/detail?id=355075
@@ -58,30 +58,30 @@
       (state/set-marion-port! nil))
     (warn "unregister-marion! called when no previous marion port!")))
 
-(defn process-marion-message [serialized-message]
-  (let [message-id (oget serialized-message "id")
-        payload (oget serialized-message "payload")
+(defn process-marion-message [context data]
+  (let [message-id (oget data "id")
+        payload (oget data "payload")
         message (reader/read-string payload)
         command (:command message)]
     (log "process-marion-message" command (envelope message))
     (case command
       :set-option (set-option! message-id message)
       :reset-connection-id-counter (reset-connection-id-counter! message-id message)
-      :fire-synthetic-chrome-event (fire-synthetic-chrome-event! message-id message)
+      :fire-synthetic-chrome-event (fire-synthetic-chrome-event! context message-id message)
       :automate-dirac-frontend (automate-dirac-frontend! message-id message)
       :tear-down (tear-down! message-id message))))
 
-(defn run-marion-message-loop! [marion-port]
+(defn run-marion-message-loop! [context marion-port]
   (go-loop []
-    (when-let [message (<! marion-port)]
-      (process-marion-message message)
+    (when-let [data (<! marion-port)]
+      (process-marion-message context data)
       (recur))
     (unregister-marion!)))
 
 ; -- marion client connection handling --------------------------------------------------------------------------------------
 
-(defn handle-marion-client-connection! [marion-port]
+(defn handle-marion-client-connection! [context marion-port]
   (register-marion! marion-port)
-  (run-marion-message-loop! marion-port))
+  (run-marion-message-loop! context marion-port))
 
 (def post-feedback-event! state/post-feedback!)
