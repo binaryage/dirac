@@ -6,3 +6,4 @@ frontend #1      implant initialized
 frontend #1      DevTools ready
 automate         [:chromex.ext.commands/on-command ["close-dirac-devtools" 1]]
 extension        handling command: close-dirac-devtools
+extension        unregister dirac frontend connection #1
