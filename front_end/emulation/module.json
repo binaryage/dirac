@@ -26,11 +26,47 @@
             ]
         },
         {
+            "type": "@WebInspector.ActionDelegate",
+            "actionId": "emulation.capture-screenshot",
+            "className": "WebInspector.DeviceModeWrapper.ActionDelegate",
+            "title": "Capture screenshot"
+        },
+        {
+            "type": "context-menu-item",
+            "location": "deviceModeMenu/tools",
+            "order": 12,
+            "actionId": "emulation.capture-screenshot"
+        },
+        {
             "type": "@WebInspector.ToolbarItem.Provider",
             "actionId": "emulation.toggle-device-mode",
             "condition": "can_dock",
             "location": "main-toolbar-left",
             "order": 1
+        },
+        {
+            "type": "setting",
+            "category": "Mobile",
+            "settingName": "showMediaQueryInspector",
+            "settingType": "boolean",
+            "defaultValue": false,
+            "options": [
+                {"value": true, "title": "Show media queries"},
+                {"value": false, "title": "Hide media queries"}
+            ],
+            "tags": "device"
+        },
+        {
+            "type": "setting",
+            "category": "Mobile",
+            "settingName": "emulation.showRulers",
+            "settingType": "boolean",
+            "defaultValue": false,
+            "options": [
+                {"value": true, "title": "Show rulers"},
+                {"value": false, "title": "Hide rulers"}
+            ],
+            "tags": "device"
         },
         {
             "type": "settings-view",
@@ -65,17 +101,10 @@
             "tags": "geolocation, accelerometer, device orientation"
         },
         {
-            "type": "@WebInspector.ActionDelegate",
-            "actionId": "emulation.request-app-banner",
-            "className": "WebInspector.DeviceModeWrapper.ActionDelegate",
-            "title": "Request app banner\u2026"
-        },
-        {
             "type": "context-menu-item",
             "location": "deviceModeMenu/tools",
-            "experiment": "appBanner",
             "order": 10,
-            "actionId": "emulation.request-app-banner"
+            "actionId": "components.request-app-banner"
         }
     ],
     "dependencies": [

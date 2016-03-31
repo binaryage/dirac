@@ -22,6 +22,22 @@
             "defaultValue": []
         },
         {
+            "type": "@WebInspector.ActionDelegate",
+            "actionId": "components.network-offline",
+            "category": "Network",
+            "title": "Go offline",
+            "className": "WebInspector.NetworkConditionsActionDelegate",
+            "tags": "device"
+        },
+        {
+            "type": "@WebInspector.ActionDelegate",
+            "actionId": "components.network-online",
+            "category": "Network",
+            "title": "Go online",
+            "className": "WebInspector.NetworkConditionsActionDelegate",
+            "tags": "device"
+        },
+        {
             "type": "settings-view",
             "name": "network-conditions",
             "title": "Throttling",
@@ -30,6 +46,13 @@
             "settings": [
                 "customNetworkConditions"
             ]
+        },
+        {
+            "type": "@WebInspector.ActionDelegate",
+            "category": "Mobile",
+            "actionId": "components.request-app-banner",
+            "className": "WebInspector.RequestAppBannerActionDelegate",
+            "title": "Trigger add to homescreen"
         }
     ],
     "dependencies": [
@@ -52,6 +75,7 @@
         "ObjectPopoverHelper.js",
         "ObjectPropertiesSection.js",
         "RemoteObjectPreviewFormatter.js",
+        "RequestAppBannerActionDelegate.js",
         "ShortcutsScreen.js",
         "EventListenersUtils.js",
         "EventListenersView.js",
