@@ -10,25 +10,38 @@
             [dirac.background.helpers :as helpers]
             [dirac.options.model :as options]))
 
-(defn automate-dirac-frontend! [message]
+; -- marion event handlers --------------------------------------------------------------------------------------------------
+
+(defn set-option! [message-id message]
+  (options/set-option! (:key message) (:value message))
+  (state/post-reply! message-id))
+
+(defn reset-connection-id-counter! [message-id _message]
+  (state/reset-connection-id-counter!)
+  (state/post-reply! message-id))
+
+(defn fire-synthetic-chrome-event! [message-id message]
+  (if-let [chrome-event-channel (state/get-chrome-event-channel)]
+    (put! chrome-event-channel (:chrome-event message))
+    (warn "no chrome event channel while receiving marion message" message))
+  (state/post-reply! message-id))
+
+(defn automate-dirac-frontend! [message-id message]
   (let [{:keys [action]} message
         connection-id (int (:connection-id message))]
     (log "automate-dirac-frontend!" action (envelope message))
     (if (state/get-connection connection-id)
       (helpers/automate-dirac-connection! connection-id action)
       (warn "dirac automation request for missing connection:" connection-id message
-            "existing connections:" (state/get-connections)))))
+            "existing connections:" (state/get-connections)))
+    (state/post-reply! message-id)))
 
-(defn fire-synthetic-chrome-event! [message]
-  (if-let [chrome-event-channel (state/get-chrome-event-channel)]
-    (put! chrome-event-channel (:chrome-event message))
-    (warn "no chrome event channel while receiving marion message" message)))
-
-(defn tear-down! []
+(defn tear-down! [message-id message]
   ; we want to close all tabs/windows opened (owned) by our extension
   ; chrome driver does not have access to those windows and fails to switch back to its own tab
   ; https://bugs.chromium.org/p/chromium/issues/detail?id=355075
-  (helpers/close-all-extension-tabs!))
+  (helpers/close-all-extension-tabs!)
+  (state/post-reply! message-id))
 
 ; -- marion event loop ------------------------------------------------------------------------------------------------------
 
@@ -46,18 +59,17 @@
     (warn "unregister-marion! called when no previous marion port!")))
 
 (defn process-marion-message [serialized-message]
-  (let [id (oget serialized-message "id")
+  (let [message-id (oget serialized-message "id")
         payload (oget serialized-message "payload")
         message (reader/read-string payload)
         command (:command message)]
     (log "process-marion-message" command (envelope message))
     (case command
-      :set-option (options/set-option! (:key message) (:value message))
-      :reset-connection-id-counter (state/reset-connection-id-counter!)
-      :fire-synthetic-chrome-event (fire-synthetic-chrome-event! message)
-      :automate-dirac-frontend (automate-dirac-frontend! message)
-      :tear-down (tear-down!))
-    (state/post-reply! id)))
+      :set-option (set-option! message-id message)
+      :reset-connection-id-counter (reset-connection-id-counter! message-id message)
+      :fire-synthetic-chrome-event (fire-synthetic-chrome-event! message-id message)
+      :automate-dirac-frontend (automate-dirac-frontend! message-id message)
+      :tear-down (tear-down! message-id message))))
 
 (defn run-marion-message-loop! [marion-port]
   (go-loop []
