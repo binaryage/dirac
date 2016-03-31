@@ -3,6 +3,7 @@
   (:require [cljs.core.async :refer [<! chan]]
             [chromex.support :refer-macros [oget ocall oapply]]
             [chromex.logging :refer-macros [log info warn error group group-end]]
+            [chromex.config :refer-macros [with-muted-error-reporting]]
             [chromex.ext.tabs :as tabs]
             [chromex.ext.runtime :as runtime]
             [chromex.ext.windows :as windows]))
@@ -29,7 +30,6 @@
 (defn get-tab-window-id [tab]
   (oget tab "windowId"))
 
-
 ; == async calls ============================================================================================================
 
 ; -- window -----------------------------------------------------------------------------------------------------------------
@@ -40,6 +40,13 @@
       window)))
 
 ; -- tab --------------------------------------------------------------------------------------------------------------------
+
+(defn tab-exists? [tab-id]
+  (go
+    (with-muted-error-reporting
+      (if-let [[tab] (<! (tabs/get tab-id))]
+        true
+        false))))
 
 (defn fetch-tab [tab-id]
   (go

@@ -63,13 +63,13 @@
   (log-in-tab tab-id "error" msg)
   (error (tab-log-prefix tab-id) msg)
   (state/post-feedback! (str "ERROR " (tab-log-prefix tab-id) " " msg))
-  (action/update-action-button tab-id :error msg))
+  (action/update-action-button! tab-id :error msg))
 
 (defn report-warning-in-tab [tab-id msg]
   (log-in-tab tab-id "warn" msg)
   (warn (tab-log-prefix tab-id) msg)
   (state/post-feedback! (str "WARNING " (tab-log-prefix tab-id) " " msg))
-  (action/update-action-button tab-id :warning msg))
+  (action/update-action-button! tab-id :warning msg))
 
 ; -- automation support -----------------------------------------------------------------------------------------------------
 

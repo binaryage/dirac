@@ -34,8 +34,8 @@
 (defn update-action-button-according-to-connection-state! [backend-tab-id]
   {:pre [(number? backend-tab-id)]}
   (if (backend-connected? backend-tab-id)
-    (action/update-action-button backend-tab-id :connected "Dirac is connected")
-    (action/update-action-button backend-tab-id :waiting "Click to open Dirac DevTools")))
+    (action/update-action-button! backend-tab-id :connected "Dirac is connected")
+    (action/update-action-button! backend-tab-id :waiting "Click to open Dirac DevTools")))
 
 (defn register-connection! [dirac-tab-id backend-tab-id]
   {:pre [(number? dirac-tab-id)
