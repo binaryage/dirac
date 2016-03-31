@@ -1,17 +1,11 @@
 (ns dirac.tests.tasks.suite01.open-close-dirac
   (:require [cljs.core.async :refer [<! timeout]]
-            [dirac.fixtures.task :refer-macros [go-task]]
+            [dirac.fixtures.task :refer-macros [run-task]]
             [dirac.fixtures.constants :refer [SECOND MINUTE]]
-            [dirac.fixtures.automation :refer [wait-for-dirac-frontend-initialization wait-for-implant-initialization
-                                               wait-for-console-initialization switch-inspector-panel!
-                                               open-dirac-devtools! close-dirac-devtools!
-                                               switch-to-dirac-prompt! switch-to-js-prompt!
-                                               wait-switch-to-console
-                                               open-tab-with-scenario!]]))
+            [dirac.fixtures.automation :as auto]))
 
-(go-task
-  (open-tab-with-scenario! "normal")
-  (open-dirac-devtools!)
-  (wait-for-dirac-frontend-initialization)
-  (wait-for-implant-initialization)
-  (close-dirac-devtools! 1))
+(run-task
+  (auto/open-tab-with-scenario! "normal")
+  (auto/open-dirac-devtools!)
+  (auto/wait-for-devtools)
+  (auto/close-dirac-devtools! 1))

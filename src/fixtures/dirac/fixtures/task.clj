@@ -3,10 +3,10 @@
 (defmacro without-transcript [& body]
   `(dirac.fixtures.transcript-host/without-transcript-work (fn [] ~@body)))
 
-(defmacro go-task [& args]
-  (let [first-arg (first args)
+(defmacro run-task [& steps]
+  (let [first-arg (first steps)
         config (if (map? first-arg) first-arg)
-        commands (if config (rest args) args)
+        commands (if config (rest steps) steps)
         serialized-commands (map (fn [command] `(cljs.core.async/<! ~command)) commands)]
     `(let [test-thunk# (fn []
                          (cljs.core.async.macros/go

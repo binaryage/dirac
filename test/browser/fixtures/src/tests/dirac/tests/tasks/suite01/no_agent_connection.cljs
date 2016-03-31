@@ -1,19 +1,13 @@
 (ns dirac.tests.tasks.suite01.no-agent-connection
   (:require [cljs.core.async :refer [<! timeout]]
-            [dirac.fixtures.task :refer-macros [go-task]]
+            [dirac.fixtures.task :refer-macros [run-task]]
             [dirac.fixtures.constants :refer [SECOND MINUTE]]
-            [dirac.fixtures.automation :refer [wait-for-dirac-frontend-initialization wait-for-implant-initialization
-                                               wait-for-console-initialization switch-inspector-panel!
-                                               open-dirac-devtools! close-dirac-devtools!
-                                               switch-to-dirac-prompt! switch-to-js-prompt!
-                                               wait-switch-to-console wait-for-transcript-match
-                                               open-tab-with-scenario!]]))
+            [dirac.fixtures.automation :as auto]))
 
-(go-task
-  (open-tab-with-scenario! "no-agent")
-  (open-dirac-devtools!)
-  (wait-for-dirac-frontend-initialization)
-  (wait-for-implant-initialization)
-  (wait-switch-to-console 1)
-  (switch-to-dirac-prompt! 1)
-  (wait-for-transcript-match #".*will try reconnect in 4 seconds.*" (* 20 SECOND)))
+(run-task
+  (auto/open-tab-with-scenario! "no-agent")
+  (auto/open-dirac-devtools!)
+  (auto/wait-for-devtools)
+  (auto/wait-switch-to-console 1)
+  (auto/switch-to-dirac-prompt! 1)
+  (auto/wait-for-transcript-match #".*will try reconnect in 4 seconds.*" (* 20 SECOND)))
