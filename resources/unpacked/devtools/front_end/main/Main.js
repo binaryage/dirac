@@ -269,6 +269,7 @@ WebInspector.Main.prototype = {
             // Allow UI cycles to repaint prior to creating connection.
             setTimeout(this._createConnection.bind(this), 0);
         }
+        dirac.implant.feedback("DevTools ready");
     },
 
     _didInitializeFileSystemManager: function()
