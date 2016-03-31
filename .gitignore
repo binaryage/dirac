@@ -18,6 +18,7 @@
 /checkouts*
 /.tmp
 .figwheel_server.log
+figwheel_server.log
 .figwheel_dirac.log
 .figwheel_marion.log
 .profiles/
