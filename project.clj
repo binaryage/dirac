@@ -32,7 +32,7 @@
                  [com.lucasbradstreet/cljs-uuid-utils "1.0.2" :scope "test"]
 
                  [http.async.client "1.1.0" :scope "test"]
-                 [org.slf4j/slf4j-log4j12 "1.7.19" :scope "test"]
+                 [org.slf4j/slf4j-log4j12 "1.7.20" :scope "test"]
 
                  [clj-webdriver "0.7.2" :scope "test"]
                  [org.seleniumhq.selenium/selenium-java "2.53.0" :scope "test"]
