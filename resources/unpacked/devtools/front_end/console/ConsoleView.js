@@ -513,6 +513,7 @@ WebInspector.ConsoleView.prototype = {
     },
 
     setDiracPromptMode: function(mode) {
+       dirac.implant.feedback("setDiracPromptMode('"+mode+"')");
        var knownModes = ["edit", "status"];
        if (knownModes.indexOf(mode)==-1) {
          console.warn("unknown mode passed to setDiracPromptMode:", mode);
