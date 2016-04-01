@@ -4,6 +4,12 @@
             [dirac.implant.helpers :refer [get-console-view]]
             [dirac.implant.feedback-support :as feedback-support]))
 
+(def ^:dynamic *last-prompt-ns* nil)
+(def ^:dynamic *last-prompt-mode* :status)
+(def ^:dynamic *last-prompt-status-content* "")
+(def ^:dynamic *last-prompt-status-style* "")
+(def ^:dynamic *last-prompt-status-banner* "")
+
 (defn announce-job-start! [job-id info]
   (group (str "nREPL JOB #" job-id) info)
   (if-let [console-view (get-console-view)]
@@ -15,29 +21,39 @@
     (ocall console-view "onJobEnded" job-id)))
 
 (defn set-prompt-ns! [ns-name]
-  (if-let [console-view (get-console-view)]
-    (ocall console-view "setDiracPromptNS" ns-name)))
+  {:pre [(string? ns-name)]}
+  (when-not (= *last-prompt-ns* ns-name)
+    (set! *last-prompt-ns* ns-name)
+    (if-let [console-view (get-console-view)]
+      (ocall console-view "setDiracPromptNS" ns-name))))
 
 (defn set-prompt-mode! [mode]
-  (let [mode-str (name mode)]
-    (assert (#{"status" "edit"} mode-str))
-    (feedback-support/post! (str "setDiracPromptMode('" mode-str "')"))
-    (if-let [console-view (get-console-view)]
-      (ocall console-view "setDiracPromptMode" mode-str))))
+  (when-not (= *last-prompt-mode* mode)
+    (set! *last-prompt-mode* mode)
+    (let [mode-str (name mode)]
+      (assert (#{"status" "edit"} mode-str))
+      (if-let [console-view (get-console-view)]
+        (ocall console-view "setDiracPromptMode" mode-str)))))
 
-(defn set-prompt-status-content! [status]
-  {:pre [(string? status)]}
-  (if-let [console-view (get-console-view)]
-    (ocall console-view "setDiracPromptStatusContent" status)))
+(defn set-prompt-status-content! [content]
+  {:pre [(string? content)]}
+  (when-not (= *last-prompt-status-content* content)
+    (set! *last-prompt-status-content* content)
+    (if-let [console-view (get-console-view)]
+      (ocall console-view "setDiracPromptStatusContent" content))))
 
 ; banner is an overlay text on the right side of prompt in "status" mode
 (defn set-prompt-status-banner! [banner]
   {:pre [(string? banner)]}
-  (if-let [console-view (get-console-view)]
-    (ocall console-view "setDiracPromptStatusBanner" banner)))
+  (when-not (= *last-prompt-status-banner* banner)
+    (set! *last-prompt-status-banner* banner)
+    (if-let [console-view (get-console-view)]
+      (ocall console-view "setDiracPromptStatusBanner" banner))))
 
 (defn set-prompt-status-style! [style]
-  (let [style (name style)]
-    (assert (#{"error" "info"} style))
-    (if-let [console-view (get-console-view)]
-      (ocall console-view "setDiracPromptStatusStyle" style))))
+  (when-not (= *last-prompt-status-style* style)
+    (set! *last-prompt-status-style* style)
+    (let [style (name style)]
+      (assert (#{"error" "info"} style))
+      (if-let [console-view (get-console-view)]
+        (ocall console-view "setDiracPromptStatusStyle" style)))))

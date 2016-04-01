@@ -15,10 +15,6 @@
 
 (def ^:dynamic *repl-connected* false)
 (def ^:dynamic *repl-bootstrapped* false)
-(def ^:dynamic *last-prompt-mode* :status)
-(def ^:dynamic *last-prompt-status-content* "")
-(def ^:dynamic *last-prompt-status-style* "")
-(def ^:dynamic *last-prompt-status-banner* "")
 (def ^:dynamic *last-connection-url* nil)
 (def ^:dynamic *last-connect-fn-id* 0)
 
@@ -79,40 +75,17 @@
   (and *repl-connected*
        *repl-bootstrapped*))
 
-(defn set-prompt-mode-if-needed! [mode]
-  (when-not (= *last-prompt-mode* mode)
-    (set! *last-prompt-mode* mode)
-    (console/set-prompt-mode! mode)))
-
-(defn set-prompt-status-banner-if-needed! [banner]
-  (when-not (= *last-prompt-status-banner* banner)
-    (set! *last-prompt-status-banner* banner)
-    (console/set-prompt-status-banner! banner)))
-
-(defn set-prompt-status-content-if-needed! [content]
-  (when-not (= *last-prompt-status-content* content)
-    (set! *last-prompt-status-content* content)
-    (console/set-prompt-status-content! content)))
-
-(defn set-prompt-status-style-if-needed! [style]
-  (when-not (= *last-prompt-status-style* style)
-    (set! *last-prompt-status-style* style)
-    (console/set-prompt-status-style! style)))
-
 (defn update-repl-mode! []
   (if (repl-ready?)
-    (set-prompt-mode-if-needed! :edit)
-    (set-prompt-mode-if-needed! :status))
-  (set-prompt-status-banner-if-needed! *last-prompt-status-banner*)
-  (set-prompt-status-content-if-needed! *last-prompt-status-content*)
-  (set-prompt-status-style-if-needed! *last-prompt-status-style*))
+    (console/set-prompt-mode! :edit)
+    (console/set-prompt-mode! :status)))
 
 (defn display-prompt-status [status & [style]]
   (let [effective-style (or style :error)]
-    (set-prompt-mode-if-needed! :status)
-    (set-prompt-status-banner-if-needed! "")
-    (set-prompt-status-content-if-needed! status)
-    (set-prompt-status-style-if-needed! effective-style)))
+    (console/set-prompt-mode! :status)
+    (console/set-prompt-status-banner! "")
+    (console/set-prompt-status-content! status)
+    (console/set-prompt-status-style! effective-style)))
 
 (defn on-client-change [_key _ref _old new]
   (if (nil? new)
@@ -159,7 +132,7 @@
         time-in-seconds (int (/ prev-time step))]
     (go-loop [remaining-time time-in-seconds]
       (when (pos? remaining-time)
-        (set-prompt-status-banner-if-needed! (will-reconnect-banner-msg remaining-time))
+        (console/set-prompt-status-banner! (will-reconnect-banner-msg remaining-time))
         (<! (timeout step))
         (if (= id *last-connect-fn-id*)
           (recur (dec remaining-time)))))
