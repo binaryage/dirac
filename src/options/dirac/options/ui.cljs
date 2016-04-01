@@ -13,13 +13,17 @@
 (defn save-state! []
   (model/reset-options! (:options @state)))
 
+(defn save-state-and-exit! []
+  (save-state!)
+  (.close js/window))
+
 (defn load-state! []
   (swap! state assoc :options (model/get-options)))
 
 (defn watch-options! []
   (add-watch model/cached-options :options-ui load-state!))
 
-(defn reset-state! []
+(defn reset-to-defaults! []
   (reset! state default-state)
   (save-state!))
 
@@ -31,7 +35,7 @@
          :button-group {:align "text-right"}}
         (f/panel
           (f/form
-            {:on-submit save-state!}
+            {:on-submit save-state-and-exit!}
             (f/url "Target URL for debugger:" data [:options :target-url] :placeholder "http://localhost:9222")
             (f/select "Open Dirac DevTools:" data [:options :open-as]
                       [["panel" "as a new panel (recommended)"]
@@ -44,8 +48,8 @@
              (f/checkbox "Enable clustered locals" data [:options :enable-clustered-locals])
              (f/checkbox "Inline Custom Formatters in sources" data [:options :inline-custom-formatters])])
           (f/form-buttons
-            (f/button "Reset to defaults" reset-state!)
-            (f/button "Save" save-state!)))))
+            (f/button "Reset to Defaults" reset-to-defaults!)
+            (f/button "Save and Exit" save-state-and-exit!)))))
 
 (defc main-view [state]
       [:div
