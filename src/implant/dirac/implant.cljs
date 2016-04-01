@@ -13,7 +13,7 @@
 (def ^:dynamic *implant-initialized* false)
 
 ; -- exported API -----------------------------------------------------------------------------------------------------------
-; don't forget to update externs.js when touching this API
+; don't forget to update externs.js when touching this
 
 (defn ^:export feedback [text]
   (feedback-support/post! text))
@@ -39,11 +39,13 @@
   (feedback "repl initialized"))
 
 (defn ^:export adopt-prompt-element [text-area-element use-parinfer?]
+  (feedback (str "adopt-prompt-element" " use-parinfer? " use-parinfer?))
   (let [editor (editor/create-editor! text-area-element :prompt use-parinfer?)]
     (editor/start-editor-sync!)
     editor))
 
 (defn ^:export send-eval-request [request-id code]
+  (feedback (str "send-eval-request: " code))
   (intercom/send-eval-request! request-id code))
 
 ; -- automation -------------------------------------------------------------------------------------------------------------
