@@ -1,0 +1,18 @@
+automate         open-tab-with-scenario! normal
+automate         [:chromex.ext.commands/on-command ["open-dirac-devtools" {:reset-settings 1}]]
+extension        handling command: open-dirac-devtools
+extension        register dirac frontend connection #1
+frontend #1      implant initialized
+frontend #1      DevTools ready
+automate #1      {:action :switch-inspector-panel, :panel :console}
+frontend #1      console initialized
+automate #1      {:action :switch-to-dirac-prompt}
+frontend #1      adopt-prompt-element use-parinfer? true
+frontend #1      setDiracPromptMode('status')
+frontend #1      switch console prompt to dirac
+frontend #1      console prompt focused
+frontend #1      repl initialized
+frontend #1      setDiracPromptStatusContent('Dirac Agent connected. Bootstrapping ClojureScript REPL...')
+frontend #1      setDiracPromptStatusStyle('info')
+frontend #1      setDiracPromptNS('cljs.user')
+frontend #1      setDiracPromptMode('edit')
