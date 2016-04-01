@@ -1,6 +1,8 @@
 (ns dirac.browser-tests-runner
   (:require [clojure.test :refer :all]
-            [clj-logging-config.log4j :as config]))
+            [clj-logging-config.log4j :as config]
+            [dirac.test.agent :as test-agent]
+            [dirac.test.nrepl-server :as test-nrepl-server]))
 
 ; this alternative test runner runs tests against real chrome browser
 
@@ -25,3 +27,12 @@
 (defn -dev-main []
   (System/setProperty "dirac-dev" "true")
   (-main))
+
+(defn agent-loop []
+  (loop []
+    (Thread/sleep 1000)
+    (recur)))
+
+(defn run-agent []
+  (config/set-loggers! :root {:level :info})
+  (test-nrepl-server/with-nrepl-server #(test-agent/with-dirac-agent agent-loop)))

@@ -302,7 +302,8 @@
 
              :dev-browser-tests
              {:cooper {"fixtures-server" ["scripts/launch-fixtures-server.sh"]
-                       "test-canary"     ["scripts/launch-test-canary.sh"]
+                       "dev-agent"       ["lein" "run-browser-tests-agent"]
+                       "test-canary"     ["scripts/launch-test-canary.sh" "1"]
                        "fig-dirac"       ["scripts/launch-after-test-canary.sh"
                                           "lein fig-dirac"]
                        "fig-marion"      ["scripts/launch-after-test-canary.sh"
@@ -343,6 +344,7 @@
             "run-backend-tests"          ["with-profile" "+test-runner" "run" "-m" "dirac.backend-tests-runner"]
             "run-browser-tests"          ["with-profile" "+test-runner" "run" "-m" "dirac.browser-tests-runner"]
             "run-browser-tests-dev"      ["with-profile" "+test-runner" "run" "-m" "dirac.browser-tests-runner/-dev-main"]
+            "run-browser-tests-agent"    ["with-profile" "+test-runner" "run" "-m" "dirac.browser-tests-runner/run-agent"]
 
             "fig-dirac"                  ["with-profile" "+dirac-unpacked,+cljs,+checkouts"
                                           "figwheel"
