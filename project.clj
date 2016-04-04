@@ -46,8 +46,8 @@
                  [ring/ring-jetty-adapter "1.4.0" :scope "test"]
                  [clj-time "0.11.0" :scope "test"]]
 
-            [lein-environ "1.0.1"]]
   :plugins [[lein-shell "0.5.0"]
+            [lein-environ "1.0.2"]]
 
   ;  :jvm-opts ["-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5005"]
 
@@ -61,7 +61,7 @@
 
   ; unfortunately this must be on root level because leiningen does not properly merge metadata
   ;   see https://github.com/technomancy/leiningen/issues/1826
-  ;   ! be careful with lein clean or tasks which do cleaning implicitly, this will wipe out all projects generated files
+  ;   ! be careful with lein clean or tasks which do cleaning implicitly, this will wipe out all generated files
   :clean-targets ^{:protect false} ["target"
                                     "resources/unpacked/compiled"
                                     "resources/unpacked/devtools/front_end/dirac/compiled"
