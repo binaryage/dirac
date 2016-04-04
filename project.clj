@@ -46,8 +46,8 @@
                  [ring/ring-jetty-adapter "1.4.0" :scope "test"]
                  [clj-time "0.11.0" :scope "test"]]
 
-  :plugins [[lein-shell "0.4.2"]
             [lein-environ "1.0.1"]]
+  :plugins [[lein-shell "0.5.0"]
 
   ;  :jvm-opts ["-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5005"]
 
