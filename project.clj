@@ -248,20 +248,19 @@
                            {:compiler {:pseudo-names true}}}}}
 
              :parallel-build
-             {}
-             #_{:cljsbuild {:builds
-                            {:dirac-implant
-                             {:compiler {:parallel-build true}}
-                             :dirac-background
-                             {:compiler {:parallel-build true}}
-                             :dirac-options
-                             {:compiler {:parallel-build true}}
-                             :marion-background
-                             {:compiler {:parallel-build true}}
-                             :marion-content-script
-                             {:compiler {:parallel-build true}}
-                             :tests
-                             {:compiler {:parallel-build true}}}}}
+             {:cljsbuild {:builds
+                          {:dirac-implant
+                           {:compiler {:parallel-build true}}
+                           :dirac-background
+                           {:compiler {:parallel-build true}}
+                           :dirac-options
+                           {:compiler {:parallel-build true}}
+                           :marion-background
+                           {:compiler {:parallel-build true}}
+                           :marion-content-script
+                           {:compiler {:parallel-build true}}
+                           :tests
+                           {:compiler {:parallel-build true}}}}}
 
              ; DON'T FORGET TO UPDATE scripts/ensure-checkouts.sh
              :checkouts
