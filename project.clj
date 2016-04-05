@@ -150,13 +150,13 @@
                                            "src/shared"
                                            "test/marion/src/dev"
                                            "test/marion/src/content_script"]
-                            :compiler     {:output-to             "test/marion/resources/unpacked/compiled/content_script/content_script.js"
-                                           :output-dir            "test/marion/resources/unpacked/compiled/content_script"
-                                           :asset-path            "compiled/content_script"
-                                           :optimizations         :whitespace                                                 ; content scripts cannot do eval / load script dynamically
-                                           :anon-fn-naming-policy :unmapped
-                                           :pretty-print          true
-                                           :source-map            "test/marion/resources/unpacked/compiled/content_script/content_script.js.map"}}}}}
+                            :compiler     {:output-to              "test/marion/resources/unpacked/compiled/content_script/content_script.js"
+                                           :output-dir             "test/marion/resources/unpacked/compiled/content_script"
+                                           :asset-path             "compiled/content_script"
+                                           :closure-output-charset "US-ASCII"
+                                           :optimizations          :whitespace                                                ; content scripts cannot do eval / load script dynamically
+                                           :pretty-print           true
+                                           :source-map             "test/marion/resources/unpacked/compiled/content_script/content_script.js.map"}}}}}
 
              :dirac-unpacked
              {:figwheel  {:server-port    7100
