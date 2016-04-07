@@ -46,6 +46,10 @@
                  [ring/ring-jetty-adapter "1.4.0" :scope "test"]
                  [clj-time "0.11.0" :scope "test"]]
 
+  ; this effectively disables checkouts and gives us a chance to re-enable them on per-profile basis, see :checkouts profile
+  ; http://jakemccrary.com/blog/2015/03/24/advanced-leiningen-checkouts-configuring-what-ends-up-on-your-classpath/
+  :checkout-deps-shares ^:replace []
+
   :plugins [[lein-shell "0.5.0"]
             [lein-environ "1.0.2"]]
 
@@ -68,8 +72,6 @@
                                     "resources/release/compiled"
                                     "test/browser/fixtures/resources/compiled"
                                     "test/marion/resources/unpacked/compiled"]
-
-  :checkout-deps-shares ^:replace []
 
   :cljsbuild {:builds {}}                                                                                                     ; prevent https://github.com/emezeske/lein-cljsbuild/issues/413
 
@@ -264,37 +266,42 @@
 
              ; DON'T FORGET TO UPDATE scripts/ensure-checkouts.sh
              :checkouts
-             {:cljsbuild {:builds
-                          {:dirac-implant
-                           {:source-paths ["checkouts/cljs-devtools/src"
-                                           "checkouts/chromex/src/lib"
-                                           "checkouts/chromex/src/exts"]
-                            :compiler     {}}
-                           :dirac-background
-                           {:source-paths ["checkouts/cljs-devtools/src"
-                                           "checkouts/chromex/src/lib"
-                                           "checkouts/chromex/src/exts"]
-                            :compiler     {}}
-                           :dirac-options
-                           {:source-paths ["checkouts/cljs-devtools/src"
-                                           "checkouts/chromex/src/lib"
-                                           "checkouts/chromex/src/exts"]
-                            :compiler     {}}
-                           :marion-background
-                           {:source-paths ["checkouts/cljs-devtools/src"
-                                           "checkouts/chromex/src/lib"
-                                           "checkouts/chromex/src/exts"]
-                            :compiler     {}}
-                           :marion-content-script
-                           {:source-paths ["checkouts/cljs-devtools/src"
-                                           "checkouts/chromex/src/lib"
-                                           "checkouts/chromex/src/exts"]
-                            :compiler     {}}
-                           :tests
-                           {:source-paths ["checkouts/cljs-devtools/src"
-                                           "checkouts/chromex/src/lib"
-                                           "checkouts/chromex/src/exts"]
-                            :compiler     {}}}}}
+             {:checkout-deps-shares ^:replace [:source-paths
+                                               :test-paths
+                                               :resource-paths
+                                               :compile-path
+                                               #=(eval leiningen.core.classpath/checkout-deps-paths)]
+              :cljsbuild            {:builds
+                                     {:dirac-implant
+                                      {:source-paths ["checkouts/cljs-devtools/src"
+                                                      "checkouts/chromex/src/lib"
+                                                      "checkouts/chromex/src/exts"]
+                                       :compiler     {}}
+                                      :dirac-background
+                                      {:source-paths ["checkouts/cljs-devtools/src"
+                                                      "checkouts/chromex/src/lib"
+                                                      "checkouts/chromex/src/exts"]
+                                       :compiler     {}}
+                                      :dirac-options
+                                      {:source-paths ["checkouts/cljs-devtools/src"
+                                                      "checkouts/chromex/src/lib"
+                                                      "checkouts/chromex/src/exts"]
+                                       :compiler     {}}
+                                      :marion-background
+                                      {:source-paths ["checkouts/cljs-devtools/src"
+                                                      "checkouts/chromex/src/lib"
+                                                      "checkouts/chromex/src/exts"]
+                                       :compiler     {}}
+                                      :marion-content-script
+                                      {:source-paths ["checkouts/cljs-devtools/src"
+                                                      "checkouts/chromex/src/lib"
+                                                      "checkouts/chromex/src/exts"]
+                                       :compiler     {}}
+                                      :tests
+                                      {:source-paths ["checkouts/cljs-devtools/src"
+                                                      "checkouts/chromex/src/lib"
+                                                      "checkouts/chromex/src/exts"]
+                                       :compiler     {}}}}}
 
              :nuke-aliases
              {:aliases ^:replace {}}
@@ -377,7 +384,4 @@
 
             "release"                    ["shell" "scripts/release.sh"]
             "package"                    ["shell" "scripts/package.sh"]
-            "jar"                        ["shell" "scripts/lein-lib-without-checkouts.sh" "jar"]
-            "install"                    ["shell" "scripts/lein-lib-without-checkouts.sh" "install"]
-            "uberjar"                    ["shell" "scripts/lein-lib-without-checkouts.sh" "uberjar"]
             "regenerate"                 ["shell" "scripts/regenerate.sh"]})
