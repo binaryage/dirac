@@ -306,6 +306,15 @@
              :nuke-aliases
              {:aliases ^:replace {}}
 
+             ; to develop browser tests:
+             ;
+             ; ./scripts/dev-browser-tests.sh
+             ;
+             ; after first launch you might need to reload extensions at chrome://extensions
+             ;   * 'dirac' should point to 'resources/unpacked'
+             ;   * 'marion' should point to 'test/marion/resources/unpacked'
+             ;
+             ; dev fixtures server is running at http://localhost:9080
              :dev-browser-tests
              {:cooper {"fixtures-server" ["scripts/launch-fixtures-server.sh"]
                        "dev-agent"       ["lein" "run-browser-tests-agent"]
@@ -318,18 +327,6 @@
                                           "lein auto-compile-marion-cs"]
                        "browser-tests"   ["scripts/launch-after-test-canary.sh"
                                           "lein auto-compile-browser-tests"]}}}
-
-  ; to develop browser tests:
-  ;
-  ; ./scripts/dev-browser-tests.sh
-  ;
-  ; after first launch you might need to reload extensions at chrome://extensions
-  ; because initial cljs compilation is slower than chrome launch
-  ;   * 'dirac' should point to 'resources/unpacked'
-  ;   * 'marion' should point to 'test/marion/resources/unpacked'
-  ;
-  ; dev fixtures server is running at http://localhost:9080
-
 
   :aliases {"check"                      ["shell" "scripts/check-code.sh"]
             "test"                       ["shell" "scripts/test-all.sh"]
