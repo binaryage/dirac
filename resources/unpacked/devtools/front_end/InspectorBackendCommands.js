@@ -6,7 +6,6 @@
 
 
 // Inspector.
-InspectorBackend.registerEvent("Inspector.inspect", ["object", "hints"]);
 InspectorBackend.registerEvent("Inspector.detached", ["reason"]);
 InspectorBackend.registerEvent("Inspector.targetCrashed", []);
 InspectorBackend.registerCommand("Inspector.enable", [], [], false);
@@ -101,6 +100,7 @@ InspectorBackend.registerEnum("Runtime.CallArgumentType", {Object: "object", Fun
 InspectorBackend.registerEvent("Runtime.executionContextCreated", ["context"]);
 InspectorBackend.registerEvent("Runtime.executionContextDestroyed", ["executionContextId"]);
 InspectorBackend.registerEvent("Runtime.executionContextsCleared", []);
+InspectorBackend.registerEvent("Runtime.inspectRequested", ["object", "hints"]);
 InspectorBackend.registerCommand("Runtime.evaluate", [{"name": "expression", "type": "string", "optional": false}, {"name": "objectGroup", "type": "string", "optional": true}, {"name": "includeCommandLineAPI", "type": "boolean", "optional": true}, {"name": "doNotPauseOnExceptionsAndMuteConsole", "type": "boolean", "optional": true}, {"name": "contextId", "type": "number", "optional": true}, {"name": "returnByValue", "type": "boolean", "optional": true}, {"name": "generatePreview", "type": "boolean", "optional": true}, {"name": "userGesture", "type": "boolean", "optional": true}], ["result", "wasThrown", "exceptionDetails"], false);
 InspectorBackend.registerCommand("Runtime.callFunctionOn", [{"name": "objectId", "type": "string", "optional": false}, {"name": "functionDeclaration", "type": "string", "optional": false}, {"name": "arguments", "type": "object", "optional": true}, {"name": "doNotPauseOnExceptionsAndMuteConsole", "type": "boolean", "optional": true}, {"name": "returnByValue", "type": "boolean", "optional": true}, {"name": "generatePreview", "type": "boolean", "optional": true}, {"name": "userGesture", "type": "boolean", "optional": true}], ["result", "wasThrown"], false);
 InspectorBackend.registerCommand("Runtime.getProperties", [{"name": "objectId", "type": "string", "optional": false}, {"name": "ownProperties", "type": "boolean", "optional": true}, {"name": "accessorPropertiesOnly", "type": "boolean", "optional": true}, {"name": "generatePreview", "type": "boolean", "optional": true}], ["result", "internalProperties", "exceptionDetails"], false);
@@ -135,6 +135,7 @@ InspectorBackend.registerEnum("Network.ResourcePriority", {VeryLow: "VeryLow", L
 InspectorBackend.registerEnum("Network.RequestMixedContentType", {Blockable: "blockable", OptionallyBlockable: "optionally-blockable", None: "none"});
 InspectorBackend.registerEnum("Network.BlockedReason", {Csp: "csp", MixedContent: "mixed-content", Origin: "origin", Inspector: "inspector", Other: "other"});
 InspectorBackend.registerEnum("Network.InitiatorType", {Parser: "parser", Script: "script", Other: "other"});
+InspectorBackend.registerEnum("Network.CookieSameSite", {Strict: "Strict", Lax: "Lax"});
 InspectorBackend.registerEvent("Network.requestWillBeSent", ["requestId", "frameId", "loaderId", "documentURL", "request", "timestamp", "wallTime", "initiator", "redirectResponse", "type"]);
 InspectorBackend.registerEvent("Network.requestServedFromCache", ["requestId"]);
 InspectorBackend.registerEvent("Network.responseReceived", ["requestId", "frameId", "loaderId", "timestamp", "type", "response"]);
@@ -313,8 +314,6 @@ InspectorBackend.registerEvent("Debugger.scriptFailedToParse", ["scriptId", "url
 InspectorBackend.registerEvent("Debugger.breakpointResolved", ["breakpointId", "location"]);
 InspectorBackend.registerEvent("Debugger.paused", ["callFrames", "reason", "data", "hitBreakpoints", "asyncStackTrace"]);
 InspectorBackend.registerEvent("Debugger.resumed", []);
-InspectorBackend.registerEvent("Debugger.asyncOperationStarted", ["operation"]);
-InspectorBackend.registerEvent("Debugger.asyncOperationCompleted", ["id"]);
 InspectorBackend.registerCommand("Debugger.enable", [], [], false);
 InspectorBackend.registerCommand("Debugger.disable", [], [], false);
 InspectorBackend.registerCommand("Debugger.setBreakpointsActive", [{"name": "active", "type": "boolean", "optional": false}], [], false);
@@ -328,7 +327,6 @@ InspectorBackend.registerCommand("Debugger.stepInto", [], [], false);
 InspectorBackend.registerCommand("Debugger.stepOut", [], [], false);
 InspectorBackend.registerCommand("Debugger.pause", [], [], false);
 InspectorBackend.registerCommand("Debugger.resume", [], [], false);
-InspectorBackend.registerCommand("Debugger.stepIntoAsync", [], [], false);
 InspectorBackend.registerCommand("Debugger.searchInContent", [{"name": "scriptId", "type": "string", "optional": false}, {"name": "query", "type": "string", "optional": false}, {"name": "caseSensitive", "type": "boolean", "optional": true}, {"name": "isRegex", "type": "boolean", "optional": true}], ["result"], false);
 InspectorBackend.registerCommand("Debugger.canSetScriptSource", [], ["result"], false);
 InspectorBackend.registerCommand("Debugger.setScriptSource", [{"name": "scriptId", "type": "string", "optional": false}, {"name": "scriptSource", "type": "string", "optional": false}, {"name": "preview", "type": "boolean", "optional": true}], ["callFrames", "stackChanged", "asyncStackTrace", "compileError"], false);
@@ -342,9 +340,6 @@ InspectorBackend.registerCommand("Debugger.evaluateOnCallFrame", [{"name": "call
 InspectorBackend.registerCommand("Debugger.setVariableValue", [{"name": "scopeNumber", "type": "number", "optional": false}, {"name": "variableName", "type": "string", "optional": false}, {"name": "newValue", "type": "object", "optional": false}, {"name": "callFrameId", "type": "string", "optional": false}], [], false);
 InspectorBackend.registerCommand("Debugger.getBacktrace", [], ["callFrames", "asyncStackTrace"], false);
 InspectorBackend.registerCommand("Debugger.setAsyncCallStackDepth", [{"name": "maxDepth", "type": "number", "optional": false}], [], false);
-InspectorBackend.registerCommand("Debugger.flushAsyncOperationEvents", [], [], false);
-InspectorBackend.registerCommand("Debugger.setAsyncOperationBreakpoint", [{"name": "operationId", "type": "number", "optional": false}], [], false);
-InspectorBackend.registerCommand("Debugger.removeAsyncOperationBreakpoint", [{"name": "operationId", "type": "number", "optional": false}], [], false);
 InspectorBackend.registerCommand("Debugger.setBlackboxedRanges", [{"name": "scriptId", "type": "string", "optional": false}, {"name": "positions", "type": "object", "optional": false}], [], false);
 
 // DOMDebugger.
@@ -404,7 +399,6 @@ InspectorBackend.registerEvent("ServiceWorker.dispatchMessage", ["workerId", "me
 InspectorBackend.registerEvent("ServiceWorker.workerRegistrationUpdated", ["registrations"]);
 InspectorBackend.registerEvent("ServiceWorker.workerVersionUpdated", ["versions"]);
 InspectorBackend.registerEvent("ServiceWorker.workerErrorReported", ["errorMessage"]);
-InspectorBackend.registerEvent("ServiceWorker.debugOnStartUpdated", ["debugOnStart"]);
 InspectorBackend.registerCommand("ServiceWorker.enable", [], [], false);
 InspectorBackend.registerCommand("ServiceWorker.disable", [], [], false);
 InspectorBackend.registerCommand("ServiceWorker.sendMessage", [{"name": "workerId", "type": "string", "optional": false}, {"name": "message", "type": "string", "optional": false}], [], false);
@@ -414,8 +408,7 @@ InspectorBackend.registerCommand("ServiceWorker.updateRegistration", [{"name": "
 InspectorBackend.registerCommand("ServiceWorker.startWorker", [{"name": "scopeURL", "type": "string", "optional": false}], [], false);
 InspectorBackend.registerCommand("ServiceWorker.stopWorker", [{"name": "versionId", "type": "string", "optional": false}], [], false);
 InspectorBackend.registerCommand("ServiceWorker.inspectWorker", [{"name": "versionId", "type": "string", "optional": false}], [], false);
-InspectorBackend.registerCommand("ServiceWorker.setDebugOnStart", [{"name": "debugOnStart", "type": "boolean", "optional": false}], [], false);
-InspectorBackend.registerCommand("ServiceWorker.setForceUpdateOnPageLoad", [{"name": "registrationId", "type": "string", "optional": false}, {"name": "forceUpdateOnPageLoad", "type": "boolean", "optional": false}], [], false);
+InspectorBackend.registerCommand("ServiceWorker.setForceUpdateOnPageLoad", [{"name": "forceUpdateOnPageLoad", "type": "boolean", "optional": false}], [], false);
 InspectorBackend.registerCommand("ServiceWorker.deliverPushMessage", [{"name": "origin", "type": "string", "optional": false}, {"name": "registrationId", "type": "string", "optional": false}, {"name": "data", "type": "string", "optional": false}], [], false);
 InspectorBackend.registerCommand("ServiceWorker.getTargetInfo", [{"name": "targetId", "type": "string", "optional": false}], ["targetInfo"], false);
 InspectorBackend.registerCommand("ServiceWorker.activateTarget", [{"name": "targetId", "type": "string", "optional": false}], [], false);
