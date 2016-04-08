@@ -77,14 +77,16 @@
         (log (navigation-timeout-message *current-transcript-test* load-timeout test-index-url))
         (throw e)))))
 
-(defn wait-for-task-to-finish
-  ([]
-   (wait-for-task-to-finish DEFAULT_TASK_TIMEOUT))
-  ([timeout-ms]
-   (let [server (server/create! {:name "Task signaller"
-                                 :host "localhost"
-                                 :port 22555})
-         server-url (server/get-url server)
+(defn create-signal-server! []
+  (server/create! {:name "Signal server"
+                   :host "localhost"
+                   :port 22555}))
+
+(defn wait-for-signal
+  ([server]
+   (wait-for-signal server DEFAULT_TASK_TIMEOUT))
+  ([server timeout-ms]
+   (let [server-url (server/get-url server)
          friendly-timeout (format-friendly-timeout timeout-ms)]
      (log (str "waiting for task signals at " server-url " (timeout " friendly-timeout ")."))
      (if (= ::server/timeout (server/wait-for-first-client server timeout-ms))
@@ -172,12 +174,13 @@
 
 (defn execute-transcript-test! [test-name]
   (with-transcript-test test-name
-    (navigate-transcript-runner!)
-    (launch-transcript-test-after-delay (get-safe-delay-for-script-runner-to-launch-transcript-test))
-    (disconnect-browser!)
-    (wait-for-task-to-finish (* 5 MINUTE))
-    (reconnect-browser!)
-    (write-transcript-and-compare)))
+    (let [signal-server (create-signal-server!)]
+      (navigate-transcript-runner!)
+      (launch-transcript-test-after-delay (get-safe-delay-for-script-runner-to-launch-transcript-test))
+      (disconnect-browser!)
+      (wait-for-signal signal-server (* 5 MINUTE))
+      (reconnect-browser!)
+      (write-transcript-and-compare))))
 
 ; -- fixtures ---------------------------------------------------------------------------------------------------------------
 
