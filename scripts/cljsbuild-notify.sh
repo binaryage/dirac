@@ -4,8 +4,6 @@ set -e
 
 . "$(dirname "${BASH_SOURCE[0]}")/config.sh"
 
-echo "NOTIFY! $1"
-
 if [ ! -d "$NOTIFY_DIR" ] ; then
   mkdir -p "$NOTIFY_DIR"
 fi
