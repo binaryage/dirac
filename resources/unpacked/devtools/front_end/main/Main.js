@@ -129,7 +129,6 @@ WebInspector.Main.prototype = {
         Runtime.experiments.register("timelineShowAllEvents", "Show all events on Timeline", true);
         Runtime.experiments.register("timelineLatencyInfo", "Show input latency events on the Timeline", true);
         Runtime.experiments.register("securityPanel", "Security panel");
-        Runtime.experiments.register("stepIntoAsync", "Step into async");
         Runtime.experiments.register("timelineFlowEvents", "Timeline flow events", true);
         Runtime.experiments.register("timelineInvalidationTracking", "Timeline invalidation tracking", true);
         Runtime.experiments.register("timelineRecordingPerspectives", "Timeline recording perspectives UI");
@@ -549,42 +548,6 @@ WebInspector.Main.prototype = {
     {
         var hard = /** @type {boolean} */ (event.data);
         WebInspector.Main._reloadPage(hard);
-    },
-
-    /**
-     * @override
-     * @param {!RuntimeAgent.RemoteObject} payload
-     * @param {!Object=} hints
-     */
-    inspect: function(payload, hints)
-    {
-        var object = this._mainTarget.runtimeModel.createRemoteObject(payload);
-        if (object.isNode()) {
-            WebInspector.Revealer.revealPromise(object).then(object.release.bind(object));
-            return;
-        }
-
-        if (object.type === "function") {
-            WebInspector.RemoteFunction.objectAsFunction(object).targetFunctionDetails().then(didGetDetails);
-            return;
-        }
-
-        /**
-         * @param {?WebInspector.DebuggerModel.FunctionDetails} response
-         */
-        function didGetDetails(response)
-        {
-            object.release();
-
-            if (!response || !response.location)
-                return;
-
-            WebInspector.Revealer.reveal(WebInspector.debuggerWorkspaceBinding.rawLocationToUILocation(response.location));
-        }
-
-        if (hints.copyToClipboard)
-            InspectorFrontendHost.copyText(object.value);
-        object.release();
     },
 
     /**

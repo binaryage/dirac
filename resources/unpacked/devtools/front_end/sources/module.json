@@ -68,23 +68,6 @@
         },
         {
             "type": "@WebInspector.ActionDelegate",
-            "actionId": "debugger.step-into-async",
-            "experiment": "stepIntoAsync",
-            "className": "WebInspector.SourcesPanel.DebuggingActionDelegate",
-            "contextTypes": ["WebInspector.SourcesPanel"],
-            "bindings": [
-                {
-                    "platform": "windows,linux",
-                    "shortcut": "Alt+F11 Alt+Ctrl+;"
-                },
-                {
-                    "platform": "mac",
-                    "shortcut": "Alt+F11 Alt+Meta+;"
-                }
-            ]
-        },
-        {
-            "type": "@WebInspector.ActionDelegate",
             "actionId": "debugger.step-out",
             "className": "WebInspector.SourcesPanel.DebuggingActionDelegate",
             "title": "Step out of current function",
@@ -319,14 +302,6 @@
             "defaultValue": true
         },
         {
-            "type": "setting",
-            "title": "Auto-reload generated CSS",
-            "parentSettingName": "cssSourceMapsEnabled",
-            "settingName": "cssReloadEnabled",
-            "settingType": "boolean",
-            "defaultValue": false
-        },
-        {
             "type": "drawer-view",
             "name": "sources.search",
             "title": "Search",
@@ -352,7 +327,6 @@
     "scripts": [
         "UIList.js",
         "AddSourceMapURLDialog.js",
-        "AsyncOperationsSidebarPane.js",
         "CallStackSidebarPane.js",
         "SimpleHistoryManager.js",
         "EditingLocationHistoryManager.js",
@@ -368,7 +342,6 @@
         "NavigatorView.js",
         "RevisionHistoryView.js",
         "ScopeChainSidebarPane.js",
-        "ServiceWorkersSidebarPane.js",
         "SourcesNavigator.js",
         "StyleSheetOutlineDialog.js",
         "TabbedEditorContainer.js",
