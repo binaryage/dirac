@@ -115,21 +115,22 @@
              :browser-tests
              {:cljsbuild {:builds
                           {:tests
-                           {:source-paths ["src/settings"
-                                           "src/project"
-                                           "src/lib"
-                                           "src/dev"
-                                           "src/fixtures"
-                                           "src/runtime"
-                                           "src/test"
-                                           "src/agent"
-                                           "src/nrepl"
-                                           "test/browser/fixtures/src/tests"]
-                            :compiler     {:output-to     "test/browser/fixtures/resources/compiled/tests/tests.js"
-                                           :output-dir    "test/browser/fixtures/resources/compiled/tests"
-                                           :asset-path    "compiled/tests"
-                                           :optimizations :none                                                               ; we rely on optimizations :none in test runner
-                                           :source-map    true}}}}}
+                           {:notify-command ["scripts/cljsbuild-notify.sh" "tests"]
+                            :source-paths   ["src/settings"
+                                             "src/project"
+                                             "src/lib"
+                                             "src/dev"
+                                             "src/fixtures"
+                                             "src/runtime"
+                                             "src/test"
+                                             "src/agent"
+                                             "src/nrepl"
+                                             "test/browser/fixtures/src/tests"]
+                            :compiler       {:output-to     "test/browser/fixtures/resources/compiled/tests/tests.js"
+                                             :output-dir    "test/browser/fixtures/resources/compiled/tests"
+                                             :asset-path    "compiled/tests"
+                                             :optimizations :none                                                             ; we rely on optimizations :none in test runner
+                                             :source-map    true}}}}}
 
              :marion
              {:figwheel  {:server-port    7200
@@ -137,28 +138,30 @@
                           :repl           false}
               :cljsbuild {:builds
                           {:marion-background
-                           {:source-paths ["src/settings"
-                                           "src/shared"
-                                           "test/marion/src/dev"
-                                           "test/marion/src/background"]
-                            :compiler     {:output-to     "test/marion/resources/unpacked/compiled/background/background.js"
-                                           :output-dir    "test/marion/resources/unpacked/compiled/background"
-                                           :asset-path    "compiled/background"
-                                           :optimizations :none
-                                           :source-map    true}}
+                           {:initial-notify-command ["scripts/cljsbuild-notify.sh" "marion-background"]
+                            :source-paths           ["src/settings"
+                                                     "src/shared"
+                                                     "test/marion/src/dev"
+                                                     "test/marion/src/background"]
+                            :compiler               {:output-to     "test/marion/resources/unpacked/compiled/background/background.js"
+                                                     :output-dir    "test/marion/resources/unpacked/compiled/background"
+                                                     :asset-path    "compiled/background"
+                                                     :optimizations :none
+                                                     :source-map    true}}
 
                            :marion-content-script
-                           {:source-paths ["src/settings"
-                                           "src/shared"
-                                           "test/marion/src/dev"
-                                           "test/marion/src/content_script"]
-                            :compiler     {:output-to              "test/marion/resources/unpacked/compiled/content_script/content_script.js"
-                                           :output-dir             "test/marion/resources/unpacked/compiled/content_script"
-                                           :asset-path             "compiled/content_script"
-                                           :closure-output-charset "US-ASCII"
-                                           :optimizations          :whitespace                                                ; content scripts cannot do eval / load script dynamically
-                                           :pretty-print           true
-                                           :source-map             "test/marion/resources/unpacked/compiled/content_script/content_script.js.map"}}}}}
+                           {:notify-command ["scripts/cljsbuild-notify.sh" "marion-content-script"]
+                            :source-paths   ["src/settings"
+                                             "src/shared"
+                                             "test/marion/src/dev"
+                                             "test/marion/src/content_script"]
+                            :compiler       {:output-to              "test/marion/resources/unpacked/compiled/content_script/content_script.js"
+                                             :output-dir             "test/marion/resources/unpacked/compiled/content_script"
+                                             :asset-path             "compiled/content_script"
+                                             :closure-output-charset "US-ASCII"
+                                             :optimizations          :whitespace                                              ; content scripts cannot do eval / load script dynamically
+                                             :pretty-print           true
+                                             :source-map             "test/marion/resources/unpacked/compiled/content_script/content_script.js.map"}}}}}
 
              :dirac-unpacked
              {:figwheel  {:server-port    7100
@@ -166,42 +169,45 @@
                           :repl           false}
               :cljsbuild {:builds
                           {:dirac-implant
-                           {:source-paths ["src/settings"
-                                           "src/implant"
-                                           "src/lib"
-                                           "src/project"]
-                            :compiler     {:output-to     "resources/unpacked/devtools/front_end/dirac/compiled/implant/implant.js"
-                                           :output-dir    "resources/unpacked/devtools/front_end/dirac/compiled/implant"
-                                           :asset-path    "dirac/compiled/implant"
-                                           :optimizations :none
-                                           :source-map    true}}
+                           {:initial-notify-command ["scripts/cljsbuild-notify.sh" "dirac-implant"]
+                            :source-paths           ["src/settings"
+                                                     "src/implant"
+                                                     "src/lib"
+                                                     "src/project"]
+                            :compiler               {:output-to     "resources/unpacked/devtools/front_end/dirac/compiled/implant/implant.js"
+                                                     :output-dir    "resources/unpacked/devtools/front_end/dirac/compiled/implant"
+                                                     :asset-path    "dirac/compiled/implant"
+                                                     :optimizations :none
+                                                     :source-map    true}}
 
                            :dirac-background
-                           {:source-paths ["src/settings"
-                                           "src/dev"
-                                           "src/lib"
-                                           "src/figwheel"
-                                           "src/shared"
-                                           "src/project"
-                                           "src/background"]
-                            :compiler     {:output-to     "resources/unpacked/compiled/background/dirac.js"
-                                           :output-dir    "resources/unpacked/compiled/background"
-                                           :asset-path    "compiled/background"
-                                           :optimizations :none
-                                           :source-map    true}}
+                           {:initial-notify-command ["scripts/cljsbuild-notify.sh" "dirac-background"]
+                            :source-paths           ["src/settings"
+                                                     "src/dev"
+                                                     "src/lib"
+                                                     "src/figwheel"
+                                                     "src/shared"
+                                                     "src/project"
+                                                     "src/background"]
+                            :compiler               {:output-to     "resources/unpacked/compiled/background/dirac.js"
+                                                     :output-dir    "resources/unpacked/compiled/background"
+                                                     :asset-path    "compiled/background"
+                                                     :optimizations :none
+                                                     :source-map    true}}
                            :dirac-options
-                           {:source-paths ["src/settings"
-                                           "src/dev"
-                                           "src/lib"
-                                           "src/figwheel"
-                                           "src/shared"
-                                           "src/project"
-                                           "src/options"]
-                            :compiler     {:output-to     "resources/unpacked/compiled/options/dirac.js"
-                                           :output-dir    "resources/unpacked/compiled/options"
-                                           :asset-path    "compiled/options"
-                                           :optimizations :none
-                                           :source-map    true}}}}}
+                           {:initial-notify-command ["scripts/cljsbuild-notify.sh" "dirac-options"]
+                            :source-paths           ["src/settings"
+                                                     "src/dev"
+                                                     "src/lib"
+                                                     "src/figwheel"
+                                                     "src/shared"
+                                                     "src/project"
+                                                     "src/options"]
+                            :compiler               {:output-to     "resources/unpacked/compiled/options/dirac.js"
+                                                     :output-dir    "resources/unpacked/compiled/options"
+                                                     :asset-path    "compiled/options"
+                                                     :optimizations :none
+                                                     :source-map    true}}}}}
              :dirac-packed
              {:env       {:chromex-elide-verbose-logging "true"}
               :cljsbuild {:builds
@@ -318,15 +324,11 @@
              :dev-browser-tests
              {:cooper {"fixtures-server" ["scripts/launch-fixtures-server.sh"]
                        "dev-agent"       ["lein" "run-browser-tests-agent"]
-                       "test-canary"     ["scripts/launch-test-canary.sh" "1"]
-                       "fig-dirac"       ["scripts/launch-after-test-canary.sh"
-                                          "lein fig-dirac"]
-                       "fig-marion"      ["scripts/launch-after-test-canary.sh"
-                                          "lein fig-marion"]
-                       "marion-cs"       ["scripts/launch-after-test-canary.sh"
-                                          "lein auto-compile-marion-cs"]
-                       "browser-tests"   ["scripts/launch-after-test-canary.sh"
-                                          "lein auto-compile-browser-tests"]}}}
+                       "fig-dirac"       ["lein" "fig-dirac"]
+                       "fig-marion"      ["lein" "fig-marion"]
+                       "marion-cs"       ["lein" "auto-compile-marion-cs"]
+                       "browser-tests"   ["lein" "auto-compile-browser-tests"]
+                       "test-canary"     ["scripts/launch-test-canary.sh"]}}}
 
   :aliases {"check"                      ["shell" "scripts/check-code.sh"]
             "test"                       ["shell" "scripts/test-all.sh"]

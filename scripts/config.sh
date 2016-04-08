@@ -45,5 +45,6 @@ DEV_DIRAC_EXTENSION_PATH="$ROOT/resources/unpacked"
 DEV_MARION_EXTENSION_PATH="$ROOT/test/marion/resources/unpacked"
 TMP_DIR="/tmp/dirac-tmp"
 TEST_CANARY_FLAG_FILE="$TMP_DIR/canary-flag"
+NOTIFY_DIR="$ROOT/.notify"
 
 popd

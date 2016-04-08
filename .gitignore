@@ -25,3 +25,4 @@ figwheel_server.log
 pom.xml*
 /test/chromedriver
 /out/
+.notify/
