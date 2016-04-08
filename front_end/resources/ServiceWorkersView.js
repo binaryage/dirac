@@ -13,6 +13,9 @@ WebInspector.ServiceWorkersView = function()
     this.registerRequiredCSS("resources/serviceWorkersView.css");
     this.contentElement.classList.add("service-workers-view");
 
+
+    /** @type {boolean} */
+    this._showAll = false;
     /** @type {!Set.<string>} */
     this._securityOriginHosts = new Set();
     /** @type {!Map.<string, !WebInspector.ServiceWorkerOriginWidget>} */
@@ -20,13 +23,7 @@ WebInspector.ServiceWorkersView = function()
     /** @type {!Map.<string, !WebInspector.ServiceWorkerOriginWidget>} */
     this._registrationIdToOriginWidgetMap = new Map();
 
-    var settingsDiv = createElementWithClass("div", "service-workers-settings");
-    var debugOnStartCheckboxLabel = createCheckboxLabel(WebInspector.UIString("Open DevTools window and pause JavaScript execution on Service Worker startup for debugging."));
-    this._debugOnStartCheckbox = debugOnStartCheckboxLabel.checkboxElement;
-    this._debugOnStartCheckbox.addEventListener("change", this._debugOnStartCheckboxChanged.bind(this), false)
-    this._debugOnStartCheckbox.disabled = true
-    settingsDiv.appendChild(debugOnStartCheckboxLabel);
-    this.contentElement.appendChild(settingsDiv);
+    this._toolbar = new WebInspector.Toolbar("", this.contentElement);
 
     this._root = this.contentElement.createChild("div");
     this._root.classList.add("service-workers-root");
@@ -46,14 +43,18 @@ WebInspector.ServiceWorkersView.prototype = {
         this._target = target;
         this._manager = this._target.serviceWorkerManager;
 
-        this._debugOnStartCheckbox.disabled = false;
-        this._debugOnStartCheckbox.checked = this._manager.debugOnStart();
+        var forceUpdate = new WebInspector.ToolbarCheckbox(WebInspector.UIString("Update on reload"), WebInspector.UIString("Update Service Worker on page reload"), this._manager.forceUpdateOnReloadSetting());
+        this._toolbar.appendToolbarItem(forceUpdate);
+
+        this._showAllCheckbox = new WebInspector.ToolbarCheckbox(WebInspector.UIString("Show all"), WebInspector.UIString("Show all Service Workers"));
+        this._showAllCheckbox.inputElement.addEventListener("change", this._onShowAllCheckboxChanged.bind(this), false);
+        this._toolbar.appendToolbarItem(this._showAllCheckbox);
+
         for (var registration of this._manager.registrations().values())
             this._updateRegistration(registration);
 
         this._manager.addEventListener(WebInspector.ServiceWorkerManager.Events.RegistrationUpdated, this._registrationUpdated, this);
         this._manager.addEventListener(WebInspector.ServiceWorkerManager.Events.RegistrationDeleted, this._registrationDeleted, this);
-        this._manager.addEventListener(WebInspector.ServiceWorkerManager.Events.DebugOnStartUpdated, this._debugOnStartUpdated, this);
         this._target.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.SecurityOriginAdded, this._securityOriginAdded, this);
         this._target.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.SecurityOriginRemoved, this._securityOriginRemoved, this);
         var securityOrigins = this._target.resourceTreeModel.securityOrigins();
@@ -70,6 +71,25 @@ WebInspector.ServiceWorkersView.prototype = {
         if (target !== this._target)
             return;
         delete this._target;
+    },
+
+    /**
+     * @param {!Event} event
+     */
+    _onShowAllCheckboxChanged: function(event)
+    {
+        this._showAll = this._showAllCheckbox.checked();
+        if (this._showAll) {
+            for (var originWidget of this._originHostToOriginWidgetMap.values()) {
+                if (!originWidget.parentWidget())
+                    originWidget.show(this._root);
+            }
+        } else {
+            for (var originWidget of this._originHostToOriginWidgetMap.values()) {
+                if (originWidget.parentWidget() && !this._securityOriginHosts.has(originWidget._originHost))
+                    originWidget.detach();
+            }
+        }
     },
 
     /**
@@ -93,7 +113,7 @@ WebInspector.ServiceWorkersView.prototype = {
         var originWidget = this._originHostToOriginWidgetMap.get(originHost);
         if (!originWidget) {
             originWidget = new WebInspector.ServiceWorkerOriginWidget(this._manager, originHost);
-            if (this._securityOriginHosts.has(originHost))
+            if (this._securityOriginHosts.has(originHost) || this._showAll)
                 originWidget.show(this._root);
             this._originHostToOriginWidgetMap.set(originHost, originWidget);
         }
@@ -115,18 +135,9 @@ WebInspector.ServiceWorkersView.prototype = {
         originWidget._deleteRegistration(registrationId);
         if (originWidget._hasRegistration())
             return;
-        if (this._securityOriginHosts.has(originWidget._originHost))
+        if (originWidget.parentWidget())
             originWidget.detach();
         this._originHostToOriginWidgetMap.delete(originWidget._originHost);
-    },
-
-    /**
-     * @param {!WebInspector.Event} event
-     */
-    _debugOnStartUpdated: function(event)
-    {
-        var debugOnStart = /** @type {boolean} */ (event.data);
-        this._debugOnStartCheckbox.checked = debugOnStart;
     },
 
     /**
@@ -168,18 +179,12 @@ WebInspector.ServiceWorkersView.prototype = {
         if (!this._securityOriginHosts.has(originHost))
             return;
         this._securityOriginHosts.delete(originHost);
+        if (this._showAll)
+           return;
         var originWidget = this._originHostToOriginWidgetMap.get(originHost);
         if (!originWidget)
           return;
         originWidget.detach();
-    },
-
-    _debugOnStartCheckboxChanged: function()
-    {
-        if (!this._manager)
-            return;
-        this._manager.setDebugOnStart(this._debugOnStartCheckbox.checked);
-        this._debugOnStartCheckbox.checked = this._manager.debugOnStart();
     },
 
     __proto__: WebInspector.VBox.prototype
@@ -309,9 +314,21 @@ WebInspector.SWRegistrationWidget.prototype = {
         /** @type {!Map<string, !WebInspector.SWVersionWidget>} */
         var versionWidgets = new Map();
 
-        var modesWithVersions = new Set();
+        // Remove all the redundant workers that are older than the
+        // active version.
+        var versions = registration.versions.valuesArray();
+        var activeVersion = versions.find(version => version.mode() === WebInspector.ServiceWorkerVersion.Modes.Active);
+        if (activeVersion) {
+            versions = versions.filter(version => {
+                if (version.mode() == WebInspector.ServiceWorkerVersion.Modes.Redundant)
+                    return version.scriptLastModified > activeVersion.scriptLastModified;
+                return true;
+            });
+        }
+
         var firstMode;
-        for (var version of registration.versions.valuesArray()) {
+        var modesWithVersions = new Set();
+        for (var version of versions) {
             if (version.isStoppedAndRedundant() && !version.errorMessages.length)
                 continue;
             var mode = version.mode();
@@ -324,7 +341,7 @@ WebInspector.SWRegistrationWidget.prototype = {
                 versionWidget._updateVersion(version);
             else
                 versionWidget = new WebInspector.SWVersionWidget(this._manager, this._registration.scopeURL, version);
-            versionWidget.show(view.element);
+            versionWidget.show(view.element, view.element.firstElementChild);
             versionWidgets.set(version.id, versionWidget);
         }
         for (var id of this._versionWidgets.keys()) {
@@ -342,7 +359,7 @@ WebInspector.SWRegistrationWidget.prototype = {
             this._tabbedPane.selectTab(this._lastManuallySelectedTab);
             return;
         }
-        if (modesWithVersions.has(WebInspector.ServiceWorkerVersion.Modes.Active)) {
+        if (activeVersion) {
             this._tabbedPane.selectTab(WebInspector.ServiceWorkerVersion.Modes.Active);
             return;
         }
