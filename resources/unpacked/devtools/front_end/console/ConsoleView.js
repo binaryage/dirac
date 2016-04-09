@@ -1106,7 +1106,7 @@ WebInspector.ConsoleView.prototype = {
             this._prompt.setText("");
             var target = executionContext.target();
             var type = WebInspector.ConsoleMessage.MessageType.DiracCommand;
-            var commandMessage = new WebInspector.ConsoleMessage(target, WebInspector.ConsoleMessage.MessageSource.JS, null, text, type);
+            var commandMessage = new WebInspector.ConsoleMessage(target, WebInspector.ConsoleMessage.MessageSource.JS, WebInspector.ConsoleMessage.MessageLevel.Log, text, type);
             commandMessage.setExecutionContextId(executionContext.id);
             target.consoleModel.addMessage(commandMessage);
 
