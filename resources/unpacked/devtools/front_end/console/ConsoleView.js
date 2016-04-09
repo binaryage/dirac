@@ -221,6 +221,8 @@ WebInspector.ConsoleView = function()
 
     this._consolePromptIndexSetting = WebInspector.settings.createLocalSetting("consolePromptIndex", 0);
 
+    this._consoleFeedback = 0;
+
     if (dirac.hasREPL) {
         this.setDiracPromptMode("status");
         var that = this;
@@ -701,6 +703,45 @@ WebInspector.ConsoleView.prototype = {
         return extraClass;
     },
 
+    _levelForFeedback: function(level)
+    {
+        var levelString;
+        switch (level) {
+            case WebInspector.ConsoleMessage.MessageLevel.Log:
+                levelString = "log";
+                break;
+            case WebInspector.ConsoleMessage.MessageLevel.Warning:
+                levelString = "wrn";
+                break;
+            case WebInspector.ConsoleMessage.MessageLevel.Debug:
+                levelString = "dbg";
+                break;
+            case WebInspector.ConsoleMessage.MessageLevel.Error:
+                levelString = "err";
+                break;
+            case WebInspector.ConsoleMessage.MessageLevel.RevokedError:
+                levelString = "rer";
+                break;
+            case WebInspector.ConsoleMessage.MessageLevel.Info:
+                levelString = "inf";
+                break;
+            default:
+                levelString = "???";
+                break;
+        }
+        return levelString;
+    },
+
+    _typeForFeedback: function(messageType, isDiracFlavored) {
+        if (isDiracFlavored) {
+          return "DF";
+        }
+        if (messageType==WebInspector.ConsoleMessage.MessageType.DiracCommand) {
+          return "DC";
+        }
+        return "JS";
+    },
+
     _createViewMessage: function(message)
     {
         // this is a HACK to treat REPL messages as Dirac results
@@ -719,6 +760,15 @@ WebInspector.ConsoleView.prototype = {
             if (extraClasss) {
                 wraperElement.classList.add(extraClasss);
             }
+        }
+
+        if (this._consoleFeedback) {
+            try {
+              var levelText = this._levelForFeedback(message.level);
+              var typeText = this._typeForFeedback(message.type, isDiracFlavoredMessage);
+              var messageText = result.formattedMessage().querySelector("span").textContent;
+              dirac.implant.feedback(typeText+"."+levelText+"> "+messageText);
+            } catch (e) {};
         }
 
         return result;
@@ -1057,6 +1107,30 @@ WebInspector.ConsoleView.prototype = {
             return;
         }
         this._switchPromptIfAvail(this._activePromptIndex, selectedPromptIndex);
+    },
+
+    getCurrentPromptDescriptor: function() {
+        return this._prompts[this._activePromptIndex];
+    },
+
+    dispatchEventsForPromptInput: function(input) {
+       this._prompt.setText(input);
+    },
+
+    dispatchEventsForPromptAction: function(action) {
+        var promptDescriptor = this.getCurrentPromptDescriptor();
+        var keyboard = Keysim.Keyboard.US_ENGLISH;
+        keyboard.dispatchEventsForAction(action, promptDescriptor.proxy);
+    },
+
+    enableConsoleFeedback: function() {
+        this._consoleFeedback++;
+        return this._consoleFeedback;
+    },
+
+    disableConsoleFeedback: function() {
+        this._consoleFeedback--;
+        return this._consoleFeedback;
     },
 
     _promptKeyDown: function(event)
