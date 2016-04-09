@@ -8,6 +8,12 @@
   (auto/open-tab-with-scenario! "normal")
   (auto/open-dirac-devtools!)
   (auto/wait-for-devtools)
+  ; ---
   (auto/wait-switch-to-console 1)
   (auto/switch-to-dirac-prompt! 1)
-  (<! (timeout (* 10 SECOND))))
+  (auto/wait-for-prompt-edit)
+  (auto/enable-console-feedback! 1)
+  (auto/dispatch-console-prompt-input! 1 "(+ 1 2)")
+  (auto/dispatch-console-prompt-action! 1 "enter")
+  ; ---
+  (auto/wait-for-transcript-match #".*> 3.*"))

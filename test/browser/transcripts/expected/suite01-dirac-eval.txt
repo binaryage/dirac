@@ -15,4 +15,13 @@ frontend #1      repl initialized
 frontend #1      setDiracPromptStatusContent('Dirac Agent connected. Bootstrapping ClojureScript REPL...')
 frontend #1      setDiracPromptStatusStyle('info')
 frontend #1      setDiracPromptNS('cljs.user')
+frontend #1      wrap-with-postprocess-and-eval-in-current-context!
+frontend #1      wrap-with-postprocess-and-eval-in-current-context!
 frontend #1      setDiracPromptMode('edit')
+automate #1      {:action :enable-console-feedback}
+automate #1      {:action :dispatch-console-prompt-input, :input "(+ 1 2)"}
+automate #1      {:action :dispatch-console-prompt-action, :input "enter"}
+frontend #1      DC.log> (+ 1 2)
+frontend #1      send-eval-request: (+ 1 2)
+frontend #1      wrap-with-postprocess-and-eval-in-current-context!
+frontend #1      DF.log> 3
