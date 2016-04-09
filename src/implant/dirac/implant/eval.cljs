@@ -3,12 +3,11 @@
   (:require [cljs.core.async :refer [put! <! chan timeout alts! close!]]
             [cljs.core.async.impl.protocols :as core-async]
             [chromex.support :refer-macros [oget ocall oapply]]
-            [chromex.logging :refer-macros [log warn error]]
-            [dirac.implant.helpers :as helpers]))
+            [chromex.logging :refer-macros [log warn error]]))
 
 ; -- configuration ----------------------------------------------------------------------------------------------------------
 
-(def default-config
+(defonce default-config
   {:install-check-total-time-limit              5000
    :install-check-next-trial-waiting-time       500
    :install-check-eval-time-limit               300
@@ -19,7 +18,7 @@
    :display-user-info-fn                        nil
    :display-user-error-fn                       nil})
 
-(def current-config (atom default-config))
+(defonce current-config (atom default-config))
 
 (defn update-config! [config]
   (swap! current-config merge config))
@@ -198,7 +197,7 @@
 ; Also look into implementation of process-message :eval-js, there is a deliberate delay before processing eval-js requests
 ; This means printing messages in tunnel have better chance to complete before a subsequent eval is executed.
 
-(def eval-requests-chan (chan))
+(defonce eval-requests-chan (chan))
 
 (defn start-eval-request-queue-processing-loop! []
   (go-loop []

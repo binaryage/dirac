@@ -82,11 +82,11 @@
                                              "drawAttention" true}))
       (tabs/update dirac-tab-id #js {"active" true}))))
 
-(def flag-keys [:enable-repl
-                :enable-parinfer
-                :enable-friendly-locals
-                :enable-clustered-locals
-                :inline-custom-formatters])
+(defonce flag-keys [:enable-repl
+                    :enable-parinfer
+                    :enable-friendly-locals
+                    :enable-clustered-locals
+                    :inline-custom-formatters])
 
 (defn get-dirac-flags []
   (let [options (options/get-options)

@@ -1,4 +1,4 @@
-(ns marion.figwheel
+(ns ^:figwheel-no-load marion.figwheel
   (:require [figwheel.client :as figwheel]))
 
 ; -------------------------------------------------------------------------------------------------------------------

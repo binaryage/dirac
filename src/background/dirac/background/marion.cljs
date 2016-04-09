@@ -84,4 +84,5 @@
   (register-marion! marion-port)
   (run-marion-message-loop! context marion-port))
 
-(def post-feedback-event! state/post-feedback!)
+(defn post-feedback-event! [& args]
+  (apply state/post-feedback! args))

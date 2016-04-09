@@ -8,8 +8,8 @@
             [dirac.implant.version :as implant-version]
             [dirac.implant.console :as console]))
 
-(def current-client (atom nil))                                                                                               ; only one client can be connected as a time
-(def pending-messages (atom {}))                                                                                              ; a map of 'msg-id -> handler' for messages in flight where we wait for status responses, see ***
+(defonce current-client (atom nil))                                                                                               ; only one client can be connected as a time
+(defonce pending-messages (atom {}))                                                                                              ; a map of 'msg-id -> handler' for messages in flight where we wait for status responses, see ***
 
 (defn connected? []
   (not (nil? @current-client)))

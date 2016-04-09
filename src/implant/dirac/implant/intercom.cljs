@@ -11,12 +11,12 @@
             [dirac.implant.eval :as eval])
   (:import goog.net.WebSocket.ErrorEvent))
 
-(def required-repl-api-version 3)
+(defonce required-repl-api-version 3)
 
-(def ^:dynamic *repl-connected* false)
-(def ^:dynamic *repl-bootstrapped* false)
-(def ^:dynamic *last-connection-url* nil)
-(def ^:dynamic *last-connect-fn-id* 0)
+(defonce ^:dynamic *repl-connected* false)
+(defonce ^:dynamic *repl-bootstrapped* false)
+(defonce ^:dynamic *last-connection-url* nil)
+(defonce ^:dynamic *last-connect-fn-id* 0)
 
 (defn ^:dynamic repl-api-mismatch-msg [current-api required-api]
   (str "Dirac Runtime version mismatch detected. Dirac DevTools requires Dirac Runtime REPL API v" required-api ", "

@@ -4,11 +4,11 @@
             [dirac.implant.helpers :refer [get-console-view]]
             [dirac.implant.feedback-support :as feedback-support]))
 
-(def ^:dynamic *last-prompt-ns* nil)
-(def ^:dynamic *last-prompt-mode* :status)
-(def ^:dynamic *last-prompt-status-content* "")
-(def ^:dynamic *last-prompt-status-style* "")
-(def ^:dynamic *last-prompt-status-banner* "")
+(defonce ^:dynamic *last-prompt-ns* nil)
+(defonce ^:dynamic *last-prompt-mode* :status)
+(defonce ^:dynamic *last-prompt-status-content* "")
+(defonce ^:dynamic *last-prompt-status-style* "")
+(defonce ^:dynamic *last-prompt-status-banner* "")
 
 (defn announce-job-start! [job-id info]
   (group (str "nREPL JOB #" job-id) info)

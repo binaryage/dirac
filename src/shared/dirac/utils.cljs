@@ -8,7 +8,7 @@
 (defn remove-nil-values [m]
   (into {} (remove (comp nil? second) m)))
 
-(def ^:const EXPONENTIAL_BACKOFF_CEILING (* 60 1000))
+(defonce ^:const EXPONENTIAL_BACKOFF_CEILING (* 60 1000))
 
 (defn exponential-backoff-ceiling [attempt]
   (let [time (* (js/Math.pow 2 attempt) 1000)]

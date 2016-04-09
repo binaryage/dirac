@@ -3,7 +3,7 @@
 ; ---------------------------------------------------------------------------------------------------------------------------
 ; logging - these need to be macros to preserve source location for devtools
 
-(def enabled? true)
+(defonce enabled? true)
 
 (defn prefix []
   ["%cmarion%cbackground"

@@ -5,7 +5,7 @@
             [dirac.sugar :refer [tab-exists?]]
             [chromex.ext.browser-action :as browser-action]))
 
-(def state-table
+(defonce state-table
   {:waiting       {}
    :connected     {:text "~" :color [0 0 255 255]}
    :not-available {:text "x" :color [128 128 128 255]}

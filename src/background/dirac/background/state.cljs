@@ -3,7 +3,7 @@
             [chromex.logging :refer-macros [log info warn error group group-end]]
             [chromex.protocols :refer [post-message! get-sender get-name]]))
 
-(def initial-state
+(defonce initial-state
   {:last-connection-id   0
    :connections          {}                                                                                                   ; pairings between dirac instances and connected backend tabs
    :chrome-event-channel nil
@@ -59,4 +59,3 @@
    (post-to-marion! #js {:type "reply" :id message-id}))
   ([message-id data]
    (post-to-marion! #js {:type "reply" :id message-id :data (pr-str data)})))
-

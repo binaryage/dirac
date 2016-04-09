@@ -1,4 +1,4 @@
-(ns dirac.figwheel
+(ns ^:figwheel-no-load dirac.figwheel
   (:require [figwheel.client :as figwheel]))
 
 ; -------------------------------------------------------------------------------------------------------------------

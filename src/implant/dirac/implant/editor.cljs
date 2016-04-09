@@ -18,7 +18,7 @@
 ;; When typing, on-change is called, then on-cursor-activity.
 ;; So we prevent updating the text twice by using an update flag.
 
-(def frame-updates (atom {}))
+(defonce frame-updates (atom {}))
 
 (defn before-change
   "Called before any change is applied to the editor."
@@ -58,7 +58,7 @@
 ;; Setup
 ;;----------------------------------------------------------------------
 
-(def basic-editor-opts
+(defonce basic-editor-opts
   {:mode          "clojure-parinfer"
    :theme         "dirac"
    :matchBrackets true
@@ -68,7 +68,7 @@
                    "Alt-Enter"   "newlineAndIndent"
                    "Ctrl-Enter"  "newlineAndIndent"}})
 
-(def parinfer-editor-opts
+(defonce parinfer-editor-opts
   (merge basic-editor-opts
          {:extraKeys {"Tab" on-tab}}))
 

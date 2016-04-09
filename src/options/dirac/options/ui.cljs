@@ -4,9 +4,9 @@
             [rum.core :include-macros true :as rum :refer-macros [defc]]
             [dirac.options.model :as model]))
 
-(def default-state {:options model/default-options})
+(defonce default-state {:options model/default-options})
 
-(def state (atom {:options model/default-options}))
+(defonce state (atom {:options model/default-options}))
 
 ; -- supporting functions ---------------------------------------------------------------------------------------------------
 

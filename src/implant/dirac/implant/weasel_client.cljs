@@ -20,7 +20,7 @@
             [dirac.implant.eval :as eval]
             [dirac.lib.ws-client :as ws-client]))
 
-(def current-client (atom nil))
+(defonce current-client (atom nil))
 
 ; -- helpers ----------------------------------------------------------------------------------------------------------------
 

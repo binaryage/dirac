@@ -9,8 +9,8 @@
             [dirac.implant.eval :as eval]
             [dirac.implant.feedback-support :as feedback-support]))
 
-(def ^:dynamic *console-initialized* false)
-(def ^:dynamic *implant-initialized* false)
+(defonce ^:dynamic *console-initialized* false)
+(defonce ^:dynamic *implant-initialized* false)
 
 ; -- exported API -----------------------------------------------------------------------------------------------------------
 ; don't forget to update externs.js when touching this
@@ -71,4 +71,4 @@
 
 ; -- intialization ----------------------------------------------------------------------------------------------------------
 
-(init-implant!)
+(defonce _ (init-implant!))
