@@ -3,7 +3,8 @@
   (:require [cljs.core.async :refer [put! <! chan timeout alts! close!]]
             [cljs.core.async.impl.protocols :as core-async]
             [chromex.support :refer-macros [oget ocall oapply]]
-            [chromex.logging :refer-macros [log warn error]]))
+            [chromex.logging :refer-macros [log warn error]]
+            [dirac.implant.feedback-support :as feedback]))
 
 ; -- configuration ----------------------------------------------------------------------------------------------------------
 
@@ -259,12 +260,14 @@
 ; -- printing captured server-side output -----------------------------------------------------------------------------------
 
 (defn present-output! [job-id kind text]
+  (feedback/post! (str "present-server-side-output! " kind " > " text))
   (let [code (output-template (int job-id) kind text)]
     (eval-in-context! :default code)))
 
 ; -- fancy evaluation in currently selected context -------------------------------------------------------------------------
 
 (defn wrap-with-postprocess-and-eval-in-current-context! [code]
+  (feedback/post! (str "wrap-with-postprocess-and-eval-in-current-context!"))
   (go
     ; for result structure refer to devtools.api.postprocess_successful_eval and devtools.api.postprocess_unsuccessful_eval
     (let [wrapped-code (postprocess-template code)]
