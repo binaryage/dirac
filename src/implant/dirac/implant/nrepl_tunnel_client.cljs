@@ -96,7 +96,7 @@
 
 (defmethod process-message :print-output [_client message]
   (let [{:keys [id content kind]} message]
-    (eval/present-output! id kind content))
+    (eval/present-server-side-output! id kind content))
   nil)
 
 (defmethod process-message :error [_client message]

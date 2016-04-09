@@ -259,7 +259,7 @@
 
 ; -- printing captured server-side output -----------------------------------------------------------------------------------
 
-(defn present-output! [job-id kind text]
+(defn present-server-side-output! [job-id kind text]
   (feedback/post! (str "present-server-side-output! " kind " > " text))
   (let [code (output-template (int job-id) kind text)]
     (eval-in-context! :default code)))
