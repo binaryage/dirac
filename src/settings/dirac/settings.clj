@@ -16,6 +16,13 @@
 (def ^:const MARION_RECONNECTION_ATTEMPT_DELAY (* 2 SECOND))
 (def ^:const MARION_MESSAGE_REPLY_TIME (* 2 SECOND))
 
+(def ^:const DEFAULT_TASK_TIMEOUT (* 5 MINUTE))
+(def ^:const DEFAULT_TEST_HTML_LOAD_TIMEOUT (* 1 SECOND))
+(def ^:const SIGNAL_SERVER_CLOSE_WAIT_TIMEOUT (* 1 SECOND))
+
+(def ^:const ACTUAL_TRANSCRIPTS_ROOT_PATH "test/browser/transcripts/actual/")
+(def ^:const EXPECTED_TRANSCRIPTS_ROOT_PATH "test/browser/transcripts/expected/")
+
 ; -- cljs access ------------------------------------------------------------------------------------------------------------
 
 (defmacro get-test-dirac-agent-port []
@@ -44,3 +51,18 @@
 
 (defmacro get-marion-message-reply-time []
   MARION_MESSAGE_REPLY_TIME)
+
+(defmacro get-default-task-timeout []
+  DEFAULT_TASK_TIMEOUT)
+
+(defmacro get-default-test-html-load-timeout []
+  DEFAULT_TEST_HTML_LOAD_TIMEOUT)
+
+(defmacro get-signal-server-close-wait-timeout []
+  SIGNAL_SERVER_CLOSE_WAIT_TIMEOUT)
+
+(defmacro get-actual-transcripts-root-path []
+  ACTUAL_TRANSCRIPTS_ROOT_PATH)
+
+(defmacro get-expected-transcripts-root-path []
+  EXPECTED_TRANSCRIPTS_ROOT_PATH)

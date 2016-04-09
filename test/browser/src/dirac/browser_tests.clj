@@ -2,7 +2,12 @@
   (:require [clojure.test :refer :all]
             [clojure.java.io :as io]
             [clojure.stacktrace :as stacktrace]
-            [dirac.settings :refer [get-launch-task-message]]
+            [dirac.settings :refer [get-launch-task-message
+                                    get-default-task-timeout
+                                    get-default-test-html-load-timeout
+                                    get-signal-server-close-wait-timeout
+                                    get-actual-transcripts-root-path
+                                    get-expected-transcripts-root-path]]
             [dirac.test.fixtures-web-server :refer [with-fixtures-web-server]]
             [dirac.test.nrepl-server :refer [with-nrepl-server]]
             [dirac.test.agent :refer [with-dirac-agent]]
@@ -18,15 +23,7 @@
 
 ; note: we expect current working directory to be dirac root directory ($root)
 ; $root/test/browser/transcripts/expected/*.txt should contain expected transcripts
-
-(def actual-transcripts-root-path "test/browser/transcripts/actual/")
-(def expected-transcripts-root-path "test/browser/transcripts/expected/")
-
-(def ^:const SECOND 1000)
-(def ^:const MINUTE (* 60 SECOND))
-(def ^:const DEFAULT_TASK_TIMEOUT (* 5 MINUTE))
-(def ^:const DEFAULT_TEST_HTML_LOAD_TIMEOUT (* 1 SECOND))
-(def ^:const SIGNAL_SERVER_CLOSE_WAIT_TIMEOUT (* 1 SECOND))
+; see settings.clj for actual constants
 
 (defonce ^:dynamic *current-transcript-test* nil)
 (defonce ^:dynamic *current-transcript-suite* nil)
@@ -68,7 +65,7 @@
 
 (defn navigate-transcript-runner! []
   (let [test-index-url (make-test-runner-url *current-transcript-suite* *current-transcript-test*)
-        load-timeout DEFAULT_TEST_HTML_LOAD_TIMEOUT]
+        load-timeout (get-default-test-html-load-timeout)]
     (log "navigating to" test-index-url)
     (to test-index-url)
     (try
@@ -84,7 +81,7 @@
 
 (defn wait-for-signal
   ([server]
-   (wait-for-signal server DEFAULT_TASK_TIMEOUT))
+   (wait-for-signal server (get-default-task-timeout)))
   ([server timeout-ms]
    (let [server-url (server/get-url server)
          friendly-timeout (format-friendly-timeout timeout-ms)]
@@ -94,7 +91,7 @@
        (log (str "received 'task finished' signal.")))
      ; this is here to give client some time to disconnet before destroying server
      ; devtools would spit "Close received after close" errors in js console
-     (Thread/sleep SIGNAL_SERVER_CLOSE_WAIT_TIMEOUT)
+     (Thread/sleep (get-signal-server-close-wait-timeout))
      (server/destroy! server))))
 
 ; -- transcript helpers -----------------------------------------------------------------------------------------------------
@@ -103,13 +100,13 @@
   (str suite-name "-" test-name ".txt"))
 
 (defn get-actual-transcript-path [suite-name test-name]
-  (str actual-transcripts-root-path (get-actual-transcript-path-filename suite-name test-name)))
+  (str (get-actual-transcripts-root-path) (get-actual-transcript-path-filename suite-name test-name)))
 
 (defn get-expected-transcript-filename [suite-name test-name]
   (str suite-name "-" test-name ".txt"))
 
 (defn get-expected-transcript-path [suite-name test-name]
-  (str expected-transcripts-root-path (get-expected-transcript-filename suite-name test-name)))
+  (str (get-expected-transcripts-root-path) (get-expected-transcript-filename suite-name test-name)))
 
 (defn canonic-transcript [transcript]
   (-> transcript
@@ -178,7 +175,7 @@
       (navigate-transcript-runner!)
       (launch-transcript-test-after-delay (get-safe-delay-for-script-runner-to-launch-transcript-test))
       (disconnect-browser!)
-      (wait-for-signal signal-server (* 5 MINUTE))
+      (wait-for-signal signal-server)
       (reconnect-browser!)
       (write-transcript-and-compare))))
 
