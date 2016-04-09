@@ -44,14 +44,33 @@
   (automate-dirac-frontend! connection-id {:action :switch-inspector-panel
                                            :panel  panel}))
 
-(defn focus-console-prompt! [connection-id]
-  (automate-dirac-frontend! connection-id {:action :focus-console-prompt}))
-
 (defn switch-to-dirac-prompt! [connection-id]
   (automate-dirac-frontend! connection-id {:action :switch-to-dirac-prompt}))
 
 (defn switch-to-js-prompt! [connection-id]
   (automate-dirac-frontend! connection-id {:action :switch-to-js-prompt}))
+
+(defn focus-console-prompt! [connection-id]
+  (automate-dirac-frontend! connection-id {:action :focus-console-prompt}))
+
+(defn clear-console-prompt! [connection-id]
+  (automate-dirac-frontend! connection-id {:action :clear-console-prompt}))
+
+(defn dispatch-console-prompt-input! [connection-id input]
+  {:pre [(string? input)]}
+  (automate-dirac-frontend! connection-id {:action :dispatch-console-prompt-input
+                                           :input  input}))
+
+(defn dispatch-console-prompt-action! [connection-id action]
+  {:pre [(string? action)]}
+  (automate-dirac-frontend! connection-id {:action :dispatch-console-prompt-action
+                                           :input  action}))
+
+(defn enable-console-feedback! [connection-id]
+  (automate-dirac-frontend! connection-id {:action :enable-console-feedback}))
+
+(defn disable-console-feedback! [connection-id]
+  (automate-dirac-frontend! connection-id {:action :disable-console-feedback}))
 
 ; -- waiting for transcript feedback ----------------------------------------------------------------------------------------
 
@@ -71,6 +90,9 @@
   (wait-for-dirac-frontend-initialization)
   (wait-for-implant-initialization)
   (wait-for-devtools-ready))
+
+(defn wait-for-prompt-edit []
+  (wait-for-transcript-match #".*setDiracPromptMode\('edit'\).*"))
 
 (defn wait-for-console-initialization [& [timeout silent?]]
   (wait-for-transcript-match #".*console initialized.*" timeout silent?))
