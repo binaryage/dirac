@@ -2,6 +2,7 @@
     "dependencies": [
     ],
     "scripts": [
+        "keysim.js",
         "dirac.js",
         "compiled/implant/implant.js",
         "require-implant.js"
