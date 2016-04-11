@@ -123,6 +123,7 @@
                                              "src/fixtures"
                                              "src/runtime"
                                              "src/test"
+                                             "src/shared"
                                              "src/agent"
                                              "src/nrepl"
                                              "test/browser/fixtures/src/tests"]
