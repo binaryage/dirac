@@ -34,9 +34,10 @@
   (wait-for-transcript-match #".*DevTools ready.*"))
 
 (defn wait-for-devtools [connection-id]
-  (wait-for-dirac-frontend-initialization)
-  (wait-for-implant-initialization)
-  (wait-for-devtools-ready))
+  (go
+    (<! (wait-for-dirac-frontend-initialization))
+    (<! (wait-for-implant-initialization))
+    (<! (wait-for-devtools-ready))))
 
 (defn wait-for-prompt-edit []
   (wait-for-transcript-match #".*setDiracPromptMode\('edit'\).*"))
@@ -103,8 +104,9 @@
 
 (defn open-dirac-devtools! []
   (go
-    (let [connection-id (<! (post-open-dirac-devtools-request!))]
-      (<! (wait-for-devtools connection-id))
+    (let [waiting (wait-for-devtools connection-id)
+          connection-id (<! (post-open-dirac-devtools-request!))]
+      (<! waiting)
       connection-id)))
 
 (defn close-dirac-devtools! [connection-id]
