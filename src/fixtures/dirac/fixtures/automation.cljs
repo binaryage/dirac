@@ -19,7 +19,37 @@
   (append-to-transcript! data)
   (messages/fire-chrome-event! data))
 
-; -- automation commands ----------------------------------------------------------------------------------------------------
+; -- waiting for transcript feedback ----------------------------------------------------------------------------------------
+
+(defn wait-for-transcript-match [& args]
+  (apply transcript-host/wait-for-transcript-match args))
+
+(defn wait-for-dirac-frontend-initialization []
+  (wait-for-transcript-match #".*register dirac frontend connection #(.*)"))
+
+(defn wait-for-implant-initialization []
+  (wait-for-transcript-match #".*implant initialized.*"))
+
+(defn wait-for-devtools-ready []
+  (wait-for-transcript-match #".*DevTools ready.*"))
+
+(defn wait-for-devtools [connection-id]
+  (wait-for-dirac-frontend-initialization)
+  (wait-for-implant-initialization)
+  (wait-for-devtools-ready))
+
+(defn wait-for-prompt-edit []
+  (wait-for-transcript-match #".*setDiracPromptMode\('edit'\).*"))
+
+(defn wait-for-console-initialization [& [timeout silent?]]
+  (wait-for-transcript-match #".*console initialized.*" timeout silent?))
+
+(defn wait-switch-to-console [connection-id]
+  (go
+    (switch-inspector-panel! connection-id :console)
+    (<! (wait-for-console-initialization))))
+
+; -- scenarios --------------------------------------------------------------------------------------------------------------
 
 (defn get-base-url []
   (str (oget js/location "protocol") "//" (oget js/location "host")))
@@ -31,11 +61,7 @@
   (append-to-transcript! (str "open-tab-with-scenario! " name))
   (messages/post-message! #js {:type "marion-open-tab-with-scenario" :url (get-scenario-url name)}))
 
-(defn open-dirac-devtools! []
-  (fire-chrome-event! [:chromex.ext.commands/on-command ["open-dirac-devtools" {:reset-settings 1}]]))                        ; we want to always start with clear devtools for reproducibility
-
-(defn close-dirac-devtools! [connection-id]
-  (fire-chrome-event! [:chromex.ext.commands/on-command ["close-dirac-devtools" connection-id]]))
+; -- automation commands ----------------------------------------------------------------------------------------------------
 
 (defn switch-inspector-panel! [connection-id panel]
   (automate-dirac-frontend! connection-id {:action :switch-inspector-panel
@@ -69,32 +95,17 @@
 (defn disable-console-feedback! [connection-id]
   (automate-dirac-frontend! connection-id {:action :disable-console-feedback}))
 
-; -- waiting for transcript feedback ----------------------------------------------------------------------------------------
+; -- devtools ---------------------------------------------------------------------------------------------------------------
 
-(defn wait-for-transcript-match [& args]
-  (apply transcript-host/wait-for-transcript-match args))
+(defn post-open-dirac-devtools-request! []
+  ; :reset-settings is important, becasue we want to always start with clear/deterministic devtools for reproducibility
+  (fire-chrome-event! [:chromex.ext.commands/on-command ["open-dirac-devtools" {:reset-settings 1}]]))
 
-(defn wait-for-dirac-frontend-initialization []
-  (wait-for-transcript-match #".*register dirac frontend connection #(.*)"))
-
-(defn wait-for-implant-initialization []
-  (wait-for-transcript-match #".*implant initialized.*"))
-
-(defn wait-for-devtools-ready []
-  (wait-for-transcript-match #".*DevTools ready.*"))
-
-(defn wait-for-devtools []
-  (wait-for-dirac-frontend-initialization)
-  (wait-for-implant-initialization)
-  (wait-for-devtools-ready))
-
-(defn wait-for-prompt-edit []
-  (wait-for-transcript-match #".*setDiracPromptMode\('edit'\).*"))
-
-(defn wait-for-console-initialization [& [timeout silent?]]
-  (wait-for-transcript-match #".*console initialized.*" timeout silent?))
-
-(defn wait-switch-to-console [connection-id]
+(defn open-dirac-devtools! []
   (go
-    (switch-inspector-panel! connection-id :console)
-    (<! (wait-for-console-initialization))))
+    (let [connection-id (<! (post-open-dirac-devtools-request!))]
+      (<! (wait-for-devtools connection-id))
+      connection-id)))
+
+(defn close-dirac-devtools! [connection-id]
+  (fire-chrome-event! [:chromex.ext.commands/on-command ["close-dirac-devtools" connection-id]]))

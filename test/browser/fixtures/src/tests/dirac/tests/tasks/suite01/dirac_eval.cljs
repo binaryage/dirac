@@ -7,7 +7,6 @@
 (run-task
   (auto/open-tab-with-scenario! "normal")
   (auto/open-dirac-devtools!)
-  (auto/wait-for-devtools)
   ; ---
   (auto/wait-switch-to-console 1)
   (auto/switch-to-dirac-prompt! 1)

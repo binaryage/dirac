@@ -7,5 +7,4 @@
 (run-task
   (auto/open-tab-with-scenario! "normal")
   (auto/open-dirac-devtools!)
-  (auto/wait-for-devtools)
   (auto/close-dirac-devtools! 1))

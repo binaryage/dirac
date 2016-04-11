@@ -7,7 +7,6 @@
 (run-task
   (auto/open-tab-with-scenario! "no-agent")
   (auto/open-dirac-devtools!)
-  (auto/wait-for-devtools)
   (auto/wait-switch-to-console 1)
   (auto/switch-to-dirac-prompt! 1)
   (auto/wait-for-transcript-match #".*will try reconnect in 4 seconds.*" (* 20 SECOND)))
