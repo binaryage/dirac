@@ -55,8 +55,8 @@
   (let [message-type (oget message "type")]
     (log "dispatch dirac extension message" message-type (envelope message))
     (case message-type
-      "feedback-from-dirac-extension" (feedback/broadcast-feedback! message)
-      "feedback-from-dirac-frontend" (feedback/broadcast-feedback! message)
+      "feedback-from-extension" (feedback/broadcast-feedback! message)
+      "feedback-from-devtools" (feedback/broadcast-feedback! message)
       "reply" (feedback/broadcast-feedback! message)
       (warn "received unknown dirac extension message type:" message-type message))))
 

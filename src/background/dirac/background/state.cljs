@@ -1,5 +1,5 @@
 (ns dirac.background.state
-  (:require [chromex.support :refer-macros [oget ocall oapply]]
+  (:require [chromex.support :refer-macros [oget oset ocall oapply]]
             [chromex.logging :refer-macros [log info warn error group group-end]]
             [chromex.protocols :refer [post-message! get-sender get-name]]))
 
@@ -59,10 +59,12 @@
     (post-message! marion-port message)))
 
 (defn post-feedback! [text]
-  (post-to-marion! #js {:type "feedback-from-dirac-extension" :transcript text}))
+  (post-to-marion! #js {:type "feedback-from-extension" :transcript text}))
 
 (defn post-reply!
-  ([message-id]
-   (post-to-marion! #js {:type "reply" :id message-id}))
+  ([message-id] (post-reply! message-id nil))
   ([message-id data]
-   (post-to-marion! #js {:type "reply" :id message-id :data (pr-str data)})))
+   (let [message #js {:type "reply" :id message-id}]
+     (if data
+       (oset message ["data"] (pr-str data)))
+     (post-to-marion! message))))

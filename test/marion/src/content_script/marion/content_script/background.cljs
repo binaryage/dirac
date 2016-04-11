@@ -19,8 +19,8 @@
   (let [type (oget message "type")]
     (log "process background page message" type (envelope message))
     (case type
-      "feedback-from-dirac-extension" (relay-message-to-page! message)
-      "feedback-from-dirac-frontend" (relay-message-to-page! message)
+      "feedback-from-extension" (relay-message-to-page! message)
+      "feedback-from-devtools" (relay-message-to-page! message)
       "reply" (relay-message-to-page! message)
       (warn "got unknown message from background page" type message))))
 

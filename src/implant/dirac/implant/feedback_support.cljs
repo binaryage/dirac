@@ -22,9 +22,9 @@
 
 (defn post! [text]
   (let [message #js {:type     "marion-deliver-feedback"
-                     :envelope #js {:type         "feedback-from-dirac-frontend"
-                                    :devtools (helpers/get-devtools-id)
-                                    :transcript   text}}]
+                     :envelope #js {:type       "feedback-from-devtools"
+                                    :devtools   (helpers/get-devtools-id)
+                                    :transcript text}}]
     (if-let [intercom (get-intercom)]
       (intercom message)
       (do

@@ -42,7 +42,7 @@
          (number? backend-tab-id)]}
   (let [id (state/get-next-devtools-id!)]
     (add! id dirac-tab-id backend-tab-id)
-    (marion/post-feedback-event! (str "register dirac frontend #" id))
+    (marion/post-feedback-event! (str "register devtools #" id))
     (update-action-button! backend-tab-id)
     id))
 
@@ -51,6 +51,6 @@
   (if-let [descriptor (find-devtools-descriptor-for-frontend-tab dirac-tab-id)]
     (let [{:keys [id backend-tab-id]} descriptor]
       (remove! id)
-      (marion/post-feedback-event! (str "unregister dirac frontend #" id))
+      (marion/post-feedback-event! (str "unregister devtools #" id))
       (update-action-button! backend-tab-id))
     (warn "attempt to unregister non-existent devtools with dirac-tab-id:" dirac-tab-id)))

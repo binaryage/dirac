@@ -14,8 +14,8 @@
 (defn process-event! [event]
   (if-let [data (oget event "data")]
     (case (oget data "type")
-      "feedback-from-dirac-frontend" (transcript-append! "frontend" (oget data "transcript") (oget data "devtools"))
-      "feedback-from-dirac-extension" (transcript-append! "extension" (oget data "transcript"))
+      "feedback-from-devtools" (transcript-append! "devtools" (oget data "transcript") (oget data "devtools"))
+      "feedback-from-extension" (transcript-append! "extension" (oget data "transcript"))
       "reply" (messages/process-reply! data)
       nil)))
 

@@ -2,15 +2,56 @@
   (:require-macros [cljs.core.async.macros :refer [go go-loop]])
   (:require [cljs.core.async :refer [put! <! chan timeout alts! close!]]
             [chromex.support :refer-macros [oget oset ocall oapply]]
+            [chromex.logging :refer-macros [log]]
             [dirac.automation.messages :as messages]
             [dirac.automation.task :as task]
-            [dirac.automation.transcript-host :as transcript-host]))
+            [dirac.automation.transcript-host :as transcript]))
 
 (def label "automate")
 
+; -- matchers ---------------------------------------------------------------------------------------------------------------
+
+(defn make-re-matcher [re]
+  (fn [[_label text]]
+    (re-matches re text)))
+
+(defn make-substr-matcher [s]
+  (fn [[_label text]]
+    (not= (.indexOf text s) -1)))
+
+(defn make-devtools-matcher [devtools-id]
+  (fn [[label _text]]
+    (= label (str "devtools #" devtools-id))))
+
+(defn make-and-matcher [& fns]
+  (fn [val]
+    (every? #(% val) fns)))
+
+; -- wait helpers -----------------------------------------------------------------------------------------------------------
+
+(defn wait-for-re-match [re & args]
+  (apply transcript/wait-for-match (make-re-matcher re) (str "regex: " re) args))
+
+(defn wait-for-substr-match [s & args]
+  (apply transcript/wait-for-match (make-substr-matcher s) (str "substr: '" s "'") args))
+
+(defn wait-for-devtools-re-match
+  ([re] (assert false))
+  ([devtools-id re & args]
+   (let [matcher (make-and-matcher (make-devtools-matcher devtools-id) (make-re-matcher re))]
+     (apply transcript/wait-for-match matcher (str "devtools #" devtools-id ", regex: " re) args))))
+
+(defn wait-for-devtools-substr-match
+  ([s] (assert false))
+  ([devtools-id s & args]
+   (let [matcher (make-and-matcher (make-devtools-matcher devtools-id) (make-substr-matcher s))]
+     (apply transcript/wait-for-match matcher (str "devtools #" devtools-id ", substr: " s) args))))
+
+; -- transcript -------------------------------------------------------------------------------------------------------------
+
 (defn append-to-transcript! [message & [devtools-id]]
-  (transcript-host/append-to-transcript! (if devtools-id (str label " #" devtools-id) label)
-                                         (if (string? message) message (pr-str message))))
+  (transcript/append-to-transcript! (if devtools-id (str label " #" devtools-id) label)
+                                    (if (string? message) message (pr-str message))))
 
 (defn automate-dirac-frontend! [devtools-id data]
   (append-to-transcript! (pr-str data) devtools-id)
@@ -20,31 +61,40 @@
   (append-to-transcript! data)
   (messages/fire-chrome-event! data))
 
-(defn wait-for-transcript-match [& args]
-  (apply transcript-host/wait-for-transcript-match args))
+(defn wait-for-devtools-registration []
+  (wait-for-substr-match "register devtools #"))
 
-(defn wait-for-dirac-frontend-initialization []
-  (wait-for-transcript-match #".*register dirac frontend #(.*)"))
+(defn wait-for-devtools-unregistration [devtools-id]
+  (wait-for-substr-match (str "unregister devtools #" devtools-id)))
 
 (defn wait-for-implant-initialization []
-  (wait-for-transcript-match #".*implant initialized.*"))
+  (wait-for-substr-match "implant initialized"))
 
 (defn wait-for-devtools-ready []
-  (wait-for-transcript-match #".*DevTools ready.*"))
+  (wait-for-substr-match "devtools ready"))
 
 (defn wait-for-devtools []
   ; TODO: to be 100% correct we should check for matching devtools id here
   ;       imagine a situation when two or more devtools instances are started at the same time
   (go
-    (<! (wait-for-dirac-frontend-initialization))
+    (<! (wait-for-devtools-registration))
     (<! (wait-for-implant-initialization))
     (<! (wait-for-devtools-ready))))
 
-(defn wait-for-prompt-edit []
-  (wait-for-transcript-match #".*setDiracPromptMode\('edit'\).*"))
+(defn wait-for-devtools-close
+  ([] (assert false))
+  ([devtools-id]
+   (wait-for-devtools-unregistration devtools-id)))
 
-(defn wait-for-console-initialization [& [timeout silent?]]
-  (wait-for-transcript-match #".*console initialized.*" timeout silent?))
+(defn wait-for-prompt-edit
+  ([] (assert false))
+  ([devtools-id]
+   (wait-for-devtools-substr-match devtools-id "setDiracPromptMode('edit')")))
+
+(defn wait-for-console-initialization
+  ([] (assert false))
+  ([devtools-id]
+   (wait-for-devtools-substr-match devtools-id "console initialized")))
 
 ; -- scenarios --------------------------------------------------------------------------------------------------------------
 
@@ -60,42 +110,63 @@
 
 ; -- automation commands ----------------------------------------------------------------------------------------------------
 
-(defn switch-inspector-panel! [devtools-id panel]
-  (automate-dirac-frontend! devtools-id {:action :switch-inspector-panel
-                                         :panel  panel}))
+(defn switch-inspector-panel!
+  ([] (assert false))
+  ([devtools-id panel]
+   (automate-dirac-frontend! devtools-id {:action :switch-inspector-panel
+                                          :panel  panel})))
 
-(defn switch-to-dirac-prompt! [devtools-id]
-  (automate-dirac-frontend! devtools-id {:action :switch-to-dirac-prompt}))
+(defn switch-to-dirac-prompt!
+  ([] (assert false))
+  ([devtools-id]
+   (automate-dirac-frontend! devtools-id {:action :switch-to-dirac-prompt})))
 
-(defn switch-to-js-prompt! [devtools-id]
-  (automate-dirac-frontend! devtools-id {:action :switch-to-js-prompt}))
+(defn switch-to-js-prompt!
+  ([] (assert false))
+  ([devtools-id]
+   (automate-dirac-frontend! devtools-id {:action :switch-to-js-prompt})))
 
-(defn focus-console-prompt! [devtools-id]
-  (automate-dirac-frontend! devtools-id {:action :focus-console-prompt}))
+(defn focus-console-prompt!
+  ([] (assert false))
+  ([devtools-id]
+   (automate-dirac-frontend! devtools-id {:action :focus-console-prompt})))
 
-(defn clear-console-prompt! [devtools-id]
-  (automate-dirac-frontend! devtools-id {:action :clear-console-prompt}))
+(defn clear-console-prompt!
+  ([] (assert false))
+  ([devtools-id]
+   (automate-dirac-frontend! devtools-id {:action :clear-console-prompt})))
 
-(defn dispatch-console-prompt-input! [devtools-id input]
-  {:pre [(string? input)]}
-  (automate-dirac-frontend! devtools-id {:action :dispatch-console-prompt-input
-                                         :input  input}))
+(defn dispatch-console-prompt-input!
+  ([input] (assert false))
+  ([devtools-id input]
+   {:pre [(string? input)]}
+   (automate-dirac-frontend! devtools-id {:action :dispatch-console-prompt-input
+                                          :input  input})))
 
-(defn dispatch-console-prompt-action! [devtools-id action]
-  {:pre [(string? action)]}
-  (automate-dirac-frontend! devtools-id {:action :dispatch-console-prompt-action
-                                         :input  action}))
+(defn dispatch-console-prompt-action!
+  ([action] (assert false))
+  ([devtools-id action]
+   {:pre [(string? action)]}
+   (automate-dirac-frontend! devtools-id {:action :dispatch-console-prompt-action
+                                          :input  action})))
 
-(defn enable-console-feedback! [devtools-id]
-  (automate-dirac-frontend! devtools-id {:action :enable-console-feedback}))
+(defn enable-console-feedback!
+  ([] (assert false))
+  ([devtools-id]
+   (automate-dirac-frontend! devtools-id {:action :enable-console-feedback})))
 
-(defn disable-console-feedback! [devtools-id]
-  (automate-dirac-frontend! devtools-id {:action :disable-console-feedback}))
+(defn disable-console-feedback!
+  ([] (assert false))
+  ([devtools-id]
+   (automate-dirac-frontend! devtools-id {:action :disable-console-feedback})))
 
-(defn wait-switch-to-console [devtools-id]
-  (go
-    (switch-inspector-panel! devtools-id :console)
-    (<! (wait-for-console-initialization))))
+(defn wait-switch-to-console
+  ([] (assert false))
+  ([devtools-id]
+   (go
+     (let [wait (wait-for-console-initialization devtools-id)]
+       (<! (switch-inspector-panel! devtools-id :console))
+       (<! wait)))))
 
 ; -- devtools ---------------------------------------------------------------------------------------------------------------
 
@@ -106,9 +177,11 @@
 (defn open-dirac-devtools! []
   (go
     (let [waiting-for-devtools-to-get-ready (wait-for-devtools)
-          devtools-id (<! (post-open-dirac-devtools-request!))]
+          reply (<! (post-open-dirac-devtools-request!))]
       (<! waiting-for-devtools-to-get-ready)
-      devtools-id)))
+      (int (oget reply "data")))))
 
-(defn close-dirac-devtools! [devtools-id]
-  (fire-chrome-event! [:chromex.ext.commands/on-command ["close-dirac-devtools" devtools-id]]))
+(defn close-dirac-devtools!
+  ([] (assert false))
+  ([devtools-id]
+   (fire-chrome-event! [:chromex.ext.commands/on-command ["close-dirac-devtools" devtools-id]])))
