@@ -39,12 +39,18 @@
   @sniffer-enabled)
 
 (defn disable-sniffer! []
-  {:pre [(sniffer-enabled?)]}
-  (reset! sniffer-enabled false))
+  (if-not (sniffer-enabled?)
+    (do
+      (warn "sniffer is already disabled")
+      (.trace js/console))
+    (reset! sniffer-enabled false)))
 
 (defn enable-sniffer! []
-  {:pre [(not (sniffer-enabled?))]}
-  (reset! sniffer-enabled false))
+  (if (sniffer-enabled?)
+    (do
+      (warn "sniffer is already enabled")
+      (.trace js/console))
+    (reset! sniffer-enabled false)))
 
 (defn call-transcript-sniffer [text]
   (when-let [dirac-frontend-id (second (re-matches #".*register dirac frontend connection #(.*)" text))]
