@@ -9,6 +9,9 @@
 (defonce last-message-id (volatile! 0))
 (defonce reply-subscribers (atom {}))                                                                                         ; message-id -> list of callbacks
 
+(defn ^:dynamic get-reply-timeout-message [reply-timeout js-message]
+  (str "timeout (" reply-timeout " ms) while waiting for reply to " (pr-str js-message)))
+
 (defn get-next-message-id! []
   (vswap! last-message-id inc))
 
@@ -27,31 +30,31 @@
     (swap! reply-subscribers dissoc message-id)))
 
 (defn wait-for-reply!
-  ([message]
-   (wait-for-reply! message (get-marion-message-reply-time)))
-  ([message time]
-   (let [message-id (oget message "id")
-         _ (assert (number? message-id))
-         channel (chan)
+  ([message-id]
+   (wait-for-reply! message-id (get-marion-message-reply-time)))
+  ([message-id reply-timeout]
+   {:pre [(number? message-id)]}
+   (let [channel (chan)
          interceptor (fn [reply]
                        (put! channel reply)
                        (close! channel))]
      (subscribe-to-reply! message-id interceptor)
-     (when time
-       (assert (number? time))
+     (when reply-timeout
+       (assert (number? reply-timeout))
        (go
-         (<! (timeout time))
+         (<! (timeout reply-timeout))
          (when-not (core-async/closed? channel)
-           (throw (ex-info :task-timeout {:transcript (str "timeout while waiting for reply to " (pr-str message))})))))
+           (throw (ex-info :task-timeout {:transcript (get-reply-timeout-message reply-timeout message)})))))
      channel)))
 
 ; for communication between tested page and marionette extension
 ; see https://developer.chrome.com/extensions/content_scripts#host-page-communication
-(defn post-message! [js-message]
+(defn post-message! [js-message & [opts]]
   (let [message-id (get-next-message-id!)]
     (oset js-message ["id"] message-id)
-    (.postMessage js/window js-message "*")
-    js-message))
+    (let [reply-channel (wait-for-reply! message-id (:reply-timeout opts))]
+      (.postMessage js/window js-message "*")
+      reply-channel)))
 
 (defn post-extension-command! [command]
   (post-message! #js {:type "marion-extension-command" :payload (pr-str command)}))

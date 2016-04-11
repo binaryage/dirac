@@ -13,13 +13,11 @@
 
 (defn automate-dirac-frontend! [connection-id data]
   (append-to-transcript! (pr-str data) connection-id)
-  (messages/wait-for-reply!
-    (messages/automate-dirac-frontend! connection-id data)))
+  (messages/automate-dirac-frontend! connection-id data))
 
 (defn fire-chrome-event! [data]
   (append-to-transcript! data)
-  (messages/wait-for-reply!
-    (messages/fire-chrome-event! data)))
+  (messages/fire-chrome-event! data))
 
 ; -- automation commands ----------------------------------------------------------------------------------------------------
 
@@ -31,8 +29,7 @@
 
 (defn open-tab-with-scenario! [name]
   (append-to-transcript! (str "open-tab-with-scenario! " name))
-  (messages/wait-for-reply!
-    (messages/post-message! #js {:type "marion-open-tab-with-scenario" :url (get-scenario-url name)})))
+  (messages/post-message! #js {:type "marion-open-tab-with-scenario" :url (get-scenario-url name)}))
 
 (defn open-dirac-devtools! []
   (fire-chrome-event! [:chromex.ext.commands/on-command ["open-dirac-devtools" {:reset-settings 1}]]))                        ; we want to always start with clear devtools for reproducibility
