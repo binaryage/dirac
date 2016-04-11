@@ -12,6 +12,7 @@
                          (cljs.core.async.macros/go
                            (dirac.automation.task/task-started!)
                            ~@serialized-commands
+                           (cljs.core.async/<! (cljs.core.async/timeout 2000))
                            (dirac.automation.task/task-finished!)
                            (dirac.automation.task/task-teardown!)))]
        (dirac.automation.launcher/register-task! test-thunk#)
