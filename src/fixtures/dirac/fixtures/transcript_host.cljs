@@ -10,7 +10,6 @@
             [dirac.fixtures.helpers :as helpers]))
 
 (defonce current-transcript (atom nil))
-(defonce last-dirac-frontend-id (atom nil))
 (defonce transcript-observers (atom #{}))
 (defonce sniffer-enabled (atom true))
 (defonce ^:dynamic *transcript-enabled* true)
@@ -53,8 +52,6 @@
     (reset! sniffer-enabled false)))
 
 (defn call-transcript-sniffer [text]
-  (when-let [dirac-frontend-id (second (re-matches #".*register dirac frontend connection #(.*)" text))]
-    (reset! last-dirac-frontend-id dirac-frontend-id))
   (doseq [observer @transcript-observers]
     (observer text)))
 
