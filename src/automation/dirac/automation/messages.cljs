@@ -1,7 +1,8 @@
 (ns dirac.automation.messages
   (:require-macros [cljs.core.async.macros :refer [go go-loop]])
-  (:require [cljs.core.async :refer [put! <! chan timeout alts! close!]]
-            [dirac.settings :refer-macros [get-marion-message-reply-time]]
+  (:require [cljs.core.async :refer [put! <! chan timeout close!]]
+            [dirac.settings :refer-macros [get-marion-message-reply-timeout]]
+            [dirac.utils :as utils]
             [chromex.support :refer-macros [oget oset ocall oapply]]
             [chromex.logging :refer-macros [log info warn error]]
             [cljs.core.async.impl.protocols :as core-async]))
@@ -9,8 +10,8 @@
 (defonce last-message-id (volatile! 0))
 (defonce reply-subscribers (atom {}))                                                                                         ; message-id -> list of callbacks
 
-(defn ^:dynamic get-reply-timeout-message [reply-timeout info]
-  (str "timeout (" reply-timeout " ms) while waiting for reply. " (pr-str info)))
+(defn ^:dynamic get-reply-timeout-message [timeout info]
+  (str "timeout (" timeout "ms) while waiting for reply. " (pr-str info)))
 
 (defn get-next-message-id! []
   (vswap! last-message-id inc))
@@ -33,8 +34,8 @@
   {:pre [(number? message-id)
          (or (nil? reply-timeout) (number? reply-timeout))]}
   (let [reply-channel (chan)
-        effective-timeout (or reply-timeout (get-marion-message-reply-time))
-        timeout-channel (timeout effective-timeout)
+        effective-timeout (or reply-timeout (get-marion-message-reply-timeout))
+        timeout-channel (utils/timeout effective-timeout)
         observer (fn [reply-message]
                    (put! reply-channel reply-message)
                    (close! reply-channel)
@@ -71,9 +72,9 @@
                             :value   value}))
 
 (defn automate-dirac-frontend! [devtools-id action]
-  (post-extension-command! {:command       :automate-dirac-frontend
+  (post-extension-command! {:command     :automate-dirac-frontend
                             :devtools-id devtools-id
-                            :action        action}))
+                            :action      action}))
 
 (defn switch-to-task-runner-tab! []
   (post-message! #js {:type "marion-switch-to-task-runner-tab"}))

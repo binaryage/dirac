@@ -14,7 +14,7 @@
 
 (def ^:const MARION_INITIAL_WAIT_TIME (* 1 SECOND))
 (def ^:const MARION_RECONNECTION_ATTEMPT_DELAY (* 2 SECOND))
-(def ^:const MARION_MESSAGE_REPLY_TIME (* 2 SECOND))
+(def ^:const MARION_MESSAGE_REPLY_TIMEOUT (* 5 SECOND))
 
 (def ^:const DEFAULT_TASK_TIMEOUT (* 5 MINUTE))
 (def ^:const DEFAULT_TEST_HTML_LOAD_TIMEOUT (* 1 SECOND))
@@ -49,8 +49,8 @@
 (defmacro get-marion-reconnection-attempt-delay []
   MARION_RECONNECTION_ATTEMPT_DELAY)
 
-(defmacro get-marion-message-reply-time []
-  MARION_MESSAGE_REPLY_TIME)
+(defmacro get-marion-message-reply-timeout []
+  MARION_MESSAGE_REPLY_TIMEOUT)
 
 (defmacro get-default-task-timeout []
   DEFAULT_TASK_TIMEOUT)

@@ -3,7 +3,7 @@
                    [marion.background.logging :refer [log info warn error]])
   (:require [cljs.core.async :refer [<! chan timeout]]
             [devtools.toolbox :refer [envelope]]
-            [chromex.support :refer-macros [oget ocall oapply]]
+            [chromex.support :refer-macros [oget oset ocall oapply]]
             [chromex.protocols :refer [post-message! get-sender]]
             [marion.background.helpers :as helpers]
             [marion.background.feedback :as feedback]
@@ -11,13 +11,15 @@
             [marion.background.clients :as clients]))
 
 (defn post-reply!
-  ([message-id]
-   (feedback/broadcast-feedback! #js {:type "reply" :id message-id}))
+  ([message-id] (post-reply! message-id nil))
   ([message-id data]
-   (feedback/broadcast-feedback! #js {:type "reply" :id message-id :data (pr-str data)})))
+   (let [message #js {:type "reply" :id message-id}]
+     (if data
+       (oset message ["data"] (pr-str data)))
+     (feedback/broadcast-feedback! message))))
 
-(defn reply-to-message! [message]
-  (post-reply! (oget message "id")))
+(defn reply-to-message! [message & [data]]
+  (post-reply! (oget message "id") data))
 
 ; -- message handlers -------------------------------------------------------------------------------------------------------
 

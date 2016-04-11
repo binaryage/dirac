@@ -7,12 +7,16 @@
             [chromex.support :refer-macros [oget oset ocall oapply]]
             [chromex.logging :refer-macros [log warn error info]]
             [cuerdas.core :as cuerdas]
-            [dirac.automation.helpers :as helpers]))
+            [dirac.automation.helpers :as helpers]
+            [dirac.utils :as utils]))
 
 (defonce current-transcript (atom nil))
 (defonce transcript-observers (atom #{}))
 (defonce sniffer-enabled (atom true))
 (defonce ^:dynamic *transcript-enabled* true)
+
+(defn ^:dynamic get-timeout-transcript [max-waiting-time re]
+  (str "while waiting (" max-waiting-time "ms) for transcript match: " re))
 
 (defn add-transcript-observer! [observer]
   {:pre [(not (contains? @transcript-observers observer))]}
@@ -88,7 +92,7 @@
   ([re time-limit silent?]
    (let [result-channel (chan)
          max-waiting-time (or time-limit (get-transcript-match-timeout))
-         timeout-channel (timeout max-waiting-time)
+         timeout-channel (utils/timeout max-waiting-time)
          observer (fn [self text]
                     (when-let [match (re-matches re text)]
                       (remove-transcript-observer! self)
@@ -105,5 +109,5 @@
              (close! result-channel))
            (do
              (disable-sniffer!)
-             (throw (ex-info :task-timeout {:transcript (str "while waiting for transcript match: " re)}))))))
+             (throw (ex-info :task-timeout {:transcript (get-timeout-transcript max-waiting-time re)}))))))
      result-channel)))

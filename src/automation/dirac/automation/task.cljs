@@ -70,7 +70,7 @@
 
 (defn task-timeouted! [data]
   (if-let [transcript (:transcript data)]
-    (transcript-host/append-to-transcript! "timeout" transcript))
+    (transcript-host/append-to-transcript! "timeout" transcript true))
   (status-host/set-status! (or (:status data) "task timeouted!"))
   (transcript-host/set-style! (or (:style data) "timeout")))
 
