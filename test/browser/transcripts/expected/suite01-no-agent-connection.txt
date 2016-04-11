@@ -1,7 +1,7 @@
 automate         open-tab-with-scenario! no-agent
 automate         [:chromex.ext.commands/on-command ["open-dirac-devtools" {:reset-settings 1}]]
 extension        handling command: open-dirac-devtools
-extension        register dirac frontend connection #1
+extension        register dirac frontend #1
 frontend #1      implant initialized
 frontend #1      DevTools ready
 automate #1      {:action :switch-inspector-panel, :panel :console}
