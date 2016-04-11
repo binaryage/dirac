@@ -9,7 +9,7 @@
             [dirac.i18n :as i18n]
             [dirac.sugar :as sugar]
             [dirac.background.helpers :as helpers :refer [report-error-in-tab report-warning-in-tab]]
-            [dirac.background.connections :as connections]
+            [dirac.background.devtools :as devtools]
             [dirac.options.model :as options]
             [dirac.background.state :as state]))
 
@@ -44,12 +44,12 @@
     "marion-deliver-feedback" (state/post-to-marion! (oget message "envelope"))))
 
 (defn connect-and-navigate-dirac-frontend! [dirac-tab-id backend-tab-id options]
-  (let [connection-id (connections/register-connection! dirac-tab-id backend-tab-id)
-        dirac-frontend-url (helpers/make-dirac-frontend-url connection-id options)]
+  (let [devtools-id (devtools/register! dirac-tab-id backend-tab-id)
+        dirac-frontend-url (helpers/make-dirac-frontend-url devtools-id options)]
     (go
       (<! (tabs/update dirac-tab-id #js {:url dirac-frontend-url}))
       (<! (timeout 500))                                                                                                      ; give the page some time load the document
-      (helpers/install-intercom! connection-id intercom-handler))))
+      (helpers/install-intercom! devtools-id intercom-handler))))
 
 (defn create-dirac! [backend-tab-id options]
   (go
@@ -75,7 +75,7 @@
 
 (defn activate-dirac! [tab-id]
   (go
-    (let [{:keys [dirac-tab-id]} (connections/find-backend-connection tab-id)
+    (let [{:keys [dirac-tab-id]} (devtools/find-devtools-descriptor-for-backend-tab tab-id)
           _ (assert dirac-tab-id)
           dirac-window-id (<! (sugar/fetch-tab-window-id dirac-tab-id))]
       (if dirac-window-id
@@ -96,7 +96,7 @@
 
 (defn activate-or-open-dirac! [tab & [options-overrides]]
   (let [tab-id (oget tab "id")]
-    (if (connections/backend-connected? tab-id)
+    (if (devtools/backend-connected? tab-id)
       (activate-dirac! tab-id)
       (let [options {:open-as (get-dirac-open-as-setting)
                      :flags   (get-dirac-flags)}]
@@ -114,7 +114,7 @@
   (let [ids (if (coll? tab-id-or-ids) (into-array tab-id-or-ids) (int tab-id-or-ids))]
     (tabs/remove ids)))
 
-(defn close-dirac-connection! [connection-id]
-  (if-let [connection (state/get-connection connection-id)]
-    (close-tab-with-id! (:dirac-tab-id connection))
-    (warn "requested closing unknown dirac connection" connection-id)))
+(defn close-devtools! [devtools-id]
+  (if-let [descriptor (state/get-devtools-descriptor devtools-id)]
+    (close-tab-with-id! (:dirac-tab-id descriptor))
+    (warn "requested closing unknown devtools" devtools-id)))

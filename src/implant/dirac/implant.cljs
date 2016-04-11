@@ -57,7 +57,7 @@
     (automate command)))
 
 (defn install-automation-support! []
-  (oset js/window ["automateDirac"] automation-handler))
+  (oset js/window ["automateDiracDevTools"] automation-handler))
 
 ; -- init code --------------------------------------------------------------------------------------------------------------
 

@@ -92,4 +92,4 @@
   (register-global-exception-handler! task-exception-handler)
   (status-host/set-status! "task running...")
   (transcript-host/set-style! "running")
-  (messages/reset-connection-id-counter!))
+  (messages/reset-devtools-id-counter!))

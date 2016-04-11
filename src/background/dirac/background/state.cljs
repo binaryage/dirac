@@ -4,8 +4,8 @@
             [chromex.protocols :refer [post-message! get-sender get-name]]))
 
 (defonce initial-state
-  {:last-connection-id   0
-   :connections          {}                                                                                                   ; pairings between dirac instances and connected backend tabs
+  {:last-devtools-id     0
+   :devtools-descriptors {}                                                                                                   ; pairings between dirac instances and connected backend tabs
    :chrome-event-channel nil
    :marion-port          nil})
 
@@ -23,30 +23,34 @@
 (defn get-marion-port []
   (:marion-port @state))
 
-(defn get-next-connection-id! []
-  (:last-connection-id (swap! state update :last-connection-id inc)))
+; -- devtools descriptors ---------------------------------------------------------------------------------------------------
 
-(defn get-last-connection-id []
-  (:last-connection-id @state))
+(defn get-devtools-descriptors []
+  (:devtools-descriptors @state))
 
-(defn get-connections []
-  (:connections @state))
-
-(defn add-connection! [id connection]
+(defn add-devtools-descriptor! [id descriptor]
   {:pre [(integer? id)]}
-  (swap! state update :connections assoc id connection))
+  (swap! state update :devtools-descriptors assoc id descriptor))
 
-(defn remove-connection! [id]
-  (swap! state update :connections dissoc id))
+(defn remove-devtools-descriptor! [id]
+  (swap! state update :devtools-descriptors dissoc id))
 
-(defn get-connection [id]
-  (let [connections (get-connections)]
-    (get connections (int id))))
+(defn get-devtools-descriptor [id]
+  (let [descriptors (get-devtools-descriptors)]
+    (get descriptors (int id))))
 
-(defn reset-connection-id-counter! []
-  (if-not (zero? (count (get-connections)))
-    (warn "request to reset connection id counter while having connections present" (get-connections)))
-  (swap! state assoc :last-connection-id 0))
+; -- devtools ids -----------------------------------------------------------------------------------------------------------
+
+(defn get-next-devtools-id! []
+  (:last-devtools-id (swap! state update :last-devtools-id inc)))
+
+(defn get-last-devtools-id []
+  (:last-devtools-id @state))
+
+(defn reset-devtools-id-counter! []
+  (if-not (zero? (count (get-devtools-descriptors)))
+    (warn "request to reset devtools descriptor id counter while having connections present" (get-devtools-descriptors)))
+  (swap! state assoc :last-devtools-id 0))
 
 ; -- marion feedback --------------------------------------------------------------------------------------------------------
 

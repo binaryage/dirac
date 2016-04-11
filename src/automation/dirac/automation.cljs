@@ -3,17 +3,18 @@
   (:require [cljs.core.async :refer [put! <! chan timeout alts! close!]]
             [chromex.support :refer-macros [oget oset ocall oapply]]
             [dirac.automation.messages :as messages]
+            [dirac.automation.task :as task]
             [dirac.automation.transcript-host :as transcript-host]))
 
 (def label "automate")
 
-(defn append-to-transcript! [message & [connection-id]]
-  (transcript-host/append-to-transcript! (if connection-id (str label " #" connection-id) label)
+(defn append-to-transcript! [message & [devtools-id]]
+  (transcript-host/append-to-transcript! (if devtools-id (str label " #" devtools-id) label)
                                          (if (string? message) message (pr-str message))))
 
-(defn automate-dirac-frontend! [connection-id data]
-  (append-to-transcript! (pr-str data) connection-id)
-  (messages/automate-dirac-frontend! connection-id data))
+(defn automate-dirac-frontend! [devtools-id data]
+  (append-to-transcript! (pr-str data) devtools-id)
+  (messages/automate-dirac-frontend! devtools-id data))
 
 (defn fire-chrome-event! [data]
   (append-to-transcript! data)
@@ -23,7 +24,7 @@
   (apply transcript-host/wait-for-transcript-match args))
 
 (defn wait-for-dirac-frontend-initialization []
-  (wait-for-transcript-match #".*register dirac frontend connection #(.*)"))
+  (wait-for-transcript-match #".*register dirac frontend #(.*)"))
 
 (defn wait-for-implant-initialization []
   (wait-for-transcript-match #".*implant initialized.*"))
@@ -59,41 +60,41 @@
 
 ; -- automation commands ----------------------------------------------------------------------------------------------------
 
-(defn switch-inspector-panel! [connection-id panel]
-  (automate-dirac-frontend! connection-id {:action :switch-inspector-panel
-                                           :panel  panel}))
+(defn switch-inspector-panel! [devtools-id panel]
+  (automate-dirac-frontend! devtools-id {:action :switch-inspector-panel
+                                         :panel  panel}))
 
-(defn switch-to-dirac-prompt! [connection-id]
-  (automate-dirac-frontend! connection-id {:action :switch-to-dirac-prompt}))
+(defn switch-to-dirac-prompt! [devtools-id]
+  (automate-dirac-frontend! devtools-id {:action :switch-to-dirac-prompt}))
 
-(defn switch-to-js-prompt! [connection-id]
-  (automate-dirac-frontend! connection-id {:action :switch-to-js-prompt}))
+(defn switch-to-js-prompt! [devtools-id]
+  (automate-dirac-frontend! devtools-id {:action :switch-to-js-prompt}))
 
-(defn focus-console-prompt! [connection-id]
-  (automate-dirac-frontend! connection-id {:action :focus-console-prompt}))
+(defn focus-console-prompt! [devtools-id]
+  (automate-dirac-frontend! devtools-id {:action :focus-console-prompt}))
 
-(defn clear-console-prompt! [connection-id]
-  (automate-dirac-frontend! connection-id {:action :clear-console-prompt}))
+(defn clear-console-prompt! [devtools-id]
+  (automate-dirac-frontend! devtools-id {:action :clear-console-prompt}))
 
-(defn dispatch-console-prompt-input! [connection-id input]
+(defn dispatch-console-prompt-input! [devtools-id input]
   {:pre [(string? input)]}
-  (automate-dirac-frontend! connection-id {:action :dispatch-console-prompt-input
-                                           :input  input}))
+  (automate-dirac-frontend! devtools-id {:action :dispatch-console-prompt-input
+                                         :input  input}))
 
-(defn dispatch-console-prompt-action! [connection-id action]
+(defn dispatch-console-prompt-action! [devtools-id action]
   {:pre [(string? action)]}
-  (automate-dirac-frontend! connection-id {:action :dispatch-console-prompt-action
-                                           :input  action}))
+  (automate-dirac-frontend! devtools-id {:action :dispatch-console-prompt-action
+                                         :input  action}))
 
-(defn enable-console-feedback! [connection-id]
-  (automate-dirac-frontend! connection-id {:action :enable-console-feedback}))
+(defn enable-console-feedback! [devtools-id]
+  (automate-dirac-frontend! devtools-id {:action :enable-console-feedback}))
 
-(defn disable-console-feedback! [connection-id]
-  (automate-dirac-frontend! connection-id {:action :disable-console-feedback}))
+(defn disable-console-feedback! [devtools-id]
+  (automate-dirac-frontend! devtools-id {:action :disable-console-feedback}))
 
-(defn wait-switch-to-console [connection-id]
+(defn wait-switch-to-console [devtools-id]
   (go
-    (switch-inspector-panel! connection-id :console)
+    (switch-inspector-panel! devtools-id :console)
     (<! (wait-for-console-initialization))))
 
 ; -- devtools ---------------------------------------------------------------------------------------------------------------
@@ -105,9 +106,9 @@
 (defn open-dirac-devtools! []
   (go
     (let [waiting-for-devtools-to-get-ready (wait-for-devtools)
-          connection-id (<! (post-open-dirac-devtools-request!))]
+          devtools-id (<! (post-open-dirac-devtools-request!))]
       (<! waiting-for-devtools-to-get-ready)
-      connection-id)))
+      devtools-id)))
 
-(defn close-dirac-devtools! [connection-id]
-  (fire-chrome-event! [:chromex.ext.commands/on-command ["close-dirac-devtools" connection-id]]))
+(defn close-dirac-devtools! [devtools-id]
+  (fire-chrome-event! [:chromex.ext.commands/on-command ["close-dirac-devtools" devtools-id]]))

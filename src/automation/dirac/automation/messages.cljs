@@ -62,17 +62,17 @@
   (post-extension-command! {:command      :fire-synthetic-chrome-event
                             :chrome-event event}))
 
-(defn reset-connection-id-counter! []
-  (post-extension-command! {:command :reset-connection-id-counter}))
+(defn reset-devtools-id-counter! []
+  (post-extension-command! {:command :reset-devtools-id-counter}))
 
 (defn set-option! [key value]
   (post-extension-command! {:command :set-option
                             :key     key
                             :value   value}))
 
-(defn automate-dirac-frontend! [connection-id action]
+(defn automate-dirac-frontend! [devtools-id action]
   (post-extension-command! {:command       :automate-dirac-frontend
-                            :connection-id connection-id
+                            :devtools-id devtools-id
                             :action        action}))
 
 (defn switch-to-task-runner-tab! []

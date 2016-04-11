@@ -7,4 +7,4 @@
   (auto/open-dirac-devtools!)
   (auto/wait-switch-to-console 1)
   (auto/switch-to-dirac-prompt! 1)
-  (auto/wait-for-transcript-match #".*will try reconnect in 4 seconds.*" (* 20 SECOND)))
+  (auto/wait-for-transcript-match #".*will try reconnect in 4 seconds.*" 20000))

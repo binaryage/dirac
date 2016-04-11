@@ -11,7 +11,7 @@
             [chromex.ext.commands :as commands]
             [dirac.target.core :refer [resolve-backend-url]]
             [dirac.background.state :as state]
-            [dirac.background.connections :as connections]
+            [dirac.background.devtools :as devtools]
             [dirac.background.tools :as tools]
             [dirac.background.marion :as marion]))
 
@@ -25,17 +25,17 @@
   (go
     (case command
       "open-dirac-devtools" (<! (apply tools/open-dirac-in-active-tab! args))
-      "close-dirac-devtools" (<! (apply tools/close-dirac-connection! args))
+      "close-dirac-devtools" (<! (apply tools/close-devtools! args))
       (warn "received unrecognized command:" command))))
 
 (defn on-tab-removed! [tab-id _remove-info]
   (go
-    (if (connections/dirac-connected? tab-id)
-      (connections/unregister-connection! tab-id))))
+    (if (devtools/frontend-connected? tab-id)
+      (devtools/unregister! tab-id))))
 
 (defn on-tab-updated! [tab-id _change-info _tab]
   (go
-    (connections/update-action-button-according-to-connection-state! tab-id)))
+    (devtools/update-action-button! tab-id)))
 
 (defn handle-external-client-connection! [client-port]
   (go

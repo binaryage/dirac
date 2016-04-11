@@ -35,20 +35,20 @@
   (runtime/get-url "blank.html"))
 
 ; example result:
-; chrome-extension://mjdnckdilfjoenmikegbbenflgjcmbid/devtools/front_end/inspector.html?connection_id=1&dirac_flags=11111&ws=localhost:9222/devtools/page/76BE0A6D-412C-4592-BC3C-ED3ECB5DFF8C
-(defn make-dirac-frontend-url [connection-id options]
-  {:pre [connection-id]}
+; chrome-extension://mjdnckdilfjoenmikegbbenflgjcmbid/devtools/front_end/inspector.html?devtools_id=1&dirac_flags=11111&ws=localhost:9222/devtools/page/76BE0A6D-412C-4592-BC3C-ED3ECB5DFF8C
+(defn make-dirac-frontend-url [devtools-id options]
+  {:pre [devtools-id]}
   (let [{:keys [backend-url flags reset-settings]} options
         html-file-path (get-dirac-main-html-file-path)]
     (assert backend-url)
     (assert flags)
-    (runtime/get-url (make-relative-url html-file-path {"connection_id"  connection-id
+    (runtime/get-url (make-relative-url html-file-path {"devtools_id"    devtools-id
                                                         "dirac_flags"    flags
                                                         "reset_settings" reset-settings
                                                         "ws"             backend-url}))))
 
-(defn extract-connection-id-from-url [url]
-  (int (get-query-param (str url) "connection_id")))
+(defn extract-devtools-id-from-url [url]
+  (int (get-query-param (str url) "devtools_id")))
 
 ; -- logging helpers --------------------------------------------------------------------------------------------------------
 
@@ -73,18 +73,18 @@
 
 ; -- automation support -----------------------------------------------------------------------------------------------------
 
-(defn view-matches-connection? [connection-id view]
+(defn is-devtools-view? [devtools-id view]
   (let [url (oget view "location")
-        id (extract-connection-id-from-url url)]
-    (= id connection-id)))
+        id (extract-devtools-id-from-url url)]
+    (= id devtools-id)))
 
-(defn get-views-matching-connection [connection-id]
-  (filter (partial view-matches-connection? connection-id) (extension/get-views)))
+(defn get-devtools-views [devtools-id]
+  (filter (partial is-devtools-view? devtools-id) (extension/get-views)))
 
-(defn automate-dirac-connection! [connection-id action]
-  (let [matching-views (get-views-matching-connection connection-id)]
+(defn automate-devtools! [devtools-id action]
+  (let [matching-views (get-devtools-views devtools-id)]
     (doseq [view matching-views]
-      (when-let [automate-fn (oget view "automateDirac")]
+      (when-let [automate-fn (oget view "automateDiracDevTools")]
         (automate-fn (pr-str action))))))
 
 (defn close-all-extension-tabs! []
@@ -92,11 +92,11 @@
     (doseq [view views]
       (.close view))))
 
-(defn install-intercom! [connection-id handler]
-  (let [matching-views (get-views-matching-connection connection-id)]
+(defn install-intercom! [devtools-id handler]
+  (let [matching-views (get-devtools-views devtools-id)]
     (if (= (count matching-views) 1)
       (let [view (first matching-views)]
         (oset view ["diracExtensionIntercom"] handler)
         (when-let [flush-fn (oget view "diracFlushPendingFeedbackMessages")]
           (flush-fn)))
-      (error "unable to install intercom from dirac extension to dirac frontend" connection-id))))
+      (error "unable to install intercom from dirac extension to dirac frontend" devtools-id))))

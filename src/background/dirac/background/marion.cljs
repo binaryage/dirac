@@ -16,33 +16,33 @@
   (options/set-option! (:key message) (:value message))
   (state/post-reply! message-id))
 
-(defn reset-connection-id-counter! [message-id _message]
-  (state/reset-connection-id-counter!)
+(defn reset-devtools-id-counter! [message-id _message]
+  (state/reset-devtools-id-counter!)
   (state/post-reply! message-id))
 
 (defn fire-synthetic-chrome-event! [context message-id message]
   (assert (fn? (:process-chrome-event context)))
   (go
     (let [chrome-event (:chrome-event message)
-          old-connection-id (state/get-last-connection-id)]
+          old-devtools-id (state/get-last-devtools-id)]
       (<! ((:process-chrome-event context) chrome-event))
       (cond
-        ; this is a special case for "open-dirac-devtools" request, when we want to get back new connection id
+        ; this is a special case for "open-dirac-devtools" request, when we want to get back new devtools id
         (and (= (first chrome-event) :chromex.ext.commands/on-command)
              (= (first (second chrome-event)) "open-dirac-devtools"))
-        (let [new-connection-id (state/get-last-connection-id)]
-          (assert (not= old-connection-id new-connection-id))
-          (state/post-reply! message-id new-connection-id))
+        (let [new-devtools-id (state/get-last-devtools-id)]
+          (assert (not= old-devtools-id new-devtools-id))
+          (state/post-reply! message-id new-devtools-id))
         :else (state/post-reply! message-id)))))
 
 (defn automate-dirac-frontend! [message-id message]
   (let [{:keys [action]} message
-        connection-id (int (:connection-id message))]
+        devtools-id (int (:devtools-id message))]
     (log "automate-dirac-frontend!" action (envelope message))
-    (if (state/get-connection connection-id)
-      (helpers/automate-dirac-connection! connection-id action)
-      (warn "dirac automation request for missing connection:" connection-id message
-            "existing connections:" (state/get-connections)))
+    (if (state/get-devtools-descriptor devtools-id)
+      (helpers/automate-devtools! devtools-id action)
+      (warn "dirac automation request for missing connection:" devtools-id message
+            "existing connections:" (state/get-devtools-descriptors)))
     (state/post-reply! message-id)))
 
 (defn tear-down! [message-id _message]
@@ -75,7 +75,7 @@
     (log "process-marion-message" command (envelope message))
     (case command
       :set-option (set-option! message-id message)
-      :reset-connection-id-counter (reset-connection-id-counter! message-id message)
+      :reset-devtools-id-counter (reset-devtools-id-counter! message-id message)
       :fire-synthetic-chrome-event (fire-synthetic-chrome-event! context message-id message)
       :automate-dirac-frontend (automate-dirac-frontend! message-id message)
       :tear-down (tear-down! message-id message))))
