@@ -23,8 +23,17 @@
 (defn fire-synthetic-chrome-event! [context message-id message]
   (assert (fn? (:process-chrome-event context)))
   (go
-    (<! ((:process-chrome-event context) (:chrome-event message)))
-    (state/post-reply! message-id)))
+    (let [chrome-event (:chrome-event message)
+          old-connection-id (state/get-last-connection-id)]
+      (<! ((:process-chrome-event context) chrome-event))
+      (cond
+        ; this is a special case for "open-dirac-devtools" request, when we want to get back new connection id
+        (and (= (first chrome-event) :chromex.ext.commands/on-command)
+             (= (first (second chrome-event)) "open-dirac-devtools"))
+        (let [new-connection-id (state/get-last-connection-id)]
+          (assert (not= old-connection-id new-connection-id))
+          (state/post-reply! message-id new-connection-id))
+        :else (state/post-reply! message-id)))))
 
 (defn automate-dirac-frontend! [message-id message]
   (let [{:keys [action]} message

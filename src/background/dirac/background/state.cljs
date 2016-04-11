@@ -26,6 +26,9 @@
 (defn get-next-connection-id! []
   (:last-connection-id (swap! state update :last-connection-id inc)))
 
+(defn get-last-connection-id []
+  (:last-connection-id @state))
+
 (defn get-connections []
   (:connections @state))
 
