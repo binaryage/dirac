@@ -8,8 +8,8 @@
             [dirac.implant.version :as implant-version]
             [dirac.implant.console :as console]))
 
-(defonce current-client (atom nil))                                                                                               ; only one client can be connected as a time
-(defonce pending-messages (atom {}))                                                                                              ; a map of 'msg-id -> handler' for messages in flight where we wait for status responses, see ***
+(defonce current-client (atom nil))                                                                                           ; only one client can be connected as a time
+(defonce pending-messages (atom {}))                                                                                          ; a map of 'msg-id -> handler' for messages in flight where we wait for status responses, see ***
 
 (defn connected? []
   (not (nil? @current-client)))
@@ -34,9 +34,8 @@
 
 (defn deliver-response [message]
   (let [id (:id message)]
-    (when-let [handler (lookup-pending-message-handler id)]
-      (handler message)
-      (remove-pending-message-handler! id))))
+    (if-let [handler (lookup-pending-message-handler id)]
+      (handler message))))
 
 ; -- message sending --------------------------------------------------------------------------------------------------------
 
@@ -55,18 +54,18 @@
 (defn tunnel-message-with-response! [msg]
   (let [id (uuid/uuid-string (uuid/make-random-uuid))
         msg-with-id (assoc msg :id id)
-        response (chan)
-        timeout (timeout (:response-timeout (get-current-options)))
+        response-channel (chan)
+        timeout-channel (timeout (:response-timeout (get-current-options)))
         handler (fn [response-message]
-                  (put! response response-message)
-                  (close! timeout))]
+                  (remove-pending-message-handler! id)
+                  (put! response-channel response-message))]
     (register-pending-message-handler! id handler)
-    (go
-      (<! timeout)
-      (deliver-response {:status ["timeout"]
-                         :id     id}))
     (tunnel-message! msg-with-id)
-    response))
+    (go
+      (let [[result] (alts! [response-channel timeout-channel])]
+        (or result
+            (deliver-response {:status ["timeout"]
+                               :id     id}))))))
 
 ; -- message processing -----------------------------------------------------------------------------------------------------
 
