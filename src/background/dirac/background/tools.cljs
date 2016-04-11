@@ -54,23 +54,24 @@
 (defn create-dirac! [backend-tab-id options]
   (go
     (if-let [dirac-tab-id (<! (open-dirac-frontend! (:open-as options)))]
-      (connect-and-navigate-dirac-frontend! dirac-tab-id backend-tab-id options)
+      (<! (connect-and-navigate-dirac-frontend! dirac-tab-id backend-tab-id options))
       (report-error-in-tab backend-tab-id (i18n/unable-to-create-dirac-tab)))))
 
 (defn open-dirac! [tab options]
-  (let [backend-tab-id (sugar/get-tab-id tab)
-        tab-url (oget tab "url")
-        target-url (options/get-option :target-url)]
-    (assert backend-tab-id)
-    (cond
-      (not tab-url) (report-error-in-tab backend-tab-id (i18n/tab-cannot-be-debugged tab))
-      (not target-url) (report-error-in-tab backend-tab-id (i18n/target-url-not-specified))
-      :else (go
-              (if-let [backend-url (<! (resolve-backend-url target-url tab-url))]
-                (if (keyword-identical? backend-url :not-attachable)
-                  (report-warning-in-tab backend-tab-id (i18n/cannot-attach-dirac target-url tab-url))
-                  (create-dirac! backend-tab-id (assoc options :backend-url backend-url)))
-                (report-error-in-tab backend-tab-id (i18n/unable-to-resolve-backend-url target-url tab-url)))))))
+  (go
+    (let [backend-tab-id (sugar/get-tab-id tab)
+          tab-url (oget tab "url")
+          target-url (options/get-option :target-url)]
+      (assert backend-tab-id)
+      (cond
+        (not tab-url) (report-error-in-tab backend-tab-id (i18n/tab-cannot-be-debugged tab))
+        (not target-url) (report-error-in-tab backend-tab-id (i18n/target-url-not-specified))
+        :else
+        (if-let [backend-url (<! (resolve-backend-url target-url tab-url))]
+          (if (keyword-identical? backend-url :not-attachable)
+            (report-warning-in-tab backend-tab-id (i18n/cannot-attach-dirac target-url tab-url))
+            (<! (create-dirac! backend-tab-id (assoc options :backend-url backend-url))))
+          (report-error-in-tab backend-tab-id (i18n/unable-to-resolve-backend-url target-url tab-url)))))))
 
 (defn activate-dirac! [tab-id]
   (go
@@ -106,7 +107,7 @@
     (let [[tabs] (<! (tabs/query #js {"lastFocusedWindow" true
                                       "active"            true}))]
       (if-let [tab (first tabs)]
-        (activate-or-open-dirac! tab options-overrides)
+        (<! (activate-or-open-dirac! tab options-overrides))
         (warn "no active tab?")))))
 
 (defn close-tab-with-id! [tab-id-or-ids]
