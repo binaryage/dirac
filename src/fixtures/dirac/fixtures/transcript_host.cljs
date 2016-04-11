@@ -85,14 +85,17 @@
    (wait-for-transcript-match re time-limit false))
   ([re time-limit silent?]
    (let [channel (chan)
+         max-waiting-time (or time-limit (get-transcript-match-timeout))
+         timeout-channel (timeout max-waiting-time)
          observer (fn [self text]
                     (when-let [match (re-matches re text)]
                       (remove-transcript-observer! self)
                       (put! channel match)
-                      (close! channel)))]
+                      (close! channel)
+                      (close! timeout-channel)))]
      (add-transcript-observer! (partial observer observer))
      (go
-       (<! (timeout (or time-limit (get-transcript-match-timeout))))
+       (<! timeout-channel)
        (when-not (core-async/closed? channel)
          (if silent?
            (do
