@@ -103,5 +103,5 @@
              (close! channel))
            (do
              (disable-sniffer!)
-             (ex-info :task-timeout {:transcript (str "while waiting for transcript match: " re)})))))
+             (throw (ex-info :task-timeout {:transcript (str "while waiting for transcript match: " re)}))))))
      channel)))
