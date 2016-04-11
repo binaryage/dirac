@@ -15,9 +15,11 @@
 (defonce ^:dynamic *transcript-enabled* true)
 
 (defn add-transcript-observer! [observer]
+  {:pre [(not (contains? @transcript-observers observer))]}
   (swap! transcript-observers conj observer))
 
 (defn remove-transcript-observer! [observer]
+  {:pre [(contains? @transcript-observers observer)]}
   (swap! transcript-observers disj observer))
 
 (defn init-transcript! [id]
@@ -53,7 +55,7 @@
 
 (defn call-transcript-sniffer [text]
   (doseq [observer @transcript-observers]
-    (observer text)))
+    (observer observer text)))
 
 (defn format-transcript-line [label text]
   {:pre [(string? text)
@@ -93,7 +95,7 @@
                       (put! result-channel match)
                       (close! result-channel)
                       (close! timeout-channel)))]
-     (add-transcript-observer! (partial observer observer))
+     (add-transcript-observer! observer)
      (go
        (<! timeout-channel)
        (when-not (core-async/closed? result-channel)
