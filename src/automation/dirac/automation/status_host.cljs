@@ -1,8 +1,8 @@
-(ns dirac.fixtures.status-host
+(ns dirac.automation.status-host
   (:require [chromex.support :refer-macros [oget oset ocall oapply]]
             [chromex.logging :refer-macros [log warn error info]]
-            [dirac.fixtures.helpers :as helpers]
-            [dirac.fixtures.status :as status]))
+            [dirac.automation.helpers :as helpers]
+            [dirac.automation.status :as status]))
 
 (defonce current-status (atom nil))
 

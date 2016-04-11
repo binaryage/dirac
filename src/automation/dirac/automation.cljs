@@ -1,9 +1,9 @@
-(ns dirac.fixtures.automation
+(ns dirac.automation
   (:require-macros [cljs.core.async.macros :refer [go go-loop]])
   (:require [cljs.core.async :refer [put! <! chan timeout alts! close!]]
             [chromex.support :refer-macros [oget oset ocall oapply]]
-            [dirac.fixtures.messages :as messages]
-            [dirac.fixtures.transcript-host :as transcript-host]))
+            [dirac.automation.messages :as messages]
+            [dirac.automation.transcript-host :as transcript-host]))
 
 (def label "automate")
 

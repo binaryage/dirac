@@ -1,13 +1,13 @@
-(ns dirac.fixtures.transcript-host
+(ns dirac.automation.transcript-host
   (:require-macros [cljs.core.async.macros :refer [go go-loop]]
                    [dirac.settings :refer [get-test-dirac-agent-port get-transcript-match-timeout]])
   (:require [cljs.core.async :refer [put! <! chan timeout alts! close!]]
             [cljs.core.async.impl.protocols :as core-async]
-            [dirac.fixtures.transcript :as transcript]
+            [dirac.automation.transcript :as transcript]
             [chromex.support :refer-macros [oget oset ocall oapply]]
             [chromex.logging :refer-macros [log warn error info]]
             [cuerdas.core :as cuerdas]
-            [dirac.fixtures.helpers :as helpers]))
+            [dirac.automation.helpers :as helpers]))
 
 (defonce current-transcript (atom nil))
 (defonce transcript-observers (atom #{}))

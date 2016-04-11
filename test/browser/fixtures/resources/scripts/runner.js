@@ -86,7 +86,7 @@ function taskNamespaceToJavascriptNamespace(taskNs) {
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-goog.require("dirac.fixtures.runner");
+goog.require("dirac.automation.runner");
 
 var taskRootNamespace = "dirac.tests.tasks";
 var task = getParameterByName("task");

@@ -1,8 +1,8 @@
 (ns dirac.tests.tasks.suite01.no-agent-connection
   (:require [cljs.core.async :refer [<! timeout]]
-            [dirac.fixtures.task :refer-macros [run-task]]
-            [dirac.fixtures.constants :refer [SECOND MINUTE]]
-            [dirac.fixtures.automation :as auto]))
+            [dirac.automation.task :refer-macros [run-task]]
+            [dirac.automation.constants :refer [SECOND MINUTE]]
+            [dirac.automation :as auto]))
 
 (run-task
   (auto/open-tab-with-scenario! "no-agent")

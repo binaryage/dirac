@@ -1,4 +1,4 @@
-(ns dirac.fixtures.transcript)
+(ns dirac.automation.transcript)
 
 ; transcript is a <pre> tag which collects textual messages about test execution:
 ; 1) issued automation commands

@@ -1,7 +1,7 @@
-(ns dirac.fixtures.task)
+(ns dirac.automation.task)
 
 (defmacro without-transcript [& body]
-  `(dirac.fixtures.transcript-host/without-transcript-work (fn [] ~@body)))
+  `(dirac.automation.transcript-host/without-transcript-work (fn [] ~@body)))
 
 (defmacro run-task [& steps]
   (let [first-arg (first steps)
@@ -10,12 +10,12 @@
         serialized-commands (map (fn [command] `(cljs.core.async/<! ~command)) commands)]
     `(let [test-thunk# (fn []
                          (cljs.core.async.macros/go
-                           (dirac.fixtures.task/task-started!)
+                           (dirac.automation.task/task-started!)
                            ~@serialized-commands
-                           (dirac.fixtures.task/task-finished!)
-                           (dirac.fixtures.task/task-teardown!)))]
-       (dirac.fixtures.launcher/register-task! test-thunk#)
-       (dirac.fixtures.task/task-setup! ~config))))
+                           (dirac.automation.task/task-finished!)
+                           (dirac.automation.task/task-teardown!)))]
+       (dirac.automation.launcher/register-task! test-thunk#)
+       (dirac.automation.task/task-setup! ~config))))
 
 ; ---------------------------------------------------------------------------------------------------------------------------
 ; logging - these need to be macros to preserve source location for devtools

@@ -1,4 +1,4 @@
-(ns dirac.fixtures.runtime
+(ns dirac.automation.runtime
   (:require-macros [dirac.settings :refer [get-test-dirac-agent-port]])
   (:require [chromex.logging :refer-macros [log warn error info]]
             [dirac.runtime :as runtime]

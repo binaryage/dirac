@@ -1,4 +1,4 @@
-(ns dirac.fixtures.devtools
+(ns dirac.automation.devtools
   (:require-macros [cljs.core.async.macros :refer [go go-loop]]
                    [dirac.settings :refer [get-test-dirac-agent-port]])
   (:require [cljs.core.async :refer [put! <! chan timeout alts! close!]]

@@ -1,4 +1,4 @@
-(ns dirac.fixtures.status)
+(ns dirac.automation.status)
 
 ; status is a <div> tag which shows status of fixtures page
 

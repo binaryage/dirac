@@ -120,7 +120,7 @@
                                              "src/project"
                                              "src/lib"
                                              "src/dev"
-                                             "src/fixtures"
+                                             "src/automation"
                                              "src/runtime"
                                              "src/test"
                                              "src/shared"

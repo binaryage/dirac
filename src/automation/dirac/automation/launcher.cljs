@@ -1,4 +1,4 @@
-(ns dirac.fixtures.launcher
+(ns dirac.automation.launcher
   (:require-macros [cljs.core.async.macros :refer [go go-loop]]
                    [dirac.settings :refer [get-launch-task-key get-launch-task-message]])
   (:require [cljs.core.async :refer [put! <! chan timeout alts! close!]]

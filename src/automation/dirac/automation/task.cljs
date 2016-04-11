@@ -1,15 +1,15 @@
-(ns dirac.fixtures.task
+(ns dirac.automation.task
   (:require-macros [cljs.core.async.macros :refer [go go-loop]])
   (:require [cljs.core.async :refer [put! <! chan timeout alts! close!]]
             [chromex.support :refer-macros [oget oset ocall oapply]]
             [chromex.logging :refer-macros [log warn error info]]
             [dirac.lib.ws-client :as ws-client]
-            [dirac.fixtures.transcript-host :as transcript-host]
-            [dirac.fixtures.status-host :as status-host]
-            [dirac.fixtures.feedback :as feedback]
-            [dirac.fixtures.messages :as messages]
-            [dirac.fixtures.launcher :as launcher]
-            [dirac.fixtures.helpers :as helpers]))
+            [dirac.automation.transcript-host :as transcript-host]
+            [dirac.automation.status-host :as status-host]
+            [dirac.automation.feedback :as feedback]
+            [dirac.automation.messages :as messages]
+            [dirac.automation.launcher :as launcher]
+            [dirac.automation.helpers :as helpers]))
 
 (defonce setup-done (volatile! false))
 

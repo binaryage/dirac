@@ -1,4 +1,4 @@
-(ns dirac.fixtures.messages
+(ns dirac.automation.messages
   (:require-macros [cljs.core.async.macros :refer [go go-loop]])
   (:require [cljs.core.async :refer [put! <! chan timeout alts! close!]]
             [dirac.settings :refer-macros [get-marion-message-reply-time]]
@@ -9,8 +9,8 @@
 (defonce last-message-id (volatile! 0))
 (defonce reply-subscribers (atom {}))                                                                                         ; message-id -> list of callbacks
 
-(defn ^:dynamic get-reply-timeout-message [reply-timeout js-message]
-  (str "timeout (" reply-timeout " ms) while waiting for reply to " (pr-str js-message)))
+(defn ^:dynamic get-reply-timeout-message [reply-timeout info]
+  (str "timeout (" reply-timeout " ms) while waiting for reply. " (pr-str info)))
 
 (defn get-next-message-id! []
   (vswap! last-message-id inc))
@@ -21,38 +21,37 @@
 (defn get-reply-subscribers [message-id]
   (get @reply-subscribers message-id))
 
-(defn process-reply! [reply]
-  (let [message-id (oget reply "id")
+(defn process-reply! [reply-message]
+  (let [message-id (oget reply-message "id")
         _ (assert (number? message-id))
         subscribers (get-reply-subscribers message-id)]
     (doseq [subscriber subscribers]
-      (subscriber reply))
+      (subscriber reply-message))
     (swap! reply-subscribers dissoc message-id)))
 
-(defn wait-for-reply!
-  ([message-id]
-   (wait-for-reply! message-id (get-marion-message-reply-time)))
-  ([message-id reply-timeout]
-   {:pre [(number? message-id)]}
-   (let [channel (chan)
-         interceptor (fn [reply]
-                       (put! channel reply)
-                       (close! channel))]
-     (subscribe-to-reply! message-id interceptor)
-     (when reply-timeout
-       (assert (number? reply-timeout))
-       (go
-         (<! (timeout reply-timeout))
-         (when-not (core-async/closed? channel)
-           (throw (ex-info :task-timeout {:transcript (get-reply-timeout-message reply-timeout message)})))))
-     channel)))
+(defn wait-for-reply! [message-id reply-timeout info]
+  {:pre [(number? message-id)
+         (or (nil? reply-timeout) (number? reply-timeout))]}
+  (let [reply-channel (chan)
+        effective-timeout (or reply-timeout (get-marion-message-reply-time))
+        timeout-channel (timeout effective-timeout)
+        observer (fn [reply-message]
+                   (put! reply-channel reply-message)
+                   (close! reply-channel)
+                   (close! timeout-channel))]
+    (subscribe-to-reply! message-id observer)
+    (go
+      (<! timeout-channel)
+      (when-not (core-async/closed? reply-channel)
+        (throw (ex-info :task-timeout {:transcript (get-reply-timeout-message effective-timeout info)}))))
+    reply-channel))
 
 ; for communication between tested page and marionette extension
 ; see https://developer.chrome.com/extensions/content_scripts#host-page-communication
 (defn post-message! [js-message & [opts]]
   (let [message-id (get-next-message-id!)]
     (oset js-message ["id"] message-id)
-    (let [reply-channel (wait-for-reply! message-id (:reply-timeout opts))]
+    (let [reply-channel (wait-for-reply! message-id (:reply-timeout opts) js-message)]
       (.postMessage js/window js-message "*")
       reply-channel)))
 
