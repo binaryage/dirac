@@ -19,8 +19,6 @@
   (append-to-transcript! data)
   (messages/fire-chrome-event! data))
 
-; -- waiting for transcript feedback ----------------------------------------------------------------------------------------
-
 (defn wait-for-transcript-match [& args]
   (apply transcript-host/wait-for-transcript-match args))
 
@@ -33,7 +31,9 @@
 (defn wait-for-devtools-ready []
   (wait-for-transcript-match #".*DevTools ready.*"))
 
-(defn wait-for-devtools [connection-id]
+(defn wait-for-devtools []
+  ; TODO: to be 100% correct we should check for matching devtools id here
+  ;       imagine a situation when two or more devtools instances are started at the same time
   (go
     (<! (wait-for-dirac-frontend-initialization))
     (<! (wait-for-implant-initialization))
@@ -44,11 +44,6 @@
 
 (defn wait-for-console-initialization [& [timeout silent?]]
   (wait-for-transcript-match #".*console initialized.*" timeout silent?))
-
-(defn wait-switch-to-console [connection-id]
-  (go
-    (switch-inspector-panel! connection-id :console)
-    (<! (wait-for-console-initialization))))
 
 ; -- scenarios --------------------------------------------------------------------------------------------------------------
 
@@ -96,6 +91,11 @@
 (defn disable-console-feedback! [connection-id]
   (automate-dirac-frontend! connection-id {:action :disable-console-feedback}))
 
+(defn wait-switch-to-console [connection-id]
+  (go
+    (switch-inspector-panel! connection-id :console)
+    (<! (wait-for-console-initialization))))
+
 ; -- devtools ---------------------------------------------------------------------------------------------------------------
 
 (defn post-open-dirac-devtools-request! []
@@ -104,9 +104,9 @@
 
 (defn open-dirac-devtools! []
   (go
-    (let [waiting (wait-for-devtools connection-id)
+    (let [waiting-for-devtools-to-get-ready (wait-for-devtools)
           connection-id (<! (post-open-dirac-devtools-request!))]
-      (<! waiting)
+      (<! waiting-for-devtools-to-get-ready)
       connection-id)))
 
 (defn close-dirac-devtools! [connection-id]
