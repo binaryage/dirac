@@ -1,7 +1,6 @@
 (ns dirac.tests.tasks.suite01.dirac-eval
   (:require [cljs.core.async :refer [<! timeout]]
-            [dirac.automation.task :refer-macros [run-task]]
-            [dirac.automation :as auto]))
+            [dirac.automation :as auto :refer-macros [run-task]]))
 
 (run-task
   (auto/open-tab-with-scenario! "normal")
