@@ -1,6 +1,6 @@
 (ns dirac.automation.messages
   (:require-macros [cljs.core.async.macros :refer [go go-loop]])
-  (:require [cljs.core.async :refer [put! <! chan timeout close!]]
+  (:require [cljs.core.async :refer [put! <! chan timeout alts! close!]]
             [dirac.settings :refer-macros [get-marion-message-reply-timeout]]
             [dirac.utils :as utils]
             [chromex.support :refer-macros [oget oset ocall oapply]]
@@ -35,17 +35,13 @@
          (or (nil? reply-timeout) (number? reply-timeout))]}
   (let [reply-channel (chan)
         effective-timeout (or reply-timeout (get-marion-message-reply-timeout))
-        timeout-channel (utils/timeout effective-timeout)
+        timeout-channel (timeout effective-timeout)
         observer (fn [reply-message]
-                   (put! reply-channel reply-message)
-                   (close! reply-channel)
-                   (close! timeout-channel))]
+                   (put! reply-channel reply-message))]
     (subscribe-to-reply! message-id observer)
     (go
-      (<! timeout-channel)
-      (when-not (core-async/closed? reply-channel)
-        (throw (ex-info :task-timeout {:transcript (get-reply-timeout-message effective-timeout info)}))))
-    reply-channel))
+      (let [[result] (alts! [reply-channel timeout-channel])]
+        (or result (throw (ex-info :task-timeout {:transcript (get-reply-timeout-message effective-timeout info)})))))))
 
 ; for communication between tested page and marionette extension
 ; see https://developer.chrome.com/extensions/content_scripts#host-page-communication

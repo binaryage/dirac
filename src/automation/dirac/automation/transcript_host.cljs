@@ -92,22 +92,17 @@
   ([re time-limit silent?]
    (let [result-channel (chan)
          max-waiting-time (or time-limit (get-transcript-match-timeout))
-         timeout-channel (utils/timeout max-waiting-time)
+         timeout-channel (timeout max-waiting-time)
          observer (fn [self text]
                     (when-let [match (re-matches re text)]
                       (remove-transcript-observer! self)
-                      (put! result-channel match)
-                      (close! result-channel)
-                      (close! timeout-channel)))]
+                      (put! result-channel match)))]
      (add-transcript-observer! observer)
      (go
-       (<! timeout-channel)
-       (when-not (core-async/closed? result-channel)
-         (if silent?
-           (do
-             (put! result-channel :timeout)
-             (close! result-channel))
-           (do
-             (disable-sniffer!)
-             (throw (ex-info :task-timeout {:transcript (get-timeout-transcript max-waiting-time re)}))))))
-     result-channel)))
+       (let [[result] (alts! [result-channel timeout-channel])]
+         (or result
+             (if silent?
+               :timeout
+               (do
+                 (disable-sniffer!)
+                 (throw (ex-info :task-timeout {:transcript (get-timeout-transcript max-waiting-time re)}))))))))))
