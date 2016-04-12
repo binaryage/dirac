@@ -41,7 +41,7 @@
         (System/exit 2)))))
 
 (defn stop-browser! []
-  (quit))
+  #_(quit))
 
 (defn with-chrome-browser [f]
   (try
