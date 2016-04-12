@@ -10,11 +10,15 @@ if [ ! -d "$DIRAC_BROWSER_TESTS_USER_PROFILE" ] ; then
   mkdir -p "$DIRAC_BROWSER_TESTS_USER_PROFILE"
 fi
 
-if [ ! -z "$1" ] ; then
+EXE="/Applications/Google Chrome Canary.app/Contents/MacOS/Google Chrome Canary"
+if [ -n "$DIRAC_USE_CHROME" ] ; then
   EXE="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
-else
-  EXE="/Applications/Google Chrome Canary.app/Contents/MacOS/Google Chrome Canary"
 fi
+if [ -n "$DIRAC_USE_CHROMIUM" ] ; then
+  EXE="/Applications/Chromium.app/Contents/MacOS/Chromium"
+fi
+
+echo $EXE
 
 # we want wait to compilation of our extensions, so that --load-extension param does not fail
 # see cljsbuild-notify.sh usage in project.clj

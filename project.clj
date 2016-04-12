@@ -328,8 +328,8 @@
                        "fig-dirac"       ["lein" "fig-dirac"]
                        "fig-marion"      ["lein" "fig-marion"]
                        "marion-cs"       ["lein" "auto-compile-marion-cs"]
-                       "browser-tests"   ["lein" "auto-compile-browser-tests"]
-                       "test-canary"     ["scripts/launch-test-canary.sh"]}}}
+                       "tests"           ["lein" "auto-compile-browser-tests"]
+                       "browser"         ["scripts/launch-test-browser.sh"]}}}
 
   :aliases {"check"                      ["shell" "scripts/check-code.sh"]
             "test"                       ["shell" "scripts/test-all.sh"]
