@@ -52,11 +52,16 @@
 (defn get-marion-extension-path [dirac-root]
   [dirac-root "test" "marion" "resources" "unpacked"])                                                                        ; note: we always use dev version, it is just a helper extension, no need for advanced compliation here
 
-(defn pick-chrome-binary-path [os]
-  (case os
-    "Mac OS X" "/Applications/Google Chrome Canary.app/Contents/MacOS/Google Chrome Canary"
-    "Linux" "/usr/bin/google-chrome-unstable"
-    nil))
+(defn pick-chrome-binary-path [options]
+  (let [{:keys [dirac-use-chromium dirac-host-os]} options]
+    (if dirac-use-chromium
+      (case dirac-host-os
+        "Mac OS X" "/Applications/Chromium.app/Contents/MacOS/Chromium"
+        nil)
+      (case dirac-host-os
+        "Mac OS X" "/Applications/Google Chrome Canary.app/Contents/MacOS/Google Chrome Canary"
+        "Linux" "/usr/bin/google-chrome-unstable"
+        nil))))
 
 (defn beautify-command-line [raw-command-line-text]
   (string/join (interpose "\\\n                     --" (string/split raw-command-line-text #" --"))))
@@ -112,7 +117,7 @@
     logging-prefs))
 
 (defn tweak-os-specific-options [chrome-options options]
-  (when-let [chrome-binary-path (pick-chrome-binary-path (:dirac-host-os options))]
+  (when-let [chrome-binary-path (pick-chrome-binary-path options)]
     (log (str "setting chrome binary path to '" chrome-binary-path "'"))
     (.setBinary chrome-options chrome-binary-path)))
 
@@ -164,14 +169,22 @@
     (set-current-chrome-driver! chrome-driver)
     (init-driver chrome-driver)))
 
+(def known-env-options [:travis
+                        :chrome-driver-path
+                        :dirac-root
+                        :dirac-dev
+                        :dirac-host-os
+                        :dirac-use-chromium
+                        :dirac-chrome-driver-verbose
+                        :dirac-chrome-driver-browser-log-level])
+
 (defn prepare-options
   ([]
    (prepare-options false))
   ([attaching?]
    (let [defaults {:dirac-host-os                         (System/getProperty "os.name")
                    :dirac-chrome-driver-browser-log-level "SEVERE"}
-         env-settings (select-keys env [:dirac-root :travis :chrome-driver-path :dirac-dev :dirac-host-os
-                                        :dirac-chrome-driver-verbose :dirac-chrome-driver-browser-log-level])
+         env-settings (select-keys env known-env-options)
          ; when testing with travis we place chrome driver binary under test/chromedriver
          ; detect that case here and use the binary explicitely
          dirac-test-chromedriver-file (io/file (:dirac-root env-settings) "test" "chromedriver")
