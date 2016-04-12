@@ -12,7 +12,7 @@
             [dirac.automation.helpers :as helpers]))
 
 (defonce setup-done (volatile! false))
-(defonce resolved (volatile! false))
+(defonce done (volatile! false))
 
 (defn setup-debugging-port! []
   (let [url (helpers/get-document-url)]
@@ -66,21 +66,24 @@
        (messages/focus-task-runner-window!)))))
 
 (defn task-finished! []
-  (when-not @resolved
+  (when-not @done
     (status-host/set-status! "task finished")
-    (transcript-host/set-style! "finished")))
+    (transcript-host/set-style! "finished")
+    (vreset! done true)))
 
 (defn task-timeouted! [data]
-  (if-let [transcript (:transcript data)]
-    (transcript-host/append-to-transcript! "timeout" transcript true))
-  (status-host/set-status! (or (:status data) "task timeouted!"))
-  (transcript-host/set-style! (or (:style data) "timeout"))
-  (vreset! resolved true))
+  (when-not @done
+    (if-let [transcript (:transcript data)]
+      (transcript-host/append-to-transcript! "timeout" transcript true))
+    (status-host/set-status! (or (:status data) "task timeouted!"))
+    (transcript-host/set-style! (or (:style data) "timeout"))
+    (vreset! done true)))
 
 (defn task-thrown-exception! [e]
-  (status-host/set-status! (str "task has thrown an exception: " e))
-  (transcript-host/set-style! "exception")
-  (vreset! resolved true))
+  (when-not @done
+    (status-host/set-status! (str "task has thrown an exception: " e))
+    (transcript-host/set-style! "exception")
+    (vreset! done true)))
 
 (defn task-exception-handler [message _source _lineno _colno error]
   (case (ex-message error)
