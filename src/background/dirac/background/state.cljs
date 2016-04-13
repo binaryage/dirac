@@ -5,23 +5,19 @@
 
 (defonce initial-state
   {:last-devtools-id     0
-   :devtools-descriptors {}                                                                                                   ; pairings between dirac instances and connected backend tabs
+   :devtools-descriptors {}                                                                                                   ; pairings between dirac devtools instances and connected backend tabs
    :chrome-event-channel nil
    :marion-port          nil})
 
 (defonce state (atom initial-state))
+
+; -- chrome-event-channel ---------------------------------------------------------------------------------------------------
 
 (defn set-chrome-event-channel! [new-channel]
   (swap! state assoc :chrome-event-channel new-channel))
 
 (defn get-chrome-event-channel []
   (:chrome-event-channel @state))
-
-(defn set-marion-port! [new-marion-port]
-  (swap! state assoc :marion-port new-marion-port))
-
-(defn get-marion-port []
-  (:marion-port @state))
 
 ; -- devtools descriptors ---------------------------------------------------------------------------------------------------
 
@@ -51,6 +47,14 @@
   (if-not (zero? (count (get-devtools-descriptors)))
     (warn "request to reset devtools descriptor id counter while having connections present" (get-devtools-descriptors)))
   (swap! state assoc :last-devtools-id 0))
+
+; -- marion-port ------------------------------------------------------------------------------------------------------------
+
+(defn set-marion-port! [new-marion-port]
+  (swap! state assoc :marion-port new-marion-port))
+
+(defn get-marion-port []
+  (:marion-port @state))
 
 ; -- marion feedback --------------------------------------------------------------------------------------------------------
 

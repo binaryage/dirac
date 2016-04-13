@@ -68,18 +68,18 @@
   (case (oget message "type")
     "marion-deliver-feedback" (state/post-to-marion! (oget message "envelope"))))
 
-(defn connect-and-navigate-dirac-devtools! [dirac-tab-id backend-tab-id options]
-  (let [devtools-id (devtools/register! dirac-tab-id backend-tab-id)
+(defn connect-and-navigate-dirac-devtools! [frontend-tab-id backend-tab-id options]
+  (let [devtools-id (devtools/register! frontend-tab-id backend-tab-id)
         dirac-frontend-url (helpers/make-dirac-frontend-url devtools-id options)]
     (go
-      (<! (tabs/update dirac-tab-id #js {:url dirac-frontend-url}))
+      (<! (tabs/update frontend-tab-id #js {:url dirac-frontend-url}))
       (<! (timeout 500))                                                                                                      ; give the page some time load the document
       (helpers/install-intercom! devtools-id intercom-handler))))
 
 (defn create-dirac-devtools! [backend-tab-id options]
   (go
-    (if-let [dirac-tab-id (<! (open-dirac-frontend! (:open-as options)))]
-      (<! (connect-and-navigate-dirac-devtools! dirac-tab-id backend-tab-id options))
+    (if-let [frontend-tab-id (<! (open-dirac-frontend! (:open-as options)))]
+      (<! (connect-and-navigate-dirac-devtools! frontend-tab-id backend-tab-id options))
       (report-error-in-tab backend-tab-id (i18n/unable-to-create-dirac-tab)))))
 
 (defn open-dirac-devtools! [tab options]
@@ -100,13 +100,13 @@
 
 (defn activate-dirac-devtools! [tab-id]
   (go
-    (let [{:keys [dirac-tab-id]} (devtools/find-devtools-descriptor-for-backend-tab tab-id)
-          _ (assert dirac-tab-id)
-          dirac-window-id (<! (sugar/fetch-tab-window-id dirac-tab-id))]
+    (let [{:keys [frontend-tab-id]} (devtools/find-devtools-descriptor-for-backend-tab tab-id)
+          _ (assert frontend-tab-id)
+          dirac-window-id (<! (sugar/fetch-tab-window-id frontend-tab-id))]
       (if dirac-window-id
         (windows/update dirac-window-id #js {"focused"       true
                                              "drawAttention" true}))
-      (tabs/update dirac-tab-id #js {"active" true}))))
+      (tabs/update frontend-tab-id #js {"active" true}))))
 
 (defn activate-or-open-dirac-devtools! [tab & [options-overrides]]
   (let [tab-id (oget tab "id")]
@@ -130,5 +130,5 @@
 
 (defn close-dirac-devtools! [devtools-id]
   (if-let [descriptor (state/get-devtools-descriptor devtools-id)]
-    (close-tab-with-id! (:dirac-tab-id descriptor))
+    (close-tab-with-id! (:frontend-tab-id descriptor))
     (warn "requested closing unknown devtools" devtools-id)))
