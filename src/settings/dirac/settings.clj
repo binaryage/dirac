@@ -31,6 +31,12 @@
 
 ; -- cljs access ------------------------------------------------------------------------------------------------------------
 
+(defmacro seconds [v]
+  (* SECOND v))
+
+(defmacro minutes [v]
+  (* MINUTE v))
+
 (defmacro get-test-dirac-agent-port []
   TEST_DIRAC_AGENT_PORT)
 
