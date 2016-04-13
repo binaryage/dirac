@@ -14,12 +14,23 @@
             [dirac.background.state :as state]))
 
 (defn create-dirac-window! [panel?]
-  (go
-    (if-let [[window] (<! (windows/create #js {:url  (helpers/make-blank-page-url)                                            ; a blank page url is actually important here, url-less popups don't get assigned a tab-id
-                                               :type (if panel? "popup" "normal")}))]
-      (let [tabs (oget window "tabs")
-            first-tab (aget tabs 0)]
-        (sugar/get-tab-id first-tab)))))
+  (let [window-params #js {:url  (helpers/make-blank-page-url)                                                                ; a blank page url is actually important here, url-less popups don't get assigned a tab-id
+                           :type (if panel? "popup" "normal")}]
+    ; during development we may want to override standard "cascading" of new windows and position the window explicitely
+    (log "!!" (get-dirac-window-left) (get-dirac-window-top))
+    (if-let [left (get-dirac-window-left)]
+      (aset window-params "left" (utils/parse-int left)))
+    (if-let [top (get-dirac-window-top)]
+      (aset window-params "top" (utils/parse-int top)))
+    (if-let [width (get-dirac-window-width)]
+      (aset window-params "width" (utils/parse-int width)))
+    (if-let [height (get-dirac-window-height)]
+      (aset window-params "height" (utils/parse-int height)))
+    (go
+      (if-let [[window] (<! (windows/create window-params))]
+        (let [tabs (oget window "tabs")
+              first-tab (aget tabs 0)]
+          (sugar/get-tab-id first-tab))))))
 
 (defn create-dirac-tab! []
   (go
