@@ -1,4 +1,6 @@
-(ns ^:figwheel-no-load marion.background
-  (:require [marion.background.core :as core]))
+(ns marion.background
+  (:require [marion.background.core :as core]
+            [dirac.utils :refer-macros [runonce]]))
 
-(core/init!)
+(runonce
+  (core/init!))

@@ -1,4 +1,6 @@
-(ns ^:figwheel-no-load dirac.background
-  (:require [dirac.background.core :as core]))
+(ns dirac.background
+  (:require [dirac.background.core :as core]
+            [dirac.utils :refer-macros [runonce]]))
 
-(core/init!)
+(runonce
+  (core/init!))

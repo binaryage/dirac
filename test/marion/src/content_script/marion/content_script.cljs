@@ -1,4 +1,6 @@
-(ns ^:figwheel-no-load marion.content-script
-  (:require [marion.content-script.core :as core]))
+(ns marion.content-script
+  (:require [marion.content-script.core :as core]
+            [dirac.utils :refer-macros [runonce]]))
 
-(core/init!)
+(runonce
+  (core/init!))

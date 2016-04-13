@@ -1,4 +1,6 @@
-(ns ^:figwheel-no-load dirac.dev.devtools
-  (:require [devtools.core :as devtools]))
+(ns dirac.dev.devtools
+  (:require [devtools.core :as devtools]
+            [dirac.utils :refer-macros [runonce]]))
 
-(devtools/install! [:custom-formatters :sanity-hints])
+(runonce
+  (devtools/install! [:custom-formatters :sanity-hints]))

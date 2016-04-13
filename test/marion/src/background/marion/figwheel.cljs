@@ -1,8 +1,10 @@
-(ns ^:figwheel-no-load marion.figwheel
-  (:require [figwheel.client :as figwheel]))
+(ns marion.figwheel
+  (:require [figwheel.client :as figwheel]
+            [dirac.utils :refer-macros [runonce]]))
 
 ; -------------------------------------------------------------------------------------------------------------------
 ; has to be included before boot
 
-(figwheel/start
-  {:websocket-url "ws://localhost:7200/figwheel-ws"})
+(runonce
+  (figwheel/start
+    {:websocket-url "ws://localhost:7200/figwheel-ws"}))
