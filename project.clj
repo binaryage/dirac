@@ -98,7 +98,7 @@
              {:plugins [[lein-cooper "1.2.1"]]}
 
              :cljs
-             {:plugins [[lein-cljsbuild "1.1.2"]
+             {:plugins [[lein-cljsbuild "1.1.3"]
                         [lein-figwheel "0.5.2"]]
               :hooks   [leiningen.cljsbuild]}
 
