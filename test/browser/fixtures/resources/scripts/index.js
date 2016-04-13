@@ -34,7 +34,7 @@ function genTaskList(runnerUrl, tasks) {
 }
 
 var tasks = getIndex(/tasks\/(.*)\.js/);
-var tasksMarkup = genTaskList("runner.html", tasks);
+var tasksMarkup = genTaskList("runner.html", tasks.sort());
 
 var scenariosMarkup = "<b><a href=\"scenarios\">AVAILABLE SCENARIOS</a></b>";
 
