@@ -1,4 +1,5 @@
-(ns dirac.settings)
+(ns dirac.settings
+  (:require [environ.core :refer [env]]))
 
 ; we want this stuff to be accessible both from clojure and clojurescript
 
@@ -22,6 +23,11 @@
 
 (def ^:const ACTUAL_TRANSCRIPTS_ROOT_PATH "test/browser/transcripts/actual/")
 (def ^:const EXPECTED_TRANSCRIPTS_ROOT_PATH "test/browser/transcripts/expected/")
+
+(def dirac-window-top (env :dirac-window-top))
+(def dirac-window-left (env :dirac-window-left))
+(def dirac-window-width (env :dirac-window-width))
+(def dirac-window-height (env :dirac-window-height))
 
 ; -- cljs access ------------------------------------------------------------------------------------------------------------
 
@@ -66,3 +72,15 @@
 
 (defmacro get-expected-transcripts-root-path []
   EXPECTED_TRANSCRIPTS_ROOT_PATH)
+
+(defmacro get-dirac-window-top []
+  dirac-window-top)
+
+(defmacro get-dirac-window-left []
+  dirac-window-left)
+
+(defmacro get-dirac-window-width []
+  dirac-window-width)
+
+(defmacro get-dirac-window-height []
+  dirac-window-height)
