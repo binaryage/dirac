@@ -31,7 +31,6 @@
   (let [window-params #js {:url  (helpers/make-blank-page-url)                                                                ; a blank page url is actually important here, url-less popups don't get assigned a tab-id
                            :type (if panel? "popup" "normal")}]
     ; during development we may want to override standard "cascading" of new windows and position the window explicitely
-    (log "!!" (get-dirac-window-left) (get-dirac-window-top))
     (if-let [left (get-dirac-window-left)]
       (aset window-params "left" (utils/parse-int left)))
     (if-let [top (get-dirac-window-top)]
