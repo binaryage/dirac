@@ -141,6 +141,10 @@ WebInspector.ConsoleView = function()
     var historyData = this._consoleHistorySetting.get();
     this._prompt.setHistoryData(historyData);
 
+    this._consoleHistoryAutocompleteSetting = WebInspector.moduleSetting("consoleHistoryAutocomplete");
+    this._consoleHistoryAutocompleteSetting.addChangeListener(this._consoleHistoryAutocompleteChanged, this);
+    this._consoleHistoryAutocompleteChanged();
+
     this._updateFilterStatus();
     WebInspector.moduleSetting("consoleTimestampsEnabled").addChangeListener(this._consoleTimestampsSettingChanged, this);
 
@@ -168,6 +172,11 @@ WebInspector.ConsoleView.prototype = {
     {
         this._consoleHistorySetting.set([]);
         this._prompt.setHistoryData([]);
+    },
+
+    _consoleHistoryAutocompleteChanged: function()
+    {
+        this._prompt.setAddCompletionsFromHistory(this._consoleHistoryAutocompleteSetting.get());
     },
 
     /**
@@ -346,8 +355,10 @@ WebInspector.ConsoleView.prototype = {
     {
         if (this._promptElement === WebInspector.currentFocusElement())
             return;
-        WebInspector.setCurrentFocusElement(this._promptElement);
+        // Set caret position before setting focus in order to avoid scrolling
+        // by focus().
         this._prompt.moveCaretToEndOfPrompt();
+        WebInspector.setCurrentFocusElement(this._promptElement);
     },
 
     restoreScrollPositions: function()
