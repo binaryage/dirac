@@ -6,6 +6,7 @@
             [chromex.chrome-event-channel :refer [make-chrome-event-channel]]
             [chromex.protocols :refer [post-message! get-sender get-name]]
             [chromex.ext.runtime :as runtime]
+            [chromex.ext.windows :as windows]
             [chromex.ext.tabs :as tabs]
             [chromex.ext.browser-action :as browser-action]
             [chromex.ext.commands :as commands]
@@ -24,8 +25,8 @@
   (marion/post-feedback-event! (str "handling command: " command))
   (go
     (case command
-      "open-dirac-devtools" (<! (apply tools/open-dirac-in-active-tab! args))
-      "close-dirac-devtools" (<! (apply tools/close-devtools! args))
+      "open-dirac-devtools" (<! (apply tools/open-dirac-devtools-in-active-tab! args))
+      "close-dirac-devtools" (<! (apply tools/close-dirac-devtools! args))
       (warn "received unrecognized command:" command))))
 
 (defn on-tab-removed! [tab-id _remove-info]
@@ -50,7 +51,7 @@
   (go
     (let [[event-id event-args] event]
       (case event-id
-        ::browser-action/on-clicked (<! (apply tools/activate-or-open-dirac! event-args))
+        ::browser-action/on-clicked (<! (apply tools/activate-or-open-dirac-devtools! event-args))
         ::commands/on-command (<! (apply handle-command! event-args))
         ::tabs/on-removed (<! (apply on-tab-removed! event-args))
         ::tabs/on-updated (<! (apply on-tab-updated! event-args))
