@@ -1,6 +1,7 @@
 (ns dirac.automation.transcript-host
   (:require-macros [cljs.core.async.macros :refer [go go-loop]]
-                   [dirac.settings :refer [get-test-dirac-agent-port get-transcript-match-timeout]])
+                   [dirac.settings :refer [get-test-dirac-agent-port get-transcript-match-timeout
+                                           get-transcript-label-padding-length get-transcript-label-padding-type]])
   (:require [cljs.core.async :refer [put! <! chan timeout alts! close!]]
             [dirac.automation.transcript :as transcript]
             [chromex.support :refer-macros [oget oset ocall oapply]]
@@ -32,11 +33,15 @@
   (ocall js/window "setRunnerFavicon" style)
   (transcript/set-style! @current-transcript style))
 
-(defn format-transcript-line [label text]
+(defn format-transcript [label text]
   {:pre [(string? text)
          (string? label)]}
-  (let [padded-type (cuerdas/pad label {:length 16 :type :right})]
-    (str padded-type " " text)))
+  (let [padding-length (get-transcript-label-padding-length)
+        truncated-label (cuerdas/prune label padding-length "")
+        padded-label (cuerdas/pad truncated-label {:length padding-length
+                                                   :type   (get-transcript-label-padding-type)})
+        text-block (helpers/prefix-text-block (cuerdas/repeat " " padding-length) text)]
+    (str padded-label text-block "\n")))
 
 (defn append-to-transcript! [label text & [force?]]
   {:pre [(has-transcript?)
@@ -44,7 +49,7 @@
          (string? label)]}
   (when (or *transcript-enabled* force?)
     (put! recorder [label text])
-    (transcript/append-to-transcript! @current-transcript (str (format-transcript-line label text) "\n"))))
+    (transcript/append-to-transcript! @current-transcript (format-transcript label text))))
 
 (defn read-transcript []
   {:pre [(has-transcript?)]}
