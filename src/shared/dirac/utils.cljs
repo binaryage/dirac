@@ -21,3 +21,7 @@
   (let [channel (chan)]
     (.setTimeout js/window #(close! channel) msec)
     channel))
+
+(defn parse-int [v]
+  {:pre [(string? v)]}
+  (js/parseInt v 10))
