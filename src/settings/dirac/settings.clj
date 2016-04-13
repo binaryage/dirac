@@ -24,6 +24,9 @@
 (def ^:const ACTUAL_TRANSCRIPTS_ROOT_PATH "test/browser/transcripts/actual/")
 (def ^:const EXPECTED_TRANSCRIPTS_ROOT_PATH "test/browser/transcripts/expected/")
 
+(def ^:const TRANSCRIPT_LABEL_PADDING_LENGTH 17)
+(def ^:const TRANSCRIPT_LABEL_PADDING_TYPE :right)
+
 (def dirac-window-top (env :dirac-window-top))
 (def dirac-window-left (env :dirac-window-left))
 (def dirac-window-width (env :dirac-window-width))
@@ -90,3 +93,9 @@
 
 (defmacro get-dirac-window-height []
   dirac-window-height)
+
+(defmacro get-transcript-label-padding-length []
+  TRANSCRIPT_LABEL_PADDING_LENGTH)
+
+(defmacro get-transcript-label-padding-type []
+  TRANSCRIPT_LABEL_PADDING_TYPE)
