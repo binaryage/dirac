@@ -22,14 +22,38 @@ function getIndex(re) {
 }
 
 function genTaskList(runnerUrl, tasks) {
-  var lines = ["<b>AVAILABLE TASKS:</b><ul>"];
+  var lines = [
+    "<div class='tasks'>",
+    "<span class='tasks-title'>AVAILABLE TASKS:</span>",
+    "<ol class='suite-list'>"];
+
+  var lastPrefix;
 
   for (var i=0; i<tasks.length; i++) {
     var ns = tasks[i];
-    var line = "<li><a href=\""+ runnerUrl +"?task="+ ns +"\">"+ns+"</a></li>";
+    var parts = ns.split(".");
+    var lastPart = parts.pop();
+    var prefix = parts.join(".");
+
+    if (prefix != lastPrefix) {
+      if (lastPrefix) {
+        lines.push("</ol>");
+        lines.push("</li>");
+      }
+      lastPrefix = prefix;
+      lines.push("<li>");
+      lines.push("<span class='suite-title'>"+ prefix +"</span>");
+      lines.push("<ol class='task-list'>");
+    }
+
+    var line = "<li><a href=\""+ runnerUrl +"?task="+ ns +"\">"+lastPart+"</a></li>";
     lines.push(line);
   }
-  lines.push("</ul>");
+
+  lines.push("</ol>");
+  lines.push("</li>");
+  lines.push("</ol>");
+  lines.push("</div>");
   return lines.join("");
 }
 

@@ -2,3 +2,23 @@ html {
   font-family: courier;
   font-size: 12px;
 }
+
+.tasks .tasks-title {
+  font-weight: bold;
+}
+
+.tasks .suite-title {
+  font-weight: bold;
+  display: block;
+  margin-bottom: 6px;
+}
+
+.tasks .suite-list {
+  margin-bottom: 16px;
+  list-style-type: square;
+  padding-left: 20px;
+}
+
+.tasks .task-list {
+  list-style-type: decimal-leading-zero;
+}
