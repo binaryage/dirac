@@ -1,7 +1,8 @@
 (ns dirac.automation.helpers
   (:require-macros [cljs.core.async.macros :refer [go go-loop]])
   (:require [cljs.core.async :refer [put! <! chan timeout alts! close!]]
-            [chromex.support :refer-macros [oget oset ocall oapply]])
+            [chromex.support :refer-macros [oget oset ocall oapply]]
+            [cuerdas.core :as cuerdas])
   (:import goog.Uri))
 
 (defn get-body-el []
@@ -23,3 +24,9 @@
 (defn is-test-runner-present? []
   (let [url (get-document-url)]
     (boolean (get-query-param url "test_runner"))))
+
+(defn prefix-text-block [prefix text]
+  (->> text
+       (cuerdas/lines)
+       (map-indexed (fn [i line] (if-not (zero? i) (str prefix line) line)))                                                  ; prepend prefix to all lines except the first
+       (cuerdas/unlines)))
