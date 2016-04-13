@@ -2,6 +2,8 @@
   (:require [cljs.core.async :refer [<! timeout]]
             [dirac.automation :as auto :refer-macros [go-task with-devtools]]))
 
+(def dirac-object "Object {automation: Object, tests: Object, runtime: Object, project: Object}")
+
 (go-task
   (<! (auto/open-tab-with-scenario! "normal"))
   (with-devtools (<! (auto/open-dirac-devtools!))
@@ -9,6 +11,14 @@
     (auto/switch-to-dirac-prompt!)
     (auto/wait-for-prompt-edit)
     (auto/enable-console-feedback!)
-    (auto/dispatch-console-prompt-input! "(+ 1 2)")
-    (auto/dispatch-console-prompt-action! "enter")
-    (auto/wait-for-devtools-substr-match "> 3")))
+    ; ---
+    (auto/console-enter-and-wait! "(+ 1 2)" "log> 3")
+    ; TODO: test this after implementing recursive textContent retrieval from console's DOM
+    ; (auto/console-enter-and-wait! "(range 200)" "log> 3")
+    (auto/console-enter-and-wait! "(doc filter)" "log> null")
+    (auto/console-enter-and-wait! "js/dirac" (str "log> " dirac-object))
+    (auto/console-enter-and-wait! "(x)" ["wrn> Use of undeclared Var cljs.user/x at line 1 <dirac repl>"
+                                         "err> TypeError: Cannot read property 'call' of undefined(…)"])
+    ; TODO: test this after implementing transcript filtering
+    ;(auto/console-enter-and-wait! "(in-ns)" "log> 3")
+    (auto/console-enter-and-wait! "(in-ns 'my.ns)" "setDiracPromptNS('my.ns')")))
