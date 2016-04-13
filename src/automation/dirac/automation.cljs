@@ -150,6 +150,24 @@
    (automate-dirac-frontend! devtools-id {:action :dispatch-console-prompt-action
                                           :input  action})))
 
+(defn console-enter!
+  ([input] (assert false))
+  ([devtools-id input]
+   (go
+     (<! (dispatch-console-prompt-input! devtools-id input))
+     (<! (dispatch-console-prompt-action! devtools-id "enter")))))
+
+(defn console-enter-and-wait!
+  ([input match-or-matches] (assert false))
+  ([devtools-id input match-or-matches]
+   (let [matches (if (coll? match-or-matches)
+                   match-or-matches
+                   [match-or-matches])]
+     (go
+       (<! (console-enter! devtools-id input))
+       (doseq [match matches]
+         (<! (wait-for-devtools-substr-match devtools-id match)))))))
+
 (defn enable-console-feedback!
   ([] (assert false))
   ([devtools-id]
