@@ -70,6 +70,7 @@
     (state/set-chrome-event-channel! channel)
     (tabs/tap-all-events channel)
     (runtime/tap-all-events channel)
+    (windows/tap-all-events channel)
     (browser-action/tap-on-clicked-events channel)
     (commands/tap-on-command-events channel)
     (run-chrome-event-loop! channel)))
