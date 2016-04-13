@@ -15,6 +15,7 @@
             [dirac.test.chrome-driver :refer [get-debugging-port extract-javascript-logs
                                               get-safe-delay-for-script-runner-to-launch-transcript-test]]
             [dirac.lib.ws-server :as server]
+            [cuerdas.core :as cuerdas]
             [clj-webdriver.taxi :refer :all]
             [clojure.string :as string]
             [clojure.java.shell :as shell]
@@ -108,9 +109,18 @@
 (defn get-expected-transcript-path [suite-name test-name]
   (str (get-expected-transcripts-root-path) (get-expected-transcript-filename suite-name test-name)))
 
-(defn canonic-transcript [transcript]
-  (-> transcript
-      (string/trim)))
+(defn get-canonical-line [line]
+  (string/trim line))
+
+(defn significant-line? [line]
+  (not (empty? line)))
+
+(defn get-canonical-transcript [transcript]
+  (->> transcript
+       (cuerdas/lines)
+       (map get-canonical-line)
+       (filter significant-line?)                                                                                             ; filter empty lines to work around end-of-the-file new-line issue
+       (cuerdas/unlines)))
 
 (defn obtain-transcript []
   (let [test-index-url (make-test-runner-url *current-transcript-suite* *current-transcript-test*)]
@@ -136,11 +146,11 @@
         (println)
         (println (str "*************** JAVASCRIPT LOGS ***************\n" logs))
         (println))
-      (let [actual-transcript (canonic-transcript (obtain-transcript))
+      (let [actual-transcript (get-canonical-transcript (obtain-transcript))
             actual-path (get-actual-transcript-path suite-name test-name)]
         (write-transcript! actual-path actual-transcript)
         (let [expected-path (get-expected-transcript-path suite-name test-name)
-              expected-transcript (canonic-transcript (slurp expected-path))]
+              expected-transcript (get-canonical-transcript (slurp expected-path))]
           (if-not (= actual-transcript expected-transcript)
             (do
               (println)
