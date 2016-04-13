@@ -16,7 +16,7 @@
        (dirac.automation.launcher/register-task! test-thunk#)
        (dirac.automation.task/task-setup! ~config))))
 
-(defmacro doto-devtools [devtools-id & body]
+(defmacro with-devtools [devtools-id & body]
   (let [devtools-id-sym (gensym)
         sync-commands (map (fn [command] `(cljs.core.async/<! (~(first command) ~devtools-id-sym ~@(rest command)))) body)]
     `(let [~devtools-id-sym ~devtools-id]
