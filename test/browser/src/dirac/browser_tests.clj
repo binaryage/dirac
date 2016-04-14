@@ -110,7 +110,7 @@
   (str (get-expected-transcripts-root-path) (get-expected-transcript-filename suite-name test-name)))
 
 (defn get-canonical-line [line]
-  (string/trim line))
+  (string/trimr line))
 
 (defn significant-line? [line]
   (not (empty? line)))
