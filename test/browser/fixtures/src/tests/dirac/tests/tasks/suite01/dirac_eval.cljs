@@ -13,8 +13,7 @@
     (auto/enable-console-feedback!)
     ; ---
     (auto/console-enter-and-wait! "(+ 1 2)" "log> 3")
-    ; TODO: test this after implementing recursive textContent retrieval from console's DOM
-    ; (auto/console-enter-and-wait! "(range 200)" "log> 3")
+    (auto/console-enter-and-wait! "(range 200)" "log> (0 1 2 3 4 …)")
     (auto/console-enter-and-wait! "(doc filter)" "log> null")
     (auto/console-enter-and-wait! "js/dirac" (str "log> " dirac-object))
     (auto/console-enter-and-wait! "(x)" ["wrn> Use of undeclared Var cljs.user/x at line 1 <dirac repl>"
