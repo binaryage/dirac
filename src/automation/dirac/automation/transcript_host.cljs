@@ -13,6 +13,7 @@
 (defonce ^:dynamic *transcript-enabled* true)
 (defonce recorder (chan 1000))
 (defonce active-reader (volatile! false))
+(defonce filter-machine-state (atom {}))
 
 (defn ^:dynamic get-timeout-transcript [max-waiting-time info]
   (str "while waiting (" max-waiting-time "ms) for transcript match <" info ">"))
@@ -43,13 +44,42 @@
         text-block (helpers/prefix-text-block (cuerdas/repeat " " padding-length) text)]
     (str padded-label text-block "\n")))
 
+(defn extract-first-line [s]
+  (-> s
+      (cuerdas/lines)
+      (first)))
+
+(defn start-state-machine-for-java-trace [label text]
+  (swap! filter-machine-state assoc :state :java-trace :logs 2)
+  [label (str (extract-first-line text) "\n<elided stack trace>")])
+
+(defn advance-state-machine-for-java-trace [label text]
+  (if (re-find #"DF\.log" text)
+    (case (:logs @filter-machine-state)
+      2 (do
+          (swap! filter-machine-state assoc :logs 1)
+          [label text])
+      1 (do
+          (swap! filter-machine-state dissoc :state :logs)
+          [label "<elided stack trace log>"]))
+    [label text]))
+
+(defn filter-transcript [label text]
+  (if-let [state (:state @filter-machine-state)]
+    (case state
+      :java-trace (advance-state-machine-for-java-trace label text))
+    (cond
+      (re-find #"present-server-side-output! java-trace" text) (start-state-machine-for-java-trace label text)
+      :else [label text])))
+
 (defn append-to-transcript! [label text & [force?]]
   {:pre [(has-transcript?)
          (string? text)
          (string? label)]}
   (when (or *transcript-enabled* force?)
-    (put! recorder [label text])
-    (transcript/append-to-transcript! @current-transcript (format-transcript label text))))
+    (when-let [[filtered-label filtered-text] (filter-transcript label text)]
+      (put! recorder [filtered-label filtered-text])
+      (transcript/append-to-transcript! @current-transcript (format-transcript filtered-label filtered-text)))))
 
 (defn read-transcript []
   {:pre [(has-transcript?)]}
