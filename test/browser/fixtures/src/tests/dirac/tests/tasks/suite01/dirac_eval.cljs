@@ -12,12 +12,12 @@
     (auto/wait-for-prompt-edit)
     (auto/enable-console-feedback!)
     ; ---
-    (auto/console-enter-and-wait! "(+ 1 2)" "log> 3")
-    (auto/console-enter-and-wait! "(range 200)" "log> (0 1 2 3 4 …)")
-    (auto/console-enter-and-wait! "(doc filter)" "log> null")
-    (auto/console-enter-and-wait! "js/dirac" (str "log> " dirac-object))
-    (auto/console-enter-and-wait! "(x)" ["wrn> Use of undeclared Var cljs.user/x at line 1 <dirac repl>"
-                                         "err> TypeError: Cannot read property 'call' of undefined(…)"])
+    (auto/console-exec-and-wait-for-match! "(+ 1 2)" "log> 3")
+    (auto/console-exec-and-wait-for-match! "(range 200)" "log> (0 1 2 3 4 …)")
+    (auto/console-exec-and-wait-for-match! "(doc filter)" "log> null")
+    (auto/console-exec-and-wait-for-match! "js/dirac" (str "log> " dirac-object))
+    (auto/console-exec-and-wait-for-match! "(x)" ["wrn> Use of undeclared Var cljs.user/x at line 1 <dirac repl>"
+                                                  "err> TypeError: Cannot read property 'call' of undefined(…)"])
     ; TODO: test this after implementing transcript filtering
     ;(auto/console-enter-and-wait! "(in-ns)" "log> 3")
-    (auto/console-enter-and-wait! "(in-ns 'my.ns)" "setDiracPromptNS('my.ns')")))
+    (auto/console-exec-and-wait-for-match! "(in-ns 'my.ns)" "setDiracPromptNS('my.ns')")))

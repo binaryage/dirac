@@ -157,7 +157,7 @@
      (<! (dispatch-console-prompt-input! devtools-id input))
      (<! (dispatch-console-prompt-action! devtools-id "enter")))))
 
-(defn console-enter-and-wait!
+(defn console-exec-and-wait-for-match!
   ([input match-or-matches] (assert false))
   ([devtools-id input match-or-matches]
    (let [matches (if (coll? match-or-matches)
