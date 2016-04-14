@@ -25,6 +25,12 @@ devtools #1      DC.log> (+ 1 2)
 devtools #1      send-eval-request: (+ 1 2)
 devtools #1      wrap-with-postprocess-and-eval-in-current-context!
 devtools #1      DF.log> 3
+automate #1      {:action :dispatch-console-prompt-input, :input "(range 200)"}
+automate #1      {:action :dispatch-console-prompt-action, :input "enter"}
+devtools #1      DC.log> (range 200)
+devtools #1      send-eval-request: (range 200)
+devtools #1      wrap-with-postprocess-and-eval-in-current-context!
+devtools #1      DF.log> (0 1 2 3 4 …)
 automate #1      {:action :dispatch-console-prompt-input, :input "(doc filter)"}
 automate #1      {:action :dispatch-console-prompt-action, :input "enter"}
 devtools #1      DC.log> (doc filter)
@@ -37,7 +43,6 @@ devtools #1      DF.log>
                    Returns a lazy sequence of the items in coll for which
                    (pred item) returns true. pred must be free of side-effects.
                    Returns a transducer when no collection is provided.
-
 devtools #1      DF.log> null
 automate #1      {:action :dispatch-console-prompt-input, :input "js/dirac"}
 automate #1      {:action :dispatch-console-prompt-action, :input "enter"}
@@ -53,7 +58,16 @@ devtools #1      present-server-side-output! stderr > WARNING: Use of undeclared
 devtools #1      DF.wrn> Use of undeclared Var cljs.user/x at line 1 <dirac repl>
 devtools #1      wrap-with-postprocess-and-eval-in-current-context!
 devtools #1      DF.err> TypeError: Cannot read property 'call' of undefined(…)
+automate #1      {:action :dispatch-console-prompt-input, :input "(in-ns)"}
+automate #1      {:action :dispatch-console-prompt-action, :input "enter"}
+devtools #1      DC.log> (in-ns)
+devtools #1      send-eval-request: (in-ns)
+devtools #1      present-server-side-output! java-trace > java.lang.IllegalArgumentException: Argument to in-ns must be a symbol.
+                 <elided stack trace>
+devtools #1      DF.log> java.lang.IllegalArgumentException: Argument to in-ns must be a symbol.
 automate #1      {:action :dispatch-console-prompt-input, :input "(in-ns 'my.ns)"}
+devtools #1      <elided stack trace log>
+devtools #1      JS.log>
 automate #1      {:action :dispatch-console-prompt-action, :input "enter"}
 devtools #1      DC.log> (in-ns 'my.ns)
 devtools #1      send-eval-request: (in-ns 'my.ns)
