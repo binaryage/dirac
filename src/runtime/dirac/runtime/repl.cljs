@@ -66,6 +66,19 @@
     (if (= s prefix)
       (string/triml (subs text prefix-len)))))
 
+(defn get-whitespace-prefix-length [line]
+  (if-let [m (re-find #"^([ ]+)" line)]
+    (count (second m))
+    0))
+
+(defn remove-common-whitespace-prefix [text]
+  (let [text-with-spaces (string/replace text "\t" "  ")                                                                      ; we don't want to run into mixed tabs-spaces situation, treat all tabs as 2-spaces
+        lines (string/split text-with-spaces #"\n")
+        common-prefix-length (apply min (map get-whitespace-prefix-length lines))]
+    (if (pos? common-prefix-length)
+      (string/join "\n" (map #(subs % common-prefix-length) lines))
+      text)))
+
 (defn present-java-trace [request-id text]
   (let [lines (string/split text #"\n")
         first-line (first lines)
@@ -74,7 +87,7 @@
       (error request-id :stderr first-line)
       (do
         (group-collapsed request-id :stderr "%c%s" (pref :java-trace-header-style) first-line)
-        (log request-id :stderr rest-content)
+        (log request-id :stderr (remove-common-whitespace-prefix rest-content))
         (group-end)))))
 
 ; -- REPL API ---------------------------------------------------------------------------------------------------------------
