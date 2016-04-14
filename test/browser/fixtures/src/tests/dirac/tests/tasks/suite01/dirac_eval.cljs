@@ -18,6 +18,6 @@
     (auto/console-exec-and-wait-for-match! "js/dirac" (str "log> " dirac-object))
     (auto/console-exec-and-wait-for-match! "(x)" ["wrn> Use of undeclared Var cljs.user/x at line 1 <dirac repl>"
                                                   "err> TypeError: Cannot read property 'call' of undefined(…)"])
-    ; TODO: test this after implementing transcript filtering
-    ;(auto/console-enter-and-wait! "(in-ns)" "log> 3")
+    (auto/console-exec-and-wait-for-match! "(in-ns)" (str "log> java.lang.IllegalArgumentException: "
+                                                          "Argument to in-ns must be a symbol."))
     (auto/console-exec-and-wait-for-match! "(in-ns 'my.ns)" "setDiracPromptNS('my.ns')")))
