@@ -777,7 +777,7 @@ WebInspector.ConsoleView.prototype = {
             try {
               var levelText = this._levelForFeedback(message.level);
               var typeText = this._typeForFeedback(message.type, isDiracFlavoredMessage);
-              var messageText = result.formattedMessage().querySelector("span").textContent;
+              var messageText = result.formattedMessage().querySelector("span").deepTextContent();
               var glue = (messageText.indexOf("\n")==-1)?"> ":">\n"; // log multi-line log messages on a new line
               dirac.implant.feedback(typeText+"."+levelText+glue+messageText);
             } catch (e) {};
