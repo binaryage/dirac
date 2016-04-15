@@ -2,13 +2,17 @@
 
 ### Why should I use recent Chrome Canary with Dirac DevTools?
 
-DevTools "frontend" depends on Chrome APIs on the "backend" ([remote debugging protocol](https://developer.chrome.com/devtools/docs/debugger-protocol) and others).
-As you can imagine those APIs are in constant evolution. This is normally not a problem because internal DevTools frontend bundled with Chrome talks to a matching backend.
+Please note that DevTools has two parts.
 
-But if you use your own version of DevTools frontend and connect it to an arbitrary Chrome (backend) better that Chrome be of similar "age".
-It might work but it is not guaranteed. Typically a new DevTools-related backend API is introduced in a next Chrome version and DevTools frontend adopts it at some point later.
-DevTools developers have some system in place which allows detection of available APIs. This allows for some flexibility so DevTools
-frontend doesn't break when used with a slightly different Chrome version. But you should not use "too old" DevTools with "too recent" Chrome and vice versa.
+1. DevTools "frontend" is a classic single-page web application (this is the UI you can see)
+2. DevTools "backend" is a set of APIs in Chrome providing various services to DevTools over a websocket connectio (see [remote debugging protocol](https://developer.chrome.com/devtools/docs/debugger-protocol)).
+
+As you can imagine those APIs are in constant evolution. This is normally not a problem because internal DevTools frontend is bundled with Chrome so it is guaranteed that it talks to a matching backend.
+
+When you use your own version of DevTools frontend and connect it to an arbitrary Chrome (backend) better make sure that the Chrome is of similar "age".
+It might work but it is not guaranteed. DevTools developers have some anti-fragility system in place which allows detection of available APIs, so that
+DevTools frontend can adapt dynamically and doesn't fatally break when used with a different Chrome version.
+But you should not use "too old" DevTools with "too recent" Chrome and vice versa.
 Such combinations are not tested and are likely to break because fundamental APIs could be missing / changed on either side.
 
-My goal is to release Dirac DevTools update at least once a month to match it with current Chrome Canary builds.
+My goal is to release Dirac DevTools update at least once a month to match it with recent Chrome Canary builds.
