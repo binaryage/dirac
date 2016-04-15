@@ -55,7 +55,22 @@
 
   ;  :jvm-opts ["-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5005"]
 
-  :source-paths ["src"
+  :source-paths ["src/agent"
+                 "src/automation"
+                 "src/background"
+                 "src/dev"
+                 "src/figwheel"
+                 "src/implant"
+                 "src/lib"
+                 "src/nrepl"
+                 "src/options"
+                 "src/project"
+                 "src/rel"
+                 "src/runtime"
+                 "src/settings"
+                 "src/shared"
+                 "src/test"
+
                  "test/backend/src"
                  "test/browser/fixtures"
                  "test/browser/src"
