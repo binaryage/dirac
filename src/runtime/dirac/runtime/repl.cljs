@@ -1,9 +1,9 @@
 (ns dirac.runtime.repl
   (:require [goog.object]
-            [chromex.support :refer-macros [oget oset ocall oapply]]
             [clojure.browser.repl :as brepl]
             [dirac.runtime.prefs :refer [get-prefs pref]]
             [clojure.string :as string]
+            [goog.object :as gobject]
             [goog.labs.userAgent.browser :as ua]))
 
 ; We didn't want to introduce new protocol methods for websocket connection between DevTools front-end and back-end.
@@ -26,7 +26,7 @@
 ; -- tunneling messages to Dirac DevTools -----------------------------------------------------------------------------------
 
 (defn console-tunnel [method & args]
-  (.apply (oget js/console method) js/console (into-array args)))
+  (.apply (gobject/get js/console method) js/console (into-array args)))
 
 (defn dirac-msg-args [name args]
   (concat ["~~$DIRAC-MSG$~~" name] args))
