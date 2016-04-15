@@ -13,11 +13,14 @@
   (case feature
     :repl (repl/available?)))
 
-(defn install! [features-to-install]
-  (let [lib-info (make-lib-info (get-current-version))]
-    (report-unknown-features! features-to-install known-features lib-info)
-    (display-banner-if-needed! features-to-install known-features lib-info)
-    (install-feature! :repl features-to-install is-feature-available? repl/install!)))
+(defn install!
+  ([] (install! features-to-install-by-default))
+  ([features-to-install]
+   (let [features (if (some? features-to-install) features-to-install features-to-install-by-default)
+         lib-info (make-lib-info (get-current-version))]
+     (report-unknown-features! features known-features lib-info)
+     (display-banner-if-needed! features known-features lib-info)
+     (install-feature! :repl features is-feature-available? repl/install!))))
 
 (defn uninstall! []
   (repl/uninstall!))
