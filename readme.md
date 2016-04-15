@@ -18,3 +18,10 @@ Dirac is a [Chrome DevTools](https://developer.chrome.com/devtools) fork with ex
       * then undefined values
 
 ![ClojureScript REPL](https://dl.dropboxusercontent.com/u/559047/dirac-repl-01.png)
+
+#### Documentation
+
+  * **[Motivation](docs/motivation.md)**
+  * **[Installation](docs/install.md)**
+  * **[Configuration](docs/configuration.md)**
+  * **[FAQ](docs/faq.md)**
