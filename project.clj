@@ -27,7 +27,7 @@
                  [reforms "0.4.3" :scope "test"]
                  [rum "0.6.0" :scope "test"]
                  [rum-reforms "0.4.3" :scope "test"]
-                 [funcool/cuerdas "0.7.1" :scope "test"]
+                 [funcool/cuerdas "0.7.2" :scope "test"]
                  [parinfer "0.2.3" :scope "test"]
                  [com.lucasbradstreet/cljs-uuid-utils "1.0.2" :scope "test"]
 
