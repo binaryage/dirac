@@ -1,11 +1,11 @@
 (ns dirac.automation.runtime
-  (:require-macros [dirac.settings :refer [get-test-dirac-agent-port]])
+  (:require-macros [dirac.settings :refer [get-browser-tests-dirac-agent-port]])
   (:require [chromex.logging :refer-macros [log warn error info]]
             [dirac.runtime :as runtime]
             [dirac.runtime.prefs :as runtime-prefs]))
 
 (defn init-runtime! [& [config]]
-  (runtime/set-pref! :agent-port (get-test-dirac-agent-port))
+  (runtime/set-pref! :agent-port (get-browser-tests-dirac-agent-port))
   (when-let [runtime-prefs (:runtime-prefs config)]                                                                           ; override runtime prefs
     (warn "dirac runtime override: set prefs " runtime-prefs)
     (runtime-prefs/merge-prefs! runtime-prefs))

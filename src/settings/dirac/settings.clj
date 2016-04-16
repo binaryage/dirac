@@ -16,8 +16,14 @@
 
 ; ---------------------------------------------------------------------------------------------------------------------------
 
-(def ^:const TEST_DIRAC_AGENT_PORT 8021)
-(def ^:const TEST_NREPL_SERVER_PORT 8020)
+(def ^:const BACKEND_TESTS_NREPL_SERVER_TIMEOUT (seconds 60))
+(def ^:const BACKEND_TESTS_NREPL_SERVER_PORT 7230)                                                                            ; -1000 from defaults
+(def ^:const BACKEND_TESTS_NREPL_TUNNEL_PORT 7231)                                                                            ; -1000 from defaults
+(def ^:const BACKEND_TESTS_WEASEL_PORT 7232)                                                                                  ; -1000 from defaults
+
+(def ^:const BROWSER_TESTS_DIRAC_AGENT_PORT 8021)
+(def ^:const BROWSER_TESTS_NREPL_SERVER_PORT 8020)
+
 (def ^:const DIRAC_AGENT_BOOT_TIME (seconds 2))
 (def ^:const TRANSCRIPT_MATCH_TIMEOUT (seconds 5))
 (def ^:const LAUNCH_TASK_KEY "diracLaunchTask")
@@ -42,16 +48,29 @@
 (def dirac-window-width (env :dirac-window-width))
 (def dirac-window-height (env :dirac-window-height))
 
-; -- cljs access ------------------------------------------------------------------------------------------------------------
+; -- macro wrappers ---------------------------------------------------------------------------------------------------------
+; macros allow us to potentially expose the constants to cljs
 
-(defmacro get-test-dirac-agent-port []
-  TEST_DIRAC_AGENT_PORT)
+(defmacro get-backend-tests-nrepl-server-timeout []
+  BACKEND_TESTS_NREPL_SERVER_TIMEOUT)
+
+(defmacro get-backend-tests-nrepl-server-port []
+  BACKEND_TESTS_NREPL_SERVER_PORT)
+
+(defmacro get-backend-tests-nrepl-tunnel-port []
+  BACKEND_TESTS_NREPL_TUNNEL_PORT)
+
+(defmacro get-backend-tests-weasel-port []
+  BACKEND_TESTS_WEASEL_PORT)
+
+(defmacro get-browser-tests-dirac-agent-port []
+  BROWSER_TESTS_DIRAC_AGENT_PORT)
+
+(defmacro get-browser-tests-nrepl-server-port []
+  BROWSER_TESTS_NREPL_SERVER_PORT)
 
 (defmacro get-dirac-agent-boot-time []
   DIRAC_AGENT_BOOT_TIME)
-
-(defmacro get-test-nrepl-server-port []
-  TEST_NREPL_SERVER_PORT)
 
 (defmacro get-launch-task-key []
   LAUNCH_TASK_KEY)

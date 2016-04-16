@@ -1,7 +1,10 @@
 (ns dirac.agent-tests
   (:require [clojure.core.async :refer [chan <!! <! >!! put! alts!! timeout close! go go-loop]]
             [clojure.test :refer :all]
-            [dirac.test.nrepl-server-helpers :refer [start-nrepl-server! stop-nrepl-server! test-nrepl-server-port]]
+            [dirac.settings :refer [get-backend-tests-nrepl-server-port
+                                    get-backend-tests-nrepl-tunnel-port
+                                    get-backend-tests-weasel-port]]
+            [dirac.test.nrepl-server-helpers :refer [start-nrepl-server! stop-nrepl-server!]]
             [dirac.agent :as agent]
             [dirac.project :refer [version]]
             [dirac.test.mock-nrepl-tunnel-client :as tunnel-client]
@@ -9,8 +12,6 @@
             [dirac.test.logging :as logging]
             [clojure.tools.logging :as log]))
 
-(def test-nrepl-tunnel-port 7231)                                                                                             ; -1000 from defaults
-(def test-weasel-port 7232)                                                                                                   ; -1000 from defaults
 (def log-level "INFO")                                                                                                        ; INFO, DEBUG, TRACE, ALL
 (def last-msg (volatile! nil))
 
@@ -75,7 +76,7 @@
               "  (require 'dirac.nrepl)"
               "  (dirac.nrepl/boot-cljs-repl! {:log-level \"" log-level "\""
               "                                :weasel-repl {:host \"localhost\""
-              "                                              :port " test-weasel-port "}}))")})
+              "                                              :port " (get-backend-tests-weasel-port) "}}))")})
 
 (defn nrepl-message [envelope]
   {:op       :nrepl-message
@@ -85,14 +86,16 @@
 
 (deftest simple-interaction
   (testing "happy path"
-    (let [actual-out (with-out-str
+    (let [tunnel-port (get-backend-tests-nrepl-tunnel-port)
+          server-port (get-backend-tests-nrepl-server-port)
+          actual-out (with-out-str
                        @(agent/boot! {:log-level    log-level
-                                      :nrepl-server {:port test-nrepl-server-port}
-                                      :nrepl-tunnel {:port test-nrepl-tunnel-port}}))
+                                      :nrepl-server {:port server-port}
+                                      :nrepl-tunnel {:port tunnel-port}}))
           expected-out #"(?s).*Connected to nREPL server at nrepl://localhost:7230.\nTunnel is accepting connections at ws://localhost:7231.*"]
       (is (some? (re-matches expected-out actual-out)))
-      (log/info "dirac agent started at" test-nrepl-tunnel-port)
-      (let [tunnel (tunnel-client/create! (str "ws://localhost:" test-nrepl-tunnel-port))]
+      (log/info "dirac agent started at" tunnel-port)
+      (let [tunnel (tunnel-client/create! (str "ws://localhost:" tunnel-port))]
         (expect-event! tunnel :open)
         (tunnel-client/send! tunnel {:op      :ready
                                      :version version})

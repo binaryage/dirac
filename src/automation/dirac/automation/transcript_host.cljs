@@ -1,6 +1,6 @@
 (ns dirac.automation.transcript-host
   (:require-macros [cljs.core.async.macros :refer [go go-loop]]
-                   [dirac.settings :refer [get-test-dirac-agent-port get-transcript-match-timeout
+                   [dirac.settings :refer [get-browser-tests-dirac-agent-port get-transcript-match-timeout
                                            get-transcript-label-padding-length get-transcript-label-padding-type]])
   (:require [cljs.core.async :refer [put! <! chan timeout alts! close!]]
             [dirac.automation.transcript :as transcript]
