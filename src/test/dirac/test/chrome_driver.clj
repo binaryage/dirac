@@ -71,7 +71,7 @@
         nil))))
 
 (defn beautify-command-line [raw-command-line-text]
-  (string/join (interpose "\\\n                     --" (string/split raw-command-line-text #" --"))))
+  (string/join (interpose " \\\n                     --" (string/split raw-command-line-text #" --"))))
 
 (defn extract-javascript-log-lines [driver]
   {:pre [driver]}

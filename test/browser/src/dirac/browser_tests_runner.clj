@@ -3,6 +3,7 @@
             [environ.core :refer [env]]
             [dirac.logging :as logging]
             [dirac.test.agent :as test-agent]
+            [dirac.test.chrome-browser :refer [start-browser! stop-browser!]]
             [dirac.test.nrepl-server :as test-nrepl-server]))
 
 ; this test runner runs tests against real chrome browser using chrome driver
@@ -26,10 +27,15 @@
 (defn -main []
   (set-test-runner-present!)
   (setup-logging!)
+  (start-browser!)
   (let [test-namespaces default-test-namespaces]
     (require-namespaces test-namespaces)                                                                                      ; we want to require namespaces dynamically for our loggging configuration to take effect
     (let [summary (apply run-tests test-namespaces)]
-      (System/exit (if (successful? summary) 0 1)))))
+      (if-not (successful? summary)
+        (System/exit 1)                                                                                                       ; in case of failure we want let the browser open for further manual inspection
+        (do
+          (stop-browser!)
+          (System/exit 0))))))
 
 (defn -dev-main []
   (System/setProperty "dirac-dev" "true")

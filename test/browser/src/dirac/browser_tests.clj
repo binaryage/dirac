@@ -16,7 +16,7 @@
             [dirac.test.fixtures-web-server :refer [with-fixtures-web-server]]
             [dirac.test.nrepl-server :refer [with-nrepl-server]]
             [dirac.test.agent :refer [with-dirac-agent]]
-            [dirac.test.chrome-browser :refer [with-chrome-browser disconnect-browser! reconnect-browser!]]
+            [dirac.test.chrome-browser :refer [disconnect-browser! reconnect-browser!]]
             [dirac.test.chrome-driver :refer [get-debugging-port extract-javascript-logs]]
             [dirac.lib.ws-server :as server]
             [cuerdas.core :as cuerdas]
@@ -196,7 +196,7 @@
 
 ; -- fixtures ---------------------------------------------------------------------------------------------------------------
 
-(use-fixtures :once with-chrome-browser with-fixtures-web-server with-nrepl-server with-dirac-agent)
+(use-fixtures :once with-fixtures-web-server with-nrepl-server with-dirac-agent)
 
 ; -- individual tests -------------------------------------------------------------------------------------------------------
 
