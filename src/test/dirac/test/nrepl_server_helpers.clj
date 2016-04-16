@@ -1,7 +1,9 @@
 (ns dirac.test.nrepl-server-helpers
   (:require [clojure.tools.nrepl.ack :as nrepl.ack]
             [clojure.tools.nrepl.server :as nrepl.server]
-            [dirac.settings :refer [get-backend-tests-nrepl-server-timeout get-backend-tests-nrepl-server-port]]
+            [dirac.settings :refer [get-backend-tests-nrepl-server-timeout
+                                    get-backend-tests-nrepl-server-host
+                                    get-backend-tests-nrepl-server-port]]
             [dirac.nrepl.middleware :as middleware]))
 
 ; -- helpers ----------------------------------------------------------------------------------------------------------------
@@ -17,13 +19,15 @@
 (defn start-nrepl-server! [& [port timeout]]
   (nrepl.ack/reset-ack-port!)
   (let [ack-server (start-ack-server!)
-        ack-port (:port ack-server)
+        effective-port (or port (get-backend-tests-nrepl-server-port))
+        effective-host (get-backend-tests-nrepl-server-host)
+        effective-timeout (or timeout (get-backend-tests-nrepl-server-timeout))
         nrepl-server (nrepl.server/start-server
-                       :bind "localhost"
-                       :port (or port (get-backend-tests-nrepl-server-port))
-                       :ack-port ack-port
+                       :bind effective-host
+                       :port effective-port
+                       :ack-port (:port ack-server)
                        :handler (get-nrepl-server-handler-with-dirac-middleware))]
-    (when-let [repl-port (nrepl.ack/wait-for-ack (or timeout (get-backend-tests-nrepl-server-timeout)))]
+    (when-let [repl-port (nrepl.ack/wait-for-ack effective-timeout)]
       (nrepl.server/stop-server ack-server)
       [nrepl-server repl-port])))
 
