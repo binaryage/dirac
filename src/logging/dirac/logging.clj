@@ -8,16 +8,16 @@
 ; -- options ----------------------------------------------------------------------------------------------------------------
 
 (def root-options
-  {:pattern (str (utils/wrap-with-ansi-color utils/ANSI_CYAN "# %m") "%n")})
+  {:pattern (str (style "_ %m" :default) "%n")})
 
 (def base-options
-  {:pattern (str (utils/wrap-with-ansi-color utils/ANSI_YELLOW "# %m") "%n")})
+  {:pattern (str (style "%m" :yellow) "%n")})
 
 (def lib-options
-  {:pattern (str (utils/wrap-with-ansi-color utils/ANSI_BLUE "# %m") "%n")})
+  {:pattern (str (style "%m" :blue) "%n")})
 
 (def nrepl-options
-  {:pattern (str (utils/wrap-with-ansi-color utils/ANSI_GREEN "# %m") "%n")})
+  {:pattern (str (style "%m" :green) "%n")})
 
 ; -- public API -------------------------------------------------------------------------------------------------------------
 

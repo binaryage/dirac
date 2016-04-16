@@ -44,7 +44,8 @@
                  [ring/ring-core "1.4.0" :scope "test"]
                  [ring/ring-devel "1.4.0" :scope "test"]
                  [ring/ring-jetty-adapter "1.4.0" :scope "test"]
-                 [clj-time "0.11.0" :scope "test"]]
+                 [clj-time "0.11.0" :scope "test"]
+                 [clansi "1.0.0" :scope "test"]]
 
   ; this effectively disables checkouts and gives us a chance to re-enable them on per-profile basis, see :checkouts profile
   ; http://jakemccrary.com/blog/2015/03/24/advanced-leiningen-checkouts-configuring-what-ends-up-on-your-classpath/
