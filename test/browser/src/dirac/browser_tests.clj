@@ -7,13 +7,14 @@
                                     get-default-test-html-load-timeout
                                     get-signal-server-close-wait-timeout
                                     get-actual-transcripts-root-path
-                                    get-expected-transcripts-root-path]]
-            [dirac.test.fixtures-web-server :refer [with-fixtures-web-server]]
+                                    get-expected-transcripts-root-path
+                                    get-script-runner-launch-delay
+                                    get-fixtures-server-port]]
+            [dirac.test.fixtures-web-server :refer [with-fixtures-web-server get-fixtures-server-url]]
             [dirac.test.nrepl-server :refer [with-nrepl-server]]
             [dirac.test.agent :refer [with-dirac-agent]]
             [dirac.test.chrome-browser :refer [with-chrome-browser disconnect-browser! reconnect-browser!]]
-            [dirac.test.chrome-driver :refer [get-debugging-port extract-javascript-logs
-                                              get-safe-delay-for-script-runner-to-launch-transcript-test]]
+            [dirac.test.chrome-driver :refer [get-debugging-port extract-javascript-logs]]
             [dirac.lib.ws-server :as server]
             [cuerdas.core :as cuerdas]
             [clj-webdriver.taxi :refer :all]
@@ -59,7 +60,7 @@
 
 (defn make-test-runner-url [suite-name test-name]
   (let [debugging-port (get-debugging-port)]
-    (str "http://localhost:9090/runner.html?"
+    (str (get-fixtures-server-url) "/runner.html?"
          "task=" suite-name "." test-name
          "&test_runner=1"
          "&debugging_port=" debugging-port)))
@@ -183,7 +184,10 @@
   (with-transcript-test test-name
     (let [signal-server (create-signal-server!)]
       (navigate-transcript-runner!)
-      (launch-transcript-test-after-delay (get-safe-delay-for-script-runner-to-launch-transcript-test))
+      ; chrome driver needs some time to cooldown after disconnection
+      ; to prevent random org.openqa.selenium.SessionNotCreatedException exceptions
+      ; also we want to run our transcript test safely after debugger port is available for devtools after driver disconnection
+      (launch-transcript-test-after-delay (get-script-runner-launch-delay))
       (disconnect-browser!)
       (wait-for-signal signal-server)
       (reconnect-browser!)
@@ -196,7 +200,7 @@
 ; -- individual tests -------------------------------------------------------------------------------------------------------
 
 (defn fixtures-web-server-check []
-  (to "http://localhost:9090")
+  (to (get-fixtures-server-url))
   (is (= (text "body") "fixtures web-server ready")))
 
 (deftest test-all

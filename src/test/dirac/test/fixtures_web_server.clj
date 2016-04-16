@@ -1,11 +1,15 @@
 (ns dirac.test.fixtures-web-server
+  (:require [dirac.settings :refer [get-fixtures-server-port]])
   (:use ring.middleware.resource
         ring.middleware.content-type
         ring.middleware.not-modified
         ring.middleware.reload))
 
+(defn get-fixtures-server-url []
+  (str "http://localhost:" (get-fixtures-server-port)))
+
 (def default-options
-  {:port  9090
+  {:port  (get-fixtures-server-port)
    :join? false})
 
 (defn handler [_request]

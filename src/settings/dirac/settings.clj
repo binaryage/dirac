@@ -43,6 +43,11 @@
 (def ^:const TRANSCRIPT_LABEL_PADDING_LENGTH 17)
 (def ^:const TRANSCRIPT_LABEL_PADDING_TYPE :right)
 
+(def ^:const BROWSER_CONNECTION_MINIMAL_COOLDOWN (seconds 4))
+(def ^:const SCRIPT_RUNNER_LAUNCH_DELAY (seconds 1))
+
+(def ^:const FIXTURES_SERVER_PORT 9090)
+
 (def dirac-window-top (env :dirac-window-top))
 (def dirac-window-left (env :dirac-window-left))
 (def dirac-window-width (env :dirac-window-width))
@@ -122,3 +127,12 @@
 
 (defmacro get-transcript-label-padding-type []
   TRANSCRIPT_LABEL_PADDING_TYPE)
+
+(defmacro get-browser-connection-minimal-cooldown []
+  BROWSER_CONNECTION_MINIMAL_COOLDOWN)
+
+(defmacro get-script-runner-launch-delay []
+  SCRIPT_RUNNER_LAUNCH_DELAY)
+
+(defmacro get-fixtures-server-port []
+  FIXTURES_SERVER_PORT)

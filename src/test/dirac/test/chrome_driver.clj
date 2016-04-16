@@ -6,7 +6,8 @@
             [clojure.java.io :as io]
             [clojure.core.async :refer [timeout <!!]]
             [clojure.core.async.impl.protocols :refer [closed?]]
-            [clj-time.local :as time-local])
+            [clj-time.local :as time-local]
+            [dirac.settings :refer [get-script-runner-launch-delay]])
   (:import (org.openqa.selenium.chrome ChromeDriver ChromeOptions ChromeDriverService$Builder)
            (org.openqa.selenium.logging LoggingPreferences LogType)
            (org.openqa.selenium.remote DesiredCapabilities CapabilityType)
@@ -15,7 +16,6 @@
            (java.util Date)))
 
 (def ^:const CHROME_VERSION_PAGE "chrome://version")
-(def ^:const SCRIPT_RUNNER_LAUNCH_DELAY 1000)
 
 (def current-chrome-driver-service (atom nil))
 (def current-chrome-remote-debugging-port (atom nil))
@@ -89,12 +89,6 @@
       (catch Exception e
         (log (str "unable to parse log level: " level-str ". " e))
         Level/OFF))))
-
-(defn get-safe-delay-for-script-runner-to-launch-transcript-test []
-  ; chrome driver needs some time to cooldown after disconnection
-  ; to prevent random org.openqa.selenium.SessionNotCreatedException exceptions
-  ; also we want to run our transcript test safely after debugger port is available for devtools after driver disconnection
-  SCRIPT_RUNNER_LAUNCH_DELAY)
 
 ; -- chrome driver / service ------------------------------------------------------------------------------------------------
 

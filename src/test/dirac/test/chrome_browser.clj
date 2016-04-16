@@ -4,9 +4,8 @@
             [clj-webdriver.taxi :refer :all]
             [clj-webdriver.driver :refer [init-driver]]
             [environ.core :refer [env]]
+            [dirac.settings :refer [get-browser-connection-minimal-cooldown]]
             [dirac.test.chrome-driver :as chrome-driver]))
-
-(def ^:const BROWSER_CONNECTION_MINIMAL_COOLDOWN 4000)
 
 (def connection-cooldown-channel (atom nil))
 
@@ -62,7 +61,7 @@
   (when-let [service (chrome-driver/get-current-chrome-driver-service)]
     (.stop service)
     (chrome-driver/set-current-chrome-driver-service! nil)
-    (set-connection-cooldown! (timeout BROWSER_CONNECTION_MINIMAL_COOLDOWN))))
+    (set-connection-cooldown! (timeout (get-browser-connection-minimal-cooldown)))))
 
 (defn reconnect-browser! []
   (wait-for-reconnection-cooldown!)
