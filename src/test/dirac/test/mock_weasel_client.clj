@@ -38,8 +38,8 @@
 (defn serialize-message [msg]
   (pr-str msg))
 
-(defn unserialize-msg [unserialized-msg]
-  (read-string unserialized-msg))
+(defn unserialize-msg [serialized-msg]
+  (read-string serialized-msg))
 
 ; -- handlers ---------------------------------------------------------------------------------------------------------------
 
@@ -81,5 +81,4 @@
     (log/debug "sending text:" serialized-msg)
     (http/send (get-ws client) :text serialized-msg)))
 
-(defn destroy! [client]
-  ())
+(defn destroy! [_client])

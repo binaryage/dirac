@@ -31,8 +31,8 @@
 (defn serialize-message [msg]
   (pr-str msg))
 
-(defn unserialize-msg [unserialized-msg]
-  (read-string unserialized-msg))
+(defn unserialize-msg [serialized-msg]
+  (read-string serialized-msg))
 
 ; -- handlers ---------------------------------------------------------------------------------------------------------------
 
@@ -40,7 +40,6 @@
   (let [info (vec args)]
     (log/debug "got event" info)
     (put! channel info)))
-
 
 (defn on-message [channel _ws serialized-msg]
   (let [msg (unserialize-msg serialized-msg)
