@@ -148,11 +148,13 @@
                                              :optimizations :none                                                             ; we rely on optimizations :none in test runner
                                              :source-map    true}}}}}
 
+             :marion-figwheel
+             {:figwheel {:server-port    7200
+                         :server-logfile ".figwheel_marion.log"
+                         :repl           false}}
+
              :marion
-             {:figwheel  {:server-port    7200
-                          :server-logfile ".figwheel_marion.log"
-                          :repl           false}
-              :cljsbuild {:builds
+             {:cljsbuild {:builds
                           {:marion-background
                            {:initial-notify-command ["scripts/cljsbuild-notify.sh" "marion-background"]
                             :source-paths           ["src/settings"
@@ -179,11 +181,13 @@
                                              :pretty-print           true
                                              :source-map             "test/marion/resources/unpacked/compiled/content_script/content_script.js.map"}}}}}
 
+             :dirac-figwheel
+             {:figwheel {:server-port    7100
+                         :server-logfile ".figwheel_dirac.log"
+                         :repl           false}}
+
              :dirac-unpacked
-             {:figwheel  {:server-port    7100
-                          :server-logfile ".figwheel_dirac.log"
-                          :repl           false}
-              :cljsbuild {:builds
+             {:cljsbuild {:builds
                           {:dirac-implant
                            {:initial-notify-command ["scripts/cljsbuild-notify.sh" "dirac-implant"]
                             :source-paths           ["src/settings"
@@ -371,34 +375,34 @@
             "run-browser-tests-dev"      ["with-profile" "+test-runner" "run" "-m" "dirac.browser-tests-runner/-dev-main"]
             "run-browser-tests-agent"    ["with-profile" "+test-runner" "run" "-m" "dirac.browser-tests-runner/run-agent"]
 
-            "fig-dirac"                  ["with-profile" "+dirac-unpacked,+cljs,+checkouts"
+            "fig-dirac"                  ["with-profile" "+cljs,+checkouts,+dirac-unpacked,+dirac-figwheel"
                                           "figwheel"
                                           "dirac-background" "dirac-options" "dirac-implant"]
-            "compile-dirac-dev"          ["with-profile" "+cljs,+dirac-unpacked,+checkouts,+parallel-build"
+            "compile-dirac-dev"          ["with-profile" "+cljs,+checkouts,+parallel-build,+dirac-unpacked"
                                           "cljsbuild" "once"
                                           "dirac-background" "dirac-options" "dirac-implant"]
-            "auto-compile-dirac-dev"     ["with-profile" "+cljs,+dirac-unpacked,+checkouts,+parallel-build"
+            "auto-compile-dirac-dev"     ["with-profile" "+cljs,+checkouts,+parallel-build,+dirac-unpacked"
                                           "cljsbuild" "auto"
                                           "dirac-background" "dirac-options" "dirac-implant"]
-            "compile-dirac"              ["with-profile" "+dirac-packed,+cljs,+parallel-build"
+            "compile-dirac"              ["with-profile" "+cljs,+parallel-build,+dirac-packed"
                                           "cljsbuild" "once"
                                           "dirac-background" "dirac-options" "dirac-implant"]
-            "fig-marion"                 ["with-profile" "+cljs,+marion,+checkouts"
+            "fig-marion"                 ["with-profile" "+cljs,+checkouts,+marion,+marion-figwheel"
                                           "figwheel"
                                           "marion-background"]
-            "compile-marion"             ["with-profile" "+cljs,+marion,+checkouts"
+            "compile-marion"             ["with-profile" "+cljs,+parallel-build,+marion"
                                           "cljsbuild" "once"
                                           "marion-background" "marion-content-script"]
-            "auto-compile-marion"        ["with-profile" "+cljs,+marion,+checkouts"
+            "auto-compile-marion"        ["with-profile" "+cljs,+checkouts,+parallel-build,+marion"
                                           "cljsbuild" "auto"
                                           "marion-background" "marion-content-script"]
-            "auto-compile-marion-cs"     ["with-profile" "+cljs,+marion,+checkouts"
+            "auto-compile-marion-cs"     ["with-profile" "+cljs,+checkouts,+parallel-build,+marion"
                                           "cljsbuild" "auto"
                                           "marion-content-script"]
 
-            "compile-browser-tests"      ["with-profile" "+cljs,+browser-tests,+checkouts,+parallel-build"
+            "compile-browser-tests"      ["with-profile" "+cljs,+checkouts,+parallel-build,+browser-tests"
                                           "cljsbuild" "once" "tests"]
-            "auto-compile-browser-tests" ["with-profile" "+cljs,+browser-tests,+checkouts,+parallel-build"
+            "auto-compile-browser-tests" ["with-profile" "+cljs,+checkouts,+parallel-build,+browser-tests"
                                           "cljsbuild" "auto" "tests"]
 
             "release"                    ["shell" "scripts/release.sh"]
