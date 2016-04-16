@@ -47,7 +47,7 @@
 (def current-nrepl-server-port (atom nil))
 
 (defn setup-tests []
-  (log/info "setup")
+  (log/debug "setup-tests")
   (if-let [[server port] (start-nrepl-server!)]
     (do
       (log/info "nrepl server started on" port)
@@ -56,7 +56,7 @@
     (log/error "nREPL server start timeouted/failed")))
 
 (defn teardown-tests []
-  (log/info "teardown")
+  (log/debug "teardown-tests")
   (when-let [current-server @current-nrepl-server]
     (stop-nrepl-server! current-server)
     (log/info "nrepl server on" @current-nrepl-server-port "stopped")
