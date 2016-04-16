@@ -1,6 +1,6 @@
 (ns dirac.browser-tests-runner
   (:require [clojure.test :refer :all]
-            [clj-logging-config.log4j :as config]
+            [dirac.test.logging :refer [setup-logging!]]
             [dirac.test.agent :as test-agent]
             [dirac.test.nrepl-server :as test-nrepl-server]))
 
@@ -18,7 +18,7 @@
 
 (defn -main []
   (set-test-runner-present!)
-  (config/set-loggers! :root {:level :info})
+  (setup-logging!)
   (let [test-namespaces default-test-namespaces]
     (require-namespaces test-namespaces)                                                                                      ; we want to require namespaces dynamically for our loggging configuration to take effect
     (let [summary (apply run-tests test-namespaces)]
@@ -34,5 +34,5 @@
     (recur)))
 
 (defn run-agent []
-  (config/set-loggers! :root {:level :info})
+  (setup-logging!)
   (test-nrepl-server/with-nrepl-server #(test-agent/with-dirac-agent agent-loop)))

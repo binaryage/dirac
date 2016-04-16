@@ -10,13 +10,13 @@
 ; -- fixtures ---------------------------------------------------------------------------------------------------------------
 
 (defn setup-dirac-agent! []
-  (log/info "setup-dirac-agent")
+  (log/debug "setup-dirac-agent!")
   (agent/boot! {:nrepl-server {:port (get-browser-tests-nrepl-server-port)}
                 :nrepl-tunnel {:port (get-browser-tests-dirac-agent-port)}})
   (Thread/sleep (get-dirac-agent-boot-time)))                                                                                 ; wait for agent to boot up
 
 (defn teardown-dirac-agent! []
-  (log/info "teardown-dirac-agent")
+  (log/debug "teardown-dirac-agent!")
   (agent/destroy!))
 
 (defn with-dirac-agent [f]

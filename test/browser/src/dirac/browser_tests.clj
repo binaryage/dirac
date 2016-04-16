@@ -24,7 +24,8 @@
             [clojure.string :as string]
             [clojure.java.shell :as shell]
             [clj-time.format :as time-format]
-            [clj-time.coerce :as time-coerce]))
+            [clj-time.coerce :as time-coerce]
+            [clojure.tools.logging :as log]))
 
 ; note: we expect current working directory to be dirac root directory ($root)
 ; $root/test/browser/transcripts/expected/*.txt should contain expected transcripts
@@ -48,9 +49,6 @@
   `(binding [*current-transcript-suite* ~suite-name]
      ~@body))
 
-(defn log [& args]
-  (apply println "*** RUNNER:" args))
-
 (defn get-transcript-test-label [test-name]
   (str "Transcript test '" test-name "'"))
 
@@ -71,12 +69,12 @@
 (defn navigate-transcript-runner! []
   (let [test-index-url (make-test-runner-url *current-transcript-suite* *current-transcript-test*)
         load-timeout (get-default-test-html-load-timeout)]
-    (log "navigating to" test-index-url)
+    (log/info "navigating to" test-index-url)
     (to test-index-url)
     (try
       (wait-until #(exists? "#status-box") load-timeout)
       (catch Exception e
-        (log (navigation-timeout-message *current-transcript-test* load-timeout test-index-url))
+        (log/error (navigation-timeout-message *current-transcript-test* load-timeout test-index-url))
         (throw e)))))
 
 (defn create-signal-server! []
@@ -90,10 +88,10 @@
   ([server timeout-ms]
    (let [server-url (server/get-url server)
          friendly-timeout (format-friendly-timeout timeout-ms)]
-     (log (str "waiting for task signals at " server-url " (timeout " friendly-timeout ")."))
+     (log/info (str "waiting for a task signal at " server-url " (timeout " friendly-timeout ")."))
      (if (= ::server/timeout (server/wait-for-first-client server timeout-ms))
-       (log (str "timeouted while waiting for task signal."))
-       (log (str "received 'task finished' signal.")))
+       (log/error (str "timeouted while waiting for the task signal."))
+       (log/info (str "received the task signal.")))
      ; this is here to give client some time to disconnet before destroying server
      ; devtools would spit "Close received after close" errors in js console
      (Thread/sleep (get-signal-server-close-wait-timeout))

@@ -5,14 +5,12 @@
             [clj-webdriver.driver :refer [init-driver]]
             [environ.core :refer [env]]
             [dirac.settings :refer [get-browser-connection-minimal-cooldown]]
-            [dirac.test.chrome-driver :as chrome-driver]))
+            [dirac.test.chrome-driver :as chrome-driver]
+            [clojure.tools.logging :as log]))
 
 (def connection-cooldown-channel (atom nil))
 
 ; -- helpers ----------------------------------------------------------------------------------------------------------------
-
-(defn log [& args]
-  (apply println "chrome-browser:" args))
 
 (defn get-connection-cooldown []
   @connection-cooldown-channel)
@@ -31,12 +29,14 @@
     (if-let [debug-port (chrome-driver/retrieve-remote-debugging-port)]
       (chrome-driver/set-debugging-port! debug-port)
       (do
-        (log "unable to retrieve-remote-debugging-port")
+        (log/error "unable to retrieve-remote-debugging-port")
         (System/exit 1)))
     (if-let [chrome-info (chrome-driver/retrieve-chrome-info)]
-      (log (str "== CHROME INFO ==============================================================================\n" chrome-info))
+      (log/info (str "\n"
+                               "== CHROME INFO ============================================================================\n"
+                               chrome-info))
       (do
-        (log "unable to retrieve-chrome-info")
+        (log/error "unable to retrieve-chrome-info")
         (System/exit 2)))))
 
 (defn stop-browser! []
@@ -52,7 +52,7 @@
 (defn wait-for-reconnection-cooldown! []
   (when-let [cooldown-channel (get-connection-cooldown)]
     (when-not (closed? cooldown-channel)
-      (log "waiting for connection to cool down...")
+      (log/info "waiting for connection to cool down...")
       (<!! cooldown-channel))
     (clear-connection-cooldown!)))
 

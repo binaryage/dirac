@@ -7,7 +7,8 @@
             [clojure.core.async :refer [timeout <!!]]
             [clojure.core.async.impl.protocols :refer [closed?]]
             [clj-time.local :as time-local]
-            [dirac.settings :refer [get-script-runner-launch-delay]])
+            [dirac.settings :refer [get-script-runner-launch-delay]]
+            [clojure.tools.logging :as log])
   (:import (org.openqa.selenium.chrome ChromeDriver ChromeOptions ChromeDriverService$Builder)
            (org.openqa.selenium.logging LoggingPreferences LogType)
            (org.openqa.selenium.remote DesiredCapabilities CapabilityType)
@@ -40,9 +41,6 @@
 
 (defn set-current-chrome-driver! [driver]
   (reset! current-chrome-driver driver))
-
-(defn log [& args]
-  (apply println "chrome-driver:" args))
 
 (defn get-dirac-extension-path [dirac-root dev?]
   (if dev?
@@ -87,7 +85,7 @@
     (try
       (Level/parse level-str)
       (catch Exception e
-        (log (str "unable to parse log level: " level-str ". " e))
+        (log/error (str "unable to parse log level: " level-str ". " e))
         Level/OFF))))
 
 ; -- chrome driver / service ------------------------------------------------------------------------------------------------
@@ -97,7 +95,7 @@
         builder (ChromeDriverService$Builder.)]
     (if chrome-driver-path
       (let [chrome-driver-exe (io/file chrome-driver-path)]
-        (log (str "setting chrome driver path to '" chrome-driver-exe "'"))
+        (log/debug (str "setting chrome driver path to '" chrome-driver-exe "'"))
         (.usingDriverExecutable builder chrome-driver-exe)))
     (.withVerbose builder (boolean dirac-chrome-driver-verbose))
     (if port
@@ -112,7 +110,7 @@
 
 (defn tweak-os-specific-options [chrome-options options]
   (when-let [chrome-binary-path (pick-chrome-binary-path options)]
-    (log (str "setting chrome binary path to '" chrome-binary-path "'"))
+    (log/debug (str "setting chrome binary path to '" chrome-binary-path "'"))
     (.setBinary chrome-options chrome-binary-path)))
 
 (defn tweak-travis-specific-options [chrome-options options]
@@ -195,7 +193,7 @@
       (when-let [m (re-matches #"(?s).*--remote-debugging-port=(\d+).*" body-text)]
         (Integer/parseInt (second m))))
     (catch Exception e
-      (log (str "got an exception when trying to retrieve remote debugging port:\n" e))
+      (log/error (str "got an exception when trying to retrieve remote debugging port:\n" e))
       nil)))
 
 (defn retrieve-chrome-info []
@@ -215,5 +213,5 @@
            "  Executable Path: " executable-path-text "\n"
            "     Command Line: " (beautify-command-line command-line-text) "\n"))
     (catch Exception e
-      (log (str "got an exception when trying to retrieve chrome info:\n" e))
+      (log/error (str "got an exception when trying to retrieve chrome info:\n" e))
       nil)))
