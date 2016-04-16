@@ -1,8 +1,12 @@
 (ns dirac.agent-tests
   (:require [clojure.core.async :refer [chan <!! <! >!! put! alts!! timeout close! go go-loop]]
             [clojure.test :refer :all]
-            [dirac.settings :refer [get-backend-tests-nrepl-server-port
+            [dirac.settings :refer [get-backend-tests-nrepl-server-host
+                                    get-backend-tests-nrepl-server-port
+                                    get-backend-tests-nrepl-server-url
+                                    get-backend-tests-nrepl-tunnel-host
                                     get-backend-tests-nrepl-tunnel-port
+                                    get-backend-tests-nrepl-tunnel-url
                                     get-backend-tests-weasel-port]]
             [dirac.test.nrepl-server-helpers :refer [start-nrepl-server! stop-nrepl-server!]]
             [dirac.agent :as agent]
@@ -82,16 +86,22 @@
 
 (deftest simple-interaction
   (testing "happy path"
-    (let [tunnel-port (get-backend-tests-nrepl-tunnel-port)
+    (let [server-host (get-backend-tests-nrepl-server-host)
           server-port (get-backend-tests-nrepl-server-port)
-          actual-out (with-out-str
-                       @(agent/boot! {:skip-logging-setup true                                                                ; logging was already setup by our test runner
-                                      :nrepl-server       {:port server-port}
-                                      :nrepl-tunnel       {:port tunnel-port}}))
-          expected-out #"(?s).*Connected to nREPL server at nrepl://localhost:7230.\nTunnel is accepting connections at ws://localhost:7231.*"]
-      (is (some? (re-matches expected-out actual-out)))
+          server-url (get-backend-tests-nrepl-server-url)
+          tunnel-host (get-backend-tests-nrepl-tunnel-host)
+          tunnel-port (get-backend-tests-nrepl-tunnel-port)
+          tunner-url (get-backend-tests-nrepl-tunnel-url)
+          agent-output (with-out-str
+                         @(agent/boot! {:skip-logging-setup true                                                              ; logging was already setup by our test runner
+                                        :nrepl-server       {:host server-host
+                                                             :port server-port}
+                                        :nrepl-tunnel       {:host tunnel-host
+                                                             :port tunnel-port}}))]
+      (is (.contains agent-output (str "Connected to nREPL server at " server-url)))
+      (is (.contains agent-output (str "Tunnel is accepting connections at " tunner-url)))
       (log/info "dirac agent started at" tunnel-port)
-      (let [tunnel (tunnel-client/create! (str "ws://localhost:" tunnel-port))]
+      (let [tunnel (tunnel-client/create! tunner-url)]
         (expect-event! tunnel :open)
         (tunnel-client/send! tunnel {:op      :ready
                                      :version version})
