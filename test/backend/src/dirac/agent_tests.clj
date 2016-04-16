@@ -7,6 +7,7 @@
                                     get-backend-tests-nrepl-tunnel-host
                                     get-backend-tests-nrepl-tunnel-port
                                     get-backend-tests-nrepl-tunnel-url
+                                    get-backend-tests-weasel-host
                                     get-backend-tests-weasel-port]]
             [dirac.test.nrepl-server-helpers :refer [start-nrepl-server! stop-nrepl-server!]]
             [dirac.agent :as agent]
@@ -75,7 +76,7 @@
    :code (str `(do
                  (require 'dirac.nrepl)
                  (dirac.nrepl/boot-cljs-repl! {:skip-logging-setup true                                                       ; we are running nrepl code in the same process, logging was already setup by our test runner
-                                               :weasel-repl        {:host "localhost"
+                                               :weasel-repl        {:host ~(get-backend-tests-weasel-host)
                                                                     :port ~(get-backend-tests-weasel-port)}})))})
 
 (defn nrepl-message [envelope]

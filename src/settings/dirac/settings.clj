@@ -21,6 +21,7 @@
 (def ^:const BACKEND_TESTS_NREPL_SERVER_PORT 7230)                                                                            ; -1000 from defaults
 (def ^:const BACKEND_TESTS_NREPL_TUNNEL_HOST "localhost")
 (def ^:const BACKEND_TESTS_NREPL_TUNNEL_PORT 7231)                                                                            ; -1000 from defaults
+(def ^:const BACKEND_TESTS_WEASEL_HOST "localhost")
 (def ^:const BACKEND_TESTS_WEASEL_PORT 7232)                                                                                  ; -1000 from defaults
 (def ^:const BACKEND_TESTS_NREPL_ACK_SERVER_HOST "localhost")
 
@@ -86,6 +87,9 @@
 
 (defmacro get-backend-tests-nrepl-tunnel-url []
   (str "ws://" (get-backend-tests-nrepl-tunnel-host) ":" (get-backend-tests-nrepl-tunnel-port)))
+
+(defmacro get-backend-tests-weasel-host []
+  BACKEND_TESTS_WEASEL_HOST)
 
 (defmacro get-backend-tests-weasel-port []
   BACKEND_TESTS_WEASEL_PORT)
