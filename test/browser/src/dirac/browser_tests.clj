@@ -9,8 +9,11 @@
                                     get-actual-transcripts-root-path
                                     get-expected-transcripts-root-path
                                     get-script-runner-launch-delay
-                                    get-fixtures-server-port]]
-            [dirac.test.fixtures-web-server :refer [with-fixtures-web-server get-fixtures-server-url]]
+                                    get-fixtures-server-port
+                                    get-fixtures-server-url
+                                    get-signal-server-host
+                                    get-signal-server-port]]
+            [dirac.test.fixtures-web-server :refer [with-fixtures-web-server]]
             [dirac.test.nrepl-server :refer [with-nrepl-server]]
             [dirac.test.agent :refer [with-dirac-agent]]
             [dirac.test.chrome-browser :refer [with-chrome-browser disconnect-browser! reconnect-browser!]]
@@ -78,8 +81,8 @@
 
 (defn create-signal-server! []
   (server/create! {:name "Signal server"
-                   :host "localhost"
-                   :port 22555}))
+                   :host (get-signal-server-host)
+                   :port (get-signal-server-port)}))
 
 (defn wait-for-signal
   ([server]

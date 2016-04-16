@@ -5,9 +5,6 @@
         ring.middleware.not-modified
         ring.middleware.reload))
 
-(defn get-fixtures-server-url []
-  (str "http://localhost:" (get-fixtures-server-port)))
-
 (def default-options
   {:port  (get-fixtures-server-port)
    :join? false})

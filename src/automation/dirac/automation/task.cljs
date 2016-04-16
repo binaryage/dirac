@@ -3,6 +3,7 @@
   (:require [cljs.core.async :refer [put! <! chan timeout alts! close!]]
             [chromex.support :refer-macros [oget oset ocall oapply]]
             [chromex.logging :refer-macros [log warn error info]]
+            [dirac.settings :refer-macros [get-signal-server-url]]
             [dirac.lib.ws-client :as ws-client]
             [dirac.automation.transcript-host :as transcript-host]
             [dirac.automation.status-host :as status-host]
@@ -45,8 +46,8 @@
 
 (defn signal-task-finished! []
   ; this signals to the task runner that he can reconnect chrome driver and check the results
-  (ws-client/connect! "ws://localhost:22555" {:name    "Signaller"
-                                              :on-open #(ws-client/close! %)}))
+  (ws-client/connect! (get-signal-server-url) {:name    "Signaller"
+                                               :on-open #(ws-client/close! %)}))
 
 (defn task-teardown!
   ([]

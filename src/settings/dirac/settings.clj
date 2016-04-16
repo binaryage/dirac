@@ -46,7 +46,11 @@
 (def ^:const BROWSER_CONNECTION_MINIMAL_COOLDOWN (seconds 4))
 (def ^:const SCRIPT_RUNNER_LAUNCH_DELAY (seconds 1))
 
+(def ^:const FIXTURES_SERVER_HOST "localhost")
 (def ^:const FIXTURES_SERVER_PORT 9090)
+
+(def ^:const SIGNAL_SERVER_HOST "localhost")
+(def ^:const SIGNAL_SERVER_PORT 22555)
 
 (def dirac-window-top (env :dirac-window-top))
 (def dirac-window-left (env :dirac-window-left))
@@ -134,5 +138,20 @@
 (defmacro get-script-runner-launch-delay []
   SCRIPT_RUNNER_LAUNCH_DELAY)
 
+(defmacro get-fixtures-server-host []
+  FIXTURES_SERVER_HOST)
+
 (defmacro get-fixtures-server-port []
   FIXTURES_SERVER_PORT)
+
+(defmacro get-fixtures-server-url []
+  (str "http://" (get-fixtures-server-host) ":" (get-fixtures-server-port)))
+
+(defmacro get-signal-server-host []
+  SIGNAL_SERVER_HOST)
+
+(defmacro get-signal-server-port []
+  SIGNAL_SERVER_PORT)
+
+(defmacro get-signal-server-url []
+  (str "ws://" (get-signal-server-host) ":" (get-signal-server-port)))
