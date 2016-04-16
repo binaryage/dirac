@@ -82,6 +82,9 @@
   {:op       :nrepl-message
    :envelope envelope})
 
+(defn success-value [& [opts]]
+  (merge {:status :success} opts))
+
 ; -- test -------------------------------------------------------------------------------------------------------------------
 
 (deftest simple-interaction
@@ -111,11 +114,9 @@
         (let [weasel (weasel-client/create! (:server-url @last-msg))]
           (expect-event! weasel :open)
           (expect-op-msg! weasel :eval-js)
-          (weasel-client/send! weasel {:op :result :value {:status :success
-                                                           :value  ""}})
+          (weasel-client/send! weasel {:op :result :value (success-value)})
           (expect-op-msg! weasel :eval-js)
-          (weasel-client/send! weasel {:op :result :value {:status :success
-                                                           :value  ""}})
+          (weasel-client/send! weasel {:op :result :value (success-value)})
           (expect-ns-msg! tunnel "cljs.user")
           (expect-status-msg! tunnel ["done"])
           (tunnel-client/send! tunnel {:op :bootstrap-done})))
