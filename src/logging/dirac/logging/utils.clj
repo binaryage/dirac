@@ -12,6 +12,3 @@
                     :log-level :level})
       (update :level #(if % (Level/toLevel % Level/INFO)))
       (remove-keys-with-nil-val)))
-
-(defn make-logging-options [& option-maps]
-  (or (apply deep-merge-ignoring-nils option-maps) {}))

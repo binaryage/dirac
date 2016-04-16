@@ -1,9 +1,16 @@
 (ns dirac.logging
   (:require [dirac.logging.utils :as utils]
+            [dirac.lib.utils :as lib-utils]
             [clj-logging-config.log4j :as config]
-            [clojure.tools.logging :as log]))
+            [clojure.tools.logging :as log]
+            [clansi :refer [style]]))
 
 (def initialized? (volatile! false))
+
+; -- options ----------------------------------------------------------------------------------------------------------------
+
+(defn merge-options [& option-maps]
+  (or (apply lib-utils/deep-merge-ignoring-nils option-maps) {}))
 
 ; -- options ----------------------------------------------------------------------------------------------------------------
 
@@ -29,25 +36,25 @@
       (let [options (utils/config->logging-options config)]
         (println "logging setup")
         (config/set-loggers!
-          :root (utils/make-logging-options root-options options)
+          :root (merge-options root-options options)
           ; test runners
-          "dirac.browser-tests" (utils/make-logging-options base-options options)
-          "dirac.agent-tests" (utils/make-logging-options base-options options)
+          "dirac.browser-tests" (merge-options base-options options)
+          "dirac.agent-tests" (merge-options base-options options)
           ; test mocks / helpers
-          "dirac.test.mock-nrepl-tunnel-client" (utils/make-logging-options base-options options)
-          "dirac.test.mock-weasel-client" (utils/make-logging-options base-options options)
+          "dirac.test.mock-nrepl-tunnel-client" (merge-options base-options options)
+          "dirac.test.mock-weasel-client" (merge-options base-options options)
           ; agent
-          "dirac.agent" (utils/make-logging-options base-options options)
-          "dirac.agent-impl" (utils/make-logging-options base-options options)
-          "dirac.agent.logging" (utils/make-logging-options base-options options)
-          "dirac.agent.config" (utils/make-logging-options base-options options)
+          "dirac.agent" (merge-options base-options options)
+          "dirac.agent-impl" (merge-options base-options options)
+          "dirac.agent.logging" (merge-options base-options options)
+          "dirac.agent.config" (merge-options base-options options)
           ; nrepl
-          "dirac.nrepl" (utils/make-logging-options nrepl-options options)
-          "dirac.nrepl.middleware" (utils/make-logging-options nrepl-options options)
-          "dirac.nrepl.piggieback" (utils/make-logging-options nrepl-options options)
+          "dirac.nrepl" (merge-options nrepl-options options)
+          "dirac.nrepl.middleware" (merge-options nrepl-options options)
+          "dirac.nrepl.piggieback" (merge-options nrepl-options options)
           ; lib
-          "dirac.lib.nrepl-client" (utils/make-logging-options lib-options options)
-          "dirac.lib.nrepl-tunnel" (utils/make-logging-options lib-options options)
-          "dirac.lib.nrepl-tunnel-server" (utils/make-logging-options lib-options options)
-          "dirac.lib.weasel-server" (utils/make-logging-options lib-options options)
-          "dirac.lib.ws-server" (utils/make-logging-options lib-options options))))))
+          "dirac.lib.nrepl-client" (merge-options lib-options options)
+          "dirac.lib.nrepl-tunnel" (merge-options lib-options options)
+          "dirac.lib.nrepl-tunnel-server" (merge-options lib-options options)
+          "dirac.lib.weasel-server" (merge-options lib-options options)
+          "dirac.lib.ws-server" (merge-options lib-options options))))))
