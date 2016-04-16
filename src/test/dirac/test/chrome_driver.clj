@@ -118,9 +118,10 @@
     logging-prefs))
 
 (defn tweak-os-specific-options [chrome-options options]
-  (when-let [chrome-binary-path (pick-chrome-binary-path options)]
-    (log/debug (str "setting chrome binary path to '" chrome-binary-path "'"))
-    (.setBinary chrome-options chrome-binary-path)))
+  (when-not (:attaching? options)
+    (when-let [chrome-binary-path (pick-chrome-binary-path options)]
+      (log/debug (str "setting chrome binary path to '" chrome-binary-path "'"))
+      (.setBinary chrome-options chrome-binary-path))))
 
 (defn tweak-travis-specific-options [chrome-options options]
   (when (:travis options)
