@@ -18,6 +18,15 @@
 
 (def ^:const CHROME_VERSION_PAGE "chrome://version")
 
+(def known-env-options [:travis
+                        :chrome-driver-path
+                        :dirac-root
+                        :dirac-dev
+                        :dirac-host-os
+                        :dirac-use-chromium
+                        :dirac-chrome-driver-verbose
+                        :dirac-chrome-driver-browser-log-level])
+
 (def current-chrome-driver-service (atom nil))
 (def current-chrome-remote-debugging-port (atom nil))
 (def current-chrome-driver (atom nil))
@@ -161,18 +170,8 @@
     (set-current-chrome-driver! chrome-driver)
     (init-driver chrome-driver)))
 
-(def known-env-options [:travis
-                        :chrome-driver-path
-                        :dirac-root
-                        :dirac-dev
-                        :dirac-host-os
-                        :dirac-use-chromium
-                        :dirac-chrome-driver-verbose
-                        :dirac-chrome-driver-browser-log-level])
-
 (defn prepare-options
-  ([]
-   (prepare-options false))
+  ([] (prepare-options false))
   ([attaching?]
    (let [defaults {:dirac-host-os                         (System/getProperty "os.name")
                    :dirac-chrome-driver-browser-log-level "SEVERE"}
@@ -190,7 +189,7 @@
     (to CHROME_VERSION_PAGE)
     (wait-until #(exists? "#executable_path"))
     (let [body-text (text "body")]
-      (when-let [m (re-matches #"(?s).*--remote-debugging-port=(\d+).*" body-text)]
+      (when-let [m (re-find #"--remote-debugging-port=(\d+)" body-text)]
         (Integer/parseInt (second m))))
     (catch Exception e
       (log/error (str "got an exception when trying to retrieve remote debugging port:\n" e))
