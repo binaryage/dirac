@@ -1,12 +1,13 @@
 (ns dirac.browser-tests-runner
   (:require [clojure.test :refer :all]
+            [environ.core :refer [env]]
             [dirac.logging :as logging]
             [dirac.test.agent :as test-agent]
             [dirac.test.nrepl-server :as test-nrepl-server]))
 
-; this alternative test runner runs tests against real chrome browser
+; this test runner runs tests against real chrome browser using chrome driver
 
-(def log-level "INFO")                                                                                                        ; INFO, DEBUG, TRACE, ALL
+(def log-level (or (env :dirac-log-level) (env :dirac-browser-tests-log-level) "INFO"))                                       ; INFO, DEBUG, TRACE, ALL
 
 (defn setup-logging! []
   (logging/setup! {:log-out   :console
