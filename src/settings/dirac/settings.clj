@@ -3,23 +3,33 @@
 
 ; we want this stuff to be accessible both from clojure and clojurescript
 
+; -- time -------------------------------------------------------------------------------------------------------------------
+
 (def ^:const SECOND 1000)
 (def ^:const MINUTE (* 60 SECOND))
 
+(defmacro seconds [v]
+  (* SECOND v))
+
+(defmacro minutes [v]
+  (* MINUTE v))
+
+; ---------------------------------------------------------------------------------------------------------------------------
+
 (def ^:const TEST_DIRAC_AGENT_PORT 8021)
 (def ^:const TEST_NREPL_SERVER_PORT 8020)
-(def ^:const DIRAC_AGENT_BOOT_TIME (* 2 SECOND))
-(def ^:const TRANSCRIPT_MATCH_TIMEOUT (* 5 SECOND))
+(def ^:const DIRAC_AGENT_BOOT_TIME (seconds 2))
+(def ^:const TRANSCRIPT_MATCH_TIMEOUT (seconds 5))
 (def ^:const LAUNCH_TASK_KEY "diracLaunchTask")
 (def ^:const LAUNCH_TASK_MESSAGE "dirac-launch-task")
 
-(def ^:const MARION_INITIAL_WAIT_TIME (* 1 SECOND))
-(def ^:const MARION_RECONNECTION_ATTEMPT_DELAY (* 2 SECOND))
-(def ^:const MARION_MESSAGE_REPLY_TIMEOUT (* 5 SECOND))
+(def ^:const MARION_INITIAL_WAIT_TIME (seconds 1))
+(def ^:const MARION_RECONNECTION_ATTEMPT_DELAY (seconds 2))
+(def ^:const MARION_MESSAGE_REPLY_TIMEOUT (seconds 5))
 
-(def ^:const DEFAULT_TASK_TIMEOUT (* 5 MINUTE))
-(def ^:const DEFAULT_TEST_HTML_LOAD_TIMEOUT (* 1 SECOND))
-(def ^:const SIGNAL_SERVER_CLOSE_WAIT_TIMEOUT (* 1 SECOND))
+(def ^:const DEFAULT_TASK_TIMEOUT (minutes 5))
+(def ^:const DEFAULT_TEST_HTML_LOAD_TIMEOUT (seconds 1))
+(def ^:const SIGNAL_SERVER_CLOSE_WAIT_TIMEOUT (seconds 1))
 
 (def ^:const ACTUAL_TRANSCRIPTS_ROOT_PATH "test/browser/transcripts/actual/")
 (def ^:const EXPECTED_TRANSCRIPTS_ROOT_PATH "test/browser/transcripts/expected/")
@@ -33,12 +43,6 @@
 (def dirac-window-height (env :dirac-window-height))
 
 ; -- cljs access ------------------------------------------------------------------------------------------------------------
-
-(defmacro seconds [v]
-  (* SECOND v))
-
-(defmacro minutes [v]
-  (* MINUTE v))
 
 (defmacro get-test-dirac-agent-port []
   TEST_DIRAC_AGENT_PORT)
