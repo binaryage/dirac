@@ -72,11 +72,11 @@
 
 (defn boostrap-cljs-repl-message []
   {:op   "eval"
-   :code (str "(do"
-              "  (require 'dirac.nrepl)"
-              "  (dirac.nrepl/boot-cljs-repl! {:skip-logging-setup true"                                                      ; we are running nrepl code in the same process, logging was already setup by our test runner
-              "                                :weasel-repl {:host \"localhost\""
-              "                                              :port " (get-backend-tests-weasel-port) "}}))")})
+   :code (str `(do
+                 (require 'dirac.nrepl)
+                 (dirac.nrepl/boot-cljs-repl! {:skip-logging-setup true                                                       ; we are running nrepl code in the same process, logging was already setup by our test runner
+                                               :weasel-repl        {:host "localhost"
+                                                                    :port ~(get-backend-tests-weasel-port)}})))})
 
 (defn nrepl-message [envelope]
   {:op       :nrepl-message
