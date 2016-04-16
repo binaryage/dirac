@@ -1,10 +1,16 @@
 (ns dirac.browser-tests-runner
   (:require [clojure.test :refer :all]
-            [dirac.test.logging :refer [setup-logging!]]
+            [dirac.logging :as logging]
             [dirac.test.agent :as test-agent]
             [dirac.test.nrepl-server :as test-nrepl-server]))
 
 ; this alternative test runner runs tests against real chrome browser
+
+(def log-level "INFO")                                                                                                        ; INFO, DEBUG, TRACE, ALL
+
+(defn setup-logging! []
+  (logging/setup! {:log-out   :console
+                   :log-level log-level}))
 
 (def default-test-namespaces
   ['dirac.browser-tests])

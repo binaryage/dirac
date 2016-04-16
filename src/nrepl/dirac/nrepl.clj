@@ -2,7 +2,7 @@
   (:require [clojure.core.async :refer [chan <!! <! >!! put! alts!! timeout close! go go-loop]]
             [clojure.tools.logging :as log]
             [dirac.lib.weasel-server :as weasel-server]
-            [dirac.nrepl.logging :as logging]
+            [dirac.logging :as logging]
             [dirac.nrepl.piggieback :as piggieback]
             [dirac.nrepl.config :as config]))
 
@@ -25,7 +25,7 @@
   ; TODO: defensively check for it^
   (let [effective-config (config/get-effective-config config)]
     (if-not (:skip-logging-setup effective-config)
-      (logging/setup-logging! effective-config))
+      (logging/setup! effective-config))
     (log/debug "boot-cljs-repl! with effective config:" effective-config))
   (bootstrap! config)
   true)

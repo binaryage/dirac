@@ -46,7 +46,6 @@
 (defn on-event [client-promise & args]
   (channel-put! client-promise (vec args)))
 
-
 (defn on-message [client-promise _ws serialized-msg]
   (let [msg (unserialize-msg serialized-msg)]
     (channel-put! client-promise [:msg msg])))
@@ -54,6 +53,7 @@
 ; -- api --------------------------------------------------------------------------------------------------------------------
 
 (defn create! [url]
+  {:pre (string? url)}
   (let [http-client (http/create-client)
         client-promise (promise)
         channel (chan)

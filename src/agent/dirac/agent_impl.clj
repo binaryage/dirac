@@ -1,7 +1,7 @@
 (ns dirac.agent-impl
   (:require [clojure.core.async :refer [chan <!! <! >!! put! alts!! timeout close! go go-loop]]
             [clojure.tools.logging :as log]
-            [dirac.agent.logging :as logging]
+            [dirac.logging :as logging]
             [dirac.agent.config :as config]
             [dirac.agent.version :refer [version]]
             [dirac.lib.nrepl-tunnel :as nrepl-tunnel]
@@ -134,7 +134,7 @@
   [& [config]]
   (let [effective-config (config/get-effective-config config)]
     (if-not (:skip-logging-setup effective-config)
-      (logging/setup-logging! effective-config))
+      (logging/setup! effective-config))
     (log/info "Booting Dirac Agent...")
     (log/debug "effective config: " effective-config)
     (future (boot-now! config))))

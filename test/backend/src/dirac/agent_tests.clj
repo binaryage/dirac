@@ -9,10 +9,8 @@
             [dirac.project :refer [version]]
             [dirac.test.mock-nrepl-tunnel-client :as tunnel-client]
             [dirac.test.mock-weasel-client :as weasel-client]
-            [dirac.test.logging :as logging]
             [clojure.tools.logging :as log]))
 
-(def log-level "INFO")                                                                                                        ; INFO, DEBUG, TRACE, ALL
 (def last-msg (volatile! nil))
 
 ; -- helpers ----------------------------------------------------------------------------------------------------------------
@@ -45,8 +43,6 @@
 (def current-nrepl-server-port (atom nil))
 
 (defn setup-tests []
-  (logging/setup-logging! {:log-out   :console
-                           :log-level log-level})
   (log/info "setup")
   (if-let [[server port] (start-nrepl-server!)]
     (do
@@ -74,7 +70,7 @@
   {:op   "eval"
    :code (str "(do"
               "  (require 'dirac.nrepl)"
-              "  (dirac.nrepl/boot-cljs-repl! {:log-level \"" log-level "\""
+              "  (dirac.nrepl/boot-cljs-repl! {:skip-logging-setup true"                                                      ; we are running nrepl code in the same process, logging was already setup by our test runner
               "                                :weasel-repl {:host \"localhost\""
               "                                              :port " (get-backend-tests-weasel-port) "}}))")})
 
@@ -89,9 +85,9 @@
     (let [tunnel-port (get-backend-tests-nrepl-tunnel-port)
           server-port (get-backend-tests-nrepl-server-port)
           actual-out (with-out-str
-                       @(agent/boot! {:log-level    log-level
-                                      :nrepl-server {:port server-port}
-                                      :nrepl-tunnel {:port tunnel-port}}))
+                       @(agent/boot! {:skip-logging-setup true                                                                ; logging was already setup by our test runner
+                                      :nrepl-server       {:port server-port}
+                                      :nrepl-tunnel       {:port tunnel-port}}))
           expected-out #"(?s).*Connected to nREPL server at nrepl://localhost:7230.\nTunnel is accepting connections at ws://localhost:7231.*"]
       (is (some? (re-matches expected-out actual-out)))
       (log/info "dirac agent started at" tunnel-port)

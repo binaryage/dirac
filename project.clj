@@ -62,6 +62,7 @@
                  "src/figwheel"
                  "src/implant"
                  "src/lib"
+                 "src/logging"
                  "src/nrepl"
                  "src/options"
                  "src/project"
@@ -102,6 +103,7 @@
                                   (with-meta (vec non-test-deps) {:replace true}))                                            ; so ugly!
                :source-paths   ^:replace ["src/project"
                                           "src/settings"
+                                          "src/logging"
                                           "src/runtime"
                                           "src/lib"
                                           "src/agent"
@@ -118,11 +120,12 @@
               :hooks   [leiningen.cljsbuild]}
 
              :test-runner
-             {:source-paths ^:replace ["src/settings"
+             {:source-paths ^:replace ["src/project"
+                                       "src/settings"
+                                       "src/logging"
                                        "src/lib"
                                        "src/agent"
-                                       "src/nrepl"
-                                       "src/project"]
+                                       "src/nrepl"]
               :test-paths   ["src/test"
                              "test/browser/src"
                              "test/backend/src"]}
