@@ -33,7 +33,7 @@
 
 (defn ^:dynamic bootstrap-error-msg []
   (str "Unable to bootstrap ClojureScript REPL due to an error.\n"
-       "Check your Dirac Agent server console."))
+       "Check your Dirac Agent console output."))
 
 (defn ^:dynamic unable-to-connect-exception-msg [url e]
   (str "Unable to connect to Dirac Agent at " url ":\n"
@@ -199,13 +199,16 @@
     (let [response (<! (nrepl-tunnel-client/tunnel-message-with-response! (nrepl-tunnel-client/boostrap-cljs-repl-message)))]
       (case (first (:status response))
         "done" (do
+                 (log "Bootstrap done" response)
                  (set! *repl-bootstrapped* true)
                  (update-repl-mode!)
                  {:op :bootstrap-done})
         "timeout" (do
+                    (error "Bootstrap timeouted" response)
                     (display-prompt-status (unable-to-bootstrap-msg))
                     {:op :bootstrap-timeout})
         (do
+          (error "Bootstrap failed" response)
           (display-prompt-status (bootstrap-error-msg))
           {:op :bootstrap-error})))))
 
