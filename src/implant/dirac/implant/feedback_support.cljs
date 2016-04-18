@@ -25,6 +25,7 @@
                      :envelope #js {:type       "feedback-from-devtools"
                                     :devtools   (helpers/get-devtools-id)
                                     :transcript text}}]
+    (log "posting feedback:" message)
     (if-let [intercom (get-intercom)]
       (intercom message)
       (do
