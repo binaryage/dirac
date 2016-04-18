@@ -4,11 +4,13 @@ extension        handling command: open-dirac-devtools
 extension        register devtools #1
 devtools #1      implant initialized
 devtools #1      devtools ready
+devtools #1      setCurrentPanel: elements
 automate #1      {:action :switch-inspector-panel, :panel :console}
 devtools #1      console initialized
 automate #1      {:action :switch-to-dirac-prompt}
 devtools #1      adopt-prompt-element use-parinfer? true
 devtools #1      setDiracPromptMode('status')
+devtools #1      setCurrentPanel: console
 devtools #1      switch console prompt to dirac
 devtools #1      console prompt focused
 devtools #1      repl initialized
@@ -19,6 +21,7 @@ devtools #1      wrap-with-postprocess-and-eval-in-current-context!
 devtools #1      wrap-with-postprocess-and-eval-in-current-context!
 devtools #1      setDiracPromptMode('edit')
 automate #1      {:action :enable-console-feedback}
+devtools #1      console prompt focused
 automate #1      {:action :dispatch-console-prompt-input, :input "(+ 1 2)"}
 automate #1      {:action :dispatch-console-prompt-action, :input "enter"}
 devtools #1      DC.log> (+ 1 2)

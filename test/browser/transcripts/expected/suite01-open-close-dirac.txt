@@ -4,6 +4,7 @@ extension        handling command: open-dirac-devtools
 extension        register devtools #1
 devtools #1      implant initialized
 devtools #1      devtools ready
+devtools #1      setCurrentPanel: elements
 automate         [:chromex.ext.commands/on-command ["close-dirac-devtools" 1]]
 extension        handling command: close-dirac-devtools
 extension        unregister devtools #1
