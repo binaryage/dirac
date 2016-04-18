@@ -1060,13 +1060,6 @@ WebInspector.ConsoleView.prototype = {
           return this._switchPrompt(oldIndex, newIndex);
         }
 
-        var that = this;
-        var callback = function(result, wasThrown, valueResult, exceptionDetails) {
-            if (result && result.value === true) {
-                return that._switchPrompt(oldIndex, newIndex);
-            }
-        };
-
         return this._switchPrompt(oldIndex, newIndex);
     },
 
