@@ -535,7 +535,9 @@ WebInspector.ConsoleView.prototype = {
          var m = knownModes[i];
          this._diracPromptDescriptor.element.classList.toggle("dirac-prompt-mode-"+m, mode==m);
        }
-       this._diracPromptDescriptor.element.focus();
+       if (mode=="edit") {
+         this.focus();
+       }
     },
 
     _refreshNs: function () {
