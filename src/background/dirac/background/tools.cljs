@@ -16,11 +16,19 @@
             [dirac.background.state :as state]
             [dirac.utils :as utils]))
 
-(defonce flag-keys [:enable-repl
-                    :enable-parinfer
-                    :enable-friendly-locals
-                    :enable-clustered-locals
-                    :inline-custom-formatters])
+(def flag-keys [:enable-repl
+                :enable-parinfer
+                :enable-friendly-locals
+                :enable-clustered-locals
+                :inline-custom-formatters])
+
+(def last-active-tab-query #js {"lastFocusedWindow" true
+                                "active"            true})
+
+(def focus-window-params #js {"focused"       true
+                              "drawAttention" true})
+
+(def activate-tab-params #js {"active" true})
 
 (defn get-dirac-flags []
   (let [options (options/get-options)
@@ -99,13 +107,11 @@
 
 (defn activate-dirac-devtools! [tab-id]
   (go
-    (let [{:keys [frontend-tab-id]} (devtools/find-devtools-descriptor-for-backend-tab tab-id)
-          _ (assert frontend-tab-id)
-          dirac-window-id (<! (sugar/fetch-tab-window-id frontend-tab-id))]
-      (if dirac-window-id
-        (windows/update dirac-window-id #js {"focused"       true
-                                             "drawAttention" true}))
-      (tabs/update frontend-tab-id #js {"active" true}))))
+    (if-let [{:keys [frontend-tab-id]} (devtools/find-devtools-descriptor-for-backend-tab tab-id)]
+      (if-let [dirac-window-id (<! (sugar/fetch-tab-window-id frontend-tab-id))]
+        (windows/update dirac-window-id focus-window-params)
+        (tabs/update frontend-tab-id activate-tab-params))
+      (warn "activate-dirac-devtools! unable to lookup devtools decriptor for backend tab" tab-id))))
 
 (defn activate-or-open-dirac-devtools! [tab & [options-overrides]]
   (let [tab-id (oget tab "id")]
@@ -117,8 +123,7 @@
 
 (defn open-dirac-devtools-in-active-tab! [& [options-overrides]]
   (go
-    (let [[tabs] (<! (tabs/query #js {"lastFocusedWindow" true
-                                      "active"            true}))]
+    (let [[tabs] (<! (tabs/query last-active-tab-query))]
       (if-let [tab (first tabs)]
         (<! (activate-or-open-dirac-devtools! tab options-overrides))
         (warn "no active tab?")))))
