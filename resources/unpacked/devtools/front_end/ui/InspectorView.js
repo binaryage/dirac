@@ -347,11 +347,13 @@ WebInspector.InspectorView.prototype = {
         WebInspector.userMetrics.panelShown(panel.name);
         panel.focus();
 
+        dirac.implant.feedback("setCurrentPanel: "+panel.name);
         return panel;
     },
 
     showDrawer: function()
     {
+        dirac.implant.feedback("showDrawer");
         this._drawer.showDrawer();
     },
 
@@ -370,6 +372,7 @@ WebInspector.InspectorView.prototype = {
      */
     showViewInDrawer: function(id, immediate)
     {
+        dirac.implant.feedback("showViewInDrawer("+id+", "+immediate+")");
         return this._drawer.showView(id, immediate);
     },
 
