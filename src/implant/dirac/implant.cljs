@@ -19,12 +19,14 @@
   (feedback-support/post! text))
 
 (defn ^:export automate [command]
-  (try
-    (automation/dispatch-command! command)
-    (catch :default e
-      (feedback (str "automation exception while performing " (pr-str command) " => " e "\n"
-                     (.-stack e)))
-      (throw e))))
+  (let [commands (if (map? command) [command] command)]
+    (try
+      (doseq [command commands]
+        (automation/dispatch-command! command))
+      (catch :default e
+        (feedback (str "automation exception while performing " (pr-str command) " => " e "\n"
+                       (.-stack e)))
+        (throw e)))))
 
 (defn ^:export init-console []
   (when-not *console-initialized*
