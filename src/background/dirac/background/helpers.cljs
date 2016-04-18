@@ -85,7 +85,10 @@
   (let [matching-views (get-devtools-views devtools-id)]
     (doseq [view matching-views]
       (when-let [automate-fn (oget view "automateDiracDevTools")]
-        (automate-fn (pr-str action))))))
+        (try
+          (automate-fn (pr-str action))
+          (catch :default e
+            (error "unable to automate dirac devtools:\n" view e)))))))
 
 (defn close-all-extension-tabs! []
   (let [views (extension/get-views #js {:type "tab"})]
