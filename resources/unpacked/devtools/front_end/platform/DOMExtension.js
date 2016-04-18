@@ -301,7 +301,8 @@ Node.prototype.isComponentSelectionCollapsed = function()
 {
     // FIXME: crbug.com/447523, use selection.isCollapsed when it is fixed for shadow dom.
     var selection = this.getComponentSelection();
-    return selection && selection.rangeCount ? selection.getRangeAt(0).collapsed : true;
+    var range = selection && selection.rangeCount ? selection.getRangeAt(0) : null;
+    return range ? range.collapsed : true;
 }
 
 /**
@@ -348,9 +349,10 @@ Element.prototype.removeChildren = function()
 Element.prototype.isInsertionCaretInside = function()
 {
     var selection = this.getComponentSelection();
-    if (!selection.rangeCount || !selection.isCollapsed)
+    // @see crbug.com/602541
+    var selectionRange = selection && selection.rangeCount ? selection.getRangeAt(0) : null;
+    if (!selectionRange || !selection.isCollapsed)
         return false;
-    var selectionRange = selection.getRangeAt(0);
     return selectionRange.startContainer.isSelfOrDescendant(this);
 }
 

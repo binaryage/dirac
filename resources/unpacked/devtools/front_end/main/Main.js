@@ -600,7 +600,7 @@ WebInspector.Main.prototype = {
             }
         }
 
-        this._mainConnection.runAfterPendingDispatches(invokeMethod);
+        this._mainConnection.deprecatedRunAfterPendingDispatches(invokeMethod);
     }
 }
 
