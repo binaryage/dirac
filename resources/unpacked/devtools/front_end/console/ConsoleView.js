@@ -439,13 +439,13 @@ WebInspector.ConsoleView.prototype = {
 
     focus: function()
     {
-        dirac.implant.feedback("console prompt focused");
         if (this._promptElement === WebInspector.currentFocusElement())
             return;
         // Set caret position before setting focus in order to avoid scrolling
         // by focus().
         this._prompt.moveCaretToEndOfPrompt();
         WebInspector.setCurrentFocusElement(this._promptElement);
+        dirac.implant.feedback("console prompt focused");
     },
 
     restoreScrollPositions: function()
