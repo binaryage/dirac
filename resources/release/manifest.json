@@ -25,6 +25,12 @@
         "default": "Ctrl+Shift+I"
       },
       "description": "Open Dirac DevTools"
+    },
+    "focus-best-console-prompt": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+P"
+      },
+      "description": "Focus Console Prompt"
     }
   },
   "options_ui": {

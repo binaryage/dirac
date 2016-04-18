@@ -14,6 +14,7 @@
             [dirac.background.devtools :as devtools]
             [dirac.options.model :as options]
             [dirac.background.state :as state]
+            [dirac.background.helpers :as helpers]
             [dirac.utils :as utils]))
 
 (def flag-keys [:enable-repl
@@ -136,3 +137,31 @@
   (if-let [descriptor (state/get-devtools-descriptor devtools-id)]
     (close-tab-with-id! (:frontend-tab-id descriptor))
     (warn "requested closing unknown devtools" devtools-id)))
+
+(defn focus-console-prompt-for-backend-tab! [backend-tab-id]
+  {:pre [backend-tab-id]}
+  (go
+    (<! (activate-dirac-devtools! backend-tab-id))
+    (if-let [{:keys [id]} (devtools/find-devtools-descriptor-for-backend-tab backend-tab-id)]
+      (helpers/automate-devtools! id {:action :focus-best-console-prompt})
+      (warn "id gone?" backend-tab-id))))
+
+(defn focus-console-prompt-in-first-devtools! []
+  (log "focus-console-prompt-in-first-devtools!")
+  (go
+    (let [first-devtools-descriptor (second (first (state/get-devtools-descriptors)))]
+      (if-let [backend-tab-id (:backend-tab-id first-devtools-descriptor)]
+        (<! (focus-console-prompt-for-backend-tab! backend-tab-id))
+        (warn "cannot focus console prompt, no Dirac devtools available")))))
+
+(defn focus-best-console-prompt! []
+  (go
+    (let [[tabs] (<! (tabs/query last-active-tab-query))]
+      (if-let [tab (first tabs)]
+        (let [active-tab-id (oget tab "id")]
+          (if-let [active-devtools-descriptor (devtools/find-devtools-descriptor-for-frontend-tab active-tab-id)]
+            (<! (focus-console-prompt-for-backend-tab! (:backend-tab-id active-devtools-descriptor)))                         ; in case devtools is already active => focus its console
+            (if (devtools/backend-connected? active-tab-id)
+              (<! (focus-console-prompt-for-backend-tab! active-tab-id))                                                      ; the case for active backend tab
+              (<! (focus-console-prompt-in-first-devtools!)))))                                                               ; otherwise fallback to first devtools activation
+        (<! (focus-console-prompt-in-first-devtools!))))))                                                                    ; this is the pathological case where there is no last active tab information

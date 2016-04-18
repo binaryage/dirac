@@ -27,6 +27,7 @@
     (case command
       "open-dirac-devtools" (<! (apply tools/open-dirac-devtools-in-active-tab! args))
       "close-dirac-devtools" (<! (apply tools/close-dirac-devtools! args))
+      "focus-best-console-prompt" (<! (apply tools/focus-best-console-prompt! args))
       (warn "received unrecognized command:" command))))
 
 (defn on-tab-removed! [tab-id _remove-info]

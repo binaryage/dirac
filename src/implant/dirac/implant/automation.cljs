@@ -5,13 +5,36 @@
 
 ; -- commands ---------------------------------------------------------------------------------------------------------------
 
-(defn switch-inspector-panel! [panel]
+(defn show-inspector-panel! [panel]
   (let [panel-name (name panel)
-        inspector-view (get-inspector-view)
-        promise (ocall inspector-view "panel" panel-name)
-        set-current-panel (oget inspector-view "setCurrentPanel")
-        bound-set-current-panel (ocall set-current-panel "bind" inspector-view)]
-    (ocall promise "then" bound-set-current-panel)))
+        inspector-view (get-inspector-view)]
+    (ocall inspector-view "showPanel" panel-name)))
+
+(defn get-inspector-current-panel-name []
+  (let [inspector-view (get-inspector-view)]
+    (if-let [panel (ocall inspector-view "currentPanel")]
+      (oget panel "name"))))
+
+(defn inspector-drawer-visible? []
+  (let [inspector-view (get-inspector-view)]
+    (ocall inspector-view "drawerVisible")))
+
+(defn show-inspector-drawer! []
+  (let [inspector-view (get-inspector-view)]
+    (if-not (inspector-drawer-visible?)
+      (ocall inspector-view "showDrawer"))))
+
+(defn show-view-in-drawer! [view]
+  (let [view-name (name view)
+        inspector-view (get-inspector-view)]
+    (if (ocall inspector-view "drawerVisible")
+      (if-not (= (ocall inspector-view "selectedViewInDrawer") view-name)
+        (ocall inspector-view "showViewInDrawer" view-name true)))))
+
+(defn open-drawer-console-if-not-on-console-panel! []
+  (when-not (= (get-inspector-current-panel-name) "console")
+    (show-inspector-drawer!)
+    (show-view-in-drawer! :console)))
 
 ; -- console panel ----------------------------------------------------------------------------------------------------------
 ;  following opperations are assuming that console panel is selected (active)
@@ -28,6 +51,10 @@
 (defn focus-console-prompt! []
   (if-let [console-view (get-console-view)]
     (ocall console-view "focus")))
+
+(defn focus-best-console-prompt! []
+  (open-drawer-console-if-not-on-console-panel!)
+  (focus-console-prompt!))
 
 (defn clear-console-prompt! []
   (if-let [console-view (get-console-view)]
@@ -56,11 +83,12 @@
 (defn dispatch-command! [command]
   (log "dispatch automation command" (pr-str command))
   (case (:action command)
-    :switch-inspector-panel (switch-inspector-panel! (:panel command))
+    :switch-inspector-panel (show-inspector-panel! (:panel command))
     :switch-to-dirac-prompt (switch-to-dirac-prompt!)
     :switch-to-js-prompt (switch-to-js-prompt!)
     :focus-console-prompt (focus-console-prompt!)
     :clear-console-prompt (clear-console-prompt!)
+    :focus-best-console-prompt (focus-best-console-prompt!)
     :dispatch-console-prompt-input (dispatch-console-prompt-input! (:input command))
     :dispatch-console-prompt-action (dispatch-console-prompt-action! (:input command))
     :enable-console-feedback (enable-console-feedback!)
