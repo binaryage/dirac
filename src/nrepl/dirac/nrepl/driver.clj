@@ -1,8 +1,10 @@
 (ns dirac.nrepl.driver
   (:require [clojure.core.async :refer [chan <!! <! >!! put! alts!! timeout close! go go-loop]]
             [cljs.repl :as cljs-repl]
-            [dirac.nrepl.sniffer :as sniffer])
-  (:import (clojure.lang IExceptionInfo)))
+            [dirac.nrepl.sniffer :as sniffer]
+            [clojure.tools.logging :as log])
+  (:import (clojure.lang IExceptionInfo)
+           (java.io StringWriter)))
 
 ; -- driver construction ----------------------------------------------------------------------------------------------------
 
@@ -124,13 +126,26 @@
       (when-not (instance? ThreadDeath root-ex)
         (let [orig-call #(cljs-repl/repl-caught e repl-env opts)]
           (if-not (recording? driver)
-            (orig-call)
-            ; we want to prevent recording javascript errors and exceptions,
-            ; because those were already reported on client-side directly
-            ; other exceptional cases should be recorded as usual (for example exceptions originated in the compiler)
+            (do
+              ; in case we are not recording, we want to report :eval-error to the driver
+              ; and log error information as well
+              (orig-call)
+              (let [exception-output (new StringWriter)]
+                (cond
+                  (instance? Throwable e) (binding [*err* exception-output]
+                                            (.printStackTrace e))
+                  :else (.write exception-output (pr-str e)))
+                (log/error "Caught an exception during REPL evaluation:\n" (str exception-output))
+                (send! driver {:status  :eval-error
+                               :ex      (str (class e))
+                               :root-ex (str (class root-ex))
+                               :details (str exception-output)})))
             (if (and (instance? IExceptionInfo e)
                      (#{:js-eval-error :js-eval-exception} (:type (ex-data e))))
               (do
+                ; we want to prevent recording javascript errors and exceptions,
+                ; because those were already reported on client-side directly
+                ; other exceptional cases should be recorded as usual (for example exceptions originated in the compiler)
                 (stop-recording! driver)
                 (orig-call)
                 (start-recording! driver))
@@ -139,10 +154,7 @@
                 ; it will be printed in cljs.repl/repl-caught via (.printStackTrace e *err*)
                 ; we capture output and send it to client side with special kind :java-trace
                 ; with this hint, client-side should implement a nice way how to present this to the user
-                (report-java-trace! driver orig-call))))
-          (send! driver {:status  :eval-error
-                         :ex      (-> e class str)
-                         :root-ex (-> root-ex class str)}))))))
+                (report-java-trace! driver orig-call)))))))))
 
 ; -- sniffer handlers -------------------------------------------------------------------------------------------------------
 
