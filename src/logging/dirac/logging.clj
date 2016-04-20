@@ -26,7 +26,8 @@
 
 (defn setup! [& [config]]
   (if @initialized?
-    (log/warn "dirac.logging/setup! already called => ignoring this call")
+    (do
+      #_(log/warn "dirac.logging/setup! already called => ignoring this call"))
     (do
       (vreset! initialized? true)
       (let [options (convert-config-to-logging-options config)]
