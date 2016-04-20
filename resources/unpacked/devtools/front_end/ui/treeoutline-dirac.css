@@ -14,3 +14,7 @@
 :host-context(.console-message) .object-properties-section-root-element.expanded::before {
     -webkit-mask-position: -20px -96px !important;
 }
+
+.tree-outline {
+    overflow: auto; /* https://github.com/binaryage/dirac/issues/7 */
+}
