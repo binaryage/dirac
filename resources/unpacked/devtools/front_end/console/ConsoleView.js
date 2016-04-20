@@ -1116,6 +1116,9 @@ WebInspector.ConsoleView.prototype = {
         this._switchPromptIfAvail(this._activePromptIndex, selectedPromptIndex);
     },
 
+    /**
+     * @return {!Object}
+     */
     getCurrentPromptDescriptor: function() {
         return this._prompts[this._activePromptIndex];
     },
@@ -1130,11 +1133,17 @@ WebInspector.ConsoleView.prototype = {
         keyboard.dispatchEventsForAction(action, promptDescriptor.proxy);
     },
 
+    /**
+     * @return {number}
+     */
     enableConsoleFeedback: function() {
         this._consoleFeedback++;
         return this._consoleFeedback;
     },
 
+    /**
+     * @return {number}
+     */
     disableConsoleFeedback: function() {
         this._consoleFeedback--;
         return this._consoleFeedback;

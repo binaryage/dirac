@@ -397,6 +397,20 @@ var dirac = {
     }
 }
 
+var Keysim = {
+    Keyboard: {
+        US_ENGLISH: {}},
+
+    /**
+     * Fires the correct sequence of events on the given target as if the given
+     * action was undertaken by a human.
+     *
+     * @param {string} action e.g. "alt+shift+left" or "backspace"
+     * @param {HTMLElement} target
+     */
+    dispatchEventsForAction: function(action, target) {}
+}
+
 
 /** @constructor */
 function Path2D() {}

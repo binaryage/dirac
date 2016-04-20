@@ -8,6 +8,7 @@
         "require-implant.js"
     ],
     "skip_compilation": [
+        "keysim.js",
         "dirac.js",
         "compiled/implant/implant.js",
         "require-implant.js"
