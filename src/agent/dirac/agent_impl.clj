@@ -90,7 +90,7 @@
     (loop [trial 1]
       (if (<= trial max-boot-trials)
         (let [result (try
-                       (log/info (str "Starting Dirac Agent (attempt #" trial ")"))
+                       (log/info (str "Starting Dirac Agent" (if (> trial 1) (str "(attempt #" trial ")"))))
                        (create! config)
                        (catch ExceptionInfo e                                                                                 ; for example missing nREPL middleware
                          (log/error "ERROR:" (.getMessage e))
