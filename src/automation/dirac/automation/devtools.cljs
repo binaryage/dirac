@@ -8,7 +8,6 @@
             [devtools.prefs :as devtools-prefs]))
 
 (defn init-devtools! [& [config]]
-  (devtools/set-pref! :agent-port (get-browser-tests-dirac-agent-port))
   (when-let [devtools-prefs (:devtools-prefs config)]                                                                         ; override devtools prefs
     (log "devtools override: set prefs " devtools-prefs)
     (devtools-prefs/merge-prefs! devtools-prefs))
