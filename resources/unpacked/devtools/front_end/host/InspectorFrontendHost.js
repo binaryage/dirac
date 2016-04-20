@@ -147,7 +147,7 @@ WebInspector.InspectorFrontendHostStub.prototype = {
      */
     inspectedURLChanged: function(url)
     {
-        document.title = WebInspector.UIString("Dirac - %s", url);
+        document.title = WebInspector.UIString("Dirac v" + dirac.implant.get_version() + " <-> %s", url);
     },
 
     /**

@@ -3,6 +3,7 @@
             [dirac.implant.editor :as editor]
             [dirac.implant.intercom :as intercom]
             [dirac.implant.automation :as automation]
+            [dirac.implant.version :refer [version]]
             [cljs.reader :as reader]
             [chromex.support :refer-macros [oget oset ocall oapply]]
             [chromex.logging :refer-macros [log warn error]]
@@ -50,6 +51,9 @@
 (defn ^:export send-eval-request [request-id code]
   (feedback (str "send-eval-request: " code))
   (intercom/send-eval-request! request-id code))
+
+(defn ^:export get-version []
+  version)
 
 ; -- automation -------------------------------------------------------------------------------------------------------------
 
