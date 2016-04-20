@@ -17,6 +17,8 @@
                  [clj-logging-config "1.9.12"]
                  [version-clj "0.1.2"]
                  [environ "1.0.2"]
+                 [clansi "1.0.0"]
+                 [funcool/cuerdas "0.7.2"]
 
                  ; we cannot use :dependencies under individual profiles because Cursive recognizes only root level
                  ; thus we mark extra deps with :scope "test" and filter them later when producing jar library
@@ -27,7 +29,6 @@
                  [reforms "0.4.3" :scope "test"]
                  [rum "0.8.1" :scope "test"]
                  [rum-reforms "0.4.3" :scope "test"]
-                 [funcool/cuerdas "0.7.2" :scope "test"]
                  [parinfer "0.2.3" :scope "test"]
                  [com.lucasbradstreet/cljs-uuid-utils "1.0.2" :scope "test"]
 
@@ -44,8 +45,7 @@
                  [ring/ring-core "1.4.0" :scope "test"]
                  [ring/ring-devel "1.4.0" :scope "test"]
                  [ring/ring-jetty-adapter "1.4.0" :scope "test"]
-                 [clj-time "0.11.0" :scope "test"]
-                 [clansi "1.0.0" :scope "test"]]
+                 [clj-time "0.11.0" :scope "test"]]
 
   ; this effectively disables checkouts and gives us a chance to re-enable them on per-profile basis, see :checkouts profile
   ; http://jakemccrary.com/blog/2015/03/24/advanced-leiningen-checkouts-configuring-what-ends-up-on-your-classpath/
