@@ -25,7 +25,7 @@
                  [cljs-http "0.1.40" :scope "test"]
                  [figwheel "0.5.2" :scope "test"]
                  [reforms "0.4.3" :scope "test"]
-                 [rum "0.7.0" :scope "test"]
+                 [rum "0.8.1" :scope "test"]
                  [rum-reforms "0.4.3" :scope "test"]
                  [funcool/cuerdas "0.7.2" :scope "test"]
                  [parinfer "0.2.3" :scope "test"]
