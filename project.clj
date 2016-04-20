@@ -411,4 +411,6 @@
 
             "release"                    ["shell" "scripts/release.sh"]
             "package"                    ["shell" "scripts/package.sh"]
+            "install"                    ["shell" "scripts/local-install.sh"]
+            "publish"                    ["shell" "scripts/deploy-clojars.sh"]
             "regenerate"                 ["shell" "scripts/regenerate.sh"]})
