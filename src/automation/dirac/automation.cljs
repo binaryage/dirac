@@ -73,13 +73,17 @@
 (defn wait-for-devtools-ready []
   (wait-for-substr-match "devtools ready"))
 
+(defn wait-for-elements-panel-switch []
+  (wait-for-substr-match "setCurrentPanel: elements"))
+
 (defn wait-for-devtools []
   ; TODO: to be 100% correct we should check for matching devtools id here
   ;       imagine a situation when two or more devtools instances are started at the same time
   (go
     (<! (wait-for-devtools-registration))
     (<! (wait-for-implant-initialization))
-    (<! (wait-for-devtools-ready))))
+    (<! (wait-for-devtools-ready))
+    (<! (wait-for-elements-panel-switch))))
 
 (defn wait-for-devtools-close
   ([] (assert false))
