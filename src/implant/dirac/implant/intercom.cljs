@@ -18,6 +18,8 @@
 (defonce ^:dynamic *last-connection-url* nil)
 (defonce ^:dynamic *last-connect-fn-id* 0)
 
+(def dirac-agent-help-url "https://github.com/binaryage/dirac/blob/master/docs/install.md#start-dirac-agent")
+
 (defn ^:dynamic repl-api-mismatch-msg [current-api required-api]
   (str "Dirac Runtime version mismatch detected. Dirac DevTools requires Dirac Runtime REPL API v" required-api ", "
        "but your version is v" current-api ".\n"
@@ -41,7 +43,7 @@
 
 (defn ^:dynamic dirac-agent-disconnected-msg [tunnel-url]
   (str "<b>Dirac Agent is not listening</b> at " tunnel-url " "
-       "(<a href=\"https://github.com/binaryage/dirac#start-dirac-agent\">need help?</a>)."))
+       "(<a href=\"" dirac-agent-help-url "\">need help?</a>)."))
 
 (defn ^:dynamic dirac-agent-connected-msg []
   (str "Dirac Agent connected. Bootstrapping ClojureScript REPL..."))
