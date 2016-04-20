@@ -8,9 +8,6 @@ pushd "$ROOT"
 
 ./scripts/ensure-checkouts.sh
 
-echo "Running all type checks..."
-lein check
-
 echo "Running all backend tests..."
 lein test-backend
 
