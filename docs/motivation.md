@@ -1,44 +1,48 @@
 # Dirac DevTools Motivation
 
-Currently I spend most of my time developing web apps on client side in ClojureScript.
-And for page inspection and debugging I stay most of the time in the DevTools.
-Over time I realized that a few possible DevTools tweaks would greatly improve my ClojureScript experience.
-Especially integrating ClojureScript REPL into DevTools Javascript Console would be a pretty huge deal.
+I spend most of my time developing web apps in ClojureScript and for debugging and page inspection I use Chrome DevTools.
+
+I realized that a few possible DevTools tweaks would greatly improve my ClojureScript experience.
+For example I wanted integrated ClojureScript REPL in DevTools Javascript Console - that would be a pretty huge deal for me.
 
 ### A bit of history
 
-Chrome/Blink developers have been pretty open for adding extensibility points to their DevTools platform.
-This is not a first attempt to integrate a REPL into DevTools.
-Traditionally one has been able to implement a Chrome extension which could register additional panels in Chrome DevTools.
-Suprematic have implemented their [ClojureScript REPL extension](http://blog.suprematic.net/2014/02/chrome-devtools-repl-for-clojurescript_26.html) this way back in 2014.
-Also more recently [React Developer Tools](https://github.com/facebook/react-devtools) used this approach.
+Chrome/Blink developers have been pretty open for adding extension points into their DevTools.
 
-The problem with extra panels is that that they don't integrate well with existing panels. They are separate islands. Separate web "apps" injected
-into DevTools UI. IMO for best user experience the ClojureScript REPL should be very closely integrated with
-Javascript Console. Ideally, there should be no switching between panels.
-
-There was a big improvement by introduction of [custom formatters](https://docs.google.com/document/d/1FTascZXT9cxfetuPRT2eXPQKXui4nWFivUnS_335T3U) in early 2015.
-This allowed to enhance presentation of ClojureScript values directly in Javascript Console.
+Introduction of [custom formatters](https://docs.google.com/document/d/1FTascZXT9cxfetuPRT2eXPQKXui4nWFivUnS_335T3U) in early 2015 was a great step forward.
+This allowed to enhance presentation of ClojureScript values (data structures) directly in Javascript Console.
 I implemented the [cljs-devtools](https://github.com/binaryage/cljs-devtools) library which leverages this feature.
 
-Also I have filled a [request for a new extension point](https://code.google.com/p/chromium/issues/detail?id=484261) which would
-potentially allow me to implement REPL functionality in a similar way to custom formatters. Unfortunately existing DevTools extension
-APIs weren't suitable for what I wanted to do. There has been some progress made on that issue but after six months of waiting I decided to fork the DevTools.
+In December of 2015 I had an idea of [integrating cljs-devtools with Figwheel's REPL console](https://github.com/bhauman/lein-figwheel/pull/309).
+But this was not the first attempt to bring ClojureScript REPL functionality into Chrome DevTools. Actually Suprematic have implemented
+their [ClojureScript REPL extension](http://blog.suprematic.net/2014/02/chrome-devtools-repl-for-clojurescript.html) in 2014.
+
+The problem with Suprematic approach was usability. The trouble with extra panels is that they don't integrate well with existing panels.
+They are separate web "apps" injected into DevTools UI. For best user experience the ClojureScript REPL should be very closely integrated with
+Javascript Console.
+
+Also I tried to [request a new extension point](https://code.google.com/p/chromium/issues/detail?id=484261) which would
+potentially allow me to implement REPL functionality in a similar way how custom formatters are implemented.
+Unfortunately existing DevTools extension APIs were not suitable for what I wanted to do.
+There has been some progress made on that issue but after six months of waiting I decided to fork the DevTools.
 
 ### A divergent fork?
 
 I don't have an ambition to merge this project upstream into official DevTools.
 Dirac changes are too specific for ClojureScript (and mostly implemented in ClojureScript).
-Instead, the idea is to maintain a set of patches rolling on top of official DevTools branch.
+Instead, the idea is to maintain [a set of patches](https://github.com/binaryage/dirac/commit/devtools-diff) rolling on top of official DevTools branch
+(and maintain [a battery of tests](https://github.com/binaryage/dirac/tree/master/test/browser/fixtures/src/tests/dirac/tests) to make sure the Dirac code does not break).
 
-Turns out, it is not that big deal at the end of the day. I also provide the [Dirac Chrome Extension](https://chrome.google.com/webstore/detail/dirac-devtools/kbkdngfljkchidcjpnfcgcokkbhlkogi)
-which wraps Dirac DevTools to make installation and life a bit easier for Dirac users. The experience should be very similar
+I also provide a [Chrome Extension](https://chrome.google.com/webstore/detail/dirac-devtools/kbkdngfljkchidcjpnfcgcokkbhlkogi)
+which wraps Dirac DevTools to make installation and life a bit easier for Dirac users. After initial setup, the experience should be very similar
 to integrated DevTools - you just use a different keyboard shortcut to open it.
 
-Also I view Dirac as an experimental test ground where new DevTools features can be implemented.
-Not only for ClojureScript but maybe for other compile-to-js languages as well. It could serve as a proof-of-concept
-implementation of some niche features or extension points requested or planned in the official DevTools.
+### It is an experimental ground
 
-In future some Dirac features could move into official DevTools eventually, because there could be a way how to implement
-them using newly introduced extension points. But until then we want to maintain a live fork so we don't have to wait
-for Chrome developers to add "our" requested features.
+I view Dirac as an experimental ground where new DevTools features can be implemented in more relaxed way.
+Not only for ClojureScript but maybe for other compile-to-js languages as well. It could serve as a proof-of-concept
+implementation of some features or extension points requested or planned in the official DevTools.
+
+In future, it might be eventually possible to implement some Dirac features directly in the DevTools.
+But until then I decided to maintain a live fork so we don't have to beg Chrome developers to add experimental \
+ClojureScript-related features into official DevTools for us.

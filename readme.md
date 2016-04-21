@@ -7,6 +7,7 @@ Dirac is a [Chrome DevTools](https://developer.chrome.com/devtools) fork with ex
   * REPL integrated into DevTools Javascript console
     * can eval ClojureScript in the context of currently selected stack frame (activated breakpoint)
     * [Parinfer](https://shaunlebron.github.io/parinfer) goodness
+    * global keyboard shortcut for focusing the console prompt
   * custom formatters enabled by default (for [cljs-devtools](https://github.com/binaryage/cljs-devtools))
   * custom formatters are displayed inline in Source panel during debugging
   * 'Object Properties' better display ClojureScript properties:
@@ -24,4 +25,5 @@ Dirac is a [Chrome DevTools](https://developer.chrome.com/devtools) fork with ex
   * **[Motivation](docs/motivation.md)**
   * **[Installation](docs/install.md)**
   * **[Configuration](docs/configuration.md)**
+  * **[Example project](https://github.com/binaryage/dirac-sample)**
   * **[FAQ](docs/faq.md)**

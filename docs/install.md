@@ -5,10 +5,10 @@ In this document I will discuss standard configuration with Leiningen. For custo
 
 Here are the ingredients you are going to need:
 
-1. the [Dirac Chrome Extension](https://chrome.google.com/webstore/detail/dirac-devtools/kbkdngfljkchidcjpnfcgcokkbhlkogi) installed in your Chrome Canary
-1. the Dirac Runtime - a ClojureScript library installed in your page
-1. an nREPL server with the Dirac nREPL middleware
-1. the Dirac Agent
+1. [Dirac Chrome Extension](https://chrome.google.com/webstore/detail/dirac-devtools/kbkdngfljkchidcjpnfcgcokkbhlkogi) installed in your Chrome Canary
+1. Dirac Runtime - a ClojureScript library installed in your page
+1. nREPL server with Dirac nREPL middleware
+1. Dirac Agent - a helper server providing a proxy tunnel between nREPL server and DevTools web app
 
 #### Setup Dirac Chrome Extension
 
@@ -23,9 +23,7 @@ You probably want to run your Chrome Canary with dedicated user profile. And you
 
 Please note that `--remote-debugging-port` should be 9222 by default. But you can change it in the Dirac Extension `options page` if needed.
 
-Now install [Dirac Chrome Extension](https://chrome.google.com/webstore/detail/dirac-devtools/kbkdngfljkchidcjpnfcgcokkbhlkogi).
-
-Chrome should keep it up-to-date for you.
+Now install the [Dirac Chrome Extension](https://chrome.google.com/webstore/detail/dirac-devtools/kbkdngfljkchidcjpnfcgcokkbhlkogi). Chrome should keep it up-to-date for you.
 
 #### Install the Dirac Runtime
 
@@ -113,12 +111,10 @@ Now when you start `lein repl` from command-line you should see something like t
      Results: Stored in vars *1, *2, *3, an exception in *e
 
     user=>
-    Dirac Agent v0.1.2
+    Dirac Agent v0.2.0
     Connected to nREPL server at nrepl://localhost:8230.
     Tunnel is accepting connections at ws://localhost:8231.
 
 The last line should remind you that Dirac Agent started successfully and listens for browser connections on port 8231.
 
 Now you should be able to use REPL from any of your Dirac DevTools instances.
-
-Note that you should use the same version of Dirac Agent as you have installed Dirac Runtime in your page.
