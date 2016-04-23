@@ -63,7 +63,6 @@ WebInspector.TimelinePanel = function()
     /** @type {!Array.<!WebInspector.TimelineModeView>} */
     this._currentViews = [];
 
-    this._viewModeSetting = WebInspector.settings.createSetting("timelineViewMode", WebInspector.TimelinePanel.ViewMode.FlameChart);
     this._captureNetworkSetting = WebInspector.settings.createSetting("timelineCaptureNetwork", false);
     this._captureJSProfileSetting = WebInspector.settings.createSetting("timelineEnableJSSampling", true);
     this._captureMemorySetting = WebInspector.settings.createSetting("timelineCaptureMemory", false);
@@ -104,17 +103,9 @@ WebInspector.TimelinePanel = function()
     this._stackView = new WebInspector.StackView(false);
     this._stackView.element.classList.add("timeline-view-stack");
 
-    if (Runtime.experiments.isEnabled("multipleTimelineViews")) {
-        this._tabbedPane = new WebInspector.TabbedPane();
-        this._tabbedPane.appendTab(WebInspector.TimelinePanel.ViewMode.FlameChart, WebInspector.UIString("Flame Chart"), new WebInspector.VBox());
-        this._tabbedPane.appendTab(WebInspector.TimelinePanel.ViewMode.CallTree, WebInspector.UIString("Call Tree"), new WebInspector.VBox());
-        this._tabbedPane.appendTab(WebInspector.TimelinePanel.ViewMode.BottomUp, WebInspector.UIString("Bottom-Up"), new WebInspector.VBox());
-        this._tabbedPane.addEventListener(WebInspector.TabbedPane.EventTypes.TabSelected, this._onMainViewChanged.bind(this));
-        this._tabbedPane.show(this._searchableView.element);
-    } else {
-        this._stackView.show(this._searchableView.element);
-        this._onModeChanged();
-    }
+    this._stackView.show(this._searchableView.element);
+    this._onModeChanged();
+
     this._detailsSplitWidget.show(timelinePane.element);
     this._detailsSplitWidget.hideSidebar();
     WebInspector.targetManager.addEventListener(WebInspector.TargetManager.Events.SuspendStateChanged, this._onSuspendStateChanged, this);
@@ -129,15 +120,6 @@ WebInspector.TimelinePanel.Perspectives = {
     Load: "Load",
     Responsiveness: "Responsiveness",
     Custom: "Custom"
-}
-
-/**
- * @enum {string}
- */
-WebInspector.TimelinePanel.ViewMode = {
-    FlameChart: "FlameChart",
-    CallTree: "CallTree",
-    BottomUp: "BottomUp",
 }
 
 /**
@@ -220,12 +202,6 @@ WebInspector.TimelinePanel.prototype = {
 
         if (!this._selection || this._selection.type() === WebInspector.TimelineSelection.Type.Range)
             this.select(null);
-    },
-
-    _onMainViewChanged: function()
-    {
-        this._viewModeSetting.set(this._tabbedPane.selectedTabId);
-        this._onModeChanged();
     },
 
     /**
@@ -553,24 +529,11 @@ WebInspector.TimelinePanel.prototype = {
 
         // Set up the main view.
         this._removeAllModeViews();
-        var viewMode = WebInspector.TimelinePanel.ViewMode.FlameChart;
-        this._flameChart = null;
-        if (Runtime.experiments.isEnabled("multipleTimelineViews")) {
-            viewMode = this._tabbedPane.selectedTabId;
-            this._stackView.detach();
-            this._stackView.show(this._tabbedPane.visibleView.element);
-        }
-        if (viewMode === WebInspector.TimelinePanel.ViewMode.FlameChart) {
-            this._flameChart = new WebInspector.TimelineFlameChartView(this, this._model, this._frameModel, this._irModel);
-            this._flameChart.enableNetworkPane(this._captureNetworkSetting.get());
-            this._addModeView(this._flameChart);
-        } else if (viewMode === WebInspector.TimelinePanel.ViewMode.CallTree || viewMode === WebInspector.TimelinePanel.ViewMode.BottomUp) {
-            var innerView = viewMode === WebInspector.TimelinePanel.ViewMode.BottomUp ? new WebInspector.BottomUpTimelineTreeView(this._model) : new WebInspector.CallTreeTimelineTreeView(this._model);
-            var treeView = new WebInspector.TimelineTreeModeView(this, innerView);
-            this._addModeView(treeView);
-        }
+        this._flameChart = new WebInspector.TimelineFlameChartView(this, this._model, this._frameModel, this._irModel);
+        this._flameChart.enableNetworkPane(this._captureNetworkSetting.get());
+        this._addModeView(this._flameChart);
 
-        if (this._captureMemorySetting.get() && viewMode !== WebInspector.TimelinePanel.ViewMode.CallTree && viewMode !== WebInspector.TimelinePanel.ViewMode.BottomUp)
+        if (this._captureMemorySetting.get())
             this._addModeView(new WebInspector.MemoryCountersGraph(this, this._model, [WebInspector.TimelineUIUtils.visibleEventsFilter()]));
 
         this.doResize();
@@ -1324,95 +1287,6 @@ WebInspector.TimelineLifecycleDelegate.prototype = {
 
 /**
  * @constructor
- * @extends {WebInspector.VBox}
- * @implements {WebInspector.TimelineModeView}
- * @param {!WebInspector.TimelineModeViewDelegate} delegate
- * @param {!WebInspector.TimelineTreeView} innerTreeView
- */
-WebInspector.TimelineTreeModeView = function(delegate, innerTreeView)
-{
-    WebInspector.VBox.call(this);
-    this._treeView = innerTreeView;
-    this._treeView.show(this.element);
-}
-
-WebInspector.TimelineTreeModeView.prototype = {
-    /**
-     * @override
-     */
-    dispose: function()
-    {
-    },
-
-    /**
-     * @override
-     * @return {?Element}
-     */
-    resizerElement: function()
-    {
-        return null;
-    },
-
-    /**
-     * @override
-     */
-    highlightSearchResult: function()
-    {
-    },
-
-    /**
-     * @override
-     * @param {?WebInspector.TracingModel.Event} event
-     */
-    highlightEvent: function(event)
-    {
-    },
-
-    /**
-     * @override
-     */
-    refreshRecords: function()
-    {
-    },
-
-    /**
-     * @override
-     */
-    reset: function()
-    {
-    },
-
-    /**
-     * @override
-     */
-    setSelection: function()
-    {
-    },
-
-    /**
-     * @override
-     * @param {number} startTime
-     * @param {number} endTime
-     */
-    setWindowTimes: function(startTime, endTime)
-    {
-        this._treeView.setRange(startTime, endTime);
-    },
-
-    /**
-     * @override
-     * @return {!WebInspector.Widget}
-     */
-    view: function()
-    {
-        return this;
-    },
-
-    __proto__: WebInspector.VBox.prototype
-}
-
-/**
- * @constructor
  * @extends {WebInspector.TabbedPane}
  * @param {!WebInspector.TimelineModel} timelineModel
  * @param {!WebInspector.TimelineModeViewDelegate} delegate
@@ -1431,19 +1305,18 @@ WebInspector.TimelineDetailsView = function(timelineModel, delegate)
 
     /** @type Map<string, WebInspector.TimelineTreeView> */
     this._rangeDetailViews = new Map();
-    if (!Runtime.experiments.isEnabled("multipleTimelineViews")) {
-        var bottomUpView = new WebInspector.BottomUpTimelineTreeView(timelineModel);
-        this.appendTab(tabIds.BottomUp, WebInspector.UIString("Bottom-Up"), bottomUpView);
-        this._rangeDetailViews.set(tabIds.BottomUp, bottomUpView);
 
-        var callTreeView = new WebInspector.CallTreeTimelineTreeView(timelineModel);
-        this.appendTab(tabIds.CallTree, WebInspector.UIString("Call Tree"), callTreeView);
-        this._rangeDetailViews.set(tabIds.CallTree, callTreeView);
+    var bottomUpView = new WebInspector.BottomUpTimelineTreeView(timelineModel);
+    this.appendTab(tabIds.BottomUp, WebInspector.UIString("Bottom-Up"), bottomUpView);
+    this._rangeDetailViews.set(tabIds.BottomUp, bottomUpView);
 
-        var eventsView = new WebInspector.EventsTimelineTreeView(timelineModel, delegate);
-        this.appendTab(tabIds.Events, WebInspector.UIString("Event Log"), eventsView);
-        this._rangeDetailViews.set(tabIds.Events, eventsView);
-    }
+    var callTreeView = new WebInspector.CallTreeTimelineTreeView(timelineModel);
+    this.appendTab(tabIds.CallTree, WebInspector.UIString("Call Tree"), callTreeView);
+    this._rangeDetailViews.set(tabIds.CallTree, callTreeView);
+
+    var eventsView = new WebInspector.EventsTimelineTreeView(timelineModel, delegate);
+    this.appendTab(tabIds.Events, WebInspector.UIString("Event Log"), eventsView);
+    this._rangeDetailViews.set(tabIds.Events, eventsView);
 
     this.addEventListener(WebInspector.TabbedPane.EventTypes.TabSelected, this._tabSelected, this);
 }
@@ -1780,36 +1653,6 @@ WebInspector.TimelineTextFilter.prototype = {
     accept: function(event)
     {
         return !this._regExp || WebInspector.TimelineUIUtils.testContentMatching(event, this._regExp);
-    },
-
-    __proto__: WebInspector.TimelineModel.Filter.prototype
-}
-
-/**
- * @constructor
- * @extends {WebInspector.TimelineModel.Filter}
- */
-WebInspector.TimelineStaticFilter = function()
-{
-    WebInspector.TimelineModel.Filter.call(this);
-}
-
-WebInspector.TimelineStaticFilter.prototype = {
-    /**
-     * @override
-     * @param {!WebInspector.TracingModel.Event} event
-     * @return {boolean}
-     */
-    accept: function(event)
-    {
-        switch (event.name) {
-        case WebInspector.TimelineModel.RecordType.EventDispatch:
-            return event.hasChildren;
-        case WebInspector.TimelineModel.RecordType.JSFrame:
-            return false;
-        default:
-            return true;
-        }
     },
 
     __proto__: WebInspector.TimelineModel.Filter.prototype

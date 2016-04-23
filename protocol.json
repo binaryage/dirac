@@ -1223,6 +1223,8 @@
                     { "name": "workerReady", "type": "number", "description": "Finished Starting ServiceWorker.", "hidden": true },
                     { "name": "sendStart", "type": "number", "description": "Started sending request." },
                     { "name": "sendEnd", "type": "number", "description": "Finished sending request." },
+                    { "name": "pushStart", "type": "number", "description": "Time the server started pushing request.", "hidden": true },
+                    { "name": "pushEnd", "type": "number", "description": "Time the server finished pushing request.", "hidden": true },
                     { "name": "receiveHeadersEnd", "type": "number", "description": "Finished receiving response headers." }
                 ]
             },
@@ -1545,6 +1547,14 @@
                     { "name": "cacheDisabled", "type": "boolean", "description": "Cache disabled state." }
                 ],
                 "description": "Toggles ignoring cache for each request. If <code>true</code>, cache will not be used."
+            },
+            {
+                "name": "setBypassServiceWorker",
+                "parameters": [
+                    { "name": "bypass", "type": "boolean", "description": "Bypass service worker and load from network." }
+                ],
+                "hidden": true,
+                "description": "Toggles ignoring of service worker for each request."
             },
             {
                 "name": "setDataSizeLimitsForTest",
@@ -3695,6 +3705,14 @@
                 "description": "Enables or disables async call stacks tracking."
             },
             {
+                "name": "setBlackboxPatterns",
+                "parameters": [
+                    { "name": "patterns", "type": "array", "items": { "type": "string" }, "description": "Array of regexps that will be used to check script url for blackbox state." }
+                ],
+                "hidden": true,
+                "description": "Replace previous blackbox patterns with passed ones. Forces backend to skip stepping/pausing in scripts with url matching one of the patterns. VM will try to leave blackboxed script by performing 'step in' several times, finally resorting to 'step out' if unsuccessful."
+            },
+            {
                 "name": "setBlackboxedRanges",
                 "parameters": [
                     { "name": "scriptId", "$ref": "Runtime.ScriptId", "description": "Id of the script." },
@@ -3979,7 +3997,7 @@
                     { "name": "url", "type": "string", "description": "URL." },
                     { "name": "lineNumber", "type": "integer", "description": "1-based line number of the function start position." },
                     { "name": "columnNumber", "type": "integer", "description": "1-based column number of the function start position." },
-                    { "name": "totalSize", "type": "number", "description": "Total allocations size in bytes." },
+                    { "name": "selfSize", "type": "number", "description": "Allocations size in bytes for the node excluding children." },
                     { "name": "children", "type": "array", "items": { "$ref": "SamplingHeapProfileNode" }, "description": "Child nodes." }
                 ]
             },

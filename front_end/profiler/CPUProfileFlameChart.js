@@ -97,7 +97,7 @@ WebInspector.CPUFlameChartDataProvider.prototype = {
      */
     totalTime: function()
     {
-        return this._cpuProfile.profileHead.totalTime;
+        return this._cpuProfile.profileHead.total;
     },
 
     /**
@@ -442,7 +442,7 @@ WebInspector.CPUProfileFlameChart.prototype = {
      */
     performSearch: function(searchConfig, shouldJump, jumpBackwards)
     {
-        var matcher = createPlainTextSearchRegex(searchConfig.query, searchConfig.caseSensitive ? "": "i");
+        var matcher = createPlainTextSearchRegex(searchConfig.query, searchConfig.caseSensitive ? "" : "i");
 
         var selectedEntryIndex = this._searchResultIndex !== -1 ? this._searchResults[this._searchResultIndex] : -1;
         this._searchResults = [];
@@ -639,13 +639,6 @@ WebInspector.CPUProfileFlameChart.OverviewPane.prototype = {
      * @param {number} endTime
      */
     updateRangeSelection: function(startTime, endTime)
-    {
-    },
-
-    /**
-     * @override
-     */
-    endRangeSelection: function()
     {
     },
 
