@@ -168,6 +168,7 @@ InspectorBackend.registerCommand("Network.deleteCookie", [{"name": "cookieName",
 InspectorBackend.registerCommand("Network.canEmulateNetworkConditions", [], ["result"], false);
 InspectorBackend.registerCommand("Network.emulateNetworkConditions", [{"name": "offline", "type": "boolean", "optional": false}, {"name": "latency", "type": "number", "optional": false}, {"name": "downloadThroughput", "type": "number", "optional": false}, {"name": "uploadThroughput", "type": "number", "optional": false}], [], false);
 InspectorBackend.registerCommand("Network.setCacheDisabled", [{"name": "cacheDisabled", "type": "boolean", "optional": false}], [], false);
+InspectorBackend.registerCommand("Network.setBypassServiceWorker", [{"name": "bypass", "type": "boolean", "optional": false}], [], false);
 InspectorBackend.registerCommand("Network.setDataSizeLimitsForTest", [{"name": "maxTotalSize", "type": "number", "optional": false}, {"name": "maxResourceSize", "type": "number", "optional": false}], [], false);
 InspectorBackend.registerCommand("Network.getCertificateDetails", [{"name": "certificateId", "type": "number", "optional": false}], ["result"], false);
 InspectorBackend.registerCommand("Network.showCertificateViewer", [{"name": "certificateId", "type": "number", "optional": false}], [], false);
@@ -340,6 +341,7 @@ InspectorBackend.registerCommand("Debugger.evaluateOnCallFrame", [{"name": "call
 InspectorBackend.registerCommand("Debugger.setVariableValue", [{"name": "scopeNumber", "type": "number", "optional": false}, {"name": "variableName", "type": "string", "optional": false}, {"name": "newValue", "type": "object", "optional": false}, {"name": "callFrameId", "type": "string", "optional": false}], [], false);
 InspectorBackend.registerCommand("Debugger.getBacktrace", [], ["callFrames", "asyncStackTrace"], false);
 InspectorBackend.registerCommand("Debugger.setAsyncCallStackDepth", [{"name": "maxDepth", "type": "number", "optional": false}], [], false);
+InspectorBackend.registerCommand("Debugger.setBlackboxPatterns", [{"name": "patterns", "type": "object", "optional": false}], [], false);
 InspectorBackend.registerCommand("Debugger.setBlackboxedRanges", [{"name": "scriptId", "type": "string", "optional": false}, {"name": "positions", "type": "object", "optional": false}], [], false);
 
 // DOMDebugger.
