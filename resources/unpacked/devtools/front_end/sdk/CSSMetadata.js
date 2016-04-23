@@ -78,7 +78,7 @@ WebInspector.CSSMetadata.cssPropertiesMetainfo = new WebInspector.CSSMetadata([]
  */
 WebInspector.CSSMetadata.isColorAwareProperty = function(propertyName)
 {
-    return !!WebInspector.CSSMetadata._colorAwareProperties[propertyName.toLowerCase()];
+    return !!WebInspector.CSSMetadata._colorAwareProperties[propertyName.toLowerCase()] || WebInspector.CSSMetadata.isCustomProperty(propertyName.toLowerCase());
 }
 
 /**
@@ -100,7 +100,16 @@ WebInspector.CSSMetadata.isLengthProperty = function(propertyName)
  */
 WebInspector.CSSMetadata.isBezierAwareProperty = function(propertyName)
 {
-    return !!WebInspector.CSSMetadata._bezierAwareProperties[propertyName.toLowerCase()];
+    return !!WebInspector.CSSMetadata._bezierAwareProperties[propertyName.toLowerCase()] || WebInspector.CSSMetadata.isCustomProperty(propertyName.toLowerCase());
+}
+
+/**
+ * @param {string} propertyName
+ * @return {boolean}
+ */
+WebInspector.CSSMetadata.isCustomProperty = function(propertyName)
+{
+    return propertyName.startsWith("--");
 }
 
 // Originally taken from http://www.w3.org/TR/CSS21/propidx.html and augmented.
@@ -157,8 +166,8 @@ WebInspector.CSSMetadata.isPropertyInherited = function(propertyName)
 }
 
 WebInspector.CSSMetadata._distanceProperties = [
-    'background-position', 'border-spacing', 'bottom', 'font-size', 'height', 'left', 'letter-spacing', 'max-height', 'max-width', 'min-height',
-    'min-width', 'right', 'text-indent', 'top', 'width', 'word-spacing'
+    "background-position", "border-spacing", "bottom", "font-size", "height", "left", "letter-spacing", "max-height", "max-width", "min-height",
+    "min-width", "right", "text-indent", "top", "width", "word-spacing"
 ];
 
 WebInspector.CSSMetadata._bezierAwareProperties = [

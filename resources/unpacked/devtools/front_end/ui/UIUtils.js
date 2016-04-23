@@ -857,7 +857,7 @@ WebInspector.highlightRangesWithStyleClass = function(element, resultRanges, sty
     changes = changes || [];
     var highlightNodes = [];
     var textNodes = element.childTextNodes();
-    var lineText = textNodes.map(function (node) { return node.textContent; }).join("");
+    var lineText = textNodes.map(function(node) { return node.textContent; }).join("");
     var ownerDocument = element.ownerDocument;
 
     if (textNodes.length === 0)
@@ -1261,15 +1261,20 @@ function createRadioLabel(name, title, checked)
 /**
  * @param {string=} title
  * @param {boolean=} checked
+ * @param {string=} subtitle
  * @return {!Element}
  */
-function createCheckboxLabel(title, checked)
+function createCheckboxLabel(title, checked, subtitle)
 {
     var element = createElement("label", "dt-checkbox");
     element.checkboxElement.checked = !!checked;
     if (title !== undefined) {
         element.textElement = element.createChild("div", "dt-checkbox-text");
         element.textElement.textContent = title;
+        if (subtitle !== undefined) {
+            element.subtitleElement = element.textElement.createChild("div", "dt-checkbox-subtitle");
+            element.subtitleElement.textContent = subtitle;
+        }
     }
     return element;
 }
@@ -1709,7 +1714,7 @@ WebInspector.ThemeSupport.prototype = {
             var fullText = result.join("\n");
             this._cachedThemePatches.set(id, fullText);
             return fullText;
-        } catch(e) {
+        } catch (e) {
            this._setting.set("default");
            return "";
         }

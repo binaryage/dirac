@@ -336,6 +336,8 @@ WebInspector.NetworkDataGridNode.prototype = {
         var request = this._request;
         var initiator = request.initiatorInfo();
 
+        if (request.timing && request.timing.pushStart)
+            cell.appendChild(createTextNode(WebInspector.UIString("Push / ")));
         switch (initiator.type) {
         case WebInspector.NetworkRequest.InitiatorType.Parser:
             cell.title = initiator.url + ":" + initiator.lineNumber;
@@ -364,9 +366,9 @@ WebInspector.NetworkDataGridNode.prototype = {
             break;
 
         default:
-            cell.title = "";
+            cell.title = WebInspector.UIString("Other");
             cell.classList.add("network-dim-cell");
-            cell.setTextAndTitle(WebInspector.UIString("Other"));
+            cell.appendChild(createTextNode(WebInspector.UIString("Other")));
         }
     },
 
@@ -427,7 +429,7 @@ WebInspector.NetworkDataGridNode.prototype = {
     _updateTimingGraph: function()
     {
         var calculator = this._parentView.calculator();
-        var timeRanges = WebInspector.RequestTimingView.calculateRequestTimeRanges(this._request);
+        var timeRanges = WebInspector.RequestTimingView.calculateRequestTimeRanges(this._request, calculator.minimumBoundary());
         var right = timeRanges[0].end;
 
         var container = this._barAreaElement;
@@ -708,18 +710,60 @@ WebInspector.NetworkDataGridNode.InitialPriorityComparator = function(a, b)
 
 /**
  * @param {string} propertyName
- * @param {boolean} revert
  * @param {!WebInspector.NetworkDataGridNode} a
  * @param {!WebInspector.NetworkDataGridNode} b
  * @return {number}
  */
-WebInspector.NetworkDataGridNode.RequestPropertyComparator = function(propertyName, revert, a, b)
+WebInspector.NetworkDataGridNode.RequestPropertyComparator = function(propertyName, a, b)
 {
     var aValue = a._request[propertyName];
     var bValue = b._request[propertyName];
-    if (aValue > bValue)
-        return revert ? -1 : 1;
-    if (bValue > aValue)
-        return revert ? 1 : -1;
-    return a._request.indentityCompare(b._request);
+    if (aValue == bValue)
+        return a._request.indentityCompare(b._request);
+    return aValue > bValue ? 1 : -1;
+}
+
+/**
+ * @param {string} propertyName
+ * @param {!WebInspector.NetworkDataGridNode} a
+ * @param {!WebInspector.NetworkDataGridNode} b
+ * @return {number}
+ */
+WebInspector.NetworkDataGridNode.ResponseHeaderStringComparator = function(propertyName, a, b)
+{
+    var aValue = String(a._request.responseHeaderValue(propertyName) || "");
+    var bValue = String(b._request.responseHeaderValue(propertyName) || "");
+    return aValue.localeCompare(bValue) || a._request.indentityCompare(b._request);
+}
+
+/**
+ * @param {string} propertyName
+ * @param {!WebInspector.NetworkDataGridNode} a
+ * @param {!WebInspector.NetworkDataGridNode} b
+ * @return {number}
+ */
+WebInspector.NetworkDataGridNode.ResponseHeaderNumberComparator = function(propertyName, a, b)
+{
+    var aValue = (a._request.responseHeaderValue(propertyName) !== undefined) ? parseFloat(a._request.responseHeaderValue(propertyName)) : -Infinity;
+    var bValue = (b._request.responseHeaderValue(propertyName) !== undefined) ? parseFloat(b._request.responseHeaderValue(propertyName)) : -Infinity;
+    if (aValue == bValue)
+        return a._request.indentityCompare(b._request);
+    return aValue > bValue ? 1 : -1;
+}
+
+/**
+ * @param {string} propertyName
+ * @param {!WebInspector.NetworkDataGridNode} a
+ * @param {!WebInspector.NetworkDataGridNode} b
+ * @return {number}
+ */
+WebInspector.NetworkDataGridNode.ResponseHeaderDateComparator = function(propertyName, a, b)
+{
+    var aHeader = a._request.responseHeaderValue(propertyName);
+    var bHeader = b._request.responseHeaderValue(propertyName);
+    var aValue = aHeader ? new Date(aHeader).getTime() : -Infinity;
+    var bValue = bHeader ? new Date(bHeader).getTime() : -Infinity;
+    if (aValue == bValue)
+        return a._request.indentityCompare(b._request);
+    return aValue > bValue ? 1 : -1;
 }

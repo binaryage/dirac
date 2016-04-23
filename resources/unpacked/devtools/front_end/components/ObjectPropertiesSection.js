@@ -89,6 +89,14 @@ WebInspector.ObjectPropertiesSection.prototype = {
     },
 
     /**
+     * @param {boolean} value
+     */
+    setEditable: function(value)
+    {
+        this._editable = value;
+    },
+
+    /**
      * @return {!TreeElement}
      */
     objectTreeElement: function()
@@ -254,7 +262,7 @@ WebInspector.ObjectPropertyTreeElement.prototype = {
         var propertyValue = /** @type {!WebInspector.RemoteObject} */ (this.property.value);
         console.assert(propertyValue);
         var skipProto = this.treeOutline ? this.treeOutline._skipProto : true;
-        var targetValue = this.property.name !== '__proto__' ? propertyValue : this.property.parentObject;
+        var targetValue = this.property.name !== "__proto__" ? propertyValue : this.property.parentObject;
         WebInspector.ObjectPropertyTreeElement._populate(this, propertyValue, skipProto, undefined, undefined, undefined, targetValue);
     },
 
