@@ -209,4 +209,5 @@
   (with-transcript-suite "suite01"
     (execute-transcript-test! "open-close-dirac")
     (execute-transcript-test! "no-agent-connection")
+    (execute-transcript-test! "disabled-parinfer")
     (execute-transcript-test! "dirac-eval")))
