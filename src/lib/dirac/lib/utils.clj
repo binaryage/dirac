@@ -28,7 +28,7 @@
       :bool (or (= val "1")
                 (= (string/lower-case val) "true")
                 (= (string/lower-case val) "yes"))
-      :int (int val)
+      :int (Integer/parseInt val)
       (str val))))
 
 
