@@ -44,23 +44,25 @@
 ; -- message processing -----------------------------------------------------------------------------------------------------
 
 (defn subscribe-to-transcript! []
-  (go
-    (if-not @trancript-subscribed?
-      (do
-        (<! (messages/post-message! #js {:type "marion-subscribe-transcript"}))
-        (vreset! trancript-subscribed? true))
-      (warn "subscribe-to-transcript! called while already subscribed => ignoring this call"))))
+  (if-not @trancript-subscribed?
+    (do
+      (messages/post-message! #js {:type "marion-subscribe-transcript"} :no-timeout)
+      (vreset! trancript-subscribed? true))
+    (warn "subscribe-to-transcript! called while already subscribed => ignoring this call")))
 
 (defn unsubscribe-from-transcript! []
-  (go
-    (if @trancript-subscribed?
-      (do
-        (<! (messages/post-message! #js {:type "marion-unsubscribe-transcript"}))
-        (vreset! trancript-subscribed? false))
-      (warn "subscribe-to-transcript! called while not yet subscribed => ignoring this call"))))
+  (if @trancript-subscribed?
+    (do
+      (messages/post-message! #js {:type "marion-unsubscribe-transcript"} :no-timeout)
+      (vreset! trancript-subscribed? false))
+    (warn "subscribe-to-transcript! called while not yet subscribed => ignoring this call")))
 
 ; -- initialization ---------------------------------------------------------------------------------------------------------
 
 (defn init-feedback! []
   (start-processing-messages!)
   (subscribe-to-transcript!))
+
+(defn done-feedback! []
+  (unsubscribe-from-transcript!)
+  (stop-processing-messages!))

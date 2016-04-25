@@ -5,7 +5,8 @@
             [chromex.logging :refer-macros [log warn error info]]
             [dirac.settings :refer-macros [get-signal-server-url
                                            get-chrome-remote-debugging-port
-                                           get-chrome-remote-debugging-host]]
+                                           get-chrome-remote-debugging-host
+                                           get-pending-replies-wait-timeout]]
             [dirac.lib.ws-client :as ws-client]
             [dirac.options.model :as options-model]
             [dirac.automation.transcript-host :as transcript-host]
@@ -23,12 +24,13 @@
     (helpers/get-query-param url param)))
 
 (defn setup-debugging-port! []
-  (let [debugging-host (or (get-url-param "debugging_host") (get-chrome-remote-debugging-host) "http://localhost")
-        debugging-port (or (get-url-param "debugging_port") (get-chrome-remote-debugging-port) "9222")
-        target-url (str debugging-host ":" debugging-port)]
-    (when-not (= target-url (:target-url options-model/default-options))
-      (info "Setting Dirac Extension :target-url option to" target-url)
-      (messages/set-option! :target-url target-url))))
+  (go
+    (let [debugging-host (or (get-url-param "debugging_host") (get-chrome-remote-debugging-host) "http://localhost")
+          debugging-port (or (get-url-param "debugging_port") (get-chrome-remote-debugging-port) "9222")
+          target-url (str debugging-host ":" debugging-port)]
+      (when-not (= target-url (:target-url options-model/default-options))
+        (info "Setting Dirac Extension :target-url option to" target-url)
+        (<! (messages/set-option! :target-url target-url))))))
 
 (defn task-setup! [& [config]]
   (when-not @setup-done                                                                                                       ; this is here to support figwheel's hot-reloading
@@ -36,22 +38,15 @@
     ; transcript is a fancy name for "log of interesting events"
     (transcript-host/init-transcript! "transcript-box")
     (status-host/init-status! "status-box")
-    ; feedback subsystem is responsible for intercepting messages to be presented in transcript
-    (feedback/init-feedback!)
     (launcher/init!)
-    ; when launched from test runner, chrome driver is in charge of selecting debugging port, we have to propagate this
-    ; information to our dirac extension settings
-    (setup-debugging-port!)
-    ; open-as window is handy for debugging, becasue we can open internal devtools to inspect dirac frontend in case of errors
-    (messages/set-option! :open-as "window")
     ; if test runner is present, we will wait for test runner to launch the test
     ; it needs to disconnect the driver first
     (if-not (helpers/is-test-runner-present?)
       (launcher/launch-task!))))
 
-(defn cleanup! []
-  (messages/close-all-marion-tabs!)
-  (messages/post-extension-command! {:command :tear-down}))                                                                   ; to fight https://bugs.chromium.org/p/chromium/issues/detail?id=355075
+(defn browser-state-cleanup! []
+  (messages/post-message! #js {:type "marion-close-all-tabs"} :no-timeout)
+  (messages/post-extension-command! {:command :tear-down} :no-timeout))                                                       ; to fight https://bugs.chromium.org/p/chromium/issues/detail?id=3550 75
 
 (defn signal-task-finished! []
   ; this signals to the task runner that he can reconnect chrome driver and check the results
@@ -65,21 +60,27 @@
     ; also we don't want to signal "task finished", because  there is no test runner listening
    (task-teardown! (helpers/is-test-runner-present?)))
   ([runner-present?]
-   (transcript-host/disable-transcript!)
-   (if runner-present?
-     (do
-       (cleanup!)
-       (signal-task-finished!))
-     (do
-       ; this is for a convenience when running tests manually
-       (messages/switch-to-task-runner-tab!)
-       (messages/focus-task-runner-window!)))))
+   (assert @done)
+   (go
+     (messages/tear-down!)
+     (<! (messages/wait-for-all-pending-replies-or-timeout! (get-pending-replies-wait-timeout)))
+     (transcript-host/disable-transcript!)
+     (feedback/done-feedback!)
+     (if runner-present?
+       (do
+         (browser-state-cleanup!)
+         (signal-task-finished!))
+       (do
+         ; this is for a convenience when running tests manually
+         (messages/switch-to-task-runner-tab!)
+         (messages/focus-task-runner-window!))))))
 
 (defn task-finished! []
-  (when-not @done
-    (status-host/set-status! "task finished")
-    (transcript-host/set-style! "finished")
-    (vreset! done true)))
+  (go
+    (when-not @done
+      (status-host/set-status! "task finished")
+      (transcript-host/set-style! "finished")
+      (vreset! done true))))
 
 (defn task-timeouted! [data]
   (when-not @done
@@ -106,7 +107,15 @@
   (oset js/window ["onerror"] handler))
 
 (defn task-started! []
-  (register-global-exception-handler! task-exception-handler)
-  (status-host/set-status! "task running...")
-  (transcript-host/set-style! "running")
-  (messages/reset-devtools-id-counter!))
+  (go
+    (register-global-exception-handler! task-exception-handler)
+    (status-host/set-status! "task running...")
+    (transcript-host/set-style! "running")
+    (messages/reset-devtools-id-counter!)
+    ; feedback subsystem is responsible for intercepting messages to be presented in transcript
+    (feedback/init-feedback!)
+    ; when launched from test runner, chrome driver is in charge of selecting debugging port, we have to propagate this
+    ; information to our dirac extension settings
+    (<! (setup-debugging-port!))
+    ; open-as window is handy for debugging, becasue we can open internal devtools to inspect dirac frontend in case of errors
+    (<! (messages/set-option! :open-as "window"))))

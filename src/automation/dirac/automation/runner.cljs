@@ -8,7 +8,7 @@
 ; -- api accessed by runner.html --------------------------------------------------------------------------------------------
 
 (defn ^:export reset []
-  (task/cleanup!))
+  (task/browser-state-cleanup!))
 
 (defn ^:export reload []
   (reset)

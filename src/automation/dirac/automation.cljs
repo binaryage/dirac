@@ -100,6 +100,9 @@
   ([devtools-id]
    (wait-for-devtools-substr-match devtools-id "console initialized")))
 
+(defn set-option! [key value]
+  (messages/set-option! key value))
+
 ; -- scenarios --------------------------------------------------------------------------------------------------------------
 
 (defn get-base-url []

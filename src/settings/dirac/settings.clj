@@ -35,11 +35,12 @@
 
 (def ^:const MARION_INITIAL_WAIT_TIME (seconds 1))
 (def ^:const MARION_RECONNECTION_ATTEMPT_DELAY (seconds 2))
-(def ^:const MARION_MESSAGE_REPLY_TIMEOUT (seconds 5))
+(def ^:const MARION_MESSAGE_REPLY_TIMEOUT (seconds 2))
 
 (def ^:const DEFAULT_TASK_TIMEOUT (minutes 5))
 (def ^:const DEFAULT_TEST_HTML_LOAD_TIMEOUT (seconds 1))
 (def ^:const SIGNAL_SERVER_CLOSE_WAIT_TIMEOUT (seconds 1))
+(def ^:const PENDING_REPLIES_WAIT_TIMEOUT (seconds 2))
 
 (def ^:const ACTUAL_TRANSCRIPTS_ROOT_PATH "test/browser/transcripts/actual/")
 (def ^:const EXPECTED_TRANSCRIPTS_ROOT_PATH "test/browser/transcripts/expected/")
@@ -191,3 +192,6 @@
 
 (defmacro get-chrome-remote-debugging-host []
   chrome-remote-debugging-host)
+
+(defmacro get-pending-replies-wait-timeout []
+  PENDING_REPLIES_WAIT_TIMEOUT)

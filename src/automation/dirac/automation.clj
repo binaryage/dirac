@@ -9,10 +9,10 @@
         commands (if config (rest steps) steps)]
     `(let [test-thunk# (fn []
                          (cljs.core.async.macros/go
-                           (dirac.automation.task/task-started!)
+                           (cljs.core.async/<! (dirac.automation.task/task-started!))
                            ~@commands
-                           (dirac.automation.task/task-finished!)
-                           (dirac.automation.task/task-teardown!)))]
+                           (cljs.core.async/<! (dirac.automation.task/task-finished!))
+                           (cljs.core.async/<! (dirac.automation.task/task-teardown!))))]
        (dirac.automation.launcher/register-task! test-thunk#)
        (dirac.automation.task/task-setup! ~config))))
 
