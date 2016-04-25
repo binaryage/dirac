@@ -16,6 +16,7 @@
    (let [message #js {:type "reply" :id message-id}]
      (if data
        (oset message ["data"] (pr-str data)))
+     (log "broadcasting reply" message-id (envelope message))
      (feedback/broadcast-feedback! message))))
 
 (defn reply-to-message! [message & [data]]

@@ -38,5 +38,8 @@
 ; -- broadcasting -----------------------------------------------------------------------------------------------------------
 
 (defn broadcast-feedback! [message]
-  (doseq [subscriber @subscribers]
-    (post-message! subscriber message)))
+  (let [subscribers @subscribers]
+    (if-not (pos? (count subscribers))
+      (warn "feedback broadcast request while no subscribers registered" message)
+      (doseq [subscriber subscribers]
+        (post-message! subscriber message)))))
