@@ -84,6 +84,7 @@
   ;   see https://github.com/technomancy/leiningen/issues/1826
   ;   ! be careful with lein clean or tasks which do cleaning implicitly, this will wipe out all generated files
   :clean-targets ^{:protect false} ["target"
+                                    ; also update scripts/clean-compiled.sh
                                     "resources/unpacked/compiled"
                                     "resources/unpacked/devtools/front_end/dirac/compiled"
                                     "resources/release/compiled"
@@ -408,6 +409,8 @@
                                           "cljsbuild" "once" "tests"]
             "auto-compile-browser-tests" ["with-profile" "+cljs,+checkouts,+parallel-build,+browser-tests"
                                           "cljsbuild" "auto" "tests"]
+
+            "clean-compiled"             ["shell" "scripts/clean-compiled.sh"]
 
             "release"                    ["shell" "scripts/release.sh"]
             "package"                    ["shell" "scripts/package.sh"]
