@@ -18,21 +18,24 @@
 
 (defmacro static-pref [key kind]
   (let [sym (symbol (str "*" (name key) "*"))]
-    `(if ~sym {~key (~kind ~sym)})))
+    (case kind
+      :str `(if ~sym {~key (str ~sym)})
+      :boolean `(if ~sym {~key (boolean ~sym)})
+      :int `(if ~sym {~key (Integer/parseInt ~sym)}))))
 
 (defmacro gen-static-prefs []
   (merge {}
-         (static-pref :agent-host str)
-         (static-pref :agent-port int)
-         (static-pref :agent-verbose boolean)
-         (static-pref :agent-auto-reconnect boolean)
-         (static-pref :agent-response-timeout int)
-         (static-pref :weasel-verbose boolean)
-         (static-pref :weasel-auto-reconnect boolean)
-         (static-pref :weasel-pre-eval-delay int)
-         (static-pref :install-check-total-time-limit int)
-         (static-pref :install-check-next-trial-waiting-time int)
-         (static-pref :install-check-eval-time-limit int)
-         (static-pref :context-availablity-total-time-limit int)
-         (static-pref :context-availablity-next-trial-waiting-time int)
-         (static-pref :eval-time-limit int)))
+         (static-pref :agent-host :str)
+         (static-pref :agent-port :int)
+         (static-pref :agent-verbose :boolean)
+         (static-pref :agent-auto-reconnect :boolean)
+         (static-pref :agent-response-timeout :int)
+         (static-pref :weasel-verbose :boolean)
+         (static-pref :weasel-auto-reconnect :boolean)
+         (static-pref :weasel-pre-eval-delay :int)
+         (static-pref :install-check-total-time-limit :int)
+         (static-pref :install-check-next-trial-waiting-time :int)
+         (static-pref :install-check-eval-time-limit :int)
+         (static-pref :context-availablity-total-time-limit :int)
+         (static-pref :context-availablity-next-trial-waiting-time :int)
+         (static-pref :eval-time-limit :int)))
