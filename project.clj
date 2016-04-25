@@ -369,11 +369,7 @@
                                           "compile-dirac-dev,"
                                           "compile-marion,"
                                           "run-browser-tests-dev"]
-            "dev-browser-tests"          ["with-profile" "+cooper,+dev-browser-tests"
-                                          "do"
-                                          "clean,"
-                                          "shell" "scripts/clear-notify.sh,"
-                                          "cooper"]
+            "dev-browser-tests"          ["shell" "scripts/dev-browser-tests.sh"]
 
             "run-backend-tests"          ["with-profile" "+test-runner" "run" "-m" "dirac.backend-tests-runner"]
             "run-browser-tests"          ["with-profile" "+test-runner" "run" "-m" "dirac.browser-tests-runner"]

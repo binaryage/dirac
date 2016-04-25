@@ -18,7 +18,8 @@ if [ -n "$DIRAC_USE_CHROMIUM" ] ; then
   EXE="/Applications/Chromium.app/Contents/MacOS/Chromium"
 fi
 
-echo $EXE
+echo "selected browser binary '$EXE'"
+echo "waiting for compilation of clojurescript components..."
 
 # we want wait to compilation of our extensions, so that --load-extension param does not fail
 # see cljsbuild-notify.sh usage in project.clj
@@ -32,7 +33,7 @@ echo $EXE
 
 set -x
 "$EXE" \
-      --remote-debugging-port=9222 \
+      --remote-debugging-port=${DIRAC_CHROME_REMOTE_DEBUGGING_PORT:=9222} \
       --user-data-dir="$DIRAC_BROWSER_TESTS_USER_PROFILE" \
       --no-first-run \
       --enable-experimental-extension-apis \
