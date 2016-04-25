@@ -61,6 +61,9 @@
 (def dirac-window-width (env :dirac-window-width))
 (def dirac-window-height (env :dirac-window-height))
 
+(def chrome-remote-debugging-port (env :dirac-chrome-remote-debugging-port))
+(def chrome-remote-debugging-host (env :dirac-chrome-remote-debugging-host))
+
 ; -- macro wrappers ---------------------------------------------------------------------------------------------------------
 ; macros allow us to potentially expose the constants to cljs
 
@@ -177,3 +180,10 @@
 
 (defmacro get-signal-server-url []
   (str "ws://" (get-signal-server-host) ":" (get-signal-server-port)))
+
+(defmacro get-chrome-remote-debugging-port []
+  (if (some? chrome-remote-debugging-port)
+    (Integer/parseInt chrome-remote-debugging-port)))
+
+(defmacro get-chrome-remote-debugging-host []
+  chrome-remote-debugging-host)

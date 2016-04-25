@@ -3,8 +3,11 @@
   (:require [cljs.core.async :refer [put! <! chan timeout alts! close!]]
             [chromex.support :refer-macros [oget oset ocall oapply]]
             [chromex.logging :refer-macros [log warn error info]]
-            [dirac.settings :refer-macros [get-signal-server-url]]
+            [dirac.settings :refer-macros [get-signal-server-url
+                                           get-chrome-remote-debugging-port
+                                           get-chrome-remote-debugging-host]]
             [dirac.lib.ws-client :as ws-client]
+            [dirac.options.model :as options-model]
             [dirac.automation.transcript-host :as transcript-host]
             [dirac.automation.status-host :as status-host]
             [dirac.automation.feedback :as feedback]
@@ -15,11 +18,17 @@
 (defonce setup-done (volatile! false))
 (defonce done (volatile! false))
 
-(defn setup-debugging-port! []
+(defn get-url-param [param]
   (let [url (helpers/get-document-url)]
-    (if-let [debugging-port (helpers/get-query-param url "debugging_port")]
-      (let [target-url (str "http://localhost:" debugging-port)]
-        (messages/set-option! :target-url target-url)))))
+    (helpers/get-query-param url param)))
+
+(defn setup-debugging-port! []
+  (let [debugging-host (or (get-url-param "debugging_host") (get-chrome-remote-debugging-host) "http://localhost")
+        debugging-port (or (get-url-param "debugging_port") (get-chrome-remote-debugging-port) "9222")
+        target-url (str debugging-host ":" debugging-port)]
+    (when-not (= target-url (:target-url options-model/default-options))
+      (info "Setting Dirac Extension :target-url option to" target-url)
+      (messages/set-option! :target-url target-url))))
 
 (defn task-setup! [& [config]]
   (when-not @setup-done                                                                                                       ; this is here to support figwheel's hot-reloading
