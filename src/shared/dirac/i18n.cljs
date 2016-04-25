@@ -1,9 +1,4 @@
-(ns dirac.i18n
-  (:require [goog.string :as gstring]
-            [goog.string.format]
-            [chromex.support :refer-macros [oget ocall oapply]]
-            [chromex.logging :refer-macros [log info warn error group group-end]]
-            [clojure.string :as string]))
+(ns dirac.i18n)
 
 (defn unable-to-create-dirac-tab []
   "Unable to create a new tab for Dirac DevTools.")
@@ -18,7 +13,7 @@
        "target-url=" target-url ", tab-url=" tab-url))
 
 (defn target-url-not-specified []
-  "Target URL for attachment not specified. Check your Dirac options.")
+  "Target URL not specified. Check your Dirac options.")
 
 (defn tab-cannot-be-debugged [tab]
   (str "This tab cannot be debugged: it has no tab url" tab))
