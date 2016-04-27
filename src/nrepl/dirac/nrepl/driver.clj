@@ -4,7 +4,7 @@
             [dirac.nrepl.sniffer :as sniffer]
             [clojure.tools.logging :as log])
   (:import (clojure.lang IExceptionInfo)
-           (java.io StringWriter)))
+           (java.io StringWriter PrintWriter)))
 
 ; -- driver construction ----------------------------------------------------------------------------------------------------
 
@@ -118,6 +118,13 @@
   (unsuppress-flushing driver :stderr)
   (flush-sniffer! driver :stderr :java-trace))
 
+(defn capture-exception-details [e]
+  (let [exception-output (StringWriter.)]
+    (cond
+      (instance? Throwable e) (.printStackTrace e (PrintWriter. exception-output))
+      :else (.write exception-output (pr-str e)))
+    (str exception-output)))
+
 ; -- REPL handler factories -------------------------------------------------------------------------------------------------
 
 (defn custom-caught-factory [driver]
@@ -130,16 +137,12 @@
               ; in case we are not recording, we want to report :eval-error to the driver
               ; and log error information as well
               (orig-call)
-              (let [exception-output (new StringWriter)]
-                (cond
-                  (instance? Throwable e) (binding [*err* exception-output]
-                                            (.printStackTrace e))
-                  :else (.write exception-output (pr-str e)))
-                (log/error "Caught an exception during REPL evaluation:\n" (str exception-output))
+              (let [exception-details (capture-exception-details e)]
+                (log/error "Caught an exception during REPL evaluation:\n" exception-details)
                 (send! driver {:status  :eval-error
                                :ex      (str (class e))
                                :root-ex (str (class root-ex))
-                               :details (str exception-output)})))
+                               :details exception-details})))
             (if (and (instance? IExceptionInfo e)
                      (#{:js-eval-error :js-eval-exception} (:type (ex-data e))))
               (do
