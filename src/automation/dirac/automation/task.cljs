@@ -53,6 +53,9 @@
   (ws-client/connect! (get-signal-server-url) {:name    "Signaller"
                                                :on-open #(ws-client/close! %)}))
 
+(defn successful-task-run? []
+  (= @done true))
+
 (defn task-teardown!
   ([]
     ; under manual test development we don't want to execute tear-down
@@ -67,7 +70,9 @@
      (transcript-host/disable-transcript!)
      (feedback/done-feedback!)
      (if runner-present?
-       (do
+       (when (successful-task-run?)
+         ; note: if task runner wasn't successful we leave browser in failed state for possible inspection
+         ; task runner should eventually timeout when waiting for signal-task-finished!
          (browser-state-cleanup!)
          (signal-task-finished!))
        (do
