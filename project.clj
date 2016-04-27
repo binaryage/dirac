@@ -87,7 +87,6 @@
                                     ; also update scripts/clean-compiled.sh
                                     "resources/unpacked/compiled"
                                     "resources/unpacked/devtools/front_end/dirac/compiled"
-                                    "resources/release/compiled"
                                     "test/browser/fixtures/resources/compiled"
                                     "test/marion/resources/unpacked/compiled"]
 
@@ -234,6 +233,8 @@
                                                      :optimizations :none
                                                      :source-map    true}}}}}
              :dirac-packed
+             ; note: we want to compile under target folder to prevent unnecessary recompilations after running ./scripts/release.sh
+             ;       the script will copy most recent build over
              {:env       {:chromex-elide-verbose-logging "true"}
               :cljsbuild {:builds
                           {:dirac-implant
@@ -241,8 +242,8 @@
                                            "src/implant"
                                            "src/lib"
                                            "src/project"]
-                            :compiler     {:output-to     "resources/release/devtools/front_end/dirac/compiled/implant/implant.js"
-                                           :output-dir    "resources/release/devtools/front_end/dirac/compiled/implant"
+                            :compiler     {:output-to     "target/resources/release/devtools/front_end/dirac/compiled/implant/implant.js"
+                                           :output-dir    "target/resources/release/devtools/front_end/dirac/compiled/implant"
                                            :asset-path    "dirac/compiled/implant"
                                            :optimizations :advanced
                                            :elide-asserts true}}
@@ -253,8 +254,8 @@
                                            "src/shared"
                                            "src/project"
                                            "src/background"]
-                            :compiler     {:output-to     "resources/release/compiled/background.js"
-                                           :output-dir    "resources/release/compiled/background"
+                            :compiler     {:output-to     "target/resources/release/compiled/background.js"
+                                           :output-dir    "target/resources/release/compiled/background"
                                            :asset-path    "compiled/background"
                                            :optimizations :advanced
                                            :elide-asserts true}}
@@ -265,8 +266,8 @@
                                            "src/shared"
                                            "src/project"
                                            "src/options"]
-                            :compiler     {:output-to     "resources/release/compiled/options.js"
-                                           :output-dir    "resources/release/compiled/options"
+                            :compiler     {:output-to     "target/resources/release/compiled/options.js"
+                                           :output-dir    "target/resources/release/compiled/options"
                                            :asset-path    "compiled/options"
                                            :optimizations :advanced
                                            :elide-asserts true}}}}}
@@ -361,8 +362,8 @@
             "test-backend"               ["run-backend-tests"]
             "test-browser"               ["do"                                                                                ; this will run browser tests against fully optimized dirac extension (release build)
                                           "compile-browser-tests,"
-                                          "release,"                                                                          ; = compile-dirac and devtools plus some cleanup, see scripts/release.sh
                                           "compile-marion,"
+                                          "release,"                                                                          ; = compile-dirac and devtools plus some cleanup, see scripts/release.sh
                                           "run-browser-tests"]
             "test-browser-dev"           ["do"                                                                                ; this will run browser tests against unpacked dirac extension
                                           "compile-browser-tests,"

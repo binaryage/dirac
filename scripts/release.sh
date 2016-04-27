@@ -10,11 +10,13 @@
 #
 # steps:
 # - move some required destination files to resources/release
-# - compile implant into resources/release/dirac/compiled
+# - compile dirac extension into target/resources/release/compiled
+# - compile implant into target/resources/release/devtools/front_end/dirac/compiled
 # - move existing sources in resources/unpacked into a temp folder
 # - zero dirac/require-implant.js in the temp folder
 # - run build_applications.py on the files in temp folder as input, output to resources/release
 # - move static resources to resources/release
+# - copy compiled code to appropriate places in resources/release
 # - remove unneeded files from resources/release
 
 set -e
@@ -66,7 +68,13 @@ trap cleanup EXIT
 mkdir -p "$WORK_DIR"
 
 cp -r "$FRONTEND"/* "$WORK_DIR"
-cp -r "$RELEASE_BUILD_DEVTOOLS_FRONTEND/dirac" "$WORK_DIR"
+
+# the compiled dir might exist because of dev build
+WORK_DIR_DIRAC_COMPILED="$WORK_DIR/dirac/compiled"
+if [ -d "$WORK_DIR_DIRAC_COMPILED" ] ; then
+  rm -rf "$WORK_DIR_DIRAC_COMPILED"
+fi
+cp -r "$ROOT/target/resources/release/devtools/front_end/dirac/compiled" "$WORK_DIR/dirac" # produced by `lein compile-dirac`
 
 echo -n "" > "$WORK_DIR/dirac/require-implant.js" # when doing advanced build, all implant files are required automatically
 
@@ -82,6 +90,9 @@ pushd "$ROOT"
 cp -r "$FRONTEND/Images" "$RELEASE_BUILD_DEVTOOLS_FRONTEND"
 cp -r "$FRONTEND/emulated_devices" "$RELEASE_BUILD_DEVTOOLS_FRONTEND"
 cp "$FRONTEND/devtools.js" "$RELEASE_BUILD_DEVTOOLS_FRONTEND"
+
+# copy compiled extension code (produced by `lein compile-dirac`)
+cp -r "$ROOT/target/resources/release/compiled" "$RELEASE_BUILD"
 
 # ad-hoc cleanup
 rm -rf "$RELEASE_BUILD_DEVTOOLS_FRONTEND/dirac"
