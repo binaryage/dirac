@@ -8,14 +8,14 @@
 
 ; -- support for booting into CLJS REPL -------------------------------------------------------------------------------------
 
-(defn after-launch [repl-env url]
+(defn after-launch! [repl-env url]
   (log/trace "after-launch handler called with repl-env:" repl-env)
   (piggieback/send-bootstrap-info! url))
 
 (defn bootstrap! [& [config]]
   (let [effective-confg (config/get-effective-config config)
         weasel-repl-options (:weasel-repl effective-confg)
-        repl-options (assoc weasel-repl-options :after-launch after-launch)
+        repl-options (assoc weasel-repl-options :after-launch after-launch!)
         repl-env (weasel-server/make-weasel-repl-env repl-options)]
     (log/trace "starting cljs-repl with repl-env:" repl-env)
     (piggieback/cljs-repl repl-env)))
