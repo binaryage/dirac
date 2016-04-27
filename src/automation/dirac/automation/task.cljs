@@ -65,9 +65,9 @@
   ([runner-present?]
    (assert @done)
    (go
+     (transcript-host/disable-transcript!)
      (messages/tear-down!)
      (<! (messages/wait-for-all-pending-replies-or-timeout! (get-pending-replies-wait-timeout)))
-     (transcript-host/disable-transcript!)
      (feedback/done-feedback!)
      (if runner-present?
        (when (successful-task-run?)
