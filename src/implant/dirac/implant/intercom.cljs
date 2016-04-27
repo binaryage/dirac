@@ -33,9 +33,10 @@
        "This is usually a case when server side process raised an exception or crashed.\n"
        "Check your Dirac Agent server console."))
 
-(defn ^:dynamic bootstrap-error-msg []
+(defn ^:dynamic bootstrap-error-msg [details]
   (str "Unable to bootstrap ClojureScript REPL due to an error.\n"
-       "Check your Dirac Agent console output."))
+       (if (some? details) (str details "\n"))
+       "Please check your Dirac Agent console for additional output."))
 
 (defn ^:dynamic unable-to-connect-exception-msg [url e]
   (str "Unable to connect to Dirac Agent at " url ":\n"
@@ -211,7 +212,7 @@
                     {:op :bootstrap-timeout})
         (do
           (error "Bootstrap failed" response)
-          (display-prompt-status (bootstrap-error-msg))
+          (display-prompt-status (bootstrap-error-msg (or (:details response) response)))
           {:op :bootstrap-error})))))
 
 (defmethod nrepl-tunnel-client/process-message :bootstrap-info [_client message]
