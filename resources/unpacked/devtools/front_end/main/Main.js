@@ -193,6 +193,7 @@ WebInspector.Main.prototype = {
 
         WebInspector.fileManager = new WebInspector.FileManager();
         WebInspector.workspace = new WebInspector.Workspace();
+        WebInspector.formatterWorkerPool = new WebInspector.FormatterWorkerPool();
         WebInspector.fileSystemMapping = new WebInspector.FileSystemMapping();
 
         var fileSystemWorkspaceBinding = new WebInspector.FileSystemWorkspaceBinding(WebInspector.isolatedFileSystemManager, WebInspector.workspace);

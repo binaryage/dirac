@@ -117,6 +117,7 @@
     ],
     "scripts": [
         "clojure-parinfer.js",
+        "ConsoleContextSelector.js",
         "ConsoleViewMessage.js",
         "ConsoleView.js",
         "ConsolePanel.js"
