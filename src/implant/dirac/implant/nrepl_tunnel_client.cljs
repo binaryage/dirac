@@ -71,9 +71,9 @@
 
 (defn boostrap-cljs-repl-message []
   {:op   "eval"
-   :code (str "(do"
-              "  (require 'dirac.nrepl)"
-              "  (dirac.nrepl/boot-cljs-repl!))")})
+   :code (pr-str '(do
+                    (require 'dirac.nrepl)
+                    (dirac.nrepl/boot-cljs-repl!)))})
 
 (defmulti process-message (fn [_client message] (:op message)))
 
