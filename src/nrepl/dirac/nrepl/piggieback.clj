@@ -3,16 +3,23 @@
 ; original author: Chas Emerick
 ; Eclipse Public License - v 1.0
 ;
-; this file differs from original piggieback.clj and was modified to include Dirac-specific functionality
-; removed generic code for supporting arbitrary repl environment, supports only Dirac's WeaselREPLEnv
+; this file differs significantly from the original piggieback.clj and was modified to include Dirac-specific functionality
+;
+; main changes:
+;   * removed generic code for supporting arbitrary repl environment
+;   * supports only Dirac's WeaselREPLEnv
+;   * uses recording driver when performing eval of ClojureScript code (see driver.clj)
+;   * observes evaluation errors when performing eval of Clojure code
 
 (ns dirac.nrepl.piggieback
   (:require [clojure.tools.nrepl :as nrepl]
             (clojure.tools.nrepl [transport :as transport]
                                  [misc :refer (response-for returning)]
                                  [middleware :refer (set-descriptor!)])
-            [clojure.tools.nrepl.middleware.interruptible-eval :as ieval]
+            [clojure.tools.nrepl.middleware.interruptible-eval :as nrepl-ieval]
+            [clojure.tools.nrepl.transport :as nrepl-transport]
             cljs.repl
+            clojure.pprint
             [cljs.env :as env]
             [cljs.analyzer :as ana]
             [dirac.nrepl.driver :as driver]
@@ -20,7 +27,9 @@
             [clojure.tools.logging :as log])
   (:import clojure.lang.LineNumberingPushbackReader
            java.io.StringReader
-           java.io.Writer)
+           java.io.Writer
+           (clojure.tools.nrepl.transport Transport)
+           (clojure.lang IDeref))
   (:refer-clojure :exclude (load-file)))
 
 ; this is the var that is checked by the middleware to determine whether an active CLJS REPL is in flight
@@ -30,9 +39,9 @@
 (def ^:private ^:dynamic *original-clj-ns* nil)
 
 (defn wrap-fn [form]
-  (let [current-repl-msg ieval/*msg*
-        dirac-mode (:dirac current-repl-msg)
-        job-id (or (:id current-repl-msg) 0)
+  (let [nrepl-message nrepl-ieval/*msg*
+        dirac-mode (:dirac nrepl-message)
+        job-id (or (:id nrepl-message) 0)
         dirac-wrap (case dirac-mode
                      "wrap" (fn [x]
                               `(try
@@ -114,7 +123,7 @@
                      (let [effective-repl-opts (assoc repl-opts
                                                  :flush (partial flush driver)
                                                  :print (partial print-fn driver))]
-                       (driver/start-job! driver (:id ieval/*msg*))
+                       (driver/start-job! driver (:id nrepl-ieval/*msg*))
                        (repl repl-env effective-repl-opts)
                        (driver/stop-job! driver)))]
     ; MAJOR TRICK HERE! we append :cljs/quit to our code which needs to be evaluated,
@@ -147,7 +156,7 @@
   (try
     (set! ana/*cljs-ns* 'cljs.user)
     ; this will implicitly set! *cljs-compiler-env*
-    (run-cljs-repl (assoc ieval/*msg* ::first-cljs-repl true)
+    (run-cljs-repl (assoc nrepl-ieval/*msg* ::first-cljs-repl true)
                    (nrepl/code (ns cljs.user
                                  (:require [cljs.repl :refer-macros (source doc find-doc
                                                                             apropos dir pst)])))
@@ -164,15 +173,15 @@
 
 ;; mostly a copy/paste from interruptible-eval
 (defn- enqueue [{:keys [session transport] :as msg} func]
-  (ieval/queue-eval session @ieval/default-executor
-                    (fn []
-                      (alter-meta! session assoc
-                                   :thread (Thread/currentThread)
-                                   :eval-msg msg)
-                      (binding [ieval/*msg* msg]
-                        (func)
-                        (transport/send transport (response-for msg :status :done))
-                        (alter-meta! session dissoc :thread :eval-msg)))))
+  (nrepl-ieval/queue-eval session @nrepl-ieval/default-executor
+                          (fn []
+                            (alter-meta! session assoc
+                                         :thread (Thread/currentThread)
+                                         :eval-msg msg)
+                            (binding [nrepl-ieval/*msg* msg]
+                              (func)
+                              (transport/send transport (response-for msg :status :done))
+                              (alter-meta! session dissoc :thread :eval-msg)))))
 
 ; only executed within the context of an nREPL session having *cljs-repl-env*
 ; bound. Thus, we're not going through interruptible-eval, and the user's
@@ -205,40 +214,109 @@
 ; the file being loaded is on disk, in the location implied by the namespace
 ; declaration.
 ; TODO either pull in our own `load-file` that doesn't imply this, or raise the issue upstream.
-(defn- load-file [{:keys [session transport file-path] :as msg}]
+(defn- load-file [{:keys [file-path] :as msg}]
   (evaluate (assoc msg :code (format "(load-file %s)" (pr-str file-path)))))
 
-(defn identify-dirac-nrepl-middleware [msg]
-  (let [{:keys [transport]} msg]
-    (transport/send transport (response-for msg
+; -- middlewre helpers ------------------------------------------------------------------------------------------------------
+
+(defn in-cljs-repl? [session]
+  (boolean (@session #'*cljs-repl-env*)))
+
+(defn nrepl-message-as-str [nrepl-message]
+  (with-out-str
+    (binding [*print-level* 5]                                                                                                ; we have to be careful here, nrepl-message might contain circular data
+      (clojure.pprint/pprint nrepl-message))))
+
+(defn ensure-bindings! [session]
+  ; ensure that bindings exist so cljs-repl can set!
+  (if-not (contains? @session #'*cljs-repl-env*)
+    (swap! session (partial merge {#'*cljs-repl-env*     *cljs-repl-env*
+                                   #'*cljs-compiler-env* *cljs-compiler-env*
+                                   #'*cljs-repl-options* *cljs-repl-options*
+                                   #'*original-clj-ns*   *original-clj-ns*
+                                   #'ana/*cljs-ns*       ana/*cljs-ns*}))))
+
+; -- nrepl-message error observer -------------------------------------------------------------------------------------------
+
+(defn get-eval-error-details [session]
+  {:pre [(instance? IDeref session)]}
+  (driver/capture-exception-details (@session #'clojure.core/*e)))
+
+(defn get-nrepl-message-info [nrepl-message]
+  (let [{:keys [op code]} nrepl-message]
+    (str "op: '" op "'" (if (some? code) (str " code: " code)))))
+
+(defrecord ErrorsObservingTransport [nrepl-message transport]
+  Transport
+  (recv [_this timeout]
+    (nrepl-transport/recv transport timeout))
+  (send [_this reply-message]
+    (let [effective-message (if (some #{:eval-error} (:status reply-message))
+                              (let [details (get-eval-error-details (:session nrepl-message))
+                                    message-info (get-nrepl-message-info nrepl-message)]
+                                (log/error (str "Clojure eval error while responding to " message-info "\n" details))
+                                (assoc reply-message :details (str message-info "\n" details)))
+                              reply-message)]
+      (nrepl-transport/send transport effective-message))))
+
+(defn observed-nrepl-message [nrepl-message]
+  ; This is a little trick due to unfortunate fact that clojure.tools.nrepl.middleware.interruptible-eval/evaluate does not
+  ; offer configurable :caught option. The problem is that eval errors in Clojure REPL are not printed to stderr
+  ; for some reasons and reported exception in response message is not helpful.
+  ;
+  ; Our strategy here is to wrap :transport with our custom implementation which observes send calls and enhances :eval-error
+  ; messages with more details. It relies onthe fact that :caught implementation
+  ; in clojure.tools.nrepl.middleware.interruptible-eval/evaluate sets exception into *e binding in the session atom.
+  ;
+  ; Also it uses our logging infrastructure to log the error which should be displayed in console (assuming default log
+  ; levels)
+  (update nrepl-message :transport (partial ->ErrorsObservingTransport nrepl-message)))
+
+; -- handlers for middleware operations -------------------------------------------------------------------------------------
+
+(defn identify-dirac-nrepl-middleware! [_next-handler nrepl-message]
+  (let [{:keys [transport]} nrepl-message]
+    (transport/send transport (response-for nrepl-message
                                             :version version))))
 
-(defn wrap-cljs-repl [handler]
-  (fn [{:keys [session op] :as msg}]
-    (case op
-      "identify-dirac-nrepl-middleware" (identify-dirac-nrepl-middleware msg)
-      (let [handler (or (when-let [f (and (@session #'*cljs-repl-env*)
-                                          ({"eval" #'evaluate "load-file" #'load-file} op))]
-                          (fn [msg] (enqueue msg #(f msg))))
-                        handler)]
-        ; ensure that bindings exist so cljs-repl can set!
-        (when-not (contains? @session #'*cljs-repl-env*)
-          (swap! session (partial merge {#'*cljs-repl-env*     *cljs-repl-env*
-                                         #'*cljs-compiler-env* *cljs-compiler-env*
-                                         #'*cljs-repl-options* *cljs-repl-options*
-                                         #'*original-clj-ns*   *original-clj-ns*
-                                         #'ana/*cljs-ns*       ana/*cljs-ns*})))
-        (handler msg)))))
+(defn handle-eval! [next-handler nrepl-message]
+  (let [{:keys [session]} nrepl-message]
+    (if (in-cljs-repl? session)
+      (enqueue nrepl-message #(evaluate nrepl-message))
+      (next-handler (observed-nrepl-message nrepl-message)))))
 
+(defn handle-load-file! [next-handler nrepl-message]
+  (let [{:keys [session]} nrepl-message]
+    (if (in-cljs-repl? session)
+      (enqueue nrepl-message #(load-file nrepl-message))
+      (next-handler (observed-nrepl-message nrepl-message)))))
+
+; -- nrepl middleware -------------------------------------------------------------------------------------------------------
+
+(defn dirac-nrepl-middleware [next-handler]
+  (fn [nrepl-message]
+    (let [{:keys [session op]} nrepl-message]
+      (log/trace "dirac-nrepl-middleware:" op "\n"
+                 (nrepl-message-as-str nrepl-message))
+      (ensure-bindings! session)
+      (case op
+        "identify-dirac-nrepl-middleware" (identify-dirac-nrepl-middleware! next-handler nrepl-message)
+        "eval" (handle-eval! next-handler nrepl-message)
+        "load-file" (handle-load-file! next-handler nrepl-message)
+        (next-handler nrepl-message)))))
+
+; -- additional tools -------------------------------------------------------------------------------------------------------
+
+; this message is sent to client after booting into a Dirac REPL
 (defn send-bootstrap-info! [server-url]
-  (log/trace "send-bootstrap-info!" server-url)
-  (let [nrepl-msg ieval/*msg*
-        _ (assert nrepl-msg)
-        {:keys [transport session]} nrepl-msg
-        _ (assert transport)
-        _ (assert session)
-        info-msg {:op         :bootstrap-info
-                  :server-url server-url
-                  :ns         (@session #'ana/*cljs-ns*)}]
-    (log/trace "sending :bootstrap-info" info-msg)
-    (transport/send transport (response-for nrepl-msg info-msg))))
+  (let [{:keys [transport session] :as nrepl-message} nrepl-ieval/*msg*]
+    (log/trace "send-bootstrap-info!" server-url "\n"
+               (nrepl-message-as-str nrepl-message))
+    (assert nrepl-message)
+    (assert transport)
+    (assert session)
+    (let [info-message {:op         :bootstrap-info
+                        :server-url server-url
+                        :ns         (@session #'ana/*cljs-ns*)}]
+      (log/debug "sending :bootstrap-info" info-message)
+      (transport/send transport (response-for nrepl-message info-message)))))
