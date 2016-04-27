@@ -70,8 +70,8 @@ devtools #1      present-server-side-output! java-trace > java.lang.IllegalArgum
                  <elided stack trace>
 devtools #1      DF.log> java.lang.IllegalArgumentException: Argument to in-ns must be a symbol.
 devtools #1      <elided stack trace log>
-automate #1      {:action :dispatch-console-prompt-input, :input "(in-ns 'my.ns)"}
 devtools #1      JS.log>
+automate #1      {:action :dispatch-console-prompt-input, :input "(in-ns 'my.ns)"}
 automate #1      {:action :dispatch-console-prompt-action, :input "enter"}
 devtools #1      DC.log> (in-ns 'my.ns)
 devtools #1      send-eval-request: (in-ns 'my.ns)

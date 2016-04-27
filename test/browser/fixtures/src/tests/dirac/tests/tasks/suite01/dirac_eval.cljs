@@ -20,5 +20,6 @@
                                                   "err> TypeError: Cannot read property 'call' of undefined(…)"])
     (auto/console-exec-and-wait-for-match! "(in-ns)" [(str "log> java.lang.IllegalArgumentException: "
                                                            "Argument to in-ns must be a symbol.")
-                                                      "<elided stack trace log>"])
+                                                      "<elided stack trace log>"
+                                                      "JS.log"])
     (auto/console-exec-and-wait-for-match! "(in-ns 'my.ns)" "setDiracPromptNS('my.ns')")))
