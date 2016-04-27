@@ -234,6 +234,7 @@ WebInspector.ConsoleView = function()
             that._switchToLastPrompt();
         }, 200);
     }
+    dirac.implant.feedback("ConsoleView constructed");
 }
 
 WebInspector.ConsoleView.persistedHistorySize = 300;

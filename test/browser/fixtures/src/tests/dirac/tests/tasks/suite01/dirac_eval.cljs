@@ -7,7 +7,7 @@
 (go-task
   (<! (auto/open-tab-with-scenario! "normal"))
   (with-devtools (<! (auto/open-dirac-devtools!))
-    (auto/wait-switch-to-console)
+    (auto/switch-to-console-and-wait-for-it)
     (auto/switch-to-dirac-prompt!)
     (auto/wait-for-prompt-edit)
     (auto/enable-console-feedback!)

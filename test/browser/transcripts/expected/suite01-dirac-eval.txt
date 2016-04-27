@@ -7,9 +7,10 @@ devtools #1      devtools ready
 devtools #1      setCurrentPanel: elements
 automate #1      {:action :switch-inspector-panel, :panel :console}
 devtools #1      console initialized
-automate #1      {:action :switch-to-dirac-prompt}
 devtools #1      adopt-prompt-element use-parinfer? true
 devtools #1      setDiracPromptMode('status')
+devtools #1      ConsoleView constructed
+automate #1      {:action :switch-to-dirac-prompt}
 devtools #1      setCurrentPanel: console
 devtools #1      switch console prompt to dirac
 devtools #1      console prompt focused

@@ -185,13 +185,14 @@
   ([devtools-id]
    (automate-dirac-frontend! devtools-id {:action :disable-console-feedback})))
 
-(defn wait-switch-to-console
+(defn switch-to-console-and-wait-for-it
   ([] (assert false))
   ([devtools-id]
    (go
      (let [wait (wait-for-console-initialization devtools-id)]
        (<! (switch-inspector-panel! devtools-id :console))
-       (<! wait)))))
+       (<! wait)
+       (<! (wait-for-devtools-substr-match devtools-id "ConsoleView constructed"))))))
 
 ; -- devtools ---------------------------------------------------------------------------------------------------------------
 
