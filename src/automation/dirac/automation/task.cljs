@@ -71,36 +71,43 @@
          (browser-state-cleanup!)
          (signal-task-finished!))
        (do
-         ; this is for a convenience when running tests manually
+         ; this is for convenience when running tests manually
          (messages/switch-to-task-runner-tab!)
          (messages/focus-task-runner-window!))))))
 
 (defn task-finished! []
   (go
     (when-not @done
+      (vreset! done true)
       (status-host/set-status! "task finished")
       (transcript-host/set-style! "finished")
-      (vreset! done true))))
+      (<! (task-teardown!))
+      true)))
 
 (defn task-timeouted! [data]
-  (when-not @done
-    (if-let [transcript (:transcript data)]
-      (transcript-host/append-to-transcript! "timeout" transcript true))
-    (status-host/set-status! (or (:status data) "task timeouted!"))
-    (transcript-host/set-style! (or (:style data) "timeout"))
-    (vreset! done true)))
+  (go
+    (when-not @done
+      (vreset! done ::timeouted)
+      (if-let [transcript (:transcript data)]
+        (transcript-host/append-to-transcript! "timeout" transcript true))
+      (status-host/set-status! (or (:status data) "task timeouted!"))
+      (transcript-host/set-style! (or (:style data) "timeout"))
+      (<! (task-teardown!))
+      true)))
 
 (defn task-thrown-exception! [e]
-  (when-not @done
-    (status-host/set-status! (str "task has thrown an exception: " e))
-    (transcript-host/set-style! "exception")
-    (vreset! done true)))
+  (go
+    (when-not @done
+      (vreset! done ::thrown-exception)
+      (status-host/set-status! (str "task has thrown an exception: " e))
+      (transcript-host/set-style! "exception")
+      (<! (task-teardown!))
+      true)))
 
 (defn task-exception-handler [message _source _lineno _colno error]
   (case (ex-message error)
     :task-timeout (task-timeouted! (ex-data error))
     (task-thrown-exception! message))
-  (task-teardown!)
   false)
 
 (defn register-global-exception-handler! [handler]

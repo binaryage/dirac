@@ -11,8 +11,7 @@
                          (cljs.core.async.macros/go
                            (cljs.core.async/<! (dirac.automation.task/task-started!))
                            ~@commands
-                           (cljs.core.async/<! (dirac.automation.task/task-finished!))
-                           (cljs.core.async/<! (dirac.automation.task/task-teardown!))))]
+                           (cljs.core.async/<! (dirac.automation.task/task-finished!))))]
        (dirac.automation.launcher/register-task! test-thunk#)
        (dirac.automation.task/task-setup! ~config))))
 
