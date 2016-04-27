@@ -72,14 +72,17 @@
       (re-find #"present-server-side-output! java-trace" text) (start-state-machine-for-java-trace label text)
       :else [label text])))
 
+(defn record! [data]
+  (put! recorder data))
+
 (defn append-to-transcript! [label text & [force?]]
   {:pre [(has-transcript?)
          (string? text)
          (string? label)]}
   (when (or *transcript-enabled* force?)
     (when-let [[filtered-label filtered-text] (filter-transcript label text)]
-      (put! recorder [filtered-label filtered-text])
-      (transcript/append-to-transcript! @current-transcript (format-transcript filtered-label filtered-text)))))
+      (transcript/append-to-transcript! @current-transcript (format-transcript filtered-label filtered-text))
+      (record! [filtered-label filtered-text]))))
 
 (defn read-transcript []
   {:pre [(has-transcript?)]}
