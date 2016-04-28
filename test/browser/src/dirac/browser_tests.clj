@@ -1,5 +1,6 @@
 (ns dirac.browser-tests
-  (:require [clojure.test :refer :all]
+  (:require [environ.core :refer [env]]
+            [clojure.test :refer :all]
             [clojure.java.io :as io]
             [clojure.stacktrace :as stacktrace]
             [dirac.settings :refer [get-launch-task-message
@@ -33,6 +34,7 @@
 
 (defonce ^:dynamic *current-transcript-test* nil)
 (defonce ^:dynamic *current-transcript-suite* nil)
+(defonce last-task-success (volatile! nil))
 
 (defmacro with-transcript-test [test-name & body]
   `(try
@@ -78,9 +80,29 @@
         (throw e)))))
 
 (defn create-signal-server! []
-  (server/create! {:name "Signal server"
-                   :host (get-signal-server-host)
-                   :port (get-signal-server-port)}))
+  (vreset! last-task-success nil)
+  (server/create! {:name       "Signal server"
+                   :host       (get-signal-server-host)
+                   :port       (get-signal-server-port)
+                   :on-message (fn [_server _client msg]
+                                 (log/debug "signal server: got signal message" msg)
+                                 (case (:op msg)
+                                   :ready nil                                                                                 ; ignore
+                                   :task-result (vreset! last-task-success (:success msg))
+                                   (log/error "signal server: received unrecognized message" msg)))}))
+
+(defn under-ci? []
+  (or (some? (:ci env)) (some? (:travis env))))
+
+(defn enter-infinite-loop []
+  (loop []
+    (Thread/sleep 1000)
+    (recur)))
+
+(defn pause-unless-ci []
+  (when-not (under-ci?)
+    (log/info "paused execution to allow inspection of failed task => CTRL+C to break")
+    (enter-infinite-loop)))
 
 (defn wait-for-signal
   ([server]
@@ -89,12 +111,16 @@
    (let [server-url (server/get-url server)
          friendly-timeout (format-friendly-timeout timeout-ms)]
      (log/info (str "waiting for a task signal at " server-url " (timeout " friendly-timeout ")."))
-     (if (= ::server/timeout (server/wait-for-first-client server timeout-ms))
+     (when (= ::server/timeout (server/wait-for-first-client server timeout-ms))
        (log/error (str "timeouted while waiting for the task signal."))
-       (log/info (str "received the task signal.")))
+       (pause-unless-ci))
      ; this is here to give client some time to disconnet before destroying server
      ; devtools would spit "Close received after close" errors in js console
      (Thread/sleep (get-signal-server-close-wait-timeout))
+     (assert (some? @last-task-success) "didn't get task-result message from signal client?")
+     (when-not @last-task-success
+       (log/error (str "task reported failure"))
+       (pause-unless-ci))
      (server/destroy! server))))
 
 ; -- transcript helpers -----------------------------------------------------------------------------------------------------

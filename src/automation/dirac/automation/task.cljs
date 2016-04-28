@@ -48,10 +48,13 @@
   (messages/post-message! #js {:type "marion-close-all-tabs"} :no-timeout)
   (messages/post-extension-command! {:command :tear-down} :no-timeout))                                                       ; to fight https://bugs.chromium.org/p/chromium/issues/detail?id=3550 75
 
-(defn signal-task-finished! []
+(defn signal-task-finished! [success?]
   ; this signals to the task runner that he can reconnect chrome driver and check the results
   (ws-client/connect! (get-signal-server-url) {:name    "Signaller"
-                                               :on-open #(ws-client/close! %)}))
+                                               :on-open (fn [client]
+                                                          (ws-client/send! client {:op      :task-result
+                                                                                   :success success?})
+                                                          (ws-client/close! client))}))
 
 (defn successful-task-run? []
   (= @done true))
@@ -70,15 +73,13 @@
      (<! (messages/wait-for-all-pending-replies-or-timeout! (get-pending-replies-wait-timeout)))
      (feedback/done-feedback!)
      (if runner-present?
-       (when (successful-task-run?)
-         ; note: if task runner wasn't successful we leave browser in failed state for possible inspection
-         ; task runner should eventually timeout when waiting for signal-task-finished!
-         (browser-state-cleanup!)
-         (signal-task-finished!))
        (do
-         ; this is for convenience when running tests manually
-         (messages/switch-to-task-runner-tab!)
-         (messages/focus-task-runner-window!))))))
+         (when (successful-task-run?)
+           (browser-state-cleanup!))                                                                                          ; note: if task runner wasn't successful we leave browser in failed state for possible inspection
+         (signal-task-finished! (successful-task-run?)))
+       (do                                                                                                                    ; this is for convenience when running tests manually
+         (<! (messages/switch-to-task-runner-tab!))
+         (<! (messages/focus-task-runner-window!)))))))
 
 (defn task-finished! []
   (go
