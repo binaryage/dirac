@@ -18,7 +18,7 @@
         repl-options (assoc weasel-repl-options :after-launch after-launch!)
         repl-env (weasel-server/make-weasel-repl-env repl-options)]
     (log/trace "starting cljs-repl with repl-env:" repl-env)
-    (piggieback/cljs-repl repl-env)))
+    (piggieback/start-cljs-repl! repl-env)))
 
 (defn boot-cljs-repl! [& [config]]
   ; this must be called from the main thread, piggieback/cljs-repl depends on it
