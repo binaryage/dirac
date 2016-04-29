@@ -3,6 +3,10 @@
 Dirac integration with your project requires some effort and can be configured in many ways.
 In this document I will discuss standard configuration with Leiningen. For custom configuration refer to [this document](configuration.md).
 
+If this is your first Dirac installation and you are not familiar with Dirac features
+I first recommend following [the demo walktrough in Dirac Example project](https://github.com/binaryage/dirac-sample) to learn
+the basics and test-drive Dirac on properly-configured project.
+
 Here are the ingredients you are going to need:
 
 1. [Dirac Chrome Extension](https://chrome.google.com/webstore/detail/dirac-devtools/kbkdngfljkchidcjpnfcgcokkbhlkogi) installed in your Chrome Canary
