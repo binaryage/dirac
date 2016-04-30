@@ -19,11 +19,11 @@
             [clojure.tools.nrepl.middleware.interruptible-eval :as nrepl-ieval]
             [clojure.tools.nrepl.transport :as nrepl-transport]
             cljs.repl
-            clojure.pprint
             [cljs.env :as env]
             [cljs.analyzer :as ana]
             [dirac.nrepl.driver :as driver]
             [dirac.nrepl.version :refer [version]]
+            [dirac.logging :refer [pprint]]
             [clojure.tools.logging :as log])
   (:import clojure.lang.LineNumberingPushbackReader
            java.io.StringReader
@@ -48,11 +48,6 @@
 
 (defn cljs-repl-in-flight? [session]
   (boolean (@session #'*cljs-repl-env*)))
-
-(defn nrepl-message-as-str [nrepl-message]
-  (with-out-str
-    (binding [*print-level* 5]                                                                                                ; we have to be careful here, nrepl-message might contain circular data
-      (clojure.pprint/pprint nrepl-message))))
 
 (defn ensure-bindings! [session]
   ; ensure that bindings exist so cljs-repl can set!
@@ -311,8 +306,7 @@
 (defn dirac-nrepl-middleware [next-handler]
   (fn [nrepl-message]
     (let [{:keys [session op]} nrepl-message]
-      (log/trace "dirac-nrepl-middleware:" op "\n"
-                 (nrepl-message-as-str nrepl-message))
+      (log/trace "dirac-nrepl-middleware:" op "\n" (pprint nrepl-message))
       (ensure-bindings! session)
       (case op
         "identify-dirac-nrepl-middleware" (identify-dirac-nrepl-middleware! next-handler nrepl-message)
@@ -325,8 +319,7 @@
 ; this message is sent to client after booting into a Dirac REPL
 (defn send-bootstrap-info! [server-url]
   (let [{:keys [transport session] :as nrepl-message} nrepl-ieval/*msg*]
-    (log/trace "send-bootstrap-info!" server-url "\n"
-               (nrepl-message-as-str nrepl-message))
+    (log/trace "send-bootstrap-info!" server-url "\n" (pprint nrepl-message))
     (assert nrepl-message)
     (assert transport)
     (assert session)
