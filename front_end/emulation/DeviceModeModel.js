@@ -45,7 +45,7 @@ WebInspector.DeviceModeModel = function(updateCallback)
     this._deviceScaleFactorSetting = WebInspector.settings.createSetting("emulation.deviceScaleFactor", 0);
     this._deviceScaleFactorSetting.addChangeListener(this._deviceScaleFactorSettingChanged, this);
 
-    this._deviceOutlineSetting = WebInspector.settings.createSetting("emulation.deviceOutline", true);
+    this._deviceOutlineSetting = WebInspector.settings.createSetting("emulation.deviceOutline", false);
     this._deviceOutlineSetting.addChangeListener(this._deviceOutlineSettingChanged, this);
 
     /** @type {!WebInspector.DeviceModeModel.Type} */
@@ -434,7 +434,9 @@ WebInspector.DeviceModeModel.prototype = {
 
         if (this._type === WebInspector.DeviceModeModel.Type.Device) {
             var orientation = this._device.orientationByName(this._mode.orientation);
-            var outline = (this._deviceOutlineSetting.get() && Runtime.experiments.isEnabled("deviceFrames")) ? orientation.outlineInsets : new Insets(0,0,0,0);
+            var outline = new Insets(0, 0, 0, 0);
+            if (Runtime.experiments.isEnabled("deviceFrames") && this._deviceOutlineSetting.get())
+                outline = orientation.outlineInsets || outline;
             this._fitScale = this._calculateFitScale(orientation.width, orientation.height);
             if (this._device.mobile())
                 this._appliedUserAgentType = this._device.touch() ? WebInspector.DeviceModeModel.UA.Mobile : WebInspector.DeviceModeModel.UA.MobileNoTouch;
@@ -501,7 +503,7 @@ WebInspector.DeviceModeModel.prototype = {
     /**
      * @param {!Size} screenSize
      * @param {!Insets} insets
-     * @param {!Insets|null} outline
+     * @param {!Insets} outline
      * @param {number} scale
      * @param {number} deviceScaleFactor
      * @param {boolean} mobile

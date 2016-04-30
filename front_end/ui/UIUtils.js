@@ -1254,6 +1254,19 @@ function createRadioLabel(name, title, checked)
 }
 
 /**
+ * @param {string} title
+ * @param {string} iconClass
+ * @return {!Element}
+ */
+function createLabel(title, iconClass)
+{
+    var element = createElement("label", "dt-icon-label");
+    element.createChild("span").textContent = title;
+    element.type = iconClass;
+    return element;
+}
+
+/**
  * @param {string=} title
  * @param {boolean=} checked
  * @param {string=} subtitle
@@ -1524,7 +1537,11 @@ WebInspector.bindInput = function(input, apply, validate, numeric)
         var valid = validate(value);
         input.classList.toggle("error-input", !valid);
         input.value = value;
-        input.setSelectionRange(value.length, value.length);
+
+        // Selection range operations are not supported by type "number" inputs.  This browser
+        // behavior is detailed by the WHATWG forms spec.
+        if (input.type !== "number")
+            input.setSelectionRange(value.length, value.length);
     }
 
     return setValue;
