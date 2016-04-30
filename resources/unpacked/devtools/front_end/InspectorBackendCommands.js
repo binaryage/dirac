@@ -66,6 +66,7 @@ InspectorBackend.registerCommand("Page.screencastFrameAck", [{"name": "sessionId
 InspectorBackend.registerCommand("Page.handleJavaScriptDialog", [{"name": "accept", "type": "boolean", "optional": false}, {"name": "promptText", "type": "string", "optional": true}], [], false);
 InspectorBackend.registerCommand("Page.setColorPickerEnabled", [{"name": "enabled", "type": "boolean", "optional": false}], [], false);
 InspectorBackend.registerCommand("Page.setOverlayMessage", [{"name": "message", "type": "string", "optional": true}], [], false);
+InspectorBackend.registerCommand("Page.getAppManifest", [], ["url", "errors", "data"], false);
 InspectorBackend.registerCommand("Page.requestAppBanner", [], [], false);
 
 // Rendering.
@@ -380,7 +381,7 @@ InspectorBackend.registerCommand("HeapProfiler.collectGarbage", [], [], false);
 InspectorBackend.registerCommand("HeapProfiler.getObjectByHeapObjectId", [{"name": "objectId", "type": "string", "optional": false}, {"name": "objectGroup", "type": "string", "optional": true}], ["result"], false);
 InspectorBackend.registerCommand("HeapProfiler.addInspectedHeapObject", [{"name": "heapObjectId", "type": "string", "optional": false}], [], false);
 InspectorBackend.registerCommand("HeapProfiler.getHeapObjectId", [{"name": "objectId", "type": "string", "optional": false}], ["heapSnapshotObjectId"], false);
-InspectorBackend.registerCommand("HeapProfiler.startSampling", [], [], false);
+InspectorBackend.registerCommand("HeapProfiler.startSampling", [{"name": "samplingInterval", "type": "number", "optional": true}], [], false);
 InspectorBackend.registerCommand("HeapProfiler.stopSampling", [], ["profile"], false);
 
 // Worker.
