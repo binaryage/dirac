@@ -22,9 +22,9 @@
 
 ; -- support for booting into CLJS REPL -------------------------------------------------------------------------------------
 
-(defn after-launch! [repl-env url]
+(defn after-launch! [repl-env weasel-url]
   (log/trace "after-launch handler called with repl-env:\n" (logging/pprint repl-env))
-  (piggieback/send-bootstrap-info! url))
+  (piggieback/send-bootstrap-info! weasel-url))
 
 (defn bootstrap! [& [config]]
   (let [effective-confg (config/get-effective-config config)

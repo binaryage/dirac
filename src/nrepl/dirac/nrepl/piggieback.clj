@@ -317,14 +317,14 @@
 ; -- additional tools -------------------------------------------------------------------------------------------------------
 
 ; this message is sent to client after booting into a Dirac REPL
-(defn send-bootstrap-info! [server-url]
+(defn send-bootstrap-info! [weasel-url]
   (let [{:keys [transport session] :as nrepl-message} nrepl-ieval/*msg*]
-    (log/trace "send-bootstrap-info!" server-url "\n" (pprint nrepl-message))
+    (log/trace "send-bootstrap-info!" weasel-url "\n" (pprint nrepl-message))
     (assert nrepl-message)
     (assert transport)
     (assert session)
     (let [info-message {:op         :bootstrap-info
-                        :server-url server-url
+                        :weasel-url weasel-url
                         :ns         (@session #'ana/*cljs-ns*)}]
       (log/debug "sending :bootstrap-info" info-message)
       (transport/send transport (response-for nrepl-message info-message)))))
