@@ -1,10 +1,24 @@
 (ns dirac.nrepl
   (:require [clojure.core.async :refer [chan <!! <! >!! put! alts!! timeout close! go go-loop]]
             [clojure.tools.logging :as log]
+            [clojure.tools.nrepl.middleware :refer (set-descriptor!)]
             [dirac.lib.weasel-server :as weasel-server]
             [dirac.logging :as logging]
             [dirac.nrepl.piggieback :as piggieback]
             [dirac.nrepl.config :as config]))
+
+; -- public middleware definition -------------------------------------------------------------------------------------------
+
+(def middleware piggieback/dirac-nrepl-middleware)
+
+(set-descriptor! #'middleware
+                 {:requires #{"clone"}
+                  :expects  #{"eval" "load-file"}                                                                             ; piggieback unconditionally hijacks eval and load-file
+                  :handles  {"identify-dirac-nrepl-middleware"
+                             {:doc      "Checks for presence of Dirac nREPL middleware"
+                              :requires {}
+                              :optional {}
+                              :returns  {"version" "Version of Dirac nREPL middleware."}}}})
 
 ; -- support for booting into CLJS REPL -------------------------------------------------------------------------------------
 
