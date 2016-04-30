@@ -21,8 +21,6 @@
     (piggieback/start-cljs-repl! repl-env)))
 
 (defn boot-cljs-repl! [& [config]]
-  ; this must be called from the main thread, piggieback/cljs-repl depends on it
-  ; TODO: defensively check for it^
   (let [effective-config (config/get-effective-config config)]
     (if-not (:skip-logging-setup effective-config)
       (logging/setup! effective-config))
