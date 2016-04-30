@@ -21,6 +21,20 @@ WebInspector.HeapProfileView = function(profileHeader)
 }
 
 WebInspector.HeapProfileView.prototype = {
+    /**
+     * @override
+     * @param {string} columnId
+     * @return {string}
+     */
+    columnHeader: function(columnId)
+    {
+        switch (columnId) {
+        case "self": return WebInspector.UIString("Self Size (bytes)");
+        case "total": return WebInspector.UIString("Total Size (bytes)");
+        }
+        return "";
+    },
+
     __proto__: WebInspector.ProfileView.prototype
 }
 
@@ -30,7 +44,7 @@ WebInspector.HeapProfileView.prototype = {
  */
 WebInspector.SamplingHeapProfileType = function()
 {
-    WebInspector.ProfileType.call(this, WebInspector.SamplingHeapProfileType.TypeId, WebInspector.UIString("Collect JavaScript Heap Profile"));
+    WebInspector.ProfileType.call(this, WebInspector.SamplingHeapProfileType.TypeId, WebInspector.UIString("Record Allocation Profile"));
     this._recording = false;
     WebInspector.SamplingHeapProfileType.instance = this;
 }
@@ -77,12 +91,12 @@ WebInspector.SamplingHeapProfileType.prototype = {
 
     get treeItemTitle()
     {
-        return WebInspector.UIString("HEAP PROFILES");
+        return WebInspector.UIString("ALLOCATION PROFILES");
     },
 
     get description()
     {
-        return WebInspector.UIString("Heap profiles show where the most memory allocations took place in JavaScript functions.");
+        return WebInspector.UIString("Allocation profiles show memory allocations from your JavaScript functions.");
     },
 
     startRecordingProfile: function()
