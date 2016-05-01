@@ -126,6 +126,15 @@
 (defmethod process-message :error [server client message]
   (log/error (str server) "Received an error from client" (str client) ":\n" (utils/pp message)))
 
+(defmethod process-message :bootstrap-error [server client message]
+  (log/error (str server) "Received a bootstrap error from client" (str client) ":\n" (utils/pp message)))
+
+(defmethod process-message :bootstrap-timeout [server client message]
+  (log/error (str server) "Received a bootstrap timeout from client" (str client) ":\n" (utils/pp message)))
+
+(defmethod process-message :bootstrap-done [server client message]
+  (log/debug (str server) "Received a bootstrap done from client" (str client)))
+
 (defmethod process-message :nrepl-message [server client message]
   (if-let [envelope (:envelope message)]
     (let [tunnel (get-tunnel server)
