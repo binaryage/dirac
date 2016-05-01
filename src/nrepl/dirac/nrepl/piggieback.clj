@@ -18,12 +18,15 @@
                                  [middleware :refer (set-descriptor!)])
             [clojure.tools.nrepl.middleware.interruptible-eval :as nrepl-ieval]
             [clojure.tools.nrepl.transport :as nrepl-transport]
+            clojure.main
             cljs.repl
             [cljs.env :as env]
             [cljs.analyzer :as ana]
+            [dirac.nrepl.state :refer [*cljs-repl-env* *cljs-compiler-env* *cljs-repl-options* *original-clj-ns*]]
             [dirac.nrepl.driver :as driver]
             [dirac.nrepl.version :refer [version]]
             [dirac.nrepl.sessions :as sessions]
+            dirac.nrepl.controls
             [dirac.logging :refer [pprint]]
             [clojure.tools.logging :as log])
   (:import clojure.lang.LineNumberingPushbackReader
@@ -33,31 +36,7 @@
            (clojure.lang IDeref))
   (:refer-clojure :exclude (load-file)))
 
-; -- helpers ----------------------------------------------------------------------------------------------------------------
-
-; we cannot pass nrepl-message info into all our functions,
-; so we keep some global state around and various functions touch it at will
-
-(def ^:dynamic *cljs-repl-env* nil)                                                                                           ; this is the var that is checked by the middleware to determine whether an active CLJS REPL is in flight
-(def ^:dynamic *cljs-compiler-env* nil)
-(def ^:dynamic *cljs-repl-options* nil)
-(def ^:dynamic *original-clj-ns* nil)
-
 (def ^:const dirac-repl-alias "<dirac repl>")
-
-; -- helpers ----------------------------------------------------------------------------------------------------------------
-
-(defn cljs-repl-in-flight? [session]
-  (boolean (@session #'*cljs-repl-env*)))
-
-(defn ensure-bindings! [session]
-  ; ensure that bindings exist so cljs-repl can set!
-  (if-not (contains? @session #'*cljs-repl-env*)
-    (swap! session (partial merge {#'*cljs-repl-env*     *cljs-repl-env*
-                                   #'*cljs-compiler-env* *cljs-compiler-env*
-                                   #'*cljs-repl-options* *cljs-repl-options*
-                                   #'*original-clj-ns*   *original-clj-ns*
-                                   #'ana/*cljs-ns*       ana/*cljs-ns*}))))
 
 ; -- dirac-specific wrapper for evaluated forms -----------------------------------------------------------------------------
 
@@ -228,7 +207,7 @@
       (let [actual-repl-env (@session #'*cljs-repl-env*)]
         (reset! (:cached-setup actual-repl-env) :tear-down)                                                                   ; TODO: find a better way
         (cljs.repl/-tear-down actual-repl-env)
-        (sessions/remove-session! session)
+        (sessions/remove-session-descriptor! session)
         (swap! session assoc
                #'*ns* (@session #'*original-clj-ns*)
                #'*cljs-repl-env* nil
@@ -254,13 +233,18 @@
 
 ; -- nrepl-message error observer -------------------------------------------------------------------------------------------
 
-(defn get-eval-error-details [session]
+(defn get-session-exception [session]
   {:pre [(instance? IDeref session)]}
-  (driver/capture-exception-details (@session #'clojure.core/*e)))
+  (@session #'clojure.core/*e))
 
 (defn get-nrepl-message-info [nrepl-message]
   (let [{:keys [op code]} nrepl-message]
     (str "op: '" op "'" (if (some? code) (str " code: " code)))))
+
+(defn get-exception-details [nrepl-message e]
+  (let [details (driver/capture-exception-details e)
+        message-info (get-nrepl-message-info nrepl-message)]
+    (str message-info "\n" details)))
 
 (defrecord ErrorsObservingTransport [nrepl-message transport]
   Transport
@@ -268,10 +252,10 @@
     (nrepl-transport/recv transport timeout))
   (send [_this reply-message]
     (let [effective-message (if (some #{:eval-error} (:status reply-message))
-                              (let [details (get-eval-error-details (:session nrepl-message))
-                                    message-info (get-nrepl-message-info nrepl-message)]
-                                (log/error (str "Clojure eval error while responding to " message-info "\n" details))
-                                (assoc reply-message :details (str message-info "\n" details)))
+                              (let [e (get-session-exception (:session nrepl-message))
+                                    details (get-exception-details nrepl-message e)]
+                                (log/error (str "Clojure eval error: " details))
+                                (assoc reply-message :details details))
                               reply-message)]
       (nrepl-transport/send transport effective-message))))
 
@@ -281,7 +265,7 @@
   ; for some reasons and reported exception in response message is not helpful.
   ;
   ; Our strategy here is to wrap :transport with our custom implementation which observes send calls and enhances :eval-error
-  ; messages with more details. It relies onthe fact that :caught implementation
+  ; messages with more details. It relies on the fact that :caught implementation
   ; in clojure.tools.nrepl.middleware.interruptible-eval/evaluate sets exception into *e binding in the session atom.
   ;
   ; Also it uses our logging infrastructure to log the error which should be displayed in console (assuming default log
@@ -290,35 +274,150 @@
 
 ; -- handlers for middleware operations -------------------------------------------------------------------------------------
 
+(defn safe-pr-str [value & [level length]]
+  (binding [*print-level* (or level 5)
+            *print-length* (or length 100)]
+    (pr-str value)))
+
+(defrecord LoggingTransport [nrepl-message transport]
+  Transport
+  (recv [_this timeout]
+    (nrepl-transport/recv transport timeout))
+  (send [_this reply-message]
+    (log/debug "sending raw message via nREPL transport:\n" (pprint reply-message))
+    (nrepl-transport/send transport reply-message)))
+
+(defn logged-nrepl-message [nrepl-message]
+  (update nrepl-message :transport (partial ->LoggingTransport nrepl-message)))
+
+(defn make-print-output-message [base job-id output-kind content]
+  (-> base
+      (dissoc :out)
+      (dissoc :err)
+      (merge {:op      :print-output
+              :id      job-id
+              :kind    output-kind
+              :content content})))
+
+(defrecord OutputCapturingTransport [nrepl-message transport]
+  Transport
+  (recv [_this timeout]
+    (nrepl-transport/recv transport timeout))
+  (send [_this reply-message]
+    (if-let [content (:out reply-message)]
+      (nrepl-transport/send transport (make-print-output-message reply-message (:id nrepl-message) :stdout content)))
+    (if-let [content (:err reply-message)]
+      (nrepl-transport/send transport (make-print-output-message reply-message (:id nrepl-message) :stderr content)))
+    (nrepl-transport/send transport reply-message)))
+
+(defn make-nrepl-message-with-captured-output [nrepl-message]
+  (update nrepl-message :transport (partial ->OutputCapturingTransport nrepl-message)))
+
+(defn dirac-special-command? [code]
+  (boolean (re-find #"^\(dirac! " code)))                                                                                     ; we don't want to use read-string here, regexp test should be safe and quick
+
+(defn repl-eval! [nrepl-message code ns]
+  (let [{:keys [transport session]} nrepl-message
+        bindings @session
+        out (bindings #'*out*)
+        err (bindings #'*err*)]
+    (let [result (with-bindings bindings
+                   (try
+                     (let [form (read-string code)]
+                       (binding [*ns* ns
+                                 nrepl-ieval/*msg* nrepl-message]
+                         (eval form)))
+                     (catch Throwable e
+                       (let [root-ex (clojure.main/root-cause e)
+                             details (get-exception-details nrepl-message e)]
+                         (log/error (str "Clojure eval error during eval of a special dirac command: " details))
+                         (transport/send transport (response-for nrepl-message
+                                                                 :status :eval-error
+                                                                 :ex (-> e class str)
+                                                                 :root-ex (-> root-ex class str)
+                                                                 :details details))
+                         (clojure.main/repl-caught e)
+                         ::exception))                                                                                        ; this will trigger :err message
+                     (finally
+                       (.flush ^Writer out)
+                       (.flush ^Writer err))))]
+      (if (or (= result ::exception) (= result :dirac.nrepl.controls/no-result))
+        (transport/send transport (response-for nrepl-message
+                                                :status :done))
+        (transport/send transport (response-for nrepl-message
+                                                :status :done
+                                                :value (safe-pr-str result)
+                                                :printed-value 1))))))
+
+(defn handle-dirac-eval-command! [nrepl-message]
+  (let [{:keys [code session]} nrepl-message
+        message (if (sessions/in-cljs-repl? session)
+                  (make-nrepl-message-with-captured-output nrepl-message)
+                  nrepl-message)]
+    (repl-eval! message code (find-ns 'dirac.nrepl.controls))))                                                               ; we want to eval special commands in dirac.nrepl.controls namespace
+
+(defn make-mock-nrepl-message [nrepl-message target-session]
+  (let [mock-message (assoc nrepl-message
+                       :session target-session
+                       ; :transport TODO: retargeting transport
+                       )]
+    mock-message))
+
+(defn send-empty-reply! [nrepl-message]
+  (let [{:keys [transport]} nrepl-message]
+    (transport/send transport (response-for nrepl-message
+                                            :status :done
+                                            :value "nil"
+                                            :printed-value 1))))
+
+(defn report-missing-target-session! []
+  (println "report-missing-target-session!"))                                                                                 ; TODO
+
+(defn enqueue-command! [command nrepl-message]
+  (enqueue nrepl-message #(command nrepl-message)))
+
+(defn enqueue-command-in-joined-session! [command nrepl-message]
+  (let [{:keys [session]} nrepl-message]
+    (if-let [joined-session-descriptor (sessions/find-joined-session-descriptor session)]
+      (let [mock-nrepl-message (make-mock-nrepl-message nrepl-message (:session joined-session-descriptor))]
+        (enqueue-command! command mock-nrepl-message))
+      (do
+        (report-missing-target-session!)
+        (send-empty-reply! nrepl-message)))))
+
 (defn identify-dirac-nrepl-middleware! [_next-handler nrepl-message]
   (let [{:keys [transport]} nrepl-message]
     (transport/send transport (response-for nrepl-message
                                             :version version))))
 
 (defn handle-eval! [next-handler nrepl-message]
-  (let [{:keys [session]} nrepl-message]
-    (if (cljs-repl-in-flight? session)
-      (enqueue nrepl-message #(evaluate nrepl-message))
-      (next-handler (observed-nrepl-message nrepl-message)))))
+  (let [{:keys [session code]} nrepl-message]
+    (cond
+      (dirac-special-command? code) (handle-dirac-eval-command! nrepl-message)
+      (sessions/in-cljs-repl? session) (enqueue-command! evaluate nrepl-message)
+      (sessions/has-joined-session? session) (enqueue-command-in-joined-session! evaluate nrepl-message)
+      :else (next-handler (observed-nrepl-message nrepl-message)))))
 
 (defn handle-load-file! [next-handler nrepl-message]
   (let [{:keys [session]} nrepl-message]
-    (if (cljs-repl-in-flight? session)
-      (enqueue nrepl-message #(load-file nrepl-message))
+    (if (sessions/in-cljs-repl? session)
+      (enqueue-command! load-file nrepl-message)
       (next-handler (observed-nrepl-message nrepl-message)))))
 
 ; -- nrepl middleware -------------------------------------------------------------------------------------------------------
 
 (defn dirac-nrepl-middleware [next-handler]
   (fn [nrepl-message]
-    (let [{:keys [session op]} nrepl-message]
+    (let [nrepl-message (logged-nrepl-message nrepl-message)
+          {:keys [session op]} nrepl-message]
       (log/trace "dirac-nrepl-middleware:" op "\n" (pprint nrepl-message))
-      (ensure-bindings! session)
+      (sessions/ensure-bindings! session)
       (case op
         "identify-dirac-nrepl-middleware" (identify-dirac-nrepl-middleware! next-handler nrepl-message)
         "eval" (handle-eval! next-handler nrepl-message)
         "load-file" (handle-load-file! next-handler nrepl-message)
-        (next-handler nrepl-message)))))
+        (next-handler nrepl-message)))
+    nil))
 
 ; -- additional tools -------------------------------------------------------------------------------------------------------
 
@@ -336,6 +435,6 @@
       (transport/send transport (response-for nrepl-message info-message)))))
 
 (defn weasel-launched! [weasel-url runtime-tag]
-  (let [{:keys [session] :as nrepl-message} nrepl-ieval/*msg*]
-    (sessions/add-session! session runtime-tag)
+  (let [{:keys [session]} nrepl-ieval/*msg*]
+    (sessions/add-session-descriptor! session runtime-tag)
     (send-bootstrap-info! weasel-url)))

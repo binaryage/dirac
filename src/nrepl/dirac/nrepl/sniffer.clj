@@ -1,8 +1,7 @@
 (ns dirac.nrepl.sniffer
-  (:require [clojure.string :as string])
+  (:require [clojure.string :as string]
+            [dirac.nrepl.state :refer [sniffer->proxy]])
   (:import (java.io StringWriter PrintWriter)))
-
-(def sniffer->proxy (atom {}))
 
 (defmacro enter-gate [gate-keeper & body]
   `(try
