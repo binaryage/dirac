@@ -1,7 +1,8 @@
 (ns dirac.logging
   (:require [dirac.logging.utils :refer [merge-options standard-layout convert-config-to-logging-options standard-layout]]
             [clj-logging-config.log4j :as config]
-            [clojure.pprint :as clojure-pprint]))
+            [clojure.pprint :as clojure-pprint])
+  (:import (org.apache.log4j Level)))
 
 (def initialized? (volatile! false))
 
@@ -29,7 +30,7 @@
     (vreset! initialized? true)
     (let [options (convert-config-to-logging-options config)]
       (config/set-loggers!
-        :root (merge-options root-options options)
+        :root (merge-options root-options options {:level Level/INFO})                                                        ; root level should be always INFO, otherwise we would get very verbosel logs from java libs
         ; test runners
         "dirac.browser-tests" (merge-options tests-options options)
         "dirac.agent-tests" (merge-options tests-options options)
