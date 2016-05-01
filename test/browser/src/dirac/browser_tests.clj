@@ -35,6 +35,7 @@
 (defonce ^:dynamic *current-transcript-test* nil)
 (defonce ^:dynamic *current-transcript-suite* nil)
 (defonce last-task-success (volatile! nil))
+(defonce client-disconnected-promise (volatile! nil))
 
 (defmacro with-transcript-test [test-name & body]
   `(try
@@ -80,16 +81,30 @@
         (throw e)))))
 
 (defn create-signal-server! []
+  {:pre [(nil? @client-disconnected-promise)]}
   (vreset! last-task-success nil)
-  (server/create! {:name       "Signal server"
-                   :host       (get-signal-server-host)
-                   :port       (get-signal-server-port)
-                   :on-message (fn [_server _client msg]
-                                 (log/debug "signal server: got signal message" msg)
-                                 (case (:op msg)
-                                   :ready nil                                                                                 ; ignore
-                                   :task-result (vreset! last-task-success (:success msg))
-                                   (log/error "signal server: received unrecognized message" msg)))}))
+  (vreset! client-disconnected-promise (promise))
+  (server/create! {:name              "Signal server"
+                   :host              (get-signal-server-host)
+                   :port              (get-signal-server-port)
+                   :on-message        (fn [_server _client msg]
+                                        (log/debug "signal server: got signal message" msg)
+                                        (case (:op msg)
+                                          :ready nil                                                                          ; ignore
+                                          :task-result (vreset! last-task-success (:success msg))
+                                          (log/error "signal server: received unrecognized message" msg)))
+                   :on-leaving-client (fn [_server _client]
+                                        (log/info ":on-leaving-client")
+                                        {:pre [(assert @client-disconnected-promise)]}
+                                        (assert (some? @last-task-success) "client leaving but we didn't receive :task-result")
+                                        (deliver @client-disconnected-promise true)
+                                        (vreset! client-disconnected-promise nil))}))
+
+(defn wait-for-client-disconnection []
+  (log/info "wait-for-client-disconnection")
+  @@client-disconnected-promise
+  (Thread/sleep (get-signal-server-close-wait-timeout))
+  (log/info "wait-for-client-disconnection done"))
 
 (defn under-ci? []
   (or (some? (:ci env)) (some? (:travis env))))
@@ -116,7 +131,8 @@
        (pause-unless-ci))
      ; this is here to give client some time to disconnet before destroying server
      ; devtools would spit "Close received after close" errors in js console
-     (Thread/sleep (get-signal-server-close-wait-timeout))
+     ;(Thread/sleep (get-signal-server-close-wait-timeout))
+     (wait-for-client-disconnection)
      (assert (some? @last-task-success) "didn't get task-result message from signal client?")
      (when-not @last-task-success
        (log/error (str "task reported failure"))
