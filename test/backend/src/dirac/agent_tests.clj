@@ -71,13 +71,13 @@
 
 (use-fixtures :once setup)
 
-(defn boostrap-cljs-repl-message []
+(defn make-boostrap-dirac-repl-message []
   {:op   "eval"
-   :code (str `(do
-                 (require 'dirac.nrepl)
-                 (dirac.nrepl/boot-cljs-repl! {:skip-logging-setup true                                                       ; we are running nrepl code in the same process, logging was already setup by our test runner
-                                               :weasel-repl        {:host ~(get-backend-tests-weasel-host)
-                                                                    :port ~(get-backend-tests-weasel-port)}})))})
+   :code (pr-str `(do
+                    (~'require '~'dirac.nrepl)
+                    (dirac.nrepl/boot-dirac-repl! {:skip-logging-setup true                                                   ; we are running nrepl code in the same process, logging was already setup by our test runner
+                                                   :weasel-repl        {:host ~(get-backend-tests-weasel-host)
+                                                                        :port ~(get-backend-tests-weasel-port)}})))})
 
 (defn nrepl-message [envelope]
   {:op       :nrepl-message
@@ -110,9 +110,9 @@
         (tunnel-client/send! tunnel {:op      :ready
                                      :version version})
         (expect-op-msg! tunnel :bootstrap)
-        (tunnel-client/send! tunnel (nrepl-message (boostrap-cljs-repl-message)))
+        (tunnel-client/send! tunnel (nrepl-message (make-boostrap-dirac-repl-message)))
         (expect-op-msg! tunnel :bootstrap-info)
-        (let [weasel (weasel-client/create! (:server-url @last-msg))]
+        (let [weasel (weasel-client/create! (:weasel-url @last-msg))]
           (expect-event! weasel :open)
           (expect-op-msg! weasel :eval-js)
           (weasel-client/send! weasel {:op :result :value (success-value)})
@@ -121,4 +121,5 @@
           (expect-ns-msg! tunnel "cljs.user")
           (expect-status-msg! tunnel ["done"])
           (tunnel-client/send! tunnel {:op :bootstrap-done})))
-      (agent/destroy!))))
+      (agent/destroy!)
+      (log/info "dirac agent destroyed at" tunnel-port))))

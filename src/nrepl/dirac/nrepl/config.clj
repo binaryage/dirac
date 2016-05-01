@@ -7,7 +7,8 @@
    :skip-logging-setup false
    :weasel-repl        {:host  "localhost"
                         :port  8232
-                        :range 10}})                                                                                          ; how many ports to try if the default port is taken
+                        :range 10}                                                                                            ; how many ports to try if the default port is taken
+   :runtime-tag        "unidentified"})
 
 ; -- environment ------------------------------------------------------------------------------------------------------------
 

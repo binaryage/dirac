@@ -203,7 +203,9 @@
 (defmethod nrepl-tunnel-client/process-message :bootstrap [_client message]
   (check-version! (:version message))
   (go
-    (let [response (<! (nrepl-tunnel-client/tunnel-message-with-response! (nrepl-tunnel-client/boostrap-cljs-repl-message)))]
+    (let [runtime-tag (<! (eval/get-runtime-tag))
+          bootstrap-message (nrepl-tunnel-client/make-boostrap-message runtime-tag)
+          response (<! (nrepl-tunnel-client/tunnel-message-with-response! bootstrap-message))]
       (case (first (:status response))
         "done" (do
                  (log "Bootstrap done" response)

@@ -23,6 +23,7 @@
             [cljs.analyzer :as ana]
             [dirac.nrepl.driver :as driver]
             [dirac.nrepl.version :refer [version]]
+            [dirac.nrepl.sessions :as sessions]
             [dirac.logging :refer [pprint]]
             [clojure.tools.logging :as log])
   (:import clojure.lang.LineNumberingPushbackReader
@@ -227,6 +228,7 @@
       (let [actual-repl-env (@session #'*cljs-repl-env*)]
         (reset! (:cached-setup actual-repl-env) :tear-down)                                                                   ; TODO: find a better way
         (cljs.repl/-tear-down actual-repl-env)
+        (sessions/remove-session! session)
         (swap! session assoc
                #'*ns* (@session #'*original-clj-ns*)
                #'*cljs-repl-env* nil
@@ -332,3 +334,8 @@
                         :ns         (@session #'ana/*cljs-ns*)}]
       (log/debug "sending :bootstrap-info" info-message)
       (transport/send transport (response-for nrepl-message info-message)))))
+
+(defn weasel-launched! [weasel-url runtime-tag]
+  (let [{:keys [session] :as nrepl-message} nrepl-ieval/*msg*]
+    (sessions/add-session! session runtime-tag)
+    (send-bootstrap-info! weasel-url)))

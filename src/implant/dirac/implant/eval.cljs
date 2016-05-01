@@ -257,6 +257,11 @@
     (let [[value] (<! (eval-in-context! :default "dirac.runtime.repl.get_effective_config()"))]
       (js->clj value :keywordize-keys true))))
 
+(defn get-runtime-tag []
+  (go
+    (let [[value] (<! (eval-in-context! :default "dirac.runtime.get_tag()"))]
+      (str value))))
+
 ; -- printing captured server-side output -----------------------------------------------------------------------------------
 
 (defn present-server-side-output! [job-id kind text]

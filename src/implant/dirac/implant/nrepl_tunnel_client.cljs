@@ -69,11 +69,11 @@
 
 ; -- message processing -----------------------------------------------------------------------------------------------------
 
-(defn boostrap-cljs-repl-message []
+(defn make-boostrap-message [runtime-tag]
   {:op   "eval"
-   :code (pr-str '(do
-                    (require 'dirac.nrepl)
-                    (dirac.nrepl/boot-cljs-repl!)))})
+   :code (pr-str `(do
+                    (~'require '~'dirac.nrepl)
+                    (dirac.nrepl/boot-dirac-repl! {:runtime-tag ~runtime-tag})))})
 
 (defmulti process-message (fn [_client message] (:op message)))
 
