@@ -195,7 +195,11 @@
 
 ; -- message processing -----------------------------------------------------------------------------------------------------
 
-; When we connect to freshly open nREPL session, cljs REPL is not boostrapped (google "nREPL piggieback" for more details).
+; When we connect to a freshly open nREPL session, CLJS REPL is not boostrapped yet.
+; Normally user enters something like "(cemerick.piggieback/cljs-repl ...)" into his nREPL Clojure session to enter CLJS REPL.
+; Because we have control over nREPL process thanks to our middleware, we can automate this process.
+; We send a bootstrap message with request to enter CLJS REPL on user's behalf
+; (google "nREPL piggieback" for more details).
 (defmethod nrepl-tunnel-client/process-message :bootstrap [_client message]
   (check-version! (:version message))
   (go
