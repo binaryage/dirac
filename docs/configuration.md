@@ -43,9 +43,6 @@ command-line arguments and converting some of them to config options.
 Please consult [this file](https://github.com/binaryage/dirac/blob/master/src/nrepl/dirac/nrepl/config.clj) for possible
 defaults and their environmental counterparts.
 
-If you are invoking [`dirac.nrepl/boot-cljs-repl!`](https://github.com/binaryage/dirac/blob/master/src/nrepl/dirac/nrepl.clj) from code
- you can override config options with a config map specified as an argument.
-
 ##### Dirac Runtime - page-specific configuration
 
 When you open/refresh Dirac DevTools it asks current page for effective runtime page-specific Dirac config
