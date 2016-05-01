@@ -13,7 +13,8 @@
                                     get-fixtures-server-port
                                     get-fixtures-server-url
                                     get-signal-server-host
-                                    get-signal-server-port]]
+                                    get-signal-server-port
+                                    get-signal-server-max-connection-time]]
             [dirac.test.fixtures-web-server :refer [with-fixtures-web-server]]
             [dirac.test.nrepl-server :refer [with-nrepl-server]]
             [dirac.test.agent :refer [with-dirac-agent]]
@@ -126,6 +127,7 @@
     (if-let [disconnection-promise @client-disconnected-promise]
       (when (= ::timeouted (deref disconnection-promise timeout-ms ::timeouted))
         (log/error (str "timeouted while waiting for the task signal."))
+        (vreset! last-task-success false)
         (pause-unless-ci))
       (do
         (log/error "client-disconnected-promise is unexpectedly nil => assuming chrome crash")
@@ -141,8 +143,9 @@
      (log/info (str "waiting for a task signal at " server-url " (timeout " friendly-timeout ")."))
      (when (= ::server/timeout (server/wait-for-first-client server timeout-ms))
        (log/error (str "timeouted while waiting for the task signal."))
+       (vreset! last-task-success false)
        (pause-unless-ci))
-     (wait-for-client-disconnection timeout-ms)
+     (wait-for-client-disconnection (get-signal-server-max-connection-time))
      (assert (some? @last-task-success) "didn't get task-result message from signal client?")
      (when-not @last-task-success
        (log/error (str "task reported failure"))

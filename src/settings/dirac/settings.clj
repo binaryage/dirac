@@ -46,6 +46,7 @@
 (def ^:const PENDING_REPLIES_WAIT_TIMEOUT (seconds 2))
 (def ^:const SIGNAL_CLIENT_TASK_RESULT_DELAY (milisec 500))
 (def ^:const SIGNAL_CLIENT_CLOSE_DELAY (milisec 500))
+(def ^:const SIGNAL_SERVER_MAX_CONNECTION_TIME (seconds 5))
 
 (def ^:const ACTUAL_TRANSCRIPTS_ROOT_PATH "test/browser/transcripts/actual/")
 (def ^:const EXPECTED_TRANSCRIPTS_ROOT_PATH "test/browser/transcripts/expected/")
@@ -206,3 +207,6 @@
 
 (defmacro get-signal-client-close-delay []
   SIGNAL_CLIENT_CLOSE_DELAY)
+
+(defmacro get-signal-server-max-connection-time []
+  SIGNAL_SERVER_MAX_CONNECTION_TIME)
