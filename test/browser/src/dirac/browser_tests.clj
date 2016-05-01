@@ -94,17 +94,24 @@
                                           :task-result (vreset! last-task-success (:success msg))
                                           (log/error "signal server: received unrecognized message" msg)))
                    :on-leaving-client (fn [_server _client]
-                                        (log/info ":on-leaving-client")
-                                        {:pre [(assert @client-disconnected-promise)]}
+                                        (log/debug (str ":on-leaving-client" @last-task-success))
                                         (assert (some? @last-task-success) "client leaving but we didn't receive :task-result")
+                                        (assert (some? @client-disconnected-promise))
                                         (deliver @client-disconnected-promise true)
                                         (vreset! client-disconnected-promise nil))}))
 
 (defn wait-for-client-disconnection []
-  (log/info "wait-for-client-disconnection")
-  @@client-disconnected-promise
+  (log/debug "wait-for-client-disconnection")
+  (if-let [disconnection-promise @client-disconnected-promise]
+    @disconnection-promise
+    (do
+      (log/error "client-disconnected-promise is unexpectedly nil => assuming chrome crash")
+      (vreset! last-task-success false)))
+  (log/debug "wait-for-client-disconnection done")
+  ; this is here to give client some time to disconnet before destroying server
+  ; devtools would spit "Close received after close" errors in js console
   (Thread/sleep (get-signal-server-close-wait-timeout))
-  (log/info "wait-for-client-disconnection done"))
+  (log/debug "wait-for-client-disconnection after delay"))
 
 (defn under-ci? []
   (or (some? (:ci env)) (some? (:travis env))))
@@ -129,9 +136,6 @@
      (when (= ::server/timeout (server/wait-for-first-client server timeout-ms))
        (log/error (str "timeouted while waiting for the task signal."))
        (pause-unless-ci))
-     ; this is here to give client some time to disconnet before destroying server
-     ; devtools would spit "Close received after close" errors in js console
-     ;(Thread/sleep (get-signal-server-close-wait-timeout))
      (wait-for-client-disconnection)
      (assert (some? @last-task-success) "didn't get task-result message from signal client?")
      (when-not @last-task-success
