@@ -6,7 +6,9 @@
             [dirac.settings :refer-macros [get-signal-server-url
                                            get-chrome-remote-debugging-port
                                            get-chrome-remote-debugging-host
-                                           get-pending-replies-wait-timeout]]
+                                           get-pending-replies-wait-timeout
+                                           get-signal-client-task-result-delay
+                                           get-signal-client-close-delay]]
             [dirac.lib.ws-client :as ws-client]
             [dirac.options.model :as options-model]
             [dirac.automation.transcript-host :as transcript-host]
@@ -52,9 +54,12 @@
   ; this signals to the task runner that he can reconnect chrome driver and check the results
   (ws-client/connect! (get-signal-server-url) {:name    "Signaller"
                                                :on-open (fn [client]
-                                                          (ws-client/send! client {:op      :task-result
-                                                                                   :success success?})
-                                                          (ws-client/close! client))}))
+                                                          (go
+                                                            (<! (timeout (get-signal-client-task-result-delay)))
+                                                            (ws-client/send! client {:op      :task-result
+                                                                                     :success success?})
+                                                            (<! (timeout (get-signal-client-close-delay)))
+                                                            (ws-client/close! client)))}))
 
 (defn successful-task-run? []
   (= @done true))

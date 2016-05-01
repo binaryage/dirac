@@ -80,6 +80,19 @@
         (log/error (navigation-timeout-message *current-transcript-test* load-timeout test-index-url))
         (throw e)))))
 
+(defn under-ci? []
+  (or (some? (:ci env)) (some? (:travis env))))
+
+(defn enter-infinite-loop []
+  (loop []
+    (Thread/sleep 1000)
+    (recur)))
+
+(defn pause-unless-ci []
+  (when-not (under-ci?)
+    (log/info "paused execution to allow inspection of failed task => CTRL+C to break")
+    (enter-infinite-loop)))
+
 (defn create-signal-server! []
   {:pre [(nil? @client-disconnected-promise)]}
   (vreset! last-task-success nil)
@@ -94,41 +107,30 @@
                                           :task-result (vreset! last-task-success (:success msg))
                                           (log/error "signal server: received unrecognized message" msg)))
                    :on-leaving-client (fn [_server _client]
+                                        (log/debug (str ":on-leaving-client called => wait a bit for possible pending messages"))
                                         ; :on-leaving-client can be called before all :on-message messages get delivered
                                         ; introduce some delay here
                                         (future
-                                          ; this is here to give client some time to disconnet before destroying server
+                                          ; this is here to give client some time to disconnect before destroying server
                                           ; devtools would spit "Close received after close" errors in js console
                                           (Thread/sleep (get-signal-server-close-wait-timeout))
-                                          (log/debug (str ":on-leaving-client last-task-success='" @last-task-success "'"))
+                                          (log/debug ":on-leaving-client after signal-server-close-wait-timeout")
                                           (assert (some? @last-task-success) "client leaving but we didn't receive :task-result")
                                           (assert (some? @client-disconnected-promise))
                                           (deliver @client-disconnected-promise true)
-                                          (vreset! client-disconnected-promise nil)))
-}))
+                                          (vreset! client-disconnected-promise nil)))}))
 
-(defn wait-for-client-disconnection []
-  (log/debug "wait-for-client-disconnection")
-  (if-let [disconnection-promise @client-disconnected-promise]
-    @disconnection-promise
-    (do
-      (log/error "client-disconnected-promise is unexpectedly nil => assuming chrome crash")
-      (vreset! last-task-success false)))
-  (log/debug "wait-for-client-disconnection done")
-  (log/debug "wait-for-client-disconnection after delay"))
-
-(defn under-ci? []
-  (or (some? (:ci env)) (some? (:travis env))))
-
-(defn enter-infinite-loop []
-  (loop []
-    (Thread/sleep 1000)
-    (recur)))
-
-(defn pause-unless-ci []
-  (when-not (under-ci?)
-    (log/info "paused execution to allow inspection of failed task => CTRL+C to break")
-    (enter-infinite-loop)))
+(defn wait-for-client-disconnection [timeout-ms]
+  (let [friendly-timeout (format-friendly-timeout timeout-ms)]
+    (log/debug (str "wait-for-client-disconnection (timeout " friendly-timeout ")."))
+    (if-let [disconnection-promise @client-disconnected-promise]
+      (when (= ::timeouted (deref disconnection-promise timeout-ms ::timeouted))
+        (log/error (str "timeouted while waiting for the task signal."))
+        (pause-unless-ci))
+      (do
+        (log/error "client-disconnected-promise is unexpectedly nil => assuming chrome crash")
+        (vreset! last-task-success false)))
+    (log/debug "wait-for-client-disconnection done")))
 
 (defn wait-for-signal
   ([server]
@@ -140,7 +142,7 @@
      (when (= ::server/timeout (server/wait-for-first-client server timeout-ms))
        (log/error (str "timeouted while waiting for the task signal."))
        (pause-unless-ci))
-     (wait-for-client-disconnection)
+     (wait-for-client-disconnection timeout-ms)
      (assert (some? @last-task-success) "didn't get task-result message from signal client?")
      (when-not @last-task-success
        (log/error (str "task reported failure"))

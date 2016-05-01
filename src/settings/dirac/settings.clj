@@ -14,6 +14,9 @@
 (defmacro minutes [v]
   (* MINUTE v))
 
+(defmacro milisec [v]
+  v)
+
 ; ---------------------------------------------------------------------------------------------------------------------------
 
 (def ^:const BACKEND_TESTS_NREPL_SERVER_TIMEOUT (seconds 60))
@@ -39,8 +42,10 @@
 
 (def ^:const DEFAULT_TASK_TIMEOUT (minutes 5))
 (def ^:const DEFAULT_TEST_HTML_LOAD_TIMEOUT (seconds 1))
-(def ^:const SIGNAL_SERVER_CLOSE_WAIT_TIMEOUT (seconds 1))
+(def ^:const SIGNAL_SERVER_CLOSE_WAIT_TIMEOUT (seconds 2))
 (def ^:const PENDING_REPLIES_WAIT_TIMEOUT (seconds 2))
+(def ^:const SIGNAL_CLIENT_TASK_RESULT_DELAY (milisec 500))
+(def ^:const SIGNAL_CLIENT_CLOSE_DELAY (milisec 500))
 
 (def ^:const ACTUAL_TRANSCRIPTS_ROOT_PATH "test/browser/transcripts/actual/")
 (def ^:const EXPECTED_TRANSCRIPTS_ROOT_PATH "test/browser/transcripts/expected/")
@@ -195,3 +200,9 @@
 
 (defmacro get-pending-replies-wait-timeout []
   PENDING_REPLIES_WAIT_TIMEOUT)
+
+(defmacro get-signal-client-task-result-delay []
+  SIGNAL_CLIENT_TASK_RESULT_DELAY)
+
+(defmacro get-signal-client-close-delay []
+  SIGNAL_CLIENT_CLOSE_DELAY)
