@@ -68,42 +68,46 @@
              cljs.core/*print-length* 10]
      (cljs.core/pr-str ~value)))
 
+(defn make-wrap-for-job [job-id]
+  (fn [form]
+    `(try
+       (js/dirac.runtime.repl.present_repl_result ~job-id ~form)
+       (catch :default e#
+         (js/dirac.runtime.repl.present_repl_exception ~job-id e#)
+         (throw e#)))))
+
+(defn make-special-form-evaluator [dirac-wrap]
+  (fn [form]
+    (safe-value-conversion-to-string (dirac-wrap form))))
+
+(defn make-job-evaluator [dirac-wrap job-id]
+  (fn [form]
+    (let [result-sym (gensym "result")]
+      `(try
+         ; we want to redirect all side-effect printing to dirac.runtime, so it can be presented in the Dirac REPL console
+         (binding [cljs.core/*print-newline* false
+                   cljs.core/*print-fn* (partial js/dirac.runtime.repl.present_output ~job-id "stdout")
+                   cljs.core/*print-err-fn* (partial js/dirac.runtime.repl.present_output ~job-id "stderr")]
+           (let [~result-sym ~(dirac-wrap form)]
+             (set! *3 *2)
+             (set! *2 *1)
+             (set! *1 ~result-sym)
+             ~(safe-value-conversion-to-string result-sym)))
+         (catch :default e#
+           (set! *e e#)
+           (throw e#))))))
+
 (defn make-wrapper-for-form [form]
   (let [nrepl-message nrepl-ieval/*msg*
         dirac-mode (:dirac nrepl-message)
         job-id (or (:id nrepl-message) 0)
         dirac-wrap (case dirac-mode
-                     "wrap" (fn [form]
-                              `(try
-                                 (js/dirac.runtime.repl.present_repl_result ~job-id ~form)
-                                 (catch :default e#
-                                   (js/dirac.runtime.repl.present_repl_exception ~job-id e#)
-                                   (throw e#))))
+                     "wrap" (make-wrap-for-job job-id)
                      identity)]
     (cond
-      (and (seq? form) (= 'ns (first form)))
-      identity
-
-      ('#{*1 *2 *3 *e} form)
-      (fn [form]
-        `~(safe-value-conversion-to-string (dirac-wrap form)))
-
-      :else
-      (fn [form]
-        (let [result-sym (gensym "result")]
-          `(try
-             ; we want to redirect all side-effect printing to dirac.runtime, so it can be presented in the Dirac REPL console
-             (binding [cljs.core/*print-newline* false
-                       cljs.core/*print-fn* (partial js/dirac.runtime.repl.present_output ~job-id "stdout")
-                       cljs.core/*print-err-fn* (partial js/dirac.runtime.repl.present_output ~job-id "stderr")]
-               (let [~result-sym ~(dirac-wrap form)]
-                 (set! *3 *2)
-                 (set! *2 *1)
-                 (set! *1 ~result-sym)
-                 ~(safe-value-conversion-to-string result-sym)))
-             (catch :default e#
-               (set! *e e#)
-               (throw e#))))))))
+      (and (seq? form) (= 'ns (first form))) identity
+      ('#{*1 *2 *3 *e} form) (make-special-form-evaluator dirac-wrap)
+      :else (make-job-evaluator dirac-wrap job-id))))
 
 (defn eval-cljs
   "Given a REPL evaluation environment, an analysis environment, and a
