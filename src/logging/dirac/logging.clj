@@ -44,8 +44,8 @@
         "dirac.logging" (merge-options lib-options options)
         "dirac.lib" (merge-options lib-options options)))))
 
-(defn pprint [data]
+(defn pprint [data & [level length]]
   (with-out-str
-    (binding [*print-level* 5                                                                                                 ; we have to be careful here, data might contain circular references
-              *print-length* 100]
+    (binding [*print-level* (or level 5)                                                                                      ; we have to be careful here, data might contain circular references
+              *print-length* (or length 100)]
       (clojure-pprint/pprint data))))
