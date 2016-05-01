@@ -94,11 +94,18 @@
                                           :task-result (vreset! last-task-success (:success msg))
                                           (log/error "signal server: received unrecognized message" msg)))
                    :on-leaving-client (fn [_server _client]
-                                        (log/debug (str ":on-leaving-client" @last-task-success))
-                                        (assert (some? @last-task-success) "client leaving but we didn't receive :task-result")
-                                        (assert (some? @client-disconnected-promise))
-                                        (deliver @client-disconnected-promise true)
-                                        (vreset! client-disconnected-promise nil))}))
+                                        ; :on-leaving-client can be called before all :on-message messages get delivered
+                                        ; introduce some delay here
+                                        (future
+                                          ; this is here to give client some time to disconnet before destroying server
+                                          ; devtools would spit "Close received after close" errors in js console
+                                          (Thread/sleep (get-signal-server-close-wait-timeout))
+                                          (log/debug (str ":on-leaving-client last-task-success='" @last-task-success "'"))
+                                          (assert (some? @last-task-success) "client leaving but we didn't receive :task-result")
+                                          (assert (some? @client-disconnected-promise))
+                                          (deliver @client-disconnected-promise true)
+                                          (vreset! client-disconnected-promise nil)))
+}))
 
 (defn wait-for-client-disconnection []
   (log/debug "wait-for-client-disconnection")
@@ -108,9 +115,6 @@
       (log/error "client-disconnected-promise is unexpectedly nil => assuming chrome crash")
       (vreset! last-task-success false)))
   (log/debug "wait-for-client-disconnection done")
-  ; this is here to give client some time to disconnet before destroying server
-  ; devtools would spit "Close received after close" errors in js console
-  (Thread/sleep (get-signal-server-close-wait-timeout))
   (log/debug "wait-for-client-disconnection after delay"))
 
 (defn under-ci? []
