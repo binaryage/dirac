@@ -47,5 +47,5 @@
 (defn pprint [data]
   (with-out-str
     (binding [*print-level* 5                                                                                                 ; we have to be careful here, data might contain circular references
-              *print-length* 30]
+              *print-length* 100]
       (clojure-pprint/pprint data))))
