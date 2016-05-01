@@ -2,7 +2,8 @@
   (:require [dirac.project :refer [get-current-version]]
             [dirac.runtime.repl :as repl]
             [dirac.runtime.util :refer [display-banner-if-needed! report-unknown-features! install-feature! make-version-info
-                                        make-lib-info]]))
+                                        make-lib-info]]
+            [dirac.runtime.prefs :as prefs]))
 
 (def known-features [:repl])
 (def features-to-install-by-default [:repl])
@@ -24,3 +25,9 @@
 
 (defn uninstall! []
   (repl/uninstall!))
+
+(defn get-tag []
+  (let [tag (prefs/pref :runtime-tag)
+        url (str js/location)
+        ua (str (.-userAgent js/navigator))]
+    (apply str (interpose "|" [tag url ua]))))

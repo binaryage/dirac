@@ -1,6 +1,18 @@
 (ns dirac.runtime.prefs
   (:require [environ.core :refer [env]]))
 
+(defn attempt-to-read-runtime-tag-from-project-settings []
+  ; TODO: support boot configurations as well
+  ; note: this works only in dev mode (when project is not packaged as jar)
+  ; if we don't succeed it is not that big deal, runtime tags are only "nice to have" feature
+  ; they are relevant to auto-joining dirac REPL sessions
+  (try
+    (if-let [project (slurp "project.clj")]
+      (if-let [match (re-find #"^\(defproject (.*?) " project)]
+        (str (second match))))
+    (catch Throwable _e
+      nil)))
+
 (def ^:dynamic *agent-host* (env :dirac-agent-host))
 (def ^:dynamic *agent-port* (env :dirac-agent-port))
 (def ^:dynamic *agent-verbose* (env :dirac-agent-verbose))
@@ -15,6 +27,7 @@
 (def ^:dynamic *context-availablity-total-time-limit* (env :dirac-context-availablity-total-time-limit))
 (def ^:dynamic *context-availablity-next-trial-waiting-time* (env :context-availablity-next-trial-waiting-time))
 (def ^:dynamic *eval-time-limit* (env :dirac-eval-time-limit))
+(def ^:dynamic *runtime-tag* (or (env :dirac-runtime-tag) (attempt-to-read-runtime-tag-from-project-settings)))
 
 (defmacro static-pref [key kind]
   (let [sym (symbol (str "*" (name key) "*"))]
@@ -38,4 +51,5 @@
          (static-pref :install-check-eval-time-limit :int)
          (static-pref :context-availablity-total-time-limit :int)
          (static-pref :context-availablity-next-trial-waiting-time :int)
-         (static-pref :eval-time-limit :int)))
+         (static-pref :eval-time-limit :int)
+         (static-pref :runtime-tag :str)))

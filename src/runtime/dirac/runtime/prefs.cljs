@@ -19,7 +19,8 @@
    :context-availablity-total-time-limit        3000
    :context-availablity-next-trial-waiting-time 10
    :eval-time-limit                             10000
-   :java-trace-header-style                     "color:red"})
+   :java-trace-header-style                     "color:red"
+   :runtime-tag                                 "unidentified"})
 
 (def static-prefs (gen-static-prefs))                                                                                         ; this config is comming from environment and system properties
 

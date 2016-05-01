@@ -10,6 +10,7 @@
 (def ^:export is-feature-available? core/is-feature-available?)
 (def ^:export install! core/install!)
 (def ^:export uninstall! core/uninstall!)
+(def ^:export get-tag core/get-tag)
 
 (def ^:export set-prefs! prefs/set-prefs!)
 (def ^:export get-prefs prefs/get-prefs)
