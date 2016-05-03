@@ -3,13 +3,16 @@
             [cljs.analyzer :as ana]
             [dirac.logging :as logging]
             [dirac.nrepl.state :refer [session-descriptors]]
-            [dirac.nrepl.state :refer [*cljs-repl-env* *cljs-compiler-env* *cljs-repl-options* *original-clj-ns*]]
-            [clojure.tools.nrepl.middleware.interruptible-eval :as nrepl-ieval]))
-
+            [dirac.nrepl.state :refer [*cljs-repl-env*
+                                       *cljs-compiler-env*
+                                       *cljs-repl-options*
+                                       *original-clj-ns*]]
+            [clojure.tools.nrepl.middleware.interruptible-eval :as nrepl-ieval]
+            [clojure.string :as string]))
 
 ; -- helpers ----------------------------------------------------------------------------------------------------------------
 
-(defn in-cljs-repl? [session]
+(defn dirac-session? [session]
   (boolean (@session #'*cljs-repl-env*)))
 
 (defn get-current-session []
@@ -45,27 +48,118 @@
     (swap! session-descriptors #(remove #{session-descriptor} %))
     (log/error "attempt to remove unknown session descriptor:\n" (logging/pprint session))))
 
+(defn find-matching-session-descriptors [matcher]
+  (let [descriptors @session-descriptors
+        descriptors-count (count descriptors)
+        match-result (fn [i d]
+                       (if (matcher d i descriptors-count) d))]
+    (keep-indexed match-result descriptors)))
+
 (defn find-matching-session-descriptor [matcher]
-  (some #(if (matcher %) %) @session-descriptors))
+  (first (find-matching-session-descriptors matcher)))
+
+(defn make-user-friendly-tag [tag]
+  (if (empty? tag) "?" tag))
+
+(defn get-user-friendly-tags [session-descriptors]
+  (map #(make-user-friendly-tag (:tag %)) session-descriptors))
 
 (defn get-user-friendly-session-descriptor-tag [session]
-  (or (:tag (find-session-descriptor session)) "?"))
+  (make-user-friendly-tag (:tag (find-session-descriptor session))))
+
+(defn get-user-friendly-session-tags []
+  (get-user-friendly-tags @session-descriptors))
 
 ; -- joining sessions -------------------------------------------------------------------------------------------------------
 
-(defn has-joined-session? [session]
-  (boolean (::joined-session-matcher @session)))
+(defn make-joined-session-descriptor [matcher-fn info]
+  {:matcher matcher-fn
+   :info    info})
 
-(defn join-session! [session matcher]
-  (if (some? matcher)
-    (swap! session assoc ::joined-session-matcher matcher)
-    (swap! session dissoc ::joined-session-matcher)))
+(defn get-joined-session-descriptor [session]
+  (::joined-session-descriptor (meta session)))
+
+(defn get-joined-session-matcher [session]
+  (:matcher (get-joined-session-descriptor session)))
+
+(defn get-joined-session-info [session]
+  (:info (get-joined-session-descriptor session)))
+
+(defn joined-session? [session]
+  (some? (get-joined-session-descriptor session)))
+
+(defn join-session! [session matcher & [info]]
+  {:pre [(some? matcher)]}
+  (alter-meta! session assoc ::joined-session-descriptor (make-joined-session-descriptor matcher info)))
 
 (defn disjoin-session! [session]
-  (join-session! session nil))
+  (alter-meta! session dissoc ::joined-session-descriptor))
 
 (defn find-joined-session-descriptor [session]
-  (if-let [matcher (::joined-session-matcher session)]
-    (find-matching-session-descriptor matcher)
-    (log/error "find-joined-session-descriptor called on session without ::joined-session-matcher:\n"
+  (if-let [matcher-fn (get-joined-session-matcher session)]
+    (find-matching-session-descriptor matcher-fn)
+    (log/error "find-joined-session-descriptor called on session without matcher-fn:\n"
                (logging/pprint session))))
+
+(defn list-matching-sessions-tags [session]
+  (if-let [matcher-fn (get-joined-session-matcher session)]
+    (let [decriptors (find-matching-session-descriptors matcher-fn)]
+      (get-user-friendly-tags decriptors))))
+
+; -- session matchers -------------------------------------------------------------------------------------------------------
+
+(defn make-substr-matcher-description [substring]
+  (str "substring '" substring "'"))
+
+(defn make-most-recent-matcher-description []
+  (str "most recent Dirac session"))
+
+(defn make-regex-matcher-description [re]
+  (str "regex " re))
+
+(defn make-number-matcher-description [number]
+  (str "session #" number))
+
+(defn make-substr-matcher [substring]
+  (fn [session-descriptor _ _]
+    (let [tag (:tag session-descriptor)]
+      (boolean (string/index-of tag substring)))))
+
+(defn make-most-recent-matcher []
+  (fn [_session-descriptor index cnt]
+    (= index (dec cnt))))
+
+(defn make-regex-matcher [re]
+  (fn [session-descriptor _ _]
+    (some? (re-find re (:tag session-descriptor)))))
+
+(defn make-number-matcher [number]
+  (fn [_ index _]
+    (= index number)))
+
+(defn join-session-with-most-recent-matcher! [session]
+  (join-session! session (make-most-recent-matcher) (make-most-recent-matcher-description)))
+
+(defn join-session-with-substr-matcher! [session substring]
+  (join-session! session (make-substr-matcher substring) (make-substr-matcher-description substring)))
+
+(defn join-session-with-regex-matcher! [session re]
+  (join-session! session (make-regex-matcher re) (make-regex-matcher-description re)))
+
+(defn join-session-with-number-matcher! [session number]
+  (join-session! session (make-number-matcher number) (make-number-matcher-description number)))
+
+; -- sessions state ---------------------------------------------------------------------------------------------------------
+
+(defn get-session-type [session]
+  (cond
+    (dirac-session? session)
+    (str "a ClojureScript session.\n"
+         "The session is connected to '" (get-user-friendly-session-descriptor-tag session) "'")
+
+    (joined-session? session)
+    (str "a joined ClojureScript session.\n"
+         "The target session is matched to " (get-joined-session-info session) ".")
+
+    :else
+    (str "a normal Clojure session")))

@@ -351,7 +351,7 @@
 
 (defn handle-dirac-eval-command! [nrepl-message]
   (let [{:keys [code session]} nrepl-message
-        message (if (sessions/in-cljs-repl? session)
+        message (if (sessions/dirac-session? session)
                   (make-nrepl-message-with-captured-output nrepl-message)
                   nrepl-message)]
     (repl-eval! message code (find-ns 'dirac.nrepl.controls))))                                                               ; we want to eval special commands in dirac.nrepl.controls namespace
@@ -394,13 +394,13 @@
   (let [{:keys [session code]} nrepl-message]
     (cond
       (dirac-special-command? code) (handle-dirac-eval-command! nrepl-message)
-      (sessions/in-cljs-repl? session) (enqueue-command! evaluate nrepl-message)
-      (sessions/has-joined-session? session) (enqueue-command-in-joined-session! evaluate nrepl-message)
+      (sessions/dirac-session? session) (enqueue-command! evaluate nrepl-message)
+      (sessions/joined-session? session) (enqueue-command-in-joined-session! evaluate nrepl-message)
       :else (next-handler (observed-nrepl-message nrepl-message)))))
 
 (defn handle-load-file! [next-handler nrepl-message]
   (let [{:keys [session]} nrepl-message]
-    (if (sessions/in-cljs-repl? session)
+    (if (sessions/dirac-session? session)
       (enqueue-command! load-file nrepl-message)
       (next-handler (observed-nrepl-message nrepl-message)))))
 
@@ -408,7 +408,7 @@
 
 (defn dirac-nrepl-middleware [next-handler]
   (fn [nrepl-message]
-    (let [nrepl-message (logged-nrepl-message nrepl-message)
+    (let [;nrepl-message (logged-nrepl-message nrepl-message)
           {:keys [session op]} nrepl-message]
       (log/trace "dirac-nrepl-middleware:" op "\n" (pprint nrepl-message))
       (sessions/ensure-bindings! session)

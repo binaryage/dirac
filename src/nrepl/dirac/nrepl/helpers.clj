@@ -5,5 +5,9 @@
   `(binding [*out* *err*]
      ~@body))
 
-(defn get-nrepl-agent-string []
+(defn error-println [& args]
+  (with-err-output
+    (apply println args)))
+
+(defn get-nrepl-info []
   (str "Dirac nREPL middleware v" version))
