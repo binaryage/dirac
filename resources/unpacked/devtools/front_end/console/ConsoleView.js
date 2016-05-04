@@ -1179,18 +1179,21 @@ WebInspector.ConsoleView.prototype = {
 
         var promptDescriptor = this._prompts[this._activePromptIndex];
         if (promptDescriptor.id == "dirac") {
-           this._appendDiracCommand(str);
+           this.appendDiracCommand(str);
         } else {
             this._appendCommand(str, true);
         }
     },
 
-    _appendDiracCommand: function (text) {
+    appendDiracCommand: function (text, id) {
         if (!text)
             return;
-        this._lastDiracCommandId++;
+
+        if (!id) {
+          id = this._lastDiracCommandId++;
+        }
         var command = text;
-        var commandId = this._lastDiracCommandId;
+        var commandId = id;
 
         var executionContext = WebInspector.context.flavor(WebInspector.ExecutionContext);
         if (executionContext) {

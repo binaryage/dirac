@@ -57,3 +57,8 @@
       (assert (#{"error" "info"} style))
       (if-let [console-view (get-console-view)]
         (ocall console-view "setDiracPromptStatusStyle" style)))))
+
+(defn append-dirac-command! [code job-id]
+  {:pre [(string? code)]}
+  (if-let [console-view (get-console-view)]
+    (ocall console-view "appendDiracCommand" code job-id)))
