@@ -9,11 +9,11 @@
 ; -- usage docs -------------------------------------------------------------------------------------------------------------
 
 (def ^:dynamic general-usage
-  ["Dirac provides a command-line-like interface for controlling Dirac REPL operations."
-   "A special REPL function 'dirac!' was made available by the Dirac Middleware."
-   "You invoke it from your nREPL session by evaluating a form:"
+  ["Dirac provides a command-line interface to control Dirac's nREPL middleware."
+   "A special REPL function 'dirac!' was made available by the Dirac middleware."
+   "You may invoke it from any of your nREPL sessions by evaluating a form:"
    ""
-   "  (dirac! <command> [arg1] [arg2] ...)"
+   "  (dirac! <command> [arg1] [arg2] [...])"
    ""
    "Dirac <command> is a keyword followed by optional arguments."
    ""
@@ -67,19 +67,23 @@
    "  3. (dirac! :join <regex>)"
    "  4. (dirac! :join)"
    ""
-   "Join or re-join a Dirac session which matches provided matcher."
-   "Joined session will forward all eval requests to the first matched Dirac session."
+   "Join or re-join first Dirac session matching provided matching strategy."
+   "In other words this Clojure nREPL session joins a specific target Dirac session."
+   "When joined, this session will forward all incoming eval requests to a matched target Dirac session."
+   ""
    "To list all available Dirac sessions use (dirac! :ls)."
    "Matching is done dynamically for every new eval request. Dirac sessions are tested in historical order."
-   "Matcher must be either a number(1), a string(2), a regex(3) or omitted(4)."
+   "Matching strategy must be either a number(1), a string(2), a regex(3) or omitted(4)."
    "Number-based matching joins nth session from the list."
-   "String matching tests for a matching tag substring."
-   "Regex matches tags with provided regular expression."
-   "If no matcher is provided, this session will join the most recent Dirac session in the list."
+   "String-based matching takes first Dirac session matching the provided substring."
+   "Regex-based matching takes first Dirac session matching the provided regular expression."
+   "If no matching strategy is provided, this session will always target the most recent Dirac session in the list."
    ""
-   "Note: Dirac sessions are created and destroyed with browser reloads. That is why it is important to have"
-   "      a dynamic matching system in place for stable joining experience. String or regex matching is recommended."
-   "      In case there is no matching Dirac session available, we will warn you and evaluation will result in a no-op."])
+   "Note: Dirac sessions are not persistent. They are created when Dirac DevTools instance opens a Console Panel and switches"
+   "      console prompt to the Dirac REPL. Dirac sessions are destroyed when Dirac DevTools window gets closed."
+   "      Dynamic matching helps you to keep stable targeting of a specific Dirac session even if DevTools gets closed and"
+   "      reopened. In case there is no matching target Dirac session currently available, we will warn you and evaluation"
+   "      will result in a no-op. You may use (dirac! :match) command to test/troubleshoot your current matching strategy."])
 
 (def ^:dynamic disjoin-usage
   ["Usage forms:"
@@ -96,7 +100,7 @@
    ""
    "Lists matching Dirac sessions for this (joined) session."
    "This command is available for testing purposed for finetuning your match substring or regexp."
-   "The first session in the list would be used for evaluation requests."])
+   "The first session in the list would be used as target Dirac session for incoming evaluation requests."])
 
 (def ^:dynamic docs
   {:help    help-usage
