@@ -51,8 +51,8 @@
 (defn find-matching-session-descriptors [matcher]
   (let [descriptors @session-descriptors
         descriptors-count (count descriptors)
-        match-result (fn [i d]
-                       (if (matcher d i descriptors-count) d))]
+        match-result (fn [index descriptor]
+                       (if (matcher descriptor index descriptors-count) descriptor))]
     (keep-indexed match-result descriptors)))
 
 (defn find-matching-session-descriptor [matcher]
@@ -123,11 +123,11 @@
 (defn make-substr-matcher [substring]
   (fn [session-descriptor _ _]
     (let [tag (:tag session-descriptor)]
-      (boolean (string/index-of tag substring)))))
+      (some? (string/index-of tag substring)))))
 
 (defn make-most-recent-matcher []
-  (fn [_session-descriptor index cnt]
-    (= index (dec cnt))))
+  (fn [_ index cnt]
+    (= index (dec cnt))))                                                                                                     ; match last descriptor in the list
 
 (defn make-regex-matcher [re]
   (fn [session-descriptor _ _]
@@ -138,16 +138,24 @@
     (= index number)))
 
 (defn join-session-with-most-recent-matcher! [session]
-  (join-session! session (make-most-recent-matcher) (make-most-recent-matcher-description)))
+  (join-session! session
+                 (make-most-recent-matcher)
+                 (make-most-recent-matcher-description)))
 
 (defn join-session-with-substr-matcher! [session substring]
-  (join-session! session (make-substr-matcher substring) (make-substr-matcher-description substring)))
+  (join-session! session
+                 (make-substr-matcher substring)
+                 (make-substr-matcher-description substring)))
 
 (defn join-session-with-regex-matcher! [session re]
-  (join-session! session (make-regex-matcher re) (make-regex-matcher-description re)))
+  (join-session! session
+                 (make-regex-matcher re)
+                 (make-regex-matcher-description re)))
 
 (defn join-session-with-number-matcher! [session number]
-  (join-session! session (make-number-matcher number) (make-number-matcher-description number)))
+  (join-session! session
+                 (make-number-matcher number)
+                 (make-number-matcher-description number)))
 
 ; -- sessions state ---------------------------------------------------------------------------------------------------------
 
