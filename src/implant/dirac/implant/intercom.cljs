@@ -8,7 +8,8 @@
             [dirac.implant.version :as implant-version]
             [dirac.utils :as utils]
             [chromex.logging :refer-macros [log info warn error]]
-            [dirac.implant.eval :as eval])
+            [dirac.implant.eval :as eval]
+            [devtools.toolbox :refer [envelope]])
   (:import goog.net.WebSocket.ErrorEvent))
 
 (defonce required-repl-api-version 3)
@@ -227,4 +228,34 @@
     (assert ns (str "expected :ns in :bootstrap-info message" message))
     (console/set-prompt-ns! ns)
     (connect-to-weasel-server! weasel-url))
+  nil)
+
+(defn unserialize-message [serialized-message]
+  (try
+    (read-string serialized-message)
+    (catch :default e
+      (error "troubles unserializing message" serialized-message e))))
+
+(defn handle-forwarded-eval-message! [forwarded-message proposed-id]
+  (log "handle-forwarded-eval-message!" proposed-id forwarded-message)
+  (if-let [code (:code forwarded-message)]
+    (console/append-dirac-command! code proposed-id)
+    (error ":code missing in forwarded eval message" forwarded-message))
+  nil)
+
+(defmethod nrepl-tunnel-client/process-message :handle-forwarded-message [_client message]
+  (let [{:keys [proposed-id]} message
+        serialized-forwarded-message (:message message)]
+    (assert (string? serialized-forwarded-message) (str "expected string :message in :handle-forwarded-message message" message))
+    (if-let [forwarded-message (unserialize-message serialized-forwarded-message)]
+      (case (:op forwarded-message)
+        "eval" (handle-forwarded-eval-message! forwarded-message proposed-id)
+        (do
+          (error "received unrecognized forwarded message" (envelope message))
+          (go
+            {:op      :error
+             :message (str "received unrecognized forwarded message:" (:op forwarded-message))})))
+      (go
+        {:op      :error
+         :message "unable to unserialize forwarded message"})))
   nil)
