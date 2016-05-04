@@ -23,6 +23,9 @@
 (def tests-options
   (standard-layout :magenta))
 
+(def weasel-options
+  (standard-layout :cyan))
+
 ; -- public API -------------------------------------------------------------------------------------------------------------
 
 (defn setup! [& [config]]
@@ -43,7 +46,8 @@
         "dirac.nrepl" (merge-options nrepl-options options)
         ; lib
         "dirac.logging" (merge-options lib-options options)
-        "dirac.lib" (merge-options lib-options options)))))
+        "dirac.lib" (merge-options lib-options options)
+        "dirac.lib.weasel-server" (merge-options weasel-options options)))))
 
 (defn pprint [data & [level length]]
   (with-out-str
