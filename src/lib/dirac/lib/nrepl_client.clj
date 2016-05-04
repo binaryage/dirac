@@ -146,8 +146,8 @@
       (log/error (str client) "The response-poller didn't shut down gracefully => forcibly cancelling")
       (future-cancel response-poller))))
 
-(defn spawn-response-poller! [tunnel options response-table connection]
-  (future (poll-for-responses tunnel options response-table connection)))
+(defn spawn-response-poller! [tunnel connection response-table options]
+  (future (poll-for-responses tunnel connection response-table options)))
 
 ; -- life cycle -------------------------------------------------------------------------------------------------------------
 
