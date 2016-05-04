@@ -6,43 +6,6 @@ WebInspector.SASSSupport = {}
 
 /**
  * @param {string} url
- * @param {string} text
- * @return {!Promise<!WebInspector.SASSSupport.AST>}
- */
-WebInspector.SASSSupport.parseCSS = function(url, text)
-{
-    var cssParser = new WebInspector.CSSParser();
-    return cssParser.parsePromise(text)
-        .then(onParsed);
-
-    /**
-     * @param {!Array.<!WebInspector.CSSParser.Rule>} parsedCSS
-     * @return {!WebInspector.SASSSupport.AST}
-     */
-    function onParsed(parsedCSS)
-    {
-        var document = new WebInspector.SASSSupport.ASTDocument(url, new WebInspector.Text(text));
-        var rules = [];
-        for (var i = 0; i < parsedCSS.length; ++i) {
-            var rule = parsedCSS[i];
-            if (!rule.properties)
-                continue;
-            var properties = [];
-            for (var j = 0; j < rule.properties.length; ++j) {
-                var cssProperty = rule.properties[j];
-                var name = new WebInspector.SASSSupport.TextNode(document, cssProperty.name, WebInspector.TextRange.fromObject(cssProperty.nameRange));
-                var value = new WebInspector.SASSSupport.TextNode(document, cssProperty.value, WebInspector.TextRange.fromObject(cssProperty.valueRange));
-                var property = new WebInspector.SASSSupport.Property(document, name, value, WebInspector.TextRange.fromObject(cssProperty.range), !!cssProperty.disabled);
-                properties.push(property);
-            }
-            rules.push(new WebInspector.SASSSupport.Rule(document, rule.selectorText, WebInspector.TextRange.fromObject(rule.styleRange), properties));
-        }
-        return new WebInspector.SASSSupport.AST(document, rules);
-    }
-}
-
-/**
- * @param {string} url
  * @param {string} content
  * @return {!Promise<!WebInspector.SASSSupport.AST>}
  */
@@ -61,16 +24,22 @@ WebInspector.SASSSupport.parseSCSS = function(url, content)
     {
         if (!event)
             return new WebInspector.SASSSupport.AST(document, []);
-        var data = /** @type {!{properties: !Array<!Object>, variables: !Array<!Object>, mixins: !Array<!Object>}} */(event.data);
-        var properties = data.properties.map(createProperty);
-        var variables = data.variables.map(createProperty);
-        var mixins = data.mixins.map(createProperty);
-        var rules = [
-            new WebInspector.SASSSupport.Rule(document, "variables", WebInspector.TextRange.createFromLocation(0, 0), variables),
-            new WebInspector.SASSSupport.Rule(document, "properties", WebInspector.TextRange.createFromLocation(0, 0), properties),
-            new WebInspector.SASSSupport.Rule(document, "mixins", WebInspector.TextRange.createFromLocation(0, 0), mixins)
-        ];
-
+        var data = /** @type {!Array<!Object>} */(event.data);
+        var rules = [];
+        for (var i = 0; i < data.length; ++i) {
+            var rulePayload = data[i];
+            var selectorText = "";
+            if (rulePayload.selectors.length) {
+                var first = rulePayload.selectors[0];
+                var last = rulePayload.selectors.peekLast();
+                var selectorRange = new WebInspector.TextRange(first.startLine, first.startColumn, last.endLine, last.endColumn);
+                selectorText = text.extract(selectorRange);
+            }
+            var properties = rulePayload.properties.map(createProperty);
+            var range = WebInspector.TextRange.fromObject(rulePayload.styleRange);
+            var rule = new WebInspector.SASSSupport.Rule(document, selectorText, range, properties);
+            rules.push(rule);
+        }
         return new WebInspector.SASSSupport.AST(document, rules);
     }
 
