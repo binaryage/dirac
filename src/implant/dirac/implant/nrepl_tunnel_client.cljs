@@ -6,7 +6,8 @@
             [dirac.implant.eval :as eval]
             [dirac.lib.ws-client :as ws-client]
             [dirac.implant.version :as implant-version]
-            [dirac.implant.console :as console]))
+            [dirac.implant.console :as console]
+            [devtools.toolbox :refer [envelope]]))
 
 (defonce current-client (atom nil))                                                                                           ; only one client can be connected as a time
 (defonce pending-messages (atom {}))                                                                                          ; a map of 'msg-id -> handler' for messages in flight where we wait for status responses, see ***
@@ -90,7 +91,7 @@
       status (when id
                (deliver-response message)                                                                                     ; *** (see pending-messages above)
                (console/announce-job-end! id))
-      :else (warn "received an unrecognized message from nREPL server" message)))
+      :else (warn "received an unrecognized message from nREPL server" (envelope message))))
   nil)
 
 (defmethod process-message :print-output [_client message]
@@ -99,7 +100,7 @@
   nil)
 
 (defmethod process-message :error [_client message]
-  (error "Received an error message from nREPL server" message)
+  (error "Received an error message from nREPL server" (envelope message))
   (go
     {:op      :error
      :message (:type message)}))
