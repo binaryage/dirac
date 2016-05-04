@@ -1,9 +1,12 @@
 (ns dirac.runtime.core
+  (:require-macros [dirac.runtime.core :refer [get-current-browser-name get-current-platform-name]])
   (:require [dirac.project :refer [get-current-version]]
             [dirac.runtime.repl :as repl]
             [dirac.runtime.util :refer [display-banner-if-needed! report-unknown-features! install-feature! make-version-info
                                         make-lib-info]]
-            [dirac.runtime.prefs :as prefs]))
+            [dirac.runtime.prefs :as prefs]
+            [goog.labs.userAgent.browser :as ua-browser]
+            [goog.labs.userAgent.platform :as ua-platform]))
 
 (def known-features [:repl])
 (def features-to-install-by-default [:repl])
@@ -29,5 +32,11 @@
 (defn get-tag []
   (let [tag (prefs/pref :runtime-tag)
         url (str js/location)
+        browser-version (ua-browser/getVersion)
+        browser-name (get-current-browser-name)
+        browser (str (or browser-name "?") "/" browser-version)
+        platform-version (ua-platform/getVersion)
+        platform-name (get-current-platform-name)
+        platform (str (or platform-name "?") "/" platform-version)
         ua (str (.-userAgent js/navigator))]
-    (apply str (interpose "|" [tag url ua]))))
+    (apply str (interpose "|" [tag url browser platform]))))
