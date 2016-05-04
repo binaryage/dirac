@@ -131,6 +131,7 @@
 (defn poll-for-responses [tunnel connection response-table _options]
   (loop []
     (let [response (read-next-response connection)]
+      (log/trace (str tunnel) "got response" response)
       (case response
         ::interrupted (log/debug (str tunnel) "Leaving poll-for-responses loop - interrupted")
         ::socket-closed (log/debug (str tunnel) "Leaving poll-for-responses loop - connection closed")
