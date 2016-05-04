@@ -202,7 +202,7 @@
 ; -- (dirac! :ls) -----------------------------------------------------------------------------------------------------------
 
 (defmethod dirac! :ls [_ & _]
-  (let [tags (sessions/get-user-friendly-session-tags)]
+  (let [tags (sessions/get-dirac-session-tags)]
     (if (empty? tags)
       (println (no-dirac-sessions-msg))
       (println (list-dirac-sessions-msg tags))))
@@ -240,7 +240,7 @@
     (cond
       (sessions/dirac-session? session) (error-println (cannot-match-dirac-session-msg))
       (not (sessions/joined-session? session)) (error-println (cannot-match-clojure-session-msg))
-      :else (let [description (sessions/get-joined-session-info session)
+      :else (let [description (sessions/get-target-session-info session)
                   tags (sessions/list-matching-sessions-tags session)]
               (if (empty? tags)
                 (println (no-matching-dirac-sessions-msg description))

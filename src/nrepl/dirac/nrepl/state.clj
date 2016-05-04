@@ -10,9 +10,10 @@
 (def ^:dynamic *cljs-repl-options* nil)
 (def ^:dynamic *original-clj-ns* nil)
 
-; here we keep a map of all bootstrapped dirac CLJS sessions
-; also we provide a mechanism for observing adding/removing sessions
-
+; here we keep a map of all bootstrapped Dirac sessions
 (def session-descriptors (atom '()))
+
+; here we maintain a list of in-progress jobs which want to be echo-ed back to joined-session
+(def observed-jobs (atom {}))
 
 (def sniffer->proxy (atom {}))
