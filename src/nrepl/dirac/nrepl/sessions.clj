@@ -109,16 +109,16 @@
 ; -- session matchers -------------------------------------------------------------------------------------------------------
 
 (defn make-substr-matcher-description [substring]
-  (str "substring '" substring "'"))
+  (str "Dirac session matching substring '" substring "'"))
 
 (defn make-most-recent-matcher-description []
   (str "most recent Dirac session"))
 
 (defn make-regex-matcher-description [re]
-  (str "regex " re))
+  (str "Dirac session matching regex " re))
 
 (defn make-number-matcher-description [number]
-  (str "session #" number))
+  (str "Dirac session #" number))
 
 (defn make-substr-matcher [substring]
   (fn [session-descriptor _ _]
@@ -154,12 +154,12 @@
 (defn get-session-type [session]
   (cond
     (dirac-session? session)
-    (str "a ClojureScript session.\n"
+    (str "a Dirac session (ClojureScript).\n"
          "The session is connected to '" (get-user-friendly-session-descriptor-tag session) "'")
 
     (joined-session? session)
-    (str "a joined ClojureScript session.\n"
+    (str "a joined Dirac session (ClojureScript).\n"
          "The target session is matched to " (get-joined-session-info session) ".")
 
     :else
-    (str "a normal Clojure session")))
+    (str "a normal session (Clojure)")))
