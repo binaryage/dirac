@@ -183,6 +183,7 @@
 ; -- request handling -------------------------------------------------------------------------------------------------------
 
 (defn on-message [server _ws-server client message]
+  (log/trace (str server) "received a message from" (str client) ": " message)
   (process-message server client message))
 
 (defn on-incoming-client [server _ws-server client]
