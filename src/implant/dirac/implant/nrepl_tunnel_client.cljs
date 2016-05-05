@@ -65,16 +65,10 @@
     (go
       (let [[result] (alts! [response-channel timeout-channel])]
         (or result
-            (deliver-response {:status ["timeout"]
+            (deliver-response {:status [:timeout]
                                :id     id}))))))
 
 ; -- message processing -----------------------------------------------------------------------------------------------------
-
-(defn make-boostrap-message [runtime-tag]
-  {:op   "eval"
-   :code (pr-str `(do
-                    (~'require '~'dirac.nrepl)
-                    (dirac.nrepl/boot-dirac-repl! {:runtime-tag ~runtime-tag})))})
 
 (defmulti process-message (fn [_client message] (:op message)))
 
@@ -99,6 +93,7 @@
     (eval/present-server-side-output! id kind content))
   nil)
 
+; TODO: is this really needed?
 (defmethod process-message :error [_client message]
   (error "Received an error message from nREPL server" (envelope message))
   (go
