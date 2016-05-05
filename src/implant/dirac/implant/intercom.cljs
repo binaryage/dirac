@@ -1,5 +1,6 @@
 (ns dirac.implant.intercom
-  (:require-macros [cljs.core.async.macros :refer [go go-loop]])
+  (:require-macros [cljs.core.async.macros :refer [go go-loop]]
+                   [dirac.implant.intercom :refer [error-response]])
   (:require [cljs.core.async :refer [<! chan put! timeout close!]]
             [cljs.reader :refer [read-string]]
             [dirac.implant.console :as console]
@@ -194,18 +195,27 @@
           (display-prompt-status (repl-support-not-enabled-msg)))
         (display-prompt-status (eval/missing-runtime-msg))))))
 
+; ---------------------------------------------------------------------------------------------------------------------------
 ; -- message processing -----------------------------------------------------------------------------------------------------
+
+; -- :bootstrap -------------------------------------------------------------------------------------------------------------
 
 ; When we connect to a freshly open nREPL session, CLJS REPL is not boostrapped yet.
 ; Normally user enters something like "(cemerick.piggieback/cljs-repl ...)" into his nREPL Clojure session to enter CLJS REPL.
 ; Because we have control over nREPL process thanks to our middleware, we can automate this process.
-; We send a bootstrap message with request to enter CLJS REPL on user's behalf
-; (google "nREPL piggieback" for more details).
+; We send a bootstrap message with request to enter CLJS REPL on user's behalf (google "nREPL piggieback" for more details).
+
+(defn make-boostrap-message [runtime-tag]
+  {:op   "eval"
+   :code (pr-str `(do
+                    (~'require '~'dirac.nrepl)
+                    (dirac.nrepl/boot-dirac-repl! {:runtime-tag ~runtime-tag})))})
+
 (defmethod nrepl-tunnel-client/process-message :bootstrap [_client message]
   (check-version! (:version message))
   (go
     (let [runtime-tag (<! (eval/get-runtime-tag))
-          bootstrap-message (nrepl-tunnel-client/make-boostrap-message runtime-tag)
+          bootstrap-message (make-boostrap-message runtime-tag)
           response (<! (nrepl-tunnel-client/tunnel-message-with-response! bootstrap-message))]
       (case (first (:status response))
         "done" (do
@@ -222,6 +232,8 @@
           (display-prompt-status (bootstrap-error-msg (or (:details response) response)))
           {:op :bootstrap-error})))))
 
+; -- :bootstrap-info --------------------------------------------------------------------------------------------------------
+
 (defmethod nrepl-tunnel-client/process-message :bootstrap-info [_client message]
   (let [{:keys [weasel-url ns]} message]
     (assert weasel-url (str "expected :weasel-url in :bootstrap-info message" message))
@@ -230,32 +242,41 @@
     (connect-to-weasel-server! weasel-url))
   nil)
 
+; -- :handle-forwarded-nrepl-message ----------------------------------------------------------------------------------------------
+
+(defn bounce-message! [message job-id]
+  (nrepl-tunnel-client/tunnel-message! (assoc message :id job-id)))
+
 (defn unserialize-message [serialized-message]
   (try
     (read-string serialized-message)
     (catch :default e
       (error "troubles unserializing message" serialized-message e))))
 
-(defn handle-forwarded-eval-message! [forwarded-message proposed-id]
-  (log "handle-forwarded-eval-message!" proposed-id forwarded-message)
+(defn handle-forwarded-eval-message! [forwarded-message job-id]
+  (log "handle-forwarded-eval-message!" job-id forwarded-message)
   (if-let [code (:code forwarded-message)]
-    (console/append-dirac-command! code proposed-id)
-    (error ":code missing in forwarded eval message" forwarded-message))
-  nil)
+    (console/append-dirac-command! code job-id)
+    (error-response job-id "Key :code is missing in forwarded eval message:\n"
+                    forwarded-message)))
 
-(defmethod nrepl-tunnel-client/process-message :handle-forwarded-message [_client message]
-  (let [{:keys [proposed-id]} message
-        serialized-forwarded-message (:message message)]
-    (assert (string? serialized-forwarded-message) (str "expected string :message in :handle-forwarded-message message" message))
-    (if-let [forwarded-message (unserialize-message serialized-forwarded-message)]
-      (case (:op forwarded-message)
-        "eval" (handle-forwarded-eval-message! forwarded-message proposed-id)
-        (do
-          (error "received unrecognized forwarded message" (envelope message))
-          (go
-            {:op      :error
-             :message (str "received unrecognized forwarded message:" (:op forwarded-message))})))
-      (go
-        {:op      :error
-         :message "unable to unserialize forwarded message"})))
-  nil)
+(defn handle-forwarded-load-file-message! [forwarded-message job-id]
+  (log "handle-forwarded-load-file-message!" job-id forwarded-message)
+  (let [file-path (:file-path forwarded-message)]
+    (eval/console-info! "Loading" (or file-path "?") "...")
+    (bounce-message! forwarded-message job-id)))
+
+(defmethod nrepl-tunnel-client/process-message :handle-forwarded-nrepl-message [_client message]
+  (let [{:keys [job-id serialized-forwarded-nrepl-message]} message]
+    (assert (some? job-id) "expectged :job-id in :handle-forwarded-nrepl-message")
+    (assert (string? serialized-forwarded-nrepl-message)
+            (str "expected string :serialized-forwarded-nrepl-message in :handle-forwarded-nrepl-message" message))
+    (if-let [forwarded-nrepl-message (unserialize-message serialized-forwarded-nrepl-message)]
+      (let [op (:op forwarded-nrepl-message)]
+        (case op
+          "eval" (handle-forwarded-eval-message! forwarded-nrepl-message job-id)
+          "load-file" (handle-forwarded-load-file-message! forwarded-nrepl-message job-id)
+          (error-response job-id "Received unrecognized forwarded nREPL message" (str "op='" op "'") "\n"
+                          forwarded-nrepl-message)))
+      (error-response job-id "Unable to unserialize forwarded nREPL message:\n"
+                      serialized-forwarded-nrepl-message))))
