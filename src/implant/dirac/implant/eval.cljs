@@ -4,7 +4,8 @@
             [cljs.core.async.impl.protocols :as core-async]
             [chromex.support :refer-macros [oget ocall oapply]]
             [chromex.logging :refer-macros [log warn error]]
-            [dirac.implant.feedback-support :as feedback]))
+            [dirac.implant.feedback-support :as feedback]
+            [clojure.string :as string]))
 
 ; -- configuration ----------------------------------------------------------------------------------------------------------
 
@@ -104,8 +105,8 @@
        "  dirac.runtime.repl.postprocess_unsuccessful_eval(e)"
        "}"))
 
-(defn console-log-template [method text]
-  (str "console." method "(" (code-as-string text) ")"))
+(defn console-log-template [method & args]
+  (str "console." method "(" (string/join (interpose "," (map code-as-string args))) ")"))
 
 ; -- message templates ------------------------------------------------------------------------------------------------------
 
@@ -172,17 +173,17 @@
 
 ; -- simple evaluation for page-context console logging ---------------------------------------------------------------------
 
-(defn console-info! [msg]
-  (eval-with-callback! :default (console-log-template "info" msg)))
+(defn console-info! [& args]
+  (eval-with-callback! :default (apply console-log-template "info" args)))
 
-(defn console-error! [msg]
-  (eval-with-callback! :default (console-log-template "error" msg)))
+(defn console-error! [& args]
+  (eval-with-callback! :default (apply console-log-template "error" args)))
 
-(defn console-warn! [msg]
-  (eval-with-callback! :default (console-log-template "warn" msg)))
+(defn console-warn! [& args]
+  (eval-with-callback! :default (apply console-log-template "warn" args)))
 
-(defn console-log! [msg]
-  (eval-with-callback! :default (console-log-template "log" msg)))
+(defn console-log! [& args]
+  (eval-with-callback! :default (apply console-log-template "log" args)))
 
 ; -- serialization of evaluations -------------------------------------------------------------------------------------------
 
