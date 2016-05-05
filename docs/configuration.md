@@ -1,30 +1,31 @@
 # Dirac DevTools Configuration
 
-[Installation instructions](installation.md) rely on sane default settings.
-Depending on your setup you might need to provide a custom configuration.
+[Installation instructions](installation.md) rely on default settings.
+Depending on your setup you might need to provide a custom config.
 
 There are three areas where custom configuration can be provided:
 
 1. Dirac Agent
-2. Dirac nREPL middleware
-3. Dirac Runtime - page-specific configuration
+2. Dirac nREPL middleware (a config inside nREPL server)
+3. Dirac Runtime (a page-specific config)
 
-In general, the configuration can come from different sources:
+In general, a configuration can originate in different places:
 
 1. hard-coded defaults
 2. environment
-3. a config map provided as an argument
+3. a config map provided as an argument to a function call
 
-Configuration options from later source override settings from previous sources.
+Configuration options from later override settings from previous.
 
-Environmental variables have always prefix "DIRAC" and are named after corresponding option key in the hard-coded defaults config map.
-We use [environ library](https://github.com/weavejester/environ) for reading environmental settings, so you have multiple ways how to define them:
+Environmental variables have always a "DIRAC" prefix and are named after corresponding option key in the hard-coded defaults config map.
+We use the [environ library](https://github.com/weavejester/environ) for reading environmental settings, so you have multiple ways how to define them:
 
 1. environmental variables
 2. Java system properties
 3. `.lein-env` file.
 
-You can for example use `lein-environ` plugin to specify environmental variables directly in your `project.clj` or alternatively `lein-boot` for boot scenario.
+You can for example use `lein-environ` plugin to specify environmental variables directly in your `project.clj`
+(or alternatively `lein-boot` for boot scenario).
 
 Please refer to [environ docs](https://github.com/weavejester/environ) for further info.
 
@@ -33,10 +34,10 @@ Please refer to [environ docs](https://github.com/weavejester/environ) for furth
 Please consult [this file](https://github.com/binaryage/dirac/blob/master/src/agent/dirac/agent/config.clj) for possible
 defaults and their environmental counterparts.
 
-If you invoke [`dirac.agent/boot!`](https://github.com/binaryage/dirac/blob/master/src/agent/dirac/agent.clj) from code
+If you call [`dirac.agent/boot!`](https://github.com/binaryage/dirac/blob/master/src/agent/dirac/agent.clj) from code,
  you can override config options with a config map specified as an argument. Actually this is what
  [`dirac.agent-cli`](https://github.com/binaryage/dirac/blob/master/src/agent/dirac/agent_cli.clj) does by reading
-command-line arguments and converting some of them to config options.
+command-line arguments and converting some of them to specific config keys.
 
 ##### Dirac nREPL middleware configuration
 
@@ -45,11 +46,11 @@ defaults and their environmental counterparts.
 
 ##### Dirac Runtime - page-specific configuration
 
-When you open/refresh Dirac DevTools it asks current page for effective runtime page-specific Dirac config
+When you open/refresh Dirac DevTools it asks the current page for effective runtime page-specific config
 (see [`dirac.runtime.repl/get-effective-config`](https://github.com/binaryage/dirac/blob/master/src/runtime/dirac/runtime/repl.cljs).
-The most important setting is a connection info for Dirac Agent. This allows flexibility of configuring individual
+The most important setting is the connection info for Dirac Agent. This allows flexibility of configuring individual
 ClojureScript projects with their own settings instead of providing one system-wide configuration. In theory
-you can have different projects connecting do different Dirac Agents (which are connected to different nREPL servers).
+you could have different projects connecting do different Dirac Agents (which are connected to different nREPL servers).
 
 Please consult [this file](https://github.com/binaryage/dirac/blob/master/src/runtime/dirac/runtime/prefs.cljs) for possible
 defaults and their environmental counterparts.
