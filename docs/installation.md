@@ -50,14 +50,14 @@ And also install runtime support in your main page(s):
 
 There are many ways how to start an nREPL server. We will use Leiningen's nREPL server here.
 
-By default you should run it on port `8230` and with `dirac.nrepl.middleware/dirac-repl` middleware. Please note that Dirac middleware
+By default you should run it on port `8230` and with `dirac.nrepl/middleware` middleware. Please note that Dirac middleware
 was implemented as a [Piggieback middleware](https://github.com/cemerick/piggieback) fork, so you cannot run both.
 Think of Dirac middleware as Piggieback middleware replacement with some extra features specific to Dirac DevTools.
 
 The configuration snippet could look something like this:
 
     :repl-options {:port 8230
-                   :nrepl-middleware [dirac.nrepl.middleware/dirac-repl]}
+                   :nrepl-middleware [dirac.nrepl/middleware]}
 
 Replace `<DIRAC-VERSION>` with actual version of your Dirac Runtime.
 

@@ -49,7 +49,7 @@
 
 (defn ^:dynamic missing-nrepl-middleware-msg [url]
   (str "Dirac nREPL middleware is not present in nREPL server at " url "!\n"
-       "Didn't you forget to add :nrepl-middleware [dirac.nrepl.middleware/dirac-repl] to your :repl-options?\n"
+       "Didn't you forget to add :nrepl-middleware [dirac.nrepl/middleware] to your :repl-options?\n"
        "Please follow Dirac installation instructions: " nrepl-setup-doc-url "."))
 
 (defn ^:dynamic old-nrepl-middleware-msg [expected-version reported-version]
