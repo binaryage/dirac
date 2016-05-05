@@ -160,16 +160,16 @@
              :marion
              {:cljsbuild {:builds
                           {:marion-background
-                           {:initial-notify-command ["scripts/cljsbuild-notify.sh" "marion-background"]
-                            :source-paths           ["src/settings"
-                                                     "src/shared"
-                                                     "test/marion/src/dev"
-                                                     "test/marion/src/background"]
-                            :compiler               {:output-to     "test/marion/resources/unpacked/compiled/background/background.js"
-                                                     :output-dir    "test/marion/resources/unpacked/compiled/background"
-                                                     :asset-path    "compiled/background"
-                                                     :optimizations :none
-                                                     :source-map    true}}
+                           {:notify-command ["scripts/cljsbuild-notify.sh" "marion-background"]
+                            :source-paths   ["src/settings"
+                                             "src/shared"
+                                             "test/marion/src/dev"
+                                             "test/marion/src/background"]
+                            :compiler       {:output-to     "test/marion/resources/unpacked/compiled/background/background.js"
+                                             :output-dir    "test/marion/resources/unpacked/compiled/background"
+                                             :asset-path    "compiled/background"
+                                             :optimizations :none
+                                             :source-map    true}}
 
                            :marion-content-script
                            {:notify-command ["scripts/cljsbuild-notify.sh" "marion-content-script"]
@@ -193,45 +193,45 @@
              :dirac-unpacked
              {:cljsbuild {:builds
                           {:dirac-implant
-                           {:initial-notify-command ["scripts/cljsbuild-notify.sh" "dirac-implant"]
-                            :source-paths           ["src/settings"
-                                                     "src/implant"
-                                                     "src/lib"
-                                                     "src/project"]
-                            :compiler               {:output-to     "resources/unpacked/devtools/front_end/dirac/compiled/implant/implant.js"
-                                                     :output-dir    "resources/unpacked/devtools/front_end/dirac/compiled/implant"
-                                                     :asset-path    "dirac/compiled/implant"
-                                                     :optimizations :none
-                                                     :source-map    true}}
+                           {:notify-command ["scripts/cljsbuild-notify.sh" "dirac-implant"]
+                            :source-paths   ["src/settings"
+                                             "src/implant"
+                                             "src/lib"
+                                             "src/project"]
+                            :compiler       {:output-to     "resources/unpacked/devtools/front_end/dirac/compiled/implant/implant.js"
+                                             :output-dir    "resources/unpacked/devtools/front_end/dirac/compiled/implant"
+                                             :asset-path    "dirac/compiled/implant"
+                                             :optimizations :none
+                                             :source-map    true}}
 
                            :dirac-background
-                           {:initial-notify-command ["scripts/cljsbuild-notify.sh" "dirac-background"]
-                            :source-paths           ["src/settings"
-                                                     "src/dev"
-                                                     "src/lib"
-                                                     "src/figwheel"
-                                                     "src/shared"
-                                                     "src/project"
-                                                     "src/background"]
-                            :compiler               {:output-to     "resources/unpacked/compiled/background/dirac.js"
-                                                     :output-dir    "resources/unpacked/compiled/background"
-                                                     :asset-path    "compiled/background"
-                                                     :optimizations :none
-                                                     :source-map    true}}
+                           {:notify-command ["scripts/cljsbuild-notify.sh" "dirac-background"]
+                            :source-paths   ["src/settings"
+                                             "src/dev"
+                                             "src/lib"
+                                             "src/figwheel"
+                                             "src/shared"
+                                             "src/project"
+                                             "src/background"]
+                            :compiler       {:output-to     "resources/unpacked/compiled/background/dirac.js"
+                                             :output-dir    "resources/unpacked/compiled/background"
+                                             :asset-path    "compiled/background"
+                                             :optimizations :none
+                                             :source-map    true}}
                            :dirac-options
-                           {:initial-notify-command ["scripts/cljsbuild-notify.sh" "dirac-options"]
-                            :source-paths           ["src/settings"
-                                                     "src/dev"
-                                                     "src/lib"
-                                                     "src/figwheel"
-                                                     "src/shared"
-                                                     "src/project"
-                                                     "src/options"]
-                            :compiler               {:output-to     "resources/unpacked/compiled/options/dirac.js"
-                                                     :output-dir    "resources/unpacked/compiled/options"
-                                                     :asset-path    "compiled/options"
-                                                     :optimizations :none
-                                                     :source-map    true}}}}}
+                           {:notify-command ["scripts/cljsbuild-notify.sh" "dirac-options"]
+                            :source-paths   ["src/settings"
+                                             "src/dev"
+                                             "src/lib"
+                                             "src/figwheel"
+                                             "src/shared"
+                                             "src/project"
+                                             "src/options"]
+                            :compiler       {:output-to     "resources/unpacked/compiled/options/dirac.js"
+                                             :output-dir    "resources/unpacked/compiled/options"
+                                             :asset-path    "compiled/options"
+                                             :optimizations :none
+                                             :source-map    true}}}}}
              :dirac-packed
              ; note: we want to compile under target folder to prevent unnecessary recompilations after running ./scripts/release.sh
              ;       the script will copy most recent build over
