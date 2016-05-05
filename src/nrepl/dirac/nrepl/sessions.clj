@@ -138,7 +138,7 @@
   (str "most recent Dirac session"))
 
 (defn make-regex-matcher-description [re]
-  (str "Dirac session matching regex " re))
+  (str "Dirac session matching regex '" re "'"))
 
 (defn make-number-matcher-description [number]
   (str "Dirac session #" number))
