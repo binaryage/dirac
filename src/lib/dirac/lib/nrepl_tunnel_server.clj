@@ -107,6 +107,11 @@
       (send! client message))
     (log/trace (str server) (str "Message " (utils/sid message) " cannot be dispatched because it does not have a session"))))
 
+(defn send-message-to-server! [server client message]
+  (let [tunnel (get-tunnel server)
+        session (get-client-session server client)]
+    (deliver-message-to-server! tunnel (assoc message :session session))))
+
 ; -- message processing -----------------------------------------------------------------------------------------------------
 
 (defmulti process-message (fn [_server _client msg] (:op msg)))
@@ -132,27 +137,22 @@
 (defmethod process-message :bootstrap-timeout [server client message]
   (log/error (str server) "Received a bootstrap timeout from client" (str client) ":\n" (utils/pp message)))
 
-(defmethod process-message :bootstrap-done [server client message]
+(defmethod process-message :bootstrap-done [server client _message]
   (log/debug (str server) "Received a bootstrap done from client" (str client)))
 
 (defmethod process-message :nrepl-message [server client message]
+  (log/debug (str server) "process :nrepl-message from" (str client) (utils/pp message))
   (if-let [envelope (:envelope message)]
-    (let [tunnel (get-tunnel server)
-          session (get-client-session server client)
-          envelope-with-session (assoc envelope :session session)]
-      (deliver-message-to-server! tunnel envelope-with-session))))
+    (send-message-to-server! server client envelope)))
 
 ; -- utilities --------------------------------------------------------------------------------------------------------------
 
-(defn prepare-cljs-quit-message [session]
-  {:op      "eval"
-   :session session
-   :code    ":cljs/quit"})
+(defn cljs-quit-message []
+  {:op   "eval"
+   :code ":cljs/quit"})
 
 (defn quit-client! [server client]
-  (let [tunnel (get-tunnel server)
-        session (get-client-session server client)
-        responses-channel @(deliver-message-to-server! tunnel (prepare-cljs-quit-message session))]
+  (let [responses-channel @(send-message-to-server! server client (cljs-quit-message))]
     (utils/wait-for-all-responses! responses-channel)))
 
 (defn teardown-client! [server client]
