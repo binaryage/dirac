@@ -79,7 +79,9 @@ cp -r "$ROOT/target/resources/release/devtools/front_end/dirac/compiled" "$WORK_
 echo -n "" > "$WORK_DIR/dirac/require-implant.js" # when doing advanced build, all implant files are required automatically
 
 echo "Building devtools in advanced mode..."
-./scripts/build_applications.py inspector toolbox --input_path "$WORK_DIR" --output_path "$RELEASE_BUILD_DEVTOOLS_FRONTEND" --debug 0
+# DANGER! this list of applications must be the same as specified in resources/unpacked/devtools/scripts/compile_frontend.py (search for "darwin")
+./scripts/build_applications.py inspector toolbox formatter_worker heap_snapshot_worker temp_storage_shared_worker \
+                                --input_path "$WORK_DIR" --output_path "$RELEASE_BUILD_DEVTOOLS_FRONTEND" --debug 0
 
 popd
 
