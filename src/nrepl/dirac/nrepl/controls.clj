@@ -27,7 +27,7 @@
    "  :version -> print version info"
    "  :help    -> print usage help"
    ""
-   "For more information use (dirac! :help <command>)."])
+   "For more information use `(dirac! :help <command>)`."])
 
 (def ^:dynamic help-usage
   ["Usage forms:"
@@ -118,7 +118,7 @@
 
 (defn ^:dynamic no-such-command-msg [command]
   (str "No such command '" command "'.\n"
-       "Execute (dirac! :help) for a list of available commands."))
+       "Execute `(dirac! :help)` for a list of available commands."))
 
 (defn ^:dynamic invalid-matcher-msg [matcher]
   (str "Invalid matching strategy provided. It must be either a number, a string, a regex or omitted.\n"
