@@ -29,9 +29,9 @@
 
 ; -- helpers ----------------------------------------------------------------------------------------------------------------
 
-(defn code-as-string [& args]
+(defn code-as-string [code]
   (if-let [eval-fn (oget js/window "dirac" "codeAsString")]
-    (.apply eval-fn nil (into-array args))
+    (eval-fn code)
     (error "dirac.codeAsString not found")))
 
 (defn get-has-context-fn-name [context]
