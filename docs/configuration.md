@@ -1,6 +1,6 @@
 # Dirac DevTools Configuration
 
-[Installation instructions](install.md) rely on sane default settings.
+[Installation instructions](installation.md) rely on sane default settings.
 Depending on your setup you might need to provide a custom configuration.
 
 There are three areas where custom configuration can be provided:

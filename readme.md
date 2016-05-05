@@ -23,7 +23,7 @@ Dirac is a [Chrome DevTools](https://developer.chrome.com/devtools) fork with ex
 #### Documentation
 
   * **[Motivation](docs/motivation.md)**
-  * **[Installation](docs/install.md)**
+  * **[Installation](docs/installation.md)**
   * **[Configuration](docs/configuration.md)**
   * **[Example project](https://github.com/binaryage/dirac-sample)**
   * **[FAQ](docs/faq.md)**

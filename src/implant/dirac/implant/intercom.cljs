@@ -20,7 +20,7 @@
 (defonce ^:dynamic *last-connection-url* nil)
 (defonce ^:dynamic *last-connect-fn-id* 0)
 
-(def dirac-agent-help-url "https://github.com/binaryage/dirac/blob/master/docs/install.md#start-dirac-agent")
+(def dirac-agent-help-url "https://github.com/binaryage/dirac/blob/master/docs/installation.md#start-dirac-agent")
 
 (defn ^:dynamic repl-api-mismatch-msg [current-api required-api]
   (str "Dirac Runtime version mismatch detected. Dirac DevTools requires Dirac Runtime REPL API v" required-api ", "
