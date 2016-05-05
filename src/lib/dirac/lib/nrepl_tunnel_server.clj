@@ -7,7 +7,7 @@
             [dirac.lib.version :as lib-version]
             [dirac.lib.utils :as utils]))
 
-(def install-doc-url "https://github.com/binaryage/dirac#installation")
+(def install-doc-url "https://github.com/binaryage/dirac/blob/master/docs/install.md")
 
 (defn ^:dynamic old-devtools-client-msg [expected-version reported-version]
   (str "WARNING: The version of connected DevTools client is old. "
