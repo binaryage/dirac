@@ -128,8 +128,17 @@
                    :version lib-version/version
                    :session session})))
 
+(defn finish-dirac-job-reply [source-message status]
+  (let [{:keys [id err out]} source-message]
+    (into {:op     "finish-dirac-job"
+           :status status}
+          [(if id [:id id])
+           (if err [:err err])
+           (if out [:err out])])))
+
 (defmethod process-message :error [server client message]
-  (log/error (str server) "Received an error from client" (str client) ":\n" (utils/pp message)))
+  (log/error (str server) "Received an error from client" (str client) ":\n" (utils/pp message))
+  (send-message-to-server! server client (finish-dirac-job-reply message #{:error :done})))
 
 (defmethod process-message :bootstrap-error [server client message]
   (log/error (str server) "Received a bootstrap error from client" (str client) ":\n" (utils/pp message)))
