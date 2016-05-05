@@ -11,7 +11,7 @@
                  [org.clojure/clojurescript "1.8.51" :scope "provided"]
                  [org.clojure/core.async "0.2.374"]
                  [org.clojure/tools.logging "0.3.1"]
-                 [org.clojure/tools.cli "0.3.3"]
+                 [org.clojure/tools.cli "0.3.5"]
                  [org.clojure/tools.nrepl "0.2.12"]
                  [http-kit "2.1.21-alpha2"]
                  [clj-logging-config "1.9.12"]
