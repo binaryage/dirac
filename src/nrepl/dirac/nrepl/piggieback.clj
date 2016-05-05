@@ -91,26 +91,16 @@
       ('#{*1 *2 *3 *e} form) (make-special-form-evaluator dirac-wrap)
       :else (make-job-evaluator dirac-wrap job-id))))
 
-(defn start-retargeted-job! [nrepl-message code]
-  (log/trace "start-retargeted-job!" code)
-  (let [{:keys [transport session]} nrepl-message]
-    (transport/send transport {:id      100037
-                               :session (sessions/get-session-id session)
-                               :op      :start-retargeted-job
-                               :code    code})))
-
 (defn eval-cljs
   "Given a REPL evaluation environment, an analysis environment, and a
    form, evaluate the form and return the result. The result is always the value
    represented as a string."
   ([nrepl-message code repl-env env form]
    (eval-cljs nrepl-message code repl-env env form cljs.repl/*repl-opts*))
-  ([nrepl-message code repl-env env form opts]
+  ([repl-env env form opts]
    (let [wrap ((or (:wrap opts) make-wrapper-for-form) form)
          env (assoc env :ns (ana/get-namespace ana/*cljs-ns*))]                                                               ; the pluggability of :wrap is needed for older JS runtimes like Rhino where catching the error will swallow the original trace
      (log/trace "eval-cljs" form)
-     (if (::retargeted nrepl-message)
-       (start-retargeted-job! nrepl-message code))
      (cljs.repl/evaluate-form repl-env env dirac-repl-alias form wrap opts))))
 
 (defn- run-single-cljs-repl-iteration [nrepl-message code repl-env compiler-env options]
@@ -158,7 +148,7 @@
                           :quit-prompt  (fn [])
                           :init         (fn [])
                           :prompt       (fn [])
-                          :eval         (partial eval-cljs nrepl-message code)
+                          :eval         eval-cljs
                           :compiler-env compiler-env}
             repl-options (merge base-options options)]
         (driver/start-repl-with-driver repl-env repl-options start-repl send-response-fn)))))
