@@ -157,8 +157,9 @@
     (some? (re-find re (prepare-dirac-session-descriptor-tag session-descriptor)))))
 
 (defn make-number-matcher [number]
-  (fn [_ index _]
-    (= index number)))
+  (let [matching-index (dec number)]
+    (fn [_ index _]
+      (= index matching-index))))
 
 (defn join-session-with-most-recent-matcher! [session]
   (join-session! session
