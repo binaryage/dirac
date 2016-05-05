@@ -25,7 +25,7 @@
                  [binaryage/chromex "0.4.0" :scope "test"]
                  [binaryage/devtools "0.6.1" :scope "test"]
                  [cljs-http "0.1.40" :scope "test"]
-                 [figwheel "0.5.2" :scope "test"]
+                 [figwheel "0.5.3" :scope "test"]
                  [reforms "0.4.3" :scope "test"]
                  [rum "0.8.3" :scope "test"]
                  [rum-reforms "0.4.3" :scope "test"]
@@ -117,7 +117,7 @@
 
              :cljs
              {:plugins [[lein-cljsbuild "1.1.3"]
-                        [lein-figwheel "0.5.2"]]
+                        [lein-figwheel "0.5.3"]]
               :hooks   [leiningen.cljsbuild]}
 
              :test-runner
