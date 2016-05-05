@@ -9,11 +9,11 @@
 ; -- usage docs -------------------------------------------------------------------------------------------------------------
 
 (def ^:dynamic general-usage
-  ["Dirac provides a command-line interface to control Dirac's nREPL middleware."
-   "A special REPL function 'dirac!' was made available by the Dirac middleware."
+  ["Dirac provides a command-line interface to control its REPL operations."
+   "A special REPL function `dirac!` was made available for you."
    "You may invoke it from any of your nREPL sessions by evaluating a form:"
    ""
-   "  (dirac! <command> [arg1] [arg2] [...])"
+   "  `(dirac! <command> [arg1] [arg2] [...])`"
    ""
    "Dirac <command> is a keyword followed by optional arguments."
    ""
@@ -21,8 +21,8 @@
    ""
    "  :status  -> prints current session state"
    "  :ls      -> list available Dirac sessions"
-   "  :join    -> join a Dirac session"
-   "  :disjoin -> disjoin Dirac session"
+   "  :join    -> join Dirac"
+   "  :disjoin -> disjoin Dirac"
    "  :match   -> list matching Dirac sessions"
    "  :version -> print version info"
    "  :help    -> print usage help"
@@ -32,75 +32,75 @@
 (def ^:dynamic help-usage
   ["Usage forms:"
    ""
-   "  1. (dirac! :help)"
-   "  2. (dirac! :help <command>)"
+   "  1. `(dirac! :help)`"
+   "  2. `(dirac! :help <command>)`"
    ""
    "Print general usage help(1) or specific command usage help(2)."])
 
 (def ^:dynamic version-usage
   ["Usage forms:"
    ""
-   "  1. (dirac! :version)"
+   "  1. `(dirac! :version)`"
    ""
    "Print version info(1)."])
 
 (def ^:dynamic status-usage
   ["Usage forms:"
    ""
-   "  1. (dirac! :status)"
+   "  1. `(dirac! :status)`"
    ""
-   "Print status of current nREPL session."])
+   "Print status(1) of current nREPL session."])
 
 (def ^:dynamic ls-usage
   ["Usage forms:"
    ""
-   "  1. (dirac! :ls)"
+   "  1. `(dirac! :ls)`"
    ""
-   "Print list of all currently available Dirac sessions."
-   "They are listed in historical order."])
+   "Print listing(1) of all currently connected Dirac sessions to this nREPL server."
+   "They are listed in historical order as they connected."])
 
 (def ^:dynamic join-usage
   ["Usage forms:"
    ""
-   "  1. (dirac! :join <number>)"
-   "  2. (dirac! :join <string>)"
-   "  3. (dirac! :join <regex>)"
-   "  4. (dirac! :join)"
+   "  1. `(dirac! :join <number>)`"
+   "  2. `(dirac! :join <string>)`"
+   "  3. `(dirac! :join <regex>)`"
+   "  4. `(dirac! :join)`"
    ""
    "Join or re-join first Dirac session matching provided matching strategy."
-   "In other words this Clojure nREPL session joins a specific target Dirac session."
-   "When joined, this session will forward all incoming eval requests to a matched target Dirac session."
+   "In other words: this Clojure nREPL session joins a specific target Dirac session."
+   "When joined, this session will forward all incoming eval requests to the matched target Dirac session."
    ""
-   "To list all available Dirac sessions use (dirac! :ls)."
-   "Matching is done dynamically for every new eval request. Dirac sessions are tested in historical order."
+   "To list all available Dirac sessions use `(dirac! :ls)`."
+   "Matching is done dynamically for every new eval request. Connected Dirac sessions are tested in historical order."
    "Matching strategy must be either a number(1), a string(2), a regex(3) or omitted(4)."
-   "Number-based matching joins nth session from the list."
-   "String-based matching takes first Dirac session matching the provided substring."
-   "Regex-based matching takes first Dirac session matching the provided regular expression."
-   "If no matching strategy is provided, this session will always target the most recent Dirac session in the list."
+   "Number-based matching targets nth session from the list."
+   "String-based matching targets first Dirac session matching the provided substring."
+   "Regex-based matching targets first Dirac session matching the provided regular expression."
+   "If no matching strategy is provided, this session will target the most recent Dirac session in the list."
    ""
    "Note: Dirac sessions are not persistent. They are created when Dirac DevTools instance opens a Console Panel and switches"
    "      console prompt to the Dirac REPL. Dirac sessions are destroyed when Dirac DevTools window gets closed."
-   "      Dynamic matching helps you to keep stable targeting of a specific Dirac session even if DevTools gets closed and"
-   "      reopened. In case there is no matching target Dirac session currently available, we will warn you and evaluation"
-   "      will result in a no-op. You may use (dirac! :match) command to test/troubleshoot your current matching strategy."])
+   "      Dynamic matching helps us to keep stable targeting of a specific Dirac session even if DevTools app gets closed and"
+   "      reopened. In case there is no matching target Dirac session available, we will warn you and evaluation will result"
+   "      in a no-op. You may use `(dirac! :match)` command to test/troubleshoot your current matching strategy."])
 
 (def ^:dynamic disjoin-usage
   ["Usage forms:"
    ""
-   "  1. (dirac! :disjoin)"
+   "  1. `(dirac! :disjoin)`"
    ""
-   "Disjoins previously joined Dirac session."
-   "Future eval requests will be executed in the context of a normal Clojure session."])
+   "Disjoins(1) previously joined Dirac session."
+   "Future eval requests will be executed in the context of your original Clojure session."])
 
 (def ^:dynamic match-usage
   ["Usage forms:"
    ""
-   "  1. (dirac! :match)"
+   "  1. `(dirac! :match)`"
    ""
-   "Lists matching Dirac sessions for this (joined) session."
-   "This command is available for testing purposed for finetuning your match substring or regexp."
-   "The first session in the list would be used as target Dirac session for incoming evaluation requests."])
+   "Lists matching(1) Dirac sessions for this session (according to current matching strategy set by :join)."
+   "This command is available for testing purposes - for fine-tuning your matching substring or regexp."
+   "The first session(*) in the list would be used as the target Dirac session for incoming evaluation requests."])
 
 (def ^:dynamic docs
   {:help    help-usage
@@ -121,45 +121,49 @@
        "Execute (dirac! :help) for a list of available commands."))
 
 (defn ^:dynamic invalid-matcher-msg [matcher]
-  (str "Invalid matcher provided. Matcher must be either a number, a string, a regex or omitted.\n"
-       "Your matcher '" matcher "' is of type " (type matcher)))
+  (str "Invalid matching strategy provided. It must be either a number, a string, a regex or omitted.\n"
+       "Provided matching strategy '" matcher "' is of type " (type matcher)))
 
 (defn ^:dynamic cannot-disjoin-dirac-session-msg []
   (str "Your session is a Dirac session. Cannot disjoin this type of session."))
 
 (defn ^:dynamic cannot-disjoin-clojure-session-msg []
-  (str "Your session is not joined to any Dirac session. Nothing to do."))
+  (str "Your session is not joined to Dirac. Nothing to do."))
 
 (defn ^:dynamic session-disjoined-msg []
-  (str "Your session was disjoined from a Dirac session. Now you are back in a normal Clojure session."))
+  (str "Your session was disjoined from Dirac. Now you are back in normal Clojure session."))
 
 (defn ^:dynamic cannot-match-dirac-session-msg []
-  (str "Your session is a Dirac session. This type of session cannot join any other Dirac sessions."))
+  (str "Your session is a Dirac session. This type of session cannot join any other session."))
 
 (defn ^:dynamic cannot-match-clojure-session-msg []
-  (str "Your session is not joined to any Dirac session. No Dirac session will match."))
+  (str "Your session is not joined to Dirac. Use `(dirac! :join)` to join the Dirac first."))
 
-(defn ^:dynamic no-matching-dirac-sessions-msg [matcher-description]
-  (str "No Dirac sessions were matched for current target session matcher \"" matcher-description "\"."))
+(defn ^:dynamic no-matching-dirac-sessions-msg [info]
+  (str "No connected Dirac session is \"" info "\"."))
 
-(defn ^:dynamic list-matching-dirac-sessions-msg [matcher-description tags]
+(defn ^:dynamic list-matching-dirac-sessions-msg [info tags]
   (let [printer (fn [i tag]
                   (str (if (zero? i) "  * " "    ") tag))]
-    (str "Following Dirac sessions were matched for current target session matcher \"" matcher-description "\"\n"
+    (str "Listing Dirac sessions which are \"" info "\":\n"
          (string/join "\n" (map-indexed printer tags)))))
 
 (defn ^:dynamic no-dirac-sessions-msg []
-  (str "No Dirac sessions are currently available. Connect at least one Dirac REPL to the nREPL server."))
+  (str "No Dirac sessions are currently available. Connect with at least one Dirac REPL to your nREPL server."))
 
 (defn ^:dynamic list-dirac-sessions-msg [tags]
   (let [printer (fn [i tag]
-                  (str "  #" (inc i) ": " tag))]
-    (str "List of all Dirac sessions currently connected to the nREPL server:\n"
+                  (str "  #" (inc i) " " tag))]
+    (str "Listing all Dirac sessions currently connected to your nREPL server:\n"
          (string/join "\n" (map-indexed printer tags)))))
 
 (defn ^:dynamic default-error-msg [command]
   (str "Unrecognized Dirac command '" command "'\n"
-       "Execute '(dirac! :help)' to see a list of available commands."))
+       "Use `(dirac! :help)` to list all available commands."))
+
+(defn ^:dynamic after-join-msg []
+  (str "Your session joined Dirac (ClojureScript). "
+       "The specific target Dirac session will be determined dynamically according to current matching strategy."))
 
 ; == special REPL commands ==================================================================================================
 
