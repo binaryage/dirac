@@ -214,14 +214,19 @@
 
 ; -- (dirac! :join) ---------------------------------------------------------------------------------------------------------
 
+(defn announce-join! [& _]
+  (println (after-join-msg))
+  (dirac! :match)                                                                                                             ; this should give user immediate feedback about newly matched sessions
+  ; trigger Cursive switching to CLJS REPL mode
+  (println "To quit, type:" :cljs/quit))                                                                                      ; this is taken from https://github.com/cemerick/piggieback/blob/440b2d03f944f6418844c2fab1e0361387eed543/src/cemerick/piggieback.clj#L233
+
 (defmethod dirac! :join [_ & [matcher]]
-  (let [session (sessions/get-current-session)
-        test-match (fn [& _] (dirac! :match))]
+  (let [session (sessions/get-current-session)]
     (cond
-      (nil? matcher) (test-match (sessions/join-session-with-most-recent-matcher! session))
-      (number? matcher) (test-match (sessions/join-session-with-number-matcher! session matcher))
-      (string? matcher) (test-match (sessions/join-session-with-substr-matcher! session matcher))
-      (instance? Pattern matcher) (test-match (sessions/join-session-with-regex-matcher! session matcher))
+      (nil? matcher) (announce-join! (sessions/join-session-with-most-recent-matcher! session))
+      (number? matcher) (announce-join! (sessions/join-session-with-number-matcher! session matcher))
+      (string? matcher) (announce-join! (sessions/join-session-with-substr-matcher! session matcher))
+      (instance? Pattern matcher) (announce-join! (sessions/join-session-with-regex-matcher! session matcher))
       :else (error-println (invalid-matcher-msg matcher))))
   ::no-result)
 
