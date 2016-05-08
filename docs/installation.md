@@ -52,7 +52,7 @@ There are many ways how to start an nREPL server. We will use Leiningen's nREPL 
 
 By default you should run it on port `8230` and with `dirac.nrepl/middleware` middleware. Please note that Dirac middleware
 was implemented as a [Piggieback middleware](https://github.com/cemerick/piggieback) fork, so you cannot run both.
-Think of Dirac middleware as Piggieback middleware replacement with some extra features specific to Dirac DevTools.
+Think of Dirac middleware as a Piggieback middleware replacement with some extra features specific to Dirac DevTools.
 
 The configuration snippet could look something like this:
 
@@ -68,15 +68,15 @@ I tend to put this extra config under `:repl` profile in my `project.clj` files
 
 Dirac Agent is a program which connects to an existing nREPL server and acts as a proxy providing nREPL connections to the browser.
 
-Please note that Dirac DevTools frontend is "just" a web app. It cannot open a classic TCP socket connection and talk to the nREPL server directly.
-Instead it connects to a Dirac Agent instance which listens for web socket connections on port 8231. Dirac Agent has also an open connection
-to your nREPL server at port 8230 so it can bridge messages between those two. Tunneling messages between
-the browser and the nREPL server is main feature of Dirac Agent, sometimes you might see (error) messages mentioning "nREPL Tunnel",
-which is a component of Dirac Agent.
+Please note that Dirac **DevTools** frontend is "just" a web app. It cannot open a classic TCP socket connection and talk to the nREPL server directly.
+Instead it connects to a Dirac **Agent** instance which listens for web socket connections on port 8231. Dirac **Agent** in turn has an open connection
+to your nREPL server at port 8230 so it can bridge messages between the two. Tunneling messages between
+the browser and the nREPL server is the main feature of Dirac **Agent**. Sometimes you might see (error) messages mentioning "nREPL Tunnel",
+which is a component of Dirac **Agent**.
 
-Actually Dirac Agent is a bit smarter than that. It allows one-to-many scenario where multiple Dirac DevTools instances
-can connect to a singe Dirac Agent which talks to a single nREPL server. Each Dirac DevTools instance is assigned its own nREPL session
-so they don't step on each others' toes. Thanks to sessions you can open multiple pages with different Dirac DevTools and
+Actually Dirac **Agent** is a bit smarter than that. It allows one-to-many scenario where multiple Dirac **DevTools** instances
+can connect to a singe Dirac **Agent** which talks to a single nREPL server. Each Dirac **DevTools** instance is assigned its own nREPL session
+so they don't step on each others' toes. Thanks to sessions you can open multiple pages with different Dirac **DevTools** and
 they all can have their own independent REPLs.
 
 Unfortunately this is the hardest part of the setup and most fragile.
@@ -86,13 +86,13 @@ how [Weasel](https://github.com/tomjakubowski/weasel) comes into play and how Di
 
 If you hit a wall you can try to ask for help in the `#dirac` channel at http://clojurians.slack.com ([ask for an invitation here](http://clojurians.net/)).
 
-Now let's get back to launching the Dirac Agent. You can wrap it as a command-line tool and run it. The source for cli tool is [here](https://github.com/binaryage/dirac/blob/master/src/agent/dirac/agent_cli.clj).
+Now let's get back to launching the Dirac **Agent**. You can wrap it as a command-line tool and run it. The source for cli tool is [here](https://github.com/binaryage/dirac/blob/master/src/agent/dirac/agent_cli.clj).
 Here is a custom launcher script which uses maven to download dirac jar and execute `agent-cli` with your current java env from command-line:
 
 [https://github.com/binaryage/dirac/blob/master/scripts/agent-launcher.sh](https://github.com/binaryage/dirac/blob/master/scripts/agent-launcher.sh)
 
-But I have a better idea. Why to spin yet another JVM just to run this tiny server? Let's use our existing nREPL process
-and start the Dirac Agent there. This will effectively run nREPL server and Dirac Agent in one process side-by-side.
+But I have a better idea. Why spin up yet another JVM just to run this tiny server? Let's use our existing nREPL process
+and start the Dirac **Agent** there. This will effectively run nREPL server and Dirac **Agent** in one process side-by-side.
 
 You can configure it as `:init` command which will be executed every time you start your REPL. Simply add this to your
 `:repl-options` for Leiningen:
@@ -119,6 +119,6 @@ Now when you start `lein repl` from command-line you should see something like t
     Connected to nREPL server at nrepl://localhost:8230.
     Tunnel is accepting connections at ws://localhost:8231.
 
-The last line should remind you that Dirac Agent started successfully and listens for browser connections on port 8231.
+The last line should remind you that Dirac **Agent** started successfully and is listening for browser connections on port 8231.
 
-Now you should be able to use REPL from any of your Dirac DevTools instances.
+Now you should be able to use REPL from any of your Dirac **DevTools** instances.
