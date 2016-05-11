@@ -40,7 +40,7 @@ WebInspector.SASSSourceMapFactory.prototype = {
             promises.push(sassPromise);
         }
         var cssURL = sourceMap.compiledURL();
-        var cssPromise = header.requestContent()
+        var cssPromise = header.originalContentProvider().requestContent()
             .then(text => this._astService.parseCSS(cssURL, text || ""))
             .then(ast => models.set(ast.document.url, ast));
         promises.push(cssPromise);
@@ -70,7 +70,7 @@ WebInspector.SASSSourceMapFactory.prototype = {
         {
             if (!(cssNode instanceof WebInspector.SASSSupport.TextNode))
                 return;
-            var entry = sourceMap.findEntry(cssNode.range.endLine, cssNode.range.endColumn);
+            var entry = sourceMap.findEntry(cssNode.range.startLine, cssNode.range.startColumn);
             if (!entry || !entry.sourceURL || typeof entry.sourceLineNumber === "undefined" || typeof entry.sourceColumnNumber === "undefined")
                 return;
             var sassAST = models.get(entry.sourceURL);
