@@ -8,7 +8,7 @@
                                        *cljs-repl-options*
                                        *original-clj-ns*]]
             [clojure.tools.nrepl.middleware.interruptible-eval :as nrepl-ieval]
-            [clojure.string :as string]))
+            [dirac.backport.string :as backport-string]))
 
 ; -- helpers ----------------------------------------------------------------------------------------------------------------
 
@@ -79,8 +79,8 @@
 
 (defn prepare-dirac-session-descriptor-tag [session-descriptor]
   (let [tag (get-dirac-session-descriptor-tag session-descriptor)
-        session (get-dirac-session-descriptor-session session-descriptor)
         sanitized-tag (if (empty? tag) "?" tag)
+        session (get-dirac-session-descriptor-session session-descriptor)
         session-id (get-session-id session)]
     (str sanitized-tag " [" session-id "]")))
 
@@ -146,7 +146,7 @@
 (defn make-substr-matcher [substring]
   (fn [session-descriptor _ _]
     (let [tag (prepare-dirac-session-descriptor-tag session-descriptor)]
-      (some? (string/index-of tag substring)))))
+      (backport-string/includes? tag substring))))
 
 (defn make-most-recent-matcher []
   (fn [_ index cnt]

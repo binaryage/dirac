@@ -59,6 +59,7 @@
   :source-paths ["src/agent"
                  "src/automation"
                  "src/background"
+                 "src/backport"
                  "src/dev"
                  "src/figwheel"
                  "src/implant"
@@ -104,6 +105,7 @@
                                   (with-meta (vec non-test-deps) {:replace true}))                                            ; so ugly!
                :source-paths   ^:replace ["src/project"
                                           "src/settings"
+                                          "src/backport"
                                           "src/logging"
                                           "src/runtime"
                                           "src/lib"
@@ -123,6 +125,7 @@
              :test-runner
              {:source-paths ^:replace ["src/project"
                                        "src/settings"
+                                       "src/backport"
                                        "src/logging"
                                        "src/lib"
                                        "src/agent"
@@ -137,6 +140,7 @@
                            {:notify-command ["scripts/cljsbuild-notify.sh" "tests"]
                             :source-paths   ["src/settings"
                                              "src/project"
+                                             "src/backport"
                                              "src/lib"
                                              "src/dev"
                                              "src/automation"
