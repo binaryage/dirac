@@ -3,7 +3,7 @@
         {
             "type": "@WebInspector.PanelFactory",
             "name": "resources",
-            "title": "Resources",
+            "title": "Application",
             "order": 70,
             "className": "WebInspector.ResourcesPanelFactory"
         },
@@ -17,6 +17,7 @@
     "scripts": [
         "AppManifestView.js",
         "ApplicationCacheItemsView.js",
+        "ClearStorageView.js",
         "CookieItemsView.js",
         "DatabaseModel.js",
         "DOMStorageModel.js",
@@ -31,6 +32,7 @@
     ],
     "resources": [
         "appManifestView.css",
+        "clearStorageView.css",
         "indexedDBViews.css",
         "resourcesPanel.css",
         "resourcesSidebar.css",

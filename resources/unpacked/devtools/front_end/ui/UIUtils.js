@@ -30,6 +30,7 @@
  */
 
 WebInspector.highlightedSearchResultClassName = "highlighted-search-result";
+WebInspector.highlightedCurrentSearchResultClassName = "current-search-result";
 
 /**
  * @param {!Element} element
@@ -301,9 +302,10 @@ WebInspector._valueModificationDirection = function(event)
 {
     var direction = null;
     if (event.type === "mousewheel") {
-        if (event.wheelDeltaY > 0)
+        // When shift is pressed while spinning mousewheel, delta comes as wheelDeltaX.
+        if (event.wheelDeltaY > 0 || event.wheelDeltaX > 0)
             direction = "Up";
-        else if (event.wheelDeltaY < 0)
+        else if (event.wheelDeltaY < 0 || event.wheelDeltaX < 0)
             direction = "Down";
     } else {
         if (event.keyIdentifier === "Up" || event.keyIdentifier === "PageUp")
@@ -324,31 +326,43 @@ WebInspector._modifiedHexValue = function(hexString, event)
     if (!direction)
         return hexString;
 
+    var mouseEvent = /** @type {!MouseEvent} */(event);
     var number = parseInt(hexString, 16);
     if (isNaN(number) || !isFinite(number))
         return hexString;
 
-    var maxValue = Math.pow(16, hexString.length) - 1;
-    var arrowKeyOrMouseWheelEvent = (event.keyIdentifier === "Up" || event.keyIdentifier === "Down" || event.type === "mousewheel");
-    var delta;
+    var hexStrLen = hexString.length;
+    var channelLen = hexStrLen / 3;
 
-    if (arrowKeyOrMouseWheelEvent)
-        delta = (direction === "Up") ? 1 : -1;
-    else
-        delta = (event.keyIdentifier === "PageUp") ? 16 : -16;
-
-    if (event.shiftKey)
-        delta *= 16;
-
-    var result = number + delta;
-    if (result < 0)
-        result = 0; // Color hex values are never negative, so clamp to 0.
-    else if (result > maxValue)
+    // Colors are either rgb or rrggbb.
+    if (channelLen !== 1 && channelLen !== 2)
         return hexString;
+
+    // Precision modifier keys work with both mousewheel and up/down keys.
+    // When ctrl is pressed, increase R by 1.
+    // When shift is pressed, increase G by 1.
+    // When alt is pressed, increase B by 1.
+    // If no shortcut keys are pressed then increase hex value by 1.
+    // Keys can be pressed together to increase RGB channels. e.g trying different shades.
+    var delta = 0;
+    if (WebInspector.KeyboardShortcut.eventHasCtrlOrMeta(mouseEvent))
+        delta += Math.pow(16, channelLen * 2);
+    if (mouseEvent.shiftKey)
+        delta += Math.pow(16, channelLen);
+    if (mouseEvent.altKey)
+        delta += 1;
+    if (delta === 0)
+        delta = 1;
+    if (direction === "Down")
+        delta *= -1;
+
+    // Increase hex value by 1 and clamp from 0 ... maxValue.
+    var maxValue = Math.pow(16, hexStrLen) - 1;
+    var result = Number.constrain(number + delta, 0, maxValue);
 
     // Ensure the result length is the same as the original hex value.
     var resultString = result.toString(16).toUpperCase();
-    for (var i = 0, lengthDelta = hexString.length - resultString.length; i < lengthDelta; ++i)
+    for (var i = 0, lengthDelta = hexStrLen - resultString.length; i < lengthDelta; ++i)
         resultString = "0" + resultString;
     return resultString;
 }
@@ -363,24 +377,27 @@ WebInspector._modifiedFloatNumber = function(number, event)
     if (!direction)
         return number;
 
-    var arrowKeyOrMouseWheelEvent = (event.keyIdentifier === "Up" || event.keyIdentifier === "Down" || event.type === "mousewheel");
+    var mouseEvent = /** @type {!MouseEvent} */(event);
 
-    // Jump by 10 when shift is down or jump by 0.1 when Alt/Option is down.
-    // Also jump by 10 for page up and down, or by 100 if shift is held with a page key.
-    var changeAmount = 1;
-    if (event.shiftKey && !arrowKeyOrMouseWheelEvent)
-        changeAmount = 100;
-    else if (event.shiftKey || !arrowKeyOrMouseWheelEvent)
-        changeAmount = 10;
-    else if (event.altKey)
-        changeAmount = 0.1;
+    // Precision modifier keys work with both mousewheel and up/down keys.
+    // When ctrl is pressed, increase by 100.
+    // When shift is pressed, increase by 10.
+    // When alt is pressed, increase by 0.1.
+    // Otherwise increase by 1.
+    var delta = 1;
+    if (WebInspector.KeyboardShortcut.eventHasCtrlOrMeta(mouseEvent))
+        delta = 100;
+    else if (mouseEvent.shiftKey)
+        delta = 10;
+    else if (mouseEvent.altKey)
+        delta = 0.1;
 
     if (direction === "Down")
-        changeAmount *= -1;
+        delta *= -1;
 
     // Make the new number and constrain it to a precision of 6, this matches numbers the engine returns.
     // Use the Number constructor to forget the fixed precision, so 1.100000 will print as 1.1.
-    var result = Number((number + changeAmount).toFixed(6));
+    var result = Number((number + delta).toFixed(6));
     if (!String(result).match(WebInspector.CSSNumberRegex))
         return null;
 
@@ -776,6 +793,8 @@ WebInspector.setCurrentFocusElement = function(x)
     if (WebInspector._currentFocusElement !== x)
         WebInspector._previousFocusElement = WebInspector._currentFocusElement;
     WebInspector._currentFocusElement = x;
+    if (WebInspector._previousFocusElement && WebInspector._previousFocusElement !== x)
+        WebInspector._previousFocusElement.blur();
 
     if (x) {
         x.focus();
@@ -792,8 +811,7 @@ WebInspector.setCurrentFocusElement = function(x)
             selection.removeAllRanges();
             selection.addRange(selectionRange);
         }
-    } else if (WebInspector._previousFocusElement)
-        WebInspector._previousFocusElement.blur();
+    }
 }
 
 WebInspector.restoreFocusFromElement = function(element)
@@ -1860,6 +1878,50 @@ WebInspector.uiLabelForPriority = function(priority)
         WebInspector.uiLabelForPriority._priorityToUILabel = labelMap;
     }
     return labelMap.get(priority) || WebInspector.UIString("Unknown");
+}
+
+/**
+ * @param {string} url
+ * @param {string=} linkText
+ * @param {string=} classes
+ * @param {boolean=} isExternal
+ * @param {string=} tooltipText
+ * @return {!Element}
+ */
+WebInspector.linkifyURLAsNode = function(url, linkText, classes, isExternal, tooltipText)
+{
+    if (!linkText)
+        linkText = url;
+
+    var a = createElementWithClass("a", classes);
+    var href = url;
+    if (url.trim().toLowerCase().startsWith("javascript:"))
+        href = null;
+    if (isExternal && WebInspector.ParsedURL.isRelativeURL(url))
+        href = null;
+    if (href !== null) {
+        a.href = href;
+        a.classList.add(isExternal ? "webkit-html-external-link" : "webkit-html-resource-link");
+    }
+    if (!tooltipText && linkText !== url)
+        a.title = url;
+    else if (tooltipText)
+        a.title = tooltipText;
+    a.textContent = linkText.trimMiddle(150);
+    if (isExternal)
+        a.setAttribute("target", "_blank");
+
+    return a;
+}
+
+/**
+ * @param {string} article
+ * @param {string} title
+ * @return {!Element}
+ */
+WebInspector.linkifyDocumentationURLAsNode = function(article, title)
+{
+    return WebInspector.linkifyURLAsNode("https://developers.google.com/web/tools/chrome-devtools/" + article, title, undefined, true);
 }
 
 /** @type {!WebInspector.ThemeSupport} */
