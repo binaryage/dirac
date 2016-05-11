@@ -16,7 +16,7 @@
                  [http-kit "2.1.21-alpha2"]
                  [clj-logging-config "1.9.12"]
                  [version-clj "0.1.2"]
-                 [environ "1.0.2"]
+                 [environ "1.0.3"]
                  [clansi "1.0.0"]
                  [funcool/cuerdas "0.7.2"]
 
@@ -52,7 +52,7 @@
   :checkout-deps-shares ^:replace []
 
   :plugins [[lein-shell "0.5.0"]
-            [lein-environ "1.0.2"]]
+            [lein-environ "1.0.3"]]
 
   ;  :jvm-opts ["-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5005"]
 
