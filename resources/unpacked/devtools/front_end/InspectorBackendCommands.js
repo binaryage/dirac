@@ -137,6 +137,7 @@ InspectorBackend.registerEnum("Network.RequestMixedContentType", {Blockable: "bl
 InspectorBackend.registerEnum("Network.BlockedReason", {Csp: "csp", MixedContent: "mixed-content", Origin: "origin", Inspector: "inspector", Other: "other"});
 InspectorBackend.registerEnum("Network.InitiatorType", {Parser: "parser", Script: "script", Other: "other"});
 InspectorBackend.registerEnum("Network.CookieSameSite", {Strict: "Strict", Lax: "Lax"});
+InspectorBackend.registerEvent("Network.resourceChangedPriority", ["requestId", "newPriority", "timestamp"]);
 InspectorBackend.registerEvent("Network.requestWillBeSent", ["requestId", "frameId", "loaderId", "documentURL", "request", "timestamp", "wallTime", "initiator", "redirectResponse", "type"]);
 InspectorBackend.registerEvent("Network.requestServedFromCache", ["requestId"]);
 InspectorBackend.registerEvent("Network.responseReceived", ["requestId", "frameId", "loaderId", "timestamp", "type", "response"]);
@@ -409,6 +410,7 @@ InspectorBackend.registerCommand("ServiceWorker.stop", [{"name": "workerId", "ty
 InspectorBackend.registerCommand("ServiceWorker.unregister", [{"name": "scopeURL", "type": "string", "optional": false}], [], false);
 InspectorBackend.registerCommand("ServiceWorker.updateRegistration", [{"name": "scopeURL", "type": "string", "optional": false}], [], false);
 InspectorBackend.registerCommand("ServiceWorker.startWorker", [{"name": "scopeURL", "type": "string", "optional": false}], [], false);
+InspectorBackend.registerCommand("ServiceWorker.skipWaiting", [{"name": "scopeURL", "type": "string", "optional": false}], [], false);
 InspectorBackend.registerCommand("ServiceWorker.stopWorker", [{"name": "versionId", "type": "string", "optional": false}], [], false);
 InspectorBackend.registerCommand("ServiceWorker.inspectWorker", [{"name": "versionId", "type": "string", "optional": false}], [], false);
 InspectorBackend.registerCommand("ServiceWorker.setForceUpdateOnPageLoad", [{"name": "forceUpdateOnPageLoad", "type": "boolean", "optional": false}], [], false);
@@ -446,7 +448,6 @@ InspectorBackend.registerCommand("DeviceOrientation.setDeviceOrientationOverride
 InspectorBackend.registerCommand("DeviceOrientation.clearDeviceOrientationOverride", [], [], false);
 
 // Tracing.
-InspectorBackend.registerEnum("Tracing.MemoryDumpTriggerMode", {Light: "light", Detailed: "detailed"});
 InspectorBackend.registerEnum("Tracing.TraceConfigRecordMode", {RecordUntilFull: "recordUntilFull", RecordContinuously: "recordContinuously", RecordAsMuchAsPossible: "recordAsMuchAsPossible", EchoToConsole: "echoToConsole"});
 InspectorBackend.registerEvent("Tracing.dataCollected", ["value"]);
 InspectorBackend.registerEvent("Tracing.tracingComplete", ["stream"]);
@@ -483,5 +484,9 @@ InspectorBackend.registerEnum("Accessibility.AXWidgetAttributes", {Autocomplete:
 InspectorBackend.registerEnum("Accessibility.AXWidgetStates", {Checked: "checked", Expanded: "expanded", Pressed: "pressed", Selected: "selected"});
 InspectorBackend.registerEnum("Accessibility.AXRelationshipAttributes", {Activedescendant: "activedescendant", Flowto: "flowto", Controls: "controls", Describedby: "describedby", Labelledby: "labelledby", Owns: "owns"});
 InspectorBackend.registerCommand("Accessibility.getAXNode", [{"name": "nodeId", "type": "number", "optional": false}], ["accessibilityNode"], false);
+
+// Storage.
+InspectorBackend.registerEnum("Storage.StorageType", {Appcache: "appcache", Cookies: "cookies", File_systems: "file_systems", Indexeddb: "indexeddb", Local_storage: "local_storage", Shader_cache: "shader_cache", Websql: "websql", Webrtc_indetity: "webrtc_indetity", Service_workers: "service_workers", Cache_storage: "cache_storage", All: "all"});
+InspectorBackend.registerCommand("Storage.clearDataForOrigin", [{"name": "origin", "type": "string", "optional": false}, {"name": "storageTypes", "type": "string", "optional": false}], [], false);
 
 
