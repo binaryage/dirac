@@ -390,6 +390,8 @@ var dirac = {
         init: function() {},
         init_console: function() {},
         init_repl: function() {},
+        get_version: function() {},
+        get_runtime_tag: function() {},
         /**
         * @param {Element} textAreaElement
         * @param {boolean} useParinfer
