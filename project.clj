@@ -115,7 +115,7 @@
                :test-paths     ^:replace []}]
 
              :cooper
-             {:plugins [[lein-cooper "1.2.1"]]}
+             {:plugins [[lein-cooper "1.2.2"]]}
 
              :cljs
              {:plugins [[lein-cljsbuild "1.1.3"]
