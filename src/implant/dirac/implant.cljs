@@ -1,5 +1,7 @@
 (ns dirac.implant
-  (:require [dirac.dev]
+  (:require-macros [cljs.core.async.macros :refer [go go-loop]])
+  (:require [cljs.core.async :refer [put! <! chan timeout alts! close!]]
+            [dirac.dev]
             [dirac.implant.editor :as editor]
             [dirac.implant.intercom :as intercom]
             [dirac.implant.automation :as automation]
@@ -14,7 +16,8 @@
 (defonce ^:dynamic *implant-initialized* false)
 
 ; -- exported API -----------------------------------------------------------------------------------------------------------
-; don't forget to update externs.js when touching this
+;
+; !!! don't forget to update externs.js when touching this !!!
 
 (defn ^:export feedback [text]
   (feedback-support/post! text))
@@ -55,6 +58,11 @@
 (defn ^:export get-version []
   version)
 
+(defn ^:export get-runtime-tag [callback]
+  (go
+    (let [tag (<! (eval/get-runtime-tag))]
+      (callback tag))))
+
 ; -- automation -------------------------------------------------------------------------------------------------------------
 
 (defn automation-handler [message]
@@ -69,6 +77,7 @@
 
 (defn init-implant! []
   (when-not *implant-initialized*
+
     (set! *implant-initialized* true)
     (assert (not *console-initialized*))
     (install-automation-support!)
