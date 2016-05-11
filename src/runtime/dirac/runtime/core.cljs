@@ -29,7 +29,7 @@
 (defn uninstall! []
   (repl/uninstall!))
 
-(defn get-tag []
+(defn get-tag-data []
   (let [tag (prefs/pref :runtime-tag)
         url (str js/location)
         browser-version (ua-browser/getVersion)
@@ -37,6 +37,12 @@
         browser (str (or browser-name "?") "/" browser-version)
         platform-version (ua-platform/getVersion)
         platform-name (get-current-platform-name)
-        platform (str (or platform-name "?") "/" platform-version)
-        ua (str (.-userAgent js/navigator))]
-    (apply str (interpose "|" [tag url browser platform]))))
+        platform (str (or platform-name "?") "/" platform-version)]
+    {:tag      tag
+     :url      url
+     :browser  browser
+     :platform platform}))
+
+(defn get-tag []
+  (let [{:keys [tag url browser platform]} (get-tag-data)]
+    (apply str (interpose " | " [tag url browser platform]))))
