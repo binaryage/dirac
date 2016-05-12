@@ -1179,7 +1179,7 @@ WebInspector.ConsoleView.prototype = {
 
         var promptDescriptor = this._prompts[this._activePromptIndex];
         if (promptDescriptor.id == "dirac") {
-           this.appendDiracCommand(str);
+           this.appendDiracCommand(str, null);
         } else {
             this._appendCommand(str, true);
         }
