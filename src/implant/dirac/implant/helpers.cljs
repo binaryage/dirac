@@ -7,8 +7,15 @@
     (ocall runtime "queryParam" name)
     (throw (ex-info "Unable to obtain window.Runtime from DevTools" nil))))
 
-(defn get-devtools-id []
-  (or (int (get-query-param "devtools_id")) 0))
+(defn get-devtools-id* []
+  (or (js/parseInt (get-query-param "devtools_id") 10) 0))
+
+(def get-devtools-id (memoize get-devtools-id*))
+
+(defn should-automate?* []
+  (= (get-query-param "dirac_automate") "1"))
+
+(def should-automate? (memoize should-automate?*))
 
 (defn get-console-view []
   (if-let [console-view-class (oget js/window "WebInspector" "ConsoleView")]

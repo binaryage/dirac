@@ -21,13 +21,14 @@
   (oset js/window ["diracFlushPendingFeedbackMessages"] flush-pending-messages!))
 
 (defn post! [text]
-  (let [message #js {:type     "marion-deliver-feedback"
-                     :envelope #js {:type       "feedback-from-devtools"
-                                    :devtools   (helpers/get-devtools-id)
-                                    :transcript text}}]
-    (log "posting feedback:" message)
-    (if-let [intercom (get-intercom)]
-      (intercom message)
-      (do
-        (log "intercom not yet ready, queuing feedback message" message)
-        (swap! pending-messages conj message)))))
+  (when (helpers/should-automate?)
+    (let [message #js {:type     "marion-deliver-feedback"
+                       :envelope #js {:type       "feedback-from-devtools"
+                                      :devtools   (helpers/get-devtools-id)
+                                      :transcript text}}]
+      (log "posting feedback:" message)
+      (if-let [intercom (get-intercom)]
+        (intercom message)
+        (do
+          (log "intercom not yet ready, queuing feedback message" message)
+          (swap! pending-messages conj message))))))
