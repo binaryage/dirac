@@ -76,9 +76,14 @@
   (case (oget message "type")
     "marion-deliver-feedback" (state/post-to-marion! (oget message "envelope"))))
 
+(defn automate-if-marion-present [options]
+  (if (state/marion-present?)
+    (assoc options :automate true)
+    options))
+
 (defn connect-and-navigate-dirac-devtools! [frontend-tab-id backend-tab-id options]
   (let [devtools-id (devtools/register! frontend-tab-id backend-tab-id)
-        dirac-frontend-url (helpers/make-dirac-frontend-url devtools-id options)]
+        dirac-frontend-url (helpers/make-dirac-frontend-url devtools-id (automate-if-marion-present options))]
     (go
       (<! (tabs/update frontend-tab-id #js {:url dirac-frontend-url}))
       (<! (timeout 500))                                                                                                      ; give the page some time load the document

@@ -1,7 +1,8 @@
 (ns dirac.background.state
   (:require [chromex.support :refer-macros [oget oset ocall oapply]]
             [chromex.logging :refer-macros [log info warn error group group-end]]
-            [chromex.protocols :refer [post-message! get-sender get-name]]))
+            [chromex.protocols :refer [post-message! get-sender get-name]]
+            [devtools.toolbox :as toolbox]))
 
 (defonce initial-state
   {:last-devtools-id     0
@@ -56,11 +57,15 @@
 (defn get-marion-port []
   (:marion-port @state))
 
+(defn marion-present? []
+  (some? (get-marion-port)))
+
 ; -- marion feedback --------------------------------------------------------------------------------------------------------
 
 (defn post-to-marion! [message]
   (if-let [marion-port (get-marion-port)]
-    (post-message! marion-port message)))
+    (post-message! marion-port message)
+    (warn "marion not yet connected when called post-to-marion! with message:" (toolbox/envelope message))))
 
 (defn post-feedback! [text]
   (post-to-marion! #js {:type "feedback-from-extension" :transcript text}))
