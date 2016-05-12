@@ -2,7 +2,8 @@
   (:require [clojure.test :refer :all]
             [environ.core :refer [env]]
             [dirac.agent-tests]
-            [dirac.logging :as logging]))
+            [dirac.logging :as logging]
+            [clojure.tools.logging :as log]))
 
 ; this is the default dirac test runner
 
@@ -17,5 +18,6 @@
 
 (defn -main []
   (setup-logging!)
+  (log/info (str "Running tests against Clojure " (clojure-version)))
   (let [summary (apply run-tests default-test-namespaces)]
     (System/exit (if (successful? summary) 0 1))))
