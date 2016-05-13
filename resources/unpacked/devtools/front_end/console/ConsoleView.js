@@ -1192,24 +1192,35 @@ WebInspector.ConsoleView.prototype = {
         if (!id) {
           id = this._lastDiracCommandId++;
         }
+
         var command = text;
         var commandId = id;
 
         var executionContext = WebInspector.context.flavor(WebInspector.ExecutionContext);
-        if (executionContext) {
-            this._prompt.setText("");
-            var target = executionContext.target();
-            var type = WebInspector.ConsoleMessage.MessageType.DiracCommand;
-            var commandMessage = new WebInspector.ConsoleMessage(target, WebInspector.ConsoleMessage.MessageSource.JS, WebInspector.ConsoleMessage.MessageLevel.Log, text, type);
-            commandMessage.setExecutionContextId(executionContext.id);
-            target.consoleModel.addMessage(commandMessage);
-
-            this._prompt.pushHistoryItem(text);
-            this._diracHistorySetting.set(this._prompt.historyData().slice(-WebInspector.ConsoleView.persistedHistorySize));
-
-            this._pendingDiracCommands[commandId] = commandMessage;
-            dirac.implant.send_eval_request(commandId, command);
+        if (!executionContext) {
+          return;
         }
+
+        this._prompt.setText("");
+        var target = executionContext.target();
+        var type = WebInspector.ConsoleMessage.MessageType.DiracCommand;
+        var commandMessage = new WebInspector.ConsoleMessage(target, WebInspector.ConsoleMessage.MessageSource.JS, WebInspector.ConsoleMessage.MessageLevel.Log, text, type);
+        commandMessage.setExecutionContextId(executionContext.id);
+        target.consoleModel.addMessage(commandMessage);
+
+        this._prompt.pushHistoryItem(text);
+        this._diracHistorySetting.set(this._prompt.historyData().slice(-WebInspector.ConsoleView.persistedHistorySize));
+
+        var debuggerModel = executionContext.debuggerModel;
+        var scopeInfoPromise = Promise.resolve(null);
+        if (debuggerModel) {
+          scopeInfoPromise = dirac.extractInfoFromScopeChainPromise(debuggerModel.selectedCallFrame());
+        }
+
+        this._pendingDiracCommands[commandId] = commandMessage;
+        scopeInfoPromise.then(function (scopeInfo) {
+          dirac.implant.send_eval_request(commandId, command, scopeInfo);
+        });
     },
 
     /**
