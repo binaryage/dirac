@@ -104,15 +104,15 @@
 (defn set-env-namespace [env]
   (assoc env :ns (ana/get-namespace ana/*cljs-ns*)))
 
-(defn extract-scope-info-props [scope-info]
-  (mapcat :props (:frames scope-info)))
+(defn extract-scope-locals [scope-info]
+  (mapcat :props (reverse (:frames scope-info))))                                                                             ; reverse frames to process outer scopes first
 
 ; extract locals from scope-info (as provided by Dirac) and put it into :locals env map for analyzer
 ; note in case of duplicit names we won't break, resulting locals is a flat list: "last name wins"
 (defn set-env-locals [env]
   (let [nrepl-message nrepl-ieval/*msg*
         scope-info (:scope-info nrepl-message)
-        all-scope-locals (reverse (extract-scope-info-props scope-info))                                                      ; reverse for having inner scope locals going after outer scope locals
+        all-scope-locals (extract-scope-locals scope-info)
         build-env-local (fn [local]
                           (let [{:keys [name identifier]} local
                                 name-sym (symbol name)
