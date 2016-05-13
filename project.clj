@@ -31,6 +31,7 @@
                  [rum-reforms "0.4.3" :scope "test"]
                  [parinfer "0.2.3" :scope "test"]
                  [com.lucasbradstreet/cljs-uuid-utils "1.0.2" :scope "test"]
+                 [com.rpl/specter "0.10.0" :scope "test"]
 
                  [http.async.client "1.1.0" :scope "test"]
                  [org.slf4j/slf4j-log4j12 "1.7.21" :scope "test"]
