@@ -48,7 +48,7 @@ WebInspector.TimelinePanel = function()
     this._windowStartTime = 0;
     this._windowEndTime = Infinity;
     this._millisecondsToRecordAfterLoadEvent = 3000;
-    this._toggleRecordAction = WebInspector.actionRegistry.action("timeline.toggle-recording");
+    this._toggleRecordAction = /** @type {!WebInspector.Action }*/ (WebInspector.actionRegistry.action("timeline.toggle-recording"));
 
     /** @type {!Array<!WebInspector.TimelineModel.Filter>} */
     this._filters = [];
@@ -61,7 +61,7 @@ WebInspector.TimelinePanel = function()
     this._tracingModelBackingStorage = new WebInspector.TempFileBackingStorage("tracing");
     this._tracingModel = new WebInspector.TracingModel(this._tracingModelBackingStorage);
     this._model = new WebInspector.TimelineModel(WebInspector.TimelineUIUtils.visibleEventsFilter());
-    this._frameModel = new WebInspector.TracingTimelineFrameModel();
+    this._frameModel = new WebInspector.TimelineFrameModel();
     this._irModel = new WebInspector.TimelineIRModel();
 
     if (Runtime.experiments.isEnabled("cpuThrottling"))

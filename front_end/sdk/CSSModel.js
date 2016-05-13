@@ -211,7 +211,7 @@ WebInspector.CSSModel.prototype = {
      */
     _factoryForSourceMap: function(sourceMap)
     {
-        var sourceExtensions = new Set(sourceMap.sourceURLs().map(url => WebInspector.TextUtils.extension(url)));
+        var sourceExtensions = new Set(sourceMap.sourceURLs().map(url => WebInspector.ParsedURL.extractExtension(url)));
         for (var runtimeExtension of self.runtime.extensions(WebInspector.SourceMapFactory)) {
             var supportedExtensions = new Set(runtimeExtension.descriptor()["extensions"]);
             if (supportedExtensions.containsAll(sourceExtensions))
@@ -814,9 +814,15 @@ WebInspector.CSSModel.prototype = {
         if (!promise) {
             promise = this.getStyleSheetText(header.id);
             this._originalStyleSheetText.set(header, promise);
+            this._originalContentRequestedForTest(header);
         }
         return promise;
     },
+
+    /**
+     * @param {!WebInspector.CSSStyleSheetHeader} header
+     */
+    _originalContentRequestedForTest: function(header) { },
 
     /**
      * @param {!WebInspector.CSSStyleSheetHeader} header
