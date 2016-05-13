@@ -1,14 +1,14 @@
 (ns dirac.implant
   (:require-macros [cljs.core.async.macros :refer [go go-loop]])
   (:require [cljs.core.async :refer [put! <! chan timeout alts! close!]]
+            [cljs.reader :as reader]
+            [chromex.support :refer-macros [oget oset ocall oapply]]
+            [chromex.logging :refer-macros [log warn error]]
             [dirac.dev]
             [dirac.implant.editor :as editor]
             [dirac.implant.intercom :as intercom]
             [dirac.implant.automation :as automation]
             [dirac.implant.version :refer [version]]
-            [cljs.reader :as reader]
-            [chromex.support :refer-macros [oget oset ocall oapply]]
-            [chromex.logging :refer-macros [log warn error]]
             [dirac.implant.eval :as eval]
             [dirac.implant.feedback-support :as feedback-support]))
 

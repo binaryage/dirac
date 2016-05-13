@@ -5,7 +5,7 @@
     [clojure.string :refer [join]]
     [chromex.support :refer-macros [oget ocall oapply]]
     [dirac.implant.state :refer [state empty-editor-state]]
-    [dirac.implant.support :refer [update-cursor! fix-text! cm-key IEditor get-prev-state frame-updated? set-frame-updated!]]))
+    [dirac.implant.support :refer [fix-text! cm-key IEditor get-prev-state frame-updated? set-frame-updated!]]))
 
 ;;----------------------------------------------------------------------
 ;; Life Cycle events
@@ -34,7 +34,6 @@
   [cm change]
   (when (not= "setValue" (oget change "origin"))
     (fix-text! cm :change change)
-    (update-cursor! cm change)
     (set-frame-updated! cm true)))
 
 (defn on-cursor-activity
