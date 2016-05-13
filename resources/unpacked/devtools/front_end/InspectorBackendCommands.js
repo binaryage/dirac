@@ -68,6 +68,7 @@ InspectorBackend.registerCommand("Page.setColorPickerEnabled", [{"name": "enable
 InspectorBackend.registerCommand("Page.setOverlayMessage", [{"name": "message", "type": "string", "optional": true}], [], false);
 InspectorBackend.registerCommand("Page.getAppManifest", [], ["url", "errors", "data"], false);
 InspectorBackend.registerCommand("Page.requestAppBanner", [], [], false);
+InspectorBackend.registerCommand("Page.setBlockedEventsWarningThreshold", [{"name": "threshold", "type": "number", "optional": false}], [], false);
 
 // Rendering.
 InspectorBackend.registerCommand("Rendering.setShowPaintRects", [{"name": "result", "type": "boolean", "optional": false}], [], false);
