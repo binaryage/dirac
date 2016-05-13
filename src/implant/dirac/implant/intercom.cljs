@@ -159,13 +159,18 @@
         (display-prompt-status (unable-to-connect-exception-msg url e))
         (throw e)))))
 
-(defn send-eval-request! [job-id code]
+(defn prepare-scope-info [scope-info-js]
+  (js->clj scope-info-js :keywordize-keys true))
+
+(defn send-eval-request! [job-id code scope-info]
   (when (repl-ready?)
     (console/announce-job-start! job-id (str "eval: " code))
-    (nrepl-tunnel-client/tunnel-message! {:op    "eval"
-                                          :dirac "wrap"
-                                          :id    job-id
-                                          :code  code})))
+    (let [message {:op         "eval"
+                   :dirac      "wrap"
+                   :id         job-id
+                   :code       code
+                   :scope-info (prepare-scope-info scope-info)}]
+      (nrepl-tunnel-client/tunnel-message! (utils/compact message)))))
 
 (defn ws-url [host port]
   (str "ws://" host ":" port))

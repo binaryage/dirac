@@ -51,9 +51,9 @@
     (editor/start-editor-sync!)
     editor))
 
-(defn ^:export send-eval-request [request-id code]
+(defn ^:export send-eval-request [request-id code scope-info]
   (feedback (str "send-eval-request: " code))
-  (intercom/send-eval-request! request-id code))
+  (intercom/send-eval-request! request-id code scope-info))
 
 (defn ^:export get-version []
   version)
