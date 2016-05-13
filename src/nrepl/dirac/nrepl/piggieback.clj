@@ -101,17 +101,40 @@
       ('#{*1 *2 *3 *e} form) (make-special-form-evaluator dirac-wrap)
       :else (make-job-evaluator dirac-wrap job-id))))
 
+(defn set-env-namespace [env]
+  (assoc env :ns (ana/get-namespace ana/*cljs-ns*)))
+
+(defn extract-scope-info-props [scope-info]
+  (mapcat :props (:frames scope-info)))
+
+; extract locals from scope-info (as provided by Dirac) and put it into :locals env map for analyzer
+; note in case of duplicit names we won't break, resulting locals is a flat list: "last name wins"
+(defn set-env-locals [env]
+  (let [nrepl-message nrepl-ieval/*msg*
+        scope-info (:scope-info nrepl-message)
+        all-scope-locals (reverse (extract-scope-info-props scope-info))                                                      ; reverse for having inner scope locals going after outer scope locals
+        build-env-local (fn [local]
+                          (let [{:keys [name identifier]} local
+                                name-sym (symbol name)
+                                identifier-sym (if identifier (symbol identifier) name-sym)]
+                            [name-sym {:name identifier-sym}]))
+        env-locals (into {} (map build-env-local all-scope-locals))]
+    (assoc env :locals env-locals)))
+
 (defn eval-cljs
   "Given a REPL evaluation environment, an analysis environment, and a
    form, evaluate the form and return the result. The result is always the value
    represented as a string."
-  ([nrepl-message code repl-env env form]
-   (eval-cljs nrepl-message code repl-env env form cljs.repl/*repl-opts*))
+  ([repl-env env form]
+   (eval-cljs repl-env env form cljs.repl/*repl-opts*))
   ([repl-env env form opts]
    (let [wrap ((or (:wrap opts) make-wrapper-for-form) form)
-         env (assoc env :ns (ana/get-namespace ana/*cljs-ns*))]                                                               ; the pluggability of :wrap is needed for older JS runtimes like Rhino where catching the error will swallow the original trace
+         effective-env (-> env
+                           (set-env-namespace)
+                           (set-env-locals))]
      (log/trace "eval-cljs" form)
-     (cljs.repl/evaluate-form repl-env env dirac-repl-alias form wrap opts))))
+     (log/trace "eval-env" (pprint effective-env 7))
+     (cljs.repl/evaluate-form repl-env effective-env dirac-repl-alias form wrap opts))))
 
 (defn- run-single-cljs-repl-iteration [nrepl-message code repl-env compiler-env options]
   (let [{:keys [session transport ns]} nrepl-message
