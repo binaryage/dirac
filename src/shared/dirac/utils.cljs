@@ -25,3 +25,8 @@
 (defn parse-int [v]
   {:pre [(string? v)]}
   (js/parseInt v 10))
+
+(defn compact [coll]
+  (cond
+    (vector? coll) (into [] (filter (complement nil?) coll))
+    (map? coll) (into {} (filter (comp not nil? second) coll))))
