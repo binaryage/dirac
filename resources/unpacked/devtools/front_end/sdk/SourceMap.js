@@ -458,7 +458,7 @@ WebInspector.TextSourceMap.prototype = {
             sourceLineNumber += this._decodeVLQ(stringCharIterator);
             sourceColumnNumber += this._decodeVLQ(stringCharIterator);
 
-            if (this._isSeparator(stringCharIterator.peek())) {
+            if (!stringCharIterator.hasNext() || this._isSeparator(stringCharIterator.peek())) {
                 this._mappings.push(new WebInspector.SourceMapEntry(lineNumber, columnNumber, sourceURL, sourceLineNumber, sourceColumnNumber));
                 continue;
             }
