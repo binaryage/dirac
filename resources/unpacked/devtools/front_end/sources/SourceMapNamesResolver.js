@@ -461,8 +461,10 @@ WebInspector.SourceMapNamesResolver.RemoteObject.prototype = {
             if (properties) {
                 for (var i = 0; i < properties.length; ++i) {
                     var property = properties[i];
-                    var name = namesMapping.get(property.name) || properties[i].name;
-                    newProperties.push(new WebInspector.RemoteObjectProperty(name, property.value, property.enumerable, property.writable, property.isOwn, property.wasThrown, property.symbol, property.synthetic));
+                    var name = namesMapping.get(property.name) || property.name;
+                    var wrappingProperty = new WebInspector.RemoteObjectProperty(name, property.value, property.enumerable, property.writable, property.isOwn, property.wasThrown, property.symbol, property.synthetic);
+                    wrappingProperty.resolutionSourceProperty = property;
+                    newProperties.push(wrappingProperty);
                 }
             }
 
