@@ -46,7 +46,7 @@
   (let [sym (symbol (str "*" (name key) "*"))]
     (case kind
       :str `(if ~sym {~key (str ~sym)})
-      :boolean `(if ~sym {~key (boolean ~sym)})
+      :boolean `(if ~sym {~key (boolean (#{"1" "true" "yes"} (string/lower-case ~sym)))})
       :int `(if ~sym {~key (Integer/parseInt ~sym)}))))
 
 (defmacro gen-static-prefs []
