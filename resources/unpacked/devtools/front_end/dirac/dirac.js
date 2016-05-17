@@ -211,7 +211,7 @@ function extractNamesFromScopePromise(scope) {
   });
 }
 
-function extractInfoFromScopeChainPromise(callFrame) {
+function extractScopeInfoFromScopeChainAsync(callFrame) {
   if (!callFrame) {
     return Promise.resolve(null);
   }
@@ -248,7 +248,7 @@ window.dirac = {
   codeAsString: codeAsString,
   stringEscape: stringEscape,
   evalInCurrentContext: evalInCurrentContext,
-  extractInfoFromScopeChainPromise: extractInfoFromScopeChainPromise,
+  extractScopeInfoFromScopeChainAsync: extractScopeInfoFromScopeChainAsync,
   hasCurrentContext: hasCurrentContext,
   evalInDefaultContext: evalInDefaultContext,
   hasDefaultContext: hasDefaultContext

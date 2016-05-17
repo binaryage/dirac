@@ -1214,7 +1214,7 @@ WebInspector.ConsoleView.prototype = {
         var debuggerModel = executionContext.debuggerModel;
         var scopeInfoPromise = Promise.resolve(null);
         if (debuggerModel) {
-          scopeInfoPromise = dirac.extractInfoFromScopeChainPromise(debuggerModel.selectedCallFrame());
+          scopeInfoPromise = dirac.extractScopeInfoFromScopeChainAsync(debuggerModel.selectedCallFrame());
         }
 
         this._pendingDiracCommands[commandId] = commandMessage;
