@@ -555,6 +555,9 @@ WebInspector.ConsoleView.prototype = {
     {
         dirac.implant.feedback("setDiracPromptNS('"+name+"')");
         this._currentNs = name;
+        if (this._diracPromptDescriptor) {
+          this._diracPromptDescriptor.prompt.setCurrentClojureScriptNamespace(name);
+        }
         this._refreshNs();
     },
 
