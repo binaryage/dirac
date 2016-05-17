@@ -124,6 +124,15 @@
     width: 20px;
 }
 
+.suggest-box .suggest-box-content-item .info {
+    font-size: 8px;
+    float: right;
+    color: #ccc;
+    padding: 0px 6px;
+    position: relative;
+    top: 2px;
+}
+
 .suggest-box .suggest-box-content-item.selected {
     background-color: rgba(56, 121, 217, 0.1);
 }
