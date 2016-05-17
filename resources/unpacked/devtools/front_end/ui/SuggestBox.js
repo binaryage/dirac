@@ -72,7 +72,7 @@ WebInspector.SuggestBox = function(suggestBoxDelegate, maxItemsHeight)
 }
 
 /**
- * @typedef Array.<{title: string, className: (string|undefined)}>
+ * @typedef Array.<{title: string, className: (string|undefined), info: (string|undefined)}>
  */
 WebInspector.SuggestBox.Suggestions;
 
@@ -246,6 +246,7 @@ WebInspector.SuggestBox.prototype = {
      * @param {string} prefix
      * @param {string} text
      * @param {string|undefined} className
+     * @param {string|undefined} info
      * @param {number} index
      */
     _createItemElement: function(prefix, text, className, info, index)

@@ -1,14 +1,23 @@
 /**
+ * @param {!Element} proxyElement
+ * @param {string} text
+ * @param {number} cursorOffset
+ * @param {!Range} wordRange
+ * @param {boolean} force
+ * @param {function(!Array.<string>, number=)} completionsReadyCallback
+ */
+var dummyCompletionsFn = function(proxyElement, text, cursorOffset, wordRange, force, completionsReadyCallback) {
+};
+
+/**
  * @constructor
  * @extends {WebInspector.TextPromptWithHistory}
  * @implements {WebInspector.SuggestBoxDelegate}
  * @param {!CodeMirror} codeMirrorInstance
- * @param {function(!Element, string, number, !Range, boolean, function(!Array.<string>, number=))} completions
- * @param {string=} stopCharacters
  */
 WebInspector.DiracPromptWithHistory = function(codeMirrorInstance)
 {
-    WebInspector.TextPromptWithHistory.call(this, null);
+    WebInspector.TextPromptWithHistory.call(this, dummyCompletionsFn);
 
     this._codeMirror = codeMirrorInstance;
     this._codeMirror.on("changes", this._changes.bind(this));
@@ -181,6 +190,7 @@ WebInspector.DiracPromptWithHistory.prototype = {
     },
 
     /**
+     * @override
      * @param {boolean=} force
      */
     _updateAutoComplete: function(force)
@@ -193,6 +203,7 @@ WebInspector.DiracPromptWithHistory.prototype = {
     },
 
     /**
+     * @override
      * @param {string} prefix
      * @return {!WebInspector.SuggestBox.Suggestions}
      */
@@ -212,7 +223,6 @@ WebInspector.DiracPromptWithHistory.prototype = {
     },
 
     /**
-     * @override
      * @param {boolean=} force
      * @param {boolean=} reverse
      */
@@ -266,9 +276,9 @@ WebInspector.DiracPromptWithHistory.prototype = {
     },
 
     /**
-     * @param {string} prefix
+     * @param {string} input
      * @param {boolean} force
-     * @param {function(!Array.<string>, number=)} completionsReadyCallback
+     * @param {function(string, !Array.<string>, number=)} completionsReadyCallback
      */
     _loadJavascriptCompletions: function(input, force, completionsReadyCallback)
     {
@@ -278,9 +288,9 @@ WebInspector.DiracPromptWithHistory.prototype = {
         var executionContext = WebInspector.context.flavor(WebInspector.ExecutionContext);
         if (!executionContext) {
             if (dirac._DEBUG_COMPLETIONS) {
-                log.warn("no execution context available");
+                console.warn("no execution context available");
             }
-            completionsReadyCallback([]);
+            completionsReadyCallback("", []);
             return;
         }
 
@@ -305,10 +315,10 @@ WebInspector.DiracPromptWithHistory.prototype = {
     },
 
     /**
-     * @override
      * @param {string} prefix
      * @param {boolean} reverse
      * @param {boolean} force
+     * @param {string} expression
      * @param {!Array.<string>} completions
      * @param {number=} selectedIndex
      */
@@ -382,9 +392,9 @@ WebInspector.DiracPromptWithHistory.prototype = {
     },
 
     /**
-     * @param {string} prefix
+     * @param {string} input
      * @param {boolean} force
-     * @param {function(!Array.<string>, number=)} completionsReadyCallback
+     * @param {function(string, !Array.<string>, number=)} completionsReadyCallback
      */
     _loadClojureScriptCompletions: function(input, force, completionsReadyCallback)
     {
@@ -394,18 +404,18 @@ WebInspector.DiracPromptWithHistory.prototype = {
         var executionContext = WebInspector.context.flavor(WebInspector.ExecutionContext);
         if (!executionContext) {
             if (dirac._DEBUG_COMPLETIONS) {
-                log.warn("no execution context available");
+                console.warn("no execution context available");
             }
-            completionsReadyCallback([]);
+            completionsReadyCallback("", []);
             return;
         }
 
         var debuggerModel = executionContext.debuggerModel;
         if (!debuggerModel) {
             if (dirac._DEBUG_COMPLETIONS) {
-                log.warn("no debugger model available");
+                console.warn("no debugger model available");
             }
-            completionsReadyCallback([]);
+            completionsReadyCallback("", []);
             return;
         }
 
@@ -470,10 +480,10 @@ WebInspector.DiracPromptWithHistory.prototype = {
     },
 
     /**
-     * @override
      * @param {string} prefix
      * @param {boolean} reverse
      * @param {boolean} force
+     * @param {string} expression
      * @param {!Array.<string>} completions
      * @param {number=} selectedIndex
      */
@@ -536,25 +546,7 @@ WebInspector.DiracPromptWithHistory.prototype = {
         };
     },
 
-    /**
-     * @param {number} x
-     * @param {number} y
-     * @return {?WebInspector.TextRange}
-     */
-    coordinatesToCursorPosition: function(x, y)
-    {
-        var element = this.element.ownerDocument.elementFromPoint(x, y);
-        if (!element || !element.isSelfOrDescendant(this._codeMirror.getWrapperElement()))
-            return null;
-        var gutterBox = this._codeMirror.getGutterElement().boxInWindow();
-        if (x >= gutterBox.x && x <= gutterBox.x + gutterBox.width &&
-            y >= gutterBox.y && y <= gutterBox.y + gutterBox.height)
-            return null;
-        var coords = this._codeMirror.coordsChar({left: x, top: y});
-        return WebInspector.CodeMirrorUtils.toRange(coords, coords);
-    },
-
-    /**
+   /**
      * @override
      * @param {string} suggestion
      * @param {boolean=} isIntermediateSuggestion

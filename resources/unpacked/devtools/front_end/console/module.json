@@ -117,6 +117,7 @@
     ],
     "scripts": [
         "clojure-parinfer.js",
+        "DiracPrompt.js",
         "ConsoleContextSelector.js",
         "ConsoleViewMessage.js",
         "ConsoleView.js",

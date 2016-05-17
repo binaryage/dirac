@@ -386,6 +386,22 @@ var dirac = {
     * @return {boolean}
     */
     hasDefaultContext: function() {},
+
+    /**
+    * @param {?} callFrame
+    * @return {!Promise<!dirac.ScopeInfo>}
+    */
+    extractScopeInfoFromScopeChainAsync: function(callFrame) {},
+    /**
+    * @param {string} namespaceName
+    * @return {!Promise<Array.<string>>}
+    */
+    extractNamespaceSymbolsAsync: function(namespaceName) {},
+    /**
+    * @return {!Promise<Array.<string>>}
+    */
+    extractNamespacesAsync: function() {},
+
     implant: {
         init: function() {},
         init_console: function() {},
@@ -401,14 +417,50 @@ var dirac = {
         /**
         * @param {number} requestId
         * @param {string} code
+        * @param {dirac.ScopeInfo} scopeInfo
         */
-        send_eval_request: function(requestId, code) {},
+        send_eval_request: function(requestId, code, scopeInfo) {},
+
+        /**
+        * @param {!string} name
+        * @returns {!string}
+        */
+        munge: function(name) {},
+        /**
+        * @param {!string} ns
+        * @param {!string} ext
+        * @returns {!string}
+        */
+        ns_to_relpath: function(ns, ext) {},
+
+        /**
+        * @param {!string} source
+        * @returns {?Object}
+        */
+        parse_ns_from_source: function(source) {},
+
         /**
         * @param {string} text
         */
         feedback: function(text) {}
     }
 }
+
+/**
+ * @typedef {{name:!string, identifier:?string}}
+ */
+dirac.ScopeFrameProp;
+
+/**
+ * @typedef {{title:?string, props:?Array.<!dirac.ScopeFrameProp>}}
+ */
+dirac.ScopeFrame;
+
+/**
+ * @typedef {{frames:!Array.<!dirac.ScopeFrame>}}
+ */
+dirac.ScopeInfo;
+
 
 var Keysim = {
     Keyboard: {

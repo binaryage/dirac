@@ -45,7 +45,6 @@
         "TabbedPane.js",
         "SidebarPane.js",
         "TextPrompt.js",
-        "DiracPrompt.js",
         "UIUtils.js",
         "ViewportControl.js",
         "ZoomManager.js",
