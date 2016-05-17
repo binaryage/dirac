@@ -57,7 +57,7 @@ defaults and their environmental counterparts.
 
 ##### Figwheel build configuration
 
-As of May 2016, [Chrome doesn't reload sourcemaps when JavaScript is dynamically reloaded](https://bugs.chromium.org/p/chromium/issues/detail?id=438251). If you are using Figwheel to live reload your ClojureScript project, then the sourcemaps the browser uses will be out of sync with the JavaScript that is running, leading to very confusing debugging behaviour. The fix is simple: add `[:source-map-timestamp](https://github.com/clojure/clojurescript/wiki/Compiler-Options#source-map-timestamp) true` to your ClojureScript compiler options. This will bust the cache Chrome uses when caching source maps. For example:
+As of May 2016, [Chrome doesn't reload sourcemaps when JavaScript is dynamically reloaded](https://bugs.chromium.org/p/chromium/issues/detail?id=438251). If you are using Figwheel to live reload your ClojureScript project, then the sourcemaps the browser uses will be out of sync with the JavaScript that is running, leading to very confusing debugging behaviour. The fix is simple: add [`:source-map-timestamp true`](https://github.com/clojure/clojurescript/wiki/Compiler-Options#source-map-timestamp) to your ClojureScript compiler options. This will bust the cache Chrome uses when caching source maps. For example:
 
 ```clj
 :cljsbuild {:builds [{:id           "dev"
