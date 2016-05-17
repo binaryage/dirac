@@ -41,6 +41,7 @@
 (def ^:dynamic *context-availablity-next-trial-waiting-time* (env :context-availablity-next-trial-waiting-time))
 (def ^:dynamic *eval-time-limit* (env :dirac-eval-time-limit))
 (def ^:dynamic *runtime-tag* (or (env :dirac-runtime-tag) (attempt-to-determine-runtime-tag)))
+(def ^:dynamic *silence-use-of-undeclared-var-warnings* (env :dirac-silence-use-of-undeclared-var-warnings))
 
 (defmacro static-pref [key kind]
   (let [sym (symbol (str "*" (name key) "*"))]
@@ -65,4 +66,5 @@
          (static-pref :context-availablity-total-time-limit :int)
          (static-pref :context-availablity-next-trial-waiting-time :int)
          (static-pref :eval-time-limit :int)
-         (static-pref :runtime-tag :str)))
+         (static-pref :runtime-tag :str)
+         (static-pref :silence-use-of-undeclared-var-warnings :boolean)))

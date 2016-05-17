@@ -59,7 +59,6 @@ automate #1      {:action :dispatch-console-prompt-action, :input "enter"}
 devtools #1      DC.log> (x)
 devtools #1      send-eval-request: (x)
 devtools #1      present-server-side-output! stderr > WARNING: Use of undeclared Var cljs.user/x at line 1 <dirac repl>
-devtools #1      DF.wrn> Use of undeclared Var cljs.user/x at line 1 <dirac repl>
 devtools #1      wrap-with-postprocess-and-eval-in-current-context!
 devtools #1      DF.err> TypeError: Cannot read property 'call' of undefined(…)
 automate #1      {:action :dispatch-console-prompt-input, :input "(in-ns)"}

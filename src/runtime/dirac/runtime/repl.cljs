@@ -91,6 +91,23 @@
         (log request-id :stderr (remove-common-whitespace-prefix rest-content))
         (group-end)))))
 
+(defn should-silence-warning? [message]
+  (cond
+    (and (pref :silence-use-of-undeclared-var-warnings) (re-find #"^Use of undeclared Var" message)) true
+    :else false))
+
+(defn should-silence-error? [_message]
+  (cond
+    :else false))
+
+(defn emit-warning! [request-id message]
+  (when-not (should-silence-warning? message)
+    (warn request-id "warning" message)))
+
+(defn emit-error! [request-id message]
+  (when-not (should-silence-error? message)
+    (error request-id "error" message)))
+
 ; -- REPL API ---------------------------------------------------------------------------------------------------------------
 
 (def api-version 3)                                                                                                           ; version of REPL API
@@ -116,9 +133,9 @@
   (case kind
     "java-trace" (present-java-trace request-id text)
     (if-let [warning-msg (detect-and-strip "WARNING:" text)]
-      (warn request-id "warning" warning-msg)
+      (emit-warning! request-id warning-msg)
       (if-let [error-msg (detect-and-strip "ERROR:" text)]
-        (error request-id "error" error-msg)
+        (emit-error! request-id error-msg)
         (log request-id kind text)))))
 
 (defn ^:export postprocess-successful-eval
