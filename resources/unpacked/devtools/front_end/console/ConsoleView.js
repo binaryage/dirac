@@ -164,8 +164,8 @@ WebInspector.ConsoleView = function()
 
 
     if (dirac.hasREPL) {
-        var diracPrompt = new WebInspector.DiracPromptWithHistory(diracPromptCodeMirrorInstance, dummyCompletionsFn, undefined);
-        diracPrompt.setSuggestBoxEnabled(false);
+        var diracPrompt = new WebInspector.DiracPromptWithHistory(diracPromptCodeMirrorInstance);
+        diracPrompt.setSuggestBoxEnabled(true);
         diracPrompt.setAutocompletionTimeout(0);
         diracPrompt.renderAsBlock();
         var diracProxyElement = diracPrompt.attach(diracPromptElement);
