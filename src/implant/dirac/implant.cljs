@@ -71,12 +71,8 @@
 (defn ^:export munge [name]
   (cljs.core/munge name))
 
-(defn ^:export ns-to-relpath
-  "Given a namespace as a symbol return the relative path. May optionally
-  provide the file extension, defaults to :cljs."
-  ([ns] (ns-to-relpath ns :cljs))
-  ([ns ext]
-   (str (string/replace (munge ns) \. \/) "." (name ext))))
+(defn ^:export ns-to-relpath [ns ext]
+  (str (string/replace (munge ns) \. \/) "." (name ext)))
 
 (defn ^:export parse-ns-from-source [source]
   (let [reader (tools-reader-types/string-push-back-reader source)]
