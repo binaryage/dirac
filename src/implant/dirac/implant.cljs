@@ -1,7 +1,11 @@
 (ns dirac.implant
+  (:refer-clojure :exclude [munge])
   (:require-macros [cljs.core.async.macros :refer [go go-loop]])
   (:require [cljs.core.async :refer [put! <! chan timeout alts! close!]]
             [cljs.reader :as reader]
+            [cljs.tools.reader :as tools-reader]
+            [cljs.tools.reader.reader-types :as tools-reader-types]
+            [clojure.tools.namespace.parse :as ns-parse]
             [chromex.support :refer-macros [oget oset ocall oapply]]
             [chromex.logging :refer-macros [log warn error]]
             [dirac.dev]
@@ -10,7 +14,8 @@
             [dirac.implant.automation :as automation]
             [dirac.implant.version :refer [version]]
             [dirac.implant.eval :as eval]
-            [dirac.implant.feedback-support :as feedback-support]))
+            [dirac.implant.feedback-support :as feedback-support]
+            [clojure.string :as string]))
 
 (defonce ^:dynamic *console-initialized* false)
 (defonce ^:dynamic *implant-initialized* false)
@@ -62,6 +67,21 @@
   (go
     (let [tag (<! (eval/get-runtime-tag))]
       (callback tag))))
+
+(defn ^:export munge [name]
+  (cljs.core/munge name))
+
+(defn ^:export ns-to-relpath
+  "Given a namespace as a symbol return the relative path. May optionally
+  provide the file extension, defaults to :cljs."
+  ([ns] (ns-to-relpath ns :cljs))
+  ([ns ext]
+   (str (string/replace (munge ns) \. \/) "." (name ext))))
+
+(defn ^:export parse-ns-from-source [source]
+  (let [reader (tools-reader-types/string-push-back-reader source)]
+    (when-let [ns-decl (ns-parse/read-ns-decl reader)]
+      #js {:name (str (ns-parse/name-from-ns-decl ns-decl))})))
 
 ; -- automation -------------------------------------------------------------------------------------------------------------
 
