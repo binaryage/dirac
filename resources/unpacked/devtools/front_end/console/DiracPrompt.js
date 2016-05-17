@@ -371,7 +371,7 @@ WebInspector.DiracPromptWithHistory.prototype = {
 
         var frames = scopeInfo.frames;
         if (frames) {
-          for (var i = frames.length-1; i >= 0; i--) {
+          for (var i = 0; i < frames.length; i++) {
             var frame = frames[i];
             var props = frame.props;
 
@@ -457,6 +457,7 @@ WebInspector.DiracPromptWithHistory.prototype = {
               var annotatedCompletions = filteredLocals.map(item => ({title: item.name || "?",
                                                                        info: item.identifier,
                                                                   className: "suggest-cljs-scope"}));
+              annotatedCompletions.reverse(); // we want to display inner scopes first
               return annotatedCompletions;
           }).bind(this);
 

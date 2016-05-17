@@ -105,7 +105,7 @@
   (assoc env :ns (ana/get-namespace ana/*cljs-ns*)))
 
 (defn extract-scope-locals [scope-info]
-  (mapcat :props (reverse (:frames scope-info))))                                                                             ; reverse frames to process outer scopes first
+  (mapcat :props (:frames scope-info)))
 
 ; extract locals from scope-info (as provided by Dirac) and put it into :locals env map for analyzer
 ; note in case of duplicit names we won't break, resulting locals is a flat list: "last name wins"

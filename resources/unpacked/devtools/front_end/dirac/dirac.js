@@ -228,7 +228,7 @@ function extractScopeInfoFromScopeChainAsync(callFrame) {
         continue;
       }
 
-      scopeNamesPromises.push(extractNamesFromScopePromise(scope));
+      scopeNamesPromises.unshift(extractNamesFromScopePromise(scope));
     }
 
     Promise.all(scopeNamesPromises).then(function(frames){
