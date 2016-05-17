@@ -1,4 +1,5 @@
 (ns dirac.runtime.repl
+  (:require-macros [dirac.runtime.repl :refer [with-safe-printing]])
   (:require [goog.object]
             [clojure.browser.repl :as brepl]
             [dirac.runtime.prefs :refer [get-prefs pref]]
@@ -127,20 +128,20 @@
   To be correct we have to do this post-processing in app's context to use the same cljs runtime as app evaluating the code.
 
   Also we have to be careful to not enter into infinite printing with cyclic data structures.
-  We limit printing level and length."
+  We limit printing level and length via with-safe-printing."
   [value]
-  (binding [*print-level* (pref :dirac-print-level)
-            *print-length* (pref :dirac-print-length)]
+  (with-safe-printing
     #js {:status "success"
          :value  (str value)}))
 
 (defn ^:export postprocess-unsuccessful-eval [ex]
   "Same as postprocess-successful-eval but prepares response for evaluation attempt with exception."
-  #js {:status     "exception"
-       :value      (pr-str ex)
-       :stacktrace (if (.hasOwnProperty ex "stack")
-                     (.-stack ex)
-                     "No stacktrace available.")})
+  (with-safe-printing
+    #js {:status     "exception"
+         :value      (pr-str ex)
+         :stacktrace (if (.hasOwnProperty ex "stack")
+                       (.-stack ex)
+                       "No stacktrace available.")}))
 
 ; -- install/uninstall ------------------------------------------------------------------------------------------------------
 

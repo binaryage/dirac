@@ -32,3 +32,8 @@
          (if *context-availablity-total-time-limit* [:context-availablity-total-time-limit (int *context-availablity-total-time-limit*)])
          (if *context-availablity-next-trial-waiting-time* [:context-availablity-next-trial-waiting-time (int *context-availablity-next-trial-waiting-time*)])
          (if *eval-time-limit* [:eval-time-limit (int *eval-time-limit*)])))
+
+(defmacro with-safe-printing [& body]
+  `(binding [cljs.core/*print-level* (dirac.runtime.prefs/pref :dirac-print-level)
+             cljs.core/*print-length* (dirac.runtime.prefs/pref :dirac-print-length)]
+          ~@body))
