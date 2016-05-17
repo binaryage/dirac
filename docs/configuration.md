@@ -54,3 +54,17 @@ you could have different projects connecting do different Dirac Agents (which ar
 
 Please consult [this file](https://github.com/binaryage/dirac/blob/master/src/runtime/dirac/runtime/prefs.cljs) for possible
 defaults and their environmental counterparts.
+
+##### Figwheel build configuration
+
+As of May 2016, [Chrome doesn't reload sourcemaps when JavaScript is dynamically reloaded](https://bugs.chromium.org/p/chromium/issues/detail?id=438251). If you are using Figwheel to live reload your ClojureScript project, then the sourcemaps the browser uses will be out of sync with the JavaScript that is running, leading to very confusing debugging behaviour. The fix is simple: add `[:source-map-timestamp](https://github.com/clojure/clojurescript/wiki/Compiler-Options#source-map-timestamp) true` to your ClojureScript compiler options. This will bust the cache Chrome uses when caching source maps. For example:
+
+```clj
+:cljsbuild {:builds [{:id           "dev"
+                      :source-paths ["src"]
+                      :compiler     { ; other options elided
+                                     :source-map      true
+                                     :source-map-timestamp true}}
+```
+
+This configuration won't be needed if [lein-figwheel#386](https://github.com/bhauman/lein-figwheel/issues/386) is fixed. This configuration is only needed for build configurations you use to run Figwheel.
