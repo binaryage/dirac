@@ -178,6 +178,7 @@ WebInspector.TextSourceMap = function(compiledURL, sourceMappingURL, payload)
     this._mappings = [];
     this._sources = {};
     this._sourceContentByURL = {};
+    this._payload = payload;
     this._parseMappingPayload(payload);
 }
 
