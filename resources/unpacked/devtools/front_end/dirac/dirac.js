@@ -147,6 +147,8 @@ function evalInDefaultContext(code, callback) {
   evalInContext(lookupDefaultContext(), code, callback);
 }
 
+// --- scope info -----------------------------------------------------------------------------------------------------------
+
 function getScopeTitle(scope) {
   var title = null;
 
@@ -236,9 +238,175 @@ function extractScopeInfoFromScopeChainAsync(callFrame) {
   });
 }
 
+// --- namespace symbols ----------------------------------------------------------------------------------------------------
+
+function prepareUrlMatcher(namespaceName) {
+  var relativeNSPath = dirac.implant.ns_to_relpath(namespaceName, "js");
+  return function(url) {
+    return url.endsWith(relativeNSPath);
+  };
+}
+
+function findMatchingSourceCode(uiSourceCodes, urlMatcherFn) {
+  for (var i=0; i<uiSourceCodes.length; i++) {
+    var uiSourceCode = uiSourceCodes[i];
+    if (urlMatcherFn(uiSourceCode.url())) {
+      return uiSourceCode;
+    }
+  }
+}
+
+function filterNamesForNamespace(names, namespaceName) {
+  var prefix = namespaceName + "/";
+  var prefixLength = prefix.length;
+
+  return names.filter(name => name.startsWith(prefix)).map(name => name.substring(prefixLength));
+}
+
+function extractNamespaceSymbolsAsyncWorker(namespaceName) {
+  var workspace = WebInspector.workspace;
+  if (!workspace) {
+    console.error("unable to locate WebInspector.workspace when extracting symbols for ClojureScript namespace '"+namespaceName+"'");
+    return Promise.resolve([]);
+  }
+
+  return new Promise((function (resolve) {
+    var urlMatcherFn = prepareUrlMatcher(namespaceName);
+    var uiSourceCodes = workspace.uiSourceCodes();
+    var uiSourceCode = findMatchingSourceCode(uiSourceCodes, urlMatcherFn);
+    if (!uiSourceCode) {
+      if (dirac._DEBUG_COMPLETIONS) {
+          console.warn("cannot find matching source file for ClojureScript namespace '"+namespaceName+"'");
+      }
+      resolve([]);
+      return;
+    }
+    var script = uiSourceCode[WebInspector.NetworkProject._scriptSymbol];
+    if (!script) {
+      console.error("unable to locate script when extracting symbols for ClojureScript namespace '"+namespaceName+"'");
+      resolve([]);
+      return;
+    }
+    var sourceMap = WebInspector.debuggerWorkspaceBinding.sourceMapForScript(script);
+    if (!sourceMap) {
+      console.error("unable to locate sourceMap when extracting symbols for ClojureScript namespace '"+namespaceName+"'");
+      resolve([]);
+      return;
+    }
+    var payload = sourceMap._payload;
+    if (!payload) {
+      console.error("unable to locate payload when extracting symbols for ClojureScript namespace '"+namespaceName+"'");
+      resolve([]);
+      return;
+    }
+    var names = payload.names || [];
+    var filteredNames = filterNamesForNamespace(names, namespaceName);
+    resolve(filteredNames);
+  }.bind(this)));
+}
+
+var namespacesSymbolsCache = new Map();
+
+function extractNamespaceSymbolsAsync(namespaceName) {
+  if (!namespaceName) {
+    return Promise.resolve([]);
+  }
+  if (namespacesSymbolsCache.has(namespaceName)) {
+    return Promise.resolve(namespacesSymbolsCache.get(namespaceName));
+  }
+
+  return new Promise((function (resolve) {
+    extractNamespaceSymbolsAsyncWorker(namespaceName).then(function(result) {
+      namespacesSymbolsCache.set(namespaceName, result);
+      resolve(result);
+    });
+  }).bind(this));
+}
+
+// --- namespace names ------------------------------------------------------------------------------------------------------
+
+function parseClojureScriptNamespace(url, cljsSourceCode) {
+  var descriptor = dirac.implant.parse_ns_from_source(cljsSourceCode);
+  if (!descriptor) {
+    return null;
+  };
+
+  descriptor.url = url;
+  return descriptor;
+}
+
+function extractNamespacesAsyncWorker() {
+  var workspace = WebInspector.workspace;
+  if (!workspace) {
+    console.error("unable to locate WebInspector.workspace when extracting all ClojureScript namespace names");
+    return Promise.resolve([]);
+  }
+
+  return new Promise((function (resolve) {
+    var uiSourceCodes = workspace.uiSourceCodes();
+    var promises = [];
+    for (var i=0; i<uiSourceCodes.length; i++) {
+      var uiSourceCode = uiSourceCodes[i];
+      if (!uiSourceCode) {
+        continue;
+      }
+      var script = uiSourceCode[WebInspector.NetworkProject._scriptSymbol];
+      if (!script) {
+        continue;
+      }
+      var sourceMap = WebInspector.debuggerWorkspaceBinding.sourceMapForScript(script);
+      if (!sourceMap) {
+        continue;
+      }
+
+      for (let url of sourceMap.sourceURLs()) {
+        // take only .cljs or .cljc urls, make sure url params and fragments get matched properly
+        // examples:
+        //   http://localhost:9977/_compiled/demo/clojure/browser/event.cljs?rel=1463085025939
+        //   http://localhost:9977/_compiled/demo/dirac_sample/demo.cljs?rel=1463085026941
+        var parser = document.createElement('a');
+        parser.href = url;
+        if (!parser.pathname.match(/\.clj.$/)) {
+          continue;
+        }
+        var contentProvider = sourceMap.sourceContentProvider(url, WebInspector.resourceTypes.SourceMapScript);
+        var namespaceDescriptorPromise = contentProvider.requestContent().then(cljsSourceCode => parseClojureScriptNamespace(url, cljsSourceCode || ""));
+        promises.push(namespaceDescriptorPromise);
+      }
+    }
+
+    var extractNamespaceNames = (function(namespaceDescriptors) {
+      var names = namespaceDescriptors.filter(desc => !!desc).map(desc => desc.name);
+      return names;
+    }).bind(this);
+
+    Promise.all(promises).then(extractNamespaceNames).then(resolve);
+  }).bind(this));
+}
+
+var namespacesCache;
+
+function extractNamespacesAsync() {
+  if (namespacesCache) {
+    return Promise.resolve(namespacesCache);
+  }
+
+  return new Promise((function (resolve) {
+    extractNamespacesAsyncWorker().then(function(result) {
+      namespacesCache = result;
+      resolve(result);
+    });
+  }).bind(this));
+}
+
+// --- exported interface ---------------------------------------------------------------------------------------------------
+
 // don't forget to update externs.js too
 window.dirac = {
   _DEBUG_EVAL: false,
+  _DEBUG_COMPLETIONS: false,
+  _namespacesSymbolsCache: namespacesSymbolsCache,
+  _namespacesCache: namespacesCache,
   hasFeature: hasFeature,
   hasREPL: hasFeature("enable-repl"),
   hasParinfer: hasFeature("enable-parinfer"),
@@ -249,6 +417,8 @@ window.dirac = {
   stringEscape: stringEscape,
   evalInCurrentContext: evalInCurrentContext,
   extractScopeInfoFromScopeChainAsync: extractScopeInfoFromScopeChainAsync,
+  extractNamespaceSymbolsAsync: extractNamespaceSymbolsAsync,
+  extractNamespacesAsync: extractNamespacesAsync,
   hasCurrentContext: hasCurrentContext,
   evalInDefaultContext: evalInDefaultContext,
   hasDefaultContext: hasDefaultContext
