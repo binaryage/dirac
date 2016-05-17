@@ -402,6 +402,16 @@ var dirac = {
     */
     extractNamespacesAsync: function() {},
 
+    startListeningForWorkspaceChanges: function() {},
+    stopListeningForWorkspaceChanges: function() {},
+    /**
+    * @param {string} namespaceName
+    */
+    invalidateNamespaceSymbolsCache: function (namespaceName) {},
+    invalidateNamespacesCache: function() {},
+
+    // ----------------------------------------------------------------------------------------------------------------------
+
     implant: {
         init: function() {},
         init_console: function() {},
