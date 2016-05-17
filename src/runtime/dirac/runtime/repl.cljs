@@ -149,7 +149,7 @@
   *installed?*)
 
 (defn install! []
-  (when (and (not (installed?)) (available?))
+  (when (not (installed?))
     (brepl/bootstrap)
     (set! *installed?* true)
     true))
