@@ -94,6 +94,7 @@
 (defn should-silence-warning? [message]
   (cond
     (and (pref :silence-use-of-undeclared-var-warnings) (re-find #"^Use of undeclared Var" message)) true
+    (and (pref :silence-no-such-namespace-warnings) (re-find #"^No such namespace" message)) true
     :else false))
 
 (defn should-silence-error? [_message]
