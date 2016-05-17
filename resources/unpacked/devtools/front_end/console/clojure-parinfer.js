@@ -308,5 +308,6 @@ CodeMirror.defineMode("clojure-parinfer", function (options) {
 });
 
 CodeMirror.defineMIME("text/x-clojure", "clojure");
+CodeMirror.registerHelper("wordChars", "clojure-parinfer", /[^\s()[]{},`']/);
 
 });
