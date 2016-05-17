@@ -28,8 +28,10 @@
         {
             "type": "@WebInspector.ActionDelegate",
             "actionId": "emulation.capture-screenshot",
+            "category": "Mobile",
             "className": "WebInspector.DeviceModeWrapper.ActionDelegate",
-            "title": "Capture screenshot"
+            "title": "Capture screenshot",
+            "tags": "device"
         },
         {
             "type": "context-menu-item",
@@ -69,6 +71,18 @@
             "tags": "device"
         },
         {
+            "type": "setting",
+            "category": "Mobile",
+            "settingName": "emulation.showDeviceOutline",
+            "settingType": "boolean",
+            "defaultValue": false,
+            "options": [
+                {"value": true, "title": "Show device frame"},
+                {"value": false, "title": "Hide device frame"}
+            ],
+            "tags": "device"
+        },
+        {
             "type": "settings-view",
             "name": "devices",
             "title": "Devices",
@@ -99,12 +113,6 @@
             "order": 100,
             "className": "WebInspector.SensorsView",
             "tags": "geolocation, accelerometer, device orientation"
-        },
-        {
-            "type": "context-menu-item",
-            "location": "deviceModeMenu/tools",
-            "order": 10,
-            "actionId": "components.request-app-banner"
         }
     ],
     "dependencies": [
