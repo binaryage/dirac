@@ -455,7 +455,7 @@ WebInspector.DiracPromptWithHistory.prototype = {
               var locals = this._extractLocalsFromScopeInfo(scopeInfo);
               var filteredLocals = locals.filter(item => item.name.startsWith(input));
               var annotatedCompletions = filteredLocals.map(item => ({title: item.name || "?",
-                                                                       info: item.identifier,
+                                                                       info: item.identifier?"js/"+item.identifier:undefined,
                                                                   className: "suggest-cljs-scope"}));
               annotatedCompletions.reverse(); // we want to display inner scopes first
               return annotatedCompletions;
@@ -480,6 +480,23 @@ WebInspector.DiracPromptWithHistory.prototype = {
         }
     },
 
+    _markAliasedCompletions: function(annotatedCompletions) {
+        var previous = null;
+        for (var i=0; i<annotatedCompletions.length; i++) {
+            var current = annotatedCompletions[i];
+
+            if (previous) {
+                if (current.title === previous.title) {
+                    if (!current.className) {
+                        current.className = "";
+                    }
+                    current.className += " suggest-aliased";
+                }
+            }
+            previous = current;
+        }
+    },
+
     /**
      * @param {string} prefix
      * @param {boolean} reverse
@@ -496,6 +513,8 @@ WebInspector.DiracPromptWithHistory.prototype = {
 
         var annotatedCompletions = completions;
         annotatedCompletions.sort(function(a, b) { return a.title.localeCompare(b.title); });
+
+        this._markAliasedCompletions(annotatedCompletions);
 
         if (!this._waitingForCompletions || !annotatedCompletions.length) {
             this.hideSuggestBox();

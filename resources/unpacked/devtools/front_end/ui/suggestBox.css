@@ -208,10 +208,18 @@
     text-align: right;
 }
 
+.suggest-box .suggest-box-content-item.suggest-aliased .prefix {
+   color: #ccc;
+}
+
+.suggest-box .suggest-box-content-item.suggest-aliased .suffix{
+   color: #ccc;
+}
+
 .suggest-box .suggest-box-content-item .info {
     font-size: 8px;
     float: right;
-    color: #ccc;
+    color: #aaf;
     padding: 0px 6px;
     position: relative;
     top: 2px;
