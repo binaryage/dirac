@@ -124,6 +124,90 @@
     width: 20px;
 }
 
+.suggest-box .suggest-box-content-item.suggest-cljs::before {
+    display: inline-block;
+    font-size: 8px;
+    min-width: 26px;
+    content: "";
+    -webkit-user-select: none;
+    position: relative;
+    margin-right: 6px;
+    color: #ccc;
+    position: relative;
+    top: -1px;
+    text-align: right;
+}
+
+.suggest-box .suggest-box-content-item.suggest-cljs-ns::before {
+    display: inline-block;
+    font-size: 8px;
+    content: "ns";
+    min-width: 26px;
+    -webkit-user-select: none;
+    position: relative;
+    margin-right: 6px;
+    color: #ccc;
+    position: relative;
+    top: -1px;
+    text-align: right;
+}
+
+.suggest-box .suggest-box-content-item.suggest-cljs-core::before {
+    display: inline-block;
+    font-size: 8px;
+    content: "core";
+    min-width: 26px;
+    -webkit-user-select: none;
+    position: relative;
+    margin-right: 6px;
+    color: #ccc;
+    position: relative;
+    top: -1px;
+    text-align: right;
+}
+
+.suggest-box .suggest-box-content-item.suggest-cljs-in-ns::before {
+    display: inline-block;
+    font-size: 8px;
+    content: "in-ns";
+    min-width: 26px;
+    -webkit-user-select: none;
+    position: relative;
+    margin-right: 6px;
+    color: #ccc;
+    position: relative;
+    top: -1px;
+    text-align: right;
+}
+
+.suggest-box .suggest-box-content-item.suggest-cljs-scope::before {
+    display: inline-block;
+    font-size: 8px;
+    content: "scope";
+    min-width: 26px;
+    -webkit-user-select: none;
+    position: relative;
+    margin-right: 6px;
+    color: #ccc;
+    position: relative;
+    top: -1px;
+    text-align: right;
+}
+
+.suggest-box .suggest-box-content-item.suggest-cljs-qualified::before {
+    display: inline-block;
+    font-size: 8px;
+    content: "/";
+    min-width: 26px;
+    -webkit-user-select: none;
+    position: relative;
+    margin-right: 6px;
+    color: #ccc;
+    position: relative;
+    top: -1px;
+    text-align: right;
+}
+
 .suggest-box .suggest-box-content-item .info {
     font-size: 8px;
     float: right;
