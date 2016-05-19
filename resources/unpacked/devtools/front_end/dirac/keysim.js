@@ -226,7 +226,7 @@
       for (var i = 0, _length = input.length; i < _length; i++) {
         var keystroke = this.keystrokeForCharCode(input.charCodeAt(i));
         this.dispatchModifierStateTransition(target, currentModifierState, keystroke.modifiers);
-        this.dispatchEventsForKeystroke(keystroke, target, false);
+        this.dispatchEventsForKeystroke(keystroke, target, false, KeyEvents.ALL, input[i]);
         currentModifierState = keystroke.modifiers;
       }
       this.dispatchModifierStateTransition(target, currentModifierState, 0);
@@ -265,10 +265,7 @@
      * @param {number} events
      */
 
-    Keyboard.prototype.dispatchEventsForKeystroke = function dispatchEventsForKeystroke(keystroke, target) {
-      var transitionModifiers = arguments.length <= 2 || arguments[2] === undefined ? true : arguments[2];
-      var events = arguments.length <= 3 || arguments[3] === undefined ? KeyEvents.ALL : arguments[3];
-
+    Keyboard.prototype.dispatchEventsForKeystroke = function dispatchEventsForKeystroke(keystroke, target, transitionModifiers=true, events=KeyEvents.ALL, addContent=null) {
       if (transitionModifiers) {
         this.dispatchModifierStateTransition(target, 0, keystroke.modifiers, events);
       }
@@ -291,6 +288,14 @@
         if (keypressEvent && keypressEvent.charCode && dispatchEvent(keypressEvent)) {
           if (events & KeyEvents.INPUT) {
             var inputEvent = this.createEventFromKeystroke('input', keystroke, target);
+            // CodeMirror does read input content back, so we have to add real content into target element
+            // we currently only support cursor at the end of input, no selection changes, etc.
+            //console.log("before", target.textContent);
+            if (addContent) {
+              target.textContent += addContent;
+              target.value += addContent;
+            }
+            //console.log("after", target.textContent);
             dispatchEvent(inputEvent);
           }
         }
