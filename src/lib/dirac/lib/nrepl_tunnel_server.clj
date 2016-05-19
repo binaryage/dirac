@@ -5,7 +5,8 @@
             [dirac.lib.nrepl-protocols :refer :all]
             [dirac.lib.ws-server :as ws-server]
             [dirac.lib.version :as lib-version]
-            [dirac.lib.utils :as utils]))
+            [dirac.lib.utils :as utils]
+            [dirac.logging :as logging]))
 
 (def install-doc-url "https://github.com/binaryage/dirac/blob/master/docs/installation.md")
 
@@ -207,14 +208,15 @@
 
 (defn create! [tunnel options]
   (let [server (make-server tunnel)
-        server-options (merge options {:ip                 (get options :host "localhost")
+        server-options (merge options {:name               "nREPL Tunnel Server"
+                                       :ip                 (get options :host "localhost")
                                        :port               (get options :port 8231)
                                        :on-message         (partial on-message server)
                                        :on-incoming-client (partial on-incoming-client server)
                                        :on-leaving-client  (partial on-leaving-client server)})]
     (set-ws-server! server (ws-server/create! server-options))
     (log/info (str server) (str "Started Dirac nREPL tunnel server at " (get-server-url server)))
-    (log/debug "Created" (str server))
+    (log/debug "Created" (str server) (logging/pprint options))
     server))
 
 (defn disconnect-all-clients! [server]

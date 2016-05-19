@@ -2,7 +2,8 @@
 (ns dirac.lib.ws-server
   (:require [org.httpkit.server :as http]
             [clojure.tools.logging :as log]
-            [dirac.lib.utils :as utils])
+            [dirac.lib.utils :as utils]
+            [dirac.logging :as logging])
   (:import (java.net BindException)))
 
 (defrecord WebSocketServer [id options http-server first-client-promise clients]
@@ -213,7 +214,7 @@
           (recur (inc port))
           (do
             (set-http-server! server http-server)
-            (log/debug "Created" (str server))
+            (log/debug "Created" (str server) (logging/pprint options))
             server))))))
 
 (defn destroy! [server & [timeout]]
