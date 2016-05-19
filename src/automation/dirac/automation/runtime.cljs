@@ -1,13 +1,22 @@
 (ns dirac.automation.runtime
-  (:require-macros [dirac.settings :refer [get-browser-tests-dirac-agent-port]])
   (:require [chromex.logging :refer-macros [log warn error info]]
             [dirac.runtime :as runtime]
-            [dirac.runtime.prefs :as runtime-prefs]))
+            [dirac.runtime.prefs :as runtime-prefs]
+            [dirac.automation.helpers :as helpers]))
+
+(defn configure-runtime-from-url-params! [url]
+  (let [params (helpers/get-matching-query-params url #"^set-")
+        prefs (into {} (for [[param value] params]
+                         (let [key (keyword (second (re-find #"^set-(.*)" param)))]
+                           [key value])))]
+    (when-not (empty? prefs)
+      (warn "setting dirac runtime prefs via url params" prefs)
+      (runtime-prefs/merge-prefs! prefs))))
 
 (defn init-runtime! [& [config]]
-  (runtime/set-pref! :agent-port (get-browser-tests-dirac-agent-port))
+  (configure-runtime-from-url-params! (helpers/get-document-url))
   (when-let [runtime-prefs (:runtime-prefs config)]                                                                           ; override runtime prefs
-    (warn "dirac runtime override: set prefs " runtime-prefs)
+    (warn "dirac runtime prefs override:" runtime-prefs)
     (runtime-prefs/merge-prefs! runtime-prefs))
   (if-not (:do-not-install-runtime config)                                                                                    ; override devtools features/installation
     (let [features-to-enable (cond-> []
