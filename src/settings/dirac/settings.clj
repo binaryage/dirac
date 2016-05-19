@@ -38,7 +38,7 @@
 
 (def ^:const MARION_INITIAL_WAIT_TIME (seconds 1))
 (def ^:const MARION_RECONNECTION_ATTEMPT_DELAY (seconds 2))
-(def ^:const MARION_MESSAGE_REPLY_TIMEOUT (seconds 2))
+(def ^:const MARION_MESSAGE_REPLY_TIMEOUT (seconds 10))
 
 (def ^:const DEFAULT_TASK_TIMEOUT (minutes 5))
 (def ^:const DEFAULT_TEST_HTML_LOAD_TIMEOUT (seconds 1))
@@ -62,6 +62,8 @@
 
 (def ^:const SIGNAL_SERVER_HOST "localhost")
 (def ^:const SIGNAL_SERVER_PORT 22555)
+
+(def ^:const AUTOMATION_ENTRY_POINT_KEY "diracAutomateDevTools")
 
 (def dirac-window-top (env :dirac-window-top))
 (def dirac-window-left (env :dirac-window-left))
@@ -210,3 +212,6 @@
 
 (defmacro get-signal-server-max-connection-time []
   SIGNAL_SERVER_MAX_CONNECTION_TIME)
+
+(defmacro get-automation-entry-point-key []
+  AUTOMATION_ENTRY_POINT_KEY)
