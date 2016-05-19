@@ -17,6 +17,7 @@
 
 (defmacro with-devtools [devtools-id & body]
   (let [devtools-id-sym (gensym)
-        sync-commands (map (fn [command] `(cljs.core.async/<! (~(first command) ~devtools-id-sym ~@(rest command)))) body)]
+        sync-commands (map (fn [command] `(if-not @dirac.automation.task/done
+                                            (cljs.core.async/<! (~(first command) ~devtools-id-sym ~@(rest command))))) body)]
     `(let [~devtools-id-sym ~devtools-id]
        ~@sync-commands)))
