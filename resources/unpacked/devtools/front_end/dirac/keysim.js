@@ -29,6 +29,35 @@
         }
     }
 
+    /**
+     * @param {string} s
+     * @return {function}
+     */
+    let appender = function(s) {
+        /**
+         * @param {string} value
+         * @return {string}
+         */
+        return function(value) {
+            return value + s;
+        };
+    };
+
+    /**
+     * @param {number} n
+     * @return {function}
+     */
+    let deleter = function(n) {
+        /**
+         * @param {string} value
+         * @return {string}
+         */
+        return function(value) {
+            const end = value.length - n;
+            return (end > 0) ? value.substring(0, end) : "";
+        };
+    };
+
     /* jshint esnext:true, undef:true, unused:true */
 
     var keyCodeToKeyIdentifierMap = {
@@ -81,9 +110,9 @@
         /**
          * @param {number} modifiers A bitmask formed by CTRL, META, ALT, and SHIFT.
          * @param {number} keyCode
+         * @param {?function} mutation
          */
-
-        function Keystroke(modifiers, keyCode) {
+        function Keystroke(modifiers, keyCode, mutation) {
             _classCallCheck(this, Keystroke);
 
             this.modifiers = modifiers;
@@ -92,6 +121,7 @@
             this.altKey = !!(modifiers & ALT);
             this.shiftKey = !!(modifiers & SHIFT);
             this.keyCode = keyCode;
+            this.mutation = mutation;
         }
 
         /**
@@ -147,14 +177,14 @@
     var Keyboard = (function() {
         /**
          * @param {Object.<number, Keystroke>} charCodeKeyCodeMap
-         * @param {Object.<string, number>} actionKeyCodeMap
+         * @param {Object.<string, number>} actionMap
          */
 
-        function Keyboard(charCodeKeyCodeMap, actionKeyCodeMap) {
+        function Keyboard(charCodeKeyCodeMap, actionMap) {
             _classCallCheck(this, Keyboard);
 
             this._charCodeKeyCodeMap = charCodeKeyCodeMap;
-            this._actionKeyCodeMap = actionKeyCodeMap;
+            this._actionMap = actionMap;
         }
 
         /**
@@ -248,8 +278,9 @@
             var currentModifierState = 0;
             for (var i = 0, _length = input.length; i < _length; i++) {
                 var keystroke = this.keystrokeForCharCode(input.charCodeAt(i));
+                keystroke.mutation = appender(input[i]);
                 this.dispatchModifierStateTransition(target, currentModifierState, keystroke.modifiers);
-                this.dispatchEventsForKeystroke(keystroke, target, false, KeyEvents.ALL, input[i]);
+                this.dispatchEventsForKeystroke(keystroke, target, false);
                 currentModifierState = keystroke.modifiers;
             }
             this.dispatchModifierStateTransition(target, currentModifierState, 0);
@@ -288,7 +319,7 @@
          * @param {number} events
          */
 
-        Keyboard.prototype.dispatchEventsForKeystroke = function dispatchEventsForKeystroke(keystroke, target, transitionModifiers = true, events = KeyEvents.ALL, addContent = null) {
+        Keyboard.prototype.dispatchEventsForKeystroke = function dispatchEventsForKeystroke(keystroke, target, transitionModifiers = true, events = KeyEvents.ALL) {
             if (transitionModifiers) {
                 this.dispatchModifierStateTransition(target, 0, keystroke.modifiers, events);
             }
@@ -308,17 +339,12 @@
                 if (events & KeyEvents.PRESS) {
                     keypressEvent = this.createEventFromKeystroke('keypress', keystroke, target);
                 }
-                if (keypressEvent && keypressEvent.charCode && dispatchEvent(keypressEvent)) {
+                if (keypressEvent && (keypressEvent.charCode || keystroke.mutation) && dispatchEvent(keypressEvent)) {
                     if (events & KeyEvents.INPUT) {
                         var inputEvent = this.createEventFromKeystroke('input', keystroke, target);
                         // CodeMirror does read input content back, so we have to add real content into target element
                         // we currently only support cursor at the end of input, no selection changes, etc.
-                        //console.log("before", target.textContent);
-                        if (addContent) {
-                            target.textContent += addContent;
-                            target.value += addContent;
-                        }
-                        //console.log("after", target.textContent);
+                        target.value = keystroke.mutation(target.value);
                         dispatchEvent(inputEvent);
                     }
                 }
@@ -369,49 +395,49 @@
             if (includeKeyUp && didHaveMeta === true && willHaveMeta === false) {
                 // Release the meta key.
                 currentModifierState &= ~META;
-                dispatchEvent(this.createEventFromKeystroke('keyup', new Keystroke(currentModifierState, this._actionKeyCodeMap.META), target));
+                dispatchEvent(this.createEventFromKeystroke('keyup', new Keystroke(currentModifierState, this._actionMap.META.keyCode), target));
             }
 
             if (includeKeyUp && didHaveCtrl === true && willHaveCtrl === false) {
                 // Release the ctrl key.
                 currentModifierState &= ~CTRL;
-                dispatchEvent(this.createEventFromKeystroke('keyup', new Keystroke(currentModifierState, this._actionKeyCodeMap.CTRL), target));
+                dispatchEvent(this.createEventFromKeystroke('keyup', new Keystroke(currentModifierState, this._actionMap.CTRL.keyCode), target));
             }
 
             if (includeKeyUp && didHaveShift === true && willHaveShift === false) {
                 // Release the shift key.
                 currentModifierState &= ~SHIFT;
-                dispatchEvent(this.createEventFromKeystroke('keyup', new Keystroke(currentModifierState, this._actionKeyCodeMap.SHIFT), target));
+                dispatchEvent(this.createEventFromKeystroke('keyup', new Keystroke(currentModifierState, this._actionMap.SHIFT.keyCode), target));
             }
 
             if (includeKeyUp && didHaveAlt === true && willHaveAlt === false) {
                 // Release the alt key.
                 currentModifierState &= ~ALT;
-                dispatchEvent(this.createEventFromKeystroke('keyup', new Keystroke(currentModifierState, this._actionKeyCodeMap.ALT), target));
+                dispatchEvent(this.createEventFromKeystroke('keyup', new Keystroke(currentModifierState, this._actionMap.ALT.keyCode), target));
             }
 
             if (includeKeyDown && didHaveMeta === false && willHaveMeta === true) {
                 // Press the meta key.
                 currentModifierState |= META;
-                dispatchEvent(this.createEventFromKeystroke('keydown', new Keystroke(currentModifierState, this._actionKeyCodeMap.META), target));
+                dispatchEvent(this.createEventFromKeystroke('keydown', new Keystroke(currentModifierState, this._actionMap.META.keyCode), target));
             }
 
             if (includeKeyDown && didHaveCtrl === false && willHaveCtrl === true) {
                 // Press the ctrl key.
                 currentModifierState |= CTRL;
-                dispatchEvent(this.createEventFromKeystroke('keydown', new Keystroke(currentModifierState, this._actionKeyCodeMap.CTRL), target));
+                dispatchEvent(this.createEventFromKeystroke('keydown', new Keystroke(currentModifierState, this._actionMap.CTRL.keyCode), target));
             }
 
             if (includeKeyDown && didHaveShift === false && willHaveShift === true) {
                 // Press the shift key.
                 currentModifierState |= SHIFT;
-                dispatchEvent(this.createEventFromKeystroke('keydown', new Keystroke(currentModifierState, this._actionKeyCodeMap.SHIFT), target));
+                dispatchEvent(this.createEventFromKeystroke('keydown', new Keystroke(currentModifierState, this._actionMap.SHIFT.keyCode), target));
             }
 
             if (includeKeyDown && didHaveAlt === false && willHaveAlt === true) {
                 // Press the alt key.
                 currentModifierState |= ALT;
-                dispatchEvent(this.createEventFromKeystroke('keydown', new Keystroke(currentModifierState, this._actionKeyCodeMap.ALT), target));
+                dispatchEvent(this.createEventFromKeystroke('keydown', new Keystroke(currentModifierState, this._actionMap.ALT.keyCode), target));
             }
 
             if (currentModifierState !== toModifierState) {
@@ -453,8 +479,9 @@
                 }
             });
 
-            if (lastPart.toUpperCase() in this._actionKeyCodeMap) {
-                keyCode = this._actionKeyCodeMap[lastPart.toUpperCase()];
+            const actionLookup = this._actionMap[lastPart.toUpperCase()];
+            if (actionLookup) {
+                keyCode = actionLookup.keyCode;
             } else if (lastPart.length === 1) {
                 var lastPartKeystroke = this.keystrokeForCharCode(lastPart.charCodeAt(0));
                 modifiers |= lastPartKeystroke.modifiers;
@@ -599,39 +626,39 @@
         126: new Keystroke(SHIFT, 192) // ~
     };
 
-    var US_ENGLISH_ACTION_KEYCODE_MAP = {
-        BACKSPACE: 8,
-        TAB: 9,
-        ENTER: 13,
-        SHIFT: 16,
-        CTRL: 17,
-        ALT: 18,
-        PAUSE: 19,
-        CAPSLOCK: 20,
-        ESCAPE: 27,
-        PAGEUP: 33,
-        PAGEDOWN: 34,
-        END: 35,
-        HOME: 36,
-        LEFT: 37,
-        UP: 38,
-        RIGHT: 39,
-        DOWN: 40,
-        INSERT: 45,
-        DELETE: 46,
-        META: 91,
-        F1: 112,
-        F2: 113,
-        F3: 114,
-        F4: 115,
-        F5: 116,
-        F6: 117,
-        F7: 118,
-        F8: 119,
-        F9: 120,
-        F10: 121,
-        F11: 122,
-        F12: 123
+    var US_ENGLISH_ACTION_MAP = {
+        BACKSPACE: {keyCode: 8, mutation: deleter(1)},
+        TAB: {keyCode: 9, mutation: appender("\t")},
+        ENTER: {keyCode: 13, mutation: appender("\n")},
+        SHIFT: {keyCode: 16},
+        CTRL: {keyCode: 17},
+        ALT: {keyCode: 18},
+        PAUSE: {keyCode: 19},
+        CAPSLOCK: {keyCode: 20},
+        ESCAPE: {keyCode: 27},
+        PAGEUP: {keyCode: 33},
+        PAGEDOWN: {keyCode: 34},
+        END: {keyCode: 35},
+        HOME: {keyCode: 36},
+        LEFT: {keyCode: 37},
+        UP: {keyCode: 38},
+        RIGHT: {keyCode: 39},
+        DOWN: {keyCode: 40},
+        INSERT: {keyCode: 45},
+        DELETE: {keyCode: 46},
+        META: {keyCode: 91},
+        F1: {keyCode: 112},
+        F2: {keyCode: 113},
+        F3: {keyCode: 114},
+        F4: {keyCode: 115},
+        F5: {keyCode: 116},
+        F6: {keyCode: 117},
+        F7: {keyCode: 118},
+        F8: {keyCode: 119},
+        F9: {keyCode: 120},
+        F10: {keyCode: 121},
+        F11: {keyCode: 122},
+        F12: {keyCode: 123}
     };
 
     /**
@@ -639,7 +666,7 @@
      *
      * @return {Keyboard}
      */
-    Keyboard.US_ENGLISH = new Keyboard(US_ENGLISH_CHARCODE_KEYCODE_MAP, US_ENGLISH_ACTION_KEYCODE_MAP);
+    Keyboard.US_ENGLISH = new Keyboard(US_ENGLISH_CHARCODE_KEYCODE_MAP, US_ENGLISH_ACTION_MAP);
 
     exports.KeyEvents = KeyEvents;
     exports.Keystroke = Keystroke;
