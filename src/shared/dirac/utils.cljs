@@ -1,5 +1,7 @@
 (ns dirac.utils
+  (:require-macros [cljs.core.async.macros :refer [go]])
   (:require [cljs.core.async :refer [put! <! chan close!]]
+            [cljs.core.async.impl.protocols :as async-protocols]
             [chromex.support :refer-macros [oget ocall oapply]]
             [chromex.logging :refer-macros [log info warn error group group-end]]))
 
@@ -30,3 +32,14 @@
   (cond
     (vector? coll) (into [] (filter (complement nil?) coll))
     (map? coll) (into {} (filter (comp not nil? second) coll))))
+
+(defn turn-promise-into-channel [promise]
+  (let [channel (chan)]
+    (.then promise #(put! channel %))
+    channel))
+
+(defn to-channel [o]
+  (cond
+    (satisfies? async-protocols/Channel o) o
+    (instance? js/Promise o) (turn-promise-into-channel o)
+    :else (go o)))
