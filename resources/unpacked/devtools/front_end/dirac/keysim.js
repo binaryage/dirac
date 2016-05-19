@@ -58,6 +58,31 @@
         };
     };
 
+    var taskQueueRunning = false;
+    var taskQueue = [];
+
+    function processTask(task) {
+        task.job();
+        wakeTaskQueue();
+    }
+
+    function wakeTaskQueue() {
+        const task = taskQueue.shift();
+        if (task) {
+            taskQueueRunning = true;
+            setTimeout(processTask.bind(this, task), task.delay);
+        } else {
+            taskQueueRunning = false;
+        }
+    }
+
+    function scheduleTask(delay, job) {
+        taskQueue.push({delay, job});
+        if (!taskQueueRunning) {
+            wakeTaskQueue();
+        }
+    }
+
     /* jshint esnext:true, undef:true, unused:true */
 
     var keyCodeToKeyIdentifierMap = {
@@ -259,11 +284,14 @@
          *
          * @param {string} action e.g. "alt+shift+left" or "backspace"
          * @param {HTMLElement} target
+         * @param {?function} callback
          */
-
-        Keyboard.prototype.dispatchEventsForAction = function dispatchEventsForAction(action, target) {
+        Keyboard.prototype.dispatchEventsForAction = function dispatchEventsForAction(action, target, callback) {
             var keystroke = this.keystrokeForAction(action);
-            this.dispatchEventsForKeystroke(keystroke, target);
+            scheduleTask(50, () => this.dispatchEventsForKeystroke(keystroke, target));
+            if (callback) {
+                scheduleTask(100, callback);
+            }
         };
 
         /**
@@ -272,18 +300,24 @@
          *
          * @param {string} input
          * @param {HTMLElement} target
+         * @param {?function} callback
          */
-
-        Keyboard.prototype.dispatchEventsForInput = function dispatchEventsForInput(input, target) {
+        Keyboard.prototype.dispatchEventsForInput = function dispatchEventsForInput(input, target, callback) {
             var currentModifierState = 0;
             for (var i = 0, _length = input.length; i < _length; i++) {
                 var keystroke = this.keystrokeForCharCode(input.charCodeAt(i));
-                keystroke.mutation = appender(input[i]);
-                this.dispatchModifierStateTransition(target, currentModifierState, keystroke.modifiers);
-                this.dispatchEventsForKeystroke(keystroke, target, false);
+                scheduleTask(30, ((currentModifierState, keystrokeModifiers) =>
+                    this.dispatchModifierStateTransition(target, currentModifierState, keystrokeModifiers))
+                    .bind(this, currentModifierState, keystroke.modifiers));
+                scheduleTask(20, ((keystroke, char) =>
+                    this.dispatchEventsForKeystroke(keystroke, target, false, KeyEvents.ALL, appender(char)))
+                    .bind(this, keystroke, input[i]));
                 currentModifierState = keystroke.modifiers;
             }
-            this.dispatchModifierStateTransition(target, currentModifierState, 0);
+            scheduleTask(20, () => this.dispatchModifierStateTransition(target, currentModifierState, 0));
+            if (callback) {
+                scheduleTask(100, callback);
+            }
         };
 
         /**
@@ -319,7 +353,7 @@
          * @param {number} events
          */
 
-        Keyboard.prototype.dispatchEventsForKeystroke = function dispatchEventsForKeystroke(keystroke, target, transitionModifiers = true, events = KeyEvents.ALL) {
+        Keyboard.prototype.dispatchEventsForKeystroke = function dispatchEventsForKeystroke(keystroke, target, transitionModifiers = true, events = KeyEvents.ALL, mutation) {
             if (transitionModifiers) {
                 this.dispatchModifierStateTransition(target, 0, keystroke.modifiers, events);
             }
@@ -339,12 +373,15 @@
                 if (events & KeyEvents.PRESS) {
                     keypressEvent = this.createEventFromKeystroke('keypress', keystroke, target);
                 }
-                if (keypressEvent && (keypressEvent.charCode || keystroke.mutation) && dispatchEvent(keypressEvent)) {
+                if (keypressEvent && (keypressEvent.charCode || mutation || keystroke.mutation) && dispatchEvent(keypressEvent)) {
                     if (events & KeyEvents.INPUT) {
                         var inputEvent = this.createEventFromKeystroke('input', keystroke, target);
                         // CodeMirror does read input content back, so we have to add real content into target element
                         // we currently only support cursor at the end of input, no selection changes, etc.
-                        target.value = keystroke.mutation(target.value);
+                        const effectiveMutation = mutation || keystroke.mutation;
+                        if (effectiveMutation) {
+                            target.value = effectiveMutation(target.value);
+                        }
                         dispatchEvent(inputEvent);
                     }
                 }
@@ -501,7 +538,7 @@
          */
 
         Keyboard.prototype.keystrokeForCharCode = function keystrokeForCharCode(charCode) {
-            return this._charCodeKeyCodeMap[charCode] || null;
+            return this._charCodeKeyCodeMap[charCode];
         };
 
         /**
