@@ -38,7 +38,7 @@
 (def ^:dynamic *install-check-next-trial-waiting-time* (env :dirac-install-check-next-trial-waiting-time))
 (def ^:dynamic *install-check-eval-time-limit* (env :dirac-install-check-eval-time-limit))
 (def ^:dynamic *context-availablity-total-time-limit* (env :dirac-context-availablity-total-time-limit))
-(def ^:dynamic *context-availablity-next-trial-waiting-time* (env :context-availablity-next-trial-waiting-time))
+(def ^:dynamic *context-availablity-next-trial-waiting-time* (env :dirac-context-availablity-next-trial-waiting-time))
 (def ^:dynamic *eval-time-limit* (env :dirac-eval-time-limit))
 (def ^:dynamic *runtime-tag* (or (env :dirac-runtime-tag) (attempt-to-determine-runtime-tag)))
 (def ^:dynamic *silence-use-of-undeclared-var-warnings* (env :dirac-silence-use-of-undeclared-var-warnings))
