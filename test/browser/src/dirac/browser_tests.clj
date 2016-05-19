@@ -27,7 +27,8 @@
             [clojure.java.shell :as shell]
             [clj-time.format :as time-format]
             [clj-time.coerce :as time-coerce]
-            [clojure.tools.logging :as log]))
+            [clojure.tools.logging :as log])
+  (import [java.net URLEncoder]))
 
 ; note: we expect current working directory to be dirac root directory ($root)
 ; $root/test/browser/transcripts/expected/*.txt should contain expected transcripts
@@ -63,12 +64,25 @@
 (defn navigation-timeout-message [_test-name load-timeout test-index-url]
   (str "failed to navigate to index page in time (" load-timeout " ms): " test-index-url))
 
+(def env-to-be-exported #{:dirac-agent-host
+                          :dirac-agent-port
+                          :dirac-agent-verbose})
+
+(defn extract-dirac-env-config-as-url-params [env]
+  (let [dirac-pattern #"^dirac-(.*)$"
+        relevant-config (into {} (filter (fn [[key _val]] (some #{key} env-to-be-exported)) env))
+        strip-prefix (fn [key] (second (re-find dirac-pattern (name key))))
+        build-param (fn [key value] (str (URLEncoder/encode key) "=" (URLEncoder/encode value)))]
+    (string/join "&" (map (fn [[key val]] (build-param (str "set-" (strip-prefix key)) val)) relevant-config))))
+
 (defn make-test-runner-url [suite-name test-name]
-  (let [debugging-port (get-debugging-port)]
+  (let [debugging-port (get-debugging-port)
+        extra-params (extract-dirac-env-config-as-url-params env)]
     (str (get-fixtures-server-url) "/runner.html?"
          "task=" suite-name "." test-name
          "&test_runner=1"
-         "&debugging_port=" debugging-port)))
+         "&debugging_port=" debugging-port
+         (if extra-params (str "&" extra-params)))))
 
 (defn navigate-transcript-runner! []
   (let [test-index-url (make-test-runner-url *current-transcript-suite* *current-transcript-test*)
