@@ -265,4 +265,5 @@
     (execute-transcript-test! "open-close-dirac")
     (execute-transcript-test! "no-agent-connection")
     (execute-transcript-test! "disabled-parinfer")
-    (execute-transcript-test! "dirac-eval")))
+    (execute-transcript-test! "dirac-eval")
+    (execute-transcript-test! "completions")))
