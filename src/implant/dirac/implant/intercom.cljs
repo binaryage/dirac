@@ -116,11 +116,11 @@
 
 (defn connect-to-weasel-server! [url]
   (go
-    (if-let [client-config (<! (eval/get-runtime-config))]
+    (if-let [runtime-config (<! (eval/get-runtime-config))]
       (do
-        (let [weasel-options (utils/remove-nil-values {:verbose?        (:weasel-verbose client-config)
-                                                       :auto-reconnect? (:weasel-auto-reconnect client-config)
-                                                       :pre-eval-delay  (:weasel-pre-eval-delay client-config)})]
+        (let [weasel-options (utils/remove-nil-values {:verbose?        (:weasel-verbose runtime-config)
+                                                       :auto-reconnect? (:weasel-auto-reconnect runtime-config)
+                                                       :pre-eval-delay  (:weasel-pre-eval-delay runtime-config)})]
           (info (str "Connecting to a weasel server at " url ". Weasel options:") weasel-options)
           (weasel-client/connect! url weasel-options)))
       (display-prompt-status (failed-to-retrieve-client-config-msg "in connect-to-weasel-server!")))))
@@ -210,17 +210,20 @@
 ; Because we have control over nREPL process thanks to our middleware, we can automate this process.
 ; We send a bootstrap message with request to enter CLJS REPL on user's behalf (google "nREPL piggieback" for more details).
 
-(defn make-boostrap-message [runtime-tag]
-  {:op   "eval"
-   :code (pr-str `(do
-                    (~'require '~'dirac.nrepl)
-                    (dirac.nrepl/boot-dirac-repl! {:runtime-tag ~runtime-tag})))})
+(defn make-boostrap-message [runtime-config runtime-tag]
+  (let [nrepl-config (-> (:nrepl-config runtime-config)
+                         (assoc :runtime-tag runtime-tag))]
+    {:op   "eval"
+     :code (pr-str `(do
+                      (~'require '~'dirac.nrepl)
+                      (dirac.nrepl/boot-dirac-repl! ~nrepl-config)))}))
 
 (defmethod nrepl-tunnel-client/process-message :bootstrap [_client message]
   (check-version! (:version message))
   (go
     (let [runtime-tag (<! (eval/get-runtime-tag))
-          bootstrap-message (make-boostrap-message runtime-tag)
+          runtime-config (<! (eval/get-runtime-config))
+          bootstrap-message (make-boostrap-message runtime-config runtime-tag)
           response (<! (nrepl-tunnel-client/tunnel-message-with-response! bootstrap-message))]
       (case (first (:status response))
         "done" (do
