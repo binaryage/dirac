@@ -5,7 +5,8 @@
             [chromex.logging :refer-macros [log]]
             [dirac.automation.messages :as messages]
             [dirac.automation.task :as task]
-            [dirac.automation.transcript-host :as transcript]))
+            [dirac.automation.transcript-host :as transcript]
+            [dirac.automation.helpers :as helpers]))
 
 (def label "automate")
 
@@ -109,7 +110,7 @@
   (str (oget js/location "protocol") "//" (oget js/location "host")))
 
 (defn get-scenario-url [name]
-  (str (get-base-url) "/scenarios/" name ".html"))
+  (str (get-base-url) "/scenarios/" name ".html?" (helpers/get-encoded-query (helpers/get-document-url))))                    ; we pass all query parameters to scenario page
 
 (defn open-tab-with-scenario! [name]
   (append-to-transcript! (str "open-tab-with-scenario! " name))
