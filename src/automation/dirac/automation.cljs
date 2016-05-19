@@ -173,7 +173,8 @@
      (go
        (<! (console-enter! devtools-id input))
        (doseq [match matches]
-         (<! (wait-for-devtools-substr-match devtools-id match)))))))
+         (<! (wait-for-devtools-substr-match devtools-id match)))
+       (<! (wait-for-devtools-substr-match devtools-id "repl eval job ended"))))))
 
 (defn enable-console-feedback!
   ([] (assert false))
