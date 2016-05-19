@@ -6,6 +6,7 @@
             [chromex.ext.tabs :as tabs]
             [chromex.ext.extension :as extension]
             [chromex.ext.runtime :as runtime]
+            [dirac.settings :refer-macros [get-automation-entry-point-key]]
             [dirac.background.action :as action]
             [dirac.background.state :as state]
             [dirac.utils :as utils])
@@ -85,14 +86,28 @@
 (defn get-devtools-views [devtools-id]
   (filter (partial is-devtools-view? devtools-id) (extension/get-views)))
 
+(defn has-automation-support? [view]
+  (some? (oget view (get-automation-entry-point-key))))
+
+(defn get-automation-entry-point [view]
+  {:post [(fn? %)]}
+  (oget view (get-automation-entry-point-key)))
+
 (defn automate-devtools! [devtools-id action]
-  (let [matching-views (get-devtools-views devtools-id)]
-    (doseq [view matching-views]
-      (when-let [automate-fn (oget view "automateDiracDevTools")]
-        (try
-          (automate-fn (pr-str action))
-          (catch :default e
-            (error "unable to automate dirac devtools:\n" view e)))))))
+  (go
+    (let [matching-views (get-devtools-views devtools-id)
+          matching-views-with-automation-support (filter has-automation-support? matching-views)]
+      (if (> (count matching-views-with-automation-support) 1)
+        (warn (str "found unexpected number views with enabled automation support for devtools #" devtools-id "\n")
+              matching-views-with-automation-support "\n"
+              "targeting only the first one"))
+      (if-let [view (first matching-views-with-automation-support)]
+        (let [automate-fn (get-automation-entry-point view)]
+          (try
+            (<! (automate-fn (pr-str action)))
+            (catch :default e
+              (error (str "unable to automate dirac devtools #" devtools-id "\n")
+                     view e))))))))
 
 (defn close-all-extension-tabs! []
   (let [views (extension/get-views #js {:type "tab"})]

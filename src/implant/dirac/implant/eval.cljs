@@ -4,7 +4,7 @@
             [cljs.core.async.impl.protocols :as core-async]
             [chromex.support :refer-macros [oget ocall oapply]]
             [chromex.logging :refer-macros [log warn error]]
-            [dirac.implant.feedback-support :as feedback]
+            [dirac.implant.feedback :as feedback]
             [clojure.string :as string]))
 
 ; -- configuration ----------------------------------------------------------------------------------------------------------

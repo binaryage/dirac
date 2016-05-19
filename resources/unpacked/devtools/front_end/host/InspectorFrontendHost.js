@@ -147,8 +147,8 @@ WebInspector.InspectorFrontendHostStub.prototype = {
      */
     inspectedURLChanged: function(url)
     {
-        var version = dirac.implant.get_version();
-        dirac.implant.get_runtime_tag(
+        var version = dirac.getVersion();
+        dirac.getRuntimeTag(
         /** @suppressGlobalPropertiesCheck */
         function(tag) {
           if (!tag) {

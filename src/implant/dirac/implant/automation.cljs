@@ -1,7 +1,12 @@
 (ns dirac.implant.automation
-  (:require [chromex.support :refer-macros [oget ocall oapply]]
-            [chromex.logging :refer-macros [log warn error group group-end]]
-            [dirac.implant.helpers :refer [get-console-view get-inspector-view]]))
+  (:require [chromex.logging :refer-macros [log warn error group group-end]]
+            [chromex.support :refer-macros [oget oset ocall oapply]]
+            [dirac.implant.helpers :refer [get-console-view get-inspector-view]]
+            [cljs.reader :as reader]
+            [dirac.settings :refer-macros [get-automation-entry-point-key]]
+            [dirac.implant.helpers :as helpers]
+            [dirac.utils :as utils]
+            [dirac.implant.feedback :as feedback-support]))
 
 ; -- commands ---------------------------------------------------------------------------------------------------------------
 
@@ -94,3 +99,29 @@
     :enable-console-feedback (enable-console-feedback!)
     :disable-console-feedback (disable-console-feedback!)
     (warn "received unknown automation command:" (pr-str command))))
+
+; -- automation -------------------------------------------------------------------------------------------------------------
+
+(defn automate [command]
+  {:pre [(map? command)]}
+  (try
+    (let [result (dispatch-command! command)]
+      (utils/to-channel result))
+    (catch :default e
+      (feedback-support/post! (str "automation exception while performing " (pr-str command) " => " e "\n"
+                                   (.-stack e)))
+      (throw e))))
+
+; -- installation -----------------------------------------------------------------------------------------------------------
+
+(defn automation-handler [message]
+  {:pre [(string? message)]}
+  (let [command (reader/read-string message)]
+    (automate command)))
+
+(defn install-automation-support! []
+  (oset js/window [(get-automation-entry-point-key)] automation-handler))
+
+(defn install! []
+  (when (helpers/should-automate?)
+    (install-automation-support!)))

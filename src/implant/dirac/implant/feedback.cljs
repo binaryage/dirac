@@ -1,4 +1,4 @@
-(ns dirac.implant.feedback-support
+(ns dirac.implant.feedback
   (:require [chromex.support :refer-macros [oget oset ocall oapply]]
             [chromex.logging :refer-macros [log warn error group group-end]]
             [dirac.implant.helpers :as helpers]))
@@ -6,7 +6,7 @@
 (defonce pending-messages (atom []))
 
 (defn get-intercom []
-  (oget js/window "diracExtensionIntercom"))
+  (oget js/window "diracExtensionIntercom"))                                                                                  ; TODO: move to settings
 
 (defn flush-pending-messages! []
   (let [messages @pending-messages]
@@ -18,7 +18,7 @@
         (intercom message)))))
 
 (defn install! []
-  (oset js/window ["diracFlushPendingFeedbackMessages"] flush-pending-messages!))
+  (oset js/window ["diracFlushPendingFeedbackMessages"] flush-pending-messages!))                                             ; TODO: move to settings
 
 (defn post! [text]
   (when (helpers/should-automate?)

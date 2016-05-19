@@ -40,10 +40,12 @@
         devtools-id (int (:devtools-id message))]
     (log "automate-dirac-frontend!" action (envelope message))
     (if (state/get-devtools-descriptor devtools-id)
-      (helpers/automate-devtools! devtools-id action)
+      (go
+        (let [reply (<! (helpers/automate-devtools! devtools-id action))]
+          (state/post-reply! message-id reply)))
       (warn "dirac automation request for missing connection:" devtools-id message
-            "existing connections:" (state/get-devtools-descriptors)))
-    (state/post-reply! message-id)))
+            "existing connections:" (state/get-devtools-descriptors)))))
+
 
 (defn tear-down! [message-id _message]
   ; we want to close all tabs/windows opened (owned) by our extension

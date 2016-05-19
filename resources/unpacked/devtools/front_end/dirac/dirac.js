@@ -1,4 +1,10 @@
-(function() {
+// dirac namespace may not exist at this point, play safe
+if (!window.dirac) {
+  window.dirac = {};
+}
+
+// note: if goog/cljs namespace system comes after us, they don't wipe our properteis, just add theirs
+Object.assign(window.dirac, (function() {
 
 var featureFlags = {};
 
@@ -243,7 +249,7 @@ function extractScopeInfoFromScopeChainAsync(callFrame) {
 var namespacesSymbolsCache = new Map();
 
 function prepareUrlMatcher(namespaceName) {
-  var relativeNSPath = dirac.implant.ns_to_relpath(namespaceName, "js");
+  var relativeNSPath = dirac.nsToRelpath(namespaceName, "js");
   return function(url) {
     var parser = document.createElement('a');
     parser.href = url;
@@ -258,10 +264,10 @@ function unique(a) {
 // --- parsing namespaces ---------------------------------------------------------------------------------------------------
 
 function parseClojureScriptNamespace(url, cljsSourceCode) {
-  var descriptor = dirac.implant.parse_ns_from_source(cljsSourceCode);
+  var descriptor = dirac.parseNsFromSource(cljsSourceCode);
   if (!descriptor) {
     return null;
-  };
+  }
 
   descriptor.url = url;
   return descriptor;
@@ -534,17 +540,17 @@ function invalidateNamespacesCache() {
 // --- exported interface ---------------------------------------------------------------------------------------------------
 
 // don't forget to update externs.js too
-window.dirac = {
+return {
   _DEBUG_EVAL: false,
   _DEBUG_COMPLETIONS: false,
   _namespacesSymbolsCache: namespacesSymbolsCache,
   _namespacesCache: null,
-  hasFeature: hasFeature,
   hasREPL: hasFeature("enable-repl"),
   hasParinfer: hasFeature("enable-parinfer"),
   hasFriendlyLocals: hasFeature("enable-friendly-locals"),
   hasClusteredLocals: hasFeature("enable-clustered-locals"),
   hasInlineCFs: hasFeature("inline-custom-formatters"),
+  hasFeature: hasFeature,
   codeAsString: codeAsString,
   stringEscape: stringEscape,
   startListeningForWorkspaceChanges: startListeningForWorkspaceChanges,
@@ -558,6 +564,8 @@ window.dirac = {
   hasCurrentContext: hasCurrentContext,
   evalInDefaultContext: evalInDefaultContext,
   hasDefaultContext: hasDefaultContext
+  // note: there will be more functions added to this object dynamically by dirac.implant init code
+  //       see externs.js for full list of avail functions or
 };
 
-})();
+})());

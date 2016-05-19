@@ -1,8 +1,7 @@
 (ns dirac.implant.console
   (:require [chromex.support :refer-macros [oget ocall oapply]]
             [chromex.logging :refer-macros [log warn error group group-end]]
-            [dirac.implant.helpers :refer [get-console-view]]
-            [dirac.implant.feedback-support :as feedback-support]))
+            [dirac.implant.helpers :refer [get-console-view]]))
 
 (defonce ^:dynamic *last-prompt-ns* nil)
 (defonce ^:dynamic *last-prompt-mode* :status)

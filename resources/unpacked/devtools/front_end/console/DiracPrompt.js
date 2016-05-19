@@ -25,6 +25,7 @@ WebInspector.DiracPromptWithHistory = function(codeMirrorInstance)
     this._codeMirror.on("cursorActivity", this._onCursorActivity.bind(this));
     this._codeMirror.on("blur", this._blur.bind(this))
     this._currentClojureScriptNamespace = null;
+    this._lastAutocompleteRequest = 0;
 };
 
 WebInspector.DiracPromptWithHistory.prototype = {
@@ -229,16 +230,22 @@ WebInspector.DiracPromptWithHistory.prototype = {
     autocomplete: function(force, reverse)
     {
         this.clearAutoComplete(true);
+        this._lastAutocompleteRequest++;
 
         var shouldExit = false;
-        var cursor = this._codeMirror.getCursor()
+        var cursor = this._codeMirror.getCursor();
         var token = this._codeMirror.getTokenAt(cursor);
 
         if (dirac._DEBUG_COMPLETIONS) {
             console.log("autocomplete:", cursor, token);
         }
 
-        if (this._codeMirror.somethingSelected()) {
+        if (!token) {
+            if (dirac._DEBUG_COMPLETIONS) {
+                console.log("no autocomplete because no token");
+            }
+            shouldExit = true;
+        } else if (this._codeMirror.somethingSelected()) {
             if (dirac._DEBUG_COMPLETIONS) {
                 console.log("no autocomplete because codeMirror.somethingSelected()");
             }
@@ -263,28 +270,34 @@ WebInspector.DiracPromptWithHistory.prototype = {
             console.log("detected prefix='"+prefix+"'", javascriptCompletion);
         }
         if (javascriptCompletion) {
-          this._waitingForCompletions = true;
           this._prefixRange = new WebInspector.TextRange(cursor.line, token.start+javascriptCompletion.offset, cursor.line, cursor.ch);
           var input = javascriptCompletion.prefix;
-          this._loadJavascriptCompletions(input, force || false, this._completionsForJavascriptReady.bind(this, input, !!reverse, !!force));
+          this._loadJavascriptCompletions(this._lastAutocompleteRequest, input, force || false, this._completionsForJavascriptReady.bind(this, this._lastAutocompleteRequest, input, !!reverse, !!force));
         } else {
-          this._waitingForCompletions = true;
           this._prefixRange = new WebInspector.TextRange(cursor.line, token.start, cursor.line, cursor.ch);
           var input = prefix;
-          this._loadClojureScriptCompletions(input, force || false, this._completionsForClojureScriptReady.bind(this, input, !!reverse, !!force));
+          this._loadClojureScriptCompletions(this._lastAutocompleteRequest, input, force || false, this._completionsForClojureScriptReady.bind(this, this._lastAutocompleteRequest, input, !!reverse, !!force));
         }
     },
 
     /**
+     * @param {number} requestId
      * @param {string} input
      * @param {boolean} force
      * @param {function(string, !Array.<string>, number=)} completionsReadyCallback
      */
-    _loadJavascriptCompletions: function(input, force, completionsReadyCallback)
+    _loadJavascriptCompletions: function(requestId, input, force, completionsReadyCallback)
     {
         if (dirac._DEBUG_COMPLETIONS) {
             console.log("_loadJavascriptCompletions", input, force);
         }
+        if (requestId!=this._lastAutocompleteRequest) {
+            if (dirac._DEBUG_COMPLETIONS) {
+                console.log("_loadJavascriptCompletions cancelled", requestId, this._lastAutocompleteRequest);
+            }
+            return;
+        }
+
         var executionContext = WebInspector.context.flavor(WebInspector.ExecutionContext);
         if (!executionContext) {
             if (dirac._DEBUG_COMPLETIONS) {
@@ -315,6 +328,7 @@ WebInspector.DiracPromptWithHistory.prototype = {
     },
 
     /**
+     * @param {number} requestId
      * @param {string} prefix
      * @param {boolean} reverse
      * @param {boolean} force
@@ -322,10 +336,16 @@ WebInspector.DiracPromptWithHistory.prototype = {
      * @param {!Array.<string>} completions
      * @param {number=} selectedIndex
      */
-    _completionsForJavascriptReady: function(prefix, reverse, force, expression, completions, selectedIndex)
+    _completionsForJavascriptReady: function(requestId, prefix, reverse, force, expression, completions, selectedIndex)
     {
         if (dirac._DEBUG_COMPLETIONS) {
             console.log("_completionsForJavascriptReady", prefix, reverse, force, expression, completions, selectedIndex);
+        }
+        if (requestId!=this._lastAutocompleteRequest) {
+            if (dirac._DEBUG_COMPLETIONS) {
+                console.log("_completionsForJavascriptReady cancelled", requestId, this._lastAutocompleteRequest);
+            }
+            return;
         }
         // Filter out dupes.
         var store = new Set();
@@ -339,12 +359,10 @@ WebInspector.DiracPromptWithHistory.prototype = {
                 annotatedCompletions = this.additionalCompletions(prefix).concat(annotatedCompletions);
         }
 
-        if (!this._suggestBox || !this._waitingForCompletions || !annotatedCompletions.length) {
+        if (!annotatedCompletions.length) {
             this.hideSuggestBox();
             return;
         }
-
-        delete this._waitingForCompletions;
 
         this._userEnteredText = prefix;
 
@@ -392,14 +410,21 @@ WebInspector.DiracPromptWithHistory.prototype = {
     },
 
     /**
+     * @param {number} requestId
      * @param {string} input
      * @param {boolean} force
      * @param {function(string, !Array.<string>, number=)} completionsReadyCallback
      */
-    _loadClojureScriptCompletions: function(input, force, completionsReadyCallback)
+    _loadClojureScriptCompletions: function(requestId, input, force, completionsReadyCallback)
     {
         if (dirac._DEBUG_COMPLETIONS) {
             console.log("_loadClojureScriptCompletions", input, force);
+        }
+        if (requestId!=this._lastAutocompleteRequest) {
+            if (dirac._DEBUG_COMPLETIONS) {
+                console.log("_loadClojureScriptCompletions cancelled", requestId, this._lastAutocompleteRequest);
+            }
+            return;
         }
         var executionContext = WebInspector.context.flavor(WebInspector.ExecutionContext);
         if (!executionContext) {
@@ -498,6 +523,7 @@ WebInspector.DiracPromptWithHistory.prototype = {
     },
 
     /**
+     * @param {number} requestId
      * @param {string} prefix
      * @param {boolean} reverse
      * @param {boolean} force
@@ -505,10 +531,17 @@ WebInspector.DiracPromptWithHistory.prototype = {
      * @param {!Array.<string>} completions
      * @param {number=} selectedIndex
      */
-    _completionsForClojureScriptReady: function(prefix, reverse, force, expression, completions, selectedIndex)
+    _completionsForClojureScriptReady: function(requestId, prefix, reverse, force, expression, completions, selectedIndex)
     {
         if (dirac._DEBUG_COMPLETIONS) {
             console.log("_completionsForClojureScriptReady", prefix, reverse, force, completions, selectedIndex);
+        }
+
+        if (requestId!=this._lastAutocompleteRequest) {
+            if (dirac._DEBUG_COMPLETIONS) {
+                console.log("_loadClojureScriptCompletions cancelled", requestId, this._lastAutocompleteRequest);
+            }
+            return;
         }
 
         var annotatedCompletions = completions;
@@ -516,12 +549,11 @@ WebInspector.DiracPromptWithHistory.prototype = {
 
         this._markAliasedCompletions(annotatedCompletions);
 
-        if (!this._waitingForCompletions || !annotatedCompletions.length) {
+        if (!annotatedCompletions.length) {
             this.hideSuggestBox();
             return;
         }
 
-        delete this._waitingForCompletions;
         this._userEnteredText = prefix;
         selectedIndex = (this._disableDefaultSuggestionForEmptyInput && !this.text()) ? -1 : (selectedIndex || 0);
 

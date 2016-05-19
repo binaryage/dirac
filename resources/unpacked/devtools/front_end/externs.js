@@ -341,7 +341,7 @@ diff_match_patch.prototype = {
      * @return {!Array.<!{0: number, 1: string}>}
      */
     diff_main: function(text1, text2) { }
-}
+};
 
 var dirac = {
     /** @type {boolean} */
@@ -410,51 +410,42 @@ var dirac = {
     invalidateNamespaceSymbolsCache: function (namespaceName) {},
     invalidateNamespacesCache: function() {},
 
-    // ----------------------------------------------------------------------------------------------------------------------
+    // -- these are dynamically added by dirac.implant namespace ------------------------------------------------------------
 
-    implant: {
-        init: function() {},
-        init_console: function() {},
-        init_repl: function() {},
-        get_version: function() {},
-        get_runtime_tag: function() {},
-        /**
-        * @param {Element} textAreaElement
-        * @param {boolean} useParinfer
-        * @returns {!CodeMirror}
-        */
-        adopt_prompt_element: function(textAreaElement, useParinfer) {},
-        /**
-        * @param {number} requestId
-        * @param {string} code
-        * @param {dirac.ScopeInfo} scopeInfo
-        */
-        send_eval_request: function(requestId, code, scopeInfo) {},
+    initConsole: function() {},
+    initRepl: function() {},
+    getVersion: function() {},
+    getRuntimeTag: function() {},
+    /**
+     * @param {Element} textAreaElement
+     * @param {boolean} useParinfer
+     * @returns {!CodeMirror}
+     */
+    adoptPrompt: function(textAreaElement, useParinfer) {},
+    /**
+     * @param {number} requestId
+     * @param {string} code
+     * @param {dirac.ScopeInfo} scopeInfo
+     */
+    sendEvalRequest: function(requestId, code, scopeInfo) {},
+    /**
+     * @param {!string} ns
+     * @param {!string} ext
+     * @returns {!string}
+     */
+    nsToRelpath: function(ns, ext) {},
 
-        /**
-        * @param {!string} name
-        * @returns {!string}
-        */
-        munge: function(name) {},
-        /**
-        * @param {!string} ns
-        * @param {!string} ext
-        * @returns {!string}
-        */
-        ns_to_relpath: function(ns, ext) {},
+    /**
+     * @param {!string} source
+     * @returns {?Object}
+     */
+    parseNsFromSource: function(source) {},
 
-        /**
-        * @param {!string} source
-        * @returns {?Object}
-        */
-        parse_ns_from_source: function(source) {},
-
-        /**
-        * @param {string} text
-        */
-        feedback: function(text) {}
-    }
-}
+    /**
+     * @param {string} text
+     */
+    feedback: function(text) {}
+};
 
 /**
  * @typedef {{name:!string, identifier:?string}}
