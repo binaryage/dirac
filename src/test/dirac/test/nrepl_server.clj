@@ -1,6 +1,5 @@
 (ns dirac.test.nrepl-server
   (:require [dirac.test.nrepl-server-helpers :refer [start-nrepl-server! stop-nrepl-server!]]
-            [dirac.settings :refer [get-browser-tests-nrepl-server-port]]
             [clojure.tools.logging :as log]))
 
 ; -- fixtures ---------------------------------------------------------------------------------------------------------------
@@ -10,7 +9,7 @@
 
 (defn setup-nrepl-server! []
   (log/debug "setup-nrepl-server")
-  (if-let [[server port] (start-nrepl-server! (get-browser-tests-nrepl-server-port))]
+  (if-let [[server port] (start-nrepl-server!)]
     (do
       (log/info "nrepl server started on" port)
       (reset! current-nrepl-server server)

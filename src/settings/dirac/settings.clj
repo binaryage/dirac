@@ -26,10 +26,6 @@
 (def ^:const BACKEND_TESTS_NREPL_TUNNEL_PORT 7231)                                                                            ; -1000 from defaults
 (def ^:const BACKEND_TESTS_WEASEL_HOST "localhost")
 (def ^:const BACKEND_TESTS_WEASEL_PORT 7232)                                                                                  ; -1000 from defaults
-(def ^:const BACKEND_TESTS_NREPL_ACK_SERVER_HOST "localhost")
-
-(def ^:const BROWSER_TESTS_DIRAC_AGENT_PORT (env :dirac-agent-port))
-(def ^:const BROWSER_TESTS_NREPL_SERVER_PORT (env :dirac-nrepl-server-port))
 
 (def ^:const DIRAC_AGENT_BOOT_TIME (seconds 2))
 (def ^:const TRANSCRIPT_MATCH_TIMEOUT (seconds 5))
@@ -88,9 +84,6 @@
 (defmacro get-backend-tests-nrepl-server-url []
   (str "nrepl://" (get-backend-tests-nrepl-server-host) ":" (get-backend-tests-nrepl-server-port)))
 
-(defmacro get-backend-tests-nrepl-ack-server-host []
-  BACKEND_TESTS_NREPL_ACK_SERVER_HOST)
-
 (defmacro get-backend-tests-nrepl-tunnel-port []
   BACKEND_TESTS_NREPL_TUNNEL_PORT)
 
@@ -105,16 +98,6 @@
 
 (defmacro get-backend-tests-weasel-port []
   BACKEND_TESTS_WEASEL_PORT)
-
-(defmacro get-browser-tests-dirac-agent-port []
-  (if (some? BROWSER_TESTS_DIRAC_AGENT_PORT)
-    (Integer/parseInt BROWSER_TESTS_DIRAC_AGENT_PORT)
-    8021))
-
-(defmacro get-browser-tests-nrepl-server-port []
-  (if (some? BROWSER_TESTS_NREPL_SERVER_PORT)
-    (Integer/parseInt BROWSER_TESTS_NREPL_SERVER_PORT)
-    8020))
 
 (defmacro get-dirac-agent-boot-time []
   DIRAC_AGENT_BOOT_TIME)

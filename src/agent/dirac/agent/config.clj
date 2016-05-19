@@ -24,8 +24,8 @@
       (assoc-env-val [:delay-between-boot-trials] :dirac-agent-delay-between-boot-trials :int)
       (assoc-env-val [:nrepl-server :host] :dirac-nrepl-server-host)
       (assoc-env-val [:nrepl-server :port] :dirac-nrepl-server-port :int)
-      (assoc-env-val [:nrepl-tunnel :host] :dirac-nrepl-tunnel-host)
-      (assoc-env-val [:nrepl-tunnel :port] :dirac-nrepl-tunnel-port :int)))
+      (assoc-env-val [:nrepl-tunnel :host] :dirac-agent-host)
+      (assoc-env-val [:nrepl-tunnel :port] :dirac-agent-port :int)))
 
 ; -- config evaluation ------------------------------------------------------------------------------------------------------
 
