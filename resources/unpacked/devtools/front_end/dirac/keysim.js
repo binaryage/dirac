@@ -159,7 +159,7 @@
     /**
      * Creates an event ready for dispatching onto the given target.
      *
-     * @param {string} type One of "keydown", "keypress", "keyup", or "textInput".
+     * @param {string} type One of "keydown", "keypress", "keyup", or "input".
      * @param {Keystroke} keystroke
      * @param {HTMLElement} target
      * @return {Event}
@@ -181,7 +181,7 @@
       event.initEvent(type, true, true);
 
       switch (type) {
-        case 'textInput':
+        case 'input':
           event.data = String.fromCharCode(this.charCodeForKeystroke(keystroke));
           break;
 
@@ -241,7 +241,7 @@
      *   keydown   keyCode=16 (SHIFT) charCode=0      shiftKey=true
      *   keydown   keyCode=65 (A)     charCode=0      shiftKey=true
      *   keypress  keyCode=65 (A)     charCode=65 (A) shiftKey=true
-     *   textInput data=A
+     *   input data=A
      *   keyup     keyCode=65 (A)     charCode=0      shiftKey=true
      *   keyup     keyCode=16 (SHIFT) charCode=0      shiftKey=false
      *
@@ -273,29 +273,32 @@
         this.dispatchModifierStateTransition(target, 0, keystroke.modifiers, events);
       }
 
-      console.log("!", keystroke, target);
+      var dispatchEvent = function(e) {
+        //console.log("dispatch", e);
+        return target.dispatchEvent(e);
+      };
 
       var keydownEvent = undefined;
       if (events & KeyEvents.DOWN) {
         keydownEvent = this.createEventFromKeystroke('keydown', keystroke, target);
       }
 
-      if (keydownEvent && target.dispatchEvent(keydownEvent) && this.targetCanReceiveTextInput(target)) {
+      if (keydownEvent && dispatchEvent(keydownEvent) && this.targetCanReceiveTextInput(target)) {
         var keypressEvent = undefined;
         if (events & KeyEvents.PRESS) {
           keypressEvent = this.createEventFromKeystroke('keypress', keystroke, target);
         }
-        if (keypressEvent && keypressEvent.charCode && target.dispatchEvent(keypressEvent)) {
+        if (keypressEvent && keypressEvent.charCode && dispatchEvent(keypressEvent)) {
           if (events & KeyEvents.INPUT) {
-            var textinputEvent = this.createEventFromKeystroke('textInput', keystroke, target);
-            target.dispatchEvent(textinputEvent);
+            var inputEvent = this.createEventFromKeystroke('input', keystroke, target);
+            dispatchEvent(inputEvent);
           }
         }
       }
 
       if (events & KeyEvents.UP) {
         var keyupEvent = this.createEventFromKeystroke('keyup', keystroke, target);
-        target.dispatchEvent(keyupEvent);
+        dispatchEvent(keyupEvent);
       }
 
       if (transitionModifiers) {
@@ -330,52 +333,57 @@
       var includeKeyPress = events & KeyEvents.PRESS;
       var includeKeyDown = events & KeyEvents.DOWN;
 
+      var dispatchEvent = function(e) {
+        //console.log("dispatch", e);
+        return target.dispatchEvent(e);
+      };
+
       if (includeKeyUp && didHaveMeta === true && willHaveMeta === false) {
         // Release the meta key.
         currentModifierState &= ~META;
-        target.dispatchEvent(this.createEventFromKeystroke('keyup', new Keystroke(currentModifierState, this._actionKeyCodeMap.META), target));
+        dispatchEvent(this.createEventFromKeystroke('keyup', new Keystroke(currentModifierState, this._actionKeyCodeMap.META), target));
       }
 
       if (includeKeyUp && didHaveCtrl === true && willHaveCtrl === false) {
         // Release the ctrl key.
         currentModifierState &= ~CTRL;
-        target.dispatchEvent(this.createEventFromKeystroke('keyup', new Keystroke(currentModifierState, this._actionKeyCodeMap.CTRL), target));
+        dispatchEvent(this.createEventFromKeystroke('keyup', new Keystroke(currentModifierState, this._actionKeyCodeMap.CTRL), target));
       }
 
       if (includeKeyUp && didHaveShift === true && willHaveShift === false) {
         // Release the shift key.
         currentModifierState &= ~SHIFT;
-        target.dispatchEvent(this.createEventFromKeystroke('keyup', new Keystroke(currentModifierState, this._actionKeyCodeMap.SHIFT), target));
+        dispatchEvent(this.createEventFromKeystroke('keyup', new Keystroke(currentModifierState, this._actionKeyCodeMap.SHIFT), target));
       }
 
       if (includeKeyUp && didHaveAlt === true && willHaveAlt === false) {
         // Release the alt key.
         currentModifierState &= ~ALT;
-        target.dispatchEvent(this.createEventFromKeystroke('keyup', new Keystroke(currentModifierState, this._actionKeyCodeMap.ALT), target));
+        dispatchEvent(this.createEventFromKeystroke('keyup', new Keystroke(currentModifierState, this._actionKeyCodeMap.ALT), target));
       }
 
       if (includeKeyDown && didHaveMeta === false && willHaveMeta === true) {
         // Press the meta key.
         currentModifierState |= META;
-        target.dispatchEvent(this.createEventFromKeystroke('keydown', new Keystroke(currentModifierState, this._actionKeyCodeMap.META), target));
+        dispatchEvent(this.createEventFromKeystroke('keydown', new Keystroke(currentModifierState, this._actionKeyCodeMap.META), target));
       }
 
       if (includeKeyDown && didHaveCtrl === false && willHaveCtrl === true) {
         // Press the ctrl key.
         currentModifierState |= CTRL;
-        target.dispatchEvent(this.createEventFromKeystroke('keydown', new Keystroke(currentModifierState, this._actionKeyCodeMap.CTRL), target));
+        dispatchEvent(this.createEventFromKeystroke('keydown', new Keystroke(currentModifierState, this._actionKeyCodeMap.CTRL), target));
       }
 
       if (includeKeyDown && didHaveShift === false && willHaveShift === true) {
         // Press the shift key.
         currentModifierState |= SHIFT;
-        target.dispatchEvent(this.createEventFromKeystroke('keydown', new Keystroke(currentModifierState, this._actionKeyCodeMap.SHIFT), target));
+        dispatchEvent(this.createEventFromKeystroke('keydown', new Keystroke(currentModifierState, this._actionKeyCodeMap.SHIFT), target));
       }
 
       if (includeKeyDown && didHaveAlt === false && willHaveAlt === true) {
         // Press the alt key.
         currentModifierState |= ALT;
-        target.dispatchEvent(this.createEventFromKeystroke('keydown', new Keystroke(currentModifierState, this._actionKeyCodeMap.ALT), target));
+        dispatchEvent(this.createEventFromKeystroke('keydown', new Keystroke(currentModifierState, this._actionKeyCodeMap.ALT), target));
       }
 
       if (currentModifierState !== toModifierState) {
