@@ -3,8 +3,8 @@
 
 (def default-prefs
   {:dont-display-banner                         false
-   :dirac-print-level                           1
-   :dirac-print-length                          10
+   :safe-print-level                            1
+   :safe-print-length                           10
    :agent-host                                  "localhost"
    :agent-port                                  "8231"
    :agent-verbose                               false
