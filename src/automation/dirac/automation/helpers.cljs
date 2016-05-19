@@ -18,6 +18,17 @@
   (let [uri (make-uri-object url)]
     (.getParameterValue uri param)))
 
+(defn get-matching-query-params [url re]
+  (let [uri (make-uri-object url)
+        query (.getQueryData uri)
+        matching-params (filter #(re-find re %) (.getKeys query))]
+    (into {} (map (fn [key] [key (.get query key)]) matching-params))))
+
+(defn get-encoded-query [url]
+  (let [uri (make-uri-object url)
+        encoded-query (.getEncodedQuery uri)]
+    encoded-query))
+
 (defn get-document-url []
   (str (.-location js/document)))
 
