@@ -62,7 +62,11 @@
     var taskQueue = [];
 
     function processTask(task) {
-        task.job();
+        try {
+            task.job();
+        } catch (e) {
+            console.error("keysim task has failed:", e, "\n", task);
+        }
         wakeTaskQueue();
     }
 
@@ -77,7 +81,7 @@
     }
 
     function scheduleTask(delay, job) {
-        taskQueue.push({delay, job});
+        taskQueue.push({delay, job, stack: new Error("scheduled at")});
         if (!taskQueueRunning) {
             wakeTaskQueue();
         }
