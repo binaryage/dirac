@@ -1,9 +1,11 @@
 (ns dirac.utils
-  (:require-macros [cljs.core.async.macros :refer [go]])
+  (:require-macros [cljs.core.async.macros :refer [go go-loop]])
   (:require [cljs.core.async :refer [put! <! chan close!]]
             [cljs.core.async.impl.protocols :as async-protocols]
             [chromex.support :refer-macros [oget ocall oapply]]
             [chromex.logging :refer-macros [log info warn error group group-end]]))
+
+(def Promise (oget js/window "Promise"))
 
 (defn escape-double-quotes [s]
   (.replace s #"\"" "\\\""))
@@ -25,23 +27,51 @@
     channel))
 
 (defn parse-int [v]
-  {:pre [(string? v)]}
-  (js/parseInt v 10))
+  (if (integer? v)
+    v
+    (js/parseInt (str v) 10)))
 
 (defn compact [coll]
   (cond
     (vector? coll) (into [] (filter (complement nil?) coll))
     (map? coll) (into {} (filter (comp not nil? second) coll))))
 
+(defn handle-promised-result! [channel result]
+  (if (some? result)
+    (put! channel result)
+    (close! channel)))
+
 (defn turn-promise-into-channel [promise]
   (let [channel (chan)]
-    (ocall promise "then" #(put! channel %))
+    (ocall promise "then" (partial handle-promised-result! channel))
     channel))
 
-(def Promise (oget js/window "Promise"))
+(defn turn-channel-into-callback [channel callback]
+  (go-loop []
+    (if-let [val (<! channel)]
+      (do
+        (callback val)
+        (recur)))))
+
+(defn turn-promise-into-callback [promise callback]
+  (ocall promise "then" callback))
+
+(defn turn-callback-into-channel [callback]
+  (assert false "turn-callback-into-channel NOT IMPLEMENTED!"))                                                               ; TODO: can we implement this? maybe using ES6 decorators
 
 (defn to-channel [o]
   (cond
     (satisfies? async-protocols/Channel o) o
     (instance? Promise o) (turn-promise-into-channel o)
+    (fn? o) (turn-callback-into-channel o)                                                                                    ; assume callback
     :else (go o)))
+
+(defn to-callback [o callback]
+  {:pre [(or (fn? callback) (nil? callback))]}
+  (if (some? callback)
+    (cond
+      (satisfies? async-protocols/Channel o) (turn-channel-into-callback o callback)
+      (instance? Promise o) (turn-promise-into-callback o callback)
+      (fn? o) o                                                                                                               ; assume already a callback
+      :else (callback o)))
+  nil)
