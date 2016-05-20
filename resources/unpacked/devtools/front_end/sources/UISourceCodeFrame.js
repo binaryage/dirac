@@ -77,8 +77,6 @@ WebInspector.UISourceCodeFrame.prototype = {
     wasShown: function()
     {
         WebInspector.SourceFrame.prototype.wasShown.call(this);
-        if (this._diff)
-            this._diff.updateImmediately();
         this._boundWindowFocused = this._windowFocused.bind(this);
         this.element.ownerDocument.defaultView.addEventListener("focus", this._boundWindowFocused, false);
         this._checkContentUpdated();
@@ -166,7 +164,7 @@ WebInspector.UISourceCodeFrame.prototype = {
     _onWorkingCopyChanged: function(event)
     {
         if (this._diff)
-            this._diff.updateWhenPossible();
+            this._diff.updateDiffMarkersWhenPossible();
         if (this._muteSourceCodeEvents)
             return;
         this._innerSetContent(this._uiSourceCode.workingCopy());
@@ -185,7 +183,7 @@ WebInspector.UISourceCodeFrame.prototype = {
         this._textEditor.markClean();
         this._updateStyle();
         if (this._diff)
-            this._diff.updateWhenPossible();
+            this._diff.updateDiffMarkersWhenPossible();
     },
 
     _updateStyle: function()
@@ -203,7 +201,14 @@ WebInspector.UISourceCodeFrame.prototype = {
     _innerSetContent: function(content)
     {
         this._isSettingContent = true;
-        this.setContent(content);
+        if (this._diff) {
+            var oldContent = this._textEditor.text();
+            this.setContent(content);
+            this._diff.updateDiffMarkersImmediately();
+            this._diff.highlightModifiedLines(oldContent, content);
+        } else {
+            this.setContent(content);
+        }
         delete this._isSettingContent;
     },
 
