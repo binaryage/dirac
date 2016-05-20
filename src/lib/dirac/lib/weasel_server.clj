@@ -6,7 +6,7 @@
             [clojure.tools.logging :as log]
             [org.httpkit.server :as http]
             [dirac.lib.ws-server :as server]
-            [dirac.lib.utils :as utils])
+            [dirac.logging :as logging])
   (:import (clojure.lang IDeref Atom)))
 
 (def default-opts {:host       "localhost"
@@ -99,7 +99,7 @@
 (defmulti process-message (fn [_env msg] (:op msg)))
 
 (defmethod process-message :default [env message]
-  (log/debug (str env) "Received unrecognized message:\n" (utils/pp message)))
+  (log/debug (str env) "Received unrecognized message:\n" (logging/pprint message)))
 
 (defmethod process-message :result [env message]
   (let [result (:value message)
@@ -108,10 +108,13 @@
       (assert (instance? IDeref client-response-promise))
       (deliver client-response-promise result))))
 
-(defmethod process-message :ready [_env _message])
+(defmethod process-message :ready [env message]
+  (log/debug (str env) "Received :ready message:\n" (logging/pprint message))
+  (if-let [ident (:ident message)]
+    (log/info (str env) (str "Client identified as '" ident "'"))))
 
 (defmethod process-message :error [env message]
-  (log/error (str env) "DevTools reported error:\n" (utils/pp message)))
+  (log/error (str env) "DevTools reported error:\n" (logging/pprint message)))
 
 ; -- env helpers ------------------------------------------------------------------------------------------------------------
 
@@ -145,7 +148,7 @@
   ; we allow only one client connection at a time
   (if (server/has-clients? server)
     (send-occupied-response-close-channel-and-reject-client! env channel)
-    (log/info (str env) "A client connected")))
+    (log/info (str env) "A client connected" channel)))
 
 (defn on-message [env _server _client message]
   ; we don't need to pass server and client into process-message
