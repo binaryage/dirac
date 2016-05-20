@@ -1071,10 +1071,10 @@ WebInspector.ConsoleView.prototype = {
         dirac.feedback("switch console prompt to " + newPromptDescriptor.id);
 
         if (newPromptDescriptor.id != "dirac") {
-          return this._switchPrompt(oldIndex, newIndex);
+          this._switchPrompt(oldIndex, newIndex);
         }
 
-        return this._switchPrompt(oldIndex, newIndex);
+        this._switchPrompt(oldIndex, newIndex);
     },
 
     _switchPrompt: function(oldPromptIndex, newPromptIndex)
