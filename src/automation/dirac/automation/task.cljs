@@ -34,12 +34,23 @@
         (info "Setting Dirac Extension :target-url option to" target-url)
         (<! (messages/set-option! :target-url target-url))))))
 
+(defn init-cljs-printing! []
+  (set! *print-newline* false)
+  (set! *print-fn* (fn [& args]
+                     (.apply (.-log js/console) js/console (into-array args))
+                     (transcript-host/append-to-transcript! "cljs out" (apply str args) true)))
+  (set! *print-err-fn* (fn [& args]
+                         (.apply (.-error js/console) js/console (into-array args))
+                         (transcript-host/append-to-transcript! "cljs err" (apply str args) true)))
+  nil)
+
 (defn task-setup! [& [config]]
   (when-not @setup-done                                                                                                       ; this is here to support figwheel's hot-reloading
     (vreset! setup-done true)
     ; transcript is a fancy name for "log of interesting events"
     (transcript-host/init-transcript! "transcript-box")
     (status-host/init-status! "status-box")
+    (init-cljs-printing!)
     (launcher/init!)
     ; if test runner is present, we will wait for test runner to launch the test
     ; it needs to disconnect the driver first
