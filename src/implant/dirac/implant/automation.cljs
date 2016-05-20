@@ -91,11 +91,15 @@
   (if-let [console-view (get-console-view)]
     (ocall console-view "getSuggestBoxRepresentation")))
 
+(defn break! []
+  (js-debugger))
+
 ; -- main dispatch ----------------------------------------------------------------------------------------------------------
 
 (defn dispatch-command! [command]
   (log "dispatch automation command" (pr-str command))
   (case (:action command)
+    :break (break!)
     :switch-inspector-panel (show-inspector-panel! (:panel command))
     :switch-to-dirac-prompt (switch-to-dirac-prompt!)
     :switch-to-js-prompt (switch-to-js-prompt!)
