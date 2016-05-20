@@ -118,9 +118,11 @@
   (go
     (if-let [runtime-config (<! (eval/get-runtime-config))]
       (do
-        (let [weasel-options (utils/remove-nil-values {:verbose?        (:weasel-verbose runtime-config)
+        (let [runtime-tag (<! (eval/get-runtime-tag))
+              weasel-options (utils/remove-nil-values {:verbose?        (:weasel-verbose runtime-config)
                                                        :auto-reconnect? (:weasel-auto-reconnect runtime-config)
-                                                       :pre-eval-delay  (:weasel-pre-eval-delay runtime-config)})]
+                                                       :pre-eval-delay  (:weasel-pre-eval-delay runtime-config)
+                                                       :ready-msg       {:ident runtime-tag}})]
           (info (str "Connecting to a weasel server at " url ". Weasel options:") weasel-options)
           (weasel-client/connect! url weasel-options)))
       (display-prompt-status (failed-to-retrieve-client-config-msg "in connect-to-weasel-server!")))))
