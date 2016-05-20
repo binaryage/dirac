@@ -85,7 +85,6 @@
    (assert @done)
    (go
      (transcript-host/disable-transcript!)
-     (messages/tear-down!)
      (<! (messages/wait-for-all-pending-replies-or-timeout! (get-pending-replies-wait-timeout)))
      (feedback/done-feedback!)
      (if runner-present?
@@ -94,8 +93,9 @@
            (browser-state-cleanup!))                                                                                          ; note: if task runner wasn't successful we leave browser in failed state for possible inspection
          (signal-task-finished! (successful-task-run?)))
        (do                                                                                                                    ; this is for convenience when running tests manually
-         (<! (messages/switch-to-task-runner-tab!))
-         (<! (messages/focus-task-runner-window!)))))))
+         (messages/switch-to-task-runner-tab!)
+         (messages/focus-task-runner-window!)))
+     (messages/tear-down!))))
 
 (defn task-finished! []
   (go

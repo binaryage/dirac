@@ -33,8 +33,7 @@
 (defn wait-for-reply! [message-id reply-timeout info]
   {:pre [(number? message-id)
          (number? reply-timeout)]}
-  (if @should-tear-down?
-    (error (str "wait-for-reply! requested after tear-down? " message-id ": " (pr-str info))))
+  (assert (not @should-tear-down?) (str "wait-for-reply! requested after tear-down? " message-id ": " (pr-str info)))
   (let [reply-channel (chan)
         timeout-channel (timeout reply-timeout)
         observer (fn [reply-message]
@@ -79,7 +78,9 @@
     (oset js-message ["id"] message-id)
     (let [post-message! #(.postMessage js/window js-message "*")]
       (if (or (nil? reply-timeout) (= :no-timeout reply-timeout))
-        (post-message!)
+        (go
+          (post-message!)
+          nil)
         (let [reply-channel (wait-for-reply! message-id reply-timeout js-message)]
           (post-message!)
           reply-channel)))))
@@ -112,7 +113,7 @@
                             :action      action}))
 
 (defn switch-to-task-runner-tab! []
-  (post-message! #js {:type "marion-switch-to-task-runner-tab"}))
+  (post-message! #js {:type "marion-switch-to-task-runner-tab"} :no-timeout))
 
 (defn focus-task-runner-window! []
-  (post-message! #js {:type "marion-focus-task-runner-window"}))
+  (post-message! #js {:type "marion-focus-task-runner-window"} :no-timeout))
