@@ -2,7 +2,7 @@
   (:require-macros [cljs.core.async.macros :refer [go go-loop]])
   (:require [cljs.core.async :refer [put! <! chan timeout alts! close!]]
             [chromex.support :refer-macros [oget oset ocall oapply]]
-            [chromex.logging :refer-macros [log]]
+            [chromex.logging :refer-macros [log error]]
             [dirac.automation.messages :as messages]
             [dirac.automation.task :as task]
             [dirac.automation.transcript-host :as transcript]
@@ -153,8 +153,12 @@
 (defn print-suggest-box-representation [devtools-id]
   (go
     (let [rep (<! (get-suggest-box-representation devtools-id))
-          description (reader/read-string (oget rep "data"))]
-      (println description))))
+          data (oget rep "data")]
+      (if (string? data)
+        (println (reader/read-string data))
+        (do
+          (error "unexpected get-suggest-box-representation reply" rep)
+          (throw "print-suggest-box-representation failed"))))))
 
 (defn dispatch-console-prompt-input!
   ([input] (assert false))
