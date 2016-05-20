@@ -261,6 +261,10 @@ function unique(a) {
   return Array.from(new Set(a));
 }
 
+function getRelevantSourceCodes(workspace) {
+  return workspace.uiSourceCodes().filter(sc => sc.project().type() === WebInspector.projectTypes.Network);
+}
+
 // --- parsing namespaces ---------------------------------------------------------------------------------------------------
 
 function parseClojureScriptNamespace(url, cljsSourceCode) {
@@ -426,7 +430,7 @@ function extractNamespaceSymbolsAsyncWorker(namespaceName) {
 
   return new Promise((function (resolve) {
     var urlMatcherFn = prepareUrlMatcher(namespaceName);
-    var uiSourceCodes = workspace.uiSourceCodes();
+    var uiSourceCodes = getRelevantSourceCodes(workspace);
 
     // not there may be multiple matching sources for given namespaceName
     // figwheel reloading is just adding new files and not removing old ones
@@ -489,7 +493,7 @@ function extractNamespacesAsyncWorker() {
   }
 
   return new Promise((function (resolve) {
-    var uiSourceCodes = workspace.uiSourceCodes();
+    var uiSourceCodes = getRelevantSourceCodes(workspace);
     var promises = [];
     for (var i=0; i<uiSourceCodes.length; i++) {
       var uiSourceCode = uiSourceCodes[i];
