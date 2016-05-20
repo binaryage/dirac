@@ -61,8 +61,9 @@
 ; -- message dispatch -------------------------------------------------------------------------------------------------------
 
 (defn process-message! [client message]
-  (let [message-type (oget message "type")]
-    (log "dispatch content script message" message-type (envelope message))
+  (let [message-type (oget message "type")
+        message-id (oget message "id")]
+    (log "dispatch content script message" message-id message-type (envelope message))
     (case message-type
       "marion-subscribe-transcript" (subscribe-client-to-transcript! message client)
       "marion-unsubscribe-transcript" (unsubscribe-client-from-transcript! message client)
