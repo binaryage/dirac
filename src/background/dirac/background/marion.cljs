@@ -38,8 +38,8 @@
 
 (defn automate-dirac-frontend! [message-id message]
   (let [{:keys [action]} message
-    (log "automate-dirac-frontend!" action (envelope message))
         devtools-id (utils/parse-int (:devtools-id message))]
+    (log "automate-dirac-frontend!" (str "#" devtools-id) action (envelope message))
     (if (state/get-devtools-descriptor devtools-id)
       (go
         (let [reply (<! (helpers/automate-devtools! devtools-id action))]
@@ -70,12 +70,12 @@
       (state/set-marion-port! nil))
     (warn "unregister-marion! called when no previous marion port!")))
 
-(defn process-marion-message [context data]
+(defn process-marion-message! [context data]
   (let [message-id (oget data "id")
         payload (oget data "payload")
         message (reader/read-string payload)
         command (:command message)]
-    (log "process-marion-message" command (envelope message))
+    (log "process-marion-message" message-id command (envelope message))
     (case command
       :set-option (set-option! message-id message)
       :reset-devtools-id-counter (reset-devtools-id-counter! message-id message)
@@ -86,7 +86,7 @@
 (defn run-marion-message-loop! [context marion-port]
   (go-loop []
     (when-let [data (<! marion-port)]
-      (process-marion-message context data)
+      (process-marion-message! context data)
       (recur))
     (unregister-marion!)))
 
