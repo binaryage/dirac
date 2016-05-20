@@ -2,7 +2,8 @@
   (:require [chromex.support :refer-macros [oget oset ocall oapply]]
             [chromex.logging :refer-macros [log info warn error group group-end]]
             [chromex.protocols :refer [post-message! get-sender get-name]]
-            [devtools.toolbox :as toolbox]))
+            [devtools.toolbox :as toolbox]
+            [dirac.utils :as utils]))
 
 (defonce initial-state
   {:last-devtools-id     0
@@ -34,7 +35,7 @@
 
 (defn get-devtools-descriptor [id]
   (let [descriptors (get-devtools-descriptors)]
-    (get descriptors (int id))))
+    (get descriptors (utils/parse-int id))))
 
 ; -- devtools ids -----------------------------------------------------------------------------------------------------------
 

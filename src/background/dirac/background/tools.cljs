@@ -135,7 +135,7 @@
         (warn "no active tab?")))))
 
 (defn close-tab-with-id! [tab-id-or-ids]
-  (let [ids (if (coll? tab-id-or-ids) (into-array tab-id-or-ids) (int tab-id-or-ids))]
+  (let [ids (if (coll? tab-id-or-ids) (into-array tab-id-or-ids) (utils/parse-int tab-id-or-ids))]
     (tabs/remove ids)))
 
 (defn close-dirac-devtools! [devtools-id]

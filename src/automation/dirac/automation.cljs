@@ -7,7 +7,8 @@
             [dirac.automation.task :as task]
             [dirac.automation.transcript-host :as transcript]
             [dirac.automation.helpers :as helpers]
-            [cljs.reader :as reader]))
+            [cljs.reader :as reader]
+            [dirac.utils :as utils]))
 
 (def label "automate")
 
@@ -223,7 +224,7 @@
     (let [waiting-for-devtools-to-get-ready (wait-for-devtools)
           reply (<! (post-open-dirac-devtools-request!))]
       (<! waiting-for-devtools-to-get-ready)
-      (int (oget reply "data")))))
+      (utils/parse-int (oget reply "data")))))
 
 (defn close-dirac-devtools!
   ([] (assert false))

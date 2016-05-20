@@ -5,7 +5,8 @@
             [chromex.support :refer-macros [oget ocall oapply]]
             [chromex.logging :refer-macros [log warn error]]
             [dirac.implant.feedback :as feedback]
-            [clojure.string :as string]))
+            [clojure.string :as string]
+            [dirac.utils :as utils]))
 
 ; -- configuration ----------------------------------------------------------------------------------------------------------
 
@@ -251,7 +252,7 @@
 (defn get-runtime-repl-api-version []
   (go
     (let [[value] (<! (eval-in-context! :default "dirac.runtime.repl.get_api_version()"))]
-      (int value))))
+      (utils/parse-int value))))
 
 (defn get-runtime-config []
   (go
@@ -267,7 +268,7 @@
 
 (defn present-server-side-output! [job-id kind text]
   (feedback/post! (str "present-server-side-output! " kind " > " text))
-  (let [code (output-template (int job-id) kind text)]
+  (let [code (output-template (utils/parse-int job-id) kind text)]
     (eval-in-context! :default code)))
 
 ; -- fancy evaluation in currently selected context -------------------------------------------------------------------------

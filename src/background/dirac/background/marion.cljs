@@ -8,7 +8,8 @@
             [dirac.background.state :as state]
             [cljs.reader :as reader]
             [dirac.background.helpers :as helpers]
-            [dirac.options.model :as options]))
+            [dirac.options.model :as options]
+            [dirac.utils :as utils]))
 
 ; -- marion event handlers --------------------------------------------------------------------------------------------------
 
@@ -37,8 +38,8 @@
 
 (defn automate-dirac-frontend! [message-id message]
   (let [{:keys [action]} message
-        devtools-id (int (:devtools-id message))]
     (log "automate-dirac-frontend!" action (envelope message))
+        devtools-id (utils/parse-int (:devtools-id message))]
     (if (state/get-devtools-descriptor devtools-id)
       (go
         (let [reply (<! (helpers/automate-devtools! devtools-id action))]

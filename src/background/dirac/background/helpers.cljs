@@ -9,7 +9,8 @@
             [dirac.settings :refer-macros [get-automation-entry-point-key]]
             [dirac.background.action :as action]
             [dirac.background.state :as state]
-            [dirac.utils :as utils])
+            [dirac.utils :as utils]
+            [cljs.reader :as reader])
   (:import goog.Uri
            goog.Uri.QueryData))
 
@@ -53,7 +54,7 @@
       (runtime/get-url (make-relative-url html-file-path all-params)))))
 
 (defn extract-devtools-id-from-url [url]
-  (int (get-query-param (str url) "devtools_id")))
+  (utils/parse-int (get-query-param (str url) "devtools_id")))
 
 ; -- logging helpers --------------------------------------------------------------------------------------------------------
 
