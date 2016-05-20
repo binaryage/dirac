@@ -19,7 +19,7 @@
 
 (defn start-nrepl-server! [& [host port timeout]]
   (nrepl.ack/reset-ack-port!)
-  (let [effective-port (Integer/parseInt (or port (env :dirac-nrepl-server-port) (get-backend-tests-nrepl-server-port)))
+  (let [effective-port (Integer/parseInt (str (or port (env :dirac-nrepl-server-port) (get-backend-tests-nrepl-server-port))))
         effective-host (or host (env :dirac-nrepl-server-host) (get-backend-tests-nrepl-server-host))
         effective-timeout (or timeout (get-backend-tests-nrepl-server-timeout))
         ack-server (start-ack-server! effective-host)

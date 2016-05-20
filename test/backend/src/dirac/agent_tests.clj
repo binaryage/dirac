@@ -49,7 +49,7 @@
 
 (defn setup-tests []
   (log/debug "setup-tests")
-  (if-let [[server port] (start-nrepl-server!)]
+  (if-let [[server port] (start-nrepl-server! (get-backend-tests-nrepl-server-host) (get-backend-tests-nrepl-server-port))]
     (do
       (log/info "nrepl server started on" port)
       (reset! current-nrepl-server server)
@@ -60,7 +60,7 @@
   (log/debug "teardown-tests")
   (when-let [current-server @current-nrepl-server]
     (stop-nrepl-server! current-server)
-    (log/info "nrepl server on" @current-nrepl-server-port "stopped")
+    (log/info "nrepl server stopped on" @current-nrepl-server-port)
     (reset! current-nrepl-server nil)
     (reset! current-nrepl-server-port nil)))
 
@@ -104,7 +104,7 @@
                                                              :port tunnel-port}}))]
       (is (.contains agent-output (str "Connected to nREPL server at " server-url)))
       (is (.contains agent-output (str "Tunnel is accepting connections at " tunner-url)))
-      (log/info "dirac agent started at" tunnel-port)
+      (log/info "dirac agent started on" tunnel-port)
       (let [tunnel (tunnel-client/create! tunner-url)]
         (expect-event! tunnel :open)
         (tunnel-client/send! tunnel {:op      :ready
@@ -122,4 +122,4 @@
           (expect-status-msg! tunnel ["done"])
           (tunnel-client/send! tunnel {:op :bootstrap-done})))
       (agent/destroy!)
-      (log/info "dirac agent destroyed at" tunnel-port))))
+      (log/info "dirac agent destroyed on" tunnel-port))))
