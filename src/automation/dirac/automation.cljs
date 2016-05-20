@@ -5,12 +5,16 @@
             [chromex.logging :refer-macros [log error]]
             [dirac.automation.messages :as messages]
             [dirac.automation.task :as task]
+            [dirac.automation.runner :as runner]
             [dirac.automation.transcript-host :as transcript]
             [dirac.automation.helpers :as helpers]
             [cljs.reader :as reader]
             [dirac.utils :as utils]))
 
 (def label "automate")
+
+(defn wait-for-resume! []
+  (runner/wait-for-resume!))
 
 ; -- matchers ---------------------------------------------------------------------------------------------------------------
 
