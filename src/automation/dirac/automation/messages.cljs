@@ -52,7 +52,7 @@
           watcher (fn [_ _ _ state]
                     (when (empty? (keys state))
                       (remove-watch reply-subscribers key)
-                      (vreset! @waiting-for-pending-replies? false)
+                      (vreset! waiting-for-pending-replies? false)
                       (close! channel)))]
       (vreset! waiting-for-pending-replies? true)
       (add-watch reply-subscribers key watcher)
