@@ -571,6 +571,14 @@ WebInspector.ConsoleView.prototype = {
         dirac.feedback("repl eval job ended");
     },
 
+    /**
+     * @return {!string}
+     */
+    getSuggestBoxRepresentation: function() {
+        var promptDescriptor = this.getCurrentPromptDescriptor();
+        return promptDescriptor.id + " prompt: " + promptDescriptor.prompt.getSuggestBoxRepresentation();
+    },
+
     _onConsoleDiracMessage: function(event)
     {
         var message = (event.data);
@@ -581,7 +589,7 @@ WebInspector.ConsoleView.prototype = {
         switch (command) {
             default:
                 throw ("unrecognized Dirac message: " + command);
-        };
+        }
     },
 
     /**

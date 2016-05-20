@@ -829,6 +829,13 @@ WebInspector.TextPrompt.prototype = {
         return this._proxyElement || null;
     },
 
+    /**
+     * @return {!string}
+     */
+    getSuggestBoxRepresentation: function() {
+        return "getSuggestBoxRepresentation not implemented for WebInspector.TextPrompt";
+    },
+
     __proto__: WebInspector.Object.prototype
 }
 

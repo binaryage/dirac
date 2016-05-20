@@ -83,6 +83,10 @@
   (if-let [console-view (get-console-view)]
     (ocall console-view "disableConsoleFeedback")))
 
+(defn get-suggest-box-representation []
+  (if-let [console-view (get-console-view)]
+    (ocall console-view "getSuggestBoxRepresentation")))
+
 ; -- main dispatch ----------------------------------------------------------------------------------------------------------
 
 (defn dispatch-command! [command]
@@ -98,6 +102,7 @@
     :dispatch-console-prompt-action (dispatch-console-prompt-action! (:input command))
     :enable-console-feedback (enable-console-feedback!)
     :disable-console-feedback (disable-console-feedback!)
+    :get-suggest-box-representation (get-suggest-box-representation)
     (warn "received unknown automation command:" (pr-str command))))
 
 ; -- automation -------------------------------------------------------------------------------------------------------------

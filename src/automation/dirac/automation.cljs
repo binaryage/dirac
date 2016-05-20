@@ -6,7 +6,8 @@
             [dirac.automation.messages :as messages]
             [dirac.automation.task :as task]
             [dirac.automation.transcript-host :as transcript]
-            [dirac.automation.helpers :as helpers]))
+            [dirac.automation.helpers :as helpers]
+            [cljs.reader :as reader]))
 
 (def label "automate")
 
@@ -143,6 +144,17 @@
   ([] (assert false))
   ([devtools-id]
    (automate-dirac-frontend! devtools-id {:action :clear-console-prompt})))
+
+(defn get-suggest-box-representation
+  ([] (assert false))
+  ([devtools-id]
+   (automate-dirac-frontend! devtools-id {:action :get-suggest-box-representation})))
+
+(defn print-suggest-box-representation [devtools-id]
+  (go
+    (let [rep (<! (get-suggest-box-representation devtools-id))
+          description (reader/read-string (oget rep "data"))]
+      (println description))))
 
 (defn dispatch-console-prompt-input!
   ([input] (assert false))
