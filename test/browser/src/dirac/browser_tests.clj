@@ -66,7 +66,9 @@
 
 (def env-to-be-exported #{:dirac-agent-host
                           :dirac-agent-port
-                          :dirac-agent-verbose})
+                          :dirac-agent-verbose
+                          :dirac-weasel-auto-reconnect
+                          :dirac-weasel-verbose})
 
 (defn extract-dirac-env-config-as-url-params [env]
   (let [dirac-pattern #"^dirac-(.*)$"

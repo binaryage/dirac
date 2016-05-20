@@ -14,6 +14,7 @@ export DIRAC_CHROME_REMOTE_DEBUGGING_PORT=9444
 export DIRAC_NREPL_SERVER_PORT=13040
 export DIRAC_AGENT_PORT=13041
 export DIRAC_NREPL_WEASEL_PORT=13042
+# export DIRAC_WEASEL_VERBOSE=1
 
 echo "Running all browser tests..."
 lein with-profile +test-runner run -m "$@"
