@@ -1,6 +1,6 @@
 (ns dirac.background.helpers
   (:require-macros [cljs.core.async.macros :refer [go go-loop]])
-  (:require [cljs.core.async :refer [<! chan]]
+  (:require [cljs.core.async :refer [<! chan put! close!]]
             [chromex.support :refer-macros [oget oset ocall oapply]]
             [chromex.logging :refer-macros [log info warn error group group-end]]
             [chromex.ext.tabs :as tabs]
@@ -13,6 +13,11 @@
             [cljs.reader :as reader])
   (:import goog.Uri
            goog.Uri.QueryData))
+
+(defn ^:dynamic warn-about-unexpected-number-views [devtools-id views]
+  (warn (str "found unexpected number views with enabled automation support for devtools #" devtools-id "\n")
+        views "\n"
+        "targeting only the first one"))
 
 ; -- uri helpers ------------------------------------------------------------------------------------------------------------
 
@@ -94,21 +99,46 @@
   {:post [(fn? %)]}
   (oget view (get-automation-entry-point-key)))
 
+(defn safe-serialize [value]
+  (try
+    (pr-str value)
+    (catch :default e
+      (error "failed to serialize value:" value e))))
+
+(defn safe-unserialize [serialized-value]
+  (try
+    (reader/read-string serialized-value)
+    (catch :default e
+      (error "failed to unserialize value:" serialized-value e)
+      ::reply-unserialization-failed)))
+
+(defn automate-action! [automate-fn action]
+  (let [channel (chan)]
+    (if-let [serialized-action (safe-serialize action)]
+      (let [reply-callback (fn [serialized-reply]
+                             (if-let [reply (safe-unserialize serialized-reply)]
+                               (put! channel reply))
+                             (close! channel))]
+        ; WARNING: here we are crossing boundary between background and implant projects
+        ;          both cljs code-bases are potentially compiled under :advanced mode but resulting in different minification
+        ;          that is why cannot pass any cljs values over this boundary
+        ;          we have to strictly serialize results on both ends, that is why we use callbacks here and do not pass channels
+        (automate-fn serialized-action reply-callback))
+      (put! channel ::action-serialization-failed))
+    channel))
+
 (defn automate-devtools! [devtools-id action]
-  (go
-    (let [matching-views (get-devtools-views devtools-id)
-          matching-views-with-automation-support (filter has-automation-support? matching-views)]
-      (if (> (count matching-views-with-automation-support) 1)
-        (warn (str "found unexpected number views with enabled automation support for devtools #" devtools-id "\n")
-              matching-views-with-automation-support "\n"
-              "targeting only the first one"))
-      (if-let [view (first matching-views-with-automation-support)]
-        (let [automate-fn (get-automation-entry-point view)]
-          (try
-            (<! (automate-fn (pr-str action)))
-            (catch :default e
-              (error (str "unable to automate dirac devtools #" devtools-id "\n")
-                     view e))))))))
+  (let [matching-views-to-devtools-id (get-devtools-views devtools-id)
+        matching-views-with-automation-support (filter has-automation-support? matching-views-to-devtools-id)]
+    (if (> (count matching-views-with-automation-support) 1)
+      (warn-about-unexpected-number-views devtools-id matching-views-with-automation-support))
+    (if-let [view (first matching-views-with-automation-support)]
+      (try
+        (automate-action! (get-automation-entry-point view) action)
+        (catch :default e
+          (error (str "unable to automate dirac devtools #" devtools-id) view e)
+          (go ::failure)))
+      (go ::no-views))))
 
 (defn close-all-extension-tabs! []
   (let [views (extension/get-views #js {:type "tab"})]

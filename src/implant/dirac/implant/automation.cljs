@@ -12,8 +12,10 @@
 
 (defn show-inspector-panel! [panel]
   (let [panel-name (name panel)
-        inspector-view (get-inspector-view)]
-    (ocall inspector-view "showPanel" panel-name)))
+        inspector-view (get-inspector-view)
+        panel-promise (ocall inspector-view "showPanel" panel-name)]
+    (if panel-promise
+      (ocall panel-promise "then" (fn [_panel] true)))))
 
 (defn get-inspector-current-panel-name []
   (let [inspector-view (get-inspector-view)]
@@ -34,7 +36,9 @@
         inspector-view (get-inspector-view)]
     (if (ocall inspector-view "drawerVisible")
       (if-not (= (ocall inspector-view "selectedViewInDrawer") view-name)
-        (ocall inspector-view "showViewInDrawer" view-name true)))))
+        (do
+          (ocall inspector-view "showViewInDrawer" view-name true)
+          true)))))
 
 (defn open-drawer-console-if-not-on-console-panel! []
   (when-not (= (get-inspector-current-panel-name) "console")
@@ -107,22 +111,47 @@
 
 ; -- automation -------------------------------------------------------------------------------------------------------------
 
-(defn automate [command]
+(defn safe-automate! [command]
   {:pre [(map? command)]}
   (try
-    (let [result (dispatch-command! command)]
-      (utils/to-channel result))
+    (dispatch-command! command)
     (catch :default e
-      (feedback-support/post! (str "automation exception while performing " (pr-str command) " => " e "\n"
-                                   (.-stack e)))
-      (throw e))))
+      (error "failed to dispatch automation command: " (pr-str command) e)
+      ::automation-dispatch-failed)))
 
 ; -- installation -----------------------------------------------------------------------------------------------------------
 
-(defn automation-handler [message]
-  {:pre [(string? message)]}
-  (let [command (reader/read-string message)]
-    (automate command)))
+(defn safe-serialize [value]
+  (try
+    (pr-str value)
+    (catch :default e
+      (error "dirac.implant.automation: unable to serialize value" e "\n" value))))
+
+(defn safe-unserialize [serialized-value]
+  (try
+    (reader/read-string serialized-value)
+    (catch :default e
+      (error "dirac.implant.automation: unable to unserialize value" e "\n" value))))
+
+(defn make-marshalled-callback [callback]
+  (fn [reply]
+    (if-let [serialized-reply (safe-serialize reply)]
+      (callback serialized-reply)
+      (callback ::reply-serialization-failed))))
+
+; WARNING: here we are crossing boundary between background and implant projects
+;          both cljs code-bases are potentially compiled under :advanced mode but resulting in different minification
+;          that is why cannot pass any cljs values over this boundary
+;          we have to strictly serialize results on both ends, that is why we use callbacks here and do not pass channels
+(defn automation-handler [message callback]
+  {:pre [(string? message)
+         (fn? callback)]}
+  (if-let [command (safe-unserialize message)]
+    (let [result (safe-automate! command)]
+      ; result can potentially be promise or core.async channel,
+      ; here we use generic code to turn it back to callback
+      (utils/to-callback result (make-marshalled-callback callback)))
+    (callback ::command-unserialization-failed)))
 
 (defn install-automation-support! []
   (oset js/window [(get-automation-entry-point-key)] automation-handler))
