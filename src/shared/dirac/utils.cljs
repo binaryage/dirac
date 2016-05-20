@@ -35,11 +35,13 @@
 
 (defn turn-promise-into-channel [promise]
   (let [channel (chan)]
-    (.then promise #(put! channel %))
+    (ocall promise "then" #(put! channel %))
     channel))
+
+(def Promise (oget js/window "Promise"))
 
 (defn to-channel [o]
   (cond
     (satisfies? async-protocols/Channel o) o
-    (instance? js/Promise o) (turn-promise-into-channel o)
+    (instance? Promise o) (turn-promise-into-channel o)
     :else (go o)))
