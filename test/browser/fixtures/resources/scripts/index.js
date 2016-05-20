@@ -21,13 +21,17 @@ function getIndex(re) {
   return index;
 }
 
+function getCurrentUrlQuery() {
+  return window.location.search.replace("?", "");
+}
+
 function genTaskList(runnerUrl, tasks) {
   var lines = [
     "<div class='tasks'>",
     "<span class='tasks-title'>AVAILABLE TASKS:</span>",
     "<ol class='suite-list'>"];
 
-  var lastPrefix;
+  var lastPrefix = null;
 
   for (var i=0; i<tasks.length; i++) {
     var ns = tasks[i];
@@ -46,7 +50,7 @@ function genTaskList(runnerUrl, tasks) {
       lines.push("<ol class='task-list'>");
     }
 
-    var line = "<li><a href=\""+ runnerUrl +"?task="+ ns +"\">"+lastPart+"</a></li>";
+    var line = "<li><a href=\"" + runnerUrl + "?task=" + ns + "&" + getCurrentUrlQuery() + "\">" + lastPart + "</a></li>";
     lines.push(line);
   }
 
