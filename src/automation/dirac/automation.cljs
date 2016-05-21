@@ -93,7 +93,7 @@
 (defn wait-for-devtools-close [devtools-id]
   (wait-for-devtools-unregistration devtools-id))
 
-(defn wait-for-prompt-edit [devtools-id]
+(defn wait-for-prompt-to-enter-edit-mode [devtools-id]
   (wait-for-devtools-substr-match devtools-id "setDiracPromptMode('edit')"))
 
 (defn wait-for-console-initialization [devtools-id]
@@ -119,7 +119,7 @@
 (defn switch-inspector-panel! [devtools-id panel]
   (automate-dirac-frontend! devtools-id {:action :switch-inspector-panel :panel panel}))
 
-(defn switch-to-dirac-prompt! [devtools-id]
+(defn switch-prompt-to-dirac! [devtools-id]
   (automate-dirac-frontend! devtools-id {:action :switch-to-dirac-prompt}))
 
 (defn switch-to-js-prompt! [devtools-id]
@@ -134,7 +134,7 @@
 (defn get-suggest-box-representation [devtools-id]
   (automate-dirac-frontend! devtools-id {:action :get-suggest-box-representation}))
 
-(defn print-suggest-box-representation [devtools-id]
+(defn print-suggest-box-state! [devtools-id]
   (go
     (let [rep (<! (get-suggest-box-representation devtools-id))
           data (oget rep "data")]
@@ -144,7 +144,7 @@
           (error "unexpected get-suggest-box-representation reply" rep)
           (throw "print-suggest-box-representation failed"))))))
 
-(defn dispatch-console-prompt-input! [devtools-id input]
+(defn add-input-to-console! [devtools-id input]
   {:pre [(string? input)]}
   (automate-dirac-frontend! devtools-id {:action :dispatch-console-prompt-input
                                          :input  input}))
@@ -156,10 +156,10 @@
 
 (defn console-enter! [devtools-id input]
   (go
-    (<! (dispatch-console-prompt-input! devtools-id input))
+    (<! (add-input-to-console! devtools-id input))
     (<! (dispatch-console-prompt-action! devtools-id "enter"))))
 
-(defn console-exec-and-wait-for-match! [devtools-id input match-or-matches]
+(defn console-exec-and-match! [devtools-id input match-or-matches]
   (let [matches (if (coll? match-or-matches)
                   match-or-matches
                   [match-or-matches])]

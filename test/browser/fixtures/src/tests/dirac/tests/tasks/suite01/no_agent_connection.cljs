@@ -7,5 +7,5 @@
   (<!* a/open-tab-with-scenario! "no-agent")
   (<!* a/open-dirac-devtools!)
   (<!* a/switch-to-console!)
-  (<!* a/switch-to-dirac-prompt!)
+  (<!* a/switch-prompt-to-dirac!)
   (<!* a/wait-for-devtools-substr-match "will try reconnect in 4 seconds" (seconds 20)))

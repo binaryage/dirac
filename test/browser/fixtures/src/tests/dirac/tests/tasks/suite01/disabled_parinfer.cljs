@@ -7,5 +7,5 @@
   (<!* a/set-option! :enable-parinfer false)
   (<!* a/open-dirac-devtools!)
   (<!* a/switch-to-console!)
-  (<!* a/switch-to-dirac-prompt!)
+  (<!* a/switch-prompt-to-dirac!)
   (<!* a/set-option! :enable-parinfer true))

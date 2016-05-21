@@ -6,28 +6,28 @@
   (<!* a/open-tab-with-scenario! "completions")
   (<!* a/open-dirac-devtools!)
   (<!* a/switch-to-console!)
-  (<!* a/switch-to-dirac-prompt!)
-  (<!* a/wait-for-prompt-edit)
+  (<!* a/switch-prompt-to-dirac!)
+  (<!* a/wait-for-prompt-to-enter-edit-mode)
   (<!* a/enable-console-feedback!)
   ; ---
   ; test in-ns completions for our namespace
   (<!* a/clear-console-prompt!)
-  (<!* a/console-exec-and-wait-for-match!
+  (<!* a/console-exec-and-match!
        "(in-ns 'dirac.tests.scenarios.completions.workspace)"
        "setDiracPromptNS('dirac.tests.scenarios.completions.workspace')")
-  (<!* a/dispatch-console-prompt-input! "sample")
-  (<!* a/print-suggest-box-representation)
+  (<!* a/add-input-to-console! "sample")
+  (<!* a/print-suggest-box-state!)
   ; test javascript completions in js/ namespace
   (<!* a/clear-console-prompt!)
-  (<!* a/dispatch-console-prompt-input! "js/docume")
-  (<!* a/print-suggest-box-representation)
-  (<!* a/dispatch-console-prompt-input! "nt.get")
-  (<!* a/print-suggest-box-representation)
+  (<!* a/add-input-to-console! "js/docume")
+  (<!* a/print-suggest-box-state!)
+  (<!* a/add-input-to-console! "nt.get")
+  (<!* a/print-suggest-box-state!)
   ; test fully qualified complations
   (<!* a/clear-console-prompt!)
-  (<!* a/dispatch-console-prompt-input! "cljs.core/part")
-  (<!* a/print-suggest-box-representation)
+  (<!* a/add-input-to-console! "cljs.core/part")
+  (<!* a/print-suggest-box-state!)
   ; test namespace completions
   (<!* a/clear-console-prompt!)
-  (<!* a/dispatch-console-prompt-input! "devtools.")
-  (<!* a/print-suggest-box-representation))
+  (<!* a/add-input-to-console! "devtools.")
+  (<!* a/print-suggest-box-state!))
