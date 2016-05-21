@@ -19,7 +19,7 @@
   (<!* a/console-exec-and-match! "(x)" "err> TypeError: Cannot read property 'call' of undefined(…)")
   (<!* a/console-exec-and-match! "(in-ns)" (str "java-trace > java.lang.IllegalArgumentException: "
                                                 "Argument to in-ns must be a symbol."))
-  (<!* a/wait-for-devtools-substr-match "DF.log> java.lang.IllegalArgumentException: Argument to in-ns must be a symbol.")
-  (<!* a/wait-for-devtools-substr-match "<elided stack trace log>")
-  (<!* a/wait-for-devtools-substr-match "JS.log>")
+  (<!* a/wait-for-devtools-match "DF.log> java.lang.IllegalArgumentException: Argument to in-ns must be a symbol.")
+  (<!* a/wait-for-devtools-match "<elided stack trace log>")
+  (<!* a/wait-for-devtools-match "JS.log>")
   (<!* a/console-exec-and-match! "(in-ns 'my.ns)" "setDiracPromptNS('my.ns')"))

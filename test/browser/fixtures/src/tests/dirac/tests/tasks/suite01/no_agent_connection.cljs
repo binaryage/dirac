@@ -8,4 +8,4 @@
   (<!* a/open-dirac-devtools!)
   (<!* a/switch-to-console!)
   (<!* a/switch-prompt-to-dirac!)
-  (<!* a/wait-for-devtools-substr-match "will try reconnect in 4 seconds" (seconds 20)))
+  (<!* a/wait-for-devtools-match "will try reconnect in 4 seconds" (seconds 20)))

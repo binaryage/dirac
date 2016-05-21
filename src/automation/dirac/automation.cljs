@@ -15,7 +15,7 @@
 
 (def ^:dynamic *last-devtools-id* nil)
 
-(defn wait-for-resume! []
+(defn ^:without-devtools-id wait-for-resume! []
   (runner/wait-for-resume!))
 
 ; -- matchers ---------------------------------------------------------------------------------------------------------------
@@ -38,19 +38,22 @@
 
 ; -- wait helpers -----------------------------------------------------------------------------------------------------------
 
-(defn wait-for-re-match [re & args]
-  (apply transcript/wait-for-match (make-re-matcher re) (str "regex: " re) args))
+(defn- make-generic-matcher [input]
+  (cond
+    (string? input) (make-substr-matcher input)
+    (regexp? input) (make-re-matcher input)
+    :else (throw (ex-info (str "don't know how to make matcher for " input " (" (type input) ")") input))))
 
-(defn wait-for-substr-match [s & args]
-  (apply transcript/wait-for-match (make-substr-matcher s) (str "substr: '" s "'") args))
+(defn- get-generic-matcher-description [input]
+  (str input " (" (type input) ")"))
 
-(defn wait-for-devtools-re-match [devtools-id re & args]
-  (let [matcher (make-and-matcher (make-devtools-matcher devtools-id) (make-re-matcher re))]
-    (apply transcript/wait-for-match matcher (str "devtools #" devtools-id ", regex: " re) args)))
+(defn ^:without-devtools-id wait-for-match [what & args]
+  (apply transcript/wait-for-match (make-generic-matcher what) (get-generic-matcher-description what) args))
 
-(defn wait-for-devtools-substr-match [devtools-id s & args]
-  (let [matcher (make-and-matcher (make-devtools-matcher devtools-id) (make-substr-matcher s))]
-    (apply transcript/wait-for-match matcher (str "devtools #" devtools-id ", substr: " s) args)))
+(defn wait-for-devtools-match [devtools-id what & args]
+  (let [matcher (make-and-matcher (make-devtools-matcher devtools-id) (make-generic-matcher what))
+        description (str "devtools #" devtools-id ", " (get-generic-matcher-description what))]
+    (apply transcript/wait-for-match matcher description args)))
 
 ; -- transcript -------------------------------------------------------------------------------------------------------------
 
@@ -67,19 +70,19 @@
   (messages/fire-chrome-event! data))
 
 (defn wait-for-devtools-registration []
-  (wait-for-substr-match "register devtools #"))
+  (wait-for-match "register devtools #"))
 
 (defn wait-for-devtools-unregistration [devtools-id]
-  (wait-for-substr-match (str "unregister devtools #" devtools-id)))
+  (wait-for-match (str "unregister devtools #" devtools-id)))
 
 (defn wait-for-implant-initialization []
-  (wait-for-substr-match "implant initialized"))
+  (wait-for-match "implant initialized"))
 
 (defn wait-for-devtools-ready []
-  (wait-for-substr-match "devtools ready"))
+  (wait-for-match "devtools ready"))
 
 (defn wait-for-elements-panel-switch []
-  (wait-for-substr-match "setCurrentPanel: elements"))
+  (wait-for-match "setCurrentPanel: elements"))
 
 (defn wait-for-devtools []
   ; TODO: to be 100% correct we should check for matching devtools id here
@@ -94,10 +97,10 @@
   (wait-for-devtools-unregistration devtools-id))
 
 (defn wait-for-prompt-to-enter-edit-mode [devtools-id]
-  (wait-for-devtools-substr-match devtools-id "setDiracPromptMode('edit')"))
+  (wait-for-devtools-match devtools-id "setDiracPromptMode('edit')"))
 
 (defn wait-for-console-initialization [devtools-id]
-  (wait-for-devtools-substr-match devtools-id "console initialized"))
+  (wait-for-devtools-match devtools-id "console initialized"))
 
 (defn ^:without-devtools-id set-option! [key value]
   (messages/set-option! key value))
@@ -166,8 +169,8 @@
     (go
       (<! (console-enter! devtools-id input))
       (doseq [match matches]
-        (<! (wait-for-devtools-substr-match devtools-id match)))
-      (<! (wait-for-devtools-substr-match devtools-id "repl eval job ended")))))
+        (<! (wait-for-devtools-match devtools-id match)))
+      (<! (wait-for-devtools-match devtools-id "repl eval job ended")))))
 
 (defn enable-console-feedback! [devtools-id]
   (automate-dirac-frontend! devtools-id {:action :enable-console-feedback}))
@@ -180,7 +183,7 @@
     (let [wait (wait-for-console-initialization devtools-id)]
       (<! (switch-inspector-panel! devtools-id :console))
       (<! wait)
-      (<! (wait-for-devtools-substr-match devtools-id "ConsoleView constructed")))))
+      (<! (wait-for-devtools-match devtools-id "ConsoleView constructed")))))
 
 ; -- devtools ---------------------------------------------------------------------------------------------------------------
 
