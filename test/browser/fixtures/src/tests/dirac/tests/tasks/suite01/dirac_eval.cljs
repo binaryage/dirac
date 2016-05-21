@@ -11,7 +11,7 @@
   (<!* a/switch-prompt-to-dirac!)
   (<!* a/wait-for-prompt-to-enter-edit-mode)
   (<!* a/enable-console-feedback!)
-  ; ---
+  ; -- test simple REPL interactions ----------------------------------------------------------------------------------------
   (<!* a/console-exec-and-match! "(+ 1 2)" "log> 3")
   (<!* a/console-exec-and-match! "(range 200)" "log> (0 1 2 3 4 …)")
   (<!* a/console-exec-and-match! "(doc filter)" "log> null")
