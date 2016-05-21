@@ -69,8 +69,10 @@ WebInspector.Main.prototype = {
 
         // for dirac testing
         if (Runtime.queryParam("reset_settings")) {
-          console.info("DIRAC TESTING: clear devtools settings because reset_settings is present in url params");
-          prefs = {};
+            dirac.feedback("reset devtools settings");
+            console.info("DIRAC TESTING: clear devtools settings because reset_settings is present in url params");
+            window.localStorage.clear(); // also wipe-out local storage to prevent tests flakiness
+            prefs = {};
         }
 
         this._createSettings(prefs);

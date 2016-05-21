@@ -3,6 +3,7 @@ automate         [:chromex.ext.commands/on-command ["open-dirac-devtools" {:rese
 extension        handling command: open-dirac-devtools
 extension        register devtools #1
 devtools #1      implant initialized
+devtools #1      reset devtools settings
 devtools #1      devtools ready
 devtools #1      setCurrentPanel: elements
 automate #1      {:action :switch-inspector-panel, :panel :console}
