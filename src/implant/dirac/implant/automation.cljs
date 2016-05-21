@@ -139,23 +139,22 @@
 
 (defn make-marshalled-callback [callback]
   (fn [reply]
-    (if-let [serialized-reply (safe-serialize reply)]
-      (callback serialized-reply)
-      (callback ::reply-serialization-failed))))
+    (callback (or (safe-serialize reply) (safe-serialize ::reply-serialization-failed)))))
 
 ; WARNING: here we are crossing boundary between background and implant projects
 ;          both cljs code-bases are potentially compiled under :advanced mode but resulting in different minification
-;          that is why cannot pass any cljs values over this boundary
+;          that is why we cannot pass any cljs values across this boundary
 ;          we have to strictly serialize results on both ends, that is why we use callbacks here and do not pass channels
 (defn automation-handler [message callback]
   {:pre [(string? message)
          (fn? callback)]}
-  (if-let [command (safe-unserialize message)]
-    (let [result (safe-automate! command)]
-      ; result can potentially be promise or core.async channel,
-      ; here we use generic code to turn it back to callback
-      (utils/to-callback result (make-marshalled-callback callback)))
-    (callback ::command-unserialization-failed)))
+  (let [marshalled-callback (make-marshalled-callback callback)]
+    (if-let [command (safe-unserialize message)]
+      (let [result (safe-automate! command)]
+        ; result can potentially be promise or core.async channel,
+        ; here we use generic code to turn it back to callback
+        (utils/to-callback result marshalled-callback))
+      (marshalled-callback ::command-unserialization-failed))))
 
 (defn install-automation-support! []
   (oset js/window [(get-automation-entry-point-key)] automation-handler))

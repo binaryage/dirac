@@ -121,8 +121,8 @@
                              (close! channel))]
         ; WARNING: here we are crossing boundary between background and implant projects
         ;          both cljs code-bases are potentially compiled under :advanced mode but resulting in different minification
-        ;          that is why cannot pass any cljs values over this boundary
-        ;          we have to strictly serialize results on both ends, that is why we use callbacks here and do not pass channels
+        ;          that is why we cannot pass any cljs values across this boundary
+        ;          we have to strictly serialize results on both ends, that is why we use callbacks and do not pass channels
         (automate-fn serialized-action reply-callback))
       (put! channel ::action-serialization-failed))
     channel))
