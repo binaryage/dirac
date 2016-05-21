@@ -1,8 +1,5 @@
 (ns dirac.automation)
 
-(defmacro without-transcript [& body]
-  `(dirac.automation.transcript-host/without-transcript-work (fn [] ~@body)))
-
 (defmacro go-task [& steps]
   (let [first-arg (first steps)
         config (if (map? first-arg) first-arg)
@@ -15,9 +12,6 @@
        (dirac.automation.launcher/register-task! task-job#)
        (dirac.automation.task/task-setup! ~config))))
 
-(defmacro with-devtools [devtools-id & body]
-  (let [devtools-id-sym (gensym)
-        sync-commands (map (fn [command] `(if-not @dirac.automation.task/done
-                                            (cljs.core.async/<! (~(first command) ~devtools-id-sym ~@(rest command))))) body)]
-    `(let [~devtools-id-sym ~devtools-id]
-       ~@sync-commands)))
+(defmacro <!* [action & args]
+  {:pre [(symbol? action)]}
+  `(cljs.core.async/<! (dirac.automation/action! ~action (meta #'~action) ~@args)))

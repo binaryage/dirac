@@ -1,9 +1,9 @@
 (ns dirac.tests.tasks.suite01.open-close-dirac
-  (:require [cljs.core.async :refer [<! timeout]]
-            [dirac.automation :as auto :refer-macros [go-task with-devtools]]))
+  (:require [cljs.core.async]
+            [dirac.automation :refer-macros [<!* go-task] :as a]))
 
 (go-task
-  (<! (auto/open-tab-with-scenario! "normal"))
-  (with-devtools (<! (auto/open-dirac-devtools!))
-    (auto/close-dirac-devtools!)
-    (auto/wait-for-devtools-close)))
+  (<!* a/open-tab-with-scenario! "normal")
+  (<!* a/open-dirac-devtools!)
+  (<!* a/close-dirac-devtools!)
+  (<!* a/wait-for-devtools-close))

@@ -13,6 +13,8 @@
 
 (def label "automate")
 
+(def ^:dynamic *last-devtools-id* nil)
+
 (defn wait-for-resume! []
   (runner/wait-for-resume!))
 
@@ -42,17 +44,13 @@
 (defn wait-for-substr-match [s & args]
   (apply transcript/wait-for-match (make-substr-matcher s) (str "substr: '" s "'") args))
 
-(defn wait-for-devtools-re-match
-  ([re] (assert false))
-  ([devtools-id re & args]
-   (let [matcher (make-and-matcher (make-devtools-matcher devtools-id) (make-re-matcher re))]
-     (apply transcript/wait-for-match matcher (str "devtools #" devtools-id ", regex: " re) args))))
+(defn wait-for-devtools-re-match [devtools-id re & args]
+  (let [matcher (make-and-matcher (make-devtools-matcher devtools-id) (make-re-matcher re))]
+    (apply transcript/wait-for-match matcher (str "devtools #" devtools-id ", regex: " re) args)))
 
-(defn wait-for-devtools-substr-match
-  ([s] (assert false))
-  ([devtools-id s & args]
-   (let [matcher (make-and-matcher (make-devtools-matcher devtools-id) (make-substr-matcher s))]
-     (apply transcript/wait-for-match matcher (str "devtools #" devtools-id ", substr: " s) args))))
+(defn wait-for-devtools-substr-match [devtools-id s & args]
+  (let [matcher (make-and-matcher (make-devtools-matcher devtools-id) (make-substr-matcher s))]
+    (apply transcript/wait-for-match matcher (str "devtools #" devtools-id ", substr: " s) args)))
 
 ; -- transcript -------------------------------------------------------------------------------------------------------------
 
@@ -92,22 +90,16 @@
     (<! (wait-for-devtools-ready))
     (<! (wait-for-elements-panel-switch))))
 
-(defn wait-for-devtools-close
-  ([] (assert false))
-  ([devtools-id]
-   (wait-for-devtools-unregistration devtools-id)))
+(defn wait-for-devtools-close [devtools-id]
+  (wait-for-devtools-unregistration devtools-id))
 
-(defn wait-for-prompt-edit
-  ([] (assert false))
-  ([devtools-id]
-   (wait-for-devtools-substr-match devtools-id "setDiracPromptMode('edit')")))
+(defn wait-for-prompt-edit [devtools-id]
+  (wait-for-devtools-substr-match devtools-id "setDiracPromptMode('edit')"))
 
-(defn wait-for-console-initialization
-  ([] (assert false))
-  ([devtools-id]
-   (wait-for-devtools-substr-match devtools-id "console initialized")))
+(defn wait-for-console-initialization [devtools-id]
+  (wait-for-devtools-substr-match devtools-id "console initialized"))
 
-(defn set-option! [key value]
+(defn ^:without-devtools-id set-option! [key value]
   (messages/set-option! key value))
 
 ; -- scenarios --------------------------------------------------------------------------------------------------------------
@@ -118,42 +110,29 @@
 (defn get-scenario-url [name]
   (str (get-base-url) "/scenarios/" name ".html?" (helpers/get-encoded-query (helpers/get-document-url))))                    ; we pass all query parameters to scenario page
 
-(defn open-tab-with-scenario! [name]
+(defn ^:without-devtools-id open-tab-with-scenario! [name]
   (append-to-transcript! (str "open-tab-with-scenario! " name))
   (messages/post-message! #js {:type "marion-open-tab-with-scenario" :url (get-scenario-url name)}))
 
 ; -- automation commands ----------------------------------------------------------------------------------------------------
 
-(defn switch-inspector-panel!
-  ([] (assert false))
-  ([devtools-id panel]
-   (automate-dirac-frontend! devtools-id {:action :switch-inspector-panel
-                                          :panel  panel})))
+(defn switch-inspector-panel! [devtools-id panel]
+  (automate-dirac-frontend! devtools-id {:action :switch-inspector-panel :panel panel}))
 
-(defn switch-to-dirac-prompt!
-  ([] (assert false))
-  ([devtools-id]
-   (automate-dirac-frontend! devtools-id {:action :switch-to-dirac-prompt})))
+(defn switch-to-dirac-prompt! [devtools-id]
+  (automate-dirac-frontend! devtools-id {:action :switch-to-dirac-prompt}))
 
-(defn switch-to-js-prompt!
-  ([] (assert false))
-  ([devtools-id]
-   (automate-dirac-frontend! devtools-id {:action :switch-to-js-prompt})))
+(defn switch-to-js-prompt! [devtools-id]
+  (automate-dirac-frontend! devtools-id {:action :switch-to-js-prompt}))
 
-(defn focus-console-prompt!
-  ([] (assert false))
-  ([devtools-id]
-   (automate-dirac-frontend! devtools-id {:action :focus-console-prompt})))
+(defn focus-console-prompt! [devtools-id]
+  (automate-dirac-frontend! devtools-id {:action :focus-console-prompt}))
 
-(defn clear-console-prompt!
-  ([] (assert false))
-  ([devtools-id]
-   (automate-dirac-frontend! devtools-id {:action :clear-console-prompt})))
+(defn clear-console-prompt! [devtools-id]
+  (automate-dirac-frontend! devtools-id {:action :clear-console-prompt}))
 
-(defn get-suggest-box-representation
-  ([] (assert false))
-  ([devtools-id]
-   (automate-dirac-frontend! devtools-id {:action :get-suggest-box-representation})))
+(defn get-suggest-box-representation [devtools-id]
+  (automate-dirac-frontend! devtools-id {:action :get-suggest-box-representation}))
 
 (defn print-suggest-box-representation [devtools-id]
   (go
@@ -165,72 +144,67 @@
           (error "unexpected get-suggest-box-representation reply" rep)
           (throw "print-suggest-box-representation failed"))))))
 
-(defn dispatch-console-prompt-input!
-  ([input] (assert false))
-  ([devtools-id input]
-   {:pre [(string? input)]}
-   (automate-dirac-frontend! devtools-id {:action :dispatch-console-prompt-input
-                                          :input  input})))
+(defn dispatch-console-prompt-input! [devtools-id input]
+  {:pre [(string? input)]}
+  (automate-dirac-frontend! devtools-id {:action :dispatch-console-prompt-input
+                                         :input  input}))
 
-(defn dispatch-console-prompt-action!
-  ([action] (assert false))
-  ([devtools-id action]
-   {:pre [(string? action)]}
-   (automate-dirac-frontend! devtools-id {:action :dispatch-console-prompt-action
-                                          :input  action})))
+(defn dispatch-console-prompt-action! [devtools-id action]
+  {:pre [(string? action)]}
+  (automate-dirac-frontend! devtools-id {:action :dispatch-console-prompt-action
+                                         :input  action}))
 
-(defn console-enter!
-  ([input] (assert false))
-  ([devtools-id input]
-   (go
-     (<! (dispatch-console-prompt-input! devtools-id input))
-     (<! (dispatch-console-prompt-action! devtools-id "enter")))))
+(defn console-enter! [devtools-id input]
+  (go
+    (<! (dispatch-console-prompt-input! devtools-id input))
+    (<! (dispatch-console-prompt-action! devtools-id "enter"))))
 
-(defn console-exec-and-wait-for-match!
-  ([input match-or-matches] (assert false))
-  ([devtools-id input match-or-matches]
-   (let [matches (if (coll? match-or-matches)
-                   match-or-matches
-                   [match-or-matches])]
-     (go
-       (<! (console-enter! devtools-id input))
-       (doseq [match matches]
-         (<! (wait-for-devtools-substr-match devtools-id match)))
-       (<! (wait-for-devtools-substr-match devtools-id "repl eval job ended"))))))
+(defn console-exec-and-wait-for-match! [devtools-id input match-or-matches]
+  (let [matches (if (coll? match-or-matches)
+                  match-or-matches
+                  [match-or-matches])]
+    (go
+      (<! (console-enter! devtools-id input))
+      (doseq [match matches]
+        (<! (wait-for-devtools-substr-match devtools-id match)))
+      (<! (wait-for-devtools-substr-match devtools-id "repl eval job ended")))))
 
-(defn enable-console-feedback!
-  ([] (assert false))
-  ([devtools-id]
-   (automate-dirac-frontend! devtools-id {:action :enable-console-feedback})))
+(defn enable-console-feedback! [devtools-id]
+  (automate-dirac-frontend! devtools-id {:action :enable-console-feedback}))
 
-(defn disable-console-feedback!
-  ([] (assert false))
-  ([devtools-id]
-   (automate-dirac-frontend! devtools-id {:action :disable-console-feedback})))
+(defn disable-console-feedback! [devtools-id]
+  (automate-dirac-frontend! devtools-id {:action :disable-console-feedback}))
 
-(defn switch-to-console-and-wait-for-it
-  ([] (assert false))
-  ([devtools-id]
-   (go
-     (let [wait (wait-for-console-initialization devtools-id)]
-       (<! (switch-inspector-panel! devtools-id :console))
-       (<! wait)
-       (<! (wait-for-devtools-substr-match devtools-id "ConsoleView constructed"))))))
+(defn switch-to-console! [devtools-id]
+  (go
+    (let [wait (wait-for-console-initialization devtools-id)]
+      (<! (switch-inspector-panel! devtools-id :console))
+      (<! wait)
+      (<! (wait-for-devtools-substr-match devtools-id "ConsoleView constructed")))))
 
 ; -- devtools ---------------------------------------------------------------------------------------------------------------
 
-(defn post-open-dirac-devtools-request! []
-  ; :reset-settings is important, becasue we want to always start with clear/deterministic devtools for reproducibility
-  (fire-chrome-event! [:chromex.ext.commands/on-command ["open-dirac-devtools" {:reset-settings 1}]]))
+(deftype DevToolsID [id])
 
-(defn open-dirac-devtools! []
+(defn ^:without-devtools-id open-dirac-devtools! []
   (go
     (let [waiting-for-devtools-to-get-ready (wait-for-devtools)
-          reply (<! (post-open-dirac-devtools-request!))]
+          reply (<! (fire-chrome-event! [:chromex.ext.commands/on-command ["open-dirac-devtools" {:reset-settings 1}]]))]
       (<! waiting-for-devtools-to-get-ready)
-      (utils/parse-int (oget reply "data")))))
+      (let [devtools-id (utils/parse-int (oget reply "data"))]
+        (set! *last-devtools-id* devtools-id)
+        (DevToolsID. devtools-id)))))                                                                                         ; note: we wrap it so we can easily detect devtools-id parameters in action! method
 
-(defn close-dirac-devtools!
-  ([] (assert false))
-  ([devtools-id]
-   (fire-chrome-event! [:chromex.ext.commands/on-command ["close-dirac-devtools" devtools-id]])))
+(defn close-dirac-devtools! [devtools-id]
+  (fire-chrome-event! [:chromex.ext.commands/on-command ["close-dirac-devtools" devtools-id]]))
+
+; -- flexible automation api ------------------------------------------------------------------------------------------------
+
+(defn action! [action-fn metadata & args]
+  (if (:without-devtools-id metadata)
+    (apply action-fn args)
+    (if (instance? DevToolsID (first args))
+      (apply action-fn (:id (first args)) (rest args))
+      (do
+        (assert *last-devtools-id* (str "action " (:name metadata) " requires prior :open-dirac-devtools call"))
+        (apply action-fn *last-devtools-id* args)))))
