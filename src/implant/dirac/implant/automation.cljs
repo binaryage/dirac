@@ -1,12 +1,10 @@
 (ns dirac.implant.automation
   (:require [chromex.logging :refer-macros [log warn error group group-end]]
             [chromex.support :refer-macros [oget oset ocall oapply]]
-            [dirac.implant.helpers :refer [get-console-view get-inspector-view]]
             [cljs.reader :as reader]
             [dirac.settings :refer-macros [get-automation-entry-point-key]]
-            [dirac.implant.helpers :as helpers]
             [dirac.utils :as utils]
-            [dirac.implant.feedback :as feedback-support]))
+            [dirac.implant.helpers :as helpers :refer [get-console-view get-inspector-view]]))
 
 ; -- commands ---------------------------------------------------------------------------------------------------------------
 
@@ -135,7 +133,7 @@
   (try
     (reader/read-string serialized-value)
     (catch :default e
-      (error "dirac.implant.automation: unable to unserialize value" e "\n" value))))
+      (error "dirac.implant.automation: unable to unserialize value" e "\n" serialized-value))))
 
 (defn make-marshalled-callback [callback]
   (fn [reply]
