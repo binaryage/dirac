@@ -14,7 +14,7 @@
 (defonce transcript-enabled (volatile! 0))
 (defonce output-recorder (chan 1024))
 (defonce active-output-observer (volatile! nil))
-(defonce rewriting-machine (atom {:state   ::default
+(defonce rewriting-machine (atom {:state   :default
                                   :context {}}))
 (defonce assigned-styles (atom {:counter 0}))
 
@@ -45,18 +45,21 @@
 
 ; -- rewriting machine ------------------------------------------------------------------------------------------------------
 
-(defn transition-rewriting-machine! [new-state]
-  {:pre [(keyword? new-state)]}
-  (swap! rewriting-machine assoc :state new-state))
-
 (defn get-rewriting-machine-state []
   (:state @rewriting-machine))
 
-(defn update-rewriting-machine-context! [f & args]
-  (apply swap! rewriting-machine update :context f args))
+(defn transition-rewriting-machine! [new-state]
+  {:pre [(keyword? new-state)]}
+  (log (str "REWRITING MACHING STATE " (get-rewriting-machine-state) " -> " new-state))
+  (swap! rewriting-machine assoc :state new-state))
 
 (defn get-rewriting-machine-context []
   (:context @rewriting-machine))
+
+(defn update-rewriting-machine-context! [f & args]
+  (let [old-context (get-rewriting-machine-context)]
+    (apply swap! rewriting-machine update :context f args)
+    (log (str "REWRITING MACHING CONTEXT " old-context " -> " (get-rewriting-machine-context)))))
 
 ; -- transcript -------------------------------------------------------------------------------------------------------------
 
@@ -111,20 +114,20 @@
 ; -- transcript rewriting ---------------------------------------------------------------------------------------------------
 
 (defn start-rewriting-machine-for-java-trace! [label text]
-  (transition-rewriting-machine! ::java-trace)
-  (update-rewriting-machine-context! assoc :logs ::expecting-java-trace)
+  (transition-rewriting-machine! :java-trace)
+  (update-rewriting-machine-context! assoc :logs :expecting-java-trace)
   [label (str (helpers/extract-first-line text) "\n<elided stack trace>")])
 
 (defn process-java-trace-state! [label text]
   (if (re-find #"DF\.log" text)
     (case (:logs (get-rewriting-machine-context))
-      ::expecting-java-trace (do
-                               (update-rewriting-machine-context! assoc :logs ::received-first-log)
-                               [label text])
-      ::received-first-log (do
-                             (update-rewriting-machine-context! dissoc :logs)
-                             (transition-rewriting-machine! ::default)
-                             [label "<elided stack trace log>"]))
+      :expecting-java-trace (do
+                              (update-rewriting-machine-context! assoc :logs :received-first-log)
+                              [label text])
+      :received-first-log (do
+                            (update-rewriting-machine-context! dissoc :logs)
+                            (transition-rewriting-machine! :default)
+                            [label "<elided stack trace log>"]))
     [label text]))
 
 (defn process-default-state! [label text]
@@ -134,8 +137,8 @@
 
 (defn rewrite-transcript! [label text]
   (case (get-rewriting-machine-state)
-    ::java-trace (process-java-trace-state! label text)
-    ::default (process-default-state! label text)))
+    :java-trace (process-java-trace-state! label text)
+    :default (process-default-state! label text)))
 
 ; -- transcript api ---------------------------------------------------------------------------------------------------------
 
@@ -144,7 +147,10 @@
          (string? label)
          (string? text)]}
   (when (transcript-enabled?)
+    (log "TRANSCRIPT" label text)
     (when-let [[effective-label effective-text] (rewrite-transcript! label text)]
+      (if (or (not= effective-label label) (not= effective-text text))
+        (log "TRANSCRIPT REWRITE\n" effective-label effective-text))
       (let [text (format-transcript effective-label effective-text)
             generated-style (determine-style effective-label effective-text)
             style (if (some? style)
