@@ -18,21 +18,12 @@
             [dirac.automation.launcher :as launcher]
             [dirac.automation.helpers :as helpers]))
 
+(declare register-global-exception-handler!)
+
 (defonce setup-done (volatile! false))
-(defonce done (volatile! false))
+(defonce exit-code (volatile! nil))
 
-(defn get-url-param [param]
-  (let [url (helpers/get-document-url)]
-    (helpers/get-query-param url param)))
-
-(defn setup-debugging-port! []
-  (go
-    (let [debugging-host (or (get-url-param "debugging_host") (get-chrome-remote-debugging-host) "http://localhost")
-          debugging-port (or (get-url-param "debugging_port") (get-chrome-remote-debugging-port) "9222")
-          target-url (str debugging-host ":" debugging-port)]
-      (when-not (= target-url (:target-url options-model/default-options))
-        (info "Setting Dirac Extension :target-url option to" target-url)
-        (<! (messages/set-option! :target-url target-url))))))
+; -- cljs printing ----------------------------------------------------------------------------------------------------------
 
 (defn init-cljs-printing! []
   (set! *print-newline* false)
@@ -44,10 +35,60 @@
                          (transcript-host/append-to-transcript! "cljs err" (apply str args) true)))
   nil)
 
+; -- chrome driver support --------------------------------------------------------------------------------------------------
+
+(defn setup-debugging-port! []
+  (let [debugging-host (or (helpers/get-document-url-param "debugging_host")
+                           (get-chrome-remote-debugging-host)
+                           "http://localhost")
+        debugging-port (or (helpers/get-document-url-param "debugging_port")
+                           (get-chrome-remote-debugging-port)
+                           "9222")
+        target-url (str debugging-host ":" debugging-port)]
+    (when-not (= target-url (:target-url options-model/default-options))
+      (info (str "Setting Dirac Extension :target-url option to " target-url))
+      (messages/set-option! :target-url target-url))))
+
+; -- helpers ----------------------------------------------------------------------------------------------------------------
+
+(defn reset-browser-state! []
+  (messages/post-message! #js {:type "marion-close-all-tabs"} :no-timeout)
+  (messages/post-extension-command! {:command :tear-down} :no-timeout))                                                       ; to fight https://bugs.chromium.org/p/chromium/issues/detail?id=355075
+
+(defn show-task-runner! []
+  (messages/switch-to-task-runner-tab!)
+  (messages/focus-task-runner-window!))
+
+; this signals to the task runner that he can reconnect chrome driver and check the results
+(defn signal-finished-task! [success?]
+  (let [client-config {:name    "Signaller"
+                       :on-open (fn [client]
+                                  (go
+                                    (<! (timeout (get-signal-client-task-result-delay)))
+                                    (ws-client/send! client {:op      :task-result
+                                                             :success success?})
+                                    (<! (timeout (get-signal-client-close-delay)))
+                                    (ws-client/close! client)))}]
+    (ws-client/connect! (get-signal-server-url) client-config)))
+
+; -- task state -------------------------------------------------------------------------------------------------------------
+
+(defn success? []
+  (= @exit-code ::success))
+
+(defn running? []
+  (nil? @exit-code))
+
+(defn set-exit-code! [code]
+  (vreset! exit-code code))
+
+; -- task life-cycle --------------------------------------------------------------------------------------------------------
+
 (defn task-setup! [& [config]]
   (when-not @setup-done                                                                                                       ; this is here to support figwheel's hot-reloading
     (vreset! setup-done true)
     ; transcript is a fancy name for "log of interesting events"
+    (register-global-exception-handler!)
     (transcript-host/init-transcript! "transcript-box")
     (status-host/init-status! "status-box")
     (init-cljs-printing!)
@@ -57,87 +98,46 @@
     (if-not (helpers/is-test-runner-present?)
       (launcher/launch-task!))))
 
-(defn browser-state-cleanup! []
-  (messages/post-message! #js {:type "marion-close-all-tabs"} :no-timeout)
-  (messages/post-extension-command! {:command :tear-down} :no-timeout))                                                       ; to fight https://bugs.chromium.org/p/chromium/issues/detail?id=3550 75
-
-(defn signal-task-finished! [success?]
-  ; this signals to the task runner that he can reconnect chrome driver and check the results
-  (ws-client/connect! (get-signal-server-url) {:name    "Signaller"
-                                               :on-open (fn [client]
-                                                          (go
-                                                            (<! (timeout (get-signal-client-task-result-delay)))
-                                                            (ws-client/send! client {:op      :task-result
-                                                                                     :success success?})
-                                                            (<! (timeout (get-signal-client-close-delay)))
-                                                            (ws-client/close! client)))}))
-
-(defn successful-task-run? []
-  (= @done true))
-
 (defn task-teardown!
   ([]
-    ; under manual test development we don't want to execute tear-down
-    ; - closing existing tabs would interfere with our ability to inspect test results
-    ; also we don't want to signal "task finished", because  there is no test runner listening
    (task-teardown! (helpers/is-test-runner-present?)))
   ([runner-present?]
-   (assert @done)
+   (assert (not (running?)))
    (go
-     (transcript-host/disable-transcript!)
      (<! (messages/wait-for-all-pending-replies-or-timeout! (get-pending-replies-wait-timeout)))
      (feedback/done-feedback!)
-     (if runner-present?
+     ; under manual test development we don't want to execute tear-down
+     ; - closing existing tabs would interfere with our ability to inspect test results
+     ; also we don't want to signal "task finished", because  there is no test runner listening
+     (if-not runner-present?
+       (show-task-runner!)
        (do
-         (when (successful-task-run?)
-           (browser-state-cleanup!))                                                                                          ; note: if task runner wasn't successful we leave browser in failed state for possible inspection
-         (signal-task-finished! (successful-task-run?)))
-       (do                                                                                                                    ; this is for convenience when running tests manually
-         (messages/switch-to-task-runner-tab!)
-         (messages/focus-task-runner-window!)))
-     (messages/tear-down!))))
+         (signal-finished-task! (success?))
+         (if (success?)
+           (reset-browser-state!))))                                                                                          ; note: if task runner wasn't successful we leave browser in failed state for possible inspection
+     (messages/tear-down!)
+     true)))
 
-(defn task-finished! []
+(defn task-timeout! [data]
   (go
-    (when-not @done
-      (vreset! done true)
-      (status-host/set-status! "task finished")
-      (transcript-host/set-style! "finished")
-      (<! (task-teardown!))
-      true)))
-
-(defn task-timeouted! [data]
-  (go
-    (when-not @done
-      (vreset! done ::timeouted)
+    (when (running?)
+      (set-exit-code! ::timeout)
       (if-let [transcript (:transcript data)]
         (transcript-host/append-to-transcript! "timeout" transcript true))
       (status-host/set-status! (or (:status data) "task timeouted!"))
       (transcript-host/set-style! (or (:style data) "timeout"))
-      (<! (task-teardown!))
-      true)))
+      (<! (task-teardown!)))))
 
-(defn task-thrown-exception! [e]
+(defn task-exception! [e]
   (go
-    (when-not @done
-      (vreset! done ::thrown-exception)
+    (when (running?)
+      (set-exit-code! ::exception)
       (status-host/set-status! (str "task has thrown an exception: " e))
       (transcript-host/set-style! "exception")
-      (<! (task-teardown!))
-      true)))
-
-(defn task-exception-handler [message _source _lineno _colno error]
-  (case (ex-message error)
-    :task-timeout (task-timeouted! (ex-data error))
-    (task-thrown-exception! message))
-  false)
-
-(defn register-global-exception-handler! [handler]
-  (oset js/window ["onerror"] handler))
+      (<! (task-teardown!)))))
 
 (defn task-started! []
   (go
-    (register-global-exception-handler! task-exception-handler)
     (status-host/set-status! "task running...")
     (transcript-host/set-style! "running")
     (messages/reset-devtools-id-counter!)
@@ -148,3 +148,22 @@
     (<! (setup-debugging-port!))
     ; open-as window is handy for debugging, becasue we can open internal devtools to inspect dirac frontend in case of errors
     (<! (messages/set-option! :open-as "window"))))
+
+(defn task-finished! []
+  (go
+    (when (running?)
+      (set-exit-code! ::success)
+      (status-host/set-status! "task finished")
+      (transcript-host/set-style! "finished")
+      (<! (task-teardown!)))))
+
+; -- handling exceptions ----------------------------------------------------------------------------------------------------
+
+(defn task-exception-handler [message _source _lineno _colno error]
+  (case (ex-message error)
+    :task-timeout (task-timeout! (ex-data error))
+    (task-exception! message))
+  false)
+
+(defn register-global-exception-handler! []
+  (oset js/window ["onerror"] task-exception-handler))
