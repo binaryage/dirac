@@ -23,11 +23,11 @@
 (defn handle-command! [command & args]
   (log "handling command" command args)
   (marion/post-feedback-event! (str "handling command: " command))
-  (go
-    (case command
-      "open-dirac-devtools" (<! (apply tools/open-dirac-devtools-in-active-tab! args))
-      "close-dirac-devtools" (<! (apply tools/close-dirac-devtools! args))
-      "focus-best-console-prompt" (<! (apply tools/focus-best-console-prompt! args))
+  (case command
+    "open-dirac-devtools" (apply tools/open-dirac-devtools-in-active-tab! args)
+    "close-dirac-devtools" (apply tools/close-dirac-devtools! args)
+    "focus-best-console-prompt" (apply tools/focus-best-console-prompt! args)
+    (go
       (warn "received unrecognized command:" command))))
 
 (defn on-tab-removed! [tab-id _remove-info]
@@ -49,15 +49,14 @@
 
 (defn process-chrome-event! [event]
   (log "dispatch chrome event" event)
-  (go
-    (let [[event-id event-args] event]
-      (case event-id
-        ::browser-action/on-clicked (<! (apply tools/activate-or-open-dirac-devtools! event-args))
-        ::commands/on-command (<! (apply handle-command! event-args))
-        ::tabs/on-removed (<! (apply on-tab-removed! event-args))
-        ::tabs/on-updated (<! (apply on-tab-updated! event-args))
-        ::runtime/on-connect-external (<! (apply handle-external-client-connection! event-args))
-        nil))))
+  (let [[event-id event-args] event]
+    (case event-id
+      ::browser-action/on-clicked (apply tools/activate-or-open-dirac-devtools! event-args)
+      ::commands/on-command (apply handle-command! event-args)
+      ::tabs/on-removed (apply on-tab-removed! event-args)
+      ::tabs/on-updated (apply on-tab-updated! event-args)
+      ::runtime/on-connect-external (apply handle-external-client-connection! event-args)
+      (go))))
 
 (defn run-chrome-event-loop! [chrome-event-channel]
   (log "starting main event loop...")
