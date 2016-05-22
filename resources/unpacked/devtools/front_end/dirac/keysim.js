@@ -90,6 +90,9 @@
     /* jshint esnext:true, undef:true, unused:true */
 
     var keyCodeToKeyIdentifierMap = {
+        9: "U+0009", // tab
+        20: "U+0020", // space
+        27: "U+001B", // esc
         38: 'Up',
         40: 'Down',
         37: 'Left',
@@ -363,8 +366,14 @@
             }
 
             var dispatchEvent = function(e) {
-                //console.log("dispatch", e);
-                return target.dispatchEvent(e);
+                if (dirac._DEBUG_KEYSIM) {
+                    console.log("event dispatch", e.keyCode, e.type, e);
+                }
+                const res = target.dispatchEvent(e);
+                if (dirac._DEBUG_KEYSIM) {
+                    console.log("  => (event dispatch) ", res);
+                }
+                return res;
             };
 
             var keydownEvent = undefined;
@@ -384,7 +393,11 @@
                         // we currently only support cursor at the end of input, no selection changes, etc.
                         const effectiveMutation = mutation || keystroke.mutation;
                         if (effectiveMutation) {
-                            target.value = effectiveMutation(target.value);
+                            const newValue = effectiveMutation(target.value);
+                            if (dirac._DEBUG_KEYSIM) {
+                                console.log("mutation of value", target.value, newValue, target);
+                            }
+                            target.value = newValue;
                         }
                         dispatchEvent(inputEvent);
                     }

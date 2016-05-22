@@ -6,7 +6,7 @@
             [dirac.utils :as utils]
             [dirac.implant.helpers :as helpers :refer [get-console-view get-inspector-view]]))
 
-; -- commands ---------------------------------------------------------------------------------------------------------------
+; -- automation actions -----------------------------------------------------------------------------------------------------
 
 (defn show-inspector-panel! [panel]
   (let [panel-name (name panel)
@@ -42,10 +42,6 @@
   (when-not (= (get-inspector-current-panel-name) "console")
     (show-inspector-drawer!)
     (show-view-in-drawer! :console)))
-
-; -- console panel ----------------------------------------------------------------------------------------------------------
-;  following opperations are assuming that console panel is selected (active)
-;  you have to first call (switch-inspector-panel! :console)
 
 (defn switch-to-dirac-prompt! []
   (if-let [console-view (get-console-view)]
@@ -92,6 +88,10 @@
 (defn break! []
   (js-debugger))
 
+(defn get-prompt-representation []
+  (if-let [console-view (get-console-view)]
+    (ocall console-view "getPromptRepresentation")))
+
 ; -- main dispatch ----------------------------------------------------------------------------------------------------------
 
 (defn dispatch-command! [command]
@@ -109,6 +109,7 @@
     :enable-console-feedback (enable-console-feedback!)
     :disable-console-feedback (disable-console-feedback!)
     :get-suggest-box-representation (get-suggest-box-representation)
+    :get-prompt-representation (get-prompt-representation)
     (warn "received unknown automation command:" (pr-str command))))
 
 ; -- automation -------------------------------------------------------------------------------------------------------------

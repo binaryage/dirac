@@ -90,6 +90,16 @@
       (assert (string? data))
       (println (reader/read-string data)))))
 
+(defn get-prompt-representation [devtools-id]
+  (automate-dirac-frontend! devtools-id {:action :get-prompt-representation}))
+
+(defn print-prompt-state! [devtools-id]
+  (go
+    (let [state-representation (<! (get-prompt-representation devtools-id))
+          data (or (oget state-representation "data") "?")]
+      (assert (string? data))
+      (println (reader/read-string data)))))
+
 (defn simulate-console-input! [devtools-id input]
   {:pre [(string? input)]}
   (automate-dirac-frontend! devtools-id {:action :dispatch-console-prompt-input

@@ -579,6 +579,13 @@ WebInspector.ConsoleView.prototype = {
         return promptDescriptor.id + " prompt: " + promptDescriptor.prompt.getSuggestBoxRepresentation();
     },
 
+    /**
+     * @return {string}
+     */
+    getPromptRepresentation: function() {
+        return this._prompt.text();
+    },
+
     _onConsoleDiracMessage: function(event)
     {
         var message = (event.data);

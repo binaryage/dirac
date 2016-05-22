@@ -547,6 +547,7 @@ function invalidateNamespacesCache() {
 return {
   _DEBUG_EVAL: false,
   _DEBUG_COMPLETIONS: false,
+  _DEBUG_KEYSIM: false,
   _namespacesSymbolsCache: namespacesSymbolsCache,
   _namespacesCache: null,
   hasREPL: hasFeature("enable-repl"),
