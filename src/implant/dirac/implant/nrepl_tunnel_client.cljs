@@ -84,7 +84,8 @@
       ns (console/set-prompt-ns! ns)
       status (when id
                (deliver-response message)                                                                                     ; *** (see pending-messages above)
-               (console/announce-job-end! id))
+               (if (number? id)                                                                                               ; assumption: REPL job ids are numeric, internal evals have string guids
+                 (console/announce-job-end! id)))
       :else (warn "received an unrecognized message from nREPL server" (envelope message))))
   nil)
 
