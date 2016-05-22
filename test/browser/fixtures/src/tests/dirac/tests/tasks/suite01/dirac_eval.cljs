@@ -7,7 +7,7 @@
 (go-task
   (<!* a/open-tab-with-scenario! "normal")
   (<!* a/open-devtools!)
-  (<!* a/switch-to-console!)
+  (<!* a/switch-to-console-panel!)
   (<!* a/switch-prompt-to-dirac!)
   (<!* a/wait-for-prompt-to-enter-edit-mode)
   (<!* a/enable-console-feedback!)

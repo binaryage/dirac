@@ -43,13 +43,13 @@
 (defn wait-for-devtools-ready []
   (wait-for-match "devtools ready"))
 
-(defn wait-for-elements-panel-switch []
-  (wait-for-match "setCurrentPanel: elements"))
+(defn wait-for-panel-switch [name]
+  (wait-for-match (str "setCurrentPanel: " name)))
 
 (defn wait-for-devtools-boot []
   (go
     (<! (wait-for-devtools-ready))
-    (<! (wait-for-elements-panel-switch))))                                                                                   ; because we have reset all devtools settings, the first landed panel will be "elements"
+    (<! (wait-for-panel-switch "elements"))))                                                                                 ; because we have reset all devtools settings, the first landed panel will be "elements"
 
 (defn wait-for-prompt-to-enter-edit-mode [devtools-id]
   (wait-for-devtools-match devtools-id "setDiracPromptMode('edit')"))
@@ -64,7 +64,9 @@
   (messages/post-message! #js {:type "marion-open-tab-with-scenario" :url (helpers/get-scenario-url name)}))
 
 (defn switch-devtools-panel! [devtools-id panel]
-  (automate-dirac-frontend! devtools-id {:action :switch-inspector-panel :panel panel}))
+  (go
+    (<! (automate-dirac-frontend! devtools-id {:action :switch-inspector-panel :panel panel}))
+    (<! (wait-for-panel-switch (name panel)))))
 
 (defn switch-prompt-to-dirac! [devtools-id]
   (automate-dirac-frontend! devtools-id {:action :switch-to-dirac-prompt}))
@@ -120,7 +122,7 @@
 (defn disable-console-feedback! [devtools-id]
   (automate-dirac-frontend! devtools-id {:action :disable-console-feedback}))
 
-(defn switch-to-console! [devtools-id]
+(defn switch-to-console-panel! [devtools-id]
   (switch-devtools-panel! devtools-id :console))
 
 (defn ^:without-devtools-id open-devtools! []

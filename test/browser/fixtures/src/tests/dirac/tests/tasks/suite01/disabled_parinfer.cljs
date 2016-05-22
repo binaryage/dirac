@@ -6,6 +6,6 @@
   (<!* a/open-tab-with-scenario! "normal")
   (<!* a/set-option! :enable-parinfer false)
   (<!* a/open-devtools!)
-  (<!* a/switch-to-console!)
+  (<!* a/switch-to-console-panel!)
   (<!* a/switch-prompt-to-dirac!)
   (<!* a/set-option! :enable-parinfer true))
