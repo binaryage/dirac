@@ -263,14 +263,13 @@
   (log/trace "Destroying" (str tunnel))
   (when-let [nrepl-tunnel-server (get-nrepl-tunnel-server tunnel)]
     (nrepl-tunnel-server/disconnect-all-clients! nrepl-tunnel-server)
+    (Thread/sleep 1000)                                                                                                       ; wait for responses from closed nREPL sessions
     (close! (get-client-messages-channel tunnel))
     @(get-client-messages-done-promise tunnel)
-    (Thread/sleep 1000)                                                                                                       ; give networking code some time to send outstanding messages
     (nrepl-tunnel-server/destroy! nrepl-tunnel-server)
     (set-nrepl-tunnel-server! tunnel nil))
   (close! (get-server-messages-channel tunnel))
   @(get-server-messages-done-promise tunnel)
-  (Thread/sleep 1000)                                                                                                         ; give networking code some time to send outstanding messages
   (when-let [nrepl-client (get-nrepl-client tunnel)]
     (nrepl-client/destroy! nrepl-client)
     (set-nrepl-client! tunnel nil))
