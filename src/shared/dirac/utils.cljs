@@ -5,6 +5,8 @@
             [chromex.support :refer-macros [oget ocall oapply]]
             [chromex.logging :refer-macros [log info warn error group group-end]]))
 
+(deftype ErrorWrapper [message stack])
+
 (def Promise (oget js/window "Promise"))
 
 (defn escape-double-quotes [s]
@@ -79,6 +81,26 @@
 (defn round [n k]
   (/ (js/Math.round (* k n)) k))
 
-(defn timeoout-display [time-ms]
+(defn timeout-display [time-ms]
   {:pre [(number? time-ms)]}
   (str (round (/ time-ms 1000) 10) "s"))
+
+(defn get-error-msg [e]
+  (try
+    (str (oget e "message"))
+    (catch :default e
+      (str "unable to retrieve error message:" e))))
+
+; TODO: this should try to apply source-mapping
+(defn get-error-stack [e]
+  (try
+    (str (oget e "stack"))
+    (catch :default e
+      (str "unable to print stack: " e))))
+
+(defn make-error-struct [e]
+  [:error (get-error-msg e) (get-error-stack e)])
+
+(defn make-result-struct
+  ([] (make-result-struct nil))
+  ([v] [:result (or v :ok)]))

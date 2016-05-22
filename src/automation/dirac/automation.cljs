@@ -1,7 +1,6 @@
 (ns dirac.automation
   (:require-macros [cljs.core.async.macros :refer [go go-loop]])
   (:require [cljs.core.async :refer [put! <! chan timeout alts! close!]]
-            [cljs.reader :as reader]
             [chromex.support :refer-macros [oget oset ocall oapply]]
             [chromex.logging :refer-macros [log error]]
             [dirac.utils :as utils]
@@ -85,20 +84,18 @@
 
 (defn print-suggest-box-state! [devtools-id]
   (go
-    (let [state-representation (<! (get-suggest-box-representation devtools-id))
-          data (or (oget state-representation "data") "?")]
+    (let [data (<! (get-suggest-box-representation devtools-id))]
       (assert (string? data))
-      (println (reader/read-string data)))))
+      (println data))))
 
 (defn get-prompt-representation [devtools-id]
   (automate-dirac-frontend! devtools-id {:action :get-prompt-representation}))
 
 (defn print-prompt-state! [devtools-id]
   (go
-    (let [state-representation (<! (get-prompt-representation devtools-id))
-          data (or (oget state-representation "data") "?")]
+    (let [data (<! (get-prompt-representation devtools-id))]
       (assert (string? data))
-      (println (reader/read-string data)))))
+      (println data))))
 
 (defn simulate-console-input! [devtools-id input]
   {:pre [(string? input)]}
@@ -137,13 +134,13 @@
 
 (defn ^:without-devtools-id open-devtools! []
   (go
-    (let [reply (<! (fire-chrome-event! [:chromex.ext.commands/on-command ["open-dirac-devtools" {:reset-settings 1}]]))]
+    (let [devtools-id (<! (fire-chrome-event! [:chromex.ext.commands/on-command
+                                               ["open-dirac-devtools" {:reset-settings 1}]]))]
       (<! (wait-for-devtools-boot))
-      (let [devtools-id (utils/parse-int (oget reply "data"))]
-        (if-not (helpers/is-test-runner-present?)
-          (messages/switch-to-task-runner-tab!))                                                                              ; for convenience
-        (set! *last-devtools-id* devtools-id)
-        (DevToolsID. devtools-id)))))                                                                                         ; note: we wrap it so we can easily detect devtools-id parameters in action! method
+      (if-not (helpers/is-test-runner-present?)
+        (messages/switch-to-task-runner-tab!))                                                                                ; for convenience
+      (set! *last-devtools-id* devtools-id)
+      (DevToolsID. devtools-id))))                                                                                            ; note: we wrap it so we can easily detect devtools-id parameters in action! method
 
 (defn close-devtools! [devtools-id]
   (go

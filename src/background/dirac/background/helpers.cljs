@@ -105,28 +105,30 @@
   (try
     (pr-str value)
     (catch :default e
-      (error "failed to serialize value:" value e))))
+      (error "failed to serialize value:" value e)
+      (utils/make-error-struct e))))
 
 (defn safe-unserialize [serialized-value]
   (try
     (reader/read-string serialized-value)
     (catch :default e
       (error "failed to unserialize value:" serialized-value e)
-      ::reply-unserialization-failed)))
+      (utils/make-error-struct e))))
 
 (defn automate-action! [automate-fn action]
   (let [channel (chan)]
-    (if-let [serialized-action (safe-serialize action)]
-      (let [reply-callback (fn [serialized-reply]
-                             (if-let [reply (safe-unserialize serialized-reply)]
-                               (put! channel reply))
-                             (close! channel))]
-        ; WARNING: here we are crossing boundary between background and implant projects
-        ;          both cljs code-bases are potentially compiled under :advanced mode but resulting in different minification
-        ;          that is why we cannot pass any cljs values across this boundary
-        ;          we have to strictly serialize results on both ends, that is why we use callbacks and do not pass channels
-        (automate-fn serialized-action reply-callback))
-      (put! channel ::action-serialization-failed))
+    (let [serialized-action (safe-serialize action)]
+      (if-not (instance? js/Error serialized-action)
+        (let [reply-callback (fn [serialized-reply]
+                               (let [reply (safe-unserialize serialized-reply)]
+                                 (assert (some? reply))
+                                 (put! channel reply)))]
+          ; WARNING: here we are crossing boundary between background and implant projects
+          ;          both cljs code-bases are potentially compiled under :advanced mode but resulting in different minification
+          ;          that is why we cannot pass any cljs values across this boundary
+          ;          we have to strictly serialize results on both ends, that is why we use callbacks and do not pass channels
+          (automate-fn serialized-action reply-callback))
+        (put! channel serialized-action)))
     channel))
 
 (defn automate-devtools! [devtools-id action]
@@ -139,8 +141,8 @@
         (automate-action! (get-automation-entry-point view) action)
         (catch :default e
           (error (str "unable to automate dirac devtools #" devtools-id) view e)
-          (go ::failure)))
-      (go ::no-views))))
+          (go (utils/make-error-struct e))))
+      (go (utils/make-error-struct (js/Error. (str "no views matching given devtools-id #" devtools-id)))))))
 
 (defn close-all-extension-tabs! []
   (let [views (extension/get-views #js {:type "tab"})]

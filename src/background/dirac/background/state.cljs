@@ -71,10 +71,27 @@
 (defn post-feedback! [text]
   (post-to-marion! #js {:type "feedback-from-extension" :transcript text}))
 
+(defn make-reply [data]
+  (if (instance? js/Error data)
+    (utils/make-error-struct data)
+    (try
+      (utils/make-result-struct data)
+      (catch :default e
+        (utils/make-error-struct e)))))
+
+(defn serialize-reply-data [data]
+  (try
+    (pr-str data)
+    (catch :default e
+      (pr-str (utils/make-error-struct e)))))
+
+(defn post-raw-reply! [message-id data]
+  (let [message #js {:type "reply"
+                     :id   message-id
+                     :data (serialize-reply-data data)}]
+    (post-to-marion! message)))
+
 (defn post-reply!
   ([message-id] (post-reply! message-id nil))
-  ([message-id data]
-   (let [message #js {:type "reply" :id message-id}]
-     (if data
-       (oset message ["data"] (pr-str data)))
-     (post-to-marion! message))))
+  ([message-id value]
+   (post-raw-reply! message-id (make-reply value))))

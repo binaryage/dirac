@@ -23,7 +23,7 @@
 ; -- messages ---------------------------------------------------------------------------------------------------------------
 
 (defn ^:dynamic get-timeout-transcript-msg [max-waiting-time info]
-  (str "while waiting (" (utils/timeoout-display max-waiting-time) ") for transcript match <" info ">"))
+  (str "while waiting (" (utils/timeout-display max-waiting-time) ") for transcript match <" info ">"))
 
 ; -- helpers ----------------------------------------------------------------------------------------------------------------
 

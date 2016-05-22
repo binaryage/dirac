@@ -72,9 +72,11 @@
     (ws-client/connect! (get-signal-server-url) client-config)))
 
 (defn format-exception [e]
-  (if-let [stack (oget e "stack")]
-    (str stack)
-    (str e)))
+  (if (string? e)
+    e
+    (if-let [stack (oget e "stack")]
+      (str stack)
+      (str e))))
 
 ; -- task state -------------------------------------------------------------------------------------------------------------
 
@@ -170,6 +172,7 @@
 (defn task-exception-handler [message _source _lineno _colno e]
   (case (ex-message e)
     :task-timeout (task-timeout! (ex-data e))
+    :serialized-error (task-exception! (second (ex-data e)) (nth (ex-data e) 2 "<missing stack trace>"))
     (task-exception! message e))
   false)
 

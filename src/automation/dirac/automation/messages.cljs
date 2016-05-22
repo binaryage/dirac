@@ -2,8 +2,10 @@
   (:require-macros [cljs.core.async.macros :refer [go go-loop]])
   (:require [cljs.core.async :refer [put! <! chan timeout alts! close!]]
             [dirac.settings :refer-macros [get-marion-message-reply-timeout]]
+            [dirac.utils :as utils]
             [chromex.support :refer-macros [oget oset ocall oapply]]
-            [chromex.logging :refer-macros [log info warn error]]))
+            [chromex.logging :refer-macros [log info warn error]]
+            [cljs.reader :as reader]))
 
 (defonce last-message-id (volatile! 0))
 (defonce reply-subscribers (atom {}))                                                                                         ; message-id -> list of callbacks
@@ -11,7 +13,7 @@
 (defonce should-tear-down? (volatile! false))
 
 (defn ^:dynamic get-reply-timeout-message [timeout info]
-  (str "timeout (" timeout "ms) while waiting for reply. " (pr-str info)))
+  (str "timeout (" (utils/timeout-display timeout) ") while waiting for reply. " info))
 
 (defn get-next-message-id! []
   (vswap! last-message-id inc))
@@ -24,11 +26,15 @@
 
 (defn process-reply! [reply-message]
   (let [message-id (oget reply-message "id")
+        serialized-data (oget reply-message "data")
+        data (reader/read-string serialized-data)                                                                             ; TODO: try-catch?
         subscribers (get-reply-subscribers message-id)]
     (assert (number? message-id))
-    (doseq [subscriber subscribers]
-      (subscriber reply-message))
-    (swap! reply-subscribers dissoc message-id)))
+    (swap! reply-subscribers dissoc message-id)
+    (case (first data)
+      :error (throw (ex-info :serialized-error data))
+      :result (doseq [subscriber subscribers]
+                (subscriber (second data))))))
 
 (defn wait-for-reply! [message-id reply-timeout info]
   {:pre [(number? message-id)
@@ -37,6 +43,7 @@
   (let [reply-channel (chan)
         timeout-channel (timeout reply-timeout)
         observer (fn [reply-message]
+                   {:pre [(some? reply-message)]}
                    (put! reply-channel reply-message))]
     (subscribe-to-reply! message-id observer)
     (go

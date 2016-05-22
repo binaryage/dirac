@@ -8,14 +8,26 @@
             [marion.background.helpers :as helpers]
             [marion.background.feedback :as feedback]
             [marion.background.dirac :as dirac]
-            [marion.background.clients :as clients]))
+            [marion.background.clients :as clients]
+            [dirac.utils :as utils]))
+
+(defn serialize-error [e]
+  (pr-str (utils/make-error-struct e)))
+
+(defn serialize-reply-data [data]
+  (if (instance? js/Error data)
+    (serialize-error data)
+    (try
+      (pr-str (utils/make-result-struct data))
+      (catch :default e
+        (serialize-error e)))))
 
 (defn post-reply!
   ([message-id] (post-reply! message-id nil))
   ([message-id data]
-   (let [message #js {:type "reply" :id message-id}]
-     (if data
-       (oset message ["data"] (pr-str data)))
+   (let [message #js {:type "reply"
+                      :id   message-id
+                      :data (serialize-reply-data data)}]
      (log "broadcasting reply" message-id (envelope message))
      (feedback/broadcast-feedback! message))))
 

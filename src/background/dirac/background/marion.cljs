@@ -43,7 +43,7 @@
     (if (state/get-devtools-descriptor devtools-id)
       (go
         (let [reply (<! (helpers/automate-devtools! devtools-id action))]
-          (state/post-reply! message-id reply)))
+          (state/post-raw-reply! message-id reply)))                                                                          ; TODO: do it better
       (do
         (warn "dirac automation request for missing connection" (str "#" devtools-id) message
               "existing connections:" (state/get-devtools-descriptors))

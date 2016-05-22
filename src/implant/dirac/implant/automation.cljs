@@ -120,25 +120,32 @@
     (dispatch-command! command)
     (catch :default e
       (error "failed to dispatch automation command: " (pr-str command) e)
-      ::automation-dispatch-failed)))
+      e)))
 
 ; -- installation -----------------------------------------------------------------------------------------------------------
 
+(defn serialize-error [e]
+  (pr-str (utils/make-error-struct e)))
+
 (defn safe-serialize [value]
-  (try
-    (pr-str value)
-    (catch :default e
-      (error "dirac.implant.automation: unable to serialize value" e "\n" value))))
+  (if (instance? js/Error value)
+    (serialize-error value)
+    (try
+      (pr-str (utils/make-result-struct value))
+      (catch :default e
+        (error "dirac.implant.automation: unable to serialize value" e "\n" value)
+        (serialize-error e)))))
 
 (defn safe-unserialize [serialized-value]
   (try
     (reader/read-string serialized-value)
     (catch :default e
-      (error "dirac.implant.automation: unable to unserialize value" e "\n" serialized-value))))
+      (error "dirac.implant.automation: unable to unserialize value" e "\n" serialized-value)
+      e)))
 
 (defn make-marshalled-callback [callback]
   (fn [reply]
-    (callback (or (safe-serialize reply) (safe-serialize ::reply-serialization-failed)))))
+    (callback (safe-serialize reply))))
 
 ; WARNING: here we are crossing boundary between background and implant projects
 ;          both cljs code-bases are potentially compiled under :advanced mode but resulting in different minification
@@ -148,12 +155,13 @@
   {:pre [(string? message)
          (fn? callback)]}
   (let [marshalled-callback (make-marshalled-callback callback)]
-    (if-let [command (safe-unserialize message)]
-      (let [result (safe-automate! command)]
-        ; result can potentially be promise or core.async channel,
-        ; here we use generic code to turn it back to callback
-        (utils/to-callback result marshalled-callback))
-      (marshalled-callback ::command-unserialization-failed))))
+    (let [command (safe-unserialize message)]
+      (if-not (instance? js/Error command)
+        (let [result (safe-automate! command)]
+          ; result can potentially be promise or core.async channel,
+          ; here we use generic code to turn it back to callback
+          (utils/to-callback result marshalled-callback))
+        (marshalled-callback command)))))
 
 (defn install-automation-support! []
   (oset js/window [(get-automation-entry-point-key)] automation-handler))
