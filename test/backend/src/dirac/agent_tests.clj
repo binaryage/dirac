@@ -114,6 +114,7 @@
         (expect-op-msg! tunnel :bootstrap-info)
         (let [weasel (weasel-client/create! (:weasel-url @last-msg))]
           (expect-event! weasel :open)
+          (weasel-client/send! weasel {:op :ready :ident (str weasel)})
           (expect-op-msg! weasel :eval-js)
           (weasel-client/send! weasel {:op :result :value (success-value)})
           (expect-op-msg! weasel :eval-js)
