@@ -61,7 +61,7 @@
     (log/error "attempt to add duplicit session descriptor:\n" (logging/pprint session))))
 
 (defn remove-dirac-session-descriptor! [session]
-  (log/debug "remove-remove-dirac-session-descriptor!" (get-session-id session))
+  (log/debug "remove-dirac-session-descriptor!" (get-session-id session))
   (log/trace (logging/pprint session))
   (if-let [session-descriptor (find-dirac-session-descriptor session)]
     (swap! session-descriptors #(remove #{session-descriptor} %))
