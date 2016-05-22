@@ -1,4 +1,5 @@
-(ns dirac.automation.transcript)
+(ns dirac.automation.transcript
+  (:require [chromex.support :refer-macros [oget oset ocall oapply]]))
 
 ; transcript is a <pre> tag which collects textual messages about test execution:
 ; 1) issued automation commands
@@ -7,16 +8,16 @@
 
 ; individual transcripts are checked against expected transcripts, see test/browser/transcripts
 
-(defn set-style! [transcript-el style]
+(defn set-style! [transcript-el & [style]]
   {:pre [transcript-el]}
-  (set! (.-className transcript-el) (if-not (empty? style)
+  (set! (.-className transcript-el) (if (some? style)
                                       (str "transcript transcript-" style)
                                       "transcript")))
 
 (defn make-transcript []
   (let [transcript-el (.createElement js/document "pre")]
     (set! (.-id transcript-el) "transcript")
-    (set-style! transcript-el nil)
+    (set-style! transcript-el)
     transcript-el))
 
 (defn create-transcript! [parent-el]
@@ -29,10 +30,13 @@
   {:pre [transcript-el]}
   (.remove transcript-el))
 
-(defn append-to-transcript! [transcript-el text]
+(defn append-to-transcript! [transcript-el text & [style]]
   {:pre [transcript-el]}
-  (let [new-text (str (.-textContent transcript-el) text)]
-    (set! (.-textContent transcript-el) new-text)))
+  (let [row-el (.createElement js/document "div")]
+    (if (some? style)
+      (.setAttribute row-el "style" style))
+    (oset row-el ["textContent"] text)
+    (.appendChild transcript-el row-el)))
 
 (defn read-transcript [transcript-el]
   {:pre [transcript-el]}

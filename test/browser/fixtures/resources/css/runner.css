@@ -1,5 +1,5 @@
 html {
-  font-family: courier;
+  font-family: courier, monospace;
   font-size: 12px;
 }
 
@@ -14,42 +14,43 @@ html {
 }
 
 #status-box {
-  margin: 10px 0px;
+  margin: 10px 0;
 }
 
 .status {
   display: inline-block;
   font-weight: bold;
-  font-family: courier;
-  margin-left: 10px;
+  font-family: courier, monospace;
+  padding: 2px 10px;
 }
 
-#transcript-box {
-  display: flex;
-}
-
-.transcript {
-  font-size: 10px;
-  min-width: 100px;
-  margin: 10px 0px;
-  border: 1px solid #ccc;
-  background-color: #eee;
-  padding: 4px 8px;
-  border-radius: 2px;
-}
-
-.transcript-running {
+.status-running {
   background-color: #eef;
 }
 
-.transcript-timeout {
+.status-timeout {
   background-color: #ffe;
 }
 
-.transcript-finished {
+.status-finished {
   background-color: #efe;
 }
 
-.transcript-exception {
+.status-exception {
   background-color: #fee;
 }
+
+#transcript-box {
+    display: flex;
+}
+
+.transcript {
+    font-size: 10px;
+    min-width: 100px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    background-color: #eee;
+    padding: 4px 8px;
+    border-radius: 2px;
+}
+

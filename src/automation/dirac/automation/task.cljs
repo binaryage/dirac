@@ -130,6 +130,7 @@
       (if-let [transcript (:transcript data)]
         (transcript-host/append-to-transcript! "timeout" transcript true))
       (status-host/set-status! (or (:status data) "task timeouted!"))
+      (status-host/set-style! (or (:style data) "timeout"))
       (transcript-host/set-style! (or (:style data) "timeout"))
       (<! (task-teardown!)))))
 
@@ -138,6 +139,7 @@
     (when (running?)
       (set-exit-code! ::exception)
       (status-host/set-status! (str "task has thrown an exception: " message))
+      (status-host/set-style! "exception")
       (transcript-host/append-to-transcript! "exception" (format-exception e) true)
       (transcript-host/set-style! "exception")
       (<! (task-teardown!)))))
@@ -145,6 +147,7 @@
 (defn task-started! []
   (go
     (status-host/set-status! "task running...")
+    (status-host/set-style! "running")
     (transcript-host/set-style! "running")
     (messages/reset-devtools-id-counter!)
     ; feedback subsystem is responsible for intercepting messages to be presented in transcript
@@ -160,6 +163,7 @@
     (when (running?)
       (set-exit-code! ::success)
       (status-host/set-status! "task finished")
+      (status-host/set-style! "finished")
       (transcript-host/set-style! "finished")
       (<! (task-teardown!)))))
 

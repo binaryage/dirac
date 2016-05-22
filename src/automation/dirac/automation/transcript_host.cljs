@@ -15,6 +15,7 @@
 (defonce output-recorder (chan 1024))
 (defonce active-output-observer (volatile! nil))
 (defonce rewriting-machine (atom {}))
+(defonce assigned-styles (atom {}))
 
 ; -- messages ---------------------------------------------------------------------------------------------------------------
 
@@ -83,6 +84,29 @@
         text-block (helpers/prefix-text-block (cuerdas/repeat " " padding-length) text)]
     (str padded-label text-block "\n")))
 
+; taken from solarized-light theme
+(def possible-styles
+  ["#dc322f" ; red
+   "#262626" ; black
+   "#d33682" ; magenta
+   "#268bd2" ; blue
+   "#859900" ; green
+   "#b58900" ; yellow
+   "#6c71c4" ; violet
+   "#2aa198" ; cyan
+   "#cb4b16" ; orange
+   ])
+
+(defn determine-style [label _text]
+  (if-let [style (get @assigned-styles label)]
+    style
+    (do
+      (swap! assigned-styles update :counter inc)
+      (let [index (:counter @assigned-styles)
+            new-style (nth (cycle (map #(str "color:" %) possible-styles)) index)]
+        (swap! assigned-styles assoc label new-style)
+        new-style))))
+
 ; -- transcript rewriting ---------------------------------------------------------------------------------------------------
 
 (defn start-rewriting-machine-for-java-trace! [label text]
@@ -111,14 +135,19 @@
 
 ; -- transcript api ---------------------------------------------------------------------------------------------------------
 
-(defn append-to-transcript! [label text & [force?]]
+(defn append-to-transcript! [label text & [style]]
   {:pre [(has-transcript?)
-         (string? text)
-         (string? label)]}
-  (when (or (transcript-enabled?) force?)
+         (string? label)
+         (string? text)]}
+  (when (or force? (transcript-enabled?))
     (when-let [[effective-label effective-text] (rewrite-transcript! label text)]
-      (transcript/append-to-transcript! @current-transcript (format-transcript effective-label effective-text))
-      (record-output! [effective-label effective-text]))))
+      (let [text (format-transcript effective-label effective-text)
+            generated-style (determine-style effective-label effective-text)
+            style (if (some? style)
+                    (str generated-style ";" style)
+                    generated-style)]
+        (transcript/append-to-transcript! @current-transcript text style)
+        (record-output! [effective-label effective-text])))))
 
 (defn run-output-matching-loop! [match-fn result-channel]
   (go-loop []

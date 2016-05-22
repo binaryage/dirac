@@ -25,7 +25,7 @@
         message (if (string? message)
                   message
                   (pr-str message))]
-    (transcript/append-to-transcript! label message)))
+    (transcript/append-to-transcript! label message "opacity:0.5;border-top: 1px dashed rgba(0,0,0,0.1);color:#666;margin-top:5px;padding-top:2px;")))
 
 ; -- automation actions -----------------------------------------------------------------------------------------------------
 

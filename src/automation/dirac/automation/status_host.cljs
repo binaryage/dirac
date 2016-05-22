@@ -13,3 +13,6 @@
   (let [status-el (status/create-status! (helpers/get-el-by-id id))]
     (reset! current-status status-el)
     (set-status! "ready to run")))
+
+(defn set-style! [style]
+  (status/set-style! @current-status style))

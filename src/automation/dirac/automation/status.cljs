@@ -2,9 +2,15 @@
 
 ; status is a <div> tag which shows status of fixtures page
 
+(defn set-style! [status-el & [style]]
+  {:pre [status-el]}
+  (set! (.-className status-el) (if (some? style)
+                                  (str "status status-" style)
+                                  "status")))
+
 (defn make-status []
   (let [status-el (.createElement js/document "div")]
-    (set! (.-className status-el) "status")
+    (set-style! status-el)
     status-el))
 
 (defn create-status! [parent-el]
