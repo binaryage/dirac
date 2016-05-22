@@ -8,10 +8,12 @@
                        (cljs.core.async.macros/go
                          (cljs.core.async/<! (dirac.automation.task/task-started!))
                          ~@commands
-                         (cljs.core.async/<! (dirac.automation.task/task-finished!))))]
+                         (if (dirac.automation.task/running?)
+                           (cljs.core.async/<! (dirac.automation.task/task-finished!)))))]
        (dirac.automation.launcher/register-task! task-job#)
        (dirac.automation.task/task-setup! ~config))))
 
 (defmacro <!* [action & args]
   {:pre [(symbol? action)]}
-  `(cljs.core.async/<! (dirac.automation/action! ~action (meta #'~action) ~@args)))
+  `(if (dirac.automation.task/running?)
+     (cljs.core.async/<! (dirac.automation/action! ~action (meta #'~action) ~@args))))
