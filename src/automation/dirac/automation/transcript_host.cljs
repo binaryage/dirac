@@ -14,8 +14,9 @@
 (defonce transcript-enabled (volatile! 0))
 (defonce output-recorder (chan 1024))
 (defonce active-output-observer (volatile! nil))
-(defonce rewriting-machine (atom {}))
-(defonce assigned-styles (atom {}))
+(defonce rewriting-machine (atom {:state   ::default
+                                  :context {}}))
+(defonce assigned-styles (atom {:counter 0}))
 
 ; -- messages ---------------------------------------------------------------------------------------------------------------
 
@@ -45,9 +46,8 @@
 ; -- rewriting machine ------------------------------------------------------------------------------------------------------
 
 (defn transition-rewriting-machine! [new-state]
-  (if (some? new-state)
-    (swap! rewriting-machine assoc :state new-state)
-    (swap! rewriting-machine dissoc :state)))
+  {:pre [(keyword? new-state)]}
+  (swap! rewriting-machine assoc :state new-state))
 
 (defn get-rewriting-machine-state []
   (:state @rewriting-machine))
@@ -85,27 +85,28 @@
     (str padded-label text-block "\n")))
 
 ; taken from solarized-light theme
-(def possible-styles
-  ["#dc322f" ; red
-   "#262626" ; black
-   "#d33682" ; magenta
-   "#268bd2" ; blue
-   "#859900" ; green
-   "#b58900" ; yellow
-   "#6c71c4" ; violet
-   "#2aa198" ; cyan
-   "#cb4b16" ; orange
+(def possible-style-colors
+  ["#262626"                                                                                                                  ; black
+   "#d33682"                                                                                                                  ; magenta
+   "#268bd2"                                                                                                                  ; blue
+   "#859900"                                                                                                                  ; green
+   "#b58900"                                                                                                                  ; yellow
+   "#6c71c4"                                                                                                                  ; violet
+   "#2aa198"                                                                                                                  ; cyan
+   "#cb4b16"                                                                                                                  ; orange
+   "#dc322f"                                                                                                                  ; red
    ])
+
+(def possible-styles (cycle (map #(str "color:" %) possible-style-colors)))
 
 (defn determine-style [label _text]
   (if-let [style (get @assigned-styles label)]
     style
-    (do
+    (let [index (:counter @assigned-styles)
+          new-style (nth possible-styles index)]
       (swap! assigned-styles update :counter inc)
-      (let [index (:counter @assigned-styles)
-            new-style (nth (cycle (map #(str "color:" %) possible-styles)) index)]
-        (swap! assigned-styles assoc label new-style)
-        new-style))))
+      (swap! assigned-styles assoc label new-style)
+      new-style)))
 
 ; -- transcript rewriting ---------------------------------------------------------------------------------------------------
 
@@ -114,7 +115,7 @@
   (update-rewriting-machine-context! assoc :logs ::expecting-java-trace)
   [label (str (helpers/extract-first-line text) "\n<elided stack trace>")])
 
-(defn step-rewriting-machine-for-java-trace! [label text]
+(defn process-java-trace-state! [label text]
   (if (re-find #"DF\.log" text)
     (case (:logs (get-rewriting-machine-context))
       ::expecting-java-trace (do
@@ -122,17 +123,19 @@
                                [label text])
       ::received-first-log (do
                              (update-rewriting-machine-context! dissoc :logs)
-                             (transition-rewriting-machine! nil)
+                             (transition-rewriting-machine! ::default)
                              [label "<elided stack trace log>"]))
     [label text]))
 
+(defn process-default-state! [label text]
+  (cond
+    (re-find #"present-server-side-output! java-trace" text) (start-rewriting-machine-for-java-trace! label text)
+    :else [label text]))
+
 (defn rewrite-transcript! [label text]
-  (if-let [state (get-rewriting-machine-state)]
-    (case state
-      ::java-trace (step-rewriting-machine-for-java-trace! label text))
-    (cond
-      (re-find #"present-server-side-output! java-trace" text) (start-rewriting-machine-for-java-trace! label text)
-      :else [label text])))
+  (case (get-rewriting-machine-state)
+    ::java-trace (process-java-trace-state! label text)
+    ::default (process-default-state! label text)))
 
 ; -- transcript api ---------------------------------------------------------------------------------------------------------
 
