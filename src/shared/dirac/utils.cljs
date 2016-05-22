@@ -75,3 +75,10 @@
       (fn? o) o                                                                                                               ; assume already a callback
       :else (callback o)))
   nil)
+
+(defn round [n k]
+  (/ (js/Math.round (* k n)) k))
+
+(defn timeoout-display [time-ms]
+  {:pre [(number? time-ms)]}
+  (str (round (/ time-ms 1000) 10) "s"))

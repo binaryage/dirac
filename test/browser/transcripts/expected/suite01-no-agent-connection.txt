@@ -16,7 +16,6 @@ automate #1      switch-prompt-to-dirac!
 devtools #1      switch console prompt to dirac
 devtools #1      console prompt focused
 devtools #1      repl initialized
-automate #1      wait-for-devtools-match ["will try reconnect in 4 seconds" 20000]
 devtools #1      setDiracPromptStatusContent('Unable to connect to Dirac Agent at ws://localhost:9999')
 devtools #1      setDiracPromptStatusStyle('error')
 devtools #1      setDiracPromptStatusContent('<b>Dirac Agent is not listening</b> at ws://localhost:9999 (<a href="https://github.com/binaryage/dirac/blob/master/docs/installation.md#start-dirac-agent">need help?</a>).')

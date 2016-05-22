@@ -57,4 +57,5 @@
 (defn get-scenario-url [name]
   (str (get-base-url) "/scenarios/" name ".html?" (get-encoded-query (get-document-url))))                                    ; we pass all query parameters to scenario page
 
-
+(defn scroll-page-to-bottom! []
+  (ocall js/window "scrollTo" 0 (oget js/document "body" "scrollHeight")))

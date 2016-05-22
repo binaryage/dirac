@@ -4,7 +4,7 @@
 
 (defn make-re-matcher [re]
   (fn [[_label text]]
-    (re-matches re text)))
+    (re-find re text)))
 
 (defn make-substr-matcher [s]
   (fn [[_label text]]
@@ -25,4 +25,4 @@
     :else (throw (ex-info (str "don't know how to make matcher for " input " (" (type input) ")") input))))
 
 (defn- get-generic-matcher-description [input]
-  (str input " (" (type input) ")"))
+  (str input))

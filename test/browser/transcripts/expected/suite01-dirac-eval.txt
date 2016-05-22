@@ -16,7 +16,6 @@ automate #1      switch-prompt-to-dirac!
 devtools #1      switch console prompt to dirac
 devtools #1      console prompt focused
 devtools #1      repl initialized
-automate #1      wait-for-prompt-to-enter-edit-mode
 devtools #1      setDiracPromptStatusContent('Dirac Agent connected. Bootstrapping ClojureScript REPL...')
 devtools #1      setDiracPromptStatusStyle('info')
 devtools #1      setDiracPromptNS('cljs.user')
@@ -78,9 +77,6 @@ devtools #1      repl eval job ended
 devtools #1      DF.log> java.lang.IllegalArgumentException: Argument to in-ns must be a symbol.
 devtools #1      <elided stack trace log>
 devtools #1      JS.log>
-automate #1      wait-for-devtools-match ["DF.log> java.lang.IllegalArgumentException: Argument to in-ns must be a symbol."]
-automate #1      wait-for-devtools-match ["<elided stack trace log>"]
-automate #1      wait-for-devtools-match ["JS.log>"]
 automate #1      console-exec-and-match! ["(in-ns 'my.ns)" "setDiracPromptNS('my.ns')"]
 devtools #1      DC.log> (in-ns 'my.ns)
 devtools #1      send-eval-request: (in-ns 'my.ns)

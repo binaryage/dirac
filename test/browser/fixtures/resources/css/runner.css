@@ -46,7 +46,8 @@ html {
 
 .transcript {
     font-size: 10px;
-    min-width: 100px;
+    width: 100%;
+    min-height: 20px;
     margin: 10px 0;
     border: 1px solid #ccc;
     background-color: #eee;

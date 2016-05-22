@@ -8,12 +8,14 @@
             [chromex.support :refer-macros [oget oset ocall oapply]]
             [chromex.logging :refer-macros [log warn error info]]
             [cuerdas.core :as cuerdas]
-            [dirac.automation.helpers :as helpers]))
+            [dirac.automation.helpers :as helpers]
+            [dirac.utils :as utils]))
 
 (defonce current-transcript (atom nil))
 (defonce transcript-enabled (volatile! 0))
 (defonce output-recorder (chan 1024))
-(defonce active-output-observer (volatile! nil))
+(defonce output-observers (atom #{}))
+(defonce output-segment (atom []))
 (defonce rewriting-machine (atom {:state   :default
                                   :context {}}))
 (defonce assigned-styles (atom {:counter 0}))
@@ -21,10 +23,16 @@
 ; -- messages ---------------------------------------------------------------------------------------------------------------
 
 (defn ^:dynamic get-timeout-transcript-msg [max-waiting-time info]
-  (str "while waiting (" max-waiting-time "ms) for transcript match <" info ">"))
+  (str "while waiting (" (utils/timeoout-display max-waiting-time) ") for transcript match <" info ">"))
 
-(defn ^:dynamic get-observer-clash-msg [active-observer-info new-observer-info]
-  (str "only one wait-for-match call can be in-flight > old: " active-observer-info ", new: " new-observer-info))
+; -- helpers ----------------------------------------------------------------------------------------------------------------
+
+(defn has-transcript? []
+  (some? @current-transcript))
+
+(defn set-style! [style]
+  (ocall js/window "setRunnerFavicon" style)
+  (transcript/set-style! @current-transcript style))
 
 ; -- enable/disable transcript ----------------------------------------------------------------------------------------------
 
@@ -43,6 +51,39 @@
 (defn record-output! [data]
   (put! output-recorder data))
 
+; -- output observing -------------------------------------------------------------------------------------------------------
+
+(declare replay-output-segment!)
+
+(defn reset-output-segment! []
+  (doseq [record @output-observers]
+    (close! (:channel record)))
+  (reset! output-segment []))
+
+(defn register-observer! [matching-fn channel]
+  (let [record {:matching-fn matching-fn
+                :channel     channel}]
+    (swap! output-observers conj record)
+    (replay-output-segment! record)))
+
+(defn unregister-observer-record! [record]
+  (swap! output-observers disj record))
+
+(defn match-observer-record! [observer-record value]
+  (when-let [match ((:matching-fn observer-record) value)]
+    (unregister-observer-record! observer-record)
+    (put! (:channel observer-record) match)))
+
+(defn get-output-segment-values []
+  @output-segment)
+
+(defn replay-output-segment! [observer-record]
+  (doseq [value (get-output-segment-values)]
+    (match-observer-record! observer-record value)))
+
+(defn apppend-to-output-segment! [value]
+  (swap! output-segment conj value))
+
 ; -- rewriting machine ------------------------------------------------------------------------------------------------------
 
 (defn get-rewriting-machine-state []
@@ -60,19 +101,6 @@
   (let [old-context (get-rewriting-machine-context)]
     (apply swap! rewriting-machine update :context f args)
     (log (str "REWRITING MACHING CONTEXT " old-context " -> " (get-rewriting-machine-context)))))
-
-; -- transcript -------------------------------------------------------------------------------------------------------------
-
-(defn init-transcript! [id]
-  (let [transcript-el (transcript/create-transcript! (helpers/get-el-by-id id))]
-    (reset! current-transcript transcript-el)))
-
-(defn has-transcript? []
-  (some? @current-transcript))
-
-(defn set-style! [style]
-  (ocall js/window "setRunnerFavicon" style)
-  (transcript/set-style! @current-transcript style))
 
 ; -- formatting -------------------------------------------------------------------------------------------------------------
 
@@ -103,13 +131,13 @@
 (def possible-styles (cycle (map #(str "color:" %) possible-style-colors)))
 
 (defn determine-style [label _text]
-  (if-let [style (get @assigned-styles label)]
-    style
-    (let [index (:counter @assigned-styles)
-          new-style (nth possible-styles index)]
-      (swap! assigned-styles update :counter inc)
-      (swap! assigned-styles assoc label new-style)
-      new-style)))
+  (or (get @assigned-styles label)
+      (let [style-index (:counter @assigned-styles)
+            new-style (nth possible-styles style-index)]
+        (swap! assigned-styles #(-> %
+                                    (assoc label new-style)
+                                    (update :counter inc)))
+        new-style)))
 
 ; -- transcript rewriting ---------------------------------------------------------------------------------------------------
 
@@ -142,39 +170,30 @@
 
 ; -- transcript api ---------------------------------------------------------------------------------------------------------
 
-(defn append-to-transcript! [label text & [style]]
+(defn append-to-transcript! [label text & [style skip-recording?]]
   {:pre [(has-transcript?)
          (string? label)
          (string? text)]}
   (when (transcript-enabled?)
-    (log "TRANSCRIPT" label text)
+    (log "TRANSCRIPT" [label text])
     (when-let [[effective-label effective-text] (rewrite-transcript! label text)]
       (if (or (not= effective-label label) (not= effective-text text))
-        (log "TRANSCRIPT REWRITE\n" effective-label effective-text))
+        (log "TRANSCRIPT REWRITE" [effective-label effective-text]))
       (let [text (format-transcript effective-label effective-text)
             generated-style (determine-style effective-label effective-text)
             style (if (some? style)
                     (str generated-style ";" style)
                     generated-style)]
         (transcript/append-to-transcript! @current-transcript text style)
-        (record-output! [effective-label effective-text])))))
-
-(defn run-output-matching-loop! [match-fn result-channel]
-  (go-loop []
-    (when-let [value (<! output-recorder)]
-      (if-let [match (match-fn value)]
-        (do
-          (put! result-channel match)
-          (vreset! active-output-observer nil))
-        (recur)))))
+        (helpers/scroll-page-to-bottom!)
+        (if-not skip-recording?
+          (record-output! [effective-label effective-text]))))))
 
 (defn wait-for-match [match-fn matching-info & [time-limit silent?]]
   (let [result-channel (chan)
         max-waiting-time (or time-limit (get-transcript-match-timeout))
         timeout-channel (timeout max-waiting-time)]
-    (assert (not @active-output-observer) (get-observer-clash-msg @active-output-observer matching-info))                     ; we do not support parallel waiting for match, only one wait-for-match call can be in-flight
-    (vreset! active-output-observer matching-info)
-    (run-output-matching-loop! match-fn result-channel)
+    (register-observer! match-fn result-channel)
     ; return a channel yielding results or throwing timeout exception (may yield :timeout if silent?)
     (go
       (let [[result] (alts! [result-channel timeout-channel])]
@@ -182,3 +201,19 @@
             (if silent?
               :timeout
               (throw (ex-info :task-timeout {:transcript (get-timeout-transcript-msg max-waiting-time matching-info)}))))))))
+
+; -- transcript init --------------------------------------------------------------------------------------------------------
+
+(defn run-output-matching-loop! []
+  (go-loop []
+    (when-let [value (<! output-recorder)]
+      (apppend-to-output-segment! value)
+      (doseq [observer-record @output-observers]
+        (match-observer-record! observer-record value))
+      (recur))))
+
+(defn init-transcript! [id]
+  (let [transcript-el (transcript/create-transcript! (helpers/get-el-by-id id))]
+    (reset! current-transcript transcript-el)
+    (run-output-matching-loop!)))
+

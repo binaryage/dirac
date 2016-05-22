@@ -85,6 +85,7 @@
   (nil? @exit-code))
 
 (defn set-exit-code! [code]
+  (log "set-exit-code!" code)
   (vreset! exit-code code))
 
 ; -- task life-cycle --------------------------------------------------------------------------------------------------------
@@ -124,25 +125,23 @@
      true)))
 
 (defn task-timeout! [data]
-  (go
-    (when (running?)
-      (set-exit-code! ::timeout)
-      (if-let [transcript (:transcript data)]
-        (transcript-host/append-to-transcript! "timeout" transcript))
-      (status-host/set-status! (or (:status data) "task timeouted!"))
-      (status-host/set-style! (or (:style data) "timeout"))
-      (transcript-host/set-style! (or (:style data) "timeout"))
-      (<! (task-teardown!)))))
+  (when (running?)
+    (set-exit-code! ::timeout)
+    (if-let [transcript (:transcript data)]
+      (transcript-host/append-to-transcript! "timeout" transcript))
+    (status-host/set-status! (or (:status data) "task timeouted!"))
+    (status-host/set-style! (or (:style data) "timeout"))
+    (transcript-host/set-style! (or (:style data) "timeout"))
+    (task-teardown!)))
 
 (defn task-exception! [message e]
-  (go
-    (when (running?)
-      (set-exit-code! ::exception)
-      (status-host/set-status! (str "task has thrown an exception: " message))
-      (status-host/set-style! "exception")
-      (transcript-host/append-to-transcript! "exception" (format-exception e))
-      (transcript-host/set-style! "exception")
-      (<! (task-teardown!)))))
+  (when (running?)
+    (set-exit-code! ::exception)
+    (status-host/set-status! (str "task has thrown an exception: " message))
+    (status-host/set-style! "exception")
+    (transcript-host/append-to-transcript! "exception" (format-exception e))
+    (transcript-host/set-style! "exception")
+    (task-teardown!)))
 
 (defn task-started! []
   (go
@@ -159,13 +158,12 @@
     (<! (messages/set-option! :open-as "window"))))
 
 (defn task-finished! []
-  (go
-    (when (running?)
-      (set-exit-code! ::success)
-      (status-host/set-status! "task finished")
-      (status-host/set-style! "finished")
-      (transcript-host/set-style! "finished")
-      (<! (task-teardown!)))))
+  (when (running?)
+    (set-exit-code! ::success)
+    (status-host/set-status! "task finished")
+    (status-host/set-style! "finished")
+    (transcript-host/set-style! "finished")
+    (task-teardown!)))
 
 ; -- handling exceptions ----------------------------------------------------------------------------------------------------
 

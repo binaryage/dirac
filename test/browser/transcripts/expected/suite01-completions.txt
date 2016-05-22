@@ -16,7 +16,6 @@ automate #1      switch-prompt-to-dirac!
 devtools #1      switch console prompt to dirac
 devtools #1      console prompt focused
 devtools #1      repl initialized
-automate #1      wait-for-prompt-to-enter-edit-mode
 devtools #1      setDiracPromptStatusContent('Dirac Agent connected. Bootstrapping ClojureScript REPL...')
 devtools #1      setDiracPromptStatusStyle('info')
 devtools #1      setDiracPromptNS('cljs.user')

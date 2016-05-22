@@ -137,26 +137,31 @@
 
 (defn ^:without-devtools-id open-devtools! []
   (go
-    (let [wait-for-boot (wait-for-devtools-boot)
-          reply (<! (fire-chrome-event! [:chromex.ext.commands/on-command ["open-dirac-devtools" {:reset-settings 1}]]))]
-      (<! wait-for-boot)
+    (let [reply (<! (fire-chrome-event! [:chromex.ext.commands/on-command ["open-dirac-devtools" {:reset-settings 1}]]))]
+      (<! (wait-for-devtools-boot))
       (let [devtools-id (utils/parse-int (oget reply "data"))]
+        (if-not (helpers/is-test-runner-present?)
+          (messages/switch-to-task-runner-tab!))                                                                              ; for convenience
         (set! *last-devtools-id* devtools-id)
         (DevToolsID. devtools-id)))))                                                                                         ; note: we wrap it so we can easily detect devtools-id parameters in action! method
 
 (defn close-devtools! [devtools-id]
   (go
-    (let [wait-for-unregistration (wait-for-devtools-unregistration devtools-id)]
-      (<! (fire-chrome-event! [:chromex.ext.commands/on-command ["close-dirac-devtools" devtools-id]]))
-      (<! wait-for-unregistration))))
+    (<! (fire-chrome-event! [:chromex.ext.commands/on-command ["close-dirac-devtools" devtools-id]]))
+    (<! (wait-for-devtools-unregistration devtools-id))))
 
 ; -- transcript sugar -------------------------------------------------------------------------------------------------------
 
+(def action-style (str "font-weight: bold;"
+                       "border-top:1px dashed rgba(0,0,0,0.3);"
+                       "margin-top:5px;"
+                       "padding-top:2px;"
+                       "color:#f66;"))
+
 (defn append-to-transcript! [message & [devtools-id]]
   (let [label (str "automate" (if devtools-id (str " #" devtools-id)))
-        message (if (string? message) message (pr-str message))
-        style "opacity:0.5;border-top: 1px dashed rgba(0,0,0,0.1);color:#666;margin-top:5px;padding-top:2px;"]
-    (transcript/append-to-transcript! label message style)))
+        message (if (string? message) message (pr-str message))]
+    (transcript/append-to-transcript! label message action-style)))
 
 ; -- flexible automation api ------------------------------------------------------------------------------------------------
 
@@ -164,14 +169,23 @@
   (str (:name metadata) (if-not (empty? args) (str " " (vec args)))))
 
 (defn action! [action-fn metadata & args]
-  (cond
-    (:without-devtools-id metadata) (do
-                                      (append-to-transcript! (make-action-signature metadata args))
-                                      (apply action-fn args))
-    (instance? DevToolsID (first args)) (let [devtools-id (first args)]
-                                          (append-to-transcript! (make-action-signature metadata (rest args)) devtools-id)
-                                          (apply action-fn (:id (first args)) (rest args)))
-    :else (do
-            (assert *last-devtools-id* (str "action " (:name metadata) " requires prior :open-dirac-devtools call"))
-            (append-to-transcript! (make-action-signature metadata args) *last-devtools-id*)
-            (apply action-fn *last-devtools-id* args))))
+  (let [name (str (:name metadata))
+        new-segment? (nil? (re-find #"^wait-" name))]
+    (log "action!" name args)
+    (when new-segment?
+      (transcript/reset-output-segment!))
+    (cond
+      (:without-devtools-id metadata) (do
+                                        (if new-segment?
+                                          (append-to-transcript! (make-action-signature metadata args)))
+                                        (apply action-fn args))
+      (instance? DevToolsID (first args)) (let [devtools-id (first args)
+                                                action-signature (make-action-signature metadata (rest args))]
+                                            (if new-segment?
+                                              (append-to-transcript! action-signature devtools-id))
+                                            (apply action-fn (:id (first args)) (rest args)))
+      :else (let [action-signature (make-action-signature metadata args)]
+              (assert *last-devtools-id* (str "action " name " requires prior :open-dirac-devtools call"))
+              (if new-segment?
+                (append-to-transcript! action-signature *last-devtools-id*))
+              (apply action-fn *last-devtools-id* args)))))
