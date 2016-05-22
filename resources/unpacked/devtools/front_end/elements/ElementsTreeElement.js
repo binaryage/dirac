@@ -1431,7 +1431,7 @@ WebInspector.ElementsTreeElement.prototype = {
                     break;
                 }
 
-                if ((this.treeOutline && this.treeOutline.isXMLMimeType) || !WebInspector.ElementsTreeElement.ForbiddenClosingTagElements[tagName])
+                if (this.treeOutline.isXMLMimeType || !WebInspector.ElementsTreeElement.ForbiddenClosingTagElements[tagName])
                     this._buildTagDOM(titleDOM, tagName, true, false, updateRecord);
                 break;
 
