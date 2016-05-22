@@ -119,7 +119,7 @@
   [label (str (helpers/extract-first-line text) "\n<elided stack trace>")])
 
 (defn process-java-trace-state! [label text]
-  (if (re-find #"DF\.log" text)
+  (if (re-find #"^DF\.log" text)
     (case (:logs (get-rewriting-machine-context))
       :expecting-java-trace (do
                               (update-rewriting-machine-context! assoc :logs :received-first-log)
