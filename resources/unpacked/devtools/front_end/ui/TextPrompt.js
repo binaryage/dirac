@@ -830,7 +830,7 @@ WebInspector.TextPrompt.prototype = {
     },
 
     /**
-     * @return {!string}
+     * @return {string}
      */
     getSuggestBoxRepresentation: function() {
         return "getSuggestBoxRepresentation not implemented for WebInspector.TextPrompt";

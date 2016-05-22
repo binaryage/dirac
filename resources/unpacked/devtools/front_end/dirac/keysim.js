@@ -290,7 +290,7 @@
          * @param {HTMLElement} target
          * @param {?function} callback
          */
-        Keyboard.prototype.dispatchEventsForAction = function dispatchEventsForAction(action, target, callback) {
+        Keyboard.prototype.dispatchEventsForAction = function(action, target, callback) {
             var keystroke = this.keystrokeForAction(action);
             scheduleTask(50, () => this.dispatchEventsForKeystroke(keystroke, target));
             if (callback) {
@@ -306,7 +306,7 @@
          * @param {HTMLElement} target
          * @param {?function} callback
          */
-        Keyboard.prototype.dispatchEventsForInput = function dispatchEventsForInput(input, target, callback) {
+        Keyboard.prototype.dispatchEventsForInput = function(input, target, callback) {
             var currentModifierState = 0;
             for (var i = 0, _length = input.length; i < _length; i++) {
                 var keystroke = this.keystrokeForCharCode(input.charCodeAt(i));

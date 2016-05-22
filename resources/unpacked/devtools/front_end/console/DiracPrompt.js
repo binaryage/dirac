@@ -639,7 +639,8 @@ WebInspector.DiracPromptWithHistory.prototype = {
     },
 
     /**
-     * @return {!string}
+     * @override
+     * @return {string}
      */
     getSuggestBoxRepresentation: function() {
         if (!this._suggestBox || !this._suggestBox.visible()) {

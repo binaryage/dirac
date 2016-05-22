@@ -429,14 +429,14 @@ var dirac = {
      */
     sendEvalRequest: function(requestId, code, scopeInfo) {},
     /**
-     * @param {!string} ns
-     * @param {!string} ext
-     * @returns {!string}
+     * @param {string} ns
+     * @param {string} ext
+     * @returns {string}
      */
     nsToRelpath: function(ns, ext) {},
 
     /**
-     * @param {!string} source
+     * @param {string} source
      * @returns {?Object}
      */
     parseNsFromSource: function(source) {},
@@ -465,7 +465,8 @@ dirac.ScopeInfo;
 
 var Keysim = {
     Keyboard: {
-        US_ENGLISH: {}},
+        US_ENGLISH: {}
+    },
 
     /**
      * Fires the correct sequence of events on the given target as if the given
@@ -473,10 +474,22 @@ var Keysim = {
      *
      * @param {string} action e.g. "alt+shift+left" or "backspace"
      * @param {HTMLElement} target
+     * @param {?function()} callback
      */
-    dispatchEventsForAction: function(action, target) {}
-}
+    dispatchEventsForAction: function(action, target, callback) {
+    },
 
+    /**
+     * Fires the correct sequence of events on the given target as if the given
+     * input had been typed by a human.
+     *
+     * @param {string} input
+     * @param {HTMLElement} target
+     * @param {?function()} callback
+     */
+    dispatchEventsForInput: function(input, target, callback) {
+    }
+};
 
 /** @constructor */
 function Path2D() {}

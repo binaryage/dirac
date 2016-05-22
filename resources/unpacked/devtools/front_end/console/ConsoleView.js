@@ -572,7 +572,7 @@ WebInspector.ConsoleView.prototype = {
     },
 
     /**
-     * @return {!string}
+     * @return {string}
      */
     getSuggestBoxRepresentation: function() {
         var promptDescriptor = this.getCurrentPromptDescriptor();
