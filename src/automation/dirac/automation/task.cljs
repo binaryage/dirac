@@ -72,8 +72,9 @@
     (ws-client/connect! (get-signal-server-url) client-config)))
 
 (defn format-exception [e]
-  (let [stack (.-stack e)]
-    (str e (if (some? stack) (str "\n" stack)))))
+  (if-let [stack (oget e "stack")]
+    (str stack)
+    (str e)))
 
 ; -- task state -------------------------------------------------------------------------------------------------------------
 
@@ -132,11 +133,11 @@
       (transcript-host/set-style! (or (:style data) "timeout"))
       (<! (task-teardown!)))))
 
-(defn task-exception! [e]
+(defn task-exception! [message e]
   (go
     (when (running?)
       (set-exit-code! ::exception)
-      (status-host/set-status! (str "task has thrown an exception: " e))
+      (status-host/set-status! (str "task has thrown an exception: " message))
       (transcript-host/append-to-transcript! "exception" (format-exception e) true)
       (transcript-host/set-style! "exception")
       (<! (task-teardown!)))))
@@ -164,10 +165,10 @@
 
 ; -- handling exceptions ----------------------------------------------------------------------------------------------------
 
-(defn task-exception-handler [message _source _lineno _colno error]
-  (case (ex-message error)
-    :task-timeout (task-timeout! (ex-data error))
-    (task-exception! message))
+(defn task-exception-handler [message _source _lineno _colno e]
+  (case (ex-message e)
+    :task-timeout (task-timeout! (ex-data e))
+    (task-exception! message e))
   false)
 
 (defn register-global-exception-handler! []
