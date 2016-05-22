@@ -4,6 +4,6 @@
 
 (go-task
   (<!* a/open-tab-with-scenario! "normal")
-  (<!* a/open-dirac-devtools!)
-  (<!* a/close-dirac-devtools!)
+  (<!* a/open-devtools!)
+  (<!* a/close-devtools!)
   (<!* a/wait-for-devtools-close))

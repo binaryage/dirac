@@ -25,6 +25,7 @@ devtools #1      repl eval job ended
 devtools #1      setDiracPromptMode('edit')
 automate #1      {:action :enable-console-feedback}
 devtools #1      console prompt focused
+automate #1      {:action :clear-console-prompt}
 automate #1      {:action :dispatch-console-prompt-input, :input "(+ 1 2)"}
 automate #1      {:action :dispatch-console-prompt-action, :input "enter"}
 devtools #1      DC.log> (+ 1 2)
@@ -33,6 +34,7 @@ devtools #1      repl eval job started
 devtools #1      wrap-with-postprocess-and-eval-in-current-context!
 devtools #1      DF.log> 3
 devtools #1      repl eval job ended
+automate #1      {:action :clear-console-prompt}
 automate #1      {:action :dispatch-console-prompt-input, :input "(range 200)"}
 automate #1      {:action :dispatch-console-prompt-action, :input "enter"}
 devtools #1      DC.log> (range 200)
@@ -41,6 +43,7 @@ devtools #1      repl eval job started
 devtools #1      wrap-with-postprocess-and-eval-in-current-context!
 devtools #1      DF.log> (0 1 2 3 4 …)
 devtools #1      repl eval job ended
+automate #1      {:action :clear-console-prompt}
 automate #1      {:action :dispatch-console-prompt-input, :input "(doc filter)"}
 automate #1      {:action :dispatch-console-prompt-action, :input "enter"}
 devtools #1      DC.log> (doc filter)
@@ -56,6 +59,7 @@ devtools #1      DF.log>
                    Returns a transducer when no collection is provided.
 devtools #1      DF.log> null
 devtools #1      repl eval job ended
+automate #1      {:action :clear-console-prompt}
 automate #1      {:action :dispatch-console-prompt-input, :input "js/dirac"}
 automate #1      {:action :dispatch-console-prompt-action, :input "enter"}
 devtools #1      DC.log> js/dirac
@@ -64,6 +68,7 @@ devtools #1      repl eval job started
 devtools #1      wrap-with-postprocess-and-eval-in-current-context!
 devtools #1      DF.log> Object {automation: Object, tests: Object, runtime: Object, project: Object}
 devtools #1      repl eval job ended
+automate #1      {:action :clear-console-prompt}
 automate #1      {:action :dispatch-console-prompt-input, :input "(x)"}
 automate #1      {:action :dispatch-console-prompt-action, :input "enter"}
 devtools #1      DC.log> (x)
@@ -73,6 +78,7 @@ devtools #1      present-server-side-output! stderr > WARNING: Use of undeclared
 devtools #1      wrap-with-postprocess-and-eval-in-current-context!
 devtools #1      DF.err> TypeError: Cannot read property 'call' of undefined(…)
 devtools #1      repl eval job ended
+automate #1      {:action :clear-console-prompt}
 automate #1      {:action :dispatch-console-prompt-input, :input "(in-ns)"}
 automate #1      {:action :dispatch-console-prompt-action, :input "enter"}
 devtools #1      DC.log> (in-ns)
@@ -84,6 +90,7 @@ devtools #1      repl eval job ended
 devtools #1      DF.log> java.lang.IllegalArgumentException: Argument to in-ns must be a symbol.
 devtools #1      <elided stack trace log>
 devtools #1      JS.log>
+automate #1      {:action :clear-console-prompt}
 automate #1      {:action :dispatch-console-prompt-input, :input "(in-ns 'my.ns)"}
 automate #1      {:action :dispatch-console-prompt-action, :input "enter"}
 devtools #1      DC.log> (in-ns 'my.ns)

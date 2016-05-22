@@ -69,14 +69,8 @@
   (append-to-transcript! data)
   (messages/fire-chrome-event! data))
 
-(defn wait-for-devtools-registration []
-  (wait-for-match "register devtools #"))
-
 (defn wait-for-devtools-unregistration [devtools-id]
   (wait-for-match (str "unregister devtools #" devtools-id)))
-
-(defn wait-for-implant-initialization []
-  (wait-for-match "implant initialized"))
 
 (defn wait-for-devtools-ready []
   (wait-for-match "devtools ready"))
@@ -88,8 +82,6 @@
   ; TODO: to be 100% correct we should check for matching devtools id here
   ;       imagine a situation when two or more devtools instances are started at the same time
   (go
-    (<! (wait-for-devtools-registration))
-    (<! (wait-for-implant-initialization))
     (<! (wait-for-devtools-ready))
     (<! (wait-for-elements-panel-switch))))
 
@@ -119,13 +111,13 @@
 
 ; -- automation commands ----------------------------------------------------------------------------------------------------
 
-(defn switch-inspector-panel! [devtools-id panel]
+(defn switch-devtools-panel! [devtools-id panel]
   (automate-dirac-frontend! devtools-id {:action :switch-inspector-panel :panel panel}))
 
 (defn switch-prompt-to-dirac! [devtools-id]
   (automate-dirac-frontend! devtools-id {:action :switch-to-dirac-prompt}))
 
-(defn switch-to-js-prompt! [devtools-id]
+(defn switch-prompt-to-javascript! [devtools-id]
   (automate-dirac-frontend! devtools-id {:action :switch-to-js-prompt}))
 
 (defn focus-console-prompt! [devtools-id]
@@ -139,28 +131,26 @@
 
 (defn print-suggest-box-state! [devtools-id]
   (go
-    (let [rep (<! (get-suggest-box-representation devtools-id))
-          data (oget rep "data")]
-      (if (string? data)
-        (println (reader/read-string data))
-        (do
-          (error "unexpected get-suggest-box-representation reply" rep)
-          (throw "print-suggest-box-representation failed"))))))
+    (let [state-representation (<! (get-suggest-box-representation devtools-id))
+          data (or (oget state-representation "data") "?")]
+      (assert (string? data))
+      (println (reader/read-string data)))))
 
-(defn add-input-to-console! [devtools-id input]
+(defn simulate-console-input! [devtools-id input]
   {:pre [(string? input)]}
   (automate-dirac-frontend! devtools-id {:action :dispatch-console-prompt-input
                                          :input  input}))
 
-(defn dispatch-console-prompt-action! [devtools-id action]
+(defn simulate-console-action! [devtools-id action]
   {:pre [(string? action)]}
   (automate-dirac-frontend! devtools-id {:action :dispatch-console-prompt-action
                                          :input  action}))
 
 (defn console-enter! [devtools-id input]
   (go
-    (<! (add-input-to-console! devtools-id input))
-    (<! (dispatch-console-prompt-action! devtools-id "enter"))))
+    (<! (clear-console-prompt! devtools-id))
+    (<! (simulate-console-input! devtools-id input))
+    (<! (simulate-console-action! devtools-id "enter"))))
 
 (defn console-exec-and-match! [devtools-id input match-or-matches]
   (let [matches (if (coll? match-or-matches)
@@ -181,7 +171,7 @@
 (defn switch-to-console! [devtools-id]
   (go
     (let [wait (wait-for-console-initialization devtools-id)]
-      (<! (switch-inspector-panel! devtools-id :console))
+      (<! (switch-devtools-panel! devtools-id :console))
       (<! wait)
       (<! (wait-for-devtools-match devtools-id "ConsoleView constructed")))))
 
@@ -189,7 +179,7 @@
 
 (deftype DevToolsID [id])
 
-(defn ^:without-devtools-id open-dirac-devtools! []
+(defn ^:without-devtools-id open-devtools! []
   (go
     (let [waiting-for-devtools-to-get-ready (wait-for-devtools)
           reply (<! (fire-chrome-event! [:chromex.ext.commands/on-command ["open-dirac-devtools" {:reset-settings 1}]]))]
@@ -198,7 +188,7 @@
         (set! *last-devtools-id* devtools-id)
         (DevToolsID. devtools-id)))))                                                                                         ; note: we wrap it so we can easily detect devtools-id parameters in action! method
 
-(defn close-dirac-devtools! [devtools-id]
+(defn close-devtools! [devtools-id]
   (fire-chrome-event! [:chromex.ext.commands/on-command ["close-dirac-devtools" devtools-id]]))
 
 ; -- flexible automation api ------------------------------------------------------------------------------------------------

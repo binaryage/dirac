@@ -5,7 +5,7 @@
 
 (go-task
   (<!* a/open-tab-with-scenario! "no-agent")
-  (<!* a/open-dirac-devtools!)
+  (<!* a/open-devtools!)
   (<!* a/switch-to-console!)
   (<!* a/switch-prompt-to-dirac!)
   (<!* a/wait-for-devtools-match "will try reconnect in 4 seconds" (seconds 20)))

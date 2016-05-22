@@ -4,29 +4,28 @@
 
 (go-task
   (<!* a/open-tab-with-scenario! "completions")
-  (<!* a/open-dirac-devtools!)
+  (<!* a/open-devtools!)
   (<!* a/switch-to-console!)
   (<!* a/switch-prompt-to-dirac!)
   (<!* a/wait-for-prompt-to-enter-edit-mode)
   (<!* a/enable-console-feedback!)
   ; -- test in-ns completions for our namespace -----------------------------------------------------------------------------
-  (<!* a/clear-console-prompt!)
   (<!* a/console-exec-and-match!
        "(in-ns 'dirac.tests.scenarios.completions.workspace)"
        "setDiracPromptNS('dirac.tests.scenarios.completions.workspace')")
-  (<!* a/add-input-to-console! "sample")
+  (<!* a/simulate-console-input! "sample")
   (<!* a/print-suggest-box-state!)
   ; -- test javascript completions in js/ namespace -------------------------------------------------------------------------
   (<!* a/clear-console-prompt!)
-  (<!* a/add-input-to-console! "js/docume")
+  (<!* a/simulate-console-input! "js/docume")
   (<!* a/print-suggest-box-state!)
-  (<!* a/add-input-to-console! "nt.get")
+  (<!* a/simulate-console-input! "nt.get")
   (<!* a/print-suggest-box-state!)
   ; -- test fully qualified completions -------------------------------------------------------------------------------------
   (<!* a/clear-console-prompt!)
-  (<!* a/add-input-to-console! "cljs.core/part")
+  (<!* a/simulate-console-input! "cljs.core/part")
   (<!* a/print-suggest-box-state!)
   ; -- test namespace names completions -------------------------------------------------------------------------------------
   (<!* a/clear-console-prompt!)
-  (<!* a/add-input-to-console! "devtools.")
+  (<!* a/simulate-console-input! "devtools.")
   (<!* a/print-suggest-box-state!))

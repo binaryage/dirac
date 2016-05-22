@@ -5,7 +5,7 @@
 (go-task
   (<!* a/open-tab-with-scenario! "normal")
   (<!* a/set-option! :enable-parinfer false)
-  (<!* a/open-dirac-devtools!)
+  (<!* a/open-devtools!)
   (<!* a/switch-to-console!)
   (<!* a/switch-prompt-to-dirac!)
   (<!* a/set-option! :enable-parinfer true))

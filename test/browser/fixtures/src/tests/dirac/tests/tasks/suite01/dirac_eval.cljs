@@ -6,7 +6,7 @@
 
 (go-task
   (<!* a/open-tab-with-scenario! "normal")
-  (<!* a/open-dirac-devtools!)
+  (<!* a/open-devtools!)
   (<!* a/switch-to-console!)
   (<!* a/switch-prompt-to-dirac!)
   (<!* a/wait-for-prompt-to-enter-edit-mode)
