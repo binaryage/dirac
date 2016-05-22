@@ -32,6 +32,10 @@
 (defn get-document-url []
   (str (.-location js/document)))
 
+(defn get-document-url-param [param]
+  (let [url (get-document-url)]
+    (get-query-param url param)))
+
 (defn is-test-runner-present? []
   (let [url (get-document-url)]
     (boolean (get-query-param url "test_runner"))))
@@ -41,3 +45,9 @@
        (cuerdas/lines)
        (map-indexed (fn [i line] (if-not (zero? i) (str prefix line) line)))                                                  ; prepend prefix to all lines except the first
        (cuerdas/unlines)))
+
+(defn extract-first-line [s]
+  (-> s
+      (cuerdas/lines)
+      (first)))
+
