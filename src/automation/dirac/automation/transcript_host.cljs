@@ -140,7 +140,7 @@
   {:pre [(has-transcript?)
          (string? label)
          (string? text)]}
-  (when (or force? (transcript-enabled?))
+  (when (transcript-enabled?)
     (when-let [[effective-label effective-text] (rewrite-transcript! label text)]
       (let [text (format-transcript effective-label effective-text)
             generated-style (determine-style effective-label effective-text)

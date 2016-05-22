@@ -29,10 +29,10 @@
   (set! *print-newline* false)
   (set! *print-fn* (fn [& args]
                      (.apply (.-log js/console) js/console (into-array args))
-                     (transcript-host/append-to-transcript! "cljs out" (apply str args) true)))
+                     (transcript-host/append-to-transcript! "cljs out" (apply str args))))
   (set! *print-err-fn* (fn [& args]
                          (.apply (.-error js/console) js/console (into-array args))
-                         (transcript-host/append-to-transcript! "cljs err" (apply str args) true)))
+                         (transcript-host/append-to-transcript! "cljs err" (apply str args))))
   nil)
 
 ; -- chrome driver support --------------------------------------------------------------------------------------------------
@@ -128,7 +128,7 @@
     (when (running?)
       (set-exit-code! ::timeout)
       (if-let [transcript (:transcript data)]
-        (transcript-host/append-to-transcript! "timeout" transcript true))
+        (transcript-host/append-to-transcript! "timeout" transcript))
       (status-host/set-status! (or (:status data) "task timeouted!"))
       (status-host/set-style! (or (:style data) "timeout"))
       (transcript-host/set-style! (or (:style data) "timeout"))
@@ -140,7 +140,7 @@
       (set-exit-code! ::exception)
       (status-host/set-status! (str "task has thrown an exception: " message))
       (status-host/set-style! "exception")
-      (transcript-host/append-to-transcript! "exception" (format-exception e) true)
+      (transcript-host/append-to-transcript! "exception" (format-exception e))
       (transcript-host/set-style! "exception")
       (<! (task-teardown!)))))
 
