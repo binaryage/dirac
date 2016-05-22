@@ -6,7 +6,9 @@
             [chromex.ext.tabs :as tabs]
             [chromex.ext.extension :as extension]
             [chromex.ext.runtime :as runtime]
-            [dirac.settings :refer-macros [get-automation-entry-point-key]]
+            [dirac.settings :refer-macros [get-automation-entry-point-key
+                                           get-flush-pending-feedback-messages-key
+                                           get-dirac-intercom-key]]
             [dirac.background.action :as action]
             [dirac.background.state :as state]
             [dirac.utils :as utils]
@@ -149,7 +151,7 @@
   (let [matching-views (get-devtools-views devtools-id)]
     (if (= (count matching-views) 1)
       (let [view (first matching-views)]
-        (oset view ["diracExtensionIntercom"] handler)
-        (when-let [flush-fn (oget view "diracFlushPendingFeedbackMessages")]
+        (oset view [(get-dirac-intercom-key)] handler)
+        (when-let [flush-fn (oget view (get-flush-pending-feedback-messages-key))]
           (flush-fn)))
       (error "unable to install intercom from dirac extension to dirac frontend" devtools-id))))

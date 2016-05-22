@@ -60,6 +60,8 @@
 (def ^:const SIGNAL_SERVER_PORT 22555)
 
 (def ^:const AUTOMATION_ENTRY_POINT_KEY "diracAutomateDevTools")
+(def ^:const FLUSH_PENDING_FEEDBACK_MESSAGES_KEY "diracFlushPendingFeedbackMessages")
+(def ^:const DIRAC_INTERCOM_KEY "diracIntercom")
 
 (def dirac-window-top (env :dirac-window-top))
 (def dirac-window-left (env :dirac-window-left))
@@ -198,3 +200,9 @@
 
 (defmacro get-automation-entry-point-key []
   AUTOMATION_ENTRY_POINT_KEY)
+
+(defmacro get-flush-pending-feedback-messages-key []
+  FLUSH_PENDING_FEEDBACK_MESSAGES_KEY)
+
+(defmacro get-dirac-intercom-key []
+  DIRAC_INTERCOM_KEY)
