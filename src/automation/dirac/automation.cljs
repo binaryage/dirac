@@ -5,6 +5,7 @@
             [chromex.logging :refer-macros [log error]]
             [dirac.automation.messages :as messages]
             [dirac.automation.task :as task]
+            [dirac.automation.matchers :as matchers]
             [dirac.automation.runner :as runner]
             [dirac.automation.transcript-host :as transcript]
             [dirac.automation.helpers :as helpers]
@@ -15,59 +16,40 @@
 
 (def ^:dynamic *last-devtools-id* nil)
 
+; -- transcript sugar -------------------------------------------------------------------------------------------------------
+
+(defn append-to-transcript! [message & [devtools-id]]
+  (let [label (if devtools-id
+                (str label " #" devtools-id)
+                label)
+        message (if (string? message)
+                  message
+                  (pr-str message))]
+    (transcript/append-to-transcript! label message)))
+
+; -- automation actions -----------------------------------------------------------------------------------------------------
+
 (defn ^:without-devtools-id wait-for-resume! []
   (runner/wait-for-resume!))
 
-; -- matchers ---------------------------------------------------------------------------------------------------------------
-
-(defn make-re-matcher [re]
-  (fn [[_label text]]
-    (re-matches re text)))
-
-(defn make-substr-matcher [s]
-  (fn [[_label text]]
-    (not= (.indexOf text s) -1)))
-
-(defn make-devtools-matcher [devtools-id]
-  (fn [[label _text]]
-    (= label (str "devtools #" devtools-id))))
-
-(defn make-and-matcher [& fns]
-  (fn [val]
-    (every? #(% val) fns)))
-
-; -- wait helpers -----------------------------------------------------------------------------------------------------------
-
-(defn- make-generic-matcher [input]
-  (cond
-    (string? input) (make-substr-matcher input)
-    (regexp? input) (make-re-matcher input)
-    :else (throw (ex-info (str "don't know how to make matcher for " input " (" (type input) ")") input))))
-
-(defn- get-generic-matcher-description [input]
-  (str input " (" (type input) ")"))
-
 (defn ^:without-devtools-id wait-for-match [what & args]
-  (apply transcript/wait-for-match (make-generic-matcher what) (get-generic-matcher-description what) args))
-
-(defn wait-for-devtools-match [devtools-id what & args]
-  (let [matcher (make-and-matcher (make-devtools-matcher devtools-id) (make-generic-matcher what))
-        description (str "devtools #" devtools-id ", " (get-generic-matcher-description what))]
+  (let [matcher (matchers/make-generic-matcher what)
+        description (matchers/get-generic-matcher-description what)]
     (apply transcript/wait-for-match matcher description args)))
 
-; -- transcript -------------------------------------------------------------------------------------------------------------
+(defn wait-for-devtools-match [devtools-id what & args]
+  (let [matcher (matchers/make-and-matcher (matchers/make-devtools-matcher devtools-id)
+                                           (matchers/make-generic-matcher what))
+        description (str "devtools #" devtools-id ", " (matchers/get-generic-matcher-description what))]
+    (apply transcript/wait-for-match matcher description args)))
 
-(defn append-to-transcript! [message & [devtools-id]]
-  (transcript/append-to-transcript! (if devtools-id (str label " #" devtools-id) label)
-                                    (if (string? message) message (pr-str message))))
+(defn fire-chrome-event! ^:without-devtools-id [data]
+  (append-to-transcript! data)
+  (messages/fire-chrome-event! data))
 
 (defn automate-dirac-frontend! [devtools-id data]
   (append-to-transcript! (pr-str data) devtools-id)
   (messages/automate-dirac-frontend! devtools-id data))
-
-(defn fire-chrome-event! [data]
-  (append-to-transcript! data)
-  (messages/fire-chrome-event! data))
 
 (defn wait-for-devtools-unregistration [devtools-id]
   (wait-for-match (str "unregister devtools #" devtools-id)))
@@ -78,12 +60,10 @@
 (defn wait-for-elements-panel-switch []
   (wait-for-match "setCurrentPanel: elements"))
 
-(defn wait-for-devtools []
-  ; TODO: to be 100% correct we should check for matching devtools id here
-  ;       imagine a situation when two or more devtools instances are started at the same time
+(defn wait-for-devtools-boot []
   (go
     (<! (wait-for-devtools-ready))
-    (<! (wait-for-elements-panel-switch))))
+    (<! (wait-for-elements-panel-switch))))                                                                                   ; because we have reset all devtools settings, the first landed panel will be "elements"
 
 (defn wait-for-devtools-close [devtools-id]
   (wait-for-devtools-unregistration devtools-id))
@@ -97,19 +77,9 @@
 (defn ^:without-devtools-id set-option! [key value]
   (messages/set-option! key value))
 
-; -- scenarios --------------------------------------------------------------------------------------------------------------
-
-(defn get-base-url []
-  (str (oget js/location "protocol") "//" (oget js/location "host")))
-
-(defn get-scenario-url [name]
-  (str (get-base-url) "/scenarios/" name ".html?" (helpers/get-encoded-query (helpers/get-document-url))))                    ; we pass all query parameters to scenario page
-
 (defn ^:without-devtools-id open-tab-with-scenario! [name]
   (append-to-transcript! (str "open-tab-with-scenario! " name))
-  (messages/post-message! #js {:type "marion-open-tab-with-scenario" :url (get-scenario-url name)}))
-
-; -- automation commands ----------------------------------------------------------------------------------------------------
+  (messages/post-message! #js {:type "marion-open-tab-with-scenario" :url (helpers/get-scenario-url name)}))
 
 (defn switch-devtools-panel! [devtools-id panel]
   (automate-dirac-frontend! devtools-id {:action :switch-inspector-panel :panel panel}))
@@ -169,11 +139,7 @@
   (automate-dirac-frontend! devtools-id {:action :disable-console-feedback}))
 
 (defn switch-to-console! [devtools-id]
-  (go
-    (let [wait (wait-for-console-initialization devtools-id)]
-      (<! (switch-devtools-panel! devtools-id :console))
-      (<! wait)
-      (<! (wait-for-devtools-match devtools-id "ConsoleView constructed")))))
+  (switch-devtools-panel! devtools-id :console))
 
 ; -- devtools ---------------------------------------------------------------------------------------------------------------
 
@@ -181,9 +147,9 @@
 
 (defn ^:without-devtools-id open-devtools! []
   (go
-    (let [waiting-for-devtools-to-get-ready (wait-for-devtools)
+    (let [wait-for-boot (wait-for-devtools-boot)
           reply (<! (fire-chrome-event! [:chromex.ext.commands/on-command ["open-dirac-devtools" {:reset-settings 1}]]))]
-      (<! waiting-for-devtools-to-get-ready)
+      (<! wait-for-boot)
       (let [devtools-id (utils/parse-int (oget reply "data"))]
         (set! *last-devtools-id* devtools-id)
         (DevToolsID. devtools-id)))))                                                                                         ; note: we wrap it so we can easily detect devtools-id parameters in action! method

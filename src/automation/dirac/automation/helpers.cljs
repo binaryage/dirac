@@ -51,3 +51,10 @@
       (cuerdas/lines)
       (first)))
 
+(defn get-base-url []
+  (str (oget js/location "protocol") "//" (oget js/location "host")))
+
+(defn get-scenario-url [name]
+  (str (get-base-url) "/scenarios/" name ".html?" (get-encoded-query (get-document-url))))                                    ; we pass all query parameters to scenario page
+
+
