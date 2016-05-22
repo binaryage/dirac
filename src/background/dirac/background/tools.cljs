@@ -138,9 +138,10 @@
     (tabs/remove ids)))
 
 (defn close-dirac-devtools! [devtools-id]
-  (if-let [descriptor (state/get-devtools-descriptor devtools-id)]
-    (close-tab-with-id! (:frontend-tab-id descriptor))
-    (warn "requested closing unknown devtools" devtools-id)))
+  (go
+    (if-let [descriptor (state/get-devtools-descriptor devtools-id)]
+      (close-tab-with-id! (:frontend-tab-id descriptor))
+      (warn "requested closing unknown devtools" devtools-id))))
 
 (defn focus-console-prompt-for-backend-tab! [backend-tab-id]
   {:pre [backend-tab-id]}
