@@ -1,18 +1,20 @@
-automate         open-tab-with-scenario! normal
-automate         [:chromex.ext.commands/on-command ["open-dirac-devtools" {:reset-settings 1}]]
+automate         open-tab-with-scenario! ["normal"]
+automate         set-option! [:enable-parinfer false]
+automate         open-devtools!
 extension        handling command: open-dirac-devtools
 extension        register devtools #1
 devtools #1      implant initialized
 devtools #1      reset devtools settings
 devtools #1      devtools ready
 devtools #1      setCurrentPanel: elements
-automate #1      {:action :switch-inspector-panel, :panel :console}
+automate #1      switch-to-console!
 devtools #1      console initialized
 devtools #1      adopt-prompt-element use-parinfer? false
 devtools #1      setDiracPromptMode('status')
 devtools #1      ConsoleView constructed
 devtools #1      setCurrentPanel: console
-automate #1      {:action :switch-to-dirac-prompt}
+automate #1      switch-prompt-to-dirac!
 devtools #1      switch console prompt to dirac
 devtools #1      console prompt focused
 devtools #1      repl initialized
+automate         set-option! [:enable-parinfer true]

@@ -12,20 +12,9 @@
             [cljs.reader :as reader]
             [dirac.utils :as utils]))
 
-(def label "automate")
+(deftype DevToolsID [id])
 
 (def ^:dynamic *last-devtools-id* nil)
-
-; -- transcript sugar -------------------------------------------------------------------------------------------------------
-
-(defn append-to-transcript! [message & [devtools-id]]
-  (let [label (if devtools-id
-                (str label " #" devtools-id)
-                label)
-        message (if (string? message)
-                  message
-                  (pr-str message))]
-    (transcript/append-to-transcript! label message "opacity:0.5;border-top: 1px dashed rgba(0,0,0,0.1);color:#666;margin-top:5px;padding-top:2px;")))
 
 ; -- automation actions -----------------------------------------------------------------------------------------------------
 
@@ -44,11 +33,9 @@
     (apply transcript/wait-for-match matcher description args)))
 
 (defn fire-chrome-event! ^:without-devtools-id [data]
-  (append-to-transcript! data)
   (messages/fire-chrome-event! data))
 
 (defn automate-dirac-frontend! [devtools-id data]
-  (append-to-transcript! (pr-str data) devtools-id)
   (messages/automate-dirac-frontend! devtools-id data))
 
 (defn wait-for-devtools-unregistration [devtools-id]
@@ -78,7 +65,6 @@
   (messages/set-option! key value))
 
 (defn ^:without-devtools-id open-tab-with-scenario! [name]
-  (append-to-transcript! (str "open-tab-with-scenario! " name))
   (messages/post-message! #js {:type "marion-open-tab-with-scenario" :url (helpers/get-scenario-url name)}))
 
 (defn switch-devtools-panel! [devtools-id panel]
@@ -141,10 +127,6 @@
 (defn switch-to-console! [devtools-id]
   (switch-devtools-panel! devtools-id :console))
 
-; -- devtools ---------------------------------------------------------------------------------------------------------------
-
-(deftype DevToolsID [id])
-
 (defn ^:without-devtools-id open-devtools! []
   (go
     (let [wait-for-boot (wait-for-devtools-boot)
@@ -157,13 +139,28 @@
 (defn close-devtools! [devtools-id]
   (fire-chrome-event! [:chromex.ext.commands/on-command ["close-dirac-devtools" devtools-id]]))
 
+; -- transcript sugar -------------------------------------------------------------------------------------------------------
+
+(defn append-to-transcript! [message & [devtools-id]]
+  (let [label (str "automate" (if devtools-id (str " #" devtools-id)))
+        message (if (string? message) message (pr-str message))
+        style "opacity:0.5;border-top: 1px dashed rgba(0,0,0,0.1);color:#666;margin-top:5px;padding-top:2px;"]
+    (transcript/append-to-transcript! label message style)))
+
 ; -- flexible automation api ------------------------------------------------------------------------------------------------
 
+(defn make-action-signature [metadata & [args]]
+  (str (:name metadata) (if-not (empty? args) (str " " (vec args)))))
+
 (defn action! [action-fn metadata & args]
-  (if (:without-devtools-id metadata)
-    (apply action-fn args)
-    (if (instance? DevToolsID (first args))
-      (apply action-fn (:id (first args)) (rest args))
-      (do
-        (assert *last-devtools-id* (str "action " (:name metadata) " requires prior :open-dirac-devtools call"))
-        (apply action-fn *last-devtools-id* args)))))
+  (cond
+    (:without-devtools-id metadata) (do
+                                      (append-to-transcript! (make-action-signature metadata args))
+                                      (apply action-fn args))
+    (instance? DevToolsID (first args)) (let [devtools-id (first args)]
+                                          (append-to-transcript! (make-action-signature metadata (rest args)) devtools-id)
+                                          (apply action-fn (:id (first args)) (rest args)))
+    :else (do
+            (assert *last-devtools-id* (str "action " (:name metadata) " requires prior :open-dirac-devtools call"))
+            (append-to-transcript! (make-action-signature metadata args) *last-devtools-id*)
+            (apply action-fn *last-devtools-id* args))))
