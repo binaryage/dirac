@@ -122,6 +122,7 @@
                                [label text])
       ::received-first-log (do
                              (update-rewriting-machine-context! dissoc :logs)
+                             (transition-rewriting-machine! nil)
                              [label "<elided stack trace log>"]))
     [label text]))
 
