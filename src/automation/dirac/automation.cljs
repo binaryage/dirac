@@ -51,9 +51,6 @@
     (<! (wait-for-devtools-ready))
     (<! (wait-for-elements-panel-switch))))                                                                                   ; because we have reset all devtools settings, the first landed panel will be "elements"
 
-(defn wait-for-devtools-close [devtools-id]
-  (wait-for-devtools-unregistration devtools-id))
-
 (defn wait-for-prompt-to-enter-edit-mode [devtools-id]
   (wait-for-devtools-match devtools-id "setDiracPromptMode('edit')"))
 
@@ -136,7 +133,10 @@
         (DevToolsID. devtools-id)))))                                                                                         ; note: we wrap it so we can easily detect devtools-id parameters in action! method
 
 (defn close-devtools! [devtools-id]
-  (fire-chrome-event! [:chromex.ext.commands/on-command ["close-dirac-devtools" devtools-id]]))
+  (go
+    (let [wait-for-unregistration (wait-for-devtools-unregistration devtools-id)]
+      (<! (fire-chrome-event! [:chromex.ext.commands/on-command ["close-dirac-devtools" devtools-id]]))
+      (<! wait-for-unregistration))))
 
 ; -- transcript sugar -------------------------------------------------------------------------------------------------------
 

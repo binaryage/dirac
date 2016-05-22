@@ -5,5 +5,4 @@
 (go-task
   (<!* a/open-tab-with-scenario! "normal")
   (<!* a/open-devtools!)
-  (<!* a/close-devtools!)
-  (<!* a/wait-for-devtools-close))
+  (<!* a/close-devtools!))
