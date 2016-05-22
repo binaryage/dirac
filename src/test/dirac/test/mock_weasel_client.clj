@@ -29,9 +29,10 @@
 ; -- channel operations -----------------------------------------------------------------------------------------------------
 
 (defn channel-put! [client-promise value]
-  (go
-    (log/debug (str @client-promise) "weasel event > " value)
-    (put! (get-channel @client-promise) value)))
+  (future
+    (let [client @client-promise]
+      (log/debug (str client) "weasel event > " value)
+      (put! (get-channel client) value))))
 
 ; -- serialization ----------------------------------------------------------------------------------------------------------
 
