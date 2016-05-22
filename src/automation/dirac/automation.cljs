@@ -1,16 +1,15 @@
 (ns dirac.automation
   (:require-macros [cljs.core.async.macros :refer [go go-loop]])
   (:require [cljs.core.async :refer [put! <! chan timeout alts! close!]]
+            [cljs.reader :as reader]
             [chromex.support :refer-macros [oget oset ocall oapply]]
             [chromex.logging :refer-macros [log error]]
+            [dirac.utils :as utils]
+            [dirac.automation.helpers :as helpers]
             [dirac.automation.messages :as messages]
-            [dirac.automation.task :as task]
             [dirac.automation.matchers :as matchers]
             [dirac.automation.runner :as runner]
-            [dirac.automation.transcript-host :as transcript]
-            [dirac.automation.helpers :as helpers]
-            [cljs.reader :as reader]
-            [dirac.utils :as utils]))
+            [dirac.automation.transcript-host :as transcript]))
 
 (deftype DevToolsID [id])
 
