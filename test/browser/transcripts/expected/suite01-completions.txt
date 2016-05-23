@@ -1,3 +1,4 @@
+ns               Testing dirac.tests.tasks.suite01.completions
 automate         open-tab-with-scenario! ["completions"]
 automate         open-devtools!
 extension        handling command: open-dirac-devtools
@@ -32,22 +33,22 @@ devtools #1      wrap-with-postprocess-and-eval-in-current-context!
 devtools #1      setDiracPromptNS('dirac.tests.scenarios.completions.workspace')
 devtools #1      repl eval job ended
 automate #1      simulate-console-input! ["sample"]
-automate #1      print-suggest-box-state!
-cljs out         dirac prompt: suggest box displays 3 items:
+automate #1      print-suggest-box!
+stdout           dirac prompt: suggest box displays 3 items:
                   * sample-def
                   * sample-defn
                   * sample-defonce
 automate #1      clear-console-prompt!
 automate #1      simulate-console-input! ["js/docume"]
-automate #1      print-suggest-box-state!
-cljs out         dirac prompt: suggest box displays 1 items:
+automate #1      print-suggest-box!
+stdout           dirac prompt: suggest box displays 1 items:
                   * document
 automate #1      simulate-console-action! ["TAB"]
-automate #1      print-prompt-state!
-cljs out         js/document
+automate #1      print-prompt!
+stdout           js/document
 automate #1      simulate-console-input! [".get"]
-automate #1      print-suggest-box-state!
-cljs out         dirac prompt: suggest box displays 6 items:
+automate #1      print-suggest-box!
+stdout           dirac prompt: suggest box displays 6 items:
                   * getElementById
                   * getElementsByClassName
                   * getElementsByName
@@ -55,23 +56,23 @@ cljs out         dirac prompt: suggest box displays 6 items:
                   * getElementsByTagNameNS
                   * getSelection
 automate #1      simulate-console-action! ["TAB"]
-automate #1      print-prompt-state!
-cljs out         js/document.getElementById
+automate #1      print-prompt!
+stdout           js/document.getElementById
 automate #1      clear-console-prompt!
 automate #1      simulate-console-input! ["cljs.core/part"]
-automate #1      print-suggest-box-state!
-cljs out         dirac prompt: suggest box displays 4 items:
+automate #1      print-suggest-box!
+stdout           dirac prompt: suggest box displays 4 items:
                   * partial
                   * partition
                   * partition-all
                   * partition-by
 automate #1      simulate-console-action! ["TAB"]
-automate #1      print-prompt-state!
-cljs out         cljs.core/partial
+automate #1      print-prompt!
+stdout           cljs.core/partial
 automate #1      clear-console-prompt!
 automate #1      simulate-console-input! ["devtools."]
-automate #1      print-suggest-box-state!
-cljs out         dirac prompt: suggest box displays 7 items:
+automate #1      print-suggest-box!
+stdout           dirac prompt: suggest box displays 7 items:
                   * devtools.core
                   * devtools.custom-formatters
                   * devtools.format
@@ -81,12 +82,12 @@ cljs out         dirac prompt: suggest box displays 7 items:
                   * devtools.version
 automate #1      simulate-console-action! ["DOWN"]
 automate #1      simulate-console-action! ["TAB"]
-automate #1      print-prompt-state!
-cljs out         devtools.custom-formatters
+automate #1      print-prompt!
+stdout           devtools.custom-formatters
 automate #1      clear-console-prompt!
 automate #1      simulate-console-input! ["cljs.cor"]
-automate #1      print-suggest-box-state!
-cljs out         dirac prompt: suggest box displays 8 items:
+automate #1      print-suggest-box!
+stdout           dirac prompt: suggest box displays 8 items:
                   * cljs.core
                   * cljs.core.async
                   * cljs.core.async.impl.buffers
@@ -96,12 +97,14 @@ cljs out         dirac prompt: suggest box displays 8 items:
                   * cljs.core.async.impl.protocols
                   * cljs.core.async.impl.timers
 automate #1      simulate-console-action! ["RIGHT"]
-automate #1      print-prompt-state!
-cljs out         cljs.core
+automate #1      print-prompt!
+stdout           cljs.core
 automate #1      simulate-console-input! ["/clj-"]
-automate #1      print-suggest-box-state!
-cljs out         dirac prompt: suggest box displays 1 items:
+automate #1      print-suggest-box!
+stdout           dirac prompt: suggest box displays 1 items:
                   * clj->js
 automate #1      simulate-console-action! ["RIGHT"]
-automate #1      print-prompt-state!
-cljs out         cljs.core/clj->js
+automate #1      print-prompt!
+stdout           cljs.core/clj->js
+summary          Ran 1 tests containing 6 assertions.
+                 0 failures, 0 errors.

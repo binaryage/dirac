@@ -1,3 +1,4 @@
+ns               Testing dirac.tests.tasks.suite01.no-agent-connection
 automate         open-tab-with-scenario! ["no-agent"]
 automate         open-devtools!
 extension        handling command: open-dirac-devtools
@@ -29,3 +30,5 @@ devtools #1      setDiracPromptStatusBanner('')
 devtools #1      setDiracPromptStatusContent('Unable to connect to Dirac Agent at ws://localhost:9999')
 devtools #1      setDiracPromptStatusContent('<b>Dirac Agent is not listening</b> at ws://localhost:9999 (<a href="https://github.com/binaryage/dirac/blob/master/docs/installation.md#start-dirac-agent">need help?</a>).')
 devtools #1      setDiracPromptStatusBanner('will try reconnect in 4 seconds')
+summary          Ran 1 tests containing 0 assertions.
+                 0 failures, 0 errors.
