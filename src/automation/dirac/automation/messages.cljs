@@ -28,13 +28,18 @@
   (let [message-id (oget reply-message "id")
         serialized-data (oget reply-message "data")
         data (reader/read-string serialized-data)                                                                             ; TODO: try-catch?
-        subscribers (get-reply-subscribers message-id)]
+        subscribers (get-reply-subscriber-callbacks message-id)
+        unsubscribe! #(swap! reply-subscribers dissoc message-id)]
     (assert (number? message-id))
-    (swap! reply-subscribers dissoc message-id)
     (case (first data)
-      :error (throw (ex-info :serialized-error data))
-      :result (doseq [subscriber subscribers]
-                (subscriber (second data))))))
+      :error (do
+               (unsubscribe!)
+               (throw (ex-info :serialized-error data)))
+      :result (do
+                (doseq [subscriber subscribers]
+                  (subscriber (second data)))
+                ; unsubscribe AFTER calling all subscribers, due to possible wait-for-all-pending-replies! watching
+                (unsubscribe!)))))
 
 (defn wait-for-reply! [message-id reply-timeout info]
   {:pre [(number? message-id)
