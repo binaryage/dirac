@@ -21,12 +21,11 @@
             [dirac.test.chrome-browser :refer [disconnect-browser! reconnect-browser!]]
             [dirac.test.chrome-driver :refer [get-debugging-port extract-javascript-logs]]
             [dirac.lib.ws-server :as server]
+            [dirac.utils :as utils]
             [cuerdas.core :as cuerdas]
             [clj-webdriver.taxi :refer :all]
             [clojure.string :as string]
             [clojure.java.shell :as shell]
-            [clj-time.format :as time-format]
-            [clj-time.coerce :as time-coerce]
             [clojure.tools.logging :as log])
   (import [java.net URLEncoder]))
 
@@ -58,11 +57,10 @@
   (str "Transcript test '" test-name "'"))
 
 (defn format-friendly-timeout [timeout-ms]
-  (time-format/unparse (time-format/formatters :hour-minute-second-ms)
-                       (time-coerce/from-long timeout-ms)))
+  (utils/timeout-display timeout-ms))
 
 (defn navigation-timeout-message [_test-name load-timeout test-index-url]
-  (str "failed to navigate to index page in time (" load-timeout " ms): " test-index-url))
+  (str "failed to navigate to index page in time (" (utils/timeout-display load-timeout) "): " test-index-url))
 
 (def env-to-be-exported #{:dirac-agent-host
                           :dirac-agent-port

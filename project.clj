@@ -134,7 +134,8 @@
                                        "src/logging"
                                        "src/lib"
                                        "src/agent"
-                                       "src/nrepl"]
+                                       "src/nrepl"
+                                       "src/shared"]
               :test-paths   ["src/test"
                              "test/browser/src"
                              "test/backend/src"]}
