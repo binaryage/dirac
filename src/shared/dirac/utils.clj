@@ -7,3 +7,7 @@
         name (symbol (str "runonce_" code-hash))]
     `(defonce ~name {:value ~code
                      :code  ~code-string})))
+
+(defn timeout-display [time-ms]
+  {:pre [(number? time-ms)]}
+  (format "%.1fs" (/ time-ms 1000.)))
