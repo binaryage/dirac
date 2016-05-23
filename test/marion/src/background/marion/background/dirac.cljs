@@ -43,11 +43,12 @@
 ; -- dirac extension event loop ---------------------------------------------------------------------------------------------
 
 (defn post-message-to-dirac-extension! [command]
-  (if-let [port @dirac-extension]
-    (post-message! port command)
-    (do
-      (register-pending-message-for-dirac-extension! command)
-      (warn "dirac extension is not connected with marion => queing"))))
+  (go
+    (if-let [port @dirac-extension]
+      (post-message! port command)
+      (do
+        (register-pending-message-for-dirac-extension! command)
+        (warn "dirac extension is not connected with marion => queing")))))
 
 ; -- message dispatch -------------------------------------------------------------------------------------------------------
 

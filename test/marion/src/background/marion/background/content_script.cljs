@@ -37,12 +37,14 @@
 ; -- message handlers -------------------------------------------------------------------------------------------------------
 
 (defn subscribe-client-to-transcript! [message client]
-  (feedback/subscribe-client! client)
-  (reply-to-message! message))
+  (go
+    (feedback/subscribe-client! client)
+    (reply-to-message! message)))
 
 (defn unsubscribe-client-from-transcript! [message client]
-  (feedback/unsubscribe-client! client)
-  (reply-to-message! message))
+  (go
+    (feedback/unsubscribe-client! client)
+    (reply-to-message! message)))
 
 (defn open-tab-with-scenario! [message]
   (let [scenario-url (oget message "url")]                                                                                    ; something like http://localhost:9080/scenarios/normal.html
@@ -90,7 +92,7 @@
 (defn run-message-loop! [client]
   (go-loop []
     (when-let [message (<! client)]
-      (process-message! client message)
+      (<! (process-message! client message))
       (recur))
     (clients/remove-client! client)))
 
