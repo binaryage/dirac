@@ -18,7 +18,6 @@
 (defonce output-segment (atom []))
 (defonce rewriting-machine (atom {:state   :default
                                   :context {}}))
-(defonce assigned-styles (atom {:counter 0}))
 
 ; -- messages ---------------------------------------------------------------------------------------------------------------
 
@@ -104,16 +103,18 @@
 
 ; -- formatting -------------------------------------------------------------------------------------------------------------
 
-; we want to have two columns, label and then padded text (potentionally wrapped on multiple lines)
-(defn format-transcript [label text]
-  {:pre [(string? text)
-         (string? label)]}
-  (let [padding-length (get-transcript-label-padding-length)
-        truncated-label (cuerdas/prune label padding-length "")
-        padded-label (cuerdas/pad truncated-label {:length padding-length
-                                                   :type   (get-transcript-label-padding-type)})
-        text-block (helpers/prefix-text-block (cuerdas/repeat " " padding-length) text)]
-    (str padded-label text-block "\n")))
+(def box-style "padding:2px;margin-left:-2px;margin-top:1px;border-radius:2px;")
+(def fail-style (str box-style "color:#fff; background-color: rgba(255,0,0,0.8);"))
+
+(defonce assigned-styles
+  (atom {:counter         0
+         "stdout"         (str box-style "color:#666; background-color: rgba(0,0,0,0.1);")
+         "stderr"         (str box-style "color:#f00; background-color: rgba(255,0,0,0.1);")
+         "ns"             (str box-style "color:#000; font-weight: bold")
+         "fail"           fail-style
+         "error"          fail-style
+         "summary"        (str box-style "color:#fff; background-color: rgba(0,128,0,0.8);")
+         "summary (fail)" (str box-style "color:#fff; background-color: rgba(128,0,0,0.8);")}))
 
 ; taken from solarized-light theme
 (def possible-style-colors
@@ -129,6 +130,18 @@
    ])
 
 (def possible-styles (cycle (map #(str "color:" %) possible-style-colors)))
+
+; we want to have two columns, label and then padded text (potentionally wrapped on multiple lines)
+(defn format-transcript [label text]
+  {:pre [(string? text)
+         (string? label)]}
+  (let [padding-length (get-transcript-label-padding-length)
+        truncated-label (cuerdas/prune label padding-length "")
+        padded-label (cuerdas/pad truncated-label {:length padding-length
+                                                   :type   (get-transcript-label-padding-type)})
+        text-block (helpers/prefix-text-block (cuerdas/repeat " " padding-length) text)]
+    (str padded-label text-block "\n")))
+
 
 (defn determine-style [label _text]
   (or (get @assigned-styles label)

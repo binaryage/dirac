@@ -3,7 +3,7 @@
   (:require [cljs.core.async :refer [put! <! chan timeout alts! close!]]
             [chromex.support :refer-macros [oget oset ocall oapply]]
             [chromex.logging :refer-macros [log error]]
-            [dirac.utils :as utils]
+            [dirac.automation.test]
             [dirac.automation.helpers :as helpers]
             [dirac.automation.messages :as messages]
             [dirac.automation.matchers :as matchers]
@@ -82,7 +82,7 @@
 (defn get-suggest-box-representation [devtools-id]
   (automate-dirac-frontend! devtools-id {:action :get-suggest-box-representation}))
 
-(defn print-suggest-box-state! [devtools-id]
+(defn print-suggest-box! [devtools-id]
   (go
     (let [data (<! (get-suggest-box-representation devtools-id))]
       (assert (string? data))
@@ -91,11 +91,12 @@
 (defn get-prompt-representation [devtools-id]
   (automate-dirac-frontend! devtools-id {:action :get-prompt-representation}))
 
-(defn print-prompt-state! [devtools-id]
+(defn print-prompt! [devtools-id]
   (go
-    (let [data (<! (get-prompt-representation devtools-id))]
-      (assert (string? data))
-      (println data))))
+    (let [content (<! (get-prompt-representation devtools-id))]
+      (assert (string? content))
+      (println content)
+      content)))
 
 (defn simulate-console-input! [devtools-id input]
   {:pre [(string? input)]}
@@ -166,23 +167,25 @@
   (str (:name metadata) (if-not (empty? args) (str " " (vec args)))))
 
 (defn action! [action-fn metadata & args]
-  (let [name (str (:name metadata))
-        new-segment? (nil? (re-find #"^wait-" name))]
-    (log "action!" name args)
-    (when new-segment?
-      (transcript/reset-output-segment!))
-    (cond
-      (:without-devtools-id metadata) (do
-                                        (if new-segment?
-                                          (append-to-transcript! (make-action-signature metadata args)))
-                                        (apply action-fn args))
-      (instance? DevToolsID (first args)) (let [devtools-id (first args)
-                                                action-signature (make-action-signature metadata (rest args))]
-                                            (if new-segment?
-                                              (append-to-transcript! action-signature devtools-id))
-                                            (apply action-fn (:id (first args)) (rest args)))
-      :else (let [action-signature (make-action-signature metadata args)]
-              (assert *last-devtools-id* (str "action " name " requires prior :open-dirac-devtools call"))
-              (if new-segment?
-                (append-to-transcript! action-signature *last-devtools-id*))
-              (apply action-fn *last-devtools-id* args)))))
+  (if-not (dirac.automation.task/running?)
+    (go)
+    (let [name (str (:name metadata))
+          new-segment? (nil? (re-find #"^wait-" name))]
+      (log "action!" name args)
+      (when new-segment?
+        (transcript/reset-output-segment!))
+      (cond
+        (:without-devtools-id metadata) (do
+                                          (if new-segment?
+                                            (append-to-transcript! (make-action-signature metadata args)))
+                                          (apply action-fn args))
+        (instance? DevToolsID (first args)) (let [devtools-id (first args)
+                                                  action-signature (make-action-signature metadata (rest args))]
+                                              (if new-segment?
+                                                (append-to-transcript! action-signature devtools-id))
+                                              (apply action-fn (:id (first args)) (rest args)))
+        :else (let [action-signature (make-action-signature metadata args)]
+                (assert *last-devtools-id* (str "action " name " requires prior :open-dirac-devtools call"))
+                (if new-segment?
+                  (append-to-transcript! action-signature *last-devtools-id*))
+                (apply action-fn *last-devtools-id* args))))))

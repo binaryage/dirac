@@ -29,10 +29,10 @@
   (set! *print-newline* false)
   (set! *print-fn* (fn [& args]
                      (.apply (.-log js/console) js/console (into-array args))
-                     (transcript-host/append-to-transcript! "cljs out" (apply str args))))
+                     (transcript-host/append-to-transcript! "stdout" (apply str args))))
   (set! *print-err-fn* (fn [& args]
                          (.apply (.-error js/console) js/console (into-array args))
-                         (transcript-host/append-to-transcript! "cljs err" (apply str args))))
+                         (transcript-host/append-to-transcript! "stderr" (apply str args))))
   nil)
 
 ; -- chrome driver support --------------------------------------------------------------------------------------------------

@@ -1,19 +1,27 @@
 (ns dirac.automation)
 
-(defmacro go-task [& steps]
-  (let [first-arg (first steps)
+(defmacro go-job [& body]
+  `(cljs.core.async.macros/go
+     (cljs.core.async/<! (dirac.automation.task/task-started!))
+     ~@body
+     (if (dirac.automation.task/running?)
+       (cljs.core.async/<! (dirac.automation.task/task-finished!)))))
+
+(defmacro go-task [& args]
+  (let [first-arg (first args)
         config (if (map? first-arg) first-arg)
-        commands (if config (rest steps) steps)]
-    `(let [task-job# (fn []
-                       (cljs.core.async.macros/go
-                         (cljs.core.async/<! (dirac.automation.task/task-started!))
-                         ~@commands
-                         (if (dirac.automation.task/running?)
-                           (cljs.core.async/<! (dirac.automation.task/task-finished!)))))]
-       (dirac.automation.launcher/register-task! task-job#)
-       (dirac.automation.task/task-setup! ~config))))
+        commands (if config (rest args) args)]
+    `(do
+       (cljs.test/deftest ~'browser-test
+         (cljs.test/async ~'browser-test-done
+           (dirac.automation/go-job
+             ~@commands
+             (~'browser-test-done))))
+       (dirac.automation.launcher/register-task! (fn []
+                                                   (cljs.test/run-tests
+                                                     (cljs.test/empty-env :cljs.test/default))))
+       (dirac.automation.task/task-setup!))))
 
 (defmacro <!* [action & args]
   {:pre [(symbol? action)]}
-  `(if (dirac.automation.task/running?)
-     (cljs.core.async/<! (dirac.automation/action! ~action (meta #'~action) ~@args))))
+  `(cljs.core.async/<! (dirac.automation/action! ~action (meta #'~action) ~@args)))
