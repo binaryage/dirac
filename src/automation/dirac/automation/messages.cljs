@@ -48,7 +48,7 @@
     (subscribe-to-reply! message-id observer)
     (go
       (let [[result] (alts! [reply-channel timeout-channel])]
-        (or result (throw (ex-info :task-timeout {:transcript (get-reply-timeout-message reply-timeout info)})))))))
+        (or result (throw (ex-info :task-timeout {:transcript (get-reply-timeout-message reply-timeout (pr-str info))})))))))
 
 (defn wait-for-all-pending-replies! []
   (assert (not @waiting-for-pending-replies?))
