@@ -1,33 +1,84 @@
 /* THEME MATCHING CLJS-DEVTOOLS FORMATTER */
 
-.cm-s-dirac .cm-special {font-weight: bold; color: #000000;}    /* clojure core forms */
-.cm-s-dirac .cm-builtin {color: #000000;}    /* clojure core library */
-.cm-s-dirac .cm-string {color: #C41A16;}     /* clojure strings */
-.cm-s-dirac .cm-variable {color: #333333;}      /* clojure misc symbols */
-.cm-s-dirac .cm-def {color: #000000;}        /* clojure function calls or defs */
-.cm-s-dirac .cm-keyword {color: #881391;}    /* clojure keyword */
-.cm-s-dirac .cm-bool {color: #009999;}       /* clojure boolean */
-.cm-s-dirac .cm-nil {color: #808080;}        /* clojure nil */
-.cm-s-dirac .cm-number {color: #1C00CF;}     /* clojure number */
-.cm-s-dirac .cm-bracket {color: #333333;}       /* clojure brackets */
-.cm-s-dirac .cm-comment {color: #aaaaaa;}    /* clojure comment */
+.cm-s-dirac .cm-special {
+    font-weight: bold;
+    color: #000000;
+}
+
+/* clojure core forms */
+.cm-s-dirac .cm-builtin {
+    color: #000000;
+}
+
+/* clojure core library */
+.cm-s-dirac .cm-string {
+    color: #C41A16;
+}
+
+/* clojure strings */
+.cm-s-dirac .cm-variable {
+    color: #333333;
+}
+
+/* clojure misc symbols */
+.cm-s-dirac .cm-def {
+    color: #000000;
+}
+
+/* clojure function calls or defs */
+.cm-s-dirac .cm-keyword {
+    color: #881391;
+}
+
+/* clojure keyword */
+.cm-s-dirac .cm-bool {
+    color: #009999;
+}
+
+/* clojure boolean */
+.cm-s-dirac .cm-nil {
+    color: #808080;
+}
+
+/* clojure nil */
+.cm-s-dirac .cm-number {
+    color: #1C00CF;
+}
+
+/* clojure number */
+.cm-s-dirac .cm-bracket {
+    color: #333333;
+}
+
+/* clojure brackets */
+.cm-s-dirac .cm-comment {
+    color: #aaaaaa;
+}
+
+/* clojure comment */
 
 .CodeMirror pre {
-  line-height: 14px;
+    line-height: 14px;
 }
 
 div.CodeMirror span.CodeMirror-matchingbracket {
-  background: #FFFF90;
-  color: inherit;
-  border-bottom: 1px solid #111;
+    background: #FFFF90;
+    color: inherit;
+    border-bottom: 1px solid #111;
 }
+
 div.CodeMirror span.CodeMirror-nonmatchingbracket {
 }
 
 /* don't change selection color based on an editor's focus status. */
-.CodeMirror-selected { background:  #d7d4f0; }
-.CodeMirror-focused .CodeMirror-selected { background: #d7d4f0; }
+.CodeMirror-selected {
+    background: #d7d4f0;
+}
+
+.CodeMirror-focused .CodeMirror-selected {
+    background: #d7d4f0;
+}
 
 .CodeMirror.cm-x-parinfer .cm-bracket.cm-eol {
-  opacity: 0.4;
+    opacity: 0.4;
 }
