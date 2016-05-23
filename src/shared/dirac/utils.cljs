@@ -2,10 +2,9 @@
   (:require-macros [cljs.core.async.macros :refer [go go-loop]])
   (:require [cljs.core.async :refer [put! <! chan close!]]
             [cljs.core.async.impl.protocols :as async-protocols]
+            [cuerdas.core :as cuerdas]
             [chromex.support :refer-macros [oget ocall oapply]]
             [chromex.logging :refer-macros [log info warn error group group-end]]))
-
-(deftype ErrorWrapper [message stack])
 
 (def Promise (oget js/window "Promise"))
 
@@ -104,3 +103,12 @@
 (defn make-result-struct
   ([] (make-result-struct nil))
   ([v] [:result (or v :ok)]))
+
+(defn strip-last-nl [s]
+  (let [last-index (dec (alength s))]
+    (if (= (aget s last-index) "\n")
+      (.substring s 0 last-index)
+      s)))
+
+(defn trim-leading-nls [s]
+  (cuerdas/ltrim s "\n"))
