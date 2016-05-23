@@ -145,9 +145,10 @@
       (go (utils/make-error-struct (js/Error. (str "no views matching given devtools-id #" devtools-id)))))))
 
 (defn close-all-extension-tabs! []
-  (let [views (extension/get-views #js {:type "tab"})]
-    (doseq [view views]
-      (.close view))))
+  (go
+    (let [views (extension/get-views #js {:type "tab"})]
+      (doseq [view views]
+        (.close view)))))
 
 (defn install-intercom! [devtools-id handler]
   (let [matching-views (get-devtools-views devtools-id)]

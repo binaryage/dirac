@@ -14,16 +14,18 @@
 ; -- marion event handlers --------------------------------------------------------------------------------------------------
 
 (defn set-option! [message-id message]
-  (options/set-option! (:key message) (:value message))
-  (state/post-reply! message-id))
+  (go
+    (options/set-option! (:key message) (:value message))
+    (state/post-reply! message-id)))
 
 (defn reset-devtools-id-counter! [message-id _message]
-  (state/reset-devtools-id-counter!)
-  (state/post-reply! message-id))
+  (go
+    (state/reset-devtools-id-counter!)
+    (state/post-reply! message-id)))
 
 (defn fire-synthetic-chrome-event! [context message-id message]
-  (assert (fn? (:process-chrome-event context)))
   (go
+    (assert (fn? (:process-chrome-event context)))
     (let [chrome-event (:chrome-event message)
           old-devtools-id (state/get-last-devtools-id)]
       (<! ((:process-chrome-event context) chrome-event))
@@ -37,24 +39,25 @@
         :else (state/post-reply! message-id)))))
 
 (defn automate-dirac-frontend! [message-id message]
-  (let [{:keys [action]} message
-        devtools-id (utils/parse-int (:devtools-id message))]
-    (log "automate-dirac-frontend!" (str "#" devtools-id) action (envelope message))
-    (if (state/get-devtools-descriptor devtools-id)
-      (go
+  (go
+    (let [{:keys [action]} message
+          devtools-id (utils/parse-int (:devtools-id message))]
+      (log "automate-dirac-frontend!" (str "#" devtools-id) action (envelope message))
+      (if (state/get-devtools-descriptor devtools-id)
         (let [reply (<! (helpers/automate-devtools! devtools-id action))]
-          (state/post-raw-reply! message-id reply)))                                                                          ; TODO: do it better
-      (do
-        (warn "dirac automation request for missing connection" (str "#" devtools-id) message
-              "existing connections:" (state/get-devtools-descriptors))
-        (state/post-reply! message-id ::missing-connection)))))
+          (state/post-raw-reply! message-id reply))
+        (do
+          (warn "dirac automation request for missing connection" (str "#" devtools-id) message
+                "existing connections:" (state/get-devtools-descriptors))
+          (state/post-reply! message-id ::missing-connection))))))
 
 (defn tear-down! [message-id _message]
-  ; we want to close all tabs/windows opened (owned) by our extension
-  ; chrome driver does not have access to those windows and fails to switch back to its own tab
-  ; https://bugs.chromium.org/p/chromium/issues/detail?id=355075
-  (helpers/close-all-extension-tabs!)
-  (state/post-reply! message-id))
+  (go
+    ; we want to close all tabs/windows opened (owned) by our extension
+    ; chrome driver does not have access to those windows and fails to switch back to its own tab
+    ; https://bugs.chromium.org/p/chromium/issues/detail?id=355075
+    (<! (helpers/close-all-extension-tabs!))
+    (state/post-reply! message-id)))
 
 ; -- marion event loop ------------------------------------------------------------------------------------------------------
 
@@ -87,7 +90,7 @@
 (defn run-marion-message-loop! [context marion-port]
   (go-loop []
     (when-let [data (<! marion-port)]
-      (process-marion-message! context data)
+      (<! (process-marion-message! context data))
       (recur))
     (unregister-marion!)))
 
