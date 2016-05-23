@@ -5,24 +5,29 @@
             [dirac.utils :as utils]
             [chromex.support :refer-macros [oget oset ocall oapply]]
             [chromex.logging :refer-macros [log info warn error]]
-            [cljs.reader :as reader]))
+            [cljs.reader :as reader]
+            [clojure.string :as str]))
 
 (defonce last-message-id (volatile! 0))
-(defonce reply-subscribers (atom {}))                                                                                         ; message-id -> list of callbacks
+(defonce reply-subscribers (atom {}))                                                                                         ; message-id -> list of [callback info]
 (defonce waiting-for-pending-replies? (volatile! false))
 (defonce should-tear-down? (volatile! false))
 
 (defn ^:dynamic get-reply-timeout-message [timeout info]
   (str "timeout (" (utils/timeout-display timeout) ") while waiting for reply. " info))
 
+(defn ^:dynamic pending-replies-timeout-msg [timeout subscribers]
+  (str "timeouted (" (utils/timeout-display timeout) ") while waiting for remaining pending replies\n"
+       "missing replies: " (str/join ", " (map (fn [id [_cb info]] (str id ": " info)) subscribers))))
+
 (defn get-next-message-id! []
   (vswap! last-message-id inc))
 
-(defn subscribe-to-reply! [message-id callback]
-  (swap! reply-subscribers update message-id #(if % (conj % callback) [callback])))
+(defn subscribe-to-reply! [message-id callback & [info]]
+  (swap! reply-subscribers update message-id #(if % (conj % callback) [[callback info]])))
 
-(defn get-reply-subscribers [message-id]
-  (get @reply-subscribers message-id))
+(defn get-reply-subscriber-callbacks [message-id]
+  (map first (get @reply-subscribers message-id)))
 
 (defn process-reply! [reply-message]
   (let [message-id (oget reply-message "id")
@@ -50,35 +55,36 @@
         observer (fn [reply-message]
                    {:pre [(some? reply-message)]}
                    (put! reply-channel reply-message))]
-    (subscribe-to-reply! message-id observer)
+    (subscribe-to-reply! message-id observer (pr-str info))
     (go
       (let [[result] (alts! [reply-channel timeout-channel])]
         (or result (throw (ex-info :task-timeout {:transcript (get-reply-timeout-message reply-timeout (pr-str info))})))))))
 
 (defn wait-for-all-pending-replies! []
   (assert (not @waiting-for-pending-replies?))
-  (if (empty? @reply-subscribers)
-    (go)
-    (let [key ::wait-for-all-pending-replies!
+  (if-not (empty? @reply-subscribers)
+    (let [watching-key ::wait-for-all-pending-replies!
           channel (chan)
-          watcher (fn [_ _ _ state]
-                    (when (empty? (keys state))
-                      (remove-watch reply-subscribers key)
+          watcher (fn [_ _ _ new-state]
+                    (when (empty? new-state)
+                      (remove-watch reply-subscribers watching-key)
                       (vreset! waiting-for-pending-replies? false)
                       (close! channel)))]
       (vreset! waiting-for-pending-replies? true)
-      (add-watch reply-subscribers key watcher)
+      (add-watch reply-subscribers watching-key watcher)
       channel)))
 
-(defn wait-for-all-pending-replies-or-timeout! [time]
-  (let [wait-channel (wait-for-all-pending-replies!)
-        timeout-channel (timeout time)]
-    (go
-      (let [[_ channel] (alts! [wait-channel timeout-channel])]
-        (if (= channel wait-channel)
-          true
-          (error (str "timeouted (" time "ms) while waiting for remaining pending replies\n"
-                      "missing replies: " (pr-str (keys @reply-subscribers)))))))))
+(defn wait-for-all-pending-replies-or-timeout! [timeout-ms]
+  (if-let [wait-channel (wait-for-all-pending-replies!)]
+    (let [timeout-channel (timeout timeout-ms)]
+      (go
+        (let [[_ channel] (alts! [wait-channel timeout-channel])]
+          (if (= channel wait-channel)
+            true
+            (let [error-msg (pending-replies-timeout-msg timeout-ms @reply-subscribers)]
+              (error error-msg)
+              (throw error-msg))))))
+    (go true)))
 
 (defn tear-down! []
   (vreset! should-tear-down? true))
