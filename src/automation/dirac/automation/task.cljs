@@ -52,15 +52,16 @@
 ; -- helpers ----------------------------------------------------------------------------------------------------------------
 
 (defn reset-browser-state! []
-  (messages/post-message! #js {:type "marion-close-all-tabs"} :no-timeout)
-  (messages/post-extension-command! {:command :tear-down} :no-timeout))                                                       ; to fight https://bugs.chromium.org/p/chromium/issues/detail?id=355075
+  (go
+    (<! (messages/post-extension-command! {:command :tear-down}))
+    (<! (messages/post-message! #js {:type "marion-close-all-tabs"}))))                                                       ; to fight https://bugs.chromium.org/p/chromium/issues/detail?id=355075
 
 (defn show-task-runner! []
   (messages/switch-to-task-runner-tab!)
   (messages/focus-task-runner-window!))
 
 ; this signals to the task runner that he can reconnect chrome driver and check the results
-(defn signal-finished-task! [success?]
+(defn send-finished-task-signal! [success?]
   (let [client-config {:name    "Signaller"
                        :on-open (fn [client]
                                   (go
@@ -106,25 +107,28 @@
     (if-not (helpers/is-test-runner-present?)
       (launcher/launch-task!))))
 
-(defn task-teardown!
-  ([]
-   (task-teardown! (helpers/is-test-runner-present?)))
-  ([runner-present?]
-   (assert (not (running?)))
-   (go
-     (<! (messages/wait-for-all-pending-replies-or-timeout! (get-pending-replies-wait-timeout)))
-     (feedback/done-feedback!)
-     ; under manual test development we don't want to execute tear-down
-     ; - closing existing tabs would interfere with our ability to inspect test results
-     ; also we don't want to signal "task finished", because  there is no test runner listening
-     (if-not runner-present?
-       (show-task-runner!)
-       (do
-         (signal-finished-task! (success?))
-         (if (success?)
-           (reset-browser-state!))))                                                                                          ; note: if task runner wasn't successful we leave browser in failed state for possible inspection
-     (messages/tear-down!)
-     true)))
+(defn task-teardown! []
+  (assert (not (running?)))
+  (let [runner-present? (helpers/is-test-runner-present?)
+        successful? (success?)]
+    (go
+      (transcript-host/disable-transcript!)                                                                                   ; this prevents any new transcript being spit out during our teardown process
+      ; under manual test development we don't want to reset-browser-state!
+      ; - closing existing tabs would interfere with our ability to inspect broken test results
+      ; also we don't want to signal "task finished" because  there is no test runner listening
+      (if-not runner-present?
+        (show-task-runner!)                                                                                                   ; this is for convenience
+        (if successful?
+          ; we want to close all tabs/windows opened (owned) by our extension
+          ; chrome driver does not have access to those windows and fails to switch back to its own tab
+          ; https://bugs.chromium.org/p/chromium/issues/detail?id=355075
+          (<! (reset-browser-state!))))
+      (<! (messages/wait-for-all-pending-replies-or-timeout! (get-pending-replies-wait-timeout)))
+      (feedback/done-feedback!)
+      (messages/tear-down!)
+      (if runner-present?
+        (send-finished-task-signal! successful?))                                                                             ; note: if task runner wasn't successful we leave browser in failed state for possible inspection
+      successful?)))
 
 (defn task-timeout! [data]
   (when (running?)
