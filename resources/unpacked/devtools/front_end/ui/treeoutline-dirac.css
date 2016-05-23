@@ -4,7 +4,7 @@
 
 /* do not apply padding to tree-outline when hosted in .console-message */
 :host-context(.console-message) {
-   padding: 0px;
+    padding: 0;
 }
 
 :host-context(.console-message) .object-properties-section-root-element::before {
