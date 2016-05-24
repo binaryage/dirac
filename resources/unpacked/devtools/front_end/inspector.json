@@ -12,6 +12,7 @@
         { "name": "bindings", "type": "autostart" },
         { "name": "extensions", "type": "autostart" },
         { "name": "dirac", "type": "autostart" },
+        { "name": "dirac_lazy" },
         { "name": "ui_lazy" },
         { "name": "components_lazy" },
         { "name": "elements", "condition": "!v8only" },

@@ -4,7 +4,6 @@
         "common",
         "host",
         "sdk",
-        "sources",
         "ui"
     ],
     "scripts": [
