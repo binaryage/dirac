@@ -1,12 +1,12 @@
 (ns dirac.automation.messages
   (:require-macros [cljs.core.async.macros :refer [go go-loop]])
   (:require [cljs.core.async :refer [put! <! chan timeout alts! close!]]
-            [dirac.settings :refer-macros [get-marion-message-reply-timeout]]
-            [dirac.utils :as utils]
+            [cljs.reader :as reader]
+            [clojure.string :as str]
             [chromex.support :refer-macros [oget oset ocall oapply]]
             [chromex.logging :refer-macros [log info warn error]]
-            [cljs.reader :as reader]
-            [clojure.string :as str]))
+            [dirac.settings :refer-macros [get-marion-message-reply-timeout]]
+            [dirac.utils :as utils]))
 
 (defonce last-message-id (volatile! 0))
 (defonce reply-subscribers (atom {}))                                                                                         ; message-id -> list of [callback info]

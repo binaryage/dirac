@@ -1,10 +1,10 @@
 (ns dirac.automation.launcher
-  (:require-macros [cljs.core.async.macros :refer [go go-loop]]
-                   [dirac.settings :refer [get-launch-task-key get-launch-task-message]])
+  (:require-macros [cljs.core.async.macros :refer [go go-loop]])
   (:require [cljs.core.async :refer [put! <! chan timeout alts! close!]]
+            [goog.string :as string]
             [chromex.support :refer-macros [oget oset ocall oapply]]
             [chromex.logging :refer-macros [log warn error info]]
-            [goog.string :as string]))
+            [dirac.settings :refer-macros [get-launch-task-key get-launch-task-message]]))
 
 (defn register-task! [task-fn]
   (oset js/window [(get-launch-task-key)] task-fn))
