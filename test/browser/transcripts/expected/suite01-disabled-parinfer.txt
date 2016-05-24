@@ -19,5 +19,5 @@ devtools #1      switch console prompt to dirac
 devtools #1      console prompt focused
 devtools #1      repl initialized
 automate         set-option! [:enable-parinfer true]
-summary          Ran 1 tests containing 0 assertions.
+summary          Automated 6 actions with 9 check-points containing 0 assertions.
                  0 failures, 0 errors.
