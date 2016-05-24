@@ -8,6 +8,7 @@
             [dirac.automation.messages :as messages]
             [dirac.automation.matchers :as matchers]
             [dirac.automation.runner :as runner]
+            [dirac.automation.task :as task]
             [dirac.automation.transcript-host :as transcript]))
 
 (deftype DevToolsID [id])
@@ -167,7 +168,7 @@
   (str (:name metadata) (if-not (empty? args) (str " " (vec args)))))
 
 (defn action! [action-fn metadata & args]
-  (if-not (dirac.automation.task/running?)
+  (if-not (task/running?)
     (go)
     (let [name (str (:name metadata))
           new-segment? (nil? (re-find #"^wait-" name))]
