@@ -154,12 +154,13 @@
     (status-host/set-status! "task running...")
     (status-host/set-style! "running")
     (transcript-host/set-style! "running")
-    (messages/reset-devtools-id-counter!)
     ; feedback subsystem is responsible for intercepting messages to be presented in transcript
     (feedback/init-feedback!)
     ; when launched from test runner, chrome driver is in charge of selecting debugging port, we have to propagate this
     ; information to our dirac extension settings
     (<! (setup-debugging-port!))
+    ; this will ensure we get stable devtools ids with each new run => stable transcript output
+    (<! (messages/reset-devtools-id-counter!))
     ; open-as window is handy for debugging, becasue we can open internal devtools to inspect dirac frontend in case of errors
     (<! (messages/set-option! :open-as "window"))))
 
