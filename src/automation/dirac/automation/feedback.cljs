@@ -9,6 +9,14 @@
 (def processing-messages? (volatile! false))
 (def trancript-subscribed? (volatile! false))
 
+; -- accessors --------------------------------------------------------------------------------------------------------------
+
+(defn is-processing-messages? []
+  @processing-messages?)
+
+(defn is-transcript-subscribed? []
+  @trancript-subscribed?)
+
 ; -- handlers ---------------------------------------------------------------------------------------------------------------
 
 (defn append-to-transcript! [label message & [devtools-id]]
@@ -28,14 +36,14 @@
       nil)))
 
 (defn start-processing-messages! []
-  (if-not @processing-messages?
+  (if-not (is-processing-messages?)
     (do
       (.addEventListener js/window "message" process-event!)
       (vreset! processing-messages? true))
     (warn "start-processing-messages! called while already started => ignoring this call")))
 
 (defn stop-processing-messages! []
-  (if @processing-messages?
+  (if (is-processing-messages?)
     (do
       (.removeEventListener js/window "message" process-event!)
       (vreset! processing-messages? false))
@@ -44,14 +52,14 @@
 ; -- message processing -----------------------------------------------------------------------------------------------------
 
 (defn subscribe-to-transcript! []
-  (if-not @trancript-subscribed?
+  (if-not (is-transcript-subscribed?)
     (do
       (messages/post-message! #js {:type "marion-subscribe-transcript"} :no-timeout)
       (vreset! trancript-subscribed? true))
     (warn "subscribe-to-transcript! called while already subscribed => ignoring this call")))
 
 (defn unsubscribe-from-transcript! []
-  (if @trancript-subscribed?
+  (if (is-transcript-subscribed?)
     (do
       (messages/post-message! #js {:type "marion-unsubscribe-transcript"} :no-timeout)
       (vreset! trancript-subscribed? false))
