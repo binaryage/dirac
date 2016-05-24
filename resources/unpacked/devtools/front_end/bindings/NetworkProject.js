@@ -103,6 +103,14 @@ WebInspector.NetworkProject._targetSymbol = Symbol("target");
 WebInspector.NetworkProject._frameSymbol = Symbol("frame");
 
 /**
+ * @param {!WebInspector.UISourceCode} uiSourceCode
+ * @return {?WebInspector.Script}
+ */
+WebInspector.NetworkProject.getScriptFromSourceCode = function(uiSourceCode) {
+    return uiSourceCode[WebInspector.NetworkProject._scriptSymbol];
+};
+    
+/**
  * @param {!WebInspector.Target} target
  * @param {?WebInspector.ResourceTreeFrame} frame
  * @param {boolean} isContentScripts

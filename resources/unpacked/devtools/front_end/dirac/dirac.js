@@ -15,10 +15,6 @@ Object.assign(window.dirac, (function() {
         "enable-clustered-locals",
         "inline-custom-formatters"];
 
-    function featureToIndex(feature) {
-        return knownFeatureFlags.indexOf(feature);
-    }
-
     function hasFeature(feature) {
         var flag = featureFlags[feature];
         if (flag !== undefined) {
@@ -44,14 +40,14 @@ Object.assign(window.dirac, (function() {
                 case '"':
                 case "'":
                 case '\\':
-                    return '\\' + character
+                    return '\\' + character;
                 // Four possible LineTerminator characters need to be escaped:
                 case '\n':
-                    return '\\n'
+                    return '\\n';
                 case '\r':
-                    return '\\r'
+                    return '\\r';
                 case '\u2028':
-                    return '\\u2028'
+                    return '\\u2028';
                 case '\u2029':
                     return '\\u2029'
             }
@@ -123,7 +119,7 @@ Object.assign(window.dirac, (function() {
         }
         for (var i = 0; i < executionContexts.length; ++i) {
             var executionContext = executionContexts[i];
-            if (executionContext.isDefault || executionContext.isMainWorldContext) {  // isMainWorldContext for backward compatibility
+            if (executionContext.isDefault) {
                 if (dirac._DEBUG_EVAL) {
                     console.log("  execution context #" + i + " isDefault:", executionContext);
                 }
@@ -197,9 +193,12 @@ Object.assign(window.dirac, (function() {
 
         return new Promise(function(resolve) {
 
-            function processProperties(properties, internalProperties) {
+            /**
+             * @param {?Array<!WebInspector.RemoteObjectProperty>} properties
+             */
+            function processProperties(properties) {
                 if (properties) {
-                    var props = properties.map(function(property) {
+                    result.props = properties.map(function(property) {
                         var propertyRecord = {name: property.name};
                         if (property.resolutionSourceProperty) {
                             var identifier = property.resolutionSourceProperty.name;
@@ -209,7 +208,6 @@ Object.assign(window.dirac, (function() {
                         }
                         return propertyRecord;
                     });
-                    result.props = props;
                 }
 
                 resolve(result);
@@ -248,9 +246,13 @@ Object.assign(window.dirac, (function() {
 
     var namespacesSymbolsCache = new Map();
 
+    /**
+     * @param {string} namespaceName
+     * @return {function(string)}
+     */
     function prepareUrlMatcher(namespaceName) {
         var relativeNSPath = dirac.nsToRelpath(namespaceName, "js");
-        return function(url) {
+        return /** @suppressGlobalPropertiesCheck */ function(url) {
             var parser = document.createElement('a');
             parser.href = url;
             return parser.pathname.endsWith(relativeNSPath);
@@ -267,6 +269,11 @@ Object.assign(window.dirac, (function() {
 
 // --- parsing namespaces ---------------------------------------------------------------------------------------------------
 
+    /**
+     * @param {string} url
+     * @param {string} cljsSourceCode
+     * @return {?dirac.NamespaceDescriptor}
+     */
     function parseClojureScriptNamespace(url, cljsSourceCode) {
         var descriptor = dirac.parseNsFromSource(cljsSourceCode);
         if (!descriptor) {
@@ -277,8 +284,13 @@ Object.assign(window.dirac, (function() {
         return descriptor;
     }
 
+    /**
+     * @param {!WebInspector.Script} script
+     * @return {!Promise<!Array<?dirac.NamespaceDescriptor>>}
+     * @suppressGlobalPropertiesCheck
+     */
     function parseNamespacesDescriptorsAsync(script) {
-        var sourceMap = WebInspector.debuggerWorkspaceBinding.sourceMapForScript(script);
+        const sourceMap = WebInspector.debuggerWorkspaceBinding.sourceMapForScript(script);
         if (!sourceMap) {
             return Promise.resolve([]);
         }
@@ -289,13 +301,13 @@ Object.assign(window.dirac, (function() {
             // examples:
             //   http://localhost:9977/_compiled/demo/clojure/browser/event.cljs?rel=1463085025939
             //   http://localhost:9977/_compiled/demo/dirac_sample/demo.cljs?rel=1463085026941
-            var parser = document.createElement('a');
+            const parser = document.createElement('a');
             parser.href = url;
             if (!parser.pathname.match(/\.clj.$/)) {
                 continue;
             }
-            var contentProvider = sourceMap.sourceContentProvider(url, WebInspector.resourceTypes.SourceMapScript);
-            var namespaceDescriptorPromise = contentProvider.requestContent().then(cljsSourceCode => parseClojureScriptNamespace(url, cljsSourceCode || ""));
+            const contentProvider = sourceMap.sourceContentProvider(url, WebInspector.resourceTypes.SourceMapScript);
+            const namespaceDescriptorPromise = contentProvider.requestContent().then(cljsSourceCode => parseClojureScriptNamespace(url, cljsSourceCode || ""));
             promises.push(namespaceDescriptorPromise);
         }
 
@@ -321,7 +333,7 @@ Object.assign(window.dirac, (function() {
             console.log("handleSourceCodeAdded", event);
         }
 
-        this.invalidateNamespacesCache();
+        dirac.invalidateNamespacesCache();
         var uiSourceCode = event.data;
         if (uiSourceCode) {
             invalidateNamespaceSymbolsMatchingUrl(uiSourceCode.url());
@@ -333,7 +345,7 @@ Object.assign(window.dirac, (function() {
             console.log("handleSourceCodeRemoved", event);
         }
 
-        this.invalidateNamespacesCache();
+        dirac.invalidateNamespacesCache();
         var uiSourceCode = event.data;
         if (uiSourceCode) {
             invalidateNamespaceSymbolsMatchingUrl(uiSourceCode.url());
@@ -384,6 +396,11 @@ Object.assign(window.dirac, (function() {
 
 // --- namespace symbols ----------------------------------------------------------------------------------------------------
 
+    /**
+     * @param {!Array<!WebInspector.UISourceCode>} uiSourceCodes
+     * @param {function(string)} urlMatcherFn
+     * @return {!Array<!WebInspector.UISourceCode>}
+     */
     function findMatchingSourceCodes(uiSourceCodes, urlMatcherFn) {
         var matching = [];
         for (var i = 0; i < uiSourceCodes.length; i++) {
@@ -395,6 +412,11 @@ Object.assign(window.dirac, (function() {
         return matching;
     }
 
+    /**
+     * @param {!Array<string>} names
+     * @param {string} namespaceName
+     * @return {!Array<string>}
+     */
     function filterNamesForNamespace(names, namespaceName) {
         var prefix = namespaceName + "/";
         var prefixLength = prefix.length;
@@ -402,18 +424,26 @@ Object.assign(window.dirac, (function() {
         return names.filter(name => name.startsWith(prefix)).map(name => name.substring(prefixLength));
     }
 
-    function extractNamesFromSourceMap(uiSourceCode) {
-        var script = uiSourceCode[WebInspector.NetworkProject._scriptSymbol];
+    /**
+     * @param {!WebInspector.UISourceCode} uiSourceCode
+     * @return {?WebInspector.Script}
+     */
+    function getScriptFromSourceCode(uiSourceCode) {
+        return WebInspector.NetworkProject.getScriptFromSourceCode(uiSourceCode);
+    }
+
+    function extractNamesFromSourceMap(uiSourceCode, namespaceName) {
+        const script = getScriptFromSourceCode(uiSourceCode);
         if (!script) {
             console.error("unable to locate script when extracting symbols for ClojureScript namespace '" + namespaceName + "'");
             return [];
         }
-        var sourceMap = WebInspector.debuggerWorkspaceBinding.sourceMapForScript(script);
+        const sourceMap = WebInspector.debuggerWorkspaceBinding.sourceMapForScript(/** @type {!WebInspector.Script} */(script));
         if (!sourceMap) {
             console.error("unable to locate sourceMap when extracting symbols for ClojureScript namespace '" + namespaceName + "'");
             return [];
         }
-        var payload = sourceMap._payload;
+        const payload = sourceMap.payload();
         if (!payload) {
             console.error("unable to locate payload when extracting symbols for ClojureScript namespace '" + namespaceName + "'");
             return [];
@@ -428,7 +458,7 @@ Object.assign(window.dirac, (function() {
             return Promise.resolve([]);
         }
 
-        return new Promise((function(resolve) {
+        return new Promise(resolve => {
             var urlMatcherFn = prepareUrlMatcher(namespaceName);
             var uiSourceCodes = getRelevantSourceCodes(workspace);
 
@@ -444,10 +474,10 @@ Object.assign(window.dirac, (function() {
             }
 
             // we simply extract names from all matching source maps and then we filter then to match our namespace name and
-            // dedupe them
+            // deduplicate them
             var results = [];
             for (let uiSourceCode of matchingSourceCodes) {
-                results.push(extractNamesFromSourceMap(uiSourceCode));
+                results.push(extractNamesFromSourceMap(uiSourceCode, namespaceName));
             }
             var allNames = [].concat.apply([], results);
             var filteredNames = unique(filterNamesForNamespace(allNames, namespaceName));
@@ -457,7 +487,7 @@ Object.assign(window.dirac, (function() {
             }
 
             resolve(filteredNames);
-        }.bind(this)));
+        });
     }
 
     function extractNamespaceSymbolsAsync(namespaceName) {
@@ -468,13 +498,13 @@ Object.assign(window.dirac, (function() {
             return Promise.resolve(namespacesSymbolsCache.get(namespaceName));
         }
 
-        return new Promise((function(resolve) {
-            extractNamespaceSymbolsAsyncWorker(namespaceName).then(function(result) {
+        return new Promise(resolve => {
+            extractNamespaceSymbolsAsyncWorker(namespaceName).then(result => {
                 namespacesSymbolsCache.set(namespaceName, result);
                 startListeningForWorkspaceChanges();
                 resolve(result);
             });
-        }).bind(this));
+        });
     }
 
     function invalidateNamespaceSymbolsCache(namespaceName) {
@@ -493,32 +523,37 @@ Object.assign(window.dirac, (function() {
             return Promise.resolve([]);
         }
 
-        return new Promise((function(resolve) {
-            var uiSourceCodes = getRelevantSourceCodes(workspace);
-            var promises = [];
+        return new Promise(resolve => {
+            const uiSourceCodes = getRelevantSourceCodes(workspace);
+            const promises = [];
             for (var i = 0; i < uiSourceCodes.length; i++) {
-                var uiSourceCode = uiSourceCodes[i];
+                const uiSourceCode = uiSourceCodes[i];
                 if (!uiSourceCode) {
                     continue;
                 }
-                var script = uiSourceCode[WebInspector.NetworkProject._scriptSymbol];
+                const script = getScriptFromSourceCode(uiSourceCode);
                 if (!script) {
                     continue;
                 }
-                promises.push(parseNamespacesDescriptorsAsync(script));
+                promises.push(parseNamespacesDescriptorsAsync(/** @type {!WebInspector.Script} */(script)));
             }
 
-            var concatResults = (function(results) {
+            const concatResults = results => {
                 return [].concat.apply([], results);
-            }).bind(this);
+            };
 
-            var extractNamespaceNames = (function(namespaceDescriptors) {
-                var names = namespaceDescriptors.filter(desc => !!desc).map(desc => desc.name);
-                return names;
-            }).bind(this);
+            const extractNamespaceNames =
+                /**
+                 *
+                 * @param {!Array<?dirac.NamespaceDescriptor>} namespaceDescriptors
+                 * @return {!Array<string>}
+                 */
+                    (namespaceDescriptors) => {
+                    return namespaceDescriptors.filter(desc => !!desc).map(desc => desc.name);
+                };
 
             Promise.all(promises).then(concatResults).then(extractNamespaceNames).then(resolve);
-        }).bind(this));
+        });
     }
 
     function extractNamespacesAsync() {
@@ -526,13 +561,13 @@ Object.assign(window.dirac, (function() {
             return Promise.resolve(dirac._namespacesCache);
         }
 
-        return new Promise((function(resolve) {
-            extractNamespacesAsyncWorker().then(function(result) {
+        return new Promise(resolve => {
+            extractNamespacesAsyncWorker().then(result => {
                 dirac._namespacesCache = result;
                 startListeningForWorkspaceChanges();
                 resolve(result);
             });
-        }).bind(this));
+        });
     }
 
     function invalidateNamespacesCache() {

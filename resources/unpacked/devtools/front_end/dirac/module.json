@@ -4,6 +4,7 @@
         "common",
         "host",
         "sdk",
+        "sources",
         "ui"
     ],
     "scripts": [
@@ -14,7 +15,6 @@
     ],
     "skip_compilation": [
         "keysim.js",
-        "dirac.js",
         "compiled/implant/implant.js",
         "require-implant.js"
     ],

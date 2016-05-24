@@ -44,6 +44,15 @@ WebInspector.ASTSourceMap.prototype = {
 
     /**
      * @override
+     * @return {?SourceMapV3}
+     */
+    payload: function()
+    {
+        return null;
+    },
+
+    /**
+     * @override
      * @return {!Array<string>}
      */
     sourceURLs: function()
