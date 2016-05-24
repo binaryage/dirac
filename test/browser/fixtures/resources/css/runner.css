@@ -1,43 +1,44 @@
 html {
-  font-family: courier, monospace;
-  font-size: 12px;
+    font-family: courier, monospace;
+    font-size: 12px;
 }
 
 #task-name {
-  display: inline-block;
-  font-weight: bold;
-  color: blue;
+    display: inline-block;
+    font-weight: bold;
+    color: blue;
 }
 
 #task-name:after {
-  content: ':';
+    content: ':';
 }
 
 #status-box {
-  margin: 10px 0;
+    margin: 10px 0;
+
 }
 
 .status {
-  display: inline-block;
-  font-weight: bold;
-  font-family: courier, monospace;
-  padding: 2px 10px;
+    display: inline-block;
+    font-weight: bold;
+    font-family: courier, monospace;
+    padding: 2px 10px;
 }
 
 .status-running {
-  background-color: #eef;
+    background-color: #eef;
 }
 
 .status-timeout {
-  background-color: #ffe;
+    background-color: #ffe;
 }
 
 .status-finished {
-  background-color: #efe;
+    background-color: #efe;
 }
 
 .status-exception {
-  background-color: #fee;
+    background-color: #fee;
 }
 
 #transcript-box {
