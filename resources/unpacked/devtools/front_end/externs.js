@@ -437,7 +437,7 @@ var dirac = {
 
     /**
      * @param {string} source
-     * @returns {?Object}
+     * @returns {?dirac.NamespaceDescriptor}
      */
     parseNsFromSource: function(source) {},
 
@@ -461,6 +461,11 @@ dirac.ScopeFrame;
  * @typedef {{frames:!Array.<!dirac.ScopeFrame>}}
  */
 dirac.ScopeInfo;
+
+/**
+ * @typedef {{name:!string, url:!string}}
+ */
+dirac.NamespaceDescriptor;
 
 
 var Keysim = {
