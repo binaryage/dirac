@@ -58,4 +58,4 @@
             clearTimeout(loopTimeout);
         }
     };
-})(this, document);
+})(window, document);
