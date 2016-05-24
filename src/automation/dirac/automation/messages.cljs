@@ -18,7 +18,7 @@
 
 (defn ^:dynamic pending-replies-timeout-msg [timeout subscribers]
   (str "timeouted (" (utils/timeout-display timeout) ") while waiting for remaining pending replies\n"
-       "missing replies: " (str/join ", " (map (fn [id [_cb info]] (str id ": " info)) subscribers))))
+       "missing replies: " (str/join ", " (map (fn [[id [_cb info]]] (str id ": " info)) subscribers))))
 
 (defn get-next-message-id! []
   (vswap! last-message-id inc))
