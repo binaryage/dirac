@@ -183,11 +183,11 @@
 
 ; -- transcript api ---------------------------------------------------------------------------------------------------------
 
-(defn append-to-transcript! [label text & [style skip-recording?]]
+(defn append-to-transcript! [label text & [style force?]]
   {:pre [(has-transcript?)
          (string? label)
          (string? text)]}
-  (when (transcript-enabled?)
+  (when (and (or force? (transcript-enabled?)) (some? text))
     (log "TRANSCRIPT" [label text])
     (when-let [[effective-label effective-text] (rewrite-transcript! label text)]
       (if (or (not= effective-label label) (not= effective-text text))
@@ -199,8 +199,10 @@
                     generated-style)]
         (transcript/append-to-transcript! @current-transcript text style)
         (helpers/scroll-page-to-bottom!)
-        (if-not skip-recording?
-          (record-output! [effective-label effective-text]))))))
+        (record-output! [effective-label effective-text])))))
+
+(defn forced-append-to-transcript! [label text & [style]]
+  (append-to-transcript! label text style true))
 
 (defn wait-for-match [match-fn matching-info & [time-limit silent?]]
   (let [result-channel (chan)
