@@ -3,9 +3,9 @@
   (:require [cljs.core.async :refer [put! <! chan timeout alts! close!]]
             [chromex.support :refer-macros [oget oset ocall oapply]]
             [chromex.logging :refer-macros [log warn error info]]
-            [dirac.automation.task :as task]
             [dirac.automation.helpers :as helpers]
-            [dirac.automation.status-host :as status-host]))
+            [dirac.automation.status-host :as status-host]
+            [dirac.automation.messages :as messages]))
 
 ; -- support for manual pausing/resuming execution --------------------------------------------------------------------------
 
@@ -32,7 +32,8 @@
 ; -- api accessed by runner.html --------------------------------------------------------------------------------------------
 
 (defn ^:export reset []
-  (task/reset-browser-state!))
+  (messages/post-extension-command! {:command :tear-down} :no-timeout)
+  (messages/post-message! #js {:type "marion-close-all-tabs"} :no-timeout))
 
 (defn ^:export reload []
   (reset)
