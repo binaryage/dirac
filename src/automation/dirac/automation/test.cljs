@@ -8,12 +8,22 @@
 ;   * we want to post-process cljs.test reporting output (styling and new lines)
 ;   * we want to redirect the cljs.test output into transcript
 
+; -- summary counters -------------------------------------------------------------------------------------------------------
+
+(defonce actions-executed (volatile! 0))
+(defonce transcript-checkpoints (volatile! 0))
+
+(defn record-action-execution! []
+  (vswap! actions-executed inc))
+
+(defn record-transcript-checkpoint! [num]
+  (vswap! transcript-checkpoints (partial + num)))
+
+; ---------------------------------------------------------------------------------------------------------------------------
+
 (defonce previous-begin-test-ns-method (-get-method report [:cljs.test/default :begin-test-ns]))
 (defonce previous-error-method (-get-method report [:cljs.test/default :error]))
 (defonce previous-fail-method (-get-method report [:cljs.test/default :fail]))
-(defonce previous-summary-method (-get-method report [:cljs.test/default :summary]))
-
-; ---------------------------------------------------------------------------------------------------------------------------
 
 (defmethod report [:cljs.test/default :begin-test-ns] [m]
   (let [output (with-captured-output
@@ -31,8 +41,11 @@
     (transcript-host/append-to-transcript! "error" output)))
 
 (defmethod report [:cljs.test/default :summary] [m]
-  (let [output (with-captured-output
-                 (previous-summary-method m))
+  (let [assertions (+ (:pass m) (:fail m) (:error m))
+        output (str "Automated " @actions-executed " actions with "
+                    @transcript-checkpoints " check-points containing "
+                    assertions " assertions.\n"
+                    (:fail m) " failures, " (:error m) " errors.")
         ok? (zero? (+ (:fail m) (:errors m)))
         label (str "summary" (if-not ok? " (fail)"))]
     (transcript-host/append-to-transcript! label output)))

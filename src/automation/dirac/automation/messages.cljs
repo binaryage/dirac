@@ -6,7 +6,8 @@
             [chromex.support :refer-macros [oget oset ocall oapply]]
             [chromex.logging :refer-macros [log info warn error]]
             [dirac.settings :refer-macros [get-marion-message-reply-timeout]]
-            [dirac.utils :as utils]))
+            [dirac.utils :as utils]
+            [dirac.automation.test :as test]))
 
 (defonce last-message-id (volatile! 0))
 (defonce reply-subscribers (atom {}))                                                                                         ; message-id -> list of [callback info]
@@ -42,6 +43,8 @@
         subscribers (get-reply-subscriber-callbacks message-id)
         unsubscribe! #(swap! reply-subscribers dissoc message-id)]
     (assert (number? message-id))
+    (if-not (empty? subscribers)
+      (test/record-transcript-checkpoint! (count subscribers)))
     (case (first data)
       :error (do
                (unsubscribe!)
