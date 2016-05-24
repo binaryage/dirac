@@ -6,8 +6,8 @@
             [dirac.automation.messages :as messages]
             [dirac.automation.transcript-host :as transcript-host]))
 
-(def processing-messages? (volatile! false))
-(def trancript-subscribed? (volatile! false))
+(defonce processing-messages? (volatile! false))
+(defonce trancript-subscribed? (volatile! false))
 
 ; -- accessors --------------------------------------------------------------------------------------------------------------
 
@@ -32,7 +32,6 @@
     (case (oget data "type")
       "feedback-from-devtools" (append-to-transcript! "devtools" (oget data "transcript") (oget data "devtools"))
       "feedback-from-extension" (append-to-transcript! "extension" (oget data "transcript"))
-      "reply" (messages/process-reply! data)
       nil)))
 
 (defn start-processing-messages! []
@@ -67,10 +66,10 @@
 
 ; -- initialization ---------------------------------------------------------------------------------------------------------
 
-(defn init-feedback! []
+(defn init! []
   (start-processing-messages!)
   (subscribe-to-transcript!))
 
-(defn done-feedback! []
+(defn done! []
   (unsubscribe-from-transcript!)
   (stop-processing-messages!))

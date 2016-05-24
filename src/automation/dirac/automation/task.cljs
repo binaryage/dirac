@@ -124,8 +124,8 @@
           ; https://bugs.chromium.org/p/chromium/issues/detail?id=355075
           (<! (reset-browser-state!))))
       (<! (messages/wait-for-all-pending-replies-or-timeout! (get-pending-replies-wait-timeout)))
-      (feedback/done-feedback!)
-      (messages/tear-down!)
+      (messages/done!)
+      (feedback/done!)
       (if runner-present?
         (send-finished-task-signal! successful?))                                                                             ; note: if task runner wasn't successful we leave browser in failed state for possible inspection
       successful?)))
@@ -155,7 +155,8 @@
     (status-host/set-style! "running")
     (transcript-host/set-style! "running")
     ; feedback subsystem is responsible for intercepting messages to be presented in transcript
-    (feedback/init-feedback!)
+    (feedback/init!)
+    (messages/init!)
     ; when launched from test runner, chrome driver is in charge of selecting debugging port, we have to propagate this
     ; information to our dirac extension settings
     (<! (setup-debugging-port!))

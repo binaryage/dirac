@@ -12,6 +12,12 @@
 (defonce reply-subscribers (atom {}))                                                                                         ; message-id -> list of [callback info]
 (defonce waiting-for-pending-replies? (volatile! false))
 (defonce should-tear-down? (volatile! false))
+(defonce processing-messages? (volatile! false))
+
+; -- accessors --------------------------------------------------------------------------------------------------------------
+
+(defn is-processing-messages? []
+  @processing-messages?)
 
 (defn ^:dynamic get-reply-timeout-message [timeout info]
   (str "timeout (" (utils/timeout-display timeout) ") while waiting for reply. " info))
@@ -49,7 +55,8 @@
 (defn wait-for-reply! [message-id reply-timeout info]
   {:pre [(number? message-id)
          (number? reply-timeout)]}
-  (assert (not @should-tear-down?) (str "wait-for-reply! requested after tear-down? " message-id ": " (pr-str info)))
+  (assert (is-processing-messages?) (str "wait-for-reply! called before messages/init! call? " message-id ": " (pr-str info)))
+  (assert (not @should-tear-down?) (str "wait-for-reply! called after messages/done! call? " message-id ": " (pr-str info)))
   (let [reply-channel (chan)
         timeout-channel (timeout reply-timeout)
         observer (fn [reply-message]
@@ -85,9 +92,6 @@
               (error error-msg)
               (throw error-msg))))))
     (go true)))
-
-(defn tear-down! []
-  (vreset! should-tear-down? true))
 
 ; for communication between tested page and marionette extension
 ; see https://developer.chrome.com/extensions/content_scripts#host-page-communication
@@ -135,3 +139,33 @@
 
 (defn focus-task-runner-window! []
   (post-message! #js {:type "marion-focus-task-runner-window"} :no-timeout))
+
+; -- message processing -----------------------------------------------------------------------------------------------------
+
+(defn process-event! [event]
+  (if-let [data (oget event "data")]
+    (case (oget data "type")
+      "reply" (process-reply! data)
+      nil)))
+
+(defn start-processing-messages! []
+  (if-not (is-processing-messages?)
+    (do
+      (.addEventListener js/window "message" process-event!)
+      (vreset! processing-messages? true))
+    (warn "start-processing-messages! called while already started => ignoring this call")))
+
+(defn stop-processing-messages! []
+  (if (is-processing-messages?)
+    (do
+      (.removeEventListener js/window "message" process-event!)
+      (vreset! processing-messages? false))
+    (warn "stop-processing-messages! called while not yet started => ignoring this call")))
+
+(defn init! []
+  (start-processing-messages!))
+
+(defn done! []
+  (vreset! should-tear-down? true)
+  (stop-processing-messages!))
+
