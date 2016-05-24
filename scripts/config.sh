@@ -46,5 +46,8 @@ DEV_MARION_EXTENSION_PATH="$ROOT/test/marion/resources/unpacked"
 TMP_DIR="/tmp/dirac-tmp"
 TEST_CANARY_FLAG_FILE="$TMP_DIR/canary-flag"
 NOTIFY_DIR="$ROOT/.notify"
+PROTOCOL_JSON_FILE="$DEVTOOLS_ROOT/protocol.json"
+#PROTOCOL_EXTERNS_OUTPUT_FILE="$DEVTOOLS_ROOT/front_end/protocol_externs.js" ! compile_frontend.py will delete this file
+PROTOCOL_EXTERNS_OUTPUT_FILE="$DEVTOOLS_ROOT/front_end/generated_protocol_externs.js" # filename must differ from protocol_externs.js
 
 popd
