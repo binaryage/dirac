@@ -3,6 +3,23 @@ html {
     font-size: 12px;
 }
 
+html, body {
+    margin:0;
+    padding:0;
+}
+
+#panel {
+    position: fixed;
+    top: 0;
+    display: block;
+    width: 100%;
+    border-bottom: 1px solid #888888;
+    background-color: #ddd;
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-bottom: 10px;
+}
+
 #task-name {
     display: inline-block;
     font-weight: bold;
@@ -15,7 +32,6 @@ html {
 
 #status-box {
     margin: 10px 0;
-
 }
 
 .status {
@@ -42,6 +58,8 @@ html {
 }
 
 #transcript-box {
+    margin-top: 60px;
+    padding: 6px 10px;
     display: flex;
 }
 
