@@ -72,7 +72,8 @@
                                     (ws-client/close! client)))}]
     (ws-client/connect! (get-signal-server-url) client-config)))
 
-(defn format-exception [e]
+(defn format-error [e]
+  ; not error may be a string message already
   (if (string? e)
     e
     (if-let [stack (oget e "stack")]
@@ -112,7 +113,8 @@
   (let [runner-present? (helpers/is-test-runner-present?)
         successful? (success?)]
     (go
-      (transcript-host/disable-transcript!)                                                                                   ; this prevents any new transcript being spit out during our teardown process
+      ; this prevents any new transcript being spit out during our teardown process, except for forced appends
+      (transcript-host/disable-transcript!)
       ; under manual test development we don't want to reset-browser-state!
       ; - closing existing tabs would interfere with our ability to inspect broken test results
       ; also we don't want to signal "task finished" because  there is no test runner listening
@@ -133,8 +135,7 @@
 (defn task-timeout! [data]
   (when (running?)
     (set-exit-code! ::timeout)
-    (if-let [transcript (:transcript data)]
-      (transcript-host/append-to-transcript! "timeout" transcript))
+    (transcript-host/forced-append-to-transcript! "timeout" (:transcript data))
     (status-host/set-status! (or (:status data) "task timeouted!"))
     (status-host/set-style! (or (:style data) "timeout"))
     (transcript-host/set-style! (or (:style data) "timeout"))
@@ -145,7 +146,7 @@
     (set-exit-code! ::exception)
     (status-host/set-status! (str "task has thrown an exception: " message))
     (status-host/set-style! "exception")
-    (transcript-host/append-to-transcript! "exception" (format-exception e))
+    (transcript-host/forced-append-to-transcript! "exception" (format-error e))
     (transcript-host/set-style! "exception")
     (task-teardown!)))
 
@@ -175,7 +176,7 @@
 
 ; -- handling exceptions ----------------------------------------------------------------------------------------------------
 
-(defn task-exception-handler [message _source _lineno _colno e]
+(defn task-exception-handler! [message _source _lineno _colno e]
   (case (ex-message e)
     :task-timeout (task-timeout! (ex-data e))
     :serialized-error (task-exception! (second (ex-data e)) (nth (ex-data e) 2 "<missing stack trace>"))
@@ -183,4 +184,4 @@
   false)
 
 (defn register-global-exception-handler! []
-  (oset js/window ["onerror"] task-exception-handler))
+  (oset js/window ["onerror"] task-exception-handler!))
