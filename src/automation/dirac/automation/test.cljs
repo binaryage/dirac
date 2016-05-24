@@ -8,10 +8,10 @@
 ;   * we want to post-process cljs.test reporting output (styling and new lines)
 ;   * we want to redirect the cljs.test output into transcript
 
-(def previous-begin-test-ns-method (-get-method report [:cljs.test/default :begin-test-ns]))
-(def previous-error-method (-get-method report [:cljs.test/default :error]))
-(def previous-fail-method (-get-method report [:cljs.test/default :fail]))
-(def previous-summary-method (-get-method report [:cljs.test/default :summary]))
+(defonce previous-begin-test-ns-method (-get-method report [:cljs.test/default :begin-test-ns]))
+(defonce previous-error-method (-get-method report [:cljs.test/default :error]))
+(defonce previous-fail-method (-get-method report [:cljs.test/default :fail]))
+(defonce previous-summary-method (-get-method report [:cljs.test/default :summary]))
 
 ; ---------------------------------------------------------------------------------------------------------------------------
 
