@@ -113,6 +113,7 @@ WebInspector.TextPrompt.prototype = {
     {
         if (this._proxyElement)
             throw "Cannot attach an attached TextPrompt";
+        /** @type {!Element} */
         this._element = element;
 
         this._boundOnKeyDown = this.onKeyDown.bind(this);

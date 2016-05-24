@@ -1,28 +1,27 @@
 /**
- * @param {!Element} proxyElement
- * @param {string} text
- * @param {number} cursorOffset
- * @param {!Range} wordRange
- * @param {boolean} force
- * @param {function(!Array.<string>, number=)} completionsReadyCallback
- */
-var dummyCompletionsFn = function(proxyElement, text, cursorOffset, wordRange, force, completionsReadyCallback) {
-};
-
-/**
  * @constructor
  * @extends {WebInspector.TextPromptWithHistory}
  * @implements {WebInspector.SuggestBoxDelegate}
  * @param {!CodeMirror} codeMirrorInstance
  */
 WebInspector.DiracPromptWithHistory = function(codeMirrorInstance) {
+    /**
+     * @param {!Element} proxyElement
+     * @param {string} text
+     * @param {number} cursorOffset
+     * @param {!Range} wordRange
+     * @param {boolean} force
+     * @param {function(!Array.<string>, number=)} completionsReadyCallback
+     */
+    const dummyCompletionsFn = function(proxyElement, text, cursorOffset, wordRange, force, completionsReadyCallback) {
+    };
     WebInspector.TextPromptWithHistory.call(this, dummyCompletionsFn);
 
     this._codeMirror = codeMirrorInstance;
     this._codeMirror.on("changes", this._changes.bind(this));
     this._codeMirror.on("scroll", this._onScroll.bind(this));
     this._codeMirror.on("cursorActivity", this._onCursorActivity.bind(this));
-    this._codeMirror.on("blur", this._blur.bind(this))
+    this._codeMirror.on("blur", this._blur.bind(this));
     this._currentClojureScriptNamespace = null;
     this._lastAutocompleteRequest = 0;
 };
@@ -38,7 +37,7 @@ WebInspector.DiracPromptWithHistory.prototype = {
      * @return {string}
      */
     text: function() {
-        var text = this._codeMirror.getValue();
+        const text = this._codeMirror.getValue();
         return text.replace(/[\s\n]+$/gm, ""); // remove trailing newlines and whitespace
     },
 
@@ -62,9 +61,9 @@ WebInspector.DiracPromptWithHistory.prototype = {
      * @return {boolean}
      */
     isCaretAtEndOfPrompt: function() {
-        var content = this._codeMirror.getValue();
-        var cursor = this._codeMirror.getCursor();
-        var endCursor = this._codeMirror.posFromIndex(content.length);
+        const content = this._codeMirror.getValue();
+        const cursor = this._codeMirror.getCursor();
+        const endCursor = this._codeMirror.posFromIndex(content.length);
         return (cursor.line == endCursor.line && cursor.ch == endCursor.ch);
     },
 
@@ -73,7 +72,7 @@ WebInspector.DiracPromptWithHistory.prototype = {
      * @return {boolean}
      */
     isCaretOnFirstLine: function() {
-        var cursor = this._codeMirror.getCursor();
+        const cursor = this._codeMirror.getCursor();
         return (cursor.line == this._codeMirror.firstLine());
     },
 
@@ -82,7 +81,7 @@ WebInspector.DiracPromptWithHistory.prototype = {
      * @return {boolean}
      */
     isCaretOnLastLine: function() {
-        var cursor = this._codeMirror.getCursor();
+        const cursor = this._codeMirror.getCursor();
         return (cursor.line == this._codeMirror.lastLine());
     },
 
@@ -91,7 +90,7 @@ WebInspector.DiracPromptWithHistory.prototype = {
     },
 
     moveCaretToIndex: function(index) {
-        var pos = this._codeMirror.posFromIndex(index);
+        const pos = this._codeMirror.posFromIndex(index);
         this._codeMirror.setCursor(pos, null, null);
     },
 
@@ -109,9 +108,9 @@ WebInspector.DiracPromptWithHistory.prototype = {
         if (!changes.length)
             return;
 
-        var singleCharInput = false;
-        for (var changeIndex = 0; changeIndex < changes.length; ++changeIndex) {
-            var changeObject = changes[changeIndex];
+        let singleCharInput = false;
+        for (let changeIndex = 0; changeIndex < changes.length; ++changeIndex) {
+            let changeObject = changes[changeIndex];
             singleCharInput = (changeObject.origin === "+input" && changeObject.text.length === 1 && changeObject.text[0].length === 1) ||
                 (this.isSuggestBoxVisible() && changeObject.origin === "+delete" && changeObject.removed.length === 1 && changeObject.removed[0].length === 1);
         }
@@ -120,6 +119,7 @@ WebInspector.DiracPromptWithHistory.prototype = {
         }
         if (singleCharInput) {
             this._ignoreNextCursorActivity = true; // this prevents flickering of suggestion widget
+            //noinspection JSUnresolvedFunction
             setImmediate(this.autocomplete.bind(this));
         }
     },
@@ -132,10 +132,10 @@ WebInspector.DiracPromptWithHistory.prototype = {
         if (!this.isSuggestBoxVisible())
             return;
 
-        var cursor = this._codeMirror.getCursor();
-        var scrollInfo = this._codeMirror.getScrollInfo();
-        var topmostLineNumber = this._codeMirror.lineAtHeight(scrollInfo.top, "local");
-        var bottomLine = this._codeMirror.lineAtHeight(scrollInfo.top + scrollInfo.clientHeight, "local");
+        const cursor = this._codeMirror.getCursor();
+        const scrollInfo = this._codeMirror.getScrollInfo();
+        const topmostLineNumber = this._codeMirror.lineAtHeight(scrollInfo.top, "local");
+        const bottomLine = this._codeMirror.lineAtHeight(scrollInfo.top + scrollInfo.clientHeight, "local");
         if (cursor.line < topmostLineNumber || cursor.line > bottomLine)
             this.finishAutocomplete();
         else {
@@ -154,7 +154,7 @@ WebInspector.DiracPromptWithHistory.prototype = {
             return;
         }
 
-        var cursor = this._codeMirror.getCursor();
+        const cursor = this._codeMirror.getCursor();
         if (cursor.line !== this._prefixRange.startLine ||
             cursor.ch > this._prefixRange.endColumn ||
             cursor.ch <= this._prefixRange.startColumn) {
@@ -199,7 +199,7 @@ WebInspector.DiracPromptWithHistory.prototype = {
 
     _javascriptCompletionTest: function(prefix) {
         // test if prefix starts with "js/", then we treat it as javascript completion
-        var m = prefix.match(/^js\/(.*)/)
+        const m = prefix.match(/^js\/(.*)/);
         if (m) {
             return {
                 prefix: m[1],
@@ -216,9 +216,9 @@ WebInspector.DiracPromptWithHistory.prototype = {
         this.clearAutoComplete(true);
         this._lastAutocompleteRequest++;
 
-        var shouldExit = false;
-        var cursor = this._codeMirror.getCursor();
-        var token = this._codeMirror.getTokenAt(cursor);
+        let shouldExit = false;
+        const cursor = this._codeMirror.getCursor();
+        const token = this._codeMirror.getTokenAt(cursor);
 
         if (dirac._DEBUG_COMPLETIONS) {
             console.log("autocomplete:", cursor, token);
@@ -248,19 +248,19 @@ WebInspector.DiracPromptWithHistory.prototype = {
             return;
         }
 
-        var prefix = this._codeMirror.getRange(new CodeMirror.Pos(cursor.line, token.start), cursor);
-        var javascriptCompletion = this._javascriptCompletionTest(prefix);
+        const prefix = this._codeMirror.getRange(new CodeMirror.Pos(cursor.line, token.start), cursor);
+        const javascriptCompletion = this._javascriptCompletionTest(prefix);
         if (dirac._DEBUG_COMPLETIONS) {
             console.log("detected prefix='" + prefix + "'", javascriptCompletion);
         }
         if (javascriptCompletion) {
             this._prefixRange = new WebInspector.TextRange(cursor.line, token.start + javascriptCompletion.offset, cursor.line, cursor.ch);
-            var input = javascriptCompletion.prefix;
-            this._loadJavascriptCompletions(this._lastAutocompleteRequest, input, force || false, this._completionsForJavascriptReady.bind(this, this._lastAutocompleteRequest, input, !!reverse, !!force));
+            const completionsForJavascriptReady = this._completionsForJavascriptReady.bind(this, this._lastAutocompleteRequest, javascriptCompletion.prefix, !!reverse, !!force);
+            this._loadJavascriptCompletions(this._lastAutocompleteRequest, javascriptCompletion.prefix, force || false, completionsForJavascriptReady);
         } else {
             this._prefixRange = new WebInspector.TextRange(cursor.line, token.start, cursor.line, cursor.ch);
-            var input = prefix;
-            this._loadClojureScriptCompletions(this._lastAutocompleteRequest, input, force || false, this._completionsForClojureScriptReady.bind(this, this._lastAutocompleteRequest, input, !!reverse, !!force));
+            const completionsForClojureScriptReady = this._completionsForClojureScriptReady.bind(this, this._lastAutocompleteRequest, prefix, !!reverse, !!force);
+            this._loadClojureScriptCompletions(this._lastAutocompleteRequest, prefix, force || false, completionsForClojureScriptReady);
         }
     },
 
@@ -281,7 +281,7 @@ WebInspector.DiracPromptWithHistory.prototype = {
             return;
         }
 
-        var executionContext = WebInspector.context.flavor(WebInspector.ExecutionContext);
+        const executionContext = WebInspector.context.flavor(WebInspector.ExecutionContext);
         if (!executionContext) {
             if (dirac._DEBUG_COMPLETIONS) {
                 console.warn("no execution context available");
@@ -290,10 +290,10 @@ WebInspector.DiracPromptWithHistory.prototype = {
             return;
         }
 
-        var prefix = input;
-        var expressionString = '';
-        var lastDotIndex = input.lastIndexOf(".");
-        var lastOpenSquareBracketIndex = input.lastIndexOf("[");
+        let prefix = input;
+        let expressionString = '';
+        const lastDotIndex = input.lastIndexOf(".");
+        const lastOpenSquareBracketIndex = input.lastIndexOf("[");
 
         if (lastOpenSquareBracketIndex > lastDotIndex) {
             // split at last square bracket
@@ -330,9 +330,9 @@ WebInspector.DiracPromptWithHistory.prototype = {
             return;
         }
         // Filter out dupes.
-        var store = new Set();
+        let store = new Set();
         completions = completions.filter(item => !store.has(item) && !!store.add(item));
-        var annotatedCompletions = completions.map(item => ({title: item}));
+        let annotatedCompletions = completions.map(item => ({title: item}));
 
         if (prefix || force) {
             if (prefix)
@@ -352,43 +352,14 @@ WebInspector.DiracPromptWithHistory.prototype = {
 
         this._lastExpression = expression;
         this._updateAnchorBox();
-        var shouldShowForSingleItem = true; // TODO: later maybe implement inline completions like in TextPrompt.js
-
+        const shouldShowForSingleItem = true; // later maybe implement inline completions like in TextPrompt.js
 
         if (dirac._DEBUG_COMPLETIONS) {
             console.log("calling SuggestBox.updateSuggestions", this._anchorBox, annotatedCompletions, selectedIndex, shouldShowForSingleItem, this._userEnteredText);
         }
         this._suggestBox.updateSuggestions(this._anchorBox, annotatedCompletions, selectedIndex, shouldShowForSingleItem, this._userEnteredText);
 
-        // TODO: here could be implemented inline completions like in TextPrompt.js
-    },
-
-    _extractLocalsFromScopeInfo: function(scopeInfo) {
-        var locals = [];
-        if (!scopeInfo) {
-            return locals;
-        }
-
-        var frames = scopeInfo.frames;
-        if (frames) {
-            for (var i = 0; i < frames.length; i++) {
-                var frame = frames[i];
-                var props = frame.props;
-
-                if (props) {
-                    for (var j = 0; j < props.length; j++) {
-                        var prop = props[j];
-                        locals.push(prop);
-                    }
-                }
-            }
-        }
-
-        // dedupe
-        var keyFn = item => "" + item.name + item.identifier;
-        var store = new Set();
-        var uniqueLocals = locals.filter(item => !store.has(keyFn(item)) && !!store.add(keyFn(item)));
-        return uniqueLocals;
+        // here could be implemented inline completions like in TextPrompt.js
     },
 
     /**
@@ -407,7 +378,7 @@ WebInspector.DiracPromptWithHistory.prototype = {
             }
             return;
         }
-        var executionContext = WebInspector.context.flavor(WebInspector.ExecutionContext);
+        const executionContext = WebInspector.context.flavor(WebInspector.ExecutionContext);
         if (!executionContext) {
             if (dirac._DEBUG_COMPLETIONS) {
                 console.warn("no execution context available");
@@ -416,7 +387,7 @@ WebInspector.DiracPromptWithHistory.prototype = {
             return;
         }
 
-        var debuggerModel = executionContext.debuggerModel;
+        const debuggerModel = executionContext.debuggerModel;
         if (!debuggerModel) {
             if (dirac._DEBUG_COMPLETIONS) {
                 console.warn("no debugger model available");
@@ -425,7 +396,7 @@ WebInspector.DiracPromptWithHistory.prototype = {
             return;
         }
 
-        var lastSlashIndex = input.lastIndexOf("/");
+        const lastSlashIndex = input.lastIndexOf("/");
         if (lastSlashIndex >= 0) {
             // completion of fully qualified name => split at last slash
             // example for input = "some.namespace/some-sym":
@@ -435,69 +406,100 @@ WebInspector.DiracPromptWithHistory.prototype = {
             //
             // present only symbols from given namespace, matching given prefix
 
-            var prefix = input.substring(lastSlashIndex + 1);
-            var expression = input.substring(0, lastSlashIndex + 1);
-            var namespace = input.substring(0, lastSlashIndex);
+            const prefix = input.substring(lastSlashIndex + 1);
+            const expression = input.substring(0, lastSlashIndex + 1);
+            const namespace = input.substring(0, lastSlashIndex);
 
-            var annotateSymbols = (function(style, symbols) {
+            const annotateQualifiedSymbols = symbols => {
                 return symbols.filter(symbol => symbol.startsWith(prefix)).map(symbol => ({
                     title: symbol || "?",
-                    className: style
+                    className: "suggest-cljs-qualified"
                 }));
-            }).bind(this);
+            };
 
             return dirac.extractNamespaceSymbolsAsync(namespace)
-                .then(annotateSymbols.bind(this, "suggest-cljs-qualified"))
+                .then(annotateQualifiedSymbols)
                 .then(completionsReadyCallback.bind(this, expression));
         } else {
             // general completion (without slashes)
             // combine: locals (if paused in debugger), current ns symbols, namespace names and cljs.core symbols
             // filter the list by input prefix
 
-            var annotateSymbols = (function(style, symbols) {
+            const annotateSymbols = (style, symbols) => {
                 return symbols.filter(symbol => symbol.startsWith(input)).map(symbol => ({
                     title: symbol || "?",
                     className: style
                 }));
-            }).bind(this);
+            };
 
-            var extractAndAnnotateLocals = (function(scopeInfo) {
-                var locals = this._extractLocalsFromScopeInfo(scopeInfo);
-                var filteredLocals = locals.filter(item => item.name.startsWith(input));
-                var annotatedCompletions = filteredLocals.map(item => ({
+            /**
+             * @param {dirac.ScopeInfo} scopeInfo
+             * @return {!Array<dirac.ScopeFrameProp>}
+             */
+            const extractLocalsFromScopeInfo = scopeInfo => {
+                let locals = [];
+                if (!scopeInfo) {
+                    return locals;
+                }
+
+                const frames = scopeInfo.frames;
+                if (frames) {
+                    for (let i = 0; i < frames.length; i++) {
+                        const frame = frames[i];
+                        const props = frame.props;
+
+                        if (props) {
+                            for (let j = 0; j < props.length; j++) {
+                                const prop = props[j];
+                                locals.push(prop);
+                            }
+                        }
+                    }
+                }
+
+                // deduplicate
+                const keyFn = item => "" + item.name + item.identifier;
+                let store = new Set();
+                return locals.filter(item => !store.has(keyFn(item)) && !!store.add(keyFn(item)));
+            };
+
+            const extractAndAnnotateLocals = scopeInfo => {
+                const locals = extractLocalsFromScopeInfo(scopeInfo);
+                const filteredLocals = locals.filter(item => item.name.startsWith(input));
+                const annotatedCompletions = filteredLocals.map(item => ({
                     title: item.name || "?",
                     info: item.identifier ? "js/" + item.identifier : undefined,
                     className: "suggest-cljs-scope"
                 }));
                 annotatedCompletions.reverse(); // we want to display inner scopes first
                 return annotatedCompletions;
-            }).bind(this);
+            };
 
-            var annotateNamespaces = (function(namespaces) {
+            const annotateNamespaces = namespaces => {
                 return namespaces.filter(name => name.startsWith(input)).map(name => ({
                     title: name || "?",
                     className: "suggest-cljs-ns"
                 }));
-            }).bind(this);
+            };
 
-            var concatAnnotatedResults = (function(results) {
+            const concatAnnotatedResults = results => {
                 return [].concat.apply([], results);
-            }).bind(this);
+            };
 
-            var localsPromise = dirac.extractScopeInfoFromScopeChainAsync(debuggerModel.selectedCallFrame()).then(extractAndAnnotateLocals);
-            var currentNSSymbolsPromise = dirac.extractNamespaceSymbolsAsync(this._currentClojureScriptNamespace).then(annotateSymbols.bind(this, "suggest-cljs-in-ns"));
-            var namespacesPromise = dirac.extractNamespacesAsync().then(annotateNamespaces);
-            var cljsCoreNSSymbolsPromise = dirac.extractNamespaceSymbolsAsync("cljs.core").then(annotateSymbols.bind(this, "suggest-cljs-core"));
+            const localsPromise = dirac.extractScopeInfoFromScopeChainAsync(debuggerModel.selectedCallFrame()).then(extractAndAnnotateLocals);
+            const currentNSSymbolsPromise = dirac.extractNamespaceSymbolsAsync(this._currentClojureScriptNamespace).then(annotateSymbols.bind(this, "suggest-cljs-in-ns"));
+            const namespacesPromise = dirac.extractNamespacesAsync().then(annotateNamespaces);
+            const cljsCoreNSSymbolsPromise = dirac.extractNamespaceSymbolsAsync("cljs.core").then(annotateSymbols.bind(this, ""));
 
-            var jobs = [localsPromise, currentNSSymbolsPromise, namespacesPromise, cljsCoreNSSymbolsPromise];
-            Promise.all(jobs).then(concatAnnotatedResults).then(completionsReadyCallback.bind(this, ''));
+            const jobs = [localsPromise, currentNSSymbolsPromise, namespacesPromise, cljsCoreNSSymbolsPromise];
+            Promise.all(jobs).then(concatAnnotatedResults).then(completionsReadyCallback.bind(this, ""));
         }
     },
 
     _markAliasedCompletions: function(annotatedCompletions) {
-        var previous = null;
-        for (var i = 0; i < annotatedCompletions.length; i++) {
-            var current = annotatedCompletions[i];
+        let previous = null;
+        for (let i = 0; i < annotatedCompletions.length; i++) {
+            const current = annotatedCompletions[i];
 
             if (previous) {
                 if (current.title === previous.title) {
@@ -532,8 +534,8 @@ WebInspector.DiracPromptWithHistory.prototype = {
             return;
         }
 
-        var annotatedCompletions = completions;
-        annotatedCompletions.sort(function(a, b) {
+        const annotatedCompletions = completions;
+        annotatedCompletions.sort((a, b) => {
             return a.title.localeCompare(b.title);
         });
 
@@ -550,21 +552,21 @@ WebInspector.DiracPromptWithHistory.prototype = {
         if (this._suggestBox) {
             this._lastExpression = expression;
             this._updateAnchorBox();
-            var shouldShowForSingleItem = true; // TODO: later maybe implement inline completions like in TextPrompt.js
+            const shouldShowForSingleItem = true; // later maybe implement inline completions like in TextPrompt.js
             if (dirac._DEBUG_COMPLETIONS) {
                 console.log("calling SuggestBox.updateSuggestions", this._anchorBox, annotatedCompletions, selectedIndex, shouldShowForSingleItem, this._userEnteredText);
             }
             this._suggestBox.updateSuggestions(this._anchorBox, annotatedCompletions, selectedIndex, shouldShowForSingleItem, this._userEnteredText);
         }
 
-        // TODO: here could be implemented inline completions like in TextPrompt.js
+        // here could be implemented inline completions like in TextPrompt.js
     },
 
 
     _updateAnchorBox: function() {
-        var line = this._prefixRange.startLine;
-        var column = this._prefixRange.startColumn;
-        var metrics = this.cursorPositionToCoordinates(line, column);
+        const line = this._prefixRange.startLine;
+        const column = this._prefixRange.startColumn;
+        const metrics = this.cursorPositionToCoordinates(line, column);
         this._anchorBox = metrics ? new AnchorBox(metrics.x, metrics.y, 0, metrics.height) : null;
     },
 
@@ -577,7 +579,7 @@ WebInspector.DiracPromptWithHistory.prototype = {
         if (lineNumber >= this._codeMirror.lineCount() || lineNumber < 0 || column < 0 || column > this._codeMirror.getLine(lineNumber).length)
             return null;
 
-        var metrics = this._codeMirror.cursorCoords(new CodeMirror.Pos(lineNumber, column));
+        const metrics = this._codeMirror.cursorCoords(new CodeMirror.Pos(lineNumber, column));
 
         return {
             x: metrics.left,
@@ -605,14 +607,14 @@ WebInspector.DiracPromptWithHistory.prototype = {
         if (this._prefixRange.endColumn - this._prefixRange.startColumn === this._currentSuggestion.length)
             return;
 
-        var selections = this._codeMirror.listSelections().slice();
+        const selections = this._codeMirror.listSelections().slice();
         if (dirac._DEBUG_COMPLETIONS) {
             console.log("acceptSuggestion", this._prefixRange, selections);
         }
-        var prefixLength = this._prefixRange.endColumn - this._prefixRange.startColumn;
-        for (var i = selections.length - 1; i >= 0; --i) {
-            var start = selections[i].head;
-            var end = new CodeMirror.Pos(start.line, start.ch - prefixLength);
+        const prefixLength = this._prefixRange.endColumn - this._prefixRange.startColumn;
+        for (let i = selections.length - 1; i >= 0; --i) {
+            const start = selections[i].head;
+            const end = new CodeMirror.Pos(start.line, start.ch - prefixLength);
             this._codeMirror.replaceRange(this._currentSuggestion, start, end, "+autocomplete");
         }
     },
