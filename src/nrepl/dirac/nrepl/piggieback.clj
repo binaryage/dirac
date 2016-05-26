@@ -55,8 +55,8 @@
        message-info))
 
 (defn ^:dynamic no-forwarding-help-msg [op]
-  (str "Your session joined Dirac and your nREPL client just sent an unsupported nREPL operation '" op "' to it.\n"
-       "Ask Dirac developers to implement this message type: https://github.com/binaryage/dirac/issues."))
+  (str "Your have a joined Dirac session and your nREPL client just sent an unsupported nREPL operation to it.\n"
+       "Ask Dirac developers to implement '" op "' op: https://github.com/binaryage/dirac/issues."))
 
 ; -- dirac-specific wrapper for evaluated forms -----------------------------------------------------------------------------
 
