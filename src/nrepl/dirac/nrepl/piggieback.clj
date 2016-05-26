@@ -529,7 +529,7 @@
 
 ; -- nrepl middleware -------------------------------------------------------------------------------------------------------
 
-(defn handle-known-ops-or-delegate [nrepl-message next-handler]
+(defn handle-known-ops-or-delegate! [nrepl-message next-handler]
   (case (:op nrepl-message)
     "identify-dirac-nrepl-middleware" (handle-identify-dirac-nrepl-middleware! next-handler nrepl-message)
     "finish-dirac-job" (handle-finish-dirac-job! nrepl-message)
@@ -537,11 +537,11 @@
     "load-file" (handle-load-file! next-handler nrepl-message)
     (next-handler nrepl-message)))
 
-(defn handle-normal-message [nrepl-message next-handler]
+(defn handle-normal-message! [nrepl-message next-handler]
   (let [{:keys [session] :as nrepl-message} (wrap-nrepl-message-if-observed nrepl-message)]
     (cond
       (sessions/joined-session? session) (forward-message-to-joined-session! nrepl-message)
-      :else (handle-known-ops-or-delegate nrepl-message next-handler))))
+      :else (handle-known-ops-or-delegate! nrepl-message next-handler))))
 
 (defn dirac-nrepl-middleware [next-handler]
   (fn [nrepl-message]
@@ -552,7 +552,7 @@
       (cond
         (dirac-special-command? nrepl-message) (handle-dirac-special-command! nrepl-message)
         (is-eval-cljs-quit-in-joined-session? nrepl-message) (issue-dirac-special-command! nrepl-message ":disjoin")
-        :else (handle-normal-message nrepl-message next-handler)))))
+        :else (handle-normal-message! nrepl-message next-handler)))))
 
 ; -- additional tools -------------------------------------------------------------------------------------------------------
 
