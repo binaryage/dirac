@@ -2,7 +2,9 @@
   (:require-macros [cljs.core.async.macros :refer [go go-loop]]
                    [dirac.implant.intercom :refer [error-response]])
   (:require [cljs.core.async :refer [<! chan put! timeout close!]]
-            [cljs.reader :refer [read-string]]
+            [cljs.tools.reader.edn :as reader-edn]
+            [cljs.tools.reader.reader-types :as reader-types]
+            [clojure.walk :as walk]
             [dirac.implant.console :as console]
             [dirac.implant.weasel-client :as weasel-client]
             [dirac.implant.nrepl-tunnel-client :as nrepl-tunnel-client]
@@ -10,7 +12,8 @@
             [dirac.utils :as utils]
             [chromex.logging :refer-macros [log info warn error]]
             [dirac.implant.eval :as eval]
-            [devtools.toolbox :refer [envelope]])
+            [devtools.toolbox :refer [envelope]]
+            [clojure.string :as string])
   (:import goog.net.WebSocket.ErrorEvent))
 
 (defonce required-repl-api-version 3)
@@ -64,6 +67,15 @@
 (defn ^:dynamic repl-support-not-enabled-msg []
   (str "Dirac Runtime is present, but the :repl feature hasn't been enabled. "
        "Please install Dirac Runtime with REPL support."))
+
+(defn ^:dynamic unrecognized-forwarded-nrepl-op-msg [op forwarded-nrepl-message]
+  (str "Received unrecognized operation [op='" op "'] in forwarded nREPL message:\n"
+       forwarded-nrepl-message))
+
+(defn ^:dynamic unable-unserialize-msg [forwarded-nrepl-message serialized-forwarded-nrepl-message]
+  (str "Unable to unserialize forwarded nREPL message:\n"
+       forwarded-nrepl-message "\n"
+       "nREPL message: <" serialized-forwarded-nrepl-message ">"))
 
 (defn ^:dynamic warn-version-mismatch [our-version agent-version]
   (let [msg (version-mismatch-msg our-version agent-version)]
@@ -257,11 +269,43 @@
 (defn bounce-message! [message job-id]
   (nrepl-tunnel-client/tunnel-message! (assoc message :id job-id)))
 
-(defn unserialize-message [serialized-message]
+(defn hot-fix-serialized-message [serialized-message]
+  ; I have headaches reading a serialized nREPL messages produced by cider middleware
+  ; the problem is a map key-value `:pprint-fn #function[cider.nrepl.middleware.pprint/wrap-pprint-fn/fn--24400/fn—24402]`
+  ; it gets produced by https://github.com/clojure-emacs/cider-nrepl/blob/cdc4c150dbb2456439543eb2577145c51e84d673/src/cider/nrepl/middleware/pprint.clj#L50
+  ;
+  ; 'cider.nrepl.middleware.pprint/wrap-pprint-fn/fn--24400/fn—24402' is not a valid symbol
+  (string/replace serialized-message "/fn--" "-fn--"))
+
+(defn unserialize-nrepl-message [serialized-message]
   (try
-    (read-string serialized-message)
+    ; note that situation might get a little tricky here, serialized-message could be produced by some tools which asume
+    ; deserialization to be done on Clojure side (I'm looking at you Cider middleware)
+    ;
+    ; an exemple of such unserializable message could be:
+    ; {:ns "frontend.core",
+    ;  :file "*cider-repl localhost*",
+    ;  :op "eval",
+    ;  :column 15,
+    ;  :line 54,
+    ;  :pprint-fn #function[cider.nrepl.middleware.pprint/wrap-pprint-fn/fn--24400/fn--24402],
+    ;  :id "15",
+    ;  :code "1\\n"}
+    ;
+    ; note :pprint-fn - that #function tag would cause failure of deserialization due to "unknown tag"
+    ;
+    ; Luckily enough we can use tools.reader and provide it with a special function to read unknown reader tags.
+    ; In our case we just want to turn them into ::skipped-tagged-value values and later replace to nil
+    ;
+    ; Also note usage of dirty-fix-serialized-message that is a separate issue with parsing nREPL messages produced by cider.
+    ;
+    (let [fixed-serialized-message (hot-fix-serialized-message serialized-message)
+          reader (reader-types/indexing-push-back-reader fixed-serialized-message)                                            ; indexing reader will provide line/column info in case of errors
+          marker ::skipped-tagged-value
+          opts {:default (constantly marker)}]                                                                                ; parse all unknown tags as ::skipped-tagged-value
+      (walk/postwalk-replace {marker nil} (reader-edn/read opts reader)))                                                     ; we cannot use nil marker due to reader special case for nils returned from :default fn
     (catch :default e
-      (error "troubles unserializing message" serialized-message e))))
+      e)))
 
 (defn handle-forwarded-eval-message! [forwarded-message job-id]
   (log "handle-forwarded-eval-message!" job-id forwarded-message)
@@ -276,17 +320,23 @@
     (eval/console-info! "Loading" (or file-path "?") "...")
     (bounce-message! forwarded-message job-id)))
 
+(defn handle-forwarded-interrupt-message! [forwarded-message job-id]
+  (log "handle-forwarded-interrupt-message!" job-id forwarded-message)
+  (let [interrupt-id (:interrupt-id forwarded-message)]
+    (eval/console-info! "Interrupt request for job" interrupt-id)
+    (bounce-message! forwarded-message job-id)))
+
 (defmethod nrepl-tunnel-client/process-message :handle-forwarded-nrepl-message [_client message]
   (let [{:keys [job-id serialized-forwarded-nrepl-message]} message]
-    (assert (some? job-id) "expectged :job-id in :handle-forwarded-nrepl-message")
+    (assert (some? job-id) "expected :job-id in :handle-forwarded-nrepl-message")
     (assert (string? serialized-forwarded-nrepl-message)
             (str "expected string :serialized-forwarded-nrepl-message in :handle-forwarded-nrepl-message" message))
-    (if-let [forwarded-nrepl-message (unserialize-message serialized-forwarded-nrepl-message)]
-      (let [op (:op forwarded-nrepl-message)]
-        (case op
-          "eval" (handle-forwarded-eval-message! forwarded-nrepl-message job-id)
-          "load-file" (handle-forwarded-load-file-message! forwarded-nrepl-message job-id)
-          (error-response job-id "Received unrecognized forwarded nREPL message" (str "op='" op "'") "\n"
-                          forwarded-nrepl-message)))
-      (error-response job-id "Unable to unserialize forwarded nREPL message:\n"
-                      serialized-forwarded-nrepl-message))))
+    (let [forwarded-nrepl-message (unserialize-nrepl-message serialized-forwarded-nrepl-message)]
+      (if (and (some? forwarded-nrepl-message) (not (instance? js/Error forwarded-nrepl-message)))
+        (let [op (:op forwarded-nrepl-message)]
+          (case op
+            "eval" (handle-forwarded-eval-message! forwarded-nrepl-message job-id)
+            "load-file" (handle-forwarded-load-file-message! forwarded-nrepl-message job-id)
+            "interrupt" (handle-forwarded-interrupt-message! forwarded-nrepl-message job-id)
+            (error-response job-id (unrecognized-forwarded-nrepl-op-msg op forwarded-nrepl-message))))
+        (error-response job-id (unable-unserialize-msg forwarded-nrepl-message serialized-forwarded-nrepl-message))))))
