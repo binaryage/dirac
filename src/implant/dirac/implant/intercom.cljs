@@ -269,38 +269,10 @@
 (defn bounce-message! [message job-id]
   (nrepl-tunnel-client/tunnel-message! (assoc message :id job-id)))
 
-(defn hot-fix-serialized-message [serialized-message]
-  ; I have headaches reading a serialized nREPL messages produced by cider middleware
-  ; the problem is a map key-value `:pprint-fn #function[cider.nrepl.middleware.pprint/wrap-pprint-fn/fn--24400/fn—24402]`
-  ; it gets produced by https://github.com/clojure-emacs/cider-nrepl/blob/cdc4c150dbb2456439543eb2577145c51e84d673/src/cider/nrepl/middleware/pprint.clj#L50
-  ;
-  ; 'cider.nrepl.middleware.pprint/wrap-pprint-fn/fn--24400/fn—24402' is not a valid symbol
-  (string/replace serialized-message "/fn--" "-fn--"))
-
 (defn unserialize-nrepl-message [serialized-message]
   (try
-    ; note that situation might get a little tricky here, serialized-message could be produced by some tools which asume
-    ; deserialization to be done on Clojure side (I'm looking at you Cider middleware)
-    ;
-    ; an exemple of such unserializable message could be:
-    ; {:ns "frontend.core",
-    ;  :file "*cider-repl localhost*",
-    ;  :op "eval",
-    ;  :column 15,
-    ;  :line 54,
-    ;  :pprint-fn #function[cider.nrepl.middleware.pprint/wrap-pprint-fn/fn--24400/fn--24402],
-    ;  :id "15",
-    ;  :code "1\\n"}
-    ;
-    ; note :pprint-fn - that #function tag would cause failure of deserialization due to "unknown tag"
-    ;
-    ; Luckily enough we can use tools.reader and provide it with a special function to read unknown reader tags.
-    ; In our case we just want to turn them into ::skipped-tagged-value values and later replace to nil
-    ;
-    ; Also note usage of dirty-fix-serialized-message that is a separate issue with parsing nREPL messages produced by cider.
-    ;
-    (let [fixed-serialized-message (hot-fix-serialized-message serialized-message)
-          reader (reader-types/indexing-push-back-reader fixed-serialized-message)                                            ; indexing reader will provide line/column info in case of errors
+    ; if serialized message contains some unknown reader tags we can recover by replacing them with marker and then nil
+    (let [reader (reader-types/indexing-push-back-reader serialized-message)                                                  ; indexing reader will provide line/column info in case of errors
           marker ::skipped-tagged-value
           opts {:default (constantly marker)}]                                                                                ; parse all unknown tags as ::skipped-tagged-value
       (walk/postwalk-replace {marker nil} (reader-edn/read opts reader)))                                                     ; we cannot use nil marker due to reader special case for nils returned from :default fn
