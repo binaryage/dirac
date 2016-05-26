@@ -9,15 +9,33 @@
 (defonce ^:dynamic *last-prompt-status-style* "")
 (defonce ^:dynamic *last-prompt-status-banner* "")
 
+; -- pending jobs -----------------------------------------------------------------------------------------------------------
+
+(defonce pending-jobs (atom {}))
+
+(defn add-pending-job! [job-id]
+  (swap! pending-jobs assoc job-id true))
+
+(defn remove-pending-job! [job-id]
+  (when (get @pending-jobs job-id)
+    (swap! pending-jobs dissoc job-id)
+    true))
+
+; -- prompt API -------------------------------------------------------------------------------------------------------------
+
 (defn announce-job-start! [job-id info]
+  (add-pending-job! job-id)                                                                                                   ; TODO: implement timeouts
   (group (str "nREPL JOB #" job-id) info)
   (if-let [console-view (get-console-view)]
     (ocall console-view "onJobStarted" job-id)))
 
 (defn announce-job-end! [job-id]
-  (group-end)
-  (if-let [console-view (get-console-view)]
-    (ocall console-view "onJobEnded" job-id)))
+  ; only announce ending jobs which were started by us
+  ; we have also some internal :eval request which don't trigger announce-job-start! but trigger announce-job-end!
+  (when (remove-pending-job! job-id)
+    (group-end)
+    (if-let [console-view (get-console-view)]
+      (ocall console-view "onJobEnded" job-id))))
 
 (defn set-prompt-ns! [ns-name]
   {:pre [(string? ns-name)]}
