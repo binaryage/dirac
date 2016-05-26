@@ -50,6 +50,14 @@
 (defn ^:dynamic no-target-session-match-msg [_info]
   (str "No suitable Dirac session is connected to handle your command."))
 
+(defn ^:dynamic nrepl-message-cannot-be-forwarded-msg [message-info]
+  (str "Encountered an nREPL message which cannot be forwarded to joined Dirac session:\n"
+       message-info))
+
+(defn ^:dynamic no-forwarding-help-msg [op]
+  (str "Your session joined Dirac and your nREPL client just sent an unsupported nREPL operation '" op "' to it.\n"
+       "Ask Dirac developers to implement this message type: https://github.com/binaryage/dirac/issues."))
+
 ; -- dirac-specific wrapper for evaluated forms -----------------------------------------------------------------------------
 
 (defn safe-value-conversion-to-string [value]
@@ -411,29 +419,52 @@
     (transport/send transport (response-for nrepl-message
                                             :err (prepare-no-target-session-match-error-message session)))
     (transport/send transport (response-for nrepl-message
-                                            :status #{:error :done}
-                                            :out (prepare-no-target-session-match-help-message session)))))
+                                            :out (prepare-no-target-session-match-help-message session)))
+    (transport/send transport (response-for nrepl-message
+                                            :status :done))))
+
+(defn report-nonforwardable-nrepl-message! [nrepl-message]
+  (log/debug "report-nonforwardable-nrepl-message!")
+  (let [{:keys [op transport]} nrepl-message
+        clean-message (dissoc nrepl-message :session :transport)]
+    (transport/send transport (response-for nrepl-message
+                                            :err (str (nrepl-message-cannot-be-forwarded-msg (pr-str clean-message)) "\n")))
+    (transport/send transport (response-for nrepl-message
+                                            :out (str (no-forwarding-help-msg (or op "?")) "\n")))
+    (transport/send transport (response-for nrepl-message
+                                            :status :done))))
 
 (defn enqueue-command! [command nrepl-message]
   (enqueue nrepl-message #(command nrepl-message)))
 
-(defn serialize-message [message]
-  (let [clean-message (dissoc message :session :transport)]
-    (pr-str clean-message)))
+(defn prepare-forwardable-message [nrepl-message]
+  ; based on what is currently supported by intercom on client-side
+  ; we deliberately filter keys to a "safe" subset, so the message can be unserialize on client side
+  (case (:op nrepl-message)
+    "eval" (select-keys nrepl-message [:id :op :code])
+    "load-file" (select-keys nrepl-message [:id :op :file :file-path :file-name])
+    "interrupt" (select-keys nrepl-message [:id :op :interrupt-id])
+    nil))
+
+(defn serialize-message [nrepl-message]
+  (pr-str nrepl-message))
 
 (defn forward-message-to-joined-session! [nrepl-message]
   (log/trace "forward-message-to-joined-session!" (pprint nrepl-message))
   (let [{:keys [id session transport]} nrepl-message]
     (if-let [target-dirac-session-descriptor (sessions/find-target-dirac-session-descriptor session)]
-      (let [target-session (sessions/get-dirac-session-descriptor-session target-dirac-session-descriptor)
-            target-transport (sessions/get-dirac-session-descriptor-transport target-dirac-session-descriptor)
-            job-id (helpers/generate-uuid)]
-        (jobs/register-observed-job! job-id id session transport 1000)
-        (transport/send target-transport {:op                                 :handle-forwarded-nrepl-message
-                                          :id                                 (helpers/generate-uuid)                         ; our request id
-                                          :session                            (sessions/get-session-id target-session)
-                                          :job-id                             job-id                                          ; id under which the job should be started
-                                          :serialized-forwarded-nrepl-message (serialize-message nrepl-message)}))
+      (if-let [forwardable-message (prepare-forwardable-message nrepl-message)]
+
+        (let [target-session (sessions/get-dirac-session-descriptor-session target-dirac-session-descriptor)
+              target-transport (sessions/get-dirac-session-descriptor-transport target-dirac-session-descriptor)
+              job-id (helpers/generate-uuid)]
+          (jobs/register-observed-job! job-id id session transport 1000)
+          (transport/send target-transport {:op                                 :handle-forwarded-nrepl-message
+                                            :id                                 (helpers/generate-uuid)                       ; our request id
+                                            :session                            (sessions/get-session-id target-session)
+                                            :job-id                             job-id                                        ; id under which the job should be started
+                                            :serialized-forwarded-nrepl-message (serialize-message forwardable-message)}))
+        (report-nonforwardable-nrepl-message! nrepl-message))
       (report-missing-target-session! nrepl-message))))
 
 (defn handle-identify-dirac-nrepl-middleware! [_next-handler nrepl-message]
