@@ -437,18 +437,18 @@ WebInspector.ObjectPropertyTreeElement.prototype = {
 
     _editingEnded: function()
     {
-       this._prompt.detach();
-       delete this._prompt;
-       this._editableDiv.remove();
-       this._updateExpandable();
-       this.listItemElement.scrollLeft = 0;
-       this.listItemElement.classList.remove("editing-sub-part");
+        this._prompt.detach();
+        delete this._prompt;
+        this._editableDiv.remove();
+        this._updateExpandable();
+        this.listItemElement.scrollLeft = 0;
+        this.listItemElement.classList.remove("editing-sub-part");
     },
 
     _editingCancelled: function()
     {
-       this.valueElement.classList.remove("hidden");
-       this._editingEnded();
+        this.valueElement.classList.remove("hidden");
+        this._editingEnded();
     },
 
     /**
@@ -456,14 +456,14 @@ WebInspector.ObjectPropertyTreeElement.prototype = {
      */
     _editingCommitted: function(originalContent)
     {
-       var userInput = this._prompt.text();
-       if (userInput === originalContent) {
-           this._editingCancelled(); // nothing changed, so cancel
-           return;
-       }
+        var userInput = this._prompt.text();
+        if (userInput === originalContent) {
+            this._editingCancelled(); // nothing changed, so cancel
+            return;
+        }
 
-       this._editingEnded();
-       this._applyExpression(userInput);
+        this._editingEnded();
+        this._applyExpression(userInput);
     },
 
     /**
@@ -678,7 +678,7 @@ WebInspector.ObjectPropertyTreeElement.populateWithProperties = function(treeNod
 
         if (internalProperties) {
             for (var i = 0; i < internalProperties.length; i++) {
-                if (internalProperties[i].name == "[[TargetFunction]]") {
+                if (internalProperties[i].name === "[[TargetFunction]]") {
                     hasTargetFunction = true;
                     break;
                 }
@@ -1028,14 +1028,14 @@ WebInspector.ArrayGroupingTreeElement._populateRanges = function(treeNode, objec
         if (!result)
             return;
         var ranges = /** @type {!Array.<!Array.<number>>} */ (result.ranges);
-        if (ranges.length == 1) {
+        if (ranges.length === 1) {
             WebInspector.ArrayGroupingTreeElement._populateAsFragment(treeNode, object, ranges[0][0], ranges[0][1]);
         } else {
             for (var i = 0; i < ranges.length; ++i) {
                 var fromIndex = ranges[i][0];
                 var toIndex = ranges[i][1];
                 var count = ranges[i][2];
-                if (fromIndex == toIndex)
+                if (fromIndex === toIndex)
                     WebInspector.ArrayGroupingTreeElement._populateAsFragment(treeNode, object, fromIndex, toIndex);
                 else
                     treeNode.appendChild(new WebInspector.ArrayGroupingTreeElement(object, fromIndex, toIndex, count));

@@ -275,7 +275,7 @@ WebInspector.TimelineUIUtils._interactionPhaseStyles = function()
 {
     var map = WebInspector.TimelineUIUtils._interactionPhaseStylesMap;
     if (!map) {
-         map = new Map([
+        map = new Map([
             [WebInspector.TimelineIRModel.Phases.Idle, {color: "white", label: "Idle"}],
             [WebInspector.TimelineIRModel.Phases.Response, {color: "hsl(43, 83%, 64%)", label: WebInspector.UIString("Response")}],
             [WebInspector.TimelineIRModel.Phases.Scroll, {color: "hsl(256, 67%, 70%)", label: WebInspector.UIString("Scroll")}],
@@ -305,25 +305,6 @@ WebInspector.TimelineUIUtils.interactionPhaseColor = function(phase)
 WebInspector.TimelineUIUtils.interactionPhaseLabel = function(phase)
 {
     return WebInspector.TimelineUIUtils._interactionPhaseStyles().get(phase).label;
-}
-
-/**
- * @param {!WebInspector.TracingModel.Event} event
- * @return {boolean}
- */
-WebInspector.TimelineUIUtils.isMarkerEvent = function(event)
-{
-    var recordTypes = WebInspector.TimelineModel.RecordType;
-    switch (event.name) {
-    case recordTypes.TimeStamp:
-    case recordTypes.MarkFirstPaint:
-        return true;
-    case recordTypes.MarkDOMContent:
-    case recordTypes.MarkLoad:
-        return event.args["data"]["isMainFrame"];
-    default:
-        return false;
-    }
 }
 
 /**
@@ -588,8 +569,8 @@ WebInspector.TimelineUIUtils.buildDetailsNodeForTraceEvent = function(event, tar
         details.createTextChild(WebInspector.beautifyFunctionName(eventData["functionName"]));
         var location = linkifyLocation(eventData["scriptId"], eventData["url"], eventData["lineNumber"], eventData["columnNumber"]);
         if (location) {
-           details.createTextChild(" @ ");
-           details.appendChild(location);
+            details.createTextChild(" @ ");
+            details.appendChild(location);
         }
         break;
     case recordType.CompileScript:
@@ -721,7 +702,7 @@ WebInspector.TimelineUIUtils._buildTraceEventDetailsSynchronously = function(eve
         contentHelper.appendWarningRow(event);
     if (event.name === recordTypes.JSFrame) {
         var deoptReason = eventData["deoptReason"];
-        if (deoptReason && deoptReason != "no reason")
+        if (deoptReason && deoptReason !== "no reason")
             contentHelper.appendWarningRow(event, WebInspector.TimelineModel.WarningType.V8Deopt);
     }
 
@@ -1546,28 +1527,21 @@ WebInspector.TimelineUIUtils.categories = function()
 };
 
 /**
- * @constructor
- * @param {string} title
+ * @param {!WebInspector.TimelineModel.AsyncEventGroup} group
+ * @return {string}
  */
-WebInspector.AsyncEventGroup = function(title)
+WebInspector.TimelineUIUtils.titleForAsyncEventGroup = function(group)
 {
-    this.title = title;
-}
-
-/**
- * @return {!Object<string, !WebInspector.AsyncEventGroup>}
- */
-WebInspector.TimelineUIUtils.asyncEventGroups = function()
-{
-    if (WebInspector.TimelineUIUtils._asyncEventGroups)
-        return WebInspector.TimelineUIUtils._asyncEventGroups;
-    WebInspector.TimelineUIUtils._asyncEventGroups = {
-        animation: new WebInspector.AsyncEventGroup(WebInspector.UIString("Animation")),
-        console: new WebInspector.AsyncEventGroup(WebInspector.UIString("Console")),
-        userTiming: new WebInspector.AsyncEventGroup(WebInspector.UIString("User Timing")),
-        input: new WebInspector.AsyncEventGroup(WebInspector.UIString("Input Events"))
-    };
-    return WebInspector.TimelineUIUtils._asyncEventGroups;
+    if (!WebInspector.TimelineUIUtils._titleForAsyncEventGroupMap) {
+        var groups = WebInspector.TimelineModel.AsyncEventGroup;
+        WebInspector.TimelineUIUtils._titleForAsyncEventGroupMap = new Map([
+            [groups.animation, WebInspector.UIString("Animation")],
+            [groups.console, WebInspector.UIString("Console")],
+            [groups.userTiming, WebInspector.UIString("User Timing")],
+            [groups.input, WebInspector.UIString("Input")]
+        ]);
+    }
+    return WebInspector.TimelineUIUtils._titleForAsyncEventGroupMap.get(group) || "";
 }
 
 /**
@@ -1599,13 +1573,13 @@ WebInspector.TimelineUIUtils.generatePieChart = function(aggregatedStats, selfCa
      */
     function appendLegendRow(name, title, value, color)
     {
-         if (!value)
-             return;
-         pieChart.addSlice(value, color);
-         var rowElement = footerElement.createChild("div");
-         rowElement.createChild("span", "timeline-aggregated-legend-value").textContent = Number.preciseMillisToString(value, 1);
-         rowElement.createChild("span", "timeline-aggregated-legend-swatch").style.backgroundColor = color;
-         rowElement.createChild("span", "timeline-aggregated-legend-title").textContent = title;
+        if (!value)
+            return;
+        pieChart.addSlice(value, color);
+        var rowElement = footerElement.createChild("div");
+        rowElement.createChild("span", "timeline-aggregated-legend-value").textContent = Number.preciseMillisToString(value, 1);
+        rowElement.createChild("span", "timeline-aggregated-legend-swatch").style.backgroundColor = color;
+        rowElement.createChild("span", "timeline-aggregated-legend-title").textContent = title;
     }
 
     // In case of self time, first add self, then children of the same category.

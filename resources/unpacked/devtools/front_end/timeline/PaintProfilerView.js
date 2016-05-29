@@ -129,7 +129,7 @@ WebInspector.PaintProfilerView.prototype = {
                 heightByCategory[categoryName] = (heightByCategory[categoryName] || 0) + sample;
             }
             ++i;
-            if (i - lastBarIndex == this._samplesPerBar || i == sampleCount) {
+            if (i - lastBarIndex === this._samplesPerBar || i === sampleCount) {
                 // Normalize by total number of samples accumulated.
                 var factor = this._profiles.length * (i - lastBarIndex);
                 lastBarTime /= factor;
@@ -203,7 +203,7 @@ WebInspector.PaintProfilerView.prototype = {
         }
         this._pieChart.setTotal(totalTime / this._profiles.length);
         for (var color in timeByCategory)
-          this._pieChart.addSlice(timeByCategory[color] / this._profiles.length, color);
+            this._pieChart.addSlice(timeByCategory[color] / this._profiles.length, color);
     },
 
     /**
