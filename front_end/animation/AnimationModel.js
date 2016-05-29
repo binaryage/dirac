@@ -66,8 +66,8 @@ WebInspector.AnimationModel.prototype = {
         if (animation.type() === "WebAnimation" && animation.source().keyframesRule().keyframes().length === 0) {
             this._pendingAnimations.remove(animation.id());
         } else {
-           this._animationsById.set(animation.id(), animation);
-           if (this._pendingAnimations.indexOf(animation.id()) === -1)
+            this._animationsById.set(animation.id(), animation);
+            if (this._pendingAnimations.indexOf(animation.id()) === -1)
                 this._pendingAnimations.push(animation.id());
         }
 
@@ -385,9 +385,9 @@ WebInspector.AnimationModel.Animation.prototype = {
     _updateNodeStyle: function(duration, delay, node)
     {
         var animationPrefix;
-        if (this.type() == WebInspector.AnimationModel.Animation.Type.CSSTransition)
+        if (this.type() === WebInspector.AnimationModel.Animation.Type.CSSTransition)
             animationPrefix = "transition-";
-        else if (this.type() == WebInspector.AnimationModel.Animation.Type.CSSAnimation)
+        else if (this.type() === WebInspector.AnimationModel.Animation.Type.CSSAnimation)
             animationPrefix = "animation-";
         else
             return;

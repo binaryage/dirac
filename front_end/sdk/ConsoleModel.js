@@ -103,15 +103,15 @@ WebInspector.ConsoleModel.prototype = {
     _incrementErrorWarningCount: function(msg)
     {
         switch (msg.level) {
-            case WebInspector.ConsoleMessage.MessageLevel.Warning:
-                this._warnings++;
-                break;
-            case WebInspector.ConsoleMessage.MessageLevel.Error:
-                this._errors++;
-                break;
-            case WebInspector.ConsoleMessage.MessageLevel.RevokedError:
-                this._revokedErrors++;
-                break;
+        case WebInspector.ConsoleMessage.MessageLevel.Warning:
+            this._warnings++;
+            break;
+        case WebInspector.ConsoleMessage.MessageLevel.Error:
+            this._errors++;
+            break;
+        case WebInspector.ConsoleMessage.MessageLevel.RevokedError:
+            this._revokedErrors++;
+            break;
         }
     },
 
@@ -121,7 +121,7 @@ WebInspector.ConsoleModel.prototype = {
      */
     _isBlacklisted: function(msg)
     {
-        if (msg.source != WebInspector.ConsoleMessage.MessageSource.Network || msg.level != WebInspector.ConsoleMessage.MessageLevel.Error || !msg.url || !msg.url.startsWith("chrome-extension"))
+        if (msg.source !== WebInspector.ConsoleMessage.MessageSource.Network || msg.level !== WebInspector.ConsoleMessage.MessageLevel.Error || !msg.url || !msg.url.startsWith("chrome-extension"))
             return false;
 
         // ignore Chromecast's cast_sender spam

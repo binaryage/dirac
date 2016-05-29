@@ -3031,7 +3031,7 @@ WebInspector.StylesSidebarPropertyRenderer = function(rule, node, name, value)
 }
 
 WebInspector.StylesSidebarPropertyRenderer._variableRegex = /(var\(--.*?\))/g;
-WebInspector.StylesSidebarPropertyRenderer._colorRegex = /((?:rgb|hsl)a?\([^)]+\)|#[0-9a-fA-F]{6}|#[0-9a-fA-F]{3}|\b\w+\b(?!-))/g;
+WebInspector.StylesSidebarPropertyRenderer._colorRegex = /((?:rgb|hsl)a?\([^)]+\)|#[0-9a-fA-F]{8}|#[0-9a-fA-F]{6}|#[0-9a-fA-F]{3,4}|\b\w+\b(?!-))/g;
 WebInspector.StylesSidebarPropertyRenderer._bezierRegex = /((cubic-bezier\([^)]+\))|\b(linear|ease-in-out|ease-in|ease-out|ease)\b)/g;
 
 /**
@@ -3107,16 +3107,16 @@ WebInspector.StylesSidebarPropertyRenderer.prototype = {
      */
     _processURL: function(url)
     {
-        var hrefUrl = url;
-        var match = hrefUrl.match(/['"]?([^'"]+)/);
-        if (match)
-            hrefUrl = match[1];
+        var isQuoted = /^'.*'$/.test(url) || /^".*"$/.test(url);
+        if (isQuoted)
+            url = url.substring(1, url.length - 1);
         var container = createDocumentFragment();
         container.createTextChild("url(");
+        var hrefUrl = null;
         if (this._rule && this._rule.resourceURL())
-            hrefUrl = WebInspector.ParsedURL.completeURL(this._rule.resourceURL(), hrefUrl);
+            hrefUrl = WebInspector.ParsedURL.completeURL(this._rule.resourceURL(), url);
         else if (this._node)
-            hrefUrl = this._node.resolveURL(hrefUrl);
+            hrefUrl = this._node.resolveURL(url);
         var hasResource = hrefUrl && !!WebInspector.resourceForURL(hrefUrl);
         // FIXME: WebInspector.linkifyURLAsNode() should really use baseURI.
         container.appendChild(WebInspector.linkifyURLAsNode(hrefUrl || url, url, undefined, !hasResource));

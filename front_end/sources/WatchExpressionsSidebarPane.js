@@ -190,7 +190,7 @@ WebInspector.WatchExpressionsSidebarPane.prototype = {
     {
         var isEditing = false;
         for (var watchExpression of this._watchExpressions)
-           isEditing |=  watchExpression.isEditing();
+            isEditing |=  watchExpression.isEditing();
 
         if (!isEditing)
             contextMenu.appendItem(WebInspector.UIString.capitalize("Add ^watch ^expression"), this._addButtonClicked.bind(this));
@@ -383,7 +383,7 @@ WebInspector.WatchExpression.prototype = {
     _onSectionClick: function(event)
     {
         event.consume(true);
-        if (event.detail == 1) {
+        if (event.detail === 1) {
             this._preventClickTimeout = setTimeout(handleClick.bind(this), 333);
         } else {
             clearTimeout(this._preventClickTimeout);

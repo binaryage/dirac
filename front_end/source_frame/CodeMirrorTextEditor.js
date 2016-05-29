@@ -1248,7 +1248,7 @@ WebInspector.CodeMirrorTextEditor.prototype = {
         this.clearPositionHighlight();
         this._highlightedLine = this._codeMirror.getLineHandle(lineNumber);
         if (!this._highlightedLine)
-          return;
+            return;
         this._revealLine(lineNumber);
         if (shouldHighlight) {
             this._codeMirror.addLineClass(this._highlightedLine, null, "cm-highlight");
@@ -1697,7 +1697,7 @@ WebInspector.CodeMirrorPositionHandle.prototype = {
      */
     equal: function(positionHandle)
     {
-        return positionHandle._lineHandle === this._lineHandle && positionHandle._columnNumber == this._columnNumber && positionHandle._codeMirror === this._codeMirror;
+        return positionHandle._lineHandle === this._lineHandle && positionHandle._columnNumber === this._columnNumber && positionHandle._codeMirror === this._codeMirror;
     }
 }
 
