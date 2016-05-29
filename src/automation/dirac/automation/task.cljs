@@ -103,6 +103,9 @@
     (status-host/init-status! "status-box")
     (init-cljs-printing!)
     (launcher/init!)
+    ; feedback subsystem is responsible for intercepting messages to be presented in transcript
+    (feedback/init!)
+    (messages/init!)
     ; if test runner is present, we will wait for test runner to launch the test
     ; it needs to disconnect the driver first
     (if-not (helpers/is-test-runner-present?)
@@ -155,9 +158,6 @@
     (status-host/set-status! "task running...")
     (status-host/set-style! "running")
     (transcript-host/set-style! "running")
-    ; feedback subsystem is responsible for intercepting messages to be presented in transcript
-    (feedback/init!)
-    (messages/init!)
     ; when launched from test runner, chrome driver is in charge of selecting debugging port, we have to propagate this
     ; information to our dirac extension settings
     (<! (setup-debugging-port!))
