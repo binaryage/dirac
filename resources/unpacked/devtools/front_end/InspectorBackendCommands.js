@@ -416,6 +416,7 @@ InspectorBackend.registerCommand("ServiceWorker.stopWorker", [{"name": "versionI
 InspectorBackend.registerCommand("ServiceWorker.inspectWorker", [{"name": "versionId", "type": "string", "optional": false}], [], false);
 InspectorBackend.registerCommand("ServiceWorker.setForceUpdateOnPageLoad", [{"name": "forceUpdateOnPageLoad", "type": "boolean", "optional": false}], [], false);
 InspectorBackend.registerCommand("ServiceWorker.deliverPushMessage", [{"name": "origin", "type": "string", "optional": false}, {"name": "registrationId", "type": "string", "optional": false}, {"name": "data", "type": "string", "optional": false}], [], false);
+InspectorBackend.registerCommand("ServiceWorker.dispatchSyncEvent", [{"name": "origin", "type": "string", "optional": false}, {"name": "registrationId", "type": "string", "optional": false}, {"name": "tag", "type": "string", "optional": false}, {"name": "lastChance", "type": "boolean", "optional": false}], [], false);
 InspectorBackend.registerCommand("ServiceWorker.getTargetInfo", [{"name": "targetId", "type": "string", "optional": false}], ["targetInfo"], false);
 InspectorBackend.registerCommand("ServiceWorker.activateTarget", [{"name": "targetId", "type": "string", "optional": false}], [], false);
 

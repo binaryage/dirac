@@ -3453,6 +3453,17 @@ Protocol.ServiceWorkerAgent.prototype.deliverPushMessage = function(origin, regi
 Protocol.ServiceWorkerAgent.prototype.invoke_deliverPushMessage = function(obj, opt_callback) {}
 
 /**
+ * @param {string} origin
+ * @param {string} registrationId
+ * @param {string} tag
+ * @param {boolean} lastChance
+ * @param {function(?Protocol.Error):void=} opt_callback
+ */
+Protocol.ServiceWorkerAgent.prototype.dispatchSyncEvent = function(origin, registrationId, tag, lastChance, opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+Protocol.ServiceWorkerAgent.prototype.invoke_dispatchSyncEvent = function(obj, opt_callback) {}
+
+/**
  * @param {ServiceWorkerAgent.TargetID} targetId
  * @param {function(?Protocol.Error, ServiceWorkerAgent.TargetInfo):void=} opt_callback
  */
