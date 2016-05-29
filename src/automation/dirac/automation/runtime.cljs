@@ -10,13 +10,13 @@
                          (let [key (keyword (second (re-find #"^set-(.*)" param)))]
                            [key value])))]
     (when-not (empty? prefs)
-      (warn "setting dirac runtime prefs via url params" prefs)
+      (warn "setting dirac runtime prefs via url params" (pr-str prefs))                                                      ; use pr-str because cljs-devtools is not yet installed
       (runtime-prefs/merge-prefs! prefs))))
 
 (defn init-runtime! [& [config]]
   (configure-runtime-from-url-params! (helpers/get-document-url))
   (when-let [runtime-prefs (:runtime-prefs config)]                                                                           ; override runtime prefs
-    (warn "dirac runtime prefs override:" runtime-prefs)
+    (warn "dirac runtime prefs override:" (pr-str runtime-prefs))                                                             ; use pr-str because cljs-devtools is not yet installed
     (runtime-prefs/merge-prefs! runtime-prefs))
   (if-not (:do-not-install-runtime config)                                                                                    ; override devtools features/installation
     (let [features-to-enable (cond-> []
