@@ -8,6 +8,7 @@
 (def ^:export get-version get-current-version)
 
 (def ^:export is-feature-available? core/is-feature-available?)
+(def ^:export installed? core/installed?)
 (def ^:export install! core/install!)
 (def ^:export uninstall! core/uninstall!)
 (def ^:export get-tag core/get-tag)

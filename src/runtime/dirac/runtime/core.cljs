@@ -17,6 +17,14 @@
   (case feature
     :repl (repl/available?)))
 
+(defn is-feature-installed? [feature]
+  (case feature
+    :repl (repl/installed?)))
+
+(defn installed? [feature-or-features]
+  (let [features (if (seq? feature-or-features) feature-or-features [feature-or-features])]
+    (every? is-feature-installed? features)))
+
 (defn install!
   ([] (install! features-to-install-by-default))
   ([features-to-install]
