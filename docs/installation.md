@@ -12,7 +12,7 @@ Here are the ingredients you are going to need:
 1. [Dirac Chrome Extension](https://chrome.google.com/webstore/detail/dirac-devtools/kbkdngfljkchidcjpnfcgcokkbhlkogi) installed in your Chrome Canary
 1. Dirac Runtime - a ClojureScript library installed in your page
 1. nREPL server with Dirac nREPL middleware
-1. Dirac Agent - a helper server providing a proxy tunnel between nREPL server and DevTools web app
+1. Dirac Agent - a helper server providing a proxy tunnel between the nREPL server and the Dirac Extension
 
 #### Setup Dirac Chrome Extension
 
