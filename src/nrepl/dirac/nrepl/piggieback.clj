@@ -76,10 +76,6 @@
          (js/dirac.runtime.repl.present_repl_exception ~job-id e#)
          (throw e#)))))
 
-(defn make-special-form-evaluator [dirac-wrap]
-  (fn [form]
-    (safe-value-conversion-to-string (dirac-wrap form))))
-
 (defn make-job-evaluator [dirac-wrap job-id]
   (fn [form]
     (let [result-sym (gensym "result")]
@@ -96,6 +92,10 @@
          (catch :default e#
            (set! *e e#)
            (throw e#))))))
+
+(defn make-special-form-evaluator [dirac-wrap]
+  (fn [form]
+    (safe-value-conversion-to-string (dirac-wrap form))))
 
 (defn make-wrapper-for-form [form]
   (let [nrepl-message nrepl-ieval/*msg*
@@ -218,7 +218,7 @@
       (throw e))))
 
 ;; mostly a copy/paste from interruptible-eval
-(defn enqueue [nrepl-message func]
+(defn enqueue! [nrepl-message func]
   (let [{:keys [session transport]} nrepl-message
         job (fn []
               (alter-meta! session
@@ -238,7 +238,7 @@
 ; bound. Thus, we're not going through interruptible-eval, and the user's
 ; Clojure session (dynamic environment) is not in place, so we need to go
 ; through the `session` atom to access/update its vars. Same goes for load-file.
-(defn evaluate [nrepl-message]
+(defn evaluate! [nrepl-message]
   (let [{:keys [session transport ^String code]} nrepl-message]
     ; we append a :cljs/quit to every chunk of code evaluated so we can break out of cljs.repl/repl*'s loop,
     ; so we need to go a gnarly little stringy check here to catch any actual user-supplied exit
@@ -270,9 +270,9 @@
 ; the file being loaded is on disk, in the location implied by the namespace
 ; declaration.
 ; TODO either pull in our own `load-file` that doesn't imply this, or raise the issue upstream.
-(defn load-file [nrepl-message]
+(defn load-file! [nrepl-message]
   (let [{:keys [file-path]} nrepl-message]
-    (evaluate (assoc nrepl-message :code (format "(load-file %s)" (pr-str file-path))))))
+    (evaluate! (assoc nrepl-message :code (format "(load-file %s)" (pr-str file-path))))))
 
 ; -- nrepl-message error observer -------------------------------------------------------------------------------------------
 
@@ -435,7 +435,7 @@
                                             :status :done))))
 
 (defn enqueue-command! [command nrepl-message]
-  (enqueue nrepl-message #(command nrepl-message)))
+  (enqueue! nrepl-message #(command nrepl-message)))
 
 (defn prepare-forwardable-message [nrepl-message]
   ; based on what is currently supported by intercom on client-side
@@ -454,7 +454,6 @@
   (let [{:keys [id session transport]} nrepl-message]
     (if-let [target-dirac-session-descriptor (sessions/find-target-dirac-session-descriptor session)]
       (if-let [forwardable-message (prepare-forwardable-message nrepl-message)]
-
         (let [target-session (sessions/get-dirac-session-descriptor-session target-dirac-session-descriptor)
               target-transport (sessions/get-dirac-session-descriptor-transport target-dirac-session-descriptor)
               job-id (helpers/generate-uuid)]
@@ -475,13 +474,13 @@
 (defn handle-eval! [next-handler nrepl-message]
   (let [{:keys [session]} nrepl-message]
     (cond
-      (sessions/dirac-session? session) (enqueue-command! evaluate nrepl-message)
+      (sessions/dirac-session? session) (enqueue-command! evaluate! nrepl-message)
       :else (next-handler (observed-nrepl-message nrepl-message)))))
 
 (defn handle-load-file! [next-handler nrepl-message]
   (let [{:keys [session]} nrepl-message]
     (if (sessions/dirac-session? session)
-      (enqueue-command! load-file nrepl-message)
+      (enqueue-command! load-file! nrepl-message)
       (next-handler (observed-nrepl-message nrepl-message)))))
 
 (defn final-message? [message]
