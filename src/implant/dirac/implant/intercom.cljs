@@ -24,6 +24,7 @@
 (defonce ^:dynamic *last-connect-fn-id* 0)
 
 (def dirac-agent-help-url "https://github.com/binaryage/dirac/blob/master/docs/installation.md#start-dirac-agent")
+(def dirac-runtime-help-url "https://github.com/binaryage/dirac/blob/master/docs/installation.md#install-the-dirac-runtime")
 
 (defn ^:dynamic repl-api-mismatch-msg [current-api required-api]
   (str "Dirac Runtime version mismatch detected. Dirac DevTools requires Dirac Runtime REPL API v" required-api ", "
@@ -66,7 +67,7 @@
 
 (defn ^:dynamic repl-support-not-enabled-msg []
   (str "Dirac Runtime is present, but the :repl feature hasn't been enabled. "
-       "Please install Dirac Runtime with REPL support."))
+       "Please <a href=\"" dirac-runtime-help-url "\">install Dirac Runtime</a> with REPL support."))
 
 (defn ^:dynamic unrecognized-forwarded-nrepl-op-msg [op forwarded-nrepl-message]
   (str "Received unrecognized operation [op='" op "'] in forwarded nREPL message:\n"
