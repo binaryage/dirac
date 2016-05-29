@@ -12,8 +12,7 @@
             [dirac.utils :as utils]
             [chromex.logging :refer-macros [log info warn error]]
             [dirac.implant.eval :as eval]
-            [devtools.toolbox :refer [envelope]]
-            [clojure.string :as string])
+            [devtools.toolbox :refer [envelope]])
   (:import goog.net.WebSocket.ErrorEvent))
 
 (defonce required-repl-api-version 3)
@@ -25,11 +24,12 @@
 
 (def dirac-agent-help-url "https://github.com/binaryage/dirac/blob/master/docs/installation.md#start-dirac-agent")
 (def dirac-runtime-help-url "https://github.com/binaryage/dirac/blob/master/docs/installation.md#install-the-dirac-runtime")
+(def dirac-upgrading-help-url "https://github.com/binaryage/dirac/blob/master/docs/upgrading.md")
 
 (defn ^:dynamic repl-api-mismatch-msg [current-api required-api]
-  (str "Dirac Runtime version mismatch detected. Dirac DevTools requires Dirac Runtime REPL API v" required-api ", "
-       "but your version is v" current-api ".\n"
-       "Please <a href=\"https://github.com/binaryage/dirac\">ugrade Dirac Runtime</a> in your app."))
+  (str "Dirac Runtime version mismatch detected.\n"
+       "Dirac Extension requires Dirac Runtime REPL API v" required-api ", but your version is v" current-api ".\n"
+       "Please <a href=\"" dirac-upgrading-help-url "\">upgrade Dirac Runtime</a> in your app."))
 
 (defn ^:dynamic failed-to-retrieve-client-config-msg [where]
   (str "Failed to retrive Dirac Runtime config (" where "). This is an unexpected error."))
@@ -37,12 +37,12 @@
 (defn ^:dynamice unable-to-bootstrap-msg []
   (str "Unable to bootstrap ClojureScript REPL due to a timeout.\n"
        "This is usually a case when server side process raised an exception or crashed.\n"
-       "Check your Dirac Agent server console."))
+       "Check your Dirac Agent error output."))
 
 (defn ^:dynamic bootstrap-error-msg [details]
   (str "Unable to bootstrap ClojureScript REPL due to an error.\n"
        (if (some? details) (str details "\n"))
-       "Please check your Dirac Agent console for additional output."))
+       "Please check your Dirac Agent error output for additional details."))
 
 (defn ^:dynamic unable-to-connect-exception-msg [url e]
   (str "Unable to connect to Dirac Agent at " url ":\n"
@@ -61,9 +61,9 @@
 (defn ^:dynamic version-mismatch-msg [devtools-version agent-version]
   (str "Version mismatch: "
        "Dirac Agent has different version (" agent-version ") "
-       "than Dirac DevTools Extension (" devtools-version ").\n"
-       "To avoid compatibility issues, please upgrade all Dirac components to the same version.\n"
-       "=> https://github.com/binaryage/dirac#installation"))
+       "than Dirac Extension (" devtools-version ").\n"
+       "To avoid compatibility issues, please "
+       "<a href=\"" dirac-upgrading-help-url "\">upgrade all Dirac components to the same version</a>."))
 
 (defn ^:dynamic repl-support-not-enabled-msg []
   (str "Dirac Runtime is present, but the :repl feature hasn't been enabled. "
