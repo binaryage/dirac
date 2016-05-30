@@ -72,14 +72,6 @@
                                     (ws-client/close! client)))}]
     (ws-client/connect! (get-signal-server-url) client-config)))
 
-(defn format-error [e]
-  ; not error may be a string message already
-  (if (string? e)
-    e
-    (if-let [stack (oget e "stack")]
-      (str stack)
-      (str e))))
-
 ; -- task state -------------------------------------------------------------------------------------------------------------
 
 (defn success? []
@@ -149,7 +141,7 @@
     (set-exit-code! ::exception)
     (status-host/set-status! (str "task has thrown an exception: " message))
     (status-host/set-style! "exception")
-    (transcript-host/forced-append-to-transcript! "exception" (format-error e))
+    (transcript-host/forced-append-to-transcript! "exception" (helpers/format-error e))
     (transcript-host/set-style! "exception")
     (task-teardown!)))
 

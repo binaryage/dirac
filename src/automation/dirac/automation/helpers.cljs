@@ -59,3 +59,11 @@
 
 (defn scroll-page-to-bottom! []
   (ocall js/window "scrollTo" 0 (oget js/document "body" "scrollHeight")))
+
+(defn format-error [e]
+  ; not error may be a string message already
+  (if (string? e)
+    e
+    (if-let [stack (oget e "stack")]
+      (str stack)
+      (str e))))
