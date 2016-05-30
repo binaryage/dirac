@@ -1,7 +1,8 @@
 (ns dirac.tests.tasks.suite01.completions
   (:require [cljs.core.async]
             [cljs.test :refer-macros [is testing]]
-            [dirac.automation :refer-macros [<!* go-task go-job] :as a]))
+            [dirac.automation :refer-macros [<!* go-task go-job] :as a]
+            [cuerdas.core :as cuerdas]))
 
 (go-task
   (<!* a/open-tab-with-scenario! "completions")
@@ -53,4 +54,9 @@
     (<!* a/simulate-console-input! "/clj-")
     (<!* a/print-suggest-box!)
     (<!* a/simulate-console-action! "RIGHT")
-    (is (= (<!* a/print-prompt!) "cljs.core/clj->js"))))
+    (is (= (<!* a/print-prompt!) "cljs.core/clj->js")))
+  ; -- test right-arrow completions -----------------------------------------------------------------------------------------
+  (testing "opening suggestion box"
+    (<!* a/clear-console-prompt!)
+    (<!* a/simulate-console-action! "CTRL+SPACE")                                                                             ; https://github.com/binaryage/dirac/issues/22)
+    (is (> (count (cuerdas/lines (<!* a/get-suggest-box-representation))) 100))))

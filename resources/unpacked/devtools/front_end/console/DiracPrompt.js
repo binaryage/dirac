@@ -179,12 +179,11 @@ WebInspector.DiracPromptWithHistory.prototype = {
      * @override
      * @param {boolean=} force
      */
-    _updateAutoComplete: function(force) {
-        // override with empty implementation to disable TextPrompt's autocomplete implementation
-        // we use CodeMirror's changes modelled after TextEditorAutocompleteController.js in DiracPrompt
-        if (dirac._DEBUG_COMPLETIONS) {
-            console.log("_updateAutoComplete called => skip for disabling default auto-complete system");
-        }
+    autoCompleteSoon: function(force) {
+        console.log("autoCompleteSoon called");
+        this._ignoreNextCursorActivity = true; // this prevents flickering of suggestion widget
+        //noinspection JSUnresolvedFunction
+        setImmediate(this.autocomplete.bind(this));
     },
 
     /**
