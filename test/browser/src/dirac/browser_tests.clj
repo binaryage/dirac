@@ -276,6 +276,8 @@
 (deftest test-all
   (fixtures-web-server-check)
   (with-transcript-suite "suite01"
+    (execute-transcript-test! "barebone")
+    (execute-transcript-test! "without-runtime")
     (execute-transcript-test! "open-close-dirac")
     (execute-transcript-test! "no-agent-connection")
     (execute-transcript-test! "disabled-parinfer")

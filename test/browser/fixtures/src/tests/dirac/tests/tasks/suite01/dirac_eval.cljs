@@ -3,8 +3,6 @@
             [cljs.test :refer-macros [is testing]]
             [dirac.automation :refer-macros [<!* go-task] :as a]))
 
-(def dirac-object "Object {automation: Object, tests: Object, runtime: Object, project: Object}")
-
 (go-task
   (<!* a/open-tab-with-scenario! "normal")
   (<!* a/open-devtools!)
@@ -17,7 +15,7 @@
     (<!* a/console-exec-and-match! "(+ 1 2)" "log> 3")
     (<!* a/console-exec-and-match! "(range 200)" "log> (0 1 2 3 4 …)")
     (<!* a/console-exec-and-match! "(doc filter)" "log> null")
-    (<!* a/console-exec-and-match! "js/dirac" (str "log> " dirac-object))
+    (<!* a/console-exec-and-match! "js/dirac" "log> Object")
     (<!* a/console-exec-and-match! "(x)" "err> TypeError: Cannot read property 'call' of undefined(…)")
     (<!* a/console-exec-and-match! "(in-ns)" (str "java-trace > java.lang.IllegalArgumentException: "
                                                   "Argument to in-ns must be a symbol."))

@@ -53,12 +53,12 @@ devtools #1      DF.log>
                    Returns a transducer when no collection is provided.
 devtools #1      DF.log> null
 devtools #1      repl eval job ended
-automate #1      console-exec-and-match! ["js/dirac" "log> Object {automation: Object, tests: Object, runtime: Object, project: Object}"]
+automate #1      console-exec-and-match! ["js/dirac" "log> Object"]
 devtools #1      DC.log> js/dirac
 devtools #1      send-eval-request: js/dirac
 devtools #1      repl eval job started
 devtools #1      wrap-with-postprocess-and-eval-in-current-context!
-devtools #1      DF.log> Object {automation: Object, tests: Object, runtime: Object, project: Object}
+devtools #1      DF.log> Object {automation: Object, tests: Object, runtime: Object, project: Object, settings: Object…}
 devtools #1      repl eval job ended
 automate #1      console-exec-and-match! ["(x)" "err> TypeError: Cannot read property 'call' of undefined(…)"]
 devtools #1      DC.log> (x)

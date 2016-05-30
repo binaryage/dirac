@@ -6,10 +6,10 @@
             [chromex.support :refer-macros [oget oset ocall oapply]]
             [chromex.logging :refer-macros [log info warn error]]
             [dirac.settings :refer-macros [get-marion-message-reply-timeout]]
-            [dirac.utils :as utils]
-            [dirac.automation.test :as test]))
+            [dirac.utils :as utils]))
 
 (defonce last-message-id (volatile! 0))
+(defonce message-id-prefix (volatile! ""))
 (defonce reply-subscribers (atom {}))                                                                                         ; message-id -> list of [callback info]
 (defonce waiting-for-pending-replies? (volatile! false))
 (defonce should-tear-down? (volatile! false))
@@ -20,7 +20,7 @@
 (defn is-processing-messages? []
   @processing-messages?)
 
-(defn ^:dynamic get-reply-timeout-message [timeout info]
+(defn ^:dynamic get-reply-timeout-msg [timeout info]
   (str "timeout (" (utils/timeout-display timeout) ") while waiting for reply. " info))
 
 (defn ^:dynamic pending-replies-timeout-msg [timeout subscribers]
@@ -28,7 +28,7 @@
        "missing replies: " (str/join ", " (map (fn [[id [_cb info]]] (str id ": " info)) subscribers))))
 
 (defn get-next-message-id! []
-  (vswap! last-message-id inc))
+  (str @message-id-prefix ":" (vswap! last-message-id inc)))
 
 (defn subscribe-to-reply! [message-id callback & [info]]
   (swap! reply-subscribers update message-id #(if % (conj % callback) [[callback info]])))
@@ -42,7 +42,7 @@
         data (reader/read-string serialized-data)                                                                             ; TODO: try-catch?
         subscribers (get-reply-subscriber-callbacks message-id)
         unsubscribe! #(swap! reply-subscribers dissoc message-id)]
-    (assert (number? message-id))
+    (assert (some? message-id))
     (case (first data)
       :error (do
                (unsubscribe!)
@@ -54,7 +54,7 @@
                 (unsubscribe!)))))
 
 (defn wait-for-reply! [message-id reply-timeout info]
-  {:pre [(number? message-id)
+  {:pre [(some? message-id)
          (number? reply-timeout)]}
   (assert (is-processing-messages?) (str "wait-for-reply! called before messages/init! call? " message-id ": " (pr-str info)))
   (assert (not @should-tear-down?) (str "wait-for-reply! called after messages/done! call? " message-id ": " (pr-str info)))
@@ -66,7 +66,7 @@
     (subscribe-to-reply! message-id observer (pr-str info))
     (go
       (let [[result] (alts! [reply-channel timeout-channel])]
-        (or result (throw (ex-info :task-timeout {:transcript (get-reply-timeout-message reply-timeout (pr-str info))})))))))
+        (or result (throw (ex-info :task-timeout {:transcript (get-reply-timeout-msg reply-timeout (pr-str info))})))))))
 
 (defn wait-for-all-pending-replies! []
   (assert (not @waiting-for-pending-replies?))
@@ -141,6 +141,19 @@
 (defn focus-task-runner-window! []
   (post-message! #js {:type "marion-focus-task-runner-window"} :no-timeout))
 
+(defn post-scenario-feedback! [text]
+  (post-message! #js {:type    "marion-feedback-from-scenario"
+                      :payload #js {:type       "feedback-from-scenario"
+                                    :transcript text}} :no-timeout))
+
+(defn broadcast-notification! [notification]
+  (post-message! #js {:type    "marion-broadcast-notification"
+                      :payload #js {:type         "notification"
+                                    :notification notification}} :no-timeout))
+
+(defn send-scenario-ready! []
+  (post-message! #js {:type "marion-scenario-ready"} :no-timeout))
+
 ; -- message processing -----------------------------------------------------------------------------------------------------
 
 (defn process-event! [event]
@@ -150,23 +163,26 @@
       nil)))
 
 (defn start-processing-messages! []
-  (if-not (is-processing-messages?)
+  (if (is-processing-messages?)
+    (warn "start-processing-messages! called while already started => ignoring this call")
     (do
       (.addEventListener js/window "message" process-event!)
-      (vreset! processing-messages? true))
-    (warn "start-processing-messages! called while already started => ignoring this call")))
+      (vreset! processing-messages? true))))
 
 (defn stop-processing-messages! []
-  (if (is-processing-messages?)
+  (if-not (is-processing-messages?)
+    (warn "stop-processing-messages! called while not yet started => ignoring this call")
     (do
       (.removeEventListener js/window "message" process-event!)
-      (vreset! processing-messages? false))
-    (warn "stop-processing-messages! called while not yet started => ignoring this call")))
+      (vreset! processing-messages? false))))
 
-(defn init! []
+; -- initialization ---------------------------------------------------------------------------------------------------------
+
+(defn init! [& [name]]
+  (if (some? name)
+    (vreset! message-id-prefix name))
   (start-processing-messages!))
 
 (defn done! []
   (vreset! should-tear-down? true)
   (stop-processing-messages!))
-

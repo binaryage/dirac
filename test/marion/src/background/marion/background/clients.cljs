@@ -5,7 +5,8 @@
             [chromex.support :refer-macros [oget ocall oapply]]
             [chromex.protocols :refer [post-message! get-sender]]
             [devtools.toolbox :refer [envelope]]
-            [marion.background.feedback :as feedback]))
+            [marion.background.feedback :as feedback]
+            [marion.background.notifications :as notifications]))
 
 ; clients are marion content scripts connected to this marion background page:
 ;   * some clients may be scenario pages
@@ -25,6 +26,7 @@
   (let [sender (get-sender client)
         sender-url (oget sender "url")]
     (feedback/unsubscribe-client-if-subscribed! client)
+    (notifications/unsubscribe-client-if-subscribed! client)
     (log (str "a client disconnected: " sender-url) (envelope sender))
     (let [remove-item (fn [coll item] (remove #(identical? item %) coll))]
       (swap! clients remove-item client))))

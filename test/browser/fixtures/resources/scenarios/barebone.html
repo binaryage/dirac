@@ -1,21 +1,20 @@
 <!doctype html>
 <html>
 <head>
-    <title>no agent</title>
+    <title>barebone</title>
     <link rel="stylesheet" href="../css/scenario.css">
     <script src="../compiled/tests/goog/base.js" type="text/javascript"></script>
     <script src="../compiled/tests/tests.js" type="text/javascript"></script>
 </head>
 <body>
-
 This page scenario contains:
 <ul>
-    <li>cljs-devtools</li>
-    <li>dirac runtime properly initialized <b>but dirac agent is not listening</b></li>
+    <li><b>no cljs-devtools</b></li>
+    <li><b>no dirac runtime support</b></li>
 </ul>
 
 <script>goog.require('dirac.tests.support.devtools')</script>
-<script>goog.require('dirac.tests.scenarios.no_agent')</script>
+<script>goog.require('dirac.tests.scenarios.barebone')</script>
 
 </body>
 </html>

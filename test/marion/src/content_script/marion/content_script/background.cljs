@@ -21,6 +21,8 @@
     (case type
       "feedback-from-extension" (relay-message-to-page! message)
       "feedback-from-devtools" (relay-message-to-page! message)
+      "feedback-from-scenario" (relay-message-to-page! message)
+      "notification" (relay-message-to-page! message)
       "reply" (relay-message-to-page! message)
       (warn "got unknown message from background page" type message))))
 

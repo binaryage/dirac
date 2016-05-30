@@ -7,23 +7,25 @@
             [dirac.automation.transcript-host :as transcript-host]))
 
 (defonce processing-messages? (volatile! false))
-(defonce trancript-subscribed? (volatile! false))
+(defonce feedback-subscribed? (volatile! false))
 
 ; -- accessors --------------------------------------------------------------------------------------------------------------
 
 (defn is-processing-messages? []
   @processing-messages?)
 
-(defn is-transcript-subscribed? []
-  @trancript-subscribed?)
+(defn is-feedback-subscribed? []
+  @feedback-subscribed?)
 
 ; -- handlers ---------------------------------------------------------------------------------------------------------------
 
+(defn format-label [label devtools-id]
+  (if devtools-id
+    (str label " #" devtools-id)
+    label))
+
 (defn append-to-transcript! [label message & [devtools-id]]
-  (let [label (if devtools-id
-                (str label " #" devtools-id)
-                label)]
-    (transcript-host/append-to-transcript! label message)))
+  (transcript-host/append-to-transcript! (format-label label devtools-id) message))
 
 ; -- message processing -----------------------------------------------------------------------------------------------------
 
@@ -32,44 +34,45 @@
     (case (oget data "type")
       "feedback-from-devtools" (append-to-transcript! "devtools" (oget data "transcript") (oget data "devtools"))
       "feedback-from-extension" (append-to-transcript! "extension" (oget data "transcript"))
+      "feedback-from-scenario" (append-to-transcript! "scenario" (oget data "transcript"))
       nil)))
 
 (defn start-processing-messages! []
-  (if-not (is-processing-messages?)
+  (if (is-processing-messages?)
+    (warn "start-processing-messages! called while already started => ignoring this call")
     (do
       (.addEventListener js/window "message" process-event!)
-      (vreset! processing-messages? true))
-    (warn "start-processing-messages! called while already started => ignoring this call")))
+      (vreset! processing-messages? true))))
 
 (defn stop-processing-messages! []
-  (if (is-processing-messages?)
+  (if-not (is-processing-messages?)
+    (warn "stop-processing-messages! called while not yet started => ignoring this call")
     (do
       (.removeEventListener js/window "message" process-event!)
-      (vreset! processing-messages? false))
-    (warn "stop-processing-messages! called while not yet started => ignoring this call")))
+      (vreset! processing-messages? false))))
 
-; -- message processing -----------------------------------------------------------------------------------------------------
+; -- transcript subscription ------------------------------------------------------------------------------------------------
 
-(defn subscribe-to-transcript! []
-  (if-not (is-transcript-subscribed?)
+(defn subscribe-to-feedback! []
+  (if (is-feedback-subscribed?)
+    (warn "subscribe-to-feedback! called while already subscribed => ignoring this call")
     (do
-      (messages/post-message! #js {:type "marion-subscribe-transcript"} :no-timeout)
-      (vreset! trancript-subscribed? true))
-    (warn "subscribe-to-transcript! called while already subscribed => ignoring this call")))
+      (messages/post-message! #js {:type "marion-subscribe-feedback"} :no-timeout)
+      (vreset! feedback-subscribed? true))))
 
-(defn unsubscribe-from-transcript! []
-  (if (is-transcript-subscribed?)
+(defn unsubscribe-from-feedback! []
+  (if-not (is-feedback-subscribed?)
+    (warn "unsubscribe-from-feedback! called while not yet subscribed => ignoring this call")
     (do
-      (messages/post-message! #js {:type "marion-unsubscribe-transcript"} :no-timeout)
-      (vreset! trancript-subscribed? false))
-    (warn "subscribe-to-transcript! called while not yet subscribed => ignoring this call")))
+      (messages/post-message! #js {:type "marion-unsubscribe-feedback"} :no-timeout)
+      (vreset! feedback-subscribed? false))))
 
 ; -- initialization ---------------------------------------------------------------------------------------------------------
 
 (defn init! []
   (start-processing-messages!)
-  (subscribe-to-transcript!))
+  (subscribe-to-feedback!))
 
 (defn done! []
-  (unsubscribe-from-transcript!)
+  (unsubscribe-from-feedback!)
   (stop-processing-messages!))

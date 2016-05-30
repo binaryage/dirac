@@ -10,7 +10,8 @@
             [dirac.automation.runner :as runner]
             [dirac.automation.task :as task]
             [dirac.automation.transcript-host :as transcript]
-            [dirac.automation.test :as test]))
+            [dirac.automation.test :as test]
+            [dirac.automation.notifications :as notifications]))
 
 (deftype DevToolsID [id])
 
@@ -149,6 +150,9 @@
   (go
     (<! (fire-chrome-event! [:chromex.ext.commands/on-command ["close-dirac-devtools" devtools-id]]))
     (<! (wait-for-devtools-unregistration devtools-id))))
+
+(defn ^:without-devtools-id trigger! [trigger-name & [data]]
+  (notifications/broadcast-notification! (merge {:trigger trigger-name} data)))
 
 ; -- transcript sugar -------------------------------------------------------------------------------------------------------
 

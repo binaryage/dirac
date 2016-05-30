@@ -1,0 +1,8 @@
+ns               Testing dirac.tests.tasks.suite01.without-runtime
+automate         open-tab-with-scenario! ["no-runtime-install"]
+scenario         test immediate feedback
+automate         trigger! [:test-if-installed]
+scenario         (dirac.runtime/installed? :repl) => false
+scenario         (dirac.runtime/installed? [:repl]) => false
+summary          Automated 2 actions with 3 check-points containing 0 assertions.
+                 0 failures, 0 errors.

@@ -97,7 +97,7 @@
     (launcher/init!)
     ; feedback subsystem is responsible for intercepting messages to be presented in transcript
     (feedback/init!)
-    (messages/init!)
+    (messages/init! "task-runner")
     ; if test runner is present, we will wait for test runner to launch the test
     ; it needs to disconnect the driver first
     (if-not (helpers/is-test-runner-present?)
