@@ -22,7 +22,7 @@
     :repl (repl/installed?)))
 
 (defn installed? [feature-or-features]
-  (let [features (if (seq? feature-or-features) feature-or-features [feature-or-features])]
+  (let [features (if (seqable? feature-or-features) feature-or-features [feature-or-features])]
     (every? is-feature-installed? features)))
 
 (defn install!
