@@ -50,7 +50,11 @@ function genTaskList(runnerUrl, tasks) {
             lines.push("<ol class='task-list'>");
         }
 
-        var line = "<li><a href=\"" + runnerUrl + "?task=" + ns + "&" + getCurrentUrlQuery() + "\">" + lastPart + "</a></li>";
+        let query = getCurrentUrlQuery();
+        if (query) {
+            query = "&" + query;
+        }
+        var line = "<li><a href=\"" + runnerUrl + "?task=" + ns + query + "\">" + lastPart + "</a></li>";
         lines.push(line);
     }
 
