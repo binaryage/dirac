@@ -106,5 +106,5 @@ stdout           dirac prompt: suggest box displays 1 items:
 automate #1      simulate-console-action! ["RIGHT"]
 automate #1      print-prompt!
 stdout           cljs.core/clj->js
-summary          Automated 37 actions with 42 check-points containing 6 assertions.
+summary          Automated 37 actions with 1 check-points containing 6 assertions.
                  0 failures, 0 errors.

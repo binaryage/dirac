@@ -85,5 +85,5 @@ devtools #1      repl eval job started
 devtools #1      wrap-with-postprocess-and-eval-in-current-context!
 devtools #1      setDiracPromptNS('my.ns')
 devtools #1      repl eval job ended
-summary          Automated 12 actions with 29 check-points containing 0 assertions.
+summary          Automated 12 actions with 3 check-points containing 0 assertions.
                  0 failures, 0 errors.

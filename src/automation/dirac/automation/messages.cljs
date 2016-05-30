@@ -43,8 +43,6 @@
         subscribers (get-reply-subscriber-callbacks message-id)
         unsubscribe! #(swap! reply-subscribers dissoc message-id)]
     (assert (number? message-id))
-    (if-not (empty? subscribers)
-      (test/record-transcript-checkpoint! (count subscribers)))
     (case (first data)
       :error (do
                (unsubscribe!)

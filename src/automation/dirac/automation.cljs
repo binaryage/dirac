@@ -174,9 +174,11 @@
     (let [name (str (:name metadata))
           automation-action? (nil? (re-find #"^wait-" name))]
       (log "action!" automation-action? name args)
-      (when automation-action?
-        (test/record-action-execution!)
-        (transcript/reset-output-segment!))
+      (if automation-action?
+        (do
+          (test/record-action-execution!)
+          (transcript/reset-output-segment!))
+        (test/record-transcript-checkpoint!))
       (cond
         (:without-devtools-id metadata) (do
                                           (if automation-action?

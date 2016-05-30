@@ -16,8 +16,9 @@
 (defn record-action-execution! []
   (vswap! actions-executed inc))
 
-(defn record-transcript-checkpoint! [num]
-  (vswap! transcript-checkpoints (partial + num)))
+(defn record-transcript-checkpoint!
+  ([] (record-transcript-checkpoint! 1))
+  ([num] (vswap! transcript-checkpoints (partial + num))))
 
 ; ---------------------------------------------------------------------------------------------------------------------------
 
