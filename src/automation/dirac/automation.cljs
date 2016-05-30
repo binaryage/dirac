@@ -154,6 +154,9 @@
 (defn ^:without-devtools-id trigger! [trigger-name & [data]]
   (notifications/broadcast-notification! (merge {:trigger trigger-name} data)))
 
+(defn ^:without-devtools-id separator! [& _args]
+  (go))
+
 ; -- transcript sugar -------------------------------------------------------------------------------------------------------
 
 (def action-style (str "font-weight: bold;"
