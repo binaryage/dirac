@@ -11,15 +11,15 @@
 ; -- configuration ----------------------------------------------------------------------------------------------------------
 
 (defonce default-config
-  {:install-check-total-time-limit              5000
-   :install-check-next-trial-waiting-time       500
-   :install-check-eval-time-limit               300
-   :context-availablity-total-time-limit        3000
-   :context-availablity-next-trial-waiting-time 10
-   :eval-time-limit                             10000
-   :update-banner-fn                            nil
-   :display-user-info-fn                        nil
-   :display-user-error-fn                       nil})
+  {:install-check-total-time-limit               5000
+   :install-check-next-trial-waiting-time        500
+   :install-check-eval-time-limit                300
+   :context-availability-total-time-limit        3000
+   :context-availability-next-trial-waiting-time 10
+   :eval-time-limit                              10000
+   :update-banner-fn                             nil
+   :display-user-info-fn                         nil
+   :display-user-error-fn                        nil})
 
 (defonce current-config (atom default-config))
 
@@ -73,8 +73,8 @@
            (call-when-avail-or-call-timeout-fn has-context-fn
                                                #(eval-fn code callback)
                                                #(error "was unable to resolve javscript context in time" context code)
-                                               (pref :context-availablity-next-trial-waiting-time)
-                                               (pref :context-availablity-total-time-limit))
+                                               (pref :context-availability-next-trial-waiting-time)
+                                               (pref :context-availability-total-time-limit))
            (throw (ex-info (str eval-fn-name " not found on window.dirac object") dirac))))
        (throw (ex-info (str has-context-fn-name " not found on window.dirac object") dirac))))))
 
