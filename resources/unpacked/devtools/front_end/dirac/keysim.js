@@ -91,8 +91,8 @@
 
     var keyCodeToKeyIdentifierMap = {
         9: "U+0009", // tab
-        20: "U+0020", // space
         27: "U+001B", // esc
+        32: "U+0020", // space
         38: 'Up',
         40: 'Down',
         37: 'Left',
@@ -690,6 +690,7 @@
         PAUSE: {keyCode: 19},
         CAPSLOCK: {keyCode: 20},
         ESCAPE: {keyCode: 27},
+        SPACE: {keyCode: 32, mutation: appender(" ")},
         PAGEUP: {keyCode: 33},
         PAGEDOWN: {keyCode: 34},
         END: {keyCode: 35},
