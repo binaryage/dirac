@@ -141,10 +141,11 @@
 (defn focus-task-runner-window! []
   (post-message! #js {:type "marion-focus-task-runner-window"} :no-timeout))
 
-(defn post-scenario-feedback! [text]
+(defn post-scenario-feedback! [text & [label]]
   (post-message! #js {:type    "marion-feedback-from-scenario"
                       :payload #js {:type       "feedback-from-scenario"
-                                    :transcript text}} :no-timeout))
+                                    :transcript text
+                                    :label      label}} :no-timeout))
 
 (defn broadcast-notification! [notification]
   (post-message! #js {:type    "marion-broadcast-notification"

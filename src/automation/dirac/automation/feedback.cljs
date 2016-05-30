@@ -34,7 +34,7 @@
     (case (oget data "type")
       "feedback-from-devtools" (append-to-transcript! "devtools" (oget data "transcript") (oget data "devtools"))
       "feedback-from-extension" (append-to-transcript! "extension" (oget data "transcript"))
-      "feedback-from-scenario" (append-to-transcript! "scenario" (oget data "transcript"))
+      "feedback-from-scenario" (append-to-transcript! (or (oget data "label") "scenario") (oget data "transcript"))
       nil)))
 
 (defn start-processing-messages! []
