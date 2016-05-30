@@ -5,7 +5,7 @@
             [dirac.runtime :as runtime]))
 
 (defn test-if-installed []
-  ;(scenario/feedback! (str "(dirac.runtime/installed?) => " (runtime/installed?)))
+  (scenario/feedback! (str "(dirac.runtime/installed?) => " (runtime/installed?)))
   (scenario/feedback! (str "(dirac.runtime/installed? :repl) => " (runtime/installed? :repl)))
   (scenario/feedback! (str "(dirac.runtime/installed? [:repl]) => " (runtime/installed? [:repl]))))
 

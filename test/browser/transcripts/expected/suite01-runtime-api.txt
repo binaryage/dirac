@@ -1,0 +1,93 @@
+ns               Testing dirac.tests.tasks.suite01.runtime-api
+automate         open-tab-with-scenario! ["runtime-api"]
+automate         separator! ["install/uninstall"]
+scenario !>      (runtime/available?)
+scenario =>      true
+scenario !>      (runtime/available? :some-uknown-feature)
+scenario out     WARN: ("No such feature :some-uknown-feature is currently available in **LIB-INFO**. The list of supported features is [:repl]")
+scenario =>      false
+scenario !>      (runtime/installed?)
+scenario =>      false
+scenario !>      (runtime/installed? :repl)
+scenario =>      false
+scenario !>      (runtime/installed? [:repl])
+scenario =>      false
+scenario !>      (runtime/installed? :default)
+scenario =>      false
+scenario !>      (runtime/installed? :all)
+scenario =>      false
+scenario !>      (runtime/install!)
+scenario out     INFO: ("Installing %c%s%c and enabling features %c%s" "color:black;font-weight:bold;" "**LIB-INFO**" "color:black" "color:#0000ff" ":repl")
+scenario =>      true
+scenario !>      (runtime/installed?)
+scenario =>      true
+scenario !>      (runtime/installed? :repl)
+scenario =>      true
+scenario !>      (runtime/installed? [:repl])
+scenario =>      true
+scenario !>      (runtime/installed? :default)
+scenario =>      true
+scenario !>      (runtime/installed? :all)
+scenario =>      true
+scenario !>      (runtime/uninstall!)
+scenario =>      false
+scenario !>      (runtime/installed?)
+scenario =>      false
+scenario !>      (runtime/installed? :repl)
+scenario =>      false
+scenario !>      (runtime/installed? [:repl])
+scenario =>      false
+scenario !>      (runtime/installed? :default)
+scenario =>      false
+scenario !>      (runtime/installed? :all)
+scenario =>      false
+scenario         install/uninstall tests done
+automate         separator! ["prefs"]
+scenario !>      default-prefs
+scenario =>      {:weasel-auto-reconnect false,
+                  :java-trace-header-style "color:red",
+                  :eval-time-limit 10000,
+                  :agent-verbose false,
+                  :agent-response-timeout 5000,
+                  :safe-print-level 1,
+                  :silence-no-such-namespace-warnings true,
+                  :agent-host "localhost",
+                  :context-availablity-total-time-limit 3000,
+                  :weasel-verbose false,
+                  :runtime-tag "binaryage/dirac",
+                  :nrepl-config nil,
+                  :safe-print-length 10,
+                  :weasel-pre-eval-delay 100,
+                  :silence-use-of-undeclared-var-warnings true,
+                  :install-check-next-trial-waiting-time 500,
+                  :install-check-eval-time-limit 300,
+                  :agent-port 8041,
+                  :dont-display-banner false,
+                  :agent-auto-reconnect true,
+                  :install-check-total-time-limit 5000,
+                  :context-availablity-next-trial-waiting-time 10}
+scenario !>      (:agent-verbose (runtime/get-prefs))
+scenario =>      false
+scenario !>      (:agent-verbose (runtime/set-pref! :agent-verbose true))
+scenario =>      true
+scenario !>      (:agent-verbose (runtime/get-prefs))
+scenario =>      true
+scenario !>      (runtime/set-prefs! {:some "pref"})
+scenario =>      {:some "pref"}
+scenario !>      (runtime/get-prefs)
+scenario =>      {:some "pref"}
+scenario !>      (:some (runtime/get-prefs))
+scenario =>      "pref"
+scenario !>      (:agent-verbose (runtime/get-prefs))
+scenario =>      nil
+scenario         prefs tests done
+automate         separator! ["runtime tag"]
+scenario !>      (runtime/get-tag)
+scenario =>      "binaryage/dirac | http://localhost...
+scenario !>      (:runtime-tag (runtime/set-pref! :runtime-tag "my-runtime-tag"))
+scenario =>      "my-runtime-tag"
+scenario !>      (runtime/get-tag)
+scenario =>      "my-runtime-tag | http://localhost...
+scenario         runtime tags tests done
+summary          Automated 4 actions with 3 check-points containing 0 assertions.
+                 0 failures, 0 errors.
