@@ -43,29 +43,29 @@ scenario !>      (runtime/installed? :all)
 scenario =>      false
 scenario         install/uninstall tests done
 automate         separator! ["prefs"]
-scenario !>      default-prefs
-scenario =>      {:weasel-auto-reconnect false,
-                  :java-trace-header-style "color:red",
-                  :eval-time-limit 10000,
-                  :agent-verbose false,
-                  :agent-response-timeout 5000,
-                  :safe-print-level 1,
-                  :silence-no-such-namespace-warnings true,
-                  :agent-host "localhost",
-                  :context-availablity-total-time-limit 3000,
-                  :weasel-verbose false,
-                  :runtime-tag "binaryage/dirac",
-                  :nrepl-config nil,
-                  :safe-print-length 10,
-                  :weasel-pre-eval-delay 100,
-                  :silence-use-of-undeclared-var-warnings true,
-                  :install-check-next-trial-waiting-time 500,
-                  :install-check-eval-time-limit 300,
-                  :agent-port 8041,
-                  :dont-display-banner false,
-                  :agent-auto-reconnect true,
-                  :install-check-total-time-limit 5000,
-                  :context-availablity-next-trial-waiting-time 10}
+scenario !>      (keys default-prefs)
+scenario =>      (:weasel-auto-reconnect
+                  :java-trace-header-style
+                  :eval-time-limit
+                  :agent-verbose
+                  :agent-response-timeout
+                  :safe-print-level
+                  :silence-no-such-namespace-warnings
+                  :agent-host
+                  :context-availability-total-time-limit
+                  :weasel-verbose
+                  :runtime-tag
+                  :nrepl-config
+                  :safe-print-length
+                  :weasel-pre-eval-delay
+                  :silence-use-of-undeclared-var-warnings
+                  :install-check-next-trial-waiting-time
+                  :install-check-eval-time-limit
+                  :agent-port
+                  :dont-display-banner
+                  :agent-auto-reconnect
+                  :install-check-total-time-limit
+                  :context-availability-next-trial-waiting-time)
 scenario !>      (:agent-verbose (runtime/get-prefs))
 scenario =>      false
 scenario !>      (:agent-verbose (runtime/set-pref! :agent-verbose true))

@@ -52,7 +52,7 @@
 (defn test-prefs! []
   (let [default-prefs (runtime/get-prefs)]
     (with-feedback
-      default-prefs
+      (keys default-prefs)
       (:agent-verbose (runtime/get-prefs))
       (:agent-verbose (runtime/set-pref! :agent-verbose true))
       (:agent-verbose (runtime/get-prefs))
