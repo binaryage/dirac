@@ -7,7 +7,6 @@
 
 (def ^:export get-version get-current-version)
 
-(def ^:export is-feature-available? core/is-feature-available?)
 (def ^:export installed? core/installed?)
 (def ^:export install! core/install!)
 (def ^:export uninstall! core/uninstall!)
@@ -16,3 +15,8 @@
 (def ^:export set-prefs! prefs/set-prefs!)
 (def ^:export get-prefs prefs/get-prefs)
 (def ^:export set-pref! prefs/set-pref!)
+; -- DEPRECATED API ---------------------------------------------------------------------------------------------------------
+
+(defn ^:export is-feature-available? [& args]
+  (.warn js/console "dirac.runtime/is-feature-available? is deprecated, use dirac.runtime/available? instead")
+  (apply core/is-feature-available? args))
