@@ -3,8 +3,8 @@ automate         open-tab-with-scenario! ["runtime-api"]
 automate         separator! ["install/uninstall"]
 scenario !>      (runtime/available?)
 scenario =>      true
-scenario !>      (runtime/available? :some-uknown-feature)
-scenario out     WARN: ("No such feature :some-uknown-feature is currently available in **LIB-INFO**. The list of supported features is [:repl]")
+scenario !>      (runtime/available? :an-unknown-feature)
+scenario out     WARN: ("No such feature :an-unknown-feature is currently available in **LIB-INFO**. The list of supported features is [:repl]")
 scenario =>      false
 scenario !>      (runtime/installed?)
 scenario =>      false
@@ -43,29 +43,29 @@ scenario !>      (runtime/installed? :all)
 scenario =>      false
 scenario         install/uninstall tests done
 automate         separator! ["prefs"]
-scenario !>      (keys default-prefs)
-scenario =>      (:weasel-auto-reconnect
-                  :java-trace-header-style
-                  :eval-time-limit
-                  :agent-verbose
+scenario !>      (sort (keys default-prefs))
+scenario =>      (:agent-auto-reconnect
+                  :agent-host
+                  :agent-port
                   :agent-response-timeout
+                  :agent-verbose
+                  :context-availability-next-trial-waiting-time
+                  :context-availability-total-time-limit
+                  :dont-display-banner
+                  :eval-time-limit
+                  :install-check-eval-time-limit
+                  :install-check-next-trial-waiting-time
+                  :install-check-total-time-limit
+                  :java-trace-header-style
+                  :nrepl-config
+                  :runtime-tag
+                  :safe-print-length
                   :safe-print-level
                   :silence-no-such-namespace-warnings
-                  :agent-host
-                  :context-availability-total-time-limit
-                  :weasel-verbose
-                  :runtime-tag
-                  :nrepl-config
-                  :safe-print-length
-                  :weasel-pre-eval-delay
                   :silence-use-of-undeclared-var-warnings
-                  :install-check-next-trial-waiting-time
-                  :install-check-eval-time-limit
-                  :agent-port
-                  :dont-display-banner
-                  :agent-auto-reconnect
-                  :install-check-total-time-limit
-                  :context-availability-next-trial-waiting-time)
+                  :weasel-auto-reconnect
+                  :weasel-pre-eval-delay
+                  :weasel-verbose)
 scenario !>      (:agent-verbose (runtime/get-prefs))
 scenario =>      false
 scenario !>      (:agent-verbose (runtime/set-pref! :agent-verbose true))

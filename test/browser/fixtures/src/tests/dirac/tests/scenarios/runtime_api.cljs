@@ -24,7 +24,7 @@
 (defn test-install-uninstall! []
   (with-feedback
     (runtime/available?)
-    (runtime/available? :some-uknown-feature)
+    (runtime/available? :an-unknown-feature)
 
     (runtime/installed?)
     (runtime/installed? :repl)
@@ -52,7 +52,7 @@
 (defn test-prefs! []
   (let [default-prefs (runtime/get-prefs)]
     (with-feedback
-      (keys default-prefs)
+      (sort (keys default-prefs))
       (:agent-verbose (runtime/get-prefs))
       (:agent-verbose (runtime/set-pref! :agent-verbose true))
       (:agent-verbose (runtime/get-prefs))
