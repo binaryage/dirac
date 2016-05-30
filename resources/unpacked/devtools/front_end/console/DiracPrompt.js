@@ -489,7 +489,7 @@ WebInspector.DiracPromptWithHistory.prototype = {
             const localsPromise = dirac.extractScopeInfoFromScopeChainAsync(debuggerModel.selectedCallFrame()).then(extractAndAnnotateLocals);
             const currentNSSymbolsPromise = dirac.extractNamespaceSymbolsAsync(this._currentClojureScriptNamespace).then(annotateSymbols.bind(this, "suggest-cljs-in-ns"));
             const namespacesPromise = dirac.extractNamespacesAsync().then(annotateNamespaces);
-            const cljsCoreNSSymbolsPromise = dirac.extractNamespaceSymbolsAsync("cljs.core").then(annotateSymbols.bind(this, ""));
+            const cljsCoreNSSymbolsPromise = dirac.extractNamespaceSymbolsAsync("cljs.core").then(annotateSymbols.bind(this, "suggest-cljs-core"));
 
             const jobs = [localsPromise, currentNSSymbolsPromise, namespacesPromise, cljsCoreNSSymbolsPromise];
             Promise.all(jobs).then(concatAnnotatedResults).then(completionsReadyCallback.bind(this, ""));
