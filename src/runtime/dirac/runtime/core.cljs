@@ -2,14 +2,15 @@
   (:require-macros [dirac.runtime.core :refer [get-current-browser-name get-current-platform-name]])
   (:require [dirac.project :refer [get-current-version]]
             [dirac.runtime.repl :as repl]
-            [dirac.runtime.util :refer [display-banner-if-needed! report-unknown-features! install-feature! make-version-info
-                                        make-lib-info]]
+            [dirac.runtime.util :refer [display-banner-if-needed! install-feature! resolve-features! get-lib-info]]
             [dirac.runtime.prefs :as prefs]
             [goog.labs.userAgent.browser :as ua-browser]
             [goog.labs.userAgent.platform :as ua-platform]))
 
 (def known-features [:repl])
-(def features-to-install-by-default [:repl])
+(def default-features [:repl])
+(def feature-groups {:all     known-features
+                     :default default-features})
 
 ; -- CORE API ---------------------------------------------------------------------------------------------------------------
 
@@ -17,21 +18,31 @@
   (case feature
     :repl (repl/available?)))
 
+(defn available?
+  ([] (available? :default))
+  ([features-desc]
+   (let [features (resolve-features! features-desc feature-groups)]
+     (if (empty? features)
+       false
+       (every? is-feature-available? features)))))
+
 (defn is-feature-installed? [feature]
   (case feature
     :repl (repl/installed?)))
 
-(defn installed? [feature-or-features]
-  (let [features (if (seqable? feature-or-features) feature-or-features [feature-or-features])]
-    (every? is-feature-installed? features)))
+(defn installed?
+  ([] (installed? :default))
+  ([features-desc]
+   (let [features (resolve-features! features-desc feature-groups)]
+     (if (empty? features)
+       false
+       (every? is-feature-installed? features)))))
 
 (defn install!
-  ([] (install! features-to-install-by-default))
-  ([features-to-install]
-   (let [features (if (some? features-to-install) features-to-install features-to-install-by-default)
-         lib-info (make-lib-info (get-current-version))]
-     (report-unknown-features! features known-features lib-info)
-     (display-banner-if-needed! features known-features lib-info)
+  ([] (install! :default))
+  ([features-desc]
+   (let [features (resolve-features! features-desc feature-groups)]
+     (display-banner-if-needed! features feature-groups)
      (install-feature! :repl features is-feature-available? repl/install!))))
 
 (defn uninstall! []
