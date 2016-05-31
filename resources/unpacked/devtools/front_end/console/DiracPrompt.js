@@ -177,6 +177,12 @@ WebInspector.DiracPromptWithHistory.prototype = {
 
     /**
      * @override
+     */
+    _selectStart: function() {
+    },
+
+    /**
+     * @override
      * @param {boolean=} force
      */
     autoCompleteSoon: function(force) {
