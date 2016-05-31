@@ -415,6 +415,10 @@ WebInspector.TextPrompt.prototype = {
     {
         this.clearAutoComplete(true);
         var selection = this._element.getComponentSelection();
+        if (!selection) {
+            return;
+        }
+
         var selectionRange = selection && selection.rangeCount ? selection.getRangeAt(0) : null;
         if (!selectionRange)
             return;
