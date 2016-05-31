@@ -67,6 +67,11 @@
     (if-let [console-view (get-console-view)]
       (ocall console-view "setDiracPromptStatusBanner" banner))))
 
+(defn set-prompt-status-banner-callback! [callback]
+  {:pre [(or (fn? callback) (nil? callback))]}
+  (if-let [console-view (get-console-view)]
+    (ocall console-view "setDiracPromptStatusBannerCallback" callback)))
+
 (defn set-prompt-status-style! [style]
   (when-not (= *last-prompt-status-style* style)
     (set! *last-prompt-status-style* style)

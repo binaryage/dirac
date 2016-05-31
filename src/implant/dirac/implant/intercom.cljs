@@ -21,6 +21,7 @@
 (defonce ^:dynamic *repl-bootstrapped* false)
 (defonce ^:dynamic *last-connection-url* nil)
 (defonce ^:dynamic *last-connect-fn-id* 0)
+(defonce ^:dynamic *last-client* nil)
 
 (def dirac-agent-help-url "https://github.com/binaryage/dirac/blob/master/docs/installation.md#start-dirac-agent")
 (def dirac-runtime-help-url "https://github.com/binaryage/dirac/blob/master/docs/installation.md#install-the-dirac-runtime")
@@ -56,7 +57,7 @@
   (str "Dirac Agent connected. Bootstrapping ClojureScript REPL..."))
 
 (defn ^:dynamic will-reconnect-banner-msg [remaining-time]
-  (str "will try reconnect in " remaining-time " seconds"))
+  (str "will <a>try reconnect</a> in " remaining-time " seconds"))
 
 (defn ^:dynamic version-mismatch-msg [devtools-version agent-version]
   (str "Version mismatch: "
@@ -174,6 +175,15 @@
         (display-prompt-status (unable-to-connect-exception-msg url e))
         (throw e)))))
 
+(defn try-reconnect! []
+  (info "Force attempt to reconnect")
+  (nrepl-tunnel-client/try-connect!))
+
+(defn handler-status-banner-event! [type event]
+  (case type
+    "click" (try-reconnect!)
+    (warn "handler-status-banner-event! recevied unknwon event type" type event)))
+
 (defn prepare-scope-info [scope-info-js]
   (js->clj scope-info-js :keywordize-keys true))
 
@@ -200,6 +210,7 @@
               verbose? (:agent-verbose client-config)
               auto-reconnect? (:agent-auto-reconnect client-config)
               response-timeout (:agent-response-timeout client-config)]
+          (console/set-prompt-status-banner-callback! handler-status-banner-event!)
           (connect-to-nrepl-tunnel-server agent-url verbose? auto-reconnect? response-timeout)))
       (display-prompt-status (failed-to-retrieve-client-config-msg "in start-repl!")))))
 

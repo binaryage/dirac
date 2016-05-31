@@ -9,6 +9,7 @@
             [dirac.implant.console :as console]
             [devtools.toolbox :refer [envelope]]))
 
+(defonce wannabe-client (atom nil))
 (defonce current-client (atom nil))                                                                                           ; only one client can be connected as a time
 (defonce pending-messages (atom {}))                                                                                          ; a map of 'msg-id -> handler' for messages in flight where we wait for status responses, see ***
 
@@ -114,6 +115,7 @@
           (send! result))))))
 
 (defn on-open-handler [client]
+  (reset! wannabe-client nil)
   (reset! current-client client))
 
 (defn on-error-handler [client _event]
@@ -133,5 +135,12 @@
                       :auto-reconnect?  true
                       :response-timeout 5000}
         effective-opts (merge default-opts opts)
-        _client (ws-client/connect! server-url effective-opts)]                                                               ; client will be set into current-client in on-open-handler
+        client (ws-client/connect! server-url effective-opts)]                                                                ; client will be set into current-client in on-open-handler
+    (reset! wannabe-client client)
     true))
+
+; this is a convenience function to attempt connection before auto-reconnect timeout fires
+(defn try-connect! []
+  (if-let [client @wannabe-client]
+    (ws-client/try-connect! client)
+    (warn "call connect! first before try-connect!")))
