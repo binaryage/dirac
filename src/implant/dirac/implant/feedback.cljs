@@ -25,13 +25,16 @@
 
 (defn post! [text]
   (when (helpers/should-automate?)
-    (let [message #js {:type     "marion-deliver-feedback"
+    (let [debug? (oget js/window "dirac" "_DEBUG_FEEDBACK")
+          message #js {:type     "marion-deliver-feedback"
                        :envelope #js {:type       "feedback-from-devtools"
                                       :devtools   (helpers/get-devtools-id)
                                       :transcript text}}]
-      (log "posting feedback:" message)
+      (if debug?
+        (log "posting feedback:" message))
       (if-let [intercom (get-intercom)]
         (intercom message)
         (do
-          (log "intercom not yet ready, queuing feedback message" message)
+          (if debug?
+            (log "intercom not yet ready, queuing feedback message" message))
           (swap! pending-messages conj message))))))
