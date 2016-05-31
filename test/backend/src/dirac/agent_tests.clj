@@ -103,7 +103,7 @@
                                         :nrepl-tunnel       {:host tunnel-host
                                                              :port tunnel-port}}))]
       (is (.contains agent-output (str "Connected to nREPL server at " server-url)))
-      (is (.contains agent-output (str "Tunnel is accepting connections at " tunner-url)))
+      (is (.contains agent-output (str "Agent is accepting connections at " tunner-url)))
       (log/info "dirac agent started on" tunnel-port)
       (let [tunnel (tunnel-client/create! tunner-url)]
         (expect-event! tunnel :open)

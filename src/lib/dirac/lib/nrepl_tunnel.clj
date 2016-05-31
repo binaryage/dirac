@@ -149,7 +149,7 @@
         nrepl-client (get-nrepl-client tunnel)
         client-info (nrepl-client/get-client-info nrepl-client)]
     (str client-info "\n"
-         "Tunnel is accepting connections at " tunnel-url ".")))
+         "Agent is accepting connections at " tunnel-url ".")))
 
 ; -- sessions ---------------------------------------------------------------------------------------------------------------
 

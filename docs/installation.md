@@ -115,9 +115,9 @@ Now when you start `lein repl` from command-line you should see something like t
      Results: Stored in vars *1, *2, *3, an exception in *e
 
     user=>
-    Dirac Agent v0.2.0
+    Dirac Agent v0.5.0
     Connected to nREPL server at nrepl://localhost:8230.
-    Tunnel is accepting connections at ws://localhost:8231.
+    Agent is accepting connections at ws://localhost:8231.
 
 The last line should remind you that Dirac **Agent** started successfully and is listening for browser connections on port 8231.
 
