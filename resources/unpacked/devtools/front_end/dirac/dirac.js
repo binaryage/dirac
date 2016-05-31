@@ -192,6 +192,7 @@ Object.assign(window.dirac, (function() {
         _DEBUG_EVAL: false,
         _DEBUG_COMPLETIONS: false,
         _DEBUG_KEYSIM: false,
+        _DEBUG_FEEDBACK: false,
         hasREPL: hasFeature("enable-repl"),
         hasParinfer: hasFeature("enable-parinfer"),
         hasFriendlyLocals: hasFeature("enable-friendly-locals"),
