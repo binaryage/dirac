@@ -58,5 +58,6 @@
   ; -- test right-arrow completions -----------------------------------------------------------------------------------------
   (testing "opening suggestion box"
     (<!* a/clear-console-prompt!)
+    (is (nil? (<!* a/get-suggest-box-item-count)))
     (<!* a/simulate-console-action! "CTRL+SPACE")                                                                             ; https://github.com/binaryage/dirac/issues/22)
-    (is (> (count (cuerdas/lines (<!* a/get-suggest-box-representation))) 100))))
+    (is (> (<!* a/get-suggest-box-item-count) 100))))

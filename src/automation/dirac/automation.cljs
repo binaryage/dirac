@@ -11,7 +11,8 @@
             [dirac.automation.task :as task]
             [dirac.automation.transcript-host :as transcript]
             [dirac.automation.test :as test]
-            [dirac.automation.notifications :as notifications]))
+            [dirac.automation.notifications :as notifications]
+            [dirac.utils :as utils]))
 
 (deftype DevToolsID [id])
 
@@ -87,9 +88,16 @@
 
 (defn print-suggest-box! [devtools-id]
   (go
-    (let [data (<! (get-suggest-box-representation devtools-id))]
-      (assert (string? data))
-      (println data))))
+    (let [text-representation (<! (get-suggest-box-representation devtools-id))]
+      (assert (string? text-representation))
+      (println text-representation))))
+
+(defn get-suggest-box-item-count [devtools-id]
+  (go
+    (let [text-representation (<! (get-suggest-box-representation devtools-id))]
+      (assert (string? text-representation))
+      (if-let [m (re-find #"suggest box displays ([0-9]*?) items" text-representation)]
+        (utils/parse-int (second m))))))
 
 (defn get-prompt-representation [devtools-id]
   (automate-dirac-frontend! devtools-id {:action :get-prompt-representation}))
