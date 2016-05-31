@@ -180,7 +180,6 @@ WebInspector.DiracPromptWithHistory.prototype = {
      * @param {boolean=} force
      */
     autoCompleteSoon: function(force) {
-        console.log("autoCompleteSoon called");
         this._ignoreNextCursorActivity = true; // this prevents flickering of suggestion widget
         //noinspection JSUnresolvedFunction
         setImmediate(this.autocomplete.bind(this));
