@@ -89,6 +89,15 @@
     color: #aaa;
 }
 
+#console-status-dirac .status-banner a {
+    color: #aaa;
+    text-decoration: underline;
+}
+
+#console-status-dirac .status-banner a:hover {
+    color: #999;
+}
+
 #console-status-dirac .status-content {
     font-style: italic;
 }

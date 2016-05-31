@@ -180,6 +180,7 @@ WebInspector.ConsoleView = function()
         statusElement.id = "console-status-dirac";
 
         var statusBannerElement = statusElement.createChild("div", "status-banner");
+        statusBannerElement.addEventListener("click", this._diracStatusBannerClick.bind(this), true);
         var statusContentElement = statusElement.createChild("div", "status-content");
         statusContentElement.tabIndex = 0; // focusable for page-up/down
 
@@ -505,6 +506,16 @@ WebInspector.ConsoleView.prototype = {
         this._filterStatusMessageElement.style.display = this._hiddenByFilterCount ? "" : "none";
     },
 
+    _diracStatusBannerClick: function(event) {
+        if (!event.target || event.target.tagName != "A") {
+            return false;
+        }
+        if (this._diracPromptDescriptor.statusBannerCallback) {
+            this._diracPromptDescriptor.statusBannerCallback("click", event);
+        }
+        return false;
+    },
+
     setDiracPromptStatusContent: function(s) {
         dirac.feedback("setDiracPromptStatusContent('"+s+"')");
         this._diracPromptDescriptor.statusContent.innerHTML = s;
@@ -513,6 +524,10 @@ WebInspector.ConsoleView.prototype = {
     setDiracPromptStatusBanner: function(s) {
         dirac.feedback("setDiracPromptStatusBanner('"+s+"')");
         this._diracPromptDescriptor.statusBanner.innerHTML = s;
+    },
+
+    setDiracPromptStatusBannerCallback: function(callback) {
+        this._diracPromptDescriptor.statusBannerCallback = callback;
     },
 
     setDiracPromptStatusStyle: function(style) {
