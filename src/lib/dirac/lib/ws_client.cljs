@@ -11,15 +11,19 @@
 
 ; -- constructor ------------------------------------------------------------------------------------------------------------
 
-(defn make-client [connection options]
+(defn make-client [connection server-url options]
   {:ready?     (volatile! false)
    :connection connection
+   :server-url server-url
    :options    options})
 
 ; -- state helpers ----------------------------------------------------------------------------------------------------------
 
 (defn get-connection [client]
   (:connection client))
+
+(defn get-server-url [client]
+  (:server-url client))
 
 (defn ready? [client]
   @(:ready? client))
@@ -98,18 +102,25 @@
 (defn sanitize-opts [opts]
   (merge defaults opts))
 
+(defn try-connect! [client]
+  (if-not (connected? client)
+    (let [server-url (get-server-url client)
+          options (get-options client)]
+      (if (:verbose? options)
+        (info client "Connecting to server:" server-url "with options:" options))
+      (.open (get-connection client) server-url))
+    true))
+
 (defn connect! [server-url & [opts]]
   (let [sanitized-opts (sanitize-opts opts)
-        {:keys [verbose? auto-reconnect? next-reconnect-fn]} sanitized-opts
+        {:keys [auto-reconnect? next-reconnect-fn]} sanitized-opts
         web-socket (goog.net.WebSocket. auto-reconnect? next-reconnect-fn)
-        client (make-client web-socket sanitized-opts)]
+        client (make-client web-socket server-url sanitized-opts)]
     (.listen web-socket gws/EventType.OPENED (partial on-open-handler client))
     (.listen web-socket gws/EventType.MESSAGE (partial on-message-handler client))
     (.listen web-socket gws/EventType.CLOSED (partial on-closed-handler client))
     (.listen web-socket gws/EventType.ERROR (partial on-error-handler client))
-    (if verbose?
-      (info client "Connecting to server:" server-url "with options:" sanitized-opts))
-    (.open web-socket server-url)
+    (try-connect! client)
     client))
 
 (defn close! [client]
