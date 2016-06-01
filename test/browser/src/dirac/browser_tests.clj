@@ -278,7 +278,6 @@
   (with-transcript-suite "suite01"
     (execute-transcript-test! "barebone")
     (execute-transcript-test! "runtime-api")
-    (execute-transcript-test! "without-runtime")
     (execute-transcript-test! "no-agent")
     (execute-transcript-test! "console")
     (execute-transcript-test! "dirac-eval")
