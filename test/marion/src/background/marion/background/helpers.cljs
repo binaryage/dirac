@@ -47,11 +47,14 @@
     (if-let [tab (<! (find-task-runner-tab!))]
       (sugar/get-tab-id tab))))
 
+(defn close-tab-with-id! [tab-id]
+  (tabs/remove tab-id))
+
 (defn close-all-scenario-tabs! []
   (go
     (let [[tabs] (<! (tabs/query #js {:url "http://*/scenarios/*"}))]
       (doseq [tab tabs]
-        (<! (tabs/remove (sugar/get-tab-id tab)))))))
+        (<! (close-tab-with-id! (sugar/get-tab-id tab)))))))
 
 (defn connect-to-dirac-extension! []
   (go

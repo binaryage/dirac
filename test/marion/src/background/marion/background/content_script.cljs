@@ -12,6 +12,36 @@
             [marion.background.clients :as clients]
             [dirac.utils :as utils]))
 
+; -- scenario ids -----------------------------------------------------------------------------------------------------------
+; we want to provide stable mapping between tab-ids and scenario tabs
+(defonce scenario-ids (atom {}))                                                                                              ; scenario-id -> tab-id
+(defonce last-scenario-id (volatile! 0))
+
+(defn get-next-scenario-id! []
+  (str "scenario-tab#" (vswap! last-scenario-id inc)))
+
+(defn reset-scenario-id! []
+  (vreset! last-scenario-id 0))
+
+(defn clear-scenario-ids! []
+  (reset! scenario-ids {}))
+
+(defn get-scenario-tab-id [scenario-id]
+  {:pre  [(some? scenario-id)]
+   :post [(some? %)]}
+  (get @scenario-ids scenario-id))
+
+(defn add-scenario-id! [scenario-id tab-id]
+  {:pre [(some? scenario-id)
+         (some? tab-id)
+         (nil? (get @scenario-ids scenario-id))]}
+  (swap! scenario-ids assoc scenario-id tab-id))
+
+(defn remove-scenario-id! [scenario-id]
+  {:pre [(some? scenario-id)
+         (some? (get-scenario-tab-id scenario-id))]}
+  (swap! scenario-ids dissoc scenario-id))
+
 ; -- pending scenarios ------------------------------------------------------------------------------------------------------
 ; after opening a new tab with scenario URL, we wait for special signal from scenario page that it finished initialization
 ; and is ready for testing excercise
@@ -54,6 +84,12 @@
 
 ; -- message handlers -------------------------------------------------------------------------------------------------------
 
+(defn reset-state! [message]
+  (go
+    (reset-scenario-id!)
+    (clear-scenario-ids!)
+    (reply-to-message! message)))
+
 (defn subscribe-client-to-feedback! [message client]
   (go
     (feedback/subscribe-client! client)
@@ -78,8 +114,18 @@
   (let [scenario-url (oget message "url")                                                                                     ; something like http://localhost:9080/scenarios/normal.html
         ready-channel (wait-for-scenario-ready! scenario-url)]
     (go
-      (<! (helpers/create-tab-with-url! scenario-url))
-      (<! ready-channel)
+      (let [scenario-id (get-next-scenario-id!)
+            tab-id (<! (helpers/create-tab-with-url! scenario-url))]
+        (<! ready-channel)
+        (add-scenario-id! scenario-id tab-id)
+        (reply-to-message! message scenario-id)))))
+
+(defn close-tab-with-scenario! [message]
+  (go
+    (let [scenario-id (oget message "scenario-id")
+          tab-id (get-scenario-tab-id scenario-id)]
+      (<! (helpers/close-tab-with-id! tab-id))
+      (remove-scenario-id! scenario-id)
       (reply-to-message! message))))
 
 (defn scenario-ready! [message client]
@@ -106,6 +152,7 @@
 (defn close-all-tabs! [message]
   (go
     (<! (helpers/close-all-scenario-tabs!))
+    (clear-scenario-ids!)
     (reply-to-message! message)))
 
 (defn handle-extension-command! [message]
@@ -128,6 +175,7 @@
         message-id (oget message "id")]
     (log "dispatch content script message" message-id message-type (envelope message))
     (case message-type
+      "marion-reset-state" (reset-state! message)
       "marion-subscribe-feedback" (subscribe-client-to-feedback! message client)
       "marion-unsubscribe-feedback" (unsubscribe-client-from-feedback! message client)
       "marion-feedback-from-scenario" (broadcast-feedback-from-scenario! message)
@@ -135,6 +183,7 @@
       "marion-unsubscribe-notifications" (unsubscribe-client-from-notifications! message client)
       "marion-broadcast-notification" (broadcast-notification! message)
       "marion-open-tab-with-scenario" (open-tab-with-scenario! message)
+      "marion-close-tab-with-scenario" (close-tab-with-scenario! message)
       "marion-scenario-ready" (scenario-ready! message client)
       "marion-switch-to-task-runner-tab" (switch-to-task-runner! message)
       "marion-focus-task-runner-window" (focus-task-runner-window! message)
