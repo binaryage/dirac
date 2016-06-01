@@ -69,8 +69,8 @@
 (defn ^:without-devtools-id set-option! [key value]
   (messages/set-option! key value))
 
-(defn ^:without-devtools-id open-tab-with-scenario! [name]
-  (messages/post-message! #js {:type "marion-open-tab-with-scenario" :url (helpers/get-scenario-url name)}))
+(defn ^:without-devtools-id open-tab-with-scenario! [name & [params]]
+  (messages/post-message! #js {:type "marion-open-tab-with-scenario" :url (helpers/get-scenario-url name params)}))
 
 (defn ^:without-devtools-id close-tab-with-scenario! [scenario-id]
   (messages/post-message! #js {:type "marion-close-tab-with-scenario" :scenario-id scenario-id}))
