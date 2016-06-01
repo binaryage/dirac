@@ -1,0 +1,52 @@
+ns               Testing dirac.tests.tasks.suite01.console
+automate         open-tab-with-scenario! ["normal"]
+automate         open-devtools!
+extension        handling command: open-dirac-devtools
+extension        register devtools #1
+devtools #1      implant initialized
+devtools #1      reset devtools settings
+devtools #1      devtools ready
+devtools #1      setCurrentPanel: elements
+automate #1      switch-to-console-panel!
+devtools #1      console initialized
+devtools #1      adopt-prompt-element use-parinfer? true
+devtools #1      setDiracPromptMode('status')
+devtools #1      ConsoleView constructed
+devtools #1      setCurrentPanel: console
+automate #1      enable-console-feedback!
+automate #1      simulate-console-action! ["CTRL+."]
+devtools #1      switched console prompt to 'dirac'
+devtools #1      console prompt focused
+devtools #1      repl initialized
+devtools #1      setDiracPromptStatusContent('Dirac Agent connected. Bootstrapping ClojureScript REPL...')
+devtools #1      setDiracPromptStatusStyle('info')
+devtools #1      setDiracPromptNS('cljs.user')
+devtools #1      wrap-with-postprocess-and-eval-in-current-context!
+devtools #1      wrap-with-postprocess-and-eval-in-current-context!
+devtools #1      setDiracPromptMode('edit')
+automate #1      simulate-console-action! ["CTRL+."]
+devtools #1      console prompt focused
+devtools #1      switched console prompt to 'js'
+automate #1      simulate-console-action! ["CTRL+."]
+devtools #1      switched console prompt to 'dirac'
+devtools #1      console prompt focused
+devtools #1      repl initialized
+automate #1      simulate-console-action! ["CTRL+,"]
+devtools #1      switched console prompt to 'js'
+automate #1      simulate-console-action! ["CTRL+."]
+devtools #1      switched console prompt to 'dirac'
+devtools #1      console prompt focused
+devtools #1      repl initialized
+automate #1      simulate-console-action! ["CTRL+."]
+devtools #1      switched console prompt to 'js'
+automate #1      simulate-console-action! ["CTRL+,"]
+devtools #1      switched console prompt to 'dirac'
+devtools #1      console prompt focused
+devtools #1      repl initialized
+automate #1      simulate-console-input! ["hello!"]
+automate #1      print-prompt!
+stdout           hello!
+automate #1      clear-console-prompt!
+automate #1      get-prompt-representation
+summary          Automated 15 actions with 7 check-points containing 2 assertions.
+                 0 failures, 0 errors.
