@@ -28,8 +28,8 @@
 (def dirac-upgrading-help-url "https://github.com/binaryage/dirac/blob/master/docs/upgrading.md")
 
 (defn ^:dynamic repl-api-mismatch-msg [current-api required-api]
-  (str "Dirac Runtime version mismatch detected.\n"
-       "Dirac Extension requires Dirac Runtime REPL API v" required-api ", but your version is v" current-api ".\n"
+  (str "Dirac REPL API version mismatch detected.\n"
+       "Dirac DevTools requires Dirac Runtime REPL API v" required-api ", but your version is v" current-api ".\n"
        "Please <a href=\"" dirac-upgrading-help-url "\">upgrade Dirac Runtime</a> in your app."))
 
 (defn ^:dynamic failed-to-retrieve-client-config-msg [where]
@@ -59,12 +59,19 @@
 (defn ^:dynamic will-reconnect-banner-msg [remaining-time]
   (str "will <a>try reconnect</a> in " remaining-time " seconds"))
 
-(defn ^:dynamic version-mismatch-msg [devtools-version agent-version]
+(defn ^:dynamic agent-version-mismatch-msg [extension-version agent-version]
   (str "Version mismatch: "
-       "Dirac Agent has different version (" agent-version ") "
-       "than Dirac Extension (" devtools-version ").\n"
-       "To avoid compatibility issues, please "
-       "<a href=\"" dirac-upgrading-help-url "\">upgrade all Dirac components to the same version</a>."))
+       "Dirac Agent has different version (v" agent-version ") "
+       "than Dirac Chrome Extension (v" extension-version ").\n"
+       "To avoid compatibility issues, "
+       "please upgrade all Dirac components to the same version: " dirac-upgrading-help-url "."))
+
+(defn ^:dynamic runtime-version-mismatch-msg [extension-version runtime-version]
+  (str "Version mismatch: "
+       "Dirac Runtime installed in the page has different version (v" runtime-version ") "
+       "than Dirac Chrome Extension (v" extension-version ").\n"
+       "To avoid compatibility issues, "
+       "please upgrade all Dirac components to the same version: " dirac-upgrading-help-url "."))
 
 (defn ^:dynamic repl-support-not-enabled-msg []
   (str "Dirac Runtime is present, but the :repl feature hasn't been enabled. "
@@ -79,14 +86,19 @@
        forwarded-nrepl-message "\n"
        "nREPL message: <" serialized-forwarded-nrepl-message ">"))
 
-(defn ^:dynamic warn-version-mismatch [our-version agent-version]
-  (let [msg (version-mismatch-msg our-version agent-version)]
-    (warn msg)
-    (eval/console-warn! msg)))
+(defn check-agent-version! [agent-version]
+  (let [our-version implant-version/version]
+    (if-not (= agent-version our-version)
+      (let [msg (agent-version-mismatch-msg our-version agent-version)]
+        (warn msg)
+        (eval/console-warn! msg)))))
 
-(defn check-version! [version]
-  (if-not (= version implant-version/version)
-    (warn-version-mismatch implant-version/version version)))
+(defn check-runtime-version! [runtime-version]
+  (let [our-version implant-version/version]
+    (if-not (= runtime-version our-version)
+      (let [msg (runtime-version-mismatch-msg our-version runtime-version)]
+        (warn msg)
+        (eval/console-warn! msg)))))
 
 ; -- prompt status ----------------------------------------------------------------------------------------------------------
 
@@ -202,6 +214,7 @@
 
 (defn start-repl! []
   (go
+    (check-runtime-version! (<! (eval/get-runtime-version)))
     (if-let [client-config (<! (eval/get-runtime-config))]
       (do
         (info "Starting REPL support. Dirac Runtime config is " client-config)
@@ -245,7 +258,7 @@
                       (dirac.nrepl/boot-dirac-repl! ~nrepl-config)))}))
 
 (defmethod nrepl-tunnel-client/process-message :bootstrap [_client message]
-  (check-version! (:version message))
+  (check-agent-version! (:version message))
   (go
     (let [runtime-tag (<! (eval/get-runtime-tag))
           runtime-config (<! (eval/get-runtime-config))
