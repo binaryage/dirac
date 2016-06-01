@@ -232,10 +232,14 @@ WebInspector.ConsoleView = function()
     if (dirac.hasREPL) {
         this.setDiracPromptMode("status");
         setTimeout(() => this._switchToLastPrompt(), 200);
+    } else {
+        dirac.feedback("!dirac.hasREPL");
     }
     dirac.feedback("ConsoleView constructed");
     if (dirac.hasWelcomeMessage) {
         this.displayWelcomeMessage();
+    } else {
+        dirac.feedback("!dirac.hasWelcomeMessage");
     }
 }
 
