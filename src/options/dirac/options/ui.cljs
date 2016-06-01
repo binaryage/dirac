@@ -43,6 +43,7 @@
                      ["window" "as a new window"]
                      ["tab" "as a new tab"]])
           [:div {:class "switches"}
+           (f/checkbox "Enable welcome message" data [:options :welcome-message])
            (f/checkbox "Enable REPL" data [:options :enable-repl])
            (f/checkbox "Enable Parinfer" data [:options :enable-parinfer])
            (f/checkbox "Enable friendly locals" data [:options :enable-friendly-locals])

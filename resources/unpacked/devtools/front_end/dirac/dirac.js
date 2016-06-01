@@ -13,7 +13,8 @@ Object.assign(window.dirac, (function() {
         "enable-parinfer",
         "enable-friendly-locals",
         "enable-clustered-locals",
-        "inline-custom-formatters"];
+        "inline-custom-formatters",
+        "welcome-message"];
 
     function hasFeature(feature) {
         var flag = featureFlags[feature];
@@ -198,6 +199,7 @@ Object.assign(window.dirac, (function() {
         hasFriendlyLocals: hasFeature("enable-friendly-locals"),
         hasClusteredLocals: hasFeature("enable-clustered-locals"),
         hasInlineCFs: hasFeature("inline-custom-formatters"),
+        hasWelcomeMessage: hasFeature("welcome-message"),
         hasFeature: hasFeature,
         codeAsString: codeAsString,
         stringEscape: stringEscape,

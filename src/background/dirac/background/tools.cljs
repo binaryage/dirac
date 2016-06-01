@@ -21,7 +21,8 @@
                 :enable-parinfer
                 :enable-friendly-locals
                 :enable-clustered-locals
-                :inline-custom-formatters])
+                :inline-custom-formatters
+                :welcome-message])
 
 (def last-active-tab-query #js {"lastFocusedWindow" true
                                 "active"            true})

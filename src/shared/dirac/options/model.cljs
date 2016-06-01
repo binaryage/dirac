@@ -17,7 +17,8 @@
    :enable-parinfer          true
    :enable-friendly-locals   true
    :enable-clustered-locals  true
-   :inline-custom-formatters true})
+   :inline-custom-formatters true
+   :welcome-message          true})
 
 (defonce cached-options (atom nil))
 (defonce chrome-event-channel (make-chrome-event-channel (chan)))
