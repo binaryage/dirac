@@ -137,8 +137,7 @@
                          :display-user-error-fn eval/console-error!)))
 
 (defn init! []
-  (add-watch nrepl-tunnel-client/current-client ::client-observer on-client-change)
-  (configure-eval! {}))
+  (add-watch nrepl-tunnel-client/current-client ::client-observer on-client-change))
 
 (defn connect-to-weasel-server! [url]
   (go
