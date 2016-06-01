@@ -25,13 +25,13 @@
                  [binaryage/chromex "0.4.0" :scope "test"]
                  [binaryage/devtools "0.6.1" :scope "test"]
                  [cljs-http "0.1.40" :scope "test"]
-                 [figwheel "0.5.3-1" :scope "test"]
+                 [figwheel "0.5.3-2" :scope "test"]
                  [reforms "0.4.3" :scope "test"]
-                 [rum "0.8.3" :scope "test"]
+                 [rum "0.9.0" :scope "test"]
                  [rum-reforms "0.4.3" :scope "test"]
                  [cljsjs/parinfer "1.8.1-0" :scope "test"]
                  [com.lucasbradstreet/cljs-uuid-utils "1.0.2" :scope "test"]
-                 [com.rpl/specter "0.10.0" :scope "test"]
+                 [com.rpl/specter "0.11.0" :scope "test"]
                  [org.clojure/tools.namespace "0.3.0-alpha3" :scope "test"]
                  [org.clojure/tools.reader "1.0.0-beta1" :scope "test"]
 
@@ -125,7 +125,7 @@
 
              :cljs
              {:plugins [[lein-cljsbuild "1.1.3"]
-                        [lein-figwheel "0.5.3-1"]]
+                        [lein-figwheel "0.5.3-2"]]
               :hooks   [leiningen.cljsbuild]}
 
              :test-runner
