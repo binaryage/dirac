@@ -1088,14 +1088,6 @@ WebInspector.ConsoleView.prototype = {
           return; // nothing to do
         }
 
-        var newPromptDescriptor = this._prompts[newIndex];
-
-        dirac.feedback("switch console prompt to " + newPromptDescriptor.id);
-
-        if (newPromptDescriptor.id != "dirac") {
-          this._switchPrompt(oldIndex, newIndex);
-        }
-
         this._switchPrompt(oldIndex, newIndex);
     },
 
@@ -1115,6 +1107,7 @@ WebInspector.ConsoleView.prototype = {
 
         oldPromptDescriptor.element.classList.add("inactive-prompt");
 
+        dirac.feedback("switched console prompt to '" + newPromptDescriptor.id + "'");
         this._prompt.setText(""); // clear prompt when switching
         this.focus();
 

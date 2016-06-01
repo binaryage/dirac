@@ -14,7 +14,7 @@ devtools #1      setDiracPromptMode('status')
 devtools #1      ConsoleView constructed
 devtools #1      setCurrentPanel: console
 automate #1      switch-prompt-to-dirac!
-devtools #1      switch console prompt to dirac
+devtools #1      switched console prompt to 'dirac'
 devtools #1      console prompt focused
 devtools #1      repl initialized
 devtools #1      setDiracPromptStatusContent('Unable to connect to Dirac Agent at ws://localhost:9999')
