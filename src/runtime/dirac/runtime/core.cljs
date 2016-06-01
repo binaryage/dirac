@@ -53,10 +53,10 @@
         url (str js/location)
         browser-version (ua-browser/getVersion)
         browser-name (get-current-browser-name)
-        browser (str (or browser-name "?") "/" browser-version)
+        browser (str (or browser-name "?") "/" (or browser-version "?"))
         platform-version (ua-platform/getVersion)
         platform-name (get-current-platform-name)
-        platform (str (or platform-name "?") "/" platform-version)]
+        platform (str (or platform-name "?") "/" (or platform-version "?"))]
     {:tag      tag
      :url      url
      :browser  browser
