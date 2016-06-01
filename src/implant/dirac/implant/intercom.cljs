@@ -74,8 +74,8 @@
        "please upgrade all Dirac components to the same version: " dirac-upgrading-help-url "."))
 
 (defn ^:dynamic repl-support-not-enabled-msg []
-  (str "Dirac Runtime is present, but the :repl feature hasn't been enabled. "
-       "Please <a href=\"" dirac-runtime-help-url "\">install Dirac Runtime</a> with REPL support."))
+  (str "Dirac Runtime is present but the :repl feature hasn't been enabled. "
+       "Please install Dirac Runtime with REPL support: " + dirac-runtime-help-url "."))
 
 (defn ^:dynamic unrecognized-forwarded-nrepl-op-msg [op forwarded-nrepl-message]
   (str "Received unrecognized operation [op='" op "'] in forwarded nREPL message:\n"
@@ -85,6 +85,13 @@
   (str "Unable to unserialize forwarded nREPL message:\n"
        forwarded-nrepl-message "\n"
        "nREPL message: <" serialized-forwarded-nrepl-message ">"))
+
+(defn ^:dynamic missing-runtime-msg []
+  (str "Dirac requires runtime support from the page context.\n"
+       "Please <a href=\"https://github.com/binaryage/dirac#installation\">install Dirac Runtime</a> "
+       "into your app and "
+       "<a href=\"https://github.com/binaryage/dirac#install-dirac-runtime\">"
+       "enable the :repl feature</a>."))
 
 (defn check-agent-version! [agent-version]
   (let [our-version implant-version/version]
@@ -236,7 +243,7 @@
               (start-repl!)
               (display-prompt-status (repl-api-mismatch-msg repl-api-version required-repl-api-version))))
           (display-prompt-status (repl-support-not-enabled-msg)))
-        (display-prompt-status (eval/missing-runtime-msg))))))
+        (display-prompt-status (missing-runtime-msg))))))
 
 ; ---------------------------------------------------------------------------------------------------------------------------
 ; -- message processing -----------------------------------------------------------------------------------------------------
