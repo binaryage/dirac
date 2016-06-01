@@ -17,6 +17,16 @@
 
 (def should-automate? (memoize should-automate?*))
 
+(defn should-mock-old-extension-version?* []
+  (= (get-query-param "mock_old_extension_version") "1"))
+
+(def should-mock-old-extension-version? (memoize should-mock-old-extension-version?*))
+
+(defn should-mock-future-extension-version?* []
+  (= (get-query-param "mock_future_extension_version") "1"))
+
+(def should-mock-future-extension-version? (memoize should-mock-future-extension-version?*))
+
 (defn get-console-view []
   (if-let [console-view-class (oget js/window "WebInspector" "ConsoleView")]
     (if-let [console-view (ocall console-view-class "instance")]
