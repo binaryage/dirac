@@ -8,6 +8,8 @@
             [clojure.string :as string]
             [dirac.utils :as utils]))
 
+(def installation-help-url "https://github.com/binaryage/dirac/blob/master/docs/installation.md")
+
 ; -- configuration ----------------------------------------------------------------------------------------------------------
 
 (defonce default-config
@@ -126,10 +128,7 @@
 
 (defn ^:dynamic missing-runtime-msg []
   (str "Dirac requires runtime support from the page context.\n"
-       "Please <a href=\"https://github.com/binaryage/dirac#installation\">install Dirac Runtime</a> "
-       "into your app and "
-       "<a href=\"https://github.com/binaryage/dirac#install-dirac-runtime\">"
-       "enable the :repl feature</a>."))
+       "Please install Dirac Runtime into your app and enable the :repl feature: " installation-help-url "."))
 
 ; -- convenient eval wrapper ------------------------------------------------------------------------------------------------
 
