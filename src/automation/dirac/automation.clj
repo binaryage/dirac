@@ -30,3 +30,11 @@
   `(let [scenario-id# (dirac.automation/<!* dirac.automation/open-tab-with-scenario! ~name)]
      ~@body
      (dirac.automation/<!* dirac.automation/close-tab-with-scenario! scenario-id#)))
+
+(defmacro with-devtools [& args]
+  (let [params (if (map? (first args)) (first args))
+        commands (if (some? params) (rest args) args)]
+    `(do
+       (dirac.automation/<!* dirac.automation/open-devtools! ~params)
+       ~@commands
+       (dirac.automation/<!* dirac.automation/close-devtools!))))
