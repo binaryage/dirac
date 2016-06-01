@@ -9,9 +9,8 @@
 ; -- usage docs -------------------------------------------------------------------------------------------------------------
 
 (def ^:dynamic general-usage
-  ["Dirac provides a command-line interface to control its REPL operations."
-   "A special REPL function `dirac!` was made available for you."
-   "You may invoke it from any of your nREPL sessions by evaluating a form:"
+  ["Dirac provides a command to control its REPL operations."
+   "You may invoke special `dirac!` function from any of your nREPL sessions by evaluating a form:"
    ""
    "  `(dirac! <command> [arg1] [arg2] [...])`"
    ""
