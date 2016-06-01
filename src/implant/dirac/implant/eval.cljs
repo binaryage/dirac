@@ -11,7 +11,7 @@
 ; -- configuration ----------------------------------------------------------------------------------------------------------
 
 (defonce default-config
-  {:install-check-total-time-limit               5000
+  {:install-check-total-time-limit               3000
    :install-check-next-trial-waiting-time        500
    :install-check-eval-time-limit                300
    :context-availability-total-time-limit        3000

@@ -13,7 +13,7 @@
    :weasel-verbose                               false
    :weasel-auto-reconnect                        false
    :weasel-pre-eval-delay                        100
-   :install-check-total-time-limit               5000
+   :install-check-total-time-limit               3000
    :install-check-next-trial-waiting-time        500
    :install-check-eval-time-limit                300
    :context-availability-total-time-limit        3000
