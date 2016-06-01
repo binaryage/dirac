@@ -29,7 +29,7 @@ You must do this manually via `chrome://extensions` -> `Keyboard shortcuts` due 
 Ideally (with multi-monitor setup) your always-present Dirac REPL session will be just one keystroke away
 from your code editor or any other app.
 
-This is my setup under Mac:
+This is my setup under Mac, note the "Global" selection for "Focus Console Prompt":
 <a href="https://dl.dropboxusercontent.com/u/559047/dirac-global-shortcuts.png"><img src="https://dl.dropboxusercontent.com/u/559047/dirac-global-shortcuts.png" width="800px"></a>
 
 ### Why can't I dock Dirac DevTools inside my Chrome window?
