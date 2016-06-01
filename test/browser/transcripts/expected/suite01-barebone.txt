@@ -3,5 +3,6 @@ automate         open-tab-with-scenario! ["barebone"]
 scenario         immediate feedback
 automate         trigger! [:test-trigger]
 scenario         feedback from trigger
-summary          Automated 2 actions with 2 check-points containing 0 assertions.
+automate         close-tab-with-scenario! ["scenario-tab#1"]
+summary          Automated 3 actions with 2 check-points containing 0 assertions.
                  0 failures, 0 errors.

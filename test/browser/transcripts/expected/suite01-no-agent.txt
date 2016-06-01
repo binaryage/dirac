@@ -31,5 +31,9 @@ devtools #1      setDiracPromptStatusBanner('')
 devtools #1      setDiracPromptStatusContent('Unable to connect to Dirac Agent at ws://localhost:9999')
 devtools #1      setDiracPromptStatusContent('<b>Dirac Agent is not listening</b> at ws://localhost:9999 (<a href="https://github.com/binaryage/dirac/blob/master/docs/installation.md#start-dirac-agent">need help?</a>).')
 devtools #1      setDiracPromptStatusBanner('will <a>try reconnect</a> in 4 seconds')
-summary          Automated 4 actions with 1 check-points containing 0 assertions.
+automate #1      close-devtools!
+extension        handling command: close-dirac-devtools
+extension        unregister devtools #1
+automate         close-tab-with-scenario! ["scenario-tab#1"]
+summary          Automated 6 actions with 1 check-points containing 0 assertions.
                  0 failures, 0 errors.

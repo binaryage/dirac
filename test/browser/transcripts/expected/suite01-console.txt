@@ -87,5 +87,9 @@ devtools #3      ConsoleView constructed
 devtools #3      displayWelcomeMessage
 devtools #3      setCurrentPanel: console
 automate         set-option! [:enable-parinfer true]
-summary          Automated 25 actions with 10 check-points containing 2 assertions.
+automate #3      close-devtools!
+extension        handling command: close-dirac-devtools
+extension        unregister devtools #3
+automate         close-tab-with-scenario! ["scenario-tab#1"]
+summary          Automated 27 actions with 10 check-points containing 2 assertions.
                  0 failures, 0 errors.

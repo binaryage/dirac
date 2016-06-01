@@ -111,5 +111,9 @@ automate #1      clear-console-prompt!
 automate #1      get-suggest-box-item-count
 automate #1      simulate-console-action! ["CTRL+SPACE"]
 automate #1      get-suggest-box-item-count
-summary          Automated 41 actions with 1 check-points containing 8 assertions.
+automate #1      close-devtools!
+extension        handling command: close-dirac-devtools
+extension        unregister devtools #1
+automate         close-tab-with-scenario! ["scenario-tab#1"]
+summary          Automated 43 actions with 1 check-points containing 8 assertions.
                  0 failures, 0 errors.
