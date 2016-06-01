@@ -279,6 +279,7 @@
     (execute-transcript-test! "barebone")
     (execute-transcript-test! "runtime-api")
     (execute-transcript-test! "no-agent")
+    (execute-transcript-test! "version-checks")
     (execute-transcript-test! "console")
     (execute-transcript-test! "repl")
     (execute-transcript-test! "completions")))

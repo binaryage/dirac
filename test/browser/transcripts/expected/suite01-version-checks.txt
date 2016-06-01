@@ -1,0 +1,55 @@
+ns               Testing dirac.tests.tasks.suite01.version-checks
+automate         open-tab-with-scenario! ["old-runtime"]
+automate         open-devtools!
+extension        handling command: open-dirac-devtools
+extension        register devtools #1
+devtools #1      implant initialized
+devtools #1      reset devtools settings
+devtools #1      devtools ready
+devtools #1      setCurrentPanel: elements
+automate #1      switch-to-console-panel!
+devtools #1      console initialized
+devtools #1      adopt-prompt-element use-parinfer? true
+devtools #1      setDiracPromptMode('status')
+devtools #1      ConsoleView constructed
+devtools #1      displayWelcomeMessage
+devtools #1      setCurrentPanel: console
+automate #1      switch-prompt-to-dirac!
+devtools #1      switched console prompt to 'dirac'
+devtools #1      console prompt focused
+devtools #1      repl initialized
+scenario out     WARN: ("Version mismatch: Dirac Runtime installed in the page has different version (v0.0.1) than Dirac Chrome Extension (v0.4.0).\nTo avoid compatibility issues, please upgrade all Dirac components to the same version: https://github.com/binaryage/dirac/blob/master/docs/upgrading.md.")
+automate #1      close-devtools!
+devtools #1      setDiracPromptStatusContent('Dirac Agent connected. Bootstrapping ClojureScript REPL...')
+devtools #1      setDiracPromptStatusStyle('info')
+extension        handling command: close-dirac-devtools
+extension        unregister devtools #1
+automate         close-tab-with-scenario! ["scenario-tab#1"]
+automate         open-tab-with-scenario! ["future-runtime"]
+automate         open-devtools!
+extension        handling command: open-dirac-devtools
+extension        register devtools #2
+devtools #2      implant initialized
+devtools #2      reset devtools settings
+devtools #2      devtools ready
+devtools #2      setCurrentPanel: elements
+automate #2      switch-to-console-panel!
+devtools #2      console initialized
+devtools #2      adopt-prompt-element use-parinfer? true
+devtools #2      setDiracPromptMode('status')
+devtools #2      ConsoleView constructed
+devtools #2      displayWelcomeMessage
+devtools #2      setCurrentPanel: console
+automate #2      switch-prompt-to-dirac!
+devtools #2      switched console prompt to 'dirac'
+devtools #2      console prompt focused
+devtools #2      repl initialized
+scenario out     WARN: ("Version mismatch: Dirac Runtime installed in the page has different version (v1000.0.1) than Dirac Chrome Extension (v0.4.0).\nTo avoid compatibility issues, please upgrade all Dirac components to the same version: https://github.com/binaryage/dirac/blob/master/docs/upgrading.md.")
+automate #2      close-devtools!
+devtools #2      setDiracPromptStatusContent('Dirac Agent connected. Bootstrapping ClojureScript REPL...')
+devtools #2      setDiracPromptStatusStyle('info')
+extension        handling command: close-dirac-devtools
+extension        unregister devtools #2
+automate         close-tab-with-scenario! ["scenario-tab#2"]
+summary          Automated 12 actions with 4 check-points containing 0 assertions.
+                 0 failures, 0 errors.
