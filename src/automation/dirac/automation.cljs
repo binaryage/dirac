@@ -72,6 +72,9 @@
 (defn ^:without-devtools-id open-tab-with-scenario! [name]
   (messages/post-message! #js {:type "marion-open-tab-with-scenario" :url (helpers/get-scenario-url name)}))
 
+(defn ^:without-devtools-id close-tab-with-scenario! [scenario-id]
+  (messages/post-message! #js {:type "marion-close-tab-with-scenario" :scenario-id scenario-id}))
+
 (defn switch-devtools-panel! [devtools-id panel]
   (go
     (<! (automate-dirac-frontend! devtools-id {:action :switch-inspector-panel :panel panel}))
