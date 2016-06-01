@@ -125,6 +125,15 @@
 (defn reset-devtools-id-counter! []
   (post-extension-command! {:command :reset-devtools-id-counter}))
 
+(defn marion-reset-state! []
+  (post-message! #js {:type "marion-reset-state"}))
+
+(defn reset-state! []
+  (go
+    (<! (reset-devtools-id-counter!))
+    (<! (marion-reset-state!))
+    true))
+
 (defn set-option! [key value]
   (post-extension-command! {:command :set-option
                             :key     key

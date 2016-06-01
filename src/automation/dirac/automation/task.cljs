@@ -153,8 +153,8 @@
     ; when launched from test runner, chrome driver is in charge of selecting debugging port, we have to propagate this
     ; information to our dirac extension settings
     (<! (setup-debugging-port!))
-    ; this will ensure we get stable devtools ids with each new run => stable transcript output
-    (<! (messages/reset-devtools-id-counter!))
+    ; this will ensure we get stable devtools/scenario ids with each new run => stable transcript output
+    (<! (messages/reset-state!))
     ; open-as window is handy for debugging, becasue we can open internal devtools to inspect dirac frontend in case of errors
     (<! (messages/set-option! :open-as "window"))))
 
