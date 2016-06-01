@@ -17,6 +17,9 @@
 (defn monkey-patch-runtime-get-version! [mock-version]
   (oset js/window ["dirac" "runtime" "get_version"] (constantly mock-version)))
 
+(defn monkey-patch-runtime-repl-get-api-version! [mock-version]
+  (oset js/window ["dirac" "runtime" "repl" "get_api_version"] (constantly mock-version)))
+
 (defn init-runtime! [& [config]]
   (configure-runtime-from-url-params! (helpers/get-document-url))
   (when-let [runtime-prefs (:runtime-prefs config)]                                                                           ; override runtime prefs
@@ -30,4 +33,8 @@
   (if (:old-runtime config)
     (monkey-patch-runtime-get-version! "0.0.1"))
   (if (:future-runtime config)
-    (monkey-patch-runtime-get-version! "1000.0.1")))
+    (monkey-patch-runtime-get-version! "1000.0.1"))
+  (if (:old-repl-api config)
+    (monkey-patch-runtime-repl-get-api-version! 0))
+  (if (:future-repl-api config)
+    (monkey-patch-runtime-repl-get-api-version! 1000)))
