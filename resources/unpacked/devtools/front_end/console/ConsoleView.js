@@ -1059,8 +1059,8 @@ WebInspector.ConsoleView.prototype = {
 
         if (dirac.hasREPL) {
             keys = [
-                shortcut.makeDescriptor(shortcut.Keys.PageDown),
-                shortcut.makeDescriptor(shortcut.Keys.PageUp)
+                shortcut.makeDescriptor(shortcut.Keys.Comma, WebInspector.KeyboardShortcut.Modifiers.Ctrl),
+                shortcut.makeDescriptor(shortcut.Keys.Period, WebInspector.KeyboardShortcut.Modifiers.Ctrl)
             ];
             this._shortcuts[keys[0].key] = this._selectNextPrompt.bind(this);
             this._shortcuts[keys[1].key] = this._selectPrevPrompt.bind(this);
