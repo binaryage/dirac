@@ -7,6 +7,9 @@
   (<!* a/open-tab-with-scenario! "normal")
   (<!* a/open-devtools!)
   (<!* a/switch-to-console-panel!)
+  ; -------------------------------------------------------------------------------------------------------------------------
+  (testing "welcome message should be present by default"
+    (<!* a/wait-for-devtools-match "displayWelcomeMessage"))
   (<!* a/enable-console-feedback!)
   ; -------------------------------------------------------------------------------------------------------------------------
   (testing "keyboard shortcuts for switching between prompts"
@@ -29,4 +32,12 @@
     (<!* a/simulate-console-input! "hello!")
     (is (= (<!* a/print-prompt!) "hello!"))
     (<!* a/clear-console-prompt!)
-    (is (= (<!* a/get-prompt-representation) ""))))
+    (is (= (<!* a/get-prompt-representation) "")))
+  (<!* a/close-devtools!)
+  (<!* a/set-option! :welcome-message false)
+  (<!* a/open-devtools!)
+  (<!* a/switch-to-console-panel!)
+  (testing "welcome message should not be present"
+    (<!* a/wait-for-devtools-match "!dirac.hasWelcomeMessage"))
+  (<!* a/close-devtools!)
+  (<!* a/set-option! :welcome-message true))

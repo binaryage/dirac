@@ -49,5 +49,27 @@ automate #1      print-prompt!
 stdout           hello!
 automate #1      clear-console-prompt!
 automate #1      get-prompt-representation
-summary          Automated 15 actions with 7 check-points containing 2 assertions.
+automate #1      close-devtools!
+extension        handling command: close-dirac-devtools
+extension        unregister devtools #1
+automate         set-option! [:welcome-message false]
+automate         open-devtools!
+extension        handling command: open-dirac-devtools
+extension        register devtools #2
+devtools #2      implant initialized
+devtools #2      reset devtools settings
+devtools #2      devtools ready
+devtools #2      setCurrentPanel: elements
+automate #2      switch-to-console-panel!
+devtools #2      console initialized
+devtools #2      adopt-prompt-element use-parinfer? true
+devtools #2      setDiracPromptMode('status')
+devtools #2      ConsoleView constructed
+devtools #2      !dirac.hasWelcomeMessage
+devtools #2      setCurrentPanel: console
+automate #2      close-devtools!
+extension        handling command: close-dirac-devtools
+extension        unregister devtools #2
+automate         set-option! [:welcome-message true]
+summary          Automated 21 actions with 9 check-points containing 2 assertions.
                  0 failures, 0 errors.
