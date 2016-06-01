@@ -10,6 +10,7 @@
     (<!* a/switch-prompt-to-dirac!)
     (<!* a/wait-for-match "Version mismatch: Dirac Runtime installed in the page has different version")
     (<!* a/wait-for-devtools-match "console prompt focused")
+    (<!* a/wait-for-prompt-to-enter-edit-mode)
     (<!* a/close-devtools!)
     (<!* a/close-tab-with-scenario! scenario-id))
   (let [scenario-id (<!* a/open-tab-with-scenario! "future-runtime")]
@@ -18,6 +19,7 @@
     (<!* a/switch-prompt-to-dirac!)
     (<!* a/wait-for-match "Version mismatch: Dirac Runtime installed in the page has different version")
     (<!* a/wait-for-devtools-match "console prompt focused")
+    (<!* a/wait-for-prompt-to-enter-edit-mode)
     (<!* a/close-devtools!)
     (<!* a/close-tab-with-scenario! scenario-id))
   (let [scenario-id (<!* a/open-tab-with-scenario! "no-runtime")]
