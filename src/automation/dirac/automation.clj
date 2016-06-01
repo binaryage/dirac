@@ -25,3 +25,8 @@
 (defmacro <!* [action & args]
   {:pre [(symbol? action)]}
   `(cljs.core.async/<! (dirac.automation/action! ~action (meta #'~action) ~@args)))
+
+(defmacro with-scenario [name & body]
+  `(let [scenario-id# (dirac.automation/<!* dirac.automation/open-tab-with-scenario! ~name)]
+     ~@body
+     (dirac.automation/<!* dirac.automation/close-tab-with-scenario! scenario-id#)))
