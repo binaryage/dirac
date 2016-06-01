@@ -1,4 +1,4 @@
-(ns dirac.tests.tasks.suite01.no-agent-connection
+(ns dirac.tests.tasks.suite01.no-agent
   (:require [cljs.core.async]
             [cljs.test :refer-macros [is testing]]
             [dirac.settings :refer-macros [seconds minutes]]
