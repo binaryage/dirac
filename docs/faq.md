@@ -17,6 +17,22 @@ Such combinations are not tested and are likely to break because fundamental API
 
 My goal is to be releasing Dirac DevTools updates at least once a month to match it with recent Chrome Canary builds.
 
+### How do I open Dirac DevTools via a keyboard shortcut?
+
+By default, `CMD+SHIFT+I` under Mac and `CTRL+SHIFT+I` under Win.
+You can assign a new shortcut via `chrome://extensions` -> `Keyboard shortcuts`
+
+### How do I focus Dirac REPL prompt via a keyboard shortcut?
+
+It is handy to bind a global keyboard shortcut to focus your Dirac REPL.
+You must do this manually via `chrome://extensions` -> `Keyboard shortcuts` due to Chrome security reasons.
+Ideally (with multi-monitor setup) your always-present Dirac REPL session will be just one keystroke away
+from your code editor or any other app.
+
+This is my setup under Mac:
+<a href="https://dl.dropboxusercontent.com/u/559047/dirac-global-shortcuts.png"><img src="https://dl.dropboxusercontent.com/u/559047/dirac-global-shortcuts.png" width="800px"></a>
+
 ### Why can't I dock Dirac DevTools inside my Chrome window?
 
-This isn't possible, due to limitations in the Chrome API's. The docking API is only available for the embedded (internal) devtools that come with Chrome. See [#5](https://github.com/binaryage/dirac/issues/5) for more details.
+The docking API is only available for the embedded (internal) DevTools that come with Chrome.
+See [the issue #5](https://github.com/binaryage/dirac/issues/5) for more details.
