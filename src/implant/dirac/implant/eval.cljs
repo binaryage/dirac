@@ -94,7 +94,7 @@
 ; -- code templates ---------------------------------------------------------------------------------------------------------
 
 (defn installation-test-template []
-  (str "dirac.runtime.repl.installed_QMARK_()"))
+  (str "dirac.runtime.installed_QMARK_()"))
 
 (defn ^:dynamic output-template [job-id kind text]
   (str "dirac.runtime.repl.present_output(" job-id ", '" kind "', " (code-as-string text) ")"))
