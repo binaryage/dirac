@@ -12,6 +12,7 @@ devtools #1      console initialized
 devtools #1      adopt-prompt-element use-parinfer? true
 devtools #1      setDiracPromptMode('status')
 devtools #1      ConsoleView constructed
+devtools #1      displayWelcomeMessage
 devtools #1      setCurrentPanel: console
 automate #1      enable-console-feedback!
 automate #1      simulate-console-action! ["CTRL+."]

@@ -451,6 +451,7 @@ WebInspector.ConsoleMessage.MessageType = {
     Profile: "profile",
     ProfileEnd: "profileEnd",
     DiracCommand: "diracCommand",
+    DiracMarkup: "diracMarkup",
     Command: "command"
 }
 

@@ -827,21 +827,22 @@ WebInspector.ConsoleView.prototype = {
      * @param {!WebInspector.ConsoleMessage} message
      * @return {!WebInspector.ConsoleViewMessage}
      */
-    _createViewMessage2: function(message)
-    {
+    _createViewMessage2: function(message) {
         var nestingLevel = this._currentGroup.nestingLevel();
         switch (message.type) {
-        case WebInspector.ConsoleMessage.MessageType.Command:
-            return new WebInspector.ConsoleCommand(message, this._linkifier, nestingLevel);
-        case WebInspector.ConsoleMessage.MessageType.DiracCommand:
-            return new WebInspector.ConsoleDiracCommand(message, this._linkifier, nestingLevel);
-        case WebInspector.ConsoleMessage.MessageType.Result:
-            return new WebInspector.ConsoleCommandResult(message, this._linkifier, nestingLevel);
-        case WebInspector.ConsoleMessage.MessageType.StartGroupCollapsed:
-        case WebInspector.ConsoleMessage.MessageType.StartGroup:
-            return new WebInspector.ConsoleGroupViewMessage(message, this._linkifier, nestingLevel);
-        default:
-            return new WebInspector.ConsoleViewMessage(message, this._linkifier, nestingLevel);
+            case WebInspector.ConsoleMessage.MessageType.Command:
+                return new WebInspector.ConsoleCommand(message, this._linkifier, nestingLevel);
+            case WebInspector.ConsoleMessage.MessageType.DiracCommand:
+                return new WebInspector.ConsoleDiracCommand(message, this._linkifier, nestingLevel);
+            case WebInspector.ConsoleMessage.MessageType.DiracMarkup:
+                return new WebInspector.ConsoleDiracMarkup(message, this._linkifier, nestingLevel);
+            case WebInspector.ConsoleMessage.MessageType.Result:
+                return new WebInspector.ConsoleCommandResult(message, this._linkifier, nestingLevel);
+            case WebInspector.ConsoleMessage.MessageType.StartGroupCollapsed:
+            case WebInspector.ConsoleMessage.MessageType.StartGroup:
+                return new WebInspector.ConsoleGroupViewMessage(message, this._linkifier, nestingLevel);
+            default:
+                return new WebInspector.ConsoleViewMessage(message, this._linkifier, nestingLevel);
         }
     },
 
@@ -1070,6 +1071,37 @@ WebInspector.ConsoleView.prototype = {
     _clearPromptBackwards: function()
     {
         this._prompt.setText("");
+    },
+
+    appendDiracMarkup: function (markup) {
+        const executionContext = WebInspector.context.flavor(WebInspector.ExecutionContext);
+        if (!executionContext) {
+            return false;
+        }
+
+        const target = executionContext.target();
+        const source = WebInspector.ConsoleMessage.MessageSource.Other;
+        const level = WebInspector.ConsoleMessage.MessageLevel.Log;
+        const type = WebInspector.ConsoleMessage.MessageType.DiracMarkup;
+        const message = new WebInspector.ConsoleMessage(target, source, level, markup, type);
+        message.setExecutionContextId(executionContext.id);
+        target.consoleModel.addMessage(message);
+    },
+
+    displayWelcomeMessage: function() {
+        dirac.feedback('displayWelcomeMessage');
+        const wrapCode = (text) => {
+            return "<code style='background-color:rgba(0, 0, 0, 0.08);padding:0 2px;border-radius:1px'>" + text + "</code>";
+        };
+        const wrapBold = (text) => {
+            return "<b>" + text + "</b>";
+        };
+
+        var markup = [
+            "Welcome to " + wrapBold("Dirac DevTools") + " hosted in " + wrapBold("Dirac Chrome Extension v" + dirac.getVersion()) + ".",
+            "Use " + wrapCode("CTRL+,") + " and " + wrapCode("CTRL+.") + " to switch between Javascript and Dirac prompts.",
+            "In connected Dirac prompt, you can enter " + wrapCode("(dirac! :help)") + " for more info."];
+        this.appendDiracMarkup(markup.join("\n"));
     },
 
     _normalizePromptIndex: function(index) {
@@ -1700,7 +1732,7 @@ WebInspector.ConsoleCommand.prototype = {
 WebInspector.ConsoleDiracCommand = function(message, linkifier, nestingLevel)
 {
     WebInspector.ConsoleCommand.call(this, message, linkifier, nestingLevel);
-}
+};
 
 WebInspector.ConsoleDiracCommand.prototype = {
 
@@ -1725,7 +1757,43 @@ WebInspector.ConsoleDiracCommand.prototype = {
     },
 
     __proto__: WebInspector.ConsoleCommand.prototype
-}
+};
+
+/**
+ * @constructor
+ * @extends {WebInspector.ConsoleViewMessage}
+ * @param {!WebInspector.ConsoleMessage} message
+ * @param {!WebInspector.Linkifier} linkifier
+ * @param {number} nestingLevel
+ */
+WebInspector.ConsoleDiracMarkup = function(message, linkifier, nestingLevel)
+{
+    WebInspector.ConsoleViewMessage.call(this, message, linkifier, nestingLevel);
+};
+
+WebInspector.ConsoleDiracMarkup.prototype = {
+
+    /**
+     * @override
+     * @return {!Element}
+     */
+    contentElement: function()
+    {
+        if (!this._element) {
+            this._element = createElementWithClass("div", "console-message console-dirac-markup");
+            this._element.message = this;
+
+            this._formattedCommand = createElementWithClass("span", "console-message-text source-code");
+            this._formattedCommand.innerHTML = this._message.messageText;
+            this._element.appendChild(this._formattedCommand);
+
+            this.element().classList.add("dirac-flavor"); // applied to wrapper element
+        }
+        return this._element;
+    },
+
+    __proto__: WebInspector.ConsoleViewMessage.prototype
+};
 
 
 /**

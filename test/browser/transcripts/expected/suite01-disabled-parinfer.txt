@@ -13,6 +13,7 @@ devtools #1      console initialized
 devtools #1      adopt-prompt-element use-parinfer? false
 devtools #1      setDiracPromptMode('status')
 devtools #1      ConsoleView constructed
+devtools #1      displayWelcomeMessage
 devtools #1      setCurrentPanel: console
 automate #1      switch-prompt-to-dirac!
 devtools #1      switched console prompt to 'dirac'

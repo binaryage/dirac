@@ -11,6 +11,10 @@
     -webkit-filter: hue-rotate(280deg);
 }
 
+.console-dirac-markup {
+    line-height: 14px;
+}
+
 .console-message, .console-user-command {
     padding-left: 4px !important;
     padding-right: 4px !important;
