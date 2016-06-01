@@ -8,23 +8,23 @@
             [dirac.lib.utils :as utils]
             [dirac.logging :as logging]))
 
-(def install-doc-url "https://github.com/binaryage/dirac/blob/master/docs/installation.md")
+(def upgrading-doc-url "https://github.com/binaryage/dirac/blob/master/docs/upgrading.md")
 
 (defn ^:dynamic old-devtools-client-msg [expected-version reported-version]
-  (str "WARNING: The version of connected DevTools client is old. "
+  (str "WARNING: The version of connected DevTools is old. "
        "Expected '" expected-version "', got '" reported-version "'.\n"
-       "You should update your Dirac DevTools extension to version '" expected-version "' (to match your Dirac Agent).\n"
-       "Please follow Dirac installation instructions: " install-doc-url "."))
+       "You should update your Dirac Chrome Extension to version '" expected-version "' (to match your Dirac Agent).\n"
+       "Please follow Dirac upgrading instructions: " upgrading-doc-url "."))
 
-(defn ^:dynamic unknown-devtools-client-msg [expected-version reported-version]
-  (str "WARNING: The version of connected DevTools client is unexpectedly recent. "
+(defn ^:dynamic future-devtools-client-msg [expected-version reported-version]
+  (str "WARNING: The version of connected DevTools is unexpectedly recent. "
        "Expected '" expected-version "', got '" reported-version "'.\n"
-       "You should update your Dirac Agent to version '" expected-version "' (to match your Dirac DevTools extension).\n"
-       "Please follow Dirac installation instructions: " install-doc-url "."))
+       "You should update your Dirac Agent to version '" reported-version "' (to match your Dirac Chrome Extension).\n"
+       "Please follow Dirac upgrading instructions: " upgrading-doc-url "."))
 
 (defn version-check! [version]
   (case (version-compare lib-version/version (or version ""))
-    -1 (log/warn (unknown-devtools-client-msg lib-version/version version))
+    -1 (log/warn (future-devtools-client-msg lib-version/version version))
     1 (log/warn (old-devtools-client-msg lib-version/version version))
     0 true))
 
