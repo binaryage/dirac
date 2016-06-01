@@ -35,6 +35,6 @@
   (let [params (if (map? (first args)) (first args))
         commands (if (some? params) (rest args) args)]
     `(do
-       (dirac.automation/<!* dirac.automation/open-devtools! ~params)
+       (dirac.automation/<!* dirac.automation/open-devtools! ~@(if (some? params) [params]))
        ~@commands
        (dirac.automation/<!* dirac.automation/close-devtools!))))
