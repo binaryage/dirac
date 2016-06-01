@@ -279,7 +279,6 @@
     (execute-transcript-test! "barebone")
     (execute-transcript-test! "runtime-api")
     (execute-transcript-test! "without-runtime")
-    (execute-transcript-test! "open-close-dirac")
     (execute-transcript-test! "no-agent-connection")
     (execute-transcript-test! "console")
     (execute-transcript-test! "dirac-eval")
