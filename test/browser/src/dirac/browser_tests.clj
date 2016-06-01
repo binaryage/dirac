@@ -280,5 +280,5 @@
     (execute-transcript-test! "runtime-api")
     (execute-transcript-test! "no-agent")
     (execute-transcript-test! "console")
-    (execute-transcript-test! "dirac-eval")
+    (execute-transcript-test! "repl")
     (execute-transcript-test! "completions")))

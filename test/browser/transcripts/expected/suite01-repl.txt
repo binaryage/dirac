@@ -1,4 +1,4 @@
-ns               Testing dirac.tests.tasks.suite01.dirac-eval
+ns               Testing dirac.tests.tasks.suite01.repl
 automate         open-tab-with-scenario! ["normal"]
 automate         open-devtools!
 extension        handling command: open-dirac-devtools
