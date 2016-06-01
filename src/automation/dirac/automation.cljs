@@ -153,10 +153,11 @@
 (defn switch-to-console-panel! [devtools-id]
   (switch-devtools-panel! devtools-id :console))
 
-(defn ^:without-devtools-id open-devtools! []
+(defn ^:without-devtools-id open-devtools! [& [extra-url-params]]
   (go
     (let [devtools-id (<! (fire-chrome-event! [:chromex.ext.commands/on-command
-                                               ["open-dirac-devtools" {:reset-settings 1}]]))]
+                                               ["open-dirac-devtools" {:reset-settings   1
+                                                                       :extra-url-params extra-url-params}]]))]
       (<! (wait-for-devtools-boot))
       (if-not (helpers/is-test-runner-present?)
         (messages/switch-to-task-runner-tab!))                                                                                ; for convenience
