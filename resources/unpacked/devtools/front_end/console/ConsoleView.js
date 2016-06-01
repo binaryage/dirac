@@ -231,12 +231,12 @@ WebInspector.ConsoleView = function()
 
     if (dirac.hasREPL) {
         this.setDiracPromptMode("status");
-        var that = this;
-        setTimeout(function() {
-            that._switchToLastPrompt();
-        }, 200);
+        setTimeout(() => this._switchToLastPrompt(), 200);
     }
     dirac.feedback("ConsoleView constructed");
+    if (dirac.hasWelcomeMessage) {
+        this.displayWelcomeMessage();
+    }
 }
 
 WebInspector.ConsoleView.persistedHistorySize = 300;
@@ -731,7 +731,7 @@ WebInspector.ConsoleView.prototype = {
         message.url = undefined;
         message.stackTrace = undefined;
 
-        var requestId = null
+        var requestId = null;
         var kind = null;
         try {
             requestId = message.parameters.shift().value; // request-id
@@ -748,8 +748,7 @@ WebInspector.ConsoleView.prototype = {
             this._pendingDiracCommands[requestId] = message;
         }
 
-        var extraClass = kind?("dirac-"+kind):null;
-        return extraClass;
+        return kind?("dirac-"+kind):null;
     },
 
     _levelForFeedback: function(level)
@@ -804,10 +803,10 @@ WebInspector.ConsoleView.prototype = {
         var result = this._createViewMessage2(message);
 
         if (isDiracFlavoredMessage) {
-            var wraperElement = result.element();
-            wraperElement.classList.add("dirac-flavor");
+            var wrapperElement = result.element();
+            wrapperElement.classList.add("dirac-flavor");
             if (extraClasss) {
-                wraperElement.classList.add(extraClasss);
+                wrapperElement.classList.add(extraClasss);
             }
         }
 
@@ -818,7 +817,7 @@ WebInspector.ConsoleView.prototype = {
               var messageText = result.formattedMessage().querySelector("span").deepTextContent();
               var glue = (messageText.indexOf("\n")==-1)?"> ":">\n"; // log multi-line log messages on a new line
               dirac.feedback(typeText+"."+levelText+glue+messageText);
-            } catch (e) {};
+            } catch (e) {}
         }
 
         return result;
