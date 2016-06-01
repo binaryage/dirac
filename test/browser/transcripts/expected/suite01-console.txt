@@ -71,5 +71,21 @@ automate #2      close-devtools!
 extension        handling command: close-dirac-devtools
 extension        unregister devtools #2
 automate         set-option! [:welcome-message true]
-summary          Automated 21 actions with 9 check-points containing 2 assertions.
+automate         set-option! [:enable-parinfer false]
+automate         open-devtools!
+extension        handling command: open-dirac-devtools
+extension        register devtools #3
+devtools #3      implant initialized
+devtools #3      reset devtools settings
+devtools #3      devtools ready
+devtools #3      setCurrentPanel: elements
+automate #3      switch-to-console-panel!
+devtools #3      console initialized
+devtools #3      adopt-prompt-element use-parinfer? false
+devtools #3      setDiracPromptMode('status')
+devtools #3      ConsoleView constructed
+devtools #3      displayWelcomeMessage
+devtools #3      setCurrentPanel: console
+automate         set-option! [:enable-parinfer true]
+summary          Automated 25 actions with 10 check-points containing 2 assertions.
                  0 failures, 0 errors.

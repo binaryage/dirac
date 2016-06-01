@@ -281,7 +281,6 @@
     (execute-transcript-test! "without-runtime")
     (execute-transcript-test! "open-close-dirac")
     (execute-transcript-test! "no-agent-connection")
-    (execute-transcript-test! "disabled-parinfer")
     (execute-transcript-test! "console")
     (execute-transcript-test! "dirac-eval")
     (execute-transcript-test! "completions")))

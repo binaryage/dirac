@@ -34,10 +34,18 @@
     (<!* a/clear-console-prompt!)
     (is (= (<!* a/get-prompt-representation) "")))
   (<!* a/close-devtools!)
-  (<!* a/set-option! :welcome-message false)
-  (<!* a/open-devtools!)
-  (<!* a/switch-to-console-panel!)
-  (testing "welcome message should not be present"
-    (<!* a/wait-for-devtools-match "!dirac.hasWelcomeMessage"))
-  (<!* a/close-devtools!)
-  (<!* a/set-option! :welcome-message true))
+  ; -------------------------------------------------------------------------------------------------------------------------
+  (testing "welcome message should not be present when disabled in options"
+    (<!* a/set-option! :welcome-message false)
+    (<!* a/open-devtools!)
+    (<!* a/switch-to-console-panel!)
+    (<!* a/wait-for-devtools-match "!dirac.hasWelcomeMessage")
+    (<!* a/close-devtools!)
+    (<!* a/set-option! :welcome-message true))
+  ; -------------------------------------------------------------------------------------------------------------------------
+  (testing "parinfer should not be present when disabled in options"
+    (<!* a/set-option! :enable-parinfer false)
+    (<!* a/open-devtools!)
+    (<!* a/switch-to-console-panel!)
+    (<!* a/wait-for-devtools-match "use-parinfer? false")
+    (<!* a/set-option! :enable-parinfer true)))
