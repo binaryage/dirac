@@ -47,7 +47,7 @@
 ; chrome-extension://mjdnckdilfjoenmikegbbenflgjcmbid/devtools/front_end/inspector.html?devtools_id=1&dirac_flags=11111&ws=localhost:9222/devtools/page/76BE0A6D-412C-4592-BC3C-ED3ECB5DFF8C
 (defn make-dirac-frontend-url [devtools-id options]
   {:pre [devtools-id]}
-  (let [{:keys [backend-url flags reset-settings automate]} options]
+  (let [{:keys [backend-url flags reset-settings automate extra-url-params]} options]
     (assert backend-url)
     (assert flags)
     (let [html-file-path (get-dirac-main-html-file-path)
@@ -57,7 +57,8 @@
           all-params (cond-> manadatory-params
                        ; add optional params
                        reset-settings (assoc "reset_settings" 1)
-                       automate (assoc "dirac_automate" 1))]
+                       automate (assoc "dirac_automate" 1)
+                       extra-url-params (merge extra-url-params))]
       (runtime/get-url (make-relative-url html-file-path all-params)))))
 
 (defn extract-devtools-id-from-url [url]
