@@ -48,15 +48,23 @@
 (defn uninstall! []
   (repl/uninstall!))
 
+(defn part-str [val placeholder]
+  (if (empty? val)
+    placeholder
+    val))
+
+(defn combo-str [name name-placeholder version version-placeholder]
+  (str (part-str name name-placeholder) "/" (part-str version version-placeholder)))
+
 (defn get-tag-data []
   (let [tag (prefs/pref :runtime-tag)
         url (str js/location)
-        browser-version (ua-browser/getVersion)
         browser-name (get-current-browser-name)
-        browser (str (or browser-name "?") "/" (or browser-version "?"))
-        platform-version (ua-platform/getVersion)
+        browser-version (ua-browser/getVersion)
+        browser (combo-str browser-name "unknown-browser" browser-version "unknown-version")
         platform-name (get-current-platform-name)
-        platform (str (or platform-name "?") "/" (or platform-version "?"))]
+        platform-version (ua-platform/getVersion)
+        platform (combo-str platform-name "unknown-platform" platform-version "unknown-version")]
     {:tag      tag
      :url      url
      :browser  browser
