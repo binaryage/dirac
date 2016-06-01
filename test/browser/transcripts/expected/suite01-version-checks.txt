@@ -61,7 +61,7 @@ devtools #2      console prompt focused
 extension        handling command: close-dirac-devtools
 extension        unregister devtools #2
 automate         close-tab-with-scenario! ["scenario-tab#2"]
-automate         open-tab-with-scenario! ["no-runtime"]
+automate         open-tab-with-scenario! ["old-repl-api"]
 automate         open-devtools!
 extension        handling command: open-dirac-devtools
 extension        register devtools #3
@@ -80,14 +80,15 @@ automate #3      switch-prompt-to-dirac!
 devtools #3      switched console prompt to 'dirac'
 devtools #3      console prompt focused
 devtools #3      repl initialized
-devtools #3      setDiracPromptStatusContent('Dirac requires runtime support from the page context.
-                 Please <a href="https://github.com/binaryage/dirac#installation">install Dirac Runtime</a> into your app and <a href="https://github.com/binaryage/dirac#install-dirac-runtime">enable the :repl feature</a>.')
+devtools #3      setDiracPromptStatusContent('Dirac REPL API version mismatch detected.
+                 Dirac DevTools requires Dirac Runtime REPL API v3, but your version is v0.
+                 Please <a href="https://github.com/binaryage/dirac/blob/master/docs/upgrading.md">upgrade Dirac Runtime</a> in your app.')
 devtools #3      setDiracPromptStatusStyle('error')
 automate #3      close-devtools!
 extension        handling command: close-dirac-devtools
 extension        unregister devtools #3
 automate         close-tab-with-scenario! ["scenario-tab#3"]
-automate         open-tab-with-scenario! ["no-repl"]
+automate         open-tab-with-scenario! ["future-repl-api"]
 automate         open-devtools!
 extension        handling command: open-dirac-devtools
 extension        register devtools #4
@@ -106,12 +107,65 @@ automate #4      switch-prompt-to-dirac!
 devtools #4      switched console prompt to 'dirac'
 devtools #4      console prompt focused
 devtools #4      repl initialized
-devtools #4      setDiracPromptStatusContent('Dirac requires runtime support from the page context.
-                 Please <a href="https://github.com/binaryage/dirac#installation">install Dirac Runtime</a> into your app and <a href="https://github.com/binaryage/dirac#install-dirac-runtime">enable the :repl feature</a>.')
+devtools #4      setDiracPromptStatusContent('Dirac REPL API version mismatch detected.
+                 Dirac DevTools requires Dirac Runtime REPL API v3, but your version is v0.
+                 Please <a href="https://github.com/binaryage/dirac/blob/master/docs/upgrading.md">upgrade Dirac Runtime</a> in your app.')
 devtools #4      setDiracPromptStatusStyle('error')
 automate #4      close-devtools!
 extension        handling command: close-dirac-devtools
 extension        unregister devtools #4
 automate         close-tab-with-scenario! ["scenario-tab#4"]
-summary          Automated 24 actions with 10 check-points containing 0 assertions.
+automate         open-tab-with-scenario! ["no-runtime"]
+automate         open-devtools!
+extension        handling command: open-dirac-devtools
+extension        register devtools #5
+devtools #5      implant initialized
+devtools #5      reset devtools settings
+devtools #5      devtools ready
+devtools #5      setCurrentPanel: elements
+automate #5      switch-to-console-panel!
+devtools #5      console initialized
+devtools #5      adopt-prompt-element use-parinfer? true
+devtools #5      setDiracPromptMode('status')
+devtools #5      ConsoleView constructed
+devtools #5      displayWelcomeMessage
+devtools #5      setCurrentPanel: console
+automate #5      switch-prompt-to-dirac!
+devtools #5      switched console prompt to 'dirac'
+devtools #5      console prompt focused
+devtools #5      repl initialized
+devtools #5      setDiracPromptStatusContent('Dirac requires runtime support from the page context.
+                 Please <a href="https://github.com/binaryage/dirac#installation">install Dirac Runtime</a> into your app and <a href="https://github.com/binaryage/dirac#install-dirac-runtime">enable the :repl feature</a>.')
+devtools #5      setDiracPromptStatusStyle('error')
+automate #5      close-devtools!
+extension        handling command: close-dirac-devtools
+extension        unregister devtools #5
+automate         close-tab-with-scenario! ["scenario-tab#5"]
+automate         open-tab-with-scenario! ["no-repl"]
+automate         open-devtools!
+extension        handling command: open-dirac-devtools
+extension        register devtools #6
+devtools #6      implant initialized
+devtools #6      reset devtools settings
+devtools #6      devtools ready
+devtools #6      setCurrentPanel: elements
+automate #6      switch-to-console-panel!
+devtools #6      console initialized
+devtools #6      adopt-prompt-element use-parinfer? true
+devtools #6      setDiracPromptMode('status')
+devtools #6      ConsoleView constructed
+devtools #6      displayWelcomeMessage
+devtools #6      setCurrentPanel: console
+automate #6      switch-prompt-to-dirac!
+devtools #6      switched console prompt to 'dirac'
+devtools #6      console prompt focused
+devtools #6      repl initialized
+devtools #6      setDiracPromptStatusContent('Dirac requires runtime support from the page context.
+                 Please <a href="https://github.com/binaryage/dirac#installation">install Dirac Runtime</a> into your app and <a href="https://github.com/binaryage/dirac#install-dirac-runtime">enable the :repl feature</a>.')
+devtools #6      setDiracPromptStatusStyle('error')
+automate #6      close-devtools!
+extension        handling command: close-dirac-devtools
+extension        unregister devtools #6
+automate         close-tab-with-scenario! ["scenario-tab#6"]
+summary          Automated 36 actions with 16 check-points containing 0 assertions.
                  0 failures, 0 errors.
