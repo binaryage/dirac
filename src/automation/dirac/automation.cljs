@@ -57,6 +57,12 @@
 (defn wait-for-prompt-to-enter-edit-mode [devtools-id]
   (wait-for-devtools-match devtools-id "setDiracPromptMode('edit')"))
 
+(defn wait-for-prompt-switch-to-dirac [devtools-id]
+  (wait-for-devtools-match devtools-id "switched console prompt to 'dirac'"))
+
+(defn wait-for-prompt-switch-to-js [devtools-id]
+  (wait-for-devtools-match devtools-id "switched console prompt to 'js'"))
+
 (defn wait-for-console-initialization [devtools-id]
   (wait-for-devtools-match devtools-id "console initialized"))
 
