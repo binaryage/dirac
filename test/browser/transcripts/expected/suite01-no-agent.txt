@@ -18,6 +18,8 @@ automate #1      switch-prompt-to-dirac!
 devtools #1      switched console prompt to 'dirac'
 devtools #1      console prompt focused
 devtools #1      repl initialized
+devtools #1      setDiracPromptStatusContent('Checking for Dirac Runtime presence in your app...')
+devtools #1      setDiracPromptStatusStyle('info')
 devtools #1      setDiracPromptStatusContent('Unable to connect to Dirac Agent at ws://localhost:9999')
 devtools #1      setDiracPromptStatusStyle('error')
 devtools #1      setDiracPromptStatusContent('<b>Dirac Agent is not listening</b> at ws://localhost:9999 (<a href="https://github.com/binaryage/dirac/blob/master/docs/installation.md#start-dirac-agent">need help?</a>).')

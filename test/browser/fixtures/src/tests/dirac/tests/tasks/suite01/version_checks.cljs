@@ -9,21 +9,21 @@
     (with-devtools
       (<!* a/switch-to-console-panel!)
       (<!* a/switch-prompt-to-dirac!)
-      (<!* a/wait-for-match "Version mismatch: Dirac Runtime installed in the page has different version")
+      (<!* a/wait-for-match "Version mismatch: Dirac Runtime installed in your app has different version")
       (<!* a/wait-for-devtools-match "console prompt focused")
       (<!* a/wait-for-prompt-to-enter-edit-mode)))
   (with-scenario "future-runtime"
     (with-devtools
       (<!* a/switch-to-console-panel!)
       (<!* a/switch-prompt-to-dirac!)
-      (<!* a/wait-for-match "Version mismatch: Dirac Runtime installed in the page has different version")
+      (<!* a/wait-for-match "Version mismatch: Dirac Runtime installed in your app has different version")
       (<!* a/wait-for-devtools-match "console prompt focused")
       (<!* a/wait-for-prompt-to-enter-edit-mode)))
   (with-scenario "normal-with-feedback"
     (with-devtools {"mock_old_extension_version" 1}
       (<!* a/switch-to-console-panel!)
       (<!* a/switch-prompt-to-dirac!)
-      (<!* a/wait-for-match "Version mismatch: Dirac Runtime installed in the page has different version")
+      (<!* a/wait-for-match "Version mismatch: Dirac Runtime installed in your app has different version")
       (<!* a/wait-for-match "Version mismatch: Dirac Agent has different version")
       (<!* a/wait-for-devtools-match "console prompt focused")
       (<!* a/wait-for-prompt-to-enter-edit-mode)))
@@ -31,7 +31,7 @@
     (with-devtools {"mock_future_extension_version" 1}
       (<!* a/switch-to-console-panel!)
       (<!* a/switch-prompt-to-dirac!)
-      (<!* a/wait-for-match "Version mismatch: Dirac Runtime installed in the page has different version")
+      (<!* a/wait-for-match "Version mismatch: Dirac Runtime installed in your app has different version")
       (<!* a/wait-for-match "Version mismatch: Dirac Agent has different version")
       (<!* a/wait-for-devtools-match "console prompt focused")
       (<!* a/wait-for-prompt-to-enter-edit-mode)))
@@ -53,11 +53,11 @@
     (with-devtools
       (<!* a/switch-to-console-panel!)
       (<!* a/switch-prompt-to-dirac!)
-      (<!* a/wait-for-match "Dirac requires runtime support from the page context" (seconds 20))
+      (<!* a/wait-for-match "Dirac requires runtime support from your app." (seconds 20))
       (<!* a/wait-for-devtools-match "setDiracPromptStatusStyle('error')" (seconds 20))))
   (with-scenario "no-repl"
     (with-devtools
       (<!* a/switch-to-console-panel!)
       (<!* a/switch-prompt-to-dirac!)
-      (<!* a/wait-for-match "Dirac requires runtime support from the page context" (seconds 20))
+      (<!* a/wait-for-match "Dirac Runtime is present in your app but the :repl feature hasn't been enabled." (seconds 20))
       (<!* a/wait-for-devtools-match "setDiracPromptStatusStyle('error')" (seconds 20)))))

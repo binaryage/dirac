@@ -18,9 +18,10 @@ automate #1      switch-prompt-to-dirac!
 devtools #1      switched console prompt to 'dirac'
 devtools #1      console prompt focused
 devtools #1      repl initialized
-scenario out     WARN: ("Version mismatch: Dirac Runtime installed in the page has different version **VERSION** than Dirac Chrome Extension **VERSION**.\nTo avoid compatibility issues, please upgrade all Dirac components to the same version: https://github.com/binaryage/dirac/blob/master/docs/upgrading.md.")
-devtools #1      setDiracPromptStatusContent('Dirac Agent connected. Bootstrapping ClojureScript REPL...')
+devtools #1      setDiracPromptStatusContent('Checking for Dirac Runtime presence in your app...')
 devtools #1      setDiracPromptStatusStyle('info')
+scenario out     WARN: ("Version mismatch: Dirac Runtime installed in your app has different version **VERSION** than Dirac Chrome Extension **VERSION**.\nTo avoid compatibility issues, please upgrade all Dirac components to the same version: https://github.com/binaryage/dirac/blob/master/docs/upgrading.md.")
+devtools #1      setDiracPromptStatusContent('Dirac Agent connected. Bootstrapping ClojureScript REPL...')
 devtools #1      setDiracPromptNS('cljs.user')
 devtools #1      wrap-with-postprocess-and-eval-in-current-context!
 devtools #1      wrap-with-postprocess-and-eval-in-current-context!
@@ -49,9 +50,10 @@ automate #2      switch-prompt-to-dirac!
 devtools #2      switched console prompt to 'dirac'
 devtools #2      console prompt focused
 devtools #2      repl initialized
-scenario out     WARN: ("Version mismatch: Dirac Runtime installed in the page has different version **VERSION** than Dirac Chrome Extension **VERSION**.\nTo avoid compatibility issues, please upgrade all Dirac components to the same version: https://github.com/binaryage/dirac/blob/master/docs/upgrading.md.")
-devtools #2      setDiracPromptStatusContent('Dirac Agent connected. Bootstrapping ClojureScript REPL...')
+devtools #2      setDiracPromptStatusContent('Checking for Dirac Runtime presence in your app...')
 devtools #2      setDiracPromptStatusStyle('info')
+scenario out     WARN: ("Version mismatch: Dirac Runtime installed in your app has different version **VERSION** than Dirac Chrome Extension **VERSION**.\nTo avoid compatibility issues, please upgrade all Dirac components to the same version: https://github.com/binaryage/dirac/blob/master/docs/upgrading.md.")
+devtools #2      setDiracPromptStatusContent('Dirac Agent connected. Bootstrapping ClojureScript REPL...')
 devtools #2      setDiracPromptNS('cljs.user')
 devtools #2      wrap-with-postprocess-and-eval-in-current-context!
 devtools #2      wrap-with-postprocess-and-eval-in-current-context!
@@ -80,9 +82,10 @@ automate #3      switch-prompt-to-dirac!
 devtools #3      switched console prompt to 'dirac'
 devtools #3      console prompt focused
 devtools #3      repl initialized
-scenario out     WARN: ("Version mismatch: Dirac Runtime installed in the page has different version **VERSION** than Dirac Chrome Extension **VERSION**.\nTo avoid compatibility issues, please upgrade all Dirac components to the same version: https://github.com/binaryage/dirac/blob/master/docs/upgrading.md.")
-devtools #3      setDiracPromptStatusContent('Dirac Agent connected. Bootstrapping ClojureScript REPL...')
+devtools #3      setDiracPromptStatusContent('Checking for Dirac Runtime presence in your app...')
 devtools #3      setDiracPromptStatusStyle('info')
+scenario out     WARN: ("Version mismatch: Dirac Runtime installed in your app has different version **VERSION** than Dirac Chrome Extension **VERSION**.\nTo avoid compatibility issues, please upgrade all Dirac components to the same version: https://github.com/binaryage/dirac/blob/master/docs/upgrading.md.")
+devtools #3      setDiracPromptStatusContent('Dirac Agent connected. Bootstrapping ClojureScript REPL...')
 scenario out     WARN: ("Version mismatch: Dirac Agent has different version **VERSION** than Dirac Chrome Extension **VERSION**.\nTo avoid compatibility issues, please upgrade all Dirac components to the same version: https://github.com/binaryage/dirac/blob/master/docs/upgrading.md.")
 devtools #3      setDiracPromptNS('cljs.user')
 devtools #3      wrap-with-postprocess-and-eval-in-current-context!
@@ -112,9 +115,10 @@ automate #4      switch-prompt-to-dirac!
 devtools #4      switched console prompt to 'dirac'
 devtools #4      console prompt focused
 devtools #4      repl initialized
-scenario out     WARN: ("Version mismatch: Dirac Runtime installed in the page has different version **VERSION** than Dirac Chrome Extension **VERSION**.\nTo avoid compatibility issues, please upgrade all Dirac components to the same version: https://github.com/binaryage/dirac/blob/master/docs/upgrading.md.")
-devtools #4      setDiracPromptStatusContent('Dirac Agent connected. Bootstrapping ClojureScript REPL...')
+devtools #4      setDiracPromptStatusContent('Checking for Dirac Runtime presence in your app...')
 devtools #4      setDiracPromptStatusStyle('info')
+scenario out     WARN: ("Version mismatch: Dirac Runtime installed in your app has different version **VERSION** than Dirac Chrome Extension **VERSION**.\nTo avoid compatibility issues, please upgrade all Dirac components to the same version: https://github.com/binaryage/dirac/blob/master/docs/upgrading.md.")
+devtools #4      setDiracPromptStatusContent('Dirac Agent connected. Bootstrapping ClojureScript REPL...')
 scenario out     WARN: ("Version mismatch: Dirac Agent has different version **VERSION** than Dirac Chrome Extension **VERSION**.\nTo avoid compatibility issues, please upgrade all Dirac components to the same version: https://github.com/binaryage/dirac/blob/master/docs/upgrading.md.")
 devtools #4      setDiracPromptNS('cljs.user')
 devtools #4      wrap-with-postprocess-and-eval-in-current-context!
@@ -144,6 +148,8 @@ automate #5      switch-prompt-to-dirac!
 devtools #5      switched console prompt to 'dirac'
 devtools #5      console prompt focused
 devtools #5      repl initialized
+devtools #5      setDiracPromptStatusContent('Checking for Dirac Runtime presence in your app...')
+devtools #5      setDiracPromptStatusStyle('info')
 devtools #5      setDiracPromptStatusContent('Dirac REPL API version mismatch detected.
                  Dirac DevTools requires Dirac Runtime REPL API v3, but your version is v0.
                  Please <a href="https://github.com/binaryage/dirac/blob/master/docs/upgrading.md">upgrade Dirac Runtime</a> in your app.')
@@ -171,6 +177,8 @@ automate #6      switch-prompt-to-dirac!
 devtools #6      switched console prompt to 'dirac'
 devtools #6      console prompt focused
 devtools #6      repl initialized
+devtools #6      setDiracPromptStatusContent('Checking for Dirac Runtime presence in your app...')
+devtools #6      setDiracPromptStatusStyle('info')
 devtools #6      setDiracPromptStatusContent('Dirac REPL API version mismatch detected.
                  Dirac DevTools requires Dirac Runtime REPL API v3, but your version is v0.
                  Please <a href="https://github.com/binaryage/dirac/blob/master/docs/upgrading.md">upgrade Dirac Runtime</a> in your app.')
@@ -198,7 +206,9 @@ automate #7      switch-prompt-to-dirac!
 devtools #7      switched console prompt to 'dirac'
 devtools #7      console prompt focused
 devtools #7      repl initialized
-devtools #7      setDiracPromptStatusContent('Dirac requires runtime support from the page context.
+devtools #7      setDiracPromptStatusContent('Checking for Dirac Runtime presence in your app...')
+devtools #7      setDiracPromptStatusStyle('info')
+devtools #7      setDiracPromptStatusContent('Dirac requires runtime support from your app.
                  Please <a href="https://github.com/binaryage/dirac#installation">install Dirac Runtime</a> into your app and <a href="https://github.com/binaryage/dirac#install-dirac-runtime">enable the :repl feature</a>.')
 devtools #7      setDiracPromptStatusStyle('error')
 automate #7      close-devtools!
@@ -224,8 +234,9 @@ automate #8      switch-prompt-to-dirac!
 devtools #8      switched console prompt to 'dirac'
 devtools #8      console prompt focused
 devtools #8      repl initialized
-devtools #8      setDiracPromptStatusContent('Dirac requires runtime support from the page context.
-                 Please <a href="https://github.com/binaryage/dirac#installation">install Dirac Runtime</a> into your app and <a href="https://github.com/binaryage/dirac#install-dirac-runtime">enable the :repl feature</a>.')
+devtools #8      setDiracPromptStatusContent('Checking for Dirac Runtime presence in your app...')
+devtools #8      setDiracPromptStatusStyle('info')
+devtools #8      setDiracPromptStatusContent('Dirac Runtime is present in your app but the :repl feature hasn't been enabled. Please <a href="https://github.com/binaryage/dirac/blob/master/docs/installation.md#install-the-dirac-runtime">install Dirac Runtime with REPL support</a>.')
 devtools #8      setDiracPromptStatusStyle('error')
 automate #8      close-devtools!
 extension        handling command: close-dirac-devtools
