@@ -2,11 +2,17 @@
 
 Dirac is a [Chrome DevTools](https://developer.chrome.com/devtools) fork with extra features to aid development in ClojureScript.
 
-#### Features
+Dirac project maintains [a set of patches](https://github.com/binaryage/dirac/tree/devtools-diff) rolling on top of official DevTools.
+That means you don't lose any functionality, you just add a ClojureScript support on top.
+Additionally we provide [a Chrome Extension](https://chrome.google.com/webstore/detail/dirac-devtools/kbkdngfljkchidcjpnfcgcokkbhlkogi)
+which packages this alternative DevTools version and hosts it within Chrome for convenient access.
+Dirac enhancements can be just a keystroke away from your beloved ClojureScript app.
+
+#### Added features
 
   * REPL integrated into DevTools Javascript console
-    * can eval ClojureScript in the context of currently selected stack frame (paused on a breakpoint)
-    * ClojureScript code completion suggestions (like completions in Javascript console)
+    * can eval ClojureScript in the context of currently selected stack frame (when paused on a breakpoint)
+    * ClojureScript [code completion suggestions](https://github.com/binaryage/dirac/releases/tag/v0.4.0) (like completions in Javascript console)
     * [Parinfer](https://shaunlebron.github.io/parinfer) goodness
     * adds a global keyboard shortcut for focusing the console prompt
   * enables [custom formatters](https://docs.google.com/document/d/1FTascZXT9cxfetuPRT2eXPQKXui4nWFivUnS_335T3U) by default (for [cljs-devtools](https://github.com/binaryage/cljs-devtools))
@@ -20,6 +26,17 @@ Dirac is a [Chrome DevTools](https://developer.chrome.com/devtools) fork with ex
       * then undefined values
 
 ![ClojureScript REPL](https://dl.dropboxusercontent.com/u/559047/dirac-main-01.png)
+
+<table>
+<tr>
+<td><a href="https://dl.dropboxusercontent.com/u/559047/dirac-general-completions.png"><img src="https://dl.dropboxusercontent.com/u/559047/dirac-general-completions.png"></a></td>
+<td><a href="https://dl.dropboxusercontent.com/u/559047/dirac-ns-completions.png"><img src="https://dl.dropboxusercontent.com/u/559047/dirac-ns-completions.png"></a></td>
+<td><a href="https://dl.dropboxusercontent.com/u/559047/dirac-js-completions.png"><img src="https://dl.dropboxusercontent.com/u/559047/dirac-js-completions.png"></a></td>
+</tr>
+</table>
+
+<br style="clear:both">
+<img src="https://dl.dropboxusercontent.com/u/559047/dirac-scope-completions.png">
 
 #### Documentation
 
