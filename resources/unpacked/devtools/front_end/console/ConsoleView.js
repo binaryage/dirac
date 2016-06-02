@@ -1077,6 +1077,10 @@ WebInspector.ConsoleView.prototype = {
         this._prompt.setText("");
     },
 
+    /**
+     * @param {string} markup
+     * @return {boolean}
+     */
     appendDiracMarkup: function (markup) {
         const executionContext = WebInspector.context.flavor(WebInspector.ExecutionContext);
         if (!executionContext) {
@@ -1090,6 +1094,7 @@ WebInspector.ConsoleView.prototype = {
         const message = new WebInspector.ConsoleMessage(target, source, level, markup, type);
         message.setExecutionContextId(executionContext.id);
         target.consoleModel.addMessage(message);
+        return true;
     },
 
     displayWelcomeMessage: function() {
