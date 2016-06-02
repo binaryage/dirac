@@ -23,16 +23,16 @@
     (with-devtools {"mock_old_extension_version" 1}
       (<!* a/switch-to-console-panel!)
       (<!* a/switch-prompt-to-dirac!)
-      (<!* a/wait-for-match #"Version mismatch: Dirac Runtime installed in the page has different version .*? than Dirac Chrome Extension \(v0\.0\.1\)\.")
-      (<!* a/wait-for-match #"Version mismatch: Dirac Agent has different version .*? than Dirac Chrome Extension \(v0\.0\.1\)\.")
+      (<!* a/wait-for-match "Version mismatch: Dirac Runtime installed in the page has different version")
+      (<!* a/wait-for-match "Version mismatch: Dirac Agent has different version")
       (<!* a/wait-for-devtools-match "console prompt focused")
       (<!* a/wait-for-prompt-to-enter-edit-mode)))
   (with-scenario "normal-with-feedback"
     (with-devtools {"mock_future_extension_version" 1}
       (<!* a/switch-to-console-panel!)
       (<!* a/switch-prompt-to-dirac!)
-      (<!* a/wait-for-match #"Version mismatch: Dirac Runtime installed in the page has different version .*? than Dirac Chrome Extension \(v1000\.0\.1\)\.")
-      (<!* a/wait-for-match #"Version mismatch: Dirac Agent has different version .*? than Dirac Chrome Extension \(v1000\.0\.1\)\.")
+      (<!* a/wait-for-match "Version mismatch: Dirac Runtime installed in the page has different version")
+      (<!* a/wait-for-match "Version mismatch: Dirac Agent has different version")
       (<!* a/wait-for-devtools-match "console prompt focused")
       (<!* a/wait-for-prompt-to-enter-edit-mode)))
   (with-scenario "old-repl-api"
