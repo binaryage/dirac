@@ -112,3 +112,11 @@
 
 (defn trim-leading-nls [s]
   (cuerdas/ltrim s "\n"))
+
+(defn format-error [e]
+  ; note that error may be a string message already
+  (if (string? e)
+    e
+    (if-let [stack (oget e "stack")]
+      (str stack)
+      (str e))))
