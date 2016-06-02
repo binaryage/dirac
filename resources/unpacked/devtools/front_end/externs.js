@@ -358,6 +358,10 @@ var dirac = {
     hasClusteredLocals: true,
     /** @type {boolean} */
     hasInlineCFs: true,
+    /** @type {boolean} */
+    hasWelcomeMessage: true,
+    /** @type {boolean} */
+    hasCleanUrls: true,
     /**
     * @param {string} code
     * @return {string}

@@ -49,7 +49,8 @@
            (f/checkbox "Enable Parinfer" data [:options :enable-parinfer])
            (f/checkbox "Enable friendly locals" data [:options :enable-friendly-locals])
            (f/checkbox "Enable clustered locals" data [:options :enable-clustered-locals])
-           (f/checkbox "Inline Custom Formatters in sources" data [:options :inline-custom-formatters])])
+           (f/checkbox "Inline Custom Formatters in sources" data [:options :inline-custom-formatters])
+           (f/checkbox "Enable clean URLs" data [:options :clean-urls])])
         (f/form-buttons
           (f/button "Reset to Defaults" reset-to-defaults!)
           (f/button "Save and Exit" save-state-and-exit!))))))

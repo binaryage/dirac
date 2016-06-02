@@ -133,6 +133,18 @@ WebInspector.UISourceCode.prototype = {
         var name = this._name;
         try {
             name = decodeURI(name);
+            if (dirac.hasCleanUrls) {
+                // strip all after ? in the name
+                const qmarkIndex = name.indexOf("?");
+                if (qmarkIndex != -1) {
+                    name = name.substring(0, qmarkIndex);
+                }
+                // strip all after # in the name
+                const hashIndex = name.indexOf("#");
+                if (hashIndex != -1) {
+                    name = name.substring(0, hashIndex);
+                }
+            }
         } catch (e) {
         }
         return skipTrim ? name : name.trimEnd(100);

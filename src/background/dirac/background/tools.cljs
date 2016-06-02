@@ -22,7 +22,8 @@
                 :enable-friendly-locals
                 :enable-clustered-locals
                 :inline-custom-formatters
-                :welcome-message])
+                :welcome-message
+                :clean-urls])
 
 (def last-active-tab-query #js {"lastFocusedWindow" true
                                 "active"            true})

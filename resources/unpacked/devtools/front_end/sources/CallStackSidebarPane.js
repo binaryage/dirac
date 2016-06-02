@@ -469,7 +469,8 @@ WebInspector.CallStackSidebarPane.CallFrame.prototype = {
             return;
         var text = uiLocation.linkText();
         this.setSubtitle(text.trimMiddle(30));
-        this.subtitleElement.title = text;
+        var fullUrl = uiLocation.toUIString();
+        this.subtitleElement.title = fullUrl;
     },
 
     __proto__: WebInspector.UIList.Item.prototype

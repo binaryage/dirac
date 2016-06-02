@@ -14,7 +14,8 @@ Object.assign(window.dirac, (function() {
         "enable-friendly-locals",
         "enable-clustered-locals",
         "inline-custom-formatters",
-        "welcome-message"];
+        "welcome-message",
+        "clean-urls"];
 
     function hasFeature(feature) {
         var flag = featureFlags[feature];
@@ -200,6 +201,7 @@ Object.assign(window.dirac, (function() {
         hasClusteredLocals: hasFeature("enable-clustered-locals"),
         hasInlineCFs: hasFeature("inline-custom-formatters"),
         hasWelcomeMessage: hasFeature("welcome-message"),
+        hasCleanUrls: hasFeature("clean-urls"),
         hasFeature: hasFeature,
         codeAsString: codeAsString,
         stringEscape: stringEscape,
