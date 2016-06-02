@@ -1051,6 +1051,9 @@ Protocol.SecurityAgent.prototype.invoke_disable = function(obj, opt_callback) {}
 
 var SecurityAgent = function(){};
 
+/** @typedef {number} */
+SecurityAgent.CertificateId;
+
 /** @enum {string} */
 SecurityAgent.SecurityState = {
     Unknown: "unknown",
@@ -1061,7 +1064,7 @@ SecurityAgent.SecurityState = {
     Info: "info"
 };
 
-/** @typedef {!{securityState:(SecurityAgent.SecurityState), summary:(string), description:(string), certificateId:(NetworkAgent.CertificateId|undefined)}} */
+/** @typedef {!{securityState:(SecurityAgent.SecurityState), summary:(string), description:(string), certificateId:(SecurityAgent.CertificateId|undefined)}} */
 SecurityAgent.SecurityStateExplanation;
 
 /** @typedef {!{ranInsecureContent:(boolean), displayedInsecureContent:(boolean), ranInsecureContentStyle:(SecurityAgent.SecurityState), displayedInsecureContentStyle:(SecurityAgent.SecurityState)}} */
@@ -1242,7 +1245,7 @@ Protocol.NetworkAgent.prototype.setDataSizeLimitsForTest = function(maxTotalSize
 Protocol.NetworkAgent.prototype.invoke_setDataSizeLimitsForTest = function(obj, opt_callback) {}
 
 /**
- * @param {NetworkAgent.CertificateId} certificateId
+ * @param {SecurityAgent.CertificateId} certificateId
  * @param {function(?Protocol.Error, NetworkAgent.CertificateDetails):void=} opt_callback
  */
 Protocol.NetworkAgent.prototype.getCertificateDetails = function(certificateId, opt_callback) {}
@@ -1250,7 +1253,7 @@ Protocol.NetworkAgent.prototype.getCertificateDetails = function(certificateId, 
 Protocol.NetworkAgent.prototype.invoke_getCertificateDetails = function(obj, opt_callback) {}
 
 /**
- * @param {NetworkAgent.CertificateId} certificateId
+ * @param {SecurityAgent.CertificateId} certificateId
  * @param {function(?Protocol.Error):void=} opt_callback
  */
 Protocol.NetworkAgent.prototype.showCertificateViewer = function(certificateId, opt_callback) {}
@@ -1295,9 +1298,6 @@ NetworkAgent.RequestMixedContentType = {
 /** @typedef {!{url:(string), method:(string), headers:(NetworkAgent.Headers), postData:(string|undefined), mixedContentType:(NetworkAgent.RequestMixedContentType|undefined), initialPriority:(NetworkAgent.ResourcePriority)}} */
 NetworkAgent.Request;
 
-/** @typedef {number} */
-NetworkAgent.CertificateId;
-
 /** @typedef {!{name:(string), sanDnsNames:(!Array.<string>), sanIpAddresses:(!Array.<string>)}} */
 NetworkAgent.CertificateSubject;
 
@@ -1307,7 +1307,7 @@ NetworkAgent.CertificateDetails;
 /** @typedef {!{numUnknownScts:(number), numInvalidScts:(number), numValidScts:(number)}} */
 NetworkAgent.CertificateValidationDetails;
 
-/** @typedef {!{protocol:(string), keyExchange:(string), cipher:(string), mac:(string|undefined), certificateId:(NetworkAgent.CertificateId), certificateValidationDetails:(NetworkAgent.CertificateValidationDetails|undefined)}} */
+/** @typedef {!{protocol:(string), keyExchange:(string), cipher:(string), mac:(string|undefined), certificateId:(SecurityAgent.CertificateId), certificateValidationDetails:(NetworkAgent.CertificateValidationDetails|undefined)}} */
 NetworkAgent.SecurityDetails;
 
 /** @enum {string} */
@@ -3080,7 +3080,7 @@ DOMDebuggerAgent.DOMBreakpointType = {
     NodeRemoved: "node-removed"
 };
 
-/** @typedef {!{type:(string), useCapture:(boolean), passive:(boolean), location:(DebuggerAgent.Location), handler:(RuntimeAgent.RemoteObject|undefined), originalHandler:(RuntimeAgent.RemoteObject|undefined)}} */
+/** @typedef {!{type:(string), useCapture:(boolean), passive:(boolean), location:(DebuggerAgent.Location), handler:(RuntimeAgent.RemoteObject|undefined), originalHandler:(RuntimeAgent.RemoteObject|undefined), removeFunction:(RuntimeAgent.RemoteObject|undefined)}} */
 DOMDebuggerAgent.EventListener;
 /** @interface */
 DOMDebuggerAgent.Dispatcher = function() {};
