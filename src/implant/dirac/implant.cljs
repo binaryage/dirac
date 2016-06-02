@@ -64,19 +64,45 @@
     (when-let [ns-decl (ns-parse/read-ns-decl reader)]
       #js {:name (str (ns-parse/name-from-ns-decl ns-decl))})))
 
+(defn is-cljs-function-name? [munged-name]
+  (some? (re-matches #"^[^$]+\$[^$]+\$.*$" munged-name)))                                                                     ; must have at least two dollars but not at the beginning
+
+(defn demunge-ns [munged-name]
+  (string/replace munged-name "$" "."))
+
+(defn break-and-demunge-name [munged-name]
+  (let [index (.lastIndexOf munged-name "$")]
+    (if (= index -1)
+      ["" (demunge munged-name)]
+      (let [ns (demunge (demunge-ns (.substring munged-name 0 index)))
+            name (demunge (.substring munged-name (inc index) (.-length munged-name)))]
+        [ns name]))))
+
+(defn get-function-name [munged-name]
+  (if (is-cljs-function-name? munged-name)
+    (second (break-and-demunge-name munged-name))
+    munged-name))
+
+(defn get-full-function-name [munged-name]
+  (if (is-cljs-function-name? munged-name)
+    (string/join "/" (break-and-demunge-name munged-name))
+    munged-name))
+
 ; -- dirac object augumentation ---------------------------------------------------------------------------------------------
 
 ; !!! don't forget to update externs.js when touching this !!!
 (def dirac-api-to-export
-  {"feedback"          post-feedback!
-   "initConsole"       init-console!
-   "initRepl"          init-repl!
-   "adoptPrompt"       adopt-prompt!
-   "sendEvalRequest"   send-eval-request!
-   "getVersion"        get-version
-   "getRuntimeTag"     get-runtime-tag
-   "parseNsFromSource" parse-ns-from-source
-   "nsToRelpath"       ns-to-relpath})
+  {"feedback"            post-feedback!
+   "initConsole"         init-console!
+   "initRepl"            init-repl!
+   "adoptPrompt"         adopt-prompt!
+   "sendEvalRequest"     send-eval-request!
+   "getVersion"          get-version
+   "getRuntimeTag"       get-runtime-tag
+   "parseNsFromSource"   parse-ns-from-source
+   "nsToRelpath"         ns-to-relpath
+   "getFunctionName"     get-function-name
+   "getFullFunctionName" get-full-function-name})
 
 (defn enhance-dirac-object! [dirac]
   (doseq [[name fn] dirac-api-to-export]

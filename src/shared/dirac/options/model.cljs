@@ -19,7 +19,8 @@
    :enable-clustered-locals  true
    :inline-custom-formatters true
    :welcome-message          true
-   :clean-urls               true})
+   :clean-urls               true
+   :beautify-function-names  true})
 
 (defonce cached-options (atom nil))
 (defonce chrome-event-channel (make-chrome-event-channel (chan)))

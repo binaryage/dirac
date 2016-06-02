@@ -445,6 +445,9 @@ WebInspector.CallStackSidebarPane.prototype = {
 WebInspector.CallStackSidebarPane.CallFrame = function(functionName, location, linkifier, debuggerCallFrame, locationPool, asyncCallFrame)
 {
     WebInspector.UIList.Item.call(this, WebInspector.beautifyFunctionName(functionName), "");
+    if (dirac.hasBeautifyFunctionNames) {
+        this.titleElement.title = dirac.getFullFunctionName(functionName);
+    }
     this._location = location;
     this._debuggerCallFrame = debuggerCallFrame;
     this._asyncCallFrame = asyncCallFrame;

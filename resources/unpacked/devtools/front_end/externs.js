@@ -362,6 +362,8 @@ var dirac = {
     hasWelcomeMessage: true,
     /** @type {boolean} */
     hasCleanUrls: true,
+    /** @type {boolean} */
+    hasBeautifyFunctionNames: true,
     /**
     * @param {string} code
     * @return {string}
@@ -438,6 +440,18 @@ var dirac = {
      * @returns {string}
      */
     nsToRelpath: function(ns, ext) {},
+
+    /**
+     * @param {string} name
+     * @returns {string}
+     */
+    getFunctionName: function(name) {},
+
+    /**
+     * @param {string} name
+     * @returns {string}
+     */
+    getFullFunctionName: function(name) {},
 
     /**
      * @param {string} source

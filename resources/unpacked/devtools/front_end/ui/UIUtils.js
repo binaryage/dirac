@@ -1300,6 +1300,10 @@ WebInspector.initializeUIUtils = function(document, themeSetting)
  */
 WebInspector.beautifyFunctionName = function(name)
 {
+    if (name && dirac.hasBeautifyFunctionNames) {
+        return dirac.getFunctionName(name);
+    }
+    
     return name || WebInspector.UIString("(anonymous function)");
 }
 
