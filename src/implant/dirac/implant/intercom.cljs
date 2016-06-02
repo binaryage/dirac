@@ -5,6 +5,7 @@
             [cljs.tools.reader.edn :as reader-edn]
             [cljs.tools.reader.reader-types :as reader-types]
             [clojure.walk :as walk]
+            [chromex.support :refer-macros [oget ocall oapply]]
             [dirac.implant.console :as console]
             [dirac.implant.weasel-client :as weasel-client]
             [dirac.implant.nrepl-tunnel-client :as nrepl-tunnel-client]
@@ -68,14 +69,14 @@
 
 (defn ^:dynamic runtime-version-mismatch-msg [extension-version runtime-version]
   (str "Version mismatch: "
-       "Dirac Runtime installed in the page has different version (v" runtime-version ") "
+       "Dirac Runtime installed in your app has different version (v" runtime-version ") "
        "than Dirac Chrome Extension (v" extension-version ").\n"
        "To avoid compatibility issues, "
        "please upgrade all Dirac components to the same version: " dirac-upgrading-help-url "."))
 
 (defn ^:dynamic repl-support-not-enabled-msg []
-  (str "Dirac Runtime is present but the :repl feature hasn't been enabled. "
-       "Please install Dirac Runtime with REPL support: " + dirac-runtime-help-url "."))
+  (str "Dirac Runtime is present in your app but the :repl feature hasn't been enabled. "
+       "Please <a href=\"" dirac-runtime-help-url "\">install Dirac Runtime with REPL support</a>."))
 
 (defn ^:dynamic unrecognized-forwarded-nrepl-op-msg [op forwarded-nrepl-message]
   (str "Received unrecognized operation [op='" op "'] in forwarded nREPL message:\n"
@@ -86,12 +87,15 @@
        forwarded-nrepl-message "\n"
        "nREPL message: <" serialized-forwarded-nrepl-message ">"))
 
-(defn ^:dynamic missing-runtime-msg []
-  (str "Dirac requires runtime support from the page context.\n"
+(defn ^:dynamic missing-runtime-msg [reason]
+  (str "Dirac requires runtime support from your app.\n"
        "Please <a href=\"https://github.com/binaryage/dirac#installation\">install Dirac Runtime</a> "
        "into your app and "
        "<a href=\"https://github.com/binaryage/dirac#install-dirac-runtime\">"
-       "enable the :repl feature</a>."))
+       "enable the :repl feature</a>."
+       (if (some? reason)
+         (if-not (re-find #"Cannot read property 'installed_QMARK_' of undefined" reason)                                     ; this is known and expected error when dirac.runtime is not present
+           (str "\n" reason)))))
 
 (defn check-agent-version! [agent-version]
   (let [our-version implant-version/version]
@@ -236,14 +240,16 @@
 (defn init-repl! []
   (when-not *last-connection-url*
     (go
-      (if (<! (eval/is-runtime-present?))
-        (if (<! (eval/is-runtime-repl-support-installed?))
-          (let [repl-api-version (<! (eval/get-runtime-repl-api-version))]
-            (if (= repl-api-version required-repl-api-version)
-              (start-repl!)
-              (display-prompt-status (repl-api-mismatch-msg repl-api-version required-repl-api-version))))
-          (display-prompt-status (repl-support-not-enabled-msg)))
-        (display-prompt-status (missing-runtime-msg))))))
+      (display-prompt-status "Checking for Dirac Runtime presence in your app..." :info)
+      (let [present? (<! (eval/is-runtime-present?))]
+        (if (true? present?)
+          (if (<! (eval/is-runtime-repl-support-installed?))
+            (let [repl-api-version (<! (eval/get-runtime-repl-api-version))]
+              (if (= repl-api-version required-repl-api-version)
+                (start-repl!)
+                (display-prompt-status (repl-api-mismatch-msg repl-api-version required-repl-api-version))))
+            (display-prompt-status (repl-support-not-enabled-msg)))
+          (display-prompt-status (missing-runtime-msg present?)))))))
 
 ; ---------------------------------------------------------------------------------------------------------------------------
 ; -- message processing -----------------------------------------------------------------------------------------------------
