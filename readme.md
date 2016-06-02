@@ -36,7 +36,6 @@ Dirac enhancements can be just a keystroke away from your beloved ClojureScript 
 </table>
 
 <br style="clear:both">
-<img src="https://dl.dropboxusercontent.com/u/559047/dirac-scope-completions.png">
 
 #### Documentation
 
