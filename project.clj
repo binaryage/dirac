@@ -147,7 +147,11 @@
              :browser-tests
              {:cljsbuild {:builds
                           {:tests
-                           {:notify-command ["scripts/cljsbuild-notify.sh" "tests"]
+                           {; HACK: we rely on figwheel's "rel=<timestamp>" into cljs url params, clean-urls tests depend on it
+                            :figwheel       {:server-port    7300
+                                             :server-logfile ".figwheel_tests.log"
+                                             :repl           false}
+                            :notify-command ["scripts/cljsbuild-notify.sh" "tests"]
                             :source-paths   ["src/settings"
                                              "src/project"
                                              "src/backport"
@@ -160,11 +164,12 @@
                                              "src/agent"
                                              "src/nrepl"
                                              "test/browser/fixtures/src/tests"]
-                            :compiler       {:output-to     "test/browser/fixtures/resources/compiled/tests/tests.js"
-                                             :output-dir    "test/browser/fixtures/resources/compiled/tests"
-                                             :asset-path    "compiled/tests"
-                                             :optimizations :none                                                             ; we rely on optimizations :none in test runner
-                                             :source-map    true}}}}}
+                            :compiler       {:output-to            "test/browser/fixtures/resources/compiled/tests/tests.js"
+                                             :output-dir           "test/browser/fixtures/resources/compiled/tests"
+                                             :asset-path           "compiled/tests"
+                                             :optimizations        :none                                                      ; we rely on optimizations :none in test runner
+                                             :source-map           true
+                                             :source-map-timestamp true}}}}}
 
              :marion-figwheel
              {:figwheel {:server-port    7200

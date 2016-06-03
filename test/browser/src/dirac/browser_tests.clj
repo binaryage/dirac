@@ -282,4 +282,6 @@
     (execute-transcript-test! "version-checks")
     (execute-transcript-test! "console")
     (execute-transcript-test! "repl")
-    (execute-transcript-test! "completions")))
+    (execute-transcript-test! "completions"))
+  (with-transcript-suite "suite02"
+    (execute-transcript-test! "clean-urls")))

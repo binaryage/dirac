@@ -1,0 +1,51 @@
+ns               Testing dirac.tests.tasks.suite02.clean-urls
+automate         open-tab-with-scenario! ["breakpoint"]
+automate         open-devtools!
+extension        handling command: open-dirac-devtools
+extension        register devtools #1
+devtools #1      implant initialized
+devtools #1      reset devtools settings
+devtools #1      devtools ready
+devtools #1      setCurrentPanel: elements
+automate         trigger! [:pause-on-breakpoint]
+devtools #1      setCurrentPanel: sources
+automate #1      scrape! [:callstack-pane-locations]
+stdout           displayed 7 items:
+                  * core.cljs:10 / http://localhost:9090/compiled/tests/dirac/tests/scenarios/breakpoint/core.cljs?rel=***:10
+                  * core.cljs:15 / http://localhost:9090/compiled/tests/dirac/tests/scenarios/breakpoint/core.cljs?rel=***:15
+                  * breakpoint.cljs:7 / http://localhost:9090/compiled/tests/dirac/tests/scenarios/breakpoint.cljs?rel=***:7
+                  * scenario.cljs:38 / http://localhost:9090/compiled/tests/dirac/automation/scenario.cljs?rel=***:38
+                  * scenario.cljs:54 / http://localhost:9090/compiled/tests/dirac/automation/scenario.cljs?rel=***:54
+                  * notifications.cljs:48 / http://localhost:9090/compiled/tests/dirac/automation/notifications.cljs?rel=***:48
+                  * notifications.cljs:53 / http://localhost:9090/compiled/tests/dirac/automation/notifications.cljs?rel=***:53
+automate #1      close-devtools!
+extension        handling command: close-dirac-devtools
+extension        unregister devtools #1
+automate         close-tab-with-scenario! ["scenario-tab#1"]
+automate         open-tab-with-scenario! ["breakpoint"]
+automate         set-option! [:clean-urls false]
+automate         open-devtools!
+extension        handling command: open-dirac-devtools
+extension        register devtools #2
+devtools #2      implant initialized
+devtools #2      reset devtools settings
+devtools #2      devtools ready
+devtools #2      setCurrentPanel: elements
+automate         trigger! [:pause-on-breakpoint]
+devtools #2      setCurrentPanel: sources
+automate #2      scrape! [:callstack-pane-locations]
+stdout           displayed 7 items:
+                  * core.cljs?rel=***:10 / http://localhost:9090/compiled/tests/dirac/tests/scenarios/breakpoint/core.cljs?rel=***:10
+                  * core.cljs?rel=***:15 / http://localhost:9090/compiled/tests/dirac/tests/scenarios/breakpoint/core.cljs?rel=***:15
+                  * breakpoint.cljs…***:7 / http://localhost:9090/compiled/tests/dirac/tests/scenarios/breakpoint.cljs?rel=***:7
+                  * scenario.cljs?r…***:38 / http://localhost:9090/compiled/tests/dirac/automation/scenario.cljs?rel=***:38
+                  * scenario.cljs?r…***:54 / http://localhost:9090/compiled/tests/dirac/automation/scenario.cljs?rel=***:54
+                  * notifications.c…***:48 / http://localhost:9090/compiled/tests/dirac/automation/notifications.cljs?rel=***:48
+                  * notifications.c…***:53 / http://localhost:9090/compiled/tests/dirac/automation/notifications.cljs?rel=***:53
+automate #2      close-devtools!
+extension        handling command: close-dirac-devtools
+extension        unregister devtools #2
+automate         set-option! [:clean-urls true]
+automate         close-tab-with-scenario! ["scenario-tab#2"]
+summary          Automated 14 actions with 4 check-points containing 2 assertions.
+                 0 failures, 0 errors.
