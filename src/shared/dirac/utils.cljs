@@ -120,3 +120,6 @@
     (if-let [stack (oget e "stack")]
       (str stack)
       (str e))))
+
+(defn line-count [text]
+  (count (cuerdas/lines text)))
