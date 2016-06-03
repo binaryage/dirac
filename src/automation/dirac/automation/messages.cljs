@@ -122,15 +122,15 @@
   (post-extension-command! {:command      :fire-synthetic-chrome-event
                             :chrome-event event}))
 
-(defn reset-devtools-id-counter! []
-  (post-extension-command! {:command :reset-devtools-id-counter}))
+(defn extension-reset-state! []
+  (post-extension-command! {:command :reset-state}))
 
 (defn marion-reset-state! []
   (post-message! #js {:type "marion-reset-state"}))
 
 (defn reset-state! []
   (go
-    (<! (reset-devtools-id-counter!))
+    (<! (extension-reset-state!))
     (<! (marion-reset-state!))
     true))
 

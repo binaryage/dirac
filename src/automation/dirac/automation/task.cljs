@@ -150,11 +150,12 @@
     (status-host/set-status! "task running...")
     (status-host/set-style! "running")
     (transcript-host/set-style! "running")
+    ; this will ensure we get stable devtools/scenario ids with each new run => stable transcript output
+    ; this will also reset extension options to defaults!
+    (<! (messages/reset-state!))
     ; when launched from test runner, chrome driver is in charge of selecting debugging port, we have to propagate this
     ; information to our dirac extension settings
     (<! (setup-debugging-port!))
-    ; this will ensure we get stable devtools/scenario ids with each new run => stable transcript output
-    (<! (messages/reset-state!))
     ; open-as window is handy for debugging, becasue we can open internal devtools to inspect dirac frontend in case of errors
     (<! (messages/set-option! :open-as "window"))))
 

@@ -18,8 +18,9 @@
     (options/set-option! (:key message) (:value message))
     (state/post-reply! message-id)))
 
-(defn reset-devtools-id-counter! [message-id _message]
+(defn reset-state! [message-id _message]
   (go
+    (options/reset-to-defaults!)
     (state/reset-devtools-id-counter!)
     (state/post-reply! message-id)))
 
@@ -82,7 +83,7 @@
     (log "process-marion-message" message-id command (envelope message))
     (case command
       :set-option (set-option! message-id message)
-      :reset-devtools-id-counter (reset-devtools-id-counter! message-id message)
+      :reset-state (reset-state! message-id message)
       :fire-synthetic-chrome-event (fire-synthetic-chrome-event! context message-id message)
       :automate-dirac-frontend (automate-dirac-frontend! message-id message)
       :tear-down (tear-down! message-id message))))
