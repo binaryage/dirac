@@ -186,12 +186,16 @@
 (defn significant-line? [line]
   (not (empty? line)))
 
+(defn append-nl [text]
+  (str text "\n"))
+
 (defn get-canonical-transcript [transcript]
   (->> transcript
        (cuerdas/lines)
        (map get-canonical-line)
        (filter significant-line?)                                                                                             ; filter empty lines to work around end-of-the-file new-line issue
-       (cuerdas/unlines)))
+       (cuerdas/unlines)
+       (append-nl)))                                                                                                          ; we want to be compatible with "copy transcript!" button which copies to clipboard with extra new-line
 
 (defn obtain-transcript []
   (let [test-index-url (make-test-runner-url *current-transcript-suite* *current-transcript-test*)]
