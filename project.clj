@@ -120,6 +120,9 @@
              :clojure17
              {:dependencies [[org.clojure/clojure "1.7.0" :scope "provided"]]}
 
+             :clojure19
+             {:dependencies [[org.clojure/clojure "1.9.0-alpha4" :scope "provided"]]}
+
              :cooper
              {:plugins [[lein-cooper "1.2.2"]]}
 
@@ -383,8 +386,9 @@
                                           "run-browser-tests-dev"]
             "dev-browser-tests"          ["shell" "scripts/dev-browser-tests.sh"]
             "run-backend-tests"          ["shell" "scripts/run-backend-tests.sh"]
-            "run-backend-tests-latest"   ["with-profile" "+test-runner" "run" "-m" "dirac.backend-tests-runner"]
+            "run-backend-tests-default"  ["with-profile" "+test-runner" "run" "-m" "dirac.backend-tests-runner"]
             "run-backend-tests-17"       ["with-profile" "+test-runner,+clojure17" "run" "-m" "dirac.backend-tests-runner"]
+            "run-backend-tests-19"       ["with-profile" "+test-runner,+clojure19" "run" "-m" "dirac.backend-tests-runner"]
             "run-browser-tests"          ["shell" "scripts/run-browser-tests.sh" "dirac.browser-tests-runner"]
             "run-browser-tests-dev"      ["shell" "scripts/run-browser-tests.sh" "dirac.browser-tests-runner/-dev-main"]
             "run-browser-tests-agent"    ["with-profile" "+test-runner" "run" "-m" "dirac.browser-tests-runner/run-agent"]

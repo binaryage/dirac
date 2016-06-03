@@ -16,7 +16,8 @@ export DIRAC_AGENT_PORT=12041
 export DIRAC_NREPL_WEASEL_PORT=12042
 
 echo "Running all backend tests..."
-lein run-backend-tests-latest
+lein run-backend-tests-default
 lein run-backend-tests-17
+lein run-backend-tests-19
 
 popd
