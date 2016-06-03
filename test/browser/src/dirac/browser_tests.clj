@@ -284,4 +284,5 @@
     (execute-transcript-test! "repl")
     (execute-transcript-test! "completions"))
   (with-transcript-suite "suite02"
-    (execute-transcript-test! "clean-urls")))
+    (execute-transcript-test! "clean-urls")
+    (execute-transcript-test! "beautify-function-names")))

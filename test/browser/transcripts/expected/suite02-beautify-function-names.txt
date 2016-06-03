@@ -1,0 +1,51 @@
+ns               Testing dirac.tests.tasks.suite02.beautify-function-names
+automate         open-tab-with-scenario! ["breakpoint"]
+automate         open-devtools!
+extension        handling command: open-dirac-devtools
+extension        register devtools #1
+devtools #1      implant initialized
+devtools #1      reset devtools settings
+devtools #1      devtools ready
+devtools #1      setCurrentPanel: elements
+automate         trigger! [:pause-on-breakpoint]
+devtools #1      setCurrentPanel: sources
+automate #1      scrape! [:callstack-pane-functions]
+stdout           displayed 7 items:
+                  * breakpoint-demo / dirac.tests.scenarios.breakpoint.core/breakpoint-demo
+                  * breakpoint-demo-handler / dirac.tests.scenarios.breakpoint.core/breakpoint-demo-handler
+                  * (anonymous function)
+                  * call-trigger! / dirac.automation.scenario/call-trigger!
+                  * notification-handler! / dirac.automation.scenario/notification-handler!
+                  * process-notification! / dirac.automation.notifications/process-notification!
+                  * process-event! / dirac.automation.notifications/process-event!
+automate #1      close-devtools!
+extension        handling command: close-dirac-devtools
+extension        unregister devtools #1
+automate         close-tab-with-scenario! ["scenario-tab#1"]
+automate         open-tab-with-scenario! ["breakpoint"]
+automate         set-option! [:beautify-function-names false]
+automate         open-devtools!
+extension        handling command: open-dirac-devtools
+extension        register devtools #2
+devtools #2      implant initialized
+devtools #2      reset devtools settings
+devtools #2      devtools ready
+devtools #2      setCurrentPanel: elements
+automate         trigger! [:pause-on-breakpoint]
+devtools #2      setCurrentPanel: sources
+automate #2      scrape! [:callstack-pane-functions]
+stdout           displayed 7 items:
+                  * dirac$tests$scenarios$breakpoint$core$breakpoint_demo
+                  * dirac$tests$scenarios$breakpoint$core$breakpoint_demo_handler
+                  * (anonymous function)
+                  * dirac$automation$scenario$call_trigger_BANG_
+                  * dirac$automation$scenario$notification_handler_BANG_
+                  * dirac$automation$notifications$process_notification_BANG_
+                  * dirac$automation$notifications$process_event_BANG_
+automate #2      close-devtools!
+extension        handling command: close-dirac-devtools
+extension        unregister devtools #2
+automate         set-option! [:beautify-function-names true]
+automate         close-tab-with-scenario! ["scenario-tab#2"]
+summary          Automated 14 actions with 8 check-points containing 2 assertions.
+                 0 failures, 0 errors.
