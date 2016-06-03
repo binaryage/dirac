@@ -9,7 +9,8 @@
             [chromex.logging :refer-macros [log warn error info]]
             [cuerdas.core :as cuerdas]
             [dirac.automation.helpers :as helpers]
-            [dirac.utils :as utils]))
+            [dirac.utils :as utils]
+            [clojure.string :as string]))
 
 (defonce current-transcript (atom nil))
 (defonce transcript-enabled (volatile! 0))
@@ -171,10 +172,21 @@
                             [label "<elided stack trace log>"]))
     [label text]))
 
+(defn replace-rel-url-params [s]
+  (string/replace s #"rel=[0-9]+" "rel=***"))
+
+(defn replace-shortened-urls [s]
+  (string/replace s #"[0-9]+:" "***:"))
+
+(defn transformer [console-output]
+  (-> console-output
+      replace-shortened-urls
+      replace-rel-url-params))
+
 (defn process-default-state! [label text]
   (cond
     (re-find #"present-server-side-output! java-trace" text) (start-rewriting-machine-for-java-trace! label text)
-    :else [label text]))
+    :else [label (transformer text)]))                                                                                        ; TODO: make transformer pluggable
 
 (defn rewrite-transcript! [label text]
   (case (get-rewriting-machine-state)
