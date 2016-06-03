@@ -27,9 +27,4 @@
         (<!* a/simulate-console-input! "hello!")
         (is (= (<!* a/print-prompt!) "hello!"))
         (<!* a/clear-console-prompt!)
-        (is (= (<!* a/get-prompt-representation) ""))))
-    (testing "parinfer should not be present when disabled in options"
-      (with-options {:enable-parinfer false}
-        (with-devtools
-          (<!* a/switch-to-console-panel!)
-          (<!* a/wait-for-devtools-match "use-parinfer? false"))))))
+        (is (= (<!* a/get-prompt-representation) ""))))))

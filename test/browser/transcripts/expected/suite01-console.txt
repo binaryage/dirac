@@ -53,26 +53,6 @@ automate #1      get-prompt-representation
 automate #1      close-devtools!
 extension        handling command: close-dirac-devtools
 extension        unregister devtools #1
-automate         store-options!
-automate         set-options! [{:enable-parinfer false}]
-automate         open-devtools!
-extension        handling command: open-dirac-devtools
-extension        register devtools #2
-devtools #2      implant initialized
-devtools #2      reset devtools settings
-devtools #2      devtools ready
-devtools #2      setCurrentPanel: elements
-automate #2      switch-to-console-panel!
-devtools #2      console initialized
-devtools #2      adopt-prompt-element use-parinfer? false
-devtools #2      setDiracPromptMode('status')
-devtools #2      ConsoleView constructed
-devtools #2      displayWelcomeMessage
-devtools #2      setCurrentPanel: console
-automate #2      close-devtools!
-extension        handling command: close-dirac-devtools
-extension        unregister devtools #2
-automate         restore-options!
 automate         close-tab-with-scenario! ["scenario-tab#1"]
-summary          Automated 23 actions with 8 check-points containing 2 assertions.
+summary          Automated 17 actions with 7 check-points containing 2 assertions.
                  0 failures, 0 errors.
