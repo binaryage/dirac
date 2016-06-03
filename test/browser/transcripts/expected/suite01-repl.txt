@@ -51,7 +51,6 @@ devtools #1      DF.log>
                    Returns a lazy sequence of the items in coll for which
                    (pred item) returns true. pred must be free of side-effects.
                    Returns a transducer when no collection is provided.
-                 Spec
 devtools #1      DF.log> null
 devtools #1      repl eval job ended
 automate #1      console-exec-and-match! ["js/dirac" "log> Object"]
