@@ -4,7 +4,8 @@
             [chromex.logging :refer-macros [log warn error info]]
             [cljs.pprint :refer [pprint]]
             [com.rpl.specter :refer [must continue-then-stay multi-path if-path ALL STAY]]
-            [dirac.implant.automation.reps :refer [RepWalker query-selector select-subrep select-subreps build-rep]]
+            [dirac.implant.automation.reps :refer [select-subrep select-subreps build-rep]]
+            [dirac.dom :as dom]
             [clojure.string :as string]))
 
 ; -- helpers ----------------------------------------------------------------------------------------------------------------
@@ -33,7 +34,7 @@
   (= (oget el "textContent") "Call Stack"))
 
 (defn find-callstack-pane-element []
-  (let [title-els (query-selector "html /deep/ .sidebar-pane-title")]
+  (let [title-els (dom/query-selector "html /deep/ .sidebar-pane-title")]
     (if-let [callstack-title-el (select-first [ALL is-callstack-title-el?] title-els)]
       (oget callstack-title-el "nextElementSibling"))))
 
