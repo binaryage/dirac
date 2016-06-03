@@ -38,3 +38,11 @@
        (dirac.automation/<!* dirac.automation/open-devtools! ~@(if (some? params) [params]))
        ~@commands
        (dirac.automation/<!* dirac.automation/close-devtools!))))
+
+(defmacro with-options [options & body]
+  {:pre [(map? options)]}
+  `(do
+     (dirac.automation/<!* dirac.automation/store-options!)
+     (dirac.automation/<!* dirac.automation/set-options! ~options)
+     ~@body
+     (dirac.automation/<!* dirac.automation/restore-options!)))

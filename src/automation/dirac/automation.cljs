@@ -12,6 +12,7 @@
             [dirac.automation.transcript-host :as transcript]
             [dirac.automation.test :as test]
             [dirac.automation.notifications :as notifications]
+            [dirac.automation.options :as options]
             [dirac.utils :as utils]))
 
 (deftype DevToolsID [id])
@@ -66,8 +67,14 @@
 (defn wait-for-console-initialization [devtools-id]
   (wait-for-devtools-match devtools-id "console initialized"))
 
-(defn ^:without-devtools-id set-option! [key value]
-  (messages/set-option! key value))
+(defn ^:without-devtools-id set-options! [options]
+  (messages/set-options! options))
+
+(defn ^:without-devtools-id store-options! []
+  (options/store-options!))
+
+(defn ^:without-devtools-id restore-options! []
+  (options/restore-options!))
 
 (defn ^:without-devtools-id open-tab-with-scenario! [name & [params]]
   (messages/post-message! #js {:type "marion-open-tab-with-scenario" :url (helpers/get-scenario-url name params)}))

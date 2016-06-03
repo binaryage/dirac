@@ -47,7 +47,7 @@
         target-url (str debugging-host ":" debugging-port)]
     (when-not (= target-url (:target-url options-model/default-options))
       (info (str "Setting Dirac Extension :target-url option to " target-url))
-      (messages/set-option! :target-url target-url))))
+      (messages/set-options! {:target-url target-url}))))
 
 ; -- helpers ----------------------------------------------------------------------------------------------------------------
 
@@ -157,7 +157,7 @@
     ; information to our dirac extension settings
     (<! (setup-debugging-port!))
     ; open-as window is handy for debugging, becasue we can open internal devtools to inspect dirac frontend in case of errors
-    (<! (messages/set-option! :open-as "window"))))
+    (<! (messages/set-options! {:open-as "window"}))))
 
 (defn task-finished! []
   (when (running?)

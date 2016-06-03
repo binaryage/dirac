@@ -134,10 +134,16 @@
     (<! (marion-reset-state!))
     true))
 
-(defn set-option! [key value]
-  (post-extension-command! {:command :set-option
-                            :key     key
-                            :value   value}))
+(defn set-options! [options]
+  (post-extension-command! {:command :set-options
+                            :options options}))
+
+(defn reset-options! [options]
+  (post-extension-command! {:command :reset-options
+                            :options options}))
+
+(defn get-options! []
+  (post-extension-command! {:command :get-options}))
 
 (defn automate-dirac-frontend! [devtools-id action]
   (post-extension-command! {:command     :automate-dirac-frontend
