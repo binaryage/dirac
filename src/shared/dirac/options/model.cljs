@@ -50,6 +50,9 @@
   {:pre [*initialized*]}
   (reset! cached-options options))                                                                                            ; will trigger on-cached-options-change!
 
+(defn reset-to-defaults! []
+  (reset-options! default-options))
+
 ; -- serialization ----------------------------------------------------------------------------------------------------------
 
 (defn serialize-options [options]
