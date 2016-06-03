@@ -16,7 +16,6 @@ devtools #1      displayWelcomeMessage
 devtools #1      setCurrentPanel: console
 automate #1      switch-prompt-to-dirac!
 devtools #1      switched console prompt to 'dirac'
-devtools #1      console prompt focused
 devtools #1      repl initialized
 devtools #1      setDiracPromptStatusContent('Checking for Dirac Runtime presence in your app...')
 devtools #1      setDiracPromptStatusStyle('info')
@@ -26,7 +25,6 @@ devtools #1      wrap-with-postprocess-and-eval-in-current-context!
 devtools #1      wrap-with-postprocess-and-eval-in-current-context!
 devtools #1      setDiracPromptMode('edit')
 automate #1      enable-console-feedback!
-devtools #1      console prompt focused
 automate #1      console-exec-and-match! ["(in-ns 'dirac.tests.scenarios.completions.workspace)" "setDiracPromptNS('dirac.tests.scenarios.completions.workspace')"]
 devtools #1      DC.log> (in-ns 'dirac.tests.scenarios.completions.workspace)
 devtools #1      send-eval-request: (in-ns 'dirac.tests.scenarios.completions.workspace)

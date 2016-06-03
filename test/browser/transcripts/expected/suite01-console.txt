@@ -17,7 +17,6 @@ devtools #1      setCurrentPanel: console
 automate #1      enable-console-feedback!
 automate #1      simulate-console-action! ["CTRL+."]
 devtools #1      switched console prompt to 'dirac'
-devtools #1      console prompt focused
 devtools #1      repl initialized
 devtools #1      setDiracPromptStatusContent('Checking for Dirac Runtime presence in your app...')
 devtools #1      setDiracPromptStatusStyle('info')
@@ -27,23 +26,19 @@ devtools #1      wrap-with-postprocess-and-eval-in-current-context!
 devtools #1      wrap-with-postprocess-and-eval-in-current-context!
 devtools #1      setDiracPromptMode('edit')
 automate #1      simulate-console-action! ["CTRL+."]
-devtools #1      console prompt focused
 devtools #1      switched console prompt to 'js'
 automate #1      simulate-console-action! ["CTRL+."]
 devtools #1      switched console prompt to 'dirac'
-devtools #1      console prompt focused
 devtools #1      repl initialized
 automate #1      simulate-console-action! ["CTRL+,"]
 devtools #1      switched console prompt to 'js'
 automate #1      simulate-console-action! ["CTRL+."]
 devtools #1      switched console prompt to 'dirac'
-devtools #1      console prompt focused
 devtools #1      repl initialized
 automate #1      simulate-console-action! ["CTRL+."]
 devtools #1      switched console prompt to 'js'
 automate #1      simulate-console-action! ["CTRL+,"]
 devtools #1      switched console prompt to 'dirac'
-devtools #1      console prompt focused
 devtools #1      repl initialized
 automate #1      simulate-console-input! ["hello!"]
 automate #1      print-prompt!

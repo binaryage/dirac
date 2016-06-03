@@ -16,7 +16,6 @@ devtools #1      displayWelcomeMessage
 devtools #1      setCurrentPanel: console
 automate #1      switch-prompt-to-dirac!
 devtools #1      switched console prompt to 'dirac'
-devtools #1      console prompt focused
 devtools #1      repl initialized
 devtools #1      setDiracPromptStatusContent('Checking for Dirac Runtime presence in your app...')
 devtools #1      setDiracPromptStatusStyle('info')
@@ -27,7 +26,6 @@ devtools #1      wrap-with-postprocess-and-eval-in-current-context!
 devtools #1      wrap-with-postprocess-and-eval-in-current-context!
 devtools #1      setDiracPromptMode('edit')
 automate #1      close-devtools!
-devtools #1      console prompt focused
 extension        handling command: close-dirac-devtools
 extension        unregister devtools #1
 automate         close-tab-with-scenario! ["scenario-tab#1"]
@@ -48,7 +46,6 @@ devtools #2      displayWelcomeMessage
 devtools #2      setCurrentPanel: console
 automate #2      switch-prompt-to-dirac!
 devtools #2      switched console prompt to 'dirac'
-devtools #2      console prompt focused
 devtools #2      repl initialized
 devtools #2      setDiracPromptStatusContent('Checking for Dirac Runtime presence in your app...')
 devtools #2      setDiracPromptStatusStyle('info')
@@ -59,7 +56,6 @@ devtools #2      wrap-with-postprocess-and-eval-in-current-context!
 devtools #2      wrap-with-postprocess-and-eval-in-current-context!
 devtools #2      setDiracPromptMode('edit')
 automate #2      close-devtools!
-devtools #2      console prompt focused
 extension        handling command: close-dirac-devtools
 extension        unregister devtools #2
 automate         close-tab-with-scenario! ["scenario-tab#2"]
@@ -80,7 +76,6 @@ devtools #3      displayWelcomeMessage
 devtools #3      setCurrentPanel: console
 automate #3      switch-prompt-to-dirac!
 devtools #3      switched console prompt to 'dirac'
-devtools #3      console prompt focused
 devtools #3      repl initialized
 devtools #3      setDiracPromptStatusContent('Checking for Dirac Runtime presence in your app...')
 devtools #3      setDiracPromptStatusStyle('info')
@@ -92,7 +87,6 @@ devtools #3      wrap-with-postprocess-and-eval-in-current-context!
 devtools #3      wrap-with-postprocess-and-eval-in-current-context!
 devtools #3      setDiracPromptMode('edit')
 automate #3      close-devtools!
-devtools #3      console prompt focused
 extension        handling command: close-dirac-devtools
 extension        unregister devtools #3
 automate         close-tab-with-scenario! ["scenario-tab#3"]
@@ -113,7 +107,6 @@ devtools #4      displayWelcomeMessage
 devtools #4      setCurrentPanel: console
 automate #4      switch-prompt-to-dirac!
 devtools #4      switched console prompt to 'dirac'
-devtools #4      console prompt focused
 devtools #4      repl initialized
 devtools #4      setDiracPromptStatusContent('Checking for Dirac Runtime presence in your app...')
 devtools #4      setDiracPromptStatusStyle('info')
@@ -125,7 +118,6 @@ devtools #4      wrap-with-postprocess-and-eval-in-current-context!
 devtools #4      wrap-with-postprocess-and-eval-in-current-context!
 devtools #4      setDiracPromptMode('edit')
 automate #4      close-devtools!
-devtools #4      console prompt focused
 extension        handling command: close-dirac-devtools
 extension        unregister devtools #4
 automate         close-tab-with-scenario! ["scenario-tab#4"]
@@ -146,7 +138,6 @@ devtools #5      displayWelcomeMessage
 devtools #5      setCurrentPanel: console
 automate #5      switch-prompt-to-dirac!
 devtools #5      switched console prompt to 'dirac'
-devtools #5      console prompt focused
 devtools #5      repl initialized
 devtools #5      setDiracPromptStatusContent('Checking for Dirac Runtime presence in your app...')
 devtools #5      setDiracPromptStatusStyle('info')
@@ -175,7 +166,6 @@ devtools #6      displayWelcomeMessage
 devtools #6      setCurrentPanel: console
 automate #6      switch-prompt-to-dirac!
 devtools #6      switched console prompt to 'dirac'
-devtools #6      console prompt focused
 devtools #6      repl initialized
 devtools #6      setDiracPromptStatusContent('Checking for Dirac Runtime presence in your app...')
 devtools #6      setDiracPromptStatusStyle('info')
@@ -204,7 +194,6 @@ devtools #7      displayWelcomeMessage
 devtools #7      setCurrentPanel: console
 automate #7      switch-prompt-to-dirac!
 devtools #7      switched console prompt to 'dirac'
-devtools #7      console prompt focused
 devtools #7      repl initialized
 devtools #7      setDiracPromptStatusContent('Checking for Dirac Runtime presence in your app...')
 devtools #7      setDiracPromptStatusStyle('info')
@@ -232,7 +221,6 @@ devtools #8      displayWelcomeMessage
 devtools #8      setCurrentPanel: console
 automate #8      switch-prompt-to-dirac!
 devtools #8      switched console prompt to 'dirac'
-devtools #8      console prompt focused
 devtools #8      repl initialized
 devtools #8      setDiracPromptStatusContent('Checking for Dirac Runtime presence in your app...')
 devtools #8      setDiracPromptStatusStyle('info')
@@ -242,5 +230,5 @@ automate #8      close-devtools!
 extension        handling command: close-dirac-devtools
 extension        unregister devtools #8
 automate         close-tab-with-scenario! ["scenario-tab#8"]
-summary          Automated 48 actions with 22 check-points containing 0 assertions.
+summary          Automated 48 actions with 18 check-points containing 0 assertions.
                  0 failures, 0 errors.

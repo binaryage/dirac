@@ -67,9 +67,6 @@
 (defn wait-for-console-initialization [devtools-id]
   (wait-for-devtools-match devtools-id "console initialized"))
 
-(defn wait-for-console-focused [devtools-id]
-  (wait-for-devtools-match devtools-id "console prompt focused"))
-
 (defn ^:without-devtools-id set-options! [options]
   (messages/set-options! options))
 

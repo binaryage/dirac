@@ -452,7 +452,6 @@ WebInspector.ConsoleView.prototype = {
         // by focus().
         this._prompt.moveCaretToEndOfPrompt();
         WebInspector.setCurrentFocusElement(this._promptElement);
-        dirac.feedback("console prompt focused");
     },
 
     restoreScrollPositions: function()
