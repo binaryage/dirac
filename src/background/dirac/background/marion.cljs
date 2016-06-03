@@ -13,9 +13,18 @@
 
 ; -- marion event handlers --------------------------------------------------------------------------------------------------
 
-(defn set-option! [message-id message]
+(defn set-options! [message-id message]
   (go
-    (options/set-option! (:key message) (:value message))
+    (options/set-options! (:options message))
+    (state/post-reply! message-id)))
+
+(defn get-options! [message-id _message]
+  (go
+    (state/post-reply! message-id (options/get-options))))
+
+(defn reset-options! [message-id message]
+  (go
+    (options/reset-options! (:options message))
     (state/post-reply! message-id)))
 
 (defn reset-state! [message-id _message]
@@ -82,7 +91,9 @@
         command (:command message)]
     (log "process-marion-message" message-id command (envelope message))
     (case command
-      :set-option (set-option! message-id message)
+      :get-options (get-options! message-id message)
+      :reset-options (reset-options! message-id message)
+      :set-options (set-options! message-id message)
       :reset-state (reset-state! message-id message)
       :fire-synthetic-chrome-event (fire-synthetic-chrome-event! context message-id message)
       :automate-dirac-frontend (automate-dirac-frontend! message-id message)
