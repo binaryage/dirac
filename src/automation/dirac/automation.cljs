@@ -118,6 +118,16 @@
       (println content)
       content)))
 
+(defn scrape [devtools-id scraper-name]
+  (automate-dirac-frontend! devtools-id {:action :scrape
+                                         :scraper scraper-name}))
+
+(defn scrape! [devtools-id scraper-name]
+  (go
+    (let [content (<! (scrape devtools-id scraper-name))]
+      (println (str content))
+      content)))
+
 (defn simulate-console-input! [devtools-id input]
   {:pre [(string? input)]}
   (automate-dirac-frontend! devtools-id {:action :dispatch-console-prompt-input
