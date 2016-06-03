@@ -4,7 +4,8 @@
             [cljs.reader :as reader]
             [dirac.settings :refer-macros [get-automation-entry-point-key]]
             [dirac.utils :as utils]
-            [dirac.implant.helpers :as helpers :refer [get-console-view get-inspector-view]]))
+            [dirac.implant.helpers :as helpers :refer [get-console-view get-inspector-view]]
+            [dirac.implant.automation.scrapers :refer [scrape]]))
 
 ; -- automation actions -----------------------------------------------------------------------------------------------------
 
@@ -110,6 +111,7 @@
     :disable-console-feedback (disable-console-feedback!)
     :get-suggest-box-representation (get-suggest-box-representation)
     :get-prompt-representation (get-prompt-representation)
+    :scrape (scrape (:scraper command))
     (warn "received unknown automation command:" (pr-str command))))
 
 ; -- automation -------------------------------------------------------------------------------------------------------------
