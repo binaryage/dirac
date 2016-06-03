@@ -1,0 +1,42 @@
+ns               Testing dirac.tests.tasks.suite02.welcome-message
+automate         open-tab-with-scenario! ["normal"]
+automate         open-devtools!
+extension        handling command: open-dirac-devtools
+extension        register devtools #1
+devtools #1      implant initialized
+devtools #1      reset devtools settings
+devtools #1      devtools ready
+devtools #1      setCurrentPanel: elements
+automate #1      switch-to-console-panel!
+devtools #1      console initialized
+devtools #1      adopt-prompt-element use-parinfer? true
+devtools #1      setDiracPromptMode('status')
+devtools #1      ConsoleView constructed
+devtools #1      displayWelcomeMessage
+devtools #1      setCurrentPanel: console
+automate #1      close-devtools!
+extension        handling command: close-dirac-devtools
+extension        unregister devtools #1
+automate         store-options!
+automate         set-options! [{:welcome-message false}]
+automate         open-devtools!
+extension        handling command: open-dirac-devtools
+extension        register devtools #2
+devtools #2      implant initialized
+devtools #2      reset devtools settings
+devtools #2      devtools ready
+devtools #2      setCurrentPanel: elements
+automate #2      switch-to-console-panel!
+devtools #2      console initialized
+devtools #2      adopt-prompt-element use-parinfer? true
+devtools #2      setDiracPromptMode('status')
+devtools #2      ConsoleView constructed
+devtools #2      !dirac.hasWelcomeMessage
+devtools #2      setCurrentPanel: console
+automate #2      close-devtools!
+extension        handling command: close-dirac-devtools
+extension        unregister devtools #2
+automate         restore-options!
+automate         close-tab-with-scenario! ["scenario-tab#1"]
+summary          Automated 11 actions with 2 check-points containing 0 assertions.
+                 0 failures, 0 errors.
