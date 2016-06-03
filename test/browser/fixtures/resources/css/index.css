@@ -1,5 +1,5 @@
 html {
-    font-family: courier;
+    font-family: courier, monospace;
     font-size: 12px;
 }
 
@@ -11,6 +11,7 @@ html {
     font-weight: bold;
     display: block;
     margin-bottom: 6px;
+    margin-top: 20px;
 }
 
 .tasks .suite-list {
