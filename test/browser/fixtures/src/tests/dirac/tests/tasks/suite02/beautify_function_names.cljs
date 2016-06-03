@@ -3,7 +3,7 @@
             [cljs.test :refer-macros [is testing]]
             [dirac.utils :refer [line-count]]
             [dirac.settings :refer-macros [seconds minutes]]
-            [dirac.automation :refer-macros [<!* go-task with-scenario with-devtools] :as a]))
+            [dirac.automation :refer-macros [<!* go-task with-scenario with-devtools with-options] :as a]))
 
 (go-task
   (with-scenario "breakpoint"
@@ -17,12 +17,11 @@
         (<!* a/wait-for-match "* call-trigger! / dirac.automation.scenario/call-trigger!"))))
   (with-scenario "breakpoint"
     (testing "disabled :beautify-function-names feature"
-      (<!* a/set-option! :beautify-function-names false)
-      (with-devtools
-        (<!* a/trigger! :pause-on-breakpoint)
-        (<!* a/wait-for-devtools-match "setCurrentPanel: sources")
-        (is (= (line-count (<!* a/scrape! :callstack-pane-functions)) 8))
-        (<!* a/wait-for-match "* dirac$tests$scenarios$breakpoint$core$breakpoint_demo")
-        (<!* a/wait-for-match "* (anonymous function)")
-        (<!* a/wait-for-match "* dirac$automation$scenario$call_trigger_BANG_"))
-      (<!* a/set-option! :beautify-function-names true))))
+      (with-options {:beautify-function-names false}
+        (with-devtools
+          (<!* a/trigger! :pause-on-breakpoint)
+          (<!* a/wait-for-devtools-match "setCurrentPanel: sources")
+          (is (= (line-count (<!* a/scrape! :callstack-pane-functions)) 8))
+          (<!* a/wait-for-match "* dirac$tests$scenarios$breakpoint$core$breakpoint_demo")
+          (<!* a/wait-for-match "* (anonymous function)")
+          (<!* a/wait-for-match "* dirac$automation$scenario$call_trigger_BANG_"))))))

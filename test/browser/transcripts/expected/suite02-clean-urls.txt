@@ -23,7 +23,8 @@ extension        handling command: close-dirac-devtools
 extension        unregister devtools #1
 automate         close-tab-with-scenario! ["scenario-tab#1"]
 automate         open-tab-with-scenario! ["breakpoint"]
-automate         set-option! [:clean-urls false]
+automate         store-options!
+automate         set-options! [{:clean-urls false}]
 automate         open-devtools!
 extension        handling command: open-dirac-devtools
 extension        register devtools #2
@@ -45,7 +46,7 @@ stdout           displayed 7 items:
 automate #2      close-devtools!
 extension        handling command: close-dirac-devtools
 extension        unregister devtools #2
-automate         set-option! [:clean-urls true]
+automate         restore-options!
 automate         close-tab-with-scenario! ["scenario-tab#2"]
-summary          Automated 14 actions with 4 check-points containing 2 assertions.
+summary          Automated 15 actions with 4 check-points containing 2 assertions.
                  0 failures, 0 errors.
