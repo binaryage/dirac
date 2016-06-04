@@ -410,18 +410,28 @@ Object.assign(window.dirac, (function() {
         return Promise.all(promises).then(concatResults).then(extractNamespaceNames);
     }
 
+    var extractNamespacesAsyncInFlightPromise = null;
+
     function extractNamespacesAsync() {
         if (dirac._namespacesCache) {
             return Promise.resolve(dirac._namespacesCache);
         }
 
-        return new Promise(resolve => {
-            extractNamespacesAsyncWorker().then(result => {
-                dirac._namespacesCache = result;
-                startListeningForWorkspaceChanges();
-                resolve(result);
-            });
+        // extractNamespacesAsync can take some time parsing all namespaces
+        // it could happen that extractNamespacesAsync() is called multiple times from code-completion code
+        // here we cache in-flight promise to prevent that
+        if (extractNamespacesAsyncInFlightPromise) {
+            return extractNamespacesAsyncInFlightPromise;
+        }
+
+        extractNamespacesAsyncInFlightPromise = extractNamespacesAsyncWorker().then(result => {
+            dirac._namespacesCache = result;
+            startListeningForWorkspaceChanges();
+            return result;
         });
+
+        extractNamespacesAsyncInFlightPromise.then(result => extractNamespacesAsyncInFlightPromise = null);
+        return extractNamespacesAsyncInFlightPromise;
     }
 
     function invalidateNamespacesCache() {
