@@ -373,43 +373,41 @@ Object.assign(window.dirac, (function() {
 // --- namespace names ------------------------------------------------------------------------------------------------------
 
     function extractNamespacesAsyncWorker() {
-        var workspace = WebInspector.workspace;
+        const workspace = WebInspector.workspace;
         if (!workspace) {
             console.error("unable to locate WebInspector.workspace when extracting all ClojureScript namespace names");
             return Promise.resolve([]);
         }
 
-        return new Promise(resolve => {
-            const uiSourceCodes = getRelevantSourceCodes(workspace);
-            const promises = [];
-            for (var i = 0; i < uiSourceCodes.length; i++) {
-                const uiSourceCode = uiSourceCodes[i];
-                if (!uiSourceCode) {
-                    continue;
-                }
-                const script = getScriptFromSourceCode(uiSourceCode);
-                if (!script) {
-                    continue;
-                }
-                promises.push(parseNamespacesDescriptorsAsync(/** @type {!WebInspector.Script} */(script)));
+        const uiSourceCodes = getRelevantSourceCodes(workspace);
+        const promises = [];
+        for (var i = 0; i < uiSourceCodes.length; i++) {
+            const uiSourceCode = uiSourceCodes[i];
+            if (!uiSourceCode) {
+                continue;
             }
+            const script = getScriptFromSourceCode(uiSourceCode);
+            if (!script) {
+                continue;
+            }
+            promises.push(parseNamespacesDescriptorsAsync(/** @type {!WebInspector.Script} */(script)));
+        }
 
-            const concatResults = results => {
-                return [].concat.apply([], results);
+        const concatResults = results => {
+            return [].concat.apply([], results);
+        };
+
+        const extractNamespaceNames =
+            /**
+             *
+             * @param {!Array<?dirac.NamespaceDescriptor>} namespaceDescriptors
+             * @return {!Array<string>}
+             */
+                (namespaceDescriptors) => {
+                return namespaceDescriptors.filter(desc => !!desc).map(desc => desc.name);
             };
 
-            const extractNamespaceNames =
-                /**
-                 *
-                 * @param {!Array<?dirac.NamespaceDescriptor>} namespaceDescriptors
-                 * @return {!Array<string>}
-                 */
-                    (namespaceDescriptors) => {
-                    return namespaceDescriptors.filter(desc => !!desc).map(desc => desc.name);
-                };
-
-            Promise.all(promises).then(concatResults).then(extractNamespaceNames).then(resolve);
-        });
+        return Promise.all(promises).then(concatResults).then(extractNamespaceNames);
     }
 
     function extractNamespacesAsync() {
