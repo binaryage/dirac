@@ -1,8 +1,10 @@
 (ns dirac.implant
-  (:require-macros [cljs.core.async.macros :refer [go go-loop]])
+  (:require-macros [cljs.core.async.macros :refer [go go-loop]]
+                   [cljs.analyzer.macros :refer [no-warn]])
   (:require [cljs.core.async :refer [put! <! chan timeout alts! close!]]
             [cljs.tools.reader.reader-types :as tools-reader-types]
             [clojure.tools.namespace.parse :as ns-parse]
+            [devtools.toolbox :refer [envelope]]
             [chromex.support :refer-macros [oget oset ocall oapply]]
             [chromex.logging :refer-macros [log warn error info]]
             [dirac.utils :refer-macros [runonce]]
@@ -13,7 +15,8 @@
             [dirac.implant.version :refer [version]]
             [dirac.implant.eval :as eval]
             [dirac.implant.feedback :as feedback]
-            [clojure.string :as string]))
+            [clojure.string :as string]
+            [cljs.analyzer :as ana]))
 
 (defonce ^:dynamic *console-initialized* false)
 (defonce ^:dynamic *implant-initialized* false)
@@ -59,10 +62,43 @@
 (defn ns-to-relpath [ns ext]
   (str (string/replace (munge ns) \. \/) "." (name ext)))
 
-(defn parse-ns-from-source [source]
+(defn analyze-ns [ns-form opts]
+  (let [env (ana/empty-env)]
+    (no-warn (ana/analyze env ns-form nil opts))))
+
+(defn parse-ns-form [source]
   (let [reader (tools-reader-types/string-push-back-reader source)]
-    (when-let [ns-decl (ns-parse/read-ns-decl reader)]
-      #js {:name (str (ns-parse/name-from-ns-decl ns-decl))})))
+    (ns-parse/read-ns-decl reader)))
+
+(defn remove-identical-mappings [mapping]
+  (into {} (remove (fn [[alias ns]] (= alias ns)) mapping)))
+
+(defn get-aliases [mapping]
+  (let [aliases (remove-identical-mappings mapping)]
+    (if-not (empty? aliases)
+      (clj->js aliases))))
+
+(defn get-uses [mapping]
+  (let [uses (remove-identical-mappings mapping)]
+    (if-not (empty? uses)
+      (clj->js uses))))
+
+(defn parse-ns-from-source* [source]
+  (when-let [ns-form (parse-ns-form source)]
+    (let [ast (analyze-ns ns-form {})
+          ns-descriptor #js {:name     (str (:name ast))
+                             :aliases  (get-aliases (:requires ast))
+                             :maliases (get-aliases (:require-macros ast))
+                             :uses     (get-uses (:uses ast))
+                             :muses    (get-uses (:use-macros ast))}]
+      ;(log "parse-ns-from-source" ns-descriptor (envelope source) (envelope ast))
+      ns-descriptor)))
+
+(defn parse-ns-from-source [source]
+  (try
+    (parse-ns-from-source* source)
+    (catch :default e
+      (error "Unable to parse namespace from source" (envelope source) "\n" e))))
 
 (defn is-cljs-function-name? [munged-name]
   (some? (re-matches #"^[^$]+\$[^$]+\$.*$" munged-name)))                                                                     ; must have at least two dollars but not at the beginning
