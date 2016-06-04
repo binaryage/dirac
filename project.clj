@@ -140,7 +140,8 @@
                                        "src/lib"
                                        "src/agent"
                                        "src/nrepl"
-                                       "src/shared"]
+                                       "src/shared"
+                                       "test/browser/fixtures/src/tests"]
               :test-paths   ["src/test"
                              "test/browser/src"
                              "test/backend/src"]}
