@@ -404,7 +404,7 @@ var dirac = {
     */
     extractNamespaceSymbolsAsync: function(namespaceName) {},
     /**
-    * @return {!Promise<Array.<string>>}
+    * @return {!Promise<!Array.<dirac.NamespaceDescriptor>>}
     */
     extractNamespacesAsync: function() {},
 
@@ -481,7 +481,7 @@ dirac.ScopeFrame;
 dirac.ScopeInfo;
 
 /**
- * @typedef {{name:!string, url:!string}}
+ * @typedef {{name:!string, url:!string, aliases:?Object.<string, string>, uses:?Object.<string, string>, maliases:?Object.<string, string>, muses:?Object.<string, string>}}
  */
 dirac.NamespaceDescriptor;
 

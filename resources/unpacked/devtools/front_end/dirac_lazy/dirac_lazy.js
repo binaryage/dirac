@@ -142,7 +142,7 @@ Object.assign(window.dirac, (function() {
 
     /**
      * @param {!WebInspector.Script} script
-     * @return {!Promise<!Array<?dirac.NamespaceDescriptor>>}
+     * @return {!Promise<!Array<dirac.NamespaceDescriptor>>}
      * @suppressGlobalPropertiesCheck
      */
     function parseNamespacesDescriptorsAsync(script) {
@@ -167,7 +167,18 @@ Object.assign(window.dirac, (function() {
             promises.push(namespaceDescriptorPromise);
         }
 
-        return Promise.all(promises);
+        const removeNullDescriptors =
+            /**
+             *
+             * @param {!Array<?dirac.NamespaceDescriptor>} namespaceDescriptors
+             * @return {!Array<dirac.NamespaceDescriptor>}
+             */
+            namespaceDescriptors => {
+                return namespaceDescriptors.filter(descriptor => !!descriptor);
+            };
+
+        // parseClojureScriptNamespace may fail and return null, so we filter out null results after gathering all results
+        return Promise.all(promises).then(removeNullDescriptors);
     }
 
 // --- changes --------------------------------------------------------------------------------------------------------------
@@ -397,17 +408,7 @@ Object.assign(window.dirac, (function() {
             return [].concat.apply([], results);
         };
 
-        const extractNamespaceNames =
-            /**
-             *
-             * @param {!Array<?dirac.NamespaceDescriptor>} namespaceDescriptors
-             * @return {!Array<string>}
-             */
-                (namespaceDescriptors) => {
-                return namespaceDescriptors.filter(desc => !!desc).map(desc => desc.name);
-            };
-
-        return Promise.all(promises).then(concatResults).then(extractNamespaceNames);
+        return Promise.all(promises).then(concatResults);
     }
 
     var extractNamespacesAsyncInFlightPromise = null;

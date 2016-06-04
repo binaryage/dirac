@@ -490,9 +490,13 @@ WebInspector.DiracPromptWithHistory.prototype = {
                 return [].concat.apply([], results);
             };
 
+            const extractNamespaceNames = namespaceDescriptors => {
+                return namespaceDescriptors.map(descriptor => descriptor.name);
+            };
+
             const localsPromise = dirac.extractScopeInfoFromScopeChainAsync(debuggerModel.selectedCallFrame()).then(extractAndAnnotateLocals);
             const currentNSSymbolsPromise = dirac.extractNamespaceSymbolsAsync(this._currentClojureScriptNamespace).then(annotateSymbols.bind(this, "suggest-cljs-in-ns"));
-            const namespacesPromise = dirac.extractNamespacesAsync().then(annotateNamespaces);
+            const namespacesPromise = dirac.extractNamespacesAsync().then(extractNamespaceNames).then(annotateNamespaces);
             const cljsCoreNSSymbolsPromise = dirac.extractNamespaceSymbolsAsync("cljs.core").then(annotateSymbols.bind(this, "suggest-cljs-core"));
 
             const jobs = [localsPromise, currentNSSymbolsPromise, namespacesPromise, cljsCoreNSSymbolsPromise];
