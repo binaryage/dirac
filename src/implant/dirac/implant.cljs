@@ -1,9 +1,6 @@
 (ns dirac.implant
-  (:require-macros [cljs.core.async.macros :refer [go go-loop]]
-                   [cljs.analyzer.macros :refer [no-warn]])
+  (:require-macros [cljs.core.async.macros :refer [go go-loop]])
   (:require [cljs.core.async :refer [put! <! chan timeout alts! close!]]
-            [cljs.tools.reader.reader-types :as tools-reader-types]
-            [clojure.tools.namespace.parse :as ns-parse]
             [devtools.toolbox :refer [envelope]]
             [chromex.support :refer-macros [oget oset ocall oapply]]
             [chromex.logging :refer-macros [log warn error info]]
@@ -15,8 +12,8 @@
             [dirac.implant.version :refer [version]]
             [dirac.implant.eval :as eval]
             [dirac.implant.feedback :as feedback]
-            [clojure.string :as string]
-            [cljs.analyzer :as ana]))
+            [dirac.implant.analyzer :as analyzer]
+            [clojure.string :as string]))
 
 (defonce ^:dynamic *console-initialized* false)
 (defonce ^:dynamic *implant-initialized* false)
@@ -62,47 +59,9 @@
 (defn ns-to-relpath [ns ext]
   (str (string/replace (munge ns) \. \/) "." (name ext)))
 
-(defn analyze-ns [ns-form opts]
-  (let [env (ana/empty-env)]
-    (no-warn (ana/analyze env ns-form nil opts))))
-
-(defn parse-ns-form [source]
-  (let [reader (tools-reader-types/string-push-back-reader source)]
-    (ns-parse/read-ns-decl reader)))
-
-(defn remove-identical-mappings [mapping]
-  (into {} (remove (fn [[alias ns]] (= alias ns)) mapping)))
-
-(defn get-aliases [mapping]
-  (let [aliases (remove-identical-mappings mapping)]
-    (if-not (empty? aliases)
-      (clj->js aliases))))
-
-(defn get-uses [mapping]
-  (let [uses (remove-identical-mappings mapping)]
-    (if-not (empty? uses)
-      (clj->js uses))))
-
-(defn collect-macro-namespaces [ast]
-  (let [{:keys [use-macros require-macros]} ast]
-    (-> (concat (vals use-macros) (vals require-macros))
-        (sort)
-        (dedupe)
-        (clj->js))))
-
-(defn parse-ns-from-source* [source]
-  (when-let [ns-form (parse-ns-form source)]
-    (let [ast (analyze-ns ns-form {})]
-      #js {"name"                    (str (:name ast))
-           "namespaceAliases"        (get-aliases (:requires ast))
-           "macroNamespaceAliases"   (get-aliases (:require-macros ast))
-           "namespaceRefers"         (get-uses (:uses ast))
-           "macroRefers"             (get-uses (:use-macros ast))
-           "detectedMacroNamespaces" (collect-macro-namespaces ast)})))
-
 (defn parse-ns-from-source [source]
   (try
-    (parse-ns-from-source* source)
+    (analyzer/parse-ns-from-source source)
     (catch :default e
       (error "Unable to parse namespace from source" (envelope source) "\n" e))))
 
