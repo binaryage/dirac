@@ -18,6 +18,8 @@ DEVTOOLS_BRANCH="devtools"
 DIFF_BRANCH="devtools-diff"
 DEVTOOLS_CHROMIUM_PREFIX="third_party/WebKit/Source/devtools"
 CHROMIUM_MIRROR_DEVTOOLS_DIR="$CHROMIUM_MIRROR_DIR/$DEVTOOLS_CHROMIUM_PREFIX"
+CHROMIUM_MIRROR_WEBKIT_SOURCE_DIR="$CHROMIUM_MIRROR_DIR/third_party/WebKit/Source"
+CHROMIUM_MIRROR_WEBKIT_SOURCE_BUILD_DIR="$CHROMIUM_MIRROR_WEBKIT_SOURCE_DIR/_build"
 DEVTOOLS_DIRAC_PREFIX="resources/unpacked/devtools"
 DEVTOOLS_ROOT="$ROOT/$DEVTOOLS_DIRAC_PREFIX"
 DIRAC_USER_PROFILE=${DIRAC_USER_PROFILE:-".profiles/dirac"}
@@ -46,7 +48,7 @@ DEV_MARION_EXTENSION_PATH="$ROOT/test/marion/resources/unpacked"
 TMP_DIR="/tmp/dirac-tmp"
 TEST_CANARY_FLAG_FILE="$TMP_DIR/canary-flag"
 NOTIFY_DIR="$ROOT/.notify"
-PROTOCOL_JSON_FILE="$DEVTOOLS_ROOT/protocol.json"
+PROTOCOL_JSON_FILE="$CHROMIUM_MIRROR_WEBKIT_SOURCE_BUILD_DIR/gen/blink/core/inspector/protocol.json"
 #PROTOCOL_EXTERNS_OUTPUT_FILE="$DEVTOOLS_ROOT/front_end/protocol_externs.js" ! compile_frontend.py will delete this file
 PROTOCOL_EXTERNS_OUTPUT_FILE="$DEVTOOLS_ROOT/front_end/generated_protocol_externs.js" # filename must differ from protocol_externs.js
 

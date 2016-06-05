@@ -6,8 +6,10 @@ set -e
 
 pushd "$ROOT"
 
+./scripts/pull-chromium.sh
+./scripts/generate-protocol-json.sh
 ./scripts/generate-inspector-backend-commands.sh
 ./scripts/generate-supported-css-properties.sh
-./scripts/generate-protocol-externs.sh
+# ./scripts/generate-protocol-externs.sh
 
 popd

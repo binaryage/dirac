@@ -4,13 +4,6 @@ set -e
 
 . "$(dirname "${BASH_SOURCE[0]}")/config.sh"
 
-pushd "$CHROMIUM_MIRROR_DIR"
-
-git checkout master
-git pull
-
-popd
-
 pushd "$DEVTOOLS_ROOT"
 
 if [ -f "$CSS_PROPERTIES_SOURCE" ]; then

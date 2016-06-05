@@ -6,6 +6,6 @@ set -e
 
 pushd "$DEVTOOLS_ROOT"
 
-python scripts/CodeGeneratorFrontend.py protocol.json --output_js_dir "$DEVTOOLS_ROOT/front_end"
+python scripts/CodeGeneratorFrontend.py "$PROTOCOL_JSON_FILE" --output_js_dir "$DEVTOOLS_ROOT/front_end"
 
 popd
