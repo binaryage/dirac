@@ -173,11 +173,11 @@
     content: "refer";
 }
 
-.suggest-box .suggest-box-content-item.suggest-aliased .prefix {
+.suggest-box .suggest-box-content-item.suggest-cljs-aliased .prefix {
     color: #ccc;
 }
 
-.suggest-box .suggest-box-content-item.suggest-aliased .suffix {
+.suggest-box .suggest-box-content-item.suggest-cljs-aliased .suffix {
     color: #ccc;
 }
 

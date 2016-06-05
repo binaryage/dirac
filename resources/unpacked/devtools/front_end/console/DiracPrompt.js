@@ -587,7 +587,7 @@ WebInspector.DiracPromptWithHistory.prototype = {
                     if (!current.className) {
                         current.className = "";
                     }
-                    current.className += " suggest-aliased";
+                    current.className += " suggest-cljs-aliased";
                 }
             }
             previous = current;
