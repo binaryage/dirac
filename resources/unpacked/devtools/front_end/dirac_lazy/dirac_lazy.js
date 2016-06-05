@@ -100,8 +100,6 @@ Object.assign(window.dirac, (function() {
 
 // --- helpers --------------------------------------------------------------------------------------------------------------
 
-    var namespacesSymbolsCache = new Map();
-
     /**
      * @param {string} namespaceName
      * @return {function(string)}
@@ -185,6 +183,8 @@ Object.assign(window.dirac, (function() {
 // this is to reflect dynamically updated files e.g. by Figwheel
 
     var listeningForWorkspaceChanges = false;
+    var namespacesSymbolsCache = new Map();
+    var macroNamespacesSymbolsCache = new Map();
 
     function invalidateNamespaceSymbolsMatchingUrl(url) {
         for (let namespaceName of namespacesSymbolsCache.keys()) {
@@ -261,7 +261,76 @@ Object.assign(window.dirac, (function() {
         listeningForWorkspaceChanges = false;
     }
 
-// --- namespace symbols ----------------------------------------------------------------------------------------------------
+    // --- namespace names --------------------------------------------------------------------------------------------------
+
+    function extractNamespacesAsyncWorker() {
+        const workspace = WebInspector.workspace;
+        if (!workspace) {
+            console.error("unable to locate WebInspector.workspace when extracting all ClojureScript namespace names");
+            return Promise.resolve([]);
+        }
+
+        const uiSourceCodes = getRelevantSourceCodes(workspace);
+        const promises = [];
+        for (var i = 0; i < uiSourceCodes.length; i++) {
+            const uiSourceCode = uiSourceCodes[i];
+            if (!uiSourceCode) {
+                continue;
+            }
+            const script = getScriptFromSourceCode(uiSourceCode);
+            if (!script) {
+                continue;
+            }
+            promises.push(parseNamespacesDescriptorsAsync(/** @type {!WebInspector.Script} */(script)));
+        }
+
+        const concatResults = results => {
+            return [].concat.apply([], results);
+        };
+
+        return Promise.all(promises).then(concatResults);
+    }
+
+    function prepareNamespacesCache(namespaceDescriptors) {
+        const result = {};
+        for (let descriptor of namespaceDescriptors) {
+            result[descriptor.name] = descriptor;
+        }
+        return result;
+    }
+
+    var extractNamespacesAsyncInFlightPromise = null;
+
+    function extractNamespacesAsync() {
+        if (dirac._namespacesCache) {
+            return Promise.resolve(dirac._namespacesCache);
+        }
+
+        // extractNamespacesAsync can take some time parsing all namespaces
+        // it could happen that extractNamespacesAsync() is called multiple times from code-completion code
+        // here we cache in-flight promise to prevent that
+        if (extractNamespacesAsyncInFlightPromise) {
+            return extractNamespacesAsyncInFlightPromise;
+        }
+
+        extractNamespacesAsyncInFlightPromise = extractNamespacesAsyncWorker().then(descriptors => {
+            dirac._namespacesCache = prepareNamespacesCache(descriptors);
+            startListeningForWorkspaceChanges();
+            return dirac._namespacesCache;
+        });
+
+        extractNamespacesAsyncInFlightPromise.then(result => extractNamespacesAsyncInFlightPromise = null);
+        return extractNamespacesAsyncInFlightPromise;
+    }
+
+    function invalidateNamespacesCache() {
+        if (dirac._DEBUG_COMPLETIONS) {
+            console.log("invalidateNamespacesCache");
+        }
+        dirac._namespacesCache = null;
+    }
+
+    // --- namespace symbols ------------------------------------------------------------------------------------------------
 
     /**
      * @param {!Array<!WebInspector.UISourceCode>} uiSourceCodes
@@ -361,17 +430,17 @@ Object.assign(window.dirac, (function() {
         if (!namespaceName) {
             return Promise.resolve([]);
         }
+
         if (namespacesSymbolsCache.has(namespaceName)) {
-            return Promise.resolve(namespacesSymbolsCache.get(namespaceName));
+            return namespacesSymbolsCache.get(namespaceName);
         }
 
-        return new Promise(resolve => {
-            extractNamespaceSymbolsAsyncWorker(namespaceName).then(result => {
-                namespacesSymbolsCache.set(namespaceName, result);
-                startListeningForWorkspaceChanges();
-                resolve(result);
-            });
-        });
+        const promisedResult = extractNamespaceSymbolsAsyncWorker(namespaceName);
+
+        namespacesSymbolsCache.set(namespaceName, promisedResult);
+
+        startListeningForWorkspaceChanges();
+        return promisedResult;
     }
 
     function invalidateNamespaceSymbolsCache(namespaceName) {
@@ -381,65 +450,58 @@ Object.assign(window.dirac, (function() {
         namespacesSymbolsCache.delete(namespaceName);
     }
 
-// --- namespace names ------------------------------------------------------------------------------------------------------
+    // --- macro namespaces symbols -----------------------------------------------------------------------------------------
+    //
+    // a situation is a bit more tricky here
+    // we don't have source mapping to clojure land in case of macro .clj files (makes no sense)
+    // but thanks to our access to all existing (ns ...) forms in the project we can infer at least some information
+    // we can at least collect macro symbols referred to via :refer
 
-    function extractNamespacesAsyncWorker() {
-        const workspace = WebInspector.workspace;
-        if (!workspace) {
-            console.error("unable to locate WebInspector.workspace when extracting all ClojureScript namespace names");
+    function extractMacroNamespaceSymbolsAsyncWorker(namespaceName) {
+
+        // TODO: we probably want to cache this
+        const collectMacroSymbols = namespaceDescriptors => {
+            const symbols = [];
+            for (const descriptor of Object.values(namespaceDescriptors)) {
+                const refers = descriptor.macroRefers;
+                if (!refers) {
+                    continue;
+                }
+                for (const symbol of Object.keys(refers)) {
+                    const ns = refers[symbol];
+                    if (ns == namespaceName) {
+                        symbols.push(symbol);
+                    }
+                }
+            }
+            return dirac.deduplicate(symbols);
+        };
+
+        return dirac.extractNamespacesAsync().then(collectMacroSymbols);
+    }
+
+    function extractMacroNamespaceSymbolsAsync(namespaceName) {
+        if (!namespaceName) {
             return Promise.resolve([]);
         }
 
-        const uiSourceCodes = getRelevantSourceCodes(workspace);
-        const promises = [];
-        for (var i = 0; i < uiSourceCodes.length; i++) {
-            const uiSourceCode = uiSourceCodes[i];
-            if (!uiSourceCode) {
-                continue;
-            }
-            const script = getScriptFromSourceCode(uiSourceCode);
-            if (!script) {
-                continue;
-            }
-            promises.push(parseNamespacesDescriptorsAsync(/** @type {!WebInspector.Script} */(script)));
+        if (macroNamespacesSymbolsCache.has(namespaceName)) {
+            return macroNamespacesSymbolsCache.get(namespaceName);
         }
 
-        const concatResults = results => {
-            return [].concat.apply([], results);
-        };
+        const promisedResult = extractMacroNamespaceSymbolsAsyncWorker(namespaceName);
 
-        return Promise.all(promises).then(concatResults);
+        macroNamespacesSymbolsCache.set(namespaceName, promisedResult);
+
+        startListeningForWorkspaceChanges();
+        return promisedResult;
     }
 
-    var extractNamespacesAsyncInFlightPromise = null;
-
-    function extractNamespacesAsync() {
-        if (dirac._namespacesCache) {
-            return Promise.resolve(dirac._namespacesCache);
-        }
-
-        // extractNamespacesAsync can take some time parsing all namespaces
-        // it could happen that extractNamespacesAsync() is called multiple times from code-completion code
-        // here we cache in-flight promise to prevent that
-        if (extractNamespacesAsyncInFlightPromise) {
-            return extractNamespacesAsyncInFlightPromise;
-        }
-
-        extractNamespacesAsyncInFlightPromise = extractNamespacesAsyncWorker().then(result => {
-            dirac._namespacesCache = result;
-            startListeningForWorkspaceChanges();
-            return result;
-        });
-
-        extractNamespacesAsyncInFlightPromise.then(result => extractNamespacesAsyncInFlightPromise = null);
-        return extractNamespacesAsyncInFlightPromise;
-    }
-
-    function invalidateNamespacesCache() {
+    function invalidateMacroNamespaceSymbolsCache(namespaceName) {
         if (dirac._DEBUG_COMPLETIONS) {
-            console.log("invalidateNamespacesCache");
+            console.log("invalidateMacroNamespaceSymbolsCache", namespaceName);
         }
-        dirac._namespacesCache = null;
+        macroNamespacesSymbolsCache.delete(namespaceName);
     }
 
 // --- exported interface ---------------------------------------------------------------------------------------------------
@@ -448,12 +510,15 @@ Object.assign(window.dirac, (function() {
     return {
         _lazyLoaded: true,
         _namespacesSymbolsCache: namespacesSymbolsCache,
+        _macroNamespacesSymbolsCache: macroNamespacesSymbolsCache,
         _namespacesCache: null,
         startListeningForWorkspaceChanges: startListeningForWorkspaceChanges,
         stopListeningForWorkspaceChanges: stopListeningForWorkspaceChanges,
         extractScopeInfoFromScopeChainAsync: extractScopeInfoFromScopeChainAsync,
         extractNamespaceSymbolsAsync: extractNamespaceSymbolsAsync,
         invalidateNamespaceSymbolsCache: invalidateNamespaceSymbolsCache,
+        extractMacroNamespaceSymbolsAsync: extractMacroNamespaceSymbolsAsync,
+        invalidateMacroNamespaceSymbolsCache: invalidateMacroNamespaceSymbolsCache,
         extractNamespacesAsync: extractNamespacesAsync,
         invalidateNamespacesCache: invalidateNamespacesCache
     };

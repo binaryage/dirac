@@ -404,7 +404,12 @@ var dirac = {
     */
     extractNamespaceSymbolsAsync: function(namespaceName) {},
     /**
-    * @return {!Promise<!Array.<dirac.NamespaceDescriptor>>}
+     * @param {string} namespaceName
+     * @return {!Promise<Array.<string>>}
+     */
+    extractMacroNamespaceSymbolsAsync: function(namespaceName) {},
+    /**
+    * @return {!Promise<!Object.<string, dirac.NamespaceDescriptor>>}
     */
     extractNamespacesAsync: function() {},
 
@@ -414,6 +419,10 @@ var dirac = {
     * @param {string} namespaceName
     */
     invalidateNamespaceSymbolsCache: function (namespaceName) {},
+    /**
+     * @param {string} namespaceName
+     */
+    invalidateMacroNamespaceSymbolsCache: function (namespaceName) {},
     invalidateNamespacesCache: function() {},
 
     /**
@@ -497,7 +506,15 @@ dirac.ScopeFrame;
 dirac.ScopeInfo;
 
 /**
- * @typedef {{name:!string, url:!string, aliases:?Object.<string, string>, uses:?Object.<string, string>, maliases:?Object.<string, string>, muses:?Object.<string, string>}}
+ * @typedef {{
+ *        name:!string,
+ *        url:!string,
+ *        namespaceAliases:?Object.<string, string>,
+ *        namespaceRefers:?Object.<string, string>,
+ *        macroNamespaceAliases:?Object.<string, string>,
+ *        macroRefers:?Object.<string, string>,
+ *        detectedMacroNamespaces:?Array.<string>
+ *     }}
  */
 dirac.NamespaceDescriptor;
 

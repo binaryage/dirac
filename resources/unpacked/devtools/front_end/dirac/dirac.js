@@ -197,6 +197,14 @@ Object.assign(window.dirac, (function() {
         return loadLazyDirac().then(() => window.dirac.invalidateNamespaceSymbolsCache(...args));
     }
 
+    function extractMacroNamespaceSymbolsAsync(...args) {
+        return loadLazyDirac().then(() => window.dirac.extractMacroNamespaceSymbolsAsync(...args));
+    }
+
+    function invalidateMacroNamespaceSymbolsCache(...args) {
+        return loadLazyDirac().then(() => window.dirac.invalidateMacroNamespaceSymbolsCache(...args));
+    }
+
     function extractNamespacesAsync(...args) {
         return loadLazyDirac().then(() => window.dirac.extractNamespacesAsync(...args));
     }
@@ -213,6 +221,8 @@ Object.assign(window.dirac, (function() {
         _DEBUG_COMPLETIONS: false,
         _DEBUG_KEYSIM: false,
         _DEBUG_FEEDBACK: false,
+
+        // -- feature toggles -----------------------------------------------------------------------------------------------
         hasREPL: hasFeature("enable-repl"),
         hasParinfer: hasFeature("enable-parinfer"),
         hasFriendlyLocals: hasFeature("enable-friendly-locals"),
@@ -221,6 +231,8 @@ Object.assign(window.dirac, (function() {
         hasWelcomeMessage: hasFeature("welcome-message"),
         hasCleanUrls: hasFeature("clean-urls"),
         hasBeautifyFunctionNames: hasFeature("beautify-function-names"),
+
+        // -- INTERFACE -----------------------------------------------------------------------------------------------------
         hasFeature: hasFeature,
         codeAsString: codeAsString,
         stringEscape: stringEscape,
@@ -228,19 +240,24 @@ Object.assign(window.dirac, (function() {
         hasCurrentContext: hasCurrentContext,
         evalInDefaultContext: evalInDefaultContext,
         hasDefaultContext: hasDefaultContext,
-        // note: there will be more functions added to this object dynamically by dirac.implant init code
-        //       see externs.js for full list of avail functions
-        // also below functions can be lazy loaded
         deduplicate: deduplicate,
+        stableSort: stableSort,
 
-        // ---- LAZY INTERFACE ----------------------------------------------------------------------------------------------
+        // -- LAZY INTERFACE ------------------------------------------------------------------------------------------------
         startListeningForWorkspaceChanges: startListeningForWorkspaceChanges,
         stopListeningForWorkspaceChanges: stopListeningForWorkspaceChanges,
         extractScopeInfoFromScopeChainAsync: extractScopeInfoFromScopeChainAsync,
         extractNamespaceSymbolsAsync: extractNamespaceSymbolsAsync,
+        extractMacroNamespaceSymbolsAsync: extractMacroNamespaceSymbolsAsync,
         extractNamespacesAsync: extractNamespacesAsync,
         invalidateNamespaceSymbolsCache: invalidateNamespaceSymbolsCache,
+        invalidateMacroNamespaceSymbolsCache: invalidateMacroNamespaceSymbolsCache,
         invalidateNamespacesCache: invalidateNamespacesCache
+
+        // ...
+
+        // note: there will be more functions added to this object dynamically by dirac.implant init code
+        //       see externs.js for full list of avail functions
     };
 
 })());

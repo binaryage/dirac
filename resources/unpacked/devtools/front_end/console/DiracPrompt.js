@@ -400,6 +400,19 @@ WebInspector.DiracPromptWithHistory.prototype = {
             return;
         }
 
+        const suggestStyle = (style = "") => `suggest-cljs ${style}`;
+
+        const namespaceSelector = name => {
+            return function(namespaceDescriptors) {
+                return namespaceDescriptors[name];
+            }
+        };
+        const selectCurrentNamespace = namespaceSelector(this._currentClojureScriptNamespace);
+
+        const concatAnnotatedResults = results => {
+            return [].concat.apply([], results);
+        };
+
         const lastSlashIndex = input.lastIndexOf("/");
         if (lastSlashIndex >= 0) {
             // completion of fully qualified name => split at last slash
@@ -409,21 +422,41 @@ WebInspector.DiracPromptWithHistory.prototype = {
             //   namespace <= "some.namespace"
             //
             // present only symbols from given namespace, matching given prefix
+            // note that some.namespace may be also alias to a namespace or a macro namespace, we will resolve it
 
             const prefix = input.substring(lastSlashIndex + 1);
             const expression = input.substring(0, lastSlashIndex + 1);
             const namespace = input.substring(0, lastSlashIndex);
 
-            const annotateQualifiedSymbols = symbols => {
+            const annotateQualifiedSymbols = (style, symbols) => {
                 return symbols.filter(symbol => symbol.startsWith(prefix)).map(symbol => ({
                     title: symbol || "?",
-                    className: "suggest-cljs-qualified"
+                    className: suggestStyle(style)
                 }));
             };
 
-            return dirac.extractNamespaceSymbolsAsync(namespace)
-                .then(annotateQualifiedSymbols)
-                .then(completionsReadyCallback.bind(this, expression));
+            const currentNamespaceDescriptorPromise = dirac.extractNamespacesAsync().then(selectCurrentNamespace);
+
+            const resolvedNamespacePromise = currentNamespaceDescriptorPromise.then(currentNamespaceDescriptor => {
+                if (!currentNamespaceDescriptor) {
+                    return namespace;
+                }
+                const namespaceAliases = currentNamespaceDescriptor.namespaceAliases || {};
+                const macroNamespaceAliases = currentNamespaceDescriptor.macroNamespaceAliases || {};
+                const allAliases = Object.assign({}, namespaceAliases, macroNamespaceAliases);
+                return allAliases[namespace] || namespace; // resolve alias or assume namespace name is a full namespace name
+            });
+
+            const namespaceSymbolsPromise = resolvedNamespacePromise.then(dirac.extractNamespaceSymbolsAsync).then(annotateQualifiedSymbols.bind(this, "suggest-cljs-qualified"));
+            const macroNamespaceSymbolsPromise = resolvedNamespacePromise.then(dirac.extractMacroNamespaceSymbolsAsync).then(annotateQualifiedSymbols.bind(this, "suggest-cljs-qualified suggest-cljs-macro"));
+
+            // order matters here, see _markAliasedCompletions below
+            const jobs = [
+                namespaceSymbolsPromise,
+                macroNamespaceSymbolsPromise
+            ];
+
+            Promise.all(jobs).then(concatAnnotatedResults).then(completionsReadyCallback.bind(this, expression));
         } else {
             // general completion (without slashes)
             // combine: locals (if paused in debugger), current ns symbols, namespace names and cljs.core symbols
@@ -432,7 +465,7 @@ WebInspector.DiracPromptWithHistory.prototype = {
             const annotateSymbols = (style, symbols) => {
                 return symbols.filter(symbol => symbol.startsWith(input)).map(symbol => ({
                     title: symbol || "?",
-                    className: style
+                    className: suggestStyle(style)
                 }));
             };
 
@@ -472,34 +505,74 @@ WebInspector.DiracPromptWithHistory.prototype = {
                 const filteredLocals = locals.filter(item => item.name.startsWith(input));
                 const annotatedCompletions = filteredLocals.map(item => ({
                     title: item.name || "?",
-                    info: item.identifier ? "js/" + item.identifier : undefined,
-                    className: "suggest-cljs-scope"
+                    epilogue: item.identifier ? "js/" + item.identifier : undefined,
+                    className: suggestStyle("suggest-cljs-scope")
                 }));
                 annotatedCompletions.reverse(); // we want to display inner scopes first
                 return annotatedCompletions;
             };
 
-            const annotateNamespaces = namespaces => {
+            const annotateNamespaceNames = (style, namespaces) => {
                 return namespaces.filter(name => name.startsWith(input)).map(name => ({
                     title: name || "?",
-                    className: "suggest-cljs-ns"
+                    className: suggestStyle(style)
                 }));
             };
 
-            const concatAnnotatedResults = results => {
-                return [].concat.apply([], results);
+            const extractNamespaceNames = namespaceDescriptors => {
+                return Object.keys(namespaceDescriptors);
             };
 
-            const extractNamespaceNames = namespaceDescriptors => {
-                return namespaceDescriptors.map(descriptor => descriptor.name);
+            const extractMacroNamespaceNames = namespaceDescriptors => {
+                let names = [];
+                for (let descriptor of Object.values(namespaceDescriptors)) {
+                    if (!descriptor.detectedMacroNamespaces) {
+                        continue;
+                    }
+                    names = names.concat(descriptor.detectedMacroNamespaces);
+                }
+                return dirac.deduplicate(names);
+            };
+
+            const annotateAliasesOrRefers = (kind, prefix, style, namespaceDescriptor) => {
+                if (!namespaceDescriptor) {
+                    return [];
+                }
+                const mapping = namespaceDescriptor[kind];
+                return Object.keys(mapping).filter(name => name.startsWith(input)).map(name => {
+                    const targetName = mapping[name];
+                    return {
+                        title: name,
+                        epilogue: targetName ? prefix + targetName : null, // full target name
+                        className: suggestStyle(style)
+                    }
+                });
             };
 
             const localsPromise = dirac.extractScopeInfoFromScopeChainAsync(debuggerModel.selectedCallFrame()).then(extractAndAnnotateLocals);
-            const currentNSSymbolsPromise = dirac.extractNamespaceSymbolsAsync(this._currentClojureScriptNamespace).then(annotateSymbols.bind(this, "suggest-cljs-in-ns"));
-            const namespacesPromise = dirac.extractNamespacesAsync().then(extractNamespaceNames).then(annotateNamespaces);
-            const cljsCoreNSSymbolsPromise = dirac.extractNamespaceSymbolsAsync("cljs.core").then(annotateSymbols.bind(this, "suggest-cljs-core"));
+            const currentNamespaceSymbolsPromise = dirac.extractNamespaceSymbolsAsync(this._currentClojureScriptNamespace).then(annotateSymbols.bind(this, "suggest-cljs-in-ns"));
+            const namespaceNamesPromise = dirac.extractNamespacesAsync().then(extractNamespaceNames).then(annotateNamespaceNames.bind(this, "suggest-cljs-ns"));
+            const macroNamespaceNamesPromise = dirac.extractNamespacesAsync().then(extractMacroNamespaceNames).then(annotateNamespaceNames.bind(this, "suggest-cljs-ns suggest-cljs-macro"));
+            const coreNamespaceSymbolsPromise = dirac.extractNamespaceSymbolsAsync("cljs.core").then(annotateSymbols.bind(this, "suggest-cljs-core"));
+            const currentNamespaceDescriptor = dirac.extractNamespacesAsync().then(selectCurrentNamespace);
+            const namespaceAliasesPromise = currentNamespaceDescriptor.then(annotateAliasesOrRefers.bind(this, "namespaceAliases", "as ", "suggest-ns-alias"));
+            const macroNamespaceAliasesPromise = currentNamespaceDescriptor.then(annotateAliasesOrRefers.bind(this, "macroNamespaceAliases", "as ", "suggest-ns-alias suggest-cljs-macro"));
+            const namespaceRefersPromise = currentNamespaceDescriptor.then(annotateAliasesOrRefers.bind(this, "namespaceRefers", "in ", "suggest-refer"));
+            const macroRefersPromise = currentNamespaceDescriptor.then(annotateAliasesOrRefers.bind(this, "macroRefers", "in ", "suggest-refer suggest-cljs-macro"));
 
-            const jobs = [localsPromise, currentNSSymbolsPromise, namespacesPromise, cljsCoreNSSymbolsPromise];
+            // order matters here, see _markAliasedCompletions below
+            const jobs = [
+                localsPromise,
+                currentNamespaceSymbolsPromise,
+                namespaceRefersPromise,
+                macroRefersPromise,
+                namespaceAliasesPromise,
+                macroNamespaceAliasesPromise,
+                namespaceNamesPromise,
+                macroNamespaceNamesPromise,
+                coreNamespaceSymbolsPromise
+            ];
+
             Promise.all(jobs).then(concatAnnotatedResults).then(completionsReadyCallback.bind(this, ""));
         }
     },
