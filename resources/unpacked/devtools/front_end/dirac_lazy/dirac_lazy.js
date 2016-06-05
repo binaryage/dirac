@@ -328,6 +328,9 @@ Object.assign(window.dirac, (function() {
             console.log("invalidateNamespacesCache");
         }
         dirac._namespacesCache = null;
+        // HACK: macro namespaces depend on _namespacesCache, do explicit invalidation here
+        // TODO: in future we want to be smarter here
+        dirac.invalidateMacroNamespaceSymbolsCache();
     }
 
     // --- namespace symbols ------------------------------------------------------------------------------------------------
@@ -463,7 +466,6 @@ Object.assign(window.dirac, (function() {
 
     function extractMacroNamespaceSymbolsAsyncWorker(namespaceName) {
 
-        // TODO: we probably want to cache this
         const collectMacroSymbols = namespaceDescriptors => {
             const symbols = [];
             for (const descriptor of Object.values(namespaceDescriptors)) {
