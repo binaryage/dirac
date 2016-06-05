@@ -538,7 +538,7 @@ WebInspector.DiracPromptWithHistory.prototype = {
                 if (!namespaceDescriptor) {
                     return [];
                 }
-                const mapping = namespaceDescriptor[kind];
+                const mapping = namespaceDescriptor[kind] || {};
                 return Object.keys(mapping).filter(name => name.startsWith(input)).map(name => {
                     const targetName = mapping[name];
                     return {
