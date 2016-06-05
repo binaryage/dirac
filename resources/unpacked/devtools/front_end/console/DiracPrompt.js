@@ -542,14 +542,13 @@ WebInspector.DiracPromptWithHistory.prototype = {
             return;
         }
 
-        const annotatedCompletions = completions;
-        annotatedCompletions.sort((a, b) => {
+        const sortedAnnotatedCompletions = dirac.stableSort(completions, (a, b) => {
             return a.title.localeCompare(b.title);
         });
 
-        this._markAliasedCompletions(annotatedCompletions);
+        this._markAliasedCompletions(sortedAnnotatedCompletions);
 
-        if (!annotatedCompletions.length) {
+        if (!sortedAnnotatedCompletions.length) {
             this.hideSuggestBox();
             return;
         }
@@ -562,9 +561,9 @@ WebInspector.DiracPromptWithHistory.prototype = {
             this._updateAnchorBox();
             const shouldShowForSingleItem = true; // later maybe implement inline completions like in TextPrompt.js
             if (dirac._DEBUG_COMPLETIONS) {
-                console.log("calling SuggestBox.updateSuggestions", this._anchorBox, annotatedCompletions, selectedIndex, shouldShowForSingleItem, this._userEnteredText);
+                console.log("calling SuggestBox.updateSuggestions", this._anchorBox, sortedAnnotatedCompletions, selectedIndex, shouldShowForSingleItem, this._userEnteredText);
             }
-            this._suggestBox.updateSuggestions(this._anchorBox, annotatedCompletions, selectedIndex, shouldShowForSingleItem, this._userEnteredText);
+            this._suggestBox.updateSuggestions(this._anchorBox, sortedAnnotatedCompletions, selectedIndex, shouldShowForSingleItem, this._userEnteredText);
         }
 
         // here could be implemented inline completions like in TextPrompt.js
