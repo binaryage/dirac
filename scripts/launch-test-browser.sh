@@ -17,6 +17,9 @@ fi
 if [ -n "$DIRAC_USE_CHROMIUM" ] ; then
   EXE="/Applications/Chromium.app/Contents/MacOS/Chromium"
 fi
+if [ -n "$DIRAC_USE_CUSTOM_CHROME" ] ; then
+  EXE="$DIRAC_USE_CUSTOM_CHROME"
+fi
 
 echo "selected browser binary '$EXE'"
 echo "waiting for compilation of clojurescript components..."
