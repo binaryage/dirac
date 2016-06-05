@@ -13,6 +13,7 @@
             [dirac.implant.eval :as eval]
             [dirac.implant.feedback :as feedback]
             [dirac.implant.analyzer :as analyzer]
+            [dirac.implant.munging :as munging]
             [clojure.string :as string]))
 
 (defonce ^:dynamic *console-initialized* false)
@@ -56,37 +57,23 @@
     (let [tag (<! (eval/get-runtime-tag))]
       (callback tag))))
 
-(defn ns-to-relpath [ns ext]
-  (str (string/replace (munge ns) \. \/) "." (name ext)))
-
 (defn parse-ns-from-source [source]
   (try
     (analyzer/parse-ns-from-source source)
     (catch :default e
       (error "Unable to parse namespace from source" (envelope source) "\n" e))))
 
-(defn is-cljs-function-name? [munged-name]
-  (some? (re-matches #"^[^$]+\$[^$]+\$.*$" munged-name)))                                                                     ; must have at least two dollars but not at the beginning
-
-(defn demunge-ns [munged-name]
-  (string/replace munged-name "$" "."))
-
-(defn break-and-demunge-name [munged-name]
-  (let [index (.lastIndexOf munged-name "$")]
-    (if (= index -1)
-      ["" (demunge munged-name)]
-      (let [ns (demunge (demunge-ns (.substring munged-name 0 index)))
-            name (demunge (.substring munged-name (inc index) (.-length munged-name)))]
-        [ns name]))))
+(defn ns-to-relpath [ns ext]
+  (munging/ns-to-relpath ns ext))
 
 (defn get-function-name [munged-name]
-  (if (is-cljs-function-name? munged-name)
-    (second (break-and-demunge-name munged-name))
+  (if (munging/is-cljs-function-name? munged-name)
+    (second (munging/break-and-demunge-name munged-name))
     munged-name))
 
 (defn get-full-function-name [munged-name]
-  (if (is-cljs-function-name? munged-name)
-    (string/join "/" (break-and-demunge-name munged-name))
+  (if (munging/is-cljs-function-name? munged-name)
+    (string/join "/" (munging/break-and-demunge-name munged-name))
     munged-name))
 
 ; -- dirac object augumentation ---------------------------------------------------------------------------------------------
