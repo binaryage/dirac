@@ -72,7 +72,7 @@ WebInspector.SuggestBox = function(suggestBoxDelegate, maxItemsHeight)
 }
 
 /**
- * @typedef Array.<{title: string, className: (string|undefined), info: (string|undefined)}>
+ * @typedef Array.<{title: string, className: (string|undefined), prologue: (string|undefined), epilogue: (string|undefined)}>
  */
 WebInspector.SuggestBox.Suggestions;
 
@@ -246,13 +246,15 @@ WebInspector.SuggestBox.prototype = {
      * @param {string} prefix
      * @param {string} text
      * @param {string|undefined} className
-     * @param {string|undefined} info
+     * @param {string|undefined} prologue
+     * @param {string|undefined} epilogue
      * @param {number} index
      */
-    _createItemElement: function(prefix, text, className, info, index)
+    _createItemElement: function(prefix, text, className, prologue, epilogue, index)
     {
         var element = createElementWithClass("div", "suggest-box-content-item source-code " + (className || ""));
         element.tabIndex = -1;
+        element.createChild("span", "prologue").textContent = (prologue||"").trimEnd(50);
         if (prefix && prefix.length && !text.indexOf(prefix)) {
             element.createChild("span", "prefix").textContent = prefix;
             element.createChild("span", "suffix").textContent = text.substring(prefix.length).trimEnd(50);
@@ -260,11 +262,8 @@ WebInspector.SuggestBox.prototype = {
             element.createChild("span", "suffix").textContent = text.trimEnd(50);
         }
         element.__fullValue = text;
-        if (info) {
-          element.createChild("span", "info").textContent = info.trimEnd(50);
-        } else {
-          element.createChild("span", "spacer");
-        }
+        element.createChild("span", "epilogue").textContent = (epilogue||"").trimEnd(50);
+        element.createChild("span", "spacer");
         element.addEventListener("mousedown", this._onItemMouseDown.bind(this), false);
         return element;
     },
@@ -284,7 +283,7 @@ WebInspector.SuggestBox.prototype = {
 
         for (var i = 0; i < items.length; ++i) {
             var item = items[i];
-            var currentItemElement = this._createItemElement(userEnteredText, item.title, item.className, item.info, i);
+            var currentItemElement = this._createItemElement(userEnteredText, item.title, item.className, item.prologue, item.epilogue, i);
             this._element.appendChild(currentItemElement);
         }
     },

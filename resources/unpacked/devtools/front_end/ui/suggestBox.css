@@ -124,103 +124,68 @@
     width: 20px;
 }
 
-.suggest-box .suggest-box-content-item.suggest-cljs::before {
+.suggest-box .suggest-box-content-item.suggest-cljs .prologue::after {
     display: inline-block;
     font-size: 8px;
-    min-width: 26px;
+    min-width: 42px;
     content: "";
     -webkit-user-select: none;
     position: relative;
     margin-right: 6px;
     color: #ccc;
-    position: relative;
     top: -1px;
     text-align: right;
 }
 
-.suggest-box .suggest-box-content-item.suggest-cljs-ns::before {
-    display: inline-block;
-    font-size: 8px;
+.suggest-box .suggest-box-content-item.suggest-cljs .prologue {
+    border-left: 3px solid #899fcb;
+}
+
+.suggest-box .suggest-box-content-item.suggest-cljs-macro .prologue {
+    border-left: 3px solid #aed17d;
+}
+
+.suggest-box .suggest-box-content-item.suggest-cljs-ns .prologue::after {
     content: "ns";
-    min-width: 26px;
-    -webkit-user-select: none;
-    position: relative;
-    margin-right: 6px;
-    color: #ccc;
-    position: relative;
-    top: -1px;
-    text-align: right;
 }
 
-.suggest-box .suggest-box-content-item.suggest-cljs-core::before {
-    display: inline-block;
-    font-size: 8px;
+.suggest-box .suggest-box-content-item.suggest-cljs-core .prologue::after {
     content: "core";
-    min-width: 26px;
-    -webkit-user-select: none;
-    position: relative;
-    margin-right: 6px;
-    color: #ccc;
-    position: relative;
-    top: -1px;
-    text-align: right;
 }
 
-.suggest-box .suggest-box-content-item.suggest-cljs-in-ns::before {
-    display: inline-block;
-    font-size: 8px;
+.suggest-box .suggest-box-content-item.suggest-cljs-in-ns .prologue::after {
     content: "in-ns";
-    min-width: 26px;
-    -webkit-user-select: none;
-    position: relative;
-    margin-right: 6px;
-    color: #ccc;
-    position: relative;
-    top: -1px;
-    text-align: right;
 }
 
-.suggest-box .suggest-box-content-item.suggest-cljs-scope::before {
-    display: inline-block;
-    font-size: 8px;
+.suggest-box .suggest-box-content-item.suggest-cljs-scope .prologue::after {
     content: "scope";
-    min-width: 26px;
-    -webkit-user-select: none;
-    position: relative;
-    margin-right: 6px;
-    color: #ccc;
-    position: relative;
-    top: -1px;
-    text-align: right;
 }
 
-.suggest-box .suggest-box-content-item.suggest-cljs-qualified::before {
-    display: inline-block;
-    font-size: 8px;
+.suggest-box .suggest-box-content-item.suggest-cljs-qualified .prologue::after {
     content: "/";
-    min-width: 26px;
-    -webkit-user-select: none;
-    position: relative;
-    margin-right: 6px;
-    color: #ccc;
-    position: relative;
-    top: -1px;
-    text-align: right;
+}
+
+.suggest-box .suggest-box-content-item.suggest-ns-alias .prologue::after {
+    content: "alias";
+}
+
+.suggest-box .suggest-box-content-item.suggest-refer .prologue::after {
+    content: "refer";
 }
 
 .suggest-box .suggest-box-content-item.suggest-aliased .prefix {
-   color: #ccc;
+    color: #ccc;
 }
 
-.suggest-box .suggest-box-content-item.suggest-aliased .suffix{
-   color: #ccc;
+.suggest-box .suggest-box-content-item.suggest-aliased .suffix {
+    color: #ccc;
 }
 
-.suggest-box .suggest-box-content-item .info {
+.suggest-box .suggest-box-content-item .epilogue {
     font-size: 8px;
     float: right;
-    color: #aaf;
-    padding: 0px 6px;
+    color: #ccc;
+    padding: 0 6px;
     position: relative;
     top: 2px;
 }
