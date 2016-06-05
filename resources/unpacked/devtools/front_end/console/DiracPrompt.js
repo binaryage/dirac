@@ -549,6 +549,13 @@ WebInspector.DiracPromptWithHistory.prototype = {
                 });
             };
 
+            const annotateReplSpecials = symbols => {
+                return symbols.filter(symbol => symbol.startsWith(input)).map(symbol => ({
+                    title: symbol || "?",
+                    className: suggestStyle("suggest-cljs-repl suggest-cljs-special")
+                }));
+            };
+            
             const localsPromise = dirac.extractScopeInfoFromScopeChainAsync(debuggerModel.selectedCallFrame()).then(extractAndAnnotateLocals);
             const currentNamespaceSymbolsPromise = dirac.extractNamespaceSymbolsAsync(this._currentClojureScriptNamespace).then(annotateSymbols.bind(this, "suggest-cljs-in-ns"));
             const namespaceNamesPromise = dirac.extractNamespacesAsync().then(extractNamespaceNames).then(annotateNamespaceNames.bind(this, "suggest-cljs-ns"));
@@ -559,9 +566,11 @@ WebInspector.DiracPromptWithHistory.prototype = {
             const macroNamespaceAliasesPromise = currentNamespaceDescriptor.then(annotateAliasesOrRefers.bind(this, "macroNamespaceAliases", "as ", "suggest-ns-alias suggest-cljs-macro"));
             const namespaceRefersPromise = currentNamespaceDescriptor.then(annotateAliasesOrRefers.bind(this, "namespaceRefers", "in ", "suggest-refer"));
             const macroRefersPromise = currentNamespaceDescriptor.then(annotateAliasesOrRefers.bind(this, "macroRefers", "in ", "suggest-refer suggest-cljs-macro"));
+            const replSpecialsPromise = dirac.getReplSpecialsAsync().then(annotateReplSpecials);
 
             // order matters here, see _markAliasedCompletions below
             const jobs = [
+                replSpecialsPromise,
                 localsPromise,
                 currentNamespaceSymbolsPromise,
                 namespaceRefersPromise,

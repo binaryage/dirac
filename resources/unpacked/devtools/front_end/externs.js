@@ -450,7 +450,7 @@ var dirac = {
     /**
      * @param {Element} textAreaElement
      * @param {boolean} useParinfer
-     * @returns {!CodeMirror}
+     * @return {!CodeMirror}
      */
     adoptPrompt: function(textAreaElement, useParinfer) {},
     /**
@@ -462,25 +462,30 @@ var dirac = {
     /**
      * @param {string} ns
      * @param {string} ext
-     * @returns {string}
+     * @return {string}
      */
     nsToRelpath: function(ns, ext) {},
 
     /**
      * @param {string} name
-     * @returns {string}
+     * @return {string}
      */
     getFunctionName: function(name) {},
 
     /**
      * @param {string} name
-     * @returns {string}
+     * @return {string}
      */
     getFullFunctionName: function(name) {},
 
     /**
+     * @return {!Promise.<!Array.<string>>}
+     */
+    getReplSpecialsAsync: function() {},
+
+    /**
      * @param {string} source
-     * @returns {?dirac.NamespaceDescriptor}
+     * @return {?dirac.NamespaceDescriptor}
      */
     parseNsFromSource: function(source) {},
 

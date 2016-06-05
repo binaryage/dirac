@@ -145,6 +145,10 @@
     border-left: 3px solid #aed17d;
 }
 
+.suggest-box .suggest-box-content-item.suggest-cljs-special .prologue {
+    border-left: 3px solid #e6bf73;
+}
+
 .suggest-box .suggest-box-content-item.suggest-cljs-ns .prologue::after {
     content: "ns";
 }
@@ -171,6 +175,10 @@
 
 .suggest-box .suggest-box-content-item.suggest-refer .prologue::after {
     content: "refer";
+}
+
+.suggest-box .suggest-box-content-item.suggest-cljs-repl .prologue::after {
+    content: "repl";
 }
 
 .suggest-box .suggest-box-content-item.suggest-cljs-aliased .prefix {
