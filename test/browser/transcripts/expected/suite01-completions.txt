@@ -156,9 +156,27 @@ automate #1      simulate-console-input! ["chromex.logging/lo"]
 automate #1      scrape! [:suggest-box]
 stdout           displayed 1 items:
                   * lo|g (qualified macro selected)
+automate #1      clear-console-prompt!
+automate #1      simulate-console-input! ["dirac"]
+automate #1      scrape [:suggest-box]
+automate #1      clear-console-prompt!
+automate #1      simulate-console-input! ["impor"]
+automate #1      scrape [:suggest-box]
+automate #1      clear-console-prompt!
+automate #1      simulate-console-input! ["in-"]
+automate #1      scrape [:suggest-box]
+automate #1      clear-console-prompt!
+automate #1      simulate-console-input! ["requi"]
+automate #1      scrape [:suggest-box]
+automate #1      clear-console-prompt!
+automate #1      simulate-console-input! ["*"]
+automate #1      scrape [:suggest-box]
+automate #1      clear-console-prompt!
+automate #1      simulate-console-input! ["load-"]
+automate #1      scrape [:suggest-box]
 automate #1      close-devtools!
 extension        handling command: close-dirac-devtools
 extension        unregister devtools #1
 automate         close-tab-with-scenario! ["scenario-tab#1"]
-summary          Automated 64 actions with 1 check-points containing 8 assertions.
+summary          Automated 82 actions with 1 check-points containing 18 assertions.
                  0 failures, 0 errors.

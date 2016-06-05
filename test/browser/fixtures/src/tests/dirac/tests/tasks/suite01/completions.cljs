@@ -1,7 +1,8 @@
 (ns dirac.tests.tasks.suite01.completions
   (:require [cljs.core.async]
-            [cljs.test :refer-macros [is testing]]
-            [dirac.automation :refer-macros [<!* go-task with-scenario with-devtools chunkify] :as a]))
+            [cljs.test :refer-macros [is are testing]]
+            [dirac.automation :refer-macros [<!* go-task with-scenario with-devtools chunkify] :as a]
+            [clojure.string :as string]))
 
 (go-task
   (with-scenario "completions"
@@ -82,4 +83,30 @@
         (testing "qualified completions of macro namespace"
           (<!* a/clear-console-prompt!)
           (<!* a/simulate-console-input! "chromex.logging/lo")
-          (<!* a/scrape! :suggest-box))))))
+          (<!* a/scrape! :suggest-box))
+        (testing "'dirac!' should be present as repl special command"
+          (<!* a/clear-console-prompt!)
+          (<!* a/simulate-console-input! "dirac")
+          (is (string/includes? (<!* a/scrape :suggest-box) "dirac|!")))
+        (testing "'import' should be present as repl special command"
+          (<!* a/clear-console-prompt!)
+          (<!* a/simulate-console-input! "impor")
+          (is (string/includes? (<!* a/scrape :suggest-box) "impor|t")))
+        (testing "'in-ns' should be present as repl special command"
+          (<!* a/clear-console-prompt!)
+          (<!* a/simulate-console-input! "in-")
+          (is (string/includes? (<!* a/scrape :suggest-box) "in-|ns")))
+        (testing "'require' should be present as repl special command"
+          (<!* a/clear-console-prompt!)
+          (<!* a/simulate-console-input! "requi")
+          (is (string/includes? (<!* a/scrape :suggest-box) "requi|re")))
+        (testing "*1 *2 *3 *e should be present as repl special commands"
+          (<!* a/clear-console-prompt!)
+          (<!* a/simulate-console-input! "*")
+          (let [output (<!* a/scrape :suggest-box)]
+            (are [substr] (string/includes? output substr) "*|1" "*|2" "*|3" "*|e")))
+        (testing "'load-file' and 'load-namespace' should be present as repl special commands"
+          (<!* a/clear-console-prompt!)
+          (<!* a/simulate-console-input! "load-")
+          (let [output (<!* a/scrape :suggest-box)]
+            (are [substr] (string/includes? output substr) "load-|file" "load-|namespace")))))))
