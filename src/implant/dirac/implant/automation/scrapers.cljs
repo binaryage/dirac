@@ -22,6 +22,9 @@
 (defn subtitle-rep? [rep]
   (= "subtitle" (:class rep)))
 
+(defn suggest-box-item-rep? [rep]
+  (some? (re-find #"suggest-box-content-item" (str (:class rep)))))
+
 (defn print-list [list]
   (if (empty? list)
     "no items displayed"
@@ -79,6 +82,29 @@
   (let [{:keys [title content]} rep]
     (str content (if title (str " / " title)))))
 
+; -- suggest box UI (code completions) --------------------------------------------------------------------------------------
+
+(defn find-suggest-box-element []
+  (first (dom/query-selector "html /deep/ .suggest-box-overlay")))
+
+(defn print-suggest-box-item [item-rep]
+  (let [{:keys [class]} item-rep
+        extract (fn [class] (:content (select-subrep (fn [rep] (= class (:class rep))) item-rep)))
+        simple-class (-> class
+                         (string/replace "suggest-box-content-item" "")
+                         (string/replace "source-code" "")
+                         (string/replace "suggest-cljs-" "")
+                         (string/replace "suggest-cljs" "")
+                         (string/trim))
+        prologue (extract "prologue")
+        prefix (extract "prefix")
+        suffix (extract "suffix")
+        epilogue (extract "epilogue")]
+    (str (if prologue (str " [" prologue "] "))
+         (str prefix "|" suffix " ")
+         (if epilogue (str "[" epilogue "] "))
+         (if-not (empty? simple-class) (str "(" simple-class ") ")))))
+
 ; -- general interface for :scrape automation action ------------------------------------------------------------------------
 
 (defmulti scrape (fn [name & _args]
@@ -101,4 +127,11 @@
        (select-callstack-widget-rep)
        (select-subreps subtitle-rep?)
        (map print-callstack-location)
+       (print-list)))
+
+(defmethod scrape :suggest-box [_ & _]
+  (->> (find-suggest-box-element)
+       (build-rep)
+       (select-subreps suggest-box-item-rep?)
+       (map print-suggest-box-item)
        (print-list)))
