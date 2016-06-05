@@ -135,6 +135,17 @@ automate #1      scrape! [:suggest-box]
 stdout           displayed 1 items:
                   * wa|rn [in chromex.logging] (suggest-refer macro selected)
 automate #1      clear-console-prompt!
+automate #1      simulate-console-input! ["get-dirac-window"]
+automate #1      scrape! [:suggest-box]
+stdout           displayed 1 items:
+                  * get-dirac-window|-top [in dirac.settings] (suggest-refer macro selected)
+automate #1      clear-console-prompt!
+automate #1      simulate-console-input! ["alias-cljs-core-async/tak"]
+automate #1      scrape! [:suggest-box]
+stdout           displayed 2 items:
+                  * |take (qualified selected)
+                  * |take! (qualified)
+automate #1      clear-console-prompt!
 automate #1      simulate-console-input! ["alias-cljs-core-async-macros/go"]
 automate #1      scrape! [:suggest-box]
 stdout           displayed 2 items:
@@ -149,5 +160,5 @@ automate #1      close-devtools!
 extension        handling command: close-dirac-devtools
 extension        unregister devtools #1
 automate         close-tab-with-scenario! ["scenario-tab#1"]
-summary          Automated 58 actions with 1 check-points containing 8 assertions.
+summary          Automated 64 actions with 1 check-points containing 8 assertions.
                  0 failures, 0 errors.
