@@ -83,16 +83,22 @@
     (if-not (empty? uses)
       (clj->js uses))))
 
+(defn collect-macro-namespaces [ast]
+  (let [{:keys [use-macros require-macros]} ast]
+    (-> (concat (vals use-macros) (vals require-macros))
+        (sort)
+        (dedupe)
+        (clj->js))))
+
 (defn parse-ns-from-source* [source]
   (when-let [ns-form (parse-ns-form source)]
-    (let [ast (analyze-ns ns-form {})
-          ns-descriptor #js {:name     (str (:name ast))
-                             :aliases  (get-aliases (:requires ast))
-                             :maliases (get-aliases (:require-macros ast))
-                             :uses     (get-uses (:uses ast))
-                             :muses    (get-uses (:use-macros ast))}]
-      ;(log "parse-ns-from-source" ns-descriptor (envelope source) (envelope ast))
-      ns-descriptor)))
+    (let [ast (analyze-ns ns-form {})]
+      #js {"name"                    (str (:name ast))
+           "namespaceAliases"        (get-aliases (:requires ast))
+           "macroNamespaceAliases"   (get-aliases (:require-macros ast))
+           "namespaceRefers"         (get-uses (:uses ast))
+           "macroRefers"             (get-uses (:use-macros ast))
+           "detectedMacroNamespaces" (collect-macro-namespaces ast)})))
 
 (defn parse-ns-from-source [source]
   (try
