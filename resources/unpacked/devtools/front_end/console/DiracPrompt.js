@@ -259,11 +259,11 @@ WebInspector.DiracPromptWithHistory.prototype = {
         }
         if (javascriptCompletion) {
             this._prefixRange = new WebInspector.TextRange(cursor.line, token.start + javascriptCompletion.offset, cursor.line, cursor.ch);
-            const completionsForJavascriptReady = this._completionsForJavascriptReady.bind(this, this._lastAutocompleteRequest, javascriptCompletion.prefix, !!reverse, !!force);
+            const completionsForJavascriptReady = this._completionsForJavascriptReady.bind(this, this._lastAutocompleteRequest, !!reverse, !!force);
             this._loadJavascriptCompletions(this._lastAutocompleteRequest, javascriptCompletion.prefix, force || false, completionsForJavascriptReady);
         } else {
             this._prefixRange = new WebInspector.TextRange(cursor.line, token.start, cursor.line, cursor.ch);
-            const completionsForClojureScriptReady = this._completionsForClojureScriptReady.bind(this, this._lastAutocompleteRequest, prefix, !!reverse, !!force);
+            const completionsForClojureScriptReady = this._completionsForClojureScriptReady.bind(this, this._lastAutocompleteRequest, !!reverse, !!force);
             this._loadClojureScriptCompletions(this._lastAutocompleteRequest, prefix, force || false, completionsForClojureScriptReady);
         }
     },
@@ -272,7 +272,7 @@ WebInspector.DiracPromptWithHistory.prototype = {
      * @param {number} requestId
      * @param {string} input
      * @param {boolean} force
-     * @param {function(string, !Array.<string>, number=)} completionsReadyCallback
+     * @param {function(string, string, !Array.<string>, number=)} completionsReadyCallback
      */
     _loadJavascriptCompletions: function(requestId, input, force, completionsReadyCallback) {
         if (dirac._DEBUG_COMPLETIONS) {
@@ -290,7 +290,7 @@ WebInspector.DiracPromptWithHistory.prototype = {
             if (dirac._DEBUG_COMPLETIONS) {
                 console.warn("no execution context available");
             }
-            completionsReadyCallback("", []);
+            completionsReadyCallback("", "", []);
             return;
         }
 
@@ -311,19 +311,19 @@ WebInspector.DiracPromptWithHistory.prototype = {
             }
         }
 
-        executionContext.completionsForExpression(expressionString, input, 0, prefix, force, completionsReadyCallback.bind(this, expressionString));
+        executionContext.completionsForExpression(expressionString, input, 0, prefix, force, completionsReadyCallback.bind(this, expressionString, prefix));
     },
 
     /**
      * @param {number} requestId
-     * @param {string} prefix
      * @param {boolean} reverse
      * @param {boolean} force
      * @param {string} expression
+     * @param {string} prefix
      * @param {!Array.<string>} completions
      * @param {number=} selectedIndex
      */
-    _completionsForJavascriptReady: function(requestId, prefix, reverse, force, expression, completions, selectedIndex) {
+    _completionsForJavascriptReady: function(requestId, reverse, force, expression, prefix, completions, selectedIndex) {
         if (dirac._DEBUG_COMPLETIONS) {
             console.log("_completionsForJavascriptReady", prefix, reverse, force, expression, completions, selectedIndex);
         }
@@ -370,7 +370,7 @@ WebInspector.DiracPromptWithHistory.prototype = {
      * @param {number} requestId
      * @param {string} input
      * @param {boolean} force
-     * @param {function(string, !Array.<string>, number=)} completionsReadyCallback
+     * @param {function(string, string, !Array.<string>, number=)} completionsReadyCallback
      */
     _loadClojureScriptCompletions: function(requestId, input, force, completionsReadyCallback) {
         if (dirac._DEBUG_COMPLETIONS) {
@@ -387,7 +387,7 @@ WebInspector.DiracPromptWithHistory.prototype = {
             if (dirac._DEBUG_COMPLETIONS) {
                 console.warn("no execution context available");
             }
-            completionsReadyCallback("", []);
+            completionsReadyCallback("", "", []);
             return;
         }
 
@@ -396,7 +396,7 @@ WebInspector.DiracPromptWithHistory.prototype = {
             if (dirac._DEBUG_COMPLETIONS) {
                 console.warn("no debugger model available");
             }
-            completionsReadyCallback("", []);
+            completionsReadyCallback("", "", []);
             return;
         }
 
@@ -456,7 +456,7 @@ WebInspector.DiracPromptWithHistory.prototype = {
                 macroNamespaceSymbolsPromise
             ];
 
-            Promise.all(jobs).then(concatAnnotatedResults).then(completionsReadyCallback.bind(this, expression));
+            Promise.all(jobs).then(concatAnnotatedResults).then(completionsReadyCallback.bind(this, expression, prefix));
         } else {
             // general completion (without slashes)
             // combine: locals (if paused in debugger), current ns symbols, namespace names and cljs.core symbols
@@ -573,7 +573,7 @@ WebInspector.DiracPromptWithHistory.prototype = {
                 coreNamespaceSymbolsPromise
             ];
 
-            Promise.all(jobs).then(concatAnnotatedResults).then(completionsReadyCallback.bind(this, ""));
+            Promise.all(jobs).then(concatAnnotatedResults).then(completionsReadyCallback.bind(this, "", input));
         }
     },
 
@@ -596,14 +596,14 @@ WebInspector.DiracPromptWithHistory.prototype = {
 
     /**
      * @param {number} requestId
-     * @param {string} prefix
      * @param {boolean} reverse
      * @param {boolean} force
      * @param {string} expression
+     * @param {string} prefix
      * @param {!Array.<string>} completions
      * @param {number=} selectedIndex
      */
-    _completionsForClojureScriptReady: function(requestId, prefix, reverse, force, expression, completions, selectedIndex) {
+    _completionsForClojureScriptReady: function(requestId, reverse, force, expression, prefix, completions, selectedIndex) {
         if (dirac._DEBUG_COMPLETIONS) {
             console.log("_completionsForClojureScriptReady", prefix, reverse, force, completions, selectedIndex);
         }

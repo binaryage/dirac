@@ -49,12 +49,12 @@ stdout           js/document
 automate #1      simulate-console-input! [".get"]
 automate #1      scrape! [:suggest-box]
 stdout           displayed 6 items:
-                  * |getElementById (selected)
-                  * |getElementsByClassName
-                  * |getElementsByName
-                  * |getElementsByTagName
-                  * |getElementsByTagNameNS
-                  * |getSelection
+                  * get|ElementById (selected)
+                  * get|ElementsByClassName
+                  * get|ElementsByName
+                  * get|ElementsByTagName
+                  * get|ElementsByTagNameNS
+                  * get|Selection
 automate #1      simulate-console-action! ["TAB"]
 automate #1      print-prompt!
 stdout           js/document.getElementById
@@ -62,10 +62,10 @@ automate #1      clear-console-prompt!
 automate #1      simulate-console-input! ["cljs.core/part"]
 automate #1      scrape! [:suggest-box]
 stdout           displayed 4 items:
-                  * |partial (qualified selected)
-                  * |partition (qualified)
-                  * |partition-all (qualified)
-                  * |partition-by (qualified)
+                  * part|ial (qualified selected)
+                  * part|ition (qualified)
+                  * part|ition-all (qualified)
+                  * part|ition-by (qualified)
 automate #1      simulate-console-action! ["TAB"]
 automate #1      print-prompt!
 stdout           cljs.core/partial
@@ -107,7 +107,7 @@ stdout           cljs.core
 automate #1      simulate-console-input! ["/clj-"]
 automate #1      scrape! [:suggest-box]
 stdout           displayed 1 items:
-                  * |clj->js (qualified selected)
+                  * clj-|>js (qualified selected)
 automate #1      simulate-console-action! ["RIGHT"]
 automate #1      print-prompt!
 stdout           cljs.core/clj->js
@@ -143,19 +143,19 @@ automate #1      clear-console-prompt!
 automate #1      simulate-console-input! ["alias-cljs-core-async/tak"]
 automate #1      scrape! [:suggest-box]
 stdout           displayed 2 items:
-                  * |take (qualified selected)
-                  * |take! (qualified)
+                  * tak|e (qualified selected)
+                  * tak|e! (qualified)
 automate #1      clear-console-prompt!
 automate #1      simulate-console-input! ["alias-cljs-core-async-macros/go"]
 automate #1      scrape! [:suggest-box]
 stdout           displayed 2 items:
-                  * |go (qualified macro selected)
-                  * |go-loop (qualified macro)
+                  * go| (qualified macro selected)
+                  * go|-loop (qualified macro)
 automate #1      clear-console-prompt!
 automate #1      simulate-console-input! ["chromex.logging/lo"]
 automate #1      scrape! [:suggest-box]
 stdout           displayed 1 items:
-                  * |log (qualified macro selected)
+                  * lo|g (qualified macro selected)
 automate #1      close-devtools!
 extension        handling command: close-dirac-devtools
 extension        unregister devtools #1
