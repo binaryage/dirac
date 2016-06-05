@@ -416,11 +416,11 @@ var dirac = {
     startListeningForWorkspaceChanges: function() {},
     stopListeningForWorkspaceChanges: function() {},
     /**
-    * @param {string} namespaceName
+    * @param {string=} namespaceName
     */
     invalidateNamespaceSymbolsCache: function (namespaceName) {},
     /**
-     * @param {string} namespaceName
+     * @param {string=} namespaceName
      */
     invalidateMacroNamespaceSymbolsCache: function (namespaceName) {},
     invalidateNamespacesCache: function() {},

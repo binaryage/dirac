@@ -443,11 +443,15 @@ Object.assign(window.dirac, (function() {
         return promisedResult;
     }
 
-    function invalidateNamespaceSymbolsCache(namespaceName) {
+    function invalidateNamespaceSymbolsCache(namespaceName = null) {
         if (dirac._DEBUG_COMPLETIONS) {
             console.log("invalidateNamespaceSymbolsCache", namespaceName);
         }
-        namespacesSymbolsCache.delete(namespaceName);
+        if (namespaceName) {
+            namespacesSymbolsCache.delete(namespaceName);
+        } else {
+            namespacesSymbolsCache.clear();
+        }
     }
 
     // --- macro namespaces symbols -----------------------------------------------------------------------------------------
@@ -497,11 +501,15 @@ Object.assign(window.dirac, (function() {
         return promisedResult;
     }
 
-    function invalidateMacroNamespaceSymbolsCache(namespaceName) {
+    function invalidateMacroNamespaceSymbolsCache(namespaceName = null) {
         if (dirac._DEBUG_COMPLETIONS) {
             console.log("invalidateMacroNamespaceSymbolsCache", namespaceName);
         }
-        macroNamespacesSymbolsCache.delete(namespaceName);
+        if (namespaceName) {
+            macroNamespacesSymbolsCache.delete(namespaceName);
+        } else {
+            macroNamespacesSymbolsCache.clear();
+        }
     }
 
 // --- exported interface ---------------------------------------------------------------------------------------------------
