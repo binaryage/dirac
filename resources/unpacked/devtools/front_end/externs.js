@@ -424,6 +424,14 @@ var dirac = {
      */
     deduplicate: function(coll, keyFn) {},
 
+    /**
+     * @param {Array.<T>} array
+     * @param {function(T, T):number} comparator
+     * @return {Array.<T>}
+     * @template T
+     */
+    stableSort: function(array, comparator) {},
+
     // -- these are dynamically added by dirac.implant namespace ------------------------------------------------------------
 
     initConsole: function() {},

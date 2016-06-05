@@ -161,6 +161,18 @@ Object.assign(window.dirac, (function() {
         return coll.filter(item => !store.has(keyFn(item)) && !!store.add(keyFn(item)));
     }
 
+    // http://stackoverflow.com/a/20767836/84283
+    function stableSort(array, comparator) {
+        const wrapped = array.map((d, i) => ({d: d, i: i}));
+
+        wrapped.sort((a, b) => {
+            const cmp = comparator(a.d, b.d);
+            return cmp === 0 ? a.i - b.i : cmp;
+        });
+
+        return wrapped.map(wrapper => wrapper.d);
+    }
+
     // --- lazy APIs --------------------------------------------------------------------------------------------------------
     // calling any of these functions will trigger loading dirac_lazy overlay
     // which will eventually overwrite those functions when fully loaded
