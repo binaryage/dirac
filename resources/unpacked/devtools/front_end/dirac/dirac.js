@@ -156,6 +156,11 @@ Object.assign(window.dirac, (function() {
         return window.runtime.loadModulePromise("dirac_lazy");
     }
 
+    function deduplicate(coll, keyFn = item => "" + item) {
+        const store = new Set();
+        return coll.filter(item => !store.has(keyFn(item)) && !!store.add(keyFn(item)));
+    }
+
     // --- lazy APIs --------------------------------------------------------------------------------------------------------
     // calling any of these functions will trigger loading dirac_lazy overlay
     // which will eventually overwrite those functions when fully loaded
@@ -214,6 +219,7 @@ Object.assign(window.dirac, (function() {
         // note: there will be more functions added to this object dynamically by dirac.implant init code
         //       see externs.js for full list of avail functions
         // also below functions can be lazy loaded
+        deduplicate: deduplicate,
 
         // ---- LAZY INTERFACE ----------------------------------------------------------------------------------------------
         startListeningForWorkspaceChanges: startListeningForWorkspaceChanges,

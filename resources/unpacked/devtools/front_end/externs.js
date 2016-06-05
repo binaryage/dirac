@@ -416,6 +416,14 @@ var dirac = {
     invalidateNamespaceSymbolsCache: function (namespaceName) {},
     invalidateNamespacesCache: function() {},
 
+    /**
+     * @param {Array.<T>} coll
+     * @param {function(T):string=} keyFn
+     * @return {Array.<T>}
+     * @template T
+     */
+    deduplicate: function(coll, keyFn) {},
+
     // -- these are dynamically added by dirac.implant namespace ------------------------------------------------------------
 
     initConsole: function() {},
