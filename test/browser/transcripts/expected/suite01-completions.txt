@@ -72,13 +72,15 @@ stdout           cljs.core/partial
 automate #1      clear-console-prompt!
 automate #1      simulate-console-input! ["devtools."]
 automate #1      print-suggest-box!
-stdout           dirac prompt: suggest box displays 7 items:
+stdout           dirac prompt: suggest box displays 9 items:
                   * devtools.core
                   * devtools.custom-formatters
                   * devtools.format
                   * devtools.prefs
                   * devtools.sanity-hints
                   * devtools.util
+                  * devtools.util
+                  * devtools.version
                   * devtools.version
 automate #1      simulate-console-action! ["DOWN"]
 automate #1      simulate-console-action! ["TAB"]
@@ -87,15 +89,18 @@ stdout           devtools.custom-formatters
 automate #1      clear-console-prompt!
 automate #1      simulate-console-input! ["cljs.cor"]
 automate #1      print-suggest-box!
-stdout           dirac prompt: suggest box displays 8 items:
+stdout           dirac prompt: suggest box displays 11 items:
+                  * cljs.core
                   * cljs.core
                   * cljs.core.async
                   * cljs.core.async.impl.buffers
                   * cljs.core.async.impl.channels
                   * cljs.core.async.impl.dispatch
                   * cljs.core.async.impl.ioc-helpers
+                  * cljs.core.async.impl.ioc-macros
                   * cljs.core.async.impl.protocols
                   * cljs.core.async.impl.timers
+                  * cljs.core.async.macros
 automate #1      simulate-console-action! ["RIGHT"]
 automate #1      print-prompt!
 stdout           cljs.core
