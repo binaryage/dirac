@@ -16,28 +16,25 @@
   (into {} (remove (fn [[alias ns]] (= alias ns)) mapping)))
 
 (defn get-aliases [mapping]
-  (let [aliases (remove-identical-mappings mapping)]
-    (if-not (empty? aliases)
-      (clj->js aliases))))
+  (-> mapping
+      (remove-identical-mappings)))
 
 (defn get-uses [mapping]
-  (let [uses (remove-identical-mappings mapping)]
-    (if-not (empty? uses)
-      (clj->js uses))))
+  (-> mapping
+      (remove-identical-mappings)))
 
 (defn collect-macro-namespaces [ast]
   (let [{:keys [use-macros require-macros]} ast]
     (-> (concat (vals use-macros) (vals require-macros))
         (sort)
-        (dedupe)
-        (clj->js))))
+        (dedupe))))
 
 (defn parse-ns-from-source [source]
   (when-let [ns-form (parse-ns-form source)]
     (let [ast (analyze-ns ns-form {})]
       #js {"name"                    (str (:name ast))
-           "namespaceAliases"        (get-aliases (:requires ast))
-           "macroNamespaceAliases"   (get-aliases (:require-macros ast))
-           "namespaceRefers"         (get-uses (:uses ast))
-           "macroRefers"             (get-uses (:use-macros ast))
-           "detectedMacroNamespaces" (collect-macro-namespaces ast)})))
+           "namespaceAliases"        (clj->js (get-aliases (:requires ast)))
+           "macroNamespaceAliases"   (clj->js (get-aliases (:require-macros ast)))
+           "namespaceRefers"         (clj->js (get-uses (:uses ast)))
+           "macroRefers"             (clj->js (get-uses (:use-macros ast)))
+           "detectedMacroNamespaces" (clj->js (collect-macro-namespaces ast))})))
