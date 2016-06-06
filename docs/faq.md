@@ -43,3 +43,20 @@ Absolutely! Figwheel is fantastic. Just keep in mind that Figwheel's REPL is com
 Agent. I usually tend to [disable Figwheel's REPL feature](https://github.com/binaryage/dirac-sample/blob/cfa695c6a1ec6ec6fac3815eec48f65da58fd959/project.clj#L111)
 in my projects and use Figwheel just as a hot code/css reloader + HUD display for compilation feedback. Figwheel's REPL is an
 extra feature which is not required for core Figwheel functionality.
+
+### Why my project needs working source maps and no optimizations?
+
+Dirac's code completion relies on source maps and the fact that project structure does not get transformed.
+Dirac can get access to all your namespace source files loaded in the browser and
+has enough runtime info about the project structure.
+
+### My macros are not provided by code completion, what went wrong?
+
+Dirac uses only client-side information to collect code-completion information. It works well with normal namespaces, but
+macros are fundamentally compile-time thing. Dirac cannot see them
+unless some information about macros gets "exported" to the client-side somehow.
+
+Good news is that Dirac can read all `ns` forms in your project (in dev mode with no optimizations and working source maps).
+When you mention a macro namespace in a `:require-macros` of some `ns` form or reference some symbols from a macro namespace
+using `:refer` or `:refer-macros`, Dirac is able to understand this and offer such names in code completions.
+Please note that macro-related names have a green border marker on the left when listed in code completion suggest box.
