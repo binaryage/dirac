@@ -1,19 +1,17 @@
 # Dirac DevTools Upgrading
 
-So you started using Dirac DevTools, followed installation steps and integrated it into your workflow. Then forgot everything.
+So you started using Dirac DevTools, followed installation steps and integrated it into your workflow. Then forgot everything ;-)
 
-And now a new version just came out and you don't remember details of the setup.
-
-Dirac is quite a complex beast. This page should hopefully help you to upgrade smoothly.
+And now a new version just came out and you don't remember details of the setup. Yep, Dirac is quite a complex beast. This page should hopefully help you to upgrade smoothly.
 
 First please note that Dirac has independent parts and their versions should match:
 
 1. [Dirac Chrome Extension](https://chrome.google.com/webstore/detail/dirac-devtools/kbkdngfljkchidcjpnfcgcokkbhlkogi) installed in your Chrome Canary
 1. Dirac Runtime - a ClojureScript library installed in your page
 1. nREPL server with Dirac nREPL middleware
-1. Dirac Agent - a helper server providing a proxy tunnel between the nREPL server and the Dirac Extension
+1. Dirac Agent - a helper server providing a proxy tunnel between the nREPL server and the Dirac Chrome Extension
 
-Note that the Runtime, nREPL middleware and Agent are all bundled in a single library "binaryage/dirac" [published on clojars](https://clojars.org/binaryage/dirac).
+Note that the Runtime, nREPL middleware and Agent are all bundled in a single library "binaryage/dirac" [published on Clojars](https://clojars.org/binaryage/dirac).
 
 #### Understanding the release process
 
