@@ -119,10 +119,10 @@ automate #1      clear-console-prompt!
 automate #1      simulate-console-input! ["alias"]
 automate #1      scrape! [:suggest-box]
 stdout           displayed 4 items:
-                  * alias|-cljs-core-async [as cljs.core.async] (suggest-ns-alias selected)
-                  * alias|-cljs-core-async-macros [as cljs.core.async.macros] (suggest-ns-alias macro)
-                  * alias|-dirac-settings [as dirac.settings] (suggest-ns-alias)
-                  * alias|-dirac-settings [as dirac.settings] (suggest-ns-alias macro aliased)
+                  * alias|-cljs-core-async [is cljs.core.async] (suggest-ns-alias selected)
+                  * alias|-cljs-core-async-macros [is cljs.core.async.macros] (suggest-ns-alias macro)
+                  * alias|-dirac-settings [is dirac.settings] (suggest-ns-alias)
+                  * alias|-dirac-settings [is dirac.settings] (suggest-ns-alias macro aliased)
 automate #1      clear-console-prompt!
 automate #1      simulate-console-input! ["pu"]
 automate #1      scrape! [:suggest-box]
