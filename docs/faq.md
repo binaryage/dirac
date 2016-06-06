@@ -36,3 +36,10 @@ This is my setup under Mac, note the "Global" selection for "Focus Console Promp
 
 The docking API is only available for the embedded (internal) DevTools that come with Chrome.
 See [the issue #5](https://github.com/binaryage/dirac/issues/5) for more details.
+
+### Does Dirac play well with Figwheel?
+
+Absolutely! Figwheel is fantastic. Just keep in mind that Figwheel's REPL is completely separate from your nREPL connected with Dirac
+Agent. I usually tend to [disable Figwheel's REPL feature](https://github.com/binaryage/dirac-sample/blob/cfa695c6a1ec6ec6fac3815eec48f65da58fd959/project.clj#L111)
+in my projects and use Figwheel just as a hot code/css reloader + HUD display for compilation feedback. Figwheel's REPL is an
+extra feature which is not required for core Figwheel functionality.
