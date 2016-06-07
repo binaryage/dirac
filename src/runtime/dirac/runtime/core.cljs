@@ -2,7 +2,7 @@
   (:require-macros [dirac.runtime.core :refer [get-current-browser-name get-current-platform-name]])
   (:require [dirac.project :refer [get-current-version]]
             [dirac.runtime.repl :as repl]
-            [dirac.runtime.util :refer [display-banner-if-needed! install-feature! resolve-features! get-lib-info]]
+            [dirac.runtime.util :refer [display-banner-if-needed! install-feature! resolve-features!]]
             [dirac.runtime.prefs :as prefs]
             [goog.labs.userAgent.browser :as ua-browser]
             [goog.labs.userAgent.platform :as ua-platform]))
