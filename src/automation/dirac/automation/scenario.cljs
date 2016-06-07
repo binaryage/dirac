@@ -70,7 +70,7 @@
 (defn console-handler [orig kind & args]
   (let [transcript (str kind args)]
     (feedback! transcript (str "scenario out"))
-    (apply orig args)))
+    (.apply orig js/console (to-array args))))
 
 (defn store-console-api []
   {"log"   (oget js/window "console" "log")
