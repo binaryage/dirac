@@ -70,18 +70,11 @@ automate #1      simulate-console-action! ["TAB"]
 automate #1      print-prompt!
 stdout           cljs.core/partial
 automate #1      clear-console-prompt!
-automate #1      simulate-console-input! ["devtools."]
+automate #1      simulate-console-input! ["devtools.c"]
 automate #1      scrape! [:suggest-box]
-stdout           displayed 9 items:
-                  * devtools.|core (ns selected)
-                  * devtools.|custom-formatters (ns)
-                  * devtools.|format (ns)
-                  * devtools.|prefs (ns)
-                  * devtools.|sanity-hints (ns)
-                  * devtools.|util (ns)
-                  * devtools.|util (ns macro aliased)
-                  * devtools.|version (ns)
-                  * devtools.|version (ns macro aliased)
+stdout           displayed 2 items:
+                  * devtools.c|ore (ns selected)
+                  * devtools.c|ustom-formatters (ns)
 automate #1      simulate-console-action! ["DOWN"]
 automate #1      simulate-console-action! ["TAB"]
 automate #1      print-prompt!

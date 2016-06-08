@@ -36,7 +36,7 @@
           (is (= (<!* a/print-prompt!) "cljs.core/partial")))
         (testing "namespace names completions"
           (<!* a/clear-console-prompt!)
-          (<!* a/simulate-console-input! "devtools.")
+          (<!* a/simulate-console-input! "devtools.c")
           (<!* a/scrape! :suggest-box)
           (<!* a/simulate-console-action! "DOWN")
           (<!* a/simulate-console-action! "TAB")
