@@ -91,30 +91,6 @@ InspectorBackend.registerCommand("Emulation.setEmulatedMedia", [{"name": "media"
 InspectorBackend.registerCommand("Emulation.setCPUThrottlingRate", [{"name": "rate", "type": "number", "optional": false}], [], false);
 InspectorBackend.registerCommand("Emulation.canEmulate", [], ["result"], false);
 
-// Runtime.
-InspectorBackend.registerEnum("Runtime.RemoteObjectType", {Object: "object", Function: "function", Undefined: "undefined", String: "string", Number: "number", Boolean: "boolean", Symbol: "symbol"});
-InspectorBackend.registerEnum("Runtime.RemoteObjectSubtype", {Array: "array", Null: "null", Node: "node", Regexp: "regexp", Date: "date", Map: "map", Set: "set", Iterator: "iterator", Generator: "generator", Error: "error"});
-InspectorBackend.registerEnum("Runtime.ObjectPreviewType", {Object: "object", Function: "function", Undefined: "undefined", String: "string", Number: "number", Boolean: "boolean", Symbol: "symbol"});
-InspectorBackend.registerEnum("Runtime.ObjectPreviewSubtype", {Array: "array", Null: "null", Node: "node", Regexp: "regexp", Date: "date", Map: "map", Set: "set", Iterator: "iterator", Generator: "generator", Error: "error"});
-InspectorBackend.registerEnum("Runtime.PropertyPreviewType", {Object: "object", Function: "function", Undefined: "undefined", String: "string", Number: "number", Boolean: "boolean", Symbol: "symbol", Accessor: "accessor"});
-InspectorBackend.registerEnum("Runtime.PropertyPreviewSubtype", {Array: "array", Null: "null", Node: "node", Regexp: "regexp", Date: "date", Map: "map", Set: "set", Iterator: "iterator", Generator: "generator", Error: "error"});
-InspectorBackend.registerEnum("Runtime.CallArgumentType", {Object: "object", Function: "function", Undefined: "undefined", String: "string", Number: "number", Boolean: "boolean", Symbol: "symbol"});
-InspectorBackend.registerEvent("Runtime.executionContextCreated", ["context"]);
-InspectorBackend.registerEvent("Runtime.executionContextDestroyed", ["executionContextId"]);
-InspectorBackend.registerEvent("Runtime.executionContextsCleared", []);
-InspectorBackend.registerEvent("Runtime.inspectRequested", ["object", "hints"]);
-InspectorBackend.registerCommand("Runtime.evaluate", [{"name": "expression", "type": "string", "optional": false}, {"name": "objectGroup", "type": "string", "optional": true}, {"name": "includeCommandLineAPI", "type": "boolean", "optional": true}, {"name": "doNotPauseOnExceptionsAndMuteConsole", "type": "boolean", "optional": true}, {"name": "contextId", "type": "number", "optional": true}, {"name": "returnByValue", "type": "boolean", "optional": true}, {"name": "generatePreview", "type": "boolean", "optional": true}, {"name": "userGesture", "type": "boolean", "optional": true}], ["result", "wasThrown", "exceptionDetails"], false);
-InspectorBackend.registerCommand("Runtime.callFunctionOn", [{"name": "objectId", "type": "string", "optional": false}, {"name": "functionDeclaration", "type": "string", "optional": false}, {"name": "arguments", "type": "object", "optional": true}, {"name": "doNotPauseOnExceptionsAndMuteConsole", "type": "boolean", "optional": true}, {"name": "returnByValue", "type": "boolean", "optional": true}, {"name": "generatePreview", "type": "boolean", "optional": true}, {"name": "userGesture", "type": "boolean", "optional": true}], ["result", "wasThrown"], false);
-InspectorBackend.registerCommand("Runtime.getProperties", [{"name": "objectId", "type": "string", "optional": false}, {"name": "ownProperties", "type": "boolean", "optional": true}, {"name": "accessorPropertiesOnly", "type": "boolean", "optional": true}, {"name": "generatePreview", "type": "boolean", "optional": true}], ["result", "internalProperties", "exceptionDetails"], false);
-InspectorBackend.registerCommand("Runtime.releaseObject", [{"name": "objectId", "type": "string", "optional": false}], [], false);
-InspectorBackend.registerCommand("Runtime.releaseObjectGroup", [{"name": "objectGroup", "type": "string", "optional": false}], [], false);
-InspectorBackend.registerCommand("Runtime.run", [], [], false);
-InspectorBackend.registerCommand("Runtime.enable", [], [], false);
-InspectorBackend.registerCommand("Runtime.disable", [], [], false);
-InspectorBackend.registerCommand("Runtime.setCustomObjectFormatterEnabled", [{"name": "enabled", "type": "boolean", "optional": false}], [], false);
-InspectorBackend.registerCommand("Runtime.compileScript", [{"name": "expression", "type": "string", "optional": false}, {"name": "sourceURL", "type": "string", "optional": false}, {"name": "persistScript", "type": "boolean", "optional": false}, {"name": "executionContextId", "type": "number", "optional": false}], ["scriptId", "exceptionDetails"], false);
-InspectorBackend.registerCommand("Runtime.runScript", [{"name": "scriptId", "type": "string", "optional": false}, {"name": "executionContextId", "type": "number", "optional": false}, {"name": "objectGroup", "type": "string", "optional": true}, {"name": "doNotPauseOnExceptionsAndMuteConsole", "type": "boolean", "optional": true}, {"name": "includeCommandLineAPI", "type": "boolean", "optional": true}], ["result", "exceptionDetails"], false);
-
 // Console.
 InspectorBackend.registerEnum("Console.ConsoleMessageSource", {XML: "xml", Javascript: "javascript", Network: "network", ConsoleAPI: "console-api", Storage: "storage", Appcache: "appcache", Rendering: "rendering", Security: "security", Other: "other", Deprecation: "deprecation"});
 InspectorBackend.registerEnum("Console.ConsoleMessageLevel", {Log: "log", Warning: "warning", Error: "error", Debug: "debug", Info: "info", RevokedError: "revokedError"});
@@ -135,7 +111,7 @@ InspectorBackend.registerCommand("Security.disable", [], [], false);
 // Network.
 InspectorBackend.registerEnum("Network.ResourcePriority", {VeryLow: "VeryLow", Low: "Low", Medium: "Medium", High: "High", VeryHigh: "VeryHigh"});
 InspectorBackend.registerEnum("Network.RequestMixedContentType", {Blockable: "blockable", OptionallyBlockable: "optionally-blockable", None: "none"});
-InspectorBackend.registerEnum("Network.BlockedReason", {Csp: "csp", MixedContent: "mixed-content", Origin: "origin", Inspector: "inspector", Other: "other"});
+InspectorBackend.registerEnum("Network.BlockedReason", {Csp: "csp", MixedContent: "mixed-content", Origin: "origin", Inspector: "inspector", SubresourceFilter: "subresource-filter", Other: "other"});
 InspectorBackend.registerEnum("Network.InitiatorType", {Parser: "parser", Script: "script", Other: "other"});
 InspectorBackend.registerEnum("Network.CookieSameSite", {Strict: "Strict", Lax: "Lax"});
 InspectorBackend.registerEvent("Network.resourceChangedPriority", ["requestId", "newPriority", "timestamp"]);
@@ -310,43 +286,6 @@ InspectorBackend.registerCommand("CSS.getBackgroundColors", [{"name": "nodeId", 
 InspectorBackend.registerCommand("IO.read", [{"name": "handle", "type": "string", "optional": false}, {"name": "offset", "type": "number", "optional": true}, {"name": "size", "type": "number", "optional": true}], ["data", "eof"], false);
 InspectorBackend.registerCommand("IO.close", [{"name": "handle", "type": "string", "optional": false}], [], false);
 
-// Debugger.
-InspectorBackend.registerEnum("Debugger.GeneratorObjectDetailsStatus", {Running: "running", Suspended: "suspended", Closed: "closed"});
-InspectorBackend.registerEnum("Debugger.ScopeType", {Global: "global", Local: "local", With: "with", Closure: "closure", Catch: "catch", Block: "block", Script: "script"});
-InspectorBackend.registerEvent("Debugger.scriptParsed", ["scriptId", "url", "startLine", "startColumn", "endLine", "endColumn", "executionContextId", "hash", "isContentScript", "isInternalScript", "isLiveEdit", "sourceMapURL", "hasSourceURL", "deprecatedCommentWasUsed"]);
-InspectorBackend.registerEvent("Debugger.scriptFailedToParse", ["scriptId", "url", "startLine", "startColumn", "endLine", "endColumn", "executionContextId", "hash", "isContentScript", "isInternalScript", "sourceMapURL", "hasSourceURL", "deprecatedCommentWasUsed"]);
-InspectorBackend.registerEvent("Debugger.breakpointResolved", ["breakpointId", "location"]);
-InspectorBackend.registerEvent("Debugger.paused", ["callFrames", "reason", "data", "hitBreakpoints", "asyncStackTrace"]);
-InspectorBackend.registerEvent("Debugger.resumed", []);
-InspectorBackend.registerCommand("Debugger.enable", [], [], false);
-InspectorBackend.registerCommand("Debugger.disable", [], [], false);
-InspectorBackend.registerCommand("Debugger.setBreakpointsActive", [{"name": "active", "type": "boolean", "optional": false}], [], false);
-InspectorBackend.registerCommand("Debugger.setSkipAllPauses", [{"name": "skipped", "type": "boolean", "optional": false}], [], false);
-InspectorBackend.registerCommand("Debugger.setBreakpointByUrl", [{"name": "lineNumber", "type": "number", "optional": false}, {"name": "url", "type": "string", "optional": true}, {"name": "urlRegex", "type": "string", "optional": true}, {"name": "columnNumber", "type": "number", "optional": true}, {"name": "condition", "type": "string", "optional": true}], ["breakpointId", "locations"], false);
-InspectorBackend.registerCommand("Debugger.setBreakpoint", [{"name": "location", "type": "object", "optional": false}, {"name": "condition", "type": "string", "optional": true}], ["breakpointId", "actualLocation"], false);
-InspectorBackend.registerCommand("Debugger.removeBreakpoint", [{"name": "breakpointId", "type": "string", "optional": false}], [], false);
-InspectorBackend.registerCommand("Debugger.continueToLocation", [{"name": "location", "type": "object", "optional": false}, {"name": "interstatementLocation", "type": "boolean", "optional": true}], [], false);
-InspectorBackend.registerCommand("Debugger.stepOver", [], [], false);
-InspectorBackend.registerCommand("Debugger.stepInto", [], [], false);
-InspectorBackend.registerCommand("Debugger.stepOut", [], [], false);
-InspectorBackend.registerCommand("Debugger.pause", [], [], false);
-InspectorBackend.registerCommand("Debugger.resume", [], [], false);
-InspectorBackend.registerCommand("Debugger.searchInContent", [{"name": "scriptId", "type": "string", "optional": false}, {"name": "query", "type": "string", "optional": false}, {"name": "caseSensitive", "type": "boolean", "optional": true}, {"name": "isRegex", "type": "boolean", "optional": true}], ["result"], false);
-InspectorBackend.registerCommand("Debugger.canSetScriptSource", [], ["result"], false);
-InspectorBackend.registerCommand("Debugger.setScriptSource", [{"name": "scriptId", "type": "string", "optional": false}, {"name": "scriptSource", "type": "string", "optional": false}, {"name": "preview", "type": "boolean", "optional": true}], ["callFrames", "stackChanged", "asyncStackTrace", "compileError"], false);
-InspectorBackend.registerCommand("Debugger.restartFrame", [{"name": "callFrameId", "type": "string", "optional": false}], ["callFrames", "asyncStackTrace"], false);
-InspectorBackend.registerCommand("Debugger.getScriptSource", [{"name": "scriptId", "type": "string", "optional": false}], ["scriptSource"], false);
-InspectorBackend.registerCommand("Debugger.getFunctionDetails", [{"name": "functionId", "type": "string", "optional": false}], ["details"], false);
-InspectorBackend.registerCommand("Debugger.getGeneratorObjectDetails", [{"name": "objectId", "type": "string", "optional": false}], ["details"], false);
-InspectorBackend.registerCommand("Debugger.getCollectionEntries", [{"name": "objectId", "type": "string", "optional": false}], ["entries"], false);
-InspectorBackend.registerCommand("Debugger.setPauseOnExceptions", [{"name": "state", "type": "string", "optional": false}], [], false);
-InspectorBackend.registerCommand("Debugger.evaluateOnCallFrame", [{"name": "callFrameId", "type": "string", "optional": false}, {"name": "expression", "type": "string", "optional": false}, {"name": "objectGroup", "type": "string", "optional": true}, {"name": "includeCommandLineAPI", "type": "boolean", "optional": true}, {"name": "doNotPauseOnExceptionsAndMuteConsole", "type": "boolean", "optional": true}, {"name": "returnByValue", "type": "boolean", "optional": true}, {"name": "generatePreview", "type": "boolean", "optional": true}], ["result", "wasThrown", "exceptionDetails"], false);
-InspectorBackend.registerCommand("Debugger.setVariableValue", [{"name": "scopeNumber", "type": "number", "optional": false}, {"name": "variableName", "type": "string", "optional": false}, {"name": "newValue", "type": "object", "optional": false}, {"name": "callFrameId", "type": "string", "optional": false}], [], false);
-InspectorBackend.registerCommand("Debugger.getBacktrace", [], ["callFrames", "asyncStackTrace"], false);
-InspectorBackend.registerCommand("Debugger.setAsyncCallStackDepth", [{"name": "maxDepth", "type": "number", "optional": false}], [], false);
-InspectorBackend.registerCommand("Debugger.setBlackboxPatterns", [{"name": "patterns", "type": "object", "optional": false}], [], false);
-InspectorBackend.registerCommand("Debugger.setBlackboxedRanges", [{"name": "scriptId", "type": "string", "optional": false}, {"name": "positions", "type": "object", "optional": false}], [], false);
-
 // DOMDebugger.
 InspectorBackend.registerEnum("DOMDebugger.DOMBreakpointType", {SubtreeModified: "subtree-modified", AttributeModified: "attribute-modified", NodeRemoved: "node-removed"});
 InspectorBackend.registerCommand("DOMDebugger.setDOMBreakpoint", [{"name": "nodeId", "type": "number", "optional": false}, {"name": "type", "type": "string", "optional": false}], [], false);
@@ -358,33 +297,6 @@ InspectorBackend.registerCommand("DOMDebugger.removeInstrumentationBreakpoint", 
 InspectorBackend.registerCommand("DOMDebugger.setXHRBreakpoint", [{"name": "url", "type": "string", "optional": false}], [], false);
 InspectorBackend.registerCommand("DOMDebugger.removeXHRBreakpoint", [{"name": "url", "type": "string", "optional": false}], [], false);
 InspectorBackend.registerCommand("DOMDebugger.getEventListeners", [{"name": "objectId", "type": "string", "optional": false}], ["listeners"], false);
-
-// Profiler.
-InspectorBackend.registerEvent("Profiler.consoleProfileStarted", ["id", "location", "title"]);
-InspectorBackend.registerEvent("Profiler.consoleProfileFinished", ["id", "location", "profile", "title"]);
-InspectorBackend.registerCommand("Profiler.enable", [], [], false);
-InspectorBackend.registerCommand("Profiler.disable", [], [], false);
-InspectorBackend.registerCommand("Profiler.setSamplingInterval", [{"name": "interval", "type": "number", "optional": false}], [], false);
-InspectorBackend.registerCommand("Profiler.start", [], [], false);
-InspectorBackend.registerCommand("Profiler.stop", [], ["profile"], false);
-
-// HeapProfiler.
-InspectorBackend.registerEvent("HeapProfiler.addHeapSnapshotChunk", ["chunk"]);
-InspectorBackend.registerEvent("HeapProfiler.resetProfiles", []);
-InspectorBackend.registerEvent("HeapProfiler.reportHeapSnapshotProgress", ["done", "total", "finished"]);
-InspectorBackend.registerEvent("HeapProfiler.lastSeenObjectId", ["lastSeenObjectId", "timestamp"]);
-InspectorBackend.registerEvent("HeapProfiler.heapStatsUpdate", ["statsUpdate"]);
-InspectorBackend.registerCommand("HeapProfiler.enable", [], [], false);
-InspectorBackend.registerCommand("HeapProfiler.disable", [], [], false);
-InspectorBackend.registerCommand("HeapProfiler.startTrackingHeapObjects", [{"name": "trackAllocations", "type": "boolean", "optional": true}], [], false);
-InspectorBackend.registerCommand("HeapProfiler.stopTrackingHeapObjects", [{"name": "reportProgress", "type": "boolean", "optional": true}], [], false);
-InspectorBackend.registerCommand("HeapProfiler.takeHeapSnapshot", [{"name": "reportProgress", "type": "boolean", "optional": true}], [], false);
-InspectorBackend.registerCommand("HeapProfiler.collectGarbage", [], [], false);
-InspectorBackend.registerCommand("HeapProfiler.getObjectByHeapObjectId", [{"name": "objectId", "type": "string", "optional": false}, {"name": "objectGroup", "type": "string", "optional": true}], ["result"], false);
-InspectorBackend.registerCommand("HeapProfiler.addInspectedHeapObject", [{"name": "heapObjectId", "type": "string", "optional": false}], [], false);
-InspectorBackend.registerCommand("HeapProfiler.getHeapObjectId", [{"name": "objectId", "type": "string", "optional": false}], ["heapSnapshotObjectId"], false);
-InspectorBackend.registerCommand("HeapProfiler.startSampling", [{"name": "samplingInterval", "type": "number", "optional": true}], [], false);
-InspectorBackend.registerCommand("HeapProfiler.stopSampling", [], ["profile"], false);
 
 // Worker.
 InspectorBackend.registerEvent("Worker.workerCreated", ["workerId", "url", "waitingForDebugger"]);
@@ -490,5 +402,100 @@ InspectorBackend.registerCommand("Accessibility.getAXNode", [{"name": "nodeId", 
 // Storage.
 InspectorBackend.registerEnum("Storage.StorageType", {Appcache: "appcache", Cookies: "cookies", File_systems: "file_systems", Indexeddb: "indexeddb", Local_storage: "local_storage", Shader_cache: "shader_cache", Websql: "websql", Webrtc_indetity: "webrtc_indetity", Service_workers: "service_workers", Cache_storage: "cache_storage", All: "all"});
 InspectorBackend.registerCommand("Storage.clearDataForOrigin", [{"name": "origin", "type": "string", "optional": false}, {"name": "storageTypes", "type": "string", "optional": false}], [], false);
+
+// Browser.
+InspectorBackend.registerEvent("Browser.dispatchMessage", ["targetId", "message"]);
+InspectorBackend.registerCommand("Browser.getTargets", [], ["targetInfo"], false);
+InspectorBackend.registerCommand("Browser.attach", [{"name": "targetId", "type": "string", "optional": false}], [], false);
+InspectorBackend.registerCommand("Browser.detach", [{"name": "targetId", "type": "string", "optional": false}], [], false);
+InspectorBackend.registerCommand("Browser.sendMessage", [{"name": "targetId", "type": "string", "optional": false}, {"name": "message", "type": "string", "optional": false}], [], false);
+
+// Runtime.
+InspectorBackend.registerEnum("Runtime.RemoteObjectType", {Object: "object", Function: "function", Undefined: "undefined", String: "string", Number: "number", Boolean: "boolean", Symbol: "symbol"});
+InspectorBackend.registerEnum("Runtime.RemoteObjectSubtype", {Array: "array", Null: "null", Node: "node", Regexp: "regexp", Date: "date", Map: "map", Set: "set", Iterator: "iterator", Generator: "generator", Error: "error"});
+InspectorBackend.registerEnum("Runtime.ObjectPreviewType", {Object: "object", Function: "function", Undefined: "undefined", String: "string", Number: "number", Boolean: "boolean", Symbol: "symbol"});
+InspectorBackend.registerEnum("Runtime.ObjectPreviewSubtype", {Array: "array", Null: "null", Node: "node", Regexp: "regexp", Date: "date", Map: "map", Set: "set", Iterator: "iterator", Generator: "generator", Error: "error"});
+InspectorBackend.registerEnum("Runtime.PropertyPreviewType", {Object: "object", Function: "function", Undefined: "undefined", String: "string", Number: "number", Boolean: "boolean", Symbol: "symbol", Accessor: "accessor"});
+InspectorBackend.registerEnum("Runtime.PropertyPreviewSubtype", {Array: "array", Null: "null", Node: "node", Regexp: "regexp", Date: "date", Map: "map", Set: "set", Iterator: "iterator", Generator: "generator", Error: "error"});
+InspectorBackend.registerEnum("Runtime.CallArgumentType", {Object: "object", Function: "function", Undefined: "undefined", String: "string", Number: "number", Boolean: "boolean", Symbol: "symbol"});
+InspectorBackend.registerEvent("Runtime.executionContextCreated", ["context"]);
+InspectorBackend.registerEvent("Runtime.executionContextDestroyed", ["executionContextId"]);
+InspectorBackend.registerEvent("Runtime.executionContextsCleared", []);
+InspectorBackend.registerEvent("Runtime.inspectRequested", ["object", "hints"]);
+InspectorBackend.registerCommand("Runtime.evaluate", [{"name": "expression", "type": "string", "optional": false}, {"name": "objectGroup", "type": "string", "optional": true}, {"name": "includeCommandLineAPI", "type": "boolean", "optional": true}, {"name": "doNotPauseOnExceptionsAndMuteConsole", "type": "boolean", "optional": true}, {"name": "contextId", "type": "number", "optional": true}, {"name": "returnByValue", "type": "boolean", "optional": true}, {"name": "generatePreview", "type": "boolean", "optional": true}, {"name": "userGesture", "type": "boolean", "optional": true}], ["result", "wasThrown", "exceptionDetails"], false);
+InspectorBackend.registerCommand("Runtime.callFunctionOn", [{"name": "objectId", "type": "string", "optional": false}, {"name": "functionDeclaration", "type": "string", "optional": false}, {"name": "arguments", "type": "object", "optional": true}, {"name": "doNotPauseOnExceptionsAndMuteConsole", "type": "boolean", "optional": true}, {"name": "returnByValue", "type": "boolean", "optional": true}, {"name": "generatePreview", "type": "boolean", "optional": true}, {"name": "userGesture", "type": "boolean", "optional": true}], ["result", "wasThrown"], false);
+InspectorBackend.registerCommand("Runtime.getProperties", [{"name": "objectId", "type": "string", "optional": false}, {"name": "ownProperties", "type": "boolean", "optional": true}, {"name": "accessorPropertiesOnly", "type": "boolean", "optional": true}, {"name": "generatePreview", "type": "boolean", "optional": true}], ["result", "internalProperties", "exceptionDetails"], false);
+InspectorBackend.registerCommand("Runtime.releaseObject", [{"name": "objectId", "type": "string", "optional": false}], [], false);
+InspectorBackend.registerCommand("Runtime.releaseObjectGroup", [{"name": "objectGroup", "type": "string", "optional": false}], [], false);
+InspectorBackend.registerCommand("Runtime.run", [], [], false);
+InspectorBackend.registerCommand("Runtime.enable", [], [], false);
+InspectorBackend.registerCommand("Runtime.disable", [], [], false);
+InspectorBackend.registerCommand("Runtime.setCustomObjectFormatterEnabled", [{"name": "enabled", "type": "boolean", "optional": false}], [], false);
+InspectorBackend.registerCommand("Runtime.compileScript", [{"name": "expression", "type": "string", "optional": false}, {"name": "sourceURL", "type": "string", "optional": false}, {"name": "persistScript", "type": "boolean", "optional": false}, {"name": "executionContextId", "type": "number", "optional": false}], ["scriptId", "exceptionDetails"], false);
+InspectorBackend.registerCommand("Runtime.runScript", [{"name": "scriptId", "type": "string", "optional": false}, {"name": "executionContextId", "type": "number", "optional": false}, {"name": "objectGroup", "type": "string", "optional": true}, {"name": "doNotPauseOnExceptionsAndMuteConsole", "type": "boolean", "optional": true}, {"name": "includeCommandLineAPI", "type": "boolean", "optional": true}], ["result", "exceptionDetails"], false);
+
+// Debugger.
+InspectorBackend.registerEnum("Debugger.GeneratorObjectDetailsStatus", {Running: "running", Suspended: "suspended", Closed: "closed"});
+InspectorBackend.registerEnum("Debugger.ScopeType", {Global: "global", Local: "local", With: "with", Closure: "closure", Catch: "catch", Block: "block", Script: "script"});
+InspectorBackend.registerEvent("Debugger.scriptParsed", ["scriptId", "url", "startLine", "startColumn", "endLine", "endColumn", "executionContextId", "hash", "isContentScript", "isInternalScript", "isLiveEdit", "sourceMapURL", "hasSourceURL", "deprecatedCommentWasUsed"]);
+InspectorBackend.registerEvent("Debugger.scriptFailedToParse", ["scriptId", "url", "startLine", "startColumn", "endLine", "endColumn", "executionContextId", "hash", "isContentScript", "isInternalScript", "sourceMapURL", "hasSourceURL", "deprecatedCommentWasUsed"]);
+InspectorBackend.registerEvent("Debugger.breakpointResolved", ["breakpointId", "location"]);
+InspectorBackend.registerEvent("Debugger.paused", ["callFrames", "reason", "data", "hitBreakpoints", "asyncStackTrace"]);
+InspectorBackend.registerEvent("Debugger.resumed", []);
+InspectorBackend.registerCommand("Debugger.enable", [], [], false);
+InspectorBackend.registerCommand("Debugger.disable", [], [], false);
+InspectorBackend.registerCommand("Debugger.setBreakpointsActive", [{"name": "active", "type": "boolean", "optional": false}], [], false);
+InspectorBackend.registerCommand("Debugger.setSkipAllPauses", [{"name": "skipped", "type": "boolean", "optional": false}], [], false);
+InspectorBackend.registerCommand("Debugger.setBreakpointByUrl", [{"name": "lineNumber", "type": "number", "optional": false}, {"name": "url", "type": "string", "optional": true}, {"name": "urlRegex", "type": "string", "optional": true}, {"name": "columnNumber", "type": "number", "optional": true}, {"name": "condition", "type": "string", "optional": true}], ["breakpointId", "locations"], false);
+InspectorBackend.registerCommand("Debugger.setBreakpoint", [{"name": "location", "type": "object", "optional": false}, {"name": "condition", "type": "string", "optional": true}], ["breakpointId", "actualLocation"], false);
+InspectorBackend.registerCommand("Debugger.removeBreakpoint", [{"name": "breakpointId", "type": "string", "optional": false}], [], false);
+InspectorBackend.registerCommand("Debugger.continueToLocation", [{"name": "location", "type": "object", "optional": false}, {"name": "interstatementLocation", "type": "boolean", "optional": true}], [], false);
+InspectorBackend.registerCommand("Debugger.stepOver", [], [], false);
+InspectorBackend.registerCommand("Debugger.stepInto", [], [], false);
+InspectorBackend.registerCommand("Debugger.stepOut", [], [], false);
+InspectorBackend.registerCommand("Debugger.pause", [], [], false);
+InspectorBackend.registerCommand("Debugger.resume", [], [], false);
+InspectorBackend.registerCommand("Debugger.searchInContent", [{"name": "scriptId", "type": "string", "optional": false}, {"name": "query", "type": "string", "optional": false}, {"name": "caseSensitive", "type": "boolean", "optional": true}, {"name": "isRegex", "type": "boolean", "optional": true}], ["result"], false);
+InspectorBackend.registerCommand("Debugger.canSetScriptSource", [], ["result"], false);
+InspectorBackend.registerCommand("Debugger.setScriptSource", [{"name": "scriptId", "type": "string", "optional": false}, {"name": "scriptSource", "type": "string", "optional": false}, {"name": "preview", "type": "boolean", "optional": true}], ["callFrames", "stackChanged", "asyncStackTrace", "compileError"], false);
+InspectorBackend.registerCommand("Debugger.restartFrame", [{"name": "callFrameId", "type": "string", "optional": false}], ["callFrames", "asyncStackTrace"], false);
+InspectorBackend.registerCommand("Debugger.getScriptSource", [{"name": "scriptId", "type": "string", "optional": false}], ["scriptSource"], false);
+InspectorBackend.registerCommand("Debugger.getFunctionDetails", [{"name": "functionId", "type": "string", "optional": false}], ["details"], false);
+InspectorBackend.registerCommand("Debugger.getGeneratorObjectDetails", [{"name": "objectId", "type": "string", "optional": false}], ["details"], false);
+InspectorBackend.registerCommand("Debugger.getCollectionEntries", [{"name": "objectId", "type": "string", "optional": false}], ["entries"], false);
+InspectorBackend.registerCommand("Debugger.setPauseOnExceptions", [{"name": "state", "type": "string", "optional": false}], [], false);
+InspectorBackend.registerCommand("Debugger.evaluateOnCallFrame", [{"name": "callFrameId", "type": "string", "optional": false}, {"name": "expression", "type": "string", "optional": false}, {"name": "objectGroup", "type": "string", "optional": true}, {"name": "includeCommandLineAPI", "type": "boolean", "optional": true}, {"name": "doNotPauseOnExceptionsAndMuteConsole", "type": "boolean", "optional": true}, {"name": "returnByValue", "type": "boolean", "optional": true}, {"name": "generatePreview", "type": "boolean", "optional": true}], ["result", "wasThrown", "exceptionDetails"], false);
+InspectorBackend.registerCommand("Debugger.setVariableValue", [{"name": "scopeNumber", "type": "number", "optional": false}, {"name": "variableName", "type": "string", "optional": false}, {"name": "newValue", "type": "object", "optional": false}, {"name": "callFrameId", "type": "string", "optional": false}], [], false);
+InspectorBackend.registerCommand("Debugger.getBacktrace", [], ["callFrames", "asyncStackTrace"], false);
+InspectorBackend.registerCommand("Debugger.setAsyncCallStackDepth", [{"name": "maxDepth", "type": "number", "optional": false}], [], false);
+InspectorBackend.registerCommand("Debugger.setBlackboxPatterns", [{"name": "patterns", "type": "object", "optional": false}], [], false);
+InspectorBackend.registerCommand("Debugger.setBlackboxedRanges", [{"name": "scriptId", "type": "string", "optional": false}, {"name": "positions", "type": "object", "optional": false}], [], false);
+
+// Profiler.
+InspectorBackend.registerEvent("Profiler.consoleProfileStarted", ["id", "location", "title"]);
+InspectorBackend.registerEvent("Profiler.consoleProfileFinished", ["id", "location", "profile", "title"]);
+InspectorBackend.registerCommand("Profiler.enable", [], [], false);
+InspectorBackend.registerCommand("Profiler.disable", [], [], false);
+InspectorBackend.registerCommand("Profiler.setSamplingInterval", [{"name": "interval", "type": "number", "optional": false}], [], false);
+InspectorBackend.registerCommand("Profiler.start", [], [], false);
+InspectorBackend.registerCommand("Profiler.stop", [], ["profile"], false);
+
+// HeapProfiler.
+InspectorBackend.registerEvent("HeapProfiler.addHeapSnapshotChunk", ["chunk"]);
+InspectorBackend.registerEvent("HeapProfiler.resetProfiles", []);
+InspectorBackend.registerEvent("HeapProfiler.reportHeapSnapshotProgress", ["done", "total", "finished"]);
+InspectorBackend.registerEvent("HeapProfiler.lastSeenObjectId", ["lastSeenObjectId", "timestamp"]);
+InspectorBackend.registerEvent("HeapProfiler.heapStatsUpdate", ["statsUpdate"]);
+InspectorBackend.registerCommand("HeapProfiler.enable", [], [], false);
+InspectorBackend.registerCommand("HeapProfiler.disable", [], [], false);
+InspectorBackend.registerCommand("HeapProfiler.startTrackingHeapObjects", [{"name": "trackAllocations", "type": "boolean", "optional": true}], [], false);
+InspectorBackend.registerCommand("HeapProfiler.stopTrackingHeapObjects", [{"name": "reportProgress", "type": "boolean", "optional": true}], [], false);
+InspectorBackend.registerCommand("HeapProfiler.takeHeapSnapshot", [{"name": "reportProgress", "type": "boolean", "optional": true}], [], false);
+InspectorBackend.registerCommand("HeapProfiler.collectGarbage", [], [], false);
+InspectorBackend.registerCommand("HeapProfiler.getObjectByHeapObjectId", [{"name": "objectId", "type": "string", "optional": false}, {"name": "objectGroup", "type": "string", "optional": true}], ["result"], false);
+InspectorBackend.registerCommand("HeapProfiler.addInspectedHeapObject", [{"name": "heapObjectId", "type": "string", "optional": false}], [], false);
+InspectorBackend.registerCommand("HeapProfiler.getHeapObjectId", [{"name": "objectId", "type": "string", "optional": false}], ["heapSnapshotObjectId"], false);
+InspectorBackend.registerCommand("HeapProfiler.startSampling", [{"name": "samplingInterval", "type": "number", "optional": true}], [], false);
+InspectorBackend.registerCommand("HeapProfiler.stopSampling", [], ["profile"], false);
 
 
