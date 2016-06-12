@@ -7,6 +7,7 @@
             [devtools.prefs :as devtools-prefs]))
 
 (defn init-devtools! [& [config]]
+  (devtools-prefs/set-pref! :dont-detect-custom-formatters true)
   (when-let [devtools-prefs (:devtools-prefs config)]                                                                         ; override devtools prefs
     (log "devtools override: set prefs " devtools-prefs)
     (devtools-prefs/merge-prefs! devtools-prefs))

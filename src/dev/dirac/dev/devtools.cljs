@@ -3,4 +3,4 @@
             [dirac.utils :refer-macros [runonce]]))
 
 (runonce
-  (devtools/install! [:custom-formatters :sanity-hints]))
+  (devtools/install! :all))
