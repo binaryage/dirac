@@ -77,7 +77,7 @@ devtools #1      present-server-side-output! java-trace > java.lang.IllegalArgum
 devtools #1      repl eval job ended
 devtools #1      DF.log> java.lang.IllegalArgumentException: Argument to in-ns must be a symbol.
 devtools #1      <elided stack trace log>
-devtools #1      JS.log>
+devtools #1      JS.log> console.groupEnd
 automate #1      console-exec-and-match! ["(in-ns 'my.ns)" "setDiracPromptNS('my.ns')"]
 devtools #1      DC.log> (in-ns 'my.ns)
 devtools #1      send-eval-request: (in-ns 'my.ns)
