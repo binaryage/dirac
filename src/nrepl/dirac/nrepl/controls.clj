@@ -258,5 +258,7 @@
 ; -- default handler --------------------------------------------------------------------------------------------------------
 
 (defmethod dirac! :default [command & _]
-  (error-println (default-error-msg command))
+  (if (some? command)
+    (error-println (default-error-msg command))
+    (dirac! :help))
   ::no-result)

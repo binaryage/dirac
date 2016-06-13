@@ -363,7 +363,7 @@
 (defn dirac-special-command? [nrepl-message]
   (let [code (:code nrepl-message)]
     (if (string? code)
-      (some? (re-find #"^\(dirac! " code)))))                                                                                 ; we don't want to use read-string here, regexp test should be safe and quick
+      (some? (re-find #"^\(?dirac!" code)))))                                                                                 ; we don't want to use read-string here, regexp test should be safe and quick
 
 (defn repl-eval! [nrepl-message code ns]
   (let [{:keys [transport session]} nrepl-message
@@ -405,12 +405,20 @@
       (if-not (= ::exception result)
         (transport/send transport (response-for nrepl-message reply))))))
 
+(defn sanitize-dirac-command [code]
+  ; this is just for convenience, we convert some common forms to canonical (dirac! :help) form
+  (let [trimmed-code (string/trim code)]
+    (if (or (= trimmed-code "dirac!")
+            (= trimmed-code "(dirac!)"))
+      "(dirac! :help)"
+      trimmed-code)))
+
 (defn handle-dirac-special-command! [nrepl-message]
   (let [{:keys [code session]} nrepl-message
         message (if (sessions/dirac-session? session)
                   (make-nrepl-message-with-captured-output nrepl-message)
                   nrepl-message)]
-    (repl-eval! message code (find-ns 'dirac.nrepl.controls))))                                                               ; we want to eval special commands in dirac.nrepl.controls namespace
+    (repl-eval! message (sanitize-dirac-command code) (find-ns 'dirac.nrepl.controls))))                                      ; we want to eval special commands in dirac.nrepl.controls namespace
 
 (defn prepare-no-target-session-match-error-message [session]
   (let [info (sessions/get-target-session-info session)]
