@@ -6,7 +6,8 @@
             [dirac.lib.ws-server :as ws-server]
             [dirac.lib.version :as lib-version]
             [dirac.lib.utils :as utils]
-            [dirac.logging :as logging]))
+            [dirac.logging :as logging])
+  (:use [clojure.tools.nrepl.misc :only (uuid)]))
 
 (def upgrading-doc-url "https://github.com/binaryage/dirac/blob/master/docs/upgrading.md")
 
@@ -97,7 +98,7 @@
 
 (defn send! [client message]
   {:pre [client]}
-  (let [message (update message :id #(or % (name (:op message))))]
+  (let [message (update message :id #(if (some? %) % (uuid)))]
     (log/trace (str "Sending message " (utils/sid message) " to client " (str client)))
     (ws-server/send! client message)))
 
