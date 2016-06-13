@@ -115,7 +115,6 @@
           (send! result))))))
 
 (defn on-open-handler [client]
-  (reset! wannabe-client nil)
   (reset! current-client client))
 
 (defn on-error-handler [client _event]
@@ -142,5 +141,7 @@
 ; this is a convenience function to attempt connection before auto-reconnect timeout fires
 (defn try-connect! []
   (if-let [client @wannabe-client]
-    (ws-client/try-connect! client)
+    (if-not (connected?)
+      (ws-client/try-connect! client)
+      (warn "client is already connected" @current-client client))
     (warn "call connect! first before try-connect!")))
