@@ -380,23 +380,30 @@
                        (let [root-ex (clojure.main/root-cause e)
                              details (get-exception-details nrepl-message e)]
                          (log/error (str "Clojure eval error during eval of a special dirac command: " details))
+                         ; repl-caught will produce :err message, but we are not under driver, so it won't be converted to :print-output
+                         ; that is why we present error output to user REPL manually
+                         (clojure.main/repl-caught e)
+                         (transport/send transport (response-for nrepl-message
+                                                                 :op :print-output
+                                                                 :kind :java-trace
+                                                                 :content (driver/capture-exception-details e)))
                          (transport/send transport (response-for nrepl-message
                                                                  :status :eval-error
                                                                  :ex (-> e class str)
                                                                  :root-ex (-> root-ex class str)
                                                                  :details details))
-                         (clojure.main/repl-caught e)
-                         ::exception))                                                                                        ; this will trigger :err message
+                         ::exception))
                      (finally
                        (.flush ^Writer out)
-                       (.flush ^Writer err))))]
-      (if (or (= result ::exception) (= result :dirac.nrepl.controls/no-result))
-        (transport/send transport (response-for nrepl-message
-                                                :status :done))
-        (transport/send transport (response-for nrepl-message
-                                                :status :done
-                                                :value (safe-pr-str result)
-                                                :printed-value 1))))))
+                       (.flush ^Writer err))))
+          base-reply {:status :done}
+          reply (if (= :dirac.nrepl.controls/no-result ::exception result)
+                  base-reply
+                  (assoc base-reply
+                    :value (safe-pr-str result)
+                    :printed-value 1))]
+      (if-not (= ::exception result)
+        (transport/send transport (response-for nrepl-message reply))))))
 
 (defn handle-dirac-special-command! [nrepl-message]
   (let [{:keys [code session]} nrepl-message
