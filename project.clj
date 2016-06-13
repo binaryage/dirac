@@ -375,7 +375,13 @@
                        "fig-marion"      ["lein" "fig-marion"]
                        "marion-cs"       ["lein" "auto-compile-marion-cs"]
                        "tests"           ["lein" "auto-compile-browser-tests"]
-                       "browser"         ["scripts/launch-test-browser.sh"]}}}
+                       "browser"         ["scripts/launch-test-browser.sh"]}}
+             :dev-dirac-sample
+             {:cooper {"fig-dirac"  ["lein" "fig-dirac"]
+                       "fig-marion" ["lein" "fig-marion"]
+                       "marion-cs"  ["lein" "auto-compile-marion-cs"]
+                       "dev-sample" ["scripts/dev-sample.sh"]
+                       "browser"    ["scripts/launch-sample-browser.sh"]}}}
 
   :aliases {"check"                      ["shell" "scripts/check-code.sh"]
             "test"                       ["shell" "scripts/test-all.sh"]
@@ -392,6 +398,7 @@
                                           "compile-marion,"
                                           "run-browser-tests-dev"]
             "dev-browser-tests"          ["shell" "scripts/dev-browser-tests.sh"]
+            "dev-dirac-sample"           ["shell" "scripts/dev-dirac-sample.sh"]
             "run-backend-tests"          ["shell" "scripts/run-backend-tests.sh"]
             "run-backend-tests-default"  ["with-profile" "+test-runner" "run" "-m" "dirac.backend-tests-runner"]
             "run-backend-tests-17"       ["with-profile" "+test-runner,+clojure17" "run" "-m" "dirac.backend-tests-runner"]
