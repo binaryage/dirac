@@ -62,12 +62,44 @@ function genTaskList(runnerUrl, tasks) {
     lines.push("</li>");
     lines.push("</ol>");
     lines.push("</div>");
-    return lines.join("");
+    return lines.join("\n");
+}
+
+function httpGetAsync(theUrl, callback) {
+    var xmlHttp = new XMLHttpRequest();
+    xmlHttp.onreadystatechange = function() {
+        if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
+            callback(xmlHttp.responseText);
+    };
+    xmlHttp.open("GET", theUrl, true); // true for asynchronous
+    xmlHttp.send(null);
+}
+
+function genScenariosMarkup(url) {
+    const lines = ["<div class='scenarios'>",
+        "<span class='scenarios-title'>AVAILABLE SCENARIOS:</span>",
+        "<ol class='scenarios-list' id='scenarios-list'>",
+        "</ol>",
+        "</div>"];
+
+    httpGetAsync(url, function(content) {
+        const lines = [];
+        var re = /(<a.*?\/a>)/gm;
+        var m;
+        while (m = re.exec(content)) {
+            const link = m[1];
+            const patchedLink = link.replace("href=\"", "href=\"" + url + "/");
+            lines.push("<li>" + patchedLink +"</li>");
+        }
+        const listEl = document.getElementById("scenarios-list");
+        listEl.innerHTML = lines.join("\n");
+    });
+
+    return lines.join("\n");
 }
 
 var tasks = getIndex(/tasks\/(.*)\.js/);
 var tasksMarkup = genTaskList("runner.html", tasks.sort());
-
-var scenariosMarkup = "<b><a href=\"scenarios\">AVAILABLE SCENARIOS</a></b>";
+var scenariosMarkup = genScenariosMarkup("scenarios");
 
 document.body.innerHTML = [tasksMarkup, scenariosMarkup].join("<br>");

@@ -23,3 +23,13 @@ html {
 .tasks .task-list {
     list-style-type: decimal-leading-zero;
 }
+
+.scenarios .scenarios-title {
+    font-weight: bold;
+}
+
+.scenarios .scenarios-list {
+    margin-bottom: 16px;
+    padding-left: 60px;
+    list-style-type: decimal-leading-zero;
+}
