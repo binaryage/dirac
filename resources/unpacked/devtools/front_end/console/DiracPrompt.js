@@ -555,7 +555,7 @@ WebInspector.DiracPromptWithHistory.prototype = {
                     className: suggestStyle("suggest-cljs-repl suggest-cljs-special")
                 }));
             };
-            
+
             const localsPromise = dirac.extractScopeInfoFromScopeChainAsync(debuggerModel.selectedCallFrame()).then(extractAndAnnotateLocals);
             const currentNamespaceSymbolsPromise = dirac.extractNamespaceSymbolsAsync(this._currentClojureScriptNamespace).then(annotateSymbols.bind(this, "suggest-cljs-in-ns"));
             const namespaceNamesPromise = dirac.extractNamespacesAsync().then(extractNamespaceNames).then(annotateNamespaceNames.bind(this, "suggest-cljs-ns"));
@@ -586,23 +586,6 @@ WebInspector.DiracPromptWithHistory.prototype = {
         }
     },
 
-    _markAliasedCompletions: function(annotatedCompletions) {
-        let previous = null;
-        for (let i = 0; i < annotatedCompletions.length; i++) {
-            const current = annotatedCompletions[i];
-
-            if (previous) {
-                if (current.title === previous.title) {
-                    if (!current.className) {
-                        current.className = "";
-                    }
-                    current.className += " suggest-cljs-aliased";
-                }
-            }
-            previous = current;
-        }
-    },
-
     /**
      * @param {number} requestId
      * @param {boolean} reverse
@@ -624,13 +607,55 @@ WebInspector.DiracPromptWithHistory.prototype = {
             return;
         }
 
-        const sortedAnnotatedCompletions = dirac.stableSort(completions, (a, b) => {
-            return a.title.localeCompare(b.title);
-        });
+        const sortCompletions = (completions) => {
+            return dirac.stableSort(completions, (a, b) => {
+                return a.title.localeCompare(b.title);
+            });
+        };
 
-        this._markAliasedCompletions(sortedAnnotatedCompletions);
+        const markAliasedCompletions = (annotatedCompletions) => {
+            let previous = null;
+            for (const current of annotatedCompletions) {
+                if (previous) {
+                    if (current.title === previous.title) {
+                        if (!current.className) {
+                            current.className = "suggest-cljs-aliased";
+                        } else {
+                            current.className += " suggest-cljs-aliased";
+                        }
+                    }
+                }
+                previous = current;
+            }
+            return annotatedCompletions;
+        };
 
-        if (!sortedAnnotatedCompletions.length) {
+        const combineAliasedMacroNamespacesInCompletions = (completions) => {
+            const result = [];
+            let previous = null;
+            for (const current of completions) {
+                var skip = false;
+                if (previous) {
+                    if (current.title === previous.title) {
+                        if (previous.className.includes("suggest-cljs-ns") &&
+                            current.className.includes("suggest-cljs-ns") &&
+                            current.className.includes("suggest-cljs-macro")) {
+                            skip = true;
+                            previous.className += " suggest-cljs-macro suggest-cljs-combined-ns-macro";
+                        }
+                    }
+                }
+                previous = current;
+                if (!skip) {
+                    result.push(current);
+                }
+            }
+            return result;
+        };
+
+        const processedCompletions = combineAliasedMacroNamespacesInCompletions(markAliasedCompletions(sortCompletions(completions)));
+
+        if (!processedCompletions.length) {
             this.hideSuggestBox();
             return;
         }
@@ -643,9 +668,9 @@ WebInspector.DiracPromptWithHistory.prototype = {
             this._updateAnchorBox();
             const shouldShowForSingleItem = true; // later maybe implement inline completions like in TextPrompt.js
             if (dirac._DEBUG_COMPLETIONS) {
-                console.log("calling SuggestBox.updateSuggestions", this._anchorBox, sortedAnnotatedCompletions, selectedIndex, shouldShowForSingleItem, this._userEnteredText);
+                console.log("calling SuggestBox.updateSuggestions", this._anchorBox, processedCompletions, selectedIndex, shouldShowForSingleItem, this._userEnteredText);
             }
-            this._suggestBox.updateSuggestions(this._anchorBox, sortedAnnotatedCompletions, selectedIndex, shouldShowForSingleItem, this._userEnteredText);
+            this._suggestBox.updateSuggestions(this._anchorBox, processedCompletions, selectedIndex, shouldShowForSingleItem, this._userEnteredText);
         }
 
         // here could be implemented inline completions like in TextPrompt.js

@@ -82,9 +82,8 @@ stdout           devtools.custom-formatters
 automate #1      clear-console-prompt!
 automate #1      simulate-console-input! ["cljs.cor"]
 automate #1      scrape! [:suggest-box]
-stdout           displayed 11 items:
-                  * cljs.cor|e (ns selected)
-                  * cljs.cor|e (ns macro aliased)
+stdout           displayed 10 items:
+                  * cljs.cor|e (ns macro combined-ns-macro selected)
                   * cljs.cor|e.async (ns)
                   * cljs.cor|e.async.impl.buffers (ns)
                   * cljs.cor|e.async.impl.channels (ns)

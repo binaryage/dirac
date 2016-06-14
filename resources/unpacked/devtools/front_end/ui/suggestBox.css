@@ -137,16 +137,27 @@
     text-align: right;
 }
 
-.suggest-box .suggest-box-content-item.suggest-cljs .prologue {
-    border-left: 3px solid #899fcb;
+.suggest-box .suggest-box-content-item.suggest-cljs .prologue::before {
+    border-left: 2px solid #899fcb;
+    border-right: 2px solid #899fcb;
+    border-radius: 1px;
+    content: "";
+    -webkit-user-select: none;
 }
 
-.suggest-box .suggest-box-content-item.suggest-cljs-macro .prologue {
-    border-left: 3px solid #aed17d;
+.suggest-box .suggest-box-content-item.suggest-cljs-macro .prologue::before {
+    border-left: 2px solid #aed17d;
+    border-right: 2px solid #aed17d;
 }
 
-.suggest-box .suggest-box-content-item.suggest-cljs-special .prologue {
-    border-left: 3px solid #e6bf73;
+.suggest-box .suggest-box-content-item.suggest-cljs-special .prologue::before {
+    border-left: 2px solid #e6bf73;
+    border-right: 2px solid #e6bf73;
+}
+
+.suggest-box .suggest-box-content-item.suggest-cljs-combined-ns-macro .prologue::before {
+    border-left: 2px solid #899fcb;
+    border-right: 2px solid #aed17d;
 }
 
 .suggest-box .suggest-box-content-item.suggest-cljs-ns .prologue::after {
