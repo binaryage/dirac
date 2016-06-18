@@ -258,8 +258,7 @@ Object.assign(window.dirac, (function() {
             console.log("invalidateNamespacesCache");
         }
         dirac._namespacesCache = null;
-        // HACK: macro namespaces depend on _namespacesCache, do explicit invalidation here
-        // TODO: in future we want to be smarter here
+        // macro namespaces depend on _namespacesCache, do explicit invalidation here
         dirac.invalidateMacroNamespaceSymbolsCache();
     }
 
@@ -273,11 +272,18 @@ Object.assign(window.dirac, (function() {
 
     function extractAndMergeSourceCodeNamespacesAsync(uiSourceCode) {
         return extractSourceCodeNamespacesAsync(uiSourceCode).then(result => {
-            if (Object.keys(result).length) {
+            const namespaceNames = Object.keys(result);
+            if (namespaceNames.length) {
                 if (dirac._DEBUG_CACHES) {
                     console.log("updated _namespacesCache by merging ", result);
                 }
                 Object.assign(dirac._namespacesCache, result);
+
+                // refresh macro namespaces data based on new results
+                for (let namespaceName of namespaceNames) {
+                    dirac.invalidateMacroNamespaceSymbolsCache(namespaceName);
+                    dirac.extractMacroNamespaceSymbolsAsync(namespaceName);
+                }
             }
             return result;
         });
@@ -290,6 +296,7 @@ Object.assign(window.dirac, (function() {
             if (descriptor.url != url) {
                 newCache[namespaceName] = descriptor;
             } else {
+                dirac.invalidateMacroNamespaceSymbolsCache(namespaceName);
                 if (dirac._DEBUG_CACHES) {
                     console.log("removeNamespacesMatchingUrl removed ", namespaceName, descriptor);
                 }
