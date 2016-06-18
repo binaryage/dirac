@@ -8,8 +8,8 @@
         :url  "https://github.com/binaryage/dirac"}
 
   :dependencies [[org.clojure/clojure "1.8.0" :scope "provided"]
-                 [org.clojure/clojurescript "1.9.36" :scope "provided"]
-                 [org.clojure/core.async "0.2.374"]
+                 [org.clojure/clojurescript "1.9.76" :scope "provided"]
+                 [org.clojure/core.async "0.2.385"]
                  [org.clojure/tools.logging "0.3.1"]
                  [org.clojure/tools.cli "0.3.5"]
                  [org.clojure/tools.nrepl "0.2.12"]
@@ -25,7 +25,7 @@
                  [binaryage/chromex "0.4.1" :scope "test"]
                  [binaryage/devtools "0.7.0" :scope "test"]
                  [cljs-http "0.1.41" :scope "test"]
-                 [figwheel "0.5.4-2" :scope "test"]
+                 [figwheel "0.5.4-3" :scope "test"]
                  [reforms "0.4.3" :scope "test"]
                  [rum "0.9.0" :scope "test"]
                  [rum-reforms "0.4.3" :scope "test"]
@@ -129,7 +129,7 @@
 
              :cljs
              {:plugins [[lein-cljsbuild "1.1.3"]
-                        [lein-figwheel "0.5.4-2"]]
+                        [lein-figwheel "0.5.4-3"]]
               :hooks   [leiningen.cljsbuild]}
 
              :test-runner
