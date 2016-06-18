@@ -84,6 +84,22 @@
           (<!* a/clear-console-prompt!)
           (<!* a/simulate-console-input! "chromex.logging/lo")
           (<!* a/scrape! :suggest-box))
+        (testing "closure libraries should be listed"
+          (<!* a/clear-console-prompt!)
+          (<!* a/simulate-console-input! "goog.stri")
+          (<!* a/scrape! :suggest-box))
+        (testing "aliases to closure libraries should be listed"
+          (<!* a/clear-console-prompt!)
+          (<!* a/simulate-console-input! "gstri")
+          (<!* a/scrape! :suggest-box))
+        (testing "qualified completions of closure libraries (full name)"
+          (<!* a/clear-console-prompt!)
+          (<!* a/simulate-console-input! "goog.array/cl")
+          (<!* a/scrape! :suggest-box))
+        (testing "qualified completions of closure libraries (via alias)"
+          (<!* a/clear-console-prompt!)
+          (<!* a/simulate-console-input! "gstring/case")
+          (<!* a/scrape! :suggest-box))
         (testing "'dirac!' should be present as repl special command"
           (<!* a/clear-console-prompt!)
           (<!* a/simulate-console-input! "dirac")

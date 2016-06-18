@@ -148,6 +148,35 @@ automate #1      scrape! [:suggest-box]
 stdout           displayed 1 items:
                   * lo|g (qualified macro selected)
 automate #1      clear-console-prompt!
+automate #1      simulate-console-input! ["goog.stri"]
+automate #1      scrape! [:suggest-box]
+stdout           displayed 5 items:
+                  * goog.stri|ng (ns pseudo selected)
+                  * goog.stri|ng.Const (ns pseudo)
+                  * goog.stri|ng.StringBuffer (ns pseudo)
+                  * goog.stri|ng.TypedString (ns pseudo)
+                  * goog.stri|ng.Unicode (ns pseudo)
+automate #1      clear-console-prompt!
+automate #1      simulate-console-input! ["gstri"]
+automate #1      scrape! [:suggest-box]
+stdout           displayed 1 items:
+                  * gstri|ng [is goog.string] (ns-alias pseudo selected)
+automate #1      clear-console-prompt!
+automate #1      simulate-console-input! ["goog.array/cl"]
+automate #1      scrape! [:suggest-box]
+stdout           displayed 2 items:
+                  * cl|ear (qualified pseudo selected)
+                  * cl|one (qualified pseudo)
+automate #1      clear-console-prompt!
+automate #1      simulate-console-input! ["gstring/case"]
+automate #1      scrape! [:suggest-box]
+stdout           displayed 5 items:
+                  * case|InsensitiveCompare (qualified pseudo selected)
+                  * case|InsensitiveContains (qualified pseudo)
+                  * case|InsensitiveEndsWith (qualified pseudo)
+                  * case|InsensitiveEquals (qualified pseudo)
+                  * case|InsensitiveStartsWith (qualified pseudo)
+automate #1      clear-console-prompt!
 automate #1      simulate-console-input! ["dirac"]
 automate #1      scrape [:suggest-box]
 automate #1      clear-console-prompt!
@@ -169,5 +198,5 @@ automate #1      close-devtools!
 extension        handling command: close-dirac-devtools
 extension        unregister devtools #1
 automate         close-tab-with-scenario! ["scenario-tab#1"]
-summary          Automated 82 actions with 1 check-points containing 18 assertions.
+summary          Automated 94 actions with 1 check-points containing 18 assertions.
                  0 failures, 0 errors.

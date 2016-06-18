@@ -3,9 +3,15 @@
                    [chromex.logging :refer [log warn]]
                    [chromex.support])
   (:require [cljs.core.async :as alias-cljs-core-async :refer [put!]]
-            [dirac.settings :as alias-dirac-settings :refer-macros [get-dirac-window-top]]))
+            [dirac.settings :as alias-dirac-settings :refer-macros [get-dirac-window-top]]
+            [goog.object :as gobj]
+            [goog.string :as gstring :refer [isEmptyOrWhitespace]]))
+
+(enable-console-print!)
 
 (def sample-def "sample-def")
 (defonce sample-defonce "sample-defonce")
 
 (defn sample-defn [a b])
+
+(println (isEmptyOrWhitespace ""))
