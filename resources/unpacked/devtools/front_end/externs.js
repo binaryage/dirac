@@ -426,6 +426,13 @@ var dirac = {
     invalidateNamespacesCache: function() {},
 
     /**
+     *
+     * @param {Object.<string, dirac.NamespaceDescriptor>} namespaces
+     * @return {Array.<string>}
+     */
+    getMacroNamespaceNames: function(namespaces) {},
+
+    /**
      * @param {Array.<T>} coll
      * @param {function(T):string=} keyFn
      * @return {Array.<T>}
@@ -514,6 +521,7 @@ dirac.ScopeInfo;
  * @typedef {{
  *        name:!string,
  *        url:!string,
+ *        pseudo:?boolean,
  *        namespaceAliases:?Object.<string, string>,
  *        namespaceRefers:?Object.<string, string>,
  *        macroNamespaceAliases:?Object.<string, string>,

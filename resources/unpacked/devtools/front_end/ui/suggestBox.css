@@ -133,31 +133,38 @@
     position: relative;
     margin-right: 6px;
     color: #ccc;
-    top: -1px;
     text-align: right;
 }
 
 .suggest-box .suggest-box-content-item.suggest-cljs .prologue::before {
-    border-left: 2px solid #899fcb;
-    border-right: 2px solid #899fcb;
+    height: 6px;
+    width: 0px;
+    display: inline-block;
+    border-left: 3px solid #aed17d;
+    border-right: 3px solid #aed17d;
     border-radius: 1px;
     content: "";
     -webkit-user-select: none;
 }
 
 .suggest-box .suggest-box-content-item.suggest-cljs-macro .prologue::before {
-    border-left: 2px solid #aed17d;
-    border-right: 2px solid #aed17d;
+    border-left-color: #d1585d;
+    border-right-color: #d1585d;
+}
+
+.suggest-box .suggest-box-content-item.suggest-cljs-pseudo .prologue::before {
+    border-left-color: #899fcb;
+    border-right-color: #899fcb;
 }
 
 .suggest-box .suggest-box-content-item.suggest-cljs-special .prologue::before {
-    border-left: 2px solid #e6bf73;
-    border-right: 2px solid #e6bf73;
+    border-left-color: #e6bf73;
+    border-right-color: #e6bf73;
 }
 
 .suggest-box .suggest-box-content-item.suggest-cljs-combined-ns-macro .prologue::before {
-    border-left: 2px solid #899fcb;
-    border-right: 2px solid #aed17d;
+    border-left-color: #d1585d;
+    border-right-color: #aed17d;
 }
 
 .suggest-box .suggest-box-content-item.suggest-cljs-ns .prologue::after {
@@ -202,11 +209,10 @@
 
 .suggest-box .suggest-box-content-item .epilogue {
     font-size: 8px;
-    float: right;
+    display:inline-block;
     color: #ccc;
-    padding: 0 6px;
-    position: relative;
-    top: 2px;
+    padding: 0 4px;
+    text-align: right;
 }
 
 .suggest-box .suggest-box-content-item.selected {

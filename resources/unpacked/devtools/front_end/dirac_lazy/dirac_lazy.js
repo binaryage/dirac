@@ -133,16 +133,45 @@ Object.assign(window.dirac, (function() {
     /**
      * @param {string} url
      * @param {string} cljsSourceCode
-     * @return {?dirac.NamespaceDescriptor}
+     * @return {!Array<dirac.NamespaceDescriptor>}
      */
-    function parseClojureScriptNamespace(url, cljsSourceCode) {
+    function parseClojureScriptNamespaces(url, cljsSourceCode) {
+        if (!cljsSourceCode) {
+            return [];
+        }
         var descriptor = dirac.parseNsFromSource(cljsSourceCode);
         if (!descriptor) {
-            return null;
+            return [];
         }
 
         descriptor.url = url;
-        return descriptor;
+        return [descriptor];
+    }
+
+    /**
+     * @param {string} url
+     * @param {string} jsSourceCode
+     * @return {!Array<dirac.NamespaceDescriptor>}
+     */
+    function parsePseudoNamespaces(url, jsSourceCode) {
+        if (!jsSourceCode) {
+            return [];
+        }
+
+        const result = [];
+        const re = /goog\.provide\('(.*?)'\);/gm;
+        let m;
+        while (m = re.exec(jsSourceCode)) {
+            const namespaceName = m[1];
+            const descriptor = {
+                name: namespaceName,
+                url: url,
+                pseudo: true
+            };
+            result.push(descriptor);
+        }
+
+        return result;
     }
 
     /**
@@ -151,42 +180,61 @@ Object.assign(window.dirac, (function() {
      * @suppressGlobalPropertiesCheck
      */
     function parseNamespacesDescriptorsAsync(script) {
-        const sourceMap = WebInspector.debuggerWorkspaceBinding.sourceMapForScript(script);
-        if (!sourceMap) {
+        if (script.isInternalScript() || script.isContentScript()) {
             return Promise.resolve([]);
         }
 
-        var promises = [];
-        for (let url of sourceMap.sourceURLs()) {
-            // take only .cljs or .cljc urls, make sure url params and fragments get matched properly
-            // examples:
-            //   http://localhost:9977/_compiled/demo/clojure/browser/event.cljs?rel=1463085025939
-            //   http://localhost:9977/_compiled/demo/dirac_sample/demo.cljs?rel=1463085026941
-            const parser = document.createElement('a');
-            parser.href = url;
-            if (!parser.pathname.match(/\.clj.$/)) {
-                continue;
+        let promises = [];
+        let realNamespace = false;
+
+        const sourceMap = WebInspector.debuggerWorkspaceBinding.sourceMapForScript(script);
+        if (sourceMap) {
+            for (let url of sourceMap.sourceURLs()) {
+                // take only .cljs or .cljc urls, make sure url params and fragments get matched properly
+                // examples:
+                //   http://localhost:9977/_compiled/demo/clojure/browser/event.cljs?rel=1463085025939
+                //   http://localhost:9977/_compiled/demo/dirac_sample/demo.cljs?rel=1463085026941
+                const parser = document.createElement('a');
+                parser.href = url;
+                if (parser.pathname.match(/\.clj.$/)) {
+                    const contentProvider = sourceMap.sourceContentProvider(url, WebInspector.resourceTypes.SourceMapScript);
+                    const namespaceDescriptorsPromise = contentProvider.requestContent().then(cljsSourceCode => parseClojureScriptNamespaces(url, cljsSourceCode));
+                    promises.push(namespaceDescriptorsPromise);
+                    realNamespace = true;
+                }
             }
-            const contentProvider = sourceMap.sourceContentProvider(url, WebInspector.resourceTypes.SourceMapScript);
-            const namespaceDescriptorPromise = contentProvider.requestContent().then(cljsSourceCode => parseClojureScriptNamespace(url, cljsSourceCode || ""));
-            promises.push(namespaceDescriptorPromise);
         }
 
-        const removeNullDescriptors =
-            /**
-             *
-             * @param {!Array<?dirac.NamespaceDescriptor>} namespaceDescriptors
-             * @return {!Array<dirac.NamespaceDescriptor>}
-             */
-            namespaceDescriptors => {
-                return namespaceDescriptors.filter(descriptor => !!descriptor);
-            };
+        // we are also interested in pseudo namespaces from google closure library
+        if (!realNamespace) {
+            const url = script.contentURL();
+            const parser = document.createElement('a');
+            parser.href = url;
+            if (parser.pathname.match(/\.js$/)) {
+                const namespaceDescriptorsPromise = script.requestContent().then(jsSourceCode => parsePseudoNamespaces(url, jsSourceCode));
+                promises.push(namespaceDescriptorsPromise);
+            }
+        }
 
-        // parseClojureScriptNamespace may fail and return null, so we filter out null results after gathering all results
-        return Promise.all(promises).then(removeNullDescriptors);
+        const concatResults = results => {
+            return [].concat.apply([], results);
+        };
+
+        return Promise.all(promises).then(concatResults);
     }
 
     // --- namespace names --------------------------------------------------------------------------------------------------
+
+    function getMacroNamespaceNames(namespaces) {
+        let names = [];
+        for (let descriptor of Object.values(namespaces)) {
+            if (!descriptor.detectedMacroNamespaces) {
+                continue;
+            }
+            names = names.concat(descriptor.detectedMacroNamespaces);
+        }
+        return dirac.deduplicate(names);
+    }
 
     function getSourceCodeNamespaceDescriptorsAsync(uiSourceCode) {
         if (!uiSourceCode) {
@@ -216,8 +264,7 @@ Object.assign(window.dirac, (function() {
 
         const uiSourceCodes = getRelevantSourceCodes(workspace);
         const promises = [];
-        for (var i = 0; i < uiSourceCodes.length; i++) {
-            const uiSourceCode = uiSourceCodes[i];
+        for (let uiSourceCode of uiSourceCodes) {
             const namespaceDescriptorsPromise = getSourceCodeNamespaceDescriptorsAsync(uiSourceCode);
             promises.push(namespaceDescriptorsPromise);
         }
@@ -586,7 +633,8 @@ Object.assign(window.dirac, (function() {
         extractMacroNamespaceSymbolsAsync: extractMacroNamespaceSymbolsAsync,
         invalidateMacroNamespaceSymbolsCache: invalidateMacroNamespaceSymbolsCache,
         extractNamespacesAsync: extractNamespacesAsync,
-        invalidateNamespacesCache: invalidateNamespacesCache
+        invalidateNamespacesCache: invalidateNamespacesCache,
+        getMacroNamespaceNames: getMacroNamespaceNames
     };
 
 })());

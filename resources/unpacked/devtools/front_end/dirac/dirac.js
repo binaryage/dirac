@@ -213,6 +213,10 @@ Object.assign(window.dirac, (function() {
         return loadLazyDirac().then(() => window.dirac.invalidateNamespacesCache(...args));
     }
 
+    function getMacroNamespaceNames(...args) {
+        return loadLazyDirac().then(() => window.dirac.getMacroNamespaceNames(...args));
+    }
+
 // --- exported interface ---------------------------------------------------------------------------------------------------
 
     // don't forget to update externs.js too
@@ -254,7 +258,8 @@ Object.assign(window.dirac, (function() {
         extractNamespacesAsync: extractNamespacesAsync,
         invalidateNamespaceSymbolsCache: invalidateNamespaceSymbolsCache,
         invalidateMacroNamespaceSymbolsCache: invalidateMacroNamespaceSymbolsCache,
-        invalidateNamespacesCache: invalidateNamespacesCache
+        invalidateNamespacesCache: invalidateNamespacesCache,
+        getMacroNamespaceNames: getMacroNamespaceNames
 
         // ...
 
