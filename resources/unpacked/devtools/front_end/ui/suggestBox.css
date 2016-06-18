@@ -187,11 +187,11 @@
     content: "/";
 }
 
-.suggest-box .suggest-box-content-item.suggest-ns-alias .prologue::after {
+.suggest-box .suggest-box-content-item.suggest-cljs-ns-alias .prologue::after {
     content: "alias";
 }
 
-.suggest-box .suggest-box-content-item.suggest-refer .prologue::after {
+.suggest-box .suggest-box-content-item.suggest-cljs-refer .prologue::after {
     content: "refer";
 }
 

@@ -110,27 +110,26 @@ automate #1      get-suggest-box-item-count
 automate #1      clear-console-prompt!
 automate #1      simulate-console-input! ["alias"]
 automate #1      scrape! [:suggest-box]
-stdout           displayed 4 items:
-                  * alias|-cljs-core-async [is cljs.core.async] (suggest-ns-alias selected)
-                  * alias|-cljs-core-async-macros [is cljs.core.async.macros] (suggest-ns-alias macro)
-                  * alias|-dirac-settings [is dirac.settings] (suggest-ns-alias)
-                  * alias|-dirac-settings [is dirac.settings] (suggest-ns-alias macro aliased)
+stdout           displayed 3 items:
+                  * alias|-cljs-core-async [is cljs.core.async] (ns-alias selected)
+                  * alias|-cljs-core-async-macros [is cljs.core.async.macros] (ns-alias macro)
+                  * alias|-dirac-settings [is dirac.settings] (ns-alias macro combined-ns-macro)
 automate #1      clear-console-prompt!
 automate #1      simulate-console-input! ["pu"]
 automate #1      scrape! [:suggest-box]
 stdout           displayed 2 items:
                   * pu|sh-tail (core selected)
-                  * pu|t! [in cljs.core.async] (suggest-refer)
+                  * pu|t! [in cljs.core.async] (refer)
 automate #1      clear-console-prompt!
 automate #1      simulate-console-input! ["wa"]
 automate #1      scrape! [:suggest-box]
 stdout           displayed 1 items:
-                  * wa|rn [in chromex.logging] (suggest-refer macro selected)
+                  * wa|rn [in chromex.logging] (refer macro selected)
 automate #1      clear-console-prompt!
 automate #1      simulate-console-input! ["get-dirac-window"]
 automate #1      scrape! [:suggest-box]
 stdout           displayed 1 items:
-                  * get-dirac-window|-top [in dirac.settings] (suggest-refer macro selected)
+                  * get-dirac-window|-top [in dirac.settings] (refer macro selected)
 automate #1      clear-console-prompt!
 automate #1      simulate-console-input! ["alias-cljs-core-async/tak"]
 automate #1      scrape! [:suggest-box]

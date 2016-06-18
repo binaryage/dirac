@@ -626,10 +626,10 @@ WebInspector.DiracPromptWithHistory.prototype = {
             const macroNamespaceNamesPromise = dirac.extractNamespacesAsync().then(dirac.getMacroNamespaceNames).then(annotateMacroNamespaceNames);
             const coreNamespaceSymbolsPromise = dirac.extractNamespaceSymbolsAsync("cljs.core").then(annotateSymbols.bind(this, "suggest-cljs-core"));
             const currentNamespaceDescriptor = dirac.extractNamespacesAsync().then(selectCurrentNamespace);
-            const namespaceAliasesPromise = currentNamespaceDescriptor.then(annotateAliasesOrRefers.bind(this, "namespaceAliases", "is ", "suggest-ns-alias"));
-            const macroNamespaceAliasesPromise = currentNamespaceDescriptor.then(annotateAliasesOrRefers.bind(this, "macroNamespaceAliases", "is ", "suggest-ns-alias suggest-cljs-macro"));
-            const namespaceRefersPromise = currentNamespaceDescriptor.then(annotateAliasesOrRefers.bind(this, "namespaceRefers", "in ", "suggest-refer"));
-            const macroRefersPromise = currentNamespaceDescriptor.then(annotateAliasesOrRefers.bind(this, "macroRefers", "in ", "suggest-refer suggest-cljs-macro"));
+            const namespaceAliasesPromise = currentNamespaceDescriptor.then(annotateAliasesOrRefers.bind(this, "namespaceAliases", "is ", "suggest-cljs-ns-alias"));
+            const macroNamespaceAliasesPromise = currentNamespaceDescriptor.then(annotateAliasesOrRefers.bind(this, "macroNamespaceAliases", "is ", "suggest-cljs-ns-alias suggest-cljs-macro"));
+            const namespaceRefersPromise = currentNamespaceDescriptor.then(annotateAliasesOrRefers.bind(this, "namespaceRefers", "in ", "suggest-cljs-refer"));
+            const macroRefersPromise = currentNamespaceDescriptor.then(annotateAliasesOrRefers.bind(this, "macroRefers", "in ", "suggest-cljs-refer suggest-cljs-macro"));
             const replSpecialsPromise = dirac.getReplSpecialsAsync().then(annotateReplSpecials);
 
             // order matters here, see _markAliasedCompletions below
