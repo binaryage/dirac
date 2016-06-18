@@ -221,6 +221,8 @@ Object.assign(window.dirac, (function() {
         _DEBUG_COMPLETIONS: false,
         _DEBUG_KEYSIM: false,
         _DEBUG_FEEDBACK: false,
+        _DEBUG_WATCHING: false,
+        _DEBUG_CACHES: false,
 
         // -- feature toggles -----------------------------------------------------------------------------------------------
         hasREPL: hasFeature("enable-repl"),
