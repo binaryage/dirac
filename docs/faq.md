@@ -83,3 +83,17 @@ Sometimes you can spot combined boxes. For example, red + green means a "combine
 It tells you that this name represents both a cljs namespace and a macro namespace.
 
 Gray names are shadowed, meaning that something else with the same name took precedence.
+
+### Something broke! How do I debug Dirac DevTools frontend?
+
+This is not practical because Dirac DevTools code is minified and ClojureScript parts are compiled under `:advanced` mode.
+Since version 0.7.x Dirac should display uncaught internal DevTools exceptions in your page's console.
+This is just for a convenience - people get at least some feedback about exceptions happening behind the scenes.
+
+But still you may want to open the internal DevTools and interact with Dirac DevTools state.
+You can open internal DevTools to debug Dirac DevTools window (`CMD+OPT+I` on a Mac).
+
+Tip: Also you may want to go to `chrome://extensions`, open Dirac Devtools options page and set "Open Dirac DevTools" to "as a new window".
+ This way you can have internal devtools docked with Dirac DevTools window which I find more convenient.
+
+For more serious debugging you need to setup dev environment and build dev version of Dirac Chrome Extension.
