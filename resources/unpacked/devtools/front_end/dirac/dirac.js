@@ -173,6 +173,14 @@ Object.assign(window.dirac, (function() {
         return wrapped.map(wrapper => wrapper.d);
     }
 
+    function getNamespace(namespaceName) {
+        if (!dirac._namespacesCache) {
+            return;
+        }
+
+        return dirac._namespacesCache[namespaceName];
+    }
+
     // --- lazy APIs --------------------------------------------------------------------------------------------------------
     // calling any of these functions will trigger loading dirac_lazy overlay
     // which will eventually overwrite those functions when fully loaded
@@ -248,6 +256,7 @@ Object.assign(window.dirac, (function() {
         hasDefaultContext: hasDefaultContext,
         deduplicate: deduplicate,
         stableSort: stableSort,
+        getNamespace: getNamespace,
 
         // -- LAZY INTERFACE ------------------------------------------------------------------------------------------------
         startListeningForWorkspaceChanges: startListeningForWorkspaceChanges,

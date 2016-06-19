@@ -448,6 +448,12 @@ var dirac = {
      */
     stableSort: function(array, comparator) {},
 
+    /**
+     * @param {string=} namespaceName
+     * @return {?dirac.NamespaceDescriptor}
+     */
+    getNamespace: function(namespaceName) {},
+
     // -- these are dynamically added by dirac.implant namespace ------------------------------------------------------------
 
     initConsole: function() {},
