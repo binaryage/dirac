@@ -6,8 +6,9 @@
 
 ; -- DOM access -------------------------------------------------------------------------------------------------------------
 
-(defn query-selector [selector]
-  (.querySelectorAll js/document selector))
+(defn query-selector
+  ([selector] (.querySelectorAll js/document selector))
+  ([element selector] (.querySelectorAll element selector)))
 
 (defn get-tag-name [el]
   (if-let [tag-name (oget el "tagName")]
