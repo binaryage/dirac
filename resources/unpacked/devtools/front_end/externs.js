@@ -419,14 +419,9 @@ var dirac = {
     * @param {string=} namespaceName
     */
     invalidateNamespaceSymbolsCache: function (namespaceName) {},
-    /**
-     * @param {string=} namespaceName
-     */
-    invalidateMacroNamespaceSymbolsCache: function (namespaceName) {},
     invalidateNamespacesCache: function() {},
 
     /**
-     *
      * @param {Object.<string, dirac.NamespaceDescriptor>} namespaces
      * @return {Array.<string>}
      */

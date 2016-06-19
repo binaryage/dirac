@@ -6,7 +6,6 @@ if (!window.dirac) {
 Object.assign(window.dirac, (function() {
 
     var namespacesSymbolsCache = new Map();
-    var macroNamespacesSymbolsCache = new Map();
 
     // --- scope info -------------------------------------------------------------------------------------------------------
 
@@ -121,7 +120,8 @@ Object.assign(window.dirac, (function() {
     }
 
     function isRelevantSourceCode(uiSourceCode) {
-        return uiSourceCode.project().type() === WebInspector.projectTypes.Network;
+        return uiSourceCode.contentType().isScript() && !uiSourceCode.contentType().isFromSourceMap() &&
+            uiSourceCode.project().type() === WebInspector.projectTypes.Network;
     }
 
     function getRelevantSourceCodes(workspace) {
@@ -174,6 +174,32 @@ Object.assign(window.dirac, (function() {
         return result;
     }
 
+    function ensureSourceMapLoadedAsync(script) {
+        if (!script.sourceMapURL) {
+            return Promise.resolve(null);
+        }
+        const sourceMap = WebInspector.debuggerWorkspaceBinding.sourceMapForScript(script);
+        if (sourceMap) {
+            return Promise.resolve(sourceMap);
+        }
+        return new Promise(resolve => {
+            let counter = 0;
+            const interval = setInterval(() => {
+                const sourceMap = WebInspector.debuggerWorkspaceBinding.sourceMapForScript(script);
+                if (sourceMap) {
+                    clearInterval(interval);
+                    resolve(sourceMap);
+                }
+                counter += 1;
+                if (counter > 50) { // 5s
+                    clearInterval(interval);
+                    console.warn("source map didn't load in time for", script);
+                    resolve(null);
+                }
+            }, 100);
+        });
+    }
+
     /**
      * @param {!WebInspector.Script} script
      * @return {!Promise<!Array<dirac.NamespaceDescriptor>>}
@@ -184,43 +210,44 @@ Object.assign(window.dirac, (function() {
             return Promise.resolve([]);
         }
 
-        let promises = [];
-        let realNamespace = false;
-
-        const sourceMap = WebInspector.debuggerWorkspaceBinding.sourceMapForScript(script);
-        if (sourceMap) {
-            for (let url of sourceMap.sourceURLs()) {
-                // take only .cljs or .cljc urls, make sure url params and fragments get matched properly
-                // examples:
-                //   http://localhost:9977/_compiled/demo/clojure/browser/event.cljs?rel=1463085025939
-                //   http://localhost:9977/_compiled/demo/dirac_sample/demo.cljs?rel=1463085026941
-                const parser = document.createElement('a');
-                parser.href = url;
-                if (parser.pathname.match(/\.clj.$/)) {
-                    const contentProvider = sourceMap.sourceContentProvider(url, WebInspector.resourceTypes.SourceMapScript);
-                    const namespaceDescriptorsPromise = contentProvider.requestContent().then(cljsSourceCode => parseClojureScriptNamespaces(url, cljsSourceCode));
-                    promises.push(namespaceDescriptorsPromise);
-                    realNamespace = true;
+        WebInspector.debuggerWorkspaceBinding.maybeLoadSourceMap(script);
+        return ensureSourceMapLoadedAsync(script).then(sourceMap => {
+            const scriptUrl = script.contentURL();
+            let promises = [];
+            let realNamespace = false;
+            if (sourceMap) {
+                for (let url of sourceMap.sourceURLs()) {
+                    // take only .cljs or .cljc urls, make sure url params and fragments get matched properly
+                    // examples:
+                    //   http://localhost:9977/_compiled/demo/clojure/browser/event.cljs?rel=1463085025939
+                    //   http://localhost:9977/_compiled/demo/dirac_sample/demo.cljs?rel=1463085026941
+                    const parser = document.createElement('a');
+                    parser.href = url;
+                    if (parser.pathname.match(/\.clj.$/)) {
+                        const contentProvider = sourceMap.sourceContentProvider(url, WebInspector.resourceTypes.SourceMapScript);
+                        const namespaceDescriptorsPromise = contentProvider.requestContent().then(cljsSourceCode => parseClojureScriptNamespaces(scriptUrl, cljsSourceCode));
+                        promises.push(namespaceDescriptorsPromise);
+                        realNamespace = true;
+                    }
                 }
             }
-        }
 
-        // we are also interested in pseudo namespaces from google closure library
-        if (!realNamespace) {
-            const url = script.contentURL();
-            const parser = document.createElement('a');
-            parser.href = url;
-            if (parser.pathname.match(/\.js$/)) {
-                const namespaceDescriptorsPromise = script.requestContent().then(jsSourceCode => parsePseudoNamespaces(url, jsSourceCode));
-                promises.push(namespaceDescriptorsPromise);
+            // we are also interested in pseudo namespaces from google closure library
+            if (!realNamespace) {
+                const parser = document.createElement('a');
+                parser.href = scriptUrl;
+                if (parser.pathname.match(/\.js$/)) {
+                    const namespaceDescriptorsPromise = script.requestContent().then(jsSourceCode => parsePseudoNamespaces(scriptUrl, jsSourceCode));
+                    promises.push(namespaceDescriptorsPromise);
+                }
             }
-        }
 
-        const concatResults = results => {
-            return [].concat.apply([], results);
-        };
+            const concatResults = results => {
+                return [].concat.apply([], results);
+            };
 
-        return Promise.all(promises).then(concatResults);
+            return Promise.all(promises).then(concatResults);
+        });
     }
 
     // --- namespace names --------------------------------------------------------------------------------------------------
@@ -264,6 +291,9 @@ Object.assign(window.dirac, (function() {
 
         const uiSourceCodes = getRelevantSourceCodes(workspace);
         const promises = [];
+        if (dirac._DEBUG_CACHES) {
+            console.log("extractNamespacesAsyncWorker initial processing of " + uiSourceCodes.length + " source codes");
+        }
         for (let uiSourceCode of uiSourceCodes) {
             const namespaceDescriptorsPromise = getSourceCodeNamespaceDescriptorsAsync(uiSourceCode);
             promises.push(namespaceDescriptorsPromise);
@@ -292,6 +322,10 @@ Object.assign(window.dirac, (function() {
 
         extractNamespacesAsyncInFlightPromise = extractNamespacesAsyncWorker().then(descriptors => {
             dirac._namespacesCache = prepareNamespacesFromDescriptors(descriptors);
+            if (dirac._DEBUG_CACHES) {
+                console.log("extractNamespacesAsync initialized _namespacesCache with "
+                    + Object.keys(dirac._namespacesCache).length + " items");
+            }
             startListeningForWorkspaceChanges();
             return dirac._namespacesCache;
         });
@@ -305,8 +339,6 @@ Object.assign(window.dirac, (function() {
             console.log("invalidateNamespacesCache");
         }
         dirac._namespacesCache = null;
-        // macro namespaces depend on _namespacesCache, do explicit invalidation here
-        dirac.invalidateMacroNamespaceSymbolsCache();
     }
 
     function extractSourceCodeNamespacesAsync(uiSourceCode) {
@@ -318,36 +350,43 @@ Object.assign(window.dirac, (function() {
     }
 
     function extractAndMergeSourceCodeNamespacesAsync(uiSourceCode) {
-        return Promise.all([extractSourceCodeNamespacesAsync(uiSourceCode), extractNamespacesAsync()])
-            .then(([namespaces, result]) => {
-                const addedNamespaceNames = Object.keys(result);
-                if (addedNamespaceNames.length) {
-                    if (dirac._DEBUG_CACHES) {
-                        console.log("updated _namespacesCache by merging ", result);
-                    }
-                    Object.assign(namespaces, result);
+        if (!isRelevantSourceCode(uiSourceCode)) {
+            console.warn("extractAndMergeSourceCodeNamespacesAsync called on irrelevant source code", uiSourceCode);
+            return;
+        }
 
-                    // refresh macro namespaces data based on new results
-                    for (let namespaceName of addedNamespaceNames) {
-                        dirac.invalidateMacroNamespaceSymbolsCache(namespaceName);
-                        dirac.extractMacroNamespaceSymbolsAsync(namespaceName);
-                    }
+        if (dirac._DEBUG_CACHES) {
+            console.log("extractAndMergeSourceCodeNamespacesAsync", uiSourceCode);
+        }
+        const jobs = [extractNamespacesAsync(), extractSourceCodeNamespacesAsync(uiSourceCode)];
+        return Promise.all(jobs).then(([namespaces, result]) => {
+            const addedNamespaceNames = Object.keys(result);
+            if (addedNamespaceNames.length) {
+                Object.assign(namespaces, result);
+                if (dirac._DEBUG_CACHES) {
+                    console.log("updated _namespacesCache by merging ", addedNamespaceNames,
+                        "from", uiSourceCode.contentURL(),
+                        " => new namespaces count:", Object.keys(namespaces).length);
                 }
-                return result;
-            });
+            }
+            return result;
+        });
     }
 
     function removeNamespacesMatchingUrl(url) {
         extractNamespacesAsync().then(namespaces => {
-            for (let namespaceName of namespaces.keys()) {
+            const removedNames = [];
+            for (let namespaceName of Object.keys(namespaces)) {
                 const descriptor = namespaces[namespaceName];
                 if (descriptor.url == url) {
                     delete namespaces[namespaceName];
-                    dirac.invalidateMacroNamespaceSymbolsCache(namespaceName);
-                    if (dirac._DEBUG_CACHES) {
-                        console.log("removeNamespacesMatchingUrl removed ", namespaceName, descriptor);
-                    }
+                    removedNames.push(namespaceName);
                 }
+            }
+
+            if (dirac._DEBUG_CACHES) {
+                console.log("removeNamespacesMatchingUrl removed " + removedNames.length + " namespaces for url: " + url +
+                    " new namespaces count:" + Object.keys(namespaces).length);
             }
         });
     }
@@ -510,29 +549,17 @@ Object.assign(window.dirac, (function() {
             return Promise.resolve([]);
         }
 
-        if (macroNamespacesSymbolsCache.has(namespaceName)) {
-            return macroNamespacesSymbolsCache.get(namespaceName);
-        }
-
         const promisedResult = extractMacroNamespaceSymbolsAsyncWorker(namespaceName);
 
-        macroNamespacesSymbolsCache.set(namespaceName, promisedResult);
+        if (dirac._DEBUG_CACHES) {
+            promisedResult.then(result => {
+                console.log("extractMacroNamespaceSymbolsAsync resolved", namespaceName, result);
+            });
+        }
 
         startListeningForWorkspaceChanges();
         return promisedResult;
     }
-
-    function invalidateMacroNamespaceSymbolsCache(namespaceName = null) {
-        if (dirac._DEBUG_CACHES) {
-            console.log("invalidateMacroNamespaceSymbolsCache", namespaceName);
-        }
-        if (namespaceName) {
-            macroNamespacesSymbolsCache.delete(namespaceName);
-        } else {
-            macroNamespacesSymbolsCache.clear();
-        }
-    }
-
 
     // --- changes ----------------------------------------------------------------------------------------------------------
     // this is to reflect dynamically updated files e.g. by Figwheel
@@ -549,26 +576,24 @@ Object.assign(window.dirac, (function() {
     }
 
     function handleSourceCodeAdded(event) {
-        if (dirac._DEBUG_WATCHING) {
-            console.log("handleSourceCodeAdded", event);
-        }
-
         var uiSourceCode = event.data;
-        if (uiSourceCode) {
+        if (uiSourceCode && isRelevantSourceCode(uiSourceCode)) {
             const url = uiSourceCode.url();
+            if (dirac._DEBUG_WATCHING) {
+                console.log("handleSourceCodeAdded", url);
+            }
             extractAndMergeSourceCodeNamespacesAsync(uiSourceCode);
             invalidateNamespaceSymbolsMatchingUrl(url);
         }
     }
 
     function handleSourceCodeRemoved(event) {
-        if (dirac._DEBUG_WATCHING) {
-            console.log("handleSourceCodeRemoved", event);
-        }
-
         var uiSourceCode = event.data;
-        if (uiSourceCode) {
+        if (uiSourceCode && isRelevantSourceCode(uiSourceCode)) {
             const url = uiSourceCode.url();
+            if (dirac._DEBUG_WATCHING) {
+                console.log("handleSourceCodeRemoved", url);
+            }
             removeNamespacesMatchingUrl(url);
             invalidateNamespaceSymbolsMatchingUrl(url);
         }
@@ -622,7 +647,6 @@ Object.assign(window.dirac, (function() {
     return {
         _lazyLoaded: true,
         _namespacesSymbolsCache: namespacesSymbolsCache,
-        _macroNamespacesSymbolsCache: macroNamespacesSymbolsCache,
         _namespacesCache: null,
         startListeningForWorkspaceChanges: startListeningForWorkspaceChanges,
         stopListeningForWorkspaceChanges: stopListeningForWorkspaceChanges,
@@ -630,7 +654,6 @@ Object.assign(window.dirac, (function() {
         extractNamespaceSymbolsAsync: extractNamespaceSymbolsAsync,
         invalidateNamespaceSymbolsCache: invalidateNamespaceSymbolsCache,
         extractMacroNamespaceSymbolsAsync: extractMacroNamespaceSymbolsAsync,
-        invalidateMacroNamespaceSymbolsCache: invalidateMacroNamespaceSymbolsCache,
         extractNamespacesAsync: extractNamespacesAsync,
         invalidateNamespacesCache: invalidateNamespacesCache,
         getMacroNamespaceNames: getMacroNamespaceNames

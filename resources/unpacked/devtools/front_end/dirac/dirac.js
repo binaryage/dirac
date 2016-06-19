@@ -209,10 +209,6 @@ Object.assign(window.dirac, (function() {
         return loadLazyDirac().then(() => window.dirac.extractMacroNamespaceSymbolsAsync(...args));
     }
 
-    function invalidateMacroNamespaceSymbolsCache(...args) {
-        return loadLazyDirac().then(() => window.dirac.invalidateMacroNamespaceSymbolsCache(...args));
-    }
-
     function extractNamespacesAsync(...args) {
         return loadLazyDirac().then(() => window.dirac.extractNamespacesAsync(...args));
     }
@@ -266,7 +262,6 @@ Object.assign(window.dirac, (function() {
         extractMacroNamespaceSymbolsAsync: extractMacroNamespaceSymbolsAsync,
         extractNamespacesAsync: extractNamespacesAsync,
         invalidateNamespaceSymbolsCache: invalidateNamespaceSymbolsCache,
-        invalidateMacroNamespaceSymbolsCache: invalidateMacroNamespaceSymbolsCache,
         invalidateNamespacesCache: invalidateNamespacesCache,
         getMacroNamespaceNames: getMacroNamespaceNames
 
