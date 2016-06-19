@@ -59,4 +59,27 @@ unless some information about macros gets "exported" to the client-side somehow.
 Good news is that Dirac can read all `ns` forms in your project (in dev mode with no optimizations and working source maps).
 When you mention a macro namespace in a `:require-macros` of some `ns` form or reference some symbols from a macro namespace
 using `:refer` or `:refer-macros`, Dirac is able to understand this and offer such names in code completions.
-Please note that macro-related names have a green border marker on the left when listed in code completion suggest box.
+
+### What are the small colored boxes in code completion suggest boxes?
+
+They should hint additional info about given suggestion. Let's look at some examples:
+
+<table>
+<tr>
+<td valign="top"><a href="https://dl.dropboxusercontent.com/u/559047/dirac-suggest-lo.png"><img src="https://dl.dropboxusercontent.com/u/559047/dirac-suggest-lo.png"></a></td>
+<td valign="top"><a href="https://dl.dropboxusercontent.com/u/559047/dirac-suggest-dirac-run.png"><img src="https://dl.dropboxusercontent.com/u/559047/dirac-suggest-dirac-run.png"></a></td>
+<td valign="top"><a href="https://dl.dropboxusercontent.com/u/559047/dirac-suggest-goog-str.png"><img src="https://dl.dropboxusercontent.com/u/559047/dirac-suggest-goog-str.png"></a></td>
+</tr>
+</table>
+
+Currently Dirac can display following colors:
+
+ * green - cljs namespaces and symbols
+ * red - cljs macro namespaces and macro symbols
+ * blue - Google Closure namespaces and their symbols (or any other code participating in Closure modules)
+ * orange - special REPL commands
+
+Sometimes you can spot combined boxes. For example, red + green means combined namespace.
+It tells you that this name represents both cljs namespace and a macro namespaces.
+
+Gray names are shadowed, meaning that something else with the same name took precedence.
