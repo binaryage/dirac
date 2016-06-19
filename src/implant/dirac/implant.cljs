@@ -26,6 +26,9 @@
 (defonce extra-specials #js ["dirac!" "*1" "*2" "*3" "*e"])
 (defonce all-specials (.concat repl-specials extra-specials))
 
+(defn warm-up-namespace-cache! []
+  (ocall (oget js/window "dirac") "extractNamespacesAsync"))
+
 ; -- public API -------------------------------------------------------------------------------------------------------------
 ; following functions will be exposed as helpers for devtools javascript code
 ; they should be called via dirac.something object, see the mapping in dirac-api-to-export below
@@ -86,6 +89,11 @@
 (defn get-repl-specials-async []
   (helpers/resolved-promise all-specials))                                                                                    ; hard-coded for now
 
+(defn notify-panel-switch [panel]
+  (let [panel-name (oget panel "name")]
+    (post-feedback! (str "setCurrentPanel: " panel-name))
+    (warm-up-namespace-cache!)))
+
 ; -- dirac object augumentation ---------------------------------------------------------------------------------------------
 
 ; !!! don't forget to update externs.js when touching this !!!
@@ -93,6 +101,7 @@
   {"feedback"             post-feedback!
    "initConsole"          init-console!
    "initRepl"             init-repl!
+   "notifyPanelSwitch"    notify-panel-switch
    "adoptPrompt"          adopt-prompt!
    "sendEvalRequest"      send-eval-request!
    "getVersion"           get-version

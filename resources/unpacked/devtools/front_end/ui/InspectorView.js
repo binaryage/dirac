@@ -346,7 +346,7 @@ WebInspector.InspectorView.prototype = {
         WebInspector.userMetrics.panelShown(panel.name);
         panel.focus();
 
-        dirac.feedback("setCurrentPanel: "+panel.name);
+        dirac.notifyPanelSwitch(panel);
         return panel;
     },
 
