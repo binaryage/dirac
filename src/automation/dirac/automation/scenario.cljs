@@ -26,15 +26,15 @@
 ; -- triggers ---------------------------------------------------------------------------------------------------------------
 
 (defn register-trigger! [name callback]
-  (swap! triggers assoc name callback)
+  (swap! triggers assoc (keyword name) callback)
   (log "registered trigger" name))
 
 (defn unregister-trigger! [name]
-  (swap! triggers dissoc name)
+  (swap! triggers dissoc (keyword name))
   (log "unregistered trigger" name))
 
 (defn call-trigger! [name data]
-  (if-let [trigger-fn (get @triggers name)]
+  (if-let [trigger-fn (get @triggers (keyword name))]
     (trigger-fn data)
     (warn "unrecognized trigger " name " when processing " data)))
 
