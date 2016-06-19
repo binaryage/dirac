@@ -176,7 +176,7 @@
   (string/replace s #"rel=[0-9]+" "rel=***"))
 
 (defn replace-shortened-urls [s]
-  (string/replace s #"[0-9]+:" "***:"))
+  (string/replace s #"[0-9]+:[0-9]*" "***"))
 
 (defn transformer [console-output]
   (-> console-output

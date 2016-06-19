@@ -11,13 +11,13 @@ automate         trigger! [:pause-on-breakpoint]
 devtools #1      setCurrentPanel: sources
 automate #1      scrape! [:callstack-pane-locations]
 stdout           displayed 7 items:
-                  * core.cljs:10 / http://localhost:9090/compiled/tests/dirac/tests/scenarios/breakpoint/core.cljs?rel=***:10
-                  * core.cljs:15 / http://localhost:9090/compiled/tests/dirac/tests/scenarios/breakpoint/core.cljs?rel=***:15
-                  * breakpoint.cljs:7 / http://localhost:9090/compiled/tests/dirac/tests/scenarios/breakpoint.cljs?rel=***:7
-                  * scenario.cljs:38 / http://localhost:9090/compiled/tests/dirac/automation/scenario.cljs?rel=***:38
-                  * scenario.cljs:54 / http://localhost:9090/compiled/tests/dirac/automation/scenario.cljs?rel=***:54
-                  * notifications.cljs:48 / http://localhost:9090/compiled/tests/dirac/automation/notifications.cljs?rel=***:48
-                  * notifications.cljs:53 / http://localhost:9090/compiled/tests/dirac/automation/notifications.cljs?rel=***:53
+                  * core.cljs:10 / http://localhost:9090/compiled/tests/dirac/tests/scenarios/breakpoint/core.cljs?rel=***
+                  * core.cljs:15 / http://localhost:9090/compiled/tests/dirac/tests/scenarios/breakpoint/core.cljs?rel=***
+                  * breakpoint.cljs:7 / http://localhost:9090/compiled/tests/dirac/tests/scenarios/breakpoint.cljs?rel=***
+                  * scenario.cljs:41 / http://localhost:9090/compiled/tests/dirac/automation/scenario.cljs?rel=***
+                  * scenario.cljs:57 / http://localhost:9090/compiled/tests/dirac/automation/scenario.cljs?rel=***
+                  * notifications.cljs:48 / http://localhost:9090/compiled/tests/dirac/automation/notifications.cljs?rel=***
+                  * notifications.cljs:53 / http://localhost:9090/compiled/tests/dirac/automation/notifications.cljs?rel=***
 automate #1      close-devtools!
 extension        handling command: close-dirac-devtools
 extension        unregister devtools #1
@@ -36,13 +36,13 @@ automate         trigger! [:pause-on-breakpoint]
 devtools #2      setCurrentPanel: sources
 automate #2      scrape! [:callstack-pane-locations]
 stdout           displayed 7 items:
-                  * core.cljs?rel=***:10 / http://localhost:9090/compiled/tests/dirac/tests/scenarios/breakpoint/core.cljs?rel=***:10
-                  * core.cljs?rel=***:15 / http://localhost:9090/compiled/tests/dirac/tests/scenarios/breakpoint/core.cljs?rel=***:15
-                  * breakpoint.cljs…***:7 / http://localhost:9090/compiled/tests/dirac/tests/scenarios/breakpoint.cljs?rel=***:7
-                  * scenario.cljs?r…***:38 / http://localhost:9090/compiled/tests/dirac/automation/scenario.cljs?rel=***:38
-                  * scenario.cljs?r…***:54 / http://localhost:9090/compiled/tests/dirac/automation/scenario.cljs?rel=***:54
-                  * notifications.c…***:48 / http://localhost:9090/compiled/tests/dirac/automation/notifications.cljs?rel=***:48
-                  * notifications.c…***:53 / http://localhost:9090/compiled/tests/dirac/automation/notifications.cljs?rel=***:53
+                  * core.cljs?rel=*** / http://localhost:9090/compiled/tests/dirac/tests/scenarios/breakpoint/core.cljs?rel=***
+                  * core.cljs?rel=*** / http://localhost:9090/compiled/tests/dirac/tests/scenarios/breakpoint/core.cljs?rel=***
+                  * breakpoint.cljs…*** / http://localhost:9090/compiled/tests/dirac/tests/scenarios/breakpoint.cljs?rel=***
+                  * scenario.cljs?r…*** / http://localhost:9090/compiled/tests/dirac/automation/scenario.cljs?rel=***
+                  * scenario.cljs?r…*** / http://localhost:9090/compiled/tests/dirac/automation/scenario.cljs?rel=***
+                  * notifications.c…*** / http://localhost:9090/compiled/tests/dirac/automation/notifications.cljs?rel=***
+                  * notifications.c…*** / http://localhost:9090/compiled/tests/dirac/automation/notifications.cljs?rel=***
 automate #2      close-devtools!
 extension        handling command: close-dirac-devtools
 extension        unregister devtools #2
