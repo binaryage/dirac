@@ -23,6 +23,9 @@
   (let [xform (fn [acc val] (val acc))]
     (reduce xform input @feedback-transformers)))
 
+(defn feedback! [transcript & [label]]
+  (messages/post-scenario-feedback! (transform-feedback transcript) label))
+
 ; -- triggers ---------------------------------------------------------------------------------------------------------------
 
 (defn register-trigger! [name callback]
@@ -41,7 +44,7 @@
 ; -- handling exceptions ----------------------------------------------------------------------------------------------------
 
 (defn scenario-exception-handler! [_message _source _lineno _colno e]
-  (messages/post-scenario-feedback! (str "! " (helpers/format-error e)))
+  (feedback! (str "uncaught exception: " (helpers/extract-first-line (helpers/format-error e))))
   false)
 
 (defn register-global-exception-handler! []
@@ -61,9 +64,6 @@
   (register-global-exception-handler!)
   (notifications/subscribe-notifications! notification-handler!)
   (messages/send-scenario-ready!))
-
-(defn feedback! [transcript & [label]]
-  (messages/post-scenario-feedback! (transform-feedback transcript) label))
 
 ; -- capturing console output -----------------------------------------------------------------------------------------------
 
