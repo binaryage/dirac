@@ -318,39 +318,38 @@ Object.assign(window.dirac, (function() {
     }
 
     function extractAndMergeSourceCodeNamespacesAsync(uiSourceCode) {
-        return extractSourceCodeNamespacesAsync(uiSourceCode).then(result => {
-            const namespaceNames = Object.keys(result);
-            if (namespaceNames.length) {
-                if (dirac._DEBUG_CACHES) {
-                    console.log("updated _namespacesCache by merging ", result);
-                }
-                Object.assign(dirac._namespacesCache, result);
+        return Promise.all([extractSourceCodeNamespacesAsync(uiSourceCode), extractNamespacesAsync()])
+            .then(([namespaces, result]) => {
+                const addedNamespaceNames = Object.keys(result);
+                if (addedNamespaceNames.length) {
+                    if (dirac._DEBUG_CACHES) {
+                        console.log("updated _namespacesCache by merging ", result);
+                    }
+                    Object.assign(namespaces, result);
 
-                // refresh macro namespaces data based on new results
-                for (let namespaceName of namespaceNames) {
-                    dirac.invalidateMacroNamespaceSymbolsCache(namespaceName);
-                    dirac.extractMacroNamespaceSymbolsAsync(namespaceName);
+                    // refresh macro namespaces data based on new results
+                    for (let namespaceName of addedNamespaceNames) {
+                        dirac.invalidateMacroNamespaceSymbolsCache(namespaceName);
+                        dirac.extractMacroNamespaceSymbolsAsync(namespaceName);
+                    }
                 }
-            }
-            return result;
-        });
+                return result;
+            });
     }
 
     function removeNamespacesMatchingUrl(url) {
-        const newCache = {};
-        for (let namespaceName of dirac._namespacesCache.keys()) {
-            const descriptor = dirac._namespacesCache[namespaceName];
-            if (descriptor.url != url) {
-                newCache[namespaceName] = descriptor;
-            } else {
-                dirac.invalidateMacroNamespaceSymbolsCache(namespaceName);
-                if (dirac._DEBUG_CACHES) {
-                    console.log("removeNamespacesMatchingUrl removed ", namespaceName, descriptor);
+        extractNamespacesAsync().then(namespaces => {
+            for (let namespaceName of namespaces.keys()) {
+                const descriptor = namespaces[namespaceName];
+                if (descriptor.url == url) {
+                    delete namespaces[namespaceName];
+                    dirac.invalidateMacroNamespaceSymbolsCache(namespaceName);
+                    if (dirac._DEBUG_CACHES) {
+                        console.log("removeNamespacesMatchingUrl removed ", namespaceName, descriptor);
+                    }
                 }
             }
-        }
-
-        dirac._namespacesCache = newCache;
+        });
     }
 
     // --- namespace symbols ------------------------------------------------------------------------------------------------
