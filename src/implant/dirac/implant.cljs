@@ -75,12 +75,12 @@
 
 (defn get-function-name [munged-name]
   (if (munging/is-cljs-function-name? munged-name)
-    (second (munging/break-and-demunge-name munged-name))
+    (munging/present-function-name munged-name)
     munged-name))
 
 (defn get-full-function-name [munged-name]
   (if (munging/is-cljs-function-name? munged-name)
-    (string/join "/" (munging/break-and-demunge-name munged-name))
+    (munging/present-function-name munged-name true true)
     munged-name))
 
 (defn get-repl-specials-async []

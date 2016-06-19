@@ -1,19 +1,19 @@
 (ns dirac.implant.munging
-  (:require [clojure.string :as string]))
+  (:require [clojure.string :as string]
+            [chromex.support :refer-macros [oget oset ocall oapply]]
+            [devtools.munging :as m]))
 
 (defn is-cljs-function-name? [munged-name]
-  (some? (re-matches #"^[^$]+\$[^$]+\$.*$" munged-name)))                                                                     ; must have at least two dollars but not at the beginning
+  (m/cljs-fn-name? munged-name))
 
-(defn demunge-ns [munged-name]
-  (string/replace munged-name "$" "."))
+(defn ns-detector [name]
+  (some? (ocall (oget js/window "dirac") "getNamespace" name)))
 
-(defn break-and-demunge-name [munged-name]
-  (let [index (.lastIndexOf munged-name "$")]
-    (if (= index -1)
-      ["" (demunge munged-name)]
-      (let [ns (demunge (demunge-ns (.substring munged-name 0 index)))
-            name (demunge (.substring munged-name (inc index) (.-length munged-name)))]
-        [ns name]))))
+(defn present-function-name [munged-name & [include-ns? include-protocol-ns?]]
+  (m/present-function-name munged-name {:include-ns?               include-ns?
+                                        :include-protocol-ns?      include-protocol-ns?
+                                        :silence-common-protocols? false
+                                        :ns-detector               ns-detector}))
 
 (defn ns-to-relpath [ns ext]
   (str (string/replace (munge ns) \. \/) "." (name ext)))
