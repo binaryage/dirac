@@ -25,6 +25,9 @@
 (defn suggest-box-item-rep? [rep]
   (some? (re-find #"suggest-box-content-item" (str (:class rep)))))
 
+(defn function-name? [rep]
+  (some? (re-find #"function-name" (str (:class rep)))))
+
 (defn print-list [list]
   (if (empty? list)
     "no items displayed"
@@ -105,6 +108,19 @@
          (if epilogue (str "[" epilogue "] "))
          (if-not (empty? simple-class) (str "(" simple-class ") ")))))
 
+; -- console UI -------------------------------------------------------------------------------------------------------------
+
+(defn find-last-console-error-element []
+  (last (dom/query-selector "html /deep/ .console-error-level")))
+
+(defn find-stack-preview-container-in-console-error-element [error-el]
+  (if (some? error-el)
+    (first (dom/query-selector error-el "html /deep/ .stack-preview-container"))))
+
+(defn print-function-name-item [item-rep]
+  (let [{:keys [content]} item-rep]
+    content))
+
 ; -- general interface for :scrape automation action ------------------------------------------------------------------------
 
 (defmulti scrape (fn [name & _args]
@@ -135,3 +151,12 @@
        (select-subreps suggest-box-item-rep?)
        (map print-suggest-box-item)
        (print-list)))
+
+(defmethod scrape :function-names-in-last-console-exception [_ & _]
+  (->> (find-last-console-error-element)
+       (find-stack-preview-container-in-console-error-element)
+       (build-rep)
+       (select-subreps function-name?)
+       (map print-function-name-item)
+       (print-list)))
+
