@@ -91,9 +91,9 @@ Since version 0.7.x Dirac should display uncaught internal DevTools exceptions i
 This is just for a convenience - people get at least some feedback about exceptions happening behind the scenes.
 
 But still you may want to open the internal DevTools and interact with Dirac DevTools state.
-You can open internal DevTools to debug Dirac DevTools window (`CMD+OPT+I` on a Mac).
+You can open internal DevTools to debug Dirac DevTools window (e.g. press `CMD+OPT+I` on a Mac while Dirac DevTools window is focused).
 
 Tip: Also you may want to go to `chrome://extensions`, open Dirac Devtools options page and set "Open Dirac DevTools" to "as a new window".
- This way you can have internal devtools docked with Dirac DevTools window which I find more convenient.
+ This way you can have internal DevTools docked with Dirac DevTools window which I find more convenient.
 
-For more serious debugging you need to setup dev environment and build dev version of Dirac Chrome Extension.
+For more serious debugging you need to setup dev environment and build a dev version of Dirac Chrome Extension.
