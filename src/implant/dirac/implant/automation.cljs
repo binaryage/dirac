@@ -111,7 +111,7 @@
     :disable-console-feedback (disable-console-feedback!)
     :get-suggest-box-representation (get-suggest-box-representation)
     :get-prompt-representation (get-prompt-representation)
-    :scrape (scrape (:scraper command))
+    :scrape (apply scrape (:scraper command) (:args command))
     (warn "received unknown automation command:" (pr-str command))))
 
 ; -- automation -------------------------------------------------------------------------------------------------------------
