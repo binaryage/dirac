@@ -286,7 +286,8 @@
     (execute-transcript-test! "version-checks")
     (execute-transcript-test! "console")
     (execute-transcript-test! "repl")
-    (execute-transcript-test! "completions"))
+    (execute-transcript-test! "completions")
+    (execute-transcript-test! "misc"))
   (with-transcript-suite "suite02"
     (execute-transcript-test! "welcome-message")
     (execute-transcript-test! "enable-parinfer")
