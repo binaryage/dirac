@@ -181,6 +181,23 @@ Object.assign(window.dirac, (function() {
         return dirac._namespacesCache[namespaceName];
     }
 
+    function addConsoleMessageToMainTarget(level, text, parameters) {
+        const target = WebInspector.targetManager.mainTarget();
+        if (!target) {
+            console.warn("Unable to add console message to main target: ", text);
+            return;
+        }
+        const consoleModel = target.consoleModel;
+        if (!consoleModel) {
+            console.warn("Unable to add console message (no consoleModel): ", text);
+            return;
+        }
+
+        const msg = new WebInspector.ConsoleMessage(target, WebInspector.ConsoleMessage.MessageSource.Other, level, text,
+            WebInspector.ConsoleMessage.MessageType.Log, null, null, null, null, parameters);
+        consoleModel.addMessage(msg);
+    }
+
     // --- lazy APIs --------------------------------------------------------------------------------------------------------
     // calling any of these functions will trigger loading dirac_lazy overlay
     // which will eventually overwrite those functions when fully loaded
@@ -253,6 +270,7 @@ Object.assign(window.dirac, (function() {
         deduplicate: deduplicate,
         stableSort: stableSort,
         getNamespace: getNamespace,
+        addConsoleMessageToMainTarget: addConsoleMessageToMainTarget,
 
         // -- LAZY INTERFACE ------------------------------------------------------------------------------------------------
         startListeningForWorkspaceChanges: startListeningForWorkspaceChanges,

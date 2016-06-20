@@ -449,6 +449,13 @@ var dirac = {
      */
     getNamespace: function(namespaceName) {},
 
+    /**
+     * @param {string} level
+     * @param {string} text
+     * @param {Array.<*>=} parameters
+     */
+    addConsoleMessageToMainTarget: function(level, text, parameters) {},
+
     // -- these are dynamically added by dirac.implant namespace ------------------------------------------------------------
 
     initConsole: function() {},
