@@ -1,5 +1,5 @@
 (ns dirac.tests.tasks.suite01.completions
-  (:require [cljs.core.async]
+  (:require [cljs.core.async :refer [timeout]]
             [cljs.test :refer-macros [is are testing]]
             [dirac.automation :refer-macros [<!* go-task with-scenario with-devtools chunkify] :as a]
             [clojure.string :as string]))
@@ -11,6 +11,7 @@
         (<!* a/switch-to-console-panel!)
         (<!* a/switch-prompt-to-dirac!)
         (<!* a/wait-for-prompt-to-enter-edit-mode)
+        (<! (timeout 1000))                                                                                                   ; wait for namespace cache to warm up
         (<!* a/enable-console-feedback!)
         (<!* a/console-exec-and-match!
              "(in-ns 'dirac.tests.scenarios.completions.workspace)"
