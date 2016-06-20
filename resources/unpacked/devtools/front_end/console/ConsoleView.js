@@ -1081,17 +1081,15 @@ WebInspector.ConsoleView.prototype = {
      * @return {boolean}
      */
     appendDiracMarkup: function (markup) {
-        const executionContext = WebInspector.context.flavor(WebInspector.ExecutionContext);
-        if (!executionContext) {
+        const target = WebInspector.targetManager.mainTarget();
+        if (!target) {
             return false;
         }
 
-        const target = executionContext.target();
         const source = WebInspector.ConsoleMessage.MessageSource.Other;
         const level = WebInspector.ConsoleMessage.MessageLevel.Log;
         const type = WebInspector.ConsoleMessage.MessageType.DiracMarkup;
         const message = new WebInspector.ConsoleMessage(target, source, level, markup, type);
-        message.setExecutionContextId(executionContext.id);
         target.consoleModel.addMessage(message);
         return true;
     },
@@ -1109,7 +1107,9 @@ WebInspector.ConsoleView.prototype = {
             "Welcome to " + wrapBold("Dirac DevTools") + " hosted in " + wrapBold("Dirac Chrome Extension v" + dirac.getVersion()) + ".",
             "Use " + wrapCode("CTRL+,") + " and " + wrapCode("CTRL+.") + " to cycle between Javascript and Dirac prompts.",
             "In connected Dirac prompt, you can enter " + wrapCode("(dirac! :help)") + " for more info."];
-        this.appendDiracMarkup(markup.join("\n"));
+        if (!this.appendDiracMarkup(markup.join("\n"))) {
+            console.warn("displayWelcomeMessage: unable to add console message");
+        }
     },
 
     _normalizePromptIndex: function(index) {
