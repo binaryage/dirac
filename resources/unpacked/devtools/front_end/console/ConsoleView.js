@@ -1105,8 +1105,8 @@ WebInspector.ConsoleView.prototype = {
 
         var markup = [
             "Welcome to " + wrapBold("Dirac DevTools") + " hosted in " + wrapBold("Dirac Chrome Extension v" + dirac.getVersion()) + ".",
-            "Use " + wrapCode("CTRL+,") + " and " + wrapCode("CTRL+.") + " to cycle between Javascript and Dirac prompts.",
-            "In connected Dirac prompt, you can enter " + wrapCode("(dirac! :help)") + " for more info."];
+            "Use " + wrapCode("CTRL+.") + " and " + wrapCode("CTRL+,") + " to cycle between Javascript and ClojureScript prompts.",
+            "In connected ClojureScript prompt, you can enter " + wrapCode("(dirac!)") + " for more info."];
         if (!this.appendDiracMarkup(markup.join("\n"))) {
             console.warn("displayWelcomeMessage: unable to add console message");
         }
