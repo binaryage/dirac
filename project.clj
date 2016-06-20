@@ -1,4 +1,4 @@
-(defproject binaryage/dirac "0.6.0"
+(defproject binaryage/dirac "0.6.1"
   :description "Dirac DevTools - a Chrome DevTools fork for ClojureScript developers."
   :url "https://github.com/binaryage/dirac"
   :license {:name         "MIT License"
