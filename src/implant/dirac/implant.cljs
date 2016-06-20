@@ -123,6 +123,7 @@
     (set! *implant-initialized* true)
     (assert (not *console-initialized*))
     (enhance-dirac-object! (oget js/window "dirac"))                                                                          ; see front_end/dirac/dirac.js
+    (reporter/install!)
     (automation/install!)
     (feedback/install!)
     (eval/start-eval-request-queue-processing-loop!)
