@@ -27,7 +27,7 @@
                  [cljs-http "0.1.41" :scope "test"]
                  [figwheel "0.5.4-3" :scope "test"]
                  [reforms "0.4.3" :scope "test"]
-                 [rum "0.9.0" :scope "test"]
+                 [rum "0.9.1" :scope "test"]
                  [rum-reforms "0.4.3" :scope "test"]
                  [cljsjs/parinfer "1.8.1-0" :scope "test"]
                  [com.lucasbradstreet/cljs-uuid-utils "1.0.2" :scope "test"]
