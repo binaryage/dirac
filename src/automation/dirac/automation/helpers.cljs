@@ -46,11 +46,6 @@
        (map-indexed (fn [i line] (if-not (zero? i) (str prefix line) line)))                                                  ; prepend prefix to all lines except the first
        (cuerdas/unlines)))
 
-(defn extract-first-line [s]
-  (-> s
-      (cuerdas/lines)
-      (first)))
-
 (defn get-base-url []
   (str (oget js/location "protocol") "//" (oget js/location "host")))
 
@@ -61,11 +56,3 @@
 
 (defn scroll-page-to-bottom! []
   (ocall js/window "scrollTo" 0 (oget js/document "body" "scrollHeight")))
-
-(defn format-error [e]
-  ; not error may be a string message already
-  (if (string? e)
-    e
-    (if-let [stack (oget e "stack")]
-      (str stack)
-      (str e))))

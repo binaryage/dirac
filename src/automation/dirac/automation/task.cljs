@@ -16,7 +16,8 @@
             [dirac.automation.feedback :as feedback]
             [dirac.automation.messages :as messages]
             [dirac.automation.launcher :as launcher]
-            [dirac.automation.helpers :as helpers]))
+            [dirac.automation.helpers :as helpers]
+            [dirac.utils :as utils]))
 
 (declare register-global-exception-handler!)
 
@@ -141,7 +142,7 @@
     (set-exit-code! ::exception)
     (status-host/set-status! (str "task has thrown an exception: " message))
     (status-host/set-style! "exception")
-    (transcript-host/forced-append-to-transcript! "exception" (helpers/format-error e))
+    (transcript-host/forced-append-to-transcript! "exception" (utils/format-error e))
     (transcript-host/set-style! "exception")
     (task-teardown!)))
 

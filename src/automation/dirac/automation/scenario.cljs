@@ -5,7 +5,7 @@
             [dirac.utils]
             [dirac.automation.messages :as messages]
             [dirac.automation.notifications :as notifications]
-            [dirac.automation.helpers :as helpers]))
+            [dirac.utils :as utils]))
 
 (defonce triggers (atom {}))                                                                                                  ; trigger-name -> callback
 (defonce original-console-api (atom nil))
@@ -44,7 +44,7 @@
 ; -- handling exceptions ----------------------------------------------------------------------------------------------------
 
 (defn scenario-exception-handler! [_message _source _lineno _colno e]
-  (feedback! (str "uncaught exception: " (helpers/extract-first-line (helpers/format-error e))))
+  (feedback! (str "uncaught exception: " (utils/extract-first-line (utils/format-error e))))
   false)
 
 (defn register-global-exception-handler! []

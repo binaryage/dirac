@@ -123,3 +123,13 @@
 
 (defn line-count [text]
   (count (cuerdas/lines text)))
+
+(defn extract-first-line [s]
+  (-> s
+      (cuerdas/lines)
+      (first)))
+
+(defn extract-line [s n]
+  (-> s
+      (cuerdas/lines)
+      (nth n)))

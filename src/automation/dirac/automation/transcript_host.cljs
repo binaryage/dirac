@@ -158,7 +158,7 @@
 (defn start-rewriting-machine-for-java-trace! [label text]
   (transition-rewriting-machine! :java-trace)
   (update-rewriting-machine-context! assoc :logs :expecting-java-trace)
-  [label (str (helpers/extract-first-line text) "\n<elided stack trace>")])
+  [label (str (utils/extract-first-line text) "\n<elided stack trace>")])
 
 (defn process-java-trace-state! [label text]
   (if (re-find #"^DF\.log" text)
