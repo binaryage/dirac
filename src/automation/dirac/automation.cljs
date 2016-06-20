@@ -125,13 +125,15 @@
       (println content)
       content)))
 
-(defn scrape [devtools-id scraper-name]
-  (automate-dirac-frontend! devtools-id {:action :scrape
-                                         :scraper scraper-name}))
 
-(defn scrape! [devtools-id scraper-name]
+(defn scrape [devtools-id scraper-name & args]
+  (automate-dirac-frontend! devtools-id {:action  :scrape
+                                         :scraper scraper-name
+                                         :args    args}))
+
+(defn scrape! [devtools-id scraper-name & args]
   (go
-    (let [content (<! (scrape devtools-id scraper-name))]
+    (let [content (<! (apply scrape devtools-id scraper-name args))]
       (println (str content))
       content)))
 
