@@ -110,12 +110,16 @@
 
 ; -- console UI -------------------------------------------------------------------------------------------------------------
 
-(defn find-last-console-error-element []
-  (last (dom/query-selector "html /deep/ .console-error-level")))
+(defn find-last-console-log-element [kind]
+  (last (dom/query-selector (str "html /deep/ .console-" (or kind "log") "-level"))))
 
 (defn find-stack-preview-container-in-console-error-element [error-el]
   (if (some? error-el)
     (first (dom/query-selector error-el "html /deep/ .stack-preview-container"))))
+
+(defn find-console-message-text-element [console-message-wrapper-element]
+  (if (some? console-message-wrapper-element)
+    (first (dom/query-selector console-message-wrapper-element "html /deep/ .console-message-text"))))
 
 (defn print-function-name-item [item-rep]
   (let [{:keys [content]} item-rep]
@@ -153,10 +157,14 @@
        (print-list)))
 
 (defmethod scrape :function-names-in-last-console-exception [_ & _]
-  (->> (find-last-console-error-element)
+  (->> (find-last-console-log-element "error")
        (find-stack-preview-container-in-console-error-element)
        (build-rep)
        (select-subreps function-name?)
        (map print-function-name-item)
        (print-list)))
 
+(defmethod scrape :last-log-item-content [_ & [kind]]
+  (if-let [el (->> (find-last-console-log-element kind)
+                   (find-console-message-text-element))]
+    (ocall el "deepTextContent")))
