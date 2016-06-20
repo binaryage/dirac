@@ -86,14 +86,14 @@ Gray names are shadowed, meaning that something else with the same name took pre
 
 ### Something broke! How do I debug Dirac DevTools frontend?
 
-This is not practical because Dirac DevTools code is minified and ClojureScript parts are compiled under `:advanced` mode.
-Since version 0.7.x Dirac should display uncaught internal DevTools exceptions in your page's console.
-This is just for a convenience - people get at least some feedback about exceptions happening behind the scenes.
+This is not practical because Dirac DevTools code is minified and ClojureScript parts are compiled with `:advanced` optimizations.
+Dirac should display uncaught internal DevTools exceptions in your page's console (since v0.6.1).
+This is just for convenience - you get at least some visible feedback about exceptions in the DevTools window.
 
-But still you may want to open the internal DevTools and interact with Dirac DevTools state.
-You can open internal DevTools to debug Dirac DevTools window (e.g. press `CMD+OPT+I` on a Mac while Dirac DevTools window is focused).
+But still you may want to open the internal DevTools and tinker with the state of Dirac DevTools.
+You can open internal DevTools to inspect Dirac DevTools window (e.g. press `CMD+OPT+I` on a Mac while Dirac DevTools window is focused).
 
-Tip: Also you may want to go to `chrome://extensions`, open Dirac Devtools options page and set "Open Dirac DevTools" to "as a new window".
- This way you can have internal DevTools docked with Dirac DevTools window which I find more convenient.
+Tip: Also you may want to go to `chrome://extensions`, open Dirac DevTools options page and set "Open Dirac DevTools" to "as a new window".
+ This way you can have internal DevTools docked inside Dirac DevTools window which I personally find more convenient.
 
-For more serious debugging you need to setup dev environment and build a dev version of Dirac Chrome Extension.
+For more serious debugging you have to setup a dev environment and build a dev version of Dirac Chrome Extension.
