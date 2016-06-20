@@ -1,7 +1,6 @@
 (ns dirac.implant
   (:require-macros [cljs.core.async.macros :refer [go go-loop]])
-  (:require [clojure.string :as string]
-            [cljs.core.async :refer [put! <! chan timeout alts! close!]]
+  (:require [cljs.core.async :refer [put! <! chan timeout alts! close!]]
             [devtools.toolbox :refer [envelope]]
             [chromex.support :refer-macros [oget oset ocall oapply]]
             [chromex.logging :refer-macros [log warn error info]]
@@ -17,6 +16,7 @@
             [dirac.implant.analyzer :as analyzer]
             [dirac.implant.munging :as munging]
             [dirac.implant.helpers :as helpers]
+            [dirac.implant.reporter :as reporter]
             [dirac.implant.repl :refer-macros [default-specials]]))
 
 (defonce ^:dynamic *console-initialized* false)
@@ -28,6 +28,9 @@
 
 (defn warm-up-namespace-cache! []
   (ocall (oget js/window "dirac") "extractNamespacesAsync"))
+
+(defn throw-internal-error! []
+  (into nil :nonsense))
 
 ; -- public API -------------------------------------------------------------------------------------------------------------
 ; following functions will be exposed as helpers for devtools javascript code
@@ -94,6 +97,11 @@
     (post-feedback! (str "setCurrentPanel: " panel-name))
     (warm-up-namespace-cache!)))
 
+(defn trigger-internal-error! []
+  ; timeout is needed for testing from console
+  ; see http://stackoverflow.com/a/27257742/84283
+  (ocall js/window "setTimeout" throw-internal-error! 0))
+
 ; -- dirac object augumentation ---------------------------------------------------------------------------------------------
 
 ; !!! don't forget to update externs.js when touching this !!!
@@ -108,6 +116,7 @@
    "getRuntimeTag"        get-runtime-tag
    "parseNsFromSource"    parse-ns-from-source
    "nsToRelpath"          ns-to-relpath
+   "triggerInternalError" trigger-internal-error!
    "getFunctionName"      get-function-name
    "getFullFunctionName"  get-full-function-name
    "getReplSpecialsAsync" get-repl-specials-async})

@@ -1,5 +1,7 @@
 (ns dirac.implant.automation
-  (:require [chromex.logging :refer-macros [log warn error group group-end]]
+  (:require-macros [cljs.core.async.macros :refer [go go-loop]])
+  (:require [cljs.core.async :refer [put! <! chan timeout alts! close!]]
+            [chromex.logging :refer-macros [log warn error group group-end]]
             [chromex.support :refer-macros [oget oset ocall oapply]]
             [cljs.reader :as reader]
             [dirac.settings :refer-macros [get-automation-entry-point-key]]
@@ -93,6 +95,15 @@
   (if-let [console-view (get-console-view)]
     (ocall console-view "getPromptRepresentation")))
 
+(defn trigger-internal-errror! [delay]
+  {:pre [(or (nil? delay) (number? delay))]}
+  (let [trigger-fn #(ocall (oget js/window "dirac") "triggerInternalError")]
+    (if (some? delay)
+      (go
+        (<! (timeout delay))
+        (trigger-fn))
+      (trigger-fn))))
+
 ; -- main dispatch ----------------------------------------------------------------------------------------------------------
 
 (defn dispatch-command! [command]
@@ -111,6 +122,7 @@
     :disable-console-feedback (disable-console-feedback!)
     :get-suggest-box-representation (get-suggest-box-representation)
     :get-prompt-representation (get-prompt-representation)
+    :trigger-internal-error (trigger-internal-errror! (:delay command))
     :scrape (apply scrape (:scraper command) (:args command))
     (warn "received unknown automation command:" (pr-str command))))
 

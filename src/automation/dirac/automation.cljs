@@ -125,6 +125,9 @@
       (println content)
       content)))
 
+(defn trigger-internal-error! [devtools-id & [delay]]
+  (automate-dirac-frontend! devtools-id {:action :trigger-internal-error
+                                         :delay  delay}))
 
 (defn scrape [devtools-id scraper-name & args]
   (automate-dirac-frontend! devtools-id {:action  :scrape
