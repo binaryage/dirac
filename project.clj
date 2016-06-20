@@ -122,7 +122,7 @@
              {:dependencies [[org.clojure/clojure "1.7.0" :scope "provided"]]}
 
              :clojure19
-             {:dependencies [[org.clojure/clojure "1.9.0-alpha5" :scope "provided"]]}
+             {:dependencies [[org.clojure/clojure "1.9.0-alpha6" :scope "provided"]]}
 
              :cooper
              {:plugins [[lein-cooper "1.2.2"]]}
