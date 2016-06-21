@@ -3,10 +3,10 @@
 Dirac is a [Chrome DevTools](https://developer.chrome.com/devtools) fork with extra features to aid development in ClojureScript.
 
 Dirac project maintains [a set of patches](https://github.com/binaryage/dirac/tree/devtools-diff) rolling on top of official DevTools.
-That means you don't lose any functionality, you just add a ClojureScript support on top.
+That means you don't lose any functionality, you just add ClojureScript support on top.
 Additionally we provide [a Chrome Extension](https://chrome.google.com/webstore/detail/dirac-devtools/kbkdngfljkchidcjpnfcgcokkbhlkogi)
-which packages this alternative DevTools version and hosts it within Chrome for convenient access.
-Dirac enhancements can be just a keystroke away from your beloved ClojureScript app.
+which packages this enhanced DevTools version and hosts it within Chrome for convenient access.
+Dirac DevTools can be just a keystroke away from your ClojureScript app.
 
 #### Added features
 
@@ -17,7 +17,9 @@ Dirac enhancements can be just a keystroke away from your beloved ClojureScript 
     * adds a global keyboard shortcut for focusing the console prompt
   * enables [custom formatters](https://docs.google.com/document/d/1FTascZXT9cxfetuPRT2eXPQKXui4nWFivUnS_335T3U) by default (for [cljs-devtools](https://github.com/binaryage/cljs-devtools))
      * custom formatters are displayed inline on Source Panel (during debugging)
-  * enables better display of ClojureScript property names:
+  * better [display of ClojureScript function names](https://dl.dropboxusercontent.com/u/559047/dirac-non-trivial-beautified-stack-trace.png)
+  * improved display of URLs
+  * better display of ClojureScript property names:
     * macro-generated names are renamed to friendly names using sub-indexes
     * properties are grouped, the most important properties at top
       * properties with nice names go first
