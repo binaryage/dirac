@@ -5,19 +5,19 @@ if (!window.dirac) {
 
 Object.assign(window.dirac, (function() {
 
-    var namespacesSymbolsCache = new Map();
+    const namespacesSymbolsCache = new Map();
 
     // --- scope info -------------------------------------------------------------------------------------------------------
 
     function getScopeTitle(scope) {
-        var title = null;
+        let title = null;
 
         switch (scope.type()) {
             case DebuggerAgent.ScopeType.Local:
                 title = WebInspector.UIString("Local");
                 break;
             case DebuggerAgent.ScopeType.Closure:
-                var scopeName = scope.name();
+                const scopeName = scope.name();
                 if (scopeName)
                     title = WebInspector.UIString("Closure (%s)", WebInspector.beautifyFunctionName(scopeName));
                 else
@@ -44,10 +44,10 @@ Object.assign(window.dirac, (function() {
     }
 
     function extractNamesFromScopePromise(scope) {
-        var title = getScopeTitle(scope);
-        var remoteObject = WebInspector.SourceMapNamesResolver.resolveScopeInObject(scope);
+        const title = getScopeTitle(scope);
+        const remoteObject = WebInspector.SourceMapNamesResolver.resolveScopeInObject(scope);
 
-        var result = {title: title};
+        const result = {title: title};
 
         return new Promise(function(resolve) {
 
@@ -57,9 +57,9 @@ Object.assign(window.dirac, (function() {
             function processProperties(properties) {
                 if (properties) {
                     result.props = properties.map(function(property) {
-                        var propertyRecord = {name: property.name};
+                        const propertyRecord = {name: property.name};
                         if (property.resolutionSourceProperty) {
-                            var identifier = property.resolutionSourceProperty.name;
+                            const identifier = property.resolutionSourceProperty.name;
                             if (identifier != property.name) {
                                 propertyRecord.identifier = identifier;
                             }
@@ -81,11 +81,11 @@ Object.assign(window.dirac, (function() {
         }
 
         return new Promise(function(resolve) {
-            var scopeNamesPromises = [];
+            const scopeNamesPromises = [];
 
-            var scopeChain = callFrame.scopeChain();
-            for (var i = 0; i < scopeChain.length; ++i) {
-                var scope = scopeChain[i];
+            const scopeChain = callFrame.scopeChain();
+            for (let i = 0; i < scopeChain.length; ++i) {
+                const scope = scopeChain[i];
                 if (scope.type() === DebuggerAgent.ScopeType.Global) {
                     continue;
                 }
@@ -94,7 +94,7 @@ Object.assign(window.dirac, (function() {
             }
 
             Promise.all(scopeNamesPromises).then(function(frames) {
-                var result = {frames: frames};
+                const result = {frames: frames};
                 resolve(result);
             });
         });
@@ -107,9 +107,9 @@ Object.assign(window.dirac, (function() {
      * @return {function(string)}
      */
     function prepareUrlMatcher(namespaceName) {
-        var relativeNSPath = dirac.nsToRelpath(namespaceName, "js");
+        const relativeNSPath = dirac.nsToRelpath(namespaceName, "js");
         return /** @suppressGlobalPropertiesCheck */ function(url) {
-            var parser = document.createElement('a');
+            const parser = document.createElement('a');
             parser.href = url;
             return parser.pathname.endsWith(relativeNSPath);
         };
@@ -139,7 +139,7 @@ Object.assign(window.dirac, (function() {
         if (!cljsSourceCode) {
             return [];
         }
-        var descriptor = dirac.parseNsFromSource(cljsSourceCode);
+        const descriptor = dirac.parseNsFromSource(cljsSourceCode);
         if (!descriptor) {
             return [];
         }
@@ -306,7 +306,7 @@ Object.assign(window.dirac, (function() {
         return Promise.all(promises).then(concatResults);
     }
 
-    var extractNamespacesAsyncInFlightPromise = null;
+    let extractNamespacesAsyncInFlightPromise = null;
 
     function extractNamespacesAsync() {
         if (dirac._namespacesCache) {
@@ -399,9 +399,9 @@ Object.assign(window.dirac, (function() {
      * @return {!Array<!WebInspector.UISourceCode>}
      */
     function findMatchingSourceCodes(uiSourceCodes, urlMatcherFn) {
-        var matching = [];
-        for (var i = 0; i < uiSourceCodes.length; i++) {
-            var uiSourceCode = uiSourceCodes[i];
+        const matching = [];
+        for (let i = 0; i < uiSourceCodes.length; i++) {
+            const uiSourceCode = uiSourceCodes[i];
             if (urlMatcherFn(uiSourceCode.url())) {
                 matching.push(uiSourceCode);
             }
@@ -415,8 +415,8 @@ Object.assign(window.dirac, (function() {
      * @return {!Array<string>}
      */
     function filterNamesForNamespace(names, namespaceName) {
-        var prefix = namespaceName + "/";
-        var prefixLength = prefix.length;
+        const prefix = namespaceName + "/";
+        const prefixLength = prefix.length;
 
         return names.filter(name => name.startsWith(prefix)).map(name => name.substring(prefixLength));
     }
@@ -449,19 +449,19 @@ Object.assign(window.dirac, (function() {
     }
 
     function extractNamespaceSymbolsAsyncWorker(namespaceName) {
-        var workspace = WebInspector.workspace;
+        const workspace = WebInspector.workspace;
         if (!workspace) {
             console.error("unable to locate WebInspector.workspace when extracting symbols for ClojureScript namespace '" + namespaceName + "'");
             return Promise.resolve([]);
         }
 
         return new Promise(resolve => {
-            var urlMatcherFn = prepareUrlMatcher(namespaceName);
-            var uiSourceCodes = getRelevantSourceCodes(workspace);
+            const urlMatcherFn = prepareUrlMatcher(namespaceName);
+            const uiSourceCodes = getRelevantSourceCodes(workspace);
 
             // not there may be multiple matching sources for given namespaceName
             // figwheel reloading is just adding new files and not removing old ones
-            var matchingSourceCodes = findMatchingSourceCodes(uiSourceCodes, urlMatcherFn);
+            const matchingSourceCodes = findMatchingSourceCodes(uiSourceCodes, urlMatcherFn);
             if (!matchingSourceCodes.length) {
                 if (dirac._DEBUG_CACHES) {
                     console.warn("cannot find any matching source file for ClojureScript namespace '" + namespaceName + "'");
@@ -472,12 +472,12 @@ Object.assign(window.dirac, (function() {
 
             // we simply extract names from all matching source maps and then we filter then to match our namespace name and
             // deduplicate them
-            var results = [];
+            const results = [];
             for (let uiSourceCode of matchingSourceCodes) {
                 results.push(extractNamesFromSourceMap(uiSourceCode, namespaceName));
             }
-            var allNames = [].concat.apply([], results);
-            var filteredNames = unique(filterNamesForNamespace(allNames, namespaceName));
+            const allNames = [].concat.apply([], results);
+            const filteredNames = unique(filterNamesForNamespace(allNames, namespaceName));
 
             if (dirac._DEBUG_CACHES) {
                 console.log("extracted " + filteredNames.length + " symbol names for namespace", namespaceName, matchingSourceCodes.map(i => i.url()));
@@ -564,11 +564,11 @@ Object.assign(window.dirac, (function() {
     // --- changes ----------------------------------------------------------------------------------------------------------
     // this is to reflect dynamically updated files e.g. by Figwheel
 
-    var listeningForWorkspaceChanges = false;
+    let listeningForWorkspaceChanges = false;
 
     function invalidateNamespaceSymbolsMatchingUrl(url) {
         for (let namespaceName of namespacesSymbolsCache.keys()) {
-            var matcherFn = prepareUrlMatcher(namespaceName);
+            const matcherFn = prepareUrlMatcher(namespaceName);
             if (matcherFn(url)) {
                 dirac.invalidateNamespaceSymbolsCache(namespaceName);
             }
@@ -576,7 +576,7 @@ Object.assign(window.dirac, (function() {
     }
 
     function handleSourceCodeAdded(event) {
-        var uiSourceCode = event.data;
+        const uiSourceCode = event.data;
         if (uiSourceCode && isRelevantSourceCode(uiSourceCode)) {
             const url = uiSourceCode.url();
             if (dirac._DEBUG_WATCHING) {
@@ -588,7 +588,7 @@ Object.assign(window.dirac, (function() {
     }
 
     function handleSourceCodeRemoved(event) {
-        var uiSourceCode = event.data;
+        const uiSourceCode = event.data;
         if (uiSourceCode && isRelevantSourceCode(uiSourceCode)) {
             const url = uiSourceCode.url();
             if (dirac._DEBUG_WATCHING) {
@@ -608,7 +608,7 @@ Object.assign(window.dirac, (function() {
             console.log("startListeningForWorkspaceChanges");
         }
 
-        var workspace = WebInspector.workspace;
+        const workspace = WebInspector.workspace;
         if (!workspace) {
             console.error("unable to locate WebInspector.workspace in startListeningForWorkspaceChanges");
             return;
@@ -629,7 +629,7 @@ Object.assign(window.dirac, (function() {
             console.log("stopListeningForWorkspaceChanges");
         }
 
-        var workspace = WebInspector.workspace;
+        const workspace = WebInspector.workspace;
         if (!workspace) {
             console.error("unable to locate WebInspector.workspace in startListeningForWorkspaceChanges");
             return;
