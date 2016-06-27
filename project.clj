@@ -149,9 +149,9 @@
              {:cljsbuild {:builds
                           {:tests
                            {; HACK: we rely on figwheel's "rel=<timestamp>" into cljs url params, clean-urls tests depend on it
-                            :figwheel       {:server-port     7300
-                                             :server-logfile  ".figwheel_tests.log"
-                                             :repl            false}
+                            :figwheel       {:server-port    7300
+                                             :server-logfile ".figwheel_tests.log"
+                                             :repl           false}
                             :notify-command ["scripts/cljsbuild-notify.sh" "tests"]
                             :source-paths   ["src/settings"
                                              "src/project"
@@ -172,9 +172,9 @@
                                              :source-map-timestamp true}}}}}
 
              :marion-figwheel
-             {:figwheel {:server-port     7200
-                         :server-logfile  ".figwheel_marion.log"
-                         :repl            false}}
+             {:figwheel {:server-port    7200
+                         :server-logfile ".figwheel_marion.log"
+                         :repl           false}}
 
              :marion
              {:cljsbuild {:builds
@@ -203,9 +203,9 @@
                                              :source-map             "test/marion/resources/unpacked/compiled/content_script/content_script.js.map"}}}}}
 
              :dirac-figwheel
-             {:figwheel {:server-port     7100
-                         :server-logfile  ".figwheel_dirac.log"
-                         :repl            false}}
+             {:figwheel {:server-port    7100
+                         :server-logfile ".figwheel_dirac.log"
+                         :repl           false}}
 
              :dirac-unpacked
              {:cljsbuild {:builds
@@ -352,27 +352,33 @@
              {:cljsbuild {:builds
                           {:dirac-implant
                            {:compiler {:tooling-config {:devtools/config {:features-to-install           :all
-                                                                          :dont-detect-custom-formatters true}}}}
+                                                                          :dont-detect-custom-formatters true}}
+                                       :preloads       [devtools.preload]}}
 
                            :dirac-background
                            {:compiler {:tooling-config {:devtools/config {:features-to-install           :all
-                                                                          :dont-detect-custom-formatters true}}}}
+                                                                          :dont-detect-custom-formatters true}}
+                                       :preloads       [devtools.preload]}}
 
                            :dirac-options
                            {:compiler {:tooling-config {:devtools/config {:features-to-install           :all
-                                                                          :dont-detect-custom-formatters true}}}}
+                                                                          :dont-detect-custom-formatters true}}
+                                       :preloads       [devtools.preload]}}
 
                            :marion-background
                            {:compiler {:tooling-config {:devtools/config {:features-to-install           :all
-                                                                          :dont-detect-custom-formatters true}}}}
+                                                                          :dont-detect-custom-formatters true}}
+                                       :preloads       [devtools.preload]}}
 
                            :marion-content-script
                            {:compiler {:tooling-config {:devtools/config {:features-to-install           :all
-                                                                          :dont-detect-custom-formatters true}}}}
+                                                                          :dont-detect-custom-formatters true}}
+                                       :preloads       [devtools.preload]}}
 
                            :tests
                            {:compiler {:tooling-config {:devtools/config {:features-to-install           :all
-                                                                          :dont-detect-custom-formatters true}}}}}}}
+                                                                          :dont-detect-custom-formatters true}}
+                                       :preloads       [devtools.preload]}}}}}
 
              :nuke-aliases
              {:aliases ^:replace {}}
