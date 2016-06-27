@@ -25,7 +25,7 @@
                  [binaryage/chromex "0.4.1" :scope "test"]
                  [binaryage/devtools "0.7.2" :scope "test"]
                  [cljs-http "0.1.41" :scope "test"]
-                 [figwheel "0.5.4-3" :scope "test"]
+                 [figwheel "0.5.4-5" :scope "test"]
                  [reforms "0.4.3" :scope "test"]
                  [rum "0.9.1" :scope "test"]
                  [rum-reforms "0.4.3" :scope "test"]
@@ -128,7 +128,7 @@
 
              :cljs
              {:plugins [[lein-cljsbuild "1.1.3"]
-                        [lein-figwheel "0.5.4-3"]]
+                        [lein-figwheel "0.5.4-5"]]
               :hooks   [leiningen.cljsbuild]}
 
              :test-runner
@@ -151,7 +151,6 @@
                            {; HACK: we rely on figwheel's "rel=<timestamp>" into cljs url params, clean-urls tests depend on it
                             :figwheel       {:server-port     7300
                                              :server-logfile  ".figwheel_tests.log"
-                                             :validate-config false
                                              :repl            false}
                             :notify-command ["scripts/cljsbuild-notify.sh" "tests"]
                             :source-paths   ["src/settings"
@@ -175,7 +174,6 @@
              :marion-figwheel
              {:figwheel {:server-port     7200
                          :server-logfile  ".figwheel_marion.log"
-                         :validate-config false
                          :repl            false}}
 
              :marion
@@ -207,7 +205,6 @@
              :dirac-figwheel
              {:figwheel {:server-port     7100
                          :server-logfile  ".figwheel_dirac.log"
-                         :validate-config false
                          :repl            false}}
 
              :dirac-unpacked
