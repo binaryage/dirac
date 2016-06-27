@@ -145,6 +145,7 @@
               "--ignore-certificate-errors"
               "--homepage=about:blank"
               "--enable-experimental-extension-apis"
+              "--disable-gpu"
               load-extensions-arg]]
     (.addArguments chrome-options args)
 
