@@ -53,7 +53,8 @@
 (defn wait-for-devtools-boot []
   (go
     (<! (wait-for-devtools-ready))
-    (<! (wait-for-panel-switch "elements"))))                                                                                 ; because we have reset all devtools settings, the first landed panel will be "elements"
+    (<! (wait-for-panel-switch "elements"))                                                                                   ; because we have reset all devtools settings, the first landed panel will be "elements"
+    (<! (wait-for-match "namespacesCache is cool now"))))                                                                     ; we need namespaces cache to be fully populated to prevent flaky tests
 
 (defn wait-for-prompt-to-enter-edit-mode [devtools-id]
   (wait-for-devtools-match devtools-id "setDiracPromptMode('edit')"))

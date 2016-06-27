@@ -6,6 +6,7 @@
             [chromex.support :refer-macros [oget oset ocall oapply]]
             [chromex.logging :refer-macros [log warn error info]]
             [cljs.repl]
+            [goog.async.Debouncer]
             [dirac.utils :refer-macros [runonce]]
             [dirac.implant.editor :as editor]
             [dirac.implant.intercom :as intercom]
@@ -21,6 +22,7 @@
 
 (defonce ^:dynamic *console-initialized* false)
 (defonce ^:dynamic *implant-initialized* false)
+(defonce ^:dynamic *namespaces-cache-debouncer* nil)
 
 (defonce repl-specials (to-array (default-specials)))
 (defonce extra-specials #js ["dirac!" "*1" "*2" "*3" "*e"])
@@ -102,24 +104,38 @@
   ; see http://stackoverflow.com/a/27257742/84283
   (ocall js/window "setTimeout" throw-internal-error! 0))
 
+(defn report-namespaces-cache-cool-down! []
+  (post-feedback! "namespacesCache is cool now")
+  (.pause *namespaces-cache-debouncer*))
+
+(defn get-namespaces-cache-debouncer []
+  (if-not *namespaces-cache-debouncer*
+    (set! *namespaces-cache-debouncer* (goog.async.Debouncer. report-namespaces-cache-cool-down! 1000)))
+  *namespaces-cache-debouncer*)
+
+(defn report-namespaces-cache-mutation! []
+  (let [debouncer (get-namespaces-cache-debouncer)]
+    (.fire debouncer)))
+
 ; -- dirac object augumentation ---------------------------------------------------------------------------------------------
 
 ; !!! don't forget to update externs.js when touching this !!!
 (def dirac-api-to-export
-  {"feedback"             post-feedback!
-   "initConsole"          init-console!
-   "initRepl"             init-repl!
-   "notifyPanelSwitch"    notify-panel-switch
-   "adoptPrompt"          adopt-prompt!
-   "sendEvalRequest"      send-eval-request!
-   "getVersion"           get-version
-   "getRuntimeTag"        get-runtime-tag
-   "parseNsFromSource"    parse-ns-from-source
-   "nsToRelpath"          ns-to-relpath
-   "triggerInternalError" trigger-internal-error!
-   "getFunctionName"      get-function-name
-   "getFullFunctionName"  get-full-function-name
-   "getReplSpecialsAsync" get-repl-specials-async})
+  {"feedback"                      post-feedback!
+   "initConsole"                   init-console!
+   "initRepl"                      init-repl!
+   "notifyPanelSwitch"             notify-panel-switch
+   "adoptPrompt"                   adopt-prompt!
+   "sendEvalRequest"               send-eval-request!
+   "getVersion"                    get-version
+   "getRuntimeTag"                 get-runtime-tag
+   "parseNsFromSource"             parse-ns-from-source
+   "nsToRelpath"                   ns-to-relpath
+   "triggerInternalError"          trigger-internal-error!
+   "getFunctionName"               get-function-name
+   "getFullFunctionName"           get-full-function-name
+   "getReplSpecialsAsync"          get-repl-specials-async
+   "reportNamespacesCacheMutation" report-namespaces-cache-mutation!})
 
 (defn enhance-dirac-object! [dirac]
   (doseq [[name fn] dirac-api-to-export]

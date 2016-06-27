@@ -509,6 +509,8 @@ var dirac = {
      */
     parseNsFromSource: function(source) {},
 
+    reportNamespacesCacheMutation: function() {},
+
     /**
      * @param {string} text
      */

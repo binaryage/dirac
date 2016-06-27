@@ -309,10 +309,6 @@ Object.assign(window.dirac, (function() {
     let extractNamespacesAsyncInFlightPromise = null;
 
     function extractNamespacesAsync() {
-        if (dirac._namespacesCache) {
-            return Promise.resolve(dirac._namespacesCache);
-        }
-
         // extractNamespacesAsync can take some time parsing all namespaces
         // it could happen that extractNamespacesAsync() is called multiple times from code-completion code
         // here we cache in-flight promise to prevent that
@@ -320,13 +316,23 @@ Object.assign(window.dirac, (function() {
             return extractNamespacesAsyncInFlightPromise;
         }
 
+        if (dirac._namespacesCache) {
+            return Promise.resolve(dirac._namespacesCache);
+        }
+
+        dirac._namespacesCache = {};
+        startListeningForWorkspaceChanges();
+
         extractNamespacesAsyncInFlightPromise = extractNamespacesAsyncWorker().then(descriptors => {
-            dirac._namespacesCache = prepareNamespacesFromDescriptors(descriptors);
+            const newDescriptors = prepareNamespacesFromDescriptors(descriptors);
+            const newDescriptorsCount = Object.keys(newDescriptors).length;
+            Object.assign(dirac._namespacesCache, newDescriptors);
+            const allDescriptorsCount = Object.keys(dirac._namespacesCache).length;
             if (dirac._DEBUG_CACHES) {
-                console.log("extractNamespacesAsync initialized _namespacesCache with "
-                    + Object.keys(dirac._namespacesCache).length + " items");
+                console.log("extractNamespacesAsync finished _namespacesCache with " + newDescriptorsCount + " items " +
+                    "(" + allDescriptorsCount + " in total)");
             }
-            startListeningForWorkspaceChanges();
+            dirac.reportNamespacesCacheMutation();
             return dirac._namespacesCache;
         });
 
@@ -368,6 +374,7 @@ Object.assign(window.dirac, (function() {
                         "from", uiSourceCode.contentURL(),
                         " => new namespaces count:", Object.keys(namespaces).length);
                 }
+                dirac.reportNamespacesCacheMutation();
             }
             return result;
         });
@@ -557,7 +564,6 @@ Object.assign(window.dirac, (function() {
             });
         }
 
-        startListeningForWorkspaceChanges();
         return promisedResult;
     }
 

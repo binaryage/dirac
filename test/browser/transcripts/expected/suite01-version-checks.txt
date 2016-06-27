@@ -7,6 +7,7 @@ devtools #1      implant initialized
 devtools #1      reset devtools settings
 devtools #1      devtools ready
 devtools #1      setCurrentPanel: elements
+devtools #1      namespacesCache is cool now
 automate #1      switch-to-console-panel!
 devtools #1      console initialized
 devtools #1      adopt-prompt-element use-parinfer? true
@@ -37,6 +38,7 @@ devtools #2      implant initialized
 devtools #2      reset devtools settings
 devtools #2      devtools ready
 devtools #2      setCurrentPanel: elements
+devtools #2      namespacesCache is cool now
 automate #2      switch-to-console-panel!
 devtools #2      console initialized
 devtools #2      adopt-prompt-element use-parinfer? true
@@ -67,6 +69,7 @@ devtools #3      implant initialized
 devtools #3      reset devtools settings
 devtools #3      devtools ready
 devtools #3      setCurrentPanel: elements
+devtools #3      namespacesCache is cool now
 automate #3      switch-to-console-panel!
 devtools #3      console initialized
 devtools #3      adopt-prompt-element use-parinfer? true
@@ -98,6 +101,7 @@ devtools #4      implant initialized
 devtools #4      reset devtools settings
 devtools #4      devtools ready
 devtools #4      setCurrentPanel: elements
+devtools #4      namespacesCache is cool now
 automate #4      switch-to-console-panel!
 devtools #4      console initialized
 devtools #4      adopt-prompt-element use-parinfer? true
@@ -129,6 +133,7 @@ devtools #5      implant initialized
 devtools #5      reset devtools settings
 devtools #5      devtools ready
 devtools #5      setCurrentPanel: elements
+devtools #5      namespacesCache is cool now
 automate #5      switch-to-console-panel!
 devtools #5      console initialized
 devtools #5      adopt-prompt-element use-parinfer? true
@@ -157,6 +162,7 @@ devtools #6      implant initialized
 devtools #6      reset devtools settings
 devtools #6      devtools ready
 devtools #6      setCurrentPanel: elements
+devtools #6      namespacesCache is cool now
 automate #6      switch-to-console-panel!
 devtools #6      console initialized
 devtools #6      adopt-prompt-element use-parinfer? true
@@ -185,6 +191,7 @@ devtools #7      implant initialized
 devtools #7      reset devtools settings
 devtools #7      devtools ready
 devtools #7      setCurrentPanel: elements
+devtools #7      namespacesCache is cool now
 automate #7      switch-to-console-panel!
 devtools #7      console initialized
 devtools #7      adopt-prompt-element use-parinfer? true
@@ -212,6 +219,7 @@ devtools #8      implant initialized
 devtools #8      reset devtools settings
 devtools #8      devtools ready
 devtools #8      setCurrentPanel: elements
+devtools #8      namespacesCache is cool now
 automate #8      switch-to-console-panel!
 devtools #8      console initialized
 devtools #8      adopt-prompt-element use-parinfer? true

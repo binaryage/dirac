@@ -7,6 +7,7 @@ devtools #1      implant initialized
 devtools #1      reset devtools settings
 devtools #1      devtools ready
 devtools #1      setCurrentPanel: elements
+devtools #1      namespacesCache is cool now
 automate #1      switch-to-console-panel!
 devtools #1      console initialized
 devtools #1      adopt-prompt-element use-parinfer? true

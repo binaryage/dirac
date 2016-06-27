@@ -9,7 +9,6 @@
   (with-scenario "breakpoint"
     (testing "enabled :beautify-function-names feature"
       (with-devtools
-        (<! (timeout 1000))                                                                                                   ; wait for namespace cache to warm up
         (<!* a/trigger! :pause-on-breakpoint)
         (<!* a/wait-for-devtools-match "setCurrentPanel: sources")
         (is (= (line-count (<!* a/scrape! :callstack-pane-functions)) 8))
@@ -20,7 +19,6 @@
     (testing "disabled :beautify-function-names feature"
       (with-options {:beautify-function-names false}
         (with-devtools
-          (<! (timeout 1000))                                                                                                 ; wait for namespace cache to warm up
           (<!* a/trigger! :pause-on-breakpoint)
           (<!* a/wait-for-devtools-match "setCurrentPanel: sources")
           (is (= (line-count (<!* a/scrape! :callstack-pane-functions)) 8))
@@ -31,7 +29,6 @@
     (testing "trigger exception with non-trivial callstack"
       (with-devtools
         (<!* a/switch-to-console-panel!)
-        (<! (timeout 1000))                                                                                                   ; wait for namespace cache to warm up
         (<!* a/trigger! :cause-exception)
         (<!* a/wait-for-match "uncaught exception: Error: :invalid is not ISeqable")
         (<! (timeout 200))                                                                                                    ; we have to give the renderer some time to present it in the dom

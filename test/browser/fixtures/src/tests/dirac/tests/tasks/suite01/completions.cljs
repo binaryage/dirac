@@ -11,7 +11,6 @@
         (<!* a/switch-to-console-panel!)
         (<!* a/switch-prompt-to-dirac!)
         (<!* a/wait-for-prompt-to-enter-edit-mode)
-        (<! (timeout 3000))                                                                                                   ; wait for namespace cache to warm up
         (<!* a/enable-console-feedback!)
         (<!* a/console-exec-and-match!
              "(in-ns 'dirac.tests.scenarios.completions.workspace)"
