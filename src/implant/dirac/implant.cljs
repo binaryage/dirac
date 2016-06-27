@@ -5,7 +5,6 @@
             [chromex.support :refer-macros [oget oset ocall oapply]]
             [chromex.logging :refer-macros [log warn error info]]
             [cljs.repl]
-            [dirac.dev]
             [dirac.utils :refer-macros [runonce]]
             [dirac.implant.editor :as editor]
             [dirac.implant.intercom :as intercom]

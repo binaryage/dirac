@@ -1,5 +1,3 @@
-goog.require("dirac.dev");
-
 function setRunnerFavicon(state) {
     if (state == "waiting") {
         favicon.change([

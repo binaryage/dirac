@@ -1,3 +1,3 @@
-goog.require("marion.dev");
+goog.require("devtools.preload");
 goog.require("marion.figwheel");
 goog.require("marion.background");
