@@ -365,6 +365,10 @@
                            {:compiler {:tooling-config {:devtools/config {:features-to-install           :all
                                                                           :dont-detect-custom-formatters true}}}}
 
+                           :tests
+                           {:compiler {:tooling-config {:devtools/config {:features-to-install           :all
+                                                                          :dont-detect-custom-formatters true}}}}
+
                            :marion-background
                            {:compiler {:tooling-config {:devtools/config {:features-to-install           :all
                                                                           :dont-detect-custom-formatters true}}}}
