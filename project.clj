@@ -119,7 +119,8 @@
                :test-paths     ^:replace []}]
 
              :clojure17
-             {:dependencies [[org.clojure/clojure "1.7.0" :scope "provided"]]}
+             {:dependencies [[org.clojure/clojure "1.7.0" :scope "provided"]
+                             [org.clojure/clojurescript "1.7.228" :scope "provided"]]}
 
              :clojure19
              {:dependencies [[org.clojure/clojure "1.9.0-alpha6" :scope "provided"]]}
