@@ -355,33 +355,23 @@
              {:cljsbuild {:builds
                           {:dirac-implant
                            {:compiler {:tooling-config {:devtools/config {:features-to-install           :all
-                                                                          :dont-detect-custom-formatters true}}
-                                       :preloads       [devtools.preload]}}
+                                                                          :dont-detect-custom-formatters true}}}}
 
                            :dirac-background
                            {:compiler {:tooling-config {:devtools/config {:features-to-install           :all
-                                                                          :dont-detect-custom-formatters true}}
-                                       :preloads       [devtools.preload]}}
+                                                                          :dont-detect-custom-formatters true}}}}
 
                            :dirac-options
                            {:compiler {:tooling-config {:devtools/config {:features-to-install           :all
-                                                                          :dont-detect-custom-formatters true}}
-                                       :preloads       [devtools.preload]}}
+                                                                          :dont-detect-custom-formatters true}}}}
 
                            :marion-background
                            {:compiler {:tooling-config {:devtools/config {:features-to-install           :all
-                                                                          :dont-detect-custom-formatters true}}
-                                       :preloads       [devtools.preload]}}
+                                                                          :dont-detect-custom-formatters true}}}}
 
                            :marion-content-script
                            {:compiler {:tooling-config {:devtools/config {:features-to-install           :all
-                                                                          :dont-detect-custom-formatters true}}
-                                       :preloads       [devtools.preload]}}
-
-                           :tests
-                           {:compiler {:tooling-config {:devtools/config {:features-to-install           :all
-                                                                          :dont-detect-custom-formatters true}}
-                                       :preloads       [devtools.preload]}}}}}
+                                                                          :dont-detect-custom-formatters true}}}}}}}
 
              :nuke-aliases
              {:aliases ^:replace {}}
