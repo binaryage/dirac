@@ -7,13 +7,16 @@
   (m/cljs-fn-name? munged-name))
 
 (defn ns-detector [name]
-  (some? (ocall (oget js/window "dirac") "getNamespace" name)))
+  (let [demunged-name (demunge name)
+        namespace-descriptor (ocall (oget js/window "dirac") "getNamespace" demunged-name)]
+    (some? namespace-descriptor)))
 
 (defn present-function-name [munged-name & [include-ns? include-protocol-ns?]]
-  (m/present-function-name munged-name {:include-ns?               include-ns?
-                                        :include-protocol-ns?      include-protocol-ns?
-                                        :silence-common-protocols? false
-                                        :ns-detector               ns-detector}))
+  (let [present-opts {:include-ns?               include-ns?
+                      :include-protocol-ns?      include-protocol-ns?
+                      :silence-common-protocols? false
+                      :ns-detector               ns-detector}]
+    (m/present-function-name munged-name present-opts)))
 
 (defn ns-to-relpath [ns ext]
   (str (string/replace (munge ns) \. \/) "." (name ext)))
