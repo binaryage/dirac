@@ -2,8 +2,18 @@
 
 (enable-console-print!)
 
+(defonce ^:dynamic *crash?* true)
+
 (defn crash! []
   (into nil :invalid))
+
+(defn break! []
+  (js-debugger))
+
+(defn crash-or-break! []
+  (if *crash?*
+    (crash!)
+    (break!)))
 
 (defprotocol ITestProtocol
   "Protocol for creating an empty collection."
@@ -18,7 +28,7 @@
   (-pmethod [this p1 p2]
     (-pmethod this p1 p2 "more"))
   (-pmethod [this p1 p2 rest]
-    (crash!)))
+    (crash-or-break!)))
 
 (defn excercise-protocol! []
   (let [instance (TestType. :prop-value)]
@@ -35,6 +45,15 @@
 (defn exception-demo! []
   (fancy-$%$#%$#-function???-name :some-arg))
 
+(defn breakpoint-demo! []
+  (fancy-$%$#%$#-function???-name :some-arg))
+
 (defn ^:export exception-demo-handler []
   (println "causing exception")
+  (set! *crash?* true)
   (exception-demo!))
+
+(defn ^:export breakpoint-demo-handler []
+  (println "causing breakpoint")
+  (set! *crash?* false)
+  (breakpoint-demo!))
