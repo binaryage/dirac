@@ -7,19 +7,19 @@
 
     // private
 
-    var head = doc.getElementsByTagName("head")[0];
-    var loopTimeout = null;
-    var changeFavicon = function(iconURL) {
-        var newLink = doc.createElement("link");
+    const head = doc.getElementsByTagName("head")[0];
+    let loopTimeout = null;
+    const changeFavicon = function(iconURL) {
+        const newLink = doc.createElement("link");
         newLink.type = "image/x-icon";
         newLink.rel = "icon";
         newLink.href = iconURL;
         removeExistingFavicons();
         head.appendChild(newLink);
     };
-    var removeExistingFavicons = function() {
-        var links = head.getElementsByTagName("link");
-        for (var i = 0; i < links.length; i++) {
+    const removeExistingFavicons = function() {
+        const links = head.getElementsByTagName("link");
+        for (let i = 0; i < links.length; i++) {
             if (/\bicon\b/i.test(links[i].getAttribute("rel"))) {
                 head.removeChild(links[i]);
             }
@@ -46,7 +46,7 @@
                 (new Image()).src = icon;
             });
             optionalDelay = optionalDelay || this["defaultPause"];
-            var iconIndex = 0;
+            let iconIndex = 0;
             changeFavicon(icons[iconIndex]);
             loopTimeout = setTimeout(function animateFunc() {
                 iconIndex = (iconIndex + 1) % icons.length;

@@ -1,1 +1,1 @@
-var client = new ZeroClipboard(document.getElementById("copy-button"));
+const client = new ZeroClipboard(document.getElementById("copy-button"));

@@ -7,13 +7,13 @@ function pathToNamespace(path) {
 }
 
 function getIndex(re) {
-    var index = [];
-    var container = goog.dependencies_.requires;
-    for (var item in container) {
+    const index = [];
+    const container = goog.dependencies_.requires;
+    for (const item in container) {
         if (container.hasOwnProperty(item)) {
-            var m = item.match(re);
+            const m = item.match(re);
             if (m) {
-                var path = m[1];
+                const path = m[1];
                 index.push(pathToNamespace(path));
             }
         }
@@ -26,18 +26,18 @@ function getCurrentUrlQuery() {
 }
 
 function genTaskList(runnerUrl, tasks) {
-    var lines = [
+    const lines = [
         "<div class='tasks'>",
         "<span class='tasks-title'>AVAILABLE TASKS:</span>",
         "<ol class='suite-list'>"];
 
-    var lastPrefix = null;
+    let lastPrefix = null;
 
-    for (var i = 0; i < tasks.length; i++) {
-        var ns = tasks[i];
-        var parts = ns.split(".");
-        var lastPart = parts.pop();
-        var prefix = parts.join(".");
+    for (let i = 0; i < tasks.length; i++) {
+        const ns = tasks[i];
+        const parts = ns.split(".");
+        const lastPart = parts.pop();
+        const prefix = parts.join(".");
 
         if (prefix != lastPrefix) {
             if (lastPrefix) {
@@ -54,7 +54,7 @@ function genTaskList(runnerUrl, tasks) {
         if (query) {
             query = "&" + query;
         }
-        var line = "<li><a href=\"" + runnerUrl + "?task=" + ns + query + "\">" + lastPart + "</a></li>";
+        const line = "<li><a href=\"" + runnerUrl + "?task=" + ns + query + "\">" + lastPart + "</a></li>";
         lines.push(line);
     }
 
@@ -66,7 +66,7 @@ function genTaskList(runnerUrl, tasks) {
 }
 
 function httpGetAsync(theUrl, callback) {
-    var xmlHttp = new XMLHttpRequest();
+    const xmlHttp = new XMLHttpRequest();
     xmlHttp.onreadystatechange = function() {
         if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
             callback(xmlHttp.responseText);
@@ -84,8 +84,8 @@ function genScenariosMarkup(url) {
 
     httpGetAsync(url, function(content) {
         const lines = [];
-        var re = /(<a.*?\/a>)/gm;
-        var m;
+        const re = /(<a.*?\/a>)/gm;
+        let m;
         while (m = re.exec(content)) {
             const link = m[1];
             const patchedLink = link.replace("href=\"", "href=\"" + url + "/");
@@ -98,8 +98,8 @@ function genScenariosMarkup(url) {
     return lines.join("\n");
 }
 
-var tasks = getIndex(/tasks\/(.*)\.js/);
-var tasksMarkup = genTaskList("runner.html", tasks.sort());
-var scenariosMarkup = genScenariosMarkup("scenarios");
+const tasks = getIndex(/tasks\/(.*)\.js/);
+const tasksMarkup = genTaskList("runner.html", tasks.sort());
+const scenariosMarkup = genScenariosMarkup("scenarios");
 
 document.body.innerHTML = [tasksMarkup, scenariosMarkup].join("<br>");
