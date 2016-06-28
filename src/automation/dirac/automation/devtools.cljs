@@ -15,6 +15,7 @@
   (if-not (:do-not-install-devtools config)                                                                                   ; override devtools features/installation
     (let [features-to-enable (cond-> []
                                (not (:do-not-enable-custom-formatters config)) (conj :custom-formatters)
-                               (not (:do-not-enable-sanity-hints config)) (conj :sanity-hints))]
+                               (not (:do-not-enable-sanity-hints config)) (conj :sanity-hints)
+                               (not (:do-not-enable-async config)) (conj :async))]
       (devtools/install! features-to-enable))
     (log "devtools override: do not install")))
