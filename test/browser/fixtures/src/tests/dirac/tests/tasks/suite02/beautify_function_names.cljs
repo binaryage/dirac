@@ -38,5 +38,6 @@
       (with-devtools
         (<!* a/trigger! :async)
         (<!* a/wait-for-devtools-match "setCurrentPanel: sources")
+        (<! (timeout 200))
         (is (= (line-count (<!* a/scrape! :callstack-pane-functions)) 11))
         (<!* a/wait-for-match "* break-here! / dirac.tests.scenarios.core-async/break-here!")))))

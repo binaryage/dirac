@@ -178,10 +178,14 @@
 (defn replace-shortened-urls [s]
   (string/replace s #"[0-9]+:[0-9]*" "***"))
 
+(defn replace-gensyms [s]
+  (string/replace s #"--\d+" "--*gen-num*"))
+
 (defn transformer [console-output]
   (-> console-output
       replace-shortened-urls
-      replace-rel-url-params))
+      replace-rel-url-params
+      replace-gensyms))
 
 (defn process-default-state! [label text]
   (cond

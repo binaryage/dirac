@@ -118,8 +118,8 @@ stdout           displayed 10 items:
                   * break-here! / dirac.tests.scenarios.core-async/break-here!
                   * (anonymous function)
                   * (anonymous function)
-                  * break-async-$-state-machine--34614--auto----1 / dirac.tests.scenarios.core-async/break-async-$-state-machine--34614--auto----1
-                  * break-async-$-state-machine--34614--auto-- / dirac.tests.scenarios.core-async/break-async-$-state-machine--34614--auto--
+                  * break-async-$-state-machine--*gen-num*--auto----*gen-num* / dirac.tests.scenarios.core-async/break-async-$-state-machine--*gen-num*--auto----*gen-num*
+                  * break-async-$-state-machine--*gen-num*--auto-- / dirac.tests.scenarios.core-async/break-async-$-state-machine--*gen-num*--auto--
                   * run-state-machine / cljs.core.async.impl.ioc-helpers/run-state-machine
                   * run-state-machine-wrapped / cljs.core.async.impl.ioc-helpers/run-state-machine-wrapped
                   * (anonymous function)
