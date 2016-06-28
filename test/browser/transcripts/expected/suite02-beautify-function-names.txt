@@ -69,13 +69,14 @@ devtools #3      setCurrentPanel: console
 automate         trigger! [:cause-exception]
 scenario         uncaught exception: Error: :invalid is not ISeqable
 automate #3      scrape! [:function-names-in-last-console-exception]
-stdout           displayed 27 items:
+stdout           displayed 28 items:
                   * seq
                   * IFn:-invoke³ (seq-reduce)
                   * IFn:-invoke³ (reduce)
                   * IFn:-invoke² (into)
                   * into
                   * crash!
+                  * crash-or-break!
                   * ITestProtocol:-pmethod⁴ (TestType)
                   * IFn:-invoke⁴ (-pmethod)
                   * -pmethod
@@ -101,5 +102,32 @@ automate #3      close-devtools!
 extension        handling command: close-dirac-devtools
 extension        unregister devtools #3
 automate         close-tab-with-scenario! ["scenario-tab#3"]
-summary          Automated 22 actions with 9 check-points containing 3 assertions.
+automate         open-tab-with-scenario! ["core-async"]
+automate         open-devtools!
+extension        handling command: open-dirac-devtools
+extension        register devtools #4
+devtools #4      implant initialized
+devtools #4      reset devtools settings
+devtools #4      devtools ready
+devtools #4      setCurrentPanel: elements
+devtools #4      namespacesCache is cool now
+automate         trigger! [:async]
+devtools #4      setCurrentPanel: sources
+automate #4      scrape! [:callstack-pane-functions]
+stdout           displayed 10 items:
+                  * break-here! / dirac.tests.scenarios.core-async/break-here!
+                  * (anonymous function)
+                  * (anonymous function)
+                  * break-async-$-state-machine--34614--auto----1 / dirac.tests.scenarios.core-async/break-async-$-state-machine--34614--auto----1
+                  * break-async-$-state-machine--34614--auto-- / dirac.tests.scenarios.core-async/break-async-$-state-machine--34614--auto--
+                  * run-state-machine / cljs.core.async.impl.ioc-helpers/run-state-machine
+                  * run-state-machine-wrapped / cljs.core.async.impl.ioc-helpers/run-state-machine-wrapped
+                  * (anonymous function)
+                  * (anonymous function)
+                  * process-messages / cljs.core.async.impl.dispatch/process-messages
+automate #4      close-devtools!
+extension        handling command: close-dirac-devtools
+extension        unregister devtools #4
+automate         close-tab-with-scenario! ["scenario-tab#4"]
+summary          Automated 28 actions with 11 check-points containing 4 assertions.
                  0 failures, 0 errors.

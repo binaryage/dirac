@@ -1,0 +1,24 @@
+<!doctype html>
+<html>
+<head>
+    <title>core-async</title>
+    <link rel="stylesheet" href="../css/scenario.css">
+    <script src="../compiled/tests/goog/base.js" type="text/javascript"></script>
+    <script src="../compiled/tests/tests.js" type="text/javascript"></script>
+</head>
+<body>
+This page scenario contains:
+<ul>
+    <li>cljs-devtools</li>
+    <li>dirac runtime properly initialized</li>
+    <li>core-async code with async stack traces</li>
+</ul>
+
+<script>goog.require('dirac.tests.support.devtools')</script>
+<script>goog.require('dirac.tests.scenarios.core_async')</script>
+
+<button onclick="dirac.automation.scenario.call_trigger_BANG_('async')">:async</button>
+<button onclick="dirac.automation.scenario.call_trigger_BANG_('async-loop')">:async-loop</button>
+
+</body>
+</html>
