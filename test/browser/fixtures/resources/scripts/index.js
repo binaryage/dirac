@@ -33,29 +33,32 @@ function genTaskList(runnerUrl, tasks) {
 
     let lastPrefix = null;
 
+    let query = getCurrentUrlQuery();
+    if (query) {
+        query = "&" + query;
+    }
+
     for (let i = 0; i < tasks.length; i++) {
         const ns = tasks[i];
         const parts = ns.split(".");
         const lastPart = parts.pop();
         const prefix = parts.join(".");
 
-        if (prefix != lastPrefix) {
-            if (lastPrefix) {
-                lines.push("</ol>");
-                lines.push("</li>");
+        if (prefix.match(/^suite/)) { // we want to skip some internal tasks like those under helpers prefix
+            if (prefix != lastPrefix) {
+                if (lastPrefix) {
+                    lines.push("</ol>");
+                    lines.push("</li>");
+                }
+                lastPrefix = prefix;
+                lines.push("<li>");
+                lines.push("<span class='suite-title'>" + prefix + "</span>");
+                lines.push("<ol class='task-list'>");
             }
-            lastPrefix = prefix;
-            lines.push("<li>");
-            lines.push("<span class='suite-title'>" + prefix + "</span>");
-            lines.push("<ol class='task-list'>");
-        }
 
-        let query = getCurrentUrlQuery();
-        if (query) {
-            query = "&" + query;
+            const line = "<li><a href=\"" + runnerUrl + "?task=" + ns + query + "\">" + lastPart + "</a></li>";
+            lines.push(line);
         }
-        const line = "<li><a href=\"" + runnerUrl + "?task=" + ns + query + "\">" + lastPart + "</a></li>";
-        lines.push(line);
     }
 
     lines.push("</ol>");
@@ -75,21 +78,25 @@ function httpGetAsync(theUrl, callback) {
     xmlHttp.send(null);
 }
 
-function genScenariosMarkup(url) {
+function genScenariosMarkup(runnerUrl, url) {
     const lines = ["<div class='scenarios'>",
         "<span class='scenarios-title'>AVAILABLE SCENARIOS:</span>",
         "<ol class='scenarios-list' id='scenarios-list'>",
         "</ol>",
         "</div>"];
 
+    let query = getCurrentUrlQuery();
+    if (query) {
+        query = "&" + query;
+    }
+
     httpGetAsync(url, function(content) {
         const lines = [];
-        const re = /(<a.*?\/a>)/gm;
+        const re = /<a href="(.*?)\.html">.*?<\/a>/gm;
         let m;
         while (m = re.exec(content)) {
-            const link = m[1];
-            const patchedLink = link.replace("href=\"", "href=\"" + url + "/");
-            lines.push("<li>" + patchedLink +"</li>");
+            const scenarioName = m[1];
+            lines.push("<li><a href=\"" + runnerUrl + "?task=helpers.open-scenario" + query + "&scenario=" + scenarioName + "\">" + scenarioName + "</a></li>");
         }
         const listEl = document.getElementById("scenarios-list");
         listEl.innerHTML = lines.join("\n");
@@ -100,6 +107,6 @@ function genScenariosMarkup(url) {
 
 const tasks = getIndex(/tasks\/(.*)\.js/);
 const tasksMarkup = genTaskList("runner.html", tasks.sort());
-const scenariosMarkup = genScenariosMarkup("scenarios");
+const scenariosMarkup = genScenariosMarkup("runner.html", "scenarios");
 
 document.body.innerHTML = [tasksMarkup, scenariosMarkup].join("<br>");
