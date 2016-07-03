@@ -1,9 +1,11 @@
 (ns dirac.automation.runtime
+  (:require-macros [chromex.support :refer [oget oset ocall oapply]])
   (:require [chromex.logging :refer-macros [log warn error info]]
             [chromex.support :refer-macros [oset oget]]
             [dirac.runtime :as runtime]
             [dirac.runtime.prefs :as runtime-prefs]
-            [dirac.automation.helpers :as helpers]))
+            [dirac.automation.helpers :as helpers]
+            [goog.async.nextTick :as next-tick]))
 
 (defn configure-runtime-from-url-params! [url]
   (let [params (helpers/get-matching-query-params url #"^set-")
@@ -20,7 +22,18 @@
 (defn monkey-patch-runtime-repl-get-api-version! [mock-version]
   (oset js/window ["dirac" "runtime" "repl" "get_api_version"] (constantly mock-version)))
 
+(defn promise-based-set-immediate [callback]
+  (-> (ocall js/Promise "resolve")
+      (ocall "then" callback))
+  nil)
+
+(defn install-async-set-immediate! []
+  (set! next-tick/setImmediate_ promise-based-set-immediate))
+
 (defn init-runtime! [& [config]]
+  (when (:override-goog-async-next-tick config)
+    (warn ":override-goog-async-next-tick applied")
+    (install-async-set-immediate!))
   (configure-runtime-from-url-params! (helpers/get-document-url))
   (when-let [runtime-prefs (:runtime-prefs config)]                                                                           ; override runtime prefs
     (warn "dirac runtime prefs override:" (pr-str runtime-prefs))                                                             ; use pr-str because cljs-devtools is not yet installed
