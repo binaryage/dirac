@@ -11,6 +11,9 @@ if [ ! -d "$DIRAC_BROWSER_TESTS_USER_PROFILE" ] ; then
 fi
 
 EXE="/Applications/Google Chrome Canary.app/Contents/MacOS/Google Chrome Canary"
+if [ -f /usr/bin/google-chrome-unstable ] ; then
+  EXE="/usr/bin/google-chrome-unstable" # this is for ubuntu
+fi
 if [ -n "$DIRAC_USE_CHROME" ] ; then
   EXE="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
 fi
@@ -47,6 +50,7 @@ set -x
       --dom-automation \
       --full-memory-crash-report \
       --no-default-browser-check \
+      --disable-gpu \
       --load-extension="$DEV_DIRAC_EXTENSION_PATH,$DEV_MARION_EXTENSION_PATH" \
       http://localhost:$DEV_FIXTURES_SERVER_PORT?set-agent-port=$DIRAC_AGENT_PORT 2> /dev/null
 set +x
