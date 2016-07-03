@@ -28,7 +28,7 @@
 
 ; ---------------------------------------------------------------------------------------------------------------------------
 
-(init-runtime!)
+(init-runtime! {:override-goog-async-next-tick true})                                                                         ; next-tick implemetation differs between Mac/Linux and that would break calls-stack tests
 (scenario/register-trigger! :async #(break-async-handler))
 (scenario/register-trigger! :async-loop #(break-loop-async-handler))
 (scenario/ready!)
