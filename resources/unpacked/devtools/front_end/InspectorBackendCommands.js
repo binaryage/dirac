@@ -91,17 +91,6 @@ InspectorBackend.registerCommand("Emulation.setEmulatedMedia", [{"name": "media"
 InspectorBackend.registerCommand("Emulation.setCPUThrottlingRate", [{"name": "rate", "type": "number", "optional": false}], [], false);
 InspectorBackend.registerCommand("Emulation.canEmulate", [], ["result"], false);
 
-// Console.
-InspectorBackend.registerEnum("Console.ConsoleMessageSource", {XML: "xml", Javascript: "javascript", Network: "network", ConsoleAPI: "console-api", Storage: "storage", Appcache: "appcache", Rendering: "rendering", Security: "security", Other: "other", Deprecation: "deprecation"});
-InspectorBackend.registerEnum("Console.ConsoleMessageLevel", {Log: "log", Warning: "warning", Error: "error", Debug: "debug", Info: "info", RevokedError: "revokedError"});
-InspectorBackend.registerEnum("Console.ConsoleMessageType", {Log: "log", Dir: "dir", DirXML: "dirxml", Table: "table", Trace: "trace", Clear: "clear", StartGroup: "startGroup", StartGroupCollapsed: "startGroupCollapsed", EndGroup: "endGroup", Assert: "assert", Profile: "profile", ProfileEnd: "profileEnd"});
-InspectorBackend.registerEvent("Console.messageAdded", ["message"]);
-InspectorBackend.registerEvent("Console.messageRepeatCountUpdated", ["count", "timestamp"]);
-InspectorBackend.registerEvent("Console.messagesCleared", []);
-InspectorBackend.registerCommand("Console.enable", [], [], false);
-InspectorBackend.registerCommand("Console.disable", [], [], false);
-InspectorBackend.registerCommand("Console.clearMessages", [], [], false);
-
 // Security.
 InspectorBackend.registerEnum("Security.SecurityState", {Unknown: "unknown", Neutral: "neutral", Insecure: "insecure", Warning: "warning", Secure: "secure", Info: "info"});
 InspectorBackend.registerEvent("Security.securityStateChanged", ["securityState", "explanations", "mixedContentStatus", "schemeIsCryptographic"]);
@@ -109,6 +98,7 @@ InspectorBackend.registerCommand("Security.enable", [], [], false);
 InspectorBackend.registerCommand("Security.disable", [], [], false);
 
 // Network.
+InspectorBackend.registerEnum("Network.ConnectionType", {None: "none", Cellular2g: "cellular2g", Cellular3g: "cellular3g", Cellular4g: "cellular4g", Bluetooth: "bluetooth", Ethernet: "ethernet", Wifi: "wifi", Wimax: "wimax", Other: "other"});
 InspectorBackend.registerEnum("Network.ResourcePriority", {VeryLow: "VeryLow", Low: "Low", Medium: "Medium", High: "High", VeryHigh: "VeryHigh"});
 InspectorBackend.registerEnum("Network.RequestMixedContentType", {Blockable: "blockable", OptionallyBlockable: "optionally-blockable", None: "none"});
 InspectorBackend.registerEnum("Network.BlockedReason", {Csp: "csp", MixedContent: "mixed-content", Origin: "origin", Inspector: "inspector", SubresourceFilter: "subresource-filter", Other: "other"});
@@ -123,7 +113,7 @@ InspectorBackend.registerEvent("Network.loadingFinished", ["requestId", "timesta
 InspectorBackend.registerEvent("Network.loadingFailed", ["requestId", "timestamp", "type", "errorText", "canceled", "blockedReason"]);
 InspectorBackend.registerEvent("Network.webSocketWillSendHandshakeRequest", ["requestId", "timestamp", "wallTime", "request"]);
 InspectorBackend.registerEvent("Network.webSocketHandshakeResponseReceived", ["requestId", "timestamp", "response"]);
-InspectorBackend.registerEvent("Network.webSocketCreated", ["requestId", "url"]);
+InspectorBackend.registerEvent("Network.webSocketCreated", ["requestId", "url", "initiator"]);
 InspectorBackend.registerEvent("Network.webSocketClosed", ["requestId", "timestamp"]);
 InspectorBackend.registerEvent("Network.webSocketFrameReceived", ["requestId", "timestamp", "response"]);
 InspectorBackend.registerEvent("Network.webSocketFrameError", ["requestId", "timestamp", "errorMessage"]);
@@ -145,7 +135,7 @@ InspectorBackend.registerCommand("Network.clearBrowserCookies", [], [], false);
 InspectorBackend.registerCommand("Network.getCookies", [], ["cookies"], false);
 InspectorBackend.registerCommand("Network.deleteCookie", [{"name": "cookieName", "type": "string", "optional": false}, {"name": "url", "type": "string", "optional": false}], [], false);
 InspectorBackend.registerCommand("Network.canEmulateNetworkConditions", [], ["result"], false);
-InspectorBackend.registerCommand("Network.emulateNetworkConditions", [{"name": "offline", "type": "boolean", "optional": false}, {"name": "latency", "type": "number", "optional": false}, {"name": "downloadThroughput", "type": "number", "optional": false}, {"name": "uploadThroughput", "type": "number", "optional": false}], [], false);
+InspectorBackend.registerCommand("Network.emulateNetworkConditions", [{"name": "offline", "type": "boolean", "optional": false}, {"name": "latency", "type": "number", "optional": false}, {"name": "downloadThroughput", "type": "number", "optional": false}, {"name": "uploadThroughput", "type": "number", "optional": false}, {"name": "connectionType", "type": "string", "optional": true}], [], false);
 InspectorBackend.registerCommand("Network.setCacheDisabled", [{"name": "cacheDisabled", "type": "boolean", "optional": false}], [], false);
 InspectorBackend.registerCommand("Network.setBypassServiceWorker", [{"name": "bypass", "type": "boolean", "optional": false}], [], false);
 InspectorBackend.registerCommand("Network.setDataSizeLimitsForTest", [{"name": "maxTotalSize", "type": "number", "optional": false}, {"name": "maxResourceSize", "type": "number", "optional": false}], [], false);
@@ -400,7 +390,7 @@ InspectorBackend.registerEnum("Accessibility.AXRelationshipAttributes", {Actived
 InspectorBackend.registerCommand("Accessibility.getAXNode", [{"name": "nodeId", "type": "number", "optional": false}], ["accessibilityNode"], false);
 
 // Storage.
-InspectorBackend.registerEnum("Storage.StorageType", {Appcache: "appcache", Cookies: "cookies", File_systems: "file_systems", Indexeddb: "indexeddb", Local_storage: "local_storage", Shader_cache: "shader_cache", Websql: "websql", Webrtc_indetity: "webrtc_indetity", Service_workers: "service_workers", Cache_storage: "cache_storage", All: "all"});
+InspectorBackend.registerEnum("Storage.StorageType", {Appcache: "appcache", Cookies: "cookies", File_systems: "file_systems", Indexeddb: "indexeddb", Local_storage: "local_storage", Shader_cache: "shader_cache", Websql: "websql", Service_workers: "service_workers", Cache_storage: "cache_storage", All: "all"});
 InspectorBackend.registerCommand("Storage.clearDataForOrigin", [{"name": "origin", "type": "string", "optional": false}, {"name": "storageTypes", "type": "string", "optional": false}], [], false);
 
 // Browser.
@@ -462,7 +452,6 @@ InspectorBackend.registerCommand("Debugger.restartFrame", [{"name": "callFrameId
 InspectorBackend.registerCommand("Debugger.getScriptSource", [{"name": "scriptId", "type": "string", "optional": false}], ["scriptSource"], false);
 InspectorBackend.registerCommand("Debugger.getFunctionDetails", [{"name": "functionId", "type": "string", "optional": false}], ["details"], false);
 InspectorBackend.registerCommand("Debugger.getGeneratorObjectDetails", [{"name": "objectId", "type": "string", "optional": false}], ["details"], false);
-InspectorBackend.registerCommand("Debugger.getCollectionEntries", [{"name": "objectId", "type": "string", "optional": false}], ["entries"], false);
 InspectorBackend.registerCommand("Debugger.setPauseOnExceptions", [{"name": "state", "type": "string", "optional": false}], [], false);
 InspectorBackend.registerCommand("Debugger.evaluateOnCallFrame", [{"name": "callFrameId", "type": "string", "optional": false}, {"name": "expression", "type": "string", "optional": false}, {"name": "objectGroup", "type": "string", "optional": true}, {"name": "includeCommandLineAPI", "type": "boolean", "optional": true}, {"name": "doNotPauseOnExceptionsAndMuteConsole", "type": "boolean", "optional": true}, {"name": "returnByValue", "type": "boolean", "optional": true}, {"name": "generatePreview", "type": "boolean", "optional": true}], ["result", "wasThrown", "exceptionDetails"], false);
 InspectorBackend.registerCommand("Debugger.setVariableValue", [{"name": "scopeNumber", "type": "number", "optional": false}, {"name": "variableName", "type": "string", "optional": false}, {"name": "newValue", "type": "object", "optional": false}, {"name": "callFrameId", "type": "string", "optional": false}], [], false);
@@ -470,6 +459,17 @@ InspectorBackend.registerCommand("Debugger.getBacktrace", [], ["callFrames", "as
 InspectorBackend.registerCommand("Debugger.setAsyncCallStackDepth", [{"name": "maxDepth", "type": "number", "optional": false}], [], false);
 InspectorBackend.registerCommand("Debugger.setBlackboxPatterns", [{"name": "patterns", "type": "object", "optional": false}], [], false);
 InspectorBackend.registerCommand("Debugger.setBlackboxedRanges", [{"name": "scriptId", "type": "string", "optional": false}, {"name": "positions", "type": "object", "optional": false}], [], false);
+
+// Console.
+InspectorBackend.registerEnum("Console.ConsoleMessageSource", {XML: "xml", Javascript: "javascript", Network: "network", ConsoleAPI: "console-api", Storage: "storage", Appcache: "appcache", Rendering: "rendering", Security: "security", Other: "other", Deprecation: "deprecation"});
+InspectorBackend.registerEnum("Console.ConsoleMessageLevel", {Log: "log", Warning: "warning", Error: "error", Debug: "debug", Info: "info", RevokedError: "revokedError"});
+InspectorBackend.registerEnum("Console.ConsoleMessageType", {Log: "log", Dir: "dir", DirXML: "dirxml", Table: "table", Trace: "trace", Clear: "clear", StartGroup: "startGroup", StartGroupCollapsed: "startGroupCollapsed", EndGroup: "endGroup", Assert: "assert", Profile: "profile", ProfileEnd: "profileEnd"});
+InspectorBackend.registerEvent("Console.messageAdded", ["message"]);
+InspectorBackend.registerEvent("Console.messageRepeatCountUpdated", ["count", "timestamp"]);
+InspectorBackend.registerEvent("Console.messagesCleared", []);
+InspectorBackend.registerCommand("Console.enable", [], [], false);
+InspectorBackend.registerCommand("Console.disable", [], [], false);
+InspectorBackend.registerCommand("Console.clearMessages", [], [], false);
 
 // Profiler.
 InspectorBackend.registerEvent("Profiler.consoleProfileStarted", ["id", "location", "title"]);
