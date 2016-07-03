@@ -168,6 +168,11 @@
 
 ; -- transcript helpers -----------------------------------------------------------------------------------------------------
 
+(defn get-current-test-full-name []
+  (let [test-name *current-transcript-test*
+        suite-name *current-transcript-suite*]
+    (str suite-name "-" test-name)))
+
 (defn get-actual-transcript-path-filename [suite-name test-name]
   (str suite-name "-" test-name ".txt"))
 
@@ -254,18 +259,30 @@
   (let [script (str "window.postMessage({type:'" (get-launch-task-message) "', delay: " delay-ms "}, '*')")]
     (execute-script script)))
 
+(defn get-browser-test-filter []
+  (env :dirac-browser-test-filter))
+
+(defn should-skip-current-test? []
+  (boolean
+    (if-let [filter-string (get-browser-test-filter)]
+      (let [filtered-test-names (string/split filter-string #"\s")
+            full-test-name (get-current-test-full-name)]
+        (not (some #(string/includes? full-test-name %) filtered-test-names))))))
+
 (defn execute-transcript-test! [test-name]
   (with-transcript-test test-name
-    (let [signal-server (create-signal-server!)]
-      (navigate-transcript-runner!)
-      ; chrome driver needs some time to cooldown after disconnection
-      ; to prevent random org.openqa.selenium.SessionNotCreatedException exceptions
-      ; also we want to run our transcript test safely after debugger port is available for devtools after driver disconnection
-      (launch-transcript-test-after-delay (get-script-runner-launch-delay))
-      (disconnect-browser!)
-      (wait-for-signal signal-server)
-      (reconnect-browser!)
-      (write-transcript-and-compare))))
+    (if (should-skip-current-test?)
+      (println (str "Skipped test '" (get-current-test-full-name) "' due to filter '" (get-browser-test-filter) "'"))
+      (let [signal-server (create-signal-server!)]
+        (navigate-transcript-runner!)
+        ; chrome driver needs some time to cooldown after disconnection
+        ; to prevent random org.openqa.selenium.SessionNotCreatedException exceptions
+        ; also we want to run our transcript test safely after debugger port is available for devtools after driver disconnection
+        (launch-transcript-test-after-delay (get-script-runner-launch-delay))
+        (disconnect-browser!)
+        (wait-for-signal signal-server)
+        (reconnect-browser!)
+        (write-transcript-and-compare)))))
 
 ; -- fixtures ---------------------------------------------------------------------------------------------------------------
 

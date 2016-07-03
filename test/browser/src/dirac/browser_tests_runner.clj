@@ -32,7 +32,7 @@
     (require-namespaces test-namespaces)                                                                                      ; we want to require namespaces dynamically for our loggging configuration to take effect
     (let [summary (apply run-tests test-namespaces)]
       (if-not (successful? summary)
-        (System/exit 1)                                                                                                       ; in case of failure we want let the browser open for further manual inspection
+        (System/exit 1)                                                                                                       ; in case of failure we want the browser left open for further manual inspection
         (do
           (stop-browser!)
           (System/exit 0))))))
