@@ -1122,6 +1122,9 @@ WebInspector.JavaScriptSourceFrame.prototype = {
      */
     _setBreakpoint: function(lineNumber, columnNumber, condition, enabled)
     {
+        if (!WebInspector.debuggerWorkspaceBinding.uiLineHasMapping(this.uiSourceCode(), lineNumber))
+            return;
+
         this._breakpointManager.setBreakpoint(this.uiSourceCode(), lineNumber, columnNumber, condition, enabled);
     },
 
