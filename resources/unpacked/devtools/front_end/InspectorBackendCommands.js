@@ -79,6 +79,7 @@ InspectorBackend.registerCommand("Rendering.setShowViewportSizeOnResize", [{"nam
 
 // Emulation.
 InspectorBackend.registerEnum("Emulation.ScreenOrientationType", {PortraitPrimary: "portraitPrimary", PortraitSecondary: "portraitSecondary", LandscapePrimary: "landscapePrimary", LandscapeSecondary: "landscapeSecondary"});
+InspectorBackend.registerEnum("Emulation.VirtualTimePolicy", {Advance: "advance", Pause: "pause", PauseIfNetworkFetchesPending: "pauseIfNetworkFetchesPending"});
 InspectorBackend.registerCommand("Emulation.setDeviceMetricsOverride", [{"name": "width", "type": "number", "optional": false}, {"name": "height", "type": "number", "optional": false}, {"name": "deviceScaleFactor", "type": "number", "optional": false}, {"name": "mobile", "type": "boolean", "optional": false}, {"name": "fitWindow", "type": "boolean", "optional": false}, {"name": "scale", "type": "number", "optional": true}, {"name": "offsetX", "type": "number", "optional": true}, {"name": "offsetY", "type": "number", "optional": true}, {"name": "screenWidth", "type": "number", "optional": true}, {"name": "screenHeight", "type": "number", "optional": true}, {"name": "positionX", "type": "number", "optional": true}, {"name": "positionY", "type": "number", "optional": true}, {"name": "screenOrientation", "type": "object", "optional": true}], [], false);
 InspectorBackend.registerCommand("Emulation.clearDeviceMetricsOverride", [], [], false);
 InspectorBackend.registerCommand("Emulation.resetPageScaleFactor", [], [], false);
@@ -90,6 +91,7 @@ InspectorBackend.registerCommand("Emulation.setTouchEmulationEnabled", [{"name":
 InspectorBackend.registerCommand("Emulation.setEmulatedMedia", [{"name": "media", "type": "string", "optional": false}], [], false);
 InspectorBackend.registerCommand("Emulation.setCPUThrottlingRate", [{"name": "rate", "type": "number", "optional": false}], [], false);
 InspectorBackend.registerCommand("Emulation.canEmulate", [], ["result"], false);
+InspectorBackend.registerCommand("Emulation.setVirtualTimePolicy", [{"name": "policy", "type": "string", "optional": false}], [], false);
 
 // Security.
 InspectorBackend.registerEnum("Security.SecurityState", {Unknown: "unknown", Neutral: "neutral", Insecure: "insecure", Warning: "warning", Secure: "secure", Info: "info"});
@@ -395,10 +397,22 @@ InspectorBackend.registerCommand("Storage.clearDataForOrigin", [{"name": "origin
 
 // Browser.
 InspectorBackend.registerEvent("Browser.dispatchMessage", ["targetId", "message"]);
+InspectorBackend.registerCommand("Browser.createBrowserContext", [], ["browserContextId"], false);
+InspectorBackend.registerCommand("Browser.disposeBrowserContext", [{"name": "browserContextId", "type": "string", "optional": false}], ["success"], false);
+InspectorBackend.registerCommand("Browser.createTarget", [{"name": "initialUrl", "type": "string", "optional": false}, {"name": "width", "type": "number", "optional": true}, {"name": "height", "type": "number", "optional": true}, {"name": "browserContextId", "type": "string", "optional": true}], ["targetId"], false);
+InspectorBackend.registerCommand("Browser.closeTarget", [{"name": "targetId", "type": "string", "optional": false}], ["success"], false);
 InspectorBackend.registerCommand("Browser.getTargets", [], ["targetInfo"], false);
 InspectorBackend.registerCommand("Browser.attach", [{"name": "targetId", "type": "string", "optional": false}], [], false);
 InspectorBackend.registerCommand("Browser.detach", [{"name": "targetId", "type": "string", "optional": false}], [], false);
 InspectorBackend.registerCommand("Browser.sendMessage", [{"name": "targetId", "type": "string", "optional": false}, {"name": "message", "type": "string", "optional": false}], [], false);
+
+// SystemInfo.
+InspectorBackend.registerCommand("SystemInfo.getInfo", [], ["gpu", "modelName", "modelVersion"], false);
+
+// Tethering.
+InspectorBackend.registerEvent("Tethering.accepted", ["port", "connectionId"]);
+InspectorBackend.registerCommand("Tethering.bind", [{"name": "port", "type": "number", "optional": false}], [], false);
+InspectorBackend.registerCommand("Tethering.unbind", [{"name": "port", "type": "number", "optional": false}], [], false);
 
 // Runtime.
 InspectorBackend.registerEnum("Runtime.RemoteObjectType", {Object: "object", Function: "function", Undefined: "undefined", String: "string", Number: "number", Boolean: "boolean", Symbol: "symbol"});
