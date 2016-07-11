@@ -40,7 +40,7 @@ WebInspector.ConsoleModel = function(target)
     /** @type {!Array.<!WebInspector.ConsoleMessage>} */
     this._messages = [];
     /** @type {!Map<number, !WebInspector.ConsoleMessage>} */
-    this._messageById = new Map();
+    this._messageByExceptionId = new Map();
     this._warnings = 0;
     this._errors = 0;
     this._revokedErrors = 0;
@@ -80,20 +80,20 @@ WebInspector.ConsoleModel.prototype = {
         if (this._isBlacklisted(msg))
             return;
 
-        if (msg.level === WebInspector.ConsoleMessage.MessageLevel.RevokedError && msg._relatedMessageId) {
-            var relatedMessage = this._messageById.get(msg._relatedMessageId);
-            if (!relatedMessage)
+        if (msg.level === WebInspector.ConsoleMessage.MessageLevel.RevokedError && msg._revokedExceptionId) {
+            var exceptionMessage = this._messageByExceptionId.get(msg._revokedExceptionId);
+            if (!exceptionMessage)
                 return;
             this._errors--;
             this._revokedErrors++;
-            relatedMessage.level = WebInspector.ConsoleMessage.MessageLevel.RevokedError;
-            this.dispatchEventToListeners(WebInspector.ConsoleModel.Events.MessageUpdated, relatedMessage);
+            exceptionMessage.level = WebInspector.ConsoleMessage.MessageLevel.RevokedError;
+            this.dispatchEventToListeners(WebInspector.ConsoleModel.Events.MessageUpdated, exceptionMessage);
             return;
         }
 
         this._messages.push(msg);
-        if (msg._messageId)
-            this._messageById.set(msg._messageId, msg);
+        if (msg._exceptionId)
+            this._messageByExceptionId.set(msg._exceptionId, msg);
         this._incrementErrorWarningCount(msg);
         this.dispatchEventToListeners(WebInspector.ConsoleModel.Events.MessageAdded, msg);
     },
@@ -153,7 +153,7 @@ WebInspector.ConsoleModel.prototype = {
     _messagesCleared: function()
     {
         this._messages = [];
-        this._messageById.clear();
+        this._messageByExceptionId.clear();
         this._errors = 0;
         this._revokedErrors = 0;
         this._warnings = 0;
@@ -249,10 +249,8 @@ WebInspector.ConsoleModel.clearConsole = function()
  * @param {number=} timestamp
  * @param {!RuntimeAgent.ExecutionContextId=} executionContextId
  * @param {?string=} scriptId
- * @param {number=} messageId
- * @param {number=} relatedMessageId
  */
-WebInspector.ConsoleMessage = function(target, source, level, messageText, type, url, line, column, requestId, parameters, stackTrace, timestamp, executionContextId, scriptId, messageId, relatedMessageId)
+WebInspector.ConsoleMessage = function(target, source, level, messageText, type, url, line, column, requestId, parameters, stackTrace, timestamp, executionContextId, scriptId)
 {
     this._target = target;
     this.source = source;
@@ -271,8 +269,6 @@ WebInspector.ConsoleMessage = function(target, source, level, messageText, type,
     this.timestamp = timestamp || Date.now();
     this.executionContextId = executionContextId || 0;
     this.scriptId = scriptId || null;
-    this._messageId = messageId || 0;
-    this._relatedMessageId = relatedMessageId || 0;
 
     var networkLog = target && WebInspector.NetworkLog.fromTarget(target);
     this.request = (requestId && networkLog) ? networkLog.requestForId(requestId) : null;
@@ -313,6 +309,22 @@ WebInspector.ConsoleMessage.prototype = {
     setExecutionContextId: function(executionContextId)
     {
         this.executionContextId = executionContextId;
+    },
+
+    /**
+     * @param {number} exceptionId
+     */
+    setExceptionId: function(exceptionId)
+    {
+        this._exceptionId = exceptionId;
+    },
+
+    /**
+     * @param {number} revokedExceptionId
+     */
+    setRevokedExceptionId: function(revokedExceptionId)
+    {
+        this._revokedExceptionId = revokedExceptionId;
     },
 
     /**
@@ -359,9 +371,9 @@ WebInspector.ConsoleMessage.prototype = {
         if (!msg)
             return false;
 
-        if (this._messageId || msg._messageId)
+        if (this._exceptionId || msg._exceptionId)
             return false;
-        if (this._relatedMessageId || msg._relatedMessageId)
+        if (this._revokedExceptionId || msg._revokedExceptionId)
             return false;
 
         if (!this._isEqualStackTraces(this.stackTrace, msg.stackTrace))
@@ -465,7 +477,7 @@ WebInspector.ConsoleMessage.MessageLevel = {
     Warning: "warning",
     Error: "error",
     Debug: "debug",
-    RevokedError: "revokedError"
+    RevokedError: "revokedError"  // This is frontend-only level, used to put exceptions to console.
 };
 
 /**
@@ -509,9 +521,7 @@ WebInspector.ConsoleDispatcher.prototype = {
             payload.stack,
             payload.timestamp * 1000, // Convert to ms.
             payload.executionContextId,
-            payload.scriptId,
-            payload.messageId,
-            payload.relatedMessageId);
+            payload.scriptId);
         this._console.addMessage(consoleMessage);
     },
 
