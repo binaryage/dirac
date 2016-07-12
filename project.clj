@@ -13,7 +13,7 @@
                  [org.clojure/tools.logging "0.3.1"]
                  [org.clojure/tools.cli "0.3.5"]
                  [org.clojure/tools.nrepl "0.2.12"]
-                 [http-kit "2.1.21-alpha2"]
+                 [http-kit "2.2.0"]
                  [clj-logging-config "1.9.12"]
                  [version-clj "0.1.2"]
                  [environ "1.0.3"]
