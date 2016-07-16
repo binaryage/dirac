@@ -608,7 +608,7 @@ TestSuite.prototype.testPauseInSharedWorkerInitialization1 = function()
 
     function callback()
     {
-        var target = WebInspector.targetManager.targetsWithJSContext()[0];
+        var target = WebInspector.targetManager.targets(WebInspector.Target.Capability.JS)[0];
         target._connection.deprecatedRunAfterPendingDispatches(this.releaseControl.bind(this));
     }
 };
@@ -620,7 +620,7 @@ TestSuite.prototype.testPauseInSharedWorkerInitialization2 = function()
 
     function callback()
     {
-        var target = WebInspector.targetManager.targetsWithJSContext()[0];
+        var target = WebInspector.targetManager.targets(WebInspector.Target.Capability.JS)[0];
         var debuggerModel = WebInspector.DebuggerModel.fromTarget(target);
         if (debuggerModel.isPaused()) {
             this.releaseControl();
@@ -715,6 +715,20 @@ TestSuite.prototype.testDeviceMetricsOverrides = function()
 
     test.takeControl();
     step1();
+};
+
+TestSuite.prototype.testDispatchKeyEventDoesNotCrash = function()
+{
+    WebInspector.targetManager.mainTarget().inputAgent().invoke_dispatchKeyEvent({
+        type: "rawKeyDown",
+        windowsVirtualKeyCode: 0x23,
+        key: "End"
+    });
+    WebInspector.targetManager.mainTarget().inputAgent().invoke_dispatchKeyEvent({
+        type: "keyUp",
+        windowsVirtualKeyCode: 0x23,
+        key: "End"
+    });
 };
 
 TestSuite.prototype.testEmulateNetworkConditions = function()
@@ -898,6 +912,15 @@ TestSuite.prototype.testSettings = function()
         test.releaseControl();
     }
 }
+
+TestSuite.prototype.testWindowInitializedOnNavigateBack = function()
+{
+    var messages = WebInspector.multitargetConsoleModel.messages();
+    this.assertEquals(1, messages.length);
+    var text = messages[0].messageText;
+    if (text.indexOf("Uncaught") !== -1)
+        this.fail(text);
+};
 
 TestSuite.prototype.waitForTestResultsInConsole = function()
 {

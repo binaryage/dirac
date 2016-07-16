@@ -21,6 +21,11 @@
             "type": "@WebInspector.Revealer",
             "contextTypes": ["WebInspector.DOMNode", "WebInspector.DeferredDOMNode", "WebInspector.RemoteObject" ],
             "className": "WebInspector.ElementsPanel.DOMNodeRevealer"
+        },        
+        {
+            "type": "@WebInspector.Revealer",
+            "contextTypes": ["WebInspector.CSSProperty" ],
+            "className": "WebInspector.ElementsPanel.CSSPropertyRevealer"
         },
         {
             "type": "setting",
@@ -78,6 +83,12 @@
             "type": "@WebInspector.ToolbarItem.Provider",
             "className": "WebInspector.ClassesPaneWidget.ButtonProvider",
             "order": 2,
+            "location": "styles-sidebarpane-toolbar"
+        },
+        {
+            "type": "@WebInspector.ToolbarItem.Provider",
+            "className": "WebInspector.StylesSidebarPane.ButtonProvider",
+            "order": 100,
             "location": "styles-sidebarpane-toolbar"
         },
         {
@@ -154,13 +165,12 @@
         "BezierUI.js",
         "StylesPopoverHelper.js",
         "BezierEditor.js",
-        "Spectrum.js",
+        "ComputedStyleModel.js",
         "ElementsBreadcrumbs.js",
         "ElementsSidebarPane.js",
         "ElementsSidebarView.js",
         "ElementsTreeElement.js",
         "ElementsTreeOutline.js",
-        "SharedSidebarModel.js",
         "EventListenersWidget.js",
         "MetricsSidebarPane.js",
         "PlatformFontsWidget.js",
@@ -179,7 +189,6 @@
         "computedStyleSidebarPane.css",
         "elementsPanel.css",
         "elementsTreeOutline.css",
-        "spectrum.css",
         "platformFontsWidget.css"
     ]
 }

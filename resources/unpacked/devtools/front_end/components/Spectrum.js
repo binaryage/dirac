@@ -46,7 +46,7 @@ WebInspector.Spectrum = function()
     }
 
     WebInspector.VBox.call(this, true);
-    this.registerRequiredCSS("elements/spectrum.css");
+    this.registerRequiredCSS("components/spectrum.css");
     this.contentElement.tabIndex = 0;
 
     this._colorElement = this.contentElement.createChild("div", "spectrum-color");
@@ -929,7 +929,7 @@ WebInspector.Spectrum.PaletteGenerator = function(callback)
     /** @type {!Map.<string, number>} */
     this._frequencyMap = new Map();
     var stylesheetPromises = [];
-    for (var target of WebInspector.targetManager.targets(WebInspector.Target.Type.Page)) {
+    for (var target of WebInspector.targetManager.targets(WebInspector.Target.Capability.Browser)) {
         var cssModel = WebInspector.CSSModel.fromTarget(target);
         for (var stylesheet of cssModel.allStyleSheets())
             stylesheetPromises.push(new Promise(this._processStylesheet.bind(this, stylesheet)));

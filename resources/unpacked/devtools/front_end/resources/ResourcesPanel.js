@@ -167,7 +167,7 @@ WebInspector.ResourcesPanel.prototype = {
         if (cacheStorageModel)
             cacheStorageModel.enable();
 
-        if (this._target.isPage())
+        if (this._target.hasBrowserCapability())
             this._populateResourceTree();
         this._populateDOMStorageTree();
         this._populateApplicationCacheTree();
@@ -2172,14 +2172,6 @@ WebInspector.StorageCategoryView = function()
 }
 
 WebInspector.StorageCategoryView.prototype = {
-    /**
-     * @return {!Array.<!WebInspector.ToolbarItem>}
-     */
-    toolbarItems: function()
-    {
-        return [];
-    },
-
     setText: function(text)
     {
         this._emptyWidget.text = text;

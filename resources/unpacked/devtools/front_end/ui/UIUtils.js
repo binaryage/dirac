@@ -1513,6 +1513,15 @@ WebInspector.appendStyle = function(node, cssFile)
             this.checkboxElement.style.borderColor = color;
         },
 
+        /**
+         * @param {boolean} focus
+         * @this {Element}
+         */
+        set visualizeFocus(focus)
+        {
+            this.checkboxElement.classList.toggle("dt-checkbox-visualize-focus", focus);
+        },
+
         __proto__: HTMLLabelElement.prototype
     });
 
