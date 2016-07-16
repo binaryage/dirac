@@ -20,6 +20,7 @@ InspectorBackend.registerCommand("Memory.simulatePressureNotification", [{"name"
 // Page.
 InspectorBackend.registerEnum("Page.ResourceType", {Document: "Document", Stylesheet: "Stylesheet", Image: "Image", Media: "Media", Font: "Font", Script: "Script", TextTrack: "TextTrack", XHR: "XHR", Fetch: "Fetch", EventSource: "EventSource", WebSocket: "WebSocket", Manifest: "Manifest", Other: "Other"});
 InspectorBackend.registerEnum("Page.DialogType", {Alert: "alert", Confirm: "confirm", Prompt: "prompt", Beforeunload: "beforeunload"});
+InspectorBackend.registerEnum("Page.NavigationResponse", {Proceed: "Proceed", Cancel: "Cancel", CancelAndIgnore: "CancelAndIgnore"});
 InspectorBackend.registerEvent("Page.domContentEventFired", ["timestamp"]);
 InspectorBackend.registerEvent("Page.loadEventFired", ["timestamp"]);
 InspectorBackend.registerEvent("Page.frameAttached", ["frameId", "parentFrameId"]);
@@ -37,6 +38,7 @@ InspectorBackend.registerEvent("Page.screencastVisibilityChanged", ["visible"]);
 InspectorBackend.registerEvent("Page.colorPicked", ["color"]);
 InspectorBackend.registerEvent("Page.interstitialShown", []);
 InspectorBackend.registerEvent("Page.interstitialHidden", []);
+InspectorBackend.registerEvent("Page.navigationRequested", ["isInMainFrame", "isRedirect", "navigationId", "url"]);
 InspectorBackend.registerCommand("Page.enable", [], [], false);
 InspectorBackend.registerCommand("Page.disable", [], [], false);
 InspectorBackend.registerCommand("Page.addScriptToEvaluateOnLoad", [{"name": "scriptSource", "type": "string", "optional": false}], ["identifier"], false);
@@ -69,6 +71,8 @@ InspectorBackend.registerCommand("Page.setOverlayMessage", [{"name": "message", 
 InspectorBackend.registerCommand("Page.getAppManifest", [], ["url", "errors", "data"], false);
 InspectorBackend.registerCommand("Page.requestAppBanner", [], [], false);
 InspectorBackend.registerCommand("Page.setBlockedEventsWarningThreshold", [{"name": "threshold", "type": "number", "optional": false}], [], false);
+InspectorBackend.registerCommand("Page.setControlNavigations", [{"name": "enabled", "type": "boolean", "optional": false}], [], false);
+InspectorBackend.registerCommand("Page.processNavigation", [{"name": "response", "type": "string", "optional": false}, {"name": "navigationId", "type": "number", "optional": false}], [], false);
 
 // Rendering.
 InspectorBackend.registerCommand("Rendering.setShowPaintRects", [{"name": "result", "type": "boolean", "optional": false}], [], false);
@@ -399,7 +403,7 @@ InspectorBackend.registerCommand("Storage.clearDataForOrigin", [{"name": "origin
 InspectorBackend.registerEvent("Browser.dispatchMessage", ["targetId", "message"]);
 InspectorBackend.registerCommand("Browser.createBrowserContext", [], ["browserContextId"], false);
 InspectorBackend.registerCommand("Browser.disposeBrowserContext", [{"name": "browserContextId", "type": "string", "optional": false}], ["success"], false);
-InspectorBackend.registerCommand("Browser.createTarget", [{"name": "initialUrl", "type": "string", "optional": false}, {"name": "width", "type": "number", "optional": true}, {"name": "height", "type": "number", "optional": true}, {"name": "browserContextId", "type": "string", "optional": true}], ["targetId"], false);
+InspectorBackend.registerCommand("Browser.createTarget", [{"name": "url", "type": "string", "optional": false}, {"name": "width", "type": "number", "optional": true}, {"name": "height", "type": "number", "optional": true}, {"name": "browserContextId", "type": "string", "optional": true}], ["targetId"], false);
 InspectorBackend.registerCommand("Browser.closeTarget", [{"name": "targetId", "type": "string", "optional": false}], ["success"], false);
 InspectorBackend.registerCommand("Browser.getTargets", [], ["targetInfo"], false);
 InspectorBackend.registerCommand("Browser.attach", [{"name": "targetId", "type": "string", "optional": false}], [], false);
@@ -426,7 +430,8 @@ InspectorBackend.registerEvent("Runtime.executionContextCreated", ["context"]);
 InspectorBackend.registerEvent("Runtime.executionContextDestroyed", ["executionContextId"]);
 InspectorBackend.registerEvent("Runtime.executionContextsCleared", []);
 InspectorBackend.registerEvent("Runtime.exceptionThrown", ["exceptionId", "timestamp", "details", "exception", "executionContextId"]);
-InspectorBackend.registerEvent("Runtime.exceptionRevoked", ["timestamp", "message", "exceptionId"]);
+InspectorBackend.registerEvent("Runtime.exceptionRevoked", ["message", "exceptionId"]);
+InspectorBackend.registerEvent("Runtime.consoleAPICalled", ["type", "args", "executionContextId", "timestamp", "stackTrace"]);
 InspectorBackend.registerEvent("Runtime.inspectRequested", ["object", "hints"]);
 InspectorBackend.registerCommand("Runtime.evaluate", [{"name": "expression", "type": "string", "optional": false}, {"name": "objectGroup", "type": "string", "optional": true}, {"name": "includeCommandLineAPI", "type": "boolean", "optional": true}, {"name": "doNotPauseOnExceptionsAndMuteConsole", "type": "boolean", "optional": true}, {"name": "contextId", "type": "number", "optional": true}, {"name": "returnByValue", "type": "boolean", "optional": true}, {"name": "generatePreview", "type": "boolean", "optional": true}, {"name": "userGesture", "type": "boolean", "optional": true}], ["result", "wasThrown", "exceptionDetails"], false);
 InspectorBackend.registerCommand("Runtime.callFunctionOn", [{"name": "objectId", "type": "string", "optional": false}, {"name": "functionDeclaration", "type": "string", "optional": false}, {"name": "arguments", "type": "object", "optional": true}, {"name": "doNotPauseOnExceptionsAndMuteConsole", "type": "boolean", "optional": true}, {"name": "returnByValue", "type": "boolean", "optional": true}, {"name": "generatePreview", "type": "boolean", "optional": true}, {"name": "userGesture", "type": "boolean", "optional": true}], ["result", "wasThrown"], false);
@@ -465,7 +470,6 @@ InspectorBackend.registerCommand("Debugger.canSetScriptSource", [], ["result"], 
 InspectorBackend.registerCommand("Debugger.setScriptSource", [{"name": "scriptId", "type": "string", "optional": false}, {"name": "scriptSource", "type": "string", "optional": false}, {"name": "preview", "type": "boolean", "optional": true}], ["callFrames", "stackChanged", "asyncStackTrace", "compileError"], false);
 InspectorBackend.registerCommand("Debugger.restartFrame", [{"name": "callFrameId", "type": "string", "optional": false}], ["callFrames", "asyncStackTrace"], false);
 InspectorBackend.registerCommand("Debugger.getScriptSource", [{"name": "scriptId", "type": "string", "optional": false}], ["scriptSource"], false);
-InspectorBackend.registerCommand("Debugger.getFunctionDetails", [{"name": "functionId", "type": "string", "optional": false}], ["details"], false);
 InspectorBackend.registerCommand("Debugger.setPauseOnExceptions", [{"name": "state", "type": "string", "optional": false}], [], false);
 InspectorBackend.registerCommand("Debugger.evaluateOnCallFrame", [{"name": "callFrameId", "type": "string", "optional": false}, {"name": "expression", "type": "string", "optional": false}, {"name": "objectGroup", "type": "string", "optional": true}, {"name": "includeCommandLineAPI", "type": "boolean", "optional": true}, {"name": "doNotPauseOnExceptionsAndMuteConsole", "type": "boolean", "optional": true}, {"name": "returnByValue", "type": "boolean", "optional": true}, {"name": "generatePreview", "type": "boolean", "optional": true}], ["result", "wasThrown", "exceptionDetails"], false);
 InspectorBackend.registerCommand("Debugger.setVariableValue", [{"name": "scopeNumber", "type": "number", "optional": false}, {"name": "variableName", "type": "string", "optional": false}, {"name": "newValue", "type": "object", "optional": false}, {"name": "callFrameId", "type": "string", "optional": false}], [], false);
@@ -475,7 +479,7 @@ InspectorBackend.registerCommand("Debugger.setBlackboxPatterns", [{"name": "patt
 InspectorBackend.registerCommand("Debugger.setBlackboxedRanges", [{"name": "scriptId", "type": "string", "optional": false}, {"name": "positions", "type": "object", "optional": false}], [], false);
 
 // Console.
-InspectorBackend.registerEnum("Console.ConsoleMessageSource", {XML: "xml", Javascript: "javascript", Network: "network", ConsoleAPI: "console-api", Storage: "storage", Appcache: "appcache", Rendering: "rendering", Security: "security", Other: "other", Deprecation: "deprecation"});
+InspectorBackend.registerEnum("Console.ConsoleMessageSource", {XML: "xml", Javascript: "javascript", Network: "network", ConsoleAPI: "console-api", Storage: "storage", Appcache: "appcache", Rendering: "rendering", Security: "security", Other: "other", Deprecation: "deprecation", Worker: "worker"});
 InspectorBackend.registerEnum("Console.ConsoleMessageLevel", {Log: "log", Warning: "warning", Error: "error", Debug: "debug", Info: "info"});
 InspectorBackend.registerEnum("Console.ConsoleMessageType", {Log: "log", Dir: "dir", DirXML: "dirxml", Table: "table", Trace: "trace", Clear: "clear", StartGroup: "startGroup", StartGroupCollapsed: "startGroupCollapsed", EndGroup: "endGroup", Assert: "assert", Profile: "profile", ProfileEnd: "profileEnd"});
 InspectorBackend.registerEvent("Console.messageAdded", ["message"]);
