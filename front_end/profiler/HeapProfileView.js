@@ -221,9 +221,19 @@ WebInspector.SamplingHeapProfileHeader.prototype = {
  */
 WebInspector.SamplingHeapProfileNode = function(node)
 {
-    WebInspector.ProfileNode.call(this, node.functionName, node.scriptId, node.url, node.lineNumber, node.columnNumber);
+    if (node.callFrame) {
+        WebInspector.ProfileNode.call(this, node.callFrame);
+    } else {
+        // Backward compatibility for old SamplingHeapProfileNode format.
+        var frame = /** @type {!RuntimeAgent.CallFrame} */(node);
+        WebInspector.ProfileNode.call(this, {
+            functionName: frame.functionName,
+            scriptId: frame.scriptId, url: frame.url,
+            lineNumber: frame.lineNumber - 1,
+            columnNumber: frame.columnNumber - 1
+        });
+    }
     this.self = node.selfSize;
-    this.callUID = `${this.frame.functionName}@${this.frame.scriptId}:${this.frame.lineNumber}`;
 }
 
 WebInspector.SamplingHeapProfileNode.prototype = {
@@ -302,8 +312,7 @@ WebInspector.HeapProfileView.NodeFormatter.prototype = {
      */
     linkifyNode: function(node)
     {
-        var callFrame = node.profileNode.frame;
-        return this._profileView.linkifier().linkifyConsoleCallFrame(this._profileView.target(), callFrame, "profile-node-file");
+        return this._profileView.linkifier().linkifyConsoleCallFrame(this._profileView.target(), node.profileNode.callFrame, "profile-node-file");
     }
 }
 
@@ -423,7 +432,7 @@ WebInspector.HeapFlameChartDataProvider.prototype = {
         pushEntryInfoRow(WebInspector.UIString("Self size"), Number.bytesToString(node.self));
         pushEntryInfoRow(WebInspector.UIString("Total size"), Number.bytesToString(node.total));
         var linkifier = new WebInspector.Linkifier();
-        var text = (new WebInspector.Linkifier()).linkifyConsoleCallFrame(this._target, node.frame).textContent;
+        var text = (new WebInspector.Linkifier()).linkifyConsoleCallFrame(this._target, node.callFrame).textContent;
         linkifier.dispose();
         pushEntryInfoRow(WebInspector.UIString("URL"), text);
         return entryInfo;

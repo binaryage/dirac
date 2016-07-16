@@ -50,8 +50,10 @@ WebInspector.StylesSidebarPane = function()
 
      /** @type {!Array<!WebInspector.SectionBlock>} */
     this._sectionBlocks = [];
+    WebInspector.StylesSidebarPane._instance = this;
 
     WebInspector.targetManager.addModelListener(WebInspector.CSSModel, WebInspector.CSSModel.Events.LayoutEditorChange, this._onLayoutEditorChange, this);
+    WebInspector.context.addFlavorChangeListener(WebInspector.DOMNode, this.forceUpdate, this);
 }
 
 /**
@@ -132,9 +134,11 @@ WebInspector.StylesSidebarPane.prototype = {
         this.update();
     },
 
-    onUndoOrRedoHappened: function()
+    forceUpdate: function()
     {
-        this.setNode(this.node());
+        this._stylesPopoverHelper.hide();
+        this._resetCache();
+        this.update();
     },
 
     /**
@@ -200,19 +204,6 @@ WebInspector.StylesSidebarPane.prototype = {
     },
 
     /**
-     * @override
-     * @param {?WebInspector.DOMNode} node
-     */
-    setNode: function(node)
-    {
-        this._stylesPopoverHelper.hide();
-        node = WebInspector.SharedSidebarModel.elementNode(node);
-
-        this._resetCache();
-        WebInspector.ElementsSidebarPane.prototype.setNode.call(this, node);
-    },
-
-    /**
      * @param {!WebInspector.StylePropertiesSection=} editedSection
      */
     _refreshUpdate: function(editedSection)
@@ -241,26 +232,26 @@ WebInspector.StylesSidebarPane.prototype = {
     {
         this._discardElementUnderMouse();
 
-        return this.fetchMatchedCascade()
+        return this._fetchMatchedCascade()
             .then(this._innerRebuildUpdate.bind(this));
     },
 
     _resetCache: function()
     {
-        delete this._matchedCascadePromise;
+        if (this.cssModel())
+            this.cssModel().discardCachedMatchedCascade();
     },
 
     /**
      * @return {!Promise.<?WebInspector.CSSMatchedStyles>}
      */
-    fetchMatchedCascade: function()
+    _fetchMatchedCascade: function()
     {
         var node = this.node();
-        if (!node)
+        if (!node || !this.cssModel())
             return Promise.resolve(/** @type {?WebInspector.CSSMatchedStyles} */(null));
-        if (!this._matchedCascadePromise)
-            this._matchedCascadePromise = this._matchedStylesForNode(node).then(validateStyles.bind(this));
-        return this._matchedCascadePromise;
+
+        return this.cssModel().cachedMatchedCascadeForNode(node).then(validateStyles.bind(this));
 
         /**
          * @param {?WebInspector.CSSMatchedStyles} matchedStyles
@@ -271,18 +262,6 @@ WebInspector.StylesSidebarPane.prototype = {
         {
             return matchedStyles && matchedStyles.node() === this.node() ? matchedStyles : null;
         }
-    },
-
-    /**
-     * @param {!WebInspector.DOMNode} node
-     * @return {!Promise.<?WebInspector.CSSMatchedStyles>}
-     */
-    _matchedStylesForNode: function(node)
-    {
-        var cssModel = this.cssModel();
-        if (!cssModel)
-            return Promise.resolve(/** @type {?WebInspector.CSSMatchedStyles} */(null));
-        return cssModel.matchedStylesPromise(node.id)
     },
 
     /**
@@ -314,41 +293,6 @@ WebInspector.StylesSidebarPane.prototype = {
 
         this._resetCache();
         this.update();
-    },
-
-    /**
-     * @override
-     */
-    onFrameResizedThrottled: function()
-    {
-        this.onCSSModelChanged();
-    },
-
-    /**
-     * @override
-     * @param {!WebInspector.DOMNode} node
-     */
-    onDOMModelChanged: function(node)
-    {
-        // Any attribute removal or modification can affect the styles of "related" nodes.
-        // Do not touch the styles if they are being edited.
-        if (this._isEditingStyle || this._userOperation)
-            return;
-
-        if (!this._canAffectCurrentStyles(node))
-            return;
-
-        this._resetCache();
-        this.update();
-    },
-
-    /**
-     * @param {?WebInspector.DOMNode} node
-     */
-    _canAffectCurrentStyles: function(node)
-    {
-        var currentNode = this.node();
-        return currentNode && (currentNode === node || node.parentNode === currentNode.parentNode || node.isAncestor(currentNode));
     },
 
     /**
@@ -566,8 +510,13 @@ WebInspector.StylesSidebarPane.prototype = {
         if (this._elementUnderMouse && event.target !== this._elementUnderMouse)
             this._discardElementUnderMouse();
         this._elementUnderMouse = event.target;
-        if (WebInspector.KeyboardShortcut.eventHasCtrlOrMeta(/** @type {!MouseEvent} */(event)))
+        if (WebInspector.KeyboardShortcut.eventHasCtrlOrMeta(/** @type {!MouseEvent} */(event))) {
             this._elementUnderMouse.classList.add("styles-panel-hovered");
+            var selectorElement = this._elementUnderMouse.enclosingNodeOrSelfWithClass("selector");
+            var sectionElement = selectorElement ? selectorElement.enclosingNodeOrSelfWithClass("styles-section") : null;
+            if (sectionElement)
+                sectionElement._section.makeHoverableSelectorsMode();
+        }
     },
 
     /**
@@ -1185,6 +1134,14 @@ WebInspector.StylePropertiesSection.prototype = {
         return !hideRule;
     },
 
+    makeHoverableSelectorsMode: function()
+    {
+        if (this._hoverableSelectorsMode)
+            return;
+        this._hoverableSelectorsMode = true;
+        this._markSelectorMatches();
+    },
+
     _markSelectorMatches: function()
     {
         var rule = this._style.parentRule;
@@ -1196,29 +1153,72 @@ WebInspector.StylePropertiesSection.prototype = {
         if (!this._matchedStyles.hasMatchingSelectors(/** @type {!WebInspector.CSSStyleRule} */(rule)))
             return;
 
-        var selectors = rule.selectors;
-        var fragment = createDocumentFragment();
-        var currentMatch = 0;
-        var matchingSelectors = this._matchedStyles.matchingSelectors(/** @type {!WebInspector.CSSStyleRule} */(rule));
-        for (var i = 0; i < selectors.length ; ++i) {
-            if (i)
-                fragment.createTextChild(", ");
-            var isSelectorMatching = matchingSelectors[currentMatch] === i;
-            if (isSelectorMatching)
-                ++currentMatch;
-            var matchingSelectorClass = isSelectorMatching ? " selector-matches" : "";
-            var selectorElement = createElement("span");
-            selectorElement.className = "simple-selector" + matchingSelectorClass;
-            if (rule.styleSheetId)
-                selectorElement._selectorIndex = i;
-            selectorElement.textContent = selectors[i].text;
+        var selectorTexts = rule.selectors.map(selector => selector.text);
 
-            fragment.appendChild(selectorElement);
-        }
+        var matchingSelectorIndexes = this._matchedStyles.matchingSelectors(/** @type {!WebInspector.CSSStyleRule} */(rule));
+        var matchingSelectors = new Array(selectorTexts.length).fill(false);
+        for (var matchingIndex of matchingSelectorIndexes)
+            matchingSelectors[matchingIndex] = true;
 
+        var fragment = this._hoverableSelectorsMode ? this._renderHoverableSelectors(selectorTexts, matchingSelectors) : this._renderSimplifiedSelectors(selectorTexts, matchingSelectors);
         this._selectorElement.removeChildren();
         this._selectorElement.appendChild(fragment);
         this._markSelectorHighlights();
+    },
+
+    /**
+     * @param {!Array<string>} selectors
+     * @param {!Array<boolean>} matchingSelectors
+     * @return {!DocumentFragment}
+     */
+    _renderHoverableSelectors: function(selectors, matchingSelectors)
+    {
+        var fragment = createDocumentFragment();
+        for (var i = 0; i < selectors.length ; ++i) {
+            if (i)
+                fragment.createTextChild(", ");
+            fragment.appendChild(this._createSelectorElement(selectors[i], matchingSelectors[i], i));
+        }
+        return fragment;
+    },
+
+    /**
+     * @param {string} text
+     * @param {boolean} isMatching
+     * @param {number=} navigationIndex
+     * @return {!Element}
+     */
+    _createSelectorElement: function(text, isMatching, navigationIndex)
+    {
+        var element = createElementWithClass("span", "simple-selector");
+        element.classList.toggle("selector-matches", isMatching);
+        if (typeof navigationIndex === "number")
+            element._selectorIndex = navigationIndex;
+        element.textContent = text;
+        return element;
+    },
+
+    /**
+     * @param {!Array<string>} selectors
+     * @param {!Array<boolean>} matchingSelectors
+     * @return {!DocumentFragment}
+     */
+    _renderSimplifiedSelectors: function(selectors, matchingSelectors)
+    {
+        var fragment = createDocumentFragment();
+        var currentMatching = false;
+        var text = "";
+        for (var i = 0; i < selectors.length; ++i) {
+            if (currentMatching !== matchingSelectors[i] && text) {
+                fragment.appendChild(this._createSelectorElement(text, currentMatching));
+                text = "";
+            }
+            currentMatching = matchingSelectors[i];
+            text += selectors[i] + (i === selectors.length - 1 ? "" : ", ");
+        }
+        if (text)
+            fragment.appendChild(this._createSelectorElement(text, currentMatching));
+        return fragment;
     },
 
     _markSelectorHighlights: function()
@@ -1401,7 +1401,7 @@ WebInspector.StylePropertiesSection.prototype = {
 
         // This gets deleted in finishOperation(), which is called both on success and failure.
         this._parentPane._userOperation = true;
-        this._parentPane._cssModel.setMediaText(media.styleSheetId, media.range, newContent)
+        this._parentPane.cssModel().setMediaText(media.styleSheetId, media.range, newContent)
             .then(userCallback.bind(this));
     },
 
@@ -1427,7 +1427,7 @@ WebInspector.StylePropertiesSection.prototype = {
      */
     _navigateToSelectorSource: function(index, focus)
     {
-        var cssModel = this._parentPane._cssModel;
+        var cssModel = this._parentPane.cssModel();
         var rule = this._style.parentRule;
         var header = cssModel.styleSheetHeaderForId(/** @type {string} */(rule.styleSheetId));
         if (!header)
@@ -1670,12 +1670,13 @@ WebInspector.StylePropertiesSection._linkifyRuleLocation = function(cssModel, li
  */
 WebInspector.BlankStylePropertiesSection = function(stylesPane, matchedStyles, defaultSelectorText, styleSheetId, ruleLocation, insertAfterStyle)
 {
-    var rule = WebInspector.CSSStyleRule.createDummyRule(stylesPane._cssModel, defaultSelectorText);
+    var cssModel = /** @type {!WebInspector.CSSModel} */(stylesPane.cssModel());
+    var rule = WebInspector.CSSStyleRule.createDummyRule(cssModel, defaultSelectorText);
     WebInspector.StylePropertiesSection.call(this, stylesPane, matchedStyles, rule.style);
     this._ruleLocation = ruleLocation;
     this._styleSheetId = styleSheetId;
     this._selectorRefElement.removeChildren();
-    this._selectorRefElement.appendChild(WebInspector.StylePropertiesSection._linkifyRuleLocation(this._parentPane._cssModel, this._parentPane._linkifier, styleSheetId, this._actualRuleLocation()));
+    this._selectorRefElement.appendChild(WebInspector.StylePropertiesSection._linkifyRuleLocation(cssModel, this._parentPane._linkifier, styleSheetId, this._actualRuleLocation()));
     if (insertAfterStyle && insertAfterStyle.parentRule)
         this._createMediaList(insertAfterStyle.parentRule.media);
     this.element.classList.add("blank-section");
@@ -1767,7 +1768,7 @@ WebInspector.BlankStylePropertiesSection.prototype = {
             newContent = newContent.trim();
         this._parentPane._userOperation = true;
 
-        var cssModel = this._parentPane._cssModel;
+        var cssModel = this._parentPane.cssModel();
         var ruleText = this._rulePrefix() + newContent + " {}";
         cssModel.addRule(this._styleSheetId, ruleText, this._ruleLocation)
             .then(onRuleAdded.bind(this));
@@ -3124,23 +3125,50 @@ WebInspector.StylesSidebarPropertyRenderer.prototype = {
     }
 }
 
-
 /**
- * @return {!WebInspector.ToolbarItem}
+ * @constructor
+ * @implements {WebInspector.ToolbarItem.Provider}
  */
-WebInspector.StylesSidebarPane.createAddNewRuleButton = function(stylesSidebarPane)
+WebInspector.StylesSidebarPane.ButtonProvider = function()
 {
-    var button = new WebInspector.ToolbarButton(WebInspector.UIString("New Style Rule"), "add-toolbar-item");
-    button.addEventListener("click", stylesSidebarPane._createNewRuleInViaInspectorStyleSheet, stylesSidebarPane);
-    button.element.createChild("div", "long-click-glyph toolbar-button-theme");
-    new WebInspector.LongClickController(button.element, stylesSidebarPane._onAddButtonLongClick.bind(stylesSidebarPane));
-    WebInspector.context.addFlavorChangeListener(WebInspector.DOMNode, onNodeChanged);
-    onNodeChanged();
-    return button;
+    this._button = new WebInspector.ToolbarButton(WebInspector.UIString("New Style Rule"), "add-toolbar-item");
+    this._button.addEventListener("click", this._clicked, this);
+    this._button.element.createChild("div", "long-click-glyph toolbar-button-theme");
+    new WebInspector.LongClickController(this._button.element, this._longClicked.bind(this));
+    WebInspector.context.addFlavorChangeListener(WebInspector.DOMNode, onNodeChanged.bind(this));
+    onNodeChanged.call(this);
 
+    /**
+     * @this {WebInspector.StylesSidebarPane.ButtonProvider}
+     */
     function onNodeChanged()
     {
         var node = WebInspector.context.flavor(WebInspector.DOMNode);
-        button.setEnabled(!!node);
+        node = node ? node.enclosingElementOrSelf() : null;
+        this._button.setEnabled(!!node);
+    }
+}
+
+WebInspector.StylesSidebarPane.ButtonProvider.prototype = {
+    _clicked: function()
+    {
+        WebInspector.StylesSidebarPane._instance._createNewRuleInViaInspectorStyleSheet();
+    },
+
+    /**
+     * @param {!Event} e
+     */
+    _longClicked: function(e)
+    {
+        WebInspector.StylesSidebarPane._instance._onAddButtonLongClick(e);
+    },
+
+    /**
+     * @override
+     * @return {!WebInspector.ToolbarItem}
+     */
+    item: function()
+    {
+        return this._button;
     }
 }

@@ -79,6 +79,12 @@ WebInspector.ConsoleModel.prototype = {
         if (this._isBlacklisted(msg))
             return;
 
+        if (msg.source === WebInspector.ConsoleMessage.MessageSource.Worker && msg.target().workerManager && msg.target().workerManager.targetByWorkerId(msg.workerId))
+            return;
+
+        if (msg.source === WebInspector.ConsoleMessage.MessageSource.ConsoleAPI && msg.type === WebInspector.ConsoleMessage.MessageType.Clear)
+            this.clear();
+
         if (msg.level === WebInspector.ConsoleMessage.MessageLevel.RevokedError && msg._revokedExceptionId) {
             var exceptionMessage = this._messageByExceptionId.get(msg._revokedExceptionId);
             if (!exceptionMessage)
@@ -142,10 +148,10 @@ WebInspector.ConsoleModel.prototype = {
     requestClearMessages: function()
     {
         this._consoleAgent.clearMessages();
-        this._messagesCleared();
+        this.clear();
     },
 
-    _messagesCleared: function()
+    clear: function()
     {
         this._messages = [];
         this._messageByExceptionId.clear();
@@ -213,10 +219,35 @@ WebInspector.ConsoleModel.evaluateCommandInConsole = function(executionContext, 
             target.consoleModel.dispatchEventToListeners(WebInspector.ConsoleModel.Events.CommandEvaluated, {result: result, wasThrown: wasThrown, text: requestedText, commandMessage: commandMessage, exceptionDetails: exceptionDetails});
         }
     }
-    if (/^\s*\{/.test(text) && /\}\s*$/.test(text))
-        text = "(" + text + ")";
-    executionContext.evaluate(text, "console", !!useCommandLineAPI, false, false, true, true, printResult);
 
+    /**
+     * @param {string} code
+     * @suppress {uselessCode}
+     * @return {boolean}
+     */
+    function looksLikeAnObjectLiteral(code)
+    {
+        // Only parenthesize what appears to be an object literal.
+        if (!(/^\s*\{/.test(code) && /\}\s*$/.test(code)))
+            return false;
+
+        try {
+            // Check if the code can be interpreted as an expression.
+            Function("return " + code + ";");
+
+            // No syntax error! Does it work parenthesized?
+            Function("(" + code + ")");
+
+            return true;
+        } catch (e) {
+            return false;
+        }
+    }
+
+    if (looksLikeAnObjectLiteral(text))
+        text = "(" + text + ")";
+
+    executionContext.evaluate(text, "console", !!useCommandLineAPI, false, false, true, true, printResult);
     WebInspector.userMetrics.actionTaken(WebInspector.UserMetrics.Action.ConsoleEvaluated);
 }
 
@@ -244,8 +275,9 @@ WebInspector.ConsoleModel.clearConsole = function()
  * @param {number=} timestamp
  * @param {!RuntimeAgent.ExecutionContextId=} executionContextId
  * @param {?string=} scriptId
+ * @param {?string=} workerId
  */
-WebInspector.ConsoleMessage = function(target, source, level, messageText, type, url, line, column, requestId, parameters, stackTrace, timestamp, executionContextId, scriptId)
+WebInspector.ConsoleMessage = function(target, source, level, messageText, type, url, line, column, requestId, parameters, stackTrace, timestamp, executionContextId, scriptId, workerId)
 {
     this._target = target;
     this.source = source;
@@ -264,6 +296,7 @@ WebInspector.ConsoleMessage = function(target, source, level, messageText, type,
     this.timestamp = timestamp || Date.now();
     this.executionContextId = executionContextId || 0;
     this.scriptId = scriptId || null;
+    this.workerId = workerId || null;
 
     var networkLog = target && WebInspector.NetworkLog.fromTarget(target);
     this.request = (requestId && networkLog) ? networkLog.requestForId(requestId) : null;
@@ -438,7 +471,8 @@ WebInspector.ConsoleMessage.MessageSource = {
     CSS: "css",
     Security: "security",
     Other: "other",
-    Deprecation: "deprecation"
+    Deprecation: "deprecation",
+    Worker: "worker"
 }
 
 /**
@@ -446,6 +480,10 @@ WebInspector.ConsoleMessage.MessageSource = {
  */
 WebInspector.ConsoleMessage.MessageType = {
     Log: "log",
+    Debug: "debug",
+    Info: "info",
+    Error: "error",
+    Warning: "warning",
     Dir: "dir",
     DirXML: "dirxml",
     Table: "table",
@@ -500,6 +538,8 @@ WebInspector.ConsoleDispatcher.prototype = {
      */
     messageAdded: function(payload)
     {
+        if (payload.source === WebInspector.ConsoleMessage.MessageSource.ConsoleAPI)
+            return;
         var consoleMessage = new WebInspector.ConsoleMessage(
             this._console.target(),
             payload.source,
@@ -512,9 +552,10 @@ WebInspector.ConsoleDispatcher.prototype = {
             payload.networkRequestId,
             payload.parameters,
             payload.stack,
-            payload.timestamp * 1000, // Convert to ms.
+            payload.timestamp,
             payload.executionContextId,
-            payload.scriptId);
+            payload.scriptId,
+            payload.workerId);
         this._console.addMessage(consoleMessage);
     },
 
@@ -531,8 +572,6 @@ WebInspector.ConsoleDispatcher.prototype = {
      */
     messagesCleared: function()
     {
-        if (!WebInspector.moduleSetting("preserveConsoleLog").get())
-            this._console._messagesCleared();
     }
 }
 

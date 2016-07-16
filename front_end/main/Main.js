@@ -57,6 +57,7 @@ WebInspector.Main.prototype = {
 
         if (InspectorFrontendHost.isUnderTest())
             self.runtime.useTestBase();
+        Runtime.setPlatform(WebInspector.platform());
         InspectorFrontendHost.getPreferences(this._gotPreferences.bind(this));
     },
 
@@ -118,6 +119,7 @@ WebInspector.Main.prototype = {
         Runtime.experiments.register("resolveVariableNames", "Resolve variable names");
         Runtime.experiments.register("timelineShowAllEvents", "Show all events on Timeline", true);
         Runtime.experiments.register("securityPanel", "Security panel");
+        Runtime.experiments.register("sourceColorPicker", "Source color picker");
         Runtime.experiments.register("sourceDiff", "Source diff");
         Runtime.experiments.register("timelineFlowEvents", "Timeline flow events", true);
         Runtime.experiments.register("timelineInvalidationTracking", "Timeline invalidation tracking", true);
@@ -308,13 +310,13 @@ WebInspector.Main.prototype = {
             WebInspector.RemoteDebuggingTerminatedScreen.show(event.data.reason);
         }
 
-        var targetType = WebInspector.Target.Type.Page;
+        var capabilities = WebInspector.Target.Capability.Browser | WebInspector.Target.Capability.JS | WebInspector.Target.Capability.Network | WebInspector.Target.Capability.Worker;
         if (Runtime.queryParam("isSharedWorker"))
-            targetType = WebInspector.Target.Type.ServiceWorker;
+            capabilities = WebInspector.Target.Capability.Network | WebInspector.Target.Capability.Worker;
         else if (Runtime.queryParam("v8only"))
-            targetType = WebInspector.Target.Type.JSInspector;
+            capabilities = WebInspector.Target.Capability.JS;
 
-        this._mainTarget = WebInspector.targetManager.createTarget(WebInspector.UIString("Main"), targetType, connection, null);
+        this._mainTarget = WebInspector.targetManager.createTarget(WebInspector.UIString("Main"), capabilities, connection, null);
         console.timeStamp("Main._mainTargetCreated");
         this._registerShortcuts();
 
@@ -322,10 +324,10 @@ WebInspector.Main.prototype = {
         InspectorFrontendHost.events.addEventListener(InspectorFrontendHostAPI.Events.ReloadInspectedPage, this._reloadInspectedPage, this);
         InspectorFrontendHost.events.addEventListener(InspectorFrontendHostAPI.Events.EvaluateForTestInFrontend, this._evaluateForTestInFrontend, this);
 
-        if (this._mainTarget.isServiceWorker() || this._mainTarget.isPage() || this._mainTarget.isJSInspector())
-            this._mainTarget.runtimeAgent().run();
+        this._mainTarget.runtimeAgent().run();
 
-        this._mainTarget.inspectorAgent().enable();
+        if (this._mainTarget.hasBrowserCapability())
+            this._mainTarget.inspectorAgent().enable();
         InspectorFrontendHost.readyForTest();
 
         // Asynchronously run the extensions.
@@ -492,32 +494,16 @@ WebInspector.Main.prototype = {
         WebInspector.shortcutRegistry.handleShortcut(event);
     },
 
-    _documentCanCopy: function(event)
+    /**
+     * @param {!Event} event
+     */
+    _redispatchClipboardEvent: function(event)
     {
-        var panel = WebInspector.inspectorView.currentPanel();
-        if (panel && panel["handleCopyEvent"])
+        var eventCopy = new CustomEvent("clipboard-" + event.type);
+        eventCopy["original"] = event;
+        event.deepActiveElement().dispatchEvent(eventCopy);
+        if (eventCopy.handled)
             event.preventDefault();
-    },
-
-    _documentCopy: function(event)
-    {
-        var panel = WebInspector.inspectorView.currentPanel();
-        if (panel && panel["handleCopyEvent"])
-            panel["handleCopyEvent"](event);
-    },
-
-    _documentCut: function(event)
-    {
-        var panel = WebInspector.inspectorView.currentPanel();
-        if (panel && panel["handleCutEvent"])
-            panel["handleCutEvent"](event);
-    },
-
-    _documentPaste: function(event)
-    {
-        var panel = WebInspector.inspectorView.currentPanel();
-        if (panel && panel["handlePasteEvent"])
-            panel["handlePasteEvent"](event);
     },
 
     _contextMenuEventFired: function(event)
@@ -532,10 +518,10 @@ WebInspector.Main.prototype = {
     _addMainEventListeners: function(document)
     {
         document.addEventListener("keydown", this._postDocumentKeyDown.bind(this), false);
-        document.addEventListener("beforecopy", this._documentCanCopy.bind(this), true);
-        document.addEventListener("copy", this._documentCopy.bind(this), false);
-        document.addEventListener("cut", this._documentCut.bind(this), false);
-        document.addEventListener("paste", this._documentPaste.bind(this), false);
+        document.addEventListener("beforecopy", this._redispatchClipboardEvent.bind(this), true);
+        document.addEventListener("copy", this._redispatchClipboardEvent.bind(this), false);
+        document.addEventListener("cut", this._redispatchClipboardEvent.bind(this), false);
+        document.addEventListener("paste", this._redispatchClipboardEvent.bind(this), false);
         document.addEventListener("contextmenu", this._contextMenuEventFired.bind(this), true);
         document.addEventListener("click", this._documentClick.bind(this), false);
     },
@@ -709,26 +695,9 @@ WebInspector.Main.SearchActionDelegate.prototype = {
  */
 WebInspector.Main._reloadPage = function(hard)
 {
-    if (!WebInspector.targetManager.hasTargets())
-        return;
-    if (WebInspector.targetManager.mainTarget().isServiceWorker())
-        return;
-    WebInspector.targetManager.reloadPage(hard);
-}
-
-/**
- * @param {string} ws
- */
-WebInspector.Main._addWebSocketTarget = function(ws)
-{
-    /**
-     * @param {!InspectorBackendClass.Connection} connection
-     */
-    function callback(connection)
-    {
-        WebInspector.targetManager.createTarget(ws, WebInspector.Target.Type.Page, connection, null);
-    }
-    new WebInspector.WebSocketConnection(ws, callback);
+    var mainTarget = WebInspector.targetManager.mainTarget();
+    if (mainTarget && mainTarget.hasBrowserCapability())
+        WebInspector.targetManager.reloadPage(hard);
 }
 
 /**
@@ -883,6 +852,13 @@ WebInspector.Main.MainMenuItem.prototype = {
 
         contextMenu.appendAction("main.toggle-drawer", WebInspector.inspectorView.drawerVisible() ? WebInspector.UIString("Hide console") : WebInspector.UIString("Show console"));
         contextMenu.appendItemsAtLocation("mainMenu");
+        var moreTools = contextMenu.namedSubMenu("mainMenuMoreTools");
+        var extensions = self.runtime.extensions("drawer-view", undefined, true);
+        for (var extension of extensions) {
+            var descriptor = extension.descriptor();
+            moreTools.appendItem(extension.title(), WebInspector.inspectorView.showViewInDrawer.bind(WebInspector.inspectorView, descriptor["name"]));
+        }
+
         contextMenu.show();
     }
 }
@@ -971,6 +947,23 @@ WebInspector.Main.InspectedNodeRevealer.prototype = {
         var deferredNode = /** @type {!WebInspector.DeferredDOMNode} */ (event.data);
         WebInspector.Revealer.reveal(deferredNode);
     }
+}
+
+/**
+ * @param {string} method
+ * @param {?Object} params
+ * @return {!Promise}
+ */
+WebInspector.sendOverProtocol = function(method, params)
+{
+    var connection = WebInspector.targetManager.mainTarget().connection();
+    return new Promise((resolve, reject) => {
+        connection.sendRawMessageForTesting(method, params, (err, result) => {
+            if (err)
+                return reject(err);
+            return resolve(result);
+        });
+    });
 }
 
 /**
@@ -1064,7 +1057,7 @@ WebInspector.BackendSettingsSync = function()
     this._disableJavascriptSetting.addChangeListener(this._update, this);
     this._blockedEventsWarningSetting = WebInspector.settings.moduleSetting("blockedEventsWarningEnabled");
     this._blockedEventsWarningSetting.addChangeListener(this._update, this);
-    WebInspector.targetManager.observeTargets(this, WebInspector.Target.Type.Page);
+    WebInspector.targetManager.observeTargets(this, WebInspector.Target.Capability.Browser);
 }
 
 WebInspector.BackendSettingsSync.prototype = {
@@ -1081,7 +1074,7 @@ WebInspector.BackendSettingsSync.prototype = {
 
     _update: function()
     {
-        WebInspector.targetManager.targets(WebInspector.Target.Type.Page).forEach(this._updateTarget, this);
+        WebInspector.targetManager.targets(WebInspector.Target.Capability.Browser).forEach(this._updateTarget, this);
     },
 
     /**

@@ -295,8 +295,6 @@ WebInspector.SourcesPanel.prototype = {
             this.sidebarPanes.callstack.setStatus(WebInspector.UIString("Paused on promise rejection: '%s'.", description.split("\n", 1)[0]));
         } else if (details.reason === WebInspector.DebuggerModel.BreakReason.Assert) {
             this.sidebarPanes.callstack.setStatus(WebInspector.UIString("Paused on assertion."));
-        } else if (details.reason === WebInspector.DebuggerModel.BreakReason.CSPViolation) {
-            this.sidebarPanes.callstack.setStatus(WebInspector.UIString("Paused on a script blocked due to Content Security Policy directive: \"%s\".", details.auxData["directiveText"]));
         } else if (details.reason === WebInspector.DebuggerModel.BreakReason.DebugCommand) {
             this.sidebarPanes.callstack.setStatus(WebInspector.UIString("Paused on a debugged function."));
         } else {
@@ -1040,7 +1038,7 @@ WebInspector.SourcesPanel.prototype = {
      */
     _showFunctionDefinition: function(remoteObject)
     {
-        remoteObject.debuggerModel().functionDetails(remoteObject, this._didGetFunctionDetails.bind(this));
+        remoteObject.debuggerModel().functionDetailsPromise(remoteObject).then(this._didGetFunctionDetails.bind(this));
     },
 
     /**

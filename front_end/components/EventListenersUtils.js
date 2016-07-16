@@ -14,7 +14,7 @@ WebInspector.EventListenerObjectInInspectedPage;
  */
 WebInspector.EventListener.frameworkEventListeners = function(object)
 {
-    if (!object.target().isPage()) {
+    if (!object.target().hasBrowserCapability()) {
         // TODO(kozyatinskiy): figure out how this should work for |window|.
         return Promise.resolve(/** @type {!WebInspector.FrameworkEventListenersObject} */ ({eventListeners: [], internalHandlers: null}));
     }
@@ -137,7 +137,7 @@ WebInspector.EventListener.frameworkEventListeners = function(object)
             function storeFunctionWithDetails(functionObject)
             {
                 handler = functionObject;
-                return /** @type {!Promise<undefined>} */(functionObject.functionDetailsPromise().then(storeFunctionDetails));
+                return /** @type {!Promise<undefined>} */(functionObject.debuggerModel().functionDetailsPromise(functionObject).then(storeFunctionDetails));
             }
 
             /**

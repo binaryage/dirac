@@ -55,6 +55,8 @@ WebInspector.ResourceTreeModel = function(target, networkManager)
     this._inspectedPageURL = "";
     this._pendingReloadOptions = null;
     this._reloadSuspensionCount = 0;
+
+    target.runtimeModel.setExecutionContextComparator(this._executionContextComparator.bind(this));
 }
 
 WebInspector.ResourceTreeModel.EventTypes = {
@@ -127,7 +129,7 @@ WebInspector.ResourceTreeModel.prototype = {
         this._inspectedPageURL = mainFramePayload.frame.url;
 
         // Do not process SW resources.
-        if (this.target().isPage())
+        if (this.target().hasBrowserCapability())
             this._addFramesRecursively(null, mainFramePayload);
         else
             this._addSecurityOrigin(mainFramePayload.frame.securityOrigin);
@@ -287,8 +289,13 @@ WebInspector.ResourceTreeModel.prototype = {
             this._inspectedPageURL = frame.url;
 
         this.dispatchEventToListeners(WebInspector.ResourceTreeModel.EventTypes.FrameNavigated, frame);
-        if (frame.isMainFrame())
+        if (frame.isMainFrame()) {
             this.dispatchEventToListeners(WebInspector.ResourceTreeModel.EventTypes.MainFrameNavigated, frame);
+            if (WebInspector.moduleSetting("preserveConsoleLog").get())
+                WebInspector.console.log(WebInspector.UIString("Navigated to %s", frame.url));
+            else
+                this.target().consoleModel.clear();
+        }
         if (addedOrigin)
             this._addSecurityOrigin(addedOrigin);
 
@@ -485,6 +492,49 @@ WebInspector.ResourceTreeModel.prototype = {
             }
             callback(url, data || null, errors);
         }
+    },
+    /**
+     * @param {!WebInspector.ExecutionContext} a
+     * @param {!WebInspector.ExecutionContext} b
+     * @return {number}
+     */
+    _executionContextComparator: function(a,b)
+    {
+        /**
+         * @param {!WebInspector.ResourceTreeFrame} frame
+         */
+        function framePath(frame)
+        {
+            var currentFrame = frame;
+            var parents = [];
+            while (currentFrame) {
+                parents.push(currentFrame);
+                currentFrame = currentFrame.parentFrame;
+            }
+            return parents.reverse();
+        }
+
+        var framesA = a.frameId ? framePath(this.frameForId(a.frameId)) : [];
+        var framesB = b.frameId ? framePath(this.frameForId(b.frameId)) : [];
+        var frameA;
+        var frameB;
+        for (var i = 0; ; i++) {
+            if (!framesA[i] || !framesB[i] || (framesA[i] !== framesB[i])) {
+                frameA = framesA[i];
+                frameB = framesB[i];
+                break;
+            }
+        }
+        if (!frameA && frameB)
+            return -1;
+
+        if (!frameB && frameA)
+            return 1;
+
+        if (frameA && frameB) {
+            return frameA.id.localeCompare(frameB.id);
+        }
+        return WebInspector.ExecutionContext.comparator(a,b);
     },
 
     __proto__: WebInspector.SDKModel.prototype

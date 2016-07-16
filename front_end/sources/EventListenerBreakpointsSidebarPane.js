@@ -35,14 +35,14 @@ WebInspector.EventListenerBreakpointsSidebarPane = function()
     this._createCategory(WebInspector.UIString("Mouse"), ["click", "dblclick", "mousedown", "mouseup", "mouseover", "mousemove", "mouseout", "mouseenter", "mouseleave", "mousewheel", "wheel", "contextmenu"]);
     this._createCategory(WebInspector.UIString("Parse"), ["setInnerHTML"], true);
     this._createCategory(WebInspector.UIString("Pointer"), ["pointerover", "pointerout", "pointerenter", "pointerleave", "pointerdown", "pointerup", "pointermove", "pointercancel", "gotpointercapture", "lostpointercapture"]);
-    this._createCategory(WebInspector.UIString("Script"), ["scriptFirstStatement"], true);
+    this._createCategory(WebInspector.UIString("Script"), ["scriptFirstStatement", "scriptBlockedByCSP"], true);
     this._createCategory(WebInspector.UIString("Timer"), ["setTimer", "clearTimer", "timerFired"], true);
     this._createCategory(WebInspector.UIString("Touch"), ["touchstart", "touchmove", "touchend", "touchcancel"]);
     this._createCategory(WebInspector.UIString("WebGL"), ["webglErrorFired", "webglWarningFired"], true);
     this._createCategory(WebInspector.UIString("Window"), ["close"], true);
     this._createCategory(WebInspector.UIString("XHR"), ["readystatechange", "load", "loadstart", "loadend", "abort", "error", "progress", "timeout"], false, ["XMLHttpRequest", "XMLHttpRequestUpload"]);
 
-    WebInspector.targetManager.observeTargets(this, WebInspector.Target.Type.Page);
+    WebInspector.targetManager.observeTargets(this, WebInspector.Target.Capability.Browser);
 }
 
 WebInspector.EventListenerBreakpointsSidebarPane.categoryListener = "listener:";
@@ -62,6 +62,7 @@ WebInspector.EventListenerBreakpointsSidebarPane.eventNameForUI = function(event
             "instrumentation:clearTimer": WebInspector.UIString("Clear Timer"),
             "instrumentation:timerFired": WebInspector.UIString("Timer Fired"),
             "instrumentation:scriptFirstStatement": WebInspector.UIString("Script First Statement"),
+            "instrumentation:scriptBlockedByCSP": WebInspector.UIString("Script Blocked by Content Security Policy"),
             "instrumentation:requestAnimationFrame": WebInspector.UIString("Request Animation Frame"),
             "instrumentation:cancelAnimationFrame": WebInspector.UIString("Cancel Animation Frame"),
             "instrumentation:animationFrameFired": WebInspector.UIString("Animation Frame Fired"),
@@ -77,6 +78,8 @@ WebInspector.EventListenerBreakpointsSidebarPane.eventNameForUI = function(event
             errorName = errorName.replace(/^.*(0x[0-9a-f]+).*$/i, "$1");
             return WebInspector.UIString("WebGL Error Fired (%s)", errorName);
         }
+        if (eventName === "instrumentation:scriptBlockedByCSP" && auxData["directiveText"])
+            return WebInspector.UIString("Script blocked due to Content Security Policy directive: %s", auxData["directiveText"]);
     }
     return WebInspector.EventListenerBreakpointsSidebarPane._eventNamesForUI[eventName] || eventName.substring(eventName.indexOf(":") + 1);
 }
@@ -231,20 +234,20 @@ WebInspector.EventListenerBreakpointsSidebarPane.prototype = {
      */
     _updateBreakpointOnTarget: function(eventName, eventTargetName, enable, target)
     {
-        var targets = target ? [target] : WebInspector.targetManager.targets(WebInspector.Target.Type.Page);
-        for (var i = 0; i < targets.length; ++i) {
+        var targets = target ? [target] : WebInspector.targetManager.targets(WebInspector.Target.Capability.Browser);
+        for (target of targets) {
             if (eventName.startsWith(WebInspector.EventListenerBreakpointsSidebarPane.categoryListener)) {
                 var protocolEventName = eventName.substring(WebInspector.EventListenerBreakpointsSidebarPane.categoryListener.length);
                 if (enable)
-                    targets[i].domdebuggerAgent().setEventListenerBreakpoint(protocolEventName, eventTargetName);
+                    target.domdebuggerAgent().setEventListenerBreakpoint(protocolEventName, eventTargetName);
                 else
-                    targets[i].domdebuggerAgent().removeEventListenerBreakpoint(protocolEventName, eventTargetName);
+                    target.domdebuggerAgent().removeEventListenerBreakpoint(protocolEventName, eventTargetName);
             } else if (eventName.startsWith(WebInspector.EventListenerBreakpointsSidebarPane.categoryInstrumentation)) {
                 var protocolEventName = eventName.substring(WebInspector.EventListenerBreakpointsSidebarPane.categoryInstrumentation.length);
                 if (enable)
-                    targets[i].domdebuggerAgent().setInstrumentationBreakpoint(protocolEventName);
+                    target.domdebuggerAgent().setInstrumentationBreakpoint(protocolEventName);
                 else
-                    targets[i].domdebuggerAgent().removeInstrumentationBreakpoint(protocolEventName);
+                    target.domdebuggerAgent().removeInstrumentationBreakpoint(protocolEventName);
             }
         }
     },

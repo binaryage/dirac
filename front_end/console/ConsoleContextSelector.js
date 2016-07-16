@@ -54,7 +54,7 @@ WebInspector.ConsoleContextSelector.prototype = {
     {
         // FIXME(413886): We never want to show execution context for the main thread of shadow page in service/shared worker frontend.
         // This check could be removed once we do not send this context to frontend.
-        if (executionContext.target().isServiceWorker())
+        if (!executionContext.target().hasJSCapability())
             return;
 
         var newOption = createElement("option");
@@ -63,7 +63,7 @@ WebInspector.ConsoleContextSelector.prototype = {
         this._optionByExecutionContext.set(executionContext, newOption);
         var options = this._selectElement.options;
         var contexts = Array.prototype.map.call(options, mapping);
-        var index = contexts.lowerBound(executionContext, WebInspector.ExecutionContext.comparator)
+        var index = contexts.lowerBound(executionContext, executionContext.runtimeModel.executionContextComparator())
         this._selectElement.insertBefore(newOption, options[index]);
 
         if (executionContext === WebInspector.context.flavor(WebInspector.ExecutionContext))

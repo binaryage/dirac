@@ -39,12 +39,13 @@ WebInspector.RuntimeModel = function(target)
 
     this._agent = target.runtimeAgent();
     this.target().registerRuntimeDispatcher(new WebInspector.RuntimeDispatcher(this));
-    if (target.hasJSContext())
+    if (target.hasJSCapability())
         this._agent.enable();
     /**
      * @type {!Object.<number, !WebInspector.ExecutionContext>}
      */
     this._executionContextById = {};
+    this._executionContextComparator = WebInspector.ExecutionContext.comparator;
 
     if (WebInspector.moduleSetting("customFormatters").get())
         this._agent.setCustomObjectFormatterEnabled(true);
@@ -67,7 +68,23 @@ WebInspector.RuntimeModel.prototype = {
      */
     executionContexts: function()
     {
-        return Object.values(this._executionContextById);
+        return Object.values(this._executionContextById).sort(this.executionContextComparator());
+    },
+
+    /**
+     * @param {function(!WebInspector.ExecutionContext,!WebInspector.ExecutionContext)} comparator
+     */
+    setExecutionContextComparator: function(comparator)
+    {
+        this._executionContextComparator = comparator;
+    },
+
+    /**
+     * @return {function(!WebInspector.ExecutionContext,!WebInspector.ExecutionContext)} comparator
+     */
+    executionContextComparator: function()
+    {
+        return this._executionContextComparator;
     },
 
     /**
@@ -354,11 +371,11 @@ WebInspector.RuntimeDispatcher.prototype = {
             details.text,
             undefined,
             details.url,
-            typeof details.lineNumber === "undefined" ? undefined : details.lineNumber + 1,
-            typeof details.columnNumber === "undefined" ? undefined : details.columnNumber + 1,
+            details.lineNumber + 1,
+            details.columnNumber + 1,
             undefined,
             exception ? ["Uncaught (in promise)", exception] : undefined,
-            details.stack,
+            details.stackTrace,
             timestamp,
             executionContextId,
             details.scriptId);
@@ -368,11 +385,10 @@ WebInspector.RuntimeDispatcher.prototype = {
 
     /**
      * @override
-     * @param {number} timestamp
      * @param {string} message
      * @param {number} exceptionId
      */
-    exceptionRevoked: function(timestamp, message, exceptionId)
+    exceptionRevoked: function(message, exceptionId)
     {
         var consoleMessage = new WebInspector.ConsoleMessage(
             this._runtimeModel.target(),
@@ -386,10 +402,53 @@ WebInspector.RuntimeDispatcher.prototype = {
             undefined,
             undefined,
             undefined,
-            timestamp,
+            undefined,
             undefined,
             undefined);
         consoleMessage.setRevokedExceptionId(exceptionId);
+        this._runtimeModel.target().consoleModel.addMessage(consoleMessage);
+    },
+
+    /**
+     * @override
+     * @param {string} type
+     * @param {!Array.<!RuntimeAgent.RemoteObject>} args
+     * @param {number} executionContextId
+     * @param {number} timestamp
+     * @param {!RuntimeAgent.StackTrace=} stackTrace
+     */
+    consoleAPICalled: function(type, args, executionContextId, timestamp, stackTrace)
+    {
+        var level = WebInspector.ConsoleMessage.MessageLevel.Log;
+        if (type === WebInspector.ConsoleMessage.MessageType.Debug)
+            level = WebInspector.ConsoleMessage.MessageLevel.Debug;
+        if (type === WebInspector.ConsoleMessage.MessageType.Error || type === WebInspector.ConsoleMessage.MessageType.Assert)
+            level = WebInspector.ConsoleMessage.MessageLevel.Error;
+        if (type === WebInspector.ConsoleMessage.MessageType.Warning)
+            level = WebInspector.ConsoleMessage.MessageLevel.Warning;
+        if (type === WebInspector.ConsoleMessage.MessageType.Info)
+            level = WebInspector.ConsoleMessage.MessageLevel.Info;
+        var message = "";
+        if (args.length && typeof args[0].value === "string")
+            message = args[0].value;
+        else if (args.length && args[0].description)
+            message = args[0].description;
+        var callFrame = stackTrace && stackTrace.callFrames.length ? stackTrace.callFrames[0] : null;
+        var consoleMessage = new WebInspector.ConsoleMessage(
+            this._runtimeModel.target(),
+            WebInspector.ConsoleMessage.MessageSource.ConsoleAPI,
+            level,
+            /** @type {string} */ (message),
+            type,
+            callFrame ? callFrame.url : undefined,
+            callFrame ? callFrame.lineNumber + 1 : undefined,
+            callFrame ? callFrame.columnNumber + 1 : undefined,
+            undefined,
+            args,
+            stackTrace,
+            timestamp,
+            executionContextId,
+            undefined);
         this._runtimeModel.target().consoleModel.addMessage(consoleMessage);
     },
 
@@ -442,9 +501,9 @@ WebInspector.ExecutionContext.comparator = function(a, b)
      */
     function targetWeight(target)
     {
-        if (target.isPage())
+        if (target.hasBrowserCapability())
             return 3;
-        if (target.isDedicatedWorker())
+        if (target.hasJSCapability())
             return 2;
         return 1;
     }
@@ -452,10 +511,6 @@ WebInspector.ExecutionContext.comparator = function(a, b)
     var weightDiff = targetWeight(a.target()) - targetWeight(b.target());
     if (weightDiff)
         return -weightDiff;
-
-    var frameIdDiff = String.hashCode(a.frameId) - String.hashCode(b.frameId);
-    if (frameIdDiff)
-        return frameIdDiff;
 
     // Main world context should always go first.
     if (a.isDefault)
@@ -869,11 +924,11 @@ WebInspector.EventListener.prototype = {
         if (!this._removeFunction)
             return Promise.resolve();
         return this._removeFunction.callFunctionPromise(callCustomRemove, [
-                WebInspector.RemoteObject.toCallArgument(this._type),
-                WebInspector.RemoteObject.toCallArgument(this._originalHandler),
-                WebInspector.RemoteObject.toCallArgument(this._useCapture),
-                WebInspector.RemoteObject.toCallArgument(this._passive),
-            ]).then(() => undefined);
+            WebInspector.RemoteObject.toCallArgument(this._type),
+            WebInspector.RemoteObject.toCallArgument(this._originalHandler),
+            WebInspector.RemoteObject.toCallArgument(this._useCapture),
+            WebInspector.RemoteObject.toCallArgument(this._passive),
+        ]).then(() => undefined);
 
         /**
          * @param {string} type
