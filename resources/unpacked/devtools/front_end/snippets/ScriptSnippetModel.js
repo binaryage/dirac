@@ -96,9 +96,8 @@ WebInspector.ScriptSnippetModel.prototype = {
 
     _loadSnippets: function()
     {
-        var snippets = this._snippetStorage.snippets();
-        for (var i = 0; i < snippets.length; ++i)
-            this._addScriptSnippet(snippets[i]);
+        for (var snippet of this._snippetStorage.snippets())
+            this._addScriptSnippet(snippet);
     },
 
     /**
@@ -146,6 +145,8 @@ WebInspector.ScriptSnippetModel.prototype = {
             return;
         var snippetId = this._snippetIdForUISourceCode.get(uiSourceCode) || "";
         var snippet = this._snippetStorage.snippetForId(snippetId);
+        if (!snippet)
+            return;
         this._snippetStorage.deleteSnippet(snippet);
         this._removeBreakpoints(uiSourceCode);
         this._releaseSnippetScript(uiSourceCode);
@@ -224,9 +225,17 @@ WebInspector.ScriptSnippetModel.prototype = {
         var mapping = this._mappingForTarget.get(target);
         mapping._setEvaluationIndex(evaluationIndex, uiSourceCode);
         var evaluationUrl = mapping._evaluationSourceURL(uiSourceCode);
-        var expression = uiSourceCode.workingCopy();
-        WebInspector.console.show();
-        runtimeModel.compileScript(expression, "", true, executionContext.id, compileCallback.bind(this));
+        uiSourceCode.requestContent().then(compileSnippet.bind(this));
+
+        /**
+         * @this {WebInspector.ScriptSnippetModel}
+         */
+        function compileSnippet()
+        {
+            var expression = uiSourceCode.workingCopy();
+            WebInspector.console.show();
+            runtimeModel.compileScript(expression, "", true, executionContext.id, compileCallback.bind(this));
+        }
 
         /**
          * @param {!RuntimeAgent.ScriptId=} scriptId
@@ -239,12 +248,12 @@ WebInspector.ScriptSnippetModel.prototype = {
             if (mapping.evaluationIndex(uiSourceCode) !== evaluationIndex)
                 return;
 
+            mapping._addScript(executionContext.debuggerModel.scriptForId(scriptId || exceptionDetails.scriptId), uiSourceCode);
             if (!scriptId) {
                 this._printRunOrCompileScriptResultFailure(target, exceptionDetails, evaluationUrl);
                 return;
             }
 
-            mapping._addScript(executionContext.debuggerModel.scriptForId(scriptId), uiSourceCode);
             var breakpointLocations = this._removeBreakpoints(uiSourceCode);
             this._restoreBreakpoints(uiSourceCode, breakpointLocations);
 
@@ -271,7 +280,7 @@ WebInspector.ScriptSnippetModel.prototype = {
         function runCallback(target, result, exceptionDetails)
         {
             if (!exceptionDetails)
-                this._printRunScriptResult(target, result, sourceURL);
+                this._printRunScriptResult(target, result, scriptId, sourceURL);
             else
                 this._printRunOrCompileScriptResultFailure(target, exceptionDetails, sourceURL);
         }
@@ -280,9 +289,10 @@ WebInspector.ScriptSnippetModel.prototype = {
     /**
      * @param {!WebInspector.Target} target
      * @param {?RuntimeAgent.RemoteObject} result
+     * @param {!RuntimeAgent.ScriptId} scriptId
      * @param {?string=} sourceURL
      */
-    _printRunScriptResult: function(target, result, sourceURL)
+    _printRunScriptResult: function(target, result, scriptId, sourceURL)
     {
         var consoleMessage = new WebInspector.ConsoleMessage(
             target,
@@ -295,7 +305,10 @@ WebInspector.ScriptSnippetModel.prototype = {
             undefined,
             undefined,
             [result],
-            undefined);
+            undefined,
+            undefined,
+            undefined,
+            scriptId);
         target.consoleModel.addMessage(consoleMessage);
     },
 
@@ -313,11 +326,14 @@ WebInspector.ScriptSnippetModel.prototype = {
             exceptionDetails.text,
             undefined,
             sourceURL,
-            exceptionDetails.lineNumber + 1,
-            exceptionDetails.columnNumber + 1,
+            exceptionDetails.lineNumber,
+            exceptionDetails.columnNumber,
             undefined,
             undefined,
-            exceptionDetails.stackTrace);
+            exceptionDetails.stackTrace,
+            undefined,
+            undefined,
+            exceptionDetails.stackTrace ? undefined : exceptionDetails.scriptId);
         target.consoleModel.addMessage(consoleMessage);
     },
 

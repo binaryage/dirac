@@ -183,7 +183,7 @@ WebInspector.ExtensionButton.prototype = {
 
 /**
  * @constructor
- * @extends {WebInspector.SidebarPane}
+ * @extends {WebInspector.View}
  * @param {!WebInspector.ExtensionServer} server
  * @param {string} panelName
  * @param {string} title
@@ -191,7 +191,7 @@ WebInspector.ExtensionButton.prototype = {
  */
 WebInspector.ExtensionSidebarPane = function(server, panelName, title, id)
 {
-    WebInspector.SidebarPane.call(this, title);
+    WebInspector.View.call(this, title);
     this.element.classList.add("fill");
     this._panelName = panelName;
     this._server = server;
@@ -249,10 +249,21 @@ WebInspector.ExtensionSidebarPane.prototype = {
             delete this._objectPropertiesView;
         }
         if (this._extensionView)
-            this._extensionView.detach(true);
+            this._extensionView.detach();
 
         this._extensionView = new WebInspector.ExtensionView(this._server, this._id, url, "extension fill");
         this._extensionView.show(this.element);
+
+        if (!this.element.style.height)
+            this.setHeight("150px");
+    },
+
+    /**
+     * @param {string} height
+     */
+    setHeight: function(height)
+    {
+        this.element.style.height = height;
     },
 
     /**
@@ -275,7 +286,7 @@ WebInspector.ExtensionSidebarPane.prototype = {
         if (this._objectPropertiesView)
             return;
         if (this._extensionView) {
-            this._extensionView.detach(true);
+            this._extensionView.detach();
             delete this._extensionView;
         }
         this._objectPropertiesView = new WebInspector.ExtensionNotifierView(this._server, this._id);
@@ -304,5 +315,5 @@ WebInspector.ExtensionSidebarPane.prototype = {
         callback();
     },
 
-    __proto__: WebInspector.SidebarPane.prototype
+    __proto__: WebInspector.View.prototype
 }

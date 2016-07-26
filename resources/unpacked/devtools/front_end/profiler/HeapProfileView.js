@@ -221,18 +221,15 @@ WebInspector.SamplingHeapProfileHeader.prototype = {
  */
 WebInspector.SamplingHeapProfileNode = function(node)
 {
-    if (node.callFrame) {
-        WebInspector.ProfileNode.call(this, node.callFrame);
-    } else {
-        // Backward compatibility for old SamplingHeapProfileNode format.
-        var frame = /** @type {!RuntimeAgent.CallFrame} */(node);
-        WebInspector.ProfileNode.call(this, {
-            functionName: frame.functionName,
-            scriptId: frame.scriptId, url: frame.url,
-            lineNumber: frame.lineNumber - 1,
-            columnNumber: frame.columnNumber - 1
-        });
-    }
+    var callFrame = node.callFrame || /** @type {!RuntimeAgent.CallFrame} */ ({
+        // Backward compatibility for old CpuProfileNode format.
+        functionName: node["functionName"],
+        scriptId: node["scriptId"],
+        url: node["url"],
+        lineNumber: node["lineNumber"] - 1,
+        columnNumber: node["columnNumber"] - 1
+    });
+    WebInspector.ProfileNode.call(this, callFrame);
     this.self = node.selfSize;
 }
 
@@ -308,11 +305,11 @@ WebInspector.HeapProfileView.NodeFormatter.prototype = {
     /**
      * @override
      * @param  {!WebInspector.ProfileDataGridNode} node
-     * @return {!Element}
+     * @return {?Element}
      */
     linkifyNode: function(node)
     {
-        return this._profileView.linkifier().linkifyConsoleCallFrame(this._profileView.target(), node.profileNode.callFrame, "profile-node-file");
+        return this._profileView.linkifier().maybeLinkifyConsoleCallFrame(this._profileView.target(), node.profileNode.callFrame, "profile-node-file");
     }
 }
 
@@ -432,9 +429,10 @@ WebInspector.HeapFlameChartDataProvider.prototype = {
         pushEntryInfoRow(WebInspector.UIString("Self size"), Number.bytesToString(node.self));
         pushEntryInfoRow(WebInspector.UIString("Total size"), Number.bytesToString(node.total));
         var linkifier = new WebInspector.Linkifier();
-        var text = (new WebInspector.Linkifier()).linkifyConsoleCallFrame(this._target, node.callFrame).textContent;
+        var link = linkifier.maybeLinkifyConsoleCallFrame(this._target, node.callFrame);
+        if (link)
+            pushEntryInfoRow(WebInspector.UIString("URL"), link.textContent);
         linkifier.dispose();
-        pushEntryInfoRow(WebInspector.UIString("URL"), text);
         return entryInfo;
     },
 

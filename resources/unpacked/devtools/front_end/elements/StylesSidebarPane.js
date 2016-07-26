@@ -40,13 +40,10 @@ WebInspector.StylesSidebarPane = function()
     WebInspector.moduleSetting("textEditorIndent").addChangeListener(this.update.bind(this));
 
     this._sectionsContainer = this.element.createChild("div");
-    this._stylesPopoverHelper = new WebInspector.StylesPopoverHelper();
+    this._swatchPopoverHelper = new WebInspector.SwatchPopoverHelper();
     this._linkifier = new WebInspector.Linkifier(new WebInspector.Linkifier.DefaultCSSFormatter());
 
     this.element.classList.add("styles-pane");
-    this.element.addEventListener("mousemove", this._mouseMovedOverElement.bind(this), false);
-    this._keyDownBound = this._keyDown.bind(this);
-    this._keyUpBound = this._keyUp.bind(this);
 
      /** @type {!Array<!WebInspector.SectionBlock>} */
     this._sectionBlocks = [];
@@ -136,7 +133,7 @@ WebInspector.StylesSidebarPane.prototype = {
 
     forceUpdate: function()
     {
-        this._stylesPopoverHelper.hide();
+        this._swatchPopoverHelper.hide();
         this._resetCache();
         this.update();
     },
@@ -230,8 +227,6 @@ WebInspector.StylesSidebarPane.prototype = {
      */
     doUpdate: function()
     {
-        this._discardElementUnderMouse();
-
         return this._fetchMatchedCascade()
             .then(this._innerRebuildUpdate.bind(this));
     },
@@ -430,7 +425,7 @@ WebInspector.StylesSidebarPane.prototype = {
      */
     _addBlankSection: function(insertAfterSection, styleSheetId, ruleLocation)
     {
-        this.expandPane();
+        this.revealWidget();
         var node = this.node();
         var blankSection = new WebInspector.BlankStylePropertiesSection(this, insertAfterSection._matchedStyles, node ? WebInspector.DOMPresentationUtils.simpleSelector(node) : "", styleSheetId, ruleLocation, insertAfterSection._style);
 
@@ -476,70 +471,10 @@ WebInspector.StylesSidebarPane.prototype = {
     /**
      * @override
      */
-    wasShown: function()
-    {
-        WebInspector.ElementsSidebarPane.prototype.wasShown.call(this);
-        this.element.ownerDocument.body.addEventListener("keydown", this._keyDownBound, false);
-        this.element.ownerDocument.body.addEventListener("keyup", this._keyUpBound, false);
-    },
-
-    /**
-     * @override
-     */
     willHide: function()
     {
-        this.element.ownerDocument.body.removeEventListener("keydown", this._keyDownBound, false);
-        this.element.ownerDocument.body.removeEventListener("keyup", this._keyUpBound, false);
-        this._stylesPopoverHelper.hide();
-        this._discardElementUnderMouse();
+        this._swatchPopoverHelper.hide();
         WebInspector.ElementsSidebarPane.prototype.willHide.call(this);
-    },
-
-    _discardElementUnderMouse: function()
-    {
-        if (this._elementUnderMouse)
-            this._elementUnderMouse.classList.remove("styles-panel-hovered");
-        delete this._elementUnderMouse;
-    },
-
-    /**
-     * @param {!Event} event
-     */
-    _mouseMovedOverElement: function(event)
-    {
-        if (this._elementUnderMouse && event.target !== this._elementUnderMouse)
-            this._discardElementUnderMouse();
-        this._elementUnderMouse = event.target;
-        if (WebInspector.KeyboardShortcut.eventHasCtrlOrMeta(/** @type {!MouseEvent} */(event))) {
-            this._elementUnderMouse.classList.add("styles-panel-hovered");
-            var selectorElement = this._elementUnderMouse.enclosingNodeOrSelfWithClass("selector");
-            var sectionElement = selectorElement ? selectorElement.enclosingNodeOrSelfWithClass("styles-section") : null;
-            if (sectionElement)
-                sectionElement._section.makeHoverableSelectorsMode();
-        }
-    },
-
-    /**
-     * @param {!Event} event
-     */
-    _keyDown: function(event)
-    {
-        if ((!WebInspector.isMac() && event.keyCode === WebInspector.KeyboardShortcut.Keys.Ctrl.code) ||
-            (WebInspector.isMac() && event.keyCode === WebInspector.KeyboardShortcut.Keys.Meta.code)) {
-            if (this._elementUnderMouse)
-                this._elementUnderMouse.classList.add("styles-panel-hovered");
-        }
-    },
-
-    /**
-     * @param {!Event} event
-     */
-    _keyUp: function(event)
-    {
-        if ((!WebInspector.isMac() && event.keyCode === WebInspector.KeyboardShortcut.Keys.Ctrl.code) ||
-            (WebInspector.isMac() && event.keyCode === WebInspector.KeyboardShortcut.Keys.Meta.code)) {
-            this._discardElementUnderMouse();
-        }
     },
 
     /**
@@ -715,6 +650,8 @@ WebInspector.StylePropertiesSection = function(parentPane, matchedStyles, style)
     this._selectorElement.addEventListener("click", this._handleSelectorClick.bind(this), false);
     this.element.addEventListener("mousedown", this._handleEmptySpaceMouseDown.bind(this), false);
     this.element.addEventListener("click", this._handleEmptySpaceClick.bind(this), false);
+    this.element.addEventListener("mousemove", this._onMouseMove.bind(this), false);
+    this.element.addEventListener("mouseleave", this._setSectionHovered.bind(this, false), false);
 
     if (rule) {
         // Prevent editing the user agent and user rules.
@@ -745,6 +682,27 @@ WebInspector.StylePropertiesSection = function(parentPane, matchedStyles, style)
 }
 
 WebInspector.StylePropertiesSection.prototype = {
+    /**
+     * @param {boolean} isHovered
+     */
+    _setSectionHovered: function(isHovered)
+    {
+        this.element.classList.toggle("styles-panel-hovered", isHovered);
+        if (this._hoverableSelectorsMode !== isHovered) {
+            this._hoverableSelectorsMode = isHovered;
+            this._markSelectorMatches();
+        }
+    },
+
+    /**
+     * @param {!Event} event
+     */
+    _onMouseMove: function(event)
+    {
+        var hasCtrlOrMeta = WebInspector.KeyboardShortcut.eventHasCtrlOrMeta(/** @type {!MouseEvent} */(event));
+        this._setSectionHovered(hasCtrlOrMeta);
+    },
+
     /**
      * @param {!Element} container
      */
@@ -1134,14 +1092,6 @@ WebInspector.StylePropertiesSection.prototype = {
         return !hideRule;
     },
 
-    makeHoverableSelectorsMode: function()
-    {
-        if (this._hoverableSelectorsMode)
-            return;
-        this._hoverableSelectorsMode = true;
-        this._markSelectorMatches();
-    },
-
     _markSelectorMatches: function()
     {
         var rule = this._style.parentRule;
@@ -1150,11 +1100,7 @@ WebInspector.StylePropertiesSection.prototype = {
 
         this._mediaListElement.classList.toggle("media-matches", this._matchedStyles.mediaMatches(this._style));
 
-        if (!this._matchedStyles.hasMatchingSelectors(/** @type {!WebInspector.CSSStyleRule} */(rule)))
-            return;
-
         var selectorTexts = rule.selectors.map(selector => selector.text);
-
         var matchingSelectorIndexes = this._matchedStyles.matchingSelectors(/** @type {!WebInspector.CSSStyleRule} */(rule));
         var matchingSelectors = new Array(selectorTexts.length).fill(false);
         for (var matchingIndex of matchingSelectorIndexes)
@@ -2014,8 +1960,8 @@ WebInspector.StylePropertyTreeElement.prototype = {
             return swatch;
         }
 
-        var stylesPopoverHelper = this._parentPane._stylesPopoverHelper;
-        var swatchIcon = new WebInspector.ColorSwatchPopoverIcon(this, stylesPopoverHelper, text);
+        var swatchPopoverHelper = this._parentPane._swatchPopoverHelper;
+        var swatchIcon = new WebInspector.ColorSwatchPopoverIcon(this, swatchPopoverHelper, text);
 
         /**
          * @param {?Array<string>} backgroundColors
@@ -2069,8 +2015,8 @@ WebInspector.StylePropertyTreeElement.prototype = {
         var geometry = WebInspector.Geometry.CubicBezier.parse(text);
         if (!geometry || !this._editable())
             return createTextNode(text);
-        var stylesPopoverHelper = this._parentPane._stylesPopoverHelper;
-        return new WebInspector.BezierPopoverIcon(this, stylesPopoverHelper, text).element();
+        var swatchPopoverHelper = this._parentPane._swatchPopoverHelper;
+        return new WebInspector.BezierPopoverIcon(this, swatchPopoverHelper, text).element();
     },
 
     _updateState: function()

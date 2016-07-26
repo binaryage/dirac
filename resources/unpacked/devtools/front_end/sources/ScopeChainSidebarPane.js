@@ -26,11 +26,11 @@
 
 /**
  * @constructor
- * @extends {WebInspector.SidebarPane}
+ * @extends {WebInspector.View}
  */
 WebInspector.ScopeChainSidebarPane = function()
 {
-    WebInspector.SidebarPane.call(this, WebInspector.UIString("Scope"));
+    WebInspector.View.call(this, WebInspector.UIString("Scope"));
     this._expandController = new WebInspector.ObjectPropertiesSectionExpandController();
     this._linkifier = new WebInspector.Linkifier();
 }
@@ -58,7 +58,7 @@ WebInspector.ScopeChainSidebarPane.prototype = {
 
         if (!callFrame) {
             var infoElement = createElement("div");
-            infoElement.className = "info";
+            infoElement.className = "gray-info-message";
             infoElement.textContent = WebInspector.UIString("Not Paused");
             this.element.appendChild(infoElement);
             return;
@@ -138,5 +138,5 @@ WebInspector.ScopeChainSidebarPane.prototype = {
 
     _sidebarPaneUpdatedForTest: function() { },
 
-    __proto__: WebInspector.SidebarPane.prototype
+    __proto__: WebInspector.View.prototype
 }
