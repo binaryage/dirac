@@ -1000,6 +1000,8 @@ function sanitizeRemoteFrontendUrl()
             location.search = "";
         if (name === "remoteBase" && !remoteBaseRegexp.test(value))
             location.search = "";
+        if (name === "settings")
+            location.search = "";
     }
 }
 
@@ -1077,6 +1079,7 @@ function keyCodeToKeyIdentifier(keyCode)
 
 /**
  * @suppressGlobalPropertiesCheck
+ * @suppress {checkTypes}
  */
 function installBackwardsCompatibility()
 {
@@ -1140,6 +1143,14 @@ function installBackwardsCompatibility()
 
     // Support for legacy (<M49) frontends.
     Event.prototype.deepPath = undefined;
+
+    // Support for legacy (<53) frontends.
+    window.FileError = {
+        NOT_FOUND_ERR: DOMException.NOT_FOUND_ERR,
+        ABORT_ERR: DOMException.ABORT_ERR,
+        INVALID_MODIFICATION_ERR: DOMException.INVALID_MODIFICATION_ERR,
+        NOT_READABLE_ERR: 0  // No matching DOMException, so code will be 0.
+    };
 }
 
 function windowLoaded()

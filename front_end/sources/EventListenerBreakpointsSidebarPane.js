@@ -4,12 +4,12 @@
 
 /**
  * @constructor
- * @extends {WebInspector.SidebarPane}
+ * @extends {WebInspector.View}
  * @implements {WebInspector.TargetManager.Observer}
  */
 WebInspector.EventListenerBreakpointsSidebarPane = function()
 {
-    WebInspector.SidebarPane.call(this, WebInspector.UIString("Event Listener Breakpoints"));
+    WebInspector.View.call(this, WebInspector.UIString("Event Listener Breakpoints"));
     this.registerRequiredCSS("components/breakpointsList.css");
 
     this._eventListenerBreakpointsSetting = WebInspector.settings.createLocalSetting("eventListenerBreakpoints", []);
@@ -42,7 +42,7 @@ WebInspector.EventListenerBreakpointsSidebarPane = function()
     this._createCategory(WebInspector.UIString("Window"), ["close"], true);
     this._createCategory(WebInspector.UIString("XHR"), ["readystatechange", "load", "loadstart", "loadend", "abort", "error", "progress", "timeout"], false, ["XMLHttpRequest", "XMLHttpRequestUpload"]);
 
-    WebInspector.targetManager.observeTargets(this, WebInspector.Target.Capability.Browser);
+    WebInspector.targetManager.observeTargets(this, WebInspector.Target.Capability.DOM);
 }
 
 WebInspector.EventListenerBreakpointsSidebarPane.categoryListener = "listener:";
@@ -234,7 +234,7 @@ WebInspector.EventListenerBreakpointsSidebarPane.prototype = {
      */
     _updateBreakpointOnTarget: function(eventName, eventTargetName, enable, target)
     {
-        var targets = target ? [target] : WebInspector.targetManager.targets(WebInspector.Target.Capability.Browser);
+        var targets = target ? [target] : WebInspector.targetManager.targets(WebInspector.Target.Capability.DOM);
         for (target of targets) {
             if (eventName.startsWith(WebInspector.EventListenerBreakpointsSidebarPane.categoryListener)) {
                 var protocolEventName = eventName.substring(WebInspector.EventListenerBreakpointsSidebarPane.categoryListener.length);
@@ -303,7 +303,7 @@ WebInspector.EventListenerBreakpointsSidebarPane.prototype = {
             breakpointItem = this._findBreakpointItem(eventName, WebInspector.EventListenerBreakpointsSidebarPane.eventTargetAny);
         if (!breakpointItem)
             return;
-        this.expandPane();
+        this.revealWidget();
         breakpointItem.parent.element.expand();
         breakpointItem.element.listItemElement.classList.add("breakpoint-hit");
         this._highlightedElement = breakpointItem.element.listItemElement;
@@ -344,5 +344,5 @@ WebInspector.EventListenerBreakpointsSidebarPane.prototype = {
         }
     },
 
-    __proto__: WebInspector.SidebarPane.prototype
+    __proto__: WebInspector.View.prototype
 }

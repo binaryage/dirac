@@ -470,7 +470,7 @@ WebInspector.ObjectPropertyTreeElement.prototype = {
                 parent.invalidateChildren();
                 parent.expand();
             }
-        };
+        }
     },
 
     /**
@@ -602,7 +602,7 @@ WebInspector.ObjectPropertyTreeElement._appendEmptyPlaceholderIfNeeded = functio
 {
     if (treeNode.childCount())
         return;
-    var title = createElementWithClass("div", "info");
+    var title = createElementWithClass("div", "gray-info-message");
     title.textContent = emptyPlaceholder || WebInspector.UIString("No Properties");
     var infoElement = new TreeElement(title);
     treeNode.appendChild(infoElement);
@@ -1068,8 +1068,7 @@ WebInspector.ObjectPropertiesSection.createValueElement = function(value, wasThr
         var rawLocation = value.debuggerModel().createRawLocationByScriptId(value.value.scriptId, value.value.lineNumber, value.value.columnNumber);
         if (rawLocation && linkifier)
             return linkifier.linkifyRawLocation(rawLocation, "");
-        else
-            valueElement.textContent = "<unknown>";
+        valueElement.textContent = "<unknown>";
     }
 
     function mouseMove()

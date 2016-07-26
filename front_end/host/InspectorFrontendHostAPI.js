@@ -7,7 +7,7 @@
 function InspectorFrontendHostAPI()
 {
 }
-
+window.InspectorFrontendHostAPI = InspectorFrontendHostAPI;
 /** @typedef
 {{
     type: string,

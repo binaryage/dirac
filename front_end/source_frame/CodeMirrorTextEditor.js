@@ -1206,10 +1206,13 @@ WebInspector.CodeMirrorTextEditor.prototype = {
         var lineHandle = this._codeMirror.getLineHandle(lineNumber);
         if (!lineHandle)
             return;
-        if (toggled)
+        if (toggled) {
+            this._codeMirror.addLineClass(lineHandle, "gutter", className);
             this._codeMirror.addLineClass(lineHandle, "wrap", className);
-        else
+        } else {
+            this._codeMirror.removeLineClass(lineHandle, "gutter", className);
             this._codeMirror.removeLineClass(lineHandle, "wrap", className);
+        }
     },
 
     /**
@@ -1340,12 +1343,13 @@ WebInspector.CodeMirrorTextEditor.prototype = {
     /**
      * @param {!WebInspector.TextRange} range
      * @param {string} text
+     * @param {string=} origin
      * @return {!WebInspector.TextRange}
      */
-    editRange: function(range, text)
+    editRange: function(range, text, origin)
     {
         var pos = WebInspector.CodeMirrorUtils.toPos(range);
-        this._codeMirror.replaceRange(text, pos.start, pos.end);
+        this._codeMirror.replaceRange(text, pos.start, pos.end, origin);
         var newRange = WebInspector.CodeMirrorUtils.toRange(pos.start, this._codeMirror.posFromIndex(this._codeMirror.indexFromPos(pos.start) + text.length));
         this._delegate.onTextChanged(range, newRange);
         if (WebInspector.moduleSetting("textEditorAutoDetectIndent").get())
@@ -1438,10 +1442,8 @@ WebInspector.CodeMirrorTextEditor.prototype = {
 
     _scroll: function()
     {
-        if (this._scrollTimer)
-            clearTimeout(this._scrollTimer);
         var topmostLineNumber = this._codeMirror.lineAtHeight(this._codeMirror.getScrollInfo().top, "local");
-        this._scrollTimer = setTimeout(this._delegate.scrollChanged.bind(this._delegate, topmostLineNumber), 100);
+        this._delegate.scrollChanged(topmostLineNumber);
     },
 
     _focus: function()

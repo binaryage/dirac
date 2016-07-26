@@ -4,148 +4,18 @@
 
 /**
  * @constructor
- * @extends {WebInspector.Object}
- */
-WebInspector.StylesPopoverHelper = function()
-{
-    this._popover = new WebInspector.Popover();
-    this._popover.setCanShrink(false);
-    this._popover.setNoMargins(true);
-    this._popover.element.addEventListener("mousedown", consumeEvent, false);
-
-    this._hideProxy = this.hide.bind(this, true);
-    this._boundOnKeyDown = this._onKeyDown.bind(this);
-    this._repositionBound = this.reposition.bind(this);
-    this._boundFocusOut = this._onFocusOut.bind(this);
-}
-
-WebInspector.StylesPopoverHelper.prototype = {
-    /**
-     * @param {!Event} event
-     */
-    _onFocusOut: function(event)
-    {
-        if (!event.relatedTarget || event.relatedTarget.isSelfOrDescendant(this._view.contentElement))
-            return;
-        this._hideProxy();
-    },
-
-    /**
-     * @return {boolean}
-     */
-    isShowing: function()
-    {
-        return this._popover.isShowing();
-    },
-
-    /**
-     * @param {!WebInspector.Widget} view
-     * @param {!Element} anchorElement
-     * @param {function(boolean)=} hiddenCallback
-     */
-    show: function(view, anchorElement, hiddenCallback)
-    {
-        if (this._popover.isShowing()) {
-            if (this._anchorElement === anchorElement)
-                return;
-
-            // Reopen the picker for another anchor element.
-            this.hide(true);
-        }
-
-        delete this._isHidden;
-        this._anchorElement = anchorElement;
-        this._view = view;
-        this._hiddenCallback = hiddenCallback;
-        this.reposition();
-
-        var document = this._popover.element.ownerDocument;
-        document.addEventListener("mousedown", this._hideProxy, false);
-        document.defaultView.addEventListener("resize", this._hideProxy, false);
-        this._view.contentElement.addEventListener("keydown", this._boundOnKeyDown, false);
-
-        this._scrollerElement = anchorElement.enclosingNodeOrSelfWithClass("style-panes-wrapper");
-        if (this._scrollerElement)
-            this._scrollerElement.addEventListener("scroll", this._repositionBound, false);
-    },
-
-    /**
-     * @param {!Event=} event
-     */
-    reposition: function(event)
-    {
-        if (!this._previousFocusElement)
-            this._previousFocusElement = WebInspector.currentFocusElement();
-        // Unbind "blur" listener to avoid reenterability: |popover.showView| will hide the popover and trigger it synchronously.
-        this._view.contentElement.removeEventListener("focusout", this._boundFocusOut, false);
-        this._popover.showView(this._view, this._anchorElement);
-        this._view.contentElement.addEventListener("focusout", this._boundFocusOut, false);
-        WebInspector.setCurrentFocusElement(this._view.contentElement);
-    },
-
-    /**
-     * @param {boolean=} commitEdit
-     */
-    hide: function(commitEdit)
-    {
-        if (this._isHidden)
-            return;
-        var document = this._popover.element.ownerDocument;
-        this._isHidden = true;
-        this._popover.hide();
-
-        if (this._scrollerElement)
-            this._scrollerElement.removeEventListener("scroll", this._repositionBound, false);
-
-        document.removeEventListener("mousedown", this._hideProxy, false);
-        document.defaultView.removeEventListener("resize", this._hideProxy, false);
-
-        if (this._hiddenCallback)
-            this._hiddenCallback.call(null, !!commitEdit);
-
-        WebInspector.setCurrentFocusElement(this._previousFocusElement);
-        delete this._previousFocusElement;
-        delete this._anchorElement;
-        if (this._view) {
-            this._view.detach();
-            this._view.contentElement.removeEventListener("keydown", this._boundOnKeyDown, false);
-            this._view.contentElement.removeEventListener("focusout", this._boundFocusOut, false);
-            delete this._view;
-        }
-    },
-
-    /**
-     * @param {!Event} event
-     */
-    _onKeyDown: function(event)
-    {
-        if (event.key === "Enter") {
-            this.hide(true);
-            event.consume(true);
-            return;
-        }
-        if (event.key === "Escape") {
-            this.hide(false);
-            event.consume(true);
-        }
-    },
-
-    __proto__: WebInspector.Object.prototype
-}
-
-/**
- * @constructor
  * @param {!WebInspector.StylePropertyTreeElement} treeElement
- * @param {!WebInspector.StylesPopoverHelper} stylesPopoverHelper
+ * @param {!WebInspector.SwatchPopoverHelper} swatchPopoverHelper
  * @param {string} text
  */
-WebInspector.BezierPopoverIcon = function(treeElement, stylesPopoverHelper, text)
+WebInspector.BezierPopoverIcon = function(treeElement, swatchPopoverHelper, text)
 {
     this._treeElement = treeElement;
-    this._stylesPopoverHelper = stylesPopoverHelper;
+    this._swatchPopoverHelper = swatchPopoverHelper;
     this._createDOM(text);
 
     this._boundBezierChanged = this._bezierChanged.bind(this);
+    this._boundOnScroll = this._onScroll.bind(this);
 }
 
 WebInspector.BezierPopoverIcon.prototype = {
@@ -184,8 +54,8 @@ WebInspector.BezierPopoverIcon.prototype = {
     _iconClick: function(event)
     {
         event.consume(true);
-        if (this._stylesPopoverHelper.isShowing()) {
-            this._stylesPopoverHelper.hide(true);
+        if (this._swatchPopoverHelper.isShowing()) {
+            this._swatchPopoverHelper.hide(true);
             return;
         }
 
@@ -193,7 +63,10 @@ WebInspector.BezierPopoverIcon.prototype = {
         var geometry = WebInspector.Geometry.CubicBezier.parse(this._bezierValueElement.textContent);
         this._bezierEditor.setBezier(geometry);
         this._bezierEditor.addEventListener(WebInspector.BezierEditor.Events.BezierChanged, this._boundBezierChanged);
-        this._stylesPopoverHelper.show(this._bezierEditor, this._iconElement, this._onPopoverHidden.bind(this));
+        this._swatchPopoverHelper.show(this._bezierEditor, this._iconElement, this._onPopoverHidden.bind(this));
+        this._scrollerElement = this._iconElement.enclosingNodeOrSelfWithClass("style-panes-wrapper");
+        if (this._scrollerElement)
+            this._scrollerElement.addEventListener("scroll", this._boundOnScroll, false);
 
         this._originalPropertyText = this._treeElement.property.propertyText;
         this._treeElement.parentPane().setEditingStyle(true);
@@ -212,10 +85,21 @@ WebInspector.BezierPopoverIcon.prototype = {
     },
 
     /**
+     * @param {!Event} event
+     */
+    _onScroll: function(event)
+    {
+        this._swatchPopoverHelper.reposition();
+    },
+
+    /**
      * @param {boolean} commitEdit
      */
     _onPopoverHidden: function(commitEdit)
     {
+        if (this._scrollerElement)
+            this._scrollerElement.removeEventListener("scroll", this._boundOnScroll, false);
+
         this._bezierEditor.removeEventListener(WebInspector.BezierEditor.Events.BezierChanged, this._boundBezierChanged);
         delete this._bezierEditor;
 
@@ -229,14 +113,14 @@ WebInspector.BezierPopoverIcon.prototype = {
 /**
  * @constructor
  * @param {!WebInspector.StylePropertyTreeElement} treeElement
- * @param {!WebInspector.StylesPopoverHelper} stylesPopoverHelper
+ * @param {!WebInspector.SwatchPopoverHelper} swatchPopoverHelper
  * @param {string} colorText
  */
-WebInspector.ColorSwatchPopoverIcon = function(treeElement, stylesPopoverHelper, colorText)
+WebInspector.ColorSwatchPopoverIcon = function(treeElement, swatchPopoverHelper, colorText)
 {
     this._treeElement = treeElement;
     this._treeElement[WebInspector.ColorSwatchPopoverIcon._treeElementSymbol] = this;
-    this._stylesPopoverHelper = stylesPopoverHelper;
+    this._swatchPopoverHelper = swatchPopoverHelper;
 
     this._swatch = WebInspector.ColorSwatch.create();
     this._swatch.setColorText(colorText);
@@ -247,6 +131,7 @@ WebInspector.ColorSwatchPopoverIcon = function(treeElement, stylesPopoverHelper,
     this._contrastColor = null;
 
     this._boundSpectrumChanged = this._spectrumChanged.bind(this);
+    this._boundOnScroll = this._onScroll.bind(this);
 }
 
 WebInspector.ColorSwatchPopoverIcon._treeElementSymbol = Symbol("WebInspector.ColorSwatchPopoverIcon._treeElementSymbol");
@@ -290,8 +175,8 @@ WebInspector.ColorSwatchPopoverIcon.prototype = {
 
     showPopover: function()
     {
-        if (this._stylesPopoverHelper.isShowing()) {
-            this._stylesPopoverHelper.hide(true);
+        if (this._swatchPopoverHelper.isShowing()) {
+            this._swatchPopoverHelper.hide(true);
             return;
         }
 
@@ -306,7 +191,10 @@ WebInspector.ColorSwatchPopoverIcon.prototype = {
 
         this._spectrum.addEventListener(WebInspector.Spectrum.Events.SizeChanged, this._spectrumResized, this);
         this._spectrum.addEventListener(WebInspector.Spectrum.Events.ColorChanged, this._boundSpectrumChanged);
-        this._stylesPopoverHelper.show(this._spectrum, this._swatch.iconElement(), this._onPopoverHidden.bind(this));
+        this._swatchPopoverHelper.show(this._spectrum, this._swatch.iconElement(), this._onPopoverHidden.bind(this));
+        this._scrollerElement = this._swatch.enclosingNodeOrSelfWithClass("style-panes-wrapper");
+        if (this._scrollerElement)
+            this._scrollerElement.addEventListener("scroll", this._boundOnScroll, false);
 
         this._originalPropertyText = this._treeElement.property.propertyText;
         this._treeElement.parentPane().setEditingStyle(true);
@@ -320,7 +208,7 @@ WebInspector.ColorSwatchPopoverIcon.prototype = {
      */
     _spectrumResized: function(event)
     {
-        this._stylesPopoverHelper.reposition();
+        this._swatchPopoverHelper.reposition();
     },
 
     /**
@@ -334,10 +222,21 @@ WebInspector.ColorSwatchPopoverIcon.prototype = {
     },
 
     /**
+     * @param {!Event} event
+     */
+    _onScroll: function(event)
+    {
+        this._swatchPopoverHelper.reposition();
+    },
+
+    /**
      * @param {boolean} commitEdit
      */
     _onPopoverHidden: function(commitEdit)
     {
+        if (this._scrollerElement)
+            this._scrollerElement.removeEventListener("scroll", this._boundOnScroll, false);
+
         this._spectrum.removeEventListener(WebInspector.Spectrum.Events.ColorChanged, this._boundSpectrumChanged);
         delete this._spectrum;
 

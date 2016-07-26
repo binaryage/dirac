@@ -30,19 +30,19 @@
 
 /**
  * @constructor
- * @extends {WebInspector.SidebarPane}
+ * @extends {WebInspector.View}
  * @param {string} title
  */
 WebInspector.BreakpointsSidebarPaneBase = function(title)
 {
-    WebInspector.SidebarPane.call(this, title);
+    WebInspector.View.call(this, title);
     this.registerRequiredCSS("components/breakpointsList.css");
 
     this.listElement = createElement("ol");
     this.listElement.className = "breakpoint-list";
 
     this.emptyElement = createElement("div");
-    this.emptyElement.className = "info";
+    this.emptyElement.className = "gray-info-message";
     this.emptyElement.textContent = WebInspector.UIString("No Breakpoints");
 
     this.element.appendChild(this.emptyElement);
@@ -92,5 +92,5 @@ WebInspector.BreakpointsSidebarPaneBase.prototype = {
         }
     },
 
-    __proto__: WebInspector.SidebarPane.prototype
+    __proto__: WebInspector.View.prototype
 }

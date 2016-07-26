@@ -450,14 +450,14 @@ WebInspector.InspectorFrontendHostStub.prototype = {
  * @type {!InspectorFrontendHostAPI}
  */
 var InspectorFrontendHost = window.InspectorFrontendHost || null;
-
+window.InspectorFrontendHost = InspectorFrontendHost;
 (function(){
 
     function initializeInspectorFrontendHost()
     {
         if (!InspectorFrontendHost) {
             // Instantiate stub for web-hosted mode if necessary.
-            InspectorFrontendHost = new WebInspector.InspectorFrontendHostStub();
+            window.InspectorFrontendHost = InspectorFrontendHost = new WebInspector.InspectorFrontendHostStub();
         } else {
             // Otherwise add stubs for missing methods that are declared in the interface.
             var proto = WebInspector.InspectorFrontendHostStub.prototype;

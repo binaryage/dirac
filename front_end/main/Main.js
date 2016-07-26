@@ -77,18 +77,6 @@ WebInspector.Main.prototype = {
      */
     _createSettings: function(prefs)
     {
-        // Patch settings from the URL param (for tests).
-        var settingsParam = Runtime.queryParam("settings");
-        if (settingsParam) {
-            try {
-                var settings = JSON.parse(window.decodeURI(settingsParam));
-                for (var key in settings)
-                    prefs[key] = settings[key];
-            } catch (e) {
-                // Ignore malformed settings.
-            }
-        }
-
         this._initializeExperiments(prefs);
         WebInspector.settings = new WebInspector.Settings(new WebInspector.SettingsStorage(prefs,
             InspectorFrontendHost.setPreference, InspectorFrontendHost.removePreference, InspectorFrontendHost.clearPreferences));
@@ -106,7 +94,7 @@ WebInspector.Main.prototype = {
         Runtime.experiments.register("applyCustomStylesheet", "Allow custom UI themes");
         Runtime.experiments.register("blackboxJSFramesOnTimeline", "Blackbox JavaScript frames on Timeline", true);
         Runtime.experiments.register("colorContrastRatio", "Contrast ratio line in color picker", true);
-        Runtime.experiments.register("continueToFirstInvocation", "Continue to first invocation");
+        Runtime.experiments.register("continueToFirstInvocation", "Continue to first invocation", true);
         Runtime.experiments.register("cpuThrottling", "CPU throttling");
         Runtime.experiments.register("emptySourceMapAutoStepping", "Empty sourcemap auto-stepping");
         Runtime.experiments.register("inputEventsOnTimelineOverview", "Input events on Timeline overview", true);
@@ -310,9 +298,9 @@ WebInspector.Main.prototype = {
             WebInspector.RemoteDebuggingTerminatedScreen.show(event.data.reason);
         }
 
-        var capabilities = WebInspector.Target.Capability.Browser | WebInspector.Target.Capability.JS | WebInspector.Target.Capability.Network | WebInspector.Target.Capability.Worker;
+        var capabilities = WebInspector.Target.Capability.Browser | WebInspector.Target.Capability.JS | WebInspector.Target.Capability.Network | WebInspector.Target.Capability.Worker | WebInspector.Target.Capability.DOM;
         if (Runtime.queryParam("isSharedWorker"))
-            capabilities = WebInspector.Target.Capability.Network | WebInspector.Target.Capability.Worker;
+            capabilities = WebInspector.Target.Capability.Browser | WebInspector.Target.Capability.Network | WebInspector.Target.Capability.Worker;
         else if (Runtime.queryParam("v8only"))
             capabilities = WebInspector.Target.Capability.JS;
 
@@ -979,6 +967,8 @@ WebInspector.RemoteDebuggingTerminatedScreen = function(reason)
     message.createChild("span").textContent = WebInspector.UIString("Debugging connection was closed. Reason: ");
     message.createChild("span", "reason").textContent = reason;
     this.contentElement.createChild("div", "message").textContent = WebInspector.UIString("Reconnect when ready by reopening DevTools.");
+    var button = createTextButton(WebInspector.UIString("Reconnect DevTools"), () => window.location.reload());
+    this.contentElement.createChild("div", "button").appendChild(button);
 }
 
 /**
@@ -1021,7 +1011,7 @@ WebInspector.TargetCrashedScreen.show = function(debuggerModel)
     dialog.setWrapsContent(true);
     dialog.addCloseButton();
     dialog.setDimmed(true);
-    var hideBound = dialog.detach.bind(dialog, false);
+    var hideBound = dialog.detach.bind(dialog);
     debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.GlobalObjectCleared, hideBound);
 
     new WebInspector.TargetCrashedScreen(onHide).show(dialog.element);

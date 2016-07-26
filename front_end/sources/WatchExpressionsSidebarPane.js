@@ -30,11 +30,11 @@
 
 /**
  * @constructor
- * @extends {WebInspector.SidebarPane}
+ * @extends {WebInspector.View}
  */
 WebInspector.WatchExpressionsSidebarPane = function()
 {
-    WebInspector.SidebarPane.call(this, WebInspector.UIString("Watch"));
+    WebInspector.View.call(this, WebInspector.UIString("Watch"));
     this.registerRequiredCSS("components/objectValue.css");
 
     this._requiresUpdate = true;
@@ -44,10 +44,10 @@ WebInspector.WatchExpressionsSidebarPane = function()
 
     var addButton = new WebInspector.ToolbarButton(WebInspector.UIString("Add expression"), "add-toolbar-item");
     addButton.addEventListener("click", this._addButtonClicked.bind(this));
-    this.toolbar().appendToolbarItem(addButton);
+    this.addToolbarItem(addButton);
     var refreshButton = new WebInspector.ToolbarButton(WebInspector.UIString("Refresh"), "refresh-toolbar-item");
     refreshButton.addEventListener("click", this._refreshButtonClicked.bind(this));
-    this.toolbar().appendToolbarItem(refreshButton);
+    this.addToolbarItem(refreshButton);
 
     this._bodyElement = this.element.createChild("div", "vbox watch-expressions");
     this._bodyElement.addEventListener("contextmenu", this._contextMenu.bind(this), false);
@@ -75,7 +75,7 @@ WebInspector.WatchExpressionsSidebarPane.prototype = {
      */
     addExpression: function(expressionString)
     {
-        this.expandPane();
+        this.revealWidget();
         if (this._requiresUpdate) {
             this._rebuildWatchExpressions();
             delete this._requiresUpdate;
@@ -87,7 +87,7 @@ WebInspector.WatchExpressionsSidebarPane.prototype = {
     expandIfNecessary: function()
     {
         if (this._watchExpressionsSetting.get().length)
-            this.expandPane();
+            this.revealWidget();
     },
 
     _saveExpressions: function()
@@ -116,7 +116,7 @@ WebInspector.WatchExpressionsSidebarPane.prototype = {
     {
         if (event)
             event.consume(true);
-        this.expandPane();
+        this.revealWidget();
         this._createWatchExpression(null).startEditing();
     },
 
@@ -134,7 +134,7 @@ WebInspector.WatchExpressionsSidebarPane.prototype = {
         this._linkifier.reset();
         this._bodyElement.removeChildren();
         this._watchExpressions = [];
-        this._emptyElement = this._bodyElement.createChild("div", "info");
+        this._emptyElement = this._bodyElement.createChild("div", "gray-info-message");
         this._emptyElement.textContent = WebInspector.UIString("No Watch Expressions");
         var watchExpressionStrings = this._watchExpressionsSetting.get();
         for (var i = 0; i < watchExpressionStrings.length; ++i) {
@@ -213,7 +213,7 @@ WebInspector.WatchExpressionsSidebarPane.prototype = {
         this._rebuildWatchExpressions();
     },
 
-    __proto__: WebInspector.SidebarPane.prototype
+    __proto__: WebInspector.View.prototype
 }
 
 /**

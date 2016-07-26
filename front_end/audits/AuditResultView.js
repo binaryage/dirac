@@ -30,35 +30,12 @@
 
 /**
  * @constructor
- * @extends {WebInspector.SidebarPaneStack}
- * @param {!Array.<!WebInspector.AuditCategoryResult>} categoryResults
- */
-WebInspector.AuditResultView = function(categoryResults)
-{
-    WebInspector.SidebarPaneStack.call(this);
-    this.setMinimumSize(100, 25);
-    this.element.classList.add("audit-result-view");
-
-    function categorySorter(a, b) {
-        return (a.title || "").localeCompare(b.title || "");
-    }
-    categoryResults.sort(categorySorter);
-    for (var i = 0; i < categoryResults.length; ++i)
-        this.addPane(new WebInspector.AuditCategoryResultPane(categoryResults[i]));
-}
-
-WebInspector.AuditResultView.prototype = {
-    __proto__: WebInspector.SidebarPaneStack.prototype
-}
-
-/**
- * @constructor
- * @extends {WebInspector.SidebarPane}
+ * @extends {WebInspector.View}
  * @param {!WebInspector.AuditCategoryResult} categoryResult
  */
 WebInspector.AuditCategoryResultPane = function(categoryResult)
 {
-    WebInspector.SidebarPane.call(this, categoryResult.title);
+    WebInspector.View.call(this, categoryResult.title);
     this._treeOutline = new TreeOutlineInShadow();
     this._treeOutline.registerRequiredCSS("audits/auditResultTree.css");
     this._treeOutline.element.classList.add("audit-result-tree");
@@ -80,7 +57,7 @@ WebInspector.AuditCategoryResultPane = function(categoryResult)
         var treeElement = this._appendResult(this._treeOutline.rootElement(), ruleResult, ruleResult.severity);
         treeElement.listItemElement.classList.add("audit-result");
     }
-    this.expandPane();
+    this.revealWidget();
 }
 
 WebInspector.AuditCategoryResultPane.prototype = {
@@ -128,5 +105,5 @@ WebInspector.AuditCategoryResultPane.prototype = {
         return treeElement;
     },
 
-    __proto__: WebInspector.SidebarPane.prototype
+    __proto__: WebInspector.View.prototype
 }
