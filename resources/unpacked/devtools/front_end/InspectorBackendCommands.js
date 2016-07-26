@@ -399,6 +399,14 @@ InspectorBackend.registerCommand("Accessibility.getAXNode", [{"name": "nodeId", 
 InspectorBackend.registerEnum("Storage.StorageType", {Appcache: "appcache", Cookies: "cookies", File_systems: "file_systems", Indexeddb: "indexeddb", Local_storage: "local_storage", Shader_cache: "shader_cache", Websql: "websql", Service_workers: "service_workers", Cache_storage: "cache_storage", All: "all"});
 InspectorBackend.registerCommand("Storage.clearDataForOrigin", [{"name": "origin", "type": "string", "optional": false}, {"name": "storageTypes", "type": "string", "optional": false}], [], false);
 
+// Log.
+InspectorBackend.registerEnum("Log.LogEntrySource", {XML: "xml", Javascript: "javascript", Network: "network", Storage: "storage", Appcache: "appcache", Rendering: "rendering", Security: "security", Deprecation: "deprecation", Worker: "worker", Other: "other"});
+InspectorBackend.registerEnum("Log.LogEntryLevel", {Log: "log", Warning: "warning", Error: "error", Debug: "debug", Info: "info"});
+InspectorBackend.registerEvent("Log.entryAdded", ["entry"]);
+InspectorBackend.registerCommand("Log.enable", [], [], false);
+InspectorBackend.registerCommand("Log.disable", [], [], false);
+InspectorBackend.registerCommand("Log.clear", [], [], false);
+
 // Browser.
 InspectorBackend.registerEvent("Browser.dispatchMessage", ["targetId", "message"]);
 InspectorBackend.registerCommand("Browser.createBrowserContext", [], ["browserContextId"], false);
@@ -441,6 +449,7 @@ InspectorBackend.registerCommand("Runtime.releaseObjectGroup", [{"name": "object
 InspectorBackend.registerCommand("Runtime.run", [], [], false);
 InspectorBackend.registerCommand("Runtime.enable", [], [], false);
 InspectorBackend.registerCommand("Runtime.disable", [], [], false);
+InspectorBackend.registerCommand("Runtime.discardConsoleEntries", [], [], false);
 InspectorBackend.registerCommand("Runtime.setCustomObjectFormatterEnabled", [{"name": "enabled", "type": "boolean", "optional": false}], [], false);
 InspectorBackend.registerCommand("Runtime.compileScript", [{"name": "expression", "type": "string", "optional": false}, {"name": "sourceURL", "type": "string", "optional": false}, {"name": "persistScript", "type": "boolean", "optional": false}, {"name": "executionContextId", "type": "number", "optional": false}], ["scriptId", "exceptionDetails"], false);
 InspectorBackend.registerCommand("Runtime.runScript", [{"name": "scriptId", "type": "string", "optional": false}, {"name": "executionContextId", "type": "number", "optional": false}, {"name": "objectGroup", "type": "string", "optional": true}, {"name": "doNotPauseOnExceptionsAndMuteConsole", "type": "boolean", "optional": true}, {"name": "includeCommandLineAPI", "type": "boolean", "optional": true}], ["result", "exceptionDetails"], false);
@@ -477,17 +486,6 @@ InspectorBackend.registerCommand("Debugger.getBacktrace", [], ["callFrames", "as
 InspectorBackend.registerCommand("Debugger.setAsyncCallStackDepth", [{"name": "maxDepth", "type": "number", "optional": false}], [], false);
 InspectorBackend.registerCommand("Debugger.setBlackboxPatterns", [{"name": "patterns", "type": "object", "optional": false}], [], false);
 InspectorBackend.registerCommand("Debugger.setBlackboxedRanges", [{"name": "scriptId", "type": "string", "optional": false}, {"name": "positions", "type": "object", "optional": false}], [], false);
-
-// Console.
-InspectorBackend.registerEnum("Console.ConsoleMessageSource", {XML: "xml", Javascript: "javascript", Network: "network", ConsoleAPI: "console-api", Storage: "storage", Appcache: "appcache", Rendering: "rendering", Security: "security", Other: "other", Deprecation: "deprecation", Worker: "worker"});
-InspectorBackend.registerEnum("Console.ConsoleMessageLevel", {Log: "log", Warning: "warning", Error: "error", Debug: "debug", Info: "info"});
-InspectorBackend.registerEnum("Console.ConsoleMessageType", {Log: "log", Dir: "dir", DirXML: "dirxml", Table: "table", Trace: "trace", Clear: "clear", StartGroup: "startGroup", StartGroupCollapsed: "startGroupCollapsed", EndGroup: "endGroup", Assert: "assert", Profile: "profile", ProfileEnd: "profileEnd"});
-InspectorBackend.registerEvent("Console.messageAdded", ["message"]);
-InspectorBackend.registerEvent("Console.messageRepeatCountUpdated", ["count", "timestamp"]);
-InspectorBackend.registerEvent("Console.messagesCleared", []);
-InspectorBackend.registerCommand("Console.enable", [], [], false);
-InspectorBackend.registerCommand("Console.disable", [], [], false);
-InspectorBackend.registerCommand("Console.clearMessages", [], [], false);
 
 // Profiler.
 InspectorBackend.registerEvent("Profiler.consoleProfileStarted", ["id", "location", "title"]);
