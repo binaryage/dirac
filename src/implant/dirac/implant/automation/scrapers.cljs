@@ -40,9 +40,14 @@
   (= (oget el "textContent") "Call Stack"))
 
 (defn find-callstack-pane-element []
-  (let [title-els (dom/query-selector "html /deep/ .sidebar-pane-title")]
+  (let [title-els (dom/query-selector "html /deep/ .expandable-view-title")]
     (if-let [callstack-title-el (select-first [ALL is-callstack-title-el?] title-els)]
-      (oget callstack-title-el "nextElementSibling"))))
+      (if-let [callstack-body-el (-> callstack-title-el
+                                     (oget "parentNode")
+                                     (oget "parentNode")
+                                     (oget "host")
+                                     (oget "firstChild"))]
+        (first (dom/query-selector callstack-body-el "html /deep/ .widget"))))))
 
 (defn get-callstack-pane-rep [callstack-pane-el]
   (build-rep callstack-pane-el))
