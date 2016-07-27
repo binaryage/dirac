@@ -1,5 +1,6 @@
 (ns dirac.implant.automation.scrapers
-  (:require-macros [com.rpl.specter.macros :refer [providepath declarepath transform select select-one select-first]])
+  (:require-macros [com.rpl.specter.macros :refer [providepath declarepath transform select select-one select-first]]
+                   [dirac.implant.automation.scrapers :refer [safe->>]])
   (:require [chromex.support :refer-macros [oget oset ocall oapply]]
             [chromex.logging :refer-macros [log warn error info]]
             [cljs.pprint :refer [pprint]]
@@ -33,6 +34,9 @@
     "no items displayed"
     (str "displayed " (count list) " items:\n"
          (string/join "\n" (map #(str " * " (or % "<empty>")) list)))))
+
+(defn get-deep-text-content [el]
+  (ocall el "deepTextContent"))
 
 ; -- call stack UI ----------------------------------------------------------------------------------------------------------
 
@@ -139,37 +143,37 @@
   (str "! scraper '" name "' has missing implementation in dirac.implant.automation.scrapers"))
 
 (defmethod scrape :callstack-pane-functions [_ & _]
-  (->> (find-callstack-pane-element)
-       (get-callstack-pane-rep)
-       (select-callstack-widget-rep)
-       (select-subreps title-rep?)
-       (map print-callstack-function)
-       (print-list)))
+  (safe->> (find-callstack-pane-element)
+           (get-callstack-pane-rep)
+           (select-callstack-widget-rep)
+           (select-subreps title-rep?)
+           (map print-callstack-function)
+           (print-list)))
 
 (defmethod scrape :callstack-pane-locations [_ & _]
-  (->> (find-callstack-pane-element)
-       (get-callstack-pane-rep)
-       (select-callstack-widget-rep)
-       (select-subreps subtitle-rep?)
-       (map print-callstack-location)
-       (print-list)))
+  (safe->> (find-callstack-pane-element)
+           (get-callstack-pane-rep)
+           (select-callstack-widget-rep)
+           (select-subreps subtitle-rep?)
+           (map print-callstack-location)
+           (print-list)))
 
 (defmethod scrape :suggest-box [_ & _]
-  (->> (find-suggest-box-element)
-       (build-rep)
-       (select-subreps suggest-box-item-rep?)
-       (map print-suggest-box-item)
-       (print-list)))
+  (safe->> (find-suggest-box-element)
+           (build-rep)
+           (select-subreps suggest-box-item-rep?)
+           (map print-suggest-box-item)
+           (print-list)))
 
 (defmethod scrape :function-names-in-last-console-exception [_ & _]
-  (->> (find-last-console-log-element "error")
-       (find-stack-preview-container-in-console-error-element)
-       (build-rep)
-       (select-subreps function-name?)
-       (map print-function-name-item)
-       (print-list)))
+  (safe->> (find-last-console-log-element "error")
+           (find-stack-preview-container-in-console-error-element)
+           (build-rep)
+           (select-subreps function-name?)
+           (map print-function-name-item)
+           (print-list)))
 
 (defmethod scrape :last-log-item-content [_ & [kind]]
-  (if-let [el (->> (find-last-console-log-element kind)
-                   (find-console-message-text-element))]
-    (ocall el "deepTextContent")))
+  (safe->> (find-last-console-log-element kind)
+           (find-console-message-text-element)
+           (get-deep-text-content)))
