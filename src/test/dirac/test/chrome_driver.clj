@@ -203,13 +203,11 @@
     (wait-until #(exists? "#executable_path"))
     (let [version-text (text "#version")
           os-type-text (text "#os_type")
-          blink-version-text (text "#blink_version")
           js-engine-text (text "#js_engine")
           command-line-text (text "#command_line")
           executable-path-text (text "#executable_path")]
       (str "    Google Chrome: " version-text "\n"
            "               OS: " os-type-text "\n"
-           "            Blink: " blink-version-text "\n"
            "       JavaScript: " js-engine-text "\n"
            "  Executable Path: " executable-path-text "\n"
            "     Command Line: " (beautify-command-line command-line-text) "\n"))
