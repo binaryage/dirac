@@ -24,10 +24,10 @@
           (<!* a/scrape! :suggest-box)
           (<!* a/simulate-console-action! "TAB")
           (is (= (<!* a/print-prompt!) "js/document"))
-          (<!* a/simulate-console-input! ".get")
+          (<!* a/simulate-console-input! ".getElements")
           (<!* a/scrape! :suggest-box)
           (<!* a/simulate-console-action! "TAB")
-          (is (= (<!* a/print-prompt!) "js/document.getElementById")))
+          (is (= (<!* a/print-prompt!) "js/document.getElementsByClassName")))
         (testing "qualified completions"
           (<!* a/clear-console-prompt!)
           (<!* a/simulate-console-input! "cljs.core/part")

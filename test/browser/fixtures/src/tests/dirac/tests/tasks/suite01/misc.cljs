@@ -18,4 +18,4 @@
           (is (= first-line "Internal Dirac Error: DevTools code has thrown an unhandled exception"))
           (is (= second-line "Error: :nonsense is not ISeqable"))
           ; assume it contains some stack trace
-          (is (= (utils/line-count error-content) 8)))))))
+          (is (> (utils/line-count error-content) 4)))))))

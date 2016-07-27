@@ -47,18 +47,16 @@ stdout           displayed 1 items:
 automate #1      simulate-console-action! ["TAB"]
 automate #1      print-prompt!
 stdout           js/document
-automate #1      simulate-console-input! [".get"]
+automate #1      simulate-console-input! [".getElements"]
 automate #1      scrape! [:suggest-box]
-stdout           displayed 6 items:
-                  * get|ElementById (selected)
-                  * get|ElementsByClassName
-                  * get|ElementsByName
-                  * get|ElementsByTagName
-                  * get|ElementsByTagNameNS
-                  * get|Selection
+stdout           displayed 4 items:
+                  * getElements|ByClassName (selected)
+                  * getElements|ByName
+                  * getElements|ByTagName
+                  * getElements|ByTagNameNS
 automate #1      simulate-console-action! ["TAB"]
 automate #1      print-prompt!
-stdout           js/document.getElementById
+stdout           js/document.getElementsByClassName
 automate #1      clear-console-prompt!
 automate #1      simulate-console-input! ["cljs.core/part"]
 automate #1      scrape! [:suggest-box]
