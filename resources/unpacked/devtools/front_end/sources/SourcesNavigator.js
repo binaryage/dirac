@@ -83,11 +83,8 @@ WebInspector.SourcesNavigator.prototype = {
      */
     revealUISourceCode: function(uiSourceCode)
     {
-        var ids = this._tabbedPaneController.viewIds();
-        var promises = [];
-        for (var i = 0; i < ids.length; ++i)
-            promises.push(this._tabbedPaneController.viewForId(ids[i]));
-        Promise.all(promises).then(filterNavigators.bind(this));
+        var extensions = self.runtime.extensions("navigator-view");
+        Promise.all(extensions.map(extension => extension.instance())).then(filterNavigators.bind(this));
 
         /**
          * @param {!Array.<!Object>} objects
@@ -98,11 +95,12 @@ WebInspector.SourcesNavigator.prototype = {
             for (var i = 0; i < objects.length; ++i) {
                 var navigatorView = /** @type {!WebInspector.NavigatorView} */ (objects[i]);
                 if (navigatorView.accept(uiSourceCode)) {
-                    this._tabbedPane.selectTab(ids[i]);
+                    this._tabbedPane.selectTab(extensions[i].descriptor()["name"]);
                     navigatorView.revealUISourceCode(uiSourceCode, true);
                 }
             }
         }
+
     },
 
     /**
@@ -163,11 +161,15 @@ WebInspector.SourcesNavigatorView.prototype = {
      */
     _inspectedURLChanged: function(event)
     {
-        var nodes = this._uiSourceCodeNodes.valuesArray();
-        for (var i = 0; i < nodes.length; ++i) {
-            var uiSourceCode = nodes[i].uiSourceCode();
-            var inspectedPageURL = WebInspector.targetManager.inspectedPageURL();
-            if (inspectedPageURL && WebInspector.networkMapping.networkURL(uiSourceCode) === inspectedPageURL)
+        var mainTarget = WebInspector.targetManager.mainTarget();
+        if (event.data !== mainTarget)
+            return;
+        var inspectedURL = mainTarget && mainTarget.inspectedURL();
+        if (!inspectedURL)
+            return
+        for (var node of this._uiSourceCodeNodes.valuesArray()) {
+            var uiSourceCode = node.uiSourceCode();
+            if (WebInspector.networkMapping.networkURL(uiSourceCode) === inspectedURL)
                 this.revealUISourceCode(uiSourceCode, true);
         }
     },
@@ -178,7 +180,7 @@ WebInspector.SourcesNavigatorView.prototype = {
      */
     uiSourceCodeAdded: function(uiSourceCode)
     {
-        var inspectedPageURL = WebInspector.targetManager.inspectedPageURL();
+        var inspectedPageURL = WebInspector.targetManager.mainTarget().inspectedURL();
         if (inspectedPageURL && WebInspector.networkMapping.networkURL(uiSourceCode) === inspectedPageURL)
             this.revealUISourceCode(uiSourceCode, true);
     },

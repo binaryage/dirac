@@ -29,15 +29,14 @@
  * @extends {WebInspector.Panel}
  * @implements {WebInspector.ContextMenu.Provider}
  * @implements {WebInspector.TargetManager.Observer}
- * @param {!WebInspector.Workspace=} workspaceForTest
  */
-WebInspector.SourcesPanel = function(workspaceForTest)
+WebInspector.SourcesPanel = function()
 {
     WebInspector.Panel.call(this, "sources");
     this.registerRequiredCSS("sources/sourcesPanel.css");
     new WebInspector.DropTarget(this.element, [WebInspector.DropTarget.Types.Files], WebInspector.UIString("Drop workspace folder here"), this._handleDrop.bind(this));
 
-    this._workspace = workspaceForTest || WebInspector.workspace;
+    this._workspace = WebInspector.workspace;
     this._networkMapping = WebInspector.networkMapping;
 
     this._runSnippetAction = /** @type {!WebInspector.Action }*/ (WebInspector.actionRegistry.action("debugger.run-snippet"));
@@ -276,15 +275,6 @@ WebInspector.SourcesPanel.prototype = {
         this.sidebarPanes.callstack.update(details);
 
         /**
-         * @param {!Element} element
-         * @this {WebInspector.SourcesPanel}
-         */
-        function didCreateBreakpointHitStatusMessage(element)
-        {
-            this.sidebarPanes.callstack.setStatus(element);
-        }
-
-        /**
          * @param {!WebInspector.LiveLocation} liveLocation
          * @this {WebInspector.SourcesPanel}
          */
@@ -302,7 +292,7 @@ WebInspector.SourcesPanel.prototype = {
 
         if (details.reason === WebInspector.DebuggerModel.BreakReason.DOM) {
             WebInspector.domBreakpointsSidebarPane.highlightBreakpoint(details.auxData);
-            WebInspector.domBreakpointsSidebarPane.createBreakpointHitStatusMessage(details, didCreateBreakpointHitStatusMessage.bind(this));
+            this.sidebarPanes.callstack.setStatus(WebInspector.domBreakpointsSidebarPane.createBreakpointHitStatusMessage(details));
         } else if (details.reason === WebInspector.DebuggerModel.BreakReason.EventListener) {
             var eventName = details.auxData["eventName"];
             var targetName = details.auxData["targetName"];
@@ -1413,9 +1403,7 @@ WebInspector.SourcesPanel.show = function()
  */
 WebInspector.SourcesPanel.instance = function()
 {
-    if (!WebInspector.SourcesPanel._instanceObject)
-        WebInspector.SourcesPanel._instanceObject = new WebInspector.SourcesPanel();
-    return WebInspector.SourcesPanel._instanceObject;
+    return /** @type {!WebInspector.SourcesPanel} */ (self.runtime.sharedInstance(WebInspector.SourcesPanel));
 }
 
 /**
@@ -1427,25 +1415,6 @@ WebInspector.SourcesPanel.updateResizer = function(panel)
         panel._splitWidget.uninstallResizer(panel._sourcesView.toolbarContainerElement());
     else
         panel._splitWidget.installResizer(panel._sourcesView.toolbarContainerElement());
-}
-
-/**
- * @constructor
- * @implements {WebInspector.PanelFactory}
- */
-WebInspector.SourcesPanelFactory = function()
-{
-}
-
-WebInspector.SourcesPanelFactory.prototype = {
-    /**
-     * @override
-     * @return {!WebInspector.Panel}
-     */
-    createPanel: function()
-    {
-        return WebInspector.SourcesPanel.instance();
-    }
 }
 
 /**

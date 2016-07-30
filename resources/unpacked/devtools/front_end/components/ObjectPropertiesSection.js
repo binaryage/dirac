@@ -1085,7 +1085,7 @@ WebInspector.ObjectPropertiesSection.createNameElement = function(name, friendly
 WebInspector.ObjectPropertiesSection.valueTextForFunctionDescription = function(description)
 {
     var text = description.replace(/^function [gs]et /, "function ");
-    var matches = /function\s([^)]*)/.exec(text);
+    var matches = /^function\s([^)]*)/.exec(text);
     if (!matches) {
         // process shorthand methods
         matches = /[^(]*(\([^)]*)/.exec(text);
@@ -1237,7 +1237,7 @@ WebInspector.ObjectPropertiesSection.formatObjectAsFunction = function(func, ele
         }
 
         // Now parse description and get the real params and title.
-        self.runtime.instancePromise(WebInspector.TokenizerFactory).then(processTokens);
+        self.runtime.extension(WebInspector.TokenizerFactory).instance().then(processTokens);
 
         var params = null;
         var functionName = response ? response.functionName : "";

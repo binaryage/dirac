@@ -2932,13 +2932,11 @@ WebInspector.StylesSidebarPane.CSSPropertyPrompt.prototype = {
 
     /**
      * @param {!Element} proxyElement
-     * @param {string} text
-     * @param {number} cursorOffset
      * @param {!Range} wordRange
      * @param {boolean} force
      * @param {function(!Array.<string>, number=)} completionsReadyCallback
      */
-    _buildPropertyCompletions: function(proxyElement, text, cursorOffset, wordRange, force, completionsReadyCallback)
+    _buildPropertyCompletions: function(proxyElement, wordRange, force, completionsReadyCallback)
     {
         var prefix = wordRange.toString().toLowerCase();
         if (!prefix && !force && (this._isEditingName || proxyElement.textContent.length)) {
@@ -2977,7 +2975,7 @@ WebInspector.StylesSidebarPropertyRenderer = function(rule, node, name, value)
 }
 
 WebInspector.StylesSidebarPropertyRenderer._variableRegex = /(var\(--.*?\))/g;
-WebInspector.StylesSidebarPropertyRenderer._colorRegex = /((?:rgb|hsl)a?\([^)]+\)|#[0-9a-fA-F]{8}|#[0-9a-fA-F]{6}|#[0-9a-fA-F]{3,4}|\b\w+\b(?!-))/g;
+WebInspector.StylesSidebarPropertyRenderer._colorRegex = /((?:rgb|hsl)a?\([^)]+\)|#[0-9a-fA-F]{6}|#[0-9a-fA-F]{3}|\b\w+\b(?!-))/g;
 WebInspector.StylesSidebarPropertyRenderer._bezierRegex = /((cubic-bezier\([^)]+\))|\b(linear|ease-in-out|ease-in|ease-out|ease)\b)/g;
 
 /**

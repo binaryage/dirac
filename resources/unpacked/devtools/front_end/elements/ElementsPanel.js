@@ -201,14 +201,17 @@ WebInspector.ElementsPanel.prototype = {
     {
         var extensions = self.runtime.extensions("@WebInspector.View");
 
+        var promises = [];
         for (var i = 0; i < extensions.length; ++i) {
             var descriptor = extensions[i].descriptor();
             if (descriptor["location"] !== "elements-panel")
                 continue;
 
             var title = WebInspector.UIString(descriptor["title"]);
-            extensions[i].instancePromise().then(addSidebarView.bind(this, title));
+            promises.push(extensions[i].instance().then(addSidebarView.bind(this, title)));
         }
+
+        Promise.all(promises).then(this._sidebarViewsLoadedForTest.bind(this));
 
         /**
          * @param {string} title
@@ -223,6 +226,11 @@ WebInspector.ElementsPanel.prototype = {
             if (this.sidebarPaneView)
                 this.sidebarPaneView.appendView(view);
         }
+    },
+
+    _sidebarViewsLoadedForTest: function()
+    {
+        // For sniffing in tests.
     },
 
     /**
@@ -1107,28 +1115,7 @@ WebInspector.ElementsPanel.show = function()
  */
 WebInspector.ElementsPanel.instance = function()
 {
-    if (!WebInspector.ElementsPanel._instanceObject)
-        WebInspector.ElementsPanel._instanceObject = new WebInspector.ElementsPanel();
-    return WebInspector.ElementsPanel._instanceObject;
-}
-
-/**
- * @constructor
- * @implements {WebInspector.PanelFactory}
- */
-WebInspector.ElementsPanelFactory = function()
-{
-}
-
-WebInspector.ElementsPanelFactory.prototype = {
-    /**
-     * @override
-     * @return {!WebInspector.Panel}
-     */
-    createPanel: function()
-    {
-        return WebInspector.ElementsPanel.instance();
-    }
+    return /** @type {!WebInspector.ElementsPanel} */ (self.runtime.sharedInstance(WebInspector.ElementsPanel));
 }
 
 /**
