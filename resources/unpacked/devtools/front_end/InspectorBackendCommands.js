@@ -67,7 +67,7 @@ InspectorBackend.registerCommand("Page.stopScreencast", [], [], false);
 InspectorBackend.registerCommand("Page.screencastFrameAck", [{"name": "sessionId", "type": "number", "optional": false}], [], false);
 InspectorBackend.registerCommand("Page.handleJavaScriptDialog", [{"name": "accept", "type": "boolean", "optional": false}, {"name": "promptText", "type": "string", "optional": true}], [], false);
 InspectorBackend.registerCommand("Page.setColorPickerEnabled", [{"name": "enabled", "type": "boolean", "optional": false}], [], false);
-InspectorBackend.registerCommand("Page.setOverlayMessage", [{"name": "message", "type": "string", "optional": true}], [], false);
+InspectorBackend.registerCommand("Page.configureOverlay", [{"name": "suspended", "type": "boolean", "optional": true}, {"name": "message", "type": "string", "optional": true}], [], false);
 InspectorBackend.registerCommand("Page.getAppManifest", [], ["url", "errors", "data"], false);
 InspectorBackend.registerCommand("Page.requestAppBanner", [], [], false);
 InspectorBackend.registerCommand("Page.setBlockedEventsWarningThreshold", [{"name": "threshold", "type": "number", "optional": false}], [], false);
@@ -255,6 +255,7 @@ InspectorBackend.registerCommand("DOM.getHighlightObjectForTest", [{"name": "nod
 InspectorBackend.registerEnum("CSS.StyleSheetOrigin", {Injected: "injected", UserAgent: "user-agent", Inspector: "inspector", Regular: "regular"});
 InspectorBackend.registerEnum("CSS.CSSMediaSource", {MediaRule: "mediaRule", ImportRule: "importRule", LinkedSheet: "linkedSheet", InlineSheet: "inlineSheet"});
 InspectorBackend.registerEvent("CSS.mediaQueryResultChanged", []);
+InspectorBackend.registerEvent("CSS.fontsUpdated", []);
 InspectorBackend.registerEvent("CSS.styleSheetChanged", ["styleSheetId"]);
 InspectorBackend.registerEvent("CSS.styleSheetAdded", ["header"]);
 InspectorBackend.registerEvent("CSS.styleSheetRemoved", ["styleSheetId"]);
@@ -442,6 +443,7 @@ InspectorBackend.registerEvent("Runtime.exceptionRevoked", ["message", "exceptio
 InspectorBackend.registerEvent("Runtime.consoleAPICalled", ["type", "args", "executionContextId", "timestamp", "stackTrace"]);
 InspectorBackend.registerEvent("Runtime.inspectRequested", ["object", "hints"]);
 InspectorBackend.registerCommand("Runtime.evaluate", [{"name": "expression", "type": "string", "optional": false}, {"name": "objectGroup", "type": "string", "optional": true}, {"name": "includeCommandLineAPI", "type": "boolean", "optional": true}, {"name": "doNotPauseOnExceptionsAndMuteConsole", "type": "boolean", "optional": true}, {"name": "contextId", "type": "number", "optional": true}, {"name": "returnByValue", "type": "boolean", "optional": true}, {"name": "generatePreview", "type": "boolean", "optional": true}, {"name": "userGesture", "type": "boolean", "optional": true}], ["result", "wasThrown", "exceptionDetails"], false);
+InspectorBackend.registerCommand("Runtime.awaitPromise", [{"name": "promiseObjectId", "type": "string", "optional": false}, {"name": "returnByValue", "type": "boolean", "optional": true}, {"name": "generatePreview", "type": "boolean", "optional": true}], ["result", "wasThrown", "exceptionDetails"], false);
 InspectorBackend.registerCommand("Runtime.callFunctionOn", [{"name": "objectId", "type": "string", "optional": false}, {"name": "functionDeclaration", "type": "string", "optional": false}, {"name": "arguments", "type": "object", "optional": true}, {"name": "doNotPauseOnExceptionsAndMuteConsole", "type": "boolean", "optional": true}, {"name": "returnByValue", "type": "boolean", "optional": true}, {"name": "generatePreview", "type": "boolean", "optional": true}, {"name": "userGesture", "type": "boolean", "optional": true}], ["result", "wasThrown"], false);
 InspectorBackend.registerCommand("Runtime.getProperties", [{"name": "objectId", "type": "string", "optional": false}, {"name": "ownProperties", "type": "boolean", "optional": true}, {"name": "accessorPropertiesOnly", "type": "boolean", "optional": true}, {"name": "generatePreview", "type": "boolean", "optional": true}], ["result", "internalProperties", "exceptionDetails"], false);
 InspectorBackend.registerCommand("Runtime.releaseObject", [{"name": "objectId", "type": "string", "optional": false}], [], false);
