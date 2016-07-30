@@ -356,12 +356,19 @@ WebInspector.DiracPromptWithHistory.prototype = {
 
         this._lastExpression = expression;
         this._updateAnchorBox();
-        const shouldShowForSingleItem = true; // later maybe implement inline completions like in TextPrompt.js
 
-        if (dirac._DEBUG_COMPLETIONS) {
-            console.log("calling SuggestBox.updateSuggestions", this._anchorBox, annotatedCompletions, selectedIndex, shouldShowForSingleItem, this._userEnteredText);
+        if (this._anchorBox) {
+            const shouldShowForSingleItem = true; // later maybe implement inline completions like in TextPrompt.js
+
+            if (dirac._DEBUG_COMPLETIONS) {
+                console.log("calling SuggestBox.updateSuggestions", this._anchorBox, annotatedCompletions, selectedIndex, shouldShowForSingleItem, this._userEnteredText);
+            }
+            this._suggestBox.updateSuggestions(this._anchorBox, annotatedCompletions, selectedIndex, shouldShowForSingleItem, this._userEnteredText);
+        } else {
+            if (dirac._DEBUG_COMPLETIONS) {
+                console.log("not calling SuggestBox.updateSuggestions because this._anchorBox is null", annotatedCompletions, selectedIndex, shouldShowForSingleItem, this._userEnteredText);
+            }
         }
-        this._suggestBox.updateSuggestions(this._anchorBox, annotatedCompletions, selectedIndex, shouldShowForSingleItem, this._userEnteredText);
 
         // here could be implemented inline completions like in TextPrompt.js
     },
@@ -730,11 +737,17 @@ WebInspector.DiracPromptWithHistory.prototype = {
         if (this._suggestBox) {
             this._lastExpression = expression;
             this._updateAnchorBox();
-            const shouldShowForSingleItem = true; // later maybe implement inline completions like in TextPrompt.js
-            if (dirac._DEBUG_COMPLETIONS) {
-                console.log("calling SuggestBox.updateSuggestions", this._anchorBox, processedCompletions, selectedIndex, shouldShowForSingleItem, this._userEnteredText);
+            if (this._anchorBox) {
+                const shouldShowForSingleItem = true; // later maybe implement inline completions like in TextPrompt.js
+                if (dirac._DEBUG_COMPLETIONS) {
+                    console.log("calling SuggestBox.updateSuggestions", this._anchorBox, processedCompletions, selectedIndex, shouldShowForSingleItem, this._userEnteredText);
+                }
+                this._suggestBox.updateSuggestions(this._anchorBox, processedCompletions, selectedIndex, shouldShowForSingleItem, this._userEnteredText);
+            } else {
+                if (dirac._DEBUG_COMPLETIONS) {
+                    console.log("not calling SuggestBox.updateSuggestions because this._anchorBox is null", processedCompletions, selectedIndex, shouldShowForSingleItem, this._userEnteredText);
+                }
             }
-            this._suggestBox.updateSuggestions(this._anchorBox, processedCompletions, selectedIndex, shouldShowForSingleItem, this._userEnteredText);
         }
 
         // here could be implemented inline completions like in TextPrompt.js
