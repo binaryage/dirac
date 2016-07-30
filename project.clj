@@ -34,7 +34,7 @@
                  [com.rpl/specter "0.11.2" :scope "test"]
                  [org.clojure/tools.namespace "0.3.0-alpha3" :scope "test"]
                  [org.clojure/tools.reader "1.0.0-beta1" :scope "test"]
-                 [com.cognitect/transit-clj "0.8.285" :scope "test"]
+                 [com.cognitect/transit-clj "0.8.288" :scope "test"]
 
                  [http.async.client "1.1.0" :scope "test"]
                  [org.slf4j/slf4j-log4j12 "1.7.21" :scope "test"]
