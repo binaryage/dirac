@@ -211,7 +211,7 @@ Object.assign(window.dirac, (function() {
         }
 
         WebInspector.debuggerWorkspaceBinding.maybeLoadSourceMap(script);
-        return ensureSourceMapLoadedAsync(script).then(sourceMap => {
+        return ensureSourceMapLoadedAsync(script).then(/** @suppressGlobalPropertiesCheck */ sourceMap => {
             const scriptUrl = script.contentURL();
             let promises = [];
             let realNamespace = false;

@@ -470,6 +470,9 @@ WebInspector.DiracPromptWithHistory.prototype = {
 
             const readyCallback = completionsReadyCallback.bind(this, expression, prefix);
 
+            /**
+             * @this {WebInspector.DiracPromptWithHistory}
+             */
             const provideCompletionsForNamespace = ([namespaces, namespaceName]) => {
                 const namespace = namespaces[namespaceName];
                 if (!namespace) {

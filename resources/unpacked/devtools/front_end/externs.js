@@ -461,7 +461,7 @@ var dirac = {
     initConsole: function() {},
     initRepl: function() {},
     /**
-     * @param {!WebInspector.Panel} panel
+     * @param {!Object} panel
      */
     notifyPanelSwitch: function(panel) {},
     getVersion: function() {},
