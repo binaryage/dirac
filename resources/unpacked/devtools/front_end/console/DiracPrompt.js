@@ -311,7 +311,7 @@ WebInspector.DiracPromptWithHistory.prototype = {
             }
         }
 
-        executionContext.completionsForExpression(expressionString, input, 0, prefix, force, completionsReadyCallback.bind(this, expressionString, prefix));
+        executionContext.completionsForExpression(expressionString, prefix, force, completionsReadyCallback.bind(this, expressionString, prefix));
     },
 
     /**
