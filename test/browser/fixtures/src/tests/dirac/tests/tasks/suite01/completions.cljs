@@ -36,11 +36,11 @@
           (is (= (<!* a/print-prompt!) "cljs.core/partial")))
         (testing "namespace names completions"
           (<!* a/clear-console-prompt!)
-          (<!* a/simulate-console-input! "devtools.c")
+          (<!* a/simulate-console-input! "cljs.r")
           (<!* a/scrape! :suggest-box)
           (<!* a/simulate-console-action! "DOWN")
           (<!* a/simulate-console-action! "TAB")
-          (is (= (<!* a/print-prompt!) "devtools.custom-formatters")))
+          (is (= (<!* a/print-prompt!) "cljs.repl")))
         (testing "right-arrow completions"
           (<!* a/clear-console-prompt!)
           (<!* a/simulate-console-input! "cljs.cor")

@@ -69,15 +69,15 @@ automate #1      simulate-console-action! ["TAB"]
 automate #1      print-prompt!
 stdout           cljs.core/partial
 automate #1      clear-console-prompt!
-automate #1      simulate-console-input! ["devtools.c"]
+automate #1      simulate-console-input! ["cljs.r"]
 automate #1      scrape! [:suggest-box]
 stdout           displayed 2 items:
-                  * devtools.c|ore (ns selected)
-                  * devtools.c|ustom-formatters (ns)
+                  * cljs.r|eader (ns selected)
+                  * cljs.r|epl (ns macro combined-ns-macro)
 automate #1      simulate-console-action! ["DOWN"]
 automate #1      simulate-console-action! ["TAB"]
 automate #1      print-prompt!
-stdout           devtools.custom-formatters
+stdout           cljs.repl
 automate #1      clear-console-prompt!
 automate #1      simulate-console-input! ["cljs.cor"]
 automate #1      scrape! [:suggest-box]
