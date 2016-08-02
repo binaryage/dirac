@@ -5,51 +5,39 @@
 /**
  * @constructor
  */
-WebInspector.OverlayController = function() {
-    WebInspector.moduleSetting("disablePausedStateOverlay").addChangeListener(this._updateAllOverlayMessages, this);
-    WebInspector.targetManager.addModelListener(WebInspector.DebuggerModel, WebInspector.DebuggerModel.Events.DebuggerPaused, this._updateOverlayMessage, this);
-    WebInspector.targetManager.addModelListener(WebInspector.DebuggerModel, WebInspector.DebuggerModel.Events.DebuggerResumed, this._updateOverlayMessage, this);
-    WebInspector.targetManager.addModelListener(WebInspector.DebuggerModel, WebInspector.DebuggerModel.Events.GlobalObjectCleared, this._updateOverlayMessage, this);
+WebInspector.OverlayController = function()
+{
+    WebInspector.moduleSetting("disablePausedStateOverlay").addChangeListener(this._updateAllOverlays, this);
+    WebInspector.targetManager.addModelListener(WebInspector.DebuggerModel, WebInspector.DebuggerModel.Events.DebuggerPaused, this._updateOverlay, this);
+    WebInspector.targetManager.addModelListener(WebInspector.DebuggerModel, WebInspector.DebuggerModel.Events.DebuggerResumed, this._updateOverlay, this);
+    // TODO(dgozman): we should get DebuggerResumed on navigations instead of listening to GlobalObjectCleared.
+    WebInspector.targetManager.addModelListener(WebInspector.DebuggerModel, WebInspector.DebuggerModel.Events.GlobalObjectCleared, this._updateOverlay, this);
+    WebInspector.targetManager.addEventListener(WebInspector.TargetManager.Events.SuspendStateChanged, this._updateAllOverlays, this);
 }
 
 WebInspector.OverlayController.prototype = {
-    _updateAllOverlayMessages: function() {
+    _updateAllOverlays: function()
+    {
         for (var target of WebInspector.targetManager.targets(WebInspector.Target.Capability.Browser))
-            this._updateTargetOverlayMessage(/** @type {!WebInspector.DebuggerModel} */ (WebInspector.DebuggerModel.fromTarget(target)));
+            this._updateTargetOverlay(/** @type {!WebInspector.DebuggerModel} */ (WebInspector.DebuggerModel.fromTarget(target)));
     },
 
     /**
      * @param {!WebInspector.Event} event
      */
-    _updateOverlayMessage: function(event) {
-        this._updateTargetOverlayMessage(/** @type {!WebInspector.DebuggerModel} */ (event.target));
+    _updateOverlay: function(event)
+    {
+        this._updateTargetOverlay(/** @type {!WebInspector.DebuggerModel} */ (event.target));
     },
 
     /**
      * @param {!WebInspector.DebuggerModel} debuggerModel
      */
-    _updateTargetOverlayMessage: function(debuggerModel) {
+    _updateTargetOverlay: function(debuggerModel)
+    {
         if (!debuggerModel.target().hasBrowserCapability())
             return;
         var message = debuggerModel.isPaused() && !WebInspector.moduleSetting("disablePausedStateOverlay").get() ? WebInspector.UIString("Paused in debugger") : undefined;
-        // this try-catch wrapping is just a HACK to silence regression:
-        //     Internal Dirac Error: DevTools code has thrown an unhandled exception
-        //     TypeError: debuggerModel.target(...).pageAgent(...).setOverlayMessage is not a function
-        //         at WebInspector.OverlayController._updateTargetOverlayMessage
-        //          (chrome-extension://epkhgbbmecfbomdhhgjnlidlmdgiapfp/devtools/front_end/inspector.js:10985:198) at
-        //          WebInspector.OverlayController._updateOverlayMessage
-        //          (chrome-extension://epkhgbbmecfbomdhhgjnlidlmdgiapfp/devtools/front_end/inspector.js:10983:7) at
-        //          WebInspector.DebuggerModel.dispatchEventToListeners
-        //          (chrome-extension://epkhgbbmecfbomdhhgjnlidlmdgiapfp/devtools/front_end/inspector.js:752:185) at
-        //          WebInspector.DebuggerModel._setDebuggerPausedDetails
-        //          (chrome-extension://epkhgbbmecfbomdhhgjnlidlmdgiapfp/devtools/front_end/inspector.js:5715:6) at
-        //          WebInspector.DebuggerModel._pausedScript
-        //          (chrome-extension://epkhgbbmecfbomdhhgjnlidlmdgiapfp/devtools/front_end/inspector.js:5719:129) at
-        //          WebInspector.DebuggerDispatcher.paused (chrome-extension://epkhgbbmecfbomdhhgjnlidlmdgiapfp/devtools/front_end/inspector.js:5780:22) at Object.dispatch (chrome-extension://epkhgbbmecfbomdhhgjnlidlmdgiapfp/devtools/front_end/inspector.js:4355:63) at WebInspector.WebSocketConnection.dispatch (chrome-extension://epkhgbbmecfbomdhhgjnlidlmdgiapfp/devtools/front_end/inspector.js:4295:31) at WebInspector.WebSocketConnection._onMessage (chrome-extension://epkhgbbmecfbomdhhgjnlidlmdgiapfp/devtools/front_end/inspector.js:10997:31)
-        try {
-            debuggerModel.target().pageAgent().setOverlayMessage(message);
-        } catch (e) {
-
-        }
+        debuggerModel.target().pageAgent().configureOverlay(WebInspector.targetManager.allTargetsSuspended(), message);
     }
 }

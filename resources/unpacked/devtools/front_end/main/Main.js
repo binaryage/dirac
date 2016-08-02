@@ -116,7 +116,6 @@ WebInspector.Main.prototype = {
         Runtime.experiments.register("resolveVariableNames", "Resolve variable names");
         Runtime.experiments.register("timelineShowAllEvents", "Show all events on Timeline", true);
         Runtime.experiments.register("securityPanel", "Security panel");
-        Runtime.experiments.register("sourceColorPicker", "Source color picker");
         Runtime.experiments.register("sourceDiff", "Source diff");
         Runtime.experiments.register("timelineFlowEvents", "Timeline flow events", true);
         Runtime.experiments.register("timelineInvalidationTracking", "Timeline invalidation tracking", true);
@@ -849,7 +848,7 @@ WebInspector.Main.MainMenuItem.prototype = {
             contextMenu.discard();
         }
 
-        contextMenu.appendAction("main.toggle-drawer", WebInspector.inspectorView.drawerVisible() ? WebInspector.UIString("Hide console") : WebInspector.UIString("Show console"));
+        contextMenu.appendAction("main.toggle-drawer", WebInspector.inspectorView.drawerVisible() ? WebInspector.UIString("Hide console drawer") : WebInspector.UIString("Show console drawer"));
         contextMenu.appendItemsAtLocation("mainMenu");
         var moreTools = contextMenu.namedSubMenu("mainMenuMoreTools");
         var extensions = self.runtime.extensions("drawer-view", undefined, true);

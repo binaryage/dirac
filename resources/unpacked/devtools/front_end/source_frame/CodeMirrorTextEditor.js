@@ -1028,8 +1028,12 @@ WebInspector.CodeMirrorTextEditor.prototype = {
     bookmarks: function(range)
     {
         var pos = WebInspector.CodeMirrorUtils.toPos(range);
-        var markers = this._codeMirror.findMarks(pos.start, pos.end);
-        return markers.filter(marker => marker.type === "bookmark");
+        if (range.isEmpty())
+            return this._codeMirror.findMarksAt(pos.start).filter(marker => marker.type === "bookmark");
+        var startMarkers = this._codeMirror.findMarksAt(pos.start);
+        var middleMarkers = this._codeMirror.findMarks(pos.start, pos.end);
+        var endMarkers = this._codeMirror.findMarksAt(pos.end);
+        return startMarkers.concat(middleMarkers, endMarkers).filter(marker => marker.type === "bookmark");
     },
 
     /**
@@ -1410,12 +1414,23 @@ WebInspector.CodeMirrorTextEditor.prototype = {
             this._codeMirror.removeLineWidget(widgets[i]);
         this._elementToWidget.clear();
 
+        if (this._muteTextChangedEvent)
+            return;
+        var edits = [];
+        var currentEdit;
         for (var changeIndex = 0; changeIndex < changes.length; ++changeIndex) {
             var changeObject = changes[changeIndex];
-
-            var editInfo = WebInspector.CodeMirrorUtils.changeObjectToEditOperation(changeObject);
-            if (!this._muteTextChangedEvent)
-                this._delegate.onTextChanged(editInfo.oldRange, editInfo.newRange);
+            var edit = WebInspector.CodeMirrorUtils.changeObjectToEditOperation(changeObject);
+            if (currentEdit && edit.oldRange.equal(currentEdit.newRange)) {
+                currentEdit.newRange = edit.newRange;
+            } else {
+                currentEdit = edit;
+                edits.push(currentEdit);
+            }
+        }
+        for (var i = 0; i < edits.length; ++i) {
+            var edit = edits[i];
+            this._delegate.onTextChanged(edit.oldRange, edit.newRange);
         }
     },
 

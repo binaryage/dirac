@@ -112,7 +112,7 @@ WebInspector.CSSSourceFrame.prototype = {
 
         var colorRegex = /[\s:;,(){}]((?:rgb|hsl)a?\([^)]+\)|#[0-9a-f]{8}|#[0-9a-f]{6}|#[0-9a-f]{3,4}|[a-z]+)(?=[\s;,(){}])/gi;
         for (var lineNumber = startLine; lineNumber <= endLine; lineNumber++) {
-            var line = this.textEditor.line(lineNumber).substring(0, WebInspector.CSSSourceFrame.maxSwatchProcessingLength) + "\n";
+            var line = "\n" + this.textEditor.line(lineNumber).substring(0, WebInspector.CSSSourceFrame.maxSwatchProcessingLength) + "\n";
             var match;
             while ((match = colorRegex.exec(line)) !== null) {
                 if (match.length < 2)
@@ -120,7 +120,7 @@ WebInspector.CSSSourceFrame.prototype = {
                 var colorText = match[1];
                 var color = WebInspector.Color.parse(colorText);
                 if (color)
-                    colorPositions.push(new WebInspector.CSSSourceFrame.ColorPosition(color, lineNumber, match.index + 1, colorText.length));
+                    colorPositions.push(new WebInspector.CSSSourceFrame.ColorPosition(color, lineNumber, match.index, colorText.length));
             }
         }
 
@@ -208,6 +208,7 @@ WebInspector.CSSSourceFrame.prototype = {
      */
     _spectrumHidden: function(commitEdit)
     {
+        this._muteColorProcessing = false;
         this._spectrum.removeEventListener(WebInspector.Spectrum.Events.SizeChanged, this._spectrumResized, this);
         this._spectrum.removeEventListener(WebInspector.Spectrum.Events.ColorChanged, this._spectrumChanged, this);
         if (!commitEdit && this._hadSpectrumChange)
@@ -215,7 +216,6 @@ WebInspector.CSSSourceFrame.prototype = {
         delete this._spectrum;
         delete this._currentSwatch;
         delete this._currentColorTextRange;
-        this._muteColorProcessing = false;
     },
 
     /**
@@ -224,7 +224,7 @@ WebInspector.CSSSourceFrame.prototype = {
     onTextEditorContentSet: function()
     {
         WebInspector.UISourceCodeFrame.prototype.onTextEditorContentSet.call(this);
-        if (!this._muteColorProcessing && Runtime.experiments.isEnabled("sourceColorPicker"))
+        if (!this._muteColorProcessing)
             this._updateColorSwatches(0, this.textEditor.linesCount - 1);
     },
 
@@ -236,7 +236,7 @@ WebInspector.CSSSourceFrame.prototype = {
     onTextChanged: function(oldRange, newRange)
     {
         WebInspector.UISourceCodeFrame.prototype.onTextChanged.call(this, oldRange, newRange);
-        if (!this._muteColorProcessing && Runtime.experiments.isEnabled("sourceColorPicker"))
+        if (!this._muteColorProcessing)
             this._updateColorSwatches(newRange.startLine, newRange.endLine);
     },
 
