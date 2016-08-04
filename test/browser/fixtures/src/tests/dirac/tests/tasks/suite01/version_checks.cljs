@@ -22,14 +22,14 @@
       (<!* a/switch-to-console-panel!)
       (<!* a/switch-prompt-to-dirac!)
       (<!* a/wait-for-match "Version mismatch: Dirac Runtime installed in your app has different version")
-      (<!* a/wait-for-match "Version mismatch: Dirac Agent has different version")
+      (<!* a/wait-for-match "Version mismatch: Dirac Agent has a different version")
       (<!* a/wait-for-prompt-to-enter-edit-mode)))
   (with-scenario "normal-with-feedback"
     (with-devtools {"mock_future_extension_version" 1}
       (<!* a/switch-to-console-panel!)
       (<!* a/switch-prompt-to-dirac!)
       (<!* a/wait-for-match "Version mismatch: Dirac Runtime installed in your app has different version")
-      (<!* a/wait-for-match "Version mismatch: Dirac Agent has different version")
+      (<!* a/wait-for-match "Version mismatch: Dirac Agent has a different version")
       (<!* a/wait-for-prompt-to-enter-edit-mode)))
   (with-scenario "old-repl-api"
     (with-devtools

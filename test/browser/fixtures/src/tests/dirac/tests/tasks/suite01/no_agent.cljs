@@ -9,4 +9,4 @@
     (with-devtools
       (<!* a/switch-to-console-panel!)
       (<!* a/switch-prompt-to-dirac!)
-      (<!* a/wait-for-devtools-match "will <a>try reconnect</a> in 4 seconds" (seconds 20)))))
+      (<!* a/wait-for-devtools-match "will <a>try to reconnect</a> in 4 seconds" (seconds 20)))))

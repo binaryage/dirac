@@ -84,7 +84,7 @@ devtools #3      setDiracPromptStatusContent('Checking for Dirac Runtime presenc
 devtools #3      setDiracPromptStatusStyle('info')
 scenario out     WARN: ("Version mismatch: Dirac Runtime installed in your app has different version **VERSION** than Dirac Chrome Extension **VERSION**.\nTo avoid compatibility issues, please upgrade all Dirac components to the same version: https://github.com/binaryage/dirac/blob/master/docs/upgrading.md.")
 devtools #3      setDiracPromptStatusContent('Dirac Agent connected. Bootstrapping ClojureScript REPL...')
-scenario out     WARN: ("Version mismatch: Dirac Agent has different version **VERSION** than Dirac Chrome Extension **VERSION**.\nTo avoid compatibility issues, please upgrade all Dirac components to the same version: https://github.com/binaryage/dirac/blob/master/docs/upgrading.md.")
+scenario out     WARN: ("Version mismatch: Dirac Agent has a different version **VERSION** than Dirac Chrome Extension **VERSION**.\nTo avoid compatibility issues, please upgrade all Dirac components to the same version: https://github.com/binaryage/dirac/blob/master/docs/upgrading.md.")
 devtools #3      setDiracPromptNS('cljs.user')
 devtools #3      wrap-with-postprocess-and-eval-in-current-context!
 devtools #3      wrap-with-postprocess-and-eval-in-current-context!
@@ -116,7 +116,7 @@ devtools #4      setDiracPromptStatusContent('Checking for Dirac Runtime presenc
 devtools #4      setDiracPromptStatusStyle('info')
 scenario out     WARN: ("Version mismatch: Dirac Runtime installed in your app has different version **VERSION** than Dirac Chrome Extension **VERSION**.\nTo avoid compatibility issues, please upgrade all Dirac components to the same version: https://github.com/binaryage/dirac/blob/master/docs/upgrading.md.")
 devtools #4      setDiracPromptStatusContent('Dirac Agent connected. Bootstrapping ClojureScript REPL...')
-scenario out     WARN: ("Version mismatch: Dirac Agent has different version **VERSION** than Dirac Chrome Extension **VERSION**.\nTo avoid compatibility issues, please upgrade all Dirac components to the same version: https://github.com/binaryage/dirac/blob/master/docs/upgrading.md.")
+scenario out     WARN: ("Version mismatch: Dirac Agent has a different version **VERSION** than Dirac Chrome Extension **VERSION**.\nTo avoid compatibility issues, please upgrade all Dirac components to the same version: https://github.com/binaryage/dirac/blob/master/docs/upgrading.md.")
 devtools #4      setDiracPromptNS('cljs.user')
 devtools #4      wrap-with-postprocess-and-eval-in-current-context!
 devtools #4      wrap-with-postprocess-and-eval-in-current-context!
