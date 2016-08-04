@@ -31,13 +31,19 @@ Now install the [Dirac Chrome Extension](https://chrome.google.com/webstore/deta
 
 #### Install the Dirac Runtime
 
-You should add the Dirac dependency to your project:
+There are two options for installing the Dirac dependency to your project. You can use a specific version of the dependency, or use `RELEASE` to always get the latest released version.
+
+Normally it would be best practice to specify the version so your dependencies don't change unexpectedly. However as the Chrome plugin automatically updates itself, and Dirac won't run if the Chrome plugin version doesn't match the version in your `project.clj`, there may not be a lot of benefit to pinning the version in your `project.clj`. You can do either:
 
 [![Clojars Project](https://img.shields.io/clojars/v/binaryage/dirac.svg)](https://clojars.org/binaryage/dirac)
 
-    :dependencies [[binaryage/dirac "<DIRAC-VERSION>"]]
+    :dependencies [[binaryage/dirac "<DIRAC-VERSION>"]] ;; Use the version from the Clojars badge above
 
-And also install runtime support in your main page(s):
+or
+
+    :dependencies [[binaryage/dirac "RELEASE"]]
+
+You will also need to install runtime support in your main page(s):
 
 ```clojure
 (ns your-project.namespace
