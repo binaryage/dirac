@@ -58,11 +58,11 @@
   (str "Dirac Agent connected. Bootstrapping ClojureScript REPL..."))
 
 (defn ^:dynamic will-reconnect-banner-msg [remaining-time]
-  (str "will <a>try reconnect</a> in " remaining-time " seconds"))
+  (str "will <a>try to reconnect</a> in " remaining-time " seconds"))
 
 (defn ^:dynamic agent-version-mismatch-msg [extension-version agent-version]
   (str "Version mismatch: "
-       "Dirac Agent has different version (v" agent-version ") "
+       "Dirac Agent has a different version (v" agent-version ") "
        "than Dirac Chrome Extension (v" extension-version ").\n"
        "To avoid compatibility issues, "
        "please upgrade all Dirac components to the same version: " dirac-upgrading-help-url "."))
