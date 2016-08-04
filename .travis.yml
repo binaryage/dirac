@@ -2,6 +2,10 @@ sudo: true
 dist: trusty
 language: clojure
 
+cache:
+  directories:
+    - $HOME/.m2
+
 before_install:
   # - export DIRAC_LOG_LEVEL=debug
   # - export DIRAC_CHROME_DRIVER_VERBOSE=1
