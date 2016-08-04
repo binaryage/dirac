@@ -67,4 +67,4 @@ As of May 2016, [Chrome doesn't reload sourcemaps when JavaScript is dynamically
                                      :source-map-timestamp true}}
 ```
 
-This configuration won't be needed if [lein-figwheel#386](https://github.com/bhauman/lein-figwheel/issues/386) is fixed. This configuration is only needed for build configurations you use to run Figwheel.
+This configuration won't be needed if you're running a version of lein-figwheel greater than 0.5.1, as it was fixed in [lein-figwheel#386](https://github.com/bhauman/lein-figwheel/issues/386). This configuration is only needed for build configurations you use to run Figwheel.
