@@ -83,9 +83,9 @@ WebInspector.JavaScriptSourceFrame.prototype = {
      * @override
      * @return {!Array<!WebInspector.ToolbarItem>}
      */
-    toolbarItems: function()
+    syncToolbarItems: function()
     {
-        var result = WebInspector.UISourceCodeFrame.prototype.toolbarItems.call(this);
+        var result = WebInspector.UISourceCodeFrame.prototype.syncToolbarItems.call(this);
         var originURL = WebInspector.CompilerScriptMapping.uiSourceCodeOrigin(this.uiSourceCode());
         if (originURL) {
             var parsedURL = originURL.asParsedURL();
@@ -149,7 +149,6 @@ WebInspector.JavaScriptSourceFrame.prototype = {
             return;
         var networkURL = WebInspector.networkMapping.networkURL(uiSourceCode);
         var url = projectType === WebInspector.projectTypes.Formatter ? uiSourceCode.url() : networkURL;
-        var isContentScript = projectType === WebInspector.projectTypes.ContentScripts;
         if (!WebInspector.blackboxManager.isBlackboxedUISourceCode(uiSourceCode)) {
             this._hideBlackboxInfobar();
             return;
@@ -169,7 +168,7 @@ WebInspector.JavaScriptSourceFrame.prototype = {
         infobar.createDetailsRowMessage();
         infobar.createDetailsRowMessage(WebInspector.UIString("Possible ways to cancel this behavior are:"));
 
-        infobar.createDetailsRowMessage(" - ").createTextChild(WebInspector.UIString("Go to \"%s\" tab in settings", WebInspector.manageBlackboxingSettingsTabLabel()));
+        infobar.createDetailsRowMessage(" - ").createTextChild(WebInspector.UIString("Go to \"%s\" tab in settings", WebInspector.UIString("Blackboxing")));
         var unblackboxLink = infobar.createDetailsRowMessage(" - ").createChild("span", "link");
         unblackboxLink.textContent = WebInspector.UIString("Unblackbox this script");
         unblackboxLink.addEventListener("click", unblackbox, false);

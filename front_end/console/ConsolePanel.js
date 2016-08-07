@@ -39,23 +39,6 @@ WebInspector.ConsolePanel = function()
 WebInspector.ConsolePanel.prototype = {
     /**
      * @override
-     * @return {!Element}
-     */
-    defaultFocusedElement: function()
-    {
-        return this._view.defaultFocusedElement();
-    },
-
-    /**
-     * @override
-     */
-    focus: function()
-    {
-        this._view.focus();
-    },
-
-    /**
-     * @override
      */
     wasShown: function()
     {
@@ -117,20 +100,6 @@ WebInspector.ConsolePanel.WrapperView.prototype = {
         WebInspector.inspectorView.setDrawerMinimized(false);
     },
 
-    /**
-     * @override
-     * @return {!Element}
-     */
-    defaultFocusedElement: function()
-    {
-        return this._view.defaultFocusedElement();
-    },
-
-    focus: function()
-    {
-        this._view.focus();
-    },
-
     _showViewInWrapper: function()
     {
         this._view.show(this.element);
@@ -160,7 +129,7 @@ WebInspector.ConsolePanel.ConsoleRevealer.prototype = {
             consoleView.focus();
             return Promise.resolve();
         }
-        WebInspector.inspectorView.showViewInDrawer("console");
+        WebInspector.viewManager.showView("console");
         return Promise.resolve();
     }
 }

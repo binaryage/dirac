@@ -30,7 +30,7 @@
 
 /**
  * @constructor
- * @extends {WebInspector.View}
+ * @extends {WebInspector.SimpleView}
  * @implements {WebInspector.Searchable}
  * @implements {WebInspector.Replaceable}
  * @param {string} url
@@ -38,7 +38,7 @@
  */
 WebInspector.SourceFrame = function(url, lazyContent)
 {
-    WebInspector.View.call(this, WebInspector.UIString("Source"));
+    WebInspector.SimpleView.call(this, WebInspector.UIString("Source"));
 
     this._url = url;
     this._lazyContent = lazyContent;
@@ -106,18 +106,9 @@ WebInspector.SourceFrame.prototype = {
      * @override
      * @return {!Array<!WebInspector.ToolbarItem>}
      */
-    toolbarItems: function()
+    syncToolbarItems: function()
     {
         return [this._sourcePosition];
-    },
-
-    /**
-     * @override
-     * @return {!Element}
-     */
-    defaultFocusedElement: function()
-    {
-        return this._textEditor.defaultFocusedElement();
     },
 
     get loaded()
@@ -647,7 +638,7 @@ WebInspector.SourceFrame.prototype = {
             e.consume(true);
     },
 
-    __proto__: WebInspector.View.prototype
+    __proto__: WebInspector.SimpleView.prototype
 }
 
 /**

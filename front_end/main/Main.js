@@ -31,26 +31,15 @@
 /**
  * @constructor
  * @implements {InspectorAgent.Dispatcher}
- * @implements {WebInspector.Console.UIDelegate}
  * @suppressGlobalPropertiesCheck
  */
 WebInspector.Main = function()
 {
-    WebInspector.console.setUIDelegate(this);
     WebInspector.Main._instanceForTest = this;
     runOnWindowLoad(this._loaded.bind(this));
 }
 
 WebInspector.Main.prototype = {
-    /**
-     * @override
-     * @return {!Promise.<undefined>}
-     */
-    showConsole: function()
-    {
-        return WebInspector.Revealer.revealPromise(WebInspector.console);
-    },
-
     _loaded: function()
     {
         console.timeStamp("Main._loaded");
@@ -142,6 +131,8 @@ WebInspector.Main.prototype = {
     {
         console.timeStamp("Main._createApp");
 
+        WebInspector.viewManager = new WebInspector.ViewManager();
+
         // Request filesystems early, we won't create connections until callback is fired. Things will happen in parallel.
         WebInspector.isolatedFileSystemManager = new WebInspector.IsolatedFileSystemManager();
         WebInspector.isolatedFileSystemManager.initialize(this._didInitializeFileSystemManager.bind(this));
@@ -156,7 +147,7 @@ WebInspector.Main.prototype = {
 
         var canDock = !!Runtime.queryParam("can_dock");
         WebInspector.zoomManager = new WebInspector.ZoomManager(window, InspectorFrontendHost);
-        WebInspector.inspectorView = new WebInspector.InspectorView();
+        WebInspector.inspectorView = WebInspector.InspectorView.instance();
         WebInspector.ContextMenu.initialize();
         WebInspector.ContextMenu.installHandler(document);
         WebInspector.Tooltip.installHandler(document);
@@ -841,10 +832,12 @@ WebInspector.Main.MainMenuItem.prototype = {
         contextMenu.appendAction("main.toggle-drawer", WebInspector.inspectorView.drawerVisible() ? WebInspector.UIString("Hide console drawer") : WebInspector.UIString("Show console drawer"));
         contextMenu.appendItemsAtLocation("mainMenu");
         var moreTools = contextMenu.namedSubMenu("mainMenuMoreTools");
-        var extensions = self.runtime.extensions("drawer-view", undefined, true);
+        var extensions = self.runtime.extensions("view", undefined, true);
         for (var extension of extensions) {
             var descriptor = extension.descriptor();
-            moreTools.appendItem(extension.title(), WebInspector.inspectorView.showViewInDrawer.bind(WebInspector.inspectorView, descriptor["name"]));
+            if (descriptor["location"] !== "drawer-view")
+                continue;
+            moreTools.appendItem(extension.title(), WebInspector.viewManager.showView.bind(WebInspector.viewManager, descriptor["id"]));
         }
 
         contextMenu.show();

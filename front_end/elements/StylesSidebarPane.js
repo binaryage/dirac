@@ -63,7 +63,7 @@ WebInspector.StylesSidebarPane.createExclamationMark = function(property)
     exclamationElement.className = "exclamation-mark";
     if (!WebInspector.StylesSidebarPane.ignoreErrorsForProperty(property))
         exclamationElement.type = "warning-icon";
-    exclamationElement.title = WebInspector.CSSMetadata.cssPropertiesMetainfo.keySet()[property.name.toLowerCase()] ? WebInspector.UIString("Invalid property value") : WebInspector.UIString("Unknown property name");
+    exclamationElement.title = WebInspector.CSSMetadata.isCSSPropertyName(property.name) ? WebInspector.UIString("Invalid property value") : WebInspector.UIString("Unknown property name");
     return exclamationElement;
 }
 
@@ -425,7 +425,7 @@ WebInspector.StylesSidebarPane.prototype = {
      */
     _addBlankSection: function(insertAfterSection, styleSheetId, ruleLocation)
     {
-        this.revealWidget();
+        this.revealView();
         var node = this.node();
         var blankSection = new WebInspector.BlankStylePropertiesSection(this, insertAfterSection._matchedStyles, node ? WebInspector.DOMPresentationUtils.simpleSelector(node) : "", styleSheetId, ruleLocation, insertAfterSection._style);
 
@@ -2387,7 +2387,8 @@ WebInspector.StylePropertyTreeElement.prototype = {
             selectElement.parentElement.scrollIntoViewIfNeeded(false);
 
         var applyItemCallback = !isEditingName ? this._applyFreeFlowStyleTextEdit.bind(this) : undefined;
-        this._prompt = new WebInspector.StylesSidebarPane.CSSPropertyPrompt(isEditingName ? WebInspector.CSSMetadata.cssPropertiesMetainfo : WebInspector.CSSMetadata.keywordsForProperty(this.nameElement.textContent), this, isEditingName);
+        var cssCompletions = isEditingName ? WebInspector.CSSMetadata.cssPropertiesMetainfo.allProperties() : WebInspector.CSSMetadata.propertyValues(this.nameElement.textContent);
+        this._prompt = new WebInspector.StylesSidebarPane.CSSPropertyPrompt(cssCompletions, this, isEditingName);
         this._prompt.setAutocompletionTimeout(0);
         if (applyItemCallback) {
             this._prompt.addEventListener(WebInspector.TextPrompt.Events.ItemApplied, applyItemCallback, this);
@@ -2798,7 +2799,7 @@ WebInspector.StylePropertyTreeElement.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.TextPrompt}
- * @param {!WebInspector.CSSMetadata} cssCompletions
+ * @param {!Array<string>} cssCompletions
  * @param {!WebInspector.StylePropertyTreeElement} treeElement
  * @param {boolean} isEditingName
  */
@@ -2944,7 +2945,7 @@ WebInspector.StylesSidebarPane.CSSPropertyPrompt.prototype = {
             return;
         }
 
-        var results = this._cssCompletions.startsWith(prefix);
+        var results = this._cssCompletions.filter(completion => completion.startsWith(prefix));
         if (!this._isEditingName && !results.length && prefix.length > 1 && "!important".startsWith(prefix))
             results.push("!important");
         var userEnteredText = wordRange.toString().replace("-", "");
@@ -2952,7 +2953,7 @@ WebInspector.StylesSidebarPane.CSSPropertyPrompt.prototype = {
             for (var i = 0; i < results.length; ++i)
                 results[i] = results[i].toUpperCase();
         }
-        var selectedIndex = this._cssCompletions.mostUsedOf(results);
+        var selectedIndex = this._isEditingName ? WebInspector.CSSMetadata.mostUsedProperty(results) : 0;
         completionsReadyCallback(results, selectedIndex);
     },
 
@@ -2972,24 +2973,6 @@ WebInspector.StylesSidebarPropertyRenderer = function(rule, node, name, value)
     this._node = node;
     this._propertyName = name;
     this._propertyValue = value;
-}
-
-WebInspector.StylesSidebarPropertyRenderer._variableRegex = /(var\(--.*?\))/g;
-WebInspector.StylesSidebarPropertyRenderer._colorRegex = /((?:rgb|hsl)a?\([^)]+\)|#[0-9a-fA-F]{6}|#[0-9a-fA-F]{3}|\b\w+\b(?!-))/g;
-WebInspector.StylesSidebarPropertyRenderer._bezierRegex = /((cubic-bezier\([^)]+\))|\b(linear|ease-in-out|ease-in|ease-out|ease)\b)/g;
-
-/**
- * @param {string} value
- * @return {!RegExp}
- */
-WebInspector.StylesSidebarPropertyRenderer._urlRegex = function(value)
-{
-    // Heuristically choose between single-quoted, double-quoted or plain URL regex.
-    if (/url\(\s*'.*\s*'\s*\)/.test(value))
-        return /url\(\s*('.+?')\s*\)/g;
-    if (/url\(\s*".*\s*"\s*\)/.test(value))
-        return /url\(\s*(".+?")\s*\)/g;
-    return /url\(\s*([^)]+)\s*\)/g;
 }
 
 WebInspector.StylesSidebarPropertyRenderer.prototype = {
@@ -3028,29 +3011,37 @@ WebInspector.StylesSidebarPropertyRenderer.prototype = {
     {
         var valueElement = createElement("span");
         valueElement.className = "value";
-
         if (!this._propertyValue)
             return valueElement;
 
-        var formatter = new WebInspector.StringFormatter();
-        formatter.addProcessor(WebInspector.StylesSidebarPropertyRenderer._variableRegex, createTextNode);
-        formatter.addProcessor(WebInspector.StylesSidebarPropertyRenderer._urlRegex(this._propertyValue), this._processURL.bind(this));
-        if (this._bezierHandler && WebInspector.CSSMetadata.isBezierAwareProperty(this._propertyName))
-            formatter.addProcessor(WebInspector.StylesSidebarPropertyRenderer._bezierRegex, this._bezierHandler);
-        if (this._colorHandler && WebInspector.CSSMetadata.isColorAwareProperty(this._propertyName))
-            formatter.addProcessor(WebInspector.StylesSidebarPropertyRenderer._colorRegex, this._colorHandler);
-
-        valueElement.appendChild(formatter.formatText(this._propertyValue));
+        var regexes = [WebInspector.CSSMetadata.VariableRegex, WebInspector.CSSMetadata.URLRegex];
+        var processors = [createTextNode, this._processURL.bind(this)];
+        if (this._bezierHandler && WebInspector.CSSMetadata.isBezierAwareProperty(this._propertyName)) {
+            regexes.push(WebInspector.Geometry.CubicBezier.Regex);
+            processors.push(this._bezierHandler);
+        }
+        if (this._colorHandler && WebInspector.CSSMetadata.isColorAwareProperty(this._propertyName)) {
+            regexes.push(WebInspector.Color.Regex);
+            processors.push(this._colorHandler);
+        }
+        var results = WebInspector.TextUtils.splitStringByRegexes(this._propertyValue, regexes);
+        for (var i = 0; i < results.length; i++) {
+            var result = results[i];
+            var processor = result.regexIndex === -1 ? createTextNode : processors[result.regexIndex];
+            valueElement.appendChild(processor(result.value));
+        }
         valueElement.normalize();
         return valueElement;
     },
 
     /**
-     * @param {string} url
+     * @param {string} text
      * @return {!Node}
      */
-    _processURL: function(url)
+    _processURL: function(text)
     {
+        // Strip "url(" and ")" along with whitespace.
+        var url = text.substring(4, text.length - 1).trim();
         var isQuoted = /^'.*'$/.test(url) || /^".*"$/.test(url);
         if (isQuoted)
             url = url.substring(1, url.length - 1);

@@ -83,8 +83,9 @@
             "tags": "device"
         },
         {
-            "type": "settings-view",
-            "name": "devices",
+            "type": "view",
+            "location": "settings-view",
+            "id": "devices",
             "title": "Devices",
             "order": "30",
             "className": "WebInspector.DevicesSettingsTab",
@@ -100,8 +101,9 @@
             "className": "WebInspector.SensorsView.ShowActionDelegate"
         },
         {
-            "type": "drawer-view",
-            "name": "sensors",
+            "type": "view",
+            "location": "drawer-view",
+            "id": "sensors",
             "title": "Sensors",
             "persistence": "closeable",
             "order": 100,

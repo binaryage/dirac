@@ -345,20 +345,21 @@ WebInspector.CSSSourceFrame.AutocompleteDelegate.prototype = {
      * @param {!WebInspector.CodeMirrorTextEditor} editor
      * @param {!WebInspector.TextRange} prefixRange
      * @param {!WebInspector.TextRange} substituteRange
-     * @return {!Array.<string>}
+     * @return {!Promise.<!WebInspector.SuggestBox.Suggestions>}
      */
     wordsWithPrefix: function(editor, prefixRange, substituteRange)
     {
         var prefix = editor.copyRange(prefixRange);
         if (prefix.startsWith("$"))
             return this._simpleDelegate.wordsWithPrefix(editor, prefixRange, substituteRange);
+
         var propertyToken = this._backtrackPropertyToken(editor, prefixRange.startLine, prefixRange.startColumn - 1);
         if (!propertyToken)
             return this._simpleDelegate.wordsWithPrefix(editor, prefixRange, substituteRange);
 
         var line = editor.line(prefixRange.startLine);
         var tokenContent = line.substring(propertyToken.startColumn, propertyToken.endColumn);
-        var keywords = WebInspector.CSSMetadata.keywordsForProperty(tokenContent);
-        return keywords.startsWith(prefix);
-    },
+        var propertyValues = WebInspector.CSSMetadata.propertyValues(tokenContent);
+        return Promise.resolve(propertyValues.filter(value => value.startsWith(prefix)).map(value => ({title: value})));
+    }
 }

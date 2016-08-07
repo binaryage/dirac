@@ -38,8 +38,9 @@
             "tags": "device"
         },
         {
-            "type": "settings-view",
-            "name": "network-conditions",
+            "type": "view",
+            "location": "settings-view",
+            "id": "network-conditions",
             "title": "Throttling",
             "order": "35",
             "className": "WebInspector.NetworkConditionsSettingsTab",
