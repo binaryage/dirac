@@ -11,16 +11,18 @@
 ; we persist all options in local storage under "options" key as JSON string
 
 (defonce default-options
-  {:target-url               "http://localhost:9222"
-   :open-as                  "panel"
-   :enable-repl              true
-   :enable-parinfer          true
-   :enable-friendly-locals   true
-   :enable-clustered-locals  true
-   :inline-custom-formatters true
-   :welcome-message          true
-   :clean-urls               true
-   :beautify-function-names  true})
+  {:target-url                "http://localhost:9222"
+   :open-as                   "panel"
+   :enable-repl               true
+   :enable-parinfer           true
+   :enable-friendly-locals    true
+   :enable-clustered-locals   true
+   :inline-custom-formatters  true
+   :welcome-message           true
+   :clean-urls                true
+   :beautify-function-names   true
+   :use-backend-supported-api true
+   :use-backend-supported-css true})
 
 (defonce cached-options (atom nil))
 (defonce chrome-event-channel (make-chrome-event-channel (chan)))

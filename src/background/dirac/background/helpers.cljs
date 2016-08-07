@@ -12,9 +12,9 @@
             [dirac.background.action :as action]
             [dirac.background.state :as state]
             [dirac.utils :as utils]
-            [cljs.reader :as reader])
-  (:import goog.Uri
-           goog.Uri.QueryData))
+            [cljs.reader :as reader]
+            [clojure.string :as string])
+  (:import goog.Uri))
 
 (defn ^:dynamic warn-about-unexpected-number-views [devtools-id views]
   (warn (str "found unexpected number views with enabled automation support for devtools #" devtools-id "\n")
@@ -30,10 +30,15 @@
   (let [uri (make-uri-object url)]
     (.getParameterValue uri param)))
 
+(defn build-query [params]
+  (let [encode js/encodeURIComponent
+        items (map (fn [[k v]] (str (encode k) "=" (encode v))) params)]
+    (string/join "&" items)))
+
 (defn make-relative-url [path params]
   {:pre [(map? params)]}
-  (let [non-empty-params (into {} (filter second params))]
-    (str path "?" (.toDecodedString (.createFromMap QueryData (clj->js non-empty-params))))))
+  (let [non-empty-params (into {} (filter #(some? (second %)) params))]
+    (str path "?" (build-query non-empty-params))))
 
 ; -- dirac frontend url -----------------------------------------------------------------------------------------------------
 
@@ -47,7 +52,7 @@
 ; chrome-extension://mjdnckdilfjoenmikegbbenflgjcmbid/devtools/front_end/inspector.html?devtools_id=1&dirac_flags=11111&ws=localhost:9222/devtools/page/76BE0A6D-412C-4592-BC3C-ED3ECB5DFF8C
 (defn make-dirac-frontend-url [devtools-id options]
   {:pre [devtools-id]}
-  (let [{:keys [backend-url flags reset-settings automate extra-url-params]} options]
+  (let [{:keys [backend-url flags reset-settings automate extra-url-params backend-api backend-css]} options]
     (assert backend-url)
     (assert flags)
     (let [html-file-path (get-dirac-main-html-file-path)
@@ -58,6 +63,8 @@
                        ; add optional params
                        reset-settings (assoc "reset_settings" 1)
                        automate (assoc "dirac_automate" 1)
+                       backend-api (assoc "backend_api" backend-api)
+                       backend-css (assoc "backend_css" backend-css)
                        extra-url-params (merge extra-url-params))]
       (runtime/get-url (make-relative-url html-file-path all-params)))))
 

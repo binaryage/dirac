@@ -248,6 +248,8 @@ Object.assign(window.dirac, (function() {
         _DEBUG_FEEDBACK: false,
         _DEBUG_WATCHING: false,
         _DEBUG_CACHES: false,
+        _DEBUG_BACKEND_API: false,
+        _DEBUG_BACKEND_CSS: false,
 
         // -- feature toggles -----------------------------------------------------------------------------------------------
         hasREPL: hasFeature("enable-repl"),

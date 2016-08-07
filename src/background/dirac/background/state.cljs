@@ -3,13 +3,16 @@
             [chromex.logging :refer-macros [log info warn error group group-end]]
             [chromex.protocols :refer [post-message! get-sender get-name]]
             [devtools.toolbox :as toolbox]
-            [dirac.utils :as utils]))
+            [dirac.utils :as utils]
+            [clojure.string :as string]))
 
 (defonce initial-state
   {:last-devtools-id     0
    :devtools-descriptors {}                                                                                                   ; pairings between dirac devtools instances and connected backend tabs
    :chrome-event-channel nil
-   :marion-port          nil})
+   :marion-port          nil
+   :backend-api          nil
+   :backend-css          nil})
 
 (defonce state (atom initial-state))
 
@@ -95,3 +98,23 @@
   ([message-id] (post-reply! message-id nil))
   ([message-id value]
    (post-raw-reply! message-id (make-reply value))))
+
+; -- backend-api ------------------------------------------------------------------------------------------------------------
+
+(defn set-backend-api! [api]
+  {:pre [(string? api)]}
+  (log (str "initialized backend-api with " (count (string/split-lines api)) " calls"))
+  (swap! state assoc :backend-api api))
+
+(defn get-backend-api []
+  (:backend-api @state))
+
+; -- backend-css ------------------------------------------------------------------------------------------------------------
+
+(defn set-backend-css! [css]
+  {:pre [(string? css)]}
+  (log (str "initialized backend-css with " (count (string/split-lines css)) " definitions"))
+  (swap! state assoc :backend-css css))
+
+(defn get-backend-css []
+  (:backend-css @state))

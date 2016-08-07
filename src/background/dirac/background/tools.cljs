@@ -57,6 +57,18 @@
               first-tab (aget tabs 0)]
           (sugar/get-tab-id first-tab))))))
 
+(defn create-bundled-devtools-inspector-window! []
+  (let [window-params #js {:url   "chrome-devtools://devtools/bundled/inspector.js"
+                           :type  "normal"
+                           :state "minimized"}]
+    (go
+      (if-let [[window] (<! (windows/create window-params))]
+        (let [tabs (oget window "tabs")
+              first-tab (aget tabs 0)
+              tab-id (sugar/get-tab-id first-tab)]
+          (<! (timeout 1000))
+          tab-id)))))
+
 (defn create-dirac-tab! []
   (go
     (if-let [[tab] (<! (tabs/create #js {:url (helpers/make-blank-page-url)}))]
@@ -84,9 +96,29 @@
     (assoc options :automate true)
     options))
 
+(defn provide-backend-api-if-available [options]
+  (or
+    (if (options/get-option :use-backend-supported-api)
+      (if-let [backend-api (state/get-backend-api)]
+        (assoc options :backend-api backend-api)))
+    options))
+
+(defn provide-backend-css-if-available [options]
+  (or
+    (if (options/get-option :use-backend-supported-css)
+      (if-let [backend-css (state/get-backend-css)]
+        (assoc options :backend-css backend-css)))
+    options))
+
+(defn prepare-options [initial-options]
+  (-> initial-options
+      (automate-if-marion-present)
+      (provide-backend-api-if-available)
+      (provide-backend-css-if-available)))
+
 (defn connect-and-navigate-dirac-devtools! [frontend-tab-id backend-tab-id options]
   (let [devtools-id (devtools/register! frontend-tab-id backend-tab-id)
-        dirac-frontend-url (helpers/make-dirac-frontend-url devtools-id (automate-if-marion-present options))]
+        dirac-frontend-url (helpers/make-dirac-frontend-url devtools-id (prepare-options options))]
     (go
       (<! (tabs/update frontend-tab-id #js {:url dirac-frontend-url}))
       (<! (timeout 500))                                                                                                      ; give the page some time load the document

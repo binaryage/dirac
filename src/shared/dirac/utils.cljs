@@ -3,7 +3,7 @@
   (:require [cljs.core.async :refer [put! <! chan close!]]
             [cljs.core.async.impl.protocols :as async-protocols]
             [cuerdas.core :as cuerdas]
-            [chromex.support :refer-macros [oget ocall oapply]]
+            [chromex.support :refer-macros [oget oset ocall oapply]]
             [chromex.logging :refer-macros [log info warn error group group-end]]))
 
 (def Promise (oget js/window "Promise"))
@@ -133,3 +133,10 @@
   (-> s
       (cuerdas/lines)
       (nth n)))
+
+(defn convert-blob-to-string [blob]
+  (let [channel (chan)
+        reader (js/FileReader.)]
+    (oset reader ["onloadend"] #(put! channel (oget reader "result")))
+    (ocall reader "readAsText" blob)
+    channel))

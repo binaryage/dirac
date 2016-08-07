@@ -46,6 +46,8 @@
     "storage",
     "webRequest",
     "http://*/json",
+    "<all_urls>",
+    "pageCapture",
     "tabs"
   ],
   "manifest_version": 2

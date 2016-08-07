@@ -44,14 +44,16 @@
                      ["window" "as a new window"]
                      ["tab" "as a new tab"]])
           [:div {:class "switches"}
-           (f/checkbox "Enable welcome message" data [:options :welcome-message])
+           (f/checkbox "Print welcome message" data [:options :welcome-message])
            (f/checkbox "Enable REPL" data [:options :enable-repl])
            (f/checkbox "Enable Parinfer" data [:options :enable-parinfer])
            (f/checkbox "Enable friendly locals" data [:options :enable-friendly-locals])
            (f/checkbox "Enable clustered locals" data [:options :enable-clustered-locals])
            (f/checkbox "Inline Custom Formatters in sources" data [:options :inline-custom-formatters])
            (f/checkbox "Enable clean URLs" data [:options :clean-urls])
-           (f/checkbox "Beautify function names" data [:options :beautify-function-names])])
+           (f/checkbox "Beautify function names" data [:options :beautify-function-names])
+           (f/checkbox "Use backend-supported API" data [:options :use-backend-supported-api])
+           (f/checkbox "Use backend-supported CSS" data [:options :use-backend-supported-css])])
         (f/form-buttons
           (f/button "Reset to Defaults" reset-to-defaults!)
           (f/button "Save and Exit" save-state-and-exit!))))))

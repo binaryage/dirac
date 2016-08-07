@@ -2,9 +2,7 @@
     "dependencies": [
         "platform",
         "common",
-        "host",
-        "sdk",
-        "ui"
+        "host"
     ],
     "scripts": [
         "keysim.js",
