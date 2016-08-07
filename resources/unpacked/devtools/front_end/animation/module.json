@@ -1,8 +1,9 @@
 {
     "extensions": [
         {
-            "type": "drawer-view",
-            "name": "animations",
+            "type": "view",
+            "location": "drawer-view",
+            "id": "animations",
             "title": "Animations",
             "persistence": "closeable",
             "order": 0,

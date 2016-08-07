@@ -1012,12 +1012,14 @@ WebInspector.CodeMirrorTextEditor.prototype = {
      * @param {number} lineNumber
      * @param {number} columnNumber
      * @param {!Element} element
+     * @param {boolean=} insertBefore
      * @return {!CodeMirror.TextMarker}
      */
-    addBookmark: function(lineNumber, columnNumber, element)
+    addBookmark: function(lineNumber, columnNumber, element, insertBefore)
     {
         return this._codeMirror.setBookmark(new CodeMirror.Pos(lineNumber, columnNumber), {
-            widget: element
+            widget: element,
+            insertLeft: insertBefore
         });
     },
 
@@ -1034,15 +1036,6 @@ WebInspector.CodeMirrorTextEditor.prototype = {
         var middleMarkers = this._codeMirror.findMarks(pos.start, pos.end);
         var endMarkers = this._codeMirror.findMarksAt(pos.end);
         return startMarkers.concat(middleMarkers, endMarkers).filter(marker => marker.type === "bookmark");
-    },
-
-    /**
-     * @override
-     * @return {!Element}
-     */
-    defaultFocusedElement: function()
-    {
-        return this.element;
     },
 
     focus: function()

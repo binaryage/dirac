@@ -148,15 +148,6 @@ WebInspector.SourcesView.prototype = {
     },
 
     /**
-     * @override
-     * @return {!Element}
-     */
-    defaultFocusedElement: function()
-    {
-        return this._editorContainer.view.defaultFocusedElement();
-    },
-
-    /**
      * @return {!WebInspector.SearchableView}
      */
     searchableView: function()
@@ -279,8 +270,8 @@ WebInspector.SourcesView.prototype = {
     {
         this._scriptViewToolbar.removeToolbarItems();
         var view = this.visibleView()
-        if (view instanceof WebInspector.View) {
-            for (var item of (/** @type {?WebInspector.View} */(view)).toolbarItems())
+        if (view instanceof WebInspector.SimpleView) {
+            for (var item of (/** @type {?WebInspector.SimpleView} */(view)).syncToolbarItems())
                 this._scriptViewToolbar.appendToolbarItem(item);
         }
     },

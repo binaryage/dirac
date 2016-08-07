@@ -75,10 +75,21 @@ WebInspector.AdvancedSearchView.prototype = {
     {
         if (queryCandidate)
             this._search.value = queryCandidate;
+
         if (this.isShowing())
             this.focus();
+        else
+            this._focusOnShow = true;
 
         this._startIndexing();
+    },
+
+    wasShown: function()
+    {
+        if (this._focusOnShow) {
+            this.focus();
+            delete this._focusOnShow;
+        }
     },
 
     _onIndexingFinished: function()
@@ -274,15 +285,6 @@ WebInspector.AdvancedSearchView.prototype = {
         this._searchMessageElement.textContent = finished ? WebInspector.UIString("Search finished.") : WebInspector.UIString("Search interrupted.");
     },
 
-    /**
-     * @override
-     * @return {!Element}
-     */
-    defaultFocusedElement: function()
-    {
-        return this._search;
-    },
-
     focus: function()
     {
         WebInspector.setCurrentFocusElement(this._search);
@@ -348,7 +350,7 @@ WebInspector.AdvancedSearchView.prototype = {
  */
 WebInspector.AdvancedSearchView.openSearch = function(query, filePath)
 {
-    WebInspector.inspectorView.showViewInDrawer("sources.search");
+    WebInspector.viewManager.showView("sources.search");
     var searchView = /** @type {!WebInspector.AdvancedSearchView} */ (self.runtime.sharedInstance(WebInspector.AdvancedSearchView));
     var fileMask = filePath ? " file:" + filePath : "";
     searchView._toggle(query + fileMask);

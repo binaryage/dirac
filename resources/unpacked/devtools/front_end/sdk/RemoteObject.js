@@ -315,7 +315,7 @@ WebInspector.RemoteObject.type = function(remoteObject)
  */
 WebInspector.RemoteObject.arrayLength = function(object)
 {
-    if (object.subtype !== "array")
+    if (object.subtype !== "array" && object.subtype !== "typedarray")
         return 0;
     var matches = object.description.match(/\[([0-9]+)\]/);
     if (!matches)
@@ -330,46 +330,37 @@ WebInspector.RemoteObject.arrayLength = function(object)
 WebInspector.RemoteObject.toCallArgument = function(object)
 {
     var type = typeof object;
-    var value = object;
-    var objectId = undefined;
-    var description = String(object);
-
-    if (type === "number" && value === 0 && 1 / value < 0)
-        description = "-0";
-
-    switch (type) {
-    case "number":
-    case "string":
-    case "boolean":
-    case "undefined":
-        break;
-    default:
-        if (object) {
-            type = object.type;
-            value = object.value;
-            objectId = object.objectId;
-            description = object.description;
-        }
-        break;
-    }
-
-    // Handle special numbers: NaN, Infinity, -Infinity, -0.
+    if (type === "undefined")
+        return {};
     if (type === "number") {
-        switch (description) {
-        case "NaN":
-        case "Infinity":
-        case "-Infinity":
-        case "-0":
-            value = description;
-            break;
-        }
+        var description = String(object);
+        if (object === 0 && 1 / object < 0)
+            return { unserializableValue: RuntimeAgent.UnserializableValue.Negative0 };
+        if (description === "NaN")
+            return { unserializableValue: RuntimeAgent.UnserializableValue.NaN };
+        if (description === "Infinity")
+            return { unserializableValue: RuntimeAgent.UnserializableValue.Infinity };
+        if (description === "-Infinity")
+            return { unserializableValue: RuntimeAgent.UnserializableValue.NegativeInfinity };
+        return { value: object };
     }
+    if (type === "string" || type === "boolean")
+        return { value: object };
 
-    return {
-        value: value,
-        objectId: objectId,
-        type: /** @type {!RuntimeAgent.CallArgumentType.<string>} */ (type)
-    };
+    if (!object)
+        return { value: null };
+
+    if (typeof object.unserializableValue !== "undefined")
+        return { unserializableValue: object.unserializableValue };
+    if (typeof object._unserializableValue !== "undefined")
+        return { unserializableValue: object._unserializableValue };
+
+    if (typeof object.objectId !== "undefined")
+        return { objectId: object.objectId };
+    if (typeof object._objectId !== "undefined")
+        return { objectId: object._objectId };
+
+    return { value: object.value };
 }
 
 /**
@@ -380,11 +371,12 @@ WebInspector.RemoteObject.toCallArgument = function(object)
  * @param {string} type
  * @param {string|undefined} subtype
  * @param {*} value
+ * @param {!RuntimeAgent.UnserializableValue=} unserializableValue
  * @param {string=} description
  * @param {!RuntimeAgent.ObjectPreview=} preview
  * @param {!RuntimeAgent.CustomPreview=} customPreview
  */
-WebInspector.RemoteObjectImpl = function(target, objectId, type, subtype, value, description, preview, customPreview)
+WebInspector.RemoteObjectImpl = function(target, objectId, type, subtype, value, unserializableValue, description, preview, customPreview)
 {
     WebInspector.RemoteObject.call(this);
 
@@ -404,11 +396,19 @@ WebInspector.RemoteObjectImpl = function(target, objectId, type, subtype, value,
         // Primitive or null object.
         this._description = description || (value + "");
         this._hasChildren = false;
-        // Handle special numbers: NaN, Infinity, -Infinity, -0.
-        if (type === "number" && typeof value !== "number")
-            this.value = Number(value);
-        else
+        if (typeof unserializableValue !== "undefined") {
+            this._unserializableValue = unserializableValue;
+            if (unserializableValue === RuntimeAgent.UnserializableValue.Infinity ||
+                unserializableValue === RuntimeAgent.UnserializableValue.NegativeInfinity ||
+                unserializableValue === RuntimeAgent.UnserializableValue.Negative0 ||
+                unserializableValue === RuntimeAgent.UnserializableValue.NaN) {
+                this.value = Number(unserializableValue);
+            } else {
+                this.value = unserializableValue;
+            }
+        } else {
             this.value = value;
+        }
     }
     this._customPreview = customPreview || null;
 }
@@ -514,7 +514,7 @@ WebInspector.RemoteObjectImpl.prototype = {
             }
 
             if (!this._objectId) {
-                reject(null);
+                reject(new Error("No object id specified"));
                 return;
             }
 
@@ -528,7 +528,7 @@ WebInspector.RemoteObjectImpl.prototype = {
             function mycallback(error, payloads)
             {
                 if (error) {
-                    reject(null);
+                    reject(new Error(error));
                     return;
                 }
                 fulfill(payloads.map(createEventListener.bind(this)));
@@ -694,7 +694,7 @@ WebInspector.RemoteObjectImpl.prototype = {
         var setPropertyValueFunction = "function(a, b) { this[a] = b; }";
 
         var argv = [name, WebInspector.RemoteObject.toCallArgument(result)];
-        this._runtimeAgent.callFunctionOn(this._objectId, setPropertyValueFunction, argv, true, undefined, undefined, undefined, propertySetCallback);
+        this._runtimeAgent.callFunctionOn(this._objectId, setPropertyValueFunction, argv, true, undefined, undefined, undefined, undefined, propertySetCallback);
 
         /**
          * @param {?Protocol.Error} error
@@ -724,7 +724,7 @@ WebInspector.RemoteObjectImpl.prototype = {
         }
 
         var deletePropertyFunction = "function(a) { delete this[a]; return !(a in this); }";
-        this._runtimeAgent.callFunctionOn(this._objectId, deletePropertyFunction, [name], true, undefined, undefined, undefined, deletePropertyCallback);
+        this._runtimeAgent.callFunctionOn(this._objectId, deletePropertyFunction, [name], true, undefined, undefined, undefined, undefined, deletePropertyCallback);
 
         /**
          * @param {?Protocol.Error} error
@@ -768,7 +768,7 @@ WebInspector.RemoteObjectImpl.prototype = {
                 callback(this.target().runtimeModel.createRemoteObject(result), wasThrown);
         }
 
-        this._runtimeAgent.callFunctionOn(this._objectId, functionDeclaration.toString(), args, true, undefined, undefined, undefined, mycallback.bind(this));
+        this._runtimeAgent.callFunctionOn(this._objectId, functionDeclaration.toString(), args, true, undefined, undefined, undefined, undefined, mycallback.bind(this));
     },
 
     /**
@@ -789,7 +789,7 @@ WebInspector.RemoteObjectImpl.prototype = {
             callback((error || wasThrown) ? null : result.value);
         }
 
-        this._runtimeAgent.callFunctionOn(this._objectId, functionDeclaration.toString(), args, true, true, false, undefined, mycallback);
+        this._runtimeAgent.callFunctionOn(this._objectId, functionDeclaration.toString(), args, true, true, false, undefined, undefined, mycallback);
     },
 
     release: function()
@@ -915,12 +915,13 @@ WebInspector.RemoteObject.loadFromObjectPerProto = function(object, callback)
  * @param {string} type
  * @param {string|undefined} subtype
  * @param {*} value
+ * @param {!RuntimeAgent.UnserializableValue=} unserializableValue
  * @param {string=} description
  * @param {!RuntimeAgent.ObjectPreview=} preview
  */
-WebInspector.ScopeRemoteObject = function(target, objectId, scopeRef, type, subtype, value, description, preview)
+WebInspector.ScopeRemoteObject = function(target, objectId, scopeRef, type, subtype, value, unserializableValue, description, preview)
 {
-    WebInspector.RemoteObjectImpl.call(this, target, objectId, type, subtype, value, description, preview);
+    WebInspector.RemoteObjectImpl.call(this, target, objectId, type, subtype, value, unserializableValue, description, preview);
     this._scopeRef = scopeRef;
     this._savedScopeProperties = undefined;
 };
@@ -1327,7 +1328,7 @@ WebInspector.RemoteArray = function(object)
  */
 WebInspector.RemoteArray.objectAsArray = function(object)
 {
-    if (!object || object.type !== "object" || object.subtype !== "array")
+    if (!object || object.type !== "object" || (object.subtype !== "array" && object.subtype !== "typedarray"))
         throw new Error("Object is empty or not an array");
     return new WebInspector.RemoteArray(object);
 }

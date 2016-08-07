@@ -32,33 +32,36 @@
 
 /**
  * @constructor
- * @param {!Array.<!{name: string, longhands: !Array.<string>}|string>} properties
+ * @param {!Array.<!{name: string, longhands: !Array.<string>}>} properties
  */
 WebInspector.CSSMetadata = function(properties)
 {
     this._values = /** !Array.<string> */ ([]);
-    this._longhands = {};
-    this._shorthands = {};
+    /** @type {!Map<string, !Array<string>>} */
+    this._longhands = new Map();
+    /** @type {!Map<string, !Array<string>>} */
+    this._shorthands = new Map();
+    /** @type {!Set<string>} */
+    this._inherited = new Set();
     for (var i = 0; i < properties.length; ++i) {
         var property = properties[i];
-        if (typeof property === "string") {
-            this._values.push(property);
-            continue;
-        }
         var propertyName = property.name;
         if (!CSS.supports(propertyName, "initial"))
             continue;
         this._values.push(propertyName);
 
+        if (property.inherited)
+            this._inherited.add(propertyName);
+
         var longhands = properties[i].longhands;
         if (longhands) {
-            this._longhands[propertyName] = longhands;
+            this._longhands.set(propertyName, longhands);
             for (var j = 0; j < longhands.length; ++j) {
                 var longhandName = longhands[j];
-                var shorthands = this._shorthands[longhandName];
+                var shorthands = this._shorthands.get(longhandName);
                 if (!shorthands) {
                     shorthands = [];
-                    this._shorthands[longhandName] = shorthands;
+                    this._shorthands.set(longhandName, shorthands);
                 }
                 shorthands.push(propertyName);
             }
@@ -67,10 +70,8 @@ WebInspector.CSSMetadata = function(properties)
     this._values.sort();
 }
 
-/**
- * @type {!WebInspector.CSSMetadata}
- */
-WebInspector.CSSMetadata.cssPropertiesMetainfo = new WebInspector.CSSMetadata([]);
+WebInspector.CSSMetadata.VariableRegex = /(var\(--.*?\))/g;
+WebInspector.CSSMetadata.URLRegex = /url\(\s*('.+?'|".+?"|[^)]+)\s*\)/g;
 
 /**
  * @param {string} propertyName
@@ -87,6 +88,7 @@ WebInspector.CSSMetadata.isColorAwareProperty = function(propertyName)
  */
 WebInspector.CSSMetadata.isLengthProperty = function(propertyName)
 {
+    propertyName = propertyName.toLowerCase();
     if (propertyName === "line-height")
         return false;
     if (!WebInspector.CSSMetadata._distancePropertiesKeySet)
@@ -112,35 +114,19 @@ WebInspector.CSSMetadata.isCustomProperty = function(propertyName)
     return propertyName.startsWith("--");
 }
 
-// Originally taken from http://www.w3.org/TR/CSS21/propidx.html and augmented.
-WebInspector.CSSMetadata.InheritedProperties = [
-    "azimuth", "border-collapse", "border-spacing", "caption-side", "color", "cursor", "direction", "elevation",
-    "empty-cells", "font-family", "font-size", "font-style", "font-variant", "font-weight", "font", "letter-spacing",
-    "line-height", "list-style-image", "list-style-position", "list-style-type", "list-style", "orphans", "overflow-wrap", "pitch-range",
-    "pitch", "quotes", "resize", "richness", "speak-header", "speak-numeral", "speak-punctuation", "speak", "speech-rate", "stress",
-    "text-align", "text-indent", "text-transform", "text-shadow", "-webkit-user-select", "visibility", "voice-family", "volume", "white-space", "widows",
-    "word-spacing", "word-wrap", "zoom"
-].keySet();
-
-// These non-standard Blink-specific properties augment the InheritedProperties.
-WebInspector.CSSMetadata.NonStandardInheritedProperties = [
-    "-webkit-font-smoothing"
-].keySet();
-
 /**
  * @param {string} name
  * @return {string}
  */
 WebInspector.CSSMetadata.canonicalPropertyName = function(name)
 {
+    name = name.toLowerCase();
     if (!name || name.length < 9 || name.charAt(0) !== "-")
-        return name.toLowerCase();
+        return name;
     var match = name.match(/(?:-webkit-)(.+)/);
-    var propertiesSet = WebInspector.CSSMetadata.cssPropertiesMetainfoKeySet();
-    var hasSupportedProperties = WebInspector.CSSMetadata.cssPropertiesMetainfo._values.length > 0;
-    if (!match || (hasSupportedProperties && !propertiesSet.hasOwnProperty(match[1].toLowerCase())))
-        return name.toLowerCase();
-    return match[1].toLowerCase();
+    if (!match || !WebInspector.CSSMetadata.cssPropertiesMetainfo.hasProperty(match[1]))
+        return name;
+    return match[1];
 }
 
 /**
@@ -149,10 +135,10 @@ WebInspector.CSSMetadata.canonicalPropertyName = function(name)
  */
 WebInspector.CSSMetadata.isCSSPropertyName = function(propertyName)
 {
+    propertyName = propertyName.toLowerCase();
     if (propertyName.startsWith("-moz-") || propertyName.startsWith("-o-") || propertyName.startsWith("-webkit-") || propertyName.startsWith("-ms-"))
         return true;
-    var hasSupportedProperties = WebInspector.CSSMetadata.cssPropertiesMetainfo._values.length > 0;
-    return !hasSupportedProperties || WebInspector.CSSMetadata.cssPropertiesMetainfoKeySet().hasOwnProperty(propertyName);
+    return WebInspector.CSSMetadata.cssPropertiesMetainfo.hasProperty(propertyName);
 }
 
 /**
@@ -161,8 +147,8 @@ WebInspector.CSSMetadata.isCSSPropertyName = function(propertyName)
  */
 WebInspector.CSSMetadata.isPropertyInherited = function(propertyName)
 {
-    return !!(WebInspector.CSSMetadata.InheritedProperties[WebInspector.CSSMetadata.canonicalPropertyName(propertyName)]
-            || WebInspector.CSSMetadata.NonStandardInheritedProperties[propertyName.toLowerCase()]);
+    var metadata = WebInspector.CSSMetadata.cssPropertiesMetainfo;
+    return metadata.inherited(WebInspector.CSSMetadata.canonicalPropertyName(propertyName)) || metadata.inherited(propertyName.toLowerCase());
 }
 
 WebInspector.CSSMetadata._distanceProperties = [
@@ -648,51 +634,27 @@ WebInspector.CSSMetadata._propertyDataMap = {
 
 /**
  * @param {string} propertyName
- * @return {!WebInspector.CSSMetadata}
+ * @return {!Array<string>}
  */
-WebInspector.CSSMetadata.keywordsForProperty = function(propertyName)
+WebInspector.CSSMetadata.propertyValues = function(propertyName)
 {
     var acceptedKeywords = ["inherit", "initial"];
-    var descriptor = WebInspector.CSSMetadata.descriptor(propertyName);
-    if (descriptor && descriptor.values)
-        acceptedKeywords.push.apply(acceptedKeywords, descriptor.values);
+    propertyName = propertyName.toLowerCase();
+    var unprefixedName = propertyName.replace(/^-webkit-/, "");
+    var entry = WebInspector.CSSMetadata._propertyDataMap[propertyName] || WebInspector.CSSMetadata._propertyDataMap[unprefixedName];
+    if (entry && entry.values)
+        acceptedKeywords.pushAll(entry.values);
     if (WebInspector.CSSMetadata.isColorAwareProperty(propertyName)) {
         acceptedKeywords.push("currentColor");
         for (var color in WebInspector.Color.Nicknames)
             acceptedKeywords.push(color);
     }
-    return new WebInspector.CSSMetadata(acceptedKeywords);
-}
-
-/**
- * @param {string} propertyName
- * @return {?Object}
- */
-WebInspector.CSSMetadata.descriptor = function(propertyName)
-{
-    if (!propertyName)
-        return null;
-    var unprefixedName = propertyName.replace(/^-webkit-/, "");
-    propertyName = propertyName.toLowerCase();
-    var entry = WebInspector.CSSMetadata._propertyDataMap[propertyName];
-    if (!entry && unprefixedName !== propertyName)
-        entry = WebInspector.CSSMetadata._propertyDataMap[unprefixedName];
-    return entry || null;
+    return acceptedKeywords.sort();
 }
 
 WebInspector.CSSMetadata.initializeWithSupportedProperties = function(properties)
 {
     WebInspector.CSSMetadata.cssPropertiesMetainfo = new WebInspector.CSSMetadata(properties);
-}
-
-/**
- * @return {!Object.<string, boolean>}
- */
-WebInspector.CSSMetadata.cssPropertiesMetainfoKeySet = function()
-{
-    if (!WebInspector.CSSMetadata._cssPropertiesMetainfoKeySet)
-        WebInspector.CSSMetadata._cssPropertiesMetainfoKeySet = WebInspector.CSSMetadata.cssPropertiesMetainfo.keySet();
-    return WebInspector.CSSMetadata._cssPropertiesMetainfoKeySet;
 }
 
 // Weight of CSS properties based on their usage from https://www.chromestatus.com/metrics/css/popularity
@@ -953,130 +915,44 @@ WebInspector.CSSMetadata.Weight = {
     "zoom": 200
 };
 
+/**
+ * @param {!Array.<string>} properties
+ * @return {number}
+ */
+WebInspector.CSSMetadata.mostUsedProperty = function(properties)
+{
+    var maxWeight = 0;
+    var index = 0;
+    for (var i = 0; i < properties.length; i++) {
+        var weight = WebInspector.CSSMetadata.Weight[properties[i]];
+        if (!weight)
+            weight = WebInspector.CSSMetadata.Weight[WebInspector.CSSMetadata.canonicalPropertyName(properties[i])];
+        if (weight > maxWeight) {
+            maxWeight = weight;
+            index = i;
+        }
+    }
+    return index;
+}
 
 WebInspector.CSSMetadata.prototype = {
     /**
-     * @param {string} prefix
-     * @return {!Array.<string>}
+     * @return {!Array<string>}
      */
-    startsWith: function(prefix)
+    allProperties: function()
     {
-        var firstIndex = this._firstIndexOfPrefix(prefix);
-        if (firstIndex === -1)
-            return [];
-
-        var results = [];
-        while (firstIndex < this._values.length && this._values[firstIndex].startsWith(prefix))
-            results.push(this._values[firstIndex++]);
-        return results;
+        return this._values;
     },
 
     /**
-     * @param {!Array.<string>} properties
-     * @return {number}
+     * @param {string} propertyName
+     * @return {boolean}
      */
-    mostUsedOf: function(properties)
+    hasProperty: function(propertyName)
     {
-        var maxWeight = 0;
-        var index = 0;
-        for (var i = 0; i < properties.length; i++) {
-            var weight = WebInspector.CSSMetadata.Weight[properties[i]];
-            if (!weight)
-                weight = WebInspector.CSSMetadata.Weight[WebInspector.CSSMetadata.canonicalPropertyName(properties[i])];
-            if (weight > maxWeight) {
-                maxWeight = weight;
-                index = i;
-            }
-        }
-        return index;
-    },
-
-    _firstIndexOfPrefix: function(prefix)
-    {
-        if (!this._values.length)
-            return -1;
-        if (!prefix)
-            return 0;
-
-        var maxIndex = this._values.length - 1;
-        var minIndex = 0;
-        var foundIndex;
-
-        do {
-            var middleIndex = (maxIndex + minIndex) >> 1;
-            if (this._values[middleIndex].startsWith(prefix)) {
-                foundIndex = middleIndex;
-                break;
-            }
-            if (this._values[middleIndex] < prefix)
-                minIndex = middleIndex + 1;
-            else
-                maxIndex = middleIndex - 1;
-        } while (minIndex <= maxIndex);
-
-        if (foundIndex === undefined)
-            return -1;
-
-        while (foundIndex && this._values[foundIndex - 1].startsWith(prefix))
-            foundIndex--;
-
-        return foundIndex;
-    },
-
-    /**
-     * @return {!Object.<string, boolean>}
-     */
-    keySet: function()
-    {
-        if (!this._keySet)
-            this._keySet = this._values.keySet();
-        return this._keySet;
-    },
-
-    /**
-     * @param {string} str
-     * @param {string} prefix
-     * @return {string}
-     */
-    next: function(str, prefix)
-    {
-        return this._closest(str, prefix, 1);
-    },
-
-    /**
-     * @param {string} str
-     * @param {string} prefix
-     * @return {string}
-     */
-    previous: function(str, prefix)
-    {
-        return this._closest(str, prefix, -1);
-    },
-
-    /**
-     * @param {string} str
-     * @param {string} prefix
-     * @param {number} shift
-     * @return {string}
-     */
-    _closest: function(str, prefix, shift)
-    {
-        if (!str)
-            return "";
-
-        var index = this._values.indexOf(str);
-        if (index === -1)
-            return "";
-
-        if (!prefix) {
-            index = (index + this._values.length + shift) % this._values.length;
-            return this._values[index];
-        }
-
-        var propertiesWithPrefix = this.startsWith(prefix);
-        var j = propertiesWithPrefix.indexOf(str);
-        j = (j + propertiesWithPrefix.length + shift) % propertiesWithPrefix.length;
-        return propertiesWithPrefix[j];
+        if (!this._valuesSet)
+            this._valuesSet = new Set(this._values);
+        return this._valuesSet.has(propertyName);
     },
 
     /**
@@ -1085,7 +961,7 @@ WebInspector.CSSMetadata.prototype = {
      */
     longhands: function(shorthand)
     {
-        return this._longhands[shorthand];
+        return this._longhands.get(shorthand);
     },
 
     /**
@@ -1094,7 +970,16 @@ WebInspector.CSSMetadata.prototype = {
      */
     shorthands: function(longhand)
     {
-        return this._shorthands[longhand];
+        return this._shorthands.get(longhand);
+    },
+
+    /**
+     * @param {string} propertyName
+     * @return {boolean}
+     */
+    inherited: function(propertyName)
+    {
+        return this._inherited.has(propertyName);
     }
 }
 

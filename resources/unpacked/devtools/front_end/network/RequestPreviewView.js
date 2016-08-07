@@ -38,6 +38,8 @@ WebInspector.RequestPreviewView = function(request, responseView)
 {
     WebInspector.RequestContentView.call(this, request);
     this._responseView = responseView;
+    /** @type {?WebInspector.Widget} */
+    this._previewView = null;
 }
 
 WebInspector.RequestPreviewView.prototype = {
@@ -47,34 +49,35 @@ WebInspector.RequestPreviewView.prototype = {
             if (!this._emptyWidget) {
                 this._emptyWidget = this._createEmptyWidget();
                 this._emptyWidget.show(this.element);
-                this.innerView = this._emptyWidget;
+                this._previewView = this._emptyWidget;
             }
-        } else {
-            if (this._emptyWidget) {
-                this._emptyWidget.detach();
-                delete this._emptyWidget;
-            }
-
-            if (!this._previewView)
-                this._createPreviewView(handlePreviewView.bind(this));
-            else
-                this.innerView = this._previewView;
+            return;
         }
+        if (this._emptyWidget) {
+            this._emptyWidget.detach();
+            delete this._emptyWidget;
+            this._previewView = null;
+        }
+
+        if (!this._previewView)
+            this._createPreviewView(handlePreviewView.bind(this));
+        else
+            this._previewView.show(this.element);
 
         /**
          * @param {!WebInspector.Widget} view
          * @this {WebInspector.RequestPreviewView}
          */
-        function handlePreviewView(view) {
+        function handlePreviewView(view)
+        {
             this._previewView = view;
-            this._previewView.show(this.element);
-            if (this._previewView instanceof WebInspector.View) {
+            view.show(this.element);
+            if (view instanceof WebInspector.SimpleView) {
                 var toolbar = new WebInspector.Toolbar("network-item-preview-toolbar", this.element);
-                for (var item of /** @type {!WebInspector.View} */ (this._previewView).toolbarItems())
+                for (var item of /** @type {!WebInspector.SimpleView} */ (this._previewView).syncToolbarItems())
                     toolbar.appendToolbarItem(item);
             }
-            this.innerView = this._previewView;
-            this._previewViewHandledForTest(this._previewView);
+            this._previewViewHandledForTest(view);
         }
     },
 

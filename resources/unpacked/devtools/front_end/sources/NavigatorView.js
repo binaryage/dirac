@@ -152,6 +152,14 @@ WebInspector.NavigatorView.appendSearchItem = function(contextMenu, path)
 
 WebInspector.NavigatorView.prototype = {
     /**
+     * @override
+     */
+    focus: function()
+    {
+        this._scriptsTree.focus();
+    },
+
+    /**
      * @param {!WebInspector.Workspace} workspace
      */
     _resetWorkspace: function(workspace)
@@ -598,10 +606,9 @@ WebInspector.NavigatorView.prototype = {
 
         if (project && project.type() === WebInspector.projectTypes.FileSystem) {
             contextMenu.appendItem(WebInspector.UIString.capitalize("Refresh"), this._handleContextMenuRefresh.bind(this, project, path));
-            if (node instanceof WebInspector.NavigatorFolderTreeNode) {
-                contextMenu.appendItem(WebInspector.UIString.capitalize("New ^file"), this._handleContextMenuCreate.bind(this, project, path));
+            contextMenu.appendItem(WebInspector.UIString.capitalize("New ^file"), this._handleContextMenuCreate.bind(this, project, path));
+            if (node instanceof WebInspector.NavigatorFolderTreeNode)
                 contextMenu.appendItem(WebInspector.UIString.capitalize("Exclude ^folder"), this._handleContextMenuExclude.bind(this, project, path));
-            }
         }
         contextMenu.appendSeparator();
         WebInspector.NavigatorView.appendAddFolderItem(contextMenu);

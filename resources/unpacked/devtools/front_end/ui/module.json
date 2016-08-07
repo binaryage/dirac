@@ -6,8 +6,8 @@
     ],
     "scripts": [
         "Widget.js",
+        "View.js",
         "treeoutline.js",
-        "Drawer.js",
         "InspectorView.js",
         "ActionRegistry.js",
         "ShortcutRegistry.js",
@@ -46,7 +46,6 @@
         "SuggestBox.js",
         "TabbedPane.js",
         "UIUtils.js",
-        "ViewContainers.js",
         "ViewportControl.js",
         "ZoomManager.js"
     ],
