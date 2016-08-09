@@ -174,7 +174,7 @@ WebInspector.ConsoleView = function()
 
         this._diracHistorySetting = WebInspector.settings.createLocalSetting("diracHistory", []);
         var diracHistoryData = this._diracHistorySetting.get();
-        diracPrompt.setHistoryData(diracHistoryData);
+        diracPrompt.history().setHistoryData(diracHistoryData);
 
         var statusElement = diracPromptElement.createChild("div");
         statusElement.id = "console-status-dirac";
@@ -1281,8 +1281,8 @@ WebInspector.ConsoleView.prototype = {
         commandMessage.setExecutionContextId(executionContext.id);
         target.consoleModel.addMessage(commandMessage);
 
-        this._prompt.pushHistoryItem(text);
-        this._diracHistorySetting.set(this._prompt.historyData().slice(-WebInspector.ConsoleView.persistedHistorySize));
+        this._prompt.history().pushHistoryItem(text);
+        this._diracHistorySetting.set(this._prompt.history().historyData().slice(-WebInspector.ConsoleView.persistedHistorySize));
 
         var debuggerModel = executionContext.debuggerModel;
         var scopeInfoPromise = Promise.resolve(null);
