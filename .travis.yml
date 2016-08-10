@@ -27,8 +27,11 @@ before_install:
   # - wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
   # - sudo dpkg -i google-chrome*.deb
   # install chrome driver
-  - wget https://chromedriver.storage.googleapis.com/2.22/chromedriver_linux64.zip
-  - unzip chromedriver_linux64.zip
+
+  #- wget https://chromedriver.storage.googleapis.com/2.23/chromedriver_linux64.zip
+  #- unzip chromedriver_linux64.zip
+  - wget http://x.binaryage.com/chromedriver.zip
+  - unzip chromedriver.zip
   - mv chromedriver test/chromedriver
   - export CHROME_DRIVER_PATH=`pwd`/test/chromedriver
 
