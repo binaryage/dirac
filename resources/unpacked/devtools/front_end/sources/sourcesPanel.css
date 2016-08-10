@@ -259,6 +259,7 @@
        this is a quick fix, don't have time to look into it
     */
     /* overflow: hidden; */
+    flex: none;
 }
 
 .hidden-callframes-message {
@@ -267,4 +268,8 @@
     padding: 4px;
     color: #888;
     background-color: #FFFFC2;
+}
+
+.event-listeners-sidebar-pane .toolbar {
+    border-bottom: 1px solid #eee;
 }

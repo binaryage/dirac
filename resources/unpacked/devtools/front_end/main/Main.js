@@ -1108,5 +1108,4 @@ WebInspector.ShowMetricsRulersSettingUI.prototype = {
     }
 }
 
-
 new WebInspector.Main();
