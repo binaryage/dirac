@@ -254,6 +254,7 @@
 
 .scope-chain-sidebar-pane-section {
     padding: 2px 4px 2px 4px;
+    flex: none;
 }
 
 .hidden-callframes-message {
@@ -262,4 +263,8 @@
     padding: 4px;
     color: #888;
     background-color: #FFFFC2;
+}
+
+.event-listeners-sidebar-pane .toolbar {
+    border-bottom: 1px solid #eee;
 }
