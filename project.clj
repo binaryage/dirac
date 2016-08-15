@@ -8,7 +8,7 @@
         :url  "https://github.com/binaryage/dirac"}
 
   :dependencies [[org.clojure/clojure "1.8.0" :scope "provided"]
-                 [org.clojure/clojurescript "1.9.89" :scope "provided"]
+                 [org.clojure/clojurescript "1.9.216" :scope "provided"]
                  [org.clojure/core.async "0.2.385"]
                  [org.clojure/tools.logging "0.3.1"]
                  [org.clojure/tools.cli "0.3.5"]
@@ -16,7 +16,7 @@
                  [http-kit "2.2.0"]
                  [clj-logging-config "1.9.12"]
                  [version-clj "0.1.2"]
-                 [environ "1.0.3"]
+                 [environ "1.1.0"]
                  [clansi "1.0.0"]
                  [funcool/cuerdas "0.8.0"]
 
@@ -31,7 +31,7 @@
                  [rum-reforms "0.4.3" :scope "test"]
                  [cljsjs/parinfer "1.8.1-0" :scope "test"]
                  [com.lucasbradstreet/cljs-uuid-utils "1.0.2" :scope "test"]
-                 [com.rpl/specter "0.11.2" :scope "test"]
+                 [com.rpl/specter "0.12.0" :scope "test"]
                  [org.clojure/tools.namespace "0.3.0-alpha3" :scope "test"]
                  [org.clojure/tools.reader "1.0.0-beta1" :scope "test"]
                  [com.cognitect/transit-clj "0.8.288" :scope "test"]
@@ -56,7 +56,7 @@
   :checkout-deps-shares ^:replace []
 
   :plugins [[lein-shell "0.5.0"]
-            [lein-environ "1.0.3"]]
+            [lein-environ "1.1.0"]]
 
   ;  :jvm-opts ["-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5005"]
 
