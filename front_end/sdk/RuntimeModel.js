@@ -256,11 +256,10 @@ WebInspector.RuntimeModel.prototype = {
 
         /**
          * @param {?Protocol.Error} error
-         * @param {?RuntimeAgent.RemoteObject} result
-         * @param {boolean=} wasThrown
-         * @param {?RuntimeAgent.ExceptionDetails=} exceptionDetails
+         * @param {!RuntimeAgent.RemoteObject} result
+         * @param {!RuntimeAgent.ExceptionDetails=} exceptionDetails
          */
-        function innerCallback(error, result, wasThrown, exceptionDetails)
+        function innerCallback(error, result, exceptionDetails)
         {
             if (error) {
                 console.error(error);
@@ -552,7 +551,7 @@ WebInspector.ExecutionContext.prototype = {
      * @param {boolean} returnByValue
      * @param {boolean} generatePreview
      * @param {boolean} userGesture
-     * @param {function(?WebInspector.RemoteObject, boolean, ?RuntimeAgent.RemoteObject=, ?RuntimeAgent.ExceptionDetails=)} callback
+     * @param {function(?WebInspector.RemoteObject, !RuntimeAgent.ExceptionDetails=)} callback
      */
     evaluate: function(expression, objectGroup, includeCommandLineAPI, doNotPauseOnExceptionsAndMuteConsole, returnByValue, generatePreview, userGesture, callback)
     {
@@ -566,13 +565,12 @@ WebInspector.ExecutionContext.prototype = {
 
     /**
      * @param {string} objectGroup
-     * @param {boolean} returnByValue
      * @param {boolean} generatePreview
-     * @param {function(?WebInspector.RemoteObject, boolean, ?RuntimeAgent.RemoteObject=, ?RuntimeAgent.ExceptionDetails=)} callback
+     * @param {function(?WebInspector.RemoteObject, !RuntimeAgent.ExceptionDetails=)} callback
      */
-    globalObject: function(objectGroup, returnByValue, generatePreview, callback)
+    globalObject: function(objectGroup, generatePreview, callback)
     {
-        this._evaluateGlobal("this", objectGroup, false, true, returnByValue, generatePreview, false, callback);
+        this._evaluateGlobal("this", objectGroup, false, true, false, generatePreview, false, callback);
     },
 
     /**
@@ -583,7 +581,7 @@ WebInspector.ExecutionContext.prototype = {
      * @param {boolean} returnByValue
      * @param {boolean} generatePreview
      * @param {boolean} userGesture
-     * @param {function(?WebInspector.RemoteObject, boolean, ?RuntimeAgent.RemoteObject=, ?RuntimeAgent.ExceptionDetails=)} callback
+     * @param {function(?WebInspector.RemoteObject, !RuntimeAgent.ExceptionDetails=)} callback
      */
     _evaluateGlobal: function(expression, objectGroup, includeCommandLineAPI, doNotPauseOnExceptionsAndMuteConsole, returnByValue, generatePreview, userGesture, callback)
     {
@@ -596,21 +594,16 @@ WebInspector.ExecutionContext.prototype = {
          * @this {WebInspector.ExecutionContext}
          * @param {?Protocol.Error} error
          * @param {!RuntimeAgent.RemoteObject} result
-         * @param {boolean=} wasThrown
-         * @param {?RuntimeAgent.ExceptionDetails=} exceptionDetails
+         * @param {!RuntimeAgent.ExceptionDetails=} exceptionDetails
          */
-        function evalCallback(error, result, wasThrown, exceptionDetails)
+        function evalCallback(error, result, exceptionDetails)
         {
             if (error) {
                 console.error(error);
-                callback(null, false);
+                callback(null);
                 return;
             }
-
-            if (returnByValue)
-                callback(null, !!wasThrown, wasThrown ? null : result, exceptionDetails);
-            else
-                callback(this.runtimeModel.createRemoteObject(result), !!wasThrown, undefined, exceptionDetails);
+            callback(this.runtimeModel.createRemoteObject(result), exceptionDetails);
         }
         this.target().runtimeAgent().evaluate(expression, objectGroup, includeCommandLineAPI, doNotPauseOnExceptionsAndMuteConsole, this.id, returnByValue, generatePreview, userGesture, false, evalCallback.bind(this));
     },
@@ -648,11 +641,13 @@ WebInspector.ExecutionContext.prototype = {
             this.evaluate(expressionString, "completion", true, true, false, false, false, evaluated.bind(this));
 
         /**
+         * @param {?WebInspector.RemoteObject} result
+         * @param {!RuntimeAgent.ExceptionDetails=} exceptionDetails
          * @this {WebInspector.ExecutionContext}
          */
-        function evaluated(result, wasThrown)
+        function evaluated(result, exceptionDetails)
         {
-            if (!result || wasThrown) {
+            if (!result || !!exceptionDetails) {
                 completionsReadyCallback([]);
                 return;
             }
@@ -736,15 +731,14 @@ WebInspector.ExecutionContext.prototype = {
         }
 
         /**
-         * @param {?WebInspector.RemoteObject} notRelevant
-         * @param {boolean} wasThrown
-         * @param {?RuntimeAgent.RemoteObject=} result
+         * @param {?WebInspector.RemoteObject} result
+         * @param {!RuntimeAgent.ExceptionDetails=} exceptionDetails
          * @this {WebInspector.ExecutionContext}
          */
-        function receivedPropertyNamesFromEval(notRelevant, wasThrown, result)
+        function receivedPropertyNamesFromEval(result, exceptionDetails)
         {
             this.target().runtimeAgent().releaseObjectGroup("completion");
-            if (result && !wasThrown)
+            if (result && !exceptionDetails)
                 receivedPropertyNames.call(this, /** @type {!Object} */(result.value));
             else
                 completionsReadyCallback([]);
