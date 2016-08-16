@@ -148,9 +148,9 @@
         (vreset! last-task-success false)))
     (log/debug "wait-for-client-disconnection done")))
 
-(defn wait-for-signal
+(defn wait-for-signal!
   ([server]
-   (wait-for-signal server (get-default-task-timeout)))
+   (wait-for-signal! server (get-default-task-timeout)))
   ([server timeout-ms]
    (let [server-url (server/get-url server)
          friendly-timeout (format-friendly-timeout timeout-ms)]
@@ -162,7 +162,7 @@
      (wait-for-client-disconnection (get-signal-server-max-connection-time))
      (assert (some? @last-task-success) "didn't get task-result message from signal client?")
      (when-not @last-task-success
-       (log/error (str "task reported failure"))
+       (log/error (str "task reported a failure"))
        (pause-unless-ci))
      (server/destroy! server))))
 
@@ -280,7 +280,7 @@
         ; also we want to run our transcript test safely after debugger port is available for devtools after driver disconnection
         (launch-transcript-test-after-delay (get-script-runner-launch-delay))
         (disconnect-browser!)
-        (wait-for-signal signal-server)
+        (wait-for-signal! signal-server)
         (reconnect-browser!)
         (write-transcript-and-compare)))))
 
