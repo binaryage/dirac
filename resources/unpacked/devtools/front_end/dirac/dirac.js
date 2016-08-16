@@ -66,12 +66,12 @@ Object.assign(window.dirac, (function() {
             console.warn("Requested evalInContext with null context:", code);
             return;
         }
-        var resultCallback = function(result, wasThrown, value, exceptionDetails) {
+        var resultCallback = function(result, exceptionDetails) {
             if (dirac._DEBUG_EVAL) {
-                console.log("evalInContext/resultCallback: result", result, "wasThrown", wasThrown, "value", value, "exceptionDetails", exceptionDetails);
+                console.log("evalInContext/resultCallback: result", result, "exceptionDetails", exceptionDetails);
             }
             if (callback) {
-                callback(value, wasThrown, exceptionDetails);
+                callback(result, exceptionDetails);
             }
         };
         try {

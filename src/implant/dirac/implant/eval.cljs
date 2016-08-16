@@ -154,11 +154,11 @@
   {:pre [(context supported-contexts)]}
   (let [result-chan (chan)
         timeout-chan (timeout eval-time-limit)
-        callback (fn [value thrown? exception-details]
-                   (let [result (if thrown?
+        callback (fn [result exception-details]
+                   (let [answer (if (some? exception-details)
                                   [::thrown exception-details]
-                                  [::ok (if value (oget value "value"))])]
-                     (put! result-chan result)))]
+                                  [::ok (if result (oget result "value"))])]
+                     (put! result-chan answer)))]
     (go
       (try
         (eval-with-callback! context code callback)
