@@ -206,7 +206,7 @@ Object.assign(window.dirac, (function() {
      * @suppressGlobalPropertiesCheck
      */
     function parseNamespacesDescriptorsAsync(script) {
-        if (script.isInternalScript() || script.isContentScript()) {
+        if (script.isContentScript()) {
             return Promise.resolve([]);
         }
 
