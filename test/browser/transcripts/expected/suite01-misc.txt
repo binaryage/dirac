@@ -16,6 +16,9 @@ devtools #1      ConsoleView constructed
 devtools #1      displayWelcomeMessage
 devtools #1      setCurrentPanel: console
 automate #1      trigger-internal-error! [200]
+devtools #1      Internal Dirac Error: DevTools code has thrown an unhandled exception
+                 Error: :nonsense is not ISeqable
+                 <elided trace>
 automate #1      scrape [:last-log-item-content "error"]
 automate #1      close-devtools!
 extension        handling command: close-dirac-devtools

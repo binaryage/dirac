@@ -181,11 +181,15 @@
 (defn replace-gensyms [s]
   (string/replace s #"--\d+" "--*gen-num*"))
 
+(defn replace-internal-error-traces [s]
+  (string/replace s #"(Internal Dirac Error:.*?\n.*)(.|[\r\n])*" "$1\n<elided trace>"))
+
 (defn transformer [console-output]
   (-> console-output
       replace-shortened-urls
       replace-rel-url-params
-      replace-gensyms))
+      replace-gensyms
+      replace-internal-error-traces))
 
 (defn process-default-state! [label text]
   (cond
