@@ -17,9 +17,12 @@
         concat-arg (fn [cmd]
                      (concat cmd [result-sym]))
         wrap-command (fn [cmd]
-                       `(try
-                          (check-result ~cmd)
-                          (catch :default e#
-                            (throw (str e# "\n\n" "form:\n" ~form-str)))))
+                       (let [cmd-str (pr-str cmd)]
+                         `(try
+                            (check-result ~cmd)
+                            (catch :default e#
+                              (throw (str e# "\n"
+                                          "command: " ~cmd-str "\n"
+                                          "form:\n" ~form-str))))))
         commands (map (comp wrap-command concat-arg) (rest forms))]
     `(as-> ~(wrap-command (first forms)) ~result-sym ~@commands)))
