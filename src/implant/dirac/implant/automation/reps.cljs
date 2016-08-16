@@ -48,7 +48,7 @@
   (continue-then-stay
     (multi-path
       [(must :children) ALL]
-      (must :shadow-root))
+      [(must :shadow-root)])
     RepWalker))
 
 ; -- helpers ----------------------------------------------------------------------------------------------------------------
