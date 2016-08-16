@@ -308,5 +308,5 @@
   (with-transcript-suite "suite02"
     (execute-transcript-test! "welcome-message")
     (execute-transcript-test! "enable-parinfer")
-    (execute-transcript-test! "clean-urls")
-    (execute-transcript-test! "beautify-function-names")))
+    #_(execute-transcript-test! "clean-urls")
+    #_(execute-transcript-test! "beautify-function-names")))
