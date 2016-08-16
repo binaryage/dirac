@@ -1,6 +1,7 @@
 (ns dirac.implant.reporter
   (:require [chromex.support :refer-macros [oget oset ocall oapply]]
             [chromex.logging :refer-macros [log warn error group group-end]]
+            [dirac.implant.feedback :as feedback]
             [dirac.utils :as utils]))
 
 ; -- handling global exceptions ---------------------------------------------------------------------------------------------
@@ -8,6 +9,7 @@
 (defn devtools-exception-handler! [_message _source _lineno _colno e]
   (let [text (str "Internal Dirac Error: DevTools code has thrown an unhandled exception\n" (utils/format-error e))]
     (ocall (oget js/window "dirac") "addConsoleMessageToMainTarget" "error" text)
+    (feedback/post! text)
     false))
 
 (defn register-global-exception-handler! []
@@ -19,7 +21,8 @@
   (let [reason (oget event "reason")
         text (str "Internal Dirac Error: DevTools code has thrown an unhandled rejection (in promise)\n"
                   (utils/format-error reason))]
-    (ocall (oget js/window "dirac") "addConsoleMessageToMainTarget" "error" text)))
+    (ocall (oget js/window "dirac") "addConsoleMessageToMainTarget" "error" text)
+    (feedback/post! text)))
 
 (defn register-unhandled-rejection-handler! []
   (.addEventListener js/window "unhandledrejection" devtools-unhandled-rejection-handler!))
