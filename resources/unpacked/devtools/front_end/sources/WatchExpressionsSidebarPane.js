@@ -53,8 +53,8 @@ WebInspector.WatchExpressionsSidebarPane = function()
     this._bodyElement.addEventListener("contextmenu", this._contextMenu.bind(this), false);
     this._expandController = new WebInspector.ObjectPropertiesSectionExpandController();
 
-    WebInspector.context.addFlavorChangeListener(WebInspector.ExecutionContext, this.refreshExpressions, this);
-
+    WebInspector.context.addFlavorChangeListener(WebInspector.ExecutionContext, this._refreshExpressions, this);
+    WebInspector.context.addFlavorChangeListener(WebInspector.DebuggerModel.CallFrame, this._refreshExpressions, this);
     this._linkifier = new WebInspector.Linkifier();
 }
 
@@ -64,7 +64,7 @@ WebInspector.WatchExpressionsSidebarPane.prototype = {
         this._refreshExpressionsIfNeeded();
     },
 
-    refreshExpressions: function()
+    _refreshExpressions: function()
     {
         this._requiresUpdate = true;
         this._refreshExpressionsIfNeeded();
@@ -128,7 +128,7 @@ WebInspector.WatchExpressionsSidebarPane.prototype = {
     _refreshButtonClicked: function(event)
     {
         event.consume();
-        this.refreshExpressions();
+        this._refreshExpressions();
     },
 
     _rebuildWatchExpressions: function()
@@ -233,7 +233,7 @@ WebInspector.WatchExpression = function(expression, expandController, linkifier)
     this._editing = false;
     this._linkifier = linkifier;
 
-    this._createWatchExpression(null, false);
+    this._createWatchExpression(null);
     this.update();
 }
 
@@ -341,9 +341,9 @@ WebInspector.WatchExpression.prototype = {
 
     /**
      * @param {?WebInspector.RemoteObject} result
-     * @param {boolean} wasThrown
+     * @param {!RuntimeAgent.ExceptionDetails=} exceptionDetails
      */
-    _createWatchExpression: function(result, wasThrown)
+    _createWatchExpression: function(result, exceptionDetails)
     {
         this._result = result;
 
@@ -354,12 +354,12 @@ WebInspector.WatchExpression.prototype = {
 
         var titleElement = headerElement.createChild("div", "watch-expression-title");
         this._nameElement = WebInspector.ObjectPropertiesSection.createNameElement(this._expression);
-        if (wasThrown || !result) {
+        if (!!exceptionDetails || !result) {
             this._valueElement = createElementWithClass("span", "error-message value");
             titleElement.classList.add("dimmed");
             this._valueElement.textContent = WebInspector.UIString("<not available>");
         } else {
-            this._valueElement = WebInspector.ObjectPropertiesSection.createValueElementWithCustomSupport(result, wasThrown, titleElement, this._linkifier);
+            this._valueElement = WebInspector.ObjectPropertiesSection.createValueElementWithCustomSupport(result, !!exceptionDetails, titleElement, this._linkifier);
         }
         var separatorElement = createElementWithClass("span", "watch-expressions-separator");
         separatorElement.textContent = ": ";
@@ -367,7 +367,7 @@ WebInspector.WatchExpression.prototype = {
 
         this._element.removeChildren();
         this._objectPropertiesSection = null;
-        if (!wasThrown && result && result.hasChildren && !result.customPreview()) {
+        if (!exceptionDetails && result && result.hasChildren && !result.customPreview()) {
             headerElement.classList.add("watch-expression-object-header");
             this._objectPropertiesSection = new WebInspector.ObjectPropertiesSection(result, headerElement, this._linkifier);
             this._objectPresentationElement = this._objectPropertiesSection.element;

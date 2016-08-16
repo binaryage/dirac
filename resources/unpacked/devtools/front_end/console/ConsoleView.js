@@ -149,6 +149,7 @@ WebInspector.ConsoleView = function()
     this._prompt.renderAsBlock();
     var proxyElement = this._prompt.attach(this._promptElement);
     proxyElement.addEventListener("keydown", this._promptKeyDown.bind(this), false);
+    proxyElement.addEventListener("input", this._promptInput.bind(this), false);
 
     this._pendingDiracCommands = {};
     this._lastDiracCommandId = 0;
@@ -240,6 +241,11 @@ WebInspector.ConsoleView = function()
     } else {
         dirac.feedback("!dirac.hasWelcomeMessage");
     }
+
+    this._messagesElement.addEventListener("mousedown", this._updateStickToBottomOnMouseDown.bind(this), false);
+    this._messagesElement.addEventListener("mouseup", this._updateStickToBottomOnMouseUp.bind(this), false);
+    this._messagesElement.addEventListener("mouseleave", this._updateStickToBottomOnMouseUp.bind(this), false);
+    this._messagesElement.addEventListener("wheel", this._updateStickToBottomOnWheel.bind(this), false);
 }
 
 WebInspector.ConsoleView.persistedHistorySize = 300;
@@ -437,7 +443,7 @@ WebInspector.ConsoleView.prototype = {
 
     restoreScrollPositions: function()
     {
-        if (this._viewport.scrolledToBottom())
+        if (this._viewport.stickToBottom())
             this._immediatelyScrollToBottom();
         else
             WebInspector.Widget.prototype.restoreScrollPositions.call(this);
@@ -447,7 +453,7 @@ WebInspector.ConsoleView.prototype = {
     {
         this._scheduleViewportRefresh();
         this._hidePromptSuggestBox();
-        if (this._viewport.scrolledToBottom())
+        if (this._viewport.stickToBottom())
             this._immediatelyScrollToBottom();
         for (var i = 0; i < this._visibleViewMessages.length; ++i)
             this._visibleViewMessages[i].onResize();
@@ -467,6 +473,10 @@ WebInspector.ConsoleView.prototype = {
          */
         function invalidateViewport()
         {
+            if (this._muteViewportUpdates) {
+                this._maybeDirtyWhileMuted = true;
+                return Promise.resolve();
+            }
             if (this._needsFullUpdate) {
                 this._updateMessageList();
                 delete this._needsFullUpdate;
@@ -475,12 +485,28 @@ WebInspector.ConsoleView.prototype = {
             }
             return Promise.resolve();
         }
+        if (this._muteViewportUpdates) {
+            this._maybeDirtyWhileMuted = true;
+            this._scheduleViewportRefreshForTest(true);
+            return;
+        } else {
+            this._scheduleViewportRefreshForTest(false);
+        }
         this._viewportThrottler.schedule(invalidateViewport.bind(this));
+    },
+
+    /**
+     * @param {boolean} muted
+     */
+    _scheduleViewportRefreshForTest: function(muted)
+    {
+        // This functions is sniffed in tests.
     },
 
     _immediatelyScrollToBottom: function()
     {
         // This will scroll viewport and trigger its refresh.
+        this._viewport.setStickToBottom(true);
         this._promptElement.scrollIntoView(true);
     },
 
@@ -1225,6 +1251,7 @@ WebInspector.ConsoleView.prototype = {
 
     _promptKeyDown: function(event)
     {
+        this._updateStickToBottomOnWheel();
         if (isEnterKey(event)) {
             if (event.altKey || event.ctrlKey || event.shiftKey) {
                 return;
@@ -1298,18 +1325,17 @@ WebInspector.ConsoleView.prototype = {
 
     /**
      * @param {?WebInspector.RemoteObject} result
-     * @param {boolean} wasThrown
      * @param {!WebInspector.ConsoleMessage} originatingConsoleMessage
-     * @param {?RuntimeAgent.ExceptionDetails=} exceptionDetails
+     * @param {!RuntimeAgent.ExceptionDetails=} exceptionDetails
      */
-    _printResult: function(result, wasThrown, originatingConsoleMessage, exceptionDetails)
+    _printResult: function(result, originatingConsoleMessage, exceptionDetails)
     {
         if (!result)
             return;
 
-        var level = wasThrown ? WebInspector.ConsoleMessage.MessageLevel.Error : WebInspector.ConsoleMessage.MessageLevel.Log;
+        var level = !!exceptionDetails ? WebInspector.ConsoleMessage.MessageLevel.Error : WebInspector.ConsoleMessage.MessageLevel.Log;
         var message;
-        if (!wasThrown)
+        if (!exceptionDetails)
             message = new WebInspector.ConsoleMessage(result.target(), WebInspector.ConsoleMessage.MessageSource.JS, level, "", WebInspector.ConsoleMessage.MessageType.Result, undefined, undefined, undefined, undefined, [result]);
         else
             message = new WebInspector.ConsoleMessage(result.target(), WebInspector.ConsoleMessage.MessageSource.JS, level, exceptionDetails.text, WebInspector.ConsoleMessage.MessageType.Result, undefined, exceptionDetails.lineNumber, exceptionDetails.columnNumber, undefined, [WebInspector.UIString("Uncaught"), result], exceptionDetails.stackTrace, undefined, undefined, exceptionDetails.scriptId);
@@ -1337,10 +1363,10 @@ WebInspector.ConsoleView.prototype = {
      */
     _commandEvaluated: function(event)
     {
-        var data = /** @type {{result: ?WebInspector.RemoteObject, wasThrown: boolean, text: string, commandMessage: !WebInspector.ConsoleMessage, exceptionDetails: (?RuntimeAgent.ExceptionDetails|undefined)}} */ (event.data);
+        var data = /** @type {{result: ?WebInspector.RemoteObject, text: string, commandMessage: !WebInspector.ConsoleMessage, exceptionDetails: (!RuntimeAgent.ExceptionDetails|undefined)}} */ (event.data);
         this._prompt.history().pushHistoryItem(data.text);
         this._consoleHistorySetting.set(this._prompt.history().historyData().slice(-WebInspector.ConsoleView.persistedHistorySize));
-        this._printResult(data.result, data.wasThrown, data.commandMessage, data.exceptionDetails);
+        this._printResult(data.result, data.commandMessage, data.exceptionDetails);
     },
 
     /**
@@ -1517,6 +1543,60 @@ WebInspector.ConsoleView.prototype = {
         highlightNode.classList.add(WebInspector.highlightedCurrentSearchResultClassName);
         this._viewport.scrollItemIntoView(matchRange.messageIndex);
         highlightNode.scrollIntoViewIfNeeded();
+    },
+
+    _updateStickToBottomOnMouseDown: function()
+    {
+        this._muteViewportUpdates = true;
+        this._viewport.setStickToBottom(false);
+        if (this._waitForScrollTimeout) {
+            clearTimeout(this._waitForScrollTimeout);
+            delete this._waitForScrollTimeout;
+        }
+    },
+
+    _updateStickToBottomOnMouseUp: function()
+    {
+        if (!this._muteViewportUpdates)
+            return;
+
+        // Delay querying isScrolledToBottom to give time for smooth scroll
+        // events to arrive. The value for the longest timeout duration is
+        // retrieved from crbug.com/575409.
+        this._waitForScrollTimeout = setTimeout(updateViewportState.bind(this), 200);
+
+        /**
+         * @this {!WebInspector.ConsoleView}
+         */
+        function updateViewportState()
+        {
+            this._muteViewportUpdates = false;
+            this._viewport.setStickToBottom(this._messagesElement.isScrolledToBottom());
+            if (this._maybeDirtyWhileMuted) {
+                this._scheduleViewportRefresh();
+                delete this._maybeDirtyWhileMuted;
+            }
+            delete this._waitForScrollTimeout;
+            this._updateViewportStickinessForTest();
+        }
+    },
+
+    _updateViewportStickinessForTest: function()
+    {
+        // This method is sniffed in tests.
+    },
+
+    _updateStickToBottomOnWheel: function()
+    {
+        this._updateStickToBottomOnMouseDown();
+        this._updateStickToBottomOnMouseUp();
+    },
+
+    _promptInput: function(event)
+    {
+        // Scroll to the bottom, except when the prompt is the only visible item.
+        if (this.itemCount() !== 0 && this._viewport.firstVisibleIndex() !== this.itemCount())
+            this._immediatelyScrollToBottom();
     },
 
     __proto__: WebInspector.VBox.prototype

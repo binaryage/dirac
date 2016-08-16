@@ -72,7 +72,9 @@
     display: flex;
     flex-direction: column;
     flex: 0 0 auto;
-    box-shadow: 0 0 2px  hsla(0, 0%, 0%, 0.3);
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.05),
+                0 2px 4px rgba(0, 0, 0, 0.2),
+                0 2px 6px rgba(0, 0, 0, 0.1);
 }
 
 .suggest-box .suggest-box-content-item {
@@ -94,19 +96,19 @@
     display: inline-block;
     content: "";
     -webkit-user-select: none;
-    background-image: url(Images/toolbarButtonGlyphs.png);
-    background-size: 352px 168px;
+    background-image: url(Images/smallIcons.png);
+    background-size: 190px 30px;
     width: 10px;
     height: 10px;
     position: relative;
     top: 2px;
     margin-right: 4px;
-    background-position: -192px -96px;
+    background-position: -20px -20px;
 }
 
 @media (-webkit-min-device-pixel-ratio: 1.5) {
 .suggest-box .suggest-box-content-item.additional::before {
-    background-image: url(Images/toolbarButtonGlyphs_2x.png);
+    background-image: url(Images/smallIcons_2x.png);
 }
 } /* media */
 
