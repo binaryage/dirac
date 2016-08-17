@@ -3,7 +3,6 @@
   (:require [cljs.core.async :refer [put! <! chan timeout alts! close!]]
             [chromex.support :refer-macros [oget oset ocall oapply]]
             [chromex.logging :refer-macros [log warn error info]]
-            [devtools.preload]
             [devtools.core :as devtools]
             [devtools.prefs :as devtools-prefs]))
 
@@ -15,7 +14,10 @@
   (if-not (:do-not-install-devtools config)                                                                                   ; override devtools features/installation
     (let [features-to-enable (cond-> []
                                (not (:do-not-enable-custom-formatters config)) (conj :formatters)
-                               (not (:do-not-enable-sanity-hints config)) (conj :hints)
+                               ; disable support for :hints for now
+                               ; sync http request interferes with test transcripts
+                               ; "JS.wrn> hints.cljs:55 Synchronous XMLHttpRequest on the main thread is deprecated because of its detrimental effects to the end user's experience. For more help, check https://xhr.spec.whatwg.org/."
+                               ;(not (:do-not-enable-sanity-hints config)) (conj :hints)
                                (not (:do-not-enable-async config)) (conj :async))]
       (devtools/install! features-to-enable))
     (log "devtools override: do not install")))

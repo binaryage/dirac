@@ -169,6 +169,7 @@
                                              :output-dir           "test/browser/fixtures/resources/compiled/tests"
                                              :asset-path           "compiled/tests"
                                              :optimizations        :none                                                      ; we rely on optimizations :none in test runner
+                                             :preloads             [devtools.preload]
                                              :source-map           true
                                              :source-map-timestamp true}}}}}
 
@@ -189,6 +190,7 @@
                                              :output-dir    "test/marion/resources/unpacked/compiled/background"
                                              :asset-path    "compiled/background"
                                              :optimizations :none
+                                             :preloads      [devtools.preload]
                                              :source-map    true}}
 
                            :marion-content-script
