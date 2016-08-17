@@ -267,7 +267,7 @@ WebInspector.Main.prototype = {
         console.timeStamp("Main._createConnection");
 
         if (Runtime.queryParam("ws")) {
-            var ws = "ws://" + Runtime.queryParam("ws");
+            var ws = "ws://" + decodeURIComponent(Runtime.queryParam("ws"));
             WebInspector.WebSocketConnection.Create(ws, this._connectionEstablished.bind(this));
             return;
         }
