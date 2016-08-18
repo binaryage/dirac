@@ -23,6 +23,9 @@
                             (catch :default e#
                               (throw (str e# "\n"
                                           "command: " ~cmd-str "\n"
-                                          "form:\n" ~form-str))))))
+                                          "form:\n"
+                                          ~form-str
+                                          "error:\n"
+                                          (dirac.utils/format-error e#)))))))
         commands (map (comp wrap-command concat-arg) (rest forms))]
     `(as-> ~(wrap-command (first forms)) ~result-sym ~@commands)))

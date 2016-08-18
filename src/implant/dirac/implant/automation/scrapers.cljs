@@ -7,6 +7,7 @@
             [com.rpl.specter :refer [must continue-then-stay multi-path if-path ALL STAY]]
             [dirac.implant.automation.reps :refer [select-subrep select-subreps build-rep]]
             [dirac.dom :as dom]
+            [dirac.utils]
             [clojure.string :as string]))
 
 ; -- helpers ----------------------------------------------------------------------------------------------------------------
