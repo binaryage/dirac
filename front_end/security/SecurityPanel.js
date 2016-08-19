@@ -248,10 +248,11 @@ WebInspector.SecurityPanel.prototype = {
 
         this._target = target;
 
-        if (target.hasBrowserCapability()) {
-            target.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.MainFrameNavigated, this._onMainFrameNavigated, this);
-            target.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.InterstitialShown, this._onInterstitialShown, this);
-            target.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.InterstitialHidden, this._onInterstitialHidden, this);
+        var resourceTreeModel = WebInspector.ResourceTreeModel.fromTarget(this._target);
+        if (resourceTreeModel) {
+            resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.MainFrameNavigated, this._onMainFrameNavigated, this);
+            resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.InterstitialShown, this._onInterstitialShown, this);
+            resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.InterstitialHidden, this._onInterstitialHidden, this);
         }
 
         var networkManager = WebInspector.NetworkManager.fromTarget(target);
@@ -296,6 +297,10 @@ WebInspector.SecurityPanel.prototype = {
 
     _onInterstitialShown: function()
     {
+        // The panel might have been displaying the origin view on the
+        // previously loaded page. When showing an interstitial, switch
+        // back to the Overview view.
+        this.selectAndSwitchToMainView();
         this._sidebarTree.toggleOriginsList(true /* hidden */);
     },
 
