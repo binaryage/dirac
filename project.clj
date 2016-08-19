@@ -90,7 +90,7 @@
                                     ; also update scripts/clean-compiled.sh
                                     "resources/unpacked/compiled"
                                     "resources/unpacked/devtools/front_end/dirac/compiled"
-                                    "test/browser/fixtures/resources/compiled"
+                                    "test/browser/fixtures/resources/_compiled"
                                     "test/marion/resources/unpacked/compiled"]
 
   :cljsbuild {:builds {}}                                                                                                     ; prevent https://github.com/emezeske/lein-cljsbuild/issues/413
@@ -147,29 +147,37 @@
 
              :browser-tests
              {:cljsbuild {:builds
-                          {:tests
-                           {; HACK: we rely on figwheel's "rel=<timestamp>" into cljs url params, clean-urls tests depend on it
-                            :figwheel       {:server-port     7300
-                                             :server-logfile  ".figwheel_tests.log"
-                                             :validate-config false
-                                             :repl            false}
-                            :notify-command ["scripts/cljsbuild-notify.sh" "tests"]
+                          {:tasks
+                           {:notify-command ["scripts/cljsbuild-notify.sh" "tasks"]
                             :source-paths   ["src/settings"
                                              "src/project"
-                                             "src/backport"
-                                             "src/lib"
                                              "src/automation"
                                              "src/runtime"
-                                             "src/test"
                                              "src/shared"
-                                             "src/agent"
-                                             "src/nrepl"
-                                             "test/browser/fixtures/src/tests"]
-                            :compiler       {:output-to            "test/browser/fixtures/resources/compiled/tests/tests.js"
-                                             :output-dir           "test/browser/fixtures/resources/compiled/tests"
-                                             :asset-path           "compiled/tests"
+                                             "test/browser/fixtures/src/tasks"]
+                            :compiler       {:output-to            "test/browser/fixtures/resources/_compiled/tasks/main.js"
+                                             :output-dir           "test/browser/fixtures/resources/_compiled/tasks"
+                                             :asset-path           "_compiled/tasks"
                                              :optimizations        :none                                                      ; we rely on optimizations :none in test runner
-                                             :preloads             [devtools.preload]
+                                             :source-map           true
+                                             :source-map-timestamp true}}
+                           :scenarios01
+                           {; HACK: we rely on figwheel's "rel=<timestamp>" into cljs url params, clean-urls tests depend on it
+                            :figwheel       {:server-port     7301
+                                             :server-logfile  ".figwheel_scenarios01.log"
+                                             :validate-config false
+                                             :repl            false}
+                            :notify-command ["scripts/cljsbuild-notify.sh" "scenarios01"]
+                            :source-paths   ["src/settings"
+                                             "src/project"
+                                             "src/automation"
+                                             "src/runtime"
+                                             "src/shared"
+                                             "test/browser/fixtures/src/scenarios01"]
+                            :compiler       {:output-to            "test/browser/fixtures/resources/_compiled/scenarios01/main.js"
+                                             :output-dir           "test/browser/fixtures/resources/_compiled/scenarios01"
+                                             :asset-path           "_compiled/scenarios01"
+                                             :optimizations        :none                                                      ; we rely on optimizations :none in test runner
                                              :source-map           true
                                              :source-map-timestamp true}}}}}
 
@@ -311,7 +319,9 @@
                            {:compiler {:parallel-build true}}
                            :marion-content-script
                            {:compiler {:parallel-build true}}
-                           :tests
+                           :tasks
+                           {:compiler {:parallel-build true}}
+                           :scenarios01
                            {:compiler {:parallel-build true}}}}}
 
              ; DON'T FORGET TO UPDATE scripts/ensure-checkouts.sh
@@ -347,7 +357,12 @@
                                                       "checkouts/chromex/src/lib"
                                                       "checkouts/chromex/src/exts"]
                                        :compiler     {}}
-                                      :tests
+                                      :tasks
+                                      {:source-paths ["checkouts/cljs-devtools/src"
+                                                      "checkouts/chromex/src/lib"
+                                                      "checkouts/chromex/src/exts"]
+                                       :compiler     {}}
+                                      :scenarios01
                                       {:source-paths ["checkouts/cljs-devtools/src"
                                                       "checkouts/chromex/src/lib"
                                                       "checkouts/chromex/src/exts"]
@@ -367,15 +382,7 @@
                            {:compiler {:tooling-config {:devtools/config {:features-to-install           :all
                                                                           :dont-detect-custom-formatters true}}}}
 
-                           :tests
-                           {:compiler {:tooling-config {:devtools/config {:features-to-install           :all
-                                                                          :dont-detect-custom-formatters true}}}}
-
                            :marion-background
-                           {:compiler {:tooling-config {:devtools/config {:features-to-install           :all
-                                                                          :dont-detect-custom-formatters true}}}}
-
-                           :marion-content-script
                            {:compiler {:tooling-config {:devtools/config {:features-to-install           :all
                                                                           :dont-detect-custom-formatters true}}}}}}}
 
@@ -456,9 +463,9 @@
                                           "marion-content-script"]
 
             "compile-browser-tests"      ["with-profile" "+cljs,+checkouts,+devtools,+parallel-build,+browser-tests"
-                                          "cljsbuild" "once" "tests"]
+                                          "cljsbuild" "once"]
             "auto-compile-browser-tests" ["with-profile" "+cljs,+checkouts,+devtools,+parallel-build,+browser-tests"
-                                          "cljsbuild" "auto" "tests"]
+                                          "cljsbuild" "auto"]
 
             "clean-compiled"             ["shell" "scripts/clean-compiled.sh"]
 

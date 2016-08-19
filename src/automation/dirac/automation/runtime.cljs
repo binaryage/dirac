@@ -5,6 +5,7 @@
             [dirac.runtime :as runtime]
             [dirac.runtime.prefs :as runtime-prefs]
             [dirac.automation.helpers :as helpers]
+            [dirac.automation.devtools :refer [init-devtools!]]
             [goog.async.nextTick :as next-tick]))
 
 (defn configure-runtime-from-url-params! [url]
@@ -31,6 +32,7 @@
   (set! next-tick/setImmediate_ promise-based-set-immediate))
 
 (defn init-runtime! [& [config]]
+  (init-devtools! config)
   (when (:override-goog-async-next-tick config)
     (warn ":override-goog-async-next-tick applied")
     (install-async-set-immediate!))

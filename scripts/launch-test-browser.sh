@@ -30,12 +30,14 @@ echo "waiting for compilation of clojurescript components..."
 # we want wait to compilation of our extensions, so that --load-extension param does not fail
 # see cljsbuild-notify.sh usage in project.clj
 
-./scripts/wait-for-notify.sh "tests"
 ./scripts/wait-for-notify.sh "marion-background"
 ./scripts/wait-for-notify.sh "marion-content-script"
 ./scripts/wait-for-notify.sh "dirac-implant"
 ./scripts/wait-for-notify.sh "dirac-background"
 ./scripts/wait-for-notify.sh "dirac-options"
+
+./scripts/wait-for-notify.sh "tasks"
+./scripts/wait-for-notify.sh "scenarios01"
 
 set -x
 "$EXE" \
