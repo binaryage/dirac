@@ -21,6 +21,8 @@
 
 set -e
 
+TASK=${1:-compile-dirac}
+
 . "$(dirname "${BASH_SOURCE[0]}")/config.sh"
 
 pushd "$ROOT"
@@ -42,7 +44,7 @@ fi
 FRONTEND="$DEVTOOLS_ROOT/front_end"
 
 echo "Building dirac extension in advanced mode..."
-lein compile-dirac
+lein $TASK
 
 popd
 

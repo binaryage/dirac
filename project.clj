@@ -444,7 +444,7 @@
             "test-browser"               ["do"                                                                                ; this will run browser tests against fully optimized dirac extension (release build)
                                           "compile-browser-tests,"
                                           "compile-marion,"
-                                          "release,"                                                                          ; = compile-dirac and devtools plus some cleanup, see scripts/release.sh
+                                          "shell" "scripts/release.sh" "compile-dirac-pseudo-names,"                          ; = compile-dirac and devtools plus some cleanup, see scripts/release.sh
                                           "run-browser-tests"]
             "test-browser-dev"           ["do"                                                                                ; this will run browser tests against unpacked dirac extension
                                           "compile-browser-tests,"
@@ -471,6 +471,9 @@
                                           "cljsbuild" "auto"
                                           "dirac-background" "dirac-options" "dirac-implant"]
             "compile-dirac"              ["with-profile" "+cljs,+parallel-build,+dirac-packed"
+                                          "cljsbuild" "once"
+                                          "dirac-background" "dirac-options" "dirac-implant"]
+            "compile-dirac-pseudo-names" ["with-profile" "+cljs,+parallel-build,+dirac-packed,+pseudo-names"
                                           "cljsbuild" "once"
                                           "dirac-background" "dirac-options" "dirac-implant"]
             "fig-marion"                 ["with-profile" "+cljs,+checkouts,+devtools,+marion,+marion-figwheel"
