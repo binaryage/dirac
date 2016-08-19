@@ -298,6 +298,7 @@
   (fixtures-web-server-check)
   (with-transcript-suite "suite01"
     (execute-transcript-test! "barebone")
+    (execute-transcript-test! "preloads")
     (execute-transcript-test! "runtime-api")
     (execute-transcript-test! "no-agent")
     (execute-transcript-test! "version-checks")

@@ -157,7 +157,7 @@
                                              "test/browser/fixtures/src/tasks"]
                             :compiler       {:output-to            "test/browser/fixtures/resources/_compiled/tasks/main.js"
                                              :output-dir           "test/browser/fixtures/resources/_compiled/tasks"
-                                             :asset-path           "_compiled/tasks"
+                                             :asset-path           "../_compiled/tasks"
                                              :optimizations        :none                                                      ; we rely on optimizations :none in test runner
                                              :source-map           true
                                              :source-map-timestamp true}}
@@ -176,8 +176,25 @@
                                              "test/browser/fixtures/src/scenarios01"]
                             :compiler       {:output-to            "test/browser/fixtures/resources/_compiled/scenarios01/main.js"
                                              :output-dir           "test/browser/fixtures/resources/_compiled/scenarios01"
-                                             :asset-path           "_compiled/scenarios01"
-                                             :optimizations        :none                                                      ; we rely on optimizations :none in test runner
+                                             :asset-path           "../_compiled/scenarios01"
+                                             :optimizations        :none
+                                             :source-map           true
+                                             :source-map-timestamp true}}
+                           :scenarios02
+                           {:notify-command ["scripts/cljsbuild-notify.sh" "scenarios02"]
+                            :source-paths   ["src/settings"
+                                             "src/project"
+                                             "src/automation"
+                                             "src/runtime"
+                                             "src/shared"
+                                             "test/browser/fixtures/src/scenarios02"]
+                            :compiler       {:output-to            "test/browser/fixtures/resources/_compiled/scenarios02/main.js"
+                                             :output-dir           "test/browser/fixtures/resources/_compiled/scenarios02"
+                                             :asset-path           "../_compiled/scenarios02"
+                                             :optimizations        :none
+                                             :main                 dirac.tests.scenarios.normal-via-preloads
+                                             :preloads             [dirac.runtime.preload]
+                                             :external-config      {:dirac.runtime/config {:external-config-setting "configured externally"}}
                                              :source-map           true
                                              :source-map-timestamp true}}}}}
 
@@ -322,6 +339,8 @@
                            :tasks
                            {:compiler {:parallel-build true}}
                            :scenarios01
+                           {:compiler {:parallel-build true}}
+                           :scenarios02
                            {:compiler {:parallel-build true}}}}}
 
              ; DON'T FORGET TO UPDATE scripts/ensure-checkouts.sh
@@ -363,6 +382,11 @@
                                                       "checkouts/chromex/src/exts"]
                                        :compiler     {}}
                                       :scenarios01
+                                      {:source-paths ["checkouts/cljs-devtools/src"
+                                                      "checkouts/chromex/src/lib"
+                                                      "checkouts/chromex/src/exts"]
+                                       :compiler     {}}
+                                      :scenarios02
                                       {:source-paths ["checkouts/cljs-devtools/src"
                                                       "checkouts/chromex/src/lib"
                                                       "checkouts/chromex/src/exts"]
