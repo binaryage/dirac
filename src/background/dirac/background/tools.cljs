@@ -1,6 +1,6 @@
 (ns dirac.background.tools
   (:require-macros [cljs.core.async.macros :refer [go go-loop]])
-  (:require [cljs.core.async :refer [<! chan timeout]]
+  (:require [cljs.core.async :refer [<! chan timeout close! put!]]
             [chromex.support :refer-macros [oget oset ocall oapply]]
             [chromex.logging :refer-macros [log info warn error group group-end]]
             [chromex.ext.windows :as windows]
@@ -61,13 +61,10 @@
   (let [window-params #js {:url   "chrome-devtools://devtools/bundled/inspector.js"
                            :type  "normal"
                            :state "minimized"}]
-    (go
-      (if-let [[window] (<! (windows/create window-params))]
-        (let [tabs (oget window "tabs")
-              first-tab (aget tabs 0)
-              tab-id (sugar/get-tab-id first-tab)]
-          (<! (timeout 1000))
-          tab-id)))))
+    (sugar/create-window-and-wait-for-first-tab-completed! window-params)))
+
+(defn remove-window! [window-id]
+  (windows/remove window-id))
 
 (defn create-dirac-tab! []
   (go

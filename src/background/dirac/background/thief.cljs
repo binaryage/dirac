@@ -1,15 +1,16 @@
 (ns dirac.background.thief
-  (:require-macros [cljs.core.async.macros :refer [go go-loop]])
+  (:require-macros [cljs.core.async.macros :refer [go go-loop]]
+                   [dirac.background.logging :refer [log info warn error]])
   (:require [cljs.core.async :refer [<! chan timeout]]
             [chromex.support :refer-macros [oget oset ocall oapply]]
-            [chromex.logging :refer-macros [log info warn error group group-end]]
             [chromex.ext.page-capture :as page-capture]
             [dirac.mime :as mime]
             [dirac.quoted-printable :as qp]
             [goog.string :as gstring]
             [dirac.utils :as utils]
             [dirac.background.tools :as tools]
-            [clojure.string :as string]))
+            [clojure.string :as string]
+            [dirac.sugar :as sugar]))
 
 ; -- inspector-js -----------------------------------------------------------------------------------------------------------
 
@@ -64,12 +65,17 @@
 
 (defn scrape-bundled-devtools! []
   (go
-    (let [tab-id (<! (tools/create-bundled-devtools-inspector-window!))
-          [mhtml] (<! (page-capture/save-as-mhtml (js-obj "tabId" tab-id)))
-          _ (tools/close-tab-with-id! tab-id)
-          multipart-mime (<! (utils/convert-blob-to-string mhtml))
-          inspector-js (steal-inspector-js multipart-mime)
-          backend-api (steal-backend-api inspector-js)
-          backend-css (steal-backend-css inspector-js)]
-      [backend-api backend-css])))
+    (let [[window] (<! (tools/create-bundled-devtools-inspector-window!))
+          first-tab (first (oget window "tabs"))
+          [mhtml] (<! (page-capture/save-as-mhtml (js-obj "tabId" (sugar/get-tab-id first-tab))))
+          multipart-mime (<! (utils/convert-blob-to-string mhtml))]
+      (<! (tools/remove-window! (sugar/get-window-id window)))
+      (try
+        (let [inspector-js (steal-inspector-js multipart-mime)
+              backend-api (steal-backend-api inspector-js)
+              backend-css (steal-backend-css inspector-js)]
+          [backend-api backend-css])
+        (catch :default e
+          (error "Unable to retrieve or parse inspector.js from bundled DevTools." e)
+          [])))))
 
