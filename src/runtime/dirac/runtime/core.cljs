@@ -3,14 +3,9 @@
   (:require [dirac.project :refer [get-current-version]]
             [dirac.runtime.repl :as repl]
             [dirac.runtime.util :refer [display-banner-if-needed! install-feature! resolve-features!]]
-            [dirac.runtime.prefs :as prefs]
+            [dirac.runtime.prefs :as prefs :refer [feature-groups known-features]]
             [goog.labs.userAgent.browser :as ua-browser]
             [goog.labs.userAgent.platform :as ua-platform]))
-
-(def known-features [:repl])
-(def default-features [:repl])
-(def feature-groups {:all     known-features
-                     :default default-features})
 
 ; -- CORE API ---------------------------------------------------------------------------------------------------------------
 
@@ -19,7 +14,7 @@
     :repl (repl/available?)))
 
 (defn available?
-  ([] (available? :default))
+  ([] (available? (prefs/pref :features-to-install)))
   ([features-desc]
    (let [features (resolve-features! features-desc feature-groups)]
      (if (empty? features)
@@ -31,7 +26,7 @@
     :repl (repl/installed?)))
 
 (defn installed?
-  ([] (installed? :default))
+  ([] (installed? (prefs/pref :features-to-install)))
   ([features-desc]
    (let [features (resolve-features! features-desc feature-groups)]
      (if (empty? features)
@@ -39,7 +34,7 @@
        (every? is-feature-installed? features)))))
 
 (defn install!
-  ([] (install! :default))
+  ([] (install! (prefs/pref :features-to-install)))
   ([features-desc]
    (let [features (resolve-features! features-desc feature-groups)]
      (display-banner-if-needed! features feature-groups)

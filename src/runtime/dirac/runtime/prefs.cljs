@@ -1,8 +1,15 @@
 (ns dirac.runtime.prefs
   (:require-macros [dirac.runtime.prefs :refer [gen-static-prefs]]))
 
+(def known-features [:repl])
+(def default-features [:repl])
+(def feature-groups {:all     known-features
+                     :default default-features})
+
 (def default-prefs
-  {:dont-display-banner                          false
+  {; you can specify a list/vector of features from known-features or a keyword from feature-groups
+   :features-to-install                          :default
+   :dont-display-banner                          false
    :safe-print-level                             1
    :safe-print-length                            10
    :agent-host                                   "localhost"

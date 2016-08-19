@@ -53,6 +53,7 @@ scenario =>      (:agent-auto-reconnect
                   :context-availability-total-time-limit
                   :dont-display-banner
                   :eval-time-limit
+                  :features-to-install
                   :install-check-eval-time-limit
                   :install-check-next-trial-waiting-time
                   :install-check-total-time-limit
