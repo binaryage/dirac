@@ -1,5 +1,5 @@
 (ns dirac.nrepl.config
-  (require [dirac.lib.utils :refer [assoc-env-val deep-merge-ignoring-nils]]))
+  (:require [dirac.lib.utils :refer [assoc-env-val deep-merge-ignoring-nils]]))
 
 (def default-config
   {:log-out            :console                                                                                               ; this is important, nREPL middleware captures output and logs be sent to client

@@ -1,5 +1,5 @@
 (ns dirac.agent.config
-  (require [dirac.lib.utils :refer [assoc-env-val deep-merge-ignoring-nils]]))
+  (:require [dirac.lib.utils :refer [assoc-env-val deep-merge-ignoring-nils]]))
 
 (def default-config
   {:log-level                 "WARN"                                                                                          ; OFF, FATAL, ERROR, WARN, INFO, DEBUG, TRACE, ALL

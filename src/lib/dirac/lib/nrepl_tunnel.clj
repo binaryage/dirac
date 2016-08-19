@@ -1,14 +1,14 @@
 (ns dirac.lib.nrepl-tunnel
-  (require [clojure.core.async :refer [chan <!! <! >!! put! alts!! timeout close! go go-loop]]
-           [clojure.core.async.impl.protocols :as core-async]
-           [clojure.tools.logging :as log]
-           [version-clj.core :refer [version-compare]]
-           [dirac.lib.nrepl-protocols :refer [NREPLTunnelService]]
-           [dirac.lib.nrepl-tunnel-server :as nrepl-tunnel-server]
-           [dirac.lib.nrepl-client :as nrepl-client]
-           [dirac.lib.version :as lib]
-           [dirac.lib.utils :as utils]
-           [dirac.logging :as logging]))
+  (:require [clojure.core.async :refer [chan <!! <! >!! put! alts!! timeout close! go go-loop]]
+            [clojure.core.async.impl.protocols :as core-async]
+            [clojure.tools.logging :as log]
+            [version-clj.core :refer [version-compare]]
+            [dirac.lib.nrepl-protocols :refer [NREPLTunnelService]]
+            [dirac.lib.nrepl-tunnel-server :as nrepl-tunnel-server]
+            [dirac.lib.nrepl-client :as nrepl-client]
+            [dirac.lib.version :as lib]
+            [dirac.lib.utils :as utils]
+            [dirac.logging :as logging]))
 
 ; Unfortunately, we cannot easily implement full-blown nREPL client in Dirac DevTools.
 ; First, we don't have real sockets API, we can use only websockets from javascript.
