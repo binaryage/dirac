@@ -1,5 +1,5 @@
-WebInspector.BakedInspectorBackendAPIChromeTag='54.0.2831.2';
-WebInspector.BakedInspectorBackendAPIChromeRev='8b8b2cd33a7685b4b4d51e3d778073be4b526897';
+WebInspector.BakedInspectorBackendAPIChromeTag='54.0.2832.2';
+WebInspector.BakedInspectorBackendAPIChromeRev='33f9e3a0fb535159cbd009663b9f194fc27f4205';
 WebInspector.BakedInspectorBackendAPI=''
 + 'InspectorBackend.registerEvent("Inspector.detached", ["reason"]);'
 + 'InspectorBackend.registerEvent("Inspector.targetCrashed", []);'
@@ -377,8 +377,8 @@ WebInspector.BakedInspectorBackendAPI=''
 + 'InspectorBackend.registerEvent("Runtime.executionContextCreated", ["context"]);'
 + 'InspectorBackend.registerEvent("Runtime.executionContextDestroyed", ["executionContextId"]);'
 + 'InspectorBackend.registerEvent("Runtime.executionContextsCleared", []);'
-+ 'InspectorBackend.registerEvent("Runtime.exceptionThrown", ["exceptionId", "timestamp", "details", "exception", "executionContextId"]);'
-+ 'InspectorBackend.registerEvent("Runtime.exceptionRevoked", ["message", "exceptionId"]);'
++ 'InspectorBackend.registerEvent("Runtime.exceptionThrown", ["timestamp", "exceptionDetails"]);'
++ 'InspectorBackend.registerEvent("Runtime.exceptionRevoked", ["reason", "exceptionId"]);'
 + 'InspectorBackend.registerEvent("Runtime.consoleAPICalled", ["type", "args", "executionContextId", "timestamp", "stackTrace"]);'
 + 'InspectorBackend.registerEvent("Runtime.inspectRequested", ["object", "hints"]);'
 + 'InspectorBackend.registerCommand("Runtime.evaluate", [{"name": "expression", "type": "string", "optional": false}, {"name": "objectGroup", "type": "string", "optional": true}, {"name": "includeCommandLineAPI", "type": "boolean", "optional": true}, {"name": "silent", "type": "boolean", "optional": true}, {"name": "contextId", "type": "number", "optional": true}, {"name": "returnByValue", "type": "boolean", "optional": true}, {"name": "generatePreview", "type": "boolean", "optional": true}, {"name": "userGesture", "type": "boolean", "optional": true}, {"name": "awaitPromise", "type": "boolean", "optional": true}], ["result", "exceptionDetails"], false);'
@@ -414,7 +414,7 @@ WebInspector.BakedInspectorBackendAPI=''
 + 'InspectorBackend.registerCommand("Debugger.pause", [], [], false);'
 + 'InspectorBackend.registerCommand("Debugger.resume", [], [], false);'
 + 'InspectorBackend.registerCommand("Debugger.searchInContent", [{"name": "scriptId", "type": "string", "optional": false}, {"name": "query", "type": "string", "optional": false}, {"name": "caseSensitive", "type": "boolean", "optional": true}, {"name": "isRegex", "type": "boolean", "optional": true}], ["result"], false);'
-+ 'InspectorBackend.registerCommand("Debugger.setScriptSource", [{"name": "scriptId", "type": "string", "optional": false}, {"name": "scriptSource", "type": "string", "optional": false}, {"name": "dryRun", "type": "boolean", "optional": true}], ["callFrames", "stackChanged", "asyncStackTrace", "compileError"], false);'
++ 'InspectorBackend.registerCommand("Debugger.setScriptSource", [{"name": "scriptId", "type": "string", "optional": false}, {"name": "scriptSource", "type": "string", "optional": false}, {"name": "dryRun", "type": "boolean", "optional": true}], ["callFrames", "stackChanged", "asyncStackTrace", "exceptionDetails"], false);'
 + 'InspectorBackend.registerCommand("Debugger.restartFrame", [{"name": "callFrameId", "type": "string", "optional": false}], ["callFrames", "asyncStackTrace"], false);'
 + 'InspectorBackend.registerCommand("Debugger.getScriptSource", [{"name": "scriptId", "type": "string", "optional": false}], ["scriptSource"], false);'
 + 'InspectorBackend.registerCommand("Debugger.setPauseOnExceptions", [{"name": "state", "type": "string", "optional": false}], [], false);'

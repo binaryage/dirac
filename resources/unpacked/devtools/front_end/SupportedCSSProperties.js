@@ -1,5 +1,5 @@
-WebInspector.BakedSupportedCSSPropertiesChromeTag='54.0.2831.2';
-WebInspector.BakedSupportedCSSPropertiesChromeRev='8b8b2cd33a7685b4b4d51e3d778073be4b526897';
+WebInspector.BakedSupportedCSSPropertiesChromeTag='54.0.2832.2';
+WebInspector.BakedSupportedCSSPropertiesChromeRev='33f9e3a0fb535159cbd009663b9f194fc27f4205';
 WebInspector.BakedSupportedCSSProperties=''
 + '[{"name": "color", "inherited": true},'
 + ' {"name": "direction", "inherited": true},'
@@ -306,7 +306,7 @@ WebInspector.BakedSupportedCSSProperties=''
 + ' {"name": "-webkit-transform-origin-z"},'
 + ' {"name": "-webkit-user-drag"},'
 + ' {"name": "-webkit-user-modify", "inherited": true},'
-+ ' {"name": "-webkit-user-select", "inherited": true},'
++ ' {"name": "user-select", "inherited": true},'
 + ' {"name": "white-space", "inherited": true},'
 + ' {"name": "widows", "inherited": true},'
 + ' {"name": "width"},'
