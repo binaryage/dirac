@@ -46,7 +46,6 @@
     "storage",
     "webRequest",
     "http://*/json",
-    "<all_urls>",
     "pageCapture",
     "tabs"
   ],
