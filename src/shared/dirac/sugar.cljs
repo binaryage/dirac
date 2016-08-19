@@ -1,9 +1,10 @@
 (ns dirac.sugar
   (:require-macros [cljs.core.async.macros :refer [go go-loop]])
-  (:require [cljs.core.async :refer [<! chan]]
+  (:require [cljs.core.async :refer [<! chan put! close!]]
             [chromex.support :refer-macros [oget ocall oapply]]
             [chromex.logging :refer-macros [log info warn error group group-end]]
             [chromex.config :refer-macros [with-muted-error-reporting]]
+            [chromex.chrome-event-channel :refer [make-chrome-event-channel]]
             [chromex.ext.tabs :as tabs]
             [chromex.ext.runtime :as runtime]
             [chromex.ext.windows :as windows]))
@@ -34,10 +35,33 @@
 
 ; -- window -----------------------------------------------------------------------------------------------------------------
 
+(defn get-window-id [window]
+  (oget window "id"))
+
 (defn fetch-window [window-id]
   (go
     (let [[window] (<! (windows/get window-id))]
       window)))
+
+(defn create-window-and-wait-for-first-tab-completed! [window-params]
+  (let [chrome-event-channel (make-chrome-event-channel (chan))
+        result-chan (chan)]
+    (tabs/tap-on-updated-events chrome-event-channel)
+    (go
+      (if-let [[window] (<! (windows/create window-params))]
+        (let [tabs (oget window "tabs")
+              tab-id (get-tab-id (first tabs))]
+          (go-loop []
+            (if-let [event (<! chrome-event-channel)]
+              (let [[event-id event-args] event]
+                (case event-id
+                  ::tabs/on-updated (let [[updated-tab-id change-info] event-args]
+                                      (when (and (= tab-id updated-tab-id)
+                                                 (= (oget change-info "status") "complete"))
+                                        (close! chrome-event-channel)
+                                        (put! result-chan [window]))))
+                (recur)))))))
+    result-chan))
 
 ; -- tab --------------------------------------------------------------------------------------------------------------------
 
