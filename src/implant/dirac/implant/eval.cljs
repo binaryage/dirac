@@ -33,21 +33,28 @@
 
 ; -- helpers ----------------------------------------------------------------------------------------------------------------
 
+(defn get-dirac []
+  {:post [(object? %)]}
+  (if-let [dirac (oget js/window "dirac")]
+    dirac
+    (throw (ex-info (str "window.dirac not found") {}))))
+
 (defn format-reason [e]
-  (if (string? e)
-    e
-    (if-let [text (oget e "text")]
-      (str text)
-      (if-let [stack (oget e "stack")]
-        (.toString stack)
-        (.toString e)))))
+  (cond
+    (string? e) e
+    (vector? e) (pr-str e)
+    :else (if-let [text (oget e "text")]
+            (str text)
+            (if-let [stack (oget e "stack")]
+              (.toString stack)
+              (.toString e)))))
 
 (def supported-contexts #{:default :current})
 
 (defn code-as-string [code]
-  (if-let [eval-fn (oget js/window "dirac" "codeAsString")]
+  (if-let [eval-fn (oget (get-dirac) "codeAsString")]
     (eval-fn code)
-    (error "dirac.codeAsString not found")))
+    (error "window.dirac.codeAsString not found")))
 
 (defn get-has-context-fn-name [context]
   (case context
@@ -62,34 +69,50 @@
 (defn get-current-time []
   (.getTime (js/Date.)))
 
-(defn call-when-avail-or-call-timeout-fn [check-fn call-fn timeout-fn next-trial-time total-time-limit]
+(defn check-and-call-when-avail-or-timeout [check-fn call-fn timeout-fn trial-delay total-time-limit]
   (let [start-time (get-current-time)]
     (go-loop []
-      (let [current-time (get-current-time)]
-        (if (< (- current-time start-time) total-time-limit)
+      (let [current-time (get-current-time)
+            elapsed-time (- current-time start-time)]
+        (if (< elapsed-time total-time-limit)
           (if (check-fn)
             (call-fn)
             (do
-              (<! (timeout next-trial-time))
+              (<! (timeout trial-delay))
               (recur)))
           (timeout-fn))))))
 
 (defn eval-with-callback!
+  "Attempts to evaluate given code string in specified context.
+  Optionally calls provided callback with evaluation result
+    [::ok result],
+    [::eval-exception exception-details] or
+    [::context-timeout]
+  Throws on internal error."
   ([context code]
    (eval-with-callback! context code nil))
   ([context code callback]
-   (let [dirac (oget js/window "dirac")
+   (let [dirac (get-dirac)
          has-context-fn-name (get-has-context-fn-name context)]
      (if-let [has-context-fn (oget dirac has-context-fn-name)]
        (let [eval-fn-name (get-eval-in-context-fn-name context)]
          (if-let [eval-fn (oget dirac eval-fn-name)]
-           (call-when-avail-or-call-timeout-fn has-context-fn
-                                               #(eval-fn code callback)
-                                               #(error "was unable to resolve javscript context in time" context code)
-                                               (pref :context-availability-next-trial-waiting-time)
-                                               (pref :context-availability-total-time-limit))
-           (throw (ex-info (str eval-fn-name " not found on window.dirac object") dirac))))
-       (throw (ex-info (str has-context-fn-name " not found on window.dirac object") dirac))))))
+           (let [callback-wrapper (fn [result-remote-object exception-details]
+                                    (if callback
+                                      (let [result (if (some? exception-details)
+                                                     [::eval-exception exception-details]
+                                                     [::ok (if result-remote-object (oget result-remote-object "value"))])]
+                                        (callback result))))
+                 call-fn (fn [] (eval-fn code callback-wrapper))
+                 timeout-fn (fn []
+                              (error "Unable to resolve javscript context in time" context code)
+                              (if callback
+                                (callback [::context-timeout])))
+                 trial-delay (pref :context-availability-next-trial-waiting-time)
+                 time-limit (pref :context-availability-total-time-limit)]
+             (check-and-call-when-avail-or-timeout has-context-fn call-fn timeout-fn trial-delay time-limit))
+           (throw (ex-info (str "Function '" eval-fn-name "' not found in window.dirac object") dirac))))
+       (throw (ex-info (str "Function '" has-context-fn-name "' not found in window.dirac object") dirac))))))
 
 (defn update-banner! [msg]
   (if-let [banner-fn (pref :update-banner-fn)]
@@ -139,57 +162,67 @@
        "While evaluating:\n"
        code))
 
-(defn ^:dynamic internal-eval-timeout-msg [code]
+(defn ^:dynamic eval-problem-msg [code key reason]
+  (str "Dirac encountered an eval problem (" key ")."
+       (if (some? reason) (str "\n" (format-reason reason) "\n"))
+       "While evaluating:\n"
+       code))
+
+(defn ^:dynamic eval-timeout-msg [code]
   (str "Dirac encountered internal eval timeout while evaluating:\n"
        code))
 
 ; -- convenient eval wrapper ------------------------------------------------------------------------------------------------
 
-; this function never throws, returns:
-;   [::exception ex] in case of internal problem
-;   [::timeout] in case of timeout
-;   [::thrown exception-details] in case of eval exception
-;   [::ok value] in case of proper execution
-(defn call-eval-with-timeout! [context code eval-time-limit]
+(defn call-eval-with-timeout!
+  "Attempts to evaluate given code string in specified context within specified time limit.
+   This function should never throw, returns:
+     [::internal-error ex] in case of internal problem
+     [::context-timeout] in case of eval context availability timeout
+     [::eval-timeout] in case of eval timeout
+     [::eval-exception exception-details] in case of eval exception
+     [::ok value] in case of proper execution
+     "
+  [context code time-limit]
   {:pre [(context supported-contexts)]}
   (let [result-chan (chan)
-        timeout-chan (timeout eval-time-limit)
-        callback (fn [result exception-details]
-                   (let [answer (if (some? exception-details)
-                                  [::thrown exception-details]
-                                  [::ok (if result (oget result "value"))])]
-                     (put! result-chan answer)))]
+        timeout-chan (timeout time-limit)
+        callback (fn [result]
+                   (put! result-chan result))]
     (go
       (try
         (eval-with-callback! context code callback)
-        (catch :default ex
-          (put! result-chan [::exception ex])))
-      (let [[result] (alts! [result-chan timeout-chan])]                                                                      ; when timeout channel closes, the result is nil
-        (or result (do
-                     (close! result-chan)
-                     [::timeout]))))))
+        (catch :default e
+          (put! result-chan [::internal-error e])))
+      (let [[result ch] (alts! [result-chan timeout-chan])]                                                                   ; when timeout channel closes, the result is nil
+        (if (= ch timeout-chan)
+          (do
+            (close! result-chan)
+            [::eval-timeout])
+          result)))))
 
-; return with [::ok value] [::failure reason]
+; returns with
+; either [::ok value]
+; or     [::failure reason]
 (defn wait-for-dirac-installed! []
   (let [timeout-chan (timeout (pref :install-check-total-time-limit))
+        trial-delay (pref :install-check-next-trial-waiting-time)
         installation-test-eval-time-limit (pref :install-check-eval-time-limit)
         installation-test-code (installation-test-template)
-        last-reason (volatile! "timeout")
+        last-reason (volatile! [::install-check-timeout])
         return (fn [& [val]] (or val [::failure @last-reason]))]
     (go-loop []
-      (if (core-async/closed? timeout-chan)                                                                                   ; timeout might close outside of alts! we must have this test here
+      (if (core-async/closed? timeout-chan)
         (return)
         (let [result-chan (call-eval-with-timeout! :default installation-test-code installation-test-eval-time-limit)
-              [result chan] (alts! [result-chan timeout-chan])]
-          (if (= chan timeout-chan)
-            (return)
-            (case (first result)
-              (::timeout ::exception ::thrown) (do
-                                                 (if-let [reason (second result)]
-                                                   (vreset! last-reason reason))
-                                                 (<! (timeout (pref :install-check-next-trial-waiting-time)))                 ; don't DoS the VM, wait between installation tests
-                                                 (recur))
-              ::ok (return result))))))))
+              [result] (alts! [result-chan timeout-chan])]
+          (case (first result)
+            ::ok (return result)
+            (do
+              (if-let [reason (second result)]
+                (vreset! last-reason reason))
+              (<! (timeout trial-delay))                                                                                      ; don't DoS the VM, wait between installation tests
+              (recur))))))))
 
 ; -- simple evaluation for page-context console logging ---------------------------------------------------------------------
 
@@ -219,42 +252,48 @@
 ; Also look into implementation of process-message :eval-js, there is a deliberate delay before processing eval-js requests
 ; This means printing messages in tunnel have better chance to complete before a subsequent eval is executed.
 
-(defonce eval-requests-chan (chan))
+(defonce eval-requests (chan))
 
 (defn start-eval-request-queue-processing-loop! []
   (go-loop []
-    (if-let [[context code handler] (<! eval-requests-chan)]
+    (if-let [[context code handler] (<! eval-requests)]
       (let [call-handler! (fn [args & errors]
                             (if-not (empty? errors)
                               (apply display-user-error! errors))
-                            (apply handler args))
-            install-result (<! (wait-for-dirac-installed!))]
+                            (if handler
+                              (apply handler (concat args errors))))
+            install-result (<! (wait-for-dirac-installed!))
+            eval-time-limit (pref :eval-time-limit)]
         (case (first install-result)
-          ::failure (call-handler! [::install-failure (second install-result)] (missing-runtime-msg (second install-result)))
-          ::ok (let [eval-result (<! (call-eval-with-timeout! context code (pref :eval-time-limit)))]
+          ::failure (let [reason (second install-result)]
+                      (call-handler! [::install-failure reason] (missing-runtime-msg reason)))
+          ::ok (let [eval-result (<! (call-eval-with-timeout! context code eval-time-limit))]
                  (case (first eval-result)
-                   ::exception (call-handler! eval-result (internal-eval-error-msg code (second eval-result)))
-                   ::timeout (call-handler! eval-result (internal-eval-timeout-msg code))
-                   (call-handler! eval-result))))
+                   ::ok (call-handler! eval-result)
+                   ::internal-error (call-handler! eval-result (internal-eval-error-msg code (second eval-result)))
+                   ::eval-timeout (call-handler! eval-result (eval-timeout-msg code))
+                   (call-handler! eval-result (eval-problem-msg code (first eval-result) (second eval-result))))))
         (recur))
       (log "Leaving start-eval-request-queue-processing-loop!"))))
 
 ; -- queued evaluation in context -------------------------------------------------------------------------------------------
 
 (defn queue-eval-request! [context code handler]
-  (put! eval-requests-chan [context code handler]))
+  (put! eval-requests [context code handler]))
 
 (defn eval-in-context! [context code]
-  (let [result-chan (chan)]
-    (queue-eval-request! context code (fn [& args] (put! result-chan args)))
+  (let [result-chan (chan)
+        handler (fn [& args]
+                  (put! result-chan args))]
+    (queue-eval-request! context code handler)
     result-chan))
 
 (defn safely-eval-in-context! [context safe-value code]
   {:pre [(context supported-contexts)
          (string? code)]}
   (go
-    (let [[result value] (<! (eval-in-context! context code))]
-      (if (= result ::ok)
+    (let [[result-code value] (<! (eval-in-context! context code))]
+      (if (= result-code ::ok)
         value
         safe-value))))
 
@@ -262,8 +301,8 @@
 
 (defn is-runtime-present? []
   (go
-    (let [[result value] (<! (eval-in-context! :default "dirac.runtime"))]
-      (case result
+    (let [[result-code value] (<! (eval-in-context! :default "dirac.runtime"))]
+      (case result-code
         ::ok true
         (format-reason value)))))
 
