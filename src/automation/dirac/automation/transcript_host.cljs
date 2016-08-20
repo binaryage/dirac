@@ -58,10 +58,11 @@
 
 (defn reset-output-segment! []
   (doseq [record @output-observers]
-    (close! (:channel record)))
+    (if-let [channel (:channel record)]
+      (close! channel)))
   (reset! output-segment []))
 
-(defn register-observer! [matching-fn channel]
+(defn register-observer! [matching-fn & [channel]]
   (let [record {:matching-fn matching-fn
                 :channel     channel}]
     (swap! output-observers conj record)
@@ -73,7 +74,8 @@
 (defn match-observer-record! [observer-record value]
   (when-let [match ((:matching-fn observer-record) value)]
     (unregister-observer-record! observer-record)
-    (put! (:channel observer-record) match)))
+    (if-let [channel (:channel observer-record)]
+      (put! channel match))))
 
 (defn get-output-segment-values []
   @output-segment)
