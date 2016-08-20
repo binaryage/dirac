@@ -254,11 +254,6 @@
 
 .scope-chain-sidebar-pane-section {
     padding: 2px 4px 2px 4px;
-    /* this was causing havoc when expanding scope items in Dirac (for some unknown reason)
-       see https://github.com/binaryage/dirac/issues/12
-       this is a quick fix, don't have time to look into it
-    */
-    /* overflow: hidden; */
     flex: none;
 }
 
