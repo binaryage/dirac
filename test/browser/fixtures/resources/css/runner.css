@@ -57,6 +57,10 @@ html, body {
     background-color: #fee;
 }
 
+.status-failed {
+    background-color: #fef;
+}
+
 #transcript-box {
     margin-top: 60px;
     padding: 6px 10px;

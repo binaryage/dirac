@@ -23,6 +23,7 @@
 
 (defonce setup-done (volatile! false))
 (defonce exit-code (volatile! nil))
+(defonce failed-state? (volatile! false))
 
 ; -- cljs printing ----------------------------------------------------------------------------------------------------------
 
@@ -78,12 +79,29 @@
 (defn success? []
   (= @exit-code ::success))
 
+(defn failed? []
+  @failed-state?)
+
 (defn running? []
   (nil? @exit-code))
+
+(defn frozen? []
+  (if-not (helpers/is-test-runner-present?)
+    (or (failed?)
+        (not (running?)))))
 
 (defn set-exit-code! [code]
   (log "set-exit-code!" code)
   (vreset! exit-code code))
+
+(defn make-failure-matcher []
+  (fn [[label _message]]
+    (if-not (failed?)
+      (when (or (= label "fail")
+                (= label "error"))
+        (log "FAILURE detected")
+        (vreset! failed-state? true)))
+    false))
 
 ; -- task life-cycle --------------------------------------------------------------------------------------------------------
 
@@ -93,6 +111,9 @@
     ; transcript is a fancy name for "log of interesting events"
     (register-global-exception-handler!)
     (transcript-host/init-transcript! "transcript-box")
+    ; when we are not running under test-runner, we want skip all future actions after a failure
+    ; this helps inspection of the problems in an interactive way
+    (transcript-host/register-observer! (make-failure-matcher))
     (status-host/init-status! "status-box")
     (init-cljs-printing!)
     (launcher/init!)
@@ -162,10 +183,17 @@
 
 (defn task-finished! []
   (when (running?)
-    (set-exit-code! ::success)
-    (status-host/set-status! "task finished")
-    (status-host/set-style! "finished")
-    (transcript-host/set-style! "finished")
+    (if (failed?)
+      (do
+        (set-exit-code! ::failed)
+        (status-host/set-status! "task failed (all actions after the failure were ignored)")
+        (status-host/set-style! "failed")
+        (transcript-host/set-style! "failed"))
+      (do
+        (set-exit-code! ::success)
+        (status-host/set-status! "task finished")
+        (status-host/set-style! "finished")
+        (transcript-host/set-style! "finished")))
     (task-teardown!)))
 
 ; -- handling exceptions ----------------------------------------------------------------------------------------------------
