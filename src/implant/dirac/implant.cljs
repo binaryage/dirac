@@ -24,12 +24,6 @@
 (defonce ^:dynamic *implant-initialized* false)
 (defonce ^:dynamic *namespaces-cache-debouncer* nil)
 
-(defn warm-up-namespace-cache! []
-  (ocall (oget js/window "dirac") "extractNamespacesAsync"))
-
-(defn throw-internal-error! []
-  (into nil :nonsense))
-
 ; -- public API -------------------------------------------------------------------------------------------------------------
 ; following functions will be exposed as helpers for devtools javascript code
 ; they should be called via dirac.something object, see the mapping in dirac-api-to-export below
@@ -93,12 +87,12 @@
 (defn notify-panel-switch [panel]
   (let [panel-name (oget panel "name")]
     (post-feedback! (str "setCurrentPanel: " panel-name))
-    (warm-up-namespace-cache!)))
+    (helpers/warm-up-namespace-cache!)))
 
 (defn trigger-internal-error! []
   ; timeout is needed for testing from console
   ; see http://stackoverflow.com/a/27257742/84283
-  (ocall js/window "setTimeout" throw-internal-error! 0))
+  (ocall js/window "setTimeout" helpers/throw-internal-error! 0))
 
 (defn report-namespaces-cache-cool-down! []
   (post-feedback! "namespacesCache is cool now")

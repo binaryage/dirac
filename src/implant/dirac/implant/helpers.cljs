@@ -41,3 +41,9 @@
 
 (defn resolved-promise [value]
   (ocall (oget js/window "Promise") "resolve" value))
+
+(defn warm-up-namespace-cache! []
+  (ocall (oget js/window "dirac") "extractNamespacesAsync"))
+
+(defn throw-internal-error! []
+  (into nil :nonsense))
