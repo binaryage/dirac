@@ -7,15 +7,24 @@
 
 (go-task
   (with-scenario "normal"
-    (testing "unhandled DevTools exceptions should be presented in target console as Internal Dirac Error"
-      (with-devtools
+    (with-devtools
+      (testing "unhandled DevTools exceptions should be presented in target console as Internal Dirac Error"
         (<!* a/switch-to-console-panel!)
-        (<!* a/trigger-internal-error! 200)
-        (<! (timeout 500))
+        (<!* a/trigger-internal-error!)
         (let [error-content (<!* a/scrape :last-log-item-content "error")
               first-line (utils/extract-first-line error-content)
               second-line (utils/extract-line error-content 1)]
           (is (= first-line "Internal Dirac Error: DevTools code has thrown an unhandled exception"))
-          (is (= second-line "Error: :nonsense is not ISeqable"))
-          ; assume it contains some stack trace
-          (is (> (utils/line-count error-content) 4)))))))
+          (is (= second-line "Error: :keyword is not ISeqable"))
+          (is (> (utils/line-count error-content) 4))))                                                                       ; assume it contains some stack trace
+      (testing "async unhandled DevTools exceptions in promises should be presented in target console as Internal Dirac Error"
+        (<!* a/trigger-internal-error-in-promise!)
+        (let [error-content (<!* a/scrape :last-log-item-content "error")
+              first-line (utils/extract-first-line error-content)
+              second-line (utils/extract-line error-content 1)]
+          (is (= first-line "Internal Dirac Error: DevTools code has thrown an unhandled rejection (in promise)"))
+          (is (= second-line "Error: fake async error in promise"))
+          (is (> (utils/line-count error-content) 4))))                                                                       ; assume it contains some stack trace
+      (testing "DevTools console.error logs should be presented in target console as Internal Dirac Error"
+        ; TBD
+        ))))

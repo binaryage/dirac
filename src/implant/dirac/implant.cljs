@@ -94,6 +94,13 @@
   ; see http://stackoverflow.com/a/27257742/84283
   (ocall js/window "setTimeout" helpers/throw-internal-error! 0))
 
+(defn trigger-internal-error-in-promise! []
+  (let [delayed-promise (js/Promise.
+                  (fn [resolve _reject]
+                    (ocall js/window "setTimeout" resolve 0)))]
+    (ocall delayed-promise "then" #(throw (ex-info "fake async error in promise" {:val %})))
+    true))
+
 (defn report-namespaces-cache-cool-down! []
   (post-feedback! "namespacesCache is cool now")
   (.pause *namespaces-cache-debouncer*))
@@ -122,6 +129,7 @@
    "parseNsFromSource"             parse-ns-from-source
    "nsToRelpath"                   ns-to-relpath
    "triggerInternalError"          trigger-internal-error!
+   "triggerInternalErrorInPromise" trigger-internal-error-in-promise!
    "getFunctionName"               get-function-name
    "getFullFunctionName"           get-full-function-name
    "getReplSpecialsAsync"          get-repl-specials-async

@@ -46,4 +46,4 @@
   (ocall (oget js/window "dirac") "extractNamespacesAsync"))
 
 (defn throw-internal-error! []
-  (into nil :nonsense))
+  (into nil :keyword))

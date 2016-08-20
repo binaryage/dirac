@@ -15,14 +15,19 @@ devtools #1      setDiracPromptMode('status')
 devtools #1      ConsoleView constructed
 devtools #1      displayWelcomeMessage
 devtools #1      setCurrentPanel: console
-automate #1      trigger-internal-error! [200]
+automate #1      trigger-internal-error!
 devtools #1      Internal Dirac Error: DevTools code has thrown an unhandled exception
-                 Error: :nonsense is not ISeqable
+                 Error: :keyword is not ISeqable
+                 <elided trace>
+automate #1      scrape [:last-log-item-content "error"]
+automate #1      trigger-internal-error-in-promise!
+devtools #1      Internal Dirac Error: DevTools code has thrown an unhandled rejection (in promise)
+                 Error: fake async error in promise
                  <elided trace>
 automate #1      scrape [:last-log-item-content "error"]
 automate #1      close-devtools!
 extension        handling command: close-dirac-devtools
 extension        unregister devtools #1
 automate         close-tab-with-scenario! ["scenario-tab#1"]
-summary          Automated 7 actions with 0 check-points containing 3 assertions.
+summary          Automated 9 actions with 0 check-points containing 6 assertions.
                  0 failures, 0 errors.

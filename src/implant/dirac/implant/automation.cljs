@@ -95,14 +95,25 @@
   (if-let [console-view (get-console-view)]
     (ocall console-view "getPromptRepresentation")))
 
-(defn trigger-internal-errror! [delay]
+(defn trigger-fn-and-wait! [f delay]
   {:pre [(or (nil? delay) (number? delay))]}
-  (let [trigger-fn #(ocall (oget js/window "dirac") "triggerInternalError")]
-    (if (some? delay)
-      (go
+  (if (some? delay)
+    (go
+      (let [result (f)]
         (<! (timeout delay))
-        (trigger-fn))
-      (trigger-fn))))
+        (if (nil? result)
+          (throw "triggered function must not return nil" {:fn    f
+                                                           :delay delay})
+          result)))
+    (f)))
+
+(defn trigger-internal-error! [delay kind]
+  {:pre [(or (nil? delay) (number? delay))]}
+  (let [fn-name (case kind
+                  :unhandled-exception "triggerInternalError"
+                  :unhandled-exception-in-promise "triggerInternalErrorInPromise")
+        trigger-fn #(ocall (oget js/window "dirac") fn-name)]
+    (trigger-fn-and-wait! trigger-fn delay)))
 
 ; -- main dispatch ----------------------------------------------------------------------------------------------------------
 
@@ -122,7 +133,7 @@
     :disable-console-feedback (disable-console-feedback!)
     :get-suggest-box-representation (get-suggest-box-representation)
     :get-prompt-representation (get-prompt-representation)
-    :trigger-internal-error (trigger-internal-errror! (:delay command))
+    :trigger-internal-error (trigger-internal-error! (:delay command) (:kind command))
     :scrape (apply scrape (:scraper command) (:args command))
     (warn "received unknown automation command:" (pr-str command))))
 

@@ -486,6 +486,7 @@ var dirac = {
     nsToRelpath: function(ns, ext) {},
 
     triggerInternalError: function() {},
+    triggerInternalErrorInPromise: function() {},
     /**
      * @param {string} name
      * @return {string}

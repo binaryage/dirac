@@ -128,7 +128,13 @@
 
 (defn trigger-internal-error! [devtools-id & [delay]]
   (automate-dirac-frontend! devtools-id {:action :trigger-internal-error
-                                         :delay  delay}))
+                                         :kind   :unhandled-exception
+                                         :delay  (or delay 100)}))
+
+(defn trigger-internal-error-in-promise! [devtools-id & [delay]]
+  (automate-dirac-frontend! devtools-id {:action :trigger-internal-error
+                                         :kind   :unhandled-exception-in-promise
+                                         :delay  (or delay 100)}))
 
 (defn scrape [devtools-id scraper-name & args]
   (automate-dirac-frontend! devtools-id {:action  :scrape
