@@ -35,7 +35,7 @@
     (catch IOException e
       ; see https://bugs.openjdk.java.net/browse/JDK-8050499 - dirty hack for clean shutdown on OSX w/ Java 1.8.0_20
       ; inspired by solution here: https://issues.apache.org/jira/browse/CASSANDRA-8220
-      (if-not (string/includes? (.getMessage e) "Unknown error: 316")
+      (if-not (string/includes? e "Unknown error: 316")
         (throw e)))))
 
 (defn with-fixtures-web-server [f]
