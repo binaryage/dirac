@@ -1,5 +1,6 @@
 (ns dirac.automation.transcript-host
   (:require-macros [cljs.core.async.macros :refer [go go-loop]]
+                   [dirac.automation.transcript-host :refer [debug-log]]
                    [dirac.settings :refer [get-transcript-match-timeout
                                            get-transcript-label-padding-length
                                            get-transcript-label-padding-type]])
@@ -91,7 +92,7 @@
 
 (defn transition-rewriting-machine! [new-state]
   {:pre [(keyword? new-state)]}
-  (log (str "REWRITING MACHING STATE " (get-rewriting-machine-state) " -> " new-state))
+  (debug-log (str "REWRITING MACHING STATE " (get-rewriting-machine-state) " -> " new-state))
   (swap! rewriting-machine assoc :state new-state))
 
 (defn get-rewriting-machine-context []
@@ -100,7 +101,7 @@
 (defn update-rewriting-machine-context! [f & args]
   (let [old-context (get-rewriting-machine-context)]
     (apply swap! rewriting-machine update :context f args)
-    (log (str "REWRITING MACHING CONTEXT " old-context " -> " (get-rewriting-machine-context)))))
+    (debug-log (str "REWRITING MACHING CONTEXT " old-context " -> " (get-rewriting-machine-context)))))
 
 ; -- formatting -------------------------------------------------------------------------------------------------------------
 
@@ -208,10 +209,10 @@
          (string? label)
          (string? text)]}
   (when (and (or force? (transcript-enabled?)) (some? text))
-    (log "TRANSCRIPT" [label text])
+    (debug-log "TRANSCRIPT" [label text])
     (when-let [[effective-label effective-text] (rewrite-transcript! label text)]
       (if (or (not= effective-label label) (not= effective-text text))
-        (log "TRANSCRIPT REWRITE" [effective-label effective-text]))
+        (debug-log "TRANSCRIPT REWRITE" [effective-label effective-text]))
       (let [text (format-transcript effective-label effective-text)
             generated-style (determine-style effective-label effective-text)
             style (if (some? style)
