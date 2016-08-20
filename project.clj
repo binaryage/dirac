@@ -215,7 +215,6 @@
                                              :output-dir    "test/marion/resources/unpacked/compiled/background"
                                              :asset-path    "compiled/background"
                                              :optimizations :none
-                                             :preloads      [devtools.preload]
                                              :source-map    true}}
 
                            :marion-content-script
