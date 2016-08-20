@@ -1,28 +1,5 @@
 ns               Testing dirac.tests.tasks.suite01.misc
 automate         open-tab-with-scenario! ["normal"]
-automate         open-devtools!
-extension        handling command: open-dirac-devtools
-extension        register devtools #1
-devtools #1      implant initialized
-devtools #1      reset devtools settings
-devtools #1      devtools ready
-devtools #1      setCurrentPanel: elements
-devtools #1      namespacesCache is cool now
-automate #1      switch-to-console-panel!
-devtools #1      console initialized
-devtools #1      adopt-prompt-element use-parinfer? true
-devtools #1      setDiracPromptMode('status')
-devtools #1      ConsoleView constructed
-devtools #1      displayWelcomeMessage
-devtools #1      setCurrentPanel: console
-automate #1      trigger-internal-error! [200]
-devtools #1      Internal Dirac Error: DevTools code has thrown an unhandled exception
-                 Error: :nonsense is not ISeqable
-                 <elided trace>
-automate #1      scrape [:last-log-item-content "error"]
-automate #1      close-devtools!
-extension        handling command: close-dirac-devtools
-extension        unregister devtools #1
 automate         close-tab-with-scenario! ["scenario-tab#1"]
-summary          Automated 7 actions with 0 check-points containing 3 assertions.
+summary          Automated 2 actions with 0 check-points containing 0 assertions.
                  0 failures, 0 errors.
