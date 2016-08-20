@@ -131,7 +131,10 @@
 (defn safe-automate! [command]
   {:pre [(map? command)]}
   (try
-    (dispatch-command! command)
+    (let [result (dispatch-command! command)]
+      (if (nil? result)
+        (throw "automation commands must not return nil as an answer, return true/false instead")
+        result))
     (catch :default e
       (error "failed to dispatch automation command: " (pr-str command) e)
       e)))
