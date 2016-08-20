@@ -86,9 +86,10 @@ WebInspector.ExtensionServer = function()
     this._initExtensions();
 }
 
+/** @enum {symbol} */
 WebInspector.ExtensionServer.Events = {
-    SidebarPaneAdded: "SidebarPaneAdded",
-    AuditCategoryAdded: "AuditCategoryAdded"
+    SidebarPaneAdded: Symbol("SidebarPaneAdded"),
+    AuditCategoryAdded: Symbol("AuditCategoryAdded")
 }
 
 WebInspector.ExtensionServer.prototype = {
@@ -690,7 +691,7 @@ WebInspector.ExtensionServer.prototype = {
          */
         function onElementsSubscriptionStarted()
         {
-            WebInspector.notifications.addEventListener(WebInspector.NotificationService.Events.SelectedNodeChanged, this._notifyElementsSelectionChanged, this);
+            WebInspector.context.addFlavorChangeListener(WebInspector.DOMNode, this._notifyElementsSelectionChanged, this);
         }
 
         /**
@@ -698,7 +699,7 @@ WebInspector.ExtensionServer.prototype = {
          */
         function onElementsSubscriptionStopped()
         {
-            WebInspector.notifications.removeEventListener(WebInspector.NotificationService.Events.SelectedNodeChanged, this._notifyElementsSelectionChanged, this);
+            WebInspector.context.removeFlavorChangeListener(WebInspector.DOMNode, this._notifyElementsSelectionChanged, this);
         }
 
         this._registerSubscriptionHandler(WebInspector.extensionAPI.Events.PanelObjectSelected + "elements",

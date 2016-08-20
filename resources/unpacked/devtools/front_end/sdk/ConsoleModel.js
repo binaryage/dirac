@@ -49,12 +49,13 @@ WebInspector.ConsoleModel = function(target)
     this._logAgent.enable();
 }
 
+/** @enum {string} */
 WebInspector.ConsoleModel.Events = {
     ConsoleCleared: "ConsoleCleared",
     DiracMessage: "DiracMessage",
     MessageAdded: "MessageAdded",
     MessageUpdated: "MessageUpdated",
-    CommandEvaluated: "CommandEvaluated",
+    CommandEvaluated: "CommandEvaluated"
 }
 
 WebInspector.ConsoleModel.prototype = {

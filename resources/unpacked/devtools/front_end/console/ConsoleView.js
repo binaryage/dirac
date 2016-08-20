@@ -1251,8 +1251,10 @@ WebInspector.ConsoleView.prototype = {
 
     _promptKeyDown: function(event)
     {
-        this._updateStickToBottomOnWheel();
-        if (isEnterKey(event)) {
+        if (event.key === "PageUp") {
+            this._updateStickToBottomOnWheel();
+            return;
+        } else if (isEnterKey(event)) {
             if (event.altKey || event.ctrlKey || event.shiftKey) {
                 return;
             }
@@ -1617,8 +1619,9 @@ WebInspector.ConsoleViewFilter = function(view)
     this._filterChanged = this.dispatchEventToListeners.bind(this, WebInspector.ConsoleViewFilter.Events.FilterChanged);
 };
 
+/** @enum {symbol} */
 WebInspector.ConsoleViewFilter.Events = {
-    FilterChanged: "FilterChanged"
+    FilterChanged: Symbol("FilterChanged")
 };
 
 WebInspector.ConsoleViewFilter.prototype = {

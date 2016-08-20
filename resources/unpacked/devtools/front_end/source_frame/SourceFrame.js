@@ -63,10 +63,11 @@ WebInspector.SourceFrame = function(url, lazyContent)
     this._searchableView = null;
 }
 
+/** @enum {symbol} */
 WebInspector.SourceFrame.Events = {
-    ScrollChanged: "ScrollChanged",
-    SelectionChanged: "SelectionChanged",
-    JumpHappened: "JumpHappened"
+    ScrollChanged: Symbol("ScrollChanged"),
+    SelectionChanged: Symbol("SelectionChanged"),
+    JumpHappened: Symbol("JumpHappened")
 }
 
 WebInspector.SourceFrame.prototype = {
@@ -594,7 +595,6 @@ WebInspector.SourceFrame.prototype = {
     {
         this._updateSourcePosition();
         this.dispatchEventToListeners(WebInspector.SourceFrame.Events.SelectionChanged, textRange);
-        WebInspector.notifications.dispatchEventToListeners(WebInspector.SourceFrame.Events.SelectionChanged, textRange);
     },
 
     _updateSourcePosition: function()
