@@ -18,15 +18,11 @@
             [dirac.implant.munging :as munging]
             [dirac.implant.helpers :as helpers]
             [dirac.implant.reporter :as reporter]
-            [dirac.implant.repl :refer-macros [default-specials]]))
+            [dirac.implant.repl :as repl]))
 
 (defonce ^:dynamic *console-initialized* false)
 (defonce ^:dynamic *implant-initialized* false)
 (defonce ^:dynamic *namespaces-cache-debouncer* nil)
-
-(defonce repl-specials (to-array (default-specials)))
-(defonce extra-specials #js ["dirac!" "*1" "*2" "*3" "*e"])
-(defonce all-specials (.concat repl-specials extra-specials))
 
 (defn warm-up-namespace-cache! []
   (ocall (oget js/window "dirac") "extractNamespacesAsync"))
@@ -92,7 +88,7 @@
     munged-name))
 
 (defn get-repl-specials-async []
-  (helpers/resolved-promise all-specials))                                                                                    ; hard-coded for now
+  (helpers/resolved-promise repl/all-specials))                                                                               ; hard-coded for now
 
 (defn notify-panel-switch [panel]
   (let [panel-name (oget panel "name")]
