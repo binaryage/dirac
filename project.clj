@@ -159,6 +159,7 @@
                                              :output-dir           "test/browser/fixtures/resources/_compiled/tasks"
                                              :asset-path           "../_compiled/tasks"
                                              :optimizations        :none                                                      ; we rely on optimizations :none in test runner
+                                             :external-config      {:devtools/config {:features-to-install :all}}
                                              :source-map           true
                                              :source-map-timestamp true}}
                            :scenarios01
