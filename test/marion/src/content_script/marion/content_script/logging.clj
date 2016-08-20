@@ -4,6 +4,7 @@
 ; logging - these need to be macros to preserve source location for devtools
 
 (defonce enabled? true)
+(defonce debug? false)
 
 (defn prefix []
   ["%cmarion%ccontent script"
@@ -25,3 +26,7 @@
 (defmacro warn [& args]
   (if enabled?
     `(do (.warn js/console ~@(prefix) ~@args) nil)))
+
+(defmacro debug-log [& args]
+  (if debug?
+    `(do (.log js/console ~@(prefix) ~@args) nil)))

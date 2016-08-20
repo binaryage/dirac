@@ -1,6 +1,6 @@
 (ns marion.content-script.background
   (:require-macros [cljs.core.async.macros :refer [go-loop]]
-                   [marion.content-script.logging :refer [log info warn error]])
+                   [marion.content-script.logging :refer [log info warn error debug-log]])
   (:require [cljs.core.async :refer [<! chan]]
             [devtools.toolbox :refer [envelope]]
             [chromex.support :refer-macros [oget ocall oapply]]
@@ -17,7 +17,7 @@
 
 (defn process-message! [message]
   (let [type (oget message "type")]
-    (log "process background page message" type (envelope message))
+    (debug-log "process background page message" type (envelope message))
     (case type
       "feedback-from-extension" (relay-message-to-page! message)
       "feedback-from-devtools" (relay-message-to-page! message)
