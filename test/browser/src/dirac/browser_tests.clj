@@ -309,6 +309,5 @@
   (with-transcript-suite "suite02"
     (execute-transcript-test! "welcome-message")
     (execute-transcript-test! "enable-parinfer")
-    (when-not (under-ci?)                                                                                                     ; TODO: this is temprorary until our ci environment gets chrome 54.0.2832.2 or newer
-      (execute-transcript-test! "clean-urls")
-      (execute-transcript-test! "beautify-function-names"))))
+    (execute-transcript-test! "clean-urls")
+    (execute-transcript-test! "beautify-function-names")))
