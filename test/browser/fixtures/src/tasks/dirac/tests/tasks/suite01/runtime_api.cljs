@@ -5,9 +5,7 @@
 
 (go-task
   (with-scenario "runtime-api"
-    (<!* a/separator! "install/uninstall")
+    (<!* a/trigger! :run-tests)
     (<!* a/wait-for-match "install/uninstall tests done")
-    (<!* a/separator! "prefs")
     (<!* a/wait-for-match "prefs tests done")
-    (<!* a/separator! "runtime tag")
     (<!* a/wait-for-match "runtime tags tests done")))

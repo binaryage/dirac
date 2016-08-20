@@ -72,14 +72,12 @@
 
 ; ---------------------------------------------------------------------------------------------------------------------------
 
-(scenario/capture-console-as-feedback!)
-(scenario/register-feedback-transformer! transformer)
-(scenario/ready!)
-
-(go
-  (flush-transcript!)
+(defn run-tests! []
   (test-install-uninstall!)
-  (flush-transcript!)
   (test-prefs!)
-  (flush-transcript!)
   (test-runtime-tag!))
+
+(scenario/register-feedback-transformer! transformer)
+(scenario/register-trigger! :run-tests run-tests!)
+(scenario/capture-console-as-feedback!)
+(scenario/ready!)
