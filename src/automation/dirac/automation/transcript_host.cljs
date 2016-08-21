@@ -184,15 +184,20 @@
 (defn replace-gensyms [s]
   (string/replace s #"--\d+" "--*gen-num*"))
 
-(defn replace-internal-error-traces [s]
-  (string/replace s #"(Internal Dirac Error:.*?\n.*)(.|[\r\n])*" "$1\n<elided trace>"))
+(def internal-error-re1 #"(Internal Dirac Error:.*?)\n(Dirac v.*?)\n(.*?)\n(.|[\r\n])*")
+(def internal-error-re2 #"(Internal Dirac Error:.*?)\n(Dirac v.*?)\n(.*?)$")
+
+(defn replace-internal-error [s]
+  (-> s
+      (string/replace internal-error-re1 "$1\n<elided info line>\n$3\n<elided body>")
+      (string/replace internal-error-re2 "$1\n<elided info line>\n$3")))
 
 (defn transformer [console-output]
   (-> console-output
       replace-shortened-urls
       replace-rel-url-params
       replace-gensyms
-      replace-internal-error-traces))
+      replace-internal-error))
 
 (defn process-default-state! [label text]
   (cond

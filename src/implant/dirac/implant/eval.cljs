@@ -123,7 +123,7 @@
     (info-fn msg)))
 
 (defn display-user-error! [msg & more]
-  (error msg more)
+  (warn msg more)
   (if-let [error-fn (pref :display-user-error-fn)]
     (error-fn msg)))
 

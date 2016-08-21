@@ -121,6 +121,9 @@
       (str stack)
       (str e))))
 
+(defn lines [text]
+  (cuerdas/lines text))
+
 (defn line-count [text]
   (count (cuerdas/lines text)))
 

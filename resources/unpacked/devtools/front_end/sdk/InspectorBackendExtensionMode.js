@@ -24,18 +24,20 @@ WebInspector.InspectorBackendExtensionMode.loadFromExtensionIfNeeded = function(
     if (backendAPI) {
         const decodedBackendAPI = decodeURIComponent(backendAPI);
         const lines = decodedBackendAPI.split("\n");
+        WebInspector.BakedInspectorBackendMode = "external";
+        WebInspector.BakedInspectorBackendModeInfo = lines.length + " registrations";
         if (dirac._DEBUG_BACKEND_API) {
-            console.log("BackendAPI: backend_api url parameter present (" + lines.length + " registrations).");
+            console.log("BackendAPI: backend_api url parameter present (" + WebInspector.BakedInspectorBackendModeInfo + ").");
         }
         evalAPI(lines);
-        WebInspector.BakedInspectorBackendMode = "external";
     } else {
         const lines = WebInspector.BakedInspectorBackendAPI.split("\n");
+        WebInspector.BakedInspectorBackendMode = "internal";
+        WebInspector.BakedInspectorBackendModeInfo = lines.length + " registrations";
         if (dirac._DEBUG_BACKEND_API) {
-            console.log("BackendAPI: backend_api url parameter not present. Using pre-baked backend API (" + lines.length + " registrations).");
+            console.log("BackendAPI: backend_api url parameter not present. Using pre-baked backend API (" + WebInspector.BakedInspectorBackendModeInfo + ").");
         }
         evalAPI(lines);
-        WebInspector.BakedInspectorBackendMode = "internal";
     }
 };
 

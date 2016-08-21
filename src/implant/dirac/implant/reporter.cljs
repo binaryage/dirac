@@ -2,15 +2,24 @@
   (:require [chromex.support :refer-macros [oget oset ocall oapply]]
             [chromex.logging :refer-macros [log warn error group group-end]]
             [dirac.implant.feedback :as feedback]
+            [dirac.implant.info :as info]
             [dirac.utils :as utils]))
+
+(defn report! [header body]
+  {:pre [(string? header)
+         (string? body)]}
+  (let [text (str header "\n"
+                  (info/get-info-line) "\n"
+                  body)]
+    (ocall (oget js/window "dirac") "addConsoleMessageToMainTarget" "error" text)
+    (feedback/post! text)))
 
 ; -- handling global exceptions ---------------------------------------------------------------------------------------------
 
 (defn devtools-exception-handler! [_message _source _lineno _colno e]
-  (let [body (utils/format-error e)
-        text (str "Internal Dirac Error: DevTools code has thrown an unhandled exception\n" body)]
-    (ocall (oget js/window "dirac") "addConsoleMessageToMainTarget" "error" text)
-    (feedback/post! text)
+  (let [header "Internal Dirac Error: DevTools code has thrown an unhandled exception"
+        body (utils/format-error e)]
+    (report! header body)
     false))
 
 (defn register-global-exception-handler! []
@@ -19,11 +28,10 @@
 ; -- handling unhandled rejections in promises ------------------------------------------------------------------------------
 
 (defn devtools-unhandled-rejection-handler! [event]
-  (let [reason (oget event "reason")
-        body (utils/format-error reason)
-        text (str "Internal Dirac Error: DevTools code has thrown an unhandled rejection (in promise)\n" body)]
-    (ocall (oget js/window "dirac") "addConsoleMessageToMainTarget" "error" text)
-    (feedback/post! text)))
+  (let [header "Internal Dirac Error: DevTools code has thrown an unhandled rejection (in promise)"
+        body (utils/format-error (oget event "reason"))]
+    (report! header body)
+    false))
 
 (defn register-unhandled-rejection-handler! []
   (.addEventListener js/window "unhandledrejection" devtools-unhandled-rejection-handler!))
@@ -34,11 +42,10 @@
 
 (defn console-error-fn [& args]
   (assert *original-console-error-fn*)
-  (let [result (.apply *original-console-error-fn* js/console (into-array args))]
-    (let [body (pr-str args)
-          text (str "Internal Dirac Error: an error was logged into the internal DevTools console\n" body)]
-      (ocall (oget js/window "dirac") "addConsoleMessageToMainTarget" "error" text)
-      (feedback/post! text))
+  (let [result (.apply *original-console-error-fn* js/console (into-array args))
+        header "Internal Dirac Error: an error was logged into the internal DevTools console"
+        body (pr-str args)]
+    (report! header body)
     result))
 
 (defn register-console-error-handler! []

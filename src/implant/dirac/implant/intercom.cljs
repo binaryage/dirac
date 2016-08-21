@@ -145,7 +145,7 @@
 (defn configure-eval! [client-config]
   (eval/update-config! (assoc client-config
                          :display-user-info-fn eval/console-info!
-                         :display-user-error-fn eval/console-error!)))
+                         :display-user-error-fn eval/console-warn!)))
 
 (defn init! []
   (add-watch nrepl-tunnel-client/current-client ::client-observer on-client-change))

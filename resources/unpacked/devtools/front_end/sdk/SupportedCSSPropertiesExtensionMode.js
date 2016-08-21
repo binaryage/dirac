@@ -13,19 +13,21 @@ WebInspector.SupportedCSSPropertiesExtensionMode.loadFromExtensionIfNeeded = fun
     if (encodedBackendCSS) {
         const backendCSS = decodeURIComponent(encodedBackendCSS);
         const lines = backendCSS.split("\n");
+        WebInspector.BakedSupportedCSSPropertiesMode = "external";
+        WebInspector.BakedSupportedCSSPropertiesModeInfo = lines.length + " definitions";
         if (dirac._DEBUG_BACKEND_CSS) {
-            console.log("BackendCSS: backend_css url parameter present (" + lines.length + " definitions).");
+            console.log("BackendCSS: backend_css url parameter present (" + WebInspector.BakedSupportedCSSPropertiesModeInfo + ").");
         }
         evalCSS(backendCSS);
-        WebInspector.BakedSupportedCSSPropertiesMode = "external";
     } else {
         const backendCSS = WebInspector.BakedSupportedCSSProperties;
         const lines = backendCSS.split("\n");
+        WebInspector.BakedSupportedCSSPropertiesMode = "internal";
+        WebInspector.BakedSupportedCSSPropertiesModeInfo = lines.length + " definitions";
         if (dirac._DEBUG_BACKEND_CSS) {
-            console.log("BackendCSS: backend_css url parameter not present. Using pre-baked backend CSS (" + lines.length + " definitions).");
+            console.log("BackendCSS: backend_css url parameter not present. Using pre-baked backend CSS (" + WebInspector.BakedSupportedCSSPropertiesModeInfo + ").");
         }
         evalCSS(backendCSS);
-        WebInspector.BakedSupportedCSSPropertiesMode = "internal";
     }
 };
 

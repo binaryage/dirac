@@ -17,18 +17,20 @@ devtools #1      displayWelcomeMessage
 devtools #1      setCurrentPanel: console
 automate #1      trigger-internal-error!
 devtools #1      Internal Dirac Error: DevTools code has thrown an unhandled exception
+                 <elided info line>
                  Error: :keyword is not ISeqable
-                 <elided trace>
+                 <elided body>
 automate #1      scrape [:last-log-item-content "error"]
 automate #1      trigger-internal-error-in-promise!
 devtools #1      Internal Dirac Error: DevTools code has thrown an unhandled rejection (in promise)
+                 <elided info line>
                  Error: fake async error in promise
-                 <elided trace>
+                 <elided body>
 automate #1      scrape [:last-log-item-content "error"]
 automate #1      trigger-internal-error-as-error-log!
 devtools #1      Internal Dirac Error: an error was logged into the internal DevTools console
+                 <elided info line>
                  ("a fake error log" 1 2 3)
-                 <elided trace>
 automate #1      scrape [:last-log-item-content "error"]
 automate #1      close-devtools!
 extension        handling command: close-dirac-devtools
