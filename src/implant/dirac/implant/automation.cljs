@@ -16,83 +16,95 @@
         inspector-view (get-inspector-view)
         panel-promise (ocall inspector-view "showPanel" panel-name)]
     (if panel-promise
-      (ocall panel-promise "then" (fn [_panel] true)))))
+      (ocall panel-promise "then" (fn [_panel] true))
+      true)))
 
 (defn get-inspector-current-panel-name []
-  (let [inspector-view (get-inspector-view)]
-    (if-let [panel (ocall inspector-view "currentPanel")]
+  (when-let [inspector-view (get-inspector-view)]
+    (when-let [panel (ocall inspector-view "currentPanel")]
       (oget panel "name"))))
 
 (defn inspector-drawer-visible? []
-  (let [inspector-view (get-inspector-view)]
-    (ocall inspector-view "drawerVisible")))
+  (when-let [inspector-view (get-inspector-view)]
+    (ocall inspector-view "drawerVisible")
+    true))
 
 (defn show-inspector-drawer! []
-  (let [inspector-view (get-inspector-view)]
+  (when-let [inspector-view (get-inspector-view)]
     (if-not (inspector-drawer-visible?)
-      (ocall inspector-view "showDrawer"))))
+      (ocall inspector-view "showDrawer"))
+    true))
 
 (defn show-view-in-drawer! [view]
   (let [view-name (name view)
         inspector-view (get-inspector-view)]
     (if (ocall inspector-view "drawerVisible")
       (if-not (= (ocall inspector-view "selectedViewInDrawer") view-name)
-        (do
-          (ocall inspector-view "showViewInDrawer" view-name true)
-          true)))))
+        (ocall inspector-view "showViewInDrawer" view-name true))))
+  true)
 
 (defn open-drawer-console-if-not-on-console-panel! []
   (when-not (= (get-inspector-current-panel-name) "console")
     (show-inspector-drawer!)
-    (show-view-in-drawer! :console)))
+    (show-view-in-drawer! :console)
+    true))
 
 (defn switch-to-dirac-prompt! []
-  (if-let [console-view (get-console-view)]
-    (ocall console-view "switchPrompt" "dirac")))
+  (when-let [console-view (get-console-view)]
+    (ocall console-view "switchPrompt" "dirac")
+    true))
 
 (defn switch-to-js-prompt! []
-  (if-let [console-view (get-console-view)]
-    (ocall console-view "switchPrompt" "js")))
+  (when-let [console-view (get-console-view)]
+    (ocall console-view "switchPrompt" "js")
+    true))
 
 (defn focus-console-prompt! []
-  (if-let [console-view (get-console-view)]
-    (ocall console-view "focus")))
+  (when-let [console-view (get-console-view)]
+    (ocall console-view "focus")
+    true))
 
 (defn focus-best-console-prompt! []
   (open-drawer-console-if-not-on-console-panel!)
-  (focus-console-prompt!))
+  (focus-console-prompt!)
+  true)
 
 (defn clear-console-prompt! []
-  (if-let [console-view (get-console-view)]
-    (ocall console-view "_clearPromptBackwards")))
+  (when-let [console-view (get-console-view)]
+    (ocall console-view "_clearPromptBackwards")
+    true))
 
 (defn dispatch-console-prompt-input! [input]
   {:pre [(string? input)]}
-  (if-let [console-view (get-console-view)]
-    (ocall console-view "dispatchEventsForPromptInput" input)))
+  (when-let [console-view (get-console-view)]
+    (ocall console-view "dispatchEventsForPromptInput" input)
+    true))
 
 (defn dispatch-console-prompt-action! [action]
   {:pre [(string? action)]}
-  (if-let [console-view (get-console-view)]
-    (ocall console-view "dispatchEventsForPromptAction" action)))
+  (when-let [console-view (get-console-view)]
+    (ocall console-view "dispatchEventsForPromptAction" action)
+    true))
 
 (defn enable-console-feedback! []
-  (if-let [console-view (get-console-view)]
-    (ocall console-view "enableConsoleFeedback")))
+  (when-let [console-view (get-console-view)]
+    (ocall console-view "enableConsoleFeedback")
+    true))
 
 (defn disable-console-feedback! []
-  (if-let [console-view (get-console-view)]
-    (ocall console-view "disableConsoleFeedback")))
+  (when-let [console-view (get-console-view)]
+    (ocall console-view "disableConsoleFeedback")
+    true))
 
 (defn get-suggest-box-representation []
-  (if-let [console-view (get-console-view)]
+  (when-let [console-view (get-console-view)]
     (ocall console-view "getSuggestBoxRepresentation")))
 
 (defn break! []
   (js-debugger))
 
 (defn get-prompt-representation []
-  (if-let [console-view (get-console-view)]
+  (when-let [console-view (get-console-view)]
     (ocall console-view "getPromptRepresentation")))
 
 (defn trigger-fn-and-wait! [f delay]
