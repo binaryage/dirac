@@ -16,8 +16,7 @@
         inspector-view (get-inspector-view)
         panel-promise (ocall inspector-view "showPanel" panel-name)]
     (if panel-promise
-      (ocall panel-promise "then" (fn [_panel] true))
-      true)))
+      (ocall panel-promise "then" (fn [_panel] true)))))
 
 (defn get-inspector-current-panel-name []
   (when-let [inspector-view (get-inspector-view)]
@@ -66,8 +65,7 @@
 
 (defn focus-best-console-prompt! []
   (open-drawer-console-if-not-on-console-panel!)
-  (focus-console-prompt!)
-  true)
+  (focus-console-prompt!))
 
 (defn clear-console-prompt! []
   (when-let [console-view (get-console-view)]
@@ -77,14 +75,12 @@
 (defn dispatch-console-prompt-input! [input]
   {:pre [(string? input)]}
   (when-let [console-view (get-console-view)]
-    (ocall console-view "dispatchEventsForPromptInput" input)
-    true))
+    (ocall console-view "dispatchEventsForPromptInput" input)))
 
 (defn dispatch-console-prompt-action! [action]
   {:pre [(string? action)]}
   (when-let [console-view (get-console-view)]
-    (ocall console-view "dispatchEventsForPromptAction" action)
-    true))
+    (ocall console-view "dispatchEventsForPromptAction" action)))
 
 (defn enable-console-feedback! []
   (when-let [console-view (get-console-view)]
@@ -101,7 +97,8 @@
     (ocall console-view "getSuggestBoxRepresentation")))
 
 (defn break! []
-  (js-debugger))
+  (js-debugger)
+  true)
 
 (defn get-prompt-representation []
   (when-let [console-view (get-console-view)]
