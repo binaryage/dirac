@@ -111,7 +111,8 @@
   {:pre [(or (nil? delay) (number? delay))]}
   (let [fn-name (case kind
                   :unhandled-exception "triggerInternalError"
-                  :unhandled-exception-in-promise "triggerInternalErrorInPromise")
+                  :unhandled-exception-in-promise "triggerInternalErrorInPromise"
+                  :error-log "triggerInternalErrorAsErrorLog")
         trigger-fn #(ocall (oget js/window "dirac") fn-name)]
     (trigger-fn-and-wait! trigger-fn delay)))
 

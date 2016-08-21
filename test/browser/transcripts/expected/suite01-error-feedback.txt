@@ -25,9 +25,14 @@ devtools #1      Internal Dirac Error: DevTools code has thrown an unhandled rej
                  Error: fake async error in promise
                  <elided trace>
 automate #1      scrape [:last-log-item-content "error"]
+automate #1      trigger-internal-error-as-error-log!
+devtools #1      Internal Dirac Error: an error was logged into the internal DevTools console
+                 ("a fake error log" 1 2 3)
+                 <elided trace>
+automate #1      scrape [:last-log-item-content "error"]
 automate #1      close-devtools!
 extension        handling command: close-dirac-devtools
 extension        unregister devtools #1
 automate         close-tab-with-scenario! ["scenario-tab#1"]
-summary          Automated 9 actions with 0 check-points containing 6 assertions.
+summary          Automated 11 actions with 0 check-points containing 9 assertions.
                  0 failures, 0 errors.

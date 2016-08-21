@@ -26,5 +26,10 @@
           (is (= second-line "Error: fake async error in promise"))
           (is (> (utils/line-count error-content) 4))))                                                                       ; assume it contains some stack trace
       (testing "DevTools console.error logs should be presented in target console as Internal Dirac Error"
-        ; TBD
-        ))))
+        (<!* a/trigger-internal-error-as-error-log!)
+        (let [error-content (<!* a/scrape :last-log-item-content "error")
+              first-line (utils/extract-first-line error-content)
+              second-line (utils/extract-line error-content 1)]
+          (is (= first-line "Internal Dirac Error: an error was logged into the internal DevTools console"))
+          (is (= second-line "(\"a fake error log\" 1 2 3)"))
+          (is (= (utils/line-count error-content) 2)))))))

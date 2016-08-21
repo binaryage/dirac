@@ -132,7 +132,7 @@
 (defn extract-line [s n]
   (-> s
       (cuerdas/lines)
-      (nth n)))
+      (nth n nil)))
 
 (defn convert-blob-to-string [blob]
   (let [channel (chan)

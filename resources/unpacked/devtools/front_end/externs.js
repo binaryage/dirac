@@ -487,6 +487,7 @@ var dirac = {
 
     triggerInternalError: function() {},
     triggerInternalErrorInPromise: function() {},
+    triggerInternalErrorAsErrorLog: function() {},
     /**
      * @param {string} name
      * @return {string}

@@ -95,11 +95,14 @@
   (ocall js/window "setTimeout" helpers/throw-internal-error! 0))
 
 (defn trigger-internal-error-in-promise! []
-  (let [delayed-promise (js/Promise.
-                  (fn [resolve _reject]
-                    (ocall js/window "setTimeout" resolve 0)))]
+  (let [delayed-promise (js/Promise. #(ocall js/window "setTimeout" % 0))]
     (ocall delayed-promise "then" #(throw (ex-info "fake async error in promise" {:val %})))
     true))
+
+(defn trigger-internal-error-as-error-log! []
+  ; timeout is needed for testing from console
+  ; see http://stackoverflow.com/a/27257742/84283
+  (ocall js/window "setTimeout" #(error "a fake error log" 1 2 3) 0))
 
 (defn report-namespaces-cache-cool-down! []
   (post-feedback! "namespacesCache is cool now")
@@ -118,22 +121,23 @@
 
 ; !!! don't forget to update externs.js when touching this !!!
 (def dirac-api-to-export
-  {"feedback"                      post-feedback!
-   "initConsole"                   init-console!
-   "initRepl"                      init-repl!
-   "notifyPanelSwitch"             notify-panel-switch
-   "adoptPrompt"                   adopt-prompt!
-   "sendEvalRequest"               send-eval-request!
-   "getVersion"                    get-version
-   "getRuntimeTag"                 get-runtime-tag
-   "parseNsFromSource"             parse-ns-from-source
-   "nsToRelpath"                   ns-to-relpath
-   "triggerInternalError"          trigger-internal-error!
-   "triggerInternalErrorInPromise" trigger-internal-error-in-promise!
-   "getFunctionName"               get-function-name
-   "getFullFunctionName"           get-full-function-name
-   "getReplSpecialsAsync"          get-repl-specials-async
-   "reportNamespacesCacheMutation" report-namespaces-cache-mutation!})
+  {"feedback"                       post-feedback!
+   "initConsole"                    init-console!
+   "initRepl"                       init-repl!
+   "notifyPanelSwitch"              notify-panel-switch
+   "adoptPrompt"                    adopt-prompt!
+   "sendEvalRequest"                send-eval-request!
+   "getVersion"                     get-version
+   "getRuntimeTag"                  get-runtime-tag
+   "parseNsFromSource"              parse-ns-from-source
+   "nsToRelpath"                    ns-to-relpath
+   "triggerInternalError"           trigger-internal-error!
+   "triggerInternalErrorInPromise"  trigger-internal-error-in-promise!
+   "triggerInternalErrorAsErrorLog" trigger-internal-error-as-error-log!
+   "getFunctionName"                get-function-name
+   "getFullFunctionName"            get-full-function-name
+   "getReplSpecialsAsync"           get-repl-specials-async
+   "reportNamespacesCacheMutation"  report-namespaces-cache-mutation!})
 
 (defn enhance-dirac-object! [dirac]
   (doseq [[name fn] dirac-api-to-export]
