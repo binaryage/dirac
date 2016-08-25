@@ -189,10 +189,11 @@
 (defn retrieve-remote-debugging-port []
   (try
     (to CHROME_VERSION_PAGE)
-    (wait-until #(exists? "#executable_path"))
-    (let [body-text (text "body")]
-      (when-let [m (re-find #"--remote-debugging-port=(\d+)" body-text)]
-        (Integer/parseInt (second m))))
+    (wait-until #(exists? "#command_line") 3000)
+    (let [command-line (text "#command_line")]
+      (if-let [m (re-find #"--remote-debugging-port=(\d+)" command-line)]
+        (Integer/parseInt (second m))
+        (throw (ex-info (str "no --remote-debugging-port found in " CHROME_VERSION_PAGE "\n") {:command-line command-line}))))
     (catch Exception e
       (log/error (str "got an exception when trying to retrieve remote debugging port:\n" e))
       nil)))
