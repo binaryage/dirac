@@ -107,11 +107,18 @@
         (assoc options :backend-css backend-css)))
     options))
 
+(defn provide-user-url-params [options]
+  (or
+    (if-let [user-url-params (options/get-option :user-frontend-url-params)]
+      (assoc options :user-url-params user-url-params))
+    options))
+
 (defn prepare-options [initial-options]
   (-> initial-options
       (automate-if-marion-present)
       (provide-backend-api-if-available)
-      (provide-backend-css-if-available)))
+      (provide-backend-css-if-available)
+      (provide-user-url-params)))
 
 (defn connect-and-navigate-dirac-devtools! [frontend-tab-id backend-tab-id options]
   (let [devtools-id (devtools/register! frontend-tab-id backend-tab-id)

@@ -125,6 +125,9 @@
         trigger-fn #(ocall (oget js/window "dirac") fn-name)]
     (trigger-fn-and-wait! trigger-fn delay)))
 
+(defn get-frontend-url-params []
+  (helpers/get-url-params))
+
 ; -- main dispatch ----------------------------------------------------------------------------------------------------------
 
 (defn dispatch-command! [command]
@@ -144,6 +147,7 @@
     :get-suggest-box-representation (get-suggest-box-representation)
     :get-prompt-representation (get-prompt-representation)
     :trigger-internal-error (trigger-internal-error! (:delay command) (:kind command))
+    :get-frontend-url-params (get-frontend-url-params)
     :scrape (apply scrape (:scraper command) (:args command))
     (warn "received unknown automation command:" (pr-str command))))
 

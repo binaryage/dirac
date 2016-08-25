@@ -141,6 +141,9 @@
                                          :kind   :error-log
                                          :delay  (or delay 100)}))
 
+(defn get-frontend-url-params [devtools-id]
+  (automate-dirac-frontend! devtools-id {:action :get-frontend-url-params}))
+
 (defn scrape [devtools-id scraper-name & args]
   (automate-dirac-frontend! devtools-id {:action  :scrape
                                          :scraper scraper-name

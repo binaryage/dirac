@@ -2,6 +2,9 @@
   (:require [chromex.support :refer-macros [oget ocall oapply]]
             [chromex.logging :refer-macros [log warn error group group-end]]))
 
+(defn get-url-params []
+  (oget js/window "location" "search"))
+
 (defn get-query-param [name]
   (if-let [runtime (oget js/window "Runtime")]
     (ocall runtime "queryParam" name)

@@ -53,7 +53,8 @@
            (f/checkbox "Enable clean URLs" data [:options :clean-urls])
            (f/checkbox "Beautify function names" data [:options :beautify-function-names])
            (f/checkbox "Use backend-supported API" data [:options :use-backend-supported-api])
-           (f/checkbox "Use backend-supported CSS" data [:options :use-backend-supported-css])])
+           (f/checkbox "Use backend-supported CSS" data [:options :use-backend-supported-css])]
+          (f/text "Extra frontend URL params:" data [:options :user-frontend-url-params]))
         (f/form-buttons
           (f/button "Reset to Defaults" reset-to-defaults!)
           (f/button "Save and Exit" save-state-and-exit!))))))

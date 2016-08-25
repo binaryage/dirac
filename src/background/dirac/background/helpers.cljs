@@ -35,10 +35,12 @@
         items (map (fn [[k v]] (str (encode k) "=" (encode v))) params)]
     (string/join "&" items)))
 
-(defn make-relative-url [path params]
-  {:pre [(map? params)]}
-  (let [non-empty-params (into {} (filter #(some? (second %)) params))]
-    (str path "?" (build-query non-empty-params))))
+(defn make-relative-url [path params & [user-params-str]]
+  {:pre [(map? params)
+         (or (string? user-params-str) (nil? user-params-str))]}
+  (let [non-empty-params (into {} (filter #(some? (second %)) params))
+        url-params-segments (remove empty? [(build-query non-empty-params) user-params-str])]
+    (str path "?" (string/join "&" url-params-segments))))
 
 ; -- dirac frontend url -----------------------------------------------------------------------------------------------------
 
@@ -52,7 +54,7 @@
 ; chrome-extension://mjdnckdilfjoenmikegbbenflgjcmbid/devtools/front_end/inspector.html?devtools_id=1&dirac_flags=11111&ws=localhost:9222/devtools/page/76BE0A6D-412C-4592-BC3C-ED3ECB5DFF8C
 (defn make-dirac-frontend-url [devtools-id options]
   {:pre [devtools-id]}
-  (let [{:keys [backend-url flags reset-settings automate extra-url-params backend-api backend-css]} options]
+  (let [{:keys [backend-url flags reset-settings automate extra-url-params backend-api backend-css user-url-params]} options]
     (assert backend-url)
     (assert flags)
     (let [html-file-path (get-dirac-main-html-file-path)
@@ -66,7 +68,7 @@
                        backend-api (assoc "backend_api" backend-api)
                        backend-css (assoc "backend_css" backend-css)
                        extra-url-params (merge extra-url-params))]
-      (runtime/get-url (make-relative-url html-file-path all-params)))))
+      (runtime/get-url (make-relative-url html-file-path all-params user-url-params)))))
 
 (defn extract-devtools-id-from-url [url]
   (utils/parse-int (get-query-param (str url) "devtools_id")))
