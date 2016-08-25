@@ -38,7 +38,7 @@
 
 (defmacro <!* [action & args]
   {:pre [(symbol? action)]}
-  `(cljs.core.async/<! (dirac.automation/action! ~action (meta #'~action) ~@args)))
+  `(cljs.core.async/<! (dirac.automation.machinery/action! ~action (meta #'~action) ~@args)))
 
 (defmacro with-scenario [name & body]
   `(let [scenario-id# (dirac.automation/<!* dirac.automation/open-tab-with-scenario! ~name)]
@@ -63,7 +63,7 @@
 
 (defmacro testing [title & body]
   `(let [title# ~title]
-     (dirac.automation/testing-start title#)
+     (dirac.automation.machinery/testing-start title#)
      (cljs.test/testing title# ~@body)
-     (dirac.automation/testing-end title#)))
+     (dirac.automation.machinery/testing-end title#)))
 

@@ -3,21 +3,15 @@
   (:require [cljs.core.async :refer [put! <! chan timeout alts! close!]]
             [chromex.support :refer-macros [oget oset ocall oapply]]
             [chromex.logging :refer-macros [log error]]
-            [dirac.automation.test]
+            [dirac.automation.machinery :as machinery]
             [dirac.automation.helpers :as helpers]
             [dirac.automation.messages :as messages]
             [dirac.automation.matchers :as matchers]
             [dirac.automation.runner :as runner]
-            [dirac.automation.task :as task]
             [dirac.automation.transcript-host :as transcript]
-            [dirac.automation.test :as test]
             [dirac.automation.notifications :as notifications]
             [dirac.automation.options :as options]
             [dirac.utils :as utils]))
-
-(deftype DevToolsID [id])
-
-(def ^:dynamic *last-devtools-id* nil)
 
 ; -- automation actions -----------------------------------------------------------------------------------------------------
 
@@ -198,8 +192,8 @@
       (<! (wait-for-devtools-boot))
       (if-not (helpers/is-test-runner-present?)
         (messages/switch-to-task-runner-tab!))                                                                                ; for convenience
-      (set! *last-devtools-id* devtools-id)
-      (DevToolsID. devtools-id))))                                                                                            ; note: we wrap it so we can easily detect devtools-id parameters in action! method
+      (set! machinery/*last-devtools-id* devtools-id)
+      (machinery/DevToolsID. devtools-id))))                                                                                  ; note: we wrap it so we can easily detect devtools-id parameters in action! method
 
 (defn close-devtools! [devtools-id]
   (go
@@ -211,64 +205,3 @@
 
 (defn ^:without-devtools-id separator! [& _args]
   (go))
-
-; -- transcript sugar -------------------------------------------------------------------------------------------------------
-
-(def action-style (str "font-weight: bold;"
-                       "margin-top:5px;"
-                       "padding-top:2px;"
-                       "color:#f66;"))
-
-(defn append-to-transcript! [message & [devtools-id]]
-  (let [label (str "automate" (if devtools-id (str " #" devtools-id)))
-        message (if (string? message) message (pr-str message))]
-    (transcript/append-to-transcript! label message action-style)))
-
-; -- flexible automation api ------------------------------------------------------------------------------------------------
-
-(defn make-action-signature [metadata & [args]]
-  (str (:name metadata) (if-not (empty? args) (str " " (vec args)))))
-
-(defn do-action! [action-fn metadata & args]
-  (let [name (str (:name metadata))
-        automation-action? (nil? (re-find #"^wait-" name))]
-    (if (task/frozen?)
-      (do
-        (log "skipping action!" name " (task is fronzen due to failures)")
-        (go))
-      (do
-        (log "action!" automation-action? name args)
-        (if automation-action?
-          (do
-            (test/record-action-execution!)
-            (transcript/reset-output-segment!))
-          (test/record-transcript-checkpoint!))
-        (cond
-          (:without-devtools-id metadata) (do
-                                            (if automation-action?
-                                              (append-to-transcript! (make-action-signature metadata args)))
-                                            (apply action-fn args))
-          (instance? DevToolsID (first args)) (let [devtools-id (first args)
-                                                    action-signature (make-action-signature metadata (rest args))]
-                                                (if automation-action?
-                                                  (append-to-transcript! action-signature devtools-id))
-                                                (apply action-fn (:id (first args)) (rest args)))
-          :else (let [action-signature (make-action-signature metadata args)]
-                  (assert *last-devtools-id* (str "action " name " requires prior :open-dirac-devtools call"))
-                  (if automation-action?
-                    (append-to-transcript! action-signature *last-devtools-id*))
-                  (apply action-fn *last-devtools-id* args)))))))
-
-(defn action! [& args]
-  (go
-    ; this timeout is important for run-output-matching-loop! and other async operations
-    ; without this we could starve those loops and their reaction could be delayed
-    (<! (timeout 0))
-    (<! (apply do-action! args))))
-
-(defn testing-start [title]
-  (transcript/append-to-transcript! "" "")
-  (transcript/append-to-transcript! "testing" title))
-
-(defn testing-end [_title]
-  (transcript/append-to-transcript! "∎" ""))
