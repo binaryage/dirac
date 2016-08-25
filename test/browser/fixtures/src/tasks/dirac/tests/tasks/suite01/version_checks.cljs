@@ -36,12 +36,14 @@
       (<!* a/switch-to-console-panel!)
       (<!* a/switch-prompt-to-dirac!)
       (<!* a/wait-for-match "Dirac REPL API version mismatch detected.")
+      (<!* a/wait-for-match "but your version is v0")
       (<!* a/wait-for-devtools-match "setDiracPromptStatusStyle('error')")))
   (with-scenario "future-repl-api"
     (with-devtools
       (<!* a/switch-to-console-panel!)
       (<!* a/switch-prompt-to-dirac!)
       (<!* a/wait-for-match "Dirac REPL API version mismatch detected.")
+      (<!* a/wait-for-match "but your version is v1000")
       (<!* a/wait-for-devtools-match "setDiracPromptStatusStyle('error')")))
   (with-scenario "no-runtime"
     (with-devtools

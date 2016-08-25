@@ -176,7 +176,7 @@ devtools #6      repl initialized
 devtools #6      setDiracPromptStatusContent('Checking for Dirac Runtime presence in your app...')
 devtools #6      setDiracPromptStatusStyle('info')
 devtools #6      setDiracPromptStatusContent('Dirac REPL API version mismatch detected.
-                 Dirac DevTools requires Dirac Runtime REPL API v3, but your version is v0.
+                 Dirac DevTools requires Dirac Runtime REPL API v3, but your version is v1000.
                  Please <a href="https://github.com/binaryage/dirac/blob/master/docs/upgrading.md">upgrade Dirac Runtime</a> in your app.')
 devtools #6      setDiracPromptStatusStyle('error')
 automate #6      close-devtools!
@@ -238,5 +238,5 @@ automate #8      close-devtools!
 extension        handling command: close-dirac-devtools
 extension        unregister devtools #8
 automate         close-tab-with-scenario! ["scenario-tab#8"]
-summary          Automated 48 actions with 18 check-points containing 0 assertions.
+summary          Automated 48 actions with 20 check-points containing 0 assertions.
                  0 failures, 0 errors.
