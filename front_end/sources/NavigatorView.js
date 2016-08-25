@@ -58,8 +58,8 @@ WebInspector.NavigatorView = function()
     this._navigatorGroupByFolderSetting.addChangeListener(this._groupingChanged.bind(this));
 
     this._initGrouping();
-    WebInspector.targetManager.addModelListener(WebInspector.ResourceTreeModel, WebInspector.ResourceTreeModel.EventTypes.FrameNavigated, this._frameNavigated, this);
-    WebInspector.targetManager.addModelListener(WebInspector.ResourceTreeModel, WebInspector.ResourceTreeModel.EventTypes.FrameDetached, this._frameDetached, this);
+    WebInspector.targetManager.addModelListener(WebInspector.ResourceTreeModel, WebInspector.ResourceTreeModel.Events.FrameNavigated, this._frameNavigated, this);
+    WebInspector.targetManager.addModelListener(WebInspector.ResourceTreeModel, WebInspector.ResourceTreeModel.Events.FrameDetached, this._frameDetached, this);
     WebInspector.targetManager.observeTargets(this);
     this._resetWorkspace(WebInspector.workspace);
 }
@@ -193,10 +193,13 @@ WebInspector.NavigatorView.prototype = {
      */
     _uiSourceCodeFrame: function(uiSourceCode)
     {
-        var target = WebInspector.NetworkProject.targetForProject(uiSourceCode.project());
-        if (!target)
-            return null;
-        return WebInspector.NetworkProject.frameForProject(uiSourceCode.project()) || target.resourceTreeModel.mainFrame;
+        var frame = WebInspector.NetworkProject.frameForProject(uiSourceCode.project());
+        if (!frame) {
+            var target = WebInspector.NetworkProject.targetForProject(uiSourceCode.project());
+            var resourceTreeModel = target && WebInspector.ResourceTreeModel.fromTarget(target);
+            frame = resourceTreeModel && resourceTreeModel.mainFrame;
+        }
+        return frame;
     },
 
     /**
