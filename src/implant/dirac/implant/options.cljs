@@ -21,9 +21,13 @@
 (defn should-mock-future-extension-version?* []
   (= (get-query-param "mock_future_extension_version") "1"))
 
+(defn should-disable-reporter?* []
+  (= (get-query-param "disable_reporter") "1"))
+
 ; -- memoized API -----------------------------------------------------------------------------------------------------------
 
 (def get-devtools-id (memoize get-devtools-id*))
 (def should-automate? (memoize should-automate?*))
 (def should-mock-old-extension-version? (memoize should-mock-old-extension-version?*))
 (def should-mock-future-extension-version? (memoize should-mock-future-extension-version?*))
+(def should-disable-reporter? (memoize should-disable-reporter?*))

@@ -123,6 +123,9 @@
 (defn find-last-console-log-element [kind]
   (last (dom/query-selector (str "html /deep/ .console-" (or kind "log") "-level"))))
 
+(defn count-console-log-elements [kind]
+  (count (dom/query-selector (str "html /deep/ .console-" (or kind "log") "-level"))))
+
 (defn find-stack-preview-container-in-console-error-element [error-el]
   (if (some? error-el)
     (first (dom/query-selector error-el "html /deep/ .stack-preview-container"))))
@@ -178,3 +181,6 @@
   (safe->> (find-last-console-log-element kind)
            (find-console-message-text-element)
            (get-deep-text-content)))
+
+(defmethod scrape :count-log-items [_ & [kind]]
+  (safe->> (count-console-log-elements kind)))

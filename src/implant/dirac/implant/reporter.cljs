@@ -3,7 +3,8 @@
             [chromex.logging :refer-macros [log warn error group group-end]]
             [dirac.implant.feedback :as feedback]
             [dirac.implant.info :as info]
-            [dirac.utils :as utils]))
+            [dirac.utils :as utils]
+            [dirac.implant.options :as options]))
 
 (defn report! [header body]
   {:pre [(string? header)
@@ -55,6 +56,7 @@
 ; -- installation -----------------------------------------------------------------------------------------------------------
 
 (defn install! []
-  (register-global-exception-handler!)
-  (register-unhandled-rejection-handler!)
-  (register-console-error-handler!))
+  (when-not (options/should-disable-reporter?)
+    (register-global-exception-handler!)
+    (register-unhandled-rejection-handler!)
+    (register-console-error-handler!)))

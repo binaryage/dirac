@@ -20,21 +20,49 @@ devtools #1      Internal Dirac Error: DevTools code has thrown an unhandled exc
                  <elided info line>
                  Error: :keyword is not ISeqable
                  <elided body>
+automate #1      scrape [:count-log-items "error"]
 automate #1      scrape [:last-log-item-content "error"]
 automate #1      trigger-internal-error-in-promise!
 devtools #1      Internal Dirac Error: DevTools code has thrown an unhandled rejection (in promise)
                  <elided info line>
                  Error: fake async error in promise
                  <elided body>
+automate #1      scrape [:count-log-items "error"]
 automate #1      scrape [:last-log-item-content "error"]
 automate #1      trigger-internal-error-as-error-log!
 devtools #1      Internal Dirac Error: an error was logged into the internal DevTools console
                  <elided info line>
                  ("a fake error log" 1 2 3)
+automate #1      scrape [:count-log-items "error"]
 automate #1      scrape [:last-log-item-content "error"]
 automate #1      close-devtools!
 extension        handling command: close-dirac-devtools
 extension        unregister devtools #1
+automate         store-options!
+automate         set-options! [{:user-frontend-url-params "disable_reporter=1"}]
+automate         open-devtools!
+extension        handling command: open-dirac-devtools
+extension        register devtools #2
+devtools #2      implant initialized
+devtools #2      reset devtools settings
+devtools #2      devtools ready
+devtools #2      setCurrentPanel: elements
+devtools #2      namespacesCache is cool now
+automate #2      switch-to-console-panel!
+devtools #2      console initialized
+devtools #2      adopt-prompt-element use-parinfer? true
+devtools #2      setDiracPromptMode('status')
+devtools #2      ConsoleView constructed
+devtools #2      displayWelcomeMessage
+devtools #2      setCurrentPanel: console
+automate #2      trigger-internal-error!
+automate #2      trigger-internal-error-in-promise!
+automate #2      trigger-internal-error-as-error-log!
+automate #2      scrape [:count-log-items "error"]
+automate #2      close-devtools!
+extension        handling command: close-dirac-devtools
+extension        unregister devtools #2
+automate         restore-options!
 automate         close-tab-with-scenario! ["scenario-tab#1"]
-summary          Automated 11 actions with 0 check-points containing 9 assertions.
+summary          Automated 24 actions with 0 check-points containing 13 assertions.
                  0 failures, 0 errors.
