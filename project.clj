@@ -36,7 +36,7 @@
                  [org.clojure/tools.reader "1.0.0-beta1" :scope "test"]
                  [com.cognitect/transit-clj "0.8.288" :scope "test"]
 
-                 [http.async.client "1.1.0" :scope "test"]
+                 [http.async.client "1.2.0" :scope "test"]
                  [org.slf4j/slf4j-log4j12 "1.7.21" :scope "test"]
 
                  [clj-webdriver "0.7.2" :scope "test"]
