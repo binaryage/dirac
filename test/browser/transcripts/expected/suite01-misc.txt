@@ -1,5 +1,6 @@
 ns               Testing dirac.tests.tasks.suite01.misc
 automate         open-tab-with-scenario! ["normal"]
+testing          user-specified url params should get propagated to DevTools frontends
 automate         store-options!
 automate         set-options! [{:user-frontend-url-params "x=1&y=2"}]
 automate         open-devtools!
@@ -15,6 +16,7 @@ automate #1      close-devtools!
 extension        handling command: close-dirac-devtools
 extension        unregister devtools #1
 automate         restore-options!
+∎
 automate         close-tab-with-scenario! ["scenario-tab#1"]
 summary          Automated 8 actions with 0 check-points containing 1 assertions.
                  0 failures, 0 errors.

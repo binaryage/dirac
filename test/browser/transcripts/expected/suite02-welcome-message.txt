@@ -1,5 +1,6 @@
 ns               Testing dirac.tests.tasks.suite02.welcome-message
 automate         open-tab-with-scenario! ["normal"]
+testing          welcome message should be present by default
 automate         open-devtools!
 extension        handling command: open-dirac-devtools
 extension        register devtools #1
@@ -18,6 +19,8 @@ devtools #1      setCurrentPanel: console
 automate #1      close-devtools!
 extension        handling command: close-dirac-devtools
 extension        unregister devtools #1
+∎
+testing          welcome message should not be present when disabled in options
 automate         store-options!
 automate         set-options! [{:welcome-message false}]
 automate         open-devtools!
@@ -39,6 +42,7 @@ automate #2      close-devtools!
 extension        handling command: close-dirac-devtools
 extension        unregister devtools #2
 automate         restore-options!
+∎
 automate         close-tab-with-scenario! ["scenario-tab#1"]
 summary          Automated 11 actions with 2 check-points containing 0 assertions.
                  0 failures, 0 errors.

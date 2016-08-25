@@ -1,5 +1,6 @@
 ns               Testing dirac.tests.tasks.suite02.clean-urls
 automate         open-tab-with-scenario! ["breakpoint"]
+testing          enabled :clean-urls feature
 automate         open-devtools!
 extension        handling command: open-dirac-devtools
 extension        register devtools #1
@@ -22,8 +23,10 @@ stdout           displayed 7 items:
 automate #1      close-devtools!
 extension        handling command: close-dirac-devtools
 extension        unregister devtools #1
+∎
 automate         close-tab-with-scenario! ["scenario-tab#1"]
 automate         open-tab-with-scenario! ["breakpoint"]
+testing          disabled :clean-urls feature
 automate         store-options!
 automate         set-options! [{:clean-urls false}]
 automate         open-devtools!
@@ -49,6 +52,7 @@ automate #2      close-devtools!
 extension        handling command: close-dirac-devtools
 extension        unregister devtools #2
 automate         restore-options!
+∎
 automate         close-tab-with-scenario! ["scenario-tab#2"]
 summary          Automated 15 actions with 4 check-points containing 2 assertions.
                  0 failures, 0 errors.

@@ -26,6 +26,7 @@ devtools #1      wrap-with-postprocess-and-eval-in-current-context!
 devtools #1      wrap-with-postprocess-and-eval-in-current-context!
 devtools #1      setDiracPromptMode('edit')
 automate #1      enable-console-feedback!
+testing          simple REPL eval interactions
 automate #1      console-exec-and-match! ["(+ 1 2)" "log> 3"]
 devtools #1      DC.log> (+ 1 2)
 devtools #1      send-eval-request: (+ 1 2)
@@ -86,6 +87,7 @@ devtools #1      repl eval job started
 devtools #1      wrap-with-postprocess-and-eval-in-current-context!
 devtools #1      setDiracPromptNS('my.ns')
 devtools #1      repl eval job ended
+∎
 automate #1      close-devtools!
 extension        handling command: close-dirac-devtools
 extension        unregister devtools #1

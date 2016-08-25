@@ -1,8 +1,8 @@
 (ns dirac.tests.tasks.suite01.version-checks
   (:require [cljs.core.async]
-            [cljs.test :refer-macros [is testing]]
+            [cljs.test :refer-macros [is]]
             [dirac.settings :refer-macros [seconds minutes]]
-            [dirac.automation :refer-macros [<!* go-task with-scenario with-devtools] :as a]))
+            [dirac.automation :refer-macros [<!* go-task with-scenario with-devtools testing] :as a]))
 
 (go-task
   (with-scenario "old-runtime"

@@ -60,3 +60,10 @@
      (dirac.automation/<!* dirac.automation/set-options! ~options)
      ~@body
      (dirac.automation/<!* dirac.automation/restore-options!)))
+
+(defmacro testing [title & body]
+  `(let [title# ~title]
+     (dirac.automation/testing-start title#)
+     (cljs.test/testing title# ~@body)
+     (dirac.automation/testing-end title#)))
+

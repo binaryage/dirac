@@ -114,7 +114,9 @@
   (atom {:counter         0
          "stdout"         (str box-style "color:#666; background-color: rgba(0,0,0,0.1);")
          "stderr"         (str box-style "color:#f00; background-color: rgba(255,0,0,0.1);")
-         "ns"             (str box-style "color:#000; font-weight: bold")
+         "ns"             (str box-style "color:#000; font-weight: bold; border-bottom: #ccc solid 1px;border-radius:0px;")
+         "testing"        (str box-style "color:#000; font-weight: bold; border-bottom: #ccc solid 1px;border-radius:0px;")
+         "∎"              (str box-style "color: #ccc;")
          "fail"           fail-style
          "error"          fail-style
          "summary"        (str box-style "color:#fff; background-color: rgba(0,128,0,0.8);")

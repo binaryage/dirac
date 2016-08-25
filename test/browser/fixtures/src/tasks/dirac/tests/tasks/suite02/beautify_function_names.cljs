@@ -1,9 +1,9 @@
 (ns dirac.tests.tasks.suite02.beautify-function-names
   (:require [cljs.core.async :refer [<! chan timeout]]
-            [cljs.test :refer-macros [is testing]]
+            [cljs.test :refer-macros [is]]
             [dirac.utils :refer [line-count]]
             [dirac.settings :refer-macros [seconds minutes]]
-            [dirac.automation :refer-macros [<!* go-task with-scenario with-devtools with-options] :as a]))
+            [dirac.automation :refer-macros [<!* go-task with-scenario with-devtools with-options testing] :as a]))
 
 (go-task
   (with-scenario "breakpoint"

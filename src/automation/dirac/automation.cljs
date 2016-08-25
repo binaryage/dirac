@@ -215,7 +215,6 @@
 ; -- transcript sugar -------------------------------------------------------------------------------------------------------
 
 (def action-style (str "font-weight: bold;"
-                       "border-top:1px dashed rgba(0,0,0,0.3);"
                        "margin-top:5px;"
                        "padding-top:2px;"
                        "color:#f66;"))
@@ -266,3 +265,10 @@
     ; without this we could starve those loops and their reaction could be delayed
     (<! (timeout 0))
     (<! (apply do-action! args))))
+
+(defn testing-start [title]
+  (transcript/append-to-transcript! "" "")
+  (transcript/append-to-transcript! "testing" title))
+
+(defn testing-end [_title]
+  (transcript/append-to-transcript! "∎" ""))

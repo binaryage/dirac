@@ -33,12 +33,15 @@ devtools #1      repl eval job started
 devtools #1      wrap-with-postprocess-and-eval-in-current-context!
 devtools #1      setDiracPromptNS('dirac.tests.scenarios.completions.workspace')
 devtools #1      repl eval job ended
+testing          in-ns completions for our namespace
 automate #1      simulate-console-input! ["sample"]
 automate #1      scrape! [:suggest-box]
 stdout           displayed 3 items:
                   * sample|-def (in-ns selected)
                   * sample|-defn (in-ns)
                   * sample|-defonce (in-ns)
+∎
+testing          javascript completions in js/ namespace
 automate #1      clear-console-prompt!
 automate #1      simulate-console-input! ["js/docume"]
 automate #1      scrape! [:suggest-box]
@@ -57,6 +60,8 @@ stdout           displayed 4 items:
 automate #1      simulate-console-action! ["TAB"]
 automate #1      print-prompt!
 stdout           js/document.getElementsByClassName
+∎
+testing          qualified completions
 automate #1      clear-console-prompt!
 automate #1      simulate-console-input! ["cljs.core/part"]
 automate #1      scrape! [:suggest-box]
@@ -68,6 +73,8 @@ stdout           displayed 4 items:
 automate #1      simulate-console-action! ["TAB"]
 automate #1      print-prompt!
 stdout           cljs.core/partial
+∎
+testing          namespace names completions
 automate #1      clear-console-prompt!
 automate #1      simulate-console-input! ["cljs.r"]
 automate #1      scrape! [:suggest-box]
@@ -78,6 +85,8 @@ automate #1      simulate-console-action! ["DOWN"]
 automate #1      simulate-console-action! ["TAB"]
 automate #1      print-prompt!
 stdout           cljs.repl
+∎
+testing          right-arrow completions
 automate #1      clear-console-prompt!
 automate #1      simulate-console-input! ["cljs.cor"]
 automate #1      scrape! [:suggest-box]
@@ -102,10 +111,14 @@ stdout           displayed 1 items:
 automate #1      simulate-console-action! ["RIGHT"]
 automate #1      print-prompt!
 stdout           cljs.core/clj->js
+∎
+testing          opening suggestion box
 automate #1      clear-console-prompt!
 automate #1      get-suggest-box-item-count
 automate #1      simulate-console-action! ["CTRL+SPACE"]
 automate #1      get-suggest-box-item-count
+∎
+testing          aliases to namespaces and macro namespaces
 automate #1      clear-console-prompt!
 automate #1      simulate-console-input! ["alias"]
 automate #1      scrape! [:suggest-box]
@@ -113,39 +126,53 @@ stdout           displayed 3 items:
                   * alias|-cljs-core-async [is cljs.core.async] (ns-alias selected)
                   * alias|-cljs-core-async-macros [is cljs.core.async.macros] (ns-alias macro)
                   * alias|-dirac-settings [is dirac.settings] (ns-alias macro combined-ns-macro)
+∎
+testing          refer namespace symbols
 automate #1      clear-console-prompt!
 automate #1      simulate-console-input! ["pu"]
 automate #1      scrape! [:suggest-box]
 stdout           displayed 2 items:
                   * pu|sh-tail (core selected)
                   * pu|t! [in cljs.core.async] (refer)
+∎
+testing          refer macro namespace symbols
 automate #1      clear-console-prompt!
 automate #1      simulate-console-input! ["wa"]
 automate #1      scrape! [:suggest-box]
 stdout           displayed 1 items:
                   * wa|rn [in chromex.logging] (refer macro selected)
+∎
+testing          refer macro namespace symbols coming from :refer-macros
 automate #1      clear-console-prompt!
 automate #1      simulate-console-input! ["get-dirac-window"]
 automate #1      scrape! [:suggest-box]
 stdout           displayed 1 items:
                   * get-dirac-window|-top [in dirac.settings] (refer macro selected)
+∎
+testing          qualified completions of namespace alias
 automate #1      clear-console-prompt!
 automate #1      simulate-console-input! ["alias-cljs-core-async/tak"]
 automate #1      scrape! [:suggest-box]
 stdout           displayed 2 items:
                   * tak|e (qualified selected)
                   * tak|e! (qualified)
+∎
+testing          qualified completions of macro namespace alias
 automate #1      clear-console-prompt!
 automate #1      simulate-console-input! ["alias-cljs-core-async-macros/go"]
 automate #1      scrape! [:suggest-box]
 stdout           displayed 2 items:
                   * go| (qualified macro selected)
                   * go|-loop (qualified macro)
+∎
+testing          qualified completions of macro namespace
 automate #1      clear-console-prompt!
 automate #1      simulate-console-input! ["chromex.logging/lo"]
 automate #1      scrape! [:suggest-box]
 stdout           displayed 1 items:
                   * lo|g (qualified macro selected)
+∎
+testing          closure libraries should be listed
 automate #1      clear-console-prompt!
 automate #1      simulate-console-input! ["goog.stri"]
 automate #1      scrape! [:suggest-box]
@@ -155,17 +182,23 @@ stdout           displayed 5 items:
                   * goog.stri|ng.StringBuffer (ns pseudo)
                   * goog.stri|ng.TypedString (ns pseudo)
                   * goog.stri|ng.Unicode (ns pseudo)
+∎
+testing          aliases to closure libraries should be listed
 automate #1      clear-console-prompt!
 automate #1      simulate-console-input! ["gstri"]
 automate #1      scrape! [:suggest-box]
 stdout           displayed 1 items:
                   * gstri|ng [is goog.string] (ns-alias pseudo selected)
+∎
+testing          qualified completions of closure libraries (full name)
 automate #1      clear-console-prompt!
 automate #1      simulate-console-input! ["goog.array/cl"]
 automate #1      scrape! [:suggest-box]
 stdout           displayed 2 items:
                   * cl|ear (qualified pseudo selected)
                   * cl|one (qualified pseudo)
+∎
+testing          qualified completions of closure libraries (via alias)
 automate #1      clear-console-prompt!
 automate #1      simulate-console-input! ["gstring/case"]
 automate #1      scrape! [:suggest-box]
@@ -175,24 +208,37 @@ stdout           displayed 5 items:
                   * case|InsensitiveEndsWith (qualified pseudo)
                   * case|InsensitiveEquals (qualified pseudo)
                   * case|InsensitiveStartsWith (qualified pseudo)
+∎
+testing          'dirac!' should be present as repl special command
 automate #1      clear-console-prompt!
 automate #1      simulate-console-input! ["dirac"]
 automate #1      scrape [:suggest-box]
+∎
+testing          'import' should be present as repl special command
 automate #1      clear-console-prompt!
 automate #1      simulate-console-input! ["impor"]
 automate #1      scrape [:suggest-box]
+∎
+testing          'in-ns' should be present as repl special command
 automate #1      clear-console-prompt!
 automate #1      simulate-console-input! ["in-"]
 automate #1      scrape [:suggest-box]
+∎
+testing          'require' should be present as repl special command
 automate #1      clear-console-prompt!
 automate #1      simulate-console-input! ["requi"]
 automate #1      scrape [:suggest-box]
+∎
+testing          *1 *2 *3 *e should be present as repl special commands
 automate #1      clear-console-prompt!
 automate #1      simulate-console-input! ["*"]
 automate #1      scrape [:suggest-box]
+∎
+testing          'load-file' and 'load-namespace' should be present as repl special commands
 automate #1      clear-console-prompt!
 automate #1      simulate-console-input! ["load-"]
 automate #1      scrape [:suggest-box]
+∎
 automate #1      close-devtools!
 extension        handling command: close-dirac-devtools
 extension        unregister devtools #1
