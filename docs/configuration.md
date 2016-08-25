@@ -52,8 +52,30 @@ The most important setting is the connection info for Dirac Agent. This allows f
 ClojureScript projects with their own settings instead of providing one system-wide configuration. In theory
 you could have different projects connecting do different Dirac Agents (which are connected to different nREPL servers).
 
+```clojure
+(ns your-project.namespace
+  (:require [dirac.runtime]))
+
+(dirac.runtime/set-pref! :agent-host "1.2.3.4")     ; an example of custom runtime configuration
+(dirac.runtime/set-pref! :agent-port 9999)          ; an example of custom runtime configuration
+(dirac.runtime/install!)                            ; install must be called after configuration tweaks
+```
+
 Please consult [this file](https://github.com/binaryage/dirac/blob/master/src/runtime/dirac/runtime/prefs.cljs) for possible
 defaults and their environmental counterparts.
+
+Please note that when installing Dirac runtime via `:preloads` the config can be specified under `:external-config > :dirac.runtime/config`.
+  
+This config example should be equivalent to the code above:
+
+```clojure
+...
+{:main my-project.main
+ :preloads [dirac.runtime.preload]
+ :external-config {:dirac.runtime/config {:agent-host "1.2.3.4"
+                                          :agent-port 9999}}}
+...
+```
 
 ##### Figwheel build configuration
 

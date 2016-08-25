@@ -5,7 +5,7 @@ In this document I will discuss standard configuration with Leiningen. For custo
 
 If this is your first Dirac installation and you are not familiar with Dirac features
 I first recommend following [the demo walktrough in Dirac Example project](https://github.com/binaryage/dirac-sample) to learn
-the basics and test-drive Dirac on properly-configured project.
+the basics and test-drive Dirac on a properly-configured project.
 
 Here are the ingredients you are going to need:
 
@@ -44,6 +44,16 @@ or
     :dependencies [[binaryage/dirac "RELEASE"]]
 
 You will also need to install runtime support in your main page(s):
+
+##### Installation via preloads
+
+Dirac supports [`:preloads` feature](https://github.com/clojure/clojurescript/wiki/Compiler-Options#preloads) since version [0.6.4](https://github.com/binaryage/dirac/releases/tag/v0.6.4).
+
+Simply add `dirac.runtime.preload` into your `:preloads` list.
+
+In this mode, Dirac runtime can be additionally configured via `:external-config > :dirac.runtime/config`. More [details here](https://github.com/binaryage/dirac/blob/master/docs/configuration.md#dirac-runtime---page-specific-configuration).
+
+##### Installation from code
 
 ```clojure
 (ns your-project.namespace
