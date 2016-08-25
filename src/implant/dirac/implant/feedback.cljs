@@ -3,7 +3,7 @@
             [chromex.logging :refer-macros [log warn error group group-end]]
             [dirac.settings :refer-macros [get-flush-pending-feedback-messages-key
                                            get-dirac-intercom-key]]
-            [dirac.implant.helpers :as helpers]))
+            [dirac.implant.options :as options]))
 
 (defonce pending-messages (atom []))
 
@@ -20,15 +20,15 @@
         (intercom message)))))
 
 (defn install! []
-  (when (helpers/should-automate?)
+  (when (options/should-automate?)
     (oset js/window [(get-flush-pending-feedback-messages-key)] flush-pending-messages!)))
 
 (defn post! [text]
-  (when (helpers/should-automate?)
+  (when (options/should-automate?)
     (let [debug? (oget js/window "dirac" "_DEBUG_FEEDBACK")
           message #js {:type     "marion-deliver-feedback"
                        :envelope #js {:type       "feedback-from-devtools"
-                                      :devtools   (helpers/get-devtools-id)
+                                      :devtools   (options/get-devtools-id)
                                       :transcript text}}]
       (if debug?
         (log "posting feedback:" message))

@@ -6,7 +6,8 @@
             [cljs.reader :as reader]
             [dirac.settings :refer-macros [get-automation-entry-point-key]]
             [dirac.utils :as utils]
-            [dirac.implant.helpers :as helpers :refer [get-console-view get-inspector-view]]
+            [dirac.implant.helpers :refer [get-console-view get-inspector-view get-url-params]]
+            [dirac.implant.options :as options]
             [dirac.implant.automation.scrapers :refer [scrape]]))
 
 ; -- automation actions -----------------------------------------------------------------------------------------------------
@@ -126,7 +127,7 @@
     (trigger-fn-and-wait! trigger-fn delay)))
 
 (defn get-frontend-url-params []
-  (helpers/get-url-params))
+  (get-url-params))
 
 ; -- main dispatch ----------------------------------------------------------------------------------------------------------
 
@@ -209,5 +210,5 @@
   (oset js/window [(get-automation-entry-point-key)] automation-handler))
 
 (defn install! []
-  (when (helpers/should-automate?)
+  (when (options/should-automate?)
     (install-automation-support!)))
