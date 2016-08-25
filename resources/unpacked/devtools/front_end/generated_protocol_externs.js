@@ -25,28 +25,11 @@ Protocol.InspectorAgent.prototype.disable = function(opt_callback) {}
 /** @param {function(?Protocol.Error):void=} opt_callback */
 Protocol.InspectorAgent.prototype.invoke_disable = function(obj, opt_callback) {}
 
-/**
- * @param {function(?Protocol.Error):void=} opt_callback
- */
-Protocol.InspectorAgent.prototype.reset = function(opt_callback) {}
-/** @param {function(?Protocol.Error):void=} opt_callback */
-Protocol.InspectorAgent.prototype.invoke_reset = function(obj, opt_callback) {}
-
 
 
 var InspectorAgent = function(){};
 /** @interface */
 InspectorAgent.Dispatcher = function() {};
-/**
- * @param {number} testCallId
- * @param {string} script
- */
-InspectorAgent.Dispatcher.prototype.evaluateForTestInFrontend = function(testCallId, script) {};
-/**
- * @param {RuntimeAgent.RemoteObject} object
- * @param {!Object} hints
- */
-InspectorAgent.Dispatcher.prototype.inspect = function(object, hints) {};
 /**
  * @param {string} reason
  */
@@ -66,21 +49,33 @@ Protocol.MemoryAgent.prototype.getDOMCounters = function(opt_callback) {}
 /** @param {function(?Protocol.Error, number, number, number):void=} opt_callback */
 Protocol.MemoryAgent.prototype.invoke_getDOMCounters = function(obj, opt_callback) {}
 
+/**
+ * @param {boolean} suppressed
+ * @param {function(?Protocol.Error):void=} opt_callback
+ */
+Protocol.MemoryAgent.prototype.setPressureNotificationsSuppressed = function(suppressed, opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+Protocol.MemoryAgent.prototype.invoke_setPressureNotificationsSuppressed = function(obj, opt_callback) {}
+
+/**
+ * @param {MemoryAgent.PressureLevel} level
+ * @param {function(?Protocol.Error):void=} opt_callback
+ */
+Protocol.MemoryAgent.prototype.simulatePressureNotification = function(level, opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+Protocol.MemoryAgent.prototype.invoke_simulatePressureNotification = function(obj, opt_callback) {}
+
 
 
 var MemoryAgent = function(){};
 
-/** @typedef {!{size:(number|undefined), name:(string), children:(!Array.<MemoryAgent.MemoryBlock>|undefined)}} */
-MemoryAgent.MemoryBlock;
-
-/** @typedef {!{strings:(!Array.<string>), nodes:(!Array.<number>), edges:(!Array.<number>), baseToRealNodeId:(!Array.<number>)}} */
-MemoryAgent.HeapSnapshotChunk;
+/** @enum {string} */
+MemoryAgent.PressureLevel = {
+    Moderate: "moderate",
+    Critical: "critical"
+};
 /** @interface */
 MemoryAgent.Dispatcher = function() {};
-/**
- * @param {MemoryAgent.HeapSnapshotChunk} chunk
- */
-MemoryAgent.Dispatcher.prototype.addNativeSnapshotChunk = function(chunk) {};
 
 
 /**
@@ -119,21 +114,28 @@ Protocol.PageAgent.prototype.removeScriptToEvaluateOnLoad = function(identifier,
 Protocol.PageAgent.prototype.invoke_removeScriptToEvaluateOnLoad = function(obj, opt_callback) {}
 
 /**
- * @param {boolean=} opt_ignoreCache
- * @param {string=} opt_scriptToEvaluateOnLoad
- * @param {string=} opt_scriptPreprocessor
+ * @param {boolean} autoAttach
  * @param {function(?Protocol.Error):void=} opt_callback
  */
-Protocol.PageAgent.prototype.reload = function(opt_ignoreCache, opt_scriptToEvaluateOnLoad, opt_scriptPreprocessor, opt_callback) {}
+Protocol.PageAgent.prototype.setAutoAttachToCreatedPages = function(autoAttach, opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+Protocol.PageAgent.prototype.invoke_setAutoAttachToCreatedPages = function(obj, opt_callback) {}
+
+/**
+ * @param {boolean=} opt_ignoreCache
+ * @param {string=} opt_scriptToEvaluateOnLoad
+ * @param {function(?Protocol.Error):void=} opt_callback
+ */
+Protocol.PageAgent.prototype.reload = function(opt_ignoreCache, opt_scriptToEvaluateOnLoad, opt_callback) {}
 /** @param {function(?Protocol.Error):void=} opt_callback */
 Protocol.PageAgent.prototype.invoke_reload = function(obj, opt_callback) {}
 
 /**
  * @param {string} url
- * @param {function(?Protocol.Error):void=} opt_callback
+ * @param {function(?Protocol.Error, PageAgent.FrameId):void=} opt_callback
  */
 Protocol.PageAgent.prototype.navigate = function(url, opt_callback) {}
-/** @param {function(?Protocol.Error):void=} opt_callback */
+/** @param {function(?Protocol.Error, PageAgent.FrameId):void=} opt_callback */
 Protocol.PageAgent.prototype.invoke_navigate = function(obj, opt_callback) {}
 
 /**
@@ -152,10 +154,10 @@ Protocol.PageAgent.prototype.navigateToHistoryEntry = function(entryId, opt_call
 Protocol.PageAgent.prototype.invoke_navigateToHistoryEntry = function(obj, opt_callback) {}
 
 /**
- * @param {function(?Protocol.Error, !Array.<PageAgent.Cookie>, string):void=} opt_callback
+ * @param {function(?Protocol.Error, !Array.<NetworkAgent.Cookie>):void=} opt_callback
  */
 Protocol.PageAgent.prototype.getCookies = function(opt_callback) {}
-/** @param {function(?Protocol.Error, !Array.<PageAgent.Cookie>, string):void=} opt_callback */
+/** @param {function(?Protocol.Error, !Array.<NetworkAgent.Cookie>):void=} opt_callback */
 Protocol.PageAgent.prototype.invoke_getCookies = function(obj, opt_callback) {}
 
 /**
@@ -189,21 +191,11 @@ Protocol.PageAgent.prototype.invoke_getResourceContent = function(obj, opt_callb
  * @param {string} query
  * @param {boolean=} opt_caseSensitive
  * @param {boolean=} opt_isRegex
- * @param {function(?Protocol.Error, !Array.<PageAgent.SearchMatch>):void=} opt_callback
+ * @param {function(?Protocol.Error, !Array.<DebuggerAgent.SearchMatch>):void=} opt_callback
  */
 Protocol.PageAgent.prototype.searchInResource = function(frameId, url, query, opt_caseSensitive, opt_isRegex, opt_callback) {}
-/** @param {function(?Protocol.Error, !Array.<PageAgent.SearchMatch>):void=} opt_callback */
+/** @param {function(?Protocol.Error, !Array.<DebuggerAgent.SearchMatch>):void=} opt_callback */
 Protocol.PageAgent.prototype.invoke_searchInResource = function(obj, opt_callback) {}
-
-/**
- * @param {string} text
- * @param {boolean=} opt_caseSensitive
- * @param {boolean=} opt_isRegex
- * @param {function(?Protocol.Error, !Array.<PageAgent.SearchResult>):void=} opt_callback
- */
-Protocol.PageAgent.prototype.searchInResources = function(text, opt_caseSensitive, opt_isRegex, opt_callback) {}
-/** @param {function(?Protocol.Error, !Array.<PageAgent.SearchResult>):void=} opt_callback */
-Protocol.PageAgent.prototype.invoke_searchInResources = function(obj, opt_callback) {}
 
 /**
  * @param {PageAgent.FrameId} frameId
@@ -217,68 +209,29 @@ Protocol.PageAgent.prototype.invoke_setDocumentContent = function(obj, opt_callb
 /**
  * @param {number} width
  * @param {number} height
- * @param {number} fontScaleFactor
+ * @param {number} deviceScaleFactor
+ * @param {boolean} mobile
  * @param {boolean} fitWindow
+ * @param {number=} opt_scale
+ * @param {number=} opt_offsetX
+ * @param {number=} opt_offsetY
+ * @param {number=} opt_screenWidth
+ * @param {number=} opt_screenHeight
+ * @param {number=} opt_positionX
+ * @param {number=} opt_positionY
+ * @param {EmulationAgent.ScreenOrientation=} opt_screenOrientation
  * @param {function(?Protocol.Error):void=} opt_callback
  */
-Protocol.PageAgent.prototype.setDeviceMetricsOverride = function(width, height, fontScaleFactor, fitWindow, opt_callback) {}
+Protocol.PageAgent.prototype.setDeviceMetricsOverride = function(width, height, deviceScaleFactor, mobile, fitWindow, opt_scale, opt_offsetX, opt_offsetY, opt_screenWidth, opt_screenHeight, opt_positionX, opt_positionY, opt_screenOrientation, opt_callback) {}
 /** @param {function(?Protocol.Error):void=} opt_callback */
 Protocol.PageAgent.prototype.invoke_setDeviceMetricsOverride = function(obj, opt_callback) {}
 
 /**
- * @param {boolean} result
  * @param {function(?Protocol.Error):void=} opt_callback
  */
-Protocol.PageAgent.prototype.setShowPaintRects = function(result, opt_callback) {}
+Protocol.PageAgent.prototype.clearDeviceMetricsOverride = function(opt_callback) {}
 /** @param {function(?Protocol.Error):void=} opt_callback */
-Protocol.PageAgent.prototype.invoke_setShowPaintRects = function(obj, opt_callback) {}
-
-/**
- * @param {boolean} show
- * @param {function(?Protocol.Error):void=} opt_callback
- */
-Protocol.PageAgent.prototype.setShowDebugBorders = function(show, opt_callback) {}
-/** @param {function(?Protocol.Error):void=} opt_callback */
-Protocol.PageAgent.prototype.invoke_setShowDebugBorders = function(obj, opt_callback) {}
-
-/**
- * @param {boolean} show
- * @param {function(?Protocol.Error):void=} opt_callback
- */
-Protocol.PageAgent.prototype.setShowFPSCounter = function(show, opt_callback) {}
-/** @param {function(?Protocol.Error):void=} opt_callback */
-Protocol.PageAgent.prototype.invoke_setShowFPSCounter = function(obj, opt_callback) {}
-
-/**
- * @param {boolean} enabled
- * @param {function(?Protocol.Error):void=} opt_callback
- */
-Protocol.PageAgent.prototype.setContinuousPaintingEnabled = function(enabled, opt_callback) {}
-/** @param {function(?Protocol.Error):void=} opt_callback */
-Protocol.PageAgent.prototype.invoke_setContinuousPaintingEnabled = function(obj, opt_callback) {}
-
-/**
- * @param {boolean} show
- * @param {function(?Protocol.Error):void=} opt_callback
- */
-Protocol.PageAgent.prototype.setShowScrollBottleneckRects = function(show, opt_callback) {}
-/** @param {function(?Protocol.Error):void=} opt_callback */
-Protocol.PageAgent.prototype.invoke_setShowScrollBottleneckRects = function(obj, opt_callback) {}
-
-/**
- * @param {function(?Protocol.Error, string):void=} opt_callback
- */
-Protocol.PageAgent.prototype.getScriptExecutionStatus = function(opt_callback) {}
-/** @param {function(?Protocol.Error, string):void=} opt_callback */
-Protocol.PageAgent.prototype.invoke_getScriptExecutionStatus = function(obj, opt_callback) {}
-
-/**
- * @param {boolean} value
- * @param {function(?Protocol.Error):void=} opt_callback
- */
-Protocol.PageAgent.prototype.setScriptExecutionDisabled = function(value, opt_callback) {}
-/** @param {function(?Protocol.Error):void=} opt_callback */
-Protocol.PageAgent.prototype.invoke_setScriptExecutionDisabled = function(obj, opt_callback) {}
+Protocol.PageAgent.prototype.invoke_clearDeviceMetricsOverride = function(obj, opt_callback) {}
 
 /**
  * @param {number=} opt_latitude
@@ -316,29 +269,18 @@ Protocol.PageAgent.prototype.invoke_clearDeviceOrientationOverride = function(ob
 
 /**
  * @param {boolean} enabled
+ * @param {string=} opt_configuration
  * @param {function(?Protocol.Error):void=} opt_callback
  */
-Protocol.PageAgent.prototype.setTouchEmulationEnabled = function(enabled, opt_callback) {}
+Protocol.PageAgent.prototype.setTouchEmulationEnabled = function(enabled, opt_configuration, opt_callback) {}
 /** @param {function(?Protocol.Error):void=} opt_callback */
 Protocol.PageAgent.prototype.invoke_setTouchEmulationEnabled = function(obj, opt_callback) {}
 
 /**
- * @param {string} media
- * @param {function(?Protocol.Error):void=} opt_callback
+ * @param {function(?Protocol.Error, string):void=} opt_callback
  */
-Protocol.PageAgent.prototype.setEmulatedMedia = function(media, opt_callback) {}
-/** @param {function(?Protocol.Error):void=} opt_callback */
-Protocol.PageAgent.prototype.invoke_setEmulatedMedia = function(obj, opt_callback) {}
-
-/**
- * @param {string=} opt_format
- * @param {number=} opt_quality
- * @param {number=} opt_maxWidth
- * @param {number=} opt_maxHeight
- * @param {function(?Protocol.Error, string, number, number, DOMAgent.Rect):void=} opt_callback
- */
-Protocol.PageAgent.prototype.captureScreenshot = function(opt_format, opt_quality, opt_maxWidth, opt_maxHeight, opt_callback) {}
-/** @param {function(?Protocol.Error, string, number, number, DOMAgent.Rect):void=} opt_callback */
+Protocol.PageAgent.prototype.captureScreenshot = function(opt_callback) {}
+/** @param {function(?Protocol.Error, string):void=} opt_callback */
 Protocol.PageAgent.prototype.invoke_captureScreenshot = function(obj, opt_callback) {}
 
 /**
@@ -346,9 +288,10 @@ Protocol.PageAgent.prototype.invoke_captureScreenshot = function(obj, opt_callba
  * @param {number=} opt_quality
  * @param {number=} opt_maxWidth
  * @param {number=} opt_maxHeight
+ * @param {number=} opt_everyNthFrame
  * @param {function(?Protocol.Error):void=} opt_callback
  */
-Protocol.PageAgent.prototype.startScreencast = function(opt_format, opt_quality, opt_maxWidth, opt_maxHeight, opt_callback) {}
+Protocol.PageAgent.prototype.startScreencast = function(opt_format, opt_quality, opt_maxWidth, opt_maxHeight, opt_everyNthFrame, opt_callback) {}
 /** @param {function(?Protocol.Error):void=} opt_callback */
 Protocol.PageAgent.prototype.invoke_startScreencast = function(obj, opt_callback) {}
 
@@ -360,6 +303,14 @@ Protocol.PageAgent.prototype.stopScreencast = function(opt_callback) {}
 Protocol.PageAgent.prototype.invoke_stopScreencast = function(obj, opt_callback) {}
 
 /**
+ * @param {number} sessionId
+ * @param {function(?Protocol.Error):void=} opt_callback
+ */
+Protocol.PageAgent.prototype.screencastFrameAck = function(sessionId, opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+Protocol.PageAgent.prototype.invoke_screencastFrameAck = function(obj, opt_callback) {}
+
+/**
  * @param {boolean} accept
  * @param {string=} opt_promptText
  * @param {function(?Protocol.Error):void=} opt_callback
@@ -369,21 +320,60 @@ Protocol.PageAgent.prototype.handleJavaScriptDialog = function(accept, opt_promp
 Protocol.PageAgent.prototype.invoke_handleJavaScriptDialog = function(obj, opt_callback) {}
 
 /**
- * @param {boolean} show
- * @param {boolean=} opt_showGrid
+ * @param {boolean} enabled
  * @param {function(?Protocol.Error):void=} opt_callback
  */
-Protocol.PageAgent.prototype.setShowViewportSizeOnResize = function(show, opt_showGrid, opt_callback) {}
+Protocol.PageAgent.prototype.setColorPickerEnabled = function(enabled, opt_callback) {}
 /** @param {function(?Protocol.Error):void=} opt_callback */
-Protocol.PageAgent.prototype.invoke_setShowViewportSizeOnResize = function(obj, opt_callback) {}
+Protocol.PageAgent.prototype.invoke_setColorPickerEnabled = function(obj, opt_callback) {}
 
 /**
- * @param {boolean} force
+ * @param {boolean=} opt_suspended
+ * @param {string=} opt_message
  * @param {function(?Protocol.Error):void=} opt_callback
  */
-Protocol.PageAgent.prototype.setForceCompositingMode = function(force, opt_callback) {}
+Protocol.PageAgent.prototype.configureOverlay = function(opt_suspended, opt_message, opt_callback) {}
 /** @param {function(?Protocol.Error):void=} opt_callback */
-Protocol.PageAgent.prototype.invoke_setForceCompositingMode = function(obj, opt_callback) {}
+Protocol.PageAgent.prototype.invoke_configureOverlay = function(obj, opt_callback) {}
+
+/**
+ * @param {function(?Protocol.Error, string, !Array.<PageAgent.AppManifestError>, string=):void=} opt_callback
+ */
+Protocol.PageAgent.prototype.getAppManifest = function(opt_callback) {}
+/** @param {function(?Protocol.Error, string, !Array.<PageAgent.AppManifestError>, string=):void=} opt_callback */
+Protocol.PageAgent.prototype.invoke_getAppManifest = function(obj, opt_callback) {}
+
+/**
+ * @param {function(?Protocol.Error):void=} opt_callback
+ */
+Protocol.PageAgent.prototype.requestAppBanner = function(opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+Protocol.PageAgent.prototype.invoke_requestAppBanner = function(obj, opt_callback) {}
+
+/**
+ * @param {number} threshold
+ * @param {function(?Protocol.Error):void=} opt_callback
+ */
+Protocol.PageAgent.prototype.setBlockedEventsWarningThreshold = function(threshold, opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+Protocol.PageAgent.prototype.invoke_setBlockedEventsWarningThreshold = function(obj, opt_callback) {}
+
+/**
+ * @param {boolean} enabled
+ * @param {function(?Protocol.Error):void=} opt_callback
+ */
+Protocol.PageAgent.prototype.setControlNavigations = function(enabled, opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+Protocol.PageAgent.prototype.invoke_setControlNavigations = function(obj, opt_callback) {}
+
+/**
+ * @param {PageAgent.NavigationResponse} response
+ * @param {number} navigationId
+ * @param {function(?Protocol.Error):void=} opt_callback
+ */
+Protocol.PageAgent.prototype.processNavigation = function(response, navigationId, opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+Protocol.PageAgent.prototype.invoke_processNavigation = function(obj, opt_callback) {}
 
 
 
@@ -394,10 +384,15 @@ PageAgent.ResourceType = {
     Document: "Document",
     Stylesheet: "Stylesheet",
     Image: "Image",
+    Media: "Media",
     Font: "Font",
     Script: "Script",
+    TextTrack: "TextTrack",
     XHR: "XHR",
+    Fetch: "Fetch",
+    EventSource: "EventSource",
     WebSocket: "WebSocket",
+    Manifest: "Manifest",
     Other: "Other"
 };
 
@@ -407,23 +402,38 @@ PageAgent.FrameId;
 /** @typedef {!{id:(string), parentId:(string|undefined), loaderId:(NetworkAgent.LoaderId), name:(string|undefined), url:(string), securityOrigin:(string), mimeType:(string)}} */
 PageAgent.Frame;
 
-/** @typedef {!{frame:(PageAgent.Frame), childFrames:(!Array.<PageAgent.FrameResourceTree>|undefined), resources:(!Array.<!Object>)}} */
+/** @typedef {!{url:(string), type:(PageAgent.ResourceType), mimeType:(string), failed:(boolean|undefined), canceled:(boolean|undefined)}} */
+PageAgent.FrameResource;
+
+/** @typedef {!{frame:(PageAgent.Frame), childFrames:(!Array.<PageAgent.FrameResourceTree>|undefined), resources:(!Array.<PageAgent.FrameResource>)}} */
 PageAgent.FrameResourceTree;
-
-/** @typedef {!{lineNumber:(number), lineContent:(string)}} */
-PageAgent.SearchMatch;
-
-/** @typedef {!{url:(string), frameId:(PageAgent.FrameId), matchesCount:(number)}} */
-PageAgent.SearchResult;
-
-/** @typedef {!{name:(string), value:(string), domain:(string), path:(string), expires:(number), size:(number), httpOnly:(boolean), secure:(boolean), session:(boolean)}} */
-PageAgent.Cookie;
 
 /** @typedef {string} */
 PageAgent.ScriptIdentifier;
 
 /** @typedef {!{id:(number), url:(string), title:(string)}} */
 PageAgent.NavigationEntry;
+
+/** @typedef {!{offsetTop:(number), pageScaleFactor:(number), deviceWidth:(number), deviceHeight:(number), scrollOffsetX:(number), scrollOffsetY:(number), timestamp:(number|undefined)}} */
+PageAgent.ScreencastFrameMetadata;
+
+/** @enum {string} */
+PageAgent.DialogType = {
+    Alert: "alert",
+    Confirm: "confirm",
+    Prompt: "prompt",
+    Beforeunload: "beforeunload"
+};
+
+/** @typedef {!{message:(string), critical:(number), line:(number), column:(number)}} */
+PageAgent.AppManifestError;
+
+/** @enum {string} */
+PageAgent.NavigationResponse = {
+    Proceed: "Proceed",
+    Cancel: "Cancel",
+    CancelAndIgnore: "CancelAndIgnore"
+};
 /** @interface */
 PageAgent.Dispatcher = function() {};
 /**
@@ -436,8 +446,9 @@ PageAgent.Dispatcher.prototype.domContentEventFired = function(timestamp) {};
 PageAgent.Dispatcher.prototype.loadEventFired = function(timestamp) {};
 /**
  * @param {PageAgent.FrameId} frameId
+ * @param {PageAgent.FrameId} parentFrameId
  */
-PageAgent.Dispatcher.prototype.frameAttached = function(frameId) {};
+PageAgent.Dispatcher.prototype.frameAttached = function(frameId, parentFrameId) {};
 /**
  * @param {PageAgent.Frame} frame
  */
@@ -463,143 +474,317 @@ PageAgent.Dispatcher.prototype.frameScheduledNavigation = function(frameId, dela
  * @param {PageAgent.FrameId} frameId
  */
 PageAgent.Dispatcher.prototype.frameClearedScheduledNavigation = function(frameId) {};
+PageAgent.Dispatcher.prototype.frameResized = function() {};
 /**
  * @param {string} message
+ * @param {PageAgent.DialogType} type
  */
-PageAgent.Dispatcher.prototype.javascriptDialogOpening = function(message) {};
-PageAgent.Dispatcher.prototype.javascriptDialogClosed = function() {};
+PageAgent.Dispatcher.prototype.javascriptDialogOpening = function(message, type) {};
 /**
- * @param {boolean} isEnabled
+ * @param {boolean} result
  */
-PageAgent.Dispatcher.prototype.scriptsEnabled = function(isEnabled) {};
+PageAgent.Dispatcher.prototype.javascriptDialogClosed = function(result) {};
 /**
  * @param {string} data
- * @param {number=} opt_deviceScaleFactor
- * @param {number=} opt_pageScaleFactor
- * @param {DOMAgent.Rect=} opt_viewport
- * @param {number=} opt_offsetTop
- * @param {number=} opt_offsetBottom
+ * @param {PageAgent.ScreencastFrameMetadata} metadata
+ * @param {number} sessionId
  */
-PageAgent.Dispatcher.prototype.screencastFrame = function(data, opt_deviceScaleFactor, opt_pageScaleFactor, opt_viewport, opt_offsetTop, opt_offsetBottom) {};
+PageAgent.Dispatcher.prototype.screencastFrame = function(data, metadata, sessionId) {};
+/**
+ * @param {boolean} visible
+ */
+PageAgent.Dispatcher.prototype.screencastVisibilityChanged = function(visible) {};
+/**
+ * @param {DOMAgent.RGBA} color
+ */
+PageAgent.Dispatcher.prototype.colorPicked = function(color) {};
+PageAgent.Dispatcher.prototype.interstitialShown = function() {};
+PageAgent.Dispatcher.prototype.interstitialHidden = function() {};
+/**
+ * @param {boolean} isInMainFrame
+ * @param {boolean} isRedirect
+ * @param {number} navigationId
+ * @param {string} url
+ */
+PageAgent.Dispatcher.prototype.navigationRequested = function(isInMainFrame, isRedirect, navigationId, url) {};
 
 
 /**
  * @constructor
 */
-Protocol.ConsoleAgent = function(){};
+Protocol.RenderingAgent = function(){};
 
 /**
+ * @param {boolean} result
  * @param {function(?Protocol.Error):void=} opt_callback
  */
-Protocol.ConsoleAgent.prototype.enable = function(opt_callback) {}
+Protocol.RenderingAgent.prototype.setShowPaintRects = function(result, opt_callback) {}
 /** @param {function(?Protocol.Error):void=} opt_callback */
-Protocol.ConsoleAgent.prototype.invoke_enable = function(obj, opt_callback) {}
+Protocol.RenderingAgent.prototype.invoke_setShowPaintRects = function(obj, opt_callback) {}
 
 /**
+ * @param {boolean} show
  * @param {function(?Protocol.Error):void=} opt_callback
  */
-Protocol.ConsoleAgent.prototype.disable = function(opt_callback) {}
+Protocol.RenderingAgent.prototype.setShowDebugBorders = function(show, opt_callback) {}
 /** @param {function(?Protocol.Error):void=} opt_callback */
-Protocol.ConsoleAgent.prototype.invoke_disable = function(obj, opt_callback) {}
+Protocol.RenderingAgent.prototype.invoke_setShowDebugBorders = function(obj, opt_callback) {}
 
 /**
+ * @param {boolean} show
  * @param {function(?Protocol.Error):void=} opt_callback
  */
-Protocol.ConsoleAgent.prototype.clearMessages = function(opt_callback) {}
+Protocol.RenderingAgent.prototype.setShowFPSCounter = function(show, opt_callback) {}
 /** @param {function(?Protocol.Error):void=} opt_callback */
-Protocol.ConsoleAgent.prototype.invoke_clearMessages = function(obj, opt_callback) {}
+Protocol.RenderingAgent.prototype.invoke_setShowFPSCounter = function(obj, opt_callback) {}
+
+/**
+ * @param {boolean} show
+ * @param {function(?Protocol.Error):void=} opt_callback
+ */
+Protocol.RenderingAgent.prototype.setShowScrollBottleneckRects = function(show, opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+Protocol.RenderingAgent.prototype.invoke_setShowScrollBottleneckRects = function(obj, opt_callback) {}
+
+/**
+ * @param {boolean} show
+ * @param {function(?Protocol.Error):void=} opt_callback
+ */
+Protocol.RenderingAgent.prototype.setShowViewportSizeOnResize = function(show, opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+Protocol.RenderingAgent.prototype.invoke_setShowViewportSizeOnResize = function(obj, opt_callback) {}
+
+
+
+var RenderingAgent = function(){};
+/** @interface */
+RenderingAgent.Dispatcher = function() {};
+
+
+/**
+ * @constructor
+*/
+Protocol.EmulationAgent = function(){};
+
+/**
+ * @param {number} width
+ * @param {number} height
+ * @param {number} deviceScaleFactor
+ * @param {boolean} mobile
+ * @param {boolean} fitWindow
+ * @param {number=} opt_scale
+ * @param {number=} opt_offsetX
+ * @param {number=} opt_offsetY
+ * @param {number=} opt_screenWidth
+ * @param {number=} opt_screenHeight
+ * @param {number=} opt_positionX
+ * @param {number=} opt_positionY
+ * @param {EmulationAgent.ScreenOrientation=} opt_screenOrientation
+ * @param {function(?Protocol.Error):T=} opt_callback
+ * @return {!Promise.<T>}
+ * @template T
+ */
+Protocol.EmulationAgent.prototype.setDeviceMetricsOverride = function(width, height, deviceScaleFactor, mobile, fitWindow, opt_scale, opt_offsetX, opt_offsetY, opt_screenWidth, opt_screenHeight, opt_positionX, opt_positionY, opt_screenOrientation, opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+Protocol.EmulationAgent.prototype.invoke_setDeviceMetricsOverride = function(obj, opt_callback) {}
+
+/**
+ * @param {function(?Protocol.Error):T=} opt_callback
+ * @return {!Promise.<T>}
+ * @template T
+ */
+Protocol.EmulationAgent.prototype.clearDeviceMetricsOverride = function(opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+Protocol.EmulationAgent.prototype.invoke_clearDeviceMetricsOverride = function(obj, opt_callback) {}
+
+/**
+ * @param {function(?Protocol.Error):T=} opt_callback
+ * @return {!Promise.<T>}
+ * @template T
+ */
+Protocol.EmulationAgent.prototype.resetPageScaleFactor = function(opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+Protocol.EmulationAgent.prototype.invoke_resetPageScaleFactor = function(obj, opt_callback) {}
+
+/**
+ * @param {number} pageScaleFactor
+ * @param {function(?Protocol.Error):T=} opt_callback
+ * @return {!Promise.<T>}
+ * @template T
+ */
+Protocol.EmulationAgent.prototype.setPageScaleFactor = function(pageScaleFactor, opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+Protocol.EmulationAgent.prototype.invoke_setPageScaleFactor = function(obj, opt_callback) {}
+
+/**
+ * @param {number} width
+ * @param {number} height
+ * @param {function(?Protocol.Error):T=} opt_callback
+ * @return {!Promise.<T>}
+ * @template T
+ */
+Protocol.EmulationAgent.prototype.setVisibleSize = function(width, height, opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+Protocol.EmulationAgent.prototype.invoke_setVisibleSize = function(obj, opt_callback) {}
+
+/**
+ * @param {boolean} value
+ * @param {function(?Protocol.Error):T=} opt_callback
+ * @return {!Promise.<T>}
+ * @template T
+ */
+Protocol.EmulationAgent.prototype.setScriptExecutionDisabled = function(value, opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+Protocol.EmulationAgent.prototype.invoke_setScriptExecutionDisabled = function(obj, opt_callback) {}
+
+/**
+ * @param {number=} opt_latitude
+ * @param {number=} opt_longitude
+ * @param {number=} opt_accuracy
+ * @param {function(?Protocol.Error):T=} opt_callback
+ * @return {!Promise.<T>}
+ * @template T
+ */
+Protocol.EmulationAgent.prototype.setGeolocationOverride = function(opt_latitude, opt_longitude, opt_accuracy, opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+Protocol.EmulationAgent.prototype.invoke_setGeolocationOverride = function(obj, opt_callback) {}
+
+/**
+ * @param {function(?Protocol.Error):T=} opt_callback
+ * @return {!Promise.<T>}
+ * @template T
+ */
+Protocol.EmulationAgent.prototype.clearGeolocationOverride = function(opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+Protocol.EmulationAgent.prototype.invoke_clearGeolocationOverride = function(obj, opt_callback) {}
 
 /**
  * @param {boolean} enabled
- * @param {function(?Protocol.Error):void=} opt_callback
+ * @param {string=} opt_configuration
+ * @param {function(?Protocol.Error):T=} opt_callback
+ * @return {!Promise.<T>}
+ * @template T
  */
-Protocol.ConsoleAgent.prototype.setMonitoringXHREnabled = function(enabled, opt_callback) {}
+Protocol.EmulationAgent.prototype.setTouchEmulationEnabled = function(enabled, opt_configuration, opt_callback) {}
 /** @param {function(?Protocol.Error):void=} opt_callback */
-Protocol.ConsoleAgent.prototype.invoke_setMonitoringXHREnabled = function(obj, opt_callback) {}
+Protocol.EmulationAgent.prototype.invoke_setTouchEmulationEnabled = function(obj, opt_callback) {}
 
 /**
- * @param {DOMAgent.NodeId} nodeId
- * @param {function(?Protocol.Error):void=} opt_callback
+ * @param {string} media
+ * @param {function(?Protocol.Error):T=} opt_callback
+ * @return {!Promise.<T>}
+ * @template T
  */
-Protocol.ConsoleAgent.prototype.addInspectedNode = function(nodeId, opt_callback) {}
+Protocol.EmulationAgent.prototype.setEmulatedMedia = function(media, opt_callback) {}
 /** @param {function(?Protocol.Error):void=} opt_callback */
-Protocol.ConsoleAgent.prototype.invoke_addInspectedNode = function(obj, opt_callback) {}
+Protocol.EmulationAgent.prototype.invoke_setEmulatedMedia = function(obj, opt_callback) {}
 
 /**
- * @param {number} heapObjectId
+ * @param {number} rate
+ * @param {function(?Protocol.Error):T=} opt_callback
+ * @return {!Promise.<T>}
+ * @template T
+ */
+Protocol.EmulationAgent.prototype.setCPUThrottlingRate = function(rate, opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+Protocol.EmulationAgent.prototype.invoke_setCPUThrottlingRate = function(obj, opt_callback) {}
+
+/**
+ * @param {function(?Protocol.Error, boolean):T} opt_callback
+ * @return {!Promise.<T>}
+ * @template T
+ */
+Protocol.EmulationAgent.prototype.canEmulate = function(opt_callback) {}
+/** @param {function(?Protocol.Error, boolean):void=} opt_callback */
+Protocol.EmulationAgent.prototype.invoke_canEmulate = function(obj, opt_callback) {}
+
+/**
+ * @param {EmulationAgent.VirtualTimePolicy} policy
+ * @param {number=} opt_budget
+ * @param {function(?Protocol.Error):T=} opt_callback
+ * @return {!Promise.<T>}
+ * @template T
+ */
+Protocol.EmulationAgent.prototype.setVirtualTimePolicy = function(policy, opt_budget, opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+Protocol.EmulationAgent.prototype.invoke_setVirtualTimePolicy = function(obj, opt_callback) {}
+
+
+
+var EmulationAgent = function(){};
+
+/** @enum {string} */
+EmulationAgent.ScreenOrientationType = {
+    PortraitPrimary: "portraitPrimary",
+    PortraitSecondary: "portraitSecondary",
+    LandscapePrimary: "landscapePrimary",
+    LandscapeSecondary: "landscapeSecondary"
+};
+
+/** @typedef {!{type:(EmulationAgent.ScreenOrientationType), angle:(number)}} */
+EmulationAgent.ScreenOrientation;
+
+/** @enum {string} */
+EmulationAgent.VirtualTimePolicy = {
+    Advance: "advance",
+    Pause: "pause",
+    PauseIfNetworkFetchesPending: "pauseIfNetworkFetchesPending"
+};
+/** @interface */
+EmulationAgent.Dispatcher = function() {};
+EmulationAgent.Dispatcher.prototype.virtualTimeBudgetExpired = function() {};
+
+
+/**
+ * @constructor
+*/
+Protocol.SecurityAgent = function(){};
+
+/**
  * @param {function(?Protocol.Error):void=} opt_callback
  */
-Protocol.ConsoleAgent.prototype.addInspectedHeapObject = function(heapObjectId, opt_callback) {}
+Protocol.SecurityAgent.prototype.enable = function(opt_callback) {}
 /** @param {function(?Protocol.Error):void=} opt_callback */
-Protocol.ConsoleAgent.prototype.invoke_addInspectedHeapObject = function(obj, opt_callback) {}
+Protocol.SecurityAgent.prototype.invoke_enable = function(obj, opt_callback) {}
+
+/**
+ * @param {function(?Protocol.Error):void=} opt_callback
+ */
+Protocol.SecurityAgent.prototype.disable = function(opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+Protocol.SecurityAgent.prototype.invoke_disable = function(obj, opt_callback) {}
 
 
 
-var ConsoleAgent = function(){};
+var SecurityAgent = function(){};
 
 /** @typedef {number} */
-ConsoleAgent.Timestamp;
+SecurityAgent.CertificateId;
 
 /** @enum {string} */
-ConsoleAgent.ConsoleMessageSource = {
-    XML: "xml",
-    Javascript: "javascript",
-    Network: "network",
-    ConsoleAPI: "console-api",
-    Storage: "storage",
-    Appcache: "appcache",
-    Rendering: "rendering",
-    Css: "css",
-    Security: "security",
-    Other: "other",
-    Deprecation: "deprecation"
-};
-
-/** @enum {string} */
-ConsoleAgent.ConsoleMessageLevel = {
-    Log: "log",
+SecurityAgent.SecurityState = {
+    Unknown: "unknown",
+    Neutral: "neutral",
+    Insecure: "insecure",
     Warning: "warning",
-    Error: "error",
-    Debug: "debug"
+    Secure: "secure",
+    Info: "info"
 };
 
-/** @enum {string} */
-ConsoleAgent.ConsoleMessageType = {
-    Log: "log",
-    Dir: "dir",
-    DirXML: "dirxml",
-    Table: "table",
-    Trace: "trace",
-    Clear: "clear",
-    StartGroup: "startGroup",
-    StartGroupCollapsed: "startGroupCollapsed",
-    EndGroup: "endGroup",
-    Assert: "assert",
-    Timing: "timing",
-    Profile: "profile",
-    ProfileEnd: "profileEnd"
-};
+/** @typedef {!{securityState:(SecurityAgent.SecurityState), summary:(string), description:(string), certificateId:(SecurityAgent.CertificateId|undefined)}} */
+SecurityAgent.SecurityStateExplanation;
 
-/** @typedef {!{source:(ConsoleAgent.ConsoleMessageSource), level:(ConsoleAgent.ConsoleMessageLevel), text:(string), type:(ConsoleAgent.ConsoleMessageType|undefined), url:(string|undefined), line:(number|undefined), column:(number|undefined), repeatCount:(number|undefined), parameters:(!Array.<RuntimeAgent.RemoteObject>|undefined), stackTrace:(ConsoleAgent.StackTrace|undefined), networkRequestId:(NetworkAgent.RequestId|undefined), timestamp:(ConsoleAgent.Timestamp)}} */
-ConsoleAgent.ConsoleMessage;
-
-/** @typedef {!{functionName:(string), scriptId:(string), url:(string), lineNumber:(number), columnNumber:(number)}} */
-ConsoleAgent.CallFrame;
-
-/** @typedef {!Array.<!ConsoleAgent.CallFrame>} */
-ConsoleAgent.StackTrace;
+/** @typedef {!{ranInsecureContent:(boolean), displayedInsecureContent:(boolean), ranInsecureContentStyle:(SecurityAgent.SecurityState), displayedInsecureContentStyle:(SecurityAgent.SecurityState)}} */
+SecurityAgent.MixedContentStatus;
 /** @interface */
-ConsoleAgent.Dispatcher = function() {};
+SecurityAgent.Dispatcher = function() {};
 /**
- * @param {ConsoleAgent.ConsoleMessage} message
+ * @param {SecurityAgent.SecurityState} securityState
+ * @param {!Array.<SecurityAgent.SecurityStateExplanation>=} opt_explanations
+ * @param {SecurityAgent.MixedContentStatus=} opt_mixedContentStatus
+ * @param {boolean=} opt_schemeIsCryptographic
  */
-ConsoleAgent.Dispatcher.prototype.messageAdded = function(message) {};
-/**
- * @param {number} count
- * @param {ConsoleAgent.Timestamp} timestamp
- */
-ConsoleAgent.Dispatcher.prototype.messageRepeatCountUpdated = function(count, timestamp) {};
-ConsoleAgent.Dispatcher.prototype.messagesCleared = function() {};
+SecurityAgent.Dispatcher.prototype.securityStateChanged = function(securityState, opt_explanations, opt_mixedContentStatus, opt_schemeIsCryptographic) {};
 
 
 /**
@@ -608,9 +793,11 @@ ConsoleAgent.Dispatcher.prototype.messagesCleared = function() {};
 Protocol.NetworkAgent = function(){};
 
 /**
+ * @param {number=} opt_maxTotalBufferSize
+ * @param {number=} opt_maxResourceBufferSize
  * @param {function(?Protocol.Error):void=} opt_callback
  */
-Protocol.NetworkAgent.prototype.enable = function(opt_callback) {}
+Protocol.NetworkAgent.prototype.enable = function(opt_maxTotalBufferSize, opt_maxResourceBufferSize, opt_callback) {}
 /** @param {function(?Protocol.Error):void=} opt_callback */
 Protocol.NetworkAgent.prototype.invoke_enable = function(obj, opt_callback) {}
 
@@ -646,12 +833,36 @@ Protocol.NetworkAgent.prototype.getResponseBody = function(requestId, opt_callba
 Protocol.NetworkAgent.prototype.invoke_getResponseBody = function(obj, opt_callback) {}
 
 /**
+ * @param {string} url
+ * @param {function(?Protocol.Error):void=} opt_callback
+ */
+Protocol.NetworkAgent.prototype.addBlockedURL = function(url, opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+Protocol.NetworkAgent.prototype.invoke_addBlockedURL = function(obj, opt_callback) {}
+
+/**
+ * @param {string} url
+ * @param {function(?Protocol.Error):void=} opt_callback
+ */
+Protocol.NetworkAgent.prototype.removeBlockedURL = function(url, opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+Protocol.NetworkAgent.prototype.invoke_removeBlockedURL = function(obj, opt_callback) {}
+
+/**
  * @param {NetworkAgent.RequestId} requestId
  * @param {function(?Protocol.Error):void=} opt_callback
  */
 Protocol.NetworkAgent.prototype.replayXHR = function(requestId, opt_callback) {}
 /** @param {function(?Protocol.Error):void=} opt_callback */
 Protocol.NetworkAgent.prototype.invoke_replayXHR = function(obj, opt_callback) {}
+
+/**
+ * @param {boolean} enabled
+ * @param {function(?Protocol.Error):void=} opt_callback
+ */
+Protocol.NetworkAgent.prototype.setMonitoringXHREnabled = function(enabled, opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+Protocol.NetworkAgent.prototype.invoke_setMonitoringXHREnabled = function(obj, opt_callback) {}
 
 /**
  * @param {function(?Protocol.Error, boolean):void=} opt_callback
@@ -682,6 +893,57 @@ Protocol.NetworkAgent.prototype.clearBrowserCookies = function(opt_callback) {}
 Protocol.NetworkAgent.prototype.invoke_clearBrowserCookies = function(obj, opt_callback) {}
 
 /**
+ * @param {function(?Protocol.Error, !Array.<NetworkAgent.Cookie>):void=} opt_callback
+ */
+Protocol.NetworkAgent.prototype.getCookies = function(opt_callback) {}
+/** @param {function(?Protocol.Error, !Array.<NetworkAgent.Cookie>):void=} opt_callback */
+Protocol.NetworkAgent.prototype.invoke_getCookies = function(obj, opt_callback) {}
+
+/**
+ * @param {string} cookieName
+ * @param {string} url
+ * @param {function(?Protocol.Error):void=} opt_callback
+ */
+Protocol.NetworkAgent.prototype.deleteCookie = function(cookieName, url, opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+Protocol.NetworkAgent.prototype.invoke_deleteCookie = function(obj, opt_callback) {}
+
+/**
+ * @param {string} url
+ * @param {string} name
+ * @param {string} value
+ * @param {string=} opt_domain
+ * @param {string=} opt_path
+ * @param {boolean=} opt_secure
+ * @param {boolean=} opt_httpOnly
+ * @param {NetworkAgent.CookieSameSite=} opt_sameSite
+ * @param {NetworkAgent.Timestamp=} opt_expirationDate
+ * @param {function(?Protocol.Error, boolean):void=} opt_callback
+ */
+Protocol.NetworkAgent.prototype.setCookie = function(url, name, value, opt_domain, opt_path, opt_secure, opt_httpOnly, opt_sameSite, opt_expirationDate, opt_callback) {}
+/** @param {function(?Protocol.Error, boolean):void=} opt_callback */
+Protocol.NetworkAgent.prototype.invoke_setCookie = function(obj, opt_callback) {}
+
+/**
+ * @param {function(?Protocol.Error, boolean):void=} opt_callback
+ */
+Protocol.NetworkAgent.prototype.canEmulateNetworkConditions = function(opt_callback) {}
+/** @param {function(?Protocol.Error, boolean):void=} opt_callback */
+Protocol.NetworkAgent.prototype.invoke_canEmulateNetworkConditions = function(obj, opt_callback) {}
+
+/**
+ * @param {boolean} offline
+ * @param {number} latency
+ * @param {number} downloadThroughput
+ * @param {number} uploadThroughput
+ * @param {NetworkAgent.ConnectionType=} opt_connectionType
+ * @param {function(?Protocol.Error):void=} opt_callback
+ */
+Protocol.NetworkAgent.prototype.emulateNetworkConditions = function(offline, latency, downloadThroughput, uploadThroughput, opt_connectionType, opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+Protocol.NetworkAgent.prototype.invoke_emulateNetworkConditions = function(obj, opt_callback) {}
+
+/**
  * @param {boolean} cacheDisabled
  * @param {function(?Protocol.Error):void=} opt_callback
  */
@@ -690,14 +952,37 @@ Protocol.NetworkAgent.prototype.setCacheDisabled = function(cacheDisabled, opt_c
 Protocol.NetworkAgent.prototype.invoke_setCacheDisabled = function(obj, opt_callback) {}
 
 /**
- * @param {PageAgent.FrameId} frameId
- * @param {string} url
- * @param {NetworkAgent.Headers=} opt_requestHeaders
- * @param {function(?Protocol.Error, number, NetworkAgent.Headers, string):void=} opt_callback
+ * @param {boolean} bypass
+ * @param {function(?Protocol.Error):void=} opt_callback
  */
-Protocol.NetworkAgent.prototype.loadResourceForFrontend = function(frameId, url, opt_requestHeaders, opt_callback) {}
-/** @param {function(?Protocol.Error, number, NetworkAgent.Headers, string):void=} opt_callback */
-Protocol.NetworkAgent.prototype.invoke_loadResourceForFrontend = function(obj, opt_callback) {}
+Protocol.NetworkAgent.prototype.setBypassServiceWorker = function(bypass, opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+Protocol.NetworkAgent.prototype.invoke_setBypassServiceWorker = function(obj, opt_callback) {}
+
+/**
+ * @param {number} maxTotalSize
+ * @param {number} maxResourceSize
+ * @param {function(?Protocol.Error):void=} opt_callback
+ */
+Protocol.NetworkAgent.prototype.setDataSizeLimitsForTest = function(maxTotalSize, maxResourceSize, opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+Protocol.NetworkAgent.prototype.invoke_setDataSizeLimitsForTest = function(obj, opt_callback) {}
+
+/**
+ * @param {SecurityAgent.CertificateId} certificateId
+ * @param {function(?Protocol.Error, NetworkAgent.CertificateDetails):void=} opt_callback
+ */
+Protocol.NetworkAgent.prototype.getCertificateDetails = function(certificateId, opt_callback) {}
+/** @param {function(?Protocol.Error, NetworkAgent.CertificateDetails):void=} opt_callback */
+Protocol.NetworkAgent.prototype.invoke_getCertificateDetails = function(obj, opt_callback) {}
+
+/**
+ * @param {SecurityAgent.CertificateId} certificateId
+ * @param {function(?Protocol.Error):void=} opt_callback
+ */
+Protocol.NetworkAgent.prototype.showCertificateViewer = function(certificateId, opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+Protocol.NetworkAgent.prototype.invoke_showCertificateViewer = function(obj, opt_callback) {}
 
 
 
@@ -715,19 +1000,76 @@ NetworkAgent.Timestamp;
 /** @typedef {!Object} */
 NetworkAgent.Headers;
 
-/** @typedef {!{requestTime:(number), proxyStart:(number), proxyEnd:(number), dnsStart:(number), dnsEnd:(number), connectStart:(number), connectEnd:(number), sslStart:(number), sslEnd:(number), sendStart:(number), sendEnd:(number), receiveHeadersEnd:(number)}} */
+/** @enum {string} */
+NetworkAgent.ConnectionType = {
+    None: "none",
+    Cellular2g: "cellular2g",
+    Cellular3g: "cellular3g",
+    Cellular4g: "cellular4g",
+    Bluetooth: "bluetooth",
+    Ethernet: "ethernet",
+    Wifi: "wifi",
+    Wimax: "wimax",
+    Other: "other"
+};
+
+/** @enum {string} */
+NetworkAgent.CookieSameSite = {
+    Strict: "Strict",
+    Lax: "Lax"
+};
+
+/** @typedef {!{requestTime:(number), proxyStart:(number), proxyEnd:(number), dnsStart:(number), dnsEnd:(number), connectStart:(number), connectEnd:(number), sslStart:(number), sslEnd:(number), workerStart:(number), workerReady:(number), sendStart:(number), sendEnd:(number), pushStart:(number), pushEnd:(number), receiveHeadersEnd:(number)}} */
 NetworkAgent.ResourceTiming;
 
-/** @typedef {!{url:(string), method:(string), headers:(NetworkAgent.Headers), postData:(string|undefined)}} */
+/** @enum {string} */
+NetworkAgent.ResourcePriority = {
+    VeryLow: "VeryLow",
+    Low: "Low",
+    Medium: "Medium",
+    High: "High",
+    VeryHigh: "VeryHigh"
+};
+
+/** @enum {string} */
+NetworkAgent.RequestMixedContentType = {
+    Blockable: "blockable",
+    OptionallyBlockable: "optionally-blockable",
+    None: "none"
+};
+
+/** @typedef {!{url:(string), method:(string), headers:(NetworkAgent.Headers), postData:(string|undefined), mixedContentType:(NetworkAgent.RequestMixedContentType|undefined), initialPriority:(NetworkAgent.ResourcePriority)}} */
 NetworkAgent.Request;
 
-/** @typedef {!{url:(string), status:(number), statusText:(string), headers:(NetworkAgent.Headers), headersText:(string|undefined), mimeType:(string), requestHeaders:(NetworkAgent.Headers|undefined), requestHeadersText:(string|undefined), connectionReused:(boolean), connectionId:(number), fromDiskCache:(boolean|undefined), timing:(NetworkAgent.ResourceTiming|undefined)}} */
+/** @typedef {!{name:(string), sanDnsNames:(!Array.<string>), sanIpAddresses:(!Array.<string>)}} */
+NetworkAgent.CertificateSubject;
+
+/** @typedef {!{subject:(NetworkAgent.CertificateSubject), issuer:(string), validFrom:(NetworkAgent.Timestamp), validTo:(NetworkAgent.Timestamp)}} */
+NetworkAgent.CertificateDetails;
+
+/** @typedef {!{status:(string), origin:(string), logDescription:(string), logId:(string), timestamp:(NetworkAgent.Timestamp), hashAlgorithm:(string), signatureAlgorithm:(string), signatureData:(string)}} */
+NetworkAgent.SignedCertificateTimestamp;
+
+/** @typedef {!{protocol:(string), keyExchange:(string), cipher:(string), mac:(string|undefined), certificateId:(SecurityAgent.CertificateId), signedCertificateTimestampList:(!Array.<NetworkAgent.SignedCertificateTimestamp>)}} */
+NetworkAgent.SecurityDetails;
+
+/** @enum {string} */
+NetworkAgent.BlockedReason = {
+    Csp: "csp",
+    MixedContent: "mixed-content",
+    Origin: "origin",
+    Inspector: "inspector",
+    SubresourceFilter: "subresource-filter",
+    Other: "other"
+};
+
+/** @typedef {!{url:(string), status:(number), statusText:(string), headers:(NetworkAgent.Headers), headersText:(string|undefined), mimeType:(string), requestHeaders:(NetworkAgent.Headers|undefined), requestHeadersText:(string|undefined), connectionReused:(boolean), connectionId:(number), remoteIPAddress:(string|undefined), remotePort:(number|undefined), fromDiskCache:(boolean|undefined), fromServiceWorker:(boolean|undefined), encodedDataLength:(number|undefined), timing:(NetworkAgent.ResourceTiming|undefined), protocol:(string|undefined), securityState:(SecurityAgent.SecurityState), securityDetails:(NetworkAgent.SecurityDetails|undefined)}} */
 NetworkAgent.Response;
 
 /** @typedef {!{headers:(NetworkAgent.Headers)}} */
 NetworkAgent.WebSocketRequest;
 
-/** @typedef {!{status:(number), statusText:(string), headers:(NetworkAgent.Headers)}} */
+/** @typedef {!{status:(number), statusText:(string), headers:(NetworkAgent.Headers), headersText:(string|undefined), requestHeaders:(NetworkAgent.Headers|undefined), requestHeadersText:(string|undefined)}} */
 NetworkAgent.WebSocketResponse;
 
 /** @typedef {!{opcode:(number), mask:(boolean), payloadData:(string)}} */
@@ -743,10 +1085,19 @@ NetworkAgent.InitiatorType = {
     Other: "other"
 };
 
-/** @typedef {!{type:(NetworkAgent.InitiatorType), stackTrace:(ConsoleAgent.StackTrace|undefined), url:(string|undefined), lineNumber:(number|undefined)}} */
+/** @typedef {!{type:(NetworkAgent.InitiatorType), stack:(RuntimeAgent.StackTrace|undefined), url:(string|undefined), lineNumber:(number|undefined)}} */
 NetworkAgent.Initiator;
+
+/** @typedef {!{name:(string), value:(string), domain:(string), path:(string), expires:(number), size:(number), httpOnly:(boolean), secure:(boolean), session:(boolean), sameSite:(NetworkAgent.CookieSameSite|undefined)}} */
+NetworkAgent.Cookie;
 /** @interface */
 NetworkAgent.Dispatcher = function() {};
+/**
+ * @param {NetworkAgent.RequestId} requestId
+ * @param {NetworkAgent.ResourcePriority} newPriority
+ * @param {NetworkAgent.Timestamp} timestamp
+ */
+NetworkAgent.Dispatcher.prototype.resourceChangedPriority = function(requestId, newPriority, timestamp) {};
 /**
  * @param {NetworkAgent.RequestId} requestId
  * @param {PageAgent.FrameId} frameId
@@ -754,10 +1105,12 @@ NetworkAgent.Dispatcher = function() {};
  * @param {string} documentURL
  * @param {NetworkAgent.Request} request
  * @param {NetworkAgent.Timestamp} timestamp
+ * @param {NetworkAgent.Timestamp} wallTime
  * @param {NetworkAgent.Initiator} initiator
  * @param {NetworkAgent.Response=} opt_redirectResponse
+ * @param {PageAgent.ResourceType=} opt_type
  */
-NetworkAgent.Dispatcher.prototype.requestWillBeSent = function(requestId, frameId, loaderId, documentURL, request, timestamp, initiator, opt_redirectResponse) {};
+NetworkAgent.Dispatcher.prototype.requestWillBeSent = function(requestId, frameId, loaderId, documentURL, request, timestamp, wallTime, initiator, opt_redirectResponse, opt_type) {};
 /**
  * @param {NetworkAgent.RequestId} requestId
  */
@@ -781,21 +1134,25 @@ NetworkAgent.Dispatcher.prototype.dataReceived = function(requestId, timestamp, 
 /**
  * @param {NetworkAgent.RequestId} requestId
  * @param {NetworkAgent.Timestamp} timestamp
+ * @param {number} encodedDataLength
  */
-NetworkAgent.Dispatcher.prototype.loadingFinished = function(requestId, timestamp) {};
+NetworkAgent.Dispatcher.prototype.loadingFinished = function(requestId, timestamp, encodedDataLength) {};
 /**
  * @param {NetworkAgent.RequestId} requestId
  * @param {NetworkAgent.Timestamp} timestamp
+ * @param {PageAgent.ResourceType} type
  * @param {string} errorText
  * @param {boolean=} opt_canceled
+ * @param {NetworkAgent.BlockedReason=} opt_blockedReason
  */
-NetworkAgent.Dispatcher.prototype.loadingFailed = function(requestId, timestamp, errorText, opt_canceled) {};
+NetworkAgent.Dispatcher.prototype.loadingFailed = function(requestId, timestamp, type, errorText, opt_canceled, opt_blockedReason) {};
 /**
  * @param {NetworkAgent.RequestId} requestId
  * @param {NetworkAgent.Timestamp} timestamp
+ * @param {NetworkAgent.Timestamp} wallTime
  * @param {NetworkAgent.WebSocketRequest} request
  */
-NetworkAgent.Dispatcher.prototype.webSocketWillSendHandshakeRequest = function(requestId, timestamp, request) {};
+NetworkAgent.Dispatcher.prototype.webSocketWillSendHandshakeRequest = function(requestId, timestamp, wallTime, request) {};
 /**
  * @param {NetworkAgent.RequestId} requestId
  * @param {NetworkAgent.Timestamp} timestamp
@@ -805,8 +1162,9 @@ NetworkAgent.Dispatcher.prototype.webSocketHandshakeResponseReceived = function(
 /**
  * @param {NetworkAgent.RequestId} requestId
  * @param {string} url
+ * @param {NetworkAgent.Initiator=} opt_initiator
  */
-NetworkAgent.Dispatcher.prototype.webSocketCreated = function(requestId, url) {};
+NetworkAgent.Dispatcher.prototype.webSocketCreated = function(requestId, url, opt_initiator) {};
 /**
  * @param {NetworkAgent.RequestId} requestId
  * @param {NetworkAgent.Timestamp} timestamp
@@ -830,6 +1188,14 @@ NetworkAgent.Dispatcher.prototype.webSocketFrameError = function(requestId, time
  * @param {NetworkAgent.WebSocketFrame} response
  */
 NetworkAgent.Dispatcher.prototype.webSocketFrameSent = function(requestId, timestamp, response) {};
+/**
+ * @param {NetworkAgent.RequestId} requestId
+ * @param {NetworkAgent.Timestamp} timestamp
+ * @param {string} eventName
+ * @param {string} eventId
+ * @param {string} data
+ */
+NetworkAgent.Dispatcher.prototype.eventSourceMessageReceived = function(requestId, timestamp, eventName, eventId, data) {};
 
 
 /**
@@ -994,6 +1360,62 @@ IndexedDBAgent.Dispatcher = function() {};
 /**
  * @constructor
 */
+Protocol.CacheStorageAgent = function(){};
+
+/**
+ * @param {string} securityOrigin
+ * @param {function(?Protocol.Error, !Array.<CacheStorageAgent.Cache>):void=} opt_callback
+ */
+Protocol.CacheStorageAgent.prototype.requestCacheNames = function(securityOrigin, opt_callback) {}
+/** @param {function(?Protocol.Error, !Array.<CacheStorageAgent.Cache>):void=} opt_callback */
+Protocol.CacheStorageAgent.prototype.invoke_requestCacheNames = function(obj, opt_callback) {}
+
+/**
+ * @param {CacheStorageAgent.CacheId} cacheId
+ * @param {number} skipCount
+ * @param {number} pageSize
+ * @param {function(?Protocol.Error, !Array.<CacheStorageAgent.DataEntry>, boolean):void=} opt_callback
+ */
+Protocol.CacheStorageAgent.prototype.requestEntries = function(cacheId, skipCount, pageSize, opt_callback) {}
+/** @param {function(?Protocol.Error, !Array.<CacheStorageAgent.DataEntry>, boolean):void=} opt_callback */
+Protocol.CacheStorageAgent.prototype.invoke_requestEntries = function(obj, opt_callback) {}
+
+/**
+ * @param {CacheStorageAgent.CacheId} cacheId
+ * @param {function(?Protocol.Error):void=} opt_callback
+ */
+Protocol.CacheStorageAgent.prototype.deleteCache = function(cacheId, opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+Protocol.CacheStorageAgent.prototype.invoke_deleteCache = function(obj, opt_callback) {}
+
+/**
+ * @param {CacheStorageAgent.CacheId} cacheId
+ * @param {string} request
+ * @param {function(?Protocol.Error):void=} opt_callback
+ */
+Protocol.CacheStorageAgent.prototype.deleteEntry = function(cacheId, request, opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+Protocol.CacheStorageAgent.prototype.invoke_deleteEntry = function(obj, opt_callback) {}
+
+
+
+var CacheStorageAgent = function(){};
+
+/** @typedef {string} */
+CacheStorageAgent.CacheId;
+
+/** @typedef {!{request:(string), response:(string)}} */
+CacheStorageAgent.DataEntry;
+
+/** @typedef {!{cacheId:(CacheStorageAgent.CacheId), securityOrigin:(string), cacheName:(string)}} */
+CacheStorageAgent.Cache;
+/** @interface */
+CacheStorageAgent.Dispatcher = function() {};
+
+
+/**
+ * @constructor
+*/
 Protocol.DOMStorageAgent = function(){};
 
 /**
@@ -1136,84 +1558,21 @@ ApplicationCacheAgent.Dispatcher.prototype.networkStateUpdated = function(isNowO
 /**
  * @constructor
 */
-Protocol.FileSystemAgent = function(){};
-
-/**
- * @param {function(?Protocol.Error):void=} opt_callback
- */
-Protocol.FileSystemAgent.prototype.enable = function(opt_callback) {}
-/** @param {function(?Protocol.Error):void=} opt_callback */
-Protocol.FileSystemAgent.prototype.invoke_enable = function(obj, opt_callback) {}
-
-/**
- * @param {function(?Protocol.Error):void=} opt_callback
- */
-Protocol.FileSystemAgent.prototype.disable = function(opt_callback) {}
-/** @param {function(?Protocol.Error):void=} opt_callback */
-Protocol.FileSystemAgent.prototype.invoke_disable = function(obj, opt_callback) {}
-
-/**
- * @param {string} origin
- * @param {string} type
- * @param {function(?Protocol.Error, number, FileSystemAgent.Entry=):void=} opt_callback
- */
-Protocol.FileSystemAgent.prototype.requestFileSystemRoot = function(origin, type, opt_callback) {}
-/** @param {function(?Protocol.Error, number, FileSystemAgent.Entry=):void=} opt_callback */
-Protocol.FileSystemAgent.prototype.invoke_requestFileSystemRoot = function(obj, opt_callback) {}
-
-/**
- * @param {string} url
- * @param {function(?Protocol.Error, number, !Array.<FileSystemAgent.Entry>=):void=} opt_callback
- */
-Protocol.FileSystemAgent.prototype.requestDirectoryContent = function(url, opt_callback) {}
-/** @param {function(?Protocol.Error, number, !Array.<FileSystemAgent.Entry>=):void=} opt_callback */
-Protocol.FileSystemAgent.prototype.invoke_requestDirectoryContent = function(obj, opt_callback) {}
-
-/**
- * @param {string} url
- * @param {function(?Protocol.Error, number, FileSystemAgent.Metadata=):void=} opt_callback
- */
-Protocol.FileSystemAgent.prototype.requestMetadata = function(url, opt_callback) {}
-/** @param {function(?Protocol.Error, number, FileSystemAgent.Metadata=):void=} opt_callback */
-Protocol.FileSystemAgent.prototype.invoke_requestMetadata = function(obj, opt_callback) {}
-
-/**
- * @param {string} url
- * @param {boolean} readAsText
- * @param {number=} opt_start
- * @param {number=} opt_end
- * @param {string=} opt_charset
- * @param {function(?Protocol.Error, number, string=, string=):void=} opt_callback
- */
-Protocol.FileSystemAgent.prototype.requestFileContent = function(url, readAsText, opt_start, opt_end, opt_charset, opt_callback) {}
-/** @param {function(?Protocol.Error, number, string=, string=):void=} opt_callback */
-Protocol.FileSystemAgent.prototype.invoke_requestFileContent = function(obj, opt_callback) {}
-
-/**
- * @param {string} url
- * @param {function(?Protocol.Error, number):void=} opt_callback
- */
-Protocol.FileSystemAgent.prototype.deleteEntry = function(url, opt_callback) {}
-/** @param {function(?Protocol.Error, number):void=} opt_callback */
-Protocol.FileSystemAgent.prototype.invoke_deleteEntry = function(obj, opt_callback) {}
-
-
-
-var FileSystemAgent = function(){};
-
-/** @typedef {!{url:(string), name:(string), isDirectory:(boolean), mimeType:(string|undefined), resourceType:(PageAgent.ResourceType|undefined), isTextFile:(boolean|undefined)}} */
-FileSystemAgent.Entry;
-
-/** @typedef {!{modificationTime:(number), size:(number)}} */
-FileSystemAgent.Metadata;
-/** @interface */
-FileSystemAgent.Dispatcher = function() {};
-
-
-/**
- * @constructor
-*/
 Protocol.DOMAgent = function(){};
+
+/**
+ * @param {function(?Protocol.Error):void=} opt_callback
+ */
+Protocol.DOMAgent.prototype.enable = function(opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+Protocol.DOMAgent.prototype.invoke_enable = function(obj, opt_callback) {}
+
+/**
+ * @param {function(?Protocol.Error):void=} opt_callback
+ */
+Protocol.DOMAgent.prototype.disable = function(opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+Protocol.DOMAgent.prototype.invoke_disable = function(obj, opt_callback) {}
 
 /**
  * @param {function(?Protocol.Error, DOMAgent.Node):void=} opt_callback
@@ -1306,15 +1665,6 @@ Protocol.DOMAgent.prototype.invoke_removeAttribute = function(obj, opt_callback)
 
 /**
  * @param {DOMAgent.NodeId} nodeId
- * @param {string=} opt_objectGroup
- * @param {function(?Protocol.Error, !Array.<DOMAgent.EventListener>):void=} opt_callback
- */
-Protocol.DOMAgent.prototype.getEventListenersForNode = function(nodeId, opt_objectGroup, opt_callback) {}
-/** @param {function(?Protocol.Error, !Array.<DOMAgent.EventListener>):void=} opt_callback */
-Protocol.DOMAgent.prototype.invoke_getEventListenersForNode = function(obj, opt_callback) {}
-
-/**
- * @param {DOMAgent.NodeId} nodeId
  * @param {function(?Protocol.Error, string):void=} opt_callback
  */
 Protocol.DOMAgent.prototype.getOuterHTML = function(nodeId, opt_callback) {}
@@ -1332,9 +1682,10 @@ Protocol.DOMAgent.prototype.invoke_setOuterHTML = function(obj, opt_callback) {}
 
 /**
  * @param {string} query
+ * @param {boolean=} opt_includeUserAgentShadowDOM
  * @param {function(?Protocol.Error, string, number):void=} opt_callback
  */
-Protocol.DOMAgent.prototype.performSearch = function(query, opt_callback) {}
+Protocol.DOMAgent.prototype.performSearch = function(query, opt_includeUserAgentShadowDOM, opt_callback) {}
 /** @param {function(?Protocol.Error, string, number):void=} opt_callback */
 Protocol.DOMAgent.prototype.invoke_performSearch = function(obj, opt_callback) {}
 
@@ -1365,14 +1716,13 @@ Protocol.DOMAgent.prototype.requestNode = function(objectId, opt_callback) {}
 Protocol.DOMAgent.prototype.invoke_requestNode = function(obj, opt_callback) {}
 
 /**
- * @param {boolean} enabled
- * @param {boolean=} opt_inspectShadowDOM
+ * @param {DOMAgent.InspectMode} mode
  * @param {DOMAgent.HighlightConfig=} opt_highlightConfig
  * @param {function(?Protocol.Error):void=} opt_callback
  */
-Protocol.DOMAgent.prototype.setInspectModeEnabled = function(enabled, opt_inspectShadowDOM, opt_highlightConfig, opt_callback) {}
+Protocol.DOMAgent.prototype.setInspectMode = function(mode, opt_highlightConfig, opt_callback) {}
 /** @param {function(?Protocol.Error):void=} opt_callback */
-Protocol.DOMAgent.prototype.invoke_setInspectModeEnabled = function(obj, opt_callback) {}
+Protocol.DOMAgent.prototype.invoke_setInspectMode = function(obj, opt_callback) {}
 
 /**
  * @param {number} x
@@ -1400,10 +1750,11 @@ Protocol.DOMAgent.prototype.invoke_highlightQuad = function(obj, opt_callback) {
 /**
  * @param {DOMAgent.HighlightConfig} highlightConfig
  * @param {DOMAgent.NodeId=} opt_nodeId
+ * @param {DOMAgent.BackendNodeId=} opt_backendNodeId
  * @param {RuntimeAgent.RemoteObjectId=} opt_objectId
  * @param {function(?Protocol.Error):void=} opt_callback
  */
-Protocol.DOMAgent.prototype.highlightNode = function(highlightConfig, opt_nodeId, opt_objectId, opt_callback) {}
+Protocol.DOMAgent.prototype.highlightNode = function(highlightConfig, opt_nodeId, opt_backendNodeId, opt_objectId, opt_callback) {}
 /** @param {function(?Protocol.Error):void=} opt_callback */
 Protocol.DOMAgent.prototype.invoke_highlightNode = function(obj, opt_callback) {}
 
@@ -1433,20 +1784,20 @@ Protocol.DOMAgent.prototype.pushNodeByPathToFrontend = function(path, opt_callba
 Protocol.DOMAgent.prototype.invoke_pushNodeByPathToFrontend = function(obj, opt_callback) {}
 
 /**
- * @param {DOMAgent.BackendNodeId} backendNodeId
- * @param {function(?Protocol.Error, DOMAgent.NodeId):void=} opt_callback
+ * @param {!Array.<DOMAgent.BackendNodeId>} backendNodeIds
+ * @param {function(?Protocol.Error, !Array.<DOMAgent.NodeId>):void=} opt_callback
  */
-Protocol.DOMAgent.prototype.pushNodeByBackendIdToFrontend = function(backendNodeId, opt_callback) {}
-/** @param {function(?Protocol.Error, DOMAgent.NodeId):void=} opt_callback */
-Protocol.DOMAgent.prototype.invoke_pushNodeByBackendIdToFrontend = function(obj, opt_callback) {}
+Protocol.DOMAgent.prototype.pushNodesByBackendIdsToFrontend = function(backendNodeIds, opt_callback) {}
+/** @param {function(?Protocol.Error, !Array.<DOMAgent.NodeId>):void=} opt_callback */
+Protocol.DOMAgent.prototype.invoke_pushNodesByBackendIdsToFrontend = function(obj, opt_callback) {}
 
 /**
- * @param {string} nodeGroup
+ * @param {DOMAgent.NodeId} nodeId
  * @param {function(?Protocol.Error):void=} opt_callback
  */
-Protocol.DOMAgent.prototype.releaseBackendNodeIds = function(nodeGroup, opt_callback) {}
+Protocol.DOMAgent.prototype.setInspectedNode = function(nodeId, opt_callback) {}
 /** @param {function(?Protocol.Error):void=} opt_callback */
-Protocol.DOMAgent.prototype.invoke_releaseBackendNodeIds = function(obj, opt_callback) {}
+Protocol.DOMAgent.prototype.invoke_setInspectedNode = function(obj, opt_callback) {}
 
 /**
  * @param {DOMAgent.NodeId} nodeId
@@ -1464,6 +1815,16 @@ Protocol.DOMAgent.prototype.invoke_resolveNode = function(obj, opt_callback) {}
 Protocol.DOMAgent.prototype.getAttributes = function(nodeId, opt_callback) {}
 /** @param {function(?Protocol.Error, !Array.<string>):void=} opt_callback */
 Protocol.DOMAgent.prototype.invoke_getAttributes = function(obj, opt_callback) {}
+
+/**
+ * @param {DOMAgent.NodeId} nodeId
+ * @param {DOMAgent.NodeId} targetNodeId
+ * @param {DOMAgent.NodeId=} opt_insertBeforeNodeId
+ * @param {function(?Protocol.Error, DOMAgent.NodeId):void=} opt_callback
+ */
+Protocol.DOMAgent.prototype.copyTo = function(nodeId, targetNodeId, opt_insertBeforeNodeId, opt_callback) {}
+/** @param {function(?Protocol.Error, DOMAgent.NodeId):void=} opt_callback */
+Protocol.DOMAgent.prototype.invoke_copyTo = function(obj, opt_callback) {}
 
 /**
  * @param {DOMAgent.NodeId} nodeId
@@ -1530,6 +1891,22 @@ Protocol.DOMAgent.prototype.getNodeForLocation = function(x, y, opt_callback) {}
 /** @param {function(?Protocol.Error, DOMAgent.NodeId):void=} opt_callback */
 Protocol.DOMAgent.prototype.invoke_getNodeForLocation = function(obj, opt_callback) {}
 
+/**
+ * @param {DOMAgent.NodeId} nodeId
+ * @param {function(?Protocol.Error, DOMAgent.NodeId):void=} opt_callback
+ */
+Protocol.DOMAgent.prototype.getRelayoutBoundary = function(nodeId, opt_callback) {}
+/** @param {function(?Protocol.Error, DOMAgent.NodeId):void=} opt_callback */
+Protocol.DOMAgent.prototype.invoke_getRelayoutBoundary = function(obj, opt_callback) {}
+
+/**
+ * @param {DOMAgent.NodeId} nodeId
+ * @param {function(?Protocol.Error, !Object):void=} opt_callback
+ */
+Protocol.DOMAgent.prototype.getHighlightObjectForTest = function(nodeId, opt_callback) {}
+/** @param {function(?Protocol.Error, !Object):void=} opt_callback */
+Protocol.DOMAgent.prototype.invoke_getHighlightObjectForTest = function(obj, opt_callback) {}
+
 
 
 var DOMAgent = function(){};
@@ -1540,11 +1917,37 @@ DOMAgent.NodeId;
 /** @typedef {number} */
 DOMAgent.BackendNodeId;
 
-/** @typedef {!{nodeId:(DOMAgent.NodeId), nodeType:(number), nodeName:(string), localName:(string), nodeValue:(string), childNodeCount:(number|undefined), children:(!Array.<DOMAgent.Node>|undefined), attributes:(!Array.<string>|undefined), documentURL:(string|undefined), baseURL:(string|undefined), publicId:(string|undefined), systemId:(string|undefined), internalSubset:(string|undefined), xmlVersion:(string|undefined), name:(string|undefined), value:(string|undefined), frameId:(PageAgent.FrameId|undefined), contentDocument:(DOMAgent.Node|undefined), shadowRoots:(!Array.<DOMAgent.Node>|undefined), templateContent:(DOMAgent.Node|undefined)}} */
-DOMAgent.Node;
+/** @typedef {!{nodeType:(number), nodeName:(string), backendNodeId:(DOMAgent.BackendNodeId)}} */
+DOMAgent.BackendNode;
 
-/** @typedef {!{type:(string), useCapture:(boolean), isAttribute:(boolean), nodeId:(DOMAgent.NodeId), handlerBody:(string), location:(DebuggerAgent.Location|undefined), sourceName:(string|undefined), handler:(RuntimeAgent.RemoteObject|undefined)}} */
-DOMAgent.EventListener;
+/** @enum {string} */
+DOMAgent.PseudoType = {
+    FirstLine: "first-line",
+    FirstLetter: "first-letter",
+    Before: "before",
+    After: "after",
+    Backdrop: "backdrop",
+    Selection: "selection",
+    FirstLineInherited: "first-line-inherited",
+    Scrollbar: "scrollbar",
+    ScrollbarThumb: "scrollbar-thumb",
+    ScrollbarButton: "scrollbar-button",
+    ScrollbarTrack: "scrollbar-track",
+    ScrollbarTrackPiece: "scrollbar-track-piece",
+    ScrollbarCorner: "scrollbar-corner",
+    Resizer: "resizer",
+    InputListButton: "input-list-button"
+};
+
+/** @enum {string} */
+DOMAgent.ShadowRootType = {
+    UserAgent: "user-agent",
+    Open: "open",
+    Closed: "closed"
+};
+
+/** @typedef {!{nodeId:(DOMAgent.NodeId), nodeType:(number), nodeName:(string), localName:(string), nodeValue:(string), childNodeCount:(number|undefined), children:(!Array.<DOMAgent.Node>|undefined), attributes:(!Array.<string>|undefined), documentURL:(string|undefined), baseURL:(string|undefined), publicId:(string|undefined), systemId:(string|undefined), internalSubset:(string|undefined), xmlVersion:(string|undefined), name:(string|undefined), value:(string|undefined), pseudoType:(DOMAgent.PseudoType|undefined), shadowRootType:(DOMAgent.ShadowRootType|undefined), frameId:(PageAgent.FrameId|undefined), contentDocument:(DOMAgent.Node|undefined), shadowRoots:(!Array.<DOMAgent.Node>|undefined), templateContent:(DOMAgent.Node|undefined), pseudoElements:(!Array.<DOMAgent.Node>|undefined), importedDocument:(DOMAgent.Node|undefined), distributedNodes:(!Array.<DOMAgent.BackendNode>|undefined)}} */
+DOMAgent.Node;
 
 /** @typedef {!{r:(number), g:(number), b:(number), a:(number|undefined)}} */
 DOMAgent.RGBA;
@@ -1552,21 +1955,32 @@ DOMAgent.RGBA;
 /** @typedef {!Array.<!number>} */
 DOMAgent.Quad;
 
-/** @typedef {!{content:(DOMAgent.Quad), padding:(DOMAgent.Quad), border:(DOMAgent.Quad), margin:(DOMAgent.Quad), width:(number), height:(number), shapeOutside:(string)}} */
+/** @typedef {!{content:(DOMAgent.Quad), padding:(DOMAgent.Quad), border:(DOMAgent.Quad), margin:(DOMAgent.Quad), width:(number), height:(number), shapeOutside:(DOMAgent.ShapeOutsideInfo|undefined)}} */
 DOMAgent.BoxModel;
+
+/** @typedef {!{bounds:(DOMAgent.Quad), shape:(!Array.<*>), marginShape:(!Array.<*>)}} */
+DOMAgent.ShapeOutsideInfo;
 
 /** @typedef {!{x:(number), y:(number), width:(number), height:(number)}} */
 DOMAgent.Rect;
 
-/** @typedef {!{showInfo:(boolean|undefined), contentColor:(DOMAgent.RGBA|undefined), paddingColor:(DOMAgent.RGBA|undefined), borderColor:(DOMAgent.RGBA|undefined), marginColor:(DOMAgent.RGBA|undefined), eventTargetColor:(DOMAgent.RGBA|undefined)}} */
+/** @typedef {!{showInfo:(boolean|undefined), showRulers:(boolean|undefined), showExtensionLines:(boolean|undefined), displayAsMaterial:(boolean|undefined), contentColor:(DOMAgent.RGBA|undefined), paddingColor:(DOMAgent.RGBA|undefined), borderColor:(DOMAgent.RGBA|undefined), marginColor:(DOMAgent.RGBA|undefined), eventTargetColor:(DOMAgent.RGBA|undefined), shapeColor:(DOMAgent.RGBA|undefined), shapeMarginColor:(DOMAgent.RGBA|undefined), selectorList:(string|undefined)}} */
 DOMAgent.HighlightConfig;
+
+/** @enum {string} */
+DOMAgent.InspectMode = {
+    SearchForNode: "searchForNode",
+    SearchForUAShadowDOM: "searchForUAShadowDOM",
+    ShowLayoutEditor: "showLayoutEditor",
+    None: "none"
+};
 /** @interface */
 DOMAgent.Dispatcher = function() {};
 DOMAgent.Dispatcher.prototype.documentUpdated = function() {};
 /**
- * @param {DOMAgent.NodeId} nodeId
+ * @param {DOMAgent.BackendNodeId} backendNodeId
  */
-DOMAgent.Dispatcher.prototype.inspectNodeRequested = function(nodeId) {};
+DOMAgent.Dispatcher.prototype.inspectNodeRequested = function(backendNodeId) {};
 /**
  * @param {DOMAgent.NodeId} parentId
  * @param {!Array.<DOMAgent.Node>} nodes
@@ -1618,6 +2032,25 @@ DOMAgent.Dispatcher.prototype.shadowRootPushed = function(hostId, root) {};
  * @param {DOMAgent.NodeId} rootId
  */
 DOMAgent.Dispatcher.prototype.shadowRootPopped = function(hostId, rootId) {};
+/**
+ * @param {DOMAgent.NodeId} parentId
+ * @param {DOMAgent.Node} pseudoElement
+ */
+DOMAgent.Dispatcher.prototype.pseudoElementAdded = function(parentId, pseudoElement) {};
+/**
+ * @param {DOMAgent.NodeId} parentId
+ * @param {DOMAgent.NodeId} pseudoElementId
+ */
+DOMAgent.Dispatcher.prototype.pseudoElementRemoved = function(parentId, pseudoElementId) {};
+/**
+ * @param {DOMAgent.NodeId} insertionPointId
+ * @param {!Array.<DOMAgent.BackendNode>} distributedNodes
+ */
+DOMAgent.Dispatcher.prototype.distributedNodesUpdated = function(insertionPointId, distributedNodes) {};
+/**
+ * @param {DOMAgent.NodeId} nodeId
+ */
+DOMAgent.Dispatcher.prototype.nodeHighlightRequested = function(nodeId) {};
 
 
 /**
@@ -1645,14 +2078,12 @@ Protocol.CSSAgent.prototype.invoke_disable = function(obj, opt_callback) {}
 
 /**
  * @param {DOMAgent.NodeId} nodeId
- * @param {boolean} includePseudo
- * @param {boolean} includeInherited
- * @param {function(?Protocol.Error, !Array.<CSSAgent.RuleMatch>=, !Array.<CSSAgent.PseudoIdMatches>=, !Array.<CSSAgent.InheritedStyleEntry>=):T} opt_callback
+ * @param {function(?Protocol.Error, CSSAgent.CSSStyle=, CSSAgent.CSSStyle=, !Array.<CSSAgent.RuleMatch>=, !Array.<CSSAgent.PseudoElementMatches>=, !Array.<CSSAgent.InheritedStyleEntry>=, !Array.<CSSAgent.CSSKeyframesRule>=):T} opt_callback
  * @return {!Promise.<T>}
  * @template T
  */
-Protocol.CSSAgent.prototype.getMatchedStylesForNode = function(nodeId, includePseudo, includeInherited, opt_callback) {}
-/** @param {function(?Protocol.Error, !Array.<CSSAgent.RuleMatch>=, !Array.<CSSAgent.PseudoIdMatches>=, !Array.<CSSAgent.InheritedStyleEntry>=):void=} opt_callback */
+Protocol.CSSAgent.prototype.getMatchedStylesForNode = function(nodeId, opt_callback) {}
+/** @param {function(?Protocol.Error, CSSAgent.CSSStyle=, CSSAgent.CSSStyle=, !Array.<CSSAgent.RuleMatch>=, !Array.<CSSAgent.PseudoElementMatches>=, !Array.<CSSAgent.InheritedStyleEntry>=, !Array.<CSSAgent.CSSKeyframesRule>=):void=} opt_callback */
 Protocol.CSSAgent.prototype.invoke_getMatchedStylesForNode = function(obj, opt_callback) {}
 
 /**
@@ -1677,32 +2108,13 @@ Protocol.CSSAgent.prototype.invoke_getComputedStyleForNode = function(obj, opt_c
 
 /**
  * @param {DOMAgent.NodeId} nodeId
- * @param {function(?Protocol.Error, string, !Array.<CSSAgent.PlatformFontUsage>):T} opt_callback
+ * @param {function(?Protocol.Error, !Array.<CSSAgent.PlatformFontUsage>):T} opt_callback
  * @return {!Promise.<T>}
  * @template T
  */
 Protocol.CSSAgent.prototype.getPlatformFontsForNode = function(nodeId, opt_callback) {}
-/** @param {function(?Protocol.Error, string, !Array.<CSSAgent.PlatformFontUsage>):void=} opt_callback */
+/** @param {function(?Protocol.Error, !Array.<CSSAgent.PlatformFontUsage>):void=} opt_callback */
 Protocol.CSSAgent.prototype.invoke_getPlatformFontsForNode = function(obj, opt_callback) {}
-
-/**
- * @param {function(?Protocol.Error, !Array.<CSSAgent.CSSStyleSheetHeader>):T} opt_callback
- * @return {!Promise.<T>}
- * @template T
- */
-Protocol.CSSAgent.prototype.getAllStyleSheets = function(opt_callback) {}
-/** @param {function(?Protocol.Error, !Array.<CSSAgent.CSSStyleSheetHeader>):void=} opt_callback */
-Protocol.CSSAgent.prototype.invoke_getAllStyleSheets = function(obj, opt_callback) {}
-
-/**
- * @param {CSSAgent.StyleSheetId} styleSheetId
- * @param {function(?Protocol.Error, CSSAgent.CSSStyleSheetBody):T} opt_callback
- * @return {!Promise.<T>}
- * @template T
- */
-Protocol.CSSAgent.prototype.getStyleSheet = function(styleSheetId, opt_callback) {}
-/** @param {function(?Protocol.Error, CSSAgent.CSSStyleSheetBody):void=} opt_callback */
-Protocol.CSSAgent.prototype.invoke_getStyleSheet = function(obj, opt_callback) {}
 
 /**
  * @param {CSSAgent.StyleSheetId} styleSheetId
@@ -1717,80 +2129,81 @@ Protocol.CSSAgent.prototype.invoke_getStyleSheetText = function(obj, opt_callbac
 /**
  * @param {CSSAgent.StyleSheetId} styleSheetId
  * @param {string} text
- * @param {function(?Protocol.Error):T=} opt_callback
+ * @param {function(?Protocol.Error, string=):T} opt_callback
  * @return {!Promise.<T>}
  * @template T
  */
 Protocol.CSSAgent.prototype.setStyleSheetText = function(styleSheetId, text, opt_callback) {}
-/** @param {function(?Protocol.Error):void=} opt_callback */
+/** @param {function(?Protocol.Error, string=):void=} opt_callback */
 Protocol.CSSAgent.prototype.invoke_setStyleSheetText = function(obj, opt_callback) {}
 
 /**
- * @param {CSSAgent.CSSStyleId} styleId
- * @param {string} text
- * @param {function(?Protocol.Error, CSSAgent.CSSStyle):T} opt_callback
- * @return {!Promise.<T>}
- * @template T
- */
-Protocol.CSSAgent.prototype.setStyleText = function(styleId, text, opt_callback) {}
-/** @param {function(?Protocol.Error, CSSAgent.CSSStyle):void=} opt_callback */
-Protocol.CSSAgent.prototype.invoke_setStyleText = function(obj, opt_callback) {}
-
-/**
- * @param {CSSAgent.CSSStyleId} styleId
- * @param {number} propertyIndex
- * @param {string} text
- * @param {boolean} overwrite
- * @param {function(?Protocol.Error, CSSAgent.CSSStyle):T} opt_callback
- * @return {!Promise.<T>}
- * @template T
- */
-Protocol.CSSAgent.prototype.setPropertyText = function(styleId, propertyIndex, text, overwrite, opt_callback) {}
-/** @param {function(?Protocol.Error, CSSAgent.CSSStyle):void=} opt_callback */
-Protocol.CSSAgent.prototype.invoke_setPropertyText = function(obj, opt_callback) {}
-
-/**
- * @param {CSSAgent.CSSStyleId} styleId
- * @param {number} propertyIndex
- * @param {boolean} disable
- * @param {function(?Protocol.Error, CSSAgent.CSSStyle):T} opt_callback
- * @return {!Promise.<T>}
- * @template T
- */
-Protocol.CSSAgent.prototype.toggleProperty = function(styleId, propertyIndex, disable, opt_callback) {}
-/** @param {function(?Protocol.Error, CSSAgent.CSSStyle):void=} opt_callback */
-Protocol.CSSAgent.prototype.invoke_toggleProperty = function(obj, opt_callback) {}
-
-/**
- * @param {CSSAgent.CSSRuleId} ruleId
+ * @param {CSSAgent.StyleSheetId} styleSheetId
+ * @param {CSSAgent.SourceRange} range
  * @param {string} selector
- * @param {function(?Protocol.Error, CSSAgent.CSSRule):T} opt_callback
+ * @param {function(?Protocol.Error, CSSAgent.SelectorList):T} opt_callback
  * @return {!Promise.<T>}
  * @template T
  */
-Protocol.CSSAgent.prototype.setRuleSelector = function(ruleId, selector, opt_callback) {}
-/** @param {function(?Protocol.Error, CSSAgent.CSSRule):void=} opt_callback */
+Protocol.CSSAgent.prototype.setRuleSelector = function(styleSheetId, range, selector, opt_callback) {}
+/** @param {function(?Protocol.Error, CSSAgent.SelectorList):void=} opt_callback */
 Protocol.CSSAgent.prototype.invoke_setRuleSelector = function(obj, opt_callback) {}
 
 /**
- * @param {DOMAgent.NodeId} contextNodeId
- * @param {string} selector
+ * @param {CSSAgent.StyleSheetId} styleSheetId
+ * @param {CSSAgent.SourceRange} range
+ * @param {string} keyText
+ * @param {function(?Protocol.Error, CSSAgent.Value):T} opt_callback
+ * @return {!Promise.<T>}
+ * @template T
+ */
+Protocol.CSSAgent.prototype.setKeyframeKey = function(styleSheetId, range, keyText, opt_callback) {}
+/** @param {function(?Protocol.Error, CSSAgent.Value):void=} opt_callback */
+Protocol.CSSAgent.prototype.invoke_setKeyframeKey = function(obj, opt_callback) {}
+
+/**
+ * @param {!Array.<CSSAgent.StyleDeclarationEdit>} edits
+ * @param {function(?Protocol.Error, !Array.<CSSAgent.CSSStyle>):T} opt_callback
+ * @return {!Promise.<T>}
+ * @template T
+ */
+Protocol.CSSAgent.prototype.setStyleTexts = function(edits, opt_callback) {}
+/** @param {function(?Protocol.Error, !Array.<CSSAgent.CSSStyle>):void=} opt_callback */
+Protocol.CSSAgent.prototype.invoke_setStyleTexts = function(obj, opt_callback) {}
+
+/**
+ * @param {CSSAgent.StyleSheetId} styleSheetId
+ * @param {CSSAgent.SourceRange} range
+ * @param {string} text
+ * @param {function(?Protocol.Error, CSSAgent.CSSMedia):T} opt_callback
+ * @return {!Promise.<T>}
+ * @template T
+ */
+Protocol.CSSAgent.prototype.setMediaText = function(styleSheetId, range, text, opt_callback) {}
+/** @param {function(?Protocol.Error, CSSAgent.CSSMedia):void=} opt_callback */
+Protocol.CSSAgent.prototype.invoke_setMediaText = function(obj, opt_callback) {}
+
+/**
+ * @param {PageAgent.FrameId} frameId
+ * @param {function(?Protocol.Error, CSSAgent.StyleSheetId):T} opt_callback
+ * @return {!Promise.<T>}
+ * @template T
+ */
+Protocol.CSSAgent.prototype.createStyleSheet = function(frameId, opt_callback) {}
+/** @param {function(?Protocol.Error, CSSAgent.StyleSheetId):void=} opt_callback */
+Protocol.CSSAgent.prototype.invoke_createStyleSheet = function(obj, opt_callback) {}
+
+/**
+ * @param {CSSAgent.StyleSheetId} styleSheetId
+ * @param {string} ruleText
+ * @param {CSSAgent.SourceRange} location
  * @param {function(?Protocol.Error, CSSAgent.CSSRule):T} opt_callback
  * @return {!Promise.<T>}
  * @template T
  */
-Protocol.CSSAgent.prototype.addRule = function(contextNodeId, selector, opt_callback) {}
+Protocol.CSSAgent.prototype.addRule = function(styleSheetId, ruleText, location, opt_callback) {}
 /** @param {function(?Protocol.Error, CSSAgent.CSSRule):void=} opt_callback */
 Protocol.CSSAgent.prototype.invoke_addRule = function(obj, opt_callback) {}
-
-/**
- * @param {function(?Protocol.Error, !Array.<CSSAgent.CSSPropertyInfo>):T} opt_callback
- * @return {!Promise.<T>}
- * @template T
- */
-Protocol.CSSAgent.prototype.getSupportedCSSProperties = function(opt_callback) {}
-/** @param {function(?Protocol.Error, !Array.<CSSAgent.CSSPropertyInfo>):void=} opt_callback */
-Protocol.CSSAgent.prototype.invoke_getSupportedCSSProperties = function(obj, opt_callback) {}
 
 /**
  * @param {DOMAgent.NodeId} nodeId
@@ -1804,14 +2217,35 @@ Protocol.CSSAgent.prototype.forcePseudoState = function(nodeId, forcedPseudoClas
 Protocol.CSSAgent.prototype.invoke_forcePseudoState = function(obj, opt_callback) {}
 
 /**
- * @param {DOMAgent.NodeId} documentNodeId
- * @param {function(?Protocol.Error, !Array.<CSSAgent.NamedFlow>):T} opt_callback
+ * @param {function(?Protocol.Error, !Array.<CSSAgent.CSSMedia>):T} opt_callback
  * @return {!Promise.<T>}
  * @template T
  */
-Protocol.CSSAgent.prototype.getNamedFlowCollection = function(documentNodeId, opt_callback) {}
-/** @param {function(?Protocol.Error, !Array.<CSSAgent.NamedFlow>):void=} opt_callback */
-Protocol.CSSAgent.prototype.invoke_getNamedFlowCollection = function(obj, opt_callback) {}
+Protocol.CSSAgent.prototype.getMediaQueries = function(opt_callback) {}
+/** @param {function(?Protocol.Error, !Array.<CSSAgent.CSSMedia>):void=} opt_callback */
+Protocol.CSSAgent.prototype.invoke_getMediaQueries = function(obj, opt_callback) {}
+
+/**
+ * @param {DOMAgent.NodeId} nodeId
+ * @param {string} propertyName
+ * @param {string} value
+ * @param {function(?Protocol.Error):T=} opt_callback
+ * @return {!Promise.<T>}
+ * @template T
+ */
+Protocol.CSSAgent.prototype.setEffectivePropertyValueForNode = function(nodeId, propertyName, value, opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+Protocol.CSSAgent.prototype.invoke_setEffectivePropertyValueForNode = function(obj, opt_callback) {}
+
+/**
+ * @param {DOMAgent.NodeId} nodeId
+ * @param {function(?Protocol.Error, !Array.<string>=):T} opt_callback
+ * @return {!Promise.<T>}
+ * @template T
+ */
+Protocol.CSSAgent.prototype.getBackgroundColors = function(nodeId, opt_callback) {}
+/** @param {function(?Protocol.Error, !Array.<string>=):void=} opt_callback */
+Protocol.CSSAgent.prototype.invoke_getBackgroundColors = function(obj, opt_callback) {}
 
 
 
@@ -1820,22 +2254,16 @@ var CSSAgent = function(){};
 /** @typedef {string} */
 CSSAgent.StyleSheetId;
 
-/** @typedef {!{styleSheetId:(CSSAgent.StyleSheetId), ordinal:(number)}} */
-CSSAgent.CSSStyleId;
-
 /** @enum {string} */
 CSSAgent.StyleSheetOrigin = {
-    User: "user",
+    Injected: "injected",
     UserAgent: "user-agent",
     Inspector: "inspector",
     Regular: "regular"
 };
 
-/** @typedef {!{styleSheetId:(CSSAgent.StyleSheetId), ordinal:(number)}} */
-CSSAgent.CSSRuleId;
-
-/** @typedef {!{pseudoId:(number), matches:(!Array.<CSSAgent.RuleMatch>)}} */
-CSSAgent.PseudoIdMatches;
+/** @typedef {!{pseudoType:(DOMAgent.PseudoType), matches:(!Array.<CSSAgent.RuleMatch>)}} */
+CSSAgent.PseudoElementMatches;
 
 /** @typedef {!{inlineStyle:(CSSAgent.CSSStyle|undefined), matchedCSSRules:(!Array.<CSSAgent.RuleMatch>)}} */
 CSSAgent.InheritedStyleEntry;
@@ -1843,45 +2271,31 @@ CSSAgent.InheritedStyleEntry;
 /** @typedef {!{rule:(CSSAgent.CSSRule), matchingSelectors:(!Array.<number>)}} */
 CSSAgent.RuleMatch;
 
-/** @typedef {!{selectors:(!Array.<string>), text:(string), range:(CSSAgent.SourceRange|undefined)}} */
+/** @typedef {!{text:(string), range:(CSSAgent.SourceRange|undefined)}} */
+CSSAgent.Value;
+
+/** @typedef {!{selectors:(!Array.<CSSAgent.Value>), text:(string)}} */
 CSSAgent.SelectorList;
 
-/** @typedef {!{name:(string), style:(CSSAgent.CSSStyle)}} */
-CSSAgent.CSSStyleAttribute;
-
-/** @typedef {!{styleSheetId:(CSSAgent.StyleSheetId), frameId:(PageAgent.FrameId), sourceURL:(string), sourceMapURL:(string|undefined), origin:(CSSAgent.StyleSheetOrigin), title:(string), disabled:(boolean), hasSourceURL:(boolean|undefined), isInline:(boolean), startLine:(number), startColumn:(number)}} */
+/** @typedef {!{styleSheetId:(CSSAgent.StyleSheetId), frameId:(PageAgent.FrameId), sourceURL:(string), sourceMapURL:(string|undefined), origin:(CSSAgent.StyleSheetOrigin), title:(string), ownerNode:(DOMAgent.BackendNodeId|undefined), disabled:(boolean), hasSourceURL:(boolean|undefined), isInline:(boolean), startLine:(number), startColumn:(number)}} */
 CSSAgent.CSSStyleSheetHeader;
 
-/** @typedef {!{styleSheetId:(CSSAgent.StyleSheetId), rules:(!Array.<CSSAgent.CSSRule>), text:(string|undefined)}} */
-CSSAgent.CSSStyleSheetBody;
-
-/** @typedef {!{ruleId:(CSSAgent.CSSRuleId|undefined), selectorList:(CSSAgent.SelectorList), sourceURL:(string|undefined), origin:(CSSAgent.StyleSheetOrigin), style:(CSSAgent.CSSStyle), media:(!Array.<CSSAgent.CSSMedia>|undefined)}} */
+/** @typedef {!{styleSheetId:(CSSAgent.StyleSheetId|undefined), selectorList:(CSSAgent.SelectorList), origin:(CSSAgent.StyleSheetOrigin), style:(CSSAgent.CSSStyle), media:(!Array.<CSSAgent.CSSMedia>|undefined)}} */
 CSSAgent.CSSRule;
 
 /** @typedef {!{startLine:(number), startColumn:(number), endLine:(number), endColumn:(number)}} */
 CSSAgent.SourceRange;
 
-/** @typedef {!{name:(string), value:(string)}} */
+/** @typedef {!{name:(string), value:(string), important:(boolean|undefined)}} */
 CSSAgent.ShorthandEntry;
-
-/** @typedef {!{name:(string), longhands:(!Array.<string>|undefined)}} */
-CSSAgent.CSSPropertyInfo;
 
 /** @typedef {!{name:(string), value:(string)}} */
 CSSAgent.CSSComputedStyleProperty;
 
-/** @typedef {!{styleId:(CSSAgent.CSSStyleId|undefined), cssProperties:(!Array.<CSSAgent.CSSProperty>), shorthandEntries:(!Array.<CSSAgent.ShorthandEntry>), cssText:(string|undefined), range:(CSSAgent.SourceRange|undefined), width:(string|undefined), height:(string|undefined)}} */
+/** @typedef {!{styleSheetId:(CSSAgent.StyleSheetId|undefined), cssProperties:(!Array.<CSSAgent.CSSProperty>), shorthandEntries:(!Array.<CSSAgent.ShorthandEntry>), cssText:(string|undefined), range:(CSSAgent.SourceRange|undefined)}} */
 CSSAgent.CSSStyle;
 
-/** @enum {string} */
-CSSAgent.CSSPropertyStatus = {
-    Active: "active",
-    Inactive: "inactive",
-    Disabled: "disabled",
-    Style: "style"
-};
-
-/** @typedef {!{name:(string), value:(string), priority:(string|undefined), implicit:(boolean|undefined), text:(string|undefined), parsedOk:(boolean|undefined), status:(CSSAgent.CSSPropertyStatus|undefined), range:(CSSAgent.SourceRange|undefined)}} */
+/** @typedef {!{name:(string), value:(string), important:(boolean|undefined), implicit:(boolean|undefined), text:(string|undefined), parsedOk:(boolean|undefined), disabled:(boolean|undefined), range:(CSSAgent.SourceRange|undefined)}} */
 CSSAgent.CSSProperty;
 
 /** @enum {string} */
@@ -1892,33 +2306,30 @@ CSSAgent.CSSMediaSource = {
     InlineSheet: "inlineSheet"
 };
 
-/** @typedef {!{text:(string), source:(CSSAgent.CSSMediaSource), sourceURL:(string|undefined), range:(CSSAgent.SourceRange|undefined), parentStyleSheetId:(CSSAgent.StyleSheetId|undefined)}} */
+/** @typedef {!{text:(string), source:(CSSAgent.CSSMediaSource), sourceURL:(string|undefined), range:(CSSAgent.SourceRange|undefined), styleSheetId:(CSSAgent.StyleSheetId|undefined), mediaList:(!Array.<CSSAgent.MediaQuery>|undefined)}} */
 CSSAgent.CSSMedia;
 
-/** @typedef {!{selector:(string), url:(string), lineNumber:(number), time:(number), hitCount:(number), matchCount:(number)}} */
-CSSAgent.SelectorProfileEntry;
+/** @typedef {!{expressions:(!Array.<CSSAgent.MediaQueryExpression>), active:(boolean)}} */
+CSSAgent.MediaQuery;
 
-/** @typedef {!{totalTime:(number), data:(!Array.<CSSAgent.SelectorProfileEntry>)}} */
-CSSAgent.SelectorProfile;
+/** @typedef {!{value:(number), unit:(string), feature:(string), valueRange:(CSSAgent.SourceRange|undefined), computedLength:(number|undefined)}} */
+CSSAgent.MediaQueryExpression;
 
-/** @enum {string} */
-CSSAgent.RegionRegionOverset = {
-    Overset: "overset",
-    Fit: "fit",
-    Empty: "empty"
-};
-
-/** @typedef {!{regionOverset:(CSSAgent.RegionRegionOverset), nodeId:(DOMAgent.NodeId)}} */
-CSSAgent.Region;
-
-/** @typedef {!{documentNodeId:(DOMAgent.NodeId), name:(string), overset:(boolean), content:(!Array.<DOMAgent.NodeId>), regions:(!Array.<CSSAgent.Region>)}} */
-CSSAgent.NamedFlow;
-
-/** @typedef {!{familyName:(string), glyphCount:(number)}} */
+/** @typedef {!{familyName:(string), isCustomFont:(boolean), glyphCount:(number)}} */
 CSSAgent.PlatformFontUsage;
+
+/** @typedef {!{animationName:(CSSAgent.Value), keyframes:(!Array.<CSSAgent.CSSKeyframeRule>)}} */
+CSSAgent.CSSKeyframesRule;
+
+/** @typedef {!{styleSheetId:(CSSAgent.StyleSheetId|undefined), origin:(CSSAgent.StyleSheetOrigin), keyText:(CSSAgent.Value), style:(CSSAgent.CSSStyle)}} */
+CSSAgent.CSSKeyframeRule;
+
+/** @typedef {!{styleSheetId:(CSSAgent.StyleSheetId), range:(CSSAgent.SourceRange), text:(string)}} */
+CSSAgent.StyleDeclarationEdit;
 /** @interface */
 CSSAgent.Dispatcher = function() {};
 CSSAgent.Dispatcher.prototype.mediaQueryResultChanged = function() {};
+CSSAgent.Dispatcher.prototype.fontsUpdated = function() {};
 /**
  * @param {CSSAgent.StyleSheetId} styleSheetId
  */
@@ -1932,22 +2343,43 @@ CSSAgent.Dispatcher.prototype.styleSheetAdded = function(header) {};
  */
 CSSAgent.Dispatcher.prototype.styleSheetRemoved = function(styleSheetId) {};
 /**
- * @param {CSSAgent.NamedFlow} namedFlow
+ * @param {CSSAgent.StyleSheetId} styleSheetId
+ * @param {CSSAgent.SourceRange} changeRange
  */
-CSSAgent.Dispatcher.prototype.namedFlowCreated = function(namedFlow) {};
+CSSAgent.Dispatcher.prototype.layoutEditorChange = function(styleSheetId, changeRange) {};
+
+
 /**
- * @param {DOMAgent.NodeId} documentNodeId
- * @param {string} flowName
- */
-CSSAgent.Dispatcher.prototype.namedFlowRemoved = function(documentNodeId, flowName) {};
+ * @constructor
+*/
+Protocol.IOAgent = function(){};
+
 /**
- * @param {CSSAgent.NamedFlow} namedFlow
+ * @param {IOAgent.StreamHandle} handle
+ * @param {number=} opt_offset
+ * @param {number=} opt_size
+ * @param {function(?Protocol.Error, string, boolean):void=} opt_callback
  */
-CSSAgent.Dispatcher.prototype.regionLayoutUpdated = function(namedFlow) {};
+Protocol.IOAgent.prototype.read = function(handle, opt_offset, opt_size, opt_callback) {}
+/** @param {function(?Protocol.Error, string, boolean):void=} opt_callback */
+Protocol.IOAgent.prototype.invoke_read = function(obj, opt_callback) {}
+
 /**
- * @param {CSSAgent.NamedFlow} namedFlow
+ * @param {IOAgent.StreamHandle} handle
+ * @param {function(?Protocol.Error):void=} opt_callback
  */
-CSSAgent.Dispatcher.prototype.regionOversetChanged = function(namedFlow) {};
+Protocol.IOAgent.prototype.close = function(handle, opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+Protocol.IOAgent.prototype.invoke_close = function(obj, opt_callback) {}
+
+
+
+var IOAgent = function(){};
+
+/** @typedef {string} */
+IOAgent.StreamHandle;
+/** @interface */
+IOAgent.Dispatcher = function() {};
 
 
 /**
@@ -1975,17 +2407,19 @@ Protocol.DOMDebuggerAgent.prototype.invoke_removeDOMBreakpoint = function(obj, o
 
 /**
  * @param {string} eventName
+ * @param {string=} opt_targetName
  * @param {function(?Protocol.Error):void=} opt_callback
  */
-Protocol.DOMDebuggerAgent.prototype.setEventListenerBreakpoint = function(eventName, opt_callback) {}
+Protocol.DOMDebuggerAgent.prototype.setEventListenerBreakpoint = function(eventName, opt_targetName, opt_callback) {}
 /** @param {function(?Protocol.Error):void=} opt_callback */
 Protocol.DOMDebuggerAgent.prototype.invoke_setEventListenerBreakpoint = function(obj, opt_callback) {}
 
 /**
  * @param {string} eventName
+ * @param {string=} opt_targetName
  * @param {function(?Protocol.Error):void=} opt_callback
  */
-Protocol.DOMDebuggerAgent.prototype.removeEventListenerBreakpoint = function(eventName, opt_callback) {}
+Protocol.DOMDebuggerAgent.prototype.removeEventListenerBreakpoint = function(eventName, opt_targetName, opt_callback) {}
 /** @param {function(?Protocol.Error):void=} opt_callback */
 Protocol.DOMDebuggerAgent.prototype.invoke_removeEventListenerBreakpoint = function(obj, opt_callback) {}
 
@@ -2021,6 +2455,14 @@ Protocol.DOMDebuggerAgent.prototype.removeXHRBreakpoint = function(url, opt_call
 /** @param {function(?Protocol.Error):void=} opt_callback */
 Protocol.DOMDebuggerAgent.prototype.invoke_removeXHRBreakpoint = function(obj, opt_callback) {}
 
+/**
+ * @param {RuntimeAgent.RemoteObjectId} objectId
+ * @param {function(?Protocol.Error, !Array.<DOMDebuggerAgent.EventListener>):void=} opt_callback
+ */
+Protocol.DOMDebuggerAgent.prototype.getEventListeners = function(objectId, opt_callback) {}
+/** @param {function(?Protocol.Error, !Array.<DOMDebuggerAgent.EventListener>):void=} opt_callback */
+Protocol.DOMDebuggerAgent.prototype.invoke_getEventListeners = function(obj, opt_callback) {}
+
 
 
 var DOMDebuggerAgent = function(){};
@@ -2031,6 +2473,9 @@ DOMDebuggerAgent.DOMBreakpointType = {
     AttributeModified: "attribute-modified",
     NodeRemoved: "node-removed"
 };
+
+/** @typedef {!{type:(string), useCapture:(boolean), passive:(boolean), scriptId:(RuntimeAgent.ScriptId), lineNumber:(number), columnNumber:(number), handler:(RuntimeAgent.RemoteObject|undefined), originalHandler:(RuntimeAgent.RemoteObject|undefined), removeFunction:(RuntimeAgent.RemoteObject|undefined)}} */
+DOMDebuggerAgent.EventListener;
 /** @interface */
 DOMDebuggerAgent.Dispatcher = function() {};
 
@@ -2055,8 +2500,8 @@ Protocol.WorkerAgent.prototype.disable = function(opt_callback) {}
 Protocol.WorkerAgent.prototype.invoke_disable = function(obj, opt_callback) {}
 
 /**
- * @param {number} workerId
- * @param {!Object} message
+ * @param {string} workerId
+ * @param {string} message
  * @param {function(?Protocol.Error):void=} opt_callback
  */
 Protocol.WorkerAgent.prototype.sendMessageToWorker = function(workerId, message, opt_callback) {}
@@ -2064,35 +2509,12 @@ Protocol.WorkerAgent.prototype.sendMessageToWorker = function(workerId, message,
 Protocol.WorkerAgent.prototype.invoke_sendMessageToWorker = function(obj, opt_callback) {}
 
 /**
- * @param {function(?Protocol.Error, boolean):void=} opt_callback
- */
-Protocol.WorkerAgent.prototype.canInspectWorkers = function(opt_callback) {}
-/** @param {function(?Protocol.Error, boolean):void=} opt_callback */
-Protocol.WorkerAgent.prototype.invoke_canInspectWorkers = function(obj, opt_callback) {}
-
-/**
- * @param {number} workerId
- * @param {function(?Protocol.Error):void=} opt_callback
- */
-Protocol.WorkerAgent.prototype.connectToWorker = function(workerId, opt_callback) {}
-/** @param {function(?Protocol.Error):void=} opt_callback */
-Protocol.WorkerAgent.prototype.invoke_connectToWorker = function(obj, opt_callback) {}
-
-/**
- * @param {number} workerId
- * @param {function(?Protocol.Error):void=} opt_callback
- */
-Protocol.WorkerAgent.prototype.disconnectFromWorker = function(workerId, opt_callback) {}
-/** @param {function(?Protocol.Error):void=} opt_callback */
-Protocol.WorkerAgent.prototype.invoke_disconnectFromWorker = function(obj, opt_callback) {}
-
-/**
  * @param {boolean} value
  * @param {function(?Protocol.Error):void=} opt_callback
  */
-Protocol.WorkerAgent.prototype.setAutoconnectToWorkers = function(value, opt_callback) {}
+Protocol.WorkerAgent.prototype.setWaitForDebuggerOnStart = function(value, opt_callback) {}
 /** @param {function(?Protocol.Error):void=} opt_callback */
-Protocol.WorkerAgent.prototype.invoke_setAutoconnectToWorkers = function(obj, opt_callback) {}
+Protocol.WorkerAgent.prototype.invoke_setWaitForDebuggerOnStart = function(obj, opt_callback) {}
 
 
 
@@ -2100,174 +2522,216 @@ var WorkerAgent = function(){};
 /** @interface */
 WorkerAgent.Dispatcher = function() {};
 /**
- * @param {number} workerId
+ * @param {string} workerId
  * @param {string} url
- * @param {boolean} inspectorConnected
+ * @param {boolean} waitingForDebugger
  */
-WorkerAgent.Dispatcher.prototype.workerCreated = function(workerId, url, inspectorConnected) {};
+WorkerAgent.Dispatcher.prototype.workerCreated = function(workerId, url, waitingForDebugger) {};
 /**
- * @param {number} workerId
+ * @param {string} workerId
  */
 WorkerAgent.Dispatcher.prototype.workerTerminated = function(workerId) {};
 /**
- * @param {number} workerId
- * @param {!Object} message
+ * @param {string} workerId
+ * @param {string} message
  */
 WorkerAgent.Dispatcher.prototype.dispatchMessageFromWorker = function(workerId, message) {};
-WorkerAgent.Dispatcher.prototype.disconnectedFromWorker = function() {};
 
 
 /**
  * @constructor
 */
-Protocol.CanvasAgent = function(){};
+Protocol.ServiceWorkerAgent = function(){};
 
 /**
  * @param {function(?Protocol.Error):void=} opt_callback
  */
-Protocol.CanvasAgent.prototype.enable = function(opt_callback) {}
+Protocol.ServiceWorkerAgent.prototype.enable = function(opt_callback) {}
 /** @param {function(?Protocol.Error):void=} opt_callback */
-Protocol.CanvasAgent.prototype.invoke_enable = function(obj, opt_callback) {}
+Protocol.ServiceWorkerAgent.prototype.invoke_enable = function(obj, opt_callback) {}
 
 /**
  * @param {function(?Protocol.Error):void=} opt_callback
  */
-Protocol.CanvasAgent.prototype.disable = function(opt_callback) {}
+Protocol.ServiceWorkerAgent.prototype.disable = function(opt_callback) {}
 /** @param {function(?Protocol.Error):void=} opt_callback */
-Protocol.CanvasAgent.prototype.invoke_disable = function(obj, opt_callback) {}
+Protocol.ServiceWorkerAgent.prototype.invoke_disable = function(obj, opt_callback) {}
 
 /**
- * @param {CanvasAgent.TraceLogId} traceLogId
+ * @param {string} workerId
+ * @param {string} message
  * @param {function(?Protocol.Error):void=} opt_callback
  */
-Protocol.CanvasAgent.prototype.dropTraceLog = function(traceLogId, opt_callback) {}
+Protocol.ServiceWorkerAgent.prototype.sendMessage = function(workerId, message, opt_callback) {}
 /** @param {function(?Protocol.Error):void=} opt_callback */
-Protocol.CanvasAgent.prototype.invoke_dropTraceLog = function(obj, opt_callback) {}
+Protocol.ServiceWorkerAgent.prototype.invoke_sendMessage = function(obj, opt_callback) {}
 
 /**
- * @param {function(?Protocol.Error, boolean):void=} opt_callback
- */
-Protocol.CanvasAgent.prototype.hasUninstrumentedCanvases = function(opt_callback) {}
-/** @param {function(?Protocol.Error, boolean):void=} opt_callback */
-Protocol.CanvasAgent.prototype.invoke_hasUninstrumentedCanvases = function(obj, opt_callback) {}
-
-/**
- * @param {PageAgent.FrameId=} opt_frameId
- * @param {function(?Protocol.Error, CanvasAgent.TraceLogId):void=} opt_callback
- */
-Protocol.CanvasAgent.prototype.captureFrame = function(opt_frameId, opt_callback) {}
-/** @param {function(?Protocol.Error, CanvasAgent.TraceLogId):void=} opt_callback */
-Protocol.CanvasAgent.prototype.invoke_captureFrame = function(obj, opt_callback) {}
-
-/**
- * @param {PageAgent.FrameId=} opt_frameId
- * @param {function(?Protocol.Error, CanvasAgent.TraceLogId):void=} opt_callback
- */
-Protocol.CanvasAgent.prototype.startCapturing = function(opt_frameId, opt_callback) {}
-/** @param {function(?Protocol.Error, CanvasAgent.TraceLogId):void=} opt_callback */
-Protocol.CanvasAgent.prototype.invoke_startCapturing = function(obj, opt_callback) {}
-
-/**
- * @param {CanvasAgent.TraceLogId} traceLogId
+ * @param {string} workerId
  * @param {function(?Protocol.Error):void=} opt_callback
  */
-Protocol.CanvasAgent.prototype.stopCapturing = function(traceLogId, opt_callback) {}
+Protocol.ServiceWorkerAgent.prototype.stop = function(workerId, opt_callback) {}
 /** @param {function(?Protocol.Error):void=} opt_callback */
-Protocol.CanvasAgent.prototype.invoke_stopCapturing = function(obj, opt_callback) {}
+Protocol.ServiceWorkerAgent.prototype.invoke_stop = function(obj, opt_callback) {}
 
 /**
- * @param {CanvasAgent.TraceLogId} traceLogId
- * @param {number=} opt_startOffset
- * @param {number=} opt_maxLength
- * @param {function(?Protocol.Error, CanvasAgent.TraceLog):void=} opt_callback
+ * @param {string} scopeURL
+ * @param {function(?Protocol.Error):void=} opt_callback
  */
-Protocol.CanvasAgent.prototype.getTraceLog = function(traceLogId, opt_startOffset, opt_maxLength, opt_callback) {}
-/** @param {function(?Protocol.Error, CanvasAgent.TraceLog):void=} opt_callback */
-Protocol.CanvasAgent.prototype.invoke_getTraceLog = function(obj, opt_callback) {}
+Protocol.ServiceWorkerAgent.prototype.unregister = function(scopeURL, opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+Protocol.ServiceWorkerAgent.prototype.invoke_unregister = function(obj, opt_callback) {}
 
 /**
- * @param {CanvasAgent.TraceLogId} traceLogId
- * @param {number} stepNo
- * @param {function(?Protocol.Error, CanvasAgent.ResourceState, number):void=} opt_callback
+ * @param {string} scopeURL
+ * @param {function(?Protocol.Error):void=} opt_callback
  */
-Protocol.CanvasAgent.prototype.replayTraceLog = function(traceLogId, stepNo, opt_callback) {}
-/** @param {function(?Protocol.Error, CanvasAgent.ResourceState, number):void=} opt_callback */
-Protocol.CanvasAgent.prototype.invoke_replayTraceLog = function(obj, opt_callback) {}
+Protocol.ServiceWorkerAgent.prototype.updateRegistration = function(scopeURL, opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+Protocol.ServiceWorkerAgent.prototype.invoke_updateRegistration = function(obj, opt_callback) {}
 
 /**
- * @param {CanvasAgent.TraceLogId} traceLogId
- * @param {CanvasAgent.ResourceId} resourceId
- * @param {function(?Protocol.Error, CanvasAgent.ResourceState):void=} opt_callback
+ * @param {string} scopeURL
+ * @param {function(?Protocol.Error):void=} opt_callback
  */
-Protocol.CanvasAgent.prototype.getResourceState = function(traceLogId, resourceId, opt_callback) {}
-/** @param {function(?Protocol.Error, CanvasAgent.ResourceState):void=} opt_callback */
-Protocol.CanvasAgent.prototype.invoke_getResourceState = function(obj, opt_callback) {}
+Protocol.ServiceWorkerAgent.prototype.startWorker = function(scopeURL, opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+Protocol.ServiceWorkerAgent.prototype.invoke_startWorker = function(obj, opt_callback) {}
 
 /**
- * @param {CanvasAgent.TraceLogId} traceLogId
- * @param {number} callIndex
- * @param {number} argumentIndex
- * @param {string=} opt_objectGroup
- * @param {function(?Protocol.Error, RuntimeAgent.RemoteObject=, CanvasAgent.ResourceState=):void=} opt_callback
+ * @param {string} scopeURL
+ * @param {function(?Protocol.Error):void=} opt_callback
  */
-Protocol.CanvasAgent.prototype.evaluateTraceLogCallArgument = function(traceLogId, callIndex, argumentIndex, opt_objectGroup, opt_callback) {}
-/** @param {function(?Protocol.Error, RuntimeAgent.RemoteObject=, CanvasAgent.ResourceState=):void=} opt_callback */
-Protocol.CanvasAgent.prototype.invoke_evaluateTraceLogCallArgument = function(obj, opt_callback) {}
+Protocol.ServiceWorkerAgent.prototype.skipWaiting = function(scopeURL, opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+Protocol.ServiceWorkerAgent.prototype.invoke_skipWaiting = function(obj, opt_callback) {}
+
+/**
+ * @param {string} versionId
+ * @param {function(?Protocol.Error):void=} opt_callback
+ */
+Protocol.ServiceWorkerAgent.prototype.stopWorker = function(versionId, opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+Protocol.ServiceWorkerAgent.prototype.invoke_stopWorker = function(obj, opt_callback) {}
+
+/**
+ * @param {string} versionId
+ * @param {function(?Protocol.Error):void=} opt_callback
+ */
+Protocol.ServiceWorkerAgent.prototype.inspectWorker = function(versionId, opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+Protocol.ServiceWorkerAgent.prototype.invoke_inspectWorker = function(obj, opt_callback) {}
+
+/**
+ * @param {boolean} forceUpdateOnPageLoad
+ * @param {function(?Protocol.Error):void=} opt_callback
+ */
+Protocol.ServiceWorkerAgent.prototype.setForceUpdateOnPageLoad = function(forceUpdateOnPageLoad, opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+Protocol.ServiceWorkerAgent.prototype.invoke_setForceUpdateOnPageLoad = function(obj, opt_callback) {}
+
+/**
+ * @param {string} origin
+ * @param {string} registrationId
+ * @param {string} data
+ * @param {function(?Protocol.Error):void=} opt_callback
+ */
+Protocol.ServiceWorkerAgent.prototype.deliverPushMessage = function(origin, registrationId, data, opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+Protocol.ServiceWorkerAgent.prototype.invoke_deliverPushMessage = function(obj, opt_callback) {}
+
+/**
+ * @param {string} origin
+ * @param {string} registrationId
+ * @param {string} tag
+ * @param {boolean} lastChance
+ * @param {function(?Protocol.Error):void=} opt_callback
+ */
+Protocol.ServiceWorkerAgent.prototype.dispatchSyncEvent = function(origin, registrationId, tag, lastChance, opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+Protocol.ServiceWorkerAgent.prototype.invoke_dispatchSyncEvent = function(obj, opt_callback) {}
+
+/**
+ * @param {ServiceWorkerAgent.TargetID} targetId
+ * @param {function(?Protocol.Error, ServiceWorkerAgent.TargetInfo):void=} opt_callback
+ */
+Protocol.ServiceWorkerAgent.prototype.getTargetInfo = function(targetId, opt_callback) {}
+/** @param {function(?Protocol.Error, ServiceWorkerAgent.TargetInfo):void=} opt_callback */
+Protocol.ServiceWorkerAgent.prototype.invoke_getTargetInfo = function(obj, opt_callback) {}
+
+/**
+ * @param {ServiceWorkerAgent.TargetID} targetId
+ * @param {function(?Protocol.Error):void=} opt_callback
+ */
+Protocol.ServiceWorkerAgent.prototype.activateTarget = function(targetId, opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+Protocol.ServiceWorkerAgent.prototype.invoke_activateTarget = function(obj, opt_callback) {}
 
 
 
-var CanvasAgent = function(){};
+var ServiceWorkerAgent = function(){};
 
-/** @typedef {string} */
-CanvasAgent.ResourceId;
-
-/** @typedef {!{name:(string), enumValueForName:(string|undefined), value:(CanvasAgent.CallArgument|undefined), values:(!Array.<CanvasAgent.ResourceStateDescriptor>|undefined), isArray:(boolean|undefined)}} */
-CanvasAgent.ResourceStateDescriptor;
-
-/** @typedef {!{id:(CanvasAgent.ResourceId), traceLogId:(CanvasAgent.TraceLogId), descriptors:(!Array.<CanvasAgent.ResourceStateDescriptor>|undefined), imageURL:(string|undefined)}} */
-CanvasAgent.ResourceState;
+/** @typedef {!{registrationId:(string), scopeURL:(string), isDeleted:(boolean)}} */
+ServiceWorkerAgent.ServiceWorkerRegistration;
 
 /** @enum {string} */
-CanvasAgent.CallArgumentType = {
-    Object: "object",
-    Function: "function",
-    Undefined: "undefined",
-    String: "string",
-    Number: "number",
-    Boolean: "boolean"
+ServiceWorkerAgent.ServiceWorkerVersionRunningStatus = {
+    Stopped: "stopped",
+    Starting: "starting",
+    Running: "running",
+    Stopping: "stopping"
 };
 
 /** @enum {string} */
-CanvasAgent.CallArgumentSubtype = {
-    Array: "array",
-    Null: "null",
-    Node: "node",
-    Regexp: "regexp",
-    Date: "date"
+ServiceWorkerAgent.ServiceWorkerVersionStatus = {
+    New: "new",
+    Installing: "installing",
+    Installed: "installed",
+    Activating: "activating",
+    Activated: "activated",
+    Redundant: "redundant"
 };
 
-/** @typedef {!{description:(string), enumName:(string|undefined), resourceId:(CanvasAgent.ResourceId|undefined), type:(CanvasAgent.CallArgumentType|undefined), subtype:(CanvasAgent.CallArgumentSubtype|undefined), remoteObject:(RuntimeAgent.RemoteObject|undefined)}} */
-CanvasAgent.CallArgument;
-
-/** @typedef {!{contextId:(CanvasAgent.ResourceId), functionName:(string|undefined), arguments:(!Array.<CanvasAgent.CallArgument>|undefined), result:(CanvasAgent.CallArgument|undefined), isDrawingCall:(boolean|undefined), isFrameEndCall:(boolean|undefined), property:(string|undefined), value:(CanvasAgent.CallArgument|undefined), sourceURL:(string|undefined), lineNumber:(number|undefined), columnNumber:(number|undefined)}} */
-CanvasAgent.Call;
-
 /** @typedef {string} */
-CanvasAgent.TraceLogId;
+ServiceWorkerAgent.TargetID;
 
-/** @typedef {!{id:(CanvasAgent.TraceLogId), calls:(!Array.<CanvasAgent.Call>), contexts:(!Array.<CanvasAgent.CallArgument>), startOffset:(number), alive:(boolean), totalAvailableCalls:(number)}} */
-CanvasAgent.TraceLog;
+/** @typedef {!{versionId:(string), registrationId:(string), scriptURL:(string), runningStatus:(ServiceWorkerAgent.ServiceWorkerVersionRunningStatus), status:(ServiceWorkerAgent.ServiceWorkerVersionStatus), scriptLastModified:(number|undefined), scriptResponseTime:(number|undefined), controlledClients:(!Array.<ServiceWorkerAgent.TargetID>|undefined)}} */
+ServiceWorkerAgent.ServiceWorkerVersion;
+
+/** @typedef {!{errorMessage:(string), registrationId:(string), versionId:(string), sourceURL:(string), lineNumber:(number), columnNumber:(number)}} */
+ServiceWorkerAgent.ServiceWorkerErrorMessage;
+
+/** @typedef {!{id:(ServiceWorkerAgent.TargetID), type:(string), title:(string), url:(string)}} */
+ServiceWorkerAgent.TargetInfo;
 /** @interface */
-CanvasAgent.Dispatcher = function() {};
+ServiceWorkerAgent.Dispatcher = function() {};
 /**
- * @param {PageAgent.FrameId} frameId
+ * @param {string} workerId
+ * @param {string} url
+ * @param {string} versionId
  */
-CanvasAgent.Dispatcher.prototype.contextCreated = function(frameId) {};
+ServiceWorkerAgent.Dispatcher.prototype.workerCreated = function(workerId, url, versionId) {};
 /**
- * @param {PageAgent.FrameId=} opt_frameId
- * @param {CanvasAgent.TraceLogId=} opt_traceLogId
+ * @param {string} workerId
  */
-CanvasAgent.Dispatcher.prototype.traceLogsRemoved = function(opt_frameId, opt_traceLogId) {};
+ServiceWorkerAgent.Dispatcher.prototype.workerTerminated = function(workerId) {};
+/**
+ * @param {string} workerId
+ * @param {string} message
+ */
+ServiceWorkerAgent.Dispatcher.prototype.dispatchMessage = function(workerId, message) {};
+/**
+ * @param {!Array.<ServiceWorkerAgent.ServiceWorkerRegistration>} registrations
+ */
+ServiceWorkerAgent.Dispatcher.prototype.workerRegistrationUpdated = function(registrations) {};
+/**
+ * @param {!Array.<ServiceWorkerAgent.ServiceWorkerVersion>} versions
+ */
+ServiceWorkerAgent.Dispatcher.prototype.workerVersionUpdated = function(versions) {};
+/**
+ * @param {ServiceWorkerAgent.ServiceWorkerErrorMessage} errorMessage
+ */
+ServiceWorkerAgent.Dispatcher.prototype.workerErrorReported = function(errorMessage) {};
 
 
 /**
@@ -2282,6 +2746,8 @@ Protocol.InputAgent = function(){};
  * @param {string=} opt_text
  * @param {string=} opt_unmodifiedText
  * @param {string=} opt_keyIdentifier
+ * @param {string=} opt_code
+ * @param {string=} opt_key
  * @param {number=} opt_windowsVirtualKeyCode
  * @param {number=} opt_nativeVirtualKeyCode
  * @param {boolean=} opt_autoRepeat
@@ -2289,7 +2755,7 @@ Protocol.InputAgent = function(){};
  * @param {boolean=} opt_isSystemKey
  * @param {function(?Protocol.Error):void=} opt_callback
  */
-Protocol.InputAgent.prototype.dispatchKeyEvent = function(type, opt_modifiers, opt_timestamp, opt_text, opt_unmodifiedText, opt_keyIdentifier, opt_windowsVirtualKeyCode, opt_nativeVirtualKeyCode, opt_autoRepeat, opt_isKeypad, opt_isSystemKey, opt_callback) {}
+Protocol.InputAgent.prototype.dispatchKeyEvent = function(type, opt_modifiers, opt_timestamp, opt_text, opt_unmodifiedText, opt_keyIdentifier, opt_code, opt_key, opt_windowsVirtualKeyCode, opt_nativeVirtualKeyCode, opt_autoRepeat, opt_isKeypad, opt_isSystemKey, opt_callback) {}
 /** @param {function(?Protocol.Error):void=} opt_callback */
 Protocol.InputAgent.prototype.invoke_dispatchKeyEvent = function(obj, opt_callback) {}
 
@@ -2301,10 +2767,9 @@ Protocol.InputAgent.prototype.invoke_dispatchKeyEvent = function(obj, opt_callba
  * @param {number=} opt_timestamp
  * @param {string=} opt_button
  * @param {number=} opt_clickCount
- * @param {boolean=} opt_deviceSpace
  * @param {function(?Protocol.Error):void=} opt_callback
  */
-Protocol.InputAgent.prototype.dispatchMouseEvent = function(type, x, y, opt_modifiers, opt_timestamp, opt_button, opt_clickCount, opt_deviceSpace, opt_callback) {}
+Protocol.InputAgent.prototype.dispatchMouseEvent = function(type, x, y, opt_modifiers, opt_timestamp, opt_button, opt_clickCount, opt_callback) {}
 /** @param {function(?Protocol.Error):void=} opt_callback */
 Protocol.InputAgent.prototype.invoke_dispatchMouseEvent = function(obj, opt_callback) {}
 
@@ -2323,15 +2788,60 @@ Protocol.InputAgent.prototype.invoke_dispatchTouchEvent = function(obj, opt_call
  * @param {string} type
  * @param {number} x
  * @param {number} y
- * @param {number=} opt_timestamp
+ * @param {number} timestamp
+ * @param {string} button
  * @param {number=} opt_deltaX
  * @param {number=} opt_deltaY
- * @param {number=} opt_pinchScale
+ * @param {number=} opt_modifiers
+ * @param {number=} opt_clickCount
  * @param {function(?Protocol.Error):void=} opt_callback
  */
-Protocol.InputAgent.prototype.dispatchGestureEvent = function(type, x, y, opt_timestamp, opt_deltaX, opt_deltaY, opt_pinchScale, opt_callback) {}
+Protocol.InputAgent.prototype.emulateTouchFromMouseEvent = function(type, x, y, timestamp, button, opt_deltaX, opt_deltaY, opt_modifiers, opt_clickCount, opt_callback) {}
 /** @param {function(?Protocol.Error):void=} opt_callback */
-Protocol.InputAgent.prototype.invoke_dispatchGestureEvent = function(obj, opt_callback) {}
+Protocol.InputAgent.prototype.invoke_emulateTouchFromMouseEvent = function(obj, opt_callback) {}
+
+/**
+ * @param {number} x
+ * @param {number} y
+ * @param {number} scaleFactor
+ * @param {number=} opt_relativeSpeed
+ * @param {InputAgent.GestureSourceType=} opt_gestureSourceType
+ * @param {function(?Protocol.Error):void=} opt_callback
+ */
+Protocol.InputAgent.prototype.synthesizePinchGesture = function(x, y, scaleFactor, opt_relativeSpeed, opt_gestureSourceType, opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+Protocol.InputAgent.prototype.invoke_synthesizePinchGesture = function(obj, opt_callback) {}
+
+/**
+ * @param {number} x
+ * @param {number} y
+ * @param {number=} opt_xDistance
+ * @param {number=} opt_yDistance
+ * @param {number=} opt_xOverscroll
+ * @param {number=} opt_yOverscroll
+ * @param {boolean=} opt_preventFling
+ * @param {number=} opt_speed
+ * @param {InputAgent.GestureSourceType=} opt_gestureSourceType
+ * @param {number=} opt_repeatCount
+ * @param {number=} opt_repeatDelayMs
+ * @param {string=} opt_interactionMarkerName
+ * @param {function(?Protocol.Error):void=} opt_callback
+ */
+Protocol.InputAgent.prototype.synthesizeScrollGesture = function(x, y, opt_xDistance, opt_yDistance, opt_xOverscroll, opt_yOverscroll, opt_preventFling, opt_speed, opt_gestureSourceType, opt_repeatCount, opt_repeatDelayMs, opt_interactionMarkerName, opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+Protocol.InputAgent.prototype.invoke_synthesizeScrollGesture = function(obj, opt_callback) {}
+
+/**
+ * @param {number} x
+ * @param {number} y
+ * @param {number=} opt_duration
+ * @param {number=} opt_tapCount
+ * @param {InputAgent.GestureSourceType=} opt_gestureSourceType
+ * @param {function(?Protocol.Error):void=} opt_callback
+ */
+Protocol.InputAgent.prototype.synthesizeTapGesture = function(x, y, opt_duration, opt_tapCount, opt_gestureSourceType, opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+Protocol.InputAgent.prototype.invoke_synthesizeTapGesture = function(obj, opt_callback) {}
 
 
 
@@ -2348,6 +2858,13 @@ InputAgent.TouchPointState = {
 
 /** @typedef {!{state:(InputAgent.TouchPointState), x:(number), y:(number), radiusX:(number|undefined), radiusY:(number|undefined), rotationAngle:(number|undefined), force:(number|undefined), id:(number|undefined)}} */
 InputAgent.TouchPoint;
+
+/** @enum {string} */
+InputAgent.GestureSourceType = {
+    Default: "default",
+    Touch: "touch",
+    Mouse: "mouse"
+};
 /** @interface */
 InputAgent.Dispatcher = function() {};
 
@@ -2372,20 +2889,66 @@ Protocol.LayerTreeAgent.prototype.disable = function(opt_callback) {}
 Protocol.LayerTreeAgent.prototype.invoke_disable = function(obj, opt_callback) {}
 
 /**
- * @param {DOMAgent.NodeId=} opt_nodeId
- * @param {function(?Protocol.Error, !Array.<LayerTreeAgent.Layer>):void=} opt_callback
- */
-Protocol.LayerTreeAgent.prototype.getLayers = function(opt_nodeId, opt_callback) {}
-/** @param {function(?Protocol.Error, !Array.<LayerTreeAgent.Layer>):void=} opt_callback */
-Protocol.LayerTreeAgent.prototype.invoke_getLayers = function(obj, opt_callback) {}
-
-/**
  * @param {LayerTreeAgent.LayerId} layerId
  * @param {function(?Protocol.Error, !Array.<string>):void=} opt_callback
  */
 Protocol.LayerTreeAgent.prototype.compositingReasons = function(layerId, opt_callback) {}
 /** @param {function(?Protocol.Error, !Array.<string>):void=} opt_callback */
 Protocol.LayerTreeAgent.prototype.invoke_compositingReasons = function(obj, opt_callback) {}
+
+/**
+ * @param {LayerTreeAgent.LayerId} layerId
+ * @param {function(?Protocol.Error, LayerTreeAgent.SnapshotId):void=} opt_callback
+ */
+Protocol.LayerTreeAgent.prototype.makeSnapshot = function(layerId, opt_callback) {}
+/** @param {function(?Protocol.Error, LayerTreeAgent.SnapshotId):void=} opt_callback */
+Protocol.LayerTreeAgent.prototype.invoke_makeSnapshot = function(obj, opt_callback) {}
+
+/**
+ * @param {!Array.<LayerTreeAgent.PictureTile>} tiles
+ * @param {function(?Protocol.Error, LayerTreeAgent.SnapshotId):void=} opt_callback
+ */
+Protocol.LayerTreeAgent.prototype.loadSnapshot = function(tiles, opt_callback) {}
+/** @param {function(?Protocol.Error, LayerTreeAgent.SnapshotId):void=} opt_callback */
+Protocol.LayerTreeAgent.prototype.invoke_loadSnapshot = function(obj, opt_callback) {}
+
+/**
+ * @param {LayerTreeAgent.SnapshotId} snapshotId
+ * @param {function(?Protocol.Error):void=} opt_callback
+ */
+Protocol.LayerTreeAgent.prototype.releaseSnapshot = function(snapshotId, opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+Protocol.LayerTreeAgent.prototype.invoke_releaseSnapshot = function(obj, opt_callback) {}
+
+/**
+ * @param {LayerTreeAgent.SnapshotId} snapshotId
+ * @param {number=} opt_minRepeatCount
+ * @param {number=} opt_minDuration
+ * @param {DOMAgent.Rect=} opt_clipRect
+ * @param {function(?Protocol.Error, !Array.<LayerTreeAgent.PaintProfile>):void=} opt_callback
+ */
+Protocol.LayerTreeAgent.prototype.profileSnapshot = function(snapshotId, opt_minRepeatCount, opt_minDuration, opt_clipRect, opt_callback) {}
+/** @param {function(?Protocol.Error, !Array.<LayerTreeAgent.PaintProfile>):void=} opt_callback */
+Protocol.LayerTreeAgent.prototype.invoke_profileSnapshot = function(obj, opt_callback) {}
+
+/**
+ * @param {LayerTreeAgent.SnapshotId} snapshotId
+ * @param {number=} opt_fromStep
+ * @param {number=} opt_toStep
+ * @param {number=} opt_scale
+ * @param {function(?Protocol.Error, string):void=} opt_callback
+ */
+Protocol.LayerTreeAgent.prototype.replaySnapshot = function(snapshotId, opt_fromStep, opt_toStep, opt_scale, opt_callback) {}
+/** @param {function(?Protocol.Error, string):void=} opt_callback */
+Protocol.LayerTreeAgent.prototype.invoke_replaySnapshot = function(obj, opt_callback) {}
+
+/**
+ * @param {LayerTreeAgent.SnapshotId} snapshotId
+ * @param {function(?Protocol.Error, !Array.<!Object>):void=} opt_callback
+ */
+Protocol.LayerTreeAgent.prototype.snapshotCommandLog = function(snapshotId, opt_callback) {}
+/** @param {function(?Protocol.Error, !Array.<!Object>):void=} opt_callback */
+Protocol.LayerTreeAgent.prototype.invoke_snapshotCommandLog = function(obj, opt_callback) {}
 
 
 
@@ -2394,11 +2957,67 @@ var LayerTreeAgent = function(){};
 /** @typedef {string} */
 LayerTreeAgent.LayerId;
 
-/** @typedef {!{layerId:(LayerTreeAgent.LayerId), parentLayerId:(LayerTreeAgent.LayerId|undefined), nodeId:(DOMAgent.NodeId|undefined), offsetX:(number), offsetY:(number), width:(number), height:(number), transform:(!Array.<number>|undefined), anchorX:(number|undefined), anchorY:(number|undefined), anchorZ:(number|undefined), paintCount:(number), invisible:(boolean|undefined)}} */
+/** @typedef {string} */
+LayerTreeAgent.SnapshotId;
+
+/** @enum {string} */
+LayerTreeAgent.ScrollRectType = {
+    RepaintsOnScroll: "RepaintsOnScroll",
+    TouchEventHandler: "TouchEventHandler",
+    WheelEventHandler: "WheelEventHandler"
+};
+
+/** @typedef {!{rect:(DOMAgent.Rect), type:(LayerTreeAgent.ScrollRectType)}} */
+LayerTreeAgent.ScrollRect;
+
+/** @typedef {!{x:(number), y:(number), picture:(string)}} */
+LayerTreeAgent.PictureTile;
+
+/** @typedef {!{layerId:(LayerTreeAgent.LayerId), parentLayerId:(LayerTreeAgent.LayerId|undefined), backendNodeId:(DOMAgent.BackendNodeId|undefined), offsetX:(number), offsetY:(number), width:(number), height:(number), transform:(!Array.<number>|undefined), anchorX:(number|undefined), anchorY:(number|undefined), anchorZ:(number|undefined), paintCount:(number), drawsContent:(boolean), invisible:(boolean|undefined), scrollRects:(!Array.<LayerTreeAgent.ScrollRect>|undefined)}} */
 LayerTreeAgent.Layer;
+
+/** @typedef {!Array.<!number>} */
+LayerTreeAgent.PaintProfile;
 /** @interface */
 LayerTreeAgent.Dispatcher = function() {};
-LayerTreeAgent.Dispatcher.prototype.layerTreeDidChange = function() {};
+/**
+ * @param {!Array.<LayerTreeAgent.Layer>=} opt_layers
+ */
+LayerTreeAgent.Dispatcher.prototype.layerTreeDidChange = function(opt_layers) {};
+/**
+ * @param {LayerTreeAgent.LayerId} layerId
+ * @param {DOMAgent.Rect} clip
+ */
+LayerTreeAgent.Dispatcher.prototype.layerPainted = function(layerId, clip) {};
+
+
+/**
+ * @constructor
+*/
+Protocol.DeviceOrientationAgent = function(){};
+
+/**
+ * @param {number} alpha
+ * @param {number} beta
+ * @param {number} gamma
+ * @param {function(?Protocol.Error):void=} opt_callback
+ */
+Protocol.DeviceOrientationAgent.prototype.setDeviceOrientationOverride = function(alpha, beta, gamma, opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+Protocol.DeviceOrientationAgent.prototype.invoke_setDeviceOrientationOverride = function(obj, opt_callback) {}
+
+/**
+ * @param {function(?Protocol.Error):void=} opt_callback
+ */
+Protocol.DeviceOrientationAgent.prototype.clearDeviceOrientationOverride = function(opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+Protocol.DeviceOrientationAgent.prototype.invoke_clearDeviceOrientationOverride = function(obj, opt_callback) {}
+
+
+
+var DeviceOrientationAgent = function(){};
+/** @interface */
+DeviceOrientationAgent.Dispatcher = function() {};
 
 
 /**
@@ -2407,10 +3026,14 @@ LayerTreeAgent.Dispatcher.prototype.layerTreeDidChange = function() {};
 Protocol.TracingAgent = function(){};
 
 /**
- * @param {string} categories
+ * @param {string=} opt_categories
+ * @param {string=} opt_options
+ * @param {number=} opt_bufferUsageReportingInterval
+ * @param {string=} opt_transferMode
+ * @param {TracingAgent.TraceConfig=} opt_traceConfig
  * @param {function(?Protocol.Error):void=} opt_callback
  */
-Protocol.TracingAgent.prototype.start = function(categories, opt_callback) {}
+Protocol.TracingAgent.prototype.start = function(opt_categories, opt_options, opt_bufferUsageReportingInterval, opt_transferMode, opt_traceConfig, opt_callback) {}
 /** @param {function(?Protocol.Error):void=} opt_callback */
 Protocol.TracingAgent.prototype.invoke_start = function(obj, opt_callback) {}
 
@@ -2421,16 +3044,608 @@ Protocol.TracingAgent.prototype.end = function(opt_callback) {}
 /** @param {function(?Protocol.Error):void=} opt_callback */
 Protocol.TracingAgent.prototype.invoke_end = function(obj, opt_callback) {}
 
+/**
+ * @param {function(?Protocol.Error, !Array.<string>):void=} opt_callback
+ */
+Protocol.TracingAgent.prototype.getCategories = function(opt_callback) {}
+/** @param {function(?Protocol.Error, !Array.<string>):void=} opt_callback */
+Protocol.TracingAgent.prototype.invoke_getCategories = function(obj, opt_callback) {}
+
+/**
+ * @param {function(?Protocol.Error, string, boolean):void=} opt_callback
+ */
+Protocol.TracingAgent.prototype.requestMemoryDump = function(opt_callback) {}
+/** @param {function(?Protocol.Error, string, boolean):void=} opt_callback */
+Protocol.TracingAgent.prototype.invoke_requestMemoryDump = function(obj, opt_callback) {}
+
+/**
+ * @param {string} syncId
+ * @param {function(?Protocol.Error):void=} opt_callback
+ */
+Protocol.TracingAgent.prototype.recordClockSyncMarker = function(syncId, opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+Protocol.TracingAgent.prototype.invoke_recordClockSyncMarker = function(obj, opt_callback) {}
+
 
 
 var TracingAgent = function(){};
+
+/** @typedef {!Object} */
+TracingAgent.MemoryDumpConfig;
+
+/** @enum {string} */
+TracingAgent.TraceConfigRecordMode = {
+    RecordUntilFull: "recordUntilFull",
+    RecordContinuously: "recordContinuously",
+    RecordAsMuchAsPossible: "recordAsMuchAsPossible",
+    EchoToConsole: "echoToConsole"
+};
+
+/** @typedef {!{recordMode:(TracingAgent.TraceConfigRecordMode|undefined), enableSampling:(boolean|undefined), enableSystrace:(boolean|undefined), enableArgumentFilter:(boolean|undefined), includedCategories:(!Array.<string>|undefined), excludedCategories:(!Array.<string>|undefined), syntheticDelays:(!Array.<string>|undefined), memoryDumpConfig:(TracingAgent.MemoryDumpConfig|undefined)}} */
+TracingAgent.TraceConfig;
 /** @interface */
 TracingAgent.Dispatcher = function() {};
 /**
  * @param {!Array.<!Object>} value
  */
 TracingAgent.Dispatcher.prototype.dataCollected = function(value) {};
-TracingAgent.Dispatcher.prototype.tracingComplete = function() {};
+/**
+ * @param {IOAgent.StreamHandle=} opt_stream
+ */
+TracingAgent.Dispatcher.prototype.tracingComplete = function(opt_stream) {};
+/**
+ * @param {number=} opt_percentFull
+ * @param {number=} opt_eventCount
+ * @param {number=} opt_value
+ */
+TracingAgent.Dispatcher.prototype.bufferUsage = function(opt_percentFull, opt_eventCount, opt_value) {};
+
+
+/**
+ * @constructor
+*/
+Protocol.AnimationAgent = function(){};
+
+/**
+ * @param {function(?Protocol.Error):T=} opt_callback
+ * @return {!Promise.<T>}
+ * @template T
+ */
+Protocol.AnimationAgent.prototype.enable = function(opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+Protocol.AnimationAgent.prototype.invoke_enable = function(obj, opt_callback) {}
+
+/**
+ * @param {function(?Protocol.Error):T=} opt_callback
+ * @return {!Promise.<T>}
+ * @template T
+ */
+Protocol.AnimationAgent.prototype.disable = function(opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+Protocol.AnimationAgent.prototype.invoke_disable = function(obj, opt_callback) {}
+
+/**
+ * @param {function(?Protocol.Error, number):T} opt_callback
+ * @return {!Promise.<T>}
+ * @template T
+ */
+Protocol.AnimationAgent.prototype.getPlaybackRate = function(opt_callback) {}
+/** @param {function(?Protocol.Error, number):void=} opt_callback */
+Protocol.AnimationAgent.prototype.invoke_getPlaybackRate = function(obj, opt_callback) {}
+
+/**
+ * @param {number} playbackRate
+ * @param {function(?Protocol.Error):T=} opt_callback
+ * @return {!Promise.<T>}
+ * @template T
+ */
+Protocol.AnimationAgent.prototype.setPlaybackRate = function(playbackRate, opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+Protocol.AnimationAgent.prototype.invoke_setPlaybackRate = function(obj, opt_callback) {}
+
+/**
+ * @param {string} id
+ * @param {function(?Protocol.Error, number):T} opt_callback
+ * @return {!Promise.<T>}
+ * @template T
+ */
+Protocol.AnimationAgent.prototype.getCurrentTime = function(id, opt_callback) {}
+/** @param {function(?Protocol.Error, number):void=} opt_callback */
+Protocol.AnimationAgent.prototype.invoke_getCurrentTime = function(obj, opt_callback) {}
+
+/**
+ * @param {!Array.<string>} animations
+ * @param {boolean} paused
+ * @param {function(?Protocol.Error):T=} opt_callback
+ * @return {!Promise.<T>}
+ * @template T
+ */
+Protocol.AnimationAgent.prototype.setPaused = function(animations, paused, opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+Protocol.AnimationAgent.prototype.invoke_setPaused = function(obj, opt_callback) {}
+
+/**
+ * @param {string} animationId
+ * @param {number} duration
+ * @param {number} delay
+ * @param {function(?Protocol.Error):T=} opt_callback
+ * @return {!Promise.<T>}
+ * @template T
+ */
+Protocol.AnimationAgent.prototype.setTiming = function(animationId, duration, delay, opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+Protocol.AnimationAgent.prototype.invoke_setTiming = function(obj, opt_callback) {}
+
+/**
+ * @param {!Array.<string>} animations
+ * @param {number} currentTime
+ * @param {function(?Protocol.Error):T=} opt_callback
+ * @return {!Promise.<T>}
+ * @template T
+ */
+Protocol.AnimationAgent.prototype.seekAnimations = function(animations, currentTime, opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+Protocol.AnimationAgent.prototype.invoke_seekAnimations = function(obj, opt_callback) {}
+
+/**
+ * @param {!Array.<string>} animations
+ * @param {function(?Protocol.Error):T=} opt_callback
+ * @return {!Promise.<T>}
+ * @template T
+ */
+Protocol.AnimationAgent.prototype.releaseAnimations = function(animations, opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+Protocol.AnimationAgent.prototype.invoke_releaseAnimations = function(obj, opt_callback) {}
+
+/**
+ * @param {string} animationId
+ * @param {function(?Protocol.Error, RuntimeAgent.RemoteObject):T} opt_callback
+ * @return {!Promise.<T>}
+ * @template T
+ */
+Protocol.AnimationAgent.prototype.resolveAnimation = function(animationId, opt_callback) {}
+/** @param {function(?Protocol.Error, RuntimeAgent.RemoteObject):void=} opt_callback */
+Protocol.AnimationAgent.prototype.invoke_resolveAnimation = function(obj, opt_callback) {}
+
+
+
+var AnimationAgent = function(){};
+
+/** @enum {string} */
+AnimationAgent.AnimationType = {
+    CSSTransition: "CSSTransition",
+    CSSAnimation: "CSSAnimation",
+    WebAnimation: "WebAnimation"
+};
+
+/** @typedef {!{id:(string), name:(string), pausedState:(boolean), playState:(string), playbackRate:(number), startTime:(number), currentTime:(number), source:(AnimationAgent.AnimationEffect), type:(AnimationAgent.AnimationType), cssId:(string|undefined)}} */
+AnimationAgent.Animation;
+
+/** @typedef {!{delay:(number), endDelay:(number), iterationStart:(number), iterations:(number), duration:(number), direction:(string), fill:(string), backendNodeId:(DOMAgent.BackendNodeId), keyframesRule:(AnimationAgent.KeyframesRule|undefined), easing:(string)}} */
+AnimationAgent.AnimationEffect;
+
+/** @typedef {!{name:(string|undefined), keyframes:(!Array.<AnimationAgent.KeyframeStyle>)}} */
+AnimationAgent.KeyframesRule;
+
+/** @typedef {!{offset:(string), easing:(string)}} */
+AnimationAgent.KeyframeStyle;
+/** @interface */
+AnimationAgent.Dispatcher = function() {};
+/**
+ * @param {string} id
+ */
+AnimationAgent.Dispatcher.prototype.animationCreated = function(id) {};
+/**
+ * @param {AnimationAgent.Animation} animation
+ */
+AnimationAgent.Dispatcher.prototype.animationStarted = function(animation) {};
+/**
+ * @param {string} id
+ */
+AnimationAgent.Dispatcher.prototype.animationCanceled = function(id) {};
+
+
+/**
+ * @constructor
+*/
+Protocol.AccessibilityAgent = function(){};
+
+/**
+ * @param {DOMAgent.NodeId} nodeId
+ * @param {function(?Protocol.Error, AccessibilityAgent.AXNode=):T} opt_callback
+ * @return {!Promise.<T>}
+ * @template T
+ */
+Protocol.AccessibilityAgent.prototype.getAXNode = function(nodeId, opt_callback) {}
+/** @param {function(?Protocol.Error, AccessibilityAgent.AXNode=):void=} opt_callback */
+Protocol.AccessibilityAgent.prototype.invoke_getAXNode = function(obj, opt_callback) {}
+
+
+
+var AccessibilityAgent = function(){};
+
+/** @typedef {string} */
+AccessibilityAgent.AXNodeId;
+
+/** @enum {string} */
+AccessibilityAgent.AXValueType = {
+    Boolean: "boolean",
+    Tristate: "tristate",
+    BooleanOrUndefined: "booleanOrUndefined",
+    Idref: "idref",
+    IdrefList: "idrefList",
+    Integer: "integer",
+    Node: "node",
+    NodeList: "nodeList",
+    Number: "number",
+    String: "string",
+    ComputedString: "computedString",
+    Token: "token",
+    TokenList: "tokenList",
+    DomRelation: "domRelation",
+    Role: "role",
+    InternalRole: "internalRole",
+    ValueUndefined: "valueUndefined"
+};
+
+/** @enum {string} */
+AccessibilityAgent.AXValueSourceType = {
+    Attribute: "attribute",
+    Implicit: "implicit",
+    Style: "style",
+    Contents: "contents",
+    Placeholder: "placeholder",
+    RelatedElement: "relatedElement"
+};
+
+/** @enum {string} */
+AccessibilityAgent.AXValueNativeSourceType = {
+    Figcaption: "figcaption",
+    Label: "label",
+    Labelfor: "labelfor",
+    Labelwrapped: "labelwrapped",
+    Legend: "legend",
+    Tablecaption: "tablecaption",
+    Title: "title",
+    Other: "other"
+};
+
+/** @typedef {!{type:(AccessibilityAgent.AXValueSourceType), value:(AccessibilityAgent.AXValue|undefined), attribute:(string|undefined), attributeValue:(AccessibilityAgent.AXValue|undefined), superseded:(boolean|undefined), nativeSource:(AccessibilityAgent.AXValueNativeSourceType|undefined), nativeSourceValue:(AccessibilityAgent.AXValue|undefined), invalid:(boolean|undefined), invalidReason:(string|undefined)}} */
+AccessibilityAgent.AXValueSource;
+
+/** @typedef {!{backendNodeId:(DOMAgent.BackendNodeId), idref:(string|undefined), text:(string|undefined)}} */
+AccessibilityAgent.AXRelatedNode;
+
+/** @typedef {!{name:(string), value:(AccessibilityAgent.AXValue)}} */
+AccessibilityAgent.AXProperty;
+
+/** @typedef {!{type:(AccessibilityAgent.AXValueType), value:(*|undefined), relatedNodes:(!Array.<AccessibilityAgent.AXRelatedNode>|undefined), sources:(!Array.<AccessibilityAgent.AXValueSource>|undefined)}} */
+AccessibilityAgent.AXValue;
+
+/** @enum {string} */
+AccessibilityAgent.AXGlobalStates = {
+    Disabled: "disabled",
+    Hidden: "hidden",
+    HiddenRoot: "hiddenRoot",
+    Invalid: "invalid"
+};
+
+/** @enum {string} */
+AccessibilityAgent.AXLiveRegionAttributes = {
+    Live: "live",
+    Atomic: "atomic",
+    Relevant: "relevant",
+    Busy: "busy",
+    Root: "root"
+};
+
+/** @enum {string} */
+AccessibilityAgent.AXWidgetAttributes = {
+    Autocomplete: "autocomplete",
+    Haspopup: "haspopup",
+    Level: "level",
+    Multiselectable: "multiselectable",
+    Orientation: "orientation",
+    Multiline: "multiline",
+    Readonly: "readonly",
+    Required: "required",
+    Valuemin: "valuemin",
+    Valuemax: "valuemax",
+    Valuetext: "valuetext"
+};
+
+/** @enum {string} */
+AccessibilityAgent.AXWidgetStates = {
+    Checked: "checked",
+    Expanded: "expanded",
+    Pressed: "pressed",
+    Selected: "selected"
+};
+
+/** @enum {string} */
+AccessibilityAgent.AXRelationshipAttributes = {
+    Activedescendant: "activedescendant",
+    Flowto: "flowto",
+    Controls: "controls",
+    Describedby: "describedby",
+    Labelledby: "labelledby",
+    Owns: "owns"
+};
+
+/** @typedef {!{nodeId:(AccessibilityAgent.AXNodeId), ignored:(boolean), ignoredReasons:(!Array.<AccessibilityAgent.AXProperty>|undefined), role:(AccessibilityAgent.AXValue|undefined), name:(AccessibilityAgent.AXValue|undefined), description:(AccessibilityAgent.AXValue|undefined), value:(AccessibilityAgent.AXValue|undefined), properties:(!Array.<AccessibilityAgent.AXProperty>|undefined)}} */
+AccessibilityAgent.AXNode;
+/** @interface */
+AccessibilityAgent.Dispatcher = function() {};
+
+
+/**
+ * @constructor
+*/
+Protocol.StorageAgent = function(){};
+
+/**
+ * @param {string} origin
+ * @param {string} storageTypes
+ * @param {function(?Protocol.Error):void=} opt_callback
+ */
+Protocol.StorageAgent.prototype.clearDataForOrigin = function(origin, storageTypes, opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+Protocol.StorageAgent.prototype.invoke_clearDataForOrigin = function(obj, opt_callback) {}
+
+
+
+var StorageAgent = function(){};
+
+/** @enum {string} */
+StorageAgent.StorageType = {
+    Appcache: "appcache",
+    Cookies: "cookies",
+    File_systems: "file_systems",
+    Indexeddb: "indexeddb",
+    Local_storage: "local_storage",
+    Shader_cache: "shader_cache",
+    Websql: "websql",
+    Service_workers: "service_workers",
+    Cache_storage: "cache_storage",
+    All: "all"
+};
+/** @interface */
+StorageAgent.Dispatcher = function() {};
+
+
+/**
+ * @constructor
+*/
+Protocol.LogAgent = function(){};
+
+/**
+ * @param {function(?Protocol.Error):void=} opt_callback
+ */
+Protocol.LogAgent.prototype.enable = function(opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+Protocol.LogAgent.prototype.invoke_enable = function(obj, opt_callback) {}
+
+/**
+ * @param {function(?Protocol.Error):void=} opt_callback
+ */
+Protocol.LogAgent.prototype.disable = function(opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+Protocol.LogAgent.prototype.invoke_disable = function(obj, opt_callback) {}
+
+/**
+ * @param {function(?Protocol.Error):void=} opt_callback
+ */
+Protocol.LogAgent.prototype.clear = function(opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+Protocol.LogAgent.prototype.invoke_clear = function(obj, opt_callback) {}
+
+
+
+var LogAgent = function(){};
+
+/** @enum {string} */
+LogAgent.LogEntrySource = {
+    XML: "xml",
+    Javascript: "javascript",
+    Network: "network",
+    Storage: "storage",
+    Appcache: "appcache",
+    Rendering: "rendering",
+    Security: "security",
+    Deprecation: "deprecation",
+    Worker: "worker",
+    Other: "other"
+};
+
+/** @enum {string} */
+LogAgent.LogEntryLevel = {
+    Log: "log",
+    Warning: "warning",
+    Error: "error",
+    Debug: "debug",
+    Info: "info"
+};
+
+/** @typedef {!{source:(LogAgent.LogEntrySource), level:(LogAgent.LogEntryLevel), text:(string), timestamp:(RuntimeAgent.Timestamp), url:(string|undefined), lineNumber:(number|undefined), stackTrace:(RuntimeAgent.StackTrace|undefined), networkRequestId:(NetworkAgent.RequestId|undefined), workerId:(string|undefined)}} */
+LogAgent.LogEntry;
+/** @interface */
+LogAgent.Dispatcher = function() {};
+/**
+ * @param {LogAgent.LogEntry} entry
+ */
+LogAgent.Dispatcher.prototype.entryAdded = function(entry) {};
+
+
+/**
+ * @constructor
+*/
+Protocol.BrowserAgent = function(){};
+
+/**
+ * @param {function(?Protocol.Error, BrowserAgent.BrowserContextID):void=} opt_callback
+ */
+Protocol.BrowserAgent.prototype.createBrowserContext = function(opt_callback) {}
+/** @param {function(?Protocol.Error, BrowserAgent.BrowserContextID):void=} opt_callback */
+Protocol.BrowserAgent.prototype.invoke_createBrowserContext = function(obj, opt_callback) {}
+
+/**
+ * @param {BrowserAgent.BrowserContextID} browserContextId
+ * @param {function(?Protocol.Error, boolean):void=} opt_callback
+ */
+Protocol.BrowserAgent.prototype.disposeBrowserContext = function(browserContextId, opt_callback) {}
+/** @param {function(?Protocol.Error, boolean):void=} opt_callback */
+Protocol.BrowserAgent.prototype.invoke_disposeBrowserContext = function(obj, opt_callback) {}
+
+/**
+ * @param {string} url
+ * @param {number=} opt_width
+ * @param {number=} opt_height
+ * @param {BrowserAgent.BrowserContextID=} opt_browserContextId
+ * @param {function(?Protocol.Error, BrowserAgent.TargetID):void=} opt_callback
+ */
+Protocol.BrowserAgent.prototype.createTarget = function(url, opt_width, opt_height, opt_browserContextId, opt_callback) {}
+/** @param {function(?Protocol.Error, BrowserAgent.TargetID):void=} opt_callback */
+Protocol.BrowserAgent.prototype.invoke_createTarget = function(obj, opt_callback) {}
+
+/**
+ * @param {BrowserAgent.TargetID} targetId
+ * @param {function(?Protocol.Error, boolean):void=} opt_callback
+ */
+Protocol.BrowserAgent.prototype.closeTarget = function(targetId, opt_callback) {}
+/** @param {function(?Protocol.Error, boolean):void=} opt_callback */
+Protocol.BrowserAgent.prototype.invoke_closeTarget = function(obj, opt_callback) {}
+
+/**
+ * @param {function(?Protocol.Error, !Array.<BrowserAgent.TargetInfo>):void=} opt_callback
+ */
+Protocol.BrowserAgent.prototype.getTargets = function(opt_callback) {}
+/** @param {function(?Protocol.Error, !Array.<BrowserAgent.TargetInfo>):void=} opt_callback */
+Protocol.BrowserAgent.prototype.invoke_getTargets = function(obj, opt_callback) {}
+
+/**
+ * @param {BrowserAgent.TargetID} targetId
+ * @param {function(?Protocol.Error):void=} opt_callback
+ */
+Protocol.BrowserAgent.prototype.attach = function(targetId, opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+Protocol.BrowserAgent.prototype.invoke_attach = function(obj, opt_callback) {}
+
+/**
+ * @param {BrowserAgent.TargetID} targetId
+ * @param {function(?Protocol.Error):void=} opt_callback
+ */
+Protocol.BrowserAgent.prototype.detach = function(targetId, opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+Protocol.BrowserAgent.prototype.invoke_detach = function(obj, opt_callback) {}
+
+/**
+ * @param {BrowserAgent.TargetID} targetId
+ * @param {string} message
+ * @param {function(?Protocol.Error):void=} opt_callback
+ */
+Protocol.BrowserAgent.prototype.sendMessage = function(targetId, message, opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+Protocol.BrowserAgent.prototype.invoke_sendMessage = function(obj, opt_callback) {}
+
+
+
+var BrowserAgent = function(){};
+
+/** @typedef {string} */
+BrowserAgent.BrowserContextID;
+
+/** @typedef {string} */
+BrowserAgent.TargetID;
+
+/** @typedef {!{targetId:(BrowserAgent.TargetID), type:(string), title:(string), url:(string)}} */
+BrowserAgent.TargetInfo;
+/** @interface */
+BrowserAgent.Dispatcher = function() {};
+/**
+ * @param {BrowserAgent.TargetID} targetId
+ * @param {string} message
+ */
+BrowserAgent.Dispatcher.prototype.dispatchMessage = function(targetId, message) {};
+
+
+/**
+ * @constructor
+*/
+Protocol.SystemInfoAgent = function(){};
+
+/**
+ * @param {function(?Protocol.Error, SystemInfoAgent.GPUInfo, string, string):void=} opt_callback
+ */
+Protocol.SystemInfoAgent.prototype.getInfo = function(opt_callback) {}
+/** @param {function(?Protocol.Error, SystemInfoAgent.GPUInfo, string, string):void=} opt_callback */
+Protocol.SystemInfoAgent.prototype.invoke_getInfo = function(obj, opt_callback) {}
+
+
+
+var SystemInfoAgent = function(){};
+
+/** @typedef {!{vendorId:(number), deviceId:(number), vendorString:(string), deviceString:(string)}} */
+SystemInfoAgent.GPUDevice;
+
+/** @typedef {!{devices:(!Array.<SystemInfoAgent.GPUDevice>), auxAttributes:(!Object|undefined), featureStatus:(!Object|undefined), driverBugWorkarounds:(!Array.<string>)}} */
+SystemInfoAgent.GPUInfo;
+/** @interface */
+SystemInfoAgent.Dispatcher = function() {};
+
+
+/**
+ * @constructor
+*/
+Protocol.TetheringAgent = function(){};
+
+/**
+ * @param {number} port
+ * @param {function(?Protocol.Error):void=} opt_callback
+ */
+Protocol.TetheringAgent.prototype.bind = function(port, opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+Protocol.TetheringAgent.prototype.invoke_bind = function(obj, opt_callback) {}
+
+/**
+ * @param {number} port
+ * @param {function(?Protocol.Error):void=} opt_callback
+ */
+Protocol.TetheringAgent.prototype.unbind = function(port, opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+Protocol.TetheringAgent.prototype.invoke_unbind = function(obj, opt_callback) {}
+
+
+
+var TetheringAgent = function(){};
+/** @interface */
+TetheringAgent.Dispatcher = function() {};
+/**
+ * @param {number} port
+ * @param {string} connectionId
+ */
+TetheringAgent.Dispatcher.prototype.accepted = function(port, connectionId) {};
+
+
+/**
+ * @constructor
+*/
+Protocol.SchemaAgent = function(){};
+
+/**
+ * @param {function(?Protocol.Error, !Array.<SchemaAgent.Domain>):void=} opt_callback
+ */
+Protocol.SchemaAgent.prototype.getDomains = function(opt_callback) {}
+/** @param {function(?Protocol.Error, !Array.<SchemaAgent.Domain>):void=} opt_callback */
+Protocol.SchemaAgent.prototype.invoke_getDomains = function(obj, opt_callback) {}
+
+
+
+var SchemaAgent = function(){};
+
+/** @typedef {!{name:(string), version:(string)}} */
+SchemaAgent.Domain;
+/** @interface */
+SchemaAgent.Dispatcher = function() {};
 
 
 /**
@@ -2442,37 +3657,52 @@ Protocol.RuntimeAgent = function(){};
  * @param {string} expression
  * @param {string=} opt_objectGroup
  * @param {boolean=} opt_includeCommandLineAPI
- * @param {boolean=} opt_doNotPauseOnExceptionsAndMuteConsole
+ * @param {boolean=} opt_silent
  * @param {RuntimeAgent.ExecutionContextId=} opt_contextId
  * @param {boolean=} opt_returnByValue
  * @param {boolean=} opt_generatePreview
- * @param {function(?Protocol.Error, RuntimeAgent.RemoteObject, boolean=):void=} opt_callback
+ * @param {boolean=} opt_userGesture
+ * @param {boolean=} opt_awaitPromise
+ * @param {function(?Protocol.Error, RuntimeAgent.RemoteObject, RuntimeAgent.ExceptionDetails=):void=} opt_callback
  */
-Protocol.RuntimeAgent.prototype.evaluate = function(expression, opt_objectGroup, opt_includeCommandLineAPI, opt_doNotPauseOnExceptionsAndMuteConsole, opt_contextId, opt_returnByValue, opt_generatePreview, opt_callback) {}
-/** @param {function(?Protocol.Error, RuntimeAgent.RemoteObject, boolean=):void=} opt_callback */
+Protocol.RuntimeAgent.prototype.evaluate = function(expression, opt_objectGroup, opt_includeCommandLineAPI, opt_silent, opt_contextId, opt_returnByValue, opt_generatePreview, opt_userGesture, opt_awaitPromise, opt_callback) {}
+/** @param {function(?Protocol.Error, RuntimeAgent.RemoteObject, RuntimeAgent.ExceptionDetails=):void=} opt_callback */
 Protocol.RuntimeAgent.prototype.invoke_evaluate = function(obj, opt_callback) {}
+
+/**
+ * @param {RuntimeAgent.RemoteObjectId} promiseObjectId
+ * @param {boolean=} opt_returnByValue
+ * @param {boolean=} opt_generatePreview
+ * @param {function(?Protocol.Error, RuntimeAgent.RemoteObject, RuntimeAgent.ExceptionDetails=):void=} opt_callback
+ */
+Protocol.RuntimeAgent.prototype.awaitPromise = function(promiseObjectId, opt_returnByValue, opt_generatePreview, opt_callback) {}
+/** @param {function(?Protocol.Error, RuntimeAgent.RemoteObject, RuntimeAgent.ExceptionDetails=):void=} opt_callback */
+Protocol.RuntimeAgent.prototype.invoke_awaitPromise = function(obj, opt_callback) {}
 
 /**
  * @param {RuntimeAgent.RemoteObjectId} objectId
  * @param {string} functionDeclaration
  * @param {!Array.<RuntimeAgent.CallArgument>=} opt_arguments
- * @param {boolean=} opt_doNotPauseOnExceptionsAndMuteConsole
+ * @param {boolean=} opt_silent
  * @param {boolean=} opt_returnByValue
  * @param {boolean=} opt_generatePreview
- * @param {function(?Protocol.Error, RuntimeAgent.RemoteObject, boolean=):void=} opt_callback
+ * @param {boolean=} opt_userGesture
+ * @param {boolean=} opt_awaitPromise
+ * @param {function(?Protocol.Error, RuntimeAgent.RemoteObject, RuntimeAgent.ExceptionDetails=):void=} opt_callback
  */
-Protocol.RuntimeAgent.prototype.callFunctionOn = function(objectId, functionDeclaration, opt_arguments, opt_doNotPauseOnExceptionsAndMuteConsole, opt_returnByValue, opt_generatePreview, opt_callback) {}
-/** @param {function(?Protocol.Error, RuntimeAgent.RemoteObject, boolean=):void=} opt_callback */
+Protocol.RuntimeAgent.prototype.callFunctionOn = function(objectId, functionDeclaration, opt_arguments, opt_silent, opt_returnByValue, opt_generatePreview, opt_userGesture, opt_awaitPromise, opt_callback) {}
+/** @param {function(?Protocol.Error, RuntimeAgent.RemoteObject, RuntimeAgent.ExceptionDetails=):void=} opt_callback */
 Protocol.RuntimeAgent.prototype.invoke_callFunctionOn = function(obj, opt_callback) {}
 
 /**
  * @param {RuntimeAgent.RemoteObjectId} objectId
  * @param {boolean=} opt_ownProperties
  * @param {boolean=} opt_accessorPropertiesOnly
- * @param {function(?Protocol.Error, !Array.<RuntimeAgent.PropertyDescriptor>, !Array.<RuntimeAgent.InternalPropertyDescriptor>=):void=} opt_callback
+ * @param {boolean=} opt_generatePreview
+ * @param {function(?Protocol.Error, !Array.<RuntimeAgent.PropertyDescriptor>, !Array.<RuntimeAgent.InternalPropertyDescriptor>=, RuntimeAgent.ExceptionDetails=):void=} opt_callback
  */
-Protocol.RuntimeAgent.prototype.getProperties = function(objectId, opt_ownProperties, opt_accessorPropertiesOnly, opt_callback) {}
-/** @param {function(?Protocol.Error, !Array.<RuntimeAgent.PropertyDescriptor>, !Array.<RuntimeAgent.InternalPropertyDescriptor>=):void=} opt_callback */
+Protocol.RuntimeAgent.prototype.getProperties = function(objectId, opt_ownProperties, opt_accessorPropertiesOnly, opt_generatePreview, opt_callback) {}
+/** @param {function(?Protocol.Error, !Array.<RuntimeAgent.PropertyDescriptor>, !Array.<RuntimeAgent.InternalPropertyDescriptor>=, RuntimeAgent.ExceptionDetails=):void=} opt_callback */
 Protocol.RuntimeAgent.prototype.invoke_getProperties = function(obj, opt_callback) {}
 
 /**
@@ -2494,9 +3724,9 @@ Protocol.RuntimeAgent.prototype.invoke_releaseObjectGroup = function(obj, opt_ca
 /**
  * @param {function(?Protocol.Error):void=} opt_callback
  */
-Protocol.RuntimeAgent.prototype.run = function(opt_callback) {}
+Protocol.RuntimeAgent.prototype.runIfWaitingForDebugger = function(opt_callback) {}
 /** @param {function(?Protocol.Error):void=} opt_callback */
-Protocol.RuntimeAgent.prototype.invoke_run = function(obj, opt_callback) {}
+Protocol.RuntimeAgent.prototype.invoke_runIfWaitingForDebugger = function(obj, opt_callback) {}
 
 /**
  * @param {function(?Protocol.Error):void=} opt_callback
@@ -2512,12 +3742,64 @@ Protocol.RuntimeAgent.prototype.disable = function(opt_callback) {}
 /** @param {function(?Protocol.Error):void=} opt_callback */
 Protocol.RuntimeAgent.prototype.invoke_disable = function(obj, opt_callback) {}
 
+/**
+ * @param {function(?Protocol.Error):void=} opt_callback
+ */
+Protocol.RuntimeAgent.prototype.discardConsoleEntries = function(opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+Protocol.RuntimeAgent.prototype.invoke_discardConsoleEntries = function(obj, opt_callback) {}
+
+/**
+ * @param {boolean} enabled
+ * @param {function(?Protocol.Error):void=} opt_callback
+ */
+Protocol.RuntimeAgent.prototype.setCustomObjectFormatterEnabled = function(enabled, opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+Protocol.RuntimeAgent.prototype.invoke_setCustomObjectFormatterEnabled = function(obj, opt_callback) {}
+
+/**
+ * @param {string} expression
+ * @param {string} sourceURL
+ * @param {boolean} persistScript
+ * @param {RuntimeAgent.ExecutionContextId=} opt_executionContextId
+ * @param {function(?Protocol.Error, RuntimeAgent.ScriptId=, RuntimeAgent.ExceptionDetails=):void=} opt_callback
+ */
+Protocol.RuntimeAgent.prototype.compileScript = function(expression, sourceURL, persistScript, opt_executionContextId, opt_callback) {}
+/** @param {function(?Protocol.Error, RuntimeAgent.ScriptId=, RuntimeAgent.ExceptionDetails=):void=} opt_callback */
+Protocol.RuntimeAgent.prototype.invoke_compileScript = function(obj, opt_callback) {}
+
+/**
+ * @param {RuntimeAgent.ScriptId} scriptId
+ * @param {RuntimeAgent.ExecutionContextId=} opt_executionContextId
+ * @param {string=} opt_objectGroup
+ * @param {boolean=} opt_silent
+ * @param {boolean=} opt_includeCommandLineAPI
+ * @param {boolean=} opt_returnByValue
+ * @param {boolean=} opt_generatePreview
+ * @param {boolean=} opt_awaitPromise
+ * @param {function(?Protocol.Error, RuntimeAgent.RemoteObject, RuntimeAgent.ExceptionDetails=):void=} opt_callback
+ */
+Protocol.RuntimeAgent.prototype.runScript = function(scriptId, opt_executionContextId, opt_objectGroup, opt_silent, opt_includeCommandLineAPI, opt_returnByValue, opt_generatePreview, opt_awaitPromise, opt_callback) {}
+/** @param {function(?Protocol.Error, RuntimeAgent.RemoteObject, RuntimeAgent.ExceptionDetails=):void=} opt_callback */
+Protocol.RuntimeAgent.prototype.invoke_runScript = function(obj, opt_callback) {}
+
 
 
 var RuntimeAgent = function(){};
 
 /** @typedef {string} */
+RuntimeAgent.ScriptId;
+
+/** @typedef {string} */
 RuntimeAgent.RemoteObjectId;
+
+/** @enum {string} */
+RuntimeAgent.UnserializableValue = {
+    Infinity: "Infinity",
+    NaN: "NaN",
+    NegativeInfinity: "-Infinity",
+    Negative0: "-0"
+};
 
 /** @enum {string} */
 RuntimeAgent.RemoteObjectType = {
@@ -2526,7 +3808,8 @@ RuntimeAgent.RemoteObjectType = {
     Undefined: "undefined",
     String: "string",
     Number: "number",
-    Boolean: "boolean"
+    Boolean: "boolean",
+    Symbol: "symbol"
 };
 
 /** @enum {string} */
@@ -2535,13 +3818,49 @@ RuntimeAgent.RemoteObjectSubtype = {
     Null: "null",
     Node: "node",
     Regexp: "regexp",
-    Date: "date"
+    Date: "date",
+    Map: "map",
+    Set: "set",
+    Iterator: "iterator",
+    Generator: "generator",
+    Error: "error",
+    Proxy: "proxy",
+    Promise: "promise",
+    Typedarray: "typedarray"
 };
 
-/** @typedef {!{type:(RuntimeAgent.RemoteObjectType), subtype:(RuntimeAgent.RemoteObjectSubtype|undefined), className:(string|undefined), value:(*|undefined), description:(string|undefined), objectId:(RuntimeAgent.RemoteObjectId|undefined), preview:(RuntimeAgent.ObjectPreview|undefined)}} */
+/** @typedef {!{type:(RuntimeAgent.RemoteObjectType), subtype:(RuntimeAgent.RemoteObjectSubtype|undefined), className:(string|undefined), value:(*|undefined), unserializableValue:(RuntimeAgent.UnserializableValue|undefined), description:(string|undefined), objectId:(RuntimeAgent.RemoteObjectId|undefined), preview:(RuntimeAgent.ObjectPreview|undefined), customPreview:(RuntimeAgent.CustomPreview|undefined)}} */
 RuntimeAgent.RemoteObject;
 
-/** @typedef {!{lossless:(boolean), overflow:(boolean), properties:(!Array.<RuntimeAgent.PropertyPreview>)}} */
+/** @typedef {!{header:(string), hasBody:(boolean), formatterObjectId:(RuntimeAgent.RemoteObjectId), bindRemoteObjectFunctionId:(RuntimeAgent.RemoteObjectId), configObjectId:(RuntimeAgent.RemoteObjectId|undefined)}} */
+RuntimeAgent.CustomPreview;
+
+/** @enum {string} */
+RuntimeAgent.ObjectPreviewType = {
+    Object: "object",
+    Function: "function",
+    Undefined: "undefined",
+    String: "string",
+    Number: "number",
+    Boolean: "boolean",
+    Symbol: "symbol"
+};
+
+/** @enum {string} */
+RuntimeAgent.ObjectPreviewSubtype = {
+    Array: "array",
+    Null: "null",
+    Node: "node",
+    Regexp: "regexp",
+    Date: "date",
+    Map: "map",
+    Set: "set",
+    Iterator: "iterator",
+    Generator: "generator",
+    Error: "error"
+};
+
+/** @typedef {!{type:(RuntimeAgent.ObjectPreviewType), subtype:(RuntimeAgent.ObjectPreviewSubtype|undefined), description:(string|undefined), overflow:(boolean), properties:(!Array.<RuntimeAgent.PropertyPreview>), entries:(!Array.<RuntimeAgent.EntryPreview>|undefined)}} */
 RuntimeAgent.ObjectPreview;
 
 /** @enum {string} */
@@ -2551,7 +3870,9 @@ RuntimeAgent.PropertyPreviewType = {
     Undefined: "undefined",
     String: "string",
     Number: "number",
-    Boolean: "boolean"
+    Boolean: "boolean",
+    Symbol: "symbol",
+    Accessor: "accessor"
 };
 
 /** @enum {string} */
@@ -2560,32 +3881,80 @@ RuntimeAgent.PropertyPreviewSubtype = {
     Null: "null",
     Node: "node",
     Regexp: "regexp",
-    Date: "date"
+    Date: "date",
+    Map: "map",
+    Set: "set",
+    Iterator: "iterator",
+    Generator: "generator",
+    Error: "error"
 };
 
 /** @typedef {!{name:(string), type:(RuntimeAgent.PropertyPreviewType), value:(string|undefined), valuePreview:(RuntimeAgent.ObjectPreview|undefined), subtype:(RuntimeAgent.PropertyPreviewSubtype|undefined)}} */
 RuntimeAgent.PropertyPreview;
 
-/** @typedef {!{name:(string), value:(RuntimeAgent.RemoteObject|undefined), writable:(boolean|undefined), get:(RuntimeAgent.RemoteObject|undefined), set:(RuntimeAgent.RemoteObject|undefined), configurable:(boolean), enumerable:(boolean), wasThrown:(boolean|undefined), isOwn:(boolean|undefined)}} */
+/** @typedef {!{key:(RuntimeAgent.ObjectPreview|undefined), value:(RuntimeAgent.ObjectPreview)}} */
+RuntimeAgent.EntryPreview;
+
+/** @typedef {!{name:(string), value:(RuntimeAgent.RemoteObject|undefined), writable:(boolean|undefined), get:(RuntimeAgent.RemoteObject|undefined), set:(RuntimeAgent.RemoteObject|undefined), configurable:(boolean), enumerable:(boolean), wasThrown:(boolean|undefined), isOwn:(boolean|undefined), symbol:(RuntimeAgent.RemoteObject|undefined)}} */
 RuntimeAgent.PropertyDescriptor;
 
 /** @typedef {!{name:(string), value:(RuntimeAgent.RemoteObject|undefined)}} */
 RuntimeAgent.InternalPropertyDescriptor;
 
-/** @typedef {!{value:(*|undefined), objectId:(RuntimeAgent.RemoteObjectId|undefined)}} */
+/** @typedef {!{value:(*|undefined), unserializableValue:(RuntimeAgent.UnserializableValue|undefined), objectId:(RuntimeAgent.RemoteObjectId|undefined)}} */
 RuntimeAgent.CallArgument;
 
 /** @typedef {number} */
 RuntimeAgent.ExecutionContextId;
 
-/** @typedef {!{id:(RuntimeAgent.ExecutionContextId), isPageContext:(boolean), name:(string), frameId:(string)}} */
+/** @typedef {!{id:(RuntimeAgent.ExecutionContextId), origin:(string), name:(string), auxData:(!Object|undefined)}} */
 RuntimeAgent.ExecutionContextDescription;
+
+/** @typedef {!{exceptionId:(number), text:(string), lineNumber:(number), columnNumber:(number), scriptId:(RuntimeAgent.ScriptId|undefined), url:(string|undefined), stackTrace:(RuntimeAgent.StackTrace|undefined), exception:(RuntimeAgent.RemoteObject|undefined), executionContextId:(RuntimeAgent.ExecutionContextId|undefined)}} */
+RuntimeAgent.ExceptionDetails;
+
+/** @typedef {number} */
+RuntimeAgent.Timestamp;
+
+/** @typedef {!{functionName:(string), scriptId:(RuntimeAgent.ScriptId), url:(string), lineNumber:(number), columnNumber:(number)}} */
+RuntimeAgent.CallFrame;
+
+/** @typedef {!{description:(string|undefined), callFrames:(!Array.<RuntimeAgent.CallFrame>), parent:(RuntimeAgent.StackTrace|undefined)}} */
+RuntimeAgent.StackTrace;
 /** @interface */
 RuntimeAgent.Dispatcher = function() {};
 /**
  * @param {RuntimeAgent.ExecutionContextDescription} context
  */
 RuntimeAgent.Dispatcher.prototype.executionContextCreated = function(context) {};
+/**
+ * @param {RuntimeAgent.ExecutionContextId} executionContextId
+ */
+RuntimeAgent.Dispatcher.prototype.executionContextDestroyed = function(executionContextId) {};
+RuntimeAgent.Dispatcher.prototype.executionContextsCleared = function() {};
+/**
+ * @param {RuntimeAgent.Timestamp} timestamp
+ * @param {RuntimeAgent.ExceptionDetails} exceptionDetails
+ */
+RuntimeAgent.Dispatcher.prototype.exceptionThrown = function(timestamp, exceptionDetails) {};
+/**
+ * @param {string} reason
+ * @param {number} exceptionId
+ */
+RuntimeAgent.Dispatcher.prototype.exceptionRevoked = function(reason, exceptionId) {};
+/**
+ * @param {string} type
+ * @param {!Array.<RuntimeAgent.RemoteObject>} args
+ * @param {RuntimeAgent.ExecutionContextId} executionContextId
+ * @param {RuntimeAgent.Timestamp} timestamp
+ * @param {RuntimeAgent.StackTrace=} opt_stackTrace
+ */
+RuntimeAgent.Dispatcher.prototype.consoleAPICalled = function(type, args, executionContextId, timestamp, opt_stackTrace) {};
+/**
+ * @param {RuntimeAgent.RemoteObject} object
+ * @param {!Object} hints
+ */
+RuntimeAgent.Dispatcher.prototype.inspectRequested = function(object, hints) {};
 
 
 /**
@@ -2616,11 +3985,10 @@ Protocol.DebuggerAgent.prototype.setBreakpointsActive = function(active, opt_cal
 Protocol.DebuggerAgent.prototype.invoke_setBreakpointsActive = function(obj, opt_callback) {}
 
 /**
- * @param {boolean} skipped
- * @param {boolean=} opt_untilReload
+ * @param {boolean} skip
  * @param {function(?Protocol.Error):void=} opt_callback
  */
-Protocol.DebuggerAgent.prototype.setSkipAllPauses = function(skipped, opt_untilReload, opt_callback) {}
+Protocol.DebuggerAgent.prototype.setSkipAllPauses = function(skip, opt_callback) {}
 /** @param {function(?Protocol.Error):void=} opt_callback */
 Protocol.DebuggerAgent.prototype.invoke_setSkipAllPauses = function(obj, opt_callback) {}
 
@@ -2630,10 +3998,9 @@ Protocol.DebuggerAgent.prototype.invoke_setSkipAllPauses = function(obj, opt_cal
  * @param {string=} opt_urlRegex
  * @param {number=} opt_columnNumber
  * @param {string=} opt_condition
- * @param {boolean=} opt_isAntibreakpoint
  * @param {function(?Protocol.Error, DebuggerAgent.BreakpointId, !Array.<DebuggerAgent.Location>):void=} opt_callback
  */
-Protocol.DebuggerAgent.prototype.setBreakpointByUrl = function(lineNumber, opt_url, opt_urlRegex, opt_columnNumber, opt_condition, opt_isAntibreakpoint, opt_callback) {}
+Protocol.DebuggerAgent.prototype.setBreakpointByUrl = function(lineNumber, opt_url, opt_urlRegex, opt_columnNumber, opt_condition, opt_callback) {}
 /** @param {function(?Protocol.Error, DebuggerAgent.BreakpointId, !Array.<DebuggerAgent.Location>):void=} opt_callback */
 Protocol.DebuggerAgent.prototype.invoke_setBreakpointByUrl = function(obj, opt_callback) {}
 
@@ -2656,10 +4023,9 @@ Protocol.DebuggerAgent.prototype.invoke_removeBreakpoint = function(obj, opt_cal
 
 /**
  * @param {DebuggerAgent.Location} location
- * @param {boolean=} opt_interstatementLocation
  * @param {function(?Protocol.Error):void=} opt_callback
  */
-Protocol.DebuggerAgent.prototype.continueToLocation = function(location, opt_interstatementLocation, opt_callback) {}
+Protocol.DebuggerAgent.prototype.continueToLocation = function(location, opt_callback) {}
 /** @param {function(?Protocol.Error):void=} opt_callback */
 Protocol.DebuggerAgent.prototype.invoke_continueToLocation = function(obj, opt_callback) {}
 
@@ -2699,7 +4065,7 @@ Protocol.DebuggerAgent.prototype.resume = function(opt_callback) {}
 Protocol.DebuggerAgent.prototype.invoke_resume = function(obj, opt_callback) {}
 
 /**
- * @param {DebuggerAgent.ScriptId} scriptId
+ * @param {RuntimeAgent.ScriptId} scriptId
  * @param {string} query
  * @param {boolean=} opt_caseSensitive
  * @param {boolean=} opt_isRegex
@@ -2710,45 +4076,30 @@ Protocol.DebuggerAgent.prototype.searchInContent = function(scriptId, query, opt
 Protocol.DebuggerAgent.prototype.invoke_searchInContent = function(obj, opt_callback) {}
 
 /**
- * @param {function(?Protocol.Error, boolean):void=} opt_callback
- */
-Protocol.DebuggerAgent.prototype.canSetScriptSource = function(opt_callback) {}
-/** @param {function(?Protocol.Error, boolean):void=} opt_callback */
-Protocol.DebuggerAgent.prototype.invoke_canSetScriptSource = function(obj, opt_callback) {}
-
-/**
- * @param {DebuggerAgent.ScriptId} scriptId
+ * @param {RuntimeAgent.ScriptId} scriptId
  * @param {string} scriptSource
- * @param {boolean=} opt_preview
- * @param {function(?Protocol.Error, DebuggerAgent.SetScriptSourceError=, !Array.<DebuggerAgent.CallFrame>=, !Object=):void=} opt_callback
+ * @param {boolean=} opt_dryRun
+ * @param {function(?Protocol.Error, !Array.<DebuggerAgent.CallFrame>=, boolean=, RuntimeAgent.StackTrace=, RuntimeAgent.ExceptionDetails=):void=} opt_callback
  */
-Protocol.DebuggerAgent.prototype.setScriptSource = function(scriptId, scriptSource, opt_preview, opt_callback) {}
-/** @param {function(?Protocol.Error, DebuggerAgent.SetScriptSourceError=, !Array.<DebuggerAgent.CallFrame>=, !Object=):void=} opt_callback */
+Protocol.DebuggerAgent.prototype.setScriptSource = function(scriptId, scriptSource, opt_dryRun, opt_callback) {}
+/** @param {function(?Protocol.Error, !Array.<DebuggerAgent.CallFrame>=, boolean=, RuntimeAgent.StackTrace=, RuntimeAgent.ExceptionDetails=):void=} opt_callback */
 Protocol.DebuggerAgent.prototype.invoke_setScriptSource = function(obj, opt_callback) {}
 
 /**
  * @param {DebuggerAgent.CallFrameId} callFrameId
- * @param {function(?Protocol.Error, !Array.<DebuggerAgent.CallFrame>, !Object):void=} opt_callback
+ * @param {function(?Protocol.Error, !Array.<DebuggerAgent.CallFrame>, RuntimeAgent.StackTrace=):void=} opt_callback
  */
 Protocol.DebuggerAgent.prototype.restartFrame = function(callFrameId, opt_callback) {}
-/** @param {function(?Protocol.Error, !Array.<DebuggerAgent.CallFrame>, !Object):void=} opt_callback */
+/** @param {function(?Protocol.Error, !Array.<DebuggerAgent.CallFrame>, RuntimeAgent.StackTrace=):void=} opt_callback */
 Protocol.DebuggerAgent.prototype.invoke_restartFrame = function(obj, opt_callback) {}
 
 /**
- * @param {DebuggerAgent.ScriptId} scriptId
+ * @param {RuntimeAgent.ScriptId} scriptId
  * @param {function(?Protocol.Error, string):void=} opt_callback
  */
 Protocol.DebuggerAgent.prototype.getScriptSource = function(scriptId, opt_callback) {}
 /** @param {function(?Protocol.Error, string):void=} opt_callback */
 Protocol.DebuggerAgent.prototype.invoke_getScriptSource = function(obj, opt_callback) {}
-
-/**
- * @param {RuntimeAgent.RemoteObjectId} functionId
- * @param {function(?Protocol.Error, DebuggerAgent.FunctionDetails):void=} opt_callback
- */
-Protocol.DebuggerAgent.prototype.getFunctionDetails = function(functionId, opt_callback) {}
-/** @param {function(?Protocol.Error, DebuggerAgent.FunctionDetails):void=} opt_callback */
-Protocol.DebuggerAgent.prototype.invoke_getFunctionDetails = function(obj, opt_callback) {}
 
 /**
  * @param {string} state
@@ -2763,101 +4114,68 @@ Protocol.DebuggerAgent.prototype.invoke_setPauseOnExceptions = function(obj, opt
  * @param {string} expression
  * @param {string=} opt_objectGroup
  * @param {boolean=} opt_includeCommandLineAPI
- * @param {boolean=} opt_doNotPauseOnExceptionsAndMuteConsole
+ * @param {boolean=} opt_silent
  * @param {boolean=} opt_returnByValue
  * @param {boolean=} opt_generatePreview
- * @param {function(?Protocol.Error, RuntimeAgent.RemoteObject, boolean=):void=} opt_callback
+ * @param {function(?Protocol.Error, RuntimeAgent.RemoteObject, RuntimeAgent.ExceptionDetails=):void=} opt_callback
  */
-Protocol.DebuggerAgent.prototype.evaluateOnCallFrame = function(callFrameId, expression, opt_objectGroup, opt_includeCommandLineAPI, opt_doNotPauseOnExceptionsAndMuteConsole, opt_returnByValue, opt_generatePreview, opt_callback) {}
-/** @param {function(?Protocol.Error, RuntimeAgent.RemoteObject, boolean=):void=} opt_callback */
+Protocol.DebuggerAgent.prototype.evaluateOnCallFrame = function(callFrameId, expression, opt_objectGroup, opt_includeCommandLineAPI, opt_silent, opt_returnByValue, opt_generatePreview, opt_callback) {}
+/** @param {function(?Protocol.Error, RuntimeAgent.RemoteObject, RuntimeAgent.ExceptionDetails=):void=} opt_callback */
 Protocol.DebuggerAgent.prototype.invoke_evaluateOnCallFrame = function(obj, opt_callback) {}
-
-/**
- * @param {string} expression
- * @param {string} sourceURL
- * @param {function(?Protocol.Error, DebuggerAgent.ScriptId=, string=):void=} opt_callback
- */
-Protocol.DebuggerAgent.prototype.compileScript = function(expression, sourceURL, opt_callback) {}
-/** @param {function(?Protocol.Error, DebuggerAgent.ScriptId=, string=):void=} opt_callback */
-Protocol.DebuggerAgent.prototype.invoke_compileScript = function(obj, opt_callback) {}
-
-/**
- * @param {DebuggerAgent.ScriptId} scriptId
- * @param {RuntimeAgent.ExecutionContextId=} opt_contextId
- * @param {string=} opt_objectGroup
- * @param {boolean=} opt_doNotPauseOnExceptionsAndMuteConsole
- * @param {function(?Protocol.Error, RuntimeAgent.RemoteObject, boolean=):void=} opt_callback
- */
-Protocol.DebuggerAgent.prototype.runScript = function(scriptId, opt_contextId, opt_objectGroup, opt_doNotPauseOnExceptionsAndMuteConsole, opt_callback) {}
-/** @param {function(?Protocol.Error, RuntimeAgent.RemoteObject, boolean=):void=} opt_callback */
-Protocol.DebuggerAgent.prototype.invoke_runScript = function(obj, opt_callback) {}
-
-/**
- * @param {string=} opt_message
- * @param {function(?Protocol.Error):void=} opt_callback
- */
-Protocol.DebuggerAgent.prototype.setOverlayMessage = function(opt_message, opt_callback) {}
-/** @param {function(?Protocol.Error):void=} opt_callback */
-Protocol.DebuggerAgent.prototype.invoke_setOverlayMessage = function(obj, opt_callback) {}
 
 /**
  * @param {number} scopeNumber
  * @param {string} variableName
  * @param {RuntimeAgent.CallArgument} newValue
- * @param {DebuggerAgent.CallFrameId=} opt_callFrameId
- * @param {RuntimeAgent.RemoteObjectId=} opt_functionObjectId
+ * @param {DebuggerAgent.CallFrameId} callFrameId
  * @param {function(?Protocol.Error):void=} opt_callback
  */
-Protocol.DebuggerAgent.prototype.setVariableValue = function(scopeNumber, variableName, newValue, opt_callFrameId, opt_functionObjectId, opt_callback) {}
+Protocol.DebuggerAgent.prototype.setVariableValue = function(scopeNumber, variableName, newValue, callFrameId, opt_callback) {}
 /** @param {function(?Protocol.Error):void=} opt_callback */
 Protocol.DebuggerAgent.prototype.invoke_setVariableValue = function(obj, opt_callback) {}
 
 /**
- * @param {DebuggerAgent.CallFrameId} callFrameId
- * @param {function(?Protocol.Error, !Array.<DebuggerAgent.Location>=):void=} opt_callback
- */
-Protocol.DebuggerAgent.prototype.getStepInPositions = function(callFrameId, opt_callback) {}
-/** @param {function(?Protocol.Error, !Array.<DebuggerAgent.Location>=):void=} opt_callback */
-Protocol.DebuggerAgent.prototype.invoke_getStepInPositions = function(obj, opt_callback) {}
-
-/**
- * @param {function(?Protocol.Error, !Array.<DebuggerAgent.CallFrame>):void=} opt_callback
- */
-Protocol.DebuggerAgent.prototype.getBacktrace = function(opt_callback) {}
-/** @param {function(?Protocol.Error, !Array.<DebuggerAgent.CallFrame>):void=} opt_callback */
-Protocol.DebuggerAgent.prototype.invoke_getBacktrace = function(obj, opt_callback) {}
-
-/**
- * @param {string=} opt_script
+ * @param {number} maxDepth
  * @param {function(?Protocol.Error):void=} opt_callback
  */
-Protocol.DebuggerAgent.prototype.skipStackFrames = function(opt_script, opt_callback) {}
+Protocol.DebuggerAgent.prototype.setAsyncCallStackDepth = function(maxDepth, opt_callback) {}
 /** @param {function(?Protocol.Error):void=} opt_callback */
-Protocol.DebuggerAgent.prototype.invoke_skipStackFrames = function(obj, opt_callback) {}
+Protocol.DebuggerAgent.prototype.invoke_setAsyncCallStackDepth = function(obj, opt_callback) {}
+
+/**
+ * @param {!Array.<string>} patterns
+ * @param {function(?Protocol.Error):void=} opt_callback
+ */
+Protocol.DebuggerAgent.prototype.setBlackboxPatterns = function(patterns, opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+Protocol.DebuggerAgent.prototype.invoke_setBlackboxPatterns = function(obj, opt_callback) {}
+
+/**
+ * @param {RuntimeAgent.ScriptId} scriptId
+ * @param {!Array.<DebuggerAgent.ScriptPosition>} positions
+ * @param {function(?Protocol.Error):void=} opt_callback
+ */
+Protocol.DebuggerAgent.prototype.setBlackboxedRanges = function(scriptId, positions, opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+Protocol.DebuggerAgent.prototype.invoke_setBlackboxedRanges = function(obj, opt_callback) {}
 
 
 
 var DebuggerAgent = function(){};
 
-/** @typedef {!{lineNumber:(number), lineContent:(string)}} */
-DebuggerAgent.SearchMatch;
-
 /** @typedef {string} */
 DebuggerAgent.BreakpointId;
 
 /** @typedef {string} */
-DebuggerAgent.ScriptId;
-
-/** @typedef {string} */
 DebuggerAgent.CallFrameId;
 
-/** @typedef {!{scriptId:(DebuggerAgent.ScriptId), lineNumber:(number), columnNumber:(number|undefined)}} */
+/** @typedef {!{scriptId:(RuntimeAgent.ScriptId), lineNumber:(number), columnNumber:(number|undefined)}} */
 DebuggerAgent.Location;
 
-/** @typedef {!{location:(DebuggerAgent.Location), name:(string|undefined), displayName:(string|undefined), inferredName:(string|undefined), scopeChain:(!Array.<DebuggerAgent.Scope>|undefined)}} */
-DebuggerAgent.FunctionDetails;
+/** @typedef {!{lineNumber:(number), columnNumber:(number)}} */
+DebuggerAgent.ScriptPosition;
 
-/** @typedef {!{callFrameId:(DebuggerAgent.CallFrameId), functionName:(string), location:(DebuggerAgent.Location), scopeChain:(!Array.<DebuggerAgent.Scope>), this:(RuntimeAgent.RemoteObject)}} */
+/** @typedef {!{callFrameId:(DebuggerAgent.CallFrameId), functionName:(string), functionLocation:(DebuggerAgent.Location|undefined), location:(DebuggerAgent.Location), scopeChain:(!Array.<DebuggerAgent.Scope>), this:(RuntimeAgent.RemoteObject), returnValue:(RuntimeAgent.RemoteObject|undefined)}} */
 DebuggerAgent.CallFrame;
 
 /** @enum {string} */
@@ -2866,41 +4184,47 @@ DebuggerAgent.ScopeType = {
     Local: "local",
     With: "with",
     Closure: "closure",
-    Catch: "catch"
+    Catch: "catch",
+    Block: "block",
+    Script: "script"
 };
 
-/** @typedef {!{type:(DebuggerAgent.ScopeType), object:(RuntimeAgent.RemoteObject)}} */
+/** @typedef {!{type:(DebuggerAgent.ScopeType), object:(RuntimeAgent.RemoteObject), name:(string|undefined), startLocation:(DebuggerAgent.Location|undefined), endLocation:(DebuggerAgent.Location|undefined)}} */
 DebuggerAgent.Scope;
 
-/** @typedef {!{compileError:(!Object|undefined)}} */
-DebuggerAgent.SetScriptSourceError;
+/** @typedef {!{lineNumber:(number), lineContent:(string)}} */
+DebuggerAgent.SearchMatch;
 /** @interface */
 DebuggerAgent.Dispatcher = function() {};
-DebuggerAgent.Dispatcher.prototype.globalObjectCleared = function() {};
 /**
- * @param {DebuggerAgent.ScriptId} scriptId
+ * @param {RuntimeAgent.ScriptId} scriptId
  * @param {string} url
  * @param {number} startLine
  * @param {number} startColumn
  * @param {number} endLine
  * @param {number} endColumn
- * @param {boolean=} opt_isContentScript
+ * @param {RuntimeAgent.ExecutionContextId} executionContextId
+ * @param {string} hash
+ * @param {!Object=} opt_executionContextAuxData
+ * @param {boolean=} opt_isLiveEdit
  * @param {string=} opt_sourceMapURL
  * @param {boolean=} opt_hasSourceURL
  */
-DebuggerAgent.Dispatcher.prototype.scriptParsed = function(scriptId, url, startLine, startColumn, endLine, endColumn, opt_isContentScript, opt_sourceMapURL, opt_hasSourceURL) {};
+DebuggerAgent.Dispatcher.prototype.scriptParsed = function(scriptId, url, startLine, startColumn, endLine, endColumn, executionContextId, hash, opt_executionContextAuxData, opt_isLiveEdit, opt_sourceMapURL, opt_hasSourceURL) {};
 /**
- * @param {DebuggerAgent.ScriptId} scriptId
+ * @param {RuntimeAgent.ScriptId} scriptId
  * @param {string} url
  * @param {number} startLine
  * @param {number} startColumn
  * @param {number} endLine
  * @param {number} endColumn
- * @param {boolean=} opt_isContentScript
+ * @param {RuntimeAgent.ExecutionContextId} executionContextId
+ * @param {string} hash
+ * @param {!Object=} opt_executionContextAuxData
  * @param {string=} opt_sourceMapURL
  * @param {boolean=} opt_hasSourceURL
  */
-DebuggerAgent.Dispatcher.prototype.scriptFailedToParse = function(scriptId, url, startLine, startColumn, endLine, endColumn, opt_isContentScript, opt_sourceMapURL, opt_hasSourceURL) {};
+DebuggerAgent.Dispatcher.prototype.scriptFailedToParse = function(scriptId, url, startLine, startColumn, endLine, endColumn, executionContextId, hash, opt_executionContextAuxData, opt_sourceMapURL, opt_hasSourceURL) {};
 /**
  * @param {DebuggerAgent.BreakpointId} breakpointId
  * @param {DebuggerAgent.Location} location
@@ -2911,9 +4235,74 @@ DebuggerAgent.Dispatcher.prototype.breakpointResolved = function(breakpointId, l
  * @param {string} reason
  * @param {!Object=} opt_data
  * @param {!Array.<string>=} opt_hitBreakpoints
+ * @param {RuntimeAgent.StackTrace=} opt_asyncStackTrace
  */
-DebuggerAgent.Dispatcher.prototype.paused = function(callFrames, reason, opt_data, opt_hitBreakpoints) {};
+DebuggerAgent.Dispatcher.prototype.paused = function(callFrames, reason, opt_data, opt_hitBreakpoints, opt_asyncStackTrace) {};
 DebuggerAgent.Dispatcher.prototype.resumed = function() {};
+
+
+/**
+ * @constructor
+*/
+Protocol.ConsoleAgent = function(){};
+
+/**
+ * @param {function(?Protocol.Error):void=} opt_callback
+ */
+Protocol.ConsoleAgent.prototype.enable = function(opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+Protocol.ConsoleAgent.prototype.invoke_enable = function(obj, opt_callback) {}
+
+/**
+ * @param {function(?Protocol.Error):void=} opt_callback
+ */
+Protocol.ConsoleAgent.prototype.disable = function(opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+Protocol.ConsoleAgent.prototype.invoke_disable = function(obj, opt_callback) {}
+
+/**
+ * @param {function(?Protocol.Error):void=} opt_callback
+ */
+Protocol.ConsoleAgent.prototype.clearMessages = function(opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+Protocol.ConsoleAgent.prototype.invoke_clearMessages = function(obj, opt_callback) {}
+
+
+
+var ConsoleAgent = function(){};
+
+/** @enum {string} */
+ConsoleAgent.ConsoleMessageSource = {
+    XML: "xml",
+    Javascript: "javascript",
+    Network: "network",
+    ConsoleAPI: "console-api",
+    Storage: "storage",
+    Appcache: "appcache",
+    Rendering: "rendering",
+    Security: "security",
+    Other: "other",
+    Deprecation: "deprecation",
+    Worker: "worker"
+};
+
+/** @enum {string} */
+ConsoleAgent.ConsoleMessageLevel = {
+    Log: "log",
+    Warning: "warning",
+    Error: "error",
+    Debug: "debug",
+    Info: "info"
+};
+
+/** @typedef {!{source:(ConsoleAgent.ConsoleMessageSource), level:(ConsoleAgent.ConsoleMessageLevel), text:(string), url:(string|undefined), line:(number|undefined), column:(number|undefined)}} */
+ConsoleAgent.ConsoleMessage;
+/** @interface */
+ConsoleAgent.Dispatcher = function() {};
+/**
+ * @param {ConsoleAgent.ConsoleMessage} message
+ */
+ConsoleAgent.Dispatcher.prototype.messageAdded = function(message) {};
 
 
 /**
@@ -2940,6 +4329,16 @@ Protocol.ProfilerAgent.prototype.disable = function(opt_callback) {}
 Protocol.ProfilerAgent.prototype.invoke_disable = function(obj, opt_callback) {}
 
 /**
+ * @param {number} interval
+ * @param {function(?Protocol.Error):T=} opt_callback
+ * @return {!Promise.<T>}
+ * @template T
+ */
+Protocol.ProfilerAgent.prototype.setSamplingInterval = function(interval, opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+Protocol.ProfilerAgent.prototype.invoke_setSamplingInterval = function(obj, opt_callback) {}
+
+/**
  * @param {function(?Protocol.Error):T=} opt_callback
  * @return {!Promise.<T>}
  * @template T
@@ -2949,79 +4348,41 @@ Protocol.ProfilerAgent.prototype.start = function(opt_callback) {}
 Protocol.ProfilerAgent.prototype.invoke_start = function(obj, opt_callback) {}
 
 /**
- * @param {function(?Protocol.Error, ProfilerAgent.ProfileHeader):T} opt_callback
+ * @param {function(?Protocol.Error, ProfilerAgent.Profile):T} opt_callback
  * @return {!Promise.<T>}
  * @template T
  */
 Protocol.ProfilerAgent.prototype.stop = function(opt_callback) {}
-/** @param {function(?Protocol.Error, ProfilerAgent.ProfileHeader):void=} opt_callback */
+/** @param {function(?Protocol.Error, ProfilerAgent.Profile):void=} opt_callback */
 Protocol.ProfilerAgent.prototype.invoke_stop = function(obj, opt_callback) {}
-
-/**
- * @param {function(?Protocol.Error, !Array.<ProfilerAgent.ProfileHeader>):T} opt_callback
- * @return {!Promise.<T>}
- * @template T
- */
-Protocol.ProfilerAgent.prototype.getProfileHeaders = function(opt_callback) {}
-/** @param {function(?Protocol.Error, !Array.<ProfilerAgent.ProfileHeader>):void=} opt_callback */
-Protocol.ProfilerAgent.prototype.invoke_getProfileHeaders = function(obj, opt_callback) {}
-
-/**
- * @param {number} uid
- * @param {function(?Protocol.Error, ProfilerAgent.CPUProfile):T} opt_callback
- * @return {!Promise.<T>}
- * @template T
- */
-Protocol.ProfilerAgent.prototype.getCPUProfile = function(uid, opt_callback) {}
-/** @param {function(?Protocol.Error, ProfilerAgent.CPUProfile):void=} opt_callback */
-Protocol.ProfilerAgent.prototype.invoke_getCPUProfile = function(obj, opt_callback) {}
-
-/**
- * @param {string} type
- * @param {number} uid
- * @param {function(?Protocol.Error):T=} opt_callback
- * @return {!Promise.<T>}
- * @template T
- */
-Protocol.ProfilerAgent.prototype.removeProfile = function(type, uid, opt_callback) {}
-/** @param {function(?Protocol.Error):void=} opt_callback */
-Protocol.ProfilerAgent.prototype.invoke_removeProfile = function(obj, opt_callback) {}
-
-/**
- * @param {function(?Protocol.Error):T=} opt_callback
- * @return {!Promise.<T>}
- * @template T
- */
-Protocol.ProfilerAgent.prototype.clearProfiles = function(opt_callback) {}
-/** @param {function(?Protocol.Error):void=} opt_callback */
-Protocol.ProfilerAgent.prototype.invoke_clearProfiles = function(obj, opt_callback) {}
 
 
 
 var ProfilerAgent = function(){};
 
-/** @typedef {!{title:(string), uid:(number)}} */
-ProfilerAgent.ProfileHeader;
+/** @typedef {!{id:(number), callFrame:(RuntimeAgent.CallFrame), hitCount:(number|undefined), children:(!Array.<number>|undefined), deoptReason:(string|undefined), positionTicks:(!Array.<ProfilerAgent.PositionTickInfo>|undefined)}} */
+ProfilerAgent.ProfileNode;
 
-/** @typedef {!{functionName:(string), scriptId:(DebuggerAgent.ScriptId), url:(string), lineNumber:(number), hitCount:(number), callUID:(number), children:(!Array.<ProfilerAgent.CPUProfileNode>), deoptReason:(string), id:(number|undefined)}} */
-ProfilerAgent.CPUProfileNode;
+/** @typedef {!{nodes:(!Array.<ProfilerAgent.ProfileNode>), startTime:(number), endTime:(number), samples:(!Array.<number>|undefined), timeDeltas:(!Array.<number>|undefined)}} */
+ProfilerAgent.Profile;
 
-/** @typedef {!{head:(ProfilerAgent.CPUProfileNode), startTime:(number), endTime:(number), samples:(!Array.<number>|undefined)}} */
-ProfilerAgent.CPUProfile;
-
-/** @typedef {string} */
-ProfilerAgent.HeapSnapshotObjectId;
+/** @typedef {!{line:(number), ticks:(number)}} */
+ProfilerAgent.PositionTickInfo;
 /** @interface */
 ProfilerAgent.Dispatcher = function() {};
 /**
- * @param {ProfilerAgent.ProfileHeader} header
+ * @param {string} id
+ * @param {DebuggerAgent.Location} location
+ * @param {string=} opt_title
  */
-ProfilerAgent.Dispatcher.prototype.addProfileHeader = function(header) {};
+ProfilerAgent.Dispatcher.prototype.consoleProfileStarted = function(id, location, opt_title) {};
 /**
- * @param {boolean} isProfiling
+ * @param {string} id
+ * @param {DebuggerAgent.Location} location
+ * @param {ProfilerAgent.Profile} profile
+ * @param {string=} opt_title
  */
-ProfilerAgent.Dispatcher.prototype.setRecordingProfile = function(isProfiling) {};
-ProfilerAgent.Dispatcher.prototype.resetProfiles = function() {};
+ProfilerAgent.Dispatcher.prototype.consoleProfileFinished = function(id, location, profile, opt_title) {};
 
 
 /**
@@ -3030,48 +4391,34 @@ ProfilerAgent.Dispatcher.prototype.resetProfiles = function() {};
 Protocol.HeapProfilerAgent = function(){};
 
 /**
- * @param {function(?Protocol.Error, !Array.<HeapProfilerAgent.ProfileHeader>):void=} opt_callback
+ * @param {function(?Protocol.Error):void=} opt_callback
  */
-Protocol.HeapProfilerAgent.prototype.getProfileHeaders = function(opt_callback) {}
-/** @param {function(?Protocol.Error, !Array.<HeapProfilerAgent.ProfileHeader>):void=} opt_callback */
-Protocol.HeapProfilerAgent.prototype.invoke_getProfileHeaders = function(obj, opt_callback) {}
+Protocol.HeapProfilerAgent.prototype.enable = function(opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+Protocol.HeapProfilerAgent.prototype.invoke_enable = function(obj, opt_callback) {}
 
 /**
  * @param {function(?Protocol.Error):void=} opt_callback
  */
-Protocol.HeapProfilerAgent.prototype.startTrackingHeapObjects = function(opt_callback) {}
+Protocol.HeapProfilerAgent.prototype.disable = function(opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+Protocol.HeapProfilerAgent.prototype.invoke_disable = function(obj, opt_callback) {}
+
+/**
+ * @param {boolean=} opt_trackAllocations
+ * @param {function(?Protocol.Error):void=} opt_callback
+ */
+Protocol.HeapProfilerAgent.prototype.startTrackingHeapObjects = function(opt_trackAllocations, opt_callback) {}
 /** @param {function(?Protocol.Error):void=} opt_callback */
 Protocol.HeapProfilerAgent.prototype.invoke_startTrackingHeapObjects = function(obj, opt_callback) {}
 
 /**
+ * @param {boolean=} opt_reportProgress
  * @param {function(?Protocol.Error):void=} opt_callback
  */
-Protocol.HeapProfilerAgent.prototype.stopTrackingHeapObjects = function(opt_callback) {}
+Protocol.HeapProfilerAgent.prototype.stopTrackingHeapObjects = function(opt_reportProgress, opt_callback) {}
 /** @param {function(?Protocol.Error):void=} opt_callback */
 Protocol.HeapProfilerAgent.prototype.invoke_stopTrackingHeapObjects = function(obj, opt_callback) {}
-
-/**
- * @param {number} uid
- * @param {function(?Protocol.Error):void=} opt_callback
- */
-Protocol.HeapProfilerAgent.prototype.getHeapSnapshot = function(uid, opt_callback) {}
-/** @param {function(?Protocol.Error):void=} opt_callback */
-Protocol.HeapProfilerAgent.prototype.invoke_getHeapSnapshot = function(obj, opt_callback) {}
-
-/**
- * @param {number} uid
- * @param {function(?Protocol.Error):void=} opt_callback
- */
-Protocol.HeapProfilerAgent.prototype.removeProfile = function(uid, opt_callback) {}
-/** @param {function(?Protocol.Error):void=} opt_callback */
-Protocol.HeapProfilerAgent.prototype.invoke_removeProfile = function(obj, opt_callback) {}
-
-/**
- * @param {function(?Protocol.Error):void=} opt_callback
- */
-Protocol.HeapProfilerAgent.prototype.clearProfiles = function(opt_callback) {}
-/** @param {function(?Protocol.Error):void=} opt_callback */
-Protocol.HeapProfilerAgent.prototype.invoke_clearProfiles = function(obj, opt_callback) {}
 
 /**
  * @param {boolean=} opt_reportProgress
@@ -3098,6 +4445,14 @@ Protocol.HeapProfilerAgent.prototype.getObjectByHeapObjectId = function(objectId
 Protocol.HeapProfilerAgent.prototype.invoke_getObjectByHeapObjectId = function(obj, opt_callback) {}
 
 /**
+ * @param {HeapProfilerAgent.HeapSnapshotObjectId} heapObjectId
+ * @param {function(?Protocol.Error):void=} opt_callback
+ */
+Protocol.HeapProfilerAgent.prototype.addInspectedHeapObject = function(heapObjectId, opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+Protocol.HeapProfilerAgent.prototype.invoke_addInspectedHeapObject = function(obj, opt_callback) {}
+
+/**
  * @param {RuntimeAgent.RemoteObjectId} objectId
  * @param {function(?Protocol.Error, HeapProfilerAgent.HeapSnapshotObjectId):void=} opt_callback
  */
@@ -3105,36 +4460,46 @@ Protocol.HeapProfilerAgent.prototype.getHeapObjectId = function(objectId, opt_ca
 /** @param {function(?Protocol.Error, HeapProfilerAgent.HeapSnapshotObjectId):void=} opt_callback */
 Protocol.HeapProfilerAgent.prototype.invoke_getHeapObjectId = function(obj, opt_callback) {}
 
+/**
+ * @param {number=} opt_samplingInterval
+ * @param {function(?Protocol.Error):void=} opt_callback
+ */
+Protocol.HeapProfilerAgent.prototype.startSampling = function(opt_samplingInterval, opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+Protocol.HeapProfilerAgent.prototype.invoke_startSampling = function(obj, opt_callback) {}
+
+/**
+ * @param {function(?Protocol.Error, HeapProfilerAgent.SamplingHeapProfile):void=} opt_callback
+ */
+Protocol.HeapProfilerAgent.prototype.stopSampling = function(opt_callback) {}
+/** @param {function(?Protocol.Error, HeapProfilerAgent.SamplingHeapProfile):void=} opt_callback */
+Protocol.HeapProfilerAgent.prototype.invoke_stopSampling = function(obj, opt_callback) {}
+
 
 
 var HeapProfilerAgent = function(){};
 
-/** @typedef {!{title:(string), uid:(number), maxJSObjectId:(number|undefined)}} */
-HeapProfilerAgent.ProfileHeader;
-
 /** @typedef {string} */
 HeapProfilerAgent.HeapSnapshotObjectId;
+
+/** @typedef {!{callFrame:(RuntimeAgent.CallFrame), selfSize:(number), children:(!Array.<HeapProfilerAgent.SamplingHeapProfileNode>)}} */
+HeapProfilerAgent.SamplingHeapProfileNode;
+
+/** @typedef {!{head:(HeapProfilerAgent.SamplingHeapProfileNode)}} */
+HeapProfilerAgent.SamplingHeapProfile;
 /** @interface */
 HeapProfilerAgent.Dispatcher = function() {};
 /**
- * @param {HeapProfilerAgent.ProfileHeader} header
- */
-HeapProfilerAgent.Dispatcher.prototype.addProfileHeader = function(header) {};
-/**
- * @param {number} uid
  * @param {string} chunk
  */
-HeapProfilerAgent.Dispatcher.prototype.addHeapSnapshotChunk = function(uid, chunk) {};
-/**
- * @param {number} uid
- */
-HeapProfilerAgent.Dispatcher.prototype.finishHeapSnapshot = function(uid) {};
+HeapProfilerAgent.Dispatcher.prototype.addHeapSnapshotChunk = function(chunk) {};
 HeapProfilerAgent.Dispatcher.prototype.resetProfiles = function() {};
 /**
  * @param {number} done
  * @param {number} total
+ * @param {boolean=} opt_finished
  */
-HeapProfilerAgent.Dispatcher.prototype.reportHeapSnapshotProgress = function(done, total) {};
+HeapProfilerAgent.Dispatcher.prototype.reportHeapSnapshotProgress = function(done, total, opt_finished) {};
 /**
  * @param {number} lastSeenObjectId
  * @param {number} timestamp
@@ -3172,12 +4537,24 @@ Protocol.Agents.prototype.pageAgent = function(){};
  * @param {!PageAgent.Dispatcher} dispatcher
  */
 Protocol.Agents.prototype.registerPageDispatcher = function(dispatcher) {}
-/** @return {!Protocol.ConsoleAgent}*/
-Protocol.Agents.prototype.consoleAgent = function(){};
+/** @return {!Protocol.RenderingAgent}*/
+Protocol.Agents.prototype.renderingAgent = function(){};
 /**
- * @param {!ConsoleAgent.Dispatcher} dispatcher
+ * @param {!RenderingAgent.Dispatcher} dispatcher
  */
-Protocol.Agents.prototype.registerConsoleDispatcher = function(dispatcher) {}
+Protocol.Agents.prototype.registerRenderingDispatcher = function(dispatcher) {}
+/** @return {!Protocol.EmulationAgent}*/
+Protocol.Agents.prototype.emulationAgent = function(){};
+/**
+ * @param {!EmulationAgent.Dispatcher} dispatcher
+ */
+Protocol.Agents.prototype.registerEmulationDispatcher = function(dispatcher) {}
+/** @return {!Protocol.SecurityAgent}*/
+Protocol.Agents.prototype.securityAgent = function(){};
+/**
+ * @param {!SecurityAgent.Dispatcher} dispatcher
+ */
+Protocol.Agents.prototype.registerSecurityDispatcher = function(dispatcher) {}
 /** @return {!Protocol.NetworkAgent}*/
 Protocol.Agents.prototype.networkAgent = function(){};
 /**
@@ -3196,6 +4573,12 @@ Protocol.Agents.prototype.indexedDBAgent = function(){};
  * @param {!IndexedDBAgent.Dispatcher} dispatcher
  */
 Protocol.Agents.prototype.registerIndexedDBDispatcher = function(dispatcher) {}
+/** @return {!Protocol.CacheStorageAgent}*/
+Protocol.Agents.prototype.cacheStorageAgent = function(){};
+/**
+ * @param {!CacheStorageAgent.Dispatcher} dispatcher
+ */
+Protocol.Agents.prototype.registerCacheStorageDispatcher = function(dispatcher) {}
 /** @return {!Protocol.DOMStorageAgent}*/
 Protocol.Agents.prototype.domstorageAgent = function(){};
 /**
@@ -3208,12 +4591,6 @@ Protocol.Agents.prototype.applicationCacheAgent = function(){};
  * @param {!ApplicationCacheAgent.Dispatcher} dispatcher
  */
 Protocol.Agents.prototype.registerApplicationCacheDispatcher = function(dispatcher) {}
-/** @return {!Protocol.FileSystemAgent}*/
-Protocol.Agents.prototype.fileSystemAgent = function(){};
-/**
- * @param {!FileSystemAgent.Dispatcher} dispatcher
- */
-Protocol.Agents.prototype.registerFileSystemDispatcher = function(dispatcher) {}
 /** @return {!Protocol.DOMAgent}*/
 Protocol.Agents.prototype.domAgent = function(){};
 /**
@@ -3226,6 +4603,12 @@ Protocol.Agents.prototype.cssAgent = function(){};
  * @param {!CSSAgent.Dispatcher} dispatcher
  */
 Protocol.Agents.prototype.registerCSSDispatcher = function(dispatcher) {}
+/** @return {!Protocol.IOAgent}*/
+Protocol.Agents.prototype.ioAgent = function(){};
+/**
+ * @param {!IOAgent.Dispatcher} dispatcher
+ */
+Protocol.Agents.prototype.registerIODispatcher = function(dispatcher) {}
 /** @return {!Protocol.DOMDebuggerAgent}*/
 Protocol.Agents.prototype.domdebuggerAgent = function(){};
 /**
@@ -3238,12 +4621,12 @@ Protocol.Agents.prototype.workerAgent = function(){};
  * @param {!WorkerAgent.Dispatcher} dispatcher
  */
 Protocol.Agents.prototype.registerWorkerDispatcher = function(dispatcher) {}
-/** @return {!Protocol.CanvasAgent}*/
-Protocol.Agents.prototype.canvasAgent = function(){};
+/** @return {!Protocol.ServiceWorkerAgent}*/
+Protocol.Agents.prototype.serviceWorkerAgent = function(){};
 /**
- * @param {!CanvasAgent.Dispatcher} dispatcher
+ * @param {!ServiceWorkerAgent.Dispatcher} dispatcher
  */
-Protocol.Agents.prototype.registerCanvasDispatcher = function(dispatcher) {}
+Protocol.Agents.prototype.registerServiceWorkerDispatcher = function(dispatcher) {}
 /** @return {!Protocol.InputAgent}*/
 Protocol.Agents.prototype.inputAgent = function(){};
 /**
@@ -3256,12 +4639,66 @@ Protocol.Agents.prototype.layerTreeAgent = function(){};
  * @param {!LayerTreeAgent.Dispatcher} dispatcher
  */
 Protocol.Agents.prototype.registerLayerTreeDispatcher = function(dispatcher) {}
+/** @return {!Protocol.DeviceOrientationAgent}*/
+Protocol.Agents.prototype.deviceOrientationAgent = function(){};
+/**
+ * @param {!DeviceOrientationAgent.Dispatcher} dispatcher
+ */
+Protocol.Agents.prototype.registerDeviceOrientationDispatcher = function(dispatcher) {}
 /** @return {!Protocol.TracingAgent}*/
 Protocol.Agents.prototype.tracingAgent = function(){};
 /**
  * @param {!TracingAgent.Dispatcher} dispatcher
  */
 Protocol.Agents.prototype.registerTracingDispatcher = function(dispatcher) {}
+/** @return {!Protocol.AnimationAgent}*/
+Protocol.Agents.prototype.animationAgent = function(){};
+/**
+ * @param {!AnimationAgent.Dispatcher} dispatcher
+ */
+Protocol.Agents.prototype.registerAnimationDispatcher = function(dispatcher) {}
+/** @return {!Protocol.AccessibilityAgent}*/
+Protocol.Agents.prototype.accessibilityAgent = function(){};
+/**
+ * @param {!AccessibilityAgent.Dispatcher} dispatcher
+ */
+Protocol.Agents.prototype.registerAccessibilityDispatcher = function(dispatcher) {}
+/** @return {!Protocol.StorageAgent}*/
+Protocol.Agents.prototype.storageAgent = function(){};
+/**
+ * @param {!StorageAgent.Dispatcher} dispatcher
+ */
+Protocol.Agents.prototype.registerStorageDispatcher = function(dispatcher) {}
+/** @return {!Protocol.LogAgent}*/
+Protocol.Agents.prototype.logAgent = function(){};
+/**
+ * @param {!LogAgent.Dispatcher} dispatcher
+ */
+Protocol.Agents.prototype.registerLogDispatcher = function(dispatcher) {}
+/** @return {!Protocol.BrowserAgent}*/
+Protocol.Agents.prototype.browserAgent = function(){};
+/**
+ * @param {!BrowserAgent.Dispatcher} dispatcher
+ */
+Protocol.Agents.prototype.registerBrowserDispatcher = function(dispatcher) {}
+/** @return {!Protocol.SystemInfoAgent}*/
+Protocol.Agents.prototype.systemInfoAgent = function(){};
+/**
+ * @param {!SystemInfoAgent.Dispatcher} dispatcher
+ */
+Protocol.Agents.prototype.registerSystemInfoDispatcher = function(dispatcher) {}
+/** @return {!Protocol.TetheringAgent}*/
+Protocol.Agents.prototype.tetheringAgent = function(){};
+/**
+ * @param {!TetheringAgent.Dispatcher} dispatcher
+ */
+Protocol.Agents.prototype.registerTetheringDispatcher = function(dispatcher) {}
+/** @return {!Protocol.SchemaAgent}*/
+Protocol.Agents.prototype.schemaAgent = function(){};
+/**
+ * @param {!SchemaAgent.Dispatcher} dispatcher
+ */
+Protocol.Agents.prototype.registerSchemaDispatcher = function(dispatcher) {}
 /** @return {!Protocol.RuntimeAgent}*/
 Protocol.Agents.prototype.runtimeAgent = function(){};
 /**
@@ -3274,6 +4711,12 @@ Protocol.Agents.prototype.debuggerAgent = function(){};
  * @param {!DebuggerAgent.Dispatcher} dispatcher
  */
 Protocol.Agents.prototype.registerDebuggerDispatcher = function(dispatcher) {}
+/** @return {!Protocol.ConsoleAgent}*/
+Protocol.Agents.prototype.consoleAgent = function(){};
+/**
+ * @param {!ConsoleAgent.Dispatcher} dispatcher
+ */
+Protocol.Agents.prototype.registerConsoleDispatcher = function(dispatcher) {}
 /** @return {!Protocol.ProfilerAgent}*/
 Protocol.Agents.prototype.profilerAgent = function(){};
 /**
