@@ -15,7 +15,7 @@ export DIRAC_NREPL_SERVER_PORT=12040
 export DIRAC_AGENT_PORT=12041
 export DIRAC_NREPL_WEASEL_PORT=12042
 
-echo "Running all backend tests..."
+echo "Running backend tests..."
 lein run-backend-tests-default
 lein run-backend-tests-17
 lein run-backend-tests-19
