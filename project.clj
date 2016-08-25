@@ -25,7 +25,7 @@
                  [binaryage/chromex "0.4.2" :scope "test"]
                  [binaryage/devtools "0.8.1" :scope "test"]
                  [cljs-http "0.1.41" :scope "test"]
-                 [figwheel "0.5.4-7" :scope "test"]
+                 [figwheel "0.5.6" :scope "test"]
                  [reforms "0.4.3" :scope "test"]
                  [rum "0.9.1" :scope "test"]
                  [rum-reforms "0.4.3" :scope "test"]
@@ -50,10 +50,6 @@
                  [ring/ring-devel "1.5.0" :scope "test"]
                  [ring/ring-jetty-adapter "1.5.0" :scope "test"]
                  [clj-time "0.12.0" :scope "test"]]
-
-  ; this effectively disables checkouts and gives us a chance to re-enable them on per-profile basis, see :checkouts profile
-  ; http://jakemccrary.com/blog/2015/03/24/advanced-leiningen-checkouts-configuring-what-ends-up-on-your-classpath/
-  :checkout-deps-shares ^:replace []
 
   :plugins [[lein-shell "0.5.0"]
             [lein-environ "1.1.0"]]
@@ -128,7 +124,7 @@
 
              :cljs
              {:plugins [[lein-cljsbuild "1.1.3"]
-                        [lein-figwheel "0.5.4-7"]]
+                        [lein-figwheel "0.5.6"]]
               :hooks   [leiningen.cljsbuild]}
 
              :test-runner
@@ -157,17 +153,16 @@
                                              "test/browser/fixtures/src/tasks"]
                             :compiler       {:output-to            "test/browser/fixtures/resources/_compiled/tasks/main.js"
                                              :output-dir           "test/browser/fixtures/resources/_compiled/tasks"
-                                             :asset-path           "../_compiled/tasks"
                                              :optimizations        :none                                                      ; we rely on optimizations :none in test runner
                                              :external-config      {:devtools/config {:features-to-install :all}}
                                              :source-map           true
                                              :source-map-timestamp true}}
                            :scenarios01
                            {; HACK: we rely on figwheel's "rel=<timestamp>" into cljs url params, clean-urls tests depend on it
-                            :figwheel       {:server-port     7301
-                                             :server-logfile  ".figwheel_scenarios01.log"
-                                             :validate-config false
-                                             :repl            false}
+                            :figwheel       {:server-port          7301
+                                             :server-logfile       ".figwheel_scenarios01.log"
+                                             :validate-interactive false
+                                             :repl                 false}
                             :notify-command ["scripts/cljsbuild-notify.sh" "scenarios01"]
                             :source-paths   ["src/settings"
                                              "src/project"
@@ -177,7 +172,6 @@
                                              "test/browser/fixtures/src/scenarios01"]
                             :compiler       {:output-to            "test/browser/fixtures/resources/_compiled/scenarios01/main.js"
                                              :output-dir           "test/browser/fixtures/resources/_compiled/scenarios01"
-                                             :asset-path           "../_compiled/scenarios01"
                                              :optimizations        :none
                                              :source-map           true
                                              :source-map-timestamp true}}
@@ -200,10 +194,10 @@
                                              :source-map-timestamp true}}}}}
 
              :marion-figwheel
-             {:figwheel {:server-port     7200
-                         :server-logfile  ".figwheel_marion.log"
-                         :validate-config false
-                         :repl            false}}
+             {:figwheel {:server-port          7200
+                         :server-logfile       ".figwheel_marion.log"
+                         :validate-interactive false
+                         :repl                 false}}
 
              :marion
              {:cljsbuild {:builds
@@ -212,11 +206,12 @@
                             :source-paths   ["src/settings"
                                              "src/shared"
                                              "test/marion/src/background"]
-                            :compiler       {:output-to     "test/marion/resources/unpacked/compiled/background/background.js"
-                                             :output-dir    "test/marion/resources/unpacked/compiled/background"
-                                             :asset-path    "compiled/background"
-                                             :optimizations :none
-                                             :source-map    true}}
+                            :compiler       {:output-to       "test/marion/resources/unpacked/compiled/background/background.js"
+                                             :output-dir      "test/marion/resources/unpacked/compiled/background"
+                                             :external-config {:devtools/config {:features-to-install           :all
+                                                                                 :dont-detect-custom-formatters true}}
+                                             :optimizations   :none
+                                             :source-map      true}}
 
                            :marion-content-script
                            {:notify-command ["scripts/cljsbuild-notify.sh" "marion-content-script"]
@@ -225,17 +220,16 @@
                                              "test/marion/src/content_script"]
                             :compiler       {:output-to              "test/marion/resources/unpacked/compiled/content_script/content_script.js"
                                              :output-dir             "test/marion/resources/unpacked/compiled/content_script"
-                                             :asset-path             "compiled/content_script"
                                              :closure-output-charset "US-ASCII"
                                              :optimizations          :whitespace                                              ; content scripts cannot do eval / load script dynamically
                                              :pretty-print           true
                                              :source-map             "test/marion/resources/unpacked/compiled/content_script/content_script.js.map"}}}}}
 
              :dirac-figwheel
-             {:figwheel {:server-port     7100
-                         :server-logfile  ".figwheel_dirac.log"
-                         :validate-config false
-                         :repl            false}}
+             {:figwheel {:server-port          7100
+                         :server-logfile       ".figwheel_dirac.log"
+                         :validate-interactive false
+                         :repl                 false}}
 
              :dirac-unpacked
              {:cljsbuild {:builds
@@ -245,11 +239,12 @@
                                              "src/implant"
                                              "src/lib"
                                              "src/project"]
-                            :compiler       {:output-to     "resources/unpacked/devtools/front_end/dirac/compiled/implant/implant.js"
-                                             :output-dir    "resources/unpacked/devtools/front_end/dirac/compiled/implant"
-                                             :asset-path    "dirac/compiled/implant"
-                                             :optimizations :none
-                                             :source-map    true}}
+                            :compiler       {:output-to       "resources/unpacked/devtools/front_end/dirac/compiled/implant/implant.js"
+                                             :output-dir      "resources/unpacked/devtools/front_end/dirac/compiled/implant"
+                                             :external-config {:devtools/config {:features-to-install           :all
+                                                                                 :dont-detect-custom-formatters true}}
+                                             :optimizations   :none
+                                             :source-map      true}}
 
                            :dirac-background
                            {:notify-command ["scripts/cljsbuild-notify.sh" "dirac-background"]
@@ -259,11 +254,12 @@
                                              "src/shared"
                                              "src/project"
                                              "src/background"]
-                            :compiler       {:output-to     "resources/unpacked/compiled/background/dirac.js"
-                                             :output-dir    "resources/unpacked/compiled/background"
-                                             :asset-path    "compiled/background"
-                                             :optimizations :none
-                                             :source-map    true}}
+                            :compiler       {:output-to       "resources/unpacked/compiled/background/dirac.js"
+                                             :output-dir      "resources/unpacked/compiled/background"
+                                             :external-config {:devtools/config {:features-to-install           :all
+                                                                                 :dont-detect-custom-formatters true}}
+                                             :optimizations   :none
+                                             :source-map      true}}
                            :dirac-options
                            {:notify-command ["scripts/cljsbuild-notify.sh" "dirac-options"]
                             :source-paths   ["src/settings"
@@ -272,11 +268,12 @@
                                              "src/shared"
                                              "src/project"
                                              "src/options"]
-                            :compiler       {:output-to     "resources/unpacked/compiled/options/dirac.js"
-                                             :output-dir    "resources/unpacked/compiled/options"
-                                             :asset-path    "compiled/options"
-                                             :optimizations :none
-                                             :source-map    true}}}}}
+                            :compiler       {:output-to       "resources/unpacked/compiled/options/dirac.js"
+                                             :output-dir      "resources/unpacked/compiled/options"
+                                             :external-config {:devtools/config {:features-to-install           :all
+                                                                                 :dont-detect-custom-formatters true}}
+                                             :optimizations   :none
+                                             :source-map      true}}}}}
              :dirac-packed
              ; note: we want to compile under target folder to prevent unnecessary recompilations after running ./scripts/release.sh
              ;       the script will copy most recent build over
@@ -289,7 +286,6 @@
                                            "src/project"]
                             :compiler     {:output-to     "target/resources/release/devtools/front_end/dirac/compiled/implant/implant.js"
                                            :output-dir    "target/resources/release/devtools/front_end/dirac/compiled/implant"
-                                           :asset-path    "dirac/compiled/implant"
                                            :optimizations :advanced
                                            :elide-asserts true}}
                            :dirac-background
@@ -300,7 +296,6 @@
                                            "src/background"]
                             :compiler     {:output-to     "target/resources/release/compiled/background.js"
                                            :output-dir    "target/resources/release/compiled/background"
-                                           :asset-path    "compiled/background"
                                            :optimizations :advanced
                                            :elide-asserts true}}
                            :dirac-options
@@ -311,7 +306,6 @@
                                            "src/options"]
                             :compiler     {:output-to     "target/resources/release/compiled/options.js"
                                            :output-dir    "target/resources/release/compiled/options"
-                                           :asset-path    "compiled/options"
                                            :optimizations :advanced
                                            :elide-asserts true}}}}}
 
@@ -342,73 +336,6 @@
                            {:compiler {:parallel-build true}}
                            :scenarios02
                            {:compiler {:parallel-build true}}}}}
-
-             ; DON'T FORGET TO UPDATE scripts/ensure-checkouts.sh
-             :checkouts
-             {:checkout-deps-shares ^:replace [:source-paths
-                                               :test-paths
-                                               :resource-paths
-                                               :compile-path
-                                               #=(eval leiningen.core.classpath/checkout-deps-paths)]
-              :cljsbuild            {:builds
-                                     {:dirac-implant
-                                      {:source-paths ["checkouts/cljs-devtools/src"
-                                                      "checkouts/chromex/src/lib"
-                                                      "checkouts/chromex/src/exts"]
-                                       :compiler     {}}
-                                      :dirac-background
-                                      {:source-paths ["checkouts/cljs-devtools/src"
-                                                      "checkouts/chromex/src/lib"
-                                                      "checkouts/chromex/src/exts"]
-                                       :compiler     {}}
-                                      :dirac-options
-                                      {:source-paths ["checkouts/cljs-devtools/src"
-                                                      "checkouts/chromex/src/lib"
-                                                      "checkouts/chromex/src/exts"]
-                                       :compiler     {}}
-                                      :marion-background
-                                      {:source-paths ["checkouts/cljs-devtools/src"
-                                                      "checkouts/chromex/src/lib"
-                                                      "checkouts/chromex/src/exts"]
-                                       :compiler     {}}
-                                      :marion-content-script
-                                      {:source-paths ["checkouts/cljs-devtools/src"
-                                                      "checkouts/chromex/src/lib"
-                                                      "checkouts/chromex/src/exts"]
-                                       :compiler     {}}
-                                      :tasks
-                                      {:source-paths ["checkouts/cljs-devtools/src"
-                                                      "checkouts/chromex/src/lib"
-                                                      "checkouts/chromex/src/exts"]
-                                       :compiler     {}}
-                                      :scenarios01
-                                      {:source-paths ["checkouts/cljs-devtools/src"
-                                                      "checkouts/chromex/src/lib"
-                                                      "checkouts/chromex/src/exts"]
-                                       :compiler     {}}
-                                      :scenarios02
-                                      {:source-paths ["checkouts/cljs-devtools/src"
-                                                      "checkouts/chromex/src/lib"
-                                                      "checkouts/chromex/src/exts"]
-                                       :compiler     {}}}}}
-
-             :devtools
-             {:cljsbuild {:builds
-                          {:dirac-implant
-                           {:compiler {:tooling-config {:devtools/config {:features-to-install           :all
-                                                                          :dont-detect-custom-formatters true}}}}
-
-                           :dirac-background
-                           {:compiler {:tooling-config {:devtools/config {:features-to-install           :all
-                                                                          :dont-detect-custom-formatters true}}}}
-
-                           :dirac-options
-                           {:compiler {:tooling-config {:devtools/config {:features-to-install           :all
-                                                                          :dont-detect-custom-formatters true}}}}
-
-                           :marion-background
-                           {:compiler {:tooling-config {:devtools/config {:features-to-install           :all
-                                                                          :dont-detect-custom-formatters true}}}}}}}
 
              :nuke-aliases
              {:aliases ^:replace {}}
@@ -461,13 +388,13 @@
             "run-browser-tests-dev"      ["shell" "scripts/run-browser-tests.sh" "dirac.browser-tests-runner/-dev-main"]
             "run-browser-tests-agent"    ["with-profile" "+test-runner" "run" "-m" "dirac.browser-tests-runner/run-agent"]
 
-            "fig-dirac"                  ["with-profile" "+cljs,+checkouts,+devtools,+dirac-unpacked,+dirac-figwheel"
+            "fig-dirac"                  ["with-profile" "+cljs,+dirac-unpacked,+dirac-figwheel"
                                           "figwheel"
                                           "dirac-background" "dirac-options" "dirac-implant"]
-            "compile-dirac-dev"          ["with-profile" "+cljs,+checkouts,+devtools,+parallel-build,+dirac-unpacked"
+            "compile-dirac-dev"          ["with-profile" "+cljs,+parallel-build,+dirac-unpacked"
                                           "cljsbuild" "once"
                                           "dirac-background" "dirac-options" "dirac-implant"]
-            "auto-compile-dirac-dev"     ["with-profile" "+cljs,+checkouts,+devtools,+parallel-build,+dirac-unpacked"
+            "auto-compile-dirac-dev"     ["with-profile" "+cljs,+parallel-build,+dirac-unpacked"
                                           "cljsbuild" "auto"
                                           "dirac-background" "dirac-options" "dirac-implant"]
             "compile-dirac"              ["with-profile" "+cljs,+parallel-build,+dirac-packed"
@@ -476,22 +403,22 @@
             "compile-dirac-pseudo-names" ["with-profile" "+cljs,+parallel-build,+dirac-packed,+pseudo-names"
                                           "cljsbuild" "once"
                                           "dirac-background" "dirac-options" "dirac-implant"]
-            "fig-marion"                 ["with-profile" "+cljs,+checkouts,+devtools,+marion,+marion-figwheel"
+            "fig-marion"                 ["with-profile" "+cljs,+marion,+marion-figwheel"
                                           "figwheel"
                                           "marion-background"]
             "compile-marion"             ["with-profile" "+cljs,+parallel-build,+marion"
                                           "cljsbuild" "once"
                                           "marion-background" "marion-content-script"]
-            "auto-compile-marion"        ["with-profile" "+cljs,+checkouts,+devtools,+parallel-build,+marion"
+            "auto-compile-marion"        ["with-profile" "+cljs,+parallel-build,+marion"
                                           "cljsbuild" "auto"
                                           "marion-background" "marion-content-script"]
-            "auto-compile-marion-cs"     ["with-profile" "+cljs,+checkouts,+devtools,+parallel-build,+marion"
+            "auto-compile-marion-cs"     ["with-profile" "+cljs,+parallel-build,+marion"
                                           "cljsbuild" "auto"
                                           "marion-content-script"]
 
-            "compile-browser-tests"      ["with-profile" "+cljs,+checkouts,+devtools,+parallel-build,+browser-tests"
+            "compile-browser-tests"      ["with-profile" "+cljs,+parallel-build,+browser-tests"
                                           "cljsbuild" "once"]
-            "auto-compile-browser-tests" ["with-profile" "+cljs,+checkouts,+devtools,+parallel-build,+browser-tests"
+            "auto-compile-browser-tests" ["with-profile" "+cljs,+parallel-build,+browser-tests"
                                           "cljsbuild" "auto"]
 
             "clean-compiled"             ["shell" "scripts/clean-compiled.sh"]

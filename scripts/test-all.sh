@@ -6,7 +6,7 @@ set -e
 
 pushd "$ROOT"
 
-./scripts/ensure-checkouts.sh
+#./scripts/ensure-checkouts.sh
 
 lein test-backend
 lein test-browser
