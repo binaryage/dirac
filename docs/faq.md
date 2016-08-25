@@ -15,6 +15,9 @@ DevTools frontend can adapt dynamically and does not fatally break when used wit
 But you should not use "too old" DevTools with "too recent" Chrome and vice versa.
 Such combinations are not tested and are likely to break because fundamental APIs could be missing / changed on either side.
 
+Since [Dirac v0.6.4](https://github.com/binaryage/dirac/releases/tag/v0.6.4) this requirement was relaxed because Dirac can newly use protocol definitions from internal DevTools. 
+But still you should not diverge too far from recommended Chrome version.
+
 My goal is to be releasing Dirac DevTools updates at least once a month to match it with recent Chrome Canary builds.
 
 ### How do I open Dirac DevTools via a keyboard shortcut?
