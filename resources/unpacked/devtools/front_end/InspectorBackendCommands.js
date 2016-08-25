@@ -1,5 +1,5 @@
-WebInspector.BakedInspectorBackendAPIChromeTag='54.0.2832.2';
-WebInspector.BakedInspectorBackendAPIChromeRev='33f9e3a0fb535159cbd009663b9f194fc27f4205';
+WebInspector.BakedInspectorBackendAPIChromeTag='54.0.2839.3';
+WebInspector.BakedInspectorBackendAPIChromeRev='8b3f5df1a65187e662fcf2fd5ead1ccb89226f31';
 WebInspector.BakedInspectorBackendAPI=''
 + 'InspectorBackend.registerEvent("Inspector.detached", ["reason"]);'
 + 'InspectorBackend.registerEvent("Inspector.targetCrashed", []);'
@@ -76,6 +76,7 @@ WebInspector.BakedInspectorBackendAPI=''
 + 'InspectorBackend.registerCommand("Emulation.clearDeviceMetricsOverride", [], [], false);'
 + 'InspectorBackend.registerCommand("Emulation.resetPageScaleFactor", [], [], false);'
 + 'InspectorBackend.registerCommand("Emulation.setPageScaleFactor", [{"name": "pageScaleFactor", "type": "number", "optional": false}], [], false);'
++ 'InspectorBackend.registerCommand("Emulation.setVisibleSize", [{"name": "width", "type": "number", "optional": false}, {"name": "height", "type": "number", "optional": false}], [], false);'
 + 'InspectorBackend.registerCommand("Emulation.setScriptExecutionDisabled", [{"name": "value", "type": "boolean", "optional": false}], [], false);'
 + 'InspectorBackend.registerCommand("Emulation.setGeolocationOverride", [{"name": "latitude", "type": "number", "optional": true}, {"name": "longitude", "type": "number", "optional": true}, {"name": "accuracy", "type": "number", "optional": true}], [], false);'
 + 'InspectorBackend.registerCommand("Emulation.clearGeolocationOverride", [], [], false);'
@@ -367,6 +368,7 @@ WebInspector.BakedInspectorBackendAPI=''
 + 'InspectorBackend.registerEvent("Tethering.accepted", ["port", "connectionId"]);'
 + 'InspectorBackend.registerCommand("Tethering.bind", [{"name": "port", "type": "number", "optional": false}], [], false);'
 + 'InspectorBackend.registerCommand("Tethering.unbind", [{"name": "port", "type": "number", "optional": false}], [], false);'
++ 'InspectorBackend.registerCommand("Schema.getDomains", [], ["domains"], false);'
 + 'InspectorBackend.registerEnum("Runtime.UnserializableValue", {Infinity: "Infinity", NaN: "NaN", NegativeInfinity: "-Infinity", Negative0: "-0"});'
 + 'InspectorBackend.registerEnum("Runtime.RemoteObjectType", {Object: "object", Function: "function", Undefined: "undefined", String: "string", Number: "number", Boolean: "boolean", Symbol: "symbol"});'
 + 'InspectorBackend.registerEnum("Runtime.RemoteObjectSubtype", {Array: "array", Null: "null", Node: "node", Regexp: "regexp", Date: "date", Map: "map", Set: "set", Iterator: "iterator", Generator: "generator", Error: "error", Proxy: "proxy", Promise: "promise", Typedarray: "typedarray"});'
