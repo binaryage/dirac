@@ -273,8 +273,10 @@ WebInspector.ConsoleView.prototype = {
     _initConsoleMessages: function()
     {
         var mainTarget = WebInspector.targetManager.mainTarget();
-        if (!mainTarget || !mainTarget.resourceTreeModel.cachedResourcesLoaded()) {
-            WebInspector.targetManager.addModelListener(WebInspector.ResourceTreeModel, WebInspector.ResourceTreeModel.EventTypes.CachedResourcesLoaded, this._onResourceTreeModelLoaded, this);
+        var resourceTreeModel = mainTarget && WebInspector.ResourceTreeModel.fromTarget(mainTarget);
+        var resourcesLoaded = !resourceTreeModel || resourceTreeModel.cachedResourcesLoaded();
+        if (!mainTarget || !resourcesLoaded) {
+            WebInspector.targetManager.addModelListener(WebInspector.ResourceTreeModel, WebInspector.ResourceTreeModel.Events.CachedResourcesLoaded, this._onResourceTreeModelLoaded, this);
             return;
         }
         this._fetchMultitargetMessages();
@@ -288,7 +290,7 @@ WebInspector.ConsoleView.prototype = {
         var resourceTreeModel = event.target;
         if (resourceTreeModel.target() !== WebInspector.targetManager.mainTarget())
             return;
-        WebInspector.targetManager.removeModelListener(WebInspector.ResourceTreeModel, WebInspector.ResourceTreeModel.EventTypes.CachedResourcesLoaded, this._onResourceTreeModelLoaded, this);
+        WebInspector.targetManager.removeModelListener(WebInspector.ResourceTreeModel, WebInspector.ResourceTreeModel.Events.CachedResourcesLoaded, this._onResourceTreeModelLoaded, this);
         this._fetchMultitargetMessages();
     },
 
@@ -923,7 +925,8 @@ WebInspector.ConsoleView.prototype = {
     _saveConsole: function()
     {
         var url = WebInspector.targetManager.mainTarget().inspectedURL();
-        var filename = String.sprintf("%s-%d.log", url.asParsedURL().host, Date.now());
+        var parsedURL = url.asParsedURL();
+        var filename = String.sprintf("%s-%d.log", parsedURL ? parsedURL.host : "console", Date.now());
         var stream = new WebInspector.FileOutputStream();
 
         var progressIndicator = new WebInspector.ProgressIndicator();
