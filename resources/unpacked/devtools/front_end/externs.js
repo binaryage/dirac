@@ -271,7 +271,12 @@ DevToolsHost.isolatedFileSystem = function(fileSystemId, registeredName) { }
  */
 DevToolsHost.upgradeDraggedFileSystemPermissions = function(fileSystem) { }
 
-var WebInspector = function() {}
+var WebInspector = function() {};
+
+/** @type {string} */
+WebInspector.BakedInspectorBackendAPI;
+/** @type {string} */
+WebInspector.BakedSupportedCSSProperties;
 
 /** Extensions API */
 
@@ -364,6 +369,8 @@ var dirac = {
     hasCleanUrls: true,
     /** @type {boolean} */
     hasBeautifyFunctionNames: true,
+    /** @type {?Object.<string, dirac.NamespaceDescriptor>} */
+    _namespacesCache: null,
     /**
     * @param {string} code
     * @return {string}
@@ -374,6 +381,7 @@ var dirac = {
     * @return {string}
     */
     stringEscape: function (string) {},
+    lookupCurrentContext: function() {},
     /**
     * @param {string} code
     * @param {?} callback

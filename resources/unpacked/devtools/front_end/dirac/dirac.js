@@ -41,7 +41,7 @@ Object.assign(window.dirac, (function() {
         return Runtime.queryParam(paramName) == "1";
     }
 
-// taken from https://github.com/joliss/js-string-escape/blob/master/index.js
+    // taken from https://github.com/joliss/js-string-escape/blob/master/index.js
     function stringEscape(string) {
         return ('' + string).replace(/["'\\\n\r\u2028\u2029]/g, function(character) {
             // Escape all characters not included in SingleStringCharacters and
@@ -67,97 +67,6 @@ Object.assign(window.dirac, (function() {
 
     function codeAsString(code) {
         return "'" + stringEscape(code) + "'";
-    }
-
-    function evalInContext(context, code, callback) {
-        if (!context) {
-            console.warn("Requested evalInContext with null context:", code);
-            return;
-        }
-        var resultCallback = function(result, exceptionDetails) {
-            if (dirac._DEBUG_EVAL) {
-                console.log("evalInContext/resultCallback: result", result, "exceptionDetails", exceptionDetails);
-            }
-            if (callback) {
-                callback(result, exceptionDetails);
-            }
-        };
-        try {
-            if (dirac._DEBUG_EVAL) {
-                console.log("evalInContext", context, code);
-            }
-            context.evaluate(code, "console", true, true, true, false, false, resultCallback);
-        } catch (e) {
-            console.error("failed js evaluation in context:", context, "code", code);
-        }
-    }
-
-    function lookupCurrentContext() {
-        return WebInspector.context.flavor(WebInspector.ExecutionContext);
-    }
-
-    function hasCurrentContext() {
-        return lookupCurrentContext() ? true : false;
-    }
-
-    function evalInCurrentContext(code, callback) {
-        if (dirac._DEBUG_EVAL) {
-            console.log("evalInCurrentContext called:", code, callback);
-        }
-        evalInContext(lookupCurrentContext(), code, callback);
-    }
-
-    function lookupDefaultContext() {
-        if (dirac._DEBUG_EVAL) {
-            console.log("lookupDefaultContext called");
-        }
-        if (!WebInspector.targetManager) {
-            if (dirac._DEBUG_EVAL) {
-                console.log("  !WebInspector.targetManager => bail out");
-            }
-            return null;
-        }
-        var target = WebInspector.targetManager.mainTarget();
-        if (!target) {
-            if (dirac._DEBUG_EVAL) {
-                console.log("  !target => bail out");
-            }
-            return null;
-        }
-        var executionContexts = target.runtimeModel.executionContexts();
-        if (dirac._DEBUG_EVAL) {
-            console.log("  execution contexts:", executionContexts);
-        }
-        for (var i = 0; i < executionContexts.length; ++i) {
-            var executionContext = executionContexts[i];
-            if (executionContext.isDefault) {
-                if (dirac._DEBUG_EVAL) {
-                    console.log("  execution context #" + i + " isDefault:", executionContext);
-                }
-                return executionContext;
-            }
-        }
-        if (executionContexts.length > 0) {
-            if (dirac._DEBUG_EVAL) {
-                console.log("  lookupDefaultContext failed to find valid context => return the first one");
-            }
-            return executionContexts[0];
-        }
-        if (dirac._DEBUG_EVAL) {
-            console.log("  lookupDefaultContext failed to find valid context => no context avail");
-        }
-        return null;
-    }
-
-    function hasDefaultContext() {
-        return lookupDefaultContext() ? true : false;
-    }
-
-    function evalInDefaultContext(code, callback) {
-        if (dirac._DEBUG_EVAL) {
-            console.log("evalInDefaultContext called:", code, callback);
-        }
-        evalInContext(lookupDefaultContext(), code, callback);
     }
 
     function loadLazyDirac() {
@@ -187,23 +96,6 @@ Object.assign(window.dirac, (function() {
         }
 
         return dirac._namespacesCache[namespaceName];
-    }
-
-    function addConsoleMessageToMainTarget(level, text, parameters) {
-        const target = WebInspector.targetManager.mainTarget();
-        if (!target) {
-            console.warn("Unable to add console message to main target: ", text);
-            return;
-        }
-        const consoleModel = target.consoleModel;
-        if (!consoleModel) {
-            console.warn("Unable to add console message (no consoleModel): ", text);
-            return;
-        }
-
-        const msg = new WebInspector.ConsoleMessage(target, WebInspector.ConsoleMessage.MessageSource.Other, level, text,
-            WebInspector.ConsoleMessage.MessageType.Log, null, null, null, null, parameters);
-        consoleModel.addMessage(msg);
     }
 
     // --- lazy APIs --------------------------------------------------------------------------------------------------------
@@ -246,6 +138,30 @@ Object.assign(window.dirac, (function() {
         return loadLazyDirac().then(() => window.dirac.getMacroNamespaceNames(...args));
     }
 
+    function lookupCurrentContext(...args) {
+        return loadLazyDirac().then(() => window.dirac.lookupCurrentContext(...args));
+    }
+
+    function evalInCurrentContext(...args) {
+        return loadLazyDirac().then(() => window.dirac.evalInCurrentContext(...args));
+    }
+
+    function hasCurrentContext(...args) {
+        return loadLazyDirac().then(() => window.dirac.hasCurrentContext(...args));
+    }
+
+    function evalInDefaultContext(...args) {
+        return loadLazyDirac().then(() => window.dirac.evalInDefaultContext(...args));
+    }
+
+    function hasDefaultContext(...args) {
+        return loadLazyDirac().then(() => window.dirac.hasDefaultContext(...args));
+    }
+
+    function addConsoleMessageToMainTarget(...args) {
+        return loadLazyDirac().then(() => window.dirac.addConsoleMessageToMainTarget(...args));
+    }
+
 // --- exported interface ---------------------------------------------------------------------------------------------------
 
     // don't forget to update externs.js too
@@ -273,16 +189,17 @@ Object.assign(window.dirac, (function() {
         hasFeature: hasFeature,
         codeAsString: codeAsString,
         stringEscape: stringEscape,
+        deduplicate: deduplicate,
+        stableSort: stableSort,
+        getNamespace: getNamespace,
+
+        // -- LAZY INTERFACE ------------------------------------------------------------------------------------------------
+        lookupCurrentContext: lookupCurrentContext,
         evalInCurrentContext: evalInCurrentContext,
         hasCurrentContext: hasCurrentContext,
         evalInDefaultContext: evalInDefaultContext,
         hasDefaultContext: hasDefaultContext,
-        deduplicate: deduplicate,
-        stableSort: stableSort,
-        getNamespace: getNamespace,
         addConsoleMessageToMainTarget: addConsoleMessageToMainTarget,
-
-        // -- LAZY INTERFACE ------------------------------------------------------------------------------------------------
         startListeningForWorkspaceChanges: startListeningForWorkspaceChanges,
         stopListeningForWorkspaceChanges: stopListeningForWorkspaceChanges,
         extractScopeInfoFromScopeChainAsync: extractScopeInfoFromScopeChainAsync,

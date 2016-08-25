@@ -7,6 +7,118 @@ Object.assign(window.dirac, (function() {
 
     const namespacesSymbolsCache = new Map();
 
+    // --- eval support -----------------------------------------------------------------------------------------------------
+
+    function lookupCurrentContext() {
+        return WebInspector.context.flavor(WebInspector.ExecutionContext);
+    }
+
+    function evalInContext(context, code, callback) {
+        if (!context) {
+            console.warn("Requested evalInContext with null context:", code);
+            return;
+        }
+        var resultCallback = function(result, exceptionDetails) {
+            if (dirac._DEBUG_EVAL) {
+                console.log("evalInContext/resultCallback: result", result, "exceptionDetails", exceptionDetails);
+            }
+            if (callback) {
+                callback(result, exceptionDetails);
+            }
+        };
+        try {
+            if (dirac._DEBUG_EVAL) {
+                console.log("evalInContext", context, code);
+            }
+            context.evaluate(code, "console", true, true, true, false, false, resultCallback);
+        } catch (e) {
+            console.error("failed js evaluation in context:", context, "code", code);
+        }
+    }
+
+    function hasCurrentContext() {
+        return lookupCurrentContext() ? true : false;
+    }
+
+    function evalInCurrentContext(code, callback) {
+        if (dirac._DEBUG_EVAL) {
+            console.log("evalInCurrentContext called:", code, callback);
+        }
+        evalInContext(lookupCurrentContext(), code, callback);
+    }
+
+    function lookupDefaultContext() {
+        if (dirac._DEBUG_EVAL) {
+            console.log("lookupDefaultContext called");
+        }
+        if (!WebInspector.targetManager) {
+            if (dirac._DEBUG_EVAL) {
+                console.log("  !WebInspector.targetManager => bail out");
+            }
+            return null;
+        }
+        var target = WebInspector.targetManager.mainTarget();
+        if (!target) {
+            if (dirac._DEBUG_EVAL) {
+                console.log("  !target => bail out");
+            }
+            return null;
+        }
+        var executionContexts = target.runtimeModel.executionContexts();
+        if (dirac._DEBUG_EVAL) {
+            console.log("  execution contexts:", executionContexts);
+        }
+        for (var i = 0; i < executionContexts.length; ++i) {
+            var executionContext = executionContexts[i];
+            if (executionContext.isDefault) {
+                if (dirac._DEBUG_EVAL) {
+                    console.log("  execution context #" + i + " isDefault:", executionContext);
+                }
+                return executionContext;
+            }
+        }
+        if (executionContexts.length > 0) {
+            if (dirac._DEBUG_EVAL) {
+                console.log("  lookupDefaultContext failed to find valid context => return the first one");
+            }
+            return executionContexts[0];
+        }
+        if (dirac._DEBUG_EVAL) {
+            console.log("  lookupDefaultContext failed to find valid context => no context avail");
+        }
+        return null;
+    }
+
+    function hasDefaultContext() {
+        return lookupDefaultContext() ? true : false;
+    }
+
+    function evalInDefaultContext(code, callback) {
+        if (dirac._DEBUG_EVAL) {
+            console.log("evalInDefaultContext called:", code, callback);
+        }
+        evalInContext(lookupDefaultContext(), code, callback);
+    }
+
+    // --- console ----------------------------------------------------------------------------------------------------------
+
+    function addConsoleMessageToMainTarget(level, text, parameters) {
+        const target = WebInspector.targetManager.mainTarget();
+        if (!target) {
+            console.warn("Unable to add console message to main target: ", text);
+            return;
+        }
+        const consoleModel = target.consoleModel;
+        if (!consoleModel) {
+            console.warn("Unable to add console message (no consoleModel): ", text);
+            return;
+        }
+
+        const msg = new WebInspector.ConsoleMessage(target, WebInspector.ConsoleMessage.MessageSource.Other, level, text,
+            WebInspector.ConsoleMessage.MessageType.Log, null, null, null, null, parameters);
+        consoleModel.addMessage(msg);
+    }
+
     // --- scope info -------------------------------------------------------------------------------------------------------
 
     function getScopeTitle(scope) {
@@ -654,6 +766,12 @@ Object.assign(window.dirac, (function() {
         _lazyLoaded: true,
         _namespacesSymbolsCache: namespacesSymbolsCache,
         _namespacesCache: null,
+        lookupCurrentContext: lookupCurrentContext,
+        evalInCurrentContext: evalInCurrentContext,
+        hasCurrentContext: hasCurrentContext,
+        evalInDefaultContext: evalInDefaultContext,
+        hasDefaultContext: hasDefaultContext,
+        addConsoleMessageToMainTarget: addConsoleMessageToMainTarget,
         startListeningForWorkspaceChanges: startListeningForWorkspaceChanges,
         stopListeningForWorkspaceChanges: stopListeningForWorkspaceChanges,
         extractScopeInfoFromScopeChainAsync: extractScopeInfoFromScopeChainAsync,
