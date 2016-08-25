@@ -201,7 +201,7 @@
 (defn retrieve-chrome-info []
   (try
     (to CHROME_VERSION_PAGE)
-    (wait-until #(exists? "#executable_path"))
+    (wait-until #(exists? "#executable_path") 3000)
     (let [version-text (text "#version")
           os-type-text (text "#os_type")
           js-engine-text (text "#js_engine")
