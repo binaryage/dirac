@@ -43,7 +43,7 @@
 (defn get-backend-api-info []
   (let [mode (or (get-backend-api-mode) "?")
         info (case mode
-               "internal" (str (get-backend-api-chrome-tag) "/" (.substring (get-backend-api-chrome-rev) 0 7) "/internal")
+               "internal" (str "internal/" (get-backend-api-chrome-tag) "/" (.substring (get-backend-api-chrome-rev) 0 7))
                mode)
         more (get-backend-api-mode-info)]
     (str "Backend API/" info (if more (str " (" more ")")))))
@@ -63,7 +63,7 @@
 (defn get-backend-css-info []
   (let [mode (or (get-backend-css-mode) "?")
         info (case mode
-               "internal" (str (get-backend-css-chrome-tag) "/" (.substring (get-backend-css-chrome-rev) 0 7) "/internal")
+               "internal" (str "internal/" (get-backend-css-chrome-tag) "/" (.substring (get-backend-css-chrome-rev) 0 7))
                mode)
         more (get-backend-css-mode-info)]
     (str "Backend CSS/" info (if more (str " (" more ")")))))
