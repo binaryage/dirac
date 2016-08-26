@@ -12,7 +12,7 @@ WebInspector.SupportedCSSPropertiesExtensionMode.loadFromExtensionIfNeeded = fun
     const encodedBackendCSS = Runtime.queryParam("backend_css");
     if (encodedBackendCSS) {
         const backendCSS = decodeURIComponent(encodedBackendCSS);
-        const lines = backendCSS.split("\n");
+        const lines = backendCSS.split("\n").filter(s => s.length);
         WebInspector.BakedSupportedCSSPropertiesMode = "external";
         WebInspector.BakedSupportedCSSPropertiesModeInfo = lines.length + " definitions";
         if (dirac._DEBUG_BACKEND_CSS) {
@@ -21,7 +21,7 @@ WebInspector.SupportedCSSPropertiesExtensionMode.loadFromExtensionIfNeeded = fun
         evalCSS(backendCSS);
     } else {
         const backendCSS = WebInspector.BakedSupportedCSSProperties;
-        const lines = backendCSS.split("\n");
+        const lines = backendCSS.split("\n").filter(s => s.length);
         WebInspector.BakedSupportedCSSPropertiesMode = "internal";
         WebInspector.BakedSupportedCSSPropertiesModeInfo = lines.length + " definitions";
         if (dirac._DEBUG_BACKEND_CSS) {

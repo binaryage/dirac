@@ -23,7 +23,7 @@ WebInspector.InspectorBackendExtensionMode.loadFromExtensionIfNeeded = function(
     const backendAPI = Runtime.queryParam("backend_api");
     if (backendAPI) {
         const decodedBackendAPI = decodeURIComponent(backendAPI);
-        const lines = decodedBackendAPI.split("\n");
+        const lines = decodedBackendAPI.split("\n").filter(s => s.length);
         WebInspector.BakedInspectorBackendMode = "external";
         WebInspector.BakedInspectorBackendModeInfo = lines.length + " registrations";
         if (dirac._DEBUG_BACKEND_API) {
@@ -31,7 +31,7 @@ WebInspector.InspectorBackendExtensionMode.loadFromExtensionIfNeeded = function(
         }
         evalAPI(lines);
     } else {
-        const lines = WebInspector.BakedInspectorBackendAPI.split("\n");
+        const lines = WebInspector.BakedInspectorBackendAPI.split("\n").filter(s => s.length);
         WebInspector.BakedInspectorBackendMode = "internal";
         WebInspector.BakedInspectorBackendModeInfo = lines.length + " registrations";
         if (dirac._DEBUG_BACKEND_API) {
