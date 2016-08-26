@@ -38,10 +38,13 @@
 (defn make-js-string [s]
   (str "'" (quote-js-string s) "'"))
 
+(defn make-js-string-with-new-line [s]
+  (str "'" (quote-js-string s) "\\n'"))
+
 (defn make-readable-js-string [s]
   (->> s
        (cuerdas/lines)
-       (map make-js-string)
+       (map make-js-string-with-new-line)
        (map #(str "+ " %))
        (cuerdas/unlines)))
 
