@@ -1,0 +1,80 @@
+ns               Testing dirac.tests.tasks.suite01.options
+automate         open-tab-with-scenario! ["normal"]
+testing          user-specified url params should get propagated to DevTools frontends
+automate         store-options!
+automate         set-options! [{:user-frontend-url-params "x=1&y=2"}]
+automate         open-devtools!
+extension        handling command: open-dirac-devtools
+extension        register devtools #1
+devtools #1      implant initialized
+devtools #1      reset devtools settings
+devtools #1      devtools ready
+devtools #1      setCurrentPanel: elements
+devtools #1      namespacesCache is cool now
+automate #1      get-frontend-url-params
+automate #1      close-devtools!
+extension        handling command: close-dirac-devtools
+extension        unregister devtools #1
+automate         restore-options!
+∎
+testing          use backend-supported api and css
+automate         store-options!
+automate         set-options! [{:use-backend-supported-api true, :use-backend-supported-css true}]
+automate         open-devtools!
+extension        handling command: open-dirac-devtools
+extension        register devtools #2
+devtools #2      implant initialized
+devtools #2      reset devtools settings
+devtools #2      devtools ready
+devtools #2      setCurrentPanel: elements
+devtools #2      namespacesCache is cool now
+automate #2      switch-to-console-panel!
+devtools #2      console initialized
+devtools #2      adopt-prompt-element use-parinfer? true
+devtools #2      setDiracPromptMode('status')
+devtools #2      ConsoleView constructed
+devtools #2      displayWelcomeMessage
+devtools #2      setCurrentPanel: console
+automate #2      trigger-internal-error-as-error-log!
+devtools #2      Internal Dirac Error: an error was logged into the internal DevTools console
+                 <elided info line>
+                 ("a fake error log" 1 2 3)
+automate #2      scrape [:count-log-items "error"]
+automate #2      scrape [:last-log-item-content "error"]
+automate #2      close-devtools!
+extension        handling command: close-dirac-devtools
+extension        unregister devtools #2
+automate         restore-options!
+∎
+testing          use baked-in api and css
+automate         store-options!
+automate         set-options! [{:use-backend-supported-api false, :use-backend-supported-css false}]
+automate         open-devtools!
+extension        handling command: open-dirac-devtools
+extension        register devtools #3
+devtools #3      implant initialized
+devtools #3      reset devtools settings
+devtools #3      devtools ready
+devtools #3      setCurrentPanel: elements
+devtools #3      namespacesCache is cool now
+automate #3      switch-to-console-panel!
+devtools #3      console initialized
+devtools #3      adopt-prompt-element use-parinfer? true
+devtools #3      setDiracPromptMode('status')
+devtools #3      ConsoleView constructed
+devtools #3      displayWelcomeMessage
+devtools #3      setCurrentPanel: console
+automate #3      trigger-internal-error-as-error-log!
+devtools #3      Internal Dirac Error: an error was logged into the internal DevTools console
+                 <elided info line>
+                 ("a fake error log" 1 2 3)
+automate #3      scrape [:count-log-items "error"]
+automate #3      scrape [:last-log-item-content "error"]
+automate #3      close-devtools!
+extension        handling command: close-dirac-devtools
+extension        unregister devtools #3
+automate         restore-options!
+∎
+automate         close-tab-with-scenario! ["scenario-tab#1"]
+summary          Automated 26 actions with 0 check-points containing 11 assertions.
+                 0 failures, 0 errors.

@@ -307,6 +307,7 @@
     (execute-transcript-test! "console")
     (execute-transcript-test! "repl")
     (execute-transcript-test! "completions")
+    (execute-transcript-test! "options")
     (execute-transcript-test! "error-feedback")
     (execute-transcript-test! "misc"))
   (with-transcript-suite "suite02"
