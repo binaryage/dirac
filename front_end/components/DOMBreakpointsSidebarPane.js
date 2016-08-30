@@ -57,21 +57,12 @@ WebInspector.DOMBreakpointsSidebarPane = function()
     this._contextMenuLabels[this._breakpointTypes.NodeRemoved] = WebInspector.UIString.capitalize("Node ^removal");
 
     WebInspector.targetManager.addModelListener(WebInspector.DOMModel, WebInspector.DOMModel.Events.NodeRemoved, this._nodeRemoved, this);
-    WebInspector.targetManager.addEventListener(WebInspector.TargetManager.Events.InspectedURLChanged, this._inspectedURLChanged, this);
-    this._inspectedURL = WebInspector.targetManager.inspectedURL();
     this._update();
 }
 
 WebInspector.DOMBreakpointsSidebarPane.Marker = "breakpoint-marker";
 
 WebInspector.DOMBreakpointsSidebarPane.prototype = {
-    _inspectedURLChanged: function()
-    {
-        this._breakpointElements = {};
-        this.reset();
-        this._inspectedURL = WebInspector.targetManager.inspectedURL();
-    },
-
     /**
      * @param {!WebInspector.DOMNode} node
      * @param {!WebInspector.ContextMenu} contextMenu
@@ -231,8 +222,9 @@ WebInspector.DOMBreakpointsSidebarPane.prototype = {
         element.addEventListener("contextmenu", this._contextMenu.bind(this, node, type), true);
 
         var checkboxLabel = createCheckboxLabel("", enabled);
-        checkboxLabel.addEventListener("click", this._checkboxClicked.bind(this, node, type), false);
-        element._checkboxElement = checkboxLabel.checkboxElement;
+        var checkboxElement = checkboxLabel.checkboxElement;
+        checkboxElement.addEventListener("click", this._checkboxClicked.bind(this, node, type), false);
+        element._checkboxElement = checkboxElement;
         element.appendChild(checkboxLabel);
 
         var labelElement = createElementWithClass("div", "dom-breakpoint");
@@ -375,10 +367,14 @@ WebInspector.DOMBreakpointsSidebarPane.prototype = {
     },
 
     /**
-     * @param {!WebInspector.DOMModel} domModel
+     * @param {!WebInspector.DOMDocument} domDocument
      */
-    restoreBreakpoints: function(domModel)
+    restoreBreakpoints: function(domDocument)
     {
+        this._breakpointElements = {};
+        this.reset();
+        this._inspectedURL = domDocument.documentURL;
+        var domModel = domDocument.domModel();
         var pathToBreakpoints = {};
 
         /**
