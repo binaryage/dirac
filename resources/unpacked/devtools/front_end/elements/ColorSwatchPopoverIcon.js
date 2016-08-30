@@ -100,17 +100,15 @@ WebInspector.BezierPopoverIcon.prototype = {
  * @constructor
  * @param {!WebInspector.StylePropertyTreeElement} treeElement
  * @param {!WebInspector.SwatchPopoverHelper} swatchPopoverHelper
- * @param {string} colorText
+ * @param {!WebInspector.ColorSwatch} swatch
  */
-WebInspector.ColorSwatchPopoverIcon = function(treeElement, swatchPopoverHelper, colorText)
+WebInspector.ColorSwatchPopoverIcon = function(treeElement, swatchPopoverHelper, swatch)
 {
     this._treeElement = treeElement;
     this._treeElement[WebInspector.ColorSwatchPopoverIcon._treeElementSymbol] = this;
     this._swatchPopoverHelper = swatchPopoverHelper;
+    this._swatch = swatch;
 
-    this._swatch = WebInspector.ColorSwatch.create();
-    this._swatch.setColorText(colorText);
-    this._swatch.setFormat(WebInspector.Color.detectColorFormat(this._swatch.color()));
     var shiftClickMessage = WebInspector.UIString("Shift + Click to change color format.");
     this._swatch.iconElement().title = WebInspector.UIString("Open color picker. %s", shiftClickMessage);
     this._swatch.iconElement().addEventListener("click", this._iconClick.bind(this));
@@ -132,14 +130,6 @@ WebInspector.ColorSwatchPopoverIcon.forTreeElement = function(treeElement)
 }
 
 WebInspector.ColorSwatchPopoverIcon.prototype = {
-    /**
-     * @return {!Element}
-     */
-    element: function()
-    {
-        return this._swatch;
-    },
-
     /**
      * @param {!WebInspector.Color} color
      */
@@ -225,6 +215,88 @@ WebInspector.ColorSwatchPopoverIcon.prototype = {
 
         this._spectrum.removeEventListener(WebInspector.Spectrum.Events.ColorChanged, this._boundSpectrumChanged);
         delete this._spectrum;
+
+        var propertyText = commitEdit ? this._treeElement.renderedPropertyText() : this._originalPropertyText;
+        this._treeElement.applyStyleText(propertyText, true);
+        this._treeElement.parentPane().setEditingStyle(false);
+        delete this._originalPropertyText;
+    }
+}
+
+/**
+ * @constructor
+ * @param {!WebInspector.StylePropertyTreeElement} treeElement
+ * @param {!WebInspector.SwatchPopoverHelper} swatchPopoverHelper
+ * @param {!WebInspector.CSSShadowSwatch} shadowSwatch
+ */
+WebInspector.ShadowSwatchPopoverHelper = function(treeElement, swatchPopoverHelper, shadowSwatch)
+{
+    this._treeElement = treeElement;
+    this._swatchPopoverHelper = swatchPopoverHelper;
+    this._shadowSwatch = shadowSwatch;
+    this._iconElement = shadowSwatch.iconElement();
+
+    this._iconElement.title = WebInspector.UIString("Open shadow editor.");
+    this._iconElement.addEventListener("click", this._iconClick.bind(this), false);
+
+    this._boundShadowChanged = this._shadowChanged.bind(this);
+    this._boundOnScroll = this._onScroll.bind(this);
+}
+
+WebInspector.ShadowSwatchPopoverHelper.prototype = {
+    /**
+     * @param {!Event} event
+     */
+    _iconClick: function(event)
+    {
+        event.consume(true);
+        if (this._swatchPopoverHelper.isShowing()) {
+            this._swatchPopoverHelper.hide(true);
+            return;
+        }
+
+        this._cssShadowEditor = new WebInspector.CSSShadowEditor();
+        this._cssShadowEditor.setModel(this._shadowSwatch.model());
+        this._cssShadowEditor.addEventListener(WebInspector.CSSShadowEditor.Events.ShadowChanged, this._boundShadowChanged);
+        this._swatchPopoverHelper.show(this._cssShadowEditor, this._iconElement, this._onPopoverHidden.bind(this));
+        this._scrollerElement = this._iconElement.enclosingNodeOrSelfWithClass("style-panes-wrapper");
+        if (this._scrollerElement)
+            this._scrollerElement.addEventListener("scroll", this._boundOnScroll, false);
+
+        this._originalPropertyText = this._treeElement.property.propertyText;
+        this._treeElement.parentPane().setEditingStyle(true);
+        var uiLocation = WebInspector.cssWorkspaceBinding.propertyUILocation(this._treeElement.property, false /* forName */);
+        if (uiLocation)
+            WebInspector.Revealer.reveal(uiLocation, true /* omitFocus */);
+    },
+
+    /**
+     * @param {!WebInspector.Event} event
+     */
+    _shadowChanged: function(event)
+    {
+        this._shadowSwatch.setCSSShadow(/** @type {!WebInspector.CSSShadowModel} */ (event.data));
+        this._treeElement.applyStyleText(this._treeElement.renderedPropertyText(), false);
+    },
+
+    /**
+     * @param {!Event} event
+     */
+    _onScroll: function(event)
+    {
+        this._swatchPopoverHelper.reposition();
+    },
+
+    /**
+     * @param {boolean} commitEdit
+     */
+    _onPopoverHidden: function(commitEdit)
+    {
+        if (this._scrollerElement)
+            this._scrollerElement.removeEventListener("scroll", this._boundOnScroll, false);
+
+        this._cssShadowEditor.removeEventListener(WebInspector.CSSShadowEditor.Events.ShadowChanged, this._boundShadowChanged);
+        delete this._cssShadowEditor;
 
         var propertyText = commitEdit ? this._treeElement.renderedPropertyText() : this._originalPropertyText;
         this._treeElement.applyStyleText(propertyText, true);

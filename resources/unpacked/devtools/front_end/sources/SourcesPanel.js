@@ -355,22 +355,28 @@ WebInspector.SourcesPanel.prototype = {
 
     /**
      * @param {!WebInspector.UISourceCode} uiSourceCode
+     * @param {boolean=} skipReveal
      */
-    _revealInNavigator: function(uiSourceCode)
+    _revealInNavigator: function(uiSourceCode, skipReveal)
     {
         var extensions = self.runtime.extensions(WebInspector.NavigatorView);
-        Promise.all(extensions.map(extension => extension.instance())).then(filterNavigators);
+        Promise.all(extensions.map(extension => extension.instance())).then(filterNavigators.bind(this));
 
         /**
+         * @this {WebInspector.SourcesPanel}
          * @param {!Array.<!Object>} objects
          */
         function filterNavigators(objects)
         {
             for (var i = 0; i < objects.length; ++i) {
                 var navigatorView = /** @type {!WebInspector.NavigatorView} */ (objects[i]);
+                var viewId = extensions[i].descriptor()["viewId"];
                 if (navigatorView.accept(uiSourceCode)) {
                     navigatorView.revealUISourceCode(uiSourceCode, true);
-                    WebInspector.viewManager.showView(extensions[i].descriptor()["viewId"]);
+                    if (skipReveal)
+                        this._navigatorTabbedLocation.tabbedPane().selectTab(viewId);
+                    else
+                        WebInspector.viewManager.showView(viewId);
                 }
             }
         }
@@ -527,6 +533,8 @@ WebInspector.SourcesPanel.prototype = {
     {
         var uiSourceCode = /** @type {!WebInspector.UISourceCode} */ (event.data);
         this._editorChanged(uiSourceCode);
+        if (this.editorView.mainWidget() && WebInspector.moduleSetting("autoRevealInNavigator").get())
+            this._revealInNavigator(uiSourceCode, true);
     },
 
     /**
@@ -1294,7 +1302,7 @@ WebInspector.SourcesPanel.DebuggingActionDelegate.prototype = {
         case "debugger.evaluate-selection":
             var frame = WebInspector.context.flavor(WebInspector.UISourceCodeFrame);
             if (frame) {
-                var text = frame.textEditor.copyRange(frame.textEditor.selection());
+                var text = frame.textEditor.text(frame.textEditor.selection());
                 var executionContext = WebInspector.context.flavor(WebInspector.ExecutionContext);
                 if (executionContext)
                     WebInspector.ConsoleModel.evaluateCommandInConsole(executionContext, text);
