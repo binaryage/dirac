@@ -18,7 +18,7 @@
                  [version-clj "0.1.2"]
                  [environ "1.1.0"]
                  [clansi "1.0.0"]
-                 [funcool/cuerdas "0.8.0"]
+                 [funcool/cuerdas "1.0.0"]
 
                  ; we cannot use :dependencies under individual profiles because Cursive recognizes only root level
                  ; thus we mark extra deps with :scope "test" and filter them later when producing jar library
