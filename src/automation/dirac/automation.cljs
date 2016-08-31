@@ -201,13 +201,14 @@
       (<! (wait-for-devtools-boot))
       (if-not (helpers/is-test-runner-present?)
         (messages/switch-to-task-runner-tab!))                                                                                ; for convenience
-      (set! machinery/*last-devtools-id* devtools-id)
-      (machinery/DevToolsID. devtools-id))))                                                                                  ; note: we wrap it so we can easily detect devtools-id parameters in action! method
+      (machinery/push-devtools-id-to-stack! devtools-id)
+      (machinery/DevToolsID. devtools-id))))                                                                                  ; note: we wrap it so we can easily auto-fill devtools-id parameters in action! method
 
 (defn ^:devtools close-devtools! [devtools-id]
   (go
     (<! (fire-chrome-event! [:chromex.ext.commands/on-command ["close-dirac-devtools" devtools-id]]))
-    (<! (wait-for-devtools-unregistration devtools-id))))
+    (<! (wait-for-devtools-unregistration devtools-id))
+    (machinery/remove-devtools-id-from-stack! devtools-id)))
 
 (defn trigger! [trigger-name & [data]]
   (notifications/broadcast-notification! (merge {:trigger trigger-name} data)))
