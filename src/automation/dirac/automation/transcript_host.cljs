@@ -220,7 +220,7 @@
   (when (and (or force? (transcript-enabled?)) (some? text))
     (debug-log "TRANSCRIPT" [label text])
     (when-let [[effective-label effective-text] (rewrite-transcript! label text)]
-      (if (or (not= effective-label label) (not= effective-text text))
+      (if-not (and (= effective-label label) (= effective-text text))
         (debug-log "TRANSCRIPT REWRITE" [effective-label effective-text]))
       (let [text (format-transcript effective-label effective-text)
             generated-style (determine-style effective-label effective-text)
