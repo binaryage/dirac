@@ -9,6 +9,10 @@
 
 (deftype DevToolsID [id])
 
+(defn get-id [devtools-id-wrapper]
+  {:pre (instance? DevToolsID devtools-id-wrapper)}
+  (.-id devtools-id-wrapper))
+
 (def ^:dynamic *last-devtools-id* nil)
 
 ; -- transcript formatting --------------------------------------------------------------------------------------------------
@@ -29,11 +33,12 @@
   (str (:name metadata) (if-not (empty? args) (str " " (vec args)))))
 
 (defn do-action! [action-fn metadata & args]
+  {:pre [(fn? action-fn)]}
   (let [name (str (:name metadata))
         automation-action? (nil? (re-find #"^wait-" name))]
     (if (task/frozen?)
       (do
-        (log "skipping action!" name " (task is fronzen due to failures)")
+        (log "skipping action!" name " (the task is frozen due to failures)")
         (go))
       (do
         (log "action!" automation-action? name args)
@@ -43,20 +48,20 @@
             (transcript/reset-output-segment!))
           (test/record-transcript-checkpoint!))
         (cond
-          (:without-devtools-id metadata) (do
-                                            (if automation-action?
-                                              (append-to-transcript! (make-action-signature metadata args)))
-                                            (apply action-fn args))
-          (instance? DevToolsID (first args)) (let [devtools-id (first args)
+          (instance? DevToolsID (first args)) (let [devtools-id (get-id (first args))
                                                     action-signature (make-action-signature metadata (rest args))]
                                                 (if automation-action?
                                                   (append-to-transcript! action-signature devtools-id))
-                                                (apply action-fn (:id (first args)) (rest args)))
+                                                (apply action-fn devtools-id (rest args)))
+          (:devtools metadata) (let [action-signature (make-action-signature metadata args)]
+                                 (assert *last-devtools-id* (str "action " name " requires prior :open-dirac-devtools call"))
+                                 (if automation-action?
+                                   (append-to-transcript! action-signature *last-devtools-id*))
+                                 (apply action-fn *last-devtools-id* args))
           :else (let [action-signature (make-action-signature metadata args)]
-                  (assert *last-devtools-id* (str "action " name " requires prior :open-dirac-devtools call"))
                   (if automation-action?
-                    (append-to-transcript! action-signature *last-devtools-id*))
-                  (apply action-fn *last-devtools-id* args)))))))
+                    (append-to-transcript! action-signature))
+                  (apply action-fn args)))))))
 
 ; -- macros support ---------------------------------------------------------------------------------------------------------
 
