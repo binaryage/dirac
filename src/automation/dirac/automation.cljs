@@ -15,61 +15,16 @@
             [dirac.automation.machinery :as machinery]
             [dirac.automation.helpers :as helpers]
             [dirac.automation.messages :as messages]
-            [dirac.automation.matchers :as matchers]
             [dirac.automation.runner :as runner]
-            [dirac.automation.transcript-host :as transcript]
             [dirac.automation.notifications :as notifications]
             [dirac.automation.options :as options]
+            [dirac.automation.verbs :as verbs]
             [dirac.utils :as utils]))
 
 ; -- automation actions -----------------------------------------------------------------------------------------------------
 
 (defn wait-for-resume! []
   (runner/wait-for-resume!))
-
-(defn wait-for-match [what & args]
-  (let [matcher (matchers/make-generic-matcher what)
-        description (matchers/get-generic-matcher-description what)]
-    (apply transcript/wait-for-match matcher description args)))
-
-(defn ^:devtools wait-for-devtools-match [devtools-id what & args]
-  (let [matcher (matchers/make-and-matcher (matchers/make-devtools-matcher devtools-id)
-                                           (matchers/make-generic-matcher what))
-        description (str "devtools #" devtools-id ", " (matchers/get-generic-matcher-description what))]
-    (apply transcript/wait-for-match matcher description args)))
-
-(defn fire-chrome-event! [data]
-  (messages/fire-chrome-event! data))
-
-(defn ^:devtools automate-dirac-frontend! [devtools-id data]
-  (messages/automate-dirac-frontend! devtools-id data))
-
-(defn ^:devtools wait-for-devtools-unregistration [devtools-id]
-  (wait-for-match (str "unregister devtools #" devtools-id)))
-
-(defn wait-for-devtools-ready []
-  (wait-for-match "devtools ready"))
-
-(defn wait-for-panel-switch [name]
-  (wait-for-match (str "setCurrentPanel: " name)))
-
-(defn wait-for-devtools-boot []
-  (go
-    (<! (wait-for-devtools-ready))
-    (<! (wait-for-panel-switch "elements"))                                                                                   ; because we have reset all devtools settings, the first landed panel will be "elements"
-    (<! (wait-for-match "namespacesCache is cool now"))))                                                                     ; we need namespaces cache to be fully populated to prevent flaky tests
-
-(defn ^:devtools wait-for-prompt-to-enter-edit-mode [devtools-id]
-  (wait-for-devtools-match devtools-id "setDiracPromptMode('edit')"))
-
-(defn ^:devtools wait-for-prompt-switch-to-dirac [devtools-id]
-  (wait-for-devtools-match devtools-id "switched console prompt to 'dirac'"))
-
-(defn ^:devtools wait-for-prompt-switch-to-js [devtools-id]
-  (wait-for-devtools-match devtools-id "switched console prompt to 'js'"))
-
-(defn ^:devtools wait-for-console-initialization [devtools-id]
-  (wait-for-devtools-match devtools-id "console initialized"))
 
 (defn set-options! [options]
   (messages/set-options! options))
@@ -81,30 +36,70 @@
   (options/restore-options!))
 
 (defn open-tab-with-scenario! [name & [params]]
-  (messages/post-message! #js {:type "marion-open-tab-with-scenario" :url (helpers/get-scenario-url name params)}))
+  (messages/post-message! #js {:type "marion-open-tab-with-scenario"
+                               :url  (helpers/get-scenario-url name params)}))
 
 (defn close-tab-with-scenario! [scenario-id]
-  (messages/post-message! #js {:type "marion-close-tab-with-scenario" :scenario-id scenario-id}))
+  (messages/post-message! #js {:type        "marion-close-tab-with-scenario"
+                               :scenario-id scenario-id}))
+
+(defn trigger! [trigger-name & [data]]
+  (notifications/broadcast-notification! (merge {:trigger trigger-name} data)))
+
+(defn wait-for-match [what & args]
+  (apply verbs/wait-for-match what args))
+
+(defn open-devtools! [& [extra-url-params]]
+  (go
+    (let [open-devtools-event [:chromex.ext.commands/on-command ["open-dirac-devtools" {:reset-settings   1
+                                                                                        :extra-url-params extra-url-params}]]
+          devtools-id (<! (messages/fire-chrome-event! open-devtools-event))]
+      (<! (verbs/wait-for-devtools-boot))
+      (if-not (helpers/is-test-runner-present?)
+        (messages/switch-to-task-runner-tab!))                                                                                ; for convenience
+      (machinery/push-devtools-id-to-stack! devtools-id)
+      (machinery/DevToolsID. devtools-id))))                                                                                  ; note: we wrap it so we can easily auto-fill devtools-id parameters in action! method
+
+; -- devtools-instance targeting actions ------------------------------------------------------------------------------------
+
+(defn ^:devtools close-devtools! [devtools-id]
+  (go
+    (<! (messages/fire-chrome-event! [:chromex.ext.commands/on-command ["close-dirac-devtools" devtools-id]]))
+    (<! (verbs/wait-for-devtools-unregistration devtools-id))
+    (machinery/remove-devtools-id-from-stack! devtools-id)))
+
+(defn ^:devtools wait-for-devtools-match [devtools-id what & args]
+  (apply verbs/wait-for-devtools-match devtools-id what args))
+
+(defn ^:devtools wait-for-prompt-to-enter-edit-mode [devtools-id]
+  (wait-for-devtools-match devtools-id "setDiracPromptMode('edit')"))
+
+(defn ^:devtools wait-for-prompt-switch-to-dirac [devtools-id]
+  (wait-for-devtools-match devtools-id "switched console prompt to 'dirac'"))
+
+(defn ^:devtools wait-for-prompt-switch-to-js [devtools-id]
+  (wait-for-devtools-match devtools-id "switched console prompt to 'js'"))
 
 (defn ^:devtools switch-devtools-panel! [devtools-id panel]
   (go
-    (<! (automate-dirac-frontend! devtools-id {:action :switch-inspector-panel :panel panel}))
-    (<! (wait-for-panel-switch (name panel)))))
+    (<! (verbs/automate-dirac-frontend! devtools-id {:action :switch-inspector-panel
+                                                     :panel  panel}))
+    (<! (verbs/wait-for-panel-switch (name panel)))))
 
 (defn ^:devtools switch-prompt-to-dirac! [devtools-id]
-  (automate-dirac-frontend! devtools-id {:action :switch-to-dirac-prompt}))
+  (verbs/automate-dirac-frontend! devtools-id {:action :switch-to-dirac-prompt}))
 
 (defn ^:devtools switch-prompt-to-javascript! [devtools-id]
-  (automate-dirac-frontend! devtools-id {:action :switch-to-js-prompt}))
+  (verbs/automate-dirac-frontend! devtools-id {:action :switch-to-js-prompt}))
 
 (defn ^:devtools focus-console-prompt! [devtools-id]
-  (automate-dirac-frontend! devtools-id {:action :focus-console-prompt}))
+  (verbs/automate-dirac-frontend! devtools-id {:action :focus-console-prompt}))
 
 (defn ^:devtools clear-console-prompt! [devtools-id]
-  (automate-dirac-frontend! devtools-id {:action :clear-console-prompt}))
+  (verbs/automate-dirac-frontend! devtools-id {:action :clear-console-prompt}))
 
 (defn ^:devtools get-suggest-box-representation [devtools-id]
-  (automate-dirac-frontend! devtools-id {:action :get-suggest-box-representation}))
+  (verbs/automate-dirac-frontend! devtools-id {:action :get-suggest-box-representation}))
 
 (defn ^:devtools print-suggest-box! [devtools-id]
   (go
@@ -120,7 +115,7 @@
         (utils/parse-int (second m))))))
 
 (defn ^:devtools get-prompt-representation [devtools-id]
-  (automate-dirac-frontend! devtools-id {:action :get-prompt-representation}))
+  (verbs/automate-dirac-frontend! devtools-id {:action :get-prompt-representation}))
 
 (defn ^:devtools print-prompt! [devtools-id]
   (go
@@ -130,27 +125,27 @@
       content)))
 
 (defn ^:devtools trigger-internal-error! [devtools-id & [delay]]
-  (automate-dirac-frontend! devtools-id {:action :trigger-internal-error
-                                         :kind   :unhandled-exception
-                                         :delay  (or delay 100)}))
+  (verbs/automate-dirac-frontend! devtools-id {:action :trigger-internal-error
+                                               :kind   :unhandled-exception
+                                               :delay  (or delay 100)}))
 
 (defn ^:devtools trigger-internal-error-in-promise! [devtools-id & [delay]]
-  (automate-dirac-frontend! devtools-id {:action :trigger-internal-error
-                                         :kind   :unhandled-exception-in-promise
-                                         :delay  (or delay 100)}))
+  (verbs/automate-dirac-frontend! devtools-id {:action :trigger-internal-error
+                                               :kind   :unhandled-exception-in-promise
+                                               :delay  (or delay 100)}))
 
 (defn ^:devtools trigger-internal-error-as-error-log! [devtools-id & [delay]]
-  (automate-dirac-frontend! devtools-id {:action :trigger-internal-error
-                                         :kind   :error-log
-                                         :delay  (or delay 100)}))
+  (verbs/automate-dirac-frontend! devtools-id {:action :trigger-internal-error
+                                               :kind   :error-log
+                                               :delay  (or delay 100)}))
 
 (defn ^:devtools get-frontend-url-params [devtools-id]
-  (automate-dirac-frontend! devtools-id {:action :get-frontend-url-params}))
+  (verbs/automate-dirac-frontend! devtools-id {:action :get-frontend-url-params}))
 
 (defn ^:devtools scrape [devtools-id scraper-name & args]
-  (automate-dirac-frontend! devtools-id {:action  :scrape
-                                         :scraper scraper-name
-                                         :args    args}))
+  (verbs/automate-dirac-frontend! devtools-id {:action  :scrape
+                                               :scraper scraper-name
+                                               :args    args}))
 
 (defn ^:devtools scrape! [devtools-id scraper-name & args]
   (go
@@ -160,13 +155,13 @@
 
 (defn ^:devtools simulate-console-input! [devtools-id input]
   {:pre [(string? input)]}
-  (automate-dirac-frontend! devtools-id {:action :dispatch-console-prompt-input
-                                         :input  input}))
+  (verbs/automate-dirac-frontend! devtools-id {:action :dispatch-console-prompt-input
+                                               :input  input}))
 
 (defn ^:devtools simulate-console-action! [devtools-id action]
   {:pre [(string? action)]}
-  (automate-dirac-frontend! devtools-id {:action :dispatch-console-prompt-action
-                                         :input  action}))
+  (verbs/automate-dirac-frontend! devtools-id {:action :dispatch-console-prompt-action
+                                               :input  action}))
 
 (defn ^:devtools console-enter! [devtools-id input]
   (go
@@ -185,33 +180,10 @@
       (<! (wait-for-devtools-match devtools-id "repl eval job ended")))))
 
 (defn ^:devtools enable-console-feedback! [devtools-id]
-  (automate-dirac-frontend! devtools-id {:action :enable-console-feedback}))
+  (verbs/automate-dirac-frontend! devtools-id {:action :enable-console-feedback}))
 
 (defn ^:devtools disable-console-feedback! [devtools-id]
-  (automate-dirac-frontend! devtools-id {:action :disable-console-feedback}))
+  (verbs/automate-dirac-frontend! devtools-id {:action :disable-console-feedback}))
 
 (defn ^:devtools switch-to-console-panel! [devtools-id]
   (switch-devtools-panel! devtools-id :console))
-
-(defn open-devtools! [& [extra-url-params]]
-  (go
-    (let [devtools-id (<! (fire-chrome-event! [:chromex.ext.commands/on-command
-                                               ["open-dirac-devtools" {:reset-settings   1
-                                                                       :extra-url-params extra-url-params}]]))]
-      (<! (wait-for-devtools-boot))
-      (if-not (helpers/is-test-runner-present?)
-        (messages/switch-to-task-runner-tab!))                                                                                ; for convenience
-      (machinery/push-devtools-id-to-stack! devtools-id)
-      (machinery/DevToolsID. devtools-id))))                                                                                  ; note: we wrap it so we can easily auto-fill devtools-id parameters in action! method
-
-(defn ^:devtools close-devtools! [devtools-id]
-  (go
-    (<! (fire-chrome-event! [:chromex.ext.commands/on-command ["close-dirac-devtools" devtools-id]]))
-    (<! (wait-for-devtools-unregistration devtools-id))
-    (machinery/remove-devtools-id-from-stack! devtools-id)))
-
-(defn trigger! [trigger-name & [data]]
-  (notifications/broadcast-notification! (merge {:trigger trigger-name} data)))
-
-(defn separator! [& _args]
-  (go))
