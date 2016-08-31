@@ -54,7 +54,7 @@
     (let [open-devtools-event [:chromex.ext.commands/on-command ["open-dirac-devtools" {:reset-settings   1
                                                                                         :extra-url-params extra-url-params}]]
           devtools-id (<! (messages/fire-chrome-event! open-devtools-event))]
-      (<! (verbs/wait-for-devtools-boot))
+      (<! (verbs/wait-for-devtools-boot devtools-id))
       (if-not (helpers/is-test-runner-present?)
         (messages/switch-to-task-runner-tab!))                                                                                ; for convenience
       (machinery/push-devtools-id-to-stack! devtools-id)
@@ -84,7 +84,7 @@
   (go
     (<! (verbs/automate-dirac-frontend! devtools-id {:action :switch-inspector-panel
                                                      :panel  panel}))
-    (<! (verbs/wait-for-panel-switch (name panel)))))
+    (<! (verbs/wait-for-panel-switch devtools-id (name panel)))))
 
 (defn ^:devtools switch-prompt-to-dirac! [devtools-id]
   (verbs/automate-dirac-frontend! devtools-id {:action :switch-to-dirac-prompt}))
