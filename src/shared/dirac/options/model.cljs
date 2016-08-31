@@ -130,7 +130,7 @@
   (go
     (let [options (<! (read-options))]
       (set! *initialized* true)
-      (reset-cached-options-without-sync! options)
+      (reset-cached-options-without-sync! (merge default-options options))                                                    ; merge is important for upgrading options schema
       (add-watch cached-options ::watch on-cached-options-change!)
       (run-chrome-event-loop! chrome-event-channel)
       true)))
