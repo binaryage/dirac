@@ -115,7 +115,7 @@
     (let [scenario-url (oget message "url")                                                                                   ; something like http://localhost:9080/scenarios/normal.html
           scenario-id (get-next-scenario-id!)
           ready-channel (wait-for-scenario-ready! scenario-url)
-          tab-id (<! (helpers/create-window-with-tab-with-url! scenario-url))]
+          tab-id (<! (helpers/create-scenario-with-url! scenario-url))]
       (<! ready-channel)
       (add-scenario-id! scenario-id tab-id)
       (reply-to-message! message scenario-id))))
@@ -139,15 +139,20 @@
 
 (defn switch-to-task-runner! [message]
   (go
-    (when-let [tab-id (<! (helpers/find-task-runner-tab-id!))]
+    (when-let [tab-id (<! (helpers/find-runner-tab-id!))]
       (<! (helpers/activate-tab! tab-id))
       (reply-to-message! message))))
 
-(defn focus-task-runner-window! [message]
+(defn focus-runner-window! [message]
   (go
-    (when-let [tab-id (<! (helpers/find-task-runner-tab-id!))]
+    (when-let [tab-id (<! (helpers/find-runner-tab-id!))]
       (<! (helpers/focus-window-with-tab-id! tab-id))
       (reply-to-message! message))))
+
+(defn reposition-runner-window! [message]
+  (go
+    (<! (helpers/reposition-runner-window!))
+    (reply-to-message! message)))
 
 (defn close-all-tabs! [message]
   (go
@@ -185,8 +190,9 @@
       "marion-open-scenario" (open-scenario! message)
       "marion-close-scenario" (close-scenario! message)
       "marion-scenario-ready" (scenario-ready! message client)
-      "marion-switch-to-task-runner-tab" (switch-to-task-runner! message)
-      "marion-focus-task-runner-window" (focus-task-runner-window! message)
+      "marion-switch-to-runner-tab" (switch-to-task-runner! message)
+      "marion-reposition-runner-window" (reposition-runner-window! message)
+      "marion-focus-runner-window" (focus-runner-window! message)
       "marion-close-all-tabs" (close-all-tabs! message)
       "marion-extension-command" (handle-extension-command! message))))
 

@@ -144,10 +144,10 @@ stdout           displayed 1 items:
 ∎
 testing          refer macro namespace symbols coming from :refer-macros
 automate #1      clear-console-prompt!
-automate #1      simulate-console-input! ["get-dirac-window"]
+automate #1      simulate-console-input! ["get-dirac-devtools-window"]
 automate #1      scrape! [:suggest-box]
 stdout           displayed 1 items:
-                  * get-dirac-window|-top [in dirac.settings] (refer macro selected)
+                  * get-dirac-devtools-window|-top [in dirac.settings] (refer macro selected)
 ∎
 testing          qualified completions of namespace alias
 automate #1      clear-console-prompt!

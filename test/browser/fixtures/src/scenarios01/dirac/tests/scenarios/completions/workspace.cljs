@@ -3,7 +3,7 @@
                    [chromex.logging :refer [log warn]]
                    [chromex.support])
   (:require [cljs.core.async :as alias-cljs-core-async :refer [put!]]
-            [dirac.settings :as alias-dirac-settings :refer-macros [get-dirac-window-top]]
+            [dirac.settings :as alias-dirac-settings :refer-macros [get-dirac-devtools-window-top]]
             [goog.object :as gobj]
             [goog.string :as gstring :refer [isEmptyOrWhitespace]]))
 

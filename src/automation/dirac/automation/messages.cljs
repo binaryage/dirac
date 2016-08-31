@@ -150,11 +150,14 @@
                             :devtools-id devtools-id
                             :action      action}))
 
-(defn switch-to-task-runner-tab! []
-  (post-message! #js {:type "marion-switch-to-task-runner-tab"} :no-timeout))
+(defn switch-to-runner-tab! []
+  (post-message! #js {:type "marion-switch-to-runner-tab"} :no-timeout))
 
-(defn focus-task-runner-window! []
-  (post-message! #js {:type "marion-focus-task-runner-window"} :no-timeout))
+(defn focus-runner-window! []
+  (post-message! #js {:type "marion-focus-runner-window"} :no-timeout))
+
+(defn reposition-runner-window! []
+  (post-message! #js {:type "marion-reposition-runner-window"} :no-timeout))
 
 (defn post-scenario-feedback! [text & [label]]
   (post-message! #js {:type    "marion-feedback-from-scenario"

@@ -55,8 +55,6 @@
                                                                                         :extra-url-params extra-url-params}]]
           devtools-id (<! (messages/fire-chrome-event! open-devtools-event))]
       (<! (verbs/wait-for-devtools-boot devtools-id))
-      (if-not (helpers/is-test-runner-present?)
-        (messages/switch-to-task-runner-tab!))                                                                                ; for convenience
       (machinery/push-devtools-id-to-stack! devtools-id)
       (machinery/DevToolsID. devtools-id))))                                                                                  ; note: we wrap it so we can easily auto-fill devtools-id parameters in action! method
 

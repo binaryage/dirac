@@ -70,7 +70,7 @@
           (<!* a/scrape! :suggest-box))
         (testing "refer macro namespace symbols coming from :refer-macros"
           (<!* a/clear-console-prompt!)
-          (<!* a/simulate-console-input! "get-dirac-window")
+          (<!* a/simulate-console-input! "get-dirac-devtools-window")
           (<!* a/scrape! :suggest-box))
         (testing "qualified completions of namespace alias"
           (<!* a/clear-console-prompt!)

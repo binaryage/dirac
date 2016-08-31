@@ -5,8 +5,8 @@
             [chromex.logging :refer-macros [log info warn error group group-end]]
             [chromex.ext.windows :as windows]
             [chromex.ext.tabs :as tabs]
-            [dirac.settings :refer-macros [get-dirac-window-top get-dirac-window-left
-                                           get-dirac-window-width get-dirac-window-height]]
+            [dirac.settings :refer-macros [get-dirac-devtools-window-top get-dirac-devtools-window-left
+                                           get-dirac-devtools-window-width get-dirac-devtools-window-height]]
             [dirac.target.core :refer [resolve-backend-url]]
             [dirac.i18n :as i18n]
             [dirac.sugar :as sugar]
@@ -43,14 +43,9 @@
   (let [window-params #js {:url  (helpers/make-blank-page-url)                                                                ; a blank page url is actually important here, url-less popups don't get assigned a tab-id
                            :type (if panel? "popup" "normal")}]
     ; during development we may want to override standard "cascading" of new windows and position the window explicitely
-    (if-let [left (get-dirac-window-left)]
-      (aset window-params "left" (utils/parse-int left)))
-    (if-let [top (get-dirac-window-top)]
-      (aset window-params "top" (utils/parse-int top)))
-    (if-let [width (get-dirac-window-width)]
-      (aset window-params "width" (utils/parse-int width)))
-    (if-let [height (get-dirac-window-height)]
-      (aset window-params "height" (utils/parse-int height)))
+    (sugar/set-window-params-dimensions! window-params
+                                         (get-dirac-devtools-window-left) (get-dirac-devtools-window-top)
+                                         (get-dirac-devtools-window-width) (get-dirac-devtools-window-height))
     (go
       (if-let [[window] (<! (windows/create window-params))]
         (let [tabs (oget window "tabs")

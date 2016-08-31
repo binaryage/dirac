@@ -59,8 +59,8 @@
     (<! (messages/post-message! #js {:type "marion-close-all-tabs"}))))                                                       ; to fight https://bugs.chromium.org/p/chromium/issues/detail?id=355075
 
 (defn show-task-runner! []
-  (messages/switch-to-task-runner-tab!)
-  (messages/focus-task-runner-window!))
+  (messages/switch-to-runner-tab!)
+  (messages/focus-runner-window!))
 
 ; this signals to the task runner that he can reconnect chrome driver and check the results
 (defn send-finished-task-signal! [success?]
@@ -120,6 +120,7 @@
     ; feedback subsystem is responsible for intercepting messages to be presented in transcript
     (feedback/init!)
     (messages/init! "task-runner")
+    (messages/reposition-runner-window!)
     ; if test runner is present, we will wait for test runner to launch the test
     ; it needs to disconnect the driver first
     (if-not (helpers/is-test-runner-present?)

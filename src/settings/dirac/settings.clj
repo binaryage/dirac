@@ -65,10 +65,20 @@
 
 (def ^:const FLUSH_TRANSCRIPT_DELAY 300)
 
-(def dirac-window-top (env :dirac-window-top))
-(def dirac-window-left (env :dirac-window-left))
-(def dirac-window-width (env :dirac-window-width))
-(def dirac-window-height (env :dirac-window-height))
+(def dirac-devtools-window-top (env :dirac-devtools-window-top))
+(def dirac-devtools-window-left (env :dirac-devtools-window-left))
+(def dirac-devtools-window-width (env :dirac-devtools-window-width))
+(def dirac-devtools-window-height (env :dirac-devtools-window-height))
+
+(def dirac-runner-window-top (env :dirac-runner-window-top))
+(def dirac-runner-window-left (env :dirac-runner-window-left))
+(def dirac-runner-window-width (env :dirac-runner-window-width))
+(def dirac-runner-window-height (env :dirac-runner-window-height))
+
+(def dirac-scenario-window-top (env :dirac-scenario-window-top))
+(def dirac-scenario-window-left (env :dirac-scenario-window-left))
+(def dirac-scenario-window-width (env :dirac-scenario-window-width))
+(def dirac-scenario-window-height (env :dirac-scenario-window-height))
 
 (def chrome-remote-debugging-port (env :dirac-chrome-remote-debugging-port))
 (def chrome-remote-debugging-host (env :dirac-chrome-remote-debugging-host))
@@ -139,17 +149,41 @@
 (defmacro get-expected-transcripts-root-path []
   EXPECTED_TRANSCRIPTS_ROOT_PATH)
 
-(defmacro get-dirac-window-top []
-  dirac-window-top)
+(defmacro get-dirac-devtools-window-top []
+  dirac-devtools-window-top)
 
-(defmacro get-dirac-window-left []
-  dirac-window-left)
+(defmacro get-dirac-devtools-window-left []
+  dirac-devtools-window-left)
 
-(defmacro get-dirac-window-width []
-  dirac-window-width)
+(defmacro get-dirac-devtools-window-width []
+  dirac-devtools-window-width)
 
-(defmacro get-dirac-window-height []
-  dirac-window-height)
+(defmacro get-dirac-devtools-window-height []
+  dirac-devtools-window-height)
+
+(defmacro get-dirac-runner-window-top []
+  dirac-runner-window-top)
+
+(defmacro get-dirac-runner-window-left []
+  dirac-runner-window-left)
+
+(defmacro get-dirac-runner-window-width []
+  dirac-runner-window-width)
+
+(defmacro get-dirac-runner-window-height []
+  dirac-runner-window-height)
+
+(defmacro get-dirac-scenario-window-top []
+  dirac-scenario-window-top)
+
+(defmacro get-dirac-scenario-window-left []
+  dirac-scenario-window-left)
+
+(defmacro get-dirac-scenario-window-width []
+  dirac-scenario-window-width)
+
+(defmacro get-dirac-scenario-window-height []
+  dirac-scenario-window-height)
 
 (defmacro get-transcript-label-padding-length []
   TRANSCRIPT_LABEL_PADDING_LENGTH)
