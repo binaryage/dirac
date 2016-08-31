@@ -368,16 +368,8 @@
             "test"                       ["shell" "scripts/test-all.sh"]
 
             "test-backend"               ["run-backend-tests"]
-            "test-browser"               ["do"                                                                                ; this will run browser tests against fully optimized dirac extension (release build)
-                                          "compile-browser-tests,"
-                                          "compile-marion,"
-                                          "shell" "scripts/release.sh" "compile-dirac-pseudo-names,"                          ; = compile-dirac and devtools plus some cleanup, see scripts/release.sh
-                                          "run-browser-tests"]
-            "test-browser-dev"           ["do"                                                                                ; this will run browser tests against unpacked dirac extension
-                                          "compile-browser-tests,"
-                                          "compile-dirac-dev,"
-                                          "compile-marion,"
-                                          "run-browser-tests-dev"]
+            "test-browser"               ["shell" "scripts/test-browser.sh"]                                                  ; this will run browser tests against fully optimized dirac extension (release build)
+            "test-browser-dev"           ["shell" "scripts/test-browser-dev.sh"]                                              ; this will run browser tests against unpacked dirac extension
             "dev-browser-tests"          ["shell" "scripts/dev-browser-tests.sh"]
             "dev-dirac-sample"           ["shell" "scripts/dev-dirac-sample.sh"]
             "run-backend-tests"          ["shell" "scripts/run-backend-tests.sh"]

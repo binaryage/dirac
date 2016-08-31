@@ -10,6 +10,8 @@ popd () {
 
 pushd .
 
+. "$(dirname "${BASH_SOURCE[0]}")/export-windows-layout.sh"
+
 cd "$(dirname "${BASH_SOURCE[0]}")"; cd ..
 
 ROOT=`pwd`
