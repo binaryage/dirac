@@ -1,5 +1,5 @@
 ns               Testing dirac.tests.tasks.suite01.version-checks
-automate         open-tab-with-scenario! ["old-runtime"]
+automate         open-scenario! ["old-runtime"]
 automate         open-devtools!
 extension        handling command: open-dirac-devtools
 extension        register devtools #1
@@ -29,8 +29,8 @@ devtools #1      setDiracPromptMode('edit')
 automate #1      close-devtools!
 extension        handling command: close-dirac-devtools
 extension        unregister devtools #1
-automate         close-tab-with-scenario! ["scenario-tab#1"]
-automate         open-tab-with-scenario! ["future-runtime"]
+automate         close-scenario! ["scenario-tab#1"]
+automate         open-scenario! ["future-runtime"]
 automate         open-devtools!
 extension        handling command: open-dirac-devtools
 extension        register devtools #2
@@ -60,8 +60,8 @@ devtools #2      setDiracPromptMode('edit')
 automate #2      close-devtools!
 extension        handling command: close-dirac-devtools
 extension        unregister devtools #2
-automate         close-tab-with-scenario! ["scenario-tab#2"]
-automate         open-tab-with-scenario! ["normal-with-feedback"]
+automate         close-scenario! ["scenario-tab#2"]
+automate         open-scenario! ["normal-with-feedback"]
 automate         open-devtools! [{"mock_old_extension_version" 1}]
 extension        handling command: open-dirac-devtools
 extension        register devtools #3
@@ -92,8 +92,8 @@ devtools #3      setDiracPromptMode('edit')
 automate #3      close-devtools!
 extension        handling command: close-dirac-devtools
 extension        unregister devtools #3
-automate         close-tab-with-scenario! ["scenario-tab#3"]
-automate         open-tab-with-scenario! ["normal-with-feedback"]
+automate         close-scenario! ["scenario-tab#3"]
+automate         open-scenario! ["normal-with-feedback"]
 automate         open-devtools! [{"mock_future_extension_version" 1}]
 extension        handling command: open-dirac-devtools
 extension        register devtools #4
@@ -124,8 +124,8 @@ devtools #4      setDiracPromptMode('edit')
 automate #4      close-devtools!
 extension        handling command: close-dirac-devtools
 extension        unregister devtools #4
-automate         close-tab-with-scenario! ["scenario-tab#4"]
-automate         open-tab-with-scenario! ["old-repl-api"]
+automate         close-scenario! ["scenario-tab#4"]
+automate         open-scenario! ["old-repl-api"]
 automate         open-devtools!
 extension        handling command: open-dirac-devtools
 extension        register devtools #5
@@ -153,8 +153,8 @@ devtools #5      setDiracPromptStatusStyle('error')
 automate #5      close-devtools!
 extension        handling command: close-dirac-devtools
 extension        unregister devtools #5
-automate         close-tab-with-scenario! ["scenario-tab#5"]
-automate         open-tab-with-scenario! ["future-repl-api"]
+automate         close-scenario! ["scenario-tab#5"]
+automate         open-scenario! ["future-repl-api"]
 automate         open-devtools!
 extension        handling command: open-dirac-devtools
 extension        register devtools #6
@@ -182,8 +182,8 @@ devtools #6      setDiracPromptStatusStyle('error')
 automate #6      close-devtools!
 extension        handling command: close-dirac-devtools
 extension        unregister devtools #6
-automate         close-tab-with-scenario! ["scenario-tab#6"]
-automate         open-tab-with-scenario! ["no-runtime"]
+automate         close-scenario! ["scenario-tab#6"]
+automate         open-scenario! ["no-runtime"]
 automate         open-devtools!
 extension        handling command: open-dirac-devtools
 extension        register devtools #7
@@ -210,8 +210,8 @@ devtools #7      setDiracPromptStatusStyle('error')
 automate #7      close-devtools!
 extension        handling command: close-dirac-devtools
 extension        unregister devtools #7
-automate         close-tab-with-scenario! ["scenario-tab#7"]
-automate         open-tab-with-scenario! ["no-repl"]
+automate         close-scenario! ["scenario-tab#7"]
+automate         open-scenario! ["no-repl"]
 automate         open-devtools!
 extension        handling command: open-dirac-devtools
 extension        register devtools #8
@@ -237,6 +237,6 @@ devtools #8      setDiracPromptStatusStyle('error')
 automate #8      close-devtools!
 extension        handling command: close-dirac-devtools
 extension        unregister devtools #8
-automate         close-tab-with-scenario! ["scenario-tab#8"]
+automate         close-scenario! ["scenario-tab#8"]
 summary          Automated 48 actions with 20 check-points containing 0 assertions.
                  0 failures, 0 errors.

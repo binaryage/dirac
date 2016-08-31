@@ -1,5 +1,5 @@
 ns               Testing dirac.tests.tasks.suite02.beautify-function-names
-automate         open-tab-with-scenario! ["breakpoint"]
+automate         open-scenario! ["breakpoint"]
 testing          enabled :beautify-function-names feature
 automate         open-devtools!
 extension        handling command: open-dirac-devtools
@@ -24,8 +24,8 @@ automate #1      close-devtools!
 extension        handling command: close-dirac-devtools
 extension        unregister devtools #1
 ∎
-automate         close-tab-with-scenario! ["scenario-tab#1"]
-automate         open-tab-with-scenario! ["breakpoint"]
+automate         close-scenario! ["scenario-tab#1"]
+automate         open-scenario! ["breakpoint"]
 testing          disabled :beautify-function-names feature
 automate         store-options!
 automate         set-options! [{:beautify-function-names false}]
@@ -53,8 +53,8 @@ extension        handling command: close-dirac-devtools
 extension        unregister devtools #2
 automate         restore-options!
 ∎
-automate         close-tab-with-scenario! ["scenario-tab#2"]
-automate         open-tab-with-scenario! ["exception"]
+automate         close-scenario! ["scenario-tab#2"]
+automate         open-scenario! ["exception"]
 testing          trigger exception with non-trivial callstack
 automate         open-devtools!
 extension        handling command: open-dirac-devtools
@@ -107,8 +107,8 @@ automate #3      close-devtools!
 extension        handling command: close-dirac-devtools
 extension        unregister devtools #3
 ∎
-automate         close-tab-with-scenario! ["scenario-tab#3"]
-automate         open-tab-with-scenario! ["core-async"]
+automate         close-scenario! ["scenario-tab#3"]
+automate         open-scenario! ["core-async"]
 testing          core async stack traces
 automate         open-devtools!
 extension        handling command: open-dirac-devtools
@@ -136,6 +136,6 @@ automate #4      close-devtools!
 extension        handling command: close-dirac-devtools
 extension        unregister devtools #4
 ∎
-automate         close-tab-with-scenario! ["scenario-tab#4"]
+automate         close-scenario! ["scenario-tab#4"]
 summary          Automated 28 actions with 11 check-points containing 4 assertions.
                  0 failures, 0 errors.

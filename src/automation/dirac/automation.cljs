@@ -35,12 +35,12 @@
 (defn restore-options! []
   (options/restore-options!))
 
-(defn open-tab-with-scenario! [name & [params]]
-  (messages/post-message! #js {:type "marion-open-tab-with-scenario"
+(defn open-scenario! [name & [params]]
+  (messages/post-message! #js {:type "marion-open-scenario"
                                :url  (helpers/get-scenario-url name params)}))
 
-(defn close-tab-with-scenario! [scenario-id]
-  (messages/post-message! #js {:type        "marion-close-tab-with-scenario"
+(defn close-scenario! [scenario-id]
+  (messages/post-message! #js {:type        "marion-close-scenario"
                                :scenario-id scenario-id}))
 
 (defn trigger! [trigger-name & [data]]

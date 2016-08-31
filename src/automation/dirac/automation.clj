@@ -41,9 +41,10 @@
   `(cljs.core.async/<! (dirac.automation.machinery/action! ~action (meta #'~action) ~@args)))
 
 (defmacro with-scenario [name & body]
-  `(let [scenario-id# (dirac.automation/<!* dirac.automation/open-tab-with-scenario! ~name)]
+  `(let [scenario-id# (dirac.automation/<!* dirac.automation/open-scenario! ~name)]
      ~@body
-     (dirac.automation/<!* dirac.automation/close-tab-with-scenario! scenario-id#)))
+     (dirac.automation/<!* dirac.automation/close-scenario! scenario-id#)
+     scenario-id#))
 
 (defmacro with-devtools [& args]
   (let [params (if (map? (first args)) (first args))

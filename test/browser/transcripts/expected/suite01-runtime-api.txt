@@ -1,5 +1,5 @@
 ns               Testing dirac.tests.tasks.suite01.runtime-api
-automate         open-tab-with-scenario! ["runtime-api"]
+automate         open-scenario! ["runtime-api"]
 automate         trigger! [:run-tests]
 scenario !>      (runtime/available?)
 scenario =>      true
@@ -88,6 +88,6 @@ scenario =>      "my-runtime-tag"
 scenario !>      (runtime/get-tag)
 scenario =>      "my-runtime-tag | http://localhost...
 scenario         runtime tags tests done
-automate         close-tab-with-scenario! ["scenario-tab#1"]
+automate         close-scenario! ["scenario-tab#1"]
 summary          Automated 3 actions with 3 check-points containing 0 assertions.
                  0 failures, 0 errors.

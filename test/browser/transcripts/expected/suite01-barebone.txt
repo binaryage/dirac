@@ -1,8 +1,8 @@
 ns               Testing dirac.tests.tasks.suite01.barebone
-automate         open-tab-with-scenario! ["barebone"]
+automate         open-scenario! ["barebone"]
 scenario         immediate feedback
 automate         trigger! [:test-trigger]
 scenario         feedback from trigger
-automate         close-tab-with-scenario! ["scenario-tab#1"]
+automate         close-scenario! ["scenario-tab#1"]
 summary          Automated 3 actions with 2 check-points containing 0 assertions.
                  0 failures, 0 errors.

@@ -1,5 +1,5 @@
 ns               Testing dirac.tests.tasks.suite01.misc
-automate         open-tab-with-scenario! ["normal"]
-automate         close-tab-with-scenario! ["scenario-tab#1"]
+automate         open-scenario! ["normal"]
+automate         close-scenario! ["scenario-tab#1"]
 summary          Automated 2 actions with 0 check-points containing 0 assertions.
                  0 failures, 0 errors.

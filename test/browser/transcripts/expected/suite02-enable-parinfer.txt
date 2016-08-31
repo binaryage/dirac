@@ -1,5 +1,5 @@
 ns               Testing dirac.tests.tasks.suite02.enable-parinfer
-automate         open-tab-with-scenario! ["normal"]
+automate         open-scenario! ["normal"]
 testing          parinfer should be present by default
 automate         open-devtools!
 extension        handling command: open-dirac-devtools
@@ -43,6 +43,6 @@ extension        handling command: close-dirac-devtools
 extension        unregister devtools #2
 automate         restore-options!
 ∎
-automate         close-tab-with-scenario! ["scenario-tab#1"]
+automate         close-scenario! ["scenario-tab#1"]
 summary          Automated 11 actions with 2 check-points containing 0 assertions.
                  0 failures, 0 errors.

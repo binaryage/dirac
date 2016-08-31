@@ -44,7 +44,7 @@
 
 ; -- pending scenarios ------------------------------------------------------------------------------------------------------
 ; after opening a new tab with scenario URL, we wait for special signal from scenario page that it finished initialization
-; and is ready for testing excercise
+; and is ready for testing exercise
 ; in pending-scenarios we keep mappings from opened tab urls which have yet to be marked as "ready"
 
 (defonce pending-scenarios (atom {}))                                                                                         ; scenario-url -> callback
@@ -110,17 +110,17 @@
     (notifications/unsubscribe-client! client)
     (reply-to-message! message)))
 
-(defn open-tab-with-scenario! [message]
-  (let [scenario-url (oget message "url")                                                                                     ; something like http://localhost:9080/scenarios/normal.html
-        ready-channel (wait-for-scenario-ready! scenario-url)]
-    (go
-      (let [scenario-id (get-next-scenario-id!)
-            tab-id (<! (helpers/create-tab-with-url! scenario-url))]
-        (<! ready-channel)
-        (add-scenario-id! scenario-id tab-id)
-        (reply-to-message! message scenario-id)))))
+(defn open-scenario! [message]
+  (go
+    (let [scenario-url (oget message "url")                                                                                   ; something like http://localhost:9080/scenarios/normal.html
+          scenario-id (get-next-scenario-id!)
+          ready-channel (wait-for-scenario-ready! scenario-url)
+          tab-id (<! (helpers/create-window-with-tab-with-url! scenario-url))]
+      (<! ready-channel)
+      (add-scenario-id! scenario-id tab-id)
+      (reply-to-message! message scenario-id))))
 
-(defn close-tab-with-scenario! [message]
+(defn close-scenario! [message]
   (go
     (let [scenario-id (oget message "scenario-id")
           tab-id (get-scenario-tab-id scenario-id)]
@@ -182,8 +182,8 @@
       "marion-subscribe-notifications" (subscribe-client-to-notifications! message client)
       "marion-unsubscribe-notifications" (unsubscribe-client-from-notifications! message client)
       "marion-broadcast-notification" (broadcast-notification! message)
-      "marion-open-tab-with-scenario" (open-tab-with-scenario! message)
-      "marion-close-tab-with-scenario" (close-tab-with-scenario! message)
+      "marion-open-scenario" (open-scenario! message)
+      "marion-close-scenario" (close-scenario! message)
       "marion-scenario-ready" (scenario-ready! message client)
       "marion-switch-to-task-runner-tab" (switch-to-task-runner! message)
       "marion-focus-task-runner-window" (focus-task-runner-window! message)

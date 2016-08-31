@@ -1,5 +1,5 @@
 ns               Testing dirac.tests.tasks.suite01.console
-automate         open-tab-with-scenario! ["normal"]
+automate         open-scenario! ["normal"]
 automate         open-devtools!
 extension        handling command: open-dirac-devtools
 extension        register devtools #1
@@ -53,6 +53,6 @@ automate #1      get-prompt-representation
 automate #1      close-devtools!
 extension        handling command: close-dirac-devtools
 extension        unregister devtools #1
-automate         close-tab-with-scenario! ["scenario-tab#1"]
+automate         close-scenario! ["scenario-tab#1"]
 summary          Automated 17 actions with 7 check-points containing 2 assertions.
                  0 failures, 0 errors.

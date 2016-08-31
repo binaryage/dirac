@@ -1,11 +1,11 @@
 ns               Testing dirac.tests.tasks.suite01.preloads
-automate         open-tab-with-scenario! ["normal-via-preloads"]
+automate         open-scenario! ["normal-via-preloads"]
 scenario out     LOG: ("registered trigger" :check-runtime-installed)
 scenario out     LOG: ("registered trigger" :check-runtime-config)
 automate         trigger! [:check-runtime-installed]
 scenario out     LOG: ("runtime installed? true")
 automate         trigger! [:check-runtime-config]
 scenario out     LOG: (":external-config-setting is 'configured externally'")
-automate         close-tab-with-scenario! ["scenario-tab#1"]
+automate         close-scenario! ["scenario-tab#1"]
 summary          Automated 4 actions with 2 check-points containing 0 assertions.
                  0 failures, 0 errors.

@@ -1,5 +1,5 @@
 ns               Testing dirac.tests.tasks.suite01.no-agent
-automate         open-tab-with-scenario! ["no-agent"]
+automate         open-scenario! ["no-agent"]
 automate         open-devtools!
 extension        handling command: open-dirac-devtools
 extension        register devtools #1
@@ -36,6 +36,6 @@ devtools #1      setDiracPromptStatusBanner('will <a>try to reconnect</a> in 4 s
 automate #1      close-devtools!
 extension        handling command: close-dirac-devtools
 extension        unregister devtools #1
-automate         close-tab-with-scenario! ["scenario-tab#1"]
+automate         close-scenario! ["scenario-tab#1"]
 summary          Automated 6 actions with 1 check-points containing 0 assertions.
                  0 failures, 0 errors.

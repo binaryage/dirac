@@ -59,7 +59,7 @@
                                       (when (and (= tab-id updated-tab-id)
                                                  (= (oget change-info "status") "complete"))
                                         (close! chrome-event-channel)
-                                        (put! result-chan [window]))))
+                                        (put! result-chan [window tab-id]))))
                 (recur)))))))
     result-chan))
 

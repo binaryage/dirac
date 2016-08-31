@@ -9,4 +9,4 @@
 (go-task
   (let [scenario-name (helpers/get-document-url-param "scenario")]
     (assert scenario-name "please pass some 'scenario' param to this task via url query string")
-    (<!* a/open-tab-with-scenario! scenario-name)))
+    (<!* a/open-scenario! scenario-name)))

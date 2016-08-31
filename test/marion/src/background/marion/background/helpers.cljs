@@ -26,6 +26,11 @@
     (if-let [[tab] (<! (tabs/create #js {:url url}))]
       (sugar/get-tab-id tab))))
 
+(defn create-window-with-tab-with-url! [url]
+  (go
+    (let [[_window tab-id] (<! (sugar/create-window-and-wait-for-first-tab-completed! #js {:url url}))]
+      tab-id)))
+
 (defn focus-window-with-tab-id! [tab-id]
   (go
     (if-let [window-id (<! (sugar/fetch-tab-window-id tab-id))]
