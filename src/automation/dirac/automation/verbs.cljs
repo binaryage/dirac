@@ -10,7 +10,7 @@
 
 ; -- automation lower-level support -----------------------------------------------------------------------------------------
 
-(defn automate-dirac-frontend! [devtools-id data]
+(defn automate-devtools! [devtools-id data]
   (messages/automate-dirac-frontend! devtools-id data))
 
 (defn wait-for-match [what & args]

@@ -82,24 +82,24 @@
 
 (defn ^:devtools switch-devtools-panel! [devtools-id panel]
   (go
-    (<! (verbs/automate-dirac-frontend! devtools-id {:action :switch-inspector-panel
-                                                     :panel  panel}))
+    (<! (verbs/automate-devtools! devtools-id {:action :switch-inspector-panel
+                                               :panel  panel}))
     (<! (verbs/wait-for-panel-switch devtools-id (name panel)))))
 
 (defn ^:devtools switch-prompt-to-dirac! [devtools-id]
-  (verbs/automate-dirac-frontend! devtools-id {:action :switch-to-dirac-prompt}))
+  (verbs/automate-devtools! devtools-id {:action :switch-to-dirac-prompt}))
 
 (defn ^:devtools switch-prompt-to-javascript! [devtools-id]
-  (verbs/automate-dirac-frontend! devtools-id {:action :switch-to-js-prompt}))
+  (verbs/automate-devtools! devtools-id {:action :switch-to-js-prompt}))
 
 (defn ^:devtools focus-console-prompt! [devtools-id]
-  (verbs/automate-dirac-frontend! devtools-id {:action :focus-console-prompt}))
+  (verbs/automate-devtools! devtools-id {:action :focus-console-prompt}))
 
 (defn ^:devtools clear-console-prompt! [devtools-id]
-  (verbs/automate-dirac-frontend! devtools-id {:action :clear-console-prompt}))
+  (verbs/automate-devtools! devtools-id {:action :clear-console-prompt}))
 
 (defn ^:devtools get-suggest-box-representation [devtools-id]
-  (verbs/automate-dirac-frontend! devtools-id {:action :get-suggest-box-representation}))
+  (verbs/automate-devtools! devtools-id {:action :get-suggest-box-representation}))
 
 (defn ^:devtools print-suggest-box! [devtools-id]
   (go
@@ -115,7 +115,7 @@
         (utils/parse-int (second m))))))
 
 (defn ^:devtools get-prompt-representation [devtools-id]
-  (verbs/automate-dirac-frontend! devtools-id {:action :get-prompt-representation}))
+  (verbs/automate-devtools! devtools-id {:action :get-prompt-representation}))
 
 (defn ^:devtools print-prompt! [devtools-id]
   (go
@@ -125,27 +125,27 @@
       content)))
 
 (defn ^:devtools trigger-internal-error! [devtools-id & [delay]]
-  (verbs/automate-dirac-frontend! devtools-id {:action :trigger-internal-error
-                                               :kind   :unhandled-exception
-                                               :delay  (or delay 100)}))
+  (verbs/automate-devtools! devtools-id {:action :trigger-internal-error
+                                         :kind   :unhandled-exception
+                                         :delay  (or delay 100)}))
 
 (defn ^:devtools trigger-internal-error-in-promise! [devtools-id & [delay]]
-  (verbs/automate-dirac-frontend! devtools-id {:action :trigger-internal-error
-                                               :kind   :unhandled-exception-in-promise
-                                               :delay  (or delay 100)}))
+  (verbs/automate-devtools! devtools-id {:action :trigger-internal-error
+                                         :kind   :unhandled-exception-in-promise
+                                         :delay  (or delay 100)}))
 
 (defn ^:devtools trigger-internal-error-as-error-log! [devtools-id & [delay]]
-  (verbs/automate-dirac-frontend! devtools-id {:action :trigger-internal-error
-                                               :kind   :error-log
-                                               :delay  (or delay 100)}))
+  (verbs/automate-devtools! devtools-id {:action :trigger-internal-error
+                                         :kind   :error-log
+                                         :delay  (or delay 100)}))
 
 (defn ^:devtools get-frontend-url-params [devtools-id]
-  (verbs/automate-dirac-frontend! devtools-id {:action :get-frontend-url-params}))
+  (verbs/automate-devtools! devtools-id {:action :get-frontend-url-params}))
 
 (defn ^:devtools scrape [devtools-id scraper-name & args]
-  (verbs/automate-dirac-frontend! devtools-id {:action  :scrape
-                                               :scraper scraper-name
-                                               :args    args}))
+  (verbs/automate-devtools! devtools-id {:action  :scrape
+                                         :scraper scraper-name
+                                         :args    args}))
 
 (defn ^:devtools scrape! [devtools-id scraper-name & args]
   (go
@@ -155,13 +155,13 @@
 
 (defn ^:devtools simulate-console-input! [devtools-id input]
   {:pre [(string? input)]}
-  (verbs/automate-dirac-frontend! devtools-id {:action :dispatch-console-prompt-input
-                                               :input  input}))
+  (verbs/automate-devtools! devtools-id {:action :dispatch-console-prompt-input
+                                         :input  input}))
 
 (defn ^:devtools simulate-console-action! [devtools-id action]
   {:pre [(string? action)]}
-  (verbs/automate-dirac-frontend! devtools-id {:action :dispatch-console-prompt-action
-                                               :input  action}))
+  (verbs/automate-devtools! devtools-id {:action :dispatch-console-prompt-action
+                                         :input  action}))
 
 (defn ^:devtools console-enter! [devtools-id input]
   (go
@@ -180,10 +180,10 @@
       (<! (wait-for-devtools-match devtools-id "repl eval job ended")))))
 
 (defn ^:devtools enable-console-feedback! [devtools-id]
-  (verbs/automate-dirac-frontend! devtools-id {:action :enable-console-feedback}))
+  (verbs/automate-devtools! devtools-id {:action :enable-console-feedback}))
 
 (defn ^:devtools disable-console-feedback! [devtools-id]
-  (verbs/automate-dirac-frontend! devtools-id {:action :disable-console-feedback}))
+  (verbs/automate-devtools! devtools-id {:action :disable-console-feedback}))
 
 (defn ^:devtools switch-to-console-panel! [devtools-id]
   (switch-devtools-panel! devtools-id :console))
