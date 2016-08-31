@@ -1,13 +1,14 @@
 (ns dirac.sugar
   (:require-macros [cljs.core.async.macros :refer [go go-loop]])
   (:require [cljs.core.async :refer [<! chan put! close!]]
-            [chromex.support :refer-macros [oget ocall oapply]]
+            [chromex.support :refer-macros [oget oset ocall oapply]]
             [chromex.logging :refer-macros [log info warn error group group-end]]
             [chromex.config :refer-macros [with-muted-error-reporting]]
             [chromex.chrome-event-channel :refer [make-chrome-event-channel]]
             [chromex.ext.tabs :as tabs]
             [chromex.ext.runtime :as runtime]
-            [chromex.ext.windows :as windows]))
+            [chromex.ext.windows :as windows]
+            [dirac.utils :as utils]))
 
 ; this is a collection of helper utilities to wrap some common chromex code snippets (runtime, tabs and windows)
 ; for example many callbacks are designed to accept only one parameter as return value
@@ -34,6 +35,17 @@
 ; == async calls ============================================================================================================
 
 ; -- window -----------------------------------------------------------------------------------------------------------------
+
+(defn set-window-params-dimensions! [window-params left top width height]
+  (if (some? left)
+    (oset window-params ["left"] (utils/parse-int left)))
+  (if (some? top)
+    (oset window-params ["top"] (utils/parse-int top)))
+  (if (some? width)
+    (oset window-params ["width"] (utils/parse-int width)))
+  (if (some? height)
+    (oset window-params ["height"] (utils/parse-int height)))
+  window-params)
 
 (defn get-window-id [window]
   (oget window "id"))
