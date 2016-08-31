@@ -2,7 +2,8 @@
 
 set -e
 
-. "$(dirname "${BASH_SOURCE[0]}")/config.sh"
+pushd `dirname "${BASH_SOURCE[0]}"` > /dev/null
+source "./config.sh"
 
 pushd "$ROOT"
 
@@ -19,5 +20,7 @@ export DIRAC_NREPL_WEASEL_PORT=8042
 
 ./scripts/clean-compiled.sh
 lein with-profile +cooper,+dev-browser-tests cooper
+
+popd
 
 popd

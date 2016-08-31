@@ -2,7 +2,8 @@
 
 set -e
 
-. "$(dirname "${BASH_SOURCE[0]}")/config.sh"
+pushd `dirname "${BASH_SOURCE[0]}"` > /dev/null
+source "./config.sh"
 
 WORK_DIR="$TMP_DIR/peon/generate-supported-css-properties"
 mkdir -p "$WORK_DIR"
@@ -34,5 +35,7 @@ else
   echo "Error: Properties source file not found in $CSS_PROPERTIES_SOURCE."
   exit 1
 fi
+
+popd
 
 popd

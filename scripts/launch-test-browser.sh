@@ -2,7 +2,8 @@
 
 set -e
 
-. "$(dirname "${BASH_SOURCE[0]}")/config.sh"
+pushd `dirname "${BASH_SOURCE[0]}"` > /dev/null
+source "./config.sh"
 
 pushd "$ROOT"
 
@@ -55,7 +56,9 @@ set -x
       --no-default-browser-check \
       --disable-gpu \
       --load-extension="$DEV_DIRAC_EXTENSION_PATH,$DEV_MARION_EXTENSION_PATH" \
-      http://localhost:$DEV_FIXTURES_SERVER_PORT?set-agent-port=$DIRAC_AGENT_PORT 2> /dev/null
+      "http://localhost:$DEV_FIXTURES_SERVER_PORT?set-agent-port=$DIRAC_AGENT_PORT" 2> /dev/null
 set +x
+
+popd
 
 popd

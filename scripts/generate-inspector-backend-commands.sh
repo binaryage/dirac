@@ -2,7 +2,8 @@
 
 set -e
 
-. "$(dirname "${BASH_SOURCE[0]}")/config.sh"
+pushd `dirname "${BASH_SOURCE[0]}"` > /dev/null
+source "./config.sh"
 
 WORK_DIR="$TMP_DIR/peon/generate-inspector-backend-commands"
 mkdir -p "$WORK_DIR"
@@ -27,5 +28,7 @@ lein run -- gen-backend-api \
   --output="$DEVTOOLS_ROOT/front_end/InspectorBackendCommands.js" \
   --chrome-rev="$REV" \
   --chrome-tag="$TAG"
+
+popd
 
 popd

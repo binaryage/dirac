@@ -2,7 +2,8 @@
 
 set -e
 
-. "$(dirname "${BASH_SOURCE[0]}")/config.sh"
+pushd `dirname "${BASH_SOURCE[0]}"` > /dev/null
+source "./config.sh"
 
 pushd "$ROOT"
 
@@ -21,5 +22,7 @@ fi
       --no-first-run \
       --user-data-dir="$DIRAC_USER_PROFILE" \
       localhost:9222/json
+
+popd
 
 popd

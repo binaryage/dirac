@@ -5,7 +5,8 @@
 
 set -e
 
-. "$(dirname "${BASH_SOURCE[0]}")/config.sh"
+pushd `dirname "${BASH_SOURCE[0]}"` > /dev/null
+source "./config.sh"
 
 pushd "$ROOT"
 
@@ -51,9 +52,11 @@ cp -r "$RELEASE_BUILD" "$PACKAGE_DIR" # this will copy actual files, not symlink
 
 pushd "$PACKAGE_DIR"
 
-(cd "$dir" && zip -qr -9 -X "$ZIP_NAME" .)
+zip -qr -9 -X "$ZIP_NAME" .
 
 echo "'$ZIP_NAME' ready for upload => https://chrome.google.com/webstore/developer/dashboard"
+
+popd
 
 popd
 

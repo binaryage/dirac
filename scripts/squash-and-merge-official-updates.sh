@@ -2,7 +2,8 @@
 
 set -e
 
-. "$(dirname "${BASH_SOURCE[0]}")/config.sh"
+pushd `dirname "${BASH_SOURCE[0]}"` > /dev/null
+source "./config.sh"
 
 die_if_dirty_working_copy () {
   if [ -n "$(git status -uno --porcelain)" ] ; then
@@ -34,5 +35,7 @@ echo "hint: to update devtools branch to the latest version run: ./scripts/pull-
 
 # note: my-subtree is just my patched version of subtree command with github-friendly commit messages (SHAs are clickable)
 git my-subtree merge --prefix="$DEVTOOLS_DIRAC_PREFIX" --squash "$DEVTOOLS_BRANCH" -m "merge updates from official devtools" "$@"
+
+popd
 
 popd

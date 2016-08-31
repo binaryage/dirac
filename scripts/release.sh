@@ -23,7 +23,8 @@ set -e
 
 TASK=${1:-compile-dirac}
 
-. "$(dirname "${BASH_SOURCE[0]}")/config.sh"
+pushd `dirname "${BASH_SOURCE[0]}"` > /dev/null
+source "./config.sh"
 
 pushd "$ROOT"
 
@@ -44,7 +45,7 @@ fi
 FRONTEND="$DEVTOOLS_ROOT/front_end"
 
 echo "Building dirac extension in advanced mode..."
-lein $TASK
+lein ${TASK}
 
 popd
 
@@ -104,5 +105,7 @@ rm -rf "$RELEASE_BUILD_DEVTOOLS_FRONTEND/Images/src"
 
 rm -rf "$RELEASE_BUILD/compiled/background"
 rm -rf "$RELEASE_BUILD/compiled/options"
+
+popd
 
 popd

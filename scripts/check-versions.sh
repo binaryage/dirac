@@ -4,7 +4,8 @@
 
 set -e
 
-. "$(dirname "${BASH_SOURCE[0]}")/config.sh"
+pushd `dirname "${BASH_SOURCE[0]}"` > /dev/null
+source "./config.sh"
 
 pushd "$ROOT"
 
@@ -53,5 +54,7 @@ if [ ! "$LEIN_VERSION" = "$RELEASE_MANIFEST_VERSION" ] ; then
 fi
 
 echo "All version strings are consistent: '$LEIN_VERSION'"
+
+popd
 
 popd

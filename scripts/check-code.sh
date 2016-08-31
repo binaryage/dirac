@@ -4,10 +4,13 @@
 
 set -e
 
-. "$(dirname "${BASH_SOURCE[0]}")/config.sh"
+pushd `dirname "${BASH_SOURCE[0]}"` > /dev/null
+source "./config.sh"
 
 pushd "$DEVTOOLS_ROOT"
 
 ./scripts/compile_frontend.py
+
+popd
 
 popd

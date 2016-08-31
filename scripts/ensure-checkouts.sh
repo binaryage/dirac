@@ -5,12 +5,15 @@
 
 set -e
 
-. "$(dirname "${BASH_SOURCE[0]}")/config.sh"
+pushd `dirname "${BASH_SOURCE[0]}"` > /dev/null
+source "./config.sh"
 
 pushd "$ROOT"
 
 mkdir -p "checkouts/cljs-devtools/src"
 mkdir -p "checkouts/chromex/src/lib"
 mkdir -p "checkouts/chromex/src/exts"
+
+popd
 
 popd

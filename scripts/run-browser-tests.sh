@@ -2,7 +2,8 @@
 
 set -e
 
-. "$(dirname "${BASH_SOURCE[0]}")/config.sh"
+pushd `dirname "${BASH_SOURCE[0]}"` > /dev/null
+source "./config.sh"
 
 pushd "$ROOT"
 
@@ -18,5 +19,7 @@ export DIRAC_NREPL_WEASEL_PORT=13042
 
 echo "Running browser tests..."
 lein with-profile +test-runner run -m "$@"
+
+popd
 
 popd

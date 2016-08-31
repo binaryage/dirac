@@ -2,7 +2,8 @@
 
 set -e
 
-. "$(dirname "${BASH_SOURCE[0]}")/config.sh"
+pushd `dirname "${BASH_SOURCE[0]}"` > /dev/null
+source "./config.sh"
 
 pushd "$ROOT"
 
@@ -47,7 +48,9 @@ set -x
       --full-memory-crash-report \
       --no-default-browser-check \
       --load-extension="$DEV_DIRAC_EXTENSION_PATH,$DEV_MARION_EXTENSION_PATH" \
-      http://localhost:9977 2> /dev/null
+      "http://localhost:9977" 2> /dev/null
 set +x
+
+popd
 
 popd

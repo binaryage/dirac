@@ -8,11 +8,11 @@ popd () {
     command popd "$@" > /dev/null
 }
 
-pushd .
+pushd `dirname "${BASH_SOURCE[0]}"`
 
-. "$(dirname "${BASH_SOURCE[0]}")/export-windows-layout.sh"
+source "./export-windows-layout.sh"
 
-cd "$(dirname "${BASH_SOURCE[0]}")"; cd ..
+cd ..
 
 ROOT=`pwd`
 CHROMIUM_MIRROR_DIR=${CHROMIUM_MIRROR_DIR:-"$ROOT/../chromium-mirror"}
@@ -58,6 +58,9 @@ PROTOCOL_EXTERNS_OUTPUT_FILE="$DEVTOOLS_ROOT/front_end/generated_protocol_extern
 BROWSER_PROTOCOL_JSON_FILE="$CHROMIUM_MIRROR_WEBKIT_SOURCE_DIR/core/inspector/browser_protocol.json"
 V8_PROTOCOL_JSON_FILE="$CHROMIUM_MIRROR_WEBKIT_SOURCE_DIR/platform/v8_inspector/js_protocol.json"
 PEON_DIR="$SCRIPTS/peon"
-
+DIRAC_USE_CHROME=${DIRAC_USE_CHROME}
+DIRAC_USE_CHROMIUM=${DIRAC_USE_CHROMIUM}
+DIRAC_USE_CUSTOM_CHROME=${DIRAC_USE_CUSTOM_CHROME}
+DIRAC_AGENT_PORT=${DIRAC_AGENT_PORT}
 
 popd

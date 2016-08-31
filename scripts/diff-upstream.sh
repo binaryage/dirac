@@ -37,7 +37,7 @@ find_latest_squash()
 confirm () {
     # call with a prompt string or use a default
     read -r -p "${1:-Are you sure? [y/N]} " response
-    case $response in
+    case ${response} in
         [yY][eE][sS]|[yY])
             true
             ;;
@@ -50,7 +50,8 @@ confirm () {
 SHA=${1:-HEAD}
 FORCE_PUSH=$2
 
-. "$(dirname "${BASH_SOURCE[0]}")/config.sh"
+pushd `dirname "${BASH_SOURCE[0]}"` > /dev/null
+source "./config.sh"
 
 if [ -d "$DIFF_WORK_DIR" ] ; then
   rm -rf "$DIFF_WORK_DIR"
@@ -67,7 +68,7 @@ pushd "$OURS"
 git checkout "$SHA"
 FULL_SHA=$(git rev-parse HEAD)
 first_split="$(find_latest_squash "$OURS")"
-set $first_split
+set ${first_split}
 SQUASH_COMMIT_SHA=$1
 LAST_MERGED_DEVTOOLS_SHA=$2
 if [ -z "$LAST_MERGED_DEVTOOLS_SHA" ]; then
@@ -92,5 +93,7 @@ git commit -m "devtools -> dirac as of $FULL_SHA"
 if [[ ! -z "$FORCE_PUSH" ]] || confirm "Do you want to force push new $DIFF_BRANCH of github's Dirac repo? [y/N]" ; then
   git push -f git@github.com:binaryage/dirac.git "$DIFF_BRANCH"
 fi
+
+popd
 
 popd

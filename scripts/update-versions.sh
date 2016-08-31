@@ -4,7 +4,8 @@
 
 set -e
 
-. "$(dirname "${BASH_SOURCE[0]}")/config.sh"
+pushd `dirname "${BASH_SOURCE[0]}"` > /dev/null
+source "./config.sh"
 
 pushd "$ROOT"
 
@@ -23,5 +24,7 @@ sed -i -e "s/\"version\"\: \".*\"/\"version\": \"$VERSION\"/g" "$RELEASE_MANIFES
 
 # this is just a sanity check
 ./scripts/check-versions.sh
+
+popd
 
 popd

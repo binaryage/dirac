@@ -2,8 +2,11 @@
 
 set -e
 
-. "$(dirname "${BASH_SOURCE[0]}")/config.sh"
+pushd `dirname "${BASH_SOURCE[0]}"` > /dev/null
+source "./config.sh"
 
 if [ -d "$NOTIFY_DIR" ] ; then
   rm -rf "$NOTIFY_DIR"
 fi
+
+popd

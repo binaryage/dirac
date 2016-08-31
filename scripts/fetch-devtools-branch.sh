@@ -2,7 +2,8 @@
 
 set -ex
 
-. "$(dirname "${BASH_SOURCE[0]}")/config.sh"
+pushd `dirname "${BASH_SOURCE[0]}"` > /dev/null
+source "./config.sh"
 
 pushd "$ROOT"
 
@@ -37,6 +38,8 @@ git filter-branch -f --prune-empty --subdirectory-filter third_party/WebKit/Sour
 git checkout devtools
 git reset --hard tracker
 git push dirac devtools
+
+popd
 
 popd
 
