@@ -74,3 +74,9 @@
         effective-opts (merge default-opts opts)
         client (ws-client/connect! server-url effective-opts)]
     (reset! current-client client)))
+
+(defn disconnect! []
+  (when-let [client @current-client]
+    (ws-client/close! client)
+    true))
+
