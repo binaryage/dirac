@@ -158,6 +158,14 @@ Object.assign(window.dirac, (function() {
         return loadLazyDirac().then(() => window.dirac.hasDefaultContext(...args));
     }
 
+    function subscribeDebuggerEvents(...args) {
+        return loadLazyDirac().then(() => window.dirac.subscribeDebuggerEvents(...args));
+    }
+
+    function unsubscribeDebuggerEvents(...args) {
+        return loadLazyDirac().then(() => window.dirac.unsubscribeDebuggerEvents(...args));
+    }
+
     function addConsoleMessageToMainTarget(...args) {
         return loadLazyDirac().then(() => window.dirac.addConsoleMessageToMainTarget(...args));
     }
@@ -199,6 +207,8 @@ Object.assign(window.dirac, (function() {
         hasCurrentContext: hasCurrentContext,
         evalInDefaultContext: evalInDefaultContext,
         hasDefaultContext: hasDefaultContext,
+        subscribeDebuggerEvents: subscribeDebuggerEvents,
+        unsubscribeDebuggerEvents: unsubscribeDebuggerEvents,
         addConsoleMessageToMainTarget: addConsoleMessageToMainTarget,
         startListeningForWorkspaceChanges: startListeningForWorkspaceChanges,
         stopListeningForWorkspaceChanges: stopListeningForWorkspaceChanges,

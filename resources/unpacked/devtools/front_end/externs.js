@@ -402,6 +402,16 @@ var dirac = {
     hasDefaultContext: function() {},
 
     /**
+     * @param {?} callback
+     * @return {boolean}
+     */
+    subscribeDebuggerEvents: function(callback) {},
+    /**
+     * @return {boolean}
+     */
+    unsubscribeDebuggerEvents: function() {},
+
+    /**
     * @param {?} callFrame
     * @return {!Promise<!dirac.ScopeInfo>}
     */

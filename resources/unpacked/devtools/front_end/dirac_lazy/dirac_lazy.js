@@ -100,6 +100,36 @@ Object.assign(window.dirac, (function() {
         evalInContext(lookupDefaultContext(), code, callback);
     }
 
+    let debuggerEventsUnsubscriber = null;
+
+    function subscribeDebuggerEvents(callback) {
+        if (debuggerEventsUnsubscriber) {
+            return false;
+        }
+        const globalObjectClearedHandler = (...args) => {
+            callback("GlobalObjectCleared", ...args);
+        };
+
+        WebInspector.targetManager.addModelListener(WebInspector.DebuggerModel, WebInspector.DebuggerModel.Events.GlobalObjectCleared, globalObjectClearedHandler, this);
+
+        debuggerEventsUnsubscriber = () => {
+            WebInspector.targetManager.removeModelListener(WebInspector.DebuggerModel, WebInspector.DebuggerModel.Events.GlobalObjectCleared, globalObjectClearedHandler, this);
+            return true;
+        };
+
+        return true;
+    }
+
+    function unsubscribeDebuggerEvents() {
+        if (!debuggerEventsUnsubscriber) {
+            return false;
+        }
+
+        const res = debuggerEventsUnsubscriber();
+        debuggerEventsUnsubscriber = null;
+        return res;
+    }
+
     // --- console ----------------------------------------------------------------------------------------------------------
 
     function addConsoleMessageToMainTarget(level, text, parameters) {
@@ -771,6 +801,8 @@ Object.assign(window.dirac, (function() {
         hasCurrentContext: hasCurrentContext,
         evalInDefaultContext: evalInDefaultContext,
         hasDefaultContext: hasDefaultContext,
+        subscribeDebuggerEvents: subscribeDebuggerEvents,
+        unsubscribeDebuggerEvents: unsubscribeDebuggerEvents,
         addConsoleMessageToMainTarget: addConsoleMessageToMainTarget,
         startListeningForWorkspaceChanges: startListeningForWorkspaceChanges,
         stopListeningForWorkspaceChanges: stopListeningForWorkspaceChanges,
