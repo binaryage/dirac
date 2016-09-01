@@ -34,10 +34,10 @@
 (defn unregister-trigger! [name]
   (swap! triggers dissoc (keyword name)))
 
-(defn call-trigger! [name data]
+(defn call-trigger! [name args]
   (if-let [trigger-fn (get @triggers (keyword name))]
-    (trigger-fn data)
-    (warn "unrecognized trigger " name " when processing " data)))
+    (apply trigger-fn args)
+    (warn "unrecognized trigger " name " when processing " args)))
 
 ; -- handling exceptions ----------------------------------------------------------------------------------------------------
 
@@ -51,8 +51,10 @@
 ; -- notification handler ---------------------------------------------------------------------------------------------------
 
 (defn notification-handler! [notification]
-  (if-let [trigger-name (:trigger notification)]
-    (call-trigger! trigger-name notification)))
+  (let [trigger-name (:trigger notification)
+        args (:args notification)]
+    (assert trigger-name)
+    (call-trigger! trigger-name args)))
 
 ; -- facades ----------------------------------------------------------------------------------------------------------------
 

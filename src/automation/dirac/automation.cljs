@@ -43,8 +43,9 @@
   (messages/post-message! #js {:type        "marion-close-scenario"
                                :scenario-id scenario-id}))
 
-(defn trigger! [trigger-name & [data]]
-  (notifications/broadcast-notification! (merge {:trigger trigger-name} data)))
+(defn trigger! [trigger-name & args]
+  (notifications/broadcast-notification! {:trigger trigger-name
+                                          :args    args}))
 
 (defn wait-for-match [what & args]
   (apply verbs/wait-for-match what args))
