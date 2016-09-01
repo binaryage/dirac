@@ -1179,7 +1179,7 @@ WebInspector.ConsoleView.prototype = {
     _findPromptIndexById: function(id) {
         for (var i=0; i<this._prompts.length; i++) {
             var promptDescriptor = this._prompts[i];
-            if (promptDescriptor.id == id) {
+            if (promptDescriptor.id === id) {
                 return i;
             }
         }
@@ -1188,7 +1188,7 @@ WebInspector.ConsoleView.prototype = {
 
     switchPrompt: function(promptId) {
         var selectedPromptIndex = this._findPromptIndexById(promptId);
-        if (!selectedPromptIndex) {
+        if (selectedPromptIndex === null) {
             console.warn("switchPrompt: unknown prompt id ", promptId);
             return;
         }
