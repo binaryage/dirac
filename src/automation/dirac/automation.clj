@@ -68,3 +68,9 @@
      (cljs.test/testing title# ~@body)
      (dirac.automation.machinery/testing-end title#)))
 
+(defmacro with-console-feedback [& body]
+  `(do
+     (dirac.automation/<!* dirac.automation/enable-console-feedback!)
+     ~@body
+     (dirac.automation/<!* dirac.automation/disable-console-feedback!)))
+
