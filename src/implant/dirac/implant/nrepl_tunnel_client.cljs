@@ -14,7 +14,7 @@
 (defonce pending-messages (atom {}))                                                                                          ; a map of 'msg-id -> handler' for messages in flight where we wait for status responses, see ***
 
 (defn connected? []
-  (not (nil? @current-client)))
+  (some? @current-client))
 
 (defn get-current-options []
   (let [client @current-client]
