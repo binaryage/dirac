@@ -145,3 +145,8 @@
       (ws-client/try-connect! client)
       (warn "client is already connected" @current-client client))
     (warn "call connect! first before try-connect!")))
+
+(defn disconnect! []
+  (when-let [client @current-client]
+    (ws-client/close! client)
+    true))
