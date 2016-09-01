@@ -12,10 +12,12 @@ devtools #1      namespacesCache is cool now
 automate         trigger! [:pause-on-breakpoint]
 devtools #1      setCurrentPanel: sources
 automate #1      scrape! [:callstack-pane-functions]
-stdout           displayed 7 items:
+stdout           displayed 9 items:
                   * breakpoint-demo / dirac.tests.scenarios.breakpoint.core/breakpoint-demo
                   * breakpoint-demo-handler / dirac.tests.scenarios.breakpoint.core/breakpoint-demo-handler
                   * (anonymous function)
+                  * IFn:-invoke² (apply) / cljs.core.IFn:-invoke² (cljs.core/apply)
+                  * apply / cljs.core/apply
                   * call-trigger! / dirac.automation.scenario/call-trigger!
                   * notification-handler! / dirac.automation.scenario/notification-handler!
                   * process-notification! / dirac.automation.notifications/process-notification!
@@ -40,10 +42,12 @@ devtools #2      namespacesCache is cool now
 automate         trigger! [:pause-on-breakpoint]
 devtools #2      setCurrentPanel: sources
 automate #2      scrape! [:callstack-pane-functions]
-stdout           displayed 7 items:
+stdout           displayed 9 items:
                   * dirac$tests$scenarios$breakpoint$core$breakpoint_demo
                   * dirac$tests$scenarios$breakpoint$core$breakpoint_demo_handler
                   * (anonymous function)
+                  * cljs.core.apply.cljs$core$IFn$_invoke$arity$2
+                  * cljs$core$apply
                   * dirac$automation$scenario$call_trigger_BANG_
                   * dirac$automation$scenario$notification_handler_BANG_
                   * dirac$automation$notifications$process_notification_BANG_
@@ -74,7 +78,7 @@ devtools #3      setCurrentPanel: console
 automate         trigger! [:cause-exception]
 scenario         uncaught exception: Error: :invalid is not ISeqable
 automate #3      scrape! [:function-names-in-last-console-exception]
-stdout           displayed 28 items:
+stdout           displayed 30 items:
                   * seq
                   * IFn:-invoke³ (seq-reduce)
                   * IFn:-invoke³ (reduce)
@@ -99,6 +103,8 @@ stdout           displayed 28 items:
                   * exception-demo!
                   * exception-demo-handler
                   * (anonymous function)
+                  * IFn:-invoke² (apply)
+                  * apply
                   * call-trigger!
                   * notification-handler!
                   * process-notification!

@@ -13,7 +13,7 @@
       (with-devtools
         (<!* a/trigger! :pause-on-breakpoint)
         (<!* a/wait-for-devtools-match "setCurrentPanel: sources")
-        (is (= (line-count (<!* a/scrape! :callstack-pane-locations)) 8))
+        (is (= (line-count (<!* a/scrape! :callstack-pane-locations)) 10))
         (<!* a/wait-for-match "* core.cljs:"))))
   (with-scenario "breakpoint"
     (testing "disabled :clean-urls feature"
@@ -21,5 +21,5 @@
         (with-devtools
           (<!* a/trigger! :pause-on-breakpoint)
           (<!* a/wait-for-devtools-match "setCurrentPanel: sources")
-          (is (= (line-count (<!* a/scrape! :callstack-pane-locations)) 8))
+          (is (= (line-count (<!* a/scrape! :callstack-pane-locations)) 10))
           (<!* a/wait-for-match "* core.cljs?rel="))))))

@@ -1,7 +1,5 @@
 ns               Testing dirac.tests.tasks.suite01.preloads
 automate         open-scenario! ["normal-via-preloads"]
-scenario out     LOG: ("registered trigger" :check-runtime-installed)
-scenario out     LOG: ("registered trigger" :check-runtime-config)
 automate         trigger! [:check-runtime-installed]
 scenario out     LOG: ("runtime installed? true")
 automate         trigger! [:check-runtime-config]

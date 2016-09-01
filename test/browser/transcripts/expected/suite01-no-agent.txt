@@ -17,7 +17,7 @@ devtools #1      displayWelcomeMessage
 devtools #1      setCurrentPanel: console
 automate #1      switch-prompt-to-dirac!
 devtools #1      switched console prompt to 'dirac'
-devtools #1      repl initialized
+devtools #1      init-repl!
 devtools #1      setDiracPromptStatusContent('Checking for Dirac Runtime presence in your app...')
 devtools #1      setDiracPromptStatusStyle('info')
 devtools #1      setDiracPromptStatusContent('Unable to connect to Dirac Agent at ws://localhost:9999')

@@ -1,5 +1,6 @@
 ns               Testing dirac.tests.tasks.suite01.repl
 automate         open-scenario! ["normal"]
+testing          simple REPL eval interactions
 automate         open-devtools!
 extension        handling command: open-dirac-devtools
 extension        register devtools #1
@@ -17,35 +18,29 @@ devtools #1      displayWelcomeMessage
 devtools #1      setCurrentPanel: console
 automate #1      switch-prompt-to-dirac!
 devtools #1      switched console prompt to 'dirac'
-devtools #1      repl initialized
+devtools #1      init-repl!
 devtools #1      setDiracPromptStatusContent('Checking for Dirac Runtime presence in your app...')
 devtools #1      setDiracPromptStatusStyle('info')
 devtools #1      setDiracPromptStatusContent('Dirac Agent connected. Bootstrapping ClojureScript REPL...')
 devtools #1      setDiracPromptNS('cljs.user')
-devtools #1      wrap-with-postprocess-and-eval-in-current-context!
-devtools #1      wrap-with-postprocess-and-eval-in-current-context!
 devtools #1      setDiracPromptMode('edit')
 automate #1      enable-console-feedback!
-testing          simple REPL eval interactions
 automate #1      console-exec-and-match! ["(+ 1 2)" "log> 3"]
 devtools #1      DC.log> (+ 1 2)
 devtools #1      send-eval-request: (+ 1 2)
 devtools #1      repl eval job started
-devtools #1      wrap-with-postprocess-and-eval-in-current-context!
 devtools #1      DF.log> 3
 devtools #1      repl eval job ended
 automate #1      console-exec-and-match! ["(range 200)" "log> (0 1 2 3 4 …)"]
 devtools #1      DC.log> (range 200)
 devtools #1      send-eval-request: (range 200)
 devtools #1      repl eval job started
-devtools #1      wrap-with-postprocess-and-eval-in-current-context!
 devtools #1      DF.log> (0 1 2 3 4 …)
 devtools #1      repl eval job ended
 automate #1      console-exec-and-match! ["(doc filter)" "log> null"]
 devtools #1      DC.log> (doc filter)
 devtools #1      send-eval-request: (doc filter)
 devtools #1      repl eval job started
-devtools #1      wrap-with-postprocess-and-eval-in-current-context!
 devtools #1      DF.log>
                  -------------------------
                  cljs.core/filter
@@ -59,7 +54,6 @@ automate #1      console-exec-and-match! ["js/window.NaN" "log> NaN"]
 devtools #1      DC.log> js/window.NaN
 devtools #1      send-eval-request: js/window.NaN
 devtools #1      repl eval job started
-devtools #1      wrap-with-postprocess-and-eval-in-current-context!
 devtools #1      DF.log> NaN
 devtools #1      repl eval job ended
 automate #1      console-exec-and-match! ["(x)" "err> TypeError: Cannot read property 'call' of undefined(…)"]
@@ -67,7 +61,6 @@ devtools #1      DC.log> (x)
 devtools #1      send-eval-request: (x)
 devtools #1      repl eval job started
 devtools #1      present-server-side-output! stderr > WARNING: Use of undeclared Var cljs.user/x at line 1 <dirac repl>
-devtools #1      wrap-with-postprocess-and-eval-in-current-context!
 devtools #1      DF.err> TypeError: Cannot read property 'call' of undefined(…)
 devtools #1      repl eval job ended
 automate #1      console-exec-and-match! ["(in-ns)" "java-trace > java.lang.IllegalArgumentException: Argument to in-ns must be a symbol."]
@@ -84,13 +77,207 @@ automate #1      console-exec-and-match! ["(in-ns 'my.ns)" "setDiracPromptNS('my
 devtools #1      DC.log> (in-ns 'my.ns)
 devtools #1      send-eval-request: (in-ns 'my.ns)
 devtools #1      repl eval job started
-devtools #1      wrap-with-postprocess-and-eval-in-current-context!
 devtools #1      setDiracPromptNS('my.ns')
 devtools #1      repl eval job ended
-∎
+automate #1      disable-console-feedback!
 automate #1      close-devtools!
 extension        handling command: close-dirac-devtools
 extension        unregister devtools #1
+∎
+testing          page refresh while REPL was connected
+automate         open-devtools!
+extension        handling command: open-dirac-devtools
+extension        register devtools #2
+devtools #2      implant initialized
+devtools #2      reset devtools settings
+devtools #2      devtools ready
+devtools #2      setCurrentPanel: elements
+devtools #2      namespacesCache is cool now
+automate #2      switch-to-console-panel!
+devtools #2      console initialized
+devtools #2      adopt-prompt-element use-parinfer? true
+devtools #2      setDiracPromptMode('status')
+devtools #2      ConsoleView constructed
+devtools #2      displayWelcomeMessage
+devtools #2      setCurrentPanel: console
+automate #2      switch-prompt-to-dirac!
+devtools #2      switched console prompt to 'dirac'
+devtools #2      init-repl!
+devtools #2      setDiracPromptStatusContent('Checking for Dirac Runtime presence in your app...')
+devtools #2      setDiracPromptStatusStyle('info')
+devtools #2      setDiracPromptStatusContent('Dirac Agent connected. Bootstrapping ClojureScript REPL...')
+devtools #2      setDiracPromptNS('cljs.user')
+devtools #2      setDiracPromptMode('edit')
+automate #2      enable-console-feedback!
+automate #2      console-exec-and-match! ["(+ 1 2)" "log> 3"]
+devtools #2      DC.log> (+ 1 2)
+devtools #2      send-eval-request: (+ 1 2)
+devtools #2      repl eval job started
+devtools #2      DF.log> 3
+devtools #2      repl eval job ended
+automate #2      disable-console-feedback!
+automate         trigger! [:reload]
+devtools #2      setDiracPromptMode('status')
+devtools #2      setDiracPromptStatusContent('Disconnected')
+devtools #2      init-repl!
+devtools #2      setDiracPromptStatusContent('Checking for Dirac Runtime presence in your app...')
+devtools #2      setDiracPromptStatusContent('Dirac Agent connected. Bootstrapping ClojureScript REPL...')
+devtools #2      setDiracPromptMode('edit')
+automate #2      enable-console-feedback!
+automate #2      console-exec-and-match! ["(+ 1 2)" "log> 3"]
+devtools #2      DC.log> (+ 1 2)
+devtools #2      send-eval-request: (+ 1 2)
+devtools #2      repl eval job started
+devtools #2      DF.log> 3
+devtools #2      repl eval job ended
+automate #2      disable-console-feedback!
+automate         trigger! [:reload]
+devtools #2      setDiracPromptMode('status')
+devtools #2      setDiracPromptStatusContent('Disconnected')
+devtools #2      init-repl!
+devtools #2      setDiracPromptStatusContent('Checking for Dirac Runtime presence in your app...')
+devtools #2      setDiracPromptStatusContent('Dirac Agent connected. Bootstrapping ClojureScript REPL...')
+devtools #2      setDiracPromptMode('edit')
+automate #2      enable-console-feedback!
+automate #2      console-exec-and-match! ["(+ 1 2)" "log> 3"]
+devtools #2      DC.log> (+ 1 2)
+devtools #2      send-eval-request: (+ 1 2)
+devtools #2      repl eval job started
+devtools #2      DF.log> 3
+devtools #2      repl eval job ended
+automate #2      disable-console-feedback!
+automate #2      close-devtools!
+extension        handling command: close-dirac-devtools
+extension        unregister devtools #2
+∎
+testing          navigate to a new page without dirac runtime while REPL was connected, then navigate back and exercise REPL
+automate         open-devtools!
+extension        handling command: open-dirac-devtools
+extension        register devtools #3
+devtools #3      implant initialized
+devtools #3      reset devtools settings
+devtools #3      devtools ready
+devtools #3      setCurrentPanel: elements
+devtools #3      namespacesCache is cool now
+automate #3      switch-to-console-panel!
+devtools #3      console initialized
+devtools #3      adopt-prompt-element use-parinfer? true
+devtools #3      setDiracPromptMode('status')
+devtools #3      ConsoleView constructed
+devtools #3      displayWelcomeMessage
+devtools #3      setCurrentPanel: console
+automate #3      switch-prompt-to-dirac!
+devtools #3      switched console prompt to 'dirac'
+devtools #3      init-repl!
+devtools #3      setDiracPromptStatusContent('Checking for Dirac Runtime presence in your app...')
+devtools #3      setDiracPromptStatusStyle('info')
+devtools #3      setDiracPromptStatusContent('Dirac Agent connected. Bootstrapping ClojureScript REPL...')
+devtools #3      setDiracPromptNS('cljs.user')
+devtools #3      setDiracPromptMode('edit')
+automate #3      enable-console-feedback!
+automate #3      console-exec-and-match! ["(+ 1 2)" "log> 3"]
+devtools #3      DC.log> (+ 1 2)
+devtools #3      send-eval-request: (+ 1 2)
+devtools #3      repl eval job started
+devtools #3      DF.log> 3
+devtools #3      repl eval job ended
+automate #3      disable-console-feedback!
+automate         trigger! [:navigate "/scenarios/no-runtime.html"]
+devtools #3      setDiracPromptMode('status')
+devtools #3      setDiracPromptStatusContent('Disconnected')
+devtools #3      init-repl!
+devtools #3      setDiracPromptStatusContent('Checking for Dirac Runtime presence in your app...')
+devtools #3      setDiracPromptStatusContent('Dirac requires runtime support from your app.
+                 Please <a href="https://github.com/binaryage/dirac#installation">install Dirac Runtime</a> into your app and <a href="https://github.com/binaryage/dirac#install-dirac-runtime">enable the :repl feature</a>.')
+devtools #3      setDiracPromptStatusStyle('error')
+automate         trigger! [:navigate "/scenarios/normal.html"]
+devtools #3      setDiracPromptStatusContent('Disconnected')
+devtools #3      setDiracPromptStatusStyle('info')
+devtools #3      init-repl!
+devtools #3      setDiracPromptStatusContent('Checking for Dirac Runtime presence in your app...')
+devtools #3      setDiracPromptStatusContent('Dirac Agent connected. Bootstrapping ClojureScript REPL...')
+devtools #3      setDiracPromptMode('edit')
+automate #3      enable-console-feedback!
+automate #3      console-exec-and-match! ["(+ 1 2)" "log> 3"]
+devtools #3      DC.log> (+ 1 2)
+devtools #3      send-eval-request: (+ 1 2)
+devtools #3      repl eval job started
+devtools #3      DF.log> 3
+devtools #3      repl eval job ended
+automate #3      disable-console-feedback!
+automate #3      close-devtools!
+extension        handling command: close-dirac-devtools
+extension        unregister devtools #3
+∎
+testing          page refresh while REPL was connected (but not active)
+automate         open-devtools!
+extension        handling command: open-dirac-devtools
+extension        register devtools #4
+devtools #4      implant initialized
+devtools #4      reset devtools settings
+devtools #4      devtools ready
+devtools #4      setCurrentPanel: elements
+devtools #4      namespacesCache is cool now
+automate #4      switch-to-console-panel!
+devtools #4      console initialized
+devtools #4      adopt-prompt-element use-parinfer? true
+devtools #4      setDiracPromptMode('status')
+devtools #4      ConsoleView constructed
+devtools #4      displayWelcomeMessage
+devtools #4      setCurrentPanel: console
+automate #4      switch-prompt-to-dirac!
+devtools #4      switched console prompt to 'dirac'
+devtools #4      init-repl!
+devtools #4      setDiracPromptStatusContent('Checking for Dirac Runtime presence in your app...')
+devtools #4      setDiracPromptStatusStyle('info')
+devtools #4      setDiracPromptStatusContent('Dirac Agent connected. Bootstrapping ClojureScript REPL...')
+devtools #4      setDiracPromptNS('cljs.user')
+devtools #4      setDiracPromptMode('edit')
+automate #4      switch-prompt-to-javascript!
+devtools #4      switched console prompt to 'js'
+automate         trigger! [:reload]
+devtools #4      setDiracPromptMode('status')
+devtools #4      setDiracPromptStatusContent('Disconnected')
+automate #4      switch-prompt-to-dirac!
+devtools #4      switched console prompt to 'dirac'
+devtools #4      init-repl!
+devtools #4      setDiracPromptStatusContent('Checking for Dirac Runtime presence in your app...')
+devtools #4      setDiracPromptStatusContent('Dirac Agent connected. Bootstrapping ClojureScript REPL...')
+devtools #4      setDiracPromptMode('edit')
+automate #4      enable-console-feedback!
+automate #4      console-exec-and-match! ["(+ 1 2)" "log> 3"]
+devtools #4      DC.log> (+ 1 2)
+devtools #4      send-eval-request: (+ 1 2)
+devtools #4      repl eval job started
+devtools #4      DF.log> 3
+devtools #4      repl eval job ended
+automate #4      disable-console-feedback!
+automate #4      close-devtools!
+extension        handling command: close-dirac-devtools
+extension        unregister devtools #4
+∎
+testing          page refresh while REPL was not connected
+automate         open-devtools!
+extension        handling command: open-dirac-devtools
+extension        register devtools #5
+devtools #5      implant initialized
+devtools #5      reset devtools settings
+devtools #5      devtools ready
+devtools #5      setCurrentPanel: elements
+devtools #5      namespacesCache is cool now
+automate #5      switch-to-console-panel!
+devtools #5      console initialized
+devtools #5      adopt-prompt-element use-parinfer? true
+devtools #5      setDiracPromptMode('status')
+devtools #5      ConsoleView constructed
+devtools #5      displayWelcomeMessage
+devtools #5      setCurrentPanel: console
+automate         trigger! [:reload]
+automate         trigger! [:reload]
+automate #5      close-devtools!
+extension        handling command: close-dirac-devtools
+extension        unregister devtools #5
+∎
 automate         close-scenario! ["scenario-tab#1"]
-summary          Automated 14 actions with 3 check-points containing 0 assertions.
+summary          Automated 57 actions with 13 check-points containing 0 assertions.
                  0 failures, 0 errors.

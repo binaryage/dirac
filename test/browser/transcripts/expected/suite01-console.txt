@@ -19,29 +19,27 @@ automate #1      enable-console-feedback!
 testing          keyboard shortcuts for switching between prompts
 automate #1      simulate-console-action! ["CTRL+."]
 devtools #1      switched console prompt to 'dirac'
-devtools #1      repl initialized
+devtools #1      init-repl!
 devtools #1      setDiracPromptStatusContent('Checking for Dirac Runtime presence in your app...')
 devtools #1      setDiracPromptStatusStyle('info')
 devtools #1      setDiracPromptStatusContent('Dirac Agent connected. Bootstrapping ClojureScript REPL...')
 devtools #1      setDiracPromptNS('cljs.user')
-devtools #1      wrap-with-postprocess-and-eval-in-current-context!
-devtools #1      wrap-with-postprocess-and-eval-in-current-context!
 devtools #1      setDiracPromptMode('edit')
 automate #1      simulate-console-action! ["CTRL+."]
 devtools #1      switched console prompt to 'js'
 automate #1      simulate-console-action! ["CTRL+."]
 devtools #1      switched console prompt to 'dirac'
-devtools #1      repl initialized
+devtools #1      init-repl!
 automate #1      simulate-console-action! ["CTRL+,"]
 devtools #1      switched console prompt to 'js'
 automate #1      simulate-console-action! ["CTRL+."]
 devtools #1      switched console prompt to 'dirac'
-devtools #1      repl initialized
+devtools #1      init-repl!
 automate #1      simulate-console-action! ["CTRL+."]
 devtools #1      switched console prompt to 'js'
 automate #1      simulate-console-action! ["CTRL+,"]
 devtools #1      switched console prompt to 'dirac'
-devtools #1      repl initialized
+devtools #1      init-repl!
 ∎
 testing          prompt input simulation and feedback
 automate #1      simulate-console-input! ["hello!"]
