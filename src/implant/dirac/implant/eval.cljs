@@ -56,6 +56,12 @@
     (eval-fn code)
     (error "window.dirac.codeAsString not found")))
 
+(defn subscribe-debugger-events! [f]
+  (ocall (get-dirac) "subscribeDebuggerEvents" f))
+
+(defn unsubscribe-debugger-events! [f]
+  (ocall (get-dirac) "unsubscribeDebuggerEvents" f))
+
 (defn get-has-context-fn-name [context]
   (case context
     :default "hasDefaultContext"
@@ -149,7 +155,7 @@
 
 (defn ^:dynamic missing-runtime-msg [reason]
   (str "Dirac requires runtime support from page context.\n"
-       (if (some? reason) (str (format-reason reason) "\n"))
+       (if (and (some? reason) (not= reason "Uncaught")) (str (format-reason reason) "\n"))
        "Please install Dirac Runtime into your app and enable the :repl feature: " installation-help-url "."))
 
 (defn ^:dynamic runtime-exception-msg [reason]
@@ -309,7 +315,7 @@
 (defn get-runtime-version []
   (safely-eval-in-context! :default "0.0.0" "dirac.runtime.get_version()"))
 
-(defn is-runtime-repl-support-installed? []
+(defn is-runtime-repl-enabled? []
   (safely-eval-in-context! :default false "dirac.runtime.repl.installed_QMARK_()"))
 
 (defn get-runtime-repl-api-version []
@@ -337,7 +343,6 @@
 ; -- fancy evaluation in currently selected context -------------------------------------------------------------------------
 
 (defn wrap-with-postprocess-and-eval-in-current-context! [code]
-  (feedback/post! (str "wrap-with-postprocess-and-eval-in-current-context!"))
   (go
     ; for result structure refer to devtools.api.postprocess_successful_eval and devtools.api.postprocess_unsuccessful_eval
     (let [wrapped-code (postprocess-template code)]

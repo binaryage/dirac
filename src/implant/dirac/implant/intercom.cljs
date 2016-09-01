@@ -13,16 +13,19 @@
             [dirac.utils :as utils]
             [chromex.logging :refer-macros [log info warn error]]
             [dirac.implant.eval :as eval]
-            [devtools.toolbox :refer [envelope]])
+            [devtools.toolbox :refer [envelope]]
+            [dirac.implant.feedback :as feedback]
+            [dirac.lib.ws-client :as ws-client])
   (:import goog.net.WebSocket.ErrorEvent))
 
 (defonce required-repl-api-version 3)
 
+(defonce ^:dynamic *debugger-events-subscribed* false)
 (defonce ^:dynamic *repl-connected* false)
 (defonce ^:dynamic *repl-bootstrapped* false)
 (defonce ^:dynamic *last-connection-url* nil)
 (defonce ^:dynamic *last-connect-fn-id* 0)
-(defonce ^:dynamic *last-client* nil)
+(defonce ^:dynamic *ignore-next-client-change* false)
 
 (def dirac-agent-help-url "https://github.com/binaryage/dirac/blob/master/docs/installation.md#start-dirac-agent")
 (def dirac-runtime-help-url "https://github.com/binaryage/dirac/blob/master/docs/installation.md#install-the-dirac-runtime")
@@ -51,7 +54,7 @@
        e))
 
 (defn ^:dynamic dirac-agent-disconnected-msg [tunnel-url]
-  (str "<b>Dirac Agent is not listening</b> at " tunnel-url " "
+  (str "<b>Dirac Agent is not listening</b> " (if (some? tunnel-url) (str "at " tunnel-url " "))
        "(<a href=\"" dirac-agent-help-url "\">need help?</a>)."))
 
 (defn ^:dynamic dirac-agent-connected-msg []
@@ -129,16 +132,34 @@
     (console/set-prompt-status-content! status)
     (console/set-prompt-status-style! effective-style)))
 
-(defn on-client-change [_key _ref _old new]
-  (if (nil? new)
-    (do
-      (display-prompt-status (dirac-agent-disconnected-msg *last-connection-url*))
-      (set! *repl-bootstrapped* false)
-      (set! *repl-connected* false))
-    (do
-      (display-prompt-status (dirac-agent-connected-msg) :info)
-      (set! *repl-connected* true)))
-  (update-repl-mode!))
+(defn reset-repl-state! []
+  (set! *last-connection-url* nil)
+  (set! *repl-bootstrapped* false)
+  (set! *repl-connected* false)
+  (set! *last-connect-fn-id* 0))
+
+(defn on-client-change [_key _ref old new]
+  (when-not *ignore-next-client-change*
+    (if (some? new)
+      (do
+        (display-prompt-status (dirac-agent-connected-msg) :info)
+        (set! *repl-connected* true))
+      (let [server-url (if (some? old) (ws-client/get-server-url old))]
+        (display-prompt-status (dirac-agent-disconnected-msg (or server-url *last-connection-url*)))
+        (set! *repl-bootstrapped* false)
+        (set! *repl-connected* false)))
+    (update-repl-mode!)))
+
+(defn wait-for-client-disconnection []
+  (if (nil? @nrepl-tunnel-client/current-client)
+    (go)
+    (let [channel (chan)
+          watcher (fn [_key _ref _old new]
+                    (when (nil? new)
+                      (remove-watch nrepl-tunnel-client/current-client ::disconnection-observer)
+                      (close! channel)))]
+      (add-watch nrepl-tunnel-client/current-client ::disconnection-observer watcher)
+      channel)))
 
 ; -- message processing -----------------------------------------------------------------------------------------------------
 
@@ -147,7 +168,11 @@
                          :display-user-info-fn eval/console-info!
                          :display-user-error-fn eval/console-warn!)))
 
-(defn init! []
+(defn reset-eval! []
+  (eval/update-config! {:display-user-info-fn  nil
+                        :display-user-error-fn nil}))
+
+(defn init-console! []
   (add-watch nrepl-tunnel-client/current-client ::client-observer on-client-change))
 
 (defn connect-to-weasel-server! [url]
@@ -181,7 +206,7 @@
           (recur (dec remaining-time)))))
     time))
 
-(defn connect-to-nrepl-tunnel-server [url verbose? auto-reconnect? response-timeout]
+(defn connect-to-nrepl-tunnel-server! [url verbose? auto-reconnect? response-timeout]
   {:pre [(string? url)]}
   (when-not *last-connection-url*
     (set! *last-connection-url* url)
@@ -204,7 +229,7 @@
 (defn handler-status-banner-event! [type event]
   (case type
     "click" (try-reconnect!)
-    (warn "handler-status-banner-event! recevied unknwon event type" type event)))
+    (error "handler-status-banner-event! recevied unknown event type" type event)))
 
 (defn prepare-scope-info [scope-info-js]
   (js->clj scope-info-js :keywordize-keys true))
@@ -224,30 +249,60 @@
 
 (defn start-repl! []
   (go
-    (check-runtime-version! (<! (eval/get-runtime-version)))
-    (if-let [client-config (<! (eval/get-runtime-config))]
-      (do
-        (info "Starting REPL support. Dirac Runtime config is " client-config)
-        (configure-eval! client-config)
-        (let [agent-url (ws-url (:agent-host client-config) (:agent-port client-config))
-              verbose? (:agent-verbose client-config)
-              auto-reconnect? (:agent-auto-reconnect client-config)
-              response-timeout (:agent-response-timeout client-config)]
-          (console/set-prompt-status-banner-callback! handler-status-banner-event!)
-          (connect-to-nrepl-tunnel-server agent-url verbose? auto-reconnect? response-timeout)))
-      (display-prompt-status (failed-to-retrieve-client-config-msg "in start-repl!")))))
+    (let [runtime-version (<! (eval/get-runtime-version))]
+      (check-runtime-version! runtime-version)
+      (let [repl-api-version (<! (eval/get-runtime-repl-api-version))]
+        (if (= repl-api-version required-repl-api-version)
+          (if-let [runtime-config (<! (eval/get-runtime-config))]
+            (do
+              (info "Starting REPL support. Dirac Runtime config is " runtime-config)
+              (configure-eval! runtime-config)
+              (let [agent-url (ws-url (:agent-host runtime-config) (:agent-port runtime-config))
+                    verbose? (:agent-verbose runtime-config)
+                    auto-reconnect? (:agent-auto-reconnect runtime-config)
+                    response-timeout (:agent-response-timeout runtime-config)]
+                (console/set-prompt-status-banner-callback! handler-status-banner-event!)
+                (connect-to-nrepl-tunnel-server! agent-url verbose? auto-reconnect? response-timeout)))
+            (display-prompt-status (failed-to-retrieve-client-config-msg "in start-repl!")))
+          (display-prompt-status (repl-api-mismatch-msg repl-api-version required-repl-api-version)))))))
+
+(declare init-repl!)
+
+(defn on-global-object-cleared []
+  (reset-repl-state!)
+  (console/set-prompt-mode! :status)
+  (display-prompt-status "Disconnected" :info)
+  (weasel-client/disconnect!)
+  (go
+    (set! *ignore-next-client-change* true)
+    (nrepl-tunnel-client/disconnect!)
+    (<! (wait-for-client-disconnection))
+    (set! *ignore-next-client-change* false)
+    (if (= (console/get-current-prompt-id) "dirac")
+      (init-repl!))))
+
+(defn on-debugger-event [type & args]
+  (log "on-debugger-event" type)
+  (case type
+    "GlobalObjectCleared" (apply on-global-object-cleared args)
+    (error "on-debugger-event recevied unknown event type" type args)))
+
+(defn subscribe-debugger-events! []
+  (when-not *debugger-events-subscribed*
+    (set! *debugger-events-subscribed* true)
+    (eval/subscribe-debugger-events! on-debugger-event)))
 
 (defn init-repl! []
-  (when-not *last-connection-url*
-    (go
+  (feedback/post! "init-repl!")
+  (go
+    (subscribe-debugger-events!)
+    (when-not *last-connection-url*
+      (reset-eval!)
       (display-prompt-status "Checking for Dirac Runtime presence in your app..." :info)
       (let [present? (<! (eval/is-runtime-present?))]
         (if (true? present?)
-          (if (<! (eval/is-runtime-repl-support-installed?))
-            (let [repl-api-version (<! (eval/get-runtime-repl-api-version))]
-              (if (= repl-api-version required-repl-api-version)
-                (start-repl!)
-                (display-prompt-status (repl-api-mismatch-msg repl-api-version required-repl-api-version))))
+          (if (<! (eval/is-runtime-repl-enabled?))
+            (start-repl!)
             (display-prompt-status (repl-support-not-enabled-msg)))
           (display-prompt-status (missing-runtime-msg present?)))))))
 

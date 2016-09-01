@@ -8,6 +8,7 @@
             [cljs.repl]
             [goog.async.Debouncer]
             [dirac.utils :refer-macros [runonce]]
+            [dirac.console :refer [log-to-console!]]
             [dirac.implant.editor :as editor]
             [dirac.implant.intercom :as intercom]
             [dirac.implant.automation :as automation]
@@ -35,14 +36,13 @@
   (when-not *console-initialized*
     (assert *implant-initialized*)
     (set! *console-initialized* true)
-    (intercom/init!)
+    (intercom/init-console!)
     (feedback/post! "console initialized")))
 
 (defn init-repl! []
   (assert *implant-initialized*)
   (assert *console-initialized*)
-  (intercom/init-repl!)
-  (feedback/post! "repl initialized"))
+  (intercom/init-repl!))
 
 (defn adopt-prompt! [text-area-element use-parinfer?]
   (feedback/post! (str "adopt-prompt-element" " use-parinfer? " use-parinfer?))
@@ -149,6 +149,7 @@
   (when-not *implant-initialized*
     (set! *implant-initialized* true)
     (assert (not *console-initialized*))
+    ; (log-to-console!)
     (enhance-dirac-object! (oget js/window "dirac"))                                                                          ; see front_end/dirac/dirac.js
     (reporter/install!)
     (automation/install!)
