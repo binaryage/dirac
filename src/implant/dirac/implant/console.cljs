@@ -84,3 +84,14 @@
   {:pre [(string? code)]}
   (if-let [console-view (get-console-view)]
     (ocall console-view "appendDiracCommand" code job-id)))
+
+(defn switch-prompt! [prompt-id]
+  {:pre [(#{"js" "dirac"} prompt-id)]}
+  (when-let [console-view (get-console-view)]
+    (ocall console-view "switchPrompt" prompt-id)
+    true))
+
+(defn get-current-prompt-id []
+  (when-let [console-view (get-console-view)]
+    (let [desc (ocall console-view "getCurrentPromptDescriptor")]
+      (oget desc "id"))))
