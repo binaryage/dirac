@@ -774,17 +774,17 @@ SecurityAgent.SecurityState = {
 /** @typedef {!{securityState:(SecurityAgent.SecurityState), summary:(string), description:(string), certificateId:(SecurityAgent.CertificateId|undefined)}} */
 SecurityAgent.SecurityStateExplanation;
 
-/** @typedef {!{ranInsecureContent:(boolean), displayedInsecureContent:(boolean), ranInsecureContentStyle:(SecurityAgent.SecurityState), displayedInsecureContentStyle:(SecurityAgent.SecurityState)}} */
-SecurityAgent.MixedContentStatus;
+/** @typedef {!{ranMixedContent:(boolean), displayedMixedContent:(boolean), ranContentWithCertErrors:(boolean), displayedContentWithCertErrors:(boolean), ranInsecureContentStyle:(SecurityAgent.SecurityState), displayedInsecureContentStyle:(SecurityAgent.SecurityState)}} */
+SecurityAgent.InsecureContentStatus;
 /** @interface */
 SecurityAgent.Dispatcher = function() {};
 /**
  * @param {SecurityAgent.SecurityState} securityState
  * @param {!Array.<SecurityAgent.SecurityStateExplanation>=} opt_explanations
- * @param {SecurityAgent.MixedContentStatus=} opt_mixedContentStatus
+ * @param {SecurityAgent.InsecureContentStatus=} opt_insecureContentStatus
  * @param {boolean=} opt_schemeIsCryptographic
  */
-SecurityAgent.Dispatcher.prototype.securityStateChanged = function(securityState, opt_explanations, opt_mixedContentStatus, opt_schemeIsCryptographic) {};
+SecurityAgent.Dispatcher.prototype.securityStateChanged = function(securityState, opt_explanations, opt_insecureContentStatus, opt_schemeIsCryptographic) {};
 
 
 /**

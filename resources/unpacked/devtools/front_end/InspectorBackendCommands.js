@@ -1,5 +1,5 @@
-WebInspector.BakedInspectorBackendAPIChromeTag='54.0.2839.3';
-WebInspector.BakedInspectorBackendAPIChromeRev='8b3f5df1a65187e662fcf2fd5ead1ccb89226f31';
+WebInspector.BakedInspectorBackendAPIChromeTag='55.0.2847.2';
+WebInspector.BakedInspectorBackendAPIChromeRev='419ed06d526505e3d0b938b1a72cc2e8092a96c3';
 WebInspector.BakedInspectorBackendAPI=''
 + 'InspectorBackend.registerEvent("Inspector.detached", ["reason"]);\n'
 + 'InspectorBackend.registerEvent("Inspector.targetCrashed", []);\n'
@@ -86,7 +86,7 @@ WebInspector.BakedInspectorBackendAPI=''
 + 'InspectorBackend.registerCommand("Emulation.canEmulate", [], ["result"], false);\n'
 + 'InspectorBackend.registerCommand("Emulation.setVirtualTimePolicy", [{"name": "policy", "type": "string", "optional": false}, {"name": "budget", "type": "number", "optional": true}], [], false);\n'
 + 'InspectorBackend.registerEnum("Security.SecurityState", {Unknown: "unknown", Neutral: "neutral", Insecure: "insecure", Warning: "warning", Secure: "secure", Info: "info"});\n'
-+ 'InspectorBackend.registerEvent("Security.securityStateChanged", ["securityState", "explanations", "mixedContentStatus", "schemeIsCryptographic"]);\n'
++ 'InspectorBackend.registerEvent("Security.securityStateChanged", ["securityState", "explanations", "insecureContentStatus", "schemeIsCryptographic"]);\n'
 + 'InspectorBackend.registerCommand("Security.enable", [], [], false);\n'
 + 'InspectorBackend.registerCommand("Security.disable", [], [], false);\n'
 + 'InspectorBackend.registerEnum("Network.ConnectionType", {None: "none", Cellular2g: "cellular2g", Cellular3g: "cellular3g", Cellular4g: "cellular4g", Bluetooth: "bluetooth", Ethernet: "ethernet", Wifi: "wifi", Wimax: "wimax", Other: "other"});\n'
