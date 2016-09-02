@@ -387,24 +387,25 @@ WebInspector._valueModificationDirection = function(event)
 /**
  * @param {string} hexString
  * @param {!Event} event
+ * @return {?string}
  */
 WebInspector._modifiedHexValue = function(hexString, event)
 {
     var direction = WebInspector._valueModificationDirection(event);
     if (!direction)
-        return hexString;
+        return null;
 
     var mouseEvent = /** @type {!MouseEvent} */(event);
     var number = parseInt(hexString, 16);
     if (isNaN(number) || !isFinite(number))
-        return hexString;
+        return null;
 
     var hexStrLen = hexString.length;
     var channelLen = hexStrLen / 3;
 
     // Colors are either rgb or rrggbb.
     if (channelLen !== 1 && channelLen !== 2)
-        return hexString;
+        return null;
 
     // Precision modifier keys work with both mousewheel and up/down keys.
     // When ctrl is pressed, increase R by 1.
@@ -438,12 +439,13 @@ WebInspector._modifiedHexValue = function(hexString, event)
 /**
  * @param {number} number
  * @param {!Event} event
+ * @return {?number}
  */
 WebInspector._modifiedFloatNumber = function(number, event)
 {
     var direction = WebInspector._valueModificationDirection(event);
     if (!direction)
-        return number;
+        return null;
 
     var mouseEvent = /** @type {!MouseEvent} */(event);
 
@@ -480,32 +482,28 @@ WebInspector._modifiedFloatNumber = function(number, event)
  */
 WebInspector.createReplacementString = function(wordString, event, customNumberHandler)
 {
-    var replacementString;
-    var prefix, suffix, number;
-
-    var matches;
-    matches = /(.*#)([\da-fA-F]+)(.*)/.exec(wordString);
+    var prefix;
+    var suffix;
+    var number;
+    var replacementString = null;
+    var matches = /(.*#)([\da-fA-F]+)(.*)/.exec(wordString);
     if (matches && matches.length) {
         prefix = matches[1];
         suffix = matches[3];
         number = WebInspector._modifiedHexValue(matches[2], event);
-
-        replacementString = customNumberHandler ? customNumberHandler(prefix, number, suffix) : prefix + number + suffix;
+        if (number !== null)
+            replacementString = prefix + number + suffix;
     } else {
         matches = /(.*?)(-?(?:\d+(?:\.\d+)?|\.\d+))(.*)/.exec(wordString);
         if (matches && matches.length) {
             prefix = matches[1];
             suffix = matches[3];
             number = WebInspector._modifiedFloatNumber(parseFloat(matches[2]), event);
-
-            // Need to check for null explicitly.
-            if (number === null)
-                return null;
-
-            replacementString = customNumberHandler ? customNumberHandler(prefix, number, suffix) : prefix + number + suffix;
+            if (number !== null)
+                replacementString = customNumberHandler ? customNumberHandler(prefix, number, suffix) : prefix + number + suffix;
         }
     }
-    return replacementString || null;
+    return replacementString;
 }
 
 /**
@@ -586,6 +584,9 @@ Number.preciseMillisToString = function(ms, precision)
 }
 
 /** @type {!WebInspector.UIStringFormat} */
+WebInspector._microsFormat = new WebInspector.UIStringFormat("%.0f\u2009\u03bcs");
+
+/** @type {!WebInspector.UIStringFormat} */
 WebInspector._subMillisFormat = new WebInspector.UIStringFormat("%.2f\u2009ms");
 
 /** @type {!WebInspector.UIStringFormat} */
@@ -616,9 +617,11 @@ Number.millisToString = function(ms, higherResolution)
     if (ms === 0)
         return "0";
 
+    if (higherResolution && ms < 0.1)
+        return WebInspector._microsFormat.format(ms * 1000);
     if (higherResolution && ms < 1000)
         return WebInspector._subMillisFormat.format(ms);
-    else if (ms < 1000)
+    if (ms < 1000)
         return WebInspector._millisFormat.format(ms);
 
     var seconds = ms / 1000;
@@ -1374,13 +1377,15 @@ function createCheckboxLabel(title, checked, subtitle)
  * @return {!Element}
  * @param {number} min
  * @param {number} max
+ * @param {number} tabIndex
  */
-function createSliderLabel(min, max)
+function createSliderLabel(min, max, tabIndex)
 {
     var element = createElement("label", "dt-slider");
     element.sliderElement.min = min;
     element.sliderElement.max = max;
     element.sliderElement.step = 1;
+    element.sliderElement.tabIndex = tabIndex;
     return element;
 }
 

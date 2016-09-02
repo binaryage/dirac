@@ -94,6 +94,7 @@ WebInspector.Main.prototype = {
         Runtime.experiments.register("requestBlocking", "Request blocking", true);
         Runtime.experiments.register("resolveVariableNames", "Resolve variable names");
         Runtime.experiments.register("timelineShowAllEvents", "Show all events on Timeline", true);
+        Runtime.experiments.register("timelineShowAllProcesses", "Show all processes on Timeline", true);
         Runtime.experiments.register("securityPanel", "Security panel");
         Runtime.experiments.register("shadowEditor", "Shadow editor", true);
         Runtime.experiments.register("sourceDiff", "Source diff");
@@ -135,7 +136,8 @@ WebInspector.Main.prototype = {
 
         // Request filesystems early, we won't create connections until callback is fired. Things will happen in parallel.
         WebInspector.isolatedFileSystemManager = new WebInspector.IsolatedFileSystemManager();
-        WebInspector.isolatedFileSystemManager.initialize(this._didInitializeFileSystemManager.bind(this));
+        WebInspector.isolatedFileSystemManager.waitForFileSystems()
+            .then(this._didInitializeFileSystemManager.bind(this));
 
         var themeSetting = WebInspector.settings.createSetting("uiTheme", "default");
         WebInspector.initializeUIUtils(document, themeSetting);
