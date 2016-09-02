@@ -32,8 +32,9 @@
  * @constructor
  * @extends {WebInspector.SDKModel}
  * @param {!WebInspector.Target} target
+ * @param {?Protocol.LogAgent} logAgent
  */
-WebInspector.ConsoleModel = function(target)
+WebInspector.ConsoleModel = function(target, logAgent)
 {
     WebInspector.SDKModel.call(this, WebInspector.ConsoleModel, target);
 
@@ -45,8 +46,10 @@ WebInspector.ConsoleModel = function(target)
     this._errors = 0;
     this._revokedErrors = 0;
     this._logAgent = target.logAgent();
-    target.registerLogDispatcher(new WebInspector.DiracAwareLogDispatcher(this));
-    this._logAgent.enable();
+    if (this._logAgent) {
+        target.registerLogDispatcher(new WebInspector.DiracAwareLogDispatcher(this));
+        this._logAgent.enable();
+    }
 }
 
 /** @enum {symbol} */
@@ -139,7 +142,7 @@ WebInspector.ConsoleModel.prototype = {
 
     requestClearMessages: function()
     {
-        this._logAgent.clear();
+        this._logAgent && this._logAgent.clear();
         this.clear();
     },
 

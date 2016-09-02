@@ -37,11 +37,15 @@ WebInspector.FileSystemWorkspaceBinding = function(isolatedFileSystemManager, wo
 {
     this._isolatedFileSystemManager = isolatedFileSystemManager;
     this._workspace = workspace;
-    this._isolatedFileSystemManager.addEventListener(WebInspector.IsolatedFileSystemManager.Events.FileSystemAdded, this._fileSystemAdded, this);
-    this._isolatedFileSystemManager.addEventListener(WebInspector.IsolatedFileSystemManager.Events.FileSystemRemoved, this._fileSystemRemoved, this);
-    this._isolatedFileSystemManager.addEventListener(WebInspector.IsolatedFileSystemManager.Events.FileSystemFilesChanged, this._fileSystemFilesChanged, this);
+    this._eventListeners = [
+        this._isolatedFileSystemManager.addEventListener(WebInspector.IsolatedFileSystemManager.Events.FileSystemAdded, this._onFileSystemAdded, this),
+        this._isolatedFileSystemManager.addEventListener(WebInspector.IsolatedFileSystemManager.Events.FileSystemRemoved, this._onFileSystemRemoved, this),
+        this._isolatedFileSystemManager.addEventListener(WebInspector.IsolatedFileSystemManager.Events.FileSystemFilesChanged, this._fileSystemFilesChanged, this)
+    ];
     /** @type {!Map.<string, !WebInspector.FileSystemWorkspaceBinding.FileSystem>} */
     this._boundFileSystems = new Map();
+    this._isolatedFileSystemManager.waitForFileSystems()
+        .then(this._onFileSystemsLoaded.bind(this));
 }
 
 WebInspector.FileSystemWorkspaceBinding._styleSheetExtensions = new Set(["css", "scss", "sass", "less"]);
@@ -107,11 +111,28 @@ WebInspector.FileSystemWorkspaceBinding.prototype = {
     },
 
     /**
+     * @param {!Array<!WebInspector.IsolatedFileSystem>} fileSystems
+     */
+    _onFileSystemsLoaded: function(fileSystems)
+    {
+        for (var fileSystem of fileSystems)
+            this._addFileSystem(fileSystem);
+    },
+
+    /**
      * @param {!WebInspector.Event} event
      */
-    _fileSystemAdded: function(event)
+    _onFileSystemAdded: function(event)
     {
         var fileSystem = /** @type {!WebInspector.IsolatedFileSystem} */ (event.data);
+        this._addFileSystem(fileSystem);
+    },
+
+    /**
+     * @param {!WebInspector.IsolatedFileSystem} fileSystem
+     */
+    _addFileSystem: function(fileSystem)
+    {
         var boundFileSystem = new WebInspector.FileSystemWorkspaceBinding.FileSystem(this, fileSystem, this._workspace);
         this._boundFileSystems.set(fileSystem.path(), boundFileSystem);
     },
@@ -119,7 +140,7 @@ WebInspector.FileSystemWorkspaceBinding.prototype = {
     /**
      * @param {!WebInspector.Event} event
      */
-    _fileSystemRemoved: function(event)
+    _onFileSystemRemoved: function(event)
     {
         var fileSystem = /** @type {!WebInspector.IsolatedFileSystem} */ (event.data);
         var boundFileSystem = this._boundFileSystems.get(fileSystem.path());
@@ -153,9 +174,7 @@ WebInspector.FileSystemWorkspaceBinding.prototype = {
 
     dispose: function()
     {
-        this._isolatedFileSystemManager.removeEventListener(WebInspector.IsolatedFileSystemManager.Events.FileSystemAdded, this._fileSystemAdded, this);
-        this._isolatedFileSystemManager.removeEventListener(WebInspector.IsolatedFileSystemManager.Events.FileSystemRemoved, this._fileSystemRemoved, this);
-        this._isolatedFileSystemManager.dispose();
+        WebInspector.EventTarget.removeEventListeners(this._eventListeners);
         for (var fileSystem of this._boundFileSystems.values()) {
             fileSystem.dispose();
             this._boundFileSystems.remove(fileSystem._fileSystem.path());
