@@ -218,6 +218,14 @@
   (io/make-parents path)
   (spit path transcript))
 
+(defn run-diff [path1 path2]
+  (let [options-args ["-U" "5"]
+        paths-args [path1 path2]
+        result (apply shell/sh "colordiff" (concat options-args paths-args))]
+    (if-not (empty? (:err result))
+      (:err result)
+      (:out result))))
+
 (defn write-transcript-and-compare []
   (let [test-name *current-transcript-test*
         suite-name *current-transcript-suite*]
@@ -231,22 +239,22 @@
         (write-transcript! actual-path actual-transcript)
         (let [expected-path (get-expected-transcript-path suite-name test-name)
               expected-transcript (get-canonical-transcript (slurp expected-path))]
-          (if-not (= actual-transcript expected-transcript)
-            (do
-              (println)
-              (println "-----------------------------------------------------------------------------------------------------")
-              (println (str "! actual transcript differs for " test-name " test:"))
-              (println (str "> diff -U 5 " expected-path " " actual-path))
-              (println (:out (shell/sh "diff" "-U" "5" expected-path actual-path)))
-              (println "-----------------------------------------------------------------------------------------------------")
-              (println (str "> cat " actual-path))
-              (println actual-transcript)
-              (do-report {:type     :fail
-                          :message  (str (get-transcript-test-label test-name) " failed to match expected transcript.")
-                          :expected (str "to match expected transcript " expected-path)
-                          :actual   (str "didn't match, see " actual-path)}))
-            (do-report {:type    :pass
-                        :message (str (get-transcript-test-label test-name) " passed.")}))))
+          (when-not (= actual-transcript expected-transcript)
+            (println)
+            (println "-----------------------------------------------------------------------------------------------------")
+            (println (str "! actual transcript differs for " test-name " test:"))
+            (println)
+            (println (run-diff expected-path actual-path))
+            (println "-----------------------------------------------------------------------------------------------------")
+            (println (str "> cat " actual-path))
+            (println)
+            (println actual-transcript)
+            (do-report {:type     :fail
+                        :message  (str (get-transcript-test-label test-name) " failed to match expected transcript.")
+                        :expected (str "to match expected transcript " expected-path)
+                        :actual   (str "didn't match, see " actual-path)}))
+          (do-report {:type    :pass
+                      :message (str (get-transcript-test-label test-name) " passed.")})))
       (catch Throwable e
         (do-report {:type     :fail
                     :message  (str (get-transcript-test-label test-name) " failed with an exception.")
