@@ -49,7 +49,8 @@
                  [ring/ring-core "1.5.0" :scope "test"]
                  [ring/ring-devel "1.5.0" :scope "test"]
                  [ring/ring-jetty-adapter "1.5.0" :scope "test"]
-                 [clj-time "0.12.0" :scope "test"]]
+                 [clj-time "0.12.0" :scope "test"]
+                 [clansi "1.0.0" :scope "test"]]
 
   :plugins [[lein-shell "0.5.0"]
             [lein-environ "1.1.0"]]

@@ -26,7 +26,8 @@
             [clj-webdriver.taxi :refer :all]
             [clojure.string :as string]
             [clojure.java.shell :as shell]
-            [clojure.tools.logging :as log])
+            [clojure.tools.logging :as log]
+            [clansi])
   (import [java.net URLEncoder]))
 
 ; note: we expect current working directory to be dirac root directory ($root)
@@ -218,13 +219,16 @@
   (io/make-parents path)
   (spit path transcript))
 
-(defn run-diff [path1 path2]
+(defn produce-diff [path1 path2]
   (let [options-args ["-U" "5"]
-        paths-args [path1 path2]
-        result (apply shell/sh "colordiff" (concat options-args paths-args))]
-    (if-not (empty? (:err result))
-      (:err result)
-      (:out result))))
+        paths-args [path1 path2]]
+    (try
+      (let [result (apply shell/sh "colordiff" (concat options-args paths-args))]
+        (if-not (empty? (:err result))
+          (clansi/style (str "! " (:err result)) :red)
+          (:out result)))
+      (catch Throwable e
+        (clansi/style (str "! " (.getMessage e)) :red)))))
 
 (defn write-transcript-and-compare []
   (let [test-name *current-transcript-test*
@@ -244,7 +248,7 @@
             (println "-----------------------------------------------------------------------------------------------------")
             (println (str "! actual transcript differs for " test-name " test:"))
             (println)
-            (println (run-diff expected-path actual-path))
+            (println (produce-diff expected-path actual-path))
             (println "-----------------------------------------------------------------------------------------------------")
             (println (str "> cat " actual-path))
             (println)
