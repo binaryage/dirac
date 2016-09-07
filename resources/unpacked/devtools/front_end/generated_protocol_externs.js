@@ -754,6 +754,14 @@ Protocol.SecurityAgent.prototype.disable = function(opt_callback) {}
 /** @param {function(?Protocol.Error):void=} opt_callback */
 Protocol.SecurityAgent.prototype.invoke_disable = function(obj, opt_callback) {}
 
+/**
+ * @param {SecurityAgent.CertificateId} certificateId
+ * @param {function(?Protocol.Error):void=} opt_callback
+ */
+Protocol.SecurityAgent.prototype.showCertificateViewer = function(certificateId, opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+Protocol.SecurityAgent.prototype.invoke_showCertificateViewer = function(obj, opt_callback) {}
+
 
 
 var SecurityAgent = function(){};
@@ -969,20 +977,12 @@ Protocol.NetworkAgent.prototype.setDataSizeLimitsForTest = function(maxTotalSize
 Protocol.NetworkAgent.prototype.invoke_setDataSizeLimitsForTest = function(obj, opt_callback) {}
 
 /**
- * @param {SecurityAgent.CertificateId} certificateId
- * @param {function(?Protocol.Error, NetworkAgent.CertificateDetails):void=} opt_callback
+ * @param {string} origin
+ * @param {function(?Protocol.Error, !Array.<string>):void=} opt_callback
  */
-Protocol.NetworkAgent.prototype.getCertificateDetails = function(certificateId, opt_callback) {}
-/** @param {function(?Protocol.Error, NetworkAgent.CertificateDetails):void=} opt_callback */
-Protocol.NetworkAgent.prototype.invoke_getCertificateDetails = function(obj, opt_callback) {}
-
-/**
- * @param {SecurityAgent.CertificateId} certificateId
- * @param {function(?Protocol.Error):void=} opt_callback
- */
-Protocol.NetworkAgent.prototype.showCertificateViewer = function(certificateId, opt_callback) {}
-/** @param {function(?Protocol.Error):void=} opt_callback */
-Protocol.NetworkAgent.prototype.invoke_showCertificateViewer = function(obj, opt_callback) {}
+Protocol.NetworkAgent.prototype.getCertificate = function(origin, opt_callback) {}
+/** @param {function(?Protocol.Error, !Array.<string>):void=} opt_callback */
+Protocol.NetworkAgent.prototype.invoke_getCertificate = function(obj, opt_callback) {}
 
 
 
@@ -1041,16 +1041,10 @@ NetworkAgent.RequestMixedContentType = {
 /** @typedef {!{url:(string), method:(string), headers:(NetworkAgent.Headers), postData:(string|undefined), mixedContentType:(NetworkAgent.RequestMixedContentType|undefined), initialPriority:(NetworkAgent.ResourcePriority)}} */
 NetworkAgent.Request;
 
-/** @typedef {!{name:(string), sanDnsNames:(!Array.<string>), sanIpAddresses:(!Array.<string>)}} */
-NetworkAgent.CertificateSubject;
-
-/** @typedef {!{subject:(NetworkAgent.CertificateSubject), issuer:(string), validFrom:(NetworkAgent.Timestamp), validTo:(NetworkAgent.Timestamp)}} */
-NetworkAgent.CertificateDetails;
-
 /** @typedef {!{status:(string), origin:(string), logDescription:(string), logId:(string), timestamp:(NetworkAgent.Timestamp), hashAlgorithm:(string), signatureAlgorithm:(string), signatureData:(string)}} */
 NetworkAgent.SignedCertificateTimestamp;
 
-/** @typedef {!{protocol:(string), keyExchange:(string), cipher:(string), mac:(string|undefined), certificateId:(SecurityAgent.CertificateId), signedCertificateTimestampList:(!Array.<NetworkAgent.SignedCertificateTimestamp>)}} */
+/** @typedef {!{protocol:(string), keyExchange:(string), cipher:(string), mac:(string|undefined), certificateId:(SecurityAgent.CertificateId), subjectName:(string), sanList:(!Array.<string>), issuer:(string), validFrom:(NetworkAgent.Timestamp), validTo:(NetworkAgent.Timestamp), signedCertificateTimestampList:(!Array.<NetworkAgent.SignedCertificateTimestamp>)}} */
 NetworkAgent.SecurityDetails;
 
 /** @enum {string} */

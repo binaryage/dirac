@@ -1,5 +1,5 @@
-WebInspector.BakedInspectorBackendAPIChromeTag='55.0.2847.2';
-WebInspector.BakedInspectorBackendAPIChromeRev='419ed06d526505e3d0b938b1a72cc2e8092a96c3';
+WebInspector.BakedInspectorBackendAPIChromeTag='55.0.2853.3';
+WebInspector.BakedInspectorBackendAPIChromeRev='9773f67d88c0f99b27cc5d2d386870322f692892';
 WebInspector.BakedInspectorBackendAPI=''
 + 'InspectorBackend.registerEvent("Inspector.detached", ["reason"]);\n'
 + 'InspectorBackend.registerEvent("Inspector.targetCrashed", []);\n'
@@ -89,6 +89,7 @@ WebInspector.BakedInspectorBackendAPI=''
 + 'InspectorBackend.registerEvent("Security.securityStateChanged", ["securityState", "explanations", "insecureContentStatus", "schemeIsCryptographic"]);\n'
 + 'InspectorBackend.registerCommand("Security.enable", [], [], false);\n'
 + 'InspectorBackend.registerCommand("Security.disable", [], [], false);\n'
++ 'InspectorBackend.registerCommand("Security.showCertificateViewer", [{"name": "certificateId", "type": "number", "optional": false}], [], false);\n'
 + 'InspectorBackend.registerEnum("Network.ConnectionType", {None: "none", Cellular2g: "cellular2g", Cellular3g: "cellular3g", Cellular4g: "cellular4g", Bluetooth: "bluetooth", Ethernet: "ethernet", Wifi: "wifi", Wimax: "wimax", Other: "other"});\n'
 + 'InspectorBackend.registerEnum("Network.CookieSameSite", {Strict: "Strict", Lax: "Lax"});\n'
 + 'InspectorBackend.registerEnum("Network.ResourcePriority", {VeryLow: "VeryLow", Low: "Low", Medium: "Medium", High: "High", VeryHigh: "VeryHigh"});\n'
@@ -131,8 +132,7 @@ WebInspector.BakedInspectorBackendAPI=''
 + 'InspectorBackend.registerCommand("Network.setCacheDisabled", [{"name": "cacheDisabled", "type": "boolean", "optional": false}], [], false);\n'
 + 'InspectorBackend.registerCommand("Network.setBypassServiceWorker", [{"name": "bypass", "type": "boolean", "optional": false}], [], false);\n'
 + 'InspectorBackend.registerCommand("Network.setDataSizeLimitsForTest", [{"name": "maxTotalSize", "type": "number", "optional": false}, {"name": "maxResourceSize", "type": "number", "optional": false}], [], false);\n'
-+ 'InspectorBackend.registerCommand("Network.getCertificateDetails", [{"name": "certificateId", "type": "number", "optional": false}], ["result"], false);\n'
-+ 'InspectorBackend.registerCommand("Network.showCertificateViewer", [{"name": "certificateId", "type": "number", "optional": false}], [], false);\n'
++ 'InspectorBackend.registerCommand("Network.getCertificate", [{"name": "origin", "type": "string", "optional": false}], ["tableNames"], false);\n'
 + 'InspectorBackend.registerEvent("Database.addDatabase", ["database"]);\n'
 + 'InspectorBackend.registerCommand("Database.enable", [], [], false);\n'
 + 'InspectorBackend.registerCommand("Database.disable", [], [], false);\n'
