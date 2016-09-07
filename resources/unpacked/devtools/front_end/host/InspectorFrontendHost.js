@@ -383,6 +383,14 @@ WebInspector.InspectorFrontendHostStub.prototype = {
     },
 
     /**
+     * @param {!Array<string>} certChain
+     * @override
+     */
+    showCertificateViewer: function(certChain)
+    {
+    },
+
+    /**
      * @override
      * @return {boolean}
      */

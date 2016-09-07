@@ -416,7 +416,7 @@ WebInspector.ConsoleView.prototype = {
     _executionContextChanged: function()
     {
         this._switchToLastPrompt();
-        this._prompt.clearAutoComplete(true);
+        this._prompt.clearAutoComplete();
         if (!this._showAllMessagesCheckbox.checked())
             this._updateMessageList();
     },
@@ -463,8 +463,7 @@ WebInspector.ConsoleView.prototype = {
 
     _hidePromptSuggestBox: function()
     {
-        this._prompt.hideSuggestBox();
-        this._prompt.clearAutoComplete(true);
+        this._prompt.clearAutoComplete();
     },
 
     _scheduleViewportRefresh: function()
@@ -1258,10 +1257,6 @@ WebInspector.ConsoleView.prototype = {
             this._updateStickToBottomOnWheel();
             return;
         } else if (isEnterKey(event)) {
-            if (event.altKey || event.ctrlKey || event.shiftKey) {
-                return;
-            }
-            event.consume(true);
             this._enterKeyPressed();
             return;
         }
@@ -1276,7 +1271,12 @@ WebInspector.ConsoleView.prototype = {
 
     _enterKeyPressed: function()
     {
-        this._prompt.clearAutoComplete(true);
+        if (event.altKey || event.ctrlKey || event.shiftKey)
+            return;
+
+        event.consume(true);
+
+        this._prompt.clearAutoComplete();
 
         var str = this._prompt.text();
         if (!str.length)

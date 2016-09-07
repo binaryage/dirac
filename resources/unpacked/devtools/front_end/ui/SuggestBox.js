@@ -72,7 +72,7 @@ WebInspector.SuggestBox = function(suggestBoxDelegate, maxItemsHeight)
 }
 
 /**
- * @typedef Array.<{title: string, className: (string|undefined), prologue: (string|undefined), epilogue: (string|undefined)}>
+ * @typedef {!Array.<{title: string, className: (string|undefined), prologue: (string|undefined), epilogue: (string|undefined)}>}
  */
 WebInspector.SuggestBox.Suggestions;
 

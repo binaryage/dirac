@@ -9,7 +9,11 @@
  */
 WebInspector.SourcesTextEditor = function(delegate)
 {
-    WebInspector.CodeMirrorTextEditor.call(this);
+    WebInspector.CodeMirrorTextEditor.call(this, {
+        lineNumbers: true,
+        lineWrapping: false,
+        bracketMatchingSetting: WebInspector.moduleSetting("textEditorBracketMatching"),
+    });
 
     this.codeMirror().addKeyMap({
         "Enter": "smartNewlineAndIndent",
@@ -34,6 +38,7 @@ WebInspector.SourcesTextEditor = function(delegate)
 
     /** @type {!Array<string>} */
     this._gutters = ["CodeMirror-linenumbers"];
+    this.codeMirror().setOption("gutters", this._gutters.slice());
 
     /**
      * @this {WebInspector.SourcesTextEditor}
