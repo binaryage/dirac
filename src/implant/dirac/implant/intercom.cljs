@@ -5,6 +5,7 @@
             [cljs.tools.reader.edn :as reader-edn]
             [cljs.tools.reader.reader-types :as reader-types]
             [clojure.walk :as walk]
+            [cuerdas.core :as cuerdas]
             [chromex.support :refer-macros [oget ocall oapply]]
             [dirac.implant.console :as console]
             [dirac.implant.weasel-client :as weasel-client]
@@ -46,12 +47,12 @@
 
 (defn ^:dynamic bootstrap-error-msg [details]
   (str "Unable to bootstrap ClojureScript REPL due to an error.\n"
-       (if (some? details) (str details "\n"))
+       (if (some? details) (str (cuerdas/escape-html details) "\n"))
        "Please check your Dirac Agent error output for additional details."))
 
 (defn ^:dynamic unable-to-connect-exception-msg [url e]
   (str "Unable to connect to Dirac Agent at " url ":\n"
-       e))
+       (cuerdas/escape-html e)))
 
 (defn ^:dynamic dirac-agent-disconnected-msg [tunnel-url]
   (str "<b>Dirac Agent is not listening</b> " (if (some? tunnel-url) (str "at " tunnel-url " "))
@@ -98,7 +99,7 @@
        "enable the :repl feature</a>."
        (if (some? reason)
          (if-not (or (re-find #"Cannot read property 'installed_QMARK_' of undefined" reason) (= reason "Uncaught"))          ; this is known and expected error when dirac.runtime is not present
-           (str "\n" reason)))))
+           (str "\n" (cuerdas/escape-html reason))))))
 
 (defn check-agent-version! [agent-version]
   (let [our-version implant-version/version]
