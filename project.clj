@@ -8,7 +8,7 @@
         :url  "https://github.com/binaryage/dirac"}
 
   :dependencies [[org.clojure/clojure "1.8.0" :scope "provided"]
-                 [org.clojure/clojurescript "1.9.225" :scope "provided"]
+                 [org.clojure/clojurescript "1.9.229" :scope "provided"]
                  [org.clojure/core.async "0.2.385"]
                  [org.clojure/tools.logging "0.3.1"]
                  [org.clojure/tools.cli "0.3.5"]
@@ -25,13 +25,13 @@
                  [binaryage/chromex "0.4.2" :scope "test"]
                  [binaryage/devtools "0.8.1" :scope "test"]
                  [cljs-http "0.1.41" :scope "test"]
-                 [figwheel "0.5.6" :scope "test"]
+                 [figwheel "0.5.7" :scope "test"]
                  [reforms "0.4.3" :scope "test"]
                  [rum "0.9.1" :scope "test"]
                  [rum-reforms "0.4.3" :scope "test"]
                  [cljsjs/parinfer "1.8.1-0" :scope "test"]
                  [com.lucasbradstreet/cljs-uuid-utils "1.0.2" :scope "test"]
-                 [com.rpl/specter "0.12.0" :scope "test"]
+                 [com.rpl/specter "0.13.0" :scope "test"]
                  [org.clojure/tools.namespace "0.3.0-alpha3" :scope "test"]
                  [org.clojure/tools.reader "1.0.0-beta1" :scope "test"]
                  [com.cognitect/transit-clj "0.8.288" :scope "test"]
@@ -125,7 +125,7 @@
 
              :cljs
              {:plugins [[lein-cljsbuild "1.1.3"]
-                        [lein-figwheel "0.5.6"]]
+                        [lein-figwheel "0.5.7"]]
               :hooks   [leiningen.cljsbuild]}
 
              :test-runner
