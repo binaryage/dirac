@@ -23,7 +23,21 @@ Object.assign(window.dirac, (function() {
                 console.log("evalInContext/resultCallback: result", result, "exceptionDetails", exceptionDetails);
             }
             if (callback) {
-                callback(result, exceptionDetails);
+                var exceptionDescription = null;
+                if (exceptionDetails) {
+                    const exception = exceptionDetails.exception;
+                    if (exception) {
+                        exceptionDescription = exception.description;
+                    }
+                    if (!exceptionDescription) {
+                        exceptionDescription = exceptionDetails.text;
+                    }
+                    if (!exceptionDescription) {
+                        exceptionDescription = "?";
+                    }
+                }
+
+                callback(result, exceptionDescription);
             }
         };
         try {
