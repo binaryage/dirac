@@ -1,12 +1,11 @@
 (ns dirac.implant.automation.scrapers
-  (:require-macros [com.rpl.specter.macros :refer [providepath declarepath transform select select-one select-first]]
-                   [dirac.implant.automation.scrapers :refer [safe->>]]
+  (:require-macros [dirac.implant.automation.scrapers :refer [safe->>]]
                    [cljs.core.async.macros :refer [go go-loop]])
   (:require [oops.core :refer [oget oset! ocall oapply]]
             [chromex.logging :refer-macros [log warn error info]]
             [cljs.core.async :refer [put! <! chan timeout alts! close!]]
             [cljs.pprint :refer [pprint]]
-            [com.rpl.specter :refer [must continue-then-stay multi-path if-path ALL STAY]]
+            [com.rpl.specter :refer [ALL select-first]]
             [dirac.implant.automation.reps :refer [select-subrep select-subreps build-rep]]
             [clojure.walk :refer [prewalk postwalk]]
             [dirac.dom :as dom]
