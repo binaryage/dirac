@@ -15,6 +15,7 @@
 (def ^:export get-tag core/get-tag)
 
 (def ^:export get-prefs prefs/get-prefs)
+(def ^:export get-pref prefs/pref)
 (def ^:export set-prefs! prefs/set-prefs!)
 (def ^:export set-pref! prefs/set-pref!)
 
