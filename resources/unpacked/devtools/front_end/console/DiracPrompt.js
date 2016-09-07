@@ -42,7 +42,7 @@ WebInspector.DiracPromptWithHistory.prototype = {
     },
 
     setText: function(x) {
-        this._removeSuggestionAids();
+        this.clearAutoComplete();
         this._codeMirror.setValue(x);
         this.moveCaretToEndOfPrompt();
         this._element.scrollIntoView();
@@ -95,7 +95,7 @@ WebInspector.DiracPromptWithHistory.prototype = {
     },
 
     finishAutocomplete: function() {
-        this._removeSuggestionAids();
+        this.clearAutoComplete();
         this._prefixRange = null;
         this._anchorBox = null;
     },
@@ -248,7 +248,7 @@ WebInspector.DiracPromptWithHistory.prototype = {
         }
 
         if (shouldExit) {
-            this.hideSuggestBox();
+            this.clearAutoComplete();
             return;
         }
 
@@ -346,7 +346,7 @@ WebInspector.DiracPromptWithHistory.prototype = {
         }
 
         if (!annotatedCompletions.length) {
-            this.hideSuggestBox();
+            this.clearAutoComplete();
             return;
         }
 
@@ -730,7 +730,7 @@ WebInspector.DiracPromptWithHistory.prototype = {
         const processedCompletions = combineAliasedMacroNamespacesInCompletions(markAliasedCompletions(sortCompletions(completions)));
 
         if (!processedCompletions.length) {
-            this.hideSuggestBox();
+            this.clearAutoComplete();
             return;
         }
 
