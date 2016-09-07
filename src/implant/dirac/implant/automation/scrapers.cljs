@@ -1,10 +1,10 @@
 (ns dirac.implant.automation.scrapers
-  (:require-macros [com.rpl.specter.macros :refer [providepath declarepath transform select select-one select-first]]
-                   [dirac.implant.automation.scrapers :refer [safe->>]])
+  (:require-macros [dirac.implant.automation.scrapers :refer [safe->>]])
   (:require [chromex.support :refer-macros [oget oset ocall oapply]]
             [chromex.logging :refer-macros [log warn error info]]
             [cljs.pprint :refer [pprint]]
-            [com.rpl.specter :refer [must continue-then-stay multi-path if-path ALL STAY]]
+            [com.rpl.specter :refer [must continue-then-stay multi-path if-path ALL STAY
+                                     transform select select-one select-first]]
             [dirac.implant.automation.reps :refer [select-subrep select-subreps build-rep]]
             [dirac.dom :as dom]
             [dirac.utils]

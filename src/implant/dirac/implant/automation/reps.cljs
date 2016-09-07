@@ -1,8 +1,8 @@
 (ns dirac.implant.automation.reps
-  (:require-macros [com.rpl.specter.macros :refer [providepath declarepath select select-first]])
   (:require [chromex.support :refer-macros [oget oset ocall oapply]]
             [chromex.logging :refer-macros [log warn error info]]
-            [com.rpl.specter :refer [must continue-then-stay multi-path if-path ALL]]
+            [com.rpl.specter :refer [must continue-then-stay multi-path if-path ALL
+                                     providepath declarepath select select-first]]
             [dirac.dom :as dom]))
 
 ; "reps" are simple data structures representing interesting bits of a DOM tree snapshot.
