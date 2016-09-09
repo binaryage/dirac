@@ -70,6 +70,6 @@
       (with-devtools
         (<!* a/switch-to-console-panel!)
         (<!* a/trigger! :reload)
-        (<! (timeout 2000))
+        (<! (timeout 3000))
         (<!* a/trigger! :reload)
-        (<! (timeout 2000))))))
+        (<! (timeout 3000))))))
