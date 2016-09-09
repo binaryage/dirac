@@ -99,7 +99,8 @@
        "<a href=\"https://github.com/binaryage/dirac#install-dirac-runtime\">"
        "enable the :repl feature</a>."
        (if (some? reason)
-         (str "\n" (cuerdas/escape-html reason)))))
+         (if-not (or (re-find #"Cannot read property 'installed_QMARK_' of undefined" reason) (= reason "Uncaught"))          ; this is known and expected error when dirac.runtime is not present
+           (str "\n" (cuerdas/escape-html reason))))))
 
 (defn check-agent-version! [agent-version]
   (let [our-version implant-version/version]
