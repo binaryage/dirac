@@ -70,9 +70,10 @@ def to_platform_path_exact(filepath):
 
 scripts_path = path.dirname(path.abspath(__file__))
 devtools_path = path.dirname(scripts_path)
-webkit_path = path.join(devtools_path, '..', '..', '..', '..', 'chromium-mirror', 'third_party', 'WebKit', 'Source')
+chromium_path = path.join(devtools_path,  os.pardir, os.pardir, os.pardir, os.pardir, 'chromium-mirror')
+webkit_path = path.join(chromium_path, 'third_party', 'WebKit', 'Source')
 inspector_path = path.join(webkit_path, 'core', 'inspector')
-v8_inspector_path = path.join(webkit_path, 'platform', 'v8_inspector')
+v8_inspector_path = path.normpath(chromium_path, 'v8', 'src', 'inspector')
 devtools_frontend_path = path.join(devtools_path, 'front_end')
 global_externs_file = to_platform_path(path.join(devtools_frontend_path, 'externs.js'))
 protocol_externs_file = path.join(devtools_frontend_path, 'protocol_externs.js')

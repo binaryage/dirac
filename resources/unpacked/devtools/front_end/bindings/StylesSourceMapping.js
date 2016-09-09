@@ -30,7 +30,6 @@
 
 /**
  * @constructor
- * @implements {WebInspector.CSSSourceMapping}
  * @param {!WebInspector.CSSModel} cssModel
  * @param {!WebInspector.Workspace} workspace
  * @param {!WebInspector.NetworkMapping} networkMapping
@@ -46,19 +45,22 @@ WebInspector.StylesSourceMapping = function(cssModel, workspace, networkMapping)
     /** @type {!Map.<!WebInspector.UISourceCode, !WebInspector.StyleFile>} */
     this._styleFiles = new Map();
 
-    this._workspace.addEventListener(WebInspector.Workspace.Events.ProjectRemoved, this._projectRemoved, this);
-    this._workspace.addEventListener(WebInspector.Workspace.Events.UISourceCodeAdded, this._uiSourceCodeAddedToWorkspace, this);
-    this._workspace.addEventListener(WebInspector.Workspace.Events.UISourceCodeRemoved, this._uiSourceCodeRemoved, this);
-    this._cssModel.addEventListener(WebInspector.CSSModel.Events.StyleSheetChanged, this._styleSheetChanged, this);
-    WebInspector.ResourceTreeModel.fromTarget(cssModel.target()).addEventListener(
-        WebInspector.ResourceTreeModel.Events.MainFrameNavigated, this._unbindAllUISourceCodes, this);
+    this._eventListeners = [
+        this._workspace.addEventListener(WebInspector.Workspace.Events.ProjectRemoved, this._projectRemoved, this),
+        this._workspace.addEventListener(WebInspector.Workspace.Events.UISourceCodeAdded, this._uiSourceCodeAddedToWorkspace, this),
+        this._workspace.addEventListener(WebInspector.Workspace.Events.UISourceCodeRemoved, this._uiSourceCodeRemoved, this),
+        this._cssModel.addEventListener(WebInspector.CSSModel.Events.StyleSheetAdded, this._styleSheetAdded, this),
+        this._cssModel.addEventListener(WebInspector.CSSModel.Events.StyleSheetRemoved, this._styleSheetRemoved, this),
+        this._cssModel.addEventListener(WebInspector.CSSModel.Events.StyleSheetChanged, this._styleSheetChanged, this),
+        WebInspector.ResourceTreeModel.fromTarget(cssModel.target()).addEventListener(
+            WebInspector.ResourceTreeModel.Events.MainFrameNavigated, this._unbindAllUISourceCodes, this)
+    ];
 }
 
 WebInspector.StylesSourceMapping.ChangeUpdateTimeoutMs = 200;
 
 WebInspector.StylesSourceMapping.prototype = {
     /**
-     * @override
      * @param {!WebInspector.CSSLocation} rawLocation
      * @return {?WebInspector.UILocation}
      */
@@ -78,55 +80,15 @@ WebInspector.StylesSourceMapping.prototype = {
     },
 
     /**
-     * @override
-     * @param {!WebInspector.UISourceCode} uiSourceCode
-     * @param {number} lineNumber
-     * @param {number} columnNumber
-     * @return {?WebInspector.CSSLocation}
+     * @param {!WebInspector.Event} event
      */
-    uiLocationToRawLocation: function(uiSourceCode, lineNumber, columnNumber)
+    _styleSheetAdded: function(event)
     {
-        return null;
-    },
-
-    /**
-     * @override
-     * @return {boolean}
-     */
-    isIdentity: function()
-    {
-        return true;
-    },
-
-    /**
-     * @override
-     * @param {!WebInspector.UISourceCode} uiSourceCode
-     * @param {number} lineNumber
-     * @return {boolean}
-     */
-    uiLineHasMapping: function(uiSourceCode, lineNumber)
-    {
-        return true;
-    },
-
-    /**
-     * @return {!WebInspector.Target}
-     */
-    target: function()
-    {
-        return this._cssModel.target();
-    },
-
-    /**
-     * @param {!WebInspector.CSSStyleSheetHeader} header
-     */
-    addHeader: function(header)
-    {
+        var header = /** @type {!WebInspector.CSSStyleSheetHeader} */(event.data);
         var url = header.resourceURL();
         if (!url)
             return;
 
-        WebInspector.cssWorkspaceBinding.pushSourceMapping(header, this);
         var map = this._urlToHeadersByFrameId.get(url);
         if (!map) {
             map = /** @type {!Map.<string, !Map.<string, !WebInspector.CSSStyleSheetHeader>>} */ (new Map());
@@ -144,10 +106,11 @@ WebInspector.StylesSourceMapping.prototype = {
     },
 
     /**
-     * @param {!WebInspector.CSSStyleSheetHeader} header
+     * @param {!WebInspector.Event} event
      */
-    removeHeader: function(header)
+    _styleSheetRemoved: function(event)
     {
+        var header = /** @type {!WebInspector.CSSStyleSheetHeader} */(event.data);
         var url = header.resourceURL();
         if (!url)
             return;
@@ -186,7 +149,7 @@ WebInspector.StylesSourceMapping.prototype = {
      */
     _unbindAllUISourceCodes: function(event)
     {
-        if (event.data.target() !== this.target())
+        if (event.data.target() !== this._cssModel.target())
             return;
         for (var styleFile of this._styleFiles.values())
             styleFile.dispose();
@@ -325,6 +288,11 @@ WebInspector.StylesSourceMapping.prototype = {
             if (styleFile)
                 styleFile.addRevision(content || "");
         }
+    },
+
+    dispose: function()
+    {
+        WebInspector.EventTarget.removeEventListeners(this._eventListeners);
     }
 }
 

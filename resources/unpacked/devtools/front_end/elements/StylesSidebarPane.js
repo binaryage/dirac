@@ -1955,13 +1955,13 @@ WebInspector.StylePropertyTreeElement.prototype = {
 
         if (!this._editable()) {
             var swatch = WebInspector.ColorSwatch.create();
-            swatch.setColorText(text);
+            swatch.setColor(color);
             return swatch;
         }
 
         var swatchPopoverHelper = this._parentPane._swatchPopoverHelper;
         var swatch = WebInspector.ColorSwatch.create();
-        swatch.setColorText(text);
+        swatch.setColor(color);
         swatch.setFormat(WebInspector.Color.detectColorFormat(swatch.color()));
         var swatchIcon = new WebInspector.ColorSwatchPopoverIcon(this, swatchPopoverHelper, swatch);
 
@@ -2048,8 +2048,9 @@ WebInspector.StylePropertyTreeElement.prototype = {
             var cssShadowSwatch = WebInspector.CSSShadowSwatch.create();
             cssShadowSwatch.setCSSShadow(shadows[i]);
             new WebInspector.ShadowSwatchPopoverHelper(this, swatchPopoverHelper, cssShadowSwatch);
-            if (cssShadowSwatch.colorSwatch())
-                var colorSwatchIcon = new WebInspector.ColorSwatchPopoverIcon(this, swatchPopoverHelper, cssShadowSwatch.colorSwatch());
+            var colorSwatch = cssShadowSwatch.colorSwatch();
+            if (colorSwatch)
+                new WebInspector.ColorSwatchPopoverIcon(this, swatchPopoverHelper, colorSwatch);
             container.appendChild(cssShadowSwatch);
         }
         return container;
@@ -3060,7 +3061,7 @@ WebInspector.StylesSidebarPropertyRenderer.prototype = {
             return valueElement;
 
         if (this._shadowHandler && (this._propertyName === "box-shadow" || this._propertyName === "text-shadow" || this._propertyName === "-webkit-box-shadow")
-                && !WebInspector.CSSMetadata.VariableRegex.test(this._propertyValue) && Runtime.experiments.isEnabled("shadowEditor")) {
+                && !WebInspector.CSSMetadata.VariableRegex.test(this._propertyValue)) {
             valueElement.appendChild(this._shadowHandler(this._propertyValue, this._propertyName));
             valueElement.normalize();
             return valueElement;
