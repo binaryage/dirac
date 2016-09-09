@@ -755,10 +755,9 @@ Protocol.SecurityAgent.prototype.disable = function(opt_callback) {}
 Protocol.SecurityAgent.prototype.invoke_disable = function(obj, opt_callback) {}
 
 /**
- * @param {SecurityAgent.CertificateId} certificateId
  * @param {function(?Protocol.Error):void=} opt_callback
  */
-Protocol.SecurityAgent.prototype.showCertificateViewer = function(certificateId, opt_callback) {}
+Protocol.SecurityAgent.prototype.showCertificateViewer = function(opt_callback) {}
 /** @param {function(?Protocol.Error):void=} opt_callback */
 Protocol.SecurityAgent.prototype.invoke_showCertificateViewer = function(obj, opt_callback) {}
 
@@ -779,7 +778,7 @@ SecurityAgent.SecurityState = {
     Info: "info"
 };
 
-/** @typedef {!{securityState:(SecurityAgent.SecurityState), summary:(string), description:(string), certificateId:(SecurityAgent.CertificateId|undefined)}} */
+/** @typedef {!{securityState:(SecurityAgent.SecurityState), summary:(string), description:(string), hasCertificate:(boolean)}} */
 SecurityAgent.SecurityStateExplanation;
 
 /** @typedef {!{ranMixedContent:(boolean), displayedMixedContent:(boolean), ranContentWithCertErrors:(boolean), displayedContentWithCertErrors:(boolean), ranInsecureContentStyle:(SecurityAgent.SecurityState), displayedInsecureContentStyle:(SecurityAgent.SecurityState)}} */
@@ -1044,7 +1043,7 @@ NetworkAgent.Request;
 /** @typedef {!{status:(string), origin:(string), logDescription:(string), logId:(string), timestamp:(NetworkAgent.Timestamp), hashAlgorithm:(string), signatureAlgorithm:(string), signatureData:(string)}} */
 NetworkAgent.SignedCertificateTimestamp;
 
-/** @typedef {!{protocol:(string), keyExchange:(string), cipher:(string), mac:(string|undefined), certificateId:(SecurityAgent.CertificateId), subjectName:(string), sanList:(!Array.<string>), issuer:(string), validFrom:(NetworkAgent.Timestamp), validTo:(NetworkAgent.Timestamp), signedCertificateTimestampList:(!Array.<NetworkAgent.SignedCertificateTimestamp>)}} */
+/** @typedef {!{protocol:(string), keyExchange:(string), keyExchangeGroup:(string|undefined), cipher:(string), mac:(string|undefined), certificateId:(SecurityAgent.CertificateId), subjectName:(string), sanList:(!Array.<string>), issuer:(string), validFrom:(NetworkAgent.Timestamp), validTo:(NetworkAgent.Timestamp), signedCertificateTimestampList:(!Array.<NetworkAgent.SignedCertificateTimestamp>)}} */
 NetworkAgent.SecurityDetails;
 
 /** @enum {string} */

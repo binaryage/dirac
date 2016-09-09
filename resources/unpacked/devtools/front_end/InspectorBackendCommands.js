@@ -1,5 +1,5 @@
-WebInspector.BakedInspectorBackendAPIChromeTag='55.0.2853.3';
-WebInspector.BakedInspectorBackendAPIChromeRev='9773f67d88c0f99b27cc5d2d386870322f692892';
+WebInspector.BakedInspectorBackendAPIChromeTag='55.0.2855.3';
+WebInspector.BakedInspectorBackendAPIChromeRev='c4ff6a92ceac50ad5958b40326cdbadd111ff658';
 WebInspector.BakedInspectorBackendAPI=''
 + 'InspectorBackend.registerEvent("Inspector.detached", ["reason"]);\n'
 + 'InspectorBackend.registerEvent("Inspector.targetCrashed", []);\n'
@@ -89,7 +89,7 @@ WebInspector.BakedInspectorBackendAPI=''
 + 'InspectorBackend.registerEvent("Security.securityStateChanged", ["securityState", "explanations", "insecureContentStatus", "schemeIsCryptographic"]);\n'
 + 'InspectorBackend.registerCommand("Security.enable", [], [], false);\n'
 + 'InspectorBackend.registerCommand("Security.disable", [], [], false);\n'
-+ 'InspectorBackend.registerCommand("Security.showCertificateViewer", [{"name": "certificateId", "type": "number", "optional": false}], [], false);\n'
++ 'InspectorBackend.registerCommand("Security.showCertificateViewer", [], [], false);\n'
 + 'InspectorBackend.registerEnum("Network.ConnectionType", {None: "none", Cellular2g: "cellular2g", Cellular3g: "cellular3g", Cellular4g: "cellular4g", Bluetooth: "bluetooth", Ethernet: "ethernet", Wifi: "wifi", Wimax: "wimax", Other: "other"});\n'
 + 'InspectorBackend.registerEnum("Network.CookieSameSite", {Strict: "Strict", Lax: "Lax"});\n'
 + 'InspectorBackend.registerEnum("Network.ResourcePriority", {VeryLow: "VeryLow", Low: "Low", Medium: "Medium", High: "High", VeryHigh: "VeryHigh"});\n'
