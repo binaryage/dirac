@@ -17,7 +17,7 @@
   (:import goog.Uri))
 
 (defn ^:dynamic warn-about-unexpected-number-views [devtools-id views]
-  (warn (str "found unexpected number views with enabled automation support for devtools #" devtools-id "\n")
+  (warn (str "found unexpected number of views with enabled automation support for devtools #" devtools-id "\n")
         views "\n"
         "targeting only the first one"))
 
