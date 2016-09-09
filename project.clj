@@ -118,7 +118,7 @@
                              [org.clojure/clojurescript "1.7.228" :scope "provided"]]}
 
              :clojure19
-             {:dependencies [[org.clojure/clojure "1.9.0-alpha10" :scope "provided"]]}
+             {:dependencies [[org.clojure/clojure "1.9.0-alpha12" :scope "provided"]]}
 
              :cooper
              {:plugins [[lein-cooper "1.2.2"]]}
