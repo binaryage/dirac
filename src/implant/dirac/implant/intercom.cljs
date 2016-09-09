@@ -16,7 +16,8 @@
             [dirac.implant.eval :as eval]
             [devtools.toolbox :refer [envelope]]
             [dirac.implant.feedback :as feedback]
-            [dirac.lib.ws-client :as ws-client])
+            [dirac.lib.ws-client :as ws-client]
+            [goog.functions :as gfns])
   (:import goog.net.WebSocket.ErrorEvent))
 
 (defonce required-repl-api-version 3)
@@ -268,7 +269,7 @@
 
 (declare init-repl!)
 
-(defn on-global-object-cleared []
+(defn react-on-global-object-cleared! []
   (reset-repl-state!)
   (console/set-prompt-mode! :status)
   (display-prompt-status "Disconnected" :info)
@@ -280,6 +281,8 @@
     (set! *ignore-next-client-change* false)
     (if (= (console/get-current-prompt-id) "dirac")
       (init-repl!))))
+
+(def on-global-object-cleared (gfns/debounce react-on-global-object-cleared! 500))
 
 (defn on-debugger-event [type & args]
   (log "on-debugger-event" type)
