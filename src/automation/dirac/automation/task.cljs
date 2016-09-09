@@ -55,8 +55,9 @@
 
 (defn reset-browser-state! []
   (go
-    (<! (messages/post-extension-command! {:command :tear-down}))
-    (<! (messages/post-message! #js {:type "marion-close-all-tabs"}))))                                                       ; to fight https://bugs.chromium.org/p/chromium/issues/detail?id=355075
+    ; to fight https://bugs.chromium.org/p/chromium/issues/detail?id=355075
+    (<! (messages/post-message! #js {:type "marion-close-all-tabs"}))
+    (<! (messages/post-extension-command! {:command :tear-down}))))
 
 (defn show-task-runner! []
   (messages/switch-to-runner-tab!)

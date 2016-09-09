@@ -1,6 +1,6 @@
 (ns dirac.background.helpers
   (:require-macros [cljs.core.async.macros :refer [go go-loop]])
-  (:require [cljs.core.async :refer [<! chan put! close!]]
+  (:require [cljs.core.async :refer [<! chan put! close! timeout]]
             [chromex.support :refer-macros [oget oset ocall oapply]]
             [chromex.logging :refer-macros [log info warn error group group-end]]
             [chromex.ext.tabs :as tabs]
@@ -154,11 +154,24 @@
           (go (utils/make-error-struct e))))
       (go (utils/make-error-struct (js/Error. (str "no views matching given devtools-id #" devtools-id)))))))
 
+(defn perform-sanity-check-that-all-tabs-got-closed []
+  (let [views (extension/get-views #js {:type "tab"})]
+    (if (empty? views)
+      true
+      (do
+        (error (str "not all extension tabs got closed after the close-all-extension-tabs! [" (count views) "]") views)
+        false))))
+
 (defn close-all-extension-tabs! []
   (go
     (let [views (extension/get-views #js {:type "tab"})]
       (doseq [view views]
-        (.close view)))))
+        (try
+          (.close view)
+          (catch :default e
+            (error "close-all-extension-tabs:" e)))))
+    (<! (timeout 500))                                                                                                        ; give it some time...
+    (perform-sanity-check-that-all-tabs-got-closed)))
 
 (defn install-intercom! [devtools-id handler]
   (let [matching-views (get-devtools-views devtools-id)]
