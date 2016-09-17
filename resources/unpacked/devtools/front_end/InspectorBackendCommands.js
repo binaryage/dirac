@@ -1,5 +1,5 @@
-WebInspector.BakedInspectorBackendAPIChromeTag='55.0.2855.3';
-WebInspector.BakedInspectorBackendAPIChromeRev='c4ff6a92ceac50ad5958b40326cdbadd111ff658';
+WebInspector.BakedInspectorBackendAPIChromeTag='55.0.2863.2';
+WebInspector.BakedInspectorBackendAPIChromeRev='6914216902d8e8c9f892652a07103100f1c574d2';
 WebInspector.BakedInspectorBackendAPI=''
 + 'InspectorBackend.registerEvent("Inspector.detached", ["reason"]);\n'
 + 'InspectorBackend.registerEvent("Inspector.targetCrashed", []);\n'
@@ -187,6 +187,7 @@ WebInspector.BakedInspectorBackendAPI=''
 + 'InspectorBackend.registerCommand("DOM.enable", [], [], false);\n'
 + 'InspectorBackend.registerCommand("DOM.disable", [], [], false);\n'
 + 'InspectorBackend.registerCommand("DOM.getDocument", [], ["root"], false);\n'
++ 'InspectorBackend.registerCommand("DOM.collectClassNamesFromSubtree", [{"name": "nodeId", "type": "number", "optional": false}], ["classNames"], false);\n'
 + 'InspectorBackend.registerCommand("DOM.requestChildNodes", [{"name": "nodeId", "type": "number", "optional": false}, {"name": "depth", "type": "number", "optional": true}], [], false);\n'
 + 'InspectorBackend.registerCommand("DOM.querySelector", [{"name": "nodeId", "type": "number", "optional": false}, {"name": "selector", "type": "string", "optional": false}], ["nodeId"], false);\n'
 + 'InspectorBackend.registerCommand("DOM.querySelectorAll", [{"name": "nodeId", "type": "number", "optional": false}, {"name": "selector", "type": "string", "optional": false}], ["nodeIds"], false);\n'
@@ -239,6 +240,7 @@ WebInspector.BakedInspectorBackendAPI=''
 + 'InspectorBackend.registerCommand("CSS.getComputedStyleForNode", [{"name": "nodeId", "type": "number", "optional": false}], ["computedStyle"], false);\n'
 + 'InspectorBackend.registerCommand("CSS.getPlatformFontsForNode", [{"name": "nodeId", "type": "number", "optional": false}], ["fonts"], false);\n'
 + 'InspectorBackend.registerCommand("CSS.getStyleSheetText", [{"name": "styleSheetId", "type": "string", "optional": false}], ["text"], false);\n'
++ 'InspectorBackend.registerCommand("CSS.collectClassNames", [{"name": "styleSheetId", "type": "string", "optional": false}], ["classNames"], false);\n'
 + 'InspectorBackend.registerCommand("CSS.setStyleSheetText", [{"name": "styleSheetId", "type": "string", "optional": false}, {"name": "text", "type": "string", "optional": false}], ["sourceMapURL"], false);\n'
 + 'InspectorBackend.registerCommand("CSS.setRuleSelector", [{"name": "styleSheetId", "type": "string", "optional": false}, {"name": "range", "type": "object", "optional": false}, {"name": "selector", "type": "string", "optional": false}], ["selectorList"], false);\n'
 + 'InspectorBackend.registerCommand("CSS.setKeyframeKey", [{"name": "styleSheetId", "type": "string", "optional": false}, {"name": "range", "type": "object", "optional": false}, {"name": "keyText", "type": "string", "optional": false}], ["keyText"], false);\n'

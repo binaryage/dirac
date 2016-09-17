@@ -1576,6 +1576,14 @@ Protocol.DOMAgent.prototype.invoke_getDocument = function(obj, opt_callback) {}
 
 /**
  * @param {DOMAgent.NodeId} nodeId
+ * @param {function(?Protocol.Error, !Array.<string>):void=} opt_callback
+ */
+Protocol.DOMAgent.prototype.collectClassNamesFromSubtree = function(nodeId, opt_callback) {}
+/** @param {function(?Protocol.Error, !Array.<string>):void=} opt_callback */
+Protocol.DOMAgent.prototype.invoke_collectClassNamesFromSubtree = function(obj, opt_callback) {}
+
+/**
+ * @param {DOMAgent.NodeId} nodeId
  * @param {number=} opt_depth
  * @param {function(?Protocol.Error):void=} opt_callback
  */
@@ -2118,6 +2126,16 @@ Protocol.CSSAgent.prototype.invoke_getPlatformFontsForNode = function(obj, opt_c
 Protocol.CSSAgent.prototype.getStyleSheetText = function(styleSheetId, opt_callback) {}
 /** @param {function(?Protocol.Error, string):void=} opt_callback */
 Protocol.CSSAgent.prototype.invoke_getStyleSheetText = function(obj, opt_callback) {}
+
+/**
+ * @param {CSSAgent.StyleSheetId} styleSheetId
+ * @param {function(?Protocol.Error, !Array.<string>):T} opt_callback
+ * @return {!Promise.<T>}
+ * @template T
+ */
+Protocol.CSSAgent.prototype.collectClassNames = function(styleSheetId, opt_callback) {}
+/** @param {function(?Protocol.Error, !Array.<string>):void=} opt_callback */
+Protocol.CSSAgent.prototype.invoke_collectClassNames = function(obj, opt_callback) {}
 
 /**
  * @param {CSSAgent.StyleSheetId} styleSheetId

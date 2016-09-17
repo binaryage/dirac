@@ -1,5 +1,5 @@
-WebInspector.BakedSupportedCSSPropertiesChromeTag='55.0.2855.3';
-WebInspector.BakedSupportedCSSPropertiesChromeRev='c4ff6a92ceac50ad5958b40326cdbadd111ff658';
+WebInspector.BakedSupportedCSSPropertiesChromeTag='55.0.2863.2';
+WebInspector.BakedSupportedCSSPropertiesChromeRev='6914216902d8e8c9f892652a07103100f1c574d2';
 WebInspector.BakedSupportedCSSProperties=''
 + '[{"name": "color", "inherited": true},\n'
 + ' {"name": "direction", "inherited": true},\n'
@@ -257,7 +257,6 @@ WebInspector.BakedSupportedCSSProperties=''
 + ' {"name": "-webkit-box-orient"},\n'
 + ' {"name": "-webkit-box-pack"},\n'
 + ' {"name": "-webkit-box-reflect"},\n'
-+ ' {"name": "-webkit-clip-path"},\n'
 + ' {"name": "column-count"},\n'
 + ' {"name": "column-gap"},\n'
 + ' {"name": "column-rule-color"},\n'
