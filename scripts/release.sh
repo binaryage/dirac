@@ -5,7 +5,7 @@
 # (our test tasks rely on it)
 #
 # for our code we use clojurescript with :advanced optimizations
-# for devtools we use build_applications.py which does concatenation and minification of devtools files,
+# for devtools we use build_release_applications.py which does concatenation and minification of devtools files,
 # it also embeds resource files and compiles lazy-loaded code into modules
 #
 # steps:
@@ -14,7 +14,7 @@
 # - compile implant into target/resources/release/devtools/front_end/dirac/compiled
 # - move existing sources in resources/unpacked into a temp folder
 # - zero dirac/require-implant.js in the temp folder
-# - run build_applications.py on the files in temp folder as input, output to resources/release
+# - run build_release_applications.py on the files in temp folder as input, output to resources/release
 # - move static resources to resources/release
 # - copy compiled code to appropriate places in resources/release
 # - remove unneeded files from resources/release
@@ -82,9 +82,9 @@ cp -r "$ROOT/target/resources/release/devtools/front_end/dirac/compiled" "$WORK_
 echo -n "" > "$WORK_DIR/dirac/require-implant.js" # when doing advanced build, all implant files are required automatically
 
 echo "Building devtools in advanced mode..."
-# DANGER! this list of applications must be the same as specified in resources/unpacked/devtools/scripts/compile_frontend.py (search for "darwin")
-./scripts/build_applications.py inspector toolbox formatter_worker heap_snapshot_worker temp_storage_shared_worker \
-                                --input_path "$WORK_DIR" --output_path "$RELEASE_BUILD_DEVTOOLS_FRONTEND" --debug 0
+# DANGER! this list of applications must be the same as specified in resources/unpacked/devtools/BUILD.gn (search for "-- darwin")
+./scripts/build_release_applications.py inspector toolbox formatter_worker heap_snapshot_worker temp_storage_shared_worker \
+                                        --input_path "$WORK_DIR" --output_path "$RELEASE_BUILD_DEVTOOLS_FRONTEND" --debug 0
 
 popd
 

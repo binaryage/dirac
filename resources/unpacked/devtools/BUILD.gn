@@ -1062,17 +1062,21 @@ action("build_release_devtools") {
   debug_mode = "0"
 
   args = [
-    "inspector",
-    "toolbox",
-    "formatter_worker",
-    "heap_snapshot_worker",
-    "temp_storage_shared_worker",
-    "--input_path",
-    rebase_path("front_end", root_build_dir),
-    "--output_path",
-    rebase_path(resources_out_dir, root_build_dir),
-    "--debug",
-    debug_mode,
+# I have intentionally touched this code, so I can get merge conflicts when someone touches these params
+# => go and update scripts/release.sh script
+# -- (darwin)
+#
+#    "inspector",
+#    "toolbox",
+#    "formatter_worker",
+#    "heap_snapshot_worker",
+#    "temp_storage_shared_worker",
+#    "--input_path",
+#    rebase_path("front_end", root_build_dir),
+#    "--output_path",
+#    rebase_path(resources_out_dir, root_build_dir),
+#    "--debug",
+#    debug_mode,
   ]
 }
 
