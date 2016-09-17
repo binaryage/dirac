@@ -89,6 +89,46 @@ automate #1      close-devtools!
 extension        handling command: close-dirac-devtools
 extension        unregister devtools #1
 ∎
+testing          page-initiated eval requests, https://github.com/binaryage/dirac/issues/38
+automate         open-devtools!
+extension        handling command: open-dirac-devtools
+extension        register devtools #2
+devtools #2      implant initialized
+devtools #2      reset devtools settings
+devtools #2      devtools ready
+devtools #2      setCurrentPanel: elements
+devtools #2      namespacesCache is cool now
+automate #2      switch-to-console-panel!
+devtools #2      console initialized
+devtools #2      adopt-prompt-element use-parinfer? true
+devtools #2      setDiracPromptMode('status')
+devtools #2      ConsoleView constructed
+devtools #2      displayWelcomeMessage
+devtools #2      setCurrentPanel: console
+automate #2      switch-prompt-to-dirac!
+devtools #2      switched console prompt to 'dirac'
+devtools #2      init-repl!
+devtools #2      setDiracPromptStatusContent('Checking for Dirac Runtime presence in your app...')
+devtools #2      setDiracPromptStatusStyle('info')
+devtools #2      setDiracPromptStatusContent('Dirac Agent connected. Bootstrapping ClojureScript REPL...')
+devtools #2      setDiracPromptNS('cljs.user')
+devtools #2      setDiracPromptMode('edit')
+automate #2      enable-console-feedback!
+automate         trigger! [:eval-js "console.log('js code here'); 1+3"]
+devtools #2      JS.???> console.log('js code here'); 1+3
+devtools #2      JS.log> js code here
+devtools #2      JS.log> 4
+automate         trigger! [:eval-cljs "(+ 2 40)"]
+devtools #2      DC.log> (+ 2 40)
+devtools #2      send-eval-request: (+ 2 40)
+devtools #2      repl eval job started
+devtools #2      DF.log> 42
+devtools #2      repl eval job ended
+automate #2      disable-console-feedback!
+automate #2      close-devtools!
+extension        handling command: close-dirac-devtools
+extension        unregister devtools #2
+∎
 automate         close-scenario! ["scenario-tab#1"]
-summary          Automated 15 actions with 3 check-points containing 0 assertions.
+summary          Automated 23 actions with 8 check-points containing 0 assertions.
                  0 failures, 0 errors.
