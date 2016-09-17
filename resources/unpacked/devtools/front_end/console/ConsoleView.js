@@ -614,14 +614,14 @@ WebInspector.ConsoleView.prototype = {
 
     handleEvalCLJSConsoleDiracMessage: function(message) {
         const code = message.parameters[2];
-        if (code && goog.isString(code.value)) {
+        if (code && typeof code.value == 'string') {
             this.appendDiracCommand(code.value, null);
         }
     },
 
     handleEvalJSConsoleDiracMessage: function(message) {
         const code = message.parameters[2];
-        if (code && goog.isString(code.value)) {
+        if (code && typeof code.value == 'string') {
             this._appendCommand(code.value, true);
         }
     },
