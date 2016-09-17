@@ -64,8 +64,8 @@ WebInspector.CodeMirrorTextEditor = function(options)
         "Down": "goLineDown",
         "End": "goLineEnd",
         "Home": "goLineStartSmart",
-        "PageUp": "goPageUp",
-        "PageDown": "goPageDown",
+        "PageUp": "smartPageUp",
+        "PageDown": "smartPageDown",
         "Delete": "delCharAfter",
         "Backspace": "delCharBefore",
         "Tab": "defaultTab",
@@ -160,6 +160,9 @@ WebInspector.CodeMirrorTextEditor = function(options)
     this.element.addEventListener("keydown", this._handleKeyDown.bind(this), true);
     this.element.addEventListener("keydown", this._handlePostKeyDown.bind(this), false);
     this.element.tabIndex = 0;
+
+    this._needsRefresh = true;
+
     if (options.mimeType)
         this.setMimeType(options.mimeType);
 }
@@ -286,6 +289,26 @@ CodeMirror.commands.dismiss = function(codemirror)
 
     codemirror.setSelection(selection.anchor, selection.head, {scroll: false});
     codemirror._codeMirrorTextEditor.scrollLineIntoView(selection.anchor.line);
+}
+
+/**
+ * @return {!Object|undefined}
+ */
+CodeMirror.commands.smartPageUp = function(codemirror)
+{
+    if (codemirror._codeMirrorTextEditor.selection().equal(WebInspector.TextRange.createFromLocation(0, 0)))
+        return CodeMirror.Pass;
+    codemirror.execCommand("goPageUp");
+}
+
+/**
+ * @return {!Object|undefined}
+ */
+CodeMirror.commands.smartPageDown = function(codemirror)
+{
+    if (codemirror._codeMirrorTextEditor.selection().equal(codemirror._codeMirrorTextEditor.fullRange().collapseToEnd()))
+        return CodeMirror.Pass;
+    codemirror.execCommand("goPageDown");
 }
 
 /**
@@ -507,10 +530,21 @@ WebInspector.CodeMirrorTextEditor.prototype = {
      */
     wasShown: function()
     {
-        if (this._wasOnceShown)
+        if (this._needsRefresh)
+            this.refresh();
+    },
+
+    /**
+     * @protected
+     */
+    refresh: function()
+    {
+        if (this.isShowing()) {
+            this._codeMirror.refresh();
+            this._needsRefresh = false;
             return;
-        this._wasOnceShown = true;
-        this._codeMirror.refresh();
+        }
+        this._needsRefresh = true;
     },
 
     /**

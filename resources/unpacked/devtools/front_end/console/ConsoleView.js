@@ -416,7 +416,7 @@ WebInspector.ConsoleView.prototype = {
     _executionContextChanged: function()
     {
         this._switchToLastPrompt();
-        this._prompt.clearAutoComplete();
+        this._prompt.clearAutocomplete();
         if (!this._showAllMessagesCheckbox.checked())
             this._updateMessageList();
     },
@@ -463,7 +463,7 @@ WebInspector.ConsoleView.prototype = {
 
     _hidePromptSuggestBox: function()
     {
-        this._prompt.clearAutoComplete();
+        this._prompt.clearAutocomplete();
     },
 
     _scheduleViewportRefresh: function()
@@ -965,7 +965,7 @@ WebInspector.ConsoleView.prototype = {
             var lines = [];
             for (var i = 0; i < chunkSize && i + messageIndex < this.itemCount(); ++i) {
                 var message = this.itemElement(messageIndex + i);
-                lines.push(message.searchableElement().deepTextContent());
+                lines.push(message.formattedMessage().deepTextContent());
             }
             messageIndex += i;
             stream.write(lines.join("\n") + "\n", writeNextChunk.bind(this));
@@ -1276,7 +1276,7 @@ WebInspector.ConsoleView.prototype = {
 
         event.consume(true);
 
-        this._prompt.clearAutoComplete();
+        this._prompt.clearAutocomplete();
 
         var str = this._prompt.text();
         if (!str.length)

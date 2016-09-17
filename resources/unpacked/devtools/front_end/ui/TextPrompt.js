@@ -122,7 +122,7 @@ WebInspector.TextPrompt.prototype = {
         this._boundOnInput = this.onInput.bind(this);
         this._boundOnMouseWheel = this.onMouseWheel.bind(this);
         this._boundSelectStart = this._selectStart.bind(this);
-        this._boundClearAutocomplete = this.clearAutoComplete.bind(this);
+        this._boundClearAutocomplete = this.clearAutocomplete.bind(this);
         this._proxyElement = element.ownerDocument.createElement("span");
         var shadowRoot = WebInspector.createShadowRootWithCoreStyles(this._proxyElement, "ui/textPrompt.css");
         this._contentElement = shadowRoot.createChild("div");
@@ -183,7 +183,7 @@ WebInspector.TextPrompt.prototype = {
      */
     setText: function(x)
     {
-        this.clearAutoComplete();
+        this.clearAutocomplete();
         if (!x) {
             // Append a break element instead of setting textContent to make sure the selection is inside the prompt.
             this._element.removeChildren();
@@ -216,7 +216,7 @@ WebInspector.TextPrompt.prototype = {
 
     _removeFromElement: function()
     {
-        this.clearAutoComplete();
+        this.clearAutocomplete();
         this._element.removeEventListener("keydown", this._boundOnKeyDown, false);
         this._element.removeEventListener("input", this._boundOnInput, false);
         this._element.removeEventListener("selectstart", this._boundSelectStart, false);
@@ -261,7 +261,7 @@ WebInspector.TextPrompt.prototype = {
         if (this._selectionTimeout)
             clearTimeout(this._selectionTimeout);
 
-        this.clearAutoComplete();
+        this.clearAutocomplete();
 
         /**
          * @this {WebInspector.TextPrompt}
@@ -283,7 +283,7 @@ WebInspector.TextPrompt.prototype = {
      */
     _updateAutoComplete: function(force)
     {
-        this.clearAutoComplete();
+        this.clearAutocomplete();
         this.autoCompleteSoon(force);
     },
 
@@ -312,18 +312,18 @@ WebInspector.TextPrompt.prototype = {
             break;
         case "ArrowLeft":
         case "Home":
-            this.clearAutoComplete();
+            this.clearAutocomplete();
             break;
         case "ArrowRight":
         case "End":
             if (this.isCaretAtEndOfPrompt())
                 handled = this.acceptAutoComplete();
             else
-                this.clearAutoComplete();
+                this.clearAutocomplete();
             break;
         case "Escape":
             if (this.isSuggestBoxVisible()) {
-                this.clearAutoComplete();
+                this.clearAutocomplete();
                 handled = true;
             }
             break;
@@ -373,7 +373,7 @@ WebInspector.TextPrompt.prototype = {
         return result;
     },
 
-    clearAutoComplete: function()
+    clearAutocomplete: function()
     {
         if (this.isSuggestBoxVisible())
             this._suggestBox.hide();
@@ -408,7 +408,7 @@ WebInspector.TextPrompt.prototype = {
      */
     complete: function(force, reverse)
     {
-        this.clearAutoComplete();
+        this.clearAutocomplete();
         var selection = this._element.getComponentSelection();
         if (!selection) {
             return;
@@ -431,7 +431,7 @@ WebInspector.TextPrompt.prototype = {
                 shouldExit = true;
         }
         if (shouldExit) {
-            this.clearAutoComplete();
+            this.clearAutocomplete();
             return;
         }
 
@@ -528,7 +528,7 @@ WebInspector.TextPrompt.prototype = {
         }
 
         if (!annotatedCompletions.length) {
-            this.clearAutoComplete();
+            this.clearAutocomplete();
             return;
         }
 
@@ -671,7 +671,7 @@ WebInspector.TextPrompt.prototype = {
         selection.addRange(finalSelectionRange);
 
         if (!prefixAccepted) {
-            this.clearAutoComplete();
+            this.clearAutocomplete();
             this.dispatchEventToListeners(WebInspector.TextPrompt.Events.ItemAccepted);
         } else
             this.autoCompleteSoon(true);
@@ -910,7 +910,7 @@ WebInspector.TextPromptWithHistory.prototype = {
         if (newText !== undefined) {
             event.consume(true);
             this.setText(newText);
-            this.clearAutoComplete();
+            this.clearAutocomplete();
 
             if (isPrevious) {
                 var firstNewlineIndex = this.text().indexOf("\n");
