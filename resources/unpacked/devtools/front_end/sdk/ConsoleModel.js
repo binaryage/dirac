@@ -45,7 +45,7 @@ WebInspector.ConsoleModel = function(target)
     this._errors = 0;
     this._revokedErrors = 0;
     this._logAgent = target.logAgent();
-    target.registerLogDispatcher(new WebInspector.DiracAwareLogDispatcher(this));
+    target.registerLogDispatcher(new WebInspector.LogDispatcher(this));
     this._logAgent.enable();
 }
 
@@ -84,15 +84,19 @@ WebInspector.ConsoleModel.prototype = {
             return;
         }
 
+        if (msg.parameters) {
+            var firstParam = msg.parameters[0];
+            if (firstParam && firstParam.value == "~~$DIRAC-MSG$~~") {
+                this.dispatchEventToListeners(WebInspector.ConsoleModel.Events.DiracMessage, msg);
+                return;
+            }
+        }
+
         this._messages.push(msg);
         if (msg._exceptionId)
             this._messageByExceptionId.set(msg._exceptionId, msg);
         this._incrementErrorWarningCount(msg);
         this.dispatchEventToListeners(WebInspector.ConsoleModel.Events.MessageAdded, msg);
-    },
-
-    dispatchDiracMessage: function(msg) {
-        this.dispatchEventToListeners(WebInspector.ConsoleModel.Events.DiracMessage, msg);
     },
 
     /**
@@ -584,38 +588,6 @@ WebInspector.LogDispatcher.prototype = {
         this._console.addMessage(consoleMessage);
     }
 }
-
-/**
- * @constructor
- * @extends {WebInspector.LogDispatcher}
- * @implements {LogAgent.Dispatcher}
- * @param {!WebInspector.ConsoleModel} console
- */
-WebInspector.DiracAwareLogDispatcher = function(console)
-{
-    WebInspector.LogDispatcher.call(this, console);
-};
-
-WebInspector.DiracAwareLogDispatcher.prototype = {
-
-    /**
-     * @override
-     * @param {!LogAgent.LogEntry} payload
-     */
-    entryAdded: function(payload)
-    {
-        if (payload.parameters) {
-            var firstParam = payload.parameters[0];
-            if (firstParam && firstParam.value == "~~$DIRAC-MSG$~~") {
-                this._console.dispatchDiracMessage(payload);
-            }
-        }
-
-        WebInspector.LogDispatcher.prototype.entryAdded.call(this, payload);
-    },
-
-    __proto__: WebInspector.LogDispatcher.prototype
-};
 
 /**
  * @constructor
