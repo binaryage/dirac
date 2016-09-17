@@ -42,7 +42,7 @@ WebInspector.DiracPromptWithHistory.prototype = {
     },
 
     setText: function(x) {
-        this.clearAutoComplete();
+        this.clearAutocomplete();
         this._codeMirror.setValue(x);
         this.moveCaretToEndOfPrompt();
         this._element.scrollIntoView();
@@ -95,7 +95,7 @@ WebInspector.DiracPromptWithHistory.prototype = {
     },
 
     finishAutocomplete: function() {
-        this.clearAutoComplete();
+        this.clearAutocomplete();
         this._prefixRange = null;
         this._anchorBox = null;
     },
@@ -217,7 +217,7 @@ WebInspector.DiracPromptWithHistory.prototype = {
      * @param {boolean=} reverse
      */
     autocomplete: function(force, reverse) {
-        this.clearAutoComplete(true);
+        this.clearAutocomplete(true);
         this._lastAutocompleteRequest++;
 
         let shouldExit = false;
@@ -248,7 +248,7 @@ WebInspector.DiracPromptWithHistory.prototype = {
         }
 
         if (shouldExit) {
-            this.clearAutoComplete();
+            this.clearAutocomplete();
             return;
         }
 
@@ -346,7 +346,7 @@ WebInspector.DiracPromptWithHistory.prototype = {
         }
 
         if (!annotatedCompletions.length) {
-            this.clearAutoComplete();
+            this.clearAutocomplete();
             return;
         }
 
@@ -730,7 +730,7 @@ WebInspector.DiracPromptWithHistory.prototype = {
         const processedCompletions = combineAliasedMacroNamespacesInCompletions(markAliasedCompletions(sortCompletions(completions)));
 
         if (!processedCompletions.length) {
-            this.clearAutoComplete();
+            this.clearAutocomplete();
             return;
         }
 
