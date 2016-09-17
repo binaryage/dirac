@@ -359,6 +359,7 @@ devtools_animation_js_files = [
 devtools_audits_js_files = [
   "front_end/audits/auditResultTree.css",
   "front_end/audits/auditsPanel.css",
+  "front_end/audits/auditsSidebarTree.css",
   "front_end/audits/AuditCategories.js",
   "front_end/audits/AuditCategory.js",
   "front_end/audits/AuditController.js",
@@ -539,6 +540,7 @@ devtools_network_js_files = [
 devtools_profiler_js_files = [
   "front_end/profiler/heapProfiler.css",
   "front_end/profiler/profilesPanel.css",
+  "front_end/profiler/profilesSidebarTree.css",
   "front_end/profiler/BottomUpProfileDataGrid.js",
   "front_end/profiler/CPUProfileFlameChart.js",
   "front_end/profiler/CPUProfileView.js",
@@ -623,6 +625,8 @@ devtools_source_frame_js_files = [
   "front_end/source_frame/SourceFrame.js",
 ]
 devtools_sources_js_files = [
+  "front_end/sources/eventListenerBreakpoints.css",
+  "front_end/sources/fileBasedSearchResultsPane.css",
   "front_end/sources/navigatorView.css",
   "front_end/sources/revisionHistory.css",
   "front_end/sources/serviceWorkersSidebar.css",
@@ -1035,7 +1039,7 @@ action("frontend_protocol_sources") {
 }
 
 action("build_release_devtools") {
-  script = "scripts/build_applications.py"
+  script = "scripts/build_release_applications.py"
 
   deps = [
     ":frontend_protocol_sources",
@@ -1044,7 +1048,6 @@ action("build_release_devtools") {
 
   helper_scripts = [
     "scripts/modular_build.py",
-    "scripts/concatenate_application_code.py",
     "scripts/rjsmin.py",
   ]
 
@@ -1077,10 +1080,10 @@ if (debug_devtools) {
   resources_out_debug_dir = "$root_out_dir/resources/inspector/debug"
 
   action("build_debug_devtools") {
-    script = "scripts/build_applications.py"
+    script = "scripts/build_debug_applications.py"
 
     deps = [
-      ":copy_debug_files",
+      ":copy_generated_scripts",
     ]
 
     inputs = all_devtools_files + [
@@ -1110,38 +1113,6 @@ if (debug_devtools) {
     ]
   }
 
-  group("copy_debug_files") {
-    public_deps = [
-      ":copy_acorn_js_files",
-      ":copy_codemirror_files",
-      ":copy_emulated_devices_images_debug",
-      ":copy_generated_scripts",
-      ":copy_inspector_images_debug",
-      ":copy_runtime_core",
-    ]
-  }
-
-  copy("copy_runtime_core") {
-    sources = devtools_core_base_files
-    outputs = [
-      "$resources_out_debug_dir/{{source_file_part}}",
-    ]
-  }
-
-  copy("copy_acorn_js_files") {
-    sources = devtools_acorn_files
-    outputs = [
-      "$resources_out_debug_dir/acorn/{{source_file_part}}",
-    ]
-  }
-
-  copy("copy_codemirror_files") {
-    sources = devtools_cm_js_files + devtools_cm_css_files
-    outputs = [
-      "$resources_out_debug_dir/cm/{{source_file_part}}",
-    ]
-  }
-
   copy("copy_generated_scripts") {
     deps = [
       ":frontend_protocol_sources",
@@ -1150,19 +1121,6 @@ if (debug_devtools) {
     sources = generated_scripts
     outputs = [
       "$resources_out_debug_dir/{{source_file_part}}",
-    ]
-  }
-  copy("copy_inspector_images_debug") {
-    sources = devtools_image_files
-    outputs = [
-      "$resources_out_debug_dir/Images/{{source_file_part}}",
-    ]
-  }
-
-  copy("copy_emulated_devices_images_debug") {
-    sources = devtools_emulated_devices_images
-    outputs = [
-      "$resources_out_debug_dir/emulated_devices/{{source_file_part}}",
     ]
   }
 }

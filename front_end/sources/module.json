@@ -548,6 +548,8 @@
     ],
     "resources": [
         "uiList.css",
+        "eventListenerBreakpoints.css",
+        "fileBasedSearchResultsPane.css",
         "navigatorView.css",
         "revisionHistory.css",
         "serviceWorkersSidebar.css",

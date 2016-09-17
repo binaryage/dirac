@@ -35,6 +35,8 @@ WebInspector.Panel = function(name)
     WebInspector.VBox.call(this);
 
     this.element.classList.add("panel");
+    this.element.setAttribute("role", "tabpanel");
+    this.element.setAttribute("aria-label", name);
     this.element.classList.add(name);
     this._panelName = name;
 
@@ -138,7 +140,7 @@ WebInspector.PanelWithSidebar = function(name, defaultWidth)
     this._sidebarWidget.setMinimumSize(100, 25);
     this._panelSplitWidget.setSidebarWidget(this._sidebarWidget);
 
-    this._sidebarWidget.element.classList.add("sidebar");
+    this._sidebarWidget.element.classList.add("panel-sidebar");
 }
 
 WebInspector.PanelWithSidebar.prototype = {
