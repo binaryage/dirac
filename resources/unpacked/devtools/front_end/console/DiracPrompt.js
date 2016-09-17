@@ -7,13 +7,11 @@
 WebInspector.DiracPromptWithHistory = function(codeMirrorInstance) {
     /**
      * @param {!Element} proxyElement
-     * @param {string} text
-     * @param {number} cursorOffset
      * @param {!Range} wordRange
      * @param {boolean} force
      * @param {function(!Array.<string>, number=)} completionsReadyCallback
      */
-    const dummyCompletionsFn = function(proxyElement, text, cursorOffset, wordRange, force, completionsReadyCallback) {
+    const dummyCompletionsFn = function(proxyElement, wordRange, force, completionsReadyCallback) {
     };
     WebInspector.TextPromptWithHistory.call(this, dummyCompletionsFn);
 
@@ -217,7 +215,7 @@ WebInspector.DiracPromptWithHistory.prototype = {
      * @param {boolean=} reverse
      */
     autocomplete: function(force, reverse) {
-        this.clearAutocomplete(true);
+        this.clearAutocomplete();
         this._lastAutocompleteRequest++;
 
         let shouldExit = false;
@@ -357,9 +355,8 @@ WebInspector.DiracPromptWithHistory.prototype = {
         this._lastExpression = expression;
         this._updateAnchorBox();
 
+        const shouldShowForSingleItem = true; // later maybe implement inline completions like in TextPrompt.js
         if (this._anchorBox) {
-            const shouldShowForSingleItem = true; // later maybe implement inline completions like in TextPrompt.js
-
             if (dirac._DEBUG_COMPLETIONS) {
                 console.log("calling SuggestBox.updateSuggestions", this._anchorBox, annotatedCompletions, selectedIndex, shouldShowForSingleItem, this._userEnteredText);
             }
@@ -454,7 +451,7 @@ WebInspector.DiracPromptWithHistory.prototype = {
                 return allAliases[namespace] || namespace; // resolve alias or assume namespace name is a full namespace name
             });
 
-            const prepareAnnotatedJavascriptCompletionsForPseudoNamespaceAsync = (namespaceName, callback) => {
+            const prepareAnnotatedJavascriptCompletionsForPseudoNamespaceAsync = (namespaceName) => {
                 return new Promise(resolve => {
                     const resultHandler = (expression, prefix, completions) => {
                         const annotatedCompletions = annotateQualifiedSymbols("suggest-cljs-qualified suggest-cljs-pseudo", completions);
@@ -515,7 +512,7 @@ WebInspector.DiracPromptWithHistory.prototype = {
                 Promise.all(jobs).then(concatAnnotatedResults).then(readyCallback);
             };
 
-            Promise.all([dirac.extractNamespacesAsync(), resolvedNamespaceNamePromise]).then(provideCompletionsForNamespace);
+            Promise.all([dirac.extractNamespacesAsync(), resolvedNamespaceNamePromise]).then(provideCompletionsForNamespace.bind(this));
         } else {
             // general completion (without slashes)
             // combine: locals (if paused in debugger), current ns symbols, namespace names and cljs.core symbols
@@ -740,8 +737,8 @@ WebInspector.DiracPromptWithHistory.prototype = {
         if (this._suggestBox) {
             this._lastExpression = expression;
             this._updateAnchorBox();
+            const shouldShowForSingleItem = true; // later maybe implement inline completions like in TextPrompt.js
             if (this._anchorBox) {
-                const shouldShowForSingleItem = true; // later maybe implement inline completions like in TextPrompt.js
                 if (dirac._DEBUG_COMPLETIONS) {
                     console.log("calling SuggestBox.updateSuggestions", this._anchorBox, processedCompletions, selectedIndex, shouldShowForSingleItem, this._userEnteredText);
                 }

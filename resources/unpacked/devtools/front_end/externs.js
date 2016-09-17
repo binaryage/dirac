@@ -404,6 +404,7 @@ var dirac = {
     /**
      * @param {?} callback
      * @return {boolean}
+     * @this {Object}
      */
     subscribeDebuggerEvents: function(callback) {},
     /**

@@ -116,6 +116,10 @@ Object.assign(window.dirac, (function() {
 
     let debuggerEventsUnsubscriber = null;
 
+    /**
+     * @this {Object}
+     * @return {boolean}
+     */
     function subscribeDebuggerEvents(callback) {
         if (debuggerEventsUnsubscriber) {
             return false;
@@ -126,6 +130,10 @@ Object.assign(window.dirac, (function() {
 
         WebInspector.targetManager.addModelListener(WebInspector.DebuggerModel, WebInspector.DebuggerModel.Events.GlobalObjectCleared, globalObjectClearedHandler, this);
 
+        /**
+         * @this {Object}
+         * @return {boolean}
+         */
         debuggerEventsUnsubscriber = () => {
             WebInspector.targetManager.removeModelListener(WebInspector.DebuggerModel, WebInspector.DebuggerModel.Events.GlobalObjectCleared, globalObjectClearedHandler, this);
             return true;
@@ -134,12 +142,16 @@ Object.assign(window.dirac, (function() {
         return true;
     }
 
+    /**
+     * @this {Object}
+     * @return {boolean}
+     */
     function unsubscribeDebuggerEvents() {
         if (!debuggerEventsUnsubscriber) {
             return false;
         }
 
-        const res = debuggerEventsUnsubscriber();
+        const res = debuggerEventsUnsubscriber.call(this);
         debuggerEventsUnsubscriber = null;
         return res;
     }
@@ -159,7 +171,7 @@ Object.assign(window.dirac, (function() {
         }
 
         const msg = new WebInspector.ConsoleMessage(target, WebInspector.ConsoleMessage.MessageSource.Other, level, text,
-            WebInspector.ConsoleMessage.MessageType.Log, null, null, null, null, parameters);
+            WebInspector.ConsoleMessage.MessageType.Log, undefined, undefined, undefined, undefined, parameters);
         consoleModel.addMessage(msg);
     }
 
@@ -306,7 +318,7 @@ Object.assign(window.dirac, (function() {
 
     /**
      * @param {string} url
-     * @param {string} jsSourceCode
+     * @param {?string} jsSourceCode
      * @return {!Array<dirac.NamespaceDescriptor>}
      */
     function parsePseudoNamespaces(url, jsSourceCode) {
@@ -482,6 +494,9 @@ Object.assign(window.dirac, (function() {
         extractNamespacesAsyncInFlightPromise = extractNamespacesAsyncWorker().then(descriptors => {
             const newDescriptors = prepareNamespacesFromDescriptors(descriptors);
             const newDescriptorsCount = Object.keys(newDescriptors).length;
+            if (!dirac._namespacesCache) {
+                dirac._namespacesCache = {};
+            }
             Object.assign(dirac._namespacesCache, newDescriptors);
             const allDescriptorsCount = Object.keys(dirac._namespacesCache).length;
             if (dirac._DEBUG_CACHES) {

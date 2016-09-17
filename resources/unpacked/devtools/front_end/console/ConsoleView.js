@@ -1257,7 +1257,7 @@ WebInspector.ConsoleView.prototype = {
             this._updateStickToBottomOnWheel();
             return;
         } else if (isEnterKey(event)) {
-            this._enterKeyPressed();
+            this._enterKeyPressed(event);
             return;
         }
 
@@ -1269,7 +1269,7 @@ WebInspector.ConsoleView.prototype = {
         }
     },
 
-    _enterKeyPressed: function()
+    _enterKeyPressed: function(event)
     {
         if (event.altKey || event.ctrlKey || event.shiftKey)
             return;
