@@ -612,14 +612,33 @@ WebInspector.ConsoleView.prototype = {
         return this._prompt.text();
     },
 
-    _onConsoleDiracMessage: function(event)
-    {
+    handleEvalCLJSConsoleDiracMessage: function(message) {
+        const code = message.parameters[2];
+        if (code && goog.isString(code.value)) {
+            this.appendDiracCommand(code.value, null);
+        }
+    },
+
+    handleEvalJSConsoleDiracMessage: function(message) {
+        const code = message.parameters[2];
+        if (code && goog.isString(code.value)) {
+            this._appendCommand(code.value, true);
+        }
+    },
+
+    _onConsoleDiracMessage: function(event) {
         var message = (event.data);
         var command = message.parameters[1];
         if (command)
             command = command.value;
 
         switch (command) {
+            case "eval-cljs":
+                this.handleEvalCLJSConsoleDiracMessage(message);
+                break;
+            case "eval-js":
+                this.handleEvalJSConsoleDiracMessage(message);
+                break;
             default:
                 throw ("unrecognized Dirac message: " + command);
         }

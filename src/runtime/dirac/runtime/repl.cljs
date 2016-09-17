@@ -111,7 +111,7 @@
 
 ; -- REPL API ---------------------------------------------------------------------------------------------------------------
 
-(def api-version 3)                                                                                                           ; version of REPL API
+(def api-version 4)                                                                                                           ; version of REPL API
 
 (defn ^:export get-api-version []
   api-version)
@@ -160,6 +160,14 @@
          :stacktrace (if (.hasOwnProperty ex "stack")
                        (.-stack ex)
                        "No stacktrace available.")}))
+
+(defn ^:export request-eval-cljs [code]
+  (assert (string? code) "Code passed for evaluation must be a string")
+  (call-dirac "eval-cljs" code))
+
+(defn ^:export request-eval-js [code]
+  (assert (string? code) "Code passed for evaluation must be a string")
+  (call-dirac "eval-js" code))
 
 ; -- install/uninstall ------------------------------------------------------------------------------------------------------
 

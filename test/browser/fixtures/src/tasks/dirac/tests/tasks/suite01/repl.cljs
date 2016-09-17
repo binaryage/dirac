@@ -22,6 +22,18 @@
           (<!* a/wait-for-devtools-match "<elided stack trace log>")
           (<!* a/wait-for-devtools-match #"^JS.log")
           (<!* a/console-exec-and-match! "(in-ns 'my.ns)" "setDiracPromptNS('my.ns')"))))
+    (testing "page-initiated eval requests, https://github.com/binaryage/dirac/issues/38"
+      (with-devtools
+        (<!* a/switch-to-console-panel!)
+        (<!* a/switch-prompt-to-dirac!)
+        (<!* a/wait-for-prompt-to-enter-edit-mode)
+        (with-console-feedback
+          (<!* a/trigger! :eval-js "console.log('js code here'); 1+3")
+          (<!* a/wait-for-devtools-match "js code here")
+          (<!* a/wait-for-devtools-match "JS.log> 4")
+          (<!* a/trigger! :eval-cljs "(+ 2 40)")
+          (<!* a/wait-for-devtools-match "DF.log> 42")
+          (<!* a/wait-for-devtools-match "repl eval job ended"))))
     #_(testing "page refresh while REPL was connected"
         (with-devtools
           (<!* a/switch-to-console-panel!)
