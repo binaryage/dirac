@@ -18,12 +18,12 @@
                  [version-clj "0.1.2"]
                  [environ "1.1.0"]
                  [clansi "1.0.0"]
-                 [funcool/cuerdas "1.0.1"]
+                 [funcool/cuerdas "1.0.2"]
 
                  ; we cannot use :dependencies under individual profiles because Cursive recognizes only root level
                  ; thus we mark extra deps with :scope "test" and filter them later when producing jar library
                  [binaryage/chromex "0.4.2" :scope "test"]
-                 [binaryage/devtools "0.8.1" :scope "test"]
+                 [binaryage/devtools "0.8.2" :scope "test"]
                  [cljs-http "0.1.41" :scope "test"]
                  [figwheel "0.5.7" :scope "test"]
                  [reforms "0.4.3" :scope "test"]
