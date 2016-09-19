@@ -6,7 +6,20 @@
 [![Sample Project](https://img.shields.io/badge/project-example-ff69b4.svg)](https://github.com/binaryage/dirac-sample) 
 [![Chrome Extension](https://img.shields.io/badge/chrome-extension-ebb338.svg)](https://chrome.google.com/webstore/detail/dirac-devtools/kbkdngfljkchidcjpnfcgcokkbhlkogi)
 
-Dirac is a [Chrome DevTools][1] fork with extra features to aid development in ClojureScript.
+Dirac is a [Chrome DevTools][1] fork with extra features for ClojureScript developers.
+
+**TOC** 
+| **[Introduction](#introduction)**
+| **[Screenshots](##screenshots)**
+| **[Motivation](docs/motivation.md)**
+| **[Installation](docs/installation.md)**
+| **[Upgrading](docs/upgrading.md)**
+| **[Configuration](docs/configuration.md)**
+| **[Integration](docs/integration.md)**
+| **[Example project](https://github.com/binaryage/dirac-sample)**
+| **[FAQ](docs/faq.md)**
+
+### Introduction
 
 Dirac project maintains [a set of patches][2] rolling on top of official Chrome DevTools.
 That means you don't lose any functionality, you just add ClojureScript support on top.
@@ -30,6 +43,8 @@ Dirac DevTools can be just a keystroke away enabling following features:
       * then null values
       * then undefined values
 
+### Screenshots
+
 ![ClojureScript REPL][9]
 
 <table>
@@ -39,18 +54,6 @@ Dirac DevTools can be just a keystroke away enabling following features:
 <td><a href="https://dl.dropboxusercontent.com/u/559047/dirac-js-completions.png"><img src="https://dl.dropboxusercontent.com/u/559047/dirac-js-completions.png"></a></td>
 </tr>
 </table>
-
-<br style="clear:both">
-
-#### Documentation
-
-  * **[Motivation](docs/motivation.md)**
-  * **[Installation](docs/installation.md)**
-  * **[Upgrading](docs/upgrading.md)**
-  * **[Configuration](docs/configuration.md)**
-  * **[Integration](docs/integration.md)**
-  * **[Example project](https://github.com/binaryage/dirac-sample)**
-  * **[FAQ](docs/faq.md)**
 
 [1]: https://developer.chrome.com/devtools
 [2]: https://github.com/binaryage/dirac/commit/devtools-diff
