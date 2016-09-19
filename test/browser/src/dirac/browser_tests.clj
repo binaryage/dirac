@@ -28,7 +28,7 @@
             [clojure.java.shell :as shell]
             [clojure.tools.logging :as log]
             [clansi])
-  (import [java.net URLEncoder]))
+  (:import [java.net URLEncoder]))
 
 ; note: we expect current working directory to be dirac root directory ($root)
 ; $root/test/browser/transcripts/expected/*.txt should contain expected transcripts

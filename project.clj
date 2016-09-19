@@ -7,7 +7,7 @@
   :scm {:name "git"
         :url  "https://github.com/binaryage/dirac"}
 
-  :dependencies [[org.clojure/clojure "1.8.0" :scope "provided"]
+  :dependencies [[org.clojure/clojure "1.9.0-alpha12" :scope "provided"]
                  [org.clojure/clojurescript "1.9.229" :scope "provided"]
                  [org.clojure/core.async "0.2.391"]
                  [org.clojure/tools.logging "0.3.1"]
@@ -56,7 +56,9 @@
 
   ;  :jvm-opts ["-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5005"]
 
-  :source-paths ["src/agent"
+  :source-paths ["scripts"
+
+                 "src/agent"
                  "src/automation"
                  "src/background"
                  "src/backport"
@@ -116,6 +118,9 @@
              {:dependencies [[org.clojure/clojure "1.7.0" :scope "provided"]
                              [org.clojure/clojurescript "1.7.228" :scope "provided"]]}
 
+             :clojure18
+             {:dependencies [[org.clojure/clojure "1.8.0" :scope "provided"]]}
+
              :clojure19
              {:dependencies [[org.clojure/clojure "1.9.0-alpha12" :scope "provided"]]}
 
@@ -123,7 +128,7 @@
              {:plugins [[lein-cooper "1.2.2"]]}
 
              :cljs
-             {:plugins [[lein-cljsbuild "1.1.3"]
+             {:plugins [[lein-cljsbuild "1.1.4"]
                         [lein-figwheel "0.5.7"]]
               :hooks   [leiningen.cljsbuild]}
 
@@ -375,6 +380,7 @@
             "run-backend-tests"          ["shell" "scripts/run-backend-tests.sh"]
             "run-backend-tests-default"  ["with-profile" "+test-runner" "run" "-m" "dirac.backend-tests-runner"]
             "run-backend-tests-17"       ["with-profile" "+test-runner,+clojure17" "run" "-m" "dirac.backend-tests-runner"]
+            "run-backend-tests-18"       ["with-profile" "+test-runner,+clojure18" "run" "-m" "dirac.backend-tests-runner"]
             "run-backend-tests-19"       ["with-profile" "+test-runner,+clojure19" "run" "-m" "dirac.backend-tests-runner"]
             "run-browser-tests"          ["shell" "scripts/run-browser-tests.sh" "dirac.browser-tests-runner"]
             "run-browser-tests-dev"      ["shell" "scripts/run-browser-tests.sh" "dirac.browser-tests-runner/-dev-main"]
