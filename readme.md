@@ -9,9 +9,11 @@
 Dirac is a [Chrome DevTools][1] fork with extra features for ClojureScript developers.
 
 **TOC** 
-| **[Introduction](#introduction)**
-| **[Screenshots](##screenshots)**
-| **[Motivation](docs/motivation.md)**
+: **[Introduction](#introduction)**
+| **[Screenshots](#screenshots)**
+
+**DOC** 
+: **[Motivation](docs/motivation.md)**
 | **[Installation](docs/installation.md)**
 | **[Upgrading](docs/upgrading.md)**
 | **[Configuration](docs/configuration.md)**
