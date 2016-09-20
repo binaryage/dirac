@@ -1,7 +1,7 @@
 (ns dirac.automation.runner
   (:require-macros [cljs.core.async.macros :refer [go go-loop]])
   (:require [cljs.core.async :refer [put! <! chan timeout alts! close!]]
-            [chromex.support :refer-macros [oget oset ocall oapply]]
+            [oops.core :refer [oget oset! ocall oapply]]
             [chromex.logging :refer-macros [log warn error info]]
             [devtools.preload]
             [dirac.automation.helpers :as helpers]
@@ -16,10 +16,10 @@
   (helpers/get-el-by-id "resume-button"))
 
 (defn enable-resume! []
-  (oset (get-resume-button-el) ["disabled"] false))
+  (oset! (get-resume-button-el) "disabled" false))
 
 (defn disable-resume! []
-  (oset (get-resume-button-el) ["disabled"] true))
+  (oset! (get-resume-button-el) "disabled" true))
 
 (defn wait-for-resume! []
   (go

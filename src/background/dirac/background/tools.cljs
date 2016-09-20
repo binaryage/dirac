@@ -1,7 +1,7 @@
 (ns dirac.background.tools
   (:require-macros [cljs.core.async.macros :refer [go go-loop]])
   (:require [cljs.core.async :refer [<! chan timeout close! put!]]
-            [chromex.support :refer-macros [oget oset ocall oapply]]
+            [oops.core :refer [oget oset! ocall oapply]]
             [chromex.logging :refer-macros [log info warn error group group-end]]
             [chromex.ext.windows :as windows]
             [chromex.ext.tabs :as tabs]

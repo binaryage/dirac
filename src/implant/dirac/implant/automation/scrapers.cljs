@@ -1,7 +1,7 @@
 (ns dirac.implant.automation.scrapers
   (:require-macros [com.rpl.specter.macros :refer [providepath declarepath transform select select-one select-first]]
                    [dirac.implant.automation.scrapers :refer [safe->>]])
-  (:require [chromex.support :refer-macros [oget oset ocall oapply]]
+  (:require [oops.core :refer [oget oset! ocall oapply]]
             [chromex.logging :refer-macros [log warn error info]]
             [cljs.pprint :refer [pprint]]
             [com.rpl.specter :refer [must continue-then-stay multi-path if-path ALL STAY]]
@@ -47,11 +47,7 @@
 (defn find-callstack-pane-element []
   (let [title-els (dom/query-selector "html /deep/ .expandable-view-title")]
     (if-let [callstack-title-el (select-first [ALL is-callstack-title-el?] title-els)]
-      (if-let [callstack-body-el (-> callstack-title-el
-                                     (oget "parentNode")
-                                     (oget "parentNode")
-                                     (oget "host")
-                                     (oget "firstChild"))]
+      (if-let [callstack-body-el (oget callstack-title-el "?parentNode.?parentNode.?host.?firstChild")]
         (first (dom/query-selector callstack-body-el "html /deep/ .widget"))))))
 
 (defn get-callstack-pane-rep [callstack-pane-el]

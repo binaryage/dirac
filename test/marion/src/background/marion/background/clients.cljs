@@ -2,7 +2,7 @@
   (:require-macros [cljs.core.async.macros :refer [go go-loop]]
                    [marion.background.logging :refer [log info warn error]])
   (:require [cljs.core.async :refer [<! chan timeout]]
-            [chromex.support :refer-macros [oget ocall oapply]]
+            [oops.core :refer [oget ocall oapply]]
             [chromex.protocols :refer [post-message! get-sender]]
             [devtools.toolbox :refer [envelope]]
             [marion.background.feedback :as feedback]

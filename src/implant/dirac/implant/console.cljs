@@ -1,5 +1,5 @@
 (ns dirac.implant.console
-  (:require [chromex.support :refer-macros [oget ocall oapply]]
+  (:require [oops.core :refer [oget ocall oapply]]
             [chromex.logging :refer-macros [log warn error group group-end]]
             [dirac.implant.helpers :refer [get-console-view]]))
 

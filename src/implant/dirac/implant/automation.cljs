@@ -2,7 +2,7 @@
   (:require-macros [cljs.core.async.macros :refer [go go-loop]])
   (:require [cljs.core.async :refer [put! <! chan timeout alts! close!]]
             [chromex.logging :refer-macros [log warn error group group-end]]
-            [chromex.support :refer-macros [oget oset ocall oapply]]
+            [oops.core :refer [oget oset! ocall oapply]]
             [cljs.reader :as reader]
             [dirac.settings :refer-macros [get-automation-entry-point-key]]
             [dirac.utils :as utils]
@@ -207,7 +207,7 @@
         (marshalled-callback command)))))
 
 (defn install-automation-support! []
-  (oset js/window [(get-automation-entry-point-key)] automation-handler))
+  (oset! js/window (str "!" (get-automation-entry-point-key)) automation-handler))
 
 (defn install! []
   (when (options/should-automate?)

@@ -3,7 +3,7 @@
                    [marion.background.logging :refer [log info warn error]])
   (:require [cljs.core.async :refer [<! chan timeout]]
             [chromex.protocols :refer [post-message! get-sender]]
-            [chromex.support :refer-macros [oget ocall oapply]]))
+            [oops.core :refer [oget ocall oapply]]))
 
 ; "feedback" are events logged via calling feedback() from dirac extension and dirac frontends
 ; feedback messages should be delivered to current task runner to be appended to current transcript

@@ -2,7 +2,7 @@
   (:require-macros [cljs.core.async.macros :refer [go go-loop]]
                    [dirac.options.logging :refer [log warn error info]])
   (:require [cljs.core.async :refer [<! chan close!]]
-            [chromex.support :refer-macros [oget ocall oapply]]
+            [oops.core :refer [oget ocall oapply]]
             [chromex.chrome-event-channel :refer [make-chrome-event-channel]]
             [chromex.protocols :refer [get set]]
             [chromex.ext.storage :as storage]))

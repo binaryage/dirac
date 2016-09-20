@@ -1,6 +1,6 @@
 (ns dirac.background.state
   (:require-macros [dirac.background.logging :refer [log info warn error]])
-  (:require [chromex.support :refer-macros [oget oset ocall oapply]]
+  (:require [oops.core :refer [oget oset! ocall oapply]]
             [chromex.protocols :refer [post-message! get-sender get-name]]
             [devtools.toolbox :as toolbox]
             [dirac.utils :as utils]

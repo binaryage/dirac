@@ -1,5 +1,5 @@
 (ns dirac.implant.reporter
-  (:require [chromex.support :refer-macros [oget oset ocall oapply]]
+  (:require [oops.core :refer [oget oset! ocall oapply]]
             [chromex.logging :refer-macros [log warn error group group-end]]
             [dirac.implant.feedback :as feedback]
             [dirac.implant.info :as info]
@@ -24,13 +24,13 @@
     false))
 
 (defn register-global-exception-handler! []
-  (oset js/window ["onerror"] devtools-exception-handler!))
+  (oset! js/window "onerror" devtools-exception-handler!))
 
 ; -- handling unhandled rejections in promises ------------------------------------------------------------------------------
 
 (defn devtools-unhandled-rejection-handler! [event]
   (let [header "Internal Dirac Error: DevTools code has thrown an unhandled rejection (in promise)"
-        body (utils/format-error (oget event "reason"))]
+        body (utils/format-error (oget event "?reason"))]
     (report! header body)
     false))
 
@@ -51,7 +51,7 @@
 
 (defn register-console-error-handler! []
   (set! *original-console-error-fn* (oget js/console "error"))
-  (oset js/console ["error"] console-error-fn))
+  (oset! js/console "error" console-error-fn))
 
 ; -- installation -----------------------------------------------------------------------------------------------------------
 

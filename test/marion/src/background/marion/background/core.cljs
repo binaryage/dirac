@@ -3,7 +3,7 @@
                    [dirac.settings :refer [get-marion-initial-wait-time]]
                    [marion.background.logging :refer [log info warn error]])
   (:require [cljs.core.async :refer [<! chan timeout]]
-            [chromex.support :refer-macros [oget ocall oapply]]
+            [oops.core :refer [oget ocall oapply]]
             [marion.background.chrome :as chrome]
             [marion.background.dirac :as dirac]))
 

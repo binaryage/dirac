@@ -1,7 +1,7 @@
 (ns dirac.automation.feedback
   (:require-macros [cljs.core.async.macros :refer [go go-loop]])
   (:require [cljs.core.async :refer [put! <! chan timeout alts! close!]]
-            [chromex.support :refer-macros [oget oset ocall oapply]]
+            [oops.core :refer [oget oset! ocall oapply]]
             [chromex.logging :refer-macros [log warn]]
             [dirac.automation.messages :as messages]
             [dirac.automation.transcript-host :as transcript-host]))
@@ -30,11 +30,11 @@
 ; -- message processing -----------------------------------------------------------------------------------------------------
 
 (defn process-event! [event]
-  (if-let [data (oget event "data")]
-    (case (oget data "type")
+  (if-let [data (oget event "?data")]
+    (case (oget data "?type")
       "feedback-from-devtools" (append-to-transcript! "devtools" (oget data "transcript") (oget data "devtools"))
       "feedback-from-extension" (append-to-transcript! "extension" (oget data "transcript"))
-      "feedback-from-scenario" (append-to-transcript! (or (oget data "label") "scenario") (oget data "transcript"))
+      "feedback-from-scenario" (append-to-transcript! (or (oget data "?label") "scenario") (oget data "transcript"))
       nil)))
 
 (defn start-processing-messages! []

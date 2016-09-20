@@ -1,5 +1,5 @@
 (ns dirac.quoted-printable
-  (:require [chromex.support :refer-macros [oget oset ocall oapply]]
+  (:require [oops.core :refer [oget oset! ocall oapply]]
             [chromex.logging :refer-macros [log info warn error]]))
 
 ; taken from

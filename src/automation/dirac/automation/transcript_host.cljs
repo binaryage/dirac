@@ -6,7 +6,7 @@
                                            get-transcript-label-padding-type]])
   (:require [cljs.core.async :refer [put! <! chan timeout alts! close!]]
             [dirac.automation.transcript :as transcript]
-            [chromex.support :refer-macros [oget oset ocall oapply]]
+            [oops.core :refer [oget oset! ocall oapply]]
             [chromex.logging :refer-macros [log warn error info]]
             [cuerdas.core :as cuerdas]
             [dirac.automation.helpers :as helpers]

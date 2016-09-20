@@ -1,5 +1,5 @@
 (ns dirac.implant.feedback
-  (:require [chromex.support :refer-macros [oget oset ocall oapply]]
+  (:require [oops.core :refer [oget oset! ocall oapply]]
             [chromex.logging :refer-macros [log warn error group group-end]]
             [dirac.settings :refer-macros [get-flush-pending-feedback-messages-key
                                            get-dirac-intercom-key]]
@@ -21,7 +21,7 @@
 
 (defn install! []
   (when (options/should-automate?)
-    (oset js/window [(get-flush-pending-feedback-messages-key)] flush-pending-messages!)))
+    (oset! js/window (str "!" (get-flush-pending-feedback-messages-key)) flush-pending-messages!)))
 
 (defn post! [text]
   (when (options/should-automate?)

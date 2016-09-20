@@ -1,7 +1,7 @@
 (ns dirac.sugar
   (:require-macros [cljs.core.async.macros :refer [go go-loop]])
   (:require [cljs.core.async :refer [<! chan put! close!]]
-            [chromex.support :refer-macros [oget oset ocall oapply]]
+            [oops.core :refer [oget oset! ocall oapply]]
             [chromex.logging :refer-macros [log info warn error group group-end]]
             [chromex.config :refer-macros [with-muted-error-reporting]]
             [chromex.chrome-event-channel :refer [make-chrome-event-channel]]
@@ -38,13 +38,13 @@
 
 (defn set-window-params-dimensions! [window-params left top width height]
   (if (some? left)
-    (oset window-params ["left"] (utils/parse-int left)))
+    (oset! window-params "!left" (utils/parse-int left)))
   (if (some? top)
-    (oset window-params ["top"] (utils/parse-int top)))
+    (oset! window-params "!top" (utils/parse-int top)))
   (if (some? width)
-    (oset window-params ["width"] (utils/parse-int width)))
+    (oset! window-params "!width" (utils/parse-int width)))
   (if (some? height)
-    (oset window-params ["height"] (utils/parse-int height)))
+    (oset! window-params "!height" (utils/parse-int height)))
   window-params)
 
 (defn get-window-id [window]
@@ -69,7 +69,7 @@
                 (case event-id
                   ::tabs/on-updated (let [[updated-tab-id change-info] event-args]
                                       (when (and (= tab-id updated-tab-id)
-                                                 (= (oget change-info "status") "complete"))
+                                                 (= (oget change-info "?status") "complete"))
                                         (close! chrome-event-channel)
                                         (put! result-chan [window tab-id]))))
                 (recur)))))))

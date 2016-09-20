@@ -1,5 +1,5 @@
 (ns dirac.implant.options
-  (:require [chromex.support :refer-macros [oget ocall oapply]]
+  (:require [oops.core :refer [oget ocall oapply]]
             [chromex.logging :refer-macros [log warn error group group-end]]))
 
 (defn get-query-param [name]

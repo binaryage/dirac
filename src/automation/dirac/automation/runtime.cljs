@@ -1,7 +1,6 @@
 (ns dirac.automation.runtime
-  (:require-macros [chromex.support :refer [oget oset ocall oapply]])
   (:require [chromex.logging :refer-macros [log warn error info]]
-            [chromex.support :refer-macros [oset oget]]
+            [oops.core :refer [oset! oget ocall oapply]]
             [dirac.runtime :as runtime]
             [dirac.runtime.prefs :as runtime-prefs]
             [dirac.automation.helpers :as helpers]
@@ -18,10 +17,10 @@
       (runtime-prefs/merge-prefs! prefs))))
 
 (defn monkey-patch-runtime-get-version! [mock-version]
-  (oset js/window ["dirac" "runtime" "get_version"] (constantly mock-version)))
+  (oset! js/window ["dirac" "runtime" "get_version"] (constantly mock-version)))
 
 (defn monkey-patch-runtime-repl-get-api-version! [mock-version]
-  (oset js/window ["dirac" "runtime" "repl" "get_api_version"] (constantly mock-version)))
+  (oset! js/window ["dirac" "runtime" "repl" "get_api_version"] (constantly mock-version)))
 
 (defn promise-based-set-immediate [callback]
   (-> (ocall js/Promise "resolve")

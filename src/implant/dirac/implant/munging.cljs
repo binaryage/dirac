@@ -1,6 +1,6 @@
 (ns dirac.implant.munging
   (:require [clojure.string :as string]
-            [chromex.support :refer-macros [oget oset ocall oapply]]
+            [oops.core :refer [oget oset! ocall oapply]]
             [devtools.munging :as m]))
 
 (defn is-cljs-function-name? [munged-name]

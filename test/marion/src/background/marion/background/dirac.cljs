@@ -4,7 +4,7 @@
                    [marion.background.logging :refer [log info warn error]])
   (:require [cljs.core.async :refer [<! chan timeout]]
             [devtools.toolbox :refer [envelope]]
-            [chromex.support :refer-macros [oget ocall oapply]]
+            [oops.core :refer [oget ocall oapply]]
             [chromex.chrome-event-channel :refer [make-chrome-event-channel]]
             [chromex.protocols :refer [post-message! get-sender]]
             [marion.background.helpers :as helpers]
@@ -53,8 +53,8 @@
 ; -- message dispatch -------------------------------------------------------------------------------------------------------
 
 (defn process-message! [message]
-  (let [message-type (oget message "type")
-        message-id (oget message "id")]
+  (let [message-type (oget message "?type")
+        message-id (oget message "?id")]
     (log "dispatch dirac extension message" message-id message-type (envelope message))
     (case message-type
       "feedback-from-extension" (feedback/broadcast-feedback! message)

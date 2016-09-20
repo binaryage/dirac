@@ -1,5 +1,5 @@
 (ns dirac.automation.transcript
-  (:require [chromex.support :refer-macros [oget oset ocall oapply]]))
+  (:require [oops.core :refer [oget oset! ocall oapply]]))
 
 ; transcript is a <pre> tag which collects textual messages about test execution:
 ; 1) issued automation commands
@@ -35,7 +35,7 @@
   (let [row-el (.createElement js/document "div")]
     (if (some? style)
       (.setAttribute row-el "style" style))
-    (oset row-el ["textContent"] text)
+    (oset! row-el "textContent" text)
     (.appendChild transcript-el row-el)))
 
 (defn read-transcript [transcript-el]

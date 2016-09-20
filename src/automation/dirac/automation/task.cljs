@@ -1,7 +1,7 @@
 (ns dirac.automation.task
   (:require-macros [cljs.core.async.macros :refer [go go-loop]])
   (:require [cljs.core.async :refer [put! <! chan timeout alts! close!]]
-            [chromex.support :refer-macros [oget oset ocall oapply]]
+            [oops.core :refer [oget oset! ocall oapply]]
             [chromex.logging :refer-macros [log warn error info]]
             [dirac.settings :refer-macros [get-signal-server-url
                                            get-chrome-remote-debugging-port
@@ -208,4 +208,4 @@
   false)
 
 (defn register-global-exception-handler! []
-  (oset js/window ["onerror"] task-exception-handler!))
+  (oset! js/window "onerror" task-exception-handler!))

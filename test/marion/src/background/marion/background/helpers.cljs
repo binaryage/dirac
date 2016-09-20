@@ -2,7 +2,7 @@
   (:require-macros [cljs.core.async.macros :refer [go go-loop]]
                    [marion.background.logging :refer [log info warn error]])
   (:require [cljs.core.async :refer [<! chan timeout]]
-            [chromex.support :refer-macros [oget ocall oapply]]
+            [oops.core :refer [oget ocall oapply]]
             [chromex.ext.tabs :as tabs]
             [chromex.ext.runtime :as runtime]
             [chromex.ext.management :as management]

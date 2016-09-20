@@ -1,6 +1,6 @@
 (ns dirac.implant.info
   (:require-macros [dirac.runtime.core :refer [get-current-browser-name get-current-platform-name]])
-  (:require [chromex.support :refer-macros [oget oset ocall oapply]]
+  (:require [oops.core :refer [oget oset! ocall oapply]]
             [chromex.logging :refer-macros [log warn error group group-end]]
             [goog.labs.userAgent.browser :as ua-browser]
             [goog.labs.userAgent.platform :as ua-platform]

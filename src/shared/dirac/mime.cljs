@@ -1,5 +1,5 @@
 (ns dirac.mime
-  (:require [chromex.support :refer-macros [oget oset ocall oapply]]
+  (:require [oops.core :refer [oget oset! ocall oapply]]
             [chromex.logging :refer-macros [log info warn error group group-end]]
             [clojure.string :as string]))
 

@@ -3,7 +3,7 @@
   (:require [cljs.core.async :refer [put! <! chan timeout alts! close!]]
             [devtools.toolbox :refer [envelope]]
             [devtools.preload]
-            [chromex.support :refer-macros [oget oset ocall oapply]]
+            [oops.core :refer [oget oset! oset!+ ocall oapply]]
             [chromex.logging :refer-macros [log warn error info]]
             [cljs.repl]
             [goog.async.Debouncer]
@@ -141,7 +141,7 @@
 
 (defn enhance-dirac-object! [dirac]
   (doseq [[name fn] dirac-api-to-export]
-    (oset dirac [name] fn)))
+    (oset!+ dirac (str "!" name) fn)))
 
 ; -- init code --------------------------------------------------------------------------------------------------------------
 

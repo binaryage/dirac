@@ -3,7 +3,7 @@
   (:require [cljs.core.async :refer [put! <! chan timeout alts! close!]]
             [cljs.reader :as reader]
             [clojure.string :as str]
-            [chromex.support :refer-macros [oget oset ocall oapply]]
+            [oops.core :refer [oget oset! ocall oapply]]
             [chromex.logging :refer-macros [log info warn error]]
             [dirac.settings :refer-macros [get-marion-message-reply-timeout]]
             [dirac.utils :as utils]))
@@ -98,7 +98,7 @@
 ; see https://developer.chrome.com/extensions/content_scripts#host-page-communication
 (defn post-message-with-timeout! [js-message reply-timeout]
   (let [message-id (get-next-message-id!)]
-    (oset js-message ["id"] message-id)
+    (oset! js-message "!id" message-id)
     (let [post-message! #(.postMessage js/window js-message "*")]
       (if (or (nil? reply-timeout) (= :no-timeout reply-timeout))
         (go
@@ -176,8 +176,8 @@
 ; -- message processing -----------------------------------------------------------------------------------------------------
 
 (defn process-event! [event]
-  (if-let [data (oget event "data")]
-    (case (oget data "type")
+  (if-let [data (oget event "?data")]
+    (case (oget data "?type")
       "reply" (process-reply! data)
       nil)))
 

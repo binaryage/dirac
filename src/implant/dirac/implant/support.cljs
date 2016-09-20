@@ -3,7 +3,7 @@
   "Connects parinfer mode functions to CodeMirror"
   (:require
     [clojure.string :refer [join]]
-    [chromex.support :refer-macros [oget ocall oapply]]
+    [oops.core :refer [oget ocall oapply]]
     [dirac.implant.parinfer :refer [indent-mode paren-mode]]
     [dirac.implant.state :refer [state]]))
 

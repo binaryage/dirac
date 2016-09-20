@@ -3,7 +3,7 @@
                    [marion.background.logging :refer [log info warn error]])
   (:require [cljs.core.async :refer [<! chan timeout]]
             [chromex.protocols :refer [post-message! get-sender]]
-            [chromex.support :refer-macros [oget ocall oapply]]))
+            [oops.core :refer [oget ocall oapply]]))
 
 ; "notifications" are events sent from task runner to scenario page
 ;

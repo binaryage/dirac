@@ -3,7 +3,7 @@
                    [marion.content-script.logging :refer [log info warn error debug-log]])
   (:require [cljs.core.async :refer [<! chan]]
             [devtools.toolbox :refer [envelope]]
-            [chromex.support :refer-macros [oget ocall oapply]]
+            [oops.core :refer [oget ocall oapply]]
             [chromex.protocols :refer [post-message!]]
             [chromex.chrome-event-channel :refer [make-chrome-event-channel]]))
 
@@ -28,7 +28,7 @@
 ; forward all marion-* messages to marion's background page
 (defn process-page-message [port dom-event]
   {:pre [port dom-event]}
-  (if-let [message (oget dom-event "data")]
+  (if-let [message (oget dom-event "?data")]
     (if (marion-message? message)
       (handle-marion-message! port message))))
 

@@ -2,7 +2,7 @@
   (:require-macros [cljs.core.async.macros :refer [go go-loop]]
                    [dirac.background.logging :refer [log info warn error]])
   (:require [cljs.core.async :refer [<! chan timeout]]
-            [chromex.support :refer-macros [oget oset ocall oapply]]
+            [oops.core :refer [oget oset! ocall oapply]]
             [chromex.ext.page-capture :as page-capture]
             [dirac.mime :as mime]
             [dirac.quoted-printable :as qp]

@@ -10,7 +10,7 @@
   "
   (:require-macros [cljs.core.async.macros :refer [go go-loop]])
   (:require [cljs.core.async :refer [put! <! chan timeout alts! close!]]
-            [chromex.support :refer-macros [oget oset ocall oapply]]
+            [oops.core :refer [oget oset! ocall oapply]]
             [chromex.logging :refer-macros [log error]]
             [dirac.automation.machinery :as machinery]
             [dirac.automation.helpers :as helpers]

@@ -1,7 +1,7 @@
 (ns dirac.background.helpers
   (:require-macros [cljs.core.async.macros :refer [go go-loop]])
   (:require [cljs.core.async :refer [<! chan put! close! timeout]]
-            [chromex.support :refer-macros [oget oset ocall oapply]]
+            [oops.core :refer [oget oget+ oset! oset!+ ocall oapply]]
             [chromex.logging :refer-macros [log info warn error group group-end]]
             [chromex.ext.tabs :as tabs]
             [chromex.ext.extension :as extension]
@@ -105,11 +105,11 @@
   (filter (partial is-devtools-view? devtools-id) (extension/get-views)))
 
 (defn has-automation-support? [view]
-  (some? (oget view (get-automation-entry-point-key))))
+  (some? (oget+ view (str "?" (get-automation-entry-point-key)))))
 
 (defn get-automation-entry-point [view]
   {:post [(fn? %)]}
-  (oget view (get-automation-entry-point-key)))
+  (oget+ view (get-automation-entry-point-key)))
 
 (defn safe-serialize [value]
   (try
@@ -177,7 +177,7 @@
   (let [matching-views (get-devtools-views devtools-id)]
     (if (= (count matching-views) 1)
       (let [view (first matching-views)]
-        (oset view [(get-dirac-intercom-key)] handler)
-        (when-let [flush-fn (oget view (get-flush-pending-feedback-messages-key))]
+        (oset!+ view (str "!" (get-dirac-intercom-key)) handler)
+        (when-let [flush-fn (oget+ view (str "?" (get-flush-pending-feedback-messages-key)))]
           (flush-fn)))
       (error "unable to install intercom from dirac extension to dirac frontend" devtools-id))))

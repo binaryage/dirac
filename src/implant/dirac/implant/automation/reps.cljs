@@ -1,6 +1,6 @@
 (ns dirac.implant.automation.reps
   (:require-macros [com.rpl.specter.macros :refer [providepath declarepath select select-first]])
-  (:require [chromex.support :refer-macros [oget oset ocall oapply]]
+  (:require [oops.core :refer [oget oset! ocall oapply]]
             [chromex.logging :refer-macros [log warn error info]]
             [com.rpl.specter :refer [must continue-then-stay multi-path if-path ALL]]
             [dirac.dom :as dom]))

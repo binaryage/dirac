@@ -3,7 +3,7 @@
                    [marion.background.logging :refer [log info warn error]])
   (:require [cljs.core.async :refer [<! chan timeout put!]]
             [devtools.toolbox :refer [envelope]]
-            [chromex.support :refer-macros [oget oset ocall oapply]]
+            [oops.core :refer [oget oset! ocall oapply]]
             [chromex.protocols :refer [post-message! get-sender]]
             [marion.background.helpers :as helpers]
             [marion.background.feedback :as feedback]

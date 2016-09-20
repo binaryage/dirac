@@ -6,7 +6,7 @@
             [cljs.tools.reader.reader-types :as reader-types]
             [clojure.walk :as walk]
             [cuerdas.core :as cuerdas]
-            [chromex.support :refer-macros [oget ocall oapply]]
+            [oops.core :refer [oget ocall oapply]]
             [dirac.implant.console :as console]
             [dirac.implant.weasel-client :as weasel-client]
             [dirac.implant.nrepl-tunnel-client :as nrepl-tunnel-client]

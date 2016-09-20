@@ -2,7 +2,7 @@
   (:require-macros [cljs.core.async.macros :refer [go go-loop]])
   (:require [cljs.core.async :refer [put! <! chan timeout alts! close!]]
             [cljs.core.async.impl.protocols :as core-async]
-            [chromex.support :refer-macros [oget ocall oapply]]
+            [oops.core :refer [oget oget+ ocall oapply]]
             [chromex.logging :refer-macros [log warn error]]
             [dirac.implant.feedback :as feedback]
             [clojure.string :as string]
@@ -35,7 +35,7 @@
 
 (defn get-dirac []
   {:post [(object? %)]}
-  (if-let [dirac (oget js/window "dirac")]
+  (if-let [dirac (oget js/window "?dirac")]
     dirac
     (throw (ex-info (str "window.dirac not found") {}))))
 
@@ -43,16 +43,16 @@
   (cond
     (string? e) e
     (vector? e) (pr-str e)
-    :else (if-let [text (oget e "text")]
+    :else (if-let [text (oget e "?text")]
             (str text)
-            (if-let [stack (oget e "stack")]
+            (if-let [stack (oget e "?stack")]
               (.toString stack)
               (.toString e)))))
 
 (def supported-contexts #{:default :current})
 
 (defn code-as-string [code]
-  (if-let [eval-fn (oget (get-dirac) "codeAsString")]
+  (if-let [eval-fn (oget (get-dirac) "?codeAsString")]
     (eval-fn code)
     (error "window.dirac.codeAsString not found")))
 
@@ -100,9 +100,9 @@
   ([context code callback]
    (let [dirac (get-dirac)
          has-context-fn-name (get-has-context-fn-name context)]
-     (if-let [has-context-fn (oget dirac has-context-fn-name)]
+     (if-let [has-context-fn (oget+ dirac (str "?" has-context-fn-name))]
        (let [eval-fn-name (get-eval-in-context-fn-name context)]
-         (if-let [eval-fn (oget dirac eval-fn-name)]
+         (if-let [eval-fn (oget+ dirac (str "?" eval-fn-name))]
            (let [callback-wrapper (fn [result-remote-object exception-details]
                                     (if callback
                                       (let [result (if (some? exception-details)
