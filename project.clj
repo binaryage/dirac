@@ -241,9 +241,10 @@
                           {:dirac-implant
                            {:notify-command ["scripts/cljsbuild-notify.sh" "dirac-implant"]
                             :source-paths   ["src/settings"
-                                             "src/implant"
                                              "src/lib"
-                                             "src/project"]
+                                             "src/shared"
+                                             "src/project"
+                                             "src/implant"]
                             :compiler       {:output-to       "resources/unpacked/devtools/front_end/dirac/compiled/implant/implant.js"
                                              :output-dir      "resources/unpacked/devtools/front_end/dirac/compiled/implant"
                                              :external-config {:devtools/config {:features-to-install           :all
@@ -286,9 +287,10 @@
               :cljsbuild {:builds
                           {:dirac-implant
                            {:source-paths ["src/settings"
-                                           "src/implant"
                                            "src/lib"
-                                           "src/project"]
+                                           "src/shared"
+                                           "src/project"
+                                           "src/implant"]
                             :compiler     {:output-to     "target/resources/release/devtools/front_end/dirac/compiled/implant/implant.js"
                                            :output-dir    "target/resources/release/devtools/front_end/dirac/compiled/implant"
                                            :optimizations :advanced
