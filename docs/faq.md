@@ -87,6 +87,14 @@ It tells you that this name represents both a cljs namespace and a macro namespa
 
 Gray names are shadowed, meaning that something else with the same name took precedence.
 
+### How do you keep Dirac DevTools up to date with official releases?
+
+I have been [merging upstream changes](https://github.com/binaryage/dirac/network) pretty frequently. 
+Most merges are without conflicts or with trivial changes, git helps here a lot.
+
+Additionally I maintain a set of automated tests which exercise Dirac features. This allows me to stay pretty confident that nothing broke between updates. 
+For inspiration you can watch [this video](https://youtu.be/nTEelzQTN0w) showing a typical test run (as of Sep-2016).
+
 ### Something broke! How do I debug Dirac DevTools frontend?
 
 This is not practical because Dirac DevTools code is minified and ClojureScript parts are compiled with `:advanced` optimizations.
