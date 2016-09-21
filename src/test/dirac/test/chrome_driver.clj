@@ -146,6 +146,8 @@
               "--homepage=about:blank"
               "--enable-experimental-extension-apis"
               "--disable-gpu"
+              "--disable-infobars"
+              "--disable-default-apps"
               load-extensions-arg]]
     (.addArguments chrome-options args)
 
