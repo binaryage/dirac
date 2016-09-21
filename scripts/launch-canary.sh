@@ -20,6 +20,8 @@ fi
 "$EXE" \
       --remote-debugging-port=9222 \
       --no-first-run \
+      --disable-infobars \
+      --disable-default-apps \
       --user-data-dir="$DIRAC_USER_PROFILE" \
       localhost:9222/json
 
