@@ -63,8 +63,6 @@
 (def ^:const FLUSH_PENDING_FEEDBACK_MESSAGES_KEY "diracFlushPendingFeedbackMessages")
 (def ^:const DIRAC_INTERCOM_KEY "diracIntercom")
 
-(def ^:const FLUSH_TRANSCRIPT_DELAY 300)
-
 (def dirac-devtools-window-top (env :dirac-devtools-window-top))
 (def dirac-devtools-window-left (env :dirac-devtools-window-left))
 (def dirac-devtools-window-width (env :dirac-devtools-window-width))
@@ -242,6 +240,3 @@
 
 (defmacro get-dirac-intercom-key []
   DIRAC_INTERCOM_KEY)
-
-(defmacro get-flush-transcript-delay []
-  FLUSH_TRANSCRIPT_DELAY)

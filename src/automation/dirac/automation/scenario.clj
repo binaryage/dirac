@@ -20,6 +20,3 @@
      ~@forms
      (finally
        (dirac.automation.scenario/uncapture-console-as-feedback!))))
-
-(defmacro flush-transcript! []
-  `(cljs.core.async/<! (cljs.core.async/timeout (dirac.settings/get-flush-transcript-delay))))

@@ -3,7 +3,7 @@
   (:require [cljs.core.async :refer [put! <! chan timeout alts! close!]]
             [chromex.logging :refer-macros [log]]
             [dirac.automation.runtime :refer [init-runtime!]]
-            [dirac.automation.scenario :as scenario :refer-macros [flush-transcript! with-feedback]]
+            [dirac.automation.scenario :as scenario :refer-macros [with-feedback]]
             [dirac.settings]
             [dirac.runtime :as runtime]
             [dirac.runtime.util :as runtime-util]
