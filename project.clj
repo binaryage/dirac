@@ -13,7 +13,7 @@
                  [org.clojure/tools.logging "0.3.1"]
                  [org.clojure/tools.cli "0.3.5"]
                  [org.clojure/tools.nrepl "0.2.12"]
-                 [binaryage/oops "0.2.0"]
+                 [binaryage/oops "0.3.0"]
                  [http-kit "2.2.0"]
                  [clj-logging-config "1.9.12"]
                  [version-clj "0.1.2"]
@@ -23,7 +23,7 @@
 
                  ; we cannot use :dependencies under individual profiles because Cursive recognizes only root level
                  ; thus we mark extra deps with :scope "test" and filter them later when producing jar library
-                 [binaryage/chromex "0.5.0" :scope "test"]
+                 [binaryage/chromex "0.5.1" :scope "test"]
                  [binaryage/devtools "0.8.2" :scope "test"]
                  [cljs-http "0.1.41" :scope "test"]
                  [figwheel "0.5.7" :scope "test"]
