@@ -37,11 +37,11 @@
 (def ^:const MARION_MESSAGE_REPLY_TIMEOUT (seconds 10))
 
 (def ^:const DEFAULT_TASK_TIMEOUT (minutes 5))
-(def ^:const DEFAULT_TEST_HTML_LOAD_TIMEOUT (seconds 1))
-(def ^:const SIGNAL_SERVER_CLOSE_WAIT_TIMEOUT (seconds 2))
+(def ^:const DEFAULT_TEST_HTML_LOAD_TIMEOUT (seconds 5))
+(def ^:const SIGNAL_SERVER_CLOSE_WAIT_TIMEOUT (milisec 500))
 (def ^:const PENDING_REPLIES_WAIT_TIMEOUT (seconds 2))
-(def ^:const SIGNAL_CLIENT_TASK_RESULT_DELAY (milisec 500))
-(def ^:const SIGNAL_CLIENT_CLOSE_DELAY (milisec 500))
+(def ^:const SIGNAL_CLIENT_TASK_RESULT_DELAY (milisec 0))
+(def ^:const SIGNAL_CLIENT_CLOSE_DELAY (milisec 0))
 (def ^:const SIGNAL_SERVER_MAX_CONNECTION_TIME (seconds 5))
 
 (def ^:const ACTUAL_TRANSCRIPTS_ROOT_PATH "test/browser/transcripts/actual/")
@@ -51,7 +51,7 @@
 (def ^:const TRANSCRIPT_LABEL_PADDING_TYPE :right)
 
 (def ^:const BROWSER_CONNECTION_MINIMAL_COOLDOWN (seconds 4))
-(def ^:const SCRIPT_RUNNER_LAUNCH_DELAY (seconds 1))
+(def ^:const SCRIPT_RUNNER_LAUNCH_DELAY (seconds 2))
 
 (def ^:const FIXTURES_SERVER_HOST "localhost")
 (def ^:const FIXTURES_SERVER_PORT 9090)
