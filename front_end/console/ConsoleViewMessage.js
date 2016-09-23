@@ -738,7 +738,7 @@ WebInspector.ConsoleViewMessage.prototype = {
                 return;
             rootElement.removeChildren();
             if (wasThrown) {
-                var element = rootElement.createChild("span", "error-message");
+                var element = rootElement.createChild("span");
                 element.textContent = WebInspector.UIString("<exception>");
                 element.title = /** @type {string} */ (result.description);
             } else if (isArrayEntry) {
@@ -958,9 +958,6 @@ WebInspector.ConsoleViewMessage.prototype = {
 
         element.appendChild(this.formattedMessage());
 
-        if (this._repeatCount > 1)
-            this._showRepeatCountElement();
-
         this.updateTimestamp(WebInspector.moduleSetting("consoleTimestampsEnabled").get());
 
         return this._element;
@@ -1015,6 +1012,16 @@ WebInspector.ConsoleViewMessage.prototype = {
         }
 
         this._wrapperElement.appendChild(this.contentElement());
+        if (this._repeatCount > 1)
+            this._showRepeatCountElement();
+    },
+
+    /**
+     * @return {number}
+     */
+    repeatCount: function()
+    {
+        return this._repeatCount || 1;
     },
 
     resetIncrementRepeatCount: function()
@@ -1053,120 +1060,10 @@ WebInspector.ConsoleViewMessage.prototype = {
             default:
                 this._repeatCountElement.type = "info";
             }
-            this._element.insertBefore(this._repeatCountElement, this._element.firstChild);
+            this._wrapperElement.insertBefore(this._repeatCountElement, this._element);
             this._element.classList.add("repeated-message");
         }
         this._repeatCountElement.textContent = this._repeatCount;
-    },
-
-    /**
-     * @override
-     * @return {string}
-     */
-    toString: function()
-    {
-        var sourceString;
-        switch (this._message.source) {
-        case WebInspector.ConsoleMessage.MessageSource.XML:
-            sourceString = "XML";
-            break;
-        case WebInspector.ConsoleMessage.MessageSource.JS:
-            sourceString = "JavaScript";
-            break;
-        case WebInspector.ConsoleMessage.MessageSource.Network:
-            sourceString = "Network";
-            break;
-        case WebInspector.ConsoleMessage.MessageSource.ConsoleAPI:
-            sourceString = "ConsoleAPI";
-            break;
-        case WebInspector.ConsoleMessage.MessageSource.Storage:
-            sourceString = "Storage";
-            break;
-        case WebInspector.ConsoleMessage.MessageSource.AppCache:
-            sourceString = "AppCache";
-            break;
-        case WebInspector.ConsoleMessage.MessageSource.Rendering:
-            sourceString = "Rendering";
-            break;
-        case WebInspector.ConsoleMessage.MessageSource.CSS:
-            sourceString = "CSS";
-            break;
-        case WebInspector.ConsoleMessage.MessageSource.Security:
-            sourceString = "Security";
-            break;
-        case WebInspector.ConsoleMessage.MessageSource.Other:
-            sourceString = "Other";
-            break;
-        }
-
-        var typeString;
-        switch (this._message.type) {
-        case WebInspector.ConsoleMessage.MessageType.Log:
-            typeString = "Log";
-            break;
-        case WebInspector.ConsoleMessage.MessageType.Debug:
-            typeString = "Debug";
-            break;
-        case WebInspector.ConsoleMessage.MessageType.Info:
-            typeString = "Info";
-            break;
-        case WebInspector.ConsoleMessage.MessageType.Error:
-            typeString = "Error";
-            break;
-        case WebInspector.ConsoleMessage.MessageType.Warning:
-            typeString = "Warning";
-            break;
-        case WebInspector.ConsoleMessage.MessageType.Dir:
-            typeString = "Dir";
-            break;
-        case WebInspector.ConsoleMessage.MessageType.DirXML:
-            typeString = "Dir XML";
-            break;
-        case WebInspector.ConsoleMessage.MessageType.Trace:
-            typeString = "Trace";
-            break;
-        case WebInspector.ConsoleMessage.MessageType.StartGroupCollapsed:
-        case WebInspector.ConsoleMessage.MessageType.StartGroup:
-            typeString = "Start Group";
-            break;
-        case WebInspector.ConsoleMessage.MessageType.EndGroup:
-            typeString = "End Group";
-            break;
-        case WebInspector.ConsoleMessage.MessageType.Assert:
-            typeString = "Assert";
-            break;
-        case WebInspector.ConsoleMessage.MessageType.Result:
-            typeString = "Result";
-            break;
-        case WebInspector.ConsoleMessage.MessageType.Profile:
-        case WebInspector.ConsoleMessage.MessageType.ProfileEnd:
-            typeString = "Profiling";
-            break;
-        }
-
-        var levelString;
-        switch (this._message.level) {
-        case WebInspector.ConsoleMessage.MessageLevel.Log:
-            levelString = "Log";
-            break;
-        case WebInspector.ConsoleMessage.MessageLevel.Warning:
-            levelString = "Warning";
-            break;
-        case WebInspector.ConsoleMessage.MessageLevel.Debug:
-            levelString = "Debug";
-            break;
-        case WebInspector.ConsoleMessage.MessageLevel.Error:
-            levelString = "Error";
-            break;
-        case WebInspector.ConsoleMessage.MessageLevel.RevokedError:
-            levelString = "RevokedError";
-            break;
-        case WebInspector.ConsoleMessage.MessageLevel.Info:
-            levelString = "Info";
-            break;
-        }
-
-        return sourceString + " " + typeString + " " + levelString + ": " + this.formattedMessage().textContent + "\n" + this._message.url + " line " + this._message.line;
     },
 
     get text()
