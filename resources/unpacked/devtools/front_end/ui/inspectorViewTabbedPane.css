@@ -26,3 +26,7 @@
 .tabbed-pane-tab-slider {
     -webkit-filter: hue-rotate(280deg);
 }
+
+.tabbed-pane-left-toolbar {
+    margin-right: 0 !important;
+}

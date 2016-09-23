@@ -109,9 +109,7 @@ WebInspector.ConsoleView = function()
 
     this._promptElement = this._messagesElement.createChild("div", "source-code");
     this._promptElement.id = "console-prompt";
-    this._promptElement.spellcheck = false;
-
-    this._searchableView.setDefaultFocusedElement(this._promptElement);
+    this._promptElement.addEventListener("input", this._promptInput.bind(this), false);
 
     var diracPromptElement = this._messagesElement.createChild("div", "source-code");
     diracPromptElement.id = "console-prompt-dirac";
@@ -143,26 +141,30 @@ WebInspector.ConsoleView = function()
     this._consoleMessages = [];
     this._viewMessageSymbol = Symbol("viewMessage");
 
-    this._prompt = new WebInspector.TextPromptWithHistory(WebInspector.ExecutionContextSelector.completionsForTextPromptInCurrentContext);
-    this._prompt.setSuggestBoxEnabled(true);
-    this._prompt.setAutocompletionTimeout(0);
-    this._prompt.renderAsBlock();
-    var proxyElement = this._prompt.attach(this._promptElement);
-    proxyElement.addEventListener("keydown", this._promptKeyDown.bind(this), false);
-    proxyElement.addEventListener("input", this._promptInput.bind(this), false);
+    this._consoleHistorySetting = WebInspector.settings.createLocalSetting("consoleHistory", []);
+
+    this._prompt = new WebInspector.ConsolePrompt();
+    this._prompt.show(this._promptElement);
+    this._prompt.element.addEventListener("keydown", this._promptKeyDown.bind(this), true);
+
+    this._consoleHistoryAutocompleteSetting = WebInspector.moduleSetting("consoleHistoryAutocomplete");
+    this._consoleHistoryAutocompleteSetting.addChangeListener(this._consoleHistoryAutocompleteChanged, this);
+
+    var historyData = this._consoleHistorySetting.get();
+    this._prompt.history().setHistoryData(historyData);
+    this._consoleHistoryAutocompleteChanged();
+
+    this._updateFilterStatus();
+    WebInspector.moduleSetting("consoleTimestampsEnabled").addChangeListener(this._consoleTimestampsSettingChanged, this);
 
     this._pendingDiracCommands = {};
     this._lastDiracCommandId = 0;
     this._prompts = [];
     this._prompts.push({id: "js",
-                        prompt: this._prompt,
-                        element: this._promptElement,
-                        proxy: proxyElement});
+        prompt: this._prompt,
+        element: this._promptElement,
+        proxy: this._prompt.element});
     this._activePromptIndex = 0;
-
-    var dummyCompletionsFn = function(proxyElement, text, cursorOffset, wordRange, force, completionsReadyCallback) {
-    };
-
 
     if (dirac.hasREPL) {
         var diracPrompt = new WebInspector.DiracPromptWithHistory(diracPromptCodeMirrorInstance);
@@ -186,37 +188,26 @@ WebInspector.ConsoleView = function()
         statusContentElement.tabIndex = 0; // focusable for page-up/down
 
         diracPromptElement.focus = function() {
-          // delegate focus calls to code mirror or status
-          if (diracPromptElement.classList.contains("dirac-prompt-mode-edit")) {
-            diracPromptCodeMirrorInstance.focus();
-            diracPromptCodeMirrorInstance.refresh(); // HACK: this is needed to properly display cursor in empty codemirror,
-                                                     // http://stackoverflow.com/questions/10575833/codemirror-has-content-but-wont-display-until-keypress
-          } else {
-            statusContentElement.focus();
-          }
+            // delegate focus calls to code mirror or status
+            if (diracPromptElement.classList.contains("dirac-prompt-mode-edit")) {
+                diracPromptCodeMirrorInstance.focus();
+                diracPromptCodeMirrorInstance.refresh(); // HACK: this is needed to properly display cursor in empty codemirror,
+                                                         // http://stackoverflow.com/questions/10575833/codemirror-has-content-but-wont-display-until-keypress
+            } else {
+                statusContentElement.focus();
+            }
         };
 
         this._diracPromptDescriptor = {id: "dirac",
-                                       prompt: diracPrompt,
-                                       element: diracPromptElement,
-                                       proxy: diracProxyElement,
-                                       status: statusElement,
-                                       statusContent: statusContentElement,
-                                       statusBanner: statusBannerElement,
-                                       codeMirror: diracPromptCodeMirrorInstance};
+            prompt: diracPrompt,
+            element: diracPromptElement,
+            proxy: diracProxyElement,
+            status: statusElement,
+            statusContent: statusContentElement,
+            statusBanner: statusBannerElement,
+            codeMirror: diracPromptCodeMirrorInstance};
         this._prompts.push(this._diracPromptDescriptor);
     }
-
-    this._consoleHistorySetting = WebInspector.settings.createLocalSetting("consoleHistory", []);
-    var historyData = this._consoleHistorySetting.get();
-    this._prompt.history().setHistoryData(historyData);
-
-    this._consoleHistoryAutocompleteSetting = WebInspector.moduleSetting("consoleHistoryAutocomplete");
-    this._consoleHistoryAutocompleteSetting.addChangeListener(this._consoleHistoryAutocompleteChanged, this);
-    this._consoleHistoryAutocompleteChanged();
-
-    this._updateFilterStatus();
-    WebInspector.moduleSetting("consoleTimestampsEnabled").addChangeListener(this._consoleTimestampsSettingChanged, this);
 
     this._registerWithMessageSink();
     WebInspector.targetManager.observeTargets(this);
@@ -302,6 +293,7 @@ WebInspector.ConsoleView.prototype = {
         WebInspector.multitargetConsoleModel.addEventListener(WebInspector.ConsoleModel.Events.MessageUpdated, this._onConsoleMessageUpdated, this);
         WebInspector.multitargetConsoleModel.addEventListener(WebInspector.ConsoleModel.Events.CommandEvaluated, this._commandEvaluated, this);
         WebInspector.multitargetConsoleModel.messages().forEach(this._addConsoleMessage, this);
+        this._viewport.invalidate();
     },
 
     /**
@@ -429,18 +421,17 @@ WebInspector.ConsoleView.prototype = {
     wasShown: function()
     {
         this._viewport.refresh();
-        if (!this._prompt.isCaretInsidePrompt())
-            this._prompt.moveCaretToEndOfPrompt();
+        this.focus();
     },
 
     focus: function()
     {
-        if (this._promptElement === WebInspector.currentFocusElement())
+        if (this._prompt.hasFocus())
             return;
         // Set caret position before setting focus in order to avoid scrolling
         // by focus().
         this._prompt.moveCaretToEndOfPrompt();
-        WebInspector.setCurrentFocusElement(this._promptElement);
+        this._prompt.focus();
     },
 
     restoreScrollPositions: function()
@@ -882,6 +873,7 @@ WebInspector.ConsoleView.prototype = {
         this._consoleMessages = [];
         this._updateMessageList();
         this._hidePromptSuggestBox();
+        this._viewport.setStickToBottom(true);
         this._linkifier.reset();
     },
 
@@ -984,7 +976,9 @@ WebInspector.ConsoleView.prototype = {
             var lines = [];
             for (var i = 0; i < chunkSize && i + messageIndex < this.itemCount(); ++i) {
                 var message = this.itemElement(messageIndex + i);
-                lines.push(message.formattedMessage().deepTextContent());
+                var messageContent = message.formattedMessage().deepTextContent();
+                for (var j = 0; j < message.repeatCount(); ++j)
+                    lines.push(messageContent);
             }
             messageIndex += i;
             stream.write(lines.join("\n") + "\n", writeNextChunk.bind(this));
@@ -1041,8 +1035,8 @@ WebInspector.ConsoleView.prototype = {
     _messagesClicked: function(event)
     {
         var targetElement = event.deepElementFromPoint();
-        if (!this._prompt.isCaretInsidePrompt() && (!targetElement || targetElement.isComponentSelectionCollapsed()))
-            this._prompt.moveCaretToEndOfPrompt();
+        if (!targetElement || targetElement.isComponentSelectionCollapsed())
+            this.focus();
         var groupMessage = event.target.enclosingNodeOrSelfWithClass("console-group-title");
         if (!groupMessage)
             return;
@@ -1270,21 +1264,25 @@ WebInspector.ConsoleView.prototype = {
         return this._consoleFeedback;
     },
 
+    /**
+     * @param {!Event} event
+     */
     _promptKeyDown: function(event)
     {
-        if (event.key === "PageUp") {
+        var keyboardEvent = /** @type {!KeyboardEvent} */ (event);
+        if (keyboardEvent.key === "PageUp") {
             this._updateStickToBottomOnWheel();
             return;
-        } else if (isEnterKey(event)) {
-            this._enterKeyPressed(event);
+        } else if (isEnterKey(keyboardEvent)) {
+            this._enterKeyPressed(keyboardEvent);
             return;
         }
 
-        var shortcut = WebInspector.KeyboardShortcut.makeKeyFromEvent(event);
+        var shortcut = WebInspector.KeyboardShortcut.makeKeyFromEvent(keyboardEvent);
         var handler = this._shortcuts[shortcut];
         if (handler) {
             handler();
-            event.preventDefault();
+            keyboardEvent.preventDefault();
         }
     },
 
@@ -1305,7 +1303,29 @@ WebInspector.ConsoleView.prototype = {
         if (promptDescriptor.id == "dirac") {
            this.appendDiracCommand(str, null);
         } else {
-            this._appendCommand(str, true);
+            var currentExecutionContext = WebInspector.context.flavor(WebInspector.ExecutionContext);
+            if (!this._prompt.isCaretAtEndOfPrompt() || !currentExecutionContext) {
+                this._appendCommand(str, true);
+                return;
+            }
+            currentExecutionContext.target().runtimeModel.compileScript(str, "", false, currentExecutionContext.id, compileCallback.bind(this));
+
+            /**
+             * @param {!RuntimeAgent.ScriptId=} scriptId
+             * @param {?RuntimeAgent.ExceptionDetails=} exceptionDetails
+             * @this {WebInspector.ConsoleView}
+             */
+            function compileCallback(scriptId, exceptionDetails)
+            {
+                if (str !== this._prompt.text())
+                    return;
+                if (exceptionDetails && (exceptionDetails.exception.description === "SyntaxError: Unexpected end of input"
+                    || exceptionDetails.exception.description === "SyntaxError: Unterminated template literal")) {
+                    this._prompt.newlineAndIndent();
+                    return;
+                }
+                this._appendCommand(str, true);
+            }
         }
     },
 

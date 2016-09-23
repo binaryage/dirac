@@ -26,6 +26,18 @@ WebInspector.DiracPromptWithHistory = function(codeMirrorInstance) {
 
 WebInspector.DiracPromptWithHistory.prototype = {
 
+    /**
+     * @return {boolean}
+     */
+    hasFocus: function()
+    {
+        return this._codeMirror.hasFocus();
+    },
+
+    focus: function() {
+        this._codeMirror.focus();
+    },
+
     setCurrentClojureScriptNamespace: function(ns) {
         this._currentClojureScriptNamespace = ns;
     },

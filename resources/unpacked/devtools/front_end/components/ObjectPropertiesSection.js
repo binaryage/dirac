@@ -424,8 +424,6 @@ WebInspector.ObjectPropertyTreeElement.prototype = {
         this.nameElement = WebInspector.ObjectPropertiesSection.createNameElement(this.property.name, this.property._friendlyName, this.property._friendlyNameNum);
         if (!this.property.enumerable)
             this.nameElement.classList.add("object-properties-section-dimmed");
-        if (this.property.isAccessorProperty())
-            this.nameElement.classList.add("properties-accessor-property-name");
         if (this.property.synthetic)
             this.nameElement.classList.add("synthetic-property");
 

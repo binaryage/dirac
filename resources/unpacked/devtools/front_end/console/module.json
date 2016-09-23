@@ -109,6 +109,7 @@
         "DiracPrompt.js",
         "ConsoleContextSelector.js",
         "ConsoleViewMessage.js",
+        "ConsolePrompt.js",
         "ConsoleView.js",
         "ConsolePanel.js"
     ],

@@ -57,15 +57,25 @@
 #console-prompt {
     clear: right;
     position: relative;
-    padding: 3px 22px 1px 0;
-    margin-left: 24px;
+    margin: 0 22px 0 20px;
     min-height: 18px;  /* Sync with ConsoleViewMessage.js */
-    white-space: pre-wrap;
-    -webkit-user-modify: read-write-plaintext-only;
+}
+
+#console-prompt .CodeMirror {
+    padding: 3px 0 1px 0;
+}
+
+#console-prompt .CodeMirror-line {
+    padding-top: 0;
+}
+
+#console-prompt .CodeMirror-lines {
+    padding-top: 0;
 }
 
 #console-prompt::before {
     background-position: -20px -20px;
+    margin-left: 4px;
 }
 
 .console-log-level .console-user-command-result::before {
@@ -122,10 +132,13 @@
 }
 } /* media */
 
-.console-message .console-message-repeat-count {
-    margin-right: 4px;
-    margin-left: -18px;
+.console-message-repeat-count {
+    margin: 2px 0 0 10px;
     flex: none;
+}
+
+.repeated-message {
+    margin-left: 4px;
 }
 
 .console-error-level .repeated-message::before,
