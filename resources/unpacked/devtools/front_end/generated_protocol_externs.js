@@ -598,6 +598,27 @@ Protocol.EmulationAgent.prototype.clearDeviceMetricsOverride = function(opt_call
 Protocol.EmulationAgent.prototype.invoke_clearDeviceMetricsOverride = function(obj, opt_callback) {}
 
 /**
+ * @param {number} x
+ * @param {number} y
+ * @param {number} scale
+ * @param {function(?Protocol.Error):T=} opt_callback
+ * @return {!Promise.<T>}
+ * @template T
+ */
+Protocol.EmulationAgent.prototype.forceViewport = function(x, y, scale, opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+Protocol.EmulationAgent.prototype.invoke_forceViewport = function(obj, opt_callback) {}
+
+/**
+ * @param {function(?Protocol.Error):T=} opt_callback
+ * @return {!Promise.<T>}
+ * @template T
+ */
+Protocol.EmulationAgent.prototype.resetViewport = function(opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+Protocol.EmulationAgent.prototype.invoke_resetViewport = function(obj, opt_callback) {}
+
+/**
  * @param {function(?Protocol.Error):T=} opt_callback
  * @return {!Promise.<T>}
  * @template T
@@ -3263,13 +3284,14 @@ Protocol.AccessibilityAgent = function(){};
 
 /**
  * @param {DOMAgent.NodeId} nodeId
- * @param {function(?Protocol.Error, AccessibilityAgent.AXNode=):T} opt_callback
+ * @param {boolean} fetchAncestors
+ * @param {function(?Protocol.Error, !Array.<AccessibilityAgent.AXNode>):T} opt_callback
  * @return {!Promise.<T>}
  * @template T
  */
-Protocol.AccessibilityAgent.prototype.getAXNode = function(nodeId, opt_callback) {}
-/** @param {function(?Protocol.Error, AccessibilityAgent.AXNode=):void=} opt_callback */
-Protocol.AccessibilityAgent.prototype.invoke_getAXNode = function(obj, opt_callback) {}
+Protocol.AccessibilityAgent.prototype.getAXNodeChain = function(nodeId, fetchAncestors, opt_callback) {}
+/** @param {function(?Protocol.Error, !Array.<AccessibilityAgent.AXNode>):void=} opt_callback */
+Protocol.AccessibilityAgent.prototype.invoke_getAXNodeChain = function(obj, opt_callback) {}
 
 
 
@@ -3535,18 +3557,18 @@ Protocol.BrowserAgent.prototype.invoke_getTargets = function(obj, opt_callback) 
 
 /**
  * @param {BrowserAgent.TargetID} targetId
- * @param {function(?Protocol.Error):void=} opt_callback
+ * @param {function(?Protocol.Error, boolean):void=} opt_callback
  */
 Protocol.BrowserAgent.prototype.attach = function(targetId, opt_callback) {}
-/** @param {function(?Protocol.Error):void=} opt_callback */
+/** @param {function(?Protocol.Error, boolean):void=} opt_callback */
 Protocol.BrowserAgent.prototype.invoke_attach = function(obj, opt_callback) {}
 
 /**
  * @param {BrowserAgent.TargetID} targetId
- * @param {function(?Protocol.Error):void=} opt_callback
+ * @param {function(?Protocol.Error, boolean):void=} opt_callback
  */
 Protocol.BrowserAgent.prototype.detach = function(targetId, opt_callback) {}
-/** @param {function(?Protocol.Error):void=} opt_callback */
+/** @param {function(?Protocol.Error, boolean):void=} opt_callback */
 Protocol.BrowserAgent.prototype.invoke_detach = function(obj, opt_callback) {}
 
 /**
