@@ -132,7 +132,7 @@
 (defn ^:dynamic session-disjoined-msg []
   (str "Your session was disjoined from Dirac. Now you are back in normal Clojure session."))
 
-(defn ^:dynamic cannot-match-dirac-session-msg []
+(defn ^:dynamic cannot-join-dirac-session-msg []
   (str "Your session is a Dirac session. This type of session cannot join any other session."))
 
 (defn ^:dynamic cannot-match-clojure-session-msg []
@@ -222,6 +222,7 @@
 (defmethod dirac! :join [_ & [matcher]]
   (let [session (sessions/get-current-session)]
     (cond
+      (sessions/dirac-session? session) (error-println (cannot-join-dirac-session-msg))
       (nil? matcher) (announce-join! (sessions/join-session-with-most-recent-matcher! session))
       (number? matcher) (announce-join! (sessions/join-session-with-number-matcher! session matcher))
       (string? matcher) (announce-join! (sessions/join-session-with-substr-matcher! session matcher))
@@ -246,7 +247,7 @@
 (defmethod dirac! :match [_ & _]
   (let [session (sessions/get-current-session)]
     (cond
-      (sessions/dirac-session? session) (error-println (cannot-match-dirac-session-msg))
+      (sessions/dirac-session? session) (error-println (cannot-join-dirac-session-msg))
       (not (sessions/joined-session? session)) (error-println (cannot-match-clojure-session-msg))
       :else (let [description (sessions/get-target-session-info session)
                   tags (sessions/list-matching-sessions-tags session)]
