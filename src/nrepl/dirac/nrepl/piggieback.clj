@@ -22,7 +22,7 @@
             cljs.repl
             [cljs.env :as env]
             [cljs.analyzer :as ana]
-            [dirac.nrepl.state :refer [*cljs-repl-env* *cljs-compiler-env* *cljs-repl-options* *original-clj-ns*]]
+            [dirac.nrepl.state :as state]
             [dirac.nrepl.driver :as driver]
             [dirac.nrepl.version :refer [version]]
             [dirac.nrepl.sessions :as sessions]
@@ -164,7 +164,7 @@
                      ; environment now (instead of attempting to create one to
                      ; begin with, because we can't reliably replicate what
                      ; cljs.repl/repl* does in terms of options munging
-                     (set! *cljs-compiler-env* env/*compiler*)
+                     (set! state/*cljs-compiler-env* env/*compiler*)
                      ; if the CLJS evaluated result is nil, then we can assume
                      ; what was evaluated was a cljs.repl special fn (e.g. in-ns,
                      ; require, etc)
@@ -203,18 +203,19 @@
    Accepts all options usually accepted by e.g. cljs.repl/repl."
   [repl-env & {:as options}]
   ; TODO I think we need a var to set! the compiler environment from the REPL environment after each eval
+  (log/trace "start-cljs-repl! call stack: " (helpers/get-printed-stack-trace))
   (try
     (let [init-code (nrepl/code (ns cljs.user
                                   (:require [cljs.repl :refer-macros (source doc find-doc apropos dir pst)])))
           nrepl-message (assoc nrepl-ieval/*msg* ::first-cljs-repl true)]                                                     ; initial cljs-repl-iteration is hadnled specially
       (set! ana/*cljs-ns* 'cljs.user)
       (run-single-cljs-repl-iteration nrepl-message init-code repl-env nil options)                                           ; this will implicitly set! *cljs-compiler-env*
-      (set! *cljs-repl-env* repl-env)
-      (set! *cljs-repl-options* options)
-      (set! *original-clj-ns* *ns*)                                                                                           ; interruptible-eval is in charge of emitting the final :ns response in this context
+      (set! state/*cljs-repl-env* repl-env)
+      (set! state/*cljs-repl-options* options)
+      (set! state/*original-clj-ns* *ns*)                                                                                     ; interruptible-eval is in charge of emitting the final :ns response in this context
       (set! *ns* (find-ns ana/*cljs-ns*)))
     (catch Exception e
-      (set! *cljs-repl-env* nil)
+      (set! state/*cljs-repl-env* nil)
       (throw e))))
 
 ;; mostly a copy/paste from interruptible-eval
@@ -239,28 +240,29 @@
 ; Clojure session (dynamic environment) is not in place, so we need to go
 ; through the `session` atom to access/update its vars. Same goes for load-file.
 (defn evaluate! [nrepl-message]
+  (log/trace "evaluate! call stack: " (helpers/get-printed-stack-trace))
   (let [{:keys [session transport ^String code]} nrepl-message]
     ; we append a :cljs/quit to every chunk of code evaluated so we can break out of cljs.repl/repl*'s loop,
     ; so we need to go a gnarly little stringy check here to catch any actual user-supplied exit
     (if-not (.. code trim (endsWith ":cljs/quit"))
-      (let [repl-env (@session #'*cljs-repl-env*)
-            compiler-env (@session #'*cljs-compiler-env*)
-            options (@session #'*cljs-repl-options*)]
+      (let [repl-env (@session #'state/*cljs-repl-env*)
+            compiler-env (@session #'state/*cljs-compiler-env*)
+            options (@session #'state/*cljs-repl-options*)]
         (run-single-cljs-repl-iteration nrepl-message code repl-env compiler-env options))
-      (let [actual-repl-env (@session #'*cljs-repl-env*)]
+      (let [actual-repl-env (@session #'state/*cljs-repl-env*)]
         (reset! (:cached-setup actual-repl-env) :tear-down)                                                                   ; TODO: find a better way
         (cljs.repl/-tear-down actual-repl-env)
         (sessions/remove-dirac-session-descriptor! session)
         (swap! session assoc
-               #'*ns* (@session #'*original-clj-ns*)
-               #'*cljs-repl-env* nil
-               #'*cljs-compiler-env* nil
-               #'*cljs-repl-options* nil
+               #'*ns* (@session #'state/*original-clj-ns*)
+               #'state/*cljs-repl-env* nil
+               #'state/*cljs-compiler-env* nil
+               #'state/*cljs-repl-options* nil
                #'ana/*cljs-ns* 'cljs.user)
         (transport/send transport (response-for nrepl-message
                                                 :value "nil"
                                                 :printed-value 1
-                                                :ns (str (@session #'*original-clj-ns*))))))))
+                                                :ns (str (@session #'state/*original-clj-ns*))))))))
 
 ; struggled for too long trying to interface directly with cljs.repl/load-file,
 ; so just mocking a "regular" load-file call
@@ -559,10 +561,16 @@
 
 (defn dirac-nrepl-middleware [next-handler]
   (fn [nrepl-message]
+    ; we are a middleware which is expected to be called in the context of clojure.tools.nrepl.middleware.interruptible-eval
+    ; interruptible-eval does binding swapping specified by vars in sesssion
+    ; on first call we install our extra bindings and let interruptible-eval store/restore it for us
+    ; long story short: with each future invocation our dynamic vars in state namespace will be bound to values relevant to
+    ; the session at hand
+    (sessions/install-bindings-if-needed! (:session nrepl-message))
     (let [nrepl-message (logged-nrepl-message nrepl-message)]
       (log/debug "dirac-nrepl-middleware:" (:op nrepl-message) (sessions/get-session-id (:session nrepl-message)))
       (log/trace "received nrepl message:\n" (pprint nrepl-message))
-      (sessions/ensure-bindings! (:session nrepl-message))
+      (log/trace "dirac-nrepl-middleware call stack: " (helpers/get-printed-stack-trace))
       (cond
         (dirac-special-command? nrepl-message) (handle-dirac-special-command! nrepl-message)
         (is-eval-cljs-quit-in-joined-session? nrepl-message) (issue-dirac-special-command! nrepl-message ":disjoin")

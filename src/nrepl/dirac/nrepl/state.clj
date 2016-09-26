@@ -4,6 +4,8 @@
 
 ; we cannot pass nrepl-message info into all our functions,
 ; so we keep some global state around and various functions touch it at will
+; also note that these get re-bound with each new nrepl message by clojure.tools.nrepl.middleware.interruptible-eval
+; and each new middleware invocation has their own session-specific version
 
 (def ^:dynamic *cljs-repl-env* nil)                                                                                           ; this is the var that is checked by the middleware to determine whether an active CLJS REPL is in flight
 (def ^:dynamic *cljs-compiler-env* nil)
