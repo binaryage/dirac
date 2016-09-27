@@ -1,35 +1,26 @@
 (ns dirac.nrepl.sessions
   (:require [clojure.tools.logging :as log]
-            [cljs.analyzer :as analyzer]
             [dirac.logging :as logging]
             [dirac.nrepl.state :as state]
+            [dirac.nrepl.debug :as debug]
             [clojure.tools.nrepl.middleware.interruptible-eval :as nrepl-ieval]
-            [dirac.backport.string :as backport-string]))
+            [dirac.backport.string :as backport-string]
+            [clojure.string :as string]))
 
 ; -- helpers ----------------------------------------------------------------------------------------------------------------
 
 (defn get-session-id [session]
   (-> session meta :id))
 
+(defn humanize-session-id [session-id]
+  {:pre (string? session-id)}
+  (first (string/split session-id #"-")))
+
 (defn dirac-session? [session]
-  (boolean (@session #'state/*cljs-repl-env*)))
+  (state/dirac-session? session))
 
 (defn get-current-session []
-  {:post [%]}
-  (:session nrepl-ieval/*msg*))
-
-; -- bindings magic ---------------------------------------------------------------------------------------------------------
-
-(defn install-bindings-if-needed! [session]
-  ; this magic here expects interruptible-eval bindings jugggling
-  ; https://github.com/clojure/tools.nrepl/blob/fcac1e13d6f80eb0db28773247a769c1dc9659b1/src/main/clojure/clojure/tools/nrepl/middleware/interruptible_eval.clj#L85
-  (when-not (contains? @session #'state/*cljs-repl-env*)
-    (log/debug "installing session bindings")
-    (swap! session (partial merge {#'state/*cljs-repl-env*     state/*cljs-repl-env*
-                                   #'state/*cljs-compiler-env* state/*cljs-compiler-env*
-                                   #'state/*cljs-repl-options* state/*cljs-repl-options*
-                                   #'state/*original-clj-ns*   state/*original-clj-ns*
-                                   #'analyzer/*cljs-ns*        analyzer/*cljs-ns*}))))
+  (state/get-current-session))
 
 ; -- dirac sessions management ----------------------------------------------------------------------------------------------
 
@@ -52,18 +43,18 @@
 
 (defn add-dirac-session-descriptor! [session transport tag]
   (log/debug "add-dirac-session-descriptor!" (get-session-id session) tag)
-  (log/trace transport (logging/pprint session))
+  (log/trace transport (debug/pprint-session session))
   (if-not (find-dirac-session-descriptor session)
     (let [session-descriptor (make-dirac-session-descriptor session transport tag)]
       (swap! state/session-descriptors concat (list session-descriptor)))
-    (log/error "attempt to add duplicit session descriptor:\n" (logging/pprint session))))
+    (log/error "attempt to add duplicit session descriptor:\n" (debug/pprint-session session))))
 
 (defn remove-dirac-session-descriptor! [session]
   (log/debug "remove-dirac-session-descriptor!" (get-session-id session))
-  (log/trace (logging/pprint session))
+  (log/trace (debug/pprint-session session))
   (if-let [session-descriptor (find-dirac-session-descriptor session)]
     (swap! state/session-descriptors #(remove #{session-descriptor} %))
-    (log/error "attempt to remove unknown session descriptor:\n" (logging/pprint session))))
+    (log/error "attempt to remove unknown session descriptor:\n" (debug/pprint-session session))))
 
 (defn find-matching-dirac-session-descriptors [matcher]
   (let [descriptors @state/session-descriptors
@@ -80,7 +71,7 @@
         sanitized-tag (if (empty? tag) "?" tag)
         session (get-dirac-session-descriptor-session session-descriptor)
         session-id (get-session-id session)]
-    (str sanitized-tag " [" session-id "]")))
+    (str sanitized-tag " [" (humanize-session-id session-id) "]")))
 
 (defn get-dirac-session-descriptors-tags [session-descriptors]
   (map prepare-dirac-session-descriptor-tag session-descriptors))
@@ -119,8 +110,7 @@
 (defn find-target-dirac-session-descriptor [session]
   (if-let [matcher-fn (get-joined-session-matcher session)]
     (find-matching-dirac-session-descriptor matcher-fn)
-    (log/error "find-joined-session-descriptor called on a session without matcher-fn:\n"
-               (logging/pprint session))))
+    (log/error "find-joined-session-descriptor called on a session without matcher-fn: " (debug/pprint-session session))))
 
 (defn list-matching-sessions-tags [session]
   (if-let [matcher-fn (get-joined-session-matcher session)]
@@ -183,13 +173,6 @@
 
 (defn get-session-type [session]
   (cond
-    (dirac-session? session)
-    (str "a Dirac session (ClojureScript).\n"
-         "This session is connected to '" (get-dirac-session-tag session) "'")
-
-    (joined-session? session)
-    (str "a joined Dirac session (ClojureScript).\n"
-         "This session targets " (get-target-session-info session))
-
-    :else
-    (str "a normal session (Clojure)")))
+    (dirac-session? session) (str "a Dirac session (ClojureScript) connected to '" (get-dirac-session-tag session) "'")
+    (joined-session? session) (str "a joined Dirac session (ClojureScript) which targets " (get-target-session-info session))
+    :else (str "a normal session (Clojure)")))

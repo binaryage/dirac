@@ -22,17 +22,17 @@
 
 ; -- support for booting into CLJS REPL -------------------------------------------------------------------------------------
 
-(defn after-launch! [runtime-tag repl-env weasel-url]
-  (log/trace "after-launch handler called with repl-env:\n" (logging/pprint repl-env))
-  (piggieback/weasel-launched! weasel-url runtime-tag))
-
 (defn bootstrap! [& [config]]
-  (let [effective-confg (config/get-effective-config config)
-        weasel-repl-options (:weasel-repl effective-confg)
-        repl-options (assoc weasel-repl-options :after-launch (partial after-launch! (:runtime-tag effective-confg)))
-        repl-env (weasel-server/make-weasel-repl-env repl-options)]
-    (log/trace "starting cljs-repl with repl-env:\n" (logging/pprint repl-env))
-    (piggieback/start-cljs-repl! repl-env)))
+  (let [effective-nrepl-confg (config/get-effective-config config)
+        weasel-repl-options (:weasel-repl effective-nrepl-confg)
+        runtime-tag (:runtime-tag effective-nrepl-confg)
+        after-launch! (fn [repl-env weasel-url]
+                        (log/trace "after-launch handler called with repl-env:\n" (logging/pprint repl-env))
+                        (piggieback/weasel-server-started! weasel-url runtime-tag))
+        repl-options (assoc weasel-repl-options :after-launch after-launch!)
+        repl-env (weasel-server/make-weasel-repl-env repl-options)
+        cljs-repl-options (:cljs-repl-options effective-nrepl-confg)]
+    (piggieback/start-cljs-repl! effective-nrepl-confg repl-env cljs-repl-options)))
 
 (defn boot-dirac-repl! [& [config]]
   (let [effective-config (config/get-effective-config config)]

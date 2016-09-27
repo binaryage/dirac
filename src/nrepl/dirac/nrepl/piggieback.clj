@@ -5,33 +5,28 @@
 ;
 ; this file differs significantly from the original piggieback.clj and was modified to include Dirac-specific functionality
 ;
-; main changes:
-;   * removed generic code for supporting arbitrary repl environment
-;   * supports only Dirac's WeaselREPLEnv
-;   * uses recording driver when performing eval of ClojureScript code (see driver.clj)
-;   * observes evaluation errors when performing eval of Clojure code
-
 (ns dirac.nrepl.piggieback
-  (:require [clojure.tools.nrepl :as nrepl]
-            (clojure.tools.nrepl [transport :as transport]
+  (:require (clojure.tools.nrepl [transport :as transport]
                                  [misc :refer (response-for returning)]
                                  [middleware :refer (set-descriptor!)])
             [clojure.tools.nrepl.middleware.interruptible-eval :as nrepl-ieval]
             [clojure.tools.nrepl.transport :as nrepl-transport]
-            clojure.main
-            cljs.repl
-            [cljs.env :as env]
-            [cljs.analyzer :as ana]
+            [clojure.main]
+            [cljs.repl]
             [dirac.nrepl.state :as state]
             [dirac.nrepl.driver :as driver]
             [dirac.nrepl.version :refer [version]]
             [dirac.nrepl.sessions :as sessions]
             [dirac.nrepl.helpers :as helpers]
             [dirac.nrepl.jobs :as jobs]
-            dirac.nrepl.controls
-            [dirac.logging :refer [pprint]]
+            [dirac.nrepl.debug :as debug]
+            [dirac.nrepl.compilers :as compilers]
+            [dirac.nrepl.controls :as controls]
             [clojure.tools.logging :as log]
-            [clojure.string :as string])
+            [clojure.string :as string]
+            [cljs.analyzer :as analyzer]
+            [dirac.logging :as logging]
+            [dirac.nrepl.config :as config])
   (:import clojure.lang.LineNumberingPushbackReader
            java.io.StringReader
            java.io.Writer
@@ -39,31 +34,52 @@
            (clojure.lang IDeref))
   (:refer-clojure :exclude (load-file)))
 
-(def ^:const dirac-repl-alias "<dirac repl>")
+(defn ^:dynamic make-dirac-repl-alias [compiler-id]
+  (str "<" (or compiler-id "?") ">"))
 
-(defn ^:dynamic no-target-session-help-msg [info]
+(defn ^:dynamic make-no-target-session-help-msg [info]
   (str "Your session joined Dirac but no connected Dirac session is \"" info "\".\n"
        "You can review the list of currently available Dirac sessions via `(dirac! :ls)`.\n"
        "You can join one of them with `(dirac! :join)`.\n"
        "See `(dirac! :help)` for more info."))
 
-(defn ^:dynamic no-target-session-match-msg [_info]
+(defn ^:dynamic make-no-target-session-match-msg [_info]
   (str "No suitable Dirac session is connected to handle your command."))
 
-(defn ^:dynamic nrepl-message-cannot-be-forwarded-msg [message-info]
+(defn ^:dynamic make-nrepl-message-cannot-be-forwarded-msg [message-info]
   (str "Encountered an nREPL message which cannot be forwarded to joined Dirac session:\n"
        message-info))
 
-(defn ^:dynamic no-forwarding-help-msg [op]
+(defn ^:dynamic make-no-forwarding-help-msg [op]
   (str "Your have a joined Dirac session and your nREPL client just sent an unsupported nREPL operation to it.\n"
        "Ask Dirac developers to implement '" op "' op: https://github.com/binaryage/dirac/issues."))
+
+(defn ^:dynamic make-missing-compiler-msg [selected-compiler available-compilers]
+  (str "Selected compiler '" selected-compiler "' is missing. "
+       "It does not match any of available compilers: " (pr-str available-compilers) ".\n"
+       "Use `(dirac! :ls)` to review current situation and "
+       "`(dirac! :switch <compiler-id>)` to switch to an existing compiler."))
+
+; -- helpers ----------------------------------------------------------------------------------------------------------------
+
+(defn send-response! [nrepl-message response-msg]
+  (let [transport (:transport nrepl-message)]
+    (assert transport)
+    (transport/send transport (response-for nrepl-message response-msg))))
+
+(defn make-server-side-output-msg [kind content]
+  {:pre [(contains? #{:stderr :stdout} kind)
+         (string? content)]}
+  {:op      :print-output
+   :kind    kind
+   :content content})
 
 ; -- dirac-specific wrapper for evaluated forms -----------------------------------------------------------------------------
 
 (defn safe-value-conversion-to-string [value]
   ; darwin: I have a feeling that these cljs.core bindings should not be hard-coded.
   ;         I understand that printing must be limited somehow. But this should be user-configurable.
-  ;         Dirac REPL does not use returned string value - but normal REPL clients are affected by this.
+  ;         Dirac REPL does not use returned string value - but normal nREPL clients are affected by this.
   `(binding [cljs.core/*print-level* 1
              cljs.core/*print-length* 10]
      (cljs.core/pr-str ~value)))
@@ -110,7 +126,7 @@
       :else (make-job-evaluator dirac-wrap job-id))))
 
 (defn set-env-namespace [env]
-  (assoc env :ns (ana/get-namespace ana/*cljs-ns*)))
+  (assoc env :ns (analyzer/get-namespace analyzer/*cljs-ns*)))
 
 (defn extract-scope-locals [scope-info]
   (mapcat :props (:frames scope-info)))
@@ -133,90 +149,102 @@
   "Given a REPL evaluation environment, an analysis environment, and a
    form, evaluate the form and return the result. The result is always the value
    represented as a string."
-  ([repl-env env form]
-   (eval-cljs repl-env env form cljs.repl/*repl-opts*))
+  ([repl-env env form] (eval-cljs repl-env env form cljs.repl/*repl-opts*))
   ([repl-env env form opts]
-   (let [wrap ((or (:wrap opts) make-wrapper-for-form) form)
-         effective-env (-> env
-                           (set-env-namespace)
-                           (set-env-locals))]
-     (log/trace "eval-cljs" form)
-     (log/trace "eval-env" (pprint effective-env 7))
-     (cljs.repl/evaluate-form repl-env effective-env dirac-repl-alias form wrap opts))))
+   (let [wrapper-fn (or (:wrap opts) make-wrapper-for-form)
+         wrapped-form (wrapper-fn form)
+         effective-env (-> env set-env-namespace set-env-locals)
+         filename (make-dirac-repl-alias (compilers/get-selected-compiler-id))]
+     (log/debug "eval-cljs in " filename ":\n" form "\n with env:\n" (logging/pprint effective-env 7))
+     (cljs.repl/evaluate-form repl-env effective-env filename form wrapped-form opts))))
 
-(defn- run-single-cljs-repl-iteration [nrepl-message code repl-env compiler-env options]
-  (let [{:keys [session transport ns]} nrepl-message
-        initns (if ns (symbol ns) (@session #'ana/*cljs-ns*))
-        flush (fn [driver]
-                (.flush ^Writer (@session #'*out*))
-                (.flush ^Writer (@session #'*err*))
-                (driver/flush! driver))
-        send-response-fn (fn [response-msg]
-                           (transport/send transport (response-for nrepl-message response-msg)))
-        print-fn (fn [driver result & _rest]
-                   (flush driver)                                                                                             ; make sure that all *printed* output is flushed before sending results of evaluation
-                   (if (or (not ns) (not= initns ana/*cljs-ns*))
-                     (swap! session assoc #'ana/*cljs-ns* ana/*cljs-ns*))
-                   (if (::first-cljs-repl nrepl-message)
-                     ; the first run through the cljs REPL is effectively part
-                     ; of setup; loading core, (ns cljs.user ...), etc, should
-                     ; not yield a value. But, we do capture the compiler
-                     ; environment now (instead of attempting to create one to
-                     ; begin with, because we can't reliably replicate what
-                     ; cljs.repl/repl* does in terms of options munging
-                     (set! state/*cljs-compiler-env* env/*compiler*)
-                     ; if the CLJS evaluated result is nil, then we can assume
-                     ; what was evaluated was a cljs.repl special fn (e.g. in-ns,
-                     ; require, etc)
-                     (send-response-fn {:value         (or result "nil")
-                                        :printed-value 1
-                                        :ns            (@session #'ana/*cljs-ns*)})))
-        start-repl (fn [driver repl-env repl-options]
-                     (let [effective-repl-options (assoc repl-options
-                                                    :flush (partial flush driver)
-                                                    :print (partial print-fn driver))]
-                       (driver/start-job! driver (:id nrepl-ieval/*msg*))
-                       (cljs.repl/repl* repl-env effective-repl-options)
-                       (driver/stop-job! driver)))]
-    ; MAJOR TRICK HERE! we append :cljs/quit to our code which needs to be evaluated,
-    ; this will cause cljs.repl's loop to exit after the first eval
-    (binding [*in* (-> (str code " :cljs/quit") StringReader. LineNumberingPushbackReader.)
-              *out* (@session #'*out*)
-              *err* (@session #'*err*)
-              ana/*cljs-ns* initns]
-      (let [base-options {:need-prompt  (constantly false)
-                          :bind-err     false
-                          :quit-prompt  (fn [])
-                          :init         (fn [])
-                          :prompt       (fn [])
-                          :eval         eval-cljs
-                          :compiler-env compiler-env}
-            repl-options (merge base-options options)]
-        (driver/start-repl-with-driver repl-env repl-options start-repl send-response-fn)))))
+(defn execute-single-cljs-repl-evaluation! [job-id code ns repl-env compiler-env repl-options response-fn]
+  (let [flush-fn (fn []
+                   (log/trace "flush-fn > ")
+                   (.flush ^Writer *out*)
+                   (.flush ^Writer *err*))
+        print-fn (fn [result]
+                   (log/trace "print-fn > " result)
+                   (response-fn (compilers/prepare-announce-ns-msg analyzer/*cljs-ns* result)))
+        base-repl-options {:need-prompt  (constantly false)
+                           :bind-err     false
+                           :quit-prompt  (fn [])
+                           :prompt       (fn [])
+                           :init         (fn [])
+                           :flush        flush-fn
+                           :print        print-fn
+                           :eval         eval-cljs
+                           :compiler-env compiler-env}
+        effective-repl-options (merge base-repl-options repl-options)
+        ; MAJOR TRICK HERE!
+        ; we append :cljs/quit to our code which should be evaluated
+        ; this will cause cljs.repl loop to exit after the first eval
+        code-reader-with-quit (-> (str code " :cljs/quit")
+                                  StringReader.
+                                  LineNumberingPushbackReader.)
+        initial-ns (if ns
+                     (symbol ns)
+                     (state/get-session-cljs-ns))
+        start-repl-fn (fn [driver repl-env repl-options]
+                        (driver/start-job! driver job-id)
+                        (log/trace "calling cljs.repl/repl* with:\n" (logging/pprint repl-env) (logging/pprint repl-options))
+                        (cljs.repl/repl* repl-env repl-options)
+                        (driver/stop-job! driver))]
+    (binding [*in* code-reader-with-quit
+              *out* (state/get-session-binding-value #'*out*)
+              *err* (state/get-session-binding-value #'*err*)
+              analyzer/*cljs-ns* initial-ns]
+      (driver/wrap-repl-with-driver repl-env effective-repl-options start-repl-fn response-fn)
+      (let [final-ns analyzer/*cljs-ns*]                                                                                      ; we want analyzer/*cljs-ns* to be sticky between evaluations, that is why we keep it in our session state and bind it
+        (if-not (= final-ns initial-ns)
+          (state/set-session-cljs-ns! final-ns))))))
 
-; This function always executes when the nREPL session is evaluating Clojure,
-; via interruptible-eval, etc. This means our dynamic environment is in place,
-; so set! and simple dereferencing is available. Contrast w/ evaluate and
-; load-file below.
-(defn start-cljs-repl!
-  "Starts a ClojureScript REPL over top an nREPL session.
-   Accepts all options usually accepted by e.g. cljs.repl/repl."
-  [repl-env & {:as options}]
-  ; TODO I think we need a var to set! the compiler environment from the REPL environment after each eval
-  (log/trace "start-cljs-repl! call stack: " (helpers/get-printed-stack-trace))
-  (try
-    (let [init-code (nrepl/code (ns cljs.user
-                                  (:require [cljs.repl :refer-macros (source doc find-doc apropos dir pst)])))
-          nrepl-message (assoc nrepl-ieval/*msg* ::first-cljs-repl true)]                                                     ; initial cljs-repl-iteration is hadnled specially
-      (set! ana/*cljs-ns* 'cljs.user)
-      (run-single-cljs-repl-iteration nrepl-message init-code repl-env nil options)                                           ; this will implicitly set! *cljs-compiler-env*
-      (set! state/*cljs-repl-env* repl-env)
-      (set! state/*cljs-repl-options* options)
-      (set! state/*original-clj-ns* *ns*)                                                                                     ; interruptible-eval is in charge of emitting the final :ns response in this context
-      (set! *ns* (find-ns ana/*cljs-ns*)))
-    (catch Exception e
-      (set! state/*cljs-repl-env* nil)
-      (throw e))))
+(defn start-new-cljs-compiler-repl-environment! [dirac-nrepl-config repl-env repl-options]
+  (log/trace "start-new-cljs-compiler-repl-environment!\n")
+  (let [nrepl-message (state/get-nrepl-message)
+        compiler-env nil
+        code (or (:repl-init-code dirac-nrepl-config) config/standard-repl-init-code)
+        job-id (or (:id nrepl-message) (helpers/generate-uuid))
+        ns (:ns nrepl-message)
+        effective-repl-options (assoc repl-options
+                                 ; the first run through the cljs REPL is effectively part
+                                 ; of setup; loading core, (ns cljs.user ...), etc, should
+                                 ; not yield a value. But, we do capture the compiler
+                                 ; environment now (instead of attempting to create one to
+                                 ; begin with, because we can't reliably replicate what
+                                 ; cljs.repl/repl* does in terms of options munging
+                                 :init (fn []
+                                         (log/trace "init-fn > ")
+                                         (compilers/capture-current-compiler-and-select-it!))
+                                 :print (fn [& _]
+                                          (log/trace "print-fn (no-op)")))                                                    ; silence any responses
+        response-fn (partial send-response! nrepl-message)]
+    (execute-single-cljs-repl-evaluation! job-id code ns repl-env compiler-env effective-repl-options response-fn)))
+
+(defn start-cljs-repl! [dirac-nrepl-config repl-env repl-options]
+  (log/trace "start-cljs-repl!\n"
+             "dirac-nrepl-config:\n"
+             (logging/pprint dirac-nrepl-config)
+             "repl-env:\n"
+             (logging/pprint repl-env)
+             "repl-options:\n"
+             (logging/pprint repl-options))
+  (debug/log-stack-trace!)
+  (state/ensure-session nrepl-ieval/*msg*
+    (try
+      (state/set-session-cljs-ns! 'cljs.user)
+      (let [preferred-compiler (or (:preferred-compiler dirac-nrepl-config) "dirac/new")]
+        (if (= preferred-compiler "dirac/new")
+          (start-new-cljs-compiler-repl-environment! dirac-nrepl-config repl-env repl-options)
+          (state/set-session-selected-compiler! preferred-compiler)))                                                         ; TODO: validate that preferred compiler exists
+      (state/set-session-cljs-repl-env! repl-env)
+      (state/set-session-cljs-repl-options! repl-options)
+      (state/set-session-original-clj-ns! *ns*)                                                                               ; interruptible-eval is in charge of emitting the final :ns response in this context
+      (set! *ns* (find-ns (state/get-session-cljs-ns)))                                                                       ; TODO: is this really needed? is it for macros?
+      (send-response! (state/get-nrepl-message) (compilers/prepare-announce-ns-msg (state/get-session-cljs-ns)))
+      (catch Exception e
+        (state/set-session-cljs-repl-env! nil)
+        (throw e)))))
 
 ;; mostly a copy/paste from interruptible-eval
 (defn enqueue! [nrepl-message func]
@@ -227,7 +255,8 @@
                            :thread (Thread/currentThread)
                            :eval-msg nrepl-message)
               (binding [nrepl-ieval/*msg* nrepl-message]
-                (func)
+                (state/ensure-session nrepl-message
+                  (func))
                 (transport/send transport (response-for nrepl-message :status :done)))
               (alter-meta! session
                            dissoc
@@ -235,34 +264,37 @@
                            :eval-msg))]
     (nrepl-ieval/queue-eval session @nrepl-ieval/default-executor job)))
 
+(defn report-missing-compiler! [selected-compiler available-compilers]
+  (let [msg (make-missing-compiler-msg selected-compiler available-compilers)]
+    (send-response! (state/get-nrepl-message) (make-server-side-output-msg :stderr msg))))
+
 ; only executed within the context of an nREPL session having *cljs-repl-env*
 ; bound. Thus, we're not going through interruptible-eval, and the user's
 ; Clojure session (dynamic environment) is not in place, so we need to go
 ; through the `session` atom to access/update its vars. Same goes for load-file.
 (defn evaluate! [nrepl-message]
-  (log/trace "evaluate! call stack: " (helpers/get-printed-stack-trace))
-  (let [{:keys [session transport ^String code]} nrepl-message]
+  (debug/log-stack-trace!)
+  (let [{:keys [session ^String code]} nrepl-message
+        cljs-repl-env (state/get-session-cljs-repl-env)]
     ; we append a :cljs/quit to every chunk of code evaluated so we can break out of cljs.repl/repl*'s loop,
     ; so we need to go a gnarly little stringy check here to catch any actual user-supplied exit
     (if-not (.. code trim (endsWith ":cljs/quit"))
-      (let [repl-env (@session #'state/*cljs-repl-env*)
-            compiler-env (@session #'state/*cljs-compiler-env*)
-            options (@session #'state/*cljs-repl-options*)]
-        (run-single-cljs-repl-iteration nrepl-message code repl-env compiler-env options))
-      (let [actual-repl-env (@session #'state/*cljs-repl-env*)]
-        (reset! (:cached-setup actual-repl-env) :tear-down)                                                                   ; TODO: find a better way
-        (cljs.repl/-tear-down actual-repl-env)
+      (let [nrepl-message (state/get-nrepl-message)
+            job-id (or (:id nrepl-message) (helpers/generate-uuid))
+            ns (:ns nrepl-message)
+            selected-compiler (state/get-session-selected-compiler)
+            cljs-repl-options (state/get-session-cljs-repl-options)
+            response-fn (partial send-response! nrepl-message)]
+        (if-let [compiler-env (compilers/provide-selected-compiler-env)]
+          (execute-single-cljs-repl-evaluation! job-id code ns cljs-repl-env compiler-env cljs-repl-options response-fn)
+          (report-missing-compiler! selected-compiler (compilers/collect-all-available-compiler-ids))))
+      (do
+        (reset! (:cached-setup cljs-repl-env) :tear-down)                                                                     ; TODO: find a better way
+        (cljs.repl/-tear-down cljs-repl-env)
         (sessions/remove-dirac-session-descriptor! session)
-        (swap! session assoc
-               #'*ns* (@session #'state/*original-clj-ns*)
-               #'state/*cljs-repl-env* nil
-               #'state/*cljs-compiler-env* nil
-               #'state/*cljs-repl-options* nil
-               #'ana/*cljs-ns* 'cljs.user)
-        (transport/send transport (response-for nrepl-message
-                                                :value "nil"
-                                                :printed-value 1
-                                                :ns (str (@session #'state/*original-clj-ns*))))))))
+        (swap! session assoc #'*ns* (state/get-session-original-clj-ns))                                                      ; TODO: is this really needed?
+        (let [reply (compilers/prepare-announce-ns-msg (str (state/get-session-original-clj-ns)))]
+          (send-response! nrepl-message reply))))))
 
 ; struggled for too long trying to interface directly with cljs.repl/load-file,
 ; so just mocking a "regular" load-file call
@@ -329,7 +361,8 @@
   (recv [_this timeout]
     (nrepl-transport/recv transport timeout))
   (send [_this reply-message]
-    (log/debug (str "sending raw message via nREPL transport: " transport " \n") (pprint reply-message))
+    (log/debug (str "sending raw message via nREPL transport: " transport " \n") (logging/pprint reply-message))
+    (debug/log-stack-trace!)
     (nrepl-transport/send transport reply-message)))
 
 (defn logged-nrepl-message [nrepl-message]
@@ -375,7 +408,8 @@
     (let [result (with-bindings bindings
                    (try
                      (let [form (read-string code)]
-                       (binding [*ns* ns
+                       (binding [state/*reply!* #(send-response! nrepl-message %)
+                                 *ns* ns
                                  nrepl-ieval/*msg* nrepl-message]
                          (eval form)))
                      (catch Throwable e
@@ -399,7 +433,7 @@
                        (.flush ^Writer out)
                        (.flush ^Writer err))))
           base-reply {:status :done}
-          reply (if (= :dirac.nrepl.controls/no-result ::exception result)
+          reply (if (= ::controls/no-result ::exception result)
                   base-reply
                   (assoc base-reply
                     :value (safe-pr-str result)
@@ -424,11 +458,11 @@
 
 (defn prepare-no-target-session-match-error-message [session]
   (let [info (sessions/get-target-session-info session)]
-    (str (no-target-session-match-msg info) "\n")))
+    (str (make-no-target-session-match-msg info) "\n")))
 
 (defn prepare-no-target-session-match-help-message [session]
   (let [info (sessions/get-target-session-info session)]
-    (str (no-target-session-help-msg info) "\n")))
+    (str (make-no-target-session-help-msg info) "\n")))
 
 (defn report-missing-target-session! [nrepl-message]
   (log/debug "report-missing-target-session!")
@@ -445,9 +479,9 @@
   (let [{:keys [op transport]} nrepl-message
         clean-message (dissoc nrepl-message :session :transport)]
     (transport/send transport (response-for nrepl-message
-                                            :err (str (nrepl-message-cannot-be-forwarded-msg (pr-str clean-message)) "\n")))
+                                            :err (str (make-nrepl-message-cannot-be-forwarded-msg (pr-str clean-message)) "\n")))
     (transport/send transport (response-for nrepl-message
-                                            :out (str (no-forwarding-help-msg (or op "?")) "\n")))
+                                            :out (str (make-no-forwarding-help-msg (or op "?")) "\n")))
     (transport/send transport (response-for nrepl-message
                                             :status :done))))
 
@@ -467,7 +501,7 @@
   (pr-str nrepl-message))
 
 (defn forward-message-to-joined-session! [nrepl-message]
-  (log/trace "forward-message-to-joined-session!" (pprint nrepl-message))
+  (log/trace "forward-message-to-joined-session!" (logging/pprint nrepl-message))
   (let [{:keys [id session transport]} nrepl-message]
     (if-let [target-dirac-session-descriptor (sessions/find-target-dirac-session-descriptor session)]
       (if-let [forwardable-message (prepare-forwardable-message nrepl-message)]
@@ -514,14 +548,14 @@
           artificial-message (assoc reply-message
                                :id initial-message-id
                                :session (sessions/get-session-id observing-session))]
-      (log/debug "sending message to observing session" observing-session (pprint artificial-message))
+      (log/debug "sending message to observing session" observing-session (logging/pprint artificial-message))
       (nrepl-transport/send observing-transport artificial-message))
     (if (final-message? reply-message)
       (jobs/unregister-observed-job! (jobs/get-observed-job-id observed-job)))
     (nrepl-transport/send transport reply-message)))
 
 (defn make-nrepl-message-with-observing-transport [observed-job nrepl-message]
-  (log/trace "make-nrepl-message-with-observing-transport" observed-job (pprint nrepl-message))
+  (log/trace "make-nrepl-message-with-observing-transport" observed-job (logging/pprint nrepl-message))
   (update nrepl-message :transport (partial ->ObservingTransport observed-job nrepl-message)))
 
 (defn wrap-nrepl-message-if-observed [nrepl-message]
@@ -559,39 +593,37 @@
       (sessions/joined-session? session) (forward-message-to-joined-session! nrepl-message)
       :else (handle-known-ops-or-delegate! nrepl-message next-handler))))
 
-(defn dirac-nrepl-middleware [next-handler]
-  (fn [nrepl-message]
-    ; we are a middleware which is expected to be called in the context of clojure.tools.nrepl.middleware.interruptible-eval
-    ; interruptible-eval does binding swapping specified by vars in sesssion
-    ; on first call we install our extra bindings and let interruptible-eval store/restore it for us
-    ; long story short: with each future invocation our dynamic vars in state namespace will be bound to values relevant to
-    ; the session at hand
-    (sessions/install-bindings-if-needed! (:session nrepl-message))
+(defn dirac-nrepl-middleware-handler [next-handler nrepl-message]
+  (state/ensure-session nrepl-message
     (let [nrepl-message (logged-nrepl-message nrepl-message)]
       (log/debug "dirac-nrepl-middleware:" (:op nrepl-message) (sessions/get-session-id (:session nrepl-message)))
-      (log/trace "received nrepl message:\n" (pprint nrepl-message))
-      (log/trace "dirac-nrepl-middleware call stack: " (helpers/get-printed-stack-trace))
+      (log/trace "received nrepl message:\n" (debug/pprint-nrepl-message nrepl-message))
+      (debug/log-stack-trace!)
       (cond
         (dirac-special-command? nrepl-message) (handle-dirac-special-command! nrepl-message)
         (is-eval-cljs-quit-in-joined-session? nrepl-message) (issue-dirac-special-command! nrepl-message ":disjoin")
         :else (handle-normal-message! nrepl-message next-handler)))))
 
+(defn dirac-nrepl-middleware [next-handler]
+  (partial dirac-nrepl-middleware-handler next-handler))
+
 ; -- additional tools -------------------------------------------------------------------------------------------------------
 
 ; this message is sent to client after booting into a Dirac REPL
 (defn send-bootstrap-info! [weasel-url]
-  (let [{:keys [transport session] :as nrepl-message} nrepl-ieval/*msg*]
-    (log/trace "send-bootstrap-info!" weasel-url "\n" (pprint nrepl-message))
-    (assert nrepl-message)
-    (assert transport)
-    (assert session)
+  (assert (state/has-session?))                                                                                               ; we asssume this code is running within ensure-session
+  (debug/log-stack-trace!)
+  (let [nrepl-message (state/get-nrepl-message)]
+    (log/trace "send-bootstrap-info!" weasel-url "\n" (debug/pprint-nrepl-message nrepl-message))
     (let [info-message {:op         :bootstrap-info
-                        :weasel-url weasel-url
-                        :ns         (@session #'ana/*cljs-ns*)}]
+                        :weasel-url weasel-url}]
       (log/debug "sending :bootstrap-info" info-message)
-      (transport/send transport (response-for nrepl-message info-message)))))
+      (send-response! nrepl-message info-message))))
 
-(defn weasel-launched! [weasel-url runtime-tag]
-  (let [{:keys [session transport]} nrepl-ieval/*msg*]
+(defn weasel-server-started! [weasel-url runtime-tag]
+  (assert weasel-url)
+  (assert (state/has-session?))                                                                                               ; we asssume this code is running within ensure-session
+  (debug/log-stack-trace!)
+  (let [{:keys [session transport]} (state/get-nrepl-message)]
     (sessions/add-dirac-session-descriptor! session transport runtime-tag)
     (send-bootstrap-info! weasel-url)))

@@ -28,9 +28,9 @@
    :eval-time-limit                              10000
    :java-trace-header-style                      "color:red"
    :runtime-tag                                  "unidentified"
-   :nrepl-config                                 nil                                                                          ; see https://github.com/binaryage/dirac/blob/master/src/nrepl/dirac/nrepl/config.clj
    :silence-use-of-undeclared-var-warnings       true
    :silence-no-such-namespace-warnings           true})
+   :nrepl-config                                 {:preferred-compiler "dirac/new"}                                            ; see https://github.com/binaryage/dirac/blob/master/src/nrepl/dirac/nrepl/config.clj
 
 (def static-prefs (gen-static-prefs))                                                                                         ; this config is comming from environment and system properties
 

@@ -1,5 +1,11 @@
 (ns dirac.nrepl.config
-  (:require [dirac.lib.utils :refer [assoc-env-val deep-merge-ignoring-nils]]))
+  (:require [dirac.lib.utils :refer [assoc-env-val deep-merge-ignoring-nils]]
+            [clojure.tools.nrepl :as nrepl]))
+
+(def ^:dynamic standard-repl-init-code
+  (nrepl/code
+    (ns cljs.user
+      (:require [cljs.repl :refer-macros (source doc find-doc apropos dir pst)]))))
 
 (def default-config
   {:log-out            :console                                                                                               ; this is important, nREPL middleware captures output and logs be sent to client
@@ -8,6 +14,9 @@
    :weasel-repl        {:host  "localhost"
                         :port  8232
                         :range 10}                                                                                            ; how many ports to try if the default port is taken
+   :preferred-compiler "dirac/new"
+   :cljs-repl-options  nil
+   :repl-init-code     standard-repl-init-code
    :runtime-tag        "unidentified"})
 
 ; -- environment ------------------------------------------------------------------------------------------------------------
@@ -17,6 +26,7 @@
       (assoc-env-val [:log-level] :dirac-nrepl-log-level)
       (assoc-env-val [:log-out] :dirac-nrepl-log-out)
       (assoc-env-val [:skip-logging-setup] :dirac-nrepl-skip-logging-setup :bool)
+      (assoc-env-val [:preferred-compiler] :dirac-nrepl-preferred-compiler)
       (assoc-env-val [:weasel-repl :host] :dirac-nrepl-weasel-host)
       (assoc-env-val [:weasel-repl :port] :dirac-nrepl-weasel-port :int)
       (assoc-env-val [:weasel-repl :range] :dirac-nrepl-weasel-range :int)))
