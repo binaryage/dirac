@@ -3,6 +3,7 @@
   (:require [cljs.core.async :refer [put! <! chan close!]]
             [cljs.core.async.impl.protocols :as async-protocols]
             [cuerdas.core :as cuerdas]
+            [cljs.pprint]
             [oops.core :refer [oget oset! ocall oapply]]
             [chromex.logging :refer-macros [log info warn error group group-end]]))
 
@@ -143,3 +144,9 @@
     (oset! reader "onloadend" #(put! channel (oget reader "result")))
     (ocall reader "readAsText" blob)
     channel))
+
+(defn pprint-str [v & [level length]]
+  (with-out-str
+    (binding [*print-level* (or level 3)
+              *print-length* (or length 200)]
+      (cljs.pprint/pprint v))))
