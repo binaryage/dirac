@@ -1,7 +1,10 @@
 (ns dirac.nrepl.controls
   (:require [dirac.nrepl.sessions :as sessions]
+            [dirac.nrepl.compilers :as compilers]
             [dirac.nrepl.helpers :refer [with-err-output get-nrepl-info error-println]]
-            [clojure.string :as string])
+            [clojure.string :as string]
+            [cljs.analyzer :as analyzer]
+            [dirac.nrepl.state :as state])
   (:import (java.util.regex Pattern)))
 
 ; note: this namespace defines the context where special dirac commands are eval'd
@@ -9,20 +12,25 @@
 ; -- usage docs -------------------------------------------------------------------------------------------------------------
 
 (def ^:dynamic general-usage
-  ["Dirac provides this command to control its REPL operations."
-   "You may invoke this special `dirac!` function from any of your nREPL sessions by evaluating a form:"
+  ["You can control Dirac REPL via this special `dirac!` command:"
    ""
-   "  `(dirac! <command> [arg1] [arg2] [...])`"
+   "  `(dirac! <sub-command> [arg1] [arg2] [...])`"
    ""
-   "Dirac <command> is a keyword followed by optional arguments."
+   "The argument <sub-command> is a keyword followed by optional arguments."
    ""
    "A list of known commands:"
    ""
    "  :status  -> prints current session state"
    "  :ls      -> list available Dirac sessions"
-   "  :join    -> join Dirac"
-   "  :disjoin -> disjoin Dirac"
+   ""
+   "  :switch  -> switch ClojureScript compiler"
+   "  :spawn   -> start a fresh ClojureScript compiler"                                                                       ; TODO: :spawn
+   "  :kill    -> kill (selected) ClojureScript compiler"                                                                     ; TODO: :kill
+   ""
+   "  :join    -> join a Dirac session"
+   "  :disjoin -> disjoin Dirac session"
    "  :match   -> list matching Dirac sessions"
+   ""
    "  :version -> print version info"
    "  :help    -> print usage help"
    ""
@@ -108,65 +116,91 @@
    :ls      ls-usage
    :join    join-usage
    :disjoin disjoin-usage
-   :match   match-usage})
+   :match   match-usage})                                                                                                     ; TODO: add docs for :switch and others
 
 (defn render-usage [lines]
   (string/join "\n" lines))
 
-; -- error messages ---------------------------------------------------------------------------------------------------------
+; -- messages ---------------------------------------------------------------------------------------------------------------
 
-(defn ^:dynamic no-such-command-msg [command]
+(defn ^:dynamic make-no-such-command-msg [command]
   (str "No such command '" command "'.\n"
        "Execute `(dirac! :help)` for a list of available commands."))
 
-(defn ^:dynamic invalid-matcher-msg [matcher]
+(defn ^:dynamic make-invalid-matcher-msg [matcher]
   (str "Invalid matching strategy provided. It must be either a number, a string, a regex or omitted.\n"
        "Provided matching strategy '" matcher "' is of type " (type matcher)))
 
-(defn ^:dynamic cannot-disjoin-dirac-session-msg []
+(defn ^:dynamic make-cannot-disjoin-dirac-session-msg []
   (str "Your session is a Dirac session. Cannot disjoin this type of session."))
 
-(defn ^:dynamic cannot-disjoin-clojure-session-msg []
+(defn ^:dynamic make-cannot-disjoin-clojure-session-msg []
   (str "Your session is not joined to Dirac. Nothing to do."))
 
-(defn ^:dynamic session-disjoined-msg []
+(defn ^:dynamic make-session-disjoined-msg []
   (str "Your session was disjoined from Dirac. Now you are back in normal Clojure session."))
 
-(defn ^:dynamic cannot-join-dirac-session-msg []
+(defn ^:dynamic make-cannot-join-dirac-session-msg []
   (str "Your session is a Dirac session. This type of session cannot join any other session."))
 
-(defn ^:dynamic cannot-match-clojure-session-msg []
+(defn ^:dynamic make-cannot-match-clojure-session-msg []
   (str "Your session is not joined to Dirac. Use `(dirac! :join)` to join the Dirac first."))
 
-(defn ^:dynamic no-matching-dirac-sessions-msg [info]
+(defn ^:dynamic make-no-matching-dirac-sessions-msg [info]
   (str "No connected Dirac session is \"" info "\"."))
 
-(defn ^:dynamic list-matching-dirac-sessions-msg [info tags]
+(defn ^:dynamic make-list-matching-dirac-sessions-msg [info tags]
   (let [printer (fn [i tag]
                   (str (if (zero? i) "  * " "    ") tag))]
     (str "Listing Dirac sessions which are \"" info "\":\n"
          (string/join "\n" (map-indexed printer tags)))))
 
-(defn ^:dynamic no-dirac-sessions-msg []
+(defn ^:dynamic make-no-dirac-sessions-msg []
   (str "No Dirac sessions are currently available. Connect with at least one Dirac REPL to your nREPL server."))
 
-(defn ^:dynamic list-dirac-sessions-msg [tags]
+(defn ^:dynamic make-list-dirac-sessions-msg [tags]
   (let [printer (fn [i tag]
                   (str "  #" (inc i) " " tag))]
     (str "Listing all Dirac sessions currently connected to your nREPL server:\n"
          (string/join "\n" (map-indexed printer tags)))))
 
-(defn ^:dynamic default-error-msg [command]
+(defn ^:dynamic make-default-error-msg [command]
   (str "Unrecognized Dirac command '" command "'\n"
        "Use `(dirac! :help)` to list all available commands."))
 
-(defn ^:dynamic after-join-msg []
+(defn ^:dynamic make-after-join-msg []
   (str "Your session joined Dirac (ClojureScript). "
        "The specific target Dirac session will be determined dynamically according to current matching strategy."))
 
+(defn ^:dynamic make-list-compilers-msg [descriptors]
+  (let [printer (fn [i descriptor]
+                  (str "  #" (inc i) " " (compilers/get-compiler-descriptor-id descriptor)))]
+    (str "Listing all ClojureScript compilers currently available in your nREPL server:\n"
+         (string/join "\n" (map-indexed printer descriptors)))))
+
+(defn ^:dynamic make-no-compilers-msg [selected-compiler available-compilers]
+  (str "No ClojureScript compiler matching '" selected-compiler "' is currently available: " (pr-str available-compilers) "."
+       "\nYou may want to use `(dirac! :ls)` to review current situation."))
+
+(defn ^:dynamic make-status-msg [session-type selected-compiler matched-compiler-descriptor available-compiler-ids]
+  (str "Your current nREPL session is " session-type ".\n"
+       "Your selected ClojureScript compiler is '" selected-compiler "'"
+       (if (some? matched-compiler-descriptor)
+         (let [compiler-id (compilers/get-compiler-descriptor-id matched-compiler-descriptor)]
+           (if (= compiler-id selected-compiler)
+             "."
+             (str " which currently matches compiler <" compiler-id ">.")))
+         (str " which currently does not match any available compilers: " (pr-str available-compiler-ids)))))
+
+(defn ^:dynamic make-version-msg [nrepl-info]
+  (str nrepl-info "."))
+
+(defn ^:dynamic make-cljs-quit-msg []
+  (str "To quit, type: :cljs/quit"))
+
 ; == special REPL commands ==================================================================================================
 
-; we are forgiving when reading the command argument,
+; we are forgiving when reading the sub-command argument,
 ; it gets converted to keyword so all following variations are permitted:
 ;
 ;   (dirac! :help)
@@ -185,21 +219,25 @@
     (println (render-usage general-usage))
     (if-let [doc (get docs (keyword command))]
       (println (render-usage doc))
-      (error-println (no-such-command-msg command))))
+      (error-println (make-no-such-command-msg command))))
   ::no-result)
 
 ; -- (dirac! :version) ------------------------------------------------------------------------------------------------------
 
 (defmethod dirac! :version [_ & _]
-  (println (str (get-nrepl-info) "."))
+  (let [nrepl-info (get-nrepl-info)]
+    (println (make-version-msg nrepl-info)))
   ::no-result)
 
 ; -- (dirac! :status) -------------------------------------------------------------------------------------------------------
 
 (defmethod dirac! :status [_ & _]
   (let [session (sessions/get-current-session)
-        session-type (sessions/get-session-type session)]
-    (println (str "Your current nREPL session is " session-type ".")))
+        session-type (sessions/get-session-type session)
+        selected-compiler (state/get-session-selected-compiler)
+        matched-compiler-descriptor (compilers/find-matching-compiler-descriptor selected-compiler)
+        available-compiler-ids (compilers/collect-all-available-compiler-ids)]
+    (println (make-status-msg session-type selected-compiler matched-compiler-descriptor available-compiler-ids)))
   ::no-result)
 
 ; -- (dirac! :ls) -----------------------------------------------------------------------------------------------------------
@@ -207,27 +245,28 @@
 (defmethod dirac! :ls [_ & _]
   (let [tags (sessions/get-dirac-session-tags)]
     (if (empty? tags)
-      (println (no-dirac-sessions-msg))
-      (println (list-dirac-sessions-msg tags))))
+      (println (make-no-dirac-sessions-msg))
+      (println (make-list-dirac-sessions-msg tags))))
+  (let [compiler-descriptors (compilers/collect-all-available-compiler-descriptors)]
+    (println (make-list-compilers-msg compiler-descriptors)))
   ::no-result)
 
 ; -- (dirac! :join) ---------------------------------------------------------------------------------------------------------
 
 (defn announce-join! [& _]
-  (println (after-join-msg))
+  (println (make-after-join-msg))
   (dirac! :match)                                                                                                             ; this should give user immediate feedback about newly matched sessions
-  ; trigger Cursive switching to CLJS REPL mode
-  (println "To quit, type:" :cljs/quit))                                                                                      ; this is taken from https://github.com/cemerick/piggieback/blob/440b2d03f944f6418844c2fab1e0361387eed543/src/cemerick/piggieback.clj#L233
+  (println (make-cljs-quit-msg)))                                                                                             ; triggers Cursive switching to CLJS REPL mode
 
 (defmethod dirac! :join [_ & [matcher]]
   (let [session (sessions/get-current-session)]
     (cond
-      (sessions/dirac-session? session) (error-println (cannot-join-dirac-session-msg))
+      (sessions/dirac-session? session) (error-println (make-cannot-join-dirac-session-msg))
       (nil? matcher) (announce-join! (sessions/join-session-with-most-recent-matcher! session))
       (number? matcher) (announce-join! (sessions/join-session-with-number-matcher! session matcher))
       (string? matcher) (announce-join! (sessions/join-session-with-substr-matcher! session matcher))
       (instance? Pattern matcher) (announce-join! (sessions/join-session-with-regex-matcher! session matcher))
-      :else (error-println (invalid-matcher-msg matcher))))
+      :else (error-println (make-invalid-matcher-msg matcher))))
   ::no-result)
 
 ; -- (dirac! :disjoin) ------------------------------------------------------------------------------------------------------
@@ -235,11 +274,11 @@
 (defmethod dirac! :disjoin [_ & _]
   (let [session (sessions/get-current-session)]
     (cond
-      (sessions/dirac-session? session) (error-println (cannot-disjoin-dirac-session-msg))
-      (not (sessions/joined-session? session)) (error-println (cannot-disjoin-clojure-session-msg))
+      (sessions/dirac-session? session) (error-println (make-cannot-disjoin-dirac-session-msg))
+      (not (sessions/joined-session? session)) (error-println (make-cannot-disjoin-clojure-session-msg))
       :else (do
               (sessions/disjoin-session! session)
-              (println (session-disjoined-msg)))))
+              (println (make-session-disjoined-msg)))))
   ::no-result)
 
 ; -- (dirac! :match) --------------------------------------------------------------------------------------------------------
@@ -247,19 +286,30 @@
 (defmethod dirac! :match [_ & _]
   (let [session (sessions/get-current-session)]
     (cond
-      (sessions/dirac-session? session) (error-println (cannot-join-dirac-session-msg))
-      (not (sessions/joined-session? session)) (error-println (cannot-match-clojure-session-msg))
+      (sessions/dirac-session? session) (error-println (make-cannot-join-dirac-session-msg))
+      (not (sessions/joined-session? session)) (error-println (make-cannot-match-clojure-session-msg))
       :else (let [description (sessions/get-target-session-info session)
                   tags (sessions/list-matching-sessions-tags session)]
               (if (empty? tags)
-                (println (no-matching-dirac-sessions-msg description))
-                (println (list-matching-dirac-sessions-msg description tags))))))
+                (println (make-no-matching-dirac-sessions-msg description))
+                (println (make-list-matching-dirac-sessions-msg description tags))))))
+  ::no-result)
+
+; -- (dirac! :switch) -------------------------------------------------------------------------------------------------------
+
+(defmethod dirac! :switch [_ & [user-selected-compiler]]
+  (let [selected-compiler (str user-selected-compiler)]
+    (compilers/select-compiler! selected-compiler)
+    (let [matched-compiler-descriptor (compilers/find-matching-compiler-descriptor selected-compiler)]
+      (if (nil? matched-compiler-descriptor)
+        (error-println (make-no-compilers-msg selected-compiler (compilers/collect-all-available-compiler-ids)))))
+    (state/reply! (compilers/prepare-announce-ns-msg analyzer/*cljs-ns*)))
   ::no-result)
 
 ; -- default handler --------------------------------------------------------------------------------------------------------
 
 (defmethod dirac! :default [command & _]
   (if (some? command)
-    (error-println (default-error-msg command))
+    (error-println (make-default-error-msg command))
     (dirac! :help))
   ::no-result)
