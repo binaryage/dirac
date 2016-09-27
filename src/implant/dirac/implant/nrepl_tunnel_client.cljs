@@ -53,39 +53,47 @@
 (defn tunnel-message! [msg]
   (send-to-nrepl-tunnel! :nrepl-message msg))
 
-(defn tunnel-message-with-response! [msg]
+(defn tunnel-message-with-responses! [msg]
   (let [id (uuid/uuid-string (uuid/make-random-uuid))
         msg-with-id (assoc msg :id id)
         response-channel (chan)
-        timeout-channel (timeout (:response-timeout (get-current-options)))
         handler (fn [response-message]
-                  (remove-pending-message-handler! id)
-                  (put! response-channel response-message))]
+                  (put! response-channel response-message)
+                  (when (some? (:status response-message))
+                    (remove-pending-message-handler! id)
+                    (close! response-channel)))]
     (register-pending-message-handler! id handler)
     (tunnel-message! msg-with-id)
     (go
-      (let [[result] (alts! [response-channel timeout-channel])]
-        (or result
-            (deliver-response {:status [:timeout]
-                               :id     id}))))))
+      (<! (timeout (:response-timeout (get-current-options))))
+      (close! response-channel))
+    response-channel))
 
 ; -- message processing -----------------------------------------------------------------------------------------------------
 
 (defmulti process-message (fn [_client message] (:op message)))
 
 (defmethod process-message :default [client message]
-  (let [{:keys [out err ns status id value]} message]
-    (if value
+  (let [{:keys [out err ns status id value compiler-id]} message]
+    (if (some? value)
       (alter-meta! client assoc :last-value value))
+    (if (some? ns)
+      (console/set-prompt-ns! ns))
+    (if (some? compiler-id)
+      (console/set-prompt-compiler! compiler-id))
+    (when id
+      (deliver-response message)                                                                                              ; *** (see pending-messages above)
+      (if (some? status)
+        (console/announce-job-end! id)))
+
     (cond
       ; :out and :err messages are being sent by session middleware,
       ; we have our own output recoding based on recording driver, sent via :print-output message
-      out nil                                                                                                                 ; (eval/present-output id "stdout" out)
-      err nil                                                                                                                 ; (eval/present-output id "stderr" err)
-      ns (console/set-prompt-ns! ns)
-      status (when id
-               (deliver-response message)                                                                                     ; *** (see pending-messages above)
-               (console/announce-job-end! id))
+      (some? out) nil                                                                                                         ; (eval/present-output id "stdout" out)
+      (some? err) nil                                                                                                         ; (eval/present-output id "stderr" err)
+      (some? ns) nil
+      (some? compiler-id) nil
+      (some? status) nil
       :else (warn "received an unrecognized message from nREPL server" (envelope message))))
   nil)
 

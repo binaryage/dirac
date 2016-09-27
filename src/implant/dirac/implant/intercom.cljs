@@ -41,15 +41,15 @@
 (defn ^:dynamic failed-to-retrieve-client-config-msg [where]
   (str "Failed to retrive Dirac Runtime config (" where "). This is an unexpected error."))
 
-(defn ^:dynamice unable-to-bootstrap-msg []
+(defn ^:dynamice unable-to-bootstrap-due-to-timeout-msg []
   (str "Unable to bootstrap ClojureScript REPL due to a timeout.\n"
-       "This is usually a case when server side process raised an exception or crashed.\n"
-       "Check your Dirac Agent error output."))
+       "Usually this happens when server-side process raised an exception or crashed.\n"
+       "Please check error output in Dirac Agent."))
 
 (defn ^:dynamic bootstrap-error-msg [details]
   (str "Unable to bootstrap ClojureScript REPL due to an error.\n"
-       (if (some? details) (str (cuerdas/escape-html details) "\n"))
-       "Please check your Dirac Agent error output for additional details."))
+       (if (some? details) (str (cuerdas/escape-html (utils/pprint-str details)) "\n"))
+       "Please check error output in Dirac Agent for additional details."))
 
 (defn ^:dynamic unable-to-connect-exception-msg [url e]
   (str "Unable to connect to Dirac Agent at " url ":\n"
@@ -334,21 +334,25 @@
     (let [runtime-tag (<! (eval/get-runtime-tag))
           runtime-config (<! (eval/get-runtime-config))
           bootstrap-message (make-boostrap-message runtime-config runtime-tag)
-          response (<! (nrepl-tunnel-client/tunnel-message-with-response! bootstrap-message))]
-      (case (first (:status response))
-        "done" (do
-                 (log "Bootstrap done" response)
-                 (set! *repl-bootstrapped* true)
-                 (update-repl-mode!)
-                 {:op :bootstrap-done})
-        "timeout" (do
-                    (error "Bootstrap timeouted" response)
-                    (display-prompt-status (unable-to-bootstrap-msg))
-                    {:op :bootstrap-timeout})
-        (do
-          (error "Bootstrap failed" response)
-          (display-prompt-status (bootstrap-error-msg (or (:details response) response)))
-          {:op :bootstrap-error})))))
+          responses-chan (nrepl-tunnel-client/tunnel-message-with-responses! bootstrap-message)]
+      (loop []
+        (if-let [response (<! responses-chan)]
+          (if (some? (:status response))
+            (case (first (:status response))
+              "done" (do
+                       (log "Bootstrap done" response)
+                       (set! *repl-bootstrapped* true)
+                       (update-repl-mode!)
+                       {:op :bootstrap-done})
+              (do
+                (error "Bootstrap failed" response)
+                (display-prompt-status (bootstrap-error-msg (:details response)))
+                {:op :bootstrap-error}))
+            (recur))
+          (do
+            (error "Bootstrap timeouted")
+            (display-prompt-status (unable-to-bootstrap-due-to-timeout-msg))
+            {:op :bootstrap-timeout}))))))
 
 ; -- :bootstrap-info --------------------------------------------------------------------------------------------------------
 
