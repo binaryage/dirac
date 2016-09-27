@@ -4,6 +4,7 @@
             [dirac.implant.helpers :refer [get-console-view]]))
 
 (defonce ^:dynamic *last-prompt-ns* nil)
+(defonce ^:dynamic *last-prompt-compiler* nil)
 (defonce ^:dynamic *last-prompt-mode* :status)
 (defonce ^:dynamic *last-prompt-status-content* "")
 (defonce ^:dynamic *last-prompt-status-style* "")
@@ -43,6 +44,13 @@
     (set! *last-prompt-ns* ns-name)
     (if-let [console-view (get-console-view)]
       (ocall console-view "setDiracPromptNS" ns-name))))
+
+(defn set-prompt-compiler! [compiler-name]
+  {:pre [(string? compiler-name)]}
+  (when-not (= *last-prompt-compiler* compiler-name)
+    (set! *last-prompt-compiler* compiler-name)
+    (if-let [console-view (get-console-view)]
+      (ocall console-view "setDiracPromptCompiler" compiler-name))))
 
 (defn set-prompt-mode! [mode]
   (when-not (= *last-prompt-mode* mode)
