@@ -559,24 +559,34 @@ WebInspector.ConsoleView.prototype = {
        }
     },
 
-    _refreshNs: function () {
+    _refreshPromptInfo: function () {
         var promptDescriptor = this._prompts[this._activePromptIndex];
         if (promptDescriptor.id != "dirac") {
             return;
         }
 
-        var label = this._currentNs?this._currentNs:"";
+        var label = this._currentNamespace ? this._currentNamespace : "";
+        if (this._currentCompiler) {
+            label += " » " + this._currentCompiler;
+        }
         promptDescriptor.codeMirror.setOption("placeholder", label);
     },
 
     setDiracPromptNS: function(name)
     {
         dirac.feedback("setDiracPromptNS('"+name+"')");
-        this._currentNs = name;
+        this._currentNamespace = name;
         if (this._diracPromptDescriptor) {
           this._diracPromptDescriptor.prompt.setCurrentClojureScriptNamespace(name);
         }
-        this._refreshNs();
+        this._refreshPromptInfo();
+    },
+
+    setDiracPromptCompiler: function(name)
+    {
+        dirac.feedback("setDiracPromptCompiler('"+name+"')");
+        this._currentCompiler = name;
+        this._refreshPromptInfo();
     },
 
     onJobStarted: function(requestId) {
