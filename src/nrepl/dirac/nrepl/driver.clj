@@ -176,11 +176,17 @@
 
 ; -- initialization ---------------------------------------------------------------------------------------------------------
 
-(defn start-repl-with-driver [repl-env repl-opts start-fn send-response-fn]
+(defn wrap-repl-with-driver [repl-env repl-opts start-fn send-response-fn]
   (let [driver (make-driver {:send-response-fn send-response-fn
                              :sniffers         {:stdout (volatile! nil)
                                                 :stderr (volatile! nil)}})
-        updated-repl-opts (assoc repl-opts :caught (custom-caught-factory driver))
+        orig-flush-fn (:flush repl-opts)
+        updated-repl-opts (assoc repl-opts
+                            :flush (fn []
+                                     (if (fn? orig-flush-fn)
+                                       (orig-flush-fn))
+                                     (flush! driver))
+                            :caught (custom-caught-factory driver))
         updated-repl-env repl-env]
     (let [stdout-sniffer (sniffer/make-sniffer *out* (partial flush-handler driver :stdout))
           stderr-sniffer (sniffer/make-sniffer *err* (partial flush-handler driver :stderr))]
