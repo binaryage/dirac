@@ -353,10 +353,8 @@
 ; -- :bootstrap-info --------------------------------------------------------------------------------------------------------
 
 (defmethod nrepl-tunnel-client/process-message :bootstrap-info [_client message]
-  (let [{:keys [weasel-url ns]} message]
+  (let [{:keys [weasel-url]} message]
     (assert weasel-url (str "expected :weasel-url in :bootstrap-info message" message))
-    (assert ns (str "expected :ns in :bootstrap-info message" message))
-    (console/set-prompt-ns! ns)
     (connect-to-weasel-server! weasel-url))
   nil)
 
