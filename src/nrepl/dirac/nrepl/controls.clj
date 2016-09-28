@@ -1,7 +1,8 @@
 (ns dirac.nrepl.controls
   (:require [dirac.nrepl.sessions :as sessions]
             [dirac.nrepl.compilers :as compilers]
-            [dirac.nrepl.helpers :refer [with-err-output get-nrepl-info error-println]]
+            [dirac.nrepl.helpers :refer [with-err-output get-nrepl-info error-println
+                                         make-human-readable-list make-human-readable-selected-compiler]]
             [clojure.string :as string]
             [cljs.analyzer :as analyzer]
             [dirac.nrepl.state :as state])
@@ -179,24 +180,30 @@
          (string/join "\n" (map-indexed printer descriptors)))))
 
 (defn ^:dynamic make-no-compilers-msg [selected-compiler available-compilers]
-  (str "No ClojureScript compiler matching '" selected-compiler "' is currently available: " (pr-str available-compilers) "."
+  (str "No ClojureScript compiler matching " (make-human-readable-selected-compiler selected-compiler) " "
+       "is currently available: " (make-human-readable-list available-compilers) "."
        "\nYou may want to use `(dirac! :ls)` to review current situation."))
 
 (defn ^:dynamic make-status-msg [session-type selected-compiler matched-compiler-descriptor available-compiler-ids]
   (str "Your current nREPL session is " session-type ".\n"
-       "Your selected ClojureScript compiler is '" selected-compiler "'"
+       "Your selected ClojureScript compiler is " (make-human-readable-selected-compiler selected-compiler)
        (if (some? matched-compiler-descriptor)
          (let [compiler-id (compilers/get-compiler-descriptor-id matched-compiler-descriptor)]
            (if (= compiler-id selected-compiler)
              "."
              (str " which currently matches compiler <" compiler-id ">.")))
-         (str " which currently does not match any available compilers: " (pr-str available-compiler-ids)))))
+         (let [compilers (make-human-readable-list available-compiler-ids)]
+           (str " which currently does not match any available compilers: " compilers ".")))))
 
 (defn ^:dynamic make-version-msg [nrepl-info]
   (str nrepl-info "."))
 
 (defn ^:dynamic make-cljs-quit-msg []
   (str "To quit, type: :cljs/quit"))
+
+(defn ^:dynamic make-invalid-compiler-error-msg [user-input]
+  (str "Dirac's :switch sub-command accepts nil, integer, string or regex patterns. "
+       "You have entered " (pr-str user-input) " which is of type " (type user-input) "."))
 
 ; == special REPL commands ==================================================================================================
 
@@ -235,7 +242,7 @@
   (let [session (sessions/get-current-session)
         session-type (sessions/get-session-type session)
         selected-compiler (state/get-session-selected-compiler)
-        matched-compiler-descriptor (compilers/find-matching-compiler-descriptor selected-compiler)
+        matched-compiler-descriptor (compilers/find-matching-compiler-descriptor-by-id selected-compiler)
         available-compiler-ids (compilers/collect-all-available-compiler-ids)]
     (println (make-status-msg session-type selected-compiler matched-compiler-descriptor available-compiler-ids)))
   ::no-result)
@@ -297,13 +304,24 @@
 
 ; -- (dirac! :switch) -------------------------------------------------------------------------------------------------------
 
-(defmethod dirac! :switch [_ & [user-selected-compiler]]
-  (let [selected-compiler (str user-selected-compiler)]
-    (compilers/select-compiler! selected-compiler)
-    (let [matched-compiler-descriptor (compilers/find-matching-compiler-descriptor selected-compiler)]
-      (if (nil? matched-compiler-descriptor)
-        (error-println (make-no-compilers-msg selected-compiler (compilers/collect-all-available-compiler-ids)))))
-    (state/reply! (compilers/prepare-announce-ns-msg analyzer/*cljs-ns*)))
+(defn validate-selected-compiler [user-input]
+  (if (or (nil? user-input)
+          (integer? user-input)
+          (string? user-input)
+          (instance? Pattern user-input))
+    user-input
+    ::invalid-input))
+
+(defmethod dirac! :switch [_ & [user-input]]
+  (let [selected-compiler (validate-selected-compiler user-input)]
+    (if (= ::invalid-input selected-compiler)
+      (error-println (make-invalid-compiler-error-msg user-input))
+      (do
+        (compilers/select-compiler! selected-compiler)
+        (let [matched-compiler-descriptor (compilers/find-matching-compiler-descriptor-by-id selected-compiler)]
+          (if (nil? matched-compiler-descriptor)
+            (error-println (make-no-compilers-msg selected-compiler (compilers/collect-all-available-compiler-ids)))))
+        (state/reply! (compilers/prepare-announce-ns-msg analyzer/*cljs-ns*)))))
   ::no-result)
 
 ; -- default handler --------------------------------------------------------------------------------------------------------

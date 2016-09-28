@@ -49,7 +49,7 @@
 (defn collect-all-available-compiler-ids []
   (compiler-descriptors-ids (collect-all-available-compiler-descriptors)))
 
-(defn find-matching-compiler-descriptor [descriptor-id]
+(defn find-matching-compiler-descriptor-by-id [descriptor-id]
   (let [descriptors (collect-all-available-compiler-descriptors)]
     (log/debug "available compiler descriptors:" (logging/pprint (compiler-descriptors-ids descriptors)))
     (find-compiler-descriptor descriptor-id descriptors)))                                                                    ; TODO: fuzzy matching
@@ -61,7 +61,7 @@
    :compiler-id   (or compiler-id "")})
 
 (defn get-selected-compiler-descriptor []
-  (find-matching-compiler-descriptor (state/get-session-selected-compiler)))
+  (find-matching-compiler-descriptor-by-id (state/get-session-selected-compiler)))
 
 (defn get-selected-compiler-id []
   (get-compiler-descriptor-id (get-selected-compiler-descriptor)))
@@ -70,7 +70,7 @@
   (make-announce-ns-msg ns (get-selected-compiler-id) value))
 
 (defn provide-selected-compiler-env* [selected-compiler]
-  (if-let [descriptor (find-matching-compiler-descriptor selected-compiler)]
+  (if-let [descriptor (find-matching-compiler-descriptor-by-id selected-compiler)]
     (get-compiler-descriptor-compiler-env descriptor)))
 
 (defn provide-selected-compiler-env []
