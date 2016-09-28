@@ -156,14 +156,13 @@
     (str "Listing Dirac sessions which are \"" info "\":\n"
          (string/join "\n" (map-indexed printer tags)))))
 
-(defn ^:dynamic make-no-dirac-sessions-msg []
-  (str "No Dirac sessions are currently available. Connect with at least one Dirac REPL to your nREPL server."))
-
 (defn ^:dynamic make-list-dirac-sessions-msg [tags]
-  (let [printer (fn [i tag]
-                  (str "  #" (inc i) " " tag))]
-    (str "Listing all Dirac sessions currently connected to your nREPL server:\n"
-         (string/join "\n" (map-indexed printer tags)))))
+  (if (empty? tags)
+    (str "No Dirac sessions are currently available. Connect with at least one Dirac REPL to your nREPL server.")
+    (let [printer (fn [i tag]
+                    (str "  #" (inc i) " " tag))]
+      (str "Listing all Dirac sessions currently connected to your nREPL server:\n"
+           (string/join "\n" (map-indexed printer tags))))))
 
 (defn ^:dynamic make-default-error-msg [command]
   (str "Unrecognized Dirac command '" command "'\n"
@@ -174,10 +173,12 @@
        "The specific target Dirac session will be determined dynamically according to current matching strategy."))
 
 (defn ^:dynamic make-list-compilers-msg [descriptors]
-  (let [printer (fn [i descriptor]
-                  (str "  #" (inc i) " " (compilers/get-compiler-descriptor-id descriptor)))]
-    (str "Listing all ClojureScript compilers currently available in your nREPL server:\n"
-         (string/join "\n" (map-indexed printer descriptors)))))
+  (if (empty? descriptors)
+    (str "No ClojureScript compilers currently available in your nREPL server.")
+    (let [printer (fn [i descriptor]
+                    (str "  #" (inc i) " " (compilers/get-compiler-descriptor-id descriptor)))]
+      (str "Listing all ClojureScript compilers currently available in your nREPL server:\n"
+           (string/join "\n" (map-indexed printer descriptors))))))
 
 (defn ^:dynamic make-no-compilers-msg [selected-compiler available-compilers]
   (str "No ClojureScript compiler matching " (make-human-readable-selected-compiler selected-compiler) " "
@@ -250,12 +251,8 @@
 ; -- (dirac! :ls) -----------------------------------------------------------------------------------------------------------
 
 (defmethod dirac! :ls [_ & _]
-  (let [tags (sessions/get-dirac-session-tags)]
-    (if (empty? tags)
-      (println (make-no-dirac-sessions-msg))
-      (println (make-list-dirac-sessions-msg tags))))
-  (let [compiler-descriptors (compilers/collect-all-available-compiler-descriptors)]
-    (println (make-list-compilers-msg compiler-descriptors)))
+  (println (make-list-dirac-sessions-msg (sessions/get-dirac-session-tags)))
+  (println (make-list-compilers-msg (compilers/collect-all-available-compiler-descriptors)))
   ::no-result)
 
 ; -- (dirac! :join) ---------------------------------------------------------------------------------------------------------
