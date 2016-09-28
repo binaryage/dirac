@@ -1,6 +1,7 @@
 (ns dirac.nrepl.helpers
   (:require [dirac.nrepl.version :refer [version]]
             [dirac.logging :as logging]
+            [dirac.nrepl.state :as state]
             [clojure.tools.nrepl.transport :as transport])
   (:import (java.util UUID)))
 
@@ -18,10 +19,12 @@
 (defn generate-uuid []
   (str (UUID/randomUUID)))
 
-(defn send-response! [nrepl-message response-msg]
-  (let [transport (:transport nrepl-message)]
-    (assert transport)
-    (transport/send transport (response-for nrepl-message response-msg))))
+(defn send-response!
+  ([response-msg] (send-response! (state/get-nrepl-message) response-msg))
+  ([nrepl-message response-msg]
+   (let [transport (:transport nrepl-message)]
+     (assert transport)
+     (transport/send transport (response-for nrepl-message response-msg)))))
 
 (defn make-server-side-output-msg [kind content]
   {:pre [(contains? #{:stderr :stdout} kind)
