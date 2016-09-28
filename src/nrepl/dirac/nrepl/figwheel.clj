@@ -3,8 +3,14 @@
   (:require [clojure.tools.logging :as log]
             [dirac.logging :as logging]))
 
+(defn try-get-figwheel-api-var []
+  (try
+    (ns-resolve 'figwheel-sidecar.repl-api '*repl-api-system*)
+    (catch Throwable _e
+      nil)))
+
 (defn get-figwheel-repl-api []
-  (when-let [fig-api-var (ns-resolve 'figwheel-sidecar.repl-api '*repl-api-system*)]
+  (when-let [fig-api-var (try-get-figwheel-api-var)]
     (assert (var? fig-api-var))
     (var-get fig-api-var)))
 
