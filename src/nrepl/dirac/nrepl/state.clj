@@ -53,6 +53,9 @@
   (assert *current-session*)
   *current-session*)
 
+(defn get-current-session-if-avail []
+  *current-session*)
+
 (defn get-session-binding-value
   ([var] (get-session-binding-value *current-session* var))
   ([session var]

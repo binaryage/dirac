@@ -79,14 +79,16 @@
 (defn get-dirac-session-tag [session]
   (prepare-dirac-session-descriptor-tag (find-dirac-session-descriptor session)))
 
-(defn get-dirac-session-tags []
-  (get-dirac-session-descriptors-tags @state/session-descriptors))
-
 (defn get-other-sessions-descriptors
-  ([] (get-other-sessions-descriptors (state/get-current-session)))
+  ([] (get-other-sessions-descriptors (state/get-current-session-if-avail)))
   ([session]
-   (assert session)
    (remove #(= session (get-dirac-session-descriptor-session %)) @state/session-descriptors)))
+
+(defn get-dirac-session-tags []
+  (let [current-session-descriptor (find-dirac-session-descriptor (state/get-current-session-if-avail))
+        other-descriptors (get-other-sessions-descriptors)
+        ordered-descriptors (keep identity (concat [current-session-descriptor] other-descriptors))]
+    (get-dirac-session-descriptors-tags ordered-descriptors)))
 
 ; -- joining sessions -------------------------------------------------------------------------------------------------------
 
