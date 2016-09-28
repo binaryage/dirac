@@ -60,20 +60,6 @@
        "Use `(dirac! :ls)` to review current situation and "
        "`(dirac! :switch <compiler-id>)` to switch to an existing compiler."))
 
-; -- helpers ----------------------------------------------------------------------------------------------------------------
-
-(defn send-response! [nrepl-message response-msg]
-  (let [transport (:transport nrepl-message)]
-    (assert transport)
-    (transport/send transport (response-for nrepl-message response-msg))))
-
-(defn make-server-side-output-msg [kind content]
-  {:pre [(contains? #{:stderr :stdout} kind)
-         (string? content)]}
-  {:op      :print-output
-   :kind    kind
-   :content content})
-
 ; -- dirac-specific wrapper for evaluated forms -----------------------------------------------------------------------------
 
 (defn safe-value-conversion-to-string [value]
@@ -218,7 +204,7 @@
                                          (compilers/capture-current-compiler-and-select-it!))
                                  :print (fn [& _]
                                           (log/trace "print-fn (no-op)")))                                                    ; silence any responses
-        response-fn (partial send-response! nrepl-message)]
+        response-fn (partial helpers/send-response! nrepl-message)]
     (execute-single-cljs-repl-evaluation! job-id code ns repl-env compiler-env effective-repl-options response-fn)))
 
 (defn start-cljs-repl! [dirac-nrepl-config repl-env repl-options]
@@ -241,7 +227,7 @@
       (state/set-session-cljs-repl-options! repl-options)
       (state/set-session-original-clj-ns! *ns*)                                                                               ; interruptible-eval is in charge of emitting the final :ns response in this context
       (set! *ns* (find-ns (state/get-session-cljs-ns)))                                                                       ; TODO: is this really needed? is it for macros?
-      (send-response! (state/get-nrepl-message) (compilers/prepare-announce-ns-msg (state/get-session-cljs-ns)))
+      (helpers/send-response! (state/get-nrepl-message) (compilers/prepare-announce-ns-msg (state/get-session-cljs-ns)))
       (catch Exception e
         (state/set-session-cljs-repl-env! nil)
         (throw e)))))
@@ -266,7 +252,7 @@
 
 (defn report-missing-compiler! [selected-compiler available-compilers]
   (let [msg (make-missing-compiler-msg selected-compiler available-compilers)]
-    (send-response! (state/get-nrepl-message) (make-server-side-output-msg :stderr msg))))
+    (helpers/send-response! (state/get-nrepl-message) (helpers/make-server-side-output-msg :stderr msg))))
 
 ; only executed within the context of an nREPL session having *cljs-repl-env*
 ; bound. Thus, we're not going through interruptible-eval, and the user's
@@ -284,7 +270,7 @@
             ns (:ns nrepl-message)
             selected-compiler (state/get-session-selected-compiler)
             cljs-repl-options (state/get-session-cljs-repl-options)
-            response-fn (partial send-response! nrepl-message)]
+            response-fn (partial helpers/send-response! nrepl-message)]
         (if-let [compiler-env (compilers/provide-selected-compiler-env)]
           (execute-single-cljs-repl-evaluation! job-id code ns cljs-repl-env compiler-env cljs-repl-options response-fn)
           (report-missing-compiler! selected-compiler (compilers/collect-all-available-compiler-ids))))
@@ -294,7 +280,7 @@
         (sessions/remove-dirac-session-descriptor! session)
         (swap! session assoc #'*ns* (state/get-session-original-clj-ns))                                                      ; TODO: is this really needed?
         (let [reply (compilers/prepare-announce-ns-msg (str (state/get-session-original-clj-ns)))]
-          (send-response! nrepl-message reply))))))
+          (helpers/send-response! nrepl-message reply))))))
 
 ; struggled for too long trying to interface directly with cljs.repl/load-file,
 ; so just mocking a "regular" load-file call
@@ -408,7 +394,7 @@
     (let [result (with-bindings bindings
                    (try
                      (let [form (read-string code)]
-                       (binding [state/*reply!* #(send-response! nrepl-message %)
+                       (binding [state/*reply!* #(helpers/send-response! nrepl-message %)
                                  *ns* ns
                                  nrepl-ieval/*msg* nrepl-message]
                          (eval form)))
@@ -618,7 +604,7 @@
     (let [info-message {:op         :bootstrap-info
                         :weasel-url weasel-url}]
       (log/debug "sending :bootstrap-info" info-message)
-      (send-response! nrepl-message info-message))))
+      (helpers/send-response! nrepl-message info-message))))
 
 (defn weasel-server-started! [weasel-url runtime-tag]
   (assert weasel-url)

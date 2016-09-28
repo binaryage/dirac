@@ -2,7 +2,8 @@
   (:require [clojure.core.async :refer [chan <!! <! >!! put! alts!! timeout close! go go-loop]]
             [cljs.repl :as cljs-repl]
             [dirac.nrepl.sniffer :as sniffer]
-            [clojure.tools.logging :as log])
+            [clojure.tools.logging :as log]
+            [dirac.nrepl.helpers :as helpers])
   (:import (clojure.lang IExceptionInfo)
            (java.io StringWriter PrintWriter)))
 
@@ -48,10 +49,8 @@
     (send-fn msg)))
 
 (defn report-output [driver job-id output-kind content]
-  (send! driver {:op      :print-output
-                 :id      job-id
-                 :kind    output-kind
-                 :content content}))
+  (let [output-msg (helpers/make-server-side-output-msg output-kind content)]
+    (send! driver (assoc output-msg :id job-id))))
 
 ; -- recording/flushing suppression -----------------------------------------------------------------------------------------
 
