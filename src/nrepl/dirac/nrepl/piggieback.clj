@@ -55,8 +55,8 @@
        "Ask Dirac developers to implement '" op "' op: https://github.com/binaryage/dirac/issues."))
 
 (defn ^:dynamic make-missing-compiler-msg [selected-compiler available-compilers]
-  (str "Selected compiler '" selected-compiler "' is missing. "
-       "It does not match any of available compilers: " (pr-str available-compilers) ".\n"
+  (str "Selected compiler '" (helpers/make-human-readable-selected-compiler selected-compiler) "' is missing. "
+       "It does not match any of available compilers: " (helpers/make-human-readable-list available-compilers) ".\n"
        "Use `(dirac! :ls)` to review current situation and "
        "`(dirac! :switch <compiler-id>)` to switch to an existing compiler."))
 
