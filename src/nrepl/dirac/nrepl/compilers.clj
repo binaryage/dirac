@@ -34,7 +34,7 @@
 (defn find-matching-compiler-descriptor [match descriptors]
   (cond
     (nil? match) (first descriptors)
-    (integer? match) (nth descriptors match nil)
+    (integer? match) (nth descriptors (dec match) nil)                                                                        ; user input is 1-based
     (string? match) (find-compiler-descriptor-by-substring match descriptors)
     (instance? Pattern match) (find-compiler-descriptor-by-regexp match descriptors)
     :else (assert nil (str "invalid match in find-matching-compiler-descriptor: " (type match)))))
