@@ -69,7 +69,7 @@
 (def ^:dynamic join-usage
   ["Usage forms:"
    ""
-   "  1. `(dirac! :join <number>)`"
+   "  1. `(dirac! :join <integer>)`"
    "  2. `(dirac! :join <string>)`"
    "  3. `(dirac! :join <regex>)`"
    "  4. `(dirac! :join)`"
@@ -80,8 +80,8 @@
    ""
    "To list all available Dirac sessions use `(dirac! :ls)`."
    "Matching is done dynamically for every new eval request. Connected Dirac sessions are tested in historical order."
-   "Matching strategy must be either a number(1), a string(2), a regex(3) or omitted(4)."
-   "Number-based matching targets nth session from the list."
+   "Matching strategy must be either a integer(1), a string(2), a regex(3) or omitted(4)."
+   "Integer-based matching targets nth session from the list."
    "String-based matching targets first Dirac session matching the provided substring."
    "Regex-based matching targets first Dirac session matching the provided regular expression."
    "If no matching strategy is provided, this session will target the most recent Dirac session in the list."
@@ -263,7 +263,7 @@
     (cond
       (sessions/dirac-session? session) (error-println (make-cannot-join-dirac-session-msg))
       (nil? matcher) (announce-join! (sessions/join-session-with-most-recent-matcher! session))
-      (number? matcher) (announce-join! (sessions/join-session-with-number-matcher! session matcher))
+      (integer? matcher) (announce-join! (sessions/join-session-with-integer-matcher! session matcher))
       (string? matcher) (announce-join! (sessions/join-session-with-substr-matcher! session matcher))
       (instance? Pattern matcher) (announce-join! (sessions/join-session-with-regex-matcher! session matcher))
       :else (error-println (make-invalid-matcher-msg matcher))))

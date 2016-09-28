@@ -164,7 +164,7 @@
                  (make-regex-matcher re)
                  (make-regex-matcher-description re)))
 
-(defn join-session-with-number-matcher! [session number]
+(defn join-session-with-integer-matcher! [session number]
   (join-session! session
                  (make-number-matcher number)
                  (make-number-matcher-description number)))
