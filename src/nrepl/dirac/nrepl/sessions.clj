@@ -82,6 +82,12 @@
 (defn get-dirac-session-tags []
   (get-dirac-session-descriptors-tags @state/session-descriptors))
 
+(defn get-other-sessions-descriptors
+  ([] (get-other-sessions-descriptors (state/get-current-session)))
+  ([session]
+   (assert session)
+   (remove #(= session (get-dirac-session-descriptor-session %)) @state/session-descriptors)))
+
 ; -- joining sessions -------------------------------------------------------------------------------------------------------
 
 (defn make-joined-session-descriptor [matcher-fn info]

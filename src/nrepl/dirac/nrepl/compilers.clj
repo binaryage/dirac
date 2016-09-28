@@ -53,9 +53,10 @@
 ; -- all compilers in the process -------------------------------------------------------------------------------------------
 
 (defn collect-all-available-compiler-descriptors []
-  (let [dirac-compilers (mapcat extract-session-compiler-descriptors @state/session-descriptors)
+  (let [session-compilers (state/get-session-compiler-descriptors)
+        other-sessions-compilers (mapcat extract-session-compiler-descriptors (sessions/get-other-sessions-descriptors))
         figwheel-compilers (figwheel/collect-available-compiler-descriptors)]
-    (concat figwheel-compilers dirac-compilers)))
+    (concat session-compilers other-sessions-compilers figwheel-compilers)))                                                  ; order is important here, we are matching compilers in this order
 
 (defn compiler-descriptors-ids [descriptors]
   (vec (map get-compiler-descriptor-id descriptors)))
