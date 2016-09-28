@@ -202,7 +202,7 @@
   (str "To quit, type: :cljs/quit"))
 
 (defn ^:dynamic make-invalid-compiler-error-msg [user-input]
-  (str "Dirac's :switch sub-command accepts nil, integer, string or regex patterns. "
+  (str "Dirac's :switch sub-command accepts nil, positive integer, string or regex patterns. "
        "You have entered " (pr-str user-input) " which is of type " (type user-input) "."))
 
 ; == special REPL commands ==================================================================================================
@@ -305,12 +305,10 @@
 ; -- (dirac! :switch) -------------------------------------------------------------------------------------------------------
 
 (defn validate-selected-compiler [user-input]
-  (if (or (nil? user-input)
-          (integer? user-input)
-          (string? user-input)
-          (instance? Pattern user-input))
-    user-input
-    ::invalid-input))
+  (cond
+    (or (nil? user-input) (string? user-input) (instance? Pattern user-input)) user-input
+    (and (integer? user-input) (pos? user-input)) user-input
+    :else ::invalid-input))
 
 (defmethod dirac! :switch [_ & [user-input]]
   (let [selected-compiler (validate-selected-compiler user-input)]
