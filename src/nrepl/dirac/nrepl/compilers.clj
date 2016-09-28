@@ -81,7 +81,8 @@
    :compiler-id   (or compiler-id "")})
 
 (defn get-selected-compiler-descriptor []
-  (find-available-matching-compiler-descriptor (state/get-session-selected-compiler)))
+  (if (state/dirac-session?)
+    (find-available-matching-compiler-descriptor (state/get-session-selected-compiler))))
 
 (defn get-selected-compiler-id []
   (get-compiler-descriptor-id (get-selected-compiler-descriptor)))
