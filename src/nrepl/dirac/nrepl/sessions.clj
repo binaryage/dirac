@@ -90,6 +90,10 @@
         ordered-descriptors (keep identity (concat [current-session-descriptor] other-descriptors))]
     (get-dirac-session-descriptors-tags ordered-descriptors)))
 
+(defn get-current-session-tag []
+  (if-let [current-session-descriptor (find-dirac-session-descriptor (state/get-current-session-if-avail))]
+    (prepare-dirac-session-descriptor-tag current-session-descriptor)))
+
 ; -- joining sessions -------------------------------------------------------------------------------------------------------
 
 (defn make-joined-session-descriptor [matcher-fn info]
