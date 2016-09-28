@@ -2,7 +2,8 @@
   (:require [dirac.nrepl.version :refer [version]]
             [dirac.logging :as logging]
             [dirac.nrepl.state :as state]
-            [clojure.tools.nrepl.transport :as transport])
+            [clojure.tools.nrepl.transport :as nrepl-transport]
+            [clojure.tools.nrepl.misc :as nrepl-misc])
   (:import (java.util UUID)))
 
 (defmacro with-err-output [& body]
@@ -24,7 +25,7 @@
   ([nrepl-message response-msg]
    (let [transport (:transport nrepl-message)]
      (assert transport)
-     (transport/send transport (response-for nrepl-message response-msg)))))
+     (nrepl-transport/send transport (nrepl-misc/response-for nrepl-message response-msg)))))
 
 (defn make-server-side-output-msg [kind content]
   {:pre [(contains? #{:stderr :stdout} kind)
