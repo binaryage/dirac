@@ -20,6 +20,19 @@
 (defn generate-uuid []
   (str (UUID/randomUUID)))
 
+(defn make-human-readable-list [coll]
+  (let [strings (map pr-str coll)]
+    (case (count strings)
+      0 "(empty list)"
+      1 (first strings)
+      (str (apply str (interpose ", " (butlast strings))) " and " (last strings)))))
+
+(defn make-human-readable-selected-compiler [selected-compiler]
+  (cond
+    (nil? selected-compiler) "nil (any available)"
+    (number? selected-compiler) (str "#" selected-compiler)
+    :else (pr-str selected-compiler)))
+
 (defn send-response!
   ([response-msg] (send-response! (state/get-nrepl-message) response-msg))
   ([nrepl-message response-msg]
