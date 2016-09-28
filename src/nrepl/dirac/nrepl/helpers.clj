@@ -41,7 +41,7 @@
      (nrepl-transport/send transport (nrepl-misc/response-for nrepl-message response-msg)))))
 
 (defn make-server-side-output-msg [kind content]
-  {:pre [(contains? #{:stderr :stdout} kind)
+  {:pre [(contains? #{:stderr :stdout :java-trace} kind)
          (string? content)]}
   {:op      :print-output
    :kind    kind
