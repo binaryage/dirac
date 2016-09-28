@@ -271,7 +271,7 @@
             selected-compiler (state/get-session-selected-compiler)
             cljs-repl-options (state/get-session-cljs-repl-options)
             response-fn (partial helpers/send-response! nrepl-message)]
-        (if-let [compiler-env (compilers/provide-selected-compiler-env)]
+        (if-let [compiler-env (compilers/get-selected-compiler-env)]
           (execute-single-cljs-repl-evaluation! job-id code ns cljs-repl-env compiler-env cljs-repl-options response-fn)
           (report-missing-compiler! selected-compiler (compilers/collect-all-available-compiler-ids))))
       (do

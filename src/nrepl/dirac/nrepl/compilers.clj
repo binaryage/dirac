@@ -4,8 +4,8 @@
             [dirac.nrepl.state :as state]
             [dirac.nrepl.sessions :as sessions]
             [dirac.nrepl.figwheel :as figwheel]
-            [dirac.nrepl.helpers :as helpers]
-            [cljs.env :as cljs-env]))
+            [cljs.env :as cljs-env])
+  (:import (java.util.regex Pattern)))
 
 (defn select-compiler! [id]
   (state/set-session-selected-compiler! id))
@@ -22,8 +22,22 @@
 (defn get-compiler-descriptor-id [descriptor]
   (:id descriptor))
 
-(defn find-compiler-descriptor [id descriptors]
+(defn find-compiler-descriptor-by-id [id descriptors]
   (some #(if (= (get-compiler-descriptor-id %) id) %) descriptors))
+
+(defn find-compiler-descriptor-by-regexp [re descriptors]
+  (some #(if (re-matches re (get-compiler-descriptor-id %)) %) descriptors))
+
+(defn find-compiler-descriptor-by-substring [match descriptors]
+  (some #(if (.contains (get-compiler-descriptor-id %) match) %) descriptors))
+
+(defn find-matching-compiler-descriptor [match descriptors]
+  (cond
+    (nil? match) (first descriptors)
+    (integer? match) (nth descriptors match nil)
+    (string? match) (find-compiler-descriptor-by-substring match descriptors)
+    (instance? Pattern match) (find-compiler-descriptor-by-regexp match descriptors)
+    :else (assert nil (str "invalid match in find-matching-compiler-descriptor: " (type match)))))
 
 (defn register-compiler-descriptor! [descriptor]
   (state/set-session-compiler-descriptors! (conj (or (state/get-session-compiler-descriptors) []) descriptor)))
@@ -49,10 +63,15 @@
 (defn collect-all-available-compiler-ids []
   (compiler-descriptors-ids (collect-all-available-compiler-descriptors)))
 
-(defn find-matching-compiler-descriptor-by-id [descriptor-id]
+(defn find-available-compiler-descriptor-by-id [descriptor-id]
   (let [descriptors (collect-all-available-compiler-descriptors)]
     (log/debug "available compiler descriptors:" (logging/pprint (compiler-descriptors-ids descriptors)))
-    (find-compiler-descriptor descriptor-id descriptors)))                                                                    ; TODO: fuzzy matching
+    (find-compiler-descriptor-by-id descriptor-id descriptors)))
+
+(defn find-available-matching-compiler-descriptor [match]
+  (let [descriptors (collect-all-available-compiler-descriptors)]
+    (log/debug "available compiler descriptors:" (logging/pprint (compiler-descriptors-ids descriptors)))
+    (find-matching-compiler-descriptor match descriptors)))
 
 (defn make-announce-ns-msg [ns compiler-id value]
   {:value         (or value "nil")
@@ -61,7 +80,7 @@
    :compiler-id   (or compiler-id "")})
 
 (defn get-selected-compiler-descriptor []
-  (find-matching-compiler-descriptor-by-id (state/get-session-selected-compiler)))
+  (find-available-matching-compiler-descriptor (state/get-session-selected-compiler)))
 
 (defn get-selected-compiler-id []
   (get-compiler-descriptor-id (get-selected-compiler-descriptor)))
@@ -69,12 +88,8 @@
 (defn prepare-announce-ns-msg [ns & [value]]
   (make-announce-ns-msg ns (get-selected-compiler-id) value))
 
-(defn provide-selected-compiler-env* [selected-compiler]
-  (if-let [descriptor (find-matching-compiler-descriptor-by-id selected-compiler)]
-    (get-compiler-descriptor-compiler-env descriptor)))
-
-(defn provide-selected-compiler-env []
-  (provide-selected-compiler-env* (state/get-session-selected-compiler)))
+(defn get-selected-compiler-env []
+  (get-compiler-descriptor-compiler-env (get-selected-compiler-descriptor)))
 
 (defn get-next-compiler-number-for-session! []
   (let [last-number (or (state/get-session-last-compiler-number) 0)

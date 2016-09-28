@@ -242,7 +242,7 @@
   (let [session (sessions/get-current-session)
         session-type (sessions/get-session-type session)
         selected-compiler (state/get-session-selected-compiler)
-        matched-compiler-descriptor (compilers/find-matching-compiler-descriptor-by-id selected-compiler)
+        matched-compiler-descriptor (compilers/find-available-matching-compiler-descriptor selected-compiler)
         available-compiler-ids (compilers/collect-all-available-compiler-ids)]
     (println (make-status-msg session-type selected-compiler matched-compiler-descriptor available-compiler-ids)))
   ::no-result)
@@ -318,7 +318,7 @@
       (error-println (make-invalid-compiler-error-msg user-input))
       (do
         (compilers/select-compiler! selected-compiler)
-        (let [matched-compiler-descriptor (compilers/find-matching-compiler-descriptor-by-id selected-compiler)]
+        (let [matched-compiler-descriptor (compilers/find-available-matching-compiler-descriptor selected-compiler)]
           (if (nil? matched-compiler-descriptor)
             (error-println (make-no-compilers-msg selected-compiler (compilers/collect-all-available-compiler-ids)))))
         (state/reply! (compilers/prepare-announce-ns-msg analyzer/*cljs-ns*)))))
