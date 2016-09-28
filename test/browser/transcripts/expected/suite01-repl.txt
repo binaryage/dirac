@@ -60,7 +60,7 @@ automate #1      console-exec-and-match! ["(x)" "TypeError: Cannot read property
 devtools #1      DC.log> (x)
 devtools #1      send-eval-request: (x)
 devtools #1      repl eval job started
-devtools #1      present-server-side-output! stderr > WARNING: Use of undeclared Var cljs.user/x at line 1 <dirac repl>
+devtools #1      present-server-side-output! stderr > WARNING: Use of undeclared Var cljs.user/x at line 1 <dirac/compiler-id>
 devtools #1      DF.err>
                  TypeError: Cannot read property 'call' of undefined
                      at eval (eval at <anonymous> (:***), <anonymous>:***)

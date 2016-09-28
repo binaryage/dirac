@@ -584,7 +584,7 @@ WebInspector.ConsoleView.prototype = {
 
     setDiracPromptCompiler: function(name)
     {
-        dirac.feedback("setDiracPromptCompiler('"+name+"')");
+        //dirac.feedback("setDiracPromptCompiler('"+name+"')");
         this._currentCompiler = name;
         this._refreshPromptInfo();
     },

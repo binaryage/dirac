@@ -177,6 +177,9 @@
                             [label "<elided stack trace log>"]))
     [label text]))
 
+(defn replace-dirac-repl-ids [s]
+  (string/replace s #"<dirac/.*?>" "<dirac/compiler-id>"))
+
 (defn replace-rel-url-params [s]
   (string/replace s #"rel=[0-9]+" "rel=***"))
 
@@ -199,7 +202,8 @@
       replace-shortened-urls
       replace-rel-url-params
       replace-gensyms
-      replace-internal-error))
+      replace-internal-error
+      replace-dirac-repl-ids))
 
 (defn process-default-state! [label text]
   (cond

@@ -34,7 +34,7 @@
   (let [[event & [{:keys [status]} :as msg]] (<!! (:channel client))]
     (is (= event :msg))
     (vreset! last-msg msg)
-    (is (= status expected-status))))
+    (is (= status expected-status) (str "msg=" (pr-str msg)))))
 
 (defn expect-ns-msg! [client expected-ns]
   (let [[event & [{:keys [ns]} :as msg]] (<!! (:channel client))]
@@ -120,6 +120,7 @@
           (expect-op-msg! weasel :eval-js)
           (weasel-client/send! weasel {:op :result :value (success-value)})
           (expect-ns-msg! tunnel "cljs.user")
+          (expect-ns-msg! tunnel "cljs.user")                                                                                 ; TODO: review this, we should introduce special :op for prompt refresh
           (expect-status-msg! tunnel ["done"])
           (tunnel-client/send! tunnel {:op :bootstrap-done})))
       (agent/destroy!)
