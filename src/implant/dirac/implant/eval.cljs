@@ -135,8 +135,8 @@
 
 ; -- code templates ---------------------------------------------------------------------------------------------------------
 
-(defn installation-test-template []
-  (str "dirac.runtime.installed_QMARK_()"))
+(defn ^:dynamic installation-test-template []
+  (str "(dirac.runtime.installed_QMARK_() && dirac.runtime.repl.bootstrapped_QMARK_())"))
 
 (defn ^:dynamic output-template [job-id kind text]
   (str "dirac.runtime.repl.present_output(" job-id ", '" kind "', " (code-as-string text) ")"))
@@ -148,7 +148,7 @@
        "  dirac.runtime.repl.postprocess_unsuccessful_eval(e)"
        "}"))
 
-(defn console-log-template [method & args]
+(defn ^:dynamic console-log-template [method & args]
   (str "console." method "(" (string/join (interpose "," (map code-as-string args))) ")"))
 
 ; -- message templates ------------------------------------------------------------------------------------------------------

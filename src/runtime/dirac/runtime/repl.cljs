@@ -1,8 +1,8 @@
 (ns dirac.runtime.repl
   (:require-macros [dirac.runtime.repl :refer [with-safe-printing]])
   (:require [goog.object]
-            [clojure.browser.repl :as brepl]
             [dirac.runtime.prefs :refer [get-prefs pref]]
+            [dirac.runtime.bootstrap :refer [bootstrap!]]
             [clojure.string :as string]
             [goog.object :as gobject]
             [goog.labs.userAgent.browser :as ua]))
@@ -20,6 +20,7 @@
   (and (ua/isChrome) (ua/isVersionOrHigher 47)))                                                                              ; Chrome 47+
 
 (def ^:dynamic *installed?* false)
+(def ^:dynamic *bootstrapped?* false)
 
 ; keep in mind that we want to avoid any state at all
 ; javascript running this code can be reloaded anytime, same with devtools front-end
@@ -111,7 +112,7 @@
 
 ; -- REPL API ---------------------------------------------------------------------------------------------------------------
 
-(def api-version 4)                                                                                                           ; version of REPL API
+(def api-version 5)                                                                                                           ; version of REPL API
 
 (defn ^:export get-api-version []
   api-version)
@@ -169,17 +170,21 @@
   (assert (string? code) "Code passed for evaluation must be a string")
   (call-dirac "eval-js" code))
 
+(defn ^:export bootstrapped? []
+  *bootstrapped?*)
+
 ; -- install/uninstall ------------------------------------------------------------------------------------------------------
 
-(defn installed? []
+(defn ^:export installed? []
   *installed?*)
 
-(defn install! []
+(defn ^:export install! []
   (when (not (installed?))
-    (brepl/bootstrap)
+    (bootstrap! #(set! *bootstrapped?* true))
     (set! *installed?* true)
     true))
 
-(defn uninstall! []
+(defn ^:export uninstall! []
   (when (installed?)
     (set! *installed?* false)))
+

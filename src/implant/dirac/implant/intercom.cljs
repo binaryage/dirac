@@ -20,7 +20,7 @@
             [goog.functions :as gfns])
   (:import goog.net.WebSocket.ErrorEvent))
 
-(defonce required-repl-api-version 4)
+(defonce required-repl-api-version 5)
 
 (defonce ^:dynamic *debugger-events-subscribed* false)
 (defonce ^:dynamic *repl-connected* false)
