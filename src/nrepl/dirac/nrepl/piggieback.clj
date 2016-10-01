@@ -23,13 +23,15 @@
             [dirac.nrepl.compilers :as compilers]
             [dirac.nrepl.controls :as controls]
             [dirac.nrepl.eval :as eval]
+            [dirac.nrepl.transports.logging :refer [make-nrepl-message-with-logging]]
+            [dirac.nrepl.transports.errors-observing :refer [make-nrepl-message-with-observed-errors]]
+            [dirac.nrepl.transports.output-capturing :refer [make-nrepl-message-with-captured-output]]
             [clojure.tools.logging :as log]
             [clojure.string :as string]
             [dirac.logging :as logging]
             [dirac.nrepl.config :as config])
   (:import java.io.Writer
-           (clojure.tools.nrepl.transport Transport)
-           (clojure.lang IDeref))
+           (clojure.tools.nrepl.transport Transport))
   (:refer-clojure :exclude (load-file)))
 
 (defn ^:dynamic make-no-target-session-help-msg [info]
@@ -164,87 +166,7 @@
   (let [{:keys [file-path]} nrepl-message]
     (evaluate! (assoc nrepl-message :code (format "(load-file %s)" (pr-str file-path))))))
 
-; -- nrepl-message error observer -------------------------------------------------------------------------------------------
-
-(defn get-session-exception [session]
-  {:pre [(instance? IDeref session)]}
-  (@session #'clojure.core/*e))
-
-(defn get-nrepl-message-info [nrepl-message]
-  (let [{:keys [op code]} nrepl-message]
-    (str "op: '" op "'" (if (some? code) (str " code: " code)))))
-
-(defn get-exception-details [nrepl-message e]
-  (let [details (driver/capture-exception-details e)
-        message-info (get-nrepl-message-info nrepl-message)]
-    (str message-info "\n" details)))
-
-(defrecord ErrorsObservingTransport [nrepl-message transport]
-  Transport
-  (recv [_this timeout]
-    (nrepl-transport/recv transport timeout))
-  (send [_this reply-message]
-    (let [effective-message (if (some #{:eval-error} (:status reply-message))
-                              (let [e (get-session-exception (:session nrepl-message))
-                                    details (get-exception-details nrepl-message e)]
-                                (log/error (str "Clojure eval error: " details))
-                                (assoc reply-message :details details))
-                              reply-message)]
-      (nrepl-transport/send transport effective-message))))
-
-(defn observed-nrepl-message [nrepl-message]
-  ; This is a little trick due to unfortunate fact that clojure.tools.nrepl.middleware.interruptible-eval/evaluate does not
-  ; offer configurable :caught option. The problem is that eval errors in Clojure REPL are not printed to stderr
-  ; for some reasons and reported exception in response message is not helpful.
-  ;
-  ; Our strategy here is to wrap :transport with our custom implementation which observes send calls and enhances :eval-error
-  ; messages with more details. It relies on the fact that :caught implementation
-  ; in clojure.tools.nrepl.middleware.interruptible-eval/evaluate sets exception into *e binding in the session atom.
-  ;
-  ; Also it uses our logging infrastructure to log the error which should be displayed in console (assuming default log
-  ; levels)
-  (update nrepl-message :transport (partial ->ErrorsObservingTransport nrepl-message)))
-
 ; -- handlers for middleware operations -------------------------------------------------------------------------------------
-
-(defrecord LoggingTransport [nrepl-message transport]
-  Transport
-  (recv [_this timeout]
-    (nrepl-transport/recv transport timeout))
-  (send [_this reply-message]
-    (log/debug (str "sending raw message via nREPL transport: " transport " \n") (logging/pprint reply-message))
-    (debug/log-stack-trace!)
-    (nrepl-transport/send transport reply-message)))
-
-(defn logged-nrepl-message [nrepl-message]
-  (update nrepl-message :transport (partial ->LoggingTransport nrepl-message)))
-
-(defn make-print-output-message [base job-id output-kind content]
-  (-> base
-      (dissoc :out)
-      (dissoc :err)
-      (merge {:op      :print-output
-              :id      job-id
-              :kind    output-kind
-              :content content})))
-
-(defrecord OutputCapturingTransport [nrepl-message transport]
-  Transport
-  (recv [_this timeout]
-    (nrepl-transport/recv transport timeout))
-  (send [_this reply-message]
-    (if-let [content (:out reply-message)]
-      (nrepl-transport/send transport (make-print-output-message reply-message (:id nrepl-message) :stdout content)))
-    (if-let [content (:err reply-message)]
-      (nrepl-transport/send transport (make-print-output-message reply-message (:id nrepl-message) :stderr content)))
-    (nrepl-transport/send transport reply-message)))
-
-(defn make-nrepl-message-with-captured-output [nrepl-message]
-  ; repl-eval! does not have our sniffing driver in place, we capture output
-  ; by observing :out and :err keys in replied messages
-  ; this is good enough because we know that our controls.clj implementation does not do anything crazy and uses
-  ; standard *out* and *err* for printing outputs so that normal nREPL output capturing works
-  (update nrepl-message :transport (partial ->OutputCapturingTransport nrepl-message)))
 
 (defn dirac-special-command? [nrepl-message]
   (let [code (:code nrepl-message)]
@@ -265,7 +187,7 @@
                          (eval form)))
                      (catch Throwable e
                        (let [root-ex (clojure.main/root-cause e)
-                             details (get-exception-details nrepl-message e)]
+                             details (helpers/get-exception-details nrepl-message e)]
                          (log/error (str "Clojure eval error during eval of a special dirac command: " details))
                          ; repl-caught will produce :err message, but we are not under driver, so it won't be converted to :print-output
                          ; that is why we present error output to user REPL manually
@@ -273,7 +195,7 @@
                          (transport/send transport (response-for nrepl-message
                                                                  :op :print-output
                                                                  :kind :java-trace
-                                                                 :content (driver/capture-exception-details e)))
+                                                                 :content (helpers/capture-exception-details e)))
                          (transport/send transport (response-for nrepl-message
                                                                  :status :eval-error
                                                                  :ex (-> e class str)
@@ -377,13 +299,13 @@
   (let [{:keys [session]} nrepl-message]
     (cond
       (sessions/dirac-session? session) (enqueue-command! evaluate! nrepl-message)
-      :else (next-handler (observed-nrepl-message nrepl-message)))))
+      :else (next-handler (make-nrepl-message-with-observed-errors nrepl-message)))))
 
 (defn handle-load-file! [next-handler nrepl-message]
   (let [{:keys [session]} nrepl-message]
     (if (sessions/dirac-session? session)
       (enqueue-command! load-file! nrepl-message)
-      (next-handler (observed-nrepl-message nrepl-message)))))
+      (next-handler (make-nrepl-message-with-observed-errors nrepl-message)))))
 
 (defn final-message? [message]
   (some? (:status message)))
@@ -446,7 +368,7 @@
 
 (defn dirac-nrepl-middleware-handler [next-handler nrepl-message]
   (state/ensure-session nrepl-message
-    (let [nrepl-message (logged-nrepl-message nrepl-message)]
+    (let [nrepl-message (make-nrepl-message-with-logging nrepl-message)]
       (log/debug "dirac-nrepl-middleware:" (:op nrepl-message) (sessions/get-session-id (:session nrepl-message)))
       (log/trace "received nrepl message:\n" (debug/pprint-nrepl-message nrepl-message))
       (debug/log-stack-trace!)

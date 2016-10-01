@@ -4,7 +4,8 @@
             [dirac.nrepl.state :as state]
             [clojure.tools.nrepl.transport :as nrepl-transport]
             [clojure.tools.nrepl.misc :as nrepl-misc])
-  (:import (java.util UUID)))
+  (:import (java.util UUID)
+           (java.io StringWriter PrintWriter)))
 
 (defmacro with-err-output [& body]
   `(binding [*out* *err*]
@@ -51,4 +52,20 @@
   (binding [*print-level* (or level 5)
             *print-length* (or length 100)]
     (pr-str value)))
+
+(defn capture-exception-details [e]
+  (let [exception-output (StringWriter.)]
+    (cond
+      (instance? Throwable e) (.printStackTrace e (PrintWriter. exception-output))
+      :else (.write exception-output (pr-str e)))
+    (str exception-output)))
+
+(defn get-nrepl-message-info [nrepl-message]
+  (let [{:keys [op code]} nrepl-message]
+    (str "op: '" op "'" (if (some? code) (str " code: " code)))))
+
+(defn get-exception-details [nrepl-message e]
+  (let [details (capture-exception-details e)
+        message-info (get-nrepl-message-info nrepl-message)]
+    (str message-info "\n" details)))
 

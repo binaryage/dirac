@@ -4,8 +4,7 @@
             [dirac.nrepl.sniffer :as sniffer]
             [clojure.tools.logging :as log]
             [dirac.nrepl.helpers :as helpers])
-  (:import (clojure.lang IExceptionInfo)
-           (java.io StringWriter PrintWriter)))
+  (:import (clojure.lang IExceptionInfo)))
 
 ; -- driver construction ----------------------------------------------------------------------------------------------------
 
@@ -117,13 +116,6 @@
   (unsuppress-flushing driver :stderr)
   (flush-sniffer! driver :stderr :java-trace))
 
-(defn capture-exception-details [e]
-  (let [exception-output (StringWriter.)]
-    (cond
-      (instance? Throwable e) (.printStackTrace e (PrintWriter. exception-output))
-      :else (.write exception-output (pr-str e)))
-    (str exception-output)))
-
 ; -- REPL handler factories -------------------------------------------------------------------------------------------------
 
 (defn custom-caught-factory [driver]
@@ -136,7 +128,7 @@
               ; in case we are not recording, we want to report :eval-error to the driver
               ; and log error information as well
               (orig-call)
-              (let [exception-details (capture-exception-details e)]
+              (let [exception-details (helpers/capture-exception-details e)]
                 (log/error "Caught an exception during REPL evaluation:\n" exception-details)
                 (send! driver {:status  :eval-error
                                :ex      (str (class e))
