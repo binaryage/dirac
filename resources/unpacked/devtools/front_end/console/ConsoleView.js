@@ -623,7 +623,10 @@ WebInspector.ConsoleView.prototype = {
     handleEvalJSConsoleDiracMessage: function(message) {
         const code = message.parameters[2];
         if (code && typeof code.value == 'string') {
-            this._appendCommand(code.value, true);
+            const jsPromptDescriptor = this._getPromptDescriptor("js");
+            if (jsPromptDescriptor) {
+                jsPromptDescriptor.prompt._appendCommand(code.value, true);
+            }
         }
     },
 
@@ -1206,6 +1209,14 @@ WebInspector.ConsoleView.prototype = {
             }
         }
         return null;
+    },
+
+    _getPromptDescriptor: function(promptId) {
+        var promptIndex = this._findPromptIndexById(promptId);
+        if (promptIndex === null) {
+            return null;
+        }
+        return this._prompts[promptIndex];
     },
 
     switchPrompt: function(promptId) {
