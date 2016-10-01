@@ -559,17 +559,30 @@ WebInspector.ConsoleView.prototype = {
        }
     },
 
+    _buildPromptPlaceholder: function(namespace, compiler) {
+        const placeholderEl = createElementWithClass("div", "dirac-prompt-placeholder");
+        const namespaceEl = createElementWithClass("span", "dirac-prompt-namespace");
+        namespaceEl.textContent = namespace || "";
+        if (compiler) {
+            const compilerEl = createElementWithClass("span", "dirac-prompt-compiler");
+            compilerEl.textContent = compiler;
+            placeholderEl.appendChildren(namespaceEl, compilerEl);
+        } else {
+            placeholderEl.appendChildren(namespaceEl);
+        }
+        return placeholderEl;
+    },
+
     _refreshPromptInfo: function () {
         var promptDescriptor = this._prompts[this._activePromptIndex];
         if (promptDescriptor.id != "dirac") {
             return;
         }
 
-        var label = this._currentNamespace ? this._currentNamespace : "";
-        if (this._currentCompiler) {
-            label += " » " + this._currentCompiler;
-        }
-        promptDescriptor.codeMirror.setOption("placeholder", label);
+        var namespace = this._currentNamespace || "";
+        var compiler = this._currentCompiler;
+        const placeholderEl = this._buildPromptPlaceholder(namespace, compiler);
+        promptDescriptor.codeMirror.setOption("placeholder", placeholderEl);
     },
 
     setDiracPromptNS: function(name)
