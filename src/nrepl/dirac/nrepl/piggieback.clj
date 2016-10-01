@@ -174,11 +174,8 @@
       (some? (re-find #"^\(?dirac!" code)))))                                                                                 ; we don't want to use read-string here, regexp test should be safe and quick
 
 (defn special-repl-eval! [nrepl-message code ns]
-  (let [{:keys [transport session]} nrepl-message
-        bindings @session
-        out (bindings #'*out*)
-        err (bindings #'*err*)]
-    (let [result (with-bindings bindings
+  (let [{:keys [transport session]} nrepl-message]
+    (let [result (with-bindings @session
                    (try
                      (let [form (read-string code)]
                        (binding [state/*reply!* #(helpers/send-response! nrepl-message %)
@@ -203,8 +200,8 @@
                                                                  :details details))
                          ::exception))
                      (finally
-                       (.flush ^Writer out)
-                       (.flush ^Writer err))))
+                       (.flush ^Writer *out*)
+                       (.flush ^Writer *err*))))
           base-reply {:status :done}
           reply (if (= ::controls/no-result ::exception result)
                   base-reply
