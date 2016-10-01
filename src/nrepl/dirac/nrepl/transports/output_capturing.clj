@@ -1,15 +1,14 @@
 (ns dirac.nrepl.transports.output-capturing
-  (:require [clojure.tools.nrepl.transport :as nrepl-transport])
+  (:require [clojure.tools.nrepl.transport :as nrepl-transport]
+            [dirac.nrepl.helpers :as helpers])
   (:import (clojure.tools.nrepl.transport Transport)))
 
 (defn make-print-output-message [base job-id output-kind content]
   (-> base
+      (merge (helpers/make-server-side-output-msg output-kind content))
+      (assoc :id job-id)
       (dissoc :out)
-      (dissoc :err)
-      (merge {:op      :print-output
-              :id      job-id
-              :kind    output-kind
-              :content content})))
+      (dissoc :err)))
 
 (defrecord OutputCapturingTransport [nrepl-message transport]
   Transport
