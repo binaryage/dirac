@@ -118,7 +118,7 @@
   (mapcat :props (:frames scope-info)))
 
 ; extract locals from scope-info (as provided by Dirac) and put it into :locals env map for analyzer
-; note in case of duplicit names we won't break, resulting locals is a flat list: "last name wins"
+; note that in case of duplicit names we won't break, resulting locals is a flat list: "last name wins"
 (defn set-env-locals [env]
   (let [nrepl-message nrepl-ieval/*msg*
         scope-info (:scope-info nrepl-message)
@@ -131,37 +131,34 @@
         env-locals (into {} (map build-env-local all-scope-locals))]
     (assoc env :locals env-locals)))
 
-(defn eval-cljs
-  "Given a REPL evaluation environment, an analysis environment, and a
-   form, evaluate the form and return the result. The result is always the value
-   represented as a string."
-  ([repl-env env form] (eval-cljs repl-env env form cljs.repl/*repl-opts*))
-  ([repl-env env form opts]
-   (let [wrapper-fn (or (:wrap opts) make-wrapper-for-form)
-         wrapped-form (wrapper-fn form)
-         effective-env (-> env set-env-namespace set-env-locals)
-         filename (make-dirac-repl-alias (compilers/get-selected-compiler-id))]
-     (log/debug "eval-cljs in " filename ":\n" form "\n with env:\n" (logging/pprint effective-env 7))
-     (cljs.repl/evaluate-form repl-env effective-env filename form wrapped-form opts))))
+(defn repl-eval! [repl-env env form opts]
+  (let [wrapper-fn (or (:wrap opts) make-wrapper-for-form)
+        wrapped-form (wrapper-fn form)
+        effective-env (-> env set-env-namespace set-env-locals)
+        filename (make-dirac-repl-alias (compilers/get-selected-compiler-id))]
+    (log/trace "repl-eval! in " filename ":\n" form "\n with env:\n" (logging/pprint effective-env 7))
+    (cljs.repl/evaluate-form repl-env effective-env filename form wrapped-form opts)))
+
+(defn repl-flush! []
+  (log/trace "flush-repl!")
+  (.flush ^Writer *out*)
+  (.flush ^Writer *err*))
+
+(defn repl-print! [response-fn result]
+  (log/trace "repl-print!" result)
+  (response-fn (compilers/prepare-announce-ns-msg analyzer/*cljs-ns* result)))
 
 (defn execute-single-cljs-repl-evaluation! [job-id code ns repl-env compiler-env repl-options response-fn]
-  (let [flush-fn (fn []
-                   (log/trace "flush-fn > ")
-                   (.flush ^Writer *out*)
-                   (.flush ^Writer *err*))
-        print-fn (fn [result]
-                   (log/trace "print-fn > " result)
-                   (response-fn (compilers/prepare-announce-ns-msg analyzer/*cljs-ns* result)))
-        base-repl-options {:need-prompt  (constantly false)
-                           :bind-err     false
-                           :quit-prompt  (fn [])
-                           :prompt       (fn [])
-                           :init         (fn [])
-                           :flush        flush-fn
-                           :print        print-fn
-                           :eval         eval-cljs
-                           :compiler-env compiler-env}
-        effective-repl-options (merge base-repl-options repl-options)
+  (let [default-repl-options {:need-prompt  (constantly false)
+                              :bind-err     false
+                              :quit-prompt  (fn [])
+                              :prompt       (fn [])
+                              :init         (fn [])
+                              :flush        repl-flush!
+                              :print        (partial repl-print! response-fn)
+                              :eval         repl-eval!
+                              :compiler-env compiler-env}
+        effective-repl-options (merge default-repl-options repl-options)
         ; MAJOR TRICK HERE!
         ; we append :cljs/quit to our code which should be evaluated
         ; this will cause cljs.repl loop to exit after the first eval
@@ -386,7 +383,7 @@
     (if (string? code)
       (some? (re-find #"^\(?dirac!" code)))))                                                                                 ; we don't want to use read-string here, regexp test should be safe and quick
 
-(defn repl-eval! [nrepl-message code ns]
+(defn special-repl-eval! [nrepl-message code ns]
   (let [{:keys [transport session]} nrepl-message
         bindings @session
         out (bindings #'*out*)
@@ -440,7 +437,7 @@
         message (if (sessions/dirac-session? session)
                   (make-nrepl-message-with-captured-output nrepl-message)
                   nrepl-message)]
-    (repl-eval! message (sanitize-dirac-command code) (find-ns 'dirac.nrepl.controls))))                                      ; we want to eval special commands in dirac.nrepl.controls namespace
+    (special-repl-eval! message (sanitize-dirac-command code) (find-ns 'dirac.nrepl.controls))))                              ; we want to eval special commands in dirac.nrepl.controls namespace
 
 (defn prepare-no-target-session-match-error-message [session]
   (let [info (sessions/get-target-session-info session)]
