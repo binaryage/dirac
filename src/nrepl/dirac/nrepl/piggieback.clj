@@ -207,11 +207,6 @@
 
 ; -- handlers for middleware operations -------------------------------------------------------------------------------------
 
-(defn safe-pr-str [value & [level length]]
-  (binding [*print-level* (or level 5)
-            *print-length* (or length 100)]
-    (pr-str value)))
-
 (defrecord LoggingTransport [nrepl-message transport]
   Transport
   (recv [_this timeout]
@@ -292,7 +287,7 @@
           reply (if (= ::controls/no-result ::exception result)
                   base-reply
                   (assoc base-reply
-                    :value (safe-pr-str result)
+                    :value (helpers/safe-pr-str result)
                     :printed-value 1))]
       (if-not (= ::exception result)
         (transport/send transport (response-for nrepl-message reply))))))

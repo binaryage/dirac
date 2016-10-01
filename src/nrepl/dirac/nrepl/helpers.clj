@@ -46,3 +46,9 @@
   {:op      :print-output
    :kind    kind
    :content content})
+
+(defn safe-pr-str [value & [level length]]
+  (binding [*print-level* (or level 5)
+            *print-length* (or length 100)]
+    (pr-str value)))
+
