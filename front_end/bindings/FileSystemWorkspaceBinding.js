@@ -163,15 +163,6 @@ WebInspector.FileSystemWorkspaceBinding.prototype = {
         }
     },
 
-    /**
-     * @param {string} projectId
-     * @return {string}
-     */
-    fileSystemPath: function(projectId)
-    {
-        return projectId;
-    },
-
     dispose: function()
     {
         WebInspector.EventTarget.removeEventListeners(this._eventListeners);
@@ -180,6 +171,15 @@ WebInspector.FileSystemWorkspaceBinding.prototype = {
             this._boundFileSystems.remove(fileSystem._fileSystem.path());
         }
     }
+}
+
+/**
+ * @param {string} projectId
+ * @return {string}
+ */
+WebInspector.FileSystemWorkspaceBinding.fileSystemPath = function(projectId)
+{
+    return projectId;
 }
 
 /**
@@ -413,16 +413,6 @@ WebInspector.FileSystemWorkspaceBinding.FileSystem.prototype = {
     populate: function()
     {
         this._fileSystem.requestFilesRecursive("", this._addFile.bind(this));
-    },
-
-    /**
-     * @override
-     * @param {string} path
-     * @param {function()=} callback
-     */
-    refresh: function(path, callback)
-    {
-        this._fileSystem.requestFilesRecursive(path, this._addFile.bind(this), callback);
     },
 
     /**

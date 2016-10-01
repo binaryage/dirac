@@ -159,8 +159,7 @@ WebInspector.ScriptFormatterEditorAction.prototype = {
         this._updateButton(uiSourceCode);
 
         var path = uiSourceCode.project().id() + ":" + uiSourceCode.url();
-        var networkURL = WebInspector.networkMapping.networkURL(uiSourceCode);
-        if (this._isFormatableScript(uiSourceCode) && networkURL && this._pathsToFormatOnLoad.has(path) && !this._formattedPaths.get(path))
+        if (this._isFormatableScript(uiSourceCode) && this._pathsToFormatOnLoad.has(path) && !this._formattedPaths.get(path))
             this._formatUISourceCodeScript(uiSourceCode);
     },
 
@@ -213,6 +212,8 @@ WebInspector.ScriptFormatterEditorAction.prototype = {
     _isFormatableScript: function(uiSourceCode)
     {
         if (!uiSourceCode)
+            return false;
+        if (WebInspector.persistence.binding(uiSourceCode))
             return false;
         var supportedProjectTypes = [WebInspector.projectTypes.Network, WebInspector.projectTypes.Debugger, WebInspector.projectTypes.ContentScripts];
         if (supportedProjectTypes.indexOf(uiSourceCode.project().type()) === -1)
@@ -321,10 +322,8 @@ WebInspector.ScriptFormatterEditorAction.prototype = {
         if (uiSourceCode.contentType() === WebInspector.resourceTypes.Document) {
             var scripts = [];
             var debuggerModels = WebInspector.DebuggerModel.instances();
-            for (var i = 0; i < debuggerModels.length; ++i) {
-                var networkURL = WebInspector.networkMapping.networkURL(uiSourceCode);
-                scripts.pushAll(debuggerModels[i].scriptsForSourceURL(networkURL));
-            }
+            for (var i = 0; i < debuggerModels.length; ++i)
+                scripts.pushAll(debuggerModels[i].scriptsForSourceURL(uiSourceCode.url()));
             return scripts.filter(isInlineScript);
         }
         if (uiSourceCode.contentType().isScript()) {

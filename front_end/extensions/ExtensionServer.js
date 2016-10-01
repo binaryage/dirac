@@ -49,12 +49,15 @@ WebInspector.ExtensionServer = function()
     this._sidebarPanes = [];
     /** @type {!Array.<!WebInspector.ExtensionAuditCategory>} */
     this._auditCategories = [];
+    /** @type {!Array.<!WebInspector.ExtensionTraceProvider>} */
+    this._traceProviders = [];
 
     var commands = WebInspector.extensionAPI.Commands;
 
     this._registerHandler(commands.AddAuditCategory, this._onAddAuditCategory.bind(this));
     this._registerHandler(commands.AddAuditResult, this._onAddAuditResult.bind(this));
     this._registerHandler(commands.AddRequestHeaders, this._onAddRequestHeaders.bind(this));
+    this._registerHandler(commands.AddTraceProvider, this._onAddTraceProvider.bind(this));
     this._registerHandler(commands.ApplyStyleSheet, this._onApplyStyleSheet.bind(this));
     this._registerHandler(commands.CreatePanel, this._onCreatePanel.bind(this));
     this._registerHandler(commands.CreateSidebarPane, this._onCreateSidebarPane.bind(this));
@@ -154,7 +157,6 @@ WebInspector.ExtensionServer.prototype = {
         this._postNotification(WebInspector.extensionAPI.Events.InspectedURLChanged, url);
     },
 
-
     /**
      * @param {string} categoryId
      * @param {!WebInspector.ExtensionAuditCategoryResults} auditResults
@@ -171,6 +173,22 @@ WebInspector.ExtensionServer.prototype = {
     stopAuditRun: function(auditResults)
     {
         delete this._clientObjects[auditResults.id()];
+    },
+
+    /**
+     * @param {string} traceProviderId
+     */
+    startTraceRecording: function(traceProviderId)
+    {
+        this._postNotification("trace-recording-started-" + traceProviderId);
+    },
+
+     /**
+     * @param {string} traceProviderId
+     */
+    stopTraceRecording: function(traceProviderId)
+    {
+        this._postNotification("trace-recording-stopped-" + traceProviderId);
     },
 
     /**
@@ -597,6 +615,25 @@ WebInspector.ExtensionServer.prototype = {
     },
 
     /**
+     * @param {!Object} message
+     * @param {!MessagePort} port
+     */
+    _onAddTraceProvider: function(message, port)
+    {
+        var provider = new WebInspector.ExtensionTraceProvider(port._extensionOrigin, message.id, message.categoryName, message.categoryTooltip);
+        this._clientObjects[message.id] = provider;
+        this._traceProviders.push(provider);
+    },
+
+    /**
+     * @return {!Array<!WebInspector.ExtensionTraceProvider>}
+     */
+    traceProviders: function()
+    {
+        return this._traceProviders;
+    },
+
+    /**
      * @return {!Array.<!WebInspector.ExtensionAuditCategory>}
      */
     auditCategories: function()
@@ -778,7 +815,8 @@ WebInspector.ExtensionServer.prototype = {
             var extensionOrigin = originMatch[1];
             if (!this._registeredExtensions[extensionOrigin]) {
                 // See ExtensionAPI.js for details.
-                InspectorFrontendHost.setInjectedScriptForOrigin(extensionOrigin, buildExtensionAPIInjectedScript(extensionInfo, this._inspectedTabId, WebInspector.themeSupport.themeName()));
+                var injectedAPI = buildExtensionAPIInjectedScript(extensionInfo, this._inspectedTabId, WebInspector.themeSupport.themeName(), WebInspector.extensionServer["_extensionAPITestHook"]);
+                InspectorFrontendHost.setInjectedScriptForOrigin(extensionOrigin, injectedAPI);
                 this._registeredExtensions[extensionOrigin] = { name: name };
             }
             var iframe = createElement("iframe");

@@ -155,8 +155,6 @@
     padding: 2px 2px 4px 4px;
     min-height: 18px;
     white-space: nowrap;
-    background-origin: padding;
-    background-clip: padding;
     -webkit-user-select: text;
     border-bottom: 1px solid #eee;
     position: relative;
@@ -254,6 +252,7 @@
     padding: 2px 4px 0 0;
     list-style: none;
     clear: both;
+    display: flex;
 }
 
 .styles-section.matched-styles .style-properties {
@@ -329,6 +328,14 @@
     line-height: 15px;
     margin-left: 3px;
     width: calc(100% - 7px);
+    -webkit-user-modify: read-write-plaintext-only;
+    background-color: #fff;
+    cursor: text;
+}
+
+.styles-element-classes-pane .new-class-input:empty:before {
+    content: attr(placeholder);
+    color: darkgray;
 }
 
 .styles-element-state-pane > div {

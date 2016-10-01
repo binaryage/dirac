@@ -129,15 +129,12 @@ WebInspector.CompilerScriptMapping.prototype = {
     {
         if (uiSourceCode.project().type() === WebInspector.projectTypes.Service)
             return null;
-        var networkURL = this._networkMapping.networkURL(uiSourceCode);
-        if (!networkURL)
-            return null;
-        var sourceMap = this._sourceMapForURL.get(networkURL);
+        var sourceMap = this._sourceMapForURL.get(uiSourceCode.url());
         if (!sourceMap)
             return null;
         var script = /** @type {!WebInspector.Script} */ (this._scriptForSourceMap.get(sourceMap));
         console.assert(script);
-        var entry = sourceMap.firstSourceLineMapping(networkURL, lineNumber);
+        var entry = sourceMap.firstSourceLineMapping(uiSourceCode.url(), lineNumber);
         if (!entry)
             return null;
         return this._debuggerModel.createRawLocation(script, entry.lineNumber, entry.columnNumber);
@@ -240,7 +237,7 @@ WebInspector.CompilerScriptMapping.prototype = {
                 continue;
             this._sourceMapForURL.set(sourceURL, sourceMap);
             var uiSourceCode = this._networkMapping.uiSourceCodeForScriptURL(sourceURL, script);
-            if (!uiSourceCode && !this._networkMapping.hasMappingForNetworkURL(sourceURL)) {
+            if (!uiSourceCode) {
                 var contentProvider = sourceMap.sourceContentProvider(sourceURL, WebInspector.resourceTypes.SourceMapScript);
                 uiSourceCode = this._networkProject.addFile(contentProvider, WebInspector.ResourceTreeFrame.fromScript(script), script.isContentScript());
                 uiSourceCode[WebInspector.CompilerScriptMapping._originSymbol] = script.sourceURL;
@@ -280,13 +277,10 @@ WebInspector.CompilerScriptMapping.prototype = {
      */
     uiLineHasMapping: function(uiSourceCode, lineNumber)
     {
-        var networkURL = this._networkMapping.networkURL(uiSourceCode);
-        if (!networkURL)
-            return true;
-        var sourceMap = this._sourceMapForURL.get(networkURL);
+        var sourceMap = this._sourceMapForURL.get(uiSourceCode.url());
         if (!sourceMap)
             return true;
-        return !!sourceMap.firstSourceLineMapping(networkURL, lineNumber);
+        return !!sourceMap.firstSourceLineMapping(uiSourceCode.url(), lineNumber);
     },
 
     /**
@@ -311,8 +305,7 @@ WebInspector.CompilerScriptMapping.prototype = {
     _uiSourceCodeAddedToWorkspace: function(event)
     {
         var uiSourceCode = /** @type {!WebInspector.UISourceCode} */ (event.data);
-        var networkURL = this._networkMapping.networkURL(uiSourceCode);
-        if (!networkURL || !this._sourceMapForURL.get(networkURL))
+        if (!this._sourceMapForURL.get(uiSourceCode.url()))
             return;
         this._bindUISourceCode(uiSourceCode);
     },

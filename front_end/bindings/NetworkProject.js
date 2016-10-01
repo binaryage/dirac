@@ -32,13 +32,11 @@
  * @constructor
  * @param {!WebInspector.TargetManager} targetManager
  * @param {!WebInspector.Workspace} workspace
- * @param {!WebInspector.NetworkMapping} networkMapping
  * @implements {WebInspector.TargetManager.Observer}
  */
-WebInspector.NetworkProjectManager = function(targetManager, workspace, networkMapping)
+WebInspector.NetworkProjectManager = function(targetManager, workspace)
 {
     this._workspace = workspace;
-    this._networkMapping = networkMapping;
     targetManager.observeTargets(this);
 }
 
@@ -49,7 +47,7 @@ WebInspector.NetworkProjectManager.prototype = {
      */
     targetAdded: function(target)
     {
-        new WebInspector.NetworkProject(target, this._workspace, this._networkMapping, WebInspector.ResourceTreeModel.fromTarget(target));
+        new WebInspector.NetworkProject(target, this._workspace, WebInspector.ResourceTreeModel.fromTarget(target));
     },
 
     /**
@@ -67,14 +65,12 @@ WebInspector.NetworkProjectManager.prototype = {
  * @extends {WebInspector.SDKObject}
  * @param {!WebInspector.Target} target
  * @param {!WebInspector.Workspace} workspace
- * @param {!WebInspector.NetworkMapping} networkMapping
  * @param {?WebInspector.ResourceTreeModel} resourceTreeModel
  */
-WebInspector.NetworkProject = function(target, workspace, networkMapping, resourceTreeModel)
+WebInspector.NetworkProject = function(target, workspace, resourceTreeModel)
 {
     WebInspector.SDKObject.call(this, target);
     this._workspace = workspace;
-    this._networkMapping = networkMapping;
     /** @type {!Map<string, !WebInspector.ContentProviderBasedProject>} */
     this._workspaceProjects = new Map();
     this._resourceTreeModel = resourceTreeModel;
@@ -202,13 +198,12 @@ WebInspector.NetworkProject.prototype = {
      * @param {!WebInspector.ContentProvider} contentProvider
      * @param {?WebInspector.ResourceTreeFrame} frame
      * @param {boolean=} isContentScript
-     * @return {?WebInspector.UISourceCode}
+     * @return {!WebInspector.UISourceCode}
      */
     addFile: function(contentProvider, frame, isContentScript)
     {
         var uiSourceCode = this._createFile(contentProvider, frame, isContentScript || false);
-        if (uiSourceCode)
-            this._addUISourceCodeWithProvider(uiSourceCode, contentProvider);
+        this._addUISourceCodeWithProvider(uiSourceCode, contentProvider);
         return uiSourceCode;
     },
 
@@ -270,10 +265,8 @@ WebInspector.NetworkProject.prototype = {
                 return;
         }
         var uiSourceCode = this._createFile(script, WebInspector.ResourceTreeFrame.fromScript(script), script.isContentScript());
-        if (uiSourceCode) {
-            uiSourceCode[WebInspector.NetworkProject._scriptSymbol] = script;
-            this._addUISourceCodeWithProvider(uiSourceCode, script);
-        }
+        uiSourceCode[WebInspector.NetworkProject._scriptSymbol] = script;
+        this._addUISourceCodeWithProvider(uiSourceCode, script);
     },
 
     /**
@@ -287,10 +280,8 @@ WebInspector.NetworkProject.prototype = {
 
         var originalContentProvider = header.originalContentProvider();
         var uiSourceCode = this._createFile(originalContentProvider, WebInspector.ResourceTreeFrame.fromStyleSheet(header), false);
-        if (uiSourceCode) {
-            uiSourceCode[WebInspector.NetworkProject._styleSheetSymbol] = header;
-            this._addUISourceCodeWithProvider(uiSourceCode, originalContentProvider);
-        }
+        uiSourceCode[WebInspector.NetworkProject._styleSheetSymbol] = header;
+        this._addUISourceCodeWithProvider(uiSourceCode, originalContentProvider);
     },
 
     /**
@@ -341,10 +332,8 @@ WebInspector.NetworkProject.prototype = {
             return;
 
         var uiSourceCode = this._createFile(resource, WebInspector.ResourceTreeFrame.fromResource(resource), false);
-        if (uiSourceCode) {
-            uiSourceCode[WebInspector.NetworkProject._resourceSymbol] = resource;
-            this._addUISourceCodeWithProvider(uiSourceCode, resource);
-        }
+        uiSourceCode[WebInspector.NetworkProject._resourceSymbol] = resource;
+        this._addUISourceCodeWithProvider(uiSourceCode, resource);
     },
 
     /**
@@ -382,14 +371,11 @@ WebInspector.NetworkProject.prototype = {
      * @param {!WebInspector.ContentProvider} contentProvider
      * @param {?WebInspector.ResourceTreeFrame} frame
      * @param {boolean} isContentScript
-     * @return {?WebInspector.UISourceCode}
+     * @return {!WebInspector.UISourceCode}
      */
     _createFile: function(contentProvider, frame, isContentScript)
     {
         var url = contentProvider.contentURL();
-        if (this._networkMapping.hasMappingForNetworkURL(url))
-            return null;
-
         var project = this._workspaceProject(frame, isContentScript);
         var uiSourceCode = project.createUISourceCode(url, contentProvider.contentType());
         uiSourceCode[WebInspector.NetworkProject._targetSymbol] = this.target();

@@ -38,19 +38,18 @@ WebInspector.AuditsPanel = function()
     this.registerRequiredCSS("ui/panelEnablerView.css");
     this.registerRequiredCSS("audits/auditsPanel.css");
 
-    var sidebarTree = new TreeOutlineInShadow();
-    sidebarTree.registerRequiredCSS("audits/auditsSidebarTree.css");
-    this.panelSidebarElement().appendChild(sidebarTree.element);
-    this.setDefaultFocusedElement(sidebarTree.element);
+    this._sidebarTree = new TreeOutlineInShadow();
+    this._sidebarTree.registerRequiredCSS("audits/auditsSidebarTree.css");
+    this.panelSidebarElement().appendChild(this._sidebarTree.element);
 
     this._auditsItemTreeElement = new WebInspector.AuditsSidebarTreeElement(this);
-    sidebarTree.appendChild(this._auditsItemTreeElement);
+    this._sidebarTree.appendChild(this._auditsItemTreeElement);
 
     this._auditResultsTreeElement = new TreeElement(WebInspector.UIString("RESULTS"), true);
     this._auditResultsTreeElement.selectable = false;
     this._auditResultsTreeElement.listItemElement.classList.add("audits-sidebar-results");
     this._auditResultsTreeElement.expand();
-    sidebarTree.appendChild(this._auditResultsTreeElement);
+    this._sidebarTree.appendChild(this._auditResultsTreeElement);
 
     this._constructCategories();
 
@@ -130,6 +129,7 @@ WebInspector.AuditsPanel.prototype = {
         if (!categoryResults._resultLocation) {
             categoryResults.sort((a, b) => (a.title || "").localeCompare(b.title || ""));
             var resultView = WebInspector.viewManager.createStackLocation();
+            resultView.widget().element.classList.add("audit-result-view");
             for (var i = 0; i < categoryResults.length; ++i)
                 resultView.showView(new WebInspector.AuditCategoryResultPane(categoryResults[i]));
             categoryResults._resultLocation = resultView;
@@ -166,6 +166,14 @@ WebInspector.AuditsPanel.prototype = {
         WebInspector.Panel.prototype.wasShown.call(this);
         if (!this._visibleView)
             this._auditsItemTreeElement.select();
+    },
+
+    /**
+     * @override
+     */
+    focus: function()
+    {
+        this._sidebarTree.focus();
     },
 
     clearResults: function()

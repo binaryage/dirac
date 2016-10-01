@@ -655,7 +655,7 @@ WebInspector.ConsoleView.prototype = {
             var lines = [];
             for (var i = 0; i < chunkSize && i + messageIndex < this.itemCount(); ++i) {
                 var message = this.itemElement(messageIndex + i);
-                var messageContent = message.formattedMessage().deepTextContent();
+                var messageContent = message.contentElement().deepTextContent();
                 for (var j = 0; j < message.repeatCount(); ++j)
                     lines.push(messageContent);
             }
@@ -777,9 +777,6 @@ WebInspector.ConsoleView.prototype = {
         if (keyboardEvent.key === "PageUp") {
             this._updateStickToBottomOnWheel();
             return;
-        } else if (isEnterKey(keyboardEvent)) {
-            this._enterKeyPressed(keyboardEvent);
-            return;
         }
 
         var shortcut = WebInspector.KeyboardShortcut.makeKeyFromEvent(keyboardEvent);
@@ -787,44 +784,6 @@ WebInspector.ConsoleView.prototype = {
         if (handler) {
             handler();
             keyboardEvent.preventDefault();
-        }
-    },
-
-    _enterKeyPressed: function(event)
-    {
-        if (event.altKey || event.ctrlKey || event.shiftKey)
-            return;
-
-        event.consume(true);
-
-        this._prompt.clearAutocomplete();
-
-        var str = this._prompt.text();
-        if (!str.length)
-            return;
-
-        var currentExecutionContext = WebInspector.context.flavor(WebInspector.ExecutionContext);
-        if (!this._prompt.isCaretAtEndOfPrompt() || !currentExecutionContext) {
-            this._appendCommand(str, true);
-            return;
-        }
-        currentExecutionContext.target().runtimeModel.compileScript(str, "", false, currentExecutionContext.id, compileCallback.bind(this));
-
-        /**
-         * @param {!RuntimeAgent.ScriptId=} scriptId
-         * @param {?RuntimeAgent.ExceptionDetails=} exceptionDetails
-         * @this {WebInspector.ConsoleView}
-         */
-        function compileCallback(scriptId, exceptionDetails)
-        {
-            if (str !== this._prompt.text())
-                return;
-            if (exceptionDetails && (exceptionDetails.exception.description === "SyntaxError: Unexpected end of input"
-                || exceptionDetails.exception.description === "SyntaxError: Unterminated template literal")) {
-                this._prompt.newlineAndIndent();
-                return;
-            }
-            this._appendCommand(str, true);
         }
     },
 
@@ -846,21 +805,6 @@ WebInspector.ConsoleView.prototype = {
             message = WebInspector.ConsoleMessage.fromException(result.target(), exceptionDetails, WebInspector.ConsoleMessage.MessageType.Result, undefined, undefined);
         message.setOriginatingMessage(originatingConsoleMessage);
         result.target().consoleModel.addMessage(message);
-    },
-
-    /**
-     * @param {string} text
-     * @param {boolean} useCommandLineAPI
-     */
-    _appendCommand: function(text, useCommandLineAPI)
-    {
-        this._prompt.setText("");
-        var currentExecutionContext = WebInspector.context.flavor(WebInspector.ExecutionContext);
-        if (currentExecutionContext) {
-            WebInspector.ConsoleModel.evaluateCommandInConsole(currentExecutionContext, text, useCommandLineAPI);
-            if (WebInspector.inspectorView.currentPanel() && WebInspector.inspectorView.currentPanel().name === "console")
-                WebInspector.userMetrics.actionTaken(WebInspector.UserMetrics.Action.CommandEvaluatedInConsolePanel);
-        }
     },
 
     /**
@@ -1263,26 +1207,17 @@ WebInspector.ConsoleCommand = function(message, linkifier, nestingLevel)
 WebInspector.ConsoleCommand.prototype = {
     /**
      * @override
-     * @return {!Element})
-     */
-    searchableElement: function()
-    {
-        return this.contentElement();
-    },
-
-    /**
-     * @override
      * @return {!Element}
      */
     contentElement: function()
     {
-        if (!this._element) {
-            this._element = createElementWithClass("div", "console-user-command");
-            this._element.message = this;
+        if (!this._contentElement) {
+            this._contentElement = createElementWithClass("div", "console-user-command");
+            this._contentElement.message = this;
 
             this._formattedCommand = createElementWithClass("span", "console-message-text source-code");
             this._formattedCommand.textContent = this.text.replaceControlCharacters();
-            this._element.appendChild(this._formattedCommand);
+            this._contentElement.appendChild(this._formattedCommand);
 
             if (this._formattedCommand.textContent.length < WebInspector.ConsoleCommand.MaxLengthToIgnoreHighlighter) {
                 var javascriptSyntaxHighlighter = new WebInspector.DOMSyntaxHighlighter("text/javascript", true);
@@ -1291,7 +1226,7 @@ WebInspector.ConsoleCommand.prototype = {
                 this._updateSearch();
             }
         }
-        return this._element;
+        return this._contentElement;
     },
 
     _updateSearch: function()
