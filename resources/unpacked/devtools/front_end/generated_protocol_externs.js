@@ -2515,6 +2515,95 @@ DOMDebuggerAgent.Dispatcher = function() {};
 /**
  * @constructor
 */
+Protocol.TargetAgent = function(){};
+
+/**
+ * @param {function(?Protocol.Error):void=} opt_callback
+ */
+Protocol.TargetAgent.prototype.enable = function(opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+Protocol.TargetAgent.prototype.invoke_enable = function(obj, opt_callback) {}
+
+/**
+ * @param {function(?Protocol.Error):void=} opt_callback
+ */
+Protocol.TargetAgent.prototype.disable = function(opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+Protocol.TargetAgent.prototype.invoke_disable = function(obj, opt_callback) {}
+
+/**
+ * @param {boolean} value
+ * @param {function(?Protocol.Error):void=} opt_callback
+ */
+Protocol.TargetAgent.prototype.setWaitForDebuggerOnStart = function(value, opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+Protocol.TargetAgent.prototype.invoke_setWaitForDebuggerOnStart = function(obj, opt_callback) {}
+
+/**
+ * @param {string} targetId
+ * @param {string} message
+ * @param {function(?Protocol.Error):void=} opt_callback
+ */
+Protocol.TargetAgent.prototype.sendMessageToTarget = function(targetId, message, opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+Protocol.TargetAgent.prototype.invoke_sendMessageToTarget = function(obj, opt_callback) {}
+
+/**
+ * @param {TargetAgent.TargetID} targetId
+ * @param {function(?Protocol.Error, TargetAgent.TargetInfo):void=} opt_callback
+ */
+Protocol.TargetAgent.prototype.getTargetInfo = function(targetId, opt_callback) {}
+/** @param {function(?Protocol.Error, TargetAgent.TargetInfo):void=} opt_callback */
+Protocol.TargetAgent.prototype.invoke_getTargetInfo = function(obj, opt_callback) {}
+
+/**
+ * @param {TargetAgent.TargetID} targetId
+ * @param {function(?Protocol.Error):void=} opt_callback
+ */
+Protocol.TargetAgent.prototype.activateTarget = function(targetId, opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+Protocol.TargetAgent.prototype.invoke_activateTarget = function(obj, opt_callback) {}
+
+
+
+var TargetAgent = function(){};
+
+/** @typedef {string} */
+TargetAgent.TargetID;
+
+/** @enum {string} */
+TargetAgent.TargetType = {
+    Page: "page",
+    Frame: "frame",
+    Worker: "worker",
+    Service_worker: "service_worker"
+};
+
+/** @typedef {!{targetId:(TargetAgent.TargetID), type:(TargetAgent.TargetType), title:(string), url:(string)}} */
+TargetAgent.TargetInfo;
+/** @interface */
+TargetAgent.Dispatcher = function() {};
+/**
+ * @param {TargetAgent.TargetID} targetId
+ * @param {TargetAgent.TargetType} type
+ * @param {string} url
+ * @param {boolean} waitingForDebugger
+ */
+TargetAgent.Dispatcher.prototype.targetCreated = function(targetId, type, url, waitingForDebugger) {};
+/**
+ * @param {TargetAgent.TargetID} targetId
+ */
+TargetAgent.Dispatcher.prototype.targetRemoved = function(targetId) {};
+/**
+ * @param {TargetAgent.TargetID} targetId
+ * @param {string} message
+ */
+TargetAgent.Dispatcher.prototype.receivedMessageFromTarget = function(targetId, message) {};
+
+
+/**
+ * @constructor
+*/
 Protocol.WorkerAgent = function(){};
 
 /**
@@ -2588,23 +2677,6 @@ Protocol.ServiceWorkerAgent.prototype.invoke_enable = function(obj, opt_callback
 Protocol.ServiceWorkerAgent.prototype.disable = function(opt_callback) {}
 /** @param {function(?Protocol.Error):void=} opt_callback */
 Protocol.ServiceWorkerAgent.prototype.invoke_disable = function(obj, opt_callback) {}
-
-/**
- * @param {string} workerId
- * @param {string} message
- * @param {function(?Protocol.Error):void=} opt_callback
- */
-Protocol.ServiceWorkerAgent.prototype.sendMessage = function(workerId, message, opt_callback) {}
-/** @param {function(?Protocol.Error):void=} opt_callback */
-Protocol.ServiceWorkerAgent.prototype.invoke_sendMessage = function(obj, opt_callback) {}
-
-/**
- * @param {string} workerId
- * @param {function(?Protocol.Error):void=} opt_callback
- */
-Protocol.ServiceWorkerAgent.prototype.stop = function(workerId, opt_callback) {}
-/** @param {function(?Protocol.Error):void=} opt_callback */
-Protocol.ServiceWorkerAgent.prototype.invoke_stop = function(obj, opt_callback) {}
 
 /**
  * @param {string} scopeURL
@@ -2683,22 +2755,6 @@ Protocol.ServiceWorkerAgent.prototype.dispatchSyncEvent = function(origin, regis
 /** @param {function(?Protocol.Error):void=} opt_callback */
 Protocol.ServiceWorkerAgent.prototype.invoke_dispatchSyncEvent = function(obj, opt_callback) {}
 
-/**
- * @param {ServiceWorkerAgent.TargetID} targetId
- * @param {function(?Protocol.Error, ServiceWorkerAgent.TargetInfo):void=} opt_callback
- */
-Protocol.ServiceWorkerAgent.prototype.getTargetInfo = function(targetId, opt_callback) {}
-/** @param {function(?Protocol.Error, ServiceWorkerAgent.TargetInfo):void=} opt_callback */
-Protocol.ServiceWorkerAgent.prototype.invoke_getTargetInfo = function(obj, opt_callback) {}
-
-/**
- * @param {ServiceWorkerAgent.TargetID} targetId
- * @param {function(?Protocol.Error):void=} opt_callback
- */
-Protocol.ServiceWorkerAgent.prototype.activateTarget = function(targetId, opt_callback) {}
-/** @param {function(?Protocol.Error):void=} opt_callback */
-Protocol.ServiceWorkerAgent.prototype.invoke_activateTarget = function(obj, opt_callback) {}
-
 
 
 var ServiceWorkerAgent = function(){};
@@ -2724,34 +2780,13 @@ ServiceWorkerAgent.ServiceWorkerVersionStatus = {
     Redundant: "redundant"
 };
 
-/** @typedef {string} */
-ServiceWorkerAgent.TargetID;
-
-/** @typedef {!{versionId:(string), registrationId:(string), scriptURL:(string), runningStatus:(ServiceWorkerAgent.ServiceWorkerVersionRunningStatus), status:(ServiceWorkerAgent.ServiceWorkerVersionStatus), scriptLastModified:(number|undefined), scriptResponseTime:(number|undefined), controlledClients:(!Array.<ServiceWorkerAgent.TargetID>|undefined)}} */
+/** @typedef {!{versionId:(string), registrationId:(string), scriptURL:(string), runningStatus:(ServiceWorkerAgent.ServiceWorkerVersionRunningStatus), status:(ServiceWorkerAgent.ServiceWorkerVersionStatus), scriptLastModified:(number|undefined), scriptResponseTime:(number|undefined), controlledClients:(!Array.<TargetAgent.TargetID>|undefined), targetId:(TargetAgent.TargetID|undefined)}} */
 ServiceWorkerAgent.ServiceWorkerVersion;
 
 /** @typedef {!{errorMessage:(string), registrationId:(string), versionId:(string), sourceURL:(string), lineNumber:(number), columnNumber:(number)}} */
 ServiceWorkerAgent.ServiceWorkerErrorMessage;
-
-/** @typedef {!{id:(ServiceWorkerAgent.TargetID), type:(string), title:(string), url:(string)}} */
-ServiceWorkerAgent.TargetInfo;
 /** @interface */
 ServiceWorkerAgent.Dispatcher = function() {};
-/**
- * @param {string} workerId
- * @param {string} url
- * @param {string} versionId
- */
-ServiceWorkerAgent.Dispatcher.prototype.workerCreated = function(workerId, url, versionId) {};
-/**
- * @param {string} workerId
- */
-ServiceWorkerAgent.Dispatcher.prototype.workerTerminated = function(workerId) {};
-/**
- * @param {string} workerId
- * @param {string} message
- */
-ServiceWorkerAgent.Dispatcher.prototype.dispatchMessage = function(workerId, message) {};
 /**
  * @param {!Array.<ServiceWorkerAgent.ServiceWorkerRegistration>} registrations
  */
@@ -3515,7 +3550,9 @@ LogAgent.Dispatcher.prototype.entryAdded = function(entry) {};
 Protocol.BrowserAgent = function(){};
 
 /**
- * @param {function(?Protocol.Error, BrowserAgent.BrowserContextID):void=} opt_callback
+ * @param {function(?Protocol.Error, BrowserAgent.BrowserContextID):T} opt_callback
+ * @return {!Promise.<T>}
+ * @template T
  */
 Protocol.BrowserAgent.prototype.createBrowserContext = function(opt_callback) {}
 /** @param {function(?Protocol.Error, BrowserAgent.BrowserContextID):void=} opt_callback */
@@ -3523,7 +3560,9 @@ Protocol.BrowserAgent.prototype.invoke_createBrowserContext = function(obj, opt_
 
 /**
  * @param {BrowserAgent.BrowserContextID} browserContextId
- * @param {function(?Protocol.Error, boolean):void=} opt_callback
+ * @param {function(?Protocol.Error, boolean):T} opt_callback
+ * @return {!Promise.<T>}
+ * @template T
  */
 Protocol.BrowserAgent.prototype.disposeBrowserContext = function(browserContextId, opt_callback) {}
 /** @param {function(?Protocol.Error, boolean):void=} opt_callback */
@@ -3531,33 +3570,51 @@ Protocol.BrowserAgent.prototype.invoke_disposeBrowserContext = function(obj, opt
 
 /**
  * @param {string} url
- * @param {number=} opt_width
- * @param {number=} opt_height
- * @param {BrowserAgent.BrowserContextID=} opt_browserContextId
- * @param {function(?Protocol.Error, BrowserAgent.TargetID):void=} opt_callback
+ * @param {number} width
+ * @param {number} height
+ * @param {BrowserAgent.BrowserContextID} browserContextId
+ * @param {function(?Protocol.Error, BrowserAgent.TargetID):T} opt_callback
+ * @return {!Promise.<T>}
+ * @template T
  */
-Protocol.BrowserAgent.prototype.createTarget = function(url, opt_width, opt_height, opt_browserContextId, opt_callback) {}
+Protocol.BrowserAgent.prototype.createTarget = function(url, width, height, browserContextId, opt_callback) {}
 /** @param {function(?Protocol.Error, BrowserAgent.TargetID):void=} opt_callback */
 Protocol.BrowserAgent.prototype.invoke_createTarget = function(obj, opt_callback) {}
 
 /**
  * @param {BrowserAgent.TargetID} targetId
- * @param {function(?Protocol.Error, boolean):void=} opt_callback
+ * @param {function(?Protocol.Error, boolean):T} opt_callback
+ * @return {!Promise.<T>}
+ * @template T
  */
 Protocol.BrowserAgent.prototype.closeTarget = function(targetId, opt_callback) {}
 /** @param {function(?Protocol.Error, boolean):void=} opt_callback */
 Protocol.BrowserAgent.prototype.invoke_closeTarget = function(obj, opt_callback) {}
 
 /**
- * @param {function(?Protocol.Error, !Array.<BrowserAgent.TargetInfo>):void=} opt_callback
+ * @param {function(?Protocol.Error, !Array.<BrowserAgent.TargetInfo>):T} opt_callback
+ * @return {!Promise.<T>}
+ * @template T
  */
 Protocol.BrowserAgent.prototype.getTargets = function(opt_callback) {}
 /** @param {function(?Protocol.Error, !Array.<BrowserAgent.TargetInfo>):void=} opt_callback */
 Protocol.BrowserAgent.prototype.invoke_getTargets = function(obj, opt_callback) {}
 
 /**
+ * @param {!Array.<BrowserAgent.RemoteLocation>} locations
+ * @param {function(?Protocol.Error):T=} opt_callback
+ * @return {!Promise.<T>}
+ * @template T
+ */
+Protocol.BrowserAgent.prototype.setRemoteLocations = function(locations, opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+Protocol.BrowserAgent.prototype.invoke_setRemoteLocations = function(obj, opt_callback) {}
+
+/**
  * @param {BrowserAgent.TargetID} targetId
- * @param {function(?Protocol.Error, boolean):void=} opt_callback
+ * @param {function(?Protocol.Error, boolean):T} opt_callback
+ * @return {!Promise.<T>}
+ * @template T
  */
 Protocol.BrowserAgent.prototype.attach = function(targetId, opt_callback) {}
 /** @param {function(?Protocol.Error, boolean):void=} opt_callback */
@@ -3565,7 +3622,9 @@ Protocol.BrowserAgent.prototype.invoke_attach = function(obj, opt_callback) {}
 
 /**
  * @param {BrowserAgent.TargetID} targetId
- * @param {function(?Protocol.Error, boolean):void=} opt_callback
+ * @param {function(?Protocol.Error, boolean):T} opt_callback
+ * @return {!Promise.<T>}
+ * @template T
  */
 Protocol.BrowserAgent.prototype.detach = function(targetId, opt_callback) {}
 /** @param {function(?Protocol.Error, boolean):void=} opt_callback */
@@ -3574,7 +3633,9 @@ Protocol.BrowserAgent.prototype.invoke_detach = function(obj, opt_callback) {}
 /**
  * @param {BrowserAgent.TargetID} targetId
  * @param {string} message
- * @param {function(?Protocol.Error):void=} opt_callback
+ * @param {function(?Protocol.Error):T=} opt_callback
+ * @return {!Promise.<T>}
+ * @template T
  */
 Protocol.BrowserAgent.prototype.sendMessage = function(targetId, message, opt_callback) {}
 /** @param {function(?Protocol.Error):void=} opt_callback */
@@ -3592,6 +3653,9 @@ BrowserAgent.TargetID;
 
 /** @typedef {!{targetId:(BrowserAgent.TargetID), type:(string), title:(string), url:(string)}} */
 BrowserAgent.TargetInfo;
+
+/** @typedef {!{host:(string), port:(number)}} */
+BrowserAgent.RemoteLocation;
 /** @interface */
 BrowserAgent.Dispatcher = function() {};
 /**
@@ -4648,6 +4712,12 @@ Protocol.Agents.prototype.domdebuggerAgent = function(){};
  * @param {!DOMDebuggerAgent.Dispatcher} dispatcher
  */
 Protocol.Agents.prototype.registerDOMDebuggerDispatcher = function(dispatcher) {}
+/** @return {!Protocol.TargetAgent}*/
+Protocol.Agents.prototype.targetAgent = function(){};
+/**
+ * @param {!TargetAgent.Dispatcher} dispatcher
+ */
+Protocol.Agents.prototype.registerTargetDispatcher = function(dispatcher) {}
 /** @return {!Protocol.WorkerAgent}*/
 Protocol.Agents.prototype.workerAgent = function(){};
 /**
