@@ -131,6 +131,7 @@ devtools_sdk_js_files = [
   "front_end/sdk/ServiceWorkerCacheModel.js",
   "front_end/sdk/ServiceWorkerManager.js",
   "front_end/sdk/SourceMap.js",
+  "front_end/sdk/SubTargetsManager.js",
   "front_end/sdk/Target.js",
   "front_end/sdk/TargetManager.js",
   "front_end/sdk/TracingManager.js",
@@ -166,6 +167,7 @@ devtools_bindings_js_files = [
   "front_end/bindings/StylesSourceMapping.js",
   "front_end/bindings/TempFile.js",
 ]
+devtools_persistence_js_files = [ "front_end/persistence/Persistence.js" ]
 devtools_platform_js_files = [
   "front_end/platform/DOMExtension.js",
   "front_end/platform/utilities.js",
@@ -287,6 +289,7 @@ devtools_main_js_files = [
   "front_end/main/Connections.js",
   "front_end/main/Main.js",
   "front_end/main/OverlayController.js",
+  "front_end/main/RemoteLocationManager.js",
   "front_end/main/RenderingOptions.js",
   "front_end/main/SimpleApp.js",
 ]
@@ -605,6 +608,7 @@ devtools_formatter_worker_js_files = [
   "front_end/formatter_worker/FormatterWorker.js",
   "front_end/formatter_worker/RelaxedJSONParser.js",
 ]
+devtools_services_js_files = [ "front_end/services/ServiceManager.js" ]
 devtools_settings_js_files = [
   "front_end/settings/editFileSystemView.css",
   "front_end/settings/frameworkBlackboxSettingsTab.css",
@@ -680,6 +684,13 @@ devtools_text_editor_js_files = [
   "front_end/text_editor/CodeMirrorTextEditor.js",
   "front_end/text_editor/CodeMirrorUtils.js",
   "front_end/text_editor/TextEditorAutocompleteController.js",
+]
+devtools_terminal_js_files = [
+  "front_end/terminal/terminal.css",
+  "front_end/terminal/TerminalWidget.js",
+  "front_end/terminal/xterm.js/addons/fit/fit.js",
+  "front_end/terminal/xterm.js/build/xterm.css",
+  "front_end/terminal/xterm.js/build/xterm.js",
 ]
 devtools_timeline_model_js_files = [
   "front_end/timeline_model/LayerTreeModel.js",
@@ -839,7 +850,8 @@ devtools_core_files =
     devtools_emulation_js_files + devtools_host_js_files +
     devtools_main_js_files + devtools_platform_js_files +
     devtools_sdk_js_files + devtools_toolbox_bootstrap_js_files +
-    devtools_ui_js_files + devtools_workspace_js_files
+    devtools_ui_js_files + devtools_workspace_js_files +
+    devtools_persistence_js_files
 
 devtools_modules_js_files =
     devtools_accessibility_js_files + devtools_audits_js_files +
@@ -853,11 +865,12 @@ devtools_modules_js_files =
     devtools_resources_js_files + devtools_sass_js_files +
     devtools_security_js_files + devtools_screencast_js_files +
     devtools_formatter_worker_js_files + devtools_settings_js_files +
-    devtools_snippets_js_files + devtools_source_frame_js_files +
-    devtools_sources_js_files + devtools_temp_storage_shared_worker_js_files +
-    devtools_text_editor_js_files + devtools_timeline_model_js_files +
-    devtools_timeline_js_files + devtools_ui_lazy_js_files +
-    devtools_layer_viewer_js_files
+    devtools_services_js_files + devtools_snippets_js_files +
+    devtools_source_frame_js_files + devtools_sources_js_files +
+    devtools_temp_storage_shared_worker_js_files +
+    devtools_text_editor_js_files + devtools_terminal_js_files +
+    devtools_timeline_model_js_files + devtools_timeline_js_files +
+    devtools_ui_lazy_js_files + devtools_layer_viewer_js_files
 
 all_devtools_files = devtools_cm_css_files + devtools_cm_js_files +
                      devtools_core_files + devtools_module_json_files +
@@ -897,10 +910,12 @@ generated_bundled_modules = [
   "$resources_out_dir/resources/resources_module.js",
   "$resources_out_dir/sass/sass_module.js",
   "$resources_out_dir/security/security_module.js",
+  "$resources_out_dir/services/services_module.js",
   "$resources_out_dir/settings/settings_module.js",
   "$resources_out_dir/snippets/snippets_module.js",
   "$resources_out_dir/source_frame/source_frame_module.js",
   "$resources_out_dir/sources/sources_module.js",
+  "$resources_out_dir/terminal/terminal_module.js",
   "$resources_out_dir/text_editor/text_editor_module.js",
   "$resources_out_dir/timeline_model/timeline_model_module.js",
   "$resources_out_dir/timeline/timeline_module.js",

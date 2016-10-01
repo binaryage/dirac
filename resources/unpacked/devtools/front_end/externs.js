@@ -294,8 +294,6 @@ function Panel() {}
 function PanelWithSidebar() {}
 /** @constructor */
 function Resource() {}
-/** @constructor */
-function Timeline() {}
 
 var extensionServer;
 
@@ -305,6 +303,7 @@ var extensionServer;
 function ExtensionDescriptor() {
     this.startPage = "";
     this.name = "";
+    this.exposeExperimentalAPIs = false;
 }
 
 /**
@@ -317,7 +316,7 @@ function ExtensionReloadOptions() {
 }
 
 var Adb = {};
-/** @typedef {{id: string, name: string, url: string, adbAttachedForeign: boolean}} */
+/** @typedef {{id: string, name: string, url: string, attached: boolean}} */
 Adb.Page;
 /** @typedef {{id: string, adbBrowserChromeVersion: string, compatibleVersion: boolean, adbBrowserName: string, source: string, adbBrowserVersion: string, pages: !Array<!Adb.Page>}} */
 Adb.Browser;
@@ -1031,3 +1030,18 @@ Gonzales.Node = function()
  * TODO(jsbell): DOMException should be a subclass of Error.
  */
 DOMException.prototype.message;
+
+/**
+ * @constructor
+ * @param {!Object} params
+ */
+var Terminal = function(params) { }
+
+Terminal.prototype = {
+    fit: function() { },
+    linkify: function() { },
+    /** @param {!Element} element */
+    open: function(element) { },
+    /** @param {string} eventName * @param {!Function} handler */
+    on: function(eventName, handler) { }
+}

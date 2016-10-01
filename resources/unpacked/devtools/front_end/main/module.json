@@ -353,14 +353,16 @@
         "extensions",
         "host",
         "platform",
-        "sdk"
+        "sdk",
+        "persistence"
     ],
     "scripts": [
         "RenderingOptions.js",
         "SimpleApp.js",
         "OverlayController.js",
         "Connections.js",
-        "Main.js"
+        "Main.js",
+        "RemoteLocationManager.js"
     ],
     "resources": [
         "errorWarningCounter.css",

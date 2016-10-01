@@ -42,8 +42,8 @@ WebInspector.ResourceScriptMapping = function(debuggerModel, workspace, networkM
     this._debuggerModel = debuggerModel;
     this._networkMapping = networkMapping;
     this._debuggerWorkspaceBinding = debuggerWorkspaceBinding;
-    /** @type {!Array.<!WebInspector.UISourceCode>} */
-    this._boundUISourceCodes = [];
+    /** @type {!Set<!WebInspector.UISourceCode>} */
+    this._boundUISourceCodes = new Set();
 
     /** @type {!Map.<!WebInspector.UISourceCode, !WebInspector.ResourceScriptFile>} */
     this._uiSourceCodeToScriptFile = new Map();
@@ -160,11 +160,8 @@ WebInspector.ResourceScriptMapping.prototype = {
     _uiSourceCodeAdded: function(event)
     {
         var uiSourceCode = /** @type {!WebInspector.UISourceCode} */ (event.data);
-        if (!this._networkMapping.networkURL(uiSourceCode))
-            return;
         if (uiSourceCode.isFromServiceProject())
             return;
-
         var scripts = this._scriptsForUISourceCode(uiSourceCode);
         if (!scripts.length)
             return;
@@ -178,9 +175,7 @@ WebInspector.ResourceScriptMapping.prototype = {
     _uiSourceCodeRemoved: function(event)
     {
         var uiSourceCode = /** @type {!WebInspector.UISourceCode} */ (event.data);
-        if (!this._networkMapping.networkURL(uiSourceCode))
-            return;
-        if (uiSourceCode.isFromServiceProject())
+        if (uiSourceCode.isFromServiceProject() || !this._boundUISourceCodes.has(uiSourceCode))
             return;
 
         this._unbindUISourceCode(uiSourceCode);
@@ -216,11 +211,9 @@ WebInspector.ResourceScriptMapping.prototype = {
     _scriptsForUISourceCode: function(uiSourceCode)
     {
         var target = WebInspector.NetworkProject.targetForUISourceCode(uiSourceCode);
-        if (target && target !== this._debuggerModel.target())
+        if (target !== this._debuggerModel.target())
             return [];
-        if (!this._networkMapping.networkURL(uiSourceCode))
-            return [];
-        return this._debuggerModel.scriptsForSourceURL(this._networkMapping.networkURL(uiSourceCode));
+        return this._debuggerModel.scriptsForSourceURL(uiSourceCode.url());
     },
 
     /**
@@ -241,7 +234,7 @@ WebInspector.ResourceScriptMapping.prototype = {
         for (var i = 0; i < scripts.length; ++i)
             this._debuggerWorkspaceBinding.updateLocations(scripts[i]);
         this._debuggerWorkspaceBinding.setSourceMapping(this._target, uiSourceCode, this);
-        this._boundUISourceCodes.push(uiSourceCode);
+        this._boundUISourceCodes.add(uiSourceCode);
     },
 
     /**
@@ -255,14 +248,14 @@ WebInspector.ResourceScriptMapping.prototype = {
             this._setScriptFile(uiSourceCode, null);
         }
         this._debuggerWorkspaceBinding.setSourceMapping(this._target, uiSourceCode, null);
-        this._boundUISourceCodes.remove(uiSourceCode);
+        this._boundUISourceCodes.delete(uiSourceCode);
     },
 
     _debuggerReset: function()
     {
-        var sourceCodes = this._boundUISourceCodes;
-        this._boundUISourceCodes = [];
-        sourceCodes.forEach(this._unbindUISourceCode.bind(this));
+        for (var uiSourceCode of this._boundUISourceCodes.valuesArray())
+            this._unbindUISourceCode(uiSourceCode);
+        this._boundUISourceCodes.clear();
         console.assert(!this._uiSourceCodeToScriptFile.size);
     },
 
@@ -286,7 +279,6 @@ WebInspector.ResourceScriptFile = function(resourceScriptMapping, uiSourceCode, 
 
     this._resourceScriptMapping = resourceScriptMapping;
     this._uiSourceCode = uiSourceCode;
-    this._uiSourceCode.forceLoadOnCheckContent();
 
     if (this._uiSourceCode.contentType().isScript())
         this._script = scripts[0];
@@ -325,19 +317,10 @@ WebInspector.ResourceScriptFile.prototype = {
         var workingCopy = this._uiSourceCode.workingCopy();
 
         // Match ignoring sourceURL.
-        if (workingCopy.startsWith(this._scriptSource.trimRight())) {
-            var suffix = this._uiSourceCode.workingCopy().substr(this._scriptSource.length);
-            return !!suffix.length && !suffix.match(WebInspector.Script.sourceURLRegex);
-        }
-
-        // Match ignoring Node wrapper.
-        var nodePrefix = "(function (exports, require, module, __filename, __dirname) { \n";
-        var nodeSuffix = "\n});";
-        if (workingCopy.startsWith("#!/usr/bin/env node\n"))
-            workingCopy = workingCopy.substring("#!/usr/bin/env node\n".length);
-        if (this._scriptSource === nodePrefix + workingCopy + nodeSuffix)
-            return false;
-        return true;
+        if (!workingCopy.startsWith(this._scriptSource.trimRight()))
+            return true;
+        var suffix = this._uiSourceCode.workingCopy().substr(this._scriptSource.length);
+        return !!suffix.length && !suffix.match(WebInspector.Script.sourceURLRegex);
     },
 
     /**

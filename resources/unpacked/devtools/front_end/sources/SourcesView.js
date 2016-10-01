@@ -57,11 +57,19 @@ WebInspector.SourcesView = function()
     workspace.addEventListener(WebInspector.Workspace.Events.UISourceCodeRemoved, this._uiSourceCodeRemoved, this);
     workspace.addEventListener(WebInspector.Workspace.Events.ProjectRemoved, this._projectRemoved.bind(this), this);
 
+    /**
+     * @param {!Event} event
+     */
     function handleBeforeUnload(event)
     {
         if (event.returnValue)
             return;
-        var unsavedSourceCodes = WebInspector.workspace.unsavedSourceCodes();
+
+        var unsavedSourceCodes = [];
+        var projects = WebInspector.workspace.projectsForType(WebInspector.projectTypes.FileSystem);
+        for (var i = 0; i < projects.length; ++i)
+            unsavedSourceCodes = unsavedSourceCodes.concat(projects[i].uiSourceCodes().filter(isUnsaved));
+
         if (!unsavedSourceCodes.length)
             return;
 
@@ -69,7 +77,20 @@ WebInspector.SourcesView = function()
         WebInspector.inspectorView.setCurrentPanel(WebInspector.SourcesPanel.instance());
         for (var i = 0; i < unsavedSourceCodes.length; ++i)
             WebInspector.Revealer.reveal(unsavedSourceCodes[i]);
+
+        /**
+         * @param {!WebInspector.UISourceCode} sourceCode
+         * @return {boolean}
+         */
+        function isUnsaved(sourceCode)
+        {
+            var binding = WebInspector.persistence.binding(sourceCode);
+            if (binding)
+                return binding.network.isDirty();
+            return sourceCode.isDirty();
+        }
     }
+
     if (!window.opener)
         window.addEventListener("beforeunload", handleBeforeUnload, true);
 
@@ -246,16 +267,6 @@ WebInspector.SourcesView.prototype = {
         if (uiSourceCode.isFromServiceProject())
             return;
         this._editorContainer.addUISourceCode(uiSourceCode);
-        // Replace debugger script-based uiSourceCode with a network-based one.
-        var currentUISourceCode = this._editorContainer.currentFile();
-        if (!currentUISourceCode)
-            return;
-        var networkURL = WebInspector.networkMapping.networkURL(uiSourceCode);
-        var currentNetworkURL = WebInspector.networkMapping.networkURL(currentUISourceCode);
-        if (currentUISourceCode.isFromServiceProject() && currentUISourceCode !== uiSourceCode && currentNetworkURL === networkURL && networkURL) {
-            this._editorContainer.showFile(uiSourceCode);
-            this._editorContainer.removeUISourceCode(currentUISourceCode);
-        }
     },
 
     _uiSourceCodeRemoved: function(event)
