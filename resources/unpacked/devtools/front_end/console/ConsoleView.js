@@ -1839,18 +1839,18 @@ WebInspector.ConsoleDiracCommand.prototype = {
      */
     contentElement: function()
     {
-        if (!this._element) {
-            this._element = createElementWithClass("div", "console-user-command");
-            this._element.message = this;
+        if (!this._contentElement) {
+            this._contentElement = createElementWithClass("div", "console-user-command");
+            this._contentElement.message = this;
 
             this._formattedCommand = createElementWithClass("span", "console-message-text source-code cm-s-dirac");
-            this._element.appendChild(this._formattedCommand);
+            this._contentElement.appendChild(this._formattedCommand);
 
             CodeMirror.runMode(this.text, "clojure-parinfer", this._formattedCommand, undefined);
 
             this.element().classList.add("dirac-flavor"); // applied to wrapper element
         }
-        return this._element;
+        return this._contentElement;
     },
 
     __proto__: WebInspector.ConsoleCommand.prototype
@@ -1876,17 +1876,17 @@ WebInspector.ConsoleDiracMarkup.prototype = {
      */
     contentElement: function()
     {
-        if (!this._element) {
-            this._element = createElementWithClass("div", "console-message console-dirac-markup");
-            this._element.message = this;
+        if (!this._contentElement) {
+            this._contentElement = createElementWithClass("div", "console-message console-dirac-markup");
+            this._contentElement.message = this;
 
             this._formattedCommand = createElementWithClass("span", "console-message-text source-code");
             this._formattedCommand.innerHTML = this._message.messageText;
-            this._element.appendChild(this._formattedCommand);
+            this._contentElement.appendChild(this._formattedCommand);
 
             this.element().classList.add("dirac-flavor"); // applied to wrapper element
         }
-        return this._element;
+        return this._contentElement;
     },
 
     __proto__: WebInspector.ConsoleViewMessage.prototype
