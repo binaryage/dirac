@@ -58,10 +58,10 @@
 
 (defn get-nrepl-message-info [nrepl-message]
   (let [{:keys [op code]} nrepl-message]
-    (str "op: '" op "'" (if (some? code) (str " code: " code)))))
+    (str "    op: '" op "'" (if (some? code) (str "\n  code: " code)))))
 
 (defn get-exception-details [nrepl-message e]
   (let [details (capture-exception-details e)
         message-info (get-nrepl-message-info nrepl-message)]
-    (str message-info "\n" details)))
+    (str message-info "\n\n" details)))
 
