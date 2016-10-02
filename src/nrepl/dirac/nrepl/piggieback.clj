@@ -76,24 +76,6 @@
         (state/set-session-cljs-repl-env! nil)
         (throw e)))))
 
-;; mostly a copy/paste from interruptible-eval
-(defn enqueue! [nrepl-message func]
-  (let [{:keys [session]} nrepl-message
-        job (fn []
-              (alter-meta! session
-                           assoc
-                           :thread (Thread/currentThread)
-                           :eval-msg nrepl-message)
-              (binding [nrepl-ieval/*msg* nrepl-message]
-                (state/ensure-session nrepl-message
-                  (func))
-                (helpers/send-response! nrepl-message {:status :done}))
-              (alter-meta! session
-                           dissoc
-                           :thread
-                           :eval-msg))]
-    (nrepl-ieval/queue-eval session @nrepl-ieval/default-executor job)))
-
 (defn report-missing-compiler! [selected-compiler available-compilers]
   (let [msg (messages/make-missing-compiler-msg selected-compiler available-compilers)]
     (helpers/send-response! (state/get-nrepl-message) (helpers/make-server-side-output-msg :stderr msg))))
@@ -166,9 +148,6 @@
     (helpers/send-response! nrepl-message {:out out})
     (helpers/send-response! nrepl-message {:status :done})))
 
-(defn enqueue-command! [command nrepl-message]
-  (enqueue! nrepl-message #(command nrepl-message)))
-
 (defn prepare-forwardable-message [nrepl-message]
   ; based on what is currently supported by intercom on client-side
   ; we deliberately filter keys to a "safe" subset, so the message can be unserialized on client side
@@ -204,13 +183,13 @@
 (defn handle-eval! [next-handler nrepl-message]
   (let [{:keys [session]} nrepl-message]
     (cond
-      (sessions/dirac-session? session) (enqueue-command! evaluate! nrepl-message)
+      (sessions/dirac-session? session) (evaluate! nrepl-message)
       :else (next-handler (make-nrepl-message-with-observed-errors nrepl-message)))))
 
 (defn handle-load-file! [next-handler nrepl-message]
   (let [{:keys [session]} nrepl-message]
     (if (sessions/dirac-session? session)
-      (enqueue-command! load-file! nrepl-message)
+      (load-file! nrepl-message)
       (next-handler (make-nrepl-message-with-observed-errors nrepl-message)))))
 
 (defn wrap-nrepl-message-if-observed-job [nrepl-message]
