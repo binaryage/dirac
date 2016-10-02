@@ -110,15 +110,19 @@
 
 (defn handle-eval! [next-handler nrepl-message]
   (let [{:keys [session]} nrepl-message]
-    (cond
-      (sessions/dirac-session? session) (evaluate! nrepl-message)
-      :else (next-handler (make-nrepl-message-with-observed-errors nrepl-message)))))
+    (if (sessions/dirac-session? session)
+      (evaluate! nrepl-message)
+      (do
+        (state/register-in-flight-nrepl-message! session nrepl-message)
+        (next-handler (make-nrepl-message-with-observed-errors nrepl-message))))))
 
 (defn handle-load-file! [next-handler nrepl-message]
   (let [{:keys [session]} nrepl-message]
     (if (sessions/dirac-session? session)
       (load-file! nrepl-message)
-      (next-handler (make-nrepl-message-with-observed-errors nrepl-message)))))
+      (do
+        (state/register-in-flight-nrepl-message! session nrepl-message)
+        (next-handler (make-nrepl-message-with-observed-errors nrepl-message))))))
 
 (defn wrap-nrepl-message-if-observed-job [nrepl-message]
   (if-let [observed-job (jobs/get-observed-job nrepl-message)]

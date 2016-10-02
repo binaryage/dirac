@@ -1,7 +1,6 @@
 (ns dirac.nrepl
-  (:require [clojure.tools.logging :as log]
-            [clojure.tools.nrepl.middleware :refer [set-descriptor!]]
-            [clojure.tools.nrepl.middleware.interruptible-eval :as nrepl-ieval]
+  (:require [clojure.tools.nrepl.middleware :refer [set-descriptor!]]
+            [clojure.tools.logging :as log]
             [dirac.lib.weasel-server :as weasel-server]
             [dirac.logging :as logging]
             [dirac.nrepl.piggieback :as piggieback]
@@ -9,6 +8,7 @@
             [dirac.nrepl.sessions :as sessions]
             [dirac.nrepl.debug :as debug]
             [dirac.nrepl.state :as state]
+            [dirac.nrepl.messages :as messages]
             [dirac.nrepl.helpers :as helpers]))
 
 ; -- public middleware definition -------------------------------------------------------------------------------------------
@@ -45,18 +45,21 @@
     (send-bootstrap-info! nrepl-message weasel-url)))
 
 (defn bootstrap! [& [config]]
-  (let [nrepl-message (or (:nrepl-message config) nrepl-ieval/*msg*)                                                          ; TODO: find a way how not to depend on clojure.tools.nrepl.middleware.interruptible-eval
-        effective-nrepl-config (config/get-effective-config config)
-        weasel-repl-options (:weasel-repl effective-nrepl-config)
-        runtime-tag (:runtime-tag effective-nrepl-config)
-        after-launch! (fn [repl-env weasel-url]
-                        (log/trace "after-launch handler called with repl-env:\n" (logging/pprint repl-env))
-                        (weasel-server-started! nrepl-message weasel-url runtime-tag))
-        repl-options (assoc weasel-repl-options :after-launch after-launch!)
-        repl-env (weasel-server/make-weasel-repl-env repl-options)
-        cljs-repl-options (:cljs-repl-options effective-nrepl-config)]
-    (state/ensure-session (:session nrepl-message)
-      (piggieback/start-cljs-repl! nrepl-message effective-nrepl-config repl-env cljs-repl-options))))
+  (if-let [nrepl-message (state/get-in-flight-nrepl-message)]
+    (let [effective-nrepl-config (config/get-effective-config config)
+          weasel-repl-options (:weasel-repl effective-nrepl-config)
+          runtime-tag (:runtime-tag effective-nrepl-config)
+          after-launch! (fn [repl-env weasel-url]
+                          (log/trace "after-launch handler called with repl-env:\n" (logging/pprint repl-env))
+                          (weasel-server-started! nrepl-message weasel-url runtime-tag))
+          repl-options (assoc weasel-repl-options :after-launch after-launch!)
+          repl-env (weasel-server/make-weasel-repl-env repl-options)
+          cljs-repl-options (:cljs-repl-options effective-nrepl-config)]
+      (state/ensure-session (:session nrepl-message)
+        (piggieback/start-cljs-repl! nrepl-message effective-nrepl-config repl-env cljs-repl-options)))
+    (do
+      (log/error (messages/make-missing-nrepl-message-msg))
+      (throw (ex-info "Unable to bootstrap due to missing in-flight nREPL message." {})))))
 
 (defn boot-dirac-repl! [& [config]]
   (let [effective-config (config/get-effective-config config)]

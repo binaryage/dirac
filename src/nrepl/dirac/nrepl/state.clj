@@ -10,6 +10,18 @@
 
 (def sniffer->proxy (atom {}))
 
+; -- in-flight message for bootstrapping ------------------------------------------------------------------------------------
+
+; this is only for bootstrapping Dirac CLJS REPL,
+; we want to avoid depending directly on clojure.tools.nrepl.middleware.interruptible-eval/*msg*
+(def ^:dynamic *in-flight-nrepl-message* nil)
+
+(defn register-in-flight-nrepl-message! [session nrepl-messsage]
+  (swap! session assoc #'*in-flight-nrepl-message* nrepl-messsage))
+
+(defn get-in-flight-nrepl-message []
+  *in-flight-nrepl-message*)
+
 ; -- session-specific state -------------------------------------------------------------------------------------------------
 
 ; we cannot pass session info into all our functions,

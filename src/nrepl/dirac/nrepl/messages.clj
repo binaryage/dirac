@@ -1,6 +1,11 @@
 (ns dirac.nrepl.messages
   (:require [dirac.nrepl.helpers :as helpers]))
 
+(defn ^:dynamic make-missing-nrepl-message-msg []
+  (str "Unable to bootstrap Dirac CLJS REPL because a relevant nREPL message is not available.\n"
+       "This is likely caused by missing or misconfigured 'interruptible-eval' middleware which is normally included by default.\n"
+       "Dirac nREPL middleware currently depends on eval behaviour in 'interruptible-eval' middleware."))
+
 (defn ^:dynamic make-no-target-session-help-msg [info]
   (str "Your session joined Dirac but no connected Dirac session is \"" info "\".\n"
        "You can review the list of currently available Dirac sessions via `(dirac! :ls)`.\n"
