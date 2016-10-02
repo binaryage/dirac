@@ -5,6 +5,8 @@
             [dirac.nrepl.debug :as debug])
   (:import (clojure.tools.nrepl.transport Transport)))
 
+; -- transport wrapper ------------------------------------------------------------------------------------------------------
+
 (defrecord LoggingTransport [nrepl-message transport]
   Transport
   (recv [_this timeout]
@@ -13,6 +15,8 @@
     (log/debug (str "sending raw message via nREPL transport: " transport " \n") (logging/pprint reply-message))
     (debug/log-stack-trace!)
     (nrepl-transport/send transport reply-message)))
+
+; -- public interface -------------------------------------------------------------------------------------------------------
 
 (defn make-nrepl-message-with-logging [nrepl-message]
   (update nrepl-message :transport (partial ->LoggingTransport nrepl-message)))

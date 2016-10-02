@@ -10,11 +10,9 @@
                                  [misc :refer (response-for returning)]
                                  [middleware :refer (set-descriptor!)])
             [clojure.tools.nrepl.middleware.interruptible-eval :as nrepl-ieval]
-            [clojure.tools.nrepl.transport :as nrepl-transport]
             [clojure.main]
             [cljs.repl]
             [dirac.nrepl.state :as state]
-            [dirac.nrepl.driver :as driver]
             [dirac.nrepl.version :refer [version]]
             [dirac.nrepl.sessions :as sessions]
             [dirac.nrepl.helpers :as helpers]
@@ -26,12 +24,12 @@
             [dirac.nrepl.transports.logging :refer [make-nrepl-message-with-logging]]
             [dirac.nrepl.transports.errors-observing :refer [make-nrepl-message-with-observed-errors]]
             [dirac.nrepl.transports.output-capturing :refer [make-nrepl-message-with-captured-output]]
+            [dirac.nrepl.transports.job-observing :refer [make-nrepl-message-with-job-observing-transport]]
             [clojure.tools.logging :as log]
             [clojure.string :as string]
             [dirac.logging :as logging]
             [dirac.nrepl.config :as config])
-  (:import java.io.Writer
-           (clojure.tools.nrepl.transport Transport))
+  (:import java.io.Writer)
   (:refer-clojure :exclude (load-file)))
 
 (defn ^:dynamic make-no-target-session-help-msg [info]
@@ -304,33 +302,9 @@
       (enqueue-command! load-file! nrepl-message)
       (next-handler (make-nrepl-message-with-observed-errors nrepl-message)))))
 
-(defn final-message? [message]
-  (some? (:status message)))
-
-(defrecord ObservingTransport [observed-job nrepl-message transport]
-  Transport
-  (recv [_this timeout]
-    (nrepl-transport/recv transport timeout))
-  (send [_this reply-message]
-    (let [observing-transport (jobs/get-observed-job-transport observed-job)
-          observing-session (jobs/get-observed-job-session observed-job)
-          initial-message-id (jobs/get-observed-job-message-id observed-job)
-          artificial-message (assoc reply-message
-                               :id initial-message-id
-                               :session (sessions/get-session-id observing-session))]
-      (log/debug "sending message to observing session" observing-session (logging/pprint artificial-message))
-      (nrepl-transport/send observing-transport artificial-message))
-    (if (final-message? reply-message)
-      (jobs/unregister-observed-job! (jobs/get-observed-job-id observed-job)))
-    (nrepl-transport/send transport reply-message)))
-
-(defn make-nrepl-message-with-observing-transport [observed-job nrepl-message]
-  (log/trace "make-nrepl-message-with-observing-transport" observed-job (logging/pprint nrepl-message))
-  (update nrepl-message :transport (partial ->ObservingTransport observed-job nrepl-message)))
-
-(defn wrap-nrepl-message-if-observed [nrepl-message]
+(defn wrap-nrepl-message-if-observed-job [nrepl-message]
   (if-let [observed-job (jobs/get-observed-job nrepl-message)]
-    (make-nrepl-message-with-observing-transport observed-job nrepl-message)
+    (make-nrepl-message-with-job-observing-transport observed-job nrepl-message)
     nrepl-message))
 
 (defn is-eval-cljs-quit-in-joined-session? [nrepl-message]
@@ -358,7 +332,7 @@
     (next-handler nrepl-message)))
 
 (defn handle-normal-message! [nrepl-message next-handler]
-  (let [{:keys [session] :as nrepl-message} (wrap-nrepl-message-if-observed nrepl-message)]
+  (let [{:keys [session] :as nrepl-message} (wrap-nrepl-message-if-observed-job nrepl-message)]
     (cond
       (sessions/joined-session? session) (forward-message-to-joined-session! nrepl-message)
       :else (handle-known-ops-or-delegate! nrepl-message next-handler))))

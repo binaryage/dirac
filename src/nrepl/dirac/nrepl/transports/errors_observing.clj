@@ -5,11 +5,13 @@
   (:import (clojure.tools.nrepl.transport Transport)
            (clojure.lang IDeref)))
 
-; -- nrepl-message error observer -------------------------------------------------------------------------------------------
+; -- helpers ----------------------------------------------------------------------------------------------------------------
 
 (defn get-session-exception [session]
   {:pre [(instance? IDeref session)]}
   (@session #'clojure.core/*e))
+
+; -- transport wrapper ------------------------------------------------------------------------------------------------------
 
 (defrecord ErrorsObservingTransport [nrepl-message transport]
   Transport
@@ -23,6 +25,8 @@
                                 (assoc reply-message :details details))
                               reply-message)]
       (nrepl-transport/send transport effective-message))))
+
+; -- public interface -------------------------------------------------------------------------------------------------------
 
 (defn make-nrepl-message-with-observed-errors [nrepl-message]
   ; This is a little trick due to unfortunate fact that clojure.tools.nrepl.middleware.interruptible-eval/evaluate does not

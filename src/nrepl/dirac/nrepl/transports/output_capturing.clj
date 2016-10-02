@@ -3,12 +3,16 @@
             [dirac.nrepl.helpers :as helpers])
   (:import (clojure.tools.nrepl.transport Transport)))
 
+; -- helpers ----------------------------------------------------------------------------------------------------------------
+
 (defn make-print-output-message [base job-id output-kind content]
   (-> base
       (merge (helpers/make-server-side-output-msg output-kind content))
       (assoc :id job-id)
       (dissoc :out)
       (dissoc :err)))
+
+; -- transport wrapper ------------------------------------------------------------------------------------------------------
 
 (defrecord OutputCapturingTransport [nrepl-message transport]
   Transport
@@ -20,6 +24,8 @@
     (if-let [content (:err reply-message)]
       (nrepl-transport/send transport (make-print-output-message reply-message (:id nrepl-message) :stderr content)))
     (nrepl-transport/send transport reply-message)))
+
+; -- public interface -------------------------------------------------------------------------------------------------------
 
 (defn make-nrepl-message-with-captured-output [nrepl-message]
   ; repl-eval! does not have our sniffing driver in place, we capture output
