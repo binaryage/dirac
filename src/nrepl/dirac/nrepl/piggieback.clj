@@ -49,7 +49,7 @@
                                  :print (fn [& _]
                                           (log/trace "print-fn (no-op)")))                                                    ; silence any responses
         response-fn (partial helpers/send-response! nrepl-message)]
-    (eval/execute-single-cljs-repl-evaluation! job-id code ns repl-env compiler-env effective-repl-options response-fn)))
+    (eval/eval-in-cljs-repl! code ns repl-env compiler-env effective-repl-options response-fn job-id)))
 
 (defn start-cljs-repl! [dirac-nrepl-config repl-env repl-options]
   (log/trace "start-cljs-repl!\n"
@@ -109,14 +109,15 @@
     ; we append a :cljs/quit to every chunk of code evaluated so we can break out of cljs.repl/repl*'s loop,
     ; so we need to go a gnarly little stringy check here to catch any actual user-supplied exit
     (if-not (.. code trim (endsWith ":cljs/quit"))
-      (let [nrepl-message (state/get-nrepl-message)
-            job-id (or (:id nrepl-message) (helpers/generate-uuid))
+      (let [job-id (or (:id nrepl-message) (helpers/generate-uuid))
             ns (:ns nrepl-message)
+            mode (:dirac nrepl-message)
+            scope-info (:scope-info nrepl-message)
             selected-compiler (state/get-session-selected-compiler)
             cljs-repl-options (state/get-session-cljs-repl-options)
             response-fn (partial helpers/send-response! nrepl-message)]
         (if-let [compiler-env (compilers/get-selected-compiler-env)]
-          (eval/execute-single-cljs-repl-evaluation! job-id code ns cljs-repl-env compiler-env cljs-repl-options response-fn)
+          (eval/eval-in-cljs-repl! code ns cljs-repl-env compiler-env cljs-repl-options response-fn job-id scope-info mode)
           (report-missing-compiler! selected-compiler (compilers/collect-all-available-compiler-ids))))
       (do
         (reset! (:cached-setup cljs-repl-env) :tear-down)                                                                     ; TODO: find a better way

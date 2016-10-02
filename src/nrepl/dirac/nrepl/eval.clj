@@ -1,7 +1,5 @@
 (ns dirac.nrepl.eval
-  (:require [clojure.tools.nrepl.middleware.interruptible-eval :as nrepl-ieval]
-            [clojure.main]
-            [cljs.repl]
+  (:require [cljs.repl]
             [dirac.nrepl.state :as state]
             [dirac.nrepl.driver :as driver]
             [dirac.nrepl.version :refer [version]]
@@ -55,17 +53,15 @@
   (fn [form]
     (safe-value-conversion-to-string (dirac-wrap form))))
 
-(defn make-wrapper-for-form [form]
-  (let [nrepl-message nrepl-ieval/*msg*
-        dirac-mode (:dirac nrepl-message)
-        job-id (or (:id nrepl-message) 0)
-        dirac-wrap (case dirac-mode
-                     "wrap" (make-wrap-for-job job-id)
-                     identity)]
-    (cond
-      (and (seq? form) (= 'ns (first form))) identity
-      ('#{*1 *2 *3 *e} form) (make-special-form-evaluator dirac-wrap)
-      :else (make-job-evaluator dirac-wrap job-id))))
+(defn make-wrapper-for-form [job-id dirac-mode form]
+  (if (and (seq? form) (= 'ns (first form)))
+    identity
+    (let [dirac-wrap (case dirac-mode
+                       "wrap" (make-wrap-for-job job-id)
+                       identity)]
+      (if ('#{*1 *2 *3 *e} form)
+        (make-special-form-evaluator dirac-wrap)
+        (make-job-evaluator dirac-wrap job-id)))))
 
 (defn set-env-namespace [env]
   (assoc env :ns (analyzer/get-namespace analyzer/*cljs-ns*)))
@@ -75,10 +71,8 @@
 
 ; extract locals from scope-info (as provided by Dirac) and put it into :locals env map for analyzer
 ; note that in case of duplicit names we won't break, resulting locals is a flat list: "last name wins"
-(defn set-env-locals [env]
-  (let [nrepl-message nrepl-ieval/*msg*
-        scope-info (:scope-info nrepl-message)
-        all-scope-locals (extract-scope-locals scope-info)
+(defn set-env-locals [scope-info env]
+  (let [all-scope-locals (extract-scope-locals scope-info)
         build-env-local (fn [local]
                           (let [{:keys [name identifier]} local
                                 name-sym (symbol name)
@@ -87,10 +81,11 @@
         env-locals (into {} (map build-env-local all-scope-locals))]
     (assoc env :locals env-locals)))
 
-(defn repl-eval! [repl-env env form opts]
-  (let [wrapper-fn (or (:wrap opts) make-wrapper-for-form)
+(defn repl-eval! [job-id scope-info dirac-mode repl-env env form opts]
+  (let [wrapper-fn (or (:wrap opts) (partial make-wrapper-for-form job-id dirac-mode))
         wrapped-form (wrapper-fn form)
-        effective-env (-> env set-env-namespace set-env-locals)
+        set-env-locals-with-scope (partial set-env-locals scope-info)
+        effective-env (-> env set-env-namespace set-env-locals-with-scope)
         filename (make-dirac-repl-alias (compilers/get-selected-compiler-id))]
     (log/trace "repl-eval! in " filename ":\n" form "\n with env:\n" (logging/pprint effective-env 7))
     (cljs.repl/evaluate-form repl-env effective-env filename form wrapped-form opts)))
@@ -106,7 +101,8 @@
 
 ; -- public api -------------------------------------------------------------------------------------------------------------
 
-(defn execute-single-cljs-repl-evaluation! [job-id code ns repl-env compiler-env repl-options response-fn]
+(defn eval-in-cljs-repl! [code ns repl-env compiler-env repl-options response-fn job-id & [scope-info dirac-mode]]
+  {:pre [(some? job-id)]}
   (let [default-repl-options {:need-prompt  (constantly false)
                               :bind-err     false
                               :quit-prompt  (fn [])
@@ -114,7 +110,7 @@
                               :init         (fn [])
                               :flush        repl-flush!
                               :print        (partial repl-print! response-fn)
-                              :eval         repl-eval!
+                              :eval         (partial repl-eval! job-id scope-info dirac-mode)
                               :compiler-env compiler-env}
         effective-repl-options (merge default-repl-options repl-options)
         ; MAJOR TRICK HERE!
