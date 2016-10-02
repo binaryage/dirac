@@ -74,10 +74,6 @@
   (let [msg (messages/make-missing-compiler-msg selected-compiler available-compilers)]
     (helpers/send-response! (state/get-nrepl-message) (helpers/make-server-side-output-msg :stderr msg))))
 
-; only executed within the context of an nREPL session having *cljs-repl-env*
-; bound. Thus, we're not going through interruptible-eval, and the user's
-; Clojure session (dynamic environment) is not in place, so we need to go
-; through the `session` atom to access/update its vars. Same goes for load-file.
 (defn evaluate! [nrepl-message]
   (debug/log-stack-trace!)
   (let [{:keys [session ^String code]} nrepl-message
@@ -103,14 +99,6 @@
         (let [reply (compilers/prepare-announce-ns-msg (str (state/get-session-original-clj-ns)))]
           (helpers/send-response! nrepl-message reply))))))
 
-; struggled for too long trying to interface directly with cljs.repl/load-file,
-; so just mocking a "regular" load-file call
-; this seems to work perfectly, *but* it only loads the content of the file from
-; disk, not the content of the file sent in the message (in contrast to nREPL on
-; Clojure). This is necessitated by the expectation of cljs.repl/load-file that
-; the file being loaded is on disk, in the location implied by the namespace
-; declaration.
-; TODO either pull in our own `load-file` that doesn't imply this, or raise the issue upstream.
 (defn load-file! [nrepl-message]
   (let [{:keys [file-path]} nrepl-message]
     (evaluate! (assoc nrepl-message :code (format "(load-file %s)" (pr-str file-path))))))
