@@ -1,0 +1,66 @@
+(ns dirac.nrepl.joining
+  "A functionality related to joined Dirac sessions."
+  (:require [clojure.tools.nrepl.transport :as transport]
+            [clojure.tools.logging :as log]
+            [dirac.logging :as logging]
+            [dirac.nrepl.version :refer [version]]
+            [dirac.nrepl.sessions :as sessions]
+            [dirac.nrepl.helpers :as helpers]
+            [dirac.nrepl.jobs :as jobs]
+            [dirac.nrepl.messages :as messages]))
+
+; -- handlers for middleware operations -------------------------------------------------------------------------------------
+
+(defn prepare-no-target-session-match-error-message [session]
+  (let [info (sessions/get-target-session-info session)]
+    (str (messages/make-no-target-session-match-msg info) "\n")))
+
+(defn prepare-no-target-session-match-help-message [session]
+  (let [info (sessions/get-target-session-info session)]
+    (str (messages/make-no-target-session-help-msg info) "\n")))
+
+(defn report-missing-target-session! [nrepl-message]
+  (log/debug "report-missing-target-session!")
+  (let [{:keys [session]} nrepl-message]
+    (helpers/send-response! nrepl-message {:err (prepare-no-target-session-match-error-message session)})
+    (helpers/send-response! nrepl-message {:out (prepare-no-target-session-match-help-message session)})
+    (helpers/send-response! nrepl-message {:status :done})))
+
+(defn report-nonforwardable-nrepl-message! [nrepl-message]
+  (log/debug "report-nonforwardable-nrepl-message!")
+  (let [{:keys [op]} nrepl-message
+        clean-message (dissoc nrepl-message :session :transport)
+        err (str (messages/make-nrepl-message-cannot-be-forwarded-msg (pr-str clean-message)) "\n")
+        out (str (messages/make-no-forwarding-help-msg (or op "?")) "\n")]
+    (helpers/send-response! nrepl-message {:err err})
+    (helpers/send-response! nrepl-message {:out out})
+    (helpers/send-response! nrepl-message {:status :done})))
+
+(defn prepare-forwardable-message [nrepl-message]
+  ; based on what is currently supported by intercom on client-side
+  ; we deliberately filter keys to a "safe" subset, so the message can be unserialized on client side
+  (case (:op nrepl-message)
+    "eval" (select-keys nrepl-message [:id :op :code])
+    "load-file" (select-keys nrepl-message [:id :op :file :file-path :file-name])
+    "interrupt" (select-keys nrepl-message [:id :op :interrupt-id])
+    nil))
+
+(defn serialize-message [nrepl-message]
+  (pr-str nrepl-message))
+
+(defn forward-message-to-joined-session! [nrepl-message]
+  (log/trace "forward-message-to-joined-session!" (logging/pprint nrepl-message))
+  (let [{:keys [id session transport]} nrepl-message]
+    (if-let [target-dirac-session-descriptor (sessions/find-target-dirac-session-descriptor session)]
+      (if-let [forwardable-message (prepare-forwardable-message nrepl-message)]
+        (let [target-session (sessions/get-dirac-session-descriptor-session target-dirac-session-descriptor)
+              target-transport (sessions/get-dirac-session-descriptor-transport target-dirac-session-descriptor)
+              job-id (helpers/generate-uuid)]
+          (jobs/register-observed-job! job-id id session transport 1000)
+          (transport/send target-transport {:op                                 :handle-forwarded-nrepl-message
+                                            :id                                 (helpers/generate-uuid)                       ; our request id
+                                            :session                            (sessions/get-session-id target-session)
+                                            :job-id                             job-id                                        ; id under which the job should be started
+                                            :serialized-forwarded-nrepl-message (serialize-message forwardable-message)}))
+        (report-nonforwardable-nrepl-message! nrepl-message))
+      (report-missing-target-session! nrepl-message))))
