@@ -8,8 +8,7 @@
             [cljs.analyzer :as analyzer]
             [dirac.logging :as logging])
   (:import clojure.lang.LineNumberingPushbackReader
-           java.io.StringReader
-           java.io.Writer))
+           java.io.StringReader))
 
 (defn ^:dynamic make-dirac-repl-alias [compiler-id]
   (str "<" (or compiler-id "?") ">"))
@@ -92,8 +91,8 @@
 
 (defn repl-flush! []
   (log/trace "flush-repl!")
-  (.flush ^Writer *out*)
-  (.flush ^Writer *err*))
+  (.flush *out*)
+  (.flush *err*))
 
 (defn repl-print! [response-fn result]
   (log/trace "repl-print!" result)
