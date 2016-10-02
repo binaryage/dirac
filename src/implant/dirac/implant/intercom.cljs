@@ -48,7 +48,10 @@
 
 (defn ^:dynamic bootstrap-error-msg [details]
   (str "Unable to bootstrap ClojureScript REPL due to an error.\n"
-       (if (some? details) (str (cuerdas/escape-html (utils/pprint-str details)) "\n"))
+       (if (some? details)
+         (str (cuerdas/escape-html (if (string? details)
+                                     details
+                                     (utils/pprint-str details))) "\n"))
        "Please check error output in Dirac Agent for additional details."))
 
 (defn ^:dynamic unable-to-connect-exception-msg [url e]
@@ -345,12 +348,10 @@
                        (update-repl-mode!)
                        {:op :bootstrap-done})
               (do
-                (error "Bootstrap failed" response)
                 (display-prompt-status (bootstrap-error-msg (:details response)))
                 {:op :bootstrap-error}))
             (recur))
           (do
-            (error "Bootstrap timeouted")
             (display-prompt-status (unable-to-bootstrap-due-to-timeout-msg))
             {:op :bootstrap-timeout}))))))
 
