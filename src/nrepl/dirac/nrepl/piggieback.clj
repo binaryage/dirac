@@ -48,7 +48,6 @@
                                  ; begin with, because we can't reliably replicate what
                                  ; cljs.repl/repl* does in terms of options munging
                                  :init (fn []
-                                         (log/trace "init-fn > ")
                                          (compilers/capture-current-compiler-and-select-it!))
                                  :print (fn [& _]
                                           (log/trace "print-fn (no-op)")))                                                    ; silence any responses
@@ -82,7 +81,7 @@
 
 ;; mostly a copy/paste from interruptible-eval
 (defn enqueue! [nrepl-message func]
-  (let [{:keys [session transport]} nrepl-message
+  (let [{:keys [session]} nrepl-message
         job (fn []
               (alter-meta! session
                            assoc
@@ -91,7 +90,7 @@
               (binding [nrepl-ieval/*msg* nrepl-message]
                 (state/ensure-session nrepl-message
                   (func))
-                (transport/send transport (response-for nrepl-message :status :done)))
+                (helpers/send-response! nrepl-message {:status :done}))
               (alter-meta! session
                            dissoc
                            :thread
@@ -150,7 +149,7 @@
       (some? (re-find #"^\(?dirac!" code)))))                                                                                 ; we don't want to use read-string here, regexp test should be safe and quick
 
 (defn special-repl-eval! [nrepl-message code ns]
-  (let [{:keys [transport session]} nrepl-message]
+  (let [{:keys [session]} nrepl-message]
     (let [result (with-bindings @session
                    (try
                      (let [form (read-string code)]
@@ -165,15 +164,13 @@
                          ; repl-caught will produce :err message, but we are not under driver, so it won't be converted to :print-output
                          ; that is why we present error output to user REPL manually
                          (clojure.main/repl-caught e)
-                         (transport/send transport (response-for nrepl-message
-                                                                 :op :print-output
-                                                                 :kind :java-trace
-                                                                 :content (helpers/capture-exception-details e)))
-                         (transport/send transport (response-for nrepl-message
-                                                                 :status :eval-error
-                                                                 :ex (-> e class str)
-                                                                 :root-ex (-> root-ex class str)
-                                                                 :details details))
+                         (helpers/send-response! nrepl-message {:op      :print-output
+                                                                :kind    :java-trace
+                                                                :content (helpers/capture-exception-details e)})
+                         (helpers/send-response! nrepl-message {:status  :eval-error
+                                                                :ex      (-> e class str)
+                                                                :root-ex (-> root-ex class str)
+                                                                :details details})
                          ::exception))
                      (finally
                        (.flush ^Writer *out*)
@@ -185,7 +182,7 @@
                     :value (helpers/safe-pr-str result)
                     :printed-value 1))]
       (if-not (= ::exception result)
-        (transport/send transport (response-for nrepl-message reply))))))
+        (helpers/send-response! nrepl-message reply)))))
 
 (defn sanitize-dirac-command [code]
   ; this is just for convenience, we convert some common forms to canonical (dirac! :help) form
@@ -212,31 +209,27 @@
 
 (defn report-missing-target-session! [nrepl-message]
   (log/debug "report-missing-target-session!")
-  (let [{:keys [transport session]} nrepl-message]
-    (transport/send transport (response-for nrepl-message
-                                            :err (prepare-no-target-session-match-error-message session)))
-    (transport/send transport (response-for nrepl-message
-                                            :out (prepare-no-target-session-match-help-message session)))
-    (transport/send transport (response-for nrepl-message
-                                            :status :done))))
+  (let [{:keys [session]} nrepl-message]
+    (helpers/send-response! nrepl-message {:err (prepare-no-target-session-match-error-message session)})
+    (helpers/send-response! nrepl-message {:out (prepare-no-target-session-match-help-message session)})
+    (helpers/send-response! nrepl-message {:status :done})))
 
 (defn report-nonforwardable-nrepl-message! [nrepl-message]
   (log/debug "report-nonforwardable-nrepl-message!")
-  (let [{:keys [op transport]} nrepl-message
-        clean-message (dissoc nrepl-message :session :transport)]
-    (transport/send transport (response-for nrepl-message
-                                            :err (str (messages/make-nrepl-message-cannot-be-forwarded-msg (pr-str clean-message)) "\n")))
-    (transport/send transport (response-for nrepl-message
-                                            :out (str (messages/make-no-forwarding-help-msg (or op "?")) "\n")))
-    (transport/send transport (response-for nrepl-message
-                                            :status :done))))
+  (let [{:keys [op]} nrepl-message
+        clean-message (dissoc nrepl-message :session :transport)
+        err (str (messages/make-nrepl-message-cannot-be-forwarded-msg (pr-str clean-message)) "\n")
+        out (str (messages/make-no-forwarding-help-msg (or op "?")) "\n")]
+    (helpers/send-response! nrepl-message {:err err})
+    (helpers/send-response! nrepl-message {:out out})
+    (helpers/send-response! nrepl-message {:status :done})))
 
 (defn enqueue-command! [command nrepl-message]
   (enqueue! nrepl-message #(command nrepl-message)))
 
 (defn prepare-forwardable-message [nrepl-message]
   ; based on what is currently supported by intercom on client-side
-  ; we deliberately filter keys to a "safe" subset, so the message can be unserialize on client side
+  ; we deliberately filter keys to a "safe" subset, so the message can be unserialized on client side
   (case (:op nrepl-message)
     "eval" (select-keys nrepl-message [:id :op :code])
     "load-file" (select-keys nrepl-message [:id :op :file :file-path :file-name])
@@ -264,9 +257,7 @@
       (report-missing-target-session! nrepl-message))))
 
 (defn handle-identify-dirac-nrepl-middleware! [_next-handler nrepl-message]
-  (let [{:keys [transport]} nrepl-message]
-    (transport/send transport (response-for nrepl-message
-                                            :version version))))
+  (helpers/send-response! nrepl-message {:version version}))
 
 (defn handle-eval! [next-handler nrepl-message]
   (let [{:keys [session]} nrepl-message]
@@ -296,8 +287,7 @@
 
 (defn handle-finish-dirac-job! [nrepl-message]
   (log/debug "handle-finish-dirac-job!")
-  (let [{:keys [transport]} nrepl-message]
-    (transport/send transport (response-for nrepl-message (select-keys nrepl-message [:status :err :out])))))
+  (helpers/send-response! nrepl-message (select-keys nrepl-message [:status :err :out])))
 
 ; -- nrepl middleware -------------------------------------------------------------------------------------------------------
 
