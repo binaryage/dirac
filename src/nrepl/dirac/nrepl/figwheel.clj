@@ -1,7 +1,5 @@
 (ns dirac.nrepl.figwheel
-  "We are friends with Figwheel"
-  (:require [clojure.tools.logging :as log]
-            [dirac.logging :as logging]))
+  "We are friends with Figwheel")
 
 (defn try-get-figwheel-api-var []
   (try
