@@ -1,7 +1,7 @@
 (ns dirac.nrepl
-  (:require [clojure.core.async :refer [chan <!! <! >!! put! alts!! timeout close! go go-loop]]
-            [clojure.tools.logging :as log]
+  (:require [clojure.tools.logging :as log]
             [clojure.tools.nrepl.middleware :refer [set-descriptor!]]
+            [clojure.tools.nrepl.middleware.interruptible-eval :as nrepl-ieval]
             [dirac.lib.weasel-server :as weasel-server]
             [dirac.logging :as logging]
             [dirac.nrepl.piggieback :as piggieback]
@@ -55,7 +55,8 @@
         repl-options (assoc weasel-repl-options :after-launch after-launch!)
         repl-env (weasel-server/make-weasel-repl-env repl-options)
         cljs-repl-options (:cljs-repl-options effective-nrepl-confg)]
-    (piggieback/start-cljs-repl! effective-nrepl-confg repl-env cljs-repl-options)))
+    (state/ensure-session nrepl-ieval/*msg*
+      (piggieback/start-cljs-repl! effective-nrepl-confg repl-env cljs-repl-options))))
 
 (defn boot-dirac-repl! [& [config]]
   (let [effective-config (config/get-effective-config config)]

@@ -9,8 +9,6 @@
   (:require (clojure.tools.nrepl [transport :as transport]
                                  [misc :refer (response-for returning)]
                                  [middleware :refer (set-descriptor!)])
-            [clojure.tools.nrepl.middleware.interruptible-eval :as nrepl-ieval]
-            [clojure.main]
             [cljs.repl]
             [dirac.nrepl.state :as state]
             [dirac.nrepl.version :refer [version]]
@@ -60,21 +58,20 @@
              "repl-options:\n"
              (logging/pprint repl-options))
   (debug/log-stack-trace!)
-  (state/ensure-session nrepl-ieval/*msg*
-    (try
-      (state/set-session-cljs-ns! 'cljs.user)
-      (let [preferred-compiler (or (:preferred-compiler dirac-nrepl-config) "dirac/new")]
-        (if (= preferred-compiler "dirac/new")
-          (start-new-cljs-compiler-repl-environment! dirac-nrepl-config repl-env repl-options)
-          (state/set-session-selected-compiler! preferred-compiler)))                                                         ; TODO: validate that preferred compiler exists
-      (state/set-session-cljs-repl-env! repl-env)
-      (state/set-session-cljs-repl-options! repl-options)
-      (state/set-session-original-clj-ns! *ns*)                                                                               ; interruptible-eval is in charge of emitting the final :ns response in this context
-      (set! *ns* (find-ns (state/get-session-cljs-ns)))                                                                       ; TODO: is this really needed? is it for macros?
-      (helpers/send-response! (state/get-nrepl-message) (compilers/prepare-announce-ns-msg (state/get-session-cljs-ns)))
-      (catch Exception e
-        (state/set-session-cljs-repl-env! nil)
-        (throw e)))))
+  (try
+    (state/set-session-cljs-ns! 'cljs.user)
+    (let [preferred-compiler (or (:preferred-compiler dirac-nrepl-config) "dirac/new")]
+      (if (= preferred-compiler "dirac/new")
+        (start-new-cljs-compiler-repl-environment! dirac-nrepl-config repl-env repl-options)
+        (state/set-session-selected-compiler! preferred-compiler)))                                                           ; TODO: validate that preferred compiler exists
+    (state/set-session-cljs-repl-env! repl-env)
+    (state/set-session-cljs-repl-options! repl-options)
+    (state/set-session-original-clj-ns! *ns*)                                                                                 ; interruptible-eval is in charge of emitting the final :ns response in this context
+    (set! *ns* (find-ns (state/get-session-cljs-ns)))                                                                         ; TODO: is this really needed? is it for macros?
+    (helpers/send-response! (state/get-nrepl-message) (compilers/prepare-announce-ns-msg (state/get-session-cljs-ns)))
+    (catch Exception e
+      (state/set-session-cljs-repl-env! nil)
+      (throw e))))
 
 (defn report-missing-compiler! [selected-compiler available-compilers]
   (let [msg (messages/make-missing-compiler-msg selected-compiler available-compilers)]
