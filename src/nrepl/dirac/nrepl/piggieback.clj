@@ -318,24 +318,3 @@
 
 (defn dirac-nrepl-middleware [next-handler]
   (partial dirac-nrepl-middleware-handler next-handler))
-
-; -- additional tools -------------------------------------------------------------------------------------------------------
-
-; this message is sent to client after booting into a Dirac REPL
-(defn send-bootstrap-info! [weasel-url]
-  (assert (state/has-session?))                                                                                               ; we asssume this code is running within ensure-session
-  (debug/log-stack-trace!)
-  (let [nrepl-message (state/get-nrepl-message)]
-    (log/trace "send-bootstrap-info!" weasel-url "\n" (debug/pprint-nrepl-message nrepl-message))
-    (let [info-message {:op         :bootstrap-info
-                        :weasel-url weasel-url}]
-      (log/debug "sending :bootstrap-info" info-message)
-      (helpers/send-response! nrepl-message info-message))))
-
-(defn weasel-server-started! [weasel-url runtime-tag]
-  (assert weasel-url)
-  (assert (state/has-session?))                                                                                               ; we asssume this code is running within ensure-session
-  (debug/log-stack-trace!)
-  (let [{:keys [session transport]} (state/get-nrepl-message)]
-    (sessions/add-dirac-session-descriptor! session transport runtime-tag)
-    (send-bootstrap-info! weasel-url)))
