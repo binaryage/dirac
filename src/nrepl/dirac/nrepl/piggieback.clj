@@ -19,19 +19,16 @@
             [dirac.nrepl.jobs :as jobs]
             [dirac.nrepl.debug :as debug]
             [dirac.nrepl.compilers :as compilers]
-            [dirac.nrepl.controls :as controls]
             [dirac.nrepl.eval :as eval]
             [dirac.nrepl.messages :as messages]
+            [dirac.nrepl.special :as special]
             [dirac.nrepl.transports.logging :refer [make-nrepl-message-with-logging]]
             [dirac.nrepl.transports.errors-observing :refer [make-nrepl-message-with-observed-errors]]
-            [dirac.nrepl.transports.output-capturing :refer [make-nrepl-message-with-captured-output]]
             [dirac.nrepl.transports.job-observing :refer [make-nrepl-message-with-job-observing-transport]]
             [clojure.tools.logging :as log]
             [clojure.string :as string]
             [dirac.logging :as logging]
-            [dirac.nrepl.config :as config])
-  (:import java.io.Writer)
-  (:refer-clojure :exclude (load-file)))
+            [dirac.nrepl.config :as config]))
 
 (defn start-new-cljs-compiler-repl-environment! [dirac-nrepl-config repl-env repl-options]
   (log/trace "start-new-cljs-compiler-repl-environment!\n")
@@ -143,62 +140,6 @@
 
 ; -- handlers for middleware operations -------------------------------------------------------------------------------------
 
-(defn dirac-special-command? [nrepl-message]
-  (let [code (:code nrepl-message)]
-    (if (string? code)
-      (some? (re-find #"^\(?dirac!" code)))))                                                                                 ; we don't want to use read-string here, regexp test should be safe and quick
-
-(defn special-repl-eval! [nrepl-message code ns]
-  (let [{:keys [session]} nrepl-message]
-    (let [result (with-bindings @session
-                   (try
-                     (let [form (read-string code)]
-                       (binding [state/*reply!* #(helpers/send-response! nrepl-message %)
-                                 *ns* ns
-                                 nrepl-ieval/*msg* nrepl-message]
-                         (eval form)))
-                     (catch Throwable e
-                       (let [root-ex (clojure.main/root-cause e)
-                             details (helpers/get-exception-details nrepl-message e)]
-                         (log/error (str "Clojure eval error during eval of a special dirac command: " details))
-                         ; repl-caught will produce :err message, but we are not under driver, so it won't be converted to :print-output
-                         ; that is why we present error output to user REPL manually
-                         (clojure.main/repl-caught e)
-                         (helpers/send-response! nrepl-message {:op      :print-output
-                                                                :kind    :java-trace
-                                                                :content (helpers/capture-exception-details e)})
-                         (helpers/send-response! nrepl-message {:status  :eval-error
-                                                                :ex      (-> e class str)
-                                                                :root-ex (-> root-ex class str)
-                                                                :details details})
-                         ::exception))
-                     (finally
-                       (.flush ^Writer *out*)
-                       (.flush ^Writer *err*))))
-          base-reply {:status :done}
-          reply (if (= ::controls/no-result ::exception result)
-                  base-reply
-                  (assoc base-reply
-                    :value (helpers/safe-pr-str result)
-                    :printed-value 1))]
-      (if-not (= ::exception result)
-        (helpers/send-response! nrepl-message reply)))))
-
-(defn sanitize-dirac-command [code]
-  ; this is just for convenience, we convert some common forms to canonical (dirac! :help) form
-  (let [trimmed-code (string/trim code)]
-    (if (or (= trimmed-code "dirac!")
-            (= trimmed-code "(dirac!)"))
-      "(dirac! :help)"
-      trimmed-code)))
-
-(defn handle-dirac-special-command! [nrepl-message]
-  (let [{:keys [code session]} nrepl-message
-        message (if (sessions/dirac-session? session)
-                  (make-nrepl-message-with-captured-output nrepl-message)
-                  nrepl-message)]
-    (special-repl-eval! message (sanitize-dirac-command code) (find-ns 'dirac.nrepl.controls))))                              ; we want to eval special commands in dirac.nrepl.controls namespace
-
 (defn prepare-no-target-session-match-error-message [session]
   (let [info (sessions/get-target-session-info session)]
     (str (messages/make-no-target-session-match-msg info) "\n")))
@@ -283,13 +224,11 @@
 
 (defn issue-dirac-special-command! [nrepl-message command]
   (log/debug "issue-dirac-special-command!" command)
-  (handle-dirac-special-command! (assoc nrepl-message :code (str "(dirac! " command ")"))))
+  (special/handle-dirac-special-command! (assoc nrepl-message :code (str "(dirac! " command ")"))))
 
 (defn handle-finish-dirac-job! [nrepl-message]
   (log/debug "handle-finish-dirac-job!")
   (helpers/send-response! nrepl-message (select-keys nrepl-message [:status :err :out])))
-
-; -- nrepl middleware -------------------------------------------------------------------------------------------------------
 
 (defn handle-known-ops-or-delegate! [nrepl-message next-handler]
   (case (:op nrepl-message)
@@ -312,9 +251,11 @@
       (log/trace "received nrepl message:\n" (debug/pprint-nrepl-message nrepl-message))
       (debug/log-stack-trace!)
       (cond
-        (dirac-special-command? nrepl-message) (handle-dirac-special-command! nrepl-message)
+        (special/dirac-special-command? nrepl-message) (special/handle-dirac-special-command! nrepl-message)
         (is-eval-cljs-quit-in-joined-session? nrepl-message) (issue-dirac-special-command! nrepl-message ":disjoin")
         :else (handle-normal-message! nrepl-message next-handler)))))
+
+; -- nrepl middleware -------------------------------------------------------------------------------------------------------
 
 (defn dirac-nrepl-middleware [next-handler]
   (partial dirac-nrepl-middleware-handler next-handler))
