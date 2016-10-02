@@ -6,10 +6,11 @@
 ; this file differs significantly from the original piggieback.clj and was modified to include Dirac-specific functionality
 ;
 (ns dirac.nrepl.piggieback
-  (:require (clojure.tools.nrepl [transport :as transport]
-                                 [misc :refer (response-for returning)]
-                                 [middleware :refer (set-descriptor!)])
-            [cljs.repl]
+  (:require [clojure.tools.nrepl.transport :as transport]
+            [clojure.tools.logging :as log]
+            [clojure.string :as string]
+            [dirac.logging :as logging]
+            [dirac.nrepl.config :as config]
             [dirac.nrepl.state :as state]
             [dirac.nrepl.version :refer [version]]
             [dirac.nrepl.sessions :as sessions]
@@ -22,11 +23,7 @@
             [dirac.nrepl.special :as special]
             [dirac.nrepl.transports.logging :refer [make-nrepl-message-with-logging]]
             [dirac.nrepl.transports.errors-observing :refer [make-nrepl-message-with-observed-errors]]
-            [dirac.nrepl.transports.job-observing :refer [make-nrepl-message-with-job-observing-transport]]
-            [clojure.tools.logging :as log]
-            [clojure.string :as string]
-            [dirac.logging :as logging]
-            [dirac.nrepl.config :as config]))
+            [dirac.nrepl.transports.job-observing :refer [make-nrepl-message-with-job-observing-transport]]))
 
 (defn start-new-cljs-compiler-repl-environment! [dirac-nrepl-config repl-env repl-options]
   (log/trace "start-new-cljs-compiler-repl-environment!\n")
