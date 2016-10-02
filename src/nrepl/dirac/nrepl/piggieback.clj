@@ -91,13 +91,14 @@
         (if-let [compiler-env (compilers/get-selected-compiler-env)]
           (eval/eval-in-cljs-repl! code ns cljs-repl-env compiler-env cljs-repl-options response-fn job-id scope-info mode)
           (report-missing-compiler! selected-compiler (compilers/collect-all-available-compiler-ids))))
-      (do
+      (let [original-clj-ns (state/get-session-original-clj-ns)]
         (reset! (:cached-setup cljs-repl-env) :tear-down)                                                                     ; TODO: find a better way
         (cljs.repl/-tear-down cljs-repl-env)
         (sessions/remove-dirac-session-descriptor! session)
-        (swap! session assoc #'*ns* (state/get-session-original-clj-ns))                                                      ; TODO: is this really needed?
-        (let [reply (compilers/prepare-announce-ns-msg (str (state/get-session-original-clj-ns)))]
-          (helpers/send-response! nrepl-message reply))))))
+        (swap! session assoc #'*ns* original-clj-ns)                                                                          ; TODO: is this really needed?
+        (helpers/send-response! nrepl-message {:value         "nil"
+                                               :printed-value 1
+                                               :ns            (str original-clj-ns)})))))
 
 (defn load-file! [nrepl-message]
   (let [{:keys [file-path]} nrepl-message]
