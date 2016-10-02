@@ -27,36 +27,36 @@
 ; -- support for booting into CLJS REPL -------------------------------------------------------------------------------------
 
 ; this message is sent to client after booting into a Dirac REPL
-(defn send-bootstrap-info! [weasel-url]
+(defn send-bootstrap-info! [nrepl-message weasel-url]
   (assert (state/has-session?))                                                                                               ; we asssume this code is running within ensure-session
   (debug/log-stack-trace!)
-  (let [nrepl-message (state/get-nrepl-message)
-        info-message {:op         :bootstrap-info
+  (let [info-message {:op         :bootstrap-info
                       :weasel-url weasel-url}]
     (log/debug "sending :bootstrap-info" info-message)
     (log/trace "send-bootstrap-info!" weasel-url "\n" (debug/pprint-nrepl-message nrepl-message))
     (helpers/send-response! nrepl-message info-message)))
 
-(defn weasel-server-started! [weasel-url runtime-tag]
+(defn weasel-server-started! [nrepl-message weasel-url runtime-tag]
   (assert weasel-url)
   (assert (state/has-session?))                                                                                               ; we asssume this code is running within ensure-session
   (debug/log-stack-trace!)
-  (let [{:keys [session transport]} (state/get-nrepl-message)]
+  (let [{:keys [session transport]} nrepl-message]
     (sessions/add-dirac-session-descriptor! session transport runtime-tag)
-    (send-bootstrap-info! weasel-url)))
+    (send-bootstrap-info! nrepl-message weasel-url)))
 
 (defn bootstrap! [& [config]]
-  (let [effective-nrepl-confg (config/get-effective-config config)
-        weasel-repl-options (:weasel-repl effective-nrepl-confg)
-        runtime-tag (:runtime-tag effective-nrepl-confg)
+  (let [nrepl-message (or (:nrepl-message config) nrepl-ieval/*msg*)                                                          ; TODO: find a way how not to depend on clojure.tools.nrepl.middleware.interruptible-eval
+        effective-nrepl-config (config/get-effective-config config)
+        weasel-repl-options (:weasel-repl effective-nrepl-config)
+        runtime-tag (:runtime-tag effective-nrepl-config)
         after-launch! (fn [repl-env weasel-url]
                         (log/trace "after-launch handler called with repl-env:\n" (logging/pprint repl-env))
-                        (weasel-server-started! weasel-url runtime-tag))
+                        (weasel-server-started! nrepl-message weasel-url runtime-tag))
         repl-options (assoc weasel-repl-options :after-launch after-launch!)
         repl-env (weasel-server/make-weasel-repl-env repl-options)
-        cljs-repl-options (:cljs-repl-options effective-nrepl-confg)]
-    (state/ensure-session nrepl-ieval/*msg*
-      (piggieback/start-cljs-repl! effective-nrepl-confg repl-env cljs-repl-options))))
+        cljs-repl-options (:cljs-repl-options effective-nrepl-config)]
+    (state/ensure-session (:session nrepl-message)
+      (piggieback/start-cljs-repl! nrepl-message effective-nrepl-config repl-env cljs-repl-options))))
 
 (defn boot-dirac-repl! [& [config]]
   (let [effective-config (config/get-effective-config config)]

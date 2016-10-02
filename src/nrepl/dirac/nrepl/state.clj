@@ -12,11 +12,10 @@
 
 ; -- session-specific state -------------------------------------------------------------------------------------------------
 
-; we cannot pass nrepl-message info into all our functions,
+; we cannot pass session info into all our functions,
 ; so we keep some global state around and various functions touch it at will
 
 (def ^:dynamic *current-session* nil)
-(def ^:dynamic *nrepl-message* nil)                                                                                           ; original incoming nrepl message "in-flight"
 
 ; -- dirac! eval state ------------------------------------------------------------------------------------------------------
 
@@ -28,26 +27,16 @@
 
 ; -- convenience macros -----------------------------------------------------------------------------------------------------
 
-(defmacro ensure-session [nrepl-message & body]
+(defmacro ensure-session [session & body]
   `(do
      (assert (nil? *current-session*))
-     (assert (nil? *nrepl-message*))
-     (let [nrepl-message# ~nrepl-message
-           session# (:session nrepl-message#)]
-       (assert nrepl-message#)
-       (assert session#)
-       (binding [*current-session* session#
-                 *nrepl-message* nrepl-message#]
-         ~@body))))
+     (binding [*current-session* ~session]
+       ~@body)))
 
 ; -- helpers ----------------------------------------------------------------------------------------------------------------
 
 (defn has-session? []
   (some? *current-session*))
-
-(defn get-nrepl-message []
-  (assert *nrepl-message*)
-  *nrepl-message*)
 
 (defn get-current-session []
   (assert *current-session*)

@@ -25,10 +25,9 @@
             [dirac.nrepl.transports.errors-observing :refer [make-nrepl-message-with-observed-errors]]
             [dirac.nrepl.transports.job-observing :refer [make-nrepl-message-with-job-observing-transport]]))
 
-(defn start-new-cljs-compiler-repl-environment! [dirac-nrepl-config repl-env repl-options]
+(defn start-new-cljs-compiler-repl-environment! [nrepl-message dirac-nrepl-config repl-env repl-options]
   (log/trace "start-new-cljs-compiler-repl-environment!\n")
-  (let [nrepl-message (state/get-nrepl-message)
-        compiler-env nil
+  (let [compiler-env nil
         code (or (:repl-init-code dirac-nrepl-config) config/standard-repl-init-code)
         job-id (or (:id nrepl-message) (helpers/generate-uuid))
         ns (:ns nrepl-message)
@@ -46,7 +45,7 @@
         response-fn (partial helpers/send-response! nrepl-message)]
     (eval/eval-in-cljs-repl! code ns repl-env compiler-env effective-repl-options response-fn job-id)))
 
-(defn start-cljs-repl! [dirac-nrepl-config repl-env repl-options]
+(defn start-cljs-repl! [nrepl-message dirac-nrepl-config repl-env repl-options]
   (log/trace "start-cljs-repl!\n"
              "dirac-nrepl-config:\n"
              (logging/pprint dirac-nrepl-config)
@@ -59,20 +58,20 @@
     (state/set-session-cljs-ns! 'cljs.user)
     (let [preferred-compiler (or (:preferred-compiler dirac-nrepl-config) "dirac/new")]
       (if (= preferred-compiler "dirac/new")
-        (start-new-cljs-compiler-repl-environment! dirac-nrepl-config repl-env repl-options)
+        (start-new-cljs-compiler-repl-environment! nrepl-message dirac-nrepl-config repl-env repl-options)
         (state/set-session-selected-compiler! preferred-compiler)))                                                           ; TODO: validate that preferred compiler exists
     (state/set-session-cljs-repl-env! repl-env)
     (state/set-session-cljs-repl-options! repl-options)
     (state/set-session-original-clj-ns! *ns*)                                                                                 ; interruptible-eval is in charge of emitting the final :ns response in this context
     (set! *ns* (find-ns (state/get-session-cljs-ns)))                                                                         ; TODO: is this really needed? is it for macros?
-    (helpers/send-response! (state/get-nrepl-message) (compilers/prepare-announce-ns-msg (state/get-session-cljs-ns)))
+    (helpers/send-response! nrepl-message (compilers/prepare-announce-ns-msg (state/get-session-cljs-ns)))
     (catch Exception e
       (state/set-session-cljs-repl-env! nil)
       (throw e))))
 
-(defn report-missing-compiler! [selected-compiler available-compilers]
+(defn report-missing-compiler! [nrepl-message selected-compiler available-compilers]
   (let [msg (messages/make-missing-compiler-msg selected-compiler available-compilers)]
-    (helpers/send-response! (state/get-nrepl-message) (helpers/make-server-side-output-msg :stderr msg))))
+    (helpers/send-response! nrepl-message (helpers/make-server-side-output-msg :stderr msg))))
 
 (defn evaluate! [nrepl-message]
   (debug/log-stack-trace!)
@@ -90,7 +89,7 @@
             response-fn (partial helpers/send-response! nrepl-message)]
         (if-let [compiler-env (compilers/get-selected-compiler-env)]
           (eval/eval-in-cljs-repl! code ns cljs-repl-env compiler-env cljs-repl-options response-fn job-id scope-info mode)
-          (report-missing-compiler! selected-compiler (compilers/collect-all-available-compiler-ids))))
+          (report-missing-compiler! nrepl-message selected-compiler (compilers/collect-all-available-compiler-ids))))
       (let [original-clj-ns (state/get-session-original-clj-ns)]
         (reset! (:cached-setup cljs-repl-env) :tear-down)                                                                     ; TODO: find a better way
         (cljs.repl/-tear-down cljs-repl-env)
@@ -154,15 +153,16 @@
       :else (handle-known-ops-or-delegate! nrepl-message next-handler))))
 
 (defn dirac-nrepl-middleware-handler [next-handler nrepl-message]
-  (state/ensure-session nrepl-message
-    (let [nrepl-message (make-nrepl-message-with-logging nrepl-message)]
-      (log/debug "dirac-nrepl-middleware:" (:op nrepl-message) (sessions/get-session-id (:session nrepl-message)))
-      (log/trace "received nrepl message:\n" (debug/pprint-nrepl-message nrepl-message))
-      (debug/log-stack-trace!)
-      (cond
-        (special/dirac-special-command? nrepl-message) (special/handle-dirac-special-command! nrepl-message)
-        (is-eval-cljs-quit-in-joined-session? nrepl-message) (issue-dirac-special-command! nrepl-message ":disjoin")
-        :else (handle-normal-message! nrepl-message next-handler)))))
+  (let [session (:session nrepl-message)]
+    (state/ensure-session session
+      (let [nrepl-message (make-nrepl-message-with-logging nrepl-message)]
+        (log/debug "dirac-nrepl-middleware:" (:op nrepl-message) (sessions/get-session-id session))
+        (log/trace "received nrepl message:\n" (debug/pprint-nrepl-message nrepl-message))
+        (debug/log-stack-trace!)
+        (cond
+          (special/dirac-special-command? nrepl-message) (special/handle-dirac-special-command! nrepl-message)
+          (is-eval-cljs-quit-in-joined-session? nrepl-message) (issue-dirac-special-command! nrepl-message ":disjoin")
+          :else (handle-normal-message! nrepl-message next-handler))))))
 
 ; -- nrepl middleware -------------------------------------------------------------------------------------------------------
 
