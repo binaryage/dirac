@@ -21,7 +21,7 @@
             [dirac.nrepl.messages :as messages]
             [dirac.nrepl.special :as special]
             [dirac.nrepl.joining :as joining]
-            [dirac.nrepl.transports.logging :refer [make-nrepl-message-with-logging]]
+            [dirac.nrepl.transports.debug-logging :refer [make-nrepl-message-with-debug-logging]]
             [dirac.nrepl.transports.errors-observing :refer [make-nrepl-message-with-observed-errors]]
             [dirac.nrepl.transports.job-observing :refer [make-nrepl-message-with-job-observing-transport]]))
 
@@ -159,7 +159,7 @@
 (defn dirac-nrepl-middleware-handler [next-handler nrepl-message]
   (let [session (:session nrepl-message)]
     (state/ensure-session session
-      (let [nrepl-message (make-nrepl-message-with-logging nrepl-message)]
+      (let [nrepl-message (make-nrepl-message-with-debug-logging nrepl-message)]
         (log/debug "dirac-nrepl-middleware:" (:op nrepl-message) (sessions/get-session-id session))
         (log/trace "received nrepl message:\n" (debug/pprint-nrepl-message nrepl-message))
         (debug/log-stack-trace!)

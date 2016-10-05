@@ -1,4 +1,4 @@
-(ns dirac.nrepl.transports.logging
+(ns dirac.nrepl.transports.debug-logging
   (:require [clojure.tools.nrepl.transport :as nrepl-transport]
             [clojure.tools.logging :as log]
             [dirac.logging :as logging]
@@ -7,7 +7,7 @@
 
 ; -- transport wrapper ------------------------------------------------------------------------------------------------------
 
-(defrecord LoggingTransport [nrepl-message transport]
+(defrecord DebugLoggingTransport [nrepl-message transport]
   Transport
   (recv [_this timeout]
     (nrepl-transport/recv transport timeout))
@@ -18,5 +18,5 @@
 
 ; -- public interface -------------------------------------------------------------------------------------------------------
 
-(defn make-nrepl-message-with-logging [nrepl-message]
-  (update nrepl-message :transport (partial ->LoggingTransport nrepl-message)))
+(defn make-nrepl-message-with-debug-logging [nrepl-message]
+  (update nrepl-message :transport (partial ->DebugLoggingTransport nrepl-message)))
