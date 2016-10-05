@@ -111,7 +111,7 @@
                                         (callback result))))
                  call-fn (fn [] (eval-fn code callback-wrapper))
                  timeout-fn (fn []
-                              (error "Unable to resolve javscript context in time" context code)
+                              (error "Unable to resolve javascript context in time" context code)
                               (if callback
                                 (callback [::context-timeout])))
                  trial-delay (pref :context-availability-next-trial-waiting-time)
