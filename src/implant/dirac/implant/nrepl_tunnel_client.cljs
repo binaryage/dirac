@@ -74,13 +74,15 @@
 (defmulti process-message (fn [_client message] (:op message)))
 
 (defmethod process-message :default [client message]
-  (let [{:keys [out err ns status id value compiler-id]} message]
+  (let [{:keys [out err ns status id value]} message]
     (if (some? value)
       (alter-meta! client assoc :last-value value))
     (if (some? ns)
       (console/set-prompt-ns! ns))
-    (if (some? compiler-id)
-      (console/set-prompt-compiler! compiler-id))
+    (let [selected-compiler-id (get message :selected-compiler-id ::missing)
+          default-compiler-id (get message :default-compiler-id)]
+      (if (not= selected-compiler-id ::missing)
+        (console/set-prompt-compiler! selected-compiler-id default-compiler-id)))
     (when id
       (deliver-response message)                                                                                              ; *** (see pending-messages above)
       (if (some? status)
@@ -92,7 +94,6 @@
       (some? out) nil                                                                                                         ; (eval/present-output id "stdout" out)
       (some? err) nil                                                                                                         ; (eval/present-output id "stderr" err)
       (some? ns) nil
-      (some? compiler-id) nil
       (some? status) nil
       :else (warn "received an unrecognized message from nREPL server" (envelope message))))
   nil)

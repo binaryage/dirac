@@ -45,12 +45,19 @@
     (if-let [console-view (get-console-view)]
       (ocall console-view "setDiracPromptNS" ns-name))))
 
-(defn set-prompt-compiler! [compiler-name]
-  {:pre [(string? compiler-name)]}
-  (when-not (= *last-prompt-compiler* compiler-name)
-    (set! *last-prompt-compiler* compiler-name)
+(defn set-prompt-compiler!* [compiler-id]
+  {:pre [(string? compiler-id)]}
+  (when-not (= *last-prompt-compiler* compiler-id)
+    (set! *last-prompt-compiler* compiler-id)
     (if-let [console-view (get-console-view)]
-      (ocall console-view "setDiracPromptCompiler" compiler-name))))
+      (ocall console-view "setDiracPromptCompiler" compiler-id))))
+
+(defn set-prompt-compiler! [selected-compiler-id default-compiler-id]
+  (let [display-id (cond
+                     (nil? selected-compiler-id) "?"
+                     (= selected-compiler-id default-compiler-id) ""                                                          ; compiler-id is not presented when it is default
+                     :else selected-compiler-id)]
+    (set-prompt-compiler!* display-id)))
 
 (defn set-prompt-mode! [mode]
   (when-not (= *last-prompt-mode* mode)
