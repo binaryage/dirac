@@ -1,9 +1,10 @@
 (ns dirac.nrepl.driver
   (:require [clojure.core.async :refer [chan <!! <! >!! put! alts!! timeout close! go go-loop]]
+            [clojure.tools.logging :as log]
             [cljs.repl :as cljs-repl]
             [dirac.nrepl.sniffer :as sniffer]
-            [clojure.tools.logging :as log]
-            [dirac.nrepl.helpers :as helpers])
+            [dirac.nrepl.helpers :as helpers]
+            [dirac.nrepl.protocol :as protocol])
   (:import (clojure.lang IExceptionInfo)))
 
 ; -- driver construction ----------------------------------------------------------------------------------------------------
@@ -48,7 +49,7 @@
     (send-fn msg)))
 
 (defn report-output [driver job-id output-kind content]
-  (let [output-msg (helpers/make-server-side-output-msg output-kind content)]
+  (let [output-msg (protocol/make-server-side-output-msg output-kind content)]
     (send! driver (assoc output-msg :id job-id))))
 
 ; -- recording/flushing suppression -----------------------------------------------------------------------------------------

@@ -37,13 +37,6 @@
     (assert transport)
     (nrepl-transport/send transport (nrepl-misc/response-for nrepl-message response-msg))))
 
-(defn make-server-side-output-msg [kind content]
-  {:pre [(contains? #{:stderr :stdout :java-trace} kind)
-         (string? content)]}
-  {:op      :print-output
-   :kind    kind
-   :content content})
-
 (defn safe-pr-str [value & [level length]]
   (binding [*print-level* (or level 5)
             *print-length* (or length 100)]

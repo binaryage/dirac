@@ -21,6 +21,7 @@
             [dirac.nrepl.messages :as messages]
             [dirac.nrepl.special :as special]
             [dirac.nrepl.joining :as joining]
+            [dirac.nrepl.protocol :as protocol]
             [dirac.nrepl.transports.status-cutting :refer [make-nrepl-message-with-status-cutting-transport]]
             [dirac.nrepl.transports.debug-logging :refer [make-nrepl-message-with-debug-logging]]
             [dirac.nrepl.transports.errors-observing :refer [make-nrepl-message-with-observed-errors]]
@@ -72,7 +73,7 @@
 
 (defn report-missing-compiler! [nrepl-message selected-compiler available-compilers]
   (let [msg (messages/make-missing-compiler-msg selected-compiler available-compilers)]
-    (helpers/send-response! nrepl-message (helpers/make-server-side-output-msg :stderr msg))))
+    (helpers/send-response! nrepl-message (protocol/make-server-side-output-msg :stderr msg))))
 
 (defn user-wants-quit? [code]
   (.endsWith (.trim code) ":cljs/quit"))
