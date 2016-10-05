@@ -22,6 +22,7 @@
             [dirac.nrepl.special :as special]
             [dirac.nrepl.joining :as joining]
             [dirac.nrepl.protocol :as protocol]
+            [dirac.nrepl.utils :as utils]
             [dirac.nrepl.transports.status-cutting :refer [make-nrepl-message-with-status-cutting-transport]]
             [dirac.nrepl.transports.debug-logging :refer [make-nrepl-message-with-debug-logging]]
             [dirac.nrepl.transports.errors-observing :refer [make-nrepl-message-with-observed-errors]]
@@ -66,7 +67,7 @@
     (state/set-session-cljs-repl-options! repl-options)
     (state/set-session-original-clj-ns! *ns*)                                                                                 ; interruptible-eval is in charge of emitting the final :ns response in this context
     (set! *ns* (find-ns (state/get-session-cljs-ns)))                                                                         ; TODO: is this really needed? is it for macros?
-    (helpers/send-response! nrepl-message (compilers/prepare-announce-ns-msg (state/get-session-cljs-ns)))
+    (helpers/send-response! nrepl-message (utils/prepare-current-env-info-response))
     (catch Exception e
       (state/set-session-cljs-repl-env! nil)
       (throw e))))

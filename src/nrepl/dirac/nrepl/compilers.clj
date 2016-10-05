@@ -1,10 +1,11 @@
 (ns dirac.nrepl.compilers
   (:require [clojure.tools.logging :as log]
+            [cljs.env :as cljs-env]
             [dirac.logging :as logging]
             [dirac.nrepl.state :as state]
             [dirac.nrepl.sessions :as sessions]
             [dirac.nrepl.figwheel :as figwheel]
-            [cljs.env :as cljs-env])
+            [dirac.nrepl.protocol :as protocol])
   (:import (java.util.regex Pattern)))
 
 (defn select-compiler! [id]
@@ -74,21 +75,12 @@
     (log/debug "available compiler descriptors:" (logging/pprint (compiler-descriptors-ids descriptors)))
     (find-matching-compiler-descriptor match descriptors)))
 
-(defn make-announce-ns-msg [ns compiler-id value]
-  {:value         (or value "nil")
-   :printed-value 1
-   :ns            ns
-   :compiler-id   (or compiler-id "")})
-
 (defn get-selected-compiler-descriptor []
   (if (state/dirac-session?)
     (find-available-matching-compiler-descriptor (state/get-session-selected-compiler))))
 
 (defn get-selected-compiler-id []
   (get-compiler-descriptor-id (get-selected-compiler-descriptor)))
-
-(defn prepare-announce-ns-msg [ns & [value]]
-  (make-announce-ns-msg ns (get-selected-compiler-id) value))
 
 (defn get-selected-compiler-env []
   (get-compiler-descriptor-compiler-env (get-selected-compiler-descriptor)))

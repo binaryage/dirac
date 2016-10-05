@@ -1,11 +1,11 @@
 (ns dirac.nrepl.controls
-  (:require [dirac.nrepl.sessions :as sessions]
+  (:require [clojure.string :as string]
+            [dirac.nrepl.sessions :as sessions]
             [dirac.nrepl.compilers :as compilers]
             [dirac.nrepl.helpers :refer [with-err-output get-nrepl-info error-println
                                          make-human-readable-list make-human-readable-selected-compiler]]
-            [clojure.string :as string]
-            [cljs.analyzer :as analyzer]
-            [dirac.nrepl.state :as state])
+            [dirac.nrepl.state :as state]
+            [dirac.nrepl.utils :as utils])
   (:import (java.util.regex Pattern)))
 
 ; note: this namespace defines the context where special dirac commands are eval'd
@@ -321,7 +321,7 @@
         (let [matched-compiler-descriptor (compilers/find-available-matching-compiler-descriptor selected-compiler)]
           (if (nil? matched-compiler-descriptor)
             (error-println (make-no-compilers-msg selected-compiler (compilers/collect-all-available-compiler-ids)))))
-        (state/reply! (compilers/prepare-announce-ns-msg analyzer/*cljs-ns*)))))
+        (state/reply! (utils/prepare-current-env-info-response)))))
   ::no-result)
 
 ; -- default handler --------------------------------------------------------------------------------------------------------

@@ -1,7 +1,9 @@
 (ns dirac.nrepl.helpers
+  "Low-level helper methods NOT depending on mutable global state."
   (:require [dirac.nrepl.version :refer [version]]
             [clojure.tools.nrepl.transport :as nrepl-transport]
-            [clojure.tools.nrepl.misc :as nrepl-misc])
+            [clojure.tools.nrepl.misc :as nrepl-misc]
+            [dirac.nrepl.protocol :as protocol])
   (:import (java.util UUID)
            (java.io StringWriter PrintWriter)))
 
@@ -57,4 +59,3 @@
   (let [details (capture-exception-details e)
         message-info (get-nrepl-message-info nrepl-message)]
     (str message-info "\n\n" details)))
-
