@@ -6,7 +6,8 @@
             [dirac.nrepl.sessions :as sessions]
             [dirac.nrepl.helpers :as helpers]
             [dirac.nrepl.transports.output-capturing :refer [make-nrepl-message-with-captured-output]]
-            [dirac.nrepl.state :as state])
+            [dirac.nrepl.state :as state]
+            [dirac.nrepl.driver :as driver])
   (:import (clojure.lang Namespace)
            java.io.Writer))
 
@@ -17,34 +18,24 @@
     (if (string? code)
       (some? (re-find #"^\(?dirac!" code)))))                                                                                 ; we don't want to use read-string here, regexp test should be safe and quick
 
-(defn special-repl-eval! [nrepl-message code-str ns]
+(defn special-repl-eval! [nrepl-message code-str ns]                                                                          ; TODO: we could get rid of nrepl-message dependency here
   {:pre [(string? code-str)
          (instance? Namespace ns)]}
   (log/debug "special-repl-eval!" code-str "in" ns)
-  (let [result (with-bindings @(:session nrepl-message)
-                 (try
-                   (binding [*ns* ns
-                             state/*nrepl-message* nrepl-message]
-                     (eval (read-string code-str)))
-                   (catch Throwable e
-                     (let [root-ex (root-cause e)
-                           details (helpers/get-exception-details nrepl-message e)]
-                       (log/error (str "Clojure error during eval of a special dirac command: " details))
-                       ; repl-caught will produce :err message, but we are not under driver,
-                       ; so it won't be converted to :print-output
-                       ; that is why we present error output to user REPL manually
-                       (repl-caught e)
-                       (helpers/send-response! nrepl-message {:op      :print-output
-                                                              :kind    :java-trace
-                                                              :content (helpers/capture-exception-details e)})
-                       (helpers/send-response! nrepl-message {:status  :eval-error
-                                                              :ex      (-> e class str)
-                                                              :root-ex (-> root-ex class str)
-                                                              :details details})
-                       ::exception))
-                   (finally
-                     (.flush *out*)
-                     (.flush *err*))))
+  (let [response-fn (partial helpers/send-response! nrepl-message)
+        eval-job-fn (fn [driver caught-fn flush-fn]
+                      (try
+                        (binding [*ns* ns
+                                  state/*nrepl-message* nrepl-message]
+                          (eval (read-string code-str)))
+                        (catch Throwable e
+                          (caught-fn e nil nil)
+                          ::exception)
+                        (finally
+                          (.flush *out*)
+                          (.flush *err*))))
+        result (with-bindings @(:session nrepl-message)
+                 (driver/wrap-with-driver eval-job-fn response-fn))
         reply (cond
                 (= ::exception result) nil
                 (= ::controls/no-result result) {:status :done}
