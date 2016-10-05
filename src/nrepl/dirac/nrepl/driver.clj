@@ -167,20 +167,26 @@
 
 ; -- initialization ---------------------------------------------------------------------------------------------------------
 
-(defn wrap-with-driver [start-fn send-response-fn]
+(defn wrap-with-driver [job-id start-fn send-response-fn]
   (let [driver (make-driver {:send-response-fn send-response-fn
                              :sniffers         {:stdout (volatile! nil)
-                                                :stderr (volatile! nil)}})]
-    (let [stdout-sniffer (sniffer/make-sniffer *out* (partial flush-handler driver :stdout))
-          stderr-sniffer (sniffer/make-sniffer *err* (partial flush-handler driver :stderr))]
+                                                :stderr (volatile! nil)}})
+        stdout-sniffer (sniffer/make-sniffer *out* (partial flush-handler driver :stdout))
+        stderr-sniffer (sniffer/make-sniffer *err* (partial flush-handler driver :stderr))
+        caught-fn (partial caught! driver)
+        flush-fn (partial flush! driver)]
+    (set-sniffer! driver :stdout stdout-sniffer)
+    (set-sniffer! driver :stderr stderr-sniffer)
+    (binding [*out* stdout-sniffer
+              *err* stderr-sniffer]
       (try
-        (set-sniffer! driver :stdout stdout-sniffer)
-        (set-sniffer! driver :stderr stderr-sniffer)
-        (binding [*out* stdout-sniffer
-                  *err* stderr-sniffer]
-          (start-recording! driver)
-          (start-fn driver (partial caught! driver) (partial flush! driver)))
+        (start-recording! driver)
+        (start-job! driver job-id)
+        (start-fn driver caught-fn flush-fn)
+        (catch Throwable e
+          (caught-fn e nil nil))
         (finally
+          (stop-job! driver)
           (stop-recording! driver)
           (sniffer/destroy-sniffer stdout-sniffer)
           (sniffer/destroy-sniffer stderr-sniffer))))))

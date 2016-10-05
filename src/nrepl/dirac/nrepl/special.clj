@@ -34,8 +34,9 @@
                         (finally
                           (.flush *out*)
                           (.flush *err*))))
+        job-id (helpers/generate-uuid)
         result (with-bindings @(:session nrepl-message)
-                 (driver/wrap-with-driver eval-job-fn response-fn))
+                 (driver/wrap-with-driver job-id eval-job-fn response-fn))
         reply (cond
                 (= ::exception result) nil
                 (= ::controls/no-result result) {:status :done}

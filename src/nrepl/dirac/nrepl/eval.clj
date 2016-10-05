@@ -132,7 +132,6 @@
                      (symbol ns)
                      (state/get-session-cljs-ns))
         start-repl-fn (fn [driver caught-fn flush-fn]
-                        (driver/start-job! driver job-id)
                         (let [final-repl-options (assoc effective-repl-options
                                                    :flush (fn []
                                                             (repl-flush!)
@@ -141,13 +140,12 @@
                           (log/trace "calling cljs.repl/repl* with:\n"
                                      (logging/pprint repl-env)
                                      (logging/pprint final-repl-options))
-                          (cljs.repl/repl* repl-env final-repl-options))
-                        (driver/stop-job! driver))]
+                          (cljs.repl/repl* repl-env final-repl-options)))]
     (binding [*in* code-reader-with-quit
               *out* (state/get-session-binding-value #'*out*)
               *err* (state/get-session-binding-value #'*err*)
               analyzer/*cljs-ns* initial-ns]
-      (driver/wrap-with-driver start-repl-fn response-fn)
+      (driver/wrap-with-driver job-id start-repl-fn response-fn)
       (let [final-ns analyzer/*cljs-ns*]                                                                                      ; we want analyzer/*cljs-ns* to be sticky between evaluations, that is why we keep it in our session state and bind it
         (if-not (= final-ns initial-ns)
           (state/set-session-cljs-ns! final-ns))))))
