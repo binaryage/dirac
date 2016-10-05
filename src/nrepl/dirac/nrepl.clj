@@ -9,7 +9,8 @@
             [dirac.nrepl.debug :as debug]
             [dirac.nrepl.state :as state]
             [dirac.nrepl.messages :as messages]
-            [dirac.nrepl.helpers :as helpers]))
+            [dirac.nrepl.helpers :as helpers]
+            [dirac.nrepl.utils :as utils]))
 
 ; -- public middleware definition -------------------------------------------------------------------------------------------
 
@@ -56,7 +57,7 @@
           repl-env (weasel-server/make-weasel-repl-env repl-options)
           cljs-repl-options (:cljs-repl-options effective-nrepl-config)]
       (state/ensure-session (:session nrepl-message)
-        (piggieback/start-cljs-repl! nrepl-message effective-nrepl-config repl-env cljs-repl-options)))
+        (utils/start-cljs-repl! nrepl-message effective-nrepl-config repl-env cljs-repl-options)))
     (do
       (log/error (messages/make-missing-nrepl-message-msg))
       (throw (ex-info "Unable to bootstrap due to missing in-flight nREPL message." {})))))

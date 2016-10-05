@@ -1,4 +1,5 @@
-(ns dirac.nrepl.state)
+(ns dirac.nrepl.state
+  (:require [dirac.nrepl.helpers :as helpers]))
 
 ; -- global state -----------------------------------------------------------------------------------------------------------
 
@@ -22,20 +23,20 @@
 (defn get-in-flight-nrepl-message []
   *in-flight-nrepl-message*)
 
+; -- dirac! eval state ------------------------------------------------------------------------------------------------------
+
+(def ^:dynamic *nrepl-message*)                                                                                               ; should be set by binding wrapping eval in repl-eval!
+
+(defn reply! [msg]
+  (assert *nrepl-message*)
+  (helpers/send-response! *nrepl-message* msg))
+
 ; -- session-specific state -------------------------------------------------------------------------------------------------
 
 ; we cannot pass session info into all our functions,
 ; so we keep some global state around and various functions touch it at will
 
 (def ^:dynamic *current-session* nil)
-
-; -- dirac! eval state ------------------------------------------------------------------------------------------------------
-
-(def ^:dynamic *reply!*)
-
-(defn reply! [msg]
-  (assert *reply!*)                                                                                                           ; should be set by binding wrapping eval in repl-eval!
-  (*reply!* msg))
 
 ; -- convenience macros -----------------------------------------------------------------------------------------------------
 

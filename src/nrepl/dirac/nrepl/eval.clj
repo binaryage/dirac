@@ -7,7 +7,6 @@
             [clojure.tools.logging :as log]
             [cljs.analyzer :as analyzer]
             [dirac.logging :as logging]
-            [dirac.nrepl.utils :as utils]
             [dirac.nrepl.protocol :as protocol])
   (:import clojure.lang.LineNumberingPushbackReader
            java.io.StringReader
@@ -15,6 +14,12 @@
 
 (defn ^:dynamic make-dirac-repl-alias [compiler-id]
   (str "<" (or compiler-id "?") ">"))
+
+(defn prepare-current-env-info-response []
+  (let [current-ns (str analyzer/*cljs-ns*)
+        selected-compiler-id (compilers/get-selected-compiler-id)
+        default-compiler-id (compilers/get-default-compiler-id)]
+    (protocol/prepare-current-env-info-response current-ns selected-compiler-id default-compiler-id)))
 
 ; -- dirac-specific wrapper for evaluated forms -----------------------------------------------------------------------------
 
@@ -101,7 +106,7 @@
   (log/trace "repl-print!" result (if-not response-fn "(no response-fn)"))
   (if response-fn
     (let [response (-> (protocol/prepare-printed-value-response result)
-                       (merge (utils/prepare-current-env-info-response)))]
+                       (merge (prepare-current-env-info-response)))]
       (response-fn response))))                                                                                               ; printed value enhanced with current env info
 
 ; -- public api -------------------------------------------------------------------------------------------------------------

@@ -189,7 +189,7 @@
 (defn ^:dynamic make-status-msg [session-type dirac-session? selected-compiler compiler-descriptor available-compiler-ids]
   (str "Your current nREPL session is " session-type ".\n"
        (if dirac-session?
-         (str "Your selected ClojureScript compiler is " (make-human-readable-selected-compiler selected-compiler)
+         (str "Your currently selected ClojureScript compiler is " (make-human-readable-selected-compiler selected-compiler)
               (if (some? compiler-descriptor)
                 (let [compiler-id (compilers/get-compiler-descriptor-id compiler-descriptor)]
                   (if (= compiler-id selected-compiler)
@@ -207,6 +207,9 @@
 (defn ^:dynamic make-invalid-compiler-error-msg [user-input]
   (str "Dirac's :switch sub-command accepts nil, positive integer, string or regex patterns. "
        "You have entered " (pr-str user-input) " which is of type " (type user-input) "."))
+
+(defn ^:dynamic make-cannot-spawn-outside-dirac-session-msg []
+  (str "Your session is not a Dirac session. Only Dirac sessions are able to spawn new ClojureScript compilers."))
 
 ; == special REPL commands ==================================================================================================
 
@@ -322,6 +325,15 @@
           (if (nil? matched-compiler-descriptor)
             (error-println (make-no-compilers-msg selected-compiler (compilers/collect-all-available-compiler-ids)))))
         (state/reply! (utils/prepare-current-env-info-response)))))
+  ::no-result)
+
+; -- (dirac! :spawn) --------------------------------------------------------------------------------------------------------
+
+(defmethod dirac! :spawn [_ & _]
+  (let [session (sessions/get-current-session)]
+    (cond
+      (not (sessions/dirac-session? session)) (error-println (make-cannot-spawn-outside-dirac-session-msg))
+      :else (utils/spawn-compiler! state/*nrepl-message*)))
   ::no-result)
 
 ; -- default handler --------------------------------------------------------------------------------------------------------
