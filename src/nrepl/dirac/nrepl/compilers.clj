@@ -85,6 +85,12 @@
 (defn get-selected-compiler-env []
   (get-compiler-descriptor-compiler-env (get-selected-compiler-descriptor)))
 
+(defn get-default-compiler-descriptor []
+  (first (state/get-session-compiler-descriptors)))
+
+(defn get-default-compiler-id []
+  (get-compiler-descriptor-id (get-default-compiler-descriptor)))
+
 (defn get-next-compiler-number-for-session! []
   (let [last-number (or (state/get-session-last-compiler-number) 0)
         next-number (inc last-number)]
