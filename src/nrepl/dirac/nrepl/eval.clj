@@ -98,14 +98,15 @@
   (.flush *err*))
 
 (defn repl-print! [response-fn result]
-  (log/trace "repl-print!" result)
-  (let [response (-> (protocol/prepare-printed-value-response result)
-                     (merge (utils/prepare-current-env-info-response)))]
-    (response-fn response)))                                                                                                  ; printed value enhanced with current env info
+  (log/trace "repl-print!" result (if-not response-fn "(no response-fn)"))
+  (if response-fn
+    (let [response (-> (protocol/prepare-printed-value-response result)
+                       (merge (utils/prepare-current-env-info-response)))]
+      (response-fn response))))                                                                                               ; printed value enhanced with current env info
 
 ; -- public api -------------------------------------------------------------------------------------------------------------
 
-(defn eval-in-cljs-repl! [code ns repl-env compiler-env repl-options response-fn job-id & [scope-info dirac-mode]]
+(defn eval-in-cljs-repl! [code ns repl-env compiler-env repl-options job-id & [response-fn scope-info dirac-mode]]
   {:pre [(some? job-id)]}
   (let [default-repl-options {:need-prompt  (constantly false)
                               :bind-err     false

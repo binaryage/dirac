@@ -44,7 +44,7 @@
   (vreset! (:current-job driver) nil))
 
 (defn send! [driver msg]
-  (let [send-fn (get-send-response-fn driver)]
+  (if-let [send-fn (get-send-response-fn driver)]
     (send-fn msg)))
 
 (defn report-output [driver job-id output-kind content]

@@ -46,7 +46,7 @@
                                  :print (fn [& _]
                                           (log/trace "print-fn (no-op)")))                                                    ; silence any responses
         response-fn (partial helpers/send-response! nrepl-message)]
-    (eval/eval-in-cljs-repl! code ns repl-env compiler-env effective-repl-options response-fn job-id)))
+    (eval/eval-in-cljs-repl! code ns repl-env compiler-env effective-repl-options job-id)))
 
 (defn start-cljs-repl! [nrepl-message dirac-nrepl-config repl-env repl-options]
   (log/trace "start-cljs-repl!\n"
@@ -91,7 +91,7 @@
             cljs-repl-options (state/get-session-cljs-repl-options)
             response-fn (partial helpers/send-response! nrepl-message)]
         (if-let [compiler-env (compilers/get-selected-compiler-env)]
-          (eval/eval-in-cljs-repl! code ns cljs-repl-env compiler-env cljs-repl-options response-fn job-id scope-info mode)
+          (eval/eval-in-cljs-repl! code ns cljs-repl-env compiler-env cljs-repl-options job-id response-fn scope-info mode)
           (report-missing-compiler! nrepl-message selected-compiler (compilers/collect-all-available-compiler-ids))))
       (let [original-clj-ns (state/get-session-original-clj-ns)]
         (reset! (:cached-setup cljs-repl-env) :tear-down)                                                                     ; TODO: find a better way
