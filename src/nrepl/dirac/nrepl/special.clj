@@ -6,9 +6,9 @@
             [dirac.nrepl.sessions :as sessions]
             [dirac.nrepl.helpers :as helpers]
             [dirac.nrepl.transports.output-capturing :refer [make-nrepl-message-with-captured-output]]
-            [dirac.nrepl.state :as state]
-            [clojure.tools.nrepl.middleware.interruptible-eval :as nrepl-ieval])
-  (:import (clojure.lang Namespace)))
+            [dirac.nrepl.state :as state])
+  (:import (clojure.lang Namespace)
+           java.io.Writer))
 
 ; -- handlers for middleware operations -------------------------------------------------------------------------------------
 
