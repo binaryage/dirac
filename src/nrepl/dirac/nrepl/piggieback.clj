@@ -21,6 +21,7 @@
             [dirac.nrepl.messages :as messages]
             [dirac.nrepl.special :as special]
             [dirac.nrepl.joining :as joining]
+            [dirac.nrepl.transports.status-cutting :refer [make-nrepl-message-with-status-cutting-transport]]
             [dirac.nrepl.transports.debug-logging :refer [make-nrepl-message-with-debug-logging]]
             [dirac.nrepl.transports.errors-observing :refer [make-nrepl-message-with-observed-errors]]
             [dirac.nrepl.transports.job-observing :refer [make-nrepl-message-with-job-observing-transport]]))
@@ -73,8 +74,7 @@
   (let [msg (messages/make-missing-compiler-msg selected-compiler available-compilers)]
     (helpers/send-response! nrepl-message (helpers/make-server-side-output-msg :stderr msg))))
 
-(defn evaluate! [nrepl-message]
-  (debug/log-stack-trace!)
+(defn evaluate!* [nrepl-message]
   (let [{:keys [session ^String code]} nrepl-message
         cljs-repl-env (state/get-session-cljs-repl-env)]
     ; we append a :cljs/quit to every chunk of code evaluated so we can break out of cljs.repl/repl*'s loop,
@@ -98,7 +98,12 @@
         (helpers/send-response! nrepl-message {:value         "nil"
                                                :printed-value 1
                                                :ns            (str original-clj-ns)}))))
-  (helpers/send-response! nrepl-message {:status :done}))                                                                     ; TODO: implement a new transport wrapper for this
+  (helpers/send-response! nrepl-message {:status :done}))
+
+(defn evaluate! [nrepl-message]
+  (debug/log-stack-trace!)
+  (let [status-cutting-nrepl-message (make-nrepl-message-with-status-cutting-transport nrepl-message)]
+    (evaluate!* status-cutting-nrepl-message)))
 
 (defn load-file! [nrepl-message]
   (let [{:keys [file-path]} nrepl-message]
