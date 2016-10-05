@@ -74,12 +74,13 @@
   (let [msg (messages/make-missing-compiler-msg selected-compiler available-compilers)]
     (helpers/send-response! nrepl-message (helpers/make-server-side-output-msg :stderr msg))))
 
+(defn user-wants-quit? [code]
+  (.endsWith (.trim code) ":cljs/quit"))
+
 (defn evaluate!* [nrepl-message]
-  (let [{:keys [session ^String code]} nrepl-message
+  (let [{:keys [session code]} nrepl-message
         cljs-repl-env (state/get-session-cljs-repl-env)]
-    ; we append a :cljs/quit to every chunk of code evaluated so we can break out of cljs.repl/repl*'s loop,
-    ; so we need to go a gnarly little stringy check here to catch any actual user-supplied exit
-    (if-not (.. code trim (endsWith ":cljs/quit"))
+    (if-not (user-wants-quit? code)
       (let [job-id (or (:id nrepl-message) (helpers/generate-uuid))
             ns (:ns nrepl-message)
             mode (:dirac nrepl-message)
