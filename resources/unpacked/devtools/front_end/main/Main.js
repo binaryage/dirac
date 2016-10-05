@@ -90,6 +90,7 @@ WebInspector.Main.prototype = {
     {
         Runtime.experiments.register("accessibilityInspection", "Accessibility Inspection");
         Runtime.experiments.register("applyCustomStylesheet", "Allow custom UI themes");
+        Runtime.experiments.register("autoAttachToCrossProcessSubframes", "Auto-attach to cross-process subframes", true);
         Runtime.experiments.register("blackboxJSFramesOnTimeline", "Blackbox JavaScript frames on Timeline", true);
         Runtime.experiments.register("colorContrastRatio", "Contrast ratio line in color picker", true);
         Runtime.experiments.register("continueToFirstInvocation", "Continue to first invocation", true);
@@ -100,6 +101,7 @@ WebInspector.Main.prototype = {
         Runtime.experiments.register("inspectTooltip", "Dark inspect element tooltip");
         Runtime.experiments.register("liveSASS", "Live SASS");
         Runtime.experiments.register("nodeDebugging", "Node debugging", true);
+        Runtime.experiments.register("persistence2", "Persistence 2.0", true);
         Runtime.experiments.register("privateScriptInspection", "Private script inspection");
         Runtime.experiments.register("requestBlocking", "Request blocking", true);
         Runtime.experiments.register("resolveVariableNames", "Resolve variable names");
