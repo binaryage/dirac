@@ -1,6 +1,5 @@
 (ns dirac.nrepl.driver
-  (:require [clojure.core.async :refer [chan <!! <! >!! put! alts!! timeout close! go go-loop]]
-            [clojure.tools.logging :as log]
+  (:require [clojure.tools.logging :as log]
             [cljs.repl :as cljs-repl]
             [dirac.nrepl.sniffer :as sniffer]
             [dirac.nrepl.helpers :as helpers]
