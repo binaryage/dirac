@@ -73,7 +73,7 @@
 
 (defn report-missing-compiler! [nrepl-message selected-compiler available-compilers]
   (let [msg (messages/make-missing-compiler-msg selected-compiler available-compilers)]
-    (helpers/send-response! nrepl-message (protocol/make-server-side-output-msg :stderr msg))))
+    (helpers/send-response! nrepl-message (protocol/prepare-print-output-response :stderr msg))))
 
 (defn user-wants-quit? [code]
   (.endsWith (.trim code) ":cljs/quit"))

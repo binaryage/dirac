@@ -48,8 +48,9 @@
     (send-fn msg)))
 
 (defn report-output [driver job-id output-kind content]
-  (let [output-msg (protocol/make-server-side-output-msg output-kind content)]
-    (send! driver (assoc output-msg :id job-id))))
+  (let [response (-> (protocol/prepare-print-output-response output-kind content)
+                     (assoc :id job-id))]
+    (send! driver response)))
 
 ; -- recording/flushing suppression -----------------------------------------------------------------------------------------
 

@@ -4,12 +4,16 @@
             [dirac.nrepl.protocol :as protocol])
   (:import (clojure.tools.nrepl.transport Transport)))
 
+; repl-eval! does not have our sniffing driver in place, we capture output
+; by observing :out and :err keys in replied messages
+; this is good enough because we know that our controls.clj implementation does not do anything crazy and uses
+; standard *out* and *err* for printing outputs so that normal nREPL output capturing works
+
 ; -- helpers ----------------------------------------------------------------------------------------------------------------
 
-(defn make-print-output-message [base job-id output-kind content]
+(defn prepare-complete-print-output-response [base output-kind content]
   (-> base
-      (merge (protocol/make-server-side-output-msg output-kind content))
-      (assoc :id job-id)
+      (merge (protocol/prepare-print-output-response output-kind content))
       (dissoc :out)
       (dissoc :err)))
 
@@ -21,16 +25,12 @@
     (nrepl-transport/recv transport timeout))
   (send [_this reply-message]
     (if-let [content (:out reply-message)]
-      (nrepl-transport/send transport (make-print-output-message reply-message (:id nrepl-message) :stdout content)))
+      (nrepl-transport/send transport (prepare-complete-print-output-response reply-message :stdout content)))
     (if-let [content (:err reply-message)]
-      (nrepl-transport/send transport (make-print-output-message reply-message (:id nrepl-message) :stderr content)))
+      (nrepl-transport/send transport (prepare-complete-print-output-response reply-message :stderr content)))
     (nrepl-transport/send transport reply-message)))
 
 ; -- public interface -------------------------------------------------------------------------------------------------------
 
 (defn make-nrepl-message-with-captured-output [nrepl-message]
-  ; repl-eval! does not have our sniffing driver in place, we capture output
-  ; by observing :out and :err keys in replied messages
-  ; this is good enough because we know that our controls.clj implementation does not do anything crazy and uses
-  ; standard *out* and *err* for printing outputs so that normal nREPL output capturing works
   (update nrepl-message :transport (partial ->OutputCapturingTransport nrepl-message)))
