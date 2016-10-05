@@ -2532,12 +2532,21 @@ Protocol.TargetAgent.prototype.disable = function(opt_callback) {}
 Protocol.TargetAgent.prototype.invoke_disable = function(obj, opt_callback) {}
 
 /**
+ * @param {boolean} autoAttach
+ * @param {boolean} waitForDebuggerOnStart
+ * @param {function(?Protocol.Error):void=} opt_callback
+ */
+Protocol.TargetAgent.prototype.setAutoAttach = function(autoAttach, waitForDebuggerOnStart, opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+Protocol.TargetAgent.prototype.invoke_setAutoAttach = function(obj, opt_callback) {}
+
+/**
  * @param {boolean} value
  * @param {function(?Protocol.Error):void=} opt_callback
  */
-Protocol.TargetAgent.prototype.setWaitForDebuggerOnStart = function(value, opt_callback) {}
+Protocol.TargetAgent.prototype.setAttachToFrames = function(value, opt_callback) {}
 /** @param {function(?Protocol.Error):void=} opt_callback */
-Protocol.TargetAgent.prototype.invoke_setWaitForDebuggerOnStart = function(obj, opt_callback) {}
+Protocol.TargetAgent.prototype.invoke_setAttachToFrames = function(obj, opt_callback) {}
 
 /**
  * @param {string} targetId
@@ -2574,7 +2583,7 @@ TargetAgent.TargetID;
 /** @enum {string} */
 TargetAgent.TargetType = {
     Page: "page",
-    Frame: "frame",
+    Iframe: "iframe",
     Worker: "worker",
     Service_worker: "service_worker"
 };
@@ -2584,16 +2593,22 @@ TargetAgent.TargetInfo;
 /** @interface */
 TargetAgent.Dispatcher = function() {};
 /**
- * @param {TargetAgent.TargetID} targetId
- * @param {TargetAgent.TargetType} type
- * @param {string} url
- * @param {boolean} waitingForDebugger
+ * @param {TargetAgent.TargetInfo} targetInfo
  */
-TargetAgent.Dispatcher.prototype.targetCreated = function(targetId, type, url, waitingForDebugger) {};
+TargetAgent.Dispatcher.prototype.targetCreated = function(targetInfo) {};
 /**
  * @param {TargetAgent.TargetID} targetId
  */
 TargetAgent.Dispatcher.prototype.targetRemoved = function(targetId) {};
+/**
+ * @param {TargetAgent.TargetID} targetId
+ * @param {boolean} waitingForDebugger
+ */
+TargetAgent.Dispatcher.prototype.attachedToTarget = function(targetId, waitingForDebugger) {};
+/**
+ * @param {TargetAgent.TargetID} targetId
+ */
+TargetAgent.Dispatcher.prototype.detachedFromTarget = function(targetId) {};
 /**
  * @param {TargetAgent.TargetID} targetId
  * @param {string} message

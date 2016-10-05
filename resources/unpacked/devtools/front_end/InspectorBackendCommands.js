@@ -1,5 +1,5 @@
-WebInspector.BakedInspectorBackendAPIChromeTag='55.0.2877.2';
-WebInspector.BakedInspectorBackendAPIChromeRev='e15a4f7f9337276a79307d4210c3f6195e2a85d2';
+WebInspector.BakedInspectorBackendAPIChromeTag='55.0.2881.2';
+WebInspector.BakedInspectorBackendAPIChromeRev='def04ed853af32be10b954b0435409ed4e5e100e';
 WebInspector.BakedInspectorBackendAPI=''
 + 'InspectorBackend.registerEvent("Inspector.detached", ["reason"]);\n'
 + 'InspectorBackend.registerEvent("Inspector.targetCrashed", []);\n'
@@ -266,13 +266,16 @@ WebInspector.BakedInspectorBackendAPI=''
 + 'InspectorBackend.registerCommand("DOMDebugger.setXHRBreakpoint", [{"name": "url", "type": "string", "optional": false}], [], false);\n'
 + 'InspectorBackend.registerCommand("DOMDebugger.removeXHRBreakpoint", [{"name": "url", "type": "string", "optional": false}], [], false);\n'
 + 'InspectorBackend.registerCommand("DOMDebugger.getEventListeners", [{"name": "objectId", "type": "string", "optional": false}], ["listeners"], false);\n'
-+ 'InspectorBackend.registerEnum("Target.TargetType", {Page: "page", Frame: "frame", Worker: "worker", Service_worker: "service_worker"});\n'
-+ 'InspectorBackend.registerEvent("Target.targetCreated", ["targetId", "type", "url", "waitingForDebugger"]);\n'
++ 'InspectorBackend.registerEnum("Target.TargetType", {Page: "page", Iframe: "iframe", Worker: "worker", Service_worker: "service_worker"});\n'
++ 'InspectorBackend.registerEvent("Target.targetCreated", ["targetInfo"]);\n'
 + 'InspectorBackend.registerEvent("Target.targetRemoved", ["targetId"]);\n'
++ 'InspectorBackend.registerEvent("Target.attachedToTarget", ["targetId", "waitingForDebugger"]);\n'
++ 'InspectorBackend.registerEvent("Target.detachedFromTarget", ["targetId"]);\n'
 + 'InspectorBackend.registerEvent("Target.receivedMessageFromTarget", ["targetId", "message"]);\n'
 + 'InspectorBackend.registerCommand("Target.enable", [], [], false);\n'
 + 'InspectorBackend.registerCommand("Target.disable", [], [], false);\n'
-+ 'InspectorBackend.registerCommand("Target.setWaitForDebuggerOnStart", [{"name": "value", "type": "boolean", "optional": false}], [], false);\n'
++ 'InspectorBackend.registerCommand("Target.setAutoAttach", [{"name": "autoAttach", "type": "boolean", "optional": false}, {"name": "waitForDebuggerOnStart", "type": "boolean", "optional": false}], [], false);\n'
++ 'InspectorBackend.registerCommand("Target.setAttachToFrames", [{"name": "value", "type": "boolean", "optional": false}], [], false);\n'
 + 'InspectorBackend.registerCommand("Target.sendMessageToTarget", [{"name": "targetId", "type": "string", "optional": false}, {"name": "message", "type": "string", "optional": false}], [], false);\n'
 + 'InspectorBackend.registerCommand("Target.getTargetInfo", [{"name": "targetId", "type": "string", "optional": false}], ["targetInfo"], false);\n'
 + 'InspectorBackend.registerCommand("Target.activateTarget", [{"name": "targetId", "type": "string", "optional": false}], [], false);\n'
