@@ -251,7 +251,7 @@ WebInspector.TextSourceMap.prototype = {
      */
     payload: function()
     {
-        return this._payload;
+        return this._json;
     },
 
     /**
