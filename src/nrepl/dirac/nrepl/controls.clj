@@ -194,7 +194,7 @@
                 (let [compiler-id (compilers/get-compiler-descriptor-id compiler-descriptor)]
                   (if (= compiler-id selected-compiler)
                     "."
-                    (str " which currently matches compiler <" compiler-id ">.")))
+                    (str " which is currently matching compiler <" compiler-id ">.")))
                 (let [compilers (make-human-readable-list available-compiler-ids)]
                   (str " which currently does not match any available compilers: " compilers ".")))))))
 
