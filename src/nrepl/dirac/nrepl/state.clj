@@ -172,3 +172,15 @@
    (assert session)
    (alter-meta! session assoc ::dirac-nrepl-config dirac-nrepl-config)))
 
+(defn get-session-meta
+  ([] (get-session-meta *current-session*))
+  ([session]
+   (assert session)
+   (-> session meta)))
+
+(defn set-session-meta!
+  ([meta] (set-session-meta! *current-session* meta))
+  ([session meta]
+   (assert session)
+   (reset-meta! session meta)))
+
