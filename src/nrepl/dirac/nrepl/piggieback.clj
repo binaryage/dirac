@@ -97,7 +97,8 @@
         (swap! session assoc #'*ns* original-clj-ns)                                                                          ; TODO: is this really needed?
         (helpers/send-response! nrepl-message {:value         "nil"
                                                :printed-value 1
-                                               :ns            (str original-clj-ns)})))))
+                                               :ns            (str original-clj-ns)}))))
+  (helpers/send-response! nrepl-message {:status :done}))                                                                     ; TODO: implement a new transport wrapper for this
 
 (defn load-file! [nrepl-message]
   (let [{:keys [file-path]} nrepl-message]
