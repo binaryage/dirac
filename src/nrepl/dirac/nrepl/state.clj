@@ -159,3 +159,16 @@
   ([session n]
    (assert session)
    (alter-meta! session assoc ::last-compiler-number n)))
+
+(defn get-session-dirac-nrepl-config
+  ([] (get-session-dirac-nrepl-config *current-session*))
+  ([session]
+   (assert session)
+   (-> session meta ::dirac-nrepl-config)))
+
+(defn set-session-dirac-nrepl-config!
+  ([dirac-nrepl-config] (set-session-dirac-nrepl-config! *current-session* dirac-nrepl-config))
+  ([session dirac-nrepl-config]
+   (assert session)
+   (alter-meta! session assoc ::dirac-nrepl-config dirac-nrepl-config)))
+

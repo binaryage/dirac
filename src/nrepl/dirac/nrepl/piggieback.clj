@@ -63,6 +63,7 @@
       (if (= preferred-compiler "dirac/new")
         (start-new-cljs-compiler-repl-environment! nrepl-message dirac-nrepl-config repl-env repl-options)
         (state/set-session-selected-compiler! preferred-compiler)))                                                           ; TODO: validate that preferred compiler exists
+    (state/set-session-dirac-nrepl-config! dirac-nrepl-config)
     (state/set-session-cljs-repl-env! repl-env)
     (state/set-session-cljs-repl-options! repl-options)
     (state/set-session-original-clj-ns! *ns*)                                                                                 ; interruptible-eval is in charge of emitting the final :ns response in this context
