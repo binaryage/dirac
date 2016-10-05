@@ -1,15 +1,18 @@
 (ns dirac.nrepl.transports.job-observing
   (:require [clojure.tools.nrepl.transport :as nrepl-transport]
             [clojure.tools.logging :as log]
+            [dirac.logging :as logging]
             [dirac.nrepl.jobs :as jobs]
             [dirac.nrepl.sessions :as sessions]
-            [dirac.logging :as logging])
+            [dirac.nrepl.protocol :as protocol])
   (:import (clojure.tools.nrepl.transport Transport)))
 
-; -- helpers ----------------------------------------------------------------------------------------------------------------
-
-(defn final-message? [message]
-  (some? (:status message)))
+; Please note that joined session feature is described here:
+; https://github.com/binaryage/dirac/blob/master/docs/integration.md
+;
+; The idea of this transport is to "echo" all sent messages to an observing transport.
+; The observing transport is typically Cursive nREPL client which joined a Dirac REPL session.
+;
 
 ; -- transport wrapper ------------------------------------------------------------------------------------------------------
 
@@ -26,7 +29,7 @@
                                :session (sessions/get-session-id observing-session))]
       (log/debug "sending message to observing session" observing-session (logging/pprint artificial-message))
       (nrepl-transport/send observing-transport artificial-message))
-    (if (final-message? reply-message)
+    (if (protocol/status-message? reply-message)
       (jobs/unregister-observed-job! (jobs/get-observed-job-id observed-job)))
     (nrepl-transport/send transport reply-message)))
 
