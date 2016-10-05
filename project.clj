@@ -7,7 +7,7 @@
   :scm {:name "git"
         :url  "https://github.com/binaryage/dirac"}
 
-  :dependencies [[org.clojure/clojure "1.9.0-alpha12" :scope "provided"]
+  :dependencies [[org.clojure/clojure "1.9.0-alpha13" :scope "provided"]
                  [org.clojure/clojurescript "1.9.229" :scope "provided"]
                  [org.clojure/core.async "0.2.391"]
                  [org.clojure/tools.logging "0.3.1"]
@@ -123,7 +123,7 @@
              {:dependencies [[org.clojure/clojure "1.8.0" :scope "provided"]]}
 
              :clojure19
-             {:dependencies [[org.clojure/clojure "1.9.0-alpha12" :scope "provided"]]}
+             {:dependencies [[org.clojure/clojure "1.9.0-alpha13" :scope "provided"]]}
 
              :cooper
              {:plugins [[lein-cooper "1.2.2"]]}
