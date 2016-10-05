@@ -118,7 +118,6 @@
                               :quit-prompt  (fn [])
                               :prompt       (fn [])
                               :init         (fn [])
-                              :flush        repl-flush!
                               :print        (partial repl-print! response-fn)
                               :eval         (partial repl-eval! job-id scope-info dirac-mode)
                               :compiler-env compiler-env}
@@ -132,16 +131,23 @@
         initial-ns (if ns
                      (symbol ns)
                      (state/get-session-cljs-ns))
-        start-repl-fn (fn [driver repl-env repl-options]
+        start-repl-fn (fn [driver caught-fn flush-fn]
                         (driver/start-job! driver job-id)
-                        (log/trace "calling cljs.repl/repl* with:\n" (logging/pprint repl-env) (logging/pprint repl-options))
-                        (cljs.repl/repl* repl-env repl-options)
+                        (let [final-repl-options (assoc effective-repl-options
+                                                   :flush (fn []
+                                                            (repl-flush!)
+                                                            (flush-fn))
+                                                   :caught caught-fn)]
+                          (log/trace "calling cljs.repl/repl* with:\n"
+                                     (logging/pprint repl-env)
+                                     (logging/pprint final-repl-options))
+                          (cljs.repl/repl* repl-env final-repl-options))
                         (driver/stop-job! driver))]
     (binding [*in* code-reader-with-quit
               *out* (state/get-session-binding-value #'*out*)
               *err* (state/get-session-binding-value #'*err*)
               analyzer/*cljs-ns* initial-ns]
-      (driver/wrap-repl-with-driver repl-env effective-repl-options start-repl-fn response-fn)
+      (driver/wrap-with-driver start-repl-fn response-fn)
       (let [final-ns analyzer/*cljs-ns*]                                                                                      ; we want analyzer/*cljs-ns* to be sticky between evaluations, that is why we keep it in our session state and bind it
         (if-not (= final-ns initial-ns)
           (state/set-session-cljs-ns! final-ns))))))

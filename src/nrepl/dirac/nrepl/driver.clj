@@ -119,37 +119,36 @@
 
 ; -- REPL handler factories -------------------------------------------------------------------------------------------------
 
-(defn custom-caught-factory [driver]
-  (fn [e repl-env opts]
-    (let [root-ex (#'clojure.main/root-cause e)]
-      (when-not (instance? ThreadDeath root-ex)
-        (let [orig-call #(cljs-repl/repl-caught e repl-env opts)]
-          (if-not (recording? driver)
+(defn caught! [driver e repl-env opts]
+  (let [root-ex (#'clojure.main/root-cause e)]
+    (when-not (instance? ThreadDeath root-ex)
+      (let [orig-call #(cljs-repl/repl-caught e repl-env opts)]
+        (if-not (recording? driver)
+          (do
+            ; in case we are not recording, we want to report :eval-error to the driver
+            ; and log error information as well
+            (orig-call)
+            (let [exception-details (helpers/capture-exception-details e)]
+              (log/error "Caught an exception during REPL evaluation:\n" exception-details)
+              (send! driver {:status  :eval-error
+                             :ex      (str (class e))
+                             :root-ex (str (class root-ex))
+                             :details exception-details})))
+          (if (and (instance? IExceptionInfo e)
+                   (#{:js-eval-error :js-eval-exception} (:type (ex-data e))))
             (do
-              ; in case we are not recording, we want to report :eval-error to the driver
-              ; and log error information as well
+              ; we want to prevent recording javascript errors and exceptions,
+              ; because those were already reported on client-side directly
+              ; other exceptional cases should be recorded as usual (for example exceptions originated in the compiler)
+              (stop-recording! driver)
               (orig-call)
-              (let [exception-details (helpers/capture-exception-details e)]
-                (log/error "Caught an exception during REPL evaluation:\n" exception-details)
-                (send! driver {:status  :eval-error
-                               :ex      (str (class e))
-                               :root-ex (str (class root-ex))
-                               :details exception-details})))
-            (if (and (instance? IExceptionInfo e)
-                     (#{:js-eval-error :js-eval-exception} (:type (ex-data e))))
-              (do
-                ; we want to prevent recording javascript errors and exceptions,
-                ; because those were already reported on client-side directly
-                ; other exceptional cases should be recorded as usual (for example exceptions originated in the compiler)
-                (stop-recording! driver)
-                (orig-call)
-                (start-recording! driver))
-              (do
-                ; we've got a java exception with possibly long stack trace
-                ; it will be printed in cljs.repl/repl-caught via (.printStackTrace e *err*)
-                ; we capture output and send it to client side with special kind :java-trace
-                ; with this hint, client-side should implement a nice way how to present this to the user
-                (report-java-trace! driver orig-call)))))))))
+              (start-recording! driver))
+            (do
+              ; we've got a java exception with possibly long stack trace
+              ; it will be printed in cljs.repl/repl-caught via (.printStackTrace e *err*)
+              ; we capture output and send it to client side with special kind :java-trace
+              ; with this hint, client-side should implement a nice way how to present this to the user
+              (report-java-trace! driver orig-call))))))))
 
 ; -- sniffer handlers -------------------------------------------------------------------------------------------------------
 
@@ -168,18 +167,10 @@
 
 ; -- initialization ---------------------------------------------------------------------------------------------------------
 
-(defn wrap-repl-with-driver [repl-env repl-opts start-fn send-response-fn]
+(defn wrap-with-driver [start-fn send-response-fn]
   (let [driver (make-driver {:send-response-fn send-response-fn
                              :sniffers         {:stdout (volatile! nil)
-                                                :stderr (volatile! nil)}})
-        orig-flush-fn (:flush repl-opts)
-        updated-repl-opts (assoc repl-opts
-                            :flush (fn []
-                                     (if (fn? orig-flush-fn)
-                                       (orig-flush-fn))
-                                     (flush! driver))
-                            :caught (custom-caught-factory driver))
-        updated-repl-env repl-env]
+                                                :stderr (volatile! nil)}})]
     (let [stdout-sniffer (sniffer/make-sniffer *out* (partial flush-handler driver :stdout))
           stderr-sniffer (sniffer/make-sniffer *err* (partial flush-handler driver :stderr))]
       (try
@@ -188,7 +179,7 @@
         (binding [*out* stdout-sniffer
                   *err* stderr-sniffer]
           (start-recording! driver)
-          (start-fn driver updated-repl-env updated-repl-opts))
+          (start-fn driver (partial caught! driver) (partial flush! driver)))
         (finally
           (stop-recording! driver)
           (sniffer/destroy-sniffer stdout-sniffer)
