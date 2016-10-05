@@ -32,7 +32,7 @@
                                  :print (fn [& _]
                                           (log/trace "print-fn (no-op)")))                                                    ; silence any responses
         response-fn (partial helpers/send-response! nrepl-message)]
-    (eval/eval-in-cljs-repl! code ns repl-env compiler-env effective-repl-options job-id)))
+    (eval/eval-in-cljs-repl! code ns repl-env compiler-env effective-repl-options job-id response-fn)))
 
 (defn spawn-compiler! [nrepl-message]
   (let [initial-session-meta (state/get-session-meta)
