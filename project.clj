@@ -25,8 +25,8 @@
                  ; thus we mark extra deps with :scope "test" and filter them later when producing jar library
                  [binaryage/chromex "0.5.1" :scope "test"]
                  [binaryage/devtools "0.8.2" :scope "test"]
-                 [cljs-http "0.1.41" :scope "test"]
-                 [figwheel "0.5.7" :scope "test"]
+                 [cljs-http "0.1.42" :scope "test"]
+                 [figwheel "0.5.8" :scope "test"]
                  [reforms "0.4.3" :scope "test"]
                  [rum "0.9.1" :scope "test"]
                  [rum-reforms "0.4.3" :scope "test"]
@@ -130,7 +130,7 @@
 
              :cljs
              {:plugins [[lein-cljsbuild "1.1.4"]
-                        [lein-figwheel "0.5.7"]]
+                        [lein-figwheel "0.5.8"]]
               :hooks   [leiningen.cljsbuild]}
 
              :test-runner
