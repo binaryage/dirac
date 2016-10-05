@@ -99,7 +99,7 @@
   :profiles {:lib
              ^{:pom-scope :provided}                                                                                          ; ! to overcome default jar/pom behaviour, our :dependencies replacement would be ignored for some reason
              [:nuke-aliases
-              {:dependencies   ~(let [project (->> "project.clj"
+              {:dependencies   ~(let [project (->> "/Users/darwin/code/dirac-ws/dirac/project.clj"
                                                 slurp read-string (drop 3) (apply hash-map))
                                       test-dep? #(->> % (drop 2) (apply hash-map) :scope (= "test"))
                                       non-test-deps (remove test-dep? (:dependencies project))]
