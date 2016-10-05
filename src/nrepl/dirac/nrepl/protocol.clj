@@ -10,10 +10,13 @@
    :kind    kind
    :content content})
 
-(defn prepare-current-env-info-response [ns compiler-id default-compiler-id]
-  {:ns                  ns
-   :compiler-id         compiler-id
-   :default-compiler-id default-compiler-id})
+(defn prepare-current-env-info-response [current-ns selected-compiler-id default-compiler-id]
+  (assert (string? current-ns))
+  (assert (or (nil? selected-compiler-id) (string? selected-compiler-id)))
+  (assert (or (nil? default-compiler-id) (string? default-compiler-id)))
+  {:ns                   current-ns
+   :selected-compiler-id selected-compiler-id
+   :default-compiler-id  default-compiler-id})
 
 (defn prepare-printed-value-response [value]
   (assert (or (nil? value) (string? value)))

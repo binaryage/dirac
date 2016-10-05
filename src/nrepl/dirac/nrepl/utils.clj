@@ -5,6 +5,7 @@
             [dirac.nrepl.protocol :as protocol]))
 
 (defn prepare-current-env-info-response []
-  (protocol/prepare-current-env-info-response analyzer/*cljs-ns*
-                                              (compilers/get-selected-compiler-id)
-                                              (compilers/get-default-compiler-id)))
+  (let [current-ns (str analyzer/*cljs-ns*)
+        selected-compiler-id (compilers/get-selected-compiler-id)
+        default-compiler-id (compilers/get-default-compiler-id)]
+    (protocol/prepare-current-env-info-response current-ns selected-compiler-id default-compiler-id)))
