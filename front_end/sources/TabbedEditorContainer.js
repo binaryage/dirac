@@ -88,22 +88,20 @@ WebInspector.TabbedEditorContainer.prototype = {
     _onBindingCreated: function(event)
     {
         var binding = /** @type {!WebInspector.PersistenceBinding} */(event.data);
+        var networkTabId = this._tabIds.get(binding.network);
         var fileSystemTabId = this._tabIds.get(binding.fileSystem);
+
+        if (networkTabId)
+            this._tabbedPane.changeTabTitle(networkTabId, this._titleForFile(binding.fileSystem), this._tooltipForFile(binding.fileSystem));
         if (!fileSystemTabId)
             return;
-
-        var isSelected = this._currentFile === binding.fileSystem;
+        var wasSelectedInFileSystem = this._currentFile === binding.fileSystem;
         var tabIndex = this._tabbedPane.tabIndex(fileSystemTabId);
         this._closeTabs([fileSystemTabId]);
-        var networkTabId = this._tabIds.get(binding.network);
-        if (networkTabId) {
-            if (isSelected)
-                this._tabbedPane.selectTab(networkTabId, false);
-            return;
-        }
-        var tabId = this._appendFileTab(binding.network, false, tabIndex);
-        if (isSelected)
-            this._tabbedPane.selectTab(tabId, false);
+        if (!networkTabId)
+            networkTabId = this._appendFileTab(binding.network, false, tabIndex);
+        if (wasSelectedInFileSystem)
+            this._tabbedPane.selectTab(networkTabId, false);
     },
 
     /**
@@ -287,6 +285,7 @@ WebInspector.TabbedEditorContainer.prototype = {
      */
     _titleForFile: function(uiSourceCode)
     {
+        uiSourceCode = WebInspector.persistence.fileSystem(uiSourceCode) || uiSourceCode;
         var maxDisplayNameLength = 30;
         var title = uiSourceCode.displayName(true).trimMiddle(maxDisplayNameLength);
         if (uiSourceCode.isDirty() || WebInspector.persistence.hasUnsavedCommittedChanges(uiSourceCode))
@@ -438,6 +437,7 @@ WebInspector.TabbedEditorContainer.prototype = {
      */
     _tooltipForFile: function(uiSourceCode)
     {
+        uiSourceCode = WebInspector.persistence.fileSystem(uiSourceCode) || uiSourceCode;
         return uiSourceCode.url();
     },
 
