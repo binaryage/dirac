@@ -143,10 +143,6 @@
        (= ":cljs/quit" (string/trim (:code nrepl-message)))
        (sessions/joined-session? (:session nrepl-message))))
 
-(defn issue-dirac-special-command! [nrepl-message command]
-  (log/debug "issue-dirac-special-command!" command)
-  (special/handle-dirac-special-command! (assoc nrepl-message :code (str "(dirac! " command ")"))))
-
 (defn handle-finish-dirac-job! [nrepl-message]
   (log/debug "handle-finish-dirac-job!")
   (helpers/send-response! nrepl-message (select-keys nrepl-message [:status :err :out])))
@@ -174,7 +170,7 @@
         (debug/log-stack-trace!)
         (cond
           (special/dirac-special-command? nrepl-message) (special/handle-dirac-special-command! nrepl-message)
-          (is-eval-cljs-quit-in-joined-session? nrepl-message) (issue-dirac-special-command! nrepl-message ":disjoin")
+          (is-eval-cljs-quit-in-joined-session? nrepl-message) (special/issue-dirac-special-command! nrepl-message ":disjoin")
           :else (handle-normal-message! nrepl-message next-handler))))))
 
 ; -- nrepl middleware -------------------------------------------------------------------------------------------------------

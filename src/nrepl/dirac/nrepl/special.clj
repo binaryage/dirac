@@ -69,3 +69,7 @@
                   (make-nrepl-message-with-captured-output nrepl-message)
                   nrepl-message)]
     (special-repl-eval! message (sanitize-dirac-command code) (find-ns 'dirac.nrepl.controls))))                              ; we want to eval special commands in dirac.nrepl.controls namespace
+
+(defn issue-dirac-special-command! [nrepl-message command]
+  (log/debug "issue-dirac-special-command!" command)
+  (handle-dirac-special-command! (assoc nrepl-message :code (str "(dirac! " command ")"))))
