@@ -24,8 +24,7 @@
   (let [result (with-bindings @(:session nrepl-message)
                  (try
                    (binding [*ns* ns
-                             state/*nrepl-message* nrepl-message
-                             nrepl-ieval/*msg* nrepl-message]
+                             state/*nrepl-message* nrepl-message]
                      (eval (read-string code-str)))
                    (catch Throwable e
                      (let [root-ex (root-cause e)
