@@ -130,7 +130,7 @@
 }
 
 .dirac-prompt-compiler::before {
-    content: '»';
+    content: "\0000BB";
     padding: 0px 10px;
     color: rgba(153, 153, 153, 0.3);
 }
