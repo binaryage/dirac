@@ -29,7 +29,7 @@ before_install:
   # - sudo dpkg -i google-chrome*.deb
   # install chrome driver
 
-  - git clone git@github.com:scheib/chromium-latest-linux.git
+  - git clone https://github.com/scheib/chromium-latest-linux.git
   - mkdir -p chromium-builds
   - cd chromium-builds && `pwd`/../chromium-latest-linux/update.sh && cd ..
   - export DIRAC_CHROME_BINARY_PATH=`pwd`/chromium-builds/latest
