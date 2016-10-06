@@ -181,22 +181,22 @@
       (str "Listing all ClojureScript compilers currently available in your nREPL server:\n"
            (string/join "\n" (map-indexed printer descriptors))))))
 
-(defn ^:dynamic make-no-compilers-msg [selected-compiler available-compilers]
-  (str "No ClojureScript compiler matching " (make-human-readable-selected-compiler selected-compiler) " "
-       "is currently available: " (make-human-readable-list available-compilers) "."
-       "\nYou may want to use `(dirac! :ls)` to review current situation."))
+(defn ^:dynamic make-no-compilers-msg [selected-compiler]
+  (let [compiler (make-human-readable-selected-compiler selected-compiler)]
+    (str "No ClojureScript compiler matching " compiler " is currently available.\n"
+         "You may want to use `(dirac! :ls)` to review current situation.")))
 
-(defn ^:dynamic make-status-msg [session-type dirac-session? selected-compiler compiler-descriptor available-compiler-ids]
+(defn ^:dynamic make-status-msg [session-type dirac-session? selected-compiler compiler-descriptor]
   (str "Your current nREPL session is " session-type ".\n"
        (if dirac-session?
-         (str "Your currently selected ClojureScript compiler is " (make-human-readable-selected-compiler selected-compiler)
-              (if (some? compiler-descriptor)
-                (let [compiler-id (compilers/get-compiler-descriptor-id compiler-descriptor)]
-                  (if (= compiler-id selected-compiler)
-                    "."
-                    (str " which is currently matching compiler <" compiler-id ">.")))
-                (let [compilers (make-human-readable-list available-compiler-ids)]
-                  (str " which currently does not match any available compilers: " compilers ".")))))))
+         (let [compiler (make-human-readable-selected-compiler selected-compiler)]
+           (str "Your currently selected ClojureScript compiler is " compiler
+                (if (some? compiler-descriptor)
+                  (let [compiler-id (compilers/get-compiler-descriptor-id compiler-descriptor)]
+                    (if (= compiler-id selected-compiler)
+                      "."
+                      (str " which is currently matching compiler <" compiler-id ">.")))
+                  (str " which currently does not match any available compilers.")))))))
 
 (defn ^:dynamic make-version-msg [nrepl-info]
   (str nrepl-info "."))
@@ -249,9 +249,8 @@
         session-type (sessions/get-session-type session)
         dirac-session? (state/dirac-session?)
         selected-compiler (state/get-session-selected-compiler)
-        selected-compiler-descriptor (compilers/get-selected-compiler-descriptor)
-        available-compiler-ids (compilers/collect-all-available-compiler-ids)]
-    (println (make-status-msg session-type dirac-session? selected-compiler selected-compiler-descriptor available-compiler-ids)))
+        selected-compiler-descriptor (compilers/get-selected-compiler-descriptor)]
+    (println (make-status-msg session-type dirac-session? selected-compiler selected-compiler-descriptor)))
   ::no-result)
 
 ; -- (dirac! :ls) -----------------------------------------------------------------------------------------------------------
@@ -326,7 +325,7 @@
         (compilers/select-compiler! selected-compiler)
         (let [matched-compiler-descriptor (compilers/find-available-matching-compiler-descriptor selected-compiler)]
           (if (nil? matched-compiler-descriptor)
-            (error-println (make-no-compilers-msg selected-compiler (compilers/collect-all-available-compiler-ids)))))
+            (error-println (make-no-compilers-msg selected-compiler))))
         (state/reply! (utils/prepare-current-env-info-response)))))
   ::no-result)
 

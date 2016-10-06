@@ -84,8 +84,8 @@
         (state/set-session-meta! initial-session-meta)                                                                        ; restore session to initial state
         (throw e)))))
 
-(defn report-missing-compiler! [nrepl-message selected-compiler available-compilers]
-  (let [msg (messages/make-missing-compiler-msg selected-compiler available-compilers)]
+(defn report-missing-compiler! [nrepl-message selected-compiler]
+  (let [msg (messages/make-missing-compiler-msg selected-compiler)]
     (helpers/send-response! nrepl-message (protocol/prepare-print-output-response :stderr msg))))
 
 (defn user-wants-quit? [code]
@@ -104,7 +104,7 @@
             response-fn (partial helpers/send-response! nrepl-message)]
         (if-let [compiler-env (compilers/get-selected-compiler-env)]
           (eval/eval-in-cljs-repl! code ns cljs-repl-env compiler-env cljs-repl-options job-id response-fn scope-info mode)
-          (report-missing-compiler! nrepl-message selected-compiler (compilers/collect-all-available-compiler-ids))))
+          (report-missing-compiler! nrepl-message selected-compiler)))
       (let [original-clj-ns (state/get-session-original-clj-ns)]
         (reset! (:cached-setup cljs-repl-env) :tear-down)                                                                     ; TODO: find a better way
         (cljs.repl/-tear-down cljs-repl-env)

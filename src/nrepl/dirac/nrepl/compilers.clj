@@ -67,12 +67,12 @@
 
 (defn find-available-compiler-descriptor-by-id [descriptor-id]
   (let [descriptors (collect-all-available-compiler-descriptors)]
-    (log/debug "available compiler descriptors:" (logging/pprint (compiler-descriptors-ids descriptors)))
+    (log/trace "available compiler descriptors:" (logging/pprint (compiler-descriptors-ids descriptors)))
     (find-compiler-descriptor-by-id descriptor-id descriptors)))
 
 (defn find-available-matching-compiler-descriptor [match]
   (let [descriptors (collect-all-available-compiler-descriptors)]
-    (log/debug "available compiler descriptors:" (logging/pprint (compiler-descriptors-ids descriptors)))
+    (log/trace "available compiler descriptors:" (logging/pprint (compiler-descriptors-ids descriptors)))
     (find-matching-compiler-descriptor match descriptors)))
 
 (defn get-selected-compiler-descriptor []
@@ -99,7 +99,7 @@
 
 (defn capture-current-compiler-and-select-it! []
   (let [session-id (state/get-session-id)]
-    (log/debug "capture-current-compiler-and-select-it!" session-id)
+    (log/trace "capture-current-compiler-and-select-it!" session-id)
     (assert cljs-env/*compiler*)
     (let [short-session-id (sessions/humanize-session-id session-id)
           compiler-id (str "dirac" "/" short-session-id "/" (get-next-compiler-number-for-session!))
