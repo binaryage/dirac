@@ -6,9 +6,11 @@
             [dirac.nrepl.sessions :as sessions]
             [dirac.nrepl.helpers :as helpers]
             [dirac.nrepl.transports.output-capturing :refer [make-nrepl-message-with-captured-output]]
+            [dirac.nrepl.transports.status-cutting :refer [make-nrepl-message-with-status-cutting-transport]]
             [dirac.nrepl.state :as state]
             [dirac.nrepl.driver :as driver]
-            [dirac.nrepl.protocol :as protocol])
+            [dirac.nrepl.protocol :as protocol]
+            [dirac.nrepl.debug :as debug])
   (:import (clojure.lang Namespace)
            java.io.Writer))
 
@@ -31,7 +33,7 @@
       (.flush *out*)
       (.flush *err*))))
 
-(defn special-repl-eval! [nrepl-message code-str ns]                                                                          ; TODO: we could get rid of nrepl-message dependency here
+(defn special-repl-eval!* [nrepl-message code-str ns]                                                                         ; TODO: we could get rid of nrepl-message dependency here
   {:pre [(string? code-str)
          (instance? Namespace ns)]}
   (log/debug "special-repl-eval!" code-str "in" ns)
@@ -45,6 +47,11 @@
                          (not no-result?) (merge (protocol/prepare-printed-value-response (helpers/safe-pr-str result))))]
     (helpers/send-response! nrepl-message response)))
 
+(defn special-repl-eval! [nrepl-message & args]
+  (debug/log-stack-trace!)
+  (let [status-cutting-nrepl-message (make-nrepl-message-with-status-cutting-transport nrepl-message)]
+    (apply special-repl-eval!* status-cutting-nrepl-message args)))
+
 (defn sanitize-dirac-command [code-str]
   ; this is just for convenience, we convert some common forms to canonical (dirac! :help) form
   (let [trimmed-code (string/trim code-str)]
@@ -55,10 +62,10 @@
 
 (defn handle-dirac-special-command! [nrepl-message]
   (let [{:keys [code session]} nrepl-message
-        message (if (sessions/dirac-session? session)
-                  (make-nrepl-message-with-captured-output nrepl-message)
-                  nrepl-message)]
-    (special-repl-eval! message (sanitize-dirac-command code) (find-ns 'dirac.nrepl.controls))))                              ; we want to eval special commands in dirac.nrepl.controls namespace
+        nrepl-message (if (sessions/dirac-session? session)
+                        (make-nrepl-message-with-captured-output nrepl-message)
+                        nrepl-message)]
+    (special-repl-eval! nrepl-message (sanitize-dirac-command code) (find-ns 'dirac.nrepl.controls))))                        ; we want to eval special commands in dirac.nrepl.controls namespace
 
 (defn issue-dirac-special-command! [nrepl-message command]
   (log/debug "issue-dirac-special-command!" command)
