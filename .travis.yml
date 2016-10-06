@@ -21,13 +21,18 @@ before_install:
   - sudo sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list'
   - sudo apt-get update
   - sudo apt-get install colordiff
-  - sudo apt-get install google-chrome-unstable # want test against canary-like version
+  #- sudo apt-get install google-chrome-unstable # want test against canary-like version
   # http://blog.500tech.com/setting-up-travis-ci-to-run-tests-on-latest-google-chrome-version/
   # - sudo apt-get update
   # - sudo apt-get install -y libappindicator1 fonts-liberation
   # - wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
   # - sudo dpkg -i google-chrome*.deb
   # install chrome driver
+
+  - git clone git@github.com:scheib/chromium-latest-linux.git
+  - mkdir -p chromium-builds
+  - cd chromium-builds && $HOME/chromium-latest-linux/update.sh && cd ..
+  - export DIRAC_CHROME_BINARY_PATH=$HOME/chromium-builds/latest
 
   #- wget https://chromedriver.storage.googleapis.com/2.23/chromedriver_linux64.zip
   #- unzip chromedriver_linux64.zip
