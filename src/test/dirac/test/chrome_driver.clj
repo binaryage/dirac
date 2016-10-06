@@ -24,6 +24,7 @@
                         :dirac-dev
                         :dirac-host-os
                         :dirac-use-chromium
+                        :dirac-chrome-binary-path
                         :dirac-chrome-driver-verbose
                         :dirac-chrome-driver-browser-log-level])
 
@@ -60,15 +61,16 @@
   [dirac-root "test" "marion" "resources" "unpacked"])                                                                        ; note: we always use dev version, it is just a helper extension, no need for advanced compliation here
 
 (defn pick-chrome-binary-path [options]
-  (let [{:keys [dirac-use-chromium dirac-host-os]} options]
-    (if dirac-use-chromium
-      (case dirac-host-os
-        "Mac OS X" "/Applications/Chromium.app/Contents/MacOS/Chromium"
-        nil)
-      (case dirac-host-os
-        "Mac OS X" "/Applications/Google Chrome Canary.app/Contents/MacOS/Google Chrome Canary"
-        "Linux" "/usr/bin/google-chrome-unstable"
-        nil))))
+  (let [{:keys [dirac-chrome-binary-path dirac-use-chromium dirac-host-os]} options]
+    (cond
+      (some? dirac-chrome-binary-path) dirac-chrome-binary-path
+      dirac-use-chromium (case dirac-host-os
+                           "Mac OS X" "/Applications/Chromium.app/Contents/MacOS/Chromium"
+                           nil)
+      :else (case dirac-host-os
+              "Mac OS X" "/Applications/Google Chrome Canary.app/Contents/MacOS/Google Chrome Canary"
+              "Linux" "/usr/bin/google-chrome-unstable"
+              nil))))
 
 (defn beautify-command-line [raw-command-line-text]
   (string/join (interpose " \\\n                     --" (string/split raw-command-line-text #" --"))))
