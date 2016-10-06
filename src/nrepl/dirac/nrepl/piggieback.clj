@@ -70,24 +70,18 @@
 
 ; -- middleware dispatch logic ----------------------------------------------------------------------------------------------
 
-(defn handle-identify-dirac-nrepl-middleware! [_next-handler nrepl-message]
+(defn handle-identify-dirac-nrepl-middleware! [nrepl-message]
   (helpers/send-response! nrepl-message {:version version}))
 
-(defn handle-eval! [next-handler nrepl-message]
+(defn handle-eval! [nrepl-message]
   (let [{:keys [session]} nrepl-message]
-    (if (sessions/dirac-session? session)
-      (evaluate! nrepl-message)
-      (do
-        (state/register-in-flight-nrepl-message! session nrepl-message)
-        (next-handler (make-nrepl-message-with-observed-errors nrepl-message))))))
+    (assert (sessions/dirac-session? session))
+    (evaluate! nrepl-message)))
 
-(defn handle-load-file! [next-handler nrepl-message]
+(defn handle-load-file! [nrepl-message]
   (let [{:keys [session]} nrepl-message]
-    (if (sessions/dirac-session? session)
-      (load-file! nrepl-message)
-      (do
-        (state/register-in-flight-nrepl-message! session nrepl-message)
-        (next-handler (make-nrepl-message-with-observed-errors nrepl-message))))))
+    (assert (sessions/dirac-session? session))
+    (load-file! nrepl-message)))
 
 (defn wrap-nrepl-message-if-observed-job [nrepl-message]
   (if-let [observed-job (jobs/get-observed-job nrepl-message)]
@@ -103,31 +97,59 @@
   (log/debug "handle-finish-dirac-job!")
   (helpers/send-response! nrepl-message (select-keys nrepl-message [:status :err :out])))
 
-(defn handle-known-ops-or-delegate! [nrepl-message next-handler]
-  (case (:op nrepl-message)
-    "identify-dirac-nrepl-middleware" (handle-identify-dirac-nrepl-middleware! next-handler nrepl-message)
-    "finish-dirac-job" (handle-finish-dirac-job! nrepl-message)
-    "eval" (handle-eval! next-handler nrepl-message)
-    "load-file" (handle-load-file! next-handler nrepl-message)
+(def our-ops {"identify-dirac-nrepl-middleware" true
+              "finish-dirac-job"                true
+              "eval"                            #(state/dirac-session?)
+              "load-file"                       #(state/dirac-session?)})
+
+(defn our-op? [op]
+  (boolean
+    (let [pred (get our-ops op)]
+      (or (true? pred)
+          (and (fn? pred) (pred))))))
+
+(defn our-message? [nrepl-message]
+  (boolean
+    (or (special/dirac-special-command? nrepl-message)
+        (is-eval-cljs-quit-in-joined-session? nrepl-message)
+        (our-op? (:op nrepl-message)))))
+
+(defn handle-op! [nrepl-message]
+  (let [op (:op nrepl-message)]
+    (assert (our-op? op))
+    (case op
+      "identify-dirac-nrepl-middleware" (handle-identify-dirac-nrepl-middleware! nrepl-message)
+      "finish-dirac-job" (handle-finish-dirac-job! nrepl-message)
+      "eval" (handle-eval! nrepl-message)
+      "load-file" (handle-load-file! nrepl-message))))
+
+(defn handle-normal-message! [nrepl-message]
+  (let [nrepl-message (wrap-nrepl-message-if-observed-job nrepl-message)]
+    (cond
+      (sessions/joined-session? (:session nrepl-message)) (joining/forward-message-to-joined-session! nrepl-message)
+      :else (handle-op! nrepl-message))))
+
+(defn handle-message! [nrepl-message]
+  (let [nrepl-message (make-nrepl-message-with-debug-logging nrepl-message)
+        session (state/get-current-session)]
+    (log/debug "handle-message!" (:op nrepl-message) (sessions/get-session-id session))
+    (cond
+      (special/dirac-special-command? nrepl-message) (special/handle-dirac-special-command! nrepl-message)
+      (is-eval-cljs-quit-in-joined-session? nrepl-message) (special/issue-dirac-special-command! nrepl-message ":disjoin")
+      :else (handle-normal-message! nrepl-message))))
+
+(defn handler-job! [next-handler nrepl-message]
+  (state/register-last-seen-nrepl-message! nrepl-message)
+  (if (our-message? nrepl-message)
+    (handle-message! nrepl-message)
     (next-handler nrepl-message)))
 
-(defn handle-normal-message! [nrepl-message next-handler]
-  (let [{:keys [session] :as nrepl-message} (wrap-nrepl-message-if-observed-job nrepl-message)]
-    (cond
-      (sessions/joined-session? session) (joining/forward-message-to-joined-session! nrepl-message)
-      :else (handle-known-ops-or-delegate! nrepl-message next-handler))))
-
 (defn dirac-nrepl-middleware-handler [next-handler nrepl-message]
+  (log/trace "processing nrepl message:\n" (debug/pprint-nrepl-message nrepl-message))
+  (debug/log-stack-trace!)
   (let [session (:session nrepl-message)]
     (state/ensure-session session
-      (let [nrepl-message (make-nrepl-message-with-debug-logging nrepl-message)]
-        (log/debug "dirac-nrepl-middleware:" (:op nrepl-message) (sessions/get-session-id session))
-        (log/trace "received nrepl message:\n" (debug/pprint-nrepl-message nrepl-message))
-        (debug/log-stack-trace!)
-        (cond
-          (special/dirac-special-command? nrepl-message) (special/handle-dirac-special-command! nrepl-message)
-          (is-eval-cljs-quit-in-joined-session? nrepl-message) (special/issue-dirac-special-command! nrepl-message ":disjoin")
-          :else (handle-normal-message! nrepl-message next-handler))))))
+      (handler-job! next-handler nrepl-message))))
 
 ; -- nrepl middleware -------------------------------------------------------------------------------------------------------
 

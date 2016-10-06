@@ -11,18 +11,6 @@
 
 (def sniffer->proxy (atom {}))
 
-; -- in-flight message for bootstrapping ------------------------------------------------------------------------------------
-
-; this is only for bootstrapping Dirac CLJS REPL,
-; we want to avoid depending directly on clojure.tools.nrepl.middleware.interruptible-eval/*msg*
-(def ^:dynamic *in-flight-nrepl-message* nil)
-
-(defn register-in-flight-nrepl-message! [session nrepl-messsage]
-  (swap! session assoc #'*in-flight-nrepl-message* nrepl-messsage))
-
-(defn get-in-flight-nrepl-message []
-  *in-flight-nrepl-message*)
-
 ; -- dirac! eval state ------------------------------------------------------------------------------------------------------
 
 (def ^:dynamic *nrepl-message*)                                                                                               ; should be set by binding wrapping eval in repl-eval!
@@ -45,6 +33,22 @@
      (assert (nil? *current-session*))
      (binding [*current-session* ~session]
        ~@body)))
+
+; -- in-flight message for bootstrapping ------------------------------------------------------------------------------------
+
+; this is only for bootstrapping Dirac CLJS REPL,
+; we want to avoid depending directly on clojure.tools.nrepl.middleware.interruptible-eval/*msg*
+; please note that the machinery in interruptible-eval is async, the actual message processing could be executed
+; when leave our stack frame, that is why cannot use simple binding and we have to use session's binding map
+(def ^:dynamic *last-seen-nrepl-message* nil)
+
+(defn register-last-seen-nrepl-message!
+  ([nrepl-message] (register-last-seen-nrepl-message! *current-session* nrepl-message))
+  ([session nrepl-messsage]
+   (swap! session assoc #'*last-seen-nrepl-message* nrepl-messsage)))
+
+(defn get-last-seen-nrepl-message []
+  *last-seen-nrepl-message*)
 
 ; -- helpers ----------------------------------------------------------------------------------------------------------------
 

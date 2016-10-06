@@ -46,7 +46,7 @@
     (send-bootstrap-info! nrepl-message weasel-url)))
 
 (defn bootstrap! [& [config]]
-  (if-let [nrepl-message (state/get-in-flight-nrepl-message)]
+  (if-let [nrepl-message (state/get-last-seen-nrepl-message)]
     (let [effective-nrepl-config (config/get-effective-config config)
           weasel-repl-options (:weasel-repl effective-nrepl-config)
           runtime-tag (:runtime-tag effective-nrepl-config)
