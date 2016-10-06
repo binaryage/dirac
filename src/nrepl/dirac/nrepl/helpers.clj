@@ -5,7 +5,8 @@
             [clojure.tools.nrepl.misc :as nrepl-misc]
             [dirac.nrepl.protocol :as protocol])
   (:import (java.util UUID)
-           (java.io StringWriter PrintWriter)))
+           (java.io StringWriter PrintWriter)
+           (clojure.lang IExceptionInfo)))
 
 (defmacro with-err-output [& body]
   `(binding [*out* *err*]
@@ -66,3 +67,8 @@
       status
       [status])
     []))
+
+(defn javascript-eval-trouble? [e]
+  (boolean
+    (and (instance? IExceptionInfo e) (#{:js-eval-error :js-eval-exception} (:type (ex-data e))))))
+
