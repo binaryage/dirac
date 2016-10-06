@@ -24,7 +24,9 @@
             [dirac.nrepl.protocol :as protocol]
             [dirac.nrepl.utils :as utils]
             [dirac.nrepl.transports.debug-logging :refer [make-nrepl-message-with-debug-logging]]
-            [dirac.nrepl.transports.job-observing :refer [make-nrepl-message-with-job-observing-transport]]))
+            [dirac.nrepl.transports.errors-observing :refer [make-nrepl-message-with-observed-errors]]
+            [dirac.nrepl.transports.trace-printing :refer [make-nrepl-message-with-trace-printing]]
+            [dirac.nrepl.transports.job-observing :refer [make-nrepl-message-with-job-observing]]))
 
 ; -- middleware dispatch logic ----------------------------------------------------------------------------------------------
 
@@ -47,7 +49,14 @@
 
 (defn wrap-nrepl-message-if-observed-job [nrepl-message]
   (if-let [observed-job (jobs/get-observed-job nrepl-message)]
-    (make-nrepl-message-with-job-observing-transport observed-job nrepl-message)
+    (make-nrepl-message-with-job-observing observed-job nrepl-message)
+    nrepl-message))
+
+(defn wrap-nrepl-message-for-dirac-session [nrepl-message]
+  (if (state/dirac-session? (:session nrepl-message))
+    (-> nrepl-message
+        make-nrepl-message-with-trace-printing                                                                                ; note: the order is important here, message should first have errors observed and then traced
+        make-nrepl-message-with-observed-errors)
     nrepl-message))
 
 ; -- message handling cascade -----------------------------------------------------------------------------------------------
@@ -90,9 +99,10 @@
   (let [nrepl-message (make-nrepl-message-with-debug-logging nrepl-message)
         session (state/get-current-session)]
     (log/debug "handle-message!" (:op nrepl-message) (sessions/get-session-id session))
-    (cond
-      (special/dirac-special-command? nrepl-message) (special/handle-dirac-special-command! nrepl-message)
-      :else (handle-nonspecial-message! nrepl-message))))
+    (let [nrepl-message (wrap-nrepl-message-for-dirac-session nrepl-message)]
+      (cond
+        (special/dirac-special-command? nrepl-message) (special/handle-dirac-special-command! nrepl-message)
+        :else (handle-nonspecial-message! nrepl-message)))))
 
 (defn handler-job! [next-handler nrepl-message]
   (state/register-last-seen-nrepl-message! nrepl-message)

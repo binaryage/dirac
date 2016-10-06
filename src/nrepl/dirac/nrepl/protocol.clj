@@ -25,3 +25,6 @@
 
 (defn prepare-done-response []
   {:status :done})
+
+(defn prepare-related-response [template-message response]
+  (merge (select-keys template-message [:id :session]) response))
