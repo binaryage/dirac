@@ -283,7 +283,7 @@ WebInspector.TextPrompt.prototype = {
      */
     _updateAutoComplete: function(force)
     {
-        this.clearAutocomplete();
+        this._clearAutocompleteElement();
         this.autoCompleteSoon(force);
     },
 
@@ -377,7 +377,11 @@ WebInspector.TextPrompt.prototype = {
     {
         if (this.isSuggestBoxVisible())
             this._suggestBox.hide();
+        this._clearAutocompleteElement();
+    },
 
+    _clearAutocompleteElement: function()
+    {
         if (this._completeTimeout) {
             clearTimeout(this._completeTimeout);
             delete this._completeTimeout;
