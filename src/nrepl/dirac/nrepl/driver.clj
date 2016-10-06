@@ -10,10 +10,9 @@
 ; -- driver construction ----------------------------------------------------------------------------------------------------
 
 (defn get-initial-settings []
-  {:current-job                          (volatile! nil)                                                                      ; current job-id
-   :recording?                           (volatile! false)                                                                    ; should we record printing into *out* and *err*?
-   :suppress-flushing                    (volatile! #{})                                                                      ; temporary suppression of flushing, contains a set of sniffer-keys
-   :suppress-print-recording-until-flush (volatile! #{})})                                                                    ; temporary suppression of recording, contains a set of sniffer-keys)
+  {:current-job       (volatile! nil)                                                                                         ; current job-id
+   :recording?        (volatile! false)                                                                                       ; should we record printing into *out* and *err*?
+   :suppress-flushing (volatile! #{})})                                                                                       ; temporary suppression of flushing, contains a set of sniffer-keys
 
 (defn make-driver [extra-settings]
   (merge (get-initial-settings) extra-settings))
@@ -54,18 +53,6 @@
 
 ; -- recording/flushing suppression -----------------------------------------------------------------------------------------
 
-(defn suppress-recording-until-flush [driver sniffer-key]
-  (let [suppress-var (:suppress-print-recording-until-flush driver)]
-    (vreset! suppress-var (conj @suppress-var sniffer-key))))
-
-(defn unsuppress-recording-until-flush [driver sniffer-key]
-  (let [suppress-var (:suppress-print-recording-until-flush driver)]
-    (vreset! suppress-var (disj @suppress-var sniffer-key))))
-
-(defn suppressed-recording-until-flush? [driver sniffer-key]
-  (let [suppress-var (:suppress-print-recording-until-flush driver)]
-    (sniffer-key @suppress-var)))
-
 (defn suppress-flushing [driver sniffer-key]
   (let [suppress-var (:suppress-flushing driver)]
     (vreset! suppress-var (conj @suppress-var sniffer-key))))
@@ -84,7 +71,6 @@
   @(:recording? driver))
 
 (defn reset-sniffer-state! [driver sniffer-key]
-  (unsuppress-recording-until-flush driver sniffer-key)
   (unsuppress-flushing driver sniffer-key)
   (sniffer/clear-content! (get-sniffer driver sniffer-key)))
 
@@ -141,7 +127,7 @@
               ; it will be printed in cljs.repl/repl-caught via (.printStackTrace e *err*)
               ; we capture output and send it to client side with special kind :java-trace
               ; with this hint, client-side should implement a nice way how to present this to the user
-              (report-java-trace! driver call-cljs-repl-caught!)))))
+              (report-java-trace! driver call-cljs-repl-caught!)))))                                                          ; TODO: move this into general transport wrapper, so it works outside the driver as well
       ; last send :eval-error for traditional REPL clients, it will be ignored by Dirac client
       (let [exception-details (helpers/capture-exception-details e)]
         (send! driver {:status  :eval-error
@@ -160,9 +146,7 @@
     (let [sniffer (get-sniffer driver sniffer-key)]
       (if-let [content (sniffer/extract-all-lines-but-last! sniffer)]
         (if (recording? driver)
-          (if (suppressed-recording-until-flush? driver sniffer-key)
-            (unsuppress-recording-until-flush driver sniffer-key)
-            (report-output driver sniffer-key content)))))))
+          (report-output driver sniffer-key content))))))
 
 ; -- initialization ---------------------------------------------------------------------------------------------------------
 
