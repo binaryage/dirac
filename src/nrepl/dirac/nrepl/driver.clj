@@ -45,11 +45,10 @@
 
 (defn send! [driver msg]
   (if-let [send-fn (get-send-response-fn driver)]
-    (send-fn msg)))
+    (send-fn (assoc msg :id (get-current-job driver)))))
 
-(defn report-output [driver job-id output-kind content]
-  (let [response (-> (protocol/prepare-print-output-response output-kind content)
-                     (assoc :id job-id))]
+(defn report-output [driver output-kind content]
+  (let [response (protocol/prepare-print-output-response output-kind content)]
     (send! driver response)))
 
 ; -- recording/flushing suppression -----------------------------------------------------------------------------------------
@@ -100,7 +99,7 @@
    (let [sniffer (get-sniffer driver sniffer-key)
          content (sniffer/extract-content! sniffer)]
      (if-not (nil? content)
-       (report-output driver (get-current-job driver) output-kind content)))))
+       (report-output driver output-kind content)))))
 
 (defn flush! [driver]
   (flush-sniffer! driver :stdout)
@@ -163,7 +162,7 @@
         (if (recording? driver)
           (if (suppressed-recording-until-flush? driver sniffer-key)
             (unsuppress-recording-until-flush driver sniffer-key)
-            (report-output driver (get-current-job driver) sniffer-key content)))))))
+            (report-output driver sniffer-key content)))))))
 
 ; -- initialization ---------------------------------------------------------------------------------------------------------
 
@@ -180,13 +179,13 @@
     (binding [*out* stdout-sniffer
               *err* stderr-sniffer]
       (try
-        (start-recording! driver)
         (start-job! driver job-id)
+        (start-recording! driver)
         (start-fn driver caught-fn flush-fn)
         (catch Throwable e
           (caught-fn e nil nil))
         (finally
-          (stop-job! driver)
           (stop-recording! driver)
+          (stop-job! driver)
           (sniffer/destroy-sniffer stdout-sniffer)
           (sniffer/destroy-sniffer stderr-sniffer))))))
