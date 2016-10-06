@@ -11,9 +11,8 @@
 ; -- driver construction ----------------------------------------------------------------------------------------------------
 
 (defn get-initial-settings []
-  {:current-job       (volatile! nil)                                                                                         ; current job-id
-   :recording?        (volatile! false)                                                                                       ; should we record printing into *out* and *err*?
-   :suppress-flushing (volatile! #{})})                                                                                       ; temporary suppression of flushing, contains a set of sniffer-keys
+  {:current-job (volatile! nil)                                                                                               ; current job-id
+   :recording?  (volatile! false)})                                                                                           ; should we record printing into *out* and *err*?
 
 (defn make-driver [extra-settings]
   (merge (get-initial-settings) extra-settings))
@@ -52,27 +51,12 @@
   (let [response (protocol/prepare-print-output-response output-kind content)]
     (send! driver response)))
 
-; -- recording/flushing suppression -----------------------------------------------------------------------------------------
-
-(defn suppress-flushing [driver sniffer-key]
-  (let [suppress-var (:suppress-flushing driver)]
-    (vreset! suppress-var (conj @suppress-var sniffer-key))))
-
-(defn unsuppress-flushing [driver sniffer-key]
-  (let [suppress-var (:suppress-flushing driver)]
-    (vreset! suppress-var (disj @suppress-var sniffer-key))))
-
-(defn suppressed-flushing? [driver sniffer-key]
-  (let [suppress-var (:suppress-flushing driver)]
-    (sniffer-key @suppress-var)))
-
 ; -- print recording --------------------------------------------------------------------------------------------------------
 
 (defn recording? [driver]
   @(:recording? driver))
 
 (defn reset-sniffer-state! [driver sniffer-key]
-  (unsuppress-flushing driver sniffer-key)
   (sniffer/clear-content! (get-sniffer driver sniffer-key)))
 
 (defn start-recording! [driver]
@@ -97,12 +81,6 @@
   (when (recording? driver)
     (flush! driver)
     (vreset! (:recording? driver) false)))
-
-(defn report-java-trace! [driver f]
-  (suppress-flushing driver :stderr)
-  (f)
-  (unsuppress-flushing driver :stderr)
-  (flush-sniffer! driver :stderr :java-trace))
 
 ; -- REPL handler factories -------------------------------------------------------------------------------------------------
 
@@ -138,11 +116,10 @@
   If flushing is allowed, our job is to send accumulated (recorded) output to client side.
   In case of recording was suppressed, we throw away the content and just flip the flag back instead."
   [driver sniffer-key]
-  (if-not (suppressed-flushing? driver sniffer-key)
-    (let [sniffer (get-sniffer driver sniffer-key)]
-      (if-let [content (sniffer/extract-all-lines-but-last! sniffer)]
-        (if (recording? driver)
-          (report-output driver sniffer-key content))))))
+  (let [sniffer (get-sniffer driver sniffer-key)]
+    (if-let [content (sniffer/extract-all-lines-but-last! sniffer)]
+      (if (recording? driver)
+        (report-output driver sniffer-key content)))))
 
 ; -- initialization ---------------------------------------------------------------------------------------------------------
 
