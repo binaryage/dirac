@@ -128,7 +128,7 @@
                            :root-ex (str (class root-ex))
                            :details (helpers/capture-exception-details e)}
             response (cond-> base-response
-                             javascript-eval-trouble? (merge {:javascript-eval-trouble 1}))]                                  ; TODO: change this to true after we uncripple bencode
+                             javascript-eval-trouble? (merge {:javascript-eval-trouble true}))]
         (send! driver response)))))
 
 ; -- sniffer handlers -------------------------------------------------------------------------------------------------------

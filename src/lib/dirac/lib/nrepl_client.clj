@@ -4,7 +4,8 @@
             [clojure.tools.nrepl.transport :as nrepl.transport]
             [clojure.tools.logging :as log]
             [dirac.lib.nrepl-protocols :as nrepl-protocols]
-            [dirac.lib.utils :as utils])
+            [dirac.lib.utils :as utils]
+            [dirac.lib.bencode-hell :as bencode-hell])
   (:use [clojure.tools.nrepl.misc :only (uuid)])
   (:import (java.net SocketException)))
 
@@ -85,11 +86,12 @@
 ; -- sending ----------------------------------------------------------------------------------------------------------------
 
 (defn send! [client message]
-  (let [raw-nrepl-client (get-raw-nrepl-client client)
+  (let [dirty-message (bencode-hell/encode-poo message)
+        raw-nrepl-client (get-raw-nrepl-client client)
         response-table (get-response-table client)
         channel (chan)
-        msg-id (or (:id message) (uuid))
-        msg (assoc message :id msg-id)]
+        msg-id (or (:id dirty-message) (uuid))
+        msg (assoc dirty-message :id msg-id)]
     (swap! response-table assoc msg-id channel)
     (nrepl/message raw-nrepl-client msg)
     channel))
@@ -137,9 +139,9 @@
         ::interrupted (log/debug (str tunnel) "Leaving poll-for-responses loop - interrupted")
         ::socket-closed (log/debug (str tunnel) "Leaving poll-for-responses loop - connection closed")
         '(::error) (log/error (str tunnel) "Leaving poll-for-responses loop - error:\n" (:exception (meta response)))
-        (do
-          (submit-response-to-table! response response-table)
-          (nrepl-protocols/deliver-message-to-client! tunnel response)
+        (let [clean-response (bencode-hell/decode-poo response)]
+          (submit-response-to-table! clean-response response-table)
+          (nrepl-protocols/deliver-message-to-client! tunnel clean-response)
           (recur))))))
 
 (defn wait-for-response-poller-shutdown [client timeout]

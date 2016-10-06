@@ -23,6 +23,7 @@
             [dirac.nrepl.joining :as joining]
             [dirac.nrepl.protocol :as protocol]
             [dirac.nrepl.utils :as utils]
+            [dirac.nrepl.transports.bencode-workarounds :refer [make-nrepl-message-with-bencode-workarounds]]
             [dirac.nrepl.transports.debug-logging :refer [make-nrepl-message-with-debug-logging]]
             [dirac.nrepl.transports.errors-observing :refer [make-nrepl-message-with-observed-errors]]
             [dirac.nrepl.transports.trace-printing :refer [make-nrepl-message-with-trace-printing]]
@@ -58,6 +59,12 @@
         make-nrepl-message-with-trace-printing                                                                                ; note: the order is important here, message should first have errors observed and then traced
         make-nrepl-message-with-observed-errors)
     nrepl-message))
+
+(defn wrap-nrepl-message [nrepl-message]
+  (-> nrepl-message
+      (make-nrepl-message-with-debug-logging)
+      (make-nrepl-message-with-bencode-workarounds)
+      (wrap-nrepl-message-for-dirac-session)))
 
 ; -- message handling cascade -----------------------------------------------------------------------------------------------
 
@@ -96,18 +103,16 @@
       :else (handle-nonspecial-nonjoined-message! nrepl-message))))
 
 (defn handle-message! [nrepl-message]
-  (let [nrepl-message (make-nrepl-message-with-debug-logging nrepl-message)
-        session (state/get-current-session)]
+  (let [session (state/get-current-session)]
     (log/debug "handle-message!" (:op nrepl-message) (sessions/get-session-id session))
-    (let [nrepl-message (wrap-nrepl-message-for-dirac-session nrepl-message)]
-      (cond
-        (special/dirac-special-command? nrepl-message) (special/handle-dirac-special-command! nrepl-message)
-        :else (handle-nonspecial-message! nrepl-message)))))
+    (cond
+      (special/dirac-special-command? nrepl-message) (special/handle-dirac-special-command! nrepl-message)
+      :else (handle-nonspecial-message! nrepl-message))))
 
 (defn handler-job! [next-handler nrepl-message]
   (state/register-last-seen-nrepl-message! nrepl-message)
   (if (our-message? nrepl-message)
-    (handle-message! nrepl-message)
+    (handle-message! (wrap-nrepl-message nrepl-message))
     (next-handler nrepl-message)))
 
 ; -- top entry point (called by nrepl middleware stack) ---------------------------------------------------------------------
