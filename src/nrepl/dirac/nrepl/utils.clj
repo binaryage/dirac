@@ -12,7 +12,7 @@
             [dirac.nrepl.debug :as debug]
             [dirac.nrepl.messages :as messages]
             [dirac.nrepl.sessions :as sessions]
-            [dirac.nrepl.transports.status-cutting :refer [make-nrepl-message-with-status-cutting-transport]]))
+            [dirac.nrepl.transports.status-cutting :refer [make-nrepl-message-with-status-cutting]]))
 
 (defn prepare-current-env-info-response []
   (eval/prepare-current-env-info-response))
@@ -117,7 +117,7 @@
 
 (defn evaluate! [nrepl-message]
   (debug/log-stack-trace!)
-  (let [status-cutting-nrepl-message (make-nrepl-message-with-status-cutting-transport nrepl-message)]
+  (let [status-cutting-nrepl-message (make-nrepl-message-with-status-cutting nrepl-message)]
     (evaluate!* status-cutting-nrepl-message)))
 
 (defn load-file! [nrepl-message]

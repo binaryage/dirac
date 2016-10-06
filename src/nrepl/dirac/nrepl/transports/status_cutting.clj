@@ -4,7 +4,8 @@
             [dirac.logging :as logging]
             [dirac.nrepl.jobs :as jobs]
             [dirac.nrepl.sessions :as sessions]
-            [dirac.nrepl.protocol :as protocol])
+            [dirac.nrepl.protocol :as protocol]
+            [dirac.nrepl.debug :as debug])
   (:import (clojure.tools.nrepl.transport Transport)))
 
 ; Some jobs should be ended by sending {:status :done}. But in case of exceptions our code could have already
@@ -33,6 +34,6 @@
 
 ; -- public interface -------------------------------------------------------------------------------------------------------
 
-(defn make-nrepl-message-with-status-cutting-transport [nrepl-message]
-  (log/trace "make-nrepl-message-with-status-cutting-transport" (logging/pprint nrepl-message))
+(defn make-nrepl-message-with-status-cutting [nrepl-message]
+  (log/trace "make-nrepl-message-with-status-cutting" (debug/pprint-nrepl-message nrepl-message))
   (update nrepl-message :transport (partial ->StatusCuttingTransport nrepl-message (atom #{}))))

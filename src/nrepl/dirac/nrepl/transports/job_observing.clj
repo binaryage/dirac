@@ -35,6 +35,6 @@
 
 ; -- public interface -------------------------------------------------------------------------------------------------------
 
-(defn make-nrepl-message-with-job-observing-transport [observed-job nrepl-message]
-  (log/trace "make-nrepl-message-with-observing-transport" observed-job (logging/pprint nrepl-message))
+(defn make-nrepl-message-with-job-observing [observed-job nrepl-message]
+  (log/trace "make-nrepl-message-with-observing" observed-job (logging/pprint nrepl-message))
   (update nrepl-message :transport (partial ->JobObservingTransport observed-job nrepl-message)))

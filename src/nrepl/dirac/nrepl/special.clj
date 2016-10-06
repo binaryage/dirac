@@ -6,7 +6,7 @@
             [dirac.nrepl.sessions :as sessions]
             [dirac.nrepl.helpers :as helpers]
             [dirac.nrepl.transports.output-capturing :refer [make-nrepl-message-with-captured-output]]
-            [dirac.nrepl.transports.status-cutting :refer [make-nrepl-message-with-status-cutting-transport]]
+            [dirac.nrepl.transports.status-cutting :refer [make-nrepl-message-with-status-cutting]]
             [dirac.nrepl.state :as state]
             [dirac.nrepl.driver :as driver]
             [dirac.nrepl.protocol :as protocol]
@@ -49,7 +49,7 @@
 
 (defn special-repl-eval! [nrepl-message & args]
   (debug/log-stack-trace!)
-  (let [status-cutting-nrepl-message (make-nrepl-message-with-status-cutting-transport nrepl-message)]
+  (let [status-cutting-nrepl-message (make-nrepl-message-with-status-cutting nrepl-message)]
     (apply special-repl-eval!* status-cutting-nrepl-message args)))
 
 (defn sanitize-dirac-command [code-str]
