@@ -8,29 +8,52 @@
             [dirac.automation.status-host :as status-host]
             [dirac.automation.messages :as messages]))
 
-; -- support for manual pausing/resuming execution --------------------------------------------------------------------------
+; -- state ------------------------------------------------------------------------------------------------------------------
 
 (def resume-events (chan))
+(def paused? (volatile! false))
+
+; -- DOM helpers ------------------------------------------------------------------------------------------------------------
+
+(defn get-pause-button-el []
+  (helpers/get-el-by-id "pause-button"))
+
+(defn enable-pause-button! []
+  (oset! (get-pause-button-el) "disabled" false))
+
+(defn disable-pause-button! []
+  (oset! (get-pause-button-el) "disabled" true))
 
 (defn get-resume-button-el []
   (helpers/get-el-by-id "resume-button"))
 
-(defn enable-resume! []
+(defn enable-resume-button! []
   (oset! (get-resume-button-el) "disabled" false))
 
-(defn disable-resume! []
+(defn disable-resume-button! []
   (oset! (get-resume-button-el) "disabled" true))
+
+; -- support for manual pausing/resuming execution --------------------------------------------------------------------------
 
 (defn wait-for-resume! []
   (go
-    (enable-resume!)
+    (disable-pause-button!)
+    (enable-resume-button!)
     (log "waiting for resume button click")
     (status-host/set-status! "click resume button")
     (let [res (<! resume-events)]
-      (disable-resume!)
+      (disable-resume-button!)
+      (enable-pause-button!)
+      (status-host/set-status! "resumed again")
       res)))
 
-; -- api accessed by runner.html --------------------------------------------------------------------------------------------
+(defn wait-for-resume-if-paused! []
+  (go
+    (when @paused?
+      (<! (wait-for-resume!))
+      (vreset! paused? false))))
+
+; -- api used by runner.html ------------------------------------------------------------------------------------------------
 
 (defn ^:export reset []
   (messages/post-extension-command! {:command :tear-down} :no-timeout)
@@ -44,3 +67,6 @@
 
 (defn ^:export resume []
   (put! resume-events :click))
+
+(defn ^:export pause []
+  (vreset! paused? true))

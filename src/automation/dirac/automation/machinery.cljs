@@ -3,6 +3,7 @@
   (:require [cljs.core.async :refer [put! <! chan timeout alts! close!]]
             [oops.core :refer [oget oset! ocall oapply]]
             [chromex.logging :refer-macros [log error]]
+            [dirac.automation.runner :as runner]
             [dirac.automation.task :as task]
             [dirac.automation.transcript-host :as transcript]
             [dirac.automation.test :as test]))
@@ -94,6 +95,7 @@
 
 (defn action! [& args]
   (go
+    (<! (runner/wait-for-resume-if-paused!))
     ; this timeout is important for run-output-matching-loop! and other async operations
     ; without this we could starve those loops and their reaction could be delayed
     (<! (timeout 0))
