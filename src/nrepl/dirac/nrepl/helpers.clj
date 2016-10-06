@@ -59,3 +59,10 @@
   (let [details (capture-exception-details e)
         message-info (get-nrepl-message-info nrepl-message)]
     (str message-info "\n\n" details)))
+
+(defn status-coll [message]
+  (if-let [status (:status message)]
+    (if (coll? status)
+      status
+      [status])
+    []))

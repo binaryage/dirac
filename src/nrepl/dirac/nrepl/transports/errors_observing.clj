@@ -22,13 +22,6 @@
   {:pre [(instance? IDeref session)]}
   (@session #'clojure.core/*e))
 
-(defn status-coll [message]
-  (if-let [status (:status message)]
-    (if (coll? status)
-      status
-      [status])
-    []))
-
 ; -- transport wrapper ------------------------------------------------------------------------------------------------------
 
 (defrecord ErrorsObservingTransport [nrepl-message transport]
@@ -36,7 +29,7 @@
   (recv [_this timeout]
     (nrepl-transport/recv transport timeout))
   (send [_this reply-message]
-    (let [enhanced-message (if (and (some #{:eval-error} (status-coll reply-message))
+    (let [enhanced-message (if (and (some #{:eval-error} (helpers/status-coll reply-message))
                                     (nil? (:details reply-message)))
                              (if-let [e (get-session-exception (:session nrepl-message))]
                                (let [details (helpers/get-exception-details nrepl-message e)]
