@@ -23,7 +23,10 @@
 
 (defmacro log-stack-trace! []
   (if log-stack-traces
-    `(log/trace (get-printed-stack-trace))))
+    `(log/debug (get-printed-stack-trace))))
+
+(defmacro log-stack-trace!! []
+  `(log/debug (get-printed-stack-trace)))
 
 (defn pprint-session [session]
   (str "session #" (-> session meta :id)))
