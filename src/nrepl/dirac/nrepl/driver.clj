@@ -166,8 +166,6 @@
         (start-job! driver job-id)
         (start-recording! driver)
         (start-fn driver caught-fn flush-fn)
-        (catch Throwable e
-          (caught-fn e nil nil))
         (finally
           (stop-recording! driver)
           (stop-job! driver)
