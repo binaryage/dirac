@@ -7,7 +7,9 @@
             [dirac.nrepl.sessions :as sessions]
             [dirac.nrepl.helpers :as helpers]
             [dirac.nrepl.jobs :as jobs]
-            [dirac.nrepl.messages :as messages]))
+            [dirac.nrepl.messages :as messages]
+            [clojure.string :as string]
+            [dirac.nrepl.special :as special]))
 
 ; -- handlers for middleware operations -------------------------------------------------------------------------------------
 
@@ -48,19 +50,25 @@
 (defn serialize-message [nrepl-message]
   (pr-str nrepl-message))
 
+(defn is-eval-cljs-quit? [nrepl-message]
+  (and (= (:op nrepl-message) "eval")
+       (= ":cljs/quit" (string/trim (:code nrepl-message)))))
+
 (defn forward-message-to-joined-session! [nrepl-message]
   (log/trace "forward-message-to-joined-session!" (logging/pprint nrepl-message))
-  (let [{:keys [id session transport]} nrepl-message]
-    (if-let [target-dirac-session-descriptor (sessions/find-target-dirac-session-descriptor session)]
-      (if-let [forwardable-message (prepare-forwardable-message nrepl-message)]
-        (let [target-session (sessions/get-dirac-session-descriptor-session target-dirac-session-descriptor)
-              target-transport (sessions/get-dirac-session-descriptor-transport target-dirac-session-descriptor)
-              job-id (helpers/generate-uuid)]
-          (jobs/register-observed-job! job-id id session transport 1000)
-          (transport/send target-transport {:op                                 :handle-forwarded-nrepl-message
-                                            :id                                 (helpers/generate-uuid)                       ; our request id
-                                            :session                            (sessions/get-session-id target-session)
-                                            :job-id                             job-id                                        ; id under which the job should be started
-                                            :serialized-forwarded-nrepl-message (serialize-message forwardable-message)}))
-        (report-nonforwardable-nrepl-message! nrepl-message))
-      (report-missing-target-session! nrepl-message))))
+  (if (is-eval-cljs-quit? nrepl-message)
+    (special/issue-dirac-special-command! nrepl-message ":disjoin")
+    (let [{:keys [id session transport]} nrepl-message]
+      (if-let [target-dirac-session-descriptor (sessions/find-target-dirac-session-descriptor session)]
+        (if-let [forwardable-message (prepare-forwardable-message nrepl-message)]
+          (let [target-session (sessions/get-dirac-session-descriptor-session target-dirac-session-descriptor)
+                target-transport (sessions/get-dirac-session-descriptor-transport target-dirac-session-descriptor)
+                job-id (helpers/generate-uuid)]
+            (jobs/register-observed-job! job-id id session transport 1000)
+            (transport/send target-transport {:op                                 :handle-forwarded-nrepl-message
+                                              :id                                 (helpers/generate-uuid)                     ; our request id
+                                              :session                            (sessions/get-session-id target-session)
+                                              :job-id                             job-id                                      ; id under which the job should be started
+                                              :serialized-forwarded-nrepl-message (serialize-message forwardable-message)}))
+          (report-nonforwardable-nrepl-message! nrepl-message))
+        (report-missing-target-session! nrepl-message)))))
