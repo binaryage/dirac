@@ -1,5 +1,6 @@
 (ns dirac.nrepl.driver
   (:require [clojure.tools.logging :as log]
+            [clojure.main :as clojure-main]
             [cljs.repl :as cljs-repl]
             [dirac.nrepl.sniffer :as sniffer]
             [dirac.nrepl.helpers :as helpers]
@@ -118,36 +119,35 @@
 
 ; -- REPL handler factories -------------------------------------------------------------------------------------------------
 
+(defn javascript-eval-error? [e]
+  (and (instance? IExceptionInfo e) (#{:js-eval-error :js-eval-exception} (:type (ex-data e)))))
+
 (defn caught! [driver e repl-env opts]
-  (let [root-ex (#'clojure.main/root-cause e)]
-    (when-not (instance? ThreadDeath root-ex)
-      (let [orig-call #(cljs-repl/repl-caught e repl-env opts)]
+  (let [root-ex (clojure-main/root-cause e)]
+    (when-not (instance? ThreadDeath root-ex)                                                                                 ; TODO: investigate if this test is really needed in our case
+      (let [call-cljs-repl-caught! #(cljs-repl/repl-caught e repl-env opts)]
         (if-not (recording? driver)
-          (do
-            ; in case we are not recording, we want to report :eval-error to the driver
-            ; and log error information as well
-            (orig-call)
-            (let [exception-details (helpers/capture-exception-details e)]
-              (log/error "Caught an exception during REPL evaluation:\n" exception-details)
-              (send! driver {:status  :eval-error
-                             :ex      (str (class e))
-                             :root-ex (str (class root-ex))
-                             :details exception-details})))
-          (if (and (instance? IExceptionInfo e)
-                   (#{:js-eval-error :js-eval-exception} (:type (ex-data e))))
+          (call-cljs-repl-caught!)
+          (if (javascript-eval-error? e)
             (do
               ; we want to prevent recording javascript errors and exceptions,
               ; because those were already reported on client-side directly
               ; other exceptional cases should be recorded as usual (for example exceptions originated in the compiler)
               (stop-recording! driver)
-              (orig-call)
+              (call-cljs-repl-caught!)
               (start-recording! driver))
             (do
               ; we've got a java exception with possibly long stack trace
               ; it will be printed in cljs.repl/repl-caught via (.printStackTrace e *err*)
               ; we capture output and send it to client side with special kind :java-trace
               ; with this hint, client-side should implement a nice way how to present this to the user
-              (report-java-trace! driver orig-call))))))))
+              (report-java-trace! driver call-cljs-repl-caught!)))))
+      ; last send :eval-error for traditional REPL clients, it will be ignored by Dirac client
+      (let [exception-details (helpers/capture-exception-details e)]
+        (send! driver {:status  :eval-error
+                       :ex      (str (class e))
+                       :root-ex (str (class root-ex))
+                       :details exception-details})))))
 
 ; -- sniffer handlers -------------------------------------------------------------------------------------------------------
 
