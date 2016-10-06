@@ -7,7 +7,8 @@
             [dirac.nrepl.helpers :as helpers]
             [dirac.nrepl.transports.output-capturing :refer [make-nrepl-message-with-captured-output]]
             [dirac.nrepl.state :as state]
-            [dirac.nrepl.driver :as driver])
+            [dirac.nrepl.driver :as driver]
+            [dirac.nrepl.protocol :as protocol])
   (:import (clojure.lang Namespace)
            java.io.Writer))
 
@@ -18,33 +19,31 @@
     (if (string? code)
       (some? (re-find #"^\(?dirac!" code)))))                                                                                 ; we don't want to use read-string here, regexp test should be safe and quick
 
+(defn eval-job! [nrepl-message code-str ns driver caught-fn flush-fn]
+  (try
+    (binding [*ns* ns
+              state/*nrepl-message* nrepl-message]
+      (eval (read-string code-str)))
+    (catch Throwable e
+      (caught-fn e nil nil)
+      ::controls/no-result)
+    (finally
+      (.flush *out*)
+      (.flush *err*))))
+
 (defn special-repl-eval! [nrepl-message code-str ns]                                                                          ; TODO: we could get rid of nrepl-message dependency here
   {:pre [(string? code-str)
          (instance? Namespace ns)]}
   (log/debug "special-repl-eval!" code-str "in" ns)
   (let [response-fn (partial helpers/send-response! nrepl-message)
-        eval-job-fn (fn [driver caught-fn flush-fn]
-                      (try
-                        (binding [*ns* ns
-                                  state/*nrepl-message* nrepl-message]
-                          (eval (read-string code-str)))
-                        (catch Throwable e
-                          (caught-fn e nil nil)
-                          ::exception)
-                        (finally
-                          (.flush *out*)
-                          (.flush *err*))))
+        eval-job-fn (partial eval-job! nrepl-message code-str ns)
         job-id (helpers/generate-uuid)
         result (with-bindings @(:session nrepl-message)
                  (driver/wrap-with-driver job-id eval-job-fn response-fn))
-        reply (cond
-                (= ::exception result) nil
-                (= ::controls/no-result result) {:status :done}
-                :else {:status        :done
-                       :value         (helpers/safe-pr-str result)
-                       :printed-value 1})]
-    (if (some? reply)
-      (helpers/send-response! nrepl-message reply))))
+        no-result? (= ::controls/no-result result)
+        response (cond-> (protocol/prepare-done-response)
+                         (not no-result?) (merge (protocol/prepare-printed-value-response (helpers/safe-pr-str result))))]
+    (helpers/send-response! nrepl-message response)))
 
 (defn sanitize-dirac-command [code-str]
   ; this is just for convenience, we convert some common forms to canonical (dirac! :help) form

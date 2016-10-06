@@ -22,3 +22,6 @@
   (assert (or (nil? value) (string? value)))
   {:value         (or value "nil")
    :printed-value 1})
+
+(defn prepare-done-response []
+  {:status :done})
