@@ -1596,6 +1596,13 @@ Protocol.DOMAgent.prototype.getDocument = function(opt_callback) {}
 Protocol.DOMAgent.prototype.invoke_getDocument = function(obj, opt_callback) {}
 
 /**
+ * @param {function(?Protocol.Error, !Array.<DOMAgent.LayoutTreeNode>):void=} opt_callback
+ */
+Protocol.DOMAgent.prototype.getLayoutTreeNodes = function(opt_callback) {}
+/** @param {function(?Protocol.Error, !Array.<DOMAgent.LayoutTreeNode>):void=} opt_callback */
+Protocol.DOMAgent.prototype.invoke_getLayoutTreeNodes = function(obj, opt_callback) {}
+
+/**
  * @param {DOMAgent.NodeId} nodeId
  * @param {function(?Protocol.Error, !Array.<string>):void=} opt_callback
  */
@@ -1970,6 +1977,12 @@ DOMAgent.ShadowRootType = {
 
 /** @typedef {!{nodeId:(DOMAgent.NodeId), nodeType:(number), nodeName:(string), localName:(string), nodeValue:(string), childNodeCount:(number|undefined), children:(!Array.<DOMAgent.Node>|undefined), attributes:(!Array.<string>|undefined), documentURL:(string|undefined), baseURL:(string|undefined), publicId:(string|undefined), systemId:(string|undefined), internalSubset:(string|undefined), xmlVersion:(string|undefined), name:(string|undefined), value:(string|undefined), pseudoType:(DOMAgent.PseudoType|undefined), shadowRootType:(DOMAgent.ShadowRootType|undefined), frameId:(PageAgent.FrameId|undefined), contentDocument:(DOMAgent.Node|undefined), shadowRoots:(!Array.<DOMAgent.Node>|undefined), templateContent:(DOMAgent.Node|undefined), pseudoElements:(!Array.<DOMAgent.Node>|undefined), importedDocument:(DOMAgent.Node|undefined), distributedNodes:(!Array.<DOMAgent.BackendNode>|undefined)}} */
 DOMAgent.Node;
+
+/** @typedef {!{boundingBox:(DOMAgent.Rect), startCharacterIndex:(number), numCharacters:(number)}} */
+DOMAgent.InlineTextBox;
+
+/** @typedef {!{backendNodeId:(DOMAgent.BackendNodeId), boundingBox:(DOMAgent.Rect), layoutText:(string|undefined), inlineTextNodes:(!Array.<DOMAgent.InlineTextBox>|undefined)}} */
+DOMAgent.LayoutTreeNode;
 
 /** @typedef {!{r:(number), g:(number), b:(number), a:(number|undefined)}} */
 DOMAgent.RGBA;
@@ -2518,18 +2531,12 @@ DOMDebuggerAgent.Dispatcher = function() {};
 Protocol.TargetAgent = function(){};
 
 /**
+ * @param {boolean} discover
  * @param {function(?Protocol.Error):void=} opt_callback
  */
-Protocol.TargetAgent.prototype.enable = function(opt_callback) {}
+Protocol.TargetAgent.prototype.setDiscoverTargets = function(discover, opt_callback) {}
 /** @param {function(?Protocol.Error):void=} opt_callback */
-Protocol.TargetAgent.prototype.invoke_enable = function(obj, opt_callback) {}
-
-/**
- * @param {function(?Protocol.Error):void=} opt_callback
- */
-Protocol.TargetAgent.prototype.disable = function(opt_callback) {}
-/** @param {function(?Protocol.Error):void=} opt_callback */
-Protocol.TargetAgent.prototype.invoke_disable = function(obj, opt_callback) {}
+Protocol.TargetAgent.prototype.invoke_setDiscoverTargets = function(obj, opt_callback) {}
 
 /**
  * @param {boolean} autoAttach
@@ -2572,6 +2579,22 @@ Protocol.TargetAgent.prototype.invoke_getTargetInfo = function(obj, opt_callback
 Protocol.TargetAgent.prototype.activateTarget = function(targetId, opt_callback) {}
 /** @param {function(?Protocol.Error):void=} opt_callback */
 Protocol.TargetAgent.prototype.invoke_activateTarget = function(obj, opt_callback) {}
+
+/**
+ * @param {TargetAgent.TargetID} targetId
+ * @param {function(?Protocol.Error, boolean):void=} opt_callback
+ */
+Protocol.TargetAgent.prototype.attachToTarget = function(targetId, opt_callback) {}
+/** @param {function(?Protocol.Error, boolean):void=} opt_callback */
+Protocol.TargetAgent.prototype.invoke_attachToTarget = function(obj, opt_callback) {}
+
+/**
+ * @param {TargetAgent.TargetID} targetId
+ * @param {function(?Protocol.Error):void=} opt_callback
+ */
+Protocol.TargetAgent.prototype.detachFromTarget = function(targetId, opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+Protocol.TargetAgent.prototype.invoke_detachFromTarget = function(obj, opt_callback) {}
 
 
 
