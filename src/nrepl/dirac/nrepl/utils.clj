@@ -9,7 +9,10 @@
             [dirac.nrepl.config :as config]
             [dirac.nrepl.state :as state]
             [dirac.logging :as logging]
-            [dirac.nrepl.debug :as debug]))
+            [dirac.nrepl.debug :as debug]
+            [dirac.nrepl.messages :as messages]
+            [dirac.nrepl.sessions :as sessions]
+            [dirac.nrepl.transports.status-cutting :refer [make-nrepl-message-with-status-cutting-transport]]))
 
 (defn prepare-current-env-info-response []
   (eval/prepare-current-env-info-response))
@@ -80,3 +83,44 @@
       (catch Exception e
         (state/set-session-meta! initial-session-meta)                                                                        ; restore session to initial state
         (throw e)))))
+
+(defn report-missing-compiler! [nrepl-message selected-compiler available-compilers]
+  (let [msg (messages/make-missing-compiler-msg selected-compiler available-compilers)]
+    (helpers/send-response! nrepl-message (protocol/prepare-print-output-response :stderr msg))))
+
+(defn user-wants-quit? [code]
+  (.endsWith (.trim code) ":cljs/quit"))
+
+(defn evaluate!* [nrepl-message]
+  (let [{:keys [session code]} nrepl-message
+        cljs-repl-env (state/get-session-cljs-repl-env)]
+    (if-not (user-wants-quit? code)
+      (let [job-id (or (:id nrepl-message) (helpers/generate-uuid))
+            ns (:ns nrepl-message)
+            mode (:dirac nrepl-message)
+            scope-info (:scope-info nrepl-message)
+            selected-compiler (state/get-session-selected-compiler)
+            cljs-repl-options (state/get-session-cljs-repl-options)
+            response-fn (partial helpers/send-response! nrepl-message)]
+        (if-let [compiler-env (compilers/get-selected-compiler-env)]
+          (eval/eval-in-cljs-repl! code ns cljs-repl-env compiler-env cljs-repl-options job-id response-fn scope-info mode)
+          (report-missing-compiler! nrepl-message selected-compiler (compilers/collect-all-available-compiler-ids))))
+      (let [original-clj-ns (state/get-session-original-clj-ns)]
+        (reset! (:cached-setup cljs-repl-env) :tear-down)                                                                     ; TODO: find a better way
+        (cljs.repl/-tear-down cljs-repl-env)
+        (sessions/remove-dirac-session-descriptor! session)
+        (swap! session assoc #'*ns* original-clj-ns)                                                                          ; TODO: is this really needed?
+        (helpers/send-response! nrepl-message {:value         "nil"
+                                               :printed-value 1
+                                               :ns            (str original-clj-ns)}))))
+  (helpers/send-response! nrepl-message {:status :done}))
+
+(defn evaluate! [nrepl-message]
+  (debug/log-stack-trace!)
+  (let [status-cutting-nrepl-message (make-nrepl-message-with-status-cutting-transport nrepl-message)]
+    (evaluate!* status-cutting-nrepl-message)))
+
+(defn load-file! [nrepl-message]
+  (let [{:keys [file-path]} nrepl-message]
+    (evaluate! (assoc nrepl-message :code (format "(load-file %s)" (pr-str file-path))))))
+

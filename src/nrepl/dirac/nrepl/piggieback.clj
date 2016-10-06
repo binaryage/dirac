@@ -3,7 +3,7 @@
 ; original author: Chas Emerick
 ; Eclipse Public License - v 1.0
 ;
-; this file differs significantly from the original piggieback.clj and was modified to include Dirac-specific functionality
+; the original source was completely rewritten
 ;
 (ns dirac.nrepl.piggieback
   (:require [clojure.tools.logging :as log]
@@ -23,57 +23,10 @@
             [dirac.nrepl.joining :as joining]
             [dirac.nrepl.protocol :as protocol]
             [dirac.nrepl.utils :as utils]
-            [dirac.nrepl.transports.status-cutting :refer [make-nrepl-message-with-status-cutting-transport]]
             [dirac.nrepl.transports.debug-logging :refer [make-nrepl-message-with-debug-logging]]
-            [dirac.nrepl.transports.errors-observing :refer [make-nrepl-message-with-observed-errors]]
             [dirac.nrepl.transports.job-observing :refer [make-nrepl-message-with-job-observing-transport]]))
 
-(defn report-missing-compiler! [nrepl-message selected-compiler available-compilers]
-  (let [msg (messages/make-missing-compiler-msg selected-compiler available-compilers)]
-    (helpers/send-response! nrepl-message (protocol/prepare-print-output-response :stderr msg))))
-
-(defn user-wants-quit? [code]
-  (.endsWith (.trim code) ":cljs/quit"))
-
-(defn evaluate!* [nrepl-message]
-  (let [{:keys [session code]} nrepl-message
-        cljs-repl-env (state/get-session-cljs-repl-env)]
-    (if-not (user-wants-quit? code)
-      (let [job-id (or (:id nrepl-message) (helpers/generate-uuid))
-            ns (:ns nrepl-message)
-            mode (:dirac nrepl-message)
-            scope-info (:scope-info nrepl-message)
-            selected-compiler (state/get-session-selected-compiler)
-            cljs-repl-options (state/get-session-cljs-repl-options)
-            response-fn (partial helpers/send-response! nrepl-message)]
-        (if-let [compiler-env (compilers/get-selected-compiler-env)]
-          (eval/eval-in-cljs-repl! code ns cljs-repl-env compiler-env cljs-repl-options job-id response-fn scope-info mode)
-          (report-missing-compiler! nrepl-message selected-compiler (compilers/collect-all-available-compiler-ids))))
-      (let [original-clj-ns (state/get-session-original-clj-ns)]
-        (reset! (:cached-setup cljs-repl-env) :tear-down)                                                                     ; TODO: find a better way
-        (cljs.repl/-tear-down cljs-repl-env)
-        (sessions/remove-dirac-session-descriptor! session)
-        (swap! session assoc #'*ns* original-clj-ns)                                                                          ; TODO: is this really needed?
-        (helpers/send-response! nrepl-message {:value         "nil"
-                                               :printed-value 1
-                                               :ns            (str original-clj-ns)}))))
-  (helpers/send-response! nrepl-message {:status :done}))
-
-(defn evaluate! [nrepl-message]
-  (debug/log-stack-trace!)
-  (let [status-cutting-nrepl-message (make-nrepl-message-with-status-cutting-transport nrepl-message)]
-    (evaluate!* status-cutting-nrepl-message)))
-
-(defn load-file! [nrepl-message]
-  (let [{:keys [file-path]} nrepl-message]
-    (evaluate! (assoc nrepl-message :code (format "(load-file %s)" (pr-str file-path))))))
-
 ; -- middleware dispatch logic ----------------------------------------------------------------------------------------------
-
-(defn wrap-nrepl-message-if-observed-job [nrepl-message]
-  (if-let [observed-job (jobs/get-observed-job nrepl-message)]
-    (make-nrepl-message-with-job-observing-transport observed-job nrepl-message)
-    nrepl-message))
 
 (def our-ops {"identify-dirac-nrepl-middleware" true
               "finish-dirac-job"                true
@@ -92,6 +45,11 @@
         (sessions/joined-session? (:session nrepl-message))
         (our-op? (:op nrepl-message)))))
 
+(defn wrap-nrepl-message-if-observed-job [nrepl-message]
+  (if-let [observed-job (jobs/get-observed-job nrepl-message)]
+    (make-nrepl-message-with-job-observing-transport observed-job nrepl-message)
+    nrepl-message))
+
 ; -- message handling cascade -----------------------------------------------------------------------------------------------
 
 (defn handle-identify-message! [nrepl-message]
@@ -104,15 +62,13 @@
 
 (defn handle-eval-message! [nrepl-message]
   (log/trace "handle-eval-message!")
-  (let [{:keys [session]} nrepl-message]
-    (assert (sessions/dirac-session? session))
-    (evaluate! nrepl-message)))
+  (assert (sessions/dirac-session? (:session nrepl-message)))
+  (utils/evaluate! nrepl-message))
 
 (defn handle-load-file-message! [nrepl-message]
   (log/trace "handle-load-file-message!")
-  (let [{:keys [session]} nrepl-message]
-    (assert (sessions/dirac-session? session))
-    (load-file! nrepl-message)))
+  (assert (sessions/dirac-session? (:session nrepl-message)))
+  (utils/load-file! nrepl-message))
 
 (defn handle-nonspecial-nonjoined-message! [nrepl-message]
   (let [op (:op nrepl-message)]
