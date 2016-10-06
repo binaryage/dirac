@@ -32,7 +32,7 @@ before_install:
   - git clone https://github.com/scheib/chromium-latest-linux.git
   - mkdir -p chromium-builds
   - cd chromium-builds && `pwd`/../chromium-latest-linux/update.sh && cd ..
-  - export DIRAC_CHROME_BINARY_PATH=`pwd`/chromium-builds/latest
+  - export DIRAC_CHROME_BINARY_PATH=`pwd`/chromium-builds/latest/chrome
 
   #- wget https://chromedriver.storage.googleapis.com/2.23/chromedriver_linux64.zip
   #- unzip chromedriver_linux64.zip
