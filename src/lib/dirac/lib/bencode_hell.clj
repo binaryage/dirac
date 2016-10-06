@@ -17,9 +17,14 @@
 (def marker "\uD83D\uDCA9")
 (def re-marker (re-pattern (str marker "(.*)")))
 
+; cannot use boolean? with clojure older than 1.9, TODO: remove this before retirement
+(defn rly-boolean? [v]
+  (or (true? v)
+      (false? v)))
+
 (defn broken-value? [v]
   (or (nil? v)
-      (boolean? v)))
+      (rly-boolean? v)))
 
 (defn encode-value [v]
   (pr-str v))
