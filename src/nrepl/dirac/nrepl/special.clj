@@ -37,7 +37,7 @@
   (log/debug "special-repl-eval!" code-str "in" ns)
   (let [response-fn (partial helpers/send-response! nrepl-message)
         eval-job-fn (partial eval-job! nrepl-message code-str ns)
-        job-id (helpers/generate-uuid)
+        job-id (:id nrepl-message)
         result (with-bindings @(:session nrepl-message)
                  (driver/wrap-with-driver job-id eval-job-fn response-fn))
         no-result? (= ::controls/no-result result)
