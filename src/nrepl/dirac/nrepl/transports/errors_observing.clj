@@ -36,7 +36,8 @@
   (recv [_this timeout]
     (nrepl-transport/recv transport timeout))
   (send [_this reply-message]
-    (let [enhanced-message (if (some #{:eval-error} (status-coll reply-message))
+    (let [enhanced-message (if (and (some #{:eval-error} (status-coll reply-message))
+                                    (nil? (:details reply-message)))
                              (if-let [e (get-session-exception (:session nrepl-message))]
                                (let [details (helpers/get-exception-details nrepl-message e)]
                                  (log/error (str "Clojure eval error:\n" details))
