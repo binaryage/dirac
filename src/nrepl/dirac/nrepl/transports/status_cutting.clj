@@ -24,10 +24,10 @@
   (send [_this reply-message]
     (let [message-id (:id reply-message)]
       (if (contains? @state-atom message-id)
-        (log/debug "dropping message sent after status:" (logging/pprint reply-message))
+        (log/trace "dropping message sent after status:" (logging/pprint reply-message))
         (do
           (when (protocol/status-message? reply-message)
-            (log/debug "detected status message:" (logging/pprint reply-message))
+            (log/trace "detected status message:" (logging/pprint reply-message))
             (swap! state-atom conj message-id))                                                                               ; note that all messages with possibly nil id are treated as one job
           (nrepl-transport/send transport reply-message))))))
 
