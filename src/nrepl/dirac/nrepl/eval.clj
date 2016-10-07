@@ -44,8 +44,8 @@
       `(try
          ; we want to redirect all side-effect printing to dirac.runtime, so it can be presented in the Dirac REPL console
          (binding [cljs.core/*print-newline* false
-                   cljs.core/*print-fn* (partial js/dirac.runtime.repl.present_output ~job-id "stdout")
-                   cljs.core/*print-err-fn* (partial js/dirac.runtime.repl.present_output ~job-id "stderr")]
+                   cljs.core/*print-fn* (partial js/dirac.runtime.repl.present_output ~job-id "stdout" "plain-text")
+                   cljs.core/*print-err-fn* (partial js/dirac.runtime.repl.present_output ~job-id "stderr" "plain-text")]
            (let [~result-sym ~(dirac-wrap form)]
              (set! *3 *2)
              (set! *2 *1)
