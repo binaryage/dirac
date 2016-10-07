@@ -7,27 +7,18 @@
 ;
 (ns dirac.nrepl.piggieback
   (:require [clojure.tools.logging :as log]
-            [clojure.string :as string]
             [dirac.logging :as logging]
             [dirac.nrepl.config :as config]
             [dirac.nrepl.state :as state]
             [dirac.nrepl.version :refer [version]]
             [dirac.nrepl.sessions :as sessions]
             [dirac.nrepl.helpers :as helpers]
-            [dirac.nrepl.jobs :as jobs]
             [dirac.nrepl.debug :as debug]
-            [dirac.nrepl.compilers :as compilers]
-            [dirac.nrepl.eval :as eval]
             [dirac.nrepl.messages :as messages]
             [dirac.nrepl.special :as special]
             [dirac.nrepl.joining :as joining]
             [dirac.nrepl.protocol :as protocol]
-            [dirac.nrepl.utils :as utils]
-            [dirac.nrepl.transports.bencode-workarounds :refer [make-nrepl-message-with-bencode-workarounds]]
-            [dirac.nrepl.transports.debug-logging :refer [make-nrepl-message-with-debug-logging]]
-            [dirac.nrepl.transports.errors-observing :refer [make-nrepl-message-with-observed-errors]]
-            [dirac.nrepl.transports.trace-printing :refer [make-nrepl-message-with-trace-printing]]
-            [dirac.nrepl.transports.job-observing :refer [make-nrepl-message-with-job-observing]]))
+            [dirac.nrepl.utils :as utils]))
 
 ; -- middleware dispatch logic ----------------------------------------------------------------------------------------------
 
