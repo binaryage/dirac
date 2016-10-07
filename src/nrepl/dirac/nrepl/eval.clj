@@ -16,9 +16,10 @@
   (str "<" (or compiler-id "?") ">"))
 
 (defn prepare-current-env-info-response []
-  (let [current-ns (str analyzer/*cljs-ns*)
-        selected-compiler-id (compilers/get-selected-compiler-id)
-        default-compiler-id (compilers/get-default-compiler-id)]
+  (let [session (state/get-current-session)
+        current-ns (str analyzer/*cljs-ns*)
+        selected-compiler-id (compilers/get-selected-compiler-id session)
+        default-compiler-id (compilers/get-default-compiler-id session)]
     (protocol/prepare-current-env-info-response current-ns selected-compiler-id default-compiler-id)))
 
 ; -- dirac-specific wrapper for evaluated forms -----------------------------------------------------------------------------
@@ -93,7 +94,7 @@
         wrapped-form (wrapper-fn form)
         set-env-locals-with-scope (partial set-env-locals scope-info)
         effective-env (-> env set-env-namespace set-env-locals-with-scope)
-        filename (make-dirac-repl-alias (compilers/get-selected-compiler-id))]
+        filename (make-dirac-repl-alias (compilers/get-selected-compiler-id (state/get-current-session)))]
     (log/trace "repl-eval! in " filename ":\n" form "\n with env:\n" (logging/pprint effective-env 7))
     (cljs.repl/evaluate-form repl-env effective-env filename form wrapped-form opts)))
 

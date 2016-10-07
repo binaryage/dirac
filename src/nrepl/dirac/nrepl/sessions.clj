@@ -79,20 +79,24 @@
 (defn get-dirac-session-tag [session]
   (prepare-dirac-session-descriptor-tag (find-dirac-session-descriptor session)))
 
-(defn get-other-sessions-descriptors
-  ([] (get-other-sessions-descriptors (state/get-current-session-if-avail)))
-  ([session]
-   (remove #(= session (get-dirac-session-descriptor-session %)) @state/session-descriptors)))
+(defn get-other-sessions-descriptors [session]
+  (remove #(= session (get-dirac-session-descriptor-session %)) @state/session-descriptors))
 
-(defn get-dirac-session-tags []
-  (let [current-session-descriptor (find-dirac-session-descriptor (state/get-current-session-if-avail))
-        other-descriptors (get-other-sessions-descriptors)
+(defn get-dirac-session-tags [session]
+  (let [current-session-descriptor (find-dirac-session-descriptor session)
+        other-descriptors (get-other-sessions-descriptors session)
         ordered-descriptors (keep identity (concat [current-session-descriptor] other-descriptors))]
     (get-dirac-session-descriptors-tags ordered-descriptors)))
 
-(defn get-current-session-tag []
-  (if-let [current-session-descriptor (find-dirac-session-descriptor (state/get-current-session-if-avail))]
+(defn get-current-session-tag [session]
+  (if-let [current-session-descriptor (find-dirac-session-descriptor session)]
     (prepare-dirac-session-descriptor-tag current-session-descriptor)))
+
+(defn for-each-session [f & args]
+  (let [* (fn [session-descriptor]
+            (let [session (get-dirac-session-descriptor-session session-descriptor)]
+              (apply f session args)))]
+    (doall (map * @state/session-descriptors))))
 
 ; -- joining sessions -------------------------------------------------------------------------------------------------------
 

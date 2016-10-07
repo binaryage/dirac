@@ -51,6 +51,7 @@
         code (or (:repl-init-code dirac-nrepl-config) config/standard-repl-init-code)
         job-id (or (:id nrepl-message) (helpers/generate-uuid))
         ns (:ns nrepl-message)
+        session (:session nrepl-message)
         effective-repl-options (assoc repl-options
                                  ; the first run through the cljs REPL is effectively part
                                  ; of setup; loading core, (ns cljs.user ...), etc, should
@@ -59,7 +60,7 @@
                                  ; begin with, because we can't reliably replicate what
                                  ; cljs.repl/repl* does in terms of options munging
                                  :init (fn []
-                                         (compilers/capture-current-compiler-and-select-it!))
+                                         (compilers/capture-current-compiler-and-select-it! session))
                                  :print (fn [& _]
                                           (log/trace "print-fn (no-op)")))                                                    ; silence any responses
         response-fn (partial helpers/send-response! nrepl-message)]
@@ -96,9 +97,10 @@
   (valid-compiler-to-kill? (compilers/get-compiler-descriptor-id compiler-descriptor)))
 
 (defn kill-matching-compilers! [which]
-  (let [matching-descriptors (if (nil? which)
-                               (remove nil? (list (compilers/get-selected-compiler-descriptor)))
-                               (compilers/filter-available-matching-compiler-descriptors which))
+  (let [session (state/get-current-session)
+        matching-descriptors (if (nil? which)
+                               (remove nil? (list (compilers/get-selected-compiler-descriptor session)))
+                               (compilers/filter-available-matching-compiler-descriptors session which))
         valid-descriptors (filter valid-compiler-descriptor-to-kill? matching-descriptors)
         invalid-descriptors (remove valid-compiler-descriptor-to-kill? matching-descriptors)
         valid-compiler-ids (keep compilers/get-compiler-descriptor-id valid-descriptors)
@@ -127,7 +129,7 @@
             selected-compiler (state/get-session-selected-compiler)
             cljs-repl-options (state/get-session-cljs-repl-options)
             response-fn (partial helpers/send-response! nrepl-message)]
-        (if-let [compiler-env (compilers/get-selected-compiler-env)]
+        (if-let [compiler-env (compilers/get-selected-compiler-env session)]
           (eval/eval-in-cljs-repl! code ns cljs-repl-env compiler-env cljs-repl-options job-id response-fn scope-info mode)
           (report-missing-compiler! nrepl-message selected-compiler)))
       (let [original-clj-ns (state/get-session-original-clj-ns)]
