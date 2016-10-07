@@ -4,9 +4,11 @@
 
 ; TODO: would be nice to have some version checking (for sanity)
 
+(def figwheel-api-ns-sym 'figwheel-sidecar.repl-api)
+
 (defn try-resolve-figwheel-repl-api-symbol [sym]
   (try
-    (ns-resolve 'figwheel-sidecar.repl-api sym)
+    (ns-resolve figwheel-api-ns-sym sym)
     (catch Throwable e
       (log/trace e)
       nil)))

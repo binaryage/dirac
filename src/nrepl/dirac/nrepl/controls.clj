@@ -197,10 +197,12 @@
 ; -- (dirac! :fig) ----------------------------------------------------------------------------------------------------------
 
 (defmethod dirac! :fig [_ & [fn-name & args]]
-  (let [result (apply figwheel/call-repl-api! (or fn-name :fig-status) args)]
+  (let [effective-fn-name (symbol (name (or fn-name :fig-status)))
+        result (apply figwheel/call-repl-api! effective-fn-name args)
+        api-name (str figwheel/figwheel-api-ns-sym "/" effective-fn-name)]
     (let [response (case result
-                     ::figwheel/not-found (error-println (messages/make-figwheel-api-not-found-msg))
-                     ::figwheel/not-fn (error-println (messages/make-figwheel-bad-api-msg))
+                     ::figwheel/not-found (error-println (messages/make-figwheel-api-not-found-msg api-name))
+                     ::figwheel/not-fn (error-println (messages/make-figwheel-bad-api-msg api-name))
                      result)]
       (state/send-response! (utils/prepare-current-env-info-response))
       response)))
