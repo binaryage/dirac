@@ -269,13 +269,11 @@
 ; -- (dirac! :ls) -----------------------------------------------------------------------------------------------------------
 
 (defmethod dirac! :ls [_ & _]
-  (let [output (with-out-str
-                 (println (make-list-dirac-sessions-msg (sessions/get-dirac-session-tags)
-                                                        (sessions/get-current-session-tag)))
-                 (println)
-                 (println (make-list-compilers-msg (compilers/collect-all-available-compiler-descriptors)
-                                                   (compilers/get-selected-compiler-id))))]
-    (println output))                                                                                                         ; we want to present whole output as one text block
+  (println (make-list-dirac-sessions-msg (sessions/get-dirac-session-tags)
+                                         (sessions/get-current-session-tag)))
+  (println)
+  (println (make-list-compilers-msg (compilers/collect-all-available-compiler-descriptors)
+                                    (compilers/get-selected-compiler-id)))
   ::no-result)
 
 ; -- (dirac! :join) ---------------------------------------------------------------------------------------------------------

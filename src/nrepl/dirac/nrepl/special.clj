@@ -23,9 +23,11 @@
 
 (defn eval-job! [nrepl-message code-str ns driver caught-fn flush-fn]
   (try
-    (binding [*ns* ns
-              state/*nrepl-message* nrepl-message]
-      (eval (read-string code-str)))
+    (let [form (read-string code-str)]
+      (binding [*ns* ns
+                state/*nrepl-message* nrepl-message]
+        (helpers/with-coallesced-output
+          (eval form))))
     (catch Throwable e
       (caught-fn e nil nil)
       ::controls/no-result)

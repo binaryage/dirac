@@ -16,6 +16,15 @@
   (with-err-output
     (apply println args)))
 
+(defmacro with-coallesced-output [& body]
+  `(let [outs# (StringWriter.)
+         errs# (StringWriter.)]
+     (binding [*out* outs#
+               *err* errs#]
+       ~@body)
+     (.write *out* (str outs#))
+     (.write *err* (str errs#))))
+
 (defn get-nrepl-info []
   (str "Dirac nREPL middleware v" version))
 
