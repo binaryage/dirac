@@ -45,3 +45,9 @@
    :session                            session
    :job-id                             job-id
    :serialized-forwarded-nrepl-message serialized-forwardable-message})
+
+(defn prepare-version-response [version]
+  {:version version})
+
+(defn extract-bare-status-response [nrepl-message]
+  (select-keys nrepl-message [:status :err :out]))

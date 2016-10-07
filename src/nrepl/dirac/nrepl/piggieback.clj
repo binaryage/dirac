@@ -52,11 +52,11 @@
 
 (defn handle-identify-message! [nrepl-message]
   (log/trace "handle-identify-message!")
-  (helpers/send-response! nrepl-message {:version version}))
+  (helpers/send-response! nrepl-message (protocol/prepare-version-response version)))
 
 (defn handle-finish-dirac-job-message! [nrepl-message]
   (log/trace "handle-finish-dirac-job!")
-  (helpers/send-response! nrepl-message (select-keys nrepl-message [:status :err :out])))
+  (helpers/send-response! nrepl-message (protocol/extract-bare-status-response nrepl-message)))
 
 (defn handle-eval-message! [nrepl-message]
   (log/trace "handle-eval-message!")
