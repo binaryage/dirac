@@ -141,6 +141,9 @@
 (defn ^:dynamic output-template [job-id kind format text]
   (str "dirac.runtime.repl.present_output(" job-id ", '" kind "', '" format "', " (code-as-string text) ")"))
 
+(defn ^:dynamic result-template [job-id value]
+  (str "dirac.runtime.repl.present_repl_result(" job-id ", cljs.reader.read_string(" (code-as-string value) "))"))
+
 (defn ^:dynamic postprocess-template [code]
   (str "try{"
        "  dirac.runtime.repl.postprocess_successful_eval(eval(" (code-as-string code) "))"
@@ -338,6 +341,11 @@
 (defn present-server-side-output! [job-id kind format text]
   (feedback/post! (str "present-server-side-output! " kind "/" format " > " text))
   (let [code (output-template (utils/parse-int job-id) kind format text)]
+    (safely-eval-in-context! :default nil code)))
+
+(defn present-server-side-result! [job-id value]
+  (feedback/post! (str "present-server-side-result! " value))
+  (let [code (result-template (utils/parse-int job-id) value)]
     (safely-eval-in-context! :default nil code)))
 
 ; -- fancy evaluation in currently selected context -------------------------------------------------------------------------

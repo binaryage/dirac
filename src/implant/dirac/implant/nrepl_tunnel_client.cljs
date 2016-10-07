@@ -103,6 +103,11 @@
     (eval/present-server-side-output! id kind format content))
   nil)
 
+(defmethod process-message :present-result [_client message]
+  (let [{:keys [id value]} message]
+    (eval/present-server-side-result! id value))
+  nil)
+
 ; TODO: is this really needed?
 (defmethod process-message :error [_client message]
   (error "Received an error message from nREPL server" (envelope message))
