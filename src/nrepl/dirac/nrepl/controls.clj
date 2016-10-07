@@ -285,6 +285,7 @@
 (defmethod dirac! :status [_ & _]
   (let [session (sessions/get-current-session)]
     (println (make-status-msg (prepare-session-description session))))
+  (state/send-response! (utils/prepare-current-env-info-response))
   ::no-result)
 
 ; -- (dirac! :ls) -----------------------------------------------------------------------------------------------------------
@@ -299,6 +300,7 @@
     (println (make-list-dirac-sessions-msg tags current-tag marker))
     (println)
     (println (make-list-compilers-msg avail-compilers selected-compiler-id marker)))
+  (state/send-response! (utils/prepare-current-env-info-response))
   ::no-result)
 
 ; -- (dirac! :join) ---------------------------------------------------------------------------------------------------------
