@@ -58,31 +58,6 @@
         (state/set-session-meta! initial-session-meta)                                                                        ; restore session to initial state
         (throw e)))))
 
-(defn start-cljs-repl! [nrepl-message dirac-nrepl-config repl-env repl-options]
-  (log/trace "start-cljs-repl!\n"
-             "dirac-nrepl-config:\n"
-             (logging/pprint dirac-nrepl-config)
-             "repl-env:\n"
-             (logging/pprint repl-env)
-             "repl-options:\n"
-             (logging/pprint repl-options))
-  (debug/log-stack-trace!)
-  (let [initial-session-meta (state/get-session-meta)]
-    (try
-      (state/set-session-cljs-ns! 'cljs.user)
-      (let [preferred-compiler (or (:preferred-compiler dirac-nrepl-config) "dirac/new")]
-        (if (= preferred-compiler "dirac/new")
-          (start-new-cljs-compiler-repl-environment! nrepl-message dirac-nrepl-config repl-env repl-options)
-          (state/set-session-selected-compiler! preferred-compiler)))                                                         ; TODO: validate that preferred compiler exists
-      (state/set-session-dirac-nrepl-config! dirac-nrepl-config)
-      (state/set-session-cljs-repl-env! repl-env)
-      (state/set-session-cljs-repl-options! repl-options)
-      (state/set-session-original-clj-ns! *ns*)                                                                               ; interruptible-eval is in charge of emitting the final :ns response in this context
-      (set! *ns* (find-ns (state/get-session-cljs-ns)))                                                                       ; TODO: is this really needed? is it for macros?
-      (helpers/send-response! nrepl-message (prepare-current-env-info-response))
-      (catch Exception e
-        (state/set-session-meta! initial-session-meta)                                                                        ; restore session to initial state
-        (throw e)))))
 
 (defn report-missing-compiler! [nrepl-message selected-compiler]
   (let [msg (messages/make-missing-compiler-msg selected-compiler)]

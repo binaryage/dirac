@@ -28,3 +28,7 @@
 
 (defn prepare-related-response [template-message response]
   (merge (select-keys template-message [:id :session]) response))
+
+(defn make-bootstrap-error-response [details]
+  {:status  :bootstrap-error
+   :details details})
