@@ -20,6 +20,8 @@
             [dirac.nrepl.transports.trace-printing :refer [make-nrepl-message-with-trace-printing]]
             [dirac.nrepl.transports.job-observing :refer [make-nrepl-message-with-job-observing]]))
 
+; -- transport wrappers -----------------------------------------------------------------------------------------------------
+
 (defn wrap-nrepl-message-if-observed-job [nrepl-message]
   (if-let [observed-job (jobs/get-observed-job nrepl-message)]
     (make-nrepl-message-with-job-observing observed-job nrepl-message)
@@ -37,6 +39,8 @@
       (make-nrepl-message-with-debug-logging)
       (make-nrepl-message-with-bencode-workarounds)
       (wrap-nrepl-message-for-dirac-session)))
+
+; -- spawn/kill compilers ---------------------------------------------------------------------------------------------------
 
 (defn prepare-current-env-info-response []
   (eval/prepare-current-env-info-response))
@@ -102,6 +106,8 @@
     (doseq [compiler-id valid-compiler-ids]
       (kill-compiler! compiler-id))
     [valid-compiler-ids invalid-compiler-ids]))
+
+; -- evaluation -------------------------------------------------------------------------------------------------------------
 
 (defn report-missing-compiler! [nrepl-message selected-compiler]
   (let [msg (messages/make-missing-compiler-msg selected-compiler)]
