@@ -23,22 +23,50 @@
 (defn get-compiler-descriptor-id [descriptor]
   (:id descriptor))
 
+(defn filter-compiler-descriptors-by-first-match [descriptors]
+  (if-let [descriptor (first descriptors)]
+    (list descriptor)
+    (list)))
+
+(defn filter-compiler-descriptors-by-position [n descriptors]
+  (if-let [descriptor (nth descriptors (dec n) nil)]                                                                          ; user input is 1-based
+    (list descriptor)
+    (list)))
+
+(defn filter-compiler-descriptors-by-id [id descriptors]
+  (filter #(if (= (get-compiler-descriptor-id %) id) %) descriptors))
+
+(defn filter-compiler-descriptors-by-regexp [re descriptors]
+  (filter #(if (re-matches re (get-compiler-descriptor-id %)) %) descriptors))
+
+(defn filter-compiler-descriptors-by-substring [match descriptors]
+  (filter #(if (.contains (get-compiler-descriptor-id %) match) %) descriptors))
+
+(defn filter-matching-compiler-descriptors [match descriptors]
+  (cond
+    (nil? match) (filter-compiler-descriptors-by-first-match descriptors)
+    (integer? match) (filter-compiler-descriptors-by-position match descriptors)
+    (string? match) (filter-compiler-descriptors-by-substring match descriptors)
+    (instance? Pattern match) (filter-compiler-descriptors-by-regexp match descriptors)
+    :else (assert nil (str "invalid match in filter-matching-compiler-descriptors: " (type match)))))
+
+(defn find-compiler-descriptor-by-first-match [descriptors]
+  (first (filter-compiler-descriptors-by-first-match descriptors)))
+
 (defn find-compiler-descriptor-by-id [id descriptors]
-  (some #(if (= (get-compiler-descriptor-id %) id) %) descriptors))
+  (first (filter-compiler-descriptors-by-id id descriptors)))
 
 (defn find-compiler-descriptor-by-regexp [re descriptors]
-  (some #(if (re-matches re (get-compiler-descriptor-id %)) %) descriptors))
+  (first (filter-compiler-descriptors-by-regexp re descriptors)))
 
 (defn find-compiler-descriptor-by-substring [match descriptors]
-  (some #(if (.contains (get-compiler-descriptor-id %) match) %) descriptors))
+  (first (filter-compiler-descriptors-by-substring match descriptors)))
+
+(defn find-compiler-descriptor-by-position [n descriptors]
+  (first (filter-compiler-descriptors-by-position n descriptors)))
 
 (defn find-matching-compiler-descriptor [match descriptors]
-  (cond
-    (nil? match) (first descriptors)
-    (integer? match) (nth descriptors (dec match) nil)                                                                        ; user input is 1-based
-    (string? match) (find-compiler-descriptor-by-substring match descriptors)
-    (instance? Pattern match) (find-compiler-descriptor-by-regexp match descriptors)
-    :else (assert nil (str "invalid match in find-matching-compiler-descriptor: " (type match)))))
+  (first (filter-matching-compiler-descriptors match descriptors)))
 
 (defn register-compiler-descriptor! [descriptor]
   (state/set-session-compiler-descriptors! (conj (or (state/get-session-compiler-descriptors) []) descriptor)))
@@ -70,10 +98,13 @@
     (log/trace "available compiler descriptors:" (logging/pprint (compiler-descriptors-ids descriptors)))
     (find-compiler-descriptor-by-id descriptor-id descriptors)))
 
-(defn find-available-matching-compiler-descriptor [match]
+(defn filter-available-matching-compiler-descriptors [match]
   (let [descriptors (collect-all-available-compiler-descriptors)]
     (log/trace "available compiler descriptors:" (logging/pprint (compiler-descriptors-ids descriptors)))
-    (find-matching-compiler-descriptor match descriptors)))
+    (filter-matching-compiler-descriptors match descriptors)))
+
+(defn find-available-matching-compiler-descriptor [match]
+  (first (filter-available-matching-compiler-descriptors match)))
 
 (defn get-selected-compiler-descriptor []
   (if (state/dirac-session?)

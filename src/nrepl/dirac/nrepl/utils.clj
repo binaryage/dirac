@@ -12,7 +12,31 @@
             [dirac.nrepl.debug :as debug]
             [dirac.nrepl.messages :as messages]
             [dirac.nrepl.sessions :as sessions]
-            [dirac.nrepl.transports.status-cutting :refer [make-nrepl-message-with-status-cutting]]))
+            [dirac.nrepl.transports.status-cutting :refer [make-nrepl-message-with-status-cutting]]
+            [dirac.nrepl.jobs :as jobs]
+            [dirac.nrepl.transports.bencode-workarounds :refer [make-nrepl-message-with-bencode-workarounds]]
+            [dirac.nrepl.transports.debug-logging :refer [make-nrepl-message-with-debug-logging]]
+            [dirac.nrepl.transports.errors-observing :refer [make-nrepl-message-with-observed-errors]]
+            [dirac.nrepl.transports.trace-printing :refer [make-nrepl-message-with-trace-printing]]
+            [dirac.nrepl.transports.job-observing :refer [make-nrepl-message-with-job-observing]]))
+
+(defn wrap-nrepl-message-if-observed-job [nrepl-message]
+  (if-let [observed-job (jobs/get-observed-job nrepl-message)]
+    (make-nrepl-message-with-job-observing observed-job nrepl-message)
+    nrepl-message))
+
+(defn wrap-nrepl-message-for-dirac-session [nrepl-message]
+  (if (state/dirac-session? (:session nrepl-message))
+    (-> nrepl-message
+        make-nrepl-message-with-trace-printing                                                                                ; note: the order is important here, message should first have errors observed and then traced
+        make-nrepl-message-with-observed-errors)
+    nrepl-message))
+
+(defn wrap-nrepl-message [nrepl-message]
+  (-> nrepl-message
+      (make-nrepl-message-with-debug-logging)
+      (make-nrepl-message-with-bencode-workarounds)
+      (wrap-nrepl-message-for-dirac-session)))
 
 (defn prepare-current-env-info-response []
   (eval/prepare-current-env-info-response))
@@ -58,6 +82,26 @@
         (state/set-session-meta! initial-session-meta)                                                                        ; restore session to initial state
         (throw e)))))
 
+(defn kill-compiler! [compiler-id]
+  (compilers/unregister-compiler-descriptor! compiler-id))
+
+(defn valid-compiler-to-kill? [compiler-id]
+  (some? (re-matches #"^dirac.*" compiler-id)))
+
+(defn valid-compiler-descriptor-to-kill? [compiler-descriptor]
+  (valid-compiler-to-kill? (compilers/get-compiler-descriptor-id compiler-descriptor)))
+
+(defn kill-matching-compilers! [which]
+  (let [matching-descriptors (if (nil? which)
+                               (remove nil? (list (compilers/get-selected-compiler-descriptor)))
+                               (compilers/filter-available-matching-compiler-descriptors which))
+        valid-descriptors (filter valid-compiler-descriptor-to-kill? matching-descriptors)
+        invalid-descriptors (remove valid-compiler-descriptor-to-kill? matching-descriptors)
+        valid-compiler-ids (keep compilers/get-compiler-descriptor-id valid-descriptors)
+        invalid-compiler-ids (keep compilers/get-compiler-descriptor-id invalid-descriptors)]
+    (doseq [compiler-id valid-compiler-ids]
+      (kill-compiler! compiler-id))
+    [valid-compiler-ids invalid-compiler-ids]))
 
 (defn report-missing-compiler! [nrepl-message selected-compiler]
   (let [msg (messages/make-missing-compiler-msg selected-compiler)]
@@ -98,4 +142,3 @@
 (defn load-file! [nrepl-message]
   (let [{:keys [file-path]} nrepl-message]
     (evaluate! (assoc nrepl-message :code (format "(load-file %s)" (pr-str file-path))))))
-

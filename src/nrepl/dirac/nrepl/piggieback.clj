@@ -48,24 +48,6 @@
         (sessions/joined-session? (:session nrepl-message))
         (our-op? (:op nrepl-message)))))
 
-(defn wrap-nrepl-message-if-observed-job [nrepl-message]
-  (if-let [observed-job (jobs/get-observed-job nrepl-message)]
-    (make-nrepl-message-with-job-observing observed-job nrepl-message)
-    nrepl-message))
-
-(defn wrap-nrepl-message-for-dirac-session [nrepl-message]
-  (if (state/dirac-session? (:session nrepl-message))
-    (-> nrepl-message
-        make-nrepl-message-with-trace-printing                                                                                ; note: the order is important here, message should first have errors observed and then traced
-        make-nrepl-message-with-observed-errors)
-    nrepl-message))
-
-(defn wrap-nrepl-message [nrepl-message]
-  (-> nrepl-message
-      (make-nrepl-message-with-debug-logging)
-      (make-nrepl-message-with-bencode-workarounds)
-      (wrap-nrepl-message-for-dirac-session)))
-
 ; -- message handling cascade -----------------------------------------------------------------------------------------------
 
 (defn handle-identify-message! [nrepl-message]
@@ -96,7 +78,7 @@
       "load-file" (handle-load-file-message! nrepl-message))))
 
 (defn handle-nonspecial-message! [nrepl-message]
-  (let [nrepl-message (wrap-nrepl-message-if-observed-job nrepl-message)
+  (let [nrepl-message (utils/wrap-nrepl-message-if-observed-job nrepl-message)
         joined-session? (sessions/joined-session? (:session nrepl-message))]
     (cond
       joined-session? (joining/forward-message-to-joined-session! nrepl-message)
@@ -112,7 +94,7 @@
 (defn handler-job! [next-handler nrepl-message]
   (state/register-last-seen-nrepl-message! nrepl-message)
   (if (our-message? nrepl-message)
-    (handle-message! (wrap-nrepl-message nrepl-message))
+    (handle-message! (utils/wrap-nrepl-message nrepl-message))
     (next-handler nrepl-message)))
 
 ; -- top entry point (called by nrepl middleware stack) ---------------------------------------------------------------------

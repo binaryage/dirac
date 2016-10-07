@@ -2,7 +2,7 @@
   (:require [clojure.string :as string]
             [dirac.nrepl.sessions :as sessions]
             [dirac.nrepl.compilers :as compilers]
-            [dirac.nrepl.helpers :refer [with-err-output get-nrepl-info error-println
+            [dirac.nrepl.helpers :refer [with-err-output get-nrepl-info error-println simple-pluralize
                                          make-human-readable-list make-human-readable-selected-compiler]]
             [dirac.nrepl.state :as state]
             [dirac.nrepl.utils :as utils])
@@ -211,6 +211,19 @@
 (defn ^:dynamic make-cannot-spawn-outside-dirac-session-msg []
   (str "Your session is not a Dirac session. Only Dirac sessions are able to spawn new ClojureScript compilers."))
 
+(defn ^:dynamic make-no-killed-compilers-msg [user-input]
+  (str "No Dirac ClojureScript compilers currently match your input '" user-input "'. No compilers were killed."))
+
+(defn ^:dynamic make-report-killed-compilers-msg [_user-input killed-compiler-ids]
+  (let [cnt (count killed-compiler-ids)]
+    (str "Killed " cnt " " (simple-pluralize cnt "compiler") ": " (make-human-readable-list killed-compiler-ids))))
+
+(defn ^:dynamic make-report-invalid-compilers-not-killed-msg [user-input invalid-compiler-ids]
+  (str "Some compilers matching your input '" user-input "' cannot be killed because they don't belong to Dirac.\n"
+       "The list of invalid matching compilers: " (make-human-readable-list invalid-compiler-ids) ".\n"
+       "For example if you wanted to manipulate Figwheel compilers you have to use Figwheel's own interface for that:\n"
+       "https://github.com/bhauman/lein-figwheel#repl-figwheel-control-functions"))
+
 ; == special REPL commands ==================================================================================================
 
 ; we are forgiving when reading the sub-command argument,
@@ -336,6 +349,22 @@
     (cond
       (not (sessions/dirac-session? session)) (error-println (make-cannot-spawn-outside-dirac-session-msg))
       :else (utils/spawn-compiler! state/*nrepl-message*)))
+  ::no-result)
+
+; -- (dirac! ::kill) --------------------------------------------------------------------------------------------------------
+
+(defmethod dirac! :kill [_ & [user-input]]
+  (let [selected-compiler (validate-selected-compiler user-input)]
+    (if (= ::invalid-input selected-compiler)
+      (error-println (make-invalid-compiler-error-msg user-input))
+      (let [[killed-compiler-ids invalid-compiler-ids] (utils/kill-matching-compilers! selected-compiler)]
+        (if (empty? killed-compiler-ids)
+          (error-println (make-no-killed-compilers-msg user-input))
+          (do
+            (println (make-report-killed-compilers-msg user-input killed-compiler-ids))
+            (state/send-response! (utils/prepare-current-env-info-response))))
+        (if-not (empty? invalid-compiler-ids)
+          (error-println (make-report-invalid-compilers-not-killed-msg user-input invalid-compiler-ids))))))
   ::no-result)
 
 ; -- default handler --------------------------------------------------------------------------------------------------------

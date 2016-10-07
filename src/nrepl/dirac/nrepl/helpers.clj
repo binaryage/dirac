@@ -72,3 +72,7 @@
   (boolean
     (and (instance? IExceptionInfo e) (#{:js-eval-error :js-eval-exception} (:type (ex-data e))))))
 
+(defn simple-pluralize [n noun]
+  (if (= n 1)
+    noun
+    (str noun "s")))
