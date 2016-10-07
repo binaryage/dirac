@@ -342,11 +342,11 @@
 
 ; -- (dirac! :spawn) --------------------------------------------------------------------------------------------------------
 
-(defmethod dirac! :spawn [_ & _]
+(defmethod dirac! :spawn [_ & [options]]
   (let [session (sessions/get-current-session)]
     (cond
       (not (sessions/dirac-session? session)) (error-println (make-cannot-spawn-outside-dirac-session-msg))
-      :else (utils/spawn-compiler! state/*nrepl-message*)))
+      :else (utils/spawn-compiler! state/*nrepl-message* options)))
   ::no-result)
 
 ; -- (dirac! ::kill) --------------------------------------------------------------------------------------------------------

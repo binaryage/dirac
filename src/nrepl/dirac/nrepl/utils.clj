@@ -61,11 +61,11 @@
         response-fn (partial helpers/send-response! nrepl-message)]
     (eval/eval-in-cljs-repl! code ns repl-env compiler-env effective-repl-options job-id response-fn)))
 
-(defn spawn-compiler! [nrepl-message]
+(defn spawn-compiler! [nrepl-message & [options]]
   (let [initial-session-meta (state/get-session-meta)
-        dirac-nrepl-config (state/get-session-dirac-nrepl-config)
+        dirac-nrepl-config (merge (state/get-session-dirac-nrepl-config) (:dirac-nrepl-config options))
         repl-env (state/get-session-cljs-repl-env)
-        repl-options (state/get-session-cljs-repl-options)]
+        repl-options (merge (state/get-session-cljs-repl-options) (:repl-options options))]
     (log/trace "spawn-compiler!\n"
                "dirac-nrepl-config:\n"
                (logging/pprint dirac-nrepl-config)
