@@ -138,8 +138,8 @@
 (defn ^:dynamic installation-test-template []
   (str "(dirac.runtime.installed_QMARK_() && dirac.runtime.repl.bootstrapped_QMARK_())"))
 
-(defn ^:dynamic output-template [job-id kind text]
-  (str "dirac.runtime.repl.present_output(" job-id ", '" kind "', " (code-as-string text) ")"))
+(defn ^:dynamic output-template [job-id kind format text]
+  (str "dirac.runtime.repl.present_output(" job-id ", '" kind "', '" format "', " (code-as-string text) ")"))
 
 (defn ^:dynamic postprocess-template [code]
   (str "try{"
@@ -335,9 +335,9 @@
 
 ; -- printing captured server-side output -----------------------------------------------------------------------------------
 
-(defn present-server-side-output! [job-id kind text]
-  (feedback/post! (str "present-server-side-output! " kind " > " text))
-  (let [code (output-template (utils/parse-int job-id) kind text)]
+(defn present-server-side-output! [job-id kind format text]
+  (feedback/post! (str "present-server-side-output! " kind "/" format " > " text))
+  (let [code (output-template (utils/parse-int job-id) kind format text)]
     (safely-eval-in-context! :default nil code)))
 
 ; -- fancy evaluation in currently selected context -------------------------------------------------------------------------

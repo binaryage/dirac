@@ -99,8 +99,8 @@
   nil)
 
 (defmethod process-message :print-output [_client message]
-  (let [{:keys [id content kind]} message]
-    (eval/present-server-side-output! id kind content))
+  (let [{:keys [id content kind format]} message]
+    (eval/present-server-side-output! id kind format content))
   nil)
 
 ; TODO: is this really needed?
