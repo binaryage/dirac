@@ -28,8 +28,7 @@
       (binding [*file* (helpers/make-dirac-repl-alias (compilers/get-selected-compiler-id (:session nrepl-message)))
                 *ns* ns
                 state/*nrepl-message* nrepl-message]
-        (helpers/with-coallesced-output
-          (eval form))))
+        (eval form)))
     (catch Throwable e
       (caught-fn e nil nil)
       ::controls/no-result)
