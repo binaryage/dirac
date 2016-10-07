@@ -152,15 +152,16 @@
 
 (defn ^:dynamic make-list-matching-dirac-sessions-msg [info tags]
   (let [printer (fn [i tag]
-                  (str (if (zero? i) "  * " "    ") tag))]
+                  (str (if (zero? i) " ~> " "    ") tag))]
     (str "Listing Dirac sessions which are '" info "':\n"
          (string/join "\n" (map-indexed printer tags)))))
 
-(defn ^:dynamic make-list-dirac-sessions-msg [tags current-tag]
+(defn ^:dynamic make-list-dirac-sessions-msg [tags current-tag marker]
+  (assert (and (string? marker) (= 2 (count marker))))
   (if (empty? tags)
     (str "No Dirac sessions are currently available. Connect with at least one Dirac REPL to your nREPL server.")
     (let [printer (fn [i tag]
-                    (str (if (= tag current-tag) " -> #" "    #") (inc i) " " tag))]
+                    (str (if (= tag current-tag) (str " " marker " " "#") "    #") (inc i) " " tag))]
       (str "Listing all Dirac sessions currently connected to your nREPL server:\n"
            (string/join "\n" (map-indexed printer tags))))))
 
@@ -172,12 +173,13 @@
   (str "Your session joined Dirac (ClojureScript). "
        "The specific target Dirac session will be determined dynamically according to current matching strategy."))
 
-(defn ^:dynamic make-list-compilers-msg [descriptors selected-compiler-id]
+(defn ^:dynamic make-list-compilers-msg [descriptors selected-compiler-id marker]
+  (assert (and (string? marker) (= 2 (count marker))))
   (if (empty? descriptors)
     (str "No ClojureScript compilers currently available in your nREPL server.")
     (let [printer (fn [i descriptor]
                     (let [id (compilers/get-compiler-descriptor-id descriptor)]
-                      (str (if (= id selected-compiler-id) " -> #" "    #") (inc i) " " id)))]
+                      (str (if (= id selected-compiler-id) (str " " marker " #") "    #") (inc i) " " id)))]
       (str "Listing all ClojureScript compilers currently available in your nREPL server:\n"
            (string/join "\n" (map-indexed printer descriptors))))))
 
@@ -248,12 +250,16 @@
 
 ; -- (dirac! :status) -------------------------------------------------------------------------------------------------------
 
+(defn get-target-session [session]
+  (if-let [target-session-descriptor (sessions/find-target-dirac-session-descriptor session)]
+    (sessions/get-dirac-session-descriptor-session target-session-descriptor)))
+
 (defn prepare-session-description [session]
   (cond
     (sessions/dirac-session? session)
     (let [selected-compiler (state/get-session-selected-compiler session)
           human-selected-compiler (make-human-readable-selected-compiler selected-compiler)
-          compiler-descriptor (compilers/get-selected-compiler-descriptor-for-session session)]
+          compiler-descriptor (compilers/get-selected-compiler-descriptor session)]
       (str "Dirac session (ClojureScript) connected to '" (sessions/get-dirac-session-tag session) "'\n"
            "with selected ClojureScript compiler " human-selected-compiler
            (if (some? compiler-descriptor)
@@ -264,8 +270,7 @@
 
     (sessions/joined-session? session)
     (let [target-info (sessions/get-target-session-info session)
-          target-session-descriptor (sessions/find-target-dirac-session-descriptor session)
-          target-session (sessions/get-dirac-session-descriptor-session target-session-descriptor)]
+          target-session (get-target-session session)]
       (str "joined Dirac session (ClojureScript) which targets '" target-info "'\n"
            (if (some? target-session)
              (str "which is currently forwarding commands to the " (prepare-session-description target-session))
@@ -282,11 +287,18 @@
 ; -- (dirac! :ls) -----------------------------------------------------------------------------------------------------------
 
 (defmethod dirac! :ls [_ & _]
-  (println (make-list-dirac-sessions-msg (sessions/get-dirac-session-tags)
-                                         (sessions/get-current-session-tag)))
-  (println)
-  (println (make-list-compilers-msg (compilers/collect-all-available-compiler-descriptors)
-                                    (compilers/get-selected-compiler-id)))
+  (let [session (state/get-current-session)
+        target-session (if (sessions/joined-session? session)
+                         (get-target-session session)
+                         session)
+        tags (sessions/get-dirac-session-tags target-session)
+        current-tag (sessions/get-current-session-tag target-session)
+        avail-compilers (compilers/collect-all-available-compiler-descriptors target-session)
+        selected-compiler-id (compilers/get-selected-compiler-id target-session)
+        marker (if (= session target-session) "->" "~>")]
+    (println (make-list-dirac-sessions-msg tags current-tag marker))
+    (println)
+    (println (make-list-compilers-msg avail-compilers selected-compiler-id marker)))
   ::no-result)
 
 ; -- (dirac! :join) ---------------------------------------------------------------------------------------------------------
@@ -342,12 +354,13 @@
     :else ::invalid-input))
 
 (defmethod dirac! :switch [_ & [user-input]]
-  (let [selected-compiler (validate-selected-compiler user-input)]
+  (let [selected-compiler (validate-selected-compiler user-input)
+        session (state/get-current-session)]
     (if (= ::invalid-input selected-compiler)
       (error-println (make-invalid-compiler-error-msg user-input))
       (do
-        (compilers/select-compiler! selected-compiler)
-        (let [matched-compiler-descriptor (compilers/find-available-matching-compiler-descriptor selected-compiler)]
+        (compilers/select-compiler! session selected-compiler)
+        (let [matched-compiler-descriptor (compilers/find-available-matching-compiler-descriptor session selected-compiler)]
           (if (nil? matched-compiler-descriptor)
             (error-println (make-no-compilers-msg selected-compiler))))
         (state/send-response! (utils/prepare-current-env-info-response)))))
@@ -365,7 +378,8 @@
 ; -- (dirac! ::kill) --------------------------------------------------------------------------------------------------------
 
 (defmethod dirac! :kill [_ & [user-input]]
-  (let [selected-compiler (validate-selected-compiler user-input)]
+  (let [selected-compiler (validate-selected-compiler user-input)
+        session (state/get-current-session)]
     (if (= ::invalid-input selected-compiler)
       (error-println (make-invalid-compiler-error-msg user-input))
       (let [[killed-compiler-ids invalid-compiler-ids] (utils/kill-matching-compilers! selected-compiler)]
@@ -373,8 +387,8 @@
           (error-println (make-no-killed-compilers-msg user-input))
           (do
             (println (make-report-killed-compilers-msg user-input killed-compiler-ids))
-            (if-not (compilers/get-selected-compiler-id)                                                                      ; switch to first available compiler the current one got killed
-              (compilers/select-compiler! nil))                                                                               ; note that this still might not guarantee valid compiler selection, the compiler list might be empty
+            (if-not (compilers/get-selected-compiler-id session)                                                              ; switch to first available compiler the current one got killed
+              (compilers/select-compiler! session nil))                                                                       ; note that this still might not guarantee valid compiler selection, the compiler list might be empty
             (state/send-response! (utils/prepare-current-env-info-response))))
         (if-not (empty? invalid-compiler-ids)
           (error-println (make-report-invalid-compilers-not-killed-msg user-input invalid-compiler-ids))))))
