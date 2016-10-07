@@ -1,4 +1,5 @@
-(ns dirac.nrepl.usage)
+(ns dirac.nrepl.usage
+  (:require [clojure.string :as string]))
 
 ; -- usage docs -------------------------------------------------------------------------------------------------------------
 
@@ -129,7 +130,7 @@
    ""
    "New compiler/repl environment bootstrapping is subject to many possible options. By default we reuse configuration from"
    "current Dirac session. That is the reason why :spawn can be called only from a properly configured Dirac session."
-   "For advanced usage you have a chance to override the configuration by passed overriding options map (optional)."])
+   "For advanced usage you have a chance to override the configuration by passing in an options map (optional)."])
 
 (def ^:dynamic kill-usage
   ["Usage forms:"
@@ -153,14 +154,20 @@
           don't allow killing them via `(dirac! :kill ...)`. You have to use Figwheel's own interface to manipulate its"
    "      compilers."])
 
+; -- public docs map --------------------------------------------------------------------------------------------------------
+
+(defn render-usage [lines]
+  (string/join "\n" lines))
+
 (def ^:dynamic docs
-  {:help    help-usage
-   :version version-usage
-   :status  status-usage
-   :ls      ls-usage
-   :join    join-usage
-   :disjoin disjoin-usage
-   :match   match-usage
-   :switch  switch-usage
-   :spawn   spawn-usage
-   :kill    kill-usage})
+  {nil      (render-usage general-usage)
+   :help    (render-usage help-usage)
+   :version (render-usage version-usage)
+   :status  (render-usage status-usage)
+   :ls      (render-usage ls-usage)
+   :join    (render-usage join-usage)
+   :disjoin (render-usage disjoin-usage)
+   :match   (render-usage match-usage)
+   :switch  (render-usage switch-usage)
+   :spawn   (render-usage spawn-usage)
+   :kill    (render-usage kill-usage)})
