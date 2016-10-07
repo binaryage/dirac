@@ -110,6 +110,10 @@
   (if (state/dirac-session?)
     (find-available-matching-compiler-descriptor (state/get-session-selected-compiler))))
 
+(defn get-selected-compiler-descriptor-for-session [session]
+  (if (state/dirac-session? session)
+    (find-available-matching-compiler-descriptor (state/get-session-selected-compiler session))))
+
 (defn get-selected-compiler-id []
   (get-compiler-descriptor-id (get-selected-compiler-descriptor)))
 

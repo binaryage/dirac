@@ -153,7 +153,7 @@
 (defn ^:dynamic make-list-matching-dirac-sessions-msg [info tags]
   (let [printer (fn [i tag]
                   (str (if (zero? i) "  * " "    ") tag))]
-    (str "Listing Dirac sessions which are \"" info "\":\n"
+    (str "Listing Dirac sessions which are '" info "':\n"
          (string/join "\n" (map-indexed printer tags)))))
 
 (defn ^:dynamic make-list-dirac-sessions-msg [tags current-tag]
@@ -186,17 +186,8 @@
     (str "No ClojureScript compiler matching " compiler " is currently available.\n"
          "You may want to use `(dirac! :ls)` to review current situation.")))
 
-(defn ^:dynamic make-status-msg [session-type dirac-session? selected-compiler compiler-descriptor]
-  (str "Your current nREPL session is " session-type ".\n"
-       (if dirac-session?
-         (let [compiler (make-human-readable-selected-compiler selected-compiler)]
-           (str "Your currently selected ClojureScript compiler is " compiler
-                (if (some? compiler-descriptor)
-                  (let [compiler-id (compilers/get-compiler-descriptor-id compiler-descriptor)]
-                    (if (= compiler-id selected-compiler)
-                      "."
-                      (str " which is currently matching compiler <" compiler-id ">.")))
-                  (str " which currently does not match any available compilers.")))))))
+(defn ^:dynamic make-status-msg [session-description]
+  (str "Your current nREPL session is a " session-description "."))
 
 (defn ^:dynamic make-version-msg [nrepl-info]
   (str nrepl-info "."))
@@ -257,13 +248,35 @@
 
 ; -- (dirac! :status) -------------------------------------------------------------------------------------------------------
 
+(defn prepare-session-description [session]
+  (cond
+    (sessions/dirac-session? session)
+    (let [selected-compiler (state/get-session-selected-compiler session)
+          human-selected-compiler (make-human-readable-selected-compiler selected-compiler)
+          compiler-descriptor (compilers/get-selected-compiler-descriptor-for-session session)]
+      (str "Dirac session (ClojureScript) connected to '" (sessions/get-dirac-session-tag session) "'\n"
+           "with selected ClojureScript compiler " human-selected-compiler
+           (if (some? compiler-descriptor)
+             (let [compiler-id (compilers/get-compiler-descriptor-id compiler-descriptor)]
+               (if-not (= compiler-id selected-compiler)
+                 (str " which is currently matching compiler <" compiler-id ">")))
+             (str " which currently does not match any available compiler"))))
+
+    (sessions/joined-session? session)
+    (let [target-info (sessions/get-target-session-info session)
+          target-session-descriptor (sessions/find-target-dirac-session-descriptor session)
+          target-session (sessions/get-dirac-session-descriptor-session target-session-descriptor)]
+      (str "joined Dirac session (ClojureScript) which targets '" target-info "'\n"
+           (if (some? target-session)
+             (str "which is currently forwarding commands to the " (prepare-session-description target-session))
+             (str "which currently does not match any existing session"))))
+
+    :else
+    (str "normal session (Clojure)")))
+
 (defmethod dirac! :status [_ & _]
-  (let [session (sessions/get-current-session)
-        session-type (sessions/get-session-type session)
-        dirac-session? (state/dirac-session?)
-        selected-compiler (state/get-session-selected-compiler)
-        selected-compiler-descriptor (compilers/get-selected-compiler-descriptor)]
-    (println (make-status-msg session-type dirac-session? selected-compiler selected-compiler-descriptor)))
+  (let [session (sessions/get-current-session)]
+    (println (make-status-msg (prepare-session-description session))))
   ::no-result)
 
 ; -- (dirac! :ls) -----------------------------------------------------------------------------------------------------------

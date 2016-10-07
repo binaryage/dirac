@@ -180,11 +180,3 @@
   (join-session! session
                  (make-number-matcher number)
                  (make-number-matcher-description number)))
-
-; -- sessions state ---------------------------------------------------------------------------------------------------------
-
-(defn get-session-type [session]
-  (cond
-    (dirac-session? session) (str "a Dirac session (ClojureScript) connected to '" (get-dirac-session-tag session) "'")
-    (joined-session? session) (str "a joined Dirac session (ClojureScript) which targets " (get-target-session-info session))
-    :else (str "a normal session (Clojure)")))
