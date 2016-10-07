@@ -217,6 +217,13 @@
        "For example if you wanted to manipulate Figwheel compilers you have to use Figwheel's own interface for that:\n"
        "=> https://github.com/bhauman/lein-figwheel#repl-figwheel-control-functions."))
 
+(defn ^:dynamic make-retargeting-warning-msg []
+  (str "You are in a joined Dirac session. This command is being executed as if it was entered in the target session."))
+
+(defn ^:dynamic warn-about-retargeting-if-needed [session]
+  (if (not= session (state/get-current-session))
+    (println (make-retargeting-warning-msg))))
+
 ; == special REPL commands ==================================================================================================
 
 ; we are forgiving when reading the sub-command argument,
@@ -250,10 +257,6 @@
 
 ; -- (dirac! :status) -------------------------------------------------------------------------------------------------------
 
-(defn get-target-session [session]
-  (if-let [target-session-descriptor (sessions/find-target-dirac-session-descriptor session)]
-    (sessions/get-dirac-session-descriptor-session target-session-descriptor)))
-
 (defn prepare-session-description [session]
   (cond
     (sessions/dirac-session? session)
@@ -270,7 +273,7 @@
 
     (sessions/joined-session? session)
     (let [target-info (sessions/get-target-session-info session)
-          target-session (get-target-session session)]
+          target-session (sessions/get-target-session session)]
       (str "joined Dirac session (ClojureScript) which targets '" target-info "'\n"
            (if (some? target-session)
              (str "which is currently forwarding commands to the " (prepare-session-description target-session))
@@ -287,15 +290,12 @@
 ; -- (dirac! :ls) -----------------------------------------------------------------------------------------------------------
 
 (defmethod dirac! :ls [_ & _]
-  (let [session (state/get-current-session)
-        target-session (if (sessions/joined-session? session)
-                         (get-target-session session)
-                         session)
+  (let [target-session (sessions/get-current-retargeted-session)
         tags (sessions/get-dirac-session-tags target-session)
         current-tag (sessions/get-current-session-tag target-session)
         avail-compilers (compilers/collect-all-available-compiler-descriptors target-session)
         selected-compiler-id (compilers/get-selected-compiler-id target-session)
-        marker (if (= session target-session) "->" "~>")]
+        marker (if (= target-session (state/get-current-session)) "->" "~>")]
     (println (make-list-dirac-sessions-msg tags current-tag marker))
     (println)
     (println (make-list-compilers-msg avail-compilers selected-compiler-id marker)))
@@ -354,11 +354,11 @@
     :else ::invalid-input))
 
 (defmethod dirac! :switch [_ & [user-input]]
-  (let [selected-compiler (validate-selected-compiler user-input)
-        session (state/get-current-session)]
+  (let [selected-compiler (validate-selected-compiler user-input)]
     (if (= ::invalid-input selected-compiler)
       (error-println (make-invalid-compiler-error-msg user-input))
-      (do
+      (let [session (sessions/get-current-retargeted-session)]
+        (warn-about-retargeting-if-needed session)
         (compilers/select-compiler! session selected-compiler)
         (let [matched-compiler-descriptor (compilers/find-available-matching-compiler-descriptor session selected-compiler)]
           (if (nil? matched-compiler-descriptor)
@@ -369,7 +369,8 @@
 ; -- (dirac! :spawn) --------------------------------------------------------------------------------------------------------
 
 (defmethod dirac! :spawn [_ & [options]]
-  (let [session (sessions/get-current-session)]
+  (let [session (sessions/get-current-retargeted-session)]
+    (warn-about-retargeting-if-needed session)
     (cond
       (not (sessions/dirac-session? session)) (error-println (make-cannot-spawn-outside-dirac-session-msg))
       :else (utils/spawn-compiler! state/*nrepl-message* options)))
@@ -378,20 +379,21 @@
 ; -- (dirac! ::kill) --------------------------------------------------------------------------------------------------------
 
 (defmethod dirac! :kill [_ & [user-input]]
-  (let [selected-compiler (validate-selected-compiler user-input)
-        session (state/get-current-session)]
+  (let [selected-compiler (validate-selected-compiler user-input)]
     (if (= ::invalid-input selected-compiler)
       (error-println (make-invalid-compiler-error-msg user-input))
-      (let [[killed-compiler-ids invalid-compiler-ids] (utils/kill-matching-compilers! selected-compiler)]
-        (if (empty? killed-compiler-ids)
-          (error-println (make-no-killed-compilers-msg user-input))
-          (do
-            (println (make-report-killed-compilers-msg user-input killed-compiler-ids))
-            (if-not (compilers/get-selected-compiler-id session)                                                              ; switch to first available compiler the current one got killed
-              (compilers/select-compiler! session nil))                                                                       ; note that this still might not guarantee valid compiler selection, the compiler list might be empty
-            (state/send-response! (utils/prepare-current-env-info-response))))
-        (if-not (empty? invalid-compiler-ids)
-          (error-println (make-report-invalid-compilers-not-killed-msg user-input invalid-compiler-ids))))))
+      (let [session (sessions/get-current-retargeted-session)]
+        (warn-about-retargeting-if-needed session)
+        (let [[killed-compiler-ids invalid-compiler-ids] (utils/kill-matching-compilers! selected-compiler)]
+          (if (empty? killed-compiler-ids)
+            (error-println (make-no-killed-compilers-msg user-input))
+            (do
+              (println (make-report-killed-compilers-msg user-input killed-compiler-ids))
+              (if-not (compilers/get-selected-compiler-id session)                                                            ; switch to first available compiler the current one got killed
+                (compilers/select-compiler! session nil))                                                                     ; note that this still might not guarantee valid compiler selection, the compiler list might be empty
+              (state/send-response! (utils/prepare-current-env-info-response))))
+          (if-not (empty? invalid-compiler-ids)
+            (error-println (make-report-invalid-compilers-not-killed-msg user-input invalid-compiler-ids)))))))
   ::no-result)
 
 ; -- default handler --------------------------------------------------------------------------------------------------------

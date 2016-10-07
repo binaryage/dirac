@@ -184,3 +184,13 @@
   (join-session! session
                  (make-number-matcher number)
                  (make-number-matcher-description number)))
+
+(defn get-target-session [session]
+  (if-let [target-session-descriptor (find-target-dirac-session-descriptor session)]
+    (get-dirac-session-descriptor-session target-session-descriptor)))
+
+(defn get-current-retargeted-session []
+  (let [session (state/get-current-session)
+        target-session (if (joined-session? session)
+                         (get-target-session session))]
+    (or target-session session)))
