@@ -135,10 +135,9 @@
         (cljs.repl/-tear-down cljs-repl-env)
         (sessions/remove-dirac-session-descriptor! session)
         (swap! session assoc #'*ns* original-clj-ns)                                                                          ; TODO: is this really needed?
-        (helpers/send-response! nrepl-message {:value         "nil"
-                                               :printed-value 1
-                                               :ns            (str original-clj-ns)}))))
-  (helpers/send-response! nrepl-message {:status :done}))
+        (helpers/send-response! nrepl-message (merge (protocol/prepare-printed-value-response nil)
+                                                     {:ns (str original-clj-ns)})))))
+  (helpers/send-response! nrepl-message (protocol/prepare-done-response)))
 
 (defn evaluate! [nrepl-message]
   (debug/log-stack-trace!)

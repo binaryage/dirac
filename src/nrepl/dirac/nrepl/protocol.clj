@@ -29,6 +29,19 @@
 (defn prepare-related-response [template-message response]
   (merge (select-keys template-message [:id :session]) response))
 
-(defn make-bootstrap-error-response [details]
+(defn prepare-bootstrap-error-response [details]
   {:status  :bootstrap-error
    :details details})
+
+(defn prepare-out-response [out]
+  {:out out})
+
+(defn prepare-err-response [err]
+  {:err err})
+
+(defn prepare-handle-forwarded-nrepl-message-response [id session job-id serialized-forwardable-message]
+  {:op                                 :handle-forwarded-nrepl-message
+   :id                                 id
+   :session                            session
+   :job-id                             job-id
+   :serialized-forwarded-nrepl-message serialized-forwardable-message})

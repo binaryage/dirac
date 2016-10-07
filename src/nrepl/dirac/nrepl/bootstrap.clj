@@ -80,7 +80,7 @@
           (start-cljs-repl! nrepl-message effective-nrepl-config repl-env cljs-repl-options)))
       (catch Throwable e
         (log/error "Unable to boostrap Dirac ClojureScript REPL:\n" e)
-        (helpers/send-response! nrepl-message (protocol/make-bootstrap-error-response (helpers/capture-exception-details e)))
+        (helpers/send-response! nrepl-message (protocol/prepare-bootstrap-error-response (helpers/capture-exception-details e)))
         (throw e)))
     (do
       (log/error (messages/make-missing-nrepl-message-msg))
