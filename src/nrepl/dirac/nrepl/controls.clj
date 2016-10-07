@@ -25,8 +25,8 @@
    "  :ls      -> list available Dirac sessions"
    ""
    "  :switch  -> switch ClojureScript compiler"
-   "  :spawn   -> start a fresh ClojureScript compiler"                                                                       ; TODO: :spawn
-   "  :kill    -> kill (selected) ClojureScript compiler"                                                                     ; TODO: :kill
+   "  :spawn   -> start a new ClojureScript compiler"
+   "  :kill    -> kill ClojureScript compilers"
    ""
    "  :join    -> join a Dirac session"
    "  :disjoin -> disjoin Dirac session"
@@ -70,25 +70,25 @@
 (def ^:dynamic join-usage
   ["Usage forms:"
    ""
-   "  1. `(dirac! :join <integer>)`"
-   "  2. `(dirac! :join <string>)`"
+   "  1. `(dirac! :join <string>)`"
+   "  2. `(dirac! :join <integer>)`"
    "  3. `(dirac! :join <regex>)`"
    "  4. `(dirac! :join)`"
    ""
-   "Join or re-join first Dirac session matching provided matching strategy."
+   "Join or re-join first Dirac session matching provided input (a matching strategy)."
    "In other words: this Clojure nREPL session joins a specific target Dirac session."
    "When joined, this session will forward all incoming eval requests to the matched target Dirac session."
    ""
    "To list all available Dirac sessions use `(dirac! :ls)`."
    "Matching is done dynamically for every new eval request. Connected Dirac sessions are tested in historical order."
-   "Matching strategy must be either a integer(1), a string(2), a regex(3) or omitted(4)."
-   "Integer-based matching targets nth session from the list."
+   "Matching strategy must be either a string(1), an integer(2), a regex(3) or omitted(4)."
    "String-based matching targets first Dirac session matching the provided substring."
+   "Integer-based matching targets nth session in the list."
    "Regex-based matching targets first Dirac session matching the provided regular expression."
    "If no matching strategy is provided, this session will target the most recent Dirac session in the list."
    ""
    "Note: Dirac sessions are not persistent. They are created when Dirac DevTools instance opens a Console Panel and switches"
-   "      console prompt to the Dirac REPL. Dirac sessions are destroyed when Dirac DevTools window gets closed."
+   "      console prompt to the Dirac REPL. Dirac sessions are destroyed when Dirac DevTools window gets closed or on page refresh."
    "      Dynamic matching helps us to keep stable targeting of a specific Dirac session even if DevTools app gets closed and"
    "      reopened. In case there is no matching target Dirac session available, we will warn you and evaluation will result"
    "      in a no-op. You may use `(dirac! :match)` command to test/troubleshoot your current matching strategy."])
@@ -110,6 +110,60 @@
    "This command is available for testing purposes - for fine-tuning your matching substring or regexp."
    "The first session(*) in the list would be used as the target Dirac session for incoming evaluation requests."])
 
+(def ^:dynamic switch-usage
+  ["Usage forms:"
+   ""
+   "  1. `(dirac! :switch <string>)`"
+   "  2. `(dirac! :switch <integer>)`"
+   "  3. `(dirac! :switch <regexp>)`"
+   "  4. `(dirac! :switch)`"
+   ""
+   "Switch to another ClojureScript compiler matching provided input (a matching strategy)."
+   ""
+   "To list all available ClojureScript compilers use `(dirac! :ls)`."
+   "Matching is done dynamically for every new eval request."
+   "Matching strategy must be either a integer(1), a string(2), a regex(3) or omitted(4)."
+   "Integer-based matching targets nth compiler in the list."
+   "String-based matching targets first compiler matching the provided substring."
+   "Regex-based matching targets first compiler matching the provided regular expression."
+   "If no matching strategy is provided, eval will use the first compiler in the list."])
+
+(def ^:dynamic spawn-usage
+  ["Usage forms:"
+   ""
+   "  1. `(dirac! :spawn)`"
+   "  2. `(dirac! :spawn {:dirac-nrepl-config {...}"
+   "                      :repl-options {...}})`"
+   ""
+   "Initialize a new ClojureScript compiler and switch to it."
+   ""
+   "New compiler/repl environment bootstrapping is subject to many possible options. By default we reuse configuration from"
+   "current Dirac session. That is the reason why :spawn can be called only from a properly configured Dirac session."
+   "For advanced usage you have a chance to override the configuration by passed overriding options map (optional)."])
+
+(def ^:dynamic kill-usage
+  ["Usage forms:"
+   ""
+   "  1. `(dirac! :kill)`"
+   "  2. `(dirac! :kill <string>)`"
+   "  3. `(dirac! :kill <integer>)`"
+   "  4. `(dirac! :kill <regexp>)`"
+   ""
+   "Kill and remove existing ClojureScript compilers matching provided input (a matching strategy)."
+   ""
+   "To list all available ClojureScript compilers use `(dirac! :ls)`."
+   "Calling :kill without parameters kills currently selected compiler."
+   "If matching strategy was provided it uses same matching algorithm as :switch."
+   "It must be either a integer(2), a string(3), a regex(4)."
+   "Integer-based matching kills nth compiler in the list."
+   "String-based matching kills all compilers matching the provided substring."
+   "Regex-based matching kills all compilers matching the provided regular expression."
+   ""
+   "Note: It is allowed to kill Dirac's own compilers. For example if you have Figwheel compilers present, we
+          don't allow killing them via `(dirac! :kill ...)`. You have to use Figwheel's own interface to manipulate its"
+   "      compilers."])
+
+
 (def ^:dynamic docs
   {:help    help-usage
    :version version-usage
@@ -117,7 +171,10 @@
    :ls      ls-usage
    :join    join-usage
    :disjoin disjoin-usage
-   :match   match-usage})                                                                                                     ; TODO: add docs for :switch and others
+   :match   match-usage
+   :switch  switch-usage
+   :spawn   spawn-usage
+   :kill    kill-usage})
 
 (defn render-usage [lines]
   (string/join "\n" lines))
