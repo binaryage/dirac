@@ -52,3 +52,8 @@
 
 (defn extract-bare-status-response [nrepl-message]
   (select-keys nrepl-message [:status :err :out]))
+
+(defn prepare-present-result-response [value]
+  (assert (or (nil? value) (string? value)))
+  {:op    :present-result
+   :value (or value "nil")})
