@@ -13,9 +13,9 @@
 
 ; -- dirac! eval state ------------------------------------------------------------------------------------------------------
 
-(def ^:dynamic *nrepl-message*)                                                                                               ; should be set by binding wrapping eval in repl-eval!
+(def ^:dynamic *nrepl-message*)                                                                                               ; should be set by binding in repl-eval!
 
-(defn reply! [msg]
+(defn send-response! [msg]
   (assert *nrepl-message*)
   (helpers/send-response! *nrepl-message* msg))
 

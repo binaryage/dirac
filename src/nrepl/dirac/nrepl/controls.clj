@@ -326,7 +326,7 @@
         (let [matched-compiler-descriptor (compilers/find-available-matching-compiler-descriptor selected-compiler)]
           (if (nil? matched-compiler-descriptor)
             (error-println (make-no-compilers-msg selected-compiler))))
-        (state/reply! (utils/prepare-current-env-info-response)))))
+        (state/send-response! (utils/prepare-current-env-info-response)))))
   ::no-result)
 
 ; -- (dirac! :spawn) --------------------------------------------------------------------------------------------------------
