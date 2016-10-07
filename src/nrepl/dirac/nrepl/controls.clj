@@ -216,13 +216,13 @@
 
 (defn ^:dynamic make-report-killed-compilers-msg [_user-input killed-compiler-ids]
   (let [cnt (count killed-compiler-ids)]
-    (str "Killed " cnt " " (simple-pluralize cnt "compiler") ": " (make-human-readable-list killed-compiler-ids))))
+    (str "Killed " cnt " " (simple-pluralize cnt "compiler") ": " (make-human-readable-list killed-compiler-ids) ".")))
 
 (defn ^:dynamic make-report-invalid-compilers-not-killed-msg [user-input invalid-compiler-ids]
   (str "Some compilers matching your input '" user-input "' cannot be killed because they don't belong to Dirac.\n"
        "The list of invalid matching compilers: " (make-human-readable-list invalid-compiler-ids) ".\n"
        "For example if you wanted to manipulate Figwheel compilers you have to use Figwheel's own interface for that:\n"
-       "https://github.com/bhauman/lein-figwheel#repl-figwheel-control-functions"))
+       "=> https://github.com/bhauman/lein-figwheel#repl-figwheel-control-functions."))
 
 ; == special REPL commands ==================================================================================================
 
@@ -360,6 +360,8 @@
           (error-println (make-no-killed-compilers-msg user-input))
           (do
             (println (make-report-killed-compilers-msg user-input killed-compiler-ids))
+            (if-not (compilers/get-selected-compiler-id)                                                                      ; switch to first available compiler the current one got killed
+              (compilers/select-compiler! nil))                                                                               ; note that this still might not guarantee valid compiler selection, the compiler list might be empty
             (state/send-response! (utils/prepare-current-env-info-response))))
         (if-not (empty? invalid-compiler-ids)
           (error-println (make-report-invalid-compilers-not-killed-msg user-input invalid-compiler-ids))))))
