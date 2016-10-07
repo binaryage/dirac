@@ -88,7 +88,8 @@
         (throw e)))))
 
 (defn kill-compiler! [compiler-id]
-  (compilers/unregister-compiler-descriptor! compiler-id))
+  (sessions/for-each-session (fn [session]
+                               (compilers/unregister-compiler-descriptor! session compiler-id))))
 
 (defn valid-compiler-to-kill? [compiler-id]
   (some? (re-matches #"^dirac.*" compiler-id)))
