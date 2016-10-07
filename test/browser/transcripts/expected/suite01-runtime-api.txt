@@ -58,6 +58,34 @@ scenario =>      (:agent-auto-reconnect
                   :install-check-total-time-limit
                   :java-trace-header-style
                   :nrepl-config
+                  :rich-text-ansi-style-0
+                  :rich-text-ansi-style-1
+                  :rich-text-ansi-style-22
+                  :rich-text-ansi-style-23
+                  :rich-text-ansi-style-24
+                  :rich-text-ansi-style-29
+                  :rich-text-ansi-style-3
+                  :rich-text-ansi-style-30
+                  :rich-text-ansi-style-31
+                  :rich-text-ansi-style-32
+                  :rich-text-ansi-style-33
+                  :rich-text-ansi-style-34
+                  :rich-text-ansi-style-35
+                  :rich-text-ansi-style-36
+                  :rich-text-ansi-style-37
+                  :rich-text-ansi-style-4
+                  :rich-text-ansi-style-40
+                  :rich-text-ansi-style-41
+                  :rich-text-ansi-style-42
+                  :rich-text-ansi-style-43
+                  :rich-text-ansi-style-44
+                  :rich-text-ansi-style-45
+                  :rich-text-ansi-style-46
+                  :rich-text-ansi-style-47
+                  :rich-text-ansi-style-9
+                  :rich-text-code-style
+                  :rich-text-enabled
+                  :rich-text-reset-style
                   :runtime-tag
                   :safe-print-length
                   :safe-print-level

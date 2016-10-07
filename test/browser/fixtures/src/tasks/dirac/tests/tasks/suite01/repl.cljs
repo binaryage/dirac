@@ -17,7 +17,7 @@
           (<!* a/console-exec-and-match! "(doc filter)" "log> null")
           (<!* a/console-exec-and-match! "js/window.NaN" "log> NaN")
           (<!* a/console-exec-and-match! "(x)" "TypeError: Cannot read property 'call' of undefined")
-          (<!* a/console-exec-and-match! "(in-ns)" (str "java-trace > java.lang.IllegalArgumentException: "
+          (<!* a/console-exec-and-match! "(in-ns)" (str "java-trace/plain-text > java.lang.IllegalArgumentException: "
                                                         "Argument to in-ns must be a symbol."))
           (<!* a/wait-for-devtools-match "<elided stack trace log>")
           (<!* a/wait-for-devtools-match #"^JS.log")

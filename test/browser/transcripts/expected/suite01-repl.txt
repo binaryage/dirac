@@ -60,7 +60,7 @@ automate #1      console-exec-and-match! ["(x)" "TypeError: Cannot read property
 devtools #1      DC.log> (x)
 devtools #1      send-eval-request: (x)
 devtools #1      repl eval job started
-devtools #1      present-server-side-output! stderr > WARNING: Use of undeclared Var cljs.user/x at line 1 <dirac/compiler-id>
+devtools #1      present-server-side-output! stderr/plain-text > WARNING: Use of undeclared Var cljs.user/x at line 1 <dirac/compiler-id>
 devtools #1      DF.err>
                  TypeError: Cannot read property 'call' of undefined
                      at eval (eval at <anonymous> (:***), <anonymous>:***)
@@ -68,16 +68,16 @@ devtools #1      DF.err>
                      at eval (eval at <anonymous> (:***), <anonymous>:***)
                      at <anonymous>:***
 devtools #1      repl eval job ended
-automate #1      console-exec-and-match! ["(in-ns)" "java-trace > java.lang.IllegalArgumentException: Argument to in-ns must be a symbol."]
+automate #1      console-exec-and-match! ["(in-ns)" "java-trace/plain-text > java.lang.IllegalArgumentException: Argument to in-ns must be a symbol."]
 devtools #1      DC.log> (in-ns)
 devtools #1      send-eval-request: (in-ns)
 devtools #1      repl eval job started
-devtools #1      present-server-side-output! java-trace > java.lang.IllegalArgumentException: Argument to in-ns must be a symbol.
+devtools #1      present-server-side-output! java-trace/plain-text > java.lang.IllegalArgumentException: Argument to in-ns must be a symbol.
                  <elided stack trace>
 devtools #1      repl eval job ended
 devtools #1      DF.log> java.lang.IllegalArgumentException: Argument to in-ns must be a symbol.
 devtools #1      <elided stack trace log>
-devtools #1      JS.log> repl.cljs:61 console.groupEnd
+devtools #1      JS.log> repl.cljs:62 console.groupEnd
 automate #1      console-exec-and-match! ["(in-ns 'my.ns)" "setDiracPromptNS('my.ns')"]
 devtools #1      DC.log> (in-ns 'my.ns)
 devtools #1      send-eval-request: (in-ns 'my.ns)
