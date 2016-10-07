@@ -3,11 +3,12 @@
 (defn status-message? [message]
   (some? (:status message)))
 
-(defn prepare-print-output-response [kind content]
+(defn prepare-print-output-response [kind content & [format]]
   {:pre [(contains? #{:stderr :stdout :java-trace} kind)
          (string? content)]}
   {:op      :print-output
    :kind    kind
+   :format  (or format "plain-text")
    :content content})
 
 (defn prepare-current-env-info-response [current-ns selected-compiler-id default-compiler-id]

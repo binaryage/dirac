@@ -48,7 +48,7 @@
     (send-fn (assoc msg :id (get-current-job driver)))))
 
 (defn report-output [driver output-kind content]
-  (let [response (protocol/prepare-print-output-response output-kind content)]
+  (let [response (protocol/prepare-print-output-response output-kind content (:output-format driver))]
     (send! driver response)))
 
 ; -- print recording --------------------------------------------------------------------------------------------------------
@@ -123,8 +123,9 @@
 
 ; -- initialization ---------------------------------------------------------------------------------------------------------
 
-(defn wrap-with-driver [job-id start-fn send-response-fn]
+(defn wrap-with-driver [job-id start-fn send-response-fn output-format]
   (let [driver (make-driver {:send-response-fn send-response-fn
+                             :output-format    output-format
                              :sniffers         {:stdout (volatile! nil)
                                                 :stderr (volatile! nil)}})
         stdout-sniffer (sniffer/make-sniffer *out* (partial flush-handler driver :stdout))

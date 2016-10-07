@@ -144,7 +144,7 @@
               *out* (state/get-session-binding-value #'*out*)
               *err* (state/get-session-binding-value #'*err*)
               analyzer/*cljs-ns* initial-ns]
-      (driver/wrap-with-driver job-id start-repl-fn response-fn)
+      (driver/wrap-with-driver job-id start-repl-fn response-fn "plain-text")
       (let [final-ns analyzer/*cljs-ns*]                                                                                      ; we want analyzer/*cljs-ns* to be sticky between evaluations, that is why we keep it in our session state and bind it
         (if-not (= final-ns initial-ns)
           (state/set-session-cljs-ns! final-ns))))))

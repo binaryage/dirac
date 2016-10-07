@@ -45,7 +45,7 @@
         eval-job-fn (partial eval-job! nrepl-message code-str ns)
         job-id (:id nrepl-message)
         result (with-bindings @(:session nrepl-message)
-                 (driver/wrap-with-driver job-id eval-job-fn response-fn))
+                 (driver/wrap-with-driver job-id eval-job-fn response-fn "rich-text"))                                        ; we want support for ANSI for Figwheel and highlighting code snippets in docs
         no-result? (= ::controls/no-result result)
         response (cond-> (protocol/prepare-done-response)
                          (not no-result?) (merge (protocol/prepare-printed-value-response (helpers/safe-pr-str result))))]
