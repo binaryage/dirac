@@ -3,6 +3,7 @@
   (:require [goog.object]
             [dirac.runtime.prefs :refer [get-prefs pref]]
             [dirac.runtime.bootstrap :refer [bootstrap!]]
+            [dirac.runtime.output :as output]
             [clojure.string :as string]
             [goog.object :as gobject]
             [goog.labs.userAgent.browser :as ua]))
@@ -28,7 +29,7 @@
 ; -- tunneling messages to Dirac DevTools -----------------------------------------------------------------------------------
 
 (defn console-tunnel [method & args]
-  (.apply (gobject/get js/console method) js/console (into-array args)))
+  (.apply (gobject/get js/console method) js/console (to-array args)))
 
 (defn dirac-msg-args [name args]
   (concat ["~~$DIRAC-MSG$~~" name] args))
@@ -110,9 +111,15 @@
   (when-not (should-silence-error? message)
     (error request-id "error" message)))
 
+(defn formatted-log [request-id kind format text]
+  (if-not (and (= format "rich-text") (pref :rich-text-enabled))
+    (log request-id kind text)
+    (let [soup (output/boil-rich-text text)]
+      (apply log request-id kind soup))))
+
 ; -- REPL API ---------------------------------------------------------------------------------------------------------------
 
-(def api-version 5)                                                                                                           ; version of REPL API
+(def api-version 6)                                                                                                           ; version of REPL API
 
 (defn ^:export get-api-version []
   api-version)
@@ -131,14 +138,14 @@
   [request-id exception]
   (error request-id "exception" exception))
 
-(defn ^:export present-output [request-id kind text]
+(defn ^:export present-output [request-id kind format text]
   (case kind
     "java-trace" (present-java-trace request-id text)
     (if-let [warning-msg (detect-and-strip "WARNING:" text)]
       (emit-warning! request-id warning-msg)
       (if-let [error-msg (detect-and-strip "ERROR:" text)]
         (emit-error! request-id error-msg)
-        (log request-id kind text)))))
+        (formatted-log request-id kind format text)))))
 
 (defn ^:export postprocess-successful-eval
   "This is a postprocessing function wrapping weasel javascript evaluation attempt.
