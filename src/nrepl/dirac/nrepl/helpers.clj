@@ -85,3 +85,7 @@
   (if (= n 1)
     noun
     (str noun "s")))
+
+(defn make-dirac-repl-alias [compiler-id]
+  (str "<" (or compiler-id "?") ">"))
+

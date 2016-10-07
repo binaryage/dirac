@@ -7,13 +7,11 @@
             [clojure.tools.logging :as log]
             [cljs.analyzer :as analyzer]
             [dirac.logging :as logging]
-            [dirac.nrepl.protocol :as protocol])
+            [dirac.nrepl.protocol :as protocol]
+            [dirac.nrepl.helpers :as helpers])
   (:import clojure.lang.LineNumberingPushbackReader
            java.io.StringReader
            java.io.Writer))
-
-(defn ^:dynamic make-dirac-repl-alias [compiler-id]
-  (str "<" (or compiler-id "?") ">"))
 
 (defn prepare-current-env-info-response []
   (let [session (state/get-current-session)
@@ -94,7 +92,7 @@
         wrapped-form (wrapper-fn form)
         set-env-locals-with-scope (partial set-env-locals scope-info)
         effective-env (-> env set-env-namespace set-env-locals-with-scope)
-        filename (make-dirac-repl-alias (compilers/get-selected-compiler-id (state/get-current-session)))]
+        filename (helpers/make-dirac-repl-alias (compilers/get-selected-compiler-id (state/get-current-session)))]
     (log/trace "repl-eval! in " filename ":\n" form "\n with env:\n" (logging/pprint effective-env 7))
     (cljs.repl/evaluate-form repl-env effective-env filename form wrapped-form opts)))
 

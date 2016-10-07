@@ -10,7 +10,8 @@
             [dirac.nrepl.state :as state]
             [dirac.nrepl.driver :as driver]
             [dirac.nrepl.protocol :as protocol]
-            [dirac.nrepl.debug :as debug])
+            [dirac.nrepl.debug :as debug]
+            [dirac.nrepl.compilers :as compilers])
   (:import (clojure.lang Namespace)
            java.io.Writer))
 
@@ -24,7 +25,8 @@
 (defn eval-job! [nrepl-message code-str ns driver caught-fn flush-fn]
   (try
     (let [form (read-string code-str)]
-      (binding [*ns* ns
+      (binding [*file* (helpers/make-dirac-repl-alias (compilers/get-selected-compiler-id (:session nrepl-message)))
+                *ns* ns
                 state/*nrepl-message* nrepl-message]
         (helpers/with-coallesced-output
           (eval form))))
