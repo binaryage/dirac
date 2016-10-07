@@ -6,13 +6,15 @@
             [dirac.nrepl.compilers :as compilers]
             [dirac.nrepl.state :as state]
             [dirac.nrepl.utils :as utils]
-            [dirac.nrepl.messages :as messages])
+            [dirac.nrepl.messages :as messages]
+            [dirac.nrepl.figwheel :as figwheel])
   (:import (java.util.regex Pattern)))
 
 ; note: this namespace defines the context where special dirac commands are eval'd
 
 (defn error-println [& args]
-  (apply helpers/error-println args))
+  (apply helpers/error-println args)
+  ::no-result)
 
 (defn ^:dynamic warn-about-retargeting-if-needed [session]
   (if (not= session (state/get-current-session))
@@ -191,6 +193,17 @@
           (if-not (empty? invalid-compiler-ids)
             (error-println (messages/make-report-invalid-compilers-not-killed-msg user-input invalid-compiler-ids)))))))
   ::no-result)
+
+; -- (dirac! :fig) ----------------------------------------------------------------------------------------------------------
+
+(defmethod dirac! :fig [_ & [fn-name & args]]
+  (let [result (apply figwheel/call-repl-api! (or fn-name :fig-status) args)]
+    (let [response (case result
+                     ::figwheel/not-found (error-println (messages/make-figwheel-api-not-found-msg))
+                     ::figwheel/not-fn (error-println (messages/make-figwheel-bad-api-msg))
+                     result)]
+      (state/send-response! (utils/prepare-current-env-info-response))
+      response)))
 
 ; -- default handler --------------------------------------------------------------------------------------------------------
 

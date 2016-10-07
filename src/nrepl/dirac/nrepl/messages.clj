@@ -102,6 +102,15 @@
 (defn ^:dynamic make-retargeting-warning-msg []
   (str "You are in a joined Dirac session. This command is being executed as if it was entered in the target session."))
 
+(defn ^:dynamic make-figwheel-api-not-found-msg []
+  (str "Figwheel API not found. Please make sure you have figwheel-sidecar properly installed in your nREPL server:\n"
+       "=> https://github.com/bhauman/lein-figwheel/wiki/Using-the-Figwheel-REPL-within-NRepl"))
+
+(defn ^:dynamic make-figwheel-bad-api-msg []
+  (str "Figwheel API found but resolved symbol is not a function.\n"
+       "Please make sure you are loading the latest Figwheel in your nREPL server.\n"
+       "=> https://github.com/bhauman/lein-figwheel/wiki/Using-the-Figwheel-REPL-within-NRepl"))
+
 ; -- joined session ---------------------------------------------------------------------------------------------------------
 
 (defn ^:dynamic make-missing-nrepl-message-msg []

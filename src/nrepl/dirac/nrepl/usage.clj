@@ -23,6 +23,8 @@
    "  :disjoin -> disjoin Dirac session"
    "  :match   -> list matching Dirac sessions"
    ""
+   "  :fig     -> Figwheel REPL API bridge"
+   ""
    "  :version -> print version info"
    "  :help    -> print usage help"
    ""
@@ -154,6 +156,27 @@
           don't allow killing them via `(dirac! :kill ...)`. You have to use Figwheel's own interface to manipulate its"
    "      compilers."])
 
+(def ^:dynamic fig-usage
+  ["Usage forms:"
+   ""
+   "  1. `(dirac! :fig)`"
+   "  2. `(dirac! :fig api-fn & args)`"
+   ""
+   "Call Figwheel REPL API (if present)."
+   ""
+   "This is a bridge provided for convenince to allow controlling Figwheel directly from Dirac REPL."
+   ""
+   "You may provide api-fn as a string, keyword or symbol. Figwheel API function is resolved dynamically."
+   "Function arguments must be specified precisely as expected by Figwheel API."
+   ""
+   "  Examples:"
+   "    `(dirac! :fig :fig-status)`  ; <= this is equivalent to `(dirac! :fig)`"
+   "    `(dirac! :fig :print-config)`"
+   "    `(dirac! :fig :build-once \"my-build-id\")`"
+   ""
+   "Please refer to Figwheel docs for full list of control functions:"
+   "  => https://github.com/bhauman/lein-figwheel#repl-figwheel-control-functions"])
+
 ; -- public docs map --------------------------------------------------------------------------------------------------------
 
 (defn render-usage [lines]
@@ -170,4 +193,5 @@
    :match   (render-usage match-usage)
    :switch  (render-usage switch-usage)
    :spawn   (render-usage spawn-usage)
-   :kill    (render-usage kill-usage)})
+   :kill    (render-usage kill-usage)
+   :fig     (render-usage fig-usage)})

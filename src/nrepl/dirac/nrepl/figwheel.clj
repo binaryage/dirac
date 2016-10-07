@@ -1,19 +1,23 @@
 (ns dirac.nrepl.figwheel
-  "We are friends with Figwheel")
+  "We are friends with Figwheel"
+  (:require [clojure.tools.logging :as log]))
 
-(defn try-get-figwheel-api-var []
+; TODO: would be nice to have some version checking (for sanity)
+
+(defn try-resolve-figwheel-repl-api-symbol [sym]
   (try
-    (ns-resolve 'figwheel-sidecar.repl-api '*repl-api-system*)
-    (catch Throwable _e
+    (ns-resolve 'figwheel-sidecar.repl-api sym)
+    (catch Throwable e
+      (log/trace e)
       nil)))
 
-(defn get-figwheel-repl-api []
-  (when-let [fig-api-var (try-get-figwheel-api-var)]
-    (assert (var? fig-api-var))
-    (var-get fig-api-var)))
+(defn try-resolve-figwheel-repl-api [sym]
+  (let [v (try-resolve-figwheel-repl-api-symbol sym)]
+    (if (var? v)
+      (var-get v))))
 
 (defn get-figwheel-system []
-  (if-let [api (get-figwheel-repl-api)]
+  (if-let [api (try-resolve-figwheel-repl-api '*repl-api-system*)]
     (:figwheel-system api)))
 
 (defn get-figwheel-data []
@@ -38,3 +42,10 @@
 (defn collect-available-compiler-descriptors []
   (let [builds (get-figwheel-builds)]
     (keep (fn [[_id build]] (make-compiler-descriptor build)) builds)))
+
+(defn call-repl-api! [fn-name & args]
+  (if-let [f (try-resolve-figwheel-repl-api (symbol (name fn-name)))]
+    (if (fn? f)
+      (apply f args)
+      ::not-fn)
+    ::not-found))
