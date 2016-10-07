@@ -167,6 +167,7 @@
    "    `(dirac! :fig :fig-status)`  ; <= this is equivalent to `(dirac! :fig)`"
    "    `(dirac! :fig :print-config)`"
    "    `(dirac! :fig :build-once \"my-build-id\")`"
+   "    `(dirac! :fig :api-help)`"
    ""
    "Please refer to Figwheel docs for full list of control functions:"
    "  => https://github.com/bhauman/lein-figwheel#repl-figwheel-control-functions"])
