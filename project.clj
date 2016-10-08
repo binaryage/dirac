@@ -75,7 +75,7 @@
                  "src/shared"
 
                  "test/src/test_lib"
-                 "test/backend/src"
+                 "test/backend/src/backend_tests"
                  "test/browser/fixtures"
                  "test/browser/src"
                  "test/marion/src"]
@@ -147,7 +147,7 @@
                                        "test/browser/fixtures/src/tests"]
               :test-paths   ["test/src/test_lib"
                              "test/browser/src"
-                             "test/backend/src"]}
+                             "test/backend/src/backend_tests"]}
 
              :browser-tests
              {:cljsbuild {:builds

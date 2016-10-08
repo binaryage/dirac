@@ -1,6 +1,6 @@
 (ns dirac.tests.backend.agent.tests
-  (:require [clojure.core.async :refer [chan <!! <! >!! put! alts!! timeout close! go go-loop]]
-            [clojure.test :refer :all]
+  (:require [clojure.test :refer :all]
+            [clojure.tools.logging :as log]
             [dirac.settings :refer [get-backend-tests-nrepl-server-host
                                     get-backend-tests-nrepl-server-port
                                     get-backend-tests-nrepl-server-url
@@ -9,67 +9,18 @@
                                     get-backend-tests-nrepl-tunnel-url
                                     get-backend-tests-weasel-host
                                     get-backend-tests-weasel-port]]
-            [dirac.test-lib.nrepl-server-helpers :refer [start-nrepl-server! stop-nrepl-server!]]
             [dirac.agent :as agent]
             [dirac.project :refer [version]]
             [dirac.test-lib.mock-nrepl-tunnel-client :as tunnel-client]
             [dirac.test-lib.mock-weasel-client :as weasel-client]
-            [clojure.tools.logging :as log]))
+            [dirac.tests.backend.agent.fixtures :as fixtures]
+            [dirac.tests.backend.agent.helpers :as helpers :refer [expect-event! expect-op-msg! expect-ns-msg!
+                                                                   expect-status-msg!]]
+            [dirac.tests.backend.agent.state :refer [last-msg]]))
 
-(def last-msg (volatile! nil))
+(use-fixtures :once fixtures/setup-test-nrepl-server!)
 
-; -- helpers ----------------------------------------------------------------------------------------------------------------
-
-(defn expect-event! [client expected-event]
-  (let [[event] (<!! (:channel client))]
-    (is (= event expected-event))))
-
-(defn expect-op-msg! [client expected-op]
-  (let [[event & [{:keys [op] :as msg}]] (<!! (:channel client))]
-    (is (= event :msg))
-    (vreset! last-msg msg)
-    (is (= (keyword op) expected-op))))
-
-(defn expect-status-msg! [client expected-status]
-  (let [[event & [{:keys [status]} :as msg]] (<!! (:channel client))]
-    (is (= event :msg))
-    (vreset! last-msg msg)
-    (is (= status expected-status) (str "msg=" (pr-str msg)))))
-
-(defn expect-ns-msg! [client expected-ns]
-  (let [[event & [{:keys [ns]} :as msg]] (<!! (:channel client))]
-    (is (= event :msg))
-    (vreset! last-msg msg)
-    (is (= ns expected-ns))))
-
-; -- fixtures ---------------------------------------------------------------------------------------------------------------
-
-(def current-nrepl-server (atom nil))
-(def current-nrepl-server-port (atom nil))
-
-(defn setup-tests []
-  (log/debug "setup-tests")
-  (if-let [[server port] (start-nrepl-server! (get-backend-tests-nrepl-server-host) (get-backend-tests-nrepl-server-port))]
-    (do
-      (log/info "nrepl server started on" port)
-      (reset! current-nrepl-server server)
-      (reset! current-nrepl-server-port port))
-    (log/error "nREPL server start timeouted/failed")))
-
-(defn teardown-tests []
-  (log/debug "teardown-tests")
-  (when-let [current-server @current-nrepl-server]
-    (stop-nrepl-server! current-server)
-    (log/info "nrepl server stopped on" @current-nrepl-server-port)
-    (reset! current-nrepl-server nil)
-    (reset! current-nrepl-server-port nil)))
-
-(defn setup [f]
-  (setup-tests)
-  (f)
-  (teardown-tests))
-
-(use-fixtures :once setup)
+; -- protocol templates -----------------------------------------------------------------------------------------------------
 
 (defn make-boostrap-dirac-repl-message []
   {:op   "eval"
@@ -86,7 +37,7 @@
 (defn success-value [& [opts]]
   (merge {:status :success} opts))
 
-; -- test -------------------------------------------------------------------------------------------------------------------
+; -- tests ------------------------------------------------------------------------------------------------------------------
 
 (deftest simple-interaction
   (testing "happy path"

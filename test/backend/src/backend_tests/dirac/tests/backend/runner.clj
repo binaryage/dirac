@@ -1,9 +1,9 @@
 (ns dirac.tests.backend.runner
   (:require [clojure.test :refer :all]
+            [clojure.tools.logging :as log]
             [environ.core :refer [env]]
             [dirac.tests.backend.agent.tests]
-            [dirac.logging :as logging]
-            [clojure.tools.logging :as log]))
+            [dirac.logging :as logging]))
 
 ; this is the default dirac test runner
 
