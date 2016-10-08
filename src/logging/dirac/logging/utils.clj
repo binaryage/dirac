@@ -6,7 +6,7 @@
   (:import (org.apache.log4j Level Layout)
            (org.apache.log4j.spi LoggingEvent)))
 
-(def default-indent 32)
+(def default-indent 48)
 (def default-prefix-size 2)
 
 (defn prepare-friendly-logger-name [logger-name indent]
