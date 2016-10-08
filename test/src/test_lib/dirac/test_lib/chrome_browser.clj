@@ -1,14 +1,14 @@
-(ns dirac.test.chrome-browser
+(ns dirac.test-lib.chrome-browser
   (:require [clojure.core.async :refer [timeout <!!]]
             [clojure.core.async.impl.protocols :refer [closed?]]
-            [clj-webdriver.taxi :refer :all]
-            [clj-webdriver.driver :refer [init-driver]]
-            [environ.core :refer [env]]
-            [dirac.settings :refer [get-browser-connection-minimal-cooldown]]
-            [dirac.test.chrome-driver :as chrome-driver]
             [clojure.tools.logging :as log]
             [clojure.java.shell :refer [sh]]
-            [clojure.string :as string]))
+            [clojure.string :as string]
+            [environ.core :refer [env]]
+            [clj-webdriver.taxi :refer :all]
+            [clj-webdriver.driver :refer [init-driver]]
+            [dirac.settings :refer [get-browser-connection-minimal-cooldown]]
+            [dirac.test-lib.chrome-driver :as chrome-driver]))
 
 (def connection-cooldown-channel (atom nil))
 (def user-data-dir (atom nil))

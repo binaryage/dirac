@@ -1,4 +1,4 @@
-(ns dirac.test.nrepl-server-helpers
+(ns dirac.test-lib.nrepl-server-helpers
   (:require [clojure.tools.nrepl.ack :as nrepl.ack]
             [clojure.tools.nrepl.server :as nrepl.server]
             [environ.core :refer [env]]

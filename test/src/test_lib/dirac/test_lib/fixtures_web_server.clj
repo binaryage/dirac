@@ -1,4 +1,4 @@
-(ns dirac.test.fixtures-web-server
+(ns dirac.test-lib.fixtures-web-server
   (:require [dirac.settings :refer [get-fixtures-server-port get-fixtures-server-url]]
             [clojure.tools.logging :as log]
             [clojure.string :as string])

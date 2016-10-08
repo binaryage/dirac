@@ -9,11 +9,11 @@
                                     get-backend-tests-nrepl-tunnel-url
                                     get-backend-tests-weasel-host
                                     get-backend-tests-weasel-port]]
-            [dirac.test.nrepl-server-helpers :refer [start-nrepl-server! stop-nrepl-server!]]
+            [dirac.test-lib.nrepl-server-helpers :refer [start-nrepl-server! stop-nrepl-server!]]
             [dirac.agent :as agent]
             [dirac.project :refer [version]]
-            [dirac.test.mock-nrepl-tunnel-client :as tunnel-client]
-            [dirac.test.mock-weasel-client :as weasel-client]
+            [dirac.test-lib.mock-nrepl-tunnel-client :as tunnel-client]
+            [dirac.test-lib.mock-weasel-client :as weasel-client]
             [clojure.tools.logging :as log]))
 
 (def last-msg (volatile! nil))

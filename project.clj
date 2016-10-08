@@ -73,8 +73,8 @@
                  "src/runtime"
                  "src/settings"
                  "src/shared"
-                 "src/test"
 
+                 "test/src/test_lib"
                  "test/backend/src"
                  "test/browser/fixtures"
                  "test/browser/src"
@@ -145,7 +145,7 @@
                                        "src/nrepl"
                                        "src/shared"
                                        "test/browser/fixtures/src/tests"]
-              :test-paths   ["src/test"
+              :test-paths   ["test/src/test_lib"
                              "test/browser/src"
                              "test/backend/src"]}
 

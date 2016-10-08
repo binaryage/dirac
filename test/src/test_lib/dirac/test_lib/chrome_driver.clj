@@ -1,4 +1,4 @@
-(ns dirac.test.chrome-driver
+(ns dirac.test-lib.chrome-driver
   (:require [environ.core :refer [env]]
             [clj-webdriver.taxi :refer :all]
             [clj-webdriver.driver :refer [init-driver]]

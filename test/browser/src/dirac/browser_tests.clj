@@ -15,11 +15,11 @@
                                     get-signal-server-host
                                     get-signal-server-port
                                     get-signal-server-max-connection-time]]
-            [dirac.test.fixtures-web-server :refer [with-fixtures-web-server]]
-            [dirac.test.nrepl-server :refer [with-nrepl-server]]
-            [dirac.test.agent :refer [with-dirac-agent]]
-            [dirac.test.chrome-browser :refer [disconnect-browser! reconnect-browser!]]
-            [dirac.test.chrome-driver :refer [get-debugging-port extract-javascript-logs]]
+            [dirac.test-lib.fixtures-web-server :refer [with-fixtures-web-server]]
+            [dirac.test-lib.nrepl-server :refer [with-nrepl-server]]
+            [dirac.test-lib.agent :refer [with-dirac-agent]]
+            [dirac.test-lib.chrome-browser :refer [disconnect-browser! reconnect-browser!]]
+            [dirac.test-lib.chrome-driver :refer [get-debugging-port extract-javascript-logs]]
             [dirac.lib.ws-server :as server]
             [dirac.utils :as utils]
             [cuerdas.core :as cuerdas]

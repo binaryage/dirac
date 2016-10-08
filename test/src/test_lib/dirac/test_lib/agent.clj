@@ -1,9 +1,7 @@
-(ns dirac.test.agent
-  (:require [clojure.core.async :refer [chan <!! <! >!! put! alts!! timeout close! go go-loop]]
-            [clojure.test :refer :all]
+(ns dirac.test-lib.agent
+  (:require [clojure.tools.logging :as log]
             [dirac.agent-impl :as agent]
-            [dirac.settings :refer [get-dirac-agent-boot-time]]
-            [clojure.tools.logging :as log]))
+            [dirac.settings :refer [get-dirac-agent-boot-time]]))
 
 ; -- fixtures ---------------------------------------------------------------------------------------------------------------
 

@@ -2,9 +2,9 @@
   (:require [clojure.test :refer :all]
             [environ.core :refer [env]]
             [dirac.logging :as logging]
-            [dirac.test.agent :as test-agent]
-            [dirac.test.chrome-browser :refer [start-browser! stop-browser!]]
-            [dirac.test.nrepl-server :as test-nrepl-server]))
+            [dirac.test-lib.agent :as test-agent]
+            [dirac.test-lib.chrome-browser :refer [start-browser! stop-browser!]]
+            [dirac.test-lib.nrepl-server :as test-nrepl-server]))
 
 ; this test runner runs tests against real chrome browser using chrome driver
 
