@@ -39,8 +39,23 @@
 
 (defonce ^:dynamic *current-transcript-test* nil)
 (defonce ^:dynamic *current-transcript-suite* nil)
-(defonce last-task-success (volatile! nil))
-(defonce client-disconnected-promise (volatile! nil))
+
+; -- task state -------------------------------------------------------------------------------------------------------------
+
+(defn make-task-state []
+  {:task-success                (volatile! nil)
+   :client-disconnected-promise (promise)})
+
+(defn set-task-success! [task-state value]
+  (vreset! (:task-success task-state) value))
+
+(defn get-task-success [task-state]
+  @(:task-success task-state))
+
+(defn get-task-client-disconnected-promise [task-state]
+  (:client-disconnected-promise task-state))
+
+; -- helpers ----------------------------------------------------------------------------------------------------------------
 
 (defn get-transcript-test-label [test-name]
   (str "Transcript test '" test-name "'"))
@@ -113,10 +128,9 @@
 
 ; -- signal server ----------------------------------------------------------------------------------------------------------
 
-(defn create-signal-server! []
-  {:pre [(nil? @client-disconnected-promise)]}
-  (vreset! last-task-success nil)
-  (vreset! client-disconnected-promise (promise))
+(defn create-signal-server! [task-state]
+  {:pre [(nil? (get-task-client-disconnected-promise task-state))
+         (nil? (get-task-success task-state))]}
   (server/create! {:name              "Signal server"
                    :host              (get-signal-server-host)
                    :port              (get-signal-server-port)
@@ -124,7 +138,7 @@
                                         (log/debug "signal server: got signal message" msg)
                                         (case (:op msg)
                                           :ready nil                                                                          ; ignore
-                                          :task-result (vreset! last-task-success (:success msg))
+                                          :task-result (set-task-success! task-state (:success msg))
                                           (log/error "signal server: received unrecognized message" msg)))
                    :on-leaving-client (fn [_server _client]
                                         (log/debug (str ":on-leaving-client called => wait a bit for possible pending messages"))
@@ -135,35 +149,33 @@
                                           ; devtools would spit "Close received after close" errors in js console
                                           (Thread/sleep (get-signal-server-close-wait-timeout))
                                           (log/debug ":on-leaving-client after signal-server-close-wait-timeout")
-                                          (assert (some? @last-task-success) "client leaving but we didn't receive :task-result")
-                                          (assert (some? @client-disconnected-promise))
-                                          (deliver @client-disconnected-promise true)))}))
+                                          (assert (some? (get-task-success task-state)) "client leaving but we didn't receive :task-result")
+                                          (deliver (get-task-client-disconnected-promise task-state) true)))}))
 
 (defn kill-task! []
   (let [script (str "window.postMessage({type:'" (get-kill-task-message) "'}, '*')")]
     (execute-script script)))
 
-(defn wait-for-client-disconnection! [timeout-ms]
+(defn wait-for-client-disconnection! [disconnection-promise timeout-ms]
+  (assert (some? disconnection-promise))
   (let [friendly-timeout (format-friendly-timeout timeout-ms)]
     (log/debug (str "wait-for-client-disconnection (timeout " friendly-timeout ")."))
-    (if-let [disconnection-promise @client-disconnected-promise]
-      (if (= ::timeouted (deref disconnection-promise timeout-ms ::timeouted))
-        (do
-          (log/error (str "timeouted while waiting for client disconnection from signal server"))
-          (pause-unless-ci)
-          false)
-        true)
+    (if-not (= ::timeouted (deref disconnection-promise timeout-ms ::timeouted))
+      true
       (do
-        (log/error "client-disconnected-promise is unexpectedly nil => assuming chrome crash")
+        (log/error (str "timeouted while waiting for client disconnection from signal server"))
+        (pause-unless-ci)
         false))))
 
 (defn wait-for-signal!
-  ([signal-server] (wait-for-signal! signal-server
-                                     (get-default-task-timeout)
-                                     (get-kill-task-timeout)
-                                     (get-signal-server-max-connection-time)))
-  ([signal-server normal-timeout-ms kill-timeout-ms client-disconnection-timeout-ms]
+  ([signal-server task-state] (wait-for-signal! signal-server
+                                                task-state
+                                                (get-default-task-timeout)
+                                                (get-kill-task-timeout)
+                                                (get-signal-server-max-connection-time)))
+  ([signal-server task-state normal-timeout-ms kill-timeout-ms client-disconnection-timeout-ms]
    (let [server-url (server/get-url signal-server)
+         client-disconnection-promise (get-task-client-disconnected-promise task-state)
          friendly-normal-timeout (format-friendly-timeout normal-timeout-ms)
          friendly-kill-timeout (format-friendly-timeout kill-timeout-ms)]
      (log/info (str "waiting for a task signal at " server-url " (timeout " friendly-normal-timeout ")."))
@@ -179,18 +191,17 @@
                            "in use by this non-responsive task (if it still has any devtools instances open).\n"
                            "You will likely see 'Unable to resolve backend-url for Dirac DevTools' kind of errors."))
            (do
-             (wait-for-client-disconnection! client-disconnection-timeout-ms)
+             (wait-for-client-disconnection! client-disconnection-promise client-disconnection-timeout-ms)
              (log/info (str "client disconnected after task kill => move to next task"))))
-         (vreset! last-task-success false))
+         (set-task-success! task-state false))
        (do
-         (if-not (wait-for-client-disconnection! client-disconnection-timeout-ms)
-           (vreset! last-task-success false))
+         (if-not (wait-for-client-disconnection! client-disconnection-promise client-disconnection-timeout-ms)
+           (set-task-success! task-state false))
          (log/info (str "client disconnected => move to next task"))))
-     (assert (some? @last-task-success) "didn't get task-result message from signal client?")
-     (when-not @last-task-success
+     (assert (some? (get-task-success task-state)) "didn't get task-result message from signal client?")
+     (when-not (get-task-success task-state)
        (log/error (str "task reported a failure"))
        (pause-unless-ci))
-     (vreset! client-disconnected-promise nil)
      (server/destroy! signal-server))))
 
 ; -- transcript helpers -----------------------------------------------------------------------------------------------------
@@ -311,7 +322,8 @@
   (with-transcript-test test-name
     (if (should-skip-current-test?)
       (println (str "Skipped test '" (get-current-test-full-name) "' due to filter '" (get-browser-test-filter) "'"))
-      (let [signal-server (create-signal-server!)]
+      (let [task-state (make-task-state)
+            signal-server (create-signal-server! task-state)]
         (navigate-transcript-runner!)
         ; chrome driver needs some time to cooldown after disconnection
         ; to prevent random org.openqa.selenium.SessionNotCreatedException exceptions
@@ -319,7 +331,7 @@
         ; for devtools after driver disconnection
         (launch-transcript-test-after-delay (get-script-runner-launch-delay))
         (disconnect-browser!)
-        (wait-for-signal! signal-server)
+        (wait-for-signal! signal-server task-state)
         (Thread/sleep (get-task-disconnected-wait-timeout))
         (reconnect-browser!)
         (write-transcript-and-compare)))))
