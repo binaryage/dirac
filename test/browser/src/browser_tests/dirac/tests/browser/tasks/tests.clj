@@ -137,12 +137,13 @@
                                           (deliver @client-disconnected-promise true)
                                           (vreset! client-disconnected-promise nil)))}))
 
-(defn wait-for-client-disconnection [timeout-ms]
+(defn wait-for-client-disconnection! [timeout-ms]
   (let [friendly-timeout (format-friendly-timeout timeout-ms)]
     (log/debug (str "wait-for-client-disconnection (timeout " friendly-timeout ")."))
     (if-let [disconnection-promise @client-disconnected-promise]
       (when (= ::timeouted (deref disconnection-promise timeout-ms ::timeouted))
         (log/error (str "timeouted while waiting for the task signal."))
+        (vreset! client-disconnected-promise nil)
         (vreset! last-task-success false)
         (pause-unless-ci))
       (do
@@ -160,7 +161,7 @@
      (when (= ::server/timeout (server/wait-for-first-client signal-server timeout-ms))
        (log/error (str "timeouted while waiting for the task signal."))
        (vreset! last-task-success false))
-     (wait-for-client-disconnection (get-signal-server-max-connection-time))
+     (wait-for-client-disconnection! (get-signal-server-max-connection-time))
      (assert (some? @last-task-success) "didn't get task-result message from signal client?")
      (when-not @last-task-success
        (log/error (str "task reported a failure"))
