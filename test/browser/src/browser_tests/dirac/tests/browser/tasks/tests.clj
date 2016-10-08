@@ -161,10 +161,13 @@
    (let [server-url (server/get-url signal-server)
          friendly-timeout (format-friendly-timeout timeout-ms)]
      (log/info (str "waiting for a task signal at " server-url " (timeout " friendly-timeout ")."))
-     (when (= ::server/timeout (server/wait-for-first-client signal-server timeout-ms))
-       (log/error (str "timeouted while waiting for the task signal."))
-       (vreset! last-task-success false))
-     (wait-for-client-disconnection! (get-signal-server-max-connection-time))
+     (if (= ::server/timeout (server/wait-for-first-client signal-server timeout-ms))
+       (do
+         (log/error (str "timeouted while waiting for the first client"))
+         (vreset! last-task-success false))
+       (do
+         (wait-for-client-disconnection! (get-signal-server-max-connection-time))
+         (log/info (str "client disconnected => move to next task"))))
      (assert (some? @last-task-success) "didn't get task-result message from signal client?")
      (when-not @last-task-success
        (log/error (str "task reported a failure"))
