@@ -1,4 +1,4 @@
-(ns dirac.agent-cli
+(ns dirac.agent.cli
   (:require [clojure.string :as string]
             [clojure.tools.cli :refer [parse-opts]]
             [dirac.agent :as agent])

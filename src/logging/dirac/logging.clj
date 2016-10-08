@@ -42,7 +42,6 @@
         "dirac.test-lib" (merge-options tests-options options)
         ; agent
         "dirac.agent" (merge-options base-options options)
-        "dirac.agent-impl" (merge-options base-options options)
         ; nrepl
         "dirac.nrepl" (merge-options nrepl-options options)
         ; lib

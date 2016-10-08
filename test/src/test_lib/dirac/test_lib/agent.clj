@@ -1,6 +1,6 @@
 (ns dirac.test-lib.agent
   (:require [clojure.tools.logging :as log]
-            [dirac.agent-impl :as agent]
+            [dirac.agent.impl :as agent]
             [dirac.settings :refer [get-dirac-agent-boot-time]]))
 
 ; -- fixtures ---------------------------------------------------------------------------------------------------------------

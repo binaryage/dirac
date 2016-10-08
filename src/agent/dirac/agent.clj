@@ -11,7 +11,7 @@
 ; we try require stuff dynamically and make sense of the errors if any
 (def ok?
   (try
-    (require 'dirac.agent-impl)
+    (require 'dirac.agent.impl)
     true
     (catch Throwable e
       (let [message (.getMessage e)
@@ -28,13 +28,13 @@
 
 ; -- high-level api ---------------------------------------------------------------------------------------------------------
 
-(def current-agent (if ok? (resolve 'dirac.agent-impl/current-agent) (constantly (atom nil))))
+(def current-agent (if ok? (resolve 'dirac.agent.impl/current-agent) (constantly (atom nil))))
 
-(def live? (if ok? (resolve 'dirac.agent-impl/live?) (constantly false)))
-(def destroy! (if ok? (resolve 'dirac.agent-impl/destroy!) (constantly false)))
-(def create! (if ok? (resolve 'dirac.agent-impl/create!) (constantly false)))
-(def boot-now! (if ok? (resolve 'dirac.agent-impl/boot-now!) (constantly false)))
+(def live? (if ok? (resolve 'dirac.agent.impl/live?) (constantly false)))
+(def destroy! (if ok? (resolve 'dirac.agent.impl/destroy!) (constantly false)))
+(def create! (if ok? (resolve 'dirac.agent.impl/create!) (constantly false)))
+(def boot-now! (if ok? (resolve 'dirac.agent.impl/boot-now!) (constantly false)))
 
 ; -- entry point ------------------------------------------------------------------------------------------------------------
 
-(def boot! (if ok? (resolve 'dirac.agent-impl/boot!) (constantly nil)))
+(def boot! (if ok? (resolve 'dirac.agent.impl/boot!) (constantly nil)))

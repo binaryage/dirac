@@ -105,7 +105,7 @@ how [Weasel](https://github.com/tomjakubowski/weasel) comes into play and how Di
 If you hit a wall you can try to ask for help in the `#dirac` channel at http://clojurians.slack.com ([ask for an invitation here](http://clojurians.net/)).
 
 Now let's get back to launching the Dirac **Agent**. You can wrap it as a command-line tool and run it. The source for cli tool is [here](https://github.com/binaryage/dirac/blob/master/src/agent/dirac/agent_cli.clj).
-Here is a custom launcher script which uses maven to download dirac jar and execute `agent-cli` with your current java env from command-line:
+Here is a custom launcher script which uses maven to download dirac jar and execute `dirac.agent.cli` with your current java env from command-line:
 
 [https://github.com/binaryage/dirac/blob/master/scripts/agent-launcher.sh](https://github.com/binaryage/dirac/blob/master/scripts/agent-launcher.sh)
 

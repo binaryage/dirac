@@ -66,4 +66,4 @@ popd
 FULL_CLASS_PATH="$CLASS_PATH:$LOCAL_DIRAC_JAR_PATH"
 
 # launch the agent with full classpath
-java -classpath "$FULL_CLASS_PATH" clojure.main --main dirac.agent-cli "$@"
+java -classpath "$FULL_CLASS_PATH" clojure.main --main dirac.agent.cli "$@"

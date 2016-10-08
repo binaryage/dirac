@@ -1,4 +1,4 @@
-(ns dirac.agent-impl
+(ns dirac.agent.impl
   (:require [clojure.core.async :refer [chan <!! <! >!! put! alts!! timeout close! go go-loop]]
             [clojure.tools.logging :as log]
             [dirac.logging :as logging]

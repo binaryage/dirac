@@ -36,7 +36,7 @@ defaults and their environmental counterparts.
 
 If you call [`dirac.agent/boot!`](https://github.com/binaryage/dirac/blob/master/src/agent/dirac/agent.clj) from code,
  you can override config options with a config map specified as an argument. Actually this is what
- [`dirac.agent-cli`](https://github.com/binaryage/dirac/blob/master/src/agent/dirac/agent_cli.clj) does by reading
+ [`dirac.agent.cli`](https://github.com/binaryage/dirac/blob/master/src/agent/dirac/agent/cli.clj) does by reading
 command-line arguments and converting some of them to specific config keys.
 
 ##### Dirac nREPL middleware configuration
