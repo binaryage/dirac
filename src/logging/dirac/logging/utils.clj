@@ -24,9 +24,15 @@
          (map-indexed (fn [i s] (str (if (pos? i) indent-str "") " | " s)))
          (cuerdas/unlines))))
 
+(defn preprocess-logger-name [logger-name]
+  (if-let [m (re-matches #"^dirac\.(.*)" logger-name)]
+    (str "⊙." (second m))
+    logger-name))
+
 (defn standard-formatter [indent prefix-size event & [style-spec prefix]]
   (let [{:keys [renderedMessage loggerName]} event
-        friendly-logger-name (prepare-friendly-logger-name loggerName indent)
+        logger-name (preprocess-logger-name loggerName)
+        friendly-logger-name (prepare-friendly-logger-name logger-name indent)
         indented-message (prepare-indented-message renderedMessage (+ indent prefix-size))
         massaged-prefix (or (cuerdas/slice prefix 0 prefix-size) "  ")
         style-args (if (coll? style-spec) style-spec [style-spec])]
@@ -48,7 +54,7 @@
       (select-keys [:log-out :log-level])
       (rename-keys {:log-out   :out
                     :log-level :level})
-      (update :level #(if % (Level/toLevel % Level/INFO)))
+      (update :level #(if % (Level/toLevel ^String % Level/INFO)))
       (remove-keys-with-nil-val)))
 
 (defn merge-options [& option-maps]
