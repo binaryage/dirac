@@ -14,7 +14,8 @@
                                     get-fixtures-server-url
                                     get-signal-server-host
                                     get-signal-server-port
-                                    get-signal-server-max-connection-time]]
+                                    get-signal-server-max-connection-time
+                                    get-task-disconnected-wait-timeout]]
             [dirac.test-lib.fixtures-web-server :refer [with-fixtures-web-server]]
             [dirac.test-lib.nrepl-server :refer [with-nrepl-server]]
             [dirac.test-lib.agent :refer [with-dirac-agent]]
@@ -149,7 +150,9 @@
       (do
         (log/error "client-disconnected-promise is unexpectedly nil => assuming chrome crash")
         (vreset! last-task-success false)))
-    (log/debug "wait-for-client-disconnection done")))
+    (log/debug "wait-for-client-disconnection done, wating for task cooldown")
+    (Thread/sleep (get-task-disconnected-wait-timeout))
+    (log/debug "move on!")))
 
 (defn wait-for-signal!
   ([signal-server]

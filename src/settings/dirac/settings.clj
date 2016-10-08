@@ -43,6 +43,7 @@
 (def ^:const SIGNAL_CLIENT_TASK_RESULT_DELAY (milisec 0))
 (def ^:const SIGNAL_CLIENT_CLOSE_DELAY (milisec 0))
 (def ^:const SIGNAL_SERVER_MAX_CONNECTION_TIME (seconds 5))
+(def ^:const TASK_DISCONNECTED_WAIT_TIMEOUT (seconds 2))
 
 (def ^:const ACTUAL_TRANSCRIPTS_ROOT_PATH "test/browser/transcripts/actual/")
 (def ^:const EXPECTED_TRANSCRIPTS_ROOT_PATH "test/browser/transcripts/expected/")
@@ -240,3 +241,6 @@
 
 (defmacro get-dirac-intercom-key []
   DIRAC_INTERCOM_KEY)
+
+(defmacro get-task-disconnected-wait-timeout []
+  TASK_DISCONNECTED_WAIT_TIMEOUT)
