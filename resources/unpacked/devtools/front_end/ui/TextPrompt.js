@@ -154,7 +154,7 @@ WebInspector.TextPrompt.prototype = {
         this._proxyElement.remove();
         delete this._proxyElement;
         this._element.classList.remove("text-prompt");
-        WebInspector.restoreFocusFromElement(this._element);
+        this._focusRestorer.restore();
     },
 
     /**
@@ -242,7 +242,7 @@ WebInspector.TextPrompt.prototype = {
         this._oldTabIndex = this._element.tabIndex;
         if (this._element.tabIndex < 0)
             this._element.tabIndex = 0;
-        WebInspector.setCurrentFocusElement(this._element);
+        this._focusRestorer = new WebInspector.ElementFocusRestorer(this._element);
         if (!this.text())
             this._updateAutoComplete();
     },
@@ -696,7 +696,12 @@ WebInspector.TextPrompt.prototype = {
      */
     isCaretInsidePrompt: function()
     {
-        return this._element.isInsertionCaretInside();
+        var selection = this._element.getComponentSelection();
+        // @see crbug.com/602541
+        var selectionRange = selection && selection.rangeCount ? selection.getRangeAt(0) : null;
+        if (!selectionRange || !selection.isCollapsed)
+            return false;
+        return selectionRange.startContainer.isSelfOrDescendant(this._element);
     },
 
     /**

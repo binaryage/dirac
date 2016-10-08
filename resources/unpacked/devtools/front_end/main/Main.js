@@ -92,6 +92,7 @@ WebInspector.Main.prototype = {
         Runtime.experiments.register("applyCustomStylesheet", "Allow custom UI themes");
         Runtime.experiments.register("autoAttachToCrossProcessSubframes", "Auto-attach to cross-process subframes", true);
         Runtime.experiments.register("blackboxJSFramesOnTimeline", "Blackbox JavaScript frames on Timeline", true);
+        Runtime.experiments.register("canvasNetworkTimeline", "Canvas based timeline in Network panel", true);
         Runtime.experiments.register("colorContrastRatio", "Contrast ratio line in color picker", true);
         Runtime.experiments.register("continueToFirstInvocation", "Continue to first invocation", true);
         Runtime.experiments.register("emptySourceMapAutoStepping", "Empty sourcemap auto-stepping");
@@ -483,7 +484,8 @@ WebInspector.Main.prototype = {
         if (event.handled)
             return;
 
-        var target = event.deepActiveElement();
+        var document = event.target && event.target.ownerDocument;
+        var target = document ? document.deepActiveElement() : null;
         if (target) {
             var anchor = target.enclosingNodeOrSelfWithNodeName("a");
             if (anchor && anchor.preventFollow)
@@ -508,7 +510,10 @@ WebInspector.Main.prototype = {
     {
         var eventCopy = new CustomEvent("clipboard-" + event.type);
         eventCopy["original"] = event;
-        event.deepActiveElement().dispatchEvent(eventCopy);
+        var document = event.target && event.target.ownerDocument;
+        var target = document ? document.deepActiveElement() : null;
+        if (target)
+            target.dispatchEvent(eventCopy);
         if (eventCopy.handled)
             event.preventDefault();
     },
@@ -677,10 +682,11 @@ WebInspector.Main.SearchActionDelegate.prototype = {
      * @param {!WebInspector.Context} context
      * @param {string} actionId
      * @return {boolean}
+     * @suppressGlobalPropertiesCheck
      */
     handleAction: function(context, actionId)
     {
-        var searchableView = WebInspector.SearchableView.fromElement(WebInspector.currentFocusElement()) || WebInspector.inspectorView.currentPanel().searchableView();
+        var searchableView = WebInspector.SearchableView.fromElement(document.deepActiveElement()) || WebInspector.inspectorView.currentPanel().searchableView();
         if (!searchableView)
             return false;
         switch (actionId) {

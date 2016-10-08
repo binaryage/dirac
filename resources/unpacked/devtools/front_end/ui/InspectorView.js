@@ -47,12 +47,12 @@ WebInspector.InspectorView = function()
     this._drawerSplitWidget.show(this.element);
 
     // Create drawer tabbed pane.
-    this._drawerTabbedLocation = WebInspector.viewManager.createTabbedLocation(this.showDrawer.bind(this), "drawer-view", true);
+    this._drawerTabbedLocation = WebInspector.viewManager.createTabbedLocation(this._showDrawer.bind(this, false), "drawer-view", true);
     this._drawerTabbedLocation.enableMoreTabsButton();
     this._drawerTabbedPane = this._drawerTabbedLocation.tabbedPane();
     this._drawerTabbedPane.setMinimumSize(0, 27);
     var closeDrawerButton = new WebInspector.ToolbarButton(WebInspector.UIString("Close drawer"), "delete-toolbar-item");
-    closeDrawerButton.addEventListener("click", this.closeDrawer.bind(this));
+    closeDrawerButton.addEventListener("click", this._closeDrawer.bind(this));
     this._drawerTabbedPane.rightToolbar().appendToolbarItem(closeDrawerButton);
     this._drawerSplitWidget.installResizer(this._drawerTabbedPane.headerElement());
     this._drawerSplitWidget.setSidebarWidget(this._drawerTabbedPane);
@@ -364,12 +364,19 @@ WebInspector.InspectorView.prototype = {
         return panel;
     },
 
-    showDrawer: function()
+    /**
+     * @param {boolean} focus
+     */
+    _showDrawer: function(focus)
     {
         dirac.feedback("showDrawer");
-        if (!this._drawerTabbedPane.isShowing())
-            this._drawerSplitWidget.showBoth();
-        this._drawerTabbedPane.focus();
+        if (this._drawerTabbedPane.isShowing())
+            return;
+        this._drawerSplitWidget.showBoth();
+        if (focus)
+            this._focusRestorer = new WebInspector.WidgetFocusRestorer(this._drawerTabbedPane);
+        else
+            this._focusRestorer = null;
     },
 
     /**
@@ -380,11 +387,12 @@ WebInspector.InspectorView.prototype = {
         return this._drawerTabbedPane.isShowing();
     },
 
-    closeDrawer: function()
+    _closeDrawer: function()
     {
         if (!this._drawerTabbedPane.isShowing())
             return;
-        WebInspector.restoreFocusFromElement(this._drawerTabbedPane.element);
+        if (this._focusRestorer)
+            this._focusRestorer.restore();
         this._drawerSplitWidget.hideSidebar(true);
     },
 
@@ -594,9 +602,9 @@ WebInspector.InspectorView.DrawerToggleActionDelegate.prototype = {
     handleAction: function(context, actionId)
     {
         if (WebInspector.inspectorView.drawerVisible())
-            WebInspector.inspectorView.closeDrawer();
+            WebInspector.inspectorView._closeDrawer();
         else
-            WebInspector.inspectorView.showDrawer();
+            WebInspector.inspectorView._showDrawer(true);
         return true;
     }
 }

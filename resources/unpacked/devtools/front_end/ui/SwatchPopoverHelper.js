@@ -11,7 +11,7 @@ WebInspector.SwatchPopoverHelper = function()
     this._popover = new WebInspector.Popover();
     this._popover.setCanShrink(false);
     this._popover.setNoMargins(true);
-    this._popover.element.addEventListener("mousedown", consumeEvent, false);
+    this._popover.element.addEventListener("mousedown", (e) => e.consume(), false);
 
     this._hideProxy = this.hide.bind(this, true);
     this._boundOnKeyDown = this._onKeyDown.bind(this);
@@ -67,13 +67,12 @@ WebInspector.SwatchPopoverHelper.prototype = {
 
     reposition: function()
     {
-        if (!this._previousFocusElement)
-            this._previousFocusElement = WebInspector.currentFocusElement();
         // Unbind "blur" listener to avoid reenterability: |popover.showView| will hide the popover and trigger it synchronously.
         this._view.contentElement.removeEventListener("focusout", this._boundFocusOut, false);
         this._popover.showView(this._view, this._anchorElement);
         this._view.contentElement.addEventListener("focusout", this._boundFocusOut, false);
-        WebInspector.setCurrentFocusElement(this._view.contentElement);
+        if (!this._focusRestorer)
+            this._focusRestorer = new WebInspector.WidgetFocusRestorer(this._view);
     },
 
     /**
@@ -93,8 +92,7 @@ WebInspector.SwatchPopoverHelper.prototype = {
         if (this._hiddenCallback)
             this._hiddenCallback.call(null, !!commitEdit);
 
-        WebInspector.setCurrentFocusElement(this._previousFocusElement);
-        delete this._previousFocusElement;
+        this._focusRestorer.restore();
         delete this._anchorElement;
         if (this._view) {
             this._view.detach();
