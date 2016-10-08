@@ -181,30 +181,6 @@ Element.prototype.isScrolledToBottom = function()
 }
 
 /**
- * @param {!Node} fromNode
- * @param {!Node} toNode
- */
-function removeSubsequentNodes(fromNode, toNode)
-{
-    for (var node = fromNode; node && node !== toNode;) {
-        var nodeToRemove = node;
-        node = node.nextSibling;
-        nodeToRemove.remove();
-    }
-}
-
-/**
- * @param {!Event} event
- * @return {boolean}
- */
-Element.prototype.containsEventPoint = function(event)
-{
-    var box = this.getBoundingClientRect();
-    return box.left < event.x  && event.x < box.right &&
-           box.top < event.y && event.y < box.bottom;
-}
-
-/**
  * @param {!Array.<string>} nameArray
  * @return {?Node}
  */
@@ -338,32 +314,10 @@ Node.prototype.window = function()
     return this.ownerDocument.defaultView;
 }
 
-/**
- * @param {string} query
- * @return {?Node}
- */
-Element.prototype.query = function(query)
-{
-    return this.ownerDocument.evaluate(query, this, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
-}
-
 Element.prototype.removeChildren = function()
 {
     if (this.firstChild)
         this.textContent = "";
-}
-
-/**
- * @return {boolean}
- */
-Element.prototype.isInsertionCaretInside = function()
-{
-    var selection = this.getComponentSelection();
-    // @see crbug.com/602541
-    var selectionRange = selection && selection.rangeCount ? selection.getRangeAt(0) : null;
-    if (!selectionRange || !selection.isCollapsed)
-        return false;
-    return selectionRange.startContainer.isSelfOrDescendant(this);
 }
 
 /**
@@ -375,20 +329,6 @@ Element.prototype.isInsertionCaretInside = function()
 function createElement(tagName, customElementType)
 {
     return document.createElement(tagName, customElementType || "");
-}
-
-/**
- * @param {string} type
- * @param {boolean} bubbles
- * @param {boolean} cancelable
- * @return {!Event}
- * @suppressGlobalPropertiesCheck
- */
-function createEvent(type, bubbles, cancelable)
-{
-    var event = document.createEvent("Event");
-    event.initEvent(type, bubbles, cancelable);
-    return event;
 }
 
 /**
@@ -525,20 +465,6 @@ Element.prototype.totalOffset = function()
 }
 
 /**
- * @return {!{left: number, top: number}}
- */
-Element.prototype.scrollOffset = function()
-{
-    var curLeft = 0;
-    var curTop = 0;
-    for (var element = this; element; element = element.scrollParent) {
-        curLeft += element.scrollLeft;
-        curTop += element.scrollTop;
-    }
-    return { left: curLeft, top: curTop };
-}
-
-/**
  * @param {string} childType
  * @param {string=} className
  * @return {!Element}
@@ -594,28 +520,6 @@ AnchorBox.prototype.equals = function(anchorBox)
 }
 
 /**
- * @param {!Window} targetWindow
- * @return {!AnchorBox}
- */
-Element.prototype.offsetRelativeToWindow = function(targetWindow)
-{
-    var elementOffset = new AnchorBox();
-    var curElement = this;
-    var curWindow = this.ownerDocument.defaultView;
-    while (curWindow && curElement) {
-        elementOffset.x += curElement.totalOffsetLeft();
-        elementOffset.y += curElement.totalOffsetTop();
-        if (curWindow === targetWindow)
-            break;
-
-        curElement = curWindow.frameElement;
-        curWindow = curWindow.parent;
-    }
-
-    return elementOffset;
-}
-
-/**
  * @param {!Window=} targetWindow
  * @return {!AnchorBox}
  */
@@ -623,20 +527,21 @@ Element.prototype.boxInWindow = function(targetWindow)
 {
     targetWindow = targetWindow || this.ownerDocument.defaultView;
 
-    var anchorBox = this.offsetRelativeToWindow(window);
-    anchorBox.width = Math.min(this.offsetWidth, window.innerWidth - anchorBox.x);
-    anchorBox.height = Math.min(this.offsetHeight, window.innerHeight - anchorBox.y);
+    var anchorBox = new AnchorBox();
+    var curElement = this;
+    var curWindow = this.ownerDocument.defaultView;
+    while (curWindow && curElement) {
+        anchorBox.x += curElement.totalOffsetLeft();
+        anchorBox.y += curElement.totalOffsetTop();
+        if (curWindow === targetWindow)
+            break;
+        curElement = curWindow.frameElement;
+        curWindow = curWindow.parent;
+    }
 
+    anchorBox.width = Math.min(this.offsetWidth, targetWindow.innerWidth - anchorBox.x);
+    anchorBox.height = Math.min(this.offsetHeight, targetWindow.innerHeight - anchorBox.y);
     return anchorBox;
-}
-
-/**
- * @param {string} text
- */
-Element.prototype.setTextAndTitle = function(text)
-{
-    this.textContent = text;
-    this.title = text;
 }
 
 /**
@@ -695,32 +600,6 @@ Element.prototype.selectionLeftOffset = function()
     }
 
     return leftOffset;
-}
-
-/**
- * @this {!HTMLImageElement} element
- * @return {!Promise<!HTMLImageElement>}
- */
-HTMLImageElement.prototype.completePromise = function()
-{
-    var element = this;
-    if (element.complete)
-        return Promise.resolve(element);
-    return new Promise(promiseBody);
-
-    /**
-     * @param {function(!HTMLImageElement)} resolve
-     */
-    function promiseBody(resolve)
-    {
-        element.addEventListener("load", oncomplete);
-        element.addEventListener("error", oncomplete);
-
-        function oncomplete()
-        {
-            resolve(element);
-        }
-    }
 }
 
 /**
@@ -902,30 +781,8 @@ Node.prototype.setTextContentTruncatedIfNeeded = function(text, placeholder)
  */
 Event.prototype.deepElementFromPoint = function()
 {
-    // 1. climb to the component root.
-    var node = this.target;
-    while (node && node.nodeType !== Node.DOCUMENT_FRAGMENT_NODE && node.nodeType !== Node.DOCUMENT_NODE)
-        node = node.parentNode;
-
-    if (!node)
-        return null;
-
-    // 2. Find deepest node by coordinates.
-    node = node.elementFromPoint(this.pageX, this.pageY);
-    while (node && node.shadowRoot)
-        node = node.shadowRoot.elementFromPoint(this.pageX, this.pageY);
-    return node;
-}
-
-/**
- * @return {?Element}
- */
-Event.prototype.deepActiveElement = function()
-{
-    var activeElement = this.target && this.target.ownerDocument ? this.target.ownerDocument.activeElement : null;
-    while (activeElement && activeElement.shadowRoot && activeElement.shadowRoot.activeElement)
-        activeElement = activeElement.shadowRoot.activeElement;
-    return activeElement;
+    var root = this.target && this.target.getComponentRoot();
+    return root ? root.deepElementFromPoint(this.pageX, this.pageY) : null;
 }
 
 /**
@@ -939,6 +796,41 @@ Document.prototype.deepElementFromPoint = function(x, y)
     while (node && node.shadowRoot)
         node = node.shadowRoot.elementFromPoint(x, y);
     return node;
+}
+
+DocumentFragment.prototype.deepElementFromPoint = Document.prototype.deepElementFromPoint;
+
+/**
+ * @return {?Element}
+ */
+Document.prototype.deepActiveElement = function()
+{
+    var activeElement = this.activeElement;
+    while (activeElement && activeElement.shadowRoot && activeElement.shadowRoot.activeElement)
+        activeElement = activeElement.shadowRoot.activeElement;
+    return activeElement;
+}
+
+DocumentFragment.prototype.deepActiveElement = Document.prototype.deepActiveElement;
+
+/**
+ * @return {boolean}
+ */
+Element.prototype.hasFocus = function()
+{
+    var root = this.getComponentRoot();
+    return !!root && this.isSelfOrAncestor(root.activeElement);
+}
+
+/**
+ * @return {?Document|?DocumentFragment}
+ */
+Node.prototype.getComponentRoot = function()
+{
+    var node = this;
+    while (node && node.nodeType !== Node.DOCUMENT_FRAGMENT_NODE && node.nodeType !== Node.DOCUMENT_NODE)
+        node = node.parentNode;
+    return /** @type {?Document|?DocumentFragment} */ (node);
 }
 
 /**
@@ -958,11 +850,6 @@ function isEnterKey(event)
 function isEscKey(event)
 {
     return event.keyCode === 27;
-}
-
-function consumeEvent(e)
-{
-    e.consume();
 }
 
 /**
