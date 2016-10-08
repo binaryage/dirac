@@ -18,7 +18,7 @@ export DIRAC_NREPL_SERVER_PORT=8040
 export DIRAC_AGENT_PORT=8041
 export DIRAC_NREPL_WEASEL_PORT=8042
 
-./scripts/clean-compiled.sh
+lein clean
 lein with-profile +cooper,+dev-browser-tests cooper
 
 popd

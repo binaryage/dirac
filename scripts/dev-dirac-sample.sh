@@ -21,7 +21,7 @@ pushd "$ROOT"
 export DIRAC_WEASEL_VERBOSE=true
 export DIRAC_AGENT_VERBOSE=true
 
-./scripts/clean-compiled.sh
+lein clean
 lein with-profile +cooper,+dev-dirac-sample cooper
 
 popd

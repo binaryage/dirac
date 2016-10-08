@@ -22,14 +22,14 @@
         "<all_urls>"
       ],
       "js": [
-        "compiled/content_script/content_script.js",
+        "_compiled/content_script/content_script.js",
         "content_script.js"
       ],
       "run_at": "document_start"
     }
   ],
   "web_accessible_resources": [
-    "compiled/*"
+    "_compiled/*"
   ],
   "manifest_version": 2
 }

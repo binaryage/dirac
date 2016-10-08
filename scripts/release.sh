@@ -10,8 +10,8 @@
 #
 # steps:
 # - move some required destination files to resources/release
-# - compile dirac extension into target/resources/release/compiled
-# - compile implant into target/resources/release/devtools/front_end/dirac/compiled
+# - compile dirac extension into target/resources/release/_compiled
+# - compile implant into target/resources/release/devtools/front_end/dirac/_compiled
 # - move existing sources in resources/unpacked into a temp folder
 # - zero dirac/require-implant.js in the temp folder
 # - run build_release_applications.py on the files in temp folder as input, output to resources/release
@@ -31,10 +31,18 @@ pushd "$ROOT"
 ./scripts/check-versions.sh
 
 if [ -z "$RELEASE_BUILD_DEVTOOLS" ] ; then
-  echo "invalid config: RELEASE_BUILD is empty"
+  echo "invalid config: RELEASE_BUILD_DEVTOOLS env var is empty"
   exit 111
 fi
 
+if [ -z "$RELEASE_BUILD_COMPILED" ] ; then
+  echo "invalid config: RELEASE_BUILD_COMPILED env var is empty"
+  exit 112
+fi
+
+if [ -d "$RELEASE_BUILD_COMPILED" ] ; then
+  rm -rf "$RELEASE_BUILD_COMPILED"
+fi
 if [ -d "$RELEASE_BUILD_DEVTOOLS" ] ; then
   rm -rf "$RELEASE_BUILD_DEVTOOLS"
 fi
@@ -73,11 +81,11 @@ mkdir -p "$WORK_DIR"
 cp -r "$FRONTEND"/* "$WORK_DIR"
 
 # the compiled dir might exist because of dev build
-WORK_DIR_DIRAC_COMPILED="$WORK_DIR/dirac/compiled"
+WORK_DIR_DIRAC_COMPILED="$WORK_DIR/dirac/_compiled"
 if [ -d "$WORK_DIR_DIRAC_COMPILED" ] ; then
   rm -rf "$WORK_DIR_DIRAC_COMPILED"
 fi
-cp -r "$ROOT/target/resources/release/devtools/front_end/dirac/compiled" "$WORK_DIR/dirac" # produced by `lein compile-dirac`
+cp -r "$ROOT/target/resources/release/devtools/front_end/dirac/_compiled" "$WORK_DIR/dirac" # produced by `lein compile-dirac`
 
 echo -n "" > "$WORK_DIR/dirac/require-implant.js" # when doing advanced build, all implant files are required automatically
 
@@ -97,14 +105,14 @@ cp -r "$FRONTEND/emulated_devices" "$RELEASE_BUILD_DEVTOOLS_FRONTEND"
 cp "$FRONTEND/devtools.js" "$RELEASE_BUILD_DEVTOOLS_FRONTEND"
 
 # copy compiled extension code (produced by `lein compile-dirac`)
-cp -r "$ROOT/target/resources/release/compiled" "$RELEASE_BUILD"
+cp -r "$ROOT/target/resources/release/_compiled" "$RELEASE_BUILD"
 
 # ad-hoc cleanup
 rm -rf "$RELEASE_BUILD_DEVTOOLS_FRONTEND/dirac"
 rm -rf "$RELEASE_BUILD_DEVTOOLS_FRONTEND/Images/src"
 
-rm -rf "$RELEASE_BUILD/compiled/background"
-rm -rf "$RELEASE_BUILD/compiled/options"
+rm -rf "$RELEASE_BUILD/_compiled/background"
+rm -rf "$RELEASE_BUILD/_compiled/options"
 
 popd
 
