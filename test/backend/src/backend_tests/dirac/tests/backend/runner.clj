@@ -1,7 +1,7 @@
-(ns dirac.backend-tests-runner
+(ns dirac.tests.backend.runner
   (:require [clojure.test :refer :all]
             [environ.core :refer [env]]
-            [dirac.agent-tests]
+            [dirac.tests.backend.agent.tests]
             [dirac.logging :as logging]
             [clojure.tools.logging :as log]))
 
@@ -10,7 +10,7 @@
 (def log-level (or (env :dirac-log-level) (env :dirac-backend-tests-log-level) "INFO"))                                       ; INFO, DEBUG, TRACE, ALL
 
 (def default-test-namespaces
-  ['dirac.agent-tests])
+  ['dirac.tests.backend.agent.tests])
 
 (defn setup-logging! []
   (logging/setup! {:log-out   :console

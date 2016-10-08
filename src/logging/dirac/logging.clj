@@ -36,7 +36,7 @@
         :root (merge-options root-options options {:level Level/INFO})                                                        ; root level should be always INFO, otherwise we would get very verbosel logs from java libs
         ; test runners
         "dirac.browser-tests" (merge-options tests-options options)
-        "dirac.agent-tests" (merge-options tests-options options)
+        "dirac.tests.backend.agent.tests" (merge-options tests-options options)
         ; test mocks / helpers
         "dirac.test" (merge-options tests-options options)
         ; agent

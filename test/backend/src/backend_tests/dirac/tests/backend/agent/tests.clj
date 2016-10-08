@@ -1,4 +1,4 @@
-(ns dirac.agent-tests
+(ns dirac.tests.backend.agent.tests
   (:require [clojure.core.async :refer [chan <!! <! >!! put! alts!! timeout close! go go-loop]]
             [clojure.test :refer :all]
             [dirac.settings :refer [get-backend-tests-nrepl-server-host
