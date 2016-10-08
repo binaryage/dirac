@@ -1184,7 +1184,6 @@ WebInspector.ConsoleView.prototype = {
         var newPromptDescriptor = this._prompts[this._normalizePromptIndex(newPromptIndex)];
 
         newPromptDescriptor.element.classList.remove("inactive-prompt");
-        WebInspector.restoreFocusFromElement(oldPromptDescriptor.element);
 
         this._prompt = newPromptDescriptor.prompt;
         this._promptElement = newPromptDescriptor.element;
