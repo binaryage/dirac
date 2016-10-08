@@ -173,7 +173,7 @@
                            :scenarios01
                            {; HACK: we rely on figwheel's "rel=<timestamp>" into cljs url params, clean-urls tests depend on it
                             :figwheel       {:server-port          7301
-                                             :server-logfile       ".figwheel_scenarios01.log"
+                                             :server-logfile       ".figwheel/scenarios01.log"
                                              :validate-interactive :start
                                              :repl                 false}
                             :notify-command ["scripts/cljsbuild-notify.sh" "scenarios01"]
@@ -208,7 +208,7 @@
 
              :marion-figwheel
              {:figwheel {:server-port          7200
-                         :server-logfile       ".figwheel_marion.log"
+                         :server-logfile       ".figwheel/marion.log"
                          :validate-interactive :start
                          :repl                 false}}
 
@@ -240,7 +240,7 @@
 
              :dirac-figwheel
              {:figwheel {:server-port          7100
-                         :server-logfile       ".figwheel_dirac.log"
+                         :server-logfile       ".figwheel/dirac.log"
                          :validate-interactive :start
                          :repl                 false}}
 
