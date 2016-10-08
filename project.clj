@@ -144,7 +144,9 @@
                                        "src/agent"
                                        "src/nrepl"
                                        "src/shared"
-                                       "test/browser/fixtures/src/tests"]
+                                       "test/browser/fixtures/src/tasks"
+                                       "test/browser/fixtures/src/scenarios01"
+                                       "test/browser/fixtures/src/scenarios02"]
               :test-paths   ["test/src/test_lib"
                              "test/browser/src"
                              "test/backend/src/backend_tests"]}
