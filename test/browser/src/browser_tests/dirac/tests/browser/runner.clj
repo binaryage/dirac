@@ -1,4 +1,4 @@
-(ns dirac.browser-tests-runner
+(ns dirac.tests.browser.runner
   (:require [clojure.test :refer :all]
             [environ.core :refer [env]]
             [dirac.logging :as logging]
@@ -15,7 +15,7 @@
                    :log-level log-level}))
 
 (def default-test-namespaces
-  ['dirac.browser-tests])
+  ['dirac.tests.browser.tasks.tests])
 
 (defn require-namespaces [namespaces]
   (doseq [namespace namespaces]

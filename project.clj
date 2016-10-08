@@ -75,10 +75,13 @@
                  "src/shared"
 
                  "test/src/test_lib"
+                 "test/marion/src/background"
+                 "test/marion/src/content_script"
                  "test/backend/src/backend_tests"
-                 "test/browser/fixtures"
-                 "test/browser/src"
-                 "test/marion/src"]
+                 "test/browser/fixtures/src/scenarios01"
+                 "test/browser/fixtures/src/scenarios02"
+                 "test/browser/fixtures/src/tasks"
+                 "test/browser/src/browser_tests"]
   :resource-paths ["resources"]                                                                                               ; this is for Cursive, will be redefined by profiles
   :test-paths ["test"]                                                                                                        ; this is for Cursive, will be redefined by profiles
 
@@ -144,12 +147,12 @@
                                        "src/agent"
                                        "src/nrepl"
                                        "src/shared"
+                                       "test/src/test_lib"
+                                       "test/browser/src/browser_tests"
+                                       "test/backend/src/backend_tests"
                                        "test/browser/fixtures/src/tasks"
                                        "test/browser/fixtures/src/scenarios01"
-                                       "test/browser/fixtures/src/scenarios02"]
-              :test-paths   ["test/src/test_lib"
-                             "test/browser/src"
-                             "test/backend/src/backend_tests"]}
+                                       "test/browser/fixtures/src/scenarios02"]}
 
              :browser-tests
              {:cljsbuild {:builds
@@ -389,9 +392,9 @@
             "run-backend-tests-17"       ["with-profile" "+test-runner,+clojure17" "run" "-m" "dirac.tests.backend.runner"]
             "run-backend-tests-18"       ["with-profile" "+test-runner,+clojure18" "run" "-m" "dirac.tests.backend.runner"]
             "run-backend-tests-19"       ["with-profile" "+test-runner,+clojure19" "run" "-m" "dirac.tests.backend.runner"]
-            "run-browser-tests"          ["shell" "scripts/run-browser-tests.sh" "dirac.browser-tests-runner"]
-            "run-browser-tests-dev"      ["shell" "scripts/run-browser-tests.sh" "dirac.browser-tests-runner/-dev-main"]
-            "run-browser-tests-agent"    ["with-profile" "+test-runner" "run" "-m" "dirac.browser-tests-runner/run-agent"]
+            "run-browser-tests"          ["shell" "scripts/run-browser-tests.sh" "dirac.tests.browser.runner"]
+            "run-browser-tests-dev"      ["shell" "scripts/run-browser-tests.sh" "dirac.tests.browser.runner/-dev-main"]
+            "run-browser-tests-agent"    ["with-profile" "+test-runner" "run" "-m" "dirac.tests.browser.runner/run-agent"]
 
             "fig-dirac"                  ["with-profile" "+cljs,+dirac-unpacked,+dirac-figwheel"
                                           "figwheel"

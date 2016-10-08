@@ -1,4 +1,4 @@
-(ns dirac.browser-tests
+(ns dirac.tests.browser.tasks.tests
   (:require [environ.core :refer [env]]
             [clojure.test :refer :all]
             [clojure.java.io :as io]
