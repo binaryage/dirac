@@ -135,11 +135,14 @@
 
              :cljs
              {:plugins [[lein-cljsbuild "1.1.4"]
-                        [lein-figwheel "0.5.8"]]
-              :hooks   [leiningen.cljsbuild]}
+                        [lein-figwheel "0.5.8"]]}
+
+             :nuke-aliases
+             {:aliases ^:replace {}}
 
              :test-runner
              {:source-paths ^:replace ["src/project"
+                                       "src/empty"
                                        "src/settings"
                                        "src/backport"
                                        "src/logging"
@@ -324,36 +327,60 @@
                                            :optimizations :advanced
                                            :elide-asserts true}}}}}
 
-             :pseudo-names
+             ; want to use technique of overlaying related compiler options on top of our default configuration to all builds
+             ; the problem is cljsbuild's logic for adding default/missing options to :cljsbuild config maps
+             ; sure, we can overlay :builds with profiles, but build-ids which end up not having :source-paths will
+             ; get assigned "src-cljs" for some silly reason which goes beyond my imagination
+             ; we fight it by assigning an empty existing :source-paths to all our possible build-ids
+             ; to prevent cljsbuild to assign their defaults
+             :prevent-cljsbuild-defaults
              {:cljsbuild {:builds
                           {:dirac-implant
-                           {:compiler {:pseudo-names true}}
+                           {:source-paths ["src/empty"]}
                            :dirac-background
-                           {:compiler {:pseudo-names true}}
+                           {:source-paths ["src/empty"]}
                            :dirac-options
-                           {:compiler {:pseudo-names true}}}}}
+                           {:source-paths ["src/empty"]}
+                           :marion-background
+                           {:source-paths ["src/empty"]}
+                           :marion-content-script
+                           {:source-paths ["src/empty"]}
+                           :tasks
+                           {:source-paths ["src/empty"]}
+                           :scenarios01
+                           {:source-paths ["src/empty"]}
+                           :scenarios02
+                           {:source-paths ["src/empty"]}}}}
+
+             :pseudo-names
+             [:prevent-cljsbuild-defaults
+              {:cljsbuild {:builds
+                           {:dirac-implant
+                            {:compiler {:pseudo-names true}}
+                            :dirac-background
+                            {:compiler {:pseudo-names true}}
+                            :dirac-options
+                            {:compiler {:pseudo-names true}}}}}]
 
              :parallel-build
-             {:cljsbuild {:builds
-                          {:dirac-implant
-                           {:compiler {:parallel-build true}}
-                           :dirac-background
-                           {:compiler {:parallel-build true}}
-                           :dirac-options
-                           {:compiler {:parallel-build true}}
-                           :marion-background
-                           {:compiler {:parallel-build true}}
-                           :marion-content-script
-                           {:compiler {:parallel-build true}}
-                           :tasks
-                           {:compiler {:parallel-build true}}
-                           :scenarios01
-                           {:compiler {:parallel-build true}}
-                           :scenarios02
-                           {:compiler {:parallel-build true}}}}}
-
-             :nuke-aliases
-             {:aliases ^:replace {}}
+             [:prevent-cljsbuild-defaults
+              {:cljsbuild {:builds
+                           {:dirac-implant
+                            {:compiler {:parallel-build true}}
+                            :dirac-background
+                            {:compiler {:parallel-build true}}
+                            :dirac-options
+                            {:compiler {:parallel-build true}}
+                            :marion-background
+                            {:compiler {:parallel-build true}}
+                            :marion-content-script
+                            {:compiler {:parallel-build true}}
+                            :tasks
+                            {:compiler {:parallel-build true}}
+                            :scenarios01
+                            {:compiler {:parallel-build true}}
+                            :scenarios02
+                            {:compiler {:parallel-build true}}}}}]
 
              ; to develop browser tests:
              ;
