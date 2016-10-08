@@ -39,6 +39,9 @@
 (defonce last-task-success (volatile! nil))
 (defonce client-disconnected-promise (volatile! nil))
 
+(defn get-transcript-test-label [test-name]
+  (str "Transcript test '" test-name "'"))
+
 (defmacro with-transcript-test [test-name & body]
   `(try
      (binding [*current-transcript-test* ~test-name]
@@ -53,9 +56,6 @@
 (defmacro with-transcript-suite [suite-name & body]
   `(binding [*current-transcript-suite* ~suite-name]
      ~@body))
-
-(defn get-transcript-test-label [test-name]
-  (str "Transcript test '" test-name "'"))
 
 (defn format-friendly-timeout [timeout-ms]
   (utils/timeout-display timeout-ms))
@@ -100,14 +100,15 @@
   (or (some? (:ci env)) (some? (:travis env))))
 
 (defn enter-infinite-loop []
-  (loop []
-    (Thread/sleep 1000)
-    (recur)))
+  (Thread/sleep 1000)
+  (recur))
 
 (defn pause-unless-ci []
   (when-not (under-ci?)
     (log/info "paused execution to allow inspection of failed task => CTRL+C to break")
     (enter-infinite-loop)))
+
+; -- signal server ----------------------------------------------------------------------------------------------------------
 
 (defn create-signal-server! []
   {:pre [(nil? @client-disconnected-promise)]}
@@ -150,22 +151,21 @@
     (log/debug "wait-for-client-disconnection done")))
 
 (defn wait-for-signal!
-  ([server]
-   (wait-for-signal! server (get-default-task-timeout)))
-  ([server timeout-ms]
-   (let [server-url (server/get-url server)
+  ([signal-server]
+   (wait-for-signal! signal-server (get-default-task-timeout)))
+  ([signal-server timeout-ms]
+   (let [server-url (server/get-url signal-server)
          friendly-timeout (format-friendly-timeout timeout-ms)]
      (log/info (str "waiting for a task signal at " server-url " (timeout " friendly-timeout ")."))
-     (when (= ::server/timeout (server/wait-for-first-client server timeout-ms))
+     (when (= ::server/timeout (server/wait-for-first-client signal-server timeout-ms))
        (log/error (str "timeouted while waiting for the task signal."))
-       (vreset! last-task-success false)
-       (pause-unless-ci))
+       (vreset! last-task-success false))
      (wait-for-client-disconnection (get-signal-server-max-connection-time))
      (assert (some? @last-task-success) "didn't get task-result message from signal client?")
      (when-not @last-task-success
        (log/error (str "task reported a failure"))
        (pause-unless-ci))
-     (server/destroy! server))))
+     (server/destroy! signal-server))))
 
 ; -- transcript helpers -----------------------------------------------------------------------------------------------------
 
@@ -289,7 +289,8 @@
         (navigate-transcript-runner!)
         ; chrome driver needs some time to cooldown after disconnection
         ; to prevent random org.openqa.selenium.SessionNotCreatedException exceptions
-        ; also we want to run our transcript test safely after debugger port is available for devtools after driver disconnection
+        ; also we want to run our transcript test safely after debugger port is available
+        ; for devtools after driver disconnection
         (launch-transcript-test-after-delay (get-script-runner-launch-delay))
         (disconnect-browser!)
         (wait-for-signal! signal-server)
