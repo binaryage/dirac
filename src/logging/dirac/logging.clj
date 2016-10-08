@@ -39,7 +39,7 @@
         "dirac.tests.browser" (merge-options tests-options options)
         "dirac.tests.backend" (merge-options tests-options options)
         ; test mocks / helpers
-        "dirac.test" (merge-options tests-options options)
+        "dirac.test-lib" (merge-options tests-options options)
         ; agent
         "dirac.agent" (merge-options base-options options)
         "dirac.agent-impl" (merge-options base-options options)
