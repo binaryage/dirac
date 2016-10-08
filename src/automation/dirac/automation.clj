@@ -19,7 +19,9 @@
              (~'browser-test-done))))
        (dirac.automation.launcher/register-task! (fn []
                                                    (cljs.test/run-tests
-                                                     (cljs.test/empty-env :cljs.test/default))))
+                                                     (cljs.test/empty-env :cljs.test/default)))
+                                                 (fn []
+                                                   (dirac.automation.task/task-kill!)))
        (dirac.automation.task/task-setup!))))
 
 ; this macro exists solely to work around a bug in cljs compiler

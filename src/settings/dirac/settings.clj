@@ -31,12 +31,15 @@
 (def ^:const TRANSCRIPT_MATCH_TIMEOUT (seconds 5))
 (def ^:const LAUNCH_TASK_KEY "diracLaunchTask")
 (def ^:const LAUNCH_TASK_MESSAGE "dirac-launch-task")
+(def ^:const KILL_TASK_KEY "diracKillTask")
+(def ^:const KILL_TASK_MESSAGE "dirac-kill-task")
 
 (def ^:const MARION_INITIAL_WAIT_TIME (seconds 1))
 (def ^:const MARION_RECONNECTION_ATTEMPT_DELAY (seconds 2))
 (def ^:const MARION_MESSAGE_REPLY_TIMEOUT (seconds 10))
 
 (def ^:const DEFAULT_TASK_TIMEOUT (minutes 5))
+(def ^:const KILL_TASK_TIMEOUT (seconds 5))
 (def ^:const DEFAULT_TEST_HTML_LOAD_TIMEOUT (seconds 5))
 (def ^:const SIGNAL_SERVER_CLOSE_WAIT_TIMEOUT (milisec 500))
 (def ^:const PENDING_REPLIES_WAIT_TIMEOUT (seconds 2))
@@ -121,6 +124,12 @@
 (defmacro get-launch-task-message []
   LAUNCH_TASK_MESSAGE)
 
+(defmacro get-kill-task-key []
+  KILL_TASK_KEY)
+
+(defmacro get-kill-task-message []
+  KILL_TASK_MESSAGE)
+
 (defmacro get-transcript-match-timeout []
   TRANSCRIPT_MATCH_TIMEOUT)
 
@@ -135,6 +144,9 @@
 
 (defmacro get-default-task-timeout []
   DEFAULT_TASK_TIMEOUT)
+
+(defmacro get-kill-task-timeout []
+  KILL_TASK_TIMEOUT)
 
 (defmacro get-default-test-html-load-timeout []
   DEFAULT_TEST_HTML_LOAD_TIMEOUT)

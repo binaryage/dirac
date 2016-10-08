@@ -4,10 +4,16 @@
             [goog.string :as string]
             [oops.core :refer [oget oset! oset!+ ocall ocall+ oapply]]
             [chromex.logging :refer-macros [log warn error info]]
-            [dirac.settings :refer-macros [get-launch-task-key get-launch-task-message]]))
+            [dirac.settings :refer-macros [get-launch-task-key get-launch-task-message
+                                           get-kill-task-key get-kill-task-message]]))
 
-(defn register-task! [task-fn]
-  (oset!+ js/window (str "!" (get-launch-task-key)) task-fn))
+(defn register-task! [task-fn kill-fn]
+  (oset!+ js/window (str "!" (get-launch-task-key)) task-fn)
+  (oset!+ js/window (str "!" (get-kill-task-key)) kill-fn))
+
+(defn kill-task! []
+  (log "killing task...")
+  (ocall+ js/window (get-kill-task-key)))                                                                                     ; see go-task
 
 (defn launch-task! []
   (log "launching task...")
@@ -22,8 +28,10 @@
 
 (defn process-event! [event]
   (if-let [data (oget event "?data")]
-    (if (= (oget data "?type") (get-launch-task-message))
-      (launch-task-after-delay! (string/parseInt (oget data "?delay"))))))
+    (let [type (oget data "?type")]
+      (cond
+        (= type (get-launch-task-message)) (launch-task-after-delay! (string/parseInt (oget data "?delay")))
+        (= type (get-kill-task-message)) (kill-task!)))))
 
 (defn init! []
   (.addEventListener js/window "message" process-event!))

@@ -19,6 +19,7 @@
             [dirac.automation.notifications :as notifications]
             [dirac.automation.options :as options]
             [dirac.automation.verbs :as verbs]
+            [dirac.automation.task :as task]
             [dirac.utils :as utils]))
 
 ; -- automation actions -----------------------------------------------------------------------------------------------------

@@ -4,7 +4,9 @@
             [clojure.java.io :as io]
             [clojure.stacktrace :as stacktrace]
             [dirac.settings :refer [get-launch-task-message
+                                    get-kill-task-message
                                     get-default-task-timeout
+                                    get-kill-task-timeout
                                     get-default-test-html-load-timeout
                                     get-signal-server-close-wait-timeout
                                     get-actual-transcripts-root-path
@@ -135,43 +137,64 @@
                                           (log/debug ":on-leaving-client after signal-server-close-wait-timeout")
                                           (assert (some? @last-task-success) "client leaving but we didn't receive :task-result")
                                           (assert (some? @client-disconnected-promise))
-                                          (deliver @client-disconnected-promise true)
-                                          (vreset! client-disconnected-promise nil)))}))
+                                          (deliver @client-disconnected-promise true)))}))
+
+(defn kill-task! []
+  (let [script (str "window.postMessage({type:'" (get-kill-task-message) "'}, '*')")]
+    (execute-script script)))
 
 (defn wait-for-client-disconnection! [timeout-ms]
   (let [friendly-timeout (format-friendly-timeout timeout-ms)]
     (log/debug (str "wait-for-client-disconnection (timeout " friendly-timeout ")."))
     (if-let [disconnection-promise @client-disconnected-promise]
-      (when (= ::timeouted (deref disconnection-promise timeout-ms ::timeouted))
-        (log/error (str "timeouted while waiting for the task signal."))
-        (vreset! client-disconnected-promise nil)
-        (vreset! last-task-success false)
-        (pause-unless-ci))
+      (if (= ::timeouted (deref disconnection-promise timeout-ms ::timeouted))
+        (do
+          (log/error (str "timeouted while waiting for client disconnection from signal server"))
+          (pause-unless-ci)
+          false)
+        (do
+          (log/debug "wait-for-client-disconnection done, wating for task wait timeout")
+          (Thread/sleep (get-task-disconnected-wait-timeout))
+          (log/debug "move on!")
+          true))
       (do
         (log/error "client-disconnected-promise is unexpectedly nil => assuming chrome crash")
-        (vreset! last-task-success false)))
-    (log/debug "wait-for-client-disconnection done, wating for task cooldown")
-    (Thread/sleep (get-task-disconnected-wait-timeout))
-    (log/debug "move on!")))
+        false))))
 
 (defn wait-for-signal!
-  ([signal-server]
-   (wait-for-signal! signal-server (get-default-task-timeout)))
-  ([signal-server timeout-ms]
+  ([signal-server] (wait-for-signal! signal-server
+                                     (get-default-task-timeout)
+                                     (get-kill-task-timeout)
+                                     (get-signal-server-max-connection-time)))
+  ([signal-server normal-timeout-ms kill-timeout-ms client-disconnection-timeout-ms]
    (let [server-url (server/get-url signal-server)
-         friendly-timeout (format-friendly-timeout timeout-ms)]
-     (log/info (str "waiting for a task signal at " server-url " (timeout " friendly-timeout ")."))
-     (if (= ::server/timeout (server/wait-for-first-client signal-server timeout-ms))
+         friendly-normal-timeout (format-friendly-timeout normal-timeout-ms)
+         friendly-kill-timeout (format-friendly-timeout kill-timeout-ms)]
+     (log/info (str "waiting for a task signal at " server-url " (timeout " friendly-normal-timeout ")."))
+     (if (= ::server/timeout (server/wait-for-first-client signal-server normal-timeout-ms))
        (do
-         (log/error (str "timeouted while waiting for the first client"))
+         (log/error (str "timeouted while waiting for task signal"
+                         " => killing the task... (timeout " friendly-kill-timeout ")"))
+         (kill-task!)
+         ; give the task a second chance to signal...
+         (if (= ::server/timeout (server/wait-for-first-client signal-server kill-timeout-ms))
+           (log/error (str "client didn't disconnect even after the kill request, something went really wrong.\n"
+                           "This likely means that following tasks will fail too because Chrome debugging port might be still\n"
+                           "in use by this non-responsive task (if it still has any devtools instances open).\n"
+                           "You will likely see 'Unable to resolve backend-url for Dirac DevTools' kind of errors."))
+           (do
+             (wait-for-client-disconnection! client-disconnection-timeout-ms)
+             (log/info (str "client disconnected after task kill => move to next task"))))
          (vreset! last-task-success false))
        (do
-         (wait-for-client-disconnection! (get-signal-server-max-connection-time))
+         (if-not (wait-for-client-disconnection! client-disconnection-timeout-ms)
+           (vreset! last-task-success false))
          (log/info (str "client disconnected => move to next task"))))
      (assert (some? @last-task-success) "didn't get task-result message from signal client?")
      (when-not @last-task-success
        (log/error (str "task reported a failure"))
        (pause-unless-ci))
+     (vreset! client-disconnected-promise nil)
      (server/destroy! signal-server))))
 
 ; -- transcript helpers -----------------------------------------------------------------------------------------------------

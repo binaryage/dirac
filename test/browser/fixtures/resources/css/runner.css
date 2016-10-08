@@ -49,6 +49,10 @@ html, body {
     background-color: #ffe;
 }
 
+.status-killed {
+    background-color: #eff;
+}
+
 .status-finished {
     background-color: #efe;
 }

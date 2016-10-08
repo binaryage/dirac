@@ -198,6 +198,15 @@
         (transcript-host/set-style! "finished")))
     (task-teardown!)))
 
+(defn task-kill! []
+  (when (running?)
+    (set-exit-code! ::killed)
+    (transcript-host/forced-append-to-transcript! "killed" "the task was killed externally")
+    (status-host/set-status! "task killed!")
+    (status-host/set-style! "killed")
+    (transcript-host/set-style! "killed")
+    (task-teardown!)))
+
 ; -- handling exceptions ----------------------------------------------------------------------------------------------------
 
 (defn task-exception-handler! [message _source _lineno _colno e]
