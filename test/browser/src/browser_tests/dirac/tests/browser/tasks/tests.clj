@@ -152,11 +152,7 @@
           (log/error (str "timeouted while waiting for client disconnection from signal server"))
           (pause-unless-ci)
           false)
-        (do
-          (log/debug "wait-for-client-disconnection done, wating for task wait timeout")
-          (Thread/sleep (get-task-disconnected-wait-timeout))
-          (log/debug "move on!")
-          true))
+        true)
       (do
         (log/error "client-disconnected-promise is unexpectedly nil => assuming chrome crash")
         false))))
@@ -324,6 +320,7 @@
         (launch-transcript-test-after-delay (get-script-runner-launch-delay))
         (disconnect-browser!)
         (wait-for-signal! signal-server)
+        (Thread/sleep (get-task-disconnected-wait-timeout))
         (reconnect-browser!)
         (write-transcript-and-compare)))))
 
