@@ -1,6 +1,7 @@
 (ns dirac.tests.browser.runner
   (:require [clojure.test :refer :all]
             [environ.core :refer [env]]
+            [clojure.tools.logging :as log]
             [dirac.logging :as logging]
             [dirac.test-lib.agent :as test-agent]
             [dirac.test-lib.chrome-browser :refer [setup-browser! stop-browser!]]
@@ -28,6 +29,8 @@
   (set-test-runner-present!)
   (setup-logging!)
   (setup-browser!)
+  (log/info "---------------------------------------------------------------------------------------------------------------")
+  (log/info "Running browser test tasks...")
   (let [test-namespaces default-test-namespaces]
     (require-namespaces test-namespaces)                                                                                      ; we want to require namespaces dynamically for our loggging configuration to take effect
     (let [summary (apply run-tests test-namespaces)]

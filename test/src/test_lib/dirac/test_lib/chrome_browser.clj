@@ -8,7 +8,8 @@
             [clj-webdriver.taxi :refer :all]
             [clj-webdriver.driver :refer [init-driver]]
             [dirac.settings :refer [get-browser-connection-minimal-cooldown]]
-            [dirac.test-lib.chrome-driver :as chrome-driver]))
+            [dirac.test-lib.chrome-driver :as chrome-driver])
+  (:import (java.io ByteArrayOutputStream PrintStream)))
 
 (def connection-cooldown-channel (atom nil))
 (def user-data-dir (atom nil))
@@ -81,7 +82,7 @@
       (do
         (set-user-data-dir! user-data-dir)
         (log/info (str "== CHROME INFO ============================================================================\n"
-                       chrome-info)))
+                       chrome-info "---")))
       (do
         (log/error "unable to retrieve --user-data-dir from\n" chrome-info)
         (System/exit 3)))
@@ -117,12 +118,12 @@
         command ["-f" user-data-dir]]                                                                                         ; this may be an over kill because we match also Chrome's helper processes
     (assert user-data-dir)
     (log/debug "killing browser instance with " command)
-    (log/debug "candidate pids:" (string/join ", " (string/split (:out (apply sh "pgrep" command)) #"\n")))
+    (log/debug "candidate pids to kill:" (string/join ", " (string/split (:out (apply sh "pgrep" command)) #"\n")))
     (let [result (apply sh "pkill" command)]
       (if-not (empty? (:out result))
         (log/info (:out result)))
       (if-not (empty? (:err result))
-        (log/error "shell command" command "failed to execute:" (:err result))))))
+        (log/error "shell command: pkill" command "failed to execute:" (:err result))))))
 
 (defn wait-for-reconnection-cooldown! []
   (when-let [cooldown-channel (get-connection-cooldown)]
@@ -131,12 +132,36 @@
       (<!! cooldown-channel))
     (clear-connection-cooldown!)))
 
+(defmacro with-output-silencer [& body]
+  `(let [buffer# (ByteArrayOutputStream.)
+         stream# (PrintStream. buffer#)
+         prev-out# System/out
+         prev-err# System/err]
+     (try
+       (System/setOut stream#)
+       (System/setErr stream#)
+       ~@body
+       (finally
+         (System/setOut prev-out#)
+         (System/setErr prev-err#)))))
+
+(defn shoot-chromedriver-in-the-back! []
+  (let [command ["chromedriver"]
+        pids (string/join ", " (string/split (:out (apply sh "pgrep" command)) #"\n"))]
+    (log/debug "chromedriver pids to kill:" pids)
+    (let [result (apply sh "pkill" command)]
+      (if-not (empty? (:out result))
+        (log/info (:out result)))
+      (if-not (empty? (:err result))
+        (log/error "shell command: pkill" command "failed to execute:" (:err result))))))
+
 (defn disconnect-browser! []
-  (wait-for-reconnection-cooldown!)
-  (when-let [service (chrome-driver/get-current-chrome-driver-service)]
-    (.stop service)
-    (chrome-driver/set-current-chrome-driver-service! nil)
-    (set-connection-cooldown! (timeout (get-browser-connection-minimal-cooldown)))))
+  ; stopping service works as well, but it spits in the output
+  ; this is quick and silent (when used with-output-silencer)
+  (with-output-silencer
+    (shoot-chromedriver-in-the-back!))
+  (chrome-driver/set-current-chrome-driver-service! nil)
+  (set-connection-cooldown! (timeout (get-browser-connection-minimal-cooldown))))
 
 (defn reconnect-browser! []
   (wait-for-reconnection-cooldown!)
