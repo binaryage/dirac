@@ -34,54 +34,54 @@
           (<!* a/trigger! :eval-cljs "(+ 2 40)")
           (<!* a/wait-for-devtools-match "DF.log> 42")
           (<!* a/wait-for-devtools-match "repl eval job ended"))))
-    #_(testing "page refresh while REPL was connected"
-        (with-devtools
-          (<!* a/switch-to-console-panel!)
-          (<!* a/switch-prompt-to-dirac!)
-          (<!* a/wait-for-prompt-to-enter-edit-mode)
-          (with-console-feedback
-            (<!* a/console-exec-and-match! "(+ 1 2)" "log> 3"))
-          (<!* a/trigger! :reload)
-          (<!* a/wait-for-prompt-to-enter-edit-mode)
-          (with-console-feedback
-            (<!* a/console-exec-and-match! "(+ 1 2)" "log> 3"))
-          (<!* a/trigger! :reload)
-          (<!* a/wait-for-prompt-to-enter-edit-mode)
-          (with-console-feedback
-            (<!* a/console-exec-and-match! "(+ 1 2)" "log> 3"))))
-    #_(testing "navigate to a new page without dirac runtime while REPL was connected, then navigate back and exercise REPL"
-        (with-devtools
-          (<!* a/switch-to-console-panel!)
-          (<!* a/switch-prompt-to-dirac!)
-          (<!* a/wait-for-prompt-to-enter-edit-mode)
-          (with-console-feedback
-            (<!* a/console-exec-and-match! "(+ 1 2)" "log> 3"))
-          (<!* a/trigger! :navigate "/scenarios/no-runtime.html")
-          ; error should be presented to the user
-          (<!* a/wait-for-devtools-match "Dirac requires runtime support from your app" (seconds 20))
-          (<!* a/wait-for-devtools-match "setDiracPromptStatusStyle('error')")
-          (<!* a/trigger! :navigate "/scenarios/normal.html")
-          ; now we should auto-recoonect because we were still switched to dirac prompt
-          (<!* a/wait-for-prompt-to-enter-edit-mode)
-          (with-console-feedback
-            (<!* a/console-exec-and-match! "(+ 1 2)" "log> 3"))))
-    #_(testing "page refresh while REPL was connected (but not active)"
-        (with-devtools
-          (<!* a/switch-to-console-panel!)
-          (<!* a/switch-prompt-to-dirac!)
-          (<!* a/wait-for-prompt-to-enter-edit-mode)
-          (<!* a/switch-prompt-to-javascript!)
-          (<!* a/trigger! :reload)
-          ; after reload we should not reconnect in background because we were switched to javascript prompt
-          (<!* a/wait-for-devtools-match "Disconnected")
-          (<!* a/switch-prompt-to-dirac!)
-          (<!* a/wait-for-prompt-to-enter-edit-mode)
-          (with-console-feedback
-            (<!* a/console-exec-and-match! "(+ 1 2)" "log> 3"))))
-    #_(testing "page refresh while REPL was not connected"
-        (with-devtools
-          (<!* a/switch-to-console-panel!)
-          (<!* a/trigger! :reload)
-          (<! (timeout 3000))
-          (<!* a/trigger! :reload)
-          (<! (timeout 3000))))))
+    (testing "page refresh while REPL was connected"
+      (with-devtools
+        (<!* a/switch-to-console-panel!)
+        (<!* a/switch-prompt-to-dirac!)
+        (<!* a/wait-for-prompt-to-enter-edit-mode)
+        (with-console-feedback
+          (<!* a/console-exec-and-match! "(+ 1 2)" "log> 3"))
+        (<!* a/trigger! :reload)
+        (<!* a/wait-for-prompt-to-enter-edit-mode)
+        (with-console-feedback
+          (<!* a/console-exec-and-match! "(+ 1 2)" "log> 3"))
+        (<!* a/trigger! :reload)
+        (<!* a/wait-for-prompt-to-enter-edit-mode)
+        (with-console-feedback
+          (<!* a/console-exec-and-match! "(+ 1 2)" "log> 3"))))
+    (testing "navigate to a new page without dirac runtime while REPL was connected, then navigate back and exercise REPL"
+      (with-devtools
+        (<!* a/switch-to-console-panel!)
+        (<!* a/switch-prompt-to-dirac!)
+        (<!* a/wait-for-prompt-to-enter-edit-mode)
+        (with-console-feedback
+          (<!* a/console-exec-and-match! "(+ 1 2)" "log> 3"))
+        (<!* a/trigger! :navigate "/scenarios/no-runtime.html")
+        ; error should be presented to the user
+        (<!* a/wait-for-devtools-match "Dirac requires runtime support from your app" (seconds 20))
+        (<!* a/wait-for-devtools-match "setDiracPromptStatusStyle('error')")
+        (<!* a/trigger! :navigate "/scenarios/normal.html")
+        ; now we should auto-recoonect because we were still switched to dirac prompt
+        (<!* a/wait-for-prompt-to-enter-edit-mode)
+        (with-console-feedback
+          (<!* a/console-exec-and-match! "(+ 1 2)" "log> 3"))))
+    (testing "page refresh while REPL was connected (but not active)"
+      (with-devtools
+        (<!* a/switch-to-console-panel!)
+        (<!* a/switch-prompt-to-dirac!)
+        (<!* a/wait-for-prompt-to-enter-edit-mode)
+        (<!* a/switch-prompt-to-javascript!)
+        (<!* a/trigger! :reload)
+        ; after reload we should not reconnect in background because we were switched to javascript prompt
+        (<!* a/wait-for-devtools-match "Disconnected")
+        (<!* a/switch-prompt-to-dirac!)
+        (<!* a/wait-for-prompt-to-enter-edit-mode)
+        (with-console-feedback
+          (<!* a/console-exec-and-match! "(+ 1 2)" "log> 3"))))
+    (testing "page refresh while REPL was not connected"
+      (with-devtools
+        (<!* a/switch-to-console-panel!)
+        (<!* a/trigger! :reload)
+        (<! (timeout 3000))
+        (<!* a/trigger! :reload)
+        (<! (timeout 3000))))))
