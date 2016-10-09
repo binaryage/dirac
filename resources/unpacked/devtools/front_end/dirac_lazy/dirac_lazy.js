@@ -158,7 +158,7 @@ Object.assign(window.dirac, (function() {
 
     // --- console ----------------------------------------------------------------------------------------------------------
 
-    function addConsoleMessageToMainTarget(level, text, parameters) {
+    function addConsoleMessageToMainTarget(type, level, text, parameters) {
         const target = WebInspector.targetManager.mainTarget();
         if (!target) {
             console.warn("Unable to add console message to main target: ", text);
@@ -171,7 +171,7 @@ Object.assign(window.dirac, (function() {
         }
 
         const msg = new WebInspector.ConsoleMessage(target, WebInspector.ConsoleMessage.MessageSource.Other, level, text,
-            WebInspector.ConsoleMessage.MessageType.Log, undefined, undefined, undefined, undefined, parameters);
+            type, undefined, undefined, undefined, undefined, parameters);
         consoleModel.addMessage(msg);
     }
 
