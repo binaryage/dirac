@@ -70,6 +70,7 @@
                  "src/nrepl"
                  "src/options"
                  "src/project"
+                 "src/empty"
                  "src/runtime"
                  "src/settings"
                  "src/shared"
@@ -142,7 +143,6 @@
 
              :test-runner
              {:source-paths ^:replace ["src/project"
-                                       "src/empty"
                                        "src/settings"
                                        "src/backport"
                                        "src/logging"
