@@ -1,9 +1,9 @@
 (ns dirac.runtime.repl
   (:require-macros [dirac.runtime.repl :refer [with-safe-printing]])
-  (:require [goog.object]
-            [dirac.runtime.prefs :refer [get-prefs pref]]
+  (:require [dirac.runtime.prefs :refer [get-prefs pref]]
             [dirac.runtime.bootstrap :refer [bootstrap!]]
             [dirac.runtime.output :as output]
+            [dirac.runtime.deps]
             [clojure.string :as string]
             [goog.object :as gobject]
             [goog.labs.userAgent.browser :as ua]))
