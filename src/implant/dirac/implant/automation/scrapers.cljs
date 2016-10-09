@@ -1,11 +1,14 @@
 (ns dirac.implant.automation.scrapers
   (:require-macros [com.rpl.specter.macros :refer [providepath declarepath transform select select-one select-first]]
-                   [dirac.implant.automation.scrapers :refer [safe->>]])
+                   [dirac.implant.automation.scrapers :refer [safe->>]]
+                   [cljs.core.async.macros :refer [go go-loop]])
   (:require [oops.core :refer [oget oset! ocall oapply]]
             [chromex.logging :refer-macros [log warn error info]]
+            [cljs.core.async :refer [put! <! chan timeout alts! close!]]
             [cljs.pprint :refer [pprint]]
             [com.rpl.specter :refer [must continue-then-stay multi-path if-path ALL STAY]]
             [dirac.implant.automation.reps :refer [select-subrep select-subreps build-rep]]
+            [clojure.walk :refer [prewalk postwalk]]
             [dirac.dom :as dom]
             [dirac.utils]
             [clojure.string :as string]))
@@ -119,6 +122,9 @@
 (defn find-all-console-log-elements []
   (dom/query-selector "html /deep/ .console-message-wrapper"))
 
+(defn find-console-group-title [el]
+  (first (dom/query-selector el ".console-group-title")))
+
 (defn find-console-log-element [kind n]
   (nth (dom/query-selector (str "html /deep/ .console-message-wrapper.console-" (or kind "log") "-level")) n nil))
 
@@ -136,23 +142,73 @@
   (if (some? console-message-wrapper-element)
     (first (dom/query-selector console-message-wrapper-element "html /deep/ .console-message-text"))))
 
+(defn extract-log-content [console-message-wrapper-el]
+  (-> console-message-wrapper-el
+      (find-console-message-text-element)
+      (get-deep-text-content)))
+
 (defn print-function-name-item [item-rep]
   (let [{:keys [content]} item-rep]
     content))
 
-(defn filter-elements-by-substr [substr els]
-  (let [texts (map (comp get-deep-text-content find-console-message-text-element) els)]
-    (if (nil? substr)
-      texts
-      (filter #(string/includes? % substr) texts))))
+(defn filter-elements* [substr-or-re els]
+  (doall
+    (let [* (fn [el]
+              [el (extract-log-content el)])
+          texts (map * els)]
+      (if (nil? substr-or-re)
+        texts
+        (filter #(if (string? substr-or-re)
+                  (string/includes? (second %) substr-or-re)
+                  (re-matches substr-or-re (second %))) texts)))))
 
-(defn filter-elements-by-re [re els]
-  (let [texts (map (comp get-deep-text-content find-console-message-text-element) els)]
-    (if (nil? re)
-      texts
-      (filter #(re-matches re %) texts))))
+(defn filter-elements [substr-or-re els]
+  (map first (filter-elements* substr-or-re els)))
+
+(defn get-filtered-contents [substr-or-re els]
+  (map second (filter-elements* substr-or-re els)))
+
+(defn expand-groups-async [els]
+  (go
+    (doall
+      (let [expand! (fn [console-message-wrapper-el]
+                      (assert (string/includes? (dom/get-class-name console-message-wrapper-el) "console-message-wrapper"))
+                      (if-let [group-title-el (find-console-group-title console-message-wrapper-el)]
+                        (do
+                          (ocall group-title-el "click")
+                          console-message-wrapper-el)
+                        (error "no .console-group-title under" console-message-wrapper-el)))
+            expanded-group-els (keep expand! els)]
+        (<! (timeout 500))                                                                                                    ; give it some time to re-render/invalidate
+        expanded-group-els))))
+
+(defn find-group-elements [group-elements-chan]
+  (go
+    (doall
+      (let [* (fn [group-header-el]
+                (loop [res []
+                       cur-el group-header-el]
+                  (let [next-el (dom/get-next-sibling cur-el)
+                        next-res (conj res cur-el)
+                        closed? (pos? (count (dom/query-selector cur-el ":scope > .group-closed")))]
+                    (if closed?
+                      next-res
+                      (recur next-res next-el)))))]
+        (map * (<! group-elements-chan))))))
+
+(defn extract-logs [data-chan]
+  (go
+    (doall
+      (let [* (fn [els] (map extract-log-content els))]
+        (map * (<! data-chan))))))
+
+(defn debug-print [v & [label]]
+  (log (or label "scraper debug:") (pr-str v))
+  v)
 
 ; -- general interface for :scrape automation action ------------------------------------------------------------------------
+
+; note: scrapers might return a go channel, automation subsystem will wait for it to deliver a value
 
 (defmulti scrape (fn [name & _args]
                    (keyword name)))
@@ -204,10 +260,17 @@
 (defmethod scrape :count-log-items [_ & [kind]]
   (safe->> (count-console-log-elements kind)))
 
-(defmethod scrape :find-log-items-by-substr [_ & [substr]]
+(defmethod scrape :find-logs [_ & [substr-or-re]]
   (safe->> (find-all-console-log-elements)
-           (filter-elements-by-substr substr)))
+           (get-filtered-contents substr-or-re)))
 
-(defmethod scrape :find-log-items-by-re [_ & [re]]
+(defmethod scrape :find-logs-in-groups [_ & [substr-or-re]]
+  ; returns:
+  ; 1. for each matched group log
+  ; 1.2. list of contents belonging to that group, including group header as the first item
+  ; => list of lists of strings
   (safe->> (find-all-console-log-elements)
-           (filter-elements-by-re re)))
+           (filter-elements substr-or-re)
+           (expand-groups-async)                                                                                              ; ! async => channel
+           (find-group-elements)
+           (extract-logs)))
