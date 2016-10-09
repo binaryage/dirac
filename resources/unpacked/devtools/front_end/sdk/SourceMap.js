@@ -177,6 +177,7 @@ WebInspector.TextSourceMap = function(compiledURL, sourceMappingURL, payload)
             WebInspector.TextSourceMap.prototype._base64Map[base64Digits.charAt(i)] = i;
     }
 
+    this._payload = payload;
     this._json = payload;
     this._compiledURL = compiledURL;
     this._sourceMappingURL = sourceMappingURL;
@@ -251,7 +252,7 @@ WebInspector.TextSourceMap.prototype = {
      */
     payload: function()
     {
-        return this._json;
+        return this._payload;
     },
 
     /**
