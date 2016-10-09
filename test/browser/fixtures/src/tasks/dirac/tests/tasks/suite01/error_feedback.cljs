@@ -11,31 +11,16 @@
       (testing "unhandled DevTools exceptions should be presented in target console as Internal Dirac Error"
         (<!* a/switch-to-console-panel!)
         (<!* a/trigger-internal-error!)
-        (is (= (<!* a/scrape :count-log-items "error") 1))
-        (let [error-content (utils/lines (<!* a/scrape :last-log-item-content "error"))
-              first-line (first error-content)
-              third-line (nth error-content 2 nil)]
-          (is (= first-line "Internal Dirac Error: DevTools code has thrown an unhandled exception"))
-          (is (= third-line "Error: :keyword is not ISeqable"))
-          (is (pos? (count (drop 3 error-content))))))                                                                        ; assume it contains some stack trace
+        (let [error-header (<!* a/scrape :last-log-item-content "log")]
+          (is (= error-header "Internal Dirac Error Error: :keyword is not ISeqable"))))
       (testing "async unhandled DevTools exceptions in promises should be presented in target console as Internal Dirac Error"
         (<!* a/trigger-internal-error-in-promise!)
-        (is (= (<!* a/scrape :count-log-items "error") 2))
-        (let [error-content (utils/lines (<!* a/scrape :last-log-item-content "error"))
-              first-line (first error-content)
-              third-line (nth error-content 2 nil)]
-          (is (= first-line "Internal Dirac Error: DevTools code has thrown an unhandled rejection (in promise)"))
-          (is (= third-line "Error: fake async error in promise"))
-          (is (pos? (count (drop 3 error-content))))))                                                                        ; assume it contains some stack trace
+        (let [error-header (<!* a/scrape :last-log-item-content "log")]
+          (is (= error-header "Internal Dirac Error Error: fake async error in promise"))))
       (testing "DevTools console.error logs should be presented in target console as Internal Dirac Error"
         (<!* a/trigger-internal-error-as-error-log!)
-        (is (= (<!* a/scrape :count-log-items "error") 3))
-        (let [error-content (utils/lines (<!* a/scrape :last-log-item-content "error"))
-              first-line (first error-content)
-              third-line (nth error-content 2 nil)]
-          (is (= first-line "Internal Dirac Error: an error was logged into the internal DevTools console"))
-          (is (= third-line "(\"a fake error log\" 1 2 3)"))
-          (is (zero? (count (drop 3 error-content)))))))
+        (let [error-header (<!* a/scrape :last-log-item-content "log")]
+          (is (= error-header "Internal Dirac Error a fake error log")))))
     (testing "allow disabling error reporter via an url param"
       (with-options {:user-frontend-url-params "disable_reporter=1"}
         (with-devtools
@@ -43,4 +28,8 @@
           (<!* a/trigger-internal-error!)
           (<!* a/trigger-internal-error-in-promise!)
           (<!* a/trigger-internal-error-as-error-log!)
-          (is (= (<!* a/scrape :count-log-items "error") 0)))))))
+          ; no existing log item should contain "Internal Dirac Error"
+          (let [logs-count (<!* a/scrape :count-log-items "log")]
+            (doseq [i (range logs-count)]
+              (let [log-content (<!* a/scrape :log-item-content "log" i)]
+                (is (nil? (re-find #"Internal Dirac Error" log-content)))))))))))
