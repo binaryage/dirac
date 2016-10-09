@@ -17,29 +17,42 @@ devtools #1      ConsoleView constructed
 devtools #1      displayWelcomeMessage
 devtools #1      setCurrentPanel: console
 automate #1      trigger-internal-error!
-devtools #1      Internal Dirac Error: DevTools code has thrown an unhandled exception
-                 <elided info line>
+devtools #1      <elided dirac version info line>
+                 DevTools code has thrown an unhandled exception:
                  Error: :keyword is not ISeqable
-                 <elided body>
-automate #1      scrape [:count-log-items "error"]
-automate #1      scrape [:last-log-item-content "error"]
+                     at $cljs$core$seq$$ (chrome-extension://epkhgbbmecfbomdhhgjnlidlmdgiapfp/devtools/front_end/inspector.js:***)
+                     at $cljs$core$seq_reduce$cljs$0core$0IFn$0_invoke$0arity$03$$ (chrome-extension://epkhgbbmecfbomdhhgjnlidlmdgiapfp/devtools/front_end/inspector.js:***)
+                     at $cljs$core$reduce$cljs$0core$0IFn$0_invoke$0arity$03$$ (chrome-extension://epkhgbbmecfbomdhhgjnlidlmdgiapfp/devtools/front_end/inspector.js:***)
+                     at Function.$cljs$core$into$$.$cljs$core$IFn$_invoke$arity$2$ (chrome-extension://epkhgbbmecfbomdhhgjnlidlmdgiapfp/devtools/front_end/inspector.js:***)
+                     at $dirac$implant$helpers$throw_internal_error_BANG_$$ (chrome-extension://epkhgbbmecfbomdhhgjnlidlmdgiapfp/devtools/front_end/inspector.js:***)
+                 ---
+                 Please report the issue here: https://github.com/binaryage/dirac/issues
+automate #1      scrape [:last-log-item-content "log"]
 ∎
 testing          async unhandled DevTools exceptions in promises should be presented in target console as Internal Dirac Error
 automate #1      trigger-internal-error-in-promise!
-devtools #1      Internal Dirac Error: DevTools code has thrown an unhandled rejection (in promise)
-                 <elided info line>
+devtools #1      <elided dirac version info line>
+                 DevTools code has thrown an unhandled rejection (in promise):
                  Error: fake async error in promise
-                 <elided body>
-automate #1      scrape [:count-log-items "error"]
-automate #1      scrape [:last-log-item-content "error"]
+                     at new $cljs$core$ExceptionInfo$$ (chrome-extension://epkhgbbmecfbomdhhgjnlidlmdgiapfp/devtools/front_end/inspector.js:***)
+                     at $cljs$core$ex_info$cljs$0core$0IFn$0_invoke$0arity$03$$ (chrome-extension://epkhgbbmecfbomdhhgjnlidlmdgiapfp/devtools/front_end/inspector.js:***)
+                     at $cljs$core$ex_info$cljs$0core$0IFn$0_invoke$0arity$02$$ (chrome-extension://epkhgbbmecfbomdhhgjnlidlmdgiapfp/devtools/front_end/inspector.js:***)
+                     at chrome-extension://epkhgbbmecfbomdhhgjnlidlmdgiapfp/devtools/front_end/inspector.js:***
+                 ---
+                 Please report the issue here: https://github.com/binaryage/dirac/issues
+automate #1      scrape [:last-log-item-content "log"]
 ∎
 testing          DevTools console.error logs should be presented in target console as Internal Dirac Error
 automate #1      trigger-internal-error-as-error-log!
-devtools #1      Internal Dirac Error: an error was logged into the internal DevTools console
-                 <elided info line>
-                 ("a fake error log" 1 2 3)
-automate #1      scrape [:count-log-items "error"]
-automate #1      scrape [:last-log-item-content "error"]
+devtools #1      <elided dirac version info line>
+                 An error was logged into the internal DevTools console:
+                 a fake error log
+                   * 1
+                   * 2
+                   * 3
+                 ---
+                 Please report the issue here: https://github.com/binaryage/dirac/issues
+automate #1      scrape [:last-log-item-content "log"]
 ∎
 automate #1      close-devtools!
 extension        handling command: close-dirac-devtools
@@ -65,12 +78,12 @@ devtools #2      setCurrentPanel: console
 automate #2      trigger-internal-error!
 automate #2      trigger-internal-error-in-promise!
 automate #2      trigger-internal-error-as-error-log!
-automate #2      scrape [:count-log-items "error"]
+automate #2      scrape [:find-logs "Dirac Internal Error"]
 automate #2      close-devtools!
 extension        handling command: close-dirac-devtools
 extension        unregister devtools #2
 automate         restore-options!
 ∎
 automate         close-scenario! ["scenario-tab#1"]
-summary          Automated 24 actions with 0 check-points containing 13 assertions.
+summary          Automated 21 actions with 0 check-points containing 4 assertions.
                  0 failures, 0 errors.

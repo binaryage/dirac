@@ -36,11 +36,16 @@ devtools #2      ConsoleView constructed
 devtools #2      displayWelcomeMessage
 devtools #2      setCurrentPanel: console
 automate #2      trigger-internal-error-as-error-log!
-devtools #2      Internal Dirac Error: an error was logged into the internal DevTools console
-                 <elided info line>
-                 ("a fake error log" 1 2 3)
-automate #2      scrape [:count-log-items "error"]
-automate #2      scrape [:last-log-item-content "error"]
+devtools #2      <elided dirac version info line>
+                 An error was logged into the internal DevTools console:
+                 a fake error log
+                   * 1
+                   * 2
+                   * 3
+                 ---
+                 Please report the issue here: https://github.com/binaryage/dirac/issues
+automate #2      scrape [:find-logs "a fake error log"]
+automate #2      scrape [:find-logs-in-groups "a fake error log"]
 automate #2      close-devtools!
 extension        handling command: close-dirac-devtools
 extension        unregister devtools #2
@@ -65,11 +70,16 @@ devtools #3      ConsoleView constructed
 devtools #3      displayWelcomeMessage
 devtools #3      setCurrentPanel: console
 automate #3      trigger-internal-error-as-error-log!
-devtools #3      Internal Dirac Error: an error was logged into the internal DevTools console
-                 <elided info line>
-                 ("a fake error log" 1 2 3)
-automate #3      scrape [:count-log-items "error"]
-automate #3      scrape [:last-log-item-content "error"]
+devtools #3      <elided dirac version info line>
+                 An error was logged into the internal DevTools console:
+                 a fake error log
+                   * 1
+                   * 2
+                   * 3
+                 ---
+                 Please report the issue here: https://github.com/binaryage/dirac/issues
+automate #3      scrape [:find-logs "a fake error log"]
+automate #3      scrape [:find-logs-in-groups "a fake error log"]
 automate #3      close-devtools!
 extension        handling command: close-dirac-devtools
 extension        unregister devtools #3
