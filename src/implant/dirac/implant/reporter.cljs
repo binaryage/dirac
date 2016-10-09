@@ -16,9 +16,9 @@
   (let [trimmed-body (string/trim body)
         first-body-line (first (cuerdas/lines trimmed-body))
         header #js ["%cInternal Dirac Error%c%s"
-                    "background-color:red;color:white;font-weight:bold;padding:0px 3px;border-radius:2px;margin-right:6px;"
+                    "background-color:red;color:white;font-weight:bold;padding:0px 3px;border-radius:2px;"
                     "color:red"
-                    (if (empty? first-body-line) "(no details)" first-body-line)]
+                    (str " " (if (empty? first-body-line) "(no details)" first-body-line))]
         details (str (info/get-info-line) "\n\n"
                      kind ":\n"
                      (if (empty? trimmed-body) "(no details)" trimmed-body)
