@@ -26,6 +26,7 @@
 (defonce ^:dynamic *repl-connected* false)
 (defonce ^:dynamic *repl-bootstrapped* false)
 (defonce ^:dynamic *last-connection-url* nil)
+(defonce ^:dynamic *last-session-id* nil)
 (defonce ^:dynamic *last-connect-fn-id* 0)
 (defonce ^:dynamic *ignore-next-client-change* false)
 
@@ -324,8 +325,9 @@
 ; We send a bootstrap message with request to enter CLJS REPL on user's behalf (google "nREPL piggieback" for more details).
 
 (defn make-boostrap-message [runtime-config runtime-tag]
-  (let [nrepl-config (-> (:nrepl-config runtime-config)
-                         (assoc :runtime-tag runtime-tag))]
+  (let [nrepl-config (cond-> (:nrepl-config runtime-config)
+                       true (assoc :runtime-tag runtime-tag)
+                       (some? *last-session-id*) (assoc :parent-session *last-session-id*))]
     {:op   "eval"
      :code (pr-str `(do
                       (~'require '~'dirac.nrepl)
@@ -345,6 +347,7 @@
               "done" (do
                        (log "Bootstrap done" response)
                        (set! *repl-bootstrapped* true)
+                       (set! *last-session-id* (:session response))
                        (update-repl-mode!)
                        {:op :bootstrap-done})
               (do
