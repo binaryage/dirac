@@ -6,7 +6,6 @@
             [oops.core :refer [oget oset! oset!+ ocall oapply]]
             [chromex.logging :refer-macros [log warn error info]]
             [cljs.repl]
-            [goog.async.Debouncer]
             [dirac.utils :refer-macros [runonce]]
             [dirac.console :refer [log-to-console!]]
             [dirac.implant.editor :as editor]
@@ -19,7 +18,8 @@
             [dirac.implant.munging :as munging]
             [dirac.implant.helpers :as helpers]
             [dirac.implant.reporter :as reporter]
-            [dirac.implant.repl :as repl]))
+            [dirac.implant.repl :as repl])
+  (:import goog.async.Debouncer))
 
 (defonce ^:dynamic *console-initialized* false)
 (defonce ^:dynamic *implant-initialized* false)
@@ -110,7 +110,7 @@
 
 (defn get-namespaces-cache-debouncer []
   (if-not *namespaces-cache-debouncer*
-    (set! *namespaces-cache-debouncer* (goog.async.Debouncer. report-namespaces-cache-cool-down! 1000)))
+    (set! *namespaces-cache-debouncer* (Debouncer. report-namespaces-cache-cool-down! 1000)))
   *namespaces-cache-debouncer*)
 
 (defn report-namespaces-cache-mutation! []
