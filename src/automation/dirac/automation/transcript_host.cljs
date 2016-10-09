@@ -189,13 +189,11 @@
 (defn replace-gensyms [s]
   (string/replace s #"--\d+" "--*gen-num*"))
 
-(def internal-error-re1 #"(Internal Dirac Error:.*?)\n(Dirac v.*?)\n(.*?)\n(.|[\r\n])*")
-(def internal-error-re2 #"(Internal Dirac Error:.*?)\n(Dirac v.*?)\n(.*?)$")
+(def internal-error-re1 #"Dirac v.*?, Chrome.*?\n")
 
 (defn replace-internal-error [s]
   (-> s
-      (string/replace internal-error-re1 "$1\n<elided info line>\n$3\n<elided body>")
-      (string/replace internal-error-re2 "$1\n<elided info line>\n$3")))
+      (string/replace internal-error-re1 "<elided dirac version info line>\n")))
 
 (defn transformer [console-output]
   (-> console-output
