@@ -3,7 +3,7 @@
             [environ.core :refer [env]]
             [dirac.logging :as logging]
             [dirac.test-lib.agent :as test-agent]
-            [dirac.test-lib.chrome-browser :refer [start-browser! stop-browser!]]
+            [dirac.test-lib.chrome-browser :refer [setup-browser! stop-browser!]]
             [dirac.test-lib.nrepl-server :as test-nrepl-server]))
 
 ; this test runner runs tests against real chrome browser using chrome driver
@@ -27,7 +27,7 @@
 (defn -main []
   (set-test-runner-present!)
   (setup-logging!)
-  (start-browser!)
+  (setup-browser!)
   (let [test-namespaces default-test-namespaces]
     (require-namespaces test-namespaces)                                                                                      ; we want to require namespaces dynamically for our loggging configuration to take effect
     (let [summary (apply run-tests test-namespaces)]
