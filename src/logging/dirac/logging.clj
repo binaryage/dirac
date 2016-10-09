@@ -10,7 +10,7 @@
 ; -- options ----------------------------------------------------------------------------------------------------------------
 
 (def root-options
-  (standard-layout :default))
+  (standard-layout :black))
 
 (def base-options
   (standard-layout :yellow))
