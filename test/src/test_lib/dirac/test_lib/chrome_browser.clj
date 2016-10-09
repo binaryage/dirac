@@ -165,8 +165,9 @@
 
 (defn reconnect-browser! []
   (wait-for-reconnection-cooldown!)
-  (let [options (assoc (chrome-driver/prepare-options true) :debugger-port (chrome-driver/get-debugging-port))]
-    (set-driver! (chrome-driver/prepare-chrome-driver options))))
+  (with-output-silencer
+    (let [options (assoc (chrome-driver/prepare-options true) :debugger-port (chrome-driver/get-debugging-port))]
+      (set-driver! (chrome-driver/prepare-chrome-driver options)))))
 
 (defn setup-browser! []
   (start-browser!)
