@@ -1233,7 +1233,7 @@ WebInspector.initializeUIUtils = function(document, themeSetting)
  */
 WebInspector.beautifyFunctionName = function(name)
 {
-    if (name && dirac.hasBeautifyFunctionNames) {
+    if (dirac.hasBeautifyFunctionNames) {
         return dirac.getFunctionName(name);
     }
 

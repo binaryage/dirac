@@ -13,7 +13,7 @@
         (<!* a/wait-for-devtools-match "setCurrentPanel: sources")
         (is (= (line-count (<!* a/scrape! :callstack-pane-functions)) 10))
         (<!* a/wait-for-match "* breakpoint-demo / dirac.tests.scenarios.breakpoint.core/breakpoint-demo")
-        (<!* a/wait-for-match "* (anonymous)")
+        (<!* a/wait-for-match "* λ")
         (<!* a/wait-for-match "* call-trigger! / dirac.automation.scenario/call-trigger!"))))
   (with-scenario "breakpoint"
     (testing "disabled :beautify-function-names feature"
