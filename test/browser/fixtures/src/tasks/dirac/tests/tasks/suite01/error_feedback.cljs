@@ -29,7 +29,4 @@
           (<!* a/trigger-internal-error-in-promise!)
           (<!* a/trigger-internal-error-as-error-log!)
           ; no existing log item should contain "Internal Dirac Error"
-          (let [logs-count (<!* a/scrape :count-log-items "log")]
-            (doseq [i (range logs-count)]
-              (let [log-content (<!* a/scrape :log-item-content "log" i)]
-                (is (nil? (re-find #"Internal Dirac Error" log-content)))))))))))
+          (is (zero? (count (<!* a/scrape :find-logs "Dirac Internal Error")))))))))

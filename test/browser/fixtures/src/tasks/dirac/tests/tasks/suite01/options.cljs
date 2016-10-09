@@ -27,9 +27,9 @@
         (with-devtools
           (<!* a/switch-to-console-panel!)
           (<!* a/trigger-internal-error-as-error-log!)
-          (is (= (<!* a/scrape :count-log-items "error") 1))
-          (let [error-content (utils/lines (<!* a/scrape :last-log-item-content "error"))
-                info-line (second error-content)]
+          (is (= (count (<!* a/scrape :find-logs "a fake error log")) 1))
+          (let [error-content (second (first (<!* a/scrape :find-logs-in-groups "a fake error log")))
+                info-line (first (utils/lines error-content))]
             (is (string/includes? info-line "Backend API/external"))
             (is (string/includes? info-line "Backend CSS/external"))
             (is (> (get-registrations info-line) 400))
@@ -40,9 +40,9 @@
         (with-devtools
           (<!* a/switch-to-console-panel!)
           (<!* a/trigger-internal-error-as-error-log!)
-          (is (= (<!* a/scrape :count-log-items "error") 1))
-          (let [error-content (utils/lines (<!* a/scrape :last-log-item-content "error"))
-                info-line (second error-content)]
+          (is (= (count (<!* a/scrape :find-logs "a fake error log")) 1))
+          (let [error-content (second (first (<!* a/scrape :find-logs-in-groups "a fake error log")))
+                info-line (first (utils/lines error-content))]
             (is (string/includes? info-line "Backend API/internal"))
             (is (string/includes? info-line "Backend CSS/internal"))
             (is (> (get-registrations info-line) 400))
