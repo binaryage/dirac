@@ -2,7 +2,7 @@
   (:require-macros [cljs.core.async.macros :refer [go go-loop]])
   (:require [cljs.core.async :refer [put! <! chan timeout alts! close!]]
             [chromex.logging :refer-macros [log warn error group group-end]]
-            [oops.core :refer [oget oset! ocall oapply]]
+            [oops.core :refer [oget oset! ocall oapply oset!+ ocall+ oget+ oapply+]]
             [cljs.reader :as reader]
             [dirac.settings :refer-macros [get-automation-entry-point-key]]
             [dirac.utils :as utils]
@@ -123,7 +123,7 @@
                   :unhandled-exception "triggerInternalError"
                   :unhandled-exception-in-promise "triggerInternalErrorInPromise"
                   :error-log "triggerInternalErrorAsErrorLog")
-        trigger-fn #(ocall (oget js/window "dirac") fn-name)]
+        trigger-fn #(ocall+ (oget js/window "dirac") fn-name)]
     (trigger-fn-and-wait! trigger-fn delay)))
 
 (defn get-frontend-url-params []
@@ -207,7 +207,7 @@
         (marshalled-callback command)))))
 
 (defn install-automation-support! []
-  (oset! js/window (str "!" (get-automation-entry-point-key)) automation-handler))
+  (oset!+ js/window (str "!" (get-automation-entry-point-key)) automation-handler))
 
 (defn install! []
   (when (options/should-automate?)
