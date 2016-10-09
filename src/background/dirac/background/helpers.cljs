@@ -176,8 +176,10 @@
 (defn install-intercom! [devtools-id handler]
   (let [matching-views (get-devtools-views devtools-id)]
     (if (= (count matching-views) 1)
-      (let [view (first matching-views)]
-        (oset!+ view (str "!" (get-dirac-intercom-key)) handler)
-        (when-let [flush-fn (oget+ view (str "?" (get-flush-pending-feedback-messages-key)))]
-          (flush-fn)))
+      (if-let [view (first matching-views)]
+        (do
+          (oset!+ view (str "!" (get-dirac-intercom-key)) handler)
+          (when-let [flush-fn (oget+ view (str "?" (get-flush-pending-feedback-messages-key)))]
+            (flush-fn)))
+        (error "devtools view unexpectedly null" devtools-id))
       (error "unable to install intercom from dirac extension to dirac frontend" devtools-id))))
