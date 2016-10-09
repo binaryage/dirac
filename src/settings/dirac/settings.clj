@@ -98,7 +98,8 @@
   BACKEND_TESTS_NREPL_SERVER_PORT)
 
 (defmacro get-backend-tests-nrepl-server-url []
-  (str "nrepl://" (get-backend-tests-nrepl-server-host) ":" (get-backend-tests-nrepl-server-port)))
+  (let [port (get-backend-tests-nrepl-server-port)]
+    (str "nrepl://" (get-backend-tests-nrepl-server-host) (if (some? port) (str ":" port)))))
 
 (defmacro get-backend-tests-nrepl-tunnel-port []
   BACKEND_TESTS_NREPL_TUNNEL_PORT)
@@ -107,7 +108,8 @@
   BACKEND_TESTS_NREPL_TUNNEL_HOST)
 
 (defmacro get-backend-tests-nrepl-tunnel-url []
-  (str "ws://" (get-backend-tests-nrepl-tunnel-host) ":" (get-backend-tests-nrepl-tunnel-port)))
+  (let [port (get-backend-tests-nrepl-tunnel-port)]
+    (str "ws://" (get-backend-tests-nrepl-tunnel-host) (if (some? port) (str ":" port)))))
 
 (defmacro get-backend-tests-weasel-host []
   BACKEND_TESTS_WEASEL_HOST)
@@ -215,7 +217,8 @@
   FIXTURES_SERVER_PORT)
 
 (defmacro get-fixtures-server-url []
-  (str "http://" (get-fixtures-server-host) ":" (get-fixtures-server-port)))
+  (let [port (get-fixtures-server-port)]
+    (str "http://" (get-fixtures-server-host) (if (some? port) (str ":" port)))))
 
 (defmacro get-signal-server-host []
   SIGNAL_SERVER_HOST)
@@ -224,7 +227,8 @@
   SIGNAL_SERVER_PORT)
 
 (defmacro get-signal-server-url []
-  (str "ws://" (get-signal-server-host) ":" (get-signal-server-port)))
+  (let [port (get-signal-server-port)]
+    (str "ws://" (get-signal-server-host) (if (some? port) (str ":" port)))))
 
 (defmacro get-chrome-remote-debugging-port []
   (if (some? chrome-remote-debugging-port)
