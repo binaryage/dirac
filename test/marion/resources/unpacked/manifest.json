@@ -22,14 +22,15 @@
         "<all_urls>"
       ],
       "js": [
-        "_compiled/content_script/content_script.js",
+        /* we have to rely on on a symlink */
+        "compiled/content_script/content_script.js",
         "content_script.js"
       ],
       "run_at": "document_start"
     }
   ],
   "web_accessible_resources": [
-    "_compiled/*"
+    ".compiled/*"
   ],
   "manifest_version": 2
 }

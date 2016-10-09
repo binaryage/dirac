@@ -387,8 +387,8 @@ Object.assign(window.dirac, (function() {
                 for (let url of sourceMap.sourceURLs()) {
                     // take only .cljs or .cljc urls, make sure url params and fragments get matched properly
                     // examples:
-                    //   http://localhost:9977/_compiled/demo/clojure/browser/event.cljs?rel=1463085025939
-                    //   http://localhost:9977/_compiled/demo/dirac_sample/demo.cljs?rel=1463085026941
+                    //   http://localhost:9977/.compiled/demo/clojure/browser/event.cljs?rel=1463085025939
+                    //   http://localhost:9977/.compiled/demo/dirac_sample/demo.cljs?rel=1463085026941
                     const parser = document.createElement('a');
                     parser.href = url;
                     if (parser.pathname.match(/\.clj.$/)) {

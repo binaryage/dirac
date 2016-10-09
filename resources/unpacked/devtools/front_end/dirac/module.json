@@ -7,12 +7,12 @@
     "scripts": [
         "keysim.js",
         "dirac.js",
-        "_compiled/implant/implant.js",
+        ".compiled/implant/implant.js",
         "require-implant.js"
     ],
     "skip_compilation": [
         "keysim.js",
-        "_compiled/implant/implant.js",
+        ".compiled/implant/implant.js",
         "require-implant.js"
     ],
     "resources": [

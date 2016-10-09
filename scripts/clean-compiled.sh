@@ -9,10 +9,10 @@ pushd "$ROOT"
 
 ./scripts/clear-notify.sh
 
-rm -rf "resources/unpacked/_compiled"
-rm -rf "resources/unpacked/devtools/front_end/dirac/_compiled"
-rm -rf "test/browser/fixtures/resources/_compiled"
-rm -rf "test/marion/resources/unpacked/_compiled"
+rm -rf "resources/unpacked/.compiled"
+rm -rf "resources/unpacked/devtools/front_end/dirac/.compiled"
+rm -rf "test/browser/fixtures/resources/.compiled"
+rm -rf "test/marion/resources/unpacked/.compiled"
 
 popd
 

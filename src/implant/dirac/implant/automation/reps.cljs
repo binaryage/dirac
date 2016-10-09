@@ -23,7 +23,7 @@
                   :children ({:tag     "div",
                               :class   "subtitle",
                               :content "core.cljs:10",
-                              :title   "http://localhost:9080/_compiled/tests/dirac/tests/scenarios/breakpoint/core.cljs:10"}
+                              :title   "http://localhost:9080/.compiled/tests/dirac/tests/scenarios/breakpoint/core.cljs:10"}
                               {:tag     "div",
                                :class   "title",
                                :content "breakpoint-demo",
@@ -34,7 +34,7 @@
                    :children ({:tag     "div",
                                :class   "subtitle",
                                :content "notifications.cljs:53",
-                               :title   "http://localhost:9080/_compiled/tests/dirac/automation/notifications.cljs:53"}
+                               :title   "http://localhost:9080/.compiled/tests/dirac/automation/notifications.cljs:53"}
                                {:tag     "div",
                                 :class   "title",
                                 :content "process-event!",

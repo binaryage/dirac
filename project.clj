@@ -90,11 +90,11 @@
   ;   see https://github.com/technomancy/leiningen/issues/1826
   ;   ! be careful with lein clean or tasks which do cleaning implicitly, this will wipe out all generated files
   :clean-targets ^{:protect false} ["target"
-                                    "resources/release/_compiled"
-                                    "resources/unpacked/_compiled"
-                                    "resources/unpacked/devtools/front_end/dirac/_compiled"
-                                    "test/browser/fixtures/resources/_compiled"
-                                    "test/marion/resources/unpacked/_compiled"]
+                                    "resources/release/.compiled"
+                                    "resources/unpacked/.compiled"
+                                    "resources/unpacked/devtools/front_end/dirac/.compiled"
+                                    "test/browser/fixtures/resources/.compiled"
+                                    "test/marion/resources/unpacked/.compiled"]
 
   :cljsbuild {:builds {}}                                                                                                     ; prevent https://github.com/emezeske/lein-cljsbuild/issues/413
 
@@ -167,8 +167,8 @@
                                              "src/runtime"
                                              "src/shared"
                                              "test/browser/fixtures/src/tasks"]
-                            :compiler       {:output-to            "test/browser/fixtures/resources/_compiled/tasks/main.js"
-                                             :output-dir           "test/browser/fixtures/resources/_compiled/tasks"
+                            :compiler       {:output-to            "test/browser/fixtures/resources/.compiled/tasks/main.js"
+                                             :output-dir           "test/browser/fixtures/resources/.compiled/tasks"
                                              :optimizations        :none                                                      ; we rely on optimizations :none in test runner
                                              :external-config      {:devtools/config {:features-to-install :all}}
                                              :source-map           true
@@ -186,8 +186,8 @@
                                              "src/runtime"
                                              "src/shared"
                                              "test/browser/fixtures/src/scenarios01"]
-                            :compiler       {:output-to            "test/browser/fixtures/resources/_compiled/scenarios01/main.js"
-                                             :output-dir           "test/browser/fixtures/resources/_compiled/scenarios01"
+                            :compiler       {:output-to            "test/browser/fixtures/resources/.compiled/scenarios01/main.js"
+                                             :output-dir           "test/browser/fixtures/resources/.compiled/scenarios01"
                                              :optimizations        :none
                                              :source-map           true
                                              :source-map-timestamp true}}
@@ -199,9 +199,9 @@
                                              "src/runtime"
                                              "src/shared"
                                              "test/browser/fixtures/src/scenarios02"]
-                            :compiler       {:output-to            "test/browser/fixtures/resources/_compiled/scenarios02/main.js"
-                                             :output-dir           "test/browser/fixtures/resources/_compiled/scenarios02"
-                                             :asset-path           "../_compiled/scenarios02"
+                            :compiler       {:output-to            "test/browser/fixtures/resources/.compiled/scenarios02/main.js"
+                                             :output-dir           "test/browser/fixtures/resources/.compiled/scenarios02"
+                                             :asset-path           "../.compiled/scenarios02"
                                              :optimizations        :none
                                              :main                 dirac.tests.scenarios.normal-via-preloads
                                              :preloads             [dirac.runtime.preload]
@@ -222,8 +222,8 @@
                             :source-paths   ["src/settings"
                                              "src/shared"
                                              "test/marion/src/background"]
-                            :compiler       {:output-to       "test/marion/resources/unpacked/_compiled/background/background.js"
-                                             :output-dir      "test/marion/resources/unpacked/_compiled/background"
+                            :compiler       {:output-to       "test/marion/resources/unpacked/.compiled/background/background.js"
+                                             :output-dir      "test/marion/resources/unpacked/.compiled/background"
                                              :external-config {:devtools/config {:features-to-install           :all
                                                                                  :dont-detect-custom-formatters true}}
                                              :optimizations   :none
@@ -234,12 +234,12 @@
                             :source-paths   ["src/settings"
                                              "src/shared"
                                              "test/marion/src/content_script"]
-                            :compiler       {:output-to              "test/marion/resources/unpacked/_compiled/content_script/content_script.js"
-                                             :output-dir             "test/marion/resources/unpacked/_compiled/content_script"
+                            :compiler       {:output-to              "test/marion/resources/unpacked/.compiled/content_script/content_script.js"
+                                             :output-dir             "test/marion/resources/unpacked/.compiled/content_script"
                                              :closure-output-charset "US-ASCII"
                                              :optimizations          :whitespace                                              ; content scripts cannot do eval / load script dynamically
                                              :pretty-print           true
-                                             :source-map             "test/marion/resources/unpacked/_compiled/content_script/content_script.js.map"}}}}}
+                                             :source-map             "test/marion/resources/unpacked/.compiled/content_script/content_script.js.map"}}}}}
 
              :dirac-figwheel
              {:figwheel {:server-port          7100
@@ -256,8 +256,8 @@
                                              "src/shared"
                                              "src/project"
                                              "src/implant"]
-                            :compiler       {:output-to       "resources/unpacked/devtools/front_end/dirac/_compiled/implant/implant.js"
-                                             :output-dir      "resources/unpacked/devtools/front_end/dirac/_compiled/implant"
+                            :compiler       {:output-to       "resources/unpacked/devtools/front_end/dirac/.compiled/implant/implant.js"
+                                             :output-dir      "resources/unpacked/devtools/front_end/dirac/.compiled/implant"
                                              :external-config {:devtools/config {:features-to-install           :all
                                                                                  :dont-detect-custom-formatters true}}
                                              :optimizations   :none
@@ -271,8 +271,8 @@
                                              "src/shared"
                                              "src/project"
                                              "src/background"]
-                            :compiler       {:output-to       "resources/unpacked/_compiled/background/dirac.js"
-                                             :output-dir      "resources/unpacked/_compiled/background"
+                            :compiler       {:output-to       "resources/unpacked/.compiled/background/dirac.js"
+                                             :output-dir      "resources/unpacked/.compiled/background"
                                              :external-config {:devtools/config {:features-to-install           :all
                                                                                  :dont-detect-custom-formatters true}}
                                              :optimizations   :none
@@ -285,8 +285,8 @@
                                              "src/shared"
                                              "src/project"
                                              "src/options"]
-                            :compiler       {:output-to       "resources/unpacked/_compiled/options/dirac.js"
-                                             :output-dir      "resources/unpacked/_compiled/options"
+                            :compiler       {:output-to       "resources/unpacked/.compiled/options/dirac.js"
+                                             :output-dir      "resources/unpacked/.compiled/options"
                                              :external-config {:devtools/config {:features-to-install           :all
                                                                                  :dont-detect-custom-formatters true}}
                                              :optimizations   :none
@@ -302,8 +302,8 @@
                                            "src/shared"
                                            "src/project"
                                            "src/implant"]
-                            :compiler     {:output-to     "target/resources/release/devtools/front_end/dirac/_compiled/implant/implant.js"
-                                           :output-dir    "target/resources/release/devtools/front_end/dirac/_compiled/implant"
+                            :compiler     {:output-to     "target/resources/release/devtools/front_end/dirac/.compiled/implant/implant.js"
+                                           :output-dir    "target/resources/release/devtools/front_end/dirac/.compiled/implant"
                                            :optimizations :advanced
                                            :elide-asserts true}}
                            :dirac-background
@@ -312,8 +312,8 @@
                                            "src/shared"
                                            "src/project"
                                            "src/background"]
-                            :compiler     {:output-to     "target/resources/release/_compiled/background.js"
-                                           :output-dir    "target/resources/release/_compiled/background"
+                            :compiler     {:output-to     "target/resources/release/.compiled/background.js"
+                                           :output-dir    "target/resources/release/.compiled/background"
                                            :optimizations :advanced
                                            :elide-asserts true}}
                            :dirac-options
@@ -322,8 +322,8 @@
                                            "src/shared"
                                            "src/project"
                                            "src/options"]
-                            :compiler     {:output-to     "target/resources/release/_compiled/options.js"
-                                           :output-dir    "target/resources/release/_compiled/options"
+                            :compiler     {:output-to     "target/resources/release/.compiled/options.js"
+                                           :output-dir    "target/resources/release/.compiled/options"
                                            :optimizations :advanced
                                            :elide-asserts true}}}}}
 
