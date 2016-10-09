@@ -116,14 +116,17 @@
 
 ; -- console UI -------------------------------------------------------------------------------------------------------------
 
+(defn find-all-console-log-elements []
+  (dom/query-selector "html /deep/ .console-message-wrapper"))
+
 (defn find-console-log-element [kind n]
-  (nth (dom/query-selector (str "html /deep/ .console-" (or kind "log") "-level")) n nil))
+  (nth (dom/query-selector (str "html /deep/ .console-message-wrapper.console-" (or kind "log") "-level")) n nil))
 
 (defn find-last-console-log-element [kind]
-  (last (dom/query-selector (str "html /deep/ .console-" (or kind "log") "-level"))))
+  (last (dom/query-selector (str "html /deep/ .console-message-wrapper.console-" (or kind "log") "-level"))))
 
 (defn count-console-log-elements [kind]
-  (count (dom/query-selector (str "html /deep/ .console-" (or kind "log") "-level"))))
+  (count (dom/query-selector (str "html /deep/ .console-message-wrapper.console-" (or kind "log") "-level"))))
 
 (defn find-stack-preview-container-in-console-error-element [error-el]
   (if (some? error-el)
@@ -136,6 +139,18 @@
 (defn print-function-name-item [item-rep]
   (let [{:keys [content]} item-rep]
     content))
+
+(defn filter-elements-by-substr [substr els]
+  (let [texts (map (comp get-deep-text-content find-console-message-text-element) els)]
+    (if (nil? substr)
+      texts
+      (filter #(string/includes? % substr) texts))))
+
+(defn filter-elements-by-re [re els]
+  (let [texts (map (comp get-deep-text-content find-console-message-text-element) els)]
+    (if (nil? re)
+      texts
+      (filter #(re-matches re %) texts))))
 
 ; -- general interface for :scrape automation action ------------------------------------------------------------------------
 
@@ -189,3 +204,10 @@
 (defmethod scrape :count-log-items [_ & [kind]]
   (safe->> (count-console-log-elements kind)))
 
+(defmethod scrape :find-log-items-by-substr [_ & [substr]]
+  (safe->> (find-all-console-log-elements)
+           (filter-elements-by-substr substr)))
+
+(defmethod scrape :find-log-items-by-re [_ & [re]]
+  (safe->> (find-all-console-log-elements)
+           (filter-elements-by-re re)))
