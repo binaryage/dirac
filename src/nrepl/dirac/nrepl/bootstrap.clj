@@ -33,6 +33,10 @@
     (sessions/add-dirac-session-descriptor! session transport runtime-tag)
     (send-bootstrap-info! nrepl-message weasel-url)))
 
+(defn preferred-compiler-selection [sticky? dirac-nrepl-config]
+  (if sticky?
+    (state/get-selected-compiler-of-dead-session (:parent-session dirac-nrepl-config))))                                      ; attempt to stick to previous compiler selection
+
 (defn start-cljs-repl! [nrepl-message dirac-nrepl-config repl-env repl-options]
   (log/trace "start-cljs-repl!\n"
              "dirac-nrepl-config:\n"
@@ -49,9 +53,13 @@
         initial-session-meta (state/get-session-meta)]
     (try
       (state/set-session-cljs-ns! 'cljs.user)
-      (let [preferred-compiler (or (:preferred-compiler dirac-nrepl-config) "dirac/new")]
-        (if (= preferred-compiler "dirac/new")
-          (utils/start-new-cljs-compiler-repl-environment! nrepl-message dirac-nrepl-config repl-env repl-options)
+      (let [preferred-compiler (or (:preferred-compiler dirac-nrepl-config) "dirac/sticky")
+            want-new? (= preferred-compiler "dirac/new")
+            want-sticky? (= preferred-compiler "dirac/sticky")]
+        (if (or want-new? want-sticky?)
+          (do
+            (utils/start-new-cljs-compiler-repl-environment! nrepl-message dirac-nrepl-config repl-env repl-options)
+            (state/set-session-selected-compiler! (preferred-compiler-selection want-sticky? dirac-nrepl-config)))
           (state/set-session-selected-compiler! preferred-compiler)))                                                         ; TODO: validate that preferred compiler exists
       (state/set-session-dirac-nrepl-config! dirac-nrepl-config)
       (state/set-session-cljs-repl-env! repl-env)

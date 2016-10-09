@@ -166,7 +166,7 @@
         (error-println (messages/make-invalid-compiler-error-msg user-input))
         (let [session (sessions/get-current-retargeted-session)]
           (warn-about-retargeting-if-needed session)
-          (compilers/select-compiler! session selected-compiler)
+          (state/set-session-selected-compiler! session selected-compiler)
           (let [matched-compiler-descriptor (compilers/find-available-matching-compiler-descriptor session selected-compiler)]
             (if (nil? matched-compiler-descriptor)
               (error-println (messages/make-no-compilers-msg selected-compiler))))
@@ -199,7 +199,7 @@
               (do
                 (println (messages/make-report-killed-compilers-msg user-input killed-compiler-ids))
                 (if-not (compilers/get-selected-compiler-id session)                                                          ; switch to first available compiler the current one got killed
-                  (compilers/select-compiler! session nil))                                                                   ; note that this still might not guarantee valid compiler selection, the compiler list might be empty
+                  (state/set-session-selected-compiler! session nil))                                                         ; note that this still might not guarantee valid compiler selection, the compiler list might be empty
                 (state/send-response! (utils/prepare-current-env-info-response))))
             (if-not (empty? invalid-compiler-ids)
               (error-println (messages/make-report-invalid-compilers-not-killed-msg user-input invalid-compiler-ids))))))))

@@ -60,7 +60,7 @@
                                  ; begin with, because we can't reliably replicate what
                                  ; cljs.repl/repl* does in terms of options munging
                                  :init (fn []
-                                         (compilers/capture-current-compiler-and-select-it! session))
+                                         (compilers/capture-current-compiler! session))
                                  :print (fn [& _]
                                           (log/trace "print-fn (no-op)")))                                                    ; silence any responses
         response-fn (partial helpers/send-response! nrepl-message)]

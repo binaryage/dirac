@@ -12,9 +12,6 @@
   (let [short-session-id (sessions/humanize-session-id session-id)]
     (str "dirac" "/" short-session-id "." number)))
 
-(defn select-compiler! [session id]
-  (state/set-session-selected-compiler! session id))
-
 ; -- compiler management ----------------------------------------------------------------------------------------------------
 
 (defn make-compiler-descriptor [id compiler-env]
@@ -131,11 +128,10 @@
     (state/set-session-last-compiler-number! session next-number)
     next-number))
 
-(defn capture-current-compiler-and-select-it! [session]
+(defn capture-current-compiler! [session]
   (let [session-id (state/get-session-id)]
     (log/trace "capture-current-compiler-and-select-it!" session-id)
     (assert cljs-env/*compiler*)
     (let [compiler-id (make-compiler-id session-id (get-next-compiler-number-for-session! session))
           compiler-descriptor (make-compiler-descriptor compiler-id cljs-env/*compiler*)]
-      (register-compiler-descriptor! session compiler-descriptor)
-      (select-compiler! session (get-compiler-descriptor-id compiler-descriptor)))))
+      (register-compiler-descriptor! session compiler-descriptor))))

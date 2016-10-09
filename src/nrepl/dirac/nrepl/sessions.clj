@@ -50,11 +50,13 @@
     (log/error "attempt to add duplicit session descriptor:\n" (debug/pprint-session session))))
 
 (defn remove-dirac-session-descriptor! [session]
-  (log/debug "remove-dirac-session-descriptor!" (get-session-id session))
+  (let [session-id (get-session-id session)]
+  (log/debug "remove-dirac-session-descriptor!" )
   (log/trace (debug/pprint-session session))
+  (state/register-selected-compiler-for-dead-session! session-id (state/get-session-selected-compiler session))
   (if-let [session-descriptor (find-dirac-session-descriptor session)]
     (swap! state/session-descriptors #(remove #{session-descriptor} %))
-    (log/error "attempt to remove unknown session descriptor:\n" (debug/pprint-session session))))
+    (log/error "attempt to remove unknown session descriptor:\n" (debug/pprint-session session)))))
 
 (defn find-matching-dirac-session-descriptors [matcher]
   (let [descriptors @state/session-descriptors

@@ -1,10 +1,14 @@
 (ns dirac.nrepl.state
-  (:require [dirac.nrepl.helpers :as helpers]))
+  (:require [dirac.nrepl.helpers :as helpers]
+            [clojure.tools.logging :as log]))
 
 ; -- global state -----------------------------------------------------------------------------------------------------------
 
 ; here we keep a map of all bootstrapped Dirac sessions
 (def session-descriptors (atom '()))
+
+; this map will grow indefinitely, it is just a list of strings, not worth recollecting
+(def selected-compilers-of-dead-sessions (atom {}))                                                                           ; session-id -> compiler-id matching strategy (string)
 
 ; here we maintain a list of in-progress jobs which want to be echo-ed back to joined-session
 (def observed-jobs (atom {}))
@@ -103,6 +107,7 @@
   ([selected-compiler] (set-session-selected-compiler! *current-session* selected-compiler))
   ([session selected-compiler]
    (assert session)
+   (log/debug "setting session selected compiler" (get-session-id session) selected-compiler)
    (alter-meta! session assoc ::selected-compiler selected-compiler)))
 
 (defn get-session-compiler-descriptors
@@ -189,3 +194,9 @@
    (assert session)
    (reset-meta! session meta)))
 
+(defn register-selected-compiler-for-dead-session! [session-id selected-compiler]
+  (log/debug (str "register-selected-compiler-for-dead-session! " session-id " => " (pr-str selected-compiler)))
+  (swap! selected-compilers-of-dead-sessions assoc session-id selected-compiler))
+
+(defn get-selected-compiler-of-dead-session [session-id]
+  (get @selected-compilers-of-dead-sessions session-id nil))
