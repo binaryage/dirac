@@ -116,6 +116,9 @@
 
 ; -- console UI -------------------------------------------------------------------------------------------------------------
 
+(defn find-console-log-element [kind n]
+  (nth (dom/query-selector (str "html /deep/ .console-" (or kind "log") "-level")) n nil))
+
 (defn find-last-console-log-element [kind]
   (last (dom/query-selector (str "html /deep/ .console-" (or kind "log") "-level"))))
 
@@ -173,6 +176,11 @@
            (map print-function-name-item)
            (print-list)))
 
+(defmethod scrape :log-item-content [_ & [kind n]]
+  (safe->> (find-console-log-element kind n)
+           (find-console-message-text-element)
+           (get-deep-text-content)))
+
 (defmethod scrape :last-log-item-content [_ & [kind]]
   (safe->> (find-last-console-log-element kind)
            (find-console-message-text-element)
@@ -180,3 +188,4 @@
 
 (defmethod scrape :count-log-items [_ & [kind]]
   (safe->> (count-console-log-elements kind)))
+
