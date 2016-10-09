@@ -6,6 +6,9 @@
 
 ; -- DOM access -------------------------------------------------------------------------------------------------------------
 
+(defn element? [v]
+  (instance? js/HTMLElement v))
+
 (defn query-selector
   ([selector] (.querySelectorAll js/document selector))
   ([element selector] (.querySelectorAll element selector)))
@@ -30,3 +33,5 @@
 (defn get-title [el]
   (oget el "?title"))
 
+(defn get-next-sibling [el]
+  (oget el "nextSibling"))
