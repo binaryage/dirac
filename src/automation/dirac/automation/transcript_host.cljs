@@ -195,13 +195,17 @@
   (-> s
       (string/replace internal-error-re1 "<elided dirac version info line>\n")))
 
+(defn replace-chrome-extension-urls [s]
+  (string/replace s #"chrome-extension://.*?/" "chrome-extension://<extension-id>/"))
+
 (defn transformer [console-output]
   (-> console-output
       replace-shortened-urls
       replace-rel-url-params
       replace-gensyms
       replace-internal-error
-      replace-dirac-repl-ids))
+      replace-dirac-repl-ids
+      replace-chrome-extension-urls))
 
 (defn process-default-state! [label text]
   (cond
