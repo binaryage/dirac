@@ -15,7 +15,6 @@
                  [org.clojure/tools.nrepl "0.2.12"]
                  [binaryage/oops "0.4.0"]
                  [http-kit "2.2.0"]
-                 [clj-logging-config "1.9.12"]
                  [version-clj "0.1.2"]
                  [environ "1.1.0"]
                  [clansi "1.0.0"]
@@ -35,6 +34,7 @@
                  [com.rpl/specter "0.12.0" :scope "test"]
                  [org.clojure/tools.namespace "0.3.0-alpha3" :scope "test"]
                  [org.clojure/tools.reader "1.0.0-beta1" :scope "test"]
+                 [clj-logging-config "1.9.12" :scope "test"]
 
                  [http.async.client "1.2.0" :scope "test"]
                  [org.slf4j/slf4j-log4j12 "1.7.21" :scope "test"]
