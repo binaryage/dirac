@@ -187,17 +187,6 @@ WebInspector.ConsoleView = function()
         var statusContentElement = statusElement.createChild("div", "status-content");
         statusContentElement.tabIndex = 0; // focusable for page-up/down
 
-        diracPromptElement.focus = function() {
-            // delegate focus calls to code mirror or status
-            if (diracPromptElement.classList.contains("dirac-prompt-mode-edit")) {
-                diracPromptCodeMirrorInstance.focus();
-                diracPromptCodeMirrorInstance.refresh(); // HACK: this is needed to properly display cursor in empty codemirror,
-                                                         // http://stackoverflow.com/questions/10575833/codemirror-has-content-but-wont-display-until-keypress
-            } else {
-                statusContentElement.focus();
-            }
-        };
-
         this._diracPromptDescriptor = {id: "dirac",
             prompt: diracPrompt,
             element: diracPromptElement,

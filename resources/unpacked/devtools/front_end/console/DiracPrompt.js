@@ -36,6 +36,8 @@ WebInspector.DiracPromptWithHistory.prototype = {
 
     focus: function() {
         this._codeMirror.focus();
+        // HACK: this is needed to properly display cursor in empty codemirror: http://stackoverflow.com/questions/10575833/codemirror-has-content-but-wont-display-until-keypress
+        this._codeMirror.refresh();
     },
 
     setCurrentClojureScriptNamespace: function(ns) {
