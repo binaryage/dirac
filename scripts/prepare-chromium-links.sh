@@ -21,7 +21,7 @@ echo "----"
 
 platforms="Mac Linux_x64 Win Win_x64"
 for platform in ${platforms}; do
-  LINK=`./scripts/lookup-chrome-link.sh ${platform} ${POSITION} | tail -n1`
+  LINK=`./scripts/lookup-chromium-link.sh ${platform} ${POSITION} | tail -n1`
   echo "[$platform](${LINK})"
 done
 
