@@ -71,21 +71,20 @@
         (state/set-session-meta! initial-session-meta)                                                                        ; restore session to initial state
         (throw e)))))
 
-(defn bootstrap! [& [config]]
+(defn bootstrap! [config]
   (if-let [nrepl-message (state/get-last-seen-nrepl-message)]
     (try
-      (let [effective-nrepl-config (config/get-effective-config config)
-            weasel-repl-options (:weasel-repl effective-nrepl-config)
-            runtime-tag (:runtime-tag effective-nrepl-config)
+      (let [weasel-repl-options (:weasel-repl config)
+            runtime-tag (:runtime-tag config)
             after-launch! (fn [repl-env weasel-url]
                             (log/trace "after-launch handler called with repl-env:\n" (lib-utils/pp repl-env))
                             (weasel-server-started! nrepl-message weasel-url runtime-tag))
             repl-options (assoc weasel-repl-options :after-launch after-launch!)
             repl-env (weasel-server/make-weasel-repl-env repl-options)
-            cljs-repl-options (:cljs-repl-options effective-nrepl-config)]
+            cljs-repl-options (:cljs-repl-options config)]
         (assert (not (state/has-session?)))
         (state/ensure-session (:session nrepl-message)
-          (start-cljs-repl! nrepl-message effective-nrepl-config repl-env cljs-repl-options)))
+          (start-cljs-repl! nrepl-message config repl-env cljs-repl-options)))
       (catch Throwable e
         (log/error "Unable to boostrap Dirac ClojureScript REPL:\n" e)
         (helpers/send-response! nrepl-message (protocol/prepare-bootstrap-error-response (helpers/capture-exception-details e)))
