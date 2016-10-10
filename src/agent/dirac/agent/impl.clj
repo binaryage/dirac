@@ -1,7 +1,6 @@
 (ns dirac.agent.impl
   (:require [clojure.core.async :refer [chan <!! <! >!! put! alts!! timeout close! go go-loop]]
             [clojure.tools.logging :as log]
-            [dirac.logging :as logging]
             [dirac.agent.config :as config]
             [dirac.agent.version :refer [version]]
             [dirac.lib.nrepl-tunnel :as nrepl-tunnel]
@@ -82,9 +81,8 @@
   (reset! current-agent (create-agent! config))
   (live?))
 
-(defn boot-now! [config]
-  (let [effective-config (config/get-effective-config config)
-        {:keys [max-boot-trials delay-between-boot-trials initial-boot-delay]} effective-config]
+(defn boot-now!* [config]
+  (let [{:keys [max-boot-trials delay-between-boot-trials initial-boot-delay]} config]
     (if (pos? initial-boot-delay)
       (Thread/sleep initial-boot-delay))
     (loop [trial 1]
@@ -114,12 +112,18 @@
             ::retry (do
                       (Thread/sleep delay-between-boot-trials)
                       (recur (inc trial)))))
-        (let [{:keys [host port]} (:nrepl-server effective-config)
+        (let [{:keys [host port]} (:nrepl-server config)
               nrepl-server-url (utils/get-nrepl-server-url host port)
               trial-period-in-seconds (/ (* max-boot-trials delay-between-boot-trials) 1000)
               trial-display (format "%.2f" (double trial-period-in-seconds))]
           (log/error (failed-to-start-dirac-agent-message max-boot-trials trial-display nrepl-server-url))
           false)))))
+
+(defn boot-now! [& [config]]
+  (let [effective-config (config/get-effective-config config)]
+    (log/info "Booting Dirac Agent (on current thread)...")
+    (log/debug "effective config:\n" (utils/pp effective-config))
+    (boot-now!* effective-config)))
 
 ; -- entry point ------------------------------------------------------------------------------------------------------------
 
@@ -133,8 +137,6 @@
   Actually it waits for this init code to fully evaluate before starting nREPL server."
   [& [config]]
   (let [effective-config (config/get-effective-config config)]
-    (if-not (:skip-logging-setup effective-config)
-      (logging/setup! effective-config))
     (log/info "Booting Dirac Agent...")
     (log/debug "effective config:\n" (utils/pp effective-config))
-    (future (boot-now! config))))
+    (future (boot-now!* effective-config))))
