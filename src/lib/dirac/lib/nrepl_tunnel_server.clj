@@ -197,14 +197,14 @@
   (process-message server client message))
 
 (defn on-incoming-client [server _ws-server client]
-  (log/info (str server) "A new client" (str client) "connected")
+  (log/debug (str server) "A new client" (str client) "connected")
   (open-client-session server client))
 
 (defn on-leaving-client [server _ws-server client]
-  (log/info (str server) "Client" (str client) "disconnected")
+  (log/debug (str server) "Client" (str client) "disconnected")
   (teardown-client! server client)
   (remove-client! server client)
-  (log/debug (str client) (str "Removed client from " (str server))))
+  (log/trace (str client) (str "Removed client from " (str server))))
 
 (defn create! [tunnel options]
   (let [server (make-server tunnel)
@@ -215,8 +215,8 @@
                                        :on-incoming-client (partial on-incoming-client server)
                                        :on-leaving-client  (partial on-leaving-client server)})]
     (set-ws-server! server (ws-server/create! server-options))
-    (log/info (str server) (str "Started Dirac nREPL tunnel server at " (get-server-url server)))
-    (log/debug "Created" (str server) (utils/pp options))
+    (log/debug (str server) (str "Started Dirac nREPL tunnel server at " (get-server-url server)))
+    (log/trace "Created" (str server) (utils/pp options))
     server))
 
 (defn disconnect-all-clients! [server]
