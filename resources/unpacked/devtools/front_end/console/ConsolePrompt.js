@@ -242,8 +242,14 @@ WebInspector.ConsolePrompt.prototype = {
      */
     focus: function()
     {
-        if (this._editor)
+        if (this._editor) {
             this._editor.widget().focus();
+            // HACK: this is needed to properly display cursor in empty codemirror:
+            // http://stackoverflow.com/questions/10575833/codemirror-has-content-but-wont-display-until-keypress
+            // https://github.com/codemirror/CodeMirror/issues/877
+            this._editor.focus();
+            this._editor.refresh();
+        }
         else
             this.element.focus();
     },
