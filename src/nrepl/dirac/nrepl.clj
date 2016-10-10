@@ -1,7 +1,6 @@
 (ns dirac.nrepl
   (:require [clojure.tools.nrepl.middleware :refer [set-descriptor!]]
             [clojure.tools.logging :as log]
-            [dirac.logging :as logging]
             [dirac.nrepl.piggieback :as piggieback]
             [dirac.nrepl.config :as config]
             [dirac.nrepl.bootstrap :as bootstrap]
@@ -24,8 +23,6 @@
 
 (defn boot-dirac-repl! [& [config]]
   (let [effective-config (config/get-effective-config config)]
-    (if-not (:skip-logging-setup effective-config)
-      (logging/setup! effective-config))
-    (log/debug "boot-dirac-repl! with effective config:\n" (utils/pp effective-config)))
-  (bootstrap/bootstrap! config)
+    (log/debug "boot-dirac-repl! with effective config:\n" (utils/pp effective-config))
+    (bootstrap/bootstrap! effective-config))
   true)
