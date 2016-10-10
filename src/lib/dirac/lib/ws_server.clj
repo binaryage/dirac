@@ -1,10 +1,9 @@
 ; taken from https://github.com/tomjakubowski/weasel/tree/8bfeb29dbaf903e299b2a3296caed52b5761318f
 (ns dirac.lib.ws-server
-  (:require [org.httpkit.server :as http]
-            [clojure.core.async :as core-async :refer [chan <!! <! >!! put! alts!! timeout go go-loop]]
+  (:require [clojure.core.async :as core-async :refer [chan <!! <! >!! put! alts!! timeout go go-loop]]
             [clojure.tools.logging :as log]
-            [dirac.lib.utils :as utils]
-            [dirac.logging :as logging])
+            [org.httpkit.server :as http]
+            [dirac.lib.utils :as utils])
   (:import (java.net BindException)))
 
 (defrecord WebSocketServer [id options http-server first-client-promise clients]
@@ -238,7 +237,7 @@
           (recur (inc port))
           (do
             (set-http-server! server http-server)
-            (log/debug "Created" (str server) (logging/pprint options))
+            (log/debug "Created" (str server) (utils/pp options))
             server))))))
 
 (defn destroy! [server & [timeout]]

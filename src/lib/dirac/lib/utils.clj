@@ -10,8 +10,11 @@
 (defn get-ws-url [host port]
   (str "ws://" host ":" port))
 
-(defn pp [v]
-  (with-out-str (pprint v)))
+(defn pp [data & [level length]]
+  (with-out-str
+    (binding [*print-level* (or level 5)                                                                                      ; we have to be careful here, data might contain circular references
+              *print-length* (or length 200)]
+      (pprint data))))
 
 (defn first-part [s]
   (first (string/split s #"-" 2)))

@@ -2,7 +2,6 @@
   "A functionality related to joined Dirac sessions."
   (:require [clojure.tools.nrepl.transport :as transport]
             [clojure.tools.logging :as log]
-            [dirac.logging :as logging]
             [dirac.nrepl.version :refer [version]]
             [dirac.nrepl.sessions :as sessions]
             [dirac.nrepl.helpers :as helpers]
@@ -10,7 +9,8 @@
             [dirac.nrepl.messages :as messages]
             [clojure.string :as string]
             [dirac.nrepl.special :as special]
-            [dirac.nrepl.protocol :as protocol]))
+            [dirac.nrepl.protocol :as protocol]
+            [dirac.lib.utils :as utils]))
 
 ; -- handlers for middleware operations -------------------------------------------------------------------------------------
 
@@ -58,7 +58,7 @@
        (= ":cljs/quit" (string/trim (:code nrepl-message)))))
 
 (defn forward-message-to-joined-session! [nrepl-message]
-  (log/trace "forward-message-to-joined-session!" (logging/pprint nrepl-message))
+  (log/trace "forward-message-to-joined-session!" (utils/pp nrepl-message))
   (if (is-eval-cljs-quit? nrepl-message)
     (special/issue-dirac-special-command! nrepl-message ":disjoin")
     (let [{:keys [id session transport]} nrepl-message]

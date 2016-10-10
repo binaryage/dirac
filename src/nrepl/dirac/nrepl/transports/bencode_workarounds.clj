@@ -1,7 +1,6 @@
 (ns dirac.nrepl.transports.bencode-workarounds
   (:require [clojure.tools.nrepl.transport :as nrepl-transport]
             [clojure.tools.logging :as log]
-            [dirac.logging :as logging]
             [dirac.lib.bencode-hell :as bencode-hell]
             [dirac.nrepl.debug :as debug])
   (:import (clojure.tools.nrepl.transport Transport)))

@@ -1,6 +1,5 @@
 (ns dirac.nrepl.sessions
   (:require [clojure.tools.logging :as log]
-            [dirac.logging :as logging]
             [dirac.nrepl.state :as state]
             [dirac.nrepl.debug :as debug]
             [clojure.tools.nrepl.middleware.interruptible-eval :as nrepl-ieval]

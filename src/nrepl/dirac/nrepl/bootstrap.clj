@@ -2,7 +2,6 @@
   (:require [clojure.tools.nrepl.middleware :refer [set-descriptor!]]
             [clojure.tools.logging :as log]
             [dirac.lib.weasel-server :as weasel-server]
-            [dirac.logging :as logging]
             [dirac.nrepl.piggieback :as piggieback]
             [dirac.nrepl.config :as config]
             [dirac.nrepl.sessions :as sessions]
@@ -11,7 +10,8 @@
             [dirac.nrepl.messages :as messages]
             [dirac.nrepl.helpers :as helpers]
             [dirac.nrepl.protocol :as protocol]
-            [dirac.nrepl.utils :as utils]))
+            [dirac.nrepl.utils :as utils]
+            [dirac.lib.utils :as lib-utils]))
 
 ; -- support for booting into CLJS REPL -------------------------------------------------------------------------------------
 
@@ -40,11 +40,11 @@
 (defn start-cljs-repl! [nrepl-message dirac-nrepl-config repl-env repl-options]
   (log/trace "start-cljs-repl!\n"
              "dirac-nrepl-config:\n"
-             (logging/pprint dirac-nrepl-config)
+             (lib-utils/pp dirac-nrepl-config)
              "repl-env:\n"
-             (logging/pprint repl-env)
+             (lib-utils/pp repl-env)
              "repl-options:\n"
-             (logging/pprint repl-options))
+             (lib-utils/pp repl-options))
   (debug/log-stack-trace!)
   (let [; WARNING
         ; we are being called via boot-dirac-repl! which has been invoked outside our middleware
@@ -78,7 +78,7 @@
             weasel-repl-options (:weasel-repl effective-nrepl-config)
             runtime-tag (:runtime-tag effective-nrepl-config)
             after-launch! (fn [repl-env weasel-url]
-                            (log/trace "after-launch handler called with repl-env:\n" (logging/pprint repl-env))
+                            (log/trace "after-launch handler called with repl-env:\n" (lib-utils/pp repl-env))
                             (weasel-server-started! nrepl-message weasel-url runtime-tag))
             repl-options (assoc weasel-repl-options :after-launch after-launch!)
             repl-env (weasel-server/make-weasel-repl-env repl-options)

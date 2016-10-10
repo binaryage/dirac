@@ -136,5 +136,5 @@
     (if-not (:skip-logging-setup effective-config)
       (logging/setup! effective-config))
     (log/info "Booting Dirac Agent...")
-    (log/debug "effective config:\n" (logging/pprint effective-config))
+    (log/debug "effective config:\n" (utils/pp effective-config))
     (future (boot-now! config))))

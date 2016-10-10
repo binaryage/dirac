@@ -1,14 +1,14 @@
 (ns dirac.nrepl.eval
-  (:require [cljs.repl]
+  (:require [clojure.tools.logging :as log]
+            [cljs.repl]
+            [cljs.analyzer :as analyzer]
             [dirac.nrepl.state :as state]
             [dirac.nrepl.driver :as driver]
             [dirac.nrepl.version :refer [version]]
             [dirac.nrepl.compilers :as compilers]
-            [clojure.tools.logging :as log]
-            [cljs.analyzer :as analyzer]
-            [dirac.logging :as logging]
             [dirac.nrepl.protocol :as protocol]
-            [dirac.nrepl.helpers :as helpers])
+            [dirac.nrepl.helpers :as helpers]
+            [dirac.lib.utils :as utils])
   (:import clojure.lang.LineNumberingPushbackReader
            java.io.StringReader
            java.io.Writer))
@@ -93,7 +93,7 @@
         set-env-locals-with-scope (partial set-env-locals scope-info)
         effective-env (-> env set-env-namespace set-env-locals-with-scope)
         filename (helpers/make-dirac-repl-alias (compilers/get-selected-compiler-id (state/get-current-session)))]
-    (log/trace "repl-eval! in " filename ":\n" form "\n with env:\n" (logging/pprint effective-env 7))
+    (log/trace "repl-eval! in " filename ":\n" form "\n with env:\n" (utils/pp effective-env 7))
     (cljs.repl/evaluate-form repl-env effective-env filename form wrapped-form opts)))
 
 (defn repl-flush! []
@@ -137,8 +137,8 @@
                                                             (flush-fn))
                                                    :caught caught-fn)]
                           (log/trace "calling cljs.repl/repl* with:\n"
-                                     (logging/pprint repl-env)
-                                     (logging/pprint final-repl-options))
+                                     (utils/pp repl-env)
+                                     (utils/pp final-repl-options))
                           (cljs.repl/repl* repl-env final-repl-options)))]
     (binding [*in* code-reader-with-quit
               *out* (state/get-session-binding-value #'*out*)

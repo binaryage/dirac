@@ -4,7 +4,8 @@
             [dirac.logging :as logging]
             [dirac.nrepl.piggieback :as piggieback]
             [dirac.nrepl.config :as config]
-            [dirac.nrepl.bootstrap :as bootstrap]))
+            [dirac.nrepl.bootstrap :as bootstrap]
+            [dirac.lib.utils :as utils]))
 
 ; -- public middleware definition -------------------------------------------------------------------------------------------
 
@@ -25,6 +26,6 @@
   (let [effective-config (config/get-effective-config config)]
     (if-not (:skip-logging-setup effective-config)
       (logging/setup! effective-config))
-    (log/debug "boot-dirac-repl! with effective config:\n" (logging/pprint effective-config)))
+    (log/debug "boot-dirac-repl! with effective config:\n" (utils/pp effective-config)))
   (bootstrap/bootstrap! config)
   true)

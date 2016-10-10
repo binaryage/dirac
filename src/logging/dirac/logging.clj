@@ -34,7 +34,7 @@
     (vreset! initialized? true)
     (let [options (convert-config-to-logging-options config)]
       (config/set-loggers!
-        :root (merge-options root-options options {:level Level/INFO})                                                        ; root level should be always INFO, otherwise we would get very verbosel logs from java libs
+        :root (merge-options root-options options {:level Level/INFO})                                                        ; root level should be always INFO, otherwise we would get very verbose logs from java libs
         ; test runners
         "dirac.tests.browser" (merge-options tests-options options)
         "dirac.tests.backend" (merge-options tests-options options)
@@ -48,9 +48,3 @@
         "dirac.logging" (merge-options lib-options options)
         "dirac.lib" (merge-options lib-options options)
         "dirac.lib.weasel-server" (merge-options weasel-options options)))))
-
-(defn pprint [data & [level length]]
-  (with-out-str
-    (binding [*print-level* (or level 5)                                                                                      ; we have to be careful here, data might contain circular references
-              *print-length* (or length 200)]
-      (clojure-pprint/pprint data))))

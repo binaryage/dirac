@@ -1,11 +1,11 @@
 (ns dirac.nrepl.transports.status-cutting
   (:require [clojure.tools.nrepl.transport :as nrepl-transport]
             [clojure.tools.logging :as log]
-            [dirac.logging :as logging]
             [dirac.nrepl.jobs :as jobs]
             [dirac.nrepl.sessions :as sessions]
             [dirac.nrepl.protocol :as protocol]
-            [dirac.nrepl.debug :as debug])
+            [dirac.nrepl.debug :as debug]
+            [dirac.lib.utils :as utils])
   (:import (clojure.tools.nrepl.transport Transport)))
 
 ; Some jobs should be ended by sending {:status :done}. But in case of exceptions our code could have already
@@ -25,10 +25,10 @@
   (send [_this reply-message]
     (let [message-id (:id reply-message)]
       (if (contains? @state-atom message-id)
-        (log/trace "dropping message sent after status:" (logging/pprint reply-message))
+        (log/trace "dropping message sent after status:" (utils/pp reply-message))
         (do
           (when (protocol/status-message? reply-message)
-            (log/trace "detected status message:" (logging/pprint reply-message))
+            (log/trace "detected status message:" (utils/pp reply-message))
             (swap! state-atom conj message-id))                                                                               ; note that all messages with possibly nil id are treated as one job
           (nrepl-transport/send transport reply-message))))))
 

@@ -1,8 +1,8 @@
 (ns dirac.nrepl.transports.debug-logging
   (:require [clojure.tools.nrepl.transport :as nrepl-transport]
             [clojure.tools.logging :as log]
-            [dirac.logging :as logging]
-            [dirac.nrepl.debug :as debug])
+            [dirac.nrepl.debug :as debug]
+            [dirac.lib.utils :as utils])
   (:import (clojure.tools.nrepl.transport Transport)))
 
 ; -- transport wrapper ------------------------------------------------------------------------------------------------------
@@ -12,7 +12,7 @@
   (recv [_this timeout]
     (nrepl-transport/recv transport timeout))
   (send [_this reply-message]
-    (log/debug (str "sending raw message via nREPL transport: " transport " \n") (logging/pprint reply-message))
+    (log/debug (str "sending raw message via nREPL transport: " transport " \n") (utils/pp reply-message))
     (debug/log-stack-trace!)
     (nrepl-transport/send transport reply-message)))
 

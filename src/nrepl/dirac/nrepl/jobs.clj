@@ -1,7 +1,7 @@
 (ns dirac.nrepl.jobs
   (:require [clojure.tools.logging :as log]
             [dirac.nrepl.state :refer [observed-jobs]]
-            [dirac.logging :as logging]))
+            [dirac.lib.utils :as utils]))
 
 ; -- helpers ----------------------------------------------------------------------------------------------------------------
 
@@ -34,12 +34,12 @@
              (str "job-id=" job-id)
              (str "original-message-id=" original-id)
              (str "timeout=" timeout-ms))
-  (log/trace original-id timeout-ms (logging/pprint interested-session) interested-transport)
+  (log/trace original-id timeout-ms (utils/pp interested-session) interested-transport)
   ; TODO: implement timeouts
   (swap! observed-jobs assoc job-id (make-observed-job job-id original-id interested-session interested-transport)))
 
 (defn unregister-observed-job! [job-id]
   (log/debug "unregister-observed-job!"
              (str "job-id=" job-id))
-  (log/trace (logging/pprint (get @observed-jobs job-id)))
+  (log/trace (utils/pp (get @observed-jobs job-id)))
   (swap! observed-jobs dissoc job-id))

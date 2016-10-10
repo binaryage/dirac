@@ -7,7 +7,6 @@
 ;
 (ns dirac.nrepl.piggieback
   (:require [clojure.tools.logging :as log]
-            [dirac.logging :as logging]
             [dirac.nrepl.config :as config]
             [dirac.nrepl.state :as state]
             [dirac.nrepl.version :refer [version]]

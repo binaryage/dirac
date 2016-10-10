@@ -1,11 +1,11 @@
 (ns dirac.nrepl.compilers
   (:require [clojure.tools.logging :as log]
             [cljs.env :as cljs-env]
-            [dirac.logging :as logging]
             [dirac.nrepl.state :as state]
             [dirac.nrepl.sessions :as sessions]
             [dirac.nrepl.figwheel :as figwheel]
-            [dirac.nrepl.protocol :as protocol])
+            [dirac.nrepl.protocol :as protocol]
+            [dirac.lib.utils :as utils])
   (:import (java.util.regex Pattern)))
 
 (defn make-compiler-id [session-id number]
@@ -95,7 +95,7 @@
 
 (defn filter-available-matching-compiler-descriptors [session match]
   (let [descriptors (collect-all-available-compiler-descriptors session)]
-    (log/trace "available compiler descriptors:" (logging/pprint (compiler-descriptors-ids descriptors)))
+    (log/trace "available compiler descriptors:" (utils/pp (compiler-descriptors-ids descriptors)))
     (filter-matching-compiler-descriptors match descriptors)))
 
 (defn find-available-matching-compiler-descriptor [session match]

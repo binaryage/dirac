@@ -1,7 +1,7 @@
 (ns dirac.nrepl.debug
-  (:require [dirac.logging :as logging]
-            [cuerdas.core :as cuerdas]
-            [clojure.tools.logging :as log])
+  (:require [cuerdas.core :as cuerdas]
+            [clojure.tools.logging :as log]
+            [dirac.lib.utils :as utils])
   (:import (java.io PrintWriter StringWriter)))
 
 (def ^:dynamic log-stack-traces false)
@@ -33,4 +33,4 @@
 
 (defn pprint-nrepl-message [nrepl-message]
   (let [modified-nrepl-message (assoc nrepl-message :session (pprint-session (:session nrepl-message)))]
-    (logging/pprint modified-nrepl-message)))
+    (utils/pp modified-nrepl-message)))

@@ -8,7 +8,6 @@
             [dirac.nrepl.eval :as eval]
             [dirac.nrepl.config :as config]
             [dirac.nrepl.state :as state]
-            [dirac.logging :as logging]
             [dirac.nrepl.debug :as debug]
             [dirac.nrepl.messages :as messages]
             [dirac.nrepl.sessions :as sessions]
@@ -18,7 +17,8 @@
             [dirac.nrepl.transports.debug-logging :refer [make-nrepl-message-with-debug-logging]]
             [dirac.nrepl.transports.errors-observing :refer [make-nrepl-message-with-observed-errors]]
             [dirac.nrepl.transports.trace-printing :refer [make-nrepl-message-with-trace-printing]]
-            [dirac.nrepl.transports.job-observing :refer [make-nrepl-message-with-job-observing]]))
+            [dirac.nrepl.transports.job-observing :refer [make-nrepl-message-with-job-observing]]
+            [dirac.lib.utils :as utils]))
 
 ; -- transport wrappers -----------------------------------------------------------------------------------------------------
 
@@ -73,11 +73,11 @@
         repl-options (merge (state/get-session-cljs-repl-options) (:repl-options options))]
     (log/trace "spawn-compiler!\n"
                "dirac-nrepl-config:\n"
-               (logging/pprint dirac-nrepl-config)
+               (utils/pp dirac-nrepl-config)
                "repl-env:\n"
-               (logging/pprint repl-env)
+               (utils/pp repl-env)
                "repl-options:\n"
-               (logging/pprint repl-options))
+               (utils/pp repl-options))
     (debug/log-stack-trace!)
     (try
       (state/set-session-cljs-ns! 'cljs.user)

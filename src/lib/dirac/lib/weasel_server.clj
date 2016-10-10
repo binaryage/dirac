@@ -6,7 +6,7 @@
             [clojure.tools.logging :as log]
             [org.httpkit.server :as http]
             [dirac.lib.ws-server :as server]
-            [dirac.logging :as logging])
+            [dirac.lib.utils :as utils])
   (:import (clojure.lang IDeref Atom)))
 
 (def default-opts {:host       "localhost"
@@ -99,7 +99,7 @@
 (defmulti process-message (fn [_env msg] (:op msg)))
 
 (defmethod process-message :default [env message]
-  (log/debug (str env) "Received unrecognized message:\n" (logging/pprint message)))
+  (log/debug (str env) "Received unrecognized message:\n" (utils/pp message)))
 
 (defmethod process-message :result [env message]
   (let [result (:value message)
@@ -109,12 +109,12 @@
       (deliver client-response-promise result))))
 
 (defmethod process-message :ready [env message]
-  (log/debug (str env) "Received :ready message:\n" (logging/pprint message))
+  (log/debug (str env) "Received :ready message:\n" (utils/pp message))
   (if-let [ident (:ident message)]
     (log/info (str env) (str "Client identified as '" ident "'"))))
 
 (defmethod process-message :error [env message]
-  (log/error (str env) "DevTools reported error:\n" (logging/pprint message)))
+  (log/error (str env) "DevTools reported error:\n" (utils/pp message)))
 
 ; -- env helpers ------------------------------------------------------------------------------------------------------------
 

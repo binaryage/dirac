@@ -5,8 +5,7 @@
             [dirac.lib.nrepl-protocols :refer :all]
             [dirac.lib.ws-server :as ws-server]
             [dirac.lib.version :as lib-version]
-            [dirac.lib.utils :as utils]
-            [dirac.logging :as logging])
+            [dirac.lib.utils :as utils])
   (:use [clojure.tools.nrepl.misc :only (uuid)]))
 
 (def upgrading-doc-url "https://github.com/binaryage/dirac/blob/master/docs/upgrading.md")
@@ -217,7 +216,7 @@
                                        :on-leaving-client  (partial on-leaving-client server)})]
     (set-ws-server! server (ws-server/create! server-options))
     (log/info (str server) (str "Started Dirac nREPL tunnel server at " (get-server-url server)))
-    (log/debug "Created" (str server) (logging/pprint options))
+    (log/debug "Created" (str server) (utils/pp options))
     server))
 
 (defn disconnect-all-clients! [server]

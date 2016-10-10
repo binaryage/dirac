@@ -7,8 +7,7 @@
             [dirac.lib.nrepl-tunnel-server :as nrepl-tunnel-server]
             [dirac.lib.nrepl-client :as nrepl-client]
             [dirac.lib.version :as lib]
-            [dirac.lib.utils :as utils]
-            [dirac.logging :as logging]))
+            [dirac.lib.utils :as utils]))
 
 ; Unfortunately, we cannot easily implement full-blown nREPL client in Dirac DevTools.
 ; First, we don't have real sockets API, we can use only websockets from javascript.
@@ -256,7 +255,7 @@
         (set-nrepl-tunnel-server! tunnel nrepl-tunnel-server)
         (run-server-messages-channel-processing-loop! tunnel)
         (run-client-messages-channel-processing-loop! tunnel)
-        (log/debug "Created" (str tunnel) (logging/pprint options))
+        (log/debug "Created" (str tunnel) (utils/pp options))
         tunnel))))
 
 (defn destroy! [tunnel]

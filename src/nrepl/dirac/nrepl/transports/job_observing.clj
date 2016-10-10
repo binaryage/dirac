@@ -1,10 +1,10 @@
 (ns dirac.nrepl.transports.job-observing
   (:require [clojure.tools.nrepl.transport :as nrepl-transport]
             [clojure.tools.logging :as log]
-            [dirac.logging :as logging]
             [dirac.nrepl.jobs :as jobs]
             [dirac.nrepl.sessions :as sessions]
-            [dirac.nrepl.protocol :as protocol])
+            [dirac.nrepl.protocol :as protocol]
+            [dirac.lib.utils :as utils])
   (:import (clojure.tools.nrepl.transport Transport)))
 
 ; Please note that joined session feature is described here:
@@ -27,7 +27,7 @@
           artificial-message (assoc reply-message
                                :id initial-message-id
                                :session (sessions/get-session-id observing-session))]
-      (log/debug "sending message to observing session" observing-session (logging/pprint artificial-message))
+      (log/debug "sending message to observing session" observing-session (utils/pp artificial-message))
       (nrepl-transport/send observing-transport artificial-message))
     (if (protocol/status-message? reply-message)
       (jobs/unregister-observed-job! (jobs/get-observed-job-id observed-job)))
@@ -36,5 +36,5 @@
 ; -- public interface -------------------------------------------------------------------------------------------------------
 
 (defn make-nrepl-message-with-job-observing [observed-job nrepl-message]
-  (log/trace "make-nrepl-message-with-observing" observed-job (logging/pprint nrepl-message))
+  (log/trace "make-nrepl-message-with-observing" observed-job (utils/pp nrepl-message))
   (update nrepl-message :transport (partial ->JobObservingTransport observed-job nrepl-message)))
