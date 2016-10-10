@@ -113,7 +113,6 @@
                :source-paths   ^:replace ["src/project"
                                           "src/settings"
                                           "src/backport"
-                                          "src/logging"
                                           "src/runtime"
                                           "src/lib"
                                           "src/agent"
