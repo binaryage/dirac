@@ -88,7 +88,7 @@
     (loop [trial 1]
       (if (<= trial max-boot-trials)
         (let [result (try
-                       (log/info (str "Starting Dirac Agent" (if (> trial 1) (str "(attempt #" trial ")"))))
+                       (log/debug (str "Starting Dirac Agent" (if (> trial 1) (str "(attempt #" trial ")"))))
                        (create! config)
                        (catch ExceptionInfo e                                                                                 ; for example missing nREPL middleware
                          (log/error "ERROR:" (.getMessage e))
@@ -121,7 +121,7 @@
 
 (defn boot-now! [& [config]]
   (let [effective-config (config/get-effective-config config)]
-    (log/info "Booting Dirac Agent (on current thread)...")
+    (log/debug "Booting Dirac Agent (on current thread)...")
     (log/debug "effective config:\n" (utils/pp effective-config))
     (boot-now!* effective-config)))
 
@@ -137,6 +137,6 @@
   Actually it waits for this init code to fully evaluate before starting nREPL server."
   [& [config]]
   (let [effective-config (config/get-effective-config config)]
-    (log/info "Booting Dirac Agent...")
+    (log/debug "Booting Dirac Agent...")
     (log/debug "effective config:\n" (utils/pp effective-config))
     (future (boot-now!* effective-config))))
