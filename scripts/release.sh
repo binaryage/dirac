@@ -35,13 +35,11 @@ if [ -z "$RELEASE_BUILD_DEVTOOLS" ] ; then
   exit 111
 fi
 
-if [ -z "$RELEASE_BUILD_COMPILED" ] ; then
-  echo "invalid config: RELEASE_BUILD_COMPILED env var is empty"
-  exit 112
+if [ -f "$RELEASE_BUILD_COMPILED_BACKGROUND_JS" ] ; then
+  rm "$RELEASE_BUILD_COMPILED_BACKGROUND_JS"
 fi
-
-if [ -d "$RELEASE_BUILD_COMPILED" ] ; then
-  rm -rf "$RELEASE_BUILD_COMPILED"
+if [ -f "$RELEASE_BUILD_COMPILED_OPTIONS_JS" ] ; then
+  rm "$RELEASE_BUILD_COMPILED_OPTIONS_JS"
 fi
 if [ -d "$RELEASE_BUILD_DEVTOOLS" ] ; then
   rm -rf "$RELEASE_BUILD_DEVTOOLS"
@@ -105,14 +103,12 @@ cp -r "$FRONTEND/emulated_devices" "$RELEASE_BUILD_DEVTOOLS_FRONTEND"
 cp "$FRONTEND/devtools.js" "$RELEASE_BUILD_DEVTOOLS_FRONTEND"
 
 # copy compiled extension code (produced by `lein compile-dirac`)
-cp -r "$ROOT/target/resources/release/.compiled" "$RELEASE_BUILD"
+cp "$ROOT/target/resources/release/.compiled/background.js" "$RELEASE_BUILD/background.js"
+cp "$ROOT/target/resources/release/.compiled/options.js" "$RELEASE_BUILD/options.js"
 
 # ad-hoc cleanup
 rm -rf "$RELEASE_BUILD_DEVTOOLS_FRONTEND/dirac"
 rm -rf "$RELEASE_BUILD_DEVTOOLS_FRONTEND/Images/src"
-
-rm -rf "$RELEASE_BUILD/.compiled/background"
-rm -rf "$RELEASE_BUILD/.compiled/options"
 
 popd
 

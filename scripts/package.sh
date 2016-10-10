@@ -28,10 +28,16 @@ if [ ! -d "$RELEASE_BUILD" ] ; then
   exit 1
 fi
 
-if [ ! -d "$RELEASE_BUILD_COMPILED" ] ; then
-  echo "'$RELEASE_BUILD_COMPILED' does not exist, run 'lein release' to fully build the project"
+if [ ! -f "$RELEASE_BUILD_COMPILED_BACKGROUND_JS" ] ; then
+  echo "'$RELEASE_BUILD_COMPILED_BACKGROUND_JS' does not exist, run 'lein release' to fully build the project"
   popd
   exit 2
+fi
+
+if [ ! -f "$RELEASE_BUILD_COMPILED_OPTIONS_JS" ] ; then
+  echo "'$RELEASE_BUILD_COMPILED_OPTIONS_JS' does not exist, run 'lein release' to fully build the project"
+  popd
+  exit 3
 fi
 
 if [ ! -d "$RELEASES" ] ; then
@@ -52,7 +58,13 @@ cp -r "$RELEASE_BUILD" "$PACKAGE_DIR" # this will copy actual files, not symlink
 
 pushd "$PACKAGE_DIR"
 
+if [ -f "$ZIP_NAME" ] ; then
+  rm "$ZIP_NAME"
+fi
+
 zip -qr -9 -X "$ZIP_NAME" .
+
+unzip -l "$ZIP_NAME"
 
 echo "'$ZIP_NAME' ready for upload => https://chrome.google.com/webstore/developer/dashboard"
 
