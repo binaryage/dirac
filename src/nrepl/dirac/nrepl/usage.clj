@@ -58,7 +58,9 @@
    "Compilers are listed in the following order:"
    "  1. compilers spawned by current Dirac session in historical order"
    "  2. compilers spawned by other Dirac sessions"
-   "  3. foreign compilers not spawned by Dirac, e.g. Figwheel compilers"])
+   "  3. foreign compilers not spawned by Dirac, e.g. Figwheel compilers"
+   ""
+   "Note: Current session and compiler are marked with an arrow."])
 
 (def ^:dynamic join-usage
   ["Join or re-join first Dirac session matching provided input."
