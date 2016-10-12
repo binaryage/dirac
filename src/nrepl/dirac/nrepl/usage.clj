@@ -10,14 +10,14 @@
    ""
    "The argument `<sub-command>` is a keyword followed by optional arguments."
    ""
-   "A list of known sub-commands:"
+   "List of supported sub-commands:"
    ""
-   "  `:status`     prints current session state"
-   "  `:ls`         list available Dirac sessions"
+   "  `:status`     print current session state"
+   "  `:ls`         list available sessions/compilers"
    ""
    "  `:switch`     switch ClojureScript compiler"
    "  `:spawn`      start a new ClojureScript compiler"
-   "  `:kill`       kill ClojureScript compilers"
+   "  `:kill`       kill ClojureScript compiler"
    ""
    "  `:join`       join a Dirac session"
    "  `:disjoin`    disjoin Dirac session"
@@ -28,7 +28,7 @@
    "  `:version`    print version info"
    "  `:help`       print usage help"
    ""
-   "For more information use `(dirac! :help <command>)`."])
+   "For more information use `(dirac! :help <sub-command>)`."])
 
 (def ^:dynamic help-usage
   ["Print general usage help or specific sub-command usage help."
@@ -43,7 +43,7 @@
    "  1. `(dirac! :version)`"])
 
 (def ^:dynamic status-usage
-  ["Print the status of current nREPL session."
+  ["Print status of current nREPL session."
    ""
    "  1. `(dirac! :status)`"
    ""
@@ -56,12 +56,12 @@
    ""
    "Sessions are listed in historical order as they connected."
    "Compilers are listed in the following order:"
-   "  1. compilers spawned by current Dirac session"
+   "  1. compilers spawned by current Dirac session in historical order"
    "  2. compilers spawned by other Dirac sessions"
    "  3. foreign compilers not spawned by Dirac, e.g. Figwheel compilers"])
 
 (def ^:dynamic join-usage
-  ["Join or re-join first Dirac session matching provided input (a matching strategy)."
+  ["Join or re-join first Dirac session matching provided input."
    ""
    "  1. `(dirac! :join <string>)`"
    "  2. `(dirac! :join <integer>)`"
@@ -73,17 +73,17 @@
    ""
    "To list all available Dirac sessions use `(dirac! :ls)`."
    "Matching is done dynamically for every new eval request. Connected Dirac sessions are tested in historical order."
-   "Matching strategy must be either a string(1), an integer(2), a regex(3) or omitted(4)."
+   "The input must be either a string(1), an integer(2), a regex(3) or omitted(4)."
    "String-based matching targets first Dirac session matching the provided substring."
-   "Integer-based matching targets nth session in the list."
+   "Integer-based matching targets n-th session in the list."
    "Regex-based matching targets first Dirac session matching the provided regular expression."
-   "If no matching strategy is provided, this session will target the most recent Dirac session in the list."
+   "If no matching strategy was provided, this session will target the most recent Dirac session in the list."
    ""
    "Note: Dirac sessions are not persistent. They are created when Dirac DevTools instance opens a Console Panel and switches"
    "      console prompt to the Dirac REPL. Dirac sessions are destroyed when Dirac DevTools window gets closed or on page refresh."
-   "      Dynamic matching helps us to keep stable targeting of a specific Dirac session even if DevTools app gets closed and"
-   "      reopened. In case there is no matching target Dirac session available, we will warn you and evaluation will result"
-   "      in a no-op. You may use `(dirac! :match)` command to test/troubleshoot your current matching strategy."])
+   "      Dynamic matching helps us to keep stable targeting of specific Dirac session even if DevTools app gets closed and"
+   "      reopened. In cases when there is no matching target Dirac session available, we will warn you and evaluation will result"
+   "      in a no-op. You may want to use `(dirac! :match)` command to test/troubleshoot your current matching strategy."])
 
 (def ^:dynamic disjoin-usage
   ["Disjoin previously joined Dirac session."
@@ -101,7 +101,7 @@
    "The first session(*) in the list would be used as the target Dirac session for incoming evaluation requests."])
 
 (def ^:dynamic switch-usage
-  ["Switch to another ClojureScript compiler matching provided input (a matching strategy)."
+  ["Switch to another ClojureScript compiler matching provided input."
    ""
    "  1. `(dirac! :switch <string>)`"
    "  2. `(dirac! :switch <integer>)`"
@@ -110,13 +110,13 @@
    ""
    "To list all available ClojureScript compilers use `(dirac! :ls)`."
    "Matching is done dynamically for every new eval request."
-   "Matching strategy must be either a integer(1), a string(2), a regex(3) or omitted(4)."
+   "Matching argument must be either an integer(1), a string(2), a regex(3) or omitted(4)."
    "Integer-based matching targets nth compiler in the list."
    "String-based matching targets first compiler matching the provided substring."
    "Regex-based matching targets first compiler matching the provided regular expression."
-   "If no matching strategy is provided, eval will use the first compiler in the list."
+   "If no matching strategy was provided, eval will use the first compiler in the list."
    ""
-   "Note: If in joined session, this command will apply to the target session."])
+   "Note: If in a joined session, this command will apply to the target session."])
 
 (def ^:dynamic spawn-usage
   ["Initialize a new ClojureScript compiler and switch to it."
@@ -129,10 +129,10 @@
    "current Dirac session. That is the reason why :spawn can be called only from a properly configured Dirac session."
    "For advanced usage you have a chance to override the configuration by passing in an options map (optional)."
    ""
-   "Note: If in joined session, this command will apply to the target session."])
+   "Note: If in a joined session, this command will apply to the target session."])
 
 (def ^:dynamic kill-usage
-  ["Kill and remove existing ClojureScript compilers matching provided input (a matching strategy)."
+  ["Kill and remove existing ClojureScript compiler(s) matching provided input."
    ""
    "  1. `(dirac! :kill)`"
    "  2. `(dirac! :kill <string>)`"
@@ -141,14 +141,14 @@
    ""
    "To list all available ClojureScript compilers use `(dirac! :ls)`."
    "Calling :kill without parameters kills currently selected compiler."
-   "If matching strategy was provided it uses same matching algorithm as :switch."
-   "It must be either a integer(2), a string(3), a regex(4)."
-   "Integer-based matching kills nth compiler in the list."
+   "If an extra argument was provided it uses the same matching algorithm as :switch."
+   "It must be either an integer(2), a string(3), a regex(4)."
+   "Integer-based matching kills n-th compiler in the list."
    "String-based matching kills all compilers matching the provided substring."
    "Regex-based matching kills all compilers matching the provided regular expression."
    ""
-   "Note: If in joined session, this command will apply to the target session."
-   "Note: It is allowed to kill Dirac's own compilers. For example if you have Figwheel compilers present, we
+   "Note: If in a joined session, this command will apply to the target session."
+   "Note: It is allowed to kill only Dirac's own compilers. For example if you have Figwheel compilers present, we
           don't allow killing them via `(dirac! :kill ...)`. You have to use Figwheel's own interface to manipulate its"
    "      compilers."])
 
@@ -160,7 +160,7 @@
    ""
    "This is a bridge provided for convenince to allow controlling Figwheel directly from Dirac REPL."
    ""
-   "You may provide api-fn as a string, keyword or symbol. Figwheel API function is resolved dynamically."
+   "You may provide api-fn as a string, a keyword or a symbol. Figwheel API function is resolved dynamically."
    "Function arguments must be specified precisely as expected by Figwheel API."
    ""
    "  Examples:"
