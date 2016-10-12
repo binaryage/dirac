@@ -137,16 +137,16 @@
 ; -- session matchers -------------------------------------------------------------------------------------------------------
 
 (defn make-substr-matcher-description [substring]
-  (str "Dirac session matching substring '" substring "'"))
+  (str "Dirac sessions matching substring \"" substring "\""))
 
 (defn make-most-recent-matcher-description []
-  (str "most recent Dirac session"))
+  (str "the most recent Dirac session"))
 
 (defn make-regex-matcher-description [re]
-  (str "Dirac session matching regex '" re "'"))
+  (str "Dirac sessions matching " (pr-str re)))
 
 (defn make-number-matcher-description [number]
-  (str "Dirac session #" number))
+  (str "the Dirac session #" number))
 
 (defn make-substr-matcher [substring]
   (fn [session-descriptor _ _]
