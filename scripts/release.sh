@@ -21,7 +21,7 @@
 
 set -e
 
-TASK=${1:-compile-dirac}
+TASK=${1:-compile-dirac-pseudo-names}
 
 pushd `dirname "${BASH_SOURCE[0]}"` > /dev/null
 source "./config.sh"
