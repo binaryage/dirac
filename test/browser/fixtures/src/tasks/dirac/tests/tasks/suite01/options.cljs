@@ -7,11 +7,11 @@
             [dirac.utils :as utils]))
 
 (defn get-definitions [info-line]
-  (if-let [m (re-find #"\((\d+) definitions\)" info-line)]
+  (if-let [m (re-find #"Backend API/[^/]+/(\d+)" info-line)]
     (utils/parse-int (second m))))
 
 (defn get-registrations [info-line]
-  (if-let [m (re-find #"\((\d+) registrations\)" info-line)]
+  (if-let [m (re-find #"Backend CSS/[^/]+/(\d+)" info-line)]
     (utils/parse-int (second m))))
 
 (go-task

@@ -7,6 +7,8 @@
             [dirac.implant.version :refer [get-version]]
             [clojure.string :as string]))
 
+; -- helpers ----------------------------------------------------------------------------------------------------------------
+
 (defn part-str [val placeholder]
   (if (empty? val)
     placeholder
@@ -14,6 +16,14 @@
 
 (defn combo-str [name name-placeholder version version-placeholder]
   (str (part-str name name-placeholder) "/" (part-str version version-placeholder)))
+
+(defn make-chrome-info [tag rev]
+  (str tag "@" (.substring rev 0 7)))
+
+; -- versions ---------------------------------------------------------------------------------------------------------------
+
+(defn get-version-info []
+  (str "Dirac v" (get-version)))
 
 (defn get-browser-info []
   (let [browser-name (get-current-browser-name)
@@ -25,8 +35,7 @@
         platform-version (ua-platform/getVersion)]
     (combo-str platform-name "?" platform-version "?")))
 
-(defn get-version-info []
-  (str "Dirac v" (get-version)))
+; -- backend API ------------------------------------------------------------------------------------------------------------
 
 (defn get-backend-api-mode []
   (oget js/window "WebInspector" "BakedInspectorBackendMode"))
@@ -40,13 +49,18 @@
 (defn get-backend-api-chrome-rev []
   (oget js/window "WebInspector" "BakedInspectorBackendAPIChromeRev"))
 
+(defn get-backend-api-chrome-info []
+  (make-chrome-info (get-backend-api-chrome-tag) (get-backend-api-chrome-rev)))
+
 (defn get-backend-api-info []
   (let [mode (or (get-backend-api-mode) "?")
         info (case mode
-               "internal" (str "internal/" (get-backend-api-chrome-tag) "/" (.substring (get-backend-api-chrome-rev) 0 7))
+               "internal" (str "internal-" (get-backend-api-chrome-info))
                mode)
         more (get-backend-api-mode-info)]
-    (str "Backend API/" info (if more (str " (" more ")")))))
+    (str "Backend API/" info (if more (str "/" more)))))
+
+; -- backend CSS ------------------------------------------------------------------------------------------------------------
 
 (defn get-backend-css-mode []
   (oget js/window "WebInspector" "BakedSupportedCSSPropertiesMode"))
@@ -60,13 +74,18 @@
 (defn get-backend-css-chrome-rev []
   (oget js/window "WebInspector" "BakedSupportedCSSPropertiesChromeRev"))
 
+(defn get-backend-css-chrome-info []
+  (make-chrome-info (get-backend-css-chrome-tag) (get-backend-css-chrome-rev)))
+
 (defn get-backend-css-info []
   (let [mode (or (get-backend-css-mode) "?")
         info (case mode
-               "internal" (str "internal/" (get-backend-css-chrome-tag) "/" (.substring (get-backend-css-chrome-rev) 0 7))
+               "internal" (str "internal-" (get-backend-css-chrome-info))
                mode)
         more (get-backend-css-mode-info)]
-    (str "Backend CSS/" info (if more (str " (" more ")")))))
+    (str "Backend CSS/" info (if more (str "/" more)))))
+
+; -- public -----------------------------------------------------------------------------------------------------------------
 
 (defn get-info-line []
   (let [parts [(get-version-info) (get-browser-info) (get-platform-info) (get-backend-api-info) (get-backend-css-info)]]

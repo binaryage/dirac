@@ -25,7 +25,7 @@ WebInspector.InspectorBackendExtensionMode.loadFromExtensionIfNeeded = function(
         const decodedBackendAPI = decodeURIComponent(backendAPI);
         const lines = decodedBackendAPI.split("\n").filter(s => s.length);
         WebInspector.BakedInspectorBackendMode = "external";
-        WebInspector.BakedInspectorBackendModeInfo = lines.length + " registrations";
+        WebInspector.BakedInspectorBackendModeInfo = lines.length;
         if (dirac._DEBUG_BACKEND_API) {
             console.log("BackendAPI: backend_api url parameter present (" + WebInspector.BakedInspectorBackendModeInfo + ").");
         }
@@ -33,7 +33,7 @@ WebInspector.InspectorBackendExtensionMode.loadFromExtensionIfNeeded = function(
     } else {
         const lines = WebInspector.BakedInspectorBackendAPI.split("\n").filter(s => s.length);
         WebInspector.BakedInspectorBackendMode = "internal";
-        WebInspector.BakedInspectorBackendModeInfo = lines.length + " registrations";
+        WebInspector.BakedInspectorBackendModeInfo = lines.length;
         if (dirac._DEBUG_BACKEND_API) {
             console.log("BackendAPI: backend_api url parameter not present. Using pre-baked backend API (" + WebInspector.BakedInspectorBackendModeInfo + ").");
         }

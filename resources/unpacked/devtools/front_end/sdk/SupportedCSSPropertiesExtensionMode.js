@@ -14,7 +14,7 @@ WebInspector.SupportedCSSPropertiesExtensionMode.loadFromExtensionIfNeeded = fun
         const backendCSS = decodeURIComponent(encodedBackendCSS);
         const lines = backendCSS.split("\n").filter(s => s.length);
         WebInspector.BakedSupportedCSSPropertiesMode = "external";
-        WebInspector.BakedSupportedCSSPropertiesModeInfo = lines.length + " definitions";
+        WebInspector.BakedSupportedCSSPropertiesModeInfo = lines.length;
         if (dirac._DEBUG_BACKEND_CSS) {
             console.log("BackendCSS: backend_css url parameter present (" + WebInspector.BakedSupportedCSSPropertiesModeInfo + ").");
         }
@@ -23,7 +23,7 @@ WebInspector.SupportedCSSPropertiesExtensionMode.loadFromExtensionIfNeeded = fun
         const backendCSS = WebInspector.BakedSupportedCSSProperties;
         const lines = backendCSS.split("\n").filter(s => s.length);
         WebInspector.BakedSupportedCSSPropertiesMode = "internal";
-        WebInspector.BakedSupportedCSSPropertiesModeInfo = lines.length + " definitions";
+        WebInspector.BakedSupportedCSSPropertiesModeInfo = lines.length;
         if (dirac._DEBUG_BACKEND_CSS) {
             console.log("BackendCSS: backend_css url parameter not present. Using pre-baked backend CSS (" + WebInspector.BakedSupportedCSSPropertiesModeInfo + ").");
         }
