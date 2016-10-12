@@ -106,21 +106,33 @@
 ; -- (dirac! :join) ---------------------------------------------------------------------------------------------------------
 
 (defn announce-join! [& _]
-  (with-coallesced-output
-    (println (messages/make-after-join-msg))
-    (dirac! :match)                                                                                                           ; this should give user immediate feedback about newly matched sessions
-    (println (messages/make-cljs-quit-msg))))                                                                                 ; triggers Cursive switching to CLJS REPL mode
+  (println (messages/make-after-join-msg))
+  (dirac! :status)                                                                                                            ; this should give user immediate feedback about newly joined session
+  (println (messages/make-cljs-quit-msg)))                                                                                    ; triggers Cursive switching to CLJS REPL mode
 
-(defmethod dirac! :join [_ & [matcher]]
+(defmethod dirac! :join [_ & [input]]
   (with-coallesced-output
-    (let [session (sessions/get-current-session)]
+    (let [session (sessions/get-current-session)
+          matcher-description (sessions/make-matcher-description-pair input)]
       (cond
         (sessions/dirac-session? session) (error-println (messages/make-cannot-join-dirac-session-msg))
-        (nil? matcher) (announce-join! (sessions/join-session-with-most-recent-matcher! session))
-        (integer? matcher) (announce-join! (sessions/join-session-with-integer-matcher! session matcher))
-        (string? matcher) (announce-join! (sessions/join-session-with-substr-matcher! session matcher))
-        (instance? Pattern matcher) (announce-join! (sessions/join-session-with-regex-matcher! session matcher))
-        :else (error-println (messages/make-invalid-matcher-msg matcher)))))
+        (some? matcher-description) (announce-join! (apply sessions/join-session! session matcher-description))
+        :else (error-println (messages/make-invalid-session-matching-msg input)))))
+  ::no-result)
+
+; -- (dirac! :match) --------------------------------------------------------------------------------------------------------
+
+(defmethod dirac! :match [_ & [input]]
+  (with-coallesced-output
+    (let [session (sessions/get-current-session)
+          matcher-description (sessions/make-matcher-description-pair input)]
+      (cond
+        (nil? matcher-description) (error-println (messages/make-invalid-session-matching-msg input))
+        :else (let [[matcher-fn description] matcher-description
+                    tags (sessions/list-matching-sessions-tags matcher-fn)]
+                (if (empty? tags)
+                  (println (messages/make-no-matching-dirac-sessions-msg description))
+                  (println (messages/make-list-matching-dirac-sessions-msg description tags)))))))
   ::no-result)
 
 ; -- (dirac! :disjoin) ------------------------------------------------------------------------------------------------------
@@ -134,21 +146,6 @@
         :else (do
                 (sessions/disjoin-session! session)
                 (println (messages/make-session-disjoined-msg))))))
-  ::no-result)
-
-; -- (dirac! :match) --------------------------------------------------------------------------------------------------------
-
-(defmethod dirac! :match [_ & _]
-  (with-coallesced-output
-    (let [session (sessions/get-current-session)]
-      (cond
-        (sessions/dirac-session? session) (error-println (messages/make-cannot-join-dirac-session-msg))
-        (not (sessions/joined-session? session)) (error-println (messages/make-cannot-match-clojure-session-msg))
-        :else (let [description (sessions/get-target-session-info session)
-                    tags (sessions/list-matching-sessions-tags session)]
-                (if (empty? tags)
-                  (println (messages/make-no-matching-dirac-sessions-msg description))
-                  (println (messages/make-list-matching-dirac-sessions-msg description tags)))))))
   ::no-result)
 
 ; -- (dirac! :switch) -------------------------------------------------------------------------------------------------------

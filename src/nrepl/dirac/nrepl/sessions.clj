@@ -4,7 +4,8 @@
             [dirac.nrepl.debug :as debug]
             [clojure.tools.nrepl.middleware.interruptible-eval :as nrepl-ieval]
             [dirac.backport.string :as backport-string]
-            [clojure.string :as string]))
+            [clojure.string :as string])
+  (:import (java.util.regex Pattern)))
 
 ; -- helpers ----------------------------------------------------------------------------------------------------------------
 
@@ -50,12 +51,12 @@
 
 (defn remove-dirac-session-descriptor! [session]
   (let [session-id (get-session-id session)]
-  (log/debug "remove-dirac-session-descriptor!" )
-  (log/trace (debug/pprint-session session))
-  (state/register-selected-compiler-for-dead-session! session-id (state/get-session-selected-compiler session))
-  (if-let [session-descriptor (find-dirac-session-descriptor session)]
-    (swap! state/session-descriptors #(remove #{session-descriptor} %))
-    (log/error "attempt to remove unknown session descriptor:\n" (debug/pprint-session session)))))
+    (log/debug "remove-dirac-session-descriptor!")
+    (log/trace (debug/pprint-session session))
+    (state/register-selected-compiler-for-dead-session! session-id (state/get-session-selected-compiler session))
+    (if-let [session-descriptor (find-dirac-session-descriptor session)]
+      (swap! state/session-descriptors #(remove #{session-descriptor} %))
+      (log/error "attempt to remove unknown session descriptor:\n" (debug/pprint-session session)))))
 
 (defn find-matching-dirac-session-descriptors [matcher]
   (let [descriptors @state/session-descriptors
@@ -129,10 +130,9 @@
     (find-matching-dirac-session-descriptor matcher-fn)
     (log/error "find-joined-session-descriptor called on a session without matcher-fn: " (debug/pprint-session session))))
 
-(defn list-matching-sessions-tags [session]
-  (if-let [matcher-fn (get-joined-session-matcher session)]
-    (let [decriptors (find-matching-dirac-session-descriptors matcher-fn)]
-      (get-dirac-session-descriptors-tags decriptors))))
+(defn list-matching-sessions-tags [matcher-fn]
+  (let [decriptors (find-matching-dirac-session-descriptors matcher-fn)]
+    (get-dirac-session-descriptors-tags decriptors)))
 
 ; -- session matchers -------------------------------------------------------------------------------------------------------
 
@@ -166,25 +166,12 @@
     (fn [_ index _]
       (= index matching-index))))
 
-(defn join-session-with-most-recent-matcher! [session]
-  (join-session! session
-                 (make-most-recent-matcher)
-                 (make-most-recent-matcher-description)))
-
-(defn join-session-with-substr-matcher! [session substring]
-  (join-session! session
-                 (make-substr-matcher substring)
-                 (make-substr-matcher-description substring)))
-
-(defn join-session-with-regex-matcher! [session re]
-  (join-session! session
-                 (make-regex-matcher re)
-                 (make-regex-matcher-description re)))
-
-(defn join-session-with-integer-matcher! [session number]
-  (join-session! session
-                 (make-number-matcher number)
-                 (make-number-matcher-description number)))
+(defn make-matcher-description-pair [matcher]
+  (cond
+    (nil? matcher) [(make-most-recent-matcher) (make-most-recent-matcher-description)]
+    (integer? matcher) [(make-number-matcher matcher) (make-number-matcher-description matcher)]
+    (string? matcher) [(make-substr-matcher matcher) (make-substr-matcher-description matcher)]
+    (instance? Pattern matcher) [(make-regex-matcher matcher) (make-regex-matcher-description matcher)]))
 
 (defn get-target-session [session]
   (if-let [target-session-descriptor (find-target-dirac-session-descriptor session)]

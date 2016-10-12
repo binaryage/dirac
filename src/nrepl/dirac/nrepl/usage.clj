@@ -95,12 +95,15 @@
    "Future eval requests will be executed in the context of your original Clojure session."])
 
 (def ^:dynamic match-usage
-  ["List matching Dirac sessions for this session (according to current matching strategy set by :join)."
+  ["List Dirac sessions matching provided input."
    ""
-   "  1. `(dirac! :match)`"
+   "  1. `(dirac! :match <string>)`"
+   "  2. `(dirac! :match <integer>)`"
+   "  3. `(dirac! :match <regexp>)`"
+   "  4. `(dirac! :match)`"
    ""
-   "This command is available for testing purposes - for fine-tuning your matching substring or regexp."
-   "The first session(*) in the list would be used as the target Dirac session for incoming evaluation requests."])
+   "This command is available for testing purposes. It can be used for fine-tuning your session matching substring or regexp."
+   "The command has the same signature as `(dirac! :join ...)`. Please read `(dirac! :help :join)` for details about matching."])
 
 (def ^:dynamic switch-usage
   ["Switch to another ClojureScript compiler matching provided input."

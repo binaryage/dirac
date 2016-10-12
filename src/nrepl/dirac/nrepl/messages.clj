@@ -8,9 +8,9 @@
   (str "No such command '" command "'.\n"
        "Execute `(dirac! :help)` for a list of available commands."))
 
-(defn ^:dynamic make-invalid-matcher-msg [matcher]
-  (str "Invalid matching strategy provided. It must be either a number, a string, a regex or omitted.\n"
-       "Provided matching strategy '" matcher "' is of type " (type matcher)))
+(defn ^:dynamic make-invalid-session-matching-msg [input]
+  (str "Invalid session matching strategy provided. It must be either an integer, a string, a regex or omitted.\n"
+       "Provided matching strategy '" input "' is of type " (type input) "."))
 
 (defn ^:dynamic make-cannot-disjoin-dirac-session-msg []
   (str "Your session is a Dirac session. Cannot disjoin this type of session."))
@@ -24,16 +24,13 @@
 (defn ^:dynamic make-cannot-join-dirac-session-msg []
   (str "Your session is a Dirac session. This type of session cannot join any other session."))
 
-(defn ^:dynamic make-cannot-match-clojure-session-msg []
-  (str "Your session is not joined to Dirac. Use `(dirac! :join)` to join the Dirac first."))
-
 (defn ^:dynamic make-no-matching-dirac-sessions-msg [info]
-  (str "No connected Dirac session is \"" info "\"."))
+  (str "Currently there are no Dirac sessions matching the strategy '" info "'."))
 
 (defn ^:dynamic make-list-matching-dirac-sessions-msg [info tags]
   (let [printer (fn [i tag]
                   (str (if (zero? i) " ~> " "    ") tag))]
-    (str "Listing Dirac sessions which are '" info "':\n"
+    (str "Listing Dirac sessions which are matching the strategy '" info "':\n"
          (string/join "\n" (map-indexed printer tags)))))
 
 (defn ^:dynamic make-list-dirac-sessions-msg [tags current-tag marker]
@@ -50,8 +47,7 @@
        "Use `(dirac! :help)` to list all available commands."))
 
 (defn ^:dynamic make-after-join-msg []
-  (str "Your session joined Dirac (ClojureScript). "
-       "The specific target Dirac session will be determined dynamically according to current matching strategy."))
+  (str "Specific target Dirac session will be determined dynamically according to current matching strategy."))
 
 (defn ^:dynamic make-list-compilers-msg [descriptor-ids selected-compiler-id marker]
   (assert (and (string? marker) (= 2 (count marker))))
