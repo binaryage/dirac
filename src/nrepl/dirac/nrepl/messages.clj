@@ -9,7 +9,7 @@
        "Execute `(dirac! :help)` for a list of available commands."))
 
 (defn ^:dynamic make-invalid-session-matching-msg [input]
-  (str "Invalid session matching strategy provided. It must be either an integer, a string, a regex or omitted.\n"
+  (str "Invalid session matching strategy provided. It must be either an integer, a string, a regexp or omitted.\n"
        "Provided matching strategy '" input "' is of type " (type input) "."))
 
 (defn ^:dynamic make-cannot-disjoin-dirac-session-msg []
@@ -76,7 +76,7 @@
   (str "To quit, type: :cljs/quit"))
 
 (defn ^:dynamic make-invalid-compiler-error-msg [user-input]
-  (str "Dirac's :switch sub-command accepts nil, positive integer, string or regex patterns. "
+  (str "Dirac's :switch sub-command accepts nil, positive integer, string or regexp patterns. "
        "You have entered " (pr-str user-input) " which is of type " (type user-input) "."))
 
 (defn ^:dynamic make-cannot-spawn-outside-dirac-session-msg []
