@@ -40,11 +40,11 @@
                  [org.slf4j/slf4j-log4j12 "1.7.21" :scope "test"]
 
                  [clj-webdriver "0.7.2" :scope "test"]
-                 [org.seleniumhq.selenium/selenium-java "2.53.1" :scope "test"]
-                 [org.seleniumhq.selenium/selenium-chrome-driver "2.53.1" :scope "test"]
-                 [org.seleniumhq.selenium/selenium-support "2.53.1" :scope "test"]
+                 [org.seleniumhq.selenium/selenium-java "3.0.0" :scope "test"]
+                 [org.seleniumhq.selenium/selenium-chrome-driver "3.0.0" :scope "test"]
+                 [org.seleniumhq.selenium/selenium-support "3.0.0" :scope "test"]
+                 [org.seleniumhq.selenium/selenium-api "3.0.0" :scope "test"]
                  [org.seleniumhq.selenium/selenium-htmlunit-driver "2.52.0" :scope "test"]
-                 [org.seleniumhq.selenium/selenium-api "2.53.1" :scope "test"]
 
                  [ring/ring-core "1.5.0" :scope "test"]
                  [ring/ring-devel "1.5.0" :scope "test"]
