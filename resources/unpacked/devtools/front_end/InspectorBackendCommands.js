@@ -1,5 +1,5 @@
-WebInspector.BakedInspectorBackendAPIChromeTag='56.0.2886.2';
-WebInspector.BakedInspectorBackendAPIChromeRev='4a1aa1c66e22b57962ad79f66a2c3735b4ed8628';
+WebInspector.BakedInspectorBackendAPIChromeTag='56.0.2890.2';
+WebInspector.BakedInspectorBackendAPIChromeRev='a83f4c8e1f45b173044a6f703349a244afd5ad84';
 WebInspector.BakedInspectorBackendAPI=''
 + 'InspectorBackend.registerEvent("Inspector.detached", ["reason"]);\n'
 + 'InspectorBackend.registerEvent("Inspector.targetCrashed", []);\n'
@@ -188,10 +188,10 @@ WebInspector.BakedInspectorBackendAPI=''
 + 'InspectorBackend.registerEvent("DOM.nodeHighlightRequested", ["nodeId"]);\n'
 + 'InspectorBackend.registerCommand("DOM.enable", [], [], false);\n'
 + 'InspectorBackend.registerCommand("DOM.disable", [], [], false);\n'
-+ 'InspectorBackend.registerCommand("DOM.getDocument", [], ["root"], false);\n'
++ 'InspectorBackend.registerCommand("DOM.getDocument", [{"name": "depth", "type": "number", "optional": true}, {"name": "traverseFrames", "type": "boolean", "optional": true}], ["root"], false);\n'
 + 'InspectorBackend.registerCommand("DOM.getLayoutTreeNodes", [], ["layoutTreeNodes"], false);\n'
 + 'InspectorBackend.registerCommand("DOM.collectClassNamesFromSubtree", [{"name": "nodeId", "type": "number", "optional": false}], ["classNames"], false);\n'
-+ 'InspectorBackend.registerCommand("DOM.requestChildNodes", [{"name": "nodeId", "type": "number", "optional": false}, {"name": "depth", "type": "number", "optional": true}], [], false);\n'
++ 'InspectorBackend.registerCommand("DOM.requestChildNodes", [{"name": "nodeId", "type": "number", "optional": false}, {"name": "depth", "type": "number", "optional": true}, {"name": "traverseFrames", "type": "boolean", "optional": true}], [], false);\n'
 + 'InspectorBackend.registerCommand("DOM.querySelector", [{"name": "nodeId", "type": "number", "optional": false}, {"name": "selector", "type": "string", "optional": false}], ["nodeId"], false);\n'
 + 'InspectorBackend.registerCommand("DOM.querySelectorAll", [{"name": "nodeId", "type": "number", "optional": false}, {"name": "selector", "type": "string", "optional": false}], ["nodeIds"], false);\n'
 + 'InspectorBackend.registerCommand("DOM.setNodeName", [{"name": "nodeId", "type": "number", "optional": false}, {"name": "name", "type": "string", "optional": false}], ["nodeId"], false);\n'

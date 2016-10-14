@@ -1,5 +1,5 @@
-WebInspector.BakedSupportedCSSPropertiesChromeTag='56.0.2886.2';
-WebInspector.BakedSupportedCSSPropertiesChromeRev='4a1aa1c66e22b57962ad79f66a2c3735b4ed8628';
+WebInspector.BakedSupportedCSSPropertiesChromeTag='56.0.2890.2';
+WebInspector.BakedSupportedCSSPropertiesChromeRev='a83f4c8e1f45b173044a6f703349a244afd5ad84';
 WebInspector.BakedSupportedCSSProperties=''
 + '[{"name": "color", "inherited": true},\n'
 + ' {"name": "direction", "inherited": true},\n'
@@ -216,6 +216,7 @@ WebInspector.BakedSupportedCSSProperties=''
 + ' {"longhands": ["text-decoration-line", "text-decoration-style", "text-decoration-color"], "name": "text-decoration"},\n'
 + ' {"name": "text-decoration-color"},\n'
 + ' {"name": "text-decoration-line"},\n'
++ ' {"name": "text-decoration-skip", "inherited": true},\n'
 + ' {"name": "text-decoration-style"},\n'
 + ' {"name": "text-indent", "inherited": true},\n'
 + ' {"name": "text-justify", "inherited": true},\n'

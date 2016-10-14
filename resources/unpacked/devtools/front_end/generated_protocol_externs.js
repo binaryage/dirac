@@ -1589,9 +1589,11 @@ Protocol.DOMAgent.prototype.disable = function(opt_callback) {}
 Protocol.DOMAgent.prototype.invoke_disable = function(obj, opt_callback) {}
 
 /**
+ * @param {number=} opt_depth
+ * @param {boolean=} opt_traverseFrames
  * @param {function(?Protocol.Error, DOMAgent.Node):void=} opt_callback
  */
-Protocol.DOMAgent.prototype.getDocument = function(opt_callback) {}
+Protocol.DOMAgent.prototype.getDocument = function(opt_depth, opt_traverseFrames, opt_callback) {}
 /** @param {function(?Protocol.Error, DOMAgent.Node):void=} opt_callback */
 Protocol.DOMAgent.prototype.invoke_getDocument = function(obj, opt_callback) {}
 
@@ -1613,9 +1615,10 @@ Protocol.DOMAgent.prototype.invoke_collectClassNamesFromSubtree = function(obj, 
 /**
  * @param {DOMAgent.NodeId} nodeId
  * @param {number=} opt_depth
+ * @param {boolean=} opt_traverseFrames
  * @param {function(?Protocol.Error):void=} opt_callback
  */
-Protocol.DOMAgent.prototype.requestChildNodes = function(nodeId, opt_depth, opt_callback) {}
+Protocol.DOMAgent.prototype.requestChildNodes = function(nodeId, opt_depth, opt_traverseFrames, opt_callback) {}
 /** @param {function(?Protocol.Error):void=} opt_callback */
 Protocol.DOMAgent.prototype.invoke_requestChildNodes = function(obj, opt_callback) {}
 
