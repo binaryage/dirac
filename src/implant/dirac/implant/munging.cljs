@@ -1,6 +1,6 @@
 (ns dirac.implant.munging
   (:require [clojure.string :as string]
-            [oops.core :refer [oget oset! ocall oapply]]
+            [oops.core :refer [oget oset! ocall oapply gcall]]
             [devtools.munging :as m]))
 
 (defn is-cljs-function-name? [munged-name]
@@ -9,7 +9,7 @@
 
 (defn ns-detector [name]
   (let [demunged-name (demunge name)
-        namespace-descriptor (ocall (oget js/window "dirac") "getNamespace" demunged-name)]
+        namespace-descriptor (gcall "dirac.getNamespace" demunged-name)]
     (some? namespace-descriptor)))
 
 (defn present-function-name [munged-name & [include-ns? include-protocol-ns?]]

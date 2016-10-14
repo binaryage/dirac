@@ -1,7 +1,7 @@
 (ns dirac.automation.helpers
   (:require-macros [cljs.core.async.macros :refer [go go-loop]])
   (:require [cljs.core.async :refer [put! <! chan timeout alts! close!]]
-            [oops.core :refer [oget oset! ocall oapply]]
+            [oops.core :refer [oget oset! ocall oapply gcall! gget]]
             [cuerdas.core :as cuerdas])
   (:import goog.Uri))
 
@@ -47,7 +47,7 @@
        (cuerdas/unlines)))
 
 (defn get-base-url []
-  (str (oget js/location "protocol") "//" (oget js/location "host")))
+  (str (gget "location.protocol") "//" (gget "location.host")))
 
 (defn get-scenario-url [name & [additional-params]]
   (let [base-params (get-encoded-query (get-document-url))
@@ -55,4 +55,4 @@
     (str (get-base-url) "/scenarios/" name ".html?" all-params)))                                                             ; we pass all query parameters to scenario page
 
 (defn scroll-page-to-bottom! []
-  (ocall js/window "scrollTo" 0 (oget js/document "body" "scrollHeight")))
+  (gcall! "scrollTo" 0 (gget "document.body.scrollHeight")))

@@ -2,7 +2,7 @@
   (:require [clojure.string :as string]
             [cuerdas.core :as cuerdas]
             [chromex.logging :refer-macros [log warn error group group-end]]
-            [oops.core :refer [oget oset! ocall oapply]]
+            [oops.core :refer [oget oset! ocall oapply gget gset!]]
             [dirac.implant.feedback :as feedback]
             [dirac.implant.info :as info]
             [dirac.utils :as utils]
@@ -26,7 +26,7 @@
                      "---\n"
                      "Please report the issue here: " issues-url)]
     (feedback/post! details)
-    (let [dirac-api (oget js/window "dirac")]
+    (let [dirac-api (gget "dirac")]
       (assert dirac-api)
       (ocall dirac-api "addConsoleMessageToMainTarget" "startGroupCollapsed" "log" nil header)
       (ocall dirac-api "addConsoleMessageToMainTarget" "log" "log" details)
@@ -41,7 +41,7 @@
     false))
 
 (defn register-global-exception-handler! []
-  (oset! js/window "onerror" devtools-exception-handler!))
+  (gset! "onerror" devtools-exception-handler!))
 
 ; -- handling unhandled rejections in promises ------------------------------------------------------------------------------
 
@@ -76,8 +76,8 @@
     result))
 
 (defn register-console-error-handler! []
-  (set! *original-console-error-fn* (oget js/console "error"))
-  (oset! js/console "error" console-error-fn))
+  (set! *original-console-error-fn* (gget "console.error"))
+  (gset! "console.error" console-error-fn))
 
 ; -- installation -----------------------------------------------------------------------------------------------------------
 

@@ -3,7 +3,7 @@
   "Glues Parinfer's formatter to a CodeMirror editor"
   (:require
     [clojure.string :refer [join]]
-    [oops.core :refer [oget ocall oapply]]
+    [oops.core :refer [oget ocall oapply gget]]
     [dirac.implant.state :refer [state empty-editor-state]]
     [dirac.implant.support :refer [fix-text! cm-key IEditor get-prev-state frame-updated? set-frame-updated!]]))
 
@@ -74,7 +74,7 @@
 (defn create-editor! [element key parinfer?]
   (when-not (get @state key)
     (let [element-id (oget element "id")
-          cm-class (oget js/window "CodeMirror")
+          cm-class (gget "CodeMirror")
           effective-opts (if parinfer? parinfer-editor-opts basic-editor-opts)
           cm (cm-class. element (clj->js effective-opts))
           wrapper (ocall cm "getWrapperElement")

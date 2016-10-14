@@ -4,10 +4,10 @@
             [cljs.core.async.impl.protocols :as async-protocols]
             [cuerdas.core :as cuerdas]
             [cljs.pprint]
-            [oops.core :refer [oget oset! ocall oapply]]
+            [oops.core :refer [oget oset! ocall oapply gget]]
             [chromex.logging :refer-macros [log info warn error group group-end]]))
 
-(def Promise (oget js/window "Promise"))
+(def Promise (gget "Promise"))
 
 (defn escape-double-quotes [s]
   (.replace s #"\"" "\\\""))

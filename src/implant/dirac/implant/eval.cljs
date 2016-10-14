@@ -2,7 +2,7 @@
   (:require-macros [cljs.core.async.macros :refer [go go-loop]])
   (:require [cljs.core.async :refer [put! <! chan timeout alts! close!]]
             [cljs.core.async.impl.protocols :as core-async]
-            [oops.core :refer [oget oget+ ocall oapply]]
+            [oops.core :refer [oget oget+ ocall oapply gget]]
             [chromex.logging :refer-macros [log warn error]]
             [dirac.implant.feedback :as feedback]
             [clojure.string :as string]
@@ -35,7 +35,7 @@
 
 (defn get-dirac []
   {:post [(object? %)]}
-  (if-let [dirac (oget js/window "?dirac")]
+  (if-let [dirac (gget "?dirac")]
     dirac
     (throw (ex-info (str "window.dirac not found") {}))))
 

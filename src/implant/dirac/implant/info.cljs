@@ -1,6 +1,6 @@
 (ns dirac.implant.info
   (:require-macros [dirac.runtime.core :refer [get-current-browser-name get-current-platform-name]])
-  (:require [oops.core :refer [oget oset! ocall oapply]]
+  (:require [oops.core :refer [oget oset! ocall oapply gget]]
             [chromex.logging :refer-macros [log warn error group group-end]]
             [goog.labs.userAgent.browser :as ua-browser]
             [goog.labs.userAgent.platform :as ua-platform]
@@ -38,16 +38,16 @@
 ; -- backend API ------------------------------------------------------------------------------------------------------------
 
 (defn get-backend-api-mode []
-  (oget js/window "WebInspector" "?BakedInspectorBackendMode"))
+  (gget "WebInspector" "?BakedInspectorBackendMode"))
 
 (defn get-backend-api-mode-info []
-  (oget js/window "WebInspector" "?BakedInspectorBackendModeInfo"))
+  (gget "WebInspector" "?BakedInspectorBackendModeInfo"))
 
 (defn get-backend-api-chrome-tag []
-  (oget js/window "WebInspector" "?BakedInspectorBackendAPIChromeTag"))
+  (gget "WebInspector" "?BakedInspectorBackendAPIChromeTag"))
 
 (defn get-backend-api-chrome-rev []
-  (oget js/window "WebInspector" "?BakedInspectorBackendAPIChromeRev"))
+  (gget "WebInspector" "?BakedInspectorBackendAPIChromeRev"))
 
 (defn get-backend-api-chrome-info []
   (make-chrome-info (get-backend-api-chrome-tag) (get-backend-api-chrome-rev)))
@@ -63,16 +63,16 @@
 ; -- backend CSS ------------------------------------------------------------------------------------------------------------
 
 (defn get-backend-css-mode []
-  (oget js/window "WebInspector" "?BakedSupportedCSSPropertiesMode"))
+  (gget "WebInspector" "?BakedSupportedCSSPropertiesMode"))
 
 (defn get-backend-css-mode-info []
-  (oget js/window "WebInspector" "?BakedSupportedCSSPropertiesModeInfo"))
+  (gget "WebInspector" "?BakedSupportedCSSPropertiesModeInfo"))
 
 (defn get-backend-css-chrome-tag []
-  (oget js/window "WebInspector" "?BakedSupportedCSSPropertiesChromeTag"))
+  (gget "WebInspector" "?BakedSupportedCSSPropertiesChromeTag"))
 
 (defn get-backend-css-chrome-rev []
-  (oget js/window "WebInspector" "?BakedSupportedCSSPropertiesChromeRev"))
+  (gget "WebInspector" "?BakedSupportedCSSPropertiesChromeRev"))
 
 (defn get-backend-css-chrome-info []
   (make-chrome-info (get-backend-css-chrome-tag) (get-backend-css-chrome-rev)))

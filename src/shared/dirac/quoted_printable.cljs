@@ -1,5 +1,5 @@
 (ns dirac.quoted-printable
-  (:require [oops.core :refer [oget oset! ocall oapply]]
+  (:require [oops.core :refer [oget oset! ocall oapply gget]]
             [chromex.logging :refer-macros [log info warn error]]))
 
 ; taken from
@@ -9,7 +9,7 @@
 (def re-qp-trailing-whitespace (js/RegExp. "\\s+$" "gm"))
 (def re-qp-hard-line-breaks (js/RegExp. "=(?:\\n|$)" "g"))
 (def re-qp-escaped-sequences (js/RegExp. "=([a-fA-F0-9]{2})" "g"))
-(def from-char-code (oget js/String "fromCharCode"))
+(def from-char-code (gget "String.fromCharCode"))
 
 (defn decode-escape-sequence [hex-code-point-str]
   (let [code-point (js/parseInt hex-code-point-str 16)]

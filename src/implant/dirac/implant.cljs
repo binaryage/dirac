@@ -3,7 +3,7 @@
   (:require [dirac.implant.deps]
             [cljs.core.async :refer [put! <! chan timeout alts! close!]]
             [devtools.toolbox :refer [envelope]]
-            [oops.core :refer [oget oset! oset!+ ocall oapply]]
+            [oops.core :refer [oget oset! oset!+ ocall oapply gget gcall!]]
             [chromex.logging :refer-macros [log warn error info]]
             [dirac.utils :refer-macros [runonce]]
             [dirac.console :refer [log-to-console!]]
@@ -90,17 +90,17 @@
 (defn trigger-internal-error! []
   ; timeout is needed for testing from console
   ; see http://stackoverflow.com/a/27257742/84283
-  (ocall js/window "setTimeout" helpers/throw-internal-error! 0))
+  (gcall! "setTimeout" helpers/throw-internal-error! 0))
 
 (defn trigger-internal-error-in-promise! []
-  (let [delayed-promise (js/Promise. #(ocall js/window "setTimeout" % 0))]
+  (let [delayed-promise (js/Promise. #(gcall! "setTimeout" % 0))]
     (ocall delayed-promise "then" #(throw (ex-info "fake async error in promise" {:val %})))
     true))
 
 (defn trigger-internal-error-as-error-log! []
   ; timeout is needed for testing from console
   ; see http://stackoverflow.com/a/27257742/84283
-  (ocall js/window "setTimeout" #(error "a fake error log" 1 2 3) 0))
+  (gcall! "setTimeout" #(error "a fake error log" 1 2 3) 0))
 
 (defn report-namespaces-cache-cool-down! []
   (post-feedback! "namespacesCache is cool now")
@@ -148,7 +148,7 @@
     (set! *implant-initialized* true)
     (assert (not *console-initialized*))
     ; (log-to-console!)
-    (enhance-dirac-object! (oget js/window "dirac"))                                                                          ; see front_end/dirac/dirac.js
+    (enhance-dirac-object! (gget "dirac"))                                                                                    ; see front_end/dirac/dirac.js
     (reporter/install!)
     (automation/install!)
     (feedback/install!)

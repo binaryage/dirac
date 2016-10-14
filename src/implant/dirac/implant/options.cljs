@@ -1,9 +1,9 @@
 (ns dirac.implant.options
-  (:require [oops.core :refer [oget ocall oapply]]
+  (:require [oops.core :refer [oget ocall oapply gget]]
             [chromex.logging :refer-macros [log warn error group group-end]]))
 
 (defn get-query-param [name]
-  (if-let [runtime (oget js/window "Runtime")]
+  (if-let [runtime (gget "Runtime")]
     (ocall runtime "queryParam" name)
     (throw (ex-info "Unable to obtain window.Runtime from DevTools" nil))))
 

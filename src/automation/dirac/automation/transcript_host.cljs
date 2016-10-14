@@ -6,7 +6,7 @@
                                            get-transcript-label-padding-type]])
   (:require [cljs.core.async :refer [put! <! chan timeout alts! close!]]
             [dirac.automation.transcript :as transcript]
-            [oops.core :refer [oget oset! ocall oapply]]
+            [oops.core :refer [oget oset! ocall oapply gcall!]]
             [chromex.logging :refer-macros [log warn error info]]
             [cuerdas.core :as cuerdas]
             [dirac.automation.helpers :as helpers]
@@ -32,7 +32,7 @@
   (some? @current-transcript))
 
 (defn set-style! [style]
-  (ocall js/window "setRunnerFavicon" style)
+  (gcall! "setRunnerFavicon" style)
   (transcript/set-style! @current-transcript style))
 
 ; -- enable/disable transcript ----------------------------------------------------------------------------------------------

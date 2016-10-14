@@ -1,5 +1,5 @@
 (ns dirac.automation.scenario
-  (:require [oops.core :refer [oget oset! ocall oapply]]
+  (:require [oops.core :refer [oget oset! ocall oapply gget gset!]]
             [chromex.logging :refer-macros [log info warn error]]
             [cljs.pprint :refer [pprint]]
             [dirac.utils]
@@ -46,7 +46,7 @@
   false)
 
 (defn register-global-exception-handler! []
-  (oset! js/window "onerror" scenario-exception-handler!))
+  (gset! "onerror" scenario-exception-handler!))
 
 ; -- notification handler ---------------------------------------------------------------------------------------------------
 
@@ -73,10 +73,10 @@
     (.apply orig js/console (to-array args))))
 
 (defn store-console-api []
-  {"log"   (oget js/window "console.log")
-   "warn"  (oget js/window "console.warn")
-   "info"  (oget js/window "console.info")
-   "error" (oget js/window "console.error")})
+  {"log"   (gget "console.log")
+   "warn"  (gget "console.warn")
+   "info"  (gget "console.info")
+   "error" (gget "console.error")})
 
 (defn captured-console-api [original-api]
   {"log"   (partial console-handler (get original-api "log") "LOG: ")
@@ -85,10 +85,10 @@
    "error" (partial console-handler (get original-api "error") "ERROR: ")})
 
 (defn set-console-api! [api]
-  (oset! js/window "console.log" (get api "log"))
-  (oset! js/window "console.warn" (get api "warn"))
-  (oset! js/window "console.info" (get api "info"))
-  (oset! js/window "console.error" (get api "error")))
+  (gset! "console.log" (get api "log"))
+  (gset! "console.warn" (get api "warn"))
+  (gset! "console.info" (get api "info"))
+  (gset! "console.error" (get api "error")))
 
 (defn capture-console-as-feedback! []
   {:pre [(nil? @original-console-api)]}
