@@ -38,16 +38,16 @@
 ; -- backend API ------------------------------------------------------------------------------------------------------------
 
 (defn get-backend-api-mode []
-  (oget js/window "WebInspector" "BakedInspectorBackendMode"))
+  (oget js/window "WebInspector" "?BakedInspectorBackendMode"))
 
 (defn get-backend-api-mode-info []
-  (oget js/window "WebInspector" "BakedInspectorBackendModeInfo"))
+  (oget js/window "WebInspector" "?BakedInspectorBackendModeInfo"))
 
 (defn get-backend-api-chrome-tag []
-  (oget js/window "WebInspector" "BakedInspectorBackendAPIChromeTag"))
+  (oget js/window "WebInspector" "?BakedInspectorBackendAPIChromeTag"))
 
 (defn get-backend-api-chrome-rev []
-  (oget js/window "WebInspector" "BakedInspectorBackendAPIChromeRev"))
+  (oget js/window "WebInspector" "?BakedInspectorBackendAPIChromeRev"))
 
 (defn get-backend-api-chrome-info []
   (make-chrome-info (get-backend-api-chrome-tag) (get-backend-api-chrome-rev)))
@@ -63,16 +63,16 @@
 ; -- backend CSS ------------------------------------------------------------------------------------------------------------
 
 (defn get-backend-css-mode []
-  (oget js/window "WebInspector" "BakedSupportedCSSPropertiesMode"))
+  (oget js/window "WebInspector" "?BakedSupportedCSSPropertiesMode"))
 
 (defn get-backend-css-mode-info []
-  (oget js/window "WebInspector" "BakedSupportedCSSPropertiesModeInfo"))
+  (oget js/window "WebInspector" "?BakedSupportedCSSPropertiesModeInfo"))
 
 (defn get-backend-css-chrome-tag []
-  (oget js/window "WebInspector" "BakedSupportedCSSPropertiesChromeTag"))
+  (oget js/window "WebInspector" "?BakedSupportedCSSPropertiesChromeTag"))
 
 (defn get-backend-css-chrome-rev []
-  (oget js/window "WebInspector" "BakedSupportedCSSPropertiesChromeRev"))
+  (oget js/window "WebInspector" "?BakedSupportedCSSPropertiesChromeRev"))
 
 (defn get-backend-css-chrome-info []
   (make-chrome-info (get-backend-css-chrome-tag) (get-backend-css-chrome-rev)))
