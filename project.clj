@@ -381,6 +381,24 @@
                             :scenarios02
                             {:compiler {:parallel-build true}}}}}]
 
+             :dirac-whitespace
+             {:cljsbuild {:builds
+                          {:dirac-implant
+                           {:compiler {:optimizations          :whitespace
+                                       :pretty-print           true
+                                       :closure-output-charset "US-ASCII"
+                                       ; waiting for https://github.com/shaunlebron/parinfer/issues/120
+                                       :foreign-libs           [{:file     "https://raw.githubusercontent.com/shaunlebron/parinfer/master/lib/parinfer.js"
+                                                                 :provides ["cljsjs.parinfer"]}]}}
+                           :dirac-background
+                           {:compiler {:optimizations          :whitespace
+                                       :pretty-print           true
+                                       :closure-output-charset "US-ASCII"}}
+                           :dirac-options
+                           {:compiler {:optimizations          :whitespace
+                                       :pretty-print           true
+                                       :closure-output-charset "US-ASCII"}}}}}
+
              ; to develop browser tests:
              ;
              ; ./scripts/dev-browser-tests.sh
@@ -435,6 +453,9 @@
                                           "cljsbuild" "once"
                                           "dirac-background" "dirac-options" "dirac-implant"]
             "compile-dirac-pseudo-names" ["with-profile" "+cljs,+parallel-build,+dirac-packed,+pseudo-names"
+                                          "cljsbuild" "once"
+                                          "dirac-background" "dirac-options" "dirac-implant"]
+            "compile-dirac-whitespace"   ["with-profile" "+cljs,+parallel-build,+dirac-packed,+dirac-whitespace"
                                           "cljsbuild" "once"
                                           "dirac-background" "dirac-options" "dirac-implant"]
             "fig-marion"                 ["with-profile" "+cljs,+marion,+marion-figwheel"
