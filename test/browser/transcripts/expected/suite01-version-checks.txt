@@ -5,16 +5,16 @@ extension        handling command: open-dirac-devtools
 extension        register devtools #1
 devtools #1      implant initialized
 devtools #1      reset devtools settings
-devtools #1      devtools ready
 devtools #1      setCurrentPanel: elements
+devtools #1      devtools ready
 devtools #1      namespacesCache is cool now
 automate #1      switch-to-console-panel!
+devtools #1      setCurrentPanel: console
 devtools #1      console initialized
 devtools #1      adopt-prompt-element use-parinfer? true
 devtools #1      setDiracPromptMode('status')
 devtools #1      ConsoleView constructed
 devtools #1      displayWelcomeMessage
-devtools #1      setCurrentPanel: console
 automate #1      switch-prompt-to-dirac!
 devtools #1      switched console prompt to 'dirac'
 devtools #1      init-repl!
@@ -34,16 +34,16 @@ extension        handling command: open-dirac-devtools
 extension        register devtools #2
 devtools #2      implant initialized
 devtools #2      reset devtools settings
-devtools #2      devtools ready
 devtools #2      setCurrentPanel: elements
+devtools #2      devtools ready
 devtools #2      namespacesCache is cool now
 automate #2      switch-to-console-panel!
+devtools #2      setCurrentPanel: console
 devtools #2      console initialized
 devtools #2      adopt-prompt-element use-parinfer? true
 devtools #2      setDiracPromptMode('status')
 devtools #2      ConsoleView constructed
 devtools #2      displayWelcomeMessage
-devtools #2      setCurrentPanel: console
 automate #2      switch-prompt-to-dirac!
 devtools #2      switched console prompt to 'dirac'
 devtools #2      init-repl!
@@ -63,16 +63,16 @@ extension        handling command: open-dirac-devtools
 extension        register devtools #3
 devtools #3      implant initialized
 devtools #3      reset devtools settings
-devtools #3      devtools ready
 devtools #3      setCurrentPanel: elements
+devtools #3      devtools ready
 devtools #3      namespacesCache is cool now
 automate #3      switch-to-console-panel!
+devtools #3      setCurrentPanel: console
 devtools #3      console initialized
 devtools #3      adopt-prompt-element use-parinfer? true
 devtools #3      setDiracPromptMode('status')
 devtools #3      ConsoleView constructed
 devtools #3      displayWelcomeMessage
-devtools #3      setCurrentPanel: console
 automate #3      switch-prompt-to-dirac!
 devtools #3      switched console prompt to 'dirac'
 devtools #3      init-repl!
@@ -93,16 +93,16 @@ extension        handling command: open-dirac-devtools
 extension        register devtools #4
 devtools #4      implant initialized
 devtools #4      reset devtools settings
-devtools #4      devtools ready
 devtools #4      setCurrentPanel: elements
+devtools #4      devtools ready
 devtools #4      namespacesCache is cool now
 automate #4      switch-to-console-panel!
+devtools #4      setCurrentPanel: console
 devtools #4      console initialized
 devtools #4      adopt-prompt-element use-parinfer? true
 devtools #4      setDiracPromptMode('status')
 devtools #4      ConsoleView constructed
 devtools #4      displayWelcomeMessage
-devtools #4      setCurrentPanel: console
 automate #4      switch-prompt-to-dirac!
 devtools #4      switched console prompt to 'dirac'
 devtools #4      init-repl!
@@ -123,16 +123,16 @@ extension        handling command: open-dirac-devtools
 extension        register devtools #5
 devtools #5      implant initialized
 devtools #5      reset devtools settings
-devtools #5      devtools ready
 devtools #5      setCurrentPanel: elements
+devtools #5      devtools ready
 devtools #5      namespacesCache is cool now
 automate #5      switch-to-console-panel!
+devtools #5      setCurrentPanel: console
 devtools #5      console initialized
 devtools #5      adopt-prompt-element use-parinfer? true
 devtools #5      setDiracPromptMode('status')
 devtools #5      ConsoleView constructed
 devtools #5      displayWelcomeMessage
-devtools #5      setCurrentPanel: console
 automate #5      switch-prompt-to-dirac!
 devtools #5      switched console prompt to 'dirac'
 devtools #5      init-repl!
@@ -152,16 +152,16 @@ extension        handling command: open-dirac-devtools
 extension        register devtools #6
 devtools #6      implant initialized
 devtools #6      reset devtools settings
-devtools #6      devtools ready
 devtools #6      setCurrentPanel: elements
+devtools #6      devtools ready
 devtools #6      namespacesCache is cool now
 automate #6      switch-to-console-panel!
+devtools #6      setCurrentPanel: console
 devtools #6      console initialized
 devtools #6      adopt-prompt-element use-parinfer? true
 devtools #6      setDiracPromptMode('status')
 devtools #6      ConsoleView constructed
 devtools #6      displayWelcomeMessage
-devtools #6      setCurrentPanel: console
 automate #6      switch-prompt-to-dirac!
 devtools #6      switched console prompt to 'dirac'
 devtools #6      init-repl!
@@ -181,16 +181,16 @@ extension        handling command: open-dirac-devtools
 extension        register devtools #7
 devtools #7      implant initialized
 devtools #7      reset devtools settings
-devtools #7      devtools ready
 devtools #7      setCurrentPanel: elements
+devtools #7      devtools ready
 devtools #7      namespacesCache is cool now
 automate #7      switch-to-console-panel!
+devtools #7      setCurrentPanel: console
 devtools #7      console initialized
 devtools #7      adopt-prompt-element use-parinfer? true
 devtools #7      setDiracPromptMode('status')
 devtools #7      ConsoleView constructed
 devtools #7      displayWelcomeMessage
-devtools #7      setCurrentPanel: console
 automate #7      switch-prompt-to-dirac!
 devtools #7      switched console prompt to 'dirac'
 devtools #7      init-repl!
@@ -209,16 +209,16 @@ extension        handling command: open-dirac-devtools
 extension        register devtools #8
 devtools #8      implant initialized
 devtools #8      reset devtools settings
-devtools #8      devtools ready
 devtools #8      setCurrentPanel: elements
+devtools #8      devtools ready
 devtools #8      namespacesCache is cool now
 automate #8      switch-to-console-panel!
+devtools #8      setCurrentPanel: console
 devtools #8      console initialized
 devtools #8      adopt-prompt-element use-parinfer? true
 devtools #8      setDiracPromptMode('status')
 devtools #8      ConsoleView constructed
 devtools #8      displayWelcomeMessage
-devtools #8      setCurrentPanel: console
 automate #8      switch-prompt-to-dirac!
 devtools #8      switched console prompt to 'dirac'
 devtools #8      init-repl!

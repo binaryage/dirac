@@ -6,8 +6,8 @@ extension        handling command: open-dirac-devtools
 extension        register devtools #1
 devtools #1      implant initialized
 devtools #1      reset devtools settings
-devtools #1      devtools ready
 devtools #1      setCurrentPanel: elements
+devtools #1      devtools ready
 devtools #1      namespacesCache is cool now
 automate         trigger! [:pause-on-breakpoint]
 devtools #1      setCurrentPanel: sources
@@ -36,8 +36,8 @@ extension        handling command: open-dirac-devtools
 extension        register devtools #2
 devtools #2      implant initialized
 devtools #2      reset devtools settings
-devtools #2      devtools ready
 devtools #2      setCurrentPanel: elements
+devtools #2      devtools ready
 devtools #2      namespacesCache is cool now
 automate         trigger! [:pause-on-breakpoint]
 devtools #2      setCurrentPanel: sources
@@ -65,16 +65,16 @@ extension        handling command: open-dirac-devtools
 extension        register devtools #3
 devtools #3      implant initialized
 devtools #3      reset devtools settings
-devtools #3      devtools ready
 devtools #3      setCurrentPanel: elements
+devtools #3      devtools ready
 devtools #3      namespacesCache is cool now
 automate #3      switch-to-console-panel!
+devtools #3      setCurrentPanel: console
 devtools #3      console initialized
 devtools #3      adopt-prompt-element use-parinfer? true
 devtools #3      setDiracPromptMode('status')
 devtools #3      ConsoleView constructed
 devtools #3      displayWelcomeMessage
-devtools #3      setCurrentPanel: console
 automate         trigger! [:cause-exception]
 scenario         uncaught exception: Error: :invalid is not ISeqable
 automate #3      scrape! [:function-names-in-last-console-exception]
@@ -121,8 +121,8 @@ extension        handling command: open-dirac-devtools
 extension        register devtools #4
 devtools #4      implant initialized
 devtools #4      reset devtools settings
-devtools #4      devtools ready
 devtools #4      setCurrentPanel: elements
+devtools #4      devtools ready
 devtools #4      namespacesCache is cool now
 automate         trigger! [:async]
 devtools #4      setCurrentPanel: sources

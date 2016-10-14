@@ -480,9 +480,9 @@ var dirac = {
     initConsole: function() {},
     initRepl: function() {},
     /**
-     * @param {!Object} panel
+     * @param {string} panelId
      */
-    notifyPanelSwitch: function(panel) {},
+    notifyPanelSwitch: function(panelId) {},
     getVersion: function() {},
     getRuntimeTag: function() {},
     /**

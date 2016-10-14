@@ -5,16 +5,16 @@ extension        handling command: open-dirac-devtools
 extension        register devtools #1
 devtools #1      implant initialized
 devtools #1      reset devtools settings
-devtools #1      devtools ready
 devtools #1      setCurrentPanel: elements
+devtools #1      devtools ready
 devtools #1      namespacesCache is cool now
 automate #1      switch-to-console-panel!
+devtools #1      setCurrentPanel: console
 devtools #1      console initialized
 devtools #1      adopt-prompt-element use-parinfer? true
 devtools #1      setDiracPromptMode('status')
 devtools #1      ConsoleView constructed
 devtools #1      displayWelcomeMessage
-devtools #1      setCurrentPanel: console
 automate #1      enable-console-feedback!
 testing          keyboard shortcuts for switching between prompts
 automate #1      simulate-console-action! ["CTRL+."]

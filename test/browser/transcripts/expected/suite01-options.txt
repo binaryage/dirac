@@ -8,8 +8,8 @@ extension        handling command: open-dirac-devtools
 extension        register devtools #1
 devtools #1      implant initialized
 devtools #1      reset devtools settings
-devtools #1      devtools ready
 devtools #1      setCurrentPanel: elements
+devtools #1      devtools ready
 devtools #1      namespacesCache is cool now
 automate #1      get-frontend-url-params
 automate #1      close-devtools!
@@ -25,16 +25,16 @@ extension        handling command: open-dirac-devtools
 extension        register devtools #2
 devtools #2      implant initialized
 devtools #2      reset devtools settings
-devtools #2      devtools ready
 devtools #2      setCurrentPanel: elements
+devtools #2      devtools ready
 devtools #2      namespacesCache is cool now
 automate #2      switch-to-console-panel!
+devtools #2      setCurrentPanel: console
 devtools #2      console initialized
 devtools #2      adopt-prompt-element use-parinfer? true
 devtools #2      setDiracPromptMode('status')
 devtools #2      ConsoleView constructed
 devtools #2      displayWelcomeMessage
-devtools #2      setCurrentPanel: console
 automate #2      trigger-internal-error-as-error-log!
 devtools #2      <elided dirac version info line>
                  An error was logged into the internal DevTools console:
@@ -59,16 +59,16 @@ extension        handling command: open-dirac-devtools
 extension        register devtools #3
 devtools #3      implant initialized
 devtools #3      reset devtools settings
-devtools #3      devtools ready
 devtools #3      setCurrentPanel: elements
+devtools #3      devtools ready
 devtools #3      namespacesCache is cool now
 automate #3      switch-to-console-panel!
+devtools #3      setCurrentPanel: console
 devtools #3      console initialized
 devtools #3      adopt-prompt-element use-parinfer? true
 devtools #3      setDiracPromptMode('status')
 devtools #3      ConsoleView constructed
 devtools #3      displayWelcomeMessage
-devtools #3      setCurrentPanel: console
 automate #3      trigger-internal-error-as-error-log!
 devtools #3      <elided dirac version info line>
                  An error was logged into the internal DevTools console:

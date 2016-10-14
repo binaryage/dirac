@@ -83,10 +83,9 @@
 (defn get-repl-specials-async []
   (helpers/resolved-promise repl/all-specials))                                                                               ; hard-coded for now
 
-(defn notify-panel-switch [panel]
-  (let [panel-name (oget panel "name")]
-    (post-feedback! (str "setCurrentPanel: " panel-name))
-    (helpers/warm-up-namespace-cache!)))
+(defn notify-panel-switch [panel-id]
+  (post-feedback! (str "setCurrentPanel: " panel-id))
+  (helpers/warm-up-namespace-cache!))
 
 (defn trigger-internal-error! []
   ; timeout is needed for testing from console

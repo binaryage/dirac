@@ -187,7 +187,6 @@ WebInspector.InspectorView.prototype = {
      */
     currentPanelDeprecated: function()
     {
-        dirac.notifyPanelSwitch(panel);
         return /** @type {!WebInspector.Panel} */ (WebInspector.viewManager.materializedWidget(this._tabbedPane.selectedTabId || ""));
     },
 
@@ -289,6 +288,7 @@ WebInspector.InspectorView.prototype = {
     _tabSelected: function(event)
     {
         var tabId = /** @type {string} */(event.data["tabId"]);
+        dirac.notifyPanelSwitch(tabId);
         WebInspector.userMetrics.panelShown(tabId);
     },
 
