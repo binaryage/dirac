@@ -61,6 +61,7 @@ WebInspector.LayersPanel = function()
 
     this._paintProfilerView = new WebInspector.LayerPaintProfilerView(this._layers3DView.showImageForLayer.bind(this._layers3DView));
     this._tabbedPane.appendTab(WebInspector.LayersPanel.DetailsViewTabs.Profiler, WebInspector.UIString("Profiler"), this._paintProfilerView);
+    this._updateThrottler = new WebInspector.Throttler(100);
 }
 
 WebInspector.LayersPanel.DetailsViewTabs = {
@@ -120,18 +121,19 @@ WebInspector.LayersPanel.prototype = {
         this._model = null;
     },
 
-    /**
-     * @param {!WebInspector.DeferredLayerTree} deferredLayerTree
-     */
-    _showLayerTree: function(deferredLayerTree)
+    _onLayerTreeUpdated: function()
     {
-        deferredLayerTree.resolve(this._layerViewHost.setLayerTree.bind(this._layerViewHost));
+        this._updateThrottler.schedule(this._update.bind(this));
     },
 
-    _onLayerTreeUpdated: function()
+    /**
+     * @return {!Promise<*>}
+     */
+    _update: function()
     {
         if (this._model)
             this._layerViewHost.setLayerTree(this._model.layerTree());
+        return Promise.resolve();
     },
 
     /**
@@ -141,7 +143,6 @@ WebInspector.LayersPanel.prototype = {
     {
         if (!this._model)
             return;
-        this._layers3DView.setLayerTree(this._model.layerTree());
         if (this._layerViewHost.selection() && this._layerViewHost.selection().layer() === event.data)
             this._layerDetailsView.update();
     },
@@ -157,29 +158,4 @@ WebInspector.LayersPanel.prototype = {
     },
 
     __proto__: WebInspector.PanelWithSidebar.prototype
-}
-
-/**
- * @constructor
- * @implements {WebInspector.Revealer}
- */
-WebInspector.LayersPanel.LayerTreeRevealer = function()
-{
-}
-
-WebInspector.LayersPanel.LayerTreeRevealer.prototype = {
-    /**
-     * @override
-     * @param {!Object} snapshotData
-     * @return {!Promise}
-     */
-    reveal: function(snapshotData)
-    {
-        if (!(snapshotData instanceof WebInspector.DeferredLayerTree))
-            return Promise.reject(new Error("Internal error: not a WebInspector.DeferredLayerTree"));
-        var panel = /** @type {!WebInspector.LayersPanel} */ (self.runtime.sharedInstance(WebInspector.LayersPanel));
-        WebInspector.inspectorView.setCurrentPanel(panel);
-        panel._showLayerTree(/** @type {!WebInspector.DeferredLayerTree} */ (snapshotData));
-        return Promise.resolve();
-    }
 }

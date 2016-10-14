@@ -639,8 +639,6 @@ WebInspector.ProfilesPanel.prototype = {
 
     _reset: function()
     {
-        WebInspector.Panel.prototype.reset.call(this);
-
         var types = WebInspector.ProfileTypeRegistry.instance.profileTypes();
         for (var i = 0; i < types.length; i++)
             types[i]._reset();
@@ -875,7 +873,7 @@ WebInspector.ProfilesPanel.prototype = {
         if (!(target instanceof WebInspector.RemoteObject))
             return;
 
-        if (WebInspector.inspectorView.currentPanel() !== this)
+        if (!this.isShowing())
             return;
 
         var object = /** @type {!WebInspector.RemoteObject} */ (target);
@@ -900,7 +898,7 @@ WebInspector.ProfilesPanel.prototype = {
          */
         function didReceiveHeapObjectId(viewName, error, result)
         {
-            if (WebInspector.inspectorView.currentPanel() !== this)
+            if (!this.isShowing())
                 return;
             if (!error)
                 this.showObject(result, viewName);
@@ -1321,11 +1319,6 @@ WebInspector.ProfilesSidebarTreeElement.prototype = {
     },
 
     __proto__: TreeElement.prototype
-}
-
-WebInspector.ProfilesPanel.show = function()
-{
-    WebInspector.inspectorView.setCurrentPanel(WebInspector.ProfilesPanel._instance());
 }
 
 /**

@@ -27,6 +27,28 @@ WebInspector.NetworkTimelineColumn = function(networkLogView, dataGrid)
 }
 
 WebInspector.NetworkTimelineColumn.prototype = {
+    wasShown: function()
+    {
+        this.scheduleUpdate();
+    },
+
+    scheduleRefreshData: function()
+    {
+        this._needsRefreshData = true;
+    },
+
+    _refreshDataIfNeeded: function()
+    {
+        if (!this._needsRefreshData)
+            return;
+        this._needsRefreshData = false;
+        var currentNode = this._dataGrid.rootNode();
+        this._requestData = [];
+        while (currentNode = currentNode.traverseNextNode(true))
+            this._requestData.push(currentNode.request());
+        this._update();
+    },
+
     scheduleUpdate: function()
     {
         if (this._updateRequestID)
@@ -38,6 +60,8 @@ WebInspector.NetworkTimelineColumn.prototype = {
     {
         this.element.window().cancelAnimationFrame(this._updateRequestID);
         this._updateRequestID = null;
+
+        this._refreshDataIfNeeded();
 
         this._startTime = this._networkLogView.calculator().minimumBoundary();
         this._endTime = this._networkLogView.calculator().maximumBoundary();
@@ -133,6 +157,8 @@ WebInspector.NetworkTimelineColumn.prototype = {
         var lastRequestIndex = Math.min(requests.length, firstRequestIndex + Math.ceil(this._offsetHeight / rowHeight));
         for (var i = firstRequestIndex; i < lastRequestIndex; i++) {
             var rowOffset = rowHeight * i;
+            var rowNumber = i - firstRequestIndex;
+            this._decorateRow(context, rowNumber, rowOffset - scrollTop, rowHeight);
             var request = requests[i];
             var ranges = WebInspector.RequestTimingView.calculateRequestTimeRanges(request, 0);
             for (var range of ranges) {
@@ -204,6 +230,25 @@ WebInspector.NetworkTimelineColumn.prototype = {
             context.strokeStyle = borderColor;
             context.stroke();
         }
+        context.fill();
+        context.restore();
+    },
+
+    /**
+     * @param {!CanvasRenderingContext2D} context
+     * @param {number} rowNumber
+     * @param {number} y
+     * @param {number} rowHeight
+     */
+    _decorateRow: function(context, rowNumber, y, rowHeight)
+    {
+        context.save();
+        if (rowNumber % 2 === 1)
+            return;
+
+        context.beginPath();
+        context.fillStyle = WebInspector.themeSupport.patchColor("#f5f5f5", WebInspector.ThemeSupport.ColorUsage.Background);
+        context.rect(0, y, this._offsetWidth, rowHeight);
         context.fill();
         context.restore();
     },

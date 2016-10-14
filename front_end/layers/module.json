@@ -1,22 +1,20 @@
 {
     "extensions": [
         {
-            "type": "@WebInspector.Panel",
-            "name": "layers",
+            "type": "view",
+            "location": "panel",
+            "id": "layers",
             "title": "Layers",
             "order": 100,
+            "persistence": "closeable",
             "className": "WebInspector.LayersPanel"
-        },
-        {
-            "type": "@WebInspector.Revealer",
-            "contextTypes": ["WebInspector.DeferredLayerTree"],
-            "className": "WebInspector.LayersPanel.LayerTreeRevealer"
         }
     ],
-    "dependencies": ["layer_viewer", "timeline_model"],
+    "dependencies": ["layer_viewer"],
     "experiment": "layersPanel",
     "scripts": [
         "LayerPaintProfilerView.js",
+        "LayerTreeModel.js",
         "LayersPanel.js"
     ]
 }
