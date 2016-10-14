@@ -8,8 +8,8 @@
                                            get-kill-task-key get-kill-task-message]]))
 
 (defn register-task! [task-fn kill-fn]
-  (oset!+ js/window (str "!" (get-launch-task-key)) task-fn)
-  (oset!+ js/window (str "!" (get-kill-task-key)) kill-fn))
+  (oset! js/window "!" (get-launch-task-key) task-fn)
+  (oset! js/window "!" (get-kill-task-key) kill-fn))
 
 (defn kill-task! []
   (log "killing task...")

@@ -207,7 +207,7 @@
         (marshalled-callback command)))))
 
 (defn install-automation-support! []
-  (oset!+ js/window (str "!" (get-automation-entry-point-key)) automation-handler))
+  (oset! js/window "!" (get-automation-entry-point-key) automation-handler))
 
 (defn install! []
   (when (options/should-automate?)

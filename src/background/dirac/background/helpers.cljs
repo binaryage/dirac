@@ -105,7 +105,7 @@
   (filter (partial is-devtools-view? devtools-id) (extension/get-views)))
 
 (defn has-automation-support? [view]
-  (some? (oget+ view (str "?" (get-automation-entry-point-key)))))
+  (some? (oget view "?" (get-automation-entry-point-key))))
 
 (defn get-automation-entry-point [view]
   {:post [(fn? %)]}
@@ -178,8 +178,8 @@
     (if (= (count matching-views) 1)
       (if-let [view (first matching-views)]
         (do
-          (oset!+ view (str "!" (get-dirac-intercom-key)) handler)
-          (when-let [flush-fn (oget+ view (str "?" (get-flush-pending-feedback-messages-key)))]
+          (oset! view "!" (get-dirac-intercom-key) handler)
+          (when-let [flush-fn (oget view "?" (get-flush-pending-feedback-messages-key))]
             (flush-fn)))
         (error "devtools view unexpectedly null" devtools-id))
       (error "unable to install intercom from dirac extension to dirac frontend" devtools-id))))

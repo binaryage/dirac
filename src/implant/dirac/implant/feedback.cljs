@@ -8,7 +8,7 @@
 (defonce pending-messages (atom []))
 
 (defn get-intercom []
-  (oget+ js/window (str "?" (get-dirac-intercom-key))))
+  (oget js/window "?" (get-dirac-intercom-key)))
 
 (defn flush-pending-messages! []
   (let [messages @pending-messages]
@@ -21,7 +21,7 @@
 
 (defn install! []
   (when (options/should-automate?)
-    (oset!+ js/window (str "!" (get-flush-pending-feedback-messages-key)) flush-pending-messages!)))
+    (oset! js/window "!" (get-flush-pending-feedback-messages-key) flush-pending-messages!)))
 
 (defn post! [text]
   (when (options/should-automate?)
