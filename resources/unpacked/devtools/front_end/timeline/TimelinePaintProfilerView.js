@@ -122,8 +122,7 @@ WebInspector.TimelinePaintProfilerView.prototype = {
 
     _onWindowChanged: function()
     {
-        var window = this._paintProfilerView.windowBoundaries();
-        this._logTreeView.updateWindow(window.left, window.right);
+        this._logTreeView.updateWindow(this._paintProfilerView.selectionWindow());
     },
 
     __proto__: WebInspector.SplitWidget.prototype
@@ -135,14 +134,15 @@ WebInspector.TimelinePaintProfilerView.prototype = {
  */
 WebInspector.TimelinePaintImageView = function()
 {
-    WebInspector.Widget.call(this);
-    this.element.classList.add("fill", "paint-profiler-image-view");
-    this._imageContainer = this.element.createChild("div", "paint-profiler-image-container");
+    WebInspector.Widget.call(this, true);
+    this.registerRequiredCSS("timeline/timelinePaintProfiler.css");
+    this.contentElement.classList.add("fill", "paint-profiler-image-view");
+    this._imageContainer = this.contentElement.createChild("div", "paint-profiler-image-container");
     this._imageElement = this._imageContainer.createChild("img");
     this._maskElement = this._imageContainer.createChild("div");
     this._imageElement.addEventListener("load", this._updateImagePosition.bind(this), false);
 
-    this._transformController = new WebInspector.TransformController(this.element, true);
+    this._transformController = new WebInspector.TransformController(this.contentElement, true);
     this._transformController.addEventListener(WebInspector.TransformController.Events.TransformChanged, this._updateImagePosition, this);
 }
 
@@ -157,8 +157,8 @@ WebInspector.TimelinePaintImageView.prototype = {
     {
         var width = this._imageElement.naturalWidth;
         var height = this._imageElement.naturalHeight;
-        var clientWidth = this.element.clientWidth;
-        var clientHeight = this.element.clientHeight;
+        var clientWidth = this.contentElement.clientWidth;
+        var clientHeight = this.contentElement.clientHeight;
 
         var paddingFraction = 0.1;
         var paddingX = clientWidth * paddingFraction;

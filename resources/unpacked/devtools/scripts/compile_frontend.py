@@ -130,9 +130,8 @@ application_descriptors = ['inspector.json',
                            'toolbox.json',
                            'formatter_worker.json',
                            'heap_snapshot_worker.json',
-                           'temp_storage_shared_worker.json']
+                           'utility_shared_worker.json']
 # <------- cut here
-
 loader = modular_build.DescriptorLoader(devtools_frontend_path)
 descriptors = loader.load_applications(application_descriptors)
 modules_by_name = descriptors.modules
