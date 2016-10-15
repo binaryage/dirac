@@ -46,7 +46,6 @@
     display: flex;
     flex-direction: column;
     flex: 0 0 auto;
-    max-width: 300px;
 }
 
 .suggest-box-top-spacer {
