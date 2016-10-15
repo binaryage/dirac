@@ -328,12 +328,6 @@ WebInspector.SuggestBox.prototype = {
         this._elementList = [];
         delete this._selectedElement;
 
-        for (var i = 0; i < items.length; ++i) {
-            var item = items[i];
-            var currentItemElement = this._createItemElement(userEnteredText, item.title, item.className, item.prologue, item.epilogue, i);
-            this._element.appendChild(currentItemElement);
-        }
-
         this._userEnteredText = userEnteredText;
         this._items = items;
     },
@@ -548,8 +542,10 @@ WebInspector.SuggestBox.prototype = {
      */
     itemElement: function(index)
     {
-        if (!this._elementList[index])
-            this._elementList[index] = this._createItemElement(this._userEnteredText, this._items[index].title, this._items[index].className);
+        if (!this._elementList[index]) {
+            const item = this._items[index];
+            this._elementList[index] = this._createItemElement(this._userEnteredText, item.title, item.className, item.prologue, item.epilogue, index);
+        }
         return this._elementList[index];
     }
 }
