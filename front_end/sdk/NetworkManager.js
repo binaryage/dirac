@@ -146,14 +146,6 @@ WebInspector.NetworkManager.prototype = {
         WebInspector.moduleSetting("cacheDisabled").removeChangeListener(this._cacheDisabledSettingChanged, this);
     },
 
-    /**
-     * @return {!WebInspector.Setting}
-     */
-    bypassServiceWorkerSetting: function()
-    {
-        return this._bypassServiceWorkerSetting;
-    },
-
     _bypassServiceWorkerChanged: function()
     {
         this._networkAgent.setBypassServiceWorker(this._bypassServiceWorkerSetting.get());
@@ -364,6 +356,8 @@ WebInspector.NetworkDispatcher.prototype = {
             eventData.loaderId = loaderId;
             eventData.resourceType = resourceType;
             eventData.mimeType = response.mimeType;
+            var lastModifiedHeader = response.headers["last-modified"];
+            eventData.lastModified = lastModifiedHeader ? new Date(lastModifiedHeader) : null;
             this._manager.dispatchEventToListeners(WebInspector.NetworkManager.Events.RequestUpdateDropped, eventData);
             return;
         }

@@ -43,20 +43,15 @@ WebInspector.ParsedURL = function(url)
     this.folderPathComponents = "";
     this.lastPathComponent = "";
 
-    // RegExp groups:
-    // 1 - scheme (using the RFC3986 grammar)
-    // 2 - hostname
-    // 3 - ?port
-    // 4 - ?path
-    // 5 - ?fragment
-    var match = url.match(/^([A-Za-z][A-Za-z0-9+.-]*):\/\/([^\s\/:]*)(?::([\d]+))?(?:(\/[^#]*)(?:#(.*))?)?$/i);
+    var match = url.match(WebInspector.ParsedURL._urlRegex());
     if (match) {
         this.isValid = true;
         this.scheme = match[1].toLowerCase();
         this.host = match[2];
         this.port = match[3];
         this.path = match[4] || "/";
-        this.fragment = match[5];
+        this.queryParams = match[5] || "";
+        this.fragment = match[6];
     } else {
         if (this.url.startsWith("data:")) {
             this.scheme = "data";
@@ -69,21 +64,38 @@ WebInspector.ParsedURL = function(url)
         this.path = this.url;
     }
 
-    // First cut the query params.
-    var path = this.path;
-    var indexOfQuery = path.indexOf("?");
-    if (indexOfQuery !== -1) {
-        this.queryParams = path.substring(indexOfQuery + 1);
-        path = path.substring(0, indexOfQuery);
-    }
-
-    // Then take last path component.
-    var lastSlashIndex = path.lastIndexOf("/");
+    var lastSlashIndex = this.path.lastIndexOf("/");
     if (lastSlashIndex !== -1) {
-        this.folderPathComponents = path.substring(0, lastSlashIndex);
-        this.lastPathComponent = path.substring(lastSlashIndex + 1);
-    } else
-        this.lastPathComponent = path;
+        this.folderPathComponents = this.path.substring(0, lastSlashIndex);
+        this.lastPathComponent = this.path.substring(lastSlashIndex + 1);
+    } else {
+        this.lastPathComponent = this.path;
+    }
+}
+
+/**
+ * @return {!RegExp}
+ */
+WebInspector.ParsedURL._urlRegex = function()
+{
+    if (WebInspector.ParsedURL._urlRegexInstance)
+        return WebInspector.ParsedURL._urlRegexInstance;
+    // RegExp groups:
+    // 1 - scheme (using the RFC3986 grammar)
+    // 2 - hostname
+    // 3 - ?port
+    // 4 - ?path
+    // 5 - ?query
+    // 6 - ?fragment
+    var schemeRegex = /([A-Za-z][A-Za-z0-9+.-]*):\/\//;
+    var hostRegex = /([^\s\/:]*)/;
+    var portRegex = /(?::([\d]+))?/;
+    var pathRegex = /(\/[^#?]*)?/;
+    var queryRegex = /(?:\?([^#]*))?/;
+    var fragmentRegex = /(?:#(.*))?/;
+
+    WebInspector.ParsedURL._urlRegexInstance = new RegExp("^" + schemeRegex.source + hostRegex.source + portRegex.source + pathRegex.source + queryRegex.source + fragmentRegex.source + "$");
+    return WebInspector.ParsedURL._urlRegexInstance;
 }
 
 /**
@@ -169,63 +181,47 @@ WebInspector.ParsedURL.extractName = function(url)
  */
 WebInspector.ParsedURL.completeURL = function(baseURL, href)
 {
-    if (href) {
-        // Return special URLs as-is.
-        var trimmedHref = href.trim();
-        if (trimmedHref.startsWith("data:") || trimmedHref.startsWith("blob:") || trimmedHref.startsWith("javascript:"))
-            return href;
+    // Return special URLs as-is.
+    var trimmedHref = href.trim();
+    if (trimmedHref.startsWith("data:") || trimmedHref.startsWith("blob:") || trimmedHref.startsWith("javascript:"))
+        return href;
 
-        // Return absolute URLs as-is.
-        var parsedHref = trimmedHref.asParsedURL();
-        if (parsedHref && parsedHref.scheme)
-            return trimmedHref;
-    } else {
-        return baseURL;
-    }
+    // Return absolute URLs as-is.
+    var parsedHref = trimmedHref.asParsedURL();
+    if (parsedHref && parsedHref.scheme)
+        return trimmedHref;
 
     var parsedURL = baseURL.asParsedURL();
-    if (parsedURL) {
-        if (parsedURL.isDataURL())
-            return href;
-        var path = href;
+    if (!parsedURL)
+        return null;
 
-        var query = path.indexOf("?");
-        var postfix = "";
-        if (query !== -1) {
-            postfix = path.substring(query);
-            path = path.substring(0, query);
-        } else {
-            var fragment = path.indexOf("#");
-            if (fragment !== -1) {
-                postfix = path.substring(fragment);
-                path = path.substring(0, fragment);
-            }
-        }
+    if (parsedURL.isDataURL())
+        return href;
 
-        if (!path) {  // empty path, must be postfix
-            var basePath = parsedURL.path;
-            if (postfix.charAt(0) === "?") {
-                // A href of "?foo=bar" implies "basePath?foo=bar".
-                // With "basePath?a=b" and "?foo=bar" we should get "basePath?foo=bar".
-                var baseQuery = parsedURL.path.indexOf("?");
-                if (baseQuery !== -1)
-                    basePath = basePath.substring(0, baseQuery);
-            } // else it must be a fragment
-            return parsedURL.scheme + "://" + parsedURL.host + (parsedURL.port ? (":" + parsedURL.port) : "") + basePath + postfix;
-        } else if (path.charAt(0) !== "/") {  // relative path
-            var prefix = parsedURL.path;
-            var prefixQuery = prefix.indexOf("?");
-            if (prefixQuery !== -1)
-                prefix = prefix.substring(0, prefixQuery);
-            prefix = prefix.substring(0, prefix.lastIndexOf("/")) + "/";
-            path = prefix + path;
-        } else if (path.length > 1 && path.charAt(1) === "/") {
-            // href starts with "//" which is a full URL with the protocol dropped (use the baseURL protocol).
-            return parsedURL.scheme + ":" + path + postfix;
-        }  // else absolute path
-        return parsedURL.scheme + "://" + parsedURL.host + (parsedURL.port ? (":" + parsedURL.port) : "") + Runtime.normalizePath(path) + postfix;
+    if (href.length > 1 && href.charAt(0) === "/" && href.charAt(1) === "/") {
+        // href starts with "//" which is a full URL with the protocol dropped (use the baseURL protocol).
+        return parsedURL.scheme + ":" + href;
     }
-    return null;
+
+    var securityOrigin = parsedURL.securityOrigin();
+    var pathText = parsedURL.path;
+    var queryText = parsedURL.queryParams ? "?" + parsedURL.queryParams : "";
+
+    // Empty href resolves to a URL without fragment.
+    if (!href.length)
+        return securityOrigin + pathText + queryText;
+
+    if (href.charAt(0) === "#")
+        return securityOrigin + pathText + queryText + href;
+
+    if (href.charAt(0) === "?")
+        return securityOrigin + pathText + href;
+
+    var hrefPath = href.match(/^[^#?]*/)[0];
+    var hrefSuffix = href.substring(hrefPath.length);
+    if (hrefPath.charAt(0) !== "/")
+        hrefPath = parsedURL.folderPathComponents + "/" + hrefPath;
+    return securityOrigin + Runtime.normalizePath(hrefPath) + hrefSuffix;
 }
 
 WebInspector.ParsedURL.prototype = {

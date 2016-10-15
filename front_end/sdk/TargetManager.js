@@ -195,8 +195,6 @@ WebInspector.TargetManager.prototype = {
 
         /** @type {!WebInspector.ConsoleModel} */
         target.consoleModel = new WebInspector.ConsoleModel(target, logAgent);
-        /** @type {!WebInspector.RuntimeModel} */
-        target.runtimeModel = new WebInspector.RuntimeModel(target);
 
         var networkManager = null;
         var resourceTreeModel = null;
@@ -206,6 +204,9 @@ WebInspector.TargetManager.prototype = {
             resourceTreeModel = new WebInspector.ResourceTreeModel(target, networkManager, WebInspector.SecurityOriginManager.fromTarget(target));
             new WebInspector.NetworkLog(target, resourceTreeModel, networkManager);
         }
+
+        /** @type {!WebInspector.RuntimeModel} */
+        target.runtimeModel = new WebInspector.RuntimeModel(target);
 
         if (target.hasJSCapability())
             new WebInspector.DebuggerModel(target);
@@ -306,6 +307,14 @@ WebInspector.TargetManager.prototype = {
                     model.removeEventListener(/** @type {symbol} */ (pair[0]), listeners[i].listener, listeners[i].thisObject);
             }
         }
+    },
+
+    removeAllTargets: function()
+    {
+        var targets = this._targets.slice();
+        for (var i = targets.length - 1; i >=0 ; --i)
+            this.removeTarget(targets[i]);
+        this._targets = [];
     },
 
     /**

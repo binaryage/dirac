@@ -26,6 +26,8 @@ WebInspector.SecurityPanel = function()
     /** @type {!Map<!WebInspector.NetworkLogView.MixedContentFilterValues, number>} */
     this._filterRequestCounts = new Map();
 
+    /** @type {!Map<!WebInspector.Target, !Array<!WebInspector.EventTarget.EventDescriptor>>}*/
+    this._eventListeners = new Map();
     WebInspector.targetManager.observeTargets(this, WebInspector.Target.Capability.Network);
 }
 
@@ -257,21 +259,33 @@ WebInspector.SecurityPanel.prototype = {
         if (this._target)
             return;
 
-        this._target = target;
-
-        var resourceTreeModel = WebInspector.ResourceTreeModel.fromTarget(this._target);
+        var listeners = [];
+        var resourceTreeModel = WebInspector.ResourceTreeModel.fromTarget(target);
         if (resourceTreeModel) {
-            resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.Events.MainFrameNavigated, this._onMainFrameNavigated, this);
-            resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.Events.InterstitialShown, this._onInterstitialShown, this);
-            resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.Events.InterstitialHidden, this._onInterstitialHidden, this);
+            listeners = listeners.concat([
+                resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.Events.MainFrameNavigated, this._onMainFrameNavigated, this),
+                resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.Events.InterstitialShown, this._onInterstitialShown, this),
+                resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.Events.InterstitialHidden, this._onInterstitialHidden, this),
+            ]);
         }
 
         var networkManager = WebInspector.NetworkManager.fromTarget(target);
-        networkManager.addEventListener(WebInspector.NetworkManager.Events.ResponseReceived, this._onResponseReceived, this);
-        networkManager.addEventListener(WebInspector.NetworkManager.Events.RequestFinished, this._onRequestFinished, this);
+        if (networkManager) {
+            listeners = listeners.concat([
+                networkManager.addEventListener(WebInspector.NetworkManager.Events.ResponseReceived, this._onResponseReceived, this),
+                networkManager.addEventListener(WebInspector.NetworkManager.Events.RequestFinished, this._onRequestFinished, this),
+            ]);
+        }
 
         var securityModel = WebInspector.SecurityModel.fromTarget(target);
-        securityModel.addEventListener(WebInspector.SecurityModel.Events.SecurityStateChanged, this._onSecurityStateChanged, this);
+        if (securityModel) {
+            listeners = listeners.concat([
+                securityModel.addEventListener(WebInspector.SecurityModel.Events.SecurityStateChanged, this._onSecurityStateChanged, this)
+            ]);
+        }
+
+        this._target = target;
+        this._eventListeners.set(target, listeners);
     },
 
     /**
@@ -280,6 +294,13 @@ WebInspector.SecurityPanel.prototype = {
      */
     targetRemoved: function(target)
     {
+        if (this._target !== target)
+            return;
+
+        delete this._target;
+
+        WebInspector.EventTarget.removeEventListeners(this._eventListeners.get(target));
+        this._eventListeners.delete(target);
     },
 
     /**
@@ -865,7 +886,8 @@ WebInspector.SecurityOriginView = function(panel, origin, originState)
         var table = new WebInspector.SecurityDetailsTable();
         connectionSection.appendChild(table.element());
         table.addRow("Protocol", originState.securityDetails.protocol);
-        table.addRow("Key Exchange", originState.securityDetails.keyExchange);
+        if (originState.securityDetails.keyExchange)
+            table.addRow("Key Exchange", originState.securityDetails.keyExchange);
         if (originState.securityDetails.keyExchangeGroup)
             table.addRow("Key Exchange Group", originState.securityDetails.keyExchangeGroup);
         table.addRow("Cipher", originState.securityDetails.cipher + (originState.securityDetails.mac ? " with " + originState.securityDetails.mac : ""));
@@ -968,7 +990,7 @@ WebInspector.SecurityOriginView.prototype = {
             sanDiv.classList.add("empty-san");
         } else {
             var truncatedNumToShow = 2;
-            var listIsTruncated = sanList.length > truncatedNumToShow;
+            var listIsTruncated = sanList.length > truncatedNumToShow + 1;
             for (var i = 0; i < sanList.length; i++) {
                 var span = sanDiv.createChild("span", "san-entry");
                 span.textContent = sanList[i];
