@@ -205,13 +205,15 @@ WebInspector.NetworkProject.prototype = {
     /**
      * @param {!WebInspector.ContentProvider} contentProvider
      * @param {?WebInspector.ResourceTreeFrame} frame
-     * @param {boolean=} isContentScript
+     * @param {boolean} isContentScript
+     * @param {?number} contentSize
      * @return {!WebInspector.UISourceCode}
      */
-    addFile: function(contentProvider, frame, isContentScript)
+    addFile: function(contentProvider, frame, isContentScript, contentSize)
     {
         var uiSourceCode = this._createFile(contentProvider, frame, isContentScript || false);
-        this._addUISourceCodeWithProvider(uiSourceCode, contentProvider);
+        var metadata = typeof contentSize === "number" ? new WebInspector.UISourceCodeMetadata(null, contentSize) : null;
+        this._addUISourceCodeWithProvider(uiSourceCode, contentProvider, metadata);
         return uiSourceCode;
     },
 
@@ -252,10 +254,11 @@ WebInspector.NetworkProject.prototype = {
     /**
      * @param {!WebInspector.UISourceCode} uiSourceCode
      * @param {!WebInspector.ContentProvider} contentProvider
+     * @param {?WebInspector.UISourceCodeMetadata} metadata
      */
-    _addUISourceCodeWithProvider: function(uiSourceCode, contentProvider)
+    _addUISourceCodeWithProvider: function(uiSourceCode, contentProvider, metadata)
     {
-        /** @type {!WebInspector.ContentProviderBasedProject} */ (uiSourceCode.project()).addUISourceCodeWithProvider(uiSourceCode, contentProvider);
+        /** @type {!WebInspector.ContentProviderBasedProject} */ (uiSourceCode.project()).addUISourceCodeWithProvider(uiSourceCode, contentProvider, metadata);
     },
 
     /**
@@ -274,7 +277,8 @@ WebInspector.NetworkProject.prototype = {
         }
         var uiSourceCode = this._createFile(script, WebInspector.ResourceTreeFrame.fromScript(script), script.isContentScript());
         uiSourceCode[WebInspector.NetworkProject._scriptSymbol] = script;
-        this._addUISourceCodeWithProvider(uiSourceCode, script);
+        var resource = WebInspector.ResourceTreeModel.resourceForURL(uiSourceCode.url());
+        this._addUISourceCodeWithProvider(uiSourceCode, script, this._resourceMetadata(resource));
     },
 
     /**
@@ -289,7 +293,8 @@ WebInspector.NetworkProject.prototype = {
         var originalContentProvider = header.originalContentProvider();
         var uiSourceCode = this._createFile(originalContentProvider, WebInspector.ResourceTreeFrame.fromStyleSheet(header), false);
         uiSourceCode[WebInspector.NetworkProject._styleSheetSymbol] = header;
-        this._addUISourceCodeWithProvider(uiSourceCode, originalContentProvider);
+        var resource = WebInspector.ResourceTreeModel.resourceForURL(uiSourceCode.url());
+        this._addUISourceCodeWithProvider(uiSourceCode, originalContentProvider, this._resourceMetadata(resource));
     },
 
     /**
@@ -341,7 +346,7 @@ WebInspector.NetworkProject.prototype = {
 
         var uiSourceCode = this._createFile(resource, WebInspector.ResourceTreeFrame.fromResource(resource), false);
         uiSourceCode[WebInspector.NetworkProject._resourceSymbol] = resource;
-        this._addUISourceCodeWithProvider(uiSourceCode, resource);
+        this._addUISourceCodeWithProvider(uiSourceCode, resource, this._resourceMetadata(resource));
     },
 
     /**
@@ -388,6 +393,17 @@ WebInspector.NetworkProject.prototype = {
         var uiSourceCode = project.createUISourceCode(url, contentProvider.contentType());
         uiSourceCode[WebInspector.NetworkProject._targetSymbol] = this.target();
         return uiSourceCode;
+    },
+
+    /**
+     * @param {?WebInspector.Resource} resource
+     * @return {?WebInspector.UISourceCodeMetadata}
+     */
+    _resourceMetadata: function(resource)
+    {
+        if (!resource || (typeof resource.contentSize() !== "number" && !resource.lastModified()))
+            return null;
+        return new WebInspector.UISourceCodeMetadata(resource.lastModified(), resource.contentSize());
     },
 
     _dispose: function()

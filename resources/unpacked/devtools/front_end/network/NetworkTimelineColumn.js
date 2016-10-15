@@ -11,6 +11,8 @@
 WebInspector.NetworkTimelineColumn = function(networkLogView, dataGrid)
 {
     WebInspector.VBox.call(this, true);
+    this.registerRequiredCSS("network/networkTimelineColumn.css");
+
     this._canvas = this.contentElement.createChild("canvas");
     this._canvas.tabIndex = 1;
     this.setDefaultFocusedElement(this._canvas);
@@ -22,8 +24,40 @@ WebInspector.NetworkTimelineColumn = function(networkLogView, dataGrid)
 
     this._dataGrid = dataGrid;
     this._networkLogView = networkLogView;
+
+    this._vScrollElement = this.contentElement.createChild("div", "network-timeline-v-scroll");
+    this._vScrollContent = this._vScrollElement.createChild("div");
+    this._vScrollElement.addEventListener("scroll", this._onScroll.bind(this), { passive: true });
+    this._vScrollElement.addEventListener("mousewheel", this._onMouseWheel.bind(this), { passive: true });
+    this._canvas.addEventListener("mousewheel", this._onMouseWheel.bind(this), { passive: true });
+    this._canvas.addEventListener("mousemove", this._onMouseMove.bind(this), true);
+    this._canvas.addEventListener("mouseleave", this.setHoveredRequest.bind(this, null), true);
+
+    this._dataGridScrollContainer = this._dataGrid.scrollContainer;
+    this._dataGridScrollContainer.addEventListener("mousewheel", event => {
+        event.consume(true);
+        this._onMouseWheel(event);
+    }, true);
+
+    // TODO(allada) When timeline canvas moves out of experiment move this to stylesheet.
+    this._dataGridScrollContainer.style.overflow = "hidden";
+    this._dataGrid.setScrollContainer(this._vScrollElement);
+
+    this._dataGrid.addEventListener(WebInspector.ViewportDataGrid.Events.ViewportCalculated, this._update.bind(this));
+    this._dataGrid.addEventListener(WebInspector.DataGrid.Events.PaddingChanged, this._updateHeight.bind(this));
+
     /** @type {!Array<!WebInspector.NetworkRequest>} */
     this._requestData = [];
+
+    /** @type {?WebInspector.NetworkRequest} */
+    this._hoveredRequest = null;
+
+    this._rowStripeColor = WebInspector.themeSupport.patchColor("#f5f5f5", WebInspector.ThemeSupport.ColorUsage.Background);
+    this._rowHoverColor = WebInspector.themeSupport.patchColor("#ebf2fc", WebInspector.ThemeSupport.ColorUsage.Background);
+}
+
+WebInspector.NetworkTimelineColumn.Events = {
+    RequestHovered: Symbol("RequestHovered")
 }
 
 WebInspector.NetworkTimelineColumn.prototype = {
@@ -46,7 +80,55 @@ WebInspector.NetworkTimelineColumn.prototype = {
         this._requestData = [];
         while (currentNode = currentNode.traverseNextNode(true))
             this._requestData.push(currentNode.request());
-        this._update();
+    },
+
+    /**
+     * @param {?WebInspector.NetworkRequest} request
+     */
+    setHoveredRequest: function(request)
+    {
+        this._hoveredRequest = request;
+        this.scheduleUpdate();
+    },
+
+    /**
+     * @param {!Event} event
+     */
+    _onMouseMove: function(event)
+    {
+        var request = this._getRequestFromPoint(event.offsetX, event.offsetY);
+        this.dispatchEventToListeners(WebInspector.NetworkTimelineColumn.Events.RequestHovered, request);
+    },
+
+    /**
+     * @param {!Event} event
+     */
+    _onMouseWheel: function(event)
+    {
+        this._vScrollElement.scrollTop -= event.wheelDeltaY;
+        this._dataGridScrollContainer.scrollTop = this._vScrollElement.scrollTop;
+        var request = this._getRequestFromPoint(event.offsetX, event.offsetY);
+        this.dispatchEventToListeners(WebInspector.NetworkTimelineColumn.Events.RequestHovered, request);
+    },
+
+    /**
+     * @param {!Event} event
+     */
+    _onScroll: function(event)
+    {
+        this._dataGridScrollContainer.scrollTop = this._vScrollElement.scrollTop;
+    },
+
+    /**
+     * @param {number} x
+     * @param {number} y
+     * @return {?WebInspector.NetworkRequest}
+     */
+    _getRequestFromPoint: function(x, y)
+    {
+        var rowHeight = this._networkLogView.rowHeight();
+        var scrollTop = this._vScrollElement.scrollTop;
+        return this._requestData[Math.floor((scrollTop + y - this._networkLogView.headerHeight()) / rowHeight)] || null;
     },
 
     scheduleUpdate: function()
@@ -67,6 +149,12 @@ WebInspector.NetworkTimelineColumn.prototype = {
         this._endTime = this._networkLogView.calculator().maximumBoundary();
         this._resetCanvas();
         this._draw();
+    },
+
+    _updateHeight: function()
+    {
+        var totalHeight = this._dataGridScrollContainer.scrollHeight;
+        this._vScrollContent.style.height = totalHeight + "px";
     },
 
     _resetCanvas: function()
@@ -124,14 +212,6 @@ WebInspector.NetworkTimelineColumn.prototype = {
     },
 
     /**
-     * @return {number}
-     */
-    _scrollTop: function()
-    {
-        return this._dataGrid.scrollContainer.scrollTop;
-    },
-
-    /**
      * @param {number} time
      * @return {number}
      */
@@ -152,14 +232,13 @@ WebInspector.NetworkTimelineColumn.prototype = {
         context.rect(0, 0, this._offsetWidth, this._offsetHeight);
         context.clip();
         var rowHeight = this._networkLogView.rowHeight();
-        var scrollTop = this._scrollTop();
+        var scrollTop = this._vScrollElement.scrollTop;
         var firstRequestIndex = Math.floor(scrollTop / rowHeight);
         var lastRequestIndex = Math.min(requests.length, firstRequestIndex + Math.ceil(this._offsetHeight / rowHeight));
         for (var i = firstRequestIndex; i < lastRequestIndex; i++) {
             var rowOffset = rowHeight * i;
-            var rowNumber = i - firstRequestIndex;
-            this._decorateRow(context, rowNumber, rowOffset - scrollTop, rowHeight);
             var request = requests[i];
+            this._decorateRow(context, request, i, rowOffset - scrollTop, rowHeight);
             var ranges = WebInspector.RequestTimingView.calculateRequestTimeRanges(request, 0);
             for (var range of ranges) {
                 if (range.name === WebInspector.RequestTimeRangeNames.Total ||
@@ -168,6 +247,53 @@ WebInspector.NetworkTimelineColumn.prototype = {
                     continue;
                 this._drawBar(context, range, rowOffset - scrollTop);
             }
+        }
+        context.restore();
+        this._drawDividers(context);
+    },
+
+    _drawDividers: function(context)
+    {
+        context.save();
+        /** @const */
+        var minGridSlicePx = 64; // minimal distance between grid lines.
+        /** @const */
+        var fontSize = 10;
+
+        var drawableWidth = this._offsetWidth - this._leftPadding - this._rightPadding;
+        var timelineDuration = this._timelineDuration();
+        var dividersCount = drawableWidth / minGridSlicePx;
+        var gridSliceTime = timelineDuration / dividersCount;
+        var pixelsPerTime = drawableWidth / timelineDuration;
+
+        // Align gridSliceTime to a nearest round value.
+        // We allow spans that fit into the formula: span = (1|2|5)x10^n,
+        // e.g.: ...  .1  .2  .5  1  2  5  10  20  50  ...
+        // After a span has been chosen make grid lines at multiples of the span.
+
+        var logGridSliceTime = Math.ceil(Math.log(gridSliceTime) / Math.LN10);
+        gridSliceTime = Math.pow(10, logGridSliceTime);
+        if (gridSliceTime * pixelsPerTime >= 5 * minGridSlicePx)
+            gridSliceTime = gridSliceTime / 5;
+        if (gridSliceTime * pixelsPerTime >= 2 * minGridSlicePx)
+            gridSliceTime = gridSliceTime / 2;
+
+        context.lineWidth = 1;
+        context.strokeStyle = "rgba(0, 0, 0, .1)";
+        context.font = fontSize + "px sans-serif";
+        context.fillStyle = "#444"
+        gridSliceTime = gridSliceTime;
+        for (var position = gridSliceTime * pixelsPerTime; position < drawableWidth; position += gridSliceTime * pixelsPerTime) {
+            // Added .5 because canvas drawing points are between pixels.
+            var drawPosition = Math.floor(position) + this._leftPadding + .5;
+            context.beginPath();
+            context.moveTo(drawPosition, 0);
+            context.lineTo(drawPosition, this._offsetHeight);
+            context.stroke();
+            if (position <= gridSliceTime * pixelsPerTime)
+                continue;
+            var textData = Number.secondsToString(position / pixelsPerTime);
+            context.fillText(textData, drawPosition - context.measureText(textData).width - 2, Math.floor(this._networkLogView.headerHeight() - fontSize / 2));
         }
         context.restore();
     },
@@ -236,18 +362,22 @@ WebInspector.NetworkTimelineColumn.prototype = {
 
     /**
      * @param {!CanvasRenderingContext2D} context
+     * @param {!WebInspector.NetworkRequest} request
      * @param {number} rowNumber
      * @param {number} y
      * @param {number} rowHeight
      */
-    _decorateRow: function(context, rowNumber, y, rowHeight)
+    _decorateRow: function(context, request, rowNumber, y, rowHeight)
     {
-        context.save();
-        if (rowNumber % 2 === 1)
+        if (rowNumber % 2 === 1 && this._hoveredRequest !== request)
             return;
-
+        context.save();
         context.beginPath();
-        context.fillStyle = WebInspector.themeSupport.patchColor("#f5f5f5", WebInspector.ThemeSupport.ColorUsage.Background);
+        var color = this._rowStripeColor;
+        if (this._hoveredRequest === request)
+            color = this._rowHoverColor;
+
+        context.fillStyle = color;
         context.rect(0, y, this._offsetWidth, rowHeight);
         context.fill();
         context.restore();

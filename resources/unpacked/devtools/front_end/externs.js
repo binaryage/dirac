@@ -847,7 +847,8 @@ CodeMirror.StringStream.prototype = {
 CodeMirror.TextMarker = function(doc, type) { }
 CodeMirror.TextMarker.prototype = {
     clear: function() { },
-    find: function() { }
+    find: function() { },
+    changed: function() { }
 }
 
 /** @constructor */
@@ -878,6 +879,15 @@ ArrayBuffer.isView = function(obj) { }
  * @return {Object}
  */
 Element.prototype.animate = function(keyframes, timing) { }
+
+/**
+ * @override
+ * @param {string} type
+ * @param {(!EventListener|!function (!Event): (boolean|undefined)|null)} listener
+ * @param {(boolean|!{capture: (boolean|undefined), once: (boolean|undefined), passive: (boolean|undefined)})=} options
+ * @this {EventTarget}
+ */
+Element.prototype.addEventListener = function(type, listener, options) { }
 
 var acorn = {
     /**
