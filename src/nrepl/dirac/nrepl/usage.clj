@@ -124,15 +124,15 @@
    "Note: If in a joined session, this command will apply to the target session."])
 
 (def ^:dynamic spawn-usage
-  ["Initialize a new ClojureScript compiler and switch to it."
+  ["Initialize a new ClojureScript compiler."
    ""
    "  1. `(dirac! :spawn)`"
-   "  2. `(dirac! :spawn {:dirac-nrepl-config {...}"
-   "                      :repl-options {...}})`"
+   "  2. `(dirac! :spawn {:dirac-nrepl-config {...} :repl-options {...}})`"
    ""
    "New compiler/repl environment bootstrapping is subject to many possible options. By default we reuse configuration from"
    "current Dirac session. That is the reason why :spawn can be called only from a properly configured Dirac session."
    "For advanced usage you have a chance to override the configuration by passing in an options map (optional)."
+   "You can switch to the newly created compiler via `(dirac! :switch)`"
    ""
    "Note: If in a joined session, this command will apply to the target session."])
 
