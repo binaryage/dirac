@@ -8,12 +8,12 @@
         :url  "https://github.com/binaryage/dirac"}
 
   :dependencies [[org.clojure/clojure "1.9.0-alpha13" :scope "provided"]
-                 [org.clojure/clojurescript "1.9.229" :scope "provided"]
+                 [org.clojure/clojurescript "1.9.293" :scope "provided"]
                  [org.clojure/core.async "0.2.395"]
                  [org.clojure/tools.logging "0.3.1"]
                  [org.clojure/tools.cli "0.3.5"]
                  [org.clojure/tools.nrepl "0.2.12"]
-                 [binaryage/oops "0.5.1"]
+                 [binaryage/oops "0.5.2"]
                  [http-kit "2.2.0"]
                  [version-clj "0.1.2"]
                  [environ "1.1.0"]
@@ -40,10 +40,10 @@
                  [org.slf4j/slf4j-log4j12 "1.7.21" :scope "test"]
 
                  [clj-webdriver "0.7.2" :scope "test"]
-                 [org.seleniumhq.selenium/selenium-java "3.0.0" :scope "test"]
-                 [org.seleniumhq.selenium/selenium-chrome-driver "3.0.0" :scope "test"]
-                 [org.seleniumhq.selenium/selenium-support "3.0.0" :scope "test"]
-                 [org.seleniumhq.selenium/selenium-api "3.0.0" :scope "test"]
+                 [org.seleniumhq.selenium/selenium-java "3.0.1" :scope "test"]
+                 [org.seleniumhq.selenium/selenium-chrome-driver "3.0.1" :scope "test"]
+                 [org.seleniumhq.selenium/selenium-support "3.0.1" :scope "test"]
+                 [org.seleniumhq.selenium/selenium-api "3.0.1" :scope "test"]
                  [org.seleniumhq.selenium/selenium-htmlunit-driver "2.52.0" :scope "test"]
 
                  [ring/ring-core "1.5.0" :scope "test"]
