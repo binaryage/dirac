@@ -139,7 +139,7 @@
 
 (defn enhance-dirac-object! [dirac]
   (doseq [[name fn] dirac-api-to-export]
-    (oset! dirac "!" name fn)))
+    (oset!+ dirac "!" name fn)))
 
 ; -- init code --------------------------------------------------------------------------------------------------------------
 
