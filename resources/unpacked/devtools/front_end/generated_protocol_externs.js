@@ -402,7 +402,7 @@ PageAgent.FrameId;
 /** @typedef {!{id:(string), parentId:(string|undefined), loaderId:(NetworkAgent.LoaderId), name:(string|undefined), url:(string), securityOrigin:(string), mimeType:(string)}} */
 PageAgent.Frame;
 
-/** @typedef {!{url:(string), type:(PageAgent.ResourceType), mimeType:(string), failed:(boolean|undefined), canceled:(boolean|undefined)}} */
+/** @typedef {!{url:(string), type:(PageAgent.ResourceType), mimeType:(string), lastModified:(NetworkAgent.Timestamp|undefined), contentSize:(number|undefined), failed:(boolean|undefined), canceled:(boolean|undefined)}} */
 PageAgent.FrameResource;
 
 /** @typedef {!{frame:(PageAgent.Frame), childFrames:(!Array.<PageAgent.FrameResourceTree>|undefined), resources:(!Array.<PageAgent.FrameResource>)}} */
@@ -1598,13 +1598,6 @@ Protocol.DOMAgent.prototype.getDocument = function(opt_depth, opt_traverseFrames
 Protocol.DOMAgent.prototype.invoke_getDocument = function(obj, opt_callback) {}
 
 /**
- * @param {function(?Protocol.Error, !Array.<DOMAgent.LayoutTreeNode>):void=} opt_callback
- */
-Protocol.DOMAgent.prototype.getLayoutTreeNodes = function(opt_callback) {}
-/** @param {function(?Protocol.Error, !Array.<DOMAgent.LayoutTreeNode>):void=} opt_callback */
-Protocol.DOMAgent.prototype.invoke_getLayoutTreeNodes = function(obj, opt_callback) {}
-
-/**
  * @param {DOMAgent.NodeId} nodeId
  * @param {function(?Protocol.Error, !Array.<string>):void=} opt_callback
  */
@@ -1981,12 +1974,6 @@ DOMAgent.ShadowRootType = {
 /** @typedef {!{nodeId:(DOMAgent.NodeId), nodeType:(number), nodeName:(string), localName:(string), nodeValue:(string), childNodeCount:(number|undefined), children:(!Array.<DOMAgent.Node>|undefined), attributes:(!Array.<string>|undefined), documentURL:(string|undefined), baseURL:(string|undefined), publicId:(string|undefined), systemId:(string|undefined), internalSubset:(string|undefined), xmlVersion:(string|undefined), name:(string|undefined), value:(string|undefined), pseudoType:(DOMAgent.PseudoType|undefined), shadowRootType:(DOMAgent.ShadowRootType|undefined), frameId:(PageAgent.FrameId|undefined), contentDocument:(DOMAgent.Node|undefined), shadowRoots:(!Array.<DOMAgent.Node>|undefined), templateContent:(DOMAgent.Node|undefined), pseudoElements:(!Array.<DOMAgent.Node>|undefined), importedDocument:(DOMAgent.Node|undefined), distributedNodes:(!Array.<DOMAgent.BackendNode>|undefined)}} */
 DOMAgent.Node;
 
-/** @typedef {!{boundingBox:(DOMAgent.Rect), startCharacterIndex:(number), numCharacters:(number)}} */
-DOMAgent.InlineTextBox;
-
-/** @typedef {!{backendNodeId:(DOMAgent.BackendNodeId), boundingBox:(DOMAgent.Rect), layoutText:(string|undefined), inlineTextNodes:(!Array.<DOMAgent.InlineTextBox>|undefined)}} */
-DOMAgent.LayoutTreeNode;
-
 /** @typedef {!{r:(number), g:(number), b:(number), a:(number|undefined)}} */
 DOMAgent.RGBA;
 
@@ -2295,6 +2282,16 @@ Protocol.CSSAgent.prototype.getBackgroundColors = function(nodeId, opt_callback)
 /** @param {function(?Protocol.Error, !Array.<string>=):void=} opt_callback */
 Protocol.CSSAgent.prototype.invoke_getBackgroundColors = function(obj, opt_callback) {}
 
+/**
+ * @param {!Array.<string>} computedStyleWhitelist
+ * @param {function(?Protocol.Error, !Array.<CSSAgent.LayoutTreeNode>, !Array.<CSSAgent.ComputedStyle>):T} opt_callback
+ * @return {!Promise.<T>}
+ * @template T
+ */
+Protocol.CSSAgent.prototype.getLayoutTreeAndStyles = function(computedStyleWhitelist, opt_callback) {}
+/** @param {function(?Protocol.Error, !Array.<CSSAgent.LayoutTreeNode>, !Array.<CSSAgent.ComputedStyle>):void=} opt_callback */
+Protocol.CSSAgent.prototype.invoke_getLayoutTreeAndStyles = function(obj, opt_callback) {}
+
 
 
 var CSSAgent = function(){};
@@ -2374,6 +2371,15 @@ CSSAgent.CSSKeyframeRule;
 
 /** @typedef {!{styleSheetId:(CSSAgent.StyleSheetId), range:(CSSAgent.SourceRange), text:(string)}} */
 CSSAgent.StyleDeclarationEdit;
+
+/** @typedef {!{boundingBox:(DOMAgent.Rect), startCharacterIndex:(number), numCharacters:(number)}} */
+CSSAgent.InlineTextBox;
+
+/** @typedef {!{backendNodeId:(DOMAgent.BackendNodeId), boundingBox:(DOMAgent.Rect), layoutText:(string|undefined), inlineTextNodes:(!Array.<CSSAgent.InlineTextBox>|undefined), styleIndex:(number|undefined)}} */
+CSSAgent.LayoutTreeNode;
+
+/** @typedef {!{properties:(!Array.<CSSAgent.CSSComputedStyleProperty>)}} */
+CSSAgent.ComputedStyle;
 /** @interface */
 CSSAgent.Dispatcher = function() {};
 CSSAgent.Dispatcher.prototype.mediaQueryResultChanged = function() {};
@@ -2559,6 +2565,14 @@ Protocol.TargetAgent.prototype.setAttachToFrames = function(value, opt_callback)
 Protocol.TargetAgent.prototype.invoke_setAttachToFrames = function(obj, opt_callback) {}
 
 /**
+ * @param {!Array.<TargetAgent.RemoteLocation>} locations
+ * @param {function(?Protocol.Error):void=} opt_callback
+ */
+Protocol.TargetAgent.prototype.setRemoteLocations = function(locations, opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+Protocol.TargetAgent.prototype.invoke_setRemoteLocations = function(obj, opt_callback) {}
+
+/**
  * @param {string} targetId
  * @param {string} message
  * @param {function(?Protocol.Error):void=} opt_callback
@@ -2606,16 +2620,11 @@ var TargetAgent = function(){};
 /** @typedef {string} */
 TargetAgent.TargetID;
 
-/** @enum {string} */
-TargetAgent.TargetType = {
-    Page: "page",
-    Iframe: "iframe",
-    Worker: "worker",
-    Service_worker: "service_worker"
-};
-
-/** @typedef {!{targetId:(TargetAgent.TargetID), type:(TargetAgent.TargetType), title:(string), url:(string)}} */
+/** @typedef {!{targetId:(TargetAgent.TargetID), type:(string), title:(string), url:(string)}} */
 TargetAgent.TargetInfo;
+
+/** @typedef {!{host:(string), port:(number)}} */
+TargetAgent.RemoteLocation;
 /** @interface */
 TargetAgent.Dispatcher = function() {};
 /**
@@ -2625,12 +2634,12 @@ TargetAgent.Dispatcher.prototype.targetCreated = function(targetInfo) {};
 /**
  * @param {TargetAgent.TargetID} targetId
  */
-TargetAgent.Dispatcher.prototype.targetRemoved = function(targetId) {};
+TargetAgent.Dispatcher.prototype.targetDestroyed = function(targetId) {};
 /**
- * @param {TargetAgent.TargetID} targetId
+ * @param {TargetAgent.TargetInfo} targetInfo
  * @param {boolean} waitingForDebugger
  */
-TargetAgent.Dispatcher.prototype.attachedToTarget = function(targetId, waitingForDebugger) {};
+TargetAgent.Dispatcher.prototype.attachedToTarget = function(targetInfo, waitingForDebugger) {};
 /**
  * @param {TargetAgent.TargetID} targetId
  */
@@ -3642,16 +3651,6 @@ Protocol.BrowserAgent.prototype.getTargets = function(opt_callback) {}
 Protocol.BrowserAgent.prototype.invoke_getTargets = function(obj, opt_callback) {}
 
 /**
- * @param {!Array.<BrowserAgent.RemoteLocation>} locations
- * @param {function(?Protocol.Error):T=} opt_callback
- * @return {!Promise.<T>}
- * @template T
- */
-Protocol.BrowserAgent.prototype.setRemoteLocations = function(locations, opt_callback) {}
-/** @param {function(?Protocol.Error):void=} opt_callback */
-Protocol.BrowserAgent.prototype.invoke_setRemoteLocations = function(obj, opt_callback) {}
-
-/**
  * @param {BrowserAgent.TargetID} targetId
  * @param {function(?Protocol.Error, boolean):T} opt_callback
  * @return {!Promise.<T>}
@@ -3694,9 +3693,6 @@ BrowserAgent.TargetID;
 
 /** @typedef {!{targetId:(BrowserAgent.TargetID), type:(string), title:(string), url:(string)}} */
 BrowserAgent.TargetInfo;
-
-/** @typedef {!{host:(string), port:(number)}} */
-BrowserAgent.RemoteLocation;
 /** @interface */
 BrowserAgent.Dispatcher = function() {};
 /**
