@@ -104,18 +104,18 @@
           (<!* a/clear-console-prompt!)
           (<!* a/simulate-console-input! "dirac")
           (is (string/includes? (<!* a/scrape :suggest-box) "dirac|!")))
-        (testing "'import' should be present as repl special command"
+        (testing "'load-file' should be present as repl special command"
           (<!* a/clear-console-prompt!)
-          (<!* a/simulate-console-input! "impor")
-          (is (string/includes? (<!* a/scrape :suggest-box) "impor|t")))
+          (<!* a/simulate-console-input! "load-fi")
+          (is (string/includes? (<!* a/scrape :suggest-box) "load-fi|le")))
         (testing "'in-ns' should be present as repl special command"
           (<!* a/clear-console-prompt!)
           (<!* a/simulate-console-input! "in-")
           (is (string/includes? (<!* a/scrape :suggest-box) "in-|ns")))
-        (testing "'require' should be present as repl special command"
+        (testing "'load-namespace' should be present as repl special command"
           (<!* a/clear-console-prompt!)
-          (<!* a/simulate-console-input! "requi")
-          (is (string/includes? (<!* a/scrape :suggest-box) "requi|re")))
+          (<!* a/simulate-console-input! "load-name")
+          (is (string/includes? (<!* a/scrape :suggest-box) "load-name|space")))
         (testing "*1 *2 *3 *e should be present as repl special commands"
           (<!* a/clear-console-prompt!)
           (<!* a/simulate-console-input! "*")
