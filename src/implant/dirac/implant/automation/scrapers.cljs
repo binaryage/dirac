@@ -232,11 +232,13 @@
            (print-list)))
 
 (defmethod scrape :suggest-box [_ & _]
-  (safe->> (find-suggest-box-element)
-           (build-rep)
-           (select-subreps suggest-box-item-rep?)
-           (map print-suggest-box-item)
-           (print-list)))
+  (if-let [suggest-box-el (find-suggest-box-element)]
+    (safe->> suggest-box-el
+             (build-rep)
+             (select-subreps suggest-box-item-rep?)
+             (map print-suggest-box-item)
+             (print-list))
+    (print-list (list))))
 
 (defmethod scrape :function-names-in-last-console-exception [_ & _]
   (safe->> (find-last-console-log-element "error")
