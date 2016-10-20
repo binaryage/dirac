@@ -17,7 +17,8 @@
             [dirac.automation.messages :as messages]
             [dirac.automation.launcher :as launcher]
             [dirac.automation.helpers :as helpers]
-            [dirac.utils :as utils]))
+            [dirac.utils :as utils]
+            [dirac.automation.runner :as runner]))
 
 (declare register-global-exception-handler!)
 
@@ -86,10 +87,9 @@
 (defn running? []
   (nil? @exit-code))
 
-(defn frozen? []
+(defn pause-if-not-under-test-runner! []
   (if-not (helpers/is-test-runner-present?)
-    (or (failed?)
-        (not (running?)))))
+    (runner/pause)))
 
 (defn set-exit-code! [code]
   (log "set-exit-code!" code)
@@ -101,7 +101,8 @@
       (when (or (= label "fail")
                 (= label "error"))
         (log "FAILURE detected")
-        (vreset! failed-state? true)))
+        (vreset! failed-state? true)
+        (pause-if-not-under-test-runner!)))
     false))
 
 ; -- task life-cycle --------------------------------------------------------------------------------------------------------
