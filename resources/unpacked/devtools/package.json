@@ -5,7 +5,9 @@
     "start": "node scripts/start_chrome_and_server.js",
     "chrome": "node scripts/chrome_debug_launcher/launch_chrome.js",
     "server": "node scripts/hosted_mode/server.js",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "node scripts/npm_test.js",
+    "test:build": "node scripts/npm_test.js --build-only",
+    "test:run": "node scripts/npm_test.js --test-only",
     "lint": "eslint -c front_end/.eslintrc.js --ignore-path front_end/.eslintignore front_end"
   },
   "repository": {
@@ -24,5 +26,8 @@
   "bugs": {
     "url": "https://bugs.chromium.org/p/chromium/issues/list?can=2&q=component:Platform%3EDevTools%20&sort=-opened&colspec=ID%20Stars%20Owner%20Summary%20Modified%20Opened"
   },
-  "homepage": "https://devtools.chrome.com"
+  "homepage": "https://devtools.chrome.com",
+  "devDependencies": {
+    "eslint": "3.5.0"
+  }
 }
