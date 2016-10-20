@@ -211,9 +211,9 @@ automate #1      clear-console-prompt!
 automate #1      simulate-console-input! ["dirac"]
 automate #1      scrape [:suggest-box]
 ∎
-testing          'import' should be present as repl special command
+testing          'load-file' should be present as repl special command
 automate #1      clear-console-prompt!
-automate #1      simulate-console-input! ["impor"]
+automate #1      simulate-console-input! ["load-fi"]
 automate #1      scrape [:suggest-box]
 ∎
 testing          'in-ns' should be present as repl special command
@@ -221,9 +221,9 @@ automate #1      clear-console-prompt!
 automate #1      simulate-console-input! ["in-"]
 automate #1      scrape [:suggest-box]
 ∎
-testing          'require' should be present as repl special command
+testing          'load-namespace' should be present as repl special command
 automate #1      clear-console-prompt!
-automate #1      simulate-console-input! ["requi"]
+automate #1      simulate-console-input! ["load-name"]
 automate #1      scrape [:suggest-box]
 ∎
 testing          *1 *2 *3 *e should be present as repl special commands
