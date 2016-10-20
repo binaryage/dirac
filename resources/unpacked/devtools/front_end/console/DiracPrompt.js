@@ -29,14 +29,14 @@ WebInspector.DiracPromptWithHistory.prototype = {
     /**
      * @return {boolean}
      */
-    hasFocus: function()
-    {
+    hasFocus: function() {
         return this._codeMirror.hasFocus();
     },
 
     focus: function() {
         this._codeMirror.focus();
-        // HACK: this is needed to properly display cursor in empty codemirror: http://stackoverflow.com/questions/10575833/codemirror-has-content-but-wont-display-until-keypress
+        // HACK: this is needed to properly display cursor in empty codemirror:
+        // http://stackoverflow.com/questions/10575833/codemirror-has-content-but-wont-display-until-keypress
         this._codeMirror.refresh();
     },
 
@@ -107,6 +107,9 @@ WebInspector.DiracPromptWithHistory.prototype = {
     },
 
     finishAutocomplete: function() {
+        if (dirac._DEBUG_COMPLETIONS) {
+            console.log("finishAutocomplete", (new Error()).stack);
+        }
         this.clearAutocomplete();
         this._prefixRange = null;
         this._anchorBox = null;
@@ -167,10 +170,14 @@ WebInspector.DiracPromptWithHistory.prototype = {
         }
 
         const cursor = this._codeMirror.getCursor();
-        if (cursor.line !== this._prefixRange.startLine ||
-            cursor.ch > this._prefixRange.endColumn ||
-            cursor.ch <= this._prefixRange.startColumn) {
-            this.finishAutocomplete();
+        if (this._prefixRange) {
+            if (cursor.line !== this._prefixRange.startLine ||
+                cursor.ch > this._prefixRange.endColumn ||
+                cursor.ch <= this._prefixRange.startColumn) {
+                this.finishAutocomplete();
+            }
+        } else {
+            console.log("_prefixRange nil (unexpected)", (new Error()).stack);
         }
     },
 
@@ -769,9 +776,15 @@ WebInspector.DiracPromptWithHistory.prototype = {
 
 
     _updateAnchorBox: function() {
-        const line = this._prefixRange.startLine;
-        const column = this._prefixRange.startColumn;
-        const metrics = this.cursorPositionToCoordinates(line, column);
+        let metrics;
+        if (this._prefixRange) {
+            const line = this._prefixRange.startLine;
+            const column = this._prefixRange.startColumn;
+            metrics = this.cursorPositionToCoordinates(line, column);
+        } else {
+            console.log("_prefixRange nil (unexpected)", (new Error()).stack);
+            metrics = this.cursorPositionToCoordinates(0, 0);
+        }
         this._anchorBox = metrics ? new AnchorBox(metrics.x, metrics.y, 0, metrics.height) : null;
     },
 
@@ -809,8 +822,13 @@ WebInspector.DiracPromptWithHistory.prototype = {
      * @override
      */
     acceptSuggestion: function() {
-        if (this._prefixRange.endColumn - this._prefixRange.startColumn === this._currentSuggestion.length)
+        if (!this._prefixRange) {
+            console.log("_prefixRange nil (unexpected)", (new Error()).stack);
+            return
+        }
+        if (this._prefixRange.endColumn - this._prefixRange.startColumn === this._currentSuggestion.length) {
             return;
+        }
 
         const selections = this._codeMirror.listSelections().slice();
         if (dirac._DEBUG_COMPLETIONS) {
