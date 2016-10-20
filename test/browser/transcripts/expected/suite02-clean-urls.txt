@@ -13,15 +13,15 @@ automate         trigger! [:pause-on-breakpoint]
 devtools #1      setCurrentPanel: sources
 automate #1      scrape! [:callstack-pane-locations]
 stdout           displayed 9 items:
-                  * core.cljs:10 / http://localhost:9090/.compiled/scenarios01/dirac/tests/scenarios/breakpoint/core.cljs?rel=***
-                  * core.cljs:15 / http://localhost:9090/.compiled/scenarios01/dirac/tests/scenarios/breakpoint/core.cljs?rel=***
-                  * breakpoint.cljs:7 / http://localhost:9090/.compiled/scenarios01/dirac/tests/scenarios/breakpoint.cljs?rel=***
-                  * core.cljs:3685 / http://localhost:9090/.compiled/scenarios01/cljs/core.cljs:3685
-                  * core.cljs:3676 / http://localhost:9090/.compiled/scenarios01/cljs/core.cljs:3676
-                  * scenario.cljs:39 / http://localhost:9090/.compiled/scenarios01/dirac/automation/scenario.cljs?rel=***
-                  * scenario.cljs:57 / http://localhost:9090/.compiled/scenarios01/dirac/automation/scenario.cljs?rel=***
-                  * notifications.cljs:48 / http://localhost:9090/.compiled/scenarios01/dirac/automation/notifications.cljs?rel=***
-                  * notifications.cljs:53 / http://localhost:9090/.compiled/scenarios01/dirac/automation/notifications.cljs?rel=***
+                  * core.cljs:<line> / http://localhost:9090/.compiled/scenarios01/dirac/tests/scenarios/breakpoint/core.cljs?rel=***
+                  * core.cljs:<line> / http://localhost:9090/.compiled/scenarios01/dirac/tests/scenarios/breakpoint/core.cljs?rel=***
+                  * breakpoint.cljs:<line> / http://localhost:9090/.compiled/scenarios01/dirac/tests/scenarios/breakpoint.cljs?rel=***
+                  * core.cljs:<line> / http://localhost:9090/.compiled/scenarios01/cljs/core.cljs:<line>
+                  * core.cljs:<line> / http://localhost:9090/.compiled/scenarios01/cljs/core.cljs:<line>
+                  * scenario.cljs:<line> / http://localhost:9090/.compiled/scenarios01/dirac/automation/scenario.cljs?rel=***
+                  * scenario.cljs:<line> / http://localhost:9090/.compiled/scenarios01/dirac/automation/scenario.cljs?rel=***
+                  * notifications.cljs:<line> / http://localhost:9090/.compiled/scenarios01/dirac/automation/notifications.cljs?rel=***
+                  * notifications.cljs:<line> / http://localhost:9090/.compiled/scenarios01/dirac/automation/notifications.cljs?rel=***
 automate #1      close-devtools!
 extension        handling command: close-dirac-devtools
 extension        unregister devtools #1
@@ -46,8 +46,8 @@ stdout           displayed 9 items:
                   * core.cljs?rel=*** / http://localhost:9090/.compiled/scenarios01/dirac/tests/scenarios/breakpoint/core.cljs?rel=***
                   * core.cljs?rel=*** / http://localhost:9090/.compiled/scenarios01/dirac/tests/scenarios/breakpoint/core.cljs?rel=***
                   * breakpoint.cljs…*** / http://localhost:9090/.compiled/scenarios01/dirac/tests/scenarios/breakpoint.cljs?rel=***
-                  * core.cljs:3685 / http://localhost:9090/.compiled/scenarios01/cljs/core.cljs:3685
-                  * core.cljs:3676 / http://localhost:9090/.compiled/scenarios01/cljs/core.cljs:3676
+                  * core.cljs:<line> / http://localhost:9090/.compiled/scenarios01/cljs/core.cljs:<line>
+                  * core.cljs:<line> / http://localhost:9090/.compiled/scenarios01/cljs/core.cljs:<line>
                   * scenario.cljs?r…*** / http://localhost:9090/.compiled/scenarios01/dirac/automation/scenario.cljs?rel=***
                   * scenario.cljs?r…*** / http://localhost:9090/.compiled/scenarios01/dirac/automation/scenario.cljs?rel=***
                   * notifications.c…*** / http://localhost:9090/.compiled/scenarios01/dirac/automation/notifications.cljs?rel=***

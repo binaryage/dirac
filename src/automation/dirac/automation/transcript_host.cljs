@@ -198,6 +198,9 @@
 (defn replace-chrome-extension-urls [s]
   (string/replace s #"chrome-extension://.*?/" "chrome-extension://<extension-id>/"))
 
+(defn replace-cljs-line-numbers [s]
+  (string/replace s #"\.cljs:\d+" ".cljs:<line>"))
+
 (defn transformer [console-output]
   (-> console-output
       replace-shortened-urls
@@ -205,7 +208,8 @@
       replace-gensyms
       replace-internal-error
       replace-dirac-repl-ids
-      replace-chrome-extension-urls))
+      replace-chrome-extension-urls
+      replace-cljs-line-numbers))
 
 (defn process-default-state! [label text]
   (cond
