@@ -343,8 +343,6 @@ WebInspector.Main.prototype = {
         target.runtimeAgent().runIfWaitingForDebugger();
         if (target.hasBrowserCapability())
             target.inspectorAgent().enable();
-        if (Runtime.experiments.isEnabled("nodeDebugging"))
-            new WebInspector.RemoteLocationManager(target);
         console.timeEnd("Main._createMainTarget");
     },
 

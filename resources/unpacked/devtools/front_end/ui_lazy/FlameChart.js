@@ -66,7 +66,7 @@ WebInspector.FlameChart = function(dataProvider, flameChartDelegate, groupExpans
     this._dataProvider = dataProvider;
     this._calculator = new WebInspector.FlameChart.Calculator(dataProvider);
 
-    this._canvas = this.contentElement.createChild("canvas");
+    this._canvas = /** @type {!HTMLCanvasElement} */ (this.viewportElement.createChild("canvas"));
     this._canvas.tabIndex = 1;
     this.setDefaultFocusedElement(this._canvas);
     this._canvas.addEventListener("mousemove", this._onMouseMove.bind(this), false);
@@ -74,10 +74,10 @@ WebInspector.FlameChart = function(dataProvider, flameChartDelegate, groupExpans
     this._canvas.addEventListener("click", this._onClick.bind(this), false);
     this._canvas.addEventListener("keydown", this._onKeyDown.bind(this), false);
 
-    this._entryInfo = this.contentElement.createChild("div", "flame-chart-entry-info");
-    this._markerHighlighElement = this.contentElement.createChild("div", "flame-chart-marker-highlight-element");
-    this._highlightElement = this.contentElement.createChild("div", "flame-chart-highlight-element");
-    this._selectedElement = this.contentElement.createChild("div", "flame-chart-selected-element");
+    this._entryInfo = this.viewportElement.createChild("div", "flame-chart-entry-info");
+    this._markerHighlighElement = this.viewportElement.createChild("div", "flame-chart-marker-highlight-element");
+    this._highlightElement = this.viewportElement.createChild("div", "flame-chart-highlight-element");
+    this._selectedElement = this.viewportElement.createChild("div", "flame-chart-selected-element");
 
     this._windowLeft = 0.0;
     this._windowRight = 1.0;
@@ -168,13 +168,6 @@ WebInspector.FlameChartDataProvider.prototype = {
      * @return {number}
      */
     barHeight: function() { },
-
-    /**
-     * @param {number} startTime
-     * @param {number} endTime
-     * @return {?Array.<number>}
-     */
-    dividerOffsets: function(startTime, endTime) { },
 
     /**
      * @return {number}
@@ -505,7 +498,6 @@ WebInspector.FlameChart.prototype = {
     hideHighlight: function()
     {
         this._entryInfo.removeChildren();
-        this._canvas.style.cursor = "default";
         this._highlightedEntryIndex = -1;
         this._updateElementPosition(this._highlightElement, this._highlightedEntryIndex);
     },
@@ -584,7 +576,7 @@ WebInspector.FlameChart.prototype = {
             return;
         if (this._coordinatesToGroupIndex(event.offsetX, event.offsetY) >= 0) {
             this.hideHighlight();
-            this._canvas.style.cursor = "pointer";
+            this.viewportElement.style.cursor = "pointer";
             return;
         }
         this._updateHighlight();
@@ -601,8 +593,10 @@ WebInspector.FlameChart.prototype = {
             this.hideHighlight();
             return;
         }
+        if (this.isDragging())
+            return;
         this._updatePopover(entryIndex);
-        this._canvas.style.cursor = this._dataProvider.canJumpToEntry(entryIndex) ? "pointer" : "default";
+        this.viewportElement.style.cursor = this._dataProvider.canJumpToEntry(entryIndex) ? "pointer" : "default";
         this.highlightEntry(entryIndex);
     },
 
@@ -868,7 +862,7 @@ WebInspector.FlameChart.prototype = {
 
         if (group < 0 || group >= groups.length || y - this._groupOffsets[group] >= groups[group].style.height)
             return -1;
-        var context = this._canvas.getContext("2d");
+        var context = /** @type {!CanvasRenderingContext2D} */ (this._canvas.getContext("2d"));
         context.save();
         context.font = groups[group].style.font;
         var right = this._headerLeftPadding + this._labelWidthForGroup(context, groups[group]);
@@ -925,13 +919,14 @@ WebInspector.FlameChart.prototype = {
         if (!timelineData)
             return;
 
-        var context = this._canvas.getContext("2d");
+        var context = /** @type {!CanvasRenderingContext2D} */ (this._canvas.getContext("2d"));
         context.save();
         var ratio = window.devicePixelRatio;
         var top = this.scrollOffset();
         context.scale(ratio, ratio);
         context.translate(0, -top);
-        context.font = "11px " + WebInspector.fontFamily();
+        var defaultFont = "11px " + WebInspector.fontFamily();
+        context.font = defaultFont;
 
         var timeWindowRight = this._timeWindowRight;
         var timeWindowLeft = this._timeWindowLeft - this._paddingLeft / this._timeToPixel;
@@ -1036,7 +1031,7 @@ WebInspector.FlameChart.prototype = {
             var barY = this._levelToHeight(barLevel);
             var text = this._dataProvider.entryTitle(entryIndex);
             if (text && text.length) {
-                context.font = this._dataProvider.entryFont(entryIndex);
+                context.font = this._dataProvider.entryFont(entryIndex) || defaultFont;
                 text = this._prepareText(context, text, barWidth - 2 * textPadding);
             }
             var unclippedBarX = this._timeToPosition(entryStartTime);
@@ -1052,8 +1047,7 @@ WebInspector.FlameChart.prototype = {
 
         context.restore();
 
-        var offsets = this._dataProvider.dividerOffsets(this._calculator.minimumBoundary(), this._calculator.maximumBoundary());
-        WebInspector.TimelineGrid.drawCanvasGrid(this._canvas, this._calculator, offsets);
+        WebInspector.TimelineGrid.drawCanvasGrid(this._canvas, this._calculator);
         this._drawMarkers();
         this._drawGroupHeaders(width, height);
 
@@ -1068,7 +1062,7 @@ WebInspector.FlameChart.prototype = {
      */
     _drawGroupHeaders: function(width, height)
     {
-        var context = this._canvas.getContext("2d");
+        var context = /** @type {!CanvasRenderingContext2D} */ (this._canvas.getContext("2d"));
         var top = this.scrollOffset();
         var ratio = window.devicePixelRatio;
         var barHeight = this._barHeight;
@@ -1225,7 +1219,7 @@ WebInspector.FlameChart.prototype = {
         var range = new WebInspector.SegmentedRange(mergeCallback);
         var timeWindowRight = this._timeWindowRight;
         var timeWindowLeft = this._timeWindowLeft - this._paddingLeft / this._timeToPixel;
-        var context = this._canvas.getContext("2d");
+        var context = /** @type {!CanvasRenderingContext2D} */ (this._canvas.getContext("2d"));
         var barHeight = this._barHeight - 2;
         var entryStartTimes = this._rawTimelineData.entryStartTimes;
         var entryTotalTimes = this._rawTimelineData.entryTotalTimes;
@@ -1334,7 +1328,7 @@ WebInspector.FlameChart.prototype = {
         var left = this._markerIndexBeforeTime(this._calculator.minimumBoundary());
         var rightBoundary = this._calculator.maximumBoundary();
 
-        var context = this._canvas.getContext("2d");
+        var context = /** @type {!CanvasRenderingContext2D} */ (this._canvas.getContext("2d"));
         context.save();
         var ratio = window.devicePixelRatio;
         context.scale(ratio, ratio);
@@ -1362,7 +1356,7 @@ WebInspector.FlameChart.prototype = {
         var style = element.style;
         style.left = barX + "px";
         style.backgroundColor = marker.color();
-        this.contentElement.appendChild(element);
+        this.viewportElement.appendChild(element);
     },
 
     /**
@@ -1403,6 +1397,7 @@ WebInspector.FlameChart.prototype = {
                 groups[i].expanded = expanded;
         }
         this._updateLevelPositions();
+        this._updateHeight();
     },
 
     _updateLevelPositions: function()
@@ -1509,7 +1504,7 @@ WebInspector.FlameChart.prototype = {
         style.top = barY + "px";
         style.width = barWidth + "px";
         style.height = this._barHeight - 1 + "px";
-        this.contentElement.appendChild(element);
+        this.viewportElement.appendChild(element);
     },
 
     /**

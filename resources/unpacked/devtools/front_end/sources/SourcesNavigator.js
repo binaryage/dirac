@@ -59,7 +59,7 @@ WebInspector.SourcesNavigatorView.prototype = {
             return;
         var inspectedURL = mainTarget && mainTarget.inspectedURL();
         if (!inspectedURL)
-            return
+            return;
         for (var node of this._uiSourceCodeNodes.valuesArray()) {
             var uiSourceCode = node.uiSourceCode();
             if (uiSourceCode.url() === inspectedURL)
@@ -73,8 +73,11 @@ WebInspector.SourcesNavigatorView.prototype = {
      */
     uiSourceCodeAdded: function(uiSourceCode)
     {
-        var inspectedPageURL = WebInspector.targetManager.mainTarget().inspectedURL();
-        if (uiSourceCode.url() === inspectedPageURL)
+        var mainTarget = WebInspector.targetManager.mainTarget();
+        var inspectedURL = mainTarget && mainTarget.inspectedURL();
+        if (!inspectedURL)
+            return;
+        if (uiSourceCode.url() === inspectedURL)
             this.revealUISourceCode(uiSourceCode, true);
     },
 
@@ -137,8 +140,11 @@ WebInspector.NetworkNavigatorView.prototype = {
      */
     uiSourceCodeAdded: function(uiSourceCode)
     {
-        var inspectedPageURL = WebInspector.targetManager.mainTarget().inspectedURL();
-        if (uiSourceCode.url() === inspectedPageURL)
+        var mainTarget = WebInspector.targetManager.mainTarget();
+        var inspectedURL = mainTarget && mainTarget.inspectedURL();
+        if (!inspectedURL)
+            return;
+        if (uiSourceCode.url() === inspectedURL)
             this.revealUISourceCode(uiSourceCode, true);
     },
 
@@ -209,6 +215,11 @@ WebInspector.ContentScriptsNavigatorView.prototype = {
 WebInspector.SnippetsNavigatorView = function()
 {
     WebInspector.NavigatorView.call(this);
+    var toolbar = new WebInspector.Toolbar("snippets-navigator-toolbar");
+    var newButton = new WebInspector.ToolbarButton(WebInspector.UIString("New"), "add-toolbar-item");
+    newButton.addEventListener("click", this._handleCreateSnippet.bind(this));
+    toolbar.appendToolbarItem(newButton);
+    this.element.insertBefore(toolbar.element, this.element.firstChild);
 }
 
 WebInspector.SnippetsNavigatorView.prototype = {
