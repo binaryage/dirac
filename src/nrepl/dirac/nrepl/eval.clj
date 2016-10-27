@@ -103,7 +103,13 @@
 
 (defn repl-print! [final-ns-volatile response-fn result]
   (log/trace "repl-print!" result (if-not response-fn "(no response-fn)"))
-  (vreset! final-ns-volatile analyzer/*cljs-ns*)                                                                              ; see https://github.com/binaryage/dirac/issues/47
+  ; we have to capture analyzer/*cljs-ns* in print handler because of
+  ; https://github.com/clojure/clojurescript/blob/9959ae779dd60ca0b2a7093d1129568f3a658446/src/main/clojure/cljs/repl.cljc#L755
+  ; there is no better way I could find, ideally we would want to capture final *cljs-ns* right before binding from above line gets restored
+  ; this also explanation why piggieback did it there:
+  ; https://github.com/cemerick/piggieback/blob/440b2d03f944f6418844c2fab1e0361387eed543/src/cemerick/piggieback.clj#L183
+  ; also see https://github.com/binaryage/dirac/issues/47
+  (vreset! final-ns-volatile analyzer/*cljs-ns*)
   (if response-fn
     (let [response (-> (protocol/prepare-printed-value-response result)
                        (merge (prepare-current-env-info-response)))]
