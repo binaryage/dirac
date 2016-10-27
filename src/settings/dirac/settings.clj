@@ -59,7 +59,6 @@
 
 (def ^:const FIXTURES_SERVER_HOST "localhost")
 (def ^:const FIXTURES_SERVER_PORT 9090)
-(def ^:const FIXTURES_SERVER_WARMUP_TIME (seconds 2))
 
 (def ^:const SIGNAL_SERVER_HOST "localhost")
 (def ^:const SIGNAL_SERVER_PORT 22555)
@@ -220,9 +219,6 @@
 (defmacro get-fixtures-server-url []
   (let [port (get-fixtures-server-port)]
     (str "http://" (get-fixtures-server-host) (if (some? port) (str ":" port)))))
-
-(defmacro get-fixtures-server-warmup-time []
-  FIXTURES_SERVER_WARMUP_TIME)
 
 (defmacro get-signal-server-host []
   SIGNAL_SERVER_HOST)
