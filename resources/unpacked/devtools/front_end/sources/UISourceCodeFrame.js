@@ -33,8 +33,9 @@
  */
 WebInspector.UISourceCodeFrame = function(uiSourceCode)
 {
-    this._uiSourceCode = uiSourceCode;
     WebInspector.SourceFrame.call(this, uiSourceCode.contentURL(), workingCopy);
+    this._uiSourceCode = uiSourceCode;
+    this.setEditable(this._canEditSource());
 
     if (Runtime.experiments.isEnabled("sourceDiff"))
         this._diff = new WebInspector.SourceCodeDiff(uiSourceCode.requestOriginalContent(), this.textEditor);
@@ -63,7 +64,9 @@ WebInspector.UISourceCodeFrame = function(uiSourceCode)
 
     this._updateStyle();
 
-    this._errorPopoverHelper = new WebInspector.PopoverHelper(this.element, this._getErrorAnchor.bind(this), this._showErrorPopover.bind(this));
+    this._errorPopoverHelper = new WebInspector.PopoverHelper(this.element);
+    this._errorPopoverHelper.initializeCallbacks(this._getErrorAnchor.bind(this), this._showErrorPopover.bind(this));
+
     this._errorPopoverHelper.setTimeout(100, 100);
 
     /**
@@ -75,7 +78,7 @@ WebInspector.UISourceCodeFrame = function(uiSourceCode)
             return /** @type {!Promise<?string>} */(Promise.resolve(uiSourceCode.workingCopy()));
         return uiSourceCode.requestContent();
     }
-}
+};
 
 WebInspector.UISourceCodeFrame.prototype = {
     /**
@@ -106,10 +109,9 @@ WebInspector.UISourceCodeFrame.prototype = {
     },
 
     /**
-     * @override
      * @return {boolean}
      */
-    canEditSource: function()
+    _canEditSource: function()
     {
         if (WebInspector.persistence.binding(this._uiSourceCode))
             return true;
@@ -214,7 +216,7 @@ WebInspector.UISourceCodeFrame.prototype = {
     _updateStyle: function()
     {
         this.element.classList.toggle("source-frame-unsaved-committed-changes", WebInspector.persistence.hasUnsavedCommittedChanges(this._uiSourceCode));
-        this._textEditor.setReadOnly(!this.canEditSource());
+        this.setEditable(!this._canEditSource());
     },
 
     onUISourceCodeContentChanged: function()
@@ -439,7 +441,7 @@ WebInspector.UISourceCodeFrame.prototype = {
     },
 
     __proto__: WebInspector.SourceFrame.prototype
-}
+};
 
 WebInspector.UISourceCodeFrame._iconClassPerLevel = {};
 WebInspector.UISourceCodeFrame._iconClassPerLevel[WebInspector.UISourceCode.Message.Level.Error] = "error-icon";
@@ -456,7 +458,7 @@ WebInspector.UISourceCodeFrame._lineClassPerLevel[WebInspector.UISourceCode.Mess
 /**
  * @interface
  */
-WebInspector.UISourceCodeFrame.LineDecorator = function() { }
+WebInspector.UISourceCodeFrame.LineDecorator = function() { };
 
 WebInspector.UISourceCodeFrame.LineDecorator.prototype = {
     /**
@@ -464,7 +466,7 @@ WebInspector.UISourceCodeFrame.LineDecorator.prototype = {
      * @param {!WebInspector.CodeMirrorTextEditor} textEditor
      */
     decorate: function(uiSourceCode, textEditor) { }
-}
+};
 
 /**
  * @constructor
@@ -485,7 +487,7 @@ WebInspector.UISourceCodeFrame.RowMessage = function(message)
         var messageLine = linesContainer.createChild("div");
         messageLine.textContent = lines[i];
     }
-}
+};
 
 WebInspector.UISourceCodeFrame.RowMessage.prototype = {
     /**
@@ -519,7 +521,7 @@ WebInspector.UISourceCodeFrame.RowMessage.prototype = {
         this._repeatCountElement.classList.toggle("hidden", !showRepeatCount);
         this._icon.classList.toggle("hidden", showRepeatCount);
     }
-}
+};
 
 /**
  * @constructor
@@ -543,7 +545,7 @@ WebInspector.UISourceCodeFrame.RowMessageBucket = function(sourceFrame, textEdit
     this._messages = [];
 
     this._level = null;
-}
+};
 
 WebInspector.UISourceCodeFrame.RowMessageBucket.prototype = {
     /**
@@ -661,7 +663,7 @@ WebInspector.UISourceCodeFrame.RowMessageBucket.prototype = {
         this._textEditor.toggleLineClass(lineNumber, WebInspector.UISourceCodeFrame._lineClassPerLevel[this._level], true);
         this._icon.type = WebInspector.UISourceCodeFrame._iconClassPerLevel[this._level];
     }
-}
+};
 
 WebInspector.UISourceCode.Message._messageLevelPriority = {
     "Warning": 3,
@@ -676,4 +678,4 @@ WebInspector.UISourceCode.Message._messageLevelPriority = {
 WebInspector.UISourceCode.Message.messageLevelComparator = function(a, b)
 {
     return WebInspector.UISourceCode.Message._messageLevelPriority[a.level()] - WebInspector.UISourceCode.Message._messageLevelPriority[b.level()];
-}
+};

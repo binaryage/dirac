@@ -5,9 +5,11 @@
 /**
  * @constructor
  * @param {!WebInspector.NetworkLogView} networkLogView
+ * @param {!WebInspector.NetworkTransferTimeCalculator} timeCalculator
+ * @param {!WebInspector.NetworkTransferDurationCalculator} durationCalculator
  * @param {!WebInspector.Setting} networkLogLargeRowsSetting
  */
-WebInspector.NetworkLogViewColumns = function(networkLogView, networkLogLargeRowsSetting)
+WebInspector.NetworkLogViewColumns = function(networkLogView, timeCalculator, durationCalculator, networkLogLargeRowsSetting)
 {
     if (Runtime.experiments.isEnabled("canvasNetworkTimeline")) {
         var timelineColumn = WebInspector.NetworkLogViewColumns._defaultColumns.find(columnConfig => columnConfig.id === "timeline");
@@ -34,17 +36,28 @@ WebInspector.NetworkLogViewColumns = function(networkLogView, networkLogLargeRow
 
     this._gridMode = true;
 
-    /** @type {?WebInspector.DataGrid} */
-    this._dataGrid = null;
     /** @type {!Array.<!WebInspector.NetworkLogViewColumns.Descriptor>} */
     this._columns = [];
 
     /** @type {?WebInspector.TimelineGrid} */
     this._timelineGrid = null;
+    this._timelineHeaderElement = null;
+    this._timelineRequestsAreStale = false;
 
     /** @type {!WebInspector.Linkifier} */
     this._popupLinkifier = new WebInspector.Linkifier();
-}
+
+    /** @type {!Map<string, !WebInspector.NetworkTimeCalculator>} */
+    this._calculatorsMap = new Map();
+    this._calculatorsMap.set(WebInspector.NetworkLogViewColumns._calculatorTypes.Time, timeCalculator);
+    this._calculatorsMap.set(WebInspector.NetworkLogViewColumns._calculatorTypes.Duration, durationCalculator);
+
+    this._setupDataGrid();
+    if (Runtime.experiments.isEnabled("canvasNetworkTimeline"))
+        this._setupTimeline();
+
+    this._updateRowsSize();
+};
 WebInspector.NetworkLogViewColumns._initialSortColumn = "timeline";
 
 /**
@@ -377,12 +390,7 @@ WebInspector.NetworkLogViewColumns.prototype = {
         this.updateDividersIfNeeded();
     },
 
-    /**
-     * @param {!WebInspector.NetworkTransferTimeCalculator} timeCalculator
-     * @param {!WebInspector.NetworkTransferDurationCalculator} durationCalculator
-     * @return {!WebInspector.SortableDataGrid} dataGrid
-     */
-    createGrid: function(timeCalculator, durationCalculator)
+    _setupDataGrid: function()
     {
         var defaultColumns = WebInspector.NetworkLogViewColumns._defaultColumns;
         var defaultColumnConfig = WebInspector.NetworkLogViewColumns._defaultColumnConfig;
@@ -397,18 +405,19 @@ WebInspector.NetworkLogViewColumns.prototype = {
         }
         this._loadColumns();
 
-        /** @type {!Map<string, !WebInspector.NetworkTimeCalculator>} */
-        this._calculatorsMap = new Map();
-        this._calculatorsMap.set(WebInspector.NetworkLogViewColumns._calculatorTypes.Time, timeCalculator);
-        this._calculatorsMap.set(WebInspector.NetworkLogViewColumns._calculatorTypes.Duration, durationCalculator);
-
-        this._popoverHelper = new WebInspector.PopoverHelper(this._networkLogView.element, this._getPopoverAnchor.bind(this), this._showPopover.bind(this), this._onHidePopover.bind(this));
+        this._popoverHelper = new WebInspector.PopoverHelper(this._networkLogView.element);
+        this._popoverHelper.initializeCallbacks(this._getPopoverAnchor.bind(this), this._showPopover.bind(this), this._onHidePopover.bind(this));
 
         this._dataGrid = new WebInspector.SortableDataGrid(this._columns.map(WebInspector.NetworkLogViewColumns._convertToDataGridDescriptor));
+        this._dataGrid.element.addEventListener("mousedown", event => {
+            if ((!this._dataGrid.selectedNode && event.button) || event.target.enclosingNodeOrSelfWithNodeName("a"))
+                event.consume();
+        }, true);
 
         this._updateColumns();
         this._dataGrid.addEventListener(WebInspector.DataGrid.Events.SortingChanged, this._sortHandler, this);
         this._dataGrid.addEventListener(WebInspector.DataGrid.Events.ColumnsResized, this.updateDividersIfNeeded, this);
+        this._dataGrid.setHeaderContextMenuCallback(this._innerHeaderContextMenu.bind(this));
 
         this._timelineGrid = new WebInspector.TimelineGrid();
         this._timelineGrid.element.classList.add("network-timeline-grid");
@@ -419,8 +428,125 @@ WebInspector.NetworkLogViewColumns.prototype = {
 
         this._dataGrid.markColumnAsSortedBy(WebInspector.NetworkLogViewColumns._initialSortColumn, WebInspector.DataGrid.Order.Ascending);
 
-        this._updateRowsSize();
+        if (Runtime.experiments.isEnabled("canvasNetworkTimeline")) {
+            this._splitWidget = new WebInspector.SplitWidget(true, false, "networkPanelSplitViewTimeline");
+            this._splitWidget.setSidebarWidget(this._dataGrid.asWidget());
+        }
+    },
 
+    _setupTimeline: function()
+    {
+        var dataGridScroller = this._dataGrid.scrollContainer;
+        this._timelineColumn = new WebInspector.NetworkTimelineColumn(this._networkLogView.rowHeight(), this._networkLogView.calculator(), dataGridScroller);
+        this._dataGrid.setScrollContainer(this._timelineColumn.getScrollContainer());
+        this._dataGrid.addEventListener(WebInspector.DataGrid.Events.PaddingChanged, () => this._timelineColumn.setScrollHeight(dataGridScroller.scrollHeight));
+        this._dataGrid.addEventListener(WebInspector.ViewportDataGrid.Events.ViewportCalculated, this._redrawTimelineColumn.bind(this));
+
+        this._timelineColumn.addEventListener(WebInspector.NetworkTimelineColumn.Events.RequestHovered, event => this._networkLogView.setHoveredRequest(/** @type {?WebInspector.NetworkRequest} */ (event.data)));
+
+        this._createTimelineHeader();
+        this._timelineColumn.contentElement.classList.add("network-timeline-view");
+
+        this._splitWidget.setMainWidget(this._timelineColumn);
+
+        this.switchViewMode(false);
+    },
+
+    _redrawTimelineColumn: function()
+    {
+        if (!this._timelineRequestsAreStale) {
+            this._timelineColumn.update();
+            return;
+        }
+        var currentNode = this._dataGrid.rootNode();
+        var requestData = {
+            requests: [],
+            navigationRequest: null
+        };
+        while (currentNode = currentNode.traverseNextNode(true)) {
+            if (currentNode.isNavigationRequest())
+                requestData.navigationRequest = currentNode.request();
+            requestData.requests.push(currentNode.request());
+        }
+        this._timelineColumn.update(requestData);
+    },
+
+    /**
+     * @param {?WebInspector.NetworkRequest} request
+     */
+    setHoveredRequest: function(request)
+    {
+        if (Runtime.experiments.isEnabled("canvasNetworkTimeline"))
+            this._timelineColumn.setHoveredRequest(request);
+    },
+
+    _createTimelineHeader: function()
+    {
+        this._timelineHeaderElement = this._timelineColumn.contentElement.createChild("div", "network-timeline-header");
+        this._timelineHeaderElement.addEventListener("click", timelineHeaderClicked.bind(this));
+        this._timelineHeaderElement.addEventListener("contextmenu", event => this._innerHeaderContextMenu(new WebInspector.ContextMenu(event)));
+        var innerElement = this._timelineHeaderElement.createChild("div");
+        innerElement.textContent = WebInspector.UIString("Timeline");
+        this._timelineColumnSortIcon = this._timelineHeaderElement.createChild("div", "sort-order-icon-container").createChild("div", "sort-order-icon");
+
+        /**
+         * @this {WebInspector.NetworkLogViewColumns}
+         */
+        function timelineHeaderClicked()
+        {
+            var sortOrders = WebInspector.DataGrid.Order;
+            var sortOrder = this._dataGrid.sortOrder() === sortOrders.Ascending ? sortOrders.Descending : sortOrders.Ascending;
+            this._dataGrid.markColumnAsSortedBy("timeline", sortOrder);
+            this._sortHandler();
+        }
+    },
+
+    /**
+     * @param {!WebInspector.NetworkTimeCalculator} x
+     */
+    setCalculator: function(x)
+    {
+        if (Runtime.experiments.isEnabled("canvasNetworkTimeline"))
+            this._timelineColumn.setCalculator(x);
+    },
+
+    dataChanged: function()
+    {
+        if (Runtime.experiments.isEnabled("canvasNetworkTimeline"))
+            this._timelineRequestsAreStale = true;
+    },
+
+    _updateRowsSize: function()
+    {
+        var largeRows = !!this._networkLogLargeRowsSetting.get();
+        this._dataGrid.element.classList.toggle("small", !largeRows);
+        this._dataGrid.scheduleUpdate();
+
+        if (!Runtime.experiments.isEnabled("canvasNetworkTimeline"))
+            return;
+        this._timelineColumn.setRowHeight(this._networkLogView.rowHeight());
+        // TODO(allada) Make these non-magic numbers.
+        this._timelineColumn.setHeaderHeight(largeRows ? 31 : 27);
+        this._timelineHeaderElement.classList.toggle("small", !largeRows);
+        this._timelineGrid.element.classList.toggle("small", !this._networkLogLargeRowsSetting.get());
+    },
+
+    /**
+     * @param {!Element} element
+     */
+    show: function(element)
+    {
+        if (Runtime.experiments.isEnabled("canvasNetworkTimeline"))
+            this._splitWidget.show(element);
+        else
+            this._dataGrid.asWidget().show(element);
+    },
+
+    /**
+     * @return {!WebInspector.SortableDataGrid} dataGrid
+     */
+    dataGrid: function()
+    {
         return this._dataGrid;
     },
 
@@ -454,8 +580,8 @@ WebInspector.NetworkLogViewColumns.prototype = {
 
     _sortHandler: function()
     {
-        var columnIdentifier = this._dataGrid.sortColumnIdentifier();
-        var columnConfig = this._columns.find(columnConfig => columnConfig.id === columnIdentifier);
+        var columnId = this._dataGrid.sortColumnId();
+        var columnConfig = this._columns.find(columnConfig => columnConfig.id === columnId);
         if (!columnConfig)
             return;
         if (columnConfig.sortConfig && columnConfig.sortConfig.entries) {
@@ -468,6 +594,21 @@ WebInspector.NetworkLogViewColumns.prototype = {
         this._networkLogView.removeAllNodeHighlights();
         this._dataGrid.sortNodes(columnConfig.sortConfig.sortingFunction, !this._dataGrid.isSortOrderAscending());
         this._networkLogView.dataGridSorted();
+
+        if (!Runtime.experiments.isEnabled("canvasNetworkTimeline"))
+            return;
+
+        this._timelineColumnSortIcon.classList.remove("sort-ascending", "sort-descending");
+
+        if (this._dataGrid.sortColumnId() === "timeline") {
+            if (this._dataGrid.sortOrder() === WebInspector.DataGrid.Order.Ascending)
+                this._timelineColumnSortIcon.classList.add("sort-ascending");
+            else
+                this._timelineColumnSortIcon.classList.add("sort-descending");
+        }
+
+        this._timelineRequestsAreStale = true;
+
     },
 
     /**
@@ -490,6 +631,21 @@ WebInspector.NetworkLogViewColumns.prototype = {
         columnConfig.selectBox.options[0].label = selectedItemConfig.title;
         columnConfig.selectBox.selectedIndex = 0;
         this._networkLogView.dataGridSorted();
+
+        // TODO(allada) This entire function will be removed when the timeline comes out of exp, so copying code above for now.
+        if (!Runtime.experiments.isEnabled("canvasNetworkTimeline"))
+            return;
+
+        this._timelineColumnSortIcon.classList.remove("sort-ascending", "sort-descending");
+
+        if (this._dataGrid.sortColumnId() === "timeline") {
+            if (this._dataGrid.sortOrder() === WebInspector.DataGrid.Order.Ascending)
+                this._timelineColumnSortIcon.classList.add("sort-ascending");
+            else
+                this._timelineColumnSortIcon.classList.add("sort-descending");
+        }
+
+        this._timelineRequestsAreStale = true;
     },
 
     _updateColumns: function()
@@ -525,6 +681,15 @@ WebInspector.NetworkLogViewColumns.prototype = {
 
         this._networkLogView.element.classList.toggle("brief-mode", !gridMode);
         this._updateColumns();
+
+
+        if (!Runtime.experiments.isEnabled("canvasNetworkTimeline"))
+            return;
+        // TODO(allada) Move this code into the code above.
+        if (gridMode)
+            this._splitWidget.showBoth();
+        else
+            this._splitWidget.hideMain();
     },
 
     /**
@@ -581,16 +746,11 @@ WebInspector.NetworkLogViewColumns.prototype = {
     },
 
     /**
-     * @param {!Event} event
-     * @return {boolean}
+     * @param {!WebInspector.ContextMenu} contextMenu
      */
-    contextMenu: function(event)
+    _innerHeaderContextMenu: function(contextMenu)
     {
-        if (!this._gridMode || !event.target.isSelfOrDescendant(this._dataGrid.headerTableBody))
-            return false;
-
         var columnConfigs = this._columns.filter(columnConfig => columnConfig.hideable);
-        var contextMenu = new WebInspector.ContextMenu(event);
         var nonResponseHeaders = columnConfigs.filter(columnConfig => !columnConfig.isResponseHeader);
         for (var columnConfig of nonResponseHeaders)
             contextMenu.appendCheckboxItem(columnConfig.title, this._toggleColumnVisibility.bind(this, columnConfig), columnConfig.visible);
@@ -606,7 +766,6 @@ WebInspector.NetworkLogViewColumns.prototype = {
         responseSubMenu.appendItem(WebInspector.UIString("Manage Header Columns\u2026"), this._manageCustomHeaderDialog.bind(this));
 
         contextMenu.show();
-        return true;
     },
 
     _manageCustomHeaderDialog: function()
@@ -829,12 +988,5 @@ WebInspector.NetworkLogViewColumns.prototype = {
     {
         for (var divider of this._eventDividers)
             divider.element.classList.toggle("network-frame-divider-selected", false);
-    },
-
-    _updateRowsSize: function()
-    {
-        if (Runtime.experiments.isEnabled("canvasNetworkTimeline"))
-            return;
-        this._timelineGrid.element.classList.toggle("small", !this._networkLogLargeRowsSetting.get());
     }
-}
+};

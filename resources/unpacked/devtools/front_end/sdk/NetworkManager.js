@@ -57,7 +57,7 @@ WebInspector.NetworkManager = function(target)
     this._bypassServiceWorkerSetting.addChangeListener(this._bypassServiceWorkerChanged, this);
 
     WebInspector.moduleSetting("cacheDisabled").addChangeListener(this._cacheDisabledSettingChanged, this);
-}
+};
 
 /** @enum {symbol} */
 WebInspector.NetworkManager.Events = {
@@ -66,7 +66,7 @@ WebInspector.NetworkManager.Events = {
     RequestFinished: Symbol("RequestFinished"),
     RequestUpdateDropped: Symbol("RequestUpdateDropped"),
     ResponseReceived: Symbol("ResponseReceived")
-}
+};
 
 WebInspector.NetworkManager._MIMETypes = {
     "text/html":                   {"document": true},
@@ -77,7 +77,7 @@ WebInspector.NetworkManager._MIMETypes = {
     "text/css":                    {"stylesheet": true},
     "text/xsl":                    {"stylesheet": true},
     "text/vtt":                    {"texttrack": true},
-}
+};
 
 /**
  * @param {!WebInspector.Target} target
@@ -86,7 +86,7 @@ WebInspector.NetworkManager._MIMETypes = {
 WebInspector.NetworkManager.fromTarget = function(target)
 {
     return /** @type {?WebInspector.NetworkManager} */ (target.model(WebInspector.NetworkManager));
-}
+};
 
 /** @typedef {{download: number, upload: number, latency: number, title: string}} */
 WebInspector.NetworkManager.Conditions;
@@ -120,7 +120,7 @@ WebInspector.NetworkManager._connectionType = function(conditions)
             return type[1];
     }
     return NetworkAgent.ConnectionType.Other;
-}
+};
 
 WebInspector.NetworkManager.prototype = {
     /**
@@ -152,7 +152,7 @@ WebInspector.NetworkManager.prototype = {
     },
 
     __proto__: WebInspector.SDKModel.prototype
-}
+};
 
 /**
  * @constructor
@@ -163,7 +163,7 @@ WebInspector.NetworkDispatcher = function(manager)
     this._manager = manager;
     this._inflightRequestsById = {};
     this._inflightRequestsByURL = {};
-}
+};
 
 WebInspector.NetworkDispatcher.prototype = {
     /**
@@ -660,7 +660,7 @@ WebInspector.NetworkDispatcher.prototype = {
     {
         return new WebInspector.NetworkRequest(this._manager._target, requestId, url, documentURL, frameId, loaderId, initiator);
     }
-}
+};
 
 
 /**
@@ -671,7 +671,6 @@ WebInspector.NetworkDispatcher.prototype = {
 WebInspector.MultitargetNetworkManager = function()
 {
     WebInspector.Object.call(this);
-    WebInspector.targetManager.observeTargets(this);
 
     /** @type {!Set<string>} */
     this._blockedURLs = new Set();
@@ -685,13 +684,15 @@ WebInspector.MultitargetNetworkManager = function()
     this._agents = new Set();
     /** @type {!WebInspector.NetworkManager.Conditions} */
     this._networkConditions = WebInspector.NetworkManager.NoThrottlingConditions;
-}
+
+    WebInspector.targetManager.observeTargets(this, WebInspector.Target.Capability.Network);
+};
 
 /** @enum {symbol} */
 WebInspector.MultitargetNetworkManager.Events = {
     ConditionsChanged: Symbol("ConditionsChanged"),
     UserAgentChanged: Symbol("UserAgentChanged")
-}
+};
 
 /**
  * @param {string} uaString
@@ -705,7 +706,7 @@ WebInspector.MultitargetNetworkManager.patchUserAgentWithChromeVersion = functio
     if (chromeMatch && chromeMatch.length > 1)
         return String.sprintf(uaString, chromeMatch[1]);
     return uaString;
-}
+};
 
 WebInspector.MultitargetNetworkManager.prototype = {
     /**
@@ -789,8 +790,8 @@ WebInspector.MultitargetNetworkManager.prototype = {
     setExtraHTTPHeaders: function(headers)
     {
         this._extraHeaders = headers;
-        for (var target of WebInspector.targetManager.targets())
-            target.networkAgent().setExtraHTTPHeaders(this._extraHeaders);
+        for (var agent of this._agents)
+            agent.setExtraHTTPHeaders(this._extraHeaders);
     },
 
     /**
@@ -805,8 +806,8 @@ WebInspector.MultitargetNetworkManager.prototype = {
     {
         var userAgent = this._currentUserAgent();
         WebInspector.ResourceLoader.targetUserAgent = userAgent;
-        for (var target of WebInspector.targetManager.targets())
-            target.networkAgent().setUserAgentOverride(userAgent);
+        for (var agent of this._agents)
+            agent.setUserAgentOverride(userAgent);
     },
 
     /**
@@ -858,8 +859,8 @@ WebInspector.MultitargetNetworkManager.prototype = {
     _addBlockedURL: function(url)
     {
         this._blockedURLs.add(url);
-        for (var target of WebInspector.targetManager.targets())
-            target.networkAgent().addBlockedURL(url);
+        for (var agent of this._agents)
+            agent.addBlockedURL(url);
     },
 
     /**
@@ -868,20 +869,20 @@ WebInspector.MultitargetNetworkManager.prototype = {
     _removeBlockedURL: function(url)
     {
         this._blockedURLs.delete(url);
-        for (var target of WebInspector.targetManager.targets())
-            target.networkAgent().removeBlockedURL(url);
+        for (var agent of this._agents)
+            agent.removeBlockedURL(url);
     },
 
     clearBrowserCache: function()
     {
-        for (var target of WebInspector.targetManager.targets())
-            target.networkAgent().clearBrowserCache();
+        for (var agent of this._agents)
+            agent.clearBrowserCache();
     },
 
     clearBrowserCookies: function()
     {
-        for (var target of WebInspector.targetManager.targets())
-            target.networkAgent().clearBrowserCookies();
+        for (var agent of this._agents)
+            agent.clearBrowserCookies();
     },
 
     /**
@@ -922,7 +923,7 @@ WebInspector.MultitargetNetworkManager.prototype = {
     },
 
     __proto__: WebInspector.Object.prototype
-}
+};
 
 /**
  * @type {!WebInspector.MultitargetNetworkManager}

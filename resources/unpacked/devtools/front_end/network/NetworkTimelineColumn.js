@@ -6,13 +6,13 @@
  * @constructor
  * @extends {WebInspector.VBox}
  * @param {number} rowHeight
- * @param {number} headerHeight
- * @param {!WebInspector.NetworkTransferTimeCalculator} calculator
+ * @param {!WebInspector.NetworkTimeCalculator} calculator
  * @param {!Element} scrollContainer
  */
-WebInspector.NetworkTimelineColumn = function(rowHeight, headerHeight, calculator, scrollContainer)
+WebInspector.NetworkTimelineColumn = function(rowHeight, calculator, scrollContainer)
 {
-    WebInspector.VBox.call(this, true);
+    // TODO(allada) Make this a shadowDOM when the NetworkTimelineColumn gets moved into NetworkLogViewColumns.
+    WebInspector.VBox.call(this, false);
     this.registerRequiredCSS("network/networkTimelineColumn.css");
 
     this._canvas = this.contentElement.createChild("canvas");
@@ -27,20 +27,21 @@ WebInspector.NetworkTimelineColumn = function(rowHeight, headerHeight, calculato
     this._fontSize = 10;
 
     this._rowHeight = rowHeight;
-    this._headerHeight = headerHeight;
+    this._headerHeight = 0;
     this._calculator = calculator;
 
-    this._popoverHelper = new WebInspector.PopoverHelper(this.element, this._getPopoverAnchor.bind(this), this._showPopover.bind(this));
+    this._popoverHelper = new WebInspector.PopoverHelper(this.element);
+    this._popoverHelper.initializeCallbacks(this._getPopoverAnchor.bind(this), this._showPopover.bind(this));
     this._popoverHelper.setTimeout(300, 300);
 
     this._vScrollElement = this.contentElement.createChild("div", "network-timeline-v-scroll");
     this._vScrollElement.addEventListener("scroll", this._onScroll.bind(this), { passive: true });
     this._vScrollElement.addEventListener("mousewheel", this._onMouseWheel.bind(this), { passive: true });
-    this._vScrollContent = this._vScrollElement.createChild("div");
+    this._vScrollContent = this._vScrollElement.createChild("div", "network-timeline-v-scroll-content");
 
     this.element.addEventListener("mousewheel", this._onMouseWheel.bind(this), { passive: true });
     this.element.addEventListener("mousemove", this._onMouseMove.bind(this), true);
-    this.element.addEventListener("mouseleave", this.setHoveredRequest.bind(this, null), true);
+    this.element.addEventListener("mouseleave", this.dispatchEventToListeners.bind(this, WebInspector.NetworkTimelineColumn.Events.RequestHovered, null), true);
 
     this._boundScrollContainer = scrollContainer;
     this._boundScrollContainer.addEventListener("mousewheel", event => {
@@ -69,11 +70,11 @@ WebInspector.NetworkTimelineColumn = function(rowHeight, headerHeight, calculato
     this._borderColorsForResourceTypeCache = new Map();
     /** @type {!Map<string, !CanvasGradient>} */
     this._colorsForResourceTypeCache = new Map();
-}
+};
 
 WebInspector.NetworkTimelineColumn.Events = {
     RequestHovered: Symbol("RequestHovered")
-}
+};
 
 WebInspector.NetworkTimelineColumn._colorsForResourceType = {
     document: "hsl(215, 100%, 80%)",
@@ -86,7 +87,7 @@ WebInspector.NetworkTimelineColumn._colorsForResourceType = {
     websocket: "hsl(0, 0%, 95%)",
     xhr: "hsl(53, 100%, 80%)",
     other: "hsl(0, 0%, 95%)"
-}
+};
 
 WebInspector.NetworkTimelineColumn.prototype = {
     /**
@@ -160,7 +161,7 @@ WebInspector.NetworkTimelineColumn.prototype = {
     setHoveredRequest: function(request)
     {
         this._hoveredRequest = request;
-        this.scheduleDraw();
+        this.update();
     },
 
     /**
@@ -177,6 +178,7 @@ WebInspector.NetworkTimelineColumn.prototype = {
     setHeaderHeight: function(height)
     {
         this._headerHeight = height;
+        this._vScrollElement.style.marginTop = height + "px";
     },
 
     /**
@@ -192,7 +194,7 @@ WebInspector.NetworkTimelineColumn.prototype = {
      */
     _onMouseMove: function(event)
     {
-        var request = this._getRequestFromPoint(event.offsetX, event.offsetY);
+        var request = this._getRequestFromPoint(event.offsetX, event.offsetY + event.target.offsetTop);
         this.dispatchEventToListeners(WebInspector.NetworkTimelineColumn.Events.RequestHovered, request);
     },
 
@@ -244,6 +246,7 @@ WebInspector.NetworkTimelineColumn.prototype = {
         if (requestData) {
             this._requestData = requestData.requests;
             this._navigationRequest = requestData.navigationRequest;
+            this._calculateCanvasSize();
         }
         this.element.window().cancelAnimationFrame(this._updateRequestID);
         this._updateRequestID = null;
@@ -277,9 +280,18 @@ WebInspector.NetworkTimelineColumn.prototype = {
     onResize: function()
     {
         WebInspector.VBox.prototype.onResize.call(this);
-        this._offsetWidth = this.contentElement.offsetWidth;
-        this._offsetHeight = this.contentElement.offsetHeight;
+        this._calculateCanvasSize();
         this.scheduleDraw();
+    },
+
+    _calculateCanvasSize: function()
+    {
+        var scrollbarWidth = this._vScrollElement.offsetWidth;
+        // Offset by 1 px because css needs 1px to compute height and add scrollbar.
+        if (scrollbarWidth)
+            scrollbarWidth -= 1;
+        this._offsetWidth = this.contentElement.offsetWidth - scrollbarWidth;
+        this._offsetHeight = this.contentElement.offsetHeight;
     },
 
     /**
@@ -380,7 +392,7 @@ WebInspector.NetworkTimelineColumn.prototype = {
         context.lineWidth = 1;
         context.strokeStyle = "rgba(0, 0, 0, .1)";
         context.font = this._fontSize + "px sans-serif";
-        context.fillStyle = "#444"
+        context.fillStyle = "#444";
         gridSliceTime = gridSliceTime;
         for (var position = gridSliceTime * pixelsPerTime; position < drawableWidth; position += gridSliceTime * pixelsPerTime) {
             // Added .5 because canvas drawing points are between pixels.
@@ -634,4 +646,4 @@ WebInspector.NetworkTimelineColumn.prototype = {
     },
 
     __proto__: WebInspector.VBox.prototype
-}
+};

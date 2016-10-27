@@ -38,7 +38,7 @@ WebInspector.NetworkProjectManager = function(targetManager, workspace)
 {
     this._workspace = workspace;
     targetManager.observeTargets(this);
-}
+};
 
 WebInspector.NetworkProjectManager.prototype = {
     /**
@@ -58,7 +58,7 @@ WebInspector.NetworkProjectManager.prototype = {
     {
         WebInspector.NetworkProject.forTarget(target)._dispose();
     }
-}
+};
 
 /**
  * @constructor
@@ -82,7 +82,7 @@ WebInspector.NetworkProject = function(target, workspace, resourceTreeModel)
         this._eventListeners.push(
             resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.Events.ResourceAdded, this._resourceAdded, this),
             resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.Events.FrameWillNavigate, this._frameWillNavigate, this),
-            resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.Events.MainFrameNavigated, this._mainFrameNavigated, this))
+            resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.Events.MainFrameNavigated, this._mainFrameNavigated, this));
     }
 
     var debuggerModel = WebInspector.DebuggerModel.fromTarget(target);
@@ -99,7 +99,7 @@ WebInspector.NetworkProject = function(target, workspace, resourceTreeModel)
     }
     this._eventListeners.push(
         target.targetManager().addEventListener(WebInspector.TargetManager.Events.SuspendStateChanged, this._suspendStateChanged, this));
-}
+};
 
 WebInspector.NetworkProject._networkProjectSymbol = Symbol("networkProject");
 WebInspector.NetworkProject._resourceSymbol = Symbol("resource");
@@ -125,7 +125,7 @@ WebInspector.NetworkProject.getScriptFromSourceCode = function(uiSourceCode) {
 WebInspector.NetworkProject.projectId = function(target, frame, isContentScripts)
 {
     return target.id() + ":" + (frame ? frame.id : "") + ":" + (isContentScripts ? "contentscripts" : "");
-}
+};
 
 /**
  * @param {!WebInspector.Target} target
@@ -134,7 +134,7 @@ WebInspector.NetworkProject.projectId = function(target, frame, isContentScripts
 WebInspector.NetworkProject.forTarget = function(target)
 {
     return target[WebInspector.NetworkProject._networkProjectSymbol];
-}
+};
 
 /**
  * @param {!WebInspector.Project} project
@@ -143,7 +143,7 @@ WebInspector.NetworkProject.forTarget = function(target)
 WebInspector.NetworkProject.targetForProject = function(project)
 {
     return project[WebInspector.NetworkProject._targetSymbol] || null;
-}
+};
 
 /**
  * @param {!WebInspector.Project} project
@@ -152,7 +152,7 @@ WebInspector.NetworkProject.targetForProject = function(project)
 WebInspector.NetworkProject.frameForProject = function(project)
 {
     return project[WebInspector.NetworkProject._frameSymbol] || null;
-}
+};
 
 /**
  * @param {!WebInspector.UISourceCode} uiSourceCode
@@ -161,7 +161,7 @@ WebInspector.NetworkProject.frameForProject = function(project)
 WebInspector.NetworkProject.targetForUISourceCode = function(uiSourceCode)
 {
     return uiSourceCode[WebInspector.NetworkProject._targetSymbol] || null;
-}
+};
 
 /**
  * @param {!WebInspector.UISourceCode} uiSourceCode
@@ -178,7 +178,7 @@ WebInspector.NetworkProject.uiSourceCodeMimeType = function(uiSourceCode)
         return resource.mimeType;
     var mimeType = WebInspector.ResourceType.mimeFromURL(uiSourceCode.url());
     return mimeType || uiSourceCode.contentType().canonicalMimeType();
-}
+};
 
 WebInspector.NetworkProject.prototype = {
     /**
@@ -421,4 +421,4 @@ WebInspector.NetworkProject.prototype = {
     },
 
     __proto__: WebInspector.SDKObject.prototype
-}
+};

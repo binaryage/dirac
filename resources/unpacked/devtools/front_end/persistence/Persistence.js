@@ -17,20 +17,23 @@ WebInspector.Persistence = function(workspace, breakpointManager, fileSystemMapp
     /** @type {!Map<string, number>} */
     this._filePathPrefixesToBindingCount = new Map();
 
-    this._mapping = new WebInspector.DefaultMapping(workspace, fileSystemMapping, this._onBindingCreated.bind(this), this._onBindingRemoved.bind(this));
+    if (Runtime.experiments.isEnabled("persistence2"))
+        this._mapping = new WebInspector.Automapping(workspace, this._onBindingCreated.bind(this), this._onBindingRemoved.bind(this));
+    else
+        this._mapping = new WebInspector.DefaultMapping(workspace, fileSystemMapping, this._onBindingCreated.bind(this), this._onBindingRemoved.bind(this));
 }
 
 WebInspector.Persistence._binding = Symbol("Persistence.Binding");
 WebInspector.Persistence._muteCommit = Symbol("Persistence.MuteCommit");
 
 WebInspector.Persistence._NodePrefix = "(function (exports, require, module, __filename, __dirname) { ";
-WebInspector.Persistence._NodeSuffix = "\n});"
+WebInspector.Persistence._NodeSuffix = "\n});";
 WebInspector.Persistence._NodeShebang = "#!/usr/bin/env node\n";
 
 WebInspector.Persistence.Events = {
     BindingCreated: Symbol("BindingCreated"),
     BindingRemoved: Symbol("BindingRemoved")
-}
+};
 
 WebInspector.Persistence.prototype = {
     /**
@@ -38,10 +41,13 @@ WebInspector.Persistence.prototype = {
      */
     _onBindingCreated: function(binding)
     {
-        if (binding.network.isDirty() || binding.fileSystem.isDirty()) {
+        if (binding.network.isDirty()) {
             WebInspector.console.log(WebInspector.UIString("%s can not be persisted to file system due to unsaved changes.", binding.network.name()));
             return;
         }
+        if (binding.fileSystem.isDirty())
+            binding.network.setWorkingCopy(binding.fileSystem.workingCopy());
+
         binding.network[WebInspector.Persistence._binding] = binding;
         binding.fileSystem[WebInspector.Persistence._binding] = binding;
 
@@ -61,6 +67,9 @@ WebInspector.Persistence.prototype = {
      */
     _onBindingRemoved: function(binding)
     {
+        if (binding.network.isDirty())
+            binding.fileSystem.setWorkingCopy(binding.network.workingCopy());
+
         binding.network[WebInspector.Persistence._binding] = null;
         binding.fileSystem[WebInspector.Persistence._binding] = null;
 
@@ -228,18 +237,20 @@ WebInspector.Persistence.prototype = {
     },
 
     __proto__: WebInspector.Object.prototype
-}
+};
 
 /**
  * @constructor
  * @param {!WebInspector.UISourceCode} network
  * @param {!WebInspector.UISourceCode} fileSystem
+ * @param {boolean} exactMatch
  */
-WebInspector.PersistenceBinding = function(network, fileSystem)
+WebInspector.PersistenceBinding = function(network, fileSystem, exactMatch)
 {
     this.network = network;
     this.fileSystem = fileSystem;
-}
+    this.exactMatch = exactMatch;
+};
 
 /** @type {!WebInspector.Persistence} */
 WebInspector.persistence;

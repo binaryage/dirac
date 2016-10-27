@@ -25,7 +25,8 @@ WebInspector.FilteredListWidget = function(delegate)
     this._promptElement = this.contentElement.createChild("div", "filtered-list-widget-input");
     this._promptElement.setAttribute("spellcheck", "false");
     this._promptElement.setAttribute("contenteditable", "plaintext-only");
-    this._prompt = new WebInspector.TextPrompt(this._autocomplete.bind(this));
+    this._prompt = new WebInspector.TextPrompt();
+    this._prompt.initialize(this._autocomplete.bind(this));
     this._prompt.renderAsBlock();
     this._prompt.addEventListener(WebInspector.TextPrompt.Events.ItemAccepted, this._onAutocompleted, this);
     var promptProxy = this._prompt.attach(this._promptElement);
@@ -50,7 +51,7 @@ WebInspector.FilteredListWidget = function(delegate)
 
     /** @typedef {!Array.<!Element>} */
     this._elements = [];
-}
+};
 
 /**
  * @param {string} query
@@ -69,7 +70,7 @@ WebInspector.FilteredListWidget.filterRegex = function(query)
         regexString += c;
     }
     return new RegExp(regexString, "i");
-}
+};
 
 WebInspector.FilteredListWidget.prototype = {
     showAsDialog: function()
@@ -86,7 +87,7 @@ WebInspector.FilteredListWidget.prototype = {
      */
     _value: function()
     {
-        return this._prompt.userEnteredText().trim();
+        return this._prompt.text().trim();
     },
 
     willHide: function()
@@ -401,7 +402,7 @@ WebInspector.FilteredListWidget.prototype = {
     },
 
     __proto__: WebInspector.VBox.prototype
-}
+};
 
 /**
  * @constructor
@@ -410,7 +411,7 @@ WebInspector.FilteredListWidget.prototype = {
 WebInspector.FilteredListWidget.Delegate = function(promptHistory)
 {
     this._promptHistory = promptHistory;
-}
+};
 
 WebInspector.FilteredListWidget.Delegate.prototype = {
     /**
@@ -583,4 +584,4 @@ WebInspector.FilteredListWidget.Delegate.prototype = {
     dispose: function()
     {
     }
-}
+};

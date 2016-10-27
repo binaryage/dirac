@@ -9,11 +9,10 @@
  * @param {function(!WebInspector.DataGridNode, string, string, string)=} editCallback
  * @param {function(!WebInspector.DataGridNode)=} deleteCallback
  * @param {function()=} refreshCallback
- * @param {function(!WebInspector.ContextMenu, !WebInspector.DataGridNode)=} contextMenuCallback
  */
-WebInspector.ViewportDataGrid = function(columnsArray, editCallback, deleteCallback, refreshCallback, contextMenuCallback)
+WebInspector.ViewportDataGrid = function(columnsArray, editCallback, deleteCallback, refreshCallback)
 {
-    WebInspector.DataGrid.call(this, columnsArray, editCallback, deleteCallback, refreshCallback, contextMenuCallback);
+    WebInspector.DataGrid.call(this, columnsArray, editCallback, deleteCallback, refreshCallback);
 
     this._onScrollBound = this._onScroll.bind(this);
     this._scrollContainer.addEventListener("scroll", this._onScrollBound, true);
@@ -43,11 +42,11 @@ WebInspector.ViewportDataGrid = function(columnsArray, editCallback, deleteCallb
     this._lastScrollTop = 0;
 
     this.setRootNode(new WebInspector.ViewportDataGridNode());
-}
+};
 
 WebInspector.ViewportDataGrid.Events = {
     ViewportCalculated: Symbol("ViewportCalculated")
-}
+};
 
 WebInspector.ViewportDataGrid.prototype = {
     /**
@@ -292,7 +291,7 @@ WebInspector.ViewportDataGrid.prototype = {
     },
 
     __proto__: WebInspector.DataGrid.prototype
-}
+};
 
 /**
  * @constructor
@@ -305,7 +304,7 @@ WebInspector.ViewportDataGridNode = function(data, hasChildren)
     WebInspector.DataGridNode.call(this, data, hasChildren);
     /** @type {boolean} */
     this._stale = false;
-}
+};
 
 WebInspector.ViewportDataGridNode.prototype = {
     /**
@@ -482,4 +481,4 @@ WebInspector.ViewportDataGridNode.prototype = {
     },
 
     __proto__: WebInspector.DataGridNode.prototype
-}
+};

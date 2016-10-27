@@ -46,7 +46,7 @@ WebInspector.InspectorFrontendHostStub = function()
             event.stopPropagation();
     }
     document.addEventListener("keydown", stopEventPropagation, true);
-}
+};
 
 WebInspector.InspectorFrontendHostStub.prototype = {
     /**
@@ -568,7 +568,7 @@ window.InspectorFrontendHost = InspectorFrontendHost;
         {
             WebInspector.ResourceLoader.streamWrite(id, chunk);
         }
-    }
+    };
 
     // FIXME: This file is included into both apps, since the devtools_app needs the InspectorFrontendHostAPI only,
     // so the host instance should not initialized there.

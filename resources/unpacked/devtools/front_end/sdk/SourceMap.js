@@ -49,7 +49,7 @@ SourceMapV3.Section = function()
 {
     /** @type {!SourceMapV3} */ this.map;
     /** @type {!SourceMapV3.Offset} */ this.offset;
-}
+};
 
 /**
  * @constructor
@@ -58,7 +58,7 @@ SourceMapV3.Offset = function()
 {
     /** @type {number} */ this.line;
     /** @type {number} */ this.column;
-}
+};
 
 /**
  * @constructor
@@ -77,12 +77,12 @@ WebInspector.SourceMapEntry = function(lineNumber, columnNumber, sourceURL, sour
     this.sourceLineNumber = sourceLineNumber;
     this.sourceColumnNumber = sourceColumnNumber;
     this.name = name;
-}
+};
 
 /**
  * @interface
  */
-WebInspector.SourceMap = function() { }
+WebInspector.SourceMap = function() { };
 
 WebInspector.SourceMap.prototype = {
     /**
@@ -136,7 +136,7 @@ WebInspector.SourceMap.prototype = {
      * @return {!Promise<?WebInspector.SourceMap.EditResult>}
      */
     editCompiled: function(ranges, texts) { },
-}
+};
 
 /**
  * @constructor
@@ -149,12 +149,12 @@ WebInspector.SourceMap.EditResult = function(map, compiledEdits, newSources)
     this.map = map;
     this.compiledEdits = compiledEdits;
     this.newSources = newSources;
-}
+};
 
 /**
  * @interface
  */
-WebInspector.SourceMapFactory = function() { }
+WebInspector.SourceMapFactory = function() { };
 
 WebInspector.SourceMapFactory.prototype = {
     /**
@@ -163,7 +163,7 @@ WebInspector.SourceMapFactory.prototype = {
      * @return {!Promise<?WebInspector.SourceMap>}
      */
     editableSourceMap: function(target, sourceMap) { },
-}
+};
 
 /**
  * Implements Source Map V3 model. See https://github.com/google/closure-compiler/wiki/Source-Maps
@@ -192,7 +192,7 @@ WebInspector.TextSourceMap = function(compiledURL, sourceMappingURL, payload)
     /** @type {!Map<string, !WebInspector.TextSourceMap.SourceInfo>} */
     this._sourceInfos = new Map();
     this._eachSection(this._parseSources.bind(this));
-}
+};
 
 /**
  * @param {string} sourceMapURL
@@ -231,7 +231,7 @@ WebInspector.TextSourceMap.load = function(sourceMapURL, compiledURL)
             callback(null);
         }
     }
-}
+};
 
 WebInspector.TextSourceMap.prototype = {
     /**
@@ -561,7 +561,7 @@ WebInspector.TextSourceMap.prototype = {
     _VLQ_BASE_SHIFT: 5,
     _VLQ_BASE_MASK: (1 << 5) - 1,
     _VLQ_CONTINUATION_MASK: 1 << 5
-}
+};
 
 /**
  * @constructor
@@ -571,7 +571,7 @@ WebInspector.TextSourceMap.StringCharIterator = function(string)
 {
     this._string = string;
     this._position = 0;
-}
+};
 
 WebInspector.TextSourceMap.StringCharIterator.prototype = {
     /**
@@ -597,7 +597,7 @@ WebInspector.TextSourceMap.StringCharIterator.prototype = {
     {
         return this._position < this._string.length;
     }
-}
+};
 
 /**
  * @constructor
@@ -607,6 +607,6 @@ WebInspector.TextSourceMap.StringCharIterator.prototype = {
 WebInspector.TextSourceMap.SourceInfo = function(content, reverseMappings) {
     this.content = content;
     this.reverseMappings = reverseMappings;
-}
+};
 
 WebInspector.TextSourceMap._sourcesListSymbol = Symbol("sourcesList");

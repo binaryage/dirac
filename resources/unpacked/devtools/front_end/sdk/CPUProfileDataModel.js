@@ -24,11 +24,11 @@ WebInspector.CPUProfileNode = function(node, sampleTime)
     this.positionTicks = node.positionTicks;
     // Compatibility: legacy backends could provide "no reason" for optimized functions.
     this.deoptReason = node.deoptReason && node.deoptReason !== "no reason" ? node.deoptReason : null;
-}
+};
 
 WebInspector.CPUProfileNode.prototype = {
     __proto__: WebInspector.ProfileNode.prototype
-}
+};
 
 /**
  * @constructor
@@ -37,6 +37,7 @@ WebInspector.CPUProfileNode.prototype = {
  */
 WebInspector.CPUProfileDataModel = function(profile)
 {
+    WebInspector.ProfileTreeModel.call(this);
     var isLegacyFormat = !!profile["head"];
     if (isLegacyFormat) {
         // Legacy format contains raw timestamps and start/stop times are in seconds.
@@ -53,14 +54,14 @@ WebInspector.CPUProfileDataModel = function(profile)
     this.samples = profile.samples;
     this.totalHitCount = 0;
     this.profileHead = this._translateProfileTree(profile.nodes);
-    WebInspector.ProfileTreeModel.call(this, this.profileHead);
+    this.initialize(this.profileHead);
     this._extractMetaNodes();
     if (this.samples) {
         this._buildIdToNodeMap();
         this._sortSamples();
         this._normalizeTimestamps();
     }
-}
+};
 
 WebInspector.CPUProfileDataModel.prototype = {
     /**
@@ -374,4 +375,4 @@ WebInspector.CPUProfileDataModel.prototype = {
     },
 
     __proto__: WebInspector.ProfileTreeModel.prototype
-}
+};

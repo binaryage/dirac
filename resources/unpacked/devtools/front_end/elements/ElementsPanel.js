@@ -84,7 +84,7 @@ WebInspector.ElementsPanel = function()
     WebInspector.moduleSetting("showUAShadowDOM").addChangeListener(this._showUAShadowDOMChanged.bind(this));
     WebInspector.targetManager.addModelListener(WebInspector.DOMModel, WebInspector.DOMModel.Events.DocumentUpdated, this._documentUpdatedEvent, this);
     WebInspector.extensionServer.addEventListener(WebInspector.ExtensionServer.Events.SidebarPaneAdded, this._extensionSidebarPaneAdded, this);
-}
+};
 
 WebInspector.ElementsPanel._elementsSidebarViewTitleSymbol = Symbol("title");
 
@@ -323,7 +323,8 @@ WebInspector.ElementsPanel.prototype = {
      */
     _selectedNodeChanged: function(event)
     {
-        var selectedNode = /** @type {?WebInspector.DOMNode} */ (event.data);
+        var selectedNode = /** @type {?WebInspector.DOMNode} */ (event.data.node);
+        var focus = /** @type {boolean} */ (event.data.focus);
         for (var i = 0; i < this._treeOutlines.length; ++i) {
             if (!selectedNode || selectedNode.domModel() !== this._treeOutlines[i].domModel())
                 this._treeOutlines[i].selectDOMNode(null);
@@ -336,7 +337,7 @@ WebInspector.ElementsPanel.prototype = {
         if (!selectedNode)
             return;
         selectedNode.setAsInspectedNode();
-        if (!this._isSettingDefaultSelectedNode) {
+        if (focus) {
             this._selectedNodeOnReset = selectedNode;
             this._hasNonDefaultSelectedNode = true;
         }
@@ -436,9 +437,7 @@ WebInspector.ElementsPanel.prototype = {
         var treeOutline = WebInspector.ElementsTreeOutline.forDOMModel(node.domModel());
         if (!treeOutline)
             return;
-        this._isSettingDefaultSelectedNode = true;
         this.selectDOMNode(node);
-        this._isSettingDefaultSelectedNode = false;
         if (treeOutline.selectedTreeElement)
             treeOutline.selectedTreeElement.expand();
     },
@@ -890,7 +889,8 @@ WebInspector.ElementsPanel.prototype = {
         tabbedPane.element.addEventListener("contextmenu", this._sidebarContextMenuEventFired.bind(this), false);
         if (this._popoverHelper)
             this._popoverHelper.hidePopover();
-        this._popoverHelper = new WebInspector.PopoverHelper(tabbedPane.element, this._getPopoverAnchor.bind(this), this._showPopover.bind(this));
+        this._popoverHelper = new WebInspector.PopoverHelper(tabbedPane.element);
+        this._popoverHelper.initializeCallbacks(this._getPopoverAnchor.bind(this), this._showPopover.bind(this));
         this._popoverHelper.setTimeout(0);
 
         if (horizontally) {
@@ -952,7 +952,7 @@ WebInspector.ElementsPanel.prototype = {
     },
 
     __proto__: WebInspector.Panel.prototype
-}
+};
 
 /**
  * @constructor
@@ -960,7 +960,7 @@ WebInspector.ElementsPanel.prototype = {
  */
 WebInspector.ElementsPanel.ContextMenuProvider = function()
 {
-}
+};
 
 WebInspector.ElementsPanel.ContextMenuProvider.prototype = {
     /**
@@ -989,13 +989,13 @@ WebInspector.ElementsPanel.ContextMenuProvider.prototype = {
         var commandCallback = WebInspector.Revealer.reveal.bind(WebInspector.Revealer, object);
         contextMenu.appendItem(WebInspector.UIString.capitalize("Reveal in Elements ^panel"), commandCallback);
     }
-}
+};
 
 /**
  * @constructor
  * @implements {WebInspector.Revealer}
  */
-WebInspector.ElementsPanel.DOMNodeRevealer = function() { }
+WebInspector.ElementsPanel.DOMNodeRevealer = function() { };
 
 WebInspector.ElementsPanel.DOMNodeRevealer.prototype = {
     /**
@@ -1046,13 +1046,13 @@ WebInspector.ElementsPanel.DOMNodeRevealer.prototype = {
             }
         }
     }
-}
+};
 
 /**
  * @constructor
  * @implements {WebInspector.Revealer}
  */
-WebInspector.ElementsPanel.CSSPropertyRevealer = function() { }
+WebInspector.ElementsPanel.CSSPropertyRevealer = function() { };
 
 WebInspector.ElementsPanel.CSSPropertyRevealer.prototype = {
     /**
@@ -1065,7 +1065,7 @@ WebInspector.ElementsPanel.CSSPropertyRevealer.prototype = {
         var panel = WebInspector.ElementsPanel.instance();
         return panel._revealProperty(/** @type {!WebInspector.CSSProperty} */ (property));
     }
-}
+};
 
 /**
  * @return {!WebInspector.ElementsPanel}
@@ -1073,13 +1073,13 @@ WebInspector.ElementsPanel.CSSPropertyRevealer.prototype = {
 WebInspector.ElementsPanel.instance = function()
 {
     return /** @type {!WebInspector.ElementsPanel} */ (self.runtime.sharedInstance(WebInspector.ElementsPanel));
-}
+};
 
 /**
  * @constructor
  * @implements {WebInspector.ActionDelegate}
  */
-WebInspector.ElementsActionDelegate = function() { }
+WebInspector.ElementsActionDelegate = function() { };
 
 WebInspector.ElementsActionDelegate.prototype = {
     /**
@@ -1107,7 +1107,7 @@ WebInspector.ElementsActionDelegate.prototype = {
         }
         return false;
     }
-}
+};
 
 /**
  * @constructor
@@ -1115,7 +1115,7 @@ WebInspector.ElementsActionDelegate.prototype = {
  */
 WebInspector.ElementsPanel.PseudoStateMarkerDecorator = function()
 {
-}
+};
 
 WebInspector.ElementsPanel.PseudoStateMarkerDecorator.prototype = {
     /**
@@ -1127,4 +1127,4 @@ WebInspector.ElementsPanel.PseudoStateMarkerDecorator.prototype = {
     {
         return { color: "orange", title: WebInspector.UIString("Element state: %s", ":" + WebInspector.CSSModel.fromNode(node).pseudoState(node).join(", :")) };
     }
-}
+};

@@ -46,7 +46,7 @@ WebInspector.IDBDatabaseView = function(database)
     this._versionElement = this.element.createChild("div", "header-row");
 
     this.update(database);
-}
+};
 
 WebInspector.IDBDatabaseView.prototype = {
     /**
@@ -78,7 +78,7 @@ WebInspector.IDBDatabaseView.prototype = {
     },
 
     __proto__: WebInspector.VBox.prototype
-}
+};
 
 
 /**
@@ -113,7 +113,7 @@ WebInspector.IDBDataView = function(model, databaseId, objectStore, index)
 
     this.update(objectStore, index);
     this._entries = [];
-}
+};
 
 WebInspector.IDBDataView.prototype = {
     /**
@@ -123,12 +123,12 @@ WebInspector.IDBDataView.prototype = {
     {
         var keyPath = this._isIndex ? this._index.keyPath : this._objectStore.keyPath;
 
-        var columns = [];
-        columns.push({id: "number", title: WebInspector.UIString("#"), width: "50px"});
-        columns.push({id: "key", titleDOMFragment: this._keyColumnHeaderFragment(WebInspector.UIString("Key"), keyPath)});
+        var columns = /** @type {!Array<!WebInspector.DataGrid.ColumnDescriptor>} */ ([]);
+        columns.push({id: "number", title: WebInspector.UIString("#"), sortable: false, width: "50px"});
+        columns.push({id: "key", titleDOMFragment: this._keyColumnHeaderFragment(WebInspector.UIString("Key"), keyPath), sortable: false});
         if (this._isIndex)
-            columns.push({id: "primaryKey", titleDOMFragment: this._keyColumnHeaderFragment(WebInspector.UIString("Primary key"), this._objectStore.keyPath)});
-        columns.push({id: "value", title: WebInspector.UIString("Value")});
+            columns.push({id: "primaryKey", titleDOMFragment: this._keyColumnHeaderFragment(WebInspector.UIString("Primary key"), this._objectStore.keyPath), sortable: false});
+        columns.push({id: "value", title: WebInspector.UIString("Value"), sortable: false});
 
         var dataGrid = new WebInspector.DataGrid(columns);
         return dataGrid;
@@ -335,7 +335,7 @@ WebInspector.IDBDataView.prototype = {
     },
 
     __proto__: WebInspector.SimpleView.prototype
-}
+};
 
 /**
  * @constructor
@@ -346,7 +346,7 @@ WebInspector.IDBDataGridNode = function(data)
 {
     WebInspector.DataGridNode.call(this, data, false);
     this.selectable = false;
-}
+};
 
 WebInspector.IDBDataGridNode.prototype = {
     /**
@@ -356,7 +356,7 @@ WebInspector.IDBDataGridNode.prototype = {
     createCell: function(columnIdentifier)
     {
         var cell = WebInspector.DataGridNode.prototype.createCell.call(this, columnIdentifier);
-        var value = this.data[columnIdentifier];
+        var value = /** @type {!WebInspector.RemoteObject} */ (this.data[columnIdentifier]);
 
         switch (columnIdentifier) {
         case "value":
@@ -373,4 +373,4 @@ WebInspector.IDBDataGridNode.prototype = {
     },
 
     __proto__: WebInspector.DataGridNode.prototype
-}
+};

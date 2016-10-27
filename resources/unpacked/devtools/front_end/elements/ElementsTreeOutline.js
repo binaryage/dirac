@@ -37,15 +37,14 @@
  */
 WebInspector.ElementsTreeOutline = function(domModel, omitRootDOMNode, selectEnabled)
 {
+    TreeOutline.call(this);
+
     this._domModel = domModel;
     this._treeElementSymbol = Symbol("treeElement");
-
-    var element = createElement("div");
-
-    this._shadowRoot = WebInspector.createShadowRootWithCoreStyles(element, "elements/elementsTreeOutline.css");
+    var shadowContainer = createElement("div");
+    this._shadowRoot = WebInspector.createShadowRootWithCoreStyles(shadowContainer, "elements/elementsTreeOutline.css");
     var outlineDisclosureElement = this._shadowRoot.createChild("div", "elements-disclosure");
 
-    TreeOutline.call(this);
     this._element = this.element;
     this._element.classList.add("elements-tree-outline", "source-code");
     this._element.addEventListener("mousedown", this._onmousedown.bind(this), false);
@@ -63,7 +62,7 @@ WebInspector.ElementsTreeOutline = function(domModel, omitRootDOMNode, selectEna
     this._element.addEventListener("clipboard-paste", this._onPaste.bind(this), false);
 
     outlineDisclosureElement.appendChild(this._element);
-    this.element = element;
+    this.element = shadowContainer;
 
     this._includeRootDOMNode = !omitRootDOMNode;
     this._selectEnabled = selectEnabled;
@@ -74,7 +73,8 @@ WebInspector.ElementsTreeOutline = function(domModel, omitRootDOMNode, selectEna
 
     this._visible = false;
 
-    this._popoverHelper = new WebInspector.PopoverHelper(this._element, this._getPopoverAnchor.bind(this), this._showPopover.bind(this));
+    this._popoverHelper = new WebInspector.PopoverHelper(this._element);
+    this._popoverHelper.initializeCallbacks(this._getPopoverAnchor.bind(this), this._showPopover.bind(this));
     this._popoverHelper.setTimeout(0, 100);
 
     /** @type {!Map<!WebInspector.DOMNode, !WebInspector.ElementsTreeOutline.UpdateRecord>} */
@@ -85,7 +85,7 @@ WebInspector.ElementsTreeOutline = function(domModel, omitRootDOMNode, selectEna
     this._domModel.addEventListener(WebInspector.DOMModel.Events.MarkersChanged, this._markersChanged, this);
     this._showHTMLCommentsSetting = WebInspector.moduleSetting("showHTMLComments");
     this._showHTMLCommentsSetting.addChangeListener(this._onShowHTMLCommentsChange.bind(this));
-}
+};
 
 WebInspector.ElementsTreeOutline._treeOutlineSymbol = Symbol("treeOutline");
 
@@ -96,7 +96,7 @@ WebInspector.ElementsTreeOutline._treeOutlineSymbol = Symbol("treeOutline");
 WebInspector.ElementsTreeOutline.forDOMModel = function(domModel)
 {
     return domModel[WebInspector.ElementsTreeOutline._treeOutlineSymbol] || null;
-}
+};
 
 /** @typedef {{node: !WebInspector.DOMNode, isCut: boolean}} */
 WebInspector.ElementsTreeOutline.ClipboardData;
@@ -105,7 +105,7 @@ WebInspector.ElementsTreeOutline.ClipboardData;
 WebInspector.ElementsTreeOutline.Events = {
     SelectedNodeChanged: Symbol("SelectedNodeChanged"),
     ElementsTreeUpdated: Symbol("ElementsTreeUpdated")
-}
+};
 
 /**
  * @const
@@ -130,7 +130,7 @@ WebInspector.ElementsTreeOutline.MappedCharToEntity = {
     "\u202d": "#8237", // LRO
     "\u202e": "#8238", // RLO
     "\ufeff": "#65279" // BOM
-}
+};
 
 WebInspector.ElementsTreeOutline.prototype = {
     _onShowHTMLCommentsChange: function()
@@ -415,7 +415,7 @@ WebInspector.ElementsTreeOutline.prototype = {
         // avoid calling _selectedNodeChanged() twice, first check if _selectedDOMNode is the same
         // node as the one passed in.
         if (this._selectedDOMNode === node)
-            this._selectedNodeChanged();
+            this._selectedNodeChanged(!!focus);
     },
 
     /**
@@ -455,9 +455,12 @@ WebInspector.ElementsTreeOutline.prototype = {
             this._revealAndSelectNode(selectedNode, true);
     },
 
-    _selectedNodeChanged: function()
+    /**
+     * @param {boolean} focus
+     */
+    _selectedNodeChanged: function(focus)
     {
-        this.dispatchEventToListeners(WebInspector.ElementsTreeOutline.Events.SelectedNodeChanged, this._selectedDOMNode);
+        this.dispatchEventToListeners(WebInspector.ElementsTreeOutline.Events.SelectedNodeChanged, {node: this._selectedDOMNode, focus: focus});
     },
 
     /**
@@ -1562,14 +1565,14 @@ WebInspector.ElementsTreeOutline.prototype = {
     },
 
     __proto__: TreeOutline.prototype
-}
+};
 
 /**
  * @constructor
  */
 WebInspector.ElementsTreeOutline.UpdateRecord = function()
 {
-}
+};
 
 WebInspector.ElementsTreeOutline.UpdateRecord.prototype = {
     /**
@@ -1660,7 +1663,7 @@ WebInspector.ElementsTreeOutline.UpdateRecord.prototype = {
     {
         return !!this._hasRemovedChildren;
     }
-}
+};
 
 /**
  * @constructor
@@ -1668,7 +1671,7 @@ WebInspector.ElementsTreeOutline.UpdateRecord.prototype = {
  */
 WebInspector.ElementsTreeOutline.Renderer = function()
 {
-}
+};
 
 WebInspector.ElementsTreeOutline.Renderer.prototype = {
     /**
@@ -1719,7 +1722,7 @@ WebInspector.ElementsTreeOutline.Renderer.prototype = {
             }
         }
     }
-}
+};
 
 /**
  * @constructor
@@ -1742,7 +1745,7 @@ WebInspector.ElementsTreeOutline.ShortcutTreeElement = function(nodeShortcut)
     link.textContent = WebInspector.UIString("reveal");
     this.listItemElement.appendChild(link);
     this._nodeShortcut = nodeShortcut;
-}
+};
 
 WebInspector.ElementsTreeOutline.ShortcutTreeElement.prototype = {
     /**
@@ -1795,4 +1798,4 @@ WebInspector.ElementsTreeOutline.ShortcutTreeElement.prototype = {
     },
 
     __proto__: TreeElement.prototype
-}
+};

@@ -142,7 +142,6 @@ devtools_sdk_js_files = [
   "front_end/sdk/TargetManager.js",
   "front_end/sdk/TracingManager.js",
   "front_end/sdk/TracingModel.js",
-  "front_end/sdk/WorkerManager.js",
 ]
 devtools_workspace_js_files = [
   "front_end/workspace/FileManager.js",
@@ -175,6 +174,7 @@ devtools_bindings_js_files = [
 ]
 devtools_persistence_js_files = [
   "front_end/persistence/DefaultMapping.js",
+  "front_end/persistence/Automapping.js",
   "front_end/persistence/Persistence.js",
 ]
 devtools_platform_js_files = [
@@ -384,9 +384,10 @@ devtools_audits_js_files = [
   "front_end/audits/AuditsPanel.js",
 ]
 devtools_audits2_js_files = [ "front_end/audits2/Audits2Panel.js" ]
-devtools_audits2_worker_js_files =
-    [ "front_end/audits2_worker/Audits2Service.js" ]
-
+devtools_audits2_worker_js_files = [
+  "front_end/audits2_worker/Audits2Service.js",
+  "front_end/audits2_worker/lighthouse/lighthouse-background.js",
+]
 devtools_cm_modes_js_files = [
   "front_end/cm_modes/clike.js",
   "front_end/cm_modes/coffeescript.js",

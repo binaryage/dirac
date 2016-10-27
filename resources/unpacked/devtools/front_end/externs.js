@@ -34,7 +34,7 @@
  * @param {!Object} object
  * @param {!Function} callback
  */
-Object.observe = function(object, callback) {}
+Object.observe = function(object, callback) {};
 
 /** @type {boolean} */
 Event.prototype.isMetaOrCtrlForTest;
@@ -64,30 +64,30 @@ KeyboardEvent.DOM_KEY_LOCATION_NUMPAD;
  * @this {Array.<T>}
  * @template T
  */
-Array.prototype.remove = function(value, onlyFirst) {}
+Array.prototype.remove = function(value, onlyFirst) {};
 /**
  * @param {!Array.<!T>} array
  * @this {Array.<!T>}
  * @template T
  */
-Array.prototype.pushAll = function(array) {}
+Array.prototype.pushAll = function(array) {};
 /**
  * @return {!Object.<string, boolean>}
  * @this {Array.<T>}
  * @template T
  */
-Array.prototype.keySet = function() {}
+Array.prototype.keySet = function() {};
 /**
  * @param {number} index
  * @return {!Array.<!T>}
  * @this {Array.<T>}
  * @template T
  */
-Array.prototype.rotate = function(index) {}
+Array.prototype.rotate = function(index) {};
 /**
  * @this {Array.<number>}
  */
-Array.prototype.sortNumbers = function() {}
+Array.prototype.sortNumbers = function() {};
 /**
  * @param {!S} object
  * @param {function(!S,!T):number=} comparator
@@ -95,7 +95,7 @@ Array.prototype.sortNumbers = function() {}
  * @this {Array.<T>}
  * @template S
  */
-Array.prototype.lowerBound = function(object, comparator) {}
+Array.prototype.lowerBound = function(object, comparator) {};
 /**
  * @param {!S} object
  * @param {function(!S,!T):number=} comparator
@@ -103,7 +103,7 @@ Array.prototype.lowerBound = function(object, comparator) {}
  * @this {Array.<T>}
  * @template S
  */
-Array.prototype.upperBound = function(object, comparator) {}
+Array.prototype.upperBound = function(object, comparator) {};
 /**
  * @param {!S} value
  * @param {function(!S,!T):number} comparator
@@ -111,7 +111,7 @@ Array.prototype.upperBound = function(object, comparator) {}
  * @this {Array.<T>}
  * @template S
  */
-Array.prototype.binaryIndexOf = function(value, comparator) {}
+Array.prototype.binaryIndexOf = function(value, comparator) {};
 /**
  * @param {function(number, number): number} comparator
  * @param {number} leftBound
@@ -121,7 +121,7 @@ Array.prototype.binaryIndexOf = function(value, comparator) {}
  * @return {!Array.<number>}
  * @this {Array.<number>}
  */
-Array.prototype.sortRange = function(comparator, leftBound, rightBound, sortWindowLeft, sortWindowRight) {}
+Array.prototype.sortRange = function(comparator, leftBound, rightBound, sortWindowLeft, sortWindowRight) {};
 
 /**
  * @param {function(!T,!T): number=} comparator
@@ -129,7 +129,7 @@ Array.prototype.sortRange = function(comparator, leftBound, rightBound, sortWind
  * @this {Array.<T>}
  * @template T
  */
-Array.prototype.stableSort = function(comparator) {}
+Array.prototype.stableSort = function(comparator) {};
 
 /**
  * @this {Array.<number>}
@@ -139,7 +139,7 @@ Array.prototype.stableSort = function(comparator) {}
  * @param {number} pivotIndex
  * @return {number}
  */
-Array.prototype.partition = function(comparator, left, right, pivotIndex) {}
+Array.prototype.partition = function(comparator, left, right, pivotIndex) {};
 
 /**
  * @this {Array.<number>}
@@ -147,7 +147,7 @@ Array.prototype.partition = function(comparator, left, right, pivotIndex) {}
  * @param {function(number,number):boolean=} comparator
  * @return {number}
  */
-Array.prototype.qselect = function(k, comparator) {}
+Array.prototype.qselect = function(k, comparator) {};
 
 /**
  * @param {string} field
@@ -155,14 +155,14 @@ Array.prototype.qselect = function(k, comparator) {}
  * @this {Array.<!Object.<string,T>>}
  * @template T
  */
-Array.prototype.select = function(field) {}
+Array.prototype.select = function(field) {};
 
 /**
  * @return {!T|undefined}
  * @this {Array.<T>}
  * @template T
  */
-Array.prototype.peekLast = function() {}
+Array.prototype.peekLast = function() {};
 
 /**
  * @param {!Array.<T>} array
@@ -171,7 +171,7 @@ Array.prototype.peekLast = function() {}
  * @this {!Array.<T>}
  * @template T
  */
-Array.prototype.intersectOrdered = function(array, comparator) {}
+Array.prototype.intersectOrdered = function(array, comparator) {};
 
 /**
  * @param {!Array.<T>} array
@@ -180,7 +180,7 @@ Array.prototype.intersectOrdered = function(array, comparator) {}
  * @this {!Array.<T>}
  * @template T
  */
-Array.prototype.mergeOrdered = function(array, comparator) {}
+Array.prototype.mergeOrdered = function(array, comparator) {};
 
 // File System API
 /**
@@ -208,23 +208,23 @@ DevToolsHost.ContextMenuDescriptor;
 /**
  * @return {number}
  */
-DevToolsHost.zoomFactor = function() { }
+DevToolsHost.zoomFactor = function() { };
 
 /**
  * @param {string} origin
  * @param {string} script
  */
-DevToolsHost.setInjectedScriptForOrigin = function(origin, script) { }
+DevToolsHost.setInjectedScriptForOrigin = function(origin, script) { };
 
 /**
  * @param {string} text
  */
-DevToolsHost.copyText = function(text) { }
+DevToolsHost.copyText = function(text) { };
 
 /**
  * @return {string}
  */
-DevToolsHost.platform = function() { }
+DevToolsHost.platform = function() { };
 
 /**
  * @param {number} x
@@ -232,44 +232,44 @@ DevToolsHost.platform = function() { }
  * @param {!Array.<!DevToolsHost.ContextMenuDescriptor>} items
  * @param {!Document} document
  */
-DevToolsHost.showContextMenuAtPoint = function(x, y, items, document) { }
+DevToolsHost.showContextMenuAtPoint = function(x, y, items, document) { };
 
 /**
  * @param {string} message
  */
-DevToolsHost.sendMessageToEmbedder = function(message) { }
+DevToolsHost.sendMessageToEmbedder = function(message) { };
 
 /**
  * @return {string}
  */
-DevToolsHost.getSelectionBackgroundColor = function() { }
+DevToolsHost.getSelectionBackgroundColor = function() { };
 
 /**
  * @return {string}
  */
-DevToolsHost.getSelectionForegroundColor = function() { }
+DevToolsHost.getSelectionForegroundColor = function() { };
 
 /**
  * @return {boolean}
  */
-DevToolsHost.isUnderTest = function() { }
+DevToolsHost.isUnderTest = function() { };
 
 /**
  * @return {boolean}
  */
-DevToolsHost.isHostedMode = function() { }
+DevToolsHost.isHostedMode = function() { };
 
 /**
  * @param {string} fileSystemId
  * @param {string} registeredName
  * @return {?DOMFileSystem}
  */
-DevToolsHost.isolatedFileSystem = function(fileSystemId, registeredName) { }
+DevToolsHost.isolatedFileSystem = function(fileSystemId, registeredName) { };
 
 /**
  * @param {!FileSystem} fileSystem
  */
-DevToolsHost.upgradeDraggedFileSystemPermissions = function(fileSystem) { }
+DevToolsHost.upgradeDraggedFileSystemPermissions = function(fileSystem) { };
 
 var WebInspector = function() {};
 
@@ -616,20 +616,20 @@ Path2D.prototype = {
      * @param {number} y
      */
     lineTo: function(x, y) { }
-}
+};
 
 /** @constructor */
-var Doc = function() { }
+var Doc = function() { };
 Doc.prototype = {
     /** @type {number} */
     scrollLeft: 0,
     /** @type {number} */
     scrollTop: 0
-}
+};
 
 /** @constructor */
-var CodeMirror = function(element, config) { }
-CodeMirror.on = function(obj, type, handler) { }
+var CodeMirror = function(element, config) { };
+CodeMirror.on = function(obj, type, handler) { };
 CodeMirror.prototype = {
     /** @type {!Doc} */
     doc: null,
@@ -774,7 +774,7 @@ CodeMirror.prototype = {
     swapDoc: function(doc) { },
     undo: function() { },
     unlinkDoc: function(other) { }
-}
+};
 /** @type {!{cursorDiv: Element, lineDiv: Element}} */
 CodeMirror.prototype.display;
 /** @type {!Object} */
@@ -796,7 +796,7 @@ CodeMirror.BeforeChangeObject;
 CodeMirror.ChangeObject;
 
 /** @constructor */
-CodeMirror.Pos = function(line, ch) { }
+CodeMirror.Pos = function(line, ch) { };
 /** @type {number} */
 CodeMirror.Pos.prototype.line;
 /** @type {number} */
@@ -820,7 +820,7 @@ CodeMirror.StringStream = function(line)
 {
     this.pos = 0;
     this.start = 0;
-}
+};
 CodeMirror.StringStream.prototype = {
     backUp: function(n) { },
     column: function() { },
@@ -841,21 +841,21 @@ CodeMirror.StringStream.prototype = {
     skipTo: function(ch) { },
     skipToEnd: function() { },
     sol: function() { }
-}
+};
 
 /** @constructor */
-CodeMirror.TextMarker = function(doc, type) { }
+CodeMirror.TextMarker = function(doc, type) { };
 CodeMirror.TextMarker.prototype = {
     clear: function() { },
     find: function() { },
     changed: function() { }
-}
+};
 
 /** @constructor */
-CodeMirror.LineWidget = function() { }
+CodeMirror.LineWidget = function() { };
 CodeMirror.LineWidget.prototype = {
     clear: function() { }
-}
+};
 
 
 /** @type {Object.<string, !Object.<string, string>>} */
@@ -871,14 +871,14 @@ window.dispatchStandaloneTestRunnerMessages;
  * @param {*} obj
  * @return {boolean}
  */
-ArrayBuffer.isView = function(obj) { }
+ArrayBuffer.isView = function(obj) { };
 
 /**
  * @param {Array.<Object>} keyframes
  * @param {number|Object} timing
  * @return {Object}
  */
-Element.prototype.animate = function(keyframes, timing) { }
+Element.prototype.animate = function(keyframes, timing) { };
 
 /**
  * @override
@@ -887,7 +887,7 @@ Element.prototype.animate = function(keyframes, timing) { }
  * @param {(boolean|!{capture: (boolean|undefined), once: (boolean|undefined), passive: (boolean|undefined)})=} options
  * @this {EventTarget}
  */
-Element.prototype.addEventListener = function(type, listener, options) { }
+Element.prototype.addEventListener = function(type, listener, options) { };
 
 var acorn = {
     /**
@@ -923,7 +923,7 @@ var Acorn = {};
 Acorn.Tokenizer = function() {
     /** @type {function():!Acorn.Token} */
     this.getToken;
-}
+};
 
 /**
  * @constructor
@@ -933,7 +933,7 @@ Acorn.TokenType = function() {
     this.label;
     /** @type {(string|undefined)} */
     this.keyword;
-}
+};
 
 /**
  * @typedef {{type: !Acorn.TokenType, value: string, start: number, end: number}}
@@ -983,7 +983,7 @@ ESTree.Node = function()
     this.argument;
     /** @type {(string|undefined)} */
     this.operator;
-}
+};
 
 /**
  * @extends {ESTree.Node}
@@ -995,9 +995,9 @@ ESTree.TemplateLiteralNode = function()
     this.quasis;
     /** @type {!Array.<!ESTree.Node>} */
     this.expressions;
-}
+};
 
-var Gonzales = {}
+var Gonzales = {};
 var gonzales = {
     /**
      * @param {string} text
@@ -1005,7 +1005,7 @@ var gonzales = {
      * @return {!Gonzales.Node}
      */
     parse: function(text, options) { },
-}
+};
 
 /**
  * @constructor
@@ -1016,7 +1016,7 @@ Gonzales.Location = function()
     this.line;
     /** @type {number} */
     this.column;
-}
+};
 
 /**
  * @constructor
@@ -1033,7 +1033,7 @@ Gonzales.Node = function()
     this.end;
     /** @type {(string|!Array<!Gonzales.Node>)} */
     this.content;
-}
+};
 
 /**
  * @type {string}
@@ -1046,7 +1046,7 @@ DOMException.prototype.message;
  * @constructor
  * @param {!Object} params
  */
-var Terminal = function(params) { }
+var Terminal = function(params) { };
 
 Terminal.prototype = {
     fit: function() { },
@@ -1055,4 +1055,4 @@ Terminal.prototype = {
     open: function(element) { },
     /** @param {string} eventName * @param {!Function} handler */
     on: function(eventName, handler) { }
-}
+};

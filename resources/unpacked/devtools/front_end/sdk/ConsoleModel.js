@@ -50,7 +50,7 @@ WebInspector.ConsoleModel = function(target, logAgent)
         target.registerLogDispatcher(new WebInspector.LogDispatcher(this));
         this._logAgent.enable();
     }
-}
+};
 
 /** @enum {symbol} */
 WebInspector.ConsoleModel.Events = {
@@ -59,7 +59,7 @@ WebInspector.ConsoleModel.Events = {
     MessageAdded: Symbol("MessageAdded"),
     MessageUpdated: Symbol("MessageUpdated"),
     CommandEvaluated: Symbol("CommandEvaluated")
-}
+};
 
 WebInspector.ConsoleModel.prototype = {
     /**
@@ -70,7 +70,7 @@ WebInspector.ConsoleModel.prototype = {
         if (this._isBlacklisted(msg))
             return;
 
-        if (msg.source === WebInspector.ConsoleMessage.MessageSource.Worker && msg.target().workerManager && msg.target().workerManager.targetByWorkerId(msg.workerId))
+        if (msg.source === WebInspector.ConsoleMessage.MessageSource.Worker && msg.target().subTargetsManager && msg.target().subTargetsManager.targetForId(msg.workerId))
             return;
 
         if (msg.source === WebInspector.ConsoleMessage.MessageSource.ConsoleAPI && msg.type === WebInspector.ConsoleMessage.MessageType.Clear)
@@ -185,7 +185,7 @@ WebInspector.ConsoleModel.prototype = {
     },
 
     __proto__: WebInspector.SDKModel.prototype
-}
+};
 
 /**
  * @param {!WebInspector.ExecutionContext} executionContext
@@ -246,7 +246,7 @@ WebInspector.ConsoleModel.evaluateCommandInConsole = function(executionContext, 
 
     executionContext.evaluate(text, "console", !!useCommandLineAPI, false, false, true, true, printResult);
     WebInspector.userMetrics.actionTaken(WebInspector.UserMetrics.Action.ConsoleEvaluated);
-}
+};
 
 /**
  * @constructor
@@ -300,7 +300,7 @@ WebInspector.ConsoleMessage = function(target, source, level, messageText, type,
             }
         }
     }
-}
+};
 
 WebInspector.ConsoleMessage.prototype = {
     /**
@@ -443,7 +443,7 @@ WebInspector.ConsoleMessage.prototype = {
         }
         return this._isEqualStackTraces(stackTrace1.parent, stackTrace2.parent);
     }
-}
+};
 
 // Note: Keep these constants in sync with the ones in Console.h
 /**
@@ -462,7 +462,7 @@ WebInspector.ConsoleMessage.MessageSource = {
     Other: "other",
     Deprecation: "deprecation",
     Worker: "worker"
-}
+};
 
 /**
  * @enum {string}
@@ -488,7 +488,7 @@ WebInspector.ConsoleMessage.MessageType = {
     DiracCommand: "diracCommand",
     DiracMarkup: "diracMarkup",
     Command: "command"
-}
+};
 
 /**
  * @enum {string}
@@ -510,7 +510,7 @@ WebInspector.ConsoleMessage.MessageLevel = {
 WebInspector.ConsoleMessage.timestampComparator = function(a, b)
 {
     return a.timestamp - b.timestamp;
-}
+};
 
 /**
  * @param {!RuntimeAgent.ExceptionDetails} exceptionDetails
@@ -526,7 +526,7 @@ WebInspector.ConsoleMessage.simpleTextFromException = function(exceptionDetails)
         text += " " + description;
     }
     return text;
-}
+};
 
 /**
  * @param {!WebInspector.Target} target
@@ -553,7 +553,7 @@ WebInspector.ConsoleMessage.fromException = function(target, exceptionDetails, m
         timestamp,
         exceptionDetails.executionContextId,
         exceptionDetails.scriptId);
-}
+};
 
 /**
  * @constructor
@@ -563,7 +563,7 @@ WebInspector.ConsoleMessage.fromException = function(target, exceptionDetails, m
 WebInspector.LogDispatcher = function(console)
 {
     this._console = console;
-}
+};
 
 WebInspector.LogDispatcher.prototype = {
     /**
@@ -590,7 +590,7 @@ WebInspector.LogDispatcher.prototype = {
             payload.workerId);
         this._console.addMessage(consoleMessage);
     }
-}
+};
 
 /**
  * @constructor
@@ -604,7 +604,7 @@ WebInspector.MultitargetConsoleModel = function()
     WebInspector.targetManager.addModelListener(WebInspector.ConsoleModel, WebInspector.ConsoleModel.Events.MessageAdded, this._consoleMessageAdded, this);
     WebInspector.targetManager.addModelListener(WebInspector.ConsoleModel, WebInspector.ConsoleModel.Events.MessageUpdated, this._consoleMessageUpdated, this);
     WebInspector.targetManager.addModelListener(WebInspector.ConsoleModel, WebInspector.ConsoleModel.Events.CommandEvaluated, this._commandEvaluated, this);
-}
+};
 
 WebInspector.MultitargetConsoleModel.prototype = {
     /**
@@ -678,7 +678,7 @@ WebInspector.MultitargetConsoleModel.prototype = {
     },
 
     __proto__: WebInspector.Object.prototype
-}
+};
 
 /**
  * @type {!WebInspector.MultitargetConsoleModel}

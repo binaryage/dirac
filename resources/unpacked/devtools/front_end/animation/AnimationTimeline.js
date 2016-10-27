@@ -37,7 +37,7 @@ WebInspector.AnimationTimeline = function()
     WebInspector.targetManager.addModelListener(WebInspector.DOMModel, WebInspector.DOMModel.Events.NodeRemoved, this._nodeRemoved, this);
     WebInspector.targetManager.observeTargets(this, WebInspector.Target.Capability.DOM);
     WebInspector.context.addFlavorChangeListener(WebInspector.DOMNode, this._nodeChanged, this);
-}
+};
 
 WebInspector.AnimationTimeline.GlobalPlaybackRates = [1, 0.25, 0.1];
 
@@ -46,7 +46,7 @@ WebInspector.AnimationTimeline._ControlState = {
     Play: "play-outline",
     Replay: "replay-outline",
     Pause: "pause-outline"
-}
+};
 
 WebInspector.AnimationTimeline.prototype = {
     wasShown: function()
@@ -145,7 +145,8 @@ WebInspector.AnimationTimeline.prototype = {
         this._updatePlaybackControls();
 
         this._previewContainer = this.contentElement.createChild("div", "animation-timeline-buffer");
-        this._popoverHelper = new WebInspector.PopoverHelper(this._previewContainer, this._getPopoverAnchor.bind(this), this._showPopover.bind(this), this._onHidePopover.bind(this), true);
+        this._popoverHelper = new WebInspector.PopoverHelper(this._previewContainer, true);
+        this._popoverHelper.initializeCallbacks(this._getPopoverAnchor.bind(this), this._showPopover.bind(this), this._onHidePopover.bind(this));
         this._popoverHelper.setTimeout(0);
         var emptyBufferHint = this.contentElement.createChild("div", "animation-timeline-buffer-hint");
         emptyBufferHint.textContent = WebInspector.UIString("Listening for animations...");
@@ -696,7 +697,7 @@ WebInspector.AnimationTimeline.prototype = {
     },
 
     __proto__: WebInspector.VBox.prototype
-}
+};
 
 /**
  * @constructor
@@ -707,7 +708,7 @@ WebInspector.AnimationTimeline.NodeUI = function(animationEffect)
     this.element = createElementWithClass("div", "animation-node-row");
     this._description = this.element.createChild("div", "animation-node-description");
     this._timelineElement = this.element.createChild("div", "animation-node-timeline");
-}
+};
 
 WebInspector.AnimationTimeline.NodeUI.prototype = {
     /**
@@ -744,7 +745,7 @@ WebInspector.AnimationTimeline.NodeUI.prototype = {
     {
         this.element.classList.toggle("animation-node-selected", this._node && this._node === WebInspector.context.flavor(WebInspector.DOMNode));
     }
-}
+};
 
 /**
  * @constructor
@@ -755,7 +756,7 @@ WebInspector.AnimationTimeline.StepTimingFunction = function(steps, stepAtPositi
 {
     this.steps = steps;
     this.stepAtPosition = stepAtPosition;
-}
+};
 
 /**
  * @param {string} text
@@ -769,4 +770,4 @@ WebInspector.AnimationTimeline.StepTimingFunction.parse = function(text) {
     if (match)
         return new WebInspector.AnimationTimeline.StepTimingFunction(parseInt(match[1], 10), "end");
     return null;
-}
+};
