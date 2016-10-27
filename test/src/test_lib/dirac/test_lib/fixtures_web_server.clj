@@ -1,5 +1,5 @@
 (ns dirac.test-lib.fixtures-web-server
-  (:require [dirac.settings :refer [get-fixtures-server-port get-fixtures-server-url]]
+  (:require [dirac.settings :refer [get-fixtures-server-port get-fixtures-server-url get-fixtures-server-warmup-time]]
             [clojure.tools.logging :as log]
             [clojure.string :as string])
   (:use ring.middleware.resource
@@ -27,7 +27,9 @@
   (require 'ring.adapter.jetty)
   (let [run-jetty (resolve 'ring.adapter.jetty/run-jetty)]
     (log/info "starting fixtures web server at" (get-fixtures-server-url))
-    (run-jetty (wrap-reload (get-fixtures-server)) (merge default-options options))))
+    (let [server (run-jetty (wrap-reload (get-fixtures-server)) (merge default-options options))]
+      (Thread/sleep (get-fixtures-server-warmup-time))
+      server)))
 
 (defn stop-fixtures-web-server [server]
   (try
