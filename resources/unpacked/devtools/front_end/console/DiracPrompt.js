@@ -1,20 +1,13 @@
 /**
  * @constructor
- * @extends {WebInspector.TextPromptWithHistory}
+ * @extends {WebInspector.TextPrompt}
  * @implements {WebInspector.SuggestBoxDelegate}
  * @param {!CodeMirror} codeMirrorInstance
  */
 WebInspector.DiracPromptWithHistory = function(codeMirrorInstance) {
-    /**
-     * @param {!Element} proxyElement
-     * @param {!Range} wordRange
-     * @param {boolean} force
-     * @param {function(!Array.<string>, number=)} completionsReadyCallback
-     */
-    const dummyCompletionsFn = function(proxyElement, wordRange, force, completionsReadyCallback) {
-    };
-    WebInspector.TextPromptWithHistory.call(this, dummyCompletionsFn);
+    WebInspector.TextPrompt.call(this);
 
+    this._history = new WebInspector.ConsoleHistoryManager();
     this._codeMirror = codeMirrorInstance;
     this._codeMirror.on("changes", this._changes.bind(this));
     this._codeMirror.on("scroll", this._onScroll.bind(this));
@@ -26,6 +19,13 @@ WebInspector.DiracPromptWithHistory = function(codeMirrorInstance) {
 
 WebInspector.DiracPromptWithHistory.prototype = {
 
+    /**
+     * @return {!WebInspector.ConsoleHistoryManager}
+     */
+    history: function()
+    {
+        return this._history;
+    },
     /**
      * @return {boolean}
      */
@@ -72,7 +72,7 @@ WebInspector.DiracPromptWithHistory.prototype = {
      * @override
      * @return {boolean}
      */
-    isCaretAtEndOfPrompt: function() {
+    _isCaretAtEndOfPrompt: function() {
         const content = this._codeMirror.getValue();
         const cursor = this._codeMirror.getCursor();
         const endCursor = this._codeMirror.posFromIndex(content.length);
@@ -127,7 +127,7 @@ WebInspector.DiracPromptWithHistory.prototype = {
         for (let changeIndex = 0; changeIndex < changes.length; ++changeIndex) {
             let changeObject = changes[changeIndex];
             singleCharInput = (changeObject.origin === "+input" && changeObject.text.length === 1 && changeObject.text[0].length === 1) ||
-                (this.isSuggestBoxVisible() && changeObject.origin === "+delete" && changeObject.removed.length === 1 && changeObject.removed[0].length === 1);
+                (this._isSuggestBoxVisible() && changeObject.origin === "+delete" && changeObject.removed.length === 1 && changeObject.removed[0].length === 1);
         }
         if (dirac._DEBUG_COMPLETIONS) {
             console.log("_changes", singleCharInput, changes);
@@ -144,7 +144,7 @@ WebInspector.DiracPromptWithHistory.prototype = {
     },
 
     _onScroll: function() {
-        if (!this.isSuggestBoxVisible())
+        if (!this._isSuggestBoxVisible())
             return;
 
         const cursor = this._codeMirror.getCursor();
@@ -160,7 +160,7 @@ WebInspector.DiracPromptWithHistory.prototype = {
     },
 
     _onCursorActivity: function() {
-        if (!this.isSuggestBoxVisible()) {
+        if (!this._isSuggestBoxVisible()) {
             return;
         }
 
@@ -866,5 +866,64 @@ WebInspector.DiracPromptWithHistory.prototype = {
         return res.join("\n");
     },
 
-    __proto__: WebInspector.TextPromptWithHistory.prototype
+    /**
+     * @override
+     */
+    onKeyDown: function(event)
+    {
+        var newText;
+        var isPrevious;
+
+        switch (event.keyCode) {
+            case WebInspector.KeyboardShortcut.Keys.Up.code:
+                if (!this.isCaretOnFirstLine() || this._isSuggestBoxVisible())
+                    break;
+                newText = this._history.previous(this.text());
+                isPrevious = true;
+                break;
+            case WebInspector.KeyboardShortcut.Keys.Down.code:
+                if (!this.isCaretOnLastLine() || this._isSuggestBoxVisible())
+                    break;
+                newText = this._history.next();
+                break;
+            case WebInspector.KeyboardShortcut.Keys.P.code: // Ctrl+P = Previous
+                if (WebInspector.isMac() && event.ctrlKey && !event.metaKey && !event.altKey && !event.shiftKey) {
+                    newText = this._history.previous(this.text());
+                    isPrevious = true;
+                }
+                break;
+            case WebInspector.KeyboardShortcut.Keys.N.code: // Ctrl+N = Next
+                if (WebInspector.isMac() && event.ctrlKey && !event.metaKey && !event.altKey && !event.shiftKey)
+                    newText = this._history.next();
+                break;
+        }
+
+        if (newText !== undefined) {
+            event.consume(true);
+            this.setText(newText);
+            this.clearAutocomplete();
+
+            if (isPrevious) {
+                var firstNewlineIndex = this.text().indexOf("\n");
+                if (firstNewlineIndex === -1)
+                    this.moveCaretToEndOfPrompt();
+                else {
+                    var selection = this._element.getComponentSelection();
+                    var selectionRange = this._createRange();
+
+                    selectionRange.setStart(this._element.firstChild, firstNewlineIndex);
+                    selectionRange.setEnd(this._element.firstChild, firstNewlineIndex);
+
+                    selection.removeAllRanges();
+                    selection.addRange(selectionRange);
+                }
+            }
+
+            return;
+        }
+
+        WebInspector.TextPrompt.prototype.onKeyDown.apply(this, arguments);
+    },
+
+    __proto__: WebInspector.TextPrompt.prototype
 };
