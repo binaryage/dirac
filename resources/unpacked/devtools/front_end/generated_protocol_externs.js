@@ -1,10 +1,4 @@
 
-var InspectorBackend = {}
-
-var Protocol = {};
-/** @typedef {string}*/
-Protocol.Error;
-
 
 /**
  * @constructor
@@ -2601,6 +2595,14 @@ Protocol.TargetAgent.prototype.invoke_activateTarget = function(obj, opt_callbac
  * @param {TargetAgent.TargetID} targetId
  * @param {function(?Protocol.Error, boolean):void=} opt_callback
  */
+Protocol.TargetAgent.prototype.closeTarget = function(targetId, opt_callback) {}
+/** @param {function(?Protocol.Error, boolean):void=} opt_callback */
+Protocol.TargetAgent.prototype.invoke_closeTarget = function(obj, opt_callback) {}
+
+/**
+ * @param {TargetAgent.TargetID} targetId
+ * @param {function(?Protocol.Error, boolean):void=} opt_callback
+ */
 Protocol.TargetAgent.prototype.attachToTarget = function(targetId, opt_callback) {}
 /** @param {function(?Protocol.Error, boolean):void=} opt_callback */
 Protocol.TargetAgent.prototype.invoke_attachToTarget = function(obj, opt_callback) {}
@@ -2613,12 +2615,48 @@ Protocol.TargetAgent.prototype.detachFromTarget = function(targetId, opt_callbac
 /** @param {function(?Protocol.Error):void=} opt_callback */
 Protocol.TargetAgent.prototype.invoke_detachFromTarget = function(obj, opt_callback) {}
 
+/**
+ * @param {function(?Protocol.Error, TargetAgent.BrowserContextID):void=} opt_callback
+ */
+Protocol.TargetAgent.prototype.createBrowserContext = function(opt_callback) {}
+/** @param {function(?Protocol.Error, TargetAgent.BrowserContextID):void=} opt_callback */
+Protocol.TargetAgent.prototype.invoke_createBrowserContext = function(obj, opt_callback) {}
+
+/**
+ * @param {TargetAgent.BrowserContextID} browserContextId
+ * @param {function(?Protocol.Error, boolean):void=} opt_callback
+ */
+Protocol.TargetAgent.prototype.disposeBrowserContext = function(browserContextId, opt_callback) {}
+/** @param {function(?Protocol.Error, boolean):void=} opt_callback */
+Protocol.TargetAgent.prototype.invoke_disposeBrowserContext = function(obj, opt_callback) {}
+
+/**
+ * @param {string} url
+ * @param {number=} opt_width
+ * @param {number=} opt_height
+ * @param {TargetAgent.BrowserContextID=} opt_browserContextId
+ * @param {function(?Protocol.Error, TargetAgent.TargetID):void=} opt_callback
+ */
+Protocol.TargetAgent.prototype.createTarget = function(url, opt_width, opt_height, opt_browserContextId, opt_callback) {}
+/** @param {function(?Protocol.Error, TargetAgent.TargetID):void=} opt_callback */
+Protocol.TargetAgent.prototype.invoke_createTarget = function(obj, opt_callback) {}
+
+/**
+ * @param {function(?Protocol.Error, !Array.<TargetAgent.TargetInfo>):void=} opt_callback
+ */
+Protocol.TargetAgent.prototype.getTargets = function(opt_callback) {}
+/** @param {function(?Protocol.Error, !Array.<TargetAgent.TargetInfo>):void=} opt_callback */
+Protocol.TargetAgent.prototype.invoke_getTargets = function(obj, opt_callback) {}
+
 
 
 var TargetAgent = function(){};
 
 /** @typedef {string} */
 TargetAgent.TargetID;
+
+/** @typedef {string} */
+TargetAgent.BrowserContextID;
 
 /** @typedef {!{targetId:(TargetAgent.TargetID), type:(string), title:(string), url:(string)}} */
 TargetAgent.TargetInfo;
@@ -2649,64 +2687,6 @@ TargetAgent.Dispatcher.prototype.detachedFromTarget = function(targetId) {};
  * @param {string} message
  */
 TargetAgent.Dispatcher.prototype.receivedMessageFromTarget = function(targetId, message) {};
-
-
-/**
- * @constructor
-*/
-Protocol.WorkerAgent = function(){};
-
-/**
- * @param {function(?Protocol.Error):void=} opt_callback
- */
-Protocol.WorkerAgent.prototype.enable = function(opt_callback) {}
-/** @param {function(?Protocol.Error):void=} opt_callback */
-Protocol.WorkerAgent.prototype.invoke_enable = function(obj, opt_callback) {}
-
-/**
- * @param {function(?Protocol.Error):void=} opt_callback
- */
-Protocol.WorkerAgent.prototype.disable = function(opt_callback) {}
-/** @param {function(?Protocol.Error):void=} opt_callback */
-Protocol.WorkerAgent.prototype.invoke_disable = function(obj, opt_callback) {}
-
-/**
- * @param {string} workerId
- * @param {string} message
- * @param {function(?Protocol.Error):void=} opt_callback
- */
-Protocol.WorkerAgent.prototype.sendMessageToWorker = function(workerId, message, opt_callback) {}
-/** @param {function(?Protocol.Error):void=} opt_callback */
-Protocol.WorkerAgent.prototype.invoke_sendMessageToWorker = function(obj, opt_callback) {}
-
-/**
- * @param {boolean} value
- * @param {function(?Protocol.Error):void=} opt_callback
- */
-Protocol.WorkerAgent.prototype.setWaitForDebuggerOnStart = function(value, opt_callback) {}
-/** @param {function(?Protocol.Error):void=} opt_callback */
-Protocol.WorkerAgent.prototype.invoke_setWaitForDebuggerOnStart = function(obj, opt_callback) {}
-
-
-
-var WorkerAgent = function(){};
-/** @interface */
-WorkerAgent.Dispatcher = function() {};
-/**
- * @param {string} workerId
- * @param {string} url
- * @param {boolean} waitingForDebugger
- */
-WorkerAgent.Dispatcher.prototype.workerCreated = function(workerId, url, waitingForDebugger) {};
-/**
- * @param {string} workerId
- */
-WorkerAgent.Dispatcher.prototype.workerTerminated = function(workerId) {};
-/**
- * @param {string} workerId
- * @param {string} message
- */
-WorkerAgent.Dispatcher.prototype.dispatchMessageFromWorker = function(workerId, message) {};
 
 
 /**
@@ -3615,114 +3595,6 @@ LogAgent.Dispatcher.prototype.entryAdded = function(entry) {};
 /**
  * @constructor
 */
-Protocol.BrowserAgent = function(){};
-
-/**
- * @param {function(?Protocol.Error, BrowserAgent.BrowserContextID):T} opt_callback
- * @return {!Promise.<T>}
- * @template T
- */
-Protocol.BrowserAgent.prototype.createBrowserContext = function(opt_callback) {}
-/** @param {function(?Protocol.Error, BrowserAgent.BrowserContextID):void=} opt_callback */
-Protocol.BrowserAgent.prototype.invoke_createBrowserContext = function(obj, opt_callback) {}
-
-/**
- * @param {BrowserAgent.BrowserContextID} browserContextId
- * @param {function(?Protocol.Error, boolean):T} opt_callback
- * @return {!Promise.<T>}
- * @template T
- */
-Protocol.BrowserAgent.prototype.disposeBrowserContext = function(browserContextId, opt_callback) {}
-/** @param {function(?Protocol.Error, boolean):void=} opt_callback */
-Protocol.BrowserAgent.prototype.invoke_disposeBrowserContext = function(obj, opt_callback) {}
-
-/**
- * @param {string} url
- * @param {number|undefined} width
- * @param {number|undefined} height
- * @param {BrowserAgent.BrowserContextID|undefined} browserContextId
- * @param {function(?Protocol.Error, BrowserAgent.TargetID):T} opt_callback
- * @return {!Promise.<T>}
- * @template T
- */
-Protocol.BrowserAgent.prototype.createTarget = function(url, width, height, browserContextId, opt_callback) {}
-/** @param {function(?Protocol.Error, BrowserAgent.TargetID):void=} opt_callback */
-Protocol.BrowserAgent.prototype.invoke_createTarget = function(obj, opt_callback) {}
-
-/**
- * @param {BrowserAgent.TargetID} targetId
- * @param {function(?Protocol.Error, boolean):T} opt_callback
- * @return {!Promise.<T>}
- * @template T
- */
-Protocol.BrowserAgent.prototype.closeTarget = function(targetId, opt_callback) {}
-/** @param {function(?Protocol.Error, boolean):void=} opt_callback */
-Protocol.BrowserAgent.prototype.invoke_closeTarget = function(obj, opt_callback) {}
-
-/**
- * @param {function(?Protocol.Error, !Array.<BrowserAgent.TargetInfo>):T} opt_callback
- * @return {!Promise.<T>}
- * @template T
- */
-Protocol.BrowserAgent.prototype.getTargets = function(opt_callback) {}
-/** @param {function(?Protocol.Error, !Array.<BrowserAgent.TargetInfo>):void=} opt_callback */
-Protocol.BrowserAgent.prototype.invoke_getTargets = function(obj, opt_callback) {}
-
-/**
- * @param {BrowserAgent.TargetID} targetId
- * @param {function(?Protocol.Error, boolean):T} opt_callback
- * @return {!Promise.<T>}
- * @template T
- */
-Protocol.BrowserAgent.prototype.attach = function(targetId, opt_callback) {}
-/** @param {function(?Protocol.Error, boolean):void=} opt_callback */
-Protocol.BrowserAgent.prototype.invoke_attach = function(obj, opt_callback) {}
-
-/**
- * @param {BrowserAgent.TargetID} targetId
- * @param {function(?Protocol.Error, boolean):T} opt_callback
- * @return {!Promise.<T>}
- * @template T
- */
-Protocol.BrowserAgent.prototype.detach = function(targetId, opt_callback) {}
-/** @param {function(?Protocol.Error, boolean):void=} opt_callback */
-Protocol.BrowserAgent.prototype.invoke_detach = function(obj, opt_callback) {}
-
-/**
- * @param {BrowserAgent.TargetID} targetId
- * @param {string} message
- * @param {function(?Protocol.Error):T=} opt_callback
- * @return {!Promise.<T>}
- * @template T
- */
-Protocol.BrowserAgent.prototype.sendMessage = function(targetId, message, opt_callback) {}
-/** @param {function(?Protocol.Error):void=} opt_callback */
-Protocol.BrowserAgent.prototype.invoke_sendMessage = function(obj, opt_callback) {}
-
-
-
-var BrowserAgent = function(){};
-
-/** @typedef {string} */
-BrowserAgent.BrowserContextID;
-
-/** @typedef {string} */
-BrowserAgent.TargetID;
-
-/** @typedef {!{targetId:(BrowserAgent.TargetID), type:(string), title:(string), url:(string)}} */
-BrowserAgent.TargetInfo;
-/** @interface */
-BrowserAgent.Dispatcher = function() {};
-/**
- * @param {BrowserAgent.TargetID} targetId
- * @param {string} message
- */
-BrowserAgent.Dispatcher.prototype.dispatchMessage = function(targetId, message) {};
-
-
-/**
- * @constructor
-*/
 Protocol.SystemInfoAgent = function(){};
 
 /**
@@ -4543,14 +4415,18 @@ ProfilerAgent.Dispatcher.prototype.consoleProfileFinished = function(id, locatio
 Protocol.HeapProfilerAgent = function(){};
 
 /**
- * @param {function(?Protocol.Error):void=} opt_callback
+ * @param {function(?Protocol.Error):T=} opt_callback
+ * @return {!Promise.<T>}
+ * @template T
  */
 Protocol.HeapProfilerAgent.prototype.enable = function(opt_callback) {}
 /** @param {function(?Protocol.Error):void=} opt_callback */
 Protocol.HeapProfilerAgent.prototype.invoke_enable = function(obj, opt_callback) {}
 
 /**
- * @param {function(?Protocol.Error):void=} opt_callback
+ * @param {function(?Protocol.Error):T=} opt_callback
+ * @return {!Promise.<T>}
+ * @template T
  */
 Protocol.HeapProfilerAgent.prototype.disable = function(opt_callback) {}
 /** @param {function(?Protocol.Error):void=} opt_callback */
@@ -4558,7 +4434,9 @@ Protocol.HeapProfilerAgent.prototype.invoke_disable = function(obj, opt_callback
 
 /**
  * @param {boolean=} opt_trackAllocations
- * @param {function(?Protocol.Error):void=} opt_callback
+ * @param {function(?Protocol.Error):T=} opt_callback
+ * @return {!Promise.<T>}
+ * @template T
  */
 Protocol.HeapProfilerAgent.prototype.startTrackingHeapObjects = function(opt_trackAllocations, opt_callback) {}
 /** @param {function(?Protocol.Error):void=} opt_callback */
@@ -4566,7 +4444,9 @@ Protocol.HeapProfilerAgent.prototype.invoke_startTrackingHeapObjects = function(
 
 /**
  * @param {boolean=} opt_reportProgress
- * @param {function(?Protocol.Error):void=} opt_callback
+ * @param {function(?Protocol.Error):T=} opt_callback
+ * @return {!Promise.<T>}
+ * @template T
  */
 Protocol.HeapProfilerAgent.prototype.stopTrackingHeapObjects = function(opt_reportProgress, opt_callback) {}
 /** @param {function(?Protocol.Error):void=} opt_callback */
@@ -4574,14 +4454,18 @@ Protocol.HeapProfilerAgent.prototype.invoke_stopTrackingHeapObjects = function(o
 
 /**
  * @param {boolean=} opt_reportProgress
- * @param {function(?Protocol.Error):void=} opt_callback
+ * @param {function(?Protocol.Error):T=} opt_callback
+ * @return {!Promise.<T>}
+ * @template T
  */
 Protocol.HeapProfilerAgent.prototype.takeHeapSnapshot = function(opt_reportProgress, opt_callback) {}
 /** @param {function(?Protocol.Error):void=} opt_callback */
 Protocol.HeapProfilerAgent.prototype.invoke_takeHeapSnapshot = function(obj, opt_callback) {}
 
 /**
- * @param {function(?Protocol.Error):void=} opt_callback
+ * @param {function(?Protocol.Error):T=} opt_callback
+ * @return {!Promise.<T>}
+ * @template T
  */
 Protocol.HeapProfilerAgent.prototype.collectGarbage = function(opt_callback) {}
 /** @param {function(?Protocol.Error):void=} opt_callback */
@@ -4589,16 +4473,20 @@ Protocol.HeapProfilerAgent.prototype.invoke_collectGarbage = function(obj, opt_c
 
 /**
  * @param {HeapProfilerAgent.HeapSnapshotObjectId} objectId
- * @param {string=} opt_objectGroup
- * @param {function(?Protocol.Error, RuntimeAgent.RemoteObject):void=} opt_callback
+ * @param {string|undefined} objectGroup
+ * @param {function(?Protocol.Error, RuntimeAgent.RemoteObject):T} opt_callback
+ * @return {!Promise.<T>}
+ * @template T
  */
-Protocol.HeapProfilerAgent.prototype.getObjectByHeapObjectId = function(objectId, opt_objectGroup, opt_callback) {}
+Protocol.HeapProfilerAgent.prototype.getObjectByHeapObjectId = function(objectId, objectGroup, opt_callback) {}
 /** @param {function(?Protocol.Error, RuntimeAgent.RemoteObject):void=} opt_callback */
 Protocol.HeapProfilerAgent.prototype.invoke_getObjectByHeapObjectId = function(obj, opt_callback) {}
 
 /**
  * @param {HeapProfilerAgent.HeapSnapshotObjectId} heapObjectId
- * @param {function(?Protocol.Error):void=} opt_callback
+ * @param {function(?Protocol.Error):T=} opt_callback
+ * @return {!Promise.<T>}
+ * @template T
  */
 Protocol.HeapProfilerAgent.prototype.addInspectedHeapObject = function(heapObjectId, opt_callback) {}
 /** @param {function(?Protocol.Error):void=} opt_callback */
@@ -4606,7 +4494,9 @@ Protocol.HeapProfilerAgent.prototype.invoke_addInspectedHeapObject = function(ob
 
 /**
  * @param {RuntimeAgent.RemoteObjectId} objectId
- * @param {function(?Protocol.Error, HeapProfilerAgent.HeapSnapshotObjectId):void=} opt_callback
+ * @param {function(?Protocol.Error, HeapProfilerAgent.HeapSnapshotObjectId):T} opt_callback
+ * @return {!Promise.<T>}
+ * @template T
  */
 Protocol.HeapProfilerAgent.prototype.getHeapObjectId = function(objectId, opt_callback) {}
 /** @param {function(?Protocol.Error, HeapProfilerAgent.HeapSnapshotObjectId):void=} opt_callback */
@@ -4614,14 +4504,18 @@ Protocol.HeapProfilerAgent.prototype.invoke_getHeapObjectId = function(obj, opt_
 
 /**
  * @param {number=} opt_samplingInterval
- * @param {function(?Protocol.Error):void=} opt_callback
+ * @param {function(?Protocol.Error):T=} opt_callback
+ * @return {!Promise.<T>}
+ * @template T
  */
 Protocol.HeapProfilerAgent.prototype.startSampling = function(opt_samplingInterval, opt_callback) {}
 /** @param {function(?Protocol.Error):void=} opt_callback */
 Protocol.HeapProfilerAgent.prototype.invoke_startSampling = function(obj, opt_callback) {}
 
 /**
- * @param {function(?Protocol.Error, HeapProfilerAgent.SamplingHeapProfile):void=} opt_callback
+ * @param {function(?Protocol.Error, HeapProfilerAgent.SamplingHeapProfile):T} opt_callback
+ * @return {!Promise.<T>}
+ * @template T
  */
 Protocol.HeapProfilerAgent.prototype.stopSampling = function(opt_callback) {}
 /** @param {function(?Protocol.Error, HeapProfilerAgent.SamplingHeapProfile):void=} opt_callback */
@@ -4661,229 +4555,207 @@ HeapProfilerAgent.Dispatcher.prototype.lastSeenObjectId = function(lastSeenObjec
  * @param {!Array.<number>} statsUpdate
  */
 HeapProfilerAgent.Dispatcher.prototype.heapStatsUpdate = function(statsUpdate) {};
-
-/** @constructor
- * @param {!Object.<string, !Object>} agentsMap
- */
-Protocol.Agents = function(agentsMap){this._agentsMap;};
-/**
- * @param {string} domain
- * @param {!Object} dispatcher
- */
-Protocol.Agents.prototype.registerDispatcher = function(domain, dispatcher){};
 /** @return {!Protocol.InspectorAgent}*/
-Protocol.Agents.prototype.inspectorAgent = function(){};
+Protocol.Target.prototype.inspectorAgent = function(){};
 /**
  * @param {!InspectorAgent.Dispatcher} dispatcher
  */
-Protocol.Agents.prototype.registerInspectorDispatcher = function(dispatcher) {}
+Protocol.Target.prototype.registerInspectorDispatcher = function(dispatcher) {}
 /** @return {!Protocol.MemoryAgent}*/
-Protocol.Agents.prototype.memoryAgent = function(){};
+Protocol.Target.prototype.memoryAgent = function(){};
 /**
  * @param {!MemoryAgent.Dispatcher} dispatcher
  */
-Protocol.Agents.prototype.registerMemoryDispatcher = function(dispatcher) {}
+Protocol.Target.prototype.registerMemoryDispatcher = function(dispatcher) {}
 /** @return {!Protocol.PageAgent}*/
-Protocol.Agents.prototype.pageAgent = function(){};
+Protocol.Target.prototype.pageAgent = function(){};
 /**
  * @param {!PageAgent.Dispatcher} dispatcher
  */
-Protocol.Agents.prototype.registerPageDispatcher = function(dispatcher) {}
+Protocol.Target.prototype.registerPageDispatcher = function(dispatcher) {}
 /** @return {!Protocol.RenderingAgent}*/
-Protocol.Agents.prototype.renderingAgent = function(){};
+Protocol.Target.prototype.renderingAgent = function(){};
 /**
  * @param {!RenderingAgent.Dispatcher} dispatcher
  */
-Protocol.Agents.prototype.registerRenderingDispatcher = function(dispatcher) {}
+Protocol.Target.prototype.registerRenderingDispatcher = function(dispatcher) {}
 /** @return {!Protocol.EmulationAgent}*/
-Protocol.Agents.prototype.emulationAgent = function(){};
+Protocol.Target.prototype.emulationAgent = function(){};
 /**
  * @param {!EmulationAgent.Dispatcher} dispatcher
  */
-Protocol.Agents.prototype.registerEmulationDispatcher = function(dispatcher) {}
+Protocol.Target.prototype.registerEmulationDispatcher = function(dispatcher) {}
 /** @return {!Protocol.SecurityAgent}*/
-Protocol.Agents.prototype.securityAgent = function(){};
+Protocol.Target.prototype.securityAgent = function(){};
 /**
  * @param {!SecurityAgent.Dispatcher} dispatcher
  */
-Protocol.Agents.prototype.registerSecurityDispatcher = function(dispatcher) {}
+Protocol.Target.prototype.registerSecurityDispatcher = function(dispatcher) {}
 /** @return {!Protocol.NetworkAgent}*/
-Protocol.Agents.prototype.networkAgent = function(){};
+Protocol.Target.prototype.networkAgent = function(){};
 /**
  * @param {!NetworkAgent.Dispatcher} dispatcher
  */
-Protocol.Agents.prototype.registerNetworkDispatcher = function(dispatcher) {}
+Protocol.Target.prototype.registerNetworkDispatcher = function(dispatcher) {}
 /** @return {!Protocol.DatabaseAgent}*/
-Protocol.Agents.prototype.databaseAgent = function(){};
+Protocol.Target.prototype.databaseAgent = function(){};
 /**
  * @param {!DatabaseAgent.Dispatcher} dispatcher
  */
-Protocol.Agents.prototype.registerDatabaseDispatcher = function(dispatcher) {}
+Protocol.Target.prototype.registerDatabaseDispatcher = function(dispatcher) {}
 /** @return {!Protocol.IndexedDBAgent}*/
-Protocol.Agents.prototype.indexedDBAgent = function(){};
+Protocol.Target.prototype.indexedDBAgent = function(){};
 /**
  * @param {!IndexedDBAgent.Dispatcher} dispatcher
  */
-Protocol.Agents.prototype.registerIndexedDBDispatcher = function(dispatcher) {}
+Protocol.Target.prototype.registerIndexedDBDispatcher = function(dispatcher) {}
 /** @return {!Protocol.CacheStorageAgent}*/
-Protocol.Agents.prototype.cacheStorageAgent = function(){};
+Protocol.Target.prototype.cacheStorageAgent = function(){};
 /**
  * @param {!CacheStorageAgent.Dispatcher} dispatcher
  */
-Protocol.Agents.prototype.registerCacheStorageDispatcher = function(dispatcher) {}
+Protocol.Target.prototype.registerCacheStorageDispatcher = function(dispatcher) {}
 /** @return {!Protocol.DOMStorageAgent}*/
-Protocol.Agents.prototype.domstorageAgent = function(){};
+Protocol.Target.prototype.domstorageAgent = function(){};
 /**
  * @param {!DOMStorageAgent.Dispatcher} dispatcher
  */
-Protocol.Agents.prototype.registerDOMStorageDispatcher = function(dispatcher) {}
+Protocol.Target.prototype.registerDOMStorageDispatcher = function(dispatcher) {}
 /** @return {!Protocol.ApplicationCacheAgent}*/
-Protocol.Agents.prototype.applicationCacheAgent = function(){};
+Protocol.Target.prototype.applicationCacheAgent = function(){};
 /**
  * @param {!ApplicationCacheAgent.Dispatcher} dispatcher
  */
-Protocol.Agents.prototype.registerApplicationCacheDispatcher = function(dispatcher) {}
+Protocol.Target.prototype.registerApplicationCacheDispatcher = function(dispatcher) {}
 /** @return {!Protocol.DOMAgent}*/
-Protocol.Agents.prototype.domAgent = function(){};
+Protocol.Target.prototype.domAgent = function(){};
 /**
  * @param {!DOMAgent.Dispatcher} dispatcher
  */
-Protocol.Agents.prototype.registerDOMDispatcher = function(dispatcher) {}
+Protocol.Target.prototype.registerDOMDispatcher = function(dispatcher) {}
 /** @return {!Protocol.CSSAgent}*/
-Protocol.Agents.prototype.cssAgent = function(){};
+Protocol.Target.prototype.cssAgent = function(){};
 /**
  * @param {!CSSAgent.Dispatcher} dispatcher
  */
-Protocol.Agents.prototype.registerCSSDispatcher = function(dispatcher) {}
+Protocol.Target.prototype.registerCSSDispatcher = function(dispatcher) {}
 /** @return {!Protocol.IOAgent}*/
-Protocol.Agents.prototype.ioAgent = function(){};
+Protocol.Target.prototype.ioAgent = function(){};
 /**
  * @param {!IOAgent.Dispatcher} dispatcher
  */
-Protocol.Agents.prototype.registerIODispatcher = function(dispatcher) {}
+Protocol.Target.prototype.registerIODispatcher = function(dispatcher) {}
 /** @return {!Protocol.DOMDebuggerAgent}*/
-Protocol.Agents.prototype.domdebuggerAgent = function(){};
+Protocol.Target.prototype.domdebuggerAgent = function(){};
 /**
  * @param {!DOMDebuggerAgent.Dispatcher} dispatcher
  */
-Protocol.Agents.prototype.registerDOMDebuggerDispatcher = function(dispatcher) {}
+Protocol.Target.prototype.registerDOMDebuggerDispatcher = function(dispatcher) {}
 /** @return {!Protocol.TargetAgent}*/
-Protocol.Agents.prototype.targetAgent = function(){};
+Protocol.Target.prototype.targetAgent = function(){};
 /**
  * @param {!TargetAgent.Dispatcher} dispatcher
  */
-Protocol.Agents.prototype.registerTargetDispatcher = function(dispatcher) {}
-/** @return {!Protocol.WorkerAgent}*/
-Protocol.Agents.prototype.workerAgent = function(){};
-/**
- * @param {!WorkerAgent.Dispatcher} dispatcher
- */
-Protocol.Agents.prototype.registerWorkerDispatcher = function(dispatcher) {}
+Protocol.Target.prototype.registerTargetDispatcher = function(dispatcher) {}
 /** @return {!Protocol.ServiceWorkerAgent}*/
-Protocol.Agents.prototype.serviceWorkerAgent = function(){};
+Protocol.Target.prototype.serviceWorkerAgent = function(){};
 /**
  * @param {!ServiceWorkerAgent.Dispatcher} dispatcher
  */
-Protocol.Agents.prototype.registerServiceWorkerDispatcher = function(dispatcher) {}
+Protocol.Target.prototype.registerServiceWorkerDispatcher = function(dispatcher) {}
 /** @return {!Protocol.InputAgent}*/
-Protocol.Agents.prototype.inputAgent = function(){};
+Protocol.Target.prototype.inputAgent = function(){};
 /**
  * @param {!InputAgent.Dispatcher} dispatcher
  */
-Protocol.Agents.prototype.registerInputDispatcher = function(dispatcher) {}
+Protocol.Target.prototype.registerInputDispatcher = function(dispatcher) {}
 /** @return {!Protocol.LayerTreeAgent}*/
-Protocol.Agents.prototype.layerTreeAgent = function(){};
+Protocol.Target.prototype.layerTreeAgent = function(){};
 /**
  * @param {!LayerTreeAgent.Dispatcher} dispatcher
  */
-Protocol.Agents.prototype.registerLayerTreeDispatcher = function(dispatcher) {}
+Protocol.Target.prototype.registerLayerTreeDispatcher = function(dispatcher) {}
 /** @return {!Protocol.DeviceOrientationAgent}*/
-Protocol.Agents.prototype.deviceOrientationAgent = function(){};
+Protocol.Target.prototype.deviceOrientationAgent = function(){};
 /**
  * @param {!DeviceOrientationAgent.Dispatcher} dispatcher
  */
-Protocol.Agents.prototype.registerDeviceOrientationDispatcher = function(dispatcher) {}
+Protocol.Target.prototype.registerDeviceOrientationDispatcher = function(dispatcher) {}
 /** @return {!Protocol.TracingAgent}*/
-Protocol.Agents.prototype.tracingAgent = function(){};
+Protocol.Target.prototype.tracingAgent = function(){};
 /**
  * @param {!TracingAgent.Dispatcher} dispatcher
  */
-Protocol.Agents.prototype.registerTracingDispatcher = function(dispatcher) {}
+Protocol.Target.prototype.registerTracingDispatcher = function(dispatcher) {}
 /** @return {!Protocol.AnimationAgent}*/
-Protocol.Agents.prototype.animationAgent = function(){};
+Protocol.Target.prototype.animationAgent = function(){};
 /**
  * @param {!AnimationAgent.Dispatcher} dispatcher
  */
-Protocol.Agents.prototype.registerAnimationDispatcher = function(dispatcher) {}
+Protocol.Target.prototype.registerAnimationDispatcher = function(dispatcher) {}
 /** @return {!Protocol.AccessibilityAgent}*/
-Protocol.Agents.prototype.accessibilityAgent = function(){};
+Protocol.Target.prototype.accessibilityAgent = function(){};
 /**
  * @param {!AccessibilityAgent.Dispatcher} dispatcher
  */
-Protocol.Agents.prototype.registerAccessibilityDispatcher = function(dispatcher) {}
+Protocol.Target.prototype.registerAccessibilityDispatcher = function(dispatcher) {}
 /** @return {!Protocol.StorageAgent}*/
-Protocol.Agents.prototype.storageAgent = function(){};
+Protocol.Target.prototype.storageAgent = function(){};
 /**
  * @param {!StorageAgent.Dispatcher} dispatcher
  */
-Protocol.Agents.prototype.registerStorageDispatcher = function(dispatcher) {}
+Protocol.Target.prototype.registerStorageDispatcher = function(dispatcher) {}
 /** @return {!Protocol.LogAgent}*/
-Protocol.Agents.prototype.logAgent = function(){};
+Protocol.Target.prototype.logAgent = function(){};
 /**
  * @param {!LogAgent.Dispatcher} dispatcher
  */
-Protocol.Agents.prototype.registerLogDispatcher = function(dispatcher) {}
-/** @return {!Protocol.BrowserAgent}*/
-Protocol.Agents.prototype.browserAgent = function(){};
-/**
- * @param {!BrowserAgent.Dispatcher} dispatcher
- */
-Protocol.Agents.prototype.registerBrowserDispatcher = function(dispatcher) {}
+Protocol.Target.prototype.registerLogDispatcher = function(dispatcher) {}
 /** @return {!Protocol.SystemInfoAgent}*/
-Protocol.Agents.prototype.systemInfoAgent = function(){};
+Protocol.Target.prototype.systemInfoAgent = function(){};
 /**
  * @param {!SystemInfoAgent.Dispatcher} dispatcher
  */
-Protocol.Agents.prototype.registerSystemInfoDispatcher = function(dispatcher) {}
+Protocol.Target.prototype.registerSystemInfoDispatcher = function(dispatcher) {}
 /** @return {!Protocol.TetheringAgent}*/
-Protocol.Agents.prototype.tetheringAgent = function(){};
+Protocol.Target.prototype.tetheringAgent = function(){};
 /**
  * @param {!TetheringAgent.Dispatcher} dispatcher
  */
-Protocol.Agents.prototype.registerTetheringDispatcher = function(dispatcher) {}
+Protocol.Target.prototype.registerTetheringDispatcher = function(dispatcher) {}
 /** @return {!Protocol.SchemaAgent}*/
-Protocol.Agents.prototype.schemaAgent = function(){};
+Protocol.Target.prototype.schemaAgent = function(){};
 /**
  * @param {!SchemaAgent.Dispatcher} dispatcher
  */
-Protocol.Agents.prototype.registerSchemaDispatcher = function(dispatcher) {}
+Protocol.Target.prototype.registerSchemaDispatcher = function(dispatcher) {}
 /** @return {!Protocol.RuntimeAgent}*/
-Protocol.Agents.prototype.runtimeAgent = function(){};
+Protocol.Target.prototype.runtimeAgent = function(){};
 /**
  * @param {!RuntimeAgent.Dispatcher} dispatcher
  */
-Protocol.Agents.prototype.registerRuntimeDispatcher = function(dispatcher) {}
+Protocol.Target.prototype.registerRuntimeDispatcher = function(dispatcher) {}
 /** @return {!Protocol.DebuggerAgent}*/
-Protocol.Agents.prototype.debuggerAgent = function(){};
+Protocol.Target.prototype.debuggerAgent = function(){};
 /**
  * @param {!DebuggerAgent.Dispatcher} dispatcher
  */
-Protocol.Agents.prototype.registerDebuggerDispatcher = function(dispatcher) {}
+Protocol.Target.prototype.registerDebuggerDispatcher = function(dispatcher) {}
 /** @return {!Protocol.ConsoleAgent}*/
-Protocol.Agents.prototype.consoleAgent = function(){};
+Protocol.Target.prototype.consoleAgent = function(){};
 /**
  * @param {!ConsoleAgent.Dispatcher} dispatcher
  */
-Protocol.Agents.prototype.registerConsoleDispatcher = function(dispatcher) {}
+Protocol.Target.prototype.registerConsoleDispatcher = function(dispatcher) {}
 /** @return {!Protocol.ProfilerAgent}*/
-Protocol.Agents.prototype.profilerAgent = function(){};
+Protocol.Target.prototype.profilerAgent = function(){};
 /**
  * @param {!ProfilerAgent.Dispatcher} dispatcher
  */
-Protocol.Agents.prototype.registerProfilerDispatcher = function(dispatcher) {}
+Protocol.Target.prototype.registerProfilerDispatcher = function(dispatcher) {}
 /** @return {!Protocol.HeapProfilerAgent}*/
-Protocol.Agents.prototype.heapProfilerAgent = function(){};
+Protocol.Target.prototype.heapProfilerAgent = function(){};
 /**
  * @param {!HeapProfilerAgent.Dispatcher} dispatcher
  */
-Protocol.Agents.prototype.registerHeapProfilerDispatcher = function(dispatcher) {}
+Protocol.Target.prototype.registerHeapProfilerDispatcher = function(dispatcher) {}
