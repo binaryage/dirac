@@ -31,13 +31,14 @@ WebInspector.ResourceWebSocketFrameView = function(request)
     this._splitWidget = new WebInspector.SplitWidget(false, true, "resourceWebSocketFrameSplitViewState");
     this._splitWidget.show(this.element);
 
-    var columns = [
+    var columns = /** @type {!Array<!WebInspector.DataGrid.ColumnDescriptor>} */ ([
         {id: "data", title: WebInspector.UIString("Data"), sortable: false, weight: 88},
         {id: "length", title: WebInspector.UIString("Length"), sortable: false, align: WebInspector.DataGrid.Align.Right, weight: 5},
         {id: "time", title: WebInspector.UIString("Time"), sortable: true, weight: 7}
-    ];
+    ]);
 
-    this._dataGrid = new WebInspector.SortableDataGrid(columns, undefined, undefined, undefined, this._onContextMenu.bind(this));
+    this._dataGrid = new WebInspector.SortableDataGrid(columns);
+    this._dataGrid.setRowContextMenuCallback(onRowContextMenu);
     this._dataGrid.setStickToBottom(true);
     this._dataGrid.setCellClass("websocket-frame-view-td");
     this._timeComparator = /** @type {!WebInspector.SortableDataGrid.NodeComparator} */ (WebInspector.ResourceWebSocketFrameNodeTimeComparator);
@@ -55,7 +56,16 @@ WebInspector.ResourceWebSocketFrameView = function(request)
 
     /** @type {?WebInspector.ResourceWebSocketFrameNode} */
     this._selectedNode = null;
-}
+
+    /**
+     * @param {!WebInspector.ContextMenu} contextMenu
+     * @param {!WebInspector.DataGridNode} node
+     */
+    function onRowContextMenu(contextMenu, node)
+    {
+        contextMenu.appendItem(WebInspector.UIString.capitalize("Copy ^message"), InspectorFrontendHost.copyText.bind(InspectorFrontendHost, node.data.data))
+    }
+};
 
 /** @enum {number} */
 WebInspector.ResourceWebSocketFrameView.OpCodes = {
@@ -91,7 +101,7 @@ WebInspector.ResourceWebSocketFrameView.opCodeDescription = function(opCode, mas
     var rawDescription = WebInspector.ResourceWebSocketFrameView.opCodeDescriptions[opCode] || "";
     var localizedDescription = WebInspector.UIString(rawDescription);
     return WebInspector.UIString("%s (Opcode %d%s)", localizedDescription, opCode, (mask ? ", mask" : ""));
-}
+};
 
 WebInspector.ResourceWebSocketFrameView.prototype = {
     wasShown: function()
@@ -165,30 +175,13 @@ WebInspector.ResourceWebSocketFrameView.prototype = {
             this._dataGrid.insertChild(new WebInspector.ResourceWebSocketFrameNode(this._request.url, frames[i]));
     },
 
-    /**
-     * @param {!WebInspector.ContextMenu} contextMenu
-     * @param {!WebInspector.DataGridNode} node
-     */
-    _onContextMenu: function(contextMenu, node)
-    {
-        contextMenu.appendItem(WebInspector.UIString.capitalize("Copy ^message"), this._copyMessage.bind(this, node.data));
-    },
-
-    /**
-     * @param {!Object} row
-     */
-    _copyMessage: function(row)
-    {
-        InspectorFrontendHost.copyText(row.data);
-    },
-
     _sortItems: function()
     {
         this._dataGrid.sortNodes(this._timeComparator, !this._dataGrid.isSortOrderAscending());
     },
 
     __proto__: WebInspector.VBox.prototype
-}
+};
 
 /**
  * @constructor
@@ -198,9 +191,7 @@ WebInspector.ResourceWebSocketFrameView.prototype = {
  */
 WebInspector.ResourceWebSocketFrameNode = function(url, frame)
 {
-    this._frame = frame;
-    this._dataText = frame.text;
-    this._url = url;
+    var dataText = frame.text;
     var length = frame.text.length;
     var time = new Date(frame.time * 1000);
     var timeText = ("0" + time.getHours()).substr(-2) + ":" + ("0" + time.getMinutes()).substr(-2) + ":" + ("0" + time.getSeconds()).substr(-2) + "." + ("00" + time.getMilliseconds()).substr(-3);
@@ -208,12 +199,17 @@ WebInspector.ResourceWebSocketFrameNode = function(url, frame)
     timeNode.createTextChild(timeText);
     timeNode.title = time.toLocaleString();
 
-    this._isTextFrame = frame.opCode === WebInspector.ResourceWebSocketFrameView.OpCodes.TextFrame;
-    if (!this._isTextFrame)
-        this._dataText = WebInspector.ResourceWebSocketFrameView.opCodeDescription(frame.opCode, frame.mask);
+    var isTextFrame = frame.opCode === WebInspector.ResourceWebSocketFrameView.OpCodes.TextFrame;
+    if (!isTextFrame)
+        dataText = WebInspector.ResourceWebSocketFrameView.opCodeDescription(frame.opCode, frame.mask);
 
-    WebInspector.SortableDataGridNode.call(this, {data: this._dataText, length: length, time: timeNode});
-}
+    WebInspector.SortableDataGridNode.call(this, {data: dataText, length: length, time: timeNode});
+
+    this._url = url;
+    this._frame = frame;
+    this._isTextFrame = isTextFrame;
+    this._dataText = dataText;
+};
 
 WebInspector.ResourceWebSocketFrameNode.prototype = {
     /**
@@ -246,7 +242,7 @@ WebInspector.ResourceWebSocketFrameNode.prototype = {
     },
 
     __proto__: WebInspector.SortableDataGridNode.prototype
-}
+};
 
 /**
  * @param {!WebInspector.ResourceWebSocketFrameNode} a
@@ -256,4 +252,4 @@ WebInspector.ResourceWebSocketFrameNode.prototype = {
 WebInspector.ResourceWebSocketFrameNodeTimeComparator = function(a, b)
 {
     return a._frame.time - b._frame.time;
-}
+};

@@ -12,14 +12,19 @@ WebInspector.Audits2Panel = function()
     this.contentElement.classList.add("vbox");
     this.contentElement.appendChild(createTextButton(WebInspector.UIString("Start"), this._start.bind(this)));
     this.contentElement.appendChild(createTextButton(WebInspector.UIString("Stop"), this._stop.bind(this)));
-}
+    this._resultElement = this.contentElement.createChild("div", "overflow-auto");
+};
 
 WebInspector.Audits2Panel.prototype = {
     _start: function()
     {
         WebInspector.targetManager.interceptMainConnection(this._dispatchProtocolMessage.bind(this)).then(rawConnection => {
             this._rawConnection = rawConnection;
-            this._send("start");
+            this._send("start").then(result => {
+                var section = new WebInspector.ObjectPropertiesSection(WebInspector.RemoteObject.fromLocalObject(result), WebInspector.UIString("Audit Results"));
+                this._resultElement.appendChild(section.element);
+                this._stop();
+            });
         });
     },
 
@@ -34,7 +39,7 @@ WebInspector.Audits2Panel.prototype = {
     _stop: function()
     {
         this._send("stop").then(() => {
-            this._rawConnection.yieldConnection();
+            this._rawConnection.disconnect();
             this._backend.dispose();
             delete this._backend;
             delete this._backendPromise;
@@ -51,11 +56,11 @@ WebInspector.Audits2Panel.prototype = {
         if (!this._backendPromise) {
             this._backendPromise = WebInspector.serviceManager.createAppService("audits2_worker", "Audits2Service", false).then(backend => {
                 this._backend = backend;
-                this._backend.on("sendProtocolMessage", result => this._rawConnection.send(result.message));
+                this._backend.on("sendProtocolMessage", result => this._rawConnection.sendMessage(result.message));
             });
         }
         return this._backendPromise.then(() => this._backend ? this._backend.send(method, params) : undefined);
     },
 
     __proto__: WebInspector.Panel.prototype
-}
+};

@@ -22,7 +22,7 @@ WebInspector.ProfileNode = function(callFrame)
     this.parent = null;
     /** @type {!Array<!WebInspector.ProfileNode>} */
     this.children = [];
-}
+};
 
 WebInspector.ProfileNode.prototype = {
     /**
@@ -64,20 +64,27 @@ WebInspector.ProfileNode.prototype = {
     {
         return this.callFrame.columnNumber;
     }
-}
+};
 
 /**
  * @constructor
- * @param {!WebInspector.ProfileNode} root
  */
-WebInspector.ProfileTreeModel = function(root)
+WebInspector.ProfileTreeModel = function()
 {
-    this.root = root;
-    this._assignDepthsAndParents();
-    this.total = this._calculateTotals(this.root);
-}
+};
 
 WebInspector.ProfileTreeModel.prototype = {
+    /**
+     * @param {!WebInspector.ProfileNode} root
+     * @protected
+     */
+    initialize: function(root)
+    {
+        this.root = root;
+        this._assignDepthsAndParents();
+        this.total = this._calculateTotals(this.root);
+    },
+
     _assignDepthsAndParents: function()
     {
         var root = this.root;
@@ -122,4 +129,4 @@ WebInspector.ProfileTreeModel.prototype = {
         }
         return root.total;
     }
-}
+};

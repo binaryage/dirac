@@ -28,7 +28,7 @@ WebInspector.ServiceWorkerCacheView = function(model, cache)
 
     this.update(cache);
     this._entries = [];
-}
+};
 
 WebInspector.ServiceWorkerCacheView.prototype = {
     /**
@@ -36,13 +36,12 @@ WebInspector.ServiceWorkerCacheView.prototype = {
      */
     _createDataGrid: function()
     {
-        var columns = [];
-        columns.push({id: "number", title: WebInspector.UIString("#"), width: "50px"});
-        columns.push({id: "request", title: WebInspector.UIString("Request")});
-        columns.push({id: "response", title: WebInspector.UIString("Response")});
-
-        var dataGrid = new WebInspector.DataGrid(columns, undefined, this._deleteButtonClicked.bind(this), this._updateData.bind(this, true));
-        return dataGrid;
+        var columns = /** @type {!Array<!WebInspector.DataGrid.ColumnDescriptor>} */ ([
+            {id: "number", title: WebInspector.UIString("#"), width: "50px"},
+            {id: "request", title: WebInspector.UIString("Request")},
+            {id: "response", title: WebInspector.UIString("Response")}
+        ]);
+        return new WebInspector.DataGrid(columns, undefined, this._deleteButtonClicked.bind(this), this._updateData.bind(this, true));
     },
 
     _createEditorToolbar: function()
@@ -76,7 +75,7 @@ WebInspector.ServiceWorkerCacheView.prototype = {
      */
     _deleteButtonClicked: function(node)
     {
-        this._model.deleteCacheEntry(this._cache, node.data["request"], node.remove.bind(node));
+        this._model.deleteCacheEntry(this._cache, /** @type {string} */ (node.data["request"]), node.remove.bind(node));
     },
 
     /**
@@ -160,4 +159,4 @@ WebInspector.ServiceWorkerCacheView.prototype = {
     },
 
     __proto__: WebInspector.SimpleView.prototype
-}
+};

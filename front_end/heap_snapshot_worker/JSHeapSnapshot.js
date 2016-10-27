@@ -36,14 +36,15 @@
  */
 WebInspector.JSHeapSnapshot = function(profile, progress)
 {
+    WebInspector.HeapSnapshot.call(this, profile, progress);
     this._nodeFlags = { // bit flags
         canBeQueried: 1,
         detachedDOMTreeNode: 2,
         pageObject: 4 // The idea is to track separately the objects owned by the page and the objects owned by debugger.
     };
+    this.initialize();
     this._lazyStringCache = {};
-    WebInspector.HeapSnapshot.call(this, profile, progress);
-}
+};
 
 WebInspector.JSHeapSnapshot.prototype = {
     /**
@@ -481,7 +482,7 @@ WebInspector.JSHeapSnapshot.prototype = {
 WebInspector.JSHeapSnapshotNode = function(snapshot, nodeIndex)
 {
     WebInspector.HeapSnapshotNode.call(this, snapshot, nodeIndex);
-}
+};
 
 WebInspector.JSHeapSnapshotNode.prototype = {
     /**
@@ -677,7 +678,7 @@ WebInspector.JSHeapSnapshotNode.prototype = {
 WebInspector.JSHeapSnapshotEdge = function(snapshot, edgeIndex)
 {
     WebInspector.HeapSnapshotEdge.call(this, snapshot, edgeIndex);
-}
+};
 
 WebInspector.JSHeapSnapshotEdge.prototype = {
     /**
@@ -835,7 +836,7 @@ WebInspector.JSHeapSnapshotEdge.prototype = {
 WebInspector.JSHeapSnapshotRetainerEdge = function(snapshot, retainerIndex)
 {
     WebInspector.HeapSnapshotRetainerEdge.call(this, snapshot, retainerIndex);
-}
+};
 
 WebInspector.JSHeapSnapshotRetainerEdge.prototype = {
     /**
@@ -889,5 +890,5 @@ WebInspector.JSHeapSnapshotRetainerEdge.prototype = {
     },
 
     __proto__: WebInspector.HeapSnapshotRetainerEdge.prototype
-}
+};
 

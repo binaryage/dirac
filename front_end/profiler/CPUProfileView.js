@@ -31,12 +31,13 @@
  */
 WebInspector.CPUProfileView = function(profileHeader)
 {
+    WebInspector.ProfileView.call(this);
     this._profileHeader = profileHeader;
     this.profile = new WebInspector.CPUProfileDataModel(profileHeader._profile || profileHeader.protocolProfile());
     this.adjustedTotal = this.profile.profileHead.total;
     this.adjustedTotal -= this.profile.idleNode ? this.profile.idleNode.total : 0;
-    WebInspector.ProfileView.call(this, new WebInspector.CPUProfileView.NodeFormatter(this));
-}
+    this.initialize(new WebInspector.CPUProfileView.NodeFormatter(this));
+};
 
 WebInspector.CPUProfileView.prototype = {
     /**
@@ -74,7 +75,7 @@ WebInspector.CPUProfileView.prototype = {
     },
 
     __proto__: WebInspector.ProfileView.prototype
-}
+};
 
 /**
  * @constructor
@@ -91,7 +92,7 @@ WebInspector.CPUProfileType = function()
     WebInspector.CPUProfileType.instance = this;
     WebInspector.targetManager.addModelListener(WebInspector.CPUProfilerModel, WebInspector.CPUProfilerModel.Events.ConsoleProfileStarted, this._consoleProfileStarted, this);
     WebInspector.targetManager.addModelListener(WebInspector.CPUProfilerModel, WebInspector.CPUProfilerModel.Events.ConsoleProfileFinished, this._consoleProfileFinished, this);
-}
+};
 
 WebInspector.CPUProfileType.TypeId = "CPU";
 
@@ -276,7 +277,7 @@ WebInspector.CPUProfileType.prototype = {
     },
 
     __proto__: WebInspector.ProfileType.prototype
-}
+};
 
 /**
  * @constructor
@@ -288,7 +289,7 @@ WebInspector.CPUProfileType.prototype = {
 WebInspector.CPUProfileHeader = function(target, type, title)
 {
     WebInspector.WritableProfileHeader.call(this, target, type, title);
-}
+};
 
 WebInspector.CPUProfileHeader.prototype = {
     /**
@@ -309,7 +310,7 @@ WebInspector.CPUProfileHeader.prototype = {
     },
 
     __proto__: WebInspector.WritableProfileHeader.prototype
-}
+};
 
 /**
  * @implements {WebInspector.ProfileDataGridNode.Formatter}
@@ -318,7 +319,7 @@ WebInspector.CPUProfileHeader.prototype = {
 WebInspector.CPUProfileView.NodeFormatter = function(profileView)
 {
     this._profileView = profileView;
-}
+};
 
 WebInspector.CPUProfileView.NodeFormatter.prototype = {
     /**
@@ -351,7 +352,7 @@ WebInspector.CPUProfileView.NodeFormatter.prototype = {
     {
         return this._profileView.linkifier().maybeLinkifyConsoleCallFrame(this._profileView.target(), node.profileNode.callFrame, "profile-node-file");
     }
-}
+};
 
 /**
  * @constructor
@@ -363,7 +364,7 @@ WebInspector.CPUFlameChartDataProvider = function(cpuProfile, target)
 {
     WebInspector.ProfileFlameChartDataProvider.call(this, target);
     this._cpuProfile = cpuProfile;
-}
+};
 
 WebInspector.CPUFlameChartDataProvider.prototype = {
     /**
@@ -498,4 +499,4 @@ WebInspector.CPUFlameChartDataProvider.prototype = {
     },
 
     __proto__: WebInspector.ProfileFlameChartDataProvider.prototype
-}
+};

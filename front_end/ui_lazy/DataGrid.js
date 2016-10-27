@@ -30,59 +30,38 @@
  * @param {function(!WebInspector.DataGridNode, string, string, string)=} editCallback
  * @param {function(!WebInspector.DataGridNode)=} deleteCallback
  * @param {function()=} refreshCallback
- * @param {function(!WebInspector.ContextMenu, !WebInspector.DataGridNode)=} contextMenuCallback
  */
-WebInspector.DataGrid = function(columnsArray, editCallback, deleteCallback, refreshCallback, contextMenuCallback)
+WebInspector.DataGrid = function(columnsArray, editCallback, deleteCallback, refreshCallback)
 {
     this.element = createElementWithClass("div", "data-grid");
     WebInspector.appendStyle(this.element, "ui_lazy/dataGrid.css");
     this.element.tabIndex = 0;
     this.element.addEventListener("keydown", this._keyDown.bind(this), false);
+    this.element.addEventListener("contextmenu", this._contextMenu.bind(this), true);
 
-    var headerContainer = createElementWithClass("div", "header-container");
-    /** @type {!Element} */
-    this._headerTable = headerContainer.createChild("table", "header");
-    /** @type {!Object.<string, !Element>} */
-    this._headerTableHeaders = {};
-
-    /** @type {!Element} */
-    this._scrollContainer = createElementWithClass("div", "data-container");
-    /** @type {!Element} */
-    this._dataTable = this._scrollContainer.createChild("table", "data");
-
-    this._dataTable.addEventListener("mousedown", this._mouseDownInDataTable.bind(this));
-    this._dataTable.addEventListener("click", this._clickInDataTable.bind(this), true);
-
-    this._dataTable.addEventListener("contextmenu", this._contextMenuInDataTable.bind(this), true);
-
-    // FIXME: Add a createCallback which is different from editCallback and has different
-    // behavior when creating a new node.
-    if (editCallback)
-        this._dataTable.addEventListener("dblclick", this._ondblclick.bind(this), false);
     /** @type {function(!WebInspector.DataGridNode, string, string, string)|undefined} */
     this._editCallback = editCallback;
     /** @type {function(!WebInspector.DataGridNode)|undefined} */
     this._deleteCallback = deleteCallback;
     /** @type {function()|undefined} */
     this._refreshCallback = refreshCallback;
-    /** @type {function(!WebInspector.ContextMenu, !WebInspector.DataGridNode)|undefined} */
-    this._contextMenuCallback = contextMenuCallback;
 
-    this.element.appendChild(headerContainer);
-    this.element.appendChild(this._scrollContainer);
+    var headerContainer = this.element.createChild("div", "header-container");
+    /** @type {!Element} */
+    this._headerTable = headerContainer.createChild("table", "header");
+    /** @type {!Object.<string, !Element>} */
+    this._headerTableHeaders = {};
+    /** @type {!Element} */
+    this._scrollContainer = this.element.createChild("div", "data-container");
+    /** @type {!Element} */
+    this._dataTable = this._scrollContainer.createChild("table", "data");
 
-    /** @type {!Element} */
-    this._headerRow = createElement("tr");
-    /** @type {!Element} */
-    this._headerTableColumnGroup = createElement("colgroup");
-    /** @type {!Element} */
-    this._dataTableColumnGroup = createElement("colgroup");
-
-    /** @type {!Element} */
-    this._topFillerRow = createElementWithClass("tr", "data-grid-filler-row revealed");
-    /** @type {!Element} */
-    this._bottomFillerRow = createElementWithClass("tr", "data-grid-filler-row revealed");
-    this.setVerticalPadding(0, 0);
+    // FIXME: Add a createCallback which is different from editCallback and has different
+    // behavior when creating a new node.
+    if (editCallback)
+        this._dataTable.addEventListener("dblclick", this._ondblclick.bind(this), false);
+    this._dataTable.addEventListener("mousedown", this._mouseDownInDataTable.bind(this));
+    this._dataTable.addEventListener("click", this._clickInDataTable.bind(this), true);
 
     /** @type {boolean} */
     this._inline = false;
@@ -99,13 +78,26 @@ WebInspector.DataGrid = function(columnsArray, editCallback, deleteCallback, ref
     /** @type {?string} */
     this._cellClass = null;
 
-    this._headerTable.appendChild(this._headerTableColumnGroup);
-    this.headerTableBody.appendChild(this._headerRow);
+    /** @type {!Element} */
+    this._headerTableColumnGroup = this._headerTable.createChild("colgroup");
+    /** @type {!Element} */
+    this._headerTableBody = this._headerTable.createChild("tbody");
+    /** @type {!Element} */
+    this._headerRow = this._headerTableBody.createChild("tr");
 
-    this._dataTable.appendChild(this._dataTableColumnGroup);
-    this.dataTableBody.appendChild(this._topFillerRow);
-    this.dataTableBody.appendChild(this._bottomFillerRow);
+    /** @type {!Element} */
+    this._dataTableColumnGroup = this._dataTable.createChild("colgroup");
+    /**
+     * @protected
+     * @type {!Element}
+     */
+    this.dataTableBody = this._dataTable.createChild("tbody");
+    /** @type {!Element} */
+    this._topFillerRow = this.dataTableBody.createChild("tr", "data-grid-filler-row revealed");
+    /** @type {!Element} */
+    this._bottomFillerRow = this.dataTableBody.createChild("tr", "data-grid-filler-row revealed");
 
+    this.setVerticalPadding(0, 0);
     this._refreshHeader();
 
     /** @type {boolean} */
@@ -125,7 +117,12 @@ WebInspector.DataGrid = function(columnsArray, editCallback, deleteCallback, ref
     this._cornerWidth = WebInspector.DataGrid.CornerWidth;
     /** @type {!WebInspector.DataGrid.ResizeMethod} */
     this._resizeMethod = WebInspector.DataGrid.ResizeMethod.Nearest;
-}
+
+    /** @type {?function(!WebInspector.ContextMenu)} */
+    this._headerContextMenuCallback = null;
+    /** @type {?function(!WebInspector.ContextMenu, !WebInspector.DataGridNode)} */
+    this._rowContextMenuCallback = null;
+};
 
 // Keep in sync with .data-grid col.corner style rule.
 WebInspector.DataGrid.CornerWidth = 14;
@@ -143,7 +140,6 @@ WebInspector.DataGrid.CornerWidth = 14;
  *   nonSelectable: (boolean|undefined),
  *   longText: (boolean|undefined),
  *   disclosure: (boolean|undefined),
- *   identifier: (string|undefined),
  *   weight: (number|undefined)
  * }}
  */
@@ -156,45 +152,54 @@ WebInspector.DataGrid.Events = {
     SortingChanged: Symbol("SortingChanged"),
     ColumnsResized: Symbol("ColumnsResized"),
     PaddingChanged: Symbol("PaddingChanged")
-}
+};
 
 /** @enum {string} */
 WebInspector.DataGrid.Order = {
     Ascending: "sort-ascending",
     Descending: "sort-descending"
-}
+};
 
 /** @enum {string} */
 WebInspector.DataGrid.Align = {
     Center: "center",
     Right: "right"
-}
+};
 
 WebInspector.DataGrid._preferredWidthSymbol = Symbol("preferredWidth");
+WebInspector.DataGrid._columnIdSymbol = Symbol("columnId");
 
 WebInspector.DataGrid.prototype = {
+    /**
+     * @return {!Element}
+     */
+    headerTableBody: function()
+    {
+        return this._headerTableBody;
+    },
+
     /**
      * @param {!WebInspector.DataGrid.ColumnDescriptor} column
      * @param {number=} position
      */
     _innerAddColumn: function(column, position)
     {
-        var columnIdentifier = column.identifier = column.id || String(Object.keys(this._columns).length);
-        if (columnIdentifier in this._columns)
-            this._innerRemoveColumn(columnIdentifier);
+        var columnId = column.id;
+        if (columnId in this._columns)
+            this._innerRemoveColumn(columnId);
 
         if (position === undefined)
             position = this._columnsArray.length;
 
         this._columnsArray.splice(position, 0, column);
-        this._columns[columnIdentifier] = column;
+        this._columns[columnId] = column;
         if (column.disclosure)
-            this.disclosureColumnIdentifier = columnIdentifier;
+            this.disclosureColumnId = columnId;
 
         var cell = createElement("th");
-        cell.className = columnIdentifier + "-column";
-        cell.columnIdentifier = String(columnIdentifier);
-        this._headerTableHeaders[columnIdentifier] = cell;
+        cell.className = columnId + "-column";
+        cell[WebInspector.DataGrid._columnIdSymbol] = columnId;
+        this._headerTableHeaders[columnId] = cell;
 
         var div = createElement("div");
         if (column.titleDOMFragment)
@@ -225,28 +230,28 @@ WebInspector.DataGrid.prototype = {
     },
 
     /**
-     * @param {string} columnIdentifier
+     * @param {string} columnId
      */
-    _innerRemoveColumn: function(columnIdentifier)
+    _innerRemoveColumn: function(columnId)
     {
-        var column = this._columns[columnIdentifier];
+        var column = this._columns[columnId];
         if (!column)
             return;
-        delete this._columns[columnIdentifier];
-        var index = this._columnsArray.findIndex(columnConfig => columnConfig.identifier === columnIdentifier);
+        delete this._columns[columnId];
+        var index = this._columnsArray.findIndex(columnConfig => columnConfig.id === columnId);
         this._columnsArray.splice(index, 1);
-        var cell = this._headerTableHeaders[columnIdentifier];
+        var cell = this._headerTableHeaders[columnId];
         if (cell.parentElement)
             cell.parentElement.removeChild(cell);
-        delete this._headerTableHeaders[columnIdentifier];
+        delete this._headerTableHeaders[columnId];
     },
 
     /**
-     * @param {string} columnIdentifier
+     * @param {string} columnId
      */
-    removeColumn: function(columnIdentifier)
+    removeColumn: function(columnId)
     {
-        this._innerRemoveColumn(columnIdentifier);
+        this._innerRemoveColumn(columnId);
     },
 
     /**
@@ -267,16 +272,16 @@ WebInspector.DataGrid.prototype = {
 
         for (var i = 0; i < this._visibleColumnsArray.length; ++i) {
             var column = this._visibleColumnsArray[i];
-            var columnIdentifier = column.identifier || String(i);
+            var columnId = column.id;
             var headerColumn = this._headerTableColumnGroup.createChild("col");
             var dataColumn = this._dataTableColumnGroup.createChild("col");
             if (column.width) {
                 headerColumn.style.width = column.width;
                 dataColumn.style.width = column.width;
             }
-            this._headerRow.appendChild(this._headerTableHeaders[columnIdentifier]);
+            this._headerRow.appendChild(this._headerTableHeaders[columnId]);
             this._topFillerRow.createChild("td", "top-filler-td");
-            this._bottomFillerRow.createChild("td", "bottom-filler-td").columnIdentifier_ = columnIdentifier;
+            this._bottomFillerRow.createChild("td", "bottom-filler-td")[WebInspector.DataGrid._columnIdSymbol] = columnId;
         }
 
         this._headerRow.createChild("th", "corner");
@@ -330,15 +335,18 @@ WebInspector.DataGrid.prototype = {
         return this._rootNode;
     },
 
+    /**
+     * @param {!Event} event
+     */
     _ondblclick: function(event)
     {
         if (this._editing || this._editingNode)
             return;
 
-        var columnIdentifier = this.columnIdentifierFromNode(event.target);
-        if (!columnIdentifier || !this._columns[columnIdentifier].editable)
+        var columnId = this.columnIdFromNode(/** @type {!Node} */  (event.target));
+        if (!columnId || !this._columns[columnId].editable)
             return;
-        this._startEditing(event.target);
+        this._startEditing(/** @type {!Node} */ (event.target));
     },
 
     /**
@@ -357,9 +365,12 @@ WebInspector.DataGrid.prototype = {
         element.getComponentSelection().setBaseAndExtent(element, 0, element, 1);
     },
 
+    /**
+     * @param {!Node} target
+     */
     _startEditing: function(target)
     {
-        var element = target.enclosingNodeOrSelfWithNodeName("td");
+        var element = /** @type {?Element} */ (target.enclosingNodeOrSelfWithNodeName("td"));
         if (!element)
             return;
 
@@ -371,8 +382,10 @@ WebInspector.DataGrid.prototype = {
         }
 
         // Force editing the 1st column when editing the creation node
-        if (this._editingNode.isCreationNode)
-            return this._startEditingColumnOfDataGridNode(this._editingNode, this._nextEditableColumn(-1));
+        if (this._editingNode.isCreationNode) {
+            this._startEditingColumnOfDataGridNode(this._editingNode, this._nextEditableColumn(-1));
+            return;
+        }
 
         this._editing = true;
         WebInspector.InplaceEditor.startEditing(element, this._startEditingConfig(element));
@@ -388,21 +401,32 @@ WebInspector.DataGrid.prototype = {
         this.updateWidths();
     },
 
+    /**
+     * @param {!Element} element
+     * @return {!WebInspector.InplaceEditor.Config}
+     */
     _startEditingConfig: function(element)
     {
         return new WebInspector.InplaceEditor.Config(this._editingCommitted.bind(this), this._editingCancelled.bind(this), element.textContent);
     },
 
+    /**
+     * @param {!Element} element
+     * @param {string} newText
+     * @param {string} oldText
+     * @param {string|undefined} context
+     * @param {string} moveDirection
+     */
     _editingCommitted: function(element, newText, oldText, context, moveDirection)
     {
-        var columnIdentifier = this.columnIdentifierFromNode(element);
-        if (!columnIdentifier) {
+        var columnId = this.columnIdFromNode(element);
+        if (!columnId) {
             this._editingCancelled(element);
             return;
         }
-        var column = this._columns[columnIdentifier];
+        var column = this._columns[columnId];
         var cellIndex = this._visibleColumnsArray.indexOf(column);
-        var textBeforeEditing = this._editingNode.data[columnIdentifier];
+        var textBeforeEditing = /** @type {string} */ (this._editingNode.data[columnId]);
         var currentEditingNode = this._editingNode;
 
         /**
@@ -420,28 +444,35 @@ WebInspector.DataGrid.prototype = {
                     return;
 
                 var nextEditableColumn = this._nextEditableColumn(cellIndex);
-                if (nextEditableColumn !== -1)
-                    return this._startEditingColumnOfDataGridNode(currentEditingNode, nextEditableColumn);
+                if (nextEditableColumn !== -1) {
+                    this._startEditingColumnOfDataGridNode(currentEditingNode, nextEditableColumn);
+                    return;
+                }
 
                 var nextDataGridNode = currentEditingNode.traverseNextNode(true, null, true);
-                if (nextDataGridNode)
-                    return this._startEditingColumnOfDataGridNode(nextDataGridNode, firstEditableColumn);
+                if (nextDataGridNode) {
+                    this._startEditingColumnOfDataGridNode(nextDataGridNode, firstEditableColumn);
+                    return;
+                }
                 if (currentEditingNode.isCreationNode && wasChange) {
                     this.addCreationNode(false);
-                    return this._startEditingColumnOfDataGridNode(this.creationNode, firstEditableColumn);
+                    this._startEditingColumnOfDataGridNode(this.creationNode, firstEditableColumn);
+                    return;
                 }
                 return;
             }
 
             if (moveDirection === "backward") {
                 var prevEditableColumn = this._nextEditableColumn(cellIndex, true);
-                if (prevEditableColumn !== -1)
-                    return this._startEditingColumnOfDataGridNode(currentEditingNode, prevEditableColumn);
+                if (prevEditableColumn !== -1) {
+                    this._startEditingColumnOfDataGridNode(currentEditingNode, prevEditableColumn);
+                    return;
+                }
 
                 var lastEditableColumn = this._nextEditableColumn(this._visibleColumnsArray.length, true);
                 var nextDataGridNode = currentEditingNode.traversePreviousNode(true, true);
                 if (nextDataGridNode)
-                    return this._startEditingColumnOfDataGridNode(nextDataGridNode, lastEditableColumn);
+                    this._startEditingColumnOfDataGridNode(nextDataGridNode, lastEditableColumn);
                 return;
             }
         }
@@ -453,11 +484,11 @@ WebInspector.DataGrid.prototype = {
         }
 
         // Update the text in the datagrid that we typed
-        this._editingNode.data[columnIdentifier] = newText;
+        this._editingNode.data[columnId] = newText;
 
         // Make the callback - expects an editing node (table row), the column number that is being edited,
         // the text that used to be there, and the new text.
-        this._editCallback(this._editingNode, columnIdentifier, textBeforeEditing, newText);
+        this._editCallback(this._editingNode, columnId, textBeforeEditing, newText);
 
         if (this._editingNode.isCreationNode)
             this.addCreationNode(false);
@@ -466,6 +497,9 @@ WebInspector.DataGrid.prototype = {
         moveToNextIfNeeded.call(this, true);
     },
 
+    /**
+     * @param {!Element} element
+     */
     _editingCancelled: function(element)
     {
         this._editing = false;
@@ -491,11 +525,11 @@ WebInspector.DataGrid.prototype = {
     /**
      * @return {?string}
      */
-    sortColumnIdentifier: function()
+    sortColumnId: function()
     {
         if (!this._sortColumnCell)
             return null;
-        return this._sortColumnCell.columnIdentifier;
+        return this._sortColumnCell[WebInspector.DataGrid._columnIdSymbol];
     },
 
     /**
@@ -516,34 +550,6 @@ WebInspector.DataGrid.prototype = {
     isSortOrderAscending: function()
     {
         return !this._sortColumnCell || this._sortColumnCell.classList.contains(WebInspector.DataGrid.Order.Ascending);
-    },
-
-    get headerTableBody()
-    {
-        if ("_headerTableBody" in this)
-            return this._headerTableBody;
-
-        this._headerTableBody = this._headerTable.getElementsByTagName("tbody")[0];
-        if (!this._headerTableBody) {
-            this._headerTableBody = this.element.ownerDocument.createElement("tbody");
-            this._headerTable.insertBefore(this._headerTableBody, this._headerTable.tFoot);
-        }
-
-        return this._headerTableBody;
-    },
-
-    get dataTableBody()
-    {
-        if ("_dataTableBody" in this)
-            return this._dataTableBody;
-
-        this._dataTableBody = this._dataTable.getElementsByTagName("tbody")[0];
-        if (!this._dataTableBody) {
-            this._dataTableBody = this.element.ownerDocument.createElement("tbody");
-            this._dataTable.insertBefore(this._dataTableBody, this._dataTable.tFoot);
-        }
-
-        return this._dataTableBody;
     },
 
     /**
@@ -612,7 +618,7 @@ WebInspector.DataGrid.prototype = {
         for (var i = 0; i < children.length; ++i) {
             var node = children[i];
             for (var j = 0; j < this._columnsArray.length; ++j) {
-                var text = node.data[this._columnsArray[j].identifier] || "";
+                var text = node.data[this._columnsArray[j].id];
                 if (text.length > widths[j])
                     widths[j] = text.length;
             }
@@ -626,12 +632,18 @@ WebInspector.DataGrid.prototype = {
         this.updateWidths();
     },
 
+    /**
+     * @param {!WebInspector.DataGridNode} rootNode
+     * @param {!Array<!WebInspector.DataGridNode>} result
+     * @param {number} maxLevel
+     * @return {!Array<!WebInspector.DataGridNode>}
+     */
     _enumerateChildren: function(rootNode, result, maxLevel)
     {
         if (!rootNode._isRoot)
             result.push(rootNode);
         if (!maxLevel)
-            return;
+            return [];
         for (var i = 0; i < rootNode.children.length; ++i)
             this._enumerateChildren(rootNode.children[i], result, maxLevel - 1);
         return result;
@@ -654,23 +666,22 @@ WebInspector.DataGrid.prototype = {
     // parent element, then the DataGrid's columns will not be resizable.
     updateWidths: function()
     {
-        var headerTableColumns = this._headerTableColumnGroup.children;
-
-        // Use container size to avoid changes of table width caused by change of column widths.
-        var tableWidth = this.element.offsetWidth - this._cornerWidth;
-        var numColumns = headerTableColumns.length - 1; // Do not process corner column.
-
         // Do not attempt to use offsetes if we're not attached to the document tree yet.
         if (!this._columnWidthsInitialized && this.element.offsetWidth) {
             // Give all the columns initial widths now so that during a resize,
             // when the two columns that get resized get a percent value for
             // their widths, all the other columns already have percent values
             // for their widths.
+            var headerTableColumns = this._headerTableColumnGroup.children;
+
+            // Use container size to avoid changes of table width caused by change of column widths.
+            var tableWidth = this.element.offsetWidth - this._cornerWidth;
+            var cells = this._headerTableBody.rows[0].cells;
+            var numColumns = cells.length - 1; // Do not process corner column.
             for (var i = 0; i < numColumns; i++) {
-                var columnWidth = this.headerTableBody.rows[0].cells[i].offsetWidth;
                 var column = this._visibleColumnsArray[i];
                 if (!column.weight)
-                    column.weight = 100 * columnWidth / tableWidth;
+                    column.weight = 100 * cells[i].offsetWidth / tableWidth;
             }
             this._columnWidthsInitialized = true;
         }
@@ -693,7 +704,7 @@ WebInspector.DataGrid.prototype = {
         var weights = this._columnWeightsSetting.get();
         for (var i = 0; i < this._columnsArray.length; ++i) {
             var column = this._columnsArray[i];
-            var weight = weights[column.identifier];
+            var weight = weights[column.id];
             if (weight)
                 column.weight = weight;
         }
@@ -707,7 +718,7 @@ WebInspector.DataGrid.prototype = {
         var weights = {};
         for (var i = 0; i < this._columnsArray.length; ++i) {
             var column = this._columnsArray[i];
-            weights[column.identifier] = column.weight;
+            weights[column.id] = column.weight;
         }
         this._columnWeightsSetting.set(weights);
     },
@@ -732,7 +743,7 @@ WebInspector.DataGrid.prototype = {
         for (var i = 0; i < this._visibleColumnsArray.length; ++i) {
             var column = this._visibleColumnsArray[i];
             if (column.fixedWidth) {
-                var width = this._headerTableColumnGroup.children[i][WebInspector.DataGrid._preferredWidthSymbol] || this.headerTableBody.rows[0].cells[i].offsetWidth;
+                var width = this._headerTableColumnGroup.children[i][WebInspector.DataGrid._preferredWidthSymbol] || this._headerTableBody.rows[0].cells[i].offsetWidth;
                 fixedColumnWidths[i] = width;
                 tableWidth -= width;
             } else {
@@ -768,7 +779,7 @@ WebInspector.DataGrid.prototype = {
         this._visibleColumnsArray = [];
         for (var i = 0; i < this._columnsArray.length; ++i) {
             var column = this._columnsArray[i];
-            if (columnsVisibility[column.identifier || String(i)])
+            if (columnsVisibility[column.id])
                 this._visibleColumnsArray.push(column);
         }
         this._refreshHeader();
@@ -797,7 +808,7 @@ WebInspector.DataGrid.prototype = {
             // Get the width of the cell in the first (and only) row of the
             // header table in order to determine the width of the column, since
             // it is not possible to query a column for its width.
-            left[i] = (left[i - 1] || 0) + this.headerTableBody.rows[0].cells[i].offsetWidth;
+            left[i] = (left[i - 1] || 0) + this._headerTableBody.rows[0].cells[i].offsetWidth;
         }
 
         // Make n - 1 resizers for n columns.
@@ -833,6 +844,9 @@ WebInspector.DataGrid.prototype = {
         this.rootNode().appendChild(this.creationNode);
     },
 
+    /**
+     * @param {!Event} event
+     */
     _keyDown: function(event)
     {
         if (!this.selectedNode || event.shiftKey || event.metaKey || event.ctrlKey || this._editing)
@@ -949,16 +963,19 @@ WebInspector.DataGrid.prototype = {
      * @param {!Node} target
      * @return {?string}
      */
-    columnIdentifierFromNode: function(target)
+    columnIdFromNode: function(target)
     {
         var cellElement = target.enclosingNodeOrSelfWithNodeName("td");
-        return cellElement && cellElement.columnIdentifier_;
+        return cellElement && cellElement[WebInspector.DataGrid._columnIdSymbol];
     },
 
+    /**
+     * @param {!Event} event
+     */
     _clickInHeaderCell: function(event)
     {
         var cell = event.target.enclosingNodeOrSelfWithNodeName("th");
-        if (!cell || (cell.columnIdentifier === undefined) || !cell.classList.contains("sortable"))
+        if (!cell || (cell[WebInspector.DataGrid._columnIdSymbol] === undefined) || !cell.classList.contains("sortable"))
             return;
 
         var sortOrder = WebInspector.DataGrid.Order.Ascending;
@@ -975,37 +992,38 @@ WebInspector.DataGrid.prototype = {
     },
 
     /**
-     * @param {string} columnIdentifier
+     * @param {string} columnId
      * @param {!WebInspector.DataGrid.Order} sortOrder
      */
-    markColumnAsSortedBy: function(columnIdentifier, sortOrder)
+    markColumnAsSortedBy: function(columnId, sortOrder)
     {
         if (this._sortColumnCell)
             this._sortColumnCell.classList.remove(WebInspector.DataGrid.Order.Ascending, WebInspector.DataGrid.Order.Descending);
-        this._sortColumnCell = this._headerTableHeaders[columnIdentifier];
+        this._sortColumnCell = this._headerTableHeaders[columnId];
         this._sortColumnCell.classList.add(sortOrder);
     },
 
     /**
-     * @param {string} columnIdentifier
+     * @param {string} columnId
      * @return {!Element}
      */
-    headerTableHeader: function(columnIdentifier)
+    headerTableHeader: function(columnId)
     {
-        return this._headerTableHeaders[columnIdentifier];
+        return this._headerTableHeaders[columnId];
     },
 
+    /**
+     * @param {!Event} event
+     */
     _mouseDownInDataTable: function(event)
     {
-        var gridNode = this.dataGridNodeFromNode(event.target);
-        if (!gridNode || !gridNode.selectable)
+        var target = /** @type {!Node} */ (event.target);
+        var gridNode = this.dataGridNodeFromNode(target);
+        if (!gridNode || !gridNode.selectable || gridNode.isEventWithinDisclosureTriangle(event))
             return;
 
-        if (gridNode.isEventWithinDisclosureTriangle(event))
-            return;
-
-        var columnIdentifier = this.columnIdentifierFromNode(event.target);
-        if (columnIdentifier && this._columns[columnIdentifier].nonSelectable)
+        var columnId = this.columnIdFromNode(target);
+        if (columnId && this._columns[columnId].nonSelectable)
             return;
 
         if (event.metaKey) {
@@ -1017,40 +1035,66 @@ WebInspector.DataGrid.prototype = {
             gridNode.select();
     },
 
-    _contextMenuInDataTable: function(event)
+    /**
+     * @param {?function(!WebInspector.ContextMenu)} callback
+     */
+    setHeaderContextMenuCallback: function(callback)
+    {
+        this._headerContextMenuCallback = callback;
+    },
+
+    /**
+     * @param {?function(!WebInspector.ContextMenu, !WebInspector.DataGridNode)} callback
+     */
+    setRowContextMenuCallback: function(callback)
+    {
+        this._rowContextMenuCallback = callback;
+    },
+
+    /**
+     * @param {!Event} event
+     */
+    _contextMenu: function(event)
     {
         var contextMenu = new WebInspector.ContextMenu(event);
+        var target = /** @type {!Node} */ (event.target);
 
-        var gridNode = this.dataGridNodeFromNode(event.target);
+        if (target.isSelfOrDescendant(this._headerTableBody)) {
+            if (this._headerContextMenuCallback)
+                this._headerContextMenuCallback(contextMenu);
+            return;
+        }
+
+        var gridNode = this.dataGridNodeFromNode(target);
         if (this._refreshCallback && (!gridNode || gridNode !== this.creationNode))
             contextMenu.appendItem(WebInspector.UIString("Refresh"), this._refreshCallback.bind(this));
 
         if (gridNode && gridNode.selectable && !gridNode.isEventWithinDisclosureTriangle(event)) {
             if (this._editCallback) {
                 if (gridNode === this.creationNode)
-                    contextMenu.appendItem(WebInspector.UIString.capitalize("Add ^new"), this._startEditing.bind(this, event.target));
+                    contextMenu.appendItem(WebInspector.UIString.capitalize("Add ^new"), this._startEditing.bind(this, target));
                 else {
-                    var columnIdentifier = this.columnIdentifierFromNode(event.target);
-                    if (columnIdentifier && this._columns[columnIdentifier].editable)
-                        contextMenu.appendItem(WebInspector.UIString("Edit \"%s\"", this._columns[columnIdentifier].title), this._startEditing.bind(this, event.target));
+                    var columnId = this.columnIdFromNode(target);
+                    if (columnId && this._columns[columnId].editable)
+                        contextMenu.appendItem(WebInspector.UIString("Edit \"%s\"", this._columns[columnId].title), this._startEditing.bind(this, target));
                 }
             }
             if (this._deleteCallback && gridNode !== this.creationNode)
                 contextMenu.appendItem(WebInspector.UIString.capitalize("Delete"), this._deleteCallback.bind(this, gridNode));
-            if (this._contextMenuCallback)
-                this._contextMenuCallback(contextMenu, gridNode);
+            if (this._rowContextMenuCallback)
+                this._rowContextMenuCallback(contextMenu, gridNode);
         }
 
         contextMenu.show();
     },
 
+    /**
+     * @param {!Event} event
+     */
     _clickInDataTable: function(event)
     {
-        var gridNode = this.dataGridNodeFromNode(event.target);
-        if (!gridNode || !gridNode.hasChildren)
-            return;
-
-        if (!gridNode.isEventWithinDisclosureTriangle(event))
+        var gridNode = this.dataGridNodeFromNode(/** @type {!Node} */ (event.target));
+        if (!gridNode || !gridNode.hasChildren || !gridNode.isEventWithinDisclosureTriangle(event))
             return;
 
         if (gridNode.expanded) {
@@ -1075,6 +1119,7 @@ WebInspector.DataGrid.prototype = {
     },
 
     /**
+     * @param {!Event} event
      * @return {boolean}
      */
     _startResizerDragging: function(event)
@@ -1083,6 +1128,16 @@ WebInspector.DataGrid.prototype = {
         return true;
     },
 
+    _endResizerDragging: function()
+    {
+        this._currentResizer = null;
+        this._saveColumnWeights();
+        this.dispatchEventToListeners(WebInspector.DataGrid.Events.ColumnsResized);
+    },
+
+    /**
+     * @param {!Event} event
+     */
     _resizerDragging: function(event)
     {
         var resizer = this._currentResizer;
@@ -1092,7 +1147,7 @@ WebInspector.DataGrid.prototype = {
         // Constrain the dragpoint to be within the containing div of the
         // datagrid.
         var dragPoint = event.clientX - this.element.totalOffsetLeft();
-        var firstRowCells = this.headerTableBody.rows[0].cells;
+        var firstRowCells = this._headerTableBody.rows[0].cells;
         var leftEdgeOfPreviousColumn = 0;
         // Constrain the dragpoint to be within the space made up by the
         // column directly to the left and the column directly to the right.
@@ -1161,19 +1216,12 @@ WebInspector.DataGrid.prototype = {
         if (!this.element.offsetWidth)
             return 0;
         for (var i = 1; i < this._visibleColumnsArray.length; ++i) {
-            if (columnId === this._visibleColumnsArray[i].identifier) {
+            if (columnId === this._visibleColumnsArray[i].id) {
                 if (this._resizers[i - 1])
                     return this._resizers[i - 1].__position;
             }
         }
         return 0;
-    },
-
-    _endResizerDragging: function(event)
-    {
-        this._currentResizer = null;
-        this._saveColumnWeights();
-        this.dispatchEventToListeners(WebInspector.DataGrid.Events.ColumnsResized);
     },
 
     /**
@@ -1191,14 +1239,14 @@ WebInspector.DataGrid.prototype = {
     CenterResizerOverBorderAdjustment: 3,
 
     __proto__: WebInspector.Object.prototype
-}
+};
 
 /** @enum {string} */
 WebInspector.DataGrid.ResizeMethod = {
     Nearest: "nearest",
     First: "first",
     Last: "last"
-}
+};
 
 /**
  * @constructor
@@ -1240,7 +1288,7 @@ WebInspector.DataGridNode = function(data, hasChildren)
     this.nextSibling = null;
     /** @type {number} */
     this.disclosureToggleWidth = 10;
-}
+};
 
 WebInspector.DataGridNode.prototype = {
     /** @type {boolean} */
@@ -1287,10 +1335,13 @@ WebInspector.DataGridNode.prototype = {
         this._element.removeChildren();
         var columnsArray = this.dataGrid._visibleColumnsArray;
         for (var i = 0; i < columnsArray.length; ++i)
-            this._element.appendChild(this.createCell(columnsArray[i].identifier || String(i)));
+            this._element.appendChild(this.createCell(columnsArray[i].id));
         this._element.appendChild(this._createTDWithClass("corner"));
     },
 
+    /**
+     * @return {!Object.<string, *>}
+     */
     get data()
     {
         return this._data;
@@ -1302,6 +1353,9 @@ WebInspector.DataGridNode.prototype = {
         this.refresh();
     },
 
+    /**
+     * @return {boolean}
+     */
     get revealed()
     {
         if (this._revealed !== undefined)
@@ -1321,25 +1375,6 @@ WebInspector.DataGridNode.prototype = {
         return true;
     },
 
-    set hasChildren(x)
-    {
-        if (this._hasChildren === x)
-            return;
-
-        this._hasChildren = x;
-
-        if (!this._element)
-            return;
-
-        this._element.classList.toggle("parent", this._hasChildren);
-        this._element.classList.toggle("expanded", this._hasChildren && this.expanded);
-    },
-
-    get hasChildren()
-    {
-        return this._hasChildren;
-    },
-
     set revealed(x)
     {
         if (this._revealed === x)
@@ -1352,6 +1387,28 @@ WebInspector.DataGridNode.prototype = {
 
         for (var i = 0; i < this.children.length; ++i)
             this.children[i].revealed = x && this.expanded;
+    },
+
+    /**
+     * @return {boolean}
+     */
+    get hasChildren()
+    {
+        return this._hasChildren;
+    },
+
+    set hasChildren(x)
+    {
+        if (this._hasChildren === x)
+            return;
+
+        this._hasChildren = x;
+
+        if (!this._element)
+            return;
+
+        this._element.classList.toggle("parent", this._hasChildren);
+        this._element.classList.toggle("expanded", this._hasChildren && this.expanded);
     },
 
     /**
@@ -1368,11 +1425,17 @@ WebInspector.DataGridNode.prototype = {
         return this._depth;
     },
 
+    /**
+     * @return {number}
+     */
     get leftPadding()
     {
         return this.depth * this.dataGrid.indentWidth;
     },
 
+    /**
+     * @return {boolean}
+     */
     get shouldRefreshChildren()
     {
         return this._shouldRefreshChildren;
@@ -1385,6 +1448,9 @@ WebInspector.DataGridNode.prototype = {
             this.expand();
     },
 
+    /**
+     * @return {boolean}
+     */
     get selected()
     {
         return this._selected;
@@ -1398,14 +1464,14 @@ WebInspector.DataGridNode.prototype = {
             this.deselect();
     },
 
+    /**
+     * @return {boolean}
+     */
     get expanded()
     {
         return this._expanded;
     },
 
-    /**
-     * @param {boolean} x
-     */
     set expanded(x)
     {
         if (x)
@@ -1437,19 +1503,19 @@ WebInspector.DataGridNode.prototype = {
     },
 
     /**
-     * @param {string} columnIdentifier
+     * @param {string} columnId
      * @return {!Element}
      */
-    createTD: function(columnIdentifier)
+    createTD: function(columnId)
     {
-        var cell = this._createTDWithClass(columnIdentifier + "-column");
-        cell.columnIdentifier_ = columnIdentifier;
+        var cell = this._createTDWithClass(columnId + "-column");
+        cell[WebInspector.DataGrid._columnIdSymbol] = columnId;
 
-        var alignment = this.dataGrid._columns[columnIdentifier].align;
+        var alignment = this.dataGrid._columns[columnId].align;
         if (alignment)
             cell.classList.add(alignment);
 
-        if (columnIdentifier === this.dataGrid.disclosureColumnIdentifier) {
+        if (columnId === this.dataGrid.disclosureColumnId) {
             cell.classList.add("disclosure");
             if (this.leftPadding)
                 cell.style.setProperty("padding-left", this.leftPadding + "px");
@@ -1459,19 +1525,19 @@ WebInspector.DataGridNode.prototype = {
     },
 
     /**
-     * @param {string} columnIdentifier
+     * @param {string} columnId
      * @return {!Element}
      */
-    createCell: function(columnIdentifier)
+    createCell: function(columnId)
     {
-        var cell = this.createTD(columnIdentifier);
+        var cell = this.createTD(columnId);
 
-        var data = this.data[columnIdentifier];
+        var data = this.data[columnId];
         if (data instanceof Node) {
             cell.appendChild(data);
         } else {
             cell.textContent = data;
-            if (this.dataGrid._columns[columnIdentifier].longText)
+            if (this.dataGrid._columns[columnId].longText)
                 cell.title = data;
         }
 
@@ -1813,6 +1879,7 @@ WebInspector.DataGridNode.prototype = {
     },
 
     /**
+     * @param {!Event} event
      * @return {boolean}
      */
     isEventWithinDisclosureTriangle: function(event)
@@ -1838,9 +1905,10 @@ WebInspector.DataGridNode.prototype = {
         var previousElement = previousNode ? previousNode.element() : this.dataGrid._topFillerRow;
         this.dataGrid.dataTableBody.insertBefore(this.element(), previousElement.nextSibling);
 
-        if (this.expanded)
+        if (this.expanded) {
             for (var i = 0; i < this.children.length; ++i)
                 this.children[i]._attach();
+        }
     },
 
     _detach: function()
@@ -1888,7 +1956,7 @@ WebInspector.DataGridNode.prototype = {
     },
 
     __proto__: WebInspector.Object.prototype
-}
+};
 
 /**
  * @constructor
@@ -1899,7 +1967,7 @@ WebInspector.CreationDataGridNode = function(data, hasChildren)
     WebInspector.DataGridNode.call(this, data, hasChildren);
     /** @type {boolean} */
     this.isCreationNode = true;
-}
+};
 
 WebInspector.CreationDataGridNode.prototype = {
     makeNormal: function()
@@ -1908,7 +1976,7 @@ WebInspector.CreationDataGridNode.prototype = {
     },
 
     __proto__: WebInspector.DataGridNode.prototype
-}
+};
 
 /**
  * @constructor
@@ -1920,7 +1988,7 @@ WebInspector.DataGridWidget = function(dataGrid)
     WebInspector.VBox.call(this);
     this._dataGrid = dataGrid;
     this.element.appendChild(dataGrid.element);
-}
+};
 
 WebInspector.DataGridWidget.prototype = {
     /**
@@ -1968,4 +2036,4 @@ WebInspector.DataGridWidget.prototype = {
     },
 
     __proto__: WebInspector.VBox.prototype
-}
+};

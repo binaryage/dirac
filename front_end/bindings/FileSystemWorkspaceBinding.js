@@ -46,7 +46,7 @@ WebInspector.FileSystemWorkspaceBinding = function(isolatedFileSystemManager, wo
     this._boundFileSystems = new Map();
     this._isolatedFileSystemManager.waitForFileSystems()
         .then(this._onFileSystemsLoaded.bind(this));
-}
+};
 
 WebInspector.FileSystemWorkspaceBinding._styleSheetExtensions = new Set(["css", "scss", "sass", "less"]);
 WebInspector.FileSystemWorkspaceBinding._documentExtensions = new Set(["htm", "html", "asp", "aspx", "phtml", "jsp"]);
@@ -61,7 +61,7 @@ WebInspector.FileSystemWorkspaceBinding._imageExtensions = WebInspector.Isolated
 WebInspector.FileSystemWorkspaceBinding.projectId = function(fileSystemPath)
 {
     return fileSystemPath;
-}
+};
 
 /**
  * @param {!WebInspector.UISourceCode} uiSourceCode
@@ -71,7 +71,7 @@ WebInspector.FileSystemWorkspaceBinding.relativePath = function(uiSourceCode)
 {
     var baseURL = /** @type {!WebInspector.FileSystemWorkspaceBinding.FileSystem}*/(uiSourceCode.project())._fileSystemBaseURL;
     return uiSourceCode.url().substring(baseURL.length).split("/");
-}
+};
 
 /**
  * @param {!WebInspector.Project} project
@@ -82,7 +82,7 @@ WebInspector.FileSystemWorkspaceBinding.completeURL = function(project, relative
 {
     var fsProject = /** @type {!WebInspector.FileSystemWorkspaceBinding.FileSystem}*/(project);
     return fsProject._fileSystemBaseURL + relativePath;
-}
+};
 
 /**
  * @param {string} extension
@@ -99,7 +99,7 @@ WebInspector.FileSystemWorkspaceBinding._contentTypeForExtension = function(exte
     if (WebInspector.FileSystemWorkspaceBinding._scriptExtensions.has(extension))
         return WebInspector.resourceTypes.Script;
     return WebInspector.resourceTypes.Other;
-}
+};
 
 WebInspector.FileSystemWorkspaceBinding.prototype = {
     /**
@@ -171,7 +171,7 @@ WebInspector.FileSystemWorkspaceBinding.prototype = {
             this._boundFileSystems.remove(fileSystem._fileSystem.path());
         }
     }
-}
+};
 
 /**
  * @param {string} projectId
@@ -180,7 +180,7 @@ WebInspector.FileSystemWorkspaceBinding.prototype = {
 WebInspector.FileSystemWorkspaceBinding.fileSystemPath = function(projectId)
 {
     return projectId;
-}
+};
 
 /**
  * @constructor
@@ -192,20 +192,21 @@ WebInspector.FileSystemWorkspaceBinding.fileSystemPath = function(projectId)
  */
 WebInspector.FileSystemWorkspaceBinding.FileSystem = function(fileSystemWorkspaceBinding, isolatedFileSystem, workspace)
 {
-    this._fileSystemWorkspaceBinding = fileSystemWorkspaceBinding;
+    var fileSystemPath = isolatedFileSystem.path();
+    var id = WebInspector.FileSystemWorkspaceBinding.projectId(fileSystemPath);
+    console.assert(!workspace.project(id));
+    var displayName = fileSystemPath.substr(fileSystemPath.lastIndexOf("/") + 1);
+
+    WebInspector.ProjectStore.call(this, workspace, id, WebInspector.projectTypes.FileSystem, displayName);
+
     this._fileSystem = isolatedFileSystem;
     this._fileSystemBaseURL = this._fileSystem.path() + "/";
-    this._fileSystemPath = this._fileSystem.path();
-
-    var id = WebInspector.FileSystemWorkspaceBinding.projectId(this._fileSystemPath);
-    console.assert(!workspace.project(id));
-
-    var displayName = this._fileSystemPath.substr(this._fileSystemPath.lastIndexOf("/") + 1);
-    WebInspector.ProjectStore.call(this, workspace, id, WebInspector.projectTypes.FileSystem, displayName);
+    this._fileSystemWorkspaceBinding = fileSystemWorkspaceBinding;
+    this._fileSystemPath = fileSystemPath;
 
     workspace.addProject(this);
     this.populate();
-}
+};
 
 WebInspector.FileSystemWorkspaceBinding._metadata = Symbol("FileSystemWorkspaceBinding.Metadata");
 
@@ -216,6 +217,14 @@ WebInspector.FileSystemWorkspaceBinding.FileSystem.prototype = {
     fileSystemPath: function()
     {
         return this._fileSystemPath;
+    },
+
+    /**
+     * @return {!Array<string>}
+     */
+    gitFolders: function()
+    {
+        return this._fileSystem.gitFolders().map(folder => this._fileSystemPath + "/" + folder);
     },
 
     /**
@@ -571,4 +580,4 @@ WebInspector.FileSystemWorkspaceBinding.FileSystem.prototype = {
     },
 
     __proto__: WebInspector.ProjectStore.prototype
-}
+};

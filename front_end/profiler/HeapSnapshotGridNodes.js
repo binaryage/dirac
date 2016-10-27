@@ -51,12 +51,12 @@ WebInspector.HeapSnapshotGridNode = function(tree, hasChildren)
       * @type {?WebInspector.HeapSnapshotGridNode.ChildrenProvider}
       */
     this._providerObject = null;
-}
+};
 
 /** @enum {symbol} */
 WebInspector.HeapSnapshotGridNode.Events = {
     PopulateComplete: Symbol("PopulateComplete")
-}
+};
 
 /**
  * @param {!Array.<string>} fieldNames
@@ -65,13 +65,13 @@ WebInspector.HeapSnapshotGridNode.Events = {
 WebInspector.HeapSnapshotGridNode.createComparator = function(fieldNames)
 {
     return /** @type {!WebInspector.HeapSnapshotCommon.ComparatorConfig} */ ({fieldName1: fieldNames[0], ascending1: fieldNames[1], fieldName2: fieldNames[2], ascending2: fieldNames[3]});
-}
+};
 
 
 /**
  * @interface
  */
-WebInspector.HeapSnapshotGridNode.ChildrenProvider = function() { }
+WebInspector.HeapSnapshotGridNode.ChildrenProvider = function() { };
 
 WebInspector.HeapSnapshotGridNode.ChildrenProvider.prototype = {
     dispose: function() { },
@@ -99,7 +99,7 @@ WebInspector.HeapSnapshotGridNode.ChildrenProvider.prototype = {
      * @return {!Promise<?>}
      */
     sortAndRewind: function(comparator) { }
-}
+};
 
 
 WebInspector.HeapSnapshotGridNode.prototype = {
@@ -139,12 +139,12 @@ WebInspector.HeapSnapshotGridNode.prototype = {
 
     /**
      * @override
-     * @param {string} columnIdentifier
+     * @param {string} columnId
      * @return {!Element}
      */
-    createCell: function(columnIdentifier)
+    createCell: function(columnId)
     {
-        var cell = WebInspector.DataGridNode.prototype.createCell.call(this, columnIdentifier);
+        var cell = WebInspector.DataGridNode.prototype.createCell.call(this, columnId);
         if (this._searchMatched)
             cell.classList.add("highlight");
         return cell;
@@ -245,19 +245,19 @@ WebInspector.HeapSnapshotGridNode.prototype = {
     },
 
     /**
-     * @param {string} columnIdentifier
+     * @param {string} columnId
      * @return {!Element}
      */
-    _createValueCell: function(columnIdentifier)
+    _createValueCell: function(columnId)
     {
         var cell = createElement("td");
         cell.className = "numeric-column";
         if (this.dataGrid.snapshot.totalSize !== 0) {
             var div = createElement("div");
             var valueSpan = createElement("span");
-            valueSpan.textContent = this.data[columnIdentifier];
+            valueSpan.textContent = this.data[columnId];
             div.appendChild(valueSpan);
-            var percentColumn = columnIdentifier + "-percent";
+            var percentColumn = columnId + "-percent";
             if (percentColumn in this.data) {
                 var percentSpan = createElement("span");
                 percentSpan.className = "percent-column";
@@ -488,7 +488,7 @@ WebInspector.HeapSnapshotGridNode.prototype = {
     },
 
     __proto__: WebInspector.DataGridNode.prototype
-}
+};
 
 
 /**
@@ -544,12 +544,12 @@ WebInspector.HeapSnapshotGenericObjectNode.prototype = {
 
     /**
      * @override
-     * @param {string} columnIdentifier
+     * @param {string} columnId
      * @return {!Element}
      */
-    createCell: function(columnIdentifier)
+    createCell: function(columnId)
     {
-        var cell = columnIdentifier !== "object" ? this._createValueCell(columnIdentifier) : this._createObjectCell();
+        var cell = columnId !== "object" ? this._createValueCell(columnId) : this._createObjectCell();
         if (this._searchMatched)
             cell.classList.add("highlight");
         return cell;
@@ -684,7 +684,7 @@ WebInspector.HeapSnapshotGenericObjectNode.prototype = {
     },
 
     __proto__: WebInspector.HeapSnapshotGridNode.prototype
-}
+};
 
 /**
  * @constructor
@@ -715,7 +715,7 @@ WebInspector.HeapSnapshotObjectNode = function(dataGrid, snapshot, edge, parentO
     data["addedSize"] = "";
     data["removedSize"] = "";
     data["sizeDelta"] = "";
-}
+};
 
 WebInspector.HeapSnapshotObjectNode.prototype = {
     /**
@@ -780,14 +780,14 @@ WebInspector.HeapSnapshotObjectNode.prototype = {
     comparator: function()
     {
         var sortAscending = this._dataGrid.isSortOrderAscending();
-        var sortColumnIdentifier = this._dataGrid.sortColumnIdentifier();
+        var sortColumnId = this._dataGrid.sortColumnId();
         var sortFields = {
             object: ["!edgeName", sortAscending, "retainedSize", false],
             count: ["!edgeName", true, "retainedSize", false],
             shallowSize: ["selfSize", sortAscending, "!edgeName", true],
             retainedSize: ["retainedSize", sortAscending, "!edgeName", true],
             distance: ["distance", sortAscending, "_name", true]
-        }[sortColumnIdentifier] || ["!edgeName", true, "retainedSize", false];
+        }[sortColumnId] || ["!edgeName", true, "retainedSize", false];
         return WebInspector.HeapSnapshotGridNode.createComparator(sortFields);
     },
 
@@ -832,7 +832,7 @@ WebInspector.HeapSnapshotObjectNode.prototype = {
     },
 
     __proto__: WebInspector.HeapSnapshotGenericObjectNode.prototype
-}
+};
 
 /**
  * @constructor
@@ -845,7 +845,7 @@ WebInspector.HeapSnapshotObjectNode.prototype = {
 WebInspector.HeapSnapshotRetainingObjectNode = function(dataGrid, snapshot, edge, parentRetainingObjectNode)
 {
     WebInspector.HeapSnapshotObjectNode.call(this, dataGrid, snapshot, edge, parentRetainingObjectNode);
-}
+};
 
 WebInspector.HeapSnapshotRetainingObjectNode.prototype = {
     /**
@@ -912,7 +912,7 @@ WebInspector.HeapSnapshotRetainingObjectNode.prototype = {
     },
 
     __proto__: WebInspector.HeapSnapshotObjectNode.prototype
-}
+};
 
 /**
  * @constructor
@@ -998,7 +998,7 @@ WebInspector.HeapSnapshotInstanceNode.prototype = {
     comparator: function()
     {
         var sortAscending = this._dataGrid.isSortOrderAscending();
-        var sortColumnIdentifier = this._dataGrid.sortColumnIdentifier();
+        var sortColumnId = this._dataGrid.sortColumnId();
         var sortFields = {
             object: ["!edgeName", sortAscending, "retainedSize", false],
             distance: ["distance", sortAscending, "retainedSize", false],
@@ -1007,12 +1007,12 @@ WebInspector.HeapSnapshotInstanceNode.prototype = {
             removedSize: ["selfSize", sortAscending, "!edgeName", true],
             shallowSize: ["selfSize", sortAscending, "!edgeName", true],
             retainedSize: ["retainedSize", sortAscending, "!edgeName", true]
-        }[sortColumnIdentifier] || ["!edgeName", true, "retainedSize", false];
+        }[sortColumnId] || ["!edgeName", true, "retainedSize", false];
         return WebInspector.HeapSnapshotGridNode.createComparator(sortFields);
     },
 
     __proto__: WebInspector.HeapSnapshotGenericObjectNode.prototype
-}
+};
 
 /**
  * @constructor
@@ -1047,7 +1047,7 @@ WebInspector.HeapSnapshotConstructorNode = function(dataGrid, className, aggrega
         "shallowSize-percent": this._toPercentString(shallowSizePercent),
         "retainedSize-percent": this._toPercentString(retainedSizePercent)
     };
-}
+};
 
 WebInspector.HeapSnapshotConstructorNode.prototype = {
     /**
@@ -1056,7 +1056,7 @@ WebInspector.HeapSnapshotConstructorNode.prototype = {
      */
     createProvider: function()
     {
-        return this._dataGrid.snapshot.createNodesProviderForClass(this._name, this._nodeFilter)
+        return this._dataGrid.snapshot.createNodesProviderForClass(this._name, this._nodeFilter);
     },
 
     /**
@@ -1122,12 +1122,12 @@ WebInspector.HeapSnapshotConstructorNode.prototype = {
 
     /**
      * @override
-     * @param {string} columnIdentifier
+     * @param {string} columnId
      * @return {!Element}
      */
-    createCell: function(columnIdentifier)
+    createCell: function(columnId)
     {
-        var cell = columnIdentifier !== "object" ? this._createValueCell(columnIdentifier) : WebInspector.HeapSnapshotGridNode.prototype.createCell.call(this, columnIdentifier);
+        var cell = columnId !== "object" ? this._createValueCell(columnId) : WebInspector.HeapSnapshotGridNode.prototype.createCell.call(this, columnId);
         if (this._searchMatched)
             cell.classList.add("highlight");
         return cell;
@@ -1148,14 +1148,14 @@ WebInspector.HeapSnapshotConstructorNode.prototype = {
     comparator: function()
     {
         var sortAscending = this._dataGrid.isSortOrderAscending();
-        var sortColumnIdentifier = this._dataGrid.sortColumnIdentifier();
+        var sortColumnId = this._dataGrid.sortColumnId();
         var sortFields = {
             object: ["name", sortAscending, "id", true],
             distance: ["distance", sortAscending, "retainedSize", false],
             count: ["name", true, "id", true],
             shallowSize: ["selfSize", sortAscending, "id", true],
             retainedSize: ["retainedSize", sortAscending, "id", true]
-        }[sortColumnIdentifier];
+        }[sortColumnId];
         return WebInspector.HeapSnapshotGridNode.createComparator(sortFields);
     },
 
@@ -1178,7 +1178,7 @@ WebInspector.HeapSnapshotConstructorNode.prototype = {
     },
 
     __proto__: WebInspector.HeapSnapshotGridNode.prototype
-}
+};
 
 
 /**
@@ -1195,7 +1195,7 @@ WebInspector.HeapSnapshotDiffNodesProvider = function(addedNodesProvider, delete
     this._deletedNodesProvider = deletedNodesProvider;
     this._addedCount = addedCount;
     this._removedCount = removedCount;
-}
+};
 
 WebInspector.HeapSnapshotDiffNodesProvider.prototype = {
     /**
@@ -1332,7 +1332,7 @@ WebInspector.HeapSnapshotDiffNode = function(dataGrid, className, diffForClass)
         "removedSize": Number.withThousandsSeparator(this._removedSize),
         "sizeDelta": this._signForDelta(this._sizeDelta) + Number.withThousandsSeparator(Math.abs(this._sizeDelta))
     };
-}
+};
 
 WebInspector.HeapSnapshotDiffNode.prototype = {
     /**
@@ -1351,13 +1351,13 @@ WebInspector.HeapSnapshotDiffNode.prototype = {
 
     /**
      * @override
-     * @param {string} columnIdentifier
+     * @param {string} columnId
      * @return {!Element}
      */
-    createCell: function(columnIdentifier)
+    createCell: function(columnId)
     {
-        var cell = WebInspector.HeapSnapshotGridNode.prototype.createCell.call(this, columnIdentifier);
-        if (columnIdentifier !== "object")
+        var cell = WebInspector.HeapSnapshotGridNode.prototype.createCell.call(this, columnId);
+        if (columnId !== "object")
             cell.classList.add("numeric-column");
         return cell;
     },
@@ -1398,7 +1398,7 @@ WebInspector.HeapSnapshotDiffNode.prototype = {
     comparator: function()
     {
         var sortAscending = this._dataGrid.isSortOrderAscending();
-        var sortColumnIdentifier = this._dataGrid.sortColumnIdentifier();
+        var sortColumnId = this._dataGrid.sortColumnId();
         var sortFields = {
             object: ["name", sortAscending, "id", true],
             addedCount: ["name", true, "id", true],
@@ -1407,7 +1407,7 @@ WebInspector.HeapSnapshotDiffNode.prototype = {
             addedSize: ["selfSize", sortAscending, "id", true],
             removedSize: ["selfSize", sortAscending, "id", true],
             sizeDelta: ["selfSize", sortAscending, "id", true]
-        }[sortColumnIdentifier];
+        }[sortColumnId];
         return WebInspector.HeapSnapshotGridNode.createComparator(sortFields);
     },
 
@@ -1431,7 +1431,7 @@ WebInspector.HeapSnapshotDiffNode.prototype = {
     },
 
     __proto__: WebInspector.HeapSnapshotGridNode.prototype
-}
+};
 
 
 /**
@@ -1452,7 +1452,7 @@ WebInspector.AllocationGridNode = function(dataGrid, data)
         "size": Number.withThousandsSeparator(data.size),
         "name": data.name
     };
-}
+};
 
 WebInspector.AllocationGridNode.prototype = {
     populate: function()
@@ -1500,15 +1500,15 @@ WebInspector.AllocationGridNode.prototype = {
 
     /**
      * @override
-     * @param {string} columnIdentifier
+     * @param {string} columnId
      * @return {!Element}
      */
-    createCell: function(columnIdentifier)
+    createCell: function(columnId)
     {
-        if (columnIdentifier !== "name")
-            return this._createValueCell(columnIdentifier);
+        if (columnId !== "name")
+            return this._createValueCell(columnId);
 
-        var cell = WebInspector.HeapSnapshotGridNode.prototype.createCell.call(this, columnIdentifier);
+        var cell = WebInspector.HeapSnapshotGridNode.prototype.createCell.call(this, columnId);
         var allocationNode = this._allocationNode;
         var target = this._dataGrid.target();
         if (allocationNode.scriptId) {
@@ -1529,4 +1529,4 @@ WebInspector.AllocationGridNode.prototype = {
     },
 
     __proto__: WebInspector.HeapSnapshotGridNode.prototype
-}
+};

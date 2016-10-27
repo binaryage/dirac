@@ -47,7 +47,7 @@ WebInspector.DOMStorageItemsView = function(domStorage)
     this.domStorage.addEventListener(WebInspector.DOMStorage.Events.DOMStorageItemRemoved, this._domStorageItemRemoved, this);
     this.domStorage.addEventListener(WebInspector.DOMStorage.Events.DOMStorageItemAdded, this._domStorageItemAdded, this);
     this.domStorage.addEventListener(WebInspector.DOMStorage.Events.DOMStorageItemUpdated, this._domStorageItemUpdated, this);
-}
+};
 
 WebInspector.DOMStorageItemsView.prototype = {
     /**
@@ -182,10 +182,10 @@ WebInspector.DOMStorageItemsView.prototype = {
 
     _dataGridForDOMStorageItems: function(items)
     {
-        var columns = [
-            {id: "key", title: WebInspector.UIString("Key"), editable: true, weight: 50},
-            {id: "value", title: WebInspector.UIString("Value"), editable: true, weight: 50}
-        ];
+        var columns = /** @type {!Array<!WebInspector.DataGrid.ColumnDescriptor>} */ ([
+            {id: "key", title: WebInspector.UIString("Key"), sortable: false, editable: true, weight: 50},
+            {id: "value", title: WebInspector.UIString("Value"), sortable: false, editable: true, weight: 50}
+        ]);
 
         var nodes = [];
 
@@ -260,4 +260,4 @@ WebInspector.DOMStorageItemsView.prototype = {
     },
 
     __proto__: WebInspector.SimpleView.prototype
-}
+};

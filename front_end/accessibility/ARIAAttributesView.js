@@ -214,7 +214,8 @@ WebInspector.ARIAAttributesTreeElement.createARIAValueElement = function(value)
  */
 WebInspector.ARIAAttributesPane.ARIAAttributePrompt = function(ariaCompletions, treeElement)
 {
-    WebInspector.TextPrompt.call(this, this._buildPropertyCompletions.bind(this));
+    WebInspector.TextPrompt.call(this);
+    this.initialize(this._buildPropertyCompletions.bind(this));
 
     this.setSuggestBoxEnabled(true);
 
@@ -243,7 +244,7 @@ WebInspector.ARIAAttributesPane.ARIAAttributePrompt.prototype = {
     },
 
     __proto__: WebInspector.TextPrompt.prototype
-}
+};
 
 
 WebInspector.ARIAAttributesPane._attributes = [

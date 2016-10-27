@@ -9,7 +9,7 @@ WebInspector.HeapProfilerModel = function(target)
     target.registerHeapProfilerDispatcher(new WebInspector.HeapProfilerDispatcher(this));
     this._enabled = false;
     this._heapProfilerAgent = target.heapProfilerAgent();
-}
+};
 
 /** @enum {symbol} */
 WebInspector.HeapProfilerModel.Events = {
@@ -18,7 +18,7 @@ WebInspector.HeapProfilerModel.Events = {
     AddHeapSnapshotChunk: Symbol("AddHeapSnapshotChunk"),
     ReportHeapSnapshotProgress: Symbol("ReportHeapSnapshotProgress"),
     ResetProfiles: Symbol("ResetProfiles")
-}
+};
 
 WebInspector.HeapProfilerModel.prototype = {
     enable: function()
@@ -42,9 +42,7 @@ WebInspector.HeapProfilerModel.prototype = {
     stopSampling: function()
     {
         this._isRecording = false;
-        var currentProfile = null;
-        return this._heapProfilerAgent.stopSampling((error, profile) => { currentProfile = !error ? profile : null; })
-            .then(() => currentProfile);
+        return this._heapProfilerAgent.stopSampling((error, profile) => error ? null : profile);
     },
 
     /**
@@ -88,7 +86,7 @@ WebInspector.HeapProfilerModel.prototype = {
     },
 
     __proto__: WebInspector.SDKModel.prototype
-}
+};
 
 
 /**
@@ -98,7 +96,7 @@ WebInspector.HeapProfilerModel.prototype = {
 WebInspector.HeapProfilerDispatcher = function(model)
 {
     this._heapProfilerModel = model;
-}
+};
 
 WebInspector.HeapProfilerDispatcher.prototype = {
     /**
@@ -147,4 +145,4 @@ WebInspector.HeapProfilerDispatcher.prototype = {
     {
         this._heapProfilerModel.resetProfiles();
     }
-}
+};

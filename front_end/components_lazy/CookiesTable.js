@@ -42,7 +42,7 @@ WebInspector.CookiesTable = function(expandable, refreshCallback, selectedCallba
     var readOnly = expandable;
     this._refreshCallback = refreshCallback;
 
-    var columns = [
+    var columns = /** @type {!Array<!WebInspector.DataGrid.ColumnDescriptor>} */ ([
         {id: "name", title: WebInspector.UIString("Name"), sortable: true, disclosure: expandable, sort: WebInspector.DataGrid.Order.Ascending, longText: true, weight: 24},
         {id: "value", title: WebInspector.UIString("Value"), sortable: true, longText: true, weight: 34},
         {id: "domain", title: WebInspector.UIString("Domain"), sortable: true, weight: 7},
@@ -52,12 +52,14 @@ WebInspector.CookiesTable = function(expandable, refreshCallback, selectedCallba
         {id: "httpOnly", title: WebInspector.UIString("HTTP"), sortable: true, align: WebInspector.DataGrid.Align.Center, weight: 7},
         {id: "secure", title: WebInspector.UIString("Secure"), sortable: true, align: WebInspector.DataGrid.Align.Center, weight: 7},
         {id: "sameSite", title: WebInspector.UIString("SameSite"), sortable: true, align: WebInspector.DataGrid.Align.Center, weight: 7}
-    ];
+    ]);
 
-    if (readOnly)
+    if (readOnly) {
         this._dataGrid = new WebInspector.DataGrid(columns);
-    else
-        this._dataGrid = new WebInspector.DataGrid(columns, undefined, this._onDeleteCookie.bind(this), refreshCallback, this._onContextMenu.bind(this));
+    } else {
+        this._dataGrid = new WebInspector.DataGrid(columns, undefined, this._onDeleteCookie.bind(this), refreshCallback);
+        this._dataGrid.setRowContextMenuCallback(this._onRowContextMenu.bind(this));
+    }
 
     this._dataGrid.setName("cookiesTable");
     this._dataGrid.addEventListener(WebInspector.DataGrid.Events.SortingChanged, this._rebuildTable, this);
@@ -69,7 +71,7 @@ WebInspector.CookiesTable = function(expandable, refreshCallback, selectedCallba
 
     this._dataGrid.asWidget().show(this.element);
     this._data = [];
-}
+};
 
 WebInspector.CookiesTable.prototype = {
     /**
@@ -85,12 +87,11 @@ WebInspector.CookiesTable.prototype = {
      * @param {!WebInspector.ContextMenu} contextMenu
      * @param {!WebInspector.DataGridNode} node
      */
-    _onContextMenu: function(contextMenu, node)
+    _onRowContextMenu: function(contextMenu, node)
     {
         if (node === this._dataGrid.creationNode)
             return;
-        var cookie = node.cookie;
-        var domain = cookie.domain();
+        var domain = node.cookie.domain();
         if (domain)
             contextMenu.appendItem(WebInspector.UIString.capitalize("Clear ^all from \"%s\"", domain), this._clearAndRefresh.bind(this, domain));
         contextMenu.appendItem(WebInspector.UIString.capitalize("Clear ^all"), this._clearAndRefresh.bind(this, null));
@@ -218,7 +219,7 @@ WebInspector.CookiesTable.prototype = {
         }
 
         var comparator;
-        switch (this._dataGrid.sortColumnIdentifier()) {
+        switch (this._dataGrid.sortColumnId()) {
         case "name": comparator = compareTo.bind(null, WebInspector.Cookie.prototype.name); break;
         case "value": comparator = compareTo.bind(null, WebInspector.Cookie.prototype.value); break;
         case "domain": comparator = compareTo.bind(null, WebInspector.Cookie.prototype.domain); break;
@@ -286,4 +287,4 @@ WebInspector.CookiesTable.prototype = {
     },
 
     __proto__: WebInspector.VBox.prototype
-}
+};

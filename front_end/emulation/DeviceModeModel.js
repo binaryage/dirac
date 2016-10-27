@@ -62,14 +62,14 @@ WebInspector.DeviceModeModel = function(updateCallback)
     /** @type {?function()} */
     this._onTargetAvailable = null;
     WebInspector.targetManager.observeTargets(this, WebInspector.Target.Capability.Browser);
-}
+};
 
 /** @enum {string} */
 WebInspector.DeviceModeModel.Type = {
     None: "None",
     Responsive: "Responsive",
     Device: "Device"
-}
+};
 
 /** @enum {string} */
 WebInspector.DeviceModeModel.UA = {
@@ -77,7 +77,7 @@ WebInspector.DeviceModeModel.UA = {
     MobileNoTouch: WebInspector.UIString("Mobile (no touch)"),
     Desktop: WebInspector.UIString("Desktop"),
     DesktopTouch: WebInspector.UIString("Desktop (touch)")
-}
+};
 
 WebInspector.DeviceModeModel.MinDeviceSize = 50;
 WebInspector.DeviceModeModel.MaxDeviceSize = 9999;
@@ -91,7 +91,7 @@ WebInspector.DeviceModeModel.deviceSizeValidator = function(value)
     if (/^[\d]+$/.test(value) && value >= WebInspector.DeviceModeModel.MinDeviceSize && value <= WebInspector.DeviceModeModel.MaxDeviceSize)
         return true;
     return false;
-}
+};
 
 /**
  * @param {string} value
@@ -102,7 +102,7 @@ WebInspector.DeviceModeModel.deviceScaleFactorValidator = function(value)
     if (!value || (/^[\d]+(\.\d+)?|\.\d+$/.test(value) && value >= 0 && value <= 10))
         return true;
     return false;
-}
+};
 
 WebInspector.DeviceModeModel._defaultMobileUserAgent = "Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/%s Mobile Safari/537.36";
 WebInspector.DeviceModeModel._defaultMobileUserAgent = WebInspector.MultitargetNetworkManager.patchUserAgentWithChromeVersion(WebInspector.DeviceModeModel._defaultMobileUserAgent);
@@ -125,19 +125,20 @@ WebInspector.DeviceModeModel.prototype = {
      * @param {!WebInspector.DeviceModeModel.Type} type
      * @param {?WebInspector.EmulatedDevice} device
      * @param {?WebInspector.EmulatedDevice.Mode} mode
+     * @param {number=} scale
      */
-    emulate: function(type, device, mode)
+    emulate: function(type, device, mode, scale)
     {
         var resetPageScaleFactor = this._type !== type || this._device !== device || this._mode !== mode;
         this._type = type;
 
         if (type === WebInspector.DeviceModeModel.Type.Device) {
             console.assert(device && mode, "Must pass device and mode for device emulation");
-            this._device = device;
             this._mode = mode;
+            this._device = device;
             if (this._initialized) {
                 var orientation = device.orientationByName(mode.orientation);
-                this._scaleSetting.set(this._calculateFitScale(orientation.width, orientation.height, this._currentOutline(), this._currentInsets()));
+                this._scaleSetting.set(scale || this._calculateFitScale(orientation.width, orientation.height, this._currentOutline(), this._currentInsets()));
             }
         } else {
             this._device = null;
@@ -508,7 +509,7 @@ WebInspector.DeviceModeModel.prototype = {
         var insetsWidth = insets ? insets.left + insets.right : 0;
         var insetsHeight = insets ? insets.top + insets.bottom : 0;
         var scale = Math.min(screenWidth ? this._preferredSize.width / (screenWidth + outlineWidth) : 1, screenHeight ? this._preferredSize.height / (screenHeight + outlineHeight) : 1);
-        scale = Math.min(Math.ceil(scale * 100), 100);
+        scale = Math.min(Math.floor(scale * 100), 100);
 
         var sharpScale = scale;
         while (sharpScale > scale * 0.7) {
@@ -636,4 +637,4 @@ WebInspector.DeviceModeModel.prototype = {
     {
         WebInspector.MultitargetTouchModel.instance().setTouchEnabled(touchEnabled, mobile);
     }
-}
+};

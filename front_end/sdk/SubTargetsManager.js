@@ -20,20 +20,22 @@ WebInspector.SubTargetsManager = function(target)
     this._connections = new Map();
 
     this._agent.setAutoAttach(true /* autoAttach */, true /* waitForDebuggerOnStart */);
-    this._agent.setAttachToFrames(Runtime.experiments.isEnabled("autoAttachToCrossProcessSubframes"));
+    if (Runtime.experiments.isEnabled("autoAttachToCrossProcessSubframes"))
+        this._agent.setAttachToFrames(true);
 
     if (Runtime.experiments.isEnabled("nodeDebugging") && !target.parentTarget()) {
         var defaultLocations = [{host: "localhost", port: 9229}];
         this._agent.setRemoteLocations(defaultLocations);
         this._agent.setDiscoverTargets(true);
     }
-}
+    WebInspector.targetManager.addEventListener(WebInspector.TargetManager.Events.MainFrameNavigated, this._mainFrameNavigated, this);
+};
 
 /** @enum {symbol} */
 WebInspector.SubTargetsManager.Events = {
     SubTargetAdded: Symbol("SubTargetAdded"),
     SubTargetRemoved: Symbol("SubTargetRemoved"),
-}
+};
 
 WebInspector.SubTargetsManager._InfoSymbol = Symbol("SubTargetInfo");
 
@@ -67,8 +69,10 @@ WebInspector.SubTargetsManager.prototype = {
      */
     dispose: function()
     {
-        for (var connection of this._connections.values())
-            connection.close();
+        for (var connection of this._connections.values()) {
+            this._agent.detachFromTarget(connection._targetId);
+            connection._onDisconnect.call(null, "disposed");
+        }
         this._connections.clear();
         this._attachedTargets.clear();
     },
@@ -101,7 +105,7 @@ WebInspector.SubTargetsManager.prototype = {
             if (targetInfo)
                 callback(new WebInspector.TargetInfo(targetInfo));
             else
-                callback(null)
+                callback(null);
         }
         this._agent.getTargetInfo(targetId, innerCallback);
     },
@@ -133,11 +137,11 @@ WebInspector.SubTargetsManager.prototype = {
         if (type === "worker")
             return WebInspector.Target.Capability.JS | WebInspector.Target.Capability.Log;
         if (type === "service_worker")
-            return WebInspector.Target.Capability.Log | WebInspector.Target.Capability.Network | WebInspector.Target.Capability.Worker;
+            return WebInspector.Target.Capability.Log | WebInspector.Target.Capability.Network | WebInspector.Target.Capability.Target;
         if (type === "iframe")
             return WebInspector.Target.Capability.Browser | WebInspector.Target.Capability.DOM |
                 WebInspector.Target.Capability.JS | WebInspector.Target.Capability.Log |
-                WebInspector.Target.Capability.Network | WebInspector.Target.Capability.Worker;
+                WebInspector.Target.Capability.Network | WebInspector.Target.Capability.Target;
         if (type === "node")
             return WebInspector.Target.Capability.JS;
         return 0;
@@ -149,9 +153,6 @@ WebInspector.SubTargetsManager.prototype = {
      */
     _attachedToTarget: function(targetInfo, waitingForDebugger)
     {
-        var connection = new WebInspector.SubTargetConnection(this._agent, targetInfo.id);
-        this._connections.set(targetInfo.id, connection);
-
         var targetName = "";
         if (targetInfo.type === "node") {
             targetName = targetInfo.title;
@@ -159,12 +160,12 @@ WebInspector.SubTargetsManager.prototype = {
             var parsedURL = targetInfo.url.asParsedURL();
             targetName = parsedURL ? parsedURL.lastPathComponentWithFragment() : "#" + (++this._lastAnonymousTargetId);
         }
-        var target = WebInspector.targetManager.createTarget(targetName, this._capabilitiesForType(targetInfo.type), connection, this.target());
+        var target = WebInspector.targetManager.createTarget(targetName, this._capabilitiesForType(targetInfo.type), this._createConnection.bind(this, targetInfo.id), this.target());
         target[WebInspector.SubTargetsManager._InfoSymbol] = targetInfo;
         this._attachedTargets.set(targetInfo.id, target);
 
         // Only pause new worker if debugging SW - we are going through the pause on start checkbox.
-        var mainIsServiceWorker = !this.target().parentTarget() && this.target().hasWorkerCapability() && !this.target().hasBrowserCapability();
+        var mainIsServiceWorker = !this.target().parentTarget() && this.target().hasTargetCapability() && !this.target().hasBrowserCapability();
         if (mainIsServiceWorker && waitingForDebugger)
             target.debuggerAgent().pause();
         target.runtimeAgent().runIfWaitingForDebugger();
@@ -174,16 +175,28 @@ WebInspector.SubTargetsManager.prototype = {
 
     /**
      * @param {string} targetId
+     * @param {!InspectorBackendClass.Connection.Params} params
+     * @return {!InspectorBackendClass.Connection}
+     */
+    _createConnection: function(targetId, params)
+    {
+        var connection = new WebInspector.SubTargetConnection(this._agent, targetId, params);
+        this._connections.set(targetId, connection);
+        return connection;
+    },
+
+    /**
+     * @param {string} targetId
      */
     _detachedFromTarget: function(targetId)
     {
-        var connection = this._connections.get(targetId);
-        if (connection)
-            connection._reportClosed();
-        this._connections.delete(targetId);
         var target = this._attachedTargets.get(targetId);
         this._attachedTargets.delete(targetId);
         this.dispatchEventToListeners(WebInspector.SubTargetsManager.Events.SubTargetRemoved, target);
+        var connection = this._connections.get(targetId);
+        if (connection)
+            connection._onDisconnect.call(null, "target terminated");
+        this._connections.delete(targetId);
     },
 
     /**
@@ -194,7 +207,7 @@ WebInspector.SubTargetsManager.prototype = {
     {
         var connection = this._connections.get(targetId);
         if (connection)
-            connection.dispatch(message);
+            connection._onMessage.call(null, message);
     },
 
     /**
@@ -215,8 +228,26 @@ WebInspector.SubTargetsManager.prototype = {
         // All the work is done in _detachedFromTarget.
     },
 
+    /**
+     * @param {!WebInspector.Event} event
+     */
+    _mainFrameNavigated: function(event)
+    {
+        if (event.data.target() !== this.target())
+            return;
+
+        var idsToDetach = [];
+        for (var targetId of this._attachedTargets.keys()) {
+            var target = this._attachedTargets.get(targetId);
+            var targetInfo = this.targetInfo(target);
+            if (targetInfo.type === "worker")
+                idsToDetach.push(targetId);
+        }
+        idsToDetach.forEach(id => this._detachedFromTarget(id));
+    },
+
     __proto__: WebInspector.SDKModel.prototype
-}
+};
 
 /**
  * @constructor
@@ -226,7 +257,7 @@ WebInspector.SubTargetsManager.prototype = {
 WebInspector.SubTargetsDispatcher = function(manager)
 {
     this._manager = manager;
-}
+};
 
 WebInspector.SubTargetsDispatcher.prototype = {
     /**
@@ -275,46 +306,42 @@ WebInspector.SubTargetsDispatcher.prototype = {
     {
         this._manager._receivedMessageFromTarget(targetId, message);
     }
-}
+};
 
 /**
  * @constructor
- * @extends {InspectorBackendClass.Connection}
+ * @implements {InspectorBackendClass.Connection}
  * @param {!Protocol.TargetAgent} agent
  * @param {string} targetId
+ * @param {!InspectorBackendClass.Connection.Params} params
  */
-WebInspector.SubTargetConnection = function(agent, targetId)
+WebInspector.SubTargetConnection = function(agent, targetId, params)
 {
-    InspectorBackendClass.Connection.call(this);
     this._agent = agent;
     this._targetId = targetId;
-}
+    this._onMessage = params.onMessage;
+    this._onDisconnect = params.onDisconnect;
+};
 
 WebInspector.SubTargetConnection.prototype = {
     /**
      * @override
-     * @param {!Object} messageObject
+     * @param {string} message
      */
-    sendMessage: function(messageObject)
+    sendMessage: function(message)
     {
-        this._agent.sendMessageToTarget(this._targetId, JSON.stringify(messageObject));
+        this._agent.sendMessageToTarget(this._targetId, message);
     },
 
     /**
      * @override
+     * @return {!Promise}
      */
-    forceClose: function()
+    disconnect: function()
     {
-        this._agent.detachFromTarget(this._targetId);
+        throw new Error("Not implemented");
     },
-
-    _reportClosed: function()
-    {
-        this.connectionClosed("target_terminated");
-    },
-
-    __proto__: InspectorBackendClass.Connection.prototype
-}
+};
 
 /**
  * @constructor
@@ -332,4 +359,4 @@ WebInspector.TargetInfo = function(payload)
         this.title = payload.title;
         this.canActivate = true;
     }
-}
+};

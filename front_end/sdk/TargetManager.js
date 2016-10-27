@@ -19,7 +19,7 @@ WebInspector.TargetManager = function()
     /** @type {!Map<symbol, !Array<{modelClass: !Function, thisObject: (!Object|undefined), listener: function(!WebInspector.Event)}>>} */
     this._modelListeners = new Map();
     this._isSuspended = false;
-}
+};
 
 /** @enum {symbol} */
 WebInspector.TargetManager.Events = {
@@ -31,7 +31,7 @@ WebInspector.TargetManager.Events = {
     WillReloadPage: Symbol("WillReloadPage"),
     TargetDisposed: Symbol("TargetDisposed"),
     SuspendStateChanged: Symbol("SuspendStateChanged")
-}
+};
 
 WebInspector.TargetManager._listenersSymbol = Symbol("WebInspector.TargetManager.Listeners");
 
@@ -183,13 +183,13 @@ WebInspector.TargetManager.prototype = {
     /**
      * @param {string} name
      * @param {number} capabilitiesMask
-     * @param {!InspectorBackendClass.Connection} connection
+     * @param {!InspectorBackendClass.Connection.Factory} connectionFactory
      * @param {?WebInspector.Target} parentTarget
      * @return {!WebInspector.Target}
      */
-    createTarget: function(name, capabilitiesMask, connection, parentTarget)
+    createTarget: function(name, capabilitiesMask, connectionFactory, parentTarget)
     {
-        var target = new WebInspector.Target(this, name, capabilitiesMask, connection, parentTarget);
+        var target = new WebInspector.Target(this, name, capabilitiesMask, connectionFactory, parentTarget);
 
         var logAgent = target.hasLogCapability() ? target.logAgent() : null;
 
@@ -217,8 +217,8 @@ WebInspector.TargetManager.prototype = {
             new WebInspector.CSSModel(target, domModel);
         }
 
-        /** @type {?WebInspector.WorkerManager} */
-        target.workerManager = target.hasWorkerCapability() ? new WebInspector.WorkerManager(target) : null;
+        /** @type {?WebInspector.SubTargetsManager} */
+        target.subTargetsManager = target.hasTargetCapability() ? new WebInspector.SubTargetsManager(target) : null;
         /** @type {!WebInspector.CPUProfilerModel} */
         target.cpuProfilerModel = new WebInspector.CPUProfilerModel(target);
         /** @type {!WebInspector.HeapProfilerModel} */
@@ -226,45 +226,28 @@ WebInspector.TargetManager.prototype = {
 
         target.tracingManager = new WebInspector.TracingManager(target);
 
-        if (target.hasBrowserCapability()) {
-            target.subTargetsManager = new WebInspector.SubTargetsManager(target);
+        if (target.subTargetsManager && target.hasBrowserCapability())
             target.serviceWorkerManager = new WebInspector.ServiceWorkerManager(target, target.subTargetsManager);
-        }
 
         this.addTarget(target);
         return target;
     },
 
     /**
-     * @param {function()} factory
+     * @param {function(function(string)):!Promise<!InspectorBackendClass.Connection>} interceptor
      */
-    setMainTargetFactory: function(factory)
+    setMainConnectionInterceptor: function(interceptor)
     {
-        this._mainTargetFactory = factory;
+        this._mainConnectionInterceptor = interceptor;
     },
 
     /**
-     * @param {function(string)} dispatch
-     * @return {!Promise<!WebInspector.RawProtocolConnection>}
+     * @param {function(string)} onMessage
+     * @return {!Promise<!InspectorBackendClass.Connection>}
      */
-    interceptMainConnection: function(dispatch)
+    interceptMainConnection: function(onMessage)
     {
-        var target = WebInspector.targetManager.mainTarget();
-        if (target)
-            target.connection().close();
-
-        var fulfill;
-        var result = new Promise(resolve => fulfill = resolve);
-        InspectorFrontendHost.reattach(() => fulfill(new WebInspector.RawProtocolConnection(dispatch, yieldCallback.bind(this))));
-        return result;
-
-        /**
-         * @this {WebInspector.TargetManager}
-         */
-        function yieldCallback()
-        {
-            InspectorFrontendHost.reattach(this._mainTargetFactory());
-        }
+        return this._mainConnectionInterceptor.call(null, onMessage);
     },
 
     /**
@@ -398,14 +381,14 @@ WebInspector.TargetManager.prototype = {
     },
 
     __proto__: WebInspector.Object.prototype
-}
+};
 
 /**
  * @interface
  */
 WebInspector.TargetManager.Observer = function()
 {
-}
+};
 
 WebInspector.TargetManager.Observer.prototype = {
     /**
@@ -417,7 +400,7 @@ WebInspector.TargetManager.Observer.prototype = {
      * @param {!WebInspector.Target} target
      */
     targetRemoved: function(target) { },
-}
+};
 
 /**
  * @type {!WebInspector.TargetManager}

@@ -13,6 +13,14 @@ function TempStorage()
 TempStorage.prototype = {
     /**
      * @override
+     * @param {function(string)} notify
+     */
+    setNotify: function(notify)
+    {
+    },
+
+    /**
+     * @override
      */
     dispose: function()
     {
@@ -83,6 +91,4 @@ TempStorage.prototype = {
             resolve();
         }
     }
-}
-
-initializeSharedWorkerService("TempStorage", TempStorage);
+};
