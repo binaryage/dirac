@@ -101,8 +101,9 @@
   (.flush *out*)
   (.flush *err*))
 
-(defn repl-print! [response-fn result]
+(defn repl-print! [final-ns-volatile response-fn result]
   (log/trace "repl-print!" result (if-not response-fn "(no response-fn)"))
+  (vreset! final-ns-volatile analyzer/*cljs-ns*)                                                                              ; see https://github.com/binaryage/dirac/issues/47
   (if response-fn
     (let [response (-> (protocol/prepare-printed-value-response result)
                        (merge (prepare-current-env-info-response)))]
@@ -112,12 +113,13 @@
 
 (defn eval-in-cljs-repl! [code ns repl-env compiler-env repl-options job-id & [response-fn scope-info dirac-mode]]
   {:pre [(some? job-id)]}
-  (let [default-repl-options {:need-prompt  (constantly false)
+  (let [final-ns-volatile (volatile! nil)
+        default-repl-options {:need-prompt  (constantly false)
                               :bind-err     false
                               :quit-prompt  (fn [])
                               :prompt       (fn [])
                               :init         (fn [])
-                              :print        (partial repl-print! response-fn)
+                              :print        (partial repl-print! final-ns-volatile response-fn)
                               :eval         (partial repl-eval! job-id scope-info dirac-mode)
                               :compiler-env compiler-env}
         effective-repl-options (merge default-repl-options repl-options)
@@ -145,6 +147,6 @@
               *err* (state/get-session-binding-value #'*err*)
               analyzer/*cljs-ns* initial-ns]
       (driver/wrap-with-driver job-id start-repl-fn response-fn "plain-text")
-      (let [final-ns analyzer/*cljs-ns*]                                                                                      ; we want analyzer/*cljs-ns* to be sticky between evaluations, that is why we keep it in our session state and bind it
+      (if-let [final-ns @final-ns-volatile]                                                                                   ; we want analyzer/*cljs-ns* to be sticky between evaluations
         (if-not (= final-ns initial-ns)
           (state/set-session-cljs-ns! final-ns))))))
