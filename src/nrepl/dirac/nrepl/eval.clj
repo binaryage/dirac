@@ -8,10 +8,13 @@
             [dirac.nrepl.compilers :as compilers]
             [dirac.nrepl.protocol :as protocol]
             [dirac.nrepl.helpers :as helpers]
-            [dirac.lib.utils :as utils])
+            [dirac.lib.utils :as utils]
+            [clojure.tools.reader.reader-types :as readers]
+            [clojure.java.io :as io])
   (:import clojure.lang.LineNumberingPushbackReader
            java.io.StringReader
-           java.io.Writer))
+           java.io.Writer
+           (java.io PushbackReader)))
 
 (defn prepare-current-env-info-response []
   (let [session (state/get-current-session)
@@ -87,12 +90,22 @@
         env-locals (into {} (map build-env-local all-scope-locals))]
     (assoc env :locals env-locals)))
 
+(defn get-current-repl-filename []
+  (-> (state/get-current-session)
+      (compilers/get-selected-compiler-id)
+      (helpers/make-dirac-repl-alias)))
+
+(defn repl-read! []
+  (let [pushback-reader (PushbackReader. (io/reader *in*))
+        filename (get-current-repl-filename)]
+    (readers/source-logging-push-back-reader pushback-reader 1 filename)))
+
 (defn repl-eval! [job-id scope-info dirac-mode repl-env env form opts]
   (let [wrapper-fn (or (:wrap opts) (partial make-wrapper-for-form job-id dirac-mode))
         wrapped-form (wrapper-fn form)
         set-env-locals-with-scope (partial set-env-locals scope-info)
         effective-env (-> env set-env-namespace set-env-locals-with-scope)
-        filename (helpers/make-dirac-repl-alias (compilers/get-selected-compiler-id (state/get-current-session)))]
+        filename (get-current-repl-filename)]
     (log/trace "repl-eval! in " filename ":\n" form "\n with env:\n" (utils/pp effective-env 7))
     (cljs.repl/evaluate-form repl-env effective-env filename form wrapped-form opts)))
 
@@ -125,6 +138,7 @@
                               :quit-prompt  (fn [])
                               :prompt       (fn [])
                               :init         (fn [])
+                              :reader       repl-read!
                               :print        (partial repl-print! final-ns-volatile response-fn)
                               :eval         (partial repl-eval! job-id scope-info dirac-mode)
                               :compiler-env compiler-env}
