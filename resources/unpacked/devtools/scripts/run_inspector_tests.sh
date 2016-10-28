@@ -7,7 +7,7 @@
 # Based on: http://stackoverflow.com/questions/59895/can-a-bash-script-tell-which-directory-it-is-stored-in
 SCRIPT_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}" )" && pwd)"
 
-CHROMIUM_ROOT_PATH=${SCRIPT_PATH}"/../../../../.."
+CHROMIUM_ROOT_PATH=${SCRIPT_PATH}"/../../../../../chromium-mirror"
 OUT_PATH=${CHROMIUM_ROOT_PATH}"/out/Release"
 RUN_LAYOUT_TEST_PATH=${CHROMIUM_ROOT_PATH}"/blink/tools/run_layout_tests.py"
 ALL_TESTS=" inspector** http/tests/inspector**"
