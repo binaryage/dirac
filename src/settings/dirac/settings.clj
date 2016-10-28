@@ -68,6 +68,8 @@
 (def ^:const DIRAC_INTERCOM_KEY "diracIntercom")
 
 (def ^:const TAXI_PAGE_LOAD_TIMEOUT (seconds 5))
+(def ^:const TAXI_SCRIPT_TIMEOUT (seconds 3))
+(def ^:const TAXI_IMPLICIT_WAIT (seconds 3))
 
 (def dirac-devtools-window-top (env :dirac-devtools-window-top))
 (def dirac-devtools-window-left (env :dirac-devtools-window-left))
@@ -265,3 +267,9 @@
 
 (defmacro get-taxi-page-load-timeout []
   TAXI_PAGE_LOAD_TIMEOUT)
+
+(defmacro get-taxi-script-timeout []
+  TAXI_SCRIPT_TIMEOUT)
+
+(defmacro get-taxi-implicit-wait []
+  TAXI_IMPLICIT_WAIT)
