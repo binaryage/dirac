@@ -67,6 +67,8 @@
 (def ^:const FLUSH_PENDING_FEEDBACK_MESSAGES_KEY "diracFlushPendingFeedbackMessages")
 (def ^:const DIRAC_INTERCOM_KEY "diracIntercom")
 
+(def ^:const TAXI_PAGE_LOAD_TIMEOUT (seconds 5))
+
 (def dirac-devtools-window-top (env :dirac-devtools-window-top))
 (def dirac-devtools-window-left (env :dirac-devtools-window-left))
 (def dirac-devtools-window-width (env :dirac-devtools-window-width))
@@ -260,3 +262,6 @@
 
 (defmacro get-task-disconnected-wait-timeout []
   TASK_DISCONNECTED_WAIT_TIMEOUT)
+
+(defmacro get-taxi-page-load-timeout []
+  TAXI_PAGE_LOAD_TIMEOUT)
