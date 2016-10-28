@@ -4,7 +4,7 @@
 ; but with leiningen design it is non-trivial
 ; the problem is when dirac is used as a checkouts dependency
 
-(def version "0.7.4")
+(def version "0.7.5")
 
 (defmacro get-current-version []
   version)
