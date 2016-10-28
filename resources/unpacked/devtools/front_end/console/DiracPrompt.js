@@ -80,7 +80,6 @@ WebInspector.DiracPromptWithHistory.prototype = {
     },
 
     /**
-     * @override
      * @return {boolean}
      */
     isCaretOnFirstLine: function() {
@@ -89,7 +88,6 @@ WebInspector.DiracPromptWithHistory.prototype = {
     },
 
     /**
-     * @override
      * @return {boolean}
      */
     isCaretOnLastLine: function() {
@@ -192,12 +190,6 @@ WebInspector.DiracPromptWithHistory.prototype = {
         if (dirac._DEBUG_COMPLETIONS) {
             console.log("complete called => skip for disabling default auto-complete system");
         }
-    },
-
-    /**
-     * @override
-     */
-    _selectStart: function() {
     },
 
     /**
@@ -488,9 +480,6 @@ WebInspector.DiracPromptWithHistory.prototype = {
 
             const readyCallback = completionsReadyCallback.bind(this, expression, prefix);
 
-            /**
-             * @this {WebInspector.DiracPromptWithHistory}
-             */
             const provideCompletionsForNamespace = ([namespaces, namespaceName]) => {
                 const namespace = namespaces[namespaceName];
                 if (!namespace) {
@@ -845,7 +834,7 @@ WebInspector.DiracPromptWithHistory.prototype = {
     /**
      * @override
      */
-    _acceptSuggestionInternal: function(prefixAccepted) {
+    _acceptSuggestionInternal: function() {
     },
 
     /**

@@ -43,7 +43,8 @@ WebInspector.SuggestBoxDelegate.prototype = {
     applySuggestion: function(suggestion, isIntermediateSuggestion) { },
 
     /**
-     * acceptSuggestion will be always called after call to applySuggestion with isIntermediateSuggestion being equal to false.
+     * acceptSuggestion will be always called after call to applySuggestion with isIntermediateSuggestion being equal to
+     * false.
      */
     acceptSuggestion: function() { },
 };
@@ -87,7 +88,8 @@ WebInspector.SuggestBox = function(suggestBoxDelegate, maxItemsHeight, captureEn
 };
 
 /**
- * @typedef {!Array.<{title: string, className: (string|undefined), prologue: (string|undefined), epilogue: (string|undefined)}>}
+ * @typedef {!Array.<{title: string, className: (string|undefined), prologue: (string|undefined), epilogue:
+ *     (string|undefined)}>}
  */
 WebInspector.SuggestBox.Suggestions;
 
@@ -292,16 +294,14 @@ WebInspector.SuggestBox.prototype = {
      * @param {string} prefix
      * @param {string} text
      * @param {string=} className
-     * @param {string|undefined} prologue
-     * @param {string|undefined} epilogue
-     * @param {number} index
+     * @param {string=} prologue
+     * @param {string=} epilogue
      * @return {!Element}
      */
-    _createItemElement: function(prefix, text, className, prologue, epilogue, index)
-    {
+    _createItemElement: function(prefix, text, className, prologue, epilogue) {
         var element = createElementWithClass("div", "suggest-box-content-item source-code " + (className || ""));
         element.tabIndex = -1;
-        element.createChild("span", "prologue").textContent = (prologue||"").trimEnd(50);
+        element.createChild("span", "prologue").textContent = (prologue || "").trimEnd(50);
         if (prefix && prefix.length && !text.indexOf(prefix)) {
             element.createChild("span", "prefix").textContent = prefix;
             element.createChild("span", "suffix").textContent = text.substring(prefix.length).trimEnd(50);
@@ -309,7 +309,7 @@ WebInspector.SuggestBox.prototype = {
             element.createChild("span", "suffix").textContent = text.trimEnd(50);
         }
         element.__fullValue = text;
-        element.createChild("span", "epilogue").textContent = (epilogue||"").trimEnd(50);
+        element.createChild("span", "epilogue").textContent = (epilogue || "").trimEnd(50);
         element.createChild("span", "spacer");
         element.addEventListener("mousedown", this._onItemMouseDown.bind(this), false);
         return element;
@@ -544,7 +544,7 @@ WebInspector.SuggestBox.prototype = {
     {
         if (!this._elementList[index]) {
             const item = this._items[index];
-            this._elementList[index] = this._createItemElement(this._userEnteredText, item.title, item.className, item.prologue, item.epilogue, index);
+            this._elementList[index] = this._createItemElement(this._userEnteredText, item.title, item.className, item.prologue, item.epilogue);
         }
         return this._elementList[index];
     }

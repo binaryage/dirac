@@ -117,7 +117,6 @@ Object.assign(window.dirac, (function() {
     let debuggerEventsUnsubscriber = null;
 
     /**
-     * @this {Object}
      * @return {boolean}
      */
     function subscribeDebuggerEvents(callback) {
@@ -128,14 +127,13 @@ Object.assign(window.dirac, (function() {
             callback("GlobalObjectCleared", ...args);
         };
 
-        WebInspector.targetManager.addModelListener(WebInspector.DebuggerModel, WebInspector.DebuggerModel.Events.GlobalObjectCleared, globalObjectClearedHandler, this);
+        WebInspector.targetManager.addModelListener(WebInspector.DebuggerModel, WebInspector.DebuggerModel.Events.GlobalObjectCleared, globalObjectClearedHandler, window.dirac);
 
         /**
-         * @this {Object}
          * @return {boolean}
          */
         debuggerEventsUnsubscriber = () => {
-            WebInspector.targetManager.removeModelListener(WebInspector.DebuggerModel, WebInspector.DebuggerModel.Events.GlobalObjectCleared, globalObjectClearedHandler, this);
+            WebInspector.targetManager.removeModelListener(WebInspector.DebuggerModel, WebInspector.DebuggerModel.Events.GlobalObjectCleared, globalObjectClearedHandler, window.dirac);
             return true;
         };
 
@@ -143,7 +141,6 @@ Object.assign(window.dirac, (function() {
     }
 
     /**
-     * @this {Object}
      * @return {boolean}
      */
     function unsubscribeDebuggerEvents() {
@@ -151,7 +148,7 @@ Object.assign(window.dirac, (function() {
             return false;
         }
 
-        const res = debuggerEventsUnsubscriber.call(this);
+        const res = debuggerEventsUnsubscriber();
         debuggerEventsUnsubscriber = null;
         return res;
     }
