@@ -1,5 +1,6 @@
 ns               Testing dirac.tests.tasks.suite01.repl
-automate         open-scenario! ["normal"]
+automate         open-scenario! ["repl"]
+
 testing          simple REPL eval interactions
 automate         open-devtools!
 extension        handling command: open-dirac-devtools
@@ -89,6 +90,7 @@ automate #1      close-devtools!
 extension        handling command: close-dirac-devtools
 extension        unregister devtools #1
 ∎
+
 testing          page-initiated eval requests, https://github.com/binaryage/dirac/issues/38
 automate         open-devtools!
 extension        handling command: open-dirac-devtools
@@ -129,6 +131,7 @@ automate #2      close-devtools!
 extension        handling command: close-dirac-devtools
 extension        unregister devtools #2
 ∎
+
 testing          page refresh while REPL was connected
 automate         open-devtools!
 extension        handling command: open-dirac-devtools
@@ -195,6 +198,7 @@ automate #3      close-devtools!
 extension        handling command: close-dirac-devtools
 extension        unregister devtools #3
 ∎
+
 testing          navigate to a new page without dirac runtime while REPL was connected, then navigate back and exercise REPL
 automate         open-devtools!
 extension        handling command: open-dirac-devtools
@@ -235,7 +239,7 @@ devtools #4      setDiracPromptStatusContent('Checking for Dirac Runtime presenc
 devtools #4      setDiracPromptStatusContent('Dirac requires runtime support from your app.
                  Please <a href="https://github.com/binaryage/dirac#installation">install Dirac Runtime</a> into your app and <a href="https://github.com/binaryage/dirac#install-dirac-runtime">enable the :repl feature</a>.')
 devtools #4      setDiracPromptStatusStyle('error')
-automate         trigger! [:navigate "/scenarios/normal.html"]
+automate         trigger! [:navigate "/scenarios/repl.html"]
 devtools #4      setDiracPromptStatusContent('Disconnected')
 devtools #4      setDiracPromptStatusStyle('info')
 devtools #4      init-repl!
@@ -254,6 +258,7 @@ automate #4      close-devtools!
 extension        handling command: close-dirac-devtools
 extension        unregister devtools #4
 ∎
+
 testing          page refresh while REPL was connected (but not active)
 automate         open-devtools!
 extension        handling command: open-dirac-devtools
@@ -301,6 +306,7 @@ automate #5      close-devtools!
 extension        handling command: close-dirac-devtools
 extension        unregister devtools #5
 ∎
+
 testing          page refresh while REPL was not connected
 automate         open-devtools!
 extension        handling command: open-dirac-devtools
@@ -323,6 +329,71 @@ automate #6      close-devtools!
 extension        handling command: close-dirac-devtools
 extension        unregister devtools #6
 ∎
+
+testing          make sure `in-ns` works (https://github.com/binaryage/dirac/issues/47)
+automate         open-devtools!
+extension        handling command: open-dirac-devtools
+extension        register devtools #7
+devtools #7      implant initialized
+devtools #7      reset devtools settings
+devtools #7      setCurrentPanel: elements
+devtools #7      devtools ready
+devtools #7      namespacesCache is cool now
+automate #7      switch-to-console-panel!
+devtools #7      setCurrentPanel: console
+devtools #7      console initialized
+devtools #7      adopt-prompt-element use-parinfer? true
+devtools #7      setDiracPromptMode('status')
+devtools #7      ConsoleView constructed
+devtools #7      displayWelcomeMessage
+automate #7      switch-prompt-to-dirac!
+devtools #7      switched console prompt to 'dirac'
+devtools #7      init-repl!
+devtools #7      setDiracPromptStatusContent('Checking for Dirac Runtime presence in your app...')
+devtools #7      setDiracPromptStatusStyle('info')
+devtools #7      setDiracPromptStatusContent('Dirac Agent connected. Bootstrapping ClojureScript REPL...')
+devtools #7      setDiracPromptNS('cljs.user')
+devtools #7      setDiracPromptMode('edit')
+automate #7      enable-console-feedback!
+automate #7      console-enter! ["(require 'dirac.tests.scenarios.repl.workspace)"]
+devtools #7      DC.log> (require 'dirac.tests.scenarios.repl.workspace)
+devtools #7      send-eval-request: (require 'dirac.tests.scenarios.repl.workspace)
+devtools #7      repl eval job started
+automate #7      console-exec-and-match! ["(in-ns 'dirac.tests.scenarios.repl.workspace)" "setDiracPromptNS('dirac.tests.scenarios.repl.workspace')"]
+devtools #7      repl eval job ended
+devtools #7      DC.log> (in-ns 'dirac.tests.scenarios.repl.workspace)
+devtools #7      send-eval-request: (in-ns 'dirac.tests.scenarios.repl.workspace)
+devtools #7      repl eval job started
+devtools #7      setDiracPromptNS('dirac.tests.scenarios.repl.workspace')
+devtools #7      repl eval job ended
+automate #7      scrape [:dirac-prompt-placeholder]
+automate #7      console-exec-and-match! ["(hello! \"REPL\")" ["DF.log> Hello, REPL!" "DF.log> null"]]
+devtools #7      DC.log> (hello! "REPL")
+devtools #7      send-eval-request: (hello! "REPL")
+devtools #7      repl eval job started
+devtools #7      DF.log> Hello, REPL!
+devtools #7      DF.log> null
+devtools #7      repl eval job ended
+automate #7      scrape [:dirac-prompt-placeholder]
+automate #7      console-exec-and-match! ["(hello! \"again\")" ["DF.log> Hello, again!" "DF.log> null"]]
+devtools #7      DC.log> (hello! "again")
+devtools #7      send-eval-request: (hello! "again")
+devtools #7      repl eval job started
+devtools #7      DF.log> Hello, again!
+devtools #7      DF.log> null
+devtools #7      repl eval job ended
+automate #7      console-exec-and-match! ["(in-ns 'cljs.user)" "setDiracPromptNS('cljs.user')"]
+devtools #7      DC.log> (in-ns 'cljs.user)
+devtools #7      send-eval-request: (in-ns 'cljs.user)
+devtools #7      repl eval job started
+devtools #7      setDiracPromptNS('cljs.user')
+devtools #7      repl eval job ended
+automate #7      scrape [:dirac-prompt-placeholder]
+automate #7      disable-console-feedback!
+automate #7      close-devtools!
+extension        handling command: close-dirac-devtools
+extension        unregister devtools #7
+∎
 automate         close-scenario! ["scenario-tab#1"]
-summary          Automated 65 actions with 18 check-points containing 0 assertions.
+summary          Automated 79 actions with 19 check-points containing 3 assertions.
                  0 failures, 0 errors.

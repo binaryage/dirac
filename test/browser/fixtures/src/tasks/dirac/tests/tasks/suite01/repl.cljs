@@ -5,7 +5,7 @@
             [dirac.automation :refer-macros [<!* go-task with-scenario with-devtools testing with-console-feedback] :as a]))
 
 (go-task
-  (with-scenario "normal"
+  (with-scenario "repl"
     (testing "simple REPL eval interactions"
       (with-devtools
         (<!* a/switch-to-console-panel!)
@@ -60,7 +60,7 @@
         ; error should be presented to the user
         (<!* a/wait-for-devtools-match "Dirac requires runtime support from your app" (seconds 20))
         (<!* a/wait-for-devtools-match "setDiracPromptStatusStyle('error')")
-        (<!* a/trigger! :navigate "/scenarios/normal.html")
+        (<!* a/trigger! :navigate "/scenarios/repl.html")
         ; now we should auto-recoonect because we were still switched to dirac prompt
         (<!* a/wait-for-prompt-to-enter-edit-mode)
         (with-console-feedback
@@ -84,4 +84,22 @@
         (<!* a/trigger! :reload)
         (<! (timeout 3000))
         (<!* a/trigger! :reload)
-        (<! (timeout 3000))))))
+        (<! (timeout 3000))))
+    (testing "make sure `in-ns` works (https://github.com/binaryage/dirac/issues/47)"
+      (with-devtools
+        (<!* a/switch-to-console-panel!)
+        (<!* a/switch-prompt-to-dirac!)
+        (<!* a/wait-for-prompt-to-enter-edit-mode)
+        (with-console-feedback
+          (<!* a/console-enter! "(require 'dirac.tests.scenarios.repl.workspace)")
+          (<!* a/console-exec-and-match!
+               "(in-ns 'dirac.tests.scenarios.repl.workspace)"
+               "setDiracPromptNS('dirac.tests.scenarios.repl.workspace')")
+          (is (= (<!* a/scrape :dirac-prompt-placeholder) "dirac.tests.scenarios.repl.workspace"))
+          (<!* a/console-exec-and-match! "(hello! \"REPL\")" ["DF.log> Hello, REPL!" "DF.log> null"])
+          (is (= (<!* a/scrape :dirac-prompt-placeholder) "dirac.tests.scenarios.repl.workspace"))
+          (<!* a/console-exec-and-match! "(hello! \"again\")" ["DF.log> Hello, again!" "DF.log> null"])
+          (<!* a/console-exec-and-match!
+               "(in-ns 'cljs.user)"
+               "setDiracPromptNS('cljs.user')")
+          (is (= (<!* a/scrape :dirac-prompt-placeholder) "cljs.user")))))))
