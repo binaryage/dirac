@@ -2,6 +2,7 @@
   (:require [clojure.tools.logging :as log]
             [cljs.repl]
             [cljs.analyzer :as analyzer]
+            [cljs.compiler :as compiler]
             [dirac.nrepl.state :as state]
             [dirac.nrepl.driver :as driver]
             [dirac.nrepl.version :refer [version]]
@@ -10,11 +11,14 @@
             [dirac.nrepl.helpers :as helpers]
             [dirac.lib.utils :as utils]
             [clojure.tools.reader.reader-types :as readers]
-            [clojure.java.io :as io])
+            [clojure.java.io :as io]
+            [cljs.source-map :as sm]
+            [clojure.string :as string])
   (:import clojure.lang.LineNumberingPushbackReader
            java.io.StringReader
            java.io.Writer
-           (java.io PushbackReader)))
+           (java.io PushbackReader)
+           (javax.xml.bind DatatypeConverter)))
 
 (defn prepare-current-env-info-response []
   (let [session (state/get-current-session)
@@ -90,24 +94,88 @@
         env-locals (into {} (map build-env-local all-scope-locals))]
     (assoc env :locals env-locals)))
 
-(defn get-current-repl-filename []
-  (-> (state/get-current-session)
-      (compilers/get-selected-compiler-id)
-      (helpers/make-dirac-repl-alias)))
+(defn get-current-repl-filename [job-id]
+  (let [compiler-id (compilers/get-selected-compiler-id (state/get-current-session))]
+    (str "repl/" compiler-id "/job-" job-id ".cljs")))
 
-(defn repl-read! []
+(defn repl-read! [job-id]
   (let [pushback-reader (PushbackReader. (io/reader *in*))
-        filename (get-current-repl-filename)]
+        filename (get-current-repl-filename job-id)]
     (readers/source-logging-push-back-reader pushback-reader 1 filename)))
+
+; unfortunately I had to copy&paste bunch of code from cljs.repl
+
+; ------ evaluate-form --------> cut here
+
+(defn load-dependencies [repl-env requires opts]
+  (doseq [ns (distinct requires)]
+    (cljs.repl/load-namespace repl-env ns opts)))
+
+(defn generate-js-with-source-maps! [ast filename form]
+  (binding [compiler/*source-map-data* (atom {:source-map (sorted-map)
+                                              :gen-col    0
+                                              :gen-line   0})]
+    (let [js-filename (string/replace filename #"\.cljs$" ".js")]
+      (str (compiler/emit-str ast)
+           "\n//# sourceURL=" js-filename
+           "\n//# sourceMappingURL=data:application/json;base64,"
+           (DatatypeConverter/printBase64Binary
+             (.getBytes
+               (sm/encode
+                 {filename (:source-map @compiler/*source-map-data*)}
+                 {:lines           (+ (:gen-line @compiler/*source-map-data*) 3)
+                  :file            js-filename
+                  :sources-content [(or (:source (meta form))
+                                        ;; handle strings / primitives without metadata
+                                        (with-out-str (pr form)))]})
+               "UTF-8"))))))
+
+(defn load-dependencies-if-needed! [ast form env repl-env opts]
+  (when (#{:ns :ns*} (:op ast))
+    (let [ast (analyzer/no-warn (analyzer/analyze env form nil opts))
+          requires (into (vals (:requires ast)) (distinct (vals (:uses ast))))]
+      (load-dependencies repl-env requires opts))))
+
+(defn evaluate-form [repl-env env filename form wrap opts]
+  (binding [analyzer/*cljs-file* filename]
+    (let [env-with-source-info (assoc env :root-source-info {:source-type :fragment
+                                                             :source-form form})
+          env-with-source-info-and-repl-env (assoc env-with-source-info
+                                              :repl-env repl-env
+                                              :def-emits-var (:def-emits-var opts))
+          generated-ast (analyzer/analyze env-with-source-info-and-repl-env (wrap form) nil opts)
+          generated-js (generate-js-with-source-maps! generated-ast filename form)]
+      ;; NOTE: means macros which expand to ns aren't supported for now
+      ;; when eval'ing individual forms at the REPL - David
+      (load-dependencies-if-needed! generated-ast form env-with-source-info repl-env opts)
+      (let [ret (cljs.repl/-evaluate repl-env filename (:line (meta form)) generated-js)]
+        (case (:status ret)
+          ; darwin: note that :error never happens because dirac runtime supports only :exceptions
+          ; we keep it here just for example as an artifact copied from cljs.repl/evaluate-form
+          ;
+          ;:error (throw
+          ;         (ex-info (:value ret)
+          ;                  {:type     :js-eval-error
+          ;                   :error    ret
+          ;                   :repl-env repl-env
+          ;                   :form     form}))
+          :exception (throw (ex-info (:value ret) {:type     :js-eval-exception
+                                                   :error    ret
+                                                   :repl-env repl-env
+                                                   :form     form
+                                                   :js       generated-js}))
+          :success (:value ret))))))
+
+; <----- evaluate-form -------- cut-here
 
 (defn repl-eval! [job-id scope-info dirac-mode repl-env env form opts]
   (let [wrapper-fn (or (:wrap opts) (partial make-wrapper-for-form job-id dirac-mode))
         wrapped-form (wrapper-fn form)
         set-env-locals-with-scope (partial set-env-locals scope-info)
         effective-env (-> env set-env-namespace set-env-locals-with-scope)
-        filename (get-current-repl-filename)]
+        filename (get-current-repl-filename job-id)]
     (log/trace "repl-eval! in " filename ":\n" form "\n with env:\n" (utils/pp effective-env 7))
-    (cljs.repl/evaluate-form repl-env effective-env filename form wrapped-form opts)))
+    (evaluate-form repl-env effective-env filename form wrapped-form opts)))
 
 (defn repl-flush! []
   (log/trace "flush-repl!")
@@ -138,7 +206,7 @@
                               :quit-prompt  (fn [])
                               :prompt       (fn [])
                               :init         (fn [])
-                              :reader       repl-read!
+                              :reader       (partial repl-read! job-id)
                               :print        (partial repl-print! final-ns-volatile response-fn)
                               :eval         (partial repl-eval! job-id scope-info dirac-mode)
                               :compiler-env compiler-env}
