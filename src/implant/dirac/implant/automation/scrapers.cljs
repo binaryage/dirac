@@ -116,6 +116,11 @@
          (if epilogue (str "[" epilogue "] "))
          (if-not (empty? simple-class) (str "(" simple-class ") ")))))
 
+; -- dirac prompt UI --------------------------------------------------------------------------------------------------------
+
+(defn find-dirac-prompt-placeholder-element []
+  (first (dom/query-selector "html /deep/ .dirac-prompt-placeholder")))
+
 ; -- console UI -------------------------------------------------------------------------------------------------------------
 
 (defn find-all-console-log-elements []
@@ -239,6 +244,11 @@
              (map print-suggest-box-item)
              (print-list))
     (print-list (list))))
+
+(defmethod scrape :dirac-prompt-placeholder [_ & _]
+  (if-let [placeholder-el (find-dirac-prompt-placeholder-element)]
+    (get-deep-text-content placeholder-el)
+    "<no placeholder>"))
 
 (defmethod scrape :function-names-in-last-console-exception [_ & _]
   (safe->> (find-last-console-log-element "error")
