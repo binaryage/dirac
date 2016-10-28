@@ -100,9 +100,9 @@
   ([context code callback]
    (let [dirac (get-dirac)
          has-context-fn-name (get-has-context-fn-name context)]
-     (if-let [has-context-fn (oget dirac "?" has-context-fn-name)]
+     (if-let [has-context-fn (oget+ dirac "?" has-context-fn-name)]
        (let [eval-fn-name (get-eval-in-context-fn-name context)]
-         (if-let [eval-fn (oget dirac "?" eval-fn-name)]
+         (if-let [eval-fn (oget+ dirac "?" eval-fn-name)]
            (let [callback-wrapper (fn [result-remote-object exception-details]
                                     (if callback
                                       (let [result (if (some? exception-details)
