@@ -4,7 +4,8 @@
             [clojure.string :as string])
   (:use ring.middleware.resource
         ring.middleware.content-type
-        ring.middleware.not-modified)
+        ring.middleware.not-modified
+        ring.middleware.reload)
   (:import (java.io IOException)))
 
 (def default-options
@@ -26,7 +27,7 @@
   (require 'ring.adapter.jetty)
   (let [run-jetty (resolve 'ring.adapter.jetty/run-jetty)]
     (log/info "starting fixtures web server at" (get-fixtures-server-url))
-    (run-jetty (get-fixtures-server) (merge default-options options))))
+    (run-jetty (wrap-reload (get-fixtures-server)) (merge default-options options))))
 
 (defn stop-fixtures-web-server [server]
   (try
