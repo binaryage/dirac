@@ -1,13 +1,18 @@
 (ns dirac.nrepl.config
-  (:require [dirac.lib.utils :refer [assoc-env-val deep-merge-ignoring-nils]]
-            [clojure.tools.nrepl :as nrepl]))
+  (:require [dirac.lib.utils :refer [read-env-config deep-merge-ignoring-nils]]))
 
 (def ^:dynamic standard-repl-init-code
-  (nrepl/code
-    (ns cljs.user
-      (:require [cljs.repl :refer-macros [source doc find-doc apropos dir pst]]
-                [cljs.pprint :refer [pprint] :refer-macros [pp]]))))
+  (pr-str
+    '(ns cljs.user
+       (:require [cljs.repl :refer-macros [source doc find-doc apropos dir pst]]
+                 [cljs.pprint :refer [pprint] :refer-macros [pp]]))))
 
+(def env-config-prefix "dirac-nrepl")
+
+; you can override individual config keys via ENV variables, for example:
+;   DIRAC_NREPL/LOG_LEVEL=debug or DIRAC_NREPL/WEASEL_REPL/RANGE=20
+;
+; see https://github.com/binaryage/env-config
 (def default-config
   {:log-out            :console                                                                                               ; this is important, nREPL middleware captures output and logs be sent to client
    :log-level          "WARN"                                                                                                 ; OFF, FATAL, ERROR, WARN, INFO, DEBUG, TRACE, ALL
@@ -21,22 +26,10 @@
    :repl-init-code     standard-repl-init-code
    :runtime-tag        "unidentified"})
 
-; -- environment ------------------------------------------------------------------------------------------------------------
-
-(defn get-environ-config []
-  (-> {}
-      (assoc-env-val [:log-level] :dirac-nrepl-log-level)
-      (assoc-env-val [:log-out] :dirac-nrepl-log-out)
-      (assoc-env-val [:skip-logging-setup] :dirac-nrepl-skip-logging-setup :bool)
-      (assoc-env-val [:preferred-compiler] :dirac-nrepl-preferred-compiler)
-      (assoc-env-val [:weasel-repl :host] :dirac-nrepl-weasel-host)
-      (assoc-env-val [:weasel-repl :port] :dirac-nrepl-weasel-port :int)
-      (assoc-env-val [:weasel-repl :range] :dirac-nrepl-weasel-range :int)))
-
 ; -- config evaluation ------------------------------------------------------------------------------------------------------
 
 (defn get-effective-config* [& [config]]
-  (let [environ-config (get-environ-config)]
-    (or (deep-merge-ignoring-nils default-config environ-config config) {})))
+  (let [env-config (read-env-config env-config-prefix)]
+    (deep-merge-ignoring-nils default-config env-config config)))
 
-(def ^:dynamic get-effective-config (memoize get-effective-config*))                                                          ; assuming environ-config is constant
+(def ^:dynamic get-effective-config (memoize get-effective-config*))                                                          ; assuming env-config is constant
