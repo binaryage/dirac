@@ -46,17 +46,19 @@
              "repl-options:\n"
              (lib-utils/pp repl-options))
   (debug/log-stack-trace!)
+  (state/set-session-cljs-ns! 'cljs.user)
+  (state/set-session-dirac-nrepl-config! dirac-nrepl-config)
+  (state/set-session-cljs-repl-env! repl-env)
+  (state/set-session-cljs-repl-options! repl-options)
+  (state/set-session-original-clj-ns! *ns*)                                                                                   ; interruptible-eval is in charge of emitting the final :ns response in this context
+  ; at this point this nrepl-message session should be recognized as a dirac session
+  (assert (state/dirac-session? (:session nrepl-message)))
   (let [; WARNING
         ; we are being called via boot-dirac-repl! which has been invoked outside our middleware
         ; that is why we have to wrap our nrepl-message for the rest of processing
-        nrepl-message (utils/wrap-nrepl-message nrepl-message)
+        nrepl-message (utils/wrap-nrepl-message nrepl-message)                                                                ; warnings: we depend on going after state/set-session-cljs-repl-env! setup
         initial-session-meta (state/get-session-meta)]
     (try
-      (state/set-session-cljs-ns! 'cljs.user)
-      (state/set-session-dirac-nrepl-config! dirac-nrepl-config)
-      (state/set-session-cljs-repl-env! repl-env)
-      (state/set-session-cljs-repl-options! repl-options)
-      (state/set-session-original-clj-ns! *ns*)                                                                               ; interruptible-eval is in charge of emitting the final :ns response in this context
       (let [preferred-compiler (or (:preferred-compiler dirac-nrepl-config) "dirac/sticky")
             want-new? (= preferred-compiler "dirac/new")
             want-sticky? (= preferred-compiler "dirac/sticky")]
