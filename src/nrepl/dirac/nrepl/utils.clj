@@ -49,7 +49,7 @@
   (log/trace "start-new-cljs-compiler-repl-environment!\n")
   (let [compiler-env nil
         code (or (:repl-init-code dirac-nrepl-config) config/standard-repl-init-code)
-        job-id (or (:id nrepl-message) (helpers/generate-uuid))
+        job-id "init"                                                                                                         ; this is a special case of init code
         ns (:ns nrepl-message)
         session (:session nrepl-message)
         effective-repl-options (assoc repl-options
