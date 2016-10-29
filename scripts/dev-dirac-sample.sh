@@ -13,16 +13,12 @@ pushd "$ROOT"
 #   *  chrome instance for developing tests (port 9333)
 #   *  chrome instance for automated tests (port 9444)
 #   *  and ad-hoc chrome instances with default (port 9222)
-#export DIRAC_CHROME_REMOTE_DEBUGGING_PORT=9333
-#export DIRAC_NREPL_SERVER_PORT=8040
-#export DIRAC_AGENT_PORT=8041
-#export DIRAC_NREPL_WEASEL_PORT=8042
-
-export DIRAC_WEASEL_VERBOSE=true
-export DIRAC_AGENT_VERBOSE=true
+SETUP="\
+DIRAC_SETUP_WEASEL_VERBOSE=true\
+DIRAC_SETUP_AGENT_VERBOSE=true"
 
 lein clean
-lein with-profile +cooper,+dev-dirac-sample cooper
+env ${SETUP} lein with-profile +cooper,+dev-dirac-sample cooper
 
 popd
 

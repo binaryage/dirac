@@ -36,7 +36,7 @@ echo "waiting for compilation of clojurescript components..."
 
 set -x
 "$EXE" \
-      --remote-debugging-port=${DIRAC_CHROME_REMOTE_DEBUGGING_PORT:=9222} \
+      --remote-debugging-port=${DIRAC_SETUP_CHROME_REMOTE_DEBUGGING_PORT:=9222} \
       --user-data-dir="$DIRAC_BROWSER_SAMPLE_USER_PROFILE" \
       --no-first-run \
       --enable-experimental-extension-apis \
