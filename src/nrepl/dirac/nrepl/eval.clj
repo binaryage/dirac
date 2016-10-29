@@ -13,7 +13,9 @@
             [clojure.tools.reader.reader-types :as readers]
             [clojure.java.io :as io]
             [cljs.source-map :as sm]
-            [clojure.string :as string])
+            [clojure.string :as string]
+            [cuerdas.core :as cuerdas]
+            [clojure.data.json :as json])
   (:import clojure.lang.LineNumberingPushbackReader
            java.io.StringReader
            java.io.Writer
@@ -33,48 +35,56 @@
   ; darwin: I have a feeling that these cljs.core bindings should not be hard-coded.
   ;         I understand that printing must be limited somehow. But this should be user-configurable.
   ;         Dirac REPL does not use returned string value - but normal nREPL clients are affected by this.
-  `(binding [cljs.core/*print-level* 1
-             cljs.core/*print-length* 10]
-     (cljs.core/pr-str ~value)))
 
-(defn make-wrap-for-job [job-id]
-  (fn [form]
-    `(try
-       (js/dirac.runtime.repl.present_repl_result ~job-id ~form)
-       (catch :default e#
-         (js/dirac.runtime.repl.present_repl_exception ~job-id e#)
-         (throw e#)))))
+  ; note that we are generating named anonymous function and invoke it immediatelly
+  ; this generates more friendly call-stack with descriptive frame mentioning "dirac-serialize-eval-result"
+  `((fn ~'dirac-serialize-eval-result []
+      (binding [cljs.core/*print-level* 1
+                cljs.core/*print-length* 10]
+        (cljs.core/pr-str ~value)))))
 
-(defn make-job-evaluator [dirac-wrap job-id]
-  (fn [form]
-    (let [result-sym (gensym "result")]
-      `(try
-         ; we want to redirect all side-effect printing to dirac.runtime, so it can be presented in the Dirac REPL console
-         (binding [cljs.core/*print-newline* false
-                   cljs.core/*print-fn* (partial js/dirac.runtime.repl.present_output ~job-id "stdout" "plain-text")
-                   cljs.core/*print-err-fn* (partial js/dirac.runtime.repl.present_output ~job-id "stderr" "plain-text")]
-           (let [~result-sym ~(dirac-wrap form)]
-             (set! *3 *2)
-             (set! *2 *1)
-             (set! *1 ~result-sym)
-             ~(safe-value-conversion-to-string result-sym)))
-         (catch :default e#
-           (set! *e e#)
-           (throw e#))))))
+(defn wrap-with-dirac-presentation [job-id form]
+  ; note that we are generating named anonymous function and invoke it immediatelly
+  ; this generates more friendly call-stack with descriptive frame mentioning "dirac-presentation"
+  `((fn ~'dirac-presentation []
+      (try
+        (js/dirac.runtime.repl.present_repl_result ~job-id ~form)
+        (catch :default e#
+          (js/dirac.runtime.repl.present_repl_exception ~job-id e#)
+          (throw e#))))))
 
-(defn make-special-form-evaluator [dirac-wrap]
-  (fn [form]
-    (safe-value-conversion-to-string (dirac-wrap form))))
+(defn job-evaluator [dirac-wrap job-id form]
+  (let [job-fn-sym (symbol (str "dirac-repl-job-" job-id))
+        result-sym (gensym "eval-result-")]
+    ; note that we are generating named anonymous function and invoke it immediatelly
+    ; this generates more friendly call-stack with descriptive frame mentioning "dirac-repl-job-<id>"
+    `((fn ~job-fn-sym []
+        (try
+          ; we want to redirect all side-effect printing to dirac.runtime, so it can be presented in the Dirac REPL console
+          (binding [cljs.core/*print-newline* false
+                    cljs.core/*print-fn* (partial js/dirac.runtime.repl.present_output ~job-id "stdout" "plain-text")
+                    cljs.core/*print-err-fn* (partial js/dirac.runtime.repl.present_output ~job-id "stderr" "plain-text")]
+            (let [~result-sym ~(dirac-wrap form)]
+              (set! ~'*3 ~'*2)
+              (set! ~'*2 ~'*1)
+              (set! ~'*1 ~result-sym)
+              ~(safe-value-conversion-to-string result-sym)))
+          (catch :default e#
+            (set! ~'*e e#)
+            (throw e#)))))))
+
+(defn special-form-evaluator [dirac-wrap form]
+  (safe-value-conversion-to-string (dirac-wrap form)))
 
 (defn make-wrapper-for-form [job-id dirac-mode form]
   (if (and (seq? form) (= 'ns (first form)))
     identity
     (let [dirac-wrap (case dirac-mode
-                       "wrap" (make-wrap-for-job job-id)
+                       "wrap" (partial wrap-with-dirac-presentation job-id)
                        identity)]
       (if ('#{*1 *2 *3 *e} form)
-        (make-special-form-evaluator dirac-wrap)
-        (make-job-evaluator dirac-wrap job-id)))))
+        (partial special-form-evaluator dirac-wrap)
+        (partial job-evaluator dirac-wrap job-id)))))
 
 (defn set-env-namespace [env]
   (assoc env :ns (analyzer/get-namespace analyzer/*cljs-ns*)))
@@ -94,9 +104,21 @@
         env-locals (into {} (map build-env-local all-scope-locals))]
     (assoc env :locals env-locals)))
 
+(defn sorting-friendly-numeric-job-id [job-id]
+  (try
+    (cuerdas/pad (str (Long/parseLong (str job-id))) {:length 6 :padding "0"})
+    (catch NumberFormatException e)))
+
+(defn sanitize-filename [s]
+  (string/replace s #"[.?*!@#$%^&]" "_"))
+
 (defn get-current-repl-filename [job-id]
-  (let [compiler-id (compilers/get-selected-compiler-id (state/get-current-session))]
-    (str "repl/" compiler-id "/job-" job-id ".cljs")))
+  (let [compiler-id (compilers/get-selected-compiler-id (state/get-current-session))
+        numeric-job-id (sorting-friendly-numeric-job-id job-id)]
+    (assert compiler-id)
+    (str "_repl/"
+         (or (sanitize-filename compiler-id) "unknown") "/"
+         (if numeric-job-id (str "job-" numeric-job-id) (sanitize-filename job-id)) ".cljs")))
 
 (defn repl-read! [job-id]
   (let [pushback-reader (PushbackReader. (io/reader *in*))
@@ -111,24 +133,31 @@
   (doseq [ns (distinct requires)]
     (cljs.repl/load-namespace repl-env ns opts)))
 
+(defn gen-source-map [filename js-filename form]
+  (sm/encode*
+    {filename (:source-map @compiler/*source-map-data*)}
+    {:lines           (+ (:gen-line @compiler/*source-map-data*) 3)
+     :file            js-filename
+     :sources-content [(or (:source (meta form))
+                           ;; handle strings / primitives without metadata
+                           (with-out-str (pr form)))]}))
+
+(defn update-source-map [source-map generated-js]
+  (-> source-map
+      (update "sources" (fn [sources] (conj sources (string/replace (first sources) #"\.cljs$" ".js"))))
+      (update "sourcesContent" (fn [contents] (conj contents generated-js)))))
+
 (defn generate-js-with-source-maps! [ast filename form]
   (binding [compiler/*source-map-data* (atom {:source-map (sorted-map)
                                               :gen-col    0
                                               :gen-line   0})]
-    (let [js-filename (string/replace filename #"\.cljs$" ".js")]
-      (str (compiler/emit-str ast)
+    (let [js-filename (string/replace filename #"\.cljs$" ".js")
+          generated-js (compiler/emit-str ast)
+          source-map-json (json/write-str (update-source-map (gen-source-map filename js-filename form) generated-js))]
+      (str generated-js
            "\n//# sourceURL=" js-filename
            "\n//# sourceMappingURL=data:application/json;base64,"
-           (DatatypeConverter/printBase64Binary
-             (.getBytes
-               (sm/encode
-                 {filename (:source-map @compiler/*source-map-data*)}
-                 {:lines           (+ (:gen-line @compiler/*source-map-data*) 3)
-                  :file            js-filename
-                  :sources-content [(or (:source (meta form))
-                                        ;; handle strings / primitives without metadata
-                                        (with-out-str (pr form)))]})
-               "UTF-8"))))))
+           (DatatypeConverter/printBase64Binary (.getBytes source-map-json "UTF-8"))))))
 
 (defn load-dependencies-if-needed! [ast form env repl-env opts]
   (when (#{:ns :ns*} (:op ast))
@@ -138,13 +167,16 @@
 
 (defn evaluate-form [repl-env env filename form wrap opts]
   (binding [analyzer/*cljs-file* filename]
-    (let [env-with-source-info (assoc env :root-source-info {:source-type :fragment
+    (let [wrapped-form (wrap form)
+          _ (log/trace "wrapped-form:" (utils/pp wrapped-form 100))
+          env-with-source-info (assoc env :root-source-info {:source-type :fragment
                                                              :source-form form})
           env-with-source-info-and-repl-env (assoc env-with-source-info
                                               :repl-env repl-env
                                               :def-emits-var (:def-emits-var opts))
-          generated-ast (analyzer/analyze env-with-source-info-and-repl-env (wrap form) nil opts)
+          generated-ast (analyzer/analyze env-with-source-info-and-repl-env wrapped-form nil opts)
           generated-js (generate-js-with-source-maps! generated-ast filename form)]
+      (log/trace "generated-js:\n" generated-js)
       ;; NOTE: means macros which expand to ns aren't supported for now
       ;; when eval'ing individual forms at the REPL - David
       (load-dependencies-if-needed! generated-ast form env-with-source-info repl-env opts)
