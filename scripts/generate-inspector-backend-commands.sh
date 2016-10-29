@@ -17,7 +17,7 @@ popd
 
 pushd "$DEVTOOLS_ROOT"
 
-python scripts/CodeGeneratorFrontend.py "$PROTOCOL_JSON_FILE" --output_js_dir "$WORK_DIR"
+python scripts/build/code_generator_frontend.py "$PROTOCOL_JSON_FILE" --output_js_dir "$WORK_DIR"
 
 popd
 

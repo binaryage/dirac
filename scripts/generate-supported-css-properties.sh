@@ -18,7 +18,7 @@ popd
 pushd "$DEVTOOLS_ROOT"
 
 if [ -f "$CSS_PROPERTIES_SOURCE" ]; then
-  python scripts/generate_supported_css.py "$CSS_PROPERTIES_SOURCE" "$WORK_DIR/SupportedCSSProperties.js"
+  python scripts/build/generate_supported_css.py "$CSS_PROPERTIES_SOURCE" "$WORK_DIR/SupportedCSSProperties.js"
 
   pushd "$PEON_DIR"
 
