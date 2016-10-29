@@ -34,24 +34,11 @@
   (str "failed to navigate to index page in time (" (utils/timeout-display load-timeout) "): " test-index-url))
 
 (defn get-browser-test-filter []
-  (env :dirac-browser-test-filter))
-
-(def env-to-be-exported #{:dirac-agent-host
-                          :dirac-agent-port
-                          :dirac-agent-verbose
-                          :dirac-weasel-auto-reconnect
-                          :dirac-weasel-verbose})
-
-(defn extract-dirac-env-config-as-url-params [env]
-  (let [dirac-pattern #"^dirac-(.*)$"
-        relevant-config (into {} (filter (fn [[key _val]] (some #{key} env-to-be-exported)) env))
-        strip-prefix (fn [key] (second (re-find dirac-pattern (name key))))
-        build-param (fn [key value] (str (URLEncoder/encode key) "=" (URLEncoder/encode value)))]
-    (string/join "&" (map (fn [[key val]] (build-param (str "set-" (strip-prefix key)) val)) relevant-config))))
+  (env :dirac-setup-browser-test-filter))
 
 (defn make-test-runner-url [suite-name test-name]
   (let [debugging-port (get-debugging-port)
-        extra-params (extract-dirac-env-config-as-url-params env)
+        extra-params nil
         url (get-fixtures-server-url)]
     (str url "/runner.html?"
          "task=" suite-name "." test-name
