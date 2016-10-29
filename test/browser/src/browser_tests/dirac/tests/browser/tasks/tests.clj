@@ -27,6 +27,7 @@
 ; to run only selected tests run something like this (fish shell):
 ; > env DIRAC_BROWSER_TEST_FILTER="error-feedback welcome" lein test-browser
 (deftest test-all
+  (Thread/sleep 3000)                                                                                                         ; ad-hoc waiting for our fixtures to come online
   (fixtures-web-server-check)
   (with-transcript-suite "suite01"
     (execute-transcript-test! "barebone")
