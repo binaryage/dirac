@@ -106,6 +106,7 @@ WebInspector.Main.prototype = {
         Runtime.experiments.register("timelineInvalidationTracking", "Timeline invalidation tracking", true);
         Runtime.experiments.register("timelineRecordingPerspectives", "Timeline recording perspectives UI");
         Runtime.experiments.register("timelineTracingJSProfile", "Timeline tracing based JS profiler", true);
+        Runtime.experiments.register("timelineV8RuntimeCallStats", "V8 Runtime Call Stats on Timeline", true);
 
         Runtime.experiments.cleanUpStaleExperiments();
 
@@ -140,8 +141,6 @@ WebInspector.Main.prototype = {
 
         // Request filesystems early, we won't create connections until callback is fired. Things will happen in parallel.
         WebInspector.isolatedFileSystemManager = new WebInspector.IsolatedFileSystemManager();
-        WebInspector.isolatedFileSystemManager.waitForFileSystems()
-            .then(this._didInitializeFileSystemManager.bind(this));
 
         var themeSetting = WebInspector.settings.createSetting("uiTheme", "default");
         WebInspector.initializeUIUtils(document, themeSetting);
@@ -207,6 +206,7 @@ WebInspector.Main.prototype = {
         WebInspector.ShortcutsScreen.registerShortcuts();
         this._registerForwardedShortcuts();
         this._registerMessageSinkListener();
+        new WebInspector.Main.InspectorDomainObserver();
 
         self.runtime.extension(WebInspector.AppProvider).instance().then(this._showAppUI.bind(this));
         console.timeEnd("Main._createAppUI");
@@ -249,94 +249,25 @@ WebInspector.Main.prototype = {
             handler.handleQueryParam(value);
         }
 
-        this._appUIShown = true;
-        if (this._fileSystemManagerInitialized) {
-            // Allow UI cycles to repaint prior to creating connection.
-            setTimeout(this._initializeTarget.bind(this), 0);
-        }
+        // Allow UI cycles to repaint prior to creating connection.
+        setTimeout(this._initializeTarget.bind(this), 0);
         console.timeEnd("Main._showAppUI");
-    },
-
-    _didInitializeFileSystemManager: function()
-    {
-        this._fileSystemManagerInitialized = true;
-        if (this._appUIShown)
-            this._initializeTarget();
     },
 
     _initializeTarget: function()
     {
-        this._connectAndCreateTarget();
+        console.time("Main._initializeTarget");
+        WebInspector.targetManager.connectToMainTarget(webSocketConnectionLost);
+
         InspectorFrontendHost.readyForTest();
-        WebInspector.targetManager.setMainConnectionInterceptor(this._interceptMainConnection.bind(this));
         // Asynchronously run the extensions.
         setTimeout(this._lateInitialization.bind(this), 100);
-    },
+        console.timeEnd("Main._initializeTarget");
 
-    _connectAndCreateTarget: function()
-    {
-        console.time("Main._connectAndCreateTarget");
-
-        var capabilities =
-            WebInspector.Target.Capability.Browser | WebInspector.Target.Capability.DOM |
-            WebInspector.Target.Capability.JS | WebInspector.Target.Capability.Log |
-            WebInspector.Target.Capability.Network | WebInspector.Target.Capability.Target;
-        if (Runtime.queryParam("isSharedWorker")) {
-            capabilities =
-                WebInspector.Target.Capability.Browser | WebInspector.Target.Capability.Log |
-                WebInspector.Target.Capability.Network | WebInspector.Target.Capability.Target;
-        } else if (Runtime.queryParam("v8only")) {
-            capabilities = WebInspector.Target.Capability.JS;
-        }
-
-        var target = WebInspector.targetManager.createTarget(WebInspector.UIString("Main"), capabilities, this._createMainConnection.bind(this), null);
-        target.registerInspectorDispatcher(new WebInspector.Main.InspectorDomainDispatcher(target));
-        target.runtimeAgent().runIfWaitingForDebugger();
-        if (target.hasBrowserCapability())
-            target.inspectorAgent().enable();
-
-        console.timeEnd("Main._connectAndCreateTarget");
-    },
-
-    /**
-     * @param {function(string)} onMessage
-     * @return {!Promise<!InspectorBackendClass.Connection>}
-     */
-    _interceptMainConnection: function(onMessage)
-    {
-        var params = {
-            onMessage: onMessage,
-            onDisconnect: this._connectAndCreateTarget.bind(this)
-        };
-        return this._connection.disconnect().then(this._createMainConnection.bind(this, params));
-    },
-
-    /**
-     * @param {!InspectorBackendClass.Connection.Params} params
-     * @return {!InspectorBackendClass.Connection}
-     */
-    _createMainConnection: function(params)
-    {
-        if (Runtime.queryParam("ws")) {
-            var ws = "ws://" + Runtime.queryParam("ws");
-            params.onDisconnect = onDisconnect.bind(null, params.onDisconnect);
-            this._connection = new WebInspector.WebSocketConnection(ws, params);
-        } else if (InspectorFrontendHost.isHostedMode()) {
-            this._connection = new WebInspector.StubConnection(params);
-        } else {
-            this._connection = new WebInspector.MainConnection(params);
-        }
-        return this._connection;
-
-        /**
-         * @param {function(string)} callback
-         * @param {string} reason
-         */
-        function onDisconnect(callback, reason)
+        function webSocketConnectionLost()
         {
             if (!WebInspector._disconnectedScreenWithReasonWasShown)
-                WebInspector.RemoteDebuggingTerminatedScreen.show(reason);
-            callback(reason);
+                WebInspector.RemoteDebuggingTerminatedScreen.show("WebSocket disconnected");
         }
     },
 
@@ -551,6 +482,35 @@ WebInspector.Main.prototype = {
         var suspended = WebInspector.targetManager.allTargetsSuspended();
         WebInspector.inspectorView.onSuspendStateChanged(suspended);
     }
+};
+
+/**
+ * @constructor
+ * @implements {WebInspector.TargetManager.Observer}
+ */
+WebInspector.Main.InspectorDomainObserver = function()
+{
+    WebInspector.targetManager.observeTargets(this, WebInspector.Target.Capability.Browser);
+};
+
+WebInspector.Main.InspectorDomainObserver.prototype = {
+    /**
+     * @override
+     * @param {!WebInspector.Target} target
+     */
+    targetAdded: function(target)
+    {
+        target.registerInspectorDispatcher(new WebInspector.Main.InspectorDomainDispatcher(target));
+        target.inspectorAgent().enable();
+    },
+
+    /**
+     * @override
+     * @param {!WebInspector.Target} target
+     */
+    targetRemoved: function(target)
+    {
+    },
 };
 
 /**

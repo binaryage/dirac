@@ -82,6 +82,8 @@ WebInspector.PaintProfilerView.prototype = {
     {
         this._reset();
         this._snapshot = snapshot;
+        if (this._snapshot)
+            this._snapshot.addReference();
         this._log = log;
         this._logCategories = this._log.map(WebInspector.PaintProfilerView._categoryForLogItem);
 
@@ -116,7 +118,7 @@ WebInspector.PaintProfilerView.prototype = {
         var needsUpdate = scale > this._scale;
         var predictiveGrowthFactor = 2;
         this._pendingScale = Math.min(1, scale * predictiveGrowthFactor);
-        if (needsUpdate)
+        if (needsUpdate && this._snapshot)
             this._updateImage();
     },
 
@@ -260,11 +262,18 @@ WebInspector.PaintProfilerView.prototype = {
             right = this._log[window.right - 1].commandIndex;
         }
         var scale = this._pendingScale;
-        this._snapshot.requestImage(left, right, scale, image => { this._scale = scale; this._showImageCallback(image); });
+        this._snapshot.replay(left, right, scale).then(image => {
+            if (!image)
+                return;
+            this._scale = scale;
+            this._showImageCallback(image);
+        });
     },
 
     _reset: function()
     {
+        if (this._snapshot)
+            this._snapshot.release();
         this._snapshot = null;
         this._profiles = null;
         this._selectionWindow.reset();
