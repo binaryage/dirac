@@ -180,6 +180,9 @@
 (defn replace-dirac-repl-ids [s]
   (string/replace s #"<dirac/.*?>" "<dirac/compiler-id>"))
 
+(defn replace-dirac-repl-files [s]
+  (string/replace s #"~repl/.*?\.(cljs|js)" "~repl/<path>"))
+
 (defn replace-rel-url-params [s]
   (string/replace s #"rel=[0-9]+" "rel=***"))
 
@@ -208,6 +211,7 @@
       replace-gensyms
       replace-internal-error
       replace-dirac-repl-ids
+      replace-dirac-repl-files
       replace-chrome-extension-urls
       replace-cljs-line-numbers))
 
