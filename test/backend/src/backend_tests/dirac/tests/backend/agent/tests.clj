@@ -70,6 +70,8 @@
           (weasel-client/send! weasel {:op :result :value (success-value)})
           (expect-op-msg! weasel :eval-js)
           (weasel-client/send! weasel {:op :result :value (success-value)})
+          (expect-op-msg! weasel :eval-js)
+          (weasel-client/send! weasel {:op :result :value (success-value)})
           (expect-ns-msg! tunnel "cljs.user")
           (expect-ns-msg! tunnel "cljs.user")                                                                                 ; TODO: review this, we should introduce special :op for prompt refresh
           (expect-status-msg! tunnel ["done"])
