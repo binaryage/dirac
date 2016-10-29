@@ -1,5 +1,5 @@
 (ns dirac.runtime.prefs
-  (:require-macros [dirac.runtime.prefs :refer [gen-static-prefs]]))
+  (:require-macros [dirac.runtime.prefs :refer [gen-static-config]]))
 
 (def known-features [:repl])
 (def default-features [:repl])
@@ -7,6 +7,10 @@
                      :default default-features})
 (def reset-styles "color:inherit;background-color:none;font-weight:normal;text-decoration:none;font-style:normal")
 
+; you can override individual config keys via ENV variables, for example:
+;   DIRAC_RUNTIME/AGENT_PORT=1234 or DIRAC_RUNTIME/NREPL_CONFIG/WEASEL_REPL/RANGE=20
+;
+; see https://github.com/binaryage/env-config
 (def default-prefs
   {; you can specify a list/vector of features from known-features or a keyword from feature-groups
    :features-to-install                          :default
@@ -65,8 +69,7 @@
    :silence-use-of-undeclared-var-warnings       true
    :silence-no-such-namespace-warnings           true})
 
-
-(def static-prefs (gen-static-prefs))                                                                                         ; this config is comming from environment and system properties
+(def static-prefs (gen-static-config))                                                                                        ; this config is comming from environment and system properties
 
 (def current-prefs (atom (merge default-prefs static-prefs)))
 
