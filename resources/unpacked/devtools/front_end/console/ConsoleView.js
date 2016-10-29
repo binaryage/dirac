@@ -158,7 +158,7 @@ WebInspector.ConsoleView = function()
     WebInspector.moduleSetting("consoleTimestampsEnabled").addChangeListener(this._consoleTimestampsSettingChanged, this);
 
     this._pendingDiracCommands = {};
-    this._lastDiracCommandId = 0;
+    this._lastDiracCommandId = 1;
     this._prompts = [];
     this._prompts.push({id: "js",
         prompt: this._prompt,
