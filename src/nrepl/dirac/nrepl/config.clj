@@ -5,7 +5,8 @@
 (def ^:dynamic standard-repl-init-code
   (nrepl/code
     (ns cljs.user
-      (:require [cljs.repl :refer-macros (source doc find-doc apropos dir pst)]))))
+      (:require [cljs.repl :refer-macros [source doc find-doc apropos dir pst]]
+                [cljs.pprint :refer [pprint] :refer-macros [pp]]))))
 
 (def default-config
   {:log-out            :console                                                                                               ; this is important, nREPL middleware captures output and logs be sent to client
