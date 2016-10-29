@@ -119,7 +119,7 @@
 
 ; -- REPL API ---------------------------------------------------------------------------------------------------------------
 
-(def api-version 6)                                                                                                           ; version of REPL API
+(def api-version 7)                                                                                                           ; version of REPL API
 
 (defn ^:export get-api-version []
   api-version)
