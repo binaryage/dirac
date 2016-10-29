@@ -17,7 +17,6 @@
                  [binaryage/env-config "0.1.0"]
                  [http-kit "2.2.0"]
                  [version-clj "0.1.2"]
-                 [environ "1.1.0"]
                  [clansi "1.0.0"]
                  [funcool/cuerdas "2.0.0"]
 
@@ -25,6 +24,7 @@
                  ; thus we mark extra deps with :scope "test" and filter them later when producing jar library
                  [binaryage/chromex "0.5.2" :scope "test"]
                  [binaryage/devtools "0.8.2" :scope "test"]
+                 [environ "1.1.0" :scope "test"]
                  [cljs-http "0.1.42" :scope "test"]
                  [figwheel "0.5.8" :scope "test"]
                  [reforms "0.4.3" :scope "test"]
