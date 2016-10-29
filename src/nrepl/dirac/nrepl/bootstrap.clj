@@ -53,18 +53,18 @@
         initial-session-meta (state/get-session-meta)]
     (try
       (state/set-session-cljs-ns! 'cljs.user)
+      (state/set-session-dirac-nrepl-config! dirac-nrepl-config)
+      (state/set-session-cljs-repl-env! repl-env)
+      (state/set-session-cljs-repl-options! repl-options)
+      (state/set-session-original-clj-ns! *ns*)                                                                               ; interruptible-eval is in charge of emitting the final :ns response in this context
       (let [preferred-compiler (or (:preferred-compiler dirac-nrepl-config) "dirac/sticky")
             want-new? (= preferred-compiler "dirac/new")
             want-sticky? (= preferred-compiler "dirac/sticky")]
         (if (or want-new? want-sticky?)
           (do
-            (utils/start-new-cljs-compiler-repl-environment! nrepl-message dirac-nrepl-config repl-env repl-options)
-            (state/set-session-selected-compiler! (preferred-compiler-selection want-sticky? dirac-nrepl-config)))
+            (state/set-session-selected-compiler! (preferred-compiler-selection want-sticky? dirac-nrepl-config))
+            (utils/start-new-cljs-compiler-repl-environment! nrepl-message dirac-nrepl-config repl-env repl-options))
           (state/set-session-selected-compiler! preferred-compiler)))                                                         ; TODO: validate that preferred compiler exists
-      (state/set-session-dirac-nrepl-config! dirac-nrepl-config)
-      (state/set-session-cljs-repl-env! repl-env)
-      (state/set-session-cljs-repl-options! repl-options)
-      (state/set-session-original-clj-ns! *ns*)                                                                               ; interruptible-eval is in charge of emitting the final :ns response in this context
       (set! *ns* (find-ns (state/get-session-cljs-ns)))                                                                       ; TODO: is this really needed? is it for macros?
       (helpers/send-response! nrepl-message (utils/prepare-current-env-info-response))
       (catch Exception e
