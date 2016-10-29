@@ -144,20 +144,6 @@
 (defn ^:dynamic result-template [job-id value]
   (str "dirac.runtime.repl.present_repl_result(" job-id ", cljs.reader.read_string(" (code-as-string value) "))"))
 
-(defn make-wrapper-filename [filename]
-  (string/replace filename #"\.cljs$" "-wrapper.js"))
-
-(defn ^:dynamic postprocess-template [code filename]
-  (string/join "\n" ["(function dirac_runtime_adapter(code) {"
-                     "  try {"
-                     "    return dirac.runtime.repl.postprocess_successful_eval(eval(code));"
-                     "  } catch (e) {"
-                     "    return dirac.runtime.repl.postprocess_unsuccessful_eval(e);"
-                     "  }})("
-                     (code-as-string code)                                                                                    ; we generate it as a block just for better readability in case of errors
-                     ");"
-                     (if filename (str "//# sourceURL=" (make-wrapper-filename filename)))]))
-
 (defn ^:dynamic console-log-template [method & args]
   (str "console." method "(" (string/join (interpose "," (map code-as-string args))) ")"))
 
@@ -357,8 +343,5 @@
 
 ; -- fancy evaluation in currently selected context -------------------------------------------------------------------------
 
-(defn wrap-with-postprocess-and-eval-in-current-context! [code & [filename]]
-  (go
-    ; for result structure refer to devtools.api.postprocess_successful_eval and devtools.api.postprocess_unsuccessful_eval
-    (let [wrapped-code (postprocess-template code filename)]
-      (<! (safely-eval-in-context! :current nil wrapped-code)))))
+(defn eval-in-current-context! [code]
+  (safely-eval-in-context! :current nil code))

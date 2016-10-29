@@ -53,12 +53,11 @@
     (go
       ; there might be some output printing messages in flight in the tunnel, so we give the tunnel some time to process them
       (<! (timeout (or (:pre-eval-delay options) 100)))
-      (if-let [result (<! (eval/wrap-with-postprocess-and-eval-in-current-context! (:code message) (:file message)))]         ; posprocessing step will prepare suitable result structure for us
+      (let [result (or (<! (eval/eval-in-current-context! (:code message)))
+                       #js {:status "exception"
+                            :value  "Evaluation timeout."})]
         {:op    :result
-         :value (massage-result result)}
-        {:op    :result
-         :value (massage-result #js {:status "exception"
-                                     :value  "Evaluation timeout."})}))))
+         :value (massage-result result)}))))
 
 ; -- connection -------------------------------------------------------------------------------------------------------------
 
@@ -78,4 +77,3 @@
   (when-let [client @current-client]
     (ws-client/close! client)
     true))
-
