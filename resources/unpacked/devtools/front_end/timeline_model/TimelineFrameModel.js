@@ -544,7 +544,7 @@ WebInspector.LayerPaintEvent.prototype = {
     },
 
     /**
-     * @return !Promise<?{rect: Array<number>, snapshot: !WebInspector.PaintProfilerSnapshot}>}
+     * @return !Promise<?{rect: !Array<number>, snapshot: !WebInspector.PaintProfilerSnapshot}>}
      */
     snapshotPromise: function()
     {
