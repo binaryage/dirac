@@ -175,3 +175,8 @@
   ; otherwise the first test would use this special connection which would be, well, inconsistent and unfair
   (disconnect-browser!)
   (reconnect-browser!))
+
+(defn with-browser [f]
+  (setup-browser!)
+  (f)
+  (stop-browser!))

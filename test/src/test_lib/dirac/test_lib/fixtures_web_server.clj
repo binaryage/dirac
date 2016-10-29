@@ -24,7 +24,7 @@
       (wrap-not-modified)))
 
 (defn start-fixtures-web-server [& [options]]
-  (require 'ring.adapter.jetty)
+  (require 'ring.adapter.jetty)                                                                                               ; we load it lazily to avoid warnings that logging is not properly set up
   (let [run-jetty (resolve 'ring.adapter.jetty/run-jetty)]
     (log/info "starting fixtures web server at" (get-fixtures-server-url))
     (run-jetty (wrap-reload (get-fixtures-server)) (merge default-options options))))

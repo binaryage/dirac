@@ -2,21 +2,13 @@
   (:require [clojure.test :refer :all]
             [clojure.tools.logging :as log]
             [clj-webdriver.taxi :as taxi]
-            [dirac.test-lib.taxi :refer [with-taxi-setup]]
             [dirac.settings :refer [get-fixtures-server-url]]
-            [dirac.test-lib.fixtures-web-server :refer [with-fixtures-web-server]]
-            [dirac.test-lib.nrepl-server :refer [with-nrepl-server]]
-            [dirac.test-lib.agent :refer [with-dirac-agent]]
-            [dirac.tests.browser.tasks.transcript :refer [execute-transcript-test!]]
-            [dirac.tests.browser.tasks.macros :refer [with-transcript-suite]]))
+            [dirac.tests.browser.tasks.macros :refer [with-transcript-suite]]
+            [dirac.tests.browser.tasks.transcript :refer [execute-transcript-test!]]))
 
 ; note: we expect current working directory to be dirac root directory ($root)
 ; $root/test/browser/transcripts/expected/*.txt should contain expected transcripts
 ; see settings.clj for actual constants
-
-; -- fixtures ---------------------------------------------------------------------------------------------------------------
-
-(use-fixtures :once with-fixtures-web-server with-nrepl-server with-dirac-agent with-taxi-setup)
 
 ; -- individual tests -------------------------------------------------------------------------------------------------------
 

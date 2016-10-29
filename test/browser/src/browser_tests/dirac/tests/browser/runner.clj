@@ -4,10 +4,20 @@
             [clojure.tools.logging :as log]
             [dirac.logging :as logging]
             [dirac.test-lib.agent :as test-agent]
-            [dirac.test-lib.chrome-browser :refer [setup-browser! stop-browser!]]
+            [dirac.test-lib.chrome-browser :refer [with-browser]]
+            [dirac.test-lib.fixtures-web-server :refer [with-fixtures-web-server]]
+            [dirac.test-lib.nrepl-server :refer [with-nrepl-server]]
+            [dirac.test-lib.agent :refer [with-dirac-agent]]
+            [dirac.test-lib.taxi :refer [with-taxi-setup]]
             [dirac.test-lib.nrepl-server :as test-nrepl-server]))
 
 ; this test runner runs tests against real chrome browser using chrome driver
+
+(def setup-fixtures! (join-fixtures [with-fixtures-web-server
+                                     with-nrepl-server
+                                     with-dirac-agent
+                                     with-browser
+                                     with-taxi-setup]))
 
 (def log-level (or (env :dirac-log-level) (env :dirac-browser-tests-log-level) "INFO"))                                       ; INFO, DEBUG, TRACE, ALL
 
@@ -25,20 +35,22 @@
 (defn set-test-runner-present! []
   (System/setProperty "dirac-test-runner" "true"))
 
-(defn -main []
-  (set-test-runner-present!)
-  (setup-logging!)
-  (setup-browser!)
+; -- fixtures ---------------------------------------------------------------------------------------------------------------
+
+(defn run-tests! []
   (log/info "---------------------------------------------------------------------------------------------------------------")
   (log/info "Running browser test tasks...")
   (let [test-namespaces default-test-namespaces]
     (require-namespaces test-namespaces)                                                                                      ; we want to require namespaces dynamically for our loggging configuration to take effect
     (let [summary (apply run-tests test-namespaces)]
       (if-not (successful? summary)
-        (System/exit 1)                                                                                                       ; in case of failure we want the browser left open for further manual inspection
-        (do
-          (stop-browser!)
-          (System/exit 0))))))
+        (System/exit 1)))))
+
+(defn -main []
+  (set-test-runner-present!)
+  (setup-logging!)
+  (setup-fixtures! run-tests!)
+  (System/exit 0))
 
 (defn -dev-main []
   (System/setProperty "dirac-dev" "true")
