@@ -180,6 +180,51 @@
 (defn ^:export bootstrapped? []
   *bootstrapped?*)
 
+(defn ^:export capture-output [job-id f]
+  ; we want to redirect all side-effect printing, so it can be presented in the Dirac REPL console
+  (binding [cljs.core/*print-newline* false
+            cljs.core/*print-fn* (partial present-output job-id "stdout" "plain-text")
+            cljs.core/*print-err-fn* (partial present-output job-id "stderr" "plain-text")]
+    (f)))
+
+(defn ^:export present [job-id job-fn]
+  (try
+    (present-repl-result job-id (capture-output job-id job-fn))
+    (catch :default e
+      (present-repl-exception job-id e)
+      (throw e))))
+
+(defn ^:export execute-job [job-id wrap-mode job-fn]
+  (case wrap-mode
+    "wrap" (present job-id job-fn)
+    (job-fn)))
+
+(defn ^:export eval-captured [job-id wrap-mode job-fn]
+  (try
+    (let [result (execute-job job-id wrap-mode job-fn)]
+      (set! *3 *2)
+      (set! *2 *1)
+      (set! *1 result)
+      (with-safe-printing
+        (pr-str result)))
+    (catch :default e
+      (set! *e e)
+      (throw e))))
+
+(defn ^:export eval-special [job-id wrap-mode job-fn]
+  (let [result (execute-job job-id wrap-mode job-fn)]
+    (with-safe-printing
+      (pr-str result))))
+
+(defn ^:export eval [job-id eval-mode wrap-mode job-fn]
+  (let [eval-fn (case eval-mode
+                  "special" eval-special
+                  "captured" eval-captured)]
+    (try
+      (postprocess-successful-eval (eval-fn job-id wrap-mode job-fn))
+      (catch :default e
+        (postprocess-unsuccessful-eval e)))))
+
 ; -- install/uninstall ------------------------------------------------------------------------------------------------------
 
 (defn ^:export installed? []
