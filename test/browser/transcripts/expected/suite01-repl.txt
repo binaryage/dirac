@@ -1,6 +1,5 @@
 ns               Testing dirac.tests.tasks.suite01.repl
 automate         open-scenario! ["repl"]
-
 testing          simple REPL eval interactions
 automate         open-devtools!
 extension        handling command: open-dirac-devtools
@@ -61,13 +60,16 @@ automate #1      console-exec-and-match! ["(x)" "TypeError: Cannot read property
 devtools #1      DC.log> (x)
 devtools #1      send-eval-request: (x)
 devtools #1      repl eval job started
-devtools #1      present-server-side-output! stderr/plain-text > WARNING: Use of undeclared Var cljs.user/x at line 1 <dirac/compiler-id>
+devtools #1      present-server-side-output! stderr/plain-text > WARNING: Use of undeclared Var cljs.user/x at line 1 ~repl/<path>
 devtools #1      DF.err>
                  TypeError: Cannot read property 'call' of undefined
-                     at eval (eval at <anonymous> (:***), <anonymous>:***)
-                     at eval (eval at <anonymous> (:***), <anonymous>:***)
-                     at eval (eval at <anonymous> (:***), <anonymous>:***)
-                     at <anonymous>:***
+                     at cljs$user$repl_job_5 (~repl/<path>:2)
+                     at dirac$runtime$repl$capture_output (repl.cljs:<line>)
+                     at dirac$runtime$repl$present (repl.cljs:<line>)
+                     at dirac$runtime$repl$execute_job (repl.cljs:<line>)
+                     at dirac$runtime$repl$eval_captured (repl.cljs:<line>)
+                     at Object.dirac$runtime$repl$eval [as eval] (repl.cljs:<line>)
+                     at ~repl/<path>:1
 devtools #1      repl eval job ended
 automate #1      console-exec-and-match! ["(in-ns)" "java-trace/plain-text > java.lang.IllegalArgumentException: Argument to in-ns must be a symbol."]
 devtools #1      DC.log> (in-ns)
@@ -90,7 +92,6 @@ automate #1      close-devtools!
 extension        handling command: close-dirac-devtools
 extension        unregister devtools #1
 ∎
-
 testing          page-initiated eval requests, https://github.com/binaryage/dirac/issues/38
 automate         open-devtools!
 extension        handling command: open-dirac-devtools
@@ -131,7 +132,6 @@ automate #2      close-devtools!
 extension        handling command: close-dirac-devtools
 extension        unregister devtools #2
 ∎
-
 testing          page refresh while REPL was connected
 automate         open-devtools!
 extension        handling command: open-dirac-devtools
@@ -198,7 +198,6 @@ automate #3      close-devtools!
 extension        handling command: close-dirac-devtools
 extension        unregister devtools #3
 ∎
-
 testing          navigate to a new page without dirac runtime while REPL was connected, then navigate back and exercise REPL
 automate         open-devtools!
 extension        handling command: open-dirac-devtools
@@ -258,7 +257,6 @@ automate #4      close-devtools!
 extension        handling command: close-dirac-devtools
 extension        unregister devtools #4
 ∎
-
 testing          page refresh while REPL was connected (but not active)
 automate         open-devtools!
 extension        handling command: open-dirac-devtools
@@ -306,7 +304,6 @@ automate #5      close-devtools!
 extension        handling command: close-dirac-devtools
 extension        unregister devtools #5
 ∎
-
 testing          page refresh while REPL was not connected
 automate         open-devtools!
 extension        handling command: open-dirac-devtools
@@ -329,7 +326,6 @@ automate #6      close-devtools!
 extension        handling command: close-dirac-devtools
 extension        unregister devtools #6
 ∎
-
 testing          make sure `in-ns` works (https://github.com/binaryage/dirac/issues/47)
 automate         open-devtools!
 extension        handling command: open-dirac-devtools
