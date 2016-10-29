@@ -71,23 +71,23 @@
 (def ^:const TAXI_SCRIPT_TIMEOUT (seconds 3))
 (def ^:const TAXI_IMPLICIT_WAIT (seconds 3))
 
-(def dirac-devtools-window-top (env :dirac-devtools-window-top))
-(def dirac-devtools-window-left (env :dirac-devtools-window-left))
-(def dirac-devtools-window-width (env :dirac-devtools-window-width))
-(def dirac-devtools-window-height (env :dirac-devtools-window-height))
+(def dirac-devtools-window-top (env :dirac-setup-devtools-window-top))
+(def dirac-devtools-window-left (env :dirac-setup-devtools-window-left))
+(def dirac-devtools-window-width (env :dirac-setup-devtools-window-width))
+(def dirac-devtools-window-height (env :dirac-setup-devtools-window-height))
 
-(def dirac-runner-window-top (env :dirac-runner-window-top))
-(def dirac-runner-window-left (env :dirac-runner-window-left))
-(def dirac-runner-window-width (env :dirac-runner-window-width))
-(def dirac-runner-window-height (env :dirac-runner-window-height))
+(def dirac-runner-window-top (env :dirac-setup-runner-window-top))
+(def dirac-runner-window-left (env :dirac-setup-runner-window-left))
+(def dirac-runner-window-width (env :dirac-setup-runner-window-width))
+(def dirac-runner-window-height (env :dirac-setup-runner-window-height))
 
-(def dirac-scenario-window-top (env :dirac-scenario-window-top))
-(def dirac-scenario-window-left (env :dirac-scenario-window-left))
-(def dirac-scenario-window-width (env :dirac-scenario-window-width))
-(def dirac-scenario-window-height (env :dirac-scenario-window-height))
+(def dirac-scenario-window-top (env :dirac-setup-scenario-window-top))
+(def dirac-scenario-window-left (env :dirac-setup-scenario-window-left))
+(def dirac-scenario-window-width (env :dirac-setup-scenario-window-width))
+(def dirac-scenario-window-height (env :dirac-setup-scenario-window-height))
 
-(def chrome-remote-debugging-port (env :dirac-chrome-remote-debugging-port))
-(def chrome-remote-debugging-host (env :dirac-chrome-remote-debugging-host))
+(def chrome-remote-debugging-port (env :dirac-setup-chrome-remote-debugging-port))
+(def chrome-remote-debugging-host (env :dirac-setup-chrome-remote-debugging-host))
 
 ; -- macro wrappers ---------------------------------------------------------------------------------------------------------
 ; macros allow us to potentially expose the constants to cljs
