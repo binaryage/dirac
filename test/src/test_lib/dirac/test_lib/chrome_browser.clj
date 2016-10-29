@@ -4,7 +4,6 @@
             [clojure.tools.logging :as log]
             [clojure.java.shell :refer [sh]]
             [clojure.string :as string]
-            [environ.core :refer [env]]
             [clj-webdriver.taxi :refer :all]
             [clj-webdriver.driver :refer [init-driver]]
             [dirac.settings :refer [get-browser-connection-minimal-cooldown]]
