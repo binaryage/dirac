@@ -31,60 +31,20 @@
 
 ; -- dirac-specific wrapper for evaluated forms -----------------------------------------------------------------------------
 
-(defn safe-value-conversion-to-string [value]
-  ; darwin: I have a feeling that these cljs.core bindings should not be hard-coded.
-  ;         I understand that printing must be limited somehow. But this should be user-configurable.
-  ;         Dirac REPL does not use returned string value - but normal nREPL clients are affected by this.
+(defn gen-form-eval [job-id eval-mode dirac-mode form]
+  (let [job-fn-display-name (symbol (str "repl-job-" job-id))]                                                                ; this is just for better stack-traces
+    `(js/dirac.runtime.repl.eval ~job-id ~eval-mode ~dirac-mode (fn ~job-fn-display-name [] ~form))))
 
-  ; note that we are generating named anonymous function and invoke it immediatelly
-  ; this generates more friendly call-stack with descriptive frame mentioning "dirac-serialize-eval-result"
-  `((fn ~'dirac-serialize-eval-result []
-      (binding [cljs.core/*print-level* 1
-                cljs.core/*print-length* 10]
-        (cljs.core/pr-str ~value)))))
+(defn special-form? [form]
+  (contains? '#{*1 *2 *3 *e} form))
 
-(defn wrap-with-dirac-presentation [job-id form]
-  ; note that we are generating named anonymous function and invoke it immediatelly
-  ; this generates more friendly call-stack with descriptive frame mentioning "dirac-presentation"
-  `((fn ~'dirac-presentation []
-      (try
-        (js/dirac.runtime.repl.present_repl_result ~job-id ~form)
-        (catch :default e#
-          (js/dirac.runtime.repl.present_repl_exception ~job-id e#)
-          (throw e#))))))
+(defn ns-related-form? [form]
+  (and (seq? form) (contains? #{'ns 'require 'require-macros 'use 'use-macros 'import 'refer-clojure} (first form))))         ; note: we should keep this in sync with `cljs.repl/wrap-fn`
 
-(defn job-evaluator [dirac-wrap job-id form]
-  (let [job-fn-sym (symbol (str "dirac-repl-job-" job-id))
-        result-sym (gensym "eval-result-")]
-    ; note that we are generating named anonymous function and invoke it immediatelly
-    ; this generates more friendly call-stack with descriptive frame mentioning "dirac-repl-job-<id>"
-    `((fn ~job-fn-sym []
-        (try
-          ; we want to redirect all side-effect printing to dirac.runtime, so it can be presented in the Dirac REPL console
-          (binding [cljs.core/*print-newline* false
-                    cljs.core/*print-fn* (partial js/dirac.runtime.repl.present_output ~job-id "stdout" "plain-text")
-                    cljs.core/*print-err-fn* (partial js/dirac.runtime.repl.present_output ~job-id "stderr" "plain-text")]
-            (let [~result-sym ~(dirac-wrap form)]
-              (set! ~'*3 ~'*2)
-              (set! ~'*2 ~'*1)
-              (set! ~'*1 ~result-sym)
-              ~(safe-value-conversion-to-string result-sym)))
-          (catch :default e#
-            (set! ~'*e e#)
-            (throw e#)))))))
-
-(defn special-form-evaluator [dirac-wrap form]
-  (safe-value-conversion-to-string (dirac-wrap form)))
-
-(defn make-wrapper-for-form [job-id dirac-mode form]
-  (if (and (seq? form) (= 'ns (first form)))
-    identity
-    (let [dirac-wrap (case dirac-mode
-                       "wrap" (partial wrap-with-dirac-presentation job-id)
-                       identity)]
-      (if ('#{*1 *2 *3 *e} form)
-        (partial special-form-evaluator dirac-wrap)
-        (partial job-evaluator dirac-wrap job-id)))))
+(defn wrap-form [job-id dirac-mode form]
+  (if (ns-related-form? form)
+    form                                                                                                                      ; ns or require rely on cljs.analyzer/*allow-ns*, so we must not wrap them
+    (gen-form-eval job-id (if (special-form? form) "special" "captured") dirac-mode form)))
 
 (defn set-env-namespace [env]
   (assoc env :ns (analyzer/get-namespace analyzer/*cljs-ns*)))
@@ -110,15 +70,15 @@
     (catch NumberFormatException e)))
 
 (defn sanitize-filename [s]
-  (string/replace s #"[.?*!@#$%^&]" "_"))
+  (string/replace s #"[.?*!@#$%^&]" "-"))
 
 (defn get-current-repl-filename [job-id]
   (let [compiler-id (compilers/get-selected-compiler-id (state/get-current-session))
         numeric-job-id (sorting-friendly-numeric-job-id job-id)]
     (assert compiler-id)
-    (str "_repl/"
+    (str "~repl/"
          (or (sanitize-filename compiler-id) "unknown") "/"
-         (if numeric-job-id (str "job-" numeric-job-id) (sanitize-filename job-id)) ".cljs")))
+         (if numeric-job-id (str "repl-job-" numeric-job-id) (sanitize-filename job-id)) ".cljs")))
 
 (defn repl-read! [job-id]
   (let [pushback-reader (PushbackReader. (io/reader *in*))
@@ -168,7 +128,7 @@
 (defn evaluate-form [repl-env env filename form wrap opts]
   (binding [analyzer/*cljs-file* filename]
     (let [wrapped-form (wrap form)
-          _ (log/trace "wrapped-form:" (utils/pp wrapped-form 100))
+          _ (log/trace "wrapped-form:\n" (utils/pp wrapped-form 100))
           env-with-source-info (assoc env :root-source-info {:source-type :fragment
                                                              :source-form form})
           env-with-source-info-and-repl-env (assoc env-with-source-info
@@ -201,13 +161,12 @@
 ; <----- evaluate-form -------- cut-here
 
 (defn repl-eval! [job-id scope-info dirac-mode repl-env env form opts]
-  (let [wrapper-fn (or (:wrap opts) (partial make-wrapper-for-form job-id dirac-mode))
-        wrapped-form (wrapper-fn form)
+  (let [form-wrapper-fn (or (:wrap opts) (partial wrap-form job-id dirac-mode))
         set-env-locals-with-scope (partial set-env-locals scope-info)
         effective-env (-> env set-env-namespace set-env-locals-with-scope)
         filename (get-current-repl-filename job-id)]
     (log/trace "repl-eval! in " filename ":\n" form "\n with env:\n" (utils/pp effective-env 7))
-    (evaluate-form repl-env effective-env filename form wrapped-form opts)))
+    (evaluate-form repl-env effective-env filename form form-wrapper-fn opts)))
 
 (defn repl-flush! []
   (log/trace "flush-repl!")
