@@ -55,8 +55,6 @@
   :plugins [[lein-shell "0.5.0"]
             [lein-environ "1.1.0"]]
 
-  ;  :jvm-opts ["-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5005"]
-
   :source-paths ["scripts"
 
                  "src/agent"
@@ -116,6 +114,12 @@
                                           "src/nrepl"]
                :resource-paths ^:replace []
                :test-paths     ^:replace []}]
+
+             :debugger
+             {:jvm-opts ["-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005"]}
+
+             :suspended-debugger
+             {:jvm-opts ["-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5005"]}
 
              :clojure17
              {:dependencies [[org.clojure/clojure "1.7.0" :scope "provided"]
@@ -435,7 +439,7 @@
             "run-backend-tests-19"       ["with-profile" "+test-runner,+clojure19" "run" "-m" "dirac.tests.backend.runner"]
             "run-browser-tests"          ["shell" "scripts/run-browser-tests.sh" "dirac.tests.browser.runner"]
             "run-browser-tests-dev"      ["shell" "scripts/run-browser-tests.sh" "dirac.tests.browser.runner/-dev-main"]
-            "run-browser-tests-agent"    ["with-profile" "+test-runner" "run" "-m" "dirac.tests.browser.runner/run-agent"]
+            "run-browser-tests-agent"    ["with-profile" "+test-runner,+debugger" "run" "-m" "dirac.tests.browser.runner/run-agent"]
 
             "fig-dirac"                  ["with-profile" "+cljs,+dirac-unpacked,+dirac-figwheel"
                                           "figwheel"

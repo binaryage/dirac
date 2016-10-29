@@ -18,7 +18,7 @@ export DIRAC_NREPL_WEASEL_PORT=13042
 # export DIRAC_WEASEL_VERBOSE=1
 
 echo "Running browser tests..."
-lein with-profile +test-runner run -m "$@"
+lein with-profile +test-runner,+debugger run -m "$@"
 
 popd
 
