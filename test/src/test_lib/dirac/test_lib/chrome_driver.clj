@@ -20,6 +20,7 @@
 
 (def known-env-options [:travis
                         :chrome-driver-path
+                        :chrome-driver-log-path
                         :dirac-root
                         :dirac-dev
                         :dirac-host-os
@@ -102,8 +103,11 @@
 ; -- chrome driver / service ------------------------------------------------------------------------------------------------
 
 (defn build-chrome-driver-service [options]
-  (let [{:keys [port dirac-chrome-driver-verbose chrome-driver-path]} options
+  (let [{:keys [port dirac-chrome-driver-verbose chrome-driver-path chrome-driver-log-path]} options
         builder (ChromeDriverService$Builder.)]
+    (when chrome-driver-log-path
+      (log/debug (str "setting chrome driver log path to '" chrome-driver-log-path "'"))
+      (System/setProperty "webdriver.chrome.logfile" chrome-driver-log-path))
     (if chrome-driver-path
       (let [chrome-driver-exe (io/file chrome-driver-path)]
         (log/debug (str "setting chrome driver path to '" chrome-driver-exe "'"))
