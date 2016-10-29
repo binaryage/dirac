@@ -33,7 +33,7 @@
         cached-setup-value)))
   (-evaluate [this filename line js]
     (log/trace (str this) "-evaluate called" filename line "\n" js)
-    (request-eval this js))
+    (request-eval this js filename))
   (-load [this provides url]
     (log/trace (str this) "-load called" (str this) provides url)
     (load-javascript this provides url))
@@ -90,9 +90,10 @@
   {:op   :error
    :type :occupied})
 
-(defn make-eval-js-request-message [js]
-  {:op   :eval-js
-   :code js})
+(defn make-eval-js-request-message [js & [filename]]
+  (cond-> {:op   :eval-js
+           :code js}
+          (some? filename) (merge {:file filename})))
 
 ; -- message processing -----------------------------------------------------------------------------------------------------
 
@@ -176,9 +177,9 @@
   (server/destroy! (get-server env))
   (log/debug (str env) "Weasel server stopped."))
 
-(defn request-eval [env js]
+(defn request-eval [env js & [filename]]
   (promise-new-client-response! env)
-  (server/send! @(server/get-first-client-promise (get-server env)) (make-eval-js-request-message js))                        ; <===== MIGHT BLOCK if there is currently no client connected TODO: implement timeout
+  (server/send! @(server/get-first-client-promise (get-server env)) (make-eval-js-request-message js filename))               ; <===== MIGHT BLOCK if there is currently no client connected TODO: implement timeout
   (wait-for-promised-response! env))                                                                                          ; <===== WILL BLOCK! until client responds
 
 (defn load-javascript [env provides _]
