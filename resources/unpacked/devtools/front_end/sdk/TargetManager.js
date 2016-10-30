@@ -396,8 +396,9 @@ WebInspector.TargetManager.prototype = {
      */
     _createMainConnection: function(params)
     {
-        if (Runtime.queryParam("ws")) {
-            var ws = "ws://" + decodeURIComponent(Runtime.queryParam("ws"));
+        const wsParam = Runtime.queryParam("ws");
+        if (wsParam) {
+            const ws = "ws://" + decodeURIComponent(wsParam);
             this._mainConnection = new WebInspector.WebSocketConnection(ws, this._webSocketConnectionLostCallback, params);
         } else if (InspectorFrontendHost.isHostedMode()) {
             this._mainConnection = new WebInspector.StubConnection(params);
