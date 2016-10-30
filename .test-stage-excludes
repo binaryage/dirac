@@ -1,0 +1,17 @@
+.DS_Store
+/.git
+/.idea
+/.notify
+/.profiles
+/releases
+/target
+/resources/release
+/resources/unpacked/.compiled
+/resources/unpacked/devtools/front_end/dirac/.compiled
+/test/browser/fixtures/resources/.compiled
+/test/marion/resources/unpacked/.compiled
+/out
+/.*
+/dirac.iml
+/pom.xml*
+/test/browser/transcripts/actual

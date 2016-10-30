@@ -9,7 +9,7 @@ source "./config.sh"
 
 pushd "$DIRAC_TEST_STAGE_DIR"
 
-./scripts/test-all-here.sh
+./scripts/test-backend-here.sh
 
 popd
 

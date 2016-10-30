@@ -7,10 +7,7 @@ source "./config.sh"
 
 pushd "$ROOT"
 
-echo "Running backend tests..."
-lein run-backend-tests-17
-lein run-backend-tests-18
-lein run-backend-tests-19
+rm -rf "$DIRAC_TEST_STAGE_DIR"
 
 popd
 
