@@ -7,8 +7,7 @@ source "./config.sh"
 
 pushd "$ROOT"
 
-lein test-backend
-lein test-browser
+rm -rf "target"
 
 popd
 

@@ -7,7 +7,8 @@ source "./config.sh"
 
 pushd "$ROOT"
 
-./scripts/clear-notify.sh
+./scripts/clean-dev-browser-tests.sh
+./scripts/clean-notify.sh
 
 # we want to prevent clashes between:
 #   *  chrome instance for developing tests (port 9333)
@@ -17,7 +18,6 @@ SETUP="\
 DIRAC_SETUP_WEASEL_VERBOSE=true\
 DIRAC_SETUP_AGENT_VERBOSE=true"
 
-lein clean
 env ${SETUP} lein with-profile +cooper,+dev-dirac-sample cooper
 
 popd
