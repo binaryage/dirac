@@ -56,6 +56,7 @@
   :plugins [[lein-shell "0.5.0"]
             [lein-environ "1.1.0"]]
 
+  ; this is for Cursive, may be redefined by profiles
   :source-paths ["scripts"
 
                  "src/agent"
@@ -82,8 +83,8 @@
                  "test/browser/fixtures/src/scenarios02"
                  "test/browser/fixtures/src/tasks"
                  "test/browser/src/browser_tests"]
-  :resource-paths ["resources"]                                                                                               ; this is for Cursive, will be redefined by profiles
-  :test-paths ["test"]                                                                                                        ; this is for Cursive, will be redefined by profiles
+  :resource-paths ["resources"]
+  :test-paths ["test"]
 
   ; unfortunately this must be on root level because leiningen does not properly merge metadata
   ;   see https://github.com/technomancy/leiningen/issues/1826
@@ -116,11 +117,23 @@
                :resource-paths ^:replace []
                :test-paths     ^:replace []}]
 
-             :debugger
+             :debugger-5005
              {:jvm-opts ["-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005"]}
 
-             :suspended-debugger
+             :suspended-debugger-5005
              {:jvm-opts ["-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5005"]}
+
+             :debugger-5006
+             {:jvm-opts ["-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5006"]}
+
+             :suspended-debugger-5006
+             {:jvm-opts ["-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5006"]}
+
+             :debugger-5007
+             {:jvm-opts ["-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5007"]}
+
+             :suspended-debugger-5007
+             {:jvm-opts ["-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5007"]}
 
              :clojure17
              {:dependencies [[org.clojure/clojure "1.7.0" :scope "provided"]
@@ -434,13 +447,12 @@
             "dev-browser-tests"          ["shell" "scripts/dev-browser-tests.sh"]
             "dev-dirac-sample"           ["shell" "scripts/dev-dirac-sample.sh"]
             "run-backend-tests"          ["shell" "scripts/run-backend-tests.sh"]
-            "run-backend-tests-default"  ["with-profile" "+test-runner,+debugger" "run" "-m" "dirac.tests.backend.runner"]
-            "run-backend-tests-17"       ["with-profile" "+test-runner,+clojure17,+debugger" "run" "-m" "dirac.tests.backend.runner"]
-            "run-backend-tests-18"       ["with-profile" "+test-runner,+clojure18,+debugger" "run" "-m" "dirac.tests.backend.runner"]
-            "run-backend-tests-19"       ["with-profile" "+test-runner,+clojure19,+debugger" "run" "-m" "dirac.tests.backend.runner"]
+            "run-backend-tests-17"       ["with-profile" "+test-runner,+clojure17,+debugger-5005" "run" "-m" "dirac.tests.backend.runner"]
+            "run-backend-tests-18"       ["with-profile" "+test-runner,+clojure18,+debugger-5005" "run" "-m" "dirac.tests.backend.runner"]
+            "run-backend-tests-19"       ["with-profile" "+test-runner,+clojure19,+debugger-5005" "run" "-m" "dirac.tests.backend.runner"]
             "run-browser-tests"          ["shell" "scripts/run-browser-tests.sh" "dirac.tests.browser.runner"]
             "run-browser-tests-dev"      ["shell" "scripts/run-browser-tests.sh" "dirac.tests.browser.runner/-dev-main"]
-            "run-browser-tests-agent"    ["with-profile" "+test-runner,+debugger" "run" "-m" "dirac.tests.browser.runner/run-agent"]
+            "run-browser-tests-agent"    ["shell" "scripts/run-browser-tests.sh" "dirac.tests.browser.runner/run-agent"]
 
             "fig-dirac"                  ["with-profile" "+cljs,+dirac-unpacked,+dirac-figwheel"
                                           "figwheel"
