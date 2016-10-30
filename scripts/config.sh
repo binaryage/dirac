@@ -40,6 +40,20 @@ vercomp () {
     return 0
 }
 
+# http://stackoverflow.com/a/18443300/84283
+realpath() {
+  OURPWD=$PWD
+  cd "$(dirname "$1")"
+  LINK=$(readlink "$(basename "$1")")
+  while [ "$LINK" ]; do
+    cd "$(dirname "$LINK")"
+    LINK=$(readlink "$(basename "$1")")
+  done
+  REALPATH="$PWD/$(basename "$1")"
+  cd "$OURPWD"
+  echo "$REALPATH"
+}
+
 pushd `dirname "${BASH_SOURCE[0]}"`
 
 source "./export-windows-layout.sh"
