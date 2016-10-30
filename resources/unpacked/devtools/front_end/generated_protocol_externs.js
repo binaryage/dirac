@@ -2369,7 +2369,7 @@ CSSAgent.StyleDeclarationEdit;
 /** @typedef {!{boundingBox:(DOMAgent.Rect), startCharacterIndex:(number), numCharacters:(number)}} */
 CSSAgent.InlineTextBox;
 
-/** @typedef {!{backendNodeId:(DOMAgent.BackendNodeId), boundingBox:(DOMAgent.Rect), layoutText:(string|undefined), inlineTextNodes:(!Array.<CSSAgent.InlineTextBox>|undefined), styleIndex:(number|undefined)}} */
+/** @typedef {!{nodeId:(DOMAgent.NodeId), boundingBox:(DOMAgent.Rect), layoutText:(string|undefined), inlineTextNodes:(!Array.<CSSAgent.InlineTextBox>|undefined), styleIndex:(number|undefined)}} */
 CSSAgent.LayoutTreeNode;
 
 /** @typedef {!{properties:(!Array.<CSSAgent.CSSComputedStyleProperty>)}} */
