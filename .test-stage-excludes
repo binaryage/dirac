@@ -5,7 +5,7 @@
 /.profiles
 /releases
 /target
-/resources/release
+/resources/release/.compiled
 /resources/unpacked/.compiled
 /resources/unpacked/devtools/front_end/dirac/.compiled
 /test/browser/fixtures/resources/.compiled
