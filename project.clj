@@ -14,7 +14,7 @@
                  [org.clojure/tools.cli "0.3.5"]
                  [org.clojure/tools.nrepl "0.2.12"]
                  [binaryage/oops "0.5.2"]
-                 [binaryage/env-config "0.1.0"]
+                 [binaryage/env-config "0.1.1"]
                  [http-kit "2.2.0"]
                  [version-clj "0.1.2"]
                  [clansi "1.0.0"]
