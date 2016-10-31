@@ -219,16 +219,16 @@
   Also we have to be careful to not enter into infinite printing with cyclic data structures.
   We limit printing level and length via with-safe-printing."
   [value]
-  (with-safe-printing (fn [] #js {:status "success"
-                                  :value  (str value)})))
+  #js {:status "success"
+       :value  (with-safe-printing (fn [] (str value)))})
 
 (defn ^:export postprocess-unsuccessful-eval [ex]
   "Same as postprocess-successful-eval but prepares response of evaluation attempt with an exception."
-  (with-safe-printing (fn [] #js {:status     "exception"
-                                  :value      (pr-str ex)
-                                  :stacktrace (if (.hasOwnProperty ex "stack")
-                                                (aget ex "stack")
-                                                "No stacktrace available.")})))
+  #js {:status     "exception"
+       :value      (safe-pr-str ex)
+       :stacktrace (if (.hasOwnProperty ex "stack")
+                     (aget ex "stack")
+                     "No stacktrace available.")})
 
 (defn ^:export eval
   "This is the main entrypoint for evaluation of a snippet of code in the context of REPL.
@@ -286,4 +286,3 @@
 (defn ^:export uninstall! []
   (when (installed?)
     (set! *installed?* false)))
-
