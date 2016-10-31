@@ -126,7 +126,7 @@
 
 ; -- REPL API ---------------------------------------------------------------------------------------------------------------
 
-(def api-version 7)                                                                                                           ; version of REPL API
+(def api-version 7)                                                                                                           ; current version of our REPL API
 
 (defn ^:export get-api-version []
   api-version)
@@ -135,13 +135,13 @@
   (clj->js (get-prefs)))
 
 (defn ^:export present-repl-result
-  "Called by our nREPL boilerplate when we capture REPL evaluation result."
+  "Called by our nREPL boilerplate when we capture a REPL evaluation result."
   [request-id value]
   (log request-id "result" value)
   value)
 
 (defn ^:export present-repl-exception
-  "Called by our nREPL boilerplate when we capture REPL evaluation exception."
+  "Called by our nREPL boilerplate when we capture a REPL evaluation exception."
   [request-id exception]
   (error request-id "exception" exception))
 
@@ -154,8 +154,64 @@
         (emit-error! request-id error-msg)
         (formatted-log request-id kind format text)))))
 
+(defn ^:export bootstrapped? []
+  *bootstrapped?*)
+
+(defn ^:export capture-output
+  "A printing wrapper responsible for capturing printed output and presenting it via `present-output`."
+  [job-id f]
+  ; we want to redirect all side-effect printing, so it can be presented in the Dirac REPL console
+  (binding [cljs.core/*print-newline* false
+            cljs.core/*print-fn* (partial present-output job-id "stdout" "plain-text")
+            cljs.core/*print-err-fn* (partial present-output job-id "stderr" "plain-text")]
+    (f)))
+
+(defn ^:export present
+  "A presentation wrapper which takes care of presenting REPL evaluation to Dirac user.
+  We short-circuit nREPL feedback mechanism and display REPL results immediatelly to the user as native data.
+  This especially important for cljs-devtools.
+
+  Please note that for traditional nREPL clients we still serialize the result, send it over the wire to nREPL server and
+  in turn that result is sent back to a client and presented. The Dirac client has just special logic and ignores this echoed
+  output because it was already presented directly.
+
+  See https://github.com/binaryage/dirac/blob/master/docs/about-repls.md for conceptual overview."
+  [job-id job-fn]
+  (try
+    (present-repl-result job-id (capture-output job-id job-fn))
+    (catch :default e
+      (present-repl-exception job-id e)
+      (throw e))))
+
+(defn ^:export execute-job
+  "Execute a REPL job by optionally wrapping it in a requested wrapper."
+  [job-id wrap-mode job-fn]
+  (case wrap-mode
+    "wrap" (present job-id job-fn)
+    (job-fn)))
+
+(defn ^:export eval-captured
+  "Evaluates a REPL job in the captured mode. Compare it to eval-special.
+  Captured mode keeps track of *1 *2 *3 and *e REPL specials."
+  [job-id wrap-mode job-fn]
+  (try
+    (let [result (execute-job job-id wrap-mode job-fn)]
+      (set! *3 *2)
+      (set! *2 *1)
+      (set! *1 result)
+      (safe-pr-str result))
+    (catch :default e
+      (set! *e e)
+      (throw e))))
+
+(defn ^:export eval-special
+  "Evaluates a REPL job in the special mode. Compare it to eval-captured."
+  [job-id wrap-mode job-fn]
+  (let [result (execute-job job-id wrap-mode job-fn)]
+    (safe-pr-str result)))
+
 (defn ^:export postprocess-successful-eval
-  "This is a postprocessing function wrapping weasel javascript evaluation attempt.
+  "This is a postprocessing function wrapping Weasel's Javascript evaluation attempt.
   This structure is needed for building response to nREPL server (see dirac.implant.weasel in Dirac project)
   In our case weasel is running in the context of Dirac DevTools and could potentially have different version of cljs runtime.
   To be correct we have to do this post-processing in app's context to use the same cljs runtime as app evaluating the code.
@@ -167,59 +223,33 @@
                                   :value  (str value)})))
 
 (defn ^:export postprocess-unsuccessful-eval [ex]
-  "Same as postprocess-successful-eval but prepares response for evaluation attempt with exception."
+  "Same as postprocess-successful-eval but prepares response of evaluation attempt with an exception."
   (with-safe-printing (fn [] #js {:status     "exception"
                                   :value      (pr-str ex)
                                   :stacktrace (if (.hasOwnProperty ex "stack")
                                                 (aget ex "stack")
                                                 "No stacktrace available.")})))
 
-(defn ^:export request-eval-cljs [code]
-  (assert (string? code) "Code passed for evaluation must be a string")
-  (call-dirac "eval-cljs" code))
+(defn ^:export eval
+  "This is the main entrypoint for evaluation of a snippet of code in the context of REPL.
+   Please note that this code runs in the context of the app and uses ClojureScript runtime built together with the app.
 
-(defn ^:export request-eval-js [code]
-  (assert (string? code) "Code passed for evaluation must be a string")
-  (call-dirac "eval-js" code))
+    job-id    - a numeric id of the REPL job
+    eval-mode - 'captured' or 'special'
+    wrap-mode - 'wrap' or nil
+    job-fn    - code to be executed in the form of function
 
-(defn ^:export bootstrapped? []
-  *bootstrapped?*)
+  Note that normally we want to support capturing REPL specials *1 *2 *3 and *e. Only when we are executing their retrieval
+  we don't want to capture them and we want to use the 'special' path.
 
-(defn ^:export capture-output [job-id f]
-  ; we want to redirect all side-effect printing, so it can be presented in the Dirac REPL console
-  (binding [cljs.core/*print-newline* false
-            cljs.core/*print-fn* (partial present-output job-id "stdout" "plain-text")
-            cljs.core/*print-err-fn* (partial present-output job-id "stderr" "plain-text")]
-    (f)))
+  Also normally we want to wrap our code in a supporting wrapper which will present results directly via cljs-devtools,
+  or present exceptions in a friendly way. Also we want to capture any printing which might occur during evaluation.
+  In some special cases we might not want to do that.
 
-(defn ^:export present [job-id job-fn]
-  (try
-    (present-repl-result job-id (capture-output job-id job-fn))
-    (catch :default e
-      (present-repl-exception job-id e)
-      (throw e))))
+  Finally we want to postprocess evaluation result and prepare Weasel's nREPL response.
 
-(defn ^:export execute-job [job-id wrap-mode job-fn]
-  (case wrap-mode
-    "wrap" (present job-id job-fn)
-    (job-fn)))
-
-(defn ^:export eval-captured [job-id wrap-mode job-fn]
-  (try
-    (let [result (execute-job job-id wrap-mode job-fn)]
-      (set! *3 *2)
-      (set! *2 *1)
-      (set! *1 result)
-      (safe-pr-str result))
-    (catch :default e
-      (set! *e e)
-      (throw e))))
-
-(defn ^:export eval-special [job-id wrap-mode job-fn]
-  (let [result (execute-job job-id wrap-mode job-fn)]
-    (safe-pr-str result)))
-
-(defn ^:export eval [job-id eval-mode wrap-mode job-fn]
+  See https://github.com/binaryage/dirac/blob/master/docs/about-repls.md for conceptual overview."
+  [job-id eval-mode wrap-mode job-fn]
   (let [eval-fn (case eval-mode
                   "special" eval-special
                   "captured" eval-captured)]
@@ -227,6 +257,20 @@
       (postprocess-successful-eval (eval-fn job-id wrap-mode job-fn))
       (catch :default e
         (postprocess-unsuccessful-eval e)))))
+
+(defn ^:export request-eval-cljs
+  "Automates Dirac REPL from the app. This way you can request evaluation of ClojureScript code as it would be entered
+  directly by the user."
+  [code]
+  (assert (string? code) "Code passed for evaluation must be a string")
+  (call-dirac "eval-cljs" code))
+
+(defn ^:export request-eval-js
+  "Automates Dirac REPL from the app. This way you can request evaluation of Javascript code as it would be entered
+  directly by the user."
+  [code]
+  (assert (string? code) "Code passed for evaluation must be a string")
+  (call-dirac "eval-js" code))
 
 ; -- install/uninstall ------------------------------------------------------------------------------------------------------
 
