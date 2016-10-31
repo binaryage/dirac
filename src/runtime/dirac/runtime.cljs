@@ -18,9 +18,3 @@
 (def ^:export get-pref prefs/pref)
 (def ^:export set-prefs! prefs/set-prefs!)
 (def ^:export set-pref! prefs/set-pref!)
-
-; -- DEPRECATED API ---------------------------------------------------------------------------------------------------------
-
-(defn ^:export is-feature-available? [& args]
-  (.warn js/console "dirac.runtime/is-feature-available? is deprecated, use dirac.runtime/available? instead")
-  (apply core/is-feature-available? args))
