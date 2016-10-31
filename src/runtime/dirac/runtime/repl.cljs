@@ -1,5 +1,4 @@
 (ns dirac.runtime.repl
-  (:require-macros [dirac.runtime.repl :refer [with-safe-printing]])
   (:require [dirac.runtime.prefs :refer [get-prefs pref]]
             [dirac.runtime.bootstrap :refer [bootstrap!]]
             [dirac.runtime.output :as output]
@@ -117,6 +116,14 @@
     (let [soup (output/boil-rich-text text)]
       (apply log request-id kind soup))))
 
+(defn with-safe-printing [f]
+  (binding [cljs.core/*print-level* (pref :safe-print-level)
+            cljs.core/*print-length* (pref :safe-print-length)]
+    (f)))
+
+(defn safe-pr-str [v]
+  (with-safe-printing (fn [] (pr-str v))))
+
 ; -- REPL API ---------------------------------------------------------------------------------------------------------------
 
 (def api-version 7)                                                                                                           ; version of REPL API
@@ -156,18 +163,16 @@
   Also we have to be careful to not enter into infinite printing with cyclic data structures.
   We limit printing level and length via with-safe-printing."
   [value]
-  (with-safe-printing
-    #js {:status "success"
-         :value  (str value)}))
+  (with-safe-printing (fn [] #js {:status "success"
+                                  :value  (str value)})))
 
 (defn ^:export postprocess-unsuccessful-eval [ex]
   "Same as postprocess-successful-eval but prepares response for evaluation attempt with exception."
-  (with-safe-printing
-    #js {:status     "exception"
-         :value      (pr-str ex)
-         :stacktrace (if (.hasOwnProperty ex "stack")
-                       (.-stack ex)
-                       "No stacktrace available.")}))
+  (with-safe-printing (fn [] #js {:status     "exception"
+                                  :value      (pr-str ex)
+                                  :stacktrace (if (.hasOwnProperty ex "stack")
+                                                (aget ex "stack")
+                                                "No stacktrace available.")})))
 
 (defn ^:export request-eval-cljs [code]
   (assert (string? code) "Code passed for evaluation must be a string")
@@ -205,16 +210,14 @@
       (set! *3 *2)
       (set! *2 *1)
       (set! *1 result)
-      (with-safe-printing
-        (pr-str result)))
+      (safe-pr-str result))
     (catch :default e
       (set! *e e)
       (throw e))))
 
 (defn ^:export eval-special [job-id wrap-mode job-fn]
   (let [result (execute-job job-id wrap-mode job-fn)]
-    (with-safe-printing
-      (pr-str result))))
+    (safe-pr-str result)))
 
 (defn ^:export eval [job-id eval-mode wrap-mode job-fn]
   (let [eval-fn (case eval-mode
