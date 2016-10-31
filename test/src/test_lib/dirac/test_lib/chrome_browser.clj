@@ -170,6 +170,7 @@
 
 (defn setup-browser! []
   (start-browser!)
+  (Thread/sleep 2000)                                                                                                         ; ad-hoc delay, is this the bug? https://github.com/seleniumhq/selenium-google-code-issue-archive/issues/3951
   ; initial chromedriver connection is special
   ; we want to disconnect and then reconnect with debuggerAddress so we level paying field for tests to be executed later
   ; otherwise the first test would use this special connection which would be, well, inconsistent and unfair
