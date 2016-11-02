@@ -17,6 +17,7 @@ WebInspector.NetworkTimelineColumn = function(rowHeight, calculator)
     this._canvas = this.contentElement.createChild("canvas");
     this._canvas.tabIndex = 1;
     this.setDefaultFocusedElement(this._canvas);
+    this._canvasPosition = this._canvas.getBoundingClientRect();
 
     /** @const */
     this._leftPadding = 5;
@@ -38,6 +39,8 @@ WebInspector.NetworkTimelineColumn = function(rowHeight, calculator)
 
     /** @type {?WebInspector.NetworkRequest} */
     this._hoveredRequest = null;
+    /** @type {?WebInspector.NetworkRequest.InitiatorGraph} */
+    this._initiatorGraph = null;
 
     /** @type {?WebInspector.NetworkRequest} */
     this._navigationRequest = null;
@@ -49,6 +52,8 @@ WebInspector.NetworkTimelineColumn = function(rowHeight, calculator)
     this._rowNavigationRequestColor = WebInspector.themeSupport.patchColor("#def", colorUsage.Background);
     this._rowStripeColor = WebInspector.themeSupport.patchColor("#f5f5f5", colorUsage.Background);
     this._rowHoverColor = WebInspector.themeSupport.patchColor("#ebf2fc", /** @type {!WebInspector.ThemeSupport.ColorUsage} */ (colorUsage.Background | colorUsage.Selection));
+    this._parentInitiatorColor = WebInspector.themeSupport.patchColor("hsla(120, 68%, 54%, 0.2)", colorUsage.Background);
+    this._initiatedColor = WebInspector.themeSupport.patchColor("hsla(0, 68%, 54%, 0.2)", colorUsage.Background);
 
     /** @type {!Map<!WebInspector.ResourceType, string>} */
     this._borderColorsForResourceTypeCache = new Map();
@@ -100,14 +105,14 @@ WebInspector.NetworkTimelineColumn.prototype = {
         var start = this._timeToPosition(range.start);
         var end = this._timeToPosition(range.end);
 
-        if (event.offsetX < start || event.offsetX > end)
+        if (event.clientX < this._canvasPosition.left + start || event.clientX > this._canvasPosition.left + end)
             return;
 
         var rowIndex = this._requestData.findIndex(request => this._hoveredRequest === request);
         var barHeight = this._getBarHeight(range.name);
         var y = this._headerHeight + (this._rowHeight * rowIndex - this._scrollTop) + ((this._rowHeight - barHeight) / 2);
 
-        if (event.offsetY < y || event.offsetY > y + barHeight)
+        if (event.clientY < this._canvasPosition.top + y || event.clientY > this._canvasPosition.top + y + barHeight)
             return;
 
         var anchorBox = this.element.boxInWindow();
@@ -132,10 +137,12 @@ WebInspector.NetworkTimelineColumn.prototype = {
 
     /**
      * @param {?WebInspector.NetworkRequest} request
+     * @param {boolean} highlightInitiatorChain
      */
-    setHoveredRequest: function(request)
+    setHoveredRequest: function(request, highlightInitiatorChain)
     {
         this._hoveredRequest = request;
+        this._initiatorGraph = (highlightInitiatorChain && request) ? request.initiatorGraph() : null;
         this.update();
     },
 
@@ -237,6 +244,8 @@ WebInspector.NetworkTimelineColumn.prototype = {
     {
         this._offsetWidth = this.contentElement.offsetWidth - this._rightPadding;
         this._offsetHeight = this.contentElement.offsetHeight;
+        this._calculator.setDisplayWindow(this._offsetWidth);
+        this._canvasPosition = this._canvas.getBoundingClientRect();
     },
 
     /**
@@ -291,7 +300,6 @@ WebInspector.NetworkTimelineColumn.prototype = {
         var context = this._canvas.getContext("2d");
         context.save();
         context.scale(window.devicePixelRatio, window.devicePixelRatio);
-        context.save();
         context.translate(0, this._headerHeight);
         context.rect(0, 0, this._offsetWidth, this._offsetHeight);
         context.clip();
@@ -308,9 +316,9 @@ WebInspector.NetworkTimelineColumn.prototype = {
         }
         this._drawEventDividers(context);
         context.restore();
-        // This is outside of the save/restore above because it must draw in header.
-        this._drawDividers(context);
-        context.restore();
+
+        const freeZoneAtLeft = 75;
+        WebInspector.TimelineGrid.drawCanvasGrid(context, this._calculator, this._fontSize, freeZoneAtLeft);
     },
 
     /**
@@ -329,53 +337,6 @@ WebInspector.NetworkTimelineColumn.prototype = {
                 context.lineTo(x, this._offsetHeight);
             }
             context.stroke();
-        }
-        context.restore();
-    },
-
-    /**
-     * @param {!CanvasRenderingContext2D} context
-     */
-    _drawDividers: function(context)
-    {
-        context.save();
-        /** @const */
-        var minGridSlicePx = 64; // minimal distance between grid lines.
-
-        var drawableWidth = this._offsetWidth - this._leftPadding;
-        var timelineDuration = this._timelineDuration();
-        var dividersCount = drawableWidth / minGridSlicePx;
-        var gridSliceTime = timelineDuration / dividersCount;
-        var pixelsPerTime = drawableWidth / timelineDuration;
-
-        // Align gridSliceTime to a nearest round value.
-        // We allow spans that fit into the formula: span = (1|2|5)x10^n,
-        // e.g.: ...  .1  .2  .5  1  2  5  10  20  50  ...
-        // After a span has been chosen make grid lines at multiples of the span.
-
-        var logGridSliceTime = Math.ceil(Math.log(gridSliceTime) / Math.LN10);
-        gridSliceTime = Math.pow(10, logGridSliceTime);
-        if (gridSliceTime * pixelsPerTime >= 5 * minGridSlicePx)
-            gridSliceTime = gridSliceTime / 5;
-        if (gridSliceTime * pixelsPerTime >= 2 * minGridSlicePx)
-            gridSliceTime = gridSliceTime / 2;
-
-        context.lineWidth = 1;
-        context.strokeStyle = "rgba(0, 0, 0, .1)";
-        context.font = this._fontSize + "px sans-serif";
-        context.fillStyle = "#444";
-        gridSliceTime = gridSliceTime;
-        for (var position = gridSliceTime * pixelsPerTime; position < drawableWidth; position += gridSliceTime * pixelsPerTime) {
-            // Added .5 because canvas drawing points are between pixels.
-            var drawPosition = Math.floor(position) + this._leftPadding + .5;
-            context.beginPath();
-            context.moveTo(drawPosition, 0);
-            context.lineTo(drawPosition, this._offsetHeight);
-            context.stroke();
-            if (position <= gridSliceTime * pixelsPerTime)
-                continue;
-            var textData = Number.secondsToString(position / pixelsPerTime);
-            context.fillText(textData, drawPosition - context.measureText(textData).width - 2, Math.floor(this._headerHeight - this._fontSize / 2));
         }
         context.restore();
     },
@@ -600,20 +561,39 @@ WebInspector.NetworkTimelineColumn.prototype = {
      */
     _decorateRow: function(context, request, rowNumber, y)
     {
-        if (rowNumber % 2 === 1 && this._hoveredRequest !== request && this._navigationRequest !== request)
+        if (rowNumber % 2 === 1 && this._hoveredRequest !== request && this._navigationRequest !== request && !this._initiatorGraph)
+            return;
+
+        var color = getRowColor.call(this);
+        if (color === "transparent")
             return;
         context.save();
         context.beginPath();
-        var color = this._rowStripeColor;
-        if (this._hoveredRequest === request)
-            color = this._rowHoverColor;
-        else if (this._navigationRequest === request)
-            color = this._rowNavigationRequestColor;
-
         context.fillStyle = color;
         context.rect(0, y, this._offsetWidth, this._rowHeight);
         context.fill();
         context.restore();
+
+        /**
+         * @return {string}
+         * @this {WebInspector.NetworkTimelineColumn}
+         */
+        function getRowColor()
+        {
+            if (this._hoveredRequest === request)
+                return this._rowHoverColor;
+            if (this._initiatorGraph) {
+                if (this._initiatorGraph.initiators.has(request))
+                    return this._parentInitiatorColor;
+                if (this._initiatorGraph.initiated.has(request))
+                    return this._initiatedColor;
+            }
+            if (this._navigationRequest === request)
+                return this._rowNavigationRequestColor;
+            if (rowNumber % 2 === 1)
+                return "transparent";
+            return this._rowStripeColor;
+        }
     },
 
     __proto__: WebInspector.VBox.prototype
