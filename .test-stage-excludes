@@ -14,4 +14,4 @@
 /.*
 /dirac.iml
 /pom.xml*
-/test/browser/transcripts/actual
+/test/browser/transcripts/_actual_

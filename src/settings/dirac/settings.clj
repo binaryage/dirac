@@ -48,7 +48,7 @@
 (def ^:const SIGNAL_SERVER_MAX_CONNECTION_TIME (seconds 5))
 (def ^:const TASK_DISCONNECTED_WAIT_TIMEOUT (seconds 2))
 
-(def ^:const ACTUAL_TRANSCRIPTS_ROOT_PATH "test/browser/transcripts/actual/")
+(def ^:const ACTUAL_TRANSCRIPTS_ROOT_PATH "test/browser/transcripts/_actual_/")
 (def ^:const EXPECTED_TRANSCRIPTS_ROOT_PATH "test/browser/transcripts/expected/")
 
 (def ^:const TRANSCRIPT_LABEL_PADDING_LENGTH 17)
