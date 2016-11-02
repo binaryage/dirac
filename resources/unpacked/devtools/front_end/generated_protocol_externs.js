@@ -369,6 +369,13 @@ Protocol.PageAgent.prototype.processNavigation = function(response, navigationId
 /** @param {function(?Protocol.Error):void=} opt_callback */
 Protocol.PageAgent.prototype.invoke_processNavigation = function(obj, opt_callback) {}
 
+/**
+ * @param {function(?Protocol.Error, PageAgent.LayoutViewport, PageAgent.VisualViewport):void=} opt_callback
+ */
+Protocol.PageAgent.prototype.getLayoutMetrics = function(opt_callback) {}
+/** @param {function(?Protocol.Error, PageAgent.LayoutViewport, PageAgent.VisualViewport):void=} opt_callback */
+Protocol.PageAgent.prototype.invoke_getLayoutMetrics = function(obj, opt_callback) {}
+
 
 
 var PageAgent = function(){};
@@ -428,6 +435,12 @@ PageAgent.NavigationResponse = {
     Cancel: "Cancel",
     CancelAndIgnore: "CancelAndIgnore"
 };
+
+/** @typedef {!{pageX:(number), pageY:(number), clientWidth:(number), clientHeight:(number)}} */
+PageAgent.LayoutViewport;
+
+/** @typedef {!{offsetX:(number), offsetY:(number), pageX:(number), pageY:(number), clientWidth:(number), clientHeight:(number), scale:(number)}} */
+PageAgent.VisualViewport;
 /** @interface */
 PageAgent.Dispatcher = function() {};
 /**

@@ -1,5 +1,5 @@
-WebInspector.BakedInspectorBackendAPIChromeTag='56.0.2905.2';
-WebInspector.BakedInspectorBackendAPIChromeRev='3299ca326bf007fedc936c267f620f6118da76cd';
+WebInspector.BakedInspectorBackendAPIChromeTag='56.0.2907.2';
+WebInspector.BakedInspectorBackendAPIChromeRev='10ae436fe808a33451641e3b92e10f20954e28dc';
 WebInspector.BakedInspectorBackendAPI=''
 + 'InspectorBackend.registerEvent("Inspector.detached", ["reason"]);\n'
 + 'InspectorBackend.registerEvent("Inspector.targetCrashed", []);\n'
@@ -64,6 +64,7 @@ WebInspector.BakedInspectorBackendAPI=''
 + 'InspectorBackend.registerCommand("Page.setBlockedEventsWarningThreshold", [{"name": "threshold", "type": "number", "optional": false}], [], false);\n'
 + 'InspectorBackend.registerCommand("Page.setControlNavigations", [{"name": "enabled", "type": "boolean", "optional": false}], [], false);\n'
 + 'InspectorBackend.registerCommand("Page.processNavigation", [{"name": "response", "type": "string", "optional": false}, {"name": "navigationId", "type": "number", "optional": false}], [], false);\n'
++ 'InspectorBackend.registerCommand("Page.getLayoutMetrics", [], ["layoutViewport", "visualViewport"], false);\n'
 + 'InspectorBackend.registerCommand("Rendering.setShowPaintRects", [{"name": "result", "type": "boolean", "optional": false}], [], false);\n'
 + 'InspectorBackend.registerCommand("Rendering.setShowDebugBorders", [{"name": "show", "type": "boolean", "optional": false}], [], false);\n'
 + 'InspectorBackend.registerCommand("Rendering.setShowFPSCounter", [{"name": "show", "type": "boolean", "optional": false}], [], false);\n'
