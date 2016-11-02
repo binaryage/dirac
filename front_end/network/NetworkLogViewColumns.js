@@ -452,8 +452,8 @@ WebInspector.NetworkLogViewColumns.prototype = {
         this._dataGrid.markColumnAsSortedBy(WebInspector.NetworkLogViewColumns._initialSortColumn, WebInspector.DataGrid.Order.Ascending);
 
         if (Runtime.experiments.isEnabled("canvasNetworkTimeline")) {
-            this._splitWidget = new WebInspector.SplitWidget(true, false, "networkPanelSplitViewTimeline");
-            this._splitWidget.setSidebarWidget(this._dataGrid.asWidget());
+            this._splitWidget = new WebInspector.SplitWidget(true, true, "networkPanelSplitViewTimeline", 200);
+            this._splitWidget.setMainWidget(this._dataGrid.asWidget());
         }
     },
 
@@ -461,11 +461,12 @@ WebInspector.NetworkLogViewColumns.prototype = {
     {
         this._timelineColumn = new WebInspector.NetworkTimelineColumn(this._networkLogView.rowHeight(), this._networkLogView.calculator());
 
+        this._timelineColumn.element.addEventListener("contextmenu", handleContextMenu.bind(this));
         this._timelineColumn.element.addEventListener("mousewheel", this._onMouseWheel.bind(this, false), { passive: true });
         this._dataGridScroller.addEventListener("mousewheel",this._onMouseWheel.bind(this, true), true);
 
-        this._timelineColumn.element.addEventListener("mousemove", event => this._networkLogView.setHoveredRequest(this._timelineColumn.getRequestFromPoint(event.offsetX, event.offsetY + event.target.offsetTop)), true);
-        this._timelineColumn.element.addEventListener("mouseleave", this._networkLogView.setHoveredRequest.bind(this._networkLogView, null), true);
+        this._timelineColumn.element.addEventListener("mousemove", event => this._networkLogView.setHoveredRequest(this._timelineColumn.getRequestFromPoint(event.offsetX, event.offsetY + event.target.offsetTop), event.shiftKey), true);
+        this._timelineColumn.element.addEventListener("mouseleave", this._networkLogView.setHoveredRequest.bind(this._networkLogView, null, false), true);
 
         this._timelineScroller = this._timelineColumn.contentElement.createChild("div", "network-timeline-v-scroll");
         this._timelineScroller.addEventListener("scroll", this._syncScrollers.bind(this), { passive: true });
@@ -481,9 +482,23 @@ WebInspector.NetworkLogViewColumns.prototype = {
         this._createTimelineHeader();
         this._timelineColumn.contentElement.classList.add("network-timeline-view");
 
-        this._splitWidget.setMainWidget(this._timelineColumn);
+        this._splitWidget.setSidebarWidget(this._timelineColumn);
 
         this.switchViewMode(false);
+
+        /**
+         * @param {!Event} event
+         * @this {WebInspector.NetworkLogViewColumns}
+         */
+        function handleContextMenu(event)
+        {
+            var request = this._timelineColumn.getRequestFromPoint(event.offsetX, event.offsetY);
+            if (!request)
+                return;
+            var contextMenu = new WebInspector.ContextMenu(event);
+            this._networkLogView.handleContextMenuForRequest(contextMenu, request);
+            contextMenu.show();
+        }
     },
 
     /**
@@ -496,7 +511,7 @@ WebInspector.NetworkLogViewColumns.prototype = {
             event.consume(true);
         this._activeScroller.scrollTop -= event.wheelDeltaY;
         this._syncScrollers();
-        this._networkLogView.setHoveredRequest(this._timelineColumn.getRequestFromPoint(event.offsetX, event.offsetY));
+        this._networkLogView.setHoveredRequest(this._timelineColumn.getRequestFromPoint(event.offsetX, event.offsetY), event.shiftKey);
     },
 
     _syncScrollers: function()
@@ -538,11 +553,12 @@ WebInspector.NetworkLogViewColumns.prototype = {
 
     /**
      * @param {?WebInspector.NetworkRequest} request
+     * @param {boolean} highlightInitiatorChain
      */
-    setHoveredRequest: function(request)
+    setHoveredRequest: function(request, highlightInitiatorChain)
     {
         if (Runtime.experiments.isEnabled("canvasNetworkTimeline"))
-            this._timelineColumn.setHoveredRequest(request);
+            this._timelineColumn.setHoveredRequest(request, highlightInitiatorChain);
     },
 
     _createTimelineHeader: function()

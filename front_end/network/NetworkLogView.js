@@ -335,7 +335,7 @@ WebInspector.NetworkLogView.prototype = {
     _setupDataGrid: function()
     {
         this._dataGrid = this._columns.dataGrid();
-        this._dataGrid.setRowContextMenuCallback(this._onRowContextMenu.bind(this));
+        this._dataGrid.setRowContextMenuCallback((contextMenu, node) => this.handleContextMenuForRequest(contextMenu, node.request()));
         this._dataGrid.setStickToBottom(true);
         this._dataGrid.setName("networkLog");
         this._dataGrid.setResizeMethod(WebInspector.DataGrid.ResizeMethod.Last);
@@ -351,8 +351,9 @@ WebInspector.NetworkLogView.prototype = {
     _dataGridMouseMove: function(event)
     {
         var node = this._dataGrid.dataGridNodeFromNode(event.target);
-        this._setHoveredNode(node);
-        this._highlightInitiatorChain((event.shiftKey && node) ? node.request() : null);
+        var highlightInitiatorChain = event.shiftKey;
+        this._setHoveredNode(node, highlightInitiatorChain);
+        this._highlightInitiatorChain((highlightInitiatorChain && node) ? node.request() : null);
     },
 
     _dataGridMouseLeave: function()
@@ -363,23 +364,26 @@ WebInspector.NetworkLogView.prototype = {
 
     /**
      * @param {?WebInspector.NetworkRequest} request
+     * @param {boolean} highlightInitiatorChain
      */
-    setHoveredRequest: function(request)
+    setHoveredRequest: function(request, highlightInitiatorChain)
     {
-        this._setHoveredNode(request ? this._nodesByRequestId.get(request.requestId) : null);
+        this._setHoveredNode(request ? this._nodesByRequestId.get(request.requestId) : null, highlightInitiatorChain);
+        this._highlightInitiatorChain((request && highlightInitiatorChain) ? request : null);
     },
 
     /**
      * @param {?WebInspector.NetworkDataGridNode} node
+     * @param {boolean=} highlightInitiatorChain
      */
-    _setHoveredNode: function(node)
+    _setHoveredNode: function(node, highlightInitiatorChain)
     {
         if (this._hoveredNode)
             this._hoveredNode.element().classList.remove("hover");
         this._hoveredNode = node;
         if (this._hoveredNode)
             this._hoveredNode.element().classList.add("hover");
-        this._columns.setHoveredRequest(this._hoveredNode ? this._hoveredNode.request() : null);
+        this._columns.setHoveredRequest(this._hoveredNode ? this._hoveredNode.request() : null, !!highlightInitiatorChain);
     },
 
     /**
@@ -409,21 +413,12 @@ WebInspector.NetworkLogView.prototype = {
             return;
         }
 
-        var initiators = request.initiatorChain();
-        var initiated = new Set();
+        var initiatorGraph = request.initiatorGraph();
         for (var node of this._nodesByRequestId.values()) {
             if (!node.dataGrid)
                 continue;
-            var localInitiators = node.request().initiatorChain();
-            if (localInitiators.has(request))
-                initiated.add(node.request());
-        }
-
-        for (var node of this._nodesByRequestId.values()) {
-            if (!node.dataGrid)
-                continue;
-            node.element().classList.toggle("network-node-on-initiator-path", node.request() !== request && initiators.has(node.request()));
-            node.element().classList.toggle("network-node-on-initiated-path", node.request() !== request && initiated.has(node.request()));
+            node.element().classList.toggle("network-node-on-initiator-path", node.request() !== request && initiatorGraph.initiators.has(node.request()));
+            node.element().classList.toggle("network-node-on-initiated-path", node.request() !== request && initiatorGraph.initiated.has(node.request()));
         }
     },
 
@@ -880,12 +875,10 @@ WebInspector.NetworkLogView.prototype = {
 
     /**
      * @param {!WebInspector.ContextMenu} contextMenu
-     * @param {!WebInspector.DataGridNode} node
+     * @param {!WebInspector.NetworkRequest} request
      */
-    _onRowContextMenu: function(contextMenu, node)
+    handleContextMenuForRequest: function(contextMenu, request)
     {
-        var request = node.request();
-
         contextMenu.appendApplicableItems(request);
         var copyMenu = contextMenu.appendSubMenuItem(WebInspector.UIString("Copy"));
         if (request) {
@@ -946,8 +939,6 @@ WebInspector.NetworkLogView.prototype = {
             contextMenu.appendItem(WebInspector.UIString("Replay XHR"), request.replayXHR.bind(request));
             contextMenu.appendSeparator();
         }
-
-        contextMenu.show();
     },
 
     _harRequests: function()
