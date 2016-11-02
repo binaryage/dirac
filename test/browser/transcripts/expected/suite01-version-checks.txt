@@ -139,7 +139,7 @@ devtools #5      init-repl!
 devtools #5      setDiracPromptStatusContent('Checking for Dirac Runtime presence in your app...')
 devtools #5      setDiracPromptStatusStyle('info')
 devtools #5      setDiracPromptStatusContent('Dirac REPL API version mismatch detected.
-                 Dirac DevTools requires Dirac Runtime REPL API v7, but your version is v0.
+                 Dirac DevTools requires Dirac Runtime REPL API v8, but your version is v0.
                  Please <a href="https://github.com/binaryage/dirac/blob/master/docs/upgrading.md">upgrade Dirac Runtime</a> in your app.')
 devtools #5      setDiracPromptStatusStyle('error')
 automate #5      close-devtools!
@@ -168,7 +168,7 @@ devtools #6      init-repl!
 devtools #6      setDiracPromptStatusContent('Checking for Dirac Runtime presence in your app...')
 devtools #6      setDiracPromptStatusStyle('info')
 devtools #6      setDiracPromptStatusContent('Dirac REPL API version mismatch detected.
-                 Dirac DevTools requires Dirac Runtime REPL API v7, but your version is v1000.
+                 Dirac DevTools requires Dirac Runtime REPL API v8, but your version is v1000.
                  Please <a href="https://github.com/binaryage/dirac/blob/master/docs/upgrading.md">upgrade Dirac Runtime</a> in your app.')
 devtools #6      setDiracPromptStatusStyle('error')
 automate #6      close-devtools!

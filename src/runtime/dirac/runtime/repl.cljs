@@ -126,7 +126,7 @@
 
 ; -- REPL API ---------------------------------------------------------------------------------------------------------------
 
-(def api-version 7)                                                                                                           ; current version of our REPL API
+(def api-version 8)                                                                                                           ; current version of our REPL API
 
 (defn ^:export get-api-version []
   api-version)
@@ -187,7 +187,7 @@
   "Execute a REPL job by optionally wrapping it in a requested wrapper."
   [job-id wrap-mode job-fn]
   (case wrap-mode
-    "wrap" (present job-id job-fn)
+    "short-circuit-presentation" (present job-id job-fn)
     (job-fn)))
 
 (defn ^:export eval-captured
@@ -236,7 +236,7 @@
 
     job-id    - a numeric id of the REPL job
     eval-mode - 'captured' or 'special'
-    wrap-mode - 'wrap' or nil
+    wrap-mode - 'short-circuit-presentation' or nil
     job-fn    - code to be executed in the form of function
 
   Note that normally we want to support capturing REPL specials *1 *2 *3 and *e. Only when we are executing their retrieval

@@ -20,7 +20,7 @@
             [goog.functions :as gfns])
   (:import goog.net.WebSocket.ErrorEvent))
 
-(defonce required-repl-api-version 7)
+(defonce required-repl-api-version 8)
 
 (defonce ^:dynamic *debugger-events-subscribed* false)
 (defonce ^:dynamic *repl-connected* false)
@@ -244,7 +244,7 @@
   (when (repl-ready?)
     (console/announce-job-start! job-id (str "eval: " code))
     (let [message {:op         "eval"
-                   :dirac      "wrap"
+                   :dirac      "short-circuit-presentation"
                    :id         job-id
                    :code       code
                    :scope-info (prepare-scope-info scope-info)}]
