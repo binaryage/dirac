@@ -56,21 +56,6 @@ devtools #1      send-eval-request: js/window.NaN
 devtools #1      repl eval job started
 devtools #1      DF.log> NaN
 devtools #1      repl eval job ended
-automate #1      console-exec-and-match! ["(x)" "TypeError: Cannot read property 'call' of undefined"]
-devtools #1      DC.log> (x)
-devtools #1      send-eval-request: (x)
-devtools #1      repl eval job started
-devtools #1      present-server-side-output! stderr/plain-text > WARNING: Use of undeclared Var cljs.user/x at line 1 ~repl/<path>
-devtools #1      DF.err>
-                 TypeError: Cannot read property 'call' of undefined
-                     at cljs$user$repl_job_5 (~repl/<path>:2)
-                     at dirac$runtime$repl$capture_output (repl.cljs:<line>)
-                     at dirac$runtime$repl$present (repl.cljs:<line>)
-                     at dirac$runtime$repl$execute_job (repl.cljs:<line>)
-                     at dirac$runtime$repl$eval_captured (repl.cljs:<line>)
-                     at Object.dirac$runtime$repl$eval [as eval] (repl.cljs:<line>)
-                     at ~repl/<path>:1
-devtools #1      repl eval job ended
 automate #1      console-exec-and-match! ["(in-ns)" "java-trace/plain-text > java.lang.IllegalArgumentException: Argument to in-ns must be a symbol."]
 devtools #1      DC.log> (in-ns)
 devtools #1      send-eval-request: (in-ns)
@@ -132,6 +117,7 @@ automate #2      close-devtools!
 extension        handling command: close-dirac-devtools
 extension        unregister devtools #2
 ∎
+
 testing          page refresh while REPL was connected
 automate         open-devtools!
 extension        handling command: open-dirac-devtools
@@ -391,5 +377,5 @@ extension        handling command: close-dirac-devtools
 extension        unregister devtools #7
 ∎
 automate         close-scenario! ["scenario-tab#1"]
-summary          Automated 79 actions with 19 check-points containing 3 assertions.
+summary          Automated 78 actions with 19 check-points containing 3 assertions.
                  0 failures, 0 errors.
