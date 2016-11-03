@@ -270,12 +270,12 @@ WebInspector.DiracPromptWithHistory = class extends WebInspector.TextPrompt {
     }
     if (javascriptCompletion) {
       this._prefixRange = new WebInspector.TextRange(cursor.line, token.start + javascriptCompletion.offset, cursor.line, cursor.ch);
-      const completionsForJavascriptReady = this._completionsForJavascriptReady.bind(this, this._lastAutocompleteRequest, !!reverse, !!force);
-      this._loadJavascriptCompletions(this._lastAutocompleteRequest, javascriptCompletion.prefix, !!force, completionsForJavascriptReady);
+      const completionsForJavascriptReady = this._completionsForJavascriptReady.bind(this, this._lastAutocompleteRequest, reverse, force);
+      this._loadJavascriptCompletions(this._lastAutocompleteRequest, javascriptCompletion.prefix, force, completionsForJavascriptReady);
     } else {
       this._prefixRange = new WebInspector.TextRange(cursor.line, token.start, cursor.line, cursor.ch);
-      const completionsForClojureScriptReady = this._completionsForClojureScriptReady.bind(this, this._lastAutocompleteRequest, !!reverse, !!force);
-      this._loadClojureScriptCompletions(this._lastAutocompleteRequest, prefix, !!force, completionsForClojureScriptReady);
+      const completionsForClojureScriptReady = this._completionsForClojureScriptReady.bind(this, this._lastAutocompleteRequest, reverse, force);
+      this._loadClojureScriptCompletions(this._lastAutocompleteRequest, prefix, force, completionsForClojureScriptReady);
     }
   }
 
@@ -602,10 +602,6 @@ WebInspector.DiracPromptWithHistory = class extends WebInspector.TextPrompt {
         }));
       };
 
-      const extractNamespaceNames = namespaceDescriptors => {
-        return Object.keys(namespaceDescriptors);
-      };
-
       const annotateAliasesOrRefers = (kind, prefix, style, namespaceDescriptor) => {
         if (!namespaceDescriptor) {
           return [];
@@ -715,7 +711,7 @@ WebInspector.DiracPromptWithHistory = class extends WebInspector.TextPrompt {
       const result = [];
       let previous = null;
       for (const current of completions) {
-        var skip = false;
+        let skip = false;
         if (previous) {
           if (current.title === previous.title) {
             if (previous.className.includes("suggest-cljs-ns") &&
@@ -859,8 +855,8 @@ WebInspector.DiracPromptWithHistory = class extends WebInspector.TextPrompt {
    * @override
    */
   onKeyDown(event) {
-    var newText;
-    var isPrevious;
+    let newText;
+    let isPrevious;
 
     switch (event.keyCode) {
       case WebInspector.KeyboardShortcut.Keys.Up.code:
@@ -892,12 +888,12 @@ WebInspector.DiracPromptWithHistory = class extends WebInspector.TextPrompt {
       this.clearAutocomplete();
 
       if (isPrevious) {
-        var firstNewlineIndex = this.text().indexOf("\n");
+        const firstNewlineIndex = this.text().indexOf("\n");
         if (firstNewlineIndex === -1)
           this.moveCaretToEndOfPrompt();
         else {
-          var selection = this._element.getComponentSelection();
-          var selectionRange = this._createRange();
+          const selection = this._element.getComponentSelection();
+          const selectionRange = this._createRange();
 
           selectionRange.setStart(this._element.firstChild, firstNewlineIndex);
           selectionRange.setEnd(this._element.firstChild, firstNewlineIndex);
@@ -912,4 +908,4 @@ WebInspector.DiracPromptWithHistory = class extends WebInspector.TextPrompt {
 
     WebInspector.TextPrompt.prototype.onKeyDown.apply(this, arguments);
   }
-};
+}
