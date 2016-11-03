@@ -296,15 +296,6 @@ WebInspector.DiracPromptWithHistory = class extends WebInspector.TextPrompt {
       return;
     }
 
-    const executionContext = WebInspector.context.flavor(WebInspector.ExecutionContext);
-    if (!executionContext) {
-      if (dirac._DEBUG_COMPLETIONS) {
-        console.warn("no execution context available");
-      }
-      completionsReadyCallback("", "", []);
-      return;
-    }
-
     let prefix = input;
     let expressionString = '';
     const lastDotIndex = input.lastIndexOf(".");
@@ -322,7 +313,7 @@ WebInspector.DiracPromptWithHistory = class extends WebInspector.TextPrompt {
       }
     }
 
-    executionContext.completionsForExpression(expressionString, prefix, force).then(completionsReadyCallback.bind(this, expressionString, prefix));
+    WebInspector.JavaScriptAutocomplete.completionsForExpression(expressionString, prefix, force).then(completionsReadyCallback.bind(this, expressionString, prefix));
   }
 
   /**
