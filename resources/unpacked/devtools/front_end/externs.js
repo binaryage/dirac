@@ -640,7 +640,7 @@ var CodeMirror = function(element, config) {};
 CodeMirror.on = function(obj, type, handler) {};
 CodeMirror.prototype = {
   /** @type {!Doc} */
-  doc: null,
+  doc: new Doc(),
   addKeyMap: function(map) {},
   addLineClass: function(handle, where, cls) {},
   /**
