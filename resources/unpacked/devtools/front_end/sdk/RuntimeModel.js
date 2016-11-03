@@ -85,7 +85,7 @@ WebInspector.RuntimeModel = class extends WebInspector.SDKModel {
   }
 
   /**
-   * @param {!RuntimeAgent.ExecutionContextId} id
+   * @param {!Protocol.Runtime.ExecutionContextId} id
    * @return {?WebInspector.ExecutionContext}
    */
   executionContext(id) {
@@ -93,7 +93,7 @@ WebInspector.RuntimeModel = class extends WebInspector.SDKModel {
   }
 
   /**
-   * @param {!RuntimeAgent.ExecutionContextDescription} context
+   * @param {!Protocol.Runtime.ExecutionContextDescription} context
    */
   _executionContextCreated(context) {
     // The private script context should be hidden behind an experiment.
@@ -134,7 +134,7 @@ WebInspector.RuntimeModel = class extends WebInspector.SDKModel {
   }
 
   /**
-   * @param {!RuntimeAgent.RemoteObject} payload
+   * @param {!Protocol.Runtime.RemoteObject} payload
    * @return {!WebInspector.RemoteObject}
    */
   createRemoteObject(payload) {
@@ -145,7 +145,7 @@ WebInspector.RuntimeModel = class extends WebInspector.SDKModel {
   }
 
   /**
-   * @param {!RuntimeAgent.RemoteObject} payload
+   * @param {!Protocol.Runtime.RemoteObject} payload
    * @param {!WebInspector.ScopeRef} scopeRef
    * @return {!WebInspector.RemoteObject}
    */
@@ -165,13 +165,13 @@ WebInspector.RuntimeModel = class extends WebInspector.SDKModel {
     if (typeof value === 'number') {
       var description = String(value);
       if (value === 0 && 1 / value < 0)
-        unserializableValue = RuntimeAgent.UnserializableValue.Negative0;
+        unserializableValue = Protocol.Runtime.UnserializableValue.Negative0;
       if (description === 'NaN')
-        unserializableValue = RuntimeAgent.UnserializableValue.NaN;
+        unserializableValue = Protocol.Runtime.UnserializableValue.NaN;
       if (description === 'Infinity')
-        unserializableValue = RuntimeAgent.UnserializableValue.Infinity;
+        unserializableValue = Protocol.Runtime.UnserializableValue.Infinity;
       if (description === '-Infinity')
-        unserializableValue = RuntimeAgent.UnserializableValue.NegativeInfinity;
+        unserializableValue = Protocol.Runtime.UnserializableValue.NegativeInfinity;
       if (typeof unserializableValue !== 'undefined')
         value = undefined;
     }
@@ -204,15 +204,15 @@ WebInspector.RuntimeModel = class extends WebInspector.SDKModel {
    * @param {string} sourceURL
    * @param {boolean} persistScript
    * @param {number} executionContextId
-   * @param {function(!RuntimeAgent.ScriptId=, ?RuntimeAgent.ExceptionDetails=)=} callback
+   * @param {function(!Protocol.Runtime.ScriptId=, ?Protocol.Runtime.ExceptionDetails=)=} callback
    */
   compileScript(expression, sourceURL, persistScript, executionContextId, callback) {
     this._agent.compileScript(expression, sourceURL, persistScript, executionContextId, innerCallback);
 
     /**
      * @param {?Protocol.Error} error
-     * @param {!RuntimeAgent.ScriptId=} scriptId
-     * @param {?RuntimeAgent.ExceptionDetails=} exceptionDetails
+     * @param {!Protocol.Runtime.ScriptId=} scriptId
+     * @param {?Protocol.Runtime.ExceptionDetails=} exceptionDetails
      */
     function innerCallback(error, scriptId, exceptionDetails) {
       if (error) {
@@ -225,7 +225,7 @@ WebInspector.RuntimeModel = class extends WebInspector.SDKModel {
   }
 
   /**
-   * @param {!RuntimeAgent.ScriptId} scriptId
+   * @param {!Protocol.Runtime.ScriptId} scriptId
    * @param {number} executionContextId
    * @param {string=} objectGroup
    * @param {boolean=} silent
@@ -233,7 +233,7 @@ WebInspector.RuntimeModel = class extends WebInspector.SDKModel {
    * @param {boolean=} returnByValue
    * @param {boolean=} generatePreview
    * @param {boolean=} awaitPromise
-   * @param {function(?RuntimeAgent.RemoteObject, ?RuntimeAgent.ExceptionDetails=)=} callback
+   * @param {function(?Protocol.Runtime.RemoteObject, ?Protocol.Runtime.ExceptionDetails=)=} callback
    */
   runScript(
       scriptId,
@@ -251,8 +251,8 @@ WebInspector.RuntimeModel = class extends WebInspector.SDKModel {
 
     /**
      * @param {?Protocol.Error} error
-     * @param {!RuntimeAgent.RemoteObject} result
-     * @param {!RuntimeAgent.ExceptionDetails=} exceptionDetails
+     * @param {!Protocol.Runtime.RemoteObject} result
+     * @param {!Protocol.Runtime.ExceptionDetails=} exceptionDetails
      */
     function innerCallback(error, result, exceptionDetails) {
       if (error) {
@@ -265,7 +265,7 @@ WebInspector.RuntimeModel = class extends WebInspector.SDKModel {
   }
 
   /**
-   * @param {!RuntimeAgent.RemoteObject} payload
+   * @param {!Protocol.Runtime.RemoteObject} payload
    * @param {!Object=} hints
    */
   _inspectRequested(payload, hints) {
@@ -339,7 +339,7 @@ WebInspector.RuntimeModel.Events = {
 WebInspector.RuntimeModel._privateScript = 'private script';
 
 /**
- * @implements {RuntimeAgent.Dispatcher}
+ * @implements {Protocol.RuntimeDispatcher}
  * @unrestricted
  */
 WebInspector.RuntimeDispatcher = class {
@@ -352,7 +352,7 @@ WebInspector.RuntimeDispatcher = class {
 
   /**
    * @override
-   * @param {!RuntimeAgent.ExecutionContextDescription} context
+   * @param {!Protocol.Runtime.ExecutionContextDescription} context
    */
   executionContextCreated(context) {
     this._runtimeModel._executionContextCreated(context);
@@ -360,7 +360,7 @@ WebInspector.RuntimeDispatcher = class {
 
   /**
    * @override
-   * @param {!RuntimeAgent.ExecutionContextId} executionContextId
+   * @param {!Protocol.Runtime.ExecutionContextId} executionContextId
    */
   executionContextDestroyed(executionContextId) {
     this._runtimeModel._executionContextDestroyed(executionContextId);
@@ -376,7 +376,7 @@ WebInspector.RuntimeDispatcher = class {
   /**
    * @override
    * @param {number} timestamp
-   * @param {!RuntimeAgent.ExceptionDetails} exceptionDetails
+   * @param {!Protocol.Runtime.ExceptionDetails} exceptionDetails
    */
   exceptionThrown(timestamp, exceptionDetails) {
     var consoleMessage = WebInspector.ConsoleMessage.fromException(
@@ -402,10 +402,10 @@ WebInspector.RuntimeDispatcher = class {
   /**
    * @override
    * @param {string} type
-   * @param {!Array.<!RuntimeAgent.RemoteObject>} args
+   * @param {!Array.<!Protocol.Runtime.RemoteObject>} args
    * @param {number} executionContextId
    * @param {number} timestamp
-   * @param {!RuntimeAgent.StackTrace=} stackTrace
+   * @param {!Protocol.Runtime.StackTrace=} stackTrace
    */
   consoleAPICalled(type, args, executionContextId, timestamp, stackTrace) {
     var level = WebInspector.ConsoleMessage.MessageLevel.Log;
@@ -434,7 +434,7 @@ WebInspector.RuntimeDispatcher = class {
 
   /**
    * @override
-   * @param {!RuntimeAgent.RemoteObject} payload
+   * @param {!Protocol.Runtime.RemoteObject} payload
    * @param {!Object=} hints
    */
   inspectRequested(payload, hints) {
@@ -508,7 +508,7 @@ WebInspector.ExecutionContext = class extends WebInspector.SDKObject {
    * @param {boolean} returnByValue
    * @param {boolean} generatePreview
    * @param {boolean} userGesture
-   * @param {function(?WebInspector.RemoteObject, !RuntimeAgent.ExceptionDetails=)} callback
+   * @param {function(?WebInspector.RemoteObject, !Protocol.Runtime.ExceptionDetails=)} callback
    */
   evaluate(
       expression,
@@ -531,7 +531,7 @@ WebInspector.ExecutionContext = class extends WebInspector.SDKObject {
   /**
    * @param {string} objectGroup
    * @param {boolean} generatePreview
-   * @param {function(?WebInspector.RemoteObject, !RuntimeAgent.ExceptionDetails=)} callback
+   * @param {function(?WebInspector.RemoteObject, !Protocol.Runtime.ExceptionDetails=)} callback
    */
   globalObject(objectGroup, generatePreview, callback) {
     this._evaluateGlobal('this', objectGroup, false, true, false, generatePreview, false, callback);
@@ -545,7 +545,7 @@ WebInspector.ExecutionContext = class extends WebInspector.SDKObject {
    * @param {boolean} returnByValue
    * @param {boolean} generatePreview
    * @param {boolean} userGesture
-   * @param {function(?WebInspector.RemoteObject, !RuntimeAgent.ExceptionDetails=)} callback
+   * @param {function(?WebInspector.RemoteObject, !Protocol.Runtime.ExceptionDetails=)} callback
    */
   _evaluateGlobal(
       expression,
@@ -564,8 +564,8 @@ WebInspector.ExecutionContext = class extends WebInspector.SDKObject {
     /**
      * @this {WebInspector.ExecutionContext}
      * @param {?Protocol.Error} error
-     * @param {!RuntimeAgent.RemoteObject} result
-     * @param {!RuntimeAgent.ExceptionDetails=} exceptionDetails
+     * @param {!Protocol.Runtime.RemoteObject} result
+     * @param {!Protocol.Runtime.ExceptionDetails=} exceptionDetails
      */
     function evalCallback(error, result, exceptionDetails) {
       if (error) {
@@ -578,233 +578,6 @@ WebInspector.ExecutionContext = class extends WebInspector.SDKObject {
     this.target().runtimeAgent().evaluate(
         expression, objectGroup, includeCommandLineAPI, silent, this.id, returnByValue, generatePreview, userGesture,
         false, evalCallback.bind(this));
-  }
-
-  /**
-   * @param {string} expressionString
-   * @param {string} prefix
-   * @param {boolean=} force
-   * @return {!Promise<!Array<string>>}
-   */
-  completionsForExpression(expressionString, prefix, force) {
-    var lastIndex = expressionString.length - 1;
-
-    var dotNotation = (expressionString[lastIndex] === '.');
-    var bracketNotation = (expressionString[lastIndex] === '[');
-
-    if (dotNotation || bracketNotation)
-      expressionString = expressionString.substr(0, lastIndex);
-
-    // User is entering float value, do not suggest anything.
-    if (expressionString && !isNaN(expressionString))
-      return Promise.resolve([]);
-
-    if (!prefix && !expressionString && !force)
-      return Promise.resolve([]);
-
-    var fufill;
-    var promise = new Promise(x => fufill = x);
-    if (!expressionString && this.debuggerModel.selectedCallFrame())
-      this.debuggerModel.selectedCallFrame().variableNames(receivedPropertyNames.bind(this));
-    else
-      this.evaluate(expressionString, 'completion', true, true, false, false, false, evaluated.bind(this));
-
-    return promise;
-    /**
-     * @param {?WebInspector.RemoteObject} result
-     * @param {!RuntimeAgent.ExceptionDetails=} exceptionDetails
-     * @this {WebInspector.ExecutionContext}
-     */
-    function evaluated(result, exceptionDetails) {
-      if (!result || !!exceptionDetails) {
-        fufill([]);
-        return;
-      }
-
-      /**
-       * @param {?WebInspector.RemoteObject} object
-       * @return {!Promise<?WebInspector.RemoteObject>}
-       */
-      function extractTarget(object) {
-        if (!object)
-          return Promise.resolve(/** @type {?WebInspector.RemoteObject} */ (null));
-        if (object.type !== 'object' || object.subtype !== 'proxy')
-          return Promise.resolve(/** @type {?WebInspector.RemoteObject} */ (object));
-        return object.getOwnPropertiesPromise().then(extractTargetFromProperties).then(extractTarget);
-      }
-
-      /**
-       * @param {!{properties: ?Array<!WebInspector.RemoteObjectProperty>, internalProperties: ?Array<!WebInspector.RemoteObjectProperty>}} properties
-       * @return {?WebInspector.RemoteObject}
-       */
-      function extractTargetFromProperties(properties) {
-        var internalProperties = properties.internalProperties || [];
-        var target = internalProperties.find(property => property.name === '[[Target]]');
-        return target ? target.value : null;
-      }
-
-      /**
-       * @param {string=} type
-       * @return {!Object}
-       * @suppressReceiverCheck
-       * @this {Object}
-       */
-      function getCompletions(type) {
-        var object;
-        if (type === 'string')
-          object = new String('');
-        else if (type === 'number')
-          object = new Number(0);
-        else if (type === 'boolean')
-          object = new Boolean(false);
-        else
-          object = this;
-
-        var resultSet = {__proto__: null};
-        try {
-          for (var o = object; o; o = Object.getPrototypeOf(o)) {
-            if ((type === 'array' || type === 'typedarray') && o === object && ArrayBuffer.isView(o) && o.length > 9999)
-              continue;
-            var names = Object.getOwnPropertyNames(o);
-            var isArray = Array.isArray(o);
-            for (var i = 0; i < names.length; ++i) {
-              // Skip array elements indexes.
-              if (isArray && /^[0-9]/.test(names[i]))
-                continue;
-              resultSet[names[i]] = true;
-            }
-          }
-        } catch (e) {
-        }
-        return resultSet;
-      }
-
-      /**
-       * @param {?WebInspector.RemoteObject} object
-       * @this {WebInspector.ExecutionContext}
-       */
-      function completionsForObject(object) {
-        if (!object)
-          receivedPropertyNames.call(this, null);
-        else if (object.type === 'object' || object.type === 'function')
-          object.callFunctionJSON(
-              getCompletions, [WebInspector.RemoteObject.toCallArgument(object.subtype)],
-              receivedPropertyNames.bind(this));
-        else if (object.type === 'string' || object.type === 'number' || object.type === 'boolean')
-          this.evaluate(
-              '(' + getCompletions + ')("' + result.type + '")', 'completion', false, true, true, false, false,
-              receivedPropertyNamesFromEval.bind(this));
-      }
-
-      extractTarget(result).then(completionsForObject.bind(this));
-    }
-
-    /**
-     * @param {?WebInspector.RemoteObject} result
-     * @param {!RuntimeAgent.ExceptionDetails=} exceptionDetails
-     * @this {WebInspector.ExecutionContext}
-     */
-    function receivedPropertyNamesFromEval(result, exceptionDetails) {
-      this.target().runtimeAgent().releaseObjectGroup('completion');
-      if (result && !exceptionDetails)
-        receivedPropertyNames.call(this, /** @type {!Object} */ (result.value));
-      else
-        fufill([]);
-    }
-
-    /**
-     * @param {?Object} propertyNames
-     * @this {WebInspector.ExecutionContext}
-     */
-    function receivedPropertyNames(propertyNames) {
-      this.target().runtimeAgent().releaseObjectGroup('completion');
-      if (!propertyNames) {
-        fufill([]);
-        return;
-      }
-      var includeCommandLineAPI = (!dotNotation && !bracketNotation);
-      if (includeCommandLineAPI) {
-        const commandLineAPI = [
-          'dir',
-          'dirxml',
-          'keys',
-          'values',
-          'profile',
-          'profileEnd',
-          'monitorEvents',
-          'unmonitorEvents',
-          'inspect',
-          'copy',
-          'clear',
-          'getEventListeners',
-          'debug',
-          'undebug',
-          'monitor',
-          'unmonitor',
-          'table',
-          '$',
-          '$$',
-          '$x'
-        ];
-        for (var i = 0; i < commandLineAPI.length; ++i)
-          propertyNames[commandLineAPI[i]] = true;
-      }
-      fufill(this._completionsForPrefix(
-          dotNotation, bracketNotation, expressionString, prefix, Object.keys(propertyNames)));
-    }
-  }
-
-  /**
-   * @param {boolean} dotNotation
-   * @param {boolean} bracketNotation
-   * @param {string} expressionString
-   * @param {string} prefix
-   * @param {!Array.<string>} properties
-   * @return {!Array<string>}
-   */
-  _completionsForPrefix(dotNotation, bracketNotation, expressionString, prefix, properties) {
-    if (bracketNotation) {
-      if (prefix.length && prefix[0] === '\'')
-        var quoteUsed = '\'';
-      else
-        var quoteUsed = '"';
-    }
-
-    var results = [];
-
-    if (!expressionString) {
-      const keywords = [
-        'break', 'case',     'catch',  'continue', 'default',    'delete', 'do',     'else',   'finally',
-        'for',   'function', 'if',     'in',       'instanceof', 'new',    'return', 'switch', 'this',
-        'throw', 'try',      'typeof', 'var',      'void',       'while',  'with'
-      ];
-      properties = properties.concat(keywords);
-    }
-
-    properties.sort();
-
-    for (var i = 0; i < properties.length; ++i) {
-      var property = properties[i];
-
-      // Assume that all non-ASCII characters are letters and thus can be used as part of identifier.
-      if (dotNotation && !/^[a-zA-Z_$\u008F-\uFFFF][a-zA-Z0-9_$\u008F-\uFFFF]*$/.test(property))
-        continue;
-
-      if (bracketNotation) {
-        if (!/^[0-9]+$/.test(property))
-          property = quoteUsed + property.escapeCharacters(quoteUsed + '\\') + quoteUsed;
-        property += ']';
-      }
-
-      if (property.length < prefix.length)
-        continue;
-      if (prefix.length && !property.startsWith(prefix))
-        continue;
-
-      // Substitute actual newlines with newline characters. @see crbug.com/498421
-      results.push(property.split('\n').join('\\n'));
-    }
-    return results;
   }
 
   /**
