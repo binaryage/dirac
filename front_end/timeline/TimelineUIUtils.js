@@ -368,7 +368,7 @@ WebInspector.TimelineUIUtils = class {
   }
 
   /**
-   * @param {!RuntimeAgent.CallFrame} frame
+   * @param {!Protocol.Runtime.CallFrame} frame
    * @return {boolean}
    */
   static isUserFrame(frame) {
@@ -377,7 +377,7 @@ WebInspector.TimelineUIUtils = class {
 
   /**
    * @param {!WebInspector.TracingModel.Event} event
-   * @return {?RuntimeAgent.CallFrame}
+   * @return {?Protocol.Runtime.CallFrame}
    */
   static topStackFrame(event) {
     var stackTrace = event.stackTrace || event.initiator && event.initiator.stackTrace;
@@ -1035,7 +1035,7 @@ WebInspector.TimelineUIUtils = class {
     if (request.requestMethod)
       contentHelper.appendTextRow(WebInspector.UIString('Request Method'), request.requestMethod);
     if (typeof request.priority === 'string') {
-      var priority = WebInspector.uiLabelForPriority(/** @type {!NetworkAgent.ResourcePriority} */ (request.priority));
+      var priority = WebInspector.uiLabelForPriority(/** @type {!Protocol.Network.ResourcePriority} */ (request.priority));
       contentHelper.appendTextRow(WebInspector.UIString('Priority'), priority);
     }
     if (request.mimeType)
@@ -1089,11 +1089,11 @@ WebInspector.TimelineUIUtils = class {
   }
 
   /**
-   * @param {!Array<!RuntimeAgent.CallFrame>} callFrames
-   * @return {!RuntimeAgent.StackTrace}
+   * @param {!Array<!Protocol.Runtime.CallFrame>} callFrames
+   * @return {!Protocol.Runtime.StackTrace}
    */
   static _stackTraceFromCallFrames(callFrames) {
-    return /** @type {!RuntimeAgent.StackTrace} */ ({callFrames: callFrames});
+    return /** @type {!Protocol.Runtime.StackTrace} */ ({callFrames: callFrames});
   }
 
   /**
@@ -1238,13 +1238,10 @@ WebInspector.TimelineUIUtils = class {
 
   /**
    * @param {!Set<number>} nodeIds
-   * @param {!WebInspector.InvalidationTrackingEvent} invalidations
+   * @param {!Array<!WebInspector.InvalidationTrackingEvent>} invalidations
    */
   static _collectInvalidationNodeIds(nodeIds, invalidations) {
-    for (var i = 0; i < invalidations.length; ++i) {
-      if (invalidations[i].nodeId)
-        nodeIds.add(invalidations[i].nodeId);
-    }
+    nodeIds.addAll(invalidations.map(invalidation => invalidation.nodeId).filter(id => id));
   }
 
   /**
@@ -2194,7 +2191,7 @@ WebInspector.TimelineDetailsContentHelper = class {
 
   /**
    * @param {string} title
-   * @param {!RuntimeAgent.StackTrace} stackTrace
+   * @param {!Protocol.Runtime.StackTrace} stackTrace
    */
   appendStackTrace(title, stackTrace) {
     if (!this._linkifier || !this._target)
@@ -2207,7 +2204,7 @@ WebInspector.TimelineDetailsContentHelper = class {
 
   /**
    * @param {!Element} parentElement
-   * @param {!RuntimeAgent.StackTrace} stackTrace
+   * @param {!Protocol.Runtime.StackTrace} stackTrace
    */
   createChildStackTraceElement(parentElement, stackTrace) {
     if (!this._linkifier || !this._target)

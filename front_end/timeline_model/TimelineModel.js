@@ -473,7 +473,7 @@ WebInspector.TimelineModel = class {
     var cpuProfileEvent = events.peekLast();
     if (cpuProfileEvent && cpuProfileEvent.name === WebInspector.TimelineModel.RecordType.CpuProfile) {
       var eventData = cpuProfileEvent.args['data'];
-      cpuProfile = /** @type {?ProfilerAgent.Profile} */ (eventData && eventData['cpuProfile']);
+      cpuProfile = /** @type {?Protocol.Profiler.Profile} */ (eventData && eventData['cpuProfile']);
     }
 
     if (!cpuProfile) {
@@ -485,7 +485,7 @@ WebInspector.TimelineModel = class {
         WebInspector.console.error('Invalid CPU profile format.');
         return null;
       }
-      cpuProfile = /** @type {!ProfilerAgent.Profile} */ (
+      cpuProfile = /** @type {!Protocol.Profiler.Profile} */ (
           {startTime: cpuProfileEvent.args['data']['startTime'], endTime: 0, nodes: [], samples: [], timeDeltas: []});
       for (var profileEvent of profileGroup.children) {
         var eventData = profileEvent.args['data'];
@@ -1370,9 +1370,6 @@ WebInspector.TimelineModel.NetworkRequest = class {
   }
 };
 
-/**
- * @unrestricted
- */
 WebInspector.TimelineModel.Filter = class {
   /**
    * @param {!WebInspector.TracingModel.Event} event
@@ -1383,9 +1380,6 @@ WebInspector.TimelineModel.Filter = class {
   }
 };
 
-/**
- * @unrestricted
- */
 WebInspector.TimelineVisibleEventsFilter = class extends WebInspector.TimelineModel.Filter {
   /**
    * @param {!Array.<string>} visibleTypes
@@ -1405,9 +1399,6 @@ WebInspector.TimelineVisibleEventsFilter = class extends WebInspector.TimelineMo
   }
 };
 
-/**
- * @unrestricted
- */
 WebInspector.ExclusiveNameFilter = class extends WebInspector.TimelineModel.Filter {
   /**
    * @param {!Array<string>} excludeNames
@@ -1427,9 +1418,6 @@ WebInspector.ExclusiveNameFilter = class extends WebInspector.TimelineModel.Filt
   }
 };
 
-/**
- * @unrestricted
- */
 WebInspector.ExcludeTopLevelFilter = class extends WebInspector.TimelineModel.Filter {
   constructor() {
     super();
@@ -1498,14 +1486,16 @@ WebInspector.InvalidationTrackingEvent = class {
   }
 };
 
-/** @typedef {{reason: string, stackTrace: ?Array<!RuntimeAgent.CallFrame>}} */
+/** @typedef {{reason: string, stackTrace: ?Array<!Protocol.Runtime.CallFrame>}} */
 WebInspector.InvalidationCause;
 
-/**
- * @unrestricted
- */
 WebInspector.InvalidationTracker = class {
   constructor() {
+    /** @type {?WebInspector.TracingModel.Event} */
+    this._lastRecalcStyle = null;
+    /** @type {?WebInspector.TracingModel.Event} */
+    this._lastPaintWithLayer = null;
+    this._didPaint = false;
     this._initializePerFrameState();
   }
 
@@ -1649,7 +1639,6 @@ WebInspector.InvalidationTracker = class {
   _addSyntheticStyleRecalcInvalidation(baseEvent, styleInvalidatorInvalidation) {
     var invalidation = new WebInspector.InvalidationTrackingEvent(baseEvent);
     invalidation.type = WebInspector.TimelineModel.RecordType.StyleRecalcInvalidationTracking;
-    invalidation.synthetic = true;
     if (styleInvalidatorInvalidation.cause.reason)
       invalidation.cause.reason = styleInvalidatorInvalidation.cause.reason;
     if (styleInvalidatorInvalidation.selectorPart)
@@ -1749,8 +1738,8 @@ WebInspector.InvalidationTracker = class {
     /** @type {!Object.<number, !Array.<!WebInspector.InvalidationTrackingEvent>>} */
     this._invalidationsByNodeId = {};
 
-    this._lastRecalcStyle = undefined;
-    this._lastPaintWithLayer = undefined;
+    this._lastRecalcStyle = null;
+    this._lastPaintWithLayer = null;
     this._didPaint = false;
   }
 };
