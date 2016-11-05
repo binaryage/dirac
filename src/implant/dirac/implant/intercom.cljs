@@ -342,7 +342,7 @@
           responses-chan (nrepl-tunnel-client/tunnel-message-with-responses! bootstrap-message)]
       (loop []
         (if-let [response (<! responses-chan)]
-          (if (some? (:status response))
+          (if-not (empty? (:status response))
             (case (first (:status response))
               "done" (do
                        (log "Bootstrap done" response)
