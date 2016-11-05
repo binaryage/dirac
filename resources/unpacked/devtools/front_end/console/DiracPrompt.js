@@ -899,4 +899,4 @@ WebInspector.DiracPromptWithHistory = class extends WebInspector.TextPrompt {
 
     WebInspector.TextPrompt.prototype.onKeyDown.apply(this, arguments);
   }
-}
+};
