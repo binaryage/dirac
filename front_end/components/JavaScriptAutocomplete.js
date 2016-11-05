@@ -20,11 +20,11 @@ WebInspector.JavaScriptAutocomplete.completionsForTextPromptInCurrentContext = f
 
 /**
  * @param {string} text
- * @param {string} completionsPrefix
+ * @param {string} query
  * @param {boolean=} force
  * @return {!Promise<!Array<string>>}
  */
-WebInspector.JavaScriptAutocomplete.completionsForTextInCurrentContext = function(text, completionsPrefix, force) {
+WebInspector.JavaScriptAutocomplete.completionsForTextInCurrentContext = function(text, query, force) {
   var index;
   var stopChars = new Set(' =:({;,!+-*/&|^<>`'.split(''));
   for (index = text.length - 1; index >= 0; index--) {
@@ -50,17 +50,17 @@ WebInspector.JavaScriptAutocomplete.completionsForTextInCurrentContext = functio
   }
   clippedExpression = clippedExpression.substring(index + 1);
 
-  return WebInspector.JavaScriptAutocomplete.completionsForExpression(clippedExpression, completionsPrefix, force);
+  return WebInspector.JavaScriptAutocomplete.completionsForExpression(clippedExpression, query, force);
 };
 
 
   /**
    * @param {string} expressionString
-   * @param {string} prefix
+   * @param {string} query
    * @param {boolean=} force
    * @return {!Promise<!Array<string>>}
    */
-WebInspector.JavaScriptAutocomplete.completionsForExpression = function(expressionString, prefix, force) {
+WebInspector.JavaScriptAutocomplete.completionsForExpression = function(expressionString, query, force) {
   var executionContext = WebInspector.context.flavor(WebInspector.ExecutionContext);
   if (!executionContext)
     return Promise.resolve([]);
@@ -74,10 +74,10 @@ WebInspector.JavaScriptAutocomplete.completionsForExpression = function(expressi
     expressionString = expressionString.substr(0, lastIndex);
 
   // User is entering float value, do not suggest anything.
-  if (expressionString && !isNaN(expressionString))
+  if ((expressionString && !isNaN(expressionString)) || (!expressionString && query && !isNaN(query)))
     return Promise.resolve([]);
 
-  if (!prefix && !expressionString && !force)
+  if (!query && !expressionString && !force)
     return Promise.resolve([]);
 
   var fufill;
@@ -223,8 +223,8 @@ WebInspector.JavaScriptAutocomplete.completionsForExpression = function(expressi
       for (var i = 0; i < commandLineAPI.length; ++i)
         propertyNames[commandLineAPI[i]] = true;
     }
-    fufill(WebInspector.JavaScriptAutocomplete._completionsForPrefix(
-      dotNotation, bracketNotation, expressionString, prefix, Object.keys(propertyNames)));
+    fufill(WebInspector.JavaScriptAutocomplete._completionsForQuery(
+      dotNotation, bracketNotation, expressionString, query, Object.keys(propertyNames)));
   }
 };
 
@@ -232,19 +232,17 @@ WebInspector.JavaScriptAutocomplete.completionsForExpression = function(expressi
    * @param {boolean} dotNotation
    * @param {boolean} bracketNotation
    * @param {string} expressionString
-   * @param {string} prefix
+   * @param {string} query
    * @param {!Array.<string>} properties
    * @return {!Array<string>}
    */
-WebInspector.JavaScriptAutocomplete._completionsForPrefix = function(dotNotation, bracketNotation, expressionString, prefix, properties) {
+WebInspector.JavaScriptAutocomplete._completionsForQuery = function(dotNotation, bracketNotation, expressionString, query, properties) {
   if (bracketNotation) {
-    if (prefix.length && prefix[0] === '\'')
+    if (query.length && query[0] === '\'')
       var quoteUsed = '\'';
     else
       var quoteUsed = '"';
   }
-
-  var results = [];
 
   if (!expressionString) {
     const keywords = [
@@ -257,6 +255,10 @@ WebInspector.JavaScriptAutocomplete._completionsForPrefix = function(dotNotation
 
   properties.sort();
 
+  var caseSensitivePrefix = [];
+  var caseInsensitivePrefix = [];
+  var caseSensitiveAnywhere = [];
+  var caseInsensitiveAnywhere = [];
   for (var i = 0; i < properties.length; ++i) {
     var property = properties[i];
 
@@ -270,13 +272,21 @@ WebInspector.JavaScriptAutocomplete._completionsForPrefix = function(dotNotation
       property += ']';
     }
 
-    if (property.length < prefix.length)
+    if (property.length < query.length)
       continue;
-    if (prefix.length && !property.startsWith(prefix))
+    if (query.length && property.toLowerCase().indexOf(query.toLowerCase()) === -1)
       continue;
-
     // Substitute actual newlines with newline characters. @see crbug.com/498421
-    results.push(property.split('\n').join('\\n'));
+    var prop = property.split('\n').join('\\n');
+
+    if (property.startsWith(query))
+      caseSensitivePrefix.push(prop);
+    else if (property.toLowerCase().startsWith(query.toLowerCase()))
+      caseInsensitivePrefix.push(prop);
+    else if (property.indexOf(query) !== -1)
+      caseSensitiveAnywhere.push(prop);
+    else
+      caseInsensitiveAnywhere.push(prop);
   }
-  return results;
+  return caseSensitivePrefix.concat(caseInsensitivePrefix).concat(caseSensitiveAnywhere).concat(caseInsensitiveAnywhere);
 };
