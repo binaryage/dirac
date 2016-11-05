@@ -1,5 +1,5 @@
-WebInspector.BakedInspectorBackendAPIChromeTag='56.0.2908.2';
-WebInspector.BakedInspectorBackendAPIChromeRev='9334c34dbc59ff79a2c24c6867c9d22802212843';
+WebInspector.BakedInspectorBackendAPIChromeTag='56.0.2910.2';
+WebInspector.BakedInspectorBackendAPIChromeRev='15db598c6b9881230e31b383d06cf0fb4467bd08';
 WebInspector.BakedInspectorBackendAPI=''
 + 'InspectorBackend.registerEvent("Inspector.detached", ["reason"]);\n'
 + 'InspectorBackend.registerEvent("Inspector.targetCrashed", []);\n'
@@ -256,6 +256,8 @@ WebInspector.BakedInspectorBackendAPI=''
 + 'InspectorBackend.registerCommand("CSS.setEffectivePropertyValueForNode", [{"name": "nodeId", "type": "number", "optional": false}, {"name": "propertyName", "type": "string", "optional": false}, {"name": "value", "type": "string", "optional": false}], [], false);\n'
 + 'InspectorBackend.registerCommand("CSS.getBackgroundColors", [{"name": "nodeId", "type": "number", "optional": false}], ["backgroundColors"], false);\n'
 + 'InspectorBackend.registerCommand("CSS.getLayoutTreeAndStyles", [{"name": "computedStyleWhitelist", "type": "object", "optional": false}], ["layoutTreeNodes", "computedStyles"], false);\n'
++ 'InspectorBackend.registerCommand("CSS.startRuleUsageTracking", [], [], false);\n'
++ 'InspectorBackend.registerCommand("CSS.stopRuleUsageTracking", [], ["ruleUsage"], false);\n'
 + 'InspectorBackend.registerCommand("IO.read", [{"name": "handle", "type": "string", "optional": false}, {"name": "offset", "type": "number", "optional": true}, {"name": "size", "type": "number", "optional": true}], ["data", "eof"], false);\n'
 + 'InspectorBackend.registerCommand("IO.close", [{"name": "handle", "type": "string", "optional": false}], [], false);\n'
 + 'InspectorBackend.registerEnum("DOMDebugger.DOMBreakpointType", {SubtreeModified: "subtree-modified", AttributeModified: "attribute-modified", NodeRemoved: "node-removed"});\n'
@@ -411,6 +413,7 @@ WebInspector.BakedInspectorBackendAPI=''
 + 'InspectorBackend.registerCommand("Debugger.setBreakpointByUrl", [{"name": "lineNumber", "type": "number", "optional": false}, {"name": "url", "type": "string", "optional": true}, {"name": "urlRegex", "type": "string", "optional": true}, {"name": "columnNumber", "type": "number", "optional": true}, {"name": "condition", "type": "string", "optional": true}], ["breakpointId", "locations"], false);\n'
 + 'InspectorBackend.registerCommand("Debugger.setBreakpoint", [{"name": "location", "type": "object", "optional": false}, {"name": "condition", "type": "string", "optional": true}], ["breakpointId", "actualLocation"], false);\n'
 + 'InspectorBackend.registerCommand("Debugger.removeBreakpoint", [{"name": "breakpointId", "type": "string", "optional": false}], [], false);\n'
++ 'InspectorBackend.registerCommand("Debugger.getPossibleBreakpoints", [{"name": "start", "type": "object", "optional": false}, {"name": "end", "type": "object", "optional": true}], ["locations"], false);\n'
 + 'InspectorBackend.registerCommand("Debugger.continueToLocation", [{"name": "location", "type": "object", "optional": false}], [], false);\n'
 + 'InspectorBackend.registerCommand("Debugger.stepOver", [], [], false);\n'
 + 'InspectorBackend.registerCommand("Debugger.stepInto", [], [], false);\n'

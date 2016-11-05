@@ -1939,7 +1939,7 @@ Protocol.DOM.ShadowRootType = {
     Closed: "closed"
 };
 
-/** @typedef {!{nodeId:(Protocol.DOM.NodeId), nodeType:(number), nodeName:(string), localName:(string), nodeValue:(string), childNodeCount:(number|undefined), children:(!Array<Protocol.DOM.Node>|undefined), attributes:(!Array<string>|undefined), documentURL:(string|undefined), baseURL:(string|undefined), publicId:(string|undefined), systemId:(string|undefined), internalSubset:(string|undefined), xmlVersion:(string|undefined), name:(string|undefined), value:(string|undefined), pseudoType:(Protocol.DOM.PseudoType|undefined), shadowRootType:(Protocol.DOM.ShadowRootType|undefined), frameId:(Protocol.Page.FrameId|undefined), contentDocument:(Protocol.DOM.Node|undefined), shadowRoots:(!Array<Protocol.DOM.Node>|undefined), templateContent:(Protocol.DOM.Node|undefined), pseudoElements:(!Array<Protocol.DOM.Node>|undefined), importedDocument:(Protocol.DOM.Node|undefined), distributedNodes:(!Array<Protocol.DOM.BackendNode>|undefined)}} */
+/** @typedef {!{nodeId:(Protocol.DOM.NodeId), backendNodeId:(Protocol.DOM.BackendNodeId), nodeType:(number), nodeName:(string), localName:(string), nodeValue:(string), childNodeCount:(number|undefined), children:(!Array<Protocol.DOM.Node>|undefined), attributes:(!Array<string>|undefined), documentURL:(string|undefined), baseURL:(string|undefined), publicId:(string|undefined), systemId:(string|undefined), internalSubset:(string|undefined), xmlVersion:(string|undefined), name:(string|undefined), value:(string|undefined), pseudoType:(Protocol.DOM.PseudoType|undefined), shadowRootType:(Protocol.DOM.ShadowRootType|undefined), frameId:(Protocol.Page.FrameId|undefined), contentDocument:(Protocol.DOM.Node|undefined), shadowRoots:(!Array<Protocol.DOM.Node>|undefined), templateContent:(Protocol.DOM.Node|undefined), pseudoElements:(!Array<Protocol.DOM.Node>|undefined), importedDocument:(Protocol.DOM.Node|undefined), distributedNodes:(!Array<Protocol.DOM.BackendNode>|undefined)}} */
 Protocol.DOM.Node;
 
 /** @typedef {!{r:(number), g:(number), b:(number), a:(number|undefined)}} */
@@ -2261,6 +2261,24 @@ Protocol.CSSAgent.prototype.getLayoutTreeAndStyles = function(computedStyleWhite
 /** @param {function(?Protocol.Error, !Array<Protocol.CSS.LayoutTreeNode>, !Array<Protocol.CSS.ComputedStyle>):void=} opt_callback */
 Protocol.CSSAgent.prototype.invoke_getLayoutTreeAndStyles = function(obj, opt_callback) {}
 
+/**
+ * @param {function(?Protocol.Error):T=} opt_callback
+ * @return {!Promise.<T>}
+ * @template T
+ */
+Protocol.CSSAgent.prototype.startRuleUsageTracking = function(opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+Protocol.CSSAgent.prototype.invoke_startRuleUsageTracking = function(obj, opt_callback) {}
+
+/**
+ * @param {function(?Protocol.Error, !Array<Protocol.CSS.RuleUsage>):T} opt_callback
+ * @return {!Promise.<T>}
+ * @template T
+ */
+Protocol.CSSAgent.prototype.stopRuleUsageTracking = function(opt_callback) {}
+/** @param {function(?Protocol.Error, !Array<Protocol.CSS.RuleUsage>):void=} opt_callback */
+Protocol.CSSAgent.prototype.invoke_stopRuleUsageTracking = function(obj, opt_callback) {}
+
 /** @typedef {string} */
 Protocol.CSS.StyleSheetId;
 
@@ -2292,6 +2310,9 @@ Protocol.CSS.CSSStyleSheetHeader;
 
 /** @typedef {!{styleSheetId:(Protocol.CSS.StyleSheetId|undefined), selectorList:(Protocol.CSS.SelectorList), origin:(Protocol.CSS.StyleSheetOrigin), style:(Protocol.CSS.CSSStyle), media:(!Array<Protocol.CSS.CSSMedia>|undefined)}} */
 Protocol.CSS.CSSRule;
+
+/** @typedef {!{styleSheetId:(Protocol.CSS.StyleSheetId), range:(Protocol.CSS.SourceRange), used:(boolean)}} */
+Protocol.CSS.RuleUsage;
 
 /** @typedef {!{startLine:(number), startColumn:(number), endLine:(number), endColumn:(number)}} */
 Protocol.CSS.SourceRange;
@@ -3968,6 +3989,15 @@ Protocol.DebuggerAgent.prototype.invoke_setBreakpoint = function(obj, opt_callba
 Protocol.DebuggerAgent.prototype.removeBreakpoint = function(breakpointId, opt_callback) {}
 /** @param {function(?Protocol.Error):void=} opt_callback */
 Protocol.DebuggerAgent.prototype.invoke_removeBreakpoint = function(obj, opt_callback) {}
+
+/**
+ * @param {Protocol.Debugger.Location} start
+ * @param {Protocol.Debugger.Location=} opt_end
+ * @param {function(?Protocol.Error, !Array<Protocol.Debugger.Location>):void=} opt_callback
+ */
+Protocol.DebuggerAgent.prototype.getPossibleBreakpoints = function(start, opt_end, opt_callback) {}
+/** @param {function(?Protocol.Error, !Array<Protocol.Debugger.Location>):void=} opt_callback */
+Protocol.DebuggerAgent.prototype.invoke_getPossibleBreakpoints = function(obj, opt_callback) {}
 
 /**
  * @param {Protocol.Debugger.Location} location
