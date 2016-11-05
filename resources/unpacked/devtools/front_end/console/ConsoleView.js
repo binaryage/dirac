@@ -230,7 +230,7 @@ WebInspector.ConsoleView = class extends WebInspector.VBox {
     this._messagesElement.addEventListener("mouseup", this._updateStickToBottomOnMouseUp.bind(this), false);
     this._messagesElement.addEventListener("mouseleave", this._updateStickToBottomOnMouseUp.bind(this), false);
     this._messagesElement.addEventListener("wheel", this._updateStickToBottomOnWheel.bind(this), false);
-};
+  }
 
   /**
    * @return {!WebInspector.ConsoleView}
