@@ -18,7 +18,8 @@
                    [dirac.implant.weasel-client :refer [log warn info error]])
   (:require [cljs.core.async :refer [<! chan put! timeout]]
             [dirac.implant.eval :as eval]
-            [dirac.lib.ws-client :as ws-client]))
+            [dirac.lib.ws-client :as ws-client]
+            [clojure.string :as string]))
 
 (defonce current-client (atom nil))
 
@@ -31,12 +32,19 @@
       (js->clj :keywordize-keys true)
       (update :status keyword)))
 
+(defn prepare-result-message [result]
+  {:op    :result
+   :value (massage-result result)})
+
 ; -- message sending --------------------------------------------------------------------------------------------------------
 
 (defn send! [msg]
   (if-let [client @current-client]
     (ws-client/send! client msg)
     (error "No client! => dropping msg" msg)))
+
+(defn foreign-code? [code]
+  (not (string/starts-with? code "dirac.runtime.repl.eval")))
 
 ; -- message processing -----------------------------------------------------------------------------------------------------
 
@@ -49,15 +57,18 @@
      :message (:type message)}))
 
 (defmethod process-message :eval-js [message]
-  (let [options (ws-client/get-options @current-client)]
+  (let [options (ws-client/get-options @current-client)
+        pre-eval-delay (:pre-eval-delay options)
+        code (:code message)]
     (go
       ; there might be some output printing messages in flight in the tunnel, so we give the tunnel some time to process them
-      (<! (timeout (or (:pre-eval-delay options) 100)))
-      (let [result (or (<! (eval/eval-in-current-context! (:code message)))
-                       #js {:status "exception"
-                            :value  "Evaluation timeout."})]
-        {:op    :result
-         :value (massage-result result)}))))
+      (if (some? pre-eval-delay)
+        (<! (timeout pre-eval-delay)))
+      (let [[result error] (<! (eval/eval-in-current-context! code))]
+        (prepare-result-message (cond
+                                  (some? error) (js-obj "status" "error" "value" error)
+                                  (foreign-code? code) (js-obj "status" "success" "value" result)                             ; note that foreign code does not prepare result structure, so we do it here
+                                  :else result))))))
 
 ; -- connection -------------------------------------------------------------------------------------------------------------
 
