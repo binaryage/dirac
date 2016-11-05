@@ -40,7 +40,7 @@ WebInspector.StylesSidebarPane = class extends WebInspector.ElementsSidebarPane 
 
     this._sectionsContainer = this.element.createChild('div');
     this._swatchPopoverHelper = new WebInspector.SwatchPopoverHelper();
-    this._linkifier = new WebInspector.Linkifier(new WebInspector.Linkifier.DefaultCSSFormatter());
+    this._linkifier = new WebInspector.Linkifier(WebInspector.StylesSidebarPane._maxLinkLength);
 
     this.element.classList.add('styles-pane');
 
@@ -502,6 +502,7 @@ WebInspector.StylesSidebarPane = class extends WebInspector.ElementsSidebarPane 
   }
 };
 
+WebInspector.StylesSidebarPane._maxLinkLength = 30;
 
 /**
  * @unrestricted
@@ -2888,22 +2889,37 @@ WebInspector.StylesSidebarPane.CSSPropertyPrompt = class extends WebInspector.Te
    * @param {function(!Array.<string>, number=)} completionsReadyCallback
    */
   _buildPropertyCompletions(proxyElement, wordRange, force, completionsReadyCallback) {
-    var prefix = wordRange.toString().toLowerCase();
-    if (!prefix && !force && (this._isEditingName || proxyElement.textContent.length)) {
+    var query = wordRange.toString().toLowerCase();
+    if (!query && !force && (this._isEditingName || proxyElement.textContent.length)) {
       completionsReadyCallback([]);
       return;
     }
 
-    var results = this._cssCompletions.filter(completion => completion.startsWith(prefix));
-    if (!this._isEditingName && !results.length && prefix.length > 1 && '!important'.startsWith(prefix))
+    var prefixResults = [];
+    var anywhereResults = [];
+    this._cssCompletions.forEach(filterCompletions);
+    var results = prefixResults.concat(anywhereResults);
+
+    if (!this._isEditingName && !results.length && query.length > 1 && '!important'.startsWith(query))
       results.push('!important');
     var userEnteredText = wordRange.toString().replace('-', '');
     if (userEnteredText && (userEnteredText === userEnteredText.toUpperCase())) {
       for (var i = 0; i < results.length; ++i)
         results[i] = results[i].toUpperCase();
     }
-    var selectedIndex = this._isEditingName ? WebInspector.cssMetadata().mostUsedProperty(results) : 0;
+    var selectedIndex = this._isEditingName ? WebInspector.cssMetadata().mostUsedProperty(prefixResults) : 0;
     completionsReadyCallback(results, selectedIndex);
+
+    /**
+     * @param {string} completion
+     */
+    function filterCompletions(completion) {
+      var index = completion.indexOf(query);
+      if (index === 0)
+        prefixResults.push(completion);
+      else if (index > -1)
+        anywhereResults.push(completion);
+    }
   }
 };
 

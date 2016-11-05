@@ -85,11 +85,18 @@ WebInspector.NetworkTimelineColumn = class extends WebInspector.VBox {
   _getPopoverAnchor(element, event) {
     if (!this._hoveredRequest)
       return;
-
-    var range = WebInspector.RequestTimingView.calculateRequestTimeRanges(this._hoveredRequest, 0)
-                    .find(data => data.name === 'total');
-    var start = this._timeToPosition(range.start);
-    var end = this._timeToPosition(range.end);
+    var useTimingBars =
+        !WebInspector.moduleSetting('networkColorCodeResourceTypes').get() && !this._calculator.startAtZero;
+    if (useTimingBars) {
+      var range = WebInspector.RequestTimingView.calculateRequestTimeRanges(this._hoveredRequest, 0)
+          .find(data => data.name === WebInspector.RequestTimeRangeNames.Total);
+      var start = this._timeToPosition(range.start);
+      var end = this._timeToPosition(range.end);
+    } else {
+      var range = this._getSimplifiedBarRange(this._hoveredRequest, 0);
+      var start = range.start;
+      var end = range.end;
+    }
 
     if (event.clientX < this._canvasPosition.left + start || event.clientX > this._canvasPosition.left + end)
       return;
@@ -178,7 +185,7 @@ WebInspector.NetworkTimelineColumn = class extends WebInspector.VBox {
   /**
    * @param {number=} scrollTop
    * @param {!Map<string, !Array<number>>=} eventDividers
-   * @param {!{requests: !Array<!WebInspector.NetworkRequest>, navigationRequest: ?WebInspector.NetworkRequest}=} requestData
+   * @param {!WebInspector.NetworkTimelineColumn.RequestData=} requestData
    */
   update(scrollTop, eventDividers, requestData) {
     if (scrollTop !== undefined)
@@ -386,21 +393,31 @@ WebInspector.NetworkTimelineColumn = class extends WebInspector.VBox {
   }
 
   /**
+   * @param {!WebInspector.NetworkRequest} request
+   * @param {number} borderOffset
+   * @return {!{start: number, mid: number, end: number}}
+   */
+  _getSimplifiedBarRange(request, borderOffset) {
+    var drawWidth = this._offsetWidth - this._leftPadding;
+    var percentages = this._calculator.computeBarGraphPercentages(request);
+    return {
+      start: this._leftPadding + Math.floor((percentages.start / 100) * drawWidth) + borderOffset,
+      mid: this._leftPadding + Math.floor((percentages.middle / 100) * drawWidth) + borderOffset,
+      end: this._leftPadding + Math.floor((percentages.end / 100) * drawWidth) + borderOffset
+    };
+  }
+
+  /**
    * @param {!CanvasRenderingContext2D} context
    * @param {!WebInspector.NetworkRequest} request
    * @param {number} y
    */
   _drawSimplifiedBars(context, request, y) {
-    /** @const */
-    var borderWidth = 1;
+    const borderWidth = 1;
+    var borderOffset = borderWidth % 2 === 0 ? 0 : 0.5;
 
     context.save();
-    var percentages = this._calculator.computeBarGraphPercentages(request);
-    var drawWidth = this._offsetWidth - this._leftPadding;
-    var borderOffset = borderWidth % 2 === 0 ? 0 : .5;
-    var start = this._leftPadding + Math.floor((percentages.start / 100) * drawWidth) + borderOffset;
-    var mid = this._leftPadding + Math.floor((percentages.middle / 100) * drawWidth) + borderOffset;
-    var end = this._leftPadding + Math.floor((percentages.end / 100) * drawWidth) + borderOffset;
+    var ranges = this._getSimplifiedBarRange(request, borderOffset);
     var height = this._getBarHeight();
     y += Math.floor(this._rowHeight / 2 - height / 2 + borderWidth) - borderWidth / 2;
 
@@ -410,21 +427,47 @@ WebInspector.NetworkTimelineColumn = class extends WebInspector.VBox {
     context.lineWidth = borderWidth;
 
     context.beginPath();
-    context.globalAlpha = .5;
-    context.rect(start, 0, mid - start, height - borderWidth);
+    context.globalAlpha = 0.5;
+    context.rect(ranges.start, 0, ranges.mid - ranges.start, height - borderWidth);
     context.fill();
     context.stroke();
 
-    var barWidth = Math.max(2, end - mid);
+    var barWidth = Math.max(2, ranges.end - ranges.mid);
     context.beginPath();
     context.globalAlpha = 1;
-    context.rect(mid, 0, barWidth, height - borderWidth);
+    context.rect(ranges.mid, 0, barWidth, height - borderWidth);
     context.fill();
     context.stroke();
 
+    /** @type {?{left: string, right: string, tooltip: (string|undefined)}} */
+    var labels = null;
     if (request === this._hoveredRequest) {
-      var labels = this._calculator.computeBarGraphLabels(request);
-      this._drawSimplifiedBarDetails(context, labels.left, labels.right, start, mid, mid + barWidth + borderOffset);
+      labels = this._calculator.computeBarGraphLabels(request);
+      this._drawSimplifiedBarDetails(
+          context, labels.left, labels.right, ranges.start, ranges.mid, ranges.mid + barWidth + borderOffset);
+    }
+
+    if (!this._calculator.startAtZero) {
+      var queueingRange = WebInspector.RequestTimingView.calculateRequestTimeRanges(request, 0)
+          .find(data => data.name === WebInspector.RequestTimeRangeNames.Total);
+      var leftLabelWidth = labels ? context.measureText(labels.left).width : 0;
+      var leftTextPlacedInBar = leftLabelWidth < ranges.mid - ranges.start;
+      const wiskerTextPadding = 13;
+      var textOffset = (labels && !leftTextPlacedInBar) ? leftLabelWidth + wiskerTextPadding : 0;
+      var queueingStart = this._timeToPosition(queueingRange.start);
+      if (ranges.start - textOffset > queueingStart) {
+        context.beginPath();
+        context.globalAlpha = 1;
+        context.strokeStyle = WebInspector.themeSupport.patchColor(
+            '#a5a5a5', WebInspector.ThemeSupport.ColorUsage.Foreground);
+        context.moveTo(queueingStart, Math.floor(height / 2));
+        context.lineTo(ranges.start - textOffset, Math.floor(height / 2));
+
+        const wiskerHeight = height / 2;
+        context.moveTo(queueingStart + borderOffset, wiskerHeight / 2);
+        context.lineTo(queueingStart + borderOffset, height - wiskerHeight / 2 - 1);
+        context.stroke();
+      }
     }
 
     context.restore();
@@ -446,8 +489,8 @@ WebInspector.NetworkTimelineColumn = class extends WebInspector.VBox {
     var height = this._getBarHeight();
     var leftLabelWidth = context.measureText(leftText).width;
     var rightLabelWidth = context.measureText(rightText).width;
-    context.fillStyle = '#444';
-    context.strokeStyle = '#444';
+    context.fillStyle = WebInspector.themeSupport.patchColor('#444', WebInspector.ThemeSupport.ColorUsage.Foreground);
+    context.strokeStyle = WebInspector.themeSupport.patchColor('#444', WebInspector.ThemeSupport.ColorUsage.Foreground);
     if (leftLabelWidth < midX - startX) {
       var midBarX = startX + (midX - startX) / 2 - leftLabelWidth / 2;
       context.fillText(leftText, midBarX, this._fontSize);
@@ -560,6 +603,11 @@ WebInspector.NetworkTimelineColumn = class extends WebInspector.VBox {
     }
   }
 };
+
+/**
+ * @typedef {{requests: !Array<!WebInspector.NetworkRequest>, navigationRequest: ?WebInspector.NetworkRequest}}
+ */
+WebInspector.NetworkTimelineColumn.RequestData;
 
 WebInspector.NetworkTimelineColumn._colorsForResourceType = {
   document: 'hsl(215, 100%, 80%)',
