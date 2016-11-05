@@ -125,6 +125,13 @@
           requires (into (vals (:requires ast)) (distinct (vals (:uses ast))))]
       (load-dependencies repl-env requires opts))))
 
+(defn prepare-error-data [type error repl-env form generated-js]
+  {:type     type
+   :error    error
+   :repl-env repl-env
+   :form     form
+   :js       generated-js})
+
 (defn evaluate-form [repl-env env filename form wrap opts]
   (binding [analyzer/*cljs-file* filename]
     (let [wrapped-form (wrap form)
@@ -140,23 +147,11 @@
       ;; NOTE: means macros which expand to ns aren't supported for now
       ;; when eval'ing individual forms at the REPL - David
       (load-dependencies-if-needed! generated-ast form env-with-source-info repl-env opts)
-      (let [ret (cljs.repl/-evaluate repl-env filename (:line (meta form)) generated-js)]
-        (case (:status ret)
-          ; darwin: note that :error never happens because dirac runtime supports only :exceptions
-          ; we keep it here just for example as an artifact copied from cljs.repl/evaluate-form
-          ;
-          ;:error (throw
-          ;         (ex-info (:value ret)
-          ;                  {:type     :js-eval-error
-          ;                   :error    ret
-          ;                   :repl-env repl-env
-          ;                   :form     form}))
-          :exception (throw (ex-info (:value ret) {:type     :js-eval-exception
-                                                   :error    ret
-                                                   :repl-env repl-env
-                                                   :form     form
-                                                   :js       generated-js}))
-          :success (:value ret))))))
+      (let [result (cljs.repl/-evaluate repl-env filename (:line (meta form)) generated-js)]
+        (case (:status result)
+          :error (throw (ex-info (:value result) (prepare-error-data :js-eval-error result repl-env form generated-js)))
+          :exception (throw (ex-info (:value result) (prepare-error-data :js-eval-exception result repl-env form generated-js)))
+          :success (:value result))))))
 
 ; <----- evaluate-form -------- cut-here
 
