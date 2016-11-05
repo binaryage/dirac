@@ -42,8 +42,13 @@ testing          javascript completions in js/ namespace
 automate #1      clear-console-prompt!
 automate #1      simulate-console-input! ["js/docume"]
 automate #1      scrape! [:suggest-box]
-stdout           displayed 1 items:
+stdout           displayed 6 items:
                   * docume|nt (selected)
+                  * Docume|nt
+                  * Docume|ntFragment
+                  * Docume|ntType
+                  * HTML~Docume|nt
+                  * XML~Docume|nt
 automate #1      simulate-console-action! ["TAB"]
 automate #1      print-prompt!
 stdout           js/document

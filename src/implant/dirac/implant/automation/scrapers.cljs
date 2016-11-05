@@ -108,11 +108,12 @@
                          (string/replace "suggest-cljs" "")
                          (string/trim))
         prologue (extract "prologue")
-        prefix (extract "prefix")
-        suffix (extract "suffix")
+        pre-query (extract "pre-query")
+        query (extract "query")
+        post-query (extract "post-query")
         epilogue (extract "epilogue")]
     (str (if prologue (str " [" prologue "] "))
-         (str prefix "|" suffix " ")
+         (str (if pre-query (str pre-query "~")) query "|" post-query " ")
          (if epilogue (str "[" epilogue "] "))
          (if-not (empty? simple-class) (str "(" simple-class ") ")))))
 
@@ -163,8 +164,8 @@
       (if (nil? substr-or-re)
         texts
         (filter #(if (string? substr-or-re)
-                  (string/includes? (second %) substr-or-re)
-                  (re-matches substr-or-re (second %))) texts)))))
+                   (string/includes? (second %) substr-or-re)
+                   (re-matches substr-or-re (second %))) texts)))))
 
 (defn filter-elements [substr-or-re els]
   (map first (filter-elements* substr-or-re els)))

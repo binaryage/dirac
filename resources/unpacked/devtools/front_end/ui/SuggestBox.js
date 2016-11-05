@@ -284,10 +284,10 @@ WebInspector.SuggestBox = class {
     var displayText = text.trimEnd(50 + query.length);
     var index = displayText.toLowerCase().indexOf(query.toLowerCase());
     if (index > 0)
-      element.createChild('span').textContent = displayText.substring(0, index);
+      element.createChild('span', 'pre-query').textContent = displayText.substring(0, index);
     if (index > -1)
       element.createChild('span', 'query').textContent = displayText.substring(index, index + query.length);
-    element.createChild('span').textContent = displayText.substring(index > -1 ? index + query.length : 0);
+    element.createChild('span', 'post-query').textContent = displayText.substring(index > -1 ? index + query.length : 0);
     element.createChild("span", "epilogue").textContent = (epilogue || "").trimEnd(50);
     element.__fullValue = text;
     element.createChild('span', 'spacer');
