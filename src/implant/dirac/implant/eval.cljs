@@ -259,22 +259,28 @@
 (defn start-eval-request-queue-processing-loop! []
   (go-loop []
     (if-let [[context code handler] (<! eval-requests)]
-      (let [call-handler! (fn [args & errors]
-                            (if-not (empty? errors)
-                              (apply display-user-error! errors))
+      (let [call-handler! (fn [result-code value error]
+                            (if (some? error)
+                              (apply display-user-error! error))
                             (if handler
-                              (apply handler (concat args errors))))
+                              (apply handler [value error])))
             install-result (<! (wait-for-dirac-installed!))
             eval-time-limit (pref :eval-time-limit)]
         (case (first install-result)
           ::failure (let [reason (second install-result)]
-                      (call-handler! [::install-failure reason] (missing-runtime-msg reason)))
+                      (call-handler! ::install-failure reason (missing-runtime-msg reason)))
           ::ok (let [eval-result (<! (call-eval-with-timeout! context code eval-time-limit))]
                  (case (first eval-result)
-                   ::ok (call-handler! eval-result)
-                   ::internal-error (call-handler! eval-result (internal-eval-error-msg code (second eval-result)))
-                   ::eval-timeout (call-handler! eval-result (eval-timeout-msg code))
-                   (call-handler! eval-result (eval-problem-msg code (first eval-result) (second eval-result))))))
+                   ::ok (call-handler! ::ok (second eval-result))
+                   ::internal-error (call-handler! ::internal-error
+                                                   (second eval-result)
+                                                   (internal-eval-error-msg code (second eval-result)))
+                   ::eval-timeout (call-handler! ::eval-timeout
+                                                 (second eval-result)
+                                                 (eval-timeout-msg code))
+                   (call-handler! ::unknown-problem
+                                  (second eval-result)
+                                  (eval-problem-msg code (first eval-result) (second eval-result))))))
         (recur))
       (log "Leaving start-eval-request-queue-processing-loop!"))))
 
@@ -294,8 +300,8 @@
   {:pre [(context supported-contexts)
          (string? code)]}
   (go
-    (let [[result-code value] (<! (eval-in-context! context code))]
-      (if (= result-code ::ok)
+    (let [[value error] (<! (eval-in-context! context code))]
+      (if (nil? error)
         value
         safe-value))))
 
@@ -303,9 +309,9 @@
 
 (defn is-runtime-present? []
   (go
-    (let [[result-code value] (<! (eval-in-context! :default "dirac.runtime"))]
-      (case result-code
-        ::ok true
+    (let [[value error] (<! (eval-in-context! :default "dirac.runtime"))]
+      (if (nil? error)
+        true
         (format-reason value)))))
 
 (defn get-runtime-version []
@@ -344,4 +350,4 @@
 ; -- fancy evaluation in currently selected context -------------------------------------------------------------------------
 
 (defn eval-in-current-context! [code]
-  (safely-eval-in-context! :current nil code))
+  (eval-in-context! :current code))
