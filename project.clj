@@ -32,7 +32,7 @@
                  [rum-reforms "0.4.3" :scope "test"]
                  [cljsjs/parinfer "1.8.1-0" :scope "test"]
                  [com.lucasbradstreet/cljs-uuid-utils "1.0.2" :scope "test"]
-                 [com.rpl/specter "0.13.1-SNAPSHOT" :scope "test"]
+                 [com.rpl/specter "0.13.1" :scope "test"]
                  [org.clojure/tools.namespace "0.3.0-alpha3" :scope "test"]
                  [org.clojure/tools.reader "1.0.0-beta1" :scope "test"]
                  [clj-logging-config "1.9.12" :scope "test"]
