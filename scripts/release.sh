@@ -100,7 +100,7 @@ pushd "$ROOT"
 # this should be kept in sync with devtools_frontend_resources target of devtools.gyp
 cp -r "$FRONTEND/Images" "$RELEASE_BUILD_DEVTOOLS_FRONTEND"
 cp -r "$FRONTEND/emulated_devices" "$RELEASE_BUILD_DEVTOOLS_FRONTEND"
-#cp "$FRONTEND/devtools_compatibility.js" "$RELEASE_BUILD_DEVTOOLS_FRONTEND"
+cp "$FRONTEND/devtools_compatibility.js" "$RELEASE_BUILD_DEVTOOLS_FRONTEND"
 
 # copy compiled extension code (produced by `lein compile-dirac`)
 cp "$ROOT/target/resources/release/.compiled/background.js" "$RELEASE_BUILD/background.js"
