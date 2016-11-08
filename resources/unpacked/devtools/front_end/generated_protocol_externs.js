@@ -340,14 +340,6 @@ Protocol.PageAgent.prototype.requestAppBanner = function(opt_callback) {}
 Protocol.PageAgent.prototype.invoke_requestAppBanner = function(obj, opt_callback) {}
 
 /**
- * @param {number} threshold
- * @param {function(?Protocol.Error):void=} opt_callback
- */
-Protocol.PageAgent.prototype.setBlockedEventsWarningThreshold = function(threshold, opt_callback) {}
-/** @param {function(?Protocol.Error):void=} opt_callback */
-Protocol.PageAgent.prototype.invoke_setBlockedEventsWarningThreshold = function(obj, opt_callback) {}
-
-/**
  * @param {boolean} enabled
  * @param {function(?Protocol.Error):void=} opt_callback
  */
@@ -3515,6 +3507,14 @@ Protocol.LogAgent.prototype.clear = function(opt_callback) {}
 /** @param {function(?Protocol.Error):void=} opt_callback */
 Protocol.LogAgent.prototype.invoke_clear = function(obj, opt_callback) {}
 
+/**
+ * @param {boolean} enabled
+ * @param {function(?Protocol.Error):void=} opt_callback
+ */
+Protocol.LogAgent.prototype.setReportViolationsEnabled = function(enabled, opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+Protocol.LogAgent.prototype.invoke_setReportViolationsEnabled = function(obj, opt_callback) {}
+
 /** @enum {string} */
 Protocol.Log.LogEntrySource = {
     XML: "xml",
@@ -3526,6 +3526,7 @@ Protocol.Log.LogEntrySource = {
     Security: "security",
     Deprecation: "deprecation",
     Worker: "worker",
+    Violation: "violation",
     Other: "other"
 };
 

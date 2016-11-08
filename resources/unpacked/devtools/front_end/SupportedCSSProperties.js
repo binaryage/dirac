@@ -1,5 +1,5 @@
-WebInspector.BakedSupportedCSSPropertiesChromeTag='56.0.2910.2';
-WebInspector.BakedSupportedCSSPropertiesChromeRev='15db598c6b9881230e31b383d06cf0fb4467bd08';
+WebInspector.BakedSupportedCSSPropertiesChromeTag='56.0.2913.4';
+WebInspector.BakedSupportedCSSPropertiesChromeRev='a22f5c73b8d5590bcd1603729eac49e2a33d9600';
 WebInspector.BakedSupportedCSSProperties=''
 + '[{"name": "color", "inherited": true},\n'
 + ' {"name": "direction", "inherited": true},\n'
