@@ -5,7 +5,7 @@
 {
   "short_name": "Dirac",
   "name": "Dirac DevTools",
-  "version": "0.8.1",
+  "version": "0.8.2",
   "browser_action": {
     "default_title": "Click to open Dirac DevTools",
     "default_icon": {
