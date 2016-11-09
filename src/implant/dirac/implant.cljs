@@ -154,7 +154,7 @@
     (feedback/install!)
     (eval/start-eval-request-queue-processing-loop!)
     (feedback/post! "implant initialized")
-    (info (str "Dirac implant v" (get-version) " initialized"))))
+    (info (str "Dirac implant " (get-version) " initialized"))))
 
 ; -- intialization ----------------------------------------------------------------------------------------------------------
 
