@@ -3,7 +3,6 @@
   (:require [cljs.core.async :refer [put! <! chan timeout alts! close!]]
             [oops.core :refer [oget oset! ocall oapply gcall!]]
             [chromex.logging :refer-macros [log warn error info]]
-            [devtools.preload]
             [dirac.automation.helpers :as helpers]
             [dirac.automation.status-host :as status-host]
             [dirac.automation.messages :as messages]))

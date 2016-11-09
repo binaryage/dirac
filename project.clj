@@ -238,6 +238,7 @@
                           {:marion-background
                            {:notify-command ["scripts/cljsbuild-notify.sh" "marion-background"]
                             :source-paths   ["src/settings"
+                                             "src/devtools"
                                              "src/shared"
                                              "test/marion/src/background"]
                             :compiler       {:output-to       "test/marion/resources/unpacked/.compiled/background/background.js"
@@ -289,6 +290,7 @@
                                              "src/figwheel"
                                              "src/shared"
                                              "src/project"
+                                             "src/devtools"
                                              "src/background"]
                             :compiler       {:output-to       "resources/unpacked/.compiled/background/dirac.js"
                                              :output-dir      "resources/unpacked/.compiled/background"
@@ -303,6 +305,7 @@
                                              "src/figwheel"
                                              "src/shared"
                                              "src/project"
+                                             "src/devtools"
                                              "src/options"]
                             :compiler       {:output-to       "resources/unpacked/.compiled/options/dirac.js"
                                              :output-dir      "resources/unpacked/.compiled/options"
@@ -332,20 +335,24 @@
                                            "src/lib"
                                            "src/shared"
                                            "src/project"
+                                           "src/devtools"
                                            "src/background"]
                             :compiler     {:output-to     "target/resources/release/.compiled/background.js"
                                            :output-dir    "target/resources/release/.compiled/background"
                                            :optimizations :advanced
+                                           :main          dirac.background
                                            :elide-asserts true}}
                            :dirac-options
                            {:source-paths ["src/settings"
                                            "src/lib"
                                            "src/shared"
                                            "src/project"
+                                           "src/devtools"
                                            "src/options"]
                             :compiler     {:output-to     "target/resources/release/.compiled/options.js"
                                            :output-dir    "target/resources/release/.compiled/options"
                                            :optimizations :advanced
+                                           :main          dirac.options
                                            :elide-asserts true}}}}}
 
              ; want to use technique of overlaying related compiler options on top of our default configuration to all builds
