@@ -178,29 +178,29 @@ Object.assign(window.dirac, (function() {
     let title = null;
 
     switch (scope.type()) {
-      case DebuggerAgent.ScopeType.Local:
+      case Protocol.Debugger.ScopeType.Local:
         title = WebInspector.UIString("Local");
         break;
-      case DebuggerAgent.ScopeType.Closure:
+      case Protocol.Debugger.ScopeType.Closure:
         const scopeName = scope.name();
         if (scopeName)
           title = WebInspector.UIString("Closure (%s)", WebInspector.beautifyFunctionName(scopeName));
         else
           title = WebInspector.UIString("Closure");
         break;
-      case DebuggerAgent.ScopeType.Catch:
+      case Protocol.Debugger.ScopeType.Catch:
         title = WebInspector.UIString("Catch");
         break;
-      case DebuggerAgent.ScopeType.Block:
+      case Protocol.Debugger.ScopeType.Block:
         title = WebInspector.UIString("Block");
         break;
-      case DebuggerAgent.ScopeType.Script:
+      case Protocol.Debugger.ScopeType.Script:
         title = WebInspector.UIString("Script");
         break;
-      case DebuggerAgent.ScopeType.With:
+      case Protocol.Debugger.ScopeType.With:
         title = WebInspector.UIString("With Block");
         break;
-      case DebuggerAgent.ScopeType.Global:
+      case Protocol.Debugger.ScopeType.Global:
         title = WebInspector.UIString("Global");
         break;
     }
@@ -251,7 +251,7 @@ Object.assign(window.dirac, (function() {
       const scopeChain = callFrame.scopeChain();
       for (let i = 0; i < scopeChain.length; ++i) {
         const scope = scopeChain[i];
-        if (scope.type() === DebuggerAgent.ScopeType.Global) {
+        if (scope.type() === Protocol.Debugger.ScopeType.Global) {
           continue;
         }
 
