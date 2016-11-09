@@ -833,7 +833,7 @@ WebInspector.SplitWidget = class extends WebInspector.Widget {
    */
   createShowHideSidebarButton(title) {
     this._showHideSidebarButtonTitle = WebInspector.UIString(title);
-    this._showHideSidebarButton = new WebInspector.ToolbarButton('', 'sidebar-toolbar-item');
+    this._showHideSidebarButton = new WebInspector.ToolbarButton('', '');
     this._showHideSidebarButton.addEventListener('click', buttonClicked.bind(this));
     this._updateShowHideSidebarButton();
 
@@ -855,9 +855,17 @@ WebInspector.SplitWidget = class extends WebInspector.Widget {
     if (!this._showHideSidebarButton)
       return;
     var sidebarHidden = this._showMode === WebInspector.SplitWidget.ShowMode.OnlyMain;
-    var side =
-        this.isVertical() ? (this.isSidebarSecond() ? 'right' : 'left') : (this.isSidebarSecond() ? 'bottom' : 'top');
-    this._showHideSidebarButton.setState(side + '-' + (sidebarHidden ? 'show' : 'hide'));
+    var glyph = '';
+    if (sidebarHidden) {
+      glyph = this.isVertical() ?
+          (this.isSidebarSecond() ? 'largeicon-show-right-sidebar' : 'largeicon-show-left-sidebar') :
+          (this.isSidebarSecond() ? 'largeicon-show-bottom-sidebar' : 'largeicon-show-top-sidebar');
+    } else {
+      glyph = this.isVertical() ?
+          (this.isSidebarSecond() ? 'largeicon-hide-right-sidebar' : 'largeicon-hide-left-sidebar') :
+          (this.isSidebarSecond() ? 'largeicon-hide-bottom-sidebar' : 'largeicon-hide-top-sidebar');
+    }
+    this._showHideSidebarButton.setGlyph(glyph);
     this._showHideSidebarButton.setTitle(
         sidebarHidden ? WebInspector.UIString('Show %s', this._showHideSidebarButtonTitle) :
                         WebInspector.UIString('Hide %s', this._showHideSidebarButtonTitle));

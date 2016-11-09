@@ -1,0 +1,168 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+/**
+ * @constructor
+ * @extends {HTMLSpanElement}
+ */
+WebInspector.Icon = class extends HTMLSpanElement {
+  constructor() {
+    super();
+    throw new Error('icon must be created via factory method.');
+  }
+
+  /**
+   * @param {string=} iconType
+   * @param {string=} className
+   * @return {!WebInspector.Icon}
+   */
+  static create(iconType, className) {
+    if (!WebInspector.Icon._constructor)
+      WebInspector.Icon._constructor = registerCustomElement('span', 'ui-icon', WebInspector.Icon.prototype);
+
+    var icon = /** @type {!WebInspector.Icon} */ (new WebInspector.Icon._constructor());
+    if (className)
+      icon.className = className;
+    if (iconType)
+      icon.setIconType(iconType);
+    return icon;
+  }
+
+  /**
+   * @override
+   */
+  createdCallback() {
+    /** @type {?WebInspector.Icon.Descriptor} */
+    this._descriptor = null;
+    /** @type {string} */
+    this._iconType = '';
+  }
+
+  /**
+   * @param {string} iconType
+   */
+  setIconType(iconType) {
+    if (this._descriptor) {
+      this.style.removeProperty(this._propertyName());
+      this.style.removeProperty('width');
+      this.style.removeProperty('height');
+      this.style.removeProperty('transform');
+      this.classList.remove(this._spritesheetClass());
+      this.classList.remove(this._iconType);
+      this._iconType = '';
+      this._descriptor = null;
+    }
+    var descriptor = WebInspector.Icon.Descriptors[iconType] || null;
+    if (descriptor) {
+      this._iconType = iconType;
+      this._descriptor = descriptor;
+      this.style.setProperty(this._propertyName(), this._propertyValue());
+      this.style.setProperty('width', this._descriptor.width + 'px');
+      this.style.setProperty('height', this._descriptor.height + 'px');
+      if (this._descriptor.transform)
+        this.style.setProperty('transform', this._descriptor.transform);
+      this.classList.add(this._spritesheetClass());
+      this.classList.add(this._iconType);
+    } else if (iconType) {
+      throw new Error(`ERROR: failed to find icon descriptor for type: ${iconType}`);
+    }
+  }
+
+  /**
+   * @return {string}
+   */
+  _spritesheetClass() {
+    return 'spritesheet-' + this._descriptor.spritesheet + (this._descriptor.isMask ? '-mask' : '');
+  }
+
+  /**
+   * @return {string}
+   */
+  _propertyName() {
+    return this._descriptor.isMask ? '-webkit-mask-position' : 'background-position';
+  }
+
+  /**
+   * @return {string}
+   */
+  _propertyValue() {
+    return `${this._descriptor.x}px ${this._descriptor.y}px`;
+  }
+};
+
+/** @typedef {{x: number, y: number, width: number, height: number, spritesheet: string, isMask: (boolean|undefined)}} */
+WebInspector.Icon.Descriptor;
+
+/** @enum {!WebInspector.Icon.Descriptor} */
+WebInspector.Icon.Descriptors = {
+  'smallicon-error': {x: -20, y: 0, width: 10, height: 10, spritesheet: 'smallicons'},
+  'smallicon-revoked-error': {x: -40, y: 0, width: 10, height: 10, spritesheet: 'smallicons'},
+  'smallicon-warning': {x: -60, y: 0, width: 10, height: 10, spritesheet: 'smallicons'},
+  'smallicon-info': {x: -80, y: 0, width: 10, height: 10, spritesheet: 'smallicons'},
+  'smallicon-device': {x: -100, y: 0, width: 10, height: 10, spritesheet: 'smallicons'},
+  'smallicon-red-ball': {x: -120, y: 0, width: 10, height: 10, spritesheet: 'smallicons'},
+  'smallicon-green-ball': {x: -140, y: 0, width: 10, height: 10, spritesheet: 'smallicons'},
+  'smallicon-orange-ball': {x: -160, y: 0, width: 10, height: 10, spritesheet: 'smallicons'},
+  'smallicon-thick-right-arrow': {x: -180, y: 0, width: 10, height: 10, spritesheet: 'smallicons'},
+  'smallicon-user-command': {x: 0, y: -20, width: 10, height: 10, spritesheet: 'smallicons'},
+  'smallicon-text-prompt': {x: -20, y: -20, width: 10, height: 10, spritesheet: 'smallicons'},
+  'smallicon-command-result': {x: -40, y: -20, width: 10, height: 10, spritesheet: 'smallicons'},
+  'smallicon-shadow': {x: -60, y: -20, width: 10, height: 10, spritesheet: 'smallicons', isMask: true},
+  'smallicon-bezier': {x: -80, y: -20, width: 10, height: 10, spritesheet: 'smallicons', isMask: true},
+  'smallicon-dropdown-arrow': {x: -18, y: -96, width: 12, height: 12, spritesheet: 'largeicons', isMask: true},
+
+  'largeicon-longclick-triangle': {x: -290, y: -46, width: 28, height: 24, spritesheet: 'largeicons', isMask: true},
+  'largeicon-menu': {x: -192, y: -24, width: 28, height: 24, spritesheet: 'largeicons', isMask: true},
+  'largeicon-delete': {x: -128, y: -0, width: 28, height: 24, spritesheet: 'largeicons', isMask: true},
+  'largeicon-node-search': {x: -320, y: -120, width: 28, height: 24, spritesheet: 'largeicons', isMask: true},
+  'largeicon-add': {x: -224, y: -120, width: 28, height: 24, spritesheet: 'largeicons', isMask: true},
+  'largeicon-clear': {x: -64,  y: 0, width: 28, height: 24, spritesheet: 'largeicons', isMask: true},
+  'largeicon-rotate-screen': {x: -192,  y: -144, width: 28, height: 24, spritesheet: 'largeicons', isMask: true},
+  'largeicon-phone': {x: -320,  y: -96, width: 28, height: 24, spritesheet: 'largeicons', isMask: true},
+  'largeicon-block': {x: -32,  y: -144, width: 28, height: 24, spritesheet: 'largeicons', isMask: true},
+  'largeicon-layout-editor': {x: 0,  y: -144, width: 28, height: 24, spritesheet: 'largeicons', isMask: true},
+  'largeicon-foreground-color': {x: -128,  y: -144, width: 28, height: 24, spritesheet: 'largeicons', isMask: true},
+  'largeicon-background-color': {x: -96,  y: -144, width: 28, height: 24, spritesheet: 'largeicons', isMask: true},
+  'largeicon-text-shadow': {x: -192,  y: -48, width: 28, height: 24, spritesheet: 'largeicons', isMask: true},
+  'largeicon-box-shadow': {x: -160,  y: -48, width: 28, height: 24, spritesheet: 'largeicons', isMask: true},
+  'largeicon-pause-animation': {x: -320,  y: 0, width: 28, height: 24, spritesheet: 'largeicons', isMask: true},
+  'largeicon-replay-animation': {x: -320,  y: -24, width: 28, height: 24, spritesheet: 'largeicons', isMask: true},
+  'largeicon-play-animation': {x: -320,  y: -48, width: 28, height: 24, spritesheet: 'largeicons', isMask: true},
+  'largeicon-eyedropper': {x: -288,  y: -120, width: 28, height: 24, spritesheet: 'largeicons', isMask: true},
+  'largeicon-rotate': {x: -160,  y: -120, width: 28, height: 24, spritesheet: 'largeicons', isMask: true},
+  'largeicon-center': {x: -128,  y: -120, width: 28, height: 24, spritesheet: 'largeicons', isMask: true},
+  'largeicon-pan': {x: -98,  y: -120, width: 28, height: 24, spritesheet: 'largeicons', isMask: true},
+  'largeicon-waterfall': {x: -128,  y: -48, width: 28, height: 24, spritesheet: 'largeicons', isMask: true},
+  'largeicon-filter': {x: -32,  y: -48, width: 28, height: 24, spritesheet: 'largeicons', isMask: true},
+  'largeicon-trash-bin': {x: -128,  y: -24, width: 28, height: 24, spritesheet: 'largeicons', isMask: true},
+  'largeicon-pretty-print': {x: -256,  y: -24, width: 28, height: 24, spritesheet: 'largeicons', isMask: true},
+  'largeicon-deactivate-breakpoints': {x: 0,  y: -24, width: 28, height: 24, spritesheet: 'largeicons', isMask: true},
+  'largeicon-activate-breakpoints': {x: -32,  y: 0, width: 28, height: 24, spritesheet: 'largeicons', isMask: true},
+  'largeicon-resume': {x: 0,  y: -72, width: 28, height: 24, spritesheet: 'largeicons', isMask: true},
+  'largeicon-pause': {x: -32,  y: -72, width: 28, height: 24, spritesheet: 'largeicons', isMask: true},
+  'largeicon-pause-on-exceptions': {x: -256,  y: 0, width: 28, height: 24, spritesheet: 'largeicons', isMask: true},
+  'largeicon-play-back': {x: -64,  y: -48, width: 28, height: 24, spritesheet: 'largeicons', isMask: true, transform: 'scaleX(-1)'},
+  'largeicon-play': {x: -64,  y: -48, width: 28, height: 24, spritesheet: 'largeicons', isMask: true},
+  'largeicon-step-over': {x: -128,  y: -72, width: 28, height: 24, spritesheet: 'largeicons', isMask: true},
+  'largeicon-step-out': {x: -96,  y: -72, width: 28, height: 24, spritesheet: 'largeicons', isMask: true},
+  'largeicon-step-in': {x: -64,  y: -72, width: 28, height: 24, spritesheet: 'largeicons', isMask: true},
+  'largeicon-camera': {x: -96,  y: -24, width: 28, height: 24, spritesheet: 'largeicons', isMask: true},
+  'largeicon-stop-recording': {x: -288,  y: -24, width: 28, height: 24, spritesheet: 'largeicons', isMask: true},
+  'largeicon-start-recording': {x: -288,  y: 0, width: 28, height: 24, spritesheet: 'largeicons', isMask: true},
+  'largeicon-large-list': {x: -224,  y: 0, width: 28, height: 24, spritesheet: 'largeicons', isMask: true},
+  'largeicon-visibility': {x: -96,  y: 0, width: 28, height: 24, spritesheet: 'largeicons', isMask: true},
+  'largeicon-refresh': {x: 0,  y: 0, width: 28, height: 24, spritesheet: 'largeicons', isMask: true},
+  'largeicon-dock-to-right': {x: -256,  y: -48, width: 28, height: 24, spritesheet: 'largeicons', isMask: true},
+  'largeicon-dock-to-bottom': {x: -32,  y: -24, width: 28, height: 24, spritesheet: 'largeicons', isMask: true},
+  'largeicon-undock': {x: 0,  y: -48, width: 28, height: 24, spritesheet: 'largeicons', isMask: true},
+
+  'largeicon-show-left-sidebar': {x: -160,  y: -72, width: 28, height: 24, spritesheet: 'largeicons', isMask: true},
+  'largeicon-hide-left-sidebar': {x: -192,  y: -72, width: 28, height: 24, spritesheet: 'largeicons', isMask: true},
+  'largeicon-show-right-sidebar': {x: -160,  y: -72, width: 28, height: 24, spritesheet: 'largeicons', isMask: true, transform: 'rotate(180deg)'},
+  'largeicon-hide-right-sidebar': {x: -192,  y: -72, width: 28, height: 24, spritesheet: 'largeicons', isMask: true, transform: 'rotate(180deg)'},
+  'largeicon-show-top-sidebar': {x: -160,  y: -72, width: 28, height: 24, spritesheet: 'largeicons', isMask: true, transform: 'translate(4px, 0) rotate(90deg)'},
+  'largeicon-hide-top-sidebar': {x: -192,  y: -72, width: 28, height: 24, spritesheet: 'largeicons', isMask: true, transform: 'translate(4px, 1px) rotate(90deg)'},
+  'largeicon-show-bottom-sidebar': {x: -160,  y: -72, width: 28, height: 24, spritesheet: 'largeicons', isMask: true, transform: 'translate(4px, 0) rotate(-90deg)'},
+  'largeicon-hide-bottom-sidebar': {x: -192,  y: -72, width: 28, height: 24, spritesheet: 'largeicons', isMask: true, transform: 'translate(4px, 1px) rotate(-90deg)'},
+};

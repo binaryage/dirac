@@ -55,18 +55,7 @@ WebInspector.Main = class {
     if (InspectorFrontendHost.isUnderTest())
       self.runtime.useTestBase();
     Runtime.setPlatform(WebInspector.platform());
-    this._preferencesProvider().getPreferences(this._gotPreferences.bind(this));
-  }
-
-  /**
-   * @return {!InspectorFrontendHostAPI}
-   */
-  _preferencesProvider() {
-    if (this._preferencesProviderInstance)
-      return this._preferencesProviderInstance;
-    var isCustomFrontend = window.location.toString().startsWith('chrome-devtools://devtools/custom/');
-    this._preferencesProviderInstance = isCustomFrontend ? new WebInspector.InspectorFrontendHostStub() : InspectorFrontendHost;
-    return this._preferencesProviderInstance;
+    InspectorFrontendHost.getPreferences(this._gotPreferences.bind(this));
   }
 
   /**
@@ -84,10 +73,9 @@ WebInspector.Main = class {
    */
   _createSettings(prefs) {
     this._initializeExperiments(prefs);
-    var preferencesProvider = this._preferencesProvider();
     WebInspector.settings = new WebInspector.Settings(new WebInspector.SettingsStorage(
-      prefs, preferencesProvider.setPreference.bind(preferencesProvider), preferencesProvider.removePreference.bind(preferencesProvider),
-      preferencesProvider.clearPreferences.bind(preferencesProvider)));
+        prefs, InspectorFrontendHost.setPreference, InspectorFrontendHost.removePreference,
+        InspectorFrontendHost.clearPreferences));
 
     if (!InspectorFrontendHost.isUnderTest())
       new WebInspector.VersionController().updateVersion();
@@ -661,9 +649,9 @@ WebInspector.Main.WarningErrorCounter = class {
     this._toolbarItem = new WebInspector.ToolbarItem(this._counter);
     var shadowRoot = WebInspector.createShadowRootWithCoreStyles(this._counter, 'main/errorWarningCounter.css');
 
-    this._errors = this._createItem(shadowRoot, 'error-icon');
-    this._revokedErrors = this._createItem(shadowRoot, 'revokedError-icon');
-    this._warnings = this._createItem(shadowRoot, 'warning-icon');
+    this._errors = this._createItem(shadowRoot, 'smallicon-error');
+    this._revokedErrors = this._createItem(shadowRoot, 'smallicon-revoked-error');
+    this._warnings = this._createItem(shadowRoot, 'smallicon-warning');
     this._titles = [];
 
     WebInspector.multitargetConsoleModel.addEventListener(
@@ -745,7 +733,7 @@ WebInspector.Main.WarningErrorCounter = class {
 WebInspector.Main.MainMenuItem = class {
   constructor() {
     this._item =
-        new WebInspector.ToolbarButton(WebInspector.UIString('Customize and control DevTools'), 'menu-toolbar-item');
+        new WebInspector.ToolbarButton(WebInspector.UIString('Customize and control DevTools'), 'largeicon-menu');
     this._item.addEventListener('mousedown', this._mouseDown, this);
   }
 
@@ -776,9 +764,9 @@ WebInspector.Main.MainMenuItem = class {
       var dockItemToolbar = new WebInspector.Toolbar('', dockItemElement);
       dockItemToolbar.makeBlueOnHover();
       var undock = new WebInspector.ToolbarToggle(
-          WebInspector.UIString('Undock into separate window'), 'dock-toolbar-item-undock');
-      var bottom = new WebInspector.ToolbarToggle(WebInspector.UIString('Dock to bottom'), 'dock-toolbar-item-bottom');
-      var right = new WebInspector.ToolbarToggle(WebInspector.UIString('Dock to right'), 'dock-toolbar-item-right');
+          WebInspector.UIString('Undock into separate window'), 'largeicon-undock');
+      var bottom = new WebInspector.ToolbarToggle(WebInspector.UIString('Dock to bottom'), 'largeicon-dock-to-bottom');
+      var right = new WebInspector.ToolbarToggle(WebInspector.UIString('Dock to right'), 'largeicon-dock-to-right');
       undock.addEventListener('mouseup', setDockSide.bind(null, WebInspector.DockController.State.Undocked));
       bottom.addEventListener('mouseup', setDockSide.bind(null, WebInspector.DockController.State.DockedToBottom));
       right.addEventListener('mouseup', setDockSide.bind(null, WebInspector.DockController.State.DockedToRight));
@@ -838,10 +826,10 @@ WebInspector.NetworkPanelIndicator = class {
     function updateVisibility() {
       if (manager.isThrottling()) {
         WebInspector.inspectorView.setPanelIcon(
-            'network', 'warning-icon', WebInspector.UIString('Network throttling is enabled'));
+            'network', 'smallicon-warning', WebInspector.UIString('Network throttling is enabled'));
       } else if (blockedURLsSetting.get().length) {
         WebInspector.inspectorView.setPanelIcon(
-            'network', 'warning-icon', WebInspector.UIString('Requests may be blocked'));
+            'network', 'smallicon-warning', WebInspector.UIString('Requests may be blocked'));
       } else {
         WebInspector.inspectorView.setPanelIcon('network', '', '');
       }
@@ -861,7 +849,7 @@ WebInspector.SourcesPanelIndicator = class {
       var javaScriptDisabled = WebInspector.moduleSetting('javaScriptDisabled').get();
       if (javaScriptDisabled) {
         WebInspector.inspectorView.setPanelIcon(
-            'sources', 'warning-icon', WebInspector.UIString('JavaScript is disabled'));
+            'sources', 'smallicon-warning', WebInspector.UIString('JavaScript is disabled'));
       } else {
         WebInspector.inspectorView.setPanelIcon('sources', '', '');
       }
