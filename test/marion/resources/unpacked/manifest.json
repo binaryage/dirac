@@ -30,7 +30,7 @@
     }
   ],
   "web_accessible_resources": [
-    ".compiled/*"
+    "compiled/*"
   ],
   "manifest_version": 2
 }
