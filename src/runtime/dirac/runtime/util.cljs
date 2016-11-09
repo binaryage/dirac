@@ -4,7 +4,7 @@
             [dirac.runtime.prefs :as prefs]))
 
 (defn ^:dynamic make-version-info [version]
-  (str "v" version))
+  (str version))
 
 (defn ^:dynamic make-lib-info [version]
   (str "Dirac Runtime " (make-version-info version)))
