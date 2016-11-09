@@ -64,9 +64,9 @@
      */
     addExtensions(extensions) {
       // Support for legacy front-ends (<M41).
-      if (window['WebInspector']['addExtensions'])
-        window['WebInspector']['addExtensions'](extensions);
-      else
+      // if (window['WebInspector']['addExtensions'])
+      //   window['WebInspector']['addExtensions'](extensions);
+      // else
         this._dispatchOnInspectorFrontendAPI('addExtensions', [extensions]);
     }
 
