@@ -63,6 +63,7 @@
                  "src/automation"
                  "src/background"
                  "src/backport"
+                 "src/devtools"
                  "src/figwheel"
                  "src/implant"
                  "src/lib"
@@ -272,6 +273,7 @@
                                              "src/lib"
                                              "src/shared"
                                              "src/project"
+                                             "src/devtools"
                                              "src/implant"]
                             :compiler       {:output-to       "resources/unpacked/devtools/front_end/dirac/.compiled/implant/implant.js"
                                              :output-dir      "resources/unpacked/devtools/front_end/dirac/.compiled/implant"
@@ -318,9 +320,11 @@
                                            "src/lib"
                                            "src/shared"
                                            "src/project"
+                                           "src/devtools"
                                            "src/implant"]
                             :compiler     {:output-to     "target/resources/release/devtools/front_end/dirac/.compiled/implant/implant.js"
                                            :output-dir    "target/resources/release/devtools/front_end/dirac/.compiled/implant"
+                                           :main          dirac.implant
                                            :optimizations :advanced
                                            :elide-asserts true}}
                            :dirac-background

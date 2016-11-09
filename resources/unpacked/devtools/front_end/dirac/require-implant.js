@@ -1,2 +1,2 @@
-goog.require("devtools.preload");
+goog.require("dirac.devtools");
 goog.require("dirac.implant");

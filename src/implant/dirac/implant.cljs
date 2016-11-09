@@ -1,11 +1,9 @@
 (ns dirac.implant
   (:require-macros [cljs.core.async.macros :refer [go go-loop]])
-  (:require [dirac.implant.deps]
-            [cljs.core.async :refer [put! <! chan timeout alts! close!]]
-            [devtools.toolbox :refer [envelope]]
+  (:require [cljs.core.async :refer [put! <! chan timeout alts! close!]]
             [oops.core :refer [oget oset! oset!+ ocall oapply gget gcall!]]
             [chromex.logging :refer-macros [log warn error info]]
-            [dirac.utils :refer-macros [runonce]]
+            [dirac.utils :refer [runonce]]
             [dirac.console :refer [log-to-console!]]
             [dirac.implant.editor :as editor]
             [dirac.implant.intercom :as intercom]
@@ -65,7 +63,7 @@
   (try
     (analyzer/parse-ns-from-source source)
     (catch :default e
-      (error "Unable to parse namespace from source" (envelope source) "\n" e))))
+      (error "Unable to parse namespace from source\n" source "\n" e))))
 
 (defn ns-to-relpath [ns ext]
   (munging/ns-to-relpath ns ext))
@@ -148,6 +146,7 @@
     (set! *implant-initialized* true)
     (assert (not *console-initialized*))
     ; (log-to-console!)
+    ;(install-devtools-if-needed!)
     (enhance-dirac-object! (gget "dirac"))                                                                                    ; see front_end/dirac/dirac.js
     (reporter/install!)
     (automation/install!)
