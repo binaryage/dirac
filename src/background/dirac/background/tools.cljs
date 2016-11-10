@@ -7,14 +7,14 @@
             [chromex.ext.tabs :as tabs]
             [dirac.settings :refer-macros [get-dirac-devtools-window-top get-dirac-devtools-window-left
                                            get-dirac-devtools-window-width get-dirac-devtools-window-height]]
-            [dirac.target.core :refer [resolve-backend-url]]
             [dirac.i18n :as i18n]
             [dirac.sugar :as sugar]
             [dirac.background.helpers :as helpers :refer [report-error-in-tab report-warning-in-tab]]
             [dirac.background.devtools :as devtools]
-            [dirac.options.model :as options]
+            [dirac.background.debugger :refer [resolve-backend-url]]
             [dirac.background.state :as state]
             [dirac.background.helpers :as helpers]
+            [dirac.options.model :as options]
             [dirac.utils :as utils]))
 
 (def flag-keys [:enable-repl

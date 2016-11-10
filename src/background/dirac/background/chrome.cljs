@@ -10,7 +10,6 @@
             [chromex.ext.tabs :as tabs]
             [chromex.ext.browser-action :as browser-action]
             [chromex.ext.commands :as commands]
-            [dirac.target.core :refer [resolve-backend-url]]
             [dirac.background.state :as state]
             [dirac.background.devtools :as devtools]
             [dirac.background.tools :as tools]
