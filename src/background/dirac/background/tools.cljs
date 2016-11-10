@@ -133,16 +133,16 @@
   (go
     (let [backend-tab-id (sugar/get-tab-id tab)
           tab-url (oget tab "url")
-          target-url (options/get-option :target-url)]
+          debugger-url (options/get-option :target-url)]
       (assert backend-tab-id)
       (cond
         (not tab-url) (report-error-in-tab backend-tab-id (i18n/tab-cannot-be-debugged tab))
-        (not target-url) (report-error-in-tab backend-tab-id (i18n/target-url-not-specified))
-        :else (if-let [backend-url (<! (resolve-backend-url target-url tab-url))]
+        (not debugger-url) (report-error-in-tab backend-tab-id (i18n/debugger-url-not-specified))
+        :else (if-let [backend-url (<! (resolve-backend-url debugger-url tab-url))]
                 (if (keyword-identical? backend-url :not-attachable)
-                  (report-warning-in-tab backend-tab-id (i18n/cannot-attach-dirac target-url tab-url))
+                  (report-warning-in-tab backend-tab-id (i18n/cannot-attach-dirac debugger-url tab-url))
                   (<! (create-dirac-devtools! backend-tab-id (assoc options :backend-url backend-url))))
-                (report-error-in-tab backend-tab-id (i18n/unable-to-resolve-backend-url target-url tab-url)))))))
+                (report-error-in-tab backend-tab-id (i18n/unable-to-resolve-backend-url debugger-url tab-url)))))))
 
 (defn activate-dirac-devtools! [tab-id]
   (go
