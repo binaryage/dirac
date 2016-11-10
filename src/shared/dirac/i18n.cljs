@@ -13,8 +13,9 @@
        "See " cannot-attach-help-url ".\n"
        "tab-url=" tab-url ", debugger-url=" debugger-url))
 
-(defn unable-to-resolve-backend-url [debugger-url tab-url]
-  (str "Unable to resolve backend-url for given tab-url (via debugger-url)."
+(defn unable-to-resolve-backend-url [debugger-url tab-url reason]
+  (str "Unable to resolve backend-url for given tab-url (via debugger-url).\n"
+       (if (some? reason) (str "reason: " reason "\n"))
        "tab-url=" tab-url ", debugger-url=" debugger-url))
 
 (defn debugger-url-not-specified []
