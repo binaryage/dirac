@@ -11,7 +11,7 @@
             [dirac.sugar :as sugar]
             [dirac.background.helpers :as helpers :refer [report-error-in-tab report-warning-in-tab]]
             [dirac.background.devtools :as devtools]
-            [dirac.background.debugger :refer [resolve-backend-url resolution-failure? get-resolution-failure-reason]]
+            [dirac.background.debugging :refer [resolve-backend-url resolution-failure? get-resolution-failure-reason]]
             [dirac.background.state :as state]
             [dirac.background.helpers :as helpers]
             [dirac.options.model :as options]
