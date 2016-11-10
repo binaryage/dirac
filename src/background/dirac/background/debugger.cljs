@@ -1,14 +1,13 @@
 (ns dirac.background.debugger
   (:require-macros [cljs.core.async.macros :refer [go]])
   (:require [cljs-http.client :as http]
-            [cljs.core.async :refer [<!]]
-            [chromex.logging :refer-macros [log info warn error group group-end]]))
+            [cljs.core.async :refer [<!]]))
 
-(defn get-target-context-list-api-endpoint [target-url]
-  (str target-url "/json"))
+(defn get-context-list-api-endpoint [debugger-url]
+  (str debugger-url "/json"))
 
-(defn fetch-target-context-list [target-url]
-  (let [api-endpoint (get-target-context-list-api-endpoint target-url)]
+(defn fetch-context-list [debugger-url]
+  (let [api-endpoint (get-context-list-api-endpoint debugger-url)]
     (go
       (let [response (<! (http/get api-endpoint))]
         (:body response)))))
@@ -20,9 +19,9 @@
   (if-let [matches (re-matches #"/devtools/inspector.html\?ws=(.*)" devtools-frontend-url)]
     (second matches)))
 
-(defn resolve-backend-url [target-url context-url]
+(defn resolve-backend-url [debugger-url context-url]
   (go
-    (if-let [context-list (<! (fetch-target-context-list target-url))]
+    (if-let [context-list (<! (fetch-context-list debugger-url))]
       (if-let [context (first (matching-contexts-by-url context-list context-url))]
         (if-let [devtools-frontend-url (:devtoolsFrontendUrl context)]
           (extract-backend-url devtools-frontend-url)
