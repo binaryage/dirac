@@ -11,7 +11,7 @@
             [dirac.sugar :as sugar]
             [dirac.background.helpers :as helpers :refer [report-error-in-tab report-warning-in-tab]]
             [dirac.background.devtools :as devtools]
-            [dirac.background.debugger :refer [resolve-backend-url]]
+            [dirac.background.debugger :refer [resolve-backend-url resolution-failure? get-resolution-failure-reason]]
             [dirac.background.state :as state]
             [dirac.background.helpers :as helpers]
             [dirac.options.model :as options]
@@ -138,11 +138,13 @@
       (cond
         (not tab-url) (report-error-in-tab backend-tab-id (i18n/tab-cannot-be-debugged tab))
         (not debugger-url) (report-error-in-tab backend-tab-id (i18n/debugger-url-not-specified))
-        :else (if-let [backend-url (<! (resolve-backend-url debugger-url tab-url))]
-                (if (keyword-identical? backend-url :not-attachable)
-                  (report-warning-in-tab backend-tab-id (i18n/cannot-attach-dirac debugger-url tab-url))
-                  (<! (create-dirac-devtools! backend-tab-id (assoc options :backend-url backend-url))))
-                (report-error-in-tab backend-tab-id (i18n/unable-to-resolve-backend-url debugger-url tab-url)))))))
+        :else (let [backend-url (<! (resolve-backend-url debugger-url tab-url))]
+                (if (resolution-failure? backend-url)
+                  (let [reason (get-resolution-failure-reason backend-url)]
+                    (report-error-in-tab backend-tab-id (i18n/unable-to-resolve-backend-url debugger-url tab-url reason)))
+                  (if (keyword-identical? backend-url :not-attachable)
+                    (report-warning-in-tab backend-tab-id (i18n/cannot-attach-dirac debugger-url tab-url))
+                    (<! (create-dirac-devtools! backend-tab-id (assoc options :backend-url backend-url))))))))))
 
 (defn activate-dirac-devtools! [tab-id]
   (go
