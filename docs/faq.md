@@ -108,3 +108,11 @@ Tip: Also you may want to go to `chrome://extensions`, open Dirac DevTools optio
  This way you can have internal DevTools docked inside Dirac DevTools window which I personally find more convenient.
 
 For more serious debugging you have to setup a dev environment and build a dev version of Dirac Chrome Extension.
+
+### Getting error "Cannot attach Dirac DevTools...". What now?
+
+Dirac DevTools needs to connect to a debugger to inspect target tab running your page. 
+
+There is a fundamental limitation in current [Chrome debugger protocol](https://developer.chrome.com/devtools/docs/debugger-protocol) 
+implementation that only one debugger client can be attached at time (see [Simultaneous protocol clients](https://developer.chrome.com/devtools/docs/debugger-protocol#simultaneous)). 
+If you open internal DevTools or have some other debugger client already connected, Dirac won't be able to connect and will report this error.
