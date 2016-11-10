@@ -71,6 +71,9 @@
 (def ^:const TAXI_SCRIPT_TIMEOUT (seconds 3))
 (def ^:const TAXI_IMPLICIT_WAIT (seconds 3))
 
+(def ^:const BACKEND_URL_RESOLUTION_TRIALS 5)
+(def ^:const FAILED_BACKEND_URL_RESOLUTION_DELAY (seconds 1))
+
 (def dirac-devtools-window-top (env :dirac-setup-devtools-window-top))
 (def dirac-devtools-window-left (env :dirac-setup-devtools-window-left))
 (def dirac-devtools-window-width (env :dirac-setup-devtools-window-width))
@@ -273,3 +276,9 @@
 
 (defmacro get-taxi-implicit-wait []
   TAXI_IMPLICIT_WAIT)
+
+(defmacro get-backend-url-resolution-trials []
+  BACKEND_URL_RESOLUTION_TRIALS)
+
+(defmacro get-failed-backend-url-resolution-delay []
+  FAILED_BACKEND_URL_RESOLUTION_DELAY)
