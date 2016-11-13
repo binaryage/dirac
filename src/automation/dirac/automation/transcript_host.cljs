@@ -15,6 +15,7 @@
 
 (defonce current-transcript (atom nil))
 (defonce transcript-enabled (volatile! 0))
+(defonce normalized-transcript (volatile! true))
 (defonce output-recorder (chan 1024))
 (defonce output-observers (atom #{}))
 (defonce output-segment (atom []))
@@ -34,6 +35,9 @@
 (defn set-style! [style]
   (gcall! "setRunnerFavicon" style)
   (transcript/set-style! @current-transcript style))
+
+(defn normalized-transcript? []
+  @normalized-transcript)
 
 ; -- enable/disable transcript ----------------------------------------------------------------------------------------------
 
@@ -221,9 +225,11 @@
     :else [label (transformer text)]))                                                                                        ; TODO: make transformer pluggable
 
 (defn rewrite-transcript! [label text]
-  (case (get-rewriting-machine-state)
-    :java-trace (process-java-trace-state! label text)
-    :default (process-default-state! label text)))
+  (if-not (normalized-transcript?)
+    [label text]
+    (case (get-rewriting-machine-state)
+      :java-trace (process-java-trace-state! label text)
+      :default (process-default-state! label text))))
 
 ; -- transcript api ---------------------------------------------------------------------------------------------------------
 
@@ -271,8 +277,9 @@
         (match-observer-record! observer-record value))
       (recur))))
 
-(defn init-transcript! [id]
+(defn init-transcript! [id normalized?]
   (let [transcript-el (transcript/create-transcript! (helpers/get-el-by-id id))]
     (reset! current-transcript transcript-el)
+    (vreset! normalized-transcript normalized?)
     (run-output-matching-loop!)))
 

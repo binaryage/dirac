@@ -88,12 +88,17 @@
   (nil? @exit-code))
 
 (defn pause-if-not-under-test-runner! []
-  (if-not (helpers/is-test-runner-present?)
+  (if-not (helpers/automated-testing?)
     (runner/pause)))
 
 (defn set-exit-code! [code]
   (log "set-exit-code!" code)
   (vreset! exit-code code))
+
+(defn normalized? []
+  (if-not (helpers/automated-testing?)
+    (runner/normalized?)
+    true))
 
 (defn make-failure-matcher []
   (fn [[label _message]]
@@ -112,7 +117,7 @@
     (vreset! setup-done true)
     ; transcript is a fancy name for "log of interesting events"
     (register-global-exception-handler!)
-    (transcript-host/init-transcript! "transcript-box")
+    (transcript-host/init-transcript! "transcript-box" (normalized?))
     ; when we are not running under test-runner, we want skip all future actions after a failure
     ; this helps inspection of the problems in an interactive way
     (transcript-host/register-observer! (make-failure-matcher))
@@ -125,12 +130,12 @@
     (messages/reposition-runner-window!)
     ; if test runner is present, we will wait for test runner to launch the test
     ; it needs to disconnect the driver first
-    (if-not (helpers/is-test-runner-present?)
+    (if-not (helpers/automated-testing?)
       (launcher/launch-task!))))
 
 (defn task-teardown! []
   (assert (not (running?)))
-  (let [runner-present? (helpers/is-test-runner-present?)
+  (let [runner-present? (helpers/automated-testing?)
         successful? (success?)]
     (go
       ; this prevents any new transcript being spit out during our teardown process, except for forced appends
