@@ -3,6 +3,7 @@
   (:require [cljs.core.async :refer [put! <! chan timeout alts! close!]]
             [oops.core :refer [oget oset! ocall oapply gcall! gset!]]
             [chromex.logging :refer-macros [log warn error info]]
+            [goog.style :as gstyle]
             [dirac.utils :refer-macros [runonce]]
             [dirac.automation.helpers :as helpers]
             [dirac.cookies :as cookies]
@@ -41,8 +42,8 @@
 (defn get-normalize-checkbox []
   (helpers/get-el-by-id "normalize-checkbox"))
 
-(defn get-controls-panel-el []
-  (helpers/get-el-by-id "controls-panel"))
+(defn get-control-panel-el []
+  (helpers/get-el-by-id "control-panel"))
 
 (defn init-normalize-checkbox! []
   (let [checkbox-el (get-normalize-checkbox)
@@ -53,7 +54,7 @@
 (defn init! []
   (init-normalize-checkbox!)
   (if-not (helpers/automated-testing?)
-    (.show (get-controls-panel-el))))
+    (gstyle/setElementShown (get-control-panel-el) true)))
 
 (defn reset-extensions! []
   (messages/post-extension-command! {:command :tear-down} :no-timeout)
