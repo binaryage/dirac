@@ -49,7 +49,7 @@
 ; -- backend css ------------------------------------------------------------------------------------------------------------
 
 (defn extract-backend-css [inspector-js-source]
-  (let [re (js/RegExp. ";WebInspector\\.CSSMetadata\\._generatedProperties=(\\[.*\\])" "g")]
+  (let [re (js/RegExp. ";SDK\\.CSSMetadata\\._generatedProperties=(\\[.*\\])" "g")]
     (if-let [m (re-find re inspector-js-source)]
       (second m))))
 

@@ -38,16 +38,16 @@
 ; -- backend API ------------------------------------------------------------------------------------------------------------
 
 (defn get-backend-api-mode []
-  (gget "WebInspector" "?BakedInspectorBackendMode"))
+  (gget "Protocol" "?BakedInspectorBackendMode"))
 
 (defn get-backend-api-mode-info []
-  (gget "WebInspector" "?BakedInspectorBackendModeInfo"))
+  (gget "Protocol" "?BakedInspectorBackendModeInfo"))
 
 (defn get-backend-api-chrome-tag []
-  (gget "WebInspector" "?BakedInspectorBackendAPIChromeTag"))
+  (gget "Protocol" "?BakedInspectorBackendAPIChromeTag"))
 
 (defn get-backend-api-chrome-rev []
-  (gget "WebInspector" "?BakedInspectorBackendAPIChromeRev"))
+  (gget "Protocol" "?BakedInspectorBackendAPIChromeRev"))
 
 (defn get-backend-api-chrome-info []
   (make-chrome-info (get-backend-api-chrome-tag) (get-backend-api-chrome-rev)))
@@ -63,16 +63,16 @@
 ; -- backend CSS ------------------------------------------------------------------------------------------------------------
 
 (defn get-backend-css-mode []
-  (gget "WebInspector" "?BakedSupportedCSSPropertiesMode"))
+  (gget "Protocol" "?BakedSupportedCSSPropertiesMode"))
 
 (defn get-backend-css-mode-info []
-  (gget "WebInspector" "?BakedSupportedCSSPropertiesModeInfo"))
+  (gget "Protocol" "?BakedSupportedCSSPropertiesModeInfo"))
 
 (defn get-backend-css-chrome-tag []
-  (gget "WebInspector" "?BakedSupportedCSSPropertiesChromeTag"))
+  (gget "Protocol" "?BakedSupportedCSSPropertiesChromeTag"))
 
 (defn get-backend-css-chrome-rev []
-  (gget "WebInspector" "?BakedSupportedCSSPropertiesChromeRev"))
+  (gget "Protocol" "?BakedSupportedCSSPropertiesChromeRev"))
 
 (defn get-backend-css-chrome-info []
   (make-chrome-info (get-backend-css-chrome-tag) (get-backend-css-chrome-rev)))
