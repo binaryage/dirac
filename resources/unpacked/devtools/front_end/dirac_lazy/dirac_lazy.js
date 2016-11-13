@@ -10,7 +10,7 @@ Object.assign(window.dirac, (function() {
   // --- eval support -----------------------------------------------------------------------------------------------------
 
   function lookupCurrentContext() {
-    return WebInspector.context.flavor(WebInspector.ExecutionContext);
+    return UI.context.flavor(SDK.ExecutionContext);
   }
 
   function evalInContext(context, code, callback) {
@@ -65,13 +65,13 @@ Object.assign(window.dirac, (function() {
     if (dirac._DEBUG_EVAL) {
       console.log("lookupDefaultContext called");
     }
-    if (!WebInspector.targetManager) {
+    if (!SDK.targetManager) {
       if (dirac._DEBUG_EVAL) {
-        console.log("  !WebInspector.targetManager => bail out");
+        console.log("  !SDK.targetManager => bail out");
       }
       return null;
     }
-    let target = WebInspector.targetManager.mainTarget();
+    let target = SDK.targetManager.mainTarget();
     if (!target) {
       if (dirac._DEBUG_EVAL) {
         console.log("  !target => bail out");
@@ -127,13 +127,13 @@ Object.assign(window.dirac, (function() {
       callback("GlobalObjectCleared", ...args);
     };
 
-    WebInspector.targetManager.addModelListener(WebInspector.DebuggerModel, WebInspector.DebuggerModel.Events.GlobalObjectCleared, globalObjectClearedHandler, window.dirac);
+    SDK.targetManager.addModelListener(SDK.DebuggerModel, SDK.DebuggerModel.Events.GlobalObjectCleared, globalObjectClearedHandler, window.dirac);
 
     /**
      * @return {boolean}
      */
     debuggerEventsUnsubscriber = () => {
-      WebInspector.targetManager.removeModelListener(WebInspector.DebuggerModel, WebInspector.DebuggerModel.Events.GlobalObjectCleared, globalObjectClearedHandler, window.dirac);
+      SDK.targetManager.removeModelListener(SDK.DebuggerModel, SDK.DebuggerModel.Events.GlobalObjectCleared, globalObjectClearedHandler, window.dirac);
       return true;
     };
 
@@ -156,7 +156,7 @@ Object.assign(window.dirac, (function() {
   // --- console ----------------------------------------------------------------------------------------------------------
 
   function addConsoleMessageToMainTarget(type, level, text, parameters) {
-    const target = WebInspector.targetManager.mainTarget();
+    const target = SDK.targetManager.mainTarget();
     if (!target) {
       console.warn("Unable to add console message to main target: ", text);
       return;
@@ -167,7 +167,7 @@ Object.assign(window.dirac, (function() {
       return;
     }
 
-    const msg = new WebInspector.ConsoleMessage(target, WebInspector.ConsoleMessage.MessageSource.Other, level, text,
+    const msg = new SDK.ConsoleMessage(target, SDK.ConsoleMessage.MessageSource.Other, level, text,
       type, undefined, undefined, undefined, undefined, parameters);
     consoleModel.addMessage(msg);
   }
@@ -179,29 +179,29 @@ Object.assign(window.dirac, (function() {
 
     switch (scope.type()) {
       case Protocol.Debugger.ScopeType.Local:
-        title = WebInspector.UIString("Local");
+        title = Common.UIString("Local");
         break;
       case Protocol.Debugger.ScopeType.Closure:
         const scopeName = scope.name();
         if (scopeName)
-          title = WebInspector.UIString("Closure (%s)", WebInspector.beautifyFunctionName(scopeName));
+          title = Common.UIString("Closure (%s)", UI.beautifyFunctionName(scopeName));
         else
-          title = WebInspector.UIString("Closure");
+          title = Common.UIString("Closure");
         break;
       case Protocol.Debugger.ScopeType.Catch:
-        title = WebInspector.UIString("Catch");
+        title = Common.UIString("Catch");
         break;
       case Protocol.Debugger.ScopeType.Block:
-        title = WebInspector.UIString("Block");
+        title = Common.UIString("Block");
         break;
       case Protocol.Debugger.ScopeType.Script:
-        title = WebInspector.UIString("Script");
+        title = Common.UIString("Script");
         break;
       case Protocol.Debugger.ScopeType.With:
-        title = WebInspector.UIString("With Block");
+        title = Common.UIString("With Block");
         break;
       case Protocol.Debugger.ScopeType.Global:
-        title = WebInspector.UIString("Global");
+        title = Common.UIString("Global");
         break;
     }
 
@@ -210,14 +210,14 @@ Object.assign(window.dirac, (function() {
 
   function extractNamesFromScopePromise(scope) {
     const title = getScopeTitle(scope);
-    const remoteObject = WebInspector.SourceMapNamesResolver.resolveScopeInObject(scope);
+    const remoteObject = Sources.SourceMapNamesResolver.resolveScopeInObject(scope);
 
     const result = {title: title};
 
     return new Promise(function(resolve) {
 
       /**
-       * @param {?Array<!WebInspector.RemoteObjectProperty>} properties
+       * @param {?Array<!SDK.RemoteObjectProperty>} properties
        */
       function processProperties(properties) {
         if (properties) {
@@ -286,7 +286,7 @@ Object.assign(window.dirac, (function() {
 
   function isRelevantSourceCode(uiSourceCode) {
     return uiSourceCode.contentType().isScript() && !uiSourceCode.contentType().isFromSourceMap() &&
-      uiSourceCode.project().type() === WebInspector.projectTypes.Network;
+      uiSourceCode.project().type() === Workspace.projectTypes.Network;
   }
 
   function getRelevantSourceCodes(workspace) {
@@ -343,14 +343,14 @@ Object.assign(window.dirac, (function() {
     if (!script.sourceMapURL) {
       return Promise.resolve(null);
     }
-    const sourceMap = WebInspector.debuggerWorkspaceBinding.sourceMapForScript(script);
+    const sourceMap = Bindings.debuggerWorkspaceBinding.sourceMapForScript(script);
     if (sourceMap) {
       return Promise.resolve(sourceMap);
     }
     return new Promise(resolve => {
       let counter = 0;
       const interval = setInterval(() => {
-        const sourceMap = WebInspector.debuggerWorkspaceBinding.sourceMapForScript(script);
+        const sourceMap = Bindings.debuggerWorkspaceBinding.sourceMapForScript(script);
         if (sourceMap) {
           clearInterval(interval);
           resolve(sourceMap);
@@ -366,7 +366,7 @@ Object.assign(window.dirac, (function() {
   }
 
   /**
-   * @param {!WebInspector.Script} script
+   * @param {!SDK.Script} script
    * @return {!Promise<!Array<dirac.NamespaceDescriptor>>}
    * @suppressGlobalPropertiesCheck
    */
@@ -375,7 +375,7 @@ Object.assign(window.dirac, (function() {
       return Promise.resolve([]);
     }
 
-    WebInspector.debuggerWorkspaceBinding.maybeLoadSourceMap(script);
+    Bindings.debuggerWorkspaceBinding.maybeLoadSourceMap(script);
     return ensureSourceMapLoadedAsync(script).then(/** @suppressGlobalPropertiesCheck */ sourceMap => {
       const scriptUrl = script.contentURL();
       let promises = [];
@@ -389,7 +389,7 @@ Object.assign(window.dirac, (function() {
           const parser = document.createElement('a');
           parser.href = url;
           if (parser.pathname.match(/\.clj.$/)) {
-            const contentProvider = sourceMap.sourceContentProvider(url, WebInspector.resourceTypes.SourceMapScript);
+            const contentProvider = sourceMap.sourceContentProvider(url, Common.resourceTypes.SourceMapScript);
             const namespaceDescriptorsPromise = contentProvider.requestContent().then(cljsSourceCode => parseClojureScriptNamespaces(scriptUrl, cljsSourceCode));
             promises.push(namespaceDescriptorsPromise);
             realNamespace = true;
@@ -436,7 +436,7 @@ Object.assign(window.dirac, (function() {
     if (!script) {
       return Promise.resolve([]);
     }
-    return parseNamespacesDescriptorsAsync(/** @type {!WebInspector.Script} */(script));
+    return parseNamespacesDescriptorsAsync(/** @type {!SDK.Script} */(script));
   }
 
   function prepareNamespacesFromDescriptors(namespaceDescriptors) {
@@ -448,9 +448,9 @@ Object.assign(window.dirac, (function() {
   }
 
   function extractNamespacesAsyncWorker() {
-    const workspace = WebInspector.workspace;
+    const workspace = Workspace.workspace;
     if (!workspace) {
-      console.error("unable to locate WebInspector.workspace when extracting all ClojureScript namespace names");
+      console.error("unable to locate Workspace when extracting all ClojureScript namespace names");
       return Promise.resolve([]);
     }
 
@@ -569,9 +569,9 @@ Object.assign(window.dirac, (function() {
   // --- namespace symbols ------------------------------------------------------------------------------------------------
 
   /**
-   * @param {!Array<!WebInspector.UISourceCode>} uiSourceCodes
+   * @param {!Array<!Sources.UISourceCode>} uiSourceCodes
    * @param {function(string)} urlMatcherFn
-   * @return {!Array<!WebInspector.UISourceCode>}
+   * @return {!Array<!Sources.UISourceCode>}
    */
   function findMatchingSourceCodes(uiSourceCodes, urlMatcherFn) {
     const matching = [];
@@ -597,11 +597,11 @@ Object.assign(window.dirac, (function() {
   }
 
   /**
-   * @param {!WebInspector.UISourceCode} uiSourceCode
-   * @return {?WebInspector.Script}
+   * @param {!Workspace.UISourceCode} uiSourceCode
+   * @return {?SDK.Script}
    */
   function getScriptFromSourceCode(uiSourceCode) {
-    return WebInspector.NetworkProject.getScriptFromSourceCode(uiSourceCode);
+    return Bindings.NetworkProject.getScriptFromSourceCode(uiSourceCode);
   }
 
   function extractNamesFromSourceMap(uiSourceCode, namespaceName) {
@@ -610,7 +610,7 @@ Object.assign(window.dirac, (function() {
       console.error("unable to locate script when extracting symbols for ClojureScript namespace '" + namespaceName + "'");
       return [];
     }
-    const sourceMap = WebInspector.debuggerWorkspaceBinding.sourceMapForScript(/** @type {!WebInspector.Script} */(script));
+    const sourceMap = Bindings.debuggerWorkspaceBinding.sourceMapForScript(/** @type {!SDK.Script} */(script));
     if (!sourceMap) {
       console.error("unable to locate sourceMap when extracting symbols for ClojureScript namespace '" + namespaceName + "'");
       return [];
@@ -624,9 +624,9 @@ Object.assign(window.dirac, (function() {
   }
 
   function extractNamespaceSymbolsAsyncWorker(namespaceName) {
-    const workspace = WebInspector.workspace;
+    const workspace = Workspace.workspace;
     if (!workspace) {
-      console.error("unable to locate WebInspector.workspace when extracting symbols for ClojureScript namespace '" + namespaceName + "'");
+      console.error("unable to locate Workspace when extracting symbols for ClojureScript namespace '" + namespaceName + "'");
       return Promise.resolve([]);
     }
 
@@ -782,14 +782,14 @@ Object.assign(window.dirac, (function() {
       console.log("startListeningForWorkspaceChanges");
     }
 
-    const workspace = WebInspector.workspace;
+    const workspace = Workspace.workspace;
     if (!workspace) {
-      console.error("unable to locate WebInspector.workspace in startListeningForWorkspaceChanges");
+      console.error("unable to locate Workspace in startListeningForWorkspaceChanges");
       return;
     }
 
-    workspace.addEventListener(WebInspector.Workspace.Events.UISourceCodeAdded, handleSourceCodeAdded, dirac);
-    workspace.addEventListener(WebInspector.Workspace.Events.UISourceCodeRemoved, handleSourceCodeRemoved, dirac);
+    workspace.addEventListener(Workspace.Workspace.Events.UISourceCodeAdded, handleSourceCodeAdded, dirac);
+    workspace.addEventListener(Workspace.Workspace.Events.UISourceCodeRemoved, handleSourceCodeRemoved, dirac);
 
     listeningForWorkspaceChanges = true;
   }
@@ -803,14 +803,14 @@ Object.assign(window.dirac, (function() {
       console.log("stopListeningForWorkspaceChanges");
     }
 
-    const workspace = WebInspector.workspace;
+    const workspace = Workspace.workspace;
     if (!workspace) {
-      console.error("unable to locate WebInspector.workspace in startListeningForWorkspaceChanges");
+      console.error("unable to locate Workspace in stopListeningForWorkspaceChanges");
       return;
     }
 
-    workspace.removeEventListener(WebInspector.Workspace.Events.UISourceCodeAdded, handleSourceCodeAdded, dirac);
-    workspace.removeEventListener(WebInspector.Workspace.Events.UISourceCodeRemoved, handleSourceCodeRemoved, dirac);
+    workspace.removeEventListener(Workspace.Workspace.Events.UISourceCodeAdded, handleSourceCodeAdded, dirac);
+    workspace.removeEventListener(Workspace.Workspace.Events.UISourceCodeRemoved, handleSourceCodeRemoved, dirac);
 
     listeningForWorkspaceChanges = false;
   }

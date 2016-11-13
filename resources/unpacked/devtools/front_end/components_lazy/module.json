@@ -8,16 +8,22 @@
     ],
     "extensions": [
         {
-            "type": "@WebInspector.UISourceCodeFrame.LineDecorator",
-            "className": "WebInspector.LineLevelProfile.LineDecorator",
+            "type": "@Sources.UISourceCodeFrame.LineDecorator",
+            "className": "Components.LineLevelProfile.LineDecorator",
             "decoratorType": "performance"
+        },
+        {
+           "type": "@Sources.UISourceCodeFrame.LineDecorator",
+           "className": "Components.CoverageProfile.LineDecorator",
+           "decoratorType": "coverage"
         }
     ],
     "scripts": [
         "CookiesTable.js",
         "FilmStripModel.js",
         "FilmStripView.js",
-        "LineLevelProfile.js"
+        "LineLevelProfile.js",
+        "CoverageProfile.js"
     ],
     "resources": [
         "filmStripDialog.css",

@@ -1,6 +1,6 @@
-WebInspector.InspectorBackendExtensionMode = {};
+SDK.InspectorBackendExtensionMode = {};
 
-WebInspector.InspectorBackendExtensionMode.loadFromExtensionIfNeeded = function() {
+SDK.InspectorBackendExtensionMode.loadFromExtensionIfNeeded = function() {
   if (InspectorBackend.isInitialized()) {
     return;
   }
@@ -24,21 +24,21 @@ WebInspector.InspectorBackendExtensionMode.loadFromExtensionIfNeeded = function(
   if (backendAPI) {
     const decodedBackendAPI = decodeURIComponent(backendAPI);
     const lines = decodedBackendAPI.split("\n").filter(s => s.length);
-    WebInspector.BakedInspectorBackendMode = "external";
-    WebInspector.BakedInspectorBackendModeInfo = lines.length;
+    Protocol.BakedInspectorBackendMode = "external";
+    Protocol.BakedInspectorBackendModeInfo = lines.length;
     if (dirac._DEBUG_BACKEND_API) {
-      console.log("BackendAPI: backend_api url parameter present (" + WebInspector.BakedInspectorBackendModeInfo + ").");
+      console.log("BackendAPI: backend_api url parameter present (" + Protocol.BakedInspectorBackendModeInfo + ").");
     }
     evalAPI(lines);
   } else {
-    const lines = WebInspector.BakedInspectorBackendAPI.split("\n").filter(s => s.length);
-    WebInspector.BakedInspectorBackendMode = "internal";
-    WebInspector.BakedInspectorBackendModeInfo = lines.length;
+    const lines = Protocol.BakedInspectorBackendAPI.split("\n").filter(s => s.length);
+    Protocol.BakedInspectorBackendMode = "internal";
+    Protocol.BakedInspectorBackendModeInfo = lines.length;
     if (dirac._DEBUG_BACKEND_API) {
-      console.log("BackendAPI: backend_api url parameter not present. Using pre-baked backend API (" + WebInspector.BakedInspectorBackendModeInfo + ").");
+      console.log("BackendAPI: backend_api url parameter not present. Using pre-baked backend API (" + Protocol.BakedInspectorBackendModeInfo + ").");
     }
     evalAPI(lines);
   }
 };
 
-WebInspector.InspectorBackendExtensionMode.loadFromExtensionIfNeeded();
+SDK.InspectorBackendExtensionMode.loadFromExtensionIfNeeded();
