@@ -1,6 +1,7 @@
 (ns dirac.tests.scenarios.no-runtime
-  (:require [dirac.automation.scenario :as scenario]))
+  (:require [dirac.automation.scenario :as scenario]
+            [dirac.automation.triggers :refer [install-common-triggers!]]))
 
 (scenario/capture-console-as-feedback!)
-(scenario/register-trigger! :navigate #(set! js/window.location.pathname %))
+(install-common-triggers!)
 (scenario/ready!)
