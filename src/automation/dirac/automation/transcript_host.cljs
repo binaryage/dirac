@@ -33,7 +33,6 @@
   (some? @current-transcript))
 
 (defn set-style! [style]
-  (gcall! "setRunnerFavicon" style)
   (transcript/set-style! @current-transcript style))
 
 (defn normalized-transcript? []
