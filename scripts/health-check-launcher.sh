@@ -6,3 +6,5 @@ cd "$(dirname "${BASH_SOURCE[0]}")";
 SCRIPTS=`pwd`
 
 "$SCRIPTS/health-check.sh" 2>&1
+
+git push --force origin health-check

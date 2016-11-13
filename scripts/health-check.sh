@@ -19,7 +19,6 @@ fi
 git merge --no-edit -Xtheirs "$TAG"
 git commit --allow-empty -m "a health-check against current Chromium"
 git checkout master
-git push origin healt-check
 
 popd
 
