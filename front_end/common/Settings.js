@@ -31,20 +31,19 @@
 /**
  * @unrestricted
  */
-WebInspector.Settings = class {
+Common.Settings = class {
   /**
-   * @param {!WebInspector.SettingsStorage} storage
+   * @param {!Common.SettingsStorage} globalStorage
+   * @param {!Common.SettingsStorage} localStorage
    */
-  constructor(storage) {
-    this._settingsStorage = storage;
-    var clearLocalStorage = window.localStorage ? window.localStorage.clear.bind(window.localStorage) : undefined;
-    this._localStorage =
-        new WebInspector.SettingsStorage(window.localStorage || {}, undefined, undefined, clearLocalStorage);
+  constructor(globalStorage, localStorage) {
+    this._settingsStorage = globalStorage;
+    this._localStorage = localStorage;
 
-    this._eventSupport = new WebInspector.Object();
-    /** @type {!Map<string, !WebInspector.Setting>} */
+    this._eventSupport = new Common.Object();
+    /** @type {!Map<string, !Common.Setting>} */
     this._registry = new Map();
-    /** @type {!Map<string, !WebInspector.Setting>} */
+    /** @type {!Map<string, !Common.Setting>} */
     this._moduleSettings = new Map();
     self.runtime.extensions('setting').forEach(this._registerModuleSetting.bind(this));
   }
@@ -65,7 +64,7 @@ WebInspector.Settings = class {
 
   /**
    * @param {string} settingName
-   * @return {!WebInspector.Setting}
+   * @return {!Common.Setting}
    */
   moduleSetting(settingName) {
     var setting = this._moduleSettings.get(settingName);
@@ -76,7 +75,7 @@ WebInspector.Settings = class {
 
   /**
    * @param {string} settingName
-   * @return {!WebInspector.Setting}
+   * @return {!Common.Setting}
    */
   settingForTest(settingName) {
     var setting = this._registry.get(settingName);
@@ -89,20 +88,20 @@ WebInspector.Settings = class {
    * @param {string} key
    * @param {*} defaultValue
    * @param {boolean=} isLocal
-   * @return {!WebInspector.Setting}
+   * @return {!Common.Setting}
    */
   createSetting(key, defaultValue, isLocal) {
     if (!this._registry.get(key))
       this._registry.set(
-          key, new WebInspector.Setting(
+          key, new Common.Setting(
                    this, key, defaultValue, this._eventSupport, isLocal ? this._localStorage : this._settingsStorage));
-    return /** @type {!WebInspector.Setting} */ (this._registry.get(key));
+    return /** @type {!Common.Setting} */ (this._registry.get(key));
   }
 
   /**
    * @param {string} key
    * @param {*} defaultValue
-   * @return {!WebInspector.Setting}
+   * @return {!Common.Setting}
    */
   createLocalSetting(key, defaultValue) {
     return this.createSetting(key, defaultValue, true);
@@ -113,40 +112,42 @@ WebInspector.Settings = class {
    * @param {string} defaultValue
    * @param {string=} regexFlags
    * @param {boolean=} isLocal
-   * @return {!WebInspector.RegExpSetting}
+   * @return {!Common.RegExpSetting}
    */
   createRegExpSetting(key, defaultValue, regexFlags, isLocal) {
     if (!this._registry.get(key))
       this._registry.set(
-          key, new WebInspector.RegExpSetting(
+          key, new Common.RegExpSetting(
                    this, key, defaultValue, this._eventSupport, isLocal ? this._localStorage : this._settingsStorage,
                    regexFlags));
-    return /** @type {!WebInspector.RegExpSetting} */ (this._registry.get(key));
+    return /** @type {!Common.RegExpSetting} */ (this._registry.get(key));
   }
 
   clearAll() {
     this._settingsStorage.removeAll();
     this._localStorage.removeAll();
-    var versionSetting = WebInspector.settings.createSetting(WebInspector.VersionController._currentVersionName, 0);
-    versionSetting.set(WebInspector.VersionController.currentVersion);
+    var versionSetting = Common.settings.createSetting(Common.VersionController._currentVersionName, 0);
+    versionSetting.set(Common.VersionController.currentVersion);
   }
 };
 
 /**
  * @unrestricted
  */
-WebInspector.SettingsStorage = class {
+Common.SettingsStorage = class {
   /**
    * @param {!Object} object
    * @param {function(string, string)=} setCallback
    * @param {function(string)=} removeCallback
    * @param {function(string)=} removeAllCallback
+   * @param {string=} storagePrefix
    */
-  constructor(object, setCallback, removeCallback, removeAllCallback) {
+  constructor(object, setCallback, removeCallback, removeAllCallback, storagePrefix) {
     this._object = object;
     this._setCallback = setCallback || function() {};
     this._removeCallback = removeCallback || function() {};
     this._removeAllCallback = removeAllCallback || function() {};
+    this._storagePrefix = storagePrefix || '';
   }
 
   /**
@@ -154,6 +155,7 @@ WebInspector.SettingsStorage = class {
    * @param {string} value
    */
   set(name, value) {
+    name = this._storagePrefix + name;
     this._object[name] = value;
     this._setCallback(name, value);
   }
@@ -163,6 +165,7 @@ WebInspector.SettingsStorage = class {
    * @return {boolean}
    */
   has(name) {
+    name = this._storagePrefix + name;
     return name in this._object;
   }
 
@@ -171,6 +174,7 @@ WebInspector.SettingsStorage = class {
    * @return {string}
    */
   get(name) {
+    name = this._storagePrefix + name;
     return this._object[name];
   }
 
@@ -178,6 +182,7 @@ WebInspector.SettingsStorage = class {
    * @param {string} name
    */
   remove(name) {
+    name = this._storagePrefix + name;
     delete this._object[name];
     this._removeCallback(name);
   }
@@ -188,7 +193,7 @@ WebInspector.SettingsStorage = class {
   }
 
   _dumpSizes() {
-    WebInspector.console.log('Ten largest settings: ');
+    Common.console.log('Ten largest settings: ');
 
     var sizes = {__proto__: null};
     for (var key in this._object)
@@ -202,7 +207,7 @@ WebInspector.SettingsStorage = class {
     keys.sort(comparator);
 
     for (var i = 0; i < 10 && i < keys.length; ++i)
-      WebInspector.console.log('Setting: \'' + keys[i] + '\', size: ' + sizes[keys[i]]);
+      Common.console.log('Setting: \'' + keys[i] + '\', size: ' + sizes[keys[i]]);
   }
 };
 
@@ -210,13 +215,13 @@ WebInspector.SettingsStorage = class {
  * @template V
  * @unrestricted
  */
-WebInspector.Setting = class {
+Common.Setting = class {
   /**
-   * @param {!WebInspector.Settings} settings
+   * @param {!Common.Settings} settings
    * @param {string} name
    * @param {V} defaultValue
-   * @param {!WebInspector.Object} eventSupport
-   * @param {!WebInspector.SettingsStorage} storage
+   * @param {!Common.Object} eventSupport
+   * @param {!Common.SettingsStorage} storage
    */
   constructor(settings, name, defaultValue, eventSupport, storage) {
     this._settings = settings;
@@ -227,7 +232,7 @@ WebInspector.Setting = class {
   }
 
   /**
-   * @param {function(!WebInspector.Event)} listener
+   * @param {function(!Common.Event)} listener
    * @param {!Object=} thisObject
    */
   addChangeListener(listener, thisObject) {
@@ -235,7 +240,7 @@ WebInspector.Setting = class {
   }
 
   /**
-   * @param {function(!WebInspector.Event)} listener
+   * @param {function(!Common.Event)} listener
    * @param {!Object=} thisObject
    */
   removeChangeListener(listener, thisObject) {
@@ -277,7 +282,7 @@ WebInspector.Setting = class {
         this._printSettingsSavingError(e.message, this._name, settingString);
       }
     } catch (e) {
-      WebInspector.console.error('Cannot stringify setting with name: ' + this._name + ', error: ' + e.message);
+      Common.console.error('Cannot stringify setting with name: ' + this._name + ', error: ' + e.message);
     }
     this._eventSupport.dispatchEventToListeners(this._name, value);
   }
@@ -297,7 +302,7 @@ WebInspector.Setting = class {
     var errorMessage =
         'Error saving setting with name: ' + this._name + ', value length: ' + value.length + '. Error: ' + message;
     console.error(errorMessage);
-    WebInspector.console.error(errorMessage);
+    Common.console.error(errorMessage);
     this._storage._dumpSizes();
   }
 };
@@ -305,13 +310,13 @@ WebInspector.Setting = class {
 /**
  * @unrestricted
  */
-WebInspector.RegExpSetting = class extends WebInspector.Setting {
+Common.RegExpSetting = class extends Common.Setting {
   /**
-   * @param {!WebInspector.Settings} settings
+   * @param {!Common.Settings} settings
    * @param {string} name
    * @param {string} defaultValue
-   * @param {!WebInspector.Object} eventSupport
-   * @param {!WebInspector.SettingsStorage} storage
+   * @param {!Common.Object} eventSupport
+   * @param {!Common.SettingsStorage} storage
    * @param {string=} regexFlags
    */
   constructor(settings, name, defaultValue, eventSupport, storage, regexFlags) {
@@ -377,12 +382,12 @@ WebInspector.RegExpSetting = class extends WebInspector.Setting {
 /**
  * @unrestricted
  */
-WebInspector.VersionController = class {
+Common.VersionController = class {
   updateVersion() {
     var localStorageVersion =
-        window.localStorage ? window.localStorage[WebInspector.VersionController._currentVersionName] : 0;
-    var versionSetting = WebInspector.settings.createSetting(WebInspector.VersionController._currentVersionName, 0);
-    var currentVersion = WebInspector.VersionController.currentVersion;
+        window.localStorage ? window.localStorage[Common.VersionController._currentVersionName] : 0;
+    var versionSetting = Common.settings.createSetting(Common.VersionController._currentVersionName, 0);
+    var currentVersion = Common.VersionController.currentVersion;
     var oldVersion = versionSetting.get() || parseInt(localStorageVersion || '0', 10);
     if (oldVersion === 0) {
       // First run, no need to do anything.
@@ -407,21 +412,21 @@ WebInspector.VersionController = class {
   }
 
   _updateVersionFrom0To1() {
-    this._clearBreakpointsWhenTooMany(WebInspector.settings.createLocalSetting('breakpoints', []), 500000);
+    this._clearBreakpointsWhenTooMany(Common.settings.createLocalSetting('breakpoints', []), 500000);
   }
 
   _updateVersionFrom1To2() {
-    WebInspector.settings.createSetting('previouslyViewedFiles', []).set([]);
+    Common.settings.createSetting('previouslyViewedFiles', []).set([]);
   }
 
   _updateVersionFrom2To3() {
-    WebInspector.settings.createSetting('fileSystemMapping', {}).set({});
-    WebInspector.settings.createSetting('fileMappingEntries', []).remove();
+    Common.settings.createSetting('fileSystemMapping', {}).set({});
+    Common.settings.createSetting('fileMappingEntries', []).remove();
   }
 
   _updateVersionFrom3To4() {
-    var advancedMode = WebInspector.settings.createSetting('showHeaSnapshotObjectsHiddenProperties', false);
-    WebInspector.moduleSetting('showAdvancedHeapSnapshotProperties').set(advancedMode.get());
+    var advancedMode = Common.settings.createSetting('showHeaSnapshotObjectsHiddenProperties', false);
+    Common.moduleSetting('showAdvancedHeapSnapshotProperties').set(advancedMode.get());
     advancedMode.remove();
   }
 
@@ -453,14 +458,14 @@ WebInspector.VersionController = class {
       var oldNameH = oldName + 'H';
 
       var newValue = null;
-      var oldSetting = WebInspector.settings.createSetting(oldName, empty);
+      var oldSetting = Common.settings.createSetting(oldName, empty);
       if (oldSetting.get() !== empty) {
         newValue = newValue || {};
         newValue.vertical = {};
         newValue.vertical.size = oldSetting.get();
         oldSetting.remove();
       }
-      var oldSettingH = WebInspector.settings.createSetting(oldNameH, empty);
+      var oldSettingH = Common.settings.createSetting(oldNameH, empty);
       if (oldSettingH.get() !== empty) {
         newValue = newValue || {};
         newValue.horizontal = {};
@@ -468,7 +473,7 @@ WebInspector.VersionController = class {
         oldSettingH.remove();
       }
       if (newValue)
-        WebInspector.settings.createSetting(newName, {}).set(newValue);
+        Common.settings.createSetting(newName, {}).set(newValue);
     }
   }
 
@@ -480,7 +485,7 @@ WebInspector.VersionController = class {
     };
 
     for (var oldName in settingNames) {
-      var oldSetting = WebInspector.settings.createSetting(oldName, null);
+      var oldSetting = Common.settings.createSetting(oldName, null);
       if (oldSetting.get() === null) {
         oldSetting.remove();
         continue;
@@ -492,7 +497,7 @@ WebInspector.VersionController = class {
       oldSetting.remove();
       var showMode = hidden ? 'OnlyMain' : 'Both';
 
-      var newSetting = WebInspector.settings.createSetting(newName, {});
+      var newSetting = Common.settings.createSetting(newName, {});
       var newValue = newSetting.get() || {};
       newValue.vertical = newValue.vertical || {};
       newValue.vertical.showMode = showMode;
@@ -512,7 +517,7 @@ WebInspector.VersionController = class {
 
     var empty = {};
     for (var name in settingNames) {
-      var setting = WebInspector.settings.createSetting(name, empty);
+      var setting = Common.settings.createSetting(name, empty);
       var value = setting.get();
       if (value === empty)
         continue;
@@ -532,7 +537,7 @@ WebInspector.VersionController = class {
     var settingNames = ['skipStackFramesPattern', 'workspaceFolderExcludePattern'];
 
     for (var i = 0; i < settingNames.length; ++i) {
-      var setting = WebInspector.settings.createSetting(settingNames[i], '');
+      var setting = Common.settings.createSetting(settingNames[i], '');
       var value = setting.get();
       if (!value)
         return;
@@ -559,7 +564,7 @@ WebInspector.VersionController = class {
   _updateVersionFrom10To11() {
     var oldSettingName = 'customDevicePresets';
     var newSettingName = 'customEmulatedDeviceList';
-    var oldSetting = WebInspector.settings.createSetting(oldSettingName, undefined);
+    var oldSetting = Common.settings.createSetting(oldSettingName, undefined);
     var list = oldSetting.get();
     if (!Array.isArray(list))
       return;
@@ -585,7 +590,7 @@ WebInspector.VersionController = class {
       newList.push(device);
     }
     if (newList.length)
-      WebInspector.settings.createSetting(newSettingName, []).set(newList);
+      Common.settings.createSetting(newSettingName, []).set(newList);
     oldSetting.remove();
   }
 
@@ -595,16 +600,16 @@ WebInspector.VersionController = class {
 
   _updateVersionFrom12To13() {
     this._migrateSettingsFromLocalStorage();
-    WebInspector.settings.createSetting('timelineOverviewMode', '').remove();
+    Common.settings.createSetting('timelineOverviewMode', '').remove();
   }
 
   _updateVersionFrom13To14() {
     var defaultValue = {'throughput': -1, 'latency': 0};
-    WebInspector.settings.createSetting('networkConditions', defaultValue).set(defaultValue);
+    Common.settings.createSetting('networkConditions', defaultValue).set(defaultValue);
   }
 
   _updateVersionFrom14To15() {
-    var setting = WebInspector.settings.createLocalSetting('workspaceExcludedFolders', {});
+    var setting = Common.settings.createLocalSetting('workspaceExcludedFolders', {});
     var oldValue = setting.get();
     var newValue = {};
     for (var fileSystemPath in oldValue) {
@@ -616,7 +621,7 @@ WebInspector.VersionController = class {
   }
 
   _updateVersionFrom15To16() {
-    var setting = WebInspector.settings.createSetting('InspectorView.panelOrder', {});
+    var setting = Common.settings.createSetting('InspectorView.panelOrder', {});
     var tabOrders = setting.get();
     for (var key of Object.keys(tabOrders))
       tabOrders[key] = (tabOrders[key] + 1) * 10;
@@ -624,7 +629,7 @@ WebInspector.VersionController = class {
   }
 
   _updateVersionFrom16To17() {
-    var setting = WebInspector.settings.createSetting('networkConditionsCustomProfiles', []);
+    var setting = Common.settings.createSetting('networkConditionsCustomProfiles', []);
     var oldValue = setting.get();
     var newValue = [];
     if (Array.isArray(oldValue)) {
@@ -642,7 +647,7 @@ WebInspector.VersionController = class {
   }
 
   _updateVersionFrom17To18() {
-    var setting = WebInspector.settings.createLocalSetting('workspaceExcludedFolders', {});
+    var setting = Common.settings.createLocalSetting('workspaceExcludedFolders', {});
     var oldValue = setting.get();
     var newValue = {};
     for (var oldKey in oldValue) {
@@ -660,7 +665,7 @@ WebInspector.VersionController = class {
 
   _updateVersionFrom18To19() {
     var defaultColumns = {status: true, type: true, initiator: true, size: true, time: true};
-    var visibleColumnSettings = WebInspector.settings.createSetting('networkLogColumnsVisibility', defaultColumns);
+    var visibleColumnSettings = Common.settings.createSetting('networkLogColumnsVisibility', defaultColumns);
     var visibleColumns = visibleColumnSettings.get();
     visibleColumns.name = true;
     visibleColumns.timeline = true;
@@ -671,14 +676,14 @@ WebInspector.VersionController = class {
         continue;
       configs[columnId.toLowerCase()] = {visible: visibleColumns[columnId]};
     }
-    var newSetting = WebInspector.settings.createSetting('networkLogColumns', {});
+    var newSetting = Common.settings.createSetting('networkLogColumns', {});
     newSetting.set(configs);
     visibleColumnSettings.remove();
   }
 
   _updateVersionFrom19To20() {
-    var oldSetting = WebInspector.settings.createSetting('InspectorView.panelOrder', {});
-    var newSetting = WebInspector.settings.createSetting('panel-tabOrder', {});
+    var oldSetting = Common.settings.createSetting('InspectorView.panelOrder', {});
+    var newSetting = Common.settings.createSetting('panel-tabOrder', {});
     newSetting.set(oldSetting.get());
     oldSetting.remove();
   }
@@ -698,12 +703,12 @@ WebInspector.VersionController = class {
         continue;
       var value = window.localStorage[key];
       window.localStorage.removeItem(key);
-      WebInspector.settings._settingsStorage[key] = value;
+      Common.settings._settingsStorage[key] = value;
     }
   }
 
   /**
-   * @param {!WebInspector.Setting} breakpointsSetting
+   * @param {!Common.Setting} breakpointsSetting
    * @param {number} maxBreakpointsCount
    */
   _clearBreakpointsWhenTooMany(breakpointsSetting, maxBreakpointsCount) {
@@ -714,26 +719,26 @@ WebInspector.VersionController = class {
   }
 };
 
-WebInspector.VersionController._currentVersionName = 'inspectorVersion';
-WebInspector.VersionController.currentVersion = 20;
+Common.VersionController._currentVersionName = 'inspectorVersion';
+Common.VersionController.currentVersion = 20;
 
 /**
- * @type {!WebInspector.Settings}
+ * @type {!Common.Settings}
  */
-WebInspector.settings;
+Common.settings;
 
 /**
  * @param {string} settingName
- * @return {!WebInspector.Setting}
+ * @return {!Common.Setting}
  */
-WebInspector.moduleSetting = function(settingName) {
-  return WebInspector.settings.moduleSetting(settingName);
+Common.moduleSetting = function(settingName) {
+  return Common.settings.moduleSetting(settingName);
 };
 
 /**
  * @param {string} settingName
- * @return {!WebInspector.Setting}
+ * @return {!Common.Setting}
  */
-WebInspector.settingForTest = function(settingName) {
-  return WebInspector.settings.settingForTest(settingName);
+Common.settingForTest = function(settingName) {
+  return Common.settings.settingForTest(settingName);
 };

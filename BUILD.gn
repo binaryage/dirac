@@ -49,7 +49,6 @@ devtools_common_js_files = [
   "front_end/common/Throttler.js",
   "front_end/common/Trie.js",
   "front_end/common/UIString.js",
-  "front_end/common/WebInspector.js",
   "front_end/common/Worker.js",
 ]
 devtools_components_js_files = [
@@ -178,6 +177,7 @@ devtools_persistence_js_files = [
   "front_end/persistence/DefaultMapping.js",
   "front_end/persistence/Automapping.js",
   "front_end/persistence/Persistence.js",
+  "front_end/persistence/PersistenceUtils.js",
 ]
 devtools_platform_js_files = [
   "front_end/platform/DOMExtension.js",
@@ -407,6 +407,7 @@ devtools_components_lazy_js_files = [
   "front_end/components_lazy/FilmStripModel.js",
   "front_end/components_lazy/FilmStripView.js",
   "front_end/components_lazy/LineLevelProfile.js",
+  "front_end/components_lazy/CoverageProfile.js",
 ]
 devtools_console_js_files = [
   "front_end/console/consoleView.css",

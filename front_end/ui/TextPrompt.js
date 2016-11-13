@@ -27,10 +27,10 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 /**
- * @implements {WebInspector.SuggestBoxDelegate}
+ * @implements {UI.SuggestBoxDelegate}
  * @unrestricted
  */
-WebInspector.TextPrompt = class extends WebInspector.Object {
+UI.TextPrompt = class extends Common.Object {
   constructor() {
     super();
     /**
@@ -38,7 +38,7 @@ WebInspector.TextPrompt = class extends WebInspector.Object {
      */
     this._proxyElement;
     this._proxyElementDisplay = 'inline-block';
-    this._autocompletionTimeout = WebInspector.TextPrompt.DefaultAutocompletionTimeout;
+    this._autocompletionTimeout = UI.TextPrompt.DefaultAutocompletionTimeout;
     this._title = '';
     this._queryRange = null;
     this._previousText = '';
@@ -115,7 +115,7 @@ WebInspector.TextPrompt = class extends WebInspector.Object {
     this._boundOnMouseWheel = this.onMouseWheel.bind(this);
     this._boundClearAutocomplete = this.clearAutocomplete.bind(this);
     this._proxyElement = element.ownerDocument.createElement('span');
-    var shadowRoot = WebInspector.createShadowRootWithCoreStyles(this._proxyElement, 'ui/textPrompt.css');
+    var shadowRoot = UI.createShadowRootWithCoreStyles(this._proxyElement, 'ui/textPrompt.css');
     this._contentElement = shadowRoot.createChild('div');
     this._contentElement.createChild('content');
     this._proxyElement.style.display = this._proxyElementDisplay;
@@ -130,7 +130,7 @@ WebInspector.TextPrompt = class extends WebInspector.Object {
     this._element.ownerDocument.defaultView.addEventListener('resize', this._boundClearAutocomplete, false);
 
     if (this._suggestBoxEnabled)
-      this._suggestBox = new WebInspector.SuggestBox(this, 20, true);
+      this._suggestBox = new UI.SuggestBox(this, 20, true);
 
     if (this._title)
       this._proxyElement.title = this._title;
@@ -151,14 +151,18 @@ WebInspector.TextPrompt = class extends WebInspector.Object {
    * @return {string}
    */
   textWithCurrentSuggestion() {
-    return this._element.textContent;
+    var text = this.text();
+    if (!this._queryRange)
+      return text;
+    return text.substring(0, this._queryRange.startColumn) + this._currentSuggestion +
+        text.substring(this._queryRange.endColumn);
   }
 
   /**
    * @return {string}
    */
   text() {
-    var text = this.textWithCurrentSuggestion();
+    var text = this._element.textContent;
     if (this._ghostTextElement.parentNode) {
       var addition = this._ghostTextElement.textContent;
       text = text.substring(0, text.length - addition.length);
@@ -226,7 +230,7 @@ WebInspector.TextPrompt = class extends WebInspector.Object {
     this._oldTabIndex = this._element.tabIndex;
     if (this._element.tabIndex < 0)
       this._element.tabIndex = 0;
-    this._focusRestorer = new WebInspector.ElementFocusRestorer(this._element);
+    this._focusRestorer = new UI.ElementFocusRestorer(this._element);
     if (!this.text())
       this.autoCompleteSoon();
   }
@@ -423,7 +427,7 @@ WebInspector.TextPrompt = class extends WebInspector.Object {
 
   /**
    * @param {string} query
-   * @return {!WebInspector.SuggestBox.Suggestions}
+   * @return {!UI.SuggestBox.Suggestions}
    */
   additionalCompletions(query) {
     return [];
@@ -487,7 +491,7 @@ WebInspector.TextPrompt = class extends WebInspector.Object {
     var beforeRange = this._createRange();
     beforeRange.setStart(this._element, 0);
     beforeRange.setEnd(fullWordRange.startContainer, fullWordRange.startOffset);
-    this._queryRange = new WebInspector.TextRange(
+    this._queryRange = new Common.TextRange(
         0, beforeRange.toString().length, 0, beforeRange.toString().length + fullWordRange.toString().length);
 
     if (selectedIndex === -1)
@@ -506,7 +510,7 @@ WebInspector.TextPrompt = class extends WebInspector.Object {
     this._currentSuggestion = suggestion;
     this._refreshGhostText();
     if (isIntermediateSuggestion)
-      this.dispatchEventToListeners(WebInspector.TextPrompt.Events.ItemApplied);
+      this.dispatchEventToListeners(UI.TextPrompt.Events.ItemApplied);
   }
 
   /**
@@ -523,15 +527,13 @@ WebInspector.TextPrompt = class extends WebInspector.Object {
     if (!this._queryRange)
       return false;
 
-    var text = this.text();
-    this._element.textContent = text.substring(0, this._queryRange.startColumn) + this._currentSuggestion +
-        text.substring(this._queryRange.endColumn);
+    this._element.textContent = this.textWithCurrentSuggestion();
     this.setDOMSelection(
         this._queryRange.startColumn + this._currentSuggestion.length,
         this._queryRange.startColumn + this._currentSuggestion.length);
 
     this.clearAutocomplete();
-    this.dispatchEventToListeners(WebInspector.TextPrompt.Events.ItemAccepted);
+    this.dispatchEventToListeners(UI.TextPrompt.Events.ItemAccepted);
 
     return true;
   }
@@ -636,10 +638,10 @@ WebInspector.TextPrompt = class extends WebInspector.Object {
   }
 };
 
-WebInspector.TextPrompt.DefaultAutocompletionTimeout = 250;
+UI.TextPrompt.DefaultAutocompletionTimeout = 250;
 
 /** @enum {symbol} */
-WebInspector.TextPrompt.Events = {
+UI.TextPrompt.Events = {
   ItemApplied: Symbol('text-prompt-item-applied'),
   ItemAccepted: Symbol('text-prompt-item-accepted')
 };
