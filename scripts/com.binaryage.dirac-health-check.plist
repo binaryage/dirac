@@ -3,26 +3,40 @@
 <plist version="1.0">
 <dict>
 	<key>Label</key>
-	<string>com.binaryage.dirac.plist</string>
+	<string>com.binaryage.dirac-health-check.plist</string>
 	<key>ProgramArguments</key>
 	<array>
 		<string>sh</string>
 		<string>-c</string>
-		<string>/Users/darwin/tasks/dirac/scripts/auto-job-launcher.sh</string>
+		<string>/Users/darwin/tasks/dirac/scripts/health-check.sh</string>
 	</array>
 	<key>StartCalendarInterval</key>
-	<dict>
-		<key>Hour</key>
-		<integer>18</integer>
-		<key>Minute</key>
-		<integer>0</integer>
-	</dict>
+	<array>
+		<dict>
+			<key>Hour</key>
+			<integer>5</integer>
+			<key>Minute</key>
+			<integer>0</integer>
+		</dict>
+		<dict>
+			<key>Hour</key>
+			<integer>13</integer>
+			<key>Minute</key>
+			<integer>0</integer>
+		</dict>
+		<dict>
+			<key>Hour</key>
+			<integer>21</integer>
+			<key>Minute</key>
+			<integer>0</integer>
+		</dict>
+	</array>
 	<key>WorkingDirectory</key>
 	<string>/Users/darwin/tasks/dirac</string>
 	<key>StandardErrorPath</key>
-	<string>/Users/darwin/tasks/logs/dirac_err.log</string>
+	<string>/Users/darwin/tasks/logs/dirac_health_check_err.log</string>
 	<key>StandardOutPath</key>
-	<string>/Users/darwin/tasks/logs/dirac_out.log</string>
+	<string>/Users/darwin/tasks/logs/dirac_health_check_out.log</string>
   <key>EnvironmentVariables</key>
   <dict>
 		<key>PATH</key>
