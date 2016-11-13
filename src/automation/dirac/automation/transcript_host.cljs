@@ -220,6 +220,7 @@
 
 (defn process-default-state! [label text]
   (cond
+    (re-find #"^JS\.wrn> \[Violation\]" text) nil                                                                             ; completely elide new messages like "JS.wrn> [Violation] Long running JavaScript task took XXms."
     (re-find #"present-server-side-output! java-trace" text) (start-rewriting-machine-for-java-trace! label text)
     :else [label (transformer text)]))                                                                                        ; TODO: make transformer pluggable
 
