@@ -5,6 +5,9 @@ source "./config.sh"
 
 pushd "$ROOT"
 
+git checkout master
+git pull origin
+
 TAG=${1:-`git describe --tags --match "v*" --abbrev=0 master`}
 
 echo "TAG=$TAG"
@@ -15,9 +18,6 @@ if [ $? -ne 0 ]; then
 else
   git checkout health-check
 fi
-
-git checkout master
-git pull origin
 
 git merge --no-edit -Xtheirs "$TAG"
 git commit --allow-empty -m "a health-check against current Chromium"
