@@ -36,7 +36,7 @@
   (let [url (get-document-url)]
     (get-query-param url param)))
 
-(defn is-test-runner-present? []
+(defn automated-testing? []
   (let [url (get-document-url)]
     (boolean (get-query-param url "test_runner"))))
 

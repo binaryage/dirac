@@ -2500,7 +2500,7 @@ Protocol.DOMDebugger.DOMBreakpointType = {
     NodeRemoved: "node-removed"
 };
 
-/** @typedef {!{type:(string), useCapture:(boolean), passive:(boolean), scriptId:(Protocol.Runtime.ScriptId), lineNumber:(number), columnNumber:(number), handler:(Protocol.Runtime.RemoteObject|undefined), originalHandler:(Protocol.Runtime.RemoteObject|undefined), removeFunction:(Protocol.Runtime.RemoteObject|undefined)}} */
+/** @typedef {!{type:(string), useCapture:(boolean), passive:(boolean), once:(boolean), scriptId:(Protocol.Runtime.ScriptId), lineNumber:(number), columnNumber:(number), handler:(Protocol.Runtime.RemoteObject|undefined), originalHandler:(Protocol.Runtime.RemoteObject|undefined), removeFunction:(Protocol.Runtime.RemoteObject|undefined)}} */
 Protocol.DOMDebugger.EventListener;
 /** @interface */
 Protocol.DOMDebuggerDispatcher = function() {};
@@ -3325,14 +3325,14 @@ Protocol.AccessibilityAgent = function(){};
 
 /**
  * @param {Protocol.DOM.NodeId} nodeId
- * @param {boolean} fetchAncestors
+ * @param {boolean|undefined} fetchRelatives
  * @param {function(?Protocol.Error, !Array<Protocol.Accessibility.AXNode>):T} opt_callback
  * @return {!Promise.<T>}
  * @template T
  */
-Protocol.AccessibilityAgent.prototype.getAXNodeChain = function(nodeId, fetchAncestors, opt_callback) {}
+Protocol.AccessibilityAgent.prototype.getPartialAXTree = function(nodeId, fetchRelatives, opt_callback) {}
 /** @param {function(?Protocol.Error, !Array<Protocol.Accessibility.AXNode>):void=} opt_callback */
-Protocol.AccessibilityAgent.prototype.invoke_getAXNodeChain = function(obj, opt_callback) {}
+Protocol.AccessibilityAgent.prototype.invoke_getPartialAXTree = function(obj, opt_callback) {}
 
 /** @typedef {string} */
 Protocol.Accessibility.AXNodeId;
@@ -3383,7 +3383,7 @@ Protocol.Accessibility.AXValueNativeSourceType = {
 /** @typedef {!{type:(Protocol.Accessibility.AXValueSourceType), value:(Protocol.Accessibility.AXValue|undefined), attribute:(string|undefined), attributeValue:(Protocol.Accessibility.AXValue|undefined), superseded:(boolean|undefined), nativeSource:(Protocol.Accessibility.AXValueNativeSourceType|undefined), nativeSourceValue:(Protocol.Accessibility.AXValue|undefined), invalid:(boolean|undefined), invalidReason:(string|undefined)}} */
 Protocol.Accessibility.AXValueSource;
 
-/** @typedef {!{backendNodeId:(Protocol.DOM.BackendNodeId), idref:(string|undefined), text:(string|undefined)}} */
+/** @typedef {!{backendDOMNodeId:(Protocol.DOM.BackendNodeId), idref:(string|undefined), text:(string|undefined)}} */
 Protocol.Accessibility.AXRelatedNode;
 
 /** @typedef {!{name:(string), value:(Protocol.Accessibility.AXValue)}} */
@@ -3442,7 +3442,7 @@ Protocol.Accessibility.AXRelationshipAttributes = {
     Owns: "owns"
 };
 
-/** @typedef {!{nodeId:(Protocol.Accessibility.AXNodeId), ignored:(boolean), ignoredReasons:(!Array<Protocol.Accessibility.AXProperty>|undefined), role:(Protocol.Accessibility.AXValue|undefined), name:(Protocol.Accessibility.AXValue|undefined), description:(Protocol.Accessibility.AXValue|undefined), value:(Protocol.Accessibility.AXValue|undefined), properties:(!Array<Protocol.Accessibility.AXProperty>|undefined)}} */
+/** @typedef {!{nodeId:(Protocol.Accessibility.AXNodeId), ignored:(boolean), ignoredReasons:(!Array<Protocol.Accessibility.AXProperty>|undefined), role:(Protocol.Accessibility.AXValue|undefined), name:(Protocol.Accessibility.AXValue|undefined), description:(Protocol.Accessibility.AXValue|undefined), value:(Protocol.Accessibility.AXValue|undefined), properties:(!Array<Protocol.Accessibility.AXProperty>|undefined), childIds:(!Array<Protocol.Accessibility.AXNodeId>|undefined), backendDOMNodeId:(Protocol.DOM.BackendNodeId|undefined)}} */
 Protocol.Accessibility.AXNode;
 /** @interface */
 Protocol.AccessibilityDispatcher = function() {};
@@ -3508,12 +3508,19 @@ Protocol.LogAgent.prototype.clear = function(opt_callback) {}
 Protocol.LogAgent.prototype.invoke_clear = function(obj, opt_callback) {}
 
 /**
- * @param {boolean} enabled
+ * @param {!Array<Protocol.Log.ViolationSetting>} config
  * @param {function(?Protocol.Error):void=} opt_callback
  */
-Protocol.LogAgent.prototype.setReportViolationsEnabled = function(enabled, opt_callback) {}
+Protocol.LogAgent.prototype.startViolationsReport = function(config, opt_callback) {}
 /** @param {function(?Protocol.Error):void=} opt_callback */
-Protocol.LogAgent.prototype.invoke_setReportViolationsEnabled = function(obj, opt_callback) {}
+Protocol.LogAgent.prototype.invoke_startViolationsReport = function(obj, opt_callback) {}
+
+/**
+ * @param {function(?Protocol.Error):void=} opt_callback
+ */
+Protocol.LogAgent.prototype.stopViolationsReport = function(opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+Protocol.LogAgent.prototype.invoke_stopViolationsReport = function(obj, opt_callback) {}
 
 /** @enum {string} */
 Protocol.Log.LogEntrySource = {
@@ -3541,6 +3548,16 @@ Protocol.Log.LogEntryLevel = {
 
 /** @typedef {!{source:(Protocol.Log.LogEntrySource), level:(Protocol.Log.LogEntryLevel), text:(string), timestamp:(Protocol.Runtime.Timestamp), url:(string|undefined), lineNumber:(number|undefined), stackTrace:(Protocol.Runtime.StackTrace|undefined), networkRequestId:(Protocol.Network.RequestId|undefined), workerId:(string|undefined)}} */
 Protocol.Log.LogEntry;
+
+/** @enum {string} */
+Protocol.Log.ViolationSettingName = {
+    LongTask: "longTask",
+    LongLayout: "longLayout",
+    BlockedEvent: "blockedEvent"
+};
+
+/** @typedef {!{name:(Protocol.Log.ViolationSettingName), threshold:(number)}} */
+Protocol.Log.ViolationSetting;
 /** @interface */
 Protocol.LogDispatcher = function() {};
 /**

@@ -63,8 +63,9 @@
       (cuerdas/unlines)))
 
 (defn extract-css-definitions [content]
-  (if-let [m (re-find #"WebInspector\.CSSMetadata\._generatedProperties = (\[.*\])" content)]
-    (second m)))
+  (if-let [m (re-find #"SDK\.CSSMetadata\._generatedProperties = (\[.*\])" content)]
+    (second m)
+    (throw (ex-info "unable to extract CSS definitions" {:content content}))))
 
 (defn get-css-meat [content]
   (-> content
@@ -75,9 +76,9 @@
   (let [{:keys [input output chrome-rev chrome-tag]} options
         content (slurp input)
         meat (get-api-meat content)
-        chrome-tag (str "WebInspector.BakedInspectorBackendAPIChromeTag='" chrome-tag "';")
-        chrome-rev (str "WebInspector.BakedInspectorBackendAPIChromeRev='" chrome-rev "';")
-        quoted-meat (str "WebInspector.BakedInspectorBackendAPI=''\n" (make-readable-js-string meat) ";")
+        chrome-tag (str "Protocol.BakedInspectorBackendAPIChromeTag='" chrome-tag "';")
+        chrome-rev (str "Protocol.BakedInspectorBackendAPIChromeRev='" chrome-rev "';")
+        quoted-meat (str "Protocol.BakedInspectorBackendAPI=''\n" (make-readable-js-string meat) ";")
         result (string/join "\n" [chrome-tag chrome-rev quoted-meat])]
     (io/make-parents output)
     (spit output result)))
@@ -86,9 +87,9 @@
   (let [{:keys [input output chrome-rev chrome-tag]} options
         content (slurp input)
         meat (get-css-meat content)
-        chrome-tag (str "WebInspector.BakedSupportedCSSPropertiesChromeTag='" chrome-tag "';")
-        chrome-rev (str "WebInspector.BakedSupportedCSSPropertiesChromeRev='" chrome-rev "';")
-        quoted-meat (str "WebInspector.BakedSupportedCSSProperties=''\n" (make-readable-js-string meat) ";")
+        chrome-tag (str "Protocol.BakedSupportedCSSPropertiesChromeTag='" chrome-tag "';")
+        chrome-rev (str "Protocol.BakedSupportedCSSPropertiesChromeRev='" chrome-rev "';")
+        quoted-meat (str "Protocol.BakedSupportedCSSProperties=''\n" (make-readable-js-string meat) ";")
         result (string/join "\n" [chrome-tag chrome-rev quoted-meat])]
     (io/make-parents output)
     (spit output result)))

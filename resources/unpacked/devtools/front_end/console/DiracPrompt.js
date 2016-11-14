@@ -1,7 +1,7 @@
 /**
  * @unrestricted
  */
-WebInspector.DiracPromptWithHistory = class extends WebInspector.TextPrompt {
+Console.DiracPromptWithHistory = class extends UI.TextPrompt {
 
   /**
    * @param {!CodeMirror} codeMirrorInstance
@@ -9,7 +9,7 @@ WebInspector.DiracPromptWithHistory = class extends WebInspector.TextPrompt {
   constructor(codeMirrorInstance) {
     super();
 
-    this._history = new WebInspector.ConsoleHistoryManager();
+    this._history = new Console.ConsoleHistoryManager();
     this._codeMirror = codeMirrorInstance;
     this._codeMirror.on("changes", this._changes.bind(this));
     this._codeMirror.on("scroll", this._onScroll.bind(this));
@@ -20,7 +20,7 @@ WebInspector.DiracPromptWithHistory = class extends WebInspector.TextPrompt {
   }
 
   /**
-   * @return {!WebInspector.ConsoleHistoryManager}
+   * @return {!Console.ConsoleHistoryManager}
    */
   history() {
     return this._history;
@@ -205,7 +205,7 @@ WebInspector.DiracPromptWithHistory = class extends WebInspector.TextPrompt {
   /**
    * @override
    * @param {string} prefix
-   * @return {!WebInspector.SuggestBox.Suggestions}
+   * @return {!UI.SuggestBox.Suggestions}
    */
   additionalCompletions(prefix) {
     // we keep this list empty for now, history contains mostly cljs stuff and we don't want to mix it with javascript
@@ -269,11 +269,11 @@ WebInspector.DiracPromptWithHistory = class extends WebInspector.TextPrompt {
       console.log("detected prefix='" + prefix + "'", javascriptCompletion);
     }
     if (javascriptCompletion) {
-      this._prefixRange = new WebInspector.TextRange(cursor.line, token.start + javascriptCompletion.offset, cursor.line, cursor.ch);
+      this._prefixRange = new Common.TextRange(cursor.line, token.start + javascriptCompletion.offset, cursor.line, cursor.ch);
       const completionsForJavascriptReady = this._completionsForJavascriptReady.bind(this, this._lastAutocompleteRequest, reverse, force);
       this._loadJavascriptCompletions(this._lastAutocompleteRequest, javascriptCompletion.prefix, force, completionsForJavascriptReady);
     } else {
-      this._prefixRange = new WebInspector.TextRange(cursor.line, token.start, cursor.line, cursor.ch);
+      this._prefixRange = new Common.TextRange(cursor.line, token.start, cursor.line, cursor.ch);
       const completionsForClojureScriptReady = this._completionsForClojureScriptReady.bind(this, this._lastAutocompleteRequest, reverse, force);
       this._loadClojureScriptCompletions(this._lastAutocompleteRequest, prefix, force, completionsForClojureScriptReady);
     }
@@ -313,7 +313,7 @@ WebInspector.DiracPromptWithHistory = class extends WebInspector.TextPrompt {
       }
     }
 
-    WebInspector.JavaScriptAutocomplete.completionsForExpression(expressionString, prefix, force).then(completionsReadyCallback.bind(this, expressionString, prefix));
+    Components.JavaScriptAutocomplete.completionsForExpression(expressionString, prefix, force).then(completionsReadyCallback.bind(this, expressionString, prefix));
   }
 
   /**
@@ -390,7 +390,7 @@ WebInspector.DiracPromptWithHistory = class extends WebInspector.TextPrompt {
       }
       return;
     }
-    const executionContext = WebInspector.context.flavor(WebInspector.ExecutionContext);
+    const executionContext = UI.context.flavor(SDK.ExecutionContext);
     if (!executionContext) {
       if (dirac._DEBUG_COMPLETIONS) {
         console.warn("no execution context available");
@@ -850,25 +850,25 @@ WebInspector.DiracPromptWithHistory = class extends WebInspector.TextPrompt {
     let isPrevious;
 
     switch (event.keyCode) {
-      case WebInspector.KeyboardShortcut.Keys.Up.code:
+      case UI.KeyboardShortcut.Keys.Up.code:
         if (!this.isCaretOnFirstLine() || this._isSuggestBoxVisible())
           break;
         newText = this._history.previous(this.text());
         isPrevious = true;
         break;
-      case WebInspector.KeyboardShortcut.Keys.Down.code:
+      case UI.KeyboardShortcut.Keys.Down.code:
         if (!this.isCaretOnLastLine() || this._isSuggestBoxVisible())
           break;
         newText = this._history.next();
         break;
-      case WebInspector.KeyboardShortcut.Keys.P.code: // Ctrl+P = Previous
-        if (WebInspector.isMac() && event.ctrlKey && !event.metaKey && !event.altKey && !event.shiftKey) {
+      case UI.KeyboardShortcut.Keys.P.code: // Ctrl+P = Previous
+        if (Host.isMac() && event.ctrlKey && !event.metaKey && !event.altKey && !event.shiftKey) {
           newText = this._history.previous(this.text());
           isPrevious = true;
         }
         break;
-      case WebInspector.KeyboardShortcut.Keys.N.code: // Ctrl+N = Next
-        if (WebInspector.isMac() && event.ctrlKey && !event.metaKey && !event.altKey && !event.shiftKey)
+      case UI.KeyboardShortcut.Keys.N.code: // Ctrl+N = Next
+        if (Host.isMac() && event.ctrlKey && !event.metaKey && !event.altKey && !event.shiftKey)
           newText = this._history.next();
         break;
     }
@@ -897,6 +897,6 @@ WebInspector.DiracPromptWithHistory = class extends WebInspector.TextPrompt {
       return;
     }
 
-    WebInspector.TextPrompt.prototype.onKeyDown.apply(this, arguments);
+    UI.TextPrompt.prototype.onKeyDown.apply(this, arguments);
   }
 };

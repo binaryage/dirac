@@ -17,7 +17,6 @@ html, body {
     background-color: #ddd;
     padding-left: 10px;
     padding-right: 10px;
-    padding-bottom: 10px;
 }
 
 #task-name {
@@ -32,6 +31,10 @@ html, body {
 
 #status-box {
     margin: 10px 0;
+}
+
+#control-panel {
+    margin-bottom: 10px;
 }
 
 .status {

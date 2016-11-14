@@ -43,10 +43,12 @@
         (with-console-feedback
           (<!* a/console-exec-and-match! "(+ 1 2)" "log> 3"))
         (<!* a/trigger! :reload)
+        (<! (timeout 3000))
         (<!* a/wait-for-prompt-to-enter-edit-mode)
         (with-console-feedback
           (<!* a/console-exec-and-match! "(+ 1 2)" "log> 3"))
         (<!* a/trigger! :reload)
+        (<! (timeout 3000))
         (<!* a/wait-for-prompt-to-enter-edit-mode)
         (with-console-feedback
           (<!* a/console-exec-and-match! "(+ 1 2)" "log> 3"))))
@@ -73,6 +75,7 @@
         (<!* a/wait-for-prompt-to-enter-edit-mode)
         (<!* a/switch-prompt-to-javascript!)
         (<!* a/trigger! :reload)
+        (<! (timeout 3000))
         ; after reload we should not reconnect in background because we were switched to javascript prompt
         (<!* a/wait-for-devtools-match "Disconnected")
         (<!* a/switch-prompt-to-dirac!)

@@ -8,7 +8,7 @@ source "./config.sh"
 pushd "$ROOT"
 
 echo "Running browser tests..."
-lein with-profile +test-runner,+debugger-5006 run -m "$@"
+lein with-profile +test-runner run -m "$@"
 
 popd
 
