@@ -16,8 +16,12 @@ else
   git checkout health-check
 fi
 
+git checkout master
+git git pull origin
+
 git merge --no-edit -Xtheirs "$TAG"
 git commit --allow-empty -m "a health-check against current Chromium"
+
 git checkout master
 git push --force origin health-check
 
