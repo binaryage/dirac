@@ -17,7 +17,7 @@ else
 fi
 
 git checkout master
-git git pull origin
+git pull origin
 
 git merge --no-edit -Xtheirs "$TAG"
 git commit --allow-empty -m "a health-check against current Chromium"
