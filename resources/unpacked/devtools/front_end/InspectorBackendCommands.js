@@ -1,5 +1,5 @@
-Protocol.BakedInspectorBackendAPIChromeTag='56.0.2918.2';
-Protocol.BakedInspectorBackendAPIChromeRev='8deda9cc1fb679db56f3a48bdee462efee0ff357';
+Protocol.BakedInspectorBackendAPIChromeTag='56.0.2920.2';
+Protocol.BakedInspectorBackendAPIChromeRev='d3b5491c9bafc5fdfd81359a5b49cbe9e4d99496';
 Protocol.BakedInspectorBackendAPI=''
 + 'InspectorBackend.registerEvent("Inspector.detached", ["reason"]);\n'
 + 'InspectorBackend.registerEvent("Inspector.targetCrashed", []);\n'
@@ -188,9 +188,9 @@ Protocol.BakedInspectorBackendAPI=''
 + 'InspectorBackend.registerEvent("DOM.nodeHighlightRequested", ["nodeId"]);\n'
 + 'InspectorBackend.registerCommand("DOM.enable", [], [], false);\n'
 + 'InspectorBackend.registerCommand("DOM.disable", [], [], false);\n'
-+ 'InspectorBackend.registerCommand("DOM.getDocument", [{"name": "depth", "type": "number", "optional": true}, {"name": "traverseFrames", "type": "boolean", "optional": true}], ["root"], false);\n'
++ 'InspectorBackend.registerCommand("DOM.getDocument", [{"name": "depth", "type": "number", "optional": true}, {"name": "pierce", "type": "boolean", "optional": true}], ["root"], false);\n'
 + 'InspectorBackend.registerCommand("DOM.collectClassNamesFromSubtree", [{"name": "nodeId", "type": "number", "optional": false}], ["classNames"], false);\n'
-+ 'InspectorBackend.registerCommand("DOM.requestChildNodes", [{"name": "nodeId", "type": "number", "optional": false}, {"name": "depth", "type": "number", "optional": true}, {"name": "traverseFrames", "type": "boolean", "optional": true}], [], false);\n'
++ 'InspectorBackend.registerCommand("DOM.requestChildNodes", [{"name": "nodeId", "type": "number", "optional": false}, {"name": "depth", "type": "number", "optional": true}, {"name": "pierce", "type": "boolean", "optional": true}], [], false);\n'
 + 'InspectorBackend.registerCommand("DOM.querySelector", [{"name": "nodeId", "type": "number", "optional": false}, {"name": "selector", "type": "string", "optional": false}], ["nodeId"], false);\n'
 + 'InspectorBackend.registerCommand("DOM.querySelectorAll", [{"name": "nodeId", "type": "number", "optional": false}, {"name": "selector", "type": "string", "optional": false}], ["nodeIds"], false);\n'
 + 'InspectorBackend.registerCommand("DOM.setNodeName", [{"name": "nodeId", "type": "number", "optional": false}, {"name": "name", "type": "string", "optional": false}], ["nodeId"], false);\n'

@@ -1554,10 +1554,10 @@ Protocol.DOMAgent.prototype.invoke_disable = function(obj, opt_callback) {}
 
 /**
  * @param {number=} opt_depth
- * @param {boolean=} opt_traverseFrames
+ * @param {boolean=} opt_pierce
  * @param {function(?Protocol.Error, Protocol.DOM.Node):void=} opt_callback
  */
-Protocol.DOMAgent.prototype.getDocument = function(opt_depth, opt_traverseFrames, opt_callback) {}
+Protocol.DOMAgent.prototype.getDocument = function(opt_depth, opt_pierce, opt_callback) {}
 /** @param {function(?Protocol.Error, Protocol.DOM.Node):void=} opt_callback */
 Protocol.DOMAgent.prototype.invoke_getDocument = function(obj, opt_callback) {}
 
@@ -1572,10 +1572,10 @@ Protocol.DOMAgent.prototype.invoke_collectClassNamesFromSubtree = function(obj, 
 /**
  * @param {Protocol.DOM.NodeId} nodeId
  * @param {number=} opt_depth
- * @param {boolean=} opt_traverseFrames
+ * @param {boolean=} opt_pierce
  * @param {function(?Protocol.Error):void=} opt_callback
  */
-Protocol.DOMAgent.prototype.requestChildNodes = function(nodeId, opt_depth, opt_traverseFrames, opt_callback) {}
+Protocol.DOMAgent.prototype.requestChildNodes = function(nodeId, opt_depth, opt_pierce, opt_callback) {}
 /** @param {function(?Protocol.Error):void=} opt_callback */
 Protocol.DOMAgent.prototype.invoke_requestChildNodes = function(obj, opt_callback) {}
 
