@@ -198,8 +198,9 @@ Elements.ComputedStyleWidget = class extends UI.ThrottledWidget {
         treeElement.listItemElement.addEventListener('mousedown', (e) => e.consume(), false);
         treeElement.listItemElement.addEventListener('dblclick', (e) => e.consume(), false);
         treeElement.listItemElement.addEventListener('click', handleClick.bind(null, treeElement), false);
-        var gotoSourceElement = propertyValueElement.createChild('div', 'goto-source-icon');
+        var gotoSourceElement = UI.Icon.create('smallicon-arrow-in-circle', 'goto-source-icon');
         gotoSourceElement.addEventListener('click', this._navigateToSource.bind(this, activeProperty));
+        propertyValueElement.appendChild(gotoSourceElement);
         if (expandedProperties.has(propertyName))
           treeElement.expand();
       }
@@ -260,14 +261,13 @@ Elements.ComputedStyleWidget = class extends UI.ThrottledWidget {
       else
         activeProperty = property;
 
-      var renderer = new Elements.StylesSidebarPropertyRenderer(
-          null, node, property.name, /** @type {string} */ (property.value));
+      var renderer =
+          new Elements.StylesSidebarPropertyRenderer(null, node, property.name, /** @type {string} */ (property.value));
       renderer.setColorHandler(this._processColor.bind(this));
       var valueElement = renderer.renderValue();
       valueElement.classList.add('property-trace-value');
       valueElement.addEventListener('click', this._navigateToSource.bind(this, property), false);
-      var gotoSourceElement = createElement('div');
-      gotoSourceElement.classList.add('goto-source-icon');
+      var gotoSourceElement = UI.Icon.create('smallicon-arrow-in-circle', 'goto-source-icon');
       gotoSourceElement.addEventListener('click', this._navigateToSource.bind(this, property));
       valueElement.insertBefore(gotoSourceElement, valueElement.firstChild);
 
