@@ -18,7 +18,7 @@
                  [http-kit "2.2.0"]
                  [version-clj "0.1.2"]
                  [clansi "1.0.0"]
-                 [funcool/cuerdas "2.0.0"]
+                 [funcool/cuerdas "2.0.1"]
 
                  ; we cannot use :dependencies under individual profiles because Cursive recognizes only root level
                  ; thus we mark extra deps with :scope "test" and filter them later when producing jar library
