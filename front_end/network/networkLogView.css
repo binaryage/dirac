@@ -72,6 +72,10 @@
     vertical-align: middle;
 }
 
+.network-log-grid.data-grid .corner {
+    display: none;
+}
+
 .network-log-grid.data-grid.small td {
     height: 21px;
 }
@@ -349,7 +353,7 @@
 }
 
 .network-waterfall-header:hover {
-    background-color:hsla(0, 0%, 80%, .5);
+    background-color: hsl(0, 0%, 90%);
 }
 
 .network-waterfall-header div {
@@ -370,6 +374,8 @@
     bottom: 1px;
     display: flex;
     align-items: center;
+    padding-left: 0px;
+    background-color: white;
 }
 
 .network-waterfall-header .sort-order-icon {
