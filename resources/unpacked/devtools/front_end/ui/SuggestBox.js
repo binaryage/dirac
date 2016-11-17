@@ -526,15 +526,15 @@ UI.SuggestBox = class {
    */
   itemElement(index) {
     if (!this._elementList[index]) {
-      this._elementList[index] =
-          this._createItemElement(this._userEnteredText, this._items[index].title, this._items[index].className, this._items[index].prologue, this._items[index].epilogue);
+      const item = this._items[index];
+      this._elementList[index] = this._createItemElement(this._userEnteredText, item.title, item.className, item.prologue, item.epilogue);
     }
     return this._elementList[index];
   }
 };
 
 /**
- * @typedef {!Array.<{title: string, className: (string|undefined), priority: (number|undefined), prologue: (string|undefined, epilogue: (string|undefined)}>}
+ * @typedef {!Array.<{title: string, className: (string|undefined), priority: (number|undefined), prologue: (string|undefined), epilogue: (string|undefined)}>}
  */
 UI.SuggestBox.Suggestions;
 

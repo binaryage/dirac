@@ -168,7 +168,6 @@ Console.ConsoleView = class extends UI.VBox {
 
     if (dirac.hasREPL) {
       var diracPrompt = new Console.DiracPromptWithHistory(diracPromptCodeMirrorInstance);
-      diracPrompt.setSuggestBoxEnabled(true);
       diracPrompt.setAutocompletionTimeout(0);
       diracPrompt.renderAsBlock();
       var diracProxyElement = diracPrompt.attach(diracPromptElement);
