@@ -1426,7 +1426,9 @@
       // possible when it is clear that nothing happened. hasSelection
       // will be the case when there is a lot of text in the textarea,
       // in which case reading its value would be expensive.
-      if (this.contextMenuPending || !cm.state.focused ||
+      if (this.contextMenuPending || /* DIRAC-HACK !cm.state.focused ||
+        codemirror is too smart here and this disabled automation of code completions done by dirac via keysim.js
+      */
           (hasSelection(input) && !prevInput && !this.composing) ||
           cm.isReadOnly() || cm.options.disableInput || cm.state.keySeq)
         return false;
