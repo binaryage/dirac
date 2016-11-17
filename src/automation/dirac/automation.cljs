@@ -165,6 +165,7 @@
 
 (defn ^:devtools console-enter! [devtools-id input]
   (go
+    (<! (focus-console-prompt! devtools-id))
     (<! (clear-console-prompt! devtools-id))
     (<! (simulate-console-input! devtools-id input))
     (<! (simulate-console-action! devtools-id "enter"))))
