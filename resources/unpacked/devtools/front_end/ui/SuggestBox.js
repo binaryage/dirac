@@ -133,10 +133,11 @@ UI.SuggestBox = class {
   }
 
   _updateWidth() {
-    if (this._hasVerticalScroll) {
-      this._element.style.width = '100vw';
-      return;
-    }
+    // this interferes with Dirac removal of max-width style in .suggest-box-horizontal CSS
+    // if (this._hasVerticalScroll) {
+    //   this._element.style.width = '100vw';
+    //   return;
+    // }
     // If there are no scrollbars, set the width to the width of the largest row.
     var maxIndex = 0;
     for (var i = 0; i < this._items.length; i++) {
