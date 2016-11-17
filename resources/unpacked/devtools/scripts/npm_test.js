@@ -28,7 +28,29 @@ var MAX_CONTENT_SHELLS = 10;
 var PLATFORM = getPlatform();
 var PYTHON = process.platform === "win32" ? "python.bat" : "python";
 
-var CHROMIUM_SRC_PATH = path.resolve(__dirname, "..", "..", "..", "..", "..");
+// Dirac-specific overrides
+const DIRAC_PATH = path.resolve(__dirname, "..", "..", "..", "..");
+const SCRIPTS_PATH = DIRAC_PATH+"/scripts";
+const POSITION_FOR_VERSION_SCRIPT = SCRIPTS_PATH+"/position-for-version.sh";
+const EXTRACT_CHROME_VERSION_SCRIPT = SCRIPTS_PATH+"/extract-backend-protocol-chrome-version.sh";
+const PRINT_CHROME_SRC_DIR_SCRIPT = SCRIPTS_PATH+"/print-chrome-src-dir.sh";
+
+function firstLine(s) {
+  return s.split('\n')[0];
+}
+
+function fetchDiracChromiumSrcPath() {
+  return firstLine(shell(`${PRINT_CHROME_SRC_DIR_SCRIPT}`).toString());
+}
+
+function findDiracChromiumCommit() {
+  const chromeVersion = firstLine(shell(`${EXTRACT_CHROME_VERSION_SCRIPT}`).toString());
+  return firstLine(shell(`${POSITION_FOR_VERSION_SCRIPT} ${chromeVersion}`).toString());
+}
+
+var CHROMIUM_SRC_PATH = fetchDiracChromiumSrcPath();
+// end of dirac-specific stuff
+
 var RELEASE_PATH = path.resolve(CHROMIUM_SRC_PATH, "out", "Release");
 var BLINK_TEST_PATH = path.resolve(CHROMIUM_SRC_PATH, "blink", "tools", "run_layout_tests.py");
 var CACHE_PATH = path.resolve(__dirname, "..", ".test_cache");
@@ -99,9 +121,7 @@ function getPlatform()
 
 function findMostRecentChromiumCommit()
 {
-    var commitMessage = shell(`git log --max-count=1 --grep="Cr-Commit-Position"`).toString().trim();
-    var commitPosition = commitMessage.match(/Cr-Commit-Position: refs\/heads\/master@\{#([0-9]+)\}/)[1];
-    return commitPosition;
+    return findDiracChromiumCommit();
 }
 
 function deleteOldContentShells()

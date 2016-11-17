@@ -25,3 +25,4 @@ pom.xml*
 .figwheel*
 resources/release/background.js
 resources/release/options.js
+npm-debug.log
