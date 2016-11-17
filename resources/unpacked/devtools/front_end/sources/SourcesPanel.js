@@ -39,7 +39,6 @@ Sources.SourcesPanel = class extends UI.Panel {
         this._handleDrop.bind(this));
 
     this._workspace = Workspace.workspace;
-    this._networkMapping = Bindings.networkMapping;
 
     this._togglePauseAction =
         /** @type {!UI.Action }*/ (UI.actionRegistry.action('debugger.toggle-pause'));
@@ -743,16 +742,16 @@ Sources.SourcesPanel = class extends UI.Panel {
   mapFileSystemToNetwork(uiSourceCode) {
     Sources.SelectUISourceCodeForProjectTypesDialog.show(
         uiSourceCode.name(), [Workspace.projectTypes.Network, Workspace.projectTypes.ContentScripts],
-        mapFileSystemToNetwork.bind(this));
+        mapFileSystemToNetwork);
 
     /**
      * @param {?Workspace.UISourceCode} networkUISourceCode
-     * @this {Sources.SourcesPanel}
      */
     function mapFileSystemToNetwork(networkUISourceCode) {
       if (!networkUISourceCode)
         return;
-      this._networkMapping.addMapping(networkUISourceCode, uiSourceCode);
+      var fileSystemPath = Bindings.FileSystemWorkspaceBinding.fileSystemPath(uiSourceCode.project().id());
+      Workspace.fileSystemMapping.addMappingForResource(networkUISourceCode.url(), fileSystemPath, uiSourceCode.url());
     }
   }
 
@@ -761,16 +760,16 @@ Sources.SourcesPanel = class extends UI.Panel {
    */
   mapNetworkToFileSystem(networkUISourceCode) {
     Sources.SelectUISourceCodeForProjectTypesDialog.show(
-        networkUISourceCode.name(), [Workspace.projectTypes.FileSystem], mapNetworkToFileSystem.bind(this));
+        networkUISourceCode.name(), [Workspace.projectTypes.FileSystem], mapNetworkToFileSystem);
 
     /**
      * @param {?Workspace.UISourceCode} uiSourceCode
-     * @this {Sources.SourcesPanel}
      */
     function mapNetworkToFileSystem(uiSourceCode) {
       if (!uiSourceCode)
         return;
-      this._networkMapping.addMapping(networkUISourceCode, uiSourceCode);
+      var fileSystemPath = Bindings.FileSystemWorkspaceBinding.fileSystemPath(uiSourceCode.project().id());
+      Workspace.fileSystemMapping.addMappingForResource(networkUISourceCode.url(), fileSystemPath, uiSourceCode.url());
     }
   }
 
@@ -778,7 +777,7 @@ Sources.SourcesPanel = class extends UI.Panel {
    * @param {!Workspace.UISourceCode} uiSourceCode
    */
   _removeNetworkMapping(uiSourceCode) {
-    this._networkMapping.removeMapping(uiSourceCode);
+    Workspace.fileSystemMapping.removeMappingForURL(uiSourceCode.url());
   }
 
   /**
@@ -814,7 +813,7 @@ Sources.SourcesPanel = class extends UI.Panel {
         uiSourceCode.project().type() === Workspace.projectTypes.ContentScripts) {
       if (!this._workspace.projects().filter(filterProject).length)
         return;
-      if (this._networkMapping.uiSourceCodeForURLForAnyTarget(uiSourceCode.url()) === uiSourceCode) {
+      if (this._workspace.uiSourceCodeForURL(uiSourceCode.url()) === uiSourceCode) {
         contextMenu.appendItem(
             Common.UIString.capitalize('Map to ^file ^system ^resource\u2026'),
             this.mapNetworkToFileSystem.bind(this, uiSourceCode));
@@ -916,7 +915,7 @@ Sources.SourcesPanel = class extends UI.Panel {
     if (!(target instanceof SDK.NetworkRequest))
       return;
     var request = /** @type {!SDK.NetworkRequest} */ (target);
-    var uiSourceCode = this._networkMapping.uiSourceCodeForURLForAnyTarget(request.url);
+    var uiSourceCode = this._workspace.uiSourceCodeForURL(request.url);
     if (!uiSourceCode)
       return;
     var openText = Common.UIString.capitalize('Open in Sources ^panel');

@@ -505,6 +505,10 @@ SourceFrame.SourcesTextEditor = class extends TextEditor.CodeMirrorTextEditor {
     delete this._muteTextChangedEvent;
   }
 
+  _updateWhitespace() {
+    this.setMimeType(this.mimeType());
+  }
+
   _reverseZOrder(element, startIndex) {
     if (!element) {
       return;
@@ -534,24 +538,9 @@ SourceFrame.SourcesTextEditor = class extends TextEditor.CodeMirrorTextEditor {
   /**
    * @override
    * @param {string} mimeType
-   * @return {!Promise}
-   */
-  setMimeType(mimeType) {
-    this._mimeType = mimeType;
-    return super.setMimeType(mimeType).then(
-        () => this._codeMirror.setOption('mode', this._applyWhitespaceMimetype(mimeType)));
-  }
-
-  _updateWhitespace() {
-    if (this._mimeType)
-      this.setMimeType(this._mimeType);
-  }
-
-  /**
-   * @param {string} mimeType
    * @return {string}
    */
-  _applyWhitespaceMimetype(mimeType) {
+  rewriteMimeType(mimeType) {
     this._setupWhitespaceHighlight();
     var whitespaceMode = Common.moduleSetting('showWhitespacesInEditor').get();
     this.element.classList.toggle('show-whitespaces', whitespaceMode === 'all');
