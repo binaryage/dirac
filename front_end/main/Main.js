@@ -184,18 +184,16 @@ Main.Main = class {
     Workspace.fileManager = new Workspace.FileManager();
     Workspace.workspace = new Workspace.Workspace();
     Common.formatterWorkerPool = new Common.FormatterWorkerPool();
-    Workspace.fileSystemMapping = new Workspace.FileSystemMapping();
+    Workspace.fileSystemMapping = new Workspace.FileSystemMapping(Workspace.isolatedFileSystemManager);
 
     var fileSystemWorkspaceBinding =
         new Bindings.FileSystemWorkspaceBinding(Workspace.isolatedFileSystemManager, Workspace.workspace);
-    Bindings.networkMapping = new Bindings.NetworkMapping(
-        SDK.targetManager, Workspace.workspace, fileSystemWorkspaceBinding, Workspace.fileSystemMapping);
     Main.networkProjectManager = new Bindings.NetworkProjectManager(SDK.targetManager, Workspace.workspace);
     Bindings.presentationConsoleMessageHelper = new Bindings.PresentationConsoleMessageHelper(Workspace.workspace);
     Bindings.cssWorkspaceBinding =
-        new Bindings.CSSWorkspaceBinding(SDK.targetManager, Workspace.workspace, Bindings.networkMapping);
+        new Bindings.CSSWorkspaceBinding(SDK.targetManager, Workspace.workspace);
     Bindings.debuggerWorkspaceBinding =
-        new Bindings.DebuggerWorkspaceBinding(SDK.targetManager, Workspace.workspace, Bindings.networkMapping);
+        new Bindings.DebuggerWorkspaceBinding(SDK.targetManager, Workspace.workspace);
     Bindings.breakpointManager =
         new Bindings.BreakpointManager(null, Workspace.workspace, SDK.targetManager, Bindings.debuggerWorkspaceBinding);
     Extensions.extensionServer = new Extensions.ExtensionServer();
@@ -251,6 +249,9 @@ Main.Main = class {
           InspectorFrontendHostAPI.Events.EnterInspectElementMode,
           toggleSearchNodeAction.execute.bind(toggleSearchNodeAction), this);
     }
+    InspectorFrontendHost.events.addEventListener(
+        InspectorFrontendHostAPI.Events.RevealSourceLine, this._revealSourceLine, this);
+
     UI.inspectorView.createToolbars();
     InspectorFrontendHost.loadCompleted();
 
@@ -319,6 +320,34 @@ Main.Main = class {
     }
   }
 
+  /**
+   * @param {!Common.Event} event
+   */
+  _revealSourceLine(event) {
+    var url = /** @type {string} */ (event.data['url']);
+    var lineNumber = /** @type {number} */ (event.data['lineNumber']);
+    var columnNumber = /** @type {number} */ (event.data['columnNumber']);
+
+    var uiSourceCode = Workspace.workspace.uiSourceCodeForURL(url);
+    if (uiSourceCode) {
+      Common.Revealer.reveal(uiSourceCode.uiLocation(lineNumber, columnNumber));
+      return;
+    }
+
+    /**
+     * @param {!Common.Event} event
+     */
+    function listener(event) {
+      var uiSourceCode = /** @type {!Workspace.UISourceCode} */ (event.data);
+      if (uiSourceCode.url() === url) {
+        Common.Revealer.reveal(uiSourceCode.uiLocation(lineNumber, columnNumber));
+        Workspace.workspace.removeEventListener(Workspace.Workspace.Events.UISourceCodeAdded, listener);
+      }
+    }
+
+    Workspace.workspace.addEventListener(Workspace.Workspace.Events.UISourceCodeAdded, listener);
+  }
+
   _documentClick(event) {
     var target = event.target;
     if (target.shadowRoot)
@@ -342,7 +371,7 @@ Main.Main = class {
       if (Components.openAnchorLocationRegistry.dispatch({url: anchor.href, lineNumber: anchor.lineNumber}))
         return;
 
-      var uiSourceCode = Bindings.networkMapping.uiSourceCodeForURLForAnyTarget(anchor.href);
+      var uiSourceCode = Workspace.workspace.uiSourceCodeForURL(anchor.href);
       if (uiSourceCode) {
         Common.Revealer.reveal(uiSourceCode.uiLocation(anchor.lineNumber || 0, anchor.columnNumber || 0));
         return;
@@ -360,17 +389,6 @@ Main.Main = class {
         return;
       }
       InspectorFrontendHost.openInNewTab(anchor.href);
-    }
-
-    if (Main.followLinkTimeout)
-      clearTimeout(Main.followLinkTimeout);
-
-    if (anchor.preventFollowOnDoubleClick) {
-      // Start a timeout if this is the first click, if the timeout is canceled
-      // before it fires, then a double clicked happened or another link was clicked.
-      if (event.detail === 1)
-        Main.followLinkTimeout = setTimeout(followLink, 333);
-      return;
     }
 
     if (!anchor.classList.contains('webkit-html-external-link'))
