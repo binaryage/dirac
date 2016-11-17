@@ -1,5 +1,5 @@
-Protocol.BakedInspectorBackendAPIChromeTag='56.0.2920.2';
-Protocol.BakedInspectorBackendAPIChromeRev='d3b5491c9bafc5fdfd81359a5b49cbe9e4d99496';
+Protocol.BakedInspectorBackendAPIChromeTag='56.0.2923.0';
+Protocol.BakedInspectorBackendAPIChromeRev='542c74f6d402696e770d70a8716dbcf0ffe53094';
 Protocol.BakedInspectorBackendAPI=''
 + 'InspectorBackend.registerEvent("Inspector.detached", ["reason"]);\n'
 + 'InspectorBackend.registerEvent("Inspector.targetCrashed", []);\n'
@@ -363,7 +363,7 @@ Protocol.BakedInspectorBackendAPI=''
 + 'InspectorBackend.registerCommand("Storage.clearDataForOrigin", [{"name": "origin", "type": "string", "optional": false}, {"name": "storageTypes", "type": "string", "optional": false}], [], false);\n'
 + 'InspectorBackend.registerEnum("Log.LogEntrySource", {XML: "xml", Javascript: "javascript", Network: "network", Storage: "storage", Appcache: "appcache", Rendering: "rendering", Security: "security", Deprecation: "deprecation", Worker: "worker", Violation: "violation", Other: "other"});\n'
 + 'InspectorBackend.registerEnum("Log.LogEntryLevel", {Log: "log", Warning: "warning", Error: "error", Debug: "debug", Info: "info"});\n'
-+ 'InspectorBackend.registerEnum("Log.ViolationSettingName", {LongTask: "longTask", LongLayout: "longLayout", BlockedEvent: "blockedEvent"});\n'
++ 'InspectorBackend.registerEnum("Log.ViolationSettingName", {LongTask: "longTask", LongLayout: "longLayout", BlockedEvent: "blockedEvent", BlockedParser: "blockedParser", Handler: "handler", RecurringHandler: "recurringHandler"});\n'
 + 'InspectorBackend.registerEvent("Log.entryAdded", ["entry"]);\n'
 + 'InspectorBackend.registerCommand("Log.enable", [], [], false);\n'
 + 'InspectorBackend.registerCommand("Log.disable", [], [], false);\n'

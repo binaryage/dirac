@@ -3553,7 +3553,10 @@ Protocol.Log.LogEntry;
 Protocol.Log.ViolationSettingName = {
     LongTask: "longTask",
     LongLayout: "longLayout",
-    BlockedEvent: "blockedEvent"
+    BlockedEvent: "blockedEvent",
+    BlockedParser: "blockedParser",
+    Handler: "handler",
+    RecurringHandler: "recurringHandler"
 };
 
 /** @typedef {!{name:(Protocol.Log.ViolationSettingName), threshold:(number)}} */
