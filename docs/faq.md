@@ -18,8 +18,18 @@ Such combinations are not tested and are likely to break because fundamental API
 Since [Dirac v0.6.4](https://github.com/binaryage/dirac/releases/tag/v0.6.4) this requirement was relaxed because Dirac can newly use protocol definitions from internal DevTools. 
 But still you should not diverge too far from recommended Chrome version.
 
-My goal is to be releasing Dirac DevTools updates at least once a month to match it with recent Chrome Canary builds.
+### How do I stick to a particular Dirac version?
 
+Unfortunately it is not easily possible to [disable auto-update feature of Chrome Canary](https://www.chromium.org/administrators/turning-off-auto-updates). 
+Also it is not easily possible to disable auto-updating of Chrome Extensions installed from Chrome App Store.
+ 
+But there is a solution. You can use a specific [Chromium](https://en.wikipedia.org/wiki/Chromium_(web_browser)) version 
+and [install Dirac extension locally](https://developer.chrome.com/extensions/getstarted#unpacked) from a zip file.
+
+To make a life easier for you, we auto-generate "Rolling DevTools" section as part of release notes. You can find
+matching Chromium download links there. And a zip file with extension content is attached as a downloadable
+file in [GitHub releases page](https://github.com/binaryage/dirac/releases).
+   
 ### How do I open Dirac DevTools via a keyboard shortcut?
 
 By default, `CMD+SHIFT+I` under Mac and `CTRL+SHIFT+I` under Win.
