@@ -605,7 +605,7 @@ Timeline.TimelineUIUtils = class {
       case recordType.ResourceFinish:
         var url = TimelineModel.TimelineData.forEvent(event).url;
         if (url)
-          details = Components.linkifyResourceAsNode(url);
+          details = Components.Linkifier.linkifyURL(url);
         break;
       case recordType.FunctionCall:
       case recordType.JSFrame:
@@ -782,7 +782,7 @@ Timeline.TimelineUIUtils = class {
       case recordTypes.ResourceFinish:
         var url = timelineData.url;
         if (url)
-          contentHelper.appendElementRow(Common.UIString('Resource'), Components.linkifyResourceAsNode(url));
+          contentHelper.appendElementRow(Common.UIString('Resource'), Components.Linkifier.linkifyURL(url));
         if (eventData['requestMethod'])
           contentHelper.appendTextRow(Common.UIString('Request Method'), eventData['requestMethod']);
         if (typeof eventData['statusCode'] === 'number')
@@ -827,13 +827,13 @@ Timeline.TimelineUIUtils = class {
         relatedNodeLabel = Common.UIString('Owner Element');
         if (timelineData.url) {
           contentHelper.appendElementRow(
-              Common.UIString('Image URL'), Components.linkifyResourceAsNode(timelineData.url));
+              Common.UIString('Image URL'), Components.Linkifier.linkifyURL(timelineData.url));
         }
         break;
       case recordTypes.ParseAuthorStyleSheet:
         var url = eventData['styleSheetUrl'];
         if (url)
-          contentHelper.appendElementRow(Common.UIString('Stylesheet URL'), Components.linkifyResourceAsNode(url));
+          contentHelper.appendElementRow(Common.UIString('Stylesheet URL'), Components.Linkifier.linkifyURL(url));
         break;
       case recordTypes.UpdateLayoutTree:  // We don't want to see default details.
       case recordTypes.RecalculateStyles:
@@ -1025,7 +1025,7 @@ Timeline.TimelineUIUtils = class {
     var duration = request.endTime - (request.startTime || -Infinity);
     var items = [];
     if (request.url)
-      contentHelper.appendElementRow(Common.UIString('URL'), UI.linkifyURLAsNode(request.url));
+      contentHelper.appendElementRow(Common.UIString('URL'), Components.Linkifier.linkifyURL(request.url));
     if (isFinite(duration))
       contentHelper.appendTextRow(Common.UIString('Duration'), Number.millisToString(duration, true));
     if (request.requestMethod)
@@ -1565,9 +1565,8 @@ Timeline.TimelineUIUtils = class {
     if (!frame.hasWarnings())
       return element;
     element.createTextChild(Common.UIString('. Long frame times are an indication of '));
-    element.appendChild(UI.linkifyURLAsNode(
-        'https://developers.google.com/web/fundamentals/performance/rendering/', Common.UIString('jank'), undefined,
-        true));
+    element.appendChild(UI.createExternalLink(
+        'https://developers.google.com/web/fundamentals/performance/rendering/', Common.UIString('jank')));
     element.createTextChild('.');
     return element;
   }
@@ -1729,7 +1728,7 @@ Timeline.TimelineUIUtils = class {
     switch (warning) {
       case warnings.ForcedStyle:
       case warnings.ForcedLayout:
-        span.appendChild(UI.linkifyDocumentationURLAsNode(
+        span.appendChild(UI.createDocumentationLink(
             '../../fundamentals/performance/rendering/avoid-large-complex-layouts-and-layout-thrashing#avoid-forced-synchronous-layouts',
             Common.UIString('Forced reflow')));
         span.createTextChild(Common.UIString(' is a likely performance bottleneck.'));
@@ -1740,9 +1739,8 @@ Timeline.TimelineUIUtils = class {
             Number.millisToString(event.duration - eventData['allottedMilliseconds'], true));
         break;
       case warnings.V8Deopt:
-        span.appendChild(UI.linkifyURLAsNode(
-            'https://github.com/GoogleChrome/devtools-docs/issues/53', Common.UIString('Not optimized'), undefined,
-            true));
+        span.appendChild(UI.createExternalLink(
+            'https://github.com/GoogleChrome/devtools-docs/issues/53', Common.UIString('Not optimized')));
         span.createTextChild(Common.UIString(': %s', eventData['deoptReason']));
         break;
       default:

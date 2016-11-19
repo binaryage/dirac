@@ -1911,44 +1911,70 @@ UI.ThemeSupport.ColorUsage = {
 /**
  * @param {string} url
  * @param {string=} linkText
- * @param {string=} classes
- * @param {boolean=} isExternal
- * @param {string=} tooltipText
+ * @param {string=} className
+ * @param {boolean=} preventClick
  * @return {!Element}
  */
-UI.linkifyURLAsNode = function(url, linkText, classes, isExternal, tooltipText) {
+UI.createExternalLink = function(url, linkText, className, preventClick) {
   if (!linkText)
     linkText = url;
 
-  var a = createElementWithClass('a', classes);
+  var a = createElementWithClass('a', className);
   var href = url;
   if (url.trim().toLowerCase().startsWith('javascript:'))
     href = null;
-  if (isExternal && Common.ParsedURL.isRelativeURL(url))
+  if (Common.ParsedURL.isRelativeURL(url))
     href = null;
   if (href !== null) {
     a.href = href;
-    a.classList.add(isExternal ? 'webkit-html-external-link' : 'webkit-html-resource-link');
+    a.classList.add('webkit-html-external-link');
+    a.addEventListener('click', (event) => {
+      event.consume(true);
+      if (!preventClick)
+        InspectorFrontendHost.openInNewTab(/** @type {string} */ (href));
+    }, false);
+    a[UI._externalLinkSymbol] = true;
   }
-  if (!tooltipText && linkText !== url)
+  if (linkText !== url)
     a.title = url;
-  else if (tooltipText)
-    a.title = tooltipText;
   a.textContent = linkText.trimMiddle(150);
-  if (isExternal)
-    a.setAttribute('target', '_blank');
+  a.setAttribute('target', '_blank');
 
   return a;
 };
+
+UI._externalLinkSymbol = Symbol('UI._externalLink');
+
+/**
+ * @implements {UI.ContextMenu.Provider}
+ * @unrestricted
+ */
+UI.ExternaLinkContextMenuProvider = class {
+  /**
+   * @override
+   * @param {!Event} event
+   * @param {!UI.ContextMenu} contextMenu
+   * @param {!Object} target
+   */
+  appendApplicableItems(event, contextMenu, target) {
+    var targetNode = /** @type {!Node} */ (target);
+    while (targetNode && !targetNode[UI._externalLinkSymbol])
+      targetNode = targetNode.parentNodeOrShadowHost();
+    if (!targetNode || !targetNode.href)
+      return;
+    contextMenu.appendItem(UI.openLinkExternallyLabel(), () => InspectorFrontendHost.openInNewTab(targetNode.href));
+    contextMenu.appendItem(UI.copyLinkAddressLabel(), () => InspectorFrontendHost.copyText(targetNode.href));
+  }
+};
+
 
 /**
  * @param {string} article
  * @param {string} title
  * @return {!Element}
  */
-UI.linkifyDocumentationURLAsNode = function(article, title) {
-  return UI.linkifyURLAsNode(
-      'https://developers.google.com/web/tools/chrome-devtools/' + article, title, undefined, true);
+UI.createDocumentationLink = function(article, title) {
+  return UI.createExternalLink('https://developers.google.com/web/tools/chrome-devtools/' + article, title);
 };
 
 /**

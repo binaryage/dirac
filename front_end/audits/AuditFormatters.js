@@ -118,7 +118,7 @@ Audits.AuditFormatters.Registry = {
    * @return {!Element}
    */
   url: function(url, displayText) {
-    return UI.linkifyURLAsNode(url, displayText, undefined, true);
+    return UI.createExternalLink(url, displayText);
   },
 
   /**
@@ -127,8 +127,7 @@ Audits.AuditFormatters.Registry = {
    * @return {!Element}
    */
   resourceLink: function(url, line) {
-    // FIXME: use Components.Linkifier
-    return Components.linkifyResourceAsNode(url, line, undefined, 'resource-url webkit-html-resource-link');
+    return Components.Linkifier.linkifyURL(url, undefined, 'resource-url', line);
   }
 };
 
