@@ -9,7 +9,8 @@ source "./config.sh"
 
 pushd "$DEVTOOLS_ROOT"
 
-./scripts/compile_frontend.py
+# http://stackoverflow.com/questions/107705/disable-output-buffering
+python -u scripts/compile_frontend.py
 
 popd
 
