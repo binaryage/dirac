@@ -83,7 +83,9 @@ Main.Main = class {
     var storagePrefix = '';
     if (Host.isCustomDevtoolsFrontend())
       storagePrefix = '__custom__';
-    else if (!Runtime.queryParam('can_dock') && !!Runtime.queryParam('debugFrontend'))
+    else if (
+        !Runtime.queryParam('can_dock') && !!Runtime.queryParam('debugFrontend') &&
+        !InspectorFrontendHost.isUnderTest())
       storagePrefix = '__bundled__';
     var clearLocalStorage = window.localStorage ? window.localStorage.clear.bind(window.localStorage) : undefined;
     var localStorage =
@@ -124,7 +126,6 @@ Main.Main = class {
     Runtime.experiments.register('securityPanel', 'Security panel');
     Runtime.experiments.register('sourceDiff', 'Source diff');
     Runtime.experiments.register('terminalInDrawer', 'Terminal in drawer', true);
-    Runtime.experiments.register('timelineFlowEvents', 'Timeline flow events', true);
     Runtime.experiments.register('timelineInvalidationTracking', 'Timeline invalidation tracking', true);
     Runtime.experiments.register('timelineRecordingPerspectives', 'Timeline recording perspectives UI');
     Runtime.experiments.register('timelineTracingJSProfile', 'Timeline tracing based JS profiler', true);
@@ -193,18 +194,16 @@ Main.Main = class {
     Common.formatterWorkerPool = new Common.FormatterWorkerPool();
     Workspace.fileSystemMapping = new Workspace.FileSystemMapping(Workspace.isolatedFileSystemManager);
 
-    var fileSystemWorkspaceBinding =
-        new Bindings.FileSystemWorkspaceBinding(Workspace.isolatedFileSystemManager, Workspace.workspace);
     Main.networkProjectManager = new Bindings.NetworkProjectManager(SDK.targetManager, Workspace.workspace);
     Bindings.presentationConsoleMessageHelper = new Bindings.PresentationConsoleMessageHelper(Workspace.workspace);
-    Bindings.cssWorkspaceBinding =
-        new Bindings.CSSWorkspaceBinding(SDK.targetManager, Workspace.workspace);
-    Bindings.debuggerWorkspaceBinding =
-        new Bindings.DebuggerWorkspaceBinding(SDK.targetManager, Workspace.workspace);
+    Bindings.cssWorkspaceBinding = new Bindings.CSSWorkspaceBinding(SDK.targetManager, Workspace.workspace);
+    Bindings.debuggerWorkspaceBinding = new Bindings.DebuggerWorkspaceBinding(SDK.targetManager, Workspace.workspace);
     Bindings.breakpointManager =
         new Bindings.BreakpointManager(null, Workspace.workspace, SDK.targetManager, Bindings.debuggerWorkspaceBinding);
     Extensions.extensionServer = new Extensions.ExtensionServer();
 
+    var fileSystemWorkspaceBinding =
+        new Persistence.FileSystemWorkspaceBinding(Workspace.isolatedFileSystemManager, Workspace.workspace);
     Persistence.persistence =
         new Persistence.Persistence(Workspace.workspace, Bindings.breakpointManager, Workspace.fileSystemMapping);
 
@@ -356,55 +355,6 @@ Main.Main = class {
     Workspace.workspace.addEventListener(Workspace.Workspace.Events.UISourceCodeAdded, listener);
   }
 
-  _documentClick(event) {
-    var target = event.target;
-    if (target.shadowRoot)
-      target = event.deepElementFromPoint();
-    if (!target)
-      return;
-
-    var anchor = target.enclosingNodeOrSelfWithNodeName('a');
-    if (!anchor || !anchor.href)
-      return;
-
-    // Prevent the link from navigating, since we don't do any navigation by following links normally.
-    event.consume(true);
-
-    if (anchor.preventFollow)
-      return;
-
-    function followLink() {
-      if (UI.isBeingEdited(target))
-        return;
-      if (Components.openAnchorLocationRegistry.dispatch({url: anchor.href, lineNumber: anchor.lineNumber}))
-        return;
-
-      var uiSourceCode = Workspace.workspace.uiSourceCodeForURL(anchor.href);
-      if (uiSourceCode) {
-        Common.Revealer.reveal(uiSourceCode.uiLocation(anchor.lineNumber || 0, anchor.columnNumber || 0));
-        return;
-      }
-
-      var resource = Bindings.resourceForURL(anchor.href);
-      if (resource) {
-        Common.Revealer.reveal(resource);
-        return;
-      }
-
-      var request = SDK.NetworkLog.requestForURL(anchor.href);
-      if (request) {
-        Common.Revealer.reveal(request);
-        return;
-      }
-      InspectorFrontendHost.openInNewTab(anchor.href);
-    }
-
-    if (!anchor.classList.contains('webkit-html-external-link'))
-      followLink();
-    else
-      InspectorFrontendHost.openInNewTab(anchor.href);
-  }
-
   _registerShortcuts() {
     var shortcut = UI.KeyboardShortcut;
     var section = Components.shortcutsScreen.section(Common.UIString('All Panels'));
@@ -508,7 +458,6 @@ Main.Main = class {
     document.addEventListener('cut', this._redispatchClipboardEvent.bind(this), false);
     document.addEventListener('paste', this._redispatchClipboardEvent.bind(this), false);
     document.addEventListener('contextmenu', this._contextMenuEventFired.bind(this), true);
-    document.addEventListener('click', this._documentClick.bind(this), false);
   }
 
   /**

@@ -94,12 +94,12 @@ SDK.SourceMap.prototype = {
   /**
    * @return {string}
    */
-  compiledURL: function() {},
+  compiledURL() {},
 
   /**
    * @return {string}
    */
-  url: function() {},
+  url() {},
 
   /**
    * @return {?SourceMapV3}
@@ -109,39 +109,39 @@ SDK.SourceMap.prototype = {
   /**
    * @return {!Array<string>}
    */
-  sourceURLs: function() {},
+  sourceURLs() {},
 
   /**
    * @param {string} sourceURL
    * @param {!Common.ResourceType} contentType
    * @return {!Common.ContentProvider}
    */
-  sourceContentProvider: function(sourceURL, contentType) {},
+  sourceContentProvider(sourceURL, contentType) {},
 
   /**
    * @param {string} sourceURL
    * @return {?string}
    */
-  embeddedContentByURL: function(sourceURL) {},
+  embeddedContentByURL(sourceURL) {},
 
   /**
    * @param {number} lineNumber in compiled resource
    * @param {number} columnNumber in compiled resource
    * @return {?SDK.SourceMapEntry}
    */
-  findEntry: function(lineNumber, columnNumber) {},
+  findEntry(lineNumber, columnNumber) {},
 
   /**
    * @return {boolean}
    */
-  editable: function() {},
+  editable() {},
 
   /**
    * @param {!Array<!Common.TextRange>} ranges
    * @param {!Array<string>} texts
    * @return {!Promise<?SDK.SourceMap.EditResult>}
    */
-  editCompiled: function(ranges, texts) {},
+  editCompiled(ranges, texts) {},
 };
 
 /**
@@ -171,7 +171,7 @@ SDK.SourceMapFactory.prototype = {
    * @param {!SDK.SourceMap} sourceMap
    * @return {!Promise<?SDK.SourceMap>}
    */
-  editableSourceMap: function(target, sourceMap) {},
+  editableSourceMap(target, sourceMap) {},
 };
 
 /**

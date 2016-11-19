@@ -75,7 +75,6 @@
         "InspectorBackend.js",
         "../InspectorBackendCommands.js",
         "InspectorBackendExtensionMode.js",
-        "InspectorBackendHostedMode.js",
         "Target.js",
         "TargetManager.js",
         "ApplicationCacheModel.js",

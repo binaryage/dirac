@@ -131,14 +131,6 @@ Components.Linkifier = class {
 
   /**
    * @param {!Element} anchor
-   * @return {?Workspace.UILocation} uiLocation
-   */
-  static uiLocationByAnchor(anchor) {
-    return anchor[Components.Linkifier._uiLocationSymbol];
-  }
-
-  /**
-   * @param {!Element} anchor
    * @param {!Workspace.UILocation} uiLocation
    */
   static _bindUILocation(anchor, uiLocation) {
@@ -232,7 +224,7 @@ Components.Linkifier = class {
    */
   maybeLinkifyScriptLocation(target, scriptId, sourceURL, lineNumber, columnNumber, classes) {
     var fallbackAnchor =
-        sourceURL ? Components.linkifyResourceAsNode(sourceURL, lineNumber, columnNumber, classes) : null;
+        sourceURL ? Components.Linkifier.linkifyURL(sourceURL, undefined, classes, lineNumber, columnNumber) : null;
     if (!target || target.isDisposed())
       return fallbackAnchor;
     var debuggerModel = SDK.DebuggerModel.fromTarget(target);
@@ -267,7 +259,7 @@ Components.Linkifier = class {
    */
   linkifyScriptLocation(target, scriptId, sourceURL, lineNumber, columnNumber, classes) {
     return this.maybeLinkifyScriptLocation(target, scriptId, sourceURL, lineNumber, columnNumber, classes) ||
-        Components.linkifyResourceAsNode(sourceURL, lineNumber, columnNumber, classes);
+        Components.Linkifier.linkifyURL(sourceURL, undefined, classes, lineNumber, columnNumber);
   }
 
   /**
@@ -304,7 +296,7 @@ Components.Linkifier = class {
 
     var topFrame = stackTrace.callFrames[0];
     var fallbackAnchor =
-        Components.linkifyResourceAsNode(topFrame.url, topFrame.lineNumber, topFrame.columnNumber, classes);
+        Components.Linkifier.linkifyURL(topFrame.url, undefined, classes, topFrame.lineNumber, topFrame.columnNumber);
     if (target.isDisposed())
       return fallbackAnchor;
 
@@ -438,6 +430,103 @@ Components.Linkifier = class {
     }
     anchor[Components.Linkifier._iconSymbol] = icon;
   }
+
+  /**
+   * @param {string} url
+   * @param {string=} text
+   * @param {string=} className
+   * @param {number=} lineNumber
+   * @param {number=} columnNumber
+   * @return {!Element}
+   */
+  static linkifyURL(url, text, className, lineNumber, columnNumber) {
+    if (!url) {
+      var element = createElementWithClass('span', className);
+      element.textContent = text || Common.UIString('(unknown)');
+      return element;
+    }
+
+    var linkText = text || Bindings.displayNameForURL(url);
+    if (typeof lineNumber === 'number' && !text)
+      linkText += ':' + (lineNumber + 1);
+
+    var link = createElementWithClass('a', className);
+    if (!url.trim().toLowerCase().startsWith('javascript:')) {
+      link.href = url;
+      link.classList.add('webkit-html-resource-link');
+      link[Components.Linkifier._linkSymbol] = true;
+      link.addEventListener('click', Components.Linkifier._handleClick, false);
+    }
+    link.title = linkText !== url ? url : '';
+    link.textContent = linkText.trimMiddle(150);
+    link.lineNumber = lineNumber;
+    link.columnNumber = columnNumber;
+    return link;
+  }
+
+  /**
+   * @param {!Event} event
+   */
+  static _handleClick(event) {
+    var link = /** @type {!Element} */ (event.currentTarget);
+    event.consume(true);
+    if (link.preventFollow || UI.isBeingEdited(/** @type {!Node} */ (event.target)))
+      return;
+    if (Components.openAnchorLocationRegistry.dispatch({url: link.href, lineNumber: link.lineNumber}))
+      return;
+    var actions = Components.Linkifier._linkActions(link);
+    if (actions.length)
+      actions[0].handler.call(null);
+  }
+
+  /**
+   * @param {?Element} link
+   * @return {!Array<{title: string, handler: function()}>}
+   */
+  static _linkActions(link) {
+    var url = null;
+    var uiLocation = null;
+    var isLiveLink = false;
+    if (link && link[Components.Linkifier._uiLocationSymbol]) {
+      uiLocation = /** @type {!Workspace.UILocation} */ (link[Components.Linkifier._uiLocationSymbol]);
+      url = uiLocation.uiSourceCode.contentURL();
+      isLiveLink = true;
+    } else if (link && link.href) {
+      url = link.href;
+      var uiSourceCode = Workspace.workspace.uiSourceCodeForURL(url);
+      uiLocation = uiSourceCode ? uiSourceCode.uiLocation(link.lineNumber || 0, link.columnNumber || 0) : null;
+      isLiveLink = false;
+    } else {
+      return [];
+    }
+
+    var result = [];
+    if (uiLocation)
+      result.push({title: Common.UIString('Open'), handler: () => Common.Revealer.reveal(uiLocation)});
+
+    var resource = Bindings.resourceForURL(url);
+    if (resource) {
+      result.push({
+        title: Common.UIString.capitalize('Open ^link in Application ^panel'),
+        handler: () => Common.Revealer.reveal(resource)
+      });
+    }
+
+    var request = SDK.NetworkLog.requestForURL(url);
+    if (request) {
+      result.push({
+        title: Common.UIString.capitalize('Open ^request in Network ^panel'),
+        handler: () => Common.Revealer.reveal(request)
+      });
+    }
+
+    if (resource || !isLiveLink) {
+      result.push({title: UI.openLinkExternallyLabel(), handler: () => InspectorFrontendHost.openInNewTab(url)});
+      result.push({title: UI.copyLinkAddressLabel(), handler: () => InspectorFrontendHost.copyText(url)});
+    }
+
+    return result;
+  }
 };
 
 /** @type {!Set<!Components.Linkifier>} */
@@ -451,6 +540,7 @@ Components.Linkifier._sourceCodeAnchors = Symbol('Linkifier.anchors');
 Components.Linkifier._uiLocationSymbol = Symbol('uiLocation');
 Components.Linkifier._fallbackAnchorSymbol = Symbol('fallbackAnchor');
 Components.Linkifier._liveLocationSymbol = Symbol('liveLocation');
+Components.Linkifier._linkSymbol = Symbol('Linkifier.link');
 
 /**
  * The maximum number of characters to display in a URL.
@@ -477,7 +567,7 @@ Components.Linkifier.LinkHandler.prototype = {
    * @param {number=} lineNumber
    * @return {boolean}
    */
-  handleLink: function(url, lineNumber) {}
+  handleLink(url, lineNumber) {}
 };
 
 /**
@@ -491,7 +581,7 @@ Components.LinkDecorator.prototype = {
    * @param {!Workspace.UISourceCode} uiSourceCode
    * @return {?UI.Icon}
    */
-  linkIcon: function(uiSourceCode) {}
+  linkIcon(uiSourceCode) {}
 };
 
 Components.LinkDecorator.Events = {
@@ -551,50 +641,31 @@ Components.linkifyStringAsFragment = function(string) {
    * @return {!Node}
    */
   function linkifier(title, url, lineNumber, columnNumber) {
-    var isExternal = !Bindings.resourceForURL(url) && !Workspace.workspace.uiSourceCodeForURL(url);
-    var urlNode = UI.linkifyURLAsNode(url, title, undefined, isExternal);
-    if (typeof lineNumber !== 'undefined') {
-      urlNode.lineNumber = lineNumber;
-      if (typeof columnNumber !== 'undefined')
-        urlNode.columnNumber = columnNumber;
-    }
-
-    return urlNode;
+    return Components.Linkifier.linkifyURL(url, title, undefined, lineNumber, columnNumber);
   }
 
   return Components.linkifyStringAsFragmentWithCustomLinkifier(string, linkifier);
 };
 
 /**
- * @param {string} url
- * @param {number=} lineNumber
- * @param {number=} columnNumber
- * @param {string=} classes
- * @param {string=} tooltipText
- * @param {string=} urlDisplayName
- * @return {!Element}
+ * @implements {UI.ContextMenu.Provider}
+ * @unrestricted
  */
-Components.linkifyResourceAsNode = function(url, lineNumber, columnNumber, classes, tooltipText, urlDisplayName) {
-  if (!url) {
-    var element = createElementWithClass('span', classes);
-    element.textContent = urlDisplayName || Common.UIString('(unknown)');
-    return element;
+Components.Linkifier.LinkContextMenuProvider = class {
+  /**
+   * @override
+   * @param {!Event} event
+   * @param {!UI.ContextMenu} contextMenu
+   * @param {!Object} target
+   */
+  appendApplicableItems(event, contextMenu, target) {
+    var targetNode = /** @type {!Node} */ (target);
+    while (targetNode && !targetNode[Components.Linkifier._linkSymbol] &&
+           !targetNode[Components.Linkifier._uiLocationSymbol])
+      targetNode = targetNode.parentNodeOrShadowHost();
+    var link = /** @type {?Element} */ (targetNode);
+    var actions = Components.Linkifier._linkActions(link);
+    for (var action of actions)
+      contextMenu.appendItem(action.title, action.handler);
   }
-  var linkText = urlDisplayName || Bindings.displayNameForURL(url);
-  if (typeof lineNumber === 'number')
-    linkText += ':' + (lineNumber + 1);
-  var anchor = UI.linkifyURLAsNode(url, linkText, classes, false, tooltipText);
-  anchor.lineNumber = lineNumber;
-  anchor.columnNumber = columnNumber;
-  return anchor;
-};
-
-/**
- * @param {!SDK.NetworkRequest} request
- * @return {!Element}
- */
-Components.linkifyRequestAsNode = function(request) {
-  var anchor = UI.linkifyURLAsNode(request.url);
-  anchor.requestId = request.requestId;
-  return anchor;
 };
