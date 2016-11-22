@@ -53,6 +53,10 @@ Console.DiracPromptWithHistory = class extends UI.TextPrompt {
     return text.replace(/[\s\n]+$/gm, ""); // remove trailing newlines and whitespace
   }
 
+  /**
+   * @override
+   * @param {string} x
+   */
   setText(x) {
     this.clearAutocomplete();
     this._codeMirror.setValue(x);
@@ -95,10 +99,17 @@ Console.DiracPromptWithHistory = class extends UI.TextPrompt {
     return (cursor.line == this._codeMirror.lastLine());
   }
 
+
+  /**
+   * @override
+   */
   moveCaretToEndOfPrompt() {
     this._codeMirror.setCursor(this._codeMirror.lastLine() + 1, 0, null);
   }
 
+  /**
+   * @override
+   */
   moveCaretToIndex(index) {
     const pos = this._codeMirror.posFromIndex(index);
     this._codeMirror.setCursor(pos, null, null);
@@ -228,6 +239,8 @@ Console.DiracPromptWithHistory = class extends UI.TextPrompt {
    * @param {boolean=} reverse
    */
   autocomplete(force, reverse) {
+    force = force || false;
+    reverse = reverse || false;
     this.clearAutocomplete();
     this._lastAutocompleteRequest++;
 

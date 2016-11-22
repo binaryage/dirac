@@ -1811,7 +1811,7 @@ Console.ConsoleCommand.MaxLengthToIgnoreHighlighter = 10000;
 Console.ConsoleDiracCommand = class extends Console.ConsoleCommand {
   /**
    * @param {!SDK.ConsoleMessage} message
-   * @param {!SDK.Linkifier} linkifier
+   * @param {!Components.Linkifier} linkifier
    * @param {number} nestingLevel
    */
   constructor(message, linkifier, nestingLevel) {
@@ -1845,7 +1845,7 @@ Console.ConsoleDiracMarkup = class extends Console.ConsoleViewMessage {
 
   /**
    * @param {!SDK.ConsoleMessage} message
-   * @param {!SDK.Linkifier} linkifier
+   * @param {!Components.Linkifier} linkifier
    * @param {number} nestingLevel
    */
   constructor(message, linkifier, nestingLevel) {

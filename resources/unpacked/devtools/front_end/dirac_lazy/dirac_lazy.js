@@ -569,9 +569,9 @@ Object.assign(window.dirac, (function() {
   // --- namespace symbols ------------------------------------------------------------------------------------------------
 
   /**
-   * @param {!Array<!Sources.UISourceCode>} uiSourceCodes
+   * @param {!Array<!Workspace.UISourceCode>} uiSourceCodes
    * @param {function(string)} urlMatcherFn
-   * @return {!Array<!Sources.UISourceCode>}
+   * @return {!Array<!Workspace.UISourceCode>}
    */
   function findMatchingSourceCodes(uiSourceCodes, urlMatcherFn) {
     const matching = [];
