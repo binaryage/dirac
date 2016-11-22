@@ -1527,7 +1527,7 @@ Timeline.TimelineUIUtils = class {
     contentHelper.appendTextRow(Common.UIString('FPS'), Math.floor(1000 / durationInMillis));
     contentHelper.appendTextRow(Common.UIString('CPU time'), Number.millisToString(frame.cpuTime, true));
 
-    if (Runtime.experiments.isEnabled('layersPanel') && frame.layerTree) {
+    if (frame.layerTree) {
       contentHelper.appendElementRow(
           Common.UIString('Layer tree'),
           Components.Linkifier.linkifyUsingRevealer(frame.layerTree, Common.UIString('show')));
@@ -1737,6 +1737,12 @@ Timeline.TimelineUIUtils = class {
         span.textContent = Common.UIString(
             'Idle callback execution extended beyond deadline by ' +
             Number.millisToString(event.duration - eventData['allottedMilliseconds'], true));
+        break;
+      case warnings.LongHandler:
+        span.textContent = Common.UIString('Handler took %s', Number.millisToString(event.duration, true));
+        break;
+      case warnings.LongRecurringHandler:
+        span.textContent = Common.UIString('Recurring handler took %s', Number.millisToString(event.duration, true));
         break;
       case warnings.V8Deopt:
         span.appendChild(UI.createExternalLink(
