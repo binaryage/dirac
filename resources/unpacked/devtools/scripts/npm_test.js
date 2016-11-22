@@ -49,7 +49,7 @@ var CHROMIUM_SRC_PATH = fetchDiracChromiumSrcPath();
 
 var RELEASE_PATH = path.resolve(CHROMIUM_SRC_PATH, "out", "Release");
 var BLINK_TEST_PATH = path.resolve(CHROMIUM_SRC_PATH, "blink", "tools", "run_layout_tests.py");
-var CACHE_PATH = path.resolve(__dirname, "..", ".test_cache");
+var CACHE_PATH = path.resolve(__dirname, "..", "caches", ".test_cache");
 var SOURCE_PATH = path.resolve(__dirname, "..", "front_end");
 
 var useDebugDevtools = true;
