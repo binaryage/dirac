@@ -51,9 +51,6 @@ Main.Main = class {
 
   _loaded() {
     console.timeStamp('Main._loaded');
-
-    if (InspectorFrontendHost.isUnderTest())
-      self.runtime.useTestBase();
     Runtime.setPlatform(Host.platform());
     InspectorFrontendHost.getPreferences(this._gotPreferences.bind(this));
   }
@@ -63,6 +60,8 @@ Main.Main = class {
    */
   _gotPreferences(prefs) {
     console.timeStamp('Main._gotPreferences');
+    if (Host.isUnderTest(prefs))
+      self.runtime.useTestBase();
     // for dirac testing
     if (Runtime.queryParam("reset_settings")) {
       dirac.feedback("reset devtools settings");
@@ -85,7 +84,7 @@ Main.Main = class {
       storagePrefix = '__custom__';
     else if (
         !Runtime.queryParam('can_dock') && !!Runtime.queryParam('debugFrontend') &&
-        !InspectorFrontendHost.isUnderTest())
+        !Host.isUnderTest(prefs))
       storagePrefix = '__bundled__';
     var clearLocalStorage = window.localStorage ? window.localStorage.clear.bind(window.localStorage) : undefined;
     var localStorage =
@@ -94,8 +93,7 @@ Main.Main = class {
         prefs, InspectorFrontendHost.setPreference, InspectorFrontendHost.removePreference,
         InspectorFrontendHost.clearPreferences, storagePrefix);
     Common.settings = new Common.Settings(globalStorage, localStorage);
-
-    if (!InspectorFrontendHost.isUnderTest())
+    if (!Host.isUnderTest(prefs))
       new Common.VersionController().updateVersion();
   }
 
@@ -112,7 +110,6 @@ Main.Main = class {
     Runtime.experiments.register('continueToFirstInvocation', 'Continue to first invocation', true);
     Runtime.experiments.register('emptySourceMapAutoStepping', 'Empty sourcemap auto-stepping');
     Runtime.experiments.register('inputEventsOnTimelineOverview', 'Input events on Timeline overview', true);
-    Runtime.experiments.register('layersPanel', 'Layers panel');
     Runtime.experiments.register('layoutEditor', 'Layout editor', true);
     Runtime.experiments.register('inspectTooltip', 'Dark inspect element tooltip');
     Runtime.experiments.register('liveSASS', 'Live SASS');
@@ -135,7 +132,7 @@ Main.Main = class {
 
     Runtime.experiments.cleanUpStaleExperiments();
 
-    if (InspectorFrontendHost.isUnderTest()) {
+    if (Host.isUnderTest(prefs)) {
       var testPath = JSON.parse(prefs['testPath'] || '""');
       // Enable experiments for testing.
       if (testPath.indexOf('layers/') !== -1)
