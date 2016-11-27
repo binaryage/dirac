@@ -1,5 +1,5 @@
-Protocol.BakedInspectorBackendAPIChromeTag='56.0.2923.0';
-Protocol.BakedInspectorBackendAPIChromeRev='542c74f6d402696e770d70a8716dbcf0ffe53094';
+Protocol.BakedInspectorBackendAPIChromeTag='57.0.2934.2';
+Protocol.BakedInspectorBackendAPIChromeRev='8aa3c277b9c99f6270e7c8e1dcbede0729595b0b';
 Protocol.BakedInspectorBackendAPI=''
 + 'InspectorBackend.registerEvent("Inspector.detached", ["reason"]);\n'
 + 'InspectorBackend.registerEvent("Inspector.targetCrashed", []);\n'
@@ -37,6 +37,7 @@ Protocol.BakedInspectorBackendAPI=''
 + 'InspectorBackend.registerCommand("Page.setAutoAttachToCreatedPages", [{"name": "autoAttach", "type": "boolean", "optional": false}], [], false);\n'
 + 'InspectorBackend.registerCommand("Page.reload", [{"name": "ignoreCache", "type": "boolean", "optional": true}, {"name": "scriptToEvaluateOnLoad", "type": "string", "optional": true}], [], false);\n'
 + 'InspectorBackend.registerCommand("Page.navigate", [{"name": "url", "type": "string", "optional": false}], ["frameId"], false);\n'
++ 'InspectorBackend.registerCommand("Page.stopLoading", [], [], false);\n'
 + 'InspectorBackend.registerCommand("Page.getNavigationHistory", [], ["currentIndex", "entries"], false);\n'
 + 'InspectorBackend.registerCommand("Page.navigateToHistoryEntry", [{"name": "entryId", "type": "number", "optional": false}], [], false);\n'
 + 'InspectorBackend.registerCommand("Page.getCookies", [], ["cookies"], false);\n'
@@ -402,7 +403,7 @@ Protocol.BakedInspectorBackendAPI=''
 + 'InspectorBackend.registerCommand("Runtime.setCustomObjectFormatterEnabled", [{"name": "enabled", "type": "boolean", "optional": false}], [], false);\n'
 + 'InspectorBackend.registerCommand("Runtime.compileScript", [{"name": "expression", "type": "string", "optional": false}, {"name": "sourceURL", "type": "string", "optional": false}, {"name": "persistScript", "type": "boolean", "optional": false}, {"name": "executionContextId", "type": "number", "optional": true}], ["scriptId", "exceptionDetails"], false);\n'
 + 'InspectorBackend.registerCommand("Runtime.runScript", [{"name": "scriptId", "type": "string", "optional": false}, {"name": "executionContextId", "type": "number", "optional": true}, {"name": "objectGroup", "type": "string", "optional": true}, {"name": "silent", "type": "boolean", "optional": true}, {"name": "includeCommandLineAPI", "type": "boolean", "optional": true}, {"name": "returnByValue", "type": "boolean", "optional": true}, {"name": "generatePreview", "type": "boolean", "optional": true}, {"name": "awaitPromise", "type": "boolean", "optional": true}], ["result", "exceptionDetails"], false);\n'
-+ 'InspectorBackend.registerEnum("Debugger.ScopeType", {Global: "global", Local: "local", With: "with", Closure: "closure", Catch: "catch", Block: "block", Script: "script"});\n'
++ 'InspectorBackend.registerEnum("Debugger.ScopeType", {Global: "global", Local: "local", With: "with", Closure: "closure", Catch: "catch", Block: "block", Script: "script", Eval: "eval"});\n'
 + 'InspectorBackend.registerEvent("Debugger.scriptParsed", ["scriptId", "url", "startLine", "startColumn", "endLine", "endColumn", "executionContextId", "hash", "executionContextAuxData", "isLiveEdit", "sourceMapURL", "hasSourceURL"]);\n'
 + 'InspectorBackend.registerEvent("Debugger.scriptFailedToParse", ["scriptId", "url", "startLine", "startColumn", "endLine", "endColumn", "executionContextId", "hash", "executionContextAuxData", "sourceMapURL", "hasSourceURL"]);\n'
 + 'InspectorBackend.registerEvent("Debugger.breakpointResolved", ["breakpointId", "location"]);\n'

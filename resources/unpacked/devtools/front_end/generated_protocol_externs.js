@@ -128,6 +128,13 @@ Protocol.PageAgent.prototype.navigate = function(url, opt_callback) {}
 Protocol.PageAgent.prototype.invoke_navigate = function(obj, opt_callback) {}
 
 /**
+ * @param {function(?Protocol.Error):void=} opt_callback
+ */
+Protocol.PageAgent.prototype.stopLoading = function(opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+Protocol.PageAgent.prototype.invoke_stopLoading = function(obj, opt_callback) {}
+
+/**
  * @param {function(?Protocol.Error, number, !Array<Protocol.Page.NavigationEntry>):void=} opt_callback
  */
 Protocol.PageAgent.prototype.getNavigationHistory = function(opt_callback) {}
@@ -4181,7 +4188,8 @@ Protocol.Debugger.ScopeType = {
     Closure: "closure",
     Catch: "catch",
     Block: "block",
-    Script: "script"
+    Script: "script",
+    Eval: "eval"
 };
 
 /** @typedef {!{type:(Protocol.Debugger.ScopeType), object:(Protocol.Runtime.RemoteObject), name:(string|undefined), startLocation:(Protocol.Debugger.Location|undefined), endLocation:(Protocol.Debugger.Location|undefined)}} */
