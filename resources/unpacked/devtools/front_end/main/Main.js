@@ -82,9 +82,7 @@ Main.Main = class {
     var storagePrefix = '';
     if (Host.isCustomDevtoolsFrontend())
       storagePrefix = '__custom__';
-    else if (
-        !Runtime.queryParam('can_dock') && !!Runtime.queryParam('debugFrontend') &&
-        !Host.isUnderTest(prefs))
+    else if (!Runtime.queryParam('can_dock') && !!Runtime.queryParam('debugFrontend') && !Host.isUnderTest(prefs))
       storagePrefix = '__bundled__';
     var clearLocalStorage = window.localStorage ? window.localStorage.clear.bind(window.localStorage) : undefined;
     var localStorage =
@@ -207,14 +205,6 @@ Main.Main = class {
     new Main.OverlayController();
     new Components.ExecutionContextSelector(SDK.targetManager, UI.context);
     Bindings.blackboxManager = new Bindings.BlackboxManager(Bindings.debuggerWorkspaceBinding);
-
-    var autoselectPanel = Common.UIString('auto');
-    var openAnchorLocationSetting = Common.settings.createSetting('openLinkHandler', autoselectPanel);
-    Components.openAnchorLocationRegistry = new Components.HandlerRegistry(openAnchorLocationSetting);
-    Components.openAnchorLocationRegistry.registerHandler(autoselectPanel, function() {
-      return false;
-    });
-    Components.Linkifier.setLinkHandler(new Components.HandlerRegistry.LinkHandler());
 
     new Main.Main.PauseListener();
     new Main.Main.InspectedNodeRevealer();
@@ -406,14 +396,6 @@ Main.Main = class {
   _postDocumentKeyDown(event) {
     if (event.handled)
       return;
-
-    var document = event.target && event.target.ownerDocument;
-    var target = document ? document.deepActiveElement() : null;
-    if (target) {
-      var anchor = target.enclosingNodeOrSelfWithNodeName('a');
-      if (anchor && anchor.preventFollow)
-        event.preventDefault();
-    }
 
     if (!UI.Dialog.hasInstance() && UI.inspectorView.currentPanelDeprecated()) {
       UI.inspectorView.currentPanelDeprecated().handleShortcut(event);
