@@ -1211,10 +1211,11 @@ Elements.ElementsTreeElement = class extends TreeElement {
       value = value.replace(closingPunctuationRegex, '$&\u200B');
       if (value.startsWith('data:'))
         value = value.trimMiddle(60);
-      var anchor = node.nodeName().toLowerCase() === 'a' ? UI.createExternalLink(rewrittenHref, value, '', true) :
-                                                           Components.Linkifier.linkifyURL(rewrittenHref, value);
-      anchor.preventFollow = true;
-      return anchor;
+      var link = node.nodeName().toLowerCase() === 'a' ?
+          UI.createExternalLink(rewrittenHref, value, '', true) :
+          Components.Linkifier.linkifyURL(rewrittenHref, value, '', undefined, undefined, true);
+      link[Elements.ElementsTreeElement.HrefSymbol] = rewrittenHref;
+      return link;
     }
 
     if (node && (name === 'src' || name === 'href')) {
@@ -1556,6 +1557,8 @@ Elements.ElementsTreeElement = class extends TreeElement {
     promise.then(() => UI.actionRegistry.action('elements.edit-as-html').execute());
   }
 };
+
+Elements.ElementsTreeElement.HrefSymbol = Symbol('ElementsTreeElement.Href');
 
 Elements.ElementsTreeElement.InitialChildrenLimit = 500;
 

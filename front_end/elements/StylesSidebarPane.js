@@ -1254,9 +1254,6 @@ Elements.StylePropertiesSection = class {
     if (this._checkWillCancelEditing())
       return;
 
-    if (event.target.enclosingNodeOrSelfWithNodeName('a'))
-      return;
-
     if (event.target.classList.contains('header') || this.element.classList.contains('read-only') ||
         event.target.enclosingNodeOrSelfWithClass('media')) {
       event.consume();
@@ -3016,7 +3013,7 @@ Elements.StylesSidebarPropertyRenderer = class {
       hrefUrl = Common.ParsedURL.completeURL(this._rule.resourceURL(), url);
     else if (this._node)
       hrefUrl = this._node.resolveURL(url);
-    container.appendChild(Components.Linkifier.linkifyURL(hrefUrl || url, url));
+    container.appendChild(Components.Linkifier.linkifyURL(hrefUrl || url, url, '', undefined, undefined, true));
     container.createTextChild(')');
     return container;
   }

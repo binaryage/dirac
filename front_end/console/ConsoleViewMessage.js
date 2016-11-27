@@ -229,7 +229,7 @@ Console.ConsoleViewMessage = class {
         if (consoleMessage.level === SDK.ConsoleMessage.MessageLevel.Error ||
             consoleMessage.level === SDK.ConsoleMessage.MessageLevel.RevokedError) {
           messageElement.createTextChild(consoleMessage.request.requestMethod + ' ');
-          messageElement.appendChild(Components.Linkifier.linkifyUsingRevealer(
+          messageElement.appendChild(Components.Linkifier.linkifyRevealable(
               consoleMessage.request, consoleMessage.request.url, consoleMessage.request.url));
           if (consoleMessage.request.failed) {
             messageElement.createTextChildren(' ', consoleMessage.request.localizedFailDescription);
@@ -269,7 +269,7 @@ Console.ConsoleViewMessage = class {
      * @this {SDK.ConsoleMessage}
      */
     function linkifyRequest(title) {
-      return Components.Linkifier.linkifyUsingRevealer(
+      return Components.Linkifier.linkifyRevealable(
           /** @type {!SDK.NetworkRequest} */ (this.request), title, this.request.url);
     }
   }
@@ -330,8 +330,7 @@ Console.ConsoleViewMessage = class {
      * @param {?Event} event
      */
     function toggleStackTrace(event) {
-      var linkClicked = event.target && event.target.enclosingNodeOrSelfWithNodeName('a');
-      if (event.target.hasSelection() || linkClicked)
+      if (event.target.hasSelection())
         return;
       expandStackTrace(stackTraceElement.classList.contains('hidden'));
       event.consume();
