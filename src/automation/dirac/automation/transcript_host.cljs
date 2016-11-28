@@ -207,6 +207,9 @@
 (defn replace-cljs-line-numbers [s]
   (string/replace s #"\.cljs:\d+" ".cljs:<line>"))
 
+(defn replace-target-url-port-in-options [s]
+  (string/replace s #":target-url \"http://localhost:\d+\"" ":target-url \"http://localhost:<port>\""))
+
 (defn transformer [console-output]
   (-> console-output
       replace-shortened-urls
@@ -216,7 +219,8 @@
       replace-dirac-repl-ids
       replace-dirac-repl-files
       replace-chrome-extension-urls
-      replace-cljs-line-numbers))
+      replace-cljs-line-numbers
+      replace-target-url-port-in-options))
 
 (defn process-default-state! [label text]
   (cond
