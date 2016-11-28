@@ -42,7 +42,7 @@
 
 (defn fire-synthetic-chrome-event! [context message-id message]
   (go
-    (let [handler-fn (:process-chrome-event context)
+    (let [handler-fn (:chrome-event-handler context)
           _ (assert (fn? handler-fn))
           chrome-event (:chrome-event message)
           reply (<! (handler-fn chrome-event))]

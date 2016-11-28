@@ -41,7 +41,7 @@
 (defn handle-external-client-connection! [client-port]
   (go
     (case (get-name client-port)
-      "Dirac Marionettist" (marion/handle-marion-client-connection! {:process-chrome-event process-chrome-event!} client-port)
+      "Dirac Marionettist" (marion/handle-marion-client-connection! {:chrome-event-handler process-chrome-event!} client-port)
       (warn "external connection attempt from unrecognized client" client-port))))
 
 ; -- main event loop --------------------------------------------------------------------------------------------------------
