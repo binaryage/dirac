@@ -124,9 +124,9 @@
     (status-host/init-status! "status-box")
     (init-cljs-printing!)
     (launcher/init!)
+    (messages/init! "task-runner")
     ; feedback subsystem is responsible for intercepting messages to be presented in transcript
     (feedback/init!)
-    (messages/init! "task-runner")
     (messages/reposition-runner-window!)
     ; if test runner is present, we will wait for test runner to launch the test
     ; it needs to disconnect the driver first
@@ -151,8 +151,8 @@
           ; https://bugs.chromium.org/p/chromium/issues/detail?id=355075
           (<! (reset-browser-state!))))
       (<! (messages/wait-for-all-pending-replies-or-timeout! (get-pending-replies-wait-timeout)))
-      (messages/done!)
       (feedback/done!)
+      (messages/done!)
       (if runner-present?
         (send-finished-task-signal! successful?))                                                                             ; note: if task runner wasn't successful we leave browser in failed state for possible inspection
       successful?)))
