@@ -1,8 +1,12 @@
 ns               Testing dirac.tests.tasks.suite01.options
+extension        reset extension state
+extension        set extension options:{:target-url "http://localhost:<port>"}
+extension        set extension options:{:open-as "window"}
 automate         open-scenario! ["normal"]
 testing          user-specified url params should get propagated to DevTools frontends
 automate         store-options!
 automate         set-options! [{:user-frontend-url-params "x=1&y=2"}]
+extension        set extension options:{:user-frontend-url-params "x=1&y=2"}
 automate         open-devtools!
 extension        handling command: open-dirac-devtools
 extension        register devtools #1
@@ -16,10 +20,12 @@ automate #1      close-devtools!
 extension        handling command: close-dirac-devtools
 extension        unregister devtools #1
 automate         restore-options!
+extension        reset extension options:{:enable-clustered-locals true, :inline-custom-formatters true, :use-backend-supported-api true, :enable-parinfer true, :use-backend-supported-css true, :beautify-function-names true, :enable-friendly-locals true, :user-frontend-url-params nil, :clean-urls true, :enable-repl true, :welcome-message true, :open-as "window", :target-url "http://localhost:<port>"}
 ∎
 testing          use backend-supported api and css
 automate         store-options!
 automate         set-options! [{:use-backend-supported-api true, :use-backend-supported-css true}]
+extension        set extension options:{:use-backend-supported-api true, :use-backend-supported-css true}
 automate         open-devtools!
 extension        handling command: open-dirac-devtools
 extension        register devtools #2
@@ -50,10 +56,12 @@ automate #2      close-devtools!
 extension        handling command: close-dirac-devtools
 extension        unregister devtools #2
 automate         restore-options!
+extension        reset extension options:{:enable-clustered-locals true, :inline-custom-formatters true, :use-backend-supported-api true, :enable-parinfer true, :use-backend-supported-css true, :beautify-function-names true, :enable-friendly-locals true, :user-frontend-url-params nil, :clean-urls true, :enable-repl true, :welcome-message true, :open-as "window", :target-url "http://localhost:<port>"}
 ∎
 testing          use baked-in api and css
 automate         store-options!
 automate         set-options! [{:use-backend-supported-api false, :use-backend-supported-css false}]
+extension        set extension options:{:use-backend-supported-api false, :use-backend-supported-css false}
 automate         open-devtools!
 extension        handling command: open-dirac-devtools
 extension        register devtools #3
@@ -84,6 +92,7 @@ automate #3      close-devtools!
 extension        handling command: close-dirac-devtools
 extension        unregister devtools #3
 automate         restore-options!
+extension        reset extension options:{:enable-clustered-locals true, :inline-custom-formatters true, :use-backend-supported-api true, :enable-parinfer true, :use-backend-supported-css true, :beautify-function-names true, :enable-friendly-locals true, :user-frontend-url-params nil, :clean-urls true, :enable-repl true, :welcome-message true, :open-as "window", :target-url "http://localhost:<port>"}
 ∎
 automate         close-scenario! ["scenario-tab#1"]
 summary          Automated 26 actions with 0 check-points containing 11 assertions.

@@ -1,4 +1,7 @@
 ns               Testing dirac.tests.tasks.suite01.misc
+extension        reset extension state
+extension        set extension options:{:target-url "http://localhost:<port>"}
+extension        set extension options:{:open-as "window"}
 automate         open-scenario! ["normal"]
 automate         close-scenario! ["scenario-tab#1"]
 summary          Automated 2 actions with 0 check-points containing 0 assertions.

@@ -1,4 +1,7 @@
 ns               Testing dirac.tests.tasks.suite01.completions
+extension        reset extension state
+extension        set extension options:{:target-url "http://localhost:<port>"}
+extension        set extension options:{:open-as "window"}
 automate         open-scenario! ["completions"]
 automate         open-devtools!
 extension        handling command: open-dirac-devtools
