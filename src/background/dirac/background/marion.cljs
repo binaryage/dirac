@@ -37,8 +37,9 @@
   (go
     (assert (fn? (:process-chrome-event context)))
     (let [chrome-event (:chrome-event message)
-          old-devtools-id (state/get-last-devtools-id)]
-      (<! ((:process-chrome-event context) chrome-event))
+          old-devtools-id (state/get-last-devtools-id)
+          handler-fn (:process-chrome-event context)
+          reply (<! (handler-fn chrome-event))]
       (cond
         ; this is a special case for "open-dirac-devtools" request, when we want to get back new devtools id
         (and (= (first chrome-event) :chromex.ext.commands/on-command)
@@ -46,7 +47,7 @@
         (let [new-devtools-id (state/get-last-devtools-id)]
           (assert (not= old-devtools-id new-devtools-id))
           (state/post-reply! message-id new-devtools-id))
-        :else (state/post-reply! message-id)))))
+        :else (state/post-reply! message-id reply)))))
 
 (defn automate-dirac-frontend! [message-id message]
   (go
