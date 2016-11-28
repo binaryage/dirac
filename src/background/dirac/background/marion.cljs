@@ -11,12 +11,16 @@
             [dirac.options.model :as options]
             [dirac.utils :as utils]))
 
+(declare post-feedback-event!)
+
 ; -- marion event handlers --------------------------------------------------------------------------------------------------
 
 (defn set-options! [message-id message]
   (go
-    (options/set-options! (:options message))
-    (state/post-reply! message-id)))
+    (let [options (:options message)]
+      (post-feedback-event! (str "set extension options:" (pr-str options)))
+      (options/set-options! options)
+      (state/post-reply! message-id))))
 
 (defn get-options! [message-id _message]
   (go
@@ -24,11 +28,14 @@
 
 (defn reset-options! [message-id message]
   (go
-    (options/reset-options! (:options message))
-    (state/post-reply! message-id)))
+    (let [options (:options message)]
+      (post-feedback-event! (str "reset extension options:" (pr-str options)))
+      (options/reset-options! options)
+      (state/post-reply! message-id))))
 
 (defn reset-state! [message-id _message]
   (go
+    (post-feedback-event! (str "reset extension state"))
     (options/reset-to-defaults!)
     (state/reset-devtools-id-counter!)
     (state/post-reply! message-id)))
