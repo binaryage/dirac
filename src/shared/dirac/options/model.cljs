@@ -88,27 +88,29 @@
   (binding [*auto-sync* false]
     (reset! cached-options options)))
 
+(defn parse-options [serialized-options]
+  (let [options (unserialize-options serialized-options)]
+    (merge default-options options)))                                                                                         ; merge is important for upgrading options schema between versions
+
 (defn read-options []
   (go
     (let [local-storage (storage/get-local)
           [[items] _error] (<! (get local-storage "options"))
-          serialized-options (oget items "options")
-          unserialized-options (unserialize-options serialized-options)
-          options (merge default-options unserialized-options)]
+          options (parse-options (oget items "options"))]
       (info "read options:" options)
       options)))
 
-(defn reload-options! []
+(defn reload-options! [serialized-options]
   {:pre [*initialized*]}
-  (go
-    (let [options (<! (read-options))]
-      (reset-cached-options-without-sync! options))))
+  (let [options (parse-options serialize-options)]
+    (info "reload options:" options)
+    (reset-cached-options-without-sync! options)))
 
 ; -- events -----------------------------------------------------------------------------------------------------------------
 
-(defn process-on-changed! [_changes area-name]
+(defn process-on-changed! [changes area-name]
   (when (= area-name "local")
-    (reload-options!)))
+    (reload-options! (oget changes "newValue"))))
 
 (defn process-chrome-event [event]
   (log "got chrome event" event)
@@ -133,7 +135,7 @@
   (go
     (let [options (<! (read-options))]
       (set! *initialized* true)
-      (reset-cached-options-without-sync! (merge default-options options))                                                    ; merge is important for upgrading options schema
+      (reset-cached-options-without-sync! options)
       (add-watch cached-options ::watch (fn [_ _ _ new-state]
                                           (on-cached-options-change! new-state)))
       (run-chrome-event-loop! chrome-event-channel)
