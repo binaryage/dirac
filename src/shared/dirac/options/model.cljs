@@ -76,9 +76,9 @@
         local-storage (storage/get-local)]
     (set local-storage #js {"options" serialized-options})))                                                                  ; will trigger on-changed event and a call to reload-options!, which is fine
 
-(defn on-cached-options-change! []
+(defn on-cached-options-change! [new-options]
   (if *auto-sync*
-    (write-options! (get-options))))
+    (write-options! new-options)))
 
 (defn reset-cached-options-without-sync! [options]
   {:pre [*initialized*]}
@@ -131,7 +131,8 @@
     (let [options (<! (read-options))]
       (set! *initialized* true)
       (reset-cached-options-without-sync! (merge default-options options))                                                    ; merge is important for upgrading options schema
-      (add-watch cached-options ::watch on-cached-options-change!)
+      (add-watch cached-options ::watch (fn [_ _ _ new-state]
+                                          (on-cached-options-change! new-state)))
       (run-chrome-event-loop! chrome-event-channel)
       true)))
 
