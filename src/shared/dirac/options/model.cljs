@@ -43,14 +43,17 @@
 
 (defn set-option! [key value]
   {:pre [*initialized*]}
+  (log "set-option!" key value)
   (swap! cached-options assoc key value))                                                                                     ; will trigger on-cached-options-change!
 
 (defn set-options! [options]
   {:pre [*initialized*]}
+  (log "set-options!" (pr-str options))
   (swap! cached-options merge options))                                                                                       ; will trigger on-cached-options-change!
 
 (defn reset-options! [options]
   {:pre [*initialized*]}
+  (log "reset-options!" (pr-str options))
   (reset! cached-options options))                                                                                            ; will trigger on-cached-options-change!
 
 (defn reset-to-defaults! []
