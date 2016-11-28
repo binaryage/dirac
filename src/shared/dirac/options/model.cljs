@@ -112,13 +112,13 @@
   (let [[event-id event-args] event]
     (case event-id
       ::storage/on-changed (apply process-on-changed! event-args)
-      nil)))
+      (go))))
 
 (defn run-chrome-event-loop! [chrome-event-channel]
   (storage/tap-on-changed-events chrome-event-channel)
   (go-loop []
     (when-let [event (<! chrome-event-channel)]
-      (process-chrome-event event)
+      (<! (process-chrome-event event))
       (recur))
     (log "leaving event loop")))
 
