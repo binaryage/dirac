@@ -121,7 +121,8 @@
     (go
       (<! (tabs/update frontend-tab-id #js {:url dirac-frontend-url}))
       (<! (timeout 500))                                                                                                      ; give the page some time load the document
-      (helpers/install-intercom! devtools-id intercom-handler))))
+      (helpers/install-intercom! devtools-id intercom-handler)
+      devtools-id)))
 
 (defn create-dirac-devtools! [backend-tab-id options]
   (go
@@ -148,11 +149,13 @@
 
 (defn activate-dirac-devtools! [tab-id]
   (go
-    (if-let [{:keys [frontend-tab-id]} (devtools/find-devtools-descriptor-for-backend-tab tab-id)]
-      (if-let [dirac-window-id (<! (sugar/fetch-tab-window-id frontend-tab-id))]
-        (windows/update dirac-window-id focus-window-params)
-        (tabs/update frontend-tab-id activate-tab-params))
-      (warn "activate-dirac-devtools! unable to lookup devtools decriptor for backend tab" tab-id))))
+    (if-let [{:keys [id frontend-tab-id]} (devtools/find-devtools-descriptor-for-backend-tab tab-id)]
+      (do
+        (if-let [dirac-window-id (<! (sugar/fetch-tab-window-id frontend-tab-id))]
+          (windows/update dirac-window-id focus-window-params)
+          (tabs/update frontend-tab-id activate-tab-params))
+        id)
+      (warn "activate-dirac-devtools! unable to lookup devtools descriptor for backend tab" tab-id))))
 
 (defn activate-or-open-dirac-devtools! [tab & [options-overrides]]
   (let [tab-id (oget tab "id")]
