@@ -66,9 +66,12 @@
     (.stringify js/JSON json)))
 
 (defn unserialize-options [serialized-options]
-  (if (string? serialized-options)
-    (let [json (.parse js/JSON serialized-options)]
-      (js->clj json :keywordize-keys true))))
+  (assert (or (string? serialized-options) (object? serialized-options))
+          (str "unexpected serialized-options of type " (type serialized-options) ": " (pr-str serialized-options)))
+  (let [json (if (string? serialized-options)
+               (.parse js/JSON serialized-options)
+               serialized-options)]
+    (js->clj json :keywordize-keys true)))
 
 ; -- read/write -------------------------------------------------------------------------------------------------------------
 
@@ -102,15 +105,16 @@
 
 (defn reload-options! [serialized-options]
   {:pre [*initialized*]}
-  (let [options (parse-options serialize-options)]
+  (let [options (parse-options serialized-options)]
     (info "reload options:" options)
     (reset-cached-options-without-sync! options)))
 
 ; -- events -----------------------------------------------------------------------------------------------------------------
 
 (defn process-on-changed! [changes area-name]
-  (when (= area-name "local")
-    (reload-options! (oget changes "newValue"))))
+  (go
+    (when (= area-name "local")
+      (reload-options! (oget changes "options.newValue")))))
 
 (defn process-chrome-event [event]
   (log "got chrome event" event)
