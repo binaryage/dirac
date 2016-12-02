@@ -28,7 +28,7 @@ export DIRAC_CHROME_DRIVER_VERBOSE=1
 env ${SETUP} lein compile-browser-tests
 env ${SETUP} lein compile-marion
 env ${SETUP} ./scripts/release.sh
-env ${SETUP} lein run-browser-tests # = compile-dirac and devtools plus some cleanup, see scripts/release.sh
+env ${SETUP} ./scripts/run-browser-tests.sh "dirac.tests.browser.runner"
 
 popd
 
