@@ -194,13 +194,8 @@
    (let [defaults {:dirac-host-os                         (System/getProperty "os.name")
                    :dirac-chrome-driver-browser-log-level "SEVERE"}
          env-settings (select-keys env known-env-options)
-         ; when testing with travis we place chrome driver binary under test/chromedriver
-         ; detect that case here and use the binary explicitely
-         dirac-test-chromedriver-file (io/file (:dirac-root env-settings) "test" "chromedriver")
-         chrome-driver-path (if (.exists dirac-test-chromedriver-file)
-                              {:chrome-driver-path (.getAbsolutePath dirac-test-chromedriver-file)})
          overrides {:attaching? attaching?}]
-     (merge defaults env-settings chrome-driver-path overrides))))
+     (merge defaults env-settings overrides))))
 
 (defn retrieve-remote-debugging-port []
   (try
