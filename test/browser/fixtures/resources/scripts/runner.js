@@ -12,7 +12,9 @@ function getParameterByName(name, url) {
 
 function displayTaskName(task) {
     const nameEl = document.getElementById("task-name");
-    nameEl.innerText = task;
+    if (nameEl) {
+      nameEl.innerText = task;
+    }
 }
 
 function taskNamespaceToJavascriptNamespace(taskNs) {
@@ -30,8 +32,8 @@ if (!task) {
     console.error(msg);
     document.body.innerHTML = msg;
 } else {
-    displayTaskName(task);
     const ns = taskRootNamespace + "." + taskNamespaceToJavascriptNamespace(task);
     console.info("loading task namespace '" + ns + "'");
     goog.require(ns);
+    displayTaskName(task);
 }
