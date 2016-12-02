@@ -24,7 +24,7 @@ DIRAC_NREPL/WEASEL_PORT=13042"
 env ${SETUP} lein compile-browser-tests
 env ${SETUP} lein compile-marion
 env ${SETUP} lein compile-dirac-dev
-env ${SETUP} lein run-browser-tests-dev
+env ${SETUP} ./scripts/run-browser-tests.sh "dirac.tests.browser.runner/-dev-main"
 
 popd
 
