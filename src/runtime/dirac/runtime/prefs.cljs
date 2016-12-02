@@ -21,7 +21,7 @@
    :agent-port                                   "8231"
    :agent-verbose                                false
    :agent-auto-reconnect                         true
-   :agent-response-timeout                       5000
+   :agent-response-timeout                       30000
    :weasel-verbose                               false
    :weasel-auto-reconnect                        false
    :weasel-pre-eval-delay                        100
