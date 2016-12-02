@@ -465,7 +465,7 @@
 
             "run-browser-tests"          ["shell" "scripts/run-browser-tests.sh" "dirac.tests.browser.runner"]
             "run-browser-tests-dev"      ["shell" "scripts/run-browser-tests.sh" "dirac.tests.browser.runner/-dev-main"]
-            "run-browser-tests-agent"    ["shell" "scripts/run-browser-tests.sh" "dirac.tests.browser.runner/run-agent"]
+            "run-browser-tests-agent"    ["with-profile" "+test-runner,+debugger-5005" "trampoline" "run" "-m" "dirac.tests.browser.runner/run-agent"]
 
             "dev-browser-tests"          ["shell" "scripts/dev-browser-tests.sh"]
             "dev-dirac-sample"           ["shell" "scripts/dev-dirac-sample.sh"]
