@@ -1,11 +1,15 @@
 #!/usr/bin/env bash
 
+# we assume current working directory is set by our caller
+# in case of travis it should be TRAVIS_BUILD_DIR
+# in case of docker it should be /root
+
 set -e
 
+# read config
 pushd `dirname "${BASH_SOURCE[0]}"` > /dev/null
 source "./config.sh"
-
-cd /root
+popd
 
 #export DIRAC_LOG_LEVEL=debug
 export DIRAC_CHROME_DRIVER_VERBOSE=1
@@ -37,8 +41,8 @@ fi
 if [ ! -v TRAVIS_SKIP_CHROMIUM_UPDATE ]; then
   ./chromium-latest-linux/update.sh
 fi
-export DIRAC_CHROME_BINARY_PATH=/root/chromium-latest-linux/latest/chrome
-export CHROME_LOG_FILE=/root/
+export DIRAC_CHROME_BINARY_PATH=`pwd`/chromium-latest-linux/latest/chrome
+export CHROME_LOG_FILE=`pwd`
 
 # install chromedriver
 if [ ! -v TRAVIS_SKIP_CHROMEDRIVER_UPDATE ]; then
@@ -50,7 +54,5 @@ if [ ! -v TRAVIS_SKIP_CHROMEDRIVER_UPDATE ]; then
     fi
     unzip -o chromedriver.zip
   fi
-  export CHROME_DRIVER_PATH=/root/chromedriver
+  export CHROME_DRIVER_PATH=`pwd`/chromedriver
 fi
-
-popd

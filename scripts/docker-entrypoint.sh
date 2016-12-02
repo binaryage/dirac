@@ -4,9 +4,7 @@
 
 set -e
 
-cd /root
-
-REPO_DIR=/root/binaryage/dirac
+TRAVIS_BUILD_DIR=/root/binaryage/dirac
 
 init_travis_env() {
   export TRAVIS=1
@@ -20,7 +18,9 @@ init_travis_env() {
 
   echo "====================================================================================================================="
   set -x
-  source ./scripts/init-travis.sh
+  pushd /root
+  source "$TRAVIS_BUILD_DIR/scripts/init-travis.sh"
+  popd
   set +x
   echo "====================================================================================================================="
 }
@@ -40,7 +40,7 @@ echo_cmd() {
 # ---------------------------------------------------------------------------------------------------------------------------
 
 if [ "$1" = "prime" ]; then
-  pushd "$REPO_DIR"
+  pushd "$TRAVIS_BUILD_DIR"
   export SKIP_DIRAC_TESTS=1
   init_travis_env
   print_env
@@ -49,7 +49,7 @@ if [ "$1" = "prime" ]; then
 fi
 
 if [ "$1" = "test" ]; then
-  pushd "$REPO_DIR"
+  pushd "$TRAVIS_BUILD_DIR"
   init_travis_env
   print_env
   echo_cmd ./scripts/test-all-here.sh
@@ -59,7 +59,7 @@ if [ "$1" = "test" ]; then
 fi
 
 if [ "$1" = "test-browser" ]; then
-  pushd "$REPO_DIR"
+  pushd "$TRAVIS_BUILD_DIR"
   init_travis_env
   print_env
   echo_cmd ./scripts/test-browser-here.sh
