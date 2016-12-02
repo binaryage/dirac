@@ -78,18 +78,18 @@
 (defn tab-log-prefix [tab-id]
   (str "TAB #" tab-id ":"))
 
-(defn log-in-tab [tab-id method msg]
+(defn log-in-tab! [tab-id method msg]
   (let [code (str "console." method "(\"" (utils/escape-double-quotes msg) "\")")]
     (tabs/execute-script tab-id #js {"code" code})))
 
-(defn report-error-in-tab [tab-id msg]
-  (log-in-tab tab-id "error" msg)
+(defn report-error-in-tab! [tab-id msg]
+  (log-in-tab! tab-id "error" msg)
   (error (tab-log-prefix tab-id) msg)
   (state/post-feedback! (str "ERROR " (tab-log-prefix tab-id) " " msg))
   (action/update-action-button! tab-id :error msg))
 
-(defn report-warning-in-tab [tab-id msg]
-  (log-in-tab tab-id "warn" msg)
+(defn report-warning-in-tab! [tab-id msg]
+  (log-in-tab! tab-id "warn" msg)
   (warn (tab-log-prefix tab-id) msg)
   (state/post-feedback! (str "WARNING " (tab-log-prefix tab-id) " " msg))
   (action/update-action-button! tab-id :warning msg))
