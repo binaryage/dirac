@@ -356,7 +356,7 @@ Object.assign(window.dirac, (function() {
           resolve(sourceMap);
         }
         counter += 1;
-        if (counter > 50) { // 5s
+        if (counter > 600) { // 60s
           clearInterval(interval);
           console.warn("source map didn't load in time for", script);
           resolve(null);
