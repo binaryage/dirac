@@ -8,15 +8,16 @@
                                            get-kill-task-key get-kill-task-message]]))
 
 (defn register-task! [task-fn kill-fn]
+  (log "registering task...")
   (gset! "!" (get-launch-task-key) task-fn)
   (gset! "!" (get-kill-task-key) kill-fn))
 
 (defn kill-task! []
-  (log "killing task...")
+  (log "killing task... via" (get-kill-task-key))
   (gcall! (get-kill-task-key)))                                                                                               ; see go-task
 
 (defn launch-task! []
-  (log "launching task...")
+  (log "launching task... via" (get-launch-task-key))
   (gcall! (get-launch-task-key)))                                                                                             ; see go-task
 
 (defn launch-task-after-delay! [delay-ms]
