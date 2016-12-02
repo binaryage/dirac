@@ -150,6 +150,9 @@
         load-extensions-arg (str "load-extension=" (string/join "," absolute-extension-paths))
         args [; we need robust startup, chrome tends to display first-run dialogs on clean systems and blocks the driver
               ; but there are still some bugs: https://bugs.chromium.org/p/chromium/issues/detail?id=348426
+              ;"--disable-application-cache"
+              ;"--log-net-log=target/net.log"
+              ;"--enable-extension-activity-logging "
               "--disable-hang-monitor"
               "--disable-prompt-on-repost"
               "--dom-automation"
@@ -159,9 +162,15 @@
               "--ignore-certificate-errors"
               "--homepage=about:blank"
               "--enable-experimental-extension-apis"
+              "--dns-prefetch-disable"                                                                                        ; https://bugs.chromium.org/p/chromedriver/issues/detail?id=848#c10
               "--disable-gpu"
               "--disable-infobars"
               "--disable-default-apps"
+              "--noerrdialogs"
+              "--enable-logging"
+              "--v=1"
+              "--no-sandbox"
+              "--disable-setuid-sandbox"                                                                                      ; for docker container https://eshlox.net/2016/11/22/dockerize-behave-selenium-tests/
               load-extensions-arg]]
     (.addArguments chrome-options args)
 
