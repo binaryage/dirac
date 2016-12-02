@@ -9,13 +9,14 @@ Profiler.ProfileTypeRegistry = class {
     this._profileTypes = [];
 
     this.cpuProfileType = new Profiler.CPUProfileType();
-    this._addProfileType(this.cpuProfileType);
+    if (Runtime.queryParam('v8only') || InspectorFrontendHost.isUnderTest())
+      this._addProfileType(this.cpuProfileType);
     this.heapSnapshotProfileType = new Profiler.HeapSnapshotProfileType();
     this._addProfileType(this.heapSnapshotProfileType);
-    this.trackingHeapSnapshotProfileType = new Profiler.TrackingHeapSnapshotProfileType();
-    this._addProfileType(this.trackingHeapSnapshotProfileType);
     this.samplingHeapProfileType = new Profiler.SamplingHeapProfileType();
     this._addProfileType(this.samplingHeapProfileType);
+    this.trackingHeapSnapshotProfileType = new Profiler.TrackingHeapSnapshotProfileType();
+    this._addProfileType(this.trackingHeapSnapshotProfileType);
   }
 
   /**

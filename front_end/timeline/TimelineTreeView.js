@@ -422,7 +422,7 @@ Timeline.TimelineTreeView.TreeGridNode = class extends Timeline.TimelineTreeView
    */
   constructor(profileNode, grandTotalTime, maxSelfTime, maxTotalTime, treeView) {
     super(profileNode, grandTotalTime, maxSelfTime, maxTotalTime, treeView);
-    this.hasChildren = this._profileNode.children ? this._profileNode.children.size > 0 : false;
+    this.setHasChildren(this._profileNode.children ? this._profileNode.children.size > 0 : false);
     profileNode[Timeline.TimelineTreeView.TreeGridNode._gridNodeSymbol] = this;
   }
 
@@ -456,7 +456,7 @@ Timeline.AggregatedTimelineTreeView = class extends Timeline.TimelineTreeView {
   constructor(model, filters) {
     super();
     this._groupBySetting =
-        Common.settings.createSetting('timelineTreeGroupBy', Timeline.AggregatedTimelineTreeView.GroupBy.Category);
+        Common.settings.createSetting('timelineTreeGroupBy', Timeline.AggregatedTimelineTreeView.GroupBy.None);
     this._init(model, filters);
     var nonessentialEvents = [
       TimelineModel.TimelineModel.RecordType.EventDispatch, TimelineModel.TimelineModel.RecordType.FunctionCall,

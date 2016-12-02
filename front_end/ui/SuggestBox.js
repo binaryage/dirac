@@ -271,21 +271,30 @@ UI.SuggestBox = class {
   /**
    * @param {string} query
    * @param {string} text
-   * @param {string=} className
+   * @param {string=} iconType
+   * @param {boolean=} isSecondary
    * @return {!Element}
    */
-  _createItemElement(query, text, className) {
-    var element = createElementWithClass('div', 'suggest-box-content-item source-code ' + (className || ''));
+  _createItemElement(query, text, iconType, isSecondary) {
+    var element = createElementWithClass('div', 'suggest-box-content-item source-code');
+    if (iconType) {
+      var icon = UI.Icon.create(iconType, 'suggestion-icon');
+      element.appendChild(icon);
+    }
+    if (isSecondary)
+      element.classList.add('secondary');
     element.tabIndex = -1;
     var displayText = text.trimEnd(50 + query.length);
+
+    var suggestionText = element.createChild('span', 'suggestion-text');
     var index = displayText.toLowerCase().indexOf(query.toLowerCase());
     if (index > 0)
-      element.createChild('span').textContent = displayText.substring(0, index);
+      suggestionText.createChild('span').textContent = displayText.substring(0, index);
     if (index > -1)
-      element.createChild('span', 'query').textContent = displayText.substring(index, index + query.length);
-    element.createChild('span').textContent = displayText.substring(index > -1 ? index + query.length : 0);
+      suggestionText.createChild('span', 'query').textContent = displayText.substring(index, index + query.length);
+    suggestionText.createChild('span').textContent = displayText.substring(index > -1 ? index + query.length : 0);
+    suggestionText.createChild('span', 'spacer');
     element.__fullValue = text;
-    element.createChild('span', 'spacer');
     element.addEventListener('mousedown', this._onItemMouseDown.bind(this), false);
     return element;
   }
@@ -334,8 +343,10 @@ UI.SuggestBox = class {
    * @param {number} index
    */
   _selectItem(index) {
-    if (this._selectedElement)
+    if (this._selectedElement) {
       this._selectedElement.classList.remove('selected');
+      this._selectedElement.classList.remove('force-white-icons');
+    }
 
     this._selectedIndex = index;
     if (index < 0)
@@ -343,6 +354,7 @@ UI.SuggestBox = class {
 
     this._selectedElement = this.itemElement(index);
     this._selectedElement.classList.add('selected');
+    this._selectedElement.classList.add('force-white-icons');
     this._detailsPopup.classList.add('hidden');
     var elem = this._selectedElement;
     this._asyncDetails(index).then(showDetails.bind(this), function() {});
@@ -522,15 +534,15 @@ UI.SuggestBox = class {
    */
   itemElement(index) {
     if (!this._elementList[index]) {
-      this._elementList[index] =
-          this._createItemElement(this._userEnteredText, this._items[index].title, this._items[index].className);
+      this._elementList[index] = this._createItemElement(
+          this._userEnteredText, this._items[index].title, this._items[index].iconType, this._items[index].isSecondary);
     }
     return this._elementList[index];
   }
 };
 
 /**
- * @typedef {!Array.<{title: string, className: (string|undefined), priority: (number|undefined)}>}
+ * @typedef {!Array.<{title: string, iconType: (string|undefined), priority: (number|undefined), isSecondary: (boolean|undefined)}>}
  */
 UI.SuggestBox.Suggestions;
 
