@@ -1,5 +1,6 @@
 (ns dirac.background.debugging
-  (:require-macros [cljs.core.async.macros :refer [go]])
+  (:require-macros [cljs.core.async.macros :refer [go]]
+                   [dirac.background.logging :refer [log info warn error]])
   (:require [cljs-http.client :as http]
             [cljs.core.async :refer [<! timeout]]
             [dirac.settings :refer [get-backend-url-resolution-trials
@@ -35,8 +36,14 @@
           (empty? (:body response)) (make-failure (str "empty body response from api-endpoint=" api-endpoint))
           :else (:body response))))))
 
-(defn matching-contexts-by-url [context-list context-url]
-  (filter #(= (:url %) context-url) context-list))
+(defn select-matching-context-by-url [context-list context-url]
+  (let [matching-contexts (filter #(= (:url %) context-url) context-list)]
+    (log "matching contexts:" matching-contexts)
+    (case (count matching-contexts)
+      0 (make-failure (str "no matching context found for context-url=" context-url "\ncontext-list=" context-list))
+      1 (first matching-contexts)
+      (make-failure (str "unexpected, multiple contexts matched context-url=" context-url
+                         "\nmatching-contexts=" matching-contexts)))))
 
 (defn extract-backend-url [devtools-frontend-url]
   (if-let [matches (re-matches #"/devtools/inspector.html\?ws=(.*)" devtools-frontend-url)]
@@ -48,16 +55,18 @@
     (let [context-list (<! (fetch-context-list debugger-url))]
       (if (resolution-failure? context-list)
         context-list
-        (if-let [context (first (matching-contexts-by-url context-list context-url))]
-          (if-let [devtools-frontend-url (:devtoolsFrontendUrl context)]
-            (extract-backend-url devtools-frontend-url)
-            :not-attachable)
-          (make-failure (str "no matching context found for context-url=" context-url "\ncontext-list=" context-list)))))))
+        (let [context (select-matching-context-by-url context-list context-url)]
+          (if (resolution-failure? context)
+            context
+            (if-let [devtools-frontend-url (:devtoolsFrontendUrl context)]
+              (extract-backend-url devtools-frontend-url)
+              :not-attachable)))))))
 
 ; -- main API ---------------------------------------------------------------------------------------------------------------
 
 (defn resolve-backend-url [debugger-url context-url]
   (go
+    (log (str "resolving backend-url for debugger-url=" debugger-url " context-url=" context-url))
     (loop [attempt 0]
       (let [backend-url-or-failure (<! (try-resolve-backend-url debugger-url context-url))]
         (if (or (not (resolution-failure? backend-url-or-failure))
