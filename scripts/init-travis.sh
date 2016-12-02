@@ -18,17 +18,17 @@ export LEIN_FAST_TRAMPOLINE=1
 if [ ! -v TRAVIS_SKIP_LEIN_UPGRADE ]; then
   # we need lein 2.5.3+ because of https://github.com/technomancy/leiningen/issues/1762
   # update lein to latest, https://github.com/technomancy/leiningen/issues/2014#issuecomment-153829977
-  yes y | lein upgrade
+  yes y | sudo lein upgrade
 fi
 
 # install xvfb (for chrome tests)
 if [ ! -v TRAVIS_SKIP_XVFB_SETUP ]; then
   export DISPLAY=:99.1
-  /sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -screen 1 1024x768x24
+  sudo /sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -screen 1 1024x768x24
 fi
 
 if [ ! -v TRAVIS_SKIP_COLORDIFF_INSTALL ]; then
-  apt-get install -y colordiff
+  sudo apt-get install -y colordiff
 fi
 
 # install latest chromium
