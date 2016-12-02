@@ -451,7 +451,7 @@ Workspace.UISourceCode = class extends Common.Object {
 
   resetWorkingCopy() {
     this._innerResetWorkingCopy();
-    this.dispatchEventToListeners(Workspace.UISourceCode.Events.WorkingCopyChanged);
+    this._workingCopyChanged();
   }
 
   _innerResetWorkingCopy() {
@@ -465,13 +465,16 @@ Workspace.UISourceCode = class extends Common.Object {
   setWorkingCopy(newWorkingCopy) {
     this._workingCopy = newWorkingCopy;
     delete this._workingCopyGetter;
-    this.dispatchEventToListeners(Workspace.UISourceCode.Events.WorkingCopyChanged);
-    this._project.workspace().dispatchEventToListeners(
-        Workspace.Workspace.Events.WorkingCopyChanged, {uiSourceCode: this});
+    this._workingCopyChanged();
   }
 
   setWorkingCopyGetter(workingCopyGetter) {
     this._workingCopyGetter = workingCopyGetter;
+    this._workingCopyChanged();
+  }
+
+  _workingCopyChanged() {
+    this._removeAllMessages();
     this.dispatchEventToListeners(Workspace.UISourceCode.Events.WorkingCopyChanged);
     this._project.workspace().dispatchEventToListeners(
         Workspace.Workspace.Events.WorkingCopyChanged, {uiSourceCode: this});
@@ -607,7 +610,7 @@ Workspace.UISourceCode = class extends Common.Object {
       this.dispatchEventToListeners(Workspace.UISourceCode.Events.MessageRemoved, message);
   }
 
-  removeAllMessages() {
+  _removeAllMessages() {
     var messages = this._messages;
     this._messages = [];
     for (var message of messages)

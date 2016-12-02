@@ -48,6 +48,8 @@ Console.ConsoleViewMessage = class {
     this._dataGrid = null;
     this._previewFormatter = new Components.RemoteObjectPreviewFormatter();
     this._searchRegex = null;
+    /** @type {?UI.Icon} */
+    this._messageLevelIcon = null;
   }
 
   /**
@@ -937,6 +939,8 @@ Console.ConsoleViewMessage = class {
       return this._contentElement;
 
     var contentElement = createElementWithClass('div', 'console-message');
+    if (this._messageLevelIcon)
+      contentElement.appendChild(this._messageLevelIcon);
     this._contentElement = contentElement;
     if (this._message.type === SDK.ConsoleMessage.MessageType.StartGroup ||
         this._message.type === SDK.ConsoleMessage.MessageType.StartGroupCollapsed)
@@ -991,27 +995,47 @@ Console.ConsoleViewMessage = class {
     switch (this._message.level) {
       case SDK.ConsoleMessage.MessageLevel.Log:
         this._element.classList.add('console-log-level');
+        this._updateMessageLevelIcon('');
         break;
       case SDK.ConsoleMessage.MessageLevel.Debug:
         this._element.classList.add('console-debug-level');
+        this._updateMessageLevelIcon('');
         break;
       case SDK.ConsoleMessage.MessageLevel.Warning:
         this._element.classList.add('console-warning-level');
+        this._updateMessageLevelIcon('smallicon-warning');
         break;
       case SDK.ConsoleMessage.MessageLevel.Error:
         this._element.classList.add('console-error-level');
+        this._updateMessageLevelIcon('smallicon-error');
         break;
       case SDK.ConsoleMessage.MessageLevel.RevokedError:
         this._element.classList.add('console-revokedError-level');
+        this._updateMessageLevelIcon('smallicon-revoked-error');
         break;
       case SDK.ConsoleMessage.MessageLevel.Info:
         this._element.classList.add('console-info-level');
+        this._updateMessageLevelIcon('smallicon-info');
         break;
     }
 
     this._element.appendChild(this.contentElement());
     if (this._repeatCount > 1)
       this._showRepeatCountElement();
+  }
+
+  /**
+   * @param {string} iconType
+   */
+  _updateMessageLevelIcon(iconType) {
+    if (!iconType && !this._messageLevelIcon)
+      return;
+    if (iconType && !this._messageLevelIcon) {
+      this._messageLevelIcon = UI.Icon.create('', 'message-level-icon');
+      if (this._contentElement)
+        this._contentElement.insertBefore(this._messageLevelIcon, this._contentElement.firstChild);
+    }
+    this._messageLevelIcon.setIconType(iconType);
   }
 
   /**
@@ -1208,7 +1232,9 @@ Console.ConsoleGroupViewMessage = class extends Console.ConsoleViewMessage {
   constructor(consoleMessage, linkifier, nestingLevel) {
     console.assert(consoleMessage.isGroupStartMessage());
     super(consoleMessage, linkifier, nestingLevel);
-    this.setCollapsed(consoleMessage.type === SDK.ConsoleMessage.MessageType.StartGroupCollapsed);
+    this._collapsed = consoleMessage.type === SDK.ConsoleMessage.MessageType.StartGroupCollapsed;
+    /** @type {?UI.Icon} */
+    this._expandGroupIcon = null;
   }
 
   /**
@@ -1216,8 +1242,8 @@ Console.ConsoleGroupViewMessage = class extends Console.ConsoleViewMessage {
    */
   setCollapsed(collapsed) {
     this._collapsed = collapsed;
-    if (this._element)
-      this._element.classList.toggle('collapsed', this._collapsed);
+    if (this._expandGroupIcon)
+      this._expandGroupIcon.setIconType(this._collapsed ? 'smallicon-triangle-right' : 'smallicon-triangle-bottom');
   }
 
   /**
@@ -1234,7 +1260,9 @@ Console.ConsoleGroupViewMessage = class extends Console.ConsoleViewMessage {
   toMessageElement() {
     if (!this._element) {
       super.toMessageElement();
-      this._element.classList.toggle('collapsed', this._collapsed);
+      this._expandGroupIcon = UI.Icon.create('', 'expand-group-icon');
+      this._contentElement.insertBefore(this._expandGroupIcon, this._contentElement.firstChild);
+      this.setCollapsed(this._collapsed);
     }
     return this._element;
   }

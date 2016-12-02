@@ -51,7 +51,6 @@ Timeline.TimelinePanel = class extends UI.Panel {
     this._millisecondsToRecordAfterLoadEvent = 3000;
     this._toggleRecordAction =
         /** @type {!UI.Action }*/ (UI.actionRegistry.action('timeline.toggle-recording'));
-    this._customCPUThrottlingRate = 0;
 
     /** @type {!Array<!TimelineModel.TimelineModel.Filter>} */
     this._filters = [];
@@ -83,7 +82,6 @@ Timeline.TimelinePanel = class extends UI.Panel {
     this._markUnusedCSS = Common.settings.createSetting('timelineMarkUnusedCSS', false);
 
     this._panelToolbar = new UI.Toolbar('', this.element);
-    this._createToolbarItems();
 
     var timelinePane = new UI.VBox();
     timelinePane.show(this.element);
@@ -118,6 +116,11 @@ Timeline.TimelinePanel = class extends UI.Panel {
 
     this._stackView.show(this._searchableView.element);
     this._onModeChanged();
+    this._recreateToolbarItems();
+
+    this._captureNetworkSetting.addChangeListener(this._onNetworkChanged, this);
+    this._captureMemorySetting.addChangeListener(this._onModeChanged, this);
+    this._captureFilmStripSetting.addChangeListener(this._onModeChanged, this);
 
     this._detailsSplitWidget.show(timelinePane.element);
     this._detailsSplitWidget.hideSidebar();
@@ -269,18 +272,37 @@ Timeline.TimelinePanel = class extends UI.Panel {
     return checkboxItem;
   }
 
-  _createToolbarItems() {
+  _recreateToolbarItems() {
     this._panelToolbar.removeToolbarItems();
 
     var perspectiveSetting =
         Common.settings.createSetting('timelinePerspective', Timeline.TimelinePanel.Perspectives.Load);
+
+    // Record
+    if (Runtime.experiments.isEnabled('timelineRecordingPerspectives') &&
+        perspectiveSetting.get() === Timeline.TimelinePanel.Perspectives.Load) {
+      this._reloadButton = new UI.ToolbarButton(Common.UIString('Record & Reload'), 'largeicon-refresh');
+      this._reloadButton.addEventListener('click', () => SDK.targetManager.reloadPage());
+      this._panelToolbar.appendToolbarItem(this._reloadButton);
+    } else {
+      this._panelToolbar.appendToolbarItem(UI.Toolbar.createActionButton(this._toggleRecordAction));
+    }
+
+    // Clear
+    var clearButton = new UI.ToolbarButton(Common.UIString('Clear recording'), 'largeicon-clear');
+    clearButton.addEventListener('click', this._clear, this);
+    this._panelToolbar.appendToolbarItem(clearButton);
+
+    this._panelToolbar.appendSeparator();
+
+    // Combo
     if (Runtime.experiments.isEnabled('timelineRecordingPerspectives')) {
       /**
        * @this {!Timeline.TimelinePanel}
        */
       function onPerspectiveChanged() {
         perspectiveSetting.set(perspectiveCombobox.selectElement().value);
-        this._createToolbarItems();
+        this._recreateToolbarItems();
       }
 
       /**
@@ -297,8 +319,11 @@ Timeline.TimelinePanel = class extends UI.Panel {
       var perspectiveCombobox = new UI.ToolbarComboBox(onPerspectiveChanged.bind(this));
       addPerspectiveOption(Timeline.TimelinePanel.Perspectives.Load, Common.UIString('Page Load'));
       addPerspectiveOption(Timeline.TimelinePanel.Perspectives.Responsiveness, Common.UIString('Responsiveness'));
+      addPerspectiveOption(Timeline.TimelinePanel.Perspectives.JavaScript, Common.UIString('JavaScript'));
       addPerspectiveOption(Timeline.TimelinePanel.Perspectives.Custom, Common.UIString('Custom'));
       this._panelToolbar.appendToolbarItem(perspectiveCombobox);
+
+      this._bulkUpdate = true;
 
       switch (perspectiveSetting.get()) {
         case Timeline.TimelinePanel.Perspectives.Load:
@@ -315,25 +340,19 @@ Timeline.TimelinePanel = class extends UI.Panel {
           this._captureLayersAndPicturesSetting.set(false);
           this._captureFilmStripSetting.set(false);
           break;
+        case Timeline.TimelinePanel.Perspectives.JavaScript:
+          this._captureNetworkSetting.set(false);
+          this._captureJSProfileSetting.set(true);
+          this._captureMemorySetting.set(false);
+          this._captureLayersAndPicturesSetting.set(false);
+          this._captureFilmStripSetting.set(false);
+          this._detailsView.selectTab(Timeline.TimelinePanel.DetailsTab.BottomUp, false);
+          break;
       }
+
+      this._bulkUpdate = false;
+      this._onModeChanged();
     }
-    if (Runtime.experiments.isEnabled('timelineRecordingPerspectives') &&
-        perspectiveSetting.get() === Timeline.TimelinePanel.Perspectives.Load) {
-      this._reloadButton = new UI.ToolbarButton(Common.UIString('Record & Reload'), 'largeicon-refresh');
-      this._reloadButton.addEventListener('click', () => SDK.targetManager.reloadPage());
-      this._panelToolbar.appendToolbarItem(this._reloadButton);
-    } else {
-      this._panelToolbar.appendToolbarItem(UI.Toolbar.createActionButton(this._toggleRecordAction));
-    }
-
-    this._updateTimelineControls();
-    var clearButton = new UI.ToolbarButton(Common.UIString('Clear recording'), 'largeicon-clear');
-    clearButton.addEventListener('click', this._clear, this);
-    this._panelToolbar.appendToolbarItem(clearButton);
-
-    this._panelToolbar.appendSeparator();
-
-    this._panelToolbar.appendText(Common.UIString('Capture:'));
 
     var screenshotCheckbox = this._createSettingCheckbox(
         Common.UIString('Screenshots'), this._captureFilmStripSetting,
@@ -364,10 +383,6 @@ Timeline.TimelinePanel = class extends UI.Panel {
           Common.UIString('CSS coverage'), this._markUnusedCSS, Common.UIString('Mark unused CSS in souces.')));
     }
 
-    this._captureNetworkSetting.addChangeListener(this._onNetworkChanged, this);
-    this._captureMemorySetting.addChangeListener(this._onModeChanged, this);
-    this._captureFilmStripSetting.addChangeListener(this._onModeChanged, this);
-
     this._panelToolbar.appendSeparator();
     var garbageCollectButton = new UI.ToolbarButton(Common.UIString('Collect garbage'), 'largeicon-trash-bin');
     garbageCollectButton.addEventListener('click', this._garbageCollectButtonClicked, this);
@@ -375,8 +390,20 @@ Timeline.TimelinePanel = class extends UI.Panel {
 
     this._panelToolbar.appendSeparator();
     this._cpuThrottlingCombobox = new UI.ToolbarComboBox(this._onCPUThrottlingChanged.bind(this));
+    this._panelToolbar.appendToolbarItem(this._createNetworkConditionsSelect());
     this._panelToolbar.appendToolbarItem(this._cpuThrottlingCombobox);
     this._populateCPUThrottingCombobox();
+    this._updateTimelineControls();
+  }
+
+  /**
+   * @return {!UI.ToolbarComboBox}
+   */
+  _createNetworkConditionsSelect() {
+    var toolbarItem = new UI.ToolbarComboBox(null);
+    toolbarItem.setMaxWidth(140);
+    Components.NetworkConditionsSelector.decorateSelect(toolbarItem.selectElement());
+    return toolbarItem;
   }
 
   _populateCPUThrottingCombobox() {
@@ -397,17 +424,14 @@ Timeline.TimelinePanel = class extends UI.Panel {
       hasSelection = true;
     }
     var predefinedRates = new Map([
-      [1, Common.UIString('No CPU throttling')], [2, Common.UIString('High end device (2\xD7 slowdown)')],
-      [5, Common.UIString('Low end device (5\xD7 slowdown)')]
+      [1, Common.UIString('No CPU throttling')],
+      [2, Common.UIString('2\xD7 slowdown')],
+      [5, Common.UIString('5\xD7 slowdown')],
+      [10, Common.UIString('10\xD7 slowdown')],
+      [20, Common.UIString('20\xD7 slowdown')]
     ]);
     for (var rate of predefinedRates)
       addGroupingOption(rate[1], rate[0]);
-    if (this._customCPUThrottlingRate && !predefinedRates.has(this._customCPUThrottlingRate)) {
-      addGroupingOption(
-          Common.UIString('Custom rate (%d\xD7 slowdown)', this._customCPUThrottlingRate),
-          this._customCPUThrottlingRate);
-    }
-    addGroupingOption(Common.UIString('Set custom rate\u2026'), 0);
   }
 
   _prepareToLoadTimeline() {
@@ -496,6 +520,8 @@ Timeline.TimelinePanel = class extends UI.Panel {
   }
 
   _onModeChanged() {
+    if (this._bulkUpdate)
+      return;
     // Set up overview controls.
     this._overviewControls = [];
     this._overviewControls.push(new Timeline.TimelineEventOverviewResponsiveness(this._model, this._frameModel));
@@ -534,21 +560,8 @@ Timeline.TimelinePanel = class extends UI.Panel {
   _onCPUThrottlingChanged() {
     if (!this._cpuThrottlingManager)
       return;
-    var value = this._cpuThrottlingCombobox.selectedOption().value;
-    var isLastOption = this._cpuThrottlingCombobox.selectedIndex() === this._cpuThrottlingCombobox.size() - 1;
-    this._populateCPUThrottingCombobox();
-    var resultPromise = isLastOption ?
-        Timeline.TimelinePanel.CustomCPUThrottlingRateDialog.show(this._cpuThrottlingCombobox.element) :
-        Promise.resolve(value);
-    resultPromise.then(text => {
-      var value = Number.parseFloat(text);
-      if (value >= 1) {
-        if (isLastOption)
-          this._customCPUThrottlingRate = value;
-        this._cpuThrottlingManager.setRate(value);
-        this._populateCPUThrottingCombobox();
-      }
-    });
+    var text = this._cpuThrottlingCombobox.selectedOption().value;
+    this._cpuThrottlingManager.setRate(Number.parseFloat(text));
   }
 
   /**
@@ -771,6 +784,7 @@ Timeline.TimelinePanel = class extends UI.Panel {
     if (this._statusPane)
       this._statusPane.hide();
     delete this._statusPane;
+    this._flameChart.resizeToPreferredHeights();
     this._overviewPane.reset();
     this._overviewPane.setBounds(this._model.minimumRecordTime(), this._model.maximumRecordTime());
     this._setAutoWindowTimes();
@@ -1238,6 +1252,7 @@ Timeline.TimelinePanel = class extends UI.Panel {
 Timeline.TimelinePanel.Perspectives = {
   Load: 'Load',
   Responsiveness: 'Responsiveness',
+  JavaScript: 'JavaScript',
   Custom: 'Custom'
 };
 
@@ -1947,65 +1962,5 @@ Timeline.CPUThrottlingManager = class extends Common.Object {
    */
   targetRemoved(target) {
     this._targets.remove(target, true);
-  }
-};
-
-/**
- * @unrestricted
- */
-Timeline.TimelinePanel.CustomCPUThrottlingRateDialog = class extends UI.HBox {
-  constructor() {
-    super(true);
-    this.registerRequiredCSS('ui_lazy/dialog.css');
-    this.contentElement.createChild('label').textContent = Common.UIString('CPU Slowdown Rate: ');
-
-    this._input = this.contentElement.createChild('input');
-    this._input.setAttribute('type', 'text');
-    this._input.style.width = '64px';
-    this._input.addEventListener('keydown', this._onKeyDown.bind(this), false);
-
-    var addButton = this.contentElement.createChild('button');
-    addButton.textContent = Common.UIString('Set');
-    addButton.addEventListener('click', this._apply.bind(this), false);
-
-    this.setDefaultFocusedElement(this._input);
-    this.contentElement.tabIndex = 0;
-    this._resultPromise = new Promise(fulfill => this._callback = fulfill);
-  }
-
-  /**
-   * @param {!Element=} anchor
-   * @return {!Promise<string>}
-   */
-  static show(anchor) {
-    var dialog = new UI.Dialog();
-    var dialogContent = new Timeline.TimelinePanel.CustomCPUThrottlingRateDialog();
-    dialogContent.show(dialog.element);
-    dialog.setWrapsContent(true);
-    if (anchor)
-      dialog.setPosition(anchor.totalOffsetLeft() - 32, anchor.totalOffsetTop() + anchor.offsetHeight);
-    dialog.show();
-    return dialogContent.result().then(value => (dialog.detach(), value));
-  }
-
-  /**
-   * @return {!Promise<string>}
-   */
-  result() {
-    return this._resultPromise;
-  }
-
-  _apply() {
-    this._callback(this._input.value);
-  }
-
-  /**
-   * @param {!Event} event
-   */
-  _onKeyDown(event) {
-    if (event.keyCode === UI.KeyboardShortcut.Keys.Enter.code) {
-      event.preventDefault();
-      this._apply();
-    }
   }
 };

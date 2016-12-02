@@ -44,12 +44,12 @@ UI.Icon = class extends HTMLSpanElement {
    */
   setIconType(iconType) {
     if (this._descriptor) {
-      this.style.removeProperty(this._propertyName());
+      this.style.removeProperty('-webkit-mask-position');
+      this.style.removeProperty('background-position');
       this.style.removeProperty('width');
       this.style.removeProperty('height');
       this.style.removeProperty('transform');
-      this.classList.remove(this._spritesheetClass());
-      this.classList.remove(this._iconType);
+      this._toggleClasses(false);
       this._iconType = '';
       this._descriptor = null;
     }
@@ -57,30 +57,25 @@ UI.Icon = class extends HTMLSpanElement {
     if (descriptor) {
       this._iconType = iconType;
       this._descriptor = descriptor;
-      this.style.setProperty(this._propertyName(), this._propertyValue());
+      this.style.setProperty('-webkit-mask-position', this._propertyValue());
+      this.style.setProperty('background-position', this._propertyValue());
       this.style.setProperty('width', this._descriptor.width + 'px');
       this.style.setProperty('height', this._descriptor.height + 'px');
       if (this._descriptor.transform)
         this.style.setProperty('transform', this._descriptor.transform);
-      this.classList.add(this._spritesheetClass());
-      this.classList.add(this._iconType);
+      this._toggleClasses(true);
     } else if (iconType) {
       throw new Error(`ERROR: failed to find icon descriptor for type: ${iconType}`);
     }
   }
 
   /**
-   * @return {string}
+   * @param {boolean} value
    */
-  _spritesheetClass() {
-    return 'spritesheet-' + this._descriptor.spritesheet + (this._descriptor.isMask ? '-mask' : '');
-  }
-
-  /**
-   * @return {string}
-   */
-  _propertyName() {
-    return this._descriptor.isMask ? '-webkit-mask-position' : 'background-position';
+  _toggleClasses(value) {
+    this.classList.toggle('spritesheet-' + this._descriptor.spritesheet, value);
+    this.classList.toggle(this._iconType, value);
+    this.classList.toggle('icon-mask', value && !!this._descriptor.isMask);
   }
 
   /**
@@ -116,6 +111,8 @@ UI.Icon.Descriptors = {
   'smallicon-triangle-right': {x: -4, y: -98, width: 10, height: 8, spritesheet: 'largeicons', isMask: true},
   'smallicon-triangle-bottom': {x: -20, y: -98, width: 10, height: 8, spritesheet: 'largeicons', isMask: true},
   'smallicon-arrow-in-circle': {x: -10, y: -127, width: 11, height: 11, spritesheet: 'largeicons', isMask: true},
+  'smallicon-inline-breakpoint': {x: -140, y: -20, width: 10, height: 10, spritesheet: 'smallicons'},
+  'smallicon-inline-breakpoint-conditional': {x: -160, y: -20, width: 10, height: 10, spritesheet: 'smallicons'},
 
   'largeicon-longclick-triangle': {x: -290, y: -46, width: 28, height: 24, spritesheet: 'largeicons', isMask: true},
   'largeicon-menu': {x: -192, y: -24, width: 28, height: 24, spritesheet: 'largeicons', isMask: true},
