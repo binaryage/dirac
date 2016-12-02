@@ -1,5 +1,5 @@
-Protocol.BakedSupportedCSSPropertiesChromeTag='57.0.2934.2';
-Protocol.BakedSupportedCSSPropertiesChromeRev='8aa3c277b9c99f6270e7c8e1dcbede0729595b0b';
+Protocol.BakedSupportedCSSPropertiesChromeTag='57.0.2939.2';
+Protocol.BakedSupportedCSSPropertiesChromeRev='080c44d292d6e1103d7c3a1730349961e23a1e5c';
 Protocol.BakedSupportedCSSProperties=''
 + '[{"name": "animation-delay"},\n'
 + ' {"name": "animation-direction"},\n'
@@ -82,6 +82,7 @@ Protocol.BakedSupportedCSSProperties=''
 + ' {"name": "break-inside"},\n'
 + ' {"name": "buffered-rendering"},\n'
 + ' {"name": "caption-side", "inherited": true},\n'
++ ' {"name": "caret-color", "inherited": true},\n'
 + ' {"name": "clear"},\n'
 + ' {"name": "clip"},\n'
 + ' {"name": "clip-path"},\n'
