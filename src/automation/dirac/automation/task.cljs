@@ -115,6 +115,7 @@
 (defn task-setup! [& [config]]
   (when-not @setup-done                                                                                                       ; this is here to support figwheel's hot-reloading
     (vreset! setup-done true)
+    (messages/init! "task-runner")
     ; transcript is a fancy name for "log of interesting events"
     (register-global-exception-handler!)
     (transcript-host/init-transcript! "transcript-box" (normalized?))
@@ -124,7 +125,6 @@
     (status-host/init-status! "status-box")
     (init-cljs-printing!)
     (launcher/init!)
-    (messages/init! "task-runner")
     ; feedback subsystem is responsible for intercepting messages to be presented in transcript
     (feedback/init!)
     (messages/reposition-runner-window!)
@@ -152,7 +152,6 @@
           (<! (reset-browser-state!))))
       (<! (messages/wait-for-all-pending-replies-or-timeout! (get-pending-replies-wait-timeout)))
       (feedback/done!)
-      (messages/done!)
       (if runner-present?
         (send-finished-task-signal! successful?))                                                                             ; note: if task runner wasn't successful we leave browser in failed state for possible inspection
       successful?)))
