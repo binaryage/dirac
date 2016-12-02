@@ -61,6 +61,14 @@
 (defn get-marion-extension-path [dirac-root]
   [dirac-root "test" "marion" "resources" "unpacked"])                                                                        ; note: we always use dev version, it is just a helper extension, no need for advanced compliation here
 
+(defn slurp-chromedriver-log-if-avail []
+  (if-let [log-path (:chrome-driver-log-path env)]
+    (str "chromedriver log (" log-path "):\n" (slurp log-path))
+    "no chromedriver log available"))
+
+(defn print-chromedriver-log! []
+  (println (slurp-chromedriver-log-if-avail)))
+
 (defn pick-chrome-binary-path [options]
   (let [{:keys [dirac-chrome-binary-path dirac-use-chromium dirac-host-os]} options]
     (cond
@@ -204,6 +212,7 @@
         (throw (ex-info (str "no --remote-debugging-port found in " CHROME_VERSION_PAGE "\n") {:command-line command-line}))))
     (catch Exception e
       (log/error (str "got an exception when trying to retrieve remote debugging port:\n" e))
+      (print-chromedriver-log!)
       nil)))
 
 (defn retrieve-chrome-info []
@@ -222,4 +231,5 @@
            "     Command Line: " (beautify-command-line command-line-text) "\n"))
     (catch Exception e
       (log/error (str "got an exception when trying to retrieve chrome info:\n" e))
+      (print-chromedriver-log!)
       nil)))
