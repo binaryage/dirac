@@ -2,8 +2,6 @@
 
 # check our devtools code for google closure annotations and Chromium coding conventions
 
-set -e
-
 pushd `dirname "${BASH_SOURCE[0]}"` > /dev/null
 source "./config.sh"
 

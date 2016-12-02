@@ -2,8 +2,6 @@
 
 # updates all version strings
 
-set -e
-
 pushd `dirname "${BASH_SOURCE[0]}"` > /dev/null
 source "./config.sh"
 

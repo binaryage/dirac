@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 
-set -ex
-
 pushd `dirname "${BASH_SOURCE[0]}"` > /dev/null
 source "./config.sh"
+
+set -x
 
 pushd "$ROOT"
 

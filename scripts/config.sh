@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+# standard bash switches for our scripts
+set -e -o pipefail
+
 pushd () {
     command pushd "$@" > /dev/null
 }

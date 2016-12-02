@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-set -e
-
 # this will run browser tests against unpacked dirac extension
 
 pushd `dirname "${BASH_SOURCE[0]}"` > /dev/null

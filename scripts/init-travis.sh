@@ -4,8 +4,6 @@
 # in case of travis it should be TRAVIS_BUILD_DIR
 # in case of docker it should be /root
 
-set -e
-
 # read config
 pushd `dirname "${BASH_SOURCE[0]}"` > /dev/null
 source "./config.sh"

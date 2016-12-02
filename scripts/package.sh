@@ -3,8 +3,6 @@
 # this task is to be run after running release.sh script
 # it copies release files and packages them into a zip file with versioned filename
 
-set -e
-
 pushd `dirname "${BASH_SOURCE[0]}"` > /dev/null
 source "./config.sh"
 

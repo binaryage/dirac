@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-set -e
-
 if [ -n "$SKIP_DIRAC_TESTS" ] ; then
   echo "skipping tests due to SKIP_DIRAC_TESTS"
   exit 0

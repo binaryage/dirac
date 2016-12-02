@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
-set -e
+pushd `dirname "${BASH_SOURCE[0]}"` > /dev/null
+source "./config.sh"
 
 # taken from git/contrib/subtree
 find_latest_squash()
@@ -49,9 +50,6 @@ confirm () {
 
 SHA=${1:-HEAD}
 FORCE_PUSH=$2
-
-pushd `dirname "${BASH_SOURCE[0]}"` > /dev/null
-source "./config.sh"
 
 if [ -d "$DIFF_WORK_DIR" ] ; then
   rm -rf "$DIFF_WORK_DIR"

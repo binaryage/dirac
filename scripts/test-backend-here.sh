@@ -2,8 +2,6 @@
 
 # this will run browser tests against fully optimized dirac extension (release build)
 
-set -e
-
 pushd `dirname "${BASH_SOURCE[0]}"` > /dev/null
 source "./config.sh"
 

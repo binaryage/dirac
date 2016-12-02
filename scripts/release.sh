@@ -19,12 +19,10 @@
 # - copy compiled code to appropriate places in resources/release
 # - remove unneeded files from resources/release
 
-set -e
-
-TASK=${1:-compile-dirac-pseudo-names}
-
 pushd `dirname "${BASH_SOURCE[0]}"` > /dev/null
 source "./config.sh"
+
+TASK=${1:-compile-dirac-pseudo-names}
 
 pushd "$ROOT"
 

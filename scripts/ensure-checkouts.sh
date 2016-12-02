@@ -3,8 +3,6 @@
 # checkouts folders mentioned in :source-paths must exist for cljs compiler to be happy
 # they can be empty and that should be perfectly fine
 
-set -e
-
 pushd `dirname "${BASH_SOURCE[0]}"` > /dev/null
 source "./config.sh"
 
