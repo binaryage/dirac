@@ -137,10 +137,6 @@
       (log/debug (str "setting chrome binary path to '" chrome-binary-path "'"))
       (.setBinary chrome-options chrome-binary-path))))
 
-(defn tweak-travis-specific-options [chrome-options options]
-  (when (:travis options)
-    (.addArguments chrome-options ["--disable-setuid-sandbox"])))
-
 (defn prepare-chrome-options [options]
   (let [{:keys [attaching? dirac-root dirac-dev debugger-port]} options
         chrome-options (ChromeOptions.)
@@ -174,7 +170,6 @@
               load-extensions-arg]]
     (.addArguments chrome-options args)
 
-    (tweak-travis-specific-options chrome-options options)
     (tweak-os-specific-options chrome-options options)
     (if attaching?
       (.setExperimentalOption chrome-options "debuggerAddress" (str "127.0.0.1:" debugger-port))
