@@ -114,5 +114,6 @@ DIRAC_TEST_STAGE_DIR=${DIRAC_TEST_STAGE_DIR:-"$ROOT/../_test_stage"}
 DIRAC_TEST_STAGE_RSYNC_EXCLUDE_FILE="$ROOT/.test-stage-excludes"
 ACTUAL_TRANSCRIPTS_PATH="test/browser/transcripts/_actual_"
 EXPECTED_TRANSCRIPTS_PATH="test/browser/transcripts/expected"
+DOCKER_TESTS_DIR="$ROOT/test/docker"
 
 popd
