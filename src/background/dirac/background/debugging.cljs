@@ -6,6 +6,23 @@
             [dirac.settings :refer [get-backend-url-resolution-trials
                                     get-failed-backend-url-resolution-delay]]))
 
+; -- messages ---------------------------------------------------------------------------------------------------------------
+
+(defn make-nil-response-from-api-msg [api-endpoint]
+  (str "nil response from api-endpoint=" api-endpoint))
+
+(defn make-empty-body-response-msg [api-endpoint]
+  (str "empty body response from api-endpoint=" api-endpoint))
+
+(defn make-no-matching-context-found-msg [context-url context-list]
+  (str "no matching context found for context-url=" context-url "\ncontext-list=" context-list))
+
+(defn make-multiple-contexts-matched-msg [context-url matching-contexts]
+  (str "unexpected, multiple contexts matched context-url=" context-url "\nmatching-contexts=" matching-contexts))
+
+(defn make-failure-to-extract-ws-msg [devtools-frontend-url]
+  (str "unexpected failure to extract ws from devtools-frontend-url=" devtools-frontend-url))
+
 ; -- failure handling -------------------------------------------------------------------------------------------------------
 
 (deftype ResolutionFailure [reason])
@@ -32,23 +49,21 @@
     (go
       (let [response (<! (http/get api-endpoint))]
         (cond
-          (nil? response) (make-failure (str "nil response from api-endpoint=" api-endpoint))
-          (empty? (:body response)) (make-failure (str "empty body response from api-endpoint=" api-endpoint))
+          (nil? response) (make-failure (make-nil-response-from-api-msg api-endpoint))
+          (empty? (:body response)) (make-failure (make-empty-body-response-msg api-endpoint))
           :else (:body response))))))
 
 (defn select-matching-context-by-url [context-list context-url]
   (let [matching-contexts (filter #(= (:url %) context-url) context-list)]
-    (log "matching contexts:" matching-contexts)
     (case (count matching-contexts)
-      0 (make-failure (str "no matching context found for context-url=" context-url "\ncontext-list=" context-list))
+      0 (make-failure (make-no-matching-context-found-msg context-url context-list))
       1 (first matching-contexts)
-      (make-failure (str "unexpected, multiple contexts matched context-url=" context-url
-                         "\nmatching-contexts=" matching-contexts)))))
+      (make-failure (make-multiple-contexts-matched-msg context-url matching-contexts)))))
 
 (defn extract-backend-url [devtools-frontend-url]
   (if-let [matches (re-matches #"/devtools/inspector.html\?ws=(.*)" devtools-frontend-url)]
     (second matches)
-    (make-failure (str "unexpected failure to extract ws from devtools-frontend-url=" devtools-frontend-url))))
+    (make-failure (make-failure-to-extract-ws-msg devtools-frontend-url))))
 
 (defn try-resolve-backend-url [debugger-url context-url]
   (go
