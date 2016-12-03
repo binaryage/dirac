@@ -44,6 +44,10 @@
   (messages/post-message! #js {:type        "marion-close-scenario"
                                :scenario-id scenario-id}))
 
+(defn activate-scenario! [scenario-id]
+  (messages/post-message! #js {:type        "marion-activate-scenario"
+                               :scenario-id scenario-id}))
+
 (defn trigger! [trigger-name & args]
   (notifications/broadcast-notification! {:trigger trigger-name
                                           :args    args}))
@@ -53,6 +57,10 @@
 
 (defn open-devtools! [& [extra-url-params]]
   (go
+    ; some previous tests or user interaction in dev mode might steal focus from scenario tab => restore focus here
+    (if-let [current-scenario-id (machinery/get-current-scenario-id)]
+      (<! (activate-scenario! current-scenario-id)))
+    ; note that open-dirac-devtools operates on the last active tab, hence the focus restoration above
     (let [open-devtools-event [:chromex.ext.commands/on-command ["open-dirac-devtools" {:reset-settings   1
                                                                                         :extra-url-params extra-url-params}]]
           devtools-id (<! (messages/fire-chrome-event! open-devtools-event))]

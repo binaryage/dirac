@@ -8,6 +8,13 @@
             [dirac.automation.transcript-host :as transcript]
             [dirac.automation.test :as test]))
 
+; -- current scenario tracker -----------------------------------------------------------------------------------------------
+
+(def ^:dynamic *current-scenario-id* nil)
+
+(defn get-current-scenario-id []
+  *current-scenario-id*)
+
 ; -- devtools id wrapper ----------------------------------------------------------------------------------------------------
 
 (deftype DevToolsID [id])
