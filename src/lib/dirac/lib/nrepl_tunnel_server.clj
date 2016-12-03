@@ -121,6 +121,7 @@
   (log/debug (str server) "Received unrecognized message from client" (str client) ":\n" (utils/pp message)))
 
 (defmethod process-message :ready [server client message]
+  (log/debug (str server) "Received :ready from client" (str client))
   (version-check! (:version message))
   ; a new client is ready after connection
   ; ask him to bootstrap nREPL environment
