@@ -6,6 +6,7 @@
 
 (def defaults {:name              "WebSocket Client"
                :verbose?          false
+               :init-delay        500                                                                                         ; see https://github.com/http-kit/http-kit/issues/318
                :auto-reconnect?   false
                :next-reconnect-fn (fn [_attempt] (* 10 1000))})
 
@@ -117,12 +118,18 @@
       (.open (get-connection client) server-url))
     true))
 
+(defn make-delayed-fn [f delay]
+  (if (some? delay)
+    (fn [& args]
+      (js/setTimeout #(apply f args) delay))
+    f))
+
 (defn connect! [server-url & [opts]]
   (let [sanitized-opts (sanitize-opts opts)
-        {:keys [auto-reconnect? next-reconnect-fn]} sanitized-opts
+        {:keys [auto-reconnect? next-reconnect-fn init-delay]} sanitized-opts
         web-socket (goog.net.WebSocket. auto-reconnect? next-reconnect-fn)
         client (make-client web-socket server-url sanitized-opts)]
-    (.listen web-socket gws/EventType.OPENED (partial on-open-handler client))
+    (.listen web-socket gws/EventType.OPENED (make-delayed-fn (partial on-open-handler client) init-delay))
     (.listen web-socket gws/EventType.MESSAGE (partial on-message-handler client))
     (.listen web-socket gws/EventType.CLOSED (partial on-closed-handler client))
     (.listen web-socket gws/EventType.ERROR (partial on-error-handler client))
