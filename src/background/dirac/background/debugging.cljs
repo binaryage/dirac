@@ -2,6 +2,7 @@
   (:require-macros [cljs.core.async.macros :refer [go]]
                    [dirac.background.logging :refer [log info warn error]])
   (:require [cljs-http.client :as http]
+            [oops.core :refer [oget]]
             [cljs.core.async :refer [<! timeout]]
             [dirac.settings :refer [get-backend-url-resolution-trials
                                     get-failed-backend-url-resolution-delay]]))
@@ -31,7 +32,7 @@
   (instance? ResolutionFailure v))
 
 (defn get-resolution-failure-reason [failure]
-  (.-reason failure))
+  (oget failure "reason"))
 
 (defn make-failure [reason]
   (ResolutionFailure. reason))
