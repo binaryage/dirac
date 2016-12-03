@@ -13,6 +13,20 @@
                    :port       9001
                    :port-range 10})
 
+; -- readiness helpers ------------------------------------------------------------------------------------------------------
+
+(defonce client-ready-promise (volatile! (promise)))
+
+(defn mark-client-as-ready! []
+  (assert (not (realized? @client-ready-promise)))
+  (deliver @client-ready-promise true))
+
+(defn mark-client-as-not-ready! []
+  (vreset! client-ready-promise (promise)))
+
+(defn get-client-ready-promise []
+  @client-ready-promise)
+
 ; -- WeaselREPLEnv ----------------------------------------------------------------------------------------------------------
 
 (declare setup-env)
@@ -112,7 +126,8 @@
 (defmethod process-message :ready [env message]
   (log/debug (str env) "Received :ready message:\n" (utils/pp message))
   (if-let [ident (:ident message)]
-    (log/debug (str env) (str "Client identified as '" ident "'"))))
+    (log/debug (str env) (str "Client identified as '" ident "'")))
+  (mark-client-as-ready!))
 
 (defmethod process-message :error [env message]
   (log/error (str env) "DevTools reported error:\n" (utils/pp message)))
@@ -149,7 +164,9 @@
   ; we allow only one client connection at a time
   (if (server/has-clients? server)
     (send-occupied-response-close-channel-and-reject-client! env channel)
-    (log/debug (str env) "A client connected" channel)))
+    (do
+      (log/debug (str env) "A client connected" channel)
+      (mark-client-as-not-ready!))))
 
 (defn on-message [env _server _client message]
   ; we don't need to pass server and client into process-message
@@ -179,7 +196,10 @@
 
 (defn request-eval [env js & [filename]]
   (promise-new-client-response! env)
-  (server/send! @(server/get-first-client-promise (get-server env)) (make-eval-js-request-message js filename))               ; <===== MIGHT BLOCK if there is currently no client connected TODO: implement timeout
+  (let [client @(server/get-first-client-promise (get-server env))                                                            ; <===== MIGHT BLOCK if there is currently no client connected TODO: implement timeout
+        ready? @(get-client-ready-promise)]                                                                                   ; <===== MIGHT BLOCK until we receive client :ready signal
+    (assert ready?)
+    (server/send! client (make-eval-js-request-message js filename)))
   (wait-for-promised-response! env))                                                                                          ; <===== WILL BLOCK! until client responds
 
 (defn load-javascript [env provides _]
