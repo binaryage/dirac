@@ -37,7 +37,7 @@ testing          in-ns completions for our namespace
 automate #1      simulate-console-input! ["sample"]
 automate #1      scrape! [:suggest-box]
 stdout           displayed 3 items:
-                  * sample|-def (in-ns selected)
+                  * sample|-def (in-ns selected force-white-icons)
                   * sample|-defn (in-ns)
                   * sample|-defonce (in-ns)
 ∎
@@ -46,7 +46,7 @@ automate #1      clear-console-prompt!
 automate #1      simulate-console-input! ["js/docume"]
 automate #1      scrape! [:suggest-box]
 stdout           displayed 6 items:
-                  * docume|nt (selected)
+                  * docume|nt (selected force-white-icons)
                   * Docume|nt
                   * Docume|ntFragment
                   * Docume|ntType
@@ -58,7 +58,7 @@ stdout           js/document
 automate #1      simulate-console-input! [".getElements"]
 automate #1      scrape! [:suggest-box]
 stdout           displayed 4 items:
-                  * getElements|ByClassName (selected)
+                  * getElements|ByClassName (selected force-white-icons)
                   * getElements|ByName
                   * getElements|ByTagName
                   * getElements|ByTagNameNS
@@ -71,7 +71,7 @@ automate #1      clear-console-prompt!
 automate #1      simulate-console-input! ["cljs.core/part"]
 automate #1      scrape! [:suggest-box]
 stdout           displayed 4 items:
-                  * part|ial (qualified selected)
+                  * part|ial (qualified selected force-white-icons)
                   * part|ition (qualified)
                   * part|ition-all (qualified)
                   * part|ition-by (qualified)
@@ -84,7 +84,7 @@ automate #1      clear-console-prompt!
 automate #1      simulate-console-input! ["cljs.r"]
 automate #1      scrape! [:suggest-box]
 stdout           displayed 2 items:
-                  * cljs.r|eader (ns selected)
+                  * cljs.r|eader (ns selected force-white-icons)
                   * cljs.r|epl (ns macro combined-ns-macro)
 automate #1      simulate-console-action! ["DOWN"]
 automate #1      simulate-console-action! ["TAB"]
@@ -96,7 +96,7 @@ automate #1      clear-console-prompt!
 automate #1      simulate-console-input! ["cljs.cor"]
 automate #1      scrape! [:suggest-box]
 stdout           displayed 10 items:
-                  * cljs.cor|e (ns macro combined-ns-macro selected)
+                  * cljs.cor|e (ns macro combined-ns-macro selected force-white-icons)
                   * cljs.cor|e.async (ns)
                   * cljs.cor|e.async.impl.buffers (ns)
                   * cljs.cor|e.async.impl.channels (ns)
@@ -112,7 +112,7 @@ stdout           cljs.core
 automate #1      simulate-console-input! ["/clj-"]
 automate #1      scrape! [:suggest-box]
 stdout           displayed 1 items:
-                  * clj-|>js (qualified selected)
+                  * clj-|>js (qualified selected force-white-icons)
 automate #1      simulate-console-action! ["RIGHT"]
 automate #1      print-prompt!
 stdout           cljs.core/clj->js
@@ -128,7 +128,7 @@ automate #1      clear-console-prompt!
 automate #1      simulate-console-input! ["alias"]
 automate #1      scrape! [:suggest-box]
 stdout           displayed 3 items:
-                  * alias|-cljs-core-async [is cljs.core.async] (ns-alias selected)
+                  * alias|-cljs-core-async [is cljs.core.async] (ns-alias selected force-white-icons)
                   * alias|-cljs-core-async-macros [is cljs.core.async.macros] (ns-alias macro)
                   * alias|-dirac-settings [is dirac.settings] (ns-alias macro combined-ns-macro)
 ∎
@@ -137,7 +137,7 @@ automate #1      clear-console-prompt!
 automate #1      simulate-console-input! ["pu"]
 automate #1      scrape! [:suggest-box]
 stdout           displayed 2 items:
-                  * pu|sh-tail (core selected)
+                  * pu|sh-tail (core selected force-white-icons)
                   * pu|t! [in cljs.core.async] (refer)
 ∎
 testing          refer macro namespace symbols
@@ -145,21 +145,21 @@ automate #1      clear-console-prompt!
 automate #1      simulate-console-input! ["wa"]
 automate #1      scrape! [:suggest-box]
 stdout           displayed 1 items:
-                  * wa|rn [in chromex.logging] (refer macro selected)
+                  * wa|rn [in chromex.logging] (refer macro selected force-white-icons)
 ∎
 testing          refer macro namespace symbols coming from :refer-macros
 automate #1      clear-console-prompt!
 automate #1      simulate-console-input! ["get-dirac-devtools-window"]
 automate #1      scrape! [:suggest-box]
 stdout           displayed 1 items:
-                  * get-dirac-devtools-window|-top [in dirac.settings] (refer macro selected)
+                  * get-dirac-devtools-window|-top [in dirac.settings] (refer macro selected force-white-icons)
 ∎
 testing          qualified completions of namespace alias
 automate #1      clear-console-prompt!
 automate #1      simulate-console-input! ["alias-cljs-core-async/tak"]
 automate #1      scrape! [:suggest-box]
 stdout           displayed 2 items:
-                  * tak|e (qualified selected)
+                  * tak|e (qualified selected force-white-icons)
                   * tak|e! (qualified)
 ∎
 testing          qualified completions of macro namespace alias
@@ -167,7 +167,7 @@ automate #1      clear-console-prompt!
 automate #1      simulate-console-input! ["alias-cljs-core-async-macros/go"]
 automate #1      scrape! [:suggest-box]
 stdout           displayed 2 items:
-                  * go| (qualified macro selected)
+                  * go| (qualified macro selected force-white-icons)
                   * go|-loop (qualified macro)
 ∎
 testing          qualified completions of macro namespace
@@ -175,14 +175,14 @@ automate #1      clear-console-prompt!
 automate #1      simulate-console-input! ["chromex.logging/lo"]
 automate #1      scrape! [:suggest-box]
 stdout           displayed 1 items:
-                  * lo|g (qualified macro selected)
+                  * lo|g (qualified macro selected force-white-icons)
 ∎
 testing          closure libraries should be listed
 automate #1      clear-console-prompt!
 automate #1      simulate-console-input! ["goog.stri"]
 automate #1      scrape! [:suggest-box]
 stdout           displayed 5 items:
-                  * goog.stri|ng (ns pseudo selected)
+                  * goog.stri|ng (ns pseudo selected force-white-icons)
                   * goog.stri|ng.Const (ns pseudo)
                   * goog.stri|ng.StringBuffer (ns pseudo)
                   * goog.stri|ng.TypedString (ns pseudo)
@@ -193,14 +193,14 @@ automate #1      clear-console-prompt!
 automate #1      simulate-console-input! ["gstri"]
 automate #1      scrape! [:suggest-box]
 stdout           displayed 1 items:
-                  * gstri|ng [is goog.string] (ns-alias pseudo selected)
+                  * gstri|ng [is goog.string] (ns-alias pseudo selected force-white-icons)
 ∎
 testing          qualified completions of closure libraries (full name)
 automate #1      clear-console-prompt!
 automate #1      simulate-console-input! ["goog.array/cl"]
 automate #1      scrape! [:suggest-box]
 stdout           displayed 2 items:
-                  * cl|ear (qualified pseudo selected)
+                  * cl|ear (qualified pseudo selected force-white-icons)
                   * cl|one (qualified pseudo)
 ∎
 testing          qualified completions of closure libraries (via alias)
@@ -208,7 +208,7 @@ automate #1      clear-console-prompt!
 automate #1      simulate-console-input! ["gstring/case"]
 automate #1      scrape! [:suggest-box]
 stdout           displayed 5 items:
-                  * case|InsensitiveCompare (qualified pseudo selected)
+                  * case|InsensitiveCompare (qualified pseudo selected force-white-icons)
                   * case|InsensitiveContains (qualified pseudo)
                   * case|InsensitiveEndsWith (qualified pseudo)
                   * case|InsensitiveEquals (qualified pseudo)
