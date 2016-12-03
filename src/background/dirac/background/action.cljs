@@ -20,8 +20,8 @@
     :else (assert false (str "invalid color type:" (type color)))))
 
 (defn update-action-button! [backend-tab-id state & [title]]
-  (go
-    (let [{:keys [text color]} (state state-table)]
+  (let [{:keys [text color]} (state state-table)]
+    (go
       (when (<! (tab-exists? backend-tab-id))                                                                                 ; backend tab might not exist anymore at this point
         (browser-action/set-badge-text #js {"text"  (or text "")
                                             "tabId" backend-tab-id})
