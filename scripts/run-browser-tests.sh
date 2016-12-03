@@ -6,6 +6,8 @@ source "./config.sh"
 pushd "$ROOT"
 
 echo "Running browser tests..."
+print_env
+
 lein with-profile +test-runner trampoline run -m "$@" 2>&1 | grep --line-buffered -vE "(org\.openqa\.selenium\.remote\.ProtocolHandshake|assuming Postel|INFO: Detected dialect)"
 
 popd

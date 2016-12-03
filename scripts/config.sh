@@ -57,6 +57,13 @@ realpath() {
   echo "$REALPATH"
 }
 
+print_env() {
+  echo
+  echo "--- EFFECTIVE ENVIRONMENT ---"
+  env
+  echo "-----------------------------"
+}
+
 pushd `dirname "${BASH_SOURCE[0]}"`
 
 source "./export-windows-layout.sh"
