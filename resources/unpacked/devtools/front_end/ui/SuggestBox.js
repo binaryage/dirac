@@ -280,7 +280,7 @@ UI.SuggestBox = class {
    * @return {!Element}
    */
   _createItemElement(query, text, iconType, isSecondary, className, prologue, epilogue) {
-    var element = createElementWithClass('div', 'suggest-box-content-item source-code' + (className || ''));
+    var element = createElementWithClass('div', 'suggest-box-content-item source-code ' + (className || ''));
     if (iconType) {
       var icon = UI.Icon.create(iconType, 'suggestion-icon');
       element.appendChild(icon);

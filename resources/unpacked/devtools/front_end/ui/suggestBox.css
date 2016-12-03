@@ -193,6 +193,8 @@
     color: #ccc;
     padding: 0 4px;
     text-align: right;
+    position: relative;
+    top: 3px;
 }
 
 .suggest-box .suggest-box-content-item.selected {
