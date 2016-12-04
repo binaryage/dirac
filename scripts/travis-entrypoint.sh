@@ -13,9 +13,7 @@ init_travis_env() {
   #export TRAVIS_USE_CUSTOM_CHROMEDRIVER=http://x.binaryage.com/chromedriver.zip
 
   echo "====================================================================================================================="
-  set -x
   source "./scripts/init-travis.sh"
-  set +x
   echo "====================================================================================================================="
 }
 
@@ -35,7 +33,6 @@ echo_cmd() {
 
 if [ -z "$1" -o "$1" = "test" ]; then
   init_travis_env
-  print_env
   echo_cmd ./scripts/test-all.sh
   result=$?
   exit ${result}
@@ -43,7 +40,6 @@ fi
 
 if [ "$1" = "test-browser" ]; then
   init_travis_env
-  print_env
   echo_cmd ./scripts/test-browser.sh
   result=$?
   exit ${result}
