@@ -5,8 +5,8 @@
 # in case of docker it should be /root
 
 # read config
-source "$(dirname "${BASH_SOURCE[0]}")/config.sh"
-false && source config.sh # never executes, this is here just for IntelliJ Bash support to understand our sourcing
+source "$(dirname "${BASH_SOURCE[0]}")/_config.sh"
+false && source _config.sh # never executes, this is here just for IntelliJ Bash support to understand our sourcing
 
 #export DIRAC_LOG_LEVEL=debug
 export DIRAC_CHROME_DRIVER_VERBOSE=1

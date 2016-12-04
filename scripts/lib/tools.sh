@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-false && source "../config.sh" # never executes, this is here just for IntelliJ Bash support to understand our sourcing
+false && source "../_config.sh" # never executes, this is here just for IntelliJ Bash support to understand our sourcing
 
 redirect_to_test_stage_if_needed() {
   if [ ! -z "$DIRAC_TEST_IN_STAGE" ]; then
