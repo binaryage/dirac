@@ -36,9 +36,9 @@ Sources.HistoryEntry.prototype = {
   /**
    * @return {boolean}
    */
-  valid: function() {},
+  valid() {},
 
-  reveal: function() {}
+  reveal() {}
 };
 
 /**
@@ -79,9 +79,9 @@ Sources.SimpleHistoryManager = class {
     var filteredEntries = [];
     var removedBeforeActiveEntry = 0;
     for (var i = 0; i < this._entries.length; ++i) {
-      if (!filterOutCallback(this._entries[i])) {
+      if (!filterOutCallback(this._entries[i]))
         filteredEntries.push(this._entries[i]);
-      } else if (i <= this._activeEntryIndex)
+      else if (i <= this._activeEntryIndex)
         ++removedBeforeActiveEntry;
     }
     this._entries = filteredEntries;

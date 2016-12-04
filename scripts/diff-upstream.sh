@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
-set -e
+source "$(dirname "${BASH_SOURCE[0]}")/_config.sh"
+false && source _config.sh # never executes, this is here just for IntelliJ Bash support to understand our sourcing
 
 # taken from git/contrib/subtree
 find_latest_squash()
@@ -50,9 +51,6 @@ confirm () {
 SHA=${1:-HEAD}
 FORCE_PUSH=$2
 
-pushd `dirname "${BASH_SOURCE[0]}"` > /dev/null
-source "./config.sh"
-
 if [ -d "$DIFF_WORK_DIR" ] ; then
   rm -rf "$DIFF_WORK_DIR"
 fi
@@ -93,7 +91,5 @@ git commit -m "devtools -> dirac as of $FULL_SHA"
 if [[ ! -z "$FORCE_PUSH" ]] || confirm "Do you want to force push new $DIFF_BRANCH of github's Dirac repo? [y/N]" ; then
   git push -f git@github.com:binaryage/dirac.git "$DIFF_BRANCH"
 fi
-
-popd
 
 popd

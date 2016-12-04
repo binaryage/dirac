@@ -128,6 +128,13 @@
       (remove-scenario-id! scenario-id)
       (reply-to-message! message))))
 
+(defn activate-scenario! [message]
+  (go
+    (let [scenario-id (oget message "scenario-id")
+          tab-id (get-scenario-tab-id scenario-id)]
+      (<! (helpers/activate-tab! tab-id))
+      (reply-to-message! message))))
+
 (defn scenario-ready! [message client]
   (go
     (let [sender (get-sender client)
@@ -189,6 +196,7 @@
       "marion-broadcast-notification" (broadcast-notification! message)
       "marion-open-scenario" (open-scenario! message)
       "marion-close-scenario" (close-scenario! message)
+      "marion-activate-scenario" (activate-scenario! message)
       "marion-scenario-ready" (scenario-ready! message client)
       "marion-switch-to-runner-tab" (switch-to-task-runner! message)
       "marion-reposition-runner-window" (reposition-runner-window! message)

@@ -26,15 +26,6 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-// FIXME: This performance optimization should be moved to blink so that all developers could enjoy it.
-// console is retrieved with V8Window.getAttribute method which is slow. Here we copy it to a js variable for faster access.
-console = console;
-console.__originalAssert = console.assert;
-console.assert = function(value, message) {
-  if (value)
-    return;
-  console.__originalAssert(value, message);
-};
 
 /** @typedef {Array|NodeList|Arguments|{length: number}} */
 var ArrayLike;
@@ -333,8 +324,9 @@ String.naturalOrderComparator = function(a, b) {
         else
           return chunkb.length - chunka.length;
       }
-    } else if (chunka !== chunkb)
+    } else if (chunka !== chunkb) {
       return (chunka < chunkb) ? -1 : 1;
+    }
     a = a.substring(chunka.length);
     b = b.substring(chunkb.length);
   }
@@ -632,10 +624,11 @@ Object.defineProperty(Array.prototype, 'qselect', {
   value: function(k, comparator) {
     if (k < 0 || k >= this.length)
       return;
-    if (!comparator)
+    if (!comparator) {
       comparator = function(a, b) {
         return a - b;
       };
+    }
 
     var low = 0;
     var high = this.length - 1;

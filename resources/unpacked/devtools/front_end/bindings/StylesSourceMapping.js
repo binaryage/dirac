@@ -35,12 +35,10 @@ Bindings.StylesSourceMapping = class {
   /**
    * @param {!SDK.CSSModel} cssModel
    * @param {!Workspace.Workspace} workspace
-   * @param {!Bindings.NetworkMapping} networkMapping
    */
-  constructor(cssModel, workspace, networkMapping) {
+  constructor(cssModel, workspace) {
     this._cssModel = cssModel;
     this._workspace = workspace;
-    this._networkMapping = networkMapping;
 
     /** @type {!Map<string, !Map<string, !Map<string, !SDK.CSSStyleSheetHeader>>>} */
     this._urlToHeadersByFrameId = new Map();
@@ -51,14 +49,12 @@ Bindings.StylesSourceMapping = class {
       this._workspace.addEventListener(Workspace.Workspace.Events.ProjectRemoved, this._projectRemoved, this),
       this._workspace.addEventListener(
           Workspace.Workspace.Events.UISourceCodeAdded, this._uiSourceCodeAddedToWorkspace, this),
-      this._workspace.addEventListener(
-          Workspace.Workspace.Events.UISourceCodeRemoved, this._uiSourceCodeRemoved, this),
+      this._workspace.addEventListener(Workspace.Workspace.Events.UISourceCodeRemoved, this._uiSourceCodeRemoved, this),
       this._cssModel.addEventListener(SDK.CSSModel.Events.StyleSheetAdded, this._styleSheetAdded, this),
       this._cssModel.addEventListener(SDK.CSSModel.Events.StyleSheetRemoved, this._styleSheetRemoved, this),
       this._cssModel.addEventListener(SDK.CSSModel.Events.StyleSheetChanged, this._styleSheetChanged, this),
       SDK.ResourceTreeModel.fromTarget(cssModel.target())
-          .addEventListener(
-              SDK.ResourceTreeModel.Events.MainFrameNavigated, this._unbindAllUISourceCodes, this)
+          .addEventListener(SDK.ResourceTreeModel.Events.MainFrameNavigated, this._unbindAllUISourceCodes, this)
     ];
   }
 
@@ -67,7 +63,8 @@ Bindings.StylesSourceMapping = class {
    * @return {?Workspace.UILocation}
    */
   rawLocationToUILocation(rawLocation) {
-    var uiSourceCode = this._networkMapping.uiSourceCodeForStyleURL(rawLocation.url, rawLocation.header());
+    var uiSourceCode =
+        Bindings.NetworkProject.uiSourceCodeForStyleURL(this._workspace, rawLocation.url, rawLocation.header());
     if (!uiSourceCode)
       return null;
     var lineNumber = rawLocation.lineNumber;
@@ -100,7 +97,7 @@ Bindings.StylesSourceMapping = class {
       map.set(header.frameId, headersById);
     }
     headersById.set(header.id, header);
-    var uiSourceCode = this._networkMapping.uiSourceCodeForStyleURL(url, header);
+    var uiSourceCode = Bindings.NetworkProject.uiSourceCodeForStyleURL(this._workspace, url, header);
     if (uiSourceCode)
       this._bindUISourceCode(uiSourceCode, header);
   }
@@ -124,7 +121,7 @@ Bindings.StylesSourceMapping = class {
       map.delete(header.frameId);
       if (!map.size) {
         this._urlToHeadersByFrameId.delete(url);
-        var uiSourceCode = this._networkMapping.uiSourceCodeForStyleURL(url, header);
+        var uiSourceCode = Bindings.NetworkProject.uiSourceCodeForStyleURL(this._workspace, url, header);
         if (uiSourceCode)
           this._unbindUISourceCode(uiSourceCode);
       }
@@ -260,7 +257,7 @@ Bindings.StylesSourceMapping = class {
     var styleSheetURL = header.resourceURL();
     if (!styleSheetURL)
       return;
-    var uiSourceCode = this._networkMapping.uiSourceCodeForStyleURL(styleSheetURL, header);
+    var uiSourceCode = Bindings.NetworkProject.uiSourceCodeForStyleURL(this._workspace, styleSheetURL, header);
     if (!uiSourceCode)
       return;
     header.requestContent().then(callback.bind(this, uiSourceCode));

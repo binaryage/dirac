@@ -177,12 +177,12 @@ UI.FilterUI.prototype = {
   /**
    * @return {boolean}
    */
-  isActive: function() {},
+  isActive() {},
 
   /**
    * @return {!Element}
    */
-  element: function() {}
+  element() {}
 };
 
 /**
@@ -289,10 +289,10 @@ UI.TextFilterUI = class extends Common.Object {
   }
 
   _cancelSuggestion() {
-    if (this._suggestionBuilder && this._suggestBox.visible) {
-      this._suggestionBuilder.unapplySuggestion(this._filterInputElement);
-      this._suggestBox.hide();
-    }
+    if (!this._suggestionBuilder || !this._suggestBox.visible())
+      return;
+    this._suggestionBuilder.unapplySuggestion(this._filterInputElement);
+    this._suggestBox.hide();
   }
 
   _onInput() {
@@ -330,7 +330,7 @@ UI.TextFilterUI = class extends Common.Object {
       else
         this._suggestionBuilder.applySuggestion(this._filterInputElement, suggestions[0], true);
       var anchorBox = this._filterInputElement.boxInWindow().relativeTo(new AnchorBox(-3, 0));
-      this._suggestBox.updateSuggestions(anchorBox, suggestions.map(item => ({title: item})), 0, true, '');
+      this._suggestBox.updateSuggestions(anchorBox, suggestions.map(item => ({title: item})), true, true, '');
     } else {
       this._suggestBox.hide();
     }
@@ -423,19 +423,19 @@ UI.TextFilterUI.SuggestionBuilder.prototype = {
    * @param {!HTMLInputElement} input
    * @return {?Array.<string>}
    */
-  buildSuggestions: function(input) {},
+  buildSuggestions(input) {},
 
   /**
    * @param {!HTMLInputElement} input
    * @param {string} suggestion
    * @param {boolean} isIntermediate
    */
-  applySuggestion: function(input, suggestion, isIntermediate) {},
+  applySuggestion(input, suggestion, isIntermediate) {},
 
   /**
    * @param {!HTMLInputElement} input
    */
-  unapplySuggestion: function(input) {}
+  unapplySuggestion(input) {}
 };
 
 /**
@@ -510,8 +510,7 @@ UI.NamedBitSetFilterUI = class extends Common.Object {
   }
 
   _update() {
-    if ((Object.keys(this._allowedTypes).length === 0) ||
-        this._allowedTypes[UI.NamedBitSetFilterUI.ALL_TYPES]) {
+    if ((Object.keys(this._allowedTypes).length === 0) || this._allowedTypes[UI.NamedBitSetFilterUI.ALL_TYPES]) {
       this._allowedTypes = {};
       this._allowedTypes[UI.NamedBitSetFilterUI.ALL_TYPES] = true;
     }

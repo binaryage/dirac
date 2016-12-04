@@ -10,17 +10,13 @@ var shell = require("child_process").execSync;
 var utils = require("./utils");
 
 var Flags = {
-    BUILD_ONLY: "--build-only",
     DEBUG_DEVTOOLS: "--debug-devtools",
     DEBUG_DEVTOOLS_SHORTHAND: "-d",
-    TEST_ONLY: "--test-only",
     FETCH_CONTENT_SHELL: "--fetch-content-shell",
 };
 
 var IS_DEBUG_ENABLED = utils.includes(process.argv, Flags.DEBUG_DEVTOOLS) ||
     utils.includes(process.argv, Flags.DEBUG_DEVTOOLS_SHORTHAND);
-var IS_BUILD_ONLY = utils.includes(process.argv, Flags.BUILD_ONLY);
-var IS_TEST_ONLY = utils.includes(process.argv, Flags.TEST_ONLY);
 var IS_FETCH_CONTENT_SHELL = utils.includes(process.argv, Flags.FETCH_CONTENT_SHELL);
 
 var CONTENT_SHELL_ZIP = "content-shell.zip";
@@ -28,11 +24,35 @@ var MAX_CONTENT_SHELLS = 10;
 var PLATFORM = getPlatform();
 var PYTHON = process.platform === "win32" ? "python.bat" : "python";
 
-var CHROMIUM_SRC_PATH = path.resolve(__dirname, "..", "..", "..", "..", "..");
+// Dirac-specific overrides
+const DIRAC_PATH = path.resolve(__dirname, "..", "..", "..", "..");
+const SCRIPTS_PATH = DIRAC_PATH+"/scripts";
+const POSITION_FOR_VERSION_SCRIPT = SCRIPTS_PATH+"/position-for-version.sh";
+const EXTRACT_CHROME_VERSION_SCRIPT = SCRIPTS_PATH+"/extract-backend-protocol-chrome-version.sh";
+const PRINT_CHROME_SRC_DIR_SCRIPT = SCRIPTS_PATH+"/print-chrome-src-dir.sh";
+
+function firstLine(s) {
+  return s.split('\n')[0];
+}
+
+function fetchDiracChromiumSrcPath() {
+  return firstLine(shell(`${PRINT_CHROME_SRC_DIR_SCRIPT}`).toString());
+}
+
+function findDiracChromiumCommit() {
+  const chromeVersion = firstLine(shell(`${EXTRACT_CHROME_VERSION_SCRIPT}`).toString());
+  return firstLine(shell(`${POSITION_FOR_VERSION_SCRIPT} ${chromeVersion}`).toString());
+}
+
+var CHROMIUM_SRC_PATH = fetchDiracChromiumSrcPath();
+// end of dirac-specific stuff
+
 var RELEASE_PATH = path.resolve(CHROMIUM_SRC_PATH, "out", "Release");
 var BLINK_TEST_PATH = path.resolve(CHROMIUM_SRC_PATH, "blink", "tools", "run_layout_tests.py");
-var CACHE_PATH = path.resolve(__dirname, "..", ".test_cache");
+var CACHE_PATH = path.resolve(__dirname, "..", "caches", ".test_cache");
 var SOURCE_PATH = path.resolve(__dirname, "..", "front_end");
+
+var useDebugDevtools = true;
 
 function main(){
     var hasUserCompiledContentShell = utils.isFile(getContentShellBinaryPath(RELEASE_PATH));
@@ -42,12 +62,9 @@ function main(){
             console.log("Compiling devtools frontend");
             shell(`ninja -C ${RELEASE_PATH} devtools_frontend_resources`);
         }
-        runTests(outDir, {useRelease: !IS_DEBUG_ENABLED});
-        return;
-    }
-    if (IS_TEST_ONLY) {
-        findPreviousUploadedPosition(findMostRecentChromiumCommit())
-            .then(commitPosition => runTests(path.resolve(CACHE_PATH, commitPosition, "out"), {useRelease: false}));
+        if (!IS_DEBUG_ENABLED)
+            useDebugDevtools = false;
+        setupAndTest(outDir);
         return;
     }
     if (!utils.isDir(CACHE_PATH))
@@ -71,12 +88,12 @@ function onUploadedCommitPosition(commitPosition)
     if (hasCachedContentShell) {
         var contentShellPath = path.resolve(CACHE_PATH, commitPosition, "out");
         console.log(`Using cached content shell at: ${contentShellPath}`);
-        return buildAndTest(contentShellPath);
+        return setupAndTest(contentShellPath);
     }
     return prepareContentShellDirectory(commitPosition)
         .then(downloadContentShell)
         .then(extractContentShell)
-        .then(buildAndTest);
+        .then(setupAndTest);
 }
 
 function getPlatform()
@@ -99,9 +116,7 @@ function getPlatform()
 
 function findMostRecentChromiumCommit()
 {
-    var commitMessage = shell(`git log --max-count=1 --grep="Cr-Commit-Position"`).toString().trim();
-    var commitPosition = commitMessage.match(/Cr-Commit-Position: refs\/heads\/master@\{#([0-9]+)\}/)[1];
-    return commitPosition;
+    return findDiracChromiumCommit();
 }
 
 function deleteOldContentShells()
@@ -214,39 +229,33 @@ function getContentShellBinaryPath(dirPath)
     }
 }
 
-function buildAndTest(buildDirectoryPath)
+function setupAndTest(buildDirectoryPath)
 {
     var contentShellResourcesPath = path.resolve(buildDirectoryPath, "Release", "resources");
-    build(contentShellResourcesPath);
-    if (IS_BUILD_ONLY)
-        return;
-    runTests(buildDirectoryPath, {useRelease: false});
+    copyMetadata(contentShellResourcesPath);
+    runTests(buildDirectoryPath);
 }
 
-function build(contentShellResourcesPath)
+function copyMetadata(contentShellResourcesPath)
 {
     var devtoolsResourcesPath = path.resolve(contentShellResourcesPath, "inspector");
-    var copiedFrontendPath = path.resolve(devtoolsResourcesPath, "front_end");
-    var debugPath = path.resolve(devtoolsResourcesPath, "debug");
-    utils.removeRecursive(copiedFrontendPath);
-    utils.removeRecursive(debugPath);
-    utils.copyRecursive(SOURCE_PATH, devtoolsResourcesPath);
-    fs.renameSync(copiedFrontendPath, debugPath);
     var inspectorBackendCommandsPath = path.resolve(devtoolsResourcesPath, "InspectorBackendCommands.js");
     var supportedCSSPropertiesPath = path.resolve(devtoolsResourcesPath, "SupportedCSSProperties.js");
-    utils.copy(inspectorBackendCommandsPath, debugPath);
-    utils.copy(supportedCSSPropertiesPath, debugPath);
+    utils.copy(inspectorBackendCommandsPath, SOURCE_PATH);
+    utils.copy(supportedCSSPropertiesPath, SOURCE_PATH);
 }
 
-function runTests(buildDirectoryPath, options)
+function runTests(buildDirectoryPath)
 {
     var testArgs = getInspectorTests().concat([
         "--no-pixel-tests",
         "--build-directory",
         buildDirectoryPath,
     ]);
-    if (!options.useRelease)
+    if (useDebugDevtools) {
         testArgs.push("--additional-driver-flag=--debug-devtools");
+        testArgs.push(`--additional-driver-flag=--custom-devtools-frontend=${SOURCE_PATH}`);
+    }
     if (IS_DEBUG_ENABLED) {
         testArgs.push("--additional-driver-flag=--remote-debugging-port=9222");
         testArgs.push("--time-out-ms=6000000");

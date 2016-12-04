@@ -44,7 +44,8 @@
 
 (defmacro with-scenario [name & body]
   `(let [scenario-id# (dirac.automation/<!* dirac.automation/open-scenario! ~name)]
-     ~@body
+     (binding [dirac.automation.machinery/*current-scenario-id* scenario-id#]
+       ~@body)
      (dirac.automation/<!* dirac.automation/close-scenario! scenario-id#)
      scenario-id#))
 

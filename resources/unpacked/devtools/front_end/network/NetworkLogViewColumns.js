@@ -92,10 +92,10 @@ Network.NetworkLogViewColumns = class {
     this._popoverHelper.initializeCallbacks(
         this._getPopoverAnchor.bind(this), this._showPopover.bind(this), this._onHidePopover.bind(this));
 
-    this._dataGrid = new UI.SortableDataGrid(
-        this._columns.map(Network.NetworkLogViewColumns._convertToDataGridDescriptor));
+    this._dataGrid =
+        new UI.SortableDataGrid(this._columns.map(Network.NetworkLogViewColumns._convertToDataGridDescriptor));
     this._dataGrid.element.addEventListener('mousedown', event => {
-      if ((!this._dataGrid.selectedNode && event.button) || event.target.enclosingNodeOrSelfWithNodeName('a'))
+      if (!this._dataGrid.selectedNode && event.button)
         event.consume();
     }, true);
 
@@ -106,8 +106,7 @@ Network.NetworkLogViewColumns = class {
     this._dataGrid.setHeaderContextMenuCallback(this._innerHeaderContextMenu.bind(this));
 
     this._activeWaterfallSortId = Network.NetworkLogViewColumns.WaterfallSortIds.StartTime;
-    this._dataGrid.markColumnAsSortedBy(
-        Network.NetworkLogViewColumns._initialSortColumn, UI.DataGrid.Order.Ascending);
+    this._dataGrid.markColumnAsSortedBy(Network.NetworkLogViewColumns._initialSortColumn, UI.DataGrid.Order.Ascending);
 
     this._splitWidget = new UI.SplitWidget(true, true, 'networkPanelSplitViewWaterfall', 200);
     var widget = this._dataGrid.asWidget();
@@ -123,14 +122,12 @@ Network.NetworkLogViewColumns = class {
     this._waterfallColumn.element.addEventListener('mousewheel', this._onMouseWheel.bind(this, false), {passive: true});
     this._dataGridScroller.addEventListener('mousewheel', this._onMouseWheel.bind(this, true), true);
 
+    this._waterfallColumn.element.addEventListener('mousemove', event => {
+      var hoveredNode = this._waterfallColumn.getNodeFromPoint(event.offsetX, event.offsetY + event.target.offsetTop);
+      this._networkLogView.setHoveredNode(hoveredNode, event.shiftKey);
+    }, true);
     this._waterfallColumn.element.addEventListener(
-        'mousemove',
-        event => this._networkLogView.setHoveredRequest(
-            this._waterfallColumn.getRequestFromPoint(event.offsetX, event.offsetY + event.target.offsetTop),
-            event.shiftKey),
-        true);
-    this._waterfallColumn.element.addEventListener(
-        'mouseleave', this._networkLogView.setHoveredRequest.bind(this._networkLogView, null, false), true);
+        'mouseleave', this._networkLogView.setHoveredNode.bind(this._networkLogView, null, false), true);
 
     this._waterfallScroller = this._waterfallColumn.contentElement.createChild('div', 'network-waterfall-v-scroll');
     this._waterfallScroller.addEventListener('scroll', this._syncScrollers.bind(this), {passive: true});
@@ -156,11 +153,11 @@ Network.NetworkLogViewColumns = class {
      * @this {Network.NetworkLogViewColumns}
      */
     function handleContextMenu(event) {
-      var request = this._waterfallColumn.getRequestFromPoint(event.offsetX, event.offsetY);
-      if (!request)
+      var node = this._waterfallColumn.getNodeFromPoint(event.offsetX, event.offsetY);
+      if (!node)
         return;
       var contextMenu = new UI.ContextMenu(event);
-      this._networkLogView.handleContextMenuForRequest(contextMenu, request);
+      this._networkLogView.handleContextMenuForRequest(contextMenu, node.request());
       contextMenu.show();
     }
   }
@@ -174,8 +171,8 @@ Network.NetworkLogViewColumns = class {
       event.consume(true);
     this._activeScroller.scrollTop -= event.wheelDeltaY;
     this._syncScrollers();
-    this._networkLogView.setHoveredRequest(
-        this._waterfallColumn.getRequestFromPoint(event.offsetX, event.offsetY), event.shiftKey);
+    var node = this._waterfallColumn.getNodeFromPoint(event.offsetX, event.offsetY);
+    this._networkLogView.setHoveredNode(node, event.shiftKey);
   }
 
   _syncScrollers() {
@@ -201,23 +198,16 @@ Network.NetworkLogViewColumns = class {
           this._activeScroller.scrollTop, this._eventDividersShown ? this._eventDividers : undefined);
       return;
     }
-    var currentNode = this._dataGrid.rootNode();
-    /** @type {!Network.NetworkWaterfallColumn.RequestData} */
-    var requestData = {requests: [], navigationRequest: null};
-    while (currentNode = currentNode.traverseNextNode(true)) {
-      if (currentNode.isNavigationRequest())
-        requestData.navigationRequest = currentNode.request();
-      requestData.requests.push(currentNode.request());
-    }
-    this._waterfallColumn.update(this._activeScroller.scrollTop, this._eventDividers, requestData);
+    var nodes = this._networkLogView.flatNodesList();
+    this._waterfallColumn.update(this._activeScroller.scrollTop, this._eventDividers, nodes);
   }
 
   /**
-   * @param {?SDK.NetworkRequest} request
+   * @param {?Network.NetworkDataGridNode} node
    * @param {boolean} highlightInitiatorChain
    */
-  setHoveredRequest(request, highlightInitiatorChain) {
-    this._waterfallColumn.setHoveredRequest(request, highlightInitiatorChain);
+  setHoveredNode(node, highlightInitiatorChain) {
+    this._waterfallColumn.setHoveredNode(node, highlightInitiatorChain);
   }
 
   _createWaterfallHeader() {
@@ -228,7 +218,7 @@ Network.NetworkLogViewColumns = class {
     var innerElement = this._waterfallHeaderElement.createChild('div');
     innerElement.textContent = Common.UIString('Waterfall');
     this._waterfallColumnSortIcon = this._waterfallHeaderElement.createChild('div', 'sort-order-icon-container')
-        .createChild('div', 'sort-order-icon');
+                                        .createChild('div', 'sort-order-icon');
 
     /**
      * @this {Network.NetworkLogViewColumns}
@@ -295,9 +285,9 @@ Network.NetworkLogViewColumns = class {
         this._waterfallColumnSortIcon.classList.add('sort-descending');
 
       this._waterfallRequestsAreStale = true;
-      var sortFunction =
-          Network.NetworkDataGridNode.RequestPropertyComparator.bind(null, this._activeWaterfallSortId);
+      var sortFunction = Network.NetworkDataGridNode.RequestPropertyComparator.bind(null, this._activeWaterfallSortId);
       this._dataGrid.sortNodes(sortFunction, !this._dataGrid.isSortOrderAscending());
+      this._networkLogView.dataGridSorted();
       return;
     }
 
@@ -359,9 +349,9 @@ Network.NetworkLogViewColumns = class {
 
   _saveColumns() {
     var saveableSettings = {};
-    for (var columnConfig of this._columns) {
+    for (var columnConfig of this._columns)
       saveableSettings[columnConfig.id] = {visible: columnConfig.visible, title: columnConfig.title};
-    }
+
     this._persistantSettings.set(saveableSettings);
   }
 

@@ -25,3 +25,5 @@ pom.xml*
 .figwheel*
 resources/release/background.js
 resources/release/options.js
+npm-debug.log
+/resources/unpacked/devtools/front_end/protocol_externs.js

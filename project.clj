@@ -1,4 +1,4 @@
-(defproject binaryage/dirac "0.8.4"
+(defproject binaryage/dirac "0.8.5"
   :description "Dirac DevTools - a Chrome DevTools fork for ClojureScript developers."
   :url "https://github.com/binaryage/dirac"
   :license {:name         "MIT License"
@@ -18,7 +18,7 @@
                  [http-kit "2.2.0"]
                  [version-clj "0.1.2"]
                  [clansi "1.0.0"]
-                 [funcool/cuerdas "2.0.0"]
+                 [funcool/cuerdas "2.0.1"]
 
                  ; we cannot use :dependencies under individual profiles because Cursive recognizes only root level
                  ; thus we mark extra deps with :scope "test" and filter them later when producing jar library
@@ -459,13 +459,13 @@
             "test-browser"               ["shell" "scripts/test-browser.sh"]                                                  ; this will run browser tests against fully optimized dirac extension (release build)
             "test-browser-dev"           ["shell" "scripts/test-browser-dev.sh"]                                              ; this will run browser tests against unpacked dirac extension
 
-            "run-backend-tests-17"       ["with-profile" "+test-runner,+clojure17,+debugger-5005" "run" "-m" "dirac.tests.backend.runner"]
-            "run-backend-tests-18"       ["with-profile" "+test-runner,+clojure18,+debugger-5005" "run" "-m" "dirac.tests.backend.runner"]
-            "run-backend-tests-19"       ["with-profile" "+test-runner,+clojure19,+debugger-5005" "run" "-m" "dirac.tests.backend.runner"]
+            "run-backend-tests-17"       ["with-profile" "+test-runner,+clojure17" "trampoline" "run" "-m" "dirac.tests.backend.runner"]
+            "run-backend-tests-18"       ["with-profile" "+test-runner,+clojure18" "trampoline" "run" "-m" "dirac.tests.backend.runner"]
+            "run-backend-tests-19"       ["with-profile" "+test-runner,+clojure19" "trampoline" "run" "-m" "dirac.tests.backend.runner"]
 
             "run-browser-tests"          ["shell" "scripts/run-browser-tests.sh" "dirac.tests.browser.runner"]
             "run-browser-tests-dev"      ["shell" "scripts/run-browser-tests.sh" "dirac.tests.browser.runner/-dev-main"]
-            "run-browser-tests-agent"    ["shell" "scripts/run-browser-tests.sh" "dirac.tests.browser.runner/run-agent"]
+            "run-browser-tests-agent"    ["with-profile" "+test-runner,+debugger-5005" "trampoline" "run" "-m" "dirac.tests.browser.runner/run-agent"]
 
             "dev-browser-tests"          ["shell" "scripts/dev-browser-tests.sh"]
             "dev-dirac-sample"           ["shell" "scripts/dev-dirac-sample.sh"]

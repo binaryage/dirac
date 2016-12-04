@@ -104,7 +104,10 @@
 
 (defn make-result-struct
   ([] (make-result-struct nil))
-  ([v] [:result (or v :ok)]))
+  ([v]
+   (assert (not (and (object? v) (satisfies? async-protocols/Channel v)))
+           "value is a channel, a channel cannot be sent over wire")
+   [:result (or v :ok)]))
 
 (defn strip-last-nl [s]
   (let [last-index (dec (alength s))]

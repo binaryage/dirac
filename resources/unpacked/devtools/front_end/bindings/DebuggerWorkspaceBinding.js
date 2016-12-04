@@ -9,11 +9,9 @@ Bindings.DebuggerWorkspaceBinding = class {
   /**
    * @param {!SDK.TargetManager} targetManager
    * @param {!Workspace.Workspace} workspace
-   * @param {!Bindings.NetworkMapping} networkMapping
    */
-  constructor(targetManager, workspace, networkMapping) {
+  constructor(targetManager, workspace) {
     this._workspace = workspace;
-    this._networkMapping = networkMapping;
 
     // FIXME: Migrate from _targetToData to _debuggerModelToData.
     /** @type {!Map.<!SDK.Target, !Bindings.DebuggerWorkspaceBinding.TargetData>} */
@@ -21,11 +19,9 @@ Bindings.DebuggerWorkspaceBinding = class {
     targetManager.observeTargets(this);
 
     targetManager.addModelListener(
-        SDK.DebuggerModel, SDK.DebuggerModel.Events.GlobalObjectCleared, this._globalObjectCleared,
-        this);
+        SDK.DebuggerModel, SDK.DebuggerModel.Events.GlobalObjectCleared, this._globalObjectCleared, this);
     targetManager.addModelListener(
-        SDK.DebuggerModel, SDK.DebuggerModel.Events.BeforeDebuggerPaused, this._beforeDebuggerPaused,
-        this);
+        SDK.DebuggerModel, SDK.DebuggerModel.Events.BeforeDebuggerPaused, this._beforeDebuggerPaused, this);
     targetManager.addModelListener(
         SDK.DebuggerModel, SDK.DebuggerModel.Events.DebuggerResumed, this._debuggerResumed, this);
     workspace.addEventListener(Workspace.Workspace.Events.UISourceCodeRemoved, this._uiSourceCodeRemoved, this);
@@ -125,8 +121,8 @@ Bindings.DebuggerWorkspaceBinding = class {
   createLiveLocation(rawLocation, updateDelegate, locationPool) {
     var info = this._infoForScript(rawLocation.target(), rawLocation.scriptId);
     console.assert(info);
-    var location = new Bindings.DebuggerWorkspaceBinding.Location(
-        info._script, rawLocation, this, updateDelegate, locationPool);
+    var location =
+        new Bindings.DebuggerWorkspaceBinding.Location(info._script, rawLocation, this, updateDelegate, locationPool);
     info._addLocation(location);
     return location;
   }
@@ -363,23 +359,18 @@ Bindings.DebuggerWorkspaceBinding.TargetData = class {
     this.callFrameLocations = new Set();
 
     var workspace = debuggerWorkspaceBinding._workspace;
-    var networkMapping = debuggerWorkspaceBinding._networkMapping;
 
     this._defaultMapping = new Bindings.DefaultScriptMapping(debuggerModel, workspace, debuggerWorkspaceBinding);
-    this._resourceMapping =
-        new Bindings.ResourceScriptMapping(debuggerModel, workspace, networkMapping, debuggerWorkspaceBinding);
+    this._resourceMapping = new Bindings.ResourceScriptMapping(debuggerModel, workspace, debuggerWorkspaceBinding);
     this._compilerMapping = new Bindings.CompilerScriptMapping(
-        debuggerModel, workspace, networkMapping, Bindings.NetworkProject.forTarget(this._target),
-        debuggerWorkspaceBinding);
+        debuggerModel, workspace, Bindings.NetworkProject.forTarget(this._target), debuggerWorkspaceBinding);
 
     /** @type {!Map.<!Workspace.UISourceCode, !Bindings.DebuggerSourceMapping>} */
     this._uiSourceCodeToSourceMapping = new Map();
 
     this._eventListeners = [
-      debuggerModel.addEventListener(
-          SDK.DebuggerModel.Events.ParsedScriptSource, this._parsedScriptSource, this),
-      debuggerModel.addEventListener(
-          SDK.DebuggerModel.Events.FailedToParseScriptSource, this._parsedScriptSource, this)
+      debuggerModel.addEventListener(SDK.DebuggerModel.Events.ParsedScriptSource, this._parsedScriptSource, this),
+      debuggerModel.addEventListener(SDK.DebuggerModel.Events.FailedToParseScriptSource, this._parsedScriptSource, this)
     ];
   }
 
@@ -637,7 +628,7 @@ Bindings.DebuggerSourceMapping.prototype = {
    * @param {!SDK.DebuggerModel.Location} rawLocation
    * @return {?Workspace.UILocation}
    */
-  rawLocationToUILocation: function(rawLocation) {},
+  rawLocationToUILocation(rawLocation) {},
 
   /**
    * @param {!Workspace.UISourceCode} uiSourceCode
@@ -645,19 +636,19 @@ Bindings.DebuggerSourceMapping.prototype = {
    * @param {number} columnNumber
    * @return {?SDK.DebuggerModel.Location}
    */
-  uiLocationToRawLocation: function(uiSourceCode, lineNumber, columnNumber) {},
+  uiLocationToRawLocation(uiSourceCode, lineNumber, columnNumber) {},
 
   /**
    * @return {boolean}
    */
-  isIdentity: function() {},
+  isIdentity() {},
 
   /**
    * @param {!Workspace.UISourceCode} uiSourceCode
    * @param {number} lineNumber
    * @return {boolean}
    */
-  uiLineHasMapping: function(uiSourceCode, lineNumber) {}
+  uiLineHasMapping(uiSourceCode, lineNumber) {}
 };
 
 /**

@@ -55,11 +55,13 @@
 
 (defn wait-for-reply! [message-id reply-timeout info]
   {:pre [(some? message-id)
-         (number? reply-timeout)]}
+         (or (nil? reply-timeout) (number? reply-timeout))]}
   (assert (is-processing-messages?) (str "wait-for-reply! called before messages/init! call? " message-id ": " (pr-str info)))
   (assert (not @should-tear-down?) (str "wait-for-reply! called after messages/done! call? " message-id ": " (pr-str info)))
   (let [reply-channel (chan)
-        timeout-channel (timeout reply-timeout)
+        timeout-channel (if (some? reply-timeout)
+                          (timeout reply-timeout)
+                          (chan))
         observer (fn [reply-message]
                    {:pre [(some? reply-message)]}
                    (put! reply-channel reply-message))]
@@ -97,26 +99,24 @@
 ; for communication between tested page and marionette extension
 ; see https://developer.chrome.com/extensions/content_scripts#host-page-communication
 (defn post-message-with-timeout! [js-message reply-timeout]
+  {:pre [(some? js-message)
+         (or (nil? reply-timeout) (= :no-timeout reply-timeout) (number? reply-timeout))]}
   (let [message-id (get-next-message-id!)]
     (oset! js-message "!id" message-id)
-    (let [post-message! #(.postMessage js/window js-message "*")]
-      (if (or (nil? reply-timeout) (= :no-timeout reply-timeout))
-        (go
-          (post-message!)
-          nil)
-        (let [reply-channel (wait-for-reply! message-id reply-timeout js-message)]
-          (post-message!)
-          reply-channel)))))
-
+    (let [reply-timeout (if-not (= :no-timeout reply-timeout) reply-timeout)                                                  ; just convert :no-timeout to nil
+          reply-channel (wait-for-reply! message-id reply-timeout js-message)]
+      (.postMessage js/window js-message "*")
+      reply-channel)))
 
 (defn post-message!
   ([js-message]
-   (post-message-with-timeout! js-message (get-marion-message-reply-timeout)))
+   (post-message! js-message (get-marion-message-reply-timeout)))
   ([js-message reply-timeout]
    (post-message-with-timeout! js-message reply-timeout)))
 
 (defn post-extension-command! [command & args]
-  (apply post-message! #js {:type "marion-extension-command" :payload (pr-str command)} args))
+  (apply post-message! #js {:type    "marion-extension-command"
+                            :payload (pr-str command)} args))
 
 (defn fire-chrome-event! [event]
   (post-extension-command! {:command      :fire-synthetic-chrome-event

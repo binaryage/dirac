@@ -40,8 +40,7 @@ SDK.ResourceTreeModel = class extends SDK.SDKModel {
   constructor(target, networkManager, securityOriginManager) {
     super(SDK.ResourceTreeModel, target);
     if (networkManager) {
-      networkManager.addEventListener(
-          SDK.NetworkManager.Events.RequestFinished, this._onRequestFinished, this);
+      networkManager.addEventListener(SDK.NetworkManager.Events.RequestFinished, this._onRequestFinished, this);
       networkManager.addEventListener(
           SDK.NetworkManager.Events.RequestUpdateDropped, this._onRequestUpdateDropped, this);
     }
@@ -56,6 +55,7 @@ SDK.ResourceTreeModel = class extends SDK.SDKModel {
 
     this._pendingReloadOptions = null;
     this._reloadSuspensionCount = 0;
+    this._isInterstitialShowing = false;
   }
 
   /**
@@ -63,7 +63,7 @@ SDK.ResourceTreeModel = class extends SDK.SDKModel {
    * @return {?SDK.ResourceTreeModel}
    */
   static fromTarget(target) {
-    return /** @type {?SDK.ResourceTreeModel} */ (target.model(SDK.ResourceTreeModel));
+    return target.model(SDK.ResourceTreeModel);
   }
 
   /**
@@ -114,6 +114,13 @@ SDK.ResourceTreeModel = class extends SDK.SDKModel {
    */
   cachedResourcesLoaded() {
     return this._cachedResourcesProcessed;
+  }
+
+  /**
+   * @return {boolean}
+   */
+  isInterstitialShowing() {
+    return this._isInterstitialShowing;
   }
 
   /**
@@ -426,9 +433,9 @@ SDK.ResourceTreeModel = class extends SDK.SDKModel {
     if (!frameB && frameA)
       return 1;
 
-    if (frameA && frameB) {
+    if (frameA && frameB)
       return frameA.id.localeCompare(frameB.id);
-    }
+
     return SDK.ExecutionContext.comparator(a, b);
   }
 };
@@ -860,6 +867,7 @@ SDK.PageDispatcher = class {
    * @override
    */
   interstitialShown() {
+    this._resourceTreeModel._isInterstitialShowing = true;
     this._resourceTreeModel.dispatchEventToListeners(SDK.ResourceTreeModel.Events.InterstitialShown);
   }
 
@@ -867,6 +875,7 @@ SDK.PageDispatcher = class {
    * @override
    */
   interstitialHidden() {
+    this._resourceTreeModel._isInterstitialShowing = false;
     this._resourceTreeModel.dispatchEventToListeners(SDK.ResourceTreeModel.Events.InterstitialHidden);
   }
 

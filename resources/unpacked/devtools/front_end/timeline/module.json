@@ -4,7 +4,7 @@
             "type": "view",
             "location": "panel",
             "id": "timeline",
-            "title": "Timeline",
+            "title": "Performance",
             "order": 50,
             "className": "Timeline.TimelinePanel"
         },
@@ -127,7 +127,9 @@
         "TimelineController.js",
         "TimelineLoader.js",
         "TimelineEventOverview.js",
+        "TimelineFlameChartView.js",
         "TimelineFlameChart.js",
+        "TimelineNetworkFlameChart.js",
         "TimelineTreeView.js",
         "TimelineUIUtils.js",
         "TimelineLayersView.js",

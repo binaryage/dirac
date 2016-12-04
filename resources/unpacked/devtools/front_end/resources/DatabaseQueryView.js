@@ -35,7 +35,9 @@ Resources.DatabaseQueryView = class extends UI.VBox {
     this.element.classList.add('storage-view', 'query', 'monospace');
     this.element.addEventListener('selectstart', this._selectStart.bind(this), false);
 
+    this._promptIcon = UI.Icon.create('smallicon-text-prompt', 'prompt-icon');
     this._promptElement = createElement('div');
+    this._promptElement.appendChild(this._promptIcon);
     this._promptElement.className = 'database-query-prompt';
     this._promptElement.appendChild(createElement('br'));
     this._promptElement.addEventListener('keydown', this._promptKeyDown.bind(this), true);
@@ -54,16 +56,19 @@ Resources.DatabaseQueryView = class extends UI.VBox {
   }
 
   /**
-   * @param {!Element} proxyElement
-   * @param {!Range} wordRange
-   * @param {boolean} force
-   * @param {function(!Array.<string>, number=)} completionsReadyCallback
+   * @param {string} expression
+   * @param {string} prefix
+   * @param {boolean=} force
+   * @return {!Promise<!UI.SuggestBox.Suggestions>}
    */
-  completions(proxyElement, wordRange, force, completionsReadyCallback) {
-    var prefix = wordRange.toString().toLowerCase();
+  completions(expression, prefix, force) {
     if (!prefix)
-      return;
+      return Promise.resolve([]);
+    var fulfill;
+    var promise = new Promise(x => fulfill = x);
     var results = [];
+
+    prefix = prefix.toLowerCase();
 
     function accumulateMatches(textArray) {
       for (var i = 0; i < textArray.length; ++i) {
@@ -75,7 +80,6 @@ Resources.DatabaseQueryView = class extends UI.VBox {
         results.push(textArray[i]);
       }
     }
-
     function tableNamesCallback(tableNames) {
       accumulateMatches(tableNames.map(function(name) {
         return name + ' ';
@@ -85,9 +89,10 @@ Resources.DatabaseQueryView = class extends UI.VBox {
         'INSERT INTO ', 'VALUES ('
       ]);
 
-      completionsReadyCallback(results);
+      fulfill(results.map(completion => ({title: completion})));
     }
     this.database.getTableNames(tableNamesCallback);
+    return promise;
   }
 
   _selectStart(event) {
@@ -126,6 +131,7 @@ Resources.DatabaseQueryView = class extends UI.VBox {
       return;
 
     this._prompt.setText('');
+    this._promptElement.insertBefore(this._promptIcon, this._promptElement.firstChild);
 
     this.database.executeSql(query, this._queryFinished.bind(this, query), this._queryError.bind(this, query));
   }
@@ -165,14 +171,19 @@ Resources.DatabaseQueryView = class extends UI.VBox {
   _appendErrorQueryResult(query, errorText) {
     var resultElement = this._appendQueryResult(query);
     resultElement.classList.add('error');
-    resultElement.textContent = errorText;
+    resultElement.appendChild(UI.Icon.create('smallicon-error', 'prompt-icon'));
+    resultElement.createTextChild(errorText);
 
     this._promptElement.scrollIntoView(false);
   }
 
+  /**
+   * @param {string} query
+   */
   _appendQueryResult(query) {
     var element = createElement('div');
     element.className = 'database-user-query';
+    element.appendChild(UI.Icon.create('smallicon-user-command', 'prompt-icon'));
     this.element.insertBefore(element, this._proxyElement);
 
     var commandTextElement = createElement('span');

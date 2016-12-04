@@ -2,10 +2,8 @@
 
 # updates all version strings
 
-set -e
-
-pushd `dirname "${BASH_SOURCE[0]}"` > /dev/null
-source "./config.sh"
+source "$(dirname "${BASH_SOURCE[0]}")/_config.sh"
+false && source _config.sh # never executes, this is here just for IntelliJ Bash support to understand our sourcing
 
 pushd "$ROOT"
 
@@ -24,7 +22,5 @@ sed -i "" -e "s/\"version\"\: \".*\"/\"version\": \"$VERSION\"/g" "$RELEASE_MANI
 
 # this is just a sanity check
 ./scripts/check-versions.sh
-
-popd
 
 popd

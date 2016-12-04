@@ -79,8 +79,7 @@ Bindings.NetworkProject = class extends SDK.SDKObject {
 
     if (resourceTreeModel) {
       this._eventListeners.push(
-          resourceTreeModel.addEventListener(
-              SDK.ResourceTreeModel.Events.ResourceAdded, this._resourceAdded, this),
+          resourceTreeModel.addEventListener(SDK.ResourceTreeModel.Events.ResourceAdded, this._resourceAdded, this),
           resourceTreeModel.addEventListener(
               SDK.ResourceTreeModel.Events.FrameWillNavigate, this._frameWillNavigate, this),
           resourceTreeModel.addEventListener(
@@ -90,8 +89,7 @@ Bindings.NetworkProject = class extends SDK.SDKObject {
     var debuggerModel = SDK.DebuggerModel.fromTarget(target);
     if (debuggerModel) {
       this._eventListeners.push(
-          debuggerModel.addEventListener(
-              SDK.DebuggerModel.Events.ParsedScriptSource, this._parsedScriptSource, this),
+          debuggerModel.addEventListener(SDK.DebuggerModel.Events.ParsedScriptSource, this._parsedScriptSource, this),
           debuggerModel.addEventListener(
               SDK.DebuggerModel.Events.FailedToParseScriptSource, this._parsedScriptSource, this));
     }
@@ -106,7 +104,7 @@ Bindings.NetworkProject = class extends SDK.SDKObject {
   }
 
   /**
-   * @param {!Sources.UISourceCode} uiSourceCode
+   * @param {!Workspace.UISourceCode} uiSourceCode
    * @return {?SDK.Script}
    */
   static getScriptFromSourceCode(uiSourceCode) {
@@ -160,10 +158,9 @@ Bindings.NetworkProject = class extends SDK.SDKObject {
    * @return {string}
    */
   static uiSourceCodeMimeType(uiSourceCode) {
-    if (uiSourceCode[Bindings.NetworkProject._scriptSymbol] ||
-        uiSourceCode[Bindings.NetworkProject._styleSheetSymbol]) {
+    if (uiSourceCode[Bindings.NetworkProject._scriptSymbol] || uiSourceCode[Bindings.NetworkProject._styleSheetSymbol])
       return uiSourceCode.contentType().canonicalMimeType();
-    }
+
     var resource = uiSourceCode[Bindings.NetworkProject._resourceSymbol];
     if (resource)
       return resource.mimeType;
@@ -259,8 +256,7 @@ Bindings.NetworkProject = class extends SDK.SDKObject {
       if (!parsedURL.isValid)
         return;
     }
-    var uiSourceCode =
-        this._createFile(script, SDK.ResourceTreeFrame.fromScript(script), script.isContentScript());
+    var uiSourceCode = this._createFile(script, SDK.ResourceTreeFrame.fromScript(script), script.isContentScript());
     uiSourceCode[Bindings.NetworkProject._scriptSymbol] = script;
     var resource = SDK.ResourceTreeModel.resourceForURL(uiSourceCode.url());
     this._addUISourceCodeWithProvider(uiSourceCode, script, this._resourceMetadata(resource));
@@ -275,8 +271,7 @@ Bindings.NetworkProject = class extends SDK.SDKObject {
       return;
 
     var originalContentProvider = header.originalContentProvider();
-    var uiSourceCode =
-        this._createFile(originalContentProvider, SDK.ResourceTreeFrame.fromStyleSheet(header), false);
+    var uiSourceCode = this._createFile(originalContentProvider, SDK.ResourceTreeFrame.fromStyleSheet(header), false);
     uiSourceCode[Bindings.NetworkProject._styleSheetSymbol] = header;
     var resource = SDK.ResourceTreeModel.resourceForURL(uiSourceCode.url());
     this._addUISourceCodeWithProvider(uiSourceCode, originalContentProvider, this._resourceMetadata(resource));
@@ -308,13 +303,12 @@ Bindings.NetworkProject = class extends SDK.SDKObject {
     var resourceType = resource.resourceType();
     // Only load selected resource types from resources.
     if (resourceType !== Common.resourceTypes.Image && resourceType !== Common.resourceTypes.Font &&
-        resourceType !== Common.resourceTypes.Document && resourceType !== Common.resourceTypes.Manifest) {
+        resourceType !== Common.resourceTypes.Document && resourceType !== Common.resourceTypes.Manifest)
       return;
-    }
+
 
     // Ignore non-images and non-fonts.
-    if (resourceType === Common.resourceTypes.Image && resource.mimeType &&
-        !resource.mimeType.startsWith('image'))
+    if (resourceType === Common.resourceTypes.Image && resource.mimeType && !resource.mimeType.startsWith('image'))
       return;
     if (resourceType === Common.resourceTypes.Font && resource.mimeType && !resource.mimeType.includes('font'))
       return;
@@ -393,6 +387,30 @@ Bindings.NetworkProject = class extends SDK.SDKObject {
     for (var project of this._workspaceProjects.values())
       project.removeProject();
     this._workspaceProjects.clear();
+  }
+
+  /**
+   * @param {!Workspace.Workspace} workspace
+   * @param {string} url
+   * @param {!SDK.Script} script
+   * @return {?Workspace.UISourceCode}
+   */
+  static uiSourceCodeForScriptURL(workspace, url, script) {
+    var target = script.target();
+    var frame = SDK.ResourceTreeFrame.fromScript(script);
+    return workspace.uiSourceCode(Bindings.NetworkProject.projectId(target, frame, false), url) ||
+        workspace.uiSourceCode(Bindings.NetworkProject.projectId(target, frame, true), url);
+  }
+
+  /**
+   * @param {!Workspace.Workspace} workspace
+   * @param {string} url
+   * @param {!SDK.CSSStyleSheetHeader} header
+   * @return {?Workspace.UISourceCode}
+   */
+  static uiSourceCodeForStyleURL(workspace, url, header) {
+    var frame = SDK.ResourceTreeFrame.fromStyleSheet(header);
+    return workspace.uiSourceCode(Bindings.NetworkProject.projectId(header.target(), frame, false), url);
   }
 };
 

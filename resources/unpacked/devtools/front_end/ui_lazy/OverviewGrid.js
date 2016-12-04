@@ -100,7 +100,7 @@ UI.OverviewGrid = class {
   }
 
   /**
-   * @param {string} eventType
+   * @param {symbol} eventType
    * @param {function(!Common.Event)} listener
    * @param {!Object=} thisObject
    * @return {!Common.EventTarget.EventDescriptor}
@@ -146,10 +146,11 @@ UI.OverviewGrid.Window = class extends Common.Object {
     UI.installDragHandle(
         this._parentElement, this._startWindowSelectorDragging.bind(this), this._windowSelectorDragging.bind(this),
         this._endWindowSelectorDragging.bind(this), 'text', null);
-    if (dividersLabelBarElement)
+    if (dividersLabelBarElement) {
       UI.installDragHandle(
           dividersLabelBarElement, this._startWindowDragging.bind(this), this._windowDragging.bind(this), null,
           '-webkit-grabbing', '-webkit-grab');
+    }
 
     this._parentElement.addEventListener('mousewheel', this._onMouseWheel.bind(this), true);
     this._parentElement.addEventListener('dblclick', this._resizeWindowMaximum.bind(this), true);

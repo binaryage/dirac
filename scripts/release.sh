@@ -19,12 +19,10 @@
 # - copy compiled code to appropriate places in resources/release
 # - remove unneeded files from resources/release
 
-set -e
+source "$(dirname "${BASH_SOURCE[0]}")/_config.sh"
+false && source _config.sh # never executes, this is here just for IntelliJ Bash support to understand our sourcing
 
 TASK=${1:-compile-dirac-pseudo-names}
-
-pushd `dirname "${BASH_SOURCE[0]}"` > /dev/null
-source "./config.sh"
 
 pushd "$ROOT"
 
@@ -89,7 +87,7 @@ echo -n "" > "$WORK_DIR/dirac/require-implant.js" # when doing advanced build, a
 
 echo "Building devtools in advanced mode..."
 # DANGER! this list of applications must be the same as specified in resources/unpacked/devtools/BUILD.gn (search for "-- darwin")
-./scripts/build/build_release_applications.py inspector toolbox formatter_worker heap_snapshot_worker utility_shared_worker \
+./scripts/build/build_release_applications.py inspector toolbox unit_test_runner formatter_worker heap_snapshot_worker utility_shared_worker \
                                               --input_path "$WORK_DIR" --output_path "$RELEASE_BUILD_DEVTOOLS_FRONTEND" --debug 0
 
 popd
@@ -109,7 +107,5 @@ cp "$ROOT/target/resources/release/.compiled/options.js" "$RELEASE_BUILD/options
 # ad-hoc cleanup
 rm -rf "$RELEASE_BUILD_DEVTOOLS_FRONTEND/dirac"
 rm -rf "$RELEASE_BUILD_DEVTOOLS_FRONTEND/Images/src"
-
-popd
 
 popd

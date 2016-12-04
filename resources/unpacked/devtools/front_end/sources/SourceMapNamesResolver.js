@@ -73,8 +73,7 @@ Sources.SourceMapNamesResolver._scopeIdentifiers = function(scope) {
         continue;
       var start = scopeStart + id.offset - prefix.length;
       cursor.resetTo(start);
-      result.push(
-          new Sources.SourceMapNamesResolver.Identifier(id.name, cursor.lineNumber(), cursor.columnNumber()));
+      result.push(new Sources.SourceMapNamesResolver.Identifier(id.name, cursor.lineNumber(), cursor.columnNumber()));
     }
     return result;
   }
@@ -153,7 +152,8 @@ Sources.SourceMapNamesResolver._resolveScope = function(scope) {
     var sourceTextRange = new Common.TextRange(
         startEntry.sourceLineNumber, startEntry.sourceColumnNumber, endEntry.sourceLineNumber,
         endEntry.sourceColumnNumber);
-    var uiSourceCode = Bindings.networkMapping.uiSourceCodeForScriptURL(startEntry.sourceURL, script);
+    var uiSourceCode =
+        Bindings.NetworkProject.uiSourceCodeForScriptURL(Workspace.workspace, startEntry.sourceURL, script);
     if (!uiSourceCode)
       return Promise.resolve(/** @type {?string} */ (null));
 
@@ -225,7 +225,7 @@ Sources.SourceMapNamesResolver._allVariablesInCallFrame = function(callFrame) {
  */
 Sources.SourceMapNamesResolver.resolveExpression = function(
     callFrame, originalText, uiSourceCode, lineNumber, startColumnNumber, endColumnNumber) {
-  if (!Runtime.experiments.isEnabled('resolveVariableNames') || !uiSourceCode.contentType().isFromSourceMap())
+  if (!uiSourceCode.contentType().isFromSourceMap())
     return Promise.resolve('');
 
   return Sources.SourceMapNamesResolver._allVariablesInCallFrame(callFrame).then(findCompiledName);
@@ -254,8 +254,8 @@ Sources.SourceMapNamesResolver.resolveExpression = function(
 Sources.SourceMapNamesResolver._resolveExpression = function(
     callFrame, uiSourceCode, lineNumber, startColumnNumber, endColumnNumber) {
   var target = callFrame.target();
-  var rawLocation = Bindings.debuggerWorkspaceBinding.uiLocationToRawLocation(
-      target, uiSourceCode, lineNumber, startColumnNumber);
+  var rawLocation =
+      Bindings.debuggerWorkspaceBinding.uiLocationToRawLocation(target, uiSourceCode, lineNumber, startColumnNumber);
   if (!rawLocation)
     return Promise.resolve('');
 
@@ -282,8 +282,7 @@ Sources.SourceMapNamesResolver._resolveExpression = function(
     var originalText = text.extract(textRange);
     if (!originalText)
       return Promise.resolve('');
-    return Common.formatterWorkerPool.runTask('evaluatableJavaScriptSubstring', {content: originalText})
-        .then(onResult);
+    return Common.formatterWorkerPool.runTask('evaluatableJavaScriptSubstring', {content: originalText}).then(onResult);
   }
 
   /**
@@ -302,7 +301,7 @@ Sources.SourceMapNamesResolver._resolveExpression = function(
 Sources.SourceMapNamesResolver.resolveThisObject = function(callFrame) {
   if (!callFrame)
     return Promise.resolve(/** @type {?SDK.RemoteObject} */ (null));
-  if (!Runtime.experiments.isEnabled('resolveVariableNames') || !callFrame.scopeChain().length)
+  if (!callFrame.scopeChain().length)
     return Promise.resolve(callFrame.thisObject());
 
   return Sources.SourceMapNamesResolver._resolveScope(callFrame.scopeChain()[0]).then(onScopeResolved);
@@ -339,9 +338,6 @@ Sources.SourceMapNamesResolver.resolveThisObject = function(callFrame) {
  * @return {!SDK.RemoteObject}
  */
 Sources.SourceMapNamesResolver.resolveScopeInObject = function(scope) {
-  if (!Runtime.experiments.isEnabled('resolveVariableNames'))
-    return scope.object();
-
   var startLocation = scope.startLocation();
   var endLocation = scope.endLocation();
 

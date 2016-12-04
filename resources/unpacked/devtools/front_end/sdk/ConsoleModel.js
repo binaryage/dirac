@@ -50,11 +50,12 @@ SDK.ConsoleModel = class extends SDK.SDKModel {
     if (this._logAgent) {
       target.registerLogDispatcher(new SDK.LogDispatcher(this));
       this._logAgent.enable();
-      if (!InspectorFrontendHost.isUnderTest()) {
+      if (!Host.isUnderTest()) {
         this._logAgent.startViolationsReport([
-            {name: 'longTask', threshold: 50 },
-            {name: 'longLayout', threshold: 30},
-            {name: 'blockedEvent', threshold: 100}]);
+          {name: 'longTask', threshold: 200}, {name: 'longLayout', threshold: 30},
+          {name: 'blockedEvent', threshold: 100}, {name: 'blockedParser', threshold: -1},
+          {name: 'handler', threshold: 150}, {name: 'recurringHandler', threshold: 50}
+        ]);
       }
     }
   }
@@ -69,8 +70,7 @@ SDK.ConsoleModel = class extends SDK.SDKModel {
     var requestedText = text;
 
     var commandMessage = new SDK.ConsoleMessage(
-        target, SDK.ConsoleMessage.MessageSource.JS, null, text,
-        SDK.ConsoleMessage.MessageType.Command);
+        target, SDK.ConsoleMessage.MessageSource.JS, null, text, SDK.ConsoleMessage.MessageType.Command);
     commandMessage.setExecutionContextId(executionContext.id);
     target.consoleModel.addMessage(commandMessage);
 
@@ -131,8 +131,7 @@ SDK.ConsoleModel = class extends SDK.SDKModel {
         msg.target().subTargetsManager.targetForId(msg.workerId))
       return;
 
-    if (msg.source === SDK.ConsoleMessage.MessageSource.ConsoleAPI &&
-        msg.type === SDK.ConsoleMessage.MessageType.Clear)
+    if (msg.source === SDK.ConsoleMessage.MessageSource.ConsoleAPI && msg.type === SDK.ConsoleMessage.MessageType.Clear)
       this.clear();
 
     if (msg.level === SDK.ConsoleMessage.MessageLevel.RevokedError && msg._revokedExceptionId) {
@@ -184,8 +183,7 @@ SDK.ConsoleModel = class extends SDK.SDKModel {
    */
   _isBlacklisted(msg) {
     if (msg.source !== SDK.ConsoleMessage.MessageSource.Network ||
-        msg.level !== SDK.ConsoleMessage.MessageLevel.Error || !msg.url ||
-        !msg.url.startsWith('chrome-extension'))
+        msg.level !== SDK.ConsoleMessage.MessageLevel.Error || !msg.url || !msg.url.startsWith('chrome-extension'))
       return false;
 
     // ignore Chromecast's cast_sender spam
@@ -360,9 +358,8 @@ SDK.ConsoleMessage = class {
   static fromException(target, exceptionDetails, messageType, timestamp, forceUrl) {
     return new SDK.ConsoleMessage(
         target, SDK.ConsoleMessage.MessageSource.JS, SDK.ConsoleMessage.MessageLevel.Error,
-        SDK.ConsoleMessage.simpleTextFromException(exceptionDetails), messageType,
-        forceUrl || exceptionDetails.url, exceptionDetails.lineNumber, exceptionDetails.columnNumber, undefined,
-        exceptionDetails.exception ?
+        SDK.ConsoleMessage.simpleTextFromException(exceptionDetails), messageType, forceUrl || exceptionDetails.url,
+        exceptionDetails.lineNumber, exceptionDetails.columnNumber, undefined, exceptionDetails.exception ?
             [SDK.RemoteObject.fromLocalObject(exceptionDetails.text), exceptionDetails.exception] :
             undefined,
         exceptionDetails.stackTrace, timestamp, exceptionDetails.executionContextId, exceptionDetails.scriptId);
@@ -433,8 +430,7 @@ SDK.ConsoleMessage = class {
    */
   isErrorOrWarning() {
     return (
-        this.level === SDK.ConsoleMessage.MessageLevel.Warning ||
-        this.level === SDK.ConsoleMessage.MessageLevel.Error);
+        this.level === SDK.ConsoleMessage.MessageLevel.Warning || this.level === SDK.ConsoleMessage.MessageLevel.Error);
   }
 
   /**
@@ -615,8 +611,7 @@ SDK.MultitargetConsoleModel = class extends Common.Object {
   targetRemoved(target) {
     if (this._mainTarget === target) {
       delete this._mainTarget;
-      target.consoleModel.removeEventListener(
-          SDK.ConsoleModel.Events.ConsoleCleared, this._consoleCleared, this);
+      target.consoleModel.removeEventListener(SDK.ConsoleModel.Events.ConsoleCleared, this._consoleCleared, this);
     }
   }
 

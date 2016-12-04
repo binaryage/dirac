@@ -9,11 +9,9 @@ Bindings.CSSWorkspaceBinding = class {
   /**
    * @param {!SDK.TargetManager} targetManager
    * @param {!Workspace.Workspace} workspace
-   * @param {!Bindings.NetworkMapping} networkMapping
    */
-  constructor(targetManager, workspace, networkMapping) {
+  constructor(targetManager, workspace) {
     this._workspace = workspace;
-    this._networkMapping = networkMapping;
 
     /** @type {!Map.<!SDK.CSSModel, !Bindings.CSSWorkspaceBinding.TargetInfo>} */
     this._modelToTargetInfo = new Map();
@@ -27,8 +25,7 @@ Bindings.CSSWorkspaceBinding = class {
   targetAdded(target) {
     var cssModel = SDK.CSSModel.fromTarget(target);
     if (cssModel)
-      this._modelToTargetInfo.set(
-          cssModel, new Bindings.CSSWorkspaceBinding.TargetInfo(cssModel, this._workspace, this._networkMapping));
+      this._modelToTargetInfo.set(cssModel, new Bindings.CSSWorkspaceBinding.TargetInfo(cssModel, this._workspace));
   }
 
   /**
@@ -56,8 +53,7 @@ Bindings.CSSWorkspaceBinding = class {
   _ensureTargetInfo(header) {
     var targetInfo = this._modelToTargetInfo.get(header.cssModel());
     if (!targetInfo) {
-      targetInfo =
-          new Bindings.CSSWorkspaceBinding.TargetInfo(header.cssModel(), this._workspace, this._networkMapping);
+      targetInfo = new Bindings.CSSWorkspaceBinding.TargetInfo(header.cssModel(), this._workspace);
       this._modelToTargetInfo.set(header.cssModel(), targetInfo);
     }
     return targetInfo;
@@ -148,13 +144,12 @@ Bindings.CSSWorkspaceBinding.TargetInfo = class {
   /**
    * @param {!SDK.CSSModel} cssModel
    * @param {!Workspace.Workspace} workspace
-   * @param {!Bindings.NetworkMapping} networkMapping
    */
-  constructor(cssModel, workspace, networkMapping) {
+  constructor(cssModel, workspace) {
     this._cssModel = cssModel;
-    this._stylesSourceMapping = new Bindings.StylesSourceMapping(cssModel, workspace, networkMapping);
-    this._sassSourceMapping = new Bindings.SASSSourceMapping(
-        cssModel, networkMapping, Bindings.NetworkProject.forTarget(cssModel.target()));
+    this._stylesSourceMapping = new Bindings.StylesSourceMapping(cssModel, workspace);
+    this._sassSourceMapping =
+        new Bindings.SASSSourceMapping(cssModel, workspace, Bindings.NetworkProject.forTarget(cssModel.target()));
 
     /** @type {!Multimap<!SDK.CSSStyleSheetHeader, !Bindings.LiveLocation>} */
     this._locations = new Multimap();
@@ -275,7 +270,8 @@ Bindings.CSSWorkspaceBinding.LiveLocation = class extends Bindings.LiveLocationW
       var targetInfo = this._binding._targetInfo(this._header);
       return targetInfo._rawLocationToUILocation(this._header, cssLocation.lineNumber, cssLocation.columnNumber);
     }
-    var uiSourceCode = this._binding._networkMapping.uiSourceCodeForStyleURL(cssLocation.url, cssLocation.header());
+    var uiSourceCode = Bindings.NetworkProject.uiSourceCodeForStyleURL(
+        this._binding._workspace, cssLocation.url, cssLocation.header());
     if (!uiSourceCode)
       return null;
     return uiSourceCode.uiLocation(cssLocation.lineNumber, cssLocation.columnNumber);

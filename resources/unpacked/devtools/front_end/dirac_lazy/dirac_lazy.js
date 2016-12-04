@@ -356,7 +356,7 @@ Object.assign(window.dirac, (function() {
           resolve(sourceMap);
         }
         counter += 1;
-        if (counter > 50) { // 5s
+        if (counter > 600) { // 60s
           clearInterval(interval);
           console.warn("source map didn't load in time for", script);
           resolve(null);
@@ -569,9 +569,9 @@ Object.assign(window.dirac, (function() {
   // --- namespace symbols ------------------------------------------------------------------------------------------------
 
   /**
-   * @param {!Array<!Sources.UISourceCode>} uiSourceCodes
+   * @param {!Array<!Workspace.UISourceCode>} uiSourceCodes
    * @param {function(string)} urlMatcherFn
-   * @return {!Array<!Sources.UISourceCode>}
+   * @return {!Array<!Workspace.UISourceCode>}
    */
   function findMatchingSourceCodes(uiSourceCodes, urlMatcherFn) {
     const matching = [];

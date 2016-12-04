@@ -1,62 +1,17 @@
 #!/usr/bin/env bash
 
-pushd () {
-    command pushd "$@" > /dev/null
-}
+# standard bash switches for our scripts
+set -e -o pipefail
 
-popd () {
-    command popd "$@" > /dev/null
-}
+SPAWN_DIR=`pwd`
+SPAWN_COMMAND="$0"
+SPAWN_ARGS="$@"
 
-# http://stackoverflow.com/a/4025065/84283
-vercomp () {
-    if [[ $1 == $2 ]]
-    then
-        return 0
-    fi
-    local IFS=.
-    local i ver1=($1) ver2=($2)
-    # fill empty fields in ver1 with zeros
-    for ((i=${#ver1[@]}; i<${#ver2[@]}; i++))
-    do
-        ver1[i]=0
-    done
-    for ((i=0; i<${#ver1[@]}; i++))
-    do
-        if [[ -z ${ver2[i]} ]]
-        then
-            # fill empty fields in ver2 with zeros
-            ver2[i]=0
-        fi
-        if ((10#${ver1[i]} > 10#${ver2[i]}))
-        then
-            return 1
-        fi
-        if ((10#${ver1[i]} < 10#${ver2[i]}))
-        then
-            return 2
-        fi
-    done
-    return 0
-}
+pushd "$(dirname "${BASH_SOURCE[0]}")" > /dev/null
 
-# http://stackoverflow.com/a/18443300/84283
-realpath() {
-  OURPWD=$PWD
-  cd "$(dirname "$1")"
-  LINK=$(readlink "$(basename "$1")")
-  while [ "$LINK" ]; do
-    cd "$(dirname "$LINK")"
-    LINK=$(readlink "$(basename "$1")")
-  done
-  REALPATH="$PWD/$(basename "$1")"
-  cd "$OURPWD"
-  echo "$REALPATH"
-}
-
-pushd `dirname "${BASH_SOURCE[0]}"`
-
-source "./export-windows-layout.sh"
+source "lib/utils.sh"
+source "lib/tools.sh"
+source "export-windows-layout.sh"
 
 cd ..
 
@@ -114,5 +69,6 @@ DIRAC_TEST_STAGE_DIR=${DIRAC_TEST_STAGE_DIR:-"$ROOT/../_test_stage"}
 DIRAC_TEST_STAGE_RSYNC_EXCLUDE_FILE="$ROOT/.test-stage-excludes"
 ACTUAL_TRANSCRIPTS_PATH="test/browser/transcripts/_actual_"
 EXPECTED_TRANSCRIPTS_PATH="test/browser/transcripts/expected"
+DOCKER_TESTS_DIR="$ROOT/test/docker"
 
 popd

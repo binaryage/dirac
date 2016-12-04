@@ -37,12 +37,12 @@ UI.SuggestBoxDelegate.prototype = {
    * @param {string} suggestion
    * @param {boolean=} isIntermediateSuggestion
    */
-  applySuggestion: function(suggestion, isIntermediateSuggestion) {},
+  applySuggestion(suggestion, isIntermediateSuggestion) {},
 
   /**
    * acceptSuggestion will be always called after call to applySuggestion with isIntermediateSuggestion being equal to false.
    */
-  acceptSuggestion: function() {},
+  acceptSuggestion() {},
 };
 
 /**
@@ -133,10 +133,11 @@ UI.SuggestBox = class {
   }
 
   _updateWidth() {
-    if (this._hasVerticalScroll) {
-      this._element.style.width = '100vw';
-      return;
-    }
+    // this interferes with Dirac removal of max-width style in .suggest-box-horizontal CSS
+    // if (this._hasVerticalScroll) {
+    //   this._element.style.width = '100vw';
+    //   return;
+    // }
     // If there are no scrollbars, set the width to the width of the largest row.
     var maxIndex = 0;
     for (var i = 0; i < this._items.length; i++) {
@@ -255,8 +256,7 @@ UI.SuggestBox = class {
     else
       index = Number.constrain(index, 0, this._length - 1);
 
-    this._selectItem(index, true);
-    this._applySuggestion(true);
+    this._selectItem(index);
     return true;
   }
 
@@ -272,25 +272,35 @@ UI.SuggestBox = class {
   /**
    * @param {string} query
    * @param {string} text
+   * @param {string=} iconType
+   * @param {boolean=} isSecondary
    * @param {string=} className
    * @param {string=} prologue
    * @param {string=} epilogue
    * @return {!Element}
    */
-  _createItemElement(query, text, className, prologue, epilogue) {
+  _createItemElement(query, text, iconType, isSecondary, className, prologue, epilogue) {
     var element = createElementWithClass('div', 'suggest-box-content-item source-code ' + (className || ''));
+    if (iconType) {
+      var icon = UI.Icon.create(iconType, 'suggestion-icon');
+      element.appendChild(icon);
+    }
+    if (isSecondary)
+      element.classList.add('secondary');
     element.tabIndex = -1;
     element.createChild("span", "prologue").textContent = (prologue || "").trimEnd(50);
     var displayText = text.trimEnd(50 + query.length);
+
+    var suggestionText = element.createChild('span', 'suggestion-text');
     var index = displayText.toLowerCase().indexOf(query.toLowerCase());
     if (index > 0)
-      element.createChild('span', 'pre-query').textContent = displayText.substring(0, index);
+      suggestionText.createChild('span', 'pre-query').textContent = displayText.substring(0, index);
     if (index > -1)
-      element.createChild('span', 'query').textContent = displayText.substring(index, index + query.length);
-    element.createChild('span', 'post-query').textContent = displayText.substring(index > -1 ? index + query.length : 0);
+      suggestionText.createChild('span', 'query').textContent = displayText.substring(index, index + query.length);
+    suggestionText.createChild('span', 'post-query').textContent = displayText.substring(index > -1 ? index + query.length : 0);
     element.createChild("span", "epilogue").textContent = (epilogue || "").trimEnd(50);
+    suggestionText.createChild('span', 'spacer');
     element.__fullValue = text;
-    element.createChild('span', 'spacer');
     element.addEventListener('mousedown', this._onItemMouseDown.bind(this), false);
     return element;
   }
@@ -337,11 +347,12 @@ UI.SuggestBox = class {
 
   /**
    * @param {number} index
-   * @param {boolean} scrollIntoView
    */
-  _selectItem(index, scrollIntoView) {
-    if (this._selectedElement)
+  _selectItem(index) {
+    if (this._selectedElement) {
       this._selectedElement.classList.remove('selected');
+      this._selectedElement.classList.remove('force-white-icons');
+    }
 
     this._selectedIndex = index;
     if (index < 0)
@@ -349,12 +360,13 @@ UI.SuggestBox = class {
 
     this._selectedElement = this.itemElement(index);
     this._selectedElement.classList.add('selected');
+    this._selectedElement.classList.add('force-white-icons');
     this._detailsPopup.classList.add('hidden');
     var elem = this._selectedElement;
     this._asyncDetails(index).then(showDetails.bind(this), function() {});
 
-    if (scrollIntoView)
-      this._viewport.scrollItemIntoView(index);
+    this._viewport.scrollItemIntoView(index);
+    this._applySuggestion(true);
 
     /**
      * @param {?{detail: string, description: string}} details
@@ -398,12 +410,18 @@ UI.SuggestBox = class {
   /**
    * @param {!AnchorBox} anchorBox
    * @param {!UI.SuggestBox.Suggestions} completions
-   * @param {number} selectedIndex
+   * @param {boolean} selectHighestPriority
    * @param {boolean} canShowForSingleItem
    * @param {string} userEnteredText
    * @param {function(number): !Promise<{detail:string, description:string}>=} asyncDetails
    */
-  updateSuggestions(anchorBox, completions, selectedIndex, canShowForSingleItem, userEnteredText, asyncDetails) {
+  updateSuggestions(
+      anchorBox,
+      completions,
+      selectHighestPriority,
+      canShowForSingleItem,
+      userEnteredText,
+      asyncDetails) {
     delete this._onlyCompletion;
     if (this._canShowBox(completions, canShowForSingleItem, userEnteredText)) {
       this._updateItems(completions, userEnteredText, asyncDetails);
@@ -411,11 +429,24 @@ UI.SuggestBox = class {
       this._updateBoxPosition(anchorBox);
       this._updateWidth();
       this._viewport.refresh();
-      this._selectItem(selectedIndex, selectedIndex > 0);
+      var highestPriorityItem = -1;
+      if (selectHighestPriority) {
+        var highestPriority = -Infinity;
+        for (var i = 0; i < completions.length; i++) {
+          var priority = completions[i].priority || 0;
+          if (highestPriority < priority) {
+            highestPriority = priority;
+            highestPriorityItem = i;
+          }
+        }
+      }
+      this._selectItem(highestPriorityItem);
       delete this._rowCountPerViewport;
     } else {
-      if (completions.length === 1)
+      if (completions.length === 1) {
         this._onlyCompletion = completions[0].title;
+        this._applySuggestion(true);
+      }
       this.hide();
     }
   }
@@ -508,15 +539,16 @@ UI.SuggestBox = class {
    * @return {?Element}
    */
   itemElement(index) {
-    if (!this._elementList[index])
-      this._elementList[index] =
-          this._createItemElement(this._userEnteredText, this._items[index].title, this._items[index].className, this._items[index].prologue, this._items[index].epilogue);
+    if (!this._elementList[index]) {
+      this._elementList[index] = this._createItemElement(
+          this._userEnteredText, this._items[index].title, this._items[index].iconType, this._items[index].isSecondary, this._items[index].className, this._items[index].prologue, this._items[index].epilogue);
+    }
     return this._elementList[index];
   }
 };
 
 /**
- * @typedef {!Array.<{title: string, className: (string|undefined), prologue: (string|undefined, epilogue: (string|undefined)}>}
+ * @typedef {!Array.<{title: string, iconType: (string|undefined), priority: (number|undefined), isSecondary: (boolean|undefined), className: (string|undefined)}>}
  */
 UI.SuggestBox.Suggestions;
 

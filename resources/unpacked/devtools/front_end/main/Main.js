@@ -51,9 +51,6 @@ Main.Main = class {
 
   _loaded() {
     console.timeStamp('Main._loaded');
-
-    if (InspectorFrontendHost.isUnderTest())
-      self.runtime.useTestBase();
     Runtime.setPlatform(Host.platform());
     InspectorFrontendHost.getPreferences(this._gotPreferences.bind(this));
   }
@@ -63,6 +60,8 @@ Main.Main = class {
    */
   _gotPreferences(prefs) {
     console.timeStamp('Main._gotPreferences');
+    if (Host.isUnderTest(prefs))
+      self.runtime.useTestBase();
     // for dirac testing
     if (Runtime.queryParam("reset_settings")) {
       dirac.feedback("reset devtools settings");
@@ -80,7 +79,11 @@ Main.Main = class {
    */
   _createSettings(prefs) {
     this._initializeExperiments(prefs);
-    var storagePrefix = Host.isCustomDevtoolsFrontend() ? '__custom__' : '';
+    var storagePrefix = '';
+    if (Host.isCustomDevtoolsFrontend())
+      storagePrefix = '__custom__';
+    else if (!Runtime.queryParam('can_dock') && !!Runtime.queryParam('debugFrontend') && !Host.isUnderTest(prefs))
+      storagePrefix = '__bundled__';
     var clearLocalStorage = window.localStorage ? window.localStorage.clear.bind(window.localStorage) : undefined;
     var localStorage =
         new Common.SettingsStorage(window.localStorage || {}, undefined, undefined, clearLocalStorage, storagePrefix);
@@ -88,8 +91,7 @@ Main.Main = class {
         prefs, InspectorFrontendHost.setPreference, InspectorFrontendHost.removePreference,
         InspectorFrontendHost.clearPreferences, storagePrefix);
     Common.settings = new Common.Settings(globalStorage, localStorage);
-
-    if (!InspectorFrontendHost.isUnderTest())
+    if (!Host.isUnderTest(prefs))
       new Common.VersionController().updateVersion();
   }
 
@@ -106,21 +108,15 @@ Main.Main = class {
     Runtime.experiments.register('continueToFirstInvocation', 'Continue to first invocation', true);
     Runtime.experiments.register('emptySourceMapAutoStepping', 'Empty sourcemap auto-stepping');
     Runtime.experiments.register('inputEventsOnTimelineOverview', 'Input events on Timeline overview', true);
-    Runtime.experiments.register('layersPanel', 'Layers panel');
-    Runtime.experiments.register('layoutEditor', 'Layout editor', true);
-    Runtime.experiments.register('inspectTooltip', 'Dark inspect element tooltip');
     Runtime.experiments.register('liveSASS', 'Live SASS');
     Runtime.experiments.register('nodeDebugging', 'Node debugging', true);
     Runtime.experiments.register('persistence2', 'Persistence 2.0');
     Runtime.experiments.register('privateScriptInspection', 'Private script inspection');
     Runtime.experiments.register('requestBlocking', 'Request blocking', true);
-    Runtime.experiments.register('resolveVariableNames', 'Resolve variable names');
     Runtime.experiments.register('timelineShowAllEvents', 'Show all events on Timeline', true);
     Runtime.experiments.register('timelineShowAllProcesses', 'Show all processes on Timeline', true);
-    Runtime.experiments.register('securityPanel', 'Security panel');
     Runtime.experiments.register('sourceDiff', 'Source diff');
     Runtime.experiments.register('terminalInDrawer', 'Terminal in drawer', true);
-    Runtime.experiments.register('timelineFlowEvents', 'Timeline flow events', true);
     Runtime.experiments.register('timelineInvalidationTracking', 'Timeline invalidation tracking', true);
     Runtime.experiments.register('timelineRecordingPerspectives', 'Timeline recording perspectives UI');
     Runtime.experiments.register('timelineTracingJSProfile', 'Timeline tracing based JS profiler', true);
@@ -130,20 +126,14 @@ Main.Main = class {
 
     Runtime.experiments.cleanUpStaleExperiments();
 
-    if (InspectorFrontendHost.isUnderTest()) {
+    if (Host.isUnderTest(prefs)) {
       var testPath = JSON.parse(prefs['testPath'] || '""');
       // Enable experiments for testing.
-      if (testPath.indexOf('layers/') !== -1)
-        Runtime.experiments.enableForTest('layersPanel');
-      if (testPath.indexOf('timeline/') !== -1 || testPath.indexOf('layers/') !== -1)
-        Runtime.experiments.enableForTest('layersPanel');
-      if (testPath.indexOf('security/') !== -1)
-        Runtime.experiments.enableForTest('securityPanel');
       if (testPath.indexOf('accessibility/') !== -1)
         Runtime.experiments.enableForTest('accessibilityInspection');
     }
 
-    Runtime.experiments.setDefaultExperiments(['inspectTooltip', 'securityPanel', 'resolveVariableNames']);
+    Runtime.experiments.setDefaultExperiments(['timelineRecordingPerspectives']);
   }
 
   /**
@@ -187,38 +177,24 @@ Main.Main = class {
     Workspace.fileManager = new Workspace.FileManager();
     Workspace.workspace = new Workspace.Workspace();
     Common.formatterWorkerPool = new Common.FormatterWorkerPool();
-    Workspace.fileSystemMapping = new Workspace.FileSystemMapping();
+    Workspace.fileSystemMapping = new Workspace.FileSystemMapping(Workspace.isolatedFileSystemManager);
 
-    var fileSystemWorkspaceBinding =
-        new Bindings.FileSystemWorkspaceBinding(Workspace.isolatedFileSystemManager, Workspace.workspace);
-    Bindings.networkMapping = new Bindings.NetworkMapping(
-        SDK.targetManager, Workspace.workspace, fileSystemWorkspaceBinding, Workspace.fileSystemMapping);
-    Main.networkProjectManager =
-        new Bindings.NetworkProjectManager(SDK.targetManager, Workspace.workspace);
-    Bindings.presentationConsoleMessageHelper =
-        new Bindings.PresentationConsoleMessageHelper(Workspace.workspace);
-    Bindings.cssWorkspaceBinding = new Bindings.CSSWorkspaceBinding(
-        SDK.targetManager, Workspace.workspace, Bindings.networkMapping);
-    Bindings.debuggerWorkspaceBinding = new Bindings.DebuggerWorkspaceBinding(
-        SDK.targetManager, Workspace.workspace, Bindings.networkMapping);
-    Bindings.breakpointManager = new Bindings.BreakpointManager(
-        null, Workspace.workspace, SDK.targetManager, Bindings.debuggerWorkspaceBinding);
+    Main.networkProjectManager = new Bindings.NetworkProjectManager(SDK.targetManager, Workspace.workspace);
+    Bindings.presentationConsoleMessageHelper = new Bindings.PresentationConsoleMessageHelper(Workspace.workspace);
+    Bindings.cssWorkspaceBinding = new Bindings.CSSWorkspaceBinding(SDK.targetManager, Workspace.workspace);
+    Bindings.debuggerWorkspaceBinding = new Bindings.DebuggerWorkspaceBinding(SDK.targetManager, Workspace.workspace);
+    Bindings.breakpointManager =
+        new Bindings.BreakpointManager(null, Workspace.workspace, SDK.targetManager, Bindings.debuggerWorkspaceBinding);
     Extensions.extensionServer = new Extensions.ExtensionServer();
 
-    Persistence.persistence = new Persistence.Persistence(
-        Workspace.workspace, Bindings.breakpointManager, Workspace.fileSystemMapping);
+    var fileSystemWorkspaceBinding =
+        new Persistence.FileSystemWorkspaceBinding(Workspace.isolatedFileSystemManager, Workspace.workspace);
+    Persistence.persistence =
+        new Persistence.Persistence(Workspace.workspace, Bindings.breakpointManager, Workspace.fileSystemMapping);
 
     new Main.OverlayController();
     new Components.ExecutionContextSelector(SDK.targetManager, UI.context);
     Bindings.blackboxManager = new Bindings.BlackboxManager(Bindings.debuggerWorkspaceBinding);
-
-    var autoselectPanel = Common.UIString('auto');
-    var openAnchorLocationSetting = Common.settings.createSetting('openLinkHandler', autoselectPanel);
-    Components.openAnchorLocationRegistry = new Components.HandlerRegistry(openAnchorLocationSetting);
-    Components.openAnchorLocationRegistry.registerHandler(autoselectPanel, function() {
-      return false;
-    });
-    Components.Linkifier.setLinkHandler(new Components.HandlerRegistry.LinkHandler());
 
     new Main.Main.PauseListener();
     new Main.Main.InspectedNodeRevealer();
@@ -251,10 +227,14 @@ Main.Main = class {
 
     var toggleSearchNodeAction = UI.actionRegistry.action('elements.toggle-element-search');
     // TODO: we should not access actions from other modules.
-    if (toggleSearchNodeAction)
+    if (toggleSearchNodeAction) {
       InspectorFrontendHost.events.addEventListener(
           InspectorFrontendHostAPI.Events.EnterInspectElementMode,
           toggleSearchNodeAction.execute.bind(toggleSearchNodeAction), this);
+    }
+    InspectorFrontendHost.events.addEventListener(
+        InspectorFrontendHostAPI.Events.RevealSourceLine, this._revealSourceLine, this);
+
     UI.inspectorView.createToolbars();
     InspectorFrontendHost.loadCompleted();
 
@@ -306,8 +286,8 @@ Main.Main = class {
   _registerForwardedShortcuts() {
     /** @const */ var forwardedActions =
         ['main.toggle-dock', 'debugger.toggle-breakpoints-active', 'debugger.toggle-pause', 'commandMenu.show'];
-    var actionKeys = UI.shortcutRegistry.keysForActions(forwardedActions)
-                         .map(UI.KeyboardShortcut.keyCodeAndModifiersFromKey);
+    var actionKeys =
+        UI.shortcutRegistry.keysForActions(forwardedActions).map(UI.KeyboardShortcut.keyCodeAndModifiersFromKey);
     InspectorFrontendHost.setWhitelistedShortcuts(JSON.stringify(actionKeys));
   }
 
@@ -324,64 +304,32 @@ Main.Main = class {
     }
   }
 
-  _documentClick(event) {
-    var target = event.target;
-    if (target.shadowRoot)
-      target = event.deepElementFromPoint();
-    if (!target)
-      return;
+  /**
+   * @param {!Common.Event} event
+   */
+  _revealSourceLine(event) {
+    var url = /** @type {string} */ (event.data['url']);
+    var lineNumber = /** @type {number} */ (event.data['lineNumber']);
+    var columnNumber = /** @type {number} */ (event.data['columnNumber']);
 
-    var anchor = target.enclosingNodeOrSelfWithNodeName('a');
-    if (!anchor || !anchor.href)
-      return;
-
-    // Prevent the link from navigating, since we don't do any navigation by following links normally.
-    event.consume(true);
-
-    if (anchor.preventFollow)
-      return;
-
-    function followLink() {
-      if (UI.isBeingEdited(target))
-        return;
-      if (Components.openAnchorLocationRegistry.dispatch({url: anchor.href, lineNumber: anchor.lineNumber}))
-        return;
-
-      var uiSourceCode = Bindings.networkMapping.uiSourceCodeForURLForAnyTarget(anchor.href);
-      if (uiSourceCode) {
-        Common.Revealer.reveal(uiSourceCode.uiLocation(anchor.lineNumber || 0, anchor.columnNumber || 0));
-        return;
-      }
-
-      var resource = Bindings.resourceForURL(anchor.href);
-      if (resource) {
-        Common.Revealer.reveal(resource);
-        return;
-      }
-
-      var request = SDK.NetworkLog.requestForURL(anchor.href);
-      if (request) {
-        Common.Revealer.reveal(request);
-        return;
-      }
-      InspectorFrontendHost.openInNewTab(anchor.href);
-    }
-
-    if (Main.followLinkTimeout)
-      clearTimeout(Main.followLinkTimeout);
-
-    if (anchor.preventFollowOnDoubleClick) {
-      // Start a timeout if this is the first click, if the timeout is canceled
-      // before it fires, then a double clicked happened or another link was clicked.
-      if (event.detail === 1)
-        Main.followLinkTimeout = setTimeout(followLink, 333);
+    var uiSourceCode = Workspace.workspace.uiSourceCodeForURL(url);
+    if (uiSourceCode) {
+      Common.Revealer.reveal(uiSourceCode.uiLocation(lineNumber, columnNumber));
       return;
     }
 
-    if (!anchor.classList.contains('webkit-html-external-link'))
-      followLink();
-    else
-      InspectorFrontendHost.openInNewTab(anchor.href);
+    /**
+     * @param {!Common.Event} event
+     */
+    function listener(event) {
+      var uiSourceCode = /** @type {!Workspace.UISourceCode} */ (event.data);
+      if (uiSourceCode.url() === url) {
+        Common.Revealer.reveal(uiSourceCode.uiLocation(lineNumber, columnNumber));
+        Workspace.workspace.removeEventListener(Workspace.Workspace.Events.UISourceCodeAdded, listener);
+      }
+    }
+
+    Workspace.workspace.addEventListener(Workspace.Workspace.Events.UISourceCodeAdded, listener);
   }
 
   _registerShortcuts() {
@@ -423,8 +371,7 @@ Main.Main = class {
     if (inspectElementModeShortcuts.length)
       section.addKey(inspectElementModeShortcuts[0], Common.UIString('Select node to inspect'));
 
-    var openResourceShortcut =
-        UI.KeyboardShortcut.makeDescriptor('p', UI.KeyboardShortcut.Modifiers.CtrlOrMeta);
+    var openResourceShortcut = UI.KeyboardShortcut.makeDescriptor('p', UI.KeyboardShortcut.Modifiers.CtrlOrMeta);
     section.addKey(openResourceShortcut, Common.UIString('Go to source'));
 
     if (Host.isMac()) {
@@ -439,14 +386,6 @@ Main.Main = class {
   _postDocumentKeyDown(event) {
     if (event.handled)
       return;
-
-    var document = event.target && event.target.ownerDocument;
-    var target = document ? document.deepActiveElement() : null;
-    if (target) {
-      var anchor = target.enclosingNodeOrSelfWithNodeName('a');
-      if (anchor && anchor.preventFollow)
-        event.preventDefault();
-    }
 
     if (!UI.Dialog.hasInstance() && UI.inspectorView.currentPanelDeprecated()) {
       UI.inspectorView.currentPanelDeprecated().handleShortcut(event);
@@ -488,7 +427,6 @@ Main.Main = class {
     document.addEventListener('cut', this._redispatchClipboardEvent.bind(this), false);
     document.addEventListener('paste', this._redispatchClipboardEvent.bind(this), false);
     document.addEventListener('contextmenu', this._contextMenuEventFired.bind(this), true);
-    document.addEventListener('click', this._documentClick.bind(this), false);
   }
 
   /**
@@ -669,12 +607,9 @@ Main.Main.WarningErrorCounter = class {
     this._warnings = this._createItem(shadowRoot, 'smallicon-warning');
     this._titles = [];
 
-    SDK.multitargetConsoleModel.addEventListener(
-        SDK.ConsoleModel.Events.ConsoleCleared, this._update, this);
-    SDK.multitargetConsoleModel.addEventListener(
-        SDK.ConsoleModel.Events.MessageAdded, this._update, this);
-    SDK.multitargetConsoleModel.addEventListener(
-        SDK.ConsoleModel.Events.MessageUpdated, this._update, this);
+    SDK.multitargetConsoleModel.addEventListener(SDK.ConsoleModel.Events.ConsoleCleared, this._update, this);
+    SDK.multitargetConsoleModel.addEventListener(SDK.ConsoleModel.Events.MessageAdded, this._update, this);
+    SDK.multitargetConsoleModel.addEventListener(SDK.ConsoleModel.Events.MessageUpdated, this._update, this);
     this._update();
   }
 
@@ -719,8 +654,7 @@ Main.Main.WarningErrorCounter = class {
 
     this._titles = [];
     this._toolbarItem.setVisible(!!(errors || revokedErrors || warnings));
-    this._updateItem(
-        this._errors, errors, false, Common.UIString(errors === 1 ? '%d error' : '%d errors', errors));
+    this._updateItem(this._errors, errors, false, Common.UIString(errors === 1 ? '%d error' : '%d errors', errors));
     this._updateItem(
         this._revokedErrors, revokedErrors, !errors,
         Common.UIString(
@@ -747,8 +681,7 @@ Main.Main.WarningErrorCounter = class {
  */
 Main.Main.MainMenuItem = class {
   constructor() {
-    this._item =
-        new UI.ToolbarButton(Common.UIString('Customize and control DevTools'), 'largeicon-menu');
+    this._item = new UI.ToolbarButton(Common.UIString('Customize and control DevTools'), 'largeicon-menu');
     this._item.addEventListener('mousedown', this._mouseDown, this);
   }
 
@@ -778,8 +711,7 @@ Main.Main.MainMenuItem = class {
       dockItemElement.appendChild(titleElement);
       var dockItemToolbar = new UI.Toolbar('', dockItemElement);
       dockItemToolbar.makeBlueOnHover();
-      var undock = new UI.ToolbarToggle(
-          Common.UIString('Undock into separate window'), 'largeicon-undock');
+      var undock = new UI.ToolbarToggle(Common.UIString('Undock into separate window'), 'largeicon-undock');
       var bottom = new UI.ToolbarToggle(Common.UIString('Dock to bottom'), 'largeicon-dock-to-bottom');
       var right = new UI.ToolbarToggle(Common.UIString('Dock to right'), 'largeicon-dock-to-right');
       undock.addEventListener('mouseup', setDockSide.bind(null, Components.DockController.State.Undocked));
@@ -804,9 +736,8 @@ Main.Main.MainMenuItem = class {
     }
 
     contextMenu.appendAction(
-        'main.toggle-drawer', UI.inspectorView.drawerVisible() ?
-            Common.UIString('Hide console drawer') :
-            Common.UIString('Show console drawer'));
+        'main.toggle-drawer', UI.inspectorView.drawerVisible() ? Common.UIString('Hide console drawer') :
+                                                                 Common.UIString('Show console drawer'));
     contextMenu.appendItemsAtLocation('mainMenu');
     var moreTools = contextMenu.namedSubMenu('mainMenuMoreTools');
     var extensions = self.runtime.extensions('view', undefined, true);
@@ -816,8 +747,7 @@ Main.Main.MainMenuItem = class {
         continue;
       if (descriptor['location'] !== 'drawer-view' && descriptor['location'] !== 'panel')
         continue;
-      moreTools.appendItem(
-          extension.title(), UI.viewManager.showView.bind(UI.viewManager, descriptor['id']));
+      moreTools.appendItem(extension.title(), UI.viewManager.showView.bind(UI.viewManager, descriptor['id']));
     }
 
     contextMenu.show();
@@ -839,15 +769,12 @@ Main.NetworkPanelIndicator = class {
     updateVisibility();
 
     function updateVisibility() {
-      if (manager.isThrottling()) {
-        UI.inspectorView.setPanelIcon(
-            'network', 'smallicon-warning', Common.UIString('Network throttling is enabled'));
-      } else if (blockedURLsSetting.get().length) {
-        UI.inspectorView.setPanelIcon(
-            'network', 'smallicon-warning', Common.UIString('Requests may be blocked'));
-      } else {
+      if (manager.isThrottling())
+        UI.inspectorView.setPanelIcon('network', 'smallicon-warning', Common.UIString('Network throttling is enabled'));
+      else if (blockedURLsSetting.get().length)
+        UI.inspectorView.setPanelIcon('network', 'smallicon-warning', Common.UIString('Requests may be blocked'));
+      else
         UI.inspectorView.setPanelIcon('network', '', '');
-      }
     }
   }
 };
@@ -862,12 +789,10 @@ Main.SourcesPanelIndicator = class {
 
     function javaScriptDisabledChanged() {
       var javaScriptDisabled = Common.moduleSetting('javaScriptDisabled').get();
-      if (javaScriptDisabled) {
-        UI.inspectorView.setPanelIcon(
-            'sources', 'smallicon-warning', Common.UIString('JavaScript is disabled'));
-      } else {
+      if (javaScriptDisabled)
+        UI.inspectorView.setPanelIcon('sources', 'smallicon-warning', Common.UIString('JavaScript is disabled'));
+      else
         UI.inspectorView.setPanelIcon('sources', '', '');
-      }
     }
   }
 };
@@ -899,8 +824,7 @@ Main.Main.PauseListener = class {
  */
 Main.Main.InspectedNodeRevealer = class {
   constructor() {
-    SDK.targetManager.addModelListener(
-        SDK.DOMModel, SDK.DOMModel.Events.NodeInspected, this._inspectNode, this);
+    SDK.targetManager.addModelListener(SDK.DOMModel, SDK.DOMModel.Events.NodeInspected, this._inspectNode, this);
   }
 
   /**

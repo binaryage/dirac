@@ -32,6 +32,18 @@ var Protocol = {};
 
 /** @typedef {string} */
 Protocol.Error;
+/** @type {string} */
+Protocol.BakedInspectorBackendAPIChromeTag;
+/** @type {string} */
+Protocol.BakedInspectorBackendAPIChromeRev;
+/** @type {string} */
+Protocol.BakedInspectorBackendAPI;
+/** @type {string} */
+Protocol.BakedSupportedCSSPropertiesChromeTag;
+/** @type {string} */
+Protocol.BakedSupportedCSSPropertiesChromeRev;
+/** @type {string} */
+Protocol.BakedSupportedCSSProperties;
 
 /**
  * @unrestricted
@@ -190,12 +202,12 @@ InspectorBackendClass.Connection.prototype = {
   /**
    * @param {string} message
    */
-  sendMessage: function(message) {},
+  sendMessage(message) {},
 
   /**
    * @return {!Promise}
    */
-  disconnect: function() {},
+  disconnect() {},
 };
 
 /**
@@ -345,10 +357,11 @@ Protocol.TargetBase = class {
       --this._pendingResponsesCount;
       delete this._callbacks[messageObject.id];
 
-      if (InspectorBackendClass.Options.dumpInspectorTimeStats)
+      if (InspectorBackendClass.Options.dumpInspectorTimeStats) {
         console.log(
             'time-stats: ' + callback.methodName + ' = ' + (processingStartTime - callback.sendRequestTime) + ' + ' +
             (Date.now() - processingStartTime));
+      }
 
       if (this._scripts && !this._pendingResponsesCount)
         this._deprecatedRunAfterPendingDispatches();

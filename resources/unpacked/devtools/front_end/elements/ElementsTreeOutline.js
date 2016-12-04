@@ -531,11 +531,10 @@ Elements.ElementsTreeOutline = class extends TreeOutline {
    * @return {!Element|!AnchorBox|undefined}
    */
   _getPopoverAnchor(element, event) {
-    var anchor = element.enclosingNodeOrSelfWithClass('webkit-html-resource-link');
-    if (!anchor || !anchor.href)
-      return;
-
-    return anchor;
+    var link = element;
+    while (link && !link[Elements.ElementsTreeElement.HrefSymbol])
+      link = link.parentElementOrShadowHost();
+    return link ? link : undefined;
   }
 
   /**
@@ -577,15 +576,16 @@ Elements.ElementsTreeOutline = class extends TreeOutline {
   }
 
   /**
-   * @param {!Element} anchor
+   * @param {!Element} link
    * @param {!UI.Popover} popover
    */
-  _showPopover(anchor, popover) {
-    var listItem = anchor.enclosingNodeOrSelfWithNodeName('li');
+  _showPopover(link, popover) {
+    var listItem = link.enclosingNodeOrSelfWithNodeName('li');
     var node = /** @type {!Elements.ElementsTreeElement} */ (listItem.treeElement).node();
     this._loadDimensionsForNode(
         node, Components.DOMPresentationUtils.buildImagePreviewContents.bind(
-                  Components.DOMPresentationUtils, node.target(), anchor.href, true, showPopover));
+                  Components.DOMPresentationUtils, node.target(), link[Elements.ElementsTreeElement.HrefSymbol], true,
+                  showPopover));
 
     /**
      * @param {!Element=} contents
@@ -594,7 +594,7 @@ Elements.ElementsTreeOutline = class extends TreeOutline {
       if (!contents)
         return;
       popover.setCanShrink(false);
-      popover.showForAnchor(contents, anchor);
+      popover.showForAnchor(contents, link);
     }
   }
 
@@ -638,10 +638,10 @@ Elements.ElementsTreeOutline = class extends TreeOutline {
       return;
     }
 
-    if (element instanceof Elements.ElementsTreeOutline.ShortcutTreeElement)
+    if (element instanceof Elements.ElementsTreeOutline.ShortcutTreeElement) {
       this._domModel.highlightDOMNodeWithConfig(
-          undefined, {mode: 'all', showInfo: !UI.KeyboardShortcut.eventHasCtrlOrMeta(event)},
-          element.backendNodeId());
+          undefined, {mode: 'all', showInfo: !UI.KeyboardShortcut.eventHasCtrlOrMeta(event)}, element.backendNodeId());
+    }
   }
 
   _onmouseleave(event) {
@@ -785,7 +785,6 @@ Elements.ElementsTreeOutline = class extends TreeOutline {
     if (textNode && textNode.classList.contains('bogus'))
       textNode = null;
     var commentNode = event.target.enclosingNodeOrSelfWithClass('webkit-html-comment');
-    contextMenu.appendApplicableItems(event.target);
     if (textNode) {
       contextMenu.appendSeparator();
       treeElement.populateTextContextMenu(contextMenu, textNode);
@@ -995,13 +994,10 @@ Elements.ElementsTreeOutline = class extends TreeOutline {
     this._domModel.addEventListener(SDK.DOMModel.Events.NodeRemoved, this._nodeRemoved, this);
     this._domModel.addEventListener(SDK.DOMModel.Events.AttrModified, this._attributeModified, this);
     this._domModel.addEventListener(SDK.DOMModel.Events.AttrRemoved, this._attributeRemoved, this);
-    this._domModel.addEventListener(
-        SDK.DOMModel.Events.CharacterDataModified, this._characterDataModified, this);
+    this._domModel.addEventListener(SDK.DOMModel.Events.CharacterDataModified, this._characterDataModified, this);
     this._domModel.addEventListener(SDK.DOMModel.Events.DocumentUpdated, this._documentUpdated, this);
-    this._domModel.addEventListener(
-        SDK.DOMModel.Events.ChildNodeCountUpdated, this._childNodeCountUpdated, this);
-    this._domModel.addEventListener(
-        SDK.DOMModel.Events.DistributedNodesChanged, this._distributedNodesChanged, this);
+    this._domModel.addEventListener(SDK.DOMModel.Events.ChildNodeCountUpdated, this._childNodeCountUpdated, this);
+    this._domModel.addEventListener(SDK.DOMModel.Events.DistributedNodesChanged, this._distributedNodesChanged, this);
   }
 
   unwireFromDOMModel() {
@@ -1009,11 +1005,9 @@ Elements.ElementsTreeOutline = class extends TreeOutline {
     this._domModel.removeEventListener(SDK.DOMModel.Events.NodeRemoved, this._nodeRemoved, this);
     this._domModel.removeEventListener(SDK.DOMModel.Events.AttrModified, this._attributeModified, this);
     this._domModel.removeEventListener(SDK.DOMModel.Events.AttrRemoved, this._attributeRemoved, this);
-    this._domModel.removeEventListener(
-        SDK.DOMModel.Events.CharacterDataModified, this._characterDataModified, this);
+    this._domModel.removeEventListener(SDK.DOMModel.Events.CharacterDataModified, this._characterDataModified, this);
     this._domModel.removeEventListener(SDK.DOMModel.Events.DocumentUpdated, this._documentUpdated, this);
-    this._domModel.removeEventListener(
-        SDK.DOMModel.Events.ChildNodeCountUpdated, this._childNodeCountUpdated, this);
+    this._domModel.removeEventListener(SDK.DOMModel.Events.ChildNodeCountUpdated, this._childNodeCountUpdated, this);
     this._domModel.removeEventListener(
         SDK.DOMModel.Events.DistributedNodesChanged, this._distributedNodesChanged, this);
     delete this._domModel[Elements.ElementsTreeOutline._treeOutlineSymbol];
@@ -1299,8 +1293,8 @@ Elements.ElementsTreeOutline = class extends TreeOutline {
       var visibleChildCount = this._visibleChildren(treeElement.node()).length;
       this.setExpandedChildrenLimit(
           treeElement, Math.max(
-                           visibleChildCount, treeElement.expandedChildrenLimit() +
-                               Elements.ElementsTreeElement.InitialChildrenLimit));
+                           visibleChildCount,
+                           treeElement.expandedChildrenLimit() + Elements.ElementsTreeElement.InitialChildrenLimit));
       event.consume();
     }
   }

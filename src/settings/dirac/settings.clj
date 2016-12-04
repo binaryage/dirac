@@ -28,7 +28,7 @@
 (def ^:const BACKEND_TESTS_WEASEL_PORT 7232)                                                                                  ; -1000 from defaults
 
 (def ^:const DIRAC_AGENT_BOOT_TIME (seconds 2))
-(def ^:const TRANSCRIPT_MATCH_TIMEOUT (seconds 5))
+(def ^:const TRANSCRIPT_MATCH_TIMEOUT (minutes 2))
 (def ^:const LAUNCH_TASK_KEY "diracLaunchTask")
 (def ^:const LAUNCH_TASK_MESSAGE "dirac-launch-task")
 (def ^:const KILL_TASK_KEY "diracKillTask")
@@ -36,11 +36,11 @@
 
 (def ^:const MARION_INITIAL_WAIT_TIME (seconds 1))
 (def ^:const MARION_RECONNECTION_ATTEMPT_DELAY (seconds 2))
-(def ^:const MARION_MESSAGE_REPLY_TIMEOUT (seconds 10))
+(def ^:const MARION_MESSAGE_REPLY_TIMEOUT (minutes 1))
 
 (def ^:const DEFAULT_TASK_TIMEOUT (minutes 5))
 (def ^:const KILL_TASK_TIMEOUT (seconds 5))
-(def ^:const DEFAULT_TEST_HTML_LOAD_TIMEOUT (seconds 5))
+(def ^:const DEFAULT_TEST_HTML_LOAD_TIMEOUT (seconds 30))
 (def ^:const SIGNAL_SERVER_CLOSE_WAIT_TIMEOUT (milisec 500))
 (def ^:const PENDING_REPLIES_WAIT_TIMEOUT (seconds 2))
 (def ^:const SIGNAL_CLIENT_TASK_RESULT_DELAY (milisec 0))
@@ -63,13 +63,17 @@
 (def ^:const SIGNAL_SERVER_HOST "localhost")
 (def ^:const SIGNAL_SERVER_PORT 22555)
 
+(def ^:const TRANSCRIPT_STREAMER_SERVER_HOST "localhost")
+(def ^:const TRANSCRIPT_STREAMER_SERVER_PORT 22556)
+
 (def ^:const AUTOMATION_ENTRY_POINT_KEY "diracAutomateDevTools")
 (def ^:const FLUSH_PENDING_FEEDBACK_MESSAGES_KEY "diracFlushPendingFeedbackMessages")
 (def ^:const DIRAC_INTERCOM_KEY "diracIntercom")
 
-(def ^:const TAXI_PAGE_LOAD_TIMEOUT (seconds 5))
-(def ^:const TAXI_SCRIPT_TIMEOUT (seconds 3))
-(def ^:const TAXI_IMPLICIT_WAIT (seconds 3))
+; page load timeout could be extremely slow under docker https://bugs.chromium.org/p/chromedriver/issues/detail?id=817#c56
+(def ^:const TAXI_PAGE_LOAD_TIMEOUT (minutes 3))
+(def ^:const TAXI_SCRIPT_TIMEOUT (seconds 30))
+(def ^:const TAXI_IMPLICIT_WAIT (seconds 30))
 
 (def ^:const BACKEND_URL_RESOLUTION_TRIALS 5)
 (def ^:const FAILED_BACKEND_URL_RESOLUTION_DELAY (seconds 1))
@@ -282,3 +286,14 @@
 
 (defmacro get-failed-backend-url-resolution-delay []
   FAILED_BACKEND_URL_RESOLUTION_DELAY)
+
+(defmacro get-transcript-streamer-server-host []
+  TRANSCRIPT_STREAMER_SERVER_HOST)
+
+(defmacro get-transcript-streamer-server-port []
+  TRANSCRIPT_STREAMER_SERVER_PORT)
+
+(defmacro get-transcript-streamer-server-url []
+  (let [port (get-transcript-streamer-server-port)]
+    (str "ws://" (get-transcript-streamer-server-host) (if (some? port) (str ":" port)))))
+

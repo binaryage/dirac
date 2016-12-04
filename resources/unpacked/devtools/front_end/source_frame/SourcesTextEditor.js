@@ -168,38 +168,6 @@ SourceFrame.SourcesTextEditor = class extends TextEditor.CodeMirrorTextEditor {
   }
 
   /**
-   * @param {number} lineNumber
-   * @param {boolean} disabled
-   * @param {boolean} conditional
-   */
-  addBreakpoint(lineNumber, disabled, conditional) {
-    if (lineNumber < 0 || lineNumber >= this.codeMirror().lineCount())
-      return;
-
-    var className = 'cm-breakpoint' + (conditional ? ' cm-breakpoint-conditional' : '') +
-        (disabled ? ' cm-breakpoint-disabled' : '');
-    this.codeMirror().addLineClass(lineNumber, 'wrap', className);
-  }
-
-  /**
-   * @param {number} lineNumber
-   */
-  removeBreakpoint(lineNumber) {
-    if (lineNumber < 0 || lineNumber >= this.codeMirror().lineCount())
-      return;
-
-    var wrapClasses = this.codeMirror().getLineHandle(lineNumber).wrapClass;
-    if (!wrapClasses)
-      return;
-
-    var classes = wrapClasses.split(' ');
-    for (var i = 0; i < classes.length; ++i) {
-      if (classes[i].startsWith('cm-breakpoint'))
-        this.codeMirror().removeLineClass(lineNumber, 'wrap', classes[i]);
-    }
-  }
-
-  /**
    * @param {string} type
    * @param {boolean} leftToNumbers
    */
@@ -395,10 +363,11 @@ SourceFrame.SourcesTextEditor = class extends TextEditor.CodeMirrorTextEditor {
       if (!position)
         continue;
       var line = this.line(position.lineNumber);
-      if (line.length === position.columnNumber && Common.TextUtils.lineIndent(line).length === line.length)
+      if (line.length === position.columnNumber && Common.TextUtils.lineIndent(line).length === line.length) {
         this.codeMirror().replaceRange(
             '', new CodeMirror.Pos(position.lineNumber, 0),
             new CodeMirror.Pos(position.lineNumber, position.columnNumber));
+      }
     }
 
     this._autoAppendedSpaces = [];
@@ -488,8 +457,7 @@ SourceFrame.SourcesTextEditor = class extends TextEditor.CodeMirrorTextEditor {
   dispose() {
     super.dispose();
     Common.moduleSetting('textEditorIndent').removeChangeListener(this._onUpdateEditorIndentation, this);
-    Common.moduleSetting('textEditorAutoDetectIndent')
-        .removeChangeListener(this._onUpdateEditorIndentation, this);
+    Common.moduleSetting('textEditorAutoDetectIndent').removeChangeListener(this._onUpdateEditorIndentation, this);
     Common.moduleSetting('showWhitespacesInEditor').removeChangeListener(this._updateWhitespace, this);
   }
 
@@ -503,6 +471,10 @@ SourceFrame.SourcesTextEditor = class extends TextEditor.CodeMirrorTextEditor {
         text.split('\n').slice(0, SourceFrame.SourcesTextEditor.LinesToScanForIndentationGuessing));
     super.setText(text);
     delete this._muteTextChangedEvent;
+  }
+
+  _updateWhitespace() {
+    this.setMimeType(this.mimeType());
   }
 
   _reverseZOrder(element, startIndex) {
@@ -534,24 +506,9 @@ SourceFrame.SourcesTextEditor = class extends TextEditor.CodeMirrorTextEditor {
   /**
    * @override
    * @param {string} mimeType
-   * @return {!Promise}
-   */
-  setMimeType(mimeType) {
-    this._mimeType = mimeType;
-    return super.setMimeType(mimeType).then(
-        () => this._codeMirror.setOption('mode', this._applyWhitespaceMimetype(mimeType)));
-  }
-
-  _updateWhitespace() {
-    if (this._mimeType)
-      this.setMimeType(this._mimeType);
-  }
-
-  /**
-   * @param {string} mimeType
    * @return {string}
    */
-  _applyWhitespaceMimetype(mimeType) {
+  rewriteMimeType(mimeType) {
     this._setupWhitespaceHighlight();
     var whitespaceMode = Common.moduleSetting('showWhitespacesInEditor').get();
     this.element.classList.toggle('show-whitespaces', whitespaceMode === 'all');
@@ -615,9 +572,9 @@ SourceFrame.SourcesTextEditor = class extends TextEditor.CodeMirrorTextEditor {
         var pos = stream.pos;
         if (stream.match(/^\s+$/, true))
           return true ? 'trailing-whitespace' : null;
-        do {
+        do
           stream.next();
-        } while (!stream.eol() && stream.peek() !== ' ');
+        while (!stream.eol() && stream.peek() !== ' ');
         return null;
       }
       var whitespaceMode = {token: nextToken};
@@ -671,7 +628,7 @@ SourceFrame.SourcesTextEditorDelegate.prototype = {
    * @param {number} lineNumber
    * @return {!Promise}
    */
-  populateLineGutterContextMenu: function(contextMenu, lineNumber) {},
+  populateLineGutterContextMenu(contextMenu, lineNumber) {},
 
   /**
    * @param {!UI.ContextMenu} contextMenu
@@ -679,7 +636,7 @@ SourceFrame.SourcesTextEditorDelegate.prototype = {
    * @param {number} columnNumber
    * @return {!Promise}
    */
-  populateTextAreaContextMenu: function(contextMenu, lineNumber, columnNumber) {},
+  populateTextAreaContextMenu(contextMenu, lineNumber, columnNumber) {},
 };
 
 /**
@@ -931,9 +888,9 @@ SourceFrame.SourcesTextEditor.TokenHighlighter = class {
     if (stream.match(token) && (stream.eol() || !Common.TextUtils.isWordChar(stream.peek())))
       return stream.column() === selectionStart.ch ? 'token-highlight column-with-selection' : 'token-highlight';
     var eatenChar;
-    do {
+    do
       eatenChar = stream.next();
-    } while (eatenChar && (Common.TextUtils.isWordChar(eatenChar) || stream.peek() !== tokenFirstChar));
+    while (eatenChar && (Common.TextUtils.isWordChar(eatenChar) || stream.peek() !== tokenFirstChar));
   }
 
   /**

@@ -1,4 +1,7 @@
 ns               Testing dirac.tests.tasks.suite01.runtime-api
+extension        reset extension state
+extension        set extension options:{:target-url "http://localhost:<port>"}
+extension        set extension options:{:open-as "window"}
 automate         open-scenario! ["runtime-api"]
 automate         trigger! [:run-tests]
 scenario !>      (runtime/available?)

@@ -40,14 +40,13 @@ Sass.ASTSourceMap = class {
     return this._sourceMapURL;
   }
 
-    /**
-     * @override
-     * @return {?SourceMapV3}
-     */
-    payload: function()
-    {
-        return null;
-    },
+  /**
+   * @override
+   * @return {?SourceMapV3}
+   */
+  payload() {
+    return null;
+  }
 
     /**
    * @override

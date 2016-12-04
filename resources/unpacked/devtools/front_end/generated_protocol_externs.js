@@ -128,6 +128,13 @@ Protocol.PageAgent.prototype.navigate = function(url, opt_callback) {}
 Protocol.PageAgent.prototype.invoke_navigate = function(obj, opt_callback) {}
 
 /**
+ * @param {function(?Protocol.Error):void=} opt_callback
+ */
+Protocol.PageAgent.prototype.stopLoading = function(opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+Protocol.PageAgent.prototype.invoke_stopLoading = function(obj, opt_callback) {}
+
+/**
  * @param {function(?Protocol.Error, number, !Array<Protocol.Page.NavigationEntry>):void=} opt_callback
  */
 Protocol.PageAgent.prototype.getNavigationHistory = function(opt_callback) {}
@@ -1554,10 +1561,10 @@ Protocol.DOMAgent.prototype.invoke_disable = function(obj, opt_callback) {}
 
 /**
  * @param {number=} opt_depth
- * @param {boolean=} opt_traverseFrames
+ * @param {boolean=} opt_pierce
  * @param {function(?Protocol.Error, Protocol.DOM.Node):void=} opt_callback
  */
-Protocol.DOMAgent.prototype.getDocument = function(opt_depth, opt_traverseFrames, opt_callback) {}
+Protocol.DOMAgent.prototype.getDocument = function(opt_depth, opt_pierce, opt_callback) {}
 /** @param {function(?Protocol.Error, Protocol.DOM.Node):void=} opt_callback */
 Protocol.DOMAgent.prototype.invoke_getDocument = function(obj, opt_callback) {}
 
@@ -1572,10 +1579,10 @@ Protocol.DOMAgent.prototype.invoke_collectClassNamesFromSubtree = function(obj, 
 /**
  * @param {Protocol.DOM.NodeId} nodeId
  * @param {number=} opt_depth
- * @param {boolean=} opt_traverseFrames
+ * @param {boolean=} opt_pierce
  * @param {function(?Protocol.Error):void=} opt_callback
  */
-Protocol.DOMAgent.prototype.requestChildNodes = function(nodeId, opt_depth, opt_traverseFrames, opt_callback) {}
+Protocol.DOMAgent.prototype.requestChildNodes = function(nodeId, opt_depth, opt_pierce, opt_callback) {}
 /** @param {function(?Protocol.Error):void=} opt_callback */
 Protocol.DOMAgent.prototype.invoke_requestChildNodes = function(obj, opt_callback) {}
 
@@ -1956,7 +1963,6 @@ Protocol.DOM.HighlightConfig;
 Protocol.DOM.InspectMode = {
     SearchForNode: "searchForNode",
     SearchForUAShadowDOM: "searchForUAShadowDOM",
-    ShowLayoutEditor: "showLayoutEditor",
     None: "none"
 };
 /** @interface */
@@ -2374,11 +2380,6 @@ Protocol.CSSDispatcher.prototype.styleSheetAdded = function(header) {};
  * @param {Protocol.CSS.StyleSheetId} styleSheetId
  */
 Protocol.CSSDispatcher.prototype.styleSheetRemoved = function(styleSheetId) {};
-/**
- * @param {Protocol.CSS.StyleSheetId} styleSheetId
- * @param {Protocol.CSS.SourceRange} changeRange
- */
-Protocol.CSSDispatcher.prototype.layoutEditorChange = function(styleSheetId, changeRange) {};
 Protocol.IO = {};
 
 
@@ -3553,7 +3554,10 @@ Protocol.Log.LogEntry;
 Protocol.Log.ViolationSettingName = {
     LongTask: "longTask",
     LongLayout: "longLayout",
-    BlockedEvent: "blockedEvent"
+    BlockedEvent: "blockedEvent",
+    BlockedParser: "blockedParser",
+    Handler: "handler",
+    RecurringHandler: "recurringHandler"
 };
 
 /** @typedef {!{name:(Protocol.Log.ViolationSettingName), threshold:(number)}} */
@@ -4178,7 +4182,8 @@ Protocol.Debugger.ScopeType = {
     Closure: "closure",
     Catch: "catch",
     Block: "block",
-    Script: "script"
+    Script: "script",
+    Eval: "eval"
 };
 
 /** @typedef {!{type:(Protocol.Debugger.ScopeType), object:(Protocol.Runtime.RemoteObject), name:(string|undefined), startLocation:(Protocol.Debugger.Location|undefined), endLocation:(Protocol.Debugger.Location|undefined)}} */

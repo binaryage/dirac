@@ -9,11 +9,13 @@
             [dirac.test-lib.nrepl-server :refer [with-nrepl-server]]
             [dirac.test-lib.agent :refer [with-dirac-agent]]
             [dirac.test-lib.taxi :refer [with-taxi-setup]]
-            [dirac.test-lib.nrepl-server :as test-nrepl-server]))
+            [dirac.test-lib.nrepl-server :as test-nrepl-server]
+            [dirac.tests.browser.tasks.transcript-streamer-server :refer [with-transcript-streamer-server]]))
 
 ; this test runner runs tests against real chrome browser using chrome driver
 
-(def setup-fixtures! (join-fixtures [with-fixtures-web-server
+(def setup-fixtures! (join-fixtures [with-transcript-streamer-server
+                                     with-fixtures-web-server
                                      with-nrepl-server
                                      with-dirac-agent
                                      with-browser

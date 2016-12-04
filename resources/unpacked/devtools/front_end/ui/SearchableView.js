@@ -499,8 +499,7 @@ UI.SearchableView = class extends UI.VBox {
 
   _replaceAll() {
     var searchConfig = this._currentSearchConfig();
-    /** @type {!UI.Replaceable} */ (this._searchProvider)
-        .replaceAllWith(searchConfig, this._replaceInputElement.value);
+    /** @type {!UI.Replaceable} */ (this._searchProvider).replaceAllWith(searchConfig, this._replaceInputElement.value);
   }
 
   /**
@@ -532,28 +531,28 @@ UI.SearchableView._symbol = Symbol('searchableView');
 UI.Searchable = function() {};
 
 UI.Searchable.prototype = {
-  searchCanceled: function() {},
+  searchCanceled() {},
 
   /**
    * @param {!UI.SearchableView.SearchConfig} searchConfig
    * @param {boolean} shouldJump
    * @param {boolean=} jumpBackwards
    */
-  performSearch: function(searchConfig, shouldJump, jumpBackwards) {},
+  performSearch(searchConfig, shouldJump, jumpBackwards) {},
 
-  jumpToNextSearchResult: function() {},
+  jumpToNextSearchResult() {},
 
-  jumpToPreviousSearchResult: function() {},
-
-  /**
-   * @return {boolean}
-   */
-  supportsCaseSensitiveSearch: function() {},
+  jumpToPreviousSearchResult() {},
 
   /**
    * @return {boolean}
    */
-  supportsRegexSearch: function() {}
+  supportsCaseSensitiveSearch() {},
+
+  /**
+   * @return {boolean}
+   */
+  supportsRegexSearch() {}
 };
 
 /**
@@ -566,13 +565,13 @@ UI.Replaceable.prototype = {
    * @param {!UI.SearchableView.SearchConfig} searchConfig
    * @param {string} replacement
    */
-  replaceSelectionWith: function(searchConfig, replacement) {},
+  replaceSelectionWith(searchConfig, replacement) {},
 
   /**
    * @param {!UI.SearchableView.SearchConfig} searchConfig
    * @param {string} replacement
    */
-  replaceAllWith: function(searchConfig, replacement) {}
+  replaceAllWith(searchConfig, replacement) {}
 };
 
 /**

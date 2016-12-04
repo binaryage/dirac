@@ -72,6 +72,10 @@
     vertical-align: middle;
 }
 
+.network-log-grid.data-grid .corner {
+    display: none;
+}
+
 .network-log-grid.data-grid.small td {
     height: 21px;
 }
@@ -79,6 +83,9 @@
 .network-waterfall-header, .network-log-grid.data-grid th {
     border-bottom: 1px solid rgb(205, 205, 205);
     border-left: 1px solid rgb(205, 205, 205);
+}
+
+.network-log-grid.data-grid th {
     background: white;
 }
 
@@ -137,7 +144,7 @@
     color: rgb(230, 0, 0);
 }
 
-.initiator-column a {
+.initiator-column .devtools-link {
     color: inherit;
 }
 
@@ -345,11 +352,10 @@
     width: 100%;
     display: table;
     z-index: 200;
-    background-color: transparent;
 }
 
 .network-waterfall-header:hover {
-    background-color:hsla(0, 0%, 80%, .5);
+    background-color: hsla(0, 0%, 10%, 0.1);
 }
 
 .network-waterfall-header div {
@@ -370,6 +376,7 @@
     bottom: 1px;
     display: flex;
     align-items: center;
+    padding-left: 0px;
 }
 
 .network-waterfall-header .sort-order-icon {

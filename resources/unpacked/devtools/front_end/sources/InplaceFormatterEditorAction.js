@@ -57,12 +57,11 @@ Sources.InplaceFormatterEditorAction = class {
   _isFormattable(uiSourceCode) {
     if (!uiSourceCode)
       return false;
-    if (uiSourceCode.project().type() === Workspace.projectTypes.FileSystem)
+    if (uiSourceCode.project().canSetFileContent())
       return true;
     if (Persistence.persistence.binding(uiSourceCode))
       return true;
-    return uiSourceCode.contentType().isStyleSheet() ||
-        uiSourceCode.project().type() === Workspace.projectTypes.Snippets;
+    return uiSourceCode.contentType().isStyleSheet();
   }
 
   _formatSourceInPlace() {
@@ -81,8 +80,7 @@ Sources.InplaceFormatterEditorAction = class {
      */
     function contentLoaded(content) {
       var highlighterType = Bindings.NetworkProject.uiSourceCodeMimeType(uiSourceCode);
-      Sources.Formatter.format(
-          uiSourceCode.contentType(), highlighterType, content || '', innerCallback.bind(this));
+      Sources.Formatter.format(uiSourceCode.contentType(), highlighterType, content || '', innerCallback.bind(this));
     }
 
     /**
@@ -100,7 +98,31 @@ Sources.InplaceFormatterEditorAction = class {
         start = formatterMapping.originalToFormatted(selection.startLine, selection.startColumn);
       }
       uiSourceCode.setWorkingCopy(formattedContent);
+      this._formatDecorations(uiSourceCode, formatterMapping);
+
       this._sourcesView.showSourceLocation(uiSourceCode, start[0], start[1]);
+    }
+  }
+
+  /**
+   * @param {!Workspace.UISourceCode} uiSourceCode
+   * @param {!Sources.FormatterSourceMapping} sourceMapping
+   */
+  _formatDecorations(uiSourceCode, sourceMapping) {
+    var decorations = uiSourceCode.allDecorations();
+    if (!decorations.length)
+      return;
+
+    uiSourceCode.removeAllDecorations();
+
+    for (var decoration of decorations) {
+      var range = decoration.range();
+      var startLocation = sourceMapping.originalToFormatted(range.startLine, range.startColumn);
+      var endLocation = sourceMapping.originalToFormatted(range.endLine, range.endColumn);
+
+      uiSourceCode.addDecoration(
+          new Common.TextRange(...startLocation, ...endLocation),
+          /** @type {string} */ (decoration.type()), decoration.data());
     }
   }
 };

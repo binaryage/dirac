@@ -91,10 +91,11 @@ Common.Settings = class {
    * @return {!Common.Setting}
    */
   createSetting(key, defaultValue, isLocal) {
-    if (!this._registry.get(key))
+    if (!this._registry.get(key)) {
       this._registry.set(
           key, new Common.Setting(
                    this, key, defaultValue, this._eventSupport, isLocal ? this._localStorage : this._settingsStorage));
+    }
     return /** @type {!Common.Setting} */ (this._registry.get(key));
   }
 
@@ -115,11 +116,12 @@ Common.Settings = class {
    * @return {!Common.RegExpSetting}
    */
   createRegExpSetting(key, defaultValue, regexFlags, isLocal) {
-    if (!this._registry.get(key))
+    if (!this._registry.get(key)) {
       this._registry.set(
           key, new Common.RegExpSetting(
                    this, key, defaultValue, this._eventSupport, isLocal ? this._localStorage : this._settingsStorage,
                    regexFlags));
+    }
     return /** @type {!Common.RegExpSetting} */ (this._registry.get(key));
   }
 
@@ -635,12 +637,13 @@ Common.VersionController = class {
     if (Array.isArray(oldValue)) {
       for (var preset of oldValue) {
         if (typeof preset.title === 'string' && typeof preset.value === 'object' &&
-            typeof preset.value.throughput === 'number' && typeof preset.value.latency === 'number')
+            typeof preset.value.throughput === 'number' && typeof preset.value.latency === 'number') {
           newValue.push({
             title: preset.title,
             value:
                 {download: preset.value.throughput, upload: preset.value.throughput, latency: preset.value.latency}
           });
+        }
       }
     }
     setting.set(newValue);
@@ -688,6 +691,24 @@ Common.VersionController = class {
     oldSetting.remove();
   }
 
+  _updateVersionFrom20To21() {
+    var networkColumns = Common.settings.createSetting('networkLogColumns', {});
+    var columns = /** @type {!Object} */ (networkColumns.get());
+    delete columns['timeline'];
+    delete columns['waterfall'];
+    networkColumns.set(columns);
+  }
+
+  _updateVersionFrom21To22() {
+    var breakpointsSetting = Common.settings.createLocalSetting('breakpoints', []);
+    var breakpoints = breakpointsSetting.get();
+    for (var breakpoint of breakpoints) {
+      breakpoint['url'] = breakpoint['sourceFileId'];
+      delete breakpoint['sourceFileId'];
+    }
+    breakpointsSetting.set(breakpoints);
+  }
+
   _migrateSettingsFromLocalStorage() {
     // This step migrates all the settings except for the ones below into the browser profile.
     var localSettings = new Set([
@@ -720,7 +741,7 @@ Common.VersionController = class {
 };
 
 Common.VersionController._currentVersionName = 'inspectorVersion';
-Common.VersionController.currentVersion = 20;
+Common.VersionController.currentVersion = 22;
 
 /**
  * @type {!Common.Settings}

@@ -199,6 +199,7 @@ Snippets.ScriptSnippetModel = class extends Common.Object {
    * @param {!Workspace.UISourceCode} uiSourceCode
    */
   evaluateScriptSnippet(executionContext, uiSourceCode) {
+    console.assert(uiSourceCode.project().type() === Workspace.projectTypes.Snippets);
     var breakpointLocations = this._removeBreakpoints(uiSourceCode);
     this._releaseSnippetScript(uiSourceCode);
     this._restoreBreakpoints(uiSourceCode, breakpointLocations);
@@ -280,8 +281,8 @@ Snippets.ScriptSnippetModel = class extends Common.Object {
    */
   _printRunScriptResult(target, result, scriptId, sourceURL) {
     var consoleMessage = new SDK.ConsoleMessage(
-        target, SDK.ConsoleMessage.MessageSource.JS, SDK.ConsoleMessage.MessageLevel.Log, '',
-        undefined, sourceURL, undefined, undefined, undefined, [result], undefined, undefined, undefined, scriptId);
+        target, SDK.ConsoleMessage.MessageSource.JS, SDK.ConsoleMessage.MessageLevel.Log, '', undefined, sourceURL,
+        undefined, undefined, undefined, [result], undefined, undefined, undefined, scriptId);
     target.consoleModel.addMessage(consoleMessage);
   }
 
@@ -291,8 +292,8 @@ Snippets.ScriptSnippetModel = class extends Common.Object {
    * @param {?string=} sourceURL
    */
   _printRunOrCompileScriptResultFailure(target, exceptionDetails, sourceURL) {
-    target.consoleModel.addMessage(SDK.ConsoleMessage.fromException(
-        target, exceptionDetails, undefined, undefined, sourceURL || undefined));
+    target.consoleModel.addMessage(
+        SDK.ConsoleMessage.fromException(target, exceptionDetails, undefined, undefined, sourceURL || undefined));
   }
 
   /**
@@ -534,8 +535,7 @@ Snippets.SnippetContentProvider = class {
      * @this {Snippets.SnippetContentProvider}
      */
     function performSearch() {
-      callback(
-          Common.ContentProvider.performSearchInContent(this._snippet.content, query, caseSensitive, isRegex));
+      callback(Common.ContentProvider.performSearchInContent(this._snippet.content, query, caseSensitive, isRegex));
     }
 
     // searchInContent should call back later.

@@ -243,10 +243,11 @@ UI.ViewportControl = class {
     } else if (!hasVisibleSelection) {
       firstSelected = startSelection;
       lastSelected = endSelection;
-    } else if (topOverlap)
+    } else if (topOverlap) {
       firstSelected = isBackward ? this._headSelection : this._anchorSelection;
-    else if (bottomOverlap)
+    } else if (bottomOverlap) {
       lastSelected = isBackward ? this._anchorSelection : this._headSelection;
+    }
 
     if (isBackward) {
       this._anchorSelection = lastSelected;
@@ -503,11 +504,12 @@ UI.ViewportControl = class {
    */
   lastVisibleIndex() {
     var lastVisibleIndex;
-    if (this._stickToBottom)
+    if (this._stickToBottom) {
       lastVisibleIndex = this._itemCount - 1;
-    else
+    } else {
       lastVisibleIndex =
           this.firstVisibleIndex() + Math.ceil(this._visibleHeight() / this._provider.minimumRowHeight()) - 1;
+    }
     return Math.min(lastVisibleIndex, this._lastActiveIndex);
   }
 
@@ -582,21 +584,21 @@ UI.ViewportControl.Provider.prototype = {
    * @param {number} index
    * @return {number}
    */
-  fastHeight: function(index) {
+  fastHeight(index) {
     return 0;
   },
 
   /**
    * @return {number}
    */
-  itemCount: function() {
+  itemCount() {
     return 0;
   },
 
   /**
    * @return {number}
    */
-  minimumRowHeight: function() {
+  minimumRowHeight() {
     return 0;
   },
 
@@ -604,7 +606,7 @@ UI.ViewportControl.Provider.prototype = {
    * @param {number} index
    * @return {?UI.ViewportElement}
    */
-  itemElement: function(index) {
+  itemElement(index) {
     return null;
   }
 };
@@ -614,14 +616,14 @@ UI.ViewportControl.Provider.prototype = {
  */
 UI.ViewportElement = function() {};
 UI.ViewportElement.prototype = {
-  willHide: function() {},
+  willHide() {},
 
-  wasShown: function() {},
+  wasShown() {},
 
   /**
    * @return {!Element}
    */
-  element: function() {},
+  element() {},
 };
 
 /**

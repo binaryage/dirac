@@ -33,20 +33,20 @@
 Bindings.OutputStreamDelegate = function() {};
 
 Bindings.OutputStreamDelegate.prototype = {
-  onTransferStarted: function() {},
+  onTransferStarted() {},
 
-  onTransferFinished: function() {},
+  onTransferFinished() {},
 
   /**
    * @param {!Bindings.ChunkedReader} reader
    */
-  onChunkTransferred: function(reader) {},
+  onChunkTransferred(reader) {},
 
   /**
    * @param {!Bindings.ChunkedReader} reader
    * @param {!Event} event
    */
-  onError: function(reader, event) {},
+  onError(reader, event) {},
 };
 
 /**
@@ -58,19 +58,19 @@ Bindings.ChunkedReader.prototype = {
   /**
    * @return {number}
    */
-  fileSize: function() {},
+  fileSize() {},
 
   /**
    * @return {number}
    */
-  loadedSize: function() {},
+  loadedSize() {},
 
   /**
    * @return {string}
    */
-  fileName: function() {},
+  fileName() {},
 
-  cancel: function() {}
+  cancel() {}
 };
 
 /**
@@ -211,8 +211,7 @@ Bindings.FileOutputStream = class {
      */
     function callbackWrapper(accepted) {
       if (accepted)
-        Workspace.fileManager.addEventListener(
-            Workspace.FileManager.Events.AppendedToURL, this._onAppendDone, this);
+        Workspace.fileManager.addEventListener(Workspace.FileManager.Events.AppendedToURL, this._onAppendDone, this);
       callback(accepted);
     }
     Workspace.fileManager.save(this._fileName, '', true, callbackWrapper.bind(this));
@@ -235,8 +234,7 @@ Bindings.FileOutputStream = class {
     this._closed = true;
     if (this._writeCallbacks.length)
       return;
-    Workspace.fileManager.removeEventListener(
-        Workspace.FileManager.Events.AppendedToURL, this._onAppendDone, this);
+    Workspace.fileManager.removeEventListener(Workspace.FileManager.Events.AppendedToURL, this._onAppendDone, this);
     Workspace.fileManager.close(this._fileName);
   }
 
@@ -251,8 +249,7 @@ Bindings.FileOutputStream = class {
       callback(this);
     if (!this._writeCallbacks.length) {
       if (this._closed) {
-        Workspace.fileManager.removeEventListener(
-            Workspace.FileManager.Events.AppendedToURL, this._onAppendDone, this);
+        Workspace.fileManager.removeEventListener(Workspace.FileManager.Events.AppendedToURL, this._onAppendDone, this);
         Workspace.fileManager.close(this._fileName);
       }
     }

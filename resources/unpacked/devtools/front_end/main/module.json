@@ -7,8 +7,18 @@
         },
         {
             "type": "@UI.ContextMenu.Provider",
-            "contextTypes": ["Workspace.UISourceCode", "SDK.Resource", "SDK.NetworkRequest", "Node"],
-            "className": "Components.HandlerRegistry.ContextMenuProvider"
+            "contextTypes": ["Workspace.UISourceCode", "SDK.Resource", "SDK.NetworkRequest"],
+            "className": "Components.Linkifier.ContentProviderContextMenuProvider"
+        },
+        {
+            "type": "@UI.ContextMenu.Provider",
+            "contextTypes": ["Node"],
+            "className": "UI.ExternaLinkContextMenuProvider"
+        },
+        {
+            "type": "@UI.ContextMenu.Provider",
+            "contextTypes": ["Node"],
+            "className": "Components.Linkifier.LinkContextMenuProvider"
         },
         {
             "type": "@UI.ActionDelegate",
@@ -299,7 +309,7 @@
         {
             "type": "@UI.SettingUI",
             "category": "Extensions",
-            "className": "Components.HandlerRegistry.OpenAnchorLocationSettingUI"
+            "className": "Components.Linkifier.LinkHandlerSettingUI"
         },
         {
             "type": "@UI.SettingUI",

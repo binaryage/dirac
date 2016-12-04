@@ -1,4 +1,7 @@
 ns               Testing dirac.tests.tasks.suite02.welcome-message
+extension        reset extension state
+extension        set extension options:{:target-url "http://localhost:<port>"}
+extension        set extension options:{:open-as "window"}
 automate         open-scenario! ["normal"]
 testing          welcome message should be present by default
 automate         open-devtools!
@@ -23,6 +26,7 @@ extension        unregister devtools #1
 testing          welcome message should not be present when disabled in options
 automate         store-options!
 automate         set-options! [{:welcome-message false}]
+extension        set extension options:{:welcome-message false}
 automate         open-devtools!
 extension        handling command: open-dirac-devtools
 extension        register devtools #2
@@ -42,6 +46,7 @@ automate #2      close-devtools!
 extension        handling command: close-dirac-devtools
 extension        unregister devtools #2
 automate         restore-options!
+extension        reset extension options:{:enable-clustered-locals true, :inline-custom-formatters true, :use-backend-supported-api true, :enable-parinfer true, :use-backend-supported-css true, :beautify-function-names true, :enable-friendly-locals true, :user-frontend-url-params nil, :clean-urls true, :enable-repl true, :welcome-message true, :open-as "window", :target-url "http://localhost:<port>"}
 ∎
 automate         close-scenario! ["scenario-tab#1"]
 summary          Automated 11 actions with 2 check-points containing 0 assertions.

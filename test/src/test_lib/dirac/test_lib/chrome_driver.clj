@@ -61,6 +61,14 @@
 (defn get-marion-extension-path [dirac-root]
   [dirac-root "test" "marion" "resources" "unpacked"])                                                                        ; note: we always use dev version, it is just a helper extension, no need for advanced compliation here
 
+(defn slurp-chromedriver-log-if-avail []
+  (if-let [log-path (:chrome-driver-log-path env)]
+    (str "chromedriver log (" log-path "):\n" (slurp log-path))
+    "no chromedriver log available"))
+
+(defn print-chromedriver-log! []
+  (println (slurp-chromedriver-log-if-avail)))
+
 (defn pick-chrome-binary-path [options]
   (let [{:keys [dirac-chrome-binary-path dirac-use-chromium dirac-host-os]} options]
     (cond
@@ -129,10 +137,6 @@
       (log/debug (str "setting chrome binary path to '" chrome-binary-path "'"))
       (.setBinary chrome-options chrome-binary-path))))
 
-(defn tweak-travis-specific-options [chrome-options options]
-  (when (:travis options)
-    (.addArguments chrome-options ["--disable-setuid-sandbox"])))
-
 (defn prepare-chrome-options [options]
   (let [{:keys [attaching? dirac-root dirac-dev debugger-port]} options
         chrome-options (ChromeOptions.)
@@ -142,6 +146,9 @@
         load-extensions-arg (str "load-extension=" (string/join "," absolute-extension-paths))
         args [; we need robust startup, chrome tends to display first-run dialogs on clean systems and blocks the driver
               ; but there are still some bugs: https://bugs.chromium.org/p/chromium/issues/detail?id=348426
+              ;"--disable-application-cache"
+              ;"--log-net-log=target/net.log"
+              ;"--enable-extension-activity-logging "
               "--disable-hang-monitor"
               "--disable-prompt-on-repost"
               "--dom-automation"
@@ -151,13 +158,18 @@
               "--ignore-certificate-errors"
               "--homepage=about:blank"
               "--enable-experimental-extension-apis"
+              "--dns-prefetch-disable"                                                                                        ; https://bugs.chromium.org/p/chromedriver/issues/detail?id=848#c10
               "--disable-gpu"
               "--disable-infobars"
               "--disable-default-apps"
+              "--noerrdialogs"
+              "--enable-logging"
+              "--v=1"
+              "--no-sandbox"
+              "--disable-setuid-sandbox"                                                                                      ; for docker container https://eshlox.net/2016/11/22/dockerize-behave-selenium-tests/
               load-extensions-arg]]
     (.addArguments chrome-options args)
 
-    (tweak-travis-specific-options chrome-options options)
     (tweak-os-specific-options chrome-options options)
     (if attaching?
       (.setExperimentalOption chrome-options "debuggerAddress" (str "127.0.0.1:" debugger-port))
@@ -186,13 +198,8 @@
    (let [defaults {:dirac-host-os                         (System/getProperty "os.name")
                    :dirac-chrome-driver-browser-log-level "SEVERE"}
          env-settings (select-keys env known-env-options)
-         ; when testing with travis we place chrome driver binary under test/chromedriver
-         ; detect that case here and use the binary explicitely
-         dirac-test-chromedriver-file (io/file (:dirac-root env-settings) "test" "chromedriver")
-         chrome-driver-path (if (.exists dirac-test-chromedriver-file)
-                              {:chrome-driver-path (.getAbsolutePath dirac-test-chromedriver-file)})
          overrides {:attaching? attaching?}]
-     (merge defaults env-settings chrome-driver-path overrides))))
+     (merge defaults env-settings overrides))))
 
 (defn retrieve-remote-debugging-port []
   (try
@@ -204,6 +211,7 @@
         (throw (ex-info (str "no --remote-debugging-port found in " CHROME_VERSION_PAGE "\n") {:command-line command-line}))))
     (catch Exception e
       (log/error (str "got an exception when trying to retrieve remote debugging port:\n" e))
+      (print-chromedriver-log!)
       nil)))
 
 (defn retrieve-chrome-info []
@@ -222,4 +230,5 @@
            "     Command Line: " (beautify-command-line command-line-text) "\n"))
     (catch Exception e
       (log/error (str "got an exception when trying to retrieve chrome info:\n" e))
+      (print-chromedriver-log!)
       nil)))

@@ -21,8 +21,7 @@ Sources.WorkspaceMappingTip = class {
     if (this._workspaceInfobarDisabledSetting.get() && this._workspaceMappingInfobarDisabledSetting.get())
       return;
     this._sourcesView.addEventListener(Sources.SourcesView.Events.EditorSelected, this._editorSelected.bind(this));
-    Persistence.persistence.addEventListener(
-        Persistence.Persistence.Events.BindingCreated, this._bindingCreated, this);
+    Persistence.persistence.addEventListener(Persistence.Persistence.Events.BindingCreated, this._bindingCreated, this);
   }
 
   /**
@@ -64,8 +63,7 @@ Sources.WorkspaceMappingTip = class {
         return;
 
       var networkProjects = this._workspace.projectsForType(Workspace.projectTypes.Network);
-      networkProjects =
-          networkProjects.concat(this._workspace.projectsForType(Workspace.projectTypes.ContentScripts));
+      networkProjects = networkProjects.concat(this._workspace.projectsForType(Workspace.projectTypes.ContentScripts));
       for (var i = 0; i < networkProjects.length; ++i) {
         var name = uiSourceCode.name();
         var networkUiSourceCodes = networkProjects[i].uiSourceCodes();
@@ -115,13 +113,12 @@ Sources.WorkspaceMappingTip = class {
    */
   _showWorkspaceInfobar(uiSourceCode) {
     var infobar = UI.Infobar.create(
-        UI.Infobar.Type.Info,
-        Common.UIString('Serving from the file system? Add your files into the workspace.'),
+        UI.Infobar.Type.Info, Common.UIString('Serving from the file system? Add your files into the workspace.'),
         this._workspaceInfobarDisabledSetting);
     if (!infobar)
       return;
-    infobar.createDetailsRowMessage(Common.UIString(
-        'If you add files into your DevTools workspace, your changes will be persisted to disk.'));
+    infobar.createDetailsRowMessage(
+        Common.UIString('If you add files into your DevTools workspace, your changes will be persisted to disk.'));
     infobar.createDetailsRowMessage(
         Common.UIString('To add a folder into the workspace, drag and drop it into the Sources panel.'));
     this._appendInfobar(uiSourceCode, infobar);
@@ -138,14 +135,13 @@ Sources.WorkspaceMappingTip = class {
     else
       title = Common.UIString('Map workspace resource \'%s\' to network?', uiSourceCode.url());
 
-    var infobar = UI.Infobar.create(
-        UI.Infobar.Type.Info, title, this._workspaceMappingInfobarDisabledSetting);
+    var infobar = UI.Infobar.create(UI.Infobar.Type.Info, title, this._workspaceMappingInfobarDisabledSetting);
     if (!infobar)
       return;
     infobar.createDetailsRowMessage(Common.UIString(
         'You can map files in your workspace to the ones loaded over the network. As a result, changes made in DevTools will be persisted to disk.'));
     infobar.createDetailsRowMessage(Common.UIString('Use context menu to establish the mapping at any time.'));
-    var anchor = createElementWithClass('a', 'link');
+    var anchor = createElementWithClass('span', 'link');
     anchor.textContent = Common.UIString('Establish the mapping now...');
     anchor.addEventListener('click', this._establishTheMapping.bind(this, uiSourceCode), false);
     infobar.createDetailsRowMessage('').appendChild(anchor);
@@ -173,8 +169,8 @@ Sources.WorkspaceMappingTip = class {
 
     var rowElement =
         infobar.createDetailsRowMessage(Common.UIString('For more information on workspaces, refer to the '));
-    rowElement.appendChild(UI.linkifyDocumentationURLAsNode(
-        '../setup/setup-workflow', Common.UIString('workspaces documentation')));
+    rowElement.appendChild(
+        UI.createDocumentationLink('../setup/setup-workflow', Common.UIString('workspaces documentation')));
     rowElement.createTextChild('.');
     uiSourceCode[Sources.WorkspaceMappingTip._infobarSymbol] = infobar;
     uiSourceCodeFrame.attachInfobars([infobar]);

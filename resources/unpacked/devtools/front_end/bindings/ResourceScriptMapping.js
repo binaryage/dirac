@@ -35,13 +35,12 @@ Bindings.ResourceScriptMapping = class {
   /**
    * @param {!SDK.DebuggerModel} debuggerModel
    * @param {!Workspace.Workspace} workspace
-   * @param {!Bindings.NetworkMapping} networkMapping
    * @param {!Bindings.DebuggerWorkspaceBinding} debuggerWorkspaceBinding
    */
-  constructor(debuggerModel, workspace, networkMapping, debuggerWorkspaceBinding) {
+  constructor(debuggerModel, workspace, debuggerWorkspaceBinding) {
     this._target = debuggerModel.target();
     this._debuggerModel = debuggerModel;
-    this._networkMapping = networkMapping;
+    this._workspace = workspace;
     this._debuggerWorkspaceBinding = debuggerWorkspaceBinding;
     /** @type {!Set<!Workspace.UISourceCode>} */
     this._boundUISourceCodes = new Set();
@@ -91,9 +90,10 @@ Bindings.ResourceScriptMapping = class {
     var scripts = this._scriptsForUISourceCode(uiSourceCode);
     console.assert(scripts.length);
     var script = scripts[scripts.length - 1];
-    if (script.isInlineScriptWithSourceURL())
+    if (script.isInlineScriptWithSourceURL()) {
       return this._debuggerModel.createRawLocation(
           script, lineNumber + script.lineOffset, lineNumber ? columnNumber : columnNumber + script.columnOffset);
+    }
     return this._debuggerModel.createRawLocation(script, lineNumber, columnNumber);
   }
 
@@ -192,7 +192,7 @@ Bindings.ResourceScriptMapping = class {
   _workspaceUISourceCodeForScript(script) {
     if (script.isAnonymousScript())
       return null;
-    return this._networkMapping.uiSourceCodeForScriptURL(script.sourceURL, script);
+    return Bindings.NetworkProject.uiSourceCodeForScriptURL(this._workspace, script.sourceURL, script);
   }
 
   /**
@@ -312,7 +312,7 @@ Bindings.ResourceScriptFile = class extends Common.Object {
   }
 
   _workingCopyCommitted(event) {
-    if (this._uiSourceCode.project().type() === Workspace.projectTypes.Snippets)
+    if (this._uiSourceCode.project().canSetFileContent())
       return;
     if (!this._script)
       return;
@@ -333,8 +333,7 @@ Bindings.ResourceScriptFile = class extends Common.Object {
       if (!error && !exceptionDetails)
         return;
       if (!exceptionDetails) {
-        Common.console.addMessage(
-            Common.UIString('LiveEdit failed: %s', error), Common.Console.MessageLevel.Warning);
+        Common.console.addMessage(Common.UIString('LiveEdit failed: %s', error), Common.Console.MessageLevel.Warning);
         return;
       }
       var messageText = Common.UIString('LiveEdit compile failed: %s', exceptionDetails.text);

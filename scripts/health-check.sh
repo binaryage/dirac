@@ -1,9 +1,12 @@
 #!/usr/bin/env bash
 
-pushd `dirname "${BASH_SOURCE[0]}"` > /dev/null
-source "./config.sh"
+source "$(dirname "${BASH_SOURCE[0]}")/_config.sh"
+false && source _config.sh # never executes, this is here just for IntelliJ Bash support to understand our sourcing
 
 pushd "$ROOT"
+
+git checkout master
+git pull origin
 
 TAG=${1:-`git describe --tags --match "v*" --abbrev=0 master`}
 
@@ -17,10 +20,9 @@ else
 fi
 
 git merge --no-edit -Xtheirs "$TAG"
-git commit --allow-empty -m "a health-check against current Chromium"
+git commit --allow-empty -m "a health-check of $TAG against current Chromium"
+
 git checkout master
 git push --force origin health-check
-
-popd
 
 popd

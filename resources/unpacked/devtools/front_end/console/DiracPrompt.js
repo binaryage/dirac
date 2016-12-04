@@ -53,6 +53,10 @@ Console.DiracPromptWithHistory = class extends UI.TextPrompt {
     return text.replace(/[\s\n]+$/gm, ""); // remove trailing newlines and whitespace
   }
 
+  /**
+   * @override
+   * @param {string} x
+   */
   setText(x) {
     this.clearAutocomplete();
     this._codeMirror.setValue(x);
@@ -95,10 +99,17 @@ Console.DiracPromptWithHistory = class extends UI.TextPrompt {
     return (cursor.line == this._codeMirror.lastLine());
   }
 
+
+  /**
+   * @override
+   */
   moveCaretToEndOfPrompt() {
     this._codeMirror.setCursor(this._codeMirror.lastLine() + 1, 0, null);
   }
 
+  /**
+   * @override
+   */
   moveCaretToIndex(index) {
     const pos = this._codeMirror.posFromIndex(index);
     this._codeMirror.setCursor(pos, null, null);
@@ -228,6 +239,8 @@ Console.DiracPromptWithHistory = class extends UI.TextPrompt {
    * @param {boolean=} reverse
    */
   autocomplete(force, reverse) {
+    force = force || false;
+    reverse = reverse || false;
     this.clearAutocomplete();
     this._lastAutocompleteRequest++;
 
@@ -283,7 +296,7 @@ Console.DiracPromptWithHistory = class extends UI.TextPrompt {
    * @param {number} requestId
    * @param {string} input
    * @param {boolean} force
-   * @param {function(string, string, !Array.<string>, number=)} completionsReadyCallback
+   * @param {function(string, string, !UI.SuggestBox.Suggestions)} completionsReadyCallback
    */
   _loadJavascriptCompletions(requestId, input, force, completionsReadyCallback) {
     if (dirac._DEBUG_COMPLETIONS) {
@@ -322,12 +335,11 @@ Console.DiracPromptWithHistory = class extends UI.TextPrompt {
    * @param {boolean} force
    * @param {string} expression
    * @param {string} prefix
-   * @param {!Array.<string>} completions
-   * @param {number=} selectedIndex
+   * @param {!UI.SuggestBox.Suggestions} completions
    */
-  _completionsForJavascriptReady(requestId, reverse, force, expression, prefix, completions, selectedIndex) {
+  _completionsForJavascriptReady(requestId, reverse, force, expression, prefix, completions) {
     if (dirac._DEBUG_COMPLETIONS) {
-      console.log("_completionsForJavascriptReady", prefix, reverse, force, expression, completions, selectedIndex);
+      console.log("_completionsForJavascriptReady", prefix, reverse, force, expression, completions);
     }
     if (requestId != this._lastAutocompleteRequest) {
       if (dirac._DEBUG_COMPLETIONS) {
@@ -335,26 +347,17 @@ Console.DiracPromptWithHistory = class extends UI.TextPrompt {
       }
       return;
     }
+
     // Filter out dupes.
-    let store = new Set();
-    completions = completions.filter(item => !store.has(item) && !!store.add(item));
-    let annotatedCompletions = completions.map(item => ({title: item}));
+    var store = new Set();
+    completions = completions.filter(item => !store.has(item.title) && !!store.add(item.title));
 
-    if (prefix || force) {
-      if (prefix)
-        annotatedCompletions = annotatedCompletions.concat(this.additionalCompletions(prefix));
-      else
-        annotatedCompletions = this.additionalCompletions(prefix).concat(annotatedCompletions);
-    }
-
-    if (!annotatedCompletions.length) {
+    if (!completions.length) {
       this.clearAutocomplete();
       return;
     }
 
     this._userEnteredText = prefix;
-
-    selectedIndex = (this._disableDefaultSuggestionForEmptyInput && !this.text()) ? -1 : (selectedIndex || 0);
 
     this._lastExpression = expression;
     this._updateAnchorBox();
@@ -362,12 +365,12 @@ Console.DiracPromptWithHistory = class extends UI.TextPrompt {
     const shouldShowForSingleItem = true; // later maybe implement inline completions like in TextPrompt.js
     if (this._anchorBox) {
       if (dirac._DEBUG_COMPLETIONS) {
-        console.log("calling SuggestBox.updateSuggestions", this._anchorBox, annotatedCompletions, selectedIndex, shouldShowForSingleItem, this._userEnteredText);
+        console.log("calling SuggestBox.updateSuggestions", this._anchorBox, completions, shouldShowForSingleItem, this._userEnteredText);
       }
-      this._suggestBox.updateSuggestions(this._anchorBox, annotatedCompletions, selectedIndex, shouldShowForSingleItem, this._userEnteredText);
+      this._suggestBox.updateSuggestions(this._anchorBox, completions, true, shouldShowForSingleItem, this._userEnteredText);
     } else {
       if (dirac._DEBUG_COMPLETIONS) {
-        console.log("not calling SuggestBox.updateSuggestions because this._anchorBox is null", annotatedCompletions, selectedIndex, shouldShowForSingleItem, this._userEnteredText);
+        console.log("not calling SuggestBox.updateSuggestions because this._anchorBox is null", completions, shouldShowForSingleItem, this._userEnteredText);
       }
     }
 
@@ -443,6 +446,13 @@ Console.DiracPromptWithHistory = class extends UI.TextPrompt {
         }));
       };
 
+      const styleQualifiedSymbols = (style, symbols) => {
+        return symbols.filter(symbol => symbol.title.startsWith(prefix)).map(symbol => {
+          symbol.className = makeSuggestStyle(style);
+          return symbol;
+        });
+      };
+
       const currentNamespaceDescriptorPromise = dirac.extractNamespacesAsync().then(selectCurrentNamespace);
 
       const resolvedNamespaceNamePromise = currentNamespaceDescriptorPromise.then(currentNamespaceDescriptor => {
@@ -458,7 +468,7 @@ Console.DiracPromptWithHistory = class extends UI.TextPrompt {
       const prepareAnnotatedJavascriptCompletionsForPseudoNamespaceAsync = (namespaceName) => {
         return new Promise(resolve => {
           const resultHandler = (expression, prefix, completions) => {
-            const annotatedCompletions = annotateQualifiedSymbols("suggest-cljs-qualified suggest-cljs-pseudo", completions);
+            const annotatedCompletions = styleQualifiedSymbols("suggest-cljs-qualified suggest-cljs-pseudo", completions);
             if (dirac._DEBUG_COMPLETIONS) {
               console.log("resultHandler got", expression, prefix, completions, annotatedCompletions);
             }
@@ -661,11 +671,10 @@ Console.DiracPromptWithHistory = class extends UI.TextPrompt {
    * @param {string} expression
    * @param {string} prefix
    * @param {!Array.<string>} completions
-   * @param {number=} selectedIndex
    */
-  _completionsForClojureScriptReady(requestId, reverse, force, expression, prefix, completions, selectedIndex) {
+  _completionsForClojureScriptReady(requestId, reverse, force, expression, prefix, completions) {
     if (dirac._DEBUG_COMPLETIONS) {
-      console.log("_completionsForClojureScriptReady", prefix, reverse, force, completions, selectedIndex);
+      console.log("_completionsForClojureScriptReady", prefix, reverse, force, completions);
     }
 
     if (requestId != this._lastAutocompleteRequest) {
@@ -729,7 +738,6 @@ Console.DiracPromptWithHistory = class extends UI.TextPrompt {
     }
 
     this._userEnteredText = prefix;
-    selectedIndex = (this._disableDefaultSuggestionForEmptyInput && !this.text()) ? -1 : (selectedIndex || 0);
 
     if (this._suggestBox) {
       this._lastExpression = expression;
@@ -737,12 +745,12 @@ Console.DiracPromptWithHistory = class extends UI.TextPrompt {
       const shouldShowForSingleItem = true; // later maybe implement inline completions like in TextPrompt.js
       if (this._anchorBox) {
         if (dirac._DEBUG_COMPLETIONS) {
-          console.log("calling SuggestBox.updateSuggestions", this._anchorBox, processedCompletions, selectedIndex, shouldShowForSingleItem, this._userEnteredText);
+          console.log("calling SuggestBox.updateSuggestions", this._anchorBox, processedCompletions, shouldShowForSingleItem, this._userEnteredText);
         }
-        this._suggestBox.updateSuggestions(this._anchorBox, processedCompletions, selectedIndex, shouldShowForSingleItem, this._userEnteredText);
+        this._suggestBox.updateSuggestions(this._anchorBox, processedCompletions, true, shouldShowForSingleItem, this._userEnteredText);
       } else {
         if (dirac._DEBUG_COMPLETIONS) {
-          console.log("not calling SuggestBox.updateSuggestions because this._anchorBox is null", processedCompletions, selectedIndex, shouldShowForSingleItem, this._userEnteredText);
+          console.log("not calling SuggestBox.updateSuggestions because this._anchorBox is null", processedCompletions, shouldShowForSingleItem, this._userEnteredText);
         }
       }
     }

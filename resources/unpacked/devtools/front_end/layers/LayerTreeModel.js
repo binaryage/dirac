@@ -35,8 +35,7 @@ Layers.LayerTreeModel = class extends SDK.SDKModel {
   constructor(target) {
     super(Layers.LayerTreeModel, target);
     target.registerLayerTreeDispatcher(new Layers.LayerTreeDispatcher(this));
-    SDK.targetManager.addEventListener(
-        SDK.TargetManager.Events.MainFrameNavigated, this._onMainFrameNavigated, this);
+    SDK.targetManager.addEventListener(SDK.TargetManager.Events.MainFrameNavigated, this._onMainFrameNavigated, this);
     /** @type {?SDK.LayerTreeBase} */
     this._layerTree = null;
   }
@@ -49,7 +48,7 @@ Layers.LayerTreeModel = class extends SDK.SDKModel {
     if (!target.hasDOMCapability())
       return null;
 
-    var model = /** @type {?Layers.LayerTreeModel} */ (target.model(Layers.LayerTreeModel));
+    var model = target.model(Layers.LayerTreeModel);
     if (!model)
       model = new Layers.LayerTreeModel(target);
     return model;
@@ -415,8 +414,8 @@ Layers.AgentLayer = class {
       return;
     }
 
-    var wrappedCallback =
-        InspectorBackend.wrapClientCallback(callback, 'Protocol.LayerTree.reasonsForCompositingLayer(): ', undefined, []);
+    var wrappedCallback = InspectorBackend.wrapClientCallback(
+        callback, 'Protocol.LayerTree.reasonsForCompositingLayer(): ', undefined, []);
     this._target.layerTreeAgent().compositingReasons(this.id(), wrappedCallback);
   }
 

@@ -141,7 +141,8 @@ TextEditor.CodeMirrorTextEditor = class extends UI.VBox {
     this._shouldClearHistory = true;
     this._lineSeparator = '\n';
 
-    this._fixWordMovement = new TextEditor.CodeMirrorTextEditor.FixWordMovement(this._codeMirror);
+    TextEditor.CodeMirrorTextEditor._fixWordMovement(this._codeMirror);
+
     this._selectNextOccurrenceController =
         new TextEditor.CodeMirrorTextEditor.SelectNextOccurrenceController(this, this._codeMirror);
 
@@ -155,7 +156,6 @@ TextEditor.CodeMirrorTextEditor = class extends UI.VBox {
 
     /** @type {!Multimap<number, !TextEditor.CodeMirrorTextEditor.Decoration>} */
     this._decorations = new Multimap();
-    this._nestedUpdatesCounter = 0;
 
     this.element.addEventListener('focus', this._handleElementFocus.bind(this), false);
     this.element.addEventListener('keydown', this._handleKeyDown.bind(this), true);
@@ -164,6 +164,7 @@ TextEditor.CodeMirrorTextEditor = class extends UI.VBox {
 
     this._needsRefresh = true;
 
+    this._mimeType = '';
     if (options.mimeType)
       this.setMimeType(options.mimeType);
     if (options.autoHeight)
@@ -264,9 +265,9 @@ TextEditor.CodeMirrorTextEditor = class extends UI.VBox {
 
   /**
    * @param {string} mimeType
-   * @return {!Promise}
+   * @return {!Array<!Runtime.Extension>}}
    */
-  static _loadMimeTypeModes(mimeType) {
+  static _collectUninstalledModes(mimeType) {
     var installed = TextEditor.CodeMirrorTextEditor._loadedMimeModeExtensions;
 
     var nameToExtension = new Map();
@@ -288,10 +289,15 @@ TextEditor.CodeMirrorTextEditor = class extends UI.VBox {
           modesToLoad.add(extension);
       }
     }
+    return Array.from(modesToLoad);
+  }
 
-    var promises = [];
-    for (var extension of modesToLoad)
-      promises.push(extension.instance().then(installMode.bind(null, extension)));
+  /**
+   * @param {!Array<!Runtime.Extension>} extensions
+   * @return {!Promise}
+   */
+  static _installMimeTypeModes(extensions) {
+    var promises = extensions.map(extension => extension.instance().then(installMode.bind(null, extension)));
     return Promise.all(promises);
 
     /**
@@ -299,12 +305,59 @@ TextEditor.CodeMirrorTextEditor = class extends UI.VBox {
      * @param {!Object} instance
      */
     function installMode(extension, instance) {
-      if (installed.has(extension))
+      if (TextEditor.CodeMirrorTextEditor._loadedMimeModeExtensions.has(extension))
         return;
       var mode = /** @type {!TextEditor.CodeMirrorMimeMode} */ (instance);
       mode.install(extension);
-      installed.add(extension);
+      TextEditor.CodeMirrorTextEditor._loadedMimeModeExtensions.add(extension);
     }
+  }
+
+  /**
+   * @param {!CodeMirror} codeMirror
+   */
+  static _fixWordMovement(codeMirror) {
+    function moveLeft(shift, codeMirror) {
+      codeMirror.setExtending(shift);
+      var cursor = codeMirror.getCursor('head');
+      codeMirror.execCommand('goGroupLeft');
+      var newCursor = codeMirror.getCursor('head');
+      if (newCursor.ch === 0 && newCursor.line !== 0) {
+        codeMirror.setExtending(false);
+        return;
+      }
+
+      var skippedText = codeMirror.getRange(newCursor, cursor, '#');
+      if (/^\s+$/.test(skippedText))
+        codeMirror.execCommand('goGroupLeft');
+      codeMirror.setExtending(false);
+    }
+
+    function moveRight(shift, codeMirror) {
+      codeMirror.setExtending(shift);
+      var cursor = codeMirror.getCursor('head');
+      codeMirror.execCommand('goGroupRight');
+      var newCursor = codeMirror.getCursor('head');
+      if (newCursor.ch === 0 && newCursor.line !== 0) {
+        codeMirror.setExtending(false);
+        return;
+      }
+
+      var skippedText = codeMirror.getRange(cursor, newCursor, '#');
+      if (/^\s+$/.test(skippedText))
+        codeMirror.execCommand('goGroupRight');
+      codeMirror.setExtending(false);
+    }
+
+    var modifierKey = Host.isMac() ? 'Alt' : 'Ctrl';
+    var leftKey = modifierKey + '-Left';
+    var rightKey = modifierKey + '-Right';
+    var keyMap = {};
+    keyMap[leftKey] = moveLeft.bind(null, false);
+    keyMap[rightKey] = moveRight.bind(null, false);
+    keyMap['Shift-' + leftKey] = moveLeft.bind(null, true);
+    keyMap['Shift-' + rightKey] = moveRight.bind(null, true);
+    codeMirror.addKeyMap(keyMap);
   }
 
   /**
@@ -429,9 +482,9 @@ TextEditor.CodeMirrorTextEditor = class extends UI.VBox {
 
     if (!valid(charNumber, length))
       return constrainPosition(lineNumber, length, charNumber);
-    if (isWordStart(text, charNumber) || isWordEnd(text, charNumber)) {
+    if (isWordStart(text, charNumber) || isWordEnd(text, charNumber))
       return {lineNumber: lineNumber, columnNumber: charNumber};
-    }
+
 
     return {lineNumber: lineNumber, columnNumber: direction === -1 ? charNumber + 1 : charNumber};
   }
@@ -609,15 +662,41 @@ TextEditor.CodeMirrorTextEditor = class extends UI.VBox {
 
   /**
    * @param {string} mimeType
-   * @return {!Promise}
    */
   setMimeType(mimeType) {
-    if (this._hasLongLines())
-      this._enableLongLinesMode();
+    this._mimeType = mimeType;
+    var modesToLoad = TextEditor.CodeMirrorTextEditor._collectUninstalledModes(mimeType);
+
+    if (!modesToLoad.length)
+      setMode.call(this);
     else
-      this._disableLongLinesMode();
-    return TextEditor.CodeMirrorTextEditor._loadMimeTypeModes(mimeType).then(
-        () => this._codeMirror.setOption('mode', mimeType));
+      TextEditor.CodeMirrorTextEditor._installMimeTypeModes(modesToLoad).then(setMode.bind(this));
+
+    /**
+     * @this {TextEditor.CodeMirrorTextEditor}
+     */
+    function setMode() {
+      var rewrittenMimeType = this.rewriteMimeType(mimeType);
+      if (this._codeMirror.options.mode !== rewrittenMimeType)
+        this._codeMirror.setOption('mode', rewrittenMimeType);
+    }
+  }
+
+  /**
+   * @protected
+   * @param {string} mimeType
+   */
+  rewriteMimeType(mimeType) {
+    // Overridden in SourcesTextEditor
+    return mimeType;
+  }
+
+  /**
+   * @protected
+   * @return {string}
+   */
+  mimeType() {
+    return this._mimeType;
   }
 
   /**
@@ -849,11 +928,12 @@ TextEditor.CodeMirrorTextEditor = class extends UI.VBox {
     var newPaddingBottom;
     var linesElement = this._codeMirrorElement.querySelector('.CodeMirror-lines');
     var lineCount = this._codeMirror.lineCount();
-    if (lineCount <= 1)
+    if (lineCount <= 1) {
       newPaddingBottom = 0;
-    else
+    } else {
       newPaddingBottom =
           Math.max(scrollInfo.clientHeight - this._codeMirror.getLineHandle(this._codeMirror.lastLine()).height, 0);
+    }
     newPaddingBottom += 'px';
     linesElement.style.paddingBottom = newPaddingBottom;
     this._codeMirror.setSize(width, height);
@@ -1077,6 +1157,11 @@ TextEditor.CodeMirrorTextEditor = class extends UI.VBox {
       this._shouldClearHistory = false;
     }
     this._detectLineSeparator(text);
+
+    if (this._hasLongLines())
+      this._enableLongLinesMode();
+    else
+      this._disableLongLinesMode();
   }
 
   /**
@@ -1123,44 +1208,6 @@ TextEditor.CodeMirrorTextEditor = class extends UI.VBox {
    */
   newlineAndIndent() {
     this._codeMirror.execCommand('newlineAndIndent');
-  }
-
-  /**
-   * @param {number} line
-   * @param {string} name
-   * @param {?Object} value
-   */
-  setAttribute(line, name, value) {
-    if (line < 0 || line >= this._codeMirror.lineCount())
-      return;
-    var handle = this._codeMirror.getLineHandle(line);
-    if (handle.attributes === undefined)
-      handle.attributes = {};
-    handle.attributes[name] = value;
-  }
-
-  /**
-   * @param {number} line
-   * @param {string} name
-   * @return {?Object} value
-   */
-  getAttribute(line, name) {
-    if (line < 0 || line >= this._codeMirror.lineCount())
-      return null;
-    var handle = this._codeMirror.getLineHandle(line);
-    return handle.attributes && handle.attributes[name] !== undefined ? handle.attributes[name] : null;
-  }
-
-  /**
-   * @param {number} line
-   * @param {string} name
-   */
-  removeAttribute(line, name) {
-    if (line < 0 || line >= this._codeMirror.lineCount())
-      return;
-    var handle = this._codeMirror.getLineHandle(line);
-    if (handle && handle.attributes)
-      delete handle.attributes[name];
   }
 
   /**
@@ -1303,7 +1350,7 @@ TextEditor.CodeMirrorPositionHandle = class {
    * @return {?{lineNumber: number, columnNumber: number}}
    */
   resolve() {
-    var lineNumber = this._codeMirror.getLineNumber(this._lineHandle);
+    var lineNumber = this._lineHandle ? this._codeMirror.getLineNumber(this._lineHandle) : null;
     if (typeof lineNumber !== 'number')
       return null;
     return {lineNumber: lineNumber, columnNumber: this._columnNumber};
@@ -1317,58 +1364,6 @@ TextEditor.CodeMirrorPositionHandle = class {
   equal(positionHandle) {
     return positionHandle._lineHandle === this._lineHandle && positionHandle._columnNumber === this._columnNumber &&
         positionHandle._codeMirror === this._codeMirror;
-  }
-};
-
-/**
- * @unrestricted
- */
-TextEditor.CodeMirrorTextEditor.FixWordMovement = class {
-  /**
-   * @param {!CodeMirror} codeMirror
-   */
-  constructor(codeMirror) {
-    function moveLeft(shift, codeMirror) {
-      codeMirror.setExtending(shift);
-      var cursor = codeMirror.getCursor('head');
-      codeMirror.execCommand('goGroupLeft');
-      var newCursor = codeMirror.getCursor('head');
-      if (newCursor.ch === 0 && newCursor.line !== 0) {
-        codeMirror.setExtending(false);
-        return;
-      }
-
-      var skippedText = codeMirror.getRange(newCursor, cursor, '#');
-      if (/^\s+$/.test(skippedText))
-        codeMirror.execCommand('goGroupLeft');
-      codeMirror.setExtending(false);
-    }
-
-    function moveRight(shift, codeMirror) {
-      codeMirror.setExtending(shift);
-      var cursor = codeMirror.getCursor('head');
-      codeMirror.execCommand('goGroupRight');
-      var newCursor = codeMirror.getCursor('head');
-      if (newCursor.ch === 0 && newCursor.line !== 0) {
-        codeMirror.setExtending(false);
-        return;
-      }
-
-      var skippedText = codeMirror.getRange(cursor, newCursor, '#');
-      if (/^\s+$/.test(skippedText))
-        codeMirror.execCommand('goGroupRight');
-      codeMirror.setExtending(false);
-    }
-
-    var modifierKey = Host.isMac() ? 'Alt' : 'Ctrl';
-    var leftKey = modifierKey + '-Left';
-    var rightKey = modifierKey + '-Right';
-    var keyMap = {};
-    keyMap[leftKey] = moveLeft.bind(null, false);
-    keyMap[rightKey] = moveRight.bind(null, false);
-    keyMap['Shift-' + leftKey] = moveLeft.bind(null, true);
-    keyMap['Shift-' + rightKey] = moveRight.bind(null, true);
-    codeMirror.addKeyMap(keyMap);
   }
 };
 
@@ -1425,9 +1420,9 @@ TextEditor.CodeMirrorTextEditor.SelectNextOccurrenceController = class {
 
     var last = selections[selections.length - 1];
     var next = last;
-    do {
+    do
       next = this._findNextOccurrence(next, !!this._fullWordSelection);
-    } while (next && this._findRange(selections, next) && !next.equal(last));
+    while (next && this._findRange(selections, next) && !next.equal(last));
 
     if (!next)
       return;
@@ -1519,13 +1514,13 @@ TextEditor.TextEditorPositionHandle.prototype = {
   /**
    * @return {?{lineNumber: number, columnNumber: number}}
    */
-  resolve: function() {},
+  resolve() {},
 
   /**
    * @param {!TextEditor.TextEditorPositionHandle} positionHandle
    * @return {boolean}
    */
-  equal: function(positionHandle) {}
+  equal(positionHandle) {}
 };
 
 TextEditor.CodeMirrorTextEditor._overrideModeWithPrefixedTokens('css', 'css-');
@@ -1545,7 +1540,7 @@ TextEditor.CodeMirrorMimeMode.prototype = {
   /**
    * @param {!Runtime.Extension} extension
    */
-  install: function(extension) {}
+  install(extension) {}
 };
 
 /**

@@ -1,4 +1,7 @@
 ns               Testing dirac.tests.tasks.suite01.preloads
+extension        reset extension state
+extension        set extension options:{:target-url "http://localhost:<port>"}
+extension        set extension options:{:open-as "window"}
 automate         open-scenario! ["normal-via-preloads"]
 automate         trigger! [:check-runtime-installed]
 scenario out     LOG: ("runtime installed? true")

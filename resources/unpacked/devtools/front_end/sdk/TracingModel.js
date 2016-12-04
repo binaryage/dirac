@@ -70,9 +70,10 @@ SDK.TracingModel = class {
     if (typeof payload.id2 === 'undefined')
       return scope && payload.id ? `${scope}@${payload.id}` : payload.id;
     var id2 = payload.id2;
-    if (typeof id2 === 'object' && ('global' in id2) !== ('local' in id2))
+    if (typeof id2 === 'object' && ('global' in id2) !== ('local' in id2)) {
       return typeof id2['global'] !== 'undefined' ? `:${scope}:${id2['global']}` :
                                                     `:${scope}:${payload.pid}:${id2['local']}`;
+    }
     console.error(
         `Unexpected id2 field at ${payload.ts / 1000}, one and only one of 'local' and 'global' should be present.`);
   }
@@ -105,8 +106,7 @@ SDK.TracingModel = class {
         tracingModel.devToolsMetadataEvents().filter(e => e.name === 'TracingStartedInBrowser');
     if (tracingStartedInBrowser.length === 1)
       return tracingStartedInBrowser[0].thread;
-    Common.console.error(
-        'Failed to find browser main thread in trace, some timeline features may be unavailable');
+    Common.console.error('Failed to find browser main thread in trace, some timeline features may be unavailable');
     return null;
   }
 
@@ -178,11 +178,12 @@ SDK.TracingModel = class {
       this._processById.set(payload.pid, process);
     }
 
-    var eventsDelimiter = ',\n';
+    const phase = SDK.TracingModel.Phase;
+    const eventsDelimiter = ',\n';
     this._backingStorage.appendString(this._firstWritePending ? '[' : eventsDelimiter);
     this._firstWritePending = false;
     var stringPayload = JSON.stringify(payload);
-    var isAccessible = payload.ph === SDK.TracingModel.Phase.SnapshotObject;
+    var isAccessible = payload.ph === phase.SnapshotObject;
     var backingStorage = null;
     var keepStringsLessThan = 10000;
     if (isAccessible && stringPayload.length > keepStringsLessThan)
@@ -190,17 +191,18 @@ SDK.TracingModel = class {
     else
       this._backingStorage.appendString(stringPayload);
 
-    var timestamp = payload.ts / 1000;
+    const timestamp = payload.ts / 1000;
     // We do allow records for unrelated threads to arrive out-of-order,
     // so there's a chance we're getting records from the past.
-    if (timestamp && (!this._minimumRecordTime || timestamp < this._minimumRecordTime))
+    if (timestamp && (!this._minimumRecordTime || timestamp < this._minimumRecordTime) &&
+        (payload.ph === phase.Begin || payload.ph === phase.Complete || payload.ph === phase.Instant))
       this._minimumRecordTime = timestamp;
-    var endTimeStamp = (payload.ts + (payload.dur || 0)) / 1000;
+    const endTimeStamp = (payload.ts + (payload.dur || 0)) / 1000;
     this._maximumRecordTime = Math.max(this._maximumRecordTime, endTimeStamp);
-    var event = process._addEvent(payload);
+    const event = process._addEvent(payload);
     if (!event)
       return;
-    if (payload.ph === SDK.TracingModel.Phase.Sample) {
+    if (payload.ph === phase.Sample) {
       this._addSampleEvent(event);
       return;
     }
@@ -213,7 +215,7 @@ SDK.TracingModel = class {
     if (event.hasCategory(SDK.TracingModel.DevToolsMetadataEventCategory))
       this._devToolsMetadataEvents.push(event);
 
-    if (payload.ph !== SDK.TracingModel.Phase.Metadata)
+    if (payload.ph !== phase.Metadata)
       return;
 
     switch (payload.name) {
@@ -462,17 +464,17 @@ SDK.BackingStorage.prototype = {
   /**
    * @param {string} string
    */
-  appendString: function(string) {},
+  appendString(string) {},
 
   /**
    * @param {string} string
    * @return {function():!Promise.<?string>}
    */
-  appendAccessibleString: function(string) {},
+  appendAccessibleString(string) {},
 
-  finishWriting: function() {},
+  finishWriting() {},
 
-  reset: function() {},
+  reset() {},
 };
 
 /**
@@ -513,8 +515,7 @@ SDK.TracingModel.Event = class {
    */
   static fromPayload(payload, thread) {
     var event = new SDK.TracingModel.Event(
-        payload.cat, payload.name, /** @type {!SDK.TracingModel.Phase} */ (payload.ph), payload.ts / 1000,
-        thread);
+        payload.cat, payload.name, /** @type {!SDK.TracingModel.Phase} */ (payload.ph), payload.ts / 1000, thread);
     if (payload.args)
       event.addArgs(payload.args);
     else
@@ -713,8 +714,7 @@ SDK.TracingModel.AsyncEvent = class extends SDK.TracingModel.Event {
    */
   _addStep(event) {
     this.steps.push(event);
-    if (event.phase === SDK.TracingModel.Phase.AsyncEnd ||
-        event.phase === SDK.TracingModel.Phase.NestableAsyncEnd) {
+    if (event.phase === SDK.TracingModel.Phase.AsyncEnd || event.phase === SDK.TracingModel.Phase.NestableAsyncEnd) {
       this.setEndTime(event.startTime);
       // FIXME: ideally, we shouldn't do this, but this makes the logic of converting
       // async console events to sync ones much simpler.
@@ -887,12 +887,13 @@ SDK.TracingModel.Thread = class extends SDK.TracingModel.NamedObject {
           if (!stack.length)
             continue;
           var top = stack.pop();
-          if (top.name !== e.name || top.categoriesString !== e.categoriesString)
+          if (top.name !== e.name || top.categoriesString !== e.categoriesString) {
             console.error(
                 'B/E events mismatch at ' + top.startTime + ' (' + top.name + ') vs. ' + e.startTime + ' (' + e.name +
                 ')');
-          else
+          } else {
             top._complete(e);
+          }
           break;
         case phases.Begin:
           stack.push(e);

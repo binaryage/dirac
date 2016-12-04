@@ -6,6 +6,7 @@
                                            get-transcript-label-padding-type]])
   (:require [cljs.core.async :refer [put! <! chan timeout alts! close!]]
             [dirac.automation.transcript :as transcript]
+            [dirac.automation.transcript-streamer :as streamer]
             [oops.core :refer [oget oset! ocall oapply gcall!]]
             [chromex.logging :refer-macros [log warn error info]]
             [cuerdas.core :as cuerdas]
@@ -207,6 +208,9 @@
 (defn replace-cljs-line-numbers [s]
   (string/replace s #"\.cljs:\d+" ".cljs:<line>"))
 
+(defn replace-target-url-port-in-options [s]
+  (string/replace s #":target-url \"http://localhost:\d+\"" ":target-url \"http://localhost:<port>\""))
+
 (defn transformer [console-output]
   (-> console-output
       replace-shortened-urls
@@ -216,7 +220,8 @@
       replace-dirac-repl-ids
       replace-dirac-repl-files
       replace-chrome-extension-urls
-      replace-cljs-line-numbers))
+      replace-cljs-line-numbers
+      replace-target-url-port-in-options))
 
 (defn process-default-state! [label text]
   (cond
@@ -249,7 +254,8 @@
                     generated-style)]
         (transcript/append-to-transcript! @current-transcript text style)
         (helpers/scroll-page-to-bottom!)
-        (record-output! [effective-label effective-text])))))
+        (record-output! [effective-label effective-text])
+        (streamer/publish! text style)))))
 
 (defn forced-append-to-transcript! [label text & [style]]
   (append-to-transcript! label text style true))
@@ -277,9 +283,10 @@
         (match-observer-record! observer-record value))
       (recur))))
 
-(defn init-transcript! [id normalized?]
+(defn init-transcript! [id normalized? streamer-server-url]
   (let [transcript-el (transcript/create-transcript! (helpers/get-el-by-id id))]
     (reset! current-transcript transcript-el)
     (vreset! normalized-transcript normalized?)
+    (streamer/init! streamer-server-url)
     (run-output-matching-loop!)))
 

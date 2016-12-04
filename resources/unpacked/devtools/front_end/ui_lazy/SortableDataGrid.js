@@ -114,8 +114,7 @@ UI.SortableDataGrid = class extends UI.ViewportDataGrid {
         }
       }
 
-      var comparator = columnIsNumeric ? UI.SortableDataGrid.NumericComparator :
-                                         UI.SortableDataGrid.StringComparator;
+      var comparator = columnIsNumeric ? UI.SortableDataGrid.NumericComparator : UI.SortableDataGrid.StringComparator;
       dataGrid.sortNodes(comparator.bind(null, sortColumnId), !dataGrid.isSortOrderAscending());
     }
     return dataGrid;
@@ -135,6 +134,7 @@ UI.SortableDataGrid = class extends UI.ViewportDataGrid {
    */
   sortNodes(comparator, reverseMode) {
     this._sortingFunction = UI.SortableDataGrid.Comparator.bind(null, comparator, reverseMode);
+    this._rootNode.recalculateSiblings(0);
     this._rootNode._sortChildren(reverseMode);
     this.scheduleUpdateStructure();
   }

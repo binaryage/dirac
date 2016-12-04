@@ -1,4 +1,7 @@
 ns               Testing dirac.tests.tasks.suite02.beautify-function-names
+extension        reset extension state
+extension        set extension options:{:target-url "http://localhost:<port>"}
+extension        set extension options:{:open-as "window"}
 automate         open-scenario! ["breakpoint"]
 testing          enabled :beautify-function-names feature
 automate         open-devtools!
@@ -31,6 +34,7 @@ automate         open-scenario! ["breakpoint"]
 testing          disabled :beautify-function-names feature
 automate         store-options!
 automate         set-options! [{:beautify-function-names false}]
+extension        set extension options:{:beautify-function-names false}
 automate         open-devtools!
 extension        handling command: open-dirac-devtools
 extension        register devtools #2
@@ -56,6 +60,7 @@ automate #2      close-devtools!
 extension        handling command: close-dirac-devtools
 extension        unregister devtools #2
 automate         restore-options!
+extension        reset extension options:{:enable-clustered-locals true, :inline-custom-formatters true, :use-backend-supported-api true, :enable-parinfer true, :use-backend-supported-css true, :beautify-function-names true, :enable-friendly-locals true, :user-frontend-url-params nil, :clean-urls true, :enable-repl true, :welcome-message true, :open-as "window", :target-url "http://localhost:<port>"}
 ∎
 automate         close-scenario! ["scenario-tab#2"]
 automate         open-scenario! ["exception"]

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # darwin's iMac
-if [ `hostname` = "Bismarck.local" ]; then
+if [ `hostname` = "bismarck.local" ]; then
 
   export DIRAC_SETUP_DEVTOOLS_WINDOW_TOP="0"
   export DIRAC_SETUP_DEVTOOLS_WINDOW_LEFT="-2560"

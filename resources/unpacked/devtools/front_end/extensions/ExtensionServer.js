@@ -200,9 +200,9 @@ Extensions.ExtensionServer = class extends Common.Object {
 
   _onSubscribe(message, port) {
     var subscribers = this._subscribers[message.type];
-    if (subscribers)
+    if (subscribers) {
       subscribers.push(port);
-    else {
+    } else {
       this._subscribers[message.type] = [port];
       if (this._subscriptionStartHandlers[message.type])
         this._subscriptionStartHandlers[message.type]();
@@ -349,9 +349,10 @@ Extensions.ExtensionServer = class extends Common.Object {
       var result = error ? this._status.E_FAILED(error) : this._status.OK();
       this._dispatchCallback(message.requestId, port, result);
     }
-    if (message.evaluateOnPage)
+    if (message.evaluateOnPage) {
       return sidebar.setExpression(
           message.expression, message.rootTitle, message.evaluateOptions, port._extensionOrigin, callback.bind(this));
+    }
     sidebar.setObject(message.expression, message.rootTitle, callback.bind(this));
   }
 
@@ -363,7 +364,7 @@ Extensions.ExtensionServer = class extends Common.Object {
   }
 
   _onOpenResource(message) {
-    var uiSourceCode = Bindings.networkMapping.uiSourceCodeForURLForAnyTarget(message.url);
+    var uiSourceCode = Workspace.workspace.uiSourceCodeForURL(message.url);
     if (uiSourceCode) {
       Common.Revealer.reveal(uiSourceCode.uiLocation(message.lineNumber, 0));
       return this._status.OK();
@@ -387,29 +388,20 @@ Extensions.ExtensionServer = class extends Common.Object {
   _onSetOpenResourceHandler(message, port) {
     var name = this._registeredExtensions[port._extensionOrigin].name || ('Extension ' + port._extensionOrigin);
     if (message.handlerPresent)
-      Components.openAnchorLocationRegistry.registerHandler(name, this._handleOpenURL.bind(this, port));
+      Components.Linkifier.registerLinkHandler(name, this._handleOpenURL.bind(this, port));
     else
-      Components.openAnchorLocationRegistry.unregisterHandler(name);
+      Components.Linkifier.unregisterLinkHandler(name);
   }
 
-  _handleOpenURL(port, details) {
-    var url = /** @type {string} */ (details.url);
-    var contentProvider = Workspace.workspace.uiSourceCodeForURL(url) || Bindings.resourceForURL(url);
-    if (!contentProvider)
-      return false;
-
-    var lineNumber = details.lineNumber;
-    if (typeof lineNumber === 'number')
-      lineNumber += 1;
-    port.postMessage({command: 'open-resource', resource: this._makeResource(contentProvider), lineNumber: lineNumber});
-    return true;
+  _handleOpenURL(port, contentProvider, lineNumber) {
+    port.postMessage(
+        {command: 'open-resource', resource: this._makeResource(contentProvider), lineNumber: lineNumber + 1});
   }
 
   _onReload(message) {
     var options = /** @type {!ExtensionReloadOptions} */ (message.options || {});
 
-    SDK.multitargetNetworkManager.setUserAgentOverride(
-        typeof options.userAgent === 'string' ? options.userAgent : '');
+    SDK.multitargetNetworkManager.setUserAgentOverride(typeof options.userAgent === 'string' ? options.userAgent : '');
     var injectedScript;
     if (options.injectedScript)
       injectedScript = '(function(){' + options.injectedScript + '})()';
@@ -469,8 +461,8 @@ Extensions.ExtensionServer = class extends Common.Object {
         resources.set(contentProvider.contentURL(), this._makeResource(contentProvider));
     }
     var uiSourceCodes = Workspace.workspace.uiSourceCodesForProjectType(Workspace.projectTypes.Network);
-    uiSourceCodes = uiSourceCodes.concat(
-        Workspace.workspace.uiSourceCodesForProjectType(Workspace.projectTypes.ContentScripts));
+    uiSourceCodes =
+        uiSourceCodes.concat(Workspace.workspace.uiSourceCodesForProjectType(Workspace.projectTypes.ContentScripts));
     uiSourceCodes.forEach(pushResourceData.bind(this));
     for (var target of SDK.targetManager.targets(SDK.Target.Capability.DOM))
       SDK.ResourceTreeModel.fromTarget(target).forAllResources(pushResourceData.bind(this));
@@ -654,8 +646,8 @@ Extensions.ExtensionServer = class extends Common.Object {
 
   _initExtensions() {
     this._registerAutosubscriptionHandler(
-        Extensions.extensionAPI.Events.ResourceAdded, Workspace.workspace,
-        Workspace.Workspace.Events.UISourceCodeAdded, this._notifyResourceAdded);
+        Extensions.extensionAPI.Events.ResourceAdded, Workspace.workspace, Workspace.Workspace.Events.UISourceCodeAdded,
+        this._notifyResourceAdded);
     this._registerAutosubscriptionTargetManagerHandler(
         Extensions.extensionAPI.Events.NetworkRequestFinished, SDK.NetworkManager,
         SDK.NetworkManager.Events.RequestFinished, this._notifyRequestFinished);
@@ -679,8 +671,7 @@ Extensions.ExtensionServer = class extends Common.Object {
         onElementsSubscriptionStopped.bind(this));
     this._registerResourceContentCommittedHandler(this._notifyUISourceCodeContentCommitted);
 
-    SDK.targetManager.addEventListener(
-        SDK.TargetManager.Events.InspectedURLChanged, this._inspectedURLChanged, this);
+    SDK.targetManager.addEventListener(SDK.TargetManager.Events.InspectedURLChanged, this._inspectedURLChanged, this);
 
     InspectorExtensionRegistry.getExtensionsAsync();
   }
@@ -823,10 +814,9 @@ Extensions.ExtensionServer = class extends Common.Object {
    */
   _registerAutosubscriptionTargetManagerHandler(eventTopic, modelClass, frontendEventType, handler) {
     this._registerSubscriptionHandler(
-        eventTopic, SDK.targetManager.addModelListener.bind(
-                        SDK.targetManager, modelClass, frontendEventType, handler, this),
-        SDK.targetManager.removeModelListener.bind(
-            SDK.targetManager, modelClass, frontendEventType, handler, this));
+        eventTopic,
+        SDK.targetManager.addModelListener.bind(SDK.targetManager, modelClass, frontendEventType, handler, this),
+        SDK.targetManager.removeModelListener.bind(SDK.targetManager, modelClass, frontendEventType, handler, this));
   }
 
   _registerResourceContentCommittedHandler(handler) {
@@ -843,8 +833,7 @@ Extensions.ExtensionServer = class extends Common.Object {
      */
     function removeLastEventListener() {
       Workspace.workspace.setHasResourceContentTrackingExtensions(false);
-      Workspace.workspace.removeEventListener(
-          Workspace.Workspace.Events.WorkingCopyCommittedByUser, handler, this);
+      Workspace.workspace.removeEventListener(Workspace.Workspace.Events.WorkingCopyCommittedByUser, handler, this);
     }
 
     this._registerSubscriptionHandler(

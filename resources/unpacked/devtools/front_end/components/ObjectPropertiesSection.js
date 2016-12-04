@@ -179,19 +179,87 @@ Components.ObjectPropertiesSection = class extends TreeOutlineInShadow {
 
   /**
    * @param {?string=} description
-   * @return {string} valueText
+   * @param {boolean=} includePreview
+   * @param {string=} defaultName
+   * @return {!Element} valueElement
    */
-  static valueTextForFunctionDescription(description) {
+  static valueElementForFunctionDescription(description, includePreview, defaultName) {
+    var valueElement = createElementWithClass('span', 'object-value-function');
     var text = description.replace(/^function [gs]et /, 'function ');
-    var functionPrefixWithArguments =
-        new RegExp(Components.ObjectPropertiesSection._functionPrefixSource.source + '([^)]*)');
-    var matches = functionPrefixWithArguments.exec(text);
-    if (!matches) {
-      // process shorthand methods
-      matches = /[^(]*(\([^)]*)/.exec(text);
+    defaultName = defaultName || '';
+
+    // This set of best-effort regular expressions captures common function descriptions.
+    // Ideally, some parser would provide prefix, arguments, function body text separately.
+    var isAsync = text.startsWith('async function ');
+    var isGenerator = text.startsWith('function* ');
+    var isGeneratorShorthand = text.startsWith('*');
+    var isBasic = !isGenerator && text.startsWith('function ');
+    var isClass = text.startsWith('class ') || text.startsWith('class{');
+    var firstArrowIndex = text.indexOf('=>');
+    var isArrow = !isAsync && !isGenerator && !isBasic && !isClass && firstArrowIndex > 0;
+
+    var textAfterPrefix;
+    if (isClass) {
+      textAfterPrefix = text.substring('class'.length);
+      var classNameMatch = /^[^{\s]+/.exec(textAfterPrefix.trim());
+      var className = defaultName;
+      if (classNameMatch)
+        className = classNameMatch[0].trim() || defaultName;
+      addElements('class', textAfterPrefix, className);
+    } else if (isAsync) {
+      textAfterPrefix = text.substring('async function'.length);
+      addElements('async function', textAfterPrefix, nameAndArguments(textAfterPrefix));
+    } else if (isGenerator) {
+      textAfterPrefix = text.substring('function*'.length);
+      addElements('function*', textAfterPrefix, nameAndArguments(textAfterPrefix));
+    } else if (isGeneratorShorthand) {
+      textAfterPrefix = text.substring('*'.length);
+      addElements('function*', textAfterPrefix, nameAndArguments(textAfterPrefix));
+    } else if (isBasic) {
+      textAfterPrefix = text.substring('function'.length);
+      addElements('function', textAfterPrefix, nameAndArguments(textAfterPrefix));
+    } else if (isArrow) {
+      const maxArrowFunctionCharacterLength = 60;
+      var abbreviation = text;
+      if (defaultName)
+        abbreviation = defaultName + '()';
+      else if (text.length > maxArrowFunctionCharacterLength)
+        abbreviation = text.substring(0, firstArrowIndex + 2) + ' {\u2026}';
+      addElements('', text, abbreviation);
+    } else {
+      addElements('function', text, nameAndArguments(text));
     }
-    var match = matches ? matches[1] : null;
-    return match ? match.replace(/\n/g, ' ') + ')' : (text || '');
+    return valueElement;
+
+    /**
+     * @param {string} contents
+     * @return {string}
+     */
+    function nameAndArguments(contents) {
+      var startOfArgumentsIndex = contents.indexOf('(');
+      var endOfArgumentsMatch = contents.match(/\)\s*{/);
+      if (startOfArgumentsIndex !== -1 && endOfArgumentsMatch && endOfArgumentsMatch.index > startOfArgumentsIndex) {
+        var name = contents.substring(0, startOfArgumentsIndex).trim() || defaultName;
+        var args = contents.substring(startOfArgumentsIndex, endOfArgumentsMatch.index + 1);
+        return name + args;
+      }
+      return defaultName + '()';
+    }
+
+    /**
+     * @param {string} prefix
+     * @param {string} body
+     * @param {string} abbreviation
+     */
+    function addElements(prefix, body, abbreviation) {
+      const maxFunctionBodyLength = 200;
+      if (prefix.length)
+        valueElement.createChild('span', 'object-value-function-prefix').textContent = prefix + ' ';
+      if (includePreview)
+        valueElement.createTextChild(body.trim().trimEnd(maxFunctionBodyLength));
+      else
+        valueElement.createTextChild(abbreviation.replace(/\n/g, ' '));
+    }
   }
 
   /**
@@ -234,12 +302,13 @@ Components.ObjectPropertiesSection = class extends TreeOutlineInShadow {
       prefix = '"';
       valueText = description.replace(/\n/g, '\u21B5');
       suffix = '"';
-    } else if (type === 'function') {
-      valueText = Components.ObjectPropertiesSection.valueTextForFunctionDescription(description);
     } else if (type !== 'object' || subtype !== 'node') {
       valueText = description;
     }
-    if (type !== 'number' || valueText.indexOf('e') === -1) {
+
+    if (type === 'function') {
+      valueElement = Components.ObjectPropertiesSection.valueElementForFunctionDescription(description);
+    } else if (type !== 'number' || valueText.indexOf('e') === -1) {
       valueElement.setTextContentTruncatedIfNeeded(valueText || '');
       if (prefix)
         valueElement.insertBefore(createTextNode(prefix), valueElement.firstChild);
@@ -319,72 +388,17 @@ Components.ObjectPropertiesSection = class extends TreeOutlineInShadow {
      * @param {?SDK.DebuggerModel.FunctionDetails} response
      */
     function didGetDetails(response) {
-      if (!response) {
-        var valueText = Components.ObjectPropertiesSection.valueTextForFunctionDescription(func.description);
-        element.createTextChild(valueText);
-        return;
-      }
-
-      var matched = func.description.match(Components.ObjectPropertiesSection._functionPrefixSource);
-      if (matched) {
-        var prefix = createElementWithClass('span', 'object-value-function-prefix');
-        prefix.textContent = matched[0];
-        element.appendChild(prefix);
-      }
-
       if (linkify && response && response.location) {
-        var anchor = createElement('span');
         element.classList.add('linkified');
-        element.appendChild(anchor);
-        element.addEventListener(
-            'click', Common.Revealer.reveal.bind(Common.Revealer, response.location, undefined));
-        element = anchor;
+        element.addEventListener('click', () => Common.Revealer.reveal(response.location));
       }
 
-      var text = func.description.substring(0, 200);
-      if (includePreview) {
-        element.createTextChild(
-            text.replace(Components.ObjectPropertiesSection._functionPrefixSource, '') +
-            (func.description.length > 200 ? '\u2026' : ''));
-        return;
-      }
-
-      // Now parse description and get the real params and title.
-      self.runtime.extension(Common.TokenizerFactory).instance().then(processTokens);
-
-      var params = null;
-      var functionName = response ? response.functionName : '';
-
-      /**
-       * @param {!Common.TokenizerFactory} tokenizerFactory
-       */
-      function processTokens(tokenizerFactory) {
-        var tokenize = tokenizerFactory.createTokenizer('text/javascript');
-        tokenize(text, processToken);
-        element.createTextChild((functionName || 'anonymous') + '(' + (params || []).join(', ') + ')');
-      }
-
-      var doneProcessing = false;
-
-      /**
-       * @param {string} token
-       * @param {?string} tokenType
-       * @param {number} column
-       * @param {number} newColumn
-       */
-      function processToken(token, tokenType, column, newColumn) {
-        if (!params && tokenType === 'js-def' && !functionName)
-          functionName = token;
-        doneProcessing = doneProcessing || token === ')';
-        if (doneProcessing)
-          return;
-        if (token === '(') {
-          params = [];
-          return;
-        }
-        if (params && tokenType === 'js-def')
-          params.push(token);
-      }
+      // The includePreview flag is false for formats such as console.dir().
+      var defaultName = includePreview ? '' : 'anonymous';
+      if (response && response.functionName)
+        defaultName = response.functionName;
+      var valueElement = Components.ObjectPropertiesSection.valueElementForFunctionDescription(func.description, includePreview, defaultName);
+      element.appendChild(valueElement);
     }
   }
 
@@ -1029,11 +1043,12 @@ Components.ObjectPropertyTreeElement = class extends TreeElement {
   }
 
   _updateExpandable() {
-    if (this.property.value)
+    if (this.property.value) {
       this.setExpandable(
           !this.property.value.customPreview() && this.property.value.hasChildren && !this.property.wasThrown);
-    else
+    } else {
       this.setExpandable(false);
+    }
   }
 };
 
@@ -1181,13 +1196,13 @@ Components.ArrayGroupingTreeElement = class extends TreeElement {
           if (fromIndex === toIndex)
             Components.ArrayGroupingTreeElement._populateAsFragment(treeNode, object, fromIndex, toIndex, linkifier);
           else
-            treeNode.appendChild(
-                new Components.ArrayGroupingTreeElement(object, fromIndex, toIndex, count, linkifier));
+            treeNode.appendChild(new Components.ArrayGroupingTreeElement(object, fromIndex, toIndex, count, linkifier));
         }
       }
-      if (topLevel)
+      if (topLevel) {
         Components.ArrayGroupingTreeElement._populateNonIndexProperties(
             treeNode, object, result.skipGetOwnPropertyNames, linkifier);
+      }
     }
   }
 
@@ -1202,10 +1217,7 @@ Components.ArrayGroupingTreeElement = class extends TreeElement {
   static _populateAsFragment(treeNode, object, fromIndex, toIndex, linkifier) {
     object.callFunction(
         buildArrayFragment,
-        [
-          {value: fromIndex}, {value: toIndex},
-          {value: Components.ArrayGroupingTreeElement._sparseIterationThreshold}
-        ],
+        [{value: fromIndex}, {value: toIndex}, {value: Components.ArrayGroupingTreeElement._sparseIterationThreshold}],
         processArrayFragment.bind(this));
 
     /**
@@ -1353,14 +1365,9 @@ Components.ArrayGroupingTreeElement._getOwnPropertyNamesThreshold = 500000;
 Components.ObjectPropertyPrompt = class extends UI.TextPrompt {
   constructor() {
     super();
-    this.initialize(Components.JavaScriptAutocomplete.completionsForTextPromptInCurrentContext);
-    this.setSuggestBoxEnabled(true);
+    this.initialize(Components.JavaScriptAutocomplete.completionsForTextInCurrentContext);
   }
 };
-
-
-Components.ObjectPropertiesSection._functionPrefixSource = /^(?:async\s)?function\*?\s/;
-
 
 /**
  * @unrestricted

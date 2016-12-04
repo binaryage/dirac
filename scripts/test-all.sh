@@ -1,16 +1,18 @@
 #!/usr/bin/env bash
 
-set -e
+if [ -n "$SKIP_DIRAC_TESTS" ] ; then
+  echo "skipping tests due to SKIP_DIRAC_TESTS"
+  exit 0
+fi
 
-pushd `dirname "${BASH_SOURCE[0]}"` > /dev/null
-source "./config.sh"
+source "$(dirname "${BASH_SOURCE[0]}")/_config.sh"
+false && source _config.sh # never executes, this is here just for IntelliJ Bash support to understand our sourcing
 
-"$SCRIPTS/sync-test-stage.sh"
+redirect_to_test_stage_if_needed
 
-pushd "$DIRAC_TEST_STAGE_DIR"
+pushd "$ROOT"
 
-./scripts/test-all-here.sh
-
-popd
+./scripts/test-backend.sh
+./scripts/test-browser.sh
 
 popd

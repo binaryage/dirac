@@ -136,8 +136,9 @@ SDK.Target = class extends Protocol.TargetBase {
   }
 
   /**
-   * @param {!Function} modelClass
-   * @return {?SDK.SDKModel}
+   * @param {function(new: (!T<!SDK.SDKModel>), ...)} modelClass
+   * @return {?T}
+   * @template T
    */
   model(modelClass) {
     return this._modelByConstructor.get(modelClass) || null;
@@ -181,7 +182,9 @@ SDK.Target.Capability = {
   JS: 4,
   Log: 8,
   Network: 16,
-  Target: 32
+  Target: 32,
+
+  AllForTests: 63
 };
 
 SDK.Target._nextId = 1;

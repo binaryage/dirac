@@ -9,6 +9,7 @@ UI.BezierEditor = class extends UI.VBox {
     super(true);
     this.registerRequiredCSS('ui/bezierEditor.css');
     this.contentElement.tabIndex = 0;
+    this.setDefaultFocusedElement(this.contentElement);
 
     // Preview UI
     this._previewElement = this.contentElement.createChild('div', 'bezier-preview-container');
@@ -206,8 +207,8 @@ UI.BezierEditor = class extends UI.VBox {
 
     var length = this._selectedCategory.presets.length;
     this._selectedCategory.presetIndex = (this._selectedCategory.presetIndex + (intensify ? 1 : -1) + length) % length;
-    this.setBezier(Common.Geometry.CubicBezier.parse(
-        this._selectedCategory.presets[this._selectedCategory.presetIndex].value));
+    this.setBezier(
+        Common.Geometry.CubicBezier.parse(this._selectedCategory.presets[this._selectedCategory.presetIndex].value));
     this._onchange();
     this._startPreviewAnimation();
   }

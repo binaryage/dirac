@@ -101,8 +101,9 @@ Common.TextUtils = {
         if (startWord !== -1)
           wordCallback(text.substring(startWord, i));
         startWord = -1;
-      } else if (startWord === -1)
+      } else if (startWord === -1) {
         startWord = i;
+      }
     }
     if (startWord !== -1)
       wordCallback(text.substring(startWord));
@@ -277,5 +278,5 @@ Common.TokenizerFactory.prototype = {
    * @param {string} mimeType
    * @return {function(string, function(string, ?string, number, number))}
    */
-  createTokenizer: function(mimeType) {}
+  createTokenizer(mimeType) {}
 };

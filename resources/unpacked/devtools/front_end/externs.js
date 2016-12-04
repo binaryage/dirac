@@ -631,9 +631,10 @@ Doc.prototype = {
 /** @constructor */
 var CodeMirror = function(element, config) {};
 CodeMirror.on = function(obj, type, handler) {};
+//noinspection JSValidateTypes
 CodeMirror.prototype = {
   /** @type {!Doc} */
-  doc: new Doc(),
+  doc: 0,
   addKeyMap: function(map) {},
   addLineClass: function(handle, where, cls) {},
   /**
@@ -778,6 +779,8 @@ CodeMirror.prototype = {
 };
 /** @type {!{cursorDiv: Element, lineDiv: Element}} */
 CodeMirror.prototype.display;
+/** @type {!{mode: string}} */
+CodeMirror.prototype.options;
 /** @type {!Object} */
 CodeMirror.Pass;
 CodeMirror.showHint = function(codeMirror, hintintFunction) {};
@@ -1088,10 +1091,12 @@ var SDK = {};
 var Security = {};
 var Services = {};
 var Settings = {};
+var Shell = {};
 var Snippets = {};
 var SourceFrame = {};
 var Sources = {};
 var Terminal = {};
+var TestRunner = {};
 var TextEditor = {};
 var Timeline = {};
 var TimelineModel = {};

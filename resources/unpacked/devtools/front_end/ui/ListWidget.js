@@ -189,8 +189,8 @@ UI.ListWidget = class extends UI.VBox {
     this._updatePlaceholder();
     this._list.insertBefore(this._editor.element, insertionPoint);
     this._editor.beginEdit(
-        item, index, element ? Common.UIString('Save') : Common.UIString('Add'),
-        this._commitEditing.bind(this), this._stopEditing.bind(this));
+        item, index, element ? Common.UIString('Save') : Common.UIString('Add'), this._commitEditing.bind(this),
+        this._stopEditing.bind(this));
   }
 
   _commitEditing() {
@@ -226,26 +226,26 @@ UI.ListWidget.Delegate.prototype = {
    * @param {boolean} editable
    * @return {!Element}
    */
-  renderItem: function(item, editable) {},
+  renderItem(item, editable) {},
 
   /**
    * @param {*} item
    * @param {number} index
    */
-  removeItemRequested: function(item, index) {},
+  removeItemRequested(item, index) {},
 
   /**
    * @param {*} item
    * @return {!UI.ListWidget.Editor}
    */
-  beginEdit: function(item) {},
+  beginEdit(item) {},
 
   /**
    * @param {*} item
    * @param {!UI.ListWidget.Editor} editor
    * @param {boolean} isNew
    */
-  commitEdit: function(item, editor, isNew) {}
+  commitEdit(item, editor, isNew) {}
 };
 
 /**

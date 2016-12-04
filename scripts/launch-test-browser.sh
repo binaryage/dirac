@@ -1,9 +1,7 @@
 #!/usr/bin/env bash
 
-set -e
-
-pushd `dirname "${BASH_SOURCE[0]}"` > /dev/null
-source "./config.sh"
+source "$(dirname "${BASH_SOURCE[0]}")/_config.sh"
+false && source _config.sh # never executes, this is here just for IntelliJ Bash support to understand our sourcing
 
 pushd "$ROOT"
 
@@ -60,7 +58,5 @@ set -x
       --load-extension="$DEV_DIRAC_EXTENSION_PATH,$DEV_MARION_EXTENSION_PATH" \
       "http://localhost:$DEV_FIXTURES_SERVER_PORT?set-agent-port=$DIRAC_AGENT_PORT" 2> /dev/null
 set +x
-
-popd
 
 popd

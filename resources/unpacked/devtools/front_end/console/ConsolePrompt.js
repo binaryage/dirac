@@ -218,7 +218,8 @@ Console.ConsolePrompt = class extends UI.Widget {
       if (set.has(item))
         continue;
       set.add(item);
-      result.push({title: item.substring(text.length - prefix.length), className: 'additional'});
+      result.push(
+          {title: item.substring(text.length - prefix.length), iconType: 'smallicon-text-prompt', isSecondary: true});
     }
     return result;
   }
@@ -267,14 +268,7 @@ Console.ConsolePrompt = class extends UI.Widget {
       return Promise.resolve(historyWords);
 
     return Components.JavaScriptAutocomplete.completionsForTextInCurrentContext(before, query, force)
-        .then(innerWordsWithQuery);
-    /**
-     * @param {!Array<string>} words
-     * @return {!UI.SuggestBox.Suggestions}
-     */
-    function innerWordsWithQuery(words) {
-      return words.map(item => ({title: item})).concat(historyWords);
-    }
+        .then(words => words.concat(historyWords));
   }
 
   _editorSetForTest() {

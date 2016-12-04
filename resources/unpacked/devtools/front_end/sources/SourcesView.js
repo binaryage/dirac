@@ -26,15 +26,14 @@ Sources.SourcesView = class extends UI.VBox {
     /** @type {!Map.<!Workspace.UISourceCode, !UI.Widget>} */
     this._sourceViewByUISourceCode = new Map();
 
-    var tabbedEditorPlaceholderText = Host.isMac() ? Common.UIString('Hit \u2318+P to open a file') :
-                                                             Common.UIString('Hit Ctrl+P to open a file');
+    var tabbedEditorPlaceholderText =
+        Host.isMac() ? Common.UIString('Hit \u2318+P to open a file') : Common.UIString('Hit Ctrl+P to open a file');
     this._editorContainer = new Sources.TabbedEditorContainer(
         this, Common.settings.createLocalSetting('previouslyViewedFiles', []), tabbedEditorPlaceholderText);
     this._editorContainer.show(this._searchableView.element);
     this._editorContainer.addEventListener(
         Sources.TabbedEditorContainer.Events.EditorSelected, this._editorSelected, this);
-    this._editorContainer.addEventListener(
-        Sources.TabbedEditorContainer.Events.EditorClosed, this._editorClosed, this);
+    this._editorContainer.addEventListener(Sources.TabbedEditorContainer.Events.EditorClosed, this._editorClosed, this);
 
     this._historyManager = new Sources.EditingLocationHistoryManager(this, this.currentSourceFrame.bind(this));
 
@@ -71,8 +70,10 @@ Sources.SourcesView = class extends UI.VBox {
 
       var unsavedSourceCodes = [];
       var projects = Workspace.workspace.projectsForType(Workspace.projectTypes.FileSystem);
-      for (var i = 0; i < projects.length; ++i)
-        unsavedSourceCodes = unsavedSourceCodes.concat(projects[i].uiSourceCodes().filter(isUnsaved));
+      for (var i = 0; i < projects.length; ++i) {
+        unsavedSourceCodes =
+            unsavedSourceCodes.concat(projects[i].uiSourceCodes().filter(sourceCode => sourceCode.isDirty()));
+      }
 
       if (!unsavedSourceCodes.length)
         return;
@@ -81,17 +82,6 @@ Sources.SourcesView = class extends UI.VBox {
       UI.viewManager.showView('sources');
       for (var i = 0; i < unsavedSourceCodes.length; ++i)
         Common.Revealer.reveal(unsavedSourceCodes[i]);
-
-      /**
-       * @param {!Workspace.UISourceCode} sourceCode
-       * @return {boolean}
-       */
-      function isUnsaved(sourceCode) {
-        var binding = Persistence.persistence.binding(sourceCode);
-        if (binding)
-          return binding.network.isDirty();
-        return sourceCode.isDirty();
-      }
     }
 
     if (!window.opener)
@@ -331,11 +321,9 @@ Sources.SourcesView = class extends UI.VBox {
     else if (contentType.isStyleSheet())
       sourceFrame = new Sources.CSSSourceFrame(uiSourceCode);
     else if (contentType === Common.resourceTypes.Image)
-      sourceView =
-          new SourceFrame.ImageView(Bindings.NetworkProject.uiSourceCodeMimeType(uiSourceCode), uiSourceCode);
+      sourceView = new SourceFrame.ImageView(Bindings.NetworkProject.uiSourceCodeMimeType(uiSourceCode), uiSourceCode);
     else if (contentType === Common.resourceTypes.Font)
-      sourceView =
-          new SourceFrame.FontView(Bindings.NetworkProject.uiSourceCodeMimeType(uiSourceCode), uiSourceCode);
+      sourceView = new SourceFrame.FontView(Bindings.NetworkProject.uiSourceCodeMimeType(uiSourceCode), uiSourceCode);
     else
       sourceFrame = new Sources.UISourceCodeFrame(uiSourceCode);
 
@@ -401,8 +389,7 @@ Sources.SourcesView = class extends UI.VBox {
   _removeSourceFrame(uiSourceCode) {
     var sourceView = this._sourceViewByUISourceCode.get(uiSourceCode);
     this._sourceViewByUISourceCode.remove(uiSourceCode);
-    uiSourceCode.removeEventListener(
-        Workspace.UISourceCode.Events.TitleChanged, this._uiSourceCodeTitleChanged, this);
+    uiSourceCode.removeEventListener(Workspace.UISourceCode.Events.TitleChanged, this._uiSourceCodeTitleChanged, this);
     if (sourceView && sourceView instanceof Sources.UISourceCodeFrame)
       /** @type {!Sources.UISourceCodeFrame} */ (sourceView).dispose();
   }
@@ -691,7 +678,7 @@ Sources.SourcesView.EditorAction.prototype = {
    * @param {!Sources.SourcesView} sourcesView
    * @return {!UI.ToolbarButton}
    */
-  button: function(sourcesView) {}
+  button(sourcesView) {}
 };
 
 /**

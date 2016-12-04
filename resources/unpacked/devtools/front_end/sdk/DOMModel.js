@@ -106,14 +106,12 @@ SDK.DOMNode = class extends SDK.SDKObject {
     }
 
     if (payload.templateContent) {
-      this._templateContent =
-          SDK.DOMNode.create(this._domModel, this.ownerDocument, true, payload.templateContent);
+      this._templateContent = SDK.DOMNode.create(this._domModel, this.ownerDocument, true, payload.templateContent);
       this._templateContent.parentNode = this;
     }
 
     if (payload.importedDocument) {
-      this._importedDocument =
-          SDK.DOMNode.create(this._domModel, this.ownerDocument, true, payload.importedDocument);
+      this._importedDocument = SDK.DOMNode.create(this._domModel, this.ownerDocument, true, payload.importedDocument);
       this._importedDocument.parentNode = this;
     }
 
@@ -313,8 +311,7 @@ SDK.DOMNode = class extends SDK.SDKObject {
     var ancestorShadowRoot = this.ancestorShadowRoot();
     if (!ancestorShadowRoot)
       return null;
-    return ancestorShadowRoot.shadowRootType() === SDK.DOMNode.ShadowRootTypes.UserAgent ? ancestorShadowRoot :
-                                                                                                    null;
+    return ancestorShadowRoot.shadowRootType() === SDK.DOMNode.ShadowRootTypes.UserAgent ? ancestorShadowRoot : null;
   }
 
   /**
@@ -669,9 +666,10 @@ SDK.DOMNode = class extends SDK.SDKObject {
    */
   _setDistributedNodePayloads(payloads) {
     this._distributedNodes = [];
-    for (var payload of payloads)
-      this._distributedNodes.push(new SDK.DOMNodeShortcut(
-          this._domModel.target(), payload.backendNodeId, payload.nodeType, payload.nodeName));
+    for (var payload of payloads) {
+      this._distributedNodes.push(
+          new SDK.DOMNodeShortcut(this._domModel.target(), payload.backendNodeId, payload.nodeType, payload.nodeName));
+    }
   }
 
   _renumber() {
@@ -1109,7 +1107,7 @@ SDK.DOMModel = class extends SDK.SDKModel {
    * @return {?SDK.DOMModel}
    */
   static fromTarget(target) {
-    return /** @type {?SDK.DOMModel} */ (target.model(SDK.DOMModel));
+    return target.model(SDK.DOMModel);
   }
 
   /**
@@ -1261,9 +1259,9 @@ SDK.DOMModel = class extends SDK.SDKModel {
      * @this {SDK.DOMModel}
      */
     function onDocumentAvailable() {
-      if (this._document)
+      if (this._document) {
         func(callbackWrapper);
-      else {
+      } else {
         if (callbackWrapper)
           callbackWrapper('No document');
       }
@@ -1708,8 +1706,7 @@ SDK.DOMModel = class extends SDK.SDKModel {
    */
   highlightDOMNodeForTwoSeconds(nodeId) {
     this.highlightDOMNode(nodeId);
-    this._hideDOMNodeHighlightTimeout =
-        setTimeout(SDK.DOMModel.hideDOMNodeHighlight.bind(SDK.DOMModel), 2000);
+    this._hideDOMNodeHighlightTimeout = setTimeout(SDK.DOMModel.hideDOMNodeHighlight.bind(SDK.DOMModel), 2000);
   }
 
   /**
@@ -1768,7 +1765,7 @@ SDK.DOMModel = class extends SDK.SDKModel {
       highlightConfig.eventTargetColor = Common.Color.PageHighlight.EventTarget.toProtocolRGBA();
       highlightConfig.shapeColor = Common.Color.PageHighlight.Shape.toProtocolRGBA();
       highlightConfig.shapeMarginColor = Common.Color.PageHighlight.ShapeMargin.toProtocolRGBA();
-      highlightConfig.displayAsMaterial = Runtime.experiments.isEnabled('inspectTooltip');
+      highlightConfig.displayAsMaterial = true;
     }
     return highlightConfig;
   }
@@ -2111,19 +2108,19 @@ SDK.DOMNodeHighlighter.prototype = {
    * @param {!Protocol.DOM.BackendNodeId=} backendNodeId
    * @param {!Protocol.Runtime.RemoteObjectId=} objectId
    */
-  highlightDOMNode: function(node, config, backendNodeId, objectId) {},
+  highlightDOMNode(node, config, backendNodeId, objectId) {},
 
   /**
    * @param {!Protocol.DOM.InspectMode} mode
    * @param {!Protocol.DOM.HighlightConfig} config
    * @param {function(?Protocol.Error)=} callback
    */
-  setInspectMode: function(mode, config, callback) {},
+  setInspectMode(mode, config, callback) {},
 
   /**
    * @param {!Protocol.Page.FrameId} frameId
    */
-  highlightFrame: function(frameId) {}
+  highlightFrame(frameId) {}
 };
 
 /**

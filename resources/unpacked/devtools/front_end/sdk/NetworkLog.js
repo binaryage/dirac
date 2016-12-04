@@ -46,8 +46,7 @@ SDK.NetworkLog = class extends SDK.SDKModel {
     resourceTreeModel.addEventListener(
         SDK.ResourceTreeModel.Events.MainFrameNavigated, this._onMainFrameNavigated, this);
     resourceTreeModel.addEventListener(SDK.ResourceTreeModel.Events.Load, this._onLoad, this);
-    resourceTreeModel.addEventListener(
-        SDK.ResourceTreeModel.Events.DOMContentLoaded, this._onDOMContentLoaded, this);
+    resourceTreeModel.addEventListener(SDK.ResourceTreeModel.Events.DOMContentLoaded, this._onDOMContentLoaded, this);
   }
 
   /**
@@ -55,7 +54,7 @@ SDK.NetworkLog = class extends SDK.SDKModel {
    * @return {?SDK.NetworkLog}
    */
   static fromTarget(target) {
-    return /** @type {?SDK.NetworkLog} */ (target.model(SDK.NetworkLog));
+    return target.model(SDK.NetworkLog);
   }
 
   /**

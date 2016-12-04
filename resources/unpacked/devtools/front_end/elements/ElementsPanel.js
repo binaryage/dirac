@@ -64,8 +64,7 @@ Elements.ElementsPanel = class extends UI.Panel {
     crumbsContainer.id = 'elements-crumbs';
     this._breadcrumbs = new Elements.ElementsBreadcrumbs();
     this._breadcrumbs.show(crumbsContainer);
-    this._breadcrumbs.addEventListener(
-        Elements.ElementsBreadcrumbs.Events.NodeSelected, this._crumbNodeSelected, this);
+    this._breadcrumbs.addEventListener(Elements.ElementsBreadcrumbs.Events.NodeSelected, this._crumbNodeSelected, this);
 
     this._currentToolbarPane = null;
 
@@ -244,9 +243,9 @@ Elements.ElementsPanel = class extends UI.Panel {
     var width = this._splitWidget.element.offsetWidth;
     if (this._splitWidget.isVertical())
       width -= this._splitWidget.sidebarSize();
-    for (var i = 0; i < this._treeOutlines.length; ++i) {
+    for (var i = 0; i < this._treeOutlines.length; ++i)
       this._treeOutlines[i].setVisibleWidth(width);
-    }
+
     this._breadcrumbs.updateSizes();
   }
 
@@ -285,11 +284,12 @@ Elements.ElementsPanel = class extends UI.Panel {
       var treeOutline = this._treeOutlines[i];
       treeOutline.setVisible(true);
 
-      if (!treeOutline.rootDOMNode)
+      if (!treeOutline.rootDOMNode) {
         if (treeOutline.domModel().existingDocument())
           this._documentUpdated(treeOutline.domModel(), treeOutline.domModel().existingDocument());
         else
           treeOutline.domModel().requestDocument();
+      }
     }
     this.focus();
   }
@@ -474,9 +474,10 @@ Elements.ElementsPanel = class extends UI.Panel {
 
     var promises = [];
     var domModels = SDK.DOMModel.instances();
-    for (var domModel of domModels)
+    for (var domModel of domModels) {
       promises.push(
           domModel.performSearchPromise(whitespaceTrimmedQuery, Common.moduleSetting('showUAShadowDOM').get()));
+    }
     Promise.all(promises).then(resultCountCallback.bind(this));
 
     /**
@@ -522,21 +523,22 @@ Elements.ElementsPanel = class extends UI.Panel {
    * @return {!Element|!AnchorBox|undefined}
    */
   _getPopoverAnchor(element, event) {
-    var anchor = element.enclosingNodeOrSelfWithClass('webkit-html-resource-link');
-    if (!anchor || !anchor.href)
-      return;
-
-    return anchor;
+    var link = element;
+    while (link && !link[Elements.ElementsTreeElement.HrefSymbol])
+      link = link.parentElementOrShadowHost();
+    return link ? link : undefined;
   }
 
   /**
-   * @param {!Element} anchor
+   * @param {!Element} link
    * @param {!UI.Popover} popover
    */
-  _showPopover(anchor, popover) {
+  _showPopover(link, popover) {
     var node = this.selectedDOMNode();
-    if (node)
-      Components.DOMPresentationUtils.buildImagePreviewContents(node.target(), anchor.href, true, showPopover);
+    if (node) {
+      Components.DOMPresentationUtils.buildImagePreviewContents(
+          node.target(), link[Elements.ElementsTreeElement.HrefSymbol], true, showPopover);
+    }
 
     /**
      * @param {!Element=} contents
@@ -545,7 +547,7 @@ Elements.ElementsPanel = class extends UI.Panel {
       if (!contents)
         return;
       popover.setCanShrink(false);
-      popover.showForAnchor(contents, anchor);
+      popover.showForAnchor(contents, link);
     }
   }
 
@@ -784,12 +786,6 @@ Elements.ElementsPanel = class extends UI.Panel {
     });
   }
 
-  _sidebarContextMenuEventFired(event) {
-    var contextMenu = new UI.ContextMenu(event);
-    contextMenu.appendApplicableItems(/** @type {!Object} */ (event.deepElementFromPoint()));
-    contextMenu.show();
-  }
-
   _showUAShadowDOMChanged() {
     for (var i = 0; i < this._treeOutlines.length; ++i)
       this._treeOutlines[i].update();
@@ -854,10 +850,8 @@ Elements.ElementsPanel = class extends UI.Panel {
         showMetrics.call(this, false);
     }
 
-    this.sidebarPaneView =
-        UI.viewManager.createTabbedLocation(() => UI.viewManager.showView('elements'));
+    this.sidebarPaneView = UI.viewManager.createTabbedLocation(() => UI.viewManager.showView('elements'));
     var tabbedPane = this.sidebarPaneView.tabbedPane();
-    tabbedPane.element.addEventListener('contextmenu', this._sidebarContextMenuEventFired.bind(this), false);
     if (this._popoverHelper)
       this._popoverHelper.hidePopover();
     this._popoverHelper = new UI.PopoverHelper(tabbedPane.element);
@@ -935,11 +929,10 @@ Elements.ElementsPanel.ContextMenuProvider = class {
    * @param {!Object} object
    */
   appendApplicableItems(event, contextMenu, object) {
-    if (!(object instanceof SDK.RemoteObject &&
-          (/** @type {!SDK.RemoteObject} */ (object)).isNode()) &&
-        !(object instanceof SDK.DOMNode) && !(object instanceof SDK.DeferredDOMNode)) {
+    if (!(object instanceof SDK.RemoteObject && (/** @type {!SDK.RemoteObject} */ (object)).isNode()) &&
+        !(object instanceof SDK.DOMNode) && !(object instanceof SDK.DeferredDOMNode))
       return;
-    }
+
 
     // Add debbuging-related actions
     if (object instanceof SDK.DOMNode) {
@@ -1068,8 +1061,7 @@ Elements.ElementsPanel.PseudoStateMarkerDecorator = class {
   decorate(node) {
     return {
       color: 'orange',
-      title: Common.UIString(
-          'Element state: %s', ':' + SDK.CSSModel.fromNode(node).pseudoState(node).join(', :'))
+      title: Common.UIString('Element state: %s', ':' + SDK.CSSModel.fromNode(node).pseudoState(node).join(', :'))
     };
   }
 };

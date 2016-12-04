@@ -261,7 +261,7 @@
     (if-let [[context code handler] (<! eval-requests)]
       (let [call-handler! (fn [result-code value error]
                             (if (some? error)
-                              (apply display-user-error! error))
+                              (display-user-error! error))
                             (if handler
                               (apply handler [value error])))
             install-result (<! (wait-for-dirac-installed!))

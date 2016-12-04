@@ -132,8 +132,7 @@ UI.DragHandler = class {
     this._elementDraggingEventListener = elementDrag;
     this._elementEndDraggingEventListener = elementDragEnd;
     console.assert(
-        (UI.DragHandler._documentForMouseOut || targetDocument) === targetDocument,
-        'Dragging on multiple documents.');
+        (UI.DragHandler._documentForMouseOut || targetDocument) === targetDocument, 'Dragging on multiple documents.');
     UI.DragHandler._documentForMouseOut = targetDocument;
     this._dragEventsTargetDocument = targetDocument;
     this._dragEventsTargetDocumentTop = targetDocument.defaultView.top.document;
@@ -310,9 +309,8 @@ UI.GlassPane = class {
   constructor(document, dimmed) {
     this.element = createElement('div');
     var background = dimmed ? 'rgba(255, 255, 255, 0.5)' : 'transparent';
-    this._zIndex = UI._glassPane ?
-        UI._glassPane._zIndex + 1000 :
-        3000;  // Deliberately starts with 3000 to hide other z-indexed elements below.
+    this._zIndex = UI._glassPane ? UI._glassPane._zIndex + 1000 :
+                                   3000;  // Deliberately starts with 3000 to hide other z-indexed elements below.
     this.element.style.cssText = 'position:absolute;top:0;bottom:0;left:0;right:0;background-color:' + background +
         ';z-index:' + this._zIndex + ';overflow:hidden;';
     document.body.appendChild(this.element);
@@ -524,9 +522,10 @@ UI.createReplacementString = function(wordString, event, customNumberHandler) {
       prefix = matches[1];
       suffix = matches[3];
       number = UI._modifiedFloatNumber(parseFloat(matches[2]), event);
-      if (number !== null)
+      if (number !== null) {
         replacementString =
             customNumberHandler ? customNumberHandler(prefix, number, suffix) : prefix + number + suffix;
+      }
     }
   }
   return replacementString;
@@ -540,8 +539,7 @@ UI.createReplacementString = function(wordString, event, customNumberHandler) {
  * @param {function(string, number, string):string=} customNumberHandler
  * @return {boolean}
  */
-UI.handleElementValueModifications = function(
-    event, element, finishHandler, suggestionHandler, customNumberHandler) {
+UI.handleElementValueModifications = function(event, element, finishHandler, suggestionHandler, customNumberHandler) {
   /**
    * @return {?Range}
    * @suppressGlobalPropertiesCheck
@@ -732,7 +730,7 @@ UI.formatLocalized = function(format, substitutions) {
  * @return {string}
  */
 UI.openLinkExternallyLabel = function() {
-  return Common.UIString.capitalize('Open ^link in ^new ^tab');
+  return Common.UIString.capitalize('Open in ^new ^tab');
 };
 
 /**
@@ -852,8 +850,7 @@ UI.highlightSearchResult = function(element, offset, length, domChanges) {
  * @return {!Array.<!Element>}
  */
 UI.highlightSearchResults = function(element, resultRanges, changes) {
-  return UI.highlightRangesWithStyleClass(
-      element, resultRanges, UI.highlightedSearchResultClassName, changes);
+  return UI.highlightRangesWithStyleClass(element, resultRanges, UI.highlightedSearchResultClassName, changes);
 };
 
 /**
@@ -1339,9 +1336,8 @@ UI.appendStyle = function(node, cssFile) {
     styleElement.textContent = themeStyleSheet + '\n' + Runtime.resolveSourceURL(cssFile + '.theme');
     node.appendChild(styleElement);
   }
-}
+};
 
-;
 (function() {
   registerCustomElement('button', 'text-button', {
     /**
@@ -1617,7 +1613,7 @@ UI.bindInput = function(input, apply, validate, numeric) {
   return setValue;
 };
 
-  /**
+/**
    * @param {!CanvasRenderingContext2D} context
    * @param {string} text
    * @param {number} maxWidth
@@ -1918,44 +1914,73 @@ UI.ThemeSupport.ColorUsage = {
 /**
  * @param {string} url
  * @param {string=} linkText
- * @param {string=} classes
- * @param {boolean=} isExternal
- * @param {string=} tooltipText
+ * @param {string=} className
+ * @param {boolean=} preventClick
  * @return {!Element}
  */
-UI.linkifyURLAsNode = function(url, linkText, classes, isExternal, tooltipText) {
+UI.createExternalLink = function(url, linkText, className, preventClick) {
   if (!linkText)
     linkText = url;
 
-  var a = createElementWithClass('a', classes);
+  var a = createElementWithClass('span', className);
   var href = url;
   if (url.trim().toLowerCase().startsWith('javascript:'))
     href = null;
-  if (isExternal && Common.ParsedURL.isRelativeURL(url))
+  if (Common.ParsedURL.isRelativeURL(url))
     href = null;
   if (href !== null) {
     a.href = href;
-    a.classList.add(isExternal ? 'webkit-html-external-link' : 'webkit-html-resource-link');
+    a.classList.add('devtools-link');
+    if (!preventClick) {
+      a.addEventListener('click', (event) => {
+        event.consume(true);
+        InspectorFrontendHost.openInNewTab(/** @type {string} */ (href));
+      }, false);
+    } else {
+      a.classList.add('devtools-link-prevent-click');
+    }
+    a[UI._externalLinkSymbol] = true;
   }
-  if (!tooltipText && linkText !== url)
+  if (linkText !== url)
     a.title = url;
-  else if (tooltipText)
-    a.title = tooltipText;
   a.textContent = linkText.trimMiddle(150);
-  if (isExternal)
-    a.setAttribute('target', '_blank');
+  a.setAttribute('target', '_blank');
 
   return a;
 };
+
+UI._externalLinkSymbol = Symbol('UI._externalLink');
+
+/**
+ * @implements {UI.ContextMenu.Provider}
+ * @unrestricted
+ */
+UI.ExternaLinkContextMenuProvider = class {
+  /**
+   * @override
+   * @param {!Event} event
+   * @param {!UI.ContextMenu} contextMenu
+   * @param {!Object} target
+   */
+  appendApplicableItems(event, contextMenu, target) {
+    var targetNode = /** @type {!Node} */ (target);
+    while (targetNode && !targetNode[UI._externalLinkSymbol])
+      targetNode = targetNode.parentNodeOrShadowHost();
+    if (!targetNode || !targetNode.href)
+      return;
+    contextMenu.appendItem(UI.openLinkExternallyLabel(), () => InspectorFrontendHost.openInNewTab(targetNode.href));
+    contextMenu.appendItem(UI.copyLinkAddressLabel(), () => InspectorFrontendHost.copyText(targetNode.href));
+  }
+};
+
 
 /**
  * @param {string} article
  * @param {string} title
  * @return {!Element}
  */
-UI.linkifyDocumentationURLAsNode = function(article, title) {
-  return UI.linkifyURLAsNode(
-      'https://developers.google.com/web/tools/chrome-devtools/' + article, title, undefined, true);
+UI.createDocumentationLink = function(article, title) {
+  return UI.createExternalLink('https://developers.google.com/web/tools/chrome-devtools/' + article, title);
 };
 
 /**

@@ -7,13 +7,12 @@
 Components.DataSaverInfobar = class extends UI.Infobar {
   constructor() {
     super(
-        UI.Infobar.Type.Warning,
-        Common.UIString('Consider disabling Chrome Data Saver while debugging.'),
+        UI.Infobar.Type.Warning, Common.UIString('Consider disabling Chrome Data Saver while debugging.'),
         Common.settings.moduleSetting('disableDataSaverInfobar'));
     var message = this.createDetailsRowMessage();
     message.createTextChild('More information about  ');
-    message.appendChild(UI.linkifyURLAsNode(
-        'https://support.google.com/chrome/answer/2392284?hl=en', 'Chrome Data Saver', undefined, true));
+    message.appendChild(UI.createExternalLink(
+        'https://support.google.com/chrome/answer/2392284?hl=en', Common.UIString('Chrome Data Saver')));
     message.createTextChild('.');
   }
 

@@ -9,7 +9,7 @@
                                            get-dirac-devtools-window-width get-dirac-devtools-window-height]]
             [dirac.i18n :as i18n]
             [dirac.sugar :as sugar]
-            [dirac.background.helpers :as helpers :refer [report-error-in-tab report-warning-in-tab]]
+            [dirac.background.helpers :as helpers :refer [report-error-in-tab! report-warning-in-tab!]]
             [dirac.background.devtools :as devtools]
             [dirac.background.debugging :refer [resolve-backend-url resolution-failure? get-resolution-failure-reason]]
             [dirac.background.state :as state]
@@ -121,13 +121,14 @@
     (go
       (<! (tabs/update frontend-tab-id #js {:url dirac-frontend-url}))
       (<! (timeout 500))                                                                                                      ; give the page some time load the document
-      (helpers/install-intercom! devtools-id intercom-handler))))
+      (helpers/install-intercom! devtools-id intercom-handler)
+      devtools-id)))
 
 (defn create-dirac-devtools! [backend-tab-id options]
   (go
     (if-let [frontend-tab-id (<! (open-dirac-frontend! (:open-as options)))]
       (<! (connect-and-navigate-dirac-devtools! frontend-tab-id backend-tab-id options))
-      (report-error-in-tab backend-tab-id (i18n/unable-to-create-dirac-tab)))))
+      (<! (report-error-in-tab! backend-tab-id (i18n/unable-to-create-dirac-tab))))))
 
 (defn open-dirac-devtools! [tab options]
   (go
@@ -136,23 +137,26 @@
           debugger-url (options/get-option :target-url)]
       (assert backend-tab-id)
       (cond
-        (not tab-url) (report-error-in-tab backend-tab-id (i18n/tab-cannot-be-debugged tab))
-        (not debugger-url) (report-error-in-tab backend-tab-id (i18n/debugger-url-not-specified))
+        (not tab-url) (<! (report-error-in-tab! backend-tab-id (i18n/tab-cannot-be-debugged tab)))
+        (not debugger-url) (<! (report-error-in-tab! backend-tab-id (i18n/debugger-url-not-specified)))
         :else (let [backend-url (<! (resolve-backend-url debugger-url tab-url))]
                 (if (resolution-failure? backend-url)
                   (let [reason (get-resolution-failure-reason backend-url)]
-                    (report-error-in-tab backend-tab-id (i18n/unable-to-resolve-backend-url debugger-url tab-url reason)))
+                    (<! (report-error-in-tab! backend-tab-id
+                                              (i18n/unable-to-resolve-backend-url debugger-url tab-url reason))))
                   (if (keyword-identical? backend-url :not-attachable)
-                    (report-warning-in-tab backend-tab-id (i18n/cannot-attach-dirac debugger-url tab-url))
+                    (<! (report-warning-in-tab! backend-tab-id (i18n/cannot-attach-dirac debugger-url tab-url)))
                     (<! (create-dirac-devtools! backend-tab-id (assoc options :backend-url backend-url))))))))))
 
 (defn activate-dirac-devtools! [tab-id]
   (go
-    (if-let [{:keys [frontend-tab-id]} (devtools/find-devtools-descriptor-for-backend-tab tab-id)]
-      (if-let [dirac-window-id (<! (sugar/fetch-tab-window-id frontend-tab-id))]
-        (windows/update dirac-window-id focus-window-params)
-        (tabs/update frontend-tab-id activate-tab-params))
-      (warn "activate-dirac-devtools! unable to lookup devtools decriptor for backend tab" tab-id))))
+    (if-let [{:keys [id frontend-tab-id]} (devtools/find-devtools-descriptor-for-backend-tab tab-id)]
+      (do
+        (if-let [dirac-window-id (<! (sugar/fetch-tab-window-id frontend-tab-id))]
+          (windows/update dirac-window-id focus-window-params)
+          (tabs/update frontend-tab-id activate-tab-params))
+        id)
+      (warn "activate-dirac-devtools! unable to lookup devtools descriptor for backend tab" tab-id))))
 
 (defn activate-or-open-dirac-devtools! [tab & [options-overrides]]
   (let [tab-id (oget tab "id")]
@@ -170,13 +174,17 @@
         (warn "no active tab?")))))
 
 (defn close-tab-with-id! [tab-id-or-ids]
-  (let [ids (if (coll? tab-id-or-ids) (into-array tab-id-or-ids) (utils/parse-int tab-id-or-ids))]
+  (let [ids (if (coll? tab-id-or-ids)
+              (into-array tab-id-or-ids)
+              (utils/parse-int tab-id-or-ids))]
     (tabs/remove ids)))
 
 (defn close-dirac-devtools! [devtools-id]
   (go
     (if-let [descriptor (state/get-devtools-descriptor devtools-id)]
-      (close-tab-with-id! (:frontend-tab-id descriptor))
+      (do
+        (<! (close-tab-with-id! (:frontend-tab-id descriptor)))
+        true)
       (warn "requested closing unknown devtools" devtools-id))))
 
 (defn focus-console-prompt-for-backend-tab! [backend-tab-id]

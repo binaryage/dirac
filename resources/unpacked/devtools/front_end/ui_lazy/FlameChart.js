@@ -37,13 +37,13 @@ UI.FlameChartDelegate.prototype = {
    * @param {number} startTime
    * @param {number} endTime
    */
-  requestWindowTimes: function(startTime, endTime) {},
+  requestWindowTimes(startTime, endTime) {},
 
   /**
    * @param {number} startTime
    * @param {number} endTime
    */
-  updateRangeSelection: function(startTime, endTime) {},
+  updateRangeSelection(startTime, endTime) {},
 };
 
 /**
@@ -407,7 +407,7 @@ UI.FlameChart = class extends UI.ChartViewport {
   _coordinatesToEntryIndex(x, y) {
     if (x < 0 || y < 0)
       return -1;
-    y += this.scrollOffset();
+    y += this.getScrollOffset();
     var timelineData = this._timelineData();
     if (!timelineData)
       return -1;
@@ -471,7 +471,7 @@ UI.FlameChart = class extends UI.ChartViewport {
   _coordinatesToGroupIndex(x, y) {
     if (x < 0 || y < 0)
       return -1;
-    y += this.scrollOffset();
+    y += this.getScrollOffset();
     var groups = this._rawTimelineData.groups || [];
     var group = this._groupOffsets.upperBound(y) - 1;
 
@@ -535,7 +535,7 @@ UI.FlameChart = class extends UI.ChartViewport {
     var context = /** @type {!CanvasRenderingContext2D} */ (this._canvas.getContext('2d'));
     context.save();
     var ratio = window.devicePixelRatio;
-    var top = this.scrollOffset();
+    var top = this.getScrollOffset();
     context.scale(ratio, ratio);
     context.translate(0, -top);
     var defaultFont = '11px ' + Host.fontFamily();
@@ -658,11 +658,10 @@ UI.FlameChart = class extends UI.ChartViewport {
       context.fillText(text, barX + textPadding, barY + textBaseHeight);
     }
 
-    this._drawFlowEvents(context, width, height);
-
     context.restore();
 
-    UI.TimelineGrid.drawCanvasGrid(context, this._calculator, 3);
+    const headerHeight = 15;
+    UI.TimelineGrid.drawCanvasGrid(context, this._calculator, 3, headerHeight);
     this._drawMarkers();
     this._drawGroupHeaders(width, height);
 
@@ -677,7 +676,7 @@ UI.FlameChart = class extends UI.ChartViewport {
    */
   _drawGroupHeaders(width, height) {
     var context = /** @type {!CanvasRenderingContext2D} */ (this._canvas.getContext('2d'));
-    var top = this.scrollOffset();
+    var top = this.getScrollOffset();
     var ratio = window.devicePixelRatio;
     var barHeight = this._barHeight;
     var textBaseHeight = barHeight - this._dataProvider.textBaseline();
@@ -750,10 +749,11 @@ UI.FlameChart = class extends UI.ChartViewport {
     context.fillStyle = UI.themeSupport.patchColor('#6e6e6e', colorUsage.Foreground);
     context.beginPath();
     forEachGroup.call(this, (offset, index, group) => {
-      if (this._isGroupCollapsible(index))
+      if (this._isGroupCollapsible(index)) {
         drawExpansionArrow.call(
             this, this._expansionArrowIndent * (group.style.nestingLevel + 1),
             offset + textBaseHeight - this._arrowSide / 2, !!group.expanded);
+      }
     });
     context.fill();
 
@@ -883,55 +883,6 @@ UI.FlameChart = class extends UI.ChartViewport {
      */
     function mergeCallback(a, b) {
       return a.data === b.data && a.end + 0.4 > b.end ? a : null;
-    }
-  }
-
-  /**
-   * @param {!CanvasRenderingContext2D} context
-   * @param {number} height
-   * @param {number} width
-   */
-  _drawFlowEvents(context, width, height) {
-    var timelineData = this._timelineData();
-    var timeWindowRight = this._timeWindowRight;
-    var timeWindowLeft = this._timeWindowLeft;
-    var flowStartTimes = timelineData.flowStartTimes;
-    var flowEndTimes = timelineData.flowEndTimes;
-    var flowStartLevels = timelineData.flowStartLevels;
-    var flowEndLevels = timelineData.flowEndLevels;
-    var flowCount = flowStartTimes.length;
-    var endIndex = flowStartTimes.lowerBound(timeWindowRight);
-
-    var color = [];
-    var fadeColorsCount = 8;
-    for (var i = 0; i <= fadeColorsCount; ++i)
-      color[i] = 'rgba(128, 0, 0, ' + i / fadeColorsCount + ')';
-    var fadeColorsRange = color.length;
-    var minimumFlowDistancePx = 15;
-    var flowArcHeight = 4 * this._barHeight;
-    var colorIndex = 0;
-    context.lineWidth = 0.5;
-    for (var i = 0; i < endIndex; ++i) {
-      if (flowEndTimes[i] < timeWindowLeft)
-        continue;
-      var startX = this._timeToPosition(flowStartTimes[i]);
-      var endX = this._timeToPosition(flowEndTimes[i]);
-      if (endX - startX < minimumFlowDistancePx)
-        continue;
-      if (startX < -minimumFlowDistancePx && endX > width + minimumFlowDistancePx)
-        continue;
-      // Assign a trasparent color if the flow is small enough or if the previous color was a transparent color.
-      if (endX - startX < minimumFlowDistancePx + fadeColorsRange || colorIndex !== color.length - 1) {
-        colorIndex = Math.min(fadeColorsRange - 1, Math.floor(endX - startX - minimumFlowDistancePx));
-        context.strokeStyle = color[colorIndex];
-      }
-      var startY = this._levelToHeight(flowStartLevels[i]) + this._barHeight;
-      var endY = this._levelToHeight(flowEndLevels[i]);
-      context.beginPath();
-      context.moveTo(startX, startY);
-      var arcHeight = Math.max(Math.sqrt(Math.abs(startY - endY)), flowArcHeight) + 5;
-      context.bezierCurveTo(startX, startY + arcHeight, endX, endY + arcHeight, endX, endY + this._barHeight);
-      context.stroke();
     }
   }
 
@@ -1104,7 +1055,7 @@ UI.FlameChart = class extends UI.ChartViewport {
     var barCenter = barX + barWidth / 2;
     barWidth = Math.max(barWidth, elementMinWidthPx);
     barX = barCenter - barWidth / 2;
-    var barY = this._levelToHeight(timelineData.entryLevels[entryIndex]) - this.scrollOffset();
+    var barY = this._levelToHeight(timelineData.entryLevels[entryIndex]) - this.getScrollOffset();
     var style = element.style;
     style.left = barX + 'px';
     style.top = barY + 'px';
@@ -1253,10 +1204,6 @@ UI.FlameChart.TimelineData = class {
     this.groups = groups;
     /** @type {!Array.<!UI.FlameChartMarker>} */
     this.markers = [];
-    this.flowStartTimes = [];
-    this.flowStartLevels = [];
-    this.flowEndTimes = [];
-    this.flowEndLevels = [];
   }
 };
 
@@ -1264,64 +1211,64 @@ UI.FlameChartDataProvider.prototype = {
   /**
    * @return {number}
    */
-  barHeight: function() {},
+  barHeight() {},
 
   /**
    * @return {number}
    */
-  minimumBoundary: function() {},
+  minimumBoundary() {},
 
   /**
    * @return {number}
    */
-  totalTime: function() {},
+  totalTime() {},
 
   /**
    * @param {number} value
    * @param {number=} precision
    * @return {string}
    */
-  formatValue: function(value, precision) {},
+  formatValue(value, precision) {},
 
   /**
    * @return {number}
    */
-  maxStackDepth: function() {},
+  maxStackDepth() {},
 
   /**
    * @return {?UI.FlameChart.TimelineData}
    */
-  timelineData: function() {},
+  timelineData() {},
 
   /**
    * @param {number} entryIndex
    * @return {?Element}
    */
-  prepareHighlightedEntryInfo: function(entryIndex) {},
+  prepareHighlightedEntryInfo(entryIndex) {},
 
   /**
    * @param {number} entryIndex
    * @return {boolean}
    */
-  canJumpToEntry: function(entryIndex) {},
+  canJumpToEntry(entryIndex) {},
 
   /**
    * @param {number} entryIndex
    * @return {?string}
    */
-  entryTitle: function(entryIndex) {},
+  entryTitle(entryIndex) {},
 
   /**
    * @param {number} entryIndex
    * @return {?string}
    */
-  entryFont: function(entryIndex) {},
+  entryFont(entryIndex) {},
 
   /**
    * @param {number} entryIndex
    * @return {string}
    */
-  entryColor: function(entryIndex) {},
+  entryColor(entryIndex) {},
 
   /**
    * @param {number} entryIndex
@@ -1335,34 +1282,34 @@ UI.FlameChartDataProvider.prototype = {
    * @param {number} timeToPixels
    * @return {boolean}
    */
-  decorateEntry: function(entryIndex, context, text, barX, barY, barWidth, barHeight, unclippedBarX, timeToPixels) {},
+  decorateEntry(entryIndex, context, text, barX, barY, barWidth, barHeight, unclippedBarX, timeToPixels) {},
 
   /**
    * @param {number} entryIndex
    * @return {boolean}
    */
-  forceDecoration: function(entryIndex) {},
+  forceDecoration(entryIndex) {},
 
   /**
    * @param {number} entryIndex
    * @return {string}
    */
-  textColor: function(entryIndex) {},
+  textColor(entryIndex) {},
 
   /**
    * @return {number}
    */
-  textBaseline: function() {},
+  textBaseline() {},
 
   /**
    * @return {number}
    */
-  textPadding: function() {},
+  textPadding() {},
 
   /**
    * @return {number}
    */
-  paddingLeft: function() {},
+  paddingLeft() {},
 };
 
 /**
@@ -1374,17 +1321,17 @@ UI.FlameChartMarker.prototype = {
   /**
    * @return {number}
    */
-  startTime: function() {},
+  startTime() {},
 
   /**
    * @return {string}
    */
-  color: function() {},
+  color() {},
 
   /**
    * @return {string}
    */
-  title: function() {},
+  title() {},
 
   /**
    * @param {!CanvasRenderingContext2D} context
@@ -1392,7 +1339,7 @@ UI.FlameChartMarker.prototype = {
    * @param {number} height
    * @param {number} pixelsPerMillisecond
    */
-  draw: function(context, x, height, pixelsPerMillisecond) {},
+  draw(context, x, height, pixelsPerMillisecond) {},
 };
 
 /** @enum {symbol} */

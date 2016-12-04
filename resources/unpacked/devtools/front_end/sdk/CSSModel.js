@@ -41,8 +41,7 @@ SDK.CSSModel = class extends SDK.SDKModel {
     this._domModel = domModel;
     this._agent = target.cssAgent();
     this._styleLoader = new SDK.CSSModel.ComputedStyleLoader(this);
-    SDK.targetManager.addEventListener(
-        SDK.TargetManager.Events.MainFrameNavigated, this._mainFrameNavigated, this);
+    SDK.targetManager.addEventListener(SDK.TargetManager.Events.MainFrameNavigated, this._mainFrameNavigated, this);
     target.registerCSSDispatcher(new SDK.CSSDispatcher(this));
     this._agent.enable().then(this._wasEnabled.bind(this));
     /** @type {!Map.<string, !SDK.CSSStyleSheetHeader>} */
@@ -89,7 +88,7 @@ SDK.CSSModel = class extends SDK.SDKModel {
    * @return {?SDK.CSSModel}
    */
   static fromTarget(target) {
-    return /** @type {?SDK.CSSModel} */ (target.model(SDK.CSSModel));
+    return target.model(SDK.CSSModel);
   }
 
   /**
@@ -304,8 +303,7 @@ SDK.CSSModel = class extends SDK.SDKModel {
 
       this._sourceMapByURL.set(header.sourceMapURL, editResult.map);
       this.dispatchEventToListeners(
-          SDK.CSSModel.Events.SourceMapChanged,
-          {sourceMap: editResult.map, newSources: editResult.newSources});
+          SDK.CSSModel.Events.SourceMapChanged, {sourceMap: editResult.map, newSources: editResult.newSources});
       return Promise.resolve(true);
     }
 
@@ -627,12 +625,10 @@ SDK.CSSModel = class extends SDK.SDKModel {
       if (error || !inlinePayload)
         return null;
       var inlineStyle = inlinePayload ?
-          new SDK.CSSStyleDeclaration(
-              this, null, inlinePayload, SDK.CSSStyleDeclaration.Type.Inline) :
+          new SDK.CSSStyleDeclaration(this, null, inlinePayload, SDK.CSSStyleDeclaration.Type.Inline) :
           null;
       var attributesStyle = attributesStylePayload ?
-          new SDK.CSSStyleDeclaration(
-              this, null, attributesStylePayload, SDK.CSSStyleDeclaration.Type.Attributes) :
+          new SDK.CSSStyleDeclaration(this, null, attributesStylePayload, SDK.CSSStyleDeclaration.Type.Attributes) :
           null;
       return new SDK.CSSModel.InlineStyleResult(inlineStyle, attributesStyle);
     }
@@ -788,8 +784,7 @@ SDK.CSSModel = class extends SDK.SDKModel {
    * @param {!SDK.CSSModel.Edit=} edit
    */
   _fireStyleSheetChanged(styleSheetId, edit) {
-    this.dispatchEventToListeners(
-        SDK.CSSModel.Events.StyleSheetChanged, {styleSheetId: styleSheetId, edit: edit});
+    this.dispatchEventToListeners(SDK.CSSModel.Events.StyleSheetChanged, {styleSheetId: styleSheetId, edit: edit});
   }
 
   /**
@@ -979,14 +974,6 @@ SDK.CSSModel = class extends SDK.SDKModel {
   }
 
   /**
-   * @param {!Protocol.CSS.StyleSheetId} id
-   * @param {!Protocol.CSS.SourceRange} range
-   */
-  _layoutEditorChange(id, range) {
-    this.dispatchEventToListeners(SDK.CSSModel.Events.LayoutEditorChange, {id: id, range: range});
-  }
-
-  /**
    * @param {number} nodeId
    * @param {string} name
    * @param {string} value
@@ -1019,7 +1006,6 @@ SDK.CSSModel.RuleUsage;
 
 /** @enum {symbol} */
 SDK.CSSModel.Events = {
-  LayoutEditorChange: Symbol('LayoutEditorChange'),
   FontsUpdated: Symbol('FontsUpdated'),
   MediaQueryResultChanged: Symbol('MediaQueryResultChanged'),
   ModelWasEnabled: Symbol('ModelWasEnabled'),
@@ -1138,15 +1124,6 @@ SDK.CSSDispatcher = class {
   styleSheetRemoved(id) {
     this._cssModel._styleSheetRemoved(id);
   }
-
-  /**
-   * @override
-   * @param {!Protocol.CSS.StyleSheetId} id
-   * @param {!Protocol.CSS.SourceRange} range
-   */
-  layoutEditorChange(id, range) {
-    this._cssModel._layoutEditorChange(id, range);
-  }
 };
 
 /**
@@ -1167,9 +1144,10 @@ SDK.CSSModel.ComputedStyleLoader = class {
    * @return {!Promise<?Map<string, string>>}
    */
   computedStylePromise(nodeId) {
-    if (!this._nodeIdToPromise.has(nodeId))
+    if (!this._nodeIdToPromise.has(nodeId)) {
       this._nodeIdToPromise.set(
           nodeId, this._cssModel._agent.getComputedStyleForNode(nodeId, parsePayload).then(cleanUp.bind(this)));
+    }
 
     return /** @type {!Promise.<?Map.<string, string>>} */ (this._nodeIdToPromise.get(nodeId));
 

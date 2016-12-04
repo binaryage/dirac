@@ -21,6 +21,8 @@ devtools_core_base_files = [
   "front_end/heap_snapshot_worker.json",
   "front_end/utility_shared_worker.js",
   "front_end/utility_shared_worker.json",
+  "front_end/unit_test_runner.js",
+  "front_end/unit_test_runner.json",
   "front_end/toolbox.js",
   "front_end/toolbox.json",
   "front_end/Runtime.js",
@@ -66,7 +68,6 @@ devtools_components_js_files = [
   "front_end/components/DOMBreakpointsSidebarPane.js",
   "front_end/components/DOMPresentationUtils.js",
   "front_end/components/ExecutionContextSelector.js",
-  "front_end/components/HandlerRegistry.js",
   "front_end/components/JavaScriptAutocomplete.js",
   "front_end/components/BreakpointsSidebarPaneBase.js",
   "front_end/components/Linkifier.js",
@@ -122,7 +123,6 @@ devtools_sdk_js_files = [
   "front_end/sdk/HAREntry.js",
   "front_end/sdk/HeapProfilerModel.js",
   "front_end/sdk/InspectorBackend.js",
-  "front_end/sdk/InspectorBackendHostedMode.js",
   "front_end/sdk/LayerTreeBase.js",
   "front_end/sdk/NetworkLog.js",
   "front_end/sdk/NetworkManager.js",
@@ -161,10 +161,8 @@ devtools_bindings_js_files = [
   "front_end/bindings/CSSWorkspaceBinding.js",
   "front_end/bindings/DebuggerWorkspaceBinding.js",
   "front_end/bindings/DefaultScriptMapping.js",
-  "front_end/bindings/FileSystemWorkspaceBinding.js",
   "front_end/bindings/FileUtils.js",
   "front_end/bindings/LiveLocation.js",
-  "front_end/bindings/NetworkMapping.js",
   "front_end/bindings/NetworkProject.js",
   "front_end/bindings/PresentationConsoleMessageHelper.js",
   "front_end/bindings/ResourceScriptMapping.js",
@@ -174,6 +172,7 @@ devtools_bindings_js_files = [
   "front_end/bindings/TempFile.js",
 ]
 devtools_persistence_js_files = [
+  "front_end/persistence/FileSystemWorkspaceBinding.js",
   "front_end/persistence/DefaultMapping.js",
   "front_end/persistence/Automapping.js",
   "front_end/persistence/Persistence.js",
@@ -337,10 +336,12 @@ devtools_module_json_files = [
   "front_end/formatter_worker/module.json",
   "front_end/sdk/module.json",
   "front_end/settings/module.json",
+  "front_end/shell/module.json",
   "front_end/source_frame/module.json",
   "front_end/sources/module.json",
   "front_end/snippets/module.json",
   "front_end/utility_shared_worker/module.json",
+  "front_end/test_runner/module.json",
   "front_end/text_editor/module.json",
   "front_end/timeline_model/module.json",
   "front_end/timeline/module.json",
@@ -447,7 +448,7 @@ devtools_elements_js_files = [
   "front_end/elements/MetricsSidebarPane.js",
   "front_end/elements/PlatformFontsWidget.js",
   "front_end/elements/PropertiesWidget.js",
-  "front_end/elements/PropertyChangeHighlighter.js",
+  "front_end/elements/StylePropertyHighlighter.js",
   "front_end/elements/StylesSidebarPane.js",
   "front_end/elements/ComputedStyleWidget.js",
 ]
@@ -713,6 +714,8 @@ devtools_terminal_js_files = [
   "front_end/terminal/xterm.js/build/xterm.css",
   "front_end/terminal/xterm.js/build/xterm.js",
 ]
+devtools_shell_js_files = [ "front_end/shell/TestShell.js" ]
+devtools_test_runner_js_files = [ "front_end/test_runner/TestRunner.js" ]
 devtools_timeline_model_js_files = [
   "front_end/timeline_model/TracingLayerTree.js",
   "front_end/timeline_model/TimelineFrameModel.js",
@@ -743,6 +746,8 @@ devtools_timeline_js_files = [
   "front_end/timeline/TimelineController.js",
   "front_end/timeline/TimelineEventOverview.js",
   "front_end/timeline/TimelineFlameChart.js",
+  "front_end/timeline/TimelineFlameChartView.js",
+  "front_end/timeline/TimelineNetworkFlameChart.js",
   "front_end/timeline/TimelineLayersView.js",
   "front_end/timeline/TimelineLoader.js",
   "front_end/timeline/TimelinePaintProfilerView.js",
@@ -889,9 +894,10 @@ devtools_modules_js_files =
     devtools_resources_js_files + devtools_sass_js_files +
     devtools_security_js_files + devtools_screencast_js_files +
     devtools_formatter_worker_js_files + devtools_settings_js_files +
-    devtools_services_js_files + devtools_snippets_js_files +
-    devtools_source_frame_js_files + devtools_sources_js_files +
-    devtools_utility_shared_worker_js_files + devtools_text_editor_js_files +
+    devtools_services_js_files + devtools_shell_js_files +
+    devtools_snippets_js_files + devtools_source_frame_js_files +
+    devtools_sources_js_files + devtools_utility_shared_worker_js_files +
+    devtools_text_editor_js_files + devtools_test_runner_js_files +
     devtools_terminal_js_files + devtools_timeline_model_js_files +
     devtools_timeline_js_files + devtools_ui_lazy_js_files +
     devtools_layer_viewer_js_files + devtools_worker_service_js_files
@@ -912,6 +918,8 @@ generated_entry_files = [
   "$resources_out_dir/inspector.js",
   "$resources_out_dir/toolbox.html",
   "$resources_out_dir/toolbox.js",
+  "$resources_out_dir/unit_test_runner.html",
+  "$resources_out_dir/unit_test_runner.js",
 ]
 
 generated_workers = [
@@ -961,6 +969,7 @@ devtools_applications = [
 # => go and update scripts/release.sh script
     "inspector",
     "toolbox",
+    "unit_test_runner",
     "formatter_worker",
     "heap_snapshot_worker",
     "utility_shared_worker",
@@ -1108,6 +1117,7 @@ action("build_release_devtools") {
   inputs = helper_scripts + all_devtools_files + generated_scripts + [
              "front_end/inspector.html",
              "front_end/toolbox.html",
+             "front_end/unit_test_runner.html",
            ]
 
   outputs = generated_entry_files + generated_workers +
@@ -1134,11 +1144,13 @@ if (debug_devtools) {
     inputs = all_devtools_files + [
                "front_end/inspector.html",
                "front_end/toolbox.html",
+               "front_end/unit_test_runner.html",
              ]
 
     outputs = [
       "$resources_out_debug_dir/inspector.html",
       "$resources_out_debug_dir/toolbox.html",
+      "$resources_out_debug_dir/unit_test_runner.html",
     ]
 
     args = devtools_applications + [
@@ -1159,4 +1171,20 @@ if (debug_devtools) {
       "$resources_out_debug_dir/{{source_file_part}}",
     ]
   }
+}
+
+group("devtools_closure_compile") {
+  data = [
+    # Needed for isolate script to execute.
+    "front_end/",
+    "scripts/build/",
+    "scripts/closure/",
+    "scripts/compile_frontend.py",
+    "scripts/jsdoc_validator/",
+    "//testing/scripts/run_devtools_closure_compile.py",
+    "//testing/scripts/common.py",
+    "//testing/xvfb.py",
+    "//third_party/WebKit/Source/core/inspector/browser_protocol.json",
+    "//v8/src/inspector/js_protocol.json",
+  ]
 }
