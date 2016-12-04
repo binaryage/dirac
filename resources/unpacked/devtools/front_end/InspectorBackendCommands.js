@@ -1,5 +1,5 @@
-Protocol.BakedInspectorBackendAPIChromeTag='57.0.2939.2';
-Protocol.BakedInspectorBackendAPIChromeRev='080c44d292d6e1103d7c3a1730349961e23a1e5c';
+Protocol.BakedInspectorBackendAPIChromeTag='57.0.2941.2';
+Protocol.BakedInspectorBackendAPIChromeRev='b0dfc121a4ab3713937d60505f1588374e5d5f2b';
 Protocol.BakedInspectorBackendAPI=''
 + 'InspectorBackend.registerEvent("Inspector.detached", ["reason"]);\n'
 + 'InspectorBackend.registerEvent("Inspector.targetCrashed", []);\n'
@@ -170,7 +170,7 @@ Protocol.BakedInspectorBackendAPI=''
 + 'InspectorBackend.registerCommand("ApplicationCache.getApplicationCacheForFrame", [{"name": "frameId", "type": "string", "optional": false}], ["applicationCache"], false);\n'
 + 'InspectorBackend.registerEnum("DOM.PseudoType", {FirstLine: "first-line", FirstLetter: "first-letter", Before: "before", After: "after", Backdrop: "backdrop", Selection: "selection", FirstLineInherited: "first-line-inherited", Scrollbar: "scrollbar", ScrollbarThumb: "scrollbar-thumb", ScrollbarButton: "scrollbar-button", ScrollbarTrack: "scrollbar-track", ScrollbarTrackPiece: "scrollbar-track-piece", ScrollbarCorner: "scrollbar-corner", Resizer: "resizer", InputListButton: "input-list-button"});\n'
 + 'InspectorBackend.registerEnum("DOM.ShadowRootType", {UserAgent: "user-agent", Open: "open", Closed: "closed"});\n'
-+ 'InspectorBackend.registerEnum("DOM.InspectMode", {SearchForNode: "searchForNode", SearchForUAShadowDOM: "searchForUAShadowDOM", ShowLayoutEditor: "showLayoutEditor", None: "none"});\n'
++ 'InspectorBackend.registerEnum("DOM.InspectMode", {SearchForNode: "searchForNode", SearchForUAShadowDOM: "searchForUAShadowDOM", None: "none"});\n'
 + 'InspectorBackend.registerEvent("DOM.documentUpdated", []);\n'
 + 'InspectorBackend.registerEvent("DOM.inspectNodeRequested", ["backendNodeId"]);\n'
 + 'InspectorBackend.registerEvent("DOM.setChildNodes", ["parentId", "nodes"]);\n'
@@ -235,7 +235,6 @@ Protocol.BakedInspectorBackendAPI=''
 + 'InspectorBackend.registerEvent("CSS.styleSheetChanged", ["styleSheetId"]);\n'
 + 'InspectorBackend.registerEvent("CSS.styleSheetAdded", ["header"]);\n'
 + 'InspectorBackend.registerEvent("CSS.styleSheetRemoved", ["styleSheetId"]);\n'
-+ 'InspectorBackend.registerEvent("CSS.layoutEditorChange", ["styleSheetId", "changeRange"]);\n'
 + 'InspectorBackend.registerCommand("CSS.enable", [], [], false);\n'
 + 'InspectorBackend.registerCommand("CSS.disable", [], [], false);\n'
 + 'InspectorBackend.registerCommand("CSS.getMatchedStylesForNode", [{"name": "nodeId", "type": "number", "optional": false}], ["inlineStyle", "attributesStyle", "matchedCSSRules", "pseudoElements", "inherited", "cssKeyframesRules"], false);\n'

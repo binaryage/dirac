@@ -1963,7 +1963,6 @@ Protocol.DOM.HighlightConfig;
 Protocol.DOM.InspectMode = {
     SearchForNode: "searchForNode",
     SearchForUAShadowDOM: "searchForUAShadowDOM",
-    ShowLayoutEditor: "showLayoutEditor",
     None: "none"
 };
 /** @interface */
@@ -2381,11 +2380,6 @@ Protocol.CSSDispatcher.prototype.styleSheetAdded = function(header) {};
  * @param {Protocol.CSS.StyleSheetId} styleSheetId
  */
 Protocol.CSSDispatcher.prototype.styleSheetRemoved = function(styleSheetId) {};
-/**
- * @param {Protocol.CSS.StyleSheetId} styleSheetId
- * @param {Protocol.CSS.SourceRange} changeRange
- */
-Protocol.CSSDispatcher.prototype.layoutEditorChange = function(styleSheetId, changeRange) {};
 Protocol.IO = {};
 
 
