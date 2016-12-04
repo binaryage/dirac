@@ -6,7 +6,4 @@ cache:
   directories:
     - $HOME/.m2
 
-before_install:
-  - scripts/init-travis.sh
-
-script: scripts/test-all-here.sh
+script: scripts/travis-entrypoint.sh
