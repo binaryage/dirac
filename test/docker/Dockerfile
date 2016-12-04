@@ -16,4 +16,4 @@ RUN yes y | lein upgrade
 
 VOLUME ["/root/binaryage/dirac"]
 ENTRYPOINT ["/root/binaryage/dirac/scripts/docker-entrypoint.sh"]
-CMD ["./scripts/test-all-here"]
+CMD ["./scripts/test-all"]

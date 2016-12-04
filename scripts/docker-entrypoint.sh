@@ -52,7 +52,7 @@ if [ "$1" = "test" ]; then
   pushd "$TRAVIS_BUILD_DIR"
   init_travis_env
   print_env
-  echo_cmd ./scripts/test-all-here.sh
+  echo_cmd ./scripts/test-all.sh
   result=$?
   popd
   exit ${result}
@@ -62,7 +62,7 @@ if [ "$1" = "test-browser" ]; then
   pushd "$TRAVIS_BUILD_DIR"
   init_travis_env
   print_env
-  echo_cmd ./scripts/test-browser-here.sh
+  echo_cmd ./scripts/test-browser.sh
   result=$?
   popd
   exit ${result}

@@ -43,20 +43,6 @@ vercomp () {
     return 0
 }
 
-# http://stackoverflow.com/a/18443300/84283
-realpath() {
-  OURPWD=$PWD
-  cd "$(dirname "$1")"
-  LINK=$(readlink "$(basename "$1")")
-  while [ "$LINK" ]; do
-    cd "$(dirname "$LINK")"
-    LINK=$(readlink "$(basename "$1")")
-  done
-  REALPATH="$PWD/$(basename "$1")"
-  cd "$OURPWD"
-  echo "$REALPATH"
-}
-
 print_env() {
   echo
   echo "--- EFFECTIVE ENVIRONMENT ---"
@@ -64,7 +50,37 @@ print_env() {
   echo "-----------------------------"
 }
 
-pushd `dirname "${BASH_SOURCE[0]}"`
+portable_realpath() {
+  case "$OSTYPE" in
+    darwin*)
+      if [ -z "$(which grealpath)" ]; then
+        echo "grealpath needed under OSX, please \`brew install coreutils\`"
+        exit 1
+      fi
+      grealpath "$@" ;;
+    *)        realpath "$@" ;;
+  esac
+}
+
+redirect_to_test_stage_if_needed() {
+  if [ ! -z "$DIRAC_TEST_IN_STAGE" ]; then
+    local spawn_script_path=`portable_realpath "$SPAWN_COMMAND"`
+    local script_path=`portable_realpath --relative-to="$ROOT" "$spawn_script_path"`
+    "$SCRIPTS/sync-test-stage.sh"
+    pushd "$DIRAC_TEST_STAGE_DIR"
+    unset DIRAC_TEST_IN_STAGE
+    "$script_path"
+    result=$?
+    popd
+    exit ${result}
+  fi
+}
+
+SPAWN_DIR=`pwd`
+SPAWN_COMMAND="$0"
+SPAWN_ARGS="$@"
+
+pushd $(dirname "${BASH_SOURCE[0]}")
 
 source "./export-windows-layout.sh"
 

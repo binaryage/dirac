@@ -36,7 +36,7 @@ echo_cmd() {
 if [ -z "$1" -o "$1" = "test" ]; then
   init_travis_env
   print_env
-  echo_cmd ./scripts/test-all-here.sh
+  echo_cmd ./scripts/test-all.sh
   result=$?
   exit ${result}
 fi
@@ -44,7 +44,7 @@ fi
 if [ "$1" = "test-browser" ]; then
   init_travis_env
   print_env
-  echo_cmd ./scripts/test-browser-here.sh
+  echo_cmd ./scripts/test-browser.sh
   result=$?
   exit ${result}
 fi
