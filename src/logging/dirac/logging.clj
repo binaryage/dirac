@@ -24,6 +24,9 @@
 (def tests-options
   (standard-layout :magenta))
 
+(def transcript-stream-options
+  (standard-layout :yellow))
+
 (def weasel-options
   (standard-layout :cyan))
 
@@ -36,8 +39,9 @@
       (config/set-loggers!
         :root (merge-options root-options options {:level Level/INFO})                                                        ; root level should be always INFO, otherwise we would get very verbose logs from java libs
         ; test runners
-        "dirac.tests.browser" (merge-options tests-options options)
         "dirac.tests.backend" (merge-options tests-options options)
+        "dirac.tests.browser" (merge-options tests-options options)
+        "dirac.tests.browser.tasks.transcript-streamer-server" (merge-options transcript-stream-options options)
         ; test mocks / helpers
         "dirac.test-lib" (merge-options tests-options options)
         ; agent

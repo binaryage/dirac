@@ -4,6 +4,7 @@
             [oops.core :refer [oget oset! ocall oapply gset!]]
             [chromex.logging :refer-macros [log warn error info]]
             [dirac.settings :refer-macros [get-signal-server-url
+                                           get-transcript-streamer-server-url
                                            get-chrome-remote-debugging-port
                                            get-chrome-remote-debugging-host
                                            get-pending-replies-wait-timeout
@@ -100,6 +101,10 @@
     (runner/normalized?)
     true))
 
+(defn get-transcript-streamer-server-url-if-needed []
+  (if (helpers/automated-testing?)
+    (get-transcript-streamer-server-url)))
+
 (defn make-failure-matcher []
   (fn [[label _message]]
     (if-not (failed?)
@@ -118,7 +123,7 @@
     (messages/init! "task-runner")
     ; transcript is a fancy name for "log of interesting events"
     (register-global-exception-handler!)
-    (transcript-host/init-transcript! "transcript-box" (normalized?))
+    (transcript-host/init-transcript! "transcript-box" (normalized?) (get-transcript-streamer-server-url-if-needed))
     ; when we are not running under test-runner, we want skip all future actions after a failure
     ; this helps inspection of the problems in an interactive way
     (transcript-host/register-observer! (make-failure-matcher))
