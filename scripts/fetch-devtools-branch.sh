@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-pushd `dirname "${BASH_SOURCE[0]}"` > /dev/null
-source "./config.sh"
+source "$(dirname "${BASH_SOURCE[0]}")/config.sh"
+false && source config.sh # never executes, this is here just for IntelliJ Bash support to understand our sourcing
 
 set -x
 
@@ -25,6 +25,8 @@ if [ ! -d "$CHROMIUM_MIRROR_DIR" ] ; then
   exit 1
 fi
 
+popd
+
 # fresh splitting..., it should do the job incrementally from last run
 pushd "$CHROMIUM_MIRROR_DIR"
 
@@ -38,9 +40,5 @@ git filter-branch -f --prune-empty --subdirectory-filter third_party/WebKit/Sour
 git checkout devtools
 git reset --hard tracker
 git push dirac devtools
-
-popd
-
-popd
 
 popd

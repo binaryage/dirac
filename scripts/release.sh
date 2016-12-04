@@ -19,8 +19,8 @@
 # - copy compiled code to appropriate places in resources/release
 # - remove unneeded files from resources/release
 
-pushd `dirname "${BASH_SOURCE[0]}"` > /dev/null
-source "./config.sh"
+source "$(dirname "${BASH_SOURCE[0]}")/config.sh"
+false && source config.sh # never executes, this is here just for IntelliJ Bash support to understand our sourcing
 
 TASK=${1:-compile-dirac-pseudo-names}
 
@@ -107,7 +107,5 @@ cp "$ROOT/target/resources/release/.compiled/options.js" "$RELEASE_BUILD/options
 # ad-hoc cleanup
 rm -rf "$RELEASE_BUILD_DEVTOOLS_FRONTEND/dirac"
 rm -rf "$RELEASE_BUILD_DEVTOOLS_FRONTEND/Images/src"
-
-popd
 
 popd

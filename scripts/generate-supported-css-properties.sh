@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-pushd `dirname "${BASH_SOURCE[0]}"` > /dev/null
-source "./config.sh"
+source "$(dirname "${BASH_SOURCE[0]}")/config.sh"
+false && source config.sh # never executes, this is here just for IntelliJ Bash support to understand our sourcing
 
 WORK_DIR="$TMP_DIR/peon/generate-supported-css-properties"
 mkdir -p "$WORK_DIR"
@@ -33,7 +33,5 @@ else
   echo "Error: Properties source file not found in $CSS_PROPERTIES_SOURCE."
   exit 1
 fi
-
-popd
 
 popd

@@ -3,8 +3,8 @@
 # this task is to be run after running release.sh script
 # it copies release files and packages them into a zip file with versioned filename
 
-pushd `dirname "${BASH_SOURCE[0]}"` > /dev/null
-source "./config.sh"
+source "$(dirname "${BASH_SOURCE[0]}")/config.sh"
+false && source config.sh # never executes, this is here just for IntelliJ Bash support to understand our sourcing
 
 pushd "$ROOT"
 
@@ -65,8 +65,6 @@ zip -qr -9 -X "$ZIP_NAME" .
 unzip -l "$ZIP_NAME"
 
 echo "'$ZIP_NAME' ready for upload => https://chrome.google.com/webstore/developer/dashboard"
-
-popd
 
 popd
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-pushd `dirname "${BASH_SOURCE[0]}"` > /dev/null
-source "./config.sh"
+source "$(dirname "${BASH_SOURCE[0]}")/config.sh"
+false && source config.sh # never executes, this is here just for IntelliJ Bash support to understand our sourcing
 
 OUT_PATH="$CHROMIUM_MIRROR_DIR/out/Release"
 OUT_INSPECTOR="$OUT_PATH/resources/inspector"
@@ -26,11 +26,8 @@ function cleanup {
   "$SCRIPTS/unlink-dirac-devtools-in-chrome.sh"
 }
 trap cleanup EXIT
+popd
 
 pushd "$DEVTOOLS_SCRIPTS"
 ./run_inspector_tests.sh "$@"
-popd
-
-popd
-
 popd
