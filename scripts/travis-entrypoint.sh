@@ -14,9 +14,7 @@ init_travis_env() {
 
   echo "====================================================================================================================="
   set -x
-  pushd /root
-  source "$TRAVIS_BUILD_DIR/scripts/init-travis.sh"
-  popd
+  source "./scripts/init-travis.sh"
   set +x
   echo "====================================================================================================================="
 }
@@ -36,22 +34,18 @@ echo_cmd() {
 # ---------------------------------------------------------------------------------------------------------------------------
 
 if [ -z "$1" -o "$1" = "test" ]; then
-  pushd "$TRAVIS_BUILD_DIR"
   init_travis_env
   print_env
   echo_cmd ./scripts/test-all-here.sh
   result=$?
-  popd
   exit ${result}
 fi
 
 if [ "$1" = "test-browser" ]; then
-  pushd "$TRAVIS_BUILD_DIR"
   init_travis_env
   print_env
   echo_cmd ./scripts/test-browser-here.sh
   result=$?
-  popd
   exit ${result}
 fi
 
