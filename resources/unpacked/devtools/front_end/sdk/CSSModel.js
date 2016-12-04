@@ -88,7 +88,7 @@ SDK.CSSModel = class extends SDK.SDKModel {
    * @return {?SDK.CSSModel}
    */
   static fromTarget(target) {
-    return /** @type {?SDK.CSSModel} */ (target.model(SDK.CSSModel));
+    return target.model(SDK.CSSModel);
   }
 
   /**
@@ -974,14 +974,6 @@ SDK.CSSModel = class extends SDK.SDKModel {
   }
 
   /**
-   * @param {!Protocol.CSS.StyleSheetId} id
-   * @param {!Protocol.CSS.SourceRange} range
-   */
-  _layoutEditorChange(id, range) {
-    this.dispatchEventToListeners(SDK.CSSModel.Events.LayoutEditorChange, {id: id, range: range});
-  }
-
-  /**
    * @param {number} nodeId
    * @param {string} name
    * @param {string} value
@@ -1014,7 +1006,6 @@ SDK.CSSModel.RuleUsage;
 
 /** @enum {symbol} */
 SDK.CSSModel.Events = {
-  LayoutEditorChange: Symbol('LayoutEditorChange'),
   FontsUpdated: Symbol('FontsUpdated'),
   MediaQueryResultChanged: Symbol('MediaQueryResultChanged'),
   ModelWasEnabled: Symbol('ModelWasEnabled'),
@@ -1132,15 +1123,6 @@ SDK.CSSDispatcher = class {
    */
   styleSheetRemoved(id) {
     this._cssModel._styleSheetRemoved(id);
-  }
-
-  /**
-   * @override
-   * @param {!Protocol.CSS.StyleSheetId} id
-   * @param {!Protocol.CSS.SourceRange} range
-   */
-  layoutEditorChange(id, range) {
-    this._cssModel._layoutEditorChange(id, range);
   }
 };
 

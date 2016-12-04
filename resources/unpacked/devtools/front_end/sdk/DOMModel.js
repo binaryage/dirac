@@ -1107,7 +1107,7 @@ SDK.DOMModel = class extends SDK.SDKModel {
    * @return {?SDK.DOMModel}
    */
   static fromTarget(target) {
-    return /** @type {?SDK.DOMModel} */ (target.model(SDK.DOMModel));
+    return target.model(SDK.DOMModel);
   }
 
   /**
@@ -1765,7 +1765,7 @@ SDK.DOMModel = class extends SDK.SDKModel {
       highlightConfig.eventTargetColor = Common.Color.PageHighlight.EventTarget.toProtocolRGBA();
       highlightConfig.shapeColor = Common.Color.PageHighlight.Shape.toProtocolRGBA();
       highlightConfig.shapeMarginColor = Common.Color.PageHighlight.ShapeMargin.toProtocolRGBA();
-      highlightConfig.displayAsMaterial = Runtime.experiments.isEnabled('inspectTooltip');
+      highlightConfig.displayAsMaterial = true;
     }
     return highlightConfig;
   }
