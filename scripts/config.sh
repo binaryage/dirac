@@ -3,86 +3,15 @@
 # standard bash switches for our scripts
 set -e -o pipefail
 
-pushd () {
-    command pushd "$@" > /dev/null
-}
-
-popd () {
-    command popd "$@" > /dev/null
-}
-
-# http://stackoverflow.com/a/4025065/84283
-vercomp () {
-    if [[ $1 == $2 ]]
-    then
-        return 0
-    fi
-    local IFS=.
-    local i ver1=($1) ver2=($2)
-    # fill empty fields in ver1 with zeros
-    for ((i=${#ver1[@]}; i<${#ver2[@]}; i++))
-    do
-        ver1[i]=0
-    done
-    for ((i=0; i<${#ver1[@]}; i++))
-    do
-        if [[ -z ${ver2[i]} ]]
-        then
-            # fill empty fields in ver2 with zeros
-            ver2[i]=0
-        fi
-        if ((10#${ver1[i]} > 10#${ver2[i]}))
-        then
-            return 1
-        fi
-        if ((10#${ver1[i]} < 10#${ver2[i]}))
-        then
-            return 2
-        fi
-    done
-    return 0
-}
-
-print_env() {
-  echo
-  echo "--- EFFECTIVE ENVIRONMENT ---"
-  env
-  echo "-----------------------------"
-}
-
-portable_realpath() {
-  case "$OSTYPE" in
-    darwin*)
-      if [ -z "$(which grealpath)" ]; then
-        echo "grealpath needed under OSX, please \`brew install coreutils\`"
-        exit 1
-      fi
-      grealpath "$@" ;;
-    *)        realpath "$@" ;;
-  esac
-}
-
-redirect_to_test_stage_if_needed() {
-  if [ ! -z "$DIRAC_TEST_IN_STAGE" ]; then
-    local spawn_script_path=`portable_realpath "$SPAWN_COMMAND"`
-    local script_path=`portable_realpath --relative-to="$ROOT" "$spawn_script_path"`
-    "$SCRIPTS/sync-test-stage.sh"
-    pushd "$DIRAC_TEST_STAGE_DIR"
-    unset DIRAC_TEST_IN_STAGE
-    "$script_path"
-    result=$?
-    popd
-    exit ${result}
-  fi
-}
-
 SPAWN_DIR=`pwd`
 SPAWN_COMMAND="$0"
 SPAWN_ARGS="$@"
 
-pushd $(dirname "${BASH_SOURCE[0]}")
+pushd "$(dirname "${BASH_SOURCE[0]}")" > /dev/null
 
-source "./export-windows-layout.sh"
+source "lib/utils.sh"
+source "lib/tools.sh"
+source "export-windows-layout.sh"
 
 cd ..
 
