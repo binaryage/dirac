@@ -65,8 +65,8 @@ TextEditor.CodeMirrorTextEditor = class extends UI.VBox {
       'Down': 'goLineDown',
       'End': 'goLineEnd',
       'Home': 'goLineStartSmart',
-      'PageUp': 'smartPageUp',
-      'PageDown': 'smartPageDown',
+      'PageUp': 'goSmartPageUp',
+      'PageDown': 'goSmartPageDown',
       'Delete': 'delCharAfter',
       'Backspace': 'delCharBefore',
       'Tab': 'defaultTab',
@@ -112,6 +112,14 @@ TextEditor.CodeMirrorTextEditor = class extends UI.VBox {
       'Ctrl-Right': 'moveCamelRight',
       'Ctrl-A': 'goLineLeft',
       'Ctrl-E': 'goLineRight',
+      'Ctrl-B': 'goCharLeft',
+      'Ctrl-F': 'goCharRight',
+      'Ctrl-Alt-B': 'goGroupLeft',
+      'Ctrl-Alt-F': 'goGroupRight',
+      'Ctrl-H': 'delCharBefore',
+      'Ctrl-D': 'delCharAfter',
+      'Ctrl-K': 'killLine',
+      'Ctrl-T': 'transposeChars',
       'Shift-Ctrl-Left': 'selectCamelLeft',
       'Shift-Ctrl-Right': 'selectCamelRight',
       'Cmd-Left': 'goLineStartSmart',
@@ -1306,7 +1314,7 @@ CodeMirror.commands.dismiss = function(codemirror) {
 /**
  * @return {!Object|undefined}
  */
-CodeMirror.commands.smartPageUp = function(codemirror) {
+CodeMirror.commands.goSmartPageUp = function(codemirror) {
   if (codemirror._codeMirrorTextEditor.selection().equal(Common.TextRange.createFromLocation(0, 0)))
     return CodeMirror.Pass;
   codemirror.execCommand('goPageUp');
@@ -1315,7 +1323,7 @@ CodeMirror.commands.smartPageUp = function(codemirror) {
 /**
  * @return {!Object|undefined}
  */
-CodeMirror.commands.smartPageDown = function(codemirror) {
+CodeMirror.commands.goSmartPageDown = function(codemirror) {
   if (codemirror._codeMirrorTextEditor.selection().equal(codemirror._codeMirrorTextEditor.fullRange().collapseToEnd()))
     return CodeMirror.Pass;
   codemirror.execCommand('goPageDown');

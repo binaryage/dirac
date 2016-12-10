@@ -15,12 +15,12 @@ Components.RemoteObjectPreviewFormatter = class {
       parentElement.appendChild(this.renderPropertyPreview(preview.type, preview.subtype, description));
       return;
     }
-    var isArray = preview.subtype === 'array' || preview.subtype === 'typedarray';
-    if (description && !isArray) {
+    if (description && preview.subtype !== 'array') {
       var text = preview.subtype ? description : this._abbreviateFullQualifiedClassName(description);
       parentElement.createTextChildren(text, ' ');
     }
 
+    var isArray = preview.subtype === 'array' || preview.subtype === 'typedarray';
     parentElement.createTextChild(isArray ? '[' : '{');
     if (preview.entries)
       this._appendEntriesPreview(parentElement, preview);
@@ -49,7 +49,7 @@ Components.RemoteObjectPreviewFormatter = class {
    * @param {!Protocol.Runtime.ObjectPreview} preview
    */
   _appendObjectPropertiesPreview(parentElement, preview) {
-    var properties = preview.properties.slice().stableSort(compareFunctionsLast);
+    var properties = preview.properties.filter(p => p.type !== 'accessor').stableSort(compareFunctionsLast);
 
     /**
      * @param {!Protocol.Runtime.PropertyPreview} a
@@ -166,6 +166,12 @@ Components.RemoteObjectPreviewFormatter = class {
   renderPropertyPreview(type, subtype, description) {
     var span = createElementWithClass('span', 'object-value-' + (subtype || type));
     description = description || '';
+
+    if (type === 'accessor') {
+      span.textContent = '(...)';
+      span.title = Common.UIString('The property is computed with a getter');
+      return span;
+    }
 
     if (type === 'function') {
       span.textContent = 'function';
