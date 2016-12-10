@@ -17,9 +17,9 @@
   {:log-out            :console                                                                                               ; this is important, nREPL middleware captures output and logs be sent to client
    :log-level          "WARN"                                                                                                 ; OFF, FATAL, ERROR, WARN, INFO, DEBUG, TRACE, ALL
    :skip-logging-setup false
-   :weasel-repl        {:host  "localhost"
-                        :port  8232
-                        :range 10}                                                                                            ; how many ports to try if the default port is taken
+   :weasel-repl        {:host       "localhost"
+                        :port       8232
+                        :port-range 10}                                                                                       ; how many ports to try if the default port is taken
    ; dirac/sticky means we will inherit preferred compiler from old session on browser refresh
    :preferred-compiler "dirac/sticky"                                                                                         ; or "dirac/new", or compiler matching strategy
    :cljs-repl-options  nil
