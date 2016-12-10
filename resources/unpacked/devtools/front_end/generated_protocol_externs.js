@@ -910,9 +910,10 @@ Protocol.NetworkAgent.prototype.clearBrowserCookies = function(opt_callback) {}
 Protocol.NetworkAgent.prototype.invoke_clearBrowserCookies = function(obj, opt_callback) {}
 
 /**
+ * @param {boolean=} opt_global
  * @param {function(?Protocol.Error, !Array<Protocol.Network.Cookie>):void=} opt_callback
  */
-Protocol.NetworkAgent.prototype.getCookies = function(opt_callback) {}
+Protocol.NetworkAgent.prototype.getCookies = function(opt_global, opt_callback) {}
 /** @param {function(?Protocol.Error, !Array<Protocol.Network.Cookie>):void=} opt_callback */
 Protocol.NetworkAgent.prototype.invoke_getCookies = function(obj, opt_callback) {}
 
