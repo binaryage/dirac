@@ -35,7 +35,7 @@ if cd chromium-latest-linux; then
   git pull
   cd ..
 else
-  git clone https://github.com/scheib/chromium-latest-linux.git
+  git clone --depth 1 https://github.com/scheib/chromium-latest-linux.git
 fi
 if [ ! -v TRAVIS_SKIP_CHROMIUM_UPDATE ]; then
   ./chromium-latest-linux/update.sh
