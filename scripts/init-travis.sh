@@ -49,7 +49,7 @@ if [ ! -v TRAVIS_SKIP_CHROMEDRIVER_UPDATE ]; then
     if [ -v TRAVIS_USE_CUSTOM_CHROMEDRIVER ]; then
       wget -O chromedriver.zip "$TRAVIS_USE_CUSTOM_CHROMEDRIVER" # http://x.binaryage.com/chromedriver.zip
     else
-      wget -O chromedriver.zip https://chromedriver.storage.googleapis.com/2.25/chromedriver_linux64.zip
+      wget -O chromedriver.zip https://chromedriver.storage.googleapis.com/2.26/chromedriver_linux64.zip
     fi
     unzip -o chromedriver.zip
   fi
