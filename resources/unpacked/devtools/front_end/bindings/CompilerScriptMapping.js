@@ -57,8 +57,8 @@ Bindings.CompilerScriptMapping = class {
     this._stubUISourceCodes = new Map();
 
     var projectId = Bindings.CompilerScriptMapping.projectIdForTarget(this._target);
-    this._stubProject =
-        new Bindings.ContentProviderBasedProject(workspace, projectId, Workspace.projectTypes.Service, '');
+    this._stubProject = new Bindings.ContentProviderBasedProject(
+        workspace, projectId, Workspace.projectTypes.Service, '', true /* isServiceProject */);
     this._eventListeners = [
       workspace.addEventListener(
           Workspace.Workspace.Events.UISourceCodeAdded, this._uiSourceCodeAddedToWorkspace, this),
@@ -197,7 +197,7 @@ Bindings.CompilerScriptMapping = class {
       return;
     // Create stub UISourceCode for the time source mapping is being loaded.
     var stubUISourceCode = this._stubProject.addContentProvider(
-        script.sourceURL,
+        script.sourceURL + ':sourcemap',
         Common.StaticContentProvider.fromString(
             script.sourceURL, Common.resourceTypes.Script,
             '\n\n\n\n\n// Please wait a bit.\n// Compiled script is not shown while source map is being loaded!'));

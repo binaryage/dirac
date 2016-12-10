@@ -154,7 +154,7 @@ Bindings.ResourceScriptMapping = class {
    */
   _uiSourceCodeAdded(event) {
     var uiSourceCode = /** @type {!Workspace.UISourceCode} */ (event.data);
-    if (uiSourceCode.isFromServiceProject())
+    if (uiSourceCode.project().isServiceProject())
       return;
     var scripts = this._scriptsForUISourceCode(uiSourceCode);
     if (!scripts.length)
@@ -168,7 +168,7 @@ Bindings.ResourceScriptMapping = class {
    */
   _uiSourceCodeRemoved(event) {
     var uiSourceCode = /** @type {!Workspace.UISourceCode} */ (event.data);
-    if (uiSourceCode.isFromServiceProject() || !this._boundUISourceCodes.has(uiSourceCode))
+    if (uiSourceCode.project().isServiceProject() || !this._boundUISourceCodes.has(uiSourceCode))
       return;
 
     this._unbindUISourceCode(uiSourceCode);
@@ -296,6 +296,8 @@ Bindings.ResourceScriptFile = class extends Common.Object {
     if (typeof this._scriptSource === 'undefined')
       return false;
     var workingCopy = this._uiSourceCode.workingCopy();
+    if (!workingCopy)
+      return false;
 
     // Match ignoring sourceURL.
     if (!workingCopy.startsWith(this._scriptSource.trimRight()))

@@ -349,19 +349,16 @@ Protocol.TargetBase = class {
         return;
       }
 
-      var processingStartTime;
+      var timingLabel = 'time-stats: ' + callback.methodName;
       if (InspectorBackendClass.Options.dumpInspectorTimeStats)
-        processingStartTime = Date.now();
+        console.time(timingLabel);
 
       this._agent(callback.domain).dispatchResponse(messageObject, callback.methodName, callback);
       --this._pendingResponsesCount;
       delete this._callbacks[messageObject.id];
 
-      if (InspectorBackendClass.Options.dumpInspectorTimeStats) {
-        console.log(
-            'time-stats: ' + callback.methodName + ' = ' + (processingStartTime - callback.sendRequestTime) + ' + ' +
-            (Date.now() - processingStartTime));
-      }
+      if (InspectorBackendClass.Options.dumpInspectorTimeStats)
+        console.timeEnd(timingLabel);
 
       if (this._scripts && !this._pendingResponsesCount)
         this._deprecatedRunAfterPendingDispatches();
@@ -428,7 +425,7 @@ Protocol.TargetBase = class {
    * @param {string} message
    */
   _dumpProtocolMessage(message) {
-    console.log(message);
+    console.log(message);  // eslint-disable-line no-console
   }
 
   /**
@@ -725,14 +722,14 @@ InspectorBackendClass._DispatcherPrototype = class {
         params.push(messageObject.params[paramNames[i]]);
     }
 
-    var processingStartTime;
+    var timingLabel = 'time-stats: ' + messageObject.method;
     if (InspectorBackendClass.Options.dumpInspectorTimeStats)
-      processingStartTime = Date.now();
+      console.time(timingLabel);
 
     this._dispatcher[functionName].apply(this._dispatcher, params);
 
     if (InspectorBackendClass.Options.dumpInspectorTimeStats)
-      console.log('time-stats: ' + messageObject.method + ' = ' + (Date.now() - processingStartTime));
+      console.timeEnd(timingLabel);
   }
 };
 

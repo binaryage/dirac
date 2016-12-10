@@ -306,6 +306,7 @@ Sources.SourcesPanel = class extends UI.Panel {
     this._updateDebuggerButtonsAndStatus();
     UI.context.setFlavor(SDK.DebuggerPausedDetails, details);
     this._toggleDebuggerSidebarButton.setEnabled(false);
+    this._revealDebuggerSidebar();
     window.focus();
     InspectorFrontendHost.bringToFront();
   }
@@ -386,10 +387,6 @@ Sources.SourcesPanel = class extends UI.Panel {
    * @param {boolean=} skipReveal
    */
   _revealInNavigator(uiSourceCode, skipReveal) {
-    var binding = Persistence.persistence.binding(uiSourceCode);
-    if (binding && binding.network === uiSourceCode)
-      uiSourceCode = binding.fileSystem;
-
     var extensions = self.runtime.extensions(Sources.NavigatorView);
     Promise.all(extensions.map(extension => extension.instance())).then(filterNavigators.bind(this));
 
@@ -831,7 +828,7 @@ Sources.SourcesPanel = class extends UI.Panel {
       return;
 
     var uiSourceCode = /** @type {!Workspace.UISourceCode} */ (target);
-    if (!uiSourceCode.isFromServiceProject() &&
+    if (!uiSourceCode.project().isServiceProject() &&
         !event.target.isSelfOrDescendant(this._navigatorTabbedLocation.widget().element)) {
       contextMenu.appendItem(
           Common.UIString.capitalize('Reveal in ^navigator'), this._handleContextMenuReveal.bind(this, uiSourceCode));

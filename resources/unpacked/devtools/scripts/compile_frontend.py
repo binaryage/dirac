@@ -38,6 +38,8 @@ import tempfile
 from build import modular_build
 from build import generate_protocol_externs
 
+import utils
+
 try:
     import simplejson as json
 except ImportError:
@@ -96,24 +98,6 @@ java_build_regex = re.compile(r'^\w+ version "(\d+)\.(\d+)')
 errors_found = False
 
 generate_protocol_externs.generate_protocol_externs(protocol_externs_file, path.join(inspector_path, 'browser_protocol.json'), path.join(v8_inspector_path, 'js_protocol.json'))
-
-
-# Based on http://stackoverflow.com/questions/377017/test-if-executable-exists-in-python.
-def which(program):
-    def is_exe(fpath):
-        return path.isfile(fpath) and os.access(fpath, os.X_OK)
-
-    fpath, fname = path.split(program)
-    if fpath:
-        if is_exe(program):
-            return program
-    else:
-        for part in os.environ["PATH"].split(os.pathsep):
-            part = part.strip('"')
-            exe_file = path.join(part, program)
-            if is_exe(exe_file):
-                return exe_file
-    return None
 
 
 def log_error(message):
@@ -210,9 +194,7 @@ def find_java():
     required_minor = 7
     exec_command = None
     has_server_jvm = True
-    java_path = which('java')
-    if not java_path:
-        java_path = which('java.exe')
+    java_path = utils.which('java')
 
     if not java_path:
         print 'NOTE: No Java executable found in $PATH.'
@@ -251,12 +233,14 @@ modules_dir = tempfile.mkdtemp()
 common_closure_args = [
     '--summary_detail_level', '3',
     '--jscomp_error', 'visibility',
+    '--jscomp_warning', 'missingOverride',
     '--compilation_level', 'SIMPLE_OPTIMIZATIONS',
     '--warning_level', 'VERBOSE',
     '--language_in=ES6_STRICT',
     '--language_out=ES5_STRICT',
     '--extra_annotation_name', 'suppressReceiverCheck',
     '--extra_annotation_name', 'suppressGlobalPropertiesCheck',
+    '--checks-only',
     '--module_output_path_prefix', to_platform_path_exact(modules_dir + path.sep)
 ]
 
