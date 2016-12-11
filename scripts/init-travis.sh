@@ -15,9 +15,7 @@ export LEIN_FAST_TRAMPOLINE=1
 if [[ -z "$TRAVIS_SKIP_LEIN_UPGRADE" ]]; then
   # we need lein 2.5.3+ because of https://github.com/technomancy/leiningen/issues/1762
   # update lein to latest, https://github.com/technomancy/leiningen/issues/2014#issuecomment-153829977
-  set +e
-  yes y | sudo lein upgrade
-  set -e
+  yes y | sudo lein upgrade || true # note: sudo lein upgrade exits with non-zero exit code if there is nothing to be updated
 fi
 
 # install xvfb (for chrome tests)
