@@ -443,7 +443,7 @@ Network.NetworkLogView = class extends UI.VBox {
     this._suggestionBuilder.addItem(Network.NetworkLogView.FilterType.LargerThan, '100');
     this._suggestionBuilder.addItem(Network.NetworkLogView.FilterType.LargerThan, '10k');
     this._suggestionBuilder.addItem(Network.NetworkLogView.FilterType.LargerThan, '1M');
-    this._textFilterUI.setSuggestionBuilder(this._suggestionBuilder);
+    this._textFilterUI.setSuggestionProvider(this._suggestionBuilder.completions.bind(this._suggestionBuilder));
   }
 
   /**
@@ -504,7 +504,6 @@ Network.NetworkLogView = class extends UI.VBox {
   }
 
   _setupDataGrid() {
-    /** @type {!UI.SortableDataGrid} */
     this._dataGrid = this._columns.dataGrid();
     this._dataGrid.setRowContextMenuCallback(
         (contextMenu, node) => this.handleContextMenuForRequest(contextMenu, node.request()));
@@ -521,8 +520,7 @@ Network.NetworkLogView = class extends UI.VBox {
    * @param {!Event} event
    */
   _dataGridMouseMove(event) {
-    var node = /** @type {?Network.NetworkDataGridNode} */ (
-        this._dataGrid.dataGridNodeFromNode(/** @type {!Node} */ (event.target)));
+    var node = this._dataGrid.dataGridNodeFromNode(event.target);
     var highlightInitiatorChain = event.shiftKey;
     this._setHoveredNode(node, highlightInitiatorChain);
     this._highlightInitiatorChain((highlightInitiatorChain && node) ? node.request() : null);
@@ -785,7 +783,7 @@ Network.NetworkLogView = class extends UI.VBox {
    * @return {!Array<!Network.NetworkDataGridNode>}
    */
   flatNodesList() {
-    return this._dataGrid.rootNode().flattenChildren();
+    return this._dataGrid.flatNodesList();
   }
 
   _refresh() {

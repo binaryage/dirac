@@ -9,7 +9,7 @@ VERSION=$1
 
 if [ ! -z "$VERSION" ] ; then
   echo "looking up position for version $VERSION..."
-  POSITION=`./scripts/position-from-version.sh ${VERSION}`
+  POSITION=`./scripts/position-for-version.sh ${VERSION}`
   echo " => $POSITION"
 else
   echo "looking up latest versions..."

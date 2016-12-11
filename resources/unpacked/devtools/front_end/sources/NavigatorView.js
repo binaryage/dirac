@@ -236,7 +236,7 @@ Sources.NavigatorView = class extends UI.VBox {
    * @return {boolean}
    */
   accept(uiSourceCode) {
-    return !uiSourceCode.isFromServiceProject();
+    return !uiSourceCode.project().isServiceProject();
   }
 
   /**
@@ -287,6 +287,13 @@ Sources.NavigatorView = class extends UI.VBox {
    * @param {!Workspace.UISourceCode} uiSourceCode
    */
   uiSourceCodeAdded(uiSourceCode) {
+  }
+
+  /**
+   * @return {!Array<!Sources.NavigatorUISourceCodeTreeNode>}
+   */
+  uiSourceCodeNodes() {
+    return this._uiSourceCodeNodes.valuesArray();
   }
 
   /**

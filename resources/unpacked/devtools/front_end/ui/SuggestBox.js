@@ -126,7 +126,8 @@ UI.SuggestBox = class {
 
     var spacer = 6;
     var maxHeight = Math.min(
-        Math.max(underHeight, aboveHeight) - spacer, this._maxItemsHeight ? this._maxItemsHeight * this._rowHeight : 0);
+        Math.max(underHeight, aboveHeight) - spacer,
+        this._maxItemsHeight ? this._maxItemsHeight * this._rowHeight : Infinity);
     var height = this._rowHeight * this._items.length;
     this._hasVerticalScroll = height > maxHeight;
     this._element.style.height = Math.min(maxHeight, height) + 'px';
@@ -271,7 +272,8 @@ UI.SuggestBox = class {
 
   /**
    * @param {string} query
-   * @param {string} text
+   * @param {string} title
+   * @param {string=} subtitle
    * @param {string=} iconType
    * @param {boolean=} isSecondary
    * @param {string=} className
@@ -279,7 +281,7 @@ UI.SuggestBox = class {
    * @param {string=} epilogue
    * @return {!Element}
    */
-  _createItemElement(query, text, iconType, isSecondary, className, prologue, epilogue) {
+  _createItemElement(query, title, subtitle, iconType, isSecondary, className, prologue, epilogue) {
     var element = createElementWithClass('div', 'suggest-box-content-item source-code ' + (className || ''));
     if (iconType) {
       var icon = UI.Icon.create(iconType, 'suggestion-icon');
@@ -289,18 +291,22 @@ UI.SuggestBox = class {
       element.classList.add('secondary');
     element.tabIndex = -1;
     element.createChild("span", "prologue").textContent = (prologue || "").trimEnd(50);
-    var displayText = text.trimEnd(50 + query.length);
+    var displayText = title.trimEnd(50 + query.length);
 
-    var suggestionText = element.createChild('span', 'suggestion-text');
+    var titleElement = element.createChild('span', 'suggestion-title');
     var index = displayText.toLowerCase().indexOf(query.toLowerCase());
     if (index > 0)
-      suggestionText.createChild('span', 'pre-query').textContent = displayText.substring(0, index);
+      titleElement.createChild('span', 'pre-query').textContent = displayText.substring(0, index);
     if (index > -1)
-      suggestionText.createChild('span', 'query').textContent = displayText.substring(index, index + query.length);
-    suggestionText.createChild('span', 'post-query').textContent = displayText.substring(index > -1 ? index + query.length : 0);
+      titleElement.createChild('span', 'query').textContent = displayText.substring(index, index + query.length);
+    titleElement.createChild('span', 'post-query').textContent = displayText.substring(index > -1 ? index + query.length : 0);
     element.createChild("span", "epilogue").textContent = (epilogue || "").trimEnd(50);
-    suggestionText.createChild('span', 'spacer');
-    element.__fullValue = text;
+    titleElement.createChild('span', 'spacer');
+    if (subtitle) {
+      var subtitleElement = element.createChild('span', 'suggestion-subtitle');
+      subtitleElement.textContent = subtitle.trimEnd(15);
+    }
+    element.__fullValue = title;
     element.addEventListener('mousedown', this._onItemMouseDown.bind(this), false);
     return element;
   }
@@ -541,14 +547,15 @@ UI.SuggestBox = class {
   itemElement(index) {
     if (!this._elementList[index]) {
       this._elementList[index] = this._createItemElement(
-          this._userEnteredText, this._items[index].title, this._items[index].iconType, this._items[index].isSecondary, this._items[index].className, this._items[index].prologue, this._items[index].epilogue);
+          this._userEnteredText, this._items[index].title, this._items[index].subtitle, this._items[index].iconType,
+          this._items[index].isSecondary, this._items[index].className, this._items[index].prologue, this._items[index].epilogue);
     }
     return this._elementList[index];
   }
 };
 
 /**
- * @typedef {!Array.<{title: string, iconType: (string|undefined), priority: (number|undefined), isSecondary: (boolean|undefined), className: (string|undefined)}>}
+ * @typedef {!Array.<{title: string, subtitle: (string|undefined), iconType: (string|undefined), priority: (number|undefined), isSecondary: (boolean|undefined), className: (string|undefined)}>}
  */
 UI.SuggestBox.Suggestions;
 

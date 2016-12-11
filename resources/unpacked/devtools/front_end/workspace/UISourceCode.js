@@ -147,13 +147,6 @@ Workspace.UISourceCode = class extends Common.Object {
   /**
    * @return {boolean}
    */
-  isFromServiceProject() {
-    return Workspace.Project.isServiceProject(this._project);
-  }
-
-  /**
-   * @return {boolean}
-   */
   canRename() {
     return this._project.canRename();
   }

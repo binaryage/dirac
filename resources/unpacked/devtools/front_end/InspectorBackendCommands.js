@@ -1,5 +1,5 @@
-Protocol.BakedInspectorBackendAPIChromeTag='57.0.2941.2';
-Protocol.BakedInspectorBackendAPIChromeRev='b0dfc121a4ab3713937d60505f1588374e5d5f2b';
+Protocol.BakedInspectorBackendAPIChromeTag='57.0.2947.2';
+Protocol.BakedInspectorBackendAPIChromeRev='b8b2bfc86e7c3729593c14806c8d9f9fe08bb6ea';
 Protocol.BakedInspectorBackendAPI=''
 + 'InspectorBackend.registerEvent("Inspector.detached", ["reason"]);\n'
 + 'InspectorBackend.registerEvent("Inspector.targetCrashed", []);\n'
@@ -127,7 +127,7 @@ Protocol.BakedInspectorBackendAPI=''
 + 'InspectorBackend.registerCommand("Network.clearBrowserCache", [], [], false);\n'
 + 'InspectorBackend.registerCommand("Network.canClearBrowserCookies", [], ["result"], false);\n'
 + 'InspectorBackend.registerCommand("Network.clearBrowserCookies", [], [], false);\n'
-+ 'InspectorBackend.registerCommand("Network.getCookies", [], ["cookies"], false);\n'
++ 'InspectorBackend.registerCommand("Network.getCookies", [{"name": "global", "type": "boolean", "optional": true}], ["cookies"], false);\n'
 + 'InspectorBackend.registerCommand("Network.deleteCookie", [{"name": "cookieName", "type": "string", "optional": false}, {"name": "url", "type": "string", "optional": false}], [], false);\n'
 + 'InspectorBackend.registerCommand("Network.setCookie", [{"name": "url", "type": "string", "optional": false}, {"name": "name", "type": "string", "optional": false}, {"name": "value", "type": "string", "optional": false}, {"name": "domain", "type": "string", "optional": true}, {"name": "path", "type": "string", "optional": true}, {"name": "secure", "type": "boolean", "optional": true}, {"name": "httpOnly", "type": "boolean", "optional": true}, {"name": "sameSite", "type": "string", "optional": true}, {"name": "expirationDate", "type": "number", "optional": true}], ["success"], false);\n'
 + 'InspectorBackend.registerCommand("Network.canEmulateNetworkConditions", [], ["result"], false);\n'

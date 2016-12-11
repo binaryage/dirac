@@ -1,5 +1,5 @@
-Protocol.BakedSupportedCSSPropertiesChromeTag='57.0.2941.2';
-Protocol.BakedSupportedCSSPropertiesChromeRev='b0dfc121a4ab3713937d60505f1588374e5d5f2b';
+Protocol.BakedSupportedCSSPropertiesChromeTag='57.0.2947.2';
+Protocol.BakedSupportedCSSPropertiesChromeRev='b8b2bfc86e7c3729593c14806c8d9f9fe08bb6ea';
 Protocol.BakedSupportedCSSProperties=''
 + '[{"name": "animation-delay"},\n'
 + ' {"name": "animation-direction"},\n'
@@ -162,6 +162,7 @@ Protocol.BakedSupportedCSSProperties=''
 + ' {"name": "offset-distance"},\n'
 + ' {"name": "offset-path"},\n'
 + ' {"name": "offset-position"},\n'
++ ' {"name": "offset-rotate"},\n'
 + ' {"name": "offset-rotation"},\n'
 + ' {"name": "opacity"},\n'
 + ' {"name": "order"},\n'

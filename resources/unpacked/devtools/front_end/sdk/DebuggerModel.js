@@ -376,9 +376,9 @@ SDK.DebuggerModel = class extends SDK.SDKModel {
       callFrames,
       asyncStackTrace,
       needsStepIn) {
+    callback(error, exceptionDetails);
     if (needsStepIn) {
       this.stepInto();
-      this._pendingLiveEditCallback = callback.bind(this, error, exceptionDetails);
       return;
     }
 
@@ -387,7 +387,6 @@ SDK.DebuggerModel = class extends SDK.SDKModel {
           callFrames, this._debuggerPausedDetails.reason, this._debuggerPausedDetails.auxData,
           this._debuggerPausedDetails.breakpointIds, asyncStackTrace);
     }
-    callback(error, exceptionDetails);
   }
 
   /**
@@ -435,15 +434,8 @@ SDK.DebuggerModel = class extends SDK.SDKModel {
   _pausedScript(callFrames, reason, auxData, breakpointIds, asyncStackTrace) {
     var pausedDetails =
         new SDK.DebuggerPausedDetails(this, callFrames, reason, auxData, breakpointIds, asyncStackTrace);
-    if (this._setDebuggerPausedDetails(pausedDetails)) {
-      if (this._pendingLiveEditCallback) {
-        var callback = this._pendingLiveEditCallback;
-        delete this._pendingLiveEditCallback;
-        callback();
-      }
-    } else {
+    if (!this._setDebuggerPausedDetails(pausedDetails))
       this._agent.stepInto();
-    }
   }
 
   _resumedScript() {
@@ -1156,28 +1148,6 @@ SDK.DebuggerModel.CallFrame = class extends SDK.SDKObject {
     }
     this._debuggerAgent.restartFrame(this._payload.callFrameId, protocolCallback.bind(this));
   }
-
-  /**
-   * @param {function(!Object)} callback
-   */
-  variableNames(callback) {
-    var result = {this: true};
-
-    function propertiesCollected(properties) {
-      for (var i = 0; properties && i < properties.length; ++i)
-        result[properties[i].name] = true;
-      if (--pendingRequests === 0)
-        callback(result);
-    }
-
-    var scopeChain = this.scopeChain();
-    var pendingRequests = scopeChain.length;
-    for (var i = 0; i < scopeChain.length; ++i) {
-      var scope = scopeChain[i];
-      var object = scope.object();
-      object.getAllProperties(false, propertiesCollected);
-    }
-  }
 };
 
 
@@ -1216,6 +1186,30 @@ SDK.DebuggerModel.Scope = class {
   type() {
     return this._type;
   }
+
+  /**
+   * @return {string}
+   */
+  typeName() {
+    switch (this._type) {
+      case Protocol.Debugger.ScopeType.Local:
+        return Common.UIString('Local');
+      case Protocol.Debugger.ScopeType.Closure:
+        return Common.UIString('Closure');
+      case Protocol.Debugger.ScopeType.Catch:
+        return Common.UIString('Catch');
+      case Protocol.Debugger.ScopeType.Block:
+        return Common.UIString('Block');
+      case Protocol.Debugger.ScopeType.Script:
+        return Common.UIString('Script');
+      case Protocol.Debugger.ScopeType.With:
+        return Common.UIString('With Block');
+      case Protocol.Debugger.ScopeType.Global:
+        return Common.UIString('Global');
+    }
+    return '';
+  }
+
 
   /**
    * @return {string|undefined}

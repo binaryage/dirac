@@ -610,8 +610,10 @@ Elements.StylePropertiesSection = class {
         this.editable = false;
       } else {
         // Check this is a real CSSRule, not a bogus object coming from Elements.BlankStylePropertiesSection.
-        if (rule.styleSheetId)
-          this.navigable = !!rule.resourceURL();
+        if (rule.styleSheetId) {
+          var header = rule.cssModel().styleSheetHeaderForId(rule.styleSheetId);
+          this.navigable = !header.isAnonymousInlineStyleSheet();
+        }
       }
     }
 
@@ -646,16 +648,13 @@ Elements.StylePropertiesSection = class {
       return createTextNode('');
 
     var ruleLocation;
-    if (rule instanceof SDK.CSSStyleRule) {
-      var matchingSelectors = matchedStyles.matchingSelectors(rule);
-      var firstMatchingIndex = matchingSelectors.length ? matchingSelectors[0] : 0;
-      ruleLocation = rule.selectors[firstMatchingIndex].range;
-    } else if (rule instanceof SDK.CSSKeyframeRule) {
+    if (rule instanceof SDK.CSSStyleRule)
+      ruleLocation = rule.style.range;
+    else if (rule instanceof SDK.CSSKeyframeRule)
       ruleLocation = rule.key().range;
-    }
 
     var header = rule.styleSheetId ? matchedStyles.cssModel().styleSheetHeaderForId(rule.styleSheetId) : null;
-    if (ruleLocation && rule.styleSheetId && header && header.resourceURL()) {
+    if (ruleLocation && rule.styleSheetId && header && !header.isAnonymousInlineStyleSheet()) {
       return Elements.StylePropertiesSection._linkifyRuleLocation(
           matchedStyles.cssModel(), linkifier, rule.styleSheetId, ruleLocation);
     }
@@ -1109,9 +1108,12 @@ Elements.StylePropertiesSection = class {
 
     var selectorTexts = rule.selectors.map(selector => selector.text);
     var matchingSelectorIndexes = this._matchedStyles.matchingSelectors(/** @type {!SDK.CSSStyleRule} */ (rule));
-    var matchingSelectors = new Array(selectorTexts.length).fill(false);
+    var matchingSelectors = /** @type {!Array<boolean>} */ (new Array(selectorTexts.length).fill(false));
     for (var matchingIndex of matchingSelectorIndexes)
       matchingSelectors[matchingIndex] = true;
+
+    if (this._parentPane._isEditingStyle)
+      return;
 
     var fragment = this._hoverableSelectorsMode ? this._renderHoverableSelectors(selectorTexts, matchingSelectors) :
                                                   this._renderSimplifiedSelectors(selectorTexts, matchingSelectors);
