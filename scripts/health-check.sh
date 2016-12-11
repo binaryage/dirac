@@ -62,7 +62,7 @@ CHROMIUM_REPO_URL=${CHROMIUM_REPO_URL}
 CHROMIUM_DOWNLOAD_URL=${CHROMIUM_DOWNLOAD_URL}
 EOF
 
-if [[ -z "HEALTH_CHECK_DRY_RUN" ]]; then
+if [[ -z "${HEALTH_CHECK_DRY_RUN}" ]]; then
   git push --force origin health-check
 fi
 
