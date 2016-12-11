@@ -32,17 +32,36 @@ fi
 
 # install latest chromium
 if [[ -z "${TRAVIS_SKIP_CHROMIUM_SETUP}" ]]; then
-  if cd chromium-latest-linux; then
-    git pull
-    cd ..
+  # check for presence of CHROMIUM_DOWNLOAD_URL in the commit message
+  CHROMIUM_DOWNLOAD_URL=$(git show -s --format=%B ${TRAVIS_COMMIT} | grep "CHROMIUM_DOWNLOAD_URL=" | cut -d= -f2-)
+  if [[ ! -z "$CHROMIUM_DOWNLOAD_URL" ]]; then
+    # CHROMIUM_DOWNLOAD_URL present
+    ZIP_FILE="snapshot.zip"
+    curl -s "$CHROMIUM_DOWNLOAD_URL" > "$ZIP_FILE"
+    if [[ ! -f "$ZIP_FILE" ]]; then
+      echo "failed to download Chromium snapshot from $CHROMIUM_DOWNLOAD_URL"
+      exit 31
+    fi
+    if grep -q "Not Found" "$ZIP_FILE"; then
+      echo "Chromium snapshot $CHROMIUM_DOWNLOAD_URL not found in $ZIP_FILE"
+      exit 30
+    fi
+    unzip "$ZIP_FILE"
+    export DIRAC_CHROME_BINARY_PATH=`pwd`/chrome-linux/chrome
   else
-    git clone --depth 1 https://github.com/scheib/chromium-latest-linux.git
-  fi
-  if [[ -z "${TRAVIS_SKIP_CHROMIUM_UPDATE}" ]]; then
-    ./chromium-latest-linux/update.sh
+    # CHROMIUM_DOWNLOAD_URL not present, use the latest
+    if cd chromium-latest-linux; then
+      git pull
+      cd ..
+    else
+      git clone --depth 1 https://github.com/scheib/chromium-latest-linux.git
+    fi
+    if [[ -z "${TRAVIS_SKIP_CHROMIUM_UPDATE}" ]]; then
+      ./chromium-latest-linux/update.sh
+    fi
+    export DIRAC_CHROME_BINARY_PATH=`pwd`/chromium-latest-linux/latest/chrome
   fi
 fi
-export DIRAC_CHROME_BINARY_PATH=`pwd`/chromium-latest-linux/latest/chrome
 export CHROME_LOG_FILE=`pwd`
 
 # install chromedriver
