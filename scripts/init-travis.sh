@@ -29,9 +29,13 @@ if [[ -z "${TRAVIS_SKIP_COLORDIFF_INSTALL}" ]]; then
 fi
 
 # install latest chromium
+pushd "$TRAVIS_BUILD_DIR"
 if [[ -z "${TRAVIS_SKIP_CHROMIUM_SETUP}" ]]; then
+  if [[ -z "$TRAVIS_COMMIT" ]]; then
+    TRAVIS_COMMIT="HEAD"
+  fi
   # check for presence of CHROMIUM_DOWNLOAD_URL in the commit message
-  CHROMIUM_DOWNLOAD_URL=$(git show -s --format=%B ${TRAVIS_COMMIT} | grep "CHROMIUM_DOWNLOAD_URL=" | cut -d= -f2-)
+  CHROMIUM_DOWNLOAD_URL=$(git show -s --format=%B "${TRAVIS_COMMIT}" | grep "CHROMIUM_DOWNLOAD_URL=" | cut -d= -f2-)
   if [[ ! -z "$CHROMIUM_DOWNLOAD_URL" ]]; then
     # CHROMIUM_DOWNLOAD_URL present
     ZIP_FILE="snapshot.zip"
@@ -44,10 +48,13 @@ if [[ -z "${TRAVIS_SKIP_CHROMIUM_SETUP}" ]]; then
       echo "Chromium snapshot $CHROMIUM_DOWNLOAD_URL not found in $ZIP_FILE"
       exit 30
     fi
+    rm -rf "chrome-linux/"
     unzip "$ZIP_FILE"
     export DIRAC_CHROME_BINARY_PATH=`pwd`/chrome-linux/chrome
-  else
-    # CHROMIUM_DOWNLOAD_URL not present, use the latest
+  fi
+
+  # CHROMIUM_DOWNLOAD_URL not present => use the latest
+  if [[ -z "$DIRAC_CHROME_BINARY_PATH" ]]; then
     if cd chromium-latest-linux; then
       git pull
       cd ..
@@ -59,8 +66,11 @@ if [[ -z "${TRAVIS_SKIP_CHROMIUM_SETUP}" ]]; then
     fi
     export DIRAC_CHROME_BINARY_PATH=`pwd`/chromium-latest-linux/latest/chrome
   fi
+else
+  export DIRAC_CHROME_BINARY_PATH=`which chrome`
 fi
 export CHROME_LOG_FILE=`pwd`
+popd
 
 # install chromedriver
 if [[ -z "${TRAVIS_SKIP_CHROMEDRIVER_UPDATE}" ]]; then
