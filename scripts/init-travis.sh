@@ -31,14 +31,16 @@ if [[ ! -v TRAVIS_SKIP_COLORDIFF_INSTALL ]]; then
 fi
 
 # install latest chromium
-if cd chromium-latest-linux; then
-  git pull
-  cd ..
-else
-  git clone --depth 1 https://github.com/scheib/chromium-latest-linux.git
-fi
-if [[ ! -v TRAVIS_SKIP_CHROMIUM_UPDATE ]]; then
-  ./chromium-latest-linux/update.sh
+if [[ ! -v TRAVIS_SKIP_CHROMIUM_SETUP ]]; then
+  if cd chromium-latest-linux; then
+    git pull
+    cd ..
+  else
+    git clone --depth 1 https://github.com/scheib/chromium-latest-linux.git
+  fi
+  if [[ ! -v TRAVIS_SKIP_CHROMIUM_UPDATE ]]; then
+    ./chromium-latest-linux/update.sh
+  fi
 fi
 export DIRAC_CHROME_BINARY_PATH=`pwd`/chromium-latest-linux/latest/chrome
 export CHROME_LOG_FILE=`pwd`
