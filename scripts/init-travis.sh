@@ -64,8 +64,8 @@ export CHROME_LOG_FILE=`pwd`
 
 # install chromedriver
 if [[ -z "${TRAVIS_SKIP_CHROMEDRIVER_UPDATE}" ]]; then
-  if [[ -z "${TRAVIS_DONT_CACHE_CHROMEDRIVER}" -o ! -f chromedriver ]]; then
-    if [[ -z "${TRAVIS_USE_CUSTOM_CHROMEDRIVER}" ]]; then
+  if [[ ! -z "${TRAVIS_DONT_CACHE_CHROMEDRIVER}" -o ! -f chromedriver ]]; then
+    if [[ ! -z "${TRAVIS_USE_CUSTOM_CHROMEDRIVER}" ]]; then
       wget -O chromedriver.zip "${TRAVIS_USE_CUSTOM_CHROMEDRIVER}" # http://x.binaryage.com/chromedriver.zip
     else
       wget -O chromedriver.zip https://chromedriver.storage.googleapis.com/2.26/chromedriver_linux64.zip
