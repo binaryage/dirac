@@ -35,7 +35,7 @@ if [[ -z "${TRAVIS_SKIP_CHROMIUM_SETUP}" ]]; then
     TRAVIS_COMMIT="HEAD"
   fi
   # check for presence of CHROMIUM_DOWNLOAD_URL in the commit message
-  CHROMIUM_DOWNLOAD_URL=$(git show -s --format=%B "${TRAVIS_COMMIT}" | grep "CHROMIUM_DOWNLOAD_URL=" | cut -d= -f2-)
+  CHROMIUM_DOWNLOAD_URL=$(git show -s --format=%B "${TRAVIS_COMMIT}" | grep "CHROMIUM_DOWNLOAD_URL=" | cut -d= -f2-) || true
   if [[ ! -z "$CHROMIUM_DOWNLOAD_URL" ]]; then
     # CHROMIUM_DOWNLOAD_URL present
     ZIP_FILE="snapshot.zip"
