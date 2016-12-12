@@ -118,19 +118,20 @@
 
 (defn execute-transcript-test! [test-name]
   (with-transcript-test test-name
-    (if (should-skip-current-test?)
-      (println (str "Skipped test '" (get-current-test-full-name) "' due to filter '" (get-browser-test-filter) "'"))
-      (let [task-state (make-task-state)
-            signal-server (create-signal-server! task-state)]
-        (navigate-transcript-runner!)
-        (with-travis-fold test-name
-          ; chrome driver needs some time to cooldown after disconnection
-          ; to prevent random org.openqa.selenium.SessionNotCreatedException exceptions
-          ; also we want to run our transcript test safely after debugger port is available
-          ; for devtools after driver disconnection
-          (launch-transcript-test-after-delay! (get-script-runner-launch-delay))
-          (disconnect-browser!)
-          (wait-for-signal! signal-server task-state)
-          (Thread/sleep (get-task-disconnected-wait-timeout)))
-        (reconnect-browser!)
-        (write-transcript-and-compare!)))))
+    (let [full-name (get-current-test-full-name)]
+      (if (should-skip-current-test?)
+        (println (str "Skipped task '" full-name "' due to filter '" (get-browser-test-filter) "'"))
+        (let [task-state (make-task-state)
+              signal-server (create-signal-server! task-state)]
+          (with-travis-fold (str "Running task '" full-name "'") full-name
+            (navigate-transcript-runner!)
+            ; chrome driver needs some time to cooldown after disconnection
+            ; to prevent random org.openqa.selenium.SessionNotCreatedException exceptions
+            ; also we want to run our transcript test safely after debugger port is available
+            ; for devtools after driver disconnection
+            (launch-transcript-test-after-delay! (get-script-runner-launch-delay))
+            (disconnect-browser!)
+            (wait-for-signal! signal-server task-state))
+          (Thread/sleep (get-task-disconnected-wait-timeout))
+          (reconnect-browser!)
+          (write-transcript-and-compare!))))))
