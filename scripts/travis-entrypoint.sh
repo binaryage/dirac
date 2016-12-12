@@ -12,6 +12,7 @@ set -e
 #export TRAVIS_USE_CUSTOM_CHROMEDRIVER=http://x.binaryage.com/chromedriver.zip
 
 init_travis_env() {
+  echo "====================================================================================================================="
   source "./scripts/lib/travis.sh"
   travis_fold start init-travis
   set -x
