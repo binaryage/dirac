@@ -2,6 +2,10 @@ sudo: true
 dist: trusty
 language: clojure
 
+notifications:
+  email:
+    - antonin@hildebrand.cz
+
 cache:
   directories:
     - $HOME/.m2
