@@ -24,9 +24,15 @@ export CHROME_DRIVER_LOG_PATH="$ROOT/target/chromedriver.log"
 export CHROME_LOG_FILE="$ROOT/target/chrome.log"
 export DIRAC_CHROME_DRIVER_VERBOSE=1
 
+source ./scripts/lib/travis.sh
+
+travis_fold start compile-browser
+echo "Compile browser tests"
 lein compile-browser-tests
 lein compile-marion
 ./scripts/release.sh
+travis_fold end compile-browser
+
 ./scripts/run-browser-tests.sh "dirac.tests.browser.runner"
 
 popd
