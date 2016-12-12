@@ -8,6 +8,7 @@
             [dirac.settings :refer [get-default-test-html-load-timeout
                                     get-script-runner-launch-delay
                                     get-task-disconnected-wait-timeout]]
+            [dirac.travis :refer [with-travis-fold]]
             [dirac.test-lib.chrome-browser :refer [disconnect-browser! reconnect-browser!]]
             [dirac.test-lib.chrome-driver :refer [extract-javascript-logs]]
             [dirac.tests.browser.tasks.task-state :refer [make-task-state]]
@@ -17,8 +18,7 @@
                                                        get-actual-transcript-path get-canonical-transcript
                                                        get-expected-transcript-path produce-diff
                                                        get-browser-test-filter launch-transcript-test-after-delay!]]
-            [dirac.tests.browser.tasks.macros :refer [with-transcript-test]]
-            [dirac.tests.browser.tasks.travis :refer [with-travis-fold]]))
+            [dirac.tests.browser.tasks.macros :refer [with-transcript-test]]))
 
 (defonce ^:dynamic *current-transcript-test* nil)
 (defonce ^:dynamic *current-transcript-suite* nil)

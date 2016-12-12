@@ -1,4 +1,4 @@
-(ns dirac.tests.browser.tasks.travis
+(ns dirac.travis
   (:require [cuerdas.core :as cuerdas]))
 
 (def ANSI_CLEAR "\033[0K")
