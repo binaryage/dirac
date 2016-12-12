@@ -21,7 +21,8 @@
                                      with-browser
                                      with-taxi-setup]))
 
-(def log-level (or (env :dirac-log-level) (env :dirac-browser-tests-log-level) "INFO"))                                       ; INFO, DEBUG, TRACE, ALL
+(def log-level (or (env :dirac-log-level)
+                   (env :dirac-browser-tests-log-level) "INFO"))                                                              ; INFO, DEBUG, TRACE, ALL
 
 (defn setup-logging! []
   (logging/setup! {:log-out   :console

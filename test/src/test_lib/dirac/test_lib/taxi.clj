@@ -1,6 +1,8 @@
 (ns dirac.test-lib.taxi
   (:require [dirac.settings :refer [get-taxi-page-load-timeout get-taxi-script-timeout get-taxi-implicit-wait]]
-            [dirac.test-lib.chrome-driver :refer [get-current-chrome-driver]])
+            [dirac.test-lib.chrome-driver :refer [get-current-chrome-driver]]
+            [dirac.travis :refer [with-travis-fold]]
+            [clojure.tools.logging :as log])
   (:import (java.util.concurrent TimeUnit)))
 
 (defn setup-taxi! []
@@ -10,8 +12,12 @@
     (let [timeouts (.. driver manage timeouts)]
       (.pageLoadTimeout timeouts (get-taxi-page-load-timeout) TimeUnit/MILLISECONDS)
       (.setScriptTimeout timeouts (get-taxi-script-timeout) TimeUnit/MILLISECONDS)
-      (.implicitlyWait timeouts (get-taxi-implicit-wait) TimeUnit/MILLISECONDS))))
+      (.implicitlyWait timeouts (get-taxi-implicit-wait) TimeUnit/MILLISECONDS)
+      (log/info "Taxi timeouts:" {:page-load     (get-taxi-page-load-timeout)
+                                  :script        (get-taxi-script-timeout)
+                                  :implicit-wait (get-taxi-implicit-wait)}))))
 
 (defn with-taxi-setup [f]
-  (setup-taxi!)
+  (with-travis-fold "Setup Taxi library" "setup-taxi"
+    (setup-taxi!))
   (f))

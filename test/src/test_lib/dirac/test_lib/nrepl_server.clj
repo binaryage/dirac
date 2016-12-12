@@ -1,6 +1,7 @@
 (ns dirac.test-lib.nrepl-server
   (:require [dirac.test-lib.nrepl-server-helpers :refer [start-nrepl-server! stop-nrepl-server!]]
-            [clojure.tools.logging :as log]))
+            [clojure.tools.logging :as log]
+            [dirac.travis :refer [with-travis-fold]]))
 
 ; -- fixtures ---------------------------------------------------------------------------------------------------------------
 
@@ -25,6 +26,8 @@
     (reset! current-nrepl-server-port nil)))
 
 (defn with-nrepl-server [f]
-  (setup-nrepl-server!)
+  (with-travis-fold "Setup nREPL server" "setup-nrepl-server"
+    (setup-nrepl-server!))
   (f)
-  (teardown-nrepl-server!))
+  (with-travis-fold "Tear nREPL server down" "teardown-nrepl-server"
+    (teardown-nrepl-server!)))
