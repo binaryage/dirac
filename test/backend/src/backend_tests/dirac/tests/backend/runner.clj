@@ -5,7 +5,8 @@
             [dirac.tests.backend.agent.tests]
             [dirac.travis :as travis]
             [dirac.logging :as logging]
-            [cuerdas.core :as cuerdas]))
+            [cuerdas.core :as cuerdas]
+            [clansi :refer [style]]))
 
 ; this is the default dirac test runner
 
@@ -24,7 +25,7 @@
 (defmethod clojure.test/report :begin-test-ns [m]
   (with-test-out
     (print (travis/travis-fold-command "start" (get-fold-name m)))
-    (println "Testing" (ns-name (:ns m)))))
+    (println (style (str "Testing " (ns-name (:ns m))) :cyan))))
 
 (defmethod clojure.test/report :end-test-ns [m]
   (print (travis/travis-fold-command "end" (get-fold-name m))))

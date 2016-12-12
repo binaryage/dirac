@@ -1,7 +1,8 @@
 (ns dirac.tests.browser.runner
   (:require [clojure.test :refer :all]
-            [environ.core :refer [env]]
             [clojure.tools.logging :as log]
+            [environ.core :refer [env]]
+            [clansi :refer [style]]
             [dirac.logging :as logging]
             [dirac.test-lib.agent :as test-agent]
             [dirac.test-lib.chrome-browser :refer [with-browser]]
@@ -37,6 +38,10 @@
 
 (defn set-test-runner-present! []
   (System/setProperty "dirac-test-runner" "true"))
+
+(defmethod clojure.test/report :begin-test-ns [m]
+  (with-test-out
+    (println (style (str "Testing " (ns-name (:ns m))) :cyan))))
 
 ; -- fixtures ---------------------------------------------------------------------------------------------------------------
 
