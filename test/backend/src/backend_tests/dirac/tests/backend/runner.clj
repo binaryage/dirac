@@ -23,7 +23,6 @@
 
 (defmethod clojure.test/report :begin-test-ns [m]
   (with-test-out
-    (println)
     (print (travis/travis-fold-command "start" (get-fold-name m)))
     (println "Testing" (ns-name (:ns m)))))
 
