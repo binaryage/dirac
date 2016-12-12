@@ -32,6 +32,6 @@
 
 (defn -main []
   (setup-logging!)
-  (log/info (str "Running tests against Clojure " (clojure-version)))
+  (println (str "Running backend tests against Clojure " (clojure-version)))
   (let [summary (apply run-tests default-test-namespaces)]
     (System/exit (if (successful? summary) 0 1))))
