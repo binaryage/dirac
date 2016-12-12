@@ -17,7 +17,8 @@
                                                        get-actual-transcript-path get-canonical-transcript
                                                        get-expected-transcript-path produce-diff
                                                        get-browser-test-filter launch-transcript-test-after-delay!]]
-            [dirac.tests.browser.tasks.macros :refer [with-transcript-test]]))
+            [dirac.tests.browser.tasks.macros :refer [with-transcript-test]]
+            [dirac.tests.browser.tasks.travis :refer [with-travis-fold]]))
 
 (defonce ^:dynamic *current-transcript-test* nil)
 (defonce ^:dynamic *current-transcript-suite* nil)
@@ -122,13 +123,14 @@
       (let [task-state (make-task-state)
             signal-server (create-signal-server! task-state)]
         (navigate-transcript-runner!)
-        ; chrome driver needs some time to cooldown after disconnection
-        ; to prevent random org.openqa.selenium.SessionNotCreatedException exceptions
-        ; also we want to run our transcript test safely after debugger port is available
-        ; for devtools after driver disconnection
-        (launch-transcript-test-after-delay! (get-script-runner-launch-delay))
-        (disconnect-browser!)
-        (wait-for-signal! signal-server task-state)
-        (Thread/sleep (get-task-disconnected-wait-timeout))
+        (with-travis-fold test-name
+          ; chrome driver needs some time to cooldown after disconnection
+          ; to prevent random org.openqa.selenium.SessionNotCreatedException exceptions
+          ; also we want to run our transcript test safely after debugger port is available
+          ; for devtools after driver disconnection
+          (launch-transcript-test-after-delay! (get-script-runner-launch-delay))
+          (disconnect-browser!)
+          (wait-for-signal! signal-server task-state)
+          (Thread/sleep (get-task-disconnected-wait-timeout)))
         (reconnect-browser!)
         (write-transcript-and-compare!)))))
