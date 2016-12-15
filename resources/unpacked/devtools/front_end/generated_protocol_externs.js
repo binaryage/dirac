@@ -910,12 +910,18 @@ Protocol.NetworkAgent.prototype.clearBrowserCookies = function(opt_callback) {}
 Protocol.NetworkAgent.prototype.invoke_clearBrowserCookies = function(obj, opt_callback) {}
 
 /**
- * @param {boolean=} opt_global
  * @param {function(?Protocol.Error, !Array<Protocol.Network.Cookie>):void=} opt_callback
  */
-Protocol.NetworkAgent.prototype.getCookies = function(opt_global, opt_callback) {}
+Protocol.NetworkAgent.prototype.getCookies = function(opt_callback) {}
 /** @param {function(?Protocol.Error, !Array<Protocol.Network.Cookie>):void=} opt_callback */
 Protocol.NetworkAgent.prototype.invoke_getCookies = function(obj, opt_callback) {}
+
+/**
+ * @param {function(?Protocol.Error, !Array<Protocol.Network.Cookie>):void=} opt_callback
+ */
+Protocol.NetworkAgent.prototype.getAllCookies = function(opt_callback) {}
+/** @param {function(?Protocol.Error, !Array<Protocol.Network.Cookie>):void=} opt_callback */
+Protocol.NetworkAgent.prototype.invoke_getAllCookies = function(obj, opt_callback) {}
 
 /**
  * @param {string} cookieName
@@ -1939,7 +1945,7 @@ Protocol.DOM.ShadowRootType = {
     Closed: "closed"
 };
 
-/** @typedef {!{nodeId:(Protocol.DOM.NodeId), backendNodeId:(Protocol.DOM.BackendNodeId), nodeType:(number), nodeName:(string), localName:(string), nodeValue:(string), childNodeCount:(number|undefined), children:(!Array<Protocol.DOM.Node>|undefined), attributes:(!Array<string>|undefined), documentURL:(string|undefined), baseURL:(string|undefined), publicId:(string|undefined), systemId:(string|undefined), internalSubset:(string|undefined), xmlVersion:(string|undefined), name:(string|undefined), value:(string|undefined), pseudoType:(Protocol.DOM.PseudoType|undefined), shadowRootType:(Protocol.DOM.ShadowRootType|undefined), frameId:(Protocol.Page.FrameId|undefined), contentDocument:(Protocol.DOM.Node|undefined), shadowRoots:(!Array<Protocol.DOM.Node>|undefined), templateContent:(Protocol.DOM.Node|undefined), pseudoElements:(!Array<Protocol.DOM.Node>|undefined), importedDocument:(Protocol.DOM.Node|undefined), distributedNodes:(!Array<Protocol.DOM.BackendNode>|undefined)}} */
+/** @typedef {!{nodeId:(Protocol.DOM.NodeId), backendNodeId:(Protocol.DOM.BackendNodeId), nodeType:(number), nodeName:(string), localName:(string), nodeValue:(string), childNodeCount:(number|undefined), children:(!Array<Protocol.DOM.Node>|undefined), attributes:(!Array<string>|undefined), documentURL:(string|undefined), baseURL:(string|undefined), publicId:(string|undefined), systemId:(string|undefined), internalSubset:(string|undefined), xmlVersion:(string|undefined), name:(string|undefined), value:(string|undefined), pseudoType:(Protocol.DOM.PseudoType|undefined), shadowRootType:(Protocol.DOM.ShadowRootType|undefined), frameId:(Protocol.Page.FrameId|undefined), contentDocument:(Protocol.DOM.Node|undefined), shadowRoots:(!Array<Protocol.DOM.Node>|undefined), templateContent:(Protocol.DOM.Node|undefined), pseudoElements:(!Array<Protocol.DOM.Node>|undefined), importedDocument:(Protocol.DOM.Node|undefined), distributedNodes:(!Array<Protocol.DOM.BackendNode>|undefined), isSVG:(boolean|undefined)}} */
 Protocol.DOM.Node;
 
 /** @typedef {!{r:(number), g:(number), b:(number), a:(number|undefined)}} */
