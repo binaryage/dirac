@@ -12,19 +12,16 @@ Sass.SASSSupport.parseSCSS = function(url, content) {
   var text = new Common.Text(content);
   var document = new Sass.SASSSupport.ASTDocument(url, text);
 
-  return Common.formatterWorkerPool.runTask('parseSCSS', {content: content}).then(onParsed);
+  return Common.formatterWorkerPool.parseSCSS(content).then(onParsed);
 
   /**
-   * @param {?MessageEvent} event
+   * @param {!Array<!Common.FormatterWorkerPool.SCSSRule>} rulePayloads
    * @return {!Sass.SASSSupport.AST}
    */
-  function onParsed(event) {
-    if (!event)
-      return new Sass.SASSSupport.AST(document, []);
-    var data = /** @type {!Array<!Object>} */ (event.data);
+  function onParsed(rulePayloads) {
     var rules = [];
-    for (var i = 0; i < data.length; ++i) {
-      var rulePayload = data[i];
+    for (var i = 0; i < rulePayloads.length; ++i) {
+      var rulePayload = rulePayloads[i];
       var selectors = rulePayload.selectors.map(createTextNode);
       var properties = rulePayload.properties.map(createProperty);
       var range = Common.TextRange.fromObject(rulePayload.styleRange);
@@ -39,7 +36,6 @@ Sass.SASSSupport.parseSCSS = function(url, content) {
    */
   function createTextNode(payload) {
     var range = Common.TextRange.fromObject(payload);
-    var value = text.extract(range);
     return new Sass.SASSSupport.TextNode(document, text.extract(range), range);
   }
 

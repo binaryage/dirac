@@ -75,6 +75,7 @@ SDK.DOMNode = class extends SDK.SDKObject {
     this._shadowRootType = payload.shadowRootType;
     this._frameOwnerFrameId = payload.frameId || null;
     this._xmlVersion = payload.xmlVersion;
+    this._isSVGNode = !!payload.isSVG;
 
     this._shadowRoots = [];
 
@@ -143,6 +144,13 @@ SDK.DOMNode = class extends SDK.SDKObject {
       this.name = payload.name;
       this.value = payload.value;
     }
+  }
+
+  /**
+   * @return {boolean}
+   */
+  isSVGNode() {
+    return this._isSVGNode;
   }
 
   /**
@@ -1370,7 +1378,7 @@ SDK.DOMModel = class extends SDK.SDKModel {
       this._document = new SDK.DOMDocument(this, payload);
     else
       this._document = null;
-    this.dispatchEventToListeners(SDK.DOMModel.Events.DocumentUpdated, this._document);
+    this.dispatchEventToListeners(SDK.DOMModel.Events.DocumentUpdated, this);
   }
 
   /**
@@ -1728,7 +1736,7 @@ SDK.DOMModel = class extends SDK.SDKModel {
      */
     function onDocumentAvailable() {
       this._inspectModeEnabled = mode !== Protocol.DOM.InspectMode.None;
-      this.dispatchEventToListeners(SDK.DOMModel.Events.InspectModeWillBeToggled, this._inspectModeEnabled);
+      this.dispatchEventToListeners(SDK.DOMModel.Events.InspectModeWillBeToggled, this);
       this._highlighter.setInspectMode(mode, this._buildHighlightConfig(), callback);
     }
     this.requestDocument(onDocumentAvailable.bind(this));
@@ -1799,16 +1807,6 @@ SDK.DOMModel = class extends SDK.SDKModel {
    * @param {function(?Protocol.Error)=} callback
    */
   undo(callback) {
-    /**
-     * @param {?Protocol.Error} error
-     * @this {SDK.DOMModel}
-     */
-    function mycallback(error) {
-      this.dispatchEventToListeners(SDK.DOMModel.Events.UndoRedoCompleted);
-      callback(error);
-    }
-
-    this.dispatchEventToListeners(SDK.DOMModel.Events.UndoRedoRequested);
     this._agent.undo(callback);
   }
 
@@ -1816,16 +1814,6 @@ SDK.DOMModel = class extends SDK.SDKModel {
    * @param {function(?Protocol.Error)=} callback
    */
   redo(callback) {
-    /**
-     * @param {?Protocol.Error} error
-     * @this {SDK.DOMModel}
-     */
-    function mycallback(error) {
-      this.dispatchEventToListeners(SDK.DOMModel.Events.UndoRedoCompleted);
-      callback(error);
-    }
-
-    this.dispatchEventToListeners(SDK.DOMModel.Events.UndoRedoRequested);
     this._agent.redo(callback);
   }
 
@@ -1933,10 +1921,7 @@ SDK.DOMModel.Events = {
   NodeRemoved: Symbol('NodeRemoved'),
   DocumentUpdated: Symbol('DocumentUpdated'),
   ChildNodeCountUpdated: Symbol('ChildNodeCountUpdated'),
-  UndoRedoRequested: Symbol('UndoRedoRequested'),
-  UndoRedoCompleted: Symbol('UndoRedoCompleted'),
   DistributedNodesChanged: Symbol('DistributedNodesChanged'),
-  ModelSuspended: Symbol('ModelSuspended'),
   InspectModeWillBeToggled: Symbol('InspectModeWillBeToggled'),
   MarkersChanged: Symbol('MarkersChanged')
 };

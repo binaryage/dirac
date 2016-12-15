@@ -69,13 +69,6 @@ Common.Object = class {
 
   /**
    * @override
-   */
-  removeAllListeners() {
-    delete this._listeners;
-  }
-
-  /**
-   * @override
    * @param {symbol} eventType
    * @return {boolean}
    */
@@ -87,21 +80,15 @@ Common.Object = class {
    * @override
    * @param {symbol} eventType
    * @param {*=} eventData
-   * @return {boolean}
    */
   dispatchEventToListeners(eventType, eventData) {
     if (!this._listeners || !this._listeners.has(eventType))
-      return false;
+      return;
 
-    var event = new Common.Event(this, eventType, eventData);
+    var event = new Common.Event(eventData);
     var listeners = this._listeners.get(eventType).slice(0);
-    for (var i = 0; i < listeners.length; ++i) {
+    for (var i = 0; i < listeners.length; ++i)
       listeners[i].listener.call(listeners[i].thisObject, event);
-      if (event._stoppedPropagation)
-        break;
-    }
-
-    return event.defaultPrevented;
   }
 };
 
@@ -110,33 +97,10 @@ Common.Object = class {
  */
 Common.Event = class {
   /**
-   * @param {!Common.EventTarget} target
-   * @param {symbol} type
    * @param {*=} data
    */
-  constructor(target, type, data) {
-    this.target = target;
-    this.type = type;
+  constructor(data) {
     this.data = data;
-    this.defaultPrevented = false;
-    this._stoppedPropagation = false;
-  }
-
-  stopPropagation() {
-    this._stoppedPropagation = true;
-  }
-
-  preventDefault() {
-    this.defaultPrevented = true;
-  }
-
-  /**
-   * @param {boolean=} preventDefault
-   */
-  consume(preventDefault) {
-    this.stopPropagation();
-    if (preventDefault)
-      this.preventDefault();
   }
 };
 
@@ -173,8 +137,6 @@ Common.EventTarget.prototype = {
    */
   removeEventListener(eventType, listener, thisObject) {},
 
-  removeAllListeners() {},
-
   /**
    * @param {symbol} eventType
    * @return {boolean}
@@ -184,7 +146,6 @@ Common.EventTarget.prototype = {
   /**
    * @param {symbol} eventType
    * @param {*=} eventData
-   * @return {boolean}
    */
   dispatchEventToListeners(eventType, eventData) {},
 };

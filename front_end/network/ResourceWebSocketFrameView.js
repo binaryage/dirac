@@ -108,7 +108,7 @@ Network.ResourceWebSocketFrameView = class extends UI.VBox {
    * @param {!Common.Event} event
    */
   _onFrameSelected(event) {
-    var selectedNode = /** @type {!Network.ResourceWebSocketFrameNode} */ (event.target.selectedNode);
+    var selectedNode = /** @type {!Network.ResourceWebSocketFrameNode} */ (event.data);
     this._currentSelectedNode = selectedNode;
     var contentProvider = selectedNode.contentProvider();
     contentProvider.requestContent().then(contentHandler.bind(this));
@@ -212,15 +212,15 @@ Network.ResourceWebSocketFrameNode = class extends UI.SortableDataGridNode {
 
   /**
    * @override
+   * @param {!Element} element
    */
-  createCells() {
-    var element = this._element;
+  createCells(element) {
     element.classList.toggle(
         'websocket-frame-view-row-error', this._frame.type === SDK.NetworkRequest.WebSocketFrameType.Error);
     element.classList.toggle(
         'websocket-frame-view-row-outcoming', this._frame.type === SDK.NetworkRequest.WebSocketFrameType.Send);
     element.classList.toggle('websocket-frame-view-row-opcode', !this._isTextFrame);
-    super.createCells();
+    super.createCells(element);
   }
 
   /**

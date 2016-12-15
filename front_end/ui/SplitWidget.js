@@ -142,8 +142,7 @@ UI.SplitWidget = class extends UI.Widget {
       widget.element.classList.remove('insertion-point-sidebar');
       widget.attach(this);
       if (this._showMode === UI.SplitWidget.ShowMode.OnlyMain || this._showMode === UI.SplitWidget.ShowMode.Both)
-        widget.showWidget(this.element);
-      this.setDefaultFocusedChild(widget);
+        widget.showWidget();
     }
     this.resumeInvalidations();
   }
@@ -163,7 +162,7 @@ UI.SplitWidget = class extends UI.Widget {
       widget.element.classList.remove('insertion-point-main');
       widget.attach(this);
       if (this._showMode === UI.SplitWidget.ShowMode.OnlySidebar || this._showMode === UI.SplitWidget.ShowMode.Both)
-        widget.showWidget(this.element);
+        widget.showWidget();
     }
     this.resumeInvalidations();
   }
@@ -284,9 +283,9 @@ UI.SplitWidget = class extends UI.Widget {
       if (sideToShow) {
         // Make sure main is first in the children list.
         if (sideToShow === this._mainWidget)
-          this._mainWidget.showWidget(this.element);
+          this._mainWidget.showWidget();
         else
-          this._sidebarWidget.showWidget(this.element);
+          this._sidebarWidget.showWidget();
       }
       if (sideToHide)
         sideToHide.hideWidget();
@@ -344,9 +343,9 @@ UI.SplitWidget = class extends UI.Widget {
     // Make sure main is the first in the children list.
     this.suspendInvalidations();
     if (this._sidebarWidget)
-      this._sidebarWidget.showWidget(this.element);
+      this._sidebarWidget.showWidget();
     if (this._mainWidget)
-      this._mainWidget.showWidget(this.element);
+      this._mainWidget.showWidget();
     this.resumeInvalidations();
     // Order widgets in DOM properly.
     this.setSecondIsSidebar(this._secondIsSidebar);
@@ -832,7 +831,7 @@ UI.SplitWidget = class extends UI.Widget {
   createShowHideSidebarButton(title) {
     this._showHideSidebarButtonTitle = Common.UIString(title);
     this._showHideSidebarButton = new UI.ToolbarButton('', '');
-    this._showHideSidebarButton.addEventListener('click', buttonClicked.bind(this));
+    this._showHideSidebarButton.addEventListener(UI.ToolbarButton.Events.Click, buttonClicked, this);
     this._updateShowHideSidebarButton();
 
     /**

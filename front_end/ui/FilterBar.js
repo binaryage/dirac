@@ -44,7 +44,7 @@ UI.FilterBar = class extends UI.HBox {
     this.element.classList.add('filter-bar');
 
     this._filterButton = new UI.ToolbarToggle(Common.UIString('Filter'), 'largeicon-filter');
-    this._filterButton.addEventListener('click', this._handleFilterButtonClick, this);
+    this._filterButton.addEventListener(UI.ToolbarButton.Events.Click, this._handleFilterButtonClick, this);
 
     this._filters = [];
 
@@ -95,17 +95,23 @@ UI.FilterBar = class extends UI.HBox {
   }
 
   _updateFilterBar() {
+    if (!this.parentWidget())
+      return;
     var visible = this._alwaysShowFilters || (this._filtersShown && this._enabled);
-    this.element.classList.toggle('hidden', !visible);
-    if (visible) {
-      for (var i = 0; i < this._filters.length; ++i) {
-        if (this._filters[i] instanceof UI.TextFilterUI) {
-          var textFilterUI = /** @type {!UI.TextFilterUI} */ (this._filters[i]);
-          textFilterUI.focus();
-        }
+    if (visible)
+      this.showWidget();
+    else
+      this.hideWidget();
+  }
+
+  _focusTextField() {
+    for (var i = 0; i < this._filters.length; ++i) {
+      if (this._filters[i] instanceof UI.TextFilterUI) {
+        var textFilterUI = /** @type {!UI.TextFilterUI} */ (this._filters[i]);
+        textFilterUI.focus();
+        break;
       }
     }
-    this.invalidateSize();
   }
 
   _updateFilterButton() {
@@ -141,6 +147,8 @@ UI.FilterBar = class extends UI.HBox {
 
     this._updateFilterButton();
     this._updateFilterBar();
+    if (this._filtersShown)
+      this._focusTextField();
     this.dispatchEventToListeners(UI.FilterBar.Events.Toggled);
   }
 

@@ -284,6 +284,9 @@ Sources.JavaScriptSourceFrame = class extends Sources.UISourceCodeFrame {
         .then(populateSourceMapMembers.bind(this));
   }
 
+  /**
+   * @param {!Common.Event} event
+   */
   _workingCopyChanged(event) {
     if (this._supportsEnabledBreakpointsWhileEditing() || this._scriptFileForTarget.size)
       return;
@@ -294,6 +297,9 @@ Sources.JavaScriptSourceFrame = class extends Sources.UISourceCodeFrame {
       this._restoreBreakpointsAfterEditing();
   }
 
+  /**
+   * @param {!Common.Event} event
+   */
   _workingCopyCommitted(event) {
     this._scriptsPanel.updateLastModificationTime();
     if (this._supportsEnabledBreakpointsWhileEditing())
@@ -411,7 +417,6 @@ Sources.JavaScriptSourceFrame = class extends Sources.UISourceCodeFrame {
   }
 
   _resolveObjectForPopover(anchorBox, showCallback, objectGroupName) {
-    var target = UI.context.flavor(SDK.Target);
     var selectedCallFrame = UI.context.flavor(SDK.DebuggerModel.CallFrame);
     if (!selectedCallFrame) {
       this._popoverHelper.hidePopover();

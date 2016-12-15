@@ -602,7 +602,6 @@ UI.DataGrid = class extends Common.Object {
       // when the two columns that get resized get a percent value for
       // their widths, all the other columns already have percent values
       // for their widths.
-      var headerTableColumns = this._headerTableColumnGroup.children;
 
       // Use container size to avoid changes of table width caused by change of column widths.
       var tableWidth = this.element.offsetWidth - this._cornerWidth;
@@ -1255,14 +1254,15 @@ UI.DataGridNode = class extends Common.Object {
    */
   element() {
     if (!this._element) {
-      this.createElement();
-      this.createCells();
+      var element = this.createElement();
+      this.createCells(element);
     }
     return /** @type {!Element} */ (this._element);
   }
 
   /**
    * @protected
+   * @return {!Element}
    */
   createElement() {
     this._element = createElement('tr');
@@ -1276,17 +1276,33 @@ UI.DataGridNode = class extends Common.Object {
       this._element.classList.add('selected');
     if (this.revealed)
       this._element.classList.add('revealed');
+    return this._element;
+  }
+
+  /**
+   * @return {?Element}
+   */
+  existingElement() {
+    return this._element || null;
   }
 
   /**
    * @protected
    */
-  createCells() {
-    this._element.removeChildren();
+  resetElement() {
+    this._element = null;
+  }
+
+  /**
+   * @param {!Element} element
+   * @protected
+   */
+  createCells(element) {
+    element.removeChildren();
     var columnsArray = this.dataGrid._visibleColumnsArray;
     for (var i = 0; i < columnsArray.length; ++i)
-      this._element.appendChild(this.createCell(columnsArray[i].id));
-    this._element.appendChild(this._createTDWithClass('corner'));
+      element.appendChild(this.createCell(columnsArray[i].id));
+    element.appendChild(this._createTDWithClass('corner'));
   }
 
   /**
@@ -1439,7 +1455,7 @@ UI.DataGridNode = class extends Common.Object {
       this._element = null;
     if (!this._element)
       return;
-    this.createCells();
+    this.createCells(this._element);
   }
 
   /**
@@ -1485,7 +1501,7 @@ UI.DataGridNode = class extends Common.Object {
     var data = this.data[columnId];
     if (data instanceof Node) {
       cell.appendChild(data);
-    } else {
+    } else if (data !== null) {
       cell.textContent = data;
       if (this.dataGrid._columns[columnId].longText)
         cell.title = data;
@@ -1720,7 +1736,7 @@ UI.DataGridNode = class extends Common.Object {
       this._element.classList.add('selected');
 
     if (!supressSelectedEvent)
-      this.dataGrid.dispatchEventToListeners(UI.DataGrid.Events.SelectedNode);
+      this.dataGrid.dispatchEventToListeners(UI.DataGrid.Events.SelectedNode, this);
   }
 
   revealAndSelect() {

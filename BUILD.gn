@@ -113,7 +113,6 @@ devtools_sdk_js_files = [
   "front_end/sdk/CSSMedia.js",
   "front_end/sdk/CSSMetadata.js",
   "front_end/sdk/CSSModel.js",
-  "front_end/sdk/CSSParser.js",
   "front_end/sdk/CSSProperty.js",
   "front_end/sdk/CSSRule.js",
   "front_end/sdk/CSSStyleDeclaration.js",
@@ -407,6 +406,7 @@ devtools_components_lazy_js_files = [
   "front_end/components_lazy/CookiesTable.js",
   "front_end/components_lazy/FilmStripModel.js",
   "front_end/components_lazy/FilmStripView.js",
+  "front_end/components_lazy/GCActionDelegate.js",
   "front_end/components_lazy/LineLevelProfile.js",
   "front_end/components_lazy/CoverageProfile.js",
 ]
@@ -512,7 +512,6 @@ devtools_heap_snapshot_worker_js_files = [
   "front_end/heap_snapshot_worker/HeapSnapshotLoader.js",
   "front_end/heap_snapshot_worker/HeapSnapshotWorker.js",
   "front_end/heap_snapshot_worker/HeapSnapshotWorkerDispatcher.js",
-  "front_end/heap_snapshot_worker/JSHeapSnapshot.js",
   "front_end/platform/utilities.js",
   "front_end/profiler/HeapSnapshotCommon.js",
 ]
@@ -738,6 +737,7 @@ devtools_layer_viewer_js_files = [
 devtools_timeline_js_files = [
   "front_end/timeline/invalidationsTree.css",
   "front_end/timeline/timelineFlamechartPopover.css",
+  "front_end/timeline/timelineLandingPage.css",
   "front_end/timeline/timelinePaintProfiler.css",
   "front_end/timeline/timelinePanel.css",
   "front_end/timeline/timelineStatusDialog.css",
@@ -748,6 +748,7 @@ devtools_timeline_js_files = [
   "front_end/timeline/TimelineFlameChart.js",
   "front_end/timeline/TimelineFlameChartView.js",
   "front_end/timeline/TimelineNetworkFlameChart.js",
+  "front_end/timeline/TimelineLandingPage.js",
   "front_end/timeline/TimelineLayersView.js",
   "front_end/timeline/TimelineLoader.js",
   "front_end/timeline/TimelinePaintProfilerView.js",

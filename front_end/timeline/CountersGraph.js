@@ -103,6 +103,14 @@ Timeline.CountersGraph = class extends UI.VBox {
   }
 
   /**
+   * @protected
+   * @return {!TimelineModel.TimelineModel}
+   */
+  model() {
+    return this._model;
+  }
+
+  /**
    * @override
    */
   dispose() {
@@ -222,6 +230,12 @@ Timeline.CountersGraph = class extends UI.VBox {
    * @override
    */
   refreshRecords() {
+  }
+
+  /**
+   * @override
+   */
+  extensionDataAdded() {
   }
 
   _clear() {

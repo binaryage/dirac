@@ -112,6 +112,7 @@ Main.Main = class {
     Runtime.experiments.register('sourceDiff', 'Source diff');
     Runtime.experiments.register('terminalInDrawer', 'Terminal in drawer', true);
     Runtime.experiments.register('timelineInvalidationTracking', 'Timeline invalidation tracking', true);
+    Runtime.experiments.register('timelineLandingPage', 'Timeline landing page', true);
     Runtime.experiments.register('timelineRecordingPerspectives', 'Timeline recording perspectives UI');
     Runtime.experiments.register('timelineTracingJSProfile', 'Timeline tracing based JS profiler', true);
     Runtime.experiments.register('timelineV8RuntimeCallStats', 'V8 Runtime Call Stats on Timeline', true);
@@ -181,8 +182,7 @@ Main.Main = class {
         new Bindings.BreakpointManager(null, Workspace.workspace, SDK.targetManager, Bindings.debuggerWorkspaceBinding);
     Extensions.extensionServer = new Extensions.ExtensionServer();
 
-    var fileSystemWorkspaceBinding =
-        new Persistence.FileSystemWorkspaceBinding(Workspace.isolatedFileSystemManager, Workspace.workspace);
+    new Persistence.FileSystemWorkspaceBinding(Workspace.isolatedFileSystemManager, Workspace.workspace);
     Persistence.persistence =
         new Persistence.Persistence(Workspace.workspace, Bindings.breakpointManager, Workspace.fileSystemMapping);
 
@@ -675,7 +675,7 @@ Main.Main.WarningErrorCounter = class {
 Main.Main.MainMenuItem = class {
   constructor() {
     this._item = new UI.ToolbarButton(Common.UIString('Customize and control DevTools'), 'largeicon-menu');
-    this._item.addEventListener('mousedown', this._mouseDown, this);
+    this._item.addEventListener(UI.ToolbarButton.Events.MouseDown, this._mouseDown, this);
   }
 
   /**
@@ -707,9 +707,12 @@ Main.Main.MainMenuItem = class {
       var undock = new UI.ToolbarToggle(Common.UIString('Undock into separate window'), 'largeicon-undock');
       var bottom = new UI.ToolbarToggle(Common.UIString('Dock to bottom'), 'largeicon-dock-to-bottom');
       var right = new UI.ToolbarToggle(Common.UIString('Dock to right'), 'largeicon-dock-to-right');
-      undock.addEventListener('mouseup', setDockSide.bind(null, Components.DockController.State.Undocked));
-      bottom.addEventListener('mouseup', setDockSide.bind(null, Components.DockController.State.DockedToBottom));
-      right.addEventListener('mouseup', setDockSide.bind(null, Components.DockController.State.DockedToRight));
+      undock.addEventListener(
+          UI.ToolbarButton.Events.MouseUp, setDockSide.bind(null, Components.DockController.State.Undocked));
+      bottom.addEventListener(
+          UI.ToolbarButton.Events.MouseUp, setDockSide.bind(null, Components.DockController.State.DockedToBottom));
+      right.addEventListener(
+          UI.ToolbarButton.Events.MouseUp, setDockSide.bind(null, Components.DockController.State.DockedToRight));
       undock.setToggled(Components.dockController.dockSide() === Components.DockController.State.Undocked);
       bottom.setToggled(Components.dockController.dockSide() === Components.DockController.State.DockedToBottom);
       right.setToggled(Components.dockController.dockSide() === Components.DockController.State.DockedToRight);
@@ -805,8 +808,8 @@ Main.Main.PauseListener = class {
   _debuggerPaused(event) {
     SDK.targetManager.removeModelListener(
         SDK.DebuggerModel, SDK.DebuggerModel.Events.DebuggerPaused, this._debuggerPaused, this);
-    var debuggerPausedDetails = /** @type {!SDK.DebuggerPausedDetails} */ (event.data);
-    var debuggerModel = /** @type {!SDK.DebuggerModel} */ (event.target);
+    var debuggerModel = /** @type {!SDK.DebuggerModel} */ (event.data);
+    var debuggerPausedDetails = debuggerModel.debuggerPausedDetails();
     UI.context.setFlavor(SDK.Target, debuggerModel.target());
     Common.Revealer.reveal(debuggerPausedDetails);
   }

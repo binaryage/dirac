@@ -173,14 +173,13 @@ Workspace.UISourceCode = class extends Common.Object {
    * @param {!Common.ResourceType=} contentType
    */
   _updateName(name, url, contentType) {
-    var oldURL = this.url();
     this._url = this._url.substring(0, this._url.length - this._name.length) + name;
     this._name = name;
     if (url)
       this._url = url;
     if (contentType)
       this._contentType = contentType;
-    this.dispatchEventToListeners(Workspace.UISourceCode.Events.TitleChanged, oldURL);
+    this.dispatchEventToListeners(Workspace.UISourceCode.Events.TitleChanged, this);
   }
 
   /**
@@ -222,44 +221,11 @@ Workspace.UISourceCode = class extends Common.Object {
     return promise;
   }
 
-  /**
-   * @param {function()} callback
-   */
-  _pushCheckContentUpdatedCallback(callback) {
-    if (!this._checkContentUpdatedCallbacks)
-      this._checkContentUpdatedCallbacks = [];
-    this._checkContentUpdatedCallbacks.push(callback);
-  }
-
-  _terminateContentCheck() {
-    delete this._checkingContent;
-    if (this._checkContentUpdatedCallbacks) {
-      this._checkContentUpdatedCallbacks.forEach(function(callback) {
-        callback();
-      });
-      delete this._checkContentUpdatedCallbacks;
-    }
-  }
-
-  /**
-   * @param {boolean=} forceLoad
-   * @param {function()=} callback
-   */
-  checkContentUpdated(forceLoad, callback) {
-    callback = callback || function() {};
-    forceLoad = forceLoad || this._forceLoadOnCheckContent;
-    if (!this.contentLoaded() && !forceLoad) {
-      callback();
+  checkContentUpdated() {
+    if (!this._contentLoaded && !this._forceLoadOnCheckContent)
       return;
-    }
 
-    if (!this._project.canSetFileContent()) {
-      callback();
-      return;
-    }
-    this._pushCheckContentUpdatedCallback(callback);
-
-    if (this._checkingContent)
+    if (!this._project.canSetFileContent() || this._checkingContent)
       return;
 
     this._checkingContent = true;
@@ -270,27 +236,23 @@ Workspace.UISourceCode = class extends Common.Object {
      * @this {Workspace.UISourceCode}
      */
     function contentLoaded(updatedContent) {
+      this._checkingContent = false;
       if (updatedContent === null) {
         var workingCopy = this.workingCopy();
         this._contentCommitted('', false);
         this.setWorkingCopy(workingCopy);
-        this._terminateContentCheck();
         return;
       }
-      if (typeof this._lastAcceptedContent === 'string' && this._lastAcceptedContent === updatedContent) {
-        this._terminateContentCheck();
+      if (typeof this._lastAcceptedContent === 'string' && this._lastAcceptedContent === updatedContent)
         return;
-      }
 
       if (this._content === updatedContent) {
         delete this._lastAcceptedContent;
-        this._terminateContentCheck();
         return;
       }
 
       if (!this.isDirty() || this._workingCopy === updatedContent) {
         this._contentCommitted(updatedContent, false);
-        this._terminateContentCheck();
         return;
       }
 
@@ -300,7 +262,6 @@ Workspace.UISourceCode = class extends Common.Object {
         this._contentCommitted(updatedContent, false);
       else
         this._lastAcceptedContent = updatedContent;
-      this._terminateContentCheck();
     }
   }
 
@@ -347,7 +308,8 @@ Workspace.UISourceCode = class extends Common.Object {
     }
 
     this._innerResetWorkingCopy();
-    this.dispatchEventToListeners(Workspace.UISourceCode.Events.WorkingCopyCommitted, {content: content});
+    this.dispatchEventToListeners(
+        Workspace.UISourceCode.Events.WorkingCopyCommitted, {uiSourceCode: this, content: content});
     this._project.workspace().dispatchEventToListeners(
         Workspace.Workspace.Events.WorkingCopyCommitted, {uiSourceCode: this, content: content});
     if (committedByUser) {
@@ -456,7 +418,7 @@ Workspace.UISourceCode = class extends Common.Object {
 
   _workingCopyChanged() {
     this._removeAllMessages();
-    this.dispatchEventToListeners(Workspace.UISourceCode.Events.WorkingCopyChanged);
+    this.dispatchEventToListeners(Workspace.UISourceCode.Events.WorkingCopyChanged, this);
     this._project.workspace().dispatchEventToListeners(
         Workspace.Workspace.Events.WorkingCopyChanged, {uiSourceCode: this});
   }
