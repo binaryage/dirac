@@ -191,6 +191,7 @@ UI.TabbedPane = class extends UI.VBox {
     isCloseable = typeof isCloseable === 'boolean' ? isCloseable : this._closeableTabs;
     var tab = new UI.TabbedPaneTab(this, id, tabTitle, isCloseable, view, tabTooltip);
     tab.setDelegate(this._delegate);
+    console.assert(!this._tabsById[id], `Tabbed pane already contains a tab with id '${id}'`);
     this._tabsById[id] = tab;
     if (index !== undefined)
       this._tabs.splice(index, 0, tab);
@@ -455,6 +456,7 @@ UI.TabbedPane = class extends UI.VBox {
   setTabSlider(enable) {
     this._sliderEnabled = enable;
     this._tabSlider.classList.toggle('enabled', enable);
+    this._headerElement.classList.add('tabbed-pane-no-tab-borders');
   }
 
   /**
@@ -747,7 +749,7 @@ UI.TabbedPane = class extends UI.VBox {
   _showTab(tab) {
     tab.tabElement.classList.add('selected');
     tab.tabElement.setAttribute('aria-selected', 'true');
-    tab.view.showWidget(this.element);
+    tab.view.showWidget();
     this._updateTabSlider();
   }
 

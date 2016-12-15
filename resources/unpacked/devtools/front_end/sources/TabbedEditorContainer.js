@@ -298,7 +298,6 @@ Sources.TabbedEditorContainer = class extends Common.Object {
     if (!shouldPrompt ||
         confirm(Common.UIString('Are you sure you want to close unsaved file: %s?', uiSourceCode.name()))) {
       uiSourceCode.resetWorkingCopy();
-      var previousView = this._currentView;
       if (nextTabId)
         this._tabbedPane.selectTab(nextTabId, true);
       this._tabbedPane.closeTab(id, true);
@@ -548,19 +547,28 @@ Sources.TabbedEditorContainer = class extends Common.Object {
     }
   }
 
+  /**
+   * @param {!Common.Event} event
+   */
   _uiSourceCodeTitleChanged(event) {
-    var uiSourceCode = /** @type {!Workspace.UISourceCode} */ (event.target);
+    var uiSourceCode = /** @type {!Workspace.UISourceCode} */ (event.data);
     this._updateFileTitle(uiSourceCode);
     this._updateHistory();
   }
 
+  /**
+   * @param {!Common.Event} event
+   */
   _uiSourceCodeWorkingCopyChanged(event) {
-    var uiSourceCode = /** @type {!Workspace.UISourceCode} */ (event.target);
+    var uiSourceCode = /** @type {!Workspace.UISourceCode} */ (event.data);
     this._updateFileTitle(uiSourceCode);
   }
 
+  /**
+   * @param {!Common.Event} event
+   */
   _uiSourceCodeWorkingCopyCommitted(event) {
-    var uiSourceCode = /** @type {!Workspace.UISourceCode} */ (event.target);
+    var uiSourceCode = /** @type {!Workspace.UISourceCode} */ (event.data.uiSourceCode);
     this._updateFileTitle(uiSourceCode);
   }
 

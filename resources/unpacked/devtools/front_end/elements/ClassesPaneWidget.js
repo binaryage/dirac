@@ -10,7 +10,6 @@ Elements.ClassesPaneWidget = class extends UI.Widget {
     this.element.className = 'styles-element-classes-pane';
     var container = this.element.createChild('div', 'title-container');
     this._input = container.createChild('div', 'new-class-input monospace');
-    this._input.setAttribute('placeholder', Common.UIString('Add new class'));
     this.setDefaultFocusedElement(this._input);
     this._classesContainer = this.element.createChild('div', 'source-code');
     this._classesContainer.classList.add('styles-element-classes-container');
@@ -19,6 +18,7 @@ Elements.ClassesPaneWidget = class extends UI.Widget {
     this._prompt.renderAsBlock();
 
     var proxyElement = this._prompt.attach(this._input);
+    this._prompt.setPlaceholder(Common.UIString('Add new class'));
     proxyElement.addEventListener('keydown', this._onKeyDown.bind(this), false);
 
     SDK.targetManager.addModelListener(SDK.DOMModel, SDK.DOMModel.Events.DOMMutated, this._onDOMMutated, this);
@@ -184,7 +184,7 @@ Elements.ClassesPaneWidget.ButtonProvider = class {
     this._button = new UI.ToolbarToggle(Common.UIString('Element Classes'), '');
     this._button.setText('.cls');
     this._button.element.classList.add('monospace');
-    this._button.addEventListener('click', this._clicked, this);
+    this._button.addEventListener(UI.ToolbarButton.Events.Click, this._clicked, this);
     this._view = new Elements.ClassesPaneWidget();
   }
 

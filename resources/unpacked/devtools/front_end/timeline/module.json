@@ -123,6 +123,7 @@
     ],
     "scripts": [
         "CountersGraph.js",
+        "ExtensionTracingSession.js",
         "MemoryCountersGraph.js",
         "TimelineController.js",
         "TimelineLoader.js",
@@ -131,6 +132,7 @@
         "TimelineFlameChart.js",
         "TimelineNetworkFlameChart.js",
         "TimelineTreeView.js",
+        "TimelineLandingPage.js",
         "TimelineUIUtils.js",
         "TimelineLayersView.js",
         "TimelinePaintProfilerView.js",
@@ -139,6 +141,7 @@
     "resources": [
         "invalidationsTree.css",
         "timelineFlamechartPopover.css",
+        "timelineLandingPage.css",
         "timelinePanel.css",
         "timelinePaintProfiler.css",
         "timelineStatusDialog.css"

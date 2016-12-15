@@ -231,7 +231,6 @@ LayerViewer.Layers3DView = class extends UI.VBox {
   _updateTransformAndConstraints() {
     var paddingFraction = 0.1;
     var viewport = this._layerTree.viewportSize();
-    var root = this._layerTree.root();
     var baseWidth = viewport ? viewport.width : this._dimensionsForAutoscale.width;
     var baseHeight = viewport ? viewport.height : this._dimensionsForAutoscale.height;
     var canvasWidth = this._canvasElement.width;
@@ -697,8 +696,7 @@ LayerViewer.Layers3DView = class extends UI.VBox {
     if (selection && selection.type() === LayerViewer.LayerView.Selection.Type.Snapshot) {
       contextMenu.appendItem(
           Common.UIString('Show Paint Profiler'),
-          this.dispatchEventToListeners.bind(
-              this, LayerViewer.Layers3DView.Events.PaintProfilerRequested, selection.snapshot()),
+          this.dispatchEventToListeners.bind(this, LayerViewer.Layers3DView.Events.PaintProfilerRequested, selection),
           false);
     }
     this._layerViewHost.showContextMenu(contextMenu, selection);

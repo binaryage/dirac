@@ -220,12 +220,9 @@ Profiler.ProfileType = class extends Common.Object {
   profileBeingRecordedRemoved() {
   }
 
-  _reset() {
-    var profiles = this._profiles.slice(0);
-    for (var i = 0; i < profiles.length; ++i)
-      this._disposeProfile(profiles[i]);
+  reset() {
+    this._profiles.slice(0).forEach(this._disposeProfile.bind(this));
     this._profiles = [];
-
     this._nextProfileUid = 1;
   }
 
@@ -429,11 +426,10 @@ Profiler.ProfilesPanel = class extends UI.PanelWithSidebar {
     toolbar.appendToolbarItem(this._toggleRecordButton);
 
     this.clearResultsButton = new UI.ToolbarButton(Common.UIString('Clear all profiles'), 'largeicon-clear');
-    this.clearResultsButton.addEventListener('click', this._reset, this);
+    this.clearResultsButton.addEventListener(UI.ToolbarButton.Events.Click, this._reset, this);
     toolbar.appendToolbarItem(this.clearResultsButton);
     toolbar.appendSeparator();
-    toolbar.appendToolbarItem(
-        /** @type {!UI.ToolbarItem} */ (UI.Toolbar.createActionButtonForId('profiler.collect-garbage')));
+    toolbar.appendToolbarItem(UI.Toolbar.createActionButtonForId('components.collect-garbage'));
 
     this._profileTypeToolbar = new UI.Toolbar('', this._toolbarElement);
     this._profileViewToolbar = new UI.Toolbar('', this._toolbarElement);
@@ -598,9 +594,7 @@ Profiler.ProfilesPanel = class extends UI.PanelWithSidebar {
   }
 
   _reset() {
-    var types = Profiler.ProfileTypeRegistry.instance.profileTypes();
-    for (var i = 0; i < types.length; i++)
-      types[i]._reset();
+    Profiler.ProfileTypeRegistry.instance.profileTypes().forEach(type => type.reset());
 
     delete this.visibleView;
 
@@ -613,8 +607,6 @@ Profiler.ProfilesPanel = class extends UI.PanelWithSidebar {
     this._launcherView.detach();
     this.profileViews.removeChildren();
     this._profileViewToolbar.removeToolbarItems();
-
-    this.removeAllListeners();
 
     this._profileViewToolbar.element.classList.remove('hidden');
     this.clearResultsButton.element.classList.remove('hidden');
@@ -1209,9 +1201,6 @@ Profiler.ProfileGroupSidebarTreeElement = class extends TreeElement {
   }
 };
 
-/**
- * @unrestricted
- */
 Profiler.ProfilesSidebarTreeElement = class extends TreeElement {
   /**
    * @param {!Profiler.ProfilesPanel} panel
@@ -1244,10 +1233,8 @@ Profiler.ProfilesSidebarTreeElement = class extends TreeElement {
   }
 };
 
-
 /**
  * @implements {UI.ActionDelegate}
- * @unrestricted
  */
 Profiler.ProfilesPanel.RecordActionDelegate = class {
   /**
@@ -1260,24 +1247,6 @@ Profiler.ProfilesPanel.RecordActionDelegate = class {
     var panel = UI.context.flavor(Profiler.ProfilesPanel);
     console.assert(panel && panel instanceof Profiler.ProfilesPanel);
     panel.toggleRecord();
-    return true;
-  }
-};
-
-/**
- * @implements {UI.ActionDelegate}
- * @unrestricted
- */
-Profiler.ProfilesPanel.GCActionDelegate = class {
-  /**
-   * @override
-   * @param {!UI.Context} context
-   * @param {string} actionId
-   * @return {boolean}
-   */
-  handleAction(context, actionId) {
-    for (var target of SDK.targetManager.targets())
-      target.heapProfilerAgent().collectGarbage();
     return true;
   }
 };

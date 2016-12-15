@@ -190,7 +190,7 @@ Profiler.CPUProfileType = class extends Profiler.ProfileType {
 
   startRecordingProfile() {
     var target = UI.context.flavor(SDK.Target);
-    if (this._profileBeingRecorded || !target)
+    if (this.profileBeingRecorded() || !target)
       return;
     var profile = new Profiler.CPUProfileHeader(target, this);
     this.setProfileBeingRecorded(profile);
@@ -203,7 +203,7 @@ Profiler.CPUProfileType = class extends Profiler.ProfileType {
 
   stopRecordingProfile() {
     this._recording = false;
-    if (!this._profileBeingRecorded || !this._profileBeingRecorded.target())
+    if (!this.profileBeingRecorded() || !this.profileBeingRecorded().target())
       return;
 
     var recordedProfile;
@@ -213,12 +213,12 @@ Profiler.CPUProfileType = class extends Profiler.ProfileType {
      * @this {Profiler.CPUProfileType}
      */
     function didStopProfiling(profile) {
-      if (!this._profileBeingRecorded)
+      if (!this.profileBeingRecorded())
         return;
       console.assert(profile);
-      this._profileBeingRecorded.setProtocolProfile(profile);
-      this._profileBeingRecorded.updateStatus('');
-      recordedProfile = this._profileBeingRecorded;
+      this.profileBeingRecorded().setProtocolProfile(profile);
+      this.profileBeingRecorded().updateStatus('');
+      recordedProfile = this.profileBeingRecorded();
       this.setProfileBeingRecorded(null);
     }
 
@@ -229,7 +229,8 @@ Profiler.CPUProfileType = class extends Profiler.ProfileType {
       this.dispatchEventToListeners(Profiler.ProfileType.Events.ProfileComplete, recordedProfile);
     }
 
-    this._profileBeingRecorded.target()
+    this.profileBeingRecorded()
+        .target()
         .cpuProfilerModel.stopRecording()
         .then(didStopProfiling.bind(this))
         .then(SDK.targetManager.resumeAllTargets.bind(SDK.targetManager))
@@ -332,8 +333,9 @@ Profiler.CPUFlameChartDataProvider = class extends Profiler.ProfileFlameChartDat
    * @param {?SDK.Target} target
    */
   constructor(cpuProfile, target) {
-    super(target);
+    super();
     this._cpuProfile = cpuProfile;
+    this._target = target;
   }
 
   /**
@@ -373,7 +375,6 @@ Profiler.CPUFlameChartDataProvider = class extends Profiler.ProfileFlameChartDat
     var entryTotalTimes = new Float32Array(entries.length);
     var entrySelfTimes = new Float32Array(entries.length);
     var entryStartTimes = new Float64Array(entries.length);
-    var minimumBoundary = this.minimumBoundary();
 
     for (var i = 0; i < entries.length; ++i) {
       var entry = entries[i];

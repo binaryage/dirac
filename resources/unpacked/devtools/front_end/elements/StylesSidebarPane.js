@@ -719,25 +719,27 @@ Elements.StylePropertiesSection = class {
     var items = [];
 
     var textShadowButton = new UI.ToolbarButton(Common.UIString('Add text-shadow'), 'largeicon-text-shadow');
-    textShadowButton.addEventListener('click', this._onInsertShadowPropertyClick.bind(this, 'text-shadow'));
+    textShadowButton.addEventListener(
+        UI.ToolbarButton.Events.Click, this._onInsertShadowPropertyClick.bind(this, 'text-shadow'));
     items.push(textShadowButton);
 
     var boxShadowButton = new UI.ToolbarButton(Common.UIString('Add box-shadow'), 'largeicon-box-shadow');
-    boxShadowButton.addEventListener('click', this._onInsertShadowPropertyClick.bind(this, 'box-shadow'));
+    boxShadowButton.addEventListener(
+        UI.ToolbarButton.Events.Click, this._onInsertShadowPropertyClick.bind(this, 'box-shadow'));
     items.push(boxShadowButton);
 
     var colorButton = new UI.ToolbarButton(Common.UIString('Add color'), 'largeicon-foreground-color');
-    colorButton.addEventListener('click', this._onInsertColorPropertyClick.bind(this));
+    colorButton.addEventListener(UI.ToolbarButton.Events.Click, this._onInsertColorPropertyClick, this);
     items.push(colorButton);
 
     var backgroundButton = new UI.ToolbarButton(Common.UIString('Add background-color'), 'largeicon-background-color');
-    backgroundButton.addEventListener('click', this._onInsertBackgroundColorPropertyClick.bind(this));
+    backgroundButton.addEventListener(UI.ToolbarButton.Events.Click, this._onInsertBackgroundColorPropertyClick, this);
     items.push(backgroundButton);
 
     var newRuleButton = null;
     if (this._style.parentRule) {
       newRuleButton = new UI.ToolbarButton(Common.UIString('Insert Style Rule Below'), 'largeicon-add');
-      newRuleButton.addEventListener('click', this._onNewRuleClick.bind(this));
+      newRuleButton.addEventListener(UI.ToolbarButton.Events.Click, this._onNewRuleClick, this);
       items.push(newRuleButton);
     }
 
@@ -880,7 +882,7 @@ Elements.StylePropertiesSection = class {
    * @param {!Common.Event} event
    */
   _onNewRuleClick(event) {
-    event.consume();
+    event.data.consume();
     var rule = this._style.parentRule;
     var range = Common.TextRange.createFromLocation(rule.style.range.endLine, rule.style.range.endColumn + 1);
     this._parentPane._addBlankSection(this, /** @type {string} */ (rule.styleSheetId), range);
@@ -891,7 +893,7 @@ Elements.StylePropertiesSection = class {
    * @param {!Common.Event} event
    */
   _onInsertShadowPropertyClick(propertyName, event) {
-    event.consume(true);
+    event.data.consume(true);
     var treeElement = this.addNewBlankProperty();
     treeElement.property.name = propertyName;
     treeElement.property.value = '0 0 black';
@@ -905,7 +907,7 @@ Elements.StylePropertiesSection = class {
    * @param {!Common.Event} event
    */
   _onInsertColorPropertyClick(event) {
-    event.consume(true);
+    event.data.consume(true);
     var treeElement = this.addNewBlankProperty();
     treeElement.property.name = 'color';
     treeElement.property.value = 'black';
@@ -919,7 +921,7 @@ Elements.StylePropertiesSection = class {
    * @param {!Common.Event} event
    */
   _onInsertBackgroundColorPropertyClick(event) {
-    event.consume(true);
+    event.data.consume(true);
     var treeElement = this.addNewBlankProperty();
     treeElement.property.name = 'background-color';
     treeElement.property.value = 'white';
@@ -1511,7 +1513,6 @@ Elements.StylePropertiesSection = class {
     var oldSelectorRange = rule.selectorRange();
     if (!oldSelectorRange)
       return Promise.resolve();
-    var selectedNode = this._parentPane.node();
     return rule.setSelectorText(newContent)
         .then(onSelectorsUpdated.bind(this, /** @type {!SDK.CSSStyleRule} */ (rule), oldSelectorRange));
   }
@@ -1717,7 +1718,6 @@ Elements.KeyframePropertiesSection = class extends Elements.StylePropertiesSecti
     var oldRange = rule.key().range;
     if (!oldRange)
       return Promise.resolve();
-    var selectedNode = this._parentPane.node();
     return rule.setKeyText(newContent).then(updateSourceRanges.bind(this));
   }
 
@@ -2107,10 +2107,30 @@ Elements.StylePropertyTreeElement = class extends TreeElement {
     }
   }
 
+  /**
+   * @override
+   */
+  onexpand() {
+    this._updateExpandElement();
+  }
+
+  /**
+   * @override
+   */
+  oncollapse() {
+    this._updateExpandElement();
+  }
+
+  _updateExpandElement() {
+    if (this.expanded)
+      this._expandElement.setIconType('smallicon-triangle-bottom');
+    else
+      this._expandElement.setIconType('smallicon-triangle-right');
+  }
+
   updateTitle() {
     this._updateState();
-    this._expandElement = createElement('span');
-    this._expandElement.className = 'expand-element';
+    this._expandElement = UI.Icon.create('smallicon-triangle-right', 'expand-icon');
 
     var propertyRenderer =
         new Elements.StylesSidebarPropertyRenderer(this._style.parentRule, this.node(), this.name, this.value);
@@ -2321,8 +2341,15 @@ Elements.StylePropertyTreeElement = class extends TreeElement {
       selectElement.parentElement.scrollIntoViewIfNeeded(false);
 
     var applyItemCallback = !isEditingName ? this._applyFreeFlowStyleTextEdit.bind(this) : undefined;
-    var cssCompletions = isEditingName ? SDK.cssMetadata().allProperties() :
-                                         SDK.cssMetadata().propertyValues(this.nameElement.textContent);
+    var cssCompletions = [];
+    if (isEditingName) {
+      cssCompletions = SDK.cssMetadata().allProperties();
+      cssCompletions =
+          cssCompletions.filter(property => SDK.cssMetadata().isSVGProperty(property) === this.node().isSVGNode());
+    } else {
+      cssCompletions = SDK.cssMetadata().propertyValues(this.nameElement.textContent);
+    }
+
     this._prompt = new Elements.StylesSidebarPane.CSSPropertyPrompt(cssCompletions, this, isEditingName);
     this._prompt.setAutocompletionTimeout(0);
     if (applyItemCallback) {
@@ -2506,7 +2533,7 @@ Elements.StylePropertyTreeElement = class extends TreeElement {
     var isEditingName = context.isEditingName;
 
     // Determine where to move to before making changes
-    var createNewProperty, moveToPropertyName, moveToSelector;
+    var createNewProperty, moveToSelector;
     var isDataPasted = 'originalName' in context;
     var isDirtyViaPaste = isDataPasted && (this.nameElement.textContent !== context.originalName ||
                                            this.valueElement.textContent !== context.originalValue);
@@ -2517,12 +2544,12 @@ Elements.StylePropertyTreeElement = class extends TreeElement {
     if (moveDirection === 'forward' && (!isEditingName || isPropertySplitPaste) ||
         moveDirection === 'backward' && isEditingName) {
       moveTo = moveTo._findSibling(moveDirection);
-      if (moveTo)
-        moveToPropertyName = moveTo.name;
-      else if (moveDirection === 'forward' && (!this._newProperty || userInput))
-        createNewProperty = true;
-      else if (moveDirection === 'backward')
-        moveToSelector = true;
+      if (!moveTo) {
+        if (moveDirection === 'forward' && (!this._newProperty || userInput))
+          createNewProperty = true;
+        else if (moveDirection === 'backward')
+          moveToSelector = true;
+      }
     }
 
     // Make the Changes and trigger the moveToNextCallback after updating.
@@ -3016,7 +3043,7 @@ Elements.StylesSidebarPropertyRenderer = class {
 Elements.StylesSidebarPane.ButtonProvider = class {
   constructor() {
     this._button = new UI.ToolbarButton(Common.UIString('New Style Rule'), 'largeicon-add');
-    this._button.addEventListener('click', this._clicked, this);
+    this._button.addEventListener(UI.ToolbarButton.Events.Click, this._clicked, this);
     var longclickTriangle = UI.Icon.create('largeicon-longclick-triangle', 'long-click-glyph');
     this._button.element.appendChild(longclickTriangle);
 
@@ -3034,7 +3061,10 @@ Elements.StylesSidebarPane.ButtonProvider = class {
     }
   }
 
-  _clicked() {
+  /**
+   * @param {!Common.Event} event
+   */
+  _clicked(event) {
     Elements.StylesSidebarPane._instance._createNewRuleInViaInspectorStyleSheet();
   }
 

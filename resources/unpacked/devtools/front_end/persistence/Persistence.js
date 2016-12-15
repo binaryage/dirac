@@ -130,11 +130,19 @@ Persistence.Persistence = class extends Common.Object {
    * @param {!Common.Event} event
    */
   _onWorkingCopyChanged(event) {
-    var uiSourceCode = /** @type {!Workspace.UISourceCode} */ (event.target);
+    var uiSourceCode = /** @type {!Workspace.UISourceCode} */ (event.data);
     var binding = uiSourceCode[Persistence.Persistence._binding];
     if (!binding || binding[Persistence.Persistence._muteWorkingCopy])
       return;
     var other = binding.network === uiSourceCode ? binding.fileSystem : binding.network;
+    if (!uiSourceCode.isDirty()) {
+      binding[Persistence.Persistence._muteWorkingCopy] = true;
+      other.resetWorkingCopy();
+      binding[Persistence.Persistence._muteWorkingCopy] = false;
+      this._contentSyncedForTest();
+      return;
+    }
+
     var target = Bindings.NetworkProject.targetForUISourceCode(binding.network);
     if (target.isNodeJS()) {
       var newContent = uiSourceCode.workingCopy();
@@ -164,7 +172,7 @@ Persistence.Persistence = class extends Common.Object {
    * @param {!Common.Event} event
    */
   _onWorkingCopyCommitted(event) {
-    var uiSourceCode = /** @type {!Workspace.UISourceCode} */ (event.target);
+    var uiSourceCode = /** @type {!Workspace.UISourceCode} */ (event.data.uiSourceCode);
     var binding = uiSourceCode[Persistence.Persistence._binding];
     if (!binding || binding[Persistence.Persistence._muteCommit])
       return;
