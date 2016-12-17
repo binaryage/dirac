@@ -44,6 +44,8 @@ Timeline.TimelinePanel = class extends UI.Panel {
         this.element, [UI.DropTarget.Types.Files, UI.DropTarget.Types.URIList],
         Common.UIString('Drop timeline file or URL here'), this._handleDrop.bind(this));
 
+    /** @type {!Array<!UI.ToolbarItem>} */
+    this._recordingOptionUIControls = [];
     this._state = Timeline.TimelinePanel.State.Idle;
     this._detailsLinkifier = new Components.Linkifier();
     this._windowStartTime = 0;
@@ -80,7 +82,10 @@ Timeline.TimelinePanel = class extends UI.Panel {
     this._captureLayersAndPicturesSetting = Common.settings.createSetting('timelineCaptureLayersAndPictures', false);
     this._captureFilmStripSetting = Common.settings.createSetting('timelineCaptureFilmStrip', false);
 
-    this._markUnusedCSS = Common.settings.createSetting('timelineMarkUnusedCSS', false);
+    this._showScreenshotsSetting = Common.settings.createLocalSetting('timelineShowScreenshots', false);
+    this._showScreenshotsSetting.addChangeListener(this._onModeChanged, this);
+    this._showMemorySetting = Common.settings.createLocalSetting('timelineShowMemory', false);
+    this._showMemorySetting.addChangeListener(this._onModeChanged, this);
 
     this._panelToolbar = new UI.Toolbar('', this.element);
 
@@ -273,9 +278,7 @@ Timeline.TimelinePanel = class extends UI.Panel {
    * @return {!UI.ToolbarItem}
    */
   _createSettingCheckbox(name, setting, tooltip) {
-    if (!this._recordingOptionUIControls)
-      this._recordingOptionUIControls = [];
-    var checkboxItem = new UI.ToolbarCheckbox(name, tooltip, setting);
+    const checkboxItem = new UI.ToolbarCheckbox(name, tooltip, setting);
     this._recordingOptionUIControls.push(checkboxItem);
     return checkboxItem;
   }
@@ -283,28 +286,38 @@ Timeline.TimelinePanel = class extends UI.Panel {
   _recreateToolbarItems() {
     this._panelToolbar.removeToolbarItems();
 
-    var perspectiveSetting =
+    const perspectiveSetting =
         Common.settings.createSetting('timelinePerspective', Timeline.TimelinePanel.Perspectives.Load);
 
     // Record
-    if (Runtime.experiments.isEnabled('timelineRecordingPerspectives') &&
+    if (Runtime.experiments.isEnabled('timelineLandingPage')) {
+      const newButton = new UI.ToolbarButton(
+          Common.UIString('New recording'), 'largeicon-add', Common.UIString('New'));
+      newButton.addEventListener(UI.ToolbarButton.Events.Click, this._clear, this);
+      this._panelToolbar.appendToolbarItem(newButton);
+      this._panelToolbar.appendToolbarItem(UI.Toolbar.createActionButtonForId('main.reload'));
+      this._panelToolbar.appendToolbarItem(UI.Toolbar.createActionButton(this._toggleRecordAction));
+    } else if (Runtime.experiments.isEnabled('timelineRecordingPerspectives') &&
         perspectiveSetting.get() === Timeline.TimelinePanel.Perspectives.Load) {
-      this._reloadButton = new UI.ToolbarButton(Common.UIString('Record & Reload'), 'largeicon-refresh');
-      this._reloadButton.addEventListener(UI.ToolbarButton.Events.Click, () => SDK.targetManager.reloadPage());
-      this._panelToolbar.appendToolbarItem(this._reloadButton);
+      const reloadButton = new UI.ToolbarButton(Common.UIString('Record & Reload'), 'largeicon-refresh');
+      reloadButton.addEventListener(UI.ToolbarButton.Events.Click, () => SDK.targetManager.reloadPage());
+      this._panelToolbar.appendToolbarItem(reloadButton);
     } else {
       this._panelToolbar.appendToolbarItem(UI.Toolbar.createActionButton(this._toggleRecordAction));
     }
 
     // Clear
-    var clearButton = new UI.ToolbarButton(Common.UIString('Clear recording'), 'largeicon-clear');
-    clearButton.addEventListener(UI.ToolbarButton.Events.Click, this._clear, this);
-    this._panelToolbar.appendToolbarItem(clearButton);
+    if (!Runtime.experiments.isEnabled('timelineLandingPage')) {
+      const clearButton = new UI.ToolbarButton(Common.UIString('Clear recording'), 'largeicon-clear');
+      clearButton.addEventListener(UI.ToolbarButton.Events.Click, this._clear, this);
+      this._panelToolbar.appendToolbarItem(clearButton);
+    }
 
     this._panelToolbar.appendSeparator();
 
     // Combo
-    if (Runtime.experiments.isEnabled('timelineRecordingPerspectives')) {
+    if (!Runtime.experiments.isEnabled('timelineLandingPage') &&
+        Runtime.experiments.isEnabled('timelineRecordingPerspectives')) {
       /**
        * @this {!Timeline.TimelinePanel}
        */
@@ -362,33 +375,41 @@ Timeline.TimelinePanel = class extends UI.Panel {
       this._onModeChanged();
     }
 
-    var screenshotCheckbox = this._createSettingCheckbox(
-        Common.UIString('Screenshots'), this._captureFilmStripSetting,
-        Common.UIString('Capture screenshots while recording. (Has small performance overhead)'));
-
-    if (!Runtime.experiments.isEnabled('timelineRecordingPerspectives') ||
-        perspectiveSetting.get() === Timeline.TimelinePanel.Perspectives.Custom) {
-      this._panelToolbar.appendToolbarItem(this._createSettingCheckbox(
-          Common.UIString('Network'), this._captureNetworkSetting,
-          Common.UIString('Show network requests information')));
-      this._panelToolbar.appendToolbarItem(this._createSettingCheckbox(
-          Common.UIString('JS Profile'), this._captureJSProfileSetting,
-          Common.UIString('Capture JavaScript stacks with sampling profiler. (Has small performance overhead)')));
-      this._panelToolbar.appendToolbarItem(screenshotCheckbox);
-      this._panelToolbar.appendToolbarItem(this._createSettingCheckbox(
-          Common.UIString('Memory'), this._captureMemorySetting,
-          Common.UIString('Capture memory information on every timeline event.')));
-      this._panelToolbar.appendToolbarItem(this._createSettingCheckbox(
-          Common.UIString('Paint'), this._captureLayersAndPicturesSetting,
-          Common.UIString(
-              'Capture graphics layer positions and rasterization draw calls. (Has large performance overhead)')));
+    // Checkboxes
+    if (Runtime.experiments.isEnabled('timelineLandingPage')) {
+      if (!this._model.isEmpty()) {
+        this._panelToolbar.appendToolbarItem(this._createSettingCheckbox(Common.UIString('Memory'),
+            this._showMemorySetting, Common.UIString('Show memory timeline.')));
+        if (this._filmStripModel.frames().length) {
+          this._showScreenshotsSetting.set(true);
+          this._panelToolbar.appendToolbarItem(this._createSettingCheckbox(Common.UIString('Screenshots'),
+              this._showScreenshotsSetting, Common.UIString('Show captured screenshots.')));
+        }
+      }
     } else {
-      this._panelToolbar.appendToolbarItem(screenshotCheckbox);
-    }
+      const screenshotCheckbox = this._createSettingCheckbox(
+          Common.UIString('Screenshots'), this._captureFilmStripSetting,
+          Common.UIString('Capture screenshots while recording. (Has small performance overhead)'));
 
-    if (Runtime.experiments.isEnabled('timelineRuleUsageRecording')) {
-      this._panelToolbar.appendToolbarItem(this._createSettingCheckbox(
-          Common.UIString('CSS coverage'), this._markUnusedCSS, Common.UIString('Mark unused CSS in souces.')));
+      if (!Runtime.experiments.isEnabled('timelineRecordingPerspectives') ||
+          perspectiveSetting.get() === Timeline.TimelinePanel.Perspectives.Custom) {
+        this._panelToolbar.appendToolbarItem(this._createSettingCheckbox(
+            Common.UIString('Network'), this._captureNetworkSetting,
+            Common.UIString('Show network requests information')));
+        this._panelToolbar.appendToolbarItem(this._createSettingCheckbox(
+            Common.UIString('JS Profile'), this._captureJSProfileSetting,
+            Common.UIString('Capture JavaScript stacks with sampling profiler. (Has small performance overhead)')));
+        this._panelToolbar.appendToolbarItem(screenshotCheckbox);
+        this._panelToolbar.appendToolbarItem(this._createSettingCheckbox(
+            Common.UIString('Memory'), this._captureMemorySetting,
+            Common.UIString('Capture memory information on every timeline event.')));
+        this._panelToolbar.appendToolbarItem(this._createSettingCheckbox(
+            Common.UIString('Paint'), this._captureLayersAndPicturesSetting,
+            Common.UIString(
+                'Capture graphics layer positions and rasterization draw calls. (Has large performance overhead)')));
+      } else {
+        this._panelToolbar.appendToolbarItem(screenshotCheckbox);
+      }
     }
 
     const traceProviders = Extensions.extensionServer.traceProviders();
@@ -400,14 +421,16 @@ Timeline.TimelinePanel = class extends UI.Panel {
         this._panelToolbar.appendToolbarItem(checkbox);
       }
     }
-    this._panelToolbar.appendSeparator();
-    this._panelToolbar.appendToolbarItem(UI.Toolbar.createActionButtonForId('components.collect-garbage'));
 
     this._panelToolbar.appendSeparator();
     this._cpuThrottlingCombobox = new UI.ToolbarComboBox(this._onCPUThrottlingChanged.bind(this));
     this._panelToolbar.appendToolbarItem(this._createNetworkConditionsSelect());
     this._panelToolbar.appendToolbarItem(this._cpuThrottlingCombobox);
     this._populateCPUThrottingCombobox();
+
+    this._panelToolbar.appendSeparator();
+    this._panelToolbar.appendToolbarItem(UI.Toolbar.createActionButtonForId('components.collect-garbage'));
+
     this._updateTimelineControls();
   }
 
@@ -535,16 +558,18 @@ Timeline.TimelinePanel = class extends UI.Panel {
   }
 
   _refreshViews() {
-    for (var i = 0; i < this._currentViews.length; ++i) {
-      var view = this._currentViews[i];
-      view.refreshRecords();
-    }
+    this._currentViews.forEach(view => view.refreshRecords());
     this._updateSelectionDetails();
   }
 
   _onModeChanged() {
     if (this._bulkUpdate)
       return;
+    const showMemory = Runtime.experiments.isEnabled('timelineLandingPage')
+        ? this._showMemorySetting.get() : this._captureMemorySetting.get();
+    const showScreenshots = Runtime.experiments.isEnabled('timelineLandingPage')
+        ? this._showScreenshotsSetting.get() && this._filmStripModel.frames().length
+        : this._captureFilmStripSetting.get();
     // Set up overview controls.
     this._overviewControls = [];
     this._overviewControls.push(new Timeline.TimelineEventOverviewResponsiveness(this._model, this._frameModel));
@@ -553,9 +578,9 @@ Timeline.TimelinePanel = class extends UI.Panel {
     this._overviewControls.push(new Timeline.TimelineEventOverviewFrames(this._model, this._frameModel));
     this._overviewControls.push(new Timeline.TimelineEventOverviewCPUActivity(this._model));
     this._overviewControls.push(new Timeline.TimelineEventOverviewNetwork(this._model));
-    if (this._captureFilmStripSetting.get())
+    if (showScreenshots)
       this._overviewControls.push(new Timeline.TimelineFilmStripOverview(this._model, this._filmStripModel));
-    if (this._captureMemorySetting.get())
+    if (showMemory)
       this._overviewControls.push(new Timeline.TimelineEventOverviewMemory(this._model));
     this._overviewPane.setOverviewControls(this._overviewControls);
 
@@ -566,10 +591,12 @@ Timeline.TimelinePanel = class extends UI.Panel {
     this._flameChart.enableNetworkPane(this._captureNetworkSetting.get());
     this._addModeView(this._flameChart);
 
-    if (this._captureMemorySetting.get()) {
-      this._addModeView(
-          new Timeline.MemoryCountersGraph(this, this._model, [Timeline.TimelineUIUtils.visibleEventsFilter()]));
+    if (showMemory) {
+      this._addModeView(new Timeline.MemoryCountersGraph(
+          this, this._model, [Timeline.TimelineUIUtils.visibleEventsFilter()]));
     }
+    if (Runtime.experiments.isEnabled('timelineLandingPage'))
+      this._flameChart.enableNetworkPane(true);
 
     this.doResize();
     this.select(null);
@@ -591,13 +618,7 @@ Timeline.TimelinePanel = class extends UI.Panel {
    * @param {boolean} enabled
    */
   _setUIControlsEnabled(enabled) {
-    /**
-     * @param {!UI.ToolbarButton} toolbarButton
-     */
-    function handler(toolbarButton) {
-      toolbarButton.setEnabled(enabled);
-    }
-    this._recordingOptionUIControls.forEach(handler);
+    this._recordingOptionUIControls.forEach(control => control.setEnabled(enabled));
   }
 
   /**
@@ -610,9 +631,6 @@ Timeline.TimelinePanel = class extends UI.Panel {
       return;
     this._setState(Timeline.TimelinePanel.State.StartPending);
     this._showRecordingStarted();
-
-    if (Runtime.experiments.isEnabled('timelineRuleUsageRecording') && this._markUnusedCSS.get())
-      SDK.CSSModel.fromTarget(mainTarget).startRuleUsageTracking();
 
     this._sessionGeneration = Symbol('timelineSessionGeneration');
     this._autoRecordGeneration = userInitiated ? null : Symbol('Generation');
@@ -678,12 +696,10 @@ Timeline.TimelinePanel = class extends UI.Panel {
     this._sessionGeneration = null;
     this._recordingStartTime = 0;
     this._reset();
+    this._recreateToolbarItems();
   }
 
   _reset() {
-    if (Runtime.experiments.isEnabled('timelineRuleUsageRecording') && this._markUnusedCSS.get())
-      Components.CoverageProfile.instance().reset();
-
     Components.LineLevelProfile.instance().reset();
     this._tracingModel.reset();
     this._model.reset();
@@ -870,6 +886,7 @@ Timeline.TimelinePanel = class extends UI.Panel {
     for (let entry of this._extensionTracingModels)
       entry.model.adjustTime(this._model.minimumRecordTime() + (entry.timeOffset / 1000) - this._recordingStartTime);
 
+    this._recreateToolbarItems();
     this._flameChart.resizeToPreferredHeights();
     this._overviewPane.reset();
     this._overviewPane.setBounds(this._model.minimumRecordTime(), this._model.maximumRecordTime());

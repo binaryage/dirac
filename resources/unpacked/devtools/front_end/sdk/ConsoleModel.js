@@ -164,6 +164,8 @@ SDK.ConsoleModel = class extends SDK.SDKModel {
    * @param {!SDK.ConsoleMessage} msg
    */
   _incrementErrorWarningCount(msg) {
+    if (msg.source === SDK.ConsoleMessage.MessageSource.Violation)
+      return;
     switch (msg.level) {
       case SDK.ConsoleMessage.MessageLevel.Warning:
         this._warnings++;
