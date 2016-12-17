@@ -19,6 +19,8 @@
   (logging/setup! {:log-out   :console
                    :log-level log-level}))
 
+; -- custom reporting -------------------------------------------------------------------------------------------------------
+
 (defn get-fold-name [m]
   (cuerdas/kebab (ns-name (:ns m))))
 
@@ -29,6 +31,18 @@
 
 (defmethod clojure.test/report :end-test-ns [m]
   (print (travis/travis-fold-command "end" (get-fold-name m))))
+
+(defmethod clojure.test/report :summary [m]
+  (let [assertions-count (+ (:pass m) (:fail m) (:error m))
+        failed? (or (pos? (:fail m)) (pos? (:error m)))
+        report-style (if failed? :red :green)
+        status (if failed?
+                 (str (:fail m) " failures, " (:error m) " errors.")
+                 "all passed.")]
+    (with-test-out
+      (println (style (str "Ran " (:test m) " tests containing " assertions-count " assertions => " status) report-style)))))
+
+; -- main entrypoint --------------------------------------------------------------------------------------------------------
 
 (defn -main []
   (setup-logging!)

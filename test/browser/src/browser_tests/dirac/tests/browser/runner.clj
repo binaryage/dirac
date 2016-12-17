@@ -43,6 +43,16 @@
   (with-test-out
     (println (style (str "Testing " (ns-name (:ns m))) :cyan))))
 
+(defmethod clojure.test/report :summary [m]
+  (let [assertions-count (+ (:pass m) (:fail m) (:error m))
+        failed? (or (pos? (:fail m)) (pos? (:error m)))
+        report-style (if failed? :red :green)
+        status (if failed?
+                 (str (:fail m) " failures, " (:error m) " errors.")
+                 "all passed.")]
+    (with-test-out
+      (println (style (str "Ran " (:test m) " tests containing " assertions-count " assertions => " status) report-style)))))
+
 ; -- fixtures ---------------------------------------------------------------------------------------------------------------
 
 (defn run-tests! []
