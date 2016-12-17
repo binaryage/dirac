@@ -3,7 +3,7 @@
 <plist version="1.0">
     <dict>
         <key>Label</key>
-        <string>com.binaryage.dirac-health-check.plist</string>
+        <string>com.binaryage.dirac-health-check</string>
         <key>ProgramArguments</key>
         <array>
             <string>sh</string>
