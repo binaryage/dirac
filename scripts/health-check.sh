@@ -21,6 +21,7 @@ fi
 
 # get latest chromium revision and other info
 pushd "$ORACULUM_CHECKOUT_DIR"
+./oraculum.sh prune-cache
 ./oraculum.sh build
 CHROMIUM_REVISION=$(./oraculum.sh latest-revision)
 CHROMIUM_VERSION=$(./oraculum.sh version ${CHROMIUM_REVISION})
