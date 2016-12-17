@@ -99,24 +99,23 @@ Main.Main = class {
     Runtime.experiments.register('blackboxJSFramesOnTimeline', 'Blackbox JavaScript frames on Timeline', true);
     Runtime.experiments.register('colorContrastRatio', 'Contrast ratio line in color picker', true);
     Runtime.experiments.register('continueToFirstInvocation', 'Continue to first invocation', true);
+    Runtime.experiments.register('cssTrackerPanel', 'Panel that tracks the usage of CSS rules.');
     Runtime.experiments.register('emptySourceMapAutoStepping', 'Empty sourcemap auto-stepping');
     Runtime.experiments.register('inputEventsOnTimelineOverview', 'Input events on Timeline overview', true);
     Runtime.experiments.register('liveSASS', 'Live SASS');
     Runtime.experiments.register('nodeDebugging', 'Node debugging', true);
     Runtime.experiments.register('persistence2', 'Persistence 2.0');
     Runtime.experiments.register('persistenceValidation', 'Validate persistence bindings');
-    Runtime.experiments.register('privateScriptInspection', 'Private script inspection');
     Runtime.experiments.register('requestBlocking', 'Request blocking', true);
     Runtime.experiments.register('timelineShowAllEvents', 'Show all events on Timeline', true);
     Runtime.experiments.register('timelineShowAllProcesses', 'Show all processes on Timeline', true);
     Runtime.experiments.register('sourceDiff', 'Source diff');
     Runtime.experiments.register('terminalInDrawer', 'Terminal in drawer', true);
     Runtime.experiments.register('timelineInvalidationTracking', 'Timeline invalidation tracking', true);
-    Runtime.experiments.register('timelineLandingPage', 'Timeline landing page', true);
+    Runtime.experiments.register('timelineLandingPage', 'Timeline landing page');
     Runtime.experiments.register('timelineRecordingPerspectives', 'Timeline recording perspectives UI');
     Runtime.experiments.register('timelineTracingJSProfile', 'Timeline tracing based JS profiler', true);
     Runtime.experiments.register('timelineV8RuntimeCallStats', 'V8 Runtime Call Stats on Timeline', true);
-    Runtime.experiments.register('timelineRuleUsageRecording', 'Track CSS rules usage while recording Timeline.');
     Runtime.experiments.register('timelinePerFrameTrack', 'Show track per frame on Timeline', true);
 
     Runtime.experiments.cleanUpStaleExperiments();
@@ -126,9 +125,12 @@ Main.Main = class {
       // Enable experiments for testing.
       if (testPath.indexOf('accessibility/') !== -1)
         Runtime.experiments.enableForTest('accessibilityInspection');
+      if (testPath.indexOf('css_tracker') !== -1)
+        Runtime.experiments.enableForTest('cssTrackerPanel');
     }
 
-    Runtime.experiments.setDefaultExperiments(['timelineRecordingPerspectives', 'persistenceValidation']);
+    Runtime.experiments.setDefaultExperiments(
+        ['timelineLandingPage', 'timelineRecordingPerspectives', 'persistenceValidation']);
   }
 
   /**
