@@ -20,6 +20,6 @@ fi
 set -e
 
 echo "Syncing test stage in $(portable_realpath "$DIRAC_TEST_STAGE_DIR")"
-rsync -a --info=progress2 --delete --exclude-from="$DIRAC_TEST_STAGE_RSYNC_EXCLUDE_FILE" "$ROOT/" "$DIRAC_TEST_STAGE_DIR"
+rsync -av --delete --exclude-from="$DIRAC_TEST_STAGE_RSYNC_EXCLUDE_FILE" "$ROOT/" "$DIRAC_TEST_STAGE_DIR"
 
 popd
