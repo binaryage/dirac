@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-launchctl start com.binaryage.dirac.plist
+launchctl start com.binaryage.dirac
 
 # note: you may want to
 #

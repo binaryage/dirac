@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-launchctl start com.binaryage.dirac-health-check.plist
+launchctl start com.binaryage.dirac-health-check
 
 # note: you may want to
 #
