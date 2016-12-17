@@ -796,11 +796,12 @@ Protocol.Security.InsecureContentStatus;
 Protocol.SecurityDispatcher = function() {};
 /**
  * @param {Protocol.Security.SecurityState} securityState
- * @param {!Array<Protocol.Security.SecurityStateExplanation>=} opt_explanations
- * @param {Protocol.Security.InsecureContentStatus=} opt_insecureContentStatus
- * @param {boolean=} opt_schemeIsCryptographic
+ * @param {boolean} schemeIsCryptographic
+ * @param {!Array<Protocol.Security.SecurityStateExplanation>} explanations
+ * @param {Protocol.Security.InsecureContentStatus} insecureContentStatus
+ * @param {string=} opt_summary
  */
-Protocol.SecurityDispatcher.prototype.securityStateChanged = function(securityState, opt_explanations, opt_insecureContentStatus, opt_schemeIsCryptographic) {};
+Protocol.SecurityDispatcher.prototype.securityStateChanged = function(securityState, schemeIsCryptographic, explanations, insecureContentStatus, opt_summary) {};
 Protocol.Network = {};
 
 
@@ -4190,7 +4191,8 @@ Protocol.Debugger.ScopeType = {
     Catch: "catch",
     Block: "block",
     Script: "script",
-    Eval: "eval"
+    Eval: "eval",
+    Module: "module"
 };
 
 /** @typedef {!{type:(Protocol.Debugger.ScopeType), object:(Protocol.Runtime.RemoteObject), name:(string|undefined), startLocation:(Protocol.Debugger.Location|undefined), endLocation:(Protocol.Debugger.Location|undefined)}} */
