@@ -1,7 +1,8 @@
 (ns dirac.test-lib.fixtures-web-server
   (:require [dirac.settings :refer [get-fixtures-server-port get-fixtures-server-url]]
             [clojure.tools.logging :as log]
-            [clojure.string :as string])
+            [clojure.string :as string]
+            [dirac.travis :refer [with-travis-fold]])
   (:use ring.middleware.resource
         ring.middleware.content-type
         ring.middleware.not-modified
@@ -39,6 +40,8 @@
         (throw e)))))
 
 (defn with-fixtures-web-server [f]
-  (let [server (start-fixtures-web-server)]
+  (let [server (with-travis-fold "Start fixtures web server" "start-fixtures-web-server"
+                 (start-fixtures-web-server))]
     (f)
-    (stop-fixtures-web-server server)))
+    (with-travis-fold "Stop fixtures web server" "stop-fixtures-web-server"
+      (stop-fixtures-web-server server))))

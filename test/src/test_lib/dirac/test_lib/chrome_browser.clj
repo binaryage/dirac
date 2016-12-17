@@ -7,6 +7,7 @@
             [clj-webdriver.taxi :refer :all]
             [clj-webdriver.driver :refer [init-driver]]
             [dirac.settings :refer [get-browser-connection-minimal-cooldown]]
+            [dirac.travis :refer [with-travis-fold]]
             [dirac.test-lib.chrome-driver :as chrome-driver])
   (:import (java.io ByteArrayOutputStream PrintStream)))
 
@@ -178,6 +179,8 @@
   (reconnect-browser!))
 
 (defn with-browser [f]
-  (setup-browser!)
+  (with-travis-fold "Start Chrome" "setup-browser"
+    (setup-browser!))
   (f)
-  (stop-browser!))
+  (with-travis-fold "Stop Chrome" "stop-browser"
+    (stop-browser!)))

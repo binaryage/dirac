@@ -269,6 +269,15 @@
     background-color: transparent;
 }
 
+.tabbed-pane-no-tab-borders .tabbed-pane-header-tab {
+    border: none !important;
+    padding: 2px 0.8em;
+}
+
+.tabbed-pane-no-tab-borders .tabbed-pane-header-contents {
+    margin-left: 0;
+}
+
 .tabbed-pane-left-toolbar {
     margin-right: -4px;
     flex: none;

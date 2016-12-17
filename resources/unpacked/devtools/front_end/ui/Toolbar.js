@@ -52,12 +52,12 @@ UI.Toolbar = class {
    * @param {!UI.Action} action
    * @param {!Array<!UI.ToolbarButton>=} toggledOptions
    * @param {!Array<!UI.ToolbarButton>=} untoggledOptions
-   * @return {!UI.ToolbarItem}
+   * @return {!UI.ToolbarToggle}
    */
   static createActionButton(action, toggledOptions, untoggledOptions) {
     var button = new UI.ToolbarToggle(action.title(), action.icon(), action.toggledIcon());
     button.setToggleWithRedColor(action.toggleWithRedColor());
-    button.addEventListener('click', action.execute, action);
+    button.addEventListener(UI.ToolbarButton.Events.Click, action.execute, action);
     action.addEventListener(UI.Action.Events.Enabled, enabledChanged);
     action.addEventListener(UI.Action.Events.Toggled, toggled);
     /** @type {?UI.LongClickController} */
@@ -107,7 +107,7 @@ UI.Toolbar = class {
     function showOptions() {
       var buttons = longClickButtons.slice();
       var mainButtonClone = new UI.ToolbarToggle(action.title(), action.icon(), action.toggledIcon());
-      mainButtonClone.addEventListener('click', clicked);
+      mainButtonClone.addEventListener(UI.ToolbarButton.Events.Click, clicked);
 
       /**
        * @param {!Common.Event} event
@@ -182,11 +182,11 @@ UI.Toolbar = class {
 
   /**
    * @param {string} actionId
-   * @return {?UI.ToolbarItem}
+   * @return {!UI.ToolbarToggle}
    */
   static createActionButtonForId(actionId) {
-    var action = UI.actionRegistry.action(actionId);
-    return /** @type {?UI.ToolbarItem} */ (action ? UI.Toolbar.createActionButton(action) : null);
+    const action = UI.actionRegistry.action(actionId);
+    return UI.Toolbar.createActionButton(/** @type {!UI.Action} */ (action));
   }
 
   /**
@@ -318,18 +318,21 @@ UI.Toolbar = class {
 
     /**
      * @param {!Runtime.Extension} extension
-     * @return {!Promise.<?UI.ToolbarItem>}
+     * @return {!Promise<?UI.ToolbarItem>}
      */
     function resolveItem(extension) {
       var descriptor = extension.descriptor();
       if (descriptor['separator'])
         return Promise.resolve(/** @type {?UI.ToolbarItem} */ (new UI.ToolbarSeparator()));
-      if (descriptor['actionId'])
-        return Promise.resolve(UI.Toolbar.createActionButtonForId(descriptor['actionId']));
+      if (descriptor['actionId']) {
+        return Promise.resolve(
+            /** @type {?UI.ToolbarItem} */ (UI.Toolbar.createActionButtonForId(descriptor['actionId'])));
+      }
       return extension.instance().then(fetchItemFromProvider);
 
       /**
        * @param {!Object} provider
+       * @return {?UI.ToolbarItem}
        */
       function fetchItemFromProvider(provider) {
         return /** @type {!UI.ToolbarItem.Provider} */ (provider).item();
@@ -511,23 +514,29 @@ UI.ToolbarButton = class extends UI.ToolbarItem {
    * @param {!Event} event
    */
   _clicked(event) {
-    var defaultPrevented = this.dispatchEventToListeners('click', event);
-    event.consume(defaultPrevented);
+    this.dispatchEventToListeners(UI.ToolbarButton.Events.Click, event);
+    event.consume();
   }
 
   /**
    * @param {!Event} event
    */
   _mouseDown(event) {
-    this.dispatchEventToListeners('mousedown', event);
+    this.dispatchEventToListeners(UI.ToolbarButton.Events.MouseDown, event);
   }
 
   /**
    * @param {!Event} event
    */
   _mouseUp(event) {
-    this.dispatchEventToListeners('mouseup', event);
+    this.dispatchEventToListeners(UI.ToolbarButton.Events.MouseUp, event);
   }
+};
+
+UI.ToolbarButton.Events = {
+  Click: Symbol('Click'),
+  MouseDown: Symbol('MouseDown'),
+  MouseUp: Symbol('MouseUp')
 };
 
 /**
@@ -569,7 +578,7 @@ UI.ToolbarInput = class extends UI.ToolbarItem {
 };
 
 UI.ToolbarInput.Event = {
-  TextChanged: 'TextChanged'
+  TextChanged: Symbol('TextChanged')
 };
 
 /**

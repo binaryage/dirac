@@ -1,6 +1,7 @@
 (ns dirac.tests.browser.tasks.transcript-streamer-server
   (:require [clojure.tools.logging :as log]
             [dirac.settings :refer [get-transcript-streamer-server-host get-transcript-streamer-server-port]]
+            [dirac.travis :refer [with-travis-fold]]
             [dirac.lib.ws-server :as ws-server]))
 
 (defonce current-server (volatile! nil))
@@ -21,10 +22,11 @@
 (defn create-transcript-streamer-server! []
   (log/debug "transcript-streamer server: creating server")
   (assert (not @current-server))
-  (vreset! current-server (ws-server/create! {:name       "Transcript Streamer (server)"
-                                              :host       (get-transcript-streamer-server-host)
-                                              :port       (get-transcript-streamer-server-port)
-                                              :on-message on-message-handler})))
+  (let [options {:name "Transcript Streamer (server)"
+                 :host (get-transcript-streamer-server-host)
+                 :port (get-transcript-streamer-server-port)}]
+    (log/info "transcript-streamer server: creating server with" options)
+    (vreset! current-server (ws-server/create! (merge options {:on-message on-message-handler})))))
 
 (defn destroy-transcript-streamer-server! []
   (log/debug "transcript-streamer server: destroying server")
@@ -32,6 +34,8 @@
   (ws-server/destroy! @current-server))
 
 (defn with-transcript-streamer-server [f]
-  (create-transcript-streamer-server!)
+  (with-travis-fold "Create transcript streamer server" "create-transcript-streamer-server"
+    (create-transcript-streamer-server!))
   (f)
-  (destroy-transcript-streamer-server!))
+  (with-travis-fold "Destroy transcript streamer server" "destroy-transcript-streamer-server!"
+    (destroy-transcript-streamer-server!)))

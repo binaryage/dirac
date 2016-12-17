@@ -45,8 +45,6 @@ Network.NetworkLogView = class extends UI.VBox {
 
     this._networkHideDataURLSetting = Common.settings.createSetting('networkHideDataURL', false);
     this._networkResourceTypeFiltersSetting = Common.settings.createSetting('networkResourceTypeFilters', {});
-    this._networkShowPrimaryLoadWaterfallSetting =
-        Common.settings.createSetting('networkShowPrimaryLoadWaterfall', false);
 
     this._filterBar = filterBar;
     this._progressBarContainer = progressBarContainer;
@@ -504,6 +502,7 @@ Network.NetworkLogView = class extends UI.VBox {
   }
 
   _setupDataGrid() {
+    /** @type {!UI.SortableDataGrid} */
     this._dataGrid = this._columns.dataGrid();
     this._dataGrid.setRowContextMenuCallback(
         (contextMenu, node) => this.handleContextMenuForRequest(contextMenu, node.request()));
@@ -520,7 +519,8 @@ Network.NetworkLogView = class extends UI.VBox {
    * @param {!Event} event
    */
   _dataGridMouseMove(event) {
-    var node = this._dataGrid.dataGridNodeFromNode(event.target);
+    var node = /** @type {?Network.NetworkDataGridNode} */ (
+        this._dataGrid.dataGridNodeFromNode(/** @type {!Node} */ (event.target)));
     var highlightInitiatorChain = event.shiftKey;
     this._setHoveredNode(node, highlightInitiatorChain);
     this._highlightInitiatorChain((highlightInitiatorChain && node) ? node.request() : null);
@@ -783,7 +783,7 @@ Network.NetworkLogView = class extends UI.VBox {
    * @return {!Array<!Network.NetworkDataGridNode>}
    */
   flatNodesList() {
-    return this._dataGrid.flatNodesList();
+    return this._dataGrid.rootNode().flatChildren();
   }
 
   _refresh() {
@@ -796,7 +796,6 @@ Network.NetworkLogView = class extends UI.VBox {
 
     this.removeAllNodeHighlights();
 
-    var oldBoundary = this.calculator().boundary();
     this._timeCalculator.updateBoundariesForEventTime(this._mainRequestLoadTime);
     this._durationCalculator.updateBoundariesForEventTime(this._mainRequestLoadTime);
     this._timeCalculator.updateBoundariesForEventTime(this._mainRequestDOMContentLoadedTime);
@@ -1672,9 +1671,6 @@ Network.NetworkLogView.HTTPSchemas = {
   'ws': true,
   'wss': true
 };
-
-Network.NetworkLogView._waterfallMinOvertime = 1;
-Network.NetworkLogView._waterfallMaxOvertime = 3;
 
 /** @enum {symbol} */
 Network.NetworkLogView.Events = {

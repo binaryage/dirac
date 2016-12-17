@@ -111,9 +111,11 @@ Sources.SourcesPanel = class extends UI.Panel {
     SDK.targetManager.addModelListener(
         SDK.DebuggerModel, SDK.DebuggerModel.Events.DebuggerPaused, this._debuggerPaused, this);
     SDK.targetManager.addModelListener(
-        SDK.DebuggerModel, SDK.DebuggerModel.Events.DebuggerResumed, this._debuggerResumed, this);
+        SDK.DebuggerModel, SDK.DebuggerModel.Events.DebuggerResumed,
+        (event) => this._debuggerResumed(/** @type {!SDK.DebuggerModel} */ (event.data)));
     SDK.targetManager.addModelListener(
-        SDK.DebuggerModel, SDK.DebuggerModel.Events.GlobalObjectCleared, this._debuggerReset, this);
+        SDK.DebuggerModel, SDK.DebuggerModel.Events.GlobalObjectCleared,
+        (event) => this._debuggerResumed(/** @type {!SDK.DebuggerModel} */ (event.data)));
     SDK.targetManager.addModelListener(
         SDK.SubTargetsManager, SDK.SubTargetsManager.Events.PendingTargetAdded, this._pendingTargetAdded, this);
     new Sources.WorkspaceMappingTip(this, this._workspace);
@@ -288,7 +290,8 @@ Sources.SourcesPanel = class extends UI.Panel {
    * @param {!Common.Event} event
    */
   _debuggerPaused(event) {
-    var details = /** @type {!SDK.DebuggerPausedDetails} */ (event.data);
+    var debuggerModel = /** @type {!SDK.DebuggerModel} */ (event.data);
+    var details = debuggerModel.debuggerPausedDetails();
     if (!this._paused)
       this._setAsCurrentPanel();
 
@@ -312,10 +315,9 @@ Sources.SourcesPanel = class extends UI.Panel {
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!SDK.DebuggerModel} debuggerModel
    */
-  _debuggerResumed(event) {
-    var debuggerModel = /** @type {!SDK.DebuggerModel} */ (event.target);
+  _debuggerResumed(debuggerModel) {
     var target = debuggerModel.target();
     if (UI.context.flavor(SDK.Target) !== target)
       return;
@@ -329,18 +331,11 @@ Sources.SourcesPanel = class extends UI.Panel {
    * @param {!Common.Event} event
    */
   _debuggerWasEnabled(event) {
-    var target = /** @type {!SDK.Target} */ (event.target.target());
-    if (UI.context.flavor(SDK.Target) !== target)
+    var debuggerModel = /** @type {!SDK.DebuggerModel} */ (event.data);
+    if (UI.context.flavor(SDK.Target) !== debuggerModel.target())
       return;
 
     this._updateDebuggerButtonsAndStatus();
-  }
-
-  /**
-   * @param {!Common.Event} event
-   */
-  _debuggerReset(event) {
-    this._debuggerResumed(event);
   }
 
   /**
@@ -516,7 +511,6 @@ Sources.SourcesPanel = class extends UI.Panel {
     delete this._switchToPausedTargetTimeout;
     if (this._paused)
       return;
-    var target = UI.context.flavor(SDK.Target);
     if (debuggerModel.isPaused())
       return;
     var debuggerModels = SDK.DebuggerModel.instances();
@@ -542,6 +536,9 @@ Sources.SourcesPanel = class extends UI.Panel {
 
     var currentExecutionContext = UI.context.flavor(SDK.ExecutionContext);
     if (!currentExecutionContext)
+      return false;
+
+    if (uiSourceCode.project().type() !== Workspace.projectTypes.Snippets)
       return false;
 
     Snippets.scriptSnippetModel.evaluateScriptSnippet(currentExecutionContext, uiSourceCode);
@@ -595,16 +592,15 @@ Sources.SourcesPanel = class extends UI.Panel {
   }
 
   /**
-   * @return {boolean}
+   * @param {!Common.Event} event
    */
-  _longResume() {
+  _longResume(event) {
     var debuggerModel = this._prepareToResume();
     if (!debuggerModel)
-      return true;
+      return;
 
     debuggerModel.skipAllPausesUntilReloadOrTimeout(500);
     debuggerModel.resume();
-    return true;
   }
 
   /**
@@ -681,7 +677,7 @@ Sources.SourcesPanel = class extends UI.Panel {
 
     var longResumeButton =
         new UI.ToolbarButton(Common.UIString('Resume with all pauses blocked for 500 ms'), 'largeicon-play');
-    longResumeButton.addEventListener('click', this._longResume.bind(this), this);
+    longResumeButton.addEventListener(UI.ToolbarButton.Events.Click, this._longResume, this);
     debugToolbar.appendToolbarItem(UI.Toolbar.createActionButton(this._togglePauseAction, [longResumeButton], []));
 
     debugToolbar.appendToolbarItem(UI.Toolbar.createActionButton(this._stepOverAction));
@@ -691,7 +687,7 @@ Sources.SourcesPanel = class extends UI.Panel {
     debugToolbar.appendToolbarItem(UI.Toolbar.createActionButton(this._toggleBreakpointsActiveAction));
 
     this._pauseOnExceptionButton = new UI.ToolbarToggle('', 'largeicon-pause-on-exceptions');
-    this._pauseOnExceptionButton.addEventListener('click', this._togglePauseOnExceptions, this);
+    this._pauseOnExceptionButton.addEventListener(UI.ToolbarButton.Events.Click, this._togglePauseOnExceptions, this);
     debugToolbar.appendToolbarItem(this._pauseOnExceptionButton);
 
     debugToolbar.appendSeparator();
@@ -861,7 +857,6 @@ Sources.SourcesPanel = class extends UI.Panel {
       return;
     var uiLocation = /** @type {!Workspace.UILocation} */ (object);
     var uiSourceCode = uiLocation.uiSourceCode;
-    var projectType = uiSourceCode.project().type();
 
     var contentType = uiSourceCode.contentType();
     if (contentType.hasScripts()) {

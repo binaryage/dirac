@@ -51,14 +51,16 @@ UI.InspectorView = class extends UI.VBox {
     this._drawerTabbedPane = this._drawerTabbedLocation.tabbedPane();
     this._drawerTabbedPane.setMinimumSize(0, 27);
     var closeDrawerButton = new UI.ToolbarButton(Common.UIString('Close drawer'), 'largeicon-delete');
-    closeDrawerButton.addEventListener('click', this._closeDrawer.bind(this));
+    closeDrawerButton.addEventListener(UI.ToolbarButton.Events.Click, this._closeDrawer, this);
     this._drawerTabbedPane.rightToolbar().appendToolbarItem(closeDrawerButton);
     this._drawerSplitWidget.installResizer(this._drawerTabbedPane.headerElement());
     this._drawerSplitWidget.setSidebarWidget(this._drawerTabbedPane);
 
     // Create main area tabbed pane.
     this._tabbedLocation = UI.viewManager.createTabbedLocation(
-        InspectorFrontendHost.bringToFront.bind(InspectorFrontendHost), 'panel', true, true);
+        InspectorFrontendHost.bringToFront.bind(InspectorFrontendHost), 'panel', true, true,
+        Runtime.queryParam('panel'));
+
     this._tabbedPane = this._tabbedLocation.tabbedPane();
     this._tabbedPane.registerRequiredCSS('ui/inspectorViewTabbedPane.css');
     this._tabbedPane.setTabSlider(true);

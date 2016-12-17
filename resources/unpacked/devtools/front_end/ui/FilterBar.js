@@ -44,7 +44,7 @@ UI.FilterBar = class extends UI.HBox {
     this.element.classList.add('filter-bar');
 
     this._filterButton = new UI.ToolbarToggle(Common.UIString('Filter'), 'largeicon-filter');
-    this._filterButton.addEventListener('click', this._handleFilterButtonClick, this);
+    this._filterButton.addEventListener(UI.ToolbarButton.Events.Click, this._handleFilterButtonClick, this);
 
     this._filters = [];
 
@@ -95,17 +95,23 @@ UI.FilterBar = class extends UI.HBox {
   }
 
   _updateFilterBar() {
+    if (!this.parentWidget())
+      return;
     var visible = this._alwaysShowFilters || (this._filtersShown && this._enabled);
-    this.element.classList.toggle('hidden', !visible);
-    if (visible) {
-      for (var i = 0; i < this._filters.length; ++i) {
-        if (this._filters[i] instanceof UI.TextFilterUI) {
-          var textFilterUI = /** @type {!UI.TextFilterUI} */ (this._filters[i]);
-          textFilterUI.focus();
-        }
+    if (visible)
+      this.showWidget();
+    else
+      this.hideWidget();
+  }
+
+  _focusTextField() {
+    for (var i = 0; i < this._filters.length; ++i) {
+      if (this._filters[i] instanceof UI.TextFilterUI) {
+        var textFilterUI = /** @type {!UI.TextFilterUI} */ (this._filters[i]);
+        textFilterUI.focus();
+        break;
       }
     }
-    this.invalidateSize();
   }
 
   _updateFilterButton() {
@@ -141,6 +147,8 @@ UI.FilterBar = class extends UI.HBox {
 
     this._updateFilterButton();
     this._updateFilterBar();
+    if (this._filtersShown)
+      this._focusTextField();
     this.dispatchEventToListeners(UI.FilterBar.Events.Toggled);
   }
 
@@ -483,16 +491,18 @@ UI.ComboBoxFilterUI = class extends Common.Object {
     this._filterElement.className = 'filter-combobox-filter';
 
     this._options = options;
-    this._filterComboBox = new UI.ToolbarComboBox(this._filterChanged.bind(this));
+    this._filterComboBox = createElementWithClass('select', 'chrome-select');
+    this._filterComboBox.addEventListener('input', this._filterChanged.bind(this), false);
     for (var i = 0; i < options.length; ++i) {
       var filterOption = options[i];
       var option = createElement('option');
       option.text = filterOption.label;
       option.title = filterOption.title;
-      this._filterComboBox.addOption(option);
-      this._filterComboBox.element.title = this._filterComboBox.selectedOption().title;
+      this._filterComboBox.appendChild(option);
     }
-    this._filterElement.appendChild(this._filterComboBox.element);
+    if (options.length)
+      this._filterComboBox.title = options[0].title;
+    this._filterElement.appendChild(this._filterComboBox);
   }
 
   /**
@@ -500,7 +510,7 @@ UI.ComboBoxFilterUI = class extends Common.Object {
    * @return {boolean}
    */
   isActive() {
-    return this._filterComboBox.selectedIndex() !== 0;
+    return this._filterComboBox.selectedIndex !== 0;
   }
 
   /**
@@ -515,7 +525,7 @@ UI.ComboBoxFilterUI = class extends Common.Object {
    * @return {*}
    */
   value() {
-    var option = this._options[this._filterComboBox.selectedIndex()];
+    var option = this._options[this._filterComboBox.selectedIndex];
     return option.value;
   }
 
@@ -523,22 +533,22 @@ UI.ComboBoxFilterUI = class extends Common.Object {
    * @param {number} index
    */
   setSelectedIndex(index) {
-    this._filterComboBox.setSelectedIndex(index);
+    this._filterComboBox.selectedIndex = index;
   }
 
   /**
    * @return {number}
    */
   selectedIndex(index) {
-    return this._filterComboBox.selectedIndex();
+    return this._filterComboBox.selectedIndex;
   }
 
   /**
    * @param {!Event} event
    */
   _filterChanged(event) {
-    var option = this._options[this._filterComboBox.selectedIndex()];
-    this._filterComboBox.element.title = option.title;
+    var option = this._options[this._filterComboBox.selectedIndex];
+    this._filterComboBox.title = option.title;
     this.dispatchEventToListeners(UI.FilterUI.Events.FilterChanged, null);
   }
 };

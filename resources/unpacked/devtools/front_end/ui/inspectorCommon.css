@@ -327,7 +327,11 @@ label[is=dt-icon-label] {
     flex-shrink: 0;
 }
 
-.spritesheet-smallicons {
+.icon-mask {
+    background-color: rgb(110, 110, 110);
+}
+
+.spritesheet-smallicons:not(.icon-mask) {
     background-image: -webkit-image-set(url(Images/smallIcons.png) 1x, url(Images/smallIcons_2x.png) 2x);
     background-size: 190px 30px;
 }
@@ -335,6 +339,11 @@ label[is=dt-icon-label] {
 .spritesheet-smallicons.icon-mask {
     -webkit-mask-image: -webkit-image-set(url(Images/smallIcons.png) 1x, url(Images/smallIcons_2x.png) 2x);
     -webkit-mask-size: 190px 30px;
+}
+
+.spritesheet-largeicons:not(.icon-mask) {
+    background-image: -webkit-image-set(url(Images/toolbarButtonGlyphs.png) 1x, url(Images/toolbarButtonGlyphs_2x.png) 2x);
+    background-size: 352px 168px;
 }
 
 .spritesheet-largeicons.icon-mask {

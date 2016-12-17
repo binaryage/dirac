@@ -104,7 +104,7 @@ SDK.DebuggerModel = class extends SDK.SDKModel {
     this._debuggerEnabled = true;
     this._pauseOnExceptionStateChanged();
     this.asyncStackTracesStateChanged();
-    this.dispatchEventToListeners(SDK.DebuggerModel.Events.DebuggerWasEnabled);
+    this.dispatchEventToListeners(SDK.DebuggerModel.Events.DebuggerWasEnabled, this);
   }
 
   /**
@@ -216,7 +216,6 @@ SDK.DebuggerModel = class extends SDK.SDKModel {
     }
     columnNumber = Math.max(columnNumber, minColumnNumber);
 
-    var target = this.target();
     /**
      * @param {?Protocol.Error} error
      * @param {!Protocol.Debugger.BreakpointId} breakpointId
@@ -240,8 +239,6 @@ SDK.DebuggerModel = class extends SDK.SDKModel {
    * @param {function(?Protocol.Debugger.BreakpointId, !Array.<!SDK.DebuggerModel.Location>)=} callback
    */
   setBreakpointBySourceId(rawLocation, condition, callback) {
-    var target = this.target();
-
     /**
      * @this {SDK.DebuggerModel}
      * @param {?Protocol.Error} error
@@ -316,7 +313,7 @@ SDK.DebuggerModel = class extends SDK.SDKModel {
     this._setDebuggerPausedDetails(null);
     this._reset();
     // TODO(dgozman): move clients to ExecutionContextDestroyed/ScriptCollected events.
-    this.dispatchEventToListeners(SDK.DebuggerModel.Events.GlobalObjectCleared);
+    this.dispatchEventToListeners(SDK.DebuggerModel.Events.GlobalObjectCleared, this);
   }
 
   _reset() {
@@ -411,17 +408,24 @@ SDK.DebuggerModel = class extends SDK.SDKModel {
     this._isPausing = false;
     this._debuggerPausedDetails = debuggerPausedDetails;
     if (this._debuggerPausedDetails) {
-      if (Runtime.experiments.isEnabled('emptySourceMapAutoStepping')) {
-        if (this.dispatchEventToListeners(SDK.DebuggerModel.Events.BeforeDebuggerPaused, this._debuggerPausedDetails))
+      if (Runtime.experiments.isEnabled('emptySourceMapAutoStepping') && this._beforePausedCallback) {
+        if (!this._beforePausedCallback.call(null, this._debuggerPausedDetails))
           return false;
       }
-      this.dispatchEventToListeners(SDK.DebuggerModel.Events.DebuggerPaused, this._debuggerPausedDetails);
+      this.dispatchEventToListeners(SDK.DebuggerModel.Events.DebuggerPaused, this);
     }
     if (debuggerPausedDetails)
       this.setSelectedCallFrame(debuggerPausedDetails.callFrames[0]);
     else
       this.setSelectedCallFrame(null);
     return true;
+  }
+
+  /**
+   * @param {?function(!SDK.DebuggerPausedDetails):boolean} callback
+   */
+  setBeforePausedCallback(callback) {
+    this._beforePausedCallback = callback;
   }
 
   /**
@@ -440,7 +444,7 @@ SDK.DebuggerModel = class extends SDK.SDKModel {
 
   _resumedScript() {
     this._setDebuggerPausedDetails(null);
-    this.dispatchEventToListeners(SDK.DebuggerModel.Events.DebuggerResumed);
+    this.dispatchEventToListeners(SDK.DebuggerModel.Events.DebuggerResumed, this);
   }
 
   /**
@@ -807,7 +811,6 @@ SDK.DebuggerModel.PauseOnExceptionsState = {
 SDK.DebuggerModel.Events = {
   DebuggerWasEnabled: Symbol('DebuggerWasEnabled'),
   DebuggerWasDisabled: Symbol('DebuggerWasDisabled'),
-  BeforeDebuggerPaused: Symbol('BeforeDebuggerPaused'),
   DebuggerPaused: Symbol('DebuggerPaused'),
   DebuggerResumed: Symbol('DebuggerResumed'),
   ParsedScriptSource: Symbol('ParsedScriptSource'),

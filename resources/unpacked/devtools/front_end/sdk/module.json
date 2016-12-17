@@ -90,7 +90,6 @@
         "CSSMedia.js",
         "CSSMetadata.js",
         "CSSModel.js",
-        "CSSParser.js",
         "CSSProperty.js",
         "CSSRule.js",
         "CSSStyleDeclaration.js",

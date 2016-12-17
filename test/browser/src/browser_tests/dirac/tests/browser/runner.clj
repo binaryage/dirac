@@ -1,7 +1,8 @@
 (ns dirac.tests.browser.runner
   (:require [clojure.test :refer :all]
-            [environ.core :refer [env]]
             [clojure.tools.logging :as log]
+            [environ.core :refer [env]]
+            [clansi :refer [style]]
             [dirac.logging :as logging]
             [dirac.test-lib.agent :as test-agent]
             [dirac.test-lib.chrome-browser :refer [with-browser]]
@@ -21,7 +22,8 @@
                                      with-browser
                                      with-taxi-setup]))
 
-(def log-level (or (env :dirac-log-level) (env :dirac-browser-tests-log-level) "INFO"))                                       ; INFO, DEBUG, TRACE, ALL
+(def log-level (or (env :dirac-log-level)
+                   (env :dirac-browser-tests-log-level) "INFO"))                                                              ; INFO, DEBUG, TRACE, ALL
 
 (defn setup-logging! []
   (logging/setup! {:log-out   :console
@@ -36,6 +38,20 @@
 
 (defn set-test-runner-present! []
   (System/setProperty "dirac-test-runner" "true"))
+
+(defmethod clojure.test/report :begin-test-ns [m]
+  (with-test-out
+    (println (style (str "Testing " (ns-name (:ns m))) :cyan))))
+
+(defmethod clojure.test/report :summary [m]
+  (let [assertions-count (+ (:pass m) (:fail m) (:error m))
+        failed? (or (pos? (:fail m)) (pos? (:error m)))
+        report-style (if failed? :red :green)
+        status (if failed?
+                 (str (:fail m) " failures, " (:error m) " errors.")
+                 "all passed.")]
+    (with-test-out
+      (println (style (str "Ran " (:test m) " tests containing " assertions-count " assertions => " status) report-style)))))
 
 ; -- fixtures ---------------------------------------------------------------------------------------------------------------
 

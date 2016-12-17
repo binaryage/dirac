@@ -84,8 +84,6 @@ Audits.AuditRules.GzipRule = class extends Audits.AuditRule {
    */
   doRun(target, requests, result, callback, progress) {
     var totalSavings = 0;
-    var compressedSize = 0;
-    var candidateSize = 0;
     var summary = result.addChild('', true);
     for (var i = 0, length = requests.length; i < length; ++i) {
       var request = requests[i];
@@ -93,11 +91,8 @@ Audits.AuditRules.GzipRule = class extends Audits.AuditRule {
         continue;  // Do not test cached resources.
       if (this._shouldCompress(request)) {
         var size = request.resourceSize;
-        candidateSize += size;
-        if (this._isCompressed(request)) {
-          compressedSize += size;
+        if (this._isCompressed(request))
           continue;
-        }
         var savings = 2 * size / 3;
         totalSavings += savings;
         summary.addFormatted('%r could save ~%s', request.url, Number.bytesToString(savings));
@@ -489,7 +484,7 @@ Audits.AuditRules.UnusedCssRule = class extends Audits.AuditRule {
 };
 
 /**
- * @typedef {!{sourceURL: string, rules: !Array.<!SDK.CSSParser.StyleRule>}}
+ * @typedef {!{sourceURL: string, rules: !Array.<!Common.FormatterWorkerPool.CSSStyleRule>}}
  */
 Audits.AuditRules.ParsedStyleSheet;
 
@@ -510,37 +505,38 @@ Audits.AuditRules.StyleSheetProcessor = class {
   }
 
   run() {
-    this._parser = new SDK.CSSParser();
     this._processNextStyleSheet();
-  }
-
-  _terminateWorker() {
-    if (this._parser) {
-      this._parser.dispose();
-      delete this._parser;
-    }
-  }
-
-  _finish() {
-    this._terminateWorker();
-    this._styleSheetsParsedCallback(this._styleSheets);
   }
 
   _processNextStyleSheet() {
     if (!this._styleSheetHeaders.length) {
-      this._finish();
+      this._styleSheetsParsedCallback(this._styleSheets);
       return;
     }
     this._currentStyleSheetHeader = this._styleSheetHeaders.shift();
-    this._parser.fetchAndParse(this._currentStyleSheetHeader, this._onStyleSheetParsed.bind(this));
+
+    var allRules = [];
+    this._currentStyleSheetHeader.requestContent().then(
+        content => Common.formatterWorkerPool.parseCSS(content || '', onRulesParsed.bind(this)));
+
+    /**
+     * @param {boolean} isLastChunk
+     * @param {!Array<!Common.FormatterWorkerPool.CSSRule>} rules
+     * @this {Audits.AuditRules.StyleSheetProcessor}
+     */
+    function onRulesParsed(isLastChunk, rules) {
+      allRules.push(...rules);
+      if (isLastChunk)
+        this._onStyleSheetParsed(allRules);
+    }
   }
 
   /**
-   * @param {!Array.<!SDK.CSSParser.Rule>} rules
+   * @param {!Array.<!Common.FormatterWorkerPool.CSSRule>} rules
    */
   _onStyleSheetParsed(rules) {
     if (this._progress.isCanceled()) {
-      this._finish();
+      this._styleSheetsParsedCallback(this._styleSheets);
       return;
     }
 
@@ -1232,7 +1228,7 @@ Audits.AuditRules.CSSRuleBase = class extends Audits.AuditRule {
 
   /**
    * @param {!Audits.AuditRules.ParsedStyleSheet} styleSheet
-   * @param {!SDK.CSSParser.StyleRule} rule
+   * @param {!Common.FormatterWorkerPool.CSSStyleRule} rule
    * @param {!Audits.AuditRuleResult} result
    */
   _visitRule(styleSheet, rule, result) {
@@ -1261,7 +1257,7 @@ Audits.AuditRules.CSSRuleBase = class extends Audits.AuditRule {
 
   /**
    * @param {!Audits.AuditRules.ParsedStyleSheet} styleSheet
-   * @param {!SDK.CSSParser.StyleRule} rule
+   * @param {!Common.FormatterWorkerPool.CSSStyleRule} rule
    * @param {!Audits.AuditRuleResult} result
    */
   visitRule(styleSheet, rule, result) {
@@ -1270,7 +1266,7 @@ Audits.AuditRules.CSSRuleBase = class extends Audits.AuditRule {
 
   /**
    * @param {!Audits.AuditRules.ParsedStyleSheet} styleSheet
-   * @param {!SDK.CSSParser.StyleRule} rule
+   * @param {!Common.FormatterWorkerPool.CSSStyleRule} rule
    * @param {!Audits.AuditRuleResult} result
    */
   didVisitRule(styleSheet, rule, result) {
@@ -1279,8 +1275,8 @@ Audits.AuditRules.CSSRuleBase = class extends Audits.AuditRule {
 
   /**
    * @param {!Audits.AuditRules.ParsedStyleSheet} styleSheet
-   * @param {!SDK.CSSParser.StyleRule} rule
-   * @param {!SDK.CSSParser.Property} property
+   * @param {!Common.FormatterWorkerPool.CSSStyleRule} rule
+   * @param {!Common.FormatterWorkerPool.CSSProperty} property
    * @param {!Audits.AuditRuleResult} result
    */
   visitProperty(styleSheet, rule, property, result) {

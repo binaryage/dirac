@@ -51,8 +51,8 @@ UI.TabbedPane = class extends UI.VBox {
     this._tabs = [];
     /** @type {!Array.<!UI.TabbedPaneTab>} */
     this._tabsHistory = [];
-    /** @type {!Object.<string, !UI.TabbedPaneTab>} */
-    this._tabsById = {};
+    /** @type {!Map<string, !UI.TabbedPaneTab>} */
+    this._tabsById = new Map();
     this._currentTabLocked = false;
     this._autoSelectFirstItemOnShow = true;
 
@@ -109,7 +109,7 @@ UI.TabbedPane = class extends UI.VBox {
    * @return {?UI.Widget}
    */
   tabView(tabId) {
-    return this._tabsById[tabId] ? this._tabsById[tabId].view : null;
+    return this._tabsById.has(tabId) ? this._tabsById.get(tabId).view : null;
   }
 
   /**
@@ -164,7 +164,7 @@ UI.TabbedPane = class extends UI.VBox {
    * @return {boolean}
    */
   isTabCloseable(id) {
-    var tab = this._tabsById[id];
+    var tab = this._tabsById.get(id);
     return tab ? tab.isCloseable() : false;
   }
 
@@ -191,7 +191,8 @@ UI.TabbedPane = class extends UI.VBox {
     isCloseable = typeof isCloseable === 'boolean' ? isCloseable : this._closeableTabs;
     var tab = new UI.TabbedPaneTab(this, id, tabTitle, isCloseable, view, tabTooltip);
     tab.setDelegate(this._delegate);
-    this._tabsById[id] = tab;
+    console.assert(!this._tabsById.has(id), `Tabbed pane already contains a tab with id '${id}'`);
+    this._tabsById.set(id, tab);
     if (index !== undefined)
       this._tabs.splice(index, 0, tab);
     else
@@ -231,15 +232,15 @@ UI.TabbedPane = class extends UI.VBox {
    * @param {boolean=} userGesture
    */
   _innerCloseTab(id, userGesture) {
-    if (!this._tabsById[id])
+    if (!this._tabsById.has(id))
       return;
-    if (userGesture && !this._tabsById[id]._closeable)
+    if (userGesture && !this._tabsById.get(id)._closeable)
       return;
     if (this._currentTab && this._currentTab.id === id)
       this._hideCurrentTab();
 
-    var tab = this._tabsById[id];
-    delete this._tabsById[id];
+    var tab = this._tabsById.get(id);
+    this._tabsById.delete(id);
 
     this._tabsHistory.splice(this._tabsHistory.indexOf(tab), 1);
     this._tabs.splice(this._tabs.indexOf(tab), 1);
@@ -257,7 +258,7 @@ UI.TabbedPane = class extends UI.VBox {
    * @return {boolean}
    */
   hasTab(tabId) {
-    return !!this._tabsById[tabId];
+    return this._tabsById.has(tabId);
   }
 
   /**
@@ -310,7 +311,7 @@ UI.TabbedPane = class extends UI.VBox {
     if (this._currentTabLocked)
       return false;
     var focused = this.hasFocus();
-    var tab = this._tabsById[id];
+    var tab = this._tabsById.get(id);
     if (!tab)
       return false;
     if (this._currentTab && this._currentTab.id === id)
@@ -352,7 +353,7 @@ UI.TabbedPane = class extends UI.VBox {
    * @param {string=} iconTooltip
    */
   setTabIcon(id, iconType, iconTooltip) {
-    var tab = this._tabsById[id];
+    var tab = this._tabsById.get(id);
     if (tab._setIconType(iconType, iconTooltip))
       this._updateTabElements();
   }
@@ -362,7 +363,7 @@ UI.TabbedPane = class extends UI.VBox {
    * @param {boolean} enabled
    */
   setTabEnabled(id, enabled) {
-    var tab = this._tabsById[id];
+    var tab = this._tabsById.get(id);
     tab.tabElement.classList.toggle('disabled', !enabled);
   }
 
@@ -372,7 +373,7 @@ UI.TabbedPane = class extends UI.VBox {
    * @param {boolean=} force
    */
   toggleTabClass(id, className, force) {
-    var tab = this._tabsById[id];
+    var tab = this._tabsById.get(id);
     if (tab._toggleClass(className, force))
       this._updateTabElements();
   }
@@ -393,7 +394,7 @@ UI.TabbedPane = class extends UI.VBox {
    * @param {string=} tabTooltip
    */
   changeTabTitle(id, tabTitle, tabTooltip) {
-    var tab = this._tabsById[id];
+    var tab = this._tabsById.get(id);
     if (tabTooltip !== undefined)
       tab.tooltip = tabTooltip;
     if (tab.title !== tabTitle) {
@@ -407,7 +408,7 @@ UI.TabbedPane = class extends UI.VBox {
    * @param {!UI.Widget} view
    */
   changeTabView(id, view) {
-    var tab = this._tabsById[id];
+    var tab = this._tabsById.get(id);
     if (tab.view === view)
       return;
 
@@ -455,6 +456,7 @@ UI.TabbedPane = class extends UI.VBox {
   setTabSlider(enable) {
     this._sliderEnabled = enable;
     this._tabSlider.classList.toggle('enabled', enable);
+    this._headerElement.classList.add('tabbed-pane-no-tab-borders');
   }
 
   /**
@@ -541,7 +543,7 @@ UI.TabbedPane = class extends UI.VBox {
    */
   _dropDownMenuItemSelected(event) {
     var tabId = /** @type {string} */ (event.data);
-    this._lastSelectedOverflowTab = this._tabsById[tabId];
+    this._lastSelectedOverflowTab = this._tabsById.get(tabId);
     this.selectTab(tabId, true);
   }
 
@@ -747,7 +749,7 @@ UI.TabbedPane = class extends UI.VBox {
   _showTab(tab) {
     tab.tabElement.classList.add('selected');
     tab.tabElement.setAttribute('aria-selected', 'true');
-    tab.view.showWidget(this.element);
+    tab.view.showWidget();
     this._updateTabSlider();
   }
 

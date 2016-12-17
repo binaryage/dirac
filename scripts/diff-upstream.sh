@@ -4,48 +4,49 @@ source "$(dirname "${BASH_SOURCE[0]}")/_config.sh"
 false && source _config.sh # never executes, this is here just for IntelliJ Bash support to understand our sourcing
 
 # taken from git/contrib/subtree
-find_latest_squash()
-{
-    dir="$1"
-	sq=
-	main=
-	sub=
-	git log --grep="^git-subtree-dir:" --pretty=format:'START %H%n%s%n%n%b%nEND%n' |
-	while read a b junk; do
-		case "$a" in
-			START) sq="$b" ;;
-			git-subtree-mainline:) main="$b" ;;
-			git-subtree-split:) sub="$b" ;;
-			END)
-				if [ -n "$sub" ]; then
-					if [ -n "$main" ]; then
-						# a rejoin commit?
-						# Pretend its sub was a squash.
-						sq="$sub"
-					fi
-					echo "$sq" "$sub"
-					break
-				fi
-				sq=
-				main=
-				sub=
-				;;
-		esac
-	done
+find_latest_squash(){
+  set +e
+  dir="$1"
+  sq=
+  main=
+  sub=
+  git log --grep="^git-subtree-dir:" --pretty=format:'START %H%n%s%n%n%b%nEND%n' |
+  while read a b junk; do
+    case "$a" in
+      START) sq="$b" ;;
+      git-subtree-mainline:) main="$b" ;;
+      git-subtree-split:) sub="$b" ;;
+      END)
+        if [ -n "$sub" ]; then
+          if [ -n "$main" ]; then
+            # a rejoin commit?
+            # Pretend its sub was a squash.
+            sq="$sub"
+          fi
+          echo "$sq" "$sub"
+          break
+        fi
+        sq=
+        main=
+        sub=
+        ;;
+    esac
+  done
+  set -e
 }
 
 # http://stackoverflow.com/a/3232082/84283
 confirm () {
-    # call with a prompt string or use a default
-    read -r -p "${1:-Are you sure? [y/N]} " response
-    case ${response} in
-        [yY][eE][sS]|[yY])
-            true
-            ;;
-        *)
-            false
-            ;;
-    esac
+  # call with a prompt string or use a default
+  read -r -p "${1:-Are you sure? [y/N]} " response
+  case ${response} in
+    [yY][eE][sS]|[yY])
+        true
+        ;;
+    *)
+        false
+        ;;
+  esac
 }
 
 SHA=${1:-HEAD}

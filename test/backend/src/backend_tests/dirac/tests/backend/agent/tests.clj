@@ -26,9 +26,8 @@
   {:op   "eval"
    :code (pr-str `(do
                     (~'require '~'dirac.nrepl)
-                    (dirac.nrepl/boot-dirac-repl! {:skip-logging-setup true                                                   ; we are running nrepl code in the same process, logging was already setup by our test runner
-                                                   :weasel-repl        {:host ~(get-backend-tests-weasel-host)
-                                                                        :port ~(get-backend-tests-weasel-port)}})))})
+                    (dirac.nrepl/boot-dirac-repl! {:weasel-repl {:host ~(get-backend-tests-weasel-host)
+                                                                 :port ~(get-backend-tests-weasel-port)}})))})
 
 (defn nrepl-message [envelope]
   {:op       :nrepl-message
@@ -48,11 +47,10 @@
           tunnel-port (get-backend-tests-nrepl-tunnel-port)
           tunner-url (get-backend-tests-nrepl-tunnel-url)
           agent-output (with-out-str
-                         @(agent/boot! {:skip-logging-setup true                                                              ; logging was already setup by our test runner
-                                        :nrepl-server       {:host server-host
-                                                             :port server-port}
-                                        :nrepl-tunnel       {:host tunnel-host
-                                                             :port tunnel-port}}))]
+                         @(agent/boot! {:nrepl-server {:host server-host
+                                                       :port server-port}
+                                        :nrepl-tunnel {:host tunnel-host
+                                                       :port tunnel-port}}))]
       (is (.contains agent-output (str "Connected to nREPL server at " server-url)))
       (is (.contains agent-output (str "Agent is accepting connections at " tunner-url)))
       (log/info "dirac agent started on" tunnel-port)

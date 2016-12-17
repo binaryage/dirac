@@ -6,6 +6,7 @@
 /releases
 /target
 /resources/release/.compiled
+/resources/release
 /resources/unpacked/.compiled
 /resources/unpacked/devtools/front_end/dirac/.compiled
 /test/browser/fixtures/resources/.compiled

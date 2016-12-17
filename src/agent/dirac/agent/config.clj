@@ -12,7 +12,6 @@
    :max-boot-trials           10
    :initial-boot-delay        1000
    :delay-between-boot-trials 500
-   :skip-logging-setup        false
    :nrepl-server              {:host "localhost"
                                :port 8230}
    :nrepl-tunnel              {:host "localhost"
