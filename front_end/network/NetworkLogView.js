@@ -69,8 +69,10 @@ Network.NetworkLogView = class extends UI.VBox {
     this._columns = new Network.NetworkLogViewColumns(
         this, this._timeCalculator, this._durationCalculator, networkLogLargeRowsSetting);
 
-    /** @type {!Map.<string, !Network.NetworkDataGridNode>} */
+    /** @type {!Map.<string, !Network.NetworkRequestNode>} */
     this._nodesByRequestId = new Map();
+    /** @type {!Map.<string, !Network.NetworkGroupNode>} */
+    this._nodeGroups = new Map();
     /** @type {!Object.<string, boolean>} */
     this._staleRequestIds = {};
     /** @type {number} */
@@ -84,6 +86,7 @@ Network.NetworkLogView = class extends UI.VBox {
     this._filters = [];
     /** @type {?Network.NetworkLogView.Filter} */
     this._timeFilter = null;
+    /** @type {?Network.NetworkNode} */
     this._hoveredNode = null;
 
     this._currentMatchedRequestNode = null;
@@ -333,6 +336,14 @@ Network.NetworkLogView = class extends UI.VBox {
   }
 
   /**
+   * @param {!SDK.NetworkRequest} request
+   * @return {?Network.NetworkNode}
+   */
+  nodeForRequest(request) {
+    return this._nodesByRequestId.get(request.requestId);
+  }
+
+  /**
    * @return {number}
    */
   headerHeight() {
@@ -512,45 +523,29 @@ Network.NetworkLogView = class extends UI.VBox {
     this._dataGrid.element.classList.add('network-log-grid');
     this._dataGrid.element.addEventListener('mousedown', this._dataGridMouseDown.bind(this), true);
     this._dataGrid.element.addEventListener('mousemove', this._dataGridMouseMove.bind(this), true);
-    this._dataGrid.element.addEventListener('mouseleave', this._dataGridMouseLeave.bind(this), true);
+    this._dataGrid.element.addEventListener('mouseleave', () => this._setHoveredNode(null), true);
   }
 
   /**
    * @param {!Event} event
    */
   _dataGridMouseMove(event) {
-    var node = /** @type {?Network.NetworkDataGridNode} */ (
-        this._dataGrid.dataGridNodeFromNode(/** @type {!Node} */ (event.target)));
+    var node =
+        /** @type {?Network.NetworkNode} */ (this._dataGrid.dataGridNodeFromNode(/** @type {!Node} */ (event.target)));
     var highlightInitiatorChain = event.shiftKey;
     this._setHoveredNode(node, highlightInitiatorChain);
-    this._highlightInitiatorChain((highlightInitiatorChain && node) ? node.request() : null);
-  }
-
-  _dataGridMouseLeave() {
-    this._setHoveredNode(null);
-    this._highlightInitiatorChain(null);
   }
 
   /**
-   * @param {?Network.NetworkDataGridNode} node
-   * @param {boolean} highlightInitiatorChain
-   */
-  setHoveredNode(node, highlightInitiatorChain) {
-    this._setHoveredNode(node, highlightInitiatorChain);
-    this._highlightInitiatorChain((node && highlightInitiatorChain) ? node.request() : null);
-  }
-
-  /**
-   * @param {?Network.NetworkDataGridNode} node
+   * @param {?Network.NetworkNode} node
    * @param {boolean=} highlightInitiatorChain
    */
   _setHoveredNode(node, highlightInitiatorChain) {
     if (this._hoveredNode)
-      this._hoveredNode.element().classList.remove('hover');
+      this._hoveredNode.setHovered(false, false);
     this._hoveredNode = node;
     if (this._hoveredNode)
-      this._hoveredNode.element().classList.add('hover');
-    this._columns.setHoveredNode(this._hoveredNode, !!highlightInitiatorChain);
+      this._hoveredNode.setHovered(true, !!highlightInitiatorChain);
   }
 
   /**
@@ -559,35 +554,6 @@ Network.NetworkLogView = class extends UI.VBox {
   _dataGridMouseDown(event) {
     if (!this._dataGrid.selectedNode && event.button)
       event.consume();
-  }
-
-  /**
-   * @param {?SDK.NetworkRequest} request
-   */
-  _highlightInitiatorChain(request) {
-    if (this._requestWithHighlightedInitiators === request)
-      return;
-    this._requestWithHighlightedInitiators = request;
-
-    if (!request) {
-      for (var node of this._nodesByRequestId.values()) {
-        if (!node.dataGrid)
-          continue;
-        node.element().classList.remove('network-node-on-initiator-path', 'network-node-on-initiated-path');
-      }
-      return;
-    }
-
-    var initiatorGraph = request.initiatorGraph();
-    for (var node of this._nodesByRequestId.values()) {
-      if (!node.dataGrid)
-        continue;
-      node.element().classList.toggle(
-          'network-node-on-initiator-path',
-          node.request() !== request && initiatorGraph.initiators.has(node.request()));
-      node.element().classList.toggle(
-          'network-node-on-initiated-path', node.request() !== request && initiatorGraph.initiated.has(node.request()));
-    }
   }
 
   _updateSummaryBar() {
@@ -780,10 +746,14 @@ Network.NetworkLogView = class extends UI.VBox {
   }
 
   /**
-   * @return {!Array<!Network.NetworkDataGridNode>}
+   * @return {!Array<!Network.NetworkNode>}
    */
   flatNodesList() {
     return this._dataGrid.rootNode().flatChildren();
+  }
+
+  stylesChanged() {
+    this._columns.scheduleRefresh();
   }
 
   _refresh() {
@@ -801,11 +771,9 @@ Network.NetworkLogView = class extends UI.VBox {
     this._timeCalculator.updateBoundariesForEventTime(this._mainRequestDOMContentLoadedTime);
     this._durationCalculator.updateBoundariesForEventTime(this._mainRequestDOMContentLoadedTime);
 
-    var dataGrid = this._dataGrid;
-    var rootNode = dataGrid.rootNode();
-    /** @type {!Array<!Network.NetworkDataGridNode> } */
+    /** @type {!Array<!Network.NetworkRequestNode> } */
     var nodesToInsert = [];
-    /** @type {!Array<!Network.NetworkDataGridNode> } */
+    /** @type {!Array<!Network.NetworkRequestNode> } */
     var nodesToRefresh = [];
     for (var requestId in this._staleRequestIds) {
       var node = this._nodesByRequestId.get(requestId);
@@ -816,7 +784,7 @@ Network.NetworkLogView = class extends UI.VBox {
         this._setHoveredNode(null);
       if (node[Network.NetworkLogView._isFilteredOutSymbol] !== isFilteredOut) {
         if (!node[Network.NetworkLogView._isFilteredOutSymbol])
-          rootNode.removeChild(node);
+          node.parent.removeChild(node);
 
         node[Network.NetworkLogView._isFilteredOutSymbol] = isFilteredOut;
 
@@ -833,8 +801,9 @@ Network.NetworkLogView = class extends UI.VBox {
     for (var i = 0; i < nodesToInsert.length; ++i) {
       var node = nodesToInsert[i];
       var request = node.request();
-      dataGrid.insertChild(node);
       node[Network.NetworkLogView._isMatchingSearchQuerySymbol] = this._matchRequest(request);
+      var parent = this._parentNodeForInsert(node);
+      parent.appendChild(node);
     }
 
     for (var node of nodesToRefresh)
@@ -847,6 +816,26 @@ Network.NetworkLogView = class extends UI.VBox {
     this._updateSummaryBar();
 
     this._columns.dataChanged();
+  }
+
+  /**
+   * @param {!Network.NetworkRequestNode} node
+   * @return {!Network.NetworkNode}
+   */
+  _parentNodeForInsert(node) {
+    if (!Runtime.experiments.isEnabled('networkGroupingRequests'))
+      return /** @type {!Network.NetworkNode} */ (this._dataGrid.rootNode());
+
+    var request = node.request();
+    // TODO(allada) Make this dynamic and allow multiple grouping types.
+    var groupKey = request.domain;
+    var group = this._nodeGroups.get(groupKey);
+    if (group)
+      return group;
+    group = new Network.NetworkGroupNode(this, groupKey);
+    this._nodeGroups.set(groupKey, group);
+    this._dataGrid.rootNode().appendChild(group);
+    return group;
   }
 
   reset() {
@@ -867,6 +856,7 @@ Network.NetworkLogView = class extends UI.VBox {
     for (var i = 0; i < nodes.length; ++i)
       nodes[i].dispose();
 
+    this._nodeGroups.clear();
     this._nodesByRequestId.clear();
     this._staleRequestIds = {};
     this._resetSuggestionBuilder();
@@ -904,7 +894,7 @@ Network.NetworkLogView = class extends UI.VBox {
    * @param {!SDK.NetworkRequest} request
    */
   _appendRequest(request) {
-    var node = new Network.NetworkDataGridNode(this, request);
+    var node = new Network.NetworkRequestNode(this, request);
     node[Network.NetworkLogView._isFilteredOutSymbol] = true;
     node[Network.NetworkLogView._isMatchingSearchQuerySymbol] = false;
 
@@ -1234,7 +1224,7 @@ Network.NetworkLogView = class extends UI.VBox {
   _highlightNthMatchedRequestForSearch(n, reveal) {
     this._removeAllHighlights();
 
-    /** @type {!Array.<!Network.NetworkDataGridNode>} */
+    /** @type {!Array.<!Network.NetworkRequestNode>} */
     var nodes = this._dataGrid.rootNode().children;
     var matchCount = 0;
     var node = null;
@@ -1275,7 +1265,7 @@ Network.NetworkLogView = class extends UI.VBox {
     this._clearSearchMatchedList();
     this._searchRegex = createPlainTextSearchRegex(query, 'i');
 
-    /** @type {!Array.<!Network.NetworkDataGridNode>} */
+    /** @type {!Array.<!Network.NetworkRequestNode>} */
     var nodes = this._dataGrid.rootNode().children;
     for (var i = 0; i < nodes.length; ++i)
       nodes[i][Network.NetworkLogView._isMatchingSearchQuerySymbol] = this._matchRequest(nodes[i].request());
@@ -1302,11 +1292,11 @@ Network.NetworkLogView = class extends UI.VBox {
   }
 
   /**
-   * @param {?Network.NetworkDataGridNode} node
+   * @param {?Network.NetworkRequestNode} node
    * @return {number}
    */
   _updateMatchCountAndFindMatchIndex(node) {
-    /** @type {!Array.<!Network.NetworkDataGridNode>} */
+    /** @type {!Array.<!Network.NetworkRequestNode>} */
     var nodes = this._dataGrid.rootNode().children;
     var matchCount = 0;
     var matchIndex = 0;
@@ -1333,7 +1323,7 @@ Network.NetworkLogView = class extends UI.VBox {
   }
 
   /**
-   * @param {!Network.NetworkDataGridNode} node
+   * @param {!Network.NetworkRequestNode} node
    * @return {boolean}
    */
   _applyFilter(node) {
@@ -1536,7 +1526,7 @@ Network.NetworkLogView = class extends UI.VBox {
   }
 
   /**
-   * @param {!Network.NetworkDataGridNode} node
+   * @param {!Network.NetworkRequestNode} node
    */
   _highlightNode(node) {
     UI.runCSSAnimationOnce(node.element(), 'highlighted-row');
