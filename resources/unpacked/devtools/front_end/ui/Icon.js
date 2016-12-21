@@ -164,6 +164,7 @@ UI.Icon.Descriptors = {
   'largeicon-dock-to-right': {x: -256, y: -48, width: 28, height: 24, spritesheet: 'largeicons', isMask: true},
   'largeicon-dock-to-bottom': {x: -32, y: -24, width: 28, height: 24, spritesheet: 'largeicons', isMask: true},
   'largeicon-undock': {x: 0, y: -48, width: 28, height: 24, spritesheet: 'largeicons', isMask: true},
+  'largeicon-settings-gear': {x: -288, y: -72, width: 28, height: 24, spritesheet: 'largeicons', isMask: true},
 
   'largeicon-show-left-sidebar': {x: -160, y: -72, width: 28, height: 24, spritesheet: 'largeicons', isMask: true},
   'largeicon-hide-left-sidebar': {x: -192, y: -72, width: 28, height: 24, spritesheet: 'largeicons', isMask: true},
@@ -207,4 +208,10 @@ UI.Icon.Descriptors = {
     isMask: true,
     transform: 'translate(4px, 1px) rotate(-90deg)'
   },
+  'largeicon-navigator-file': {x: -224, y: -72, width: 32, height: 24, spritesheet: 'largeicons', isMask: true},
+  'largeicon-navigator-folder': {x: -64, y: -120, width: 32, height: 24, spritesheet: 'largeicons', isMask: true},
+  'largeicon-navigator-domain': {x: -160, y: -144, width: 32, height: 24, spritesheet: 'largeicons', isMask: true},
+  'largeicon-navigator-frame': {x: -256, y: -144, width: 32, height: 24, spritesheet: 'largeicons', isMask: true},
+  'largeicon-navigator-worker': {x: -320, y: -144, width: 32, height: 24, spritesheet: 'largeicons', isMask: true},
+  'largeicon-navigator-snippet': {x: -224, y: -96, width: 32, height: 24, spritesheet: 'largeicons', isMask: true},
 };

@@ -4,7 +4,7 @@
  * found in the LICENSE file.
  */
 /**
- * @implements {UI.StaticViewportControl.Provider}
+ * @implements {UI.ViewportControl.Provider}
  * @unrestricted
  */
 UI.FilteredListWidget = class extends UI.VBox {
@@ -32,8 +32,11 @@ UI.FilteredListWidget = class extends UI.VBox {
     promptProxy.addEventListener('input', this._onInput.bind(this), false);
     promptProxy.classList.add('filtered-list-widget-prompt-element');
 
+    this._progressElement = this.contentElement.createChild('div', 'filtered-list-widget-progress');
+    this._progressBarElement = this._progressElement.createChild('div', 'filtered-list-widget-progress-bar');
+
     this._filteredItems = [];
-    this._viewportControl = new UI.StaticViewportControl(this);
+    this._viewportControl = new UI.ViewportControl(this);
     this._itemElementsContainer = this._viewportControl.element;
     this._itemElementsContainer.classList.add('container');
     this._itemElementsContainer.addEventListener('click', this._onClick.bind(this), false);
@@ -75,6 +78,7 @@ UI.FilteredListWidget = class extends UI.VBox {
     this._dialog.setPosition(undefined, 22);
     this.show(this._dialog.element);
     this._dialog.show();
+    this._progressElementWidth = this._progressElement.offsetWidth;
   }
 
   /**
@@ -162,22 +166,30 @@ UI.FilteredListWidget = class extends UI.VBox {
     if (this._scoringTimer) {
       clearTimeout(this._scoringTimer);
       delete this._scoringTimer;
+
+      if (this._refreshViewportWithCurrentResult)
+        this._refreshViewportWithCurrentResult();
     }
+
+    this._progressBarElement.style.transform = 'scaleX(0)';
+    this._progressBarElement.classList.remove('filtered-widget-progress-fade');
 
     var query = this._delegate.rewriteQuery(this._value());
     this._query = query;
+
     var filterRegex = query ? UI.FilteredListWidget.filterRegex(query) : null;
 
     var oldSelectedAbsoluteIndex =
-        this._selectedIndexInFiltered ? this._filteredItems[this._selectedIndexInFiltered] : null;
+        this._selectedIndexInFiltered && query ? this._filteredItems[this._selectedIndexInFiltered] : undefined;
     var filteredItems = [];
-    this._selectedIndexInFiltered = 0;
 
     var bestScores = [];
     var bestItems = [];
     var bestItemsToCollect = 100;
     var minBestScore = 0;
     var overflowItems = [];
+
+    var maxWorkItems = Number.constrain(10, 500, (this._delegate.itemCount() / 10) | 0);
 
     scoreItems.call(this, 0);
 
@@ -195,8 +207,9 @@ UI.FilteredListWidget = class extends UI.VBox {
      * @this {UI.FilteredListWidget}
      */
     function scoreItems(fromIndex) {
-      var maxWorkItems = 1000;
+      delete this._scoringTimer;
       var workDone = 0;
+
       for (var i = fromIndex; i < this._delegate.itemCount() && workDone < maxWorkItems; ++i) {
         // Filter out non-matching items quickly.
         if (filterRegex && !filterRegex.test(this._delegate.itemKeyAt(i)))
@@ -224,27 +237,42 @@ UI.FilteredListWidget = class extends UI.VBox {
         }
       }
 
+      this._refreshViewportWithCurrentResult =
+          this._refreshViewport.bind(this, bestItems, overflowItems, filteredItems, oldSelectedAbsoluteIndex);
+
       // Process everything in chunks.
       if (i < this._delegate.itemCount()) {
         this._scoringTimer = setTimeout(scoreItems.bind(this, i), 0);
+        this._progressBarElement.style.transform = 'scaleX(' + i / this._delegate.itemCount() + ')';
         return;
       }
-      delete this._scoringTimer;
-
-      this._filteredItems = bestItems.concat(overflowItems).concat(filteredItems);
-      for (var i = 0; i < this._filteredItems.length; ++i) {
-        if (this._filteredItems[i] === oldSelectedAbsoluteIndex) {
-          this._selectedIndexInFiltered = i;
-          break;
-        }
-      }
-      this._elements = [];
-      this._viewportControl.refresh();
-      if (!query)
-        this._selectedIndexInFiltered = 0;
-      this._updateSelection(this._selectedIndexInFiltered, false);
-      this._itemsFilteredForTest();
+      this._progressBarElement.style.transform = 'scaleX(1)';
+      this._progressBarElement.classList.add('filtered-widget-progress-fade');
+      this._refreshViewportWithCurrentResult();
     }
+  }
+
+  /**
+   * @param {!Array<number>} bestItems
+   * @param {!Array<number>} overflowItems
+   * @param {!Array<number>} filteredItems
+   * @param {number|undefined} selectedAbsoluteIndex
+   */
+  _refreshViewport(bestItems, overflowItems, filteredItems, selectedAbsoluteIndex) {
+    delete this._refreshViewportWithCurrentResult;
+    this._filteredItems = bestItems.concat(overflowItems).concat(filteredItems);
+
+    this._selectedIndexInFiltered = 0;
+    for (var i = 0; selectedAbsoluteIndex !== undefined && i < this._filteredItems.length; ++i) {
+      if (this._filteredItems[i] === selectedAbsoluteIndex) {
+        this._selectedIndexInFiltered = i;
+        break;
+      }
+    }
+    this._elements = [];
+    this._viewportControl.refresh();
+    this._updateSelection(this._selectedIndexInFiltered, false);
+    this._itemsFilteredForTest();
   }
 
   /**

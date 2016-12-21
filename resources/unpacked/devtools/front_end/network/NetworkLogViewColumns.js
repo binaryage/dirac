@@ -122,13 +122,6 @@ Network.NetworkLogViewColumns = class {
     this._waterfallColumn.element.addEventListener('mousewheel', this._onMouseWheel.bind(this, false), {passive: true});
     this._dataGridScroller.addEventListener('mousewheel', this._onMouseWheel.bind(this, true), true);
 
-    this._waterfallColumn.element.addEventListener('mousemove', event => {
-      var hoveredNode = this._waterfallColumn.getNodeFromPoint(event.offsetX, event.offsetY + event.target.offsetTop);
-      this._networkLogView.setHoveredNode(hoveredNode, event.shiftKey);
-    }, true);
-    this._waterfallColumn.element.addEventListener(
-        'mouseleave', this._networkLogView.setHoveredNode.bind(this._networkLogView, null, false), true);
-
     this._waterfallScroller = this._waterfallColumn.contentElement.createChild('div', 'network-waterfall-v-scroll');
     this._waterfallScroller.addEventListener('scroll', this._syncScrollers.bind(this), {passive: true});
     this._waterfallScrollerContent = this._waterfallScroller.createChild('div', 'network-waterfall-v-scroll-content');
@@ -171,8 +164,6 @@ Network.NetworkLogViewColumns = class {
       event.consume(true);
     this._activeScroller.scrollTop -= event.wheelDeltaY;
     this._syncScrollers();
-    var node = this._waterfallColumn.getNodeFromPoint(event.offsetX, event.offsetY);
-    this._networkLogView.setHoveredNode(node, event.shiftKey);
   }
 
   _syncScrollers() {
@@ -200,14 +191,6 @@ Network.NetworkLogViewColumns = class {
     }
     var nodes = this._networkLogView.flatNodesList();
     this._waterfallColumn.update(this._activeScroller.scrollTop, this._eventDividers, nodes);
-  }
-
-  /**
-   * @param {?Network.NetworkDataGridNode} node
-   * @param {boolean} highlightInitiatorChain
-   */
-  setHoveredNode(node, highlightInitiatorChain) {
-    this._waterfallColumn.setHoveredNode(node, highlightInitiatorChain);
   }
 
   _createWaterfallHeader() {
@@ -241,6 +224,10 @@ Network.NetworkLogViewColumns = class {
 
   dataChanged() {
     this._waterfallRequestsAreStale = true;
+  }
+
+  scheduleRefresh() {
+    this._waterfallColumn.scheduleDraw();
   }
 
   _updateRowsSize() {
@@ -285,7 +272,7 @@ Network.NetworkLogViewColumns = class {
         this._waterfallColumnSortIcon.classList.add('sort-descending');
 
       this._waterfallRequestsAreStale = true;
-      var sortFunction = Network.NetworkDataGridNode.RequestPropertyComparator.bind(null, this._activeWaterfallSortId);
+      var sortFunction = Network.NetworkRequestNode.RequestPropertyComparator.bind(null, this._activeWaterfallSortId);
       this._dataGrid.sortNodes(sortFunction, !this._dataGrid.isSortOrderAscending());
       this._networkLogView.dataGridSorted();
       return;
@@ -500,7 +487,7 @@ Network.NetworkLogViewColumns = class {
           isResponseHeader: true,
           isCustomHeader: true,
           visible: true,
-          sortingFunction: Network.NetworkDataGridNode.ResponseHeaderStringComparator.bind(null, headerId)
+          sortingFunction: Network.NetworkRequestNode.ResponseHeaderStringComparator.bind(null, headerId)
         }));
     this._columns.splice(index, 0, columnConfig);
     if (this._dataGrid)
@@ -626,7 +613,7 @@ Network.NetworkLogViewColumns._initialSortColumn = 'waterfall';
  *     sortable: boolean,
  *     align: (?UI.DataGrid.Align|undefined),
  *     isResponseHeader: boolean,
- *     sortingFunction: (!function(!Network.NetworkDataGridNode, !Network.NetworkDataGridNode):number|undefined),
+ *     sortingFunction: (!function(!Network.NetworkRequestNode, !Network.NetworkRequestNode):number|undefined),
  *     isCustomHeader: boolean
  * }}
  */
@@ -666,66 +653,66 @@ Network.NetworkLogViewColumns._defaultColumns = [
     hideable: false,
     nonSelectable: false,
     alwaysVisible: true,
-    sortingFunction: Network.NetworkDataGridNode.NameComparator
+    sortingFunction: Network.NetworkRequestNode.NameComparator
   },
   {
     id: 'method',
     title: Common.UIString('Method'),
-    sortingFunction: Network.NetworkDataGridNode.RequestPropertyComparator.bind(null, 'requestMethod')
+    sortingFunction: Network.NetworkRequestNode.RequestPropertyComparator.bind(null, 'requestMethod')
   },
   {
     id: 'status',
     title: Common.UIString('Status'),
     visible: true,
     subtitle: Common.UIString('Text'),
-    sortingFunction: Network.NetworkDataGridNode.RequestPropertyComparator.bind(null, 'statusCode')
+    sortingFunction: Network.NetworkRequestNode.RequestPropertyComparator.bind(null, 'statusCode')
   },
   {
     id: 'protocol',
     title: Common.UIString('Protocol'),
-    sortingFunction: Network.NetworkDataGridNode.RequestPropertyComparator.bind(null, 'protocol')
+    sortingFunction: Network.NetworkRequestNode.RequestPropertyComparator.bind(null, 'protocol')
   },
   {
     id: 'scheme',
     title: Common.UIString('Scheme'),
-    sortingFunction: Network.NetworkDataGridNode.RequestPropertyComparator.bind(null, 'scheme')
+    sortingFunction: Network.NetworkRequestNode.RequestPropertyComparator.bind(null, 'scheme')
   },
   {
     id: 'domain',
     title: Common.UIString('Domain'),
-    sortingFunction: Network.NetworkDataGridNode.RequestPropertyComparator.bind(null, 'domain')
+    sortingFunction: Network.NetworkRequestNode.RequestPropertyComparator.bind(null, 'domain')
   },
   {
     id: 'remoteaddress',
     title: Common.UIString('Remote Address'),
     weight: 10,
     align: UI.DataGrid.Align.Right,
-    sortingFunction: Network.NetworkDataGridNode.RemoteAddressComparator
+    sortingFunction: Network.NetworkRequestNode.RemoteAddressComparator
   },
   {
     id: 'type',
     title: Common.UIString('Type'),
     visible: true,
-    sortingFunction: Network.NetworkDataGridNode.TypeComparator
+    sortingFunction: Network.NetworkRequestNode.TypeComparator
   },
   {
     id: 'initiator',
     title: Common.UIString('Initiator'),
     visible: true,
     weight: 10,
-    sortingFunction: Network.NetworkDataGridNode.InitiatorComparator
+    sortingFunction: Network.NetworkRequestNode.InitiatorComparator
   },
   {
     id: 'cookies',
     title: Common.UIString('Cookies'),
     align: UI.DataGrid.Align.Right,
-    sortingFunction: Network.NetworkDataGridNode.RequestCookiesCountComparator
+    sortingFunction: Network.NetworkRequestNode.RequestCookiesCountComparator
   },
   {
     id: 'setcookies',
     title: Common.UIString('Set Cookies'),
     align: UI.DataGrid.Align.Right,
-    sortingFunction: Network.NetworkDataGridNode.ResponseCookiesCountComparator
+    sortingFunction: Network.NetworkRequestNode.ResponseCookiesCountComparator
   },
   {
     id: 'size',
@@ -733,7 +720,7 @@ Network.NetworkLogViewColumns._defaultColumns = [
     visible: true,
     subtitle: Common.UIString('Content'),
     align: UI.DataGrid.Align.Right,
-    sortingFunction: Network.NetworkDataGridNode.SizeComparator
+    sortingFunction: Network.NetworkRequestNode.SizeComparator
   },
   {
     id: 'time',
@@ -741,72 +728,72 @@ Network.NetworkLogViewColumns._defaultColumns = [
     visible: true,
     subtitle: Common.UIString('Latency'),
     align: UI.DataGrid.Align.Right,
-    sortingFunction: Network.NetworkDataGridNode.RequestPropertyComparator.bind(null, 'duration')
+    sortingFunction: Network.NetworkRequestNode.RequestPropertyComparator.bind(null, 'duration')
   },
   {
     id: 'priority',
     title: Common.UIString('Priority'),
-    sortingFunction: Network.NetworkDataGridNode.InitialPriorityComparator
+    sortingFunction: Network.NetworkRequestNode.InitialPriorityComparator
   },
   {
     id: 'connectionid',
     title: Common.UIString('Connection ID'),
-    sortingFunction: Network.NetworkDataGridNode.RequestPropertyComparator.bind(null, 'connectionId')
+    sortingFunction: Network.NetworkRequestNode.RequestPropertyComparator.bind(null, 'connectionId')
   },
   {
     id: 'cache-control',
     isResponseHeader: true,
     title: Common.UIString('Cache-Control'),
-    sortingFunction: Network.NetworkDataGridNode.ResponseHeaderStringComparator.bind(null, 'cache-control')
+    sortingFunction: Network.NetworkRequestNode.ResponseHeaderStringComparator.bind(null, 'cache-control')
   },
   {
     id: 'connection',
     isResponseHeader: true,
     title: Common.UIString('Connection'),
-    sortingFunction: Network.NetworkDataGridNode.ResponseHeaderStringComparator.bind(null, 'connection')
+    sortingFunction: Network.NetworkRequestNode.ResponseHeaderStringComparator.bind(null, 'connection')
   },
   {
     id: 'content-encoding',
     isResponseHeader: true,
     title: Common.UIString('Content-Encoding'),
-    sortingFunction: Network.NetworkDataGridNode.ResponseHeaderStringComparator.bind(null, 'content-encoding')
+    sortingFunction: Network.NetworkRequestNode.ResponseHeaderStringComparator.bind(null, 'content-encoding')
   },
   {
     id: 'content-length',
     isResponseHeader: true,
     title: Common.UIString('Content-Length'),
     align: UI.DataGrid.Align.Right,
-    sortingFunction: Network.NetworkDataGridNode.ResponseHeaderNumberComparator.bind(null, 'content-length')
+    sortingFunction: Network.NetworkRequestNode.ResponseHeaderNumberComparator.bind(null, 'content-length')
   },
   {
     id: 'etag',
     isResponseHeader: true,
     title: Common.UIString('ETag'),
-    sortingFunction: Network.NetworkDataGridNode.ResponseHeaderStringComparator.bind(null, 'etag')
+    sortingFunction: Network.NetworkRequestNode.ResponseHeaderStringComparator.bind(null, 'etag')
   },
   {
     id: 'keep-alive',
     isResponseHeader: true,
     title: Common.UIString('Keep-Alive'),
-    sortingFunction: Network.NetworkDataGridNode.ResponseHeaderStringComparator.bind(null, 'keep-alive')
+    sortingFunction: Network.NetworkRequestNode.ResponseHeaderStringComparator.bind(null, 'keep-alive')
   },
   {
     id: 'last-modified',
     isResponseHeader: true,
     title: Common.UIString('Last-Modified'),
-    sortingFunction: Network.NetworkDataGridNode.ResponseHeaderDateComparator.bind(null, 'last-modified')
+    sortingFunction: Network.NetworkRequestNode.ResponseHeaderDateComparator.bind(null, 'last-modified')
   },
   {
     id: 'server',
     isResponseHeader: true,
     title: Common.UIString('Server'),
-    sortingFunction: Network.NetworkDataGridNode.ResponseHeaderStringComparator.bind(null, 'server')
+    sortingFunction: Network.NetworkRequestNode.ResponseHeaderStringComparator.bind(null, 'server')
   },
   {
     id: 'vary',
     isResponseHeader: true,
     title: Common.UIString('Vary'),
-    sortingFunction: Network.NetworkDataGridNode.ResponseHeaderStringComparator.bind(null, 'vary')
+    sortingFunction: Network.NetworkRequestNode.ResponseHeaderStringComparator.bind(null, 'vary')
   },
   // This header is a placeholder to let datagrid know that it can be sorted by this column, but never shown.
   {id: 'waterfall', title: '', visible: false, hideable: false}

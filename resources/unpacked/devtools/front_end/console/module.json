@@ -121,6 +121,7 @@
         "clojure-parinfer.js",
         "DiracPrompt.js",
         "ConsoleContextSelector.js",
+        "ConsoleViewport.js",
         "ConsoleViewMessage.js",
         "ConsolePrompt.js",
         "ConsoleView.js",
