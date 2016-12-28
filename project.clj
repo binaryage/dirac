@@ -18,7 +18,7 @@
                  [http-kit "2.2.0"]
                  [version-clj "0.1.2"]
                  [clansi "1.0.0"]
-                 [funcool/cuerdas "2.0.1"]
+                 [funcool/cuerdas "2.0.2"]
 
                  ; we cannot use :dependencies under individual profiles because Cursive recognizes only root level
                  ; thus we mark extra deps with :scope "test" and filter them later when producing jar library
@@ -32,13 +32,13 @@
                  [rum-reforms "0.4.3" :scope "test"]
                  [cljsjs/parinfer "1.8.1-0" :scope "test"]
                  [com.lucasbradstreet/cljs-uuid-utils "1.0.2" :scope "test"]
-                 [com.rpl/specter "0.13.1" :scope "test"]
+                 [com.rpl/specter "0.13.2" :scope "test"]
                  [org.clojure/tools.namespace "0.3.0-alpha3" :scope "test"]
                  [org.clojure/tools.reader "1.0.0-beta1" :scope "test"]
                  [clj-logging-config "1.9.12" :scope "test"]
 
                  [http.async.client "1.2.0" :scope "test"]
-                 [org.slf4j/slf4j-log4j12 "1.7.21" :scope "test"]
+                 [org.slf4j/slf4j-log4j12 "1.7.22" :scope "test"]
 
                  [clj-webdriver "0.7.2" :scope "test"]
                  [org.seleniumhq.selenium/selenium-java "3.0.1" :scope "test"]
@@ -50,7 +50,7 @@
                  [ring/ring-core "1.5.0" :scope "test"]
                  [ring/ring-devel "1.5.0" :scope "test"]
                  [ring/ring-jetty-adapter "1.5.0" :scope "test"]
-                 [clj-time "0.12.2" :scope "test"]
+                 [clj-time "0.13.0" :scope "test"]
                  [clansi "1.0.0" :scope "test"]]
 
   :plugins [[lein-shell "0.5.0"]
