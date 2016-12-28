@@ -27,6 +27,7 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 /**
  * @interface
  */
@@ -79,14 +80,17 @@ UI.FlameChart = class extends UI.ChartViewport {
     this._highlightElement = this.viewportElement.createChild('div', 'flame-chart-highlight-element');
     this._selectedElement = this.viewportElement.createChild('div', 'flame-chart-selected-element');
 
+    this._rulerEnabled = true;
     this._windowLeft = 0.0;
     this._windowRight = 1.0;
     this._timeWindowLeft = 0;
     this._timeWindowRight = Infinity;
     this._rangeSelectionStart = 0;
     this._rangeSelectionEnd = 0;
-    this._barHeight = dataProvider.barHeight();
-    this._paddingLeft = this._dataProvider.paddingLeft();
+    this._barHeight = 17;
+    this._textBaseline = 5;
+    this._textPadding = 5;
+    this._paddingLeft = 0;
     var markerPadding = 2;
     this._markerRadius = this._barHeight / 2 - markerPadding;
 
@@ -116,6 +120,41 @@ UI.FlameChart = class extends UI.ChartViewport {
    */
   willHide() {
     this.hideHighlight();
+  }
+
+  /**
+   * @param {number} value
+   */
+  setBarHeight(value) {
+    this._barHeight = value;
+  }
+
+  /**
+   * @param {number} value
+   */
+  setTextBaseline(value) {
+    this._textBaseline = value;
+  }
+
+  /**
+   * @param {number} value
+   */
+  setTextPadding(value) {
+    this._textPadding = value;
+  }
+
+  /**
+   * @param {number} value
+   */
+  setPaddingLeft(value) {
+    this._paddingLeft = value;
+  }
+
+  /**
+   * @param {boolean} enable
+   */
+  enableRuler(enable) {
+    this._rulerEnabled = enable;
   }
 
   /**
@@ -210,7 +249,7 @@ UI.FlameChart = class extends UI.ChartViewport {
   }
 
   _updateHighlight() {
-    var inDividersBar = this._lastMouseOffsetY < UI.FlameChart.DividersBarHeight;
+    var inDividersBar = this._lastMouseOffsetY < UI.FlameChart.HeaderHeight;
     this._highlightedMarkerIndex = inDividersBar ? this._markerIndexAtPosition(this._lastMouseOffsetX) : -1;
     this._updateMarkerHighlight();
 
@@ -549,7 +588,7 @@ UI.FlameChart = class extends UI.ChartViewport {
 
     var titleIndices = [];
     var markerIndices = [];
-    var textPadding = this._dataProvider.textPadding();
+    var textPadding = this._textPadding;
     var minTextWidth = 2 * textPadding + UI.measureTextWidth(context, '\u2026');
     var barHeight = this._barHeight;
     var minVisibleBarLevel = Math.max(this._visibleLevelOffsets.upperBound(top) - 1, 0);
@@ -633,7 +672,7 @@ UI.FlameChart = class extends UI.ChartViewport {
     context.stroke();
 
     context.textBaseline = 'alphabetic';
-    var textBaseHeight = this._barHeight - this._dataProvider.textBaseline();
+    var textBaseHeight = this._barHeight - this._textBaseline;
 
     for (var i = 0; i < titleIndices.length; ++i) {
       var entryIndex = titleIndices[i];
@@ -662,7 +701,7 @@ UI.FlameChart = class extends UI.ChartViewport {
 
     this._drawGroupHeaders(width, height);
     this._drawMarkers();
-    const headerHeight = 15;
+    const headerHeight = this._rulerEnabled ? UI.FlameChart.HeaderHeight : 0;
     UI.TimelineGrid.drawCanvasGrid(context, this._calculator, 3, headerHeight);
 
     this._updateElementPosition(this._highlightElement, this._highlightedEntryIndex);
@@ -679,7 +718,7 @@ UI.FlameChart = class extends UI.ChartViewport {
     var top = this.getScrollOffset();
     var ratio = window.devicePixelRatio;
     var barHeight = this._barHeight;
-    var textBaseHeight = barHeight - this._dataProvider.textBaseline();
+    var textBaseHeight = barHeight - this._textBaseline;
     var groups = this._rawTimelineData.groups || [];
     if (!groups.length)
       return;
@@ -895,7 +934,8 @@ UI.FlameChart = class extends UI.ChartViewport {
     context.save();
     var ratio = window.devicePixelRatio;
     context.scale(ratio, ratio);
-    var height = UI.FlameChart.DividersBarHeight - 1;
+    context.translate(0, 3);
+    var height = UI.FlameChart.HeaderHeight - 1;
     for (var i = left; i < markers.length; i++) {
       var timestamp = markers[i].startTime();
       if (timestamp > rightBoundary)
@@ -969,11 +1009,12 @@ UI.FlameChart = class extends UI.ChartViewport {
     this._groupOffsets = new Uint32Array(groups.length + 1);
 
     var groupIndex = -1;
-    var currentOffset = UI.FlameChart.DividersBarHeight;
+    var currentOffset = this._rulerEnabled ? UI.FlameChart.HeaderHeight : 2;
     var visible = true;
     /** @type !Array<{nestingLevel: number, visible: boolean}> */
     var groupStack = [{nestingLevel: -1, visible: true}];
-    for (var level = 0; level < levelCount; ++level) {
+    var lastGroupLevel = Math.max(levelCount, groups.peekLast().startLevel + 1);
+    for (var level = 0; level < lastGroupLevel; ++level) {
       while (groupIndex < groups.length - 1 && level === groups[groupIndex + 1].startLevel) {
         ++groupIndex;
         var style = groups[groupIndex].style;
@@ -995,8 +1036,10 @@ UI.FlameChart = class extends UI.ChartViewport {
       }
       var isFirstOnLevel = groupIndex >= 0 && level === groups[groupIndex].startLevel;
       var thisLevelIsVisible = visible || isFirstOnLevel && groups[groupIndex].style.useFirstLineForOverview;
-      this._visibleLevels[level] = thisLevelIsVisible;
-      this._visibleLevelOffsets[level] = currentOffset;
+      if (level < levelCount) {
+        this._visibleLevels[level] = thisLevelIsVisible;
+        this._visibleLevelOffsets[level] = currentOffset;
+      }
       if (thisLevelIsVisible || (parentGroupIsVisible && style.shareHeaderLine && isFirstOnLevel))
         currentOffset += this._barHeight;
     }
@@ -1158,7 +1201,7 @@ UI.FlameChart = class extends UI.ChartViewport {
   }
 };
 
-UI.FlameChart.DividersBarHeight = 18;
+UI.FlameChart.HeaderHeight = 15;
 
 UI.FlameChart.MinimalTimeWindowMs = 0.5;
 
@@ -1208,11 +1251,6 @@ UI.FlameChart.TimelineData = class {
 };
 
 UI.FlameChartDataProvider.prototype = {
-  /**
-   * @return {number}
-   */
-  barHeight() {},
-
   /**
    * @return {number}
    */
@@ -1295,21 +1333,6 @@ UI.FlameChartDataProvider.prototype = {
    * @return {string}
    */
   textColor(entryIndex) {},
-
-  /**
-   * @return {number}
-   */
-  textBaseline() {},
-
-  /**
-   * @return {number}
-   */
-  textPadding() {},
-
-  /**
-   * @return {number}
-   */
-  paddingLeft() {},
 };
 
 /**
