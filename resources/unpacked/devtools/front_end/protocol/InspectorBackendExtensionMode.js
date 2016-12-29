@@ -1,7 +1,7 @@
-SDK.InspectorBackendExtensionMode = {};
+Protocol.InspectorBackendExtensionMode = {};
 
-SDK.InspectorBackendExtensionMode.loadFromExtensionIfNeeded = function() {
-  if (InspectorBackend.isInitialized()) {
+Protocol.InspectorBackendExtensionMode.loadFromExtensionIfNeeded = function() {
+  if (Protocol.inspectorBackend && Protocol.inspectorBackend.isInitialized()) {
     return;
   }
 
@@ -41,4 +41,4 @@ SDK.InspectorBackendExtensionMode.loadFromExtensionIfNeeded = function() {
   }
 };
 
-SDK.InspectorBackendExtensionMode.loadFromExtensionIfNeeded();
+Protocol.InspectorBackendExtensionMode.loadFromExtensionIfNeeded();
