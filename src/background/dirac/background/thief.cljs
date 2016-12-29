@@ -29,7 +29,7 @@
 ; -- backend api ------------------------------------------------------------------------------------------------------------
 
 (defn extract-backend-api [inspector-js-source]
-  (let [re (js/RegExp. ";InspectorBackend\\.register(.*?)\\)" "gm")
+  (let [re (js/RegExp. ";Protocol\\.inspectorBackend\\.register(.*?)\\)" "gm")
         res #js []]
     (loop []
       (when-let [m (.exec re inspector-js-source)]
