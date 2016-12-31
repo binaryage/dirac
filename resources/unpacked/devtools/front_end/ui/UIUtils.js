@@ -998,14 +998,14 @@ UI.measurePreferredSize = function(element, containerElement) {
   containerElement = containerElement || element.ownerDocument.body;
   containerElement.appendChild(element);
   element.positionAt(0, 0);
-  var result = new Size(element.offsetWidth, element.offsetHeight);
+  var result = element.getBoundingClientRect();
 
   element.positionAt(undefined, undefined);
   if (oldParent)
     oldParent.insertBefore(element, oldNextSibling);
   else
     element.remove();
-  return result;
+  return new Size(result.width, result.height);
 };
 
 /**
@@ -1233,9 +1233,9 @@ UI.beautifyFunctionName = function(name) {
  * @suppressGlobalPropertiesCheck
  * @template T
  */
-function registerCustomElement(localName, typeExtension, prototype) {
+UI.registerCustomElement = function(localName, typeExtension, prototype) {
   return document.registerElement(typeExtension, {prototype: Object.create(prototype), extends: localName});
-}
+};
 
 /**
  * @param {string} text
@@ -1244,7 +1244,7 @@ function registerCustomElement(localName, typeExtension, prototype) {
  * @param {string=} title
  * @return {!Element}
  */
-function createTextButton(text, clickHandler, className, title) {
+UI.createTextButton = function(text, clickHandler, className, title) {
   var element = createElementWithClass('button', className || '', 'text-button');
   element.textContent = text;
   if (clickHandler)
@@ -1252,7 +1252,7 @@ function createTextButton(text, clickHandler, className, title) {
   if (title)
     element.title = title;
   return element;
-}
+};
 
 /**
  * @param {string} name
@@ -1260,25 +1260,25 @@ function createTextButton(text, clickHandler, className, title) {
  * @param {boolean=} checked
  * @return {!Element}
  */
-function createRadioLabel(name, title, checked) {
+UI.createRadioLabel = function(name, title, checked) {
   var element = createElement('label', 'dt-radio');
   element.radioElement.name = name;
   element.radioElement.checked = !!checked;
   element.createTextChild(title);
   return element;
-}
+};
 
 /**
  * @param {string} title
  * @param {string} iconClass
  * @return {!Element}
  */
-function createLabel(title, iconClass) {
+UI.createLabel = function(title, iconClass) {
   var element = createElement('label', 'dt-icon-label');
   element.createChild('span').textContent = title;
   element.type = iconClass;
   return element;
-}
+};
 
 /**
  * @param {string=} title
@@ -1286,7 +1286,7 @@ function createLabel(title, iconClass) {
  * @param {string=} subtitle
  * @return {!Element}
  */
-function createCheckboxLabel(title, checked, subtitle) {
+UI.createCheckboxLabel = function(title, checked, subtitle) {
   var element = createElement('label', 'dt-checkbox');
   element.checkboxElement.checked = !!checked;
   if (title !== undefined) {
@@ -1298,7 +1298,7 @@ function createCheckboxLabel(title, checked, subtitle) {
     }
   }
   return element;
-}
+};
 
 /**
  * @return {!Element}
@@ -1306,14 +1306,14 @@ function createCheckboxLabel(title, checked, subtitle) {
  * @param {number} max
  * @param {number} tabIndex
  */
-function createSliderLabel(min, max, tabIndex) {
+UI.createSliderLabel = function(min, max, tabIndex) {
   var element = createElement('label', 'dt-slider');
   element.sliderElement.min = min;
   element.sliderElement.max = max;
   element.sliderElement.step = 1;
   element.sliderElement.tabIndex = tabIndex;
   return element;
-}
+};
 
 /**
  * @param {!Node} node
@@ -1339,7 +1339,7 @@ UI.appendStyle = function(node, cssFile) {
 };
 
 (function() {
-  registerCustomElement('button', 'text-button', {
+  UI.registerCustomElement('button', 'text-button', {
     /**
      * @this {Element}
      */
@@ -1352,7 +1352,7 @@ UI.appendStyle = function(node, cssFile) {
     __proto__: HTMLButtonElement.prototype
   });
 
-  registerCustomElement('label', 'dt-radio', {
+  UI.registerCustomElement('label', 'dt-radio', {
     /**
      * @this {Element}
      */
@@ -1380,7 +1380,7 @@ UI.appendStyle = function(node, cssFile) {
     this.radioElement.dispatchEvent(new Event('change'));
   }
 
-  registerCustomElement('label', 'dt-checkbox', {
+  UI.registerCustomElement('label', 'dt-checkbox', {
     /**
      * @this {Element}
      */
@@ -1447,7 +1447,7 @@ UI.appendStyle = function(node, cssFile) {
     __proto__: HTMLLabelElement.prototype
   });
 
-  registerCustomElement('label', 'dt-icon-label', {
+  UI.registerCustomElement('label', 'dt-icon-label', {
     /**
      * @this {Element}
      */
@@ -1470,7 +1470,7 @@ UI.appendStyle = function(node, cssFile) {
     __proto__: HTMLLabelElement.prototype
   });
 
-  registerCustomElement('label', 'dt-slider', {
+  UI.registerCustomElement('label', 'dt-slider', {
     /**
      * @this {Element}
      */
@@ -1499,7 +1499,7 @@ UI.appendStyle = function(node, cssFile) {
     __proto__: HTMLLabelElement.prototype
   });
 
-  registerCustomElement('label', 'dt-small-bubble', {
+  UI.registerCustomElement('label', 'dt-small-bubble', {
     /**
      * @this {Element}
      */
@@ -1521,7 +1521,7 @@ UI.appendStyle = function(node, cssFile) {
     __proto__: HTMLLabelElement.prototype
   });
 
-  registerCustomElement('div', 'dt-close-button', {
+  UI.registerCustomElement('div', 'dt-close-button', {
     /**
      * @this {Element}
      */
@@ -1614,17 +1614,18 @@ UI.bindInput = function(input, apply, validate, numeric) {
 };
 
 /**
-   * @param {!CanvasRenderingContext2D} context
-   * @param {string} text
-   * @param {number} maxWidth
-   * @return {string}
-   */
-UI.trimTextMiddle = function(context, text, maxWidth) {
+ * @param {!CanvasRenderingContext2D} context
+ * @param {string} text
+ * @param {number} maxWidth
+ * @param {function(string, number):string} trimFunction
+ * @return {string}
+ */
+UI.trimText = function(context, text, maxWidth, trimFunction) {
   const maxLength = 200;
   if (maxWidth <= 10)
     return '';
   if (text.length > maxLength)
-    text = text.trimMiddle(maxLength);
+    text = trimFunction(text, maxLength);
   const textWidth = UI.measureTextWidth(context, text);
   if (textWidth <= maxWidth)
     return text;
@@ -1635,7 +1636,7 @@ UI.trimTextMiddle = function(context, text, maxWidth) {
   var rv = textWidth;
   while (l < r && lv !== rv && lv !== maxWidth) {
     const m = Math.ceil(l + (r - l) * (maxWidth - lv) / (rv - lv));
-    const mv = UI.measureTextWidth(context, text.trimMiddle(m));
+    const mv = UI.measureTextWidth(context, trimFunction(text, m));
     if (mv <= maxWidth) {
       l = m;
       lv = mv;
@@ -1644,8 +1645,28 @@ UI.trimTextMiddle = function(context, text, maxWidth) {
       rv = mv;
     }
   }
-  text = text.trimMiddle(l);
+  text = trimFunction(text, l);
   return text !== '\u2026' ? text : '';
+};
+
+/**
+ * @param {!CanvasRenderingContext2D} context
+ * @param {string} text
+ * @param {number} maxWidth
+ * @return {string}
+ */
+UI.trimTextMiddle = function(context, text, maxWidth) {
+  return UI.trimText(context, text, maxWidth, (text, width) => text.trimMiddle(width));
+};
+
+/**
+ * @param {!CanvasRenderingContext2D} context
+ * @param {string} text
+ * @param {number} maxWidth
+ * @return {string}
+ */
+UI.trimTextEnd = function(context, text, maxWidth) {
+  return UI.trimText(context, text, maxWidth, (text, width) => text.trimEnd(width));
 };
 
 /**

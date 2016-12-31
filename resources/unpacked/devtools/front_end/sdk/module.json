@@ -3,6 +3,7 @@
         "common",
         "host",
         "platform",
+        "protocol",
         "dirac"
     ],
     "extensions": [
@@ -72,9 +73,6 @@
         }
     ],
     "scripts": [
-        "InspectorBackend.js",
-        "../InspectorBackendCommands.js",
-        "InspectorBackendExtensionMode.js",
         "Target.js",
         "TargetManager.js",
         "ApplicationCacheModel.js",
@@ -119,7 +117,6 @@
         "SupportedCSSPropertiesExtensionMode.js"
     ],
     "skip_compilation": [
-        "../InspectorBackendCommands.js",
         "../SupportedCSSProperties.js"
     ]
 }

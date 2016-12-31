@@ -3,17 +3,17 @@
 // found in the LICENSE file.
 
 /**
+ * @implements {UI.FlameChartDataProvider}
  * @unrestricted
  */
-Timeline.TimelineFlameChartNetworkDataProvider = class extends Timeline.TimelineFlameChartDataProviderBase {
+Timeline.TimelineFlameChartNetworkDataProvider = class {
   /**
    * @param {!TimelineModel.TimelineModel} model
    */
   constructor(model) {
-    super();
+    this.reset();
+    this._font = '11px ' + Host.fontFamily();
     this._model = model;
-    /** @type {?UI.FlameChart.TimelineData} */
-    this._timelineData = null;
     var loadingCategory = Timeline.TimelineUIUtils.categories()['loading'];
     this._waitingColor = loadingCategory.childColor;
     this._processingColor = loadingCategory.color;
@@ -23,13 +23,21 @@ Timeline.TimelineFlameChartNetworkDataProvider = class extends Timeline.Timeline
       height: 17,
       collapsible: true,
       color: UI.themeSupport.patchColor('#222', UI.ThemeSupport.ColorUsage.Foreground),
-      font: this.font(),
+      font: this._font,
       backgroundColor: UI.themeSupport.patchColor('white', UI.ThemeSupport.ColorUsage.Background),
       nestingLevel: 0,
       useFirstLineForOverview: false,
       shareHeaderLine: false
     };
     this._group = {startLevel: 0, name: Common.UIString('Network'), expanded: true, style: this._style};
+  }
+
+  /**
+   * @override
+   * @return {number}
+   */
+  maxStackDepth() {
+    return this._maxLevel;
   }
 
   /**
@@ -48,9 +56,22 @@ Timeline.TimelineFlameChartNetworkDataProvider = class extends Timeline.Timeline
 
   /**
    * @override
+   * @return {number}
    */
+  minimumBoundary() {
+    return this._minimumBoundary;
+  }
+
+  /**
+   * @override
+   * @return {number}
+   */
+  totalTime() {
+    return this._timeSpan;
+  }
+
   reset() {
-    super.reset();
+    this._maxLevel = 0;
     this._timelineData = null;
     /** @type {!Array<!TimelineModel.TimelineModel.NetworkRequest>} */
     this._requests = [];
@@ -64,20 +85,6 @@ Timeline.TimelineFlameChartNetworkDataProvider = class extends Timeline.Timeline
     this._startTime = startTime;
     this._endTime = endTime;
     this._updateTimelineData();
-  }
-
-  /**
-   * @override
-   * @param {number} index
-   * @return {?Timeline.TimelineSelection}
-   */
-  createSelection(index) {
-    if (index === -1)
-      return null;
-    var request = this._requests[index];
-    this._lastSelection =
-        new Timeline.TimelineFlameChartView.Selection(Timeline.TimelineSelection.fromNetworkRequest(request), index);
-    return this._lastSelection.timelineSelection;
   }
 
   /**
@@ -116,11 +123,30 @@ Timeline.TimelineFlameChartNetworkDataProvider = class extends Timeline.Timeline
   /**
    * @override
    * @param {number} index
+   * @return {string}
+   */
+  textColor(index) {
+    return Timeline.FlameChartStyle.textColor;
+  }
+
+  /**
+   * @override
+   * @param {number} index
    * @return {?string}
    */
   entryTitle(index) {
-    var request = /** @type {!TimelineModel.TimelineModel.NetworkRequest} */ (this._requests[index]);
-    return request.url || null;
+    const request = /** @type {!TimelineModel.TimelineModel.NetworkRequest} */ (this._requests[index]);
+    const parsedURL = new Common.ParsedURL(request.url || '');
+    return parsedURL.isValid ? `${parsedURL.displayName} (${parsedURL.host})` : request.url || null;
+  }
+
+  /**
+   * @override
+   * @param {number} index
+   * @return {?string}
+   */
+  entryFont(index) {
+    return this._font;
   }
 
   /**
@@ -197,19 +223,17 @@ Timeline.TimelineFlameChartNetworkDataProvider = class extends Timeline.Timeline
     const textStart = Math.max(sendStart, 0);
     const textWidth = finish - textStart;
     const minTextWidthPx = 20;
-    const textPadding = 6;
-    var gearPadding = 0;
     if (textWidth >= minTextWidthPx) {
-      const text = this.entryTitle(index);
-      if (text && text.length) {
+      text = this.entryTitle(index) || '';
+      if (request.fromServiceWorker)
+        text = '⚙ ' + text;
+      if (text) {
+        const textPadding = 4;
+        const textBaseline = 5;
+        const textBaseHeight = barHeight - textBaseline;
+        const trimmedText = UI.trimTextEnd(context, text, textWidth - 2 * textPadding);
         context.fillStyle = '#333';
-        const textBaseHeight = barHeight - this.textBaseline();
-        if (request.fromServiceWorker) {
-          context.fillText('⚙', textStart + textPadding, barY + textBaseHeight);
-          gearPadding = UI.measureTextWidth(context, '⚙ ');
-        }
-        const trimmedText = UI.trimTextMiddle(context, text, textWidth - 2 * textPadding - gearPadding);
-        context.fillText(trimmedText, textStart + textPadding + gearPadding, barY + textBaseHeight);
+        context.fillText(trimmedText, textStart + textPadding, barY + textBaseHeight);
       }
     }
 
@@ -307,7 +331,7 @@ Timeline.TimelineFlameChartNetworkDataProvider = class extends Timeline.Timeline
     this._timelineData = new UI.FlameChart.TimelineData(
         this._timelineData.entryLevels, this._timelineData.entryTotalTimes, this._timelineData.entryStartTimes,
         [this._group]);
-    this._currentLevel = maxLevel;
+    this._maxLevel = maxLevel;
   }
 
 
@@ -325,6 +349,25 @@ Timeline.TimelineFlameChartNetworkDataProvider = class extends Timeline.Timeline
    * @return {number}
    */
   preferredHeight() {
-    return this._style.height * (this._group.expanded ? Number.constrain(this._currentLevel + 1, 4, 8) : 2) + 2;
+    return this._style.height * (this._group.expanded ? Number.constrain(this._maxLevel + 1, 4, 8) : 2) + 2;
+  }
+
+  /**
+   * @override
+   * @param {number} value
+   * @param {number=} precision
+   * @return {string}
+   */
+  formatValue(value, precision) {
+    return Number.preciseMillisToString(value, precision);
+  }
+
+  /**
+   * @override
+   * @param {number} entryIndex
+   * @return {boolean}
+   */
+  canJumpToEntry(entryIndex) {
+    return false;
   }
 };

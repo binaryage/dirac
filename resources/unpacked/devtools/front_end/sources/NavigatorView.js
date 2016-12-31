@@ -34,7 +34,7 @@ Sources.NavigatorView = class extends UI.VBox {
     super();
     this.registerRequiredCSS('sources/navigatorView.css');
 
-    this._scriptsTree = new TreeOutlineInShadow();
+    this._scriptsTree = new UI.TreeOutlineInShadow();
     this._scriptsTree.registerRequiredCSS('sources/navigatorTree.css');
     this._scriptsTree.setComparator(Sources.NavigatorView._treeElementsCompare);
     this.element.appendChild(this._scriptsTree.element);
@@ -81,7 +81,7 @@ Sources.NavigatorView = class extends UI.VBox {
   }
 
   /**
-   * @param {!TreeElement} treeElement
+   * @param {!UI.TreeElement} treeElement
    */
   static _treeElementOrder(treeElement) {
     if (treeElement._boostOrder)
@@ -91,7 +91,6 @@ Sources.NavigatorView = class extends UI.VBox {
       var weights = {};
       var types = Sources.NavigatorView.Types;
       weights[types.Root] = 1;
-      weights[types.Category] = 1;
       weights[types.Domain] = 10;
       weights[types.FileSystemFolder] = 1;
       weights[types.NetworkFolder] = 1;
@@ -149,8 +148,8 @@ Sources.NavigatorView = class extends UI.VBox {
   }
 
   /**
-   * @param {!TreeElement} treeElement1
-   * @param {!TreeElement} treeElement2
+   * @param {!UI.TreeElement} treeElement1
+   * @param {!UI.TreeElement} treeElement2
    * @return {number}
    */
   static _treeElementsCompare(treeElement1, treeElement2) {
@@ -822,7 +821,6 @@ Sources.NavigatorView = class extends UI.VBox {
 };
 
 Sources.NavigatorView.Types = {
-  Category: 'category',
   Domain: 'domain',
   File: 'file',
   FileSystem: 'fs',
@@ -834,11 +832,10 @@ Sources.NavigatorView.Types = {
   Worker: 'worker'
 };
 
-
 /**
  * @unrestricted
  */
-Sources.NavigatorFolderTreeElement = class extends TreeElement {
+Sources.NavigatorFolderTreeElement = class extends UI.TreeElement {
   /**
    * @param {!Sources.NavigatorView} navigatorView
    * @param {string} type
@@ -851,9 +848,16 @@ Sources.NavigatorFolderTreeElement = class extends TreeElement {
     this._nodeType = type;
     this.title = title;
     this.tooltip = title;
-    this.createIcon();
     this._navigatorView = navigatorView;
     this._hoverCallback = hoverCallback;
+    var iconType = 'largeicon-navigator-folder';
+    if (type === Sources.NavigatorView.Types.Domain)
+      iconType = 'largeicon-navigator-domain';
+    else if (type === Sources.NavigatorView.Types.Frame)
+      iconType = 'largeicon-navigator-frame';
+    else if (type === Sources.NavigatorView.Types.Worker)
+      iconType = 'largeicon-navigator-worker';
+    this.setLeadingIcons([UI.Icon.create(iconType, 'icon')]);
   }
 
   /**
@@ -922,7 +926,7 @@ Sources.NavigatorFolderTreeElement = class extends TreeElement {
 /**
  * @unrestricted
  */
-Sources.NavigatorSourceTreeElement = class extends TreeElement {
+Sources.NavigatorSourceTreeElement = class extends UI.TreeElement {
   /**
    * @param {!Sources.NavigatorView} navigatorView
    * @param {!Workspace.UISourceCode} uiSourceCode
@@ -937,10 +941,28 @@ Sources.NavigatorSourceTreeElement = class extends TreeElement {
     this.listItemElement.classList.add(
         'navigator-' + uiSourceCode.contentType().name() + '-tree-item', 'navigator-file-tree-item');
     this.tooltip = uiSourceCode.url();
-    this.createIcon();
-
     this._navigatorView = navigatorView;
     this._uiSourceCode = uiSourceCode;
+    this.updateIcon();
+  }
+
+  updateIcon() {
+    var binding = Persistence.persistence.binding(this._uiSourceCode);
+    if (binding && Runtime.experiments.isEnabled('persistence2')) {
+      var container = createElementWithClass('span', 'icon-stack');
+      var icon = UI.Icon.create('largeicon-navigator-file-sync', 'icon');
+      var badge = UI.Icon.create('badge-navigator-file-sync', 'icon-badge');
+      container.appendChild(icon);
+      container.appendChild(badge);
+      container.title = Persistence.PersistenceUtils.tooltipForUISourceCode(this._uiSourceCode);
+      this.setLeadingIcons([container]);
+    } else {
+      var iconType = 'largeicon-navigator-file';
+      if (this._uiSourceCode.contentType() === Common.resourceTypes.Snippet)
+        iconType = 'largeicon-navigator-snippet';
+      var defaultIcon = UI.Icon.create(iconType, 'icon');
+      this.setLeadingIcons([defaultIcon]);
+    }
   }
 
   /**
@@ -1063,7 +1085,7 @@ Sources.NavigatorTreeNode = class {
   }
 
   /**
-   * @return {!TreeElement}
+   * @return {!UI.TreeElement}
    */
   treeNode() {
     throw 'Not implemented';
@@ -1108,7 +1130,7 @@ Sources.NavigatorTreeNode = class {
   wasPopulated() {
     var children = this.children();
     for (var i = 0; i < children.length; ++i)
-      this.treeNode().appendChild(/** @type {!TreeElement} */ (children[i].treeNode()));
+      this.treeNode().appendChild(/** @type {!UI.TreeElement} */ (children[i].treeNode()));
   }
 
   /**
@@ -1116,7 +1138,7 @@ Sources.NavigatorTreeNode = class {
    */
   didAddChild(node) {
     if (this.isPopulated())
-      this.treeNode().appendChild(/** @type {!TreeElement} */ (node.treeNode()));
+      this.treeNode().appendChild(/** @type {!UI.TreeElement} */ (node.treeNode()));
   }
 
   /**
@@ -1124,7 +1146,7 @@ Sources.NavigatorTreeNode = class {
    */
   willRemoveChild(node) {
     if (this.isPopulated())
-      this.treeNode().removeChild(/** @type {!TreeElement} */ (node.treeNode()));
+      this.treeNode().removeChild(/** @type {!UI.TreeElement} */ (node.treeNode()));
   }
 
   /**
@@ -1202,7 +1224,7 @@ Sources.NavigatorRootTreeNode = class extends Sources.NavigatorTreeNode {
 
   /**
    * @override
-   * @return {!TreeElement}
+   * @return {!UI.TreeElement}
    */
   treeNode() {
     return this._navigatorView._scriptsTree.rootElement();
@@ -1234,7 +1256,7 @@ Sources.NavigatorUISourceCodeTreeNode = class extends Sources.NavigatorTreeNode 
 
   /**
    * @override
-   * @return {!TreeElement}
+   * @return {!UI.TreeElement}
    */
   treeNode() {
     if (this._treeElement)
@@ -1265,15 +1287,7 @@ Sources.NavigatorUISourceCodeTreeNode = class extends Sources.NavigatorTreeNode 
       titleText = '*' + titleText;
 
     this._treeElement.title = titleText;
-
-    var binding = Persistence.persistence.binding(this._uiSourceCode);
-    if (binding && Runtime.experiments.isEnabled('persistence2')) {
-      var icon = UI.Icon.create('smallicon-green-checkmark');
-      icon.title = Persistence.PersistenceUtils.tooltipForUISourceCode(this._uiSourceCode);
-      this._treeElement.setTrailingIcons([icon]);
-    } else {
-      this._treeElement.setTrailingIcons([]);
-    }
+    this._treeElement.updateIcon();
 
     var tooltip = this._uiSourceCode.url();
     if (this._uiSourceCode.contentType().isFromSourceMap())
@@ -1387,7 +1401,7 @@ Sources.NavigatorFolderTreeNode = class extends Sources.NavigatorTreeNode {
 
   /**
    * @override
-   * @return {!TreeElement}
+   * @return {!UI.TreeElement}
    */
   treeNode() {
     if (this._treeElement)
@@ -1409,7 +1423,7 @@ Sources.NavigatorFolderTreeNode = class extends Sources.NavigatorTreeNode {
   }
 
   /**
-   * @return {!TreeElement}
+   * @return {!UI.TreeElement}
    */
   _createTreeElement(title, node) {
     if (this._project.type() !== Workspace.projectTypes.FileSystem) {
@@ -1556,7 +1570,7 @@ Sources.NavigatorGroupTreeNode = class extends Sources.NavigatorTreeNode {
 
   /**
    * @override
-   * @return {!TreeElement}
+   * @return {!UI.TreeElement}
    */
   treeNode() {
     if (this._treeElement)

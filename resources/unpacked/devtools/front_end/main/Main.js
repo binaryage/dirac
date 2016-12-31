@@ -110,6 +110,7 @@ Main.Main = class {
     Runtime.experiments.register('emptySourceMapAutoStepping', 'Empty sourcemap auto-stepping');
     Runtime.experiments.register('inputEventsOnTimelineOverview', 'Input events on Timeline overview', true);
     Runtime.experiments.register('liveSASS', 'Live SASS');
+    Runtime.experiments.register('networkGroupingRequests', 'Network request groups support', true);
     Runtime.experiments.register('nodeDebugging', 'Node debugging', true);
     Runtime.experiments.register('persistence2', 'Persistence 2.0');
     Runtime.experiments.register('persistenceValidation', 'Validate persistence bindings');
@@ -119,8 +120,6 @@ Main.Main = class {
     Runtime.experiments.register('sourceDiff', 'Source diff');
     Runtime.experiments.register('terminalInDrawer', 'Terminal in drawer', true);
     Runtime.experiments.register('timelineInvalidationTracking', 'Timeline invalidation tracking', true);
-    Runtime.experiments.register('timelineLandingPage', 'Timeline landing page');
-    Runtime.experiments.register('timelineRecordingPerspectives', 'Timeline recording perspectives UI');
     Runtime.experiments.register('timelineTracingJSProfile', 'Timeline tracing based JS profiler', true);
     Runtime.experiments.register('timelineV8RuntimeCallStats', 'V8 Runtime Call Stats on Timeline', true);
     Runtime.experiments.register('timelinePerFrameTrack', 'Show track per frame on Timeline', true);
@@ -136,8 +135,7 @@ Main.Main = class {
         Runtime.experiments.enableForTest('cssTrackerPanel');
     }
 
-    Runtime.experiments.setDefaultExperiments(
-        ['timelineLandingPage', 'timelineRecordingPerspectives', 'persistenceValidation']);
+    Runtime.experiments.setDefaultExperiments(['persistenceValidation']);
   }
 
   /**
@@ -775,12 +773,15 @@ Main.NetworkPanelIndicator = class {
     updateVisibility();
 
     function updateVisibility() {
-      if (manager.isThrottling())
-        UI.inspectorView.setPanelIcon('network', 'smallicon-warning', Common.UIString('Network throttling is enabled'));
-      else if (blockedURLsSetting.get().length)
-        UI.inspectorView.setPanelIcon('network', 'smallicon-warning', Common.UIString('Requests may be blocked'));
-      else
-        UI.inspectorView.setPanelIcon('network', '', '');
+      var icon = null;
+      if (manager.isThrottling()) {
+        icon = UI.Icon.create('smallicon-warning');
+        icon.title = Common.UIString('Network throttling is enabled');
+      } else if (blockedURLsSetting.get().length) {
+        icon = UI.Icon.create('smallicon-warning');
+        icon.title = Common.UIString('Requests may be blocked');
+      }
+      UI.inspectorView.setPanelIcon('network', icon);
     }
   }
 };
@@ -794,11 +795,13 @@ Main.SourcesPanelIndicator = class {
     javaScriptDisabledChanged();
 
     function javaScriptDisabledChanged() {
+      var icon = null;
       var javaScriptDisabled = Common.moduleSetting('javaScriptDisabled').get();
-      if (javaScriptDisabled)
-        UI.inspectorView.setPanelIcon('sources', 'smallicon-warning', Common.UIString('JavaScript is disabled'));
-      else
-        UI.inspectorView.setPanelIcon('sources', '', '');
+      if (javaScriptDisabled) {
+        icon = UI.Icon.create('smallicon-warning');
+        icon.title = Common.UIString('JavaScript is disabled');
+      }
+      UI.inspectorView.setPanelIcon('sources', icon);
     }
   }
 };
@@ -849,7 +852,7 @@ Main.Main.InspectedNodeRevealer = class {
  */
 Main.sendOverProtocol = function(method, params) {
   return new Promise((resolve, reject) => {
-    InspectorBackendClass.sendRawMessageForTesting(method, params, (err, result) => {
+    Protocol.InspectorBackend.sendRawMessageForTesting(method, params, (err, result) => {
       if (err)
         return reject(err);
       return resolve(result);
@@ -872,7 +875,7 @@ Main.RemoteDebuggingTerminatedScreen = class extends UI.VBox {
     message.createChild('span', 'reason').textContent = reason;
     this.contentElement.createChild('div', 'message').textContent =
         Common.UIString('Reconnect when ready by reopening DevTools.');
-    var button = createTextButton(Common.UIString('Reconnect DevTools'), () => window.location.reload());
+    var button = UI.createTextButton(Common.UIString('Reconnect DevTools'), () => window.location.reload());
     this.contentElement.createChild('div', 'button').appendChild(button);
   }
 

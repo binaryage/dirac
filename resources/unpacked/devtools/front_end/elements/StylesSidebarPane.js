@@ -574,7 +574,7 @@ Elements.StylePropertiesSection = class {
 
     this._titleElement = this.element.createChild('div', 'styles-section-title ' + (rule ? 'styles-selector' : ''));
 
-    this.propertiesTreeOutline = new TreeOutlineInShadow();
+    this.propertiesTreeOutline = new UI.TreeOutlineInShadow();
     this.propertiesTreeOutline.registerRequiredCSS('elements/stylesSectionTree.css');
     this.propertiesTreeOutline.element.classList.add('style-properties', 'matched-styles', 'monospace');
     this.propertiesTreeOutline.section = this;
@@ -1240,6 +1240,10 @@ Elements.StylePropertiesSection = class {
     if (!event.target.isComponentSelectionCollapsed())
       return;
 
+    if (this.propertiesTreeOutline.element.shadowRoot.firstChild &&
+        this.propertiesTreeOutline.element.shadowRoot.firstChild.isComponentSelectionCollapsed())
+      return;
+
     if (this._checkWillCancelEditing())
       return;
 
@@ -1762,7 +1766,7 @@ Elements.KeyframePropertiesSection = class extends Elements.StylePropertiesSecti
 /**
  * @unrestricted
  */
-Elements.StylePropertyTreeElement = class extends TreeElement {
+Elements.StylePropertyTreeElement = class extends UI.TreeElement {
   /**
    * @param {!Elements.StylesSidebarPane} stylesPane
    * @param {!SDK.CSSMatchedStyles} matchedStyles

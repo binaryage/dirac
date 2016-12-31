@@ -27,10 +27,12 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 /**
+ * @implements {UI.FlameChartDataProvider}
  * @unrestricted
  */
-Timeline.TimelineFlameChartDataProvider = class extends Timeline.TimelineFlameChartDataProviderBase {
+Timeline.TimelineFlameChartDataProvider = class {
   /**
    * @param {!TimelineModel.TimelineModel} model
    * @param {!TimelineModel.TimelineFrameModel} frameModel
@@ -38,62 +40,41 @@ Timeline.TimelineFlameChartDataProvider = class extends Timeline.TimelineFlameCh
    * @param {!Array<!TimelineModel.TimelineModel.Filter>} filters
    */
   constructor(model, frameModel, irModel, filters) {
-    super();
+    this.reset();
+    this._font = '11px ' + Host.fontFamily();
     this._model = model;
     this._filters = filters;
     /** @type {?UI.FlameChart.TimelineData} */
     this._timelineData = null;
+    this._currentLevel = 0;
     this._frameModel = frameModel;
     this._irModel = irModel;
     this._consoleColorGenerator =
         new UI.FlameChart.ColorGenerator({min: 30, max: 55}, {min: 70, max: 100, count: 6}, 50, 0.7);
     this._extensionColorGenerator =
         new UI.FlameChart.ColorGenerator({min: 210, max: 300}, {min: 70, max: 100, count: 6}, 70, 0.7);
-    const font = this.font();
 
-    this._headerLevel1 = {
+    const defaultGroupStyle = {
       padding: 4,
       height: 17,
       collapsible: true,
       color: UI.themeSupport.patchColor('#222', UI.ThemeSupport.ColorUsage.Foreground),
-      font: font,
       backgroundColor: UI.themeSupport.patchColor('white', UI.ThemeSupport.ColorUsage.Background),
-      nestingLevel: 0
-    };
-
-    this._headerLevel2 = {
-      padding: 2,
-      height: 17,
-      collapsible: false,
-      font: font,
-      color: UI.themeSupport.patchColor('#222', UI.ThemeSupport.ColorUsage.Foreground),
-      backgroundColor: UI.themeSupport.patchColor('white', UI.ThemeSupport.ColorUsage.Background),
-      nestingLevel: 1,
-      shareHeaderLine: true
-    };
-
-    this._interactionsHeaderLevel1 = {
-      padding: 4,
-      height: 17,
-      collapsible: true,
-      color: UI.themeSupport.patchColor('#222', UI.ThemeSupport.ColorUsage.Foreground),
-      font: font,
-      backgroundColor: UI.themeSupport.patchColor('white', UI.ThemeSupport.ColorUsage.Background),
+      font: this._font,
       nestingLevel: 0,
-      useFirstLineForOverview: true,
       shareHeaderLine: true
     };
 
-    this._interactionsHeaderLevel2 = {
-      padding: 2,
-      height: 17,
-      collapsible: true,
-      color: UI.themeSupport.patchColor('#222', UI.ThemeSupport.ColorUsage.Foreground),
-      font: font,
-      backgroundColor: UI.themeSupport.patchColor('white', UI.ThemeSupport.ColorUsage.Background),
-      nestingLevel: 1,
-      shareHeaderLine: true
-    };
+    this._headerLevel1 = /** @type {!UI.FlameChart.GroupStyle} */
+        (Object.assign({}, defaultGroupStyle, {shareHeaderLine: false}));
+    this._headerLevel2 = /** @type {!UI.FlameChart.GroupStyle} */
+        (Object.assign({}, defaultGroupStyle, {padding: 2, nestingLevel: 1, collapsible: false}));
+    this._staticHeader = /** @type {!UI.FlameChart.GroupStyle} */
+        (Object.assign({}, defaultGroupStyle, {collapsible: false}));
+    this._interactionsHeaderLevel1 = /** @type {!UI.FlameChart.GroupStyle} */
+        (Object.assign({useFirstLineForOverview: true}, defaultGroupStyle));
+    this._interactionsHeaderLevel2 = /** @type {!UI.FlameChart.GroupStyle} */
+        (Object.assign({}, defaultGroupStyle, {padding: 2, nestingLevel: 1}));
   }
 
   /**
@@ -135,17 +116,20 @@ Timeline.TimelineFlameChartDataProvider = class extends Timeline.TimelineFlameCh
    */
   textColor(index) {
     var event = this._entryData[index];
-    if (event && event._blackboxRoot)
-      return '#888';
-    else
-      return super.textColor(index);
+    return event && event._blackboxRoot ? '#888' : Timeline.FlameChartStyle.textColor;
   }
 
   /**
    * @override
+   * @param {number} index
+   * @return {?string}
    */
+  entryFont(index) {
+    return this._font;
+  }
+
   reset() {
-    super.reset();
+    this._currentLevel = 0;
     this._timelineData = null;
     /** @type {!Array<!SDK.TracingModel.Event|!TimelineModel.TimelineFrame|!TimelineModel.TimelineIRModel.Phases>} */
     this._entryData = [];
@@ -165,6 +149,14 @@ Timeline.TimelineFlameChartDataProvider = class extends Timeline.TimelineFlameCh
 
   /**
    * @override
+   * @return {number}
+   */
+  maxStackDepth() {
+    return this._currentLevel;
+  }
+
+  /**
+   * @override
    * @return {!UI.FlameChart.TimelineData}
    */
   timelineData() {
@@ -176,6 +168,8 @@ Timeline.TimelineFlameChartDataProvider = class extends Timeline.TimelineFlameCh
     this._minimumBoundary = this._model.minimumRecordTime();
     this._timeSpan = this._model.isEmpty() ? 1000 : this._model.maximumRecordTime() - this._minimumBoundary;
     this._currentLevel = 0;
+
+    this._appendHeader(Common.UIString('Frames'), this._staticHeader);
     this._appendFrameBars(this._frameModel.frames());
 
     this._appendHeader(Common.UIString('Interactions'), this._interactionsHeaderLevel1);
@@ -238,6 +232,22 @@ Timeline.TimelineFlameChartDataProvider = class extends Timeline.TimelineFlameCh
     this._timelineData.markers = this._markers;
 
     return this._timelineData;
+  }
+
+  /**
+   * @override
+   * @return {number}
+   */
+  minimumBoundary() {
+    return this._minimumBoundary;
+  }
+
+  /**
+   * @override
+   * @return {number}
+   */
+  totalTime() {
+    return this._timeSpan;
   }
 
   /**
@@ -706,7 +716,6 @@ Timeline.TimelineFlameChartDataProvider = class extends Timeline.TimelineFlameCh
   }
 
   /**
-   * @override
    * @param {number} entryIndex
    * @return {?Timeline.TimelineSelection}
    */
@@ -723,6 +732,25 @@ Timeline.TimelineFlameChartDataProvider = class extends Timeline.TimelineFlameCh
     if (timelineSelection)
       this._lastSelection = new Timeline.TimelineFlameChartView.Selection(timelineSelection, entryIndex);
     return timelineSelection;
+  }
+
+  /**
+   * @override
+   * @param {number} value
+   * @param {number=} precision
+   * @return {string}
+   */
+  formatValue(value, precision) {
+    return Number.preciseMillisToString(value, precision);
+  }
+
+  /**
+   * @override
+   * @param {number} entryIndex
+   * @return {boolean}
+   */
+  canJumpToEntry(entryIndex) {
+    return false;
   }
 
   /**

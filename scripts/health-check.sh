@@ -21,6 +21,7 @@ fi
 
 # get latest chromium revision and other info
 pushd "$ORACULUM_CHECKOUT_DIR"
+./oraculum.sh prune-cache
 ./oraculum.sh build
 CHROMIUM_REVISION=$(./oraculum.sh latest-revision)
 CHROMIUM_VERSION=$(./oraculum.sh version ${CHROMIUM_REVISION})
@@ -50,7 +51,7 @@ fi
 
 # merge all changes from target branch
 # this is needed after release to bring in new changes
-git merge --no-edit -Xtheirs "$TAG"
+git merge --no-edit --no-verify-signatures -Xtheirs -m "merge tag $TAG into health-check" "$TAG"
 
 # commit an empty commit to trigger travis build
 # note that CHROMIUM_DOWNLOAD_URL will be used by travis

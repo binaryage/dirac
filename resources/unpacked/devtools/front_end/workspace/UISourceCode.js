@@ -56,8 +56,6 @@ Workspace.UISourceCode = class extends Common.Object {
     }
 
     this._contentType = contentType;
-    /** @type {?function(?string)} */
-    this._requestContentCallback = null;
     /** @type {?Promise<?string>} */
     this._requestContentPromise = null;
     /** @type {!Multimap<string, !Workspace.UISourceCode.LineMarker>} */
@@ -68,6 +66,18 @@ Workspace.UISourceCode = class extends Common.Object {
 
     /** @type {!Array<!Workspace.UISourceCode.Message>} */
     this._messages = [];
+
+    this._contentLoaded = false;
+    /** @type {?string} */
+    this._content = null;
+    this._forceLoadOnCheckContent = false;
+    this._checkingContent = false;
+    /** @type {?string} */
+    this._lastAcceptedContent = null;
+    /** @type {?string} */
+    this._workingCopy = null;
+    /** @type {?function() : string} */
+    this._workingCopyGetter = null;
   }
 
   /**
@@ -109,12 +119,7 @@ Workspace.UISourceCode = class extends Common.Object {
    * @return {string}
    */
   fullDisplayName() {
-    var parentPath = this._parentURL.replace(/^(?:https?|file)\:\/\//, '');
-    try {
-      parentPath = decodeURI(parentPath);
-    } catch (e) {
-    }
-    return parentPath + '/' + this.displayName(true);
+    return this._project.fullDisplayName(this);
   }
 
   /**
@@ -222,15 +227,21 @@ Workspace.UISourceCode = class extends Common.Object {
    * @return {!Promise<?string>}
    */
   requestContent() {
-    if (this._content || this._contentLoaded)
-      return Promise.resolve(this._content);
-    var promise = this._requestContentPromise;
-    if (!promise) {
-      promise = new Promise(fulfill => this._requestContentCallback = fulfill);
-      this._requestContentPromise = promise;
-      this._project.requestFileContent(this, this._fireContentAvailable.bind(this));
+    if (this._requestContentPromise)
+      return this._requestContentPromise;
+
+    if (this._contentLoaded) {
+      this._requestContentPromise = Promise.resolve(this._content);
+    } else {
+      var fulfill;
+      this._requestContentPromise = new Promise(x => fulfill = x);
+      this._project.requestFileContent(this, content => {
+        this._contentLoaded = true;
+        this._content = content;
+        fulfill(content);
+      });
     }
-    return promise;
+    return this._requestContentPromise;
   }
 
   checkContentUpdated() {
@@ -255,11 +266,11 @@ Workspace.UISourceCode = class extends Common.Object {
         this.setWorkingCopy(workingCopy);
         return;
       }
-      if (typeof this._lastAcceptedContent === 'string' && this._lastAcceptedContent === updatedContent)
+      if (this._lastAcceptedContent === updatedContent)
         return;
 
       if (this._content === updatedContent) {
-        delete this._lastAcceptedContent;
+        this._lastAcceptedContent = null;
         return;
       }
 
@@ -309,9 +320,10 @@ Workspace.UISourceCode = class extends Common.Object {
    * @param {boolean} committedByUser
    */
   _contentCommitted(content, committedByUser) {
-    delete this._lastAcceptedContent;
+    this._lastAcceptedContent = null;
     this._content = content;
     this._contentLoaded = true;
+    this._requestContentPromise = null;
 
     var lastRevision = this.history.length ? this.history[this.history.length - 1] : null;
     if (!lastRevision || lastRevision._content !== this._content) {
@@ -397,11 +409,11 @@ Workspace.UISourceCode = class extends Common.Object {
   workingCopy() {
     if (this._workingCopyGetter) {
       this._workingCopy = this._workingCopyGetter();
-      delete this._workingCopyGetter;
+      this._workingCopyGetter = null;
     }
     if (this.isDirty())
-      return this._workingCopy;
-    return this._content;
+      return /** @type {string} */ (this._workingCopy);
+    return this._content || '';
   }
 
   resetWorkingCopy() {
@@ -410,8 +422,8 @@ Workspace.UISourceCode = class extends Common.Object {
   }
 
   _innerResetWorkingCopy() {
-    delete this._workingCopy;
-    delete this._workingCopyGetter;
+    this._workingCopy = null;
+    this._workingCopyGetter = null;
   }
 
   /**
@@ -419,10 +431,13 @@ Workspace.UISourceCode = class extends Common.Object {
    */
   setWorkingCopy(newWorkingCopy) {
     this._workingCopy = newWorkingCopy;
-    delete this._workingCopyGetter;
+    this._workingCopyGetter = null;
     this._workingCopyChanged();
   }
 
+  /**
+  * @param {function(): string } workingCopyGetter
+  */
   setWorkingCopyGetter(workingCopyGetter) {
     this._workingCopyGetter = workingCopyGetter;
     this._workingCopyChanged();
@@ -439,7 +454,7 @@ Workspace.UISourceCode = class extends Common.Object {
     if (!this._workingCopyGetter)
       return;
     this._workingCopy = this._workingCopyGetter();
-    delete this._workingCopyGetter;
+    this._workingCopyGetter = null;
   }
 
   commitWorkingCopy() {
@@ -451,7 +466,7 @@ Workspace.UISourceCode = class extends Common.Object {
    * @return {boolean}
    */
   isDirty() {
-    return typeof this._workingCopy !== 'undefined' || typeof this._workingCopyGetter !== 'undefined';
+    return this._workingCopy !== null || this._workingCopyGetter !== null;
   }
 
   /**
@@ -491,20 +506,6 @@ Workspace.UISourceCode = class extends Common.Object {
     function doSearch(content) {
       callback(Common.ContentProvider.performSearchInContent(content, query, caseSensitive, isRegex));
     }
-  }
-
-  /**
-   * @param {?string} content
-   */
-  _fireContentAvailable(content) {
-    this._contentLoaded = true;
-    this._content = content;
-
-    var callback = this._requestContentCallback;
-    this._requestContentCallback = null;
-    this._requestContentPromise = null;
-
-    callback.call(null, content);
   }
 
   /**
@@ -631,7 +632,6 @@ Workspace.UISourceCode.Events = {
   WorkingCopyChanged: Symbol('WorkingCopyChanged'),
   WorkingCopyCommitted: Symbol('WorkingCopyCommitted'),
   TitleChanged: Symbol('TitleChanged'),
-  SourceMappingChanged: Symbol('SourceMappingChanged'),
   MessageAdded: Symbol('MessageAdded'),
   MessageRemoved: Symbol('MessageRemoved'),
   LineDecorationAdded: Symbol('LineDecorationAdded'),

@@ -1,0 +1,13 @@
+{
+  "dependencies": [
+    "dirac"
+  ],
+  "scripts": [
+    "InspectorBackend.js",
+    "../InspectorBackendCommands.js",
+    "InspectorBackendExtensionMode.js"
+  ],
+  "skip_compilation": [
+    "../InspectorBackendCommands.js"
+  ]
+}

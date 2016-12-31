@@ -2,187 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/**
- * @implements {UI.FlameChartDataProvider}
- * @unrestricted
- */
-Timeline.TimelineFlameChartDataProviderBase = class {
-  constructor() {
-    UI.FlameChartDataProvider.call(this);
-    this.reset();
-    this._font = '11px ' + Host.fontFamily();
-  }
-
-  /** @return {string} */
-  font() {
-    return this._font;
-  }
-
-  /**
-   * @override
-   * @return {number}
-   */
-  barHeight() {
-    return 17;
-  }
-
-  /**
-   * @override
-   * @return {number}
-   */
-  textBaseline() {
-    return 5;
-  }
-
-  /**
-   * @override
-   * @return {number}
-   */
-  textPadding() {
-    return 4;
-  }
-
-  /**
-   * @override
-   * @param {number} entryIndex
-   * @return {string}
-   */
-  entryFont(entryIndex) {
-    return this._font;
-  }
-
-  /**
-   * @override
-   * @param {number} entryIndex
-   * @return {?string}
-   */
-  entryTitle(entryIndex) {
-    return null;
-  }
-
-  reset() {
-    this._timelineData = null;
-  }
-
-  /**
-   * @override
-   * @return {number}
-   */
-  minimumBoundary() {
-    return this._minimumBoundary;
-  }
-
-  /**
-   * @override
-   * @return {number}
-   */
-  totalTime() {
-    return this._timeSpan;
-  }
-
-  /**
-   * @override
-   * @param {number} value
-   * @param {number=} precision
-   * @return {string}
-   */
-  formatValue(value, precision) {
-    return Number.preciseMillisToString(value, precision);
-  }
-
-  /**
-   * @override
-   * @return {number}
-   */
-  maxStackDepth() {
-    return this._currentLevel;
-  }
-
-  /**
-   * @override
-   * @param {number} entryIndex
-   * @return {?Element}
-   */
-  prepareHighlightedEntryInfo(entryIndex) {
-    return null;
-  }
-
-  /**
-   * @override
-   * @param {number} entryIndex
-   * @return {boolean}
-   */
-  canJumpToEntry(entryIndex) {
-    return false;
-  }
-
-  /**
-   * @override
-   * @param {number} entryIndex
-   * @return {string}
-   */
-  entryColor(entryIndex) {
-    return 'red';
-  }
-
-  /**
-   * @override
-   * @param {number} index
-   * @return {boolean}
-   */
-  forceDecoration(index) {
-    return false;
-  }
-
-  /**
-   * @override
-   * @param {number} entryIndex
-   * @param {!CanvasRenderingContext2D} context
-   * @param {?string} text
-   * @param {number} barX
-   * @param {number} barY
-   * @param {number} barWidth
-   * @param {number} barHeight
-   * @param {number} unclippedBarX
-   * @param {number} timeToPixels
-   * @return {boolean}
-   */
-  decorateEntry(entryIndex, context, text, barX, barY, barWidth, barHeight, unclippedBarX, timeToPixels) {
-    return false;
-  }
-
-  /**
-   * @override
-   * @return {number}
-   */
-  paddingLeft() {
-    return 0;
-  }
-
-  /**
-   * @override
-   * @param {number} entryIndex
-   * @return {string}
-   */
-  textColor(entryIndex) {
-    return '#333';
-  }
-
-  /**
-   * @param {number} entryIndex
-   * @return {?Timeline.TimelineSelection}
-   */
-  createSelection(entryIndex) {
-    return null;
-  }
-
-  /**
-   * @override
-   * @return {!UI.FlameChart.TimelineData}
-   */
-  timelineData() {
-    throw new Error('Not implemented');
-  }
+Timeline.FlameChartStyle = {
+  textColor: '#333'
 };
 
 /**
@@ -298,11 +119,14 @@ Timeline.TimelineFlameChartView = class extends UI.VBox {
     this._dataProvider = new Timeline.TimelineFlameChartDataProvider(this._model, frameModel, irModel, filters);
     var mainViewGroupExpansionSetting = Common.settings.createSetting('timelineFlamechartMainViewGroupExpansion', {});
     this._mainView = new UI.FlameChart(this._dataProvider, this, mainViewGroupExpansionSetting);
+    this._mainView.alwaysShowVerticalScroll();
+    this._mainView.enableRuler(false);
 
     var networkViewGroupExpansionSetting =
         Common.settings.createSetting('timelineFlamechartNetworkViewGroupExpansion', {});
     this._networkDataProvider = new Timeline.TimelineFlameChartNetworkDataProvider(this._model);
     this._networkView = new UI.FlameChart(this._networkDataProvider, this, networkViewGroupExpansionSetting);
+    this._networkView.alwaysShowVerticalScroll();
     networkViewGroupExpansionSetting.addChangeListener(this.resizeToPreferredHeights.bind(this));
 
     this._splitWidget.setMainWidget(this._mainView);
@@ -461,17 +285,6 @@ Timeline.TimelineFlameChartView = class extends UI.VBox {
   _onEntrySelected(dataProvider, event) {
     var entryIndex = /** @type{number} */ (event.data);
     this._delegate.select(dataProvider.createSelection(entryIndex));
-  }
-
-  /**
-   * @param {boolean} enable
-   * @param {boolean=} animate
-   */
-  enableNetworkPane(enable, animate) {
-    if (enable)
-      this._splitWidget.showBoth(animate);
-    else
-      this._splitWidget.hideSidebar(animate);
   }
 
   resizeToPreferredHeights() {

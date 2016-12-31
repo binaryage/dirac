@@ -73,7 +73,9 @@
 }
 
 .tabbed-pane-header-tab-icon {
-    margin-right: 2px;
+    margin-right: 6px;
+    display: flex;
+    align-items: center;
 }
 
 .tabbed-pane-header-tab {

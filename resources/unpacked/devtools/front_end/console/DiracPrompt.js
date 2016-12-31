@@ -840,7 +840,7 @@ Console.DiracPromptWithHistory = class extends UI.TextPrompt {
     if (!this._suggestBox || !this._suggestBox.visible()) {
       return "suggest box is not visible";
     }
-    const res = ["suggest box displays " + this._suggestBox._length + " items:"];
+    const res = ["suggest box displays " + this._suggestBox._list.length() + " items:"];
 
     const children = this._suggestBox._element.children;
     for (let child of children) {

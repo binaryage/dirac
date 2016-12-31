@@ -81,10 +81,6 @@ Components.NetworkConditionsSelector = class {
         var group = groups[i];
         var groupElement = selectElement.createChild('optgroup');
         groupElement.label = group.title;
-        if (!i) {
-          groupElement.appendChild(new Option(Common.UIString('Add\u2026'), Common.UIString('Add\u2026')));
-          options.push(null);
-        }
         for (var conditions of group.items) {
           var title = Components.NetworkConditionsSelector._conditionsTitle(conditions, true);
           var option = new Option(title.text, title.text);
@@ -92,12 +88,16 @@ Components.NetworkConditionsSelector = class {
           groupElement.appendChild(option);
           options.push(conditions);
         }
+        if (i === groups.length - 1) {
+          groupElement.appendChild(new Option(Common.UIString('Add\u2026'), Common.UIString('Add\u2026')));
+          options.push(null);
+        }
       }
       return options;
     }
 
     function optionSelected() {
-      if (selectElement.selectedIndex === 0)
+      if (selectElement.selectedIndex === selectElement.options.length - 1)
         selector.revealAndUpdate();
       else
         selector.optionSelected(options[selectElement.selectedIndex]);
@@ -200,7 +200,7 @@ Components.NetworkConditionsSelector = class {
     var customGroup = {title: Common.UIString('Custom'), items: this._customSetting.get()};
     var presetsGroup = {title: Common.UIString('Presets'), items: Components.NetworkConditionsSelector._presets};
     var disabledGroup = {title: Common.UIString('Disabled'), items: [SDK.NetworkManager.NoThrottlingConditions]};
-    this._options = this._populateCallback([customGroup, presetsGroup, disabledGroup]);
+    this._options = this._populateCallback([disabledGroup, presetsGroup, customGroup]);
     if (!this._conditionsChanged()) {
       for (var i = this._options.length - 1; i >= 0; i--) {
         if (this._options[i]) {
@@ -268,7 +268,7 @@ Components.NetworkConditionsSettingsTab = class extends UI.VBox {
 
     this.contentElement.createChild('div', 'header').textContent = Common.UIString('Network Throttling Profiles');
 
-    var addButton = createTextButton(
+    var addButton = UI.createTextButton(
         Common.UIString('Add custom profile...'), this._addButtonClicked.bind(this), 'add-conditions-button');
     this.contentElement.appendChild(addButton);
 
@@ -484,20 +484,69 @@ Components.NetworkConditionsActionDelegate = class {
 };
 
 /**
- * @param {?Protocol.Network.ResourcePriority} priority
+ * @param {!Protocol.Network.ResourcePriority} priority
  * @return {string}
  */
 Components.uiLabelForPriority = function(priority) {
-  var labelMap = Components.uiLabelForPriority._priorityToUILabel;
-  if (!labelMap) {
-    labelMap = new Map([
-      [Protocol.Network.ResourcePriority.VeryLow, Common.UIString('Lowest')],
-      [Protocol.Network.ResourcePriority.Low, Common.UIString('Low')],
-      [Protocol.Network.ResourcePriority.Medium, Common.UIString('Medium')],
-      [Protocol.Network.ResourcePriority.High, Common.UIString('High')],
-      [Protocol.Network.ResourcePriority.VeryHigh, Common.UIString('Highest')]
-    ]);
-    Components.uiLabelForPriority._priorityToUILabel = labelMap;
-  }
-  return labelMap.get(priority) || Common.UIString('Unknown');
+  var map = Components.priorityUiLabelMap();
+  return map.get(priority) || '';
+};
+
+/**
+ * @param {string} priorityLabel
+ * @return {string}
+ */
+Components.uiLabelToPriority = function(priorityLabel) {
+  /** @type {!Map<string, !Protocol.Network.ResourcePriority>} */
+  var labelToPriorityMap = Components.uiLabelToPriority._uiLabelToPriorityMap;
+
+  if (labelToPriorityMap)
+    return labelToPriorityMap.get(priorityLabel);
+
+  labelToPriorityMap = new Map();
+  Components.priorityUiLabelMap().forEach((value, key) => labelToPriorityMap.set(value, key));
+  Components.uiLabelToPriority._uiLabelToPriorityMap = labelToPriorityMap;
+  return labelToPriorityMap.get(priorityLabel) || '';
+};
+
+/**
+ * @return {!Map<!Protocol.Network.ResourcePriority, string>}
+ */
+Components.priorityUiLabelMap = function() {
+  /** @type {!Map<!Protocol.Network.ResourcePriority, string>} */
+  var map = Components.priorityUiLabelMap._priorityUiLabelMap;
+
+  if (map)
+    return map;
+
+  map = new Map();
+  map.set(Protocol.Network.ResourcePriority.VeryLow, Common.UIString('Lowest'));
+  map.set(Protocol.Network.ResourcePriority.Low, Common.UIString('Low'));
+  map.set(Protocol.Network.ResourcePriority.Medium, Common.UIString('Medium'));
+  map.set(Protocol.Network.ResourcePriority.High, Common.UIString('High'));
+  map.set(Protocol.Network.ResourcePriority.VeryHigh, Common.UIString('Highest'));
+  Components.priorityUiLabelMap._priorityUiLabelMap = map;
+
+  return map;
+};
+
+/**
+ * @return {!Map<!Protocol.Network.ResourcePriority, number>}
+ */
+Components.prioritySymbolToNumericMap = function() {
+  /** @type {!Map<!Protocol.Network.ResourcePriority, number>} */
+  var priorityMap = Components.prioritySymbolToNumericMap._symbolicToNumericPriorityMap;
+
+  if (priorityMap)
+    return priorityMap;
+
+  priorityMap = new Map();
+  priorityMap.set(Protocol.Network.ResourcePriority.VeryLow, 1);
+  priorityMap.set(Protocol.Network.ResourcePriority.Low, 2);
+  priorityMap.set(Protocol.Network.ResourcePriority.Medium, 3);
+  priorityMap.set(Protocol.Network.ResourcePriority.High, 4);
+  priorityMap.set(Protocol.Network.ResourcePriority.VeryHigh, 5);
+  Components.prioritySymbolToNumericMap._symbolicToNumericPriorityMap = priorityMap;
+
+  return priorityMap;
 };

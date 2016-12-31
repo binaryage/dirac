@@ -31,9 +31,9 @@
 /**
  * @unrestricted
  */
-UI.ViewportControl = class {
+Console.ConsoleViewport = class {
   /**
-   * @param {!UI.ViewportControl.Provider} provider
+   * @param {!Console.ConsoleViewportProvider} provider
    */
   constructor(provider) {
     this.element = createElement('div');
@@ -128,7 +128,7 @@ UI.ViewportControl = class {
 
   /**
    * @param {number} index
-   * @return {?UI.ViewportElement}
+   * @return {?Console.ConsoleViewportElement}
    */
   _providerElement(index) {
     if (!this._cachedProviderElements)
@@ -356,7 +356,7 @@ UI.ViewportControl = class {
         this._cumulativeHeights[this._cumulativeHeights.length - 1] - this._cumulativeHeights[this._lastActiveIndex];
 
     /**
-     * @this {UI.ViewportControl}
+     * @this {Console.ConsoleViewport}
      */
     function prepare() {
       this._topGapElement.style.height = topGapHeight + 'px';
@@ -577,9 +577,9 @@ UI.ViewportControl = class {
 /**
  * @interface
  */
-UI.ViewportControl.Provider = function() {};
+Console.ConsoleViewportProvider = function() {};
 
-UI.ViewportControl.Provider.prototype = {
+Console.ConsoleViewportProvider.prototype = {
   /**
    * @param {number} index
    * @return {number}
@@ -604,7 +604,7 @@ UI.ViewportControl.Provider.prototype = {
 
   /**
    * @param {number} index
-   * @return {?UI.ViewportElement}
+   * @return {?Console.ConsoleViewportElement}
    */
   itemElement(index) {
     return null;
@@ -614,8 +614,8 @@ UI.ViewportControl.Provider.prototype = {
 /**
  * @interface
  */
-UI.ViewportElement = function() {};
-UI.ViewportElement.prototype = {
+Console.ConsoleViewportElement = function() {};
+Console.ConsoleViewportElement.prototype = {
   willHide() {},
 
   wasShown() {},
@@ -624,37 +624,4 @@ UI.ViewportElement.prototype = {
    * @return {!Element}
    */
   element() {},
-};
-
-/**
- * @implements {UI.ViewportElement}
- * @unrestricted
- */
-UI.StaticViewportElement = class {
-  /**
-   * @param {!Element} element
-   */
-  constructor(element) {
-    this._element = element;
-  }
-
-  /**
-   * @override
-   */
-  willHide() {
-  }
-
-  /**
-   * @override
-   */
-  wasShown() {
-  }
-
-  /**
-   * @override
-   * @return {!Element}
-   */
-  element() {
-    return this._element;
-  }
 };
