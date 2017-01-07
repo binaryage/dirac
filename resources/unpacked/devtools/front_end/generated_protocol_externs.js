@@ -1051,7 +1051,17 @@ Protocol.Network.RequestMixedContentType = {
     None: "none"
 };
 
-/** @typedef {!{url:(string), method:(string), headers:(Protocol.Network.Headers), postData:(string|undefined), mixedContentType:(Protocol.Network.RequestMixedContentType|undefined), initialPriority:(Protocol.Network.ResourcePriority)}} */
+/** @enum {string} */
+Protocol.Network.RequestReferrerPolicy = {
+    UnsafeUrl: "unsafe-url",
+    NoReferrerWhenDowngrade: "no-referrer-when-downgrade",
+    NoReferrer: "no-referrer",
+    Origin: "origin",
+    OriginWhenCrossOrigin: "origin-when-cross-origin",
+    NoReferrerWhenDowngradeOriginWhenCrossOrigin: "no-referrer-when-downgrade-origin-when-cross-origin"
+};
+
+/** @typedef {!{url:(string), method:(string), headers:(Protocol.Network.Headers), postData:(string|undefined), mixedContentType:(Protocol.Network.RequestMixedContentType|undefined), initialPriority:(Protocol.Network.ResourcePriority), referrerPolicy:(Protocol.Network.RequestReferrerPolicy)}} */
 Protocol.Network.Request;
 
 /** @typedef {!{status:(string), origin:(string), logDescription:(string), logId:(string), timestamp:(Protocol.Network.Timestamp), hashAlgorithm:(string), signatureAlgorithm:(string), signatureData:(string)}} */
