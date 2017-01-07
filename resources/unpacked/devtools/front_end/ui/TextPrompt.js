@@ -120,7 +120,6 @@ UI.TextPrompt = class extends Common.Object {
     this._element.addEventListener('mousewheel', this._boundOnMouseWheel, false);
     this._element.addEventListener('selectstart', this._boundClearAutocomplete, false);
     this._element.addEventListener('blur', this._boundClearAutocomplete, false);
-    this._element.ownerDocument.defaultView.addEventListener('resize', this._boundClearAutocomplete, false);
 
     this._suggestBox = new UI.SuggestBox(this, 20, true);
 
@@ -200,7 +199,10 @@ UI.TextPrompt = class extends Common.Object {
    * @param {string} placeholder
    */
   setPlaceholder(placeholder) {
-    this._element.setAttribute('data-placeholder', placeholder);
+    if (placeholder)
+      this._element.setAttribute('data-placeholder', placeholder);
+    else
+      this._element.removeAttribute('data-placeholder');
   }
 
   _removeFromElement() {
@@ -209,7 +211,6 @@ UI.TextPrompt = class extends Common.Object {
     this._element.removeEventListener('input', this._boundOnInput, false);
     this._element.removeEventListener('selectstart', this._boundClearAutocomplete, false);
     this._element.removeEventListener('blur', this._boundClearAutocomplete, false);
-    this._element.ownerDocument.defaultView.removeEventListener('resize', this._boundClearAutocomplete, false);
     if (this._isEditing)
       this._stopEditing();
     if (this._suggestBox)

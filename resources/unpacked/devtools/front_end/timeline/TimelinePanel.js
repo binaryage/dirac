@@ -398,7 +398,7 @@ Timeline.TimelinePanel = class extends UI.Panel {
   _createFileSelector() {
     if (this._fileSelectorElement)
       this._fileSelectorElement.remove();
-    this._fileSelectorElement = Bindings.createFileSelectorElement(this._loadFromFile.bind(this));
+    this._fileSelectorElement = UI.createFileSelectorElement(this._loadFromFile.bind(this));
     this.element.appendChild(this._fileSelectorElement);
   }
 
@@ -553,7 +553,7 @@ Timeline.TimelinePanel = class extends UI.Panel {
     for (var i = 0; i < this._overviewControls.length; ++i)
       this._overviewControls[i].timelineStarted();
 
-    Host.userMetrics.actionTaken(Host.UserMetrics.Action.TimelineStarted);
+    Host.userMetrics.actionTaken(userInitiated ? Host.UserMetrics.Action.TimelineStarted : Host.UserMetrics.Action.TimelinePageReloadStarted);
     this._setUIControlsEnabled(false);
     this._hideLandingPage();
   }
@@ -1283,6 +1283,7 @@ Timeline.TimelineDetailsView = class extends UI.TabbedPane {
     this._defaultDetailsWidget.element.classList.add('timeline-details-view');
     this._defaultDetailsContentElement =
         this._defaultDetailsWidget.element.createChild('div', 'timeline-details-view-body vbox');
+    this._defaultDetailsContentElement.tabIndex = 0;
     this.appendTab(tabIds.Details, Common.UIString('Summary'), this._defaultDetailsWidget);
     this.setPreferredTab(tabIds.Details);
 

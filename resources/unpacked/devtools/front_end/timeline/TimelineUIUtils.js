@@ -734,7 +734,7 @@ Timeline.TimelineUIUtils = class {
 
     var contentHelper = new Timeline.TimelineDetailsContentHelper(model.targetByEvent(event), linkifier);
     contentHelper.addSection(
-        Timeline.TimelineUIUtils.eventTitle(event), Timeline.TimelineUIUtils.eventStyle(event).category);
+        Timeline.TimelineUIUtils.eventTitle(event), Timeline.TimelineUIUtils.eventStyle(event).category.color);
 
     var eventData = event.args['data'];
     var timelineData = TimelineModel.TimelineData.forEvent(event);
@@ -1017,10 +1017,13 @@ Timeline.TimelineUIUtils = class {
    * @return {!Promise<!DocumentFragment>}
    */
   static buildNetworkRequestDetails(request, model, linkifier) {
-    var target = model.targetByEvent(request.children[0]);
-    var contentHelper = new Timeline.TimelineDetailsContentHelper(target, linkifier);
+    const target = model.targetByEvent(request.children[0]);
+    const contentHelper = new Timeline.TimelineDetailsContentHelper(target, linkifier);
+    const category = Timeline.TimelineUIUtils.networkRequestCategory(request);
+    const color = Timeline.TimelineUIUtils.networkCategoryColor(category);
+    contentHelper.addSection(Common.UIString('Network request'), color);
 
-    var duration = request.endTime - (request.startTime || -Infinity);
+    const duration = request.endTime - (request.startTime || -Infinity);
     if (request.url)
       contentHelper.appendElementRow(Common.UIString('URL'), Components.Linkifier.linkifyURL(request.url));
     if (isFinite(duration))
@@ -1632,13 +1635,13 @@ Timeline.TimelineUIUtils = class {
    * @return {!Timeline.TimelineMarkerStyle}
    */
   static markerStyleForEvent(event) {
-    var red = 'rgb(255, 0, 0)';
-    var blue = 'rgb(0, 0, 255)';
-    var orange = 'rgb(255, 178, 23)';
-    var green = 'rgb(0, 130, 0)';
-    var tallMarkerDashStyle = [10, 5];
-
-    var title = Timeline.TimelineUIUtils.eventTitle(event);
+    const red = 'rgb(255, 0, 0)';
+    const blue = 'rgb(0, 0, 255)';
+    const orange = 'rgb(255, 178, 23)';
+    const green = 'rgb(0, 130, 0)';
+    const purple = '#a2f';
+    const tallMarkerDashStyle = [10, 5];
+    const title = Timeline.TimelineUIUtils.eventTitle(event);
 
     if (event.hasCategory(TimelineModel.TimelineModel.Category.Console) ||
         event.hasCategory(TimelineModel.TimelineModel.Category.UserTiming)) {
@@ -1646,7 +1649,7 @@ Timeline.TimelineUIUtils = class {
         title: title,
         dashStyle: tallMarkerDashStyle,
         lineWidth: 0.5,
-        color: orange,
+        color: event.hasCategory(TimelineModel.TimelineModel.Category.UserTiming) ? purple : orange,
         tall: false,
         lowPriority: false,
       };
@@ -2112,9 +2115,9 @@ Timeline.TimelineDetailsContentHelper = class {
 
   /**
    * @param {string} title
-   * @param {!Timeline.TimelineCategory=} category
+   * @param {string=} swatchColor
    */
-  addSection(title, category) {
+  addSection(title, swatchColor) {
     if (!this._tableElement.hasChildNodes()) {
       this.element.removeChildren();
     } else {
@@ -2124,8 +2127,8 @@ Timeline.TimelineDetailsContentHelper = class {
 
     if (title) {
       var titleElement = this.element.createChild('div', 'timeline-details-chip-title');
-      if (category)
-        titleElement.createChild('div').style.backgroundColor = category.color;
+      if (swatchColor)
+        titleElement.createChild('div').style.backgroundColor = swatchColor;
       titleElement.createTextChild(title);
     }
 
