@@ -11,13 +11,9 @@ Timeline.TimelineFlameChartNetworkDataProvider = class {
    * @param {!TimelineModel.TimelineModel} model
    */
   constructor(model) {
-    this.reset();
     this._font = '11px ' + Host.fontFamily();
     this._model = model;
-    var loadingCategory = Timeline.TimelineUIUtils.categories()['loading'];
-    this._waitingColor = loadingCategory.childColor;
-    this._processingColor = loadingCategory.color;
-
+    this.reset();
     this._style = {
       padding: 4,
       height: 17,
@@ -30,6 +26,14 @@ Timeline.TimelineFlameChartNetworkDataProvider = class {
       shareHeaderLine: false
     };
     this._group = {startLevel: 0, name: Common.UIString('Network'), expanded: true, style: this._style};
+  }
+
+  /**
+   * @return {boolean}
+   */
+  isEmpty() {
+    this.timelineData();
+    return this._maxLevel === 0;
   }
 
   /**
@@ -85,6 +89,19 @@ Timeline.TimelineFlameChartNetworkDataProvider = class {
     this._startTime = startTime;
     this._endTime = endTime;
     this._updateTimelineData();
+  }
+
+  /**
+   * @param {number} index
+   * @return {?Timeline.TimelineSelection}
+   */
+  createSelection(index) {
+    if (index === -1)
+      return null;
+    var request = this._requests[index];
+    this._lastSelection =
+        new Timeline.TimelineFlameChartView.Selection(Timeline.TimelineSelection.fromNetworkRequest(request), index);
+    return this._lastSelection.timelineSelection;
   }
 
   /**
@@ -349,7 +366,7 @@ Timeline.TimelineFlameChartNetworkDataProvider = class {
    * @return {number}
    */
   preferredHeight() {
-    return this._style.height * (this._group.expanded ? Number.constrain(this._maxLevel + 1, 4, 8) : 2) + 2;
+    return this._style.height * (this._group.expanded ? Number.constrain(this._maxLevel + 1, 4, 8.5) : 1);
   }
 
   /**

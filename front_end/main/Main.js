@@ -110,6 +110,7 @@ Main.Main = class {
     Runtime.experiments.register('requestBlocking', 'Request blocking', true);
     Runtime.experiments.register('timelineShowAllEvents', 'Show all events on Timeline', true);
     Runtime.experiments.register('timelineShowAllProcesses', 'Show all processes on Timeline', true);
+    Runtime.experiments.register('timelinePaintTimingMarkers', 'Show paint timing markers on Timeline', true);
     Runtime.experiments.register('sourceDiff', 'Source diff');
     Runtime.experiments.register('terminalInDrawer', 'Terminal in drawer', true);
     Runtime.experiments.register('timelineInvalidationTracking', 'Timeline invalidation tracking', true);
@@ -910,7 +911,7 @@ Main.TargetCrashedScreen = class extends UI.VBox {
     dialog.setWrapsContent(true);
     dialog.addCloseButton();
     dialog.setDimmed(true);
-    var hideBound = dialog.detach.bind(dialog);
+    var hideBound = dialog.detach.bind(dialog, false);
     debuggerModel.addEventListener(SDK.DebuggerModel.Events.GlobalObjectCleared, hideBound);
 
     new Main.TargetCrashedScreen(onHide).show(dialog.element);
