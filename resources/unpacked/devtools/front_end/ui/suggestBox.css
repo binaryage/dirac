@@ -114,6 +114,10 @@
     width: 20px;
 }
 
+.suggest-box .suggest-box-content-item.suggest-cljs {
+    display: block; /* flex was causing troubles for cljs suggestion items, see _updateWidth */
+}
+
 .suggest-box .suggest-box-content-item.suggest-cljs .prologue::after {
     display: inline-block;
     font-size: 8px;
@@ -203,8 +207,6 @@
     color: #ccc;
     padding: 0 4px;
     text-align: right;
-    position: relative;
-    top: 3px;
 }
 
 .suggest-box .suggest-box-content-item.selected {

@@ -128,28 +128,30 @@ UI.SuggestBox = class {
    * @param {!UI.SuggestBox.Suggestions} items
    */
   _updateWidth(items) {
-    // this interferes with Dirac removal of max-width style in .suggest-box-horizontal CSS
-    // if (this._hasVerticalScroll) {
-    //   this._element.style.width = '100vw';
-    //   return;
-    // }
-    if (!items.length)
-      return;
-    // If there are no scrollbars, set the width to the width of the largest row.
-    var maxItem;
-    var maxLength = -Infinity;
-    for (var i = 0; i < items.length; i++) {
-      var length = items[i].title.length + (items[i].subtitle || '').length;
-      if (length > maxLength) {
-        maxLength = length;
-        maxItem = items[i];
-      }
+    // original implementation interfered with Dirac removal of max-width style in .suggest-box-horizontal CSS
+    // also we don't try to determine max width programmatically, we removed flex display and let html layout itself
+    if (this._hasVerticalScroll) {
+      this._element.style.width = '600px'; // scrolling will jump as new items get populated, if some items exceed the width
+    } else {
+      this._element.style.width = "";
     }
-    this._element.style.width =
-        UI.measurePreferredSize(
-              this.createElementForItem(/** @type {!UI.SuggestBox.Suggestion} */ (maxItem)), this._element)
-            .width +
-        'px';
+    // if (!items.length)
+    //   return;
+    // // If there are no scrollbars, set the width to the width of the largest row.
+    // var maxItem;
+    // var maxLength = -Infinity;
+    // for (var i = 0; i < items.length; i++) {
+    //   var length = items[i].title.length + (items[i].subtitle || '').length;
+    //   if (length > maxLength) {
+    //     maxLength = length;
+    //     maxItem = items[i];
+    //   }
+    // }
+    // this._element.style.width =
+    //     UI.measurePreferredSize(
+    //           this.createElementForItem(/** @type {!UI.SuggestBox.Suggestion} */ (maxItem)), this._element)
+    //         .width +
+    //     'px';
   }
 
   /**
