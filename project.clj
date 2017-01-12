@@ -47,9 +47,9 @@
                  [org.seleniumhq.selenium/selenium-api "3.0.1" :scope "test"]
                  [org.seleniumhq.selenium/selenium-htmlunit-driver "2.52.0" :scope "test"]
 
-                 [ring/ring-core "1.5.0" :scope "test"]
-                 [ring/ring-devel "1.5.0" :scope "test"]
-                 [ring/ring-jetty-adapter "1.5.0" :scope "test"]
+                 [ring/ring-core "1.5.1" :scope "test"]
+                 [ring/ring-devel "1.5.1" :scope "test"]
+                 [ring/ring-jetty-adapter "1.5.1" :scope "test"]
                  [clj-time "0.13.0" :scope "test"]
                  [clansi "1.0.0" :scope "test"]]
 
