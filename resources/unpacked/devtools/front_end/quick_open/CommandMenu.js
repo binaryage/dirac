@@ -220,7 +220,7 @@ QuickOpen.CommandMenuDelegate = class extends QuickOpen.FilteredListWidget.Deleg
     tagElement.style.backgroundColor = QuickOpen.CommandMenuDelegate.MaterialPaletteColors[index];
     tagElement.textContent = command.category();
     titleElement.createTextChild(command.title());
-    this.highlightRanges(titleElement, query);
+    QuickOpen.FilteredListWidget.highlightRanges(titleElement, query, true);
     subtitleElement.textContent = command.shortcut();
   }
 
@@ -239,16 +239,16 @@ QuickOpen.CommandMenuDelegate = class extends QuickOpen.FilteredListWidget.Deleg
    * @override
    * @return {boolean}
    */
-  caseSensitive() {
+  renderMonospace() {
     return false;
   }
 
   /**
    * @override
-   * @return {boolean}
+   * @return {string}
    */
-  renderMonospace() {
-    return false;
+  notFoundText() {
+    return Common.UIString('No commands found');
   }
 };
 

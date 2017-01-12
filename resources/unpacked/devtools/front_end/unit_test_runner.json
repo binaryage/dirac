@@ -1,6 +1,7 @@
 {
     "modules" : [
         { "name": "platform", "type": "autostart" },
+        { "name": "dom_extension", "type": "autostart" },
         { "name": "ui", "type": "autostart" },
         { "name": "host", "type": "autostart" },
         { "name": "common", "type": "autostart" },
@@ -11,8 +12,9 @@
         { "name": "diff", "type": "autostart" },
         { "name": "shell", "type": "autostart" },
         { "name": "test_runner", "type": "autostart" },
-        { "name": "ui_lazy" },
-        { "name": "quick_open" }
+        { "name": "quick_open" },
+        { "name": "inline_editor" },
+        { "name": "data_grid" }
     ],
     "has_html": true
 }
