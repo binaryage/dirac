@@ -178,6 +178,10 @@ var Runtime = class {
      * @param {string=} scriptSource
      */
     function evaluateScript(sourceURL, scriptSource) {
+      if (_loadedScripts[sourceURL]) {
+        // darwin: prevent multiple loading of the same script, does this happen to me only?
+        return;
+      }
       _loadedScripts[sourceURL] = true;
       if (!scriptSource) {
         // Do not reject, as this is normal in the hosted mode.
