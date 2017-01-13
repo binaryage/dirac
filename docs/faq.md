@@ -119,6 +119,24 @@ Tip: Also you may want to go to `chrome://extensions`, open Dirac DevTools optio
 
 For more serious debugging you have to setup a dev environment and build a dev version of Dirac Chrome Extension.
 
+### How to enable debug logging in Dirac Agent?
+
+Logging support is not included by default in Dirac library. It would bring in some [unwanted dependencies](https://github.com/binaryage/dirac/issues/44).
+ 
+But you can install a special version of Dirac library with logging support included:
+
+1. `git clone https://github.com/binaryage/dirac.git`
+2. `lein install-with-logging`
+ 
+This will install the latest version of Dirac library with logging support into your local Maven repo.
+ 
+Then you can export an environmental variable controlling logging verbosity in your shell:
+
+`export DIRAC_AGENT__LOG_LEVEL=debug` (please note the double underscore after DIRAC_AGENT) 
+
+And then in the same shell session run your actual repl command, for example `lein repl` in case of Leiningen. Repl init code
+should pickup the custom dirac library if versions match in dependencies.
+
 ### Getting error "Cannot attach Dirac DevTools...". What now?
 
 Dirac DevTools needs to connect to a debugger to inspect target tab running your page. 
