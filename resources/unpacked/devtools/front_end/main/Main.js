@@ -117,6 +117,7 @@ Main.Main = class {
     Runtime.experiments.register('requestBlocking', 'Request blocking', true);
     Runtime.experiments.register('timelineShowAllEvents', 'Show all events on Timeline', true);
     Runtime.experiments.register('timelineShowAllProcesses', 'Show all processes on Timeline', true);
+    Runtime.experiments.register('timelinePaintTimingMarkers', 'Show paint timing markers on Timeline', true);
     Runtime.experiments.register('sourceDiff', 'Source diff');
     Runtime.experiments.register('terminalInDrawer', 'Terminal in drawer', true);
     Runtime.experiments.register('timelineInvalidationTracking', 'Timeline invalidation tracking', true);
@@ -169,12 +170,12 @@ Main.Main = class {
     SDK.targetManager.addEventListener(
         SDK.TargetManager.Events.SuspendStateChanged, this._onSuspendStateChanged.bind(this));
 
-    Components.shortcutsScreen = new Components.ShortcutsScreen();
+    UI.shortcutsScreen = new UI.ShortcutsScreen();
     // set order of some sections explicitly
-    Components.shortcutsScreen.section(Common.UIString('Elements Panel'));
-    Components.shortcutsScreen.section(Common.UIString('Styles Pane'));
-    Components.shortcutsScreen.section(Common.UIString('Debugger'));
-    Components.shortcutsScreen.section(Common.UIString('Console'));
+    UI.shortcutsScreen.section(Common.UIString('Elements Panel'));
+    UI.shortcutsScreen.section(Common.UIString('Styles Pane'));
+    UI.shortcutsScreen.section(Common.UIString('Debugger'));
+    UI.shortcutsScreen.section(Common.UIString('Console'));
 
     Workspace.fileManager = new Workspace.FileManager();
     Workspace.workspace = new Workspace.Workspace();
@@ -194,7 +195,7 @@ Main.Main = class {
         new Persistence.Persistence(Workspace.workspace, Bindings.breakpointManager, Workspace.fileSystemMapping);
 
     new Main.OverlayController();
-    new Components.ExecutionContextSelector(SDK.targetManager, UI.context);
+    new Main.ExecutionContextSelector(SDK.targetManager, UI.context);
     Bindings.blackboxManager = new Bindings.BlackboxManager(Bindings.debuggerWorkspaceBinding);
 
     new Main.Main.PauseListener();
@@ -206,7 +207,7 @@ Main.Main = class {
 
     UI.actionRegistry = new UI.ActionRegistry();
     UI.shortcutRegistry = new UI.ShortcutRegistry(UI.actionRegistry, document);
-    Components.ShortcutsScreen.registerShortcuts();
+    UI.ShortcutsScreen.registerShortcuts();
     this._registerForwardedShortcuts();
     this._registerMessageSinkListener();
     new Main.Main.InspectorDomainObserver();
@@ -335,7 +336,7 @@ Main.Main = class {
 
   _registerShortcuts() {
     var shortcut = UI.KeyboardShortcut;
-    var section = Components.shortcutsScreen.section(Common.UIString('All Panels'));
+    var section = UI.shortcutsScreen.section(Common.UIString('All Panels'));
     var keys = [
       shortcut.makeDescriptor('[', shortcut.Modifiers.CtrlOrMeta),
       shortcut.makeDescriptor(']', shortcut.Modifiers.CtrlOrMeta)
@@ -918,7 +919,7 @@ Main.TargetCrashedScreen = class extends UI.VBox {
     dialog.setWrapsContent(true);
     dialog.addCloseButton();
     dialog.setDimmed(true);
-    var hideBound = dialog.detach.bind(dialog);
+    var hideBound = dialog.detach.bind(dialog, false);
     debuggerModel.addEventListener(SDK.DebuggerModel.Events.GlobalObjectCleared, hideBound);
 
     new Main.TargetCrashedScreen(onHide).show(dialog.element);

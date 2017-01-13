@@ -104,10 +104,15 @@ TimelineModel.TimelineModel = class {
    * @return {boolean}
    */
   static isMarkerEvent(event) {
-    var recordTypes = TimelineModel.TimelineModel.RecordType;
+    const recordTypes = TimelineModel.TimelineModel.RecordType;
     switch (event.name) {
       case recordTypes.TimeStamp:
       case recordTypes.MarkFirstPaint:
+      case recordTypes.FirstTextPaint:
+      case recordTypes.FirstImagePaint:
+      case recordTypes.FirstMeaningfulPaint:
+      case recordTypes.FirstPaint:
+      case recordTypes.FirstContentfulPaint:
         return true;
       case recordTypes.MarkDOMContent:
       case recordTypes.MarkLoad:
@@ -1202,6 +1207,12 @@ TimelineModel.TimelineModel.RecordType = {
   ConsoleTime: 'ConsoleTime',
   UserTiming: 'UserTiming',
 
+  FirstTextPaint: 'firstTextPaint',
+  FirstImagePaint: 'firstImagePaint',
+  FirstMeaningfulPaint: 'firstMeaningfulPaint',
+  FirstPaint: 'firstPaint',
+  FirstContentfulPaint: 'firstContentfulPaint',
+
   ResourceSendRequest: 'ResourceSendRequest',
   ResourceReceiveResponse: 'ResourceReceiveResponse',
   ResourceReceivedData: 'ResourceReceivedData',
@@ -1475,6 +1486,7 @@ TimelineModel.TimelineModel.NetworkRequest = class {
   constructor(event) {
     this.startTime = event.name === TimelineModel.TimelineModel.RecordType.ResourceSendRequest ? event.startTime : 0;
     this.endTime = Infinity;
+    this.encodedDataLength = 0;
     /** @type {!Array<!SDK.TracingModel.Event>} */
     this.children = [];
     /** @type {?Object} */
@@ -1507,6 +1519,18 @@ TimelineModel.TimelineModel.NetworkRequest = class {
     if (!this.responseTime &&
         (event.name === recordType.ResourceReceiveResponse || event.name === recordType.ResourceReceivedData))
       this.responseTime = event.startTime;
+    const encodedDataLength = eventData['encodedDataLength'] || 0;
+    if (event.name === recordType.ResourceReceiveResponse) {
+      if (eventData['fromCache'])
+        this.fromCache = true;
+      if (eventData['fromServiceWorker'])
+        this.fromServiceWorker = true;
+      this.encodedDataLength = encodedDataLength;
+    }
+    if (event.name === recordType.ResourceReceivedData)
+      this.encodedDataLength += encodedDataLength;
+    if (event.name === recordType.ResourceFinish && encodedDataLength)
+      this.encodedDataLength = encodedDataLength;
     if (!this.url)
       this.url = eventData['url'];
     if (!this.requestMethod)

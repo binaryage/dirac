@@ -67,7 +67,7 @@ Timeline.TimelinePanel = class extends UI.Panel {
     this._model = new TimelineModel.TimelineModel(Timeline.TimelineUIUtils.visibleEventsFilter());
     this._frameModel =
         new TimelineModel.TimelineFrameModel(event => Timeline.TimelineUIUtils.eventStyle(event).category.name);
-    this._filmStripModel = new Components.FilmStripModel(this._tracingModel);
+    this._filmStripModel = new SDK.FilmStripModel(this._tracingModel);
     this._irModel = new TimelineModel.TimelineIRModel();
     /** @type {!Array<!{title: string, model: !SDK.TracingModel}>} */
     this._extensionTracingModels = [];
@@ -93,8 +93,9 @@ Timeline.TimelinePanel = class extends UI.Panel {
     topPaneElement.id = 'timeline-overview-panel';
 
     // Create top overview component.
-    this._overviewPane = new UI.TimelineOverviewPane('timeline');
-    this._overviewPane.addEventListener(UI.TimelineOverviewPane.Events.WindowChanged, this._onWindowChanged.bind(this));
+    this._overviewPane = new PerfUI.TimelineOverviewPane('timeline');
+    this._overviewPane.addEventListener(
+        PerfUI.TimelineOverviewPane.Events.WindowChanged, this._onWindowChanged.bind(this));
     this._overviewPane.show(topPaneElement);
     this._statusPaneContainer = this._timelinePane.element.createChild('div', 'status-pane-container fill');
 
@@ -398,7 +399,7 @@ Timeline.TimelinePanel = class extends UI.Panel {
   _createFileSelector() {
     if (this._fileSelectorElement)
       this._fileSelectorElement.remove();
-    this._fileSelectorElement = Bindings.createFileSelectorElement(this._loadFromFile.bind(this));
+    this._fileSelectorElement = UI.createFileSelectorElement(this._loadFromFile.bind(this));
     this.element.appendChild(this._fileSelectorElement);
   }
 
@@ -553,7 +554,8 @@ Timeline.TimelinePanel = class extends UI.Panel {
     for (var i = 0; i < this._overviewControls.length; ++i)
       this._overviewControls[i].timelineStarted();
 
-    Host.userMetrics.actionTaken(Host.UserMetrics.Action.TimelineStarted);
+    Host.userMetrics.actionTaken(
+        userInitiated ? Host.UserMetrics.Action.TimelineStarted : Host.UserMetrics.Action.TimelinePageReloadStarted);
     this._setUIControlsEnabled(false);
     this._hideLandingPage();
   }
@@ -600,7 +602,7 @@ Timeline.TimelinePanel = class extends UI.Panel {
   }
 
   _reset() {
-    Components.LineLevelProfile.instance().reset();
+    PerfUI.LineLevelProfile.instance().reset();
     this._tracingModel.reset();
     this._model.reset();
     for (let extensionEntry of this._extensionTracingModels)
@@ -723,7 +725,7 @@ Timeline.TimelinePanel = class extends UI.Panel {
     var groups = TimelineModel.TimelineModel.AsyncEventGroup;
     var asyncEventsByGroup = this._model.mainThreadAsyncEvents();
     this._irModel.populate(asyncEventsByGroup.get(groups.input), asyncEventsByGroup.get(groups.animation));
-    this._model.cpuProfiles().forEach(profile => Components.LineLevelProfile.instance().appendCPUProfile(profile));
+    this._model.cpuProfiles().forEach(profile => PerfUI.LineLevelProfile.instance().appendCPUProfile(profile));
     if (this._statusPane)
       this._statusPane.hide();
     delete this._statusPane;
@@ -1283,6 +1285,7 @@ Timeline.TimelineDetailsView = class extends UI.TabbedPane {
     this._defaultDetailsWidget.element.classList.add('timeline-details-view');
     this._defaultDetailsContentElement =
         this._defaultDetailsWidget.element.createChild('div', 'timeline-details-view-body vbox');
+    this._defaultDetailsContentElement.tabIndex = 0;
     this.appendTab(tabIds.Details, Common.UIString('Summary'), this._defaultDetailsWidget);
     this.setPreferredTab(tabIds.Details);
 

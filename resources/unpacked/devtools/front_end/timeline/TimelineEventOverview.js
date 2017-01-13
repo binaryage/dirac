@@ -31,7 +31,7 @@
 /**
  * @unrestricted
  */
-Timeline.TimelineEventOverview = class extends UI.TimelineOverviewBase {
+Timeline.TimelineEventOverview = class extends PerfUI.TimelineOverviewBase {
   /**
    * @param {string} id
    * @param {?string} title
@@ -412,7 +412,7 @@ Timeline.TimelineEventOverviewResponsiveness = class extends Timeline.TimelineEv
 Timeline.TimelineFilmStripOverview = class extends Timeline.TimelineEventOverview {
   /**
    * @param {!TimelineModel.TimelineModel} model
-   * @param {!Components.FilmStripModel} filmStripModel
+   * @param {!SDK.FilmStripModel} filmStripModel
    */
   constructor(model, filmStripModel) {
     super('filmstrip', null, model);
@@ -445,7 +445,7 @@ Timeline.TimelineFilmStripOverview = class extends Timeline.TimelineEventOvervie
   }
 
   /**
-   * @param {!Components.FilmStripModel.Frame} frame
+   * @param {!SDK.FilmStripModel.Frame} frame
    * @return {!Promise<!HTMLImageElement>}
    */
   _imageByFrame(frame) {
@@ -465,13 +465,12 @@ Timeline.TimelineFilmStripOverview = class extends Timeline.TimelineEventOvervie
       var promise = new Promise(f => fulfill = f);
 
       var image = /** @type {!HTMLImageElement} */ (createElement('img'));
-      if (data)
+      if (data) {
         image.src = 'data:image/jpg;base64,' + data;
-      if (image.complete) {
-        fulfill(image);
-      } else {
         image.addEventListener('load', () => fulfill(image));
         image.addEventListener('error', () => fulfill(image));
+      } else {
+        fulfill(image);
       }
       return promise;
     }
@@ -556,7 +555,7 @@ Timeline.TimelineFilmStripOverview = class extends Timeline.TimelineEventOvervie
   reset() {
     this._lastFrame = undefined;
     this._lastElement = null;
-    /** @type {!Map<!Components.FilmStripModel.Frame,!Promise<!HTMLImageElement>>} */
+    /** @type {!Map<!SDK.FilmStripModel.Frame,!Promise<!HTMLImageElement>>} */
     this._frameToImagePromise = new Map();
     this._imageWidth = 0;
   }

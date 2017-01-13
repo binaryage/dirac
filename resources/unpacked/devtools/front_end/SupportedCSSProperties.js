@@ -1,5 +1,5 @@
-Protocol.BakedSupportedCSSPropertiesChromeTag='57.0.2966.2';
-Protocol.BakedSupportedCSSPropertiesChromeRev='60cd9d9826b9611587c218b5bfb59f5a75767bb2';
+Protocol.BakedSupportedCSSPropertiesChromeTag='57.0.2979.3';
+Protocol.BakedSupportedCSSPropertiesChromeRev='07f18d68d972f8e49c93c699ff61f774fc0584ff';
 Protocol.BakedSupportedCSSProperties=''
 + '[{"name": "animation-delay"},\n'
 + ' {"name": "animation-direction"},\n'
@@ -320,6 +320,12 @@ Protocol.BakedSupportedCSSProperties=''
 + ' {"name": "word-spacing", "inherited": true},\n'
 + ' {"name": "word-wrap", "inherited": true},\n'
 + ' {"name": "z-index"},\n'
++ ' {"name": "inline-size"},\n'
++ ' {"name": "block-size"},\n'
++ ' {"name": "min-inline-size"},\n'
++ ' {"name": "min-block-size"},\n'
++ ' {"name": "max-inline-size"},\n'
++ ' {"name": "max-block-size"},\n'
 + ' {"name": "-webkit-border-end-color"},\n'
 + ' {"name": "-webkit-border-end-style"},\n'
 + ' {"name": "-webkit-border-end-width"},\n'

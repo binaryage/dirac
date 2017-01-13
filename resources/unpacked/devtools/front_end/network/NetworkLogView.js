@@ -349,7 +349,7 @@ Network.NetworkLogView = class extends UI.VBox {
    * @return {?Network.NetworkNode}
    */
   nodeForRequest(request) {
-    return this._nodesByRequestId.get(request.requestId);
+    return this._nodesByRequestId.get(request.requestId());
   }
 
   /**
@@ -522,13 +522,16 @@ Network.NetworkLogView = class extends UI.VBox {
   }
 
   _setupDataGrid() {
-    /** @type {!UI.SortableDataGrid} */
+    /** @type {!DataGrid.SortableDataGrid<!Network.NetworkNode>} */
     this._dataGrid = this._columns.dataGrid();
-    this._dataGrid.setRowContextMenuCallback(
-        (contextMenu, node) => this.handleContextMenuForRequest(contextMenu, node.request()));
+    this._dataGrid.setRowContextMenuCallback((contextMenu, node) => {
+      var request = node.request();
+      if (request)
+        this.handleContextMenuForRequest(contextMenu, request);
+    });
     this._dataGrid.setStickToBottom(true);
     this._dataGrid.setName('networkLog');
-    this._dataGrid.setResizeMethod(UI.DataGrid.ResizeMethod.Last);
+    this._dataGrid.setResizeMethod(DataGrid.DataGrid.ResizeMethod.Last);
     this._dataGrid.element.classList.add('network-log-grid');
     this._dataGrid.element.addEventListener('mousedown', this._dataGridMouseDown.bind(this), true);
     this._dataGrid.element.addEventListener('mousemove', this._dataGridMouseMove.bind(this), true);
@@ -539,8 +542,7 @@ Network.NetworkLogView = class extends UI.VBox {
    * @param {!Event} event
    */
   _dataGridMouseMove(event) {
-    var node =
-        /** @type {?Network.NetworkNode} */ (this._dataGrid.dataGridNodeFromNode(/** @type {!Node} */ (event.target)));
+    var node = (this._dataGrid.dataGridNodeFromNode(/** @type {!Node} */ (event.target)));
     var highlightInitiatorChain = event.shiftKey;
     this._setHoveredNode(node, highlightInitiatorChain);
   }
@@ -588,7 +590,7 @@ Network.NetworkLogView = class extends UI.VBox {
         selectedRequestsNumber++;
         selectedTransferSize += requestTransferSize;
       }
-      if (request.url === request.target().inspectedURL() && request.resourceType() === Common.resourceTypes.Document)
+      if (request.url() === request.target().inspectedURL() && request.resourceType() === Common.resourceTypes.Document)
         baseTime = request.startTime;
       if (request.endTime > maxTime)
         maxTime = request.endTime;
@@ -909,10 +911,10 @@ Network.NetworkLogView = class extends UI.VBox {
 
     // In case of redirect request id is reassigned to a redirected
     // request and we need to update _nodesByRequestId and search results.
-    var originalRequestNode = this._nodesByRequestId.get(request.requestId);
+    var originalRequestNode = this._nodesByRequestId.get(request.requestId());
     if (originalRequestNode)
-      this._nodesByRequestId.set(originalRequestNode.request().requestId, originalRequestNode);
-    this._nodesByRequestId.set(request.requestId, node);
+      this._nodesByRequestId.set(originalRequestNode.request().requestId(), originalRequestNode);
+    this._nodesByRequestId.set(request.requestId(), node);
 
     // Pull all the redirects of the main request upon commit load.
     if (request.redirects) {
@@ -935,7 +937,7 @@ Network.NetworkLogView = class extends UI.VBox {
    * @param {!SDK.NetworkRequest} request
    */
   _refreshRequest(request) {
-    if (!this._nodesByRequestId.get(request.requestId))
+    if (!this._nodesByRequestId.get(request.requestId()))
       return;
 
     Network.NetworkLogView._subdomains(request.domain)
@@ -979,7 +981,7 @@ Network.NetworkLogView = class extends UI.VBox {
       this._suggestionBuilder.addItem(Network.NetworkLogView.FilterType.SetCookieValue, cookie.value());
     }
 
-    this._staleRequestIds[request.requestId] = true;
+    this._staleRequestIds[request.requestId()] = true;
     this.dispatchEventToListeners(Network.NetworkLogView.Events.UpdateRequest, request);
     this.scheduleRefresh();
   }
@@ -1011,7 +1013,7 @@ Network.NetworkLogView = class extends UI.VBox {
     }
     for (var i = 0; i < requestsToPick.length; ++i) {
       var request = requestsToPick[i];
-      var node = this._nodesByRequestId.get(request.requestId);
+      var node = this._nodesByRequestId.get(request.requestId());
       if (node) {
         node.markAsNavigationRequest();
         break;
@@ -1311,7 +1313,6 @@ Network.NetworkLogView = class extends UI.VBox {
    * @return {number}
    */
   _updateMatchCountAndFindMatchIndex(node) {
-    /** @type {!Array.<!Network.NetworkRequestNode>} */
     var nodes = this._dataGrid.rootNode().children;
     var matchCount = 0;
     var matchIndex = 0;
@@ -1529,7 +1530,7 @@ Network.NetworkLogView = class extends UI.VBox {
   revealAndHighlightRequest(request) {
     this.removeAllNodeHighlights();
 
-    var node = this._nodesByRequestId.get(request.requestId);
+    var node = this._nodesByRequestId.get(request.requestId());
     if (node) {
       node.reveal();
       this._highlightNode(node);
@@ -1599,7 +1600,15 @@ Network.NetworkLogView = class extends UI.VBox {
           encapsChars;
     }
 
+    /**
+     * @param {string} str
+     * @return {string}
+     */
     function escapeStringPosix(str) {
+      /**
+       * @param {string} x
+       * @return {string}
+       */
       function escapeCharacter(x) {
         var code = x.charCodeAt(0);
         if (code < 256) {
@@ -1629,7 +1638,7 @@ Network.NetworkLogView = class extends UI.VBox {
     // (it may be different from the inspected page platform).
     var escapeString = platform === 'win' ? escapeStringWin : escapeStringPosix;
 
-    command.push(escapeString(request.url).replace(/[[{}\]]/g, '\\$&'));
+    command.push(escapeString(request.url()).replace(/[[{}\]]/g, '\\$&'));
 
     var inferredMethod = 'GET';
     var data = [];

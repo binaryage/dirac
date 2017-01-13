@@ -324,7 +324,7 @@ Network.NetworkWaterfallColumn = class extends UI.VBox {
 
     const freeZoneAtLeft = 75;
     const freeZoneAtRight = 18;
-    UI.TimelineGrid.drawCanvasGrid(context, this._calculator, this._fontSize, this._headerHeight, freeZoneAtLeft);
+    PerfUI.TimelineGrid.drawCanvasGrid(context, this._calculator, this._fontSize, this._headerHeight, freeZoneAtLeft);
     context.clearRect(this._offsetWidth - freeZoneAtRight, 0, freeZoneAtRight, this._headerHeight);
     this._didDrawForTest();
   }
@@ -384,7 +384,7 @@ Network.NetworkWaterfallColumn = class extends UI.VBox {
     if (this._borderColorsForResourceTypeCache.has(resourceType))
       return this._borderColorsForResourceTypeCache.get(resourceType);
     var colorsForResourceType = Network.NetworkWaterfallColumn._colorsForResourceType;
-    var color = colorsForResourceType[resourceType] || colorsForResourceType.Other;
+    var color = colorsForResourceType[resourceType] || colorsForResourceType.other;
     var parsedColor = Common.Color.parse(color);
     var hsla = parsedColor.hsla();
     hsla[1] /= 2;
@@ -402,7 +402,7 @@ Network.NetworkWaterfallColumn = class extends UI.VBox {
   _colorForResourceType(context, request) {
     var colorsForResourceType = Network.NetworkWaterfallColumn._colorsForResourceType;
     var resourceType = request.resourceType();
-    var color = colorsForResourceType[resourceType] || colorsForResourceType.Other;
+    var color = colorsForResourceType[resourceType] || colorsForResourceType.other;
     if (request.cached())
       return color;
 
@@ -635,6 +635,7 @@ Network.NetworkWaterfallColumn = class extends UI.VBox {
   }
 };
 
+/** @enum {string} */
 Network.NetworkWaterfallColumn._colorsForResourceType = {
   document: 'hsl(215, 100%, 80%)',
   font: 'hsl(8, 100%, 80%)',

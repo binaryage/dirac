@@ -1,5 +1,5 @@
-Protocol.BakedInspectorBackendAPIChromeTag='57.0.2966.2';
-Protocol.BakedInspectorBackendAPIChromeRev='60cd9d9826b9611587c218b5bfb59f5a75767bb2';
+Protocol.BakedInspectorBackendAPIChromeTag='57.0.2979.3';
+Protocol.BakedInspectorBackendAPIChromeRev='07f18d68d972f8e49c93c699ff61f774fc0584ff';
 Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerEvent("Inspector.detached", ["reason"]);\n'
 + 'Protocol.inspectorBackend.registerEvent("Inspector.targetCrashed", []);\n'
@@ -97,6 +97,7 @@ Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerEnum("Network.CookieSameSite", {Strict: "Strict", Lax: "Lax"});\n'
 + 'Protocol.inspectorBackend.registerEnum("Network.ResourcePriority", {VeryLow: "VeryLow", Low: "Low", Medium: "Medium", High: "High", VeryHigh: "VeryHigh"});\n'
 + 'Protocol.inspectorBackend.registerEnum("Network.RequestMixedContentType", {Blockable: "blockable", OptionallyBlockable: "optionally-blockable", None: "none"});\n'
++ 'Protocol.inspectorBackend.registerEnum("Network.RequestReferrerPolicy", {UnsafeUrl: "unsafe-url", NoReferrerWhenDowngrade: "no-referrer-when-downgrade", NoReferrer: "no-referrer", Origin: "origin", OriginWhenCrossOrigin: "origin-when-cross-origin", NoReferrerWhenDowngradeOriginWhenCrossOrigin: "no-referrer-when-downgrade-origin-when-cross-origin"});\n'
 + 'Protocol.inspectorBackend.registerEnum("Network.BlockedReason", {Csp: "csp", MixedContent: "mixed-content", Origin: "origin", Inspector: "inspector", SubresourceFilter: "subresource-filter", Other: "other"});\n'
 + 'Protocol.inspectorBackend.registerEnum("Network.InitiatorType", {Parser: "parser", Script: "script", Other: "other"});\n'
 + 'Protocol.inspectorBackend.registerEvent("Network.resourceChangedPriority", ["requestId", "newPriority", "timestamp"]);\n'

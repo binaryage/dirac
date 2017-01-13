@@ -1080,13 +1080,19 @@ var Bindings = {};
 /** @type {!Object} */
 var CmModes = {};
 /** @type {!Object} */
+var ColorPicker = {};
+/** @type {!Object} */
 var Common = {};
 /** @type {!Object} */
 var Components = {};
 // Closure uses Console as a namespace item so we cannot override it right now.
 var Console = {};
 /** @type {!Object} */
+var CookieTable = {};
+/** @type {!Object} */
 var CSSTracker = {};
+/** @type {!Object} */
+var DataGrid = {};
 /** @type {!Object} */
 var Devices = {};
 /** @type {!Object} */
@@ -1100,9 +1106,13 @@ var Extensions = {};
 /** @type {!Object} */
 var FormatterWorker = {};
 /** @type {!Object} */
+var HeapSnapshotModel = {};
+/** @type {!Object} */
 var HeapSnapshotWorker = {};
 /** @type {!Object} */
 var Host = {};
+/** @type {!Object} */
+var InlineEditor = {};
 /** @type {!Object} */
 var LayerViewer = {};
 /** @type {!Object} */
@@ -1112,6 +1122,8 @@ var Main = {};
 /** @type {!Object} */
 var Network = {};
 /** @type {!Object} */
+var PerfUI = {};
+/** @type {!Object} */
 var Persistence = {};
 /** @type {!Object} */
 var Platform = {};
@@ -1119,6 +1131,8 @@ var Platform = {};
 var Profiler = {};
 /** @type {!Object} */
 var Protocol = {};
+/** @type {!Object} */
+var QuickOpen = {};
 /** @type {!Object} */
 var Resources = {};
 /** @type {!Object} */

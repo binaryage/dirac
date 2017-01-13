@@ -54,7 +54,7 @@ UI.ListControl = class {
    */
   constructor(delegate, mode) {
     this.element = createElement('div');
-    this.element.style.overflow = 'auto';
+    this.element.style.overflowY = 'auto';
     this._topElement = this.element.createChild('div');
     this._bottomElement = this.element.createChild('div');
     this._firstIndex = 0;
@@ -389,7 +389,7 @@ UI.ListControl = class {
       oldElement = this._itemToElement.get(oldItem) || null;
     this._selectedIndex = index;
     var newItem = this._selectedIndex !== -1 ? this._items[this._selectedIndex] : null;
-    var newElement = this._itemToElement.get(newItem) || null;
+    var newElement = this._selectedIndex !== -1 ? this._elementAtIndex(index) : null;
     this._delegate.selectedItemChanged(oldItem, newItem, /** @type {?Element} */ (oldElement), newElement);
   }
 

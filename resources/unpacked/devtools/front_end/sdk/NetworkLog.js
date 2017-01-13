@@ -40,7 +40,9 @@ SDK.NetworkLog = class extends SDK.SDKModel {
   constructor(target, resourceTreeModel, networkManager) {
     super(SDK.NetworkLog, target);
 
+    /** @type {!Array<!SDK.NetworkRequest>} */
     this._requests = [];
+    /** @type {!Object<string, !SDK.NetworkRequest>} */
     this._requestForId = {};
     networkManager.addEventListener(SDK.NetworkManager.Events.RequestStarted, this._onRequestStarted, this);
     resourceTreeModel.addEventListener(
@@ -97,7 +99,7 @@ SDK.NetworkLog = class extends SDK.SDKModel {
    */
   requestForURL(url) {
     for (var i = 0; i < this._requests.length; ++i) {
-      if (this._requests[i].url === url)
+      if (this._requests[i].url() === url)
         return this._requests[i];
     }
     return null;
@@ -126,7 +128,7 @@ SDK.NetworkLog = class extends SDK.SDKModel {
         if (!this._currentPageLoad)
           this._currentPageLoad = new SDK.PageLoad(request);
         this._requests.push(request);
-        this._requestForId[request.requestId] = request;
+        this._requestForId[request.requestId()] = request;
         request.__page = this._currentPageLoad;
       }
     }
@@ -138,7 +140,7 @@ SDK.NetworkLog = class extends SDK.SDKModel {
   _onRequestStarted(event) {
     var request = /** @type {!SDK.NetworkRequest} */ (event.data);
     this._requests.push(request);
-    this._requestForId[request.requestId] = request;
+    this._requestForId[request.requestId()] = request;
     request.__page = this._currentPageLoad;
   }
 
@@ -177,7 +179,7 @@ SDK.PageLoad = class {
    */
   constructor(mainRequest) {
     this.id = ++SDK.PageLoad._lastIdentifier;
-    this.url = mainRequest.url;
+    this.url = mainRequest.url();
     this.startTime = mainRequest.startTime;
   }
 };

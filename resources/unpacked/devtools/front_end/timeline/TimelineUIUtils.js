@@ -734,7 +734,7 @@ Timeline.TimelineUIUtils = class {
 
     var contentHelper = new Timeline.TimelineDetailsContentHelper(model.targetByEvent(event), linkifier);
     contentHelper.addSection(
-        Timeline.TimelineUIUtils.eventTitle(event), Timeline.TimelineUIUtils.eventStyle(event).category);
+        Timeline.TimelineUIUtils.eventTitle(event), Timeline.TimelineUIUtils.eventStyle(event).category.color);
 
     var eventData = event.args['data'];
     var timelineData = TimelineModel.TimelineData.forEvent(event);
@@ -1017,10 +1017,13 @@ Timeline.TimelineUIUtils = class {
    * @return {!Promise<!DocumentFragment>}
    */
   static buildNetworkRequestDetails(request, model, linkifier) {
-    var target = model.targetByEvent(request.children[0]);
-    var contentHelper = new Timeline.TimelineDetailsContentHelper(target, linkifier);
+    const target = model.targetByEvent(request.children[0]);
+    const contentHelper = new Timeline.TimelineDetailsContentHelper(target, linkifier);
+    const category = Timeline.TimelineUIUtils.networkRequestCategory(request);
+    const color = Timeline.TimelineUIUtils.networkCategoryColor(category);
+    contentHelper.addSection(Common.UIString('Network request'), color);
 
-    var duration = request.endTime - (request.startTime || -Infinity);
+    const duration = request.endTime - (request.startTime || -Infinity);
     if (request.url)
       contentHelper.appendElementRow(Common.UIString('URL'), Components.Linkifier.linkifyURL(request.url));
     if (isFinite(duration))
@@ -1028,26 +1031,33 @@ Timeline.TimelineUIUtils = class {
     if (request.requestMethod)
       contentHelper.appendTextRow(Common.UIString('Request Method'), request.requestMethod);
     if (typeof request.priority === 'string') {
-      var priority =
+      const priority =
           Components.uiLabelForPriority(/** @type {!Protocol.Network.ResourcePriority} */ (request.priority));
       contentHelper.appendTextRow(Common.UIString('Priority'), priority);
     }
     if (request.mimeType)
       contentHelper.appendTextRow(Common.UIString('Mime Type'), request.mimeType);
-
-    var title = Common.UIString('Initiator');
-    var sendRequest = request.children[0];
-    var topFrame = TimelineModel.TimelineData.forEvent(sendRequest).topFrame();
+    var lengthText = '';
+    if (request.fromCache)
+      lengthText += Common.UIString('(from cache) ');
+    if (request.fromServiceWorker)
+      lengthText += Common.UIString('(from service worker)');
+    if (request.encodedDataLength || !lengthText)
+      lengthText = `${Number.bytesToString(request.encodedDataLength)} ${lengthText}`;
+    contentHelper.appendTextRow(Common.UIString('Encoded Length'), lengthText);
+    const title = Common.UIString('Initiator');
+    const sendRequest = request.children[0];
+    const topFrame = TimelineModel.TimelineData.forEvent(sendRequest).topFrame();
     if (topFrame) {
-      var link = linkifier.maybeLinkifyConsoleCallFrame(target, topFrame);
+      const link = linkifier.maybeLinkifyConsoleCallFrame(target, topFrame);
       if (link)
         contentHelper.appendElementRow(title, link);
     } else {
-      var initiator = TimelineModel.TimelineData.forEvent(sendRequest).initiator();
+      const initiator = TimelineModel.TimelineData.forEvent(sendRequest).initiator();
       if (initiator) {
-        var initiatorURL = TimelineModel.TimelineData.forEvent(initiator).url;
+        const initiatorURL = TimelineModel.TimelineData.forEvent(initiator).url;
         if (initiatorURL) {
-          var link = linkifier.maybeLinkifyScriptLocation(target, null, initiatorURL, 0);
+          const link = linkifier.maybeLinkifyScriptLocation(target, null, initiatorURL, 0);
           if (link)
             contentHelper.appendElementRow(title, link);
         }
@@ -1450,7 +1460,7 @@ Timeline.TimelineUIUtils = class {
       total += aggregatedStats[categoryName];
 
     var element = createElementWithClass('div', 'timeline-details-view-pie-chart-wrapper hbox');
-    var pieChart = new UI.PieChart(100);
+    var pieChart = new PerfUI.PieChart(100);
     pieChart.element.classList.add('timeline-details-view-pie-chart');
     pieChart.setTotal(total);
     var pieChartContainer = element.createChild('div', 'vbox');
@@ -1504,7 +1514,7 @@ Timeline.TimelineUIUtils = class {
   /**
    * @param {!TimelineModel.TimelineFrameModel} frameModel
    * @param {!TimelineModel.TimelineFrame} frame
-   * @param {?Components.FilmStripModel.Frame} filmStripFrame
+   * @param {?SDK.FilmStripModel.Frame} filmStripFrame
    * @return {!Element}
    */
   static generateDetailsContentForFrame(frameModel, frame, filmStripFrame) {
@@ -1539,10 +1549,10 @@ Timeline.TimelineUIUtils = class {
     }
 
     /**
-     * @param {!Components.FilmStripModel.Frame} filmStripFrame
+     * @param {!SDK.FilmStripModel.Frame} filmStripFrame
      */
     function frameClicked(filmStripFrame) {
-      new Components.FilmStripView.Dialog(filmStripFrame, 0);
+      new PerfUI.FilmStripView.Dialog(filmStripFrame, 0);
     }
 
     return contentHelper.fragment;
@@ -1632,13 +1642,13 @@ Timeline.TimelineUIUtils = class {
    * @return {!Timeline.TimelineMarkerStyle}
    */
   static markerStyleForEvent(event) {
-    var red = 'rgb(255, 0, 0)';
-    var blue = 'rgb(0, 0, 255)';
-    var orange = 'rgb(255, 178, 23)';
-    var green = 'rgb(0, 130, 0)';
-    var tallMarkerDashStyle = [10, 5];
-
-    var title = Timeline.TimelineUIUtils.eventTitle(event);
+    const red = 'rgb(255, 0, 0)';
+    const blue = 'rgb(0, 0, 255)';
+    const orange = 'rgb(255, 178, 23)';
+    const green = 'rgb(0, 130, 0)';
+    const purple = '#a2f';
+    const tallMarkerDashStyle = [10, 5];
+    const title = Timeline.TimelineUIUtils.eventTitle(event);
 
     if (event.hasCategory(TimelineModel.TimelineModel.Category.Console) ||
         event.hasCategory(TimelineModel.TimelineModel.Category.UserTiming)) {
@@ -1646,7 +1656,7 @@ Timeline.TimelineUIUtils = class {
         title: title,
         dashStyle: tallMarkerDashStyle,
         lineWidth: 0.5,
-        color: orange,
+        color: event.hasCategory(TimelineModel.TimelineModel.Category.UserTiming) ? purple : orange,
         tall: false,
         lowPriority: false,
       };
@@ -1702,7 +1712,7 @@ Timeline.TimelineUIUtils = class {
   static colorForURL(url) {
     if (!Timeline.TimelineUIUtils.colorForURL._colorGenerator) {
       Timeline.TimelineUIUtils.colorForURL._colorGenerator =
-          new UI.FlameChart.ColorGenerator({min: 30, max: 330}, {min: 50, max: 80, count: 3}, 85);
+          new PerfUI.FlameChart.ColorGenerator({min: 30, max: 330}, {min: 50, max: 80, count: 3}, 85);
     }
     return Timeline.TimelineUIUtils.colorForURL._colorGenerator.colorForID(url);
   }
@@ -2112,9 +2122,9 @@ Timeline.TimelineDetailsContentHelper = class {
 
   /**
    * @param {string} title
-   * @param {!Timeline.TimelineCategory=} category
+   * @param {string=} swatchColor
    */
-  addSection(title, category) {
+  addSection(title, swatchColor) {
     if (!this._tableElement.hasChildNodes()) {
       this.element.removeChildren();
     } else {
@@ -2124,8 +2134,8 @@ Timeline.TimelineDetailsContentHelper = class {
 
     if (title) {
       var titleElement = this.element.createChild('div', 'timeline-details-chip-title');
-      if (category)
-        titleElement.createChild('div').style.backgroundColor = category.color;
+      if (swatchColor)
+        titleElement.createChild('div').style.backgroundColor = swatchColor;
       titleElement.createTextChild(title);
     }
 

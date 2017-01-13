@@ -33,8 +33,14 @@
             "settingType": "boolean",
             "defaultValue": false,
             "options": [
-                { "value": true, "title": "Preserve log upon navigation" },
-                { "value": false, "title": "Do not preserve log upon navigation" }
+                {
+                    "value": true,
+                    "title": "Preserve log upon navigation"
+                },
+                {
+                    "value": false,
+                    "title": "Do not preserve log upon navigation"
+                }
             ]
         },
         {
@@ -44,8 +50,14 @@
             "settingType": "boolean",
             "defaultValue": false,
             "options": [
-                { "value": true, "title": "Pause on exceptions" },
-                { "value": false, "title": "Do not pause on exceptions" }
+                {
+                    "value": true,
+                    "title": "Pause on exceptions"
+                },
+                {
+                    "value": false,
+                    "title": "Do not pause on exceptions"
+                }
             ]
         },
         {
@@ -61,8 +73,14 @@
             "settingType": "boolean",
             "defaultValue": false,
             "options": [
-                { "value": true, "title": "Capture async stack traces" },
-                { "value": false, "title": "Do not capture async stack traces" }
+                {
+                    "value": true,
+                    "title": "Capture async stack traces"
+                },
+                {
+                    "value": false,
+                    "title": "Do not capture async stack traces"
+                }
             ]
         },
         {
@@ -114,7 +132,8 @@
         "PaintProfiler.js",
         "HeapProfilerModel.js",
         "../SupportedCSSProperties.js",
-        "SupportedCSSPropertiesExtensionMode.js"
+        "SupportedCSSPropertiesExtensionMode.js",
+        "FilmStripModel.js"
     ],
     "skip_compilation": [
         "../SupportedCSSProperties.js"

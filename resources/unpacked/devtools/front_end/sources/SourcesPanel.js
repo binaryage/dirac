@@ -843,7 +843,7 @@ Sources.SourcesPanel = class extends UI.Panel {
    * @param {!Object} target
    */
   _appendUISourceCodeFrameItems(event, contextMenu, target) {
-    if (!(target instanceof Sources.UISourceCodeFrame))
+    if (!(target instanceof SourceFrame.UISourceCodeFrame))
       return;
     contextMenu.appendAction('debugger.evaluate-selection');
   }
@@ -903,7 +903,7 @@ Sources.SourcesPanel = class extends UI.Panel {
     if (!(target instanceof SDK.NetworkRequest))
       return;
     var request = /** @type {!SDK.NetworkRequest} */ (target);
-    var uiSourceCode = this._workspace.uiSourceCodeForURL(request.url);
+    var uiSourceCode = this._workspace.uiSourceCodeForURL(request.url());
     if (!uiSourceCode)
       return;
     var openText = Common.UIString.capitalize('Open in Sources ^panel');
@@ -1262,7 +1262,7 @@ Sources.SourcesPanel.DebuggingActionDelegate = class {
         panel._toggleBreakpointsActive();
         return true;
       case 'debugger.evaluate-selection':
-        var frame = UI.context.flavor(Sources.UISourceCodeFrame);
+        var frame = UI.context.flavor(SourceFrame.UISourceCodeFrame);
         if (frame) {
           var text = frame.textEditor.text(frame.textEditor.selection());
           var executionContext = UI.context.flavor(SDK.ExecutionContext);

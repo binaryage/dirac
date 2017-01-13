@@ -59,6 +59,7 @@ UI.SuggestBox = class {
     this._suggestBoxDelegate = suggestBoxDelegate;
     this._maxItemsHeight = maxItemsHeight;
     this._maybeHideBound = this._maybeHide.bind(this);
+    this._hideBound = this.hide.bind(this);
     this._container = createElementWithClass('div', 'suggest-box-container');
     this._rowHeight = 17;
     /** @type {!UI.ListControl<!UI.SuggestBox.Suggestion>} */
@@ -67,11 +68,6 @@ UI.SuggestBox = class {
     this._element.classList.add('suggest-box');
     this._container.appendChild(this._element);
     this._element.addEventListener('mousedown', this._onBoxMouseDown.bind(this), true);
-    this._detailsPopup = this._container.createChild('div', 'suggest-box details-popup monospace');
-    this._detailsPopup.classList.add('hidden');
-    this._asyncDetailsCallback = null;
-    /** @type {!Map<!UI.SuggestBox.Suggestion, !Promise<{detail: string, description: string}>>} */
-    this._asyncDetailsPromises = new Map();
     this._userInteracted = false;
     this._captureEnter = captureEnter;
     this._viewportWidth = '100vw';
@@ -132,20 +128,30 @@ UI.SuggestBox = class {
    * @param {!UI.SuggestBox.Suggestions} items
    */
   _updateWidth(items) {
-    // this interferes with Dirac removal of max-width style in .suggest-box-horizontal CSS
-    // if (this._hasVerticalScroll) {
-    //   this._element.style.width = '100vw';
-    //   return;
-    // }
-    if (!items.length)
-      return;
-    // If there are no scrollbars, set the width to the width of the largest row.
-    var maxItem = items[0];
-    for (var i = 1; i < items.length; i++) {
-      if (items[i].title.length > maxItem.title.length)
-        maxItem = items[i];
+    // original implementation interfered with Dirac removal of max-width style in .suggest-box-horizontal CSS
+    // also we don't try to determine max width programmatically, we removed flex display and let html layout itself
+    if (this._hasVerticalScroll) {
+      this._element.style.width = '600px'; // scrolling will jump as new items get populated, if some items exceed the width
+    } else {
+      this._element.style.width = "";
     }
-    this._element.style.width = UI.measurePreferredSize(this.createElementForItem(maxItem), this._element).width + 'px';
+    // if (!items.length)
+    //   return;
+    // // If there are no scrollbars, set the width to the width of the largest row.
+    // var maxItem;
+    // var maxLength = -Infinity;
+    // for (var i = 0; i < items.length; i++) {
+    //   var length = items[i].title.length + (items[i].subtitle || '').length;
+    //   if (length > maxLength) {
+    //     maxLength = length;
+    //     maxItem = items[i];
+    //   }
+    // }
+    // this._element.style.width =
+    //     UI.measurePreferredSize(
+    //           this.createElementForItem(/** @type {!UI.SuggestBox.Suggestion} */ (maxItem)), this._element)
+    //         .width +
+    //     'px';
   }
 
   /**
@@ -161,7 +167,7 @@ UI.SuggestBox = class {
 
   _maybeHide() {
     if (!this._hideTimeoutId)
-      this._hideTimeoutId = window.setTimeout(this.hide.bind(this), 0);
+      this._hideTimeoutId = window.setTimeout(this._hideBound, 0);
   }
 
   /**
@@ -173,6 +179,7 @@ UI.SuggestBox = class {
       return;
     this._bodyElement = document.body;
     this._bodyElement.addEventListener('mousedown', this._maybeHideBound, true);
+    this._element.ownerDocument.defaultView.addEventListener('resize', this._hideBound, false);
     this._overlay = new UI.SuggestBox.Overlay();
     this._overlay.setContentElement(this._container);
     this._rowHeight =
@@ -185,15 +192,12 @@ UI.SuggestBox = class {
 
     this._userInteracted = false;
     this._bodyElement.removeEventListener('mousedown', this._maybeHideBound, true);
+    this._element.ownerDocument.defaultView.removeEventListener('resize', this._hideBound, false);
     delete this._bodyElement;
     this._container.remove();
     this._overlay.dispose();
     delete this._overlay;
     delete this._lastAnchorBox;
-  }
-
-  removeFromElement() {
-    this.hide();
   }
 
   /**
@@ -247,7 +251,8 @@ UI.SuggestBox = class {
       element.classList.add('secondary');
     element.tabIndex = -1;
     element.createChild("span", "prologue").textContent = (item.prologue || "").trimEnd(50);
-    var displayText = item.title.trimEnd(50 + query.length);
+    var maxTextLength = 50 + query.length;
+    var displayText = item.title.trimEnd(maxTextLength);
 
     var titleElement = element.createChild('span', 'suggestion-title');
     var index = displayText.toLowerCase().indexOf(query.toLowerCase());
@@ -260,7 +265,7 @@ UI.SuggestBox = class {
     titleElement.createChild('span', 'spacer');
     if (item.subtitle) {
       var subtitleElement = element.createChild('span', 'suggestion-subtitle');
-      subtitleElement.textContent = item.subtitle.trimEnd(15);
+      subtitleElement.textContent = item.subtitle.trimEnd(maxTextLength - displayText.length);
     }
     element.addEventListener('mousedown', this._onItemMouseDown.bind(this), false);
     return element;
@@ -298,11 +303,6 @@ UI.SuggestBox = class {
       toElement.classList.add('selected', 'force-white-icons');
     if (!to)
       return;
-    this._detailsPopup.classList.add('hidden');
-    this._asyncDetails(to).then(details => {
-      if (this._list.selectedItem() === to)
-        this._showDetailsPopup(details);
-    });
     this._applySuggestion(true);
   }
 
@@ -315,30 +315,6 @@ UI.SuggestBox = class {
     this._userInteracted = true;
     this.acceptSuggestion();
     event.consume(true);
-  }
-
-  /**
-   * @param {!UI.SuggestBox.Suggestion} item
-   * @return {!Promise<?{detail: string, description: string}>}
-   */
-  _asyncDetails(item) {
-    if (!this._asyncDetailsCallback)
-      return Promise.resolve(/** @type {?{description: string, detail: string}} */ (null));
-    if (!this._asyncDetailsPromises.has(item))
-      this._asyncDetailsPromises.set(item, this._asyncDetailsCallback(item));
-    return /** @type {!Promise<?{detail: string, description: string}>} */ (this._asyncDetailsPromises.get(item));
-  }
-
-  /**
-   * @param {?{detail: string, description: string}} details
-   */
-  _showDetailsPopup(details) {
-    this._detailsPopup.removeChildren();
-    if (!details)
-      return;
-    this._detailsPopup.createChild('section', 'detail').createTextChild(details.detail);
-    this._detailsPopup.createChild('section', 'description').createTextChild(details.description);
-    this._detailsPopup.classList.remove('hidden');
   }
 
   /**
@@ -367,22 +343,10 @@ UI.SuggestBox = class {
    * @param {boolean} selectHighestPriority
    * @param {boolean} canShowForSingleItem
    * @param {string} userEnteredText
-   * @param {function(number): !Promise<{detail:string, description:string}>=} asyncDetails
    */
-  updateSuggestions(
-      anchorBox,
-      completions,
-      selectHighestPriority,
-      canShowForSingleItem,
-      userEnteredText,
-      asyncDetails) {
+  updateSuggestions(anchorBox, completions, selectHighestPriority, canShowForSingleItem, userEnteredText) {
     delete this._onlyCompletion;
     if (this._canShowBox(completions, canShowForSingleItem, userEnteredText)) {
-      this._asyncDetailsPromises.clear();
-      if (asyncDetails)
-        this._asyncDetailsCallback = item => asyncDetails(completions.indexOf(item));
-      else
-        this._asyncDetailsCallback = null;
       this._userEnteredText = userEnteredText;
 
       this._show();

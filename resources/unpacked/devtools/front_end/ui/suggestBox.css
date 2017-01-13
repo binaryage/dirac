@@ -69,6 +69,7 @@
     box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.05),
                 0 2px 4px rgba(0, 0, 0, 0.2),
                 0 2px 6px rgba(0, 0, 0, 0.1);
+    overflow-x: hidden;
 }
 
 .suggest-box .suggest-box-content-item {
@@ -94,6 +95,8 @@
     text-align: right;
     color: #999;
     margin-right: 3px;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .suggestion-icon {
@@ -109,6 +112,10 @@
 .suggest-box .suggest-box-content-item .spacer {
     display: inline-block;
     width: 20px;
+}
+
+.suggest-box .suggest-box-content-item.suggest-cljs {
+    display: block; /* flex was causing troubles for cljs suggestion items, see _updateWidth */
 }
 
 .suggest-box .suggest-box-content-item.suggest-cljs .prologue::after {
@@ -200,8 +207,6 @@
     color: #ccc;
     padding: 0 4px;
     text-align: right;
-    position: relative;
-    top: 3px;
 }
 
 .suggest-box .suggest-box-content-item.selected {
@@ -214,17 +219,4 @@
 
 .suggest-box .suggest-box-content-item:hover:not(.selected) {
     background-color: rgba(56, 121, 217, 0.1);
-}
-
-.suggest-box .details-popup {
-    padding: 17px;
-    pointer-events: auto;
-    margin-left: 3px;
-    max-width: 750px;
-    word-wrap: normal;
-}
-
-.suggest-box .details-popup .description {
-    margin-top: 22px;
-    color: #808080;
 }

@@ -1,0 +1,34 @@
+{
+    "extensions": [
+        {
+            "type": "@SourceFrame.UISourceCodeFrame.LineDecorator",
+            "className": "PerfUI.LineLevelProfile.LineDecorator",
+            "decoratorType": "performance"
+        }
+    ],
+    "dependencies": [
+        "ui",
+        "sdk",
+        "bindings",
+        "source_frame",
+        "text_editor"
+    ],
+    "scripts": [
+        "LineLevelProfile.js",
+        "FilmStripView.js",
+        "ChartViewport.js",
+        "FlameChart.js",
+        "OverviewGrid.js",
+        "PieChart.js",
+        "TimelineGrid.js",
+        "TimelineOverviewPane.js"
+    ],
+    "resources": [
+        "filmStripView.css",
+        "filmStripDialog.css",
+        "flameChart.css",
+        "overviewGrid.css",
+        "pieChart.css",
+        "timelineGrid.css"
+    ]
+}

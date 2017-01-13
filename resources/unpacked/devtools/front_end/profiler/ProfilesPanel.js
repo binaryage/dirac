@@ -74,13 +74,6 @@ Profiler.ProfileType = class extends Common.Object {
     return null;
   }
 
-  /**
-   * @return {!Array.<!UI.ToolbarItem>}
-   */
-  toolbarItems() {
-    return [];
-  }
-
   get buttonTooltip() {
     return '';
   }
@@ -431,7 +424,6 @@ Profiler.ProfilesPanel = class extends UI.PanelWithSidebar {
     toolbar.appendSeparator();
     toolbar.appendToolbarItem(UI.Toolbar.createActionButtonForId('components.collect-garbage'));
 
-    this._profileTypeToolbar = new UI.Toolbar('', this._toolbarElement);
     this._profileViewToolbar = new UI.Toolbar('', this._toolbarElement);
 
     this._profileGroups = {};
@@ -487,7 +479,7 @@ Profiler.ProfilesPanel = class extends UI.PanelWithSidebar {
   _createFileSelectorElement() {
     if (this._fileSelectorElement)
       this.element.removeChild(this._fileSelectorElement);
-    this._fileSelectorElement = Bindings.createFileSelectorElement(this._loadFromFile.bind(this));
+    this._fileSelectorElement = UI.createFileSelectorElement(this._loadFromFile.bind(this));
     Profiler.ProfilesPanel._fileSelectorElement = this._fileSelectorElement;
     this.element.appendChild(this._fileSelectorElement);
   }
@@ -587,10 +579,6 @@ Profiler.ProfilesPanel = class extends UI.PanelWithSidebar {
 
   _updateProfileTypeSpecificUI() {
     this._updateToggleRecordAction(this._toggleRecordAction.toggled());
-    this._profileTypeToolbar.removeToolbarItems();
-    var toolbarItems = this._selectedProfileType.toolbarItems();
-    for (var i = 0; i < toolbarItems.length; ++i)
-      this._profileTypeToolbar.appendToolbarItem(toolbarItems[i]);
   }
 
   _reset() {

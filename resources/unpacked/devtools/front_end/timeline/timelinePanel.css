@@ -275,6 +275,7 @@
     background: transparent;
     text-align: left;
     border-spacing: 0;
+    margin: 4px;
 }
 
 .image-preview-container img {
@@ -438,6 +439,22 @@
 
 .timeline-flamechart {
     overflow: hidden;
+}
+
+.timeline-flamechart-resizer {
+    height: 7px;
+    background-color: #f3f3f3;
+    border-top: #a3a3a3 1px solid;
+    display: flex;
+    flex-direction: row;
+    align-items: flex-end;
+    justify-content: center;
+}
+
+.timeline-flamechart-resizer:after {
+    content: "...";
+    font-size: 14px;
+    margin-bottom: -1px;
 }
 
 .timeline-status-pane.full-widget-dimmed-banner {

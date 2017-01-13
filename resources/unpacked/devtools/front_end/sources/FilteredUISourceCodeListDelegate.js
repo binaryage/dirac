@@ -7,7 +7,7 @@
 /**
  * @unrestricted
  */
-Sources.FilteredUISourceCodeListDelegate = class extends UI.FilteredListWidget.Delegate {
+Sources.FilteredUISourceCodeListDelegate = class extends QuickOpen.FilteredListWidget.Delegate {
   /**
    * @param {!Map.<!Workspace.UISourceCode, number>=} defaultScores
    * @param {!Array<string>=} history
@@ -201,6 +201,14 @@ Sources.FilteredUISourceCodeListDelegate = class extends UI.FilteredListWidget.D
       return;
     this._uiSourceCodes.push(uiSourceCode);
     this.refresh();
+  }
+
+  /**
+   * @override
+   * @return {string}
+   */
+  notFoundText() {
+    return Common.UIString('No files found');
   }
 
   /**

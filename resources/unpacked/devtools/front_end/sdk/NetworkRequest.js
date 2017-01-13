@@ -47,7 +47,7 @@ SDK.NetworkRequest = class extends SDK.SDKObject {
     this._networkLog = /** @type {!SDK.NetworkLog} */ (SDK.NetworkLog.fromTarget(target));
     this._networkManager = /** @type {!SDK.NetworkManager} */ (SDK.NetworkManager.fromTarget(target));
     this._requestId = requestId;
-    this.url = url;
+    this.setUrl(url);
     this._documentURL = documentURL;
     this._frameId = frameId;
     this._loaderId = loaderId;
@@ -85,6 +85,9 @@ SDK.NetworkRequest = class extends SDK.SDKObject {
 
     this._remoteAddress = '';
 
+    /** @type {?Protocol.Network.RequestReferrerPolicy} */
+    this._referrerPolicy = null;
+
     /** @type {!Protocol.Security.SecurityState} */
     this._securityState = Protocol.Security.SecurityState.Unknown;
     /** @type {?Protocol.Network.SecurityDetails} */
@@ -109,28 +112,28 @@ SDK.NetworkRequest = class extends SDK.SDKObject {
   /**
    * @return {!Protocol.Network.RequestId}
    */
-  get requestId() {
+  requestId() {
     return this._requestId;
   }
 
   /**
    * @param {!Protocol.Network.RequestId} requestId
    */
-  set requestId(requestId) {
+  setRequestId(requestId) {
     this._requestId = requestId;
   }
 
   /**
    * @return {string}
    */
-  get url() {
+  url() {
     return this._url;
   }
 
   /**
    * @param {string} x
    */
-  set url(x) {
+  setUrl(x) {
     if (this._url === x)
       return;
 
@@ -181,6 +184,20 @@ SDK.NetworkRequest = class extends SDK.SDKObject {
    */
   remoteAddress() {
     return this._remoteAddress;
+  }
+
+  /**
+   * @param {!Protocol.Network.RequestReferrerPolicy} referrerPolicy
+   */
+  setReferrerPolicy(referrerPolicy) {
+    this._referrerPolicy = referrerPolicy;
+  }
+
+  /**
+   * @return {?Protocol.Network.RequestReferrerPolicy}
+   */
+  referrerPolicy() {
+    return this._referrerPolicy;
   }
 
   /**
@@ -762,7 +779,7 @@ SDK.NetworkRequest = class extends SDK.SDKObject {
       return this._queryString;
 
     var queryString = null;
-    var url = this.url;
+    var url = this.url();
     var questionMarkPosition = url.indexOf('?');
     if (questionMarkPosition !== -1) {
       queryString = url.substring(questionMarkPosition + 1);
@@ -922,7 +939,7 @@ SDK.NetworkRequest = class extends SDK.SDKObject {
    * @return {boolean}
    */
   isHttpFamily() {
-    return !!this.url.match(/^https?:/i);
+    return !!this.url().match(/^https?:/i);
   }
 
   /**
@@ -1045,7 +1062,7 @@ SDK.NetworkRequest = class extends SDK.SDKObject {
 
     if (this.redirectSource) {
       type = SDK.NetworkRequest.InitiatorType.Redirect;
-      url = this.redirectSource.url;
+      url = this.redirectSource.url();
     } else if (initiator) {
       if (initiator.type === Protocol.Network.InitiatorType.Parser) {
         type = SDK.NetworkRequest.InitiatorType.Parser;
@@ -1174,7 +1191,7 @@ SDK.NetworkRequest = class extends SDK.SDKObject {
   }
 
   replayXHR() {
-    this.target().networkAgent().replayXHR(this.requestId);
+    this.target().networkAgent().replayXHR(this._requestId);
   }
 
   /**

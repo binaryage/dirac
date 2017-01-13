@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 /**
- * @implements {UI.FlameChartDataProvider}
+ * @implements {PerfUI.FlameChartDataProvider}
  * @unrestricted
  */
 Timeline.TimelineFlameChartNetworkDataProvider = class {
@@ -11,13 +11,9 @@ Timeline.TimelineFlameChartNetworkDataProvider = class {
    * @param {!TimelineModel.TimelineModel} model
    */
   constructor(model) {
-    this.reset();
     this._font = '11px ' + Host.fontFamily();
     this._model = model;
-    var loadingCategory = Timeline.TimelineUIUtils.categories()['loading'];
-    this._waitingColor = loadingCategory.childColor;
-    this._processingColor = loadingCategory.color;
-
+    this.reset();
     this._style = {
       padding: 4,
       height: 17,
@@ -33,6 +29,14 @@ Timeline.TimelineFlameChartNetworkDataProvider = class {
   }
 
   /**
+   * @return {boolean}
+   */
+  isEmpty() {
+    this.timelineData();
+    return this._maxLevel === 0;
+  }
+
+  /**
    * @override
    * @return {number}
    */
@@ -42,14 +46,14 @@ Timeline.TimelineFlameChartNetworkDataProvider = class {
 
   /**
    * @override
-   * @return {!UI.FlameChart.TimelineData}
+   * @return {!PerfUI.FlameChart.TimelineData}
    */
   timelineData() {
     if (this._timelineData)
       return this._timelineData;
     /** @type {!Array<!TimelineModel.TimelineModel.NetworkRequest>} */
     this._requests = [];
-    this._timelineData = new UI.FlameChart.TimelineData([], [], [], []);
+    this._timelineData = new PerfUI.FlameChart.TimelineData([], [], [], []);
     this._appendTimelineData(this._model.mainThreadEvents());
     return this._timelineData;
   }
@@ -85,6 +89,19 @@ Timeline.TimelineFlameChartNetworkDataProvider = class {
     this._startTime = startTime;
     this._endTime = endTime;
     this._updateTimelineData();
+  }
+
+  /**
+   * @param {number} index
+   * @return {?Timeline.TimelineSelection}
+   */
+  createSelection(index) {
+    if (index === -1)
+      return null;
+    var request = this._requests[index];
+    this._lastSelection =
+        new Timeline.TimelineFlameChartView.Selection(Timeline.TimelineSelection.fromNetworkRequest(request), index);
+    return this._lastSelection.timelineSelection;
   }
 
   /**
@@ -328,7 +345,7 @@ Timeline.TimelineFlameChartNetworkDataProvider = class {
       if (this._timelineData.entryLevels[i] === -1)
         this._timelineData.entryLevels[i] = maxLevel;
     }
-    this._timelineData = new UI.FlameChart.TimelineData(
+    this._timelineData = new PerfUI.FlameChart.TimelineData(
         this._timelineData.entryLevels, this._timelineData.entryTotalTimes, this._timelineData.entryStartTimes,
         [this._group]);
     this._maxLevel = maxLevel;
@@ -349,7 +366,7 @@ Timeline.TimelineFlameChartNetworkDataProvider = class {
    * @return {number}
    */
   preferredHeight() {
-    return this._style.height * (this._group.expanded ? Number.constrain(this._maxLevel + 1, 4, 8) : 2) + 2;
+    return this._style.height * (this._group.expanded ? Number.constrain(this._maxLevel + 1, 4, 8.5) : 1);
   }
 
   /**
