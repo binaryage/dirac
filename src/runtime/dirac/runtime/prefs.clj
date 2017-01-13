@@ -9,7 +9,7 @@
   ; they are relevant to auto-joining dirac REPL sessions
   (try
     (if-let [project (slurp "project.clj")]
-      (if-let [match (re-find #"^\(defproject (.*?) " project)]
+      (if-let [match (re-find #"defproject (.*?) " project)]
         (str (second match))))
     (catch Throwable _e
       nil)))
