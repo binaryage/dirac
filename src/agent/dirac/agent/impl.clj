@@ -138,17 +138,11 @@
 (defn maybe-setup-logging!
   "Calls dirac.logging/setup! if present.
 
-  Please note that under normal circumstances dirac.logging is not included in the dirac library becasue that would bring in
+  Please note that under normal circumstances dirac.logging is not included in the Dirac library becasue that would bring in
   unwanted dependencies as discussed here https://github.com/binaryage/dirac/issues/44.
 
-  You can install a special version of dirac library with logging support included by
-    1. cloning the repo
-    2. and running `lein install-with-logging`
-
-  Then you still have to launch repl command with environment DIRAC_AGENT__LOG_LEVEL=debug to enable verbose logging,
-  for example in my fish shell I would run (note the double underscore after DIRAC_AGENT):
-
-      env DIRAC_AGENT__LOG_LEVEL=debug lein repl"
+  You can install a special version of the Dirac library with logging support included as described here:
+    https://github.com/binaryage/dirac/blob/master/docs/faq.md#how-to-enable-debug-logging-in-dirac-agent"
   [config]
   (if-let [setup-fn-var (try-resolve-dirac-logging-ns-symbol 'setup!)]
     (if (var? setup-fn-var)
