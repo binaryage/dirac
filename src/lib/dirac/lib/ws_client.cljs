@@ -49,11 +49,11 @@
     (catch :default e
       (error (str "Unable to serialize message: " e "\n") msg))))
 
-(defn unserialize-message [unserialized-msg]
+(defn unserialize-message [serialized-msg]
   (try
-    (read-string unserialized-msg)
+    (read-string serialized-msg)
     (catch :default e
-      (error (str "Unable to unserialize message: " e "\n") unserialize-message))))
+      (error (str "Unable to unserialize message: " e "\n") serialized-msg))))
 
 ; -- sending ----------------------------------------------------------------------------------------------------------------
 
