@@ -125,6 +125,36 @@
     (log/debug "effective config:\n" (utils/pp effective-config))
     (boot-now!* effective-config)))
 
+; -- logging support --------------------------------------------------------------------------------------------------------
+
+(defn try-resolve-dirac-logging-ns-symbol [sym]
+  (try
+    (require 'dirac.logging)
+    (ns-resolve 'dirac.logging sym)
+    (catch Throwable e
+      ; dirac.logging is not available
+      nil)))
+
+(defn maybe-setup-logging!
+  "Calls dirac.logging/setup! if present.
+
+  Please note that under normal circumstances dirac.logging is not included in the dirac library becasue that would bring in
+  unwanted dependencies as discussed here https://github.com/binaryage/dirac/issues/44.
+
+  You can install a special version of dirac library with logging support included by
+    1. cloning the repo
+    2. and running `lein install-with-logging`
+
+  Then you still have to launch repl command with environment DIRAC_AGENT__LOG_LEVEL=debug to enable verbose logging,
+  for example in my fish shell I would run (note the double underscore after DIRAC_AGENT):
+
+      env DIRAC_AGENT__LOG_LEVEL=debug lein repl"
+  [config]
+  (if-let [setup-fn-var (try-resolve-dirac-logging-ns-symbol 'setup!)]
+    (if (var? setup-fn-var)
+      (if-let [setup-fn (var-get setup-fn-var)]
+        (setup-fn config)))))
+
 ; -- entry point ------------------------------------------------------------------------------------------------------------
 
 (defn boot!
@@ -137,6 +167,7 @@
   Actually it waits for this init code to fully evaluate before starting nREPL server."
   [& [config]]
   (let [effective-config (config/get-effective-config config)]
+    (maybe-setup-logging! effective-config)
     (log/debug "Booting Dirac Agent...")
     (log/debug "effective config:\n" (utils/pp effective-config))
     (future (boot-now!* effective-config))))

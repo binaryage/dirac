@@ -5,9 +5,11 @@ false && source _config.sh # never executes, this is here just for IntelliJ Bash
 
 pushd "$ROOT"
 
+LIB_PROFILE=${1:-lib}
+
 ./scripts/check-versions.sh
 
-lein with-profile lib jar
+lein with-profile "${LIB_PROFILE}" jar
 
 LEIN_VERSION=`cat "$PROJECT_FILE" | grep "defproject" | cut -d' ' -f3 | cut -d\" -f2`
 

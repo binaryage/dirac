@@ -5,8 +5,10 @@ false && source _config.sh # never executes, this is here just for IntelliJ Bash
 
 pushd "$ROOT"
 
-./scripts/list-jar.sh
+LIB_PROFILE=${1:-lib}
 
-lein with-profile lib install
+./scripts/list-jar.sh "${LIB_PROFILE}"
+
+lein with-profile "${LIB_PROFILE}" install
 
 popd

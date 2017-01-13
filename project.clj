@@ -1,3 +1,5 @@
+(def clj-logging-config-version "1.9.12")
+(def slf4j-log4j12-version "1.7.22")
 (defproject binaryage/dirac "1.0.0"
   :description "Dirac DevTools - a Chrome DevTools fork for ClojureScript developers."
   :url "https://github.com/binaryage/dirac"
@@ -35,10 +37,11 @@
                  [com.rpl/specter "0.13.2" :scope "test"]
                  [org.clojure/tools.namespace "0.3.0-alpha3" :scope "test"]
                  [org.clojure/tools.reader "1.0.0-beta1" :scope "test"]
-                 [clj-logging-config "1.9.12" :scope "test"]
+
+                 [clj-logging-config ~clj-logging-config-version :scope "test"]
+                 [org.slf4j/slf4j-log4j12 ~slf4j-log4j12-version :scope "test"]
 
                  [http.async.client "1.2.0" :scope "test"]
-                 [org.slf4j/slf4j-log4j12 "1.7.22" :scope "test"]
 
                  [clj-webdriver "0.7.2" :scope "test"]
                  [org.seleniumhq.selenium/selenium-java "3.0.1" :scope "test"]
@@ -107,7 +110,8 @@
               {:dependencies   ~(let [project-str (or
                                                     (try (slurp "project.clj") (catch Throwable _ nil))
                                                     (try (slurp "/Users/darwin/code/dirac-ws/dirac/project.clj") (catch Throwable _ nil)))
-                                      project (->> project-str read-string (drop 3) (apply hash-map))
+                                      find-defproject #(first (filter (fn [x] (and (list? x) (= (first x) 'defproject))) %))
+                                      project (->> (str "[" project-str "]") read-string (find-defproject) (drop 3) (apply hash-map))
                                       test-dep? #(->> % (drop 2) (apply hash-map) :scope (= "test"))
                                       non-test-deps (remove test-dep? (:dependencies project))]
                                   (with-meta (vec non-test-deps) {:replace true}))                                            ; so ugly!
@@ -120,6 +124,15 @@
                                           "src/nrepl"]
                :resource-paths ^:replace []
                :test-paths     ^:replace []}]
+
+             :logging-support
+             ^{:pom-scope :provided}                                                                                          ; ! to overcome default jar/pom behaviour, our :dependencies replacement would be ignored for some reason
+             {:dependencies [[clj-logging-config ~clj-logging-config-version :scope nil]
+                             [org.slf4j/slf4j-log4j12 ~slf4j-log4j12-version :scope nil]]
+              :source-paths ["src/logging"]}
+
+             :lib-with-logging
+             [:lib :logging-support]
 
              :debugger-5005
              {:jvm-opts ["-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005"]}
@@ -509,5 +522,6 @@
             "release"                    ["shell" "scripts/release.sh"]
             "package"                    ["shell" "scripts/package.sh"]
             "install"                    ["shell" "scripts/local-install.sh"]
+            "install-with-logging"       ["shell" "scripts/local-install.sh" "lib-with-logging"]
             "publish"                    ["shell" "scripts/deploy-clojars.sh"]
             "regenerate"                 ["shell" "scripts/regenerate.sh"]})
