@@ -47,13 +47,13 @@
   (try
     (pr-str msg)
     (catch :default e
-      (error (str "Unable to serialize message: " e "\n") msg))))
+      (error (str "Unable to serialize message: " (.-message e) "\n") msg))))
 
 (defn unserialize-message [serialized-msg]
   (try
     (read-string serialized-msg)
     (catch :default e
-      (error (str "Unable to unserialize message: " e "\n") serialized-msg))))
+      (error (str "Unable to unserialize message: " (.-message e) "\n") serialized-msg))))
 
 ; -- sending ----------------------------------------------------------------------------------------------------------------
 
