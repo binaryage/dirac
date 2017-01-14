@@ -60,22 +60,21 @@
 ; -- handling console.error -------------------------------------------------------------------------------------------------
 
 (defonce ^:dynamic *original-console-error-fn* nil)
+(def console-error-body-prefix "  | ")
+
+(defn format-console-error-body [args]
+  (let [text (string/join " " args)
+        lines (cuerdas/lines text)
+        indented-lines (map (partial str console-error-body-prefix) lines)]
+    (cuerdas/unlines indented-lines)))
 
 (defn console-error-fn [& args]
   (assert *original-console-error-fn*)
   (let [result (.apply *original-console-error-fn* js/console (into-array args))
         kind "An error was logged into the internal DevTools console"
-        first-arg (first args)
-        first-item (if (and (string? first-arg)
-                            (not (empty? first-arg)))
-                     first-arg)
-        rest-items (if (some? first-item)
-                     (rest args)
-                     args)
-        decorated-rest-items (map #(str "  * " %) rest-items)
-        all-items (remove empty? (concat [first-item] decorated-rest-items))
-        body (cuerdas/unlines all-items)]
-    (report-internal-error! kind body)
+        body (format-console-error-body args)
+        title (first (cuerdas/lines (first args)))]
+    (report-internal-error! kind body title)
     result))
 
 (defn register-console-error-handler! []
