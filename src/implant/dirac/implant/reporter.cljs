@@ -10,21 +10,24 @@
 
 (def issues-url "https://github.com/binaryage/dirac/issues")
 
-(defn report-internal-error! [kind body]
+(defn format-error-header [title body]
+  (let [title-line (or title (string/trim (first (cuerdas/lines body))))]
+    (if (empty? title-line) "(no details)" title-line)))
+
+(defn report-internal-error! [kind body & [title]]
   {:pre [(string? kind)
          (string? body)]}
-  (let [trimmed-body (string/trim body)
-        first-body-line (first (cuerdas/lines trimmed-body))
-        header #js ["%cInternal Dirac Error%c%s"
+  (let [header #js ["%cInternal Dirac Error%c%s"
                     "background-color:red;color:white;font-weight:bold;padding:0px 3px;border-radius:2px;"
                     "color:red"
-                    (str " " (if (empty? first-body-line) "(no details)" first-body-line))]
-        details (str (info/get-info-line) "\n\n"
+                    (str " " (format-error-header title body))]
+        details (str (info/get-info-line) "\n"
+                     "\n"
                      kind ":\n"
-                     (if (empty? trimmed-body) "(no details)" trimmed-body)
-                     "\n\n"
+                     body "\n"
                      "---\n"
-                     "Please report the issue here: " issues-url)]
+                     "To inspect the problem in internal DevTools => https://goo.gl/0FkZ1o\n"
+                     "Consider reporting the issue here: " issues-url)]
     (feedback/post! details)
     (let [dirac-api (gget "dirac")]
       (assert dirac-api)
