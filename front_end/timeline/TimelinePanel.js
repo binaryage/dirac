@@ -71,7 +71,7 @@ Timeline.TimelinePanel = class extends UI.Panel {
     this._irModel = new TimelineModel.TimelineIRModel();
     /** @type {!Array<!{title: string, model: !SDK.TracingModel}>} */
     this._extensionTracingModels = [];
-    this._cpuThrottlingManager = new Timeline.CPUThrottlingManager();
+    this._cpuThrottlingManager = new Components.CPUThrottlingManager();
 
     /** @type {!Array<!Timeline.TimelineModeView>} */
     this._currentViews = [];
@@ -129,18 +129,18 @@ Timeline.TimelinePanel = class extends UI.Panel {
         this._configureThrottlingSetting, 'largeicon-settings-gear', Common.UIString('Configure throttling'));
     SDK.multitargetNetworkManager.addEventListener(
         SDK.MultitargetNetworkManager.Events.ConditionsChanged, this._updateConfigureThrottlingButton.bind(this));
+    this._cpuThrottlingManager.addEventListener(
+        Components.CPUThrottlingManager.Events.RateChanged, this._updateConfigureThrottlingButton.bind(this));
     this._throttlingToolbar = new UI.Toolbar('', this.element);
-    this._cpuThrottlingCombobox = new UI.ToolbarComboBox(this._onCPUThrottlingChanged.bind(this));
     this._throttlingToolbar.appendText(Common.UIString('Network:'));
     this._throttlingToolbar.appendToolbarItem(this._createNetworkConditionsSelect());
     this._throttlingToolbar.appendSeparator();
     this._throttlingToolbar.appendText(Common.UIString('CPU:'));
-    this._throttlingToolbar.appendToolbarItem(this._cpuThrottlingCombobox);
+    this._throttlingToolbar.appendToolbarItem(this._cpuThrottlingManager.createControl());
     this._throttlingToolbar.appendToolbarItem(new UI.ToolbarSeparator(true));
     var hideToolbarItem = new UI.ToolbarButton(Common.UIString('Close'), 'largeicon-delete');
     hideToolbarItem.addEventListener(UI.ToolbarButton.Events.Click, () => this._configureThrottlingSetting.set(false));
     this._throttlingToolbar.appendToolbarItem(hideToolbarItem);
-    this._populateCPUThrottingCombobox();
     this._configureThrottlingSetting.addChangeListener(this._updateThrottlingToolbarVisibility.bind(this));
     this._updateThrottlingToolbarVisibility();
 
@@ -306,12 +306,15 @@ Timeline.TimelinePanel = class extends UI.Panel {
   _recreateToolbarItems() {
     this._panelToolbar.removeToolbarItems();
 
+    // Close
+    if (!this._model.isEmpty()) {
+      const clearButton = new UI.ToolbarButton(Common.UIString('Close profile'), 'largeicon-delete');
+      clearButton.addEventListener(UI.ToolbarButton.Events.Click, this._clear, this);
+      this._panelToolbar.appendToolbarItem(clearButton);
+      this._panelToolbar.appendSeparator();
+    }
+
     // Record
-    const newButton = new UI.ToolbarButton(Common.UIString('New recording'), 'largeicon-add', Common.UIString('New'));
-    newButton.setEnabled(!this._model.isEmpty());
-    newButton.addEventListener(UI.ToolbarButton.Events.Click, this._clear, this);
-    this._panelToolbar.appendToolbarItem(newButton);
-    this._panelToolbar.appendSeparator();
     this._panelToolbar.appendToolbarItem(UI.Toolbar.createActionButton(this._toggleRecordAction));
     this._panelToolbar.appendToolbarItem(UI.Toolbar.createActionButtonForId('main.reload'));
     this._panelToolbar.appendSeparator();
@@ -367,28 +370,6 @@ Timeline.TimelinePanel = class extends UI.Panel {
     toolbarItem.setMaxWidth(140);
     Components.NetworkConditionsSelector.decorateSelect(toolbarItem.selectElement());
     return toolbarItem;
-  }
-
-  _populateCPUThrottingCombobox() {
-    var cpuThrottlingCombobox = this._cpuThrottlingCombobox;
-    cpuThrottlingCombobox.removeOptions();
-    var currentRate = this._cpuThrottlingManager.rate();
-    var hasSelection = false;
-    /**
-     * @param {string} name
-     * @param {number} value
-     */
-    function addOption(name, value) {
-      var option = cpuThrottlingCombobox.createOption(name, '', String(value));
-      cpuThrottlingCombobox.addOption(option);
-      if (hasSelection || (value && value !== currentRate))
-        return;
-      cpuThrottlingCombobox.select(option);
-      hasSelection = true;
-    }
-    addOption(Common.UIString('No throttling'), 1);
-    for (const rate of [2, 5, 10, 20])
-      addOption(Common.UIString('%d\xD7 slowdown', rate), rate);
   }
 
   _prepareToLoadTimeline() {
@@ -503,14 +484,6 @@ Timeline.TimelinePanel = class extends UI.Panel {
 
     this.doResize();
     this.select(null);
-  }
-
-  _onCPUThrottlingChanged() {
-    if (!this._cpuThrottlingManager)
-      return;
-    var text = this._cpuThrottlingCombobox.selectedOption().value;
-    this._cpuThrottlingManager.setRate(Number.parseFloat(text));
-    this._updateConfigureThrottlingButton();
   }
 
   _updateThrottlingToolbarVisibility() {
@@ -1878,54 +1851,3 @@ Timeline.TimelineFilters.Events = {
 };
 
 Timeline.TimelineFilters._durationFilterPresetsMs = [0, 1, 15];
-
-/**
- * @implements {SDK.TargetManager.Observer}
- * @unrestricted
- */
-Timeline.CPUThrottlingManager = class extends Common.Object {
-  constructor() {
-    super();
-    this._targets = [];
-    this._throttlingRate = 1.;  // No throttling
-    SDK.targetManager.observeTargets(this, SDK.Target.Capability.Browser);
-  }
-
-  /**
-   * @param {number} value
-   */
-  setRate(value) {
-    this._throttlingRate = value;
-    this._targets.forEach(target => target.emulationAgent().setCPUThrottlingRate(value));
-    var icon = null;
-    if (value !== 1) {
-      icon = UI.Icon.create('smallicon-warning');
-      icon.title = Common.UIString('CPU throttling is enabled');
-    }
-    UI.inspectorView.setPanelIcon('timeline', icon);
-  }
-
-  /**
-   * @return {number}
-   */
-  rate() {
-    return this._throttlingRate;
-  }
-
-  /**
-   * @override
-   * @param {!SDK.Target} target
-   */
-  targetAdded(target) {
-    this._targets.push(target);
-    target.emulationAgent().setCPUThrottlingRate(this._throttlingRate);
-  }
-
-  /**
-   * @override
-   * @param {!SDK.Target} target
-   */
-  targetRemoved(target) {
-    this._targets.remove(target, true);
-  }
-};

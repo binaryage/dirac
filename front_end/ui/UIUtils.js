@@ -990,7 +990,7 @@ UI.revertDomChanges = function(domChanges) {
 /**
  * @param {!Element} element
  * @param {?Element=} containerElement
- * @return {!Size}
+ * @return {!UI.Size}
  */
 UI.measurePreferredSize = function(element, containerElement) {
   var oldParent = element.parentElement;
@@ -1005,7 +1005,7 @@ UI.measurePreferredSize = function(element, containerElement) {
     oldParent.insertBefore(element, oldNextSibling);
   else
     element.remove();
-  return new Size(result.width, result.height);
+  return new UI.Size(result.width, result.height);
 };
 
 /**
@@ -1961,7 +1961,7 @@ UI.createExternalLink = function(url, linkText, className, preventClick) {
   }
   if (linkText !== url)
     a.title = url;
-  a.textContent = linkText.trimMiddle(150);
+  a.textContent = linkText.trimMiddle(UI.MaxLengthForDisplayedURLs);
   a.setAttribute('target', '_blank');
 
   return a;
@@ -2032,3 +2032,9 @@ UI.createFileSelectorElement = function(callback) {
   }
   return fileSelectorElement;
 };
+
+/**
+ * @const
+ * @type {number}
+ */
+UI.MaxLengthForDisplayedURLs = 150;
