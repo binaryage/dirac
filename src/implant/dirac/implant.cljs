@@ -63,7 +63,7 @@
   (try
     (analyzer/parse-ns-from-source source)
     (catch :default e
-      (error "Unable to parse namespace from source\n" source "\n" e))))
+      (error "Unable to parse namespace from source\n" source "\n---\n" e))))
 
 (defn ns-to-relpath [ns ext]
   (munging/ns-to-relpath ns ext))
