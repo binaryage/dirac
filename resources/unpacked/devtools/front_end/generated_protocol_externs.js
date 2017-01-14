@@ -3553,6 +3553,7 @@ Protocol.Log.LogEntrySource = {
     Deprecation: "deprecation",
     Worker: "worker",
     Violation: "violation",
+    Intervention: "intervention",
     Other: "other"
 };
 
