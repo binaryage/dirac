@@ -2,7 +2,8 @@
   (:require-macros [cljs.analyzer.macros :refer [no-warn]])
   (:require [cljs.analyzer :as ana]
             [cljs.tools.reader.reader-types :as tools-reader-types]
-            [clojure.tools.namespace.parse :as ns-parse]))
+            [clojure.tools.namespace.parse :as ns-parse]
+            [clojure.string :as string]))
 
 (defn analyze-ns [ns-form opts]
   (let [env (ana/empty-env)]
@@ -30,11 +31,12 @@
         (dedupe))))
 
 (defn parse-ns-from-source [source]
-  (when-let [ns-form (parse-ns-form source)]
-    (let [ast (analyze-ns ns-form {})]
-      #js {"name"                    (str (:name ast))
-           "namespaceAliases"        (clj->js (get-aliases (:requires ast)))
-           "macroNamespaceAliases"   (clj->js (get-aliases (:require-macros ast)))
-           "namespaceRefers"         (clj->js (get-uses (:uses ast)))
-           "macroRefers"             (clj->js (get-uses (:use-macros ast)))
-           "detectedMacroNamespaces" (clj->js (collect-macro-namespaces ast))})))
+  (if (re-find #"^\(ns\s" (string/triml source))
+    (if-let [ns-form (parse-ns-form source)]
+      (let [ast (analyze-ns ns-form {})]
+        #js {"name"                    (str (:name ast))
+             "namespaceAliases"        (clj->js (get-aliases (:requires ast)))
+             "macroNamespaceAliases"   (clj->js (get-aliases (:require-macros ast)))
+             "namespaceRefers"         (clj->js (get-uses (:uses ast)))
+             "macroRefers"             (clj->js (get-uses (:use-macros ast)))
+             "detectedMacroNamespaces" (clj->js (collect-macro-namespaces ast))}))))
