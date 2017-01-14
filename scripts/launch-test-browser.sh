@@ -52,7 +52,6 @@ set -x
       --dom-automation \
       --full-memory-crash-report \
       --no-default-browser-check \
-      --disable-gpu \
       --disable-infobars \
       --disable-default-apps \
       --load-extension="$DEV_DIRAC_EXTENSION_PATH,$DEV_MARION_EXTENSION_PATH" \
