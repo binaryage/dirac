@@ -4,9 +4,9 @@
 
 ; -- dirac! controls --------------------------------------------------------------------------------------------------------
 
-(defn ^:dynamic make-no-such-command-msg [command]
-  (str "No such command '" command "'.\n"
-       "Execute `(dirac! :help)` for a list of available commands."))
+(defn ^:dynamic make-no-such-action-msg [action]
+  (str "No such action '" action "'.\n"
+       "Execute `(dirac :help)` for a list of available actions."))
 
 (defn ^:dynamic make-invalid-session-matching-msg [input]
   (str "Invalid session matching strategy provided. It must be either an integer, a string, a regexp or omitted.\n"
@@ -42,9 +42,9 @@
       (str "Listing all Dirac sessions currently connected to your nREPL server:\n"
            (string/join "\n" (map-indexed printer tags))))))
 
-(defn ^:dynamic make-default-error-msg [command]
-  (str "Unrecognized Dirac command '" command "'\n"
-       "Use `(dirac! :help)` to list all available commands."))
+(defn ^:dynamic make-default-error-msg [action]
+  (str "Unrecognized Dirac action '" action "'\n"
+       "Use `(dirac :help)` to list all available actions."))
 
 (defn ^:dynamic make-after-join-msg []
   (str "Specific target Dirac session will be determined dynamically according to current matching strategy."))
@@ -64,7 +64,7 @@
 (defn ^:dynamic make-no-compilers-msg [selected-compiler]
   (let [compiler (helpers/make-human-readable-selected-compiler selected-compiler)]
     (str "No ClojureScript compiler matching " compiler " is currently available.\n"
-         "You may want to use `(dirac! :ls)` to review current situation.")))
+         "You may want to use `(dirac :ls)` to review current situation.")))
 
 (defn ^:dynamic make-status-msg [session-description]
   (str "Your current nREPL session is a " session-description "."))
@@ -76,7 +76,7 @@
   (str "To quit, type: :cljs/quit"))
 
 (defn ^:dynamic make-invalid-compiler-error-msg [user-input]
-  (str "Dirac's :switch sub-command accepts nil, positive integer, string or regexp patterns. "
+  (str "Dirac's :switch action accepts nil, positive integer, string or regexp patterns. "
        "You have entered " (pr-str user-input) " which is of type " (type user-input) "."))
 
 (defn ^:dynamic make-cannot-spawn-outside-dirac-session-msg []
@@ -117,9 +117,9 @@
 
 (defn ^:dynamic make-no-target-session-help-msg [info]
   (str "Your session joined Dirac but no connected Dirac session is \"" info "\".\n"
-       "You can review the list of currently available Dirac sessions via `(dirac! :ls)`.\n"
+       "You can review the list of currently available Dirac sessions via `(dirac :ls)`.\n"
        "You can join one of them with `(dirac! :join)`.\n"
-       "See `(dirac! :help)` for more info."))
+       "See `(dirac :help)` for more info."))
 
 (defn ^:dynamic make-no-target-session-match-msg [_info]
   (str "No suitable Dirac session is connected to handle your command."))
@@ -135,5 +135,5 @@
 (defn ^:dynamic make-missing-compiler-msg [selected-compiler]
   (let [compiler (helpers/make-human-readable-selected-compiler selected-compiler)]
     (str "Selected compiler '" compiler "' is missing. It does not match any of available compilers.\n"
-         "Use `(dirac! :ls)` to review current situation and "
+         "Use `(dirac :ls)` to review current situation and "
          "`(dirac! :switch <compiler-id>)` to switch to an existing compiler.")))
