@@ -15,12 +15,23 @@
   (:import (clojure.lang Namespace)
            java.io.Writer))
 
-; -- handlers for middleware operations -------------------------------------------------------------------------------------
+(def ^:dynamic dirac-command-re #"^\s*\(?dirac!?\s*(.*?)\s*\)?\s*$")                                                          ; allow both (dirac! ...) and (dirac ...) forms, parentheses are optional
+
+; -- command detection & parsing --------------------------------------------------------------------------------------------
+
+(defn extract-dirac-command [code]
+  (second (re-matches dirac-command-re code)))
 
 (defn dirac-special-command? [nrepl-message]
-  (let [code (:code nrepl-message)]
-    (if (string? code)
-      (some? (re-find #"^\(?dirac!" code)))))                                                                                 ; we don't want to use read-string here, regexp test should be safe and quick
+  (if-let [code (:code nrepl-message)]
+    (some? (extract-dirac-command (str code)))))                                                                              ; we don't want to use read-string here, regexp test should be safe and quick
+
+(defn canonical-dirac-command [code]
+  ; this is just for convenience, we convert some forms to canonical `(dirac! ...)` form
+  (if-let [command (extract-dirac-command code)]
+    (str "(dirac! " (if (empty? command) ":help" command) ")")))
+
+; -- handlers for middleware operations -------------------------------------------------------------------------------------
 
 (defn eval-job! [nrepl-message code-str ns driver caught-fn flush-fn]
   (try
@@ -57,20 +68,13 @@
   (let [status-cutting-nrepl-message (make-nrepl-message-with-status-cutting nrepl-message)]
     (apply special-repl-eval!* status-cutting-nrepl-message args)))
 
-(defn sanitize-dirac-command [code-str]
-  ; this is just for convenience, we convert some common forms to canonical (dirac! :help) form
-  (let [trimmed-code (string/trim code-str)]
-    (if (or (= trimmed-code "dirac!")
-            (= trimmed-code "(dirac!)"))
-      "(dirac! :help)"
-      trimmed-code)))
-
 (defn handle-dirac-special-command! [nrepl-message]
+  {:pre [(dirac-special-command? nrepl-message)]}
   (let [{:keys [code session]} nrepl-message
         nrepl-message (if (sessions/dirac-session? session)
                         (make-nrepl-message-with-captured-output nrepl-message)
                         nrepl-message)]
-    (special-repl-eval! nrepl-message (sanitize-dirac-command code) (find-ns 'dirac.nrepl.controls))))                        ; we want to eval special commands in dirac.nrepl.controls namespace
+    (special-repl-eval! nrepl-message (canonical-dirac-command code) (find-ns 'dirac.nrepl.controls))))                       ; we want to eval special commands in dirac.nrepl.controls namespace
 
 (defn issue-dirac-special-command! [nrepl-message command]
   (log/debug "issue-dirac-special-command!" command)
