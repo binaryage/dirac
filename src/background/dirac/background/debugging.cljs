@@ -76,7 +76,7 @@
       (make-failure (make-multiple-contexts-matched-msg context-url matching-contexts)))))
 
 (defn extract-backend-url [devtools-frontend-url]
-  (if-let [matches (re-matches #"/devtools/inspector.html\?ws=(.*)" devtools-frontend-url)]
+  (if-let [matches (re-find #"[?&]ws=([^&]*)" devtools-frontend-url)]
     (second matches)
     (make-failure (make-failure-to-extract-ws-msg devtools-frontend-url))))
 
