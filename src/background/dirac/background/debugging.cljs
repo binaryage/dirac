@@ -21,6 +21,9 @@
 (defn make-multiple-contexts-matched-msg [context-url matching-contexts]
   (str "unexpected, multiple contexts matched context-url=" context-url "\nmatching-contexts=" matching-contexts))
 
+(defn make-multiple-node-contexts-matched-msg [matching-contexts]
+  (str "unexpected, multiple node contexts matched\nmatching-contexts=" matching-contexts))
+
 (defn make-failure-to-extract-ws-msg [devtools-frontend-url]
   (str "unexpected failure to extract ws from devtools-frontend-url=" devtools-frontend-url))
 
@@ -54,10 +57,21 @@
           (empty? (:body response)) (make-failure (make-empty-body-response-msg api-endpoint))
           :else (:body response))))))
 
+(defn node-context? [context]
+  (= (:type context) "node"))
+
+(defn select-node-context [context-list]
+  (let [node-contexts (filter node-context? context-list)]
+    (case (count node-contexts)
+      0 nil
+      1 (first node-contexts)
+      (make-failure (make-multiple-node-contexts-matched-msg node-contexts)))))
+
 (defn select-matching-context-by-url [context-list context-url]
   (let [matching-contexts (filter #(= (:url %) context-url) context-list)]
     (case (count matching-contexts)
-      0 (make-failure (make-no-matching-context-found-msg context-url context-list))
+      0 (or (select-node-context context-list)
+            (make-failure (make-no-matching-context-found-msg context-url context-list)))
       1 (first matching-contexts)
       (make-failure (make-multiple-contexts-matched-msg context-url matching-contexts)))))
 
