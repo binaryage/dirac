@@ -183,3 +183,6 @@
             (flush-fn)))
         (error "devtools view unexpectedly null" devtools-id))
       (error "unable to install intercom from dirac extension to dirac frontend" devtools-id))))
+
+(defn show-connecting-debugger-backend-status! [tab-id]
+  (action/update-action-button! tab-id :connecting "Attempting to connect debugger backend..."))

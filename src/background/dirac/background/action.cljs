@@ -8,6 +8,7 @@
 (defonce state-table
   {:waiting       {}
    :connected     {:text "~" :color [0 0 255 255]}
+   :connecting    {:text "?" :color "#008888"}
    :not-available {:text "x" :color [128 128 128 255]}
    :error         {:text "!" :color "#ff0000"}
    :warning       {:text "!" :color "#ffff00"}})
