@@ -21,6 +21,7 @@
 (defonce ^:dynamic *console-initialized* false)
 (defonce ^:dynamic *implant-initialized* false)
 (defonce ^:dynamic *namespaces-cache-debouncer* nil)
+(defonce ^:dynamic *namespace-cache-cool* false)
 
 ; -- public API -------------------------------------------------------------------------------------------------------------
 ; following functions will be exposed as helpers for devtools javascript code
@@ -100,13 +101,18 @@
   ; see http://stackoverflow.com/a/27257742/84283
   (gcall! "setTimeout" #(error "a fake error log" 1 2 3) 0))
 
-(defn report-namespaces-cache-cool-down! []
-  (post-feedback! "namespacesCache is cool now")
-  (.pause *namespaces-cache-debouncer*))
+(defn namespaces-cache-changed! []
+  (when-not *namespace-cache-cool*
+    (set! *namespace-cache-cool* true)
+    (post-feedback! "namespacesCache is cool now"))
+  ; callstack pane could render before we have namespaceCache fully populated
+  ; this could cause dirac.implant.munging/ns-detector to miss some namespaces
+  ; we cannot make ns-detector async, so we force (debounced) refresh when namespaces cache changes
+  (helpers/update-callstack-pane!))
 
 (defn get-namespaces-cache-debouncer []
   (if-not *namespaces-cache-debouncer*
-    (set! *namespaces-cache-debouncer* (Debouncer. report-namespaces-cache-cool-down! 1000)))
+    (set! *namespaces-cache-debouncer* (Debouncer. namespaces-cache-changed! 1000)))
   *namespaces-cache-debouncer*)
 
 (defn report-namespaces-cache-mutation! []
