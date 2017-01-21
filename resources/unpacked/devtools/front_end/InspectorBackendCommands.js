@@ -1,5 +1,5 @@
-Protocol.BakedInspectorBackendAPIChromeTag='57.0.2981.2';
-Protocol.BakedInspectorBackendAPIChromeRev='4180b2e34325e450db3d4feb3c09b58ced38e98a';
+Protocol.BakedInspectorBackendAPIChromeTag='58.0.2988.2';
+Protocol.BakedInspectorBackendAPIChromeRev='1d97062b110831423488e9bc5bd67a1bde1fded5';
 Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerEvent("Inspector.detached", ["reason"]);\n'
 + 'Protocol.inspectorBackend.registerEvent("Inspector.targetCrashed", []);\n'
@@ -161,6 +161,7 @@ Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerEvent("DOMStorage.domStorageItemUpdated", ["storageId", "key", "oldValue", "newValue"]);\n'
 + 'Protocol.inspectorBackend.registerCommand("DOMStorage.enable", [], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("DOMStorage.disable", [], [], false);\n'
++ 'Protocol.inspectorBackend.registerCommand("DOMStorage.clear", [{"name": "storageId", "type": "object", "optional": false}], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("DOMStorage.getDOMStorageItems", [{"name": "storageId", "type": "object", "optional": false}], ["entries"], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("DOMStorage.setDOMStorageItem", [{"name": "storageId", "type": "object", "optional": false}, {"name": "key", "type": "string", "optional": false}, {"name": "value", "type": "string", "optional": false}], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("DOMStorage.removeDOMStorageItem", [{"name": "storageId", "type": "object", "optional": false}, {"name": "key", "type": "string", "optional": false}], [], false);\n'
@@ -364,7 +365,7 @@ Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerEnum("Storage.StorageType", {Appcache: "appcache", Cookies: "cookies", File_systems: "file_systems", Indexeddb: "indexeddb", Local_storage: "local_storage", Shader_cache: "shader_cache", Websql: "websql", Service_workers: "service_workers", Cache_storage: "cache_storage", All: "all"});\n'
 + 'Protocol.inspectorBackend.registerCommand("Storage.clearDataForOrigin", [{"name": "origin", "type": "string", "optional": false}, {"name": "storageTypes", "type": "string", "optional": false}], [], false);\n'
 + 'Protocol.inspectorBackend.registerEnum("Log.LogEntrySource", {XML: "xml", Javascript: "javascript", Network: "network", Storage: "storage", Appcache: "appcache", Rendering: "rendering", Security: "security", Deprecation: "deprecation", Worker: "worker", Violation: "violation", Intervention: "intervention", Other: "other"});\n'
-+ 'Protocol.inspectorBackend.registerEnum("Log.LogEntryLevel", {Log: "log", Warning: "warning", Error: "error", Debug: "debug", Info: "info"});\n'
++ 'Protocol.inspectorBackend.registerEnum("Log.LogEntryLevel", {Verbose: "verbose", Info: "info", Warning: "warning", Error: "error"});\n'
 + 'Protocol.inspectorBackend.registerEnum("Log.ViolationSettingName", {LongTask: "longTask", LongLayout: "longLayout", BlockedEvent: "blockedEvent", BlockedParser: "blockedParser", Handler: "handler", RecurringHandler: "recurringHandler"});\n'
 + 'Protocol.inspectorBackend.registerEvent("Log.entryAdded", ["entry"]);\n'
 + 'Protocol.inspectorBackend.registerCommand("Log.enable", [], [], false);\n'
