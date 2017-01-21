@@ -92,7 +92,6 @@ UI.Icon.Descriptor;
 /** @enum {!UI.Icon.Descriptor} */
 UI.Icon.Descriptors = {
   'smallicon-error': {x: -20, y: 0, width: 10, height: 10, spritesheet: 'smallicons'},
-  'smallicon-revoked-error': {x: -40, y: 0, width: 10, height: 10, spritesheet: 'smallicons'},
   'smallicon-warning': {x: -60, y: 0, width: 10, height: 10, spritesheet: 'smallicons'},
   'smallicon-info': {x: -80, y: 0, width: 10, height: 10, spritesheet: 'smallicons'},
   'smallicon-device': {x: -100, y: 0, width: 10, height: 10, spritesheet: 'smallicons'},
@@ -162,6 +161,8 @@ UI.Icon.Descriptors = {
   'largeicon-visibility': {x: -96, y: 0, width: 28, height: 24, spritesheet: 'largeicons', isMask: true},
   'largeicon-refresh': {x: 0, y: 0, width: 28, height: 24, spritesheet: 'largeicons', isMask: true},
   'largeicon-dock-to-right': {x: -256, y: -48, width: 28, height: 24, spritesheet: 'largeicons', isMask: true},
+  'largeicon-dock-to-left':
+      {x: -256, y: -48, width: 28, height: 24, spritesheet: 'largeicons', isMask: true, transform: 'rotate(180deg)'},
   'largeicon-dock-to-bottom': {x: -32, y: -24, width: 28, height: 24, spritesheet: 'largeicons', isMask: true},
   'largeicon-undock': {x: 0, y: -48, width: 28, height: 24, spritesheet: 'largeicons', isMask: true},
   'largeicon-settings-gear': {x: -288, y: -72, width: 28, height: 24, spritesheet: 'largeicons', isMask: true},
