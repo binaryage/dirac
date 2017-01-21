@@ -47,7 +47,6 @@ Timeline.TimelinePanel = class extends UI.Panel {
     /** @type {!Array<!UI.ToolbarItem>} */
     this._recordingOptionUIControls = [];
     this._state = Timeline.TimelinePanel.State.Idle;
-    this._detailsLinkifier = new Components.Linkifier();
     this._windowStartTime = 0;
     this._windowEndTime = Infinity;
     this._millisecondsToRecordAfterLoadEvent = 3000;
@@ -106,9 +105,10 @@ Timeline.TimelinePanel = class extends UI.Panel {
     SDK.targetManager.addEventListener(SDK.TargetManager.Events.Load, this._loadEventFired, this);
 
     // Create top level properties splitter.
-    this._detailsSplitWidget = new UI.SplitWidget(false, true, 'timelinePanelDetailsSplitViewState');
+    this._detailsSplitWidget = new UI.SplitWidget(false, true, 'timelinePanelDetailsSplitViewState', 400);
     this._detailsSplitWidget.element.classList.add('timeline-details-split');
-    this._detailsView = new Timeline.TimelineDetailsView(this._model, this._filters, this);
+    this._detailsView =
+        new Timeline.TimelineDetailsView(this._model, this._frameModel, this._filmStripModel, this._filters, this);
     this._detailsSplitWidget.installResizer(this._detailsView.headerElement());
     this._detailsSplitWidget.setSidebarWidget(this._detailsView);
 
@@ -219,23 +219,6 @@ Timeline.TimelinePanel = class extends UI.Panel {
    */
   requestWindowTimes(windowStartTime, windowEndTime) {
     this._overviewPane.requestWindowTimes(windowStartTime, windowEndTime);
-  }
-
-  /**
-   * @return {!UI.Widget}
-   */
-  _layersView() {
-    if (this._lazyLayersView)
-      return this._lazyLayersView;
-    this._lazyLayersView = new Timeline.TimelineLayersView(this._model, this._showSnapshotInPaintProfiler.bind(this));
-    return this._lazyLayersView;
-  }
-
-  _paintProfilerView() {
-    if (this._lazyPaintProfilerView)
-      return this._lazyPaintProfilerView;
-    this._lazyPaintProfilerView = new Timeline.TimelinePaintProfilerView(this._frameModel);
-    return this._lazyPaintProfilerView;
   }
 
   /**
@@ -459,7 +442,6 @@ Timeline.TimelinePanel = class extends UI.Panel {
 
   _refreshViews() {
     this._currentViews.forEach(view => view.refreshRecords());
-    this._updateSelectionDetails();
   }
 
   _onModeChanged() {
@@ -699,16 +681,19 @@ Timeline.TimelinePanel = class extends UI.Panel {
 
     var p = centered.createChild('p');
     p.createTextChild(Common.UIString(
-        'The Performance panel lets you record what the browser does during page load and user interaction. The timeline it generates can help you determine why certain parts of your page are slow.'));
+        'The Performance panel lets you record what the browser does during page load and user interaction. ' +
+        'The timeline it generates can help you determine why certain parts of your page are slow.'));
 
     p = centered.createChild('p');
     p.appendChild(UI.formatLocalized(
-        'To capture a new recording, click the record toolbar button or hit %s. To evaluate page load performance, hit %s to record the reload.',
+        'To capture a new recording, click the record toolbar button or hit %s. ' +
+        'To evaluate page load performance, hit %s to record the reload.',
         [recordNode, reloadNode]));
 
     p = centered.createChild('p');
     p.appendChild(UI.formatLocalized(
-        'After recording, select an area of interest in the overview by dragging. Then, zoom and pan the timeline with the mousewheel or %s keys.',
+        'After recording, select an area of interest in the overview by dragging. ' +
+        'Then, zoom and pan the timeline with the mousewheel or %s keys.',
         [navigateNode]));
 
     p = centered.createChild('p');
@@ -719,8 +704,9 @@ Timeline.TimelinePanel = class extends UI.Panel {
 
     p = centered.createChild('p', 'timeline-landing-warning');
     p.appendChild(UI.formatLocalized(
-        'The %s panel has been enriched with the JavaScript profiler capabilities and is now called %s.%sYou can find the legacy JavaScript CPU profiler under %s\u2192 More Tools \u2192 JavaScript Profiler.',
-        [timelineSpan, performanceSpan, createElement('br'), UI.Icon.create('largeicon-menu')]));
+        'The %s panel has been enriched with the JavaScript profiler capabilities and is now called %s.%s' +
+        'You can find the legacy JavaScript CPU profiler under %s%s \u2192 More Tools \u2192 JavaScript Profiler.',
+        [timelineSpan, performanceSpan, createElement('p'), createElement('br'), UI.Icon.create('largeicon-menu')]));
 
     this._landingPage.show(this._statusPaneContainer);
   }
@@ -989,46 +975,6 @@ Timeline.TimelinePanel = class extends UI.Panel {
     this._updateSearchHighlight(true, shouldJump, jumpBackwards);
   }
 
-  _updateSelectionDetails() {
-    switch (this._selection.type()) {
-      case Timeline.TimelineSelection.Type.TraceEvent:
-        var event = /** @type {!SDK.TracingModel.Event} */ (this._selection.object());
-        Timeline.TimelineUIUtils.buildTraceEventDetails(
-            event, this._model, this._detailsLinkifier, true,
-            this._appendDetailsTabsForTraceEventAndShowDetails.bind(this, event));
-        break;
-      case Timeline.TimelineSelection.Type.Frame:
-        var frame = /** @type {!TimelineModel.TimelineFrame} */ (this._selection.object());
-        var screenshotTime = frame.idle ?
-            frame.startTime :
-            frame.endTime;  // For idle frames, look at the state at the beginning of the frame.
-        var filmStripFrame = filmStripFrame = this._filmStripModel.frameByTimestamp(screenshotTime);
-        if (filmStripFrame && filmStripFrame.timestamp - frame.endTime > 10)
-          filmStripFrame = null;
-        this.showInDetails(
-            Timeline.TimelineUIUtils.generateDetailsContentForFrame(this._frameModel, frame, filmStripFrame));
-        if (frame.layerTree) {
-          var layersView = this._layersView();
-          layersView.showLayerTree(frame.layerTree);
-          if (!this._detailsView.hasTab(Timeline.TimelinePanel.DetailsTab.LayerViewer)) {
-            this._detailsView.appendTab(
-                Timeline.TimelinePanel.DetailsTab.LayerViewer, Common.UIString('Layers'), layersView);
-          }
-        }
-        break;
-      case Timeline.TimelineSelection.Type.NetworkRequest:
-        var request = /** @type {!TimelineModel.TimelineModel.NetworkRequest} */ (this._selection.object());
-        Timeline.TimelineUIUtils.buildNetworkRequestDetails(request, this._model, this._detailsLinkifier)
-            .then(this.showInDetails.bind(this));
-        break;
-      case Timeline.TimelineSelection.Type.Range:
-        this._updateSelectedRangeStats(this._selection._startTime, this._selection._endTime);
-        break;
-    }
-
-    this._detailsView.updateContents(this._selection);
-  }
-
   /**
    * @param {!Timeline.TimelineSelection} selection
    * @return {?TimelineModel.TimelineFrame}
@@ -1065,72 +1011,19 @@ Timeline.TimelinePanel = class extends UI.Panel {
   }
 
   /**
-   * @param {!SDK.PaintProfilerSnapshot} snapshot
-   */
-  _showSnapshotInPaintProfiler(snapshot) {
-    var paintProfilerView = this._paintProfilerView();
-    paintProfilerView.setSnapshot(snapshot);
-    if (!this._detailsView.hasTab(Timeline.TimelinePanel.DetailsTab.PaintProfiler)) {
-      this._detailsView.appendTab(
-          Timeline.TimelinePanel.DetailsTab.PaintProfiler, Common.UIString('Paint Profiler'), paintProfilerView,
-          undefined, undefined, true);
-    }
-    this._detailsView.selectTab(Timeline.TimelinePanel.DetailsTab.PaintProfiler, true);
-  }
-
-  /**
-   * @param {!SDK.TracingModel.Event} event
-   * @param {!Node} content
-   */
-  _appendDetailsTabsForTraceEventAndShowDetails(event, content) {
-    this.showInDetails(content);
-    if (event.name === TimelineModel.TimelineModel.RecordType.Paint ||
-        event.name === TimelineModel.TimelineModel.RecordType.RasterTask)
-      this._showEventInPaintProfiler(event);
-  }
-
-  /**
-   * @param {!SDK.TracingModel.Event} event
-   */
-  _showEventInPaintProfiler(event) {
-    var target = SDK.targetManager.mainTarget();
-    if (!target)
-      return;
-    var paintProfilerView = this._paintProfilerView();
-    var hasProfileData = paintProfilerView.setEvent(target, event);
-    if (!hasProfileData)
-      return;
-    if (!this._detailsView.hasTab(Timeline.TimelinePanel.DetailsTab.PaintProfiler)) {
-      this._detailsView.appendTab(
-          Timeline.TimelinePanel.DetailsTab.PaintProfiler, Common.UIString('Paint Profiler'), paintProfilerView,
-          undefined, undefined, false);
-    }
-  }
-
-  /**
-   * @param {number} startTime
-   * @param {number} endTime
-   */
-  _updateSelectedRangeStats(startTime, endTime) {
-    this.showInDetails(Timeline.TimelineUIUtils.buildRangeStats(this._model, startTime, endTime));
-  }
-
-  /**
    * @override
    * @param {?Timeline.TimelineSelection} selection
-   * @param {!Timeline.TimelinePanel.DetailsTab=} preferredTab
+   * @param {!Timeline.TimelineDetailsView.Tab=} preferredTab
    */
   select(selection, preferredTab) {
     if (!selection)
       selection = Timeline.TimelineSelection.fromRange(this._windowStartTime, this._windowEndTime);
     this._selection = selection;
-    this._detailsLinkifier.reset();
     if (preferredTab)
       this._detailsView.setPreferredTab(preferredTab);
-
     for (var view of this._currentViews)
       view.setSelection(selection);
-    this._updateSelectionDetails();
+    this._detailsView.setSelection(selection);
   }
 
   /**
@@ -1174,14 +1067,6 @@ Timeline.TimelinePanel = class extends UI.Panel {
       timeShift = startTime - this._windowStartTime;
     if (timeShift)
       this.requestWindowTimes(this._windowStartTime + timeShift, this._windowEndTime + timeShift);
-  }
-
-  /**
-   * @override
-   * @param {!Node} node
-   */
-  showInDetails(node) {
-    this._detailsView.setContent(node);
   }
 
   /**
@@ -1252,18 +1137,6 @@ Timeline.TimelinePanel = class extends UI.Panel {
 };
 
 /**
- * @enum {string}
- */
-Timeline.TimelinePanel.DetailsTab = {
-  Details: 'Details',
-  Events: 'Events',
-  CallTree: 'CallTree',
-  BottomUp: 'BottomUp',
-  PaintProfiler: 'PaintProfiler',
-  LayerViewer: 'LayerViewer'
-};
-
-/**
  * @enum {symbol}
  */
 Timeline.TimelinePanel.State = {
@@ -1322,105 +1195,6 @@ Timeline.TimelineLifecycleDelegate.prototype = {
   sessionGeneration() {}
 };
 
-/**
- * @unrestricted
- */
-Timeline.TimelineDetailsView = class extends UI.TabbedPane {
-  /**
-   * @param {!TimelineModel.TimelineModel} timelineModel
-   * @param {!Array<!TimelineModel.TimelineModel.Filter>} filters
-   * @param {!Timeline.TimelineModeViewDelegate} delegate
-   */
-  constructor(timelineModel, filters, delegate) {
-    super();
-    this.element.classList.add('timeline-details');
-
-    var tabIds = Timeline.TimelinePanel.DetailsTab;
-    this._defaultDetailsWidget = new UI.VBox();
-    this._defaultDetailsWidget.element.classList.add('timeline-details-view');
-    this._defaultDetailsContentElement =
-        this._defaultDetailsWidget.element.createChild('div', 'timeline-details-view-body vbox');
-    this._defaultDetailsContentElement.tabIndex = 0;
-    this.appendTab(tabIds.Details, Common.UIString('Summary'), this._defaultDetailsWidget);
-    this.setPreferredTab(tabIds.Details);
-
-    /** @type Map<string, Timeline.TimelineTreeView> */
-    this._rangeDetailViews = new Map();
-
-    var bottomUpView = new Timeline.BottomUpTimelineTreeView(timelineModel, filters);
-    this.appendTab(tabIds.BottomUp, Common.UIString('Bottom-Up'), bottomUpView);
-    this._rangeDetailViews.set(tabIds.BottomUp, bottomUpView);
-
-    var callTreeView = new Timeline.CallTreeTimelineTreeView(timelineModel, filters);
-    this.appendTab(tabIds.CallTree, Common.UIString('Call Tree'), callTreeView);
-    this._rangeDetailViews.set(tabIds.CallTree, callTreeView);
-
-    var eventsView = new Timeline.EventsTimelineTreeView(timelineModel, filters, delegate);
-    this.appendTab(tabIds.Events, Common.UIString('Event Log'), eventsView);
-    this._rangeDetailViews.set(tabIds.Events, eventsView);
-
-    this.addEventListener(UI.TabbedPane.Events.TabSelected, this._tabSelected, this);
-  }
-
-  /**
-   * @param {!Node} node
-   */
-  setContent(node) {
-    var allTabs = this.otherTabs(Timeline.TimelinePanel.DetailsTab.Details);
-    for (var i = 0; i < allTabs.length; ++i) {
-      if (!this._rangeDetailViews.has(allTabs[i]))
-        this.closeTab(allTabs[i]);
-    }
-    this._defaultDetailsContentElement.removeChildren();
-    this._defaultDetailsContentElement.appendChild(node);
-  }
-
-  /**
-   * @param {!Timeline.TimelineSelection} selection
-   */
-  updateContents(selection) {
-    this._selection = selection;
-    var view = this.selectedTabId ? this._rangeDetailViews.get(this.selectedTabId) : null;
-    if (view)
-      view.updateContents(selection);
-  }
-
-  /**
-   * @override
-   * @param {string} id
-   * @param {string} tabTitle
-   * @param {!UI.Widget} view
-   * @param {string=} tabTooltip
-   * @param {boolean=} userGesture
-   * @param {boolean=} isCloseable
-   */
-  appendTab(id, tabTitle, view, tabTooltip, userGesture, isCloseable) {
-    super.appendTab(id, tabTitle, view, tabTooltip, userGesture, isCloseable);
-    if (this._preferredTabId !== this.selectedTabId)
-      this.selectTab(id);
-  }
-
-  /**
-   * @param {string} tabId
-   */
-  setPreferredTab(tabId) {
-    this._preferredTabId = tabId;
-  }
-
-  /**
-   * @param {!Common.Event} event
-   */
-  _tabSelected(event) {
-    if (!event.data.isUserGesture)
-      return;
-    this.setPreferredTab(event.data.tabId);
-    this.updateContents(this._selection);
-  }
-};
-
-/**
- * @unrestricted
- */
 Timeline.TimelineSelection = class {
   /**
    * @param {!Timeline.TimelineSelection.Type} type
@@ -1574,7 +1348,7 @@ Timeline.TimelineModeViewDelegate.prototype = {
 
   /**
    * @param {?Timeline.TimelineSelection} selection
-   * @param {!Timeline.TimelinePanel.DetailsTab=} preferredTab
+   * @param {!Timeline.TimelineDetailsView.Tab=} preferredTab
    */
   select(selection, preferredTab) {},
 
@@ -1582,11 +1356,6 @@ Timeline.TimelineModeViewDelegate.prototype = {
    * @param {number} time
    */
   selectEntryAtTime(time) {},
-
-  /**
-   * @param {!Node} node
-   */
-  showInDetails(node) {},
 
   /**
    * @param {?SDK.TracingModel.Event} event

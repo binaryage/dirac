@@ -180,7 +180,8 @@ SDK.CSSMetadata = class {
    */
   isPropertyInherited(propertyName) {
     propertyName = propertyName.toLowerCase();
-    return this._inherited.has(this.canonicalPropertyName(propertyName)) || this._inherited.has(propertyName);
+    return propertyName.startsWith('--') || this._inherited.has(this.canonicalPropertyName(propertyName)) ||
+        this._inherited.has(propertyName);
   }
 
   /**
@@ -544,6 +545,7 @@ SDK.CSSMetadata._propertyDataMap = {
       'none',
       'inline',
       'block',
+      'flow-root',
       'list-item',
       'run-in',
       'inline-block',

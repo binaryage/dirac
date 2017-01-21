@@ -117,7 +117,8 @@ Sources.SourcesPanel = class extends UI.Panel {
         SDK.DebuggerModel, SDK.DebuggerModel.Events.GlobalObjectCleared,
         (event) => this._debuggerResumed(/** @type {!SDK.DebuggerModel} */ (event.data)));
     SDK.targetManager.addModelListener(
-        SDK.SubTargetsManager, SDK.SubTargetsManager.Events.PendingTargetAdded, this._pendingTargetAdded, this);
+        SDK.SubTargetsManager, SDK.SubTargetsManager.Events.AvailableNodeTargetsChanged,
+        this._availableNodeTargetsChanged, this);
     new Sources.WorkspaceMappingTip(this, this._workspace);
     Extensions.extensionServer.addEventListener(
         Extensions.ExtensionServer.Events.SidebarPaneAdded, this._extensionSidebarPaneAdded, this);
@@ -170,7 +171,7 @@ Sources.SourcesPanel = class extends UI.Panel {
   targetRemoved(target) {
   }
 
-  _pendingTargetAdded() {
+  _availableNodeTargetsChanged() {
     this._showThreadsIfNeeded();
   }
 
@@ -957,7 +958,8 @@ Sources.SourcesPanel = class extends UI.Panel {
         failedToSave(result);
       } else {
         SDK.ConsoleModel.evaluateCommandInConsole(
-            /** @type {!SDK.ExecutionContext} */ (currentExecutionContext), result.value);
+            /** @type {!SDK.ExecutionContext} */ (currentExecutionContext), result.value,
+            /* useCommandLineAPI */ false);
       }
     }
 
@@ -1267,7 +1269,7 @@ Sources.SourcesPanel.DebuggingActionDelegate = class {
           var text = frame.textEditor.text(frame.textEditor.selection());
           var executionContext = UI.context.flavor(SDK.ExecutionContext);
           if (executionContext)
-            SDK.ConsoleModel.evaluateCommandInConsole(executionContext, text);
+            SDK.ConsoleModel.evaluateCommandInConsole(executionContext, text, /* useCommandLineAPI */ true);
         }
         return true;
     }
