@@ -13,6 +13,10 @@
    :error         {:text "!" :color "#ff0000"}
    :warning       {:text "!" :color "#ffff00"}})
 
+(defonce active-icons
+  #js {"19" "images/icon19.png"
+       "38" "images/icon38.png"})
+
 (defn color->js [color]
   (cond
     (nil? color) #js [0 0 0 0]
@@ -33,3 +37,12 @@
           (browser-action/set-title #js {"title" title
                                          "tabId" backend-tab-id}))
         true))))
+
+(defn disable! [tab-id]
+  (browser-action/disable tab-id))
+
+(defn enable! [tab-id]
+  (browser-action/enable tab-id))
+
+(defn set-active-icons! []
+  (browser-action/set-icon #js {:path active-icons}))
