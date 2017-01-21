@@ -92,14 +92,15 @@
     (reset! cached-options options)))
 
 (defn parse-options [serialized-options]
-  (let [options (unserialize-options serialized-options)]
+  (let [options (if (some? serialized-options)
+                  (unserialize-options serialized-options))]
     (merge default-options options)))                                                                                         ; merge is important for upgrading options schema between versions
 
 (defn read-options []
   (go
     (let [local-storage (storage/get-local)
           [[items] _error] (<! (get local-storage "options"))
-          options (parse-options (oget items "options"))]
+          options (parse-options (oget items "?options"))]
       (info "read options:" options)
       options)))
 
