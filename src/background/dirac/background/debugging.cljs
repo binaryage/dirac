@@ -32,7 +32,7 @@
   (instance? ResolutionFailure v))
 
 (defn get-resolution-failure-reason [failure]
-  (oget failure "reason"))
+  (.-reason failure))
 
 (defn make-failure [reason]
   (ResolutionFailure. reason))
