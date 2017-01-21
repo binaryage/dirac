@@ -12,7 +12,7 @@
             [dirac.background.helpers :as helpers :refer [report-error-in-tab! report-warning-in-tab!
                                                           show-connecting-debugger-backend-status!]]
             [dirac.background.devtools :as devtools]
-            [dirac.background.debugging :refer [resolve-backend-url resolution-failure? get-resolution-failure-reason]]
+            [dirac.background.debugging :refer [resolve-backend-info resolution-failure? get-resolution-failure-reason]]
             [dirac.background.state :as state]
             [dirac.background.helpers :as helpers]
             [dirac.options.model :as options]
@@ -143,14 +143,16 @@
         (not debugger-url) (<! (report-error-in-tab! backend-tab-id (i18n/debugger-url-not-specified)))
         :else (do
                 (show-connecting-debugger-backend-status! backend-tab-id)
-                (let [backend-url (<! (resolve-backend-url debugger-url tab-url))]
-                  (if (resolution-failure? backend-url)
-                    (let [reason (get-resolution-failure-reason backend-url)]
+                (let [backend-info (<! (resolve-backend-info debugger-url tab-url))]
+                  (if (resolution-failure? backend-info)
+                    (let [reason (get-resolution-failure-reason backend-info)]
                       (<! (report-error-in-tab! backend-tab-id
                                                 (i18n/unable-to-resolve-backend-url debugger-url tab-url reason))))
-                    (if (keyword-identical? backend-url :not-attachable)
+                    (if (keyword-identical? backend-info :not-attachable)
                       (<! (report-warning-in-tab! backend-tab-id (i18n/cannot-attach-dirac debugger-url tab-url)))
-                      (<! (create-dirac-devtools! backend-tab-id (assoc options :backend-url backend-url)))))))))))
+                      (<! (create-dirac-devtools! backend-tab-id (assoc options
+                                                                   :backend-url (:url backend-info)
+                                                                   :node? (= (:type backend-info) :node))))))))))))
 
 (defn activate-dirac-devtools! [tab-id]
   (go
