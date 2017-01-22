@@ -1,4 +1,4 @@
-(ns dirac.runtime.tag
+(ns dirac.runtime.util
   (:require [clojure.string :as string]))
 
 (def known-browsers ["Opera" "IE" "Edge" "Firefox" "Safari" "Coast" "Chrome" "Silk"])
