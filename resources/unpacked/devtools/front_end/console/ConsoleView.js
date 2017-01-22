@@ -686,6 +686,7 @@ Console.ConsoleView = class extends UI.VBox {
 
     if (kind == "result") {
       message.type = SDK.ConsoleMessage.MessageType.Result;
+      message.timestamp = this._consoleMessages.length ? this._consoleMessages.peekLast().consoleMessage().timestamp : 0;
     }
 
     var originatingMessage = this._pendingDiracCommands[requestId];
