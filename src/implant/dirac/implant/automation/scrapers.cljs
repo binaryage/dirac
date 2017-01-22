@@ -124,6 +124,10 @@
 
 ; -- console UI -------------------------------------------------------------------------------------------------------------
 
+(defn log-kind-to-class-name [kind]
+  (if kind
+    (str ".console-" kind "-level")))
+
 (defn find-all-console-log-elements []
   (dom/query-selector "html /deep/ .console-message-wrapper"))
 
@@ -131,13 +135,13 @@
   (first (dom/query-selector el ".console-group-title")))
 
 (defn find-console-log-element [kind n]
-  (nth (dom/query-selector (str "html /deep/ .console-message-wrapper.console-" (or kind "log") "-level")) n nil))
+  (nth (dom/query-selector (str "html /deep/ .console-message-wrapper" (log-kind-to-class-name kind))) n nil))
 
 (defn find-last-console-log-element [kind]
-  (last (dom/query-selector (str "html /deep/ .console-message-wrapper.console-" (or kind "log") "-level"))))
+  (last (dom/query-selector (str "html /deep/ .console-message-wrapper" (log-kind-to-class-name kind)))))
 
 (defn count-console-log-elements [kind]
-  (count (dom/query-selector (str "html /deep/ .console-message-wrapper.console-" (or kind "log") "-level"))))
+  (count (dom/query-selector (str "html /deep/ .console-message-wrapper" (log-kind-to-class-name kind)))))
 
 (defn find-stack-preview-container-in-console-error-element [error-el]
   (if (some? error-el)
