@@ -3,6 +3,7 @@
             [dirac.runtime.bootstrap :refer [bootstrap!]]
             [dirac.runtime.output :as output]
             [dirac.runtime.deps]
+            [dirac.runtime.util :refer [in-node-context?]]
             [clojure.string :as string]
             [goog.object :as gobject]
             [goog.labs.userAgent.browser :as ua]))
@@ -17,7 +18,8 @@
 ;                      we let these bubble through as real log messages but decorate them slightly for our purposes
 
 (defn ^:dynamic available? []
-  (and (ua/isChrome) (ua/isVersionOrHigher 47)))                                                                              ; Chrome 47+
+  (or (in-node-context?)                                                                                                      ; node.js or Chrome 47+
+      (and (ua/isChrome) (ua/isVersionOrHigher 47))))
 
 (def ^:dynamic *installed?* false)
 (def ^:dynamic *bootstrapped?* false)
