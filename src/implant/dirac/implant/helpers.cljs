@@ -36,7 +36,7 @@
     (throw (ex-info "Unable to obtain SourcesPanel instance from DevTools" nil))))
 
 (defn get-sources-panel-instance-if-avail []
-  (oget (get-sources-panel-class) "_instance"))
+  (oget (get-sources-panel-class) "?_instance"))
 
 (defn get-callstack-pane [sources-panel]
   (oget sources-panel "_callstackPane"))
