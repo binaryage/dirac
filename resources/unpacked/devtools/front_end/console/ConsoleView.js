@@ -1802,6 +1802,9 @@ Console.ConsoleDiracCommand = class extends Console.ConsoleCommand {
   contentElement() {
     if (!this._contentElement) {
       this._contentElement = createElementWithClass("div", "console-user-command");
+      var icon = UI.Icon.create('smallicon-user-command', 'command-result-icon');
+      this._contentElement.appendChild(icon);
+
       this._contentElement.message = this;
 
       this._formattedCommand = createElementWithClass("span", "console-message-text source-code cm-s-dirac");
