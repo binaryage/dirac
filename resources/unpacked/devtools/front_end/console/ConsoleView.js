@@ -686,7 +686,6 @@ Console.ConsoleView = class extends UI.VBox {
 
     if (kind == "result") {
       message.type = SDK.ConsoleMessage.MessageType.Result;
-      message.timestamp = this._consoleMessages.length ? this._consoleMessages.peekLast().consoleMessage().timestamp : 0;
     }
 
     var originatingMessage = this._pendingDiracCommands[requestId];
@@ -959,6 +958,10 @@ Console.ConsoleView = class extends UI.VBox {
     this._addConsoleMessage(message);
   }
 
+  _normalizeMessageTimestamp(message) {
+    message.timestamp = this._consoleMessages.length ? this._consoleMessages.peekLast().consoleMessage().timestamp : 0;
+  }
+
   /**
    * @param {!SDK.ConsoleMessage} message
    */
@@ -972,11 +975,11 @@ Console.ConsoleView = class extends UI.VBox {
       return SDK.ConsoleMessage.timestampComparator(viewMessage1.consoleMessage(), viewMessage2.consoleMessage());
     }
 
-    if (message.type === SDK.ConsoleMessage.MessageType.Command ||
-        message.type === SDK.ConsoleMessage.MessageType.Result) {
-      message.timestamp =
-          this._consoleMessages.length ? this._consoleMessages.peekLast().consoleMessage().timestamp : 0;
-    }
+    // this hack is needed for node.js, we would get some log messages issued by DevTools with wrong timestamps
+    // if (message.type === SDK.ConsoleMessage.MessageType.Command ||
+    //     message.type === SDK.ConsoleMessage.MessageType.Result) {
+    this._normalizeMessageTimestamp(message);
+    // }
     var viewMessage = this._createViewMessage(message);
     message[this._viewMessageSymbol] = viewMessage;
     var insertAt = this._consoleMessages.upperBound(viewMessage, compareTimestamps);
