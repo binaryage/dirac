@@ -698,31 +698,7 @@ Console.ConsoleView = class extends UI.VBox {
   }
 
   _levelForFeedback(level) {
-    var levelString;
-    switch (level) {
-      case SDK.ConsoleMessage.MessageLevel.Log:
-        levelString = "log";
-        break;
-      case SDK.ConsoleMessage.MessageLevel.Warning:
-        levelString = "wrn";
-        break;
-      case SDK.ConsoleMessage.MessageLevel.Debug:
-        levelString = "dbg";
-        break;
-      case SDK.ConsoleMessage.MessageLevel.Error:
-        levelString = "err";
-        break;
-      case SDK.ConsoleMessage.MessageLevel.RevokedError:
-        levelString = "rer";
-        break;
-      case SDK.ConsoleMessage.MessageLevel.Info:
-        levelString = "inf";
-        break;
-      default:
-        levelString = "???";
-        break;
-    }
-    return levelString;
+    return level || "???";
   }
 
   _typeForFeedback(messageType, isDiracFlavored) {
@@ -778,7 +754,7 @@ Console.ConsoleView = class extends UI.VBox {
     }
 
     const source = SDK.ConsoleMessage.MessageSource.Other;
-    const level = SDK.ConsoleMessage.MessageLevel.Log;
+    const level = SDK.ConsoleMessage.MessageLevel.Info;
     const type = SDK.ConsoleMessage.MessageType.DiracMarkup;
     const message = new SDK.ConsoleMessage(target, source, level, markup, type);
     target.consoleModel.addMessage(message);
@@ -955,7 +931,7 @@ Console.ConsoleView = class extends UI.VBox {
     this._prompt.setText("");
     var target = executionContext.target();
     var type = SDK.ConsoleMessage.MessageType.DiracCommand;
-    var commandMessage = new SDK.ConsoleMessage(target, SDK.ConsoleMessage.MessageSource.JS, SDK.ConsoleMessage.MessageLevel.Log, text, type);
+    var commandMessage = new SDK.ConsoleMessage(target, SDK.ConsoleMessage.MessageSource.JS, SDK.ConsoleMessage.MessageLevel.Info, text, type);
     commandMessage.setExecutionContextId(executionContext.id);
     target.consoleModel.addMessage(commandMessage);
 

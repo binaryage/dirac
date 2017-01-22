@@ -31,9 +31,9 @@
     (feedback/post! details)
     (let [dirac-api (gget "dirac")]
       (assert dirac-api)
-      (ocall dirac-api "addConsoleMessageToMainTarget" "startGroupCollapsed" "log" nil header)
-      (ocall dirac-api "addConsoleMessageToMainTarget" "log" "log" details)
-      (ocall dirac-api "addConsoleMessageToMainTarget" "endGroup" "log"))))
+      (ocall dirac-api "addConsoleMessageToMainTarget" "startGroupCollapsed" "info" nil header)
+      (ocall dirac-api "addConsoleMessageToMainTarget" "log" "info" details)
+      (ocall dirac-api "addConsoleMessageToMainTarget" "endGroup" "info"))))
 
 ; -- handling global exceptions ---------------------------------------------------------------------------------------------
 
