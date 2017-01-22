@@ -86,10 +86,10 @@
   (post-feedback! (str "setCurrentPanel: " panel-id))
   (helpers/warm-up-namespace-cache!))
 
-(defn trigger-internal-error! []
+(defn trigger-internal-error-for-testing! []
   ; timeout is needed for testing from console
   ; see http://stackoverflow.com/a/27257742/84283
-  (gcall! "setTimeout" helpers/throw-internal-error! 0))
+  (gcall! "setTimeout" helpers/throw-internal-error-for-testing! 0))
 
 (defn trigger-internal-error-in-promise! []
   (let [delayed-promise (js/Promise. #(gcall! "setTimeout" % 0))]
@@ -133,7 +133,7 @@
    "getRuntimeTag"                  get-runtime-tag
    "parseNsFromSource"              parse-ns-from-source
    "nsToRelpath"                    ns-to-relpath
-   "triggerInternalError"           trigger-internal-error!
+   "triggerInternalError"           trigger-internal-error-for-testing!
    "triggerInternalErrorInPromise"  trigger-internal-error-in-promise!
    "triggerInternalErrorAsErrorLog" trigger-internal-error-as-error-log!
    "getFunctionName"                get-function-name

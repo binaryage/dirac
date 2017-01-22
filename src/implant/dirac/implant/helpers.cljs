@@ -23,7 +23,7 @@
 (defn warm-up-namespace-cache! []
   (gcall! "dirac.extractNamespacesAsync"))
 
-(defn throw-internal-error! []
+(defn throw-internal-error-for-testing! []
   (into nil :keyword))
 
 (defn get-sources-panel-class []
