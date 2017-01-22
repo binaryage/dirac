@@ -37,7 +37,7 @@
       (f/panel
         (f/form
           {:on-submit save-state-and-exit!}
-          (f/url "Chrome debugger URL:" data [:options :target-url] :placeholder "http://localhost:9222")
+          (f/url "Debugger URL:" data [:options :target-url] :placeholder "http://localhost:9222")
           (f/select "Open Dirac DevTools:" data [:options :open-as]
                     [["panel" "as a new panel (recommended)"]
                      ["window" "as a new window"]
