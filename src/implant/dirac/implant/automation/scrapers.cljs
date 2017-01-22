@@ -17,15 +17,6 @@
 (defn pp-rep [rep]
   (with-out-str (pprint rep)))
 
-(defn widget-rep? [rep]
-  (some? (re-find #"widget" (str (:class rep)))))
-
-(defn title-rep? [rep]
-  (= "title" (:class rep)))
-
-(defn subtitle-rep? [rep]
-  (= "subtitle" (:class rep)))
-
 (defn suggest-box-item-rep? [rep]
   (some? (re-find #"suggest-box-content-item" (str (:class rep)))))
 
@@ -43,47 +34,11 @@
 
 ; -- call stack UI ----------------------------------------------------------------------------------------------------------
 
-(defn is-callstack-title-el? [el]
-  (= (oget el "textContent") "Call Stack"))
+(defn find-call-frame-elements []
+  (dom/query-selector "html /deep/ .call-frame-item"))
 
-(defn find-callstack-pane-element []
-  (let [title-els (dom/query-selector "html /deep/ .expandable-view-title")]
-    (if-let [callstack-title-el (select-first [ALL is-callstack-title-el?] title-els)]
-      (if-let [callstack-body-el (oget callstack-title-el "?parentNode.?parentNode.?host.?firstChild")]
-        (first (dom/query-selector callstack-body-el "html /deep/ .widget"))))))
-
-(defn get-callstack-pane-rep [callstack-pane-el]
-  (build-rep callstack-pane-el))
-
-(defn select-callstack-widget-rep [rep]
-  ; example output
-  (comment
-    {:tag   "div",
-     :class "widget vbox",
-     :children
-            ({:tag      "div",
-              :class    "list-item selected",
-              :children ({:tag     "div",
-                          :class   "subtitle",
-                          :content "core.cljs:10",
-                          :title   "http://localhost:9080/.compiled/tests/dirac/tests/scenarios/breakpoint/core.cljs:10"}
-                          {:tag     "div",
-                           :class   "title",
-                           :content "breakpoint-demo",
-                           :title   "dirac.tests.scenarios.breakpoint.core/breakpoint-demo"})}
-              ; ...
-              {:tag      "div",
-               :class    "list-item",
-               :children ({:tag     "div",
-                           :class   "subtitle",
-                           :content "notifications.cljs:53",
-                           :title   "http://localhost:9080/.compiled/tests/dirac/automation/notifications.cljs:53"}
-                           {:tag     "div",
-                            :class   "title",
-                            :content "process-event!",
-                            :title   "dirac.automation.notifications/process-event!"})})})
-
-  (select-subrep widget-rep? rep))
+(defn extract-sub-elements [selector els]
+  (mapcat #(dom/query-selector % selector) els))
 
 (defn print-callstack-function [rep]
   (let [{:keys [title content]} rep]
@@ -134,14 +89,17 @@
 (defn find-console-group-title [el]
   (first (dom/query-selector el ".console-group-title")))
 
+(defn find-console-log-elements [kind]
+  (dom/query-selector (str "html /deep/ .console-message-wrapper" (log-kind-to-class-name kind))))
+
 (defn find-console-log-element [kind n]
-  (nth (dom/query-selector (str "html /deep/ .console-message-wrapper" (log-kind-to-class-name kind))) n nil))
+  (nth (find-console-log-elements kind) n nil))
 
 (defn find-last-console-log-element [kind]
-  (last (dom/query-selector (str "html /deep/ .console-message-wrapper" (log-kind-to-class-name kind)))))
+  (last (find-console-log-elements kind)))
 
 (defn count-console-log-elements [kind]
-  (count (dom/query-selector (str "html /deep/ .console-message-wrapper" (log-kind-to-class-name kind)))))
+  (count (find-console-log-elements kind)))
 
 (defn find-stack-preview-container-in-console-error-element [error-el]
   (if (some? error-el)
@@ -226,18 +184,16 @@
   (str "! scraper '" name "' has missing implementation in dirac.implant.automation.scrapers"))
 
 (defmethod scrape :callstack-pane-functions [_ & _]
-  (safe->> (find-callstack-pane-element)
-           (get-callstack-pane-rep)
-           (select-callstack-widget-rep)
-           (select-subreps title-rep?)
+  (safe->> (find-call-frame-elements)
+           (extract-sub-elements ".call-frame-item-title")
+           (map build-rep)
            (map print-callstack-function)
            (print-list)))
 
 (defmethod scrape :callstack-pane-locations [_ & _]
-  (safe->> (find-callstack-pane-element)
-           (get-callstack-pane-rep)
-           (select-callstack-widget-rep)
-           (select-subreps subtitle-rep?)
+  (safe->> (find-call-frame-elements)
+           (extract-sub-elements ".call-frame-location")
+           (map build-rep)
            (map print-callstack-location)
            (print-list)))
 
