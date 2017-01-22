@@ -16,15 +16,15 @@ automate         trigger! [:pause-on-breakpoint]
 devtools #1      setCurrentPanel: sources
 automate #1      scrape! [:callstack-pane-locations]
 stdout           displayed 9 items:
-                  * core.cljs:<line> / http://localhost:9090/.compiled/scenarios01/dirac/tests/scenarios/breakpoint/core.cljs?rel=***
-                  * core.cljs:<line> / http://localhost:9090/.compiled/scenarios01/dirac/tests/scenarios/breakpoint/core.cljs?rel=***
-                  * breakpoint.cljs:<line> / http://localhost:9090/.compiled/scenarios01/dirac/tests/scenarios/breakpoint.cljs?rel=***
-                  * core.cljs:<line> / http://localhost:9090/.compiled/scenarios01/cljs/core.cljs:<line>
-                  * core.cljs:<line> / http://localhost:9090/.compiled/scenarios01/cljs/core.cljs:<line>
-                  * scenario.cljs:<line> / http://localhost:9090/.compiled/scenarios01/dirac/automation/scenario.cljs?rel=***
-                  * scenario.cljs:<line> / http://localhost:9090/.compiled/scenarios01/dirac/automation/scenario.cljs?rel=***
-                  * notifications.cljs:<line> / http://localhost:9090/.compiled/scenarios01/dirac/automation/notifications.cljs?rel=***
-                  * notifications.cljs:<line> / http://localhost:9090/.compiled/scenarios01/dirac/automation/notifications.cljs?rel=***
+                  * core.cljs:<line> / core.cljs:<line>
+                  * core.cljs:<line> / core.cljs:<line>
+                  * breakpoint.cljs:<line> / breakpoint.cljs:<line>
+                  * core.cljs:<line> / core.cljs:<line>
+                  * core.cljs:<line> / core.cljs:<line>
+                  * scenario.cljs:<line> / scenario.cljs:<line>
+                  * scenario.cljs:<line> / scenario.cljs:<line>
+                  * notifications.cljs:<line> / notifications.cljs:<line>
+                  * notifications.cljs:<line> / notifications.cljs:<line>
 automate #1      close-devtools!
 extension        handling command: close-dirac-devtools
 extension        unregister devtools #1
@@ -47,15 +47,15 @@ automate         trigger! [:pause-on-breakpoint]
 devtools #2      setCurrentPanel: sources
 automate #2      scrape! [:callstack-pane-locations]
 stdout           displayed 9 items:
-                  * core.cljs?rel=*** / http://localhost:9090/.compiled/scenarios01/dirac/tests/scenarios/breakpoint/core.cljs?rel=***
-                  * core.cljs?rel=*** / http://localhost:9090/.compiled/scenarios01/dirac/tests/scenarios/breakpoint/core.cljs?rel=***
-                  * breakpoint.cljs…*** / http://localhost:9090/.compiled/scenarios01/dirac/tests/scenarios/breakpoint.cljs?rel=***
-                  * core.cljs:<line> / http://localhost:9090/.compiled/scenarios01/cljs/core.cljs:<line>
-                  * core.cljs:<line> / http://localhost:9090/.compiled/scenarios01/cljs/core.cljs:<line>
-                  * scenario.cljs?r…*** / http://localhost:9090/.compiled/scenarios01/dirac/automation/scenario.cljs?rel=***
-                  * scenario.cljs?r…*** / http://localhost:9090/.compiled/scenarios01/dirac/automation/scenario.cljs?rel=***
-                  * notifications.c…*** / http://localhost:9090/.compiled/scenarios01/dirac/automation/notifications.cljs?rel=***
-                  * notifications.c…*** / http://localhost:9090/.compiled/scenarios01/dirac/automation/notifications.cljs?rel=***
+                  * core.cljs?rel=*** / core.cljs?rel=***
+                  * core.cljs?rel=*** / core.cljs?rel=***
+                  * breakpoint.cljs…*** / breakpoint.cljs?rel=***
+                  * core.cljs?rel=***…*** / core.cljs?rel=***
+                  * core.cljs?rel=***…*** / core.cljs?rel=***
+                  * scenario.cljs?r…*** / scenario.cljs?rel=***
+                  * scenario.cljs?r…*** / scenario.cljs?rel=***
+                  * notifications.c…*** / notifications.cljs?rel=***
+                  * notifications.c…*** / notifications.cljs?rel=***
 automate #2      close-devtools!
 extension        handling command: close-dirac-devtools
 extension        unregister devtools #2
