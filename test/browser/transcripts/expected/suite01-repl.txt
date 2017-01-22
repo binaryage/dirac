@@ -348,8 +348,8 @@ devtools #7      DC.info> (in-ns 'dirac.tests.scenarios.repl.workspace)
 devtools #7      send-eval-request: (in-ns 'dirac.tests.scenarios.repl.workspace)
 devtools #7      repl eval job started
 devtools #7      setDiracPromptNS('dirac.tests.scenarios.repl.workspace')
-automate #7      scrape [:dirac-prompt-placeholder]
 devtools #7      repl eval job ended
+automate #7      scrape [:dirac-prompt-placeholder]
 automate #7      console-exec-and-match! ["(hello! \"REPL\")" ["DF.info> Hello, REPL!" "DF.info> null"]]
 devtools #7      DC.info> (hello! "REPL")
 devtools #7      send-eval-request: (hello! "REPL")
