@@ -170,7 +170,7 @@
   [label (str (utils/extract-first-line text) "\n<elided stack trace>")])
 
 (defn process-java-trace-state! [label text]
-  (if (re-find #"^DF\.log" text)
+  (if (re-find #"^DF\.info" text)
     (case (:logs (get-rewriting-machine-context))
       :expecting-java-trace (do
                               (update-rewriting-machine-context! assoc :logs :received-first-log)
@@ -178,7 +178,7 @@
       :received-first-log (do
                             (update-rewriting-machine-context! dissoc :logs)
                             (transition-rewriting-machine! :default)
-                            [label "<elided stack trace log>"]))
+                            [label "<elided stack trace>"]))
     [label text]))
 
 (defn replace-dirac-repl-ids [s]
@@ -225,7 +225,7 @@
 
 (defn process-default-state! [label text]
   (cond
-    (re-find #"^JS\.wrn> \[Violation\]" text) nil                                                                             ; completely elide new messages like "JS.wrn> [Violation] Long running JavaScript task took XXms."
+    (re-find #"^JS\.warning> \[Violation\]" text) nil                                                                         ; completely elide new messages like "JS.wrn> [Violation] Long running JavaScript task took XXms."
     (re-find #"present-server-side-output! java-trace" text) (start-rewriting-machine-for-java-trace! label text)
     :else [label (transformer text)]))                                                                                        ; TODO: make transformer pluggable
 

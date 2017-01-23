@@ -18,7 +18,7 @@ automate #1      scrape! [:callstack-pane-functions]
 stdout           displayed 9 items:
                   * breakpoint-demo / dirac.tests.scenarios.breakpoint.core/breakpoint-demo
                   * breakpoint-demo-handler / dirac.tests.scenarios.breakpoint.core/breakpoint-demo-handler
-                  * λ / λ
+                  * λ
                   * IFn:-invoke² (apply) / cljs.core.IFn:-invoke² (cljs.core/apply)
                   * apply / cljs.core/apply
                   * call-trigger! / dirac.automation.scenario/call-trigger!
@@ -134,14 +134,14 @@ devtools #4      setCurrentPanel: sources
 automate #4      scrape! [:callstack-pane-functions]
 stdout           displayed 10 items:
                   * break-here! / dirac.tests.scenarios.core-async/break-here!
-                  * λ / λ
-                  * λ / λ
+                  * λ
+                  * λ
                   * break-async-$-state-machine--*gen-num*--auto----*gen-num* / dirac.tests.scenarios.core-async/break-async-$-state-machine--*gen-num*--auto----*gen-num*
                   * break-async-$-state-machine--*gen-num*--auto-- / dirac.tests.scenarios.core-async/break-async-$-state-machine--*gen-num*--auto--
                   * run-state-machine / cljs.core.async.impl.ioc-helpers/run-state-machine
                   * run-state-machine-wrapped / cljs.core.async.impl.ioc-helpers/run-state-machine-wrapped
-                  * λ / λ
-                  * λ / λ
+                  * λ
+                  * λ
                   * process-messages / cljs.core.async.impl.dispatch/process-messages
 automate #4      close-devtools!
 extension        handling command: close-dirac-devtools

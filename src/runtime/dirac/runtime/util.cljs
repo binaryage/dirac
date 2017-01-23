@@ -1,7 +1,13 @@
 (ns dirac.runtime.util
+  (:require-macros [dirac.runtime.util :refer [get-current-browser-name get-current-platform-name]])
   (:require [goog.userAgent :as ua]
+            [oops.core :refer [oget]]
+            [goog.labs.userAgent.browser :as ua-browser]
+            [goog.labs.userAgent.platform :as ua-platform]
             [dirac.project :refer [get-current-version]]
             [dirac.runtime.prefs :as prefs]))
+
+; -- version helpers --------------------------------------------------------------------------------------------------------
 
 (defn ^:dynamic make-version-info [version]
   (str version))
@@ -9,16 +15,65 @@
 (defn ^:dynamic make-lib-info [version]
   (str "Dirac Runtime " (make-version-info version)))
 
+(defn get-lib-info []
+  (make-lib-info (get-current-version)))
+
+(defn str-or-placeholder [val placeholder]
+  (if (empty? val)
+    placeholder
+    val))
+
+(defn platform-str [name name-placeholder version version-placeholder]
+  (str (str-or-placeholder name name-placeholder) "/" (str-or-placeholder version version-placeholder)))
+
+(defn get-browser-version-info []
+  (let [browser-name (get-current-browser-name)
+        browser-version (ua-browser/getVersion)]
+    (platform-str browser-name "?" browser-version "?")))
+
+(defn get-browser-platform-info []
+  (let [platform-name (get-current-platform-name)
+        platform-version (ua-platform/getVersion)]
+    (platform-str platform-name "?" platform-version "?")))
+
+; -- node.js support --------------------------------------------------------------------------------------------------------
+
+(defn ^:dynamic get-node-info [root]
+  (try
+    (let [process (oget root "?process")
+          version (if process (oget process "?version"))
+          platform (if process (oget process "?platform"))]
+      (if (and version platform)
+        {:version  version
+         :platform platform}))
+    (catch :default _
+      nil)))
+
+(defn ^:dynamic get-node-description [node-info]
+  (platform-str (:platform node-info) "?" (:version node-info) "?"))
+
+(defn ^:dynamic in-node-context? []
+  (some? (get-node-info js/goog.global)))
+
+; -- javascript context utils -----------------------------------------------------------------------------------------------
+
+(defn ^:dynamic get-js-context-description []
+  (if-let [node-info (get-node-info js/goog.global)]
+    (str "node/" (get-node-description node-info))
+    (let [user-agent (ua/getUserAgentString)]
+      (if-not (empty? user-agent)
+        user-agent
+        "<unknown context>"))))
+
+; -- messages ---------------------------------------------------------------------------------------------------------------
+
 (defn ^:dynamic unknown-feature-msg [feature known-features lib-info]
   (str "No such feature " feature " is currently available in " lib-info ". "
        "The list of supported features is " (pr-str known-features)))
 
 (defn ^:dynamic feature-not-available-msg [feature]
   (str "Feature " feature " cannot be installed. "
-       "Unsupported browser " (ua/getUserAgentString) "."))
-
-(defn get-lib-info []
-  (make-lib-info (get-current-version)))
+       "Unsupported Javascript context: " (get-js-context-description) "."))
 
 ; -- banner -----------------------------------------------------------------------------------------------------------------
 

@@ -21,6 +21,7 @@
 (defonce ^:dynamic *console-initialized* false)
 (defonce ^:dynamic *implant-initialized* false)
 (defonce ^:dynamic *namespaces-cache-debouncer* nil)
+(defonce ^:dynamic *namespace-cache-cool* false)
 
 ; -- public API -------------------------------------------------------------------------------------------------------------
 ; following functions will be exposed as helpers for devtools javascript code
@@ -63,7 +64,7 @@
   (try
     (analyzer/parse-ns-from-source source)
     (catch :default e
-      (error "Unable to parse namespace from source\n" source "\n" e))))
+      (error "Unable to parse namespace from source\n" source "\n---\n" e))))
 
 (defn ns-to-relpath [ns ext]
   (munging/ns-to-relpath ns ext))
@@ -85,10 +86,10 @@
   (post-feedback! (str "setCurrentPanel: " panel-id))
   (helpers/warm-up-namespace-cache!))
 
-(defn trigger-internal-error! []
+(defn trigger-internal-error-for-testing! []
   ; timeout is needed for testing from console
   ; see http://stackoverflow.com/a/27257742/84283
-  (gcall! "setTimeout" helpers/throw-internal-error! 0))
+  (gcall! "setTimeout" helpers/throw-internal-error-for-testing! 0))
 
 (defn trigger-internal-error-in-promise! []
   (let [delayed-promise (js/Promise. #(gcall! "setTimeout" % 0))]
@@ -100,13 +101,18 @@
   ; see http://stackoverflow.com/a/27257742/84283
   (gcall! "setTimeout" #(error "a fake error log" 1 2 3) 0))
 
-(defn report-namespaces-cache-cool-down! []
-  (post-feedback! "namespacesCache is cool now")
-  (.pause *namespaces-cache-debouncer*))
+(defn namespaces-cache-changed! []
+  (when-not *namespace-cache-cool*
+    (set! *namespace-cache-cool* true)
+    (post-feedback! "namespacesCache is cool now"))
+  ; callstack pane could render before we have namespaceCache fully populated
+  ; this could cause dirac.implant.munging/ns-detector to miss some namespaces
+  ; we cannot make ns-detector async, so we force (debounced) refresh when namespaces cache changes
+  (helpers/update-callstack-pane!))
 
 (defn get-namespaces-cache-debouncer []
   (if-not *namespaces-cache-debouncer*
-    (set! *namespaces-cache-debouncer* (Debouncer. report-namespaces-cache-cool-down! 1000)))
+    (set! *namespaces-cache-debouncer* (Debouncer. namespaces-cache-changed! 1000)))
   *namespaces-cache-debouncer*)
 
 (defn report-namespaces-cache-mutation! []
@@ -127,7 +133,7 @@
    "getRuntimeTag"                  get-runtime-tag
    "parseNsFromSource"              parse-ns-from-source
    "nsToRelpath"                    ns-to-relpath
-   "triggerInternalError"           trigger-internal-error!
+   "triggerInternalError"           trigger-internal-error-for-testing!
    "triggerInternalErrorInPromise"  trigger-internal-error-in-promise!
    "triggerInternalErrorAsErrorLog" trigger-internal-error-as-error-log!
    "getFunctionName"                get-function-name

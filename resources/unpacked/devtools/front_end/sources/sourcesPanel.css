@@ -102,6 +102,20 @@
     cursor: auto;
 }
 
+.available-node-targets {
+    height: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    padding-left: 20px;
+    border-top: 1px solid #eee;
+    font-style: italic;
+}
+
+.available-node-targets > span {
+    margin-left: 5px;
+}
+
 .watch-expression-delete-button {
     width: 10px;
     height: 10px;
@@ -238,14 +252,6 @@
 .scope-chain-sidebar-pane-section {
     padding: 2px 4px 2px 4px;
     flex: none;
-}
-
-.hidden-callframes-message {
-    text-align: center;
-    font-style: italic;
-    padding: 4px;
-    color: #888;
-    background-color: #FFFFC2;
 }
 
 .event-listeners-sidebar-pane .toolbar {

@@ -1,5 +1,5 @@
-Protocol.BakedSupportedCSSPropertiesChromeTag='57.0.2979.3';
-Protocol.BakedSupportedCSSPropertiesChromeRev='07f18d68d972f8e49c93c699ff61f774fc0584ff';
+Protocol.BakedSupportedCSSPropertiesChromeTag='58.0.2988.2';
+Protocol.BakedSupportedCSSPropertiesChromeRev='1d97062b110831423488e9bc5bd67a1bde1fded5';
 Protocol.BakedSupportedCSSProperties=''
 + '[{"name": "animation-delay"},\n'
 + ' {"name": "animation-direction"},\n'

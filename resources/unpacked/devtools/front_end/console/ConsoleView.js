@@ -374,8 +374,11 @@ Console.ConsoleView = class extends UI.VBox {
    * @param {!Common.Console.Message} message
    */
   _addSinkMessage(message) {
-    var level = SDK.ConsoleMessage.MessageLevel.Debug;
+    var level = SDK.ConsoleMessage.MessageLevel.Verbose;
     switch (message.level) {
+      case Common.Console.MessageLevel.Info:
+        level = SDK.ConsoleMessage.MessageLevel.Info;
+        break;
       case Common.Console.MessageLevel.Error:
         level = SDK.ConsoleMessage.MessageLevel.Error;
         break;
@@ -695,31 +698,7 @@ Console.ConsoleView = class extends UI.VBox {
   }
 
   _levelForFeedback(level) {
-    var levelString;
-    switch (level) {
-      case SDK.ConsoleMessage.MessageLevel.Log:
-        levelString = "log";
-        break;
-      case SDK.ConsoleMessage.MessageLevel.Warning:
-        levelString = "wrn";
-        break;
-      case SDK.ConsoleMessage.MessageLevel.Debug:
-        levelString = "dbg";
-        break;
-      case SDK.ConsoleMessage.MessageLevel.Error:
-        levelString = "err";
-        break;
-      case SDK.ConsoleMessage.MessageLevel.RevokedError:
-        levelString = "rer";
-        break;
-      case SDK.ConsoleMessage.MessageLevel.Info:
-        levelString = "inf";
-        break;
-      default:
-        levelString = "???";
-        break;
-    }
-    return levelString;
+    return level || "???";
   }
 
   _typeForFeedback(messageType, isDiracFlavored) {
@@ -775,7 +754,7 @@ Console.ConsoleView = class extends UI.VBox {
     }
 
     const source = SDK.ConsoleMessage.MessageSource.Other;
-    const level = SDK.ConsoleMessage.MessageLevel.Log;
+    const level = SDK.ConsoleMessage.MessageLevel.Info;
     const type = SDK.ConsoleMessage.MessageType.DiracMarkup;
     const message = new SDK.ConsoleMessage(target, source, level, markup, type);
     target.consoleModel.addMessage(message);
@@ -952,7 +931,7 @@ Console.ConsoleView = class extends UI.VBox {
     this._prompt.setText("");
     var target = executionContext.target();
     var type = SDK.ConsoleMessage.MessageType.DiracCommand;
-    var commandMessage = new SDK.ConsoleMessage(target, SDK.ConsoleMessage.MessageSource.JS, SDK.ConsoleMessage.MessageLevel.Log, text, type);
+    var commandMessage = new SDK.ConsoleMessage(target, SDK.ConsoleMessage.MessageSource.JS, SDK.ConsoleMessage.MessageLevel.Info, text, type);
     commandMessage.setExecutionContextId(executionContext.id);
     target.consoleModel.addMessage(commandMessage);
 
@@ -979,6 +958,10 @@ Console.ConsoleView = class extends UI.VBox {
     this._addConsoleMessage(message);
   }
 
+  _normalizeMessageTimestamp(message) {
+    message.timestamp = this._consoleMessages.length ? this._consoleMessages.peekLast().consoleMessage().timestamp : 0;
+  }
+
   /**
    * @param {!SDK.ConsoleMessage} message
    */
@@ -992,11 +975,11 @@ Console.ConsoleView = class extends UI.VBox {
       return SDK.ConsoleMessage.timestampComparator(viewMessage1.consoleMessage(), viewMessage2.consoleMessage());
     }
 
-    if (message.type === SDK.ConsoleMessage.MessageType.Command ||
-        message.type === SDK.ConsoleMessage.MessageType.Result) {
-      message.timestamp =
-          this._consoleMessages.length ? this._consoleMessages.peekLast().consoleMessage().timestamp : 0;
-    }
+    // this hack is needed for node.js, we would get some log messages issued by DevTools with wrong timestamps
+    // if (message.type === SDK.ConsoleMessage.MessageType.Command ||
+    //     message.type === SDK.ConsoleMessage.MessageType.Result) {
+    this._normalizeMessageTimestamp(message);
+    // }
     var viewMessage = this._createViewMessage(message);
     message[this._viewMessageSymbol] = viewMessage;
     var insertAt = this._consoleMessages.upperBound(viewMessage, compareTimestamps);
@@ -1203,15 +1186,13 @@ Console.ConsoleView = class extends UI.VBox {
         progressIndicator.done();
         return;
       }
-      var lines = [];
+      var messageContents = [];
       for (var i = 0; i < chunkSize && i + messageIndex < this.itemCount(); ++i) {
         var message = this.itemElement(messageIndex + i);
-        var messageContent = message.contentElement().deepTextContent();
-        for (var j = 0; j < message.repeatCount(); ++j)
-          lines.push(messageContent);
+        messageContents.push(message.toExportString());
       }
       messageIndex += i;
-      stream.write(lines.join('\n') + '\n', writeNextChunk.bind(this));
+      stream.write(messageContents.join('\n') + '\n', writeNextChunk.bind(this));
       progressIndicator.setWorked(messageIndex);
     }
   }
@@ -1368,7 +1349,7 @@ Console.ConsoleView = class extends UI.VBox {
     if (!result)
       return;
 
-    var level = !!exceptionDetails ? SDK.ConsoleMessage.MessageLevel.Error : SDK.ConsoleMessage.MessageLevel.Log;
+    var level = !!exceptionDetails ? SDK.ConsoleMessage.MessageLevel.Error : SDK.ConsoleMessage.MessageLevel.Info;
     var message;
     if (!exceptionDetails) {
       message = new SDK.ConsoleMessage(
@@ -1641,9 +1622,7 @@ Console.ConsoleViewFilter = class extends Common.Object {
       {name: SDK.ConsoleMessage.MessageLevel.Error, label: Common.UIString('Errors')},
       {name: SDK.ConsoleMessage.MessageLevel.Warning, label: Common.UIString('Warnings')},
       {name: SDK.ConsoleMessage.MessageLevel.Info, label: Common.UIString('Info')},
-      {name: SDK.ConsoleMessage.MessageLevel.Log, label: Common.UIString('Logs')},
-      {name: SDK.ConsoleMessage.MessageLevel.Debug, label: Common.UIString('Debug')},
-      {name: SDK.ConsoleMessage.MessageLevel.RevokedError, label: Common.UIString('Handled')}
+      {name: SDK.ConsoleMessage.MessageLevel.Verbose, label: Common.UIString('Verbose')}
     ];
     this._levelFilterUI = new UI.NamedBitSetFilterUI(levels, this._messageLevelFiltersSetting);
     this._levelFilterUI.addEventListener(UI.FilterUI.Events.FilterChanged, this._filterChanged, this);
@@ -1827,6 +1806,9 @@ Console.ConsoleDiracCommand = class extends Console.ConsoleCommand {
   contentElement() {
     if (!this._contentElement) {
       this._contentElement = createElementWithClass("div", "console-user-command");
+      var icon = UI.Icon.create('smallicon-user-command', 'command-result-icon');
+      this._contentElement.appendChild(icon);
+
       this._contentElement.message = this;
 
       this._formattedCommand = createElementWithClass("span", "console-message-text source-code cm-s-dirac");
@@ -1892,10 +1874,12 @@ Console.ConsoleCommandResult = class extends Console.ConsoleViewMessage {
    */
   contentElement() {
     var element = super.contentElement();
-    element.classList.add('console-user-command-result');
-    if (this.consoleMessage().level === SDK.ConsoleMessage.MessageLevel.Log) {
-      var icon = UI.Icon.create('smallicon-command-result', 'command-result-icon');
-      element.insertBefore(icon, element.firstChild);
+    if (!element.classList.contains('console-user-command-result')) {
+      element.classList.add('console-user-command-result');
+      if (this.consoleMessage().level === SDK.ConsoleMessage.MessageLevel.Info) {
+        var icon = UI.Icon.create('smallicon-command-result', 'command-result-icon');
+        element.insertBefore(icon, element.firstChild);
+      }
     }
     this.updateTimestamp(false);
     return element;

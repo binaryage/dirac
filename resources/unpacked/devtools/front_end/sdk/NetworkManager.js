@@ -131,6 +131,16 @@ SDK.NetworkManager.Events = {
   ResponseReceived: Symbol('ResponseReceived')
 };
 
+/** @implements {Common.Emittable} */
+SDK.NetworkManager.RequestRedirectEvent = class {
+  /**
+   * @param {!SDK.NetworkRequest} request
+   */
+  constructor(request) {
+    this.request = request;
+  }
+};
+
 SDK.NetworkManager._MIMETypes = {
   'text/html': {'document': true},
   'text/xml': {'document': true},
@@ -240,7 +250,7 @@ SDK.NetworkDispatcher = class {
     if (!this._mimeTypeIsConsistentWithType(networkRequest)) {
       var consoleModel = this._manager._target.consoleModel;
       consoleModel.addMessage(new SDK.ConsoleMessage(
-          consoleModel.target(), SDK.ConsoleMessage.MessageSource.Network, SDK.ConsoleMessage.MessageLevel.Log,
+          consoleModel.target(), SDK.ConsoleMessage.MessageSource.Network, SDK.ConsoleMessage.MessageLevel.Info,
           Common.UIString(
               'Resource interpreted as %s but transferred with MIME type %s: "%s".',
               networkRequest.resourceType().title(), networkRequest.mimeType, networkRequest.url()),
@@ -323,6 +333,7 @@ SDK.NetworkDispatcher = class {
         return;
       this.responseReceived(requestId, frameId, loaderId, time, Protocol.Page.ResourceType.Other, redirectResponse);
       networkRequest = this._appendRedirect(requestId, time, request.url);
+      this._manager.emit(new SDK.NetworkManager.RequestRedirectEvent(networkRequest));
     } else {
       networkRequest = this._createNetworkRequest(requestId, frameId, loaderId, request.url, documentURL, initiator);
     }
@@ -444,7 +455,7 @@ SDK.NetworkDispatcher = class {
         var consoleModel = this._manager._target.consoleModel;
         consoleModel.addMessage(new SDK.ConsoleMessage(
             consoleModel.target(), SDK.ConsoleMessage.MessageSource.Network, SDK.ConsoleMessage.MessageLevel.Warning,
-            Common.UIString('Request was blocked by DevTools: "%s".', networkRequest.url),
+            Common.UIString('Request was blocked by DevTools: "%s".', networkRequest.url()),
             SDK.ConsoleMessage.MessageType.Log, '', 0, 0, networkRequest.requestId()));
       }
     }

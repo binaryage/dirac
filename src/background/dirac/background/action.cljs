@@ -8,9 +8,14 @@
 (defonce state-table
   {:waiting       {}
    :connected     {:text "~" :color [0 0 255 255]}
+   :connecting    {:text "?" :color "#008888"}
    :not-available {:text "x" :color [128 128 128 255]}
    :error         {:text "!" :color "#ff0000"}
    :warning       {:text "!" :color "#ffff00"}})
+
+(defonce active-icons
+  #js {"19" "images/icon19.png"
+       "38" "images/icon38.png"})
 
 (defn color->js [color]
   (cond
@@ -32,3 +37,12 @@
           (browser-action/set-title #js {"title" title
                                          "tabId" backend-tab-id}))
         true))))
+
+(defn disable! [tab-id]
+  (browser-action/disable tab-id))
+
+(defn enable! [tab-id]
+  (browser-action/enable tab-id))
+
+(defn set-active-icons! []
+  (browser-action/set-icon #js {:path active-icons}))

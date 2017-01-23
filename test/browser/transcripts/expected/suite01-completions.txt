@@ -28,7 +28,7 @@ devtools #1      setDiracPromptNS('cljs.user')
 devtools #1      setDiracPromptMode('edit')
 automate #1      enable-console-feedback!
 automate #1      console-exec-and-match! ["(in-ns 'dirac.tests.scenarios.completions.workspace)" "setDiracPromptNS('dirac.tests.scenarios.completions.workspace')"]
-devtools #1      DC.log> (in-ns 'dirac.tests.scenarios.completions.workspace)
+devtools #1      DC.info> (in-ns 'dirac.tests.scenarios.completions.workspace)
 devtools #1      send-eval-request: (in-ns 'dirac.tests.scenarios.completions.workspace)
 devtools #1      repl eval job started
 devtools #1      setDiracPromptNS('dirac.tests.scenarios.completions.workspace')

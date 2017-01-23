@@ -44,12 +44,10 @@ devtools #2      displayWelcomeMessage
 automate #2      trigger-internal-error-as-error-log!
 devtools #2      <elided dirac version info line>
                  An error was logged into the internal DevTools console:
-                 a fake error log
-                   * 1
-                   * 2
-                   * 3
+                   | a fake error log 1 2 3
                  ---
-                 Please report the issue here: https://github.com/binaryage/dirac/issues
+                 To inspect the problem in internal DevTools => https://goo.gl/0FkZ1o
+                 Consider reporting the issue here: https://github.com/binaryage/dirac/issues
 automate #2      scrape [:find-logs "a fake error log"]
 automate #2      scrape [:find-logs-in-groups "a fake error log"]
 automate #2      close-devtools!
@@ -80,12 +78,10 @@ devtools #3      displayWelcomeMessage
 automate #3      trigger-internal-error-as-error-log!
 devtools #3      <elided dirac version info line>
                  An error was logged into the internal DevTools console:
-                 a fake error log
-                   * 1
-                   * 2
-                   * 3
+                   | a fake error log 1 2 3
                  ---
-                 Please report the issue here: https://github.com/binaryage/dirac/issues
+                 To inspect the problem in internal DevTools => https://goo.gl/0FkZ1o
+                 Consider reporting the issue here: https://github.com/binaryage/dirac/issues
 automate #3      scrape [:find-logs "a fake error log"]
 automate #3      scrape [:find-logs-in-groups "a fake error log"]
 automate #3      close-devtools!

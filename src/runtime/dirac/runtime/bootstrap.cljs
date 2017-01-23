@@ -54,4 +54,6 @@
      (assert (fn? callback) (str "The callback parameter to clojure.browser.repl/bootstrap expected to be a function."
                                  "Got " (type callback) " instead."))
      (.push *boostrap-listeners* callback))
-   (call-after-document-finished-loading boostrap-if-needed! 0)))
+   (if-not (exists? js/document)
+     (boostrap-if-needed!)                                                                                                    ; in node.js
+     (call-after-document-finished-loading boostrap-if-needed! 0))))                                                          ; in browser

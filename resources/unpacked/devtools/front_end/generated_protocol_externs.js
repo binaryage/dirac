@@ -1443,6 +1443,14 @@ Protocol.DOMStorageAgent.prototype.invoke_disable = function(obj, opt_callback) 
 
 /**
  * @param {Protocol.DOMStorage.StorageId} storageId
+ * @param {function(?Protocol.Error):void=} opt_callback
+ */
+Protocol.DOMStorageAgent.prototype.clear = function(storageId, opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+Protocol.DOMStorageAgent.prototype.invoke_clear = function(obj, opt_callback) {}
+
+/**
+ * @param {Protocol.DOMStorage.StorageId} storageId
  * @param {function(?Protocol.Error, !Array<Protocol.DOMStorage.Item>):void=} opt_callback
  */
 Protocol.DOMStorageAgent.prototype.getDOMStorageItems = function(storageId, opt_callback) {}
@@ -3553,16 +3561,16 @@ Protocol.Log.LogEntrySource = {
     Deprecation: "deprecation",
     Worker: "worker",
     Violation: "violation",
+    Intervention: "intervention",
     Other: "other"
 };
 
 /** @enum {string} */
 Protocol.Log.LogEntryLevel = {
-    Log: "log",
+    Verbose: "verbose",
+    Info: "info",
     Warning: "warning",
-    Error: "error",
-    Debug: "debug",
-    Info: "info"
+    Error: "error"
 };
 
 /** @typedef {!{source:(Protocol.Log.LogEntrySource), level:(Protocol.Log.LogEntryLevel), text:(string), timestamp:(Protocol.Runtime.Timestamp), url:(string|undefined), lineNumber:(number|undefined), stackTrace:(Protocol.Runtime.StackTrace|undefined), networkRequestId:(Protocol.Network.RequestId|undefined), workerId:(string|undefined)}} */

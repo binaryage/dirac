@@ -27,10 +27,11 @@ devtools #1      <elided dirac version info line>
                      at $cljs$core$seq_reduce$cljs$0core$0IFn$0_invoke$0arity$03$$ (chrome-extension://<extension-id>/devtools/front_end/inspector.js:***)
                      at $cljs$core$reduce$cljs$0core$0IFn$0_invoke$0arity$03$$ (chrome-extension://<extension-id>/devtools/front_end/inspector.js:***)
                      at Function.$cljs$core$into$$.$cljs$core$IFn$_invoke$arity$2$ (chrome-extension://<extension-id>/devtools/front_end/inspector.js:***)
-                     at $dirac$implant$helpers$throw_internal_error_BANG_$$ (chrome-extension://<extension-id>/devtools/front_end/inspector.js:***)
+                     at $dirac$implant$helpers$throw_internal_error_for_testing_BANG_$$ (chrome-extension://<extension-id>/devtools/front_end/inspector.js:***)
                  ---
-                 Please report the issue here: https://github.com/binaryage/dirac/issues
-automate #1      scrape [:last-log-item-content "log"]
+                 To inspect the problem in internal DevTools => https://goo.gl/0FkZ1o
+                 Consider reporting the issue here: https://github.com/binaryage/dirac/issues
+automate #1      scrape [:last-log-item-content "info"]
 ∎
 testing          async unhandled DevTools exceptions in promises should be presented in target console as Internal Dirac Error
 automate #1      trigger-internal-error-in-promise!
@@ -42,20 +43,19 @@ devtools #1      <elided dirac version info line>
                      at $cljs$core$ex_info$cljs$0core$0IFn$0_invoke$0arity$02$$ (chrome-extension://<extension-id>/devtools/front_end/inspector.js:***)
                      at chrome-extension://<extension-id>/devtools/front_end/inspector.js:***
                  ---
-                 Please report the issue here: https://github.com/binaryage/dirac/issues
-automate #1      scrape [:last-log-item-content "log"]
+                 To inspect the problem in internal DevTools => https://goo.gl/0FkZ1o
+                 Consider reporting the issue here: https://github.com/binaryage/dirac/issues
+automate #1      scrape [:last-log-item-content "info"]
 ∎
 testing          DevTools console.error logs should be presented in target console as Internal Dirac Error
 automate #1      trigger-internal-error-as-error-log!
 devtools #1      <elided dirac version info line>
                  An error was logged into the internal DevTools console:
-                 a fake error log
-                   * 1
-                   * 2
-                   * 3
+                   | a fake error log 1 2 3
                  ---
-                 Please report the issue here: https://github.com/binaryage/dirac/issues
-automate #1      scrape [:last-log-item-content "log"]
+                 To inspect the problem in internal DevTools => https://goo.gl/0FkZ1o
+                 Consider reporting the issue here: https://github.com/binaryage/dirac/issues
+automate #1      scrape [:last-log-item-content "info"]
 ∎
 automate #1      close-devtools!
 extension        handling command: close-dirac-devtools

@@ -697,7 +697,6 @@ PerfUI.FlameChart = class extends PerfUI.ChartViewport {
       context.fillStyle = this._dataProvider.textColor(entryIndex);
       context.fillText(text, barX + textPadding, barY + textBaseHeight);
     }
-
     context.restore();
 
     this._drawGroupHeaders(width, height);
@@ -731,6 +730,8 @@ PerfUI.FlameChart = class extends PerfUI.ChartViewport {
     context.save();
     context.scale(ratio, ratio);
     context.translate(0, -top);
+    var defaultFont = '11px ' + Host.fontFamily();
+    context.font = defaultFont;
 
     context.fillStyle = UI.themeSupport.patchColor('#fff', colorUsage.Background);
     forEachGroup.call(this, (offset, index, group) => {
@@ -766,7 +767,7 @@ PerfUI.FlameChart = class extends PerfUI.ChartViewport {
       while (nextGroup < groups.length && groups[nextGroup].style.nestingLevel > group.style.nestingLevel)
         nextGroup++;
       var endLevel = nextGroup < groups.length ? groups[nextGroup].startLevel : this._dataProvider.maxStackDepth();
-      this._drawCollapsedOverviewForGroup(offset + 1, group.startLevel, endLevel);
+      this._drawCollapsedOverviewForGroup(group, offset + 1, endLevel);
     });
 
     context.save();
@@ -867,37 +868,48 @@ PerfUI.FlameChart = class extends PerfUI.ChartViewport {
   }
 
   /**
+   * @param {!PerfUI.FlameChart.Group} group
    * @param {number} y
-   * @param {number} startLevel
    * @param {number} endLevel
    */
-  _drawCollapsedOverviewForGroup(y, startLevel, endLevel) {
+  _drawCollapsedOverviewForGroup(group, y, endLevel) {
     var range = new Common.SegmentedRange(mergeCallback);
     var timeWindowRight = this._timeWindowRight;
     var timeWindowLeft = this._timeWindowLeft - this._paddingLeft / this._timeToPixel;
     var context = /** @type {!CanvasRenderingContext2D} */ (this._canvas.getContext('2d'));
-    var barHeight = this._barHeight - 2;
+    var barHeight = this._barHeight - 1;
     var entryStartTimes = this._rawTimelineData.entryStartTimes;
     var entryTotalTimes = this._rawTimelineData.entryTotalTimes;
 
-    for (var level = startLevel; level < endLevel; ++level) {
+    for (var level = group.startLevel; level < endLevel; ++level) {
       var levelIndexes = this._timelineLevels[level];
       var rightIndexOnLevel =
           levelIndexes.lowerBound(timeWindowRight, (time, entryIndex) => time - entryStartTimes[entryIndex]) - 1;
       var lastDrawOffset = Infinity;
 
       for (var entryIndexOnLevel = rightIndexOnLevel; entryIndexOnLevel >= 0; --entryIndexOnLevel) {
-        var entryIndex = levelIndexes[entryIndexOnLevel];
-        var entryStartTime = entryStartTimes[entryIndex];
-        var startPosition = this._timeToPositionClipped(entryStartTime);
-        var entryEndTime = entryStartTime + entryTotalTimes[entryIndex];
-        if (isNaN(entryEndTime) || startPosition >= lastDrawOffset)
+        const entryIndex = levelIndexes[entryIndexOnLevel];
+        const entryStartTime = entryStartTimes[entryIndex];
+        const barX = this._timeToPositionClipped(entryStartTime);
+        const entryEndTime = entryStartTime + entryTotalTimes[entryIndex];
+        if (isNaN(entryEndTime) || barX >= lastDrawOffset)
           continue;
         if (entryEndTime <= timeWindowLeft)
           break;
-        lastDrawOffset = startPosition;
-        var color = this._dataProvider.entryColor(entryIndex);
-        range.append(new Common.Segment(startPosition, this._timeToPositionClipped(entryEndTime), color));
+        lastDrawOffset = barX;
+        const color = this._dataProvider.entryColor(entryIndex);
+        const endBarX = this._timeToPositionClipped(entryEndTime);
+        if (group.style.useDecoratorsForOverview && this._dataProvider.forceDecoration(entryIndex)) {
+          const unclippedBarX = this._timeToPosition(entryStartTime);
+          const barWidth = endBarX - barX;
+          context.beginPath();
+          context.fillStyle = color;
+          context.fillRect(barX, y, barWidth, barHeight);
+          this._dataProvider.decorateEntry(
+              entryIndex, context, '', barX, y, barWidth, this._barHeight, unclippedBarX, this._timeToPixel);
+          continue;
+        }
+        range.append(new Common.Segment(barX, endBarX, color));
       }
     }
 
@@ -1226,7 +1238,8 @@ PerfUI.FlameChart.Group;
  *     backgroundColor: string,
  *     nestingLevel: number,
  *     shareHeaderLine: (boolean|undefined),
- *     useFirstLineForOverview: (boolean|undefined)
+ *     useFirstLineForOverview: (boolean|undefined),
+ *     useDecoratorsForOverview: (boolean|undefined)
  * }}
  */
 PerfUI.FlameChart.GroupStyle;
@@ -1421,7 +1434,7 @@ PerfUI.FlameChart.ColorGenerator = class {
     var s = this._indexToValueInSpace(hash >> 8, this._satSpace);
     var l = this._indexToValueInSpace(hash >> 16, this._lightnessSpace);
     var a = this._indexToValueInSpace(hash >> 24, this._alphaSpace);
-    return 'hsla(' + h + ', ' + s + '%, ' + l + '%, ' + a + ')';
+    return `hsla(${h}, ${s}%, ${l}%, ${a})`;
   }
 
   /**

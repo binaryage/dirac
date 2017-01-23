@@ -228,8 +228,7 @@ Console.ConsoleViewMessage = class {
     } else if (consoleMessage.source === SDK.ConsoleMessage.MessageSource.Network) {
       if (consoleMessage.request) {
         messageElement = createElement('span');
-        if (consoleMessage.level === SDK.ConsoleMessage.MessageLevel.Error ||
-            consoleMessage.level === SDK.ConsoleMessage.MessageLevel.RevokedError) {
+        if (consoleMessage.level === SDK.ConsoleMessage.MessageLevel.Error) {
           messageElement.createTextChild(consoleMessage.request.requestMethod + ' ');
           messageElement.appendChild(Components.Linkifier.linkifyRevealable(
               consoleMessage.request, consoleMessage.request.url(), consoleMessage.request.url()));
@@ -292,13 +291,17 @@ Console.ConsoleViewMessage = class {
         anchorElement = this._linkifyLocation(consoleMessage.url, consoleMessage.line, consoleMessage.column);
       }
     } else if (consoleMessage.url) {
-      anchorElement = Components.Linkifier.linkifyURL(consoleMessage.url, undefined, 'console-message-url');
+      anchorElement = Components.Linkifier.linkifyURL(consoleMessage.url, undefined);
     }
 
     // Append a space to prevent the anchor text from being glued to the console message when the user selects and copies the console messages.
-    if (anchorElement)
-      anchorElement.appendChild(createTextNode(' '));
-    return anchorElement;
+    if (anchorElement) {
+      var anchorWrapperElement = createElementWithClass('span', 'console-message-anchor');
+      anchorWrapperElement.appendChild(anchorElement);
+      anchorWrapperElement.createTextChild(' ');
+      return anchorWrapperElement;
+    }
+    return null;
   }
 
   /**
@@ -359,7 +362,7 @@ Console.ConsoleViewMessage = class {
     var target = this._target();
     if (!target)
       return null;
-    return this._linkifier.linkifyScriptLocation(target, null, url, lineNumber, columnNumber, 'console-message-url');
+    return this._linkifier.linkifyScriptLocation(target, null, url, lineNumber, columnNumber);
   }
 
   /**
@@ -370,7 +373,7 @@ Console.ConsoleViewMessage = class {
     var target = this._target();
     if (!target)
       return null;
-    return this._linkifier.linkifyStackTraceTopFrame(target, stackTrace, 'console-message-url');
+    return this._linkifier.linkifyStackTraceTopFrame(target, stackTrace);
   }
 
   /**
@@ -384,8 +387,7 @@ Console.ConsoleViewMessage = class {
     var target = this._target();
     if (!target)
       return null;
-    return this._linkifier.linkifyScriptLocation(
-        target, scriptId, url, lineNumber, columnNumber, 'console-message-url');
+    return this._linkifier.linkifyScriptLocation(target, scriptId, url, lineNumber, columnNumber);
   }
 
   /**
@@ -423,8 +425,7 @@ Console.ConsoleViewMessage = class {
     var shouldFormatMessage =
         SDK.RemoteObject.type((/** @type {!Array.<!SDK.RemoteObject>} **/ (parameters))[0]) === 'string' &&
         (this._message.type !== SDK.ConsoleMessage.MessageType.Result ||
-         this._message.level === SDK.ConsoleMessage.MessageLevel.Error ||
-         this._message.level === SDK.ConsoleMessage.MessageLevel.RevokedError);
+         this._message.level === SDK.ConsoleMessage.MessageLevel.Error);
 
     // Multiple parameters with the first being a format string. Save unused substitutions.
     if (shouldFormatMessage) {
@@ -881,7 +882,6 @@ Console.ConsoleViewMessage = class {
     var shouldIncludeTrace =
         !!consoleMessage.stackTrace && (consoleMessage.source === SDK.ConsoleMessage.MessageSource.Network ||
                                         consoleMessage.level === SDK.ConsoleMessage.MessageLevel.Error ||
-                                        consoleMessage.level === SDK.ConsoleMessage.MessageLevel.RevokedError ||
                                         consoleMessage.type === SDK.ConsoleMessage.MessageType.Trace ||
                                         consoleMessage.level === SDK.ConsoleMessage.MessageLevel.Warning);
     if (target && shouldIncludeTrace)
@@ -922,13 +922,12 @@ Console.ConsoleViewMessage = class {
     this._element.message = this;
 
     switch (this._message.level) {
-      case SDK.ConsoleMessage.MessageLevel.Log:
-        this._element.classList.add('console-log-level');
+      case SDK.ConsoleMessage.MessageLevel.Verbose:
+        this._element.classList.add('console-verbose-level');
         this._updateMessageLevelIcon('');
         break;
-      case SDK.ConsoleMessage.MessageLevel.Debug:
-        this._element.classList.add('console-debug-level');
-        this._updateMessageLevelIcon('');
+      case SDK.ConsoleMessage.MessageLevel.Info:
+        this._element.classList.add('console-info-level');
         break;
       case SDK.ConsoleMessage.MessageLevel.Warning:
         this._element.classList.add('console-warning-level');
@@ -937,14 +936,6 @@ Console.ConsoleViewMessage = class {
       case SDK.ConsoleMessage.MessageLevel.Error:
         this._element.classList.add('console-error-level');
         this._updateMessageLevelIcon('smallicon-error');
-        break;
-      case SDK.ConsoleMessage.MessageLevel.RevokedError:
-        this._element.classList.add('console-revokedError-level');
-        this._updateMessageLevelIcon('smallicon-revoked-error');
-        break;
-      case SDK.ConsoleMessage.MessageLevel.Info:
-        this._element.classList.add('console-info-level');
-        this._updateMessageLevelIcon('smallicon-info');
         break;
     }
 
@@ -1001,8 +992,8 @@ Console.ConsoleViewMessage = class {
         case SDK.ConsoleMessage.MessageLevel.Error:
           this._repeatCountElement.type = 'error';
           break;
-        case SDK.ConsoleMessage.MessageLevel.Debug:
-          this._repeatCountElement.type = 'debug';
+        case SDK.ConsoleMessage.MessageLevel.Verbose:
+          this._repeatCountElement.type = 'verbose';
           break;
         default:
           this._repeatCountElement.type = 'info';
@@ -1015,6 +1006,22 @@ Console.ConsoleViewMessage = class {
 
   get text() {
     return this._message.messageText;
+  }
+
+  /**
+   * @return {string}
+   */
+  toExportString() {
+    var lines = [];
+    var nodes = this.contentElement().childTextNodes();
+    var messageContent = '';
+    for (var i = 0; i < nodes.length; ++i) {
+      var originalLinkText = Components.Linkifier.originalLinkText(nodes[i].parentElement);
+      messageContent += typeof originalLinkText === 'string' ? originalLinkText : nodes[i].textContent;
+    }
+    for (var i = 0; i < this.repeatCount(); ++i)
+      lines.push(messageContent);
+    return lines.join('\n');
   }
 
   /**

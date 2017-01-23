@@ -22,27 +22,27 @@
 
 ; == special REPL commands ==================================================================================================
 
-; we are forgiving when reading the sub-command argument,
+; we are forgiving when reading the `action` argument,
 ; it gets converted to keyword so all following variations are permitted:
 ;
 ;   (dirac! :help)
 ;   (dirac! 'help)
 ;   (dirac! "help")
 ;
-(defmulti dirac! (fn [command & _args] (keyword command)))
+(defmulti dirac! (fn [action & _args] (keyword action)))
 
 ; note: we want to be forgiving when user passes extra parameters we don't care about
 ; unfortunately stack traces from eval are cryptic and could confuse some people
 
 ; -- (dirac! :help) ---------------------------------------------------------------------------------------------------------
 
-(defmethod dirac! :help [_ & [command]]
+(defmethod dirac! :help [_ & [action]]
   (with-coallesced-output
-    (if (nil? command)
+    (if (nil? action)
       (println (get usage/docs nil))
-      (if-let [doc (get usage/docs (keyword command))]
+      (if-let [doc (get usage/docs (keyword action))]
         (println doc)
-        (error-println (messages/make-no-such-command-msg command)))))
+        (error-println (messages/make-no-such-action-msg action)))))
   ::no-result)
 
 ; -- (dirac! :version) ------------------------------------------------------------------------------------------------------
@@ -218,9 +218,9 @@
 
 ; -- default handler --------------------------------------------------------------------------------------------------------
 
-(defmethod dirac! :default [command & _]
+(defmethod dirac! :default [action & _]
   (with-coallesced-output
-    (if (some? command)
-      (error-println (messages/make-default-error-msg command))
+    (if (some? action)
+      (error-println (messages/make-default-error-msg action))
       (dirac! :help)))
   ::no-result)

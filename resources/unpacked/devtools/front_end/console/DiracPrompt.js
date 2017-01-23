@@ -80,7 +80,7 @@ Console.DiracPromptWithHistory = class extends UI.TextPrompt {
     const content = this._codeMirror.getValue();
     const cursor = this._codeMirror.getCursor();
     const endCursor = this._codeMirror.posFromIndex(content.length);
-    return (cursor.line == endCursor.line && cursor.ch == endCursor.ch);
+    return (cursor.line === endCursor.line && cursor.ch === endCursor.ch);
   }
 
   /**
@@ -88,7 +88,7 @@ Console.DiracPromptWithHistory = class extends UI.TextPrompt {
    */
   isCaretOnFirstLine() {
     const cursor = this._codeMirror.getCursor();
-    return (cursor.line == this._codeMirror.firstLine());
+    return (cursor.line === this._codeMirror.firstLine());
   }
 
   /**
@@ -96,7 +96,7 @@ Console.DiracPromptWithHistory = class extends UI.TextPrompt {
    */
   isCaretOnLastLine() {
     const cursor = this._codeMirror.getCursor();
-    return (cursor.line == this._codeMirror.lastLine());
+    return (cursor.line === this._codeMirror.lastLine());
   }
 
 
@@ -263,7 +263,7 @@ Console.DiracPromptWithHistory = class extends UI.TextPrompt {
       }
       shouldExit = true;
     } else if (!force) {
-      if (token.end != cursor.ch) {
+      if (token.end !== cursor.ch) {
         if (dirac._DEBUG_COMPLETIONS) {
           console.log("no autocomplete because cursor is not at the end of detected token");
         }
@@ -302,7 +302,7 @@ Console.DiracPromptWithHistory = class extends UI.TextPrompt {
     if (dirac._DEBUG_COMPLETIONS) {
       console.log("_loadJavascriptCompletions", input, force);
     }
-    if (requestId != this._lastAutocompleteRequest) {
+    if (requestId !== this._lastAutocompleteRequest) {
       if (dirac._DEBUG_COMPLETIONS) {
         console.log("_loadJavascriptCompletions cancelled", requestId, this._lastAutocompleteRequest);
       }
@@ -341,7 +341,7 @@ Console.DiracPromptWithHistory = class extends UI.TextPrompt {
     if (dirac._DEBUG_COMPLETIONS) {
       console.log("_completionsForJavascriptReady", prefix, reverse, force, expression, completions);
     }
-    if (requestId != this._lastAutocompleteRequest) {
+    if (requestId !== this._lastAutocompleteRequest) {
       if (dirac._DEBUG_COMPLETIONS) {
         console.log("_completionsForJavascriptReady cancelled", requestId, this._lastAutocompleteRequest);
       }
@@ -349,7 +349,7 @@ Console.DiracPromptWithHistory = class extends UI.TextPrompt {
     }
 
     // Filter out dupes.
-    var store = new Set();
+    const store = new Set();
     completions = completions.filter(item => !store.has(item.title) && !!store.add(item.title));
 
     if (!completions.length) {
@@ -387,7 +387,7 @@ Console.DiracPromptWithHistory = class extends UI.TextPrompt {
     if (dirac._DEBUG_COMPLETIONS) {
       console.log("_loadClojureScriptCompletions", input, force);
     }
-    if (requestId != this._lastAutocompleteRequest) {
+    if (requestId !== this._lastAutocompleteRequest) {
       if (dirac._DEBUG_COMPLETIONS) {
         console.log("_loadClojureScriptCompletions cancelled", requestId, this._lastAutocompleteRequest);
       }
@@ -677,7 +677,7 @@ Console.DiracPromptWithHistory = class extends UI.TextPrompt {
       console.log("_completionsForClojureScriptReady", prefix, reverse, force, completions);
     }
 
-    if (requestId != this._lastAutocompleteRequest) {
+    if (requestId !== this._lastAutocompleteRequest) {
       if (dirac._DEBUG_COMPLETIONS) {
         console.log("_loadClojureScriptCompletions cancelled", requestId, this._lastAutocompleteRequest);
       }

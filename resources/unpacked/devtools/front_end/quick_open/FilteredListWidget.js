@@ -10,10 +10,11 @@
 QuickOpen.FilteredListWidget = class extends UI.VBox {
   /**
    * @param {!QuickOpen.FilteredListWidget.Delegate} delegate
+   * @param {!Array<string>=} promptHistory
    */
-  constructor(delegate) {
+  constructor(delegate, promptHistory) {
     super(true);
-
+    this._promptHistory = promptHistory || [];
     this._renderAsTwoRows = delegate.renderAsTwoRows();
 
     this.contentElement.classList.add('filtered-list-widget');
@@ -35,10 +36,9 @@ QuickOpen.FilteredListWidget = class extends UI.VBox {
     this._progressBarElement = this._progressElement.createChild('div', 'filtered-list-widget-progress-bar');
 
     /** @type {!UI.ListControl<number>} */
-    this._list = new UI.ListControl(this, UI.ListMode.ViewportFixedItemsMeasured);
+    this._list = new UI.ListControl(this, UI.ListMode.EqualHeightItems);
     this._itemElementsContainer = this._list.element;
     this._itemElementsContainer.classList.add('container');
-    this._itemElementsContainer.addEventListener('click', this._onClick.bind(this), false);
     this._bottomElementsContainer.appendChild(this._itemElementsContainer);
 
     if (delegate.renderMonospace()) {
@@ -136,7 +136,7 @@ QuickOpen.FilteredListWidget = class extends UI.VBox {
    * @override
    */
   wasShown() {
-    this._list.fixedHeightChanged();
+    this._list.invalidateItemHeight();
   }
 
   /**
@@ -160,7 +160,7 @@ QuickOpen.FilteredListWidget = class extends UI.VBox {
     // Detach dialog before allowing delegate to override focus.
     if (this._dialog)
       this._dialog.detach();
-    this._delegate.selectItemWithQuery(selectedIndexInDelegate, this._value());
+    this._selectItemWithQuery(selectedIndexInDelegate, this._value());
   }
 
   _itemsLoaded() {
@@ -186,7 +186,13 @@ QuickOpen.FilteredListWidget = class extends UI.VBox {
     var subtitleElement = itemElement.createChild('div', 'filtered-list-widget-subtitle');
     subtitleElement.textContent = '\u200B';
     this._delegate.renderItem(item, this._value(), titleElement, subtitleElement);
-
+    itemElement.addEventListener('click', event => {
+      event.consume(true);
+      // Detach dialog before allowing delegate to override focus.
+      if (this._dialog)
+        this._dialog.detach();
+      this._selectItemWithQuery(item, this._value());
+    }, false);
     return itemElement;
   }
 
@@ -196,6 +202,7 @@ QuickOpen.FilteredListWidget = class extends UI.VBox {
    * @return {number}
    */
   heightForItem(item) {
+    // Let the list measure items for us.
     return 0;
   }
 
@@ -234,7 +241,15 @@ QuickOpen.FilteredListWidget = class extends UI.VBox {
 
   _tabKeyPressed() {
     var userEnteredText = this._prompt.text();
-    var completion = this._delegate.autocomplete(userEnteredText);
+    var completion;
+    for (var i = this._promptHistory.length - 1; i >= 0; i--) {
+      if (this._promptHistory[i] !== userEnteredText && this._promptHistory[i].startsWith(userEnteredText)) {
+        completion = this._promptHistory[i];
+        break;
+      }
+    }
+    if (!completion)
+      return;
     this._prompt.setText(completion);
     this._prompt.setDOMSelection(userEnteredText.length, completion.length);
     this._scheduleFilter();
@@ -256,6 +271,7 @@ QuickOpen.FilteredListWidget = class extends UI.VBox {
 
     this._progressBarElement.style.transform = 'scaleX(0)';
     this._progressBarElement.classList.remove('filtered-widget-progress-fade');
+    this._progressBarElement.classList.remove('hidden');
 
     var query = this._delegate.rewriteQuery(this._value());
     this._query = query;
@@ -269,6 +285,7 @@ QuickOpen.FilteredListWidget = class extends UI.VBox {
     var bestItemsToCollect = 100;
     var minBestScore = 0;
     var overflowItems = [];
+    var scoreStartTime = window.performance.now();
 
     var maxWorkItems = Number.constrain(10, 500, (this._delegate.itemCount() / 10) | 0);
 
@@ -323,11 +340,16 @@ QuickOpen.FilteredListWidget = class extends UI.VBox {
       // Process everything in chunks.
       if (i < this._delegate.itemCount()) {
         this._scoringTimer = setTimeout(scoreItems.bind(this, i), 0);
-        this._progressBarElement.style.transform = 'scaleX(' + i / this._delegate.itemCount() + ')';
+        if (window.performance.now() - scoreStartTime > 50)
+          this._progressBarElement.style.transform = 'scaleX(' + i / this._delegate.itemCount() + ')';
         return;
       }
-      this._progressBarElement.style.transform = 'scaleX(1)';
-      this._progressBarElement.classList.add('filtered-widget-progress-fade');
+      if (window.performance.now() - scoreStartTime > 100) {
+        this._progressBarElement.style.transform = 'scaleX(1)';
+        this._progressBarElement.classList.add('filtered-widget-progress-fade');
+      } else {
+        this._progressBarElement.classList.add('hidden');
+      }
       this._refreshListWithCurrentResult();
     }
   }
@@ -343,7 +365,7 @@ QuickOpen.FilteredListWidget = class extends UI.VBox {
     this._updateNotFoundMessage(!!filteredItems.length);
     this._list.replaceAllItems(filteredItems);
     if (filteredItems.length)
-      this._list.selectItemAtIndex(0, true);
+      this._list.selectItem(filteredItems[0]);
 
     var beforeDialogHeight = this._dialog.element.style.height;
     this._dialog.contentResized();
@@ -385,20 +407,29 @@ QuickOpen.FilteredListWidget = class extends UI.VBox {
    * @param {!Event} event
    */
   _onKeyDown(event) {
-    if (this._list.onKeyDown(event)) {
-      event.consume(true);
-      return;
-    }
-
-    switch (event.keyCode) {
-      case UI.KeyboardShortcut.Keys.Enter.code:
+    var handled = false;
+    switch (event.key) {
+      case 'Enter':
         this._onEnter(event);
-        break;
-      case UI.KeyboardShortcut.Keys.Tab.code:
+        return;
+      case 'Tab':
         this._tabKeyPressed();
+        return;
+      case 'ArrowUp':
+        handled = this._list.selectPreviousItem(true, false);
         break;
-      default:
+      case 'ArrowDown':
+        handled = this._list.selectNextItem(true, false);
+        break;
+      case 'PageUp':
+        handled = this._list.selectItemPreviousPage(false);
+        break;
+      case 'PageDown':
+        handled = this._list.selectItemNextPage(false);
+        break;
     }
+    if (handled)
+      event.consume(true);
   }
 
   _scheduleFilter() {
@@ -408,17 +439,14 @@ QuickOpen.FilteredListWidget = class extends UI.VBox {
   }
 
   /**
-   * @param {!Event} event
+   * @param {?number} itemIndex
+   * @param {string} promptValue
    */
-  _onClick(event) {
-    if (!this._list.onClick(event))
-      return;
-
-    event.consume(true);
-    // Detach dialog before allowing delegate to override focus.
-    if (this._dialog)
-      this._dialog.detach();
-    this._delegate.selectItemWithQuery(this._list.selectedItem(), this._value());
+  _selectItemWithQuery(itemIndex, promptValue) {
+    this._promptHistory.push(promptValue);
+    if (this._promptHistory.length > 100)
+      this._promptHistory.shift();
+    this._delegate.selectItem(itemIndex, promptValue);
   }
 };
 
@@ -427,13 +455,6 @@ QuickOpen.FilteredListWidget = class extends UI.VBox {
  * @unrestricted
  */
 QuickOpen.FilteredListWidget.Delegate = class {
-  /**
-   * @param {!Array<string>} promptHistory
-   */
-  constructor(promptHistory) {
-    this._promptHistory = promptHistory;
-  }
-
   /**
    * @param {function():void} refreshCallback
    */
@@ -500,17 +521,6 @@ QuickOpen.FilteredListWidget.Delegate = class {
    * @param {?number} itemIndex
    * @param {string} promptValue
    */
-  selectItemWithQuery(itemIndex, promptValue) {
-    this._promptHistory.push(promptValue);
-    if (this._promptHistory.length > 100)
-      this._promptHistory.shift();
-    this.selectItem(itemIndex, promptValue);
-  }
-
-  /**
-   * @param {?number} itemIndex
-   * @param {string} promptValue
-   */
   selectItem(itemIndex, promptValue) {
   }
 
@@ -523,18 +533,6 @@ QuickOpen.FilteredListWidget.Delegate = class {
    * @return {string}
    */
   rewriteQuery(query) {
-    return query;
-  }
-
-  /**
-   * @param {string} query
-   * @return {string}
-   */
-  autocomplete(query) {
-    for (var i = this._promptHistory.length - 1; i >= 0; i--) {
-      if (this._promptHistory[i] !== query && this._promptHistory[i].startsWith(query))
-        return this._promptHistory[i];
-    }
     return query;
   }
 

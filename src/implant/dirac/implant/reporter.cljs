@@ -10,27 +10,30 @@
 
 (def issues-url "https://github.com/binaryage/dirac/issues")
 
-(defn report-internal-error! [kind body]
+(defn format-error-header [title body]
+  (let [title-line (or title (string/trim (first (cuerdas/lines body))))]
+    (if (empty? title-line) "(no details)" title-line)))
+
+(defn report-internal-error! [kind body & [title]]
   {:pre [(string? kind)
          (string? body)]}
-  (let [trimmed-body (string/trim body)
-        first-body-line (first (cuerdas/lines trimmed-body))
-        header #js ["%cInternal Dirac Error%c%s"
+  (let [header #js ["%cInternal Dirac Error%c%s"
                     "background-color:red;color:white;font-weight:bold;padding:0px 3px;border-radius:2px;"
                     "color:red"
-                    (str " " (if (empty? first-body-line) "(no details)" first-body-line))]
-        details (str (info/get-info-line) "\n\n"
+                    (str " " (format-error-header title body))]
+        details (str (info/get-info-line) "\n"
+                     "\n"
                      kind ":\n"
-                     (if (empty? trimmed-body) "(no details)" trimmed-body)
-                     "\n\n"
+                     body "\n"
                      "---\n"
-                     "Please report the issue here: " issues-url)]
+                     "To inspect the problem in internal DevTools => https://goo.gl/0FkZ1o\n"
+                     "Consider reporting the issue here: " issues-url)]
     (feedback/post! details)
     (let [dirac-api (gget "dirac")]
       (assert dirac-api)
-      (ocall dirac-api "addConsoleMessageToMainTarget" "startGroupCollapsed" "log" nil header)
-      (ocall dirac-api "addConsoleMessageToMainTarget" "log" "log" details)
-      (ocall dirac-api "addConsoleMessageToMainTarget" "endGroup" "log"))))
+      (ocall dirac-api "addConsoleMessageToMainTarget" "startGroupCollapsed" "info" nil header)
+      (ocall dirac-api "addConsoleMessageToMainTarget" "log" "info" details)
+      (ocall dirac-api "addConsoleMessageToMainTarget" "endGroup" "info"))))
 
 ; -- handling global exceptions ---------------------------------------------------------------------------------------------
 
@@ -57,22 +60,21 @@
 ; -- handling console.error -------------------------------------------------------------------------------------------------
 
 (defonce ^:dynamic *original-console-error-fn* nil)
+(def console-error-body-prefix "  | ")
+
+(defn format-console-error-body [args]
+  (let [text (string/join " " args)
+        lines (cuerdas/lines text)
+        indented-lines (map (partial str console-error-body-prefix) lines)]
+    (cuerdas/unlines indented-lines)))
 
 (defn console-error-fn [& args]
   (assert *original-console-error-fn*)
   (let [result (.apply *original-console-error-fn* js/console (into-array args))
         kind "An error was logged into the internal DevTools console"
-        first-arg (first args)
-        first-item (if (and (string? first-arg)
-                            (not (empty? first-arg)))
-                     first-arg)
-        rest-items (if (some? first-item)
-                     (rest args)
-                     args)
-        decorated-rest-items (map #(str "  * " %) rest-items)
-        all-items (remove empty? (concat [first-item] decorated-rest-items))
-        body (cuerdas/unlines all-items)]
-    (report-internal-error! kind body)
+        body (format-console-error-body args)
+        title (first (cuerdas/lines (first args)))]
+    (report-internal-error! kind body title)
     result))
 
 (defn register-console-error-handler! []

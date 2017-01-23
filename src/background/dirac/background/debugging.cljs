@@ -21,6 +21,9 @@
 (defn make-multiple-contexts-matched-msg [context-url matching-contexts]
   (str "unexpected, multiple contexts matched context-url=" context-url "\nmatching-contexts=" matching-contexts))
 
+(defn make-multiple-node-contexts-matched-msg [matching-contexts]
+  (str "unexpected, multiple node contexts matched\nmatching-contexts=" matching-contexts))
+
 (defn make-failure-to-extract-ws-msg [devtools-frontend-url]
   (str "unexpected failure to extract ws from devtools-frontend-url=" devtools-frontend-url))
 
@@ -32,7 +35,7 @@
   (instance? ResolutionFailure v))
 
 (defn get-resolution-failure-reason [failure]
-  (oget failure "reason"))
+  (.-reason failure))
 
 (defn make-failure [reason]
   (ResolutionFailure. reason))
@@ -54,19 +57,30 @@
           (empty? (:body response)) (make-failure (make-empty-body-response-msg api-endpoint))
           :else (:body response))))))
 
+(defn node-context? [context]
+  (= (:type context) "node"))
+
+(defn select-node-context [context-list]
+  (let [node-contexts (filter node-context? context-list)]
+    (case (count node-contexts)
+      0 nil
+      1 (first node-contexts)
+      (make-failure (make-multiple-node-contexts-matched-msg node-contexts)))))
+
 (defn select-matching-context-by-url [context-list context-url]
   (let [matching-contexts (filter #(= (:url %) context-url) context-list)]
     (case (count matching-contexts)
-      0 (make-failure (make-no-matching-context-found-msg context-url context-list))
+      0 (or (select-node-context context-list)
+            (make-failure (make-no-matching-context-found-msg context-url context-list)))
       1 (first matching-contexts)
       (make-failure (make-multiple-contexts-matched-msg context-url matching-contexts)))))
 
 (defn extract-backend-url [devtools-frontend-url]
-  (if-let [matches (re-matches #"/devtools/inspector.html\?ws=(.*)" devtools-frontend-url)]
+  (if-let [matches (re-find #"[?&]ws=([^&]*)" devtools-frontend-url)]
     (second matches)
     (make-failure (make-failure-to-extract-ws-msg devtools-frontend-url))))
 
-(defn try-resolve-backend-url [debugger-url context-url]
+(defn try-resolve-backend-info [debugger-url context-url]
   (go
     (let [context-list (<! (fetch-context-list debugger-url))]
       (if (resolution-failure? context-list)
@@ -75,16 +89,17 @@
           (if (resolution-failure? context)
             context
             (if-let [devtools-frontend-url (:devtoolsFrontendUrl context)]
-              (extract-backend-url devtools-frontend-url)
+              {:url  (extract-backend-url devtools-frontend-url)
+               :type (if (node-context? context) :node :browser)}
               :not-attachable)))))))
 
 ; -- main API ---------------------------------------------------------------------------------------------------------------
 
-(defn resolve-backend-url [debugger-url context-url]
+(defn resolve-backend-info [debugger-url context-url]
   (go
     (log (str "resolving backend-url for debugger-url=" debugger-url " context-url=" context-url))
     (loop [attempt 0]
-      (let [backend-url-or-failure (<! (try-resolve-backend-url debugger-url context-url))]
+      (let [backend-url-or-failure (<! (try-resolve-backend-info debugger-url context-url))]
         (if (or (not (resolution-failure? backend-url-or-failure))
                 (>= attempt (get-backend-url-resolution-trials)))
           backend-url-or-failure

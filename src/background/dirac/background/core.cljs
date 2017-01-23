@@ -8,14 +8,11 @@
             [dirac.background.chrome :as chrome]
             [dirac.background.state :as state]
             [dirac.background.thief :as thief]
-            [dirac.options.model :as options]))
+            [dirac.options.model :as options]
+            [dirac.background.action :as action]))
 
-; -- main entry point -------------------------------------------------------------------------------------------------------
-
-(defn init! []
-  (log "init")
+(defn extract-apis! []
   (go
-    (<! (options/init!))
     (let [extract-api? (options/get-option :use-backend-supported-api)
           extract-css? (options/get-option :use-backend-supported-css)]
       (if (or extract-api? extract-css?)
@@ -23,5 +20,14 @@
           (if (and extract-api? (some? backend-api))
             (state/set-backend-api! backend-api))
           (if (and extract-css? (some? backend-css))
-            (state/set-backend-css! backend-css)))))
+            (state/set-backend-css! backend-css)))))))
+
+; -- main entry point -------------------------------------------------------------------------------------------------------
+
+(defn init! []
+  (log "init")
+  (go
+    (<! (options/init!))
+    (<! (extract-apis!))
+    (<! (action/set-active-icons!))                                                                                           ; by default we start with grayed-out icons, see manifest.json
     (chrome/start-chrome-event-loop!)))

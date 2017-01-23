@@ -30,11 +30,12 @@
         (dedupe))))
 
 (defn parse-ns-from-source [source]
-  (when-let [ns-form (parse-ns-form source)]
-    (let [ast (analyze-ns ns-form {})]
-      #js {"name"                    (str (:name ast))
-           "namespaceAliases"        (clj->js (get-aliases (:requires ast)))
-           "macroNamespaceAliases"   (clj->js (get-aliases (:require-macros ast)))
-           "namespaceRefers"         (clj->js (get-uses (:uses ast)))
-           "macroRefers"             (clj->js (get-uses (:use-macros ast)))
-           "detectedMacroNamespaces" (clj->js (collect-macro-namespaces ast))})))
+  (if (re-find #"\(ns\s" source)
+    (if-let [ns-form (parse-ns-form source)]
+      (let [ast (analyze-ns ns-form {})]
+        #js {"name"                    (str (:name ast))
+             "namespaceAliases"        (clj->js (get-aliases (:requires ast)))
+             "macroNamespaceAliases"   (clj->js (get-aliases (:require-macros ast)))
+             "namespaceRefers"         (clj->js (get-uses (:uses ast)))
+             "macroRefers"             (clj->js (get-uses (:use-macros ast)))
+             "detectedMacroNamespaces" (clj->js (collect-macro-namespaces ast))}))))

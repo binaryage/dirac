@@ -111,7 +111,6 @@ Main.Main = class {
     Runtime.experiments.register('inputEventsOnTimelineOverview', 'Input events on Timeline overview', true);
     Runtime.experiments.register('liveSASS', 'Live SASS');
     Runtime.experiments.register('networkGroupingRequests', 'Network request groups support', true);
-    Runtime.experiments.register('nodeDebugging', 'Node debugging', true);
     Runtime.experiments.register('persistence2', 'Persistence 2.0');
     Runtime.experiments.register('persistenceValidation', 'Validate persistence bindings');
     Runtime.experiments.register('requestBlocking', 'Request blocking', true);
@@ -605,7 +604,6 @@ Main.Main.WarningErrorCounter = class {
     var shadowRoot = UI.createShadowRootWithCoreStyles(this._counter, 'main/errorWarningCounter.css');
 
     this._errors = this._createItem(shadowRoot, 'smallicon-error');
-    this._revokedErrors = this._createItem(shadowRoot, 'smallicon-revoked-error');
     this._warnings = this._createItem(shadowRoot, 'smallicon-warning');
     this._titles = [];
 
@@ -645,25 +643,18 @@ Main.Main.WarningErrorCounter = class {
 
   _update() {
     var errors = 0;
-    var revokedErrors = 0;
     var warnings = 0;
     var targets = SDK.targetManager.targets();
     for (var i = 0; i < targets.length; ++i) {
       errors += targets[i].consoleModel.errors();
-      revokedErrors += targets[i].consoleModel.revokedErrors();
       warnings += targets[i].consoleModel.warnings();
     }
 
     this._titles = [];
-    this._toolbarItem.setVisible(!!(errors || revokedErrors || warnings));
+    this._toolbarItem.setVisible(!!(errors || warnings));
     this._updateItem(this._errors, errors, false, Common.UIString(errors === 1 ? '%d error' : '%d errors', errors));
     this._updateItem(
-        this._revokedErrors, revokedErrors, !errors,
-        Common.UIString(
-            revokedErrors === 1 ? '%d handled promise rejection' : '%d handled promise rejections', revokedErrors));
-    this._updateItem(
-        this._warnings, warnings, !errors && !revokedErrors,
-        Common.UIString(warnings === 1 ? '%d warning' : '%d warnings', warnings));
+        this._warnings, warnings, !errors, Common.UIString(warnings === 1 ? '%d warning' : '%d warnings', warnings));
     this._counter.title = this._titles.join(', ');
     UI.inspectorView.toolbarItemResized();
   }
@@ -716,16 +707,21 @@ Main.Main.MainMenuItem = class {
       var undock = new UI.ToolbarToggle(Common.UIString('Undock into separate window'), 'largeicon-undock');
       var bottom = new UI.ToolbarToggle(Common.UIString('Dock to bottom'), 'largeicon-dock-to-bottom');
       var right = new UI.ToolbarToggle(Common.UIString('Dock to right'), 'largeicon-dock-to-right');
+      var left = new UI.ToolbarToggle(Common.UIString('Dock to left'), 'largeicon-dock-to-left');
       undock.addEventListener(
           UI.ToolbarButton.Events.MouseUp, setDockSide.bind(null, Components.DockController.State.Undocked));
       bottom.addEventListener(
           UI.ToolbarButton.Events.MouseUp, setDockSide.bind(null, Components.DockController.State.DockedToBottom));
       right.addEventListener(
           UI.ToolbarButton.Events.MouseUp, setDockSide.bind(null, Components.DockController.State.DockedToRight));
+      left.addEventListener(
+          UI.ToolbarButton.Events.MouseUp, setDockSide.bind(null, Components.DockController.State.DockedToLeft));
       undock.setToggled(Components.dockController.dockSide() === Components.DockController.State.Undocked);
       bottom.setToggled(Components.dockController.dockSide() === Components.DockController.State.DockedToBottom);
       right.setToggled(Components.dockController.dockSide() === Components.DockController.State.DockedToRight);
+      left.setToggled(Components.dockController.dockSide() === Components.DockController.State.DockedToLeft);
       dockItemToolbar.appendToolbarItem(undock);
+      dockItemToolbar.appendToolbarItem(left);
       dockItemToolbar.appendToolbarItem(bottom);
       dockItemToolbar.appendToolbarItem(right);
       contextMenu.appendCustomItem(dockItemElement);

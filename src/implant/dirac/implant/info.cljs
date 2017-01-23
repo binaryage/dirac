@@ -1,21 +1,13 @@
 (ns dirac.implant.info
-  (:require-macros [dirac.runtime.core :refer [get-current-browser-name get-current-platform-name]])
   (:require [oops.core :refer [oget oset! ocall oapply gget]]
             [chromex.logging :refer-macros [log warn error group group-end]]
             [goog.labs.userAgent.browser :as ua-browser]
             [goog.labs.userAgent.platform :as ua-platform]
             [dirac.implant.version :refer [get-version]]
+            [dirac.runtime.util :refer [get-browser-version-info get-browser-platform-info]]                                  ; TODO: we should not depend on runtime here
             [clojure.string :as string]))
 
 ; -- helpers ----------------------------------------------------------------------------------------------------------------
-
-(defn part-str [val placeholder]
-  (if (empty? val)
-    placeholder
-    val))
-
-(defn combo-str [name name-placeholder version version-placeholder]
-  (str (part-str name name-placeholder) "/" (part-str version version-placeholder)))
 
 (defn make-chrome-info [tag rev]
   (str tag "@" (.substring rev 0 7)))
@@ -24,16 +16,6 @@
 
 (defn get-version-info []
   (str "Dirac v" (get-version)))
-
-(defn get-browser-info []
-  (let [browser-name (get-current-browser-name)
-        browser-version (ua-browser/getVersion)]
-    (combo-str browser-name "?" browser-version "?")))
-
-(defn get-platform-info []
-  (let [platform-name (get-current-platform-name)
-        platform-version (ua-platform/getVersion)]
-    (combo-str platform-name "?" platform-version "?")))
 
 ; -- backend API ------------------------------------------------------------------------------------------------------------
 
@@ -88,5 +70,9 @@
 ; -- public -----------------------------------------------------------------------------------------------------------------
 
 (defn get-info-line []
-  (let [parts [(get-version-info) (get-browser-info) (get-platform-info) (get-backend-api-info) (get-backend-css-info)]]
+  (let [parts [(get-version-info)
+               (get-browser-version-info)
+               (get-browser-platform-info)
+               (get-backend-api-info)
+               (get-backend-css-info)]]
     (string/join ", " parts)))

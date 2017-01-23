@@ -45,7 +45,6 @@ SDK.ConsoleModel = class extends SDK.SDKModel {
     this._messageByExceptionId = new Map();
     this._warnings = 0;
     this._errors = 0;
-    this._revokedErrors = 0;
     this._logAgent = logAgent;
     if (this._logAgent) {
       target.registerLogDispatcher(new SDK.LogDispatcher(this));
@@ -63,7 +62,7 @@ SDK.ConsoleModel = class extends SDK.SDKModel {
   /**
    * @param {!SDK.ExecutionContext} executionContext
    * @param {string} text
-   * @param {boolean=} useCommandLineAPI
+   * @param {boolean} useCommandLineAPI
    */
   static evaluateCommandInConsole(executionContext, text, useCommandLineAPI) {
     var target = executionContext.target();
@@ -116,7 +115,7 @@ SDK.ConsoleModel = class extends SDK.SDKModel {
     if (looksLikeAnObjectLiteral(text))
       text = '(' + text + ')';
 
-    executionContext.evaluate(text, 'console', !!useCommandLineAPI, false, false, true, true, printResult);
+    executionContext.evaluate(text, 'console', useCommandLineAPI, false, false, true, true, printResult);
     Host.userMetrics.actionTaken(Host.UserMetrics.Action.ConsoleEvaluated);
   }
 
@@ -134,17 +133,6 @@ SDK.ConsoleModel = class extends SDK.SDKModel {
     if (msg.source === SDK.ConsoleMessage.MessageSource.ConsoleAPI && msg.type === SDK.ConsoleMessage.MessageType.Clear)
       this.clear();
 
-    if (msg.level === SDK.ConsoleMessage.MessageLevel.RevokedError && msg._revokedExceptionId) {
-      var exceptionMessage = this._messageByExceptionId.get(msg._revokedExceptionId);
-      if (!exceptionMessage)
-        return;
-      this._errors--;
-      this._revokedErrors++;
-      exceptionMessage.level = SDK.ConsoleMessage.MessageLevel.RevokedError;
-      this.dispatchEventToListeners(SDK.ConsoleModel.Events.MessageUpdated, exceptionMessage);
-      return;
-    }
-
     if (msg.parameters) {
       var firstParam = msg.parameters[0];
       if (firstParam && firstParam.value == "~~$DIRAC-MSG$~~") {
@@ -161,6 +149,18 @@ SDK.ConsoleModel = class extends SDK.SDKModel {
   }
 
   /**
+   * @param {number} exceptionId
+   */
+  revokeException(exceptionId) {
+    var exceptionMessage = this._messageByExceptionId.get(exceptionId);
+    if (!exceptionMessage)
+      return;
+    this._errors--;
+    exceptionMessage.level = SDK.ConsoleMessage.MessageLevel.Info;
+    this.dispatchEventToListeners(SDK.ConsoleModel.Events.MessageUpdated, exceptionMessage);
+  }
+
+  /**
    * @param {!SDK.ConsoleMessage} msg
    */
   _incrementErrorWarningCount(msg) {
@@ -172,9 +172,6 @@ SDK.ConsoleModel = class extends SDK.SDKModel {
         break;
       case SDK.ConsoleMessage.MessageLevel.Error:
         this._errors++;
-        break;
-      case SDK.ConsoleMessage.MessageLevel.RevokedError:
-        this._revokedErrors++;
         break;
     }
   }
@@ -217,7 +214,6 @@ SDK.ConsoleModel = class extends SDK.SDKModel {
     this._messages = [];
     this._messageByExceptionId.clear();
     this._errors = 0;
-    this._revokedErrors = 0;
     this._warnings = 0;
     this.dispatchEventToListeners(SDK.ConsoleModel.Events.ConsoleCleared);
   }
@@ -227,13 +223,6 @@ SDK.ConsoleModel = class extends SDK.SDKModel {
    */
   errors() {
     return this._errors;
-  }
-
-  /**
-   * @return {number}
-   */
-  revokedErrors() {
-    return this._revokedErrors;
   }
 
   /**
@@ -397,13 +386,6 @@ SDK.ConsoleMessage = class {
   }
 
   /**
-   * @param {number} revokedExceptionId
-   */
-  setRevokedExceptionId(revokedExceptionId) {
-    this._revokedExceptionId = revokedExceptionId;
-  }
-
-  /**
    * @return {?SDK.ConsoleMessage}
    */
   originatingMessage() {
@@ -444,8 +426,6 @@ SDK.ConsoleMessage = class {
       return false;
 
     if (this._exceptionId || msg._exceptionId)
-      return false;
-    if (this._revokedExceptionId || msg._revokedExceptionId)
       return false;
 
     if (!this._isEqualStackTraces(this.stackTrace, msg.stackTrace))
@@ -507,10 +487,11 @@ SDK.ConsoleMessage.MessageSource = {
   Rendering: 'rendering',
   CSS: 'css',
   Security: 'security',
-  Violation: 'violation',
-  Other: 'other',
   Deprecation: 'deprecation',
-  Worker: 'worker'
+  Worker: 'worker',
+  Violation: 'violation',
+  Intervention: 'intervention',
+  Other: 'other'
 };
 
 /**
@@ -543,12 +524,10 @@ SDK.ConsoleMessage.MessageType = {
  * @enum {string}
  */
 SDK.ConsoleMessage.MessageLevel = {
-  Log: 'log',
+  Verbose: 'verbose',
   Info: 'info',
   Warning: 'warning',
-  Error: 'error',
-  Debug: 'debug',
-  RevokedError: 'revokedError'  // This is frontend-only level, used to put exceptions to console.
+  Error: 'error'
 };
 
 

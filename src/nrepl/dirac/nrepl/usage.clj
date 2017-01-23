@@ -4,13 +4,13 @@
 ; -- usage docs -------------------------------------------------------------------------------------------------------------
 
 (def ^:dynamic general-usage
-  ["You can control Dirac REPL via special `dirac!` command:"
+  ["You can control Dirac REPL via special `dirac` command:"
    ""
-   "  `(dirac! <sub-command> [arg1] [arg2] [...])`"
+   "  `(dirac <action> [arg1] [arg2] [...])`"
    ""
-   "The argument `<sub-command>` is a keyword followed by optional arguments."
+   "The argument `action` is a keyword followed by optional arguments."
    ""
-   "List of supported sub-commands:"
+   "List of supported actions:"
    ""
    "  `:status`     print current session state"
    "  `:ls`         list available sessions/compilers"
@@ -28,31 +28,32 @@
    "  `:version`    print version info"
    "  `:help`       print usage help"
    ""
-   "For more information use `(dirac! :help <sub-command>)`."])
+   "For more information use `(dirac :help <action>)`."
+   "Also note that outer-most parentheses are optional. You may also alternatively use `dirac!`."])
 
 (def ^:dynamic help-usage
-  ["Print general usage help or specific sub-command usage help."
+  ["Print general usage help or specific dirac action usage help."
    ""
-   "  1. `(dirac!)`"
-   "  2. `(dirac! :help)`"
-   "  3. `(dirac! :help <command>)`"])
+   "  1. `(dirac)`"
+   "  2. `(dirac :help)`"
+   "  3. `(dirac :help <action>)`"])
 
 (def ^:dynamic version-usage
   ["Print version info."
    ""
-   "  1. `(dirac! :version)`"])
+   "  1. `(dirac :version)`"])
 
 (def ^:dynamic status-usage
   ["Print status of current nREPL session."
    ""
-   "  1. `(dirac! :status)`"
+   "  1. `(dirac :status)`"
    ""
    "If in joined session, will also print status of the target session."])
 
 (def ^:dynamic ls-usage
   ["Print listing of all currently connected Dirac sessions and available ClojureScript compilers."
    ""
-   "  1. `(dirac! :ls)`"
+   "  1. `(dirac :ls)`"
    ""
    "Sessions are listed in historical order as they connected."
    "Compilers are listed in the following order:"
@@ -73,7 +74,7 @@
    "In other words: this Clojure nREPL session joins a specific target Dirac session."
    "When joined, this session will forward all incoming eval requests to the matched target Dirac session."
    ""
-   "To list all available Dirac sessions use `(dirac! :ls)`."
+   "To list all available Dirac sessions use `(dirac :ls)`."
    "Matching is done dynamically for every new eval request. Connected Dirac sessions are tested in historical order."
    "The input must be either a string(1), an integer(2), a regex(3) or omitted(4)."
    "String-based matching targets first Dirac session matching the provided substring."
@@ -85,7 +86,7 @@
    "      console prompt to the Dirac REPL. Dirac sessions are destroyed when Dirac DevTools window gets closed or on page refresh."
    "      Dynamic matching helps us to keep stable targeting of specific Dirac session even if DevTools app gets closed and"
    "      reopened. In cases when there is no matching target Dirac session available, we will warn you and evaluation will result"
-   "      in a no-op. You may want to use `(dirac! :match)` command to test/troubleshoot your current matching strategy."])
+   "      in a no-op. You may want to use `(dirac :match)` command to test/troubleshoot your current matching strategy."])
 
 (def ^:dynamic disjoin-usage
   ["Disjoin previously joined Dirac session."
@@ -97,13 +98,13 @@
 (def ^:dynamic match-usage
   ["List Dirac sessions matching provided input."
    ""
-   "  1. `(dirac! :match <string>)`"
-   "  2. `(dirac! :match <integer>)`"
-   "  3. `(dirac! :match <regexp>)`"
-   "  4. `(dirac! :match)`"
+   "  1. `(dirac :match <string>)`"
+   "  2. `(dirac :match <integer>)`"
+   "  3. `(dirac :match <regexp>)`"
+   "  4. `(dirac :match)`"
    ""
    "This command is available for testing purposes. It can be used for fine-tuning your session matching substring or regexp."
-   "The command has the same signature as `(dirac! :join ...)`. Please read `(dirac! :help :join)` for details about matching."])
+   "The command has the same signature as `(dirac :join ...)`. Please read `(dirac :help :join)` for details about matching."])
 
 (def ^:dynamic switch-usage
   ["Switch to another ClojureScript compiler matching provided input."
@@ -113,7 +114,7 @@
    "  3. `(dirac! :switch <regexp>)`"
    "  4. `(dirac! :switch)`"
    ""
-   "To list all available ClojureScript compilers use `(dirac! :ls)`."
+   "To list all available ClojureScript compilers use `(dirac :ls)`."
    "Matching is done dynamically for every new eval request."
    "Matching argument must be either an integer(1), a string(2), a regex(3) or omitted(4)."
    "Integer-based matching targets nth compiler in the list."
@@ -144,7 +145,7 @@
    "  3. `(dirac! :kill <integer>)`"
    "  4. `(dirac! :kill <regexp>)`"
    ""
-   "To list all available ClojureScript compilers use `(dirac! :ls)`."
+   "To list all available ClojureScript compilers use `(dirac :ls)`."
    "Calling :kill without parameters kills currently selected compiler."
    "If an extra argument was provided it uses the same matching algorithm as :switch."
    "It must be either an integer(2), a string(3), a regexp(4)."
@@ -160,8 +161,8 @@
 (def ^:dynamic fig-usage
   ["Call Figwheel REPL API (if present)."
    ""
-   "  1. `(dirac! :fig)`"
-   "  2. `(dirac! :fig api-fn & args)`"
+   "  1. `(dirac :fig)`"
+   "  2. `(dirac :fig api-fn & args)`"
    ""
    "This is a bridge provided for convenince to allow controlling Figwheel directly from Dirac REPL."
    ""
@@ -169,10 +170,10 @@
    "Function arguments must be specified precisely as expected by Figwheel API."
    ""
    "  Examples:"
-   "    `(dirac! :fig :fig-status)`  ; <= this is equivalent to `(dirac! :fig)`"
-   "    `(dirac! :fig :print-config)`"
-   "    `(dirac! :fig :build-once \"my-build-id\")`"
-   "    `(dirac! :fig :api-help)`"
+   "    `(dirac :fig :fig-status)`  ; <= this is equivalent to `(dirac :fig)`"
+   "    `(dirac :fig :print-config)`"
+   "    `(dirac :fig :build-once \"my-build-id\")`"
+   "    `(dirac :fig :api-help)`"
    ""
    "Please refer to Figwheel docs for full list of control functions:"
    "  => https://github.com/bhauman/lein-figwheel#repl-figwheel-control-functions"])

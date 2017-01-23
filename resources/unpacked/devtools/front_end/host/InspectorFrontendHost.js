@@ -410,6 +410,12 @@ Host.InspectorFrontendHostStub = class {
 
   /**
    * @override
+   */
+  openNodeFrontend() {
+  }
+
+  /**
+   * @override
    * @param {number} x
    * @param {number} y
    * @param {!Array.<!InspectorFrontendHostAPI.ContextMenuDescriptor>} items

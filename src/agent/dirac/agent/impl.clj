@@ -125,6 +125,30 @@
     (log/debug "effective config:\n" (utils/pp effective-config))
     (boot-now!* effective-config)))
 
+; -- logging support --------------------------------------------------------------------------------------------------------
+
+(defn try-resolve-dirac-logging-ns-symbol [sym]
+  (try
+    (require 'dirac.logging)
+    (ns-resolve 'dirac.logging sym)
+    (catch Throwable e
+      ; dirac.logging is not available
+      nil)))
+
+(defn maybe-setup-logging!
+  "Calls dirac.logging/setup! if present.
+
+  Please note that under normal circumstances dirac.logging is not included in the Dirac library becasue that would bring in
+  unwanted dependencies as discussed here https://github.com/binaryage/dirac/issues/44.
+
+  You can install a special version of the Dirac library with logging support included as described here:
+    https://github.com/binaryage/dirac/blob/master/docs/faq.md#how-to-enable-debug-logging-in-dirac-agent"
+  [config]
+  (if-let [setup-fn-var (try-resolve-dirac-logging-ns-symbol 'setup!)]
+    (if (var? setup-fn-var)
+      (if-let [setup-fn (var-get setup-fn-var)]
+        (setup-fn config)))))
+
 ; -- entry point ------------------------------------------------------------------------------------------------------------
 
 (defn boot!
@@ -137,6 +161,7 @@
   Actually it waits for this init code to fully evaluate before starting nREPL server."
   [& [config]]
   (let [effective-config (config/get-effective-config config)]
+    (maybe-setup-logging! effective-config)
     (log/debug "Booting Dirac Agent...")
     (log/debug "effective config:\n" (utils/pp effective-config))
     (future (boot-now!* effective-config))))

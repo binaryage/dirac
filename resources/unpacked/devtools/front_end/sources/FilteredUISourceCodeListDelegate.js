@@ -10,10 +10,9 @@
 Sources.FilteredUISourceCodeListDelegate = class extends QuickOpen.FilteredListWidget.Delegate {
   /**
    * @param {!Map.<!Workspace.UISourceCode, number>=} defaultScores
-   * @param {!Array<string>=} history
    */
-  constructor(defaultScores, history) {
-    super(history || []);
+  constructor(defaultScores) {
+    super();
 
     this._defaultScores = defaultScores;
     this._scorer = new Sources.FilePathScoreFunction('');
@@ -184,9 +183,9 @@ Sources.FilteredUISourceCodeListDelegate = class extends QuickOpen.FilteredListW
    * @return {string}
    */
   rewriteQuery(query) {
-    if (!query)
-      return query;
-    query = query.trim();
+    query = query ? query.trim() : '';
+    if (!query || query === ':')
+      return '';
     var lineNumberMatch = query.match(/^([^:]+)((?::[^:]*){0,2})$/);
     this._queryLineNumberAndColumnNumber = lineNumberMatch ? lineNumberMatch[2] : '';
     return lineNumberMatch ? lineNumberMatch[1] : query;

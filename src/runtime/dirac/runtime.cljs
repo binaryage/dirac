@@ -1,7 +1,8 @@
 (ns dirac.runtime
   (:require [dirac.project :refer [get-current-version]]
             [dirac.runtime.core :as core]
-            [dirac.runtime.prefs :as prefs]))
+            [dirac.runtime.prefs :as prefs]
+            [dirac.runtime.tag :as tag]))
 
 ; -- PUBLIC API -------------------------------------------------------------------------------------------------------------
 
@@ -12,7 +13,7 @@
 (def ^:export install! core/install!)
 (def ^:export uninstall! core/uninstall!)
 
-(def ^:export get-tag core/get-tag)
+(def ^:export get-tag tag/get-tag)
 
 (def ^:export get-prefs prefs/get-prefs)
 (def ^:export get-pref prefs/pref)
