@@ -273,9 +273,11 @@ Protocol.PageAgent.prototype.setTouchEmulationEnabled = function(enabled, opt_co
 Protocol.PageAgent.prototype.invoke_setTouchEmulationEnabled = function(obj, opt_callback) {}
 
 /**
+ * @param {string=} opt_format
+ * @param {number=} opt_quality
  * @param {function(?Protocol.Error, string):void=} opt_callback
  */
-Protocol.PageAgent.prototype.captureScreenshot = function(opt_callback) {}
+Protocol.PageAgent.prototype.captureScreenshot = function(opt_format, opt_quality, opt_callback) {}
 /** @param {function(?Protocol.Error, string):void=} opt_callback */
 Protocol.PageAgent.prototype.invoke_captureScreenshot = function(obj, opt_callback) {}
 
@@ -911,9 +913,10 @@ Protocol.NetworkAgent.prototype.clearBrowserCookies = function(opt_callback) {}
 Protocol.NetworkAgent.prototype.invoke_clearBrowserCookies = function(obj, opt_callback) {}
 
 /**
+ * @param {!Array<string>=} opt_urls
  * @param {function(?Protocol.Error, !Array<Protocol.Network.Cookie>):void=} opt_callback
  */
-Protocol.NetworkAgent.prototype.getCookies = function(opt_callback) {}
+Protocol.NetworkAgent.prototype.getCookies = function(opt_urls, opt_callback) {}
 /** @param {function(?Protocol.Error, !Array<Protocol.Network.Cookie>):void=} opt_callback */
 Protocol.NetworkAgent.prototype.invoke_getCookies = function(obj, opt_callback) {}
 
@@ -1099,6 +1102,7 @@ Protocol.Network.CachedResource;
 Protocol.Network.InitiatorType = {
     Parser: "parser",
     Script: "script",
+    Preload: "preload",
     Other: "other"
 };
 
