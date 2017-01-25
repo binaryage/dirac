@@ -102,18 +102,13 @@
                            ;; handle strings / primitives without metadata
                            (with-out-str (pr form)))]}))
 
-(defn update-source-map [source-map generated-js]
-  (-> source-map
-      (update "sources" (fn [sources] (conj sources (string/replace (first sources) #"\.cljs$" ".js"))))
-      (update "sourcesContent" (fn [contents] (conj contents generated-js)))))
-
 (defn generate-js-with-source-maps! [ast filename form]
   (binding [compiler/*source-map-data* (atom {:source-map (sorted-map)
                                               :gen-col    0
                                               :gen-line   0})]
     (let [js-filename (string/replace filename #"\.cljs$" ".js")
           generated-js (compiler/emit-str ast)
-          source-map-json (json/write-str (update-source-map (gen-source-map filename js-filename form) generated-js))]
+          source-map-json (json/write-str (gen-source-map filename js-filename form))]
       (str generated-js
            "\n//# sourceURL=" js-filename
            "\n//# sourceMappingURL=data:application/json;base64,"
