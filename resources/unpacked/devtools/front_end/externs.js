@@ -496,6 +496,7 @@ var dirac = {
      * @param {string} panelId
      */
     notifyPanelSwitch: function(panelId) {},
+    notifyFrontendInitialized: function() {},
     getVersion: function() {},
     getRuntimeTag: function() {},
     /**

@@ -282,6 +282,7 @@ Main.Main = class {
     console.timeStamp('Main._lateInitialization');
     this._registerShortcuts();
     Extensions.extensionServer.initializeExtensions();
+    dirac.notifyFrontendInitialized();
   }
 
   _registerForwardedShortcuts() {
