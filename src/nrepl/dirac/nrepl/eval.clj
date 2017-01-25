@@ -76,7 +76,7 @@
   (let [compiler-id (compilers/get-selected-compiler-id (state/get-current-session))
         numeric-job-id (sorting-friendly-numeric-job-id job-id)]
     (assert compiler-id)
-    (str "~repl/"
+    (str "repl://dirac-repl/"
          (or (sanitize-filename compiler-id) "unknown") "/"
          (if numeric-job-id (str "repl-job-" numeric-job-id) (sanitize-filename job-id)) ".cljs")))
 
