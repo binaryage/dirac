@@ -249,6 +249,10 @@ Console.ConsoleViewMessage = class {
     } else {
       if (consoleMessage.source === SDK.ConsoleMessage.MessageSource.Violation)
         messageText = Common.UIString('[Violation] %s', messageText);
+      else if (consoleMessage.source === SDK.ConsoleMessage.MessageSource.Intervention)
+        messageText = Common.UIString('[Intervention] %s', messageText);
+      if (consoleMessage.source === SDK.ConsoleMessage.MessageSource.Deprecation)
+        messageText = Common.UIString('[Deprecation] %s', messageText);
       var args = consoleMessage.parameters || [messageText];
       messageElement = this._format(args);
     }
@@ -330,7 +334,7 @@ Console.ConsoleViewMessage = class {
      * @param {boolean} expand
      */
     function expandStackTrace(expand) {
-      icon.setIconType(expand ? 'smallicon-triangle-bottom' : 'smallicon-triangle-right');
+      icon.setIconType(expand ? 'smallicon-triangle-down' : 'smallicon-triangle-right');
       stackTraceElement.classList.toggle('hidden', !expand);
     }
 
@@ -526,7 +530,7 @@ Console.ConsoleViewMessage = class {
     var titleElement = createElement('span');
     if (includePreview && obj.preview) {
       titleElement.classList.add('console-object-preview');
-      this._previewFormatter.appendObjectPreview(titleElement, obj.preview);
+      this._previewFormatter.appendObjectPreview(titleElement, obj.preview, false /* isEntry */);
     } else if (obj.type === 'function') {
       Components.ObjectPropertiesSection.formatObjectAsFunction(obj, titleElement, false);
       titleElement.classList.add('object-value-function');
@@ -939,6 +943,18 @@ Console.ConsoleViewMessage = class {
         break;
     }
 
+    // Render verbose and info deprecations, interventions and violations with warning background.
+    if (this._message.level === SDK.ConsoleMessage.MessageLevel.Verbose ||
+        this._message.level === SDK.ConsoleMessage.MessageLevel.Info) {
+      switch (this._message.source) {
+        case SDK.ConsoleMessage.MessageSource.Violation:
+        case SDK.ConsoleMessage.MessageSource.Deprecation:
+        case SDK.ConsoleMessage.MessageSource.Intervention:
+          this._element.classList.add('console-warning-level');
+          break;
+      }
+    }
+
     this._element.appendChild(this.contentElement());
     if (this._repeatCount > 1)
       this._showRepeatCountElement();
@@ -1179,7 +1195,7 @@ Console.ConsoleGroupViewMessage = class extends Console.ConsoleViewMessage {
   setCollapsed(collapsed) {
     this._collapsed = collapsed;
     if (this._expandGroupIcon)
-      this._expandGroupIcon.setIconType(this._collapsed ? 'smallicon-triangle-right' : 'smallicon-triangle-bottom');
+      this._expandGroupIcon.setIconType(this._collapsed ? 'smallicon-triangle-right' : 'smallicon-triangle-down');
   }
 
   /**
