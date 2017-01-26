@@ -1,7 +1,8 @@
 (ns dirac.runtime.util
-  (:require-macros [dirac.runtime.util :refer [get-current-browser-name get-current-platform-name]])
+  (:require-macros [dirac.runtime.util :refer [get-current-browser-name get-current-platform-name]]
+                   [dirac.runtime.oops :refer [oget]])
   (:require [goog.userAgent :as ua]
-            [oops.core :refer [oget]]
+            [goog.object]
             [goog.labs.userAgent.browser :as ua-browser]
             [goog.labs.userAgent.platform :as ua-platform]
             [dirac.project :refer [get-current-version]]
@@ -40,9 +41,9 @@
 
 (defn ^:dynamic get-node-info [root]
   (try
-    (let [process (oget root "?process")
-          version (if process (oget process "?version"))
-          platform (if process (oget process "?platform"))]
+    (let [process (oget root "process")
+          version (if process (oget process "version"))
+          platform (if process (oget process "platform"))]
       (if (and version platform)
         {:version  version
          :platform platform}))

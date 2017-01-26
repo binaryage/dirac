@@ -571,7 +571,7 @@ Sources.JavaScriptSourceFrame = class extends SourceFrame.UISourceCodeFrame {
     var functionLocation = callFrame.functionLocation();
     if (localScope && functionLocation) {
       Sources.SourceMapNamesResolver.resolveScopeInObject(localScope)
-          .getAllProperties(false, this._prepareScopeVariables.bind(this, callFrame));
+          .getAllProperties(false, false, this._prepareScopeVariables.bind(this, callFrame));
     }
 
     if (this._clearValueWidgetsTimer) {
@@ -692,10 +692,12 @@ Sources.JavaScriptSourceFrame = class extends SourceFrame.UISourceCodeFrame {
         if (dirac.hasInlineCFs && value.customPreview()) {
           var customValueEl = (new Components.CustomPreviewComponent(value)).element;
           nameValuePair.appendChild(customValueEl);
-        } else if (value.preview && propertyCount + entryCount < 10)
-          formatter.appendObjectPreview(nameValuePair, value.preview);
-        else
-          nameValuePair.appendChild(Components.ObjectPropertiesSection.createValueElement(value, false));
+        } else if (value.preview && propertyCount + entryCount < 10) {
+          formatter.appendObjectPreview(nameValuePair, value.preview, false /* isEntry */);
+        } else {
+          nameValuePair.appendChild(Components.ObjectPropertiesSection.createValueElement(
+              value, false /* wasThrown */, false /* showPreview */));
+        }
         ++renderedNameCount;
       }
 

@@ -185,7 +185,7 @@
   (string/replace s #"<dirac/.*?>" "<dirac/compiler-id>"))
 
 (defn replace-dirac-repl-files [s]
-  (string/replace s #"~repl/.*?\.(cljs|js)" "~repl/<path>"))
+  (string/replace s #"repl://.*?\.(cljs|js)" "repl://<path>"))
 
 (defn replace-rel-url-params [s]
   (string/replace s #"rel=[0-9]+" "rel=***"))

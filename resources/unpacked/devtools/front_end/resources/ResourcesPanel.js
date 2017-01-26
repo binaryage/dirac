@@ -390,15 +390,18 @@ Resources.ResourcesPanel = class extends UI.PanelWithSidebar {
     this.databasesListTreeElement.appendChild(databaseTreeElement);
   }
 
-  addDocumentURL(url) {
-    var parsedURL = url.asParsedURL();
+  /**
+   * @param {!SDK.ResourceTreeFrame} frame
+   */
+  addCookieDocument(frame) {
+    var parsedURL = frame.url.asParsedURL();
     if (!parsedURL)
       return;
 
     var domain = parsedURL.securityOrigin();
     if (!this._domains[domain]) {
       this._domains[domain] = true;
-      var cookieDomainTreeElement = new Resources.CookieTreeElement(this, domain);
+      var cookieDomainTreeElement = new Resources.CookieTreeElement(this, frame, domain);
       this.cookieListTreeElement.appendChild(cookieDomainTreeElement);
     }
   }
@@ -582,11 +585,12 @@ Resources.ResourcesPanel = class extends UI.PanelWithSidebar {
   /**
    * @param {!Resources.CookieTreeElement} treeElement
    * @param {string} cookieDomain
+   * @param {!SDK.ResourceTreeFrame} cookieFrameTarget
    */
-  showCookies(treeElement, cookieDomain) {
+  showCookies(treeElement, cookieDomain, cookieFrameTarget) {
     var view = this._cookieViews[cookieDomain];
     if (!view) {
-      view = new Resources.CookieItemsView(treeElement, cookieDomain);
+      view = new Resources.CookieItemsView(treeElement, cookieFrameTarget, cookieDomain);
       this._cookieViews[cookieDomain] = view;
     }
 
@@ -635,9 +639,10 @@ Resources.ResourcesPanel = class extends UI.PanelWithSidebar {
     this.visibleView = view;
 
     this._storageViewToolbar.removeToolbarItems();
-    var toolbarItems = view instanceof UI.SimpleView ? view.syncToolbarItems() : null;
-    for (var i = 0; toolbarItems && i < toolbarItems.length; ++i)
+    var toolbarItems = (view instanceof UI.SimpleView && view.syncToolbarItems()) || [];
+    for (var i = 0; i < toolbarItems.length; ++i)
       this._storageViewToolbar.appendToolbarItem(toolbarItems[i]);
+    this._storageViewToolbar.element.classList.toggle('hidden', !toolbarItems.length);
   }
 
   closeVisibleView() {
@@ -945,7 +950,7 @@ Resources.FrameTreeElement = class extends Resources.BaseStorageTreeElement {
     this._categoryElements = {};
     this._treeElementForResource = {};
 
-    this._storagePanel.addDocumentURL(frame.url);
+    this._storagePanel.addCookieDocument(frame);
   }
 
   get itemURL() {
@@ -1922,10 +1927,11 @@ Resources.DOMStorageTreeElement = class extends Resources.BaseStorageTreeElement
  * @unrestricted
  */
 Resources.CookieTreeElement = class extends Resources.BaseStorageTreeElement {
-  constructor(storagePanel, cookieDomain) {
+  constructor(storagePanel, frame, cookieDomain) {
     super(
         storagePanel, cookieDomain ? cookieDomain : Common.UIString('Local Files'),
         ['cookie-tree-item', 'resource-tree-item']);
+    this._frame = frame;
     this._cookieDomain = cookieDomain;
   }
 
@@ -1963,7 +1969,7 @@ Resources.CookieTreeElement = class extends Resources.BaseStorageTreeElement {
    */
   onselect(selectedByUser) {
     super.onselect(selectedByUser);
-    this._storagePanel.showCookies(this, this._cookieDomain);
+    this._storagePanel.showCookies(this, this._cookieDomain, this._frame.target());
     return false;
   }
 };

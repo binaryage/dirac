@@ -83,7 +83,9 @@
   (helpers/resolved-promise repl/all-specials))                                                                               ; hard-coded for now
 
 (defn notify-panel-switch [panel-id]
-  (post-feedback! (str "setCurrentPanel: " panel-id))
+  (post-feedback! (str "setCurrentPanel: " panel-id)))
+
+(defn notify-frontend-initialized []
   (helpers/warm-up-namespace-cache!))
 
 (defn trigger-internal-error-for-testing! []
@@ -127,6 +129,7 @@
    "initConsole"                    init-console!
    "initRepl"                       init-repl!
    "notifyPanelSwitch"              notify-panel-switch
+   "notifyFrontendInitialized"      notify-frontend-initialized
    "adoptPrompt"                    adopt-prompt!
    "sendEvalRequest"                send-eval-request!
    "getVersion"                     get-version

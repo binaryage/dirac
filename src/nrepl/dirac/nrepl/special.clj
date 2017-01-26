@@ -11,16 +11,17 @@
             [dirac.nrepl.driver :as driver]
             [dirac.nrepl.protocol :as protocol]
             [dirac.nrepl.debug :as debug]
-            [dirac.nrepl.compilers :as compilers])
+            [dirac.nrepl.compilers :as compilers]
+            [cuerdas.core :as cuerdas])
   (:import (clojure.lang Namespace)
            java.io.Writer))
 
-(def ^:dynamic dirac-command-re #"^\s*\(?dirac!?\s*(.*?)\s*\)?\s*$")                                                          ; allow both (dirac! ...) and (dirac ...) forms, parentheses are optional
+(def ^:dynamic dirac-command-re #"^\s*\(?dirac!?(|\s+.*?\s*)\)?\s*$")                                                         ; allow both (dirac! ...) and (dirac ...) forms, parentheses are optional
 
 ; -- command detection & parsing --------------------------------------------------------------------------------------------
 
 (defn extract-dirac-command [code]
-  (second (re-matches dirac-command-re code)))
+  (cuerdas/trim (second (re-matches dirac-command-re code))))
 
 (defn dirac-special-command? [nrepl-message]
   (if-let [code (:code nrepl-message)]

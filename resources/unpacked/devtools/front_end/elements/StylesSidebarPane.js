@@ -1793,7 +1793,7 @@ Elements.StylePropertyTreeElement = class extends UI.TreeElement {
    * @return {boolean}
    */
   _editable() {
-    return this._style.styleSheetId && this._style.range;
+    return !!(this._style.styleSheetId && this._style.range);
   }
 
   /**
@@ -2127,7 +2127,7 @@ Elements.StylePropertyTreeElement = class extends UI.TreeElement {
 
   _updateExpandElement() {
     if (this.expanded)
-      this._expandElement.setIconType('smallicon-triangle-bottom');
+      this._expandElement.setIconType('smallicon-triangle-down');
     else
       this._expandElement.setIconType('smallicon-triangle-right');
   }
