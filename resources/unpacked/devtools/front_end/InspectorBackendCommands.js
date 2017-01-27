@@ -1,5 +1,5 @@
-Protocol.BakedInspectorBackendAPIChromeTag='58.0.2992.2';
-Protocol.BakedInspectorBackendAPIChromeRev='a910b7803d3c14ecae33d333e11585f7bcad0a70';
+Protocol.BakedInspectorBackendAPIChromeTag='58.0.2994.3';
+Protocol.BakedInspectorBackendAPIChromeRev='5258bfb4395abf16fca17a6c8fc09ff052eaf845';
 Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerEvent("Inspector.detached", ["reason"]);\n'
 + 'Protocol.inspectorBackend.registerEvent("Inspector.targetCrashed", []);\n'
@@ -151,6 +151,7 @@ Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerCommand("IndexedDB.requestDatabase", [{"name": "securityOrigin", "type": "string", "optional": false}, {"name": "databaseName", "type": "string", "optional": false}], ["databaseWithObjectStores"], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("IndexedDB.requestData", [{"name": "securityOrigin", "type": "string", "optional": false}, {"name": "databaseName", "type": "string", "optional": false}, {"name": "objectStoreName", "type": "string", "optional": false}, {"name": "indexName", "type": "string", "optional": false}, {"name": "skipCount", "type": "number", "optional": false}, {"name": "pageSize", "type": "number", "optional": false}, {"name": "keyRange", "type": "object", "optional": true}], ["objectStoreDataEntries", "hasMore"], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("IndexedDB.clearObjectStore", [{"name": "securityOrigin", "type": "string", "optional": false}, {"name": "databaseName", "type": "string", "optional": false}, {"name": "objectStoreName", "type": "string", "optional": false}], [], false);\n'
++ 'Protocol.inspectorBackend.registerCommand("IndexedDB.deleteDatabase", [{"name": "securityOrigin", "type": "string", "optional": false}, {"name": "databaseName", "type": "string", "optional": false}], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("CacheStorage.requestCacheNames", [{"name": "securityOrigin", "type": "string", "optional": false}], ["caches"], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("CacheStorage.requestEntries", [{"name": "cacheId", "type": "string", "optional": false}, {"name": "skipCount", "type": "number", "optional": false}, {"name": "pageSize", "type": "number", "optional": false}], ["cacheDataEntries", "hasMore"], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("CacheStorage.deleteCache", [{"name": "cacheId", "type": "string", "optional": false}], [], false);\n'

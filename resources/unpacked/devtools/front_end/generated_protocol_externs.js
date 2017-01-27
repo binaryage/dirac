@@ -1333,6 +1333,15 @@ Protocol.IndexedDBAgent.prototype.clearObjectStore = function(securityOrigin, da
 /** @param {function(?Protocol.Error):void=} opt_callback */
 Protocol.IndexedDBAgent.prototype.invoke_clearObjectStore = function(obj, opt_callback) {}
 
+/**
+ * @param {string} securityOrigin
+ * @param {string} databaseName
+ * @param {function(?Protocol.Error):void=} opt_callback
+ */
+Protocol.IndexedDBAgent.prototype.deleteDatabase = function(securityOrigin, databaseName, opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+Protocol.IndexedDBAgent.prototype.invoke_deleteDatabase = function(obj, opt_callback) {}
+
 /** @typedef {!{name:(string), version:(number), objectStores:(!Array<Protocol.IndexedDB.ObjectStore>)}} */
 Protocol.IndexedDB.DatabaseWithObjectStores;
 
@@ -3939,7 +3948,7 @@ Protocol.Runtime.Timestamp;
 /** @typedef {!{functionName:(string), scriptId:(Protocol.Runtime.ScriptId), url:(string), lineNumber:(number), columnNumber:(number)}} */
 Protocol.Runtime.CallFrame;
 
-/** @typedef {!{description:(string|undefined), callFrames:(!Array<Protocol.Runtime.CallFrame>), parent:(Protocol.Runtime.StackTrace|undefined)}} */
+/** @typedef {!{description:(string|undefined), callFrames:(!Array<Protocol.Runtime.CallFrame>), parent:(Protocol.Runtime.StackTrace|undefined), promiseCreationFrame:(Protocol.Runtime.CallFrame|undefined)}} */
 Protocol.Runtime.StackTrace;
 /** @interface */
 Protocol.RuntimeDispatcher = function() {};
