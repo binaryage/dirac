@@ -63,7 +63,7 @@ Timeline.TimelinePanel = class extends UI.Panel {
     // Create models.
     this._tracingModelBackingStorage = new Bindings.TempFileBackingStorage('tracing');
     this._tracingModel = new SDK.TracingModel(this._tracingModelBackingStorage);
-    this._model = new TimelineModel.TimelineModel(Timeline.TimelineUIUtils.visibleEventsFilter());
+    this._model = new TimelineModel.TimelineModel();
     this._frameModel =
         new TimelineModel.TimelineFrameModel(event => Timeline.TimelineUIUtils.eventStyle(event).category.name);
     this._filmStripModel = new SDK.FilmStripModel(this._tracingModel);
@@ -74,6 +74,9 @@ Timeline.TimelinePanel = class extends UI.Panel {
 
     /** @type {!Array<!Timeline.TimelineModeView>} */
     this._currentViews = [];
+
+    this._viewModeSetting =
+        Common.settings.createSetting('timelineViewMode', Timeline.TimelinePanel.ViewMode.FlameChart);
 
     this._disableCaptureJSProfileSetting = Common.settings.createSetting('timelineDisableJSSampling', false);
     this._captureLayersAndPicturesSetting = Common.settings.createSetting('timelineCaptureLayersAndPictures', false);
@@ -104,33 +107,44 @@ Timeline.TimelinePanel = class extends UI.Panel {
     SDK.targetManager.addEventListener(SDK.TargetManager.Events.PageReloadRequested, this._pageReloadRequested, this);
     SDK.targetManager.addEventListener(SDK.TargetManager.Events.Load, this._loadEventFired, this);
 
-    // Create top level properties splitter.
-    this._detailsSplitWidget = new UI.SplitWidget(false, true, 'timelinePanelDetailsSplitViewState', 400);
-    this._detailsSplitWidget.element.classList.add('timeline-details-split');
-    this._detailsView =
-        new Timeline.TimelineDetailsView(this._model, this._frameModel, this._filmStripModel, this._filters, this);
-    this._detailsSplitWidget.installResizer(this._detailsView.headerElement());
-    this._detailsSplitWidget.setSidebarWidget(this._detailsView);
-
     this._searchableView = new UI.SearchableView(this);
     this._searchableView.setMinimumSize(0, 100);
     this._searchableView.element.classList.add('searchable-view');
-    this._detailsSplitWidget.setMainWidget(this._searchableView);
 
     this._stackView = new UI.StackView(false);
     this._stackView.element.classList.add('timeline-view-stack');
 
-    this._stackView.show(this._searchableView.element);
-    this._onModeChanged();
+    if (Runtime.experiments.isEnabled('timelineMultipleMainViews')) {
+      const viewMode = Timeline.TimelinePanel.ViewMode;
+      this._tabbedPane = new UI.TabbedPane();
+      this._tabbedPane.appendTab(viewMode.FlameChart, Common.UIString('Flame Chart'), new UI.VBox());
+      this._tabbedPane.appendTab(viewMode.BottomUp, Common.UIString('Bottom-Up'), new UI.VBox());
+      this._tabbedPane.appendTab(viewMode.CallTree, Common.UIString('Call Tree'), new UI.VBox());
+      this._tabbedPane.appendTab(viewMode.EventLog, Common.UIString('Event Log'), new UI.VBox());
+      this._tabbedPane.addEventListener(UI.TabbedPane.Events.TabSelected, this._onMainViewChanged.bind(this));
+      this._tabbedPane.selectTab(this._viewModeSetting.get());
+      this._tabbedPane.show(this._searchableView.element);
+      this._searchableView.show(this._timelinePane.element);
+    } else {
+      // Create top level properties splitter.
+      this._detailsSplitWidget = new UI.SplitWidget(false, true, 'timelinePanelDetailsSplitViewState', 400);
+      this._detailsSplitWidget.element.classList.add('timeline-details-split');
+      this._detailsView =
+          new Timeline.TimelineDetailsView(this._model, this._frameModel, this._filmStripModel, this._filters, this);
+      this._detailsSplitWidget.installResizer(this._detailsView.headerElement());
+      this._detailsSplitWidget.setSidebarWidget(this._detailsView);
+      this._detailsSplitWidget.setMainWidget(this._searchableView);
+      this._detailsSplitWidget.hideSidebar();
+      this._detailsSplitWidget.show(this._timelinePane.element);
+      this._stackView.show(this._searchableView.element);
+    }
 
+    this._onModeChanged();
     this._populateToolbar();
     this._showLandingPage();
 
     Extensions.extensionServer.addEventListener(
         Extensions.ExtensionServer.Events.TraceProviderAdded, this._appendExtensionsToToolbar, this);
-
-    this._detailsSplitWidget.show(this._timelinePane.element);
-    this._detailsSplitWidget.hideSidebar();
     SDK.targetManager.addEventListener(SDK.TargetManager.Events.SuspendStateChanged, this._onSuspendStateChanged, this);
 
     /** @type {!SDK.TracingModel.Event}|undefined */
@@ -202,6 +216,11 @@ Timeline.TimelinePanel = class extends UI.Panel {
 
     if (!this._selection || this._selection.type() === Timeline.TimelineSelection.Type.Range)
       this.select(null);
+  }
+
+  _onMainViewChanged() {
+    this._viewModeSetting.set(this._tabbedPane.selectedTabId);
+    this._onModeChanged();
   }
 
   /**
@@ -448,28 +467,51 @@ Timeline.TimelinePanel = class extends UI.Panel {
     const showMemory = this._showMemorySetting.get();
     const showScreenshots = this._showScreenshotsSetting.get();
     // Set up overview controls.
-    this._overviewControls = [];
-    this._overviewControls.push(new Timeline.TimelineEventOverviewResponsiveness(this._model, this._frameModel));
+    var overviewControls = [];
+    overviewControls.push(new Timeline.TimelineEventOverviewResponsiveness(this._model, this._frameModel));
     if (Runtime.experiments.isEnabled('inputEventsOnTimelineOverview'))
-      this._overviewControls.push(new Timeline.TimelineEventOverviewInput(this._model));
-    this._overviewControls.push(new Timeline.TimelineEventOverviewFrames(this._model, this._frameModel));
-    this._overviewControls.push(new Timeline.TimelineEventOverviewCPUActivity(this._model));
-    this._overviewControls.push(new Timeline.TimelineEventOverviewNetwork(this._model));
+      overviewControls.push(new Timeline.TimelineEventOverviewInput(this._model));
+    overviewControls.push(new Timeline.TimelineEventOverviewFrames(this._model, this._frameModel));
+    overviewControls.push(new Timeline.TimelineEventOverviewCPUActivity(this._model));
+    overviewControls.push(new Timeline.TimelineEventOverviewNetwork(this._model));
     if (showScreenshots)
-      this._overviewControls.push(new Timeline.TimelineFilmStripOverview(this._model, this._filmStripModel));
+      overviewControls.push(new Timeline.TimelineFilmStripOverview(this._model, this._filmStripModel));
     if (showMemory)
-      this._overviewControls.push(new Timeline.TimelineEventOverviewMemory(this._model));
-    this._overviewPane.setOverviewControls(this._overviewControls);
+      overviewControls.push(new Timeline.TimelineEventOverviewMemory(this._model));
+    this._overviewPane.setOverviewControls(overviewControls);
 
     // Set up the main view.
     this._removeAllModeViews();
-    this._flameChart = new Timeline.TimelineFlameChartView(
-        this, this._model, this._frameModel, this._irModel, this._extensionTracingModels, this._filters);
-    this._addModeView(this._flameChart);
 
-    if (showMemory) {
-      this._addModeView(
-          new Timeline.MemoryCountersGraph(this, this._model, [Timeline.TimelineUIUtils.visibleEventsFilter()]));
+    var viewMode = Timeline.TimelinePanel.ViewMode.FlameChart;
+    this._flameChart = null;
+    if (Runtime.experiments.isEnabled('timelineMultipleMainViews')) {
+      viewMode = this._tabbedPane.selectedTabId;
+      this._stackView.detach();
+      this._stackView.show(this._tabbedPane.visibleView.element);
+    }
+    if (viewMode === Timeline.TimelinePanel.ViewMode.FlameChart) {
+      this._flameChart = new Timeline.TimelineFlameChartView(
+          this, this._model, this._frameModel, this._filmStripModel, this._irModel, this._extensionTracingModels,
+          this._filters);
+      this._addModeView(this._flameChart);
+      if (showMemory)
+        this._addModeView(new Timeline.MemoryCountersGraph(this, this._model));
+    } else {
+      var innerView;
+      switch (viewMode) {
+        case Timeline.TimelinePanel.ViewMode.CallTree:
+          innerView = new Timeline.CallTreeTimelineTreeView(this._model, this._filters);
+          break;
+        case Timeline.TimelinePanel.ViewMode.EventLog:
+          innerView = new Timeline.EventsTimelineTreeView(this._model, this._filters, this);
+          break;
+        default:
+          innerView = new Timeline.BottomUpTimelineTreeView(this._model, this._filters);
+          break;
+      }
+      const treeView = new Timeline.TimelineTreeModeView(this, innerView);
+      this._addModeView(treeView);
     }
 
     this.doResize();
@@ -541,9 +583,6 @@ Timeline.TimelinePanel = class extends UI.Panel {
     this._controller.startRecording(recordingOptions, enabledTraceProviders);
     this._recordingStartTime = Date.now();
 
-    for (var i = 0; i < this._overviewControls.length; ++i)
-      this._overviewControls[i].timelineStarted();
-
     Host.userMetrics.actionTaken(
         userInitiated ? Host.UserMetrics.Action.TimelineStarted : Host.UserMetrics.Action.TimelinePageReloadStarted);
     this._setUIControlsEnabled(false);
@@ -604,7 +643,7 @@ Timeline.TimelinePanel = class extends UI.Panel {
     this._filmStripModel.reset(this._tracingModel);
     this._overviewPane.reset();
     this._currentViews.forEach(view => view.reset());
-    this._overviewControls.forEach(overview => overview.reset());
+    this._overviewPane.reset();
     this.select(null);
   }
 
@@ -680,33 +719,19 @@ Timeline.TimelinePanel = class extends UI.Panel {
     var centered = this._landingPage.contentElement.createChild('div');
 
     var p = centered.createChild('p');
-    p.createTextChild(Common.UIString(
-        'The Performance panel lets you record what the browser does during page load and user interaction. ' +
-        'The timeline it generates can help you determine why certain parts of your page are slow.'));
-
-    p = centered.createChild('p');
     p.appendChild(UI.formatLocalized(
         'To capture a new recording, click the record toolbar button or hit %s. ' +
-        'To evaluate page load performance, hit %s to record the reload.',
+            'To evaluate page load performance, hit %s to record the reload.',
         [recordNode, reloadNode]));
 
     p = centered.createChild('p');
     p.appendChild(UI.formatLocalized(
         'After recording, select an area of interest in the overview by dragging. ' +
-        'Then, zoom and pan the timeline with the mousewheel or %s keys.',
+            'Then, zoom and pan the timeline with the mousewheel or %s keys.',
         [navigateNode]));
 
     p = centered.createChild('p');
     p.appendChild(learnMoreNode);
-
-    var timelineSpan = encloseWithTag('b', Common.UIString('Timeline'));
-    var performanceSpan = encloseWithTag('b', Common.UIString('Performance'));
-
-    p = centered.createChild('p', 'timeline-landing-warning');
-    p.appendChild(UI.formatLocalized(
-        'The %s panel has been enriched with the JavaScript profiler capabilities and is now called %s.%s' +
-        'You can find the legacy JavaScript CPU profiler under %s%s \u2192 More Tools \u2192 JavaScript Profiler.',
-        [timelineSpan, performanceSpan, createElement('p'), createElement('br'), UI.Icon.create('largeicon-menu')]));
 
     this._landingPage.show(this._statusPaneContainer);
   }
@@ -775,17 +800,17 @@ Timeline.TimelinePanel = class extends UI.Panel {
     for (let entry of this._extensionTracingModels)
       entry.model.adjustTime(this._model.minimumRecordTime() + (entry.timeOffset / 1000) - this._recordingStartTime);
 
-    this._flameChart.resizeToPreferredHeights();
+    if (this._flameChart)
+      this._flameChart.resizeToPreferredHeights();
     this._overviewPane.reset();
     this._overviewPane.setBounds(this._model.minimumRecordTime(), this._model.maximumRecordTime());
     this._setAutoWindowTimes();
     this._refreshViews();
-    for (var i = 0; i < this._overviewControls.length; ++i)
-      this._overviewControls[i].timelineStopped();
     this._setMarkers();
     this._overviewPane.scheduleUpdate();
     this._updateSearchHighlight(false, true);
-    this._detailsSplitWidget.showBoth();
+    if (this._detailsSplitWidget)
+      this._detailsSplitWidget.showBoth();
   }
 
   _showRecordingStarted() {
@@ -1019,11 +1044,12 @@ Timeline.TimelinePanel = class extends UI.Panel {
     if (!selection)
       selection = Timeline.TimelineSelection.fromRange(this._windowStartTime, this._windowEndTime);
     this._selection = selection;
-    if (preferredTab)
+    if (preferredTab && this._detailsView)
       this._detailsView.setPreferredTab(preferredTab);
     for (var view of this._currentViews)
       view.setSelection(selection);
-    this._detailsView.setSelection(selection);
+    if (this._detailsView)
+      this._detailsView.setSelection(selection);
   }
 
   /**
@@ -1145,6 +1171,16 @@ Timeline.TimelinePanel.State = {
   Recording: Symbol('Recording'),
   StopPending: Symbol('StopPending'),
   Loading: Symbol('Loading')
+};
+
+/**
+ * @enum {string}
+ */
+Timeline.TimelinePanel.ViewMode = {
+  FlameChart: 'FlameChart',
+  BottomUp: 'BottomUp',
+  CallTree: 'CallTree',
+  EventLog: 'EventLog'
 };
 
 // Define row and header height, should be in sync with styles for timeline graphs.
