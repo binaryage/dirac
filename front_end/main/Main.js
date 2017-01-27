@@ -114,6 +114,7 @@ Main.Main = class {
     Runtime.experiments.register('sourceDiff', 'Source diff');
     Runtime.experiments.register('terminalInDrawer', 'Terminal in drawer', true);
     Runtime.experiments.register('timelineInvalidationTracking', 'Timeline invalidation tracking', true);
+    Runtime.experiments.register('timelineMultipleMainViews', 'Timeline with multiple main views');
     Runtime.experiments.register('timelineTracingJSProfile', 'Timeline tracing based JS profiler', true);
     Runtime.experiments.register('timelineV8RuntimeCallStats', 'V8 Runtime Call Stats on Timeline', true);
     Runtime.experiments.register('timelinePerFrameTrack', 'Show track per frame on Timeline', true);
@@ -127,9 +128,11 @@ Main.Main = class {
         Runtime.experiments.enableForTest('accessibilityInspection');
       if (testPath.indexOf('css_tracker') !== -1)
         Runtime.experiments.enableForTest('cssTrackerPanel');
+      if (testPath.indexOf('audits2/') !== -1)
+        Runtime.experiments.enableForTest('audits2');
     }
 
-    Runtime.experiments.setDefaultExperiments(['persistenceValidation']);
+    Runtime.experiments.setDefaultExperiments(['persistenceValidation', 'timelineMultipleMainViews']);
   }
 
   /**

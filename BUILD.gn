@@ -117,8 +117,8 @@ all_devtools_files = [
   "front_end/components/breakpointsList.css",
   "front_end/components/BreakpointsSidebarPaneBase.js",
   "front_end/components/CPUThrottlingManager.js",
-  "front_end/components/customPreviewSection.css",
-  "front_end/components/CustomPreviewSection.js",
+  "front_end/components/customPreviewComponent.css",
+  "front_end/components/CustomPreviewComponent.js",
   "front_end/components/DataSaverInfobar.js",
   "front_end/components/DockController.js",
   "front_end/components/DOMBreakpointsSidebarPane.js",
@@ -568,6 +568,7 @@ all_devtools_files = [
   "front_end/timeline/timelinePanel.css",
   "front_end/timeline/TimelinePanel.js",
   "front_end/timeline/timelineStatusDialog.css",
+  "front_end/timeline/TimelineTreeModeView.js",
   "front_end/timeline/TimelineTreeView.js",
   "front_end/timeline/TimelineUIUtils.js",
   "front_end/toolbox_bootstrap/module.json",
@@ -577,11 +578,12 @@ all_devtools_files = [
   "front_end/ui/ActionRegistry.js",
   "front_end/ui/checkboxTextLabel.css",
   "front_end/ui/closeButton.css",
+  "front_end/ui/confirmDialog.css",
   "front_end/ui/Context.js",
   "front_end/ui/ContextMenu.js",
   "front_end/ui/dialog.css",
   "front_end/ui/Dialog.js",
-  "front_end/ui/DOMSyntaxHighlighter.js",
+  "front_end/ui/SyntaxHighlighter.js",
   "front_end/ui/DropDownMenu.js",
   "front_end/ui/dropTarget.css",
   "front_end/ui/DropTarget.js",
@@ -719,6 +721,10 @@ devtools_image_files = [
   "front_end/Images/accelerometer-left.png",
   "front_end/Images/accelerometer-right.png",
   "front_end/Images/accelerometer-top.png",
+  "front_end/Images/audits_logo.png",
+  "front_end/Images/audits_logo_2x.png",
+  "front_end/Images/audits_logo_bw.png",
+  "front_end/Images/audits_logo_bw_2x.png",
   "front_end/Images/applicationCache.png",
   "front_end/Images/breakpoint.png",
   "front_end/Images/breakpoint_2x.png",
@@ -796,6 +802,7 @@ generated_resources = [
   "$resources_out_dir/inspector.js",
   "$resources_out_dir/toolbox.html",
   "$resources_out_dir/toolbox.js",
+  "$resources_out_dir/audits2_worker.js",
   "$resources_out_dir/formatter_worker.js",
   "$resources_out_dir/heap_snapshot_worker.js",
   "$resources_out_dir/utility_shared_worker.js",
@@ -803,6 +810,7 @@ generated_resources = [
   # this contains non-autostart non-remote modules only.
   "$resources_out_dir/animation/animation_module.js",
   "$resources_out_dir/audits/audits_module.js",
+  "$resources_out_dir/audits2_worker/audits2_worker_module.js",
   "$resources_out_dir/audits2/audits2_module.js",
   "$resources_out_dir/cm/cm_module.js",
   "$resources_out_dir/color_picker/color_picker_module.js",
@@ -847,6 +855,7 @@ devtools_applications = [
   "toolbox",
   "unit_test_runner",
   "formatter_worker",
+  "audits2_worker",
   "heap_snapshot_worker",
   "utility_shared_worker",
 ]
@@ -947,7 +956,7 @@ action("supported_css_properties") {
   script = "scripts/build/generate_supported_css.py"
 
   inputs = [
-    "../core/css/CSSProperties.in",
+    "../core/css/CSSProperties.json5",
   ]
 
   outputs = [

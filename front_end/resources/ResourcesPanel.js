@@ -395,7 +395,7 @@ Resources.ResourcesPanel = class extends UI.PanelWithSidebar {
    */
   addCookieDocument(frame) {
     var parsedURL = frame.url.asParsedURL();
-    if (!parsedURL)
+    if (!parsedURL || (parsedURL.scheme !== 'http' && parsedURL.scheme !== 'https' && parsedURL.scheme !== 'file'))
       return;
 
     var domain = parsedURL.securityOrigin();
@@ -1671,7 +1671,7 @@ Resources.IDBDatabaseTreeElement = class extends Resources.BaseStorageTreeElemen
   onselect(selectedByUser) {
     super.onselect(selectedByUser);
     if (!this._view)
-      this._view = new Resources.IDBDatabaseView(this._database);
+      this._view = new Resources.IDBDatabaseView(this._model, this._database);
 
     this._storagePanel._innerShowView(this._view);
     return false;

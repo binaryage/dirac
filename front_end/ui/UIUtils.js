@@ -1287,7 +1287,7 @@ UI.createCheckboxLabel = function(title, checked, subtitle) {
   var element = createElement('label', 'dt-checkbox');
   element.checkboxElement.checked = !!checked;
   if (title !== undefined) {
-    element.textElement = element.createChild('div', 'dt-checkbox-text');
+    element.textElement = element.shadowRoot.createChild('div', 'dt-checkbox-text');
     element.textElement.textContent = title;
     if (subtitle !== undefined) {
       element.subtitleElement = element.textElement.createChild('div', 'dt-checkbox-subtitle');
@@ -1354,10 +1354,9 @@ UI.appendStyle = function(node, cssFile) {
      * @this {Element}
      */
     createdCallback: function() {
-      this.radioElement = this.createChild('input', 'dt-radio-button');
-      this.radioElement.type = 'radio';
       var root = UI.createShadowRootWithCoreStyles(this, 'ui/radioButton.css');
-      root.createChild('content').select = '.dt-radio-button';
+      this.radioElement = root.createChild('input', 'dt-radio-button');
+      this.radioElement.type = 'radio';
       root.createChild('content');
       this.addEventListener('click', radioClickHandler, false);
     },
@@ -2038,3 +2037,43 @@ UI.createFileSelectorElement = function(callback) {
  * @type {number}
  */
 UI.MaxLengthForDisplayedURLs = 150;
+
+/**
+ * @unrestricted
+ */
+UI.ConfirmDialog = class extends UI.VBox {
+  /**
+   * @param {string} message
+   * @param {!Function} callback
+   */
+  static show(message, callback) {
+    var dialog = new UI.Dialog();
+    dialog.setWrapsContent(true);
+    dialog.addCloseButton();
+    dialog.setDimmed(true);
+    new UI
+        .ConfirmDialog(
+            message,
+            () => {
+              dialog.detach();
+              callback();
+            },
+            () => dialog.detach())
+        .show(dialog.element);
+    dialog.show();
+  }
+
+  /**
+   * @param {string} message
+   * @param {!Function} okCallback
+   * @param {!Function} cancelCallback
+   */
+  constructor(message, okCallback, cancelCallback) {
+    super(true);
+    this.registerRequiredCSS('ui/confirmDialog.css');
+    this.contentElement.createChild('div', 'message').createChild('span').textContent = message;
+    var buttonsBar = this.contentElement.createChild('div', 'button');
+    buttonsBar.appendChild(UI.createTextButton(Common.UIString('Ok'), okCallback));
+    buttonsBar.appendChild(UI.createTextButton(Common.UIString('Cancel'), cancelCallback));
+  }
+};
