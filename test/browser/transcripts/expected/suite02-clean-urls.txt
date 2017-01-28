@@ -50,8 +50,8 @@ stdout           displayed 9 items:
                   * core.cljs?rel=*** / core.cljs?rel=***
                   * core.cljs?rel=*** / core.cljs?rel=***
                   * breakpoint.cljs…*** / breakpoint.cljs?rel=***
-                  * core.cljs?rel=***…*** / core.cljs?rel=***
-                  * core.cljs?rel=***…*** / core.cljs?rel=***
+                  * core.cljs:<line> / core.cljs:<line>
+                  * core.cljs:<line> / core.cljs:<line>
                   * scenario.cljs?r…*** / scenario.cljs?rel=***
                   * scenario.cljs?r…*** / scenario.cljs?rel=***
                   * notifications.c…*** / notifications.cljs?rel=***
