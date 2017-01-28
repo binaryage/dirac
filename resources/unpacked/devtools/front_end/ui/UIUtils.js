@@ -752,8 +752,13 @@ UI.anotherProfilerActiveLabel = function() {
  * @return {string}
  */
 UI.asyncStackTraceLabel = function(description) {
-  if (description)
+  if (description) {
+    if (description === 'Promise.resolve')
+      description = Common.UIString('Promise resolved');
+    else if (description === 'Promise.reject')
+      description = Common.UIString('Promise rejected');
     return description + ' ' + Common.UIString('(async)');
+  }
   return Common.UIString('Async Call');
 };
 
@@ -1357,9 +1362,10 @@ UI.appendStyle = function(node, cssFile) {
      * @this {Element}
      */
     createdCallback: function() {
-      var root = UI.createShadowRootWithCoreStyles(this, 'ui/radioButton.css');
-      this.radioElement = root.createChild('input', 'dt-radio-button');
+      this.radioElement = this.createChild('input', 'dt-radio-button');
       this.radioElement.type = 'radio';
+      var root = UI.createShadowRootWithCoreStyles(this, 'ui/radioButton.css');
+      root.createChild('content').select = '.dt-radio-button';
       root.createChild('content');
       this.addEventListener('click', radioClickHandler, false);
     },
@@ -1397,7 +1403,8 @@ UI.appendStyle = function(node, cssFile) {
        * @this {Node}
        */
       function toggleCheckbox(event) {
-        if (event.target !== checkboxElement && event.target !== this) {
+        var deepTarget = event.deepElementFromPoint();
+        if (deepTarget !== checkboxElement && deepTarget !== this) {
           event.consume();
           checkboxElement.click();
         }
