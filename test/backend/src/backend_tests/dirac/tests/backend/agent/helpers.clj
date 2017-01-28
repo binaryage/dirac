@@ -5,7 +5,7 @@
             [clojure.pprint :refer [pprint]]
             [dirac.tests.backend.agent.state :refer [received-messages]]))
 
-(def ^:dynamic default-message-timeout 2000)
+(def ^:dynamic default-message-timeout 10000)
 
 (defn report-error! [msg]
   (log/error "Received messages:\n" (with-out-str (pprint @received-messages)))
