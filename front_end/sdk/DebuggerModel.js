@@ -36,7 +36,7 @@ SDK.DebuggerModel = class extends SDK.SDKModel {
    * @param {!SDK.Target} target
    */
   constructor(target) {
-    super(SDK.DebuggerModel, target);
+    super(target);
 
     target.registerDebuggerDispatcher(new SDK.DebuggerDispatcher(this));
     this._agent = target.debuggerAgent();
@@ -84,9 +84,7 @@ SDK.DebuggerModel = class extends SDK.SDKModel {
    * @return {?SDK.DebuggerModel}
    */
   static fromTarget(target) {
-    if (!target || !target.hasJSCapability())
-      return null;
-    return target.model(SDK.DebuggerModel);
+    return target ? target.model(SDK.DebuggerModel) : null;
   }
 
   /**
@@ -837,6 +835,8 @@ SDK.DebuggerModel = class extends SDK.SDKModel {
   }
 };
 
+SDK.SDKModel.register(SDK.DebuggerModel, SDK.Target.Capability.JS);
+
 /** @typedef {{location: ?SDK.DebuggerModel.Location, functionName: string}} */
 SDK.DebuggerModel.FunctionDetails;
 
@@ -1355,7 +1355,7 @@ SDK.DebuggerPausedDetails = class extends SDK.SDKObject {
     while (stack) {
       if (stack.description === 'async function' && stack.callFrames.length)
         stack.callFrames.shift();
-      if (previous && !stack.callFrames.length)
+      if (previous && (!stack.callFrames.length && !stack.promiseCreationFrame))
         previous.parent = stack.parent;
       else
         previous = stack;
