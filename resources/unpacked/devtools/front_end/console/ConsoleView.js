@@ -1831,7 +1831,7 @@ Console.ConsoleDiracMarkup = class extends Console.ConsoleViewMessage {
       this._contentElement.message = this;
 
       this._formattedCommand = createElementWithClass("span", "console-message-text source-code");
-      this._formattedCommand.innerHTML = this._message.messageText;
+      this._formattedCommand.innerHTML = this.consoleMessage().messageText;
       this._contentElement.appendChild(this._formattedCommand);
 
       this.element().classList.add("dirac-flavor"); // applied to wrapper element

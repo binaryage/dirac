@@ -236,7 +236,7 @@ Object.assign(window.dirac, (function() {
         resolve(result);
       }
 
-      remoteObject.getAllProperties(false, processProperties);
+      remoteObject.getAllProperties(false, false, processProperties);
     });
   }
 

@@ -68,6 +68,14 @@ Console.DiracPromptWithHistory = class extends UI.TextPrompt {
    * @override
    * @return {boolean}
    */
+  _isSuggestBoxVisible() {
+    return this._suggestBox && this._suggestBox.visible();
+  }
+
+  /**
+   * @override
+   * @return {boolean}
+   */
   isCaretInsidePrompt() {
     return this._codeMirror.hasFocus();
   }
@@ -848,6 +856,15 @@ Console.DiracPromptWithHistory = class extends UI.TextPrompt {
     }
 
     return res.join("\n");
+  }
+
+  /**
+   * @return {?Range}
+   * @override
+   * @suppressGlobalPropertiesCheck
+   */
+  _createRange() {
+    return document.createRange();
   }
 
   /**
