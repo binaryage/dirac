@@ -225,7 +225,7 @@ Object.assign(window.dirac, (function() {
             const propertyRecord = {name: property.name};
             if (property.resolutionSourceProperty) {
               const identifier = property.resolutionSourceProperty.name;
-              if (identifier != property.name) {
+              if (identifier !== property.name) {
                 propertyRecord.identifier = identifier;
               }
             }
@@ -553,7 +553,7 @@ Object.assign(window.dirac, (function() {
       const removedNames = [];
       for (let namespaceName of Object.keys(namespaces)) {
         const descriptor = namespaces[namespaceName];
-        if (descriptor.url == url) {
+        if (descriptor.url === url) {
           delete namespaces[namespaceName];
           removedNames.push(namespaceName);
         }
@@ -708,7 +708,7 @@ Object.assign(window.dirac, (function() {
         }
         for (const symbol of Object.keys(refers)) {
           const ns = refers[symbol];
-          if (ns == namespaceName) {
+          if (ns === namespaceName) {
             symbols.push(symbol);
           }
         }
