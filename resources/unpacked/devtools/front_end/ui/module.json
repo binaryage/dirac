@@ -80,6 +80,7 @@
         "splitWidget.css",
         "toolbar.css",
         "suggestBox.css",
+        "suggestBox-dirac.css",
         "tabbedPane.css",
         "textButton.css",
         "textPrompt.css",

@@ -445,6 +445,7 @@ UI.SuggestBox.Overlay = class {
   constructor() {
     this.element = createElementWithClass('div', 'suggest-box-overlay');
     var root = UI.createShadowRootWithCoreStyles(this.element, 'ui/suggestBox.css');
+    UI.appendStyle(root, "ui/suggestBox-dirac.css");
     this._leftSpacerElement = root.createChild('div', 'suggest-box-left-spacer');
     this._horizontalElement = root.createChild('div', 'suggest-box-horizontal');
     this._topSpacerElement = this._horizontalElement.createChild('div', 'suggest-box-top-spacer');
