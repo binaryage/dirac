@@ -645,10 +645,9 @@ Doc.prototype = {
 /** @constructor */
 var CodeMirror = function(element, config) {};
 CodeMirror.on = function(obj, type, handler) {};
-//noinspection JSValidateTypes
 CodeMirror.prototype = {
   /** @type {!Doc} */
-  doc: 0,
+  doc: null,
   addKeyMap: function(map) {},
   addLineClass: function(handle, where, cls) {},
   /**
