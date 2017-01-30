@@ -110,14 +110,14 @@ sys.excepthook = error_excepthook
 # <------- cut here
 # darwin: I have deliberately touched these descriptors so I bump into conflicts when anyone touches this
 # => we need to update our release script in scripts/release.sh
-application_descriptors = [
-    'inspector.json',
-    'toolbox.json',
-    'unit_test_runner.json',
-    'formatter_worker.json',
-    'heap_snapshot_worker.json',
-    'utility_shared_worker.json',
-]
+application_descriptors = [ #
+    'inspector.json', #
+    'toolbox.json', #
+    'unit_test_runner.json', #
+    'formatter_worker.json', #
+    'heap_snapshot_worker.json', #
+    'utility_shared_worker.json', #
+] #
 # <------- cut here
 
 
