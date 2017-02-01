@@ -323,22 +323,22 @@ SDK.TextSourceMap = class {
    * @return {?SDK.SourceMapEntry}
    */
   findEntry(lineNumber, columnNumber) {
-    var first = 0;
-    var mappings = this.mappings();
-    var count = mappings.length;
-    while (count > 1) {
-      var step = count >> 1;
-      var middle = first + step;
-      var mapping = mappings[middle];
-      if (lineNumber < mapping.lineNumber ||
-          (lineNumber === mapping.lineNumber && columnNumber < mapping.columnNumber)) {
-        count = step;
+    const mappings = this.mappings();
+    if (mappings.length <= 0) {
+      return null;
+    }
+    let first = 0;
+    let last = mappings.length - 1;
+    while (first < last) {
+      const middle = first + Math.floor((last + 1 - first) / 2);
+      const entry = mappings[middle];
+      if (lineNumber < entry.lineNumber || (lineNumber === entry.lineNumber && columnNumber < entry.columnNumber)) {
+        last = middle - 1;
       } else {
         first = middle;
-        count -= step;
       }
     }
-    var entry = mappings[first];
+    const entry = mappings[first];
     if (entry && entry.lineNumber === lineNumber && entry.columnNumber <= columnNumber) {
       return entry;
     } else {
