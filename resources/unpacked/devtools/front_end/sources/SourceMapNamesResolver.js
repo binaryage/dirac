@@ -22,6 +22,36 @@ Sources.SourceMapNamesResolver.Identifier = class {
   }
 };
 
+Sources.SourceMapNamesResolver.NameDescriptor = class {
+  /**
+   * @param {string} name
+   * @param {number|undefined} lineNumber
+   * @param {number|undefined} columnNumber
+   */
+  constructor(name, lineNumber, columnNumber) {
+    this.name = name;
+    this.lineNumber = lineNumber;
+    this.columnNumber = columnNumber;
+  }
+};
+
+
+Sources.SourceMapNamesResolver.MappingRecord = class {
+  /**
+   * @param {!Sources.SourceMapNamesResolver.NameDescriptor} compiledNameDescriptor
+   * @param {!Sources.SourceMapNamesResolver.NameDescriptor} originalNameDescriptor
+   */
+  constructor(compiledNameDescriptor, originalNameDescriptor) {
+    this.compiledNameDescriptor = compiledNameDescriptor;
+    this.originalNameDescriptor = originalNameDescriptor;
+  }
+};
+
+/**
+ * @typedef {!Array<!Sources.SourceMapNamesResolver.MappingRecord>}
+ */
+Sources.SourceMapNamesResolver.Mapping;
+
 /**
  * @param {!SDK.DebuggerModel.Scope} scope
  * @return {!Promise<!Array<!Sources.SourceMapNamesResolver.Identifier>>}
@@ -80,7 +110,7 @@ Sources.SourceMapNamesResolver._scopeIdentifiers = function(scope) {
 
 /**
  * @param {!SDK.DebuggerModel.Scope} scope
- * @return {!Promise.<!Map<string, string>>}
+ * @return {!Promise.<!Sources.SourceMapNamesResolver.Mapping>}
  */
 Sources.SourceMapNamesResolver._resolveScope = function(scope) {
   var identifiersPromise = scope[Sources.SourceMapNamesResolver._cachedIdentifiersSymbol];
@@ -90,7 +120,7 @@ Sources.SourceMapNamesResolver._resolveScope = function(scope) {
   var script = scope.callFrame().script;
   var sourceMap = Bindings.debuggerWorkspaceBinding.sourceMapForScript(script);
   if (!sourceMap)
-    return Promise.resolve(new Map());
+    return Promise.resolve([]);
 
   /** @type {!Map<string, !Common.Text>} */
   var textCache = new Map();
@@ -100,46 +130,50 @@ Sources.SourceMapNamesResolver._resolveScope = function(scope) {
 
   /**
    * @param {!Array<!Sources.SourceMapNamesResolver.Identifier>} identifiers
-   * @return {!Promise<!Map<string, string>>}
+   * @return {!Promise<!Sources.SourceMapNamesResolver.Mapping>}
    */
   function onIdentifiers(identifiers) {
-    var namesMapping = new Map();
+    var namesMapping = [];
+    var missingIdentifiers = [];
     // Extract as much as possible from SourceMap.
     for (var i = 0; i < identifiers.length; ++i) {
       var id = identifiers[i];
       var entry = sourceMap.findEntry(id.lineNumber, id.columnNumber);
-      if (entry && entry.name)
-        namesMapping.set(id.name, entry.name);
+      if (entry && entry.name) {
+        const compiled = new Sources.SourceMapNamesResolver.NameDescriptor(
+          id.name, id.lineNumber, id.columnNumber);
+        const original = new Sources.SourceMapNamesResolver.NameDescriptor(
+          entry.name, entry.sourceLineNumber, entry.sourceColumnNumber);
+        namesMapping.push(new Sources.SourceMapNamesResolver.MappingRecord(compiled, original));
+      } else {
+        missingIdentifiers.push(id);
+      }
     }
 
     // Resolve missing identifier names from sourcemap ranges.
-    var promises = [];
-    for (var i = 0; i < identifiers.length; ++i) {
-      var id = identifiers[i];
-      if (namesMapping.has(id.name))
-        continue;
-      var promise = resolveSourceName(id).then(onSourceNameResolved.bind(null, namesMapping, id));
-      promises.push(promise);
-    }
+    var promises = missingIdentifiers.map(id => {
+      return resolveSourceName(id).then(onSourceNameResolved.bind(null, namesMapping, id));
+    });
     return Promise.all(promises)
         .then(() => Sources.SourceMapNamesResolver._scopeResolvedForTest())
         .then(() => namesMapping);
   }
 
   /**
-   * @param {!Map<string, string>} namesMapping
+   * @param {!Sources.SourceMapNamesResolver.Mapping} namesMapping
    * @param {!Sources.SourceMapNamesResolver.Identifier} id
-   * @param {?string} sourceName
+   * @param {?Sources.SourceMapNamesResolver.NameDescriptor} originalNameDescriptor
    */
-  function onSourceNameResolved(namesMapping, id, sourceName) {
-    if (!sourceName)
+  function onSourceNameResolved(namesMapping, id, originalNameDescriptor) {
+    if (!originalNameDescriptor)
       return;
-    namesMapping.set(id.name, sourceName);
+    const compiled = new Sources.SourceMapNamesResolver.NameDescriptor(id.name, id.lineNumber, id.columnNumber);
+    namesMapping.push(new Sources.SourceMapNamesResolver.MappingRecord(compiled, originalNameDescriptor));
   }
 
   /**
    * @param {!Sources.SourceMapNamesResolver.Identifier} id
-   * @return {!Promise<?string>}
+   * @return {!Promise<?Sources.SourceMapNamesResolver.NameDescriptor>}
    */
   function resolveSourceName(id) {
     var startEntry = sourceMap.findEntry(id.lineNumber, id.columnNumber);
@@ -147,24 +181,27 @@ Sources.SourceMapNamesResolver._resolveScope = function(scope) {
     if (!startEntry || !endEntry || !startEntry.sourceURL || startEntry.sourceURL !== endEntry.sourceURL ||
         !startEntry.sourceLineNumber || !startEntry.sourceColumnNumber || !endEntry.sourceLineNumber ||
         !endEntry.sourceColumnNumber)
-      return Promise.resolve(/** @type {?string} */ (null));
+      return Promise.resolve(/** @type {?Sources.SourceMapNamesResolver.NameDescriptor} */(null));
     var sourceTextRange = new Common.TextRange(
         startEntry.sourceLineNumber, startEntry.sourceColumnNumber, endEntry.sourceLineNumber,
         endEntry.sourceColumnNumber);
     var uiSourceCode =
         Bindings.NetworkProject.uiSourceCodeForScriptURL(Workspace.workspace, startEntry.sourceURL, script);
     if (!uiSourceCode)
-      return Promise.resolve(/** @type {?string} */ (null));
+      return Promise.resolve(/** @type {?Sources.SourceMapNamesResolver.NameDescriptor} */(null));
 
-    return uiSourceCode.requestContent().then(onSourceContent.bind(null, sourceTextRange));
+    return uiSourceCode.requestContent().then(onSourceContent.bind(null,
+      sourceTextRange, startEntry.sourceLineNumber, startEntry.sourceColumnNumber));
   }
 
   /**
    * @param {!Common.TextRange} sourceTextRange
+   * @param {number} line
+   * @param {number} column
    * @param {?string} content
-   * @return {?string}
+   * @return {?Sources.SourceMapNamesResolver.NameDescriptor}
    */
-  function onSourceContent(sourceTextRange, content) {
+  function onSourceContent(sourceTextRange, line, column, content) {
     if (!content)
       return null;
     var text = textCache.get(content);
@@ -173,7 +210,10 @@ Sources.SourceMapNamesResolver._resolveScope = function(scope) {
       textCache.set(content, text);
     }
     var originalIdentifier = text.extract(sourceTextRange).trim();
-    return /[a-zA-Z0-9_$]+/.test(originalIdentifier) ? originalIdentifier : null;
+    if (!/[a-zA-Z0-9_$]+/.test(originalIdentifier)) {
+      return null;
+    }
+    return new Sources.SourceMapNamesResolver.NameDescriptor(originalIdentifier, line, column);
   }
 };
 
@@ -181,7 +221,7 @@ Sources.SourceMapNamesResolver._scopeResolvedForTest = function() {};
 
 /**
  * @param {!SDK.DebuggerModel.CallFrame} callFrame
- * @return {!Promise.<!Map<string, string>>}
+ * @return {!Promise.<!Sources.SourceMapNamesResolver.Mapping>}
  */
 Sources.SourceMapNamesResolver._allVariablesInCallFrame = function(callFrame) {
   var cached = callFrame[Sources.SourceMapNamesResolver._cachedMapSymbol];
@@ -196,21 +236,74 @@ Sources.SourceMapNamesResolver._allVariablesInCallFrame = function(callFrame) {
   return Promise.all(promises).then(mergeVariables);
 
   /**
-   * @param {!Array<!Map<string, string>>} nameMappings
-   * @return {!Map<string, string>}
+   * @param {!Array<!Sources.SourceMapNamesResolver.Mapping>} nameMappings
+   * @return {!Sources.SourceMapNamesResolver.Mapping}
    */
   function mergeVariables(nameMappings) {
-    var reverseMapping = new Map();
-    for (var map of nameMappings) {
-      for (var compiledName of map.keys()) {
-        var originalName = map.get(compiledName);
-        if (!reverseMapping.has(originalName))
-          reverseMapping.set(originalName, compiledName);
-      }
-    }
-    callFrame[Sources.SourceMapNamesResolver._cachedMapSymbol] = reverseMapping;
-    return reverseMapping;
+    const mapping = Array.prototype.concat.apply([], nameMappings);
+    callFrame[Sources.SourceMapNamesResolver._cachedMapSymbol] = mapping;
+    return mapping;
   }
+};
+
+/**
+ * @param {!Sources.SourceMapNamesResolver.Mapping} mapping
+ * @param {string} name
+ * @param {number} line
+ * @param {number} column
+ * @return {?Sources.SourceMapNamesResolver.MappingRecord}
+ */
+Sources.SourceMapNamesResolver.lookupMappingRecordForOriginalName = function(mapping, name, line, column) {
+  const res = mapping.filter(value => {
+    const desc = value.originalNameDescriptor;
+    return desc.name === name && desc.lineNumber === line && desc.columnNumber === column;
+  });
+  if (res.length!==1) {
+    return null;
+  }
+  return res[0];
+};
+
+/**
+ * @param {!Sources.SourceMapNamesResolver.Mapping} mapping
+ * @param {string} name
+ * @param {number} line
+ * @param {number} column
+ * @return {?Sources.SourceMapNamesResolver.MappingRecord}
+ */
+Sources.SourceMapNamesResolver.lookupMappingRecordForCompiledName = function(mapping, name, line, column) {
+  const res = mapping.filter(value => {
+    const desc = value.compiledNameDescriptor;
+    return desc.name === name && desc.lineNumber === line && desc.columnNumber === column;
+  });
+  if (res.length!==1) {
+    return null;
+  }
+  return res[0];
+};
+
+/**
+ * @param {!Sources.SourceMapNamesResolver.Mapping} mapping
+ * @param {string} name
+ * @return {!Array<!Sources.SourceMapNamesResolver.MappingRecord>}
+ */
+Sources.SourceMapNamesResolver.collectMappingRecordsForOriginalName = function(mapping, name) {
+  return mapping.filter(value => {
+    const desc = value.originalNameDescriptor;
+    return desc.name === name;
+  });
+};
+
+/**
+ * @param {!Sources.SourceMapNamesResolver.Mapping} mapping
+ * @param {string} name
+ * @return {!Array<!Sources.SourceMapNamesResolver.MappingRecord>}
+ */
+Sources.SourceMapNamesResolver.collectMappingRecordsForCompiledName = function(mapping, name) {
+  return mapping.filter(value => {
+    const desc = value.compiledNameDescriptor;
+    return desc.name === name;
+  });
 };
 
 /**
@@ -230,12 +323,15 @@ Sources.SourceMapNamesResolver.resolveExpression = function(
   return Sources.SourceMapNamesResolver._allVariablesInCallFrame(callFrame).then(findCompiledName);
 
   /**
-   * @param {!Map<string, string>} reverseMapping
+   * @param {!Sources.SourceMapNamesResolver.Mapping} mapping
    * @return {!Promise<string>}
    */
-  function findCompiledName(reverseMapping) {
-    if (reverseMapping.has(originalText))
-      return Promise.resolve(reverseMapping.get(originalText) || '');
+  function findCompiledName(mapping) {
+    const record = Sources.SourceMapNamesResolver.lookupMappingRecordForOriginalName(mapping,
+      originalText, lineNumber, startColumnNumber);
+    if (record) {
+      return Promise.resolve(record.compiledNameDescriptor.name);
+    }
 
     return Sources.SourceMapNamesResolver._resolveExpression(
         callFrame, uiSourceCode, lineNumber, startColumnNumber, endColumnNumber);
@@ -298,18 +394,18 @@ Sources.SourceMapNamesResolver.resolveThisObject = function(callFrame) {
   return Sources.SourceMapNamesResolver._resolveScope(callFrame.scopeChain()[0]).then(onScopeResolved);
 
   /**
-   * @param {!Map<string, string>} namesMapping
+   * @param {!Sources.SourceMapNamesResolver.Mapping} namesMapping
    * @return {!Promise<?SDK.RemoteObject>}
    */
   function onScopeResolved(namesMapping) {
-    var thisMappings = namesMapping.inverse().get('this');
-    if (!thisMappings || thisMappings.size !== 1)
+    const thisRecords = Sources.SourceMapNamesResolver.collectMappingRecordsForOriginalName(namesMapping, 'this');
+    if (thisRecords.size !== 1)
       return Promise.resolve(callFrame.thisObject());
 
-    var thisMapping = thisMappings.valuesArray()[0];
+    var compiledName = thisRecords[0].compiledNameDescriptor.name;
     var callback;
     var promise = new Promise(fulfill => callback = fulfill);
-    callFrame.evaluate(thisMapping, 'backtrace', false, true, false, true, onEvaluated.bind(null, callback));
+    callFrame.evaluate(compiledName, 'backtrace', false, true, false, true, onEvaluated.bind(null, callback));
     return promise;
   }
 
@@ -430,17 +526,24 @@ Sources.SourceMapNamesResolver.RemoteObject = class extends SDK.RemoteObject {
     /**
      * @param {?Array.<!SDK.RemoteObjectProperty>} properties
      * @param {?Array.<!SDK.RemoteObjectProperty>} internalProperties
-     * @param {!Map<string, string>} namesMapping
+     * @param {!Sources.SourceMapNamesResolver.Mapping} namesMapping
      */
     function resolveNames(properties, internalProperties, namesMapping) {
       var newProperties = [];
       if (properties) {
         for (var i = 0; i < properties.length; ++i) {
           var property = properties[i];
-          var name = namesMapping.get(property.name) || properties[i].name;
-          newProperties.push(new SDK.RemoteObjectProperty(
-              name, property.value, property.enumerable, property.writable, property.isOwn, property.wasThrown,
-              property.symbol, property.synthetic));
+          var name = property.name;
+          const propertyMapping = Sources.SourceMapNamesResolver.collectMappingRecordsForCompiledName(namesMapping, name);
+          if (propertyMapping.length>0) {
+            // TODO: how to resolve the case when compiled name matches multiple original names?
+            //       currently we don't have any information in property which would help us decide which one to take
+            name = propertyMapping[0].originalNameDescriptor.name;
+          }
+          let newProperty = new SDK.RemoteObjectProperty(
+            name, property.value, property.enumerable, property.writable, property.isOwn, property.wasThrown,
+            property.symbol, property.synthetic);
+          newProperties.push(newProperty);
           newProperties[newProperties.length-1].resolutionSourceProperty = property;
         }
       }
@@ -461,7 +564,7 @@ Sources.SourceMapNamesResolver.RemoteObject = class extends SDK.RemoteObject {
     Sources.SourceMapNamesResolver._resolveScope(this._scope).then(resolveName.bind(this));
 
     /**
-     * @param {!Map<string, string>} namesMapping
+     * @param {!Sources.SourceMapNamesResolver.Mapping} namesMapping
      * @this {Sources.SourceMapNamesResolver.RemoteObject}
      */
     function resolveName(namesMapping) {
@@ -472,11 +575,10 @@ Sources.SourceMapNamesResolver.RemoteObject = class extends SDK.RemoteObject {
         name = /** @type {string} */ (argumentName.value);
 
       var actualName = name;
-      for (var compiledName of namesMapping.keys()) {
-        if (namesMapping.get(compiledName) === name) {
-          actualName = compiledName;
-          break;
-        }
+      let matchingRecords = Sources.SourceMapNamesResolver.collectMappingRecordsForOriginalName(namesMapping, name);
+      if (matchingRecords.length>0) {
+        // TODO: how to resolve the case when original name matches multiple compiled names?
+        actualName = matchingRecords[0].compiledNameDescriptor.name;
       }
       this._object.setPropertyValue(actualName, value, callback);
     }
