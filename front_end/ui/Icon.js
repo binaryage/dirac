@@ -174,9 +174,9 @@ UI.Icon.Descriptors = {
   'largeicon-show-left-sidebar': {x: -160, y: -72, width: 28, height: 24, spritesheet: 'largeicons', isMask: true},
   'largeicon-hide-left-sidebar': {x: -192, y: -72, width: 28, height: 24, spritesheet: 'largeicons', isMask: true},
   'largeicon-show-right-sidebar':
-      {x: -160, y: -72, width: 28, height: 24, spritesheet: 'largeicons', isMask: true, transform: 'rotate(180deg)'},
+      {x: -160, y: -72, width: 28, height: 24, spritesheet: 'largeicons', isMask: true, transform: 'scaleX(-1)'},
   'largeicon-hide-right-sidebar':
-      {x: -192, y: -72, width: 28, height: 24, spritesheet: 'largeicons', isMask: true, transform: 'rotate(180deg)'},
+      {x: -192, y: -72, width: 28, height: 24, spritesheet: 'largeicons', isMask: true, transform: 'scaleX(-1)'},
   'largeicon-show-top-sidebar': {
     x: -160,
     y: -72,
@@ -223,4 +223,11 @@ UI.Icon.Descriptors = {
   'largeicon-navigator-snippet': {x: -224, y: -96, width: 32, height: 24, spritesheet: 'largeicons', isMask: true},
   'largeicon-edit': {x: -160, y: -0, width: 28, height: 24, spritesheet: 'largeicons'},
   'largeicon-chevron': {x: -68, y: -143, width: 24, height: 26, spritesheet: 'largeicons', isMask: true},
+
+  'mediumicon-manifest': {x: 0, y: -0, width: 16, height: 16, spritesheet: 'resourceicons', isMask: true},
+  'mediumicon-service-worker': {x: -20, y: -0, width: 16, height: 16, spritesheet: 'resourceicons', isMask: true},
+  'mediumicon-clear-storage': {x: -40, y: -0, width: 16, height: 16, spritesheet: 'resourceicons', isMask: true},
+  'mediumicon-database': {x: -60, y: -0, width: 16, height: 16, spritesheet: 'resourceicons', isMask: true},
+  'mediumicon-table': {x: -80, y: -0, width: 16, height: 16, spritesheet: 'resourceicons', isMask: true},
+  'mediumicon-cookie': {x: -120, y: -0, width: 16, height: 16, spritesheet: 'resourceicons', isMask: true},
 };
