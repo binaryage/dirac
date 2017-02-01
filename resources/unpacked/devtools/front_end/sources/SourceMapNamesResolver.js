@@ -543,6 +543,11 @@ Sources.SourceMapNamesResolver.RemoteObject = class extends SDK.RemoteObject {
           let newProperty = new SDK.RemoteObjectProperty(
             name, property.value, property.enumerable, property.writable, property.isOwn, property.wasThrown,
             property.symbol, property.synthetic);
+          if (propertyMapping.length>0) {
+            // this is for _prepareScopeVariables, TODO: figure out a better way how to pass this info
+            newProperty.originalNameLineNumber = propertyMapping[0].originalNameDescriptor.lineNumber;
+            newProperty.originalNameColumnNumber = propertyMapping[0].originalNameDescriptor.columnNumber;
+          }
           newProperties.push(newProperty);
           newProperties[newProperties.length-1].resolutionSourceProperty = property;
         }

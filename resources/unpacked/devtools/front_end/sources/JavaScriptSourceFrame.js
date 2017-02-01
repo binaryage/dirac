@@ -614,12 +614,29 @@ Sources.JavaScriptSourceFrame = class extends SourceFrame.UISourceCodeFrame {
       return;
     }
 
-    var valuesMap = new Map();
-    for (var property of properties)
-      valuesMap.set(property.name, property.value);
+    /**
+     * @param {string} name
+     * @param {number|string=} line
+     * @param {number|string=} column
+     * @return {string}
+     */
+    function getLocationId(name, line, column) {
+      line = line || '?';
+      column = column || '?';
+      return `${name}@${line}:${column}`;
+    }
+
+    var infoMap = new Map();
+    for (var property of properties) {
+      const locationId = getLocationId(property.name, property.originalNameLineNumber, property.originalNameColumnNumber);
+      infoMap.set(locationId, {
+        name: property.name,
+        value: property.value
+      });
+    }
 
     /** @type {!Map.<number, !Set<string>>} */
-    var namesPerLine = new Map();
+    var infoIdsPerLine = new Map();
     var skipObjectProperty = false;
     var tokenizer = new TextEditor.CodeMirrorUtils.TokenizerFactory().createTokenizer('text/javascript');
     tokenizer(this.textEditor.line(fromLine).substring(fromColumn), processToken.bind(this, fromLine));
@@ -635,31 +652,41 @@ Sources.JavaScriptSourceFrame = class extends SourceFrame.UISourceCodeFrame {
      * @this {Sources.JavaScriptSourceFrame}
      */
     function processToken(lineNumber, tokenValue, tokenType, column, newColumn) {
-      if (!skipObjectProperty && tokenType && this._isIdentifier(tokenType) && valuesMap.get(tokenValue)) {
-        var names = namesPerLine.get(lineNumber);
-        if (!names) {
-          names = new Set();
-          namesPerLine.set(lineNumber, names);
+      if (!skipObjectProperty && tokenType && this._isIdentifier(tokenType)) {
+        let exists = true;
+        let tokenLocationId = getLocationId(tokenValue, lineNumber, column);
+        if (!infoMap.has(tokenLocationId)) {
+          tokenLocationId = getLocationId(tokenValue); // a case without source-maps
+          if (!infoMap.has(tokenLocationId)) {
+            exists = false;
+          }
         }
-        names.add(tokenValue);
+        if (exists) {
+          var ids = infoIdsPerLine.get(lineNumber);
+          if (!ids) {
+            ids = new Set();
+            infoIdsPerLine.set(lineNumber, ids);
+          }
+          ids.add(tokenLocationId);
+        }
       }
       skipObjectProperty = tokenValue === '.';
     }
-    this.textEditor.operation(this._renderDecorations.bind(this, valuesMap, namesPerLine, fromLine, toLine));
+    this.textEditor.operation(this._renderDecorations.bind(this, infoMap, infoIdsPerLine, fromLine, toLine));
   }
 
   /**
-   * @param {!Map.<string,!SDK.RemoteObject>} valuesMap
-   * @param {!Map.<number, !Set<string>>} namesPerLine
+   * @param {!Map.<string,!{name:string, value: !SDK.RemoteObject}>} infoMap
+   * @param {!Map.<number, !Set<string>>} infoIdsPerLine
    * @param {number} fromLine
    * @param {number} toLine
    */
-  _renderDecorations(valuesMap, namesPerLine, fromLine, toLine) {
+  _renderDecorations(infoMap, infoIdsPerLine, fromLine, toLine) {
     var formatter = new Components.RemoteObjectPreviewFormatter();
     for (var i = fromLine; i < toLine; ++i) {
-      var names = namesPerLine.get(i);
+      var infoIds = infoIdsPerLine.get(i);
       var oldWidget = this._valueWidgets.get(i);
-      if (!names) {
+      if (!infoIds) {
         if (oldWidget) {
           this._valueWidgets.delete(i);
           this.textEditor.removeDecoration(oldWidget, i);
@@ -676,17 +703,18 @@ Sources.JavaScriptSourceFrame = class extends SourceFrame.UISourceCodeFrame {
       widget.__nameToToken = new Map();
 
       var renderedNameCount = 0;
-      for (var name of names) {
+      for (var infoId of infoIds) {
         if (renderedNameCount > 10)
           break;
-        if (namesPerLine.get(i - 1) && namesPerLine.get(i - 1).has(name))
+        if (infoIdsPerLine.get(i - 1) && infoIdsPerLine.get(i - 1).has(infoId))
           continue;  // Only render name once in the given continuous block.
         if (renderedNameCount)
           widget.createTextChild(', ');
         var nameValuePair = widget.createChild('span');
-        widget.__nameToToken.set(name, nameValuePair);
-        nameValuePair.createTextChild(name + ' = ');
-        var value = valuesMap.get(name);
+        widget.__nameToToken.set(infoId, nameValuePair);
+        var info = infoMap.get(infoId);
+        nameValuePair.createTextChild(info.name + ' = ');
+        var value = info.value;
         var propertyCount = value.preview ? value.preview.properties.length : 0;
         var entryCount = value.preview && value.preview.entries ? value.preview.entries.length : 0;
         if (dirac.hasInlineCFs && value.customPreview()) {
