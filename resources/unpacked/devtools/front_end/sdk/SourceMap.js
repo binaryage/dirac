@@ -339,10 +339,11 @@ SDK.TextSourceMap = class {
       }
     }
     var entry = mappings[first];
-    if (!first && entry &&
-        (lineNumber < entry.lineNumber || (lineNumber === entry.lineNumber && columnNumber < entry.columnNumber)))
+    if (entry && entry.lineNumber === lineNumber && entry.columnNumber <= columnNumber) {
+      return entry;
+    } else {
       return null;
-    return entry;
+    }
   }
 
   /**
