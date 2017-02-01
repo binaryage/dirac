@@ -1,5 +1,5 @@
-Protocol.BakedInspectorBackendAPIChromeTag='58.0.2994.3';
-Protocol.BakedInspectorBackendAPIChromeRev='5258bfb4395abf16fca17a6c8fc09ff052eaf845';
+Protocol.BakedInspectorBackendAPIChromeTag='58.0.2999.2';
+Protocol.BakedInspectorBackendAPIChromeRev='7dd42d9e138778bbc6af6c886175302d3f281e08';
 Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerEvent("Inspector.detached", ["reason"]);\n'
 + 'Protocol.inspectorBackend.registerEvent("Inspector.targetCrashed", []);\n'
@@ -357,11 +357,11 @@ Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerEnum("Accessibility.AXValueType", {Boolean: "boolean", Tristate: "tristate", BooleanOrUndefined: "booleanOrUndefined", Idref: "idref", IdrefList: "idrefList", Integer: "integer", Node: "node", NodeList: "nodeList", Number: "number", String: "string", ComputedString: "computedString", Token: "token", TokenList: "tokenList", DomRelation: "domRelation", Role: "role", InternalRole: "internalRole", ValueUndefined: "valueUndefined"});\n'
 + 'Protocol.inspectorBackend.registerEnum("Accessibility.AXValueSourceType", {Attribute: "attribute", Implicit: "implicit", Style: "style", Contents: "contents", Placeholder: "placeholder", RelatedElement: "relatedElement"});\n'
 + 'Protocol.inspectorBackend.registerEnum("Accessibility.AXValueNativeSourceType", {Figcaption: "figcaption", Label: "label", Labelfor: "labelfor", Labelwrapped: "labelwrapped", Legend: "legend", Tablecaption: "tablecaption", Title: "title", Other: "other"});\n'
-+ 'Protocol.inspectorBackend.registerEnum("Accessibility.AXGlobalStates", {Disabled: "disabled", Hidden: "hidden", HiddenRoot: "hiddenRoot", Invalid: "invalid"});\n'
++ 'Protocol.inspectorBackend.registerEnum("Accessibility.AXGlobalStates", {Disabled: "disabled", Hidden: "hidden", HiddenRoot: "hiddenRoot", Invalid: "invalid", Keyshortcuts: "keyshortcuts", Roledescription: "roledescription"});\n'
 + 'Protocol.inspectorBackend.registerEnum("Accessibility.AXLiveRegionAttributes", {Live: "live", Atomic: "atomic", Relevant: "relevant", Busy: "busy", Root: "root"});\n'
 + 'Protocol.inspectorBackend.registerEnum("Accessibility.AXWidgetAttributes", {Autocomplete: "autocomplete", Haspopup: "haspopup", Level: "level", Multiselectable: "multiselectable", Orientation: "orientation", Multiline: "multiline", Readonly: "readonly", Required: "required", Valuemin: "valuemin", Valuemax: "valuemax", Valuetext: "valuetext"});\n'
 + 'Protocol.inspectorBackend.registerEnum("Accessibility.AXWidgetStates", {Checked: "checked", Expanded: "expanded", Pressed: "pressed", Selected: "selected"});\n'
-+ 'Protocol.inspectorBackend.registerEnum("Accessibility.AXRelationshipAttributes", {Activedescendant: "activedescendant", Flowto: "flowto", Controls: "controls", Describedby: "describedby", Labelledby: "labelledby", Owns: "owns"});\n'
++ 'Protocol.inspectorBackend.registerEnum("Accessibility.AXRelationshipAttributes", {Activedescendant: "activedescendant", Controls: "controls", Describedby: "describedby", Details: "details", Errormessage: "errormessage", Flowto: "flowto", Labelledby: "labelledby", Owns: "owns"});\n'
 + 'Protocol.inspectorBackend.registerCommand("Accessibility.getPartialAXTree", [{"name": "nodeId", "type": "number", "optional": false}, {"name": "fetchRelatives", "type": "boolean", "optional": true}], ["nodes"], false);\n'
 + 'Protocol.inspectorBackend.registerEnum("Storage.StorageType", {Appcache: "appcache", Cookies: "cookies", File_systems: "file_systems", Indexeddb: "indexeddb", Local_storage: "local_storage", Shader_cache: "shader_cache", Websql: "websql", Service_workers: "service_workers", Cache_storage: "cache_storage", All: "all"});\n'
 + 'Protocol.inspectorBackend.registerCommand("Storage.clearDataForOrigin", [{"name": "origin", "type": "string", "optional": false}, {"name": "storageTypes", "type": "string", "optional": false}], [], false);\n'

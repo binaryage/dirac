@@ -3437,7 +3437,9 @@ Protocol.Accessibility.AXGlobalStates = {
     Disabled: "disabled",
     Hidden: "hidden",
     HiddenRoot: "hiddenRoot",
-    Invalid: "invalid"
+    Invalid: "invalid",
+    Keyshortcuts: "keyshortcuts",
+    Roledescription: "roledescription"
 };
 
 /** @enum {string} */
@@ -3475,9 +3477,11 @@ Protocol.Accessibility.AXWidgetStates = {
 /** @enum {string} */
 Protocol.Accessibility.AXRelationshipAttributes = {
     Activedescendant: "activedescendant",
-    Flowto: "flowto",
     Controls: "controls",
     Describedby: "describedby",
+    Details: "details",
+    Errormessage: "errormessage",
+    Flowto: "flowto",
     Labelledby: "labelledby",
     Owns: "owns"
 };
