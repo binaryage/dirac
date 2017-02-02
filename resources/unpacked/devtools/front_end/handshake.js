@@ -9,13 +9,15 @@
 // Here we store the data into localStorage and let frontend read it later.
 // See Protocol.InspectorBackendExtensionMode and SDK.SupportedCSSPropertiesExtensionMode for further details.
 
-const encodedBackendAPI = Runtime.queryParam("backend_api");
+const params = new URL(document.location.href).searchParams; // http://stackoverflow.com/a/12151322/84283
+
+const encodedBackendAPI = params.get("backend_api");
 if (encodedBackendAPI) {
   const backendAPI = decodeURIComponent(encodedBackendAPI);
   localStorage.setItem('dirac_backend_api', backendAPI);
 }
 
-const encodedBackendCSS = Runtime.queryParam("backend_css");
+const encodedBackendCSS = params.get("backend_css");
 if (encodedBackendCSS) {
   const backendCSS = decodeURIComponent(encodedBackendCSS);
   localStorage.setItem('dirac_backend_css', backendCSS);
