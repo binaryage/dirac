@@ -186,7 +186,8 @@
       (<! (console-enter! devtools-id input))
       (doseq [match matches]
         (<! (wait-for-devtools-match devtools-id match)))
-      (<! (wait-for-devtools-match devtools-id "repl eval job ended")))))
+      (<! (wait-for-devtools-match devtools-id "repl eval job ended"))
+      (<! (timeout 100)))))                                                                                                   ; this timeout is a hack, for some reason feedback from following commands came before
 
 (defn ^:devtools enable-console-feedback! [devtools-id]
   (verbs/automate-devtools! devtools-id {:action :enable-console-feedback}))

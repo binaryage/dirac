@@ -1,6 +1,6 @@
 (def clj-logging-config-version "1.9.12")
 (def slf4j-log4j12-version "1.7.22")
-(defproject binaryage/dirac "1.1.1"
+(defproject binaryage/dirac "1.1.2"
   :description "Dirac DevTools - a Chrome DevTools fork for ClojureScript developers."
   :url "https://github.com/binaryage/dirac"
   :license {:name         "MIT License"
@@ -10,7 +10,7 @@
         :url  "https://github.com/binaryage/dirac"}
 
   :dependencies [[org.clojure/clojure "1.9.0-alpha14" :scope "provided"]
-                 [org.clojure/clojurescript "1.9.293" :scope "provided"]
+                 [org.clojure/clojurescript "1.9.456" :scope "provided"]
                  [org.clojure/core.async "0.2.395"]
                  [org.clojure/tools.logging "0.3.1"]
                  [org.clojure/tools.cli "0.3.5"]
@@ -28,7 +28,7 @@
                  [binaryage/devtools "0.9.0" :scope "test"]
                  [environ "1.1.0" :scope "test"]
                  [cljs-http "0.1.42" :scope "test"]
-                 [figwheel "0.5.8" :scope "test"]
+                 [figwheel "0.5.9" :scope "test"]
                  [reforms "0.4.3" :scope "test"]
                  [rum "0.9.1" :scope "test"]
                  [rum-reforms "0.4.3" :scope "test"]
@@ -167,7 +167,7 @@
 
              :cljs
              {:plugins [[lein-cljsbuild "1.1.4"]
-                        [lein-figwheel "0.5.8"]]}
+                        [lein-figwheel "0.5.9"]]}
 
              :nuke-aliases
              {:aliases ^:replace {}}

@@ -109,7 +109,7 @@
     background-color: rgba(255, 255, 255, 0.7);
     padding: 0 4px;
     position: absolute;
-    top: 0;
+    top: -2px;
     right: 0;
 }
 
@@ -118,7 +118,7 @@
 }
 
 #timeline-overview-network {
-    flex-basis: 12px;
+    flex-basis: 8px;
 }
 
 #timeline-overview-framerate {
@@ -340,6 +340,7 @@
     overflow: auto;
     position: relative;
     background-color: #f3f3f3;
+    -webkit-user-select: text;
 }
 
 .timeline-details-view-body > div {
@@ -560,7 +561,7 @@
 
 .timeline-tree-view .data-grid span.percent-column {
     color: #888;
-    width: 44px;
+    width: 45px;
     display: inline-block;
 }
 
@@ -612,14 +613,14 @@
 
 .timeline-tree-view .data-grid .background-bar {
     float: right;
-    height: 15px;
+    height: 18px;
     background-color: hsla(43, 84%, 64%, 0.2);
     border-bottom: 1px solid hsl(43, 84%, 64%);
 }
 
 .timeline-tree-view .data-grid .selected .background-bar {
     background-color: rgba(255, 255, 255, 0.25);
-    border-bottom-color: transparent;
+    border-bottom-color: rgba(255, 255, 255, 0.5);
 }
 
 .timeline-tree-view .timeline-details-view-body .full-widget-dimmed-banner {
@@ -636,11 +637,6 @@
 
 .timeline-tree-view .data-grid .data-container {
     top: 21px;
-}
-
-.timeline-tree-view .data-grid th {
-    border-bottom: 1px solid #ddd;
-    background-color: #f3f3f3
 }
 
 .timeline-stack-view-header {
@@ -673,8 +669,15 @@
 
 .timeline-landing-warning {
     background-color: #fffde7;
-    padding: 10px 14px;
+    padding: 16px 20px;
+    margin-top: 40px;
     box-shadow: 1px 1px 3px rgba(0,0,0,0.2);
+}
+
+.timeline-landing-warning-close {
+    float: right;
+    margin-top: -10px;
+    margin-right: -13px;
 }
 
 .timeline-landing-warning span[is=ui-icon] {

@@ -34,10 +34,9 @@
 SDK.ConsoleModel = class extends SDK.SDKModel {
   /**
    * @param {!SDK.Target} target
-   * @param {?Protocol.LogAgent} logAgent
    */
-  constructor(target, logAgent) {
-    super(SDK.ConsoleModel, target);
+  constructor(target) {
+    super(target);
 
     /** @type {!Array.<!SDK.ConsoleMessage>} */
     this._messages = [];
@@ -45,7 +44,8 @@ SDK.ConsoleModel = class extends SDK.SDKModel {
     this._messageByExceptionId = new Map();
     this._warnings = 0;
     this._errors = 0;
-    this._logAgent = logAgent;
+    /** @type {?Protocol.LogAgent} */
+    this._logAgent = target.hasLogCapability() ? target.logAgent() : null;
     if (this._logAgent) {
       target.registerLogDispatcher(new SDK.LogDispatcher(this));
       this._logAgent.enable();
@@ -233,6 +233,8 @@ SDK.ConsoleModel = class extends SDK.SDKModel {
   }
 };
 
+SDK.SDKModel.register(SDK.ConsoleModel, SDK.Target.Capability.None);
+
 /** @enum {symbol} */
 SDK.ConsoleModel.Events = {
   ConsoleCleared: Symbol('ConsoleCleared'),
@@ -282,7 +284,7 @@ SDK.ConsoleMessage = class {
       workerId) {
     this._target = target;
     this.source = source;
-    this.level = level;
+    this.level = /** @type {?SDK.ConsoleMessage.MessageLevel} */ (level);
     this.messageText = messageText;
     this.type = type || SDK.ConsoleMessage.MessageType.Log;
     /** @type {string|undefined} */
@@ -530,6 +532,19 @@ SDK.ConsoleMessage.MessageLevel = {
   Error: 'error'
 };
 
+/**
+ * @param {!SDK.ConsoleMessage.MessageLevel} level
+ * @return {number}
+ */
+SDK.ConsoleMessage.MessageLevel.ordinal = function(level) {
+  if (level === SDK.ConsoleMessage.MessageLevel.Verbose)
+    return 0;
+  if (level === SDK.ConsoleMessage.MessageLevel.Info)
+    return 1;
+  if (level === SDK.ConsoleMessage.MessageLevel.Warning)
+    return 2;
+  return 3;
+};
 
 /**
  * @implements {Protocol.LogDispatcher}

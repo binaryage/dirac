@@ -93,7 +93,6 @@
     "scripts": [
         "Target.js",
         "TargetManager.js",
-        "ApplicationCacheModel.js",
         "Connections.js",
         "ConsoleModel.js",
         "ContentProviders.js",

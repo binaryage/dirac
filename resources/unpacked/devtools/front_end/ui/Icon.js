@@ -101,9 +101,9 @@ UI.Icon.Descriptors = {
   'smallicon-thick-right-arrow': {x: -180, y: 0, width: 10, height: 10, spritesheet: 'smallicons'},
   'smallicon-thick-left-arrow':
       {x: -180, y: 0, width: 10, height: 10, spritesheet: 'smallicons', transform: 'rotate(180deg)'},
-  'smallicon-user-command': {x: 0, y: -20, width: 10, height: 10, spritesheet: 'smallicons'},
+  'smallicon-user-command': {x: 0, y: -19, width: 10, height: 10, spritesheet: 'smallicons'},
   'smallicon-text-prompt': {x: -20, y: -20, width: 10, height: 10, spritesheet: 'smallicons'},
-  'smallicon-command-result': {x: -40, y: -20, width: 10, height: 10, spritesheet: 'smallicons'},
+  'smallicon-command-result': {x: -40, y: -19, width: 10, height: 10, spritesheet: 'smallicons'},
   'smallicon-shadow': {x: -60, y: -20, width: 10, height: 10, spritesheet: 'smallicons', isMask: true},
   'smallicon-bezier': {x: -80, y: -20, width: 10, height: 10, spritesheet: 'smallicons', isMask: true},
   'smallicon-dropdown-arrow': {x: -18, y: -96, width: 12, height: 12, spritesheet: 'largeicons', isMask: true},
@@ -116,6 +116,9 @@ UI.Icon.Descriptors = {
   'smallicon-inline-breakpoint-conditional': {x: -160, y: -20, width: 10, height: 10, spritesheet: 'smallicons'},
   'smallicon-file': {x: -64, y: -24, width: 12, height: 14, spritesheet: 'largeicons'},
   'smallicon-file-sync': {x: -76, y: -24, width: 12, height: 14, spritesheet: 'largeicons'},
+  'smallicon-search': {x: -234, y: -30, width: 12, height: 12, spritesheet: 'largeicons'},
+  'smallicon-clear-input': {x: -143, y: -96, width: 13, height: 13, spritesheet: 'largeicons'},
+  'smallicon-checkmark': {x: -128, y: -109, width: 10, height: 10, spritesheet: 'largeicons'},
 
   'largeicon-longclick-triangle': {x: -290, y: -46, width: 28, height: 24, spritesheet: 'largeicons', isMask: true},
   'largeicon-menu': {x: -192, y: -24, width: 28, height: 24, spritesheet: 'largeicons', isMask: true},
@@ -171,9 +174,9 @@ UI.Icon.Descriptors = {
   'largeicon-show-left-sidebar': {x: -160, y: -72, width: 28, height: 24, spritesheet: 'largeicons', isMask: true},
   'largeicon-hide-left-sidebar': {x: -192, y: -72, width: 28, height: 24, spritesheet: 'largeicons', isMask: true},
   'largeicon-show-right-sidebar':
-      {x: -160, y: -72, width: 28, height: 24, spritesheet: 'largeicons', isMask: true, transform: 'rotate(180deg)'},
+      {x: -160, y: -72, width: 28, height: 24, spritesheet: 'largeicons', isMask: true, transform: 'scaleX(-1)'},
   'largeicon-hide-right-sidebar':
-      {x: -192, y: -72, width: 28, height: 24, spritesheet: 'largeicons', isMask: true, transform: 'rotate(180deg)'},
+      {x: -192, y: -72, width: 28, height: 24, spritesheet: 'largeicons', isMask: true, transform: 'scaleX(-1)'},
   'largeicon-show-top-sidebar': {
     x: -160,
     y: -72,
@@ -218,4 +221,13 @@ UI.Icon.Descriptors = {
   'largeicon-navigator-frame': {x: -256, y: -144, width: 32, height: 24, spritesheet: 'largeicons', isMask: true},
   'largeicon-navigator-worker': {x: -320, y: -144, width: 32, height: 24, spritesheet: 'largeicons', isMask: true},
   'largeicon-navigator-snippet': {x: -224, y: -96, width: 32, height: 24, spritesheet: 'largeicons', isMask: true},
+  'largeicon-edit': {x: -160, y: -0, width: 28, height: 24, spritesheet: 'largeicons'},
+  'largeicon-chevron': {x: -68, y: -143, width: 24, height: 26, spritesheet: 'largeicons', isMask: true},
+
+  'mediumicon-manifest': {x: 0, y: -0, width: 16, height: 16, spritesheet: 'resourceicons', isMask: true},
+  'mediumicon-service-worker': {x: -20, y: -0, width: 16, height: 16, spritesheet: 'resourceicons', isMask: true},
+  'mediumicon-clear-storage': {x: -40, y: -0, width: 16, height: 16, spritesheet: 'resourceicons', isMask: true},
+  'mediumicon-database': {x: -60, y: -0, width: 16, height: 16, spritesheet: 'resourceicons', isMask: true},
+  'mediumicon-table': {x: -80, y: -0, width: 16, height: 16, spritesheet: 'resourceicons', isMask: true},
+  'mediumicon-cookie': {x: -120, y: -0, width: 16, height: 16, spritesheet: 'resourceicons', isMask: true},
 };

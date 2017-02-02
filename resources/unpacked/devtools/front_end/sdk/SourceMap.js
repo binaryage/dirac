@@ -102,7 +102,7 @@ SDK.SourceMap.prototype = {
   url() {},
 
   /**
-   * @return {?SourceMapV3}
+   * @return {?SDK.SourceMapV3}
    */
   payload: function() {},
 
@@ -260,7 +260,7 @@ SDK.TextSourceMap = class {
 
   /**
    * @override
-   * @return {?SourceMapV3}
+   * @return {?SDK.SourceMapV3}
    */
   payload() {
     return this._payload;
@@ -339,10 +339,11 @@ SDK.TextSourceMap = class {
       }
     }
     var entry = mappings[first];
-    if (!first && entry &&
-        (lineNumber < entry.lineNumber || (lineNumber === entry.lineNumber && columnNumber < entry.columnNumber)))
+    if (entry && entry.lineNumber === lineNumber && entry.columnNumber <= columnNumber) {
+      return entry;
+    } else {
       return null;
-    return entry;
+    }
   }
 
   /**

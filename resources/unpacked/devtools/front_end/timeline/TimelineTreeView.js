@@ -23,17 +23,18 @@ Timeline.TimelineTreeView = class extends UI.VBox {
   }
 
   /**
+   * @protected
    * @param {!TimelineModel.TimelineModel} model
-   * @param {!Array<!TimelineModel.TimelineModel.Filter>} filters
+   * @param {!Array<!TimelineModel.TimelineModelFilter>} filters
    */
-  _init(model, filters) {
+  init(model, filters) {
     this._model = model;
     this._linkifier = new Components.Linkifier();
 
     this._filters = filters.slice();
 
     const columns = /** @type {!Array<!DataGrid.DataGrid.ColumnDescriptor>} */ ([]);
-    this._populateColumns(columns);
+    this.populateColumns(columns);
 
     this._splitWidget = new UI.SplitWidget(true, true, 'timelineTreeViewDetailsSplitWidget');
     const mainView = new UI.VBox();
@@ -59,6 +60,14 @@ Timeline.TimelineTreeView = class extends UI.VBox {
   }
 
   /**
+   * @protected
+   * @return {?TimelineModel.TimelineProfileTree.Node|undefined}
+   */
+  lastSelectedNode() {
+    return this._lastSelectedNode;
+  }
+
+  /**
    * @param {!Timeline.TimelineSelection} selection
    */
   updateContents(selection) {
@@ -72,7 +81,7 @@ Timeline.TimelineTreeView = class extends UI.VBox {
   setRange(startTime, endTime) {
     this._startTime = startTime;
     this._endTime = endTime;
-    this._refreshTree();
+    this.refreshTree();
   }
 
   /**
@@ -124,18 +133,21 @@ Timeline.TimelineTreeView = class extends UI.VBox {
     for (var node = treeNode; node; node = node.parent)
       pathToRoot.push(node);
     for (var i = pathToRoot.length - 1; i > 0; --i) {
-      var gridNode = this._dataGridNodeForTreeNode(pathToRoot[i]);
+      var gridNode = this.dataGridNodeForTreeNode(pathToRoot[i]);
       if (gridNode && gridNode.dataGrid)
         gridNode.expand();
     }
-    var gridNode = this._dataGridNodeForTreeNode(treeNode);
+    var gridNode = this.dataGridNodeForTreeNode(treeNode);
     if (gridNode.dataGrid) {
       gridNode.reveal();
       gridNode.select(suppressSelectedEvent);
     }
   }
 
-  _refreshTree() {
+  /**
+   * @protected
+   */
+  refreshTree() {
     this._linkifier.reset();
     this._dataGrid.rootNode().removeChildren();
     var tree = this._buildTree();
@@ -164,18 +176,20 @@ Timeline.TimelineTreeView = class extends UI.VBox {
   }
 
   /**
+   * @protected
    * @param {function(!SDK.TracingModel.Event):(string|symbol)=} eventIdCallback
    * @return {!TimelineModel.TimelineProfileTree.Node}
    */
-  _buildTopDownTree(eventIdCallback) {
+  buildTopDownTree(eventIdCallback) {
     return TimelineModel.TimelineProfileTree.buildTopDown(
         this._model.mainThreadEvents(), this._filters, this._startTime, this._endTime, eventIdCallback);
   }
 
   /**
+   * @protected
    * @param {!Array<!DataGrid.DataGrid.ColumnDescriptor>} columns
    */
-  _populateColumns(columns) {
+  populateColumns(columns) {
     columns.push({id: 'self', title: Common.UIString('Self Time'), width: '110px', fixedWidth: true, sortable: true});
     columns.push({id: 'total', title: Common.UIString('Total Time'), width: '110px', fixedWidth: true, sortable: true});
     columns.push({id: 'activity', title: Common.UIString('Activity'), disclosure: true, sortable: true});
@@ -293,9 +307,10 @@ Timeline.TimelineTreeView = class extends UI.VBox {
 
   /**
    * @param {!TimelineModel.TimelineProfileTree.Node} treeNode
+   * @protected
    * @return {?Timeline.TimelineTreeView.GridNode}
    */
-  _dataGridNodeForTreeNode(treeNode) {
+  dataGridNodeForTreeNode(treeNode) {
     return treeNode[Timeline.TimelineTreeView.TreeGridNode._gridNodeSymbol] || null;
   }
 };
@@ -452,13 +467,13 @@ Timeline.TimelineTreeView.TreeGridNode._gridNodeSymbol = Symbol('treeGridNode');
 Timeline.AggregatedTimelineTreeView = class extends Timeline.TimelineTreeView {
   /**
    * @param {!TimelineModel.TimelineModel} model
-   * @param {!Array<!TimelineModel.TimelineModel.Filter>} filters
+   * @param {!Array<!TimelineModel.TimelineModelFilter>} filters
    */
   constructor(model, filters) {
     super();
     this._groupBySetting =
         Common.settings.createSetting('timelineTreeGroupBy', Timeline.AggregatedTimelineTreeView.GroupBy.None);
-    this._init(model, filters);
+    this.init(model, filters);
     var nonessentialEvents = [
       TimelineModel.TimelineModel.RecordType.EventDispatch, TimelineModel.TimelineModel.RecordType.FunctionCall,
       TimelineModel.TimelineModel.RecordType.TimerFire
@@ -597,7 +612,7 @@ Timeline.AggregatedTimelineTreeView = class extends Timeline.TimelineTreeView {
 
   _onGroupByChanged() {
     this._groupBySetting.set(this._groupByCombobox.selectedOption().value);
-    this._refreshTree();
+    this.refreshTree();
   }
 
   _onStackViewSelectionChanged() {
@@ -730,7 +745,7 @@ Timeline.AggregatedTimelineTreeView.GroupBy = {
 Timeline.CallTreeTimelineTreeView = class extends Timeline.AggregatedTimelineTreeView {
   /**
    * @param {!TimelineModel.TimelineModel} model
-   * @param {!Array<!TimelineModel.TimelineModel.Filter>} filters
+   * @param {!Array<!TimelineModel.TimelineModelFilter>} filters
    */
   constructor(model, filters) {
     super(model, filters);
@@ -743,7 +758,7 @@ Timeline.CallTreeTimelineTreeView = class extends Timeline.AggregatedTimelineTre
    */
   _buildTree() {
     var grouping = this._groupBySetting.get();
-    var topDown = this._buildTopDownTree(this._groupingFunction(grouping));
+    var topDown = this.buildTopDownTree(this._groupingFunction(grouping));
     if (grouping === Timeline.AggregatedTimelineTreeView.GroupBy.None)
       return topDown;
     return new TimelineModel.TimelineAggregator().performGrouping(topDown);
@@ -756,7 +771,7 @@ Timeline.CallTreeTimelineTreeView = class extends Timeline.AggregatedTimelineTre
 Timeline.BottomUpTimelineTreeView = class extends Timeline.AggregatedTimelineTreeView {
   /**
    * @param {!TimelineModel.TimelineModel} model
-   * @param {!Array<!TimelineModel.TimelineModel.Filter>} filters
+   * @param {!Array<!TimelineModel.TimelineModelFilter>} filters
    */
   constructor(model, filters) {
     super(model, filters);
@@ -768,141 +783,8 @@ Timeline.BottomUpTimelineTreeView = class extends Timeline.AggregatedTimelineTre
    * @return {!TimelineModel.TimelineProfileTree.Node}
    */
   _buildTree() {
-    var topDown = this._buildTopDownTree(this._groupingFunction(this._groupBySetting.get()));
+    var topDown = this.buildTopDownTree(this._groupingFunction(this._groupBySetting.get()));
     return TimelineModel.TimelineProfileTree.buildBottomUp(topDown);
-  }
-};
-
-/**
- * @unrestricted
- */
-Timeline.EventsTimelineTreeView = class extends Timeline.TimelineTreeView {
-  /**
-   * @param {!TimelineModel.TimelineModel} model
-   * @param {!Array<!TimelineModel.TimelineModel.Filter>} filters
-   * @param {!Timeline.TimelineModeViewDelegate} delegate
-   */
-  constructor(model, filters, delegate) {
-    super();
-    this._filtersControl = new Timeline.TimelineFilters();
-    this._filtersControl.addEventListener(Timeline.TimelineFilters.Events.FilterChanged, this._onFilterChanged, this);
-    this._init(model, filters);
-    this._delegate = delegate;
-    this._filters.push.apply(this._filters, this._filtersControl.filters());
-    this._dataGrid.markColumnAsSortedBy('startTime', DataGrid.DataGrid.Order.Ascending);
-  }
-
-  /**
-   * @override
-   * @param {!Timeline.TimelineSelection} selection
-   */
-  updateContents(selection) {
-    super.updateContents(selection);
-    if (selection.type() === Timeline.TimelineSelection.Type.TraceEvent) {
-      var event = /** @type {!SDK.TracingModel.Event} */ (selection.object());
-      this._selectEvent(event, true);
-    }
-  }
-
-  /**
-   * @override
-   * @return {!TimelineModel.TimelineProfileTree.Node}
-   */
-  _buildTree() {
-    this._currentTree = this._buildTopDownTree();
-    return this._currentTree;
-  }
-
-  _onFilterChanged() {
-    var selectedEvent = this._lastSelectedNode && this._lastSelectedNode.event;
-    this._refreshTree();
-    if (selectedEvent)
-      this._selectEvent(selectedEvent, false);
-  }
-
-  /**
-   * @param {!SDK.TracingModel.Event} event
-   * @return {?TimelineModel.TimelineProfileTree.Node}
-   */
-  _findNodeWithEvent(event) {
-    var iterators = [this._currentTree.children.values()];
-
-    while (iterators.length) {
-      var iterator = iterators.peekLast().next();
-      if (iterator.done) {
-        iterators.pop();
-        continue;
-      }
-      var child = /** @type {!TimelineModel.TimelineProfileTree.Node} */ (iterator.value);
-      if (child.event === event)
-        return child;
-      if (child.children)
-        iterators.push(child.children.values());
-    }
-    return null;
-  }
-
-  /**
-   * @param {!SDK.TracingModel.Event} event
-   * @param {boolean=} expand
-   */
-  _selectEvent(event, expand) {
-    var node = this._findNodeWithEvent(event);
-    if (!node)
-      return;
-    this.selectProfileNode(node, false);
-    if (expand)
-      this._dataGridNodeForTreeNode(node).expand();
-  }
-
-  /**
-   * @override
-   * @param {!Array<!DataGrid.DataGrid.ColumnDescriptor>} columns
-   */
-  _populateColumns(columns) {
-    columns.push(
-        {id: 'startTime', title: Common.UIString('Start Time'), width: '110px', fixedWidth: true, sortable: true});
-    super._populateColumns(columns);
-  }
-
-  /**
-   * @override
-   * @param {!Element} parent
-   */
-  _populateToolbar(parent) {
-    var filtersWidget = this._filtersControl.filtersWidget();
-    filtersWidget.forceShowFilterBar();
-    filtersWidget.show(parent);
-  }
-
-  /**
-   * @override
-   * @param {!TimelineModel.TimelineProfileTree.Node} node
-   * @return {boolean}
-   */
-  _showDetailsForNode(node) {
-    var traceEvent = node.event;
-    if (!traceEvent)
-      return false;
-    Timeline.TimelineUIUtils.buildTraceEventDetails(
-        traceEvent, this._model, this._linkifier, false, showDetails.bind(this));
-    return true;
-
-    /**
-     * @param {!DocumentFragment} fragment
-     * @this {Timeline.EventsTimelineTreeView}
-     */
-    function showDetails(fragment) {
-      this._detailsView.element.appendChild(fragment);
-    }
-  }
-
-  /**
-   * @override
-   * @param {?TimelineModel.TimelineProfileTree.Node} node
-   */
-  _onHover(node) {
-    this._delegate.highlightEvent(node && node.event);
   }
 };
 

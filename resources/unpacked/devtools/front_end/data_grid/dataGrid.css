@@ -1,7 +1,6 @@
 .data-grid {
     position: relative;
     border: 1px solid #aaa;
-    font-size: 11px;
     line-height: 120%;
 }
 
@@ -23,11 +22,11 @@
 
 .data-grid .header-container {
     top: 0;
-    height: 17px;
+    height: 21px;
  }
 
 .data-grid .data-container {
-    top: 17px;
+    top: 21px;
     bottom: 0;
     overflow-y: overlay;
     transform: translateZ(0);
@@ -67,8 +66,8 @@
     right: 0;
     bottom: 0;
     border-top: 0 none transparent;
-    background-image: linear-gradient(to bottom, transparent, transparent 50%, hsla(214, 100%, 40%, 0.1) 50%, hsla(214, 100%, 40%, 0.1));
-    background-size: 128px 32px;
+    background-image: linear-gradient(to bottom, transparent, transparent 50%, hsla(214, 100%, 40%, 0.05) 50%, hsla(214, 100%, 40%, 0.05));
+    background-size: 128px 40px;
     table-layout: fixed;
 }
 
@@ -89,8 +88,10 @@
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;
-    line-height: 14px;
+    line-height: 18px;
+    height: 18px;
     border-left: 1px solid #aaa;
+    padding: 1px 4px;
 }
 
 .data-grid th:first-child,
@@ -99,20 +100,16 @@
 }
 
 .data-grid td {
-    height: 16px; /* Keep in sync with .data-grid table.data @ background-size */
     vertical-align: top;
-    padding: 1px 4px;
     -webkit-user-select: text;
 }
 
 .data-grid th {
-    height: auto;
     text-align: left;
-    background-color: #eee;
+    background-color: #f3f3f3;
     border-bottom: 1px solid #aaa;
     font-weight: normal;
     vertical-align: middle;
-    padding: 0 4px;
 }
 
 .data-grid td > div,
@@ -178,17 +175,16 @@
 
 .data-grid td.disclosure::before {
     -webkit-user-select: none;
-    -webkit-mask-image: url(Images/toolbarButtonGlyphs.png);
-    -webkit-mask-position: -4px -96px;
-    -webkit-mask-size: 352px 168px;
+    -webkit-mask-image: url(Images/treeoutlineTriangles.png);
+    -webkit-mask-position: 0 0;
+    -webkit-mask-size: 32px 24px;
     float: left;
     width: 8px;
     height: 12px;
     margin-right: 2px;
-    content: "a";
-    color: transparent;
+    content: "";
     position: relative;
-    top: 1px;
+    top: 3px;
     background-color: rgb(110, 110, 110);
 }
 
@@ -198,12 +194,12 @@
 
 @media (-webkit-min-device-pixel-ratio: 1.1) {
 .data-grid tr.parent td.disclosure::before {
-    -webkit-mask-image: url(Images/toolbarButtonGlyphs_2x.png);
+    -webkit-mask-image: url(Images/treeoutlineTriangles_2x.png);
 }
 } /* media */
 
 .data-grid tr.expanded td.disclosure::before {
-    -webkit-mask-position: -20px -96px;
+    -webkit-mask-position: -16px 0;
 }
 
 .data-grid tr.selected {
@@ -222,12 +218,27 @@
 
 .data-grid:focus tr.parent.selected td.disclosure::before {
     background-color: white;
-    -webkit-mask-position: -4px -96px;
+    -webkit-mask-position: 0 0;
 }
 
 .data-grid:focus tr.expanded.selected td.disclosure::before {
     background-color: white;
-    -webkit-mask-position: -20px -96px;
+    -webkit-mask-position: -16px 0;
+}
+
+.data-grid tr.inactive {
+    color: rgb(128, 128, 128);
+    font-style: italic;
+}
+
+.data-grid tr.dirty {
+    background-color: hsl(0, 100%, 92%);
+    color: red;
+    font-style: normal;
+}
+
+.data-grid:focus tr.selected.dirty {
+    background-color: hsl(0, 100%, 70%);
 }
 
 .data-grid-resizer {

@@ -84,7 +84,7 @@ automate #1      clear-console-prompt!
 automate #1      simulate-console-input! ["cljs.r"]
 automate #1      scrape! [:suggest-box]
 stdout           displayed 2 items:
-                  * cljs.r|eader (ns selected force-white-icons)
+                  * cljs.r|eader (ns macro combined-ns-macro selected force-white-icons)
                   * cljs.r|epl (ns macro combined-ns-macro)
 automate #1      simulate-console-action! ["DOWN"]
 automate #1      simulate-console-action! ["TAB"]

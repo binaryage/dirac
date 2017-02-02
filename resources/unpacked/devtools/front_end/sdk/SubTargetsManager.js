@@ -9,7 +9,7 @@ SDK.SubTargetsManager = class extends SDK.SDKModel {
    * @param {!SDK.Target} target
    */
   constructor(target) {
-    super(SDK.SubTargetsManager, target);
+    super(target);
     target.registerTargetDispatcher(new SDK.SubTargetsDispatcher(this));
     this._lastAnonymousTargetId = 0;
     this._agent = target.targetAgent();
@@ -130,15 +130,8 @@ SDK.SubTargetsManager = class extends SDK.SDKModel {
    * @return {number}
    */
   _capabilitiesForType(type) {
-    if (type === 'worker') {
-      var capabilities = SDK.Target.Capability.JS | SDK.Target.Capability.Log;
-      var parentTargetInfo = this.targetInfo(this.target());
-      var mainIsServiceWorker =
-          !this.target().parentTarget() && this.target().hasTargetCapability() && !this.target().hasJSCapability();
-      if ((parentTargetInfo && parentTargetInfo.type === 'service_worker') || mainIsServiceWorker)
-        capabilities |= SDK.Target.Capability.Network;
-      return capabilities;
-    }
+    if (type === 'worker')
+      return SDK.Target.Capability.JS | SDK.Target.Capability.Log;
     if (type === 'service_worker')
       return SDK.Target.Capability.Log | SDK.Target.Capability.Network | SDK.Target.Capability.Target;
     if (type === 'iframe') {
@@ -170,7 +163,7 @@ SDK.SubTargetsManager = class extends SDK.SDKModel {
 
     // Only pause new worker if debugging SW - we are going through the pause on start checkbox.
     var mainIsServiceWorker =
-        !this.target().parentTarget() && this.target().hasTargetCapability() && !this.target().hasJSCapability();
+        !this.target().parentTarget() && this.target().hasTargetCapability() && !this.target().hasBrowserCapability();
     if (mainIsServiceWorker && waitingForDebugger)
       target.debuggerAgent().pause();
     target.runtimeAgent().runIfWaitingForDebugger();
@@ -248,6 +241,8 @@ SDK.SubTargetsManager = class extends SDK.SDKModel {
     idsToDetach.forEach(id => this._detachedFromTarget(id));
   }
 };
+
+SDK.SDKModel.register(SDK.SubTargetsManager, SDK.Target.Capability.Target);
 
 /** @enum {symbol} */
 SDK.SubTargetsManager.Events = {

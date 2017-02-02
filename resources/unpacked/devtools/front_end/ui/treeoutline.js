@@ -612,8 +612,6 @@ UI.TreeElement = class {
     }
 
     this._listItemNode.removeChildren();
-    if (this._iconElement)
-      this._listItemNode.appendChild(this._iconElement);
     if (this._leadingIconsElement)
       this._listItemNode.appendChild(this._leadingIconsElement);
     this._listItemNode.appendChild(this._titleElement);
@@ -639,14 +637,6 @@ UI.TreeElement = class {
   startEditingTitle(editingConfig) {
     UI.InplaceEditor.startEditing(this._titleElement, editingConfig);
     this.treeOutline._shadowRoot.getSelection().setBaseAndExtent(this._titleElement, 0, this._titleElement, 1);
-  }
-
-  createIcon() {
-    if (!this._iconElement) {
-      this._iconElement = createElementWithClass('div', 'icon');
-      this._listItemNode.insertBefore(this._iconElement, this._listItemNode.firstChild);
-      this._ensureSelection();
-    }
   }
 
   /**

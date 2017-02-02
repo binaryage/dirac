@@ -506,3 +506,11 @@ div.CodeMirror span.CodeMirror-nonmatchingbracket {color: #f22;}
 #console-prompt-dirac span.CodeMirror-selectedtext {
     background: none;
 }
+
+/* HACK - hscrollbar started causing troubles, not sure why
+   Dirac's codemirror component should never end-up showing scrollbars anyways
+*/
+#console-prompt-dirac .CodeMirror-vscrollbar,
+#console-prompt-dirac .CodeMirror-hscrollbar {
+    display: none !important;
+}
