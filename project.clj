@@ -153,14 +153,14 @@
              {:jvm-opts ["-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5007"]}
 
              :clojure17
-             {:dependencies [[org.clojure/clojure "1.7.0" :scope "provided"]
-                             [org.clojure/clojurescript "1.7.228" :scope "provided"]]}
+             {:dependencies [[org.clojure/clojure "1.7.0" :scope "provided" :upgrade false]
+                             [org.clojure/clojurescript "1.7.228" :scope "provided" :upgrade false]]}
 
              :clojure18
-             {:dependencies [[org.clojure/clojure "1.8.0" :scope "provided"]]}
+             {:dependencies [[org.clojure/clojure "1.8.0" :scope "provided" :upgrade false]]}
 
              :clojure19
-             {:dependencies [[org.clojure/clojure "1.9.0-alpha14" :scope "provided"]]}
+             {:dependencies [[org.clojure/clojure "1.9.0-alpha14" :scope "provided" :upgrade false]]}
 
              :cooper
              {:plugins [[lein-cooper "1.2.2"]]}
