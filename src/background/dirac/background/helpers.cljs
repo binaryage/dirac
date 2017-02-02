@@ -1,6 +1,6 @@
 (ns dirac.background.helpers
   (:require-macros [cljs.core.async.macros :refer [go go-loop]])
-  (:require [cljs.core.async :refer [<! chan put! close! timeout]]
+  (:require [cljs.core.async :refer [<! chan put! close! timeout alts!]]
             [oops.core :refer [oget oget+ oset! oset!+ ocall oapply]]
             [chromex.logging :refer-macros [log info warn error group group-end]]
             [chromex.ext.tabs :as tabs]
@@ -202,3 +202,20 @@
 
 (defn show-connecting-debugger-backend-status! [tab-id]
   (action/update-action-button! tab-id :connecting "Attempting to connect debugger backend..."))
+
+(defn wait-for-document-title! [tab-id wanted-title & [timeout-ms]]
+  (let [timeout-chan (if (some? timeout-ms)
+                       (timeout timeout-ms))]
+    (go-loop [iteration 1]
+      (let [tab-info-chan (tabs/get tab-id)
+            [[result] ch] (alts! (filterv some? [tab-info-chan timeout-chan]))]
+        (if (= ch timeout-chan)
+          (str "timeouted after " iteration " trials (" timeout-ms " ms)")
+          (if-not (some? result)
+            (str "invalid tab-id: " tab-id)
+            (let [title (oget result "?title")]
+              (if (= title wanted-title)
+                true
+                (do
+                  (<! (timeout 100))
+                  (recur (inc iteration)))))))))))
