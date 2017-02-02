@@ -497,6 +497,23 @@ SDK.TextSourceMap = class {
       this._mappings.push(new SDK.SourceMapEntry(
           lineNumber, columnNumber, sourceURL, sourceLineNumber, sourceColumnNumber, names[nameIndex]));
     }
+
+    // we have to sort the mappings for findEntry
+    // some source maps don't have monotonic mappings,
+    // _decodeVLQ might return negative values when updating columnNumber
+    // AFAIK, spec here does not disallow it:
+    //   https://docs.google.com/document/d/1U1RGAehQwRypUTovF1KRlpiOFze0b-_2gc6fAH0KY0k/edit
+    this._mappings.sort((a, b) => {
+      const al = a.lineNumber;
+      const bl = b.lineNumber;
+      const ac = a.columnNumber;
+      const bc = b.columnNumber;
+      if (al < bl || (al === bl && ac < bc)) {
+        return -1;
+      } else {
+        return 1;
+      }
+    });
   }
 
   /**
