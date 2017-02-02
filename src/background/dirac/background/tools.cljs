@@ -8,7 +8,7 @@
             [chromex.ext.tabs :as tabs]
             [dirac.settings :refer-macros [get-dirac-devtools-window-top get-dirac-devtools-window-left
                                            get-dirac-devtools-window-width get-dirac-devtools-window-height
-                                           get-frontend-handshake-timeout]]
+                                           get-frontend-handshake-timeout get-frontend-loading-timeout]]
             [dirac.i18n :as i18n]
             [dirac.sugar :as sugar]
             [dirac.background.helpers :as helpers :refer [report-error-in-tab! report-warning-in-tab!
@@ -122,6 +122,9 @@
 (defn wait-for-handshake-completion! [frontend-tab-id timeout-ms]
   (helpers/wait-for-document-title! frontend-tab-id "DONE" timeout-ms))
 
+(defn wait-for-loading-completion! [frontend-tab-id timeout-ms]
+  (helpers/wait-for-document-title! frontend-tab-id "DONE" timeout-ms))
+
 (defn connect-and-navigate-dirac-devtools! [frontend-tab-id backend-tab-id options]
   (let [devtools-id (devtools/register! frontend-tab-id backend-tab-id)
         full-options (prepare-options options)
@@ -134,7 +137,10 @@
           (let [error-msg (i18n/unable-to-complete-frontend-handshake frontend-tab-id handshake-result)]
             (<! (report-error-in-tab! backend-tab-id error-msg)))))
       (<! (tabs/update frontend-tab-id #js {:url dirac-frontend-url}))
-      (<! (timeout 500))                                                                                                      ; give the page some time load the document
+      (let [loading-result (<! (wait-for-loading-completion! frontend-tab-id (get-frontend-loading-timeout)))]
+        (if-not (true? loading-result)
+          (let [error-msg (i18n/unable-to-complete-frontend-loading frontend-tab-id loading-result)]
+            (<! (report-error-in-tab! backend-tab-id error-msg)))))
       (helpers/install-intercom! devtools-id intercom-handler)
       devtools-id)))
 
