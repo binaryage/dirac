@@ -135,6 +135,13 @@ Host.InspectorFrontendHostStub = class {
    * @suppressGlobalPropertiesCheck
    */
   inspectedURLChanged(url) {
+    if (!dirac.isIntercomReady()) {
+      // postpone this code, we use document.title for signalling of frontend loading completion, see inspector.js
+      const that = this;
+      setTimeout(function() { that.inspectedURLChanged(url); }, 500);
+      return;
+    }
+
     var version = dirac.getVersion();
     dirac.getRuntimeTag(
       /** @suppressGlobalPropertiesCheck */
