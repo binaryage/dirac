@@ -80,6 +80,7 @@
 
 (def ^:const FRONTEND_HANDSHAKE_TIMEOUT (seconds 3))
 (def ^:const FRONTEND_LOADING_TIMEOUT (seconds 5))
+(def ^:const INTERCOM_INIT_TIMEOUT (seconds 3))
 
 (def dirac-devtools-window-top (env :dirac-setup-devtools-window-top))
 (def dirac-devtools-window-left (env :dirac-setup-devtools-window-left))
@@ -305,3 +306,6 @@
 
 (defmacro get-frontend-loading-timeout []
   FRONTEND_LOADING_TIMEOUT)
+
+(defmacro get-intercom-init-timeout []
+  INTERCOM_INIT_TIMEOUT)
