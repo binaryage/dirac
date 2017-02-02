@@ -78,6 +78,8 @@
 (def ^:const BACKEND_URL_RESOLUTION_TRIALS 5)
 (def ^:const FAILED_BACKEND_URL_RESOLUTION_DELAY (seconds 1))
 
+(def ^:const FRONTEND_HANDSHAKE_TIMEOUT (seconds 3))
+
 (def dirac-devtools-window-top (env :dirac-setup-devtools-window-top))
 (def dirac-devtools-window-left (env :dirac-setup-devtools-window-left))
 (def dirac-devtools-window-width (env :dirac-setup-devtools-window-width))
@@ -297,3 +299,5 @@
   (let [port (get-transcript-streamer-server-port)]
     (str "ws://" (get-transcript-streamer-server-host) (if (some? port) (str ":" port)))))
 
+(defmacro get-frontend-handshake-timeout []
+  FRONTEND_HANDSHAKE_TIMEOUT)
