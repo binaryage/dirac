@@ -8,7 +8,8 @@
             [chromex.ext.tabs :as tabs]
             [dirac.settings :refer-macros [get-dirac-devtools-window-top get-dirac-devtools-window-left
                                            get-dirac-devtools-window-width get-dirac-devtools-window-height
-                                           get-frontend-handshake-timeout get-frontend-loading-timeout]]
+                                           get-frontend-handshake-timeout get-frontend-loading-timeout
+                                           get-intercom-init-timeout]]
             [dirac.i18n :as i18n]
             [dirac.sugar :as sugar]
             [dirac.background.helpers :as helpers :refer [report-error-in-tab! report-warning-in-tab!
@@ -141,7 +142,10 @@
         (if-not (true? loading-result)
           (let [error-msg (i18n/unable-to-complete-frontend-loading frontend-tab-id loading-result)]
             (<! (report-error-in-tab! backend-tab-id error-msg)))))
-      (helpers/install-intercom! devtools-id intercom-handler)
+      (let [intercom-result (<! (helpers/try-install-intercom! devtools-id intercom-handler (get-intercom-init-timeout)))]
+        (if-not (true? intercom-result)
+          (let [error-msg (i18n/unable-to-complete-intercom-initialization frontend-tab-id intercom-result)]
+            (<! (report-error-in-tab! backend-tab-id error-msg)))))
       devtools-id)))
 
 (defn create-dirac-devtools! [backend-tab-id options]
