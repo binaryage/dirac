@@ -94,6 +94,10 @@ popd
 
 pushd "$ROOT"
 
+# copy handshake files
+cp "$FRONTEND/handshake.html" "$RELEASE_BUILD_DEVTOOLS_FRONTEND"
+cp "$FRONTEND/handshake.js" "$RELEASE_BUILD_DEVTOOLS_FRONTEND"
+
 # copy static resources
 # this should be kept in sync with devtools_frontend_resources target of devtools.gyp
 cp -r "$FRONTEND/Images" "$RELEASE_BUILD_DEVTOOLS_FRONTEND"
