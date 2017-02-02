@@ -79,6 +79,7 @@
 (def ^:const FAILED_BACKEND_URL_RESOLUTION_DELAY (seconds 1))
 
 (def ^:const FRONTEND_HANDSHAKE_TIMEOUT (seconds 3))
+(def ^:const FRONTEND_LOADING_TIMEOUT (seconds 5))
 
 (def dirac-devtools-window-top (env :dirac-setup-devtools-window-top))
 (def dirac-devtools-window-left (env :dirac-setup-devtools-window-left))
@@ -301,3 +302,6 @@
 
 (defmacro get-frontend-handshake-timeout []
   FRONTEND_HANDSHAKE_TIMEOUT)
+
+(defmacro get-frontend-loading-timeout []
+  FRONTEND_LOADING_TIMEOUT)
