@@ -4,9 +4,11 @@
             [oops.core :refer [oget oset! ocall oapply]]
             [chromex.logging :refer-macros [log info warn error group group-end]]
             [chromex.ext.windows :as windows]
+            [chromex.error :as chromex-error]
             [chromex.ext.tabs :as tabs]
             [dirac.settings :refer-macros [get-dirac-devtools-window-top get-dirac-devtools-window-left
-                                           get-dirac-devtools-window-width get-dirac-devtools-window-height]]
+                                           get-dirac-devtools-window-width get-dirac-devtools-window-height
+                                           get-frontend-handshake-timeout]]
             [dirac.i18n :as i18n]
             [dirac.sugar :as sugar]
             [dirac.background.helpers :as helpers :refer [report-error-in-tab! report-warning-in-tab!
@@ -117,6 +119,9 @@
       (provide-backend-css-if-available)
       (provide-user-url-params)))
 
+(defn wait-for-handshake-completion! [frontend-tab-id timeout-ms]
+  (helpers/wait-for-document-title! frontend-tab-id "DONE" timeout-ms))
+
 (defn connect-and-navigate-dirac-devtools! [frontend-tab-id backend-tab-id options]
   (let [devtools-id (devtools/register! frontend-tab-id backend-tab-id)
         full-options (prepare-options options)
@@ -124,7 +129,10 @@
         dirac-frontend-url (helpers/make-dirac-frontend-url devtools-id full-options)]
     (go
       (<! (tabs/update frontend-tab-id #js {:url dirac-handshake-url}))
-      (<! (timeout 500))                                                                                                      ; give the page some time load the document
+      (let [handshake-result (<! (wait-for-handshake-completion! frontend-tab-id (get-frontend-handshake-timeout)))]
+        (if-not (true? handshake-result)
+          (let [error-msg (i18n/unable-to-complete-frontend-handshake frontend-tab-id handshake-result)]
+            (<! (report-error-in-tab! backend-tab-id error-msg)))))
       (<! (tabs/update frontend-tab-id #js {:url dirac-frontend-url}))
       (<! (timeout 500))                                                                                                      ; give the page some time load the document
       (helpers/install-intercom! devtools-id intercom-handler)
