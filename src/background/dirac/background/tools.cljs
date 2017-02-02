@@ -119,8 +119,12 @@
 
 (defn connect-and-navigate-dirac-devtools! [frontend-tab-id backend-tab-id options]
   (let [devtools-id (devtools/register! frontend-tab-id backend-tab-id)
-        dirac-frontend-url (helpers/make-dirac-frontend-url devtools-id (prepare-options options))]
+        full-options (prepare-options options)
+        dirac-handshake-url (helpers/make-dirac-handshake-url full-options)
+        dirac-frontend-url (helpers/make-dirac-frontend-url devtools-id full-options)]
     (go
+      (<! (tabs/update frontend-tab-id #js {:url dirac-handshake-url}))
+      (<! (timeout 500))                                                                                                      ; give the page some time load the document
       (<! (tabs/update frontend-tab-id #js {:url dirac-frontend-url}))
       (<! (timeout 500))                                                                                                      ; give the page some time load the document
       (helpers/install-intercom! devtools-id intercom-handler)

@@ -44,11 +44,25 @@
 
 ; -- dirac frontend url -----------------------------------------------------------------------------------------------------
 
-(defn get-dirac-main-html-file-path []
+(defn get-dirac-inspector-html-file-path []
   "devtools/front_end/inspector.html")
+
+(defn get-dirac-handshake-html-file-path []
+  "devtools/front_end/handshake.html")
 
 (defn make-blank-page-url []
   (runtime/get-url "blank.html"))
+
+; example result:
+; chrome-extension://mjdnckdilfjoenmikegbbenflgjcmbid/devtools/front_end/handshake.html?backend_api=...&backend_css=...
+(defn make-dirac-handshake-url [options]
+  (let [{:keys [backend-api backend-css]} options]
+    (let [html-file-path (get-dirac-handshake-html-file-path)
+          all-params (cond-> {}
+                       ; add optional params
+                       backend-api (assoc "backend_api" backend-api)
+                       backend-css (assoc "backend_css" backend-css))]
+      (runtime/get-url (make-relative-url html-file-path all-params)))))
 
 ; example result:
 ; chrome-extension://mjdnckdilfjoenmikegbbenflgjcmbid/devtools/front_end/inspector.html?devtools_id=1&dirac_flags=11111&ws=localhost:9222/devtools/page/76BE0A6D-412C-4592-BC3C-ED3ECB5DFF8C
@@ -58,7 +72,7 @@
                 backend-api backend-css user-url-params node?]} options]
     (assert backend-url)
     (assert flags)
-    (let [html-file-path (get-dirac-main-html-file-path)
+    (let [html-file-path (get-dirac-inspector-html-file-path)
           manadatory-params {"devtools_id" devtools-id
                              "dirac_flags" flags
                              "ws"          backend-url}
@@ -66,8 +80,8 @@
                        ; add optional params
                        reset-settings (assoc "reset_settings" 1)
                        automate (assoc "dirac_automate" 1)
-                       backend-api (assoc "backend_api" backend-api)
-                       backend-css (assoc "backend_css" backend-css)
+                       backend-api (assoc "backend_api" 1)
+                       backend-css (assoc "backend_css" 1)
                        node? (assoc "v8only" "true")
                        extra-url-params (merge extra-url-params))]
       (runtime/get-url (make-relative-url html-file-path all-params user-url-params)))))
