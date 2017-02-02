@@ -120,10 +120,10 @@
       (provide-user-url-params)))
 
 (defn wait-for-handshake-completion! [frontend-tab-id timeout-ms]
-  (helpers/wait-for-document-title! frontend-tab-id "DONE" timeout-ms))
+  (helpers/wait-for-document-title! frontend-tab-id "#" timeout-ms))
 
 (defn wait-for-loading-completion! [frontend-tab-id timeout-ms]
-  (helpers/wait-for-document-title! frontend-tab-id "DONE" timeout-ms))
+  (helpers/wait-for-document-title! frontend-tab-id "#" timeout-ms))
 
 (defn connect-and-navigate-dirac-devtools! [frontend-tab-id backend-tab-id options]
   (let [devtools-id (devtools/register! frontend-tab-id backend-tab-id)
