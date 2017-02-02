@@ -30,7 +30,7 @@
 
 ; -- views ------------------------------------------------------------------------------------------------------------------
 
-(defc options-view < rum/cursored rum/cursored-watch [data]
+(defc options-view < rum/reactive [data]
   (let [form-options {:form         {:horizontal true}
                       :button-group {:align "text-right"}}]
     (fr/with-options form-options
