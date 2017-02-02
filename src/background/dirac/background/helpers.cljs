@@ -195,10 +195,24 @@
       (if-let [view (first matching-views)]
         (do
           (oset! view "!" (get-dirac-intercom-key) handler)
-          (when-let [flush-fn (oget view "?" (get-flush-pending-feedback-messages-key))]
-            (flush-fn)))
-        (error "devtools view unexpectedly null" devtools-id))
-      (error "unable to install intercom from dirac extension to dirac frontend" devtools-id))))
+          (if-let [flush-fn (oget view "?" (get-flush-pending-feedback-messages-key))]                                        ; this is optional for testing
+            (flush-fn))
+          true)
+        "devtools view unexpectedly null")
+      (str "unexpected count of devtools views: " (count matching-views)))))
+
+(defn try-install-intercom! [devtools-id handler & [timeout-ms]]
+  (let [timeout-chan (if (some? timeout-ms)
+                       (timeout timeout-ms))]
+    (go-loop [iteration 1]
+      (let [result (install-intercom! devtools-id handler)]
+        (if (true? result)
+          true
+          (let [wait-chan (timeout 100)
+                [_ ch] (alts! (filterv some? [wait-chan timeout-chan]))]
+            (if (= ch timeout-chan)
+              (str "timeouted after " iteration " trials (" timeout-ms "ms), " result)
+              (recur (inc iteration)))))))))
 
 (defn show-connecting-debugger-backend-status! [tab-id]
   (action/update-action-button! tab-id :connecting "Attempting to connect debugger backend..."))
@@ -210,7 +224,7 @@
       (let [tab-info-chan (tabs/get tab-id)
             [[result] ch] (alts! (filterv some? [tab-info-chan timeout-chan]))]
         (if (= ch timeout-chan)
-          (str "timeouted after " iteration " trials (" timeout-ms " ms)")
+          (str "timeouted after " iteration " trials (" timeout-ms "ms)")
           (if-not (some? result)
             (str "invalid tab-id: " tab-id)
             (let [title (oget result "?title")]
