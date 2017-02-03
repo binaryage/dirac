@@ -1,6 +1,6 @@
 (def clj-logging-config-version "1.9.12")
 (def slf4j-log4j12-version "1.7.22")
-(defproject binaryage/dirac "1.1.2"
+(defproject binaryage/dirac "1.1.3"
   :description "Dirac DevTools - a Chrome DevTools fork for ClojureScript developers."
   :url "https://github.com/binaryage/dirac"
   :license {:name         "MIT License"
@@ -30,7 +30,7 @@
                  [cljs-http "0.1.42" :scope "test"]
                  [figwheel "0.5.9" :scope "test"]
                  [reforms "0.4.3" :scope "test"]
-                 [rum "0.9.1" :scope "test"]
+                 [rum "0.10.8" :scope "test"]
                  [rum-reforms "0.4.3" :scope "test"]
                  [cljsjs/parinfer "1.8.1-0" :scope "test"]
                  [com.lucasbradstreet/cljs-uuid-utils "1.0.2" :scope "test"]
@@ -153,14 +153,14 @@
              {:jvm-opts ["-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5007"]}
 
              :clojure17
-             {:dependencies [[org.clojure/clojure "1.7.0" :scope "provided"]
-                             [org.clojure/clojurescript "1.7.228" :scope "provided"]]}
+             {:dependencies [[org.clojure/clojure "1.7.0" :scope "provided" :upgrade false]
+                             [org.clojure/clojurescript "1.7.228" :scope "provided" :upgrade false]]}
 
              :clojure18
-             {:dependencies [[org.clojure/clojure "1.8.0" :scope "provided"]]}
+             {:dependencies [[org.clojure/clojure "1.8.0" :scope "provided" :upgrade false]]}
 
              :clojure19
-             {:dependencies [[org.clojure/clojure "1.9.0-alpha14" :scope "provided"]]}
+             {:dependencies [[org.clojure/clojure "1.9.0-alpha14" :scope "provided" :upgrade false]]}
 
              :cooper
              {:plugins [[lein-cooper "1.2.2"]]}

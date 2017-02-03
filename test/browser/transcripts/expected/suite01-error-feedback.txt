@@ -42,6 +42,7 @@ devtools #1      <elided dirac version info line>
                      at $cljs$core$ex_info$cljs$0core$0IFn$0_invoke$0arity$03$$ (chrome-extension://<extension-id>/devtools/front_end/inspector.js:***)
                      at $cljs$core$ex_info$cljs$0core$0IFn$0_invoke$0arity$02$$ (chrome-extension://<extension-id>/devtools/front_end/inspector.js:***)
                      at chrome-extension://<extension-id>/devtools/front_end/inspector.js:***
+                     at <anonymous>
                  ---
                  To inspect the problem in internal DevTools => https://goo.gl/0FkZ1o
                  Consider reporting the issue here: https://github.com/binaryage/dirac/issues

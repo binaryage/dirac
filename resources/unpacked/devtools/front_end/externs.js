@@ -544,6 +544,8 @@ var dirac = {
      */
     parseNsFromSource: function(source) {},
 
+    isIntercomReady: function() {},
+
     reportNamespacesCacheMutation: function() {},
 
     /**

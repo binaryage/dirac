@@ -20,10 +20,10 @@ Protocol.InspectorBackendExtensionMode.loadFromExtensionIfNeeded = function() {
     }
   };
 
-  const backendAPI = Runtime.queryParam("backend_api");
-  if (backendAPI) {
-    const decodedBackendAPI = decodeURIComponent(backendAPI);
-    const lines = decodedBackendAPI.split("\n").filter(s => s.length);
+  const hasBackendAPI = Runtime.queryParam("backend_api");
+  if (hasBackendAPI) {
+    const backendAPI = window.localStorage.getItem('dirac_backend_api'); // see handshake.js
+    const lines = backendAPI.split("\n").filter(s => s.length);
     Protocol.BakedInspectorBackendMode = "external";
     Protocol.BakedInspectorBackendModeInfo = lines.length;
     if (dirac._DEBUG_BACKEND_API) {

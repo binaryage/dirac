@@ -51,6 +51,7 @@
     padding-right: 4px !important;
     margin-left: 24px;
     min-height: 18px; /* Sync with ConsoleViewMessage.js */
+    width: 100%;
 }
 
 #console-prompt-dirac::before {

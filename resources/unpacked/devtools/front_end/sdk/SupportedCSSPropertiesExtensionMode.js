@@ -9,9 +9,9 @@ SDK.SupportedCSSPropertiesExtensionMode.loadFromExtensionIfNeeded = function() {
     }
   };
 
-  const encodedBackendCSS = Runtime.queryParam("backend_css");
-  if (encodedBackendCSS) {
-    const backendCSS = decodeURIComponent(encodedBackendCSS);
+  const hasBackendCSS = Runtime.queryParam("backend_css");
+  if (hasBackendCSS) {
+    const backendCSS = window.localStorage.getItem('dirac_backend_css'); // see handshake.js
     const lines = backendCSS.split("\n").filter(s => s.length);
     Protocol.BakedSupportedCSSPropertiesMode = "external";
     Protocol.BakedSupportedCSSPropertiesModeInfo = lines.length;

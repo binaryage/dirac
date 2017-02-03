@@ -1,6 +1,6 @@
 (ns dirac.background.helpers
   (:require-macros [cljs.core.async.macros :refer [go go-loop]])
-  (:require [cljs.core.async :refer [<! chan put! close! timeout]]
+  (:require [cljs.core.async :refer [<! chan put! close! timeout alts!]]
             [oops.core :refer [oget oget+ oset! oset!+ ocall oapply]]
             [chromex.logging :refer-macros [log info warn error group group-end]]
             [chromex.ext.tabs :as tabs]
@@ -44,11 +44,25 @@
 
 ; -- dirac frontend url -----------------------------------------------------------------------------------------------------
 
-(defn get-dirac-main-html-file-path []
+(defn get-dirac-inspector-html-file-path []
   "devtools/front_end/inspector.html")
+
+(defn get-dirac-handshake-html-file-path []
+  "devtools/front_end/handshake.html")
 
 (defn make-blank-page-url []
   (runtime/get-url "blank.html"))
+
+; example result:
+; chrome-extension://mjdnckdilfjoenmikegbbenflgjcmbid/devtools/front_end/handshake.html?backend_api=...&backend_css=...
+(defn make-dirac-handshake-url [options]
+  (let [{:keys [backend-api backend-css]} options]
+    (let [html-file-path (get-dirac-handshake-html-file-path)
+          all-params (cond-> {}
+                       ; add optional params
+                       backend-api (assoc "backend_api" backend-api)
+                       backend-css (assoc "backend_css" backend-css))]
+      (runtime/get-url (make-relative-url html-file-path all-params)))))
 
 ; example result:
 ; chrome-extension://mjdnckdilfjoenmikegbbenflgjcmbid/devtools/front_end/inspector.html?devtools_id=1&dirac_flags=11111&ws=localhost:9222/devtools/page/76BE0A6D-412C-4592-BC3C-ED3ECB5DFF8C
@@ -58,7 +72,7 @@
                 backend-api backend-css user-url-params node?]} options]
     (assert backend-url)
     (assert flags)
-    (let [html-file-path (get-dirac-main-html-file-path)
+    (let [html-file-path (get-dirac-inspector-html-file-path)
           manadatory-params {"devtools_id" devtools-id
                              "dirac_flags" flags
                              "ws"          backend-url}
@@ -66,8 +80,8 @@
                        ; add optional params
                        reset-settings (assoc "reset_settings" 1)
                        automate (assoc "dirac_automate" 1)
-                       backend-api (assoc "backend_api" backend-api)
-                       backend-css (assoc "backend_css" backend-css)
+                       backend-api (assoc "backend_api" 1)
+                       backend-css (assoc "backend_css" 1)
                        node? (assoc "v8only" "true")
                        extra-url-params (merge extra-url-params))]
       (runtime/get-url (make-relative-url html-file-path all-params user-url-params)))))
@@ -181,10 +195,41 @@
       (if-let [view (first matching-views)]
         (do
           (oset! view "!" (get-dirac-intercom-key) handler)
-          (when-let [flush-fn (oget view "?" (get-flush-pending-feedback-messages-key))]
-            (flush-fn)))
-        (error "devtools view unexpectedly null" devtools-id))
-      (error "unable to install intercom from dirac extension to dirac frontend" devtools-id))))
+          (if-let [flush-fn (oget view "?" (get-flush-pending-feedback-messages-key))]                                        ; this is optional for testing
+            (flush-fn))
+          true)
+        "devtools view unexpectedly null")
+      (str "unexpected count of devtools views: " (count matching-views)))))
+
+(defn try-install-intercom! [devtools-id handler & [timeout-ms]]
+  (let [timeout-chan (if (some? timeout-ms)
+                       (timeout timeout-ms))]
+    (go-loop [iteration 1]
+      (let [result (install-intercom! devtools-id handler)]
+        (if (true? result)
+          true
+          (let [wait-chan (timeout 100)
+                [_ ch] (alts! (filterv some? [wait-chan timeout-chan]))]
+            (if (= ch timeout-chan)
+              (str "timeouted after " iteration " trials (" timeout-ms "ms), " result)
+              (recur (inc iteration)))))))))
 
 (defn show-connecting-debugger-backend-status! [tab-id]
   (action/update-action-button! tab-id :connecting "Attempting to connect debugger backend..."))
+
+(defn wait-for-document-title! [tab-id wanted-title & [timeout-ms]]
+  (let [timeout-chan (if (some? timeout-ms)
+                       (timeout timeout-ms))]
+    (go-loop [iteration 1]
+      (let [tab-info-chan (tabs/get tab-id)
+            [[result] ch] (alts! (filterv some? [tab-info-chan timeout-chan]))]
+        (if (= ch timeout-chan)
+          (str "timeouted after " iteration " trials (" timeout-ms "ms)")
+          (if-not (some? result)
+            (str "invalid tab-id: " tab-id)
+            (let [title (oget result "?title")]
+              (if (= title wanted-title)
+                true
+                (do
+                  (<! (timeout 100))
+                  (recur (inc iteration)))))))))))

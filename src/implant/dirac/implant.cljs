@@ -117,6 +117,9 @@
     (set! *namespaces-cache-debouncer* (Debouncer. namespaces-cache-changed! 1000)))
   *namespaces-cache-debouncer*)
 
+(defn is-intercom-ready []
+  (some? (feedback/get-intercom)))
+
 (defn report-namespaces-cache-mutation! []
   (let [debouncer (get-namespaces-cache-debouncer)]
     (.fire debouncer)))
@@ -142,6 +145,7 @@
    "getFunctionName"                get-function-name
    "getFullFunctionName"            get-full-function-name
    "getReplSpecialsAsync"           get-repl-specials-async
+   "isIntercomReady"                is-intercom-ready
    "reportNamespacesCacheMutation"  report-namespaces-cache-mutation!})
 
 (defn enhance-dirac-object! [dirac]

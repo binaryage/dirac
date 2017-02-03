@@ -23,3 +23,18 @@
 
 (defn tab-cannot-be-debugged [tab]
   (str "This tab cannot be debugged: it has no tab url" tab))
+
+(defn unable-to-complete-frontend-handshake [frontend-tab-id reason]
+  (str "Unable to complete initial frontend handshake"
+       (if (some? reason) (str ", reason: " reason))
+       ". (frontend-tab-id=" frontend-tab-id ")"))
+
+(defn unable-to-complete-frontend-loading [frontend-tab-id reason]
+  (str "Unable to complete initial frontend loading"
+       (if (some? reason) (str ", reason: " reason))
+       ". (frontend-tab-id=" frontend-tab-id ")"))
+
+(defn unable-to-complete-intercom-initialization [frontend-tab-id reason]
+  (str "Unable to complete intercom initialization"
+       (if (some? reason) (str ", reason: " reason))
+       ". (frontend-tab-id=" frontend-tab-id ")"))
