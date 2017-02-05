@@ -123,8 +123,9 @@ UI.Toolbar = class {
       var document = button.element.ownerDocument;
       document.documentElement.addEventListener('mouseup', mouseUp, false);
 
-      var optionsGlassPane = new UI.GlassPane(document);
-      var optionsBar = new UI.Toolbar('fill', optionsGlassPane.element);
+      var optionsGlassPane = new UI.GlassPane(document, false /* dimmed */, true /* blockPointerEvents */, event => {});
+      optionsGlassPane.show();
+      var optionsBar = new UI.Toolbar('fill', optionsGlassPane.contentElement);
       optionsBar._contentElement.classList.add('floating');
       const buttonHeight = 26;
 
@@ -167,7 +168,7 @@ UI.Toolbar = class {
       function mouseUp(e) {
         if (e.which !== 1)
           return;
-        optionsGlassPane.dispose();
+        optionsGlassPane.hide();
         document.documentElement.removeEventListener('mouseup', mouseUp, false);
 
         for (var i = 0; i < buttons.length; ++i) {
@@ -606,6 +607,7 @@ UI.ToolbarToggle = class extends UI.ToolbarButton {
     this._untoggledGlyph = glyph;
     this._toggledGlyph = toggledGlyph;
     this.element.classList.add('toolbar-state-off');
+    UI.ARIAUtils.setPressed(this.element, false);
   }
 
   /**
@@ -624,6 +626,7 @@ UI.ToolbarToggle = class extends UI.ToolbarButton {
     this._toggled = toggled;
     this.element.classList.toggle('toolbar-state-on', toggled);
     this.element.classList.toggle('toolbar-state-off', !toggled);
+    UI.ARIAUtils.setPressed(this.element, toggled);
     if (this._toggledGlyph && this._untoggledGlyph)
       this.setGlyph(toggled ? this._toggledGlyph : this._untoggledGlyph);
   }

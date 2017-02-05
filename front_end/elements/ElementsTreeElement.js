@@ -43,6 +43,8 @@ Elements.ElementsTreeElement = class extends UI.TreeElement {
 
     this._gutterContainer = this.listItemElement.createChild('div', 'gutter-container');
     this._gutterContainer.addEventListener('click', this._showContextMenu.bind(this));
+    var gutterMenuIcon = UI.Icon.create('largeicon-menu', 'gutter-menu-icon');
+    this._gutterContainer.appendChild(gutterMenuIcon);
     this._decorationsElement = this._gutterContainer.createChild('div', 'hidden');
 
     this._elementCloseTag = elementCloseTag;
@@ -825,6 +827,7 @@ Elements.ElementsTreeElement = class extends UI.TreeElement {
         return;
 
       treeOutline.runPendingUpdates();
+      treeOutline.focus();
 
       // Search for the attribute's position, and then decide where to move to.
       var attributes = this._node.attributes();
