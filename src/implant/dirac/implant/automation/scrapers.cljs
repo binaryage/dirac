@@ -51,7 +51,7 @@
 ; -- suggest box UI (code completions) --------------------------------------------------------------------------------------
 
 (defn find-suggest-box-element []
-  (first (dom/query-selector "html /deep/ .suggest-box-overlay")))
+  (first (dom/query-selector "html /deep/ .suggest-box")))
 
 (defn print-suggest-box-item [item-rep]
   (let [{:keys [class]} item-rep
