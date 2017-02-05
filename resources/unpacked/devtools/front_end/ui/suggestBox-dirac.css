@@ -1,12 +1,8 @@
-.suggest-box-horizontal {
-    max-width: initial;
-}
-
-.suggest-box .suggest-box-content-item.suggest-cljs {
+.suggest-box-content-item.suggest-cljs {
     display: block; /* flex was causing troubles for cljs suggestion items, see _updateWidth */
 }
 
-.suggest-box .suggest-box-content-item.suggest-cljs .prologue::after {
+.suggest-box-content-item.suggest-cljs .prologue::after {
     display: inline-block;
     font-size: 8px;
     min-width: 42px;
@@ -18,7 +14,7 @@
     text-align: right;
 }
 
-.suggest-box .suggest-box-content-item.suggest-cljs .prologue::before {
+.suggest-box-content-item.suggest-cljs .prologue::before {
     height: 6px;
     width: 0px;
     display: inline-block;
@@ -29,70 +25,72 @@
     -webkit-user-select: none;
 }
 
-.suggest-box .suggest-box-content-item.suggest-cljs-macro .prologue::before {
+.suggest-box-content-item.suggest-cljs-macro .prologue::before {
     border-left-color: #d1585d;
     border-right-color: #d1585d;
 }
 
-.suggest-box .suggest-box-content-item.suggest-cljs-pseudo .prologue::before {
+.suggest-box-content-item.suggest-cljs-pseudo .prologue::before {
     border-left-color: #899fcb;
     border-right-color: #899fcb;
 }
 
-.suggest-box .suggest-box-content-item.suggest-cljs-special .prologue::before {
+.suggest-box-content-item.suggest-cljs-special .prologue::before {
     border-left-color: #e6bf73;
     border-right-color: #e6bf73;
 }
 
-.suggest-box .suggest-box-content-item.suggest-cljs-combined-ns-macro .prologue::before {
+.suggest-box-content-item.suggest-cljs-combined-ns-macro .prologue::before {
     border-left-color: #d1585d;
     border-right-color: #aed17d;
 }
 
-.suggest-box .suggest-box-content-item.suggest-cljs-ns .prologue::after {
+.suggest-box-content-item.suggest-cljs-ns .prologue::after {
     content: "ns";
 }
 
-.suggest-box .suggest-box-content-item.suggest-cljs-core .prologue::after {
+.suggest-box-content-item.suggest-cljs-core .prologue::after {
     content: "core";
 }
 
-.suggest-box .suggest-box-content-item.suggest-cljs-in-ns .prologue::after {
+.suggest-box-content-item.suggest-cljs-in-ns .prologue::after {
     content: "in-ns";
 }
 
-.suggest-box .suggest-box-content-item.suggest-cljs-scope .prologue::after {
+.suggest-box-content-item.suggest-cljs-scope .prologue::after {
     content: "scope";
 }
 
-.suggest-box .suggest-box-content-item.suggest-cljs-qualified .prologue::after {
+.suggest-box-content-item.suggest-cljs-qualified .prologue::after {
     content: "/";
 }
 
-.suggest-box .suggest-box-content-item.suggest-cljs-ns-alias .prologue::after {
+.suggest-box-content-item.suggest-cljs-ns-alias .prologue::after {
     content: "alias";
 }
 
-.suggest-box .suggest-box-content-item.suggest-cljs-refer .prologue::after {
+.suggest-box-content-item.suggest-cljs-refer .prologue::after {
     content: "refer";
 }
 
-.suggest-box .suggest-box-content-item.suggest-cljs-repl .prologue::after {
+.suggest-box-content-item.suggest-cljs-repl .prologue::after {
     content: "repl";
 }
 
-.suggest-box .suggest-box-content-item.suggest-cljs-aliased .prefix {
+.suggest-box-content-item.suggest-cljs-aliased .prefix {
     color: #ccc;
 }
 
-.suggest-box .suggest-box-content-item.suggest-cljs-aliased .suffix {
+.suggest-box-content-item.suggest-cljs-aliased .suffix {
     color: #ccc;
 }
 
-.suggest-box .suggest-box-content-item .epilogue {
+.suggest-box-content-item .epilogue {
     font-size: 8px;
     display:inline-block;
     color: #ccc;
     padding: 0 4px;
-    text-align: right;
+    float: right;
+    position: relative;
+    top: 3px;
 }

@@ -109,13 +109,15 @@ UI.SuggestBox = class {
    * @return {number}
    */
   _maxWidth(items) {
-    var kMaxWidth = 300;
+    var kMaxWidth = 100000; // dirac: do not limit max-width
     if (!items.length)
       return kMaxWidth;
     var maxItem;
     var maxLength = -Infinity;
     for (var i = 0; i < items.length; i++) {
       var length = (items[i].title || items[i].text).length + (items[i].subtitle || '').length;
+      var length2 = (items[i].epilogue || '').length;
+      length = 54 + 6.7*length + 4.9*length2; // dirac's suggestion items are more complex, this is a rough estimate
       if (length > maxLength) {
         maxLength = length;
         maxItem = items[i];
@@ -359,7 +361,8 @@ UI.SuggestBox = class {
 };
 
 /**
- * @typedef {!{text: string, subtitle: (string|undefined), iconType: (string|undefined), priority: (number|undefined), isSecondary: (boolean|undefined), title: (string|undefined)}}
+ * @typedef {!{text: string, subtitle: (string|undefined), iconType: (string|undefined), priority: (number|undefined), isSecondary: (boolean|undefined), title: (string|undefined),
+ * prologue: (string|undefined), epilogue: (string|undefined)}}
  */
 UI.SuggestBox.Suggestion;
 

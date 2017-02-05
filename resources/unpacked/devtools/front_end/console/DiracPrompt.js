@@ -358,7 +358,7 @@ Console.DiracPromptWithHistory = class extends UI.TextPrompt {
 
     // Filter out dupes.
     const store = new Set();
-    completions = completions.filter(item => !store.has(item.title) && !!store.add(item.title));
+    completions = completions.filter(item => !store.has(item.text) && !!store.add(item.text));
 
     if (!completions.length) {
       this.clearAutocomplete();
@@ -449,13 +449,13 @@ Console.DiracPromptWithHistory = class extends UI.TextPrompt {
 
       const annotateQualifiedSymbols = (style, symbols) => {
         return symbols.filter(symbol => symbol.startsWith(prefix)).map(symbol => ({
-          title: symbol || "?",
+          text: symbol || "?",
           className: makeSuggestStyle(style)
         }));
       };
 
       const styleQualifiedSymbols = (style, symbols) => {
-        return symbols.filter(symbol => symbol.title.startsWith(prefix)).map(symbol => {
+        return symbols.filter(symbol => symbol.text.startsWith(prefix)).map(symbol => {
           symbol.className = makeSuggestStyle(style);
           return symbol;
         });
@@ -539,7 +539,7 @@ Console.DiracPromptWithHistory = class extends UI.TextPrompt {
 
       const annotateSymbols = (style, symbols) => {
         return symbols.filter(symbol => symbol.startsWith(input)).map(symbol => ({
-          title: symbol || "?",
+          text: symbol || "?",
           className: makeSuggestStyle(style)
         }));
       };
@@ -579,7 +579,7 @@ Console.DiracPromptWithHistory = class extends UI.TextPrompt {
         const locals = extractLocalsFromScopeInfo(scopeInfo);
         const filteredLocals = locals.filter(item => item.name.startsWith(input));
         const annotatedCompletions = filteredLocals.map(item => ({
-          title: item.name || "?",
+          text: item.name || "?",
           epilogue: item.identifier ? "js/" + item.identifier : undefined,
           className: makeSuggestStyle("suggest-cljs-scope")
         }));
@@ -593,7 +593,7 @@ Console.DiracPromptWithHistory = class extends UI.TextPrompt {
           extraStyle += " suggest-cljs-pseudo";
         }
         return {
-          title: namespace.name || "?",
+          text: namespace.name || "?",
           className: makeSuggestStyle("suggest-cljs-ns" + extraStyle)
         }
       };
@@ -606,7 +606,7 @@ Console.DiracPromptWithHistory = class extends UI.TextPrompt {
 
       const annotateMacroNamespaceNames = (namespaces) => {
         return namespaces.filter(name => name.startsWith(input)).map(name => ({
-          title: name || "?",
+          text: name || "?",
           className: makeSuggestStyle("suggest-cljs-ns suggest-cljs-macro")
         }));
       };
@@ -626,7 +626,7 @@ Console.DiracPromptWithHistory = class extends UI.TextPrompt {
               extraStyle += " suggest-cljs-pseudo";
             }
             return {
-              title: name,
+              text: name,
               epilogue: targetName ? prefix + targetName : null, // full target name
               className: makeSuggestStyle(style + extraStyle)
             }
@@ -637,7 +637,7 @@ Console.DiracPromptWithHistory = class extends UI.TextPrompt {
 
       const annotateReplSpecials = symbols => {
         return symbols.filter(symbol => symbol.startsWith(input)).map(symbol => ({
-          title: symbol || "?",
+          text: symbol || "?",
           className: makeSuggestStyle("suggest-cljs-repl suggest-cljs-special")
         }));
       };
@@ -694,7 +694,7 @@ Console.DiracPromptWithHistory = class extends UI.TextPrompt {
 
     const sortCompletions = (completions) => {
       return dirac.stableSort(completions, (a, b) => {
-        return a.title.localeCompare(b.title);
+        return a.text.localeCompare(b.text);
       });
     };
 
@@ -702,7 +702,7 @@ Console.DiracPromptWithHistory = class extends UI.TextPrompt {
       let previous = null;
       for (const current of annotatedCompletions) {
         if (previous) {
-          if (current.title === previous.title) {
+          if (current.text === previous.text) {
             if (!current.className) {
               current.className = "suggest-cljs-aliased";
             } else {
@@ -721,7 +721,7 @@ Console.DiracPromptWithHistory = class extends UI.TextPrompt {
       for (const current of completions) {
         let skip = false;
         if (previous) {
-          if (current.title === previous.title) {
+          if (current.text === previous.text) {
             if (previous.className.includes("suggest-cljs-ns") &&
               current.className.includes("suggest-cljs-ns") &&
               current.className.includes("suggest-cljs-macro")) {
