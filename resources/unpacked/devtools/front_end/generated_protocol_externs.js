@@ -1608,6 +1608,15 @@ Protocol.DOMAgent.prototype.getDocument = function(opt_depth, opt_pierce, opt_ca
 Protocol.DOMAgent.prototype.invoke_getDocument = function(obj, opt_callback) {}
 
 /**
+ * @param {number=} opt_depth
+ * @param {boolean=} opt_pierce
+ * @param {function(?Protocol.Error, !Array<Protocol.DOM.Node>):void=} opt_callback
+ */
+Protocol.DOMAgent.prototype.getFlattenedDocument = function(opt_depth, opt_pierce, opt_callback) {}
+/** @param {function(?Protocol.Error, !Array<Protocol.DOM.Node>):void=} opt_callback */
+Protocol.DOMAgent.prototype.invoke_getFlattenedDocument = function(obj, opt_callback) {}
+
+/**
  * @param {Protocol.DOM.NodeId} nodeId
  * @param {function(?Protocol.Error, !Array<string>):void=} opt_callback
  */
@@ -1977,7 +1986,7 @@ Protocol.DOM.ShadowRootType = {
     Closed: "closed"
 };
 
-/** @typedef {!{nodeId:(Protocol.DOM.NodeId), backendNodeId:(Protocol.DOM.BackendNodeId), nodeType:(number), nodeName:(string), localName:(string), nodeValue:(string), childNodeCount:(number|undefined), children:(!Array<Protocol.DOM.Node>|undefined), attributes:(!Array<string>|undefined), documentURL:(string|undefined), baseURL:(string|undefined), publicId:(string|undefined), systemId:(string|undefined), internalSubset:(string|undefined), xmlVersion:(string|undefined), name:(string|undefined), value:(string|undefined), pseudoType:(Protocol.DOM.PseudoType|undefined), shadowRootType:(Protocol.DOM.ShadowRootType|undefined), frameId:(Protocol.Page.FrameId|undefined), contentDocument:(Protocol.DOM.Node|undefined), shadowRoots:(!Array<Protocol.DOM.Node>|undefined), templateContent:(Protocol.DOM.Node|undefined), pseudoElements:(!Array<Protocol.DOM.Node>|undefined), importedDocument:(Protocol.DOM.Node|undefined), distributedNodes:(!Array<Protocol.DOM.BackendNode>|undefined), isSVG:(boolean|undefined)}} */
+/** @typedef {!{nodeId:(Protocol.DOM.NodeId), parentId:(Protocol.DOM.NodeId|undefined), backendNodeId:(Protocol.DOM.BackendNodeId), nodeType:(number), nodeName:(string), localName:(string), nodeValue:(string), childNodeCount:(number|undefined), children:(!Array<Protocol.DOM.Node>|undefined), attributes:(!Array<string>|undefined), documentURL:(string|undefined), baseURL:(string|undefined), publicId:(string|undefined), systemId:(string|undefined), internalSubset:(string|undefined), xmlVersion:(string|undefined), name:(string|undefined), value:(string|undefined), pseudoType:(Protocol.DOM.PseudoType|undefined), shadowRootType:(Protocol.DOM.ShadowRootType|undefined), frameId:(Protocol.Page.FrameId|undefined), contentDocument:(Protocol.DOM.Node|undefined), shadowRoots:(!Array<Protocol.DOM.Node>|undefined), templateContent:(Protocol.DOM.Node|undefined), pseudoElements:(!Array<Protocol.DOM.Node>|undefined), importedDocument:(Protocol.DOM.Node|undefined), distributedNodes:(!Array<Protocol.DOM.BackendNode>|undefined), isSVG:(boolean|undefined)}} */
 Protocol.DOM.Node;
 
 /** @typedef {!{r:(number), g:(number), b:(number), a:(number|undefined)}} */
@@ -3470,6 +3479,7 @@ Protocol.Accessibility.AXWidgetAttributes = {
 Protocol.Accessibility.AXWidgetStates = {
     Checked: "checked",
     Expanded: "expanded",
+    Modal: "modal",
     Pressed: "pressed",
     Selected: "selected"
 };

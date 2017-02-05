@@ -1,5 +1,5 @@
-Protocol.BakedInspectorBackendAPIChromeTag='58.0.2999.2';
-Protocol.BakedInspectorBackendAPIChromeRev='7dd42d9e138778bbc6af6c886175302d3f281e08';
+Protocol.BakedInspectorBackendAPIChromeTag='58.0.3003.2';
+Protocol.BakedInspectorBackendAPIChromeRev='89d445684f181b98567d6181670b6f84de2c981d';
 Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerEvent("Inspector.detached", ["reason"]);\n'
 + 'Protocol.inspectorBackend.registerEvent("Inspector.targetCrashed", []);\n'
@@ -194,6 +194,7 @@ Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerCommand("DOM.enable", [], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("DOM.disable", [], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("DOM.getDocument", [{"name": "depth", "type": "number", "optional": true}, {"name": "pierce", "type": "boolean", "optional": true}], ["root"], false);\n'
++ 'Protocol.inspectorBackend.registerCommand("DOM.getFlattenedDocument", [{"name": "depth", "type": "number", "optional": true}, {"name": "pierce", "type": "boolean", "optional": true}], ["nodes"], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("DOM.collectClassNamesFromSubtree", [{"name": "nodeId", "type": "number", "optional": false}], ["classNames"], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("DOM.requestChildNodes", [{"name": "nodeId", "type": "number", "optional": false}, {"name": "depth", "type": "number", "optional": true}, {"name": "pierce", "type": "boolean", "optional": true}], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("DOM.querySelector", [{"name": "nodeId", "type": "number", "optional": false}, {"name": "selector", "type": "string", "optional": false}], ["nodeId"], false);\n'
@@ -360,7 +361,7 @@ Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerEnum("Accessibility.AXGlobalStates", {Disabled: "disabled", Hidden: "hidden", HiddenRoot: "hiddenRoot", Invalid: "invalid", Keyshortcuts: "keyshortcuts", Roledescription: "roledescription"});\n'
 + 'Protocol.inspectorBackend.registerEnum("Accessibility.AXLiveRegionAttributes", {Live: "live", Atomic: "atomic", Relevant: "relevant", Busy: "busy", Root: "root"});\n'
 + 'Protocol.inspectorBackend.registerEnum("Accessibility.AXWidgetAttributes", {Autocomplete: "autocomplete", Haspopup: "haspopup", Level: "level", Multiselectable: "multiselectable", Orientation: "orientation", Multiline: "multiline", Readonly: "readonly", Required: "required", Valuemin: "valuemin", Valuemax: "valuemax", Valuetext: "valuetext"});\n'
-+ 'Protocol.inspectorBackend.registerEnum("Accessibility.AXWidgetStates", {Checked: "checked", Expanded: "expanded", Pressed: "pressed", Selected: "selected"});\n'
++ 'Protocol.inspectorBackend.registerEnum("Accessibility.AXWidgetStates", {Checked: "checked", Expanded: "expanded", Modal: "modal", Pressed: "pressed", Selected: "selected"});\n'
 + 'Protocol.inspectorBackend.registerEnum("Accessibility.AXRelationshipAttributes", {Activedescendant: "activedescendant", Controls: "controls", Describedby: "describedby", Details: "details", Errormessage: "errormessage", Flowto: "flowto", Labelledby: "labelledby", Owns: "owns"});\n'
 + 'Protocol.inspectorBackend.registerCommand("Accessibility.getPartialAXTree", [{"name": "nodeId", "type": "number", "optional": false}, {"name": "fetchRelatives", "type": "boolean", "optional": true}], ["nodes"], false);\n'
 + 'Protocol.inspectorBackend.registerEnum("Storage.StorageType", {Appcache: "appcache", Cookies: "cookies", File_systems: "file_systems", Indexeddb: "indexeddb", Local_storage: "local_storage", Shader_cache: "shader_cache", Websql: "websql", Service_workers: "service_workers", Cache_storage: "cache_storage", All: "all"});\n'
