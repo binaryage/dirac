@@ -94,8 +94,11 @@ UI.DragHandler = class {
 
   _createGlassPane() {
     this._glassPaneInUse = true;
-    if (!UI.DragHandler._glassPaneUsageCount++)
-      UI.DragHandler._glassPane = new UI.GlassPane(UI.DragHandler._documentForMouseOut);
+    if (!UI.DragHandler._glassPaneUsageCount++) {
+      UI.DragHandler._glassPane = new UI.GlassPane(
+          UI.DragHandler._documentForMouseOut, false /* dimmed */, true /* blockPointerEvents */, event => {});
+      UI.DragHandler._glassPane.show();
+    }
   }
 
   _disposeGlassPane() {
@@ -104,7 +107,7 @@ UI.DragHandler = class {
     this._glassPaneInUse = false;
     if (--UI.DragHandler._glassPaneUsageCount)
       return;
-    UI.DragHandler._glassPane.dispose();
+    UI.DragHandler._glassPane.hide();
     delete UI.DragHandler._glassPane;
     delete UI.DragHandler._documentForMouseOut;
   }
@@ -297,35 +300,6 @@ UI.installInertialDragHandle = function(
     elementDrag(lastX, lastY);
   }
 };
-
-/**
- * @unrestricted
- */
-UI.GlassPane = class {
-  /**
-   * @param {!Document} document
-   * @param {boolean=} dimmed
-   */
-  constructor(document, dimmed) {
-    this.element = createElement('div');
-    var background = dimmed ? 'rgba(255, 255, 255, 0.5)' : 'transparent';
-    this._zIndex = UI._glassPane ? UI._glassPane._zIndex + 1000 :
-                                   3000;  // Deliberately starts with 3000 to hide other z-indexed elements below.
-    this.element.style.cssText = 'position:absolute;top:0;bottom:0;left:0;right:0;background-color:' + background +
-        ';z-index:' + this._zIndex + ';overflow:hidden;';
-    document.body.appendChild(this.element);
-    UI._glassPane = this;
-    // TODO(dgozman): disallow focus outside of glass pane?
-  }
-
-  dispose() {
-    delete UI._glassPane;
-    this.element.remove();
-  }
-};
-
-/** @type {!UI.GlassPane|undefined} */
-UI._glassPane;
 
 /**
  * @param {?Node=} node
@@ -1217,6 +1191,7 @@ UI.initializeUIUtils = function(document, themeSetting) {
   var body = /** @type {!Element} */ (document.body);
   UI.appendStyle(body, 'ui/inspectorStyle.css');
   UI.appendStyle(body, 'ui/popover.css');
+  UI.GlassPane.setContainer(/** @type {!Element} */ (document.body));
 };
 
 /**
@@ -1534,6 +1509,12 @@ UI.appendStyle = function(node, cssFile) {
     createdCallback: function() {
       var root = UI.createShadowRootWithCoreStyles(this, 'ui/closeButton.css');
       this._buttonElement = root.createChild('div', 'close-button');
+      var regularIcon = UI.Icon.create('smallicon-cross', 'default-icon');
+      this._hoverIcon = UI.Icon.create('smallicon-red-cross-hover', 'hover-icon');
+      this._activeIcon = UI.Icon.create('smallicon-red-cross-active', 'active-icon');
+      this._buttonElement.appendChild(regularIcon);
+      this._buttonElement.appendChild(this._hoverIcon);
+      this._buttonElement.appendChild(this._activeIcon);
     },
 
     /**
@@ -1541,7 +1522,13 @@ UI.appendStyle = function(node, cssFile) {
      * @this {Element}
      */
     set gray(gray) {
-      this._buttonElement.className = gray ? 'close-button-gray' : 'close-button';
+      if (gray) {
+        this._hoverIcon.setIconType('smallicon-gray-cross-hover');
+        this._activeIcon.setIconType('smallicon-gray-cross-active');
+      } else {
+        this._hoverIcon.setIconType('smallicon-red-cross-hover');
+        this._activeIcon.setIconType('smallicon-red-cross-active');
+      }
     },
 
     __proto__: HTMLDivElement.prototype

@@ -34,7 +34,7 @@
 UI.InspectorView = class extends UI.VBox {
   constructor() {
     super();
-    UI.Dialog.setModalHostView(this);
+    UI.GlassPane.setContainer(this.element);
     this.setMinimumSize(240, 72);
 
     // DevTools sidebar is a vertical split of panels tabbed pane and a drawer.
@@ -65,6 +65,7 @@ UI.InspectorView = class extends UI.VBox {
     this._tabbedPane.registerRequiredCSS('ui/inspectorViewTabbedPane.css');
     this._tabbedPane.setTabSlider(true);
     this._tabbedPane.addEventListener(UI.TabbedPane.Events.TabSelected, this._tabSelected, this);
+    this._tabbedPane.setAccessibleName(Common.UIString('Panels'));
 
     if (Host.isUnderTest())
       this._tabbedPane.setAutoSelectFirstItemOnShow(false);
@@ -269,7 +270,7 @@ UI.InspectorView = class extends UI.VBox {
    * @override
    */
   onResize() {
-    UI.Dialog.modalHostRepositioned();
+    UI.GlassPane.containerMoved(this.element);
   }
 
   /**

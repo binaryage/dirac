@@ -381,7 +381,7 @@ Timeline.TimelinePanel = class extends UI.Panel {
   _createNetworkConditionsSelect() {
     var toolbarItem = new UI.ToolbarComboBox(null);
     toolbarItem.setMaxWidth(140);
-    Components.NetworkConditionsSelector.decorateSelect(toolbarItem.selectElement());
+    NetworkConditions.NetworkConditionsSelector.decorateSelect(toolbarItem.selectElement());
     return toolbarItem;
   }
 
@@ -499,7 +499,7 @@ Timeline.TimelinePanel = class extends UI.Panel {
           this._filters);
       this._addModeView(this._flameChart);
       if (showMemory)
-        this._addModeView(new Timeline.MemoryCountersGraph(this, this._model));
+        this._addModeView(new Timeline.CountersGraph(this, this._model));
     } else {
       var innerView;
       switch (viewMode) {
@@ -626,7 +626,8 @@ Timeline.TimelinePanel = class extends UI.Panel {
 
   _clear() {
     this._showLandingPage();
-    this._detailsSplitWidget.hideSidebar();
+    if (this._detailsSplitWidget)
+      this._detailsSplitWidget.hideSidebar();
     this._sessionGeneration = null;
     this._recordingStartTime = 0;
     this._reset();
