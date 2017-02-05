@@ -151,9 +151,11 @@
   (verbs/automate-devtools! devtools-id {:action :get-frontend-url-params}))
 
 (defn ^:devtools scrape [devtools-id scraper-name & args]
-  (verbs/automate-devtools! devtools-id {:action  :scrape
-                                         :scraper scraper-name
-                                         :args    args}))
+  (go
+    (<! (timeout 500))
+    (<! (verbs/automate-devtools! devtools-id {:action  :scrape
+                                               :scraper scraper-name
+                                               :args    args}))))
 
 (defn ^:devtools scrape! [devtools-id scraper-name & args]
   (go
