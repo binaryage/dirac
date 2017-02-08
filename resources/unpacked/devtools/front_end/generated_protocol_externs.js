@@ -727,6 +727,16 @@ Protocol.EmulationAgent.prototype.setVirtualTimePolicy = function(policy, opt_bu
 /** @param {function(?Protocol.Error):void=} opt_callback */
 Protocol.EmulationAgent.prototype.invoke_setVirtualTimePolicy = function(obj, opt_callback) {}
 
+/**
+ * @param {Protocol.DOM.RGBA=} opt_color
+ * @param {function(?Protocol.Error):T=} opt_callback
+ * @return {!Promise.<T>}
+ * @template T
+ */
+Protocol.EmulationAgent.prototype.setDefaultBackgroundColorOverride = function(opt_color, opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+Protocol.EmulationAgent.prototype.invoke_setDefaultBackgroundColorOverride = function(obj, opt_callback) {}
+
 /** @enum {string} */
 Protocol.Emulation.ScreenOrientationType = {
     PortraitPrimary: "portraitPrimary",
@@ -4260,8 +4270,9 @@ Protocol.DebuggerDispatcher = function() {};
  * @param {boolean=} opt_isLiveEdit
  * @param {string=} opt_sourceMapURL
  * @param {boolean=} opt_hasSourceURL
+ * @param {boolean=} opt_isModule
  */
-Protocol.DebuggerDispatcher.prototype.scriptParsed = function(scriptId, url, startLine, startColumn, endLine, endColumn, executionContextId, hash, opt_executionContextAuxData, opt_isLiveEdit, opt_sourceMapURL, opt_hasSourceURL) {};
+Protocol.DebuggerDispatcher.prototype.scriptParsed = function(scriptId, url, startLine, startColumn, endLine, endColumn, executionContextId, hash, opt_executionContextAuxData, opt_isLiveEdit, opt_sourceMapURL, opt_hasSourceURL, opt_isModule) {};
 /**
  * @param {Protocol.Runtime.ScriptId} scriptId
  * @param {string} url
@@ -4274,8 +4285,9 @@ Protocol.DebuggerDispatcher.prototype.scriptParsed = function(scriptId, url, sta
  * @param {!Object=} opt_executionContextAuxData
  * @param {string=} opt_sourceMapURL
  * @param {boolean=} opt_hasSourceURL
+ * @param {boolean=} opt_isModule
  */
-Protocol.DebuggerDispatcher.prototype.scriptFailedToParse = function(scriptId, url, startLine, startColumn, endLine, endColumn, executionContextId, hash, opt_executionContextAuxData, opt_sourceMapURL, opt_hasSourceURL) {};
+Protocol.DebuggerDispatcher.prototype.scriptFailedToParse = function(scriptId, url, startLine, startColumn, endLine, endColumn, executionContextId, hash, opt_executionContextAuxData, opt_sourceMapURL, opt_hasSourceURL, opt_isModule) {};
 /**
  * @param {Protocol.Debugger.BreakpointId} breakpointId
  * @param {Protocol.Debugger.Location} location

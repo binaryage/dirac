@@ -1,5 +1,5 @@
-Protocol.BakedInspectorBackendAPIChromeTag='58.0.3003.2';
-Protocol.BakedInspectorBackendAPIChromeRev='89d445684f181b98567d6181670b6f84de2c981d';
+Protocol.BakedInspectorBackendAPIChromeTag='58.0.3006.2';
+Protocol.BakedInspectorBackendAPIChromeRev='3eeac366b9ddde0b898b1ec8027cb3baaf98dc4b';
 Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerEvent("Inspector.detached", ["reason"]);\n'
 + 'Protocol.inspectorBackend.registerEvent("Inspector.targetCrashed", []);\n'
@@ -88,6 +88,7 @@ Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerCommand("Emulation.setCPUThrottlingRate", [{"name": "rate", "type": "number", "optional": false}], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Emulation.canEmulate", [], ["result"], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Emulation.setVirtualTimePolicy", [{"name": "policy", "type": "string", "optional": false}, {"name": "budget", "type": "number", "optional": true}], [], false);\n'
++ 'Protocol.inspectorBackend.registerCommand("Emulation.setDefaultBackgroundColorOverride", [{"name": "color", "type": "object", "optional": true}], [], false);\n'
 + 'Protocol.inspectorBackend.registerEnum("Security.SecurityState", {Unknown: "unknown", Neutral: "neutral", Insecure: "insecure", Warning: "warning", Secure: "secure", Info: "info"});\n'
 + 'Protocol.inspectorBackend.registerEvent("Security.securityStateChanged", ["securityState", "schemeIsCryptographic", "explanations", "insecureContentStatus", "summary"]);\n'
 + 'Protocol.inspectorBackend.registerCommand("Security.enable", [], [], false);\n'
@@ -408,8 +409,8 @@ Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerCommand("Runtime.compileScript", [{"name": "expression", "type": "string", "optional": false}, {"name": "sourceURL", "type": "string", "optional": false}, {"name": "persistScript", "type": "boolean", "optional": false}, {"name": "executionContextId", "type": "number", "optional": true}], ["scriptId", "exceptionDetails"], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Runtime.runScript", [{"name": "scriptId", "type": "string", "optional": false}, {"name": "executionContextId", "type": "number", "optional": true}, {"name": "objectGroup", "type": "string", "optional": true}, {"name": "silent", "type": "boolean", "optional": true}, {"name": "includeCommandLineAPI", "type": "boolean", "optional": true}, {"name": "returnByValue", "type": "boolean", "optional": true}, {"name": "generatePreview", "type": "boolean", "optional": true}, {"name": "awaitPromise", "type": "boolean", "optional": true}], ["result", "exceptionDetails"], false);\n'
 + 'Protocol.inspectorBackend.registerEnum("Debugger.ScopeType", {Global: "global", Local: "local", With: "with", Closure: "closure", Catch: "catch", Block: "block", Script: "script", Eval: "eval", Module: "module"});\n'
-+ 'Protocol.inspectorBackend.registerEvent("Debugger.scriptParsed", ["scriptId", "url", "startLine", "startColumn", "endLine", "endColumn", "executionContextId", "hash", "executionContextAuxData", "isLiveEdit", "sourceMapURL", "hasSourceURL"]);\n'
-+ 'Protocol.inspectorBackend.registerEvent("Debugger.scriptFailedToParse", ["scriptId", "url", "startLine", "startColumn", "endLine", "endColumn", "executionContextId", "hash", "executionContextAuxData", "sourceMapURL", "hasSourceURL"]);\n'
++ 'Protocol.inspectorBackend.registerEvent("Debugger.scriptParsed", ["scriptId", "url", "startLine", "startColumn", "endLine", "endColumn", "executionContextId", "hash", "executionContextAuxData", "isLiveEdit", "sourceMapURL", "hasSourceURL", "isModule"]);\n'
++ 'Protocol.inspectorBackend.registerEvent("Debugger.scriptFailedToParse", ["scriptId", "url", "startLine", "startColumn", "endLine", "endColumn", "executionContextId", "hash", "executionContextAuxData", "sourceMapURL", "hasSourceURL", "isModule"]);\n'
 + 'Protocol.inspectorBackend.registerEvent("Debugger.breakpointResolved", ["breakpointId", "location"]);\n'
 + 'Protocol.inspectorBackend.registerEvent("Debugger.paused", ["callFrames", "reason", "data", "hitBreakpoints", "asyncStackTrace"]);\n'
 + 'Protocol.inspectorBackend.registerEvent("Debugger.resumed", []);\n'
