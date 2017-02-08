@@ -1106,6 +1106,8 @@ var Emulation = {};
 /** @type {!Object} */
 var Extensions = {};
 /** @type {!Object} */
+var EventListeners = {};
+/** @type {!Object} */
 var FormatterWorker = {};
 /** @type {!Object} */
 var HeapSnapshotModel = {};
