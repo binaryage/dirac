@@ -859,12 +859,12 @@ Console.DiracPromptWithHistory = class extends UI.TextPrompt {
   }
 
   /**
-   * @return {?Range}
-   * @override
-   * @suppressGlobalPropertiesCheck
+   * @param {!Common.TextRange} textRange
    */
-  _createRange() {
-    return document.createRange();
+  setSelection(textRange) {
+    this._lastSelection = textRange;
+    var pos = TextEditor.CodeMirrorUtils.toPos(textRange);
+    this._codeMirror.setSelection(pos.start, pos.end);
   }
 
   /**
@@ -904,19 +904,9 @@ Console.DiracPromptWithHistory = class extends UI.TextPrompt {
       this.clearAutocomplete();
 
       if (isPrevious) {
-        const firstNewlineIndex = this.text().indexOf("\n");
-        if (firstNewlineIndex === -1)
-          this.moveCaretToEndOfPrompt();
-        else {
-          const selection = this._element.getComponentSelection();
-          const selectionRange = this._createRange();
-
-          selectionRange.setStart(this._element.firstChild, firstNewlineIndex);
-          selectionRange.setEnd(this._element.firstChild, firstNewlineIndex);
-
-          selection.removeAllRanges();
-          selection.addRange(selectionRange);
-        }
+        this.setSelection(Common.TextRange.createFromLocation(0, Infinity));
+      } else {
+        this.moveCaretToEndOfPrompt();
       }
 
       return;
