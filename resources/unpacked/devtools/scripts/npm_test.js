@@ -54,6 +54,27 @@ function findDiracChromiumCommit() {
   return firstLine(shell(`${POSITION_FOR_VERSION_SCRIPT} ${chromeVersion}`).toString());
 }
 
+// https://gist.github.com/bpedro/742162#gistcomment-1786537
+function mkdir(dir) {
+  // we explicitly don't use `path.sep` to have it platform independent;
+  var sep = '/';
+
+  var segments = dir.split(sep);
+  var current = '';
+  var i = 0;
+
+  while (i < segments.length) {
+    current = current + sep + segments[i];
+    try {
+      fs.statSync(current);
+    } catch (e) {
+      fs.mkdirSync(current);
+    }
+
+    i++;
+  }
+}
+
 var CHROMIUM_SRC_PATH = fetchDiracChromiumSrcPath();
 // end of dirac-specific stuff
 
@@ -67,7 +88,7 @@ CACHE_PATH = path.resolve(DEVTOOLS_PATH, '..', 'caches', '.test_cache');
 
 function main() {
   if (!utils.isDir(CACHE_PATH))
-    fs.mkdirSync(CACHE_PATH);
+    mkdir(CACHE_PATH);
   deleteOldContentShells();
 
   if (COMPAT_PROTOCOL) {
