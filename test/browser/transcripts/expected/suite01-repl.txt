@@ -34,6 +34,26 @@ devtools #1      send-eval-request: (+ 1 2)
 devtools #1      repl eval job started
 devtools #1      DF.info> 3
 devtools #1      repl eval job ended
+automate #1      console-exec-and-match! ["4 5 6" ["info> 4" "info> 5" "info> 6"]]
+devtools #1      DC.info> 4 5 6
+devtools #1      send-eval-request: 4 5 6
+devtools #1      repl eval job started
+devtools #1      DF.info> 4
+devtools #1      DF.info> 5
+devtools #1      DF.info> 6
+devtools #1      repl eval job ended
+automate #1      focus-console-prompt!
+automate #1      simulate-console-action! ["SHIFT+ENTER"]
+automate #1      simulate-console-input! ["7"]
+automate #1      simulate-console-action! ["ENTER"]
+devtools #1      DC.info>
+                 7
+devtools #1      send-eval-request:
+                 7
+devtools #1      repl eval job started
+automate #1      console-wait-for-repl-job-match! ["info> 7"]
+devtools #1      DF.info> 7
+devtools #1      repl eval job ended
 automate #1      console-exec-and-match! ["(range 200)" "info> (0 1 2 3 4 …)"]
 devtools #1      DC.info> (range 200)
 devtools #1      send-eval-request: (range 200)
@@ -378,5 +398,5 @@ extension        handling command: close-dirac-devtools
 extension        unregister devtools #7
 ∎
 automate         close-scenario! ["scenario-tab#1"]
-summary          Automated 78 actions with 19 check-points containing 3 assertions.
+summary          Automated 84 actions with 19 check-points containing 3 assertions.
                  0 failures, 0 errors.
