@@ -72,18 +72,31 @@
 (defn sanitize-filename [s]
   (string/replace s #"[.?*!@#$%^&]" "-"))
 
-(defn get-current-repl-filename [job-id]
+(defn get-current-repl-filename [job-id iteration]
   (let [compiler-id (compilers/get-selected-compiler-id (state/get-current-session))
-        numeric-job-id (sorting-friendly-numeric-job-id job-id)]
+        sanitized-compiler-id (or (sanitize-filename compiler-id) "unknown")
+        numeric-job-id (sorting-friendly-numeric-job-id job-id)
+        sanitized-repl-job-name (if numeric-job-id
+                                  (str "repl-job-" numeric-job-id)
+                                  (sanitize-filename job-id))
+        iteration-str (if (> iteration 1)
+                        (str "-" iteration))]
     (assert compiler-id)
-    (str "repl://dirac-repl/"
-         (or (sanitize-filename compiler-id) "unknown") "/"
-         (if numeric-job-id (str "repl-job-" numeric-job-id) (sanitize-filename job-id)) ".cljs")))
+    (str "repl://dirac-repl/" sanitized-compiler-id "/" sanitized-repl-job-name iteration-str ".cljs")))
 
-(defn repl-read! [job-id]
-  (let [pushback-reader (PushbackReader. (io/reader *in*))
-        filename (get-current-repl-filename job-id)]
-    (readers/source-logging-push-back-reader pushback-reader 1 filename)))
+(defn repl-prepare-reader! [job-id counter-volatile reader]
+  ; note that repl-prepare-reader! is called for every form read from input
+  ; e.g. code "1 2 3 :cljs/quit" will call repl-prepare-reader! four times
+  (let [iteration (vswap! counter-volatile inc)
+        filename (get-current-repl-filename job-id iteration)
+        reader (readers/source-logging-push-back-reader reader 1 filename)]
+    (log/trace (str "repl-prepare-reader! (" job-id "/" iteration ")\n") (utils/pp reader))
+    reader))
+
+(defn repl-read! [job-id & args]
+  (let [result (apply cljs.repl/repl-read args)]
+    (log/trace (str "repl-read! (" job-id ")\n") (utils/pp result))
+    result))
 
 ; unfortunately I had to copy&paste bunch of code from cljs.repl
 
@@ -150,11 +163,11 @@
 
 ; <----- evaluate-form -------- cut-here
 
-(defn repl-eval! [job-id scope-info dirac-mode repl-env env form opts]
+(defn repl-eval! [job-id counter-volatile scope-info dirac-mode repl-env env form opts]
   (let [form-wrapper-fn (or (:wrap opts) (partial wrap-form job-id dirac-mode))
         set-env-locals-with-scope (partial set-env-locals scope-info)
         effective-env (-> env set-env-namespace set-env-locals-with-scope)
-        filename (get-current-repl-filename job-id)]
+        filename (get-current-repl-filename job-id @counter-volatile)]
     (log/trace "repl-eval! in " filename ":\n" form "\n with env:\n" (utils/pp effective-env 7))
     (evaluate-form repl-env effective-env filename form form-wrapper-fn opts)))
 
@@ -181,23 +194,25 @@
 
 (defn eval-in-cljs-repl! [code ns repl-env compiler-env repl-options job-id & [response-fn scope-info dirac-mode]]
   {:pre [(some? job-id)]}
+  (log/trace "eval-in-cljs-repl! " ns "\n" code)
   (let [final-ns-volatile (volatile! nil)
+        counter-volatile (volatile! 0)
+        ; MAJOR TRICK HERE!
+        ; we append :cljs/quit to our code which should be evaluated
+        ; this will cause cljs.repl loop to exit after the first eval
+        code-reader-with-quit (-> (str code " :cljs/quit")
+                                  (StringReader.))
         default-repl-options {:need-prompt  (constantly false)
                               :bind-err     false
                               :quit-prompt  (fn [])
                               :prompt       (fn [])
                               :init         (fn [])
-                              :reader       (partial repl-read! job-id)
+                              :read         (partial repl-read! job-id)
+                              :reader       (partial repl-prepare-reader! job-id counter-volatile code-reader-with-quit)
                               :print        (partial repl-print! final-ns-volatile response-fn)
-                              :eval         (partial repl-eval! job-id scope-info dirac-mode)
+                              :eval         (partial repl-eval! job-id counter-volatile scope-info dirac-mode)
                               :compiler-env compiler-env}
         effective-repl-options (merge default-repl-options repl-options)
-        ; MAJOR TRICK HERE!
-        ; we append :cljs/quit to our code which should be evaluated
-        ; this will cause cljs.repl loop to exit after the first eval
-        code-reader-with-quit (-> (str code " :cljs/quit")
-                                  StringReader.
-                                  LineNumberingPushbackReader.)
         initial-ns (if ns
                      (symbol ns)
                      (state/get-session-cljs-ns))
@@ -211,8 +226,7 @@
                                      (utils/pp repl-env)
                                      (utils/pp final-repl-options))
                           (cljs.repl/repl* repl-env final-repl-options)))]
-    (binding [*in* code-reader-with-quit
-              *out* (state/get-session-binding-value #'*out*)
+    (binding [*out* (state/get-session-binding-value #'*out*)
               *err* (state/get-session-binding-value #'*err*)
               analyzer/*cljs-ns* initial-ns]
       (driver/wrap-with-driver job-id start-repl-fn response-fn "plain-text")
