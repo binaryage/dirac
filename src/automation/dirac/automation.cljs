@@ -180,16 +180,20 @@
     (<! (simulate-console-input! devtools-id input))
     (<! (simulate-console-action! devtools-id "enter"))))
 
-(defn ^:devtools console-exec-and-match! [devtools-id input match-or-matches]
+(defn ^:devtools console-wait-for-repl-job-match! [devtools-id match-or-matches]
   (let [matches (if (coll? match-or-matches)
                   match-or-matches
                   [match-or-matches])]
     (go
-      (<! (console-enter! devtools-id input))
       (doseq [match matches]
         (<! (wait-for-devtools-match devtools-id match)))
       (<! (wait-for-devtools-match devtools-id "repl eval job ended"))
       (<! (timeout 100)))))                                                                                                   ; this timeout is a hack, for some reason feedback from following commands came before
+
+(defn ^:devtools console-exec-and-match! [devtools-id input match-or-matches]
+  (go
+    (<! (console-enter! devtools-id input))
+    (<! (console-wait-for-repl-job-match! devtools-id match-or-matches))))
 
 (defn ^:devtools enable-console-feedback! [devtools-id]
   (verbs/automate-devtools! devtools-id {:action :enable-console-feedback}))
