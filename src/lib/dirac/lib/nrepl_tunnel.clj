@@ -225,7 +225,7 @@
 
 ; -- NREPLTunnel life cycle -------------------------------------------------------------------------------------------------
 
-(defn check-nrepl-middleware! [nrepl-client]
+(defn identify-dirac-nrepl-middleware! [nrepl-client]
   (log/trace "check-nrepl-middleware! lib-version" lib/version)
   (let [identify-response (<!! (nrepl-client/send! nrepl-client {:op "identify-dirac-nrepl-middleware"}))
         {:keys [version]} identify-response]
@@ -237,16 +237,19 @@
         0 [:ok])
       [:missing (missing-nrepl-middleware-msg (nrepl-client/get-server-connection-url nrepl-client))])))
 
+(defn validate-dirac-nrepl-middleware! [nrepl-client]
+  (let [[status message] (identify-dirac-nrepl-middleware! nrepl-client)]
+    (case status
+      :missing (throw (ex-info message {}))
+      (:old :unknown) (log/warn message)
+      :ok nil)))
+
 (defn create! [options]
   (let [tunnel (make-tunnel! options)
         server-messages (chan)
         client-messages (chan)]
     (let [nrepl-client (nrepl-client/create! tunnel (:nrepl-server options))]
-      (let [[status message] (check-nrepl-middleware! nrepl-client)]
-        (case status
-          :missing (throw (ex-info message {}))
-          (:old :unknown) (log/warn message)
-          nil))
+      (validate-dirac-nrepl-middleware! nrepl-client)
       (let [nrepl-tunnel-server (nrepl-tunnel-server/create! tunnel (:nrepl-tunnel options))]
         (set-nrepl-client! tunnel nrepl-client)
         (set-server-messages-channel! tunnel server-messages)
