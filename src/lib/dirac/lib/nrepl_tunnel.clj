@@ -48,18 +48,18 @@
 (def agent-setup-doc-url "https://github.com/binaryage/dirac#start-dirac-agent")
 
 (defn ^:dynamic missing-nrepl-middleware-msg [url]
-  (str "Dirac nREPL middleware is not present in nREPL server at " url "!\n"
+  (str "Dirac nREPL middleware is not present in your nREPL server at " url "!\n"
        "Didn't you forget to add :nrepl-middleware [dirac.nrepl/middleware] to your :repl-options?\n"
        "Please follow Dirac installation instructions: " nrepl-setup-doc-url "."))
 
 (defn ^:dynamic old-nrepl-middleware-msg [expected-version reported-version]
-  (str "WARNING: The version of Dirac nREPL middleware is old. "
+  (str "The version of Dirac nREPL middleware is old. "
        "Expected '" expected-version "', got '" reported-version "'.\n"
        "You should review your nREPL server setup and bump binaryage/dirac version to '" expected-version "'.\n"
        "Please follow Dirac installation instructions: " nrepl-setup-doc-url "."))
 
 (defn ^:dynamic unknown-nrepl-middleware-msg [expected-version reported-version]
-  (str "WARNING: The version of Dirac nREPL middleware is unexpectedly recent. "
+  (str "The version of Dirac nREPL middleware is unexpectedly recent. "
        "Expected '" expected-version "', got '" reported-version "'.\n"
        "You should review your Dirac Agent setup and bump binaryage/dirac version to '" reported-version "'.\n"
        "Please follow Dirac installation instructions: " agent-setup-doc-url "."))
@@ -227,22 +227,22 @@
 
 (defn identify-dirac-nrepl-middleware! [nrepl-client]
   (log/trace "check-nrepl-middleware! lib-version" lib/version)
-  (let [identify-response (<!! (nrepl-client/send! nrepl-client {:op "identify-dirac-nrepl-middleware"}))
-        {:keys [version]} identify-response]
-    (log/debug "identify-dirac-nrepl-middleware response:" identify-response)
+  (let [response (<!! (nrepl-client/send! nrepl-client {:op "identify-dirac-nrepl-middleware"}))
+        {:keys [version]} response]
+    (log/debug "identify-dirac-nrepl-middleware response:" response)
     (if version
       (case (version-compare lib/version version)
-        -1 [:unknown (unknown-nrepl-middleware-msg lib/version version)]
-        1 [:old (old-nrepl-middleware-msg lib/version version)]
-        0 [:ok])
-      [:missing (missing-nrepl-middleware-msg (nrepl-client/get-server-connection-url nrepl-client))])))
+        -1 [::unknown (unknown-nrepl-middleware-msg lib/version version)]
+        1 [::old (old-nrepl-middleware-msg lib/version version)]
+        0 [::ok])
+      [::missing (missing-nrepl-middleware-msg (nrepl-client/get-server-connection-url nrepl-client))])))
 
 (defn validate-dirac-nrepl-middleware! [nrepl-client]
   (let [[status message] (identify-dirac-nrepl-middleware! nrepl-client)]
     (case status
-      :missing (throw (ex-info message {}))
-      (:old :unknown) (log/warn message)
-      :ok nil)))
+      ::missing (utils/exit-with-error! message 77)
+      (::old ::unknown) (utils/print-warning! message)
+      ::ok nil)))
 
 (defn create! [options]
   (let [tunnel (make-tunnel! options)
