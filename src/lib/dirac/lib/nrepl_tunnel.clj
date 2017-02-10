@@ -269,7 +269,7 @@
         0 [::ok])
       [::missing (missing-nrepl-middleware-msg (nrepl-client/get-server-connection-url nrepl-client))])))
 
-(defn validate-dirac-nrepl-middleware! [nrepl-client]
+(defn dirac-nrepl-middleware-check! [nrepl-client]
   (let [[status message] (identify-dirac-nrepl-middleware! nrepl-client)]
     (case status
       ::missing (utils/exit-with-error! message 77)
@@ -306,8 +306,10 @@
         server-messages (chan)
         client-messages (chan)]
     (let [nrepl-client (nrepl-client/create! tunnel (:nrepl-server options))]
-      (paranoid-middleware-setup-check! nrepl-client expected-nrepl-middleware-ops)
-      (validate-dirac-nrepl-middleware! nrepl-client)
+      (if-not (:skip-paranoid-middleware-setup-check options)
+        (paranoid-middleware-setup-check! nrepl-client expected-nrepl-middleware-ops))
+      (if-not (:skip-dirac-nrepl-middleware-check options)
+        (dirac-nrepl-middleware-check! nrepl-client))
       (let [nrepl-tunnel-server (nrepl-tunnel-server/create! tunnel (:nrepl-tunnel options))]
         (set-nrepl-client! tunnel nrepl-client)
         (set-server-messages-channel! tunnel server-messages)
