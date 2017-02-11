@@ -185,7 +185,7 @@
 
 (defmethod scrape :callstack-pane-functions [_ & _]
   (safe->> (find-call-frame-elements)
-           (extract-sub-elements ".call-frame-item-title")
+           (extract-sub-elements ".call-frame-title-text")
            (map build-rep)
            (map print-callstack-function)
            (print-list)))
