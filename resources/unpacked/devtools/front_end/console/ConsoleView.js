@@ -162,7 +162,7 @@ Console.ConsoleView = class extends UI.VBox {
     this._consoleHistoryAutocompleteChanged();
 
     this._updateFilterStatus();
-    Common.moduleSetting('consoleTimestampFormat').addChangeListener(this._consoleTimestampsSettingChanged, this);
+    Common.moduleSetting('consoleTimestampsEnabled').addChangeListener(this._consoleTimestampsSettingChanged, this);
 
     this._pendingDiracCommands = {};
     this._lastDiracCommandId = 1;
@@ -1195,8 +1195,7 @@ Console.ConsoleView = class extends UI.VBox {
    * @return {boolean}
    */
   _tryToCollapseMessages(lastMessage, viewMessage) {
-    var timestampFormat = Common.moduleSetting('consoleTimestampFormat').get();
-    var timestampsShown = timestampFormat !== Console.ConsoleViewMessage.TimestampFormat.None;
+    var timestampsShown = Common.moduleSetting('consoleTimestampsEnabled').get();
     if (!timestampsShown && viewMessage && !lastMessage.consoleMessage().isGroupMessage() &&
         lastMessage.consoleMessage().isEqual(viewMessage.consoleMessage())) {
       viewMessage.incrementRepeatCount();
@@ -1601,7 +1600,7 @@ Console.ConsoleViewFilter = class {
     this._messageLevelFiltersSetting.addChangeListener(this._filterChanged);
     this._hideNetworkMessagesSetting.addChangeListener(this._filterChanged);
 
-    this._textFilterUI = new UI.ToolbarInput(Common.UIString('Filter'), 0.2, 1);
+    this._textFilterUI = new UI.ToolbarInput(Common.UIString('Filter'), 0.2, 1, true);
     this._textFilterUI.addEventListener(UI.ToolbarInput.Event.TextChanged, this._textFilterChanged, this);
 
     var levels = [
@@ -1664,8 +1663,6 @@ Console.ConsoleViewFilter = class {
   shouldBeVisible(viewMessage) {
     var message = viewMessage.consoleMessage();
     var executionContext = UI.context.flavor(SDK.ExecutionContext);
-    if (!message.target())
-      return true;
 
     if (this._showTargetMessagesCheckbox.checked() && executionContext) {
       if (message.target() !== executionContext.target())

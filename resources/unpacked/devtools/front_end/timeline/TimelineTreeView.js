@@ -1,12 +1,15 @@
 // Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
 /**
  * @unrestricted
  */
 Timeline.TimelineTreeView = class extends UI.VBox {
   constructor() {
     super();
+    /** @type {?Timeline.PerformanceModel} */
+    this._model = null;
     this.element.classList.add('timeline-tree-view');
   }
 
@@ -23,22 +26,38 @@ Timeline.TimelineTreeView = class extends UI.VBox {
   }
 
   /**
+   * @param {?Timeline.PerformanceModel} model
+   */
+  setModel(model) {
+    this._model = model;
+    this.refreshTree();
+  }
+
+  /**
    * @protected
-   * @param {!TimelineModel.TimelineModel} model
+   * @return {?Timeline.PerformanceModel} model
+   */
+  model() {
+    return this._model;
+  }
+
+  /**
+   * @protected
    * @param {!Array<!TimelineModel.TimelineModelFilter>} filters
    */
-  init(model, filters) {
-    this._model = model;
+  init(filters) {
     this._linkifier = new Components.Linkifier();
 
-    this._filters = filters.slice();
+    this._textFilter = new Timeline.TimelineFilters.RegExp();
+    this._filters = [...filters, this._textFilter];
 
     const columns = /** @type {!Array<!DataGrid.DataGrid.ColumnDescriptor>} */ ([]);
     this.populateColumns(columns);
 
     this._splitWidget = new UI.SplitWidget(true, true, 'timelineTreeViewDetailsSplitWidget');
-    const mainView = new UI.VBox();
-    this._populateToolbar(mainView.element);
+    var mainView = new UI.VBox();
+    var toolbar = new UI.Toolbar('', mainView.element);
+    this.populateToolbar(toolbar);
 
     this._dataGrid = new DataGrid.SortableDataGrid(columns);
     this._dataGrid.addEventListener(DataGrid.DataGrid.Events.SortingChanged, this._sortingChanged, this);
@@ -92,9 +111,22 @@ Timeline.TimelineTreeView = class extends UI.VBox {
   }
 
   /**
-   * @param {!Element} parent
+   * @protected
+   * @param {!UI.Toolbar} toolbar
    */
-  _populateToolbar(parent) {
+  populateToolbar(toolbar) {
+    this._textFilterUI = new UI.ToolbarInput(Common.UIString('Filter'), 0, 0, true);
+    this._textFilterUI.addEventListener(UI.ToolbarInput.Event.TextChanged, textFilterChanged, this);
+    toolbar.appendToolbarItem(this._textFilterUI);
+
+    /**
+     * @this {Timeline.TimelineTreeView}
+     */
+    function textFilterChanged() {
+      var searchQuery = this._textFilterUI.value();
+      this._textFilter.setRegExp(searchQuery ? createPlainTextSearchRegex(searchQuery, 'i') : null);
+      this.refreshTree();
+    }
   }
 
   /**
@@ -115,7 +147,7 @@ Timeline.TimelineTreeView = class extends UI.VBox {
    * @return {?Element}
    */
   _linkifyLocation(event) {
-    var target = this._model.targetByEvent(event);
+    var target = this._model.timelineModel().targetByEvent(event);
     if (!target)
       return null;
     var frame = TimelineModel.TimelineProfileTree.eventStackFrame(event);
@@ -150,16 +182,17 @@ Timeline.TimelineTreeView = class extends UI.VBox {
   refreshTree() {
     this._linkifier.reset();
     this._dataGrid.rootNode().removeChildren();
-    var tree = this._buildTree();
-    if (!tree.children)
+    if (!this._model)
       return;
+    var tree = this._buildTree();
+    var children = tree.children();
     var maxSelfTime = 0;
     var maxTotalTime = 0;
-    for (var child of tree.children.values()) {
+    for (var child of children.values()) {
       maxSelfTime = Math.max(maxSelfTime, child.selfTime);
       maxTotalTime = Math.max(maxTotalTime, child.totalTime);
     }
-    for (var child of tree.children.values()) {
+    for (var child of children.values()) {
       // Exclude the idle time off the total calculation.
       var gridNode = new Timeline.TimelineTreeView.TreeGridNode(child, tree.totalTime, maxSelfTime, maxTotalTime, this);
       this._dataGrid.insertChild(gridNode);
@@ -177,12 +210,14 @@ Timeline.TimelineTreeView = class extends UI.VBox {
 
   /**
    * @protected
-   * @param {function(!SDK.TracingModel.Event):(string|symbol)=} eventIdCallback
+   * @param {boolean} doNotAggregate
+   * @param {?function(!SDK.TracingModel.Event):string} groupIdCallback
    * @return {!TimelineModel.TimelineProfileTree.Node}
    */
-  buildTopDownTree(eventIdCallback) {
-    return TimelineModel.TimelineProfileTree.buildTopDown(
-        this._model.mainThreadEvents(), this._filters, this._startTime, this._endTime, eventIdCallback);
+  buildTopDownTree(doNotAggregate, groupIdCallback) {
+    return new TimelineModel.TimelineProfileTree.TopDownRootNode(
+        this._model.timelineModel().mainThreadEvents(), this._filters, this._startTime, this._endTime, doNotAggregate,
+        groupIdCallback);
   }
 
   /**
@@ -190,8 +225,8 @@ Timeline.TimelineTreeView = class extends UI.VBox {
    * @param {!Array<!DataGrid.DataGrid.ColumnDescriptor>} columns
    */
   populateColumns(columns) {
-    columns.push({id: 'self', title: Common.UIString('Self Time'), width: '110px', fixedWidth: true, sortable: true});
-    columns.push({id: 'total', title: Common.UIString('Total Time'), width: '110px', fixedWidth: true, sortable: true});
+    columns.push({id: 'self', title: Common.UIString('Self Time'), width: '120px', fixedWidth: true, sortable: true});
+    columns.push({id: 'total', title: Common.UIString('Total Time'), width: '120px', fixedWidth: true, sortable: true});
     columns.push({id: 'activity', title: Common.UIString('Activity'), disclosure: true, sortable: true});
   }
 
@@ -315,7 +350,6 @@ Timeline.TimelineTreeView = class extends UI.VBox {
   }
 };
 
-
 /**
  * @unrestricted
  */
@@ -329,7 +363,6 @@ Timeline.TimelineTreeView.GridNode = class extends DataGrid.SortableDataGridNode
    */
   constructor(profileNode, grandTotalTime, maxSelfTime, maxTotalTime, treeView) {
     super(null, false);
-
     this._populated = false;
     this._profileNode = profileNode;
     this._treeView = treeView;
@@ -392,7 +425,7 @@ Timeline.TimelineTreeView.GridNode = class extends DataGrid.SortableDataGridNode
     var maxTime;
     switch (columnId) {
       case 'startTime':
-        value = this._profileNode.event.startTime - this._treeView._model.minimumRecordTime();
+        value = this._profileNode.event.startTime - this._treeView._model.timelineModel().minimumRecordTime();
         break;
       case 'self':
         value = this._profileNode.selfTime;
@@ -438,7 +471,7 @@ Timeline.TimelineTreeView.TreeGridNode = class extends Timeline.TimelineTreeView
    */
   constructor(profileNode, grandTotalTime, maxSelfTime, maxTotalTime, treeView) {
     super(profileNode, grandTotalTime, maxSelfTime, maxTotalTime, treeView);
-    this.setHasChildren(this._profileNode.children ? this._profileNode.children.size > 0 : false);
+    this.setHasChildren(this._profileNode.hasChildren());
     profileNode[Timeline.TimelineTreeView.TreeGridNode._gridNodeSymbol] = this;
   }
 
@@ -451,7 +484,7 @@ Timeline.TimelineTreeView.TreeGridNode = class extends Timeline.TimelineTreeView
     this._populated = true;
     if (!this._profileNode.children)
       return;
-    for (var node of this._profileNode.children.values()) {
+    for (var node of this._profileNode.children().values()) {
       var gridNode = new Timeline.TimelineTreeView.TreeGridNode(
           node, this._grandTotalTime, this._maxSelfTime, this._maxTotalTime, this._treeView);
       this.insertChildOrdered(gridNode);
@@ -466,14 +499,13 @@ Timeline.TimelineTreeView.TreeGridNode._gridNodeSymbol = Symbol('treeGridNode');
  */
 Timeline.AggregatedTimelineTreeView = class extends Timeline.TimelineTreeView {
   /**
-   * @param {!TimelineModel.TimelineModel} model
    * @param {!Array<!TimelineModel.TimelineModelFilter>} filters
    */
-  constructor(model, filters) {
+  constructor(filters) {
     super();
     this._groupBySetting =
         Common.settings.createSetting('timelineTreeGroupBy', Timeline.AggregatedTimelineTreeView.GroupBy.None);
-    this.init(model, filters);
+    this.init(filters);
     var nonessentialEvents = [
       TimelineModel.TimelineModel.RecordType.EventDispatch, TimelineModel.TimelineModel.RecordType.FunctionCall,
       TimelineModel.TimelineModel.RecordType.TimerFire
@@ -510,7 +542,8 @@ Timeline.AggregatedTimelineTreeView = class extends Timeline.TimelineTreeView {
    */
   _displayInfoForGroupNode(node) {
     var categories = Timeline.TimelineUIUtils.categories();
-    var color = node.id ? Timeline.TimelineUIUtils.eventColor(node.event) : categories['other'].color;
+    var color = node.id ? Timeline.TimelineUIUtils.eventColor(/** @type {!SDK.TracingModel.Event} */ (node.event)) :
+                          categories['other'].color;
 
     switch (this._groupBySetting.get()) {
       case Timeline.AggregatedTimelineTreeView.GroupBy.Category:
@@ -542,7 +575,7 @@ Timeline.AggregatedTimelineTreeView = class extends Timeline.TimelineTreeView {
       case Timeline.AggregatedTimelineTreeView.GroupBy.URL:
         break;
       case Timeline.AggregatedTimelineTreeView.GroupBy.Frame:
-        var frame = this._model.pageFrameById(node.id);
+        var frame = this._model.timelineModel().pageFrameById(node.id);
         var frameName = frame ? Timeline.TimelineUIUtils.displayNameForFrame(frame, 80) : Common.UIString('Page');
         return {name: frameName, color: color};
 
@@ -554,10 +587,10 @@ Timeline.AggregatedTimelineTreeView = class extends Timeline.TimelineTreeView {
 
   /**
    * @override
-   * @param {!Element} parent
+   * @param {!UI.Toolbar} toolbar
    */
-  _populateToolbar(parent) {
-    var panelToolbar = new UI.Toolbar('', parent);
+  populateToolbar(toolbar) {
+    super.populateToolbar(toolbar);
     this._groupByCombobox = new UI.ToolbarComboBox(this._onGroupByChanged.bind(this));
     /**
      * @param {string} name
@@ -578,9 +611,9 @@ Timeline.AggregatedTimelineTreeView = class extends Timeline.TimelineTreeView {
     addGroupingOption.call(this, Common.UIString('Group by Subdomain'), groupBy.Subdomain);
     addGroupingOption.call(this, Common.UIString('Group by URL'), groupBy.URL);
     addGroupingOption.call(this, Common.UIString('Group by Frame'), groupBy.Frame);
-    panelToolbar.appendToolbarItem(this._groupByCombobox);
-    panelToolbar.appendSpacer();
-    panelToolbar.appendToolbarItem(this._splitWidget.createShowHideSidebarButton(Common.UIString('heaviest stack')));
+    toolbar.appendToolbarItem(this._groupByCombobox);
+    toolbar.appendSpacer();
+    toolbar.appendToolbarItem(this._splitWidget.createShowHideSidebarButton(Common.UIString('heaviest stack')));
   }
 
   /**
@@ -594,8 +627,8 @@ Timeline.AggregatedTimelineTreeView = class extends Timeline.TimelineTreeView {
     for (var node = treeNode; node && node.parent; node = node.parent)
       result.push(node);
     result = result.reverse();
-    for (node = treeNode; node && node.children && node.children.size;) {
-      var children = Array.from(node.children.values());
+    for (node = treeNode; node && node.children() && node.children().size;) {
+      var children = Array.from(node.children().values());
       node = children.reduce((a, b) => a.totalTime > b.totalTime ? a : b);
       result.push(node);
     }
@@ -635,7 +668,7 @@ Timeline.AggregatedTimelineTreeView = class extends Timeline.TimelineTreeView {
 
   /**
    * @param {!Timeline.AggregatedTimelineTreeView.GroupBy} groupBy
-   * @return {function(!SDK.TracingModel.Event):string}
+   * @return {?function(!SDK.TracingModel.Event):string}
    */
   _groupingFunction(groupBy) {
     /**
@@ -672,7 +705,7 @@ Timeline.AggregatedTimelineTreeView = class extends Timeline.TimelineTreeView {
 
     switch (groupBy) {
       case Timeline.AggregatedTimelineTreeView.GroupBy.None:
-        return () => Symbol('uniqueGroupId');
+        return null;
       case Timeline.AggregatedTimelineTreeView.GroupBy.EventName:
         return event => Timeline.TimelineUIUtils.eventStyle(event).title;
       case Timeline.AggregatedTimelineTreeView.GroupBy.Category:
@@ -687,7 +720,7 @@ Timeline.AggregatedTimelineTreeView = class extends Timeline.TimelineTreeView {
         return event => TimelineModel.TimelineData.forEvent(event).frameId;
       default:
         console.assert(false, `Unexpected aggregation setting: ${groupBy}`);
-        return () => Symbol('uniqueGroupId');
+        return null;
     }
   }
   /**
@@ -700,7 +733,7 @@ Timeline.AggregatedTimelineTreeView = class extends Timeline.TimelineTreeView {
       return;
     if (!node.isGroupNode())
       return;
-    var frame = this._model.pageFrameById(node.id);
+    var frame = this._model.timelineModel().pageFrameById(node.id);
     if (!frame || !frame.ownerNode)
       return;
     contextMenu.appendApplicableItems(frame.ownerNode);
@@ -744,11 +777,10 @@ Timeline.AggregatedTimelineTreeView.GroupBy = {
  */
 Timeline.CallTreeTimelineTreeView = class extends Timeline.AggregatedTimelineTreeView {
   /**
-   * @param {!TimelineModel.TimelineModel} model
    * @param {!Array<!TimelineModel.TimelineModelFilter>} filters
    */
-  constructor(model, filters) {
-    super(model, filters);
+  constructor(filters) {
+    super(filters);
     this._dataGrid.markColumnAsSortedBy('total', DataGrid.DataGrid.Order.Descending);
   }
 
@@ -758,10 +790,7 @@ Timeline.CallTreeTimelineTreeView = class extends Timeline.AggregatedTimelineTre
    */
   _buildTree() {
     var grouping = this._groupBySetting.get();
-    var topDown = this.buildTopDownTree(this._groupingFunction(grouping));
-    if (grouping === Timeline.AggregatedTimelineTreeView.GroupBy.None)
-      return topDown;
-    return new TimelineModel.TimelineAggregator().performGrouping(topDown);
+    return this.buildTopDownTree(false, this._groupingFunction(grouping));
   }
 };
 
@@ -770,11 +799,10 @@ Timeline.CallTreeTimelineTreeView = class extends Timeline.AggregatedTimelineTre
  */
 Timeline.BottomUpTimelineTreeView = class extends Timeline.AggregatedTimelineTreeView {
   /**
-   * @param {!TimelineModel.TimelineModel} model
    * @param {!Array<!TimelineModel.TimelineModelFilter>} filters
    */
-  constructor(model, filters) {
-    super(model, filters);
+  constructor(filters) {
+    super(filters);
     this._dataGrid.markColumnAsSortedBy('self', DataGrid.DataGrid.Order.Descending);
   }
 
@@ -783,8 +811,9 @@ Timeline.BottomUpTimelineTreeView = class extends Timeline.AggregatedTimelineTre
    * @return {!TimelineModel.TimelineProfileTree.Node}
    */
   _buildTree() {
-    var topDown = this.buildTopDownTree(this._groupingFunction(this._groupBySetting.get()));
-    return TimelineModel.TimelineProfileTree.buildBottomUp(topDown);
+    return new TimelineModel.TimelineProfileTree.BottomUpTreeRootNode(
+        this._model.timelineModel().mainThreadEvents(), this._filters, this._startTime, this._endTime,
+        this._groupingFunction(this._groupBySetting.get()));
   }
 };
 

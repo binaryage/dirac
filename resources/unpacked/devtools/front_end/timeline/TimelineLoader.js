@@ -8,16 +8,16 @@
  */
 Timeline.TimelineLoader = class {
   /**
-   * @param {!SDK.TracingModel} model
-   * @param {!Timeline.LoaderClient} delegate
+   * @param {!Timeline.TimelineLoader.Client} client
    */
-  constructor(model, delegate) {
-    this._model = model;
-    this._delegate = delegate;
+  constructor(client) {
+    this._client = client;
+
+    this._backingStorage = new Bindings.TempFileBackingStorage('tracing');
+    this._tracingModel = new SDK.TracingModel(this._backingStorage);
 
     /** @type {?function()} */
     this._canceledCallback = null;
-
     this._state = Timeline.TimelineLoader.State.Initial;
     this._buffer = '';
     this._firstChunk = true;
@@ -29,13 +29,12 @@ Timeline.TimelineLoader = class {
   }
 
   /**
-   * @param {!SDK.TracingModel} model
    * @param {!File} file
-   * @param {!Timeline.TimelineLifecycleDelegate} delegate
+   * @param {!Timeline.TimelineLoader.Client} client
    * @return {!Timeline.TimelineLoader}
    */
-  static loadFromFile(model, file, delegate) {
-    var loader = new Timeline.TimelineLoader(model, delegate);
+  static loadFromFile(file, client) {
+    var loader = new Timeline.TimelineLoader(client);
     var fileReader = Timeline.TimelineLoader._createFileReader(file, loader);
     loader._canceledCallback = fileReader.cancel.bind(fileReader);
     loader._totalSize = file.size;
@@ -44,13 +43,12 @@ Timeline.TimelineLoader = class {
   }
 
   /**
-   * @param {!SDK.TracingModel} model
    * @param {string} url
-   * @param {!Timeline.LoaderClient} delegate
+   * @param {!Timeline.TimelineLoader.Client} client
    * @return {!Timeline.TimelineLoader}
    */
-  static loadFromURL(model, url, delegate) {
-    var stream = new Timeline.TimelineLoader(model, delegate);
+  static loadFromURL(url, client) {
+    var stream = new Timeline.TimelineLoader(client);
     Host.ResourceLoader.loadAsStream(url, null, stream);
     return stream;
   }
@@ -65,9 +63,10 @@ Timeline.TimelineLoader = class {
   }
 
   cancel() {
-    this._model.reset();
-    this._delegate.loadingComplete(false);
-    this._delegate = null;
+    this._tracingModel = null;
+    this._backingStorage.reset();
+    this._client.loadingComplete(null, null);
+    this._client = null;
     if (this._canceledCallback)
       this._canceledCallback();
   }
@@ -77,11 +76,11 @@ Timeline.TimelineLoader = class {
    * @param {string} chunk
    */
   write(chunk) {
-    if (!this._delegate)
+    if (!this._client)
       return;
     this._loadedBytes += chunk.length;
     if (!this._firstChunk)
-      this._delegate.loadingProgress(this._totalSize ? this._loadedBytes / this._totalSize : undefined);
+      this._client.loadingProgress(this._totalSize ? this._loadedBytes / this._totalSize : undefined);
 
     if (this._state === Timeline.TimelineLoader.State.Initial) {
       if (chunk[0] === '{') {
@@ -123,7 +122,7 @@ Timeline.TimelineLoader = class {
     var json = data + ']';
 
     if (this._firstChunk) {
-      this._delegate.loadingStarted();
+      this._client.loadingStarted();
     } else {
       var commaIndex = json.indexOf(',');
       if (commaIndex !== -1)
@@ -141,7 +140,6 @@ Timeline.TimelineLoader = class {
 
     if (this._firstChunk) {
       this._firstChunk = false;
-      this._model.reset();
       if (this._looksLikeAppVersion(items[0])) {
         this._reportErrorAndCancelLoading(Common.UIString('Legacy Timeline format is not supported.'));
         return;
@@ -149,7 +147,7 @@ Timeline.TimelineLoader = class {
     }
 
     try {
-      this._model.addEvents(items);
+      this._tracingModel.addEvents(items);
     } catch (e) {
       this._reportErrorAndCancelLoading(Common.UIString('Malformed timeline data: %s', e.toString()));
       return;
@@ -177,9 +175,10 @@ Timeline.TimelineLoader = class {
    * @override
    */
   close() {
-    this._model.tracingComplete();
-    if (this._delegate)
-      this._delegate.loadingComplete(true);
+    if (!this._client)
+      return;
+    this._tracingModel.tracingComplete();
+    this._client.loadingComplete(this._tracingModel, this._backingStorage);
   }
 
   /**
@@ -226,6 +225,25 @@ Timeline.TimelineLoader = class {
 
 Timeline.TimelineLoader.TransferChunkLengthBytes = 5000000;
 
+/**
+ * @interface
+ */
+Timeline.TimelineLoader.Client = function() {};
+
+Timeline.TimelineLoader.Client.prototype = {
+  loadingStarted() {},
+
+  /**
+   * @param {number=} progress
+   */
+  loadingProgress(progress) {},
+
+  /**
+   * @param {?SDK.TracingModel} tracingModel
+   * @param {?Bindings.TempFileBackingStorage} backingStorage
+   */
+  loadingComplete(tracingModel, backingStorage) {},
+};
 
 /**
  * @enum {symbol}

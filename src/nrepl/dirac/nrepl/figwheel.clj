@@ -3,14 +3,15 @@
   (:require [clojure.tools.logging :as log]))
 
 ; TODO: would be nice to have some version checking (for sanity)
-
+(def ^:dynamic *verbose* false)
 (def figwheel-api-ns-sym 'figwheel-sidecar.repl-api)
 
 (defn try-resolve-figwheel-repl-api-symbol [sym]
   (try
     (ns-resolve figwheel-api-ns-sym sym)
     (catch Throwable e
-      (log/trace e)
+      (if *verbose*
+        (log/trace e))
       nil)))
 
 (defn try-resolve-figwheel-repl-api [sym]

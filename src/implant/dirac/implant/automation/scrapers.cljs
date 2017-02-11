@@ -51,7 +51,7 @@
 ; -- suggest box UI (code completions) --------------------------------------------------------------------------------------
 
 (defn find-suggest-box-element []
-  (first (dom/query-selector "html /deep/ .suggest-box-overlay")))
+  (first (dom/query-selector "html /deep/ .suggest-box")))
 
 (defn print-suggest-box-item [item-rep]
   (let [{:keys [class]} item-rep
@@ -185,7 +185,7 @@
 
 (defmethod scrape :callstack-pane-functions [_ & _]
   (safe->> (find-call-frame-elements)
-           (extract-sub-elements ".call-frame-item-title")
+           (extract-sub-elements ".call-frame-title-text")
            (map build-rep)
            (map print-callstack-function)
            (print-list)))

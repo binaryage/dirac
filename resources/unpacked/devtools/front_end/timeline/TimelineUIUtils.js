@@ -782,7 +782,7 @@ Timeline.TimelineUIUtils = class {
         if (eventData['mimeType'])
           contentHelper.appendTextRow(Common.UIString('MIME Type'), eventData['mimeType']);
         if ('priority' in eventData) {
-          var priority = Components.uiLabelForPriority(eventData['priority']);
+          var priority = NetworkConditions.uiLabelForPriority(eventData['priority']);
           contentHelper.appendTextRow(Common.UIString('Priority'), priority);
         }
         if (eventData['encodedDataLength']) {
@@ -1078,7 +1078,7 @@ Timeline.TimelineUIUtils = class {
       contentHelper.appendTextRow(Common.UIString('Request Method'), request.requestMethod);
     if (typeof request.priority === 'string') {
       const priority =
-          Components.uiLabelForPriority(/** @type {!Protocol.Network.ResourcePriority} */ (request.priority));
+          NetworkConditions.uiLabelForPriority(/** @type {!Protocol.Network.ResourcePriority} */ (request.priority));
       contentHelper.appendTextRow(Common.UIString('Priority'), priority);
     }
     if (request.mimeType)
@@ -1453,8 +1453,7 @@ Timeline.TimelineUIUtils = class {
           'gpu', Common.UIString('GPU'), false, 'hsl(109, 33%, 64%)', 'hsl(109, 33%, 55%)'),
       other:
           new Timeline.TimelineCategory('other', Common.UIString('Other'), false, 'hsl(0, 0%, 87%)', 'hsl(0, 0%, 79%)'),
-      idle: new Timeline.TimelineCategory(
-          'idle', Common.UIString('Idle'), false, 'hsl(0, 0%, 98%)', 'hsl(0, 0%, 98%)')
+      idle: new Timeline.TimelineCategory('idle', Common.UIString('Idle'), false, 'hsl(0, 0%, 98%)', 'hsl(0, 0%, 98%)')
     };
     return Timeline.TimelineUIUtils._categories;
   }
@@ -1486,13 +1485,11 @@ Timeline.TimelineUIUtils = class {
       total += aggregatedStats[categoryName];
 
     var element = createElementWithClass('div', 'timeline-details-view-pie-chart-wrapper hbox');
-    var pieChart = new PerfUI.PieChart(100);
+    var pieChart = new PerfUI.PieChart(110, value => Number.preciseMillisToString(value), true);
     pieChart.element.classList.add('timeline-details-view-pie-chart');
     pieChart.setTotal(total);
     var pieChartContainer = element.createChild('div', 'vbox');
     pieChartContainer.appendChild(pieChart.element);
-    pieChartContainer.createChild('div', 'timeline-details-view-pie-chart-total').textContent =
-        Common.UIString('Total: %s', Number.millisToString(total, true));
     var footerElement = element.createChild('div', 'timeline-aggregated-info-legend');
 
     /**
@@ -1538,12 +1535,11 @@ Timeline.TimelineUIUtils = class {
   }
 
   /**
-   * @param {!TimelineModel.TimelineFrameModel} frameModel
    * @param {!TimelineModel.TimelineFrame} frame
    * @param {?SDK.FilmStripModel.Frame} filmStripFrame
    * @return {!Element}
    */
-  static generateDetailsContentForFrame(frameModel, frame, filmStripFrame) {
+  static generateDetailsContentForFrame(frame, filmStripFrame) {
     var contentHelper = new Timeline.TimelineDetailsContentHelper(null, null);
     contentHelper.addSection(Common.UIString('Frame'));
 

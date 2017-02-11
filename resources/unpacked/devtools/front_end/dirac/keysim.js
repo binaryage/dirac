@@ -164,6 +164,7 @@
 
     var keyCodeToKeyMap = {
         9: "Tab", // tab
+        16: "Shift",
         27: "Escape", // esc
         32: " ", // space
         38: 'ArrowUp',
@@ -356,7 +357,7 @@
                     event.keyCode = type === 'keypress' ? this.charCodeForKeystroke(keystroke) : keystroke.keyCode;
                     event.charCode = type === 'keypress' ? event.keyCode : 0;
                     event.which = event.keyCode;
-                    event.keyIdentifier = keyCodeToKeyIdentifier(event.keyCode);
+                    event.keyIdentifier = keyCodeToKeyIdentifier(keystroke.keyCode);
                     event.key = keyCodeToKey(event.keyCode);
                     break;
             }
@@ -588,6 +589,7 @@
         Keyboard.prototype.keystrokeForAction = function keystrokeForAction(action) {
             var keyCode = null;
             var modifiers = 0;
+            var mutation = null;
 
             var parts = action.split('+');
             var lastPart = parts.pop();
@@ -615,6 +617,7 @@
             const actionLookup = this._actionMap[lastPart.toUpperCase()];
             if (actionLookup) {
                 keyCode = actionLookup.keyCode;
+                mutation = actionLookup.mutation;
             } else if (lastPart.length === 1) {
                 var lastPartKeystroke = this.keystrokeForCharCode(lastPart.charCodeAt(0));
                 modifiers |= lastPartKeystroke.modifiers;
@@ -623,7 +626,7 @@
                 throw new Error('in "' + action + '", invalid action: ' + lastPart);
             }
 
-            return new Keystroke(modifiers, keyCode);
+            return new Keystroke(modifiers, keyCode, mutation);
         };
 
         /**

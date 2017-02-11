@@ -1106,6 +1106,8 @@ var Emulation = {};
 /** @type {!Object} */
 var Extensions = {};
 /** @type {!Object} */
+var EventListeners = {};
+/** @type {!Object} */
 var FormatterWorker = {};
 /** @type {!Object} */
 var HeapSnapshotModel = {};
@@ -1123,6 +1125,8 @@ var Layers = {};
 var Main = {};
 /** @type {!Object} */
 var Network = {};
+/** @type {!Object} */
+var NetworkConditions = {};
 /** @type {!Object} */
 var PerfUI = {};
 /** @type {!Object} */

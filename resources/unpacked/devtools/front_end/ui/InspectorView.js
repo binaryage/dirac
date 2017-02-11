@@ -34,7 +34,7 @@
 UI.InspectorView = class extends UI.VBox {
   constructor() {
     super();
-    UI.Dialog.setModalHostView(this);
+    UI.GlassPane.setContainer(this.element);
     this.setMinimumSize(240, 72);
 
     // DevTools sidebar is a vertical split of panels tabbed pane and a drawer.
@@ -65,6 +65,7 @@ UI.InspectorView = class extends UI.VBox {
     this._tabbedPane.registerRequiredCSS('ui/inspectorViewTabbedPane.css');
     this._tabbedPane.setTabSlider(true);
     this._tabbedPane.addEventListener(UI.TabbedPane.Events.TabSelected, this._tabSelected, this);
+    this._tabbedPane.setAccessibleName(Common.UIString('Panels'));
 
     if (Host.isUnderTest())
       this._tabbedPane.setAutoSelectFirstItemOnShow(false);
@@ -231,12 +232,12 @@ UI.InspectorView = class extends UI.VBox {
    */
   _keyDown(event) {
     var keyboardEvent = /** @type {!KeyboardEvent} */ (event);
-    if (!UI.KeyboardShortcut.eventHasCtrlOrMeta(keyboardEvent))
+    if (!UI.KeyboardShortcut.eventHasCtrlOrMeta(keyboardEvent) || event.altKey || event.shiftKey)
       return;
 
     // Ctrl/Cmd + 1-9 should show corresponding panel.
     var panelShortcutEnabled = Common.moduleSetting('shortcutPanelSwitch').get();
-    if (panelShortcutEnabled && !event.shiftKey && !event.altKey) {
+    if (panelShortcutEnabled) {
       var panelIndex = -1;
       if (event.keyCode > 0x30 && event.keyCode < 0x3A)
         panelIndex = event.keyCode - 0x31;
@@ -269,7 +270,7 @@ UI.InspectorView = class extends UI.VBox {
    * @override
    */
   onResize() {
-    UI.Dialog.modalHostRepositioned();
+    UI.GlassPane.containerMoved(this.element);
   }
 
   /**

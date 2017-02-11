@@ -14,7 +14,8 @@ var Flags = {
   DEBUG_DEVTOOLS_SHORTHAND: '-d',
   FETCH_CONTENT_SHELL: '--fetch-content-shell',
   COMPAT_PROTOCOL: '--compat-protocol',  // backwards compatibility testing
-  CHROMIUM_PATH: '--chromium-path'       // useful for bisecting
+  CHROMIUM_PATH: '--chromium-path',      // useful for bisecting
+  TARGET: '--target',                    // build sub-directory (e.g. Release, Default)
 };
 
 var COMPAT_URL_MAPPING = {
@@ -26,6 +27,7 @@ var IS_DEBUG_ENABLED =
 var COMPAT_PROTOCOL = utils.parseArgs(process.argv)[Flags.COMPAT_PROTOCOL];
 var CUSTOM_CHROMIUM_PATH = utils.parseArgs(process.argv)[Flags.CHROMIUM_PATH];
 var IS_FETCH_CONTENT_SHELL = utils.includes(process.argv, Flags.FETCH_CONTENT_SHELL);
+var TARGET = utils.parseArgs(process.argv)[Flags.TARGET] || 'Release';
 
 var CONTENT_SHELL_ZIP = 'content-shell.zip';
 var MAX_CONTENT_SHELLS = 10;
@@ -52,18 +54,41 @@ function findDiracChromiumCommit() {
   return firstLine(shell(`${POSITION_FOR_VERSION_SCRIPT} ${chromeVersion}`).toString());
 }
 
+// https://gist.github.com/bpedro/742162#gistcomment-1786537
+function mkdir(dir) {
+  // we explicitly don't use `path.sep` to have it platform independent;
+  var sep = '/';
+
+  var segments = dir.split(sep);
+  var current = '';
+  var i = 0;
+
+  while (i < segments.length) {
+    current = current + sep + segments[i];
+    try {
+      fs.statSync(current);
+    } catch (e) {
+      fs.mkdirSync(current);
+    }
+
+    i++;
+  }
+}
+
 var CHROMIUM_SRC_PATH = fetchDiracChromiumSrcPath();
 // end of dirac-specific stuff
 
-var RELEASE_PATH = path.resolve(CHROMIUM_SRC_PATH, 'out', 'Release');
+var RELEASE_PATH = path.resolve(CHROMIUM_SRC_PATH, 'out', TARGET);
 var BLINK_TEST_PATH = path.resolve(CHROMIUM_SRC_PATH, 'blink', 'tools', 'run_layout_tests.py');
 var DEVTOOLS_PATH = path.resolve(CHROMIUM_SRC_PATH, 'third_party', 'WebKit', 'Source', 'devtools');
-var CACHE_PATH = path.resolve(DEVTOOLS_PATH, '..', 'caches', '.test_cache');
+var CACHE_PATH = path.resolve(DEVTOOLS_PATH, '.test_cache');
 var SOURCE_PATH = path.resolve(DEVTOOLS_PATH, 'front_end');
+
+CACHE_PATH = path.resolve(DEVTOOLS_PATH, '..', 'caches', '.test_cache');
 
 function main() {
   if (!utils.isDir(CACHE_PATH))
-    fs.mkdirSync(CACHE_PATH);
+    mkdir(CACHE_PATH);
   deleteOldContentShells();
 
   if (COMPAT_PROTOCOL) {
@@ -94,7 +119,7 @@ function runCompatibilityTests() {
   utils.removeRecursive(path.resolve(RELEASE_PATH, 'resources', 'inspector'));
   compileFrontend();
   var outPath = path.resolve(CACHE_PATH, folder, 'out');
-  var contentShellDirPath = path.resolve(outPath, 'Release');
+  var contentShellDirPath = path.resolve(outPath, TARGET);
   var hasCachedContentShell = utils.isFile(getContentShellBinaryPath(contentShellDirPath));
   if (hasCachedContentShell) {
     console.log(`Using cached content shell at: ${outPath}`);
@@ -121,7 +146,7 @@ function compileFrontend() {
 }
 
 function onUploadedCommitPosition(commitPosition) {
-  var contentShellDirPath = path.resolve(CACHE_PATH, commitPosition, 'out', 'Release');
+  var contentShellDirPath = path.resolve(CACHE_PATH, commitPosition, 'out', TARGET);
   var contentShellResourcesPath = path.resolve(contentShellDirPath, 'resources');
   var contentShellPath = path.resolve(CACHE_PATH, commitPosition, 'out');
 
@@ -259,7 +284,7 @@ function extractContentShell(contentShellZipPath) {
   shell(`${PYTHON} ${unzipScriptPath} ${src} ${dest}`);
   fs.unlinkSync(src);
   var originalDirPath = path.resolve(dest, 'content-shell');
-  var newDirPath = path.resolve(dest, 'Release');
+  var newDirPath = path.resolve(dest, TARGET);
   fs.renameSync(originalDirPath, newDirPath);
   fs.chmodSync(getContentShellBinaryPath(newDirPath), '755');
   if (process.platform === 'darwin') {
@@ -287,6 +312,8 @@ function runTests(buildDirectoryPath, useDebugDevtools) {
     '--no-pixel-tests',
     '--build-directory',
     buildDirectoryPath,
+    '--target',
+    TARGET,
   ]);
   if (useDebugDevtools)
     testArgs.push('--additional-driver-flag=--debug-devtools');

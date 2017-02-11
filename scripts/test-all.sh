@@ -10,6 +10,8 @@ false && source _config.sh # never executes, this is here just for IntelliJ Bash
 
 redirect_to_test_stage_if_needed
 
+export LEIN_FAST_TRAMPOLINE=  # lein trampoline caches might get confused in test stage
+
 pushd "$ROOT"
 
 ./scripts/test-backend.sh

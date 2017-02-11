@@ -1026,7 +1026,7 @@ PerfUI.FlameChart = class extends PerfUI.ChartViewport {
     var visible = true;
     /** @type !Array<{nestingLevel: number, visible: boolean}> */
     var groupStack = [{nestingLevel: -1, visible: true}];
-    var lastGroupLevel = Math.max(levelCount, groups.peekLast().startLevel + 1);
+    var lastGroupLevel = Math.max(levelCount, groups.length ? groups.peekLast().startLevel + 1 : 0);
     for (var level = 0; level < lastGroupLevel; ++level) {
       while (groupIndex < groups.length - 1 && level === groups[groupIndex + 1].startLevel) {
         ++groupIndex;
@@ -1201,12 +1201,14 @@ PerfUI.FlameChart = class extends PerfUI.ChartViewport {
    */
   reset() {
     super.reset();
+    this._rawTimelineData = null;
+    this._rawTimelineDataLength = 0;
     this._highlightedMarkerIndex = -1;
     this._highlightedEntryIndex = -1;
     this._selectedEntryIndex = -1;
     /** @type {!Map<string,!Map<string,number>>} */
     this._textWidth = new Map();
-    this.update();
+    this.scheduleUpdate();
   }
 
   _enabled() {
@@ -1461,15 +1463,6 @@ PerfUI.FlameChart.Calculator = class {
    */
   constructor(dataProvider) {
     this._dataProvider = dataProvider;
-    this._paddingLeft = 0;
-  }
-
-  /**
-   * @override
-   * @return {number}
-   */
-  paddingLeft() {
-    return this._paddingLeft;
   }
 
   /**

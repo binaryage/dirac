@@ -2,6 +2,7 @@
   (:require [clojure.core.async :refer [chan <!! <! >!! put! alts!! timeout close! go go-loop]]
             [clojure.core.async.impl.protocols :as core-async]
             [clojure.tools.logging :as log]
+            [clojure.data]
             [version-clj.core :refer [version-compare]]
             [dirac.lib.nrepl-protocols :refer [NREPLTunnelService]]
             [dirac.lib.nrepl-tunnel-server :as nrepl-tunnel-server]
@@ -48,21 +49,52 @@
 (def agent-setup-doc-url "https://github.com/binaryage/dirac#start-dirac-agent")
 
 (defn ^:dynamic missing-nrepl-middleware-msg [url]
-  (str "Dirac nREPL middleware is not present in nREPL server at " url "!\n"
+  (str "Dirac nREPL middleware is not present in your nREPL server at " url "!\n"
        "Didn't you forget to add :nrepl-middleware [dirac.nrepl/middleware] to your :repl-options?\n"
        "Please follow Dirac installation instructions: " nrepl-setup-doc-url "."))
 
 (defn ^:dynamic old-nrepl-middleware-msg [expected-version reported-version]
-  (str "WARNING: The version of Dirac nREPL middleware is old. "
+  (str "The version of Dirac nREPL middleware is old. "
        "Expected '" expected-version "', got '" reported-version "'.\n"
        "You should review your nREPL server setup and bump binaryage/dirac version to '" expected-version "'.\n"
        "Please follow Dirac installation instructions: " nrepl-setup-doc-url "."))
 
 (defn ^:dynamic unknown-nrepl-middleware-msg [expected-version reported-version]
-  (str "WARNING: The version of Dirac nREPL middleware is unexpectedly recent. "
+  (str "The version of Dirac nREPL middleware is unexpectedly recent. "
        "Expected '" expected-version "', got '" reported-version "'.\n"
        "You should review your Dirac Agent setup and bump binaryage/dirac version to '" reported-version "'.\n"
        "Please follow Dirac installation instructions: " agent-setup-doc-url "."))
+
+(defn ^:dynamic unexpected-middleware-msg [url versions expected-ops reported-opts]
+  (str "We detected unexpected middleware setup in your nREPL server at " url "!\n"
+       "The difference (clojure.data/diff expected-ops reported-ops) is:\n"
+       (utils/pp (clojure.data/diff expected-ops reported-opts))
+       "\n"
+       "For reference, the reported versions by the nREPL server are:\n"
+       (utils/pp (into (sorted-map) (map (fn [[k v]] [k (:version-string v)]) versions)))
+       "\n"
+       "This usually happens when some extra middleware gets injected into your nREPL server behind your back.\n"
+       "e.g. * Didn't you include a middleware via ~/.lein/profiles.clj or BOOT_HOME/boot.properties?\n"
+       "     * Or maybe using Cider's nREPL stuff?\n"
+       "     * Or maybe using some combination of ancient Clojure/Java versions?\n"
+       "     * Or some bleeding-edge alpha versions?\n"
+       "     * Or a rogue tools.nrepl dependency in your project or its dependencies?\n"
+       "\n"
+       "Please follow Dirac installation instructions: " nrepl-setup-doc-url "."))
+
+(defn ^:dynamic unexpected-tools-nrepl-version-msg [url versions reported-version expected-version]
+  (str "We detected unexpected tools.nrepl library version in your nREPL server at " url "!\n"
+       "The server reported version " reported-version ", but Dirac expected version " expected-version ".\n"
+       "This could potentialy lead to unexpected behaviour. Please check your dependencies and use latest Dirac release.\n"
+       "\n"
+       "For reference, the reported versions by the nREPL server are:\n"
+       (utils/pp (into (sorted-map) (map (fn [[k v]] [k (:version-string v)]) versions)))
+       "\n"
+       "Also double check Dirac installation instructions: " nrepl-setup-doc-url "."))
+
+(def ^:dynamic expected-nrepl-version "0.2.12")
+(def ^:dynamic expected-nrepl-middleware-ops
+  '(:clone :close :describe :eval :identify-dirac-nrepl-middleware :interrupt :load-file :ls-sessions :stdin))
 
 ; -- NREPLTunnel constructor ------------------------------------------------------------------------------------------------
 
@@ -225,28 +257,59 @@
 
 ; -- NREPLTunnel life cycle -------------------------------------------------------------------------------------------------
 
-(defn check-nrepl-middleware! [nrepl-client]
+(defn identify-dirac-nrepl-middleware! [nrepl-client]
   (log/trace "check-nrepl-middleware! lib-version" lib/version)
-  (let [identify-response (<!! (nrepl-client/send! nrepl-client {:op "identify-dirac-nrepl-middleware"}))
-        {:keys [version]} identify-response]
-    (log/debug "identify-dirac-nrepl-middleware response:" identify-response)
+  (let [response (<!! (nrepl-client/send! nrepl-client {:op "identify-dirac-nrepl-middleware"}))
+        {:keys [version]} response]
+    (log/debug "identify-dirac-nrepl-middleware response:" response)
     (if version
       (case (version-compare lib/version version)
-        -1 [:unknown (unknown-nrepl-middleware-msg lib/version version)]
-        1 [:old (old-nrepl-middleware-msg lib/version version)]
-        0 [:ok])
-      [:missing (missing-nrepl-middleware-msg (nrepl-client/get-server-connection-url nrepl-client))])))
+        -1 [::unknown (unknown-nrepl-middleware-msg lib/version version)]
+        1 [::old (old-nrepl-middleware-msg lib/version version)]
+        0 [::ok])
+      [::missing (missing-nrepl-middleware-msg (nrepl-client/get-server-connection-url nrepl-client))])))
+
+(defn dirac-nrepl-middleware-check! [nrepl-client]
+  (let [[status message] (identify-dirac-nrepl-middleware! nrepl-client)]
+    (case status
+      ::missing (utils/exit-with-error! message 77)
+      (::old ::unknown) (utils/print-warning! message)
+      ::ok nil)))
+
+(defn describe-middleware-setup! [nrepl-client expected-ops]
+  (log/trace "describe-middleware-setup! lib-version" lib/version)
+  (let [response (<!! (nrepl-client/send! nrepl-client {:op "describe"}))
+        {:keys [ops versions]} response
+        reported-ops (sort (keys ops))
+        nrepl-version (:version-string (:nrepl versions))
+        server-url (nrepl-client/get-server-connection-url nrepl-client)]
+    (log/debug "describe response:" response)
+    (cond
+      (not= nrepl-version expected-nrepl-version)
+      [::bad-nrepl-version (unexpected-tools-nrepl-version-msg server-url versions nrepl-version expected-nrepl-version)]
+
+      (not= reported-ops expected-ops)
+      [::unexpected-setup (unexpected-middleware-msg server-url versions expected-ops reported-ops)]
+
+      :else
+      [::ok nil])))
+
+(defn paranoid-middleware-setup-check! [nrepl-client expected-ops]
+  (let [[status message] (describe-middleware-setup! nrepl-client expected-ops)]
+    (case status
+      ::unexpected-setup (utils/print-warning! message)
+      ::bad-nrepl-version (utils/print-warning! message)
+      ::ok nil)))
 
 (defn create! [options]
   (let [tunnel (make-tunnel! options)
         server-messages (chan)
         client-messages (chan)]
     (let [nrepl-client (nrepl-client/create! tunnel (:nrepl-server options))]
-      (let [[status message] (check-nrepl-middleware! nrepl-client)]
-        (case status
-          :missing (throw (ex-info message {}))
-          (:old :unknown) (log/warn message)
-          nil))
+      (if-not (:skip-paranoid-middleware-setup-check options)
+        (paranoid-middleware-setup-check! nrepl-client expected-nrepl-middleware-ops))
+      (if-not (:skip-dirac-nrepl-middleware-check options)
+        (dirac-nrepl-middleware-check! nrepl-client))
       (let [nrepl-tunnel-server (nrepl-tunnel-server/create! tunnel (:nrepl-tunnel options))]
         (set-nrepl-client! tunnel nrepl-client)
         (set-server-messages-channel! tunnel server-messages)

@@ -2,27 +2,38 @@
   (:require [cljs.core.async :refer [timeout]]
             [dirac.settings :refer-macros [seconds minutes]]
             [cljs.test :refer-macros [is]]
-            [dirac.automation :refer-macros [<!* go-task with-scenario with-devtools testing with-console-feedback] :as a]))
+            [dirac.automation :refer-macros [<!* go-task with-scenario with-devtools testing with-console-feedback
+                                             chunkify] :as a]))
 
 (go-task
   (with-scenario "repl"
     (testing "simple REPL eval interactions"
       (with-devtools
-        (<!* a/switch-to-console-panel!)
-        (<!* a/switch-prompt-to-dirac!)
-        (<!* a/wait-for-prompt-to-enter-edit-mode)
-        (with-console-feedback
-          (<!* a/console-exec-and-match! "(+ 1 2)" "info> 3")
-          (<!* a/console-exec-and-match! "(range 200)" "info> (0 1 2 3 4 …)")
-          (<!* a/console-exec-and-match! "(doc filter)" "info> null")
-          (<!* a/console-exec-and-match! "js/window.NaN" "info> NaN")
-          ; TODO: revisit this, seems to be flaky
-          #_(<!* a/console-exec-and-match! "(x)" "TypeError: Cannot read property 'call' of undefined")
-          (<!* a/console-exec-and-match! "(in-ns)" (str "java-trace/plain-text > java.lang.IllegalArgumentException: "
-                                                        "Argument to in-ns must be a symbol."))
-          (<!* a/wait-for-devtools-match "<elided stack trace>")
-          (<!* a/wait-for-devtools-match #"^JS.info")
-          (<!* a/console-exec-and-match! "(in-ns 'my.ns)" "setDiracPromptNS('my.ns')"))))
+        (chunkify
+          (<!* a/switch-to-console-panel!)
+          (<!* a/switch-prompt-to-dirac!)
+          (<!* a/wait-for-prompt-to-enter-edit-mode)
+          (with-console-feedback
+            (<!* a/console-exec-and-match! "(+ 1 2)" "info> 3")
+            (<!* a/console-exec-and-match! "4 5 6" ["info> 4" "info> 5" "info> 6"])                                           ; more forms are evaluated one by one
+
+            ; an edge case
+            (<!* a/focus-console-prompt!)
+            (<!* a/simulate-console-action! "SHIFT+ENTER")
+            (<!* a/simulate-console-input! "7")
+            (<!* a/simulate-console-action! "ENTER")
+            (<!* a/console-wait-for-repl-job-match! "info> 7")
+
+            (<!* a/console-exec-and-match! "(range 200)" "info> (0 1 2 3 4 …)")
+            (<!* a/console-exec-and-match! "(doc filter)" "info> null")
+            (<!* a/console-exec-and-match! "js/window.NaN" "info> NaN")
+            ; TODO: revisit this, seems to be flaky
+            #_(<!* a/console-exec-and-match! "(x)" "TypeError: Cannot read property 'call' of undefined")
+            (<!* a/console-exec-and-match! "(in-ns)" (str "java-trace/plain-text > java.lang.IllegalArgumentException: "
+                                                          "Argument to in-ns must be a symbol."))
+            (<!* a/wait-for-devtools-match "<elided stack trace>")
+            (<!* a/wait-for-devtools-match #"^JS.info")
+            (<!* a/console-exec-and-match! "(in-ns 'my.ns)" "setDiracPromptNS('my.ns')")))))
     (testing "page-initiated eval requests, https://github.com/binaryage/dirac/issues/38"
       (with-devtools
         (<!* a/switch-to-console-panel!)

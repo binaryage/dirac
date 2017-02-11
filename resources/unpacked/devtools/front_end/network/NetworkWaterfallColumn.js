@@ -143,7 +143,7 @@ Network.NetworkWaterfallColumn = class extends UI.VBox {
     var request = this._hoveredNode.request();
     if (!request)
       return;
-    var content = Network.RequestTimingView.createTimingTable(request, this._calculator.minimumBoundary());
+    var content = Network.RequestTimingView.createTimingTable(request, this._calculator);
     popover.showForAnchor(content, anchor);
   }
 
@@ -250,7 +250,7 @@ Network.NetworkWaterfallColumn = class extends UI.VBox {
   _calculateCanvasSize() {
     this._offsetWidth = this.contentElement.offsetWidth - this._rightPadding;
     this._offsetHeight = this.contentElement.offsetHeight;
-    this._calculator.setDisplayWindow(this._offsetWidth);
+    this._calculator.setDisplayWidth(this._offsetWidth);
     this._canvasPosition = this._canvas.getBoundingClientRect();
   }
 
