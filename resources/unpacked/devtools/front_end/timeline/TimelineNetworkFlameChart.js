@@ -7,13 +7,9 @@
  * @unrestricted
  */
 Timeline.TimelineFlameChartNetworkDataProvider = class {
-  /**
-   * @param {!TimelineModel.TimelineModel} model
-   */
-  constructor(model) {
+  constructor() {
     this._font = '11px ' + Host.fontFamily();
-    this._model = model;
-    this.reset();
+    this.setModel(null);
     this._style = {
       padding: 4,
       height: 17,
@@ -30,11 +26,22 @@ Timeline.TimelineFlameChartNetworkDataProvider = class {
   }
 
   /**
+   * @param {?Timeline.PerformanceModel} performanceModel
+   */
+  setModel(performanceModel) {
+    this._model = performanceModel && performanceModel.timelineModel();
+    this._maxLevel = 0;
+    this._timelineData = null;
+    /** @type {!Array<!TimelineModel.TimelineModel.NetworkRequest>} */
+    this._requests = [];
+  }
+
+  /**
    * @return {boolean}
    */
   isEmpty() {
     this.timelineData();
-    return this._maxLevel === 0;
+    return !this._requests.length;
   }
 
   /**
@@ -55,7 +62,8 @@ Timeline.TimelineFlameChartNetworkDataProvider = class {
     /** @type {!Array<!TimelineModel.TimelineModel.NetworkRequest>} */
     this._requests = [];
     this._timelineData = new PerfUI.FlameChart.TimelineData([], [], [], []);
-    this._appendTimelineData(this._model.mainThreadEvents());
+    if (this._model)
+      this._appendTimelineData(this._model.mainThreadEvents());
     return this._timelineData;
   }
 
@@ -73,13 +81,6 @@ Timeline.TimelineFlameChartNetworkDataProvider = class {
    */
   totalTime() {
     return this._timeSpan;
-  }
-
-  reset() {
-    this._maxLevel = 0;
-    this._timelineData = null;
-    /** @type {!Array<!TimelineModel.TimelineModel.NetworkRequest>} */
-    this._requests = [];
   }
 
   /**
@@ -364,6 +365,13 @@ Timeline.TimelineFlameChartNetworkDataProvider = class {
    */
   preferredHeight() {
     return this._style.height * (this._group.expanded ? Number.constrain(this._maxLevel + 1, 4, 8.5) : 1);
+  }
+
+  /**
+   * @return {boolean}
+   */
+  isExpanded() {
+    return this._group.expanded;
   }
 
   /**
