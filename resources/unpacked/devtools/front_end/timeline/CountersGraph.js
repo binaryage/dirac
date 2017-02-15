@@ -251,15 +251,6 @@ Timeline.CountersGraph = class extends UI.VBox {
   /**
    * @override
    * @param {?SDK.TracingModel.Event} event
-   * @param {string=} regex
-   * @param {boolean=} select
-   */
-  highlightSearchResult(event, regex, select) {
-  }
-
-  /**
-   * @override
-   * @param {?SDK.TracingModel.Event} event
    */
   highlightEvent(event) {
   }
@@ -379,7 +370,8 @@ Timeline.CountersGraph.CounterUI = class {
     var container = countersPane._infoWidget.element.createChild('div', 'memory-counter-selector-info');
 
     this._setting = Common.settings.createSetting('timelineCountersGraph-' + title, true);
-    this._filter = new UI.ToolbarCheckbox(title, title, this._setting);
+    this._setting.setTitle(title);
+    this._filter = new UI.ToolbarSettingCheckbox(this._setting, title);
     this._filter.inputElement.classList.add('-theme-preserve');
     var color = Common.Color.parse(graphColor).setAlpha(0.5).asString(Common.Color.Format.RGBA);
     if (color) {

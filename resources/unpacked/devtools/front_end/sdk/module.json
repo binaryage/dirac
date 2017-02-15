@@ -9,7 +9,7 @@
     "extensions": [
         {
             "type": "setting",
-            "settingName": "blockedURLs",
+            "settingName": "networkBlockedURLs",
             "settingType": "array",
             "defaultValue": []
         },
@@ -127,6 +127,7 @@
         "TracingManager.js",
         "TracingModel.js",
         "RuntimeModel.js",
+        "ScreenCaptureModel.js",
         "Script.js",
         "ServiceWorkerCacheModel.js",
         "RemoteObject.js",
