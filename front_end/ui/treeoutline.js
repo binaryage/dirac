@@ -633,7 +633,7 @@ UI.TreeElement = class {
    */
   startEditingTitle(editingConfig) {
     UI.InplaceEditor.startEditing(this._titleElement, editingConfig);
-    this.treeOutline._shadowRoot.getSelection().setBaseAndExtent(this._titleElement, 0, this._titleElement, 1);
+    this.treeOutline._shadowRoot.getSelection().selectAllChildren(this._titleElement);
   }
 
   /**
@@ -1213,3 +1213,12 @@ UI.TreeElement = class {
 
 /** @const */
 UI.TreeElement._ArrowToggleWidth = 10;
+
+(function() {
+  var img = new Image();
+  if (window.devicePixelRatio > 1)
+    img.src = 'Images/treeoutlineTriangles_2x.png';
+  else
+    img.src = 'Images/treeoutlineTriangles.png';
+  UI.TreeElement._imagePreload = img;
+})();
