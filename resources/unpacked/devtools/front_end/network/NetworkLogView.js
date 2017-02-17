@@ -57,6 +57,9 @@ Network.NetworkLogView = class extends UI.VBox {
     this._durationCalculator = new Network.NetworkTransferDurationCalculator();
     this._calculator = this._timeCalculator;
 
+    /** @type {?Network.NetworkGroupLookupInterface} */
+    this._activeGroupLookup = null;
+
     /**
      * @this {Network.NetworkLogView}
      */
@@ -342,6 +345,14 @@ Network.NetworkLogView = class extends UI.VBox {
     if (request.endTime !== -1 && request.endTime < windowStart)
       return false;
     return true;
+  }
+
+  /**
+   * @param {?Network.NetworkGroupLookupInterface} grouping
+   */
+  setGrouping(grouping) {
+    this._activeGroupLookup = grouping;
+    this._invalidateAllItems();
   }
 
   /**
@@ -800,9 +811,6 @@ Network.NetworkLogView = class extends UI.VBox {
       this._timeCalculator.updateBoundaries(request);
       this._durationCalculator.updateBoundaries(request);
 
-      if (node[Network.NetworkLogView._isFilteredOutSymbol] === isFilteredOut)
-        continue;
-
       node[Network.NetworkLogView._isFilteredOutSymbol] = isFilteredOut;
       var newParent = this._parentNodeForInsert(node);
       var removeFromParent = node.parent && (isFilteredOut || node.parent !== newParent);
@@ -816,7 +824,7 @@ Network.NetworkLogView = class extends UI.VBox {
         }
       }
 
-      if (isFilteredOut)
+      if (!newParent || isFilteredOut)
         continue;
 
       if (!newParent.dataGrid && !nodesToInsert.has(newParent)) {
@@ -849,25 +857,21 @@ Network.NetworkLogView = class extends UI.VBox {
 
   /**
    * @param {!Network.NetworkRequestNode} node
-   * @return {!Network.NetworkNode}
+   * @return {?Network.NetworkNode}
    */
   _parentNodeForInsert(node) {
-    if (!Runtime.experiments.isEnabled('networkGroupingRequests'))
-      return /** @type {!Network.NetworkNode} */ (this._dataGrid.rootNode());
+    if (!this._activeGroupLookup)
+      return this._dataGrid.rootNode();
 
-    var request = node.request();
-    // TODO(allada) Make this dynamic and allow multiple grouping types.
-    var groupKey = request.connectionId;
-    var group = this._nodeGroups.get(groupKey);
+    var groupName = this._activeGroupLookup.lookup(node.request());
+    if (!groupName)
+      return this._dataGrid.rootNode();
+
+    var group = this._nodeGroups.get(groupName);
     if (group)
       return group;
-
-    var parsedURL = request.url().asParsedURL();
-    var host = '';
-    if (parsedURL)
-      host = parsedURL.host;
-    group = new Network.NetworkGroupNode(this, host + ' - ' + groupKey);
-    this._nodeGroups.set(groupKey, group);
+    group = new Network.NetworkGroupNode(this, groupName);
+    this._nodeGroups.set(groupName, group);
     return group;
   }
 
@@ -1782,3 +1786,16 @@ Network.NetworkLogView._searchKeys =
 
 /** @typedef {function(!SDK.NetworkRequest): boolean} */
 Network.NetworkLogView.Filter;
+
+/**
+ * @interface
+ */
+Network.NetworkGroupLookupInterface = function() {};
+
+Network.NetworkGroupLookupInterface.prototype = {
+  /**
+   * @param {!SDK.NetworkRequest} request
+   * @return {?string}
+   */
+  lookup(request) {}
+};
