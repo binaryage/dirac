@@ -36,4 +36,6 @@
     (execute-transcript-test! "welcome-message")
     (execute-transcript-test! "enable-parinfer")
     (execute-transcript-test! "clean-urls")
-    (execute-transcript-test! "beautify-function-names")))
+    (execute-transcript-test! "beautify-function-names"))
+  (with-transcript-suite "suite03"
+    (execute-transcript-test! "issue-55")))

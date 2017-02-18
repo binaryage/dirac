@@ -85,6 +85,7 @@
                  "test/backend/src/backend_tests"
                  "test/browser/fixtures/src/scenarios01"
                  "test/browser/fixtures/src/scenarios02"
+                 "test/browser/fixtures/src/scenarios03"
                  "test/browser/fixtures/src/tasks"
                  "test/browser/src/browser_tests"]
   :resource-paths ["resources"]
@@ -187,7 +188,8 @@
                                        "test/backend/src/backend_tests"
                                        "test/browser/fixtures/src/tasks"
                                        "test/browser/fixtures/src/scenarios01"
-                                       "test/browser/fixtures/src/scenarios02"]}
+                                       "test/browser/fixtures/src/scenarios02"
+                                       "test/browser/fixtures/src/scenarios03"]}
 
              :browser-tests
              {:cljsbuild {:builds
@@ -238,6 +240,21 @@
                                              :main                 dirac.tests.scenarios.normal-via-preloads
                                              :preloads             [dirac.runtime.preload]
                                              :external-config      {:dirac.runtime/config {:external-config-setting "configured externally"}}
+                                             :source-map           true
+                                             :source-map-timestamp true}}
+
+                           :scenarios03
+                           {:notify-command ["scripts/cljsbuild-notify.sh" "scenarios03"]
+                            :source-paths   ["src/settings"
+                                             "src/project"
+                                             "src/automation"
+                                             "src/runtime"
+                                             "src/shared"
+                                             "test/browser/fixtures/src/scenarios03"]
+                            :compiler       {:output-to            "test/browser/fixtures/resources/.compiled/scenarios03/main.js"
+                                             :output-dir           "test/browser/fixtures/resources/.compiled/scenarios03"
+                                             :asset-path           "../.compiled/scenarios03"
+                                             :optimizations        :none
                                              :source-map           true
                                              :source-map-timestamp true}}}}}
 
@@ -392,6 +409,8 @@
                            :scenarios01
                            {:source-paths ["src/empty"]}
                            :scenarios02
+                           {:source-paths ["src/empty"]}
+                           :scenarios03
                            {:source-paths ["src/empty"]}}}}
 
              :pseudo-names
@@ -422,6 +441,8 @@
                             :scenarios01
                             {:compiler {:parallel-build true}}
                             :scenarios02
+                            {:compiler {:parallel-build true}}
+                            :scenarios03
                             {:compiler {:parallel-build true}}}}}]
 
              :dirac-whitespace
