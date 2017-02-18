@@ -10,7 +10,7 @@
 
 (defn parse-ns-form [source]
   (let [reader (tools-reader-types/string-push-back-reader source)]
-    (ns-parse/read-ns-decl reader)))
+    (ns-parse/read-ns-decl reader ns-parse/cljs-read-opts)))
 
 (defn remove-identical-mappings [mapping]
   (into {} (remove (fn [[alias ns]] (= alias ns)) mapping)))
