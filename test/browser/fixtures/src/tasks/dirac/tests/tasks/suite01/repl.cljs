@@ -1,5 +1,5 @@
 (ns dirac.tests.tasks.suite01.repl
-  (:require [cljs.core.async :refer [timeout]]
+  (:require [cljs.core.async :refer [<! timeout]]
             [dirac.settings :refer-macros [seconds minutes]]
             [cljs.test :refer-macros [is]]
             [dirac.automation :refer-macros [<!* go-task with-scenario with-devtools testing with-console-feedback

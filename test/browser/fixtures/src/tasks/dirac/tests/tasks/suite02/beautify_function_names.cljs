@@ -1,5 +1,5 @@
 (ns dirac.tests.tasks.suite02.beautify-function-names
-  (:require [cljs.core.async :refer [<! chan timeout]]
+  (:require [cljs.core.async :refer [<! timeout]]
             [cljs.test :refer-macros [is]]
             [dirac.utils :refer [line-count]]
             [dirac.settings :refer-macros [seconds minutes]]
