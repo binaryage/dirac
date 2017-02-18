@@ -29,4 +29,4 @@
           (<!* a/trigger-internal-error-in-promise!)
           (<!* a/trigger-internal-error-as-error-log!)
           ; no existing log item should contain "Internal Dirac Error"
-          (is (zero? (count (<!* a/scrape :find-logs "Dirac Internal Error")))))))))
+          (is (zero? (<!* a/count-internal-dirac-errors))))))))
