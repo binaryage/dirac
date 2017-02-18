@@ -1,0 +1,45 @@
+ns               Testing dirac.tests.tasks.suite03.issue-55
+extension        reset extension state
+extension        set extension options:{:target-url "http://localhost:<port>"}
+extension        set extension options:{:open-as "window"}
+automate         open-scenario! ["issue-55"]
+automate         open-devtools!
+extension        handling command: open-dirac-devtools
+extension        register devtools #1
+devtools #1      implant initialized
+devtools #1      reset devtools settings
+devtools #1      setCurrentPanel: elements
+devtools #1      devtools ready
+devtools #1      namespacesCache is cool now
+testing          there should be no internal errors due to reader conditionals in cljc files (issue 55)
+automate #1      switch-to-console-panel!
+devtools #1      setCurrentPanel: console
+devtools #1      console initialized
+devtools #1      adopt-prompt-element use-parinfer? true
+devtools #1      setDiracPromptMode('status')
+devtools #1      ConsoleView constructed
+devtools #1      displayWelcomeMessage
+automate #1      switch-prompt-to-dirac!
+devtools #1      switched console prompt to 'dirac'
+devtools #1      init-repl!
+devtools #1      setDiracPromptStatusContent('Checking for Dirac Runtime presence in your app...')
+devtools #1      setDiracPromptStatusStyle('info')
+devtools #1      setDiracPromptStatusContent('Dirac Agent connected. Bootstrapping ClojureScript REPL...')
+devtools #1      setDiracPromptNS('cljs.user')
+devtools #1      setDiracPromptMode('edit')
+automate         trigger! [:reload]
+devtools #1      setDiracPromptMode('status')
+devtools #1      setDiracPromptStatusContent('Disconnected')
+devtools #1      init-repl!
+devtools #1      setDiracPromptStatusContent('Checking for Dirac Runtime presence in your app...')
+automate #1      switch-prompt-to-dirac!
+devtools #1      setDiracPromptStatusContent('Dirac Agent connected. Bootstrapping ClojureScript REPL...')
+devtools #1      setDiracPromptMode('edit')
+automate #1      count-internal-dirac-errors
+∎
+automate #1      close-devtools!
+extension        handling command: close-dirac-devtools
+extension        unregister devtools #1
+automate         close-scenario! ["scenario-tab#1"]
+summary          Automated 9 actions with 2 check-points containing 1 assertions.
+                 0 failures, 0 errors.
