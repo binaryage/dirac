@@ -44,10 +44,10 @@
                  [http.async.client "1.2.0" :scope "test"]
 
                  [clj-webdriver "0.7.2" :scope "test"]
-                 [org.seleniumhq.selenium/selenium-java "3.0.1" :scope "test"]
-                 [org.seleniumhq.selenium/selenium-chrome-driver "3.0.1" :scope "test"]
-                 [org.seleniumhq.selenium/selenium-support "3.0.1" :scope "test"]
-                 [org.seleniumhq.selenium/selenium-api "3.0.1" :scope "test"]
+                 [org.seleniumhq.selenium/selenium-java "3.1.0" :scope "test"]
+                 [org.seleniumhq.selenium/selenium-chrome-driver "3.1.0" :scope "test"]
+                 [org.seleniumhq.selenium/selenium-support "3.1.0" :scope "test"]
+                 [org.seleniumhq.selenium/selenium-api "3.1.0" :scope "test"]
                  [org.seleniumhq.selenium/selenium-htmlunit-driver "2.52.0" :scope "test"]
 
                  [ring/ring-core "1.5.1" :scope "test"]
