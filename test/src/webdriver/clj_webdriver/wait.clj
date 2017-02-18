@@ -2,8 +2,9 @@
   (:use [clj-webdriver.driver :only [init-driver]])
   (:import clj_webdriver.driver.Driver
            org.openqa.selenium.WebDriver
-           [org.openqa.selenium.support.ui ExpectedCondition WebDriverWait]
-           [java.util.concurrent TimeUnit]))
+           [org.openqa.selenium.support.ui WebDriverWait]
+           [java.util.concurrent TimeUnit]
+           (java.util.function Predicate)))
 
 ;; ## Wait Functionality ##
 (defprotocol IWait
@@ -26,8 +27,8 @@
     ([driver pred timeout] (wait-until driver pred timeout 0))
     ([driver pred timeout interval]
        (let [wait (WebDriverWait. (:webdriver driver) (/ timeout 1000) interval)]
-         (.until wait (proxy [ExpectedCondition] []
-                        (apply [d] (let [result (pred (init-driver {:webdriver d}))]
+         (.until wait (proxy [Predicate] []
+                        (test [d] (let [result (pred (init-driver {:webdriver d}))]
                                      ;; This allows us to wrap zero-arity functions
                                      ;; in a single-arity function, so we don't need
                                      ;; to write a macro or different function.
