@@ -43,7 +43,6 @@
 
                  [http.async.client "1.2.0" :scope "test"]
 
-                 [clj-webdriver "0.7.2" :scope "test"]
                  [org.seleniumhq.selenium/selenium-java "3.1.0" :scope "test"]
                  [org.seleniumhq.selenium/selenium-chrome-driver "3.1.0" :scope "test"]
                  [org.seleniumhq.selenium/selenium-support "3.1.0" :scope "test"]
@@ -80,6 +79,7 @@
                  "src/shared"
 
                  "test/src/test_lib"
+                 "test/src/webdriver"
                  "test/marion/src/background"
                  "test/marion/src/content_script"
                  "test/backend/src/backend_tests"
@@ -182,6 +182,7 @@
                                        "src/nrepl"
                                        "src/shared"
                                        "test/src/test_lib"
+                                       "test/src/webdriver"
                                        "test/browser/src/browser_tests"
                                        "test/backend/src/backend_tests"
                                        "test/browser/fixtures/src/tasks"
