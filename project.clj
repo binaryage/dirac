@@ -1,6 +1,6 @@
 (def clj-logging-config-version "1.9.12")
 (def slf4j-log4j12-version "1.7.22")
-(defproject binaryage/dirac "1.1.4"
+(defproject binaryage/dirac "1.1.5"
   :description "Dirac DevTools - a Chrome DevTools fork for ClojureScript developers."
   :url "https://github.com/binaryage/dirac"
   :license {:name         "MIT License"
@@ -25,7 +25,7 @@
                  ; thus we mark extra deps with :scope "test" and filter them later when producing jar library
                  [binaryage/oops "0.5.2" :scope "test"]
                  [binaryage/chromex "0.5.3" :scope "test"]
-                 [binaryage/devtools "0.9.0" :scope "test"]
+                 [binaryage/devtools "0.9.1" :scope "test"]
                  [environ "1.1.0" :scope "test"]
                  [cljs-http "0.1.42" :scope "test"]
                  [figwheel "0.5.9" :scope "test"]
@@ -43,11 +43,10 @@
 
                  [http.async.client "1.2.0" :scope "test"]
 
-                 [clj-webdriver "0.7.2" :scope "test"]
-                 [org.seleniumhq.selenium/selenium-java "3.0.1" :scope "test"]
-                 [org.seleniumhq.selenium/selenium-chrome-driver "3.0.1" :scope "test"]
-                 [org.seleniumhq.selenium/selenium-support "3.0.1" :scope "test"]
-                 [org.seleniumhq.selenium/selenium-api "3.0.1" :scope "test"]
+                 [org.seleniumhq.selenium/selenium-java "3.1.0" :scope "test"]
+                 [org.seleniumhq.selenium/selenium-chrome-driver "3.1.0" :scope "test"]
+                 [org.seleniumhq.selenium/selenium-support "3.1.0" :scope "test"]
+                 [org.seleniumhq.selenium/selenium-api "3.1.0" :scope "test"]
                  [org.seleniumhq.selenium/selenium-htmlunit-driver "2.52.0" :scope "test"]
 
                  [ring/ring-core "1.5.1" :scope "test"]
@@ -80,11 +79,13 @@
                  "src/shared"
 
                  "test/src/test_lib"
+                 "test/src/webdriver"
                  "test/marion/src/background"
                  "test/marion/src/content_script"
                  "test/backend/src/backend_tests"
                  "test/browser/fixtures/src/scenarios01"
                  "test/browser/fixtures/src/scenarios02"
+                 "test/browser/fixtures/src/scenarios03"
                  "test/browser/fixtures/src/tasks"
                  "test/browser/src/browser_tests"]
   :resource-paths ["resources"]
@@ -182,11 +183,13 @@
                                        "src/nrepl"
                                        "src/shared"
                                        "test/src/test_lib"
+                                       "test/src/webdriver"
                                        "test/browser/src/browser_tests"
                                        "test/backend/src/backend_tests"
                                        "test/browser/fixtures/src/tasks"
                                        "test/browser/fixtures/src/scenarios01"
-                                       "test/browser/fixtures/src/scenarios02"]}
+                                       "test/browser/fixtures/src/scenarios02"
+                                       "test/browser/fixtures/src/scenarios03"]}
 
              :browser-tests
              {:cljsbuild {:builds
@@ -237,6 +240,21 @@
                                              :main                 dirac.tests.scenarios.normal-via-preloads
                                              :preloads             [dirac.runtime.preload]
                                              :external-config      {:dirac.runtime/config {:external-config-setting "configured externally"}}
+                                             :source-map           true
+                                             :source-map-timestamp true}}
+
+                           :scenarios03
+                           {:notify-command ["scripts/cljsbuild-notify.sh" "scenarios03"]
+                            :source-paths   ["src/settings"
+                                             "src/project"
+                                             "src/automation"
+                                             "src/runtime"
+                                             "src/shared"
+                                             "test/browser/fixtures/src/scenarios03"]
+                            :compiler       {:output-to            "test/browser/fixtures/resources/.compiled/scenarios03/main.js"
+                                             :output-dir           "test/browser/fixtures/resources/.compiled/scenarios03"
+                                             :asset-path           "../.compiled/scenarios03"
+                                             :optimizations        :none
                                              :source-map           true
                                              :source-map-timestamp true}}}}}
 
@@ -391,6 +409,8 @@
                            :scenarios01
                            {:source-paths ["src/empty"]}
                            :scenarios02
+                           {:source-paths ["src/empty"]}
+                           :scenarios03
                            {:source-paths ["src/empty"]}}}}
 
              :pseudo-names
@@ -421,6 +441,8 @@
                             :scenarios01
                             {:compiler {:parallel-build true}}
                             :scenarios02
+                            {:compiler {:parallel-build true}}
+                            :scenarios03
                             {:compiler {:parallel-build true}}}}}]
 
              :dirac-whitespace

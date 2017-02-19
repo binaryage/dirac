@@ -38,6 +38,7 @@ echo "waiting for compilation of clojurescript components..."
 ./scripts/wait-for-notify.sh "tasks"
 ./scripts/wait-for-notify.sh "scenarios01"
 ./scripts/wait-for-notify.sh "scenarios02"
+./scripts/wait-for-notify.sh "scenarios03"
 
 set -x
 "$EXE" \

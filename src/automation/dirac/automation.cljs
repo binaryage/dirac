@@ -203,3 +203,7 @@
 
 (defn ^:devtools switch-to-console-panel! [devtools-id]
   (switch-devtools-panel! devtools-id :console))
+
+(defn ^:devtools count-internal-dirac-errors [devtools-id]
+  (go
+    (count (<! (scrape devtools-id :find-logs "Internal Dirac Error")))))

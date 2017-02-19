@@ -1,5 +1,5 @@
 (ns dirac.tests.tasks.suite01.error-feedback
-  (:require [cljs.core.async :refer [timeout]]
+  (:require [cljs.core.async]
             [cljs.test :refer-macros [is]]
             [dirac.settings :refer-macros [seconds minutes]]
             [dirac.automation :refer-macros [<!* go-task with-scenario with-devtools with-options testing] :as a]
@@ -29,4 +29,4 @@
           (<!* a/trigger-internal-error-in-promise!)
           (<!* a/trigger-internal-error-as-error-log!)
           ; no existing log item should contain "Internal Dirac Error"
-          (is (zero? (count (<!* a/scrape :find-logs "Dirac Internal Error")))))))))
+          (is (zero? (<!* a/count-internal-dirac-errors))))))))

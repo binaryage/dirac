@@ -32,7 +32,6 @@
 /**
  * @implements {Timeline.TimelineController.Client}
  * @implements {Timeline.TimelineModeViewDelegate}
- * @implements {UI.Searchable}
  * @unrestricted
  */
 Timeline.TimelinePanel = class extends UI.Panel {
@@ -74,11 +73,15 @@ Timeline.TimelinePanel = class extends UI.Panel {
         Common.settings.createSetting('timelineViewMode', Timeline.TimelinePanel.ViewMode.FlameChart);
 
     this._disableCaptureJSProfileSetting = Common.settings.createSetting('timelineDisableJSSampling', false);
+    this._disableCaptureJSProfileSetting.setTitle(Common.UIString('Disable JavaScript Samples'));
     this._captureLayersAndPicturesSetting = Common.settings.createSetting('timelineCaptureLayersAndPictures', false);
+    this._captureLayersAndPicturesSetting.setTitle(Common.UIString('Enable advanced paint instrumentation (slow)'));
 
-    this._showScreenshotsSetting = Common.settings.createLocalSetting('timelineShowScreenshots', true);
+    this._showScreenshotsSetting = Common.settings.createSetting('timelineShowScreenshots', true);
+    this._showScreenshotsSetting.setTitle(Common.UIString('Screenshots'));
     this._showScreenshotsSetting.addChangeListener(this._onModeChanged, this);
-    this._showMemorySetting = Common.settings.createLocalSetting('timelineShowMemory', false);
+    this._showMemorySetting = Common.settings.createSetting('timelineShowMemory', false);
+    this._showMemorySetting.setTitle(Common.UIString('Memory'));
     this._showMemorySetting.addChangeListener(this._onModeChanged, this);
 
     this._panelToolbar = new UI.Toolbar('', this.element);
@@ -105,10 +108,6 @@ Timeline.TimelinePanel = class extends UI.Panel {
     SDK.targetManager.addEventListener(SDK.TargetManager.Events.PageReloadRequested, this._pageReloadRequested, this);
     SDK.targetManager.addEventListener(SDK.TargetManager.Events.Load, this._loadEventFired, this);
 
-    this._searchableView = new UI.SearchableView(this);
-    this._searchableView.setMinimumSize(0, 100);
-    this._searchableView.element.classList.add('searchable-view');
-
     this._stackView = new UI.StackView(false);
     this._stackView.element.classList.add('timeline-view-stack');
 
@@ -119,10 +118,12 @@ Timeline.TimelinePanel = class extends UI.Panel {
       this._tabbedPane.appendTab(viewMode.BottomUp, Common.UIString('Bottom-Up'), new UI.VBox());
       this._tabbedPane.appendTab(viewMode.CallTree, Common.UIString('Call Tree'), new UI.VBox());
       this._tabbedPane.appendTab(viewMode.EventLog, Common.UIString('Event Log'), new UI.VBox());
+      this._tabbedPane.setTabIcon(viewMode.FlameChart, UI.Icon.create('largeicon-perf-flamechart'));
+      this._tabbedPane.setTabIcon(viewMode.BottomUp, UI.Icon.create('largeicon-perf-bottom-up-tree'));
+      this._tabbedPane.setTabIcon(viewMode.CallTree, UI.Icon.create('largeicon-perf-call-tree'));
+      this._tabbedPane.setTabIcon(viewMode.EventLog, UI.Icon.create('largeicon-perf-event-list'));
       this._tabbedPane.addEventListener(UI.TabbedPane.Events.TabSelected, this._onMainViewChanged.bind(this));
       this._tabbedPane.selectTab(this._viewModeSetting.get());
-      this._tabbedPane.show(this._searchableView.element);
-      this._searchableView.show(this._timelinePane.element);
     } else {
       // Create top level properties splitter.
       this._detailsSplitWidget = new UI.SplitWidget(false, true, 'timelinePanelDetailsSplitViewState', 400);
@@ -130,10 +131,9 @@ Timeline.TimelinePanel = class extends UI.Panel {
       this._detailsView = new Timeline.TimelineDetailsView(this._filters, this);
       this._detailsSplitWidget.installResizer(this._detailsView.headerElement());
       this._detailsSplitWidget.setSidebarWidget(this._detailsView);
-      this._detailsSplitWidget.setMainWidget(this._searchableView);
+      this._detailsSplitWidget.setMainWidget(this._stackView);
       this._detailsSplitWidget.hideSidebar();
       this._detailsSplitWidget.show(this._timelinePane.element);
-      this._stackView.show(this._searchableView.element);
     }
 
     this._onModeChanged();
@@ -143,11 +143,6 @@ Timeline.TimelinePanel = class extends UI.Panel {
     Extensions.extensionServer.addEventListener(
         Extensions.ExtensionServer.Events.TraceProviderAdded, this._appendExtensionsToToolbar, this);
     SDK.targetManager.addEventListener(SDK.TargetManager.Events.SuspendStateChanged, this._onSuspendStateChanged, this);
-
-    /** @type {!SDK.TracingModel.Event}|undefined */
-    this._selectedSearchResult;
-    /** @type {!Array<!SDK.TracingModel.Event>}|undefined */
-    this._searchResults;
   }
 
   /**
@@ -245,13 +240,12 @@ Timeline.TimelinePanel = class extends UI.Panel {
   }
 
   /**
-   * @param {string} name
    * @param {!Common.Setting} setting
    * @param {string} tooltip
    * @return {!UI.ToolbarItem}
    */
-  _createSettingCheckbox(name, setting, tooltip) {
-    const checkboxItem = new UI.ToolbarCheckbox(name, tooltip, setting);
+  _createSettingCheckbox(setting, tooltip) {
+    const checkboxItem = new UI.ToolbarSettingCheckbox(setting, tooltip);
     this._recordingOptionUIControls.push(checkboxItem);
     return checkboxItem;
   }
@@ -267,12 +261,12 @@ Timeline.TimelinePanel = class extends UI.Panel {
 
     // View
     this._panelToolbar.appendSeparator();
-    this._showScreenshotsToolbarCheckbox = this._createSettingCheckbox(
-        Common.UIString('Screenshots'), this._showScreenshotsSetting, Common.UIString('Capture screenshots'));
+    this._showScreenshotsToolbarCheckbox =
+        this._createSettingCheckbox(this._showScreenshotsSetting, Common.UIString('Capture screenshots'));
     this._panelToolbar.appendToolbarItem(this._showScreenshotsToolbarCheckbox);
 
-    this._showMemoryToolbarCheckbox = this._createSettingCheckbox(
-        Common.UIString('Memory'), this._showMemorySetting, Common.UIString('Show memory timeline.'));
+    this._showMemoryToolbarCheckbox =
+        this._createSettingCheckbox(this._showMemorySetting, Common.UIString('Show memory timeline'));
     this._panelToolbar.appendToolbarItem(this._showMemoryToolbarCheckbox);
 
     // GC
@@ -304,10 +298,10 @@ Timeline.TimelinePanel = class extends UI.Panel {
     captureToolbar.element.classList.add('flex-auto');
     captureToolbar.makeVertical();
     captureToolbar.appendToolbarItem(this._createSettingCheckbox(
-        Common.UIString('Disable JavaScript Samples'), this._disableCaptureJSProfileSetting,
+        this._disableCaptureJSProfileSetting,
         Common.UIString('Disables JavaScript sampling, reduces overhead when running against mobile devices')));
     captureToolbar.appendToolbarItem(this._createSettingCheckbox(
-        Common.UIString('Enable advanced paint instrumentation (slow)'), this._captureLayersAndPicturesSetting,
+        this._captureLayersAndPicturesSetting,
         Common.UIString('Captures advanced paint instrumentation, introduces significant performance overhead')));
 
     var throttlingPane = new UI.VBox();
@@ -331,7 +325,7 @@ Timeline.TimelinePanel = class extends UI.Panel {
   _appendExtensionsToToolbar(event) {
     var provider = /** @type {!Extensions.ExtensionTraceProvider} */ (event.data);
     const setting = Timeline.TimelinePanel._settingForTraceProvider(provider);
-    const checkbox = this._createSettingCheckbox(provider.shortDisplayName(), setting, provider.longDisplayName());
+    const checkbox = this._createSettingCheckbox(setting, provider.longDisplayName());
     this._panelToolbar.appendToolbarItem(checkbox);
   }
 
@@ -344,6 +338,7 @@ Timeline.TimelinePanel = class extends UI.Panel {
     if (!setting) {
       var providerId = traceProvider.persistentIdentifier();
       setting = Common.settings.createSetting(providerId, false);
+      setting.setTitle(traceProvider.shortDisplayName());
       traceProvider[Timeline.TimelinePanel._traceProviderSettingSymbol] = setting;
     }
     return setting;
@@ -466,26 +461,39 @@ Timeline.TimelinePanel = class extends UI.Panel {
       this._stackView.detach();
       this._stackView.show(this._tabbedPane.visibleView.element);
     }
+    var mainView;
     if (viewMode === Timeline.TimelinePanel.ViewMode.FlameChart) {
       this._flameChart = new Timeline.TimelineFlameChartView(this, this._filters);
       this._addModeView(this._flameChart);
       if (showMemory)
         this._addModeView(new Timeline.CountersGraph(this));
+      mainView = this._flameChart;
     } else {
-      var innerView;
       switch (viewMode) {
         case Timeline.TimelinePanel.ViewMode.CallTree:
-          innerView = new Timeline.CallTreeTimelineTreeView(this._filters);
+          mainView = new Timeline.CallTreeTimelineTreeView(this._filters);
           break;
         case Timeline.TimelinePanel.ViewMode.EventLog:
-          innerView = new Timeline.EventsTimelineTreeView(this._filters, this);
+          mainView = new Timeline.EventsTimelineTreeView(this._filters, this);
           break;
         default:
-          innerView = new Timeline.BottomUpTimelineTreeView(this._filters);
+          mainView = new Timeline.BottomUpTimelineTreeView(this._filters);
           break;
       }
-      const treeView = new Timeline.TimelineTreeModeView(this, innerView);
+      var treeView = new Timeline.TimelineTreeModeView(this, mainView);
       this._addModeView(treeView);
+    }
+    if (this._searchableView)
+      this._searchableView.detach();
+    this._searchableView = new UI.SearchableView(mainView);
+    this._searchableView.setMinimumSize(0, 100);
+    this._searchableView.element.classList.add('searchable-view');
+    this._searchableView.show(this._timelinePane.element);
+    this._tabbedPane.show(this._searchableView.element);
+    mainView.setSearchableView(this._searchableView);
+    if (this._lastViewMode !== viewMode) {
+      this._lastViewMode = viewMode;
+      this._searchableView.cancelSearch();
     }
 
     this.doResize();
@@ -638,7 +646,6 @@ Timeline.TimelinePanel = class extends UI.Panel {
       this._detailsView.setModel(model);
 
     this.select(null);
-    this._updateSearchHighlight(false, true);
     if (this._flameChart)
       this._flameChart.resizeToPreferredHeights();
   }
@@ -681,24 +688,27 @@ Timeline.TimelinePanel = class extends UI.Panel {
     }
 
     var learnMoreNode = UI.createExternalLink(
-        'https://developers.google.com/web/tools/chrome-devtools/evaluate-performance/', Common.UIString('Learn more'));
-    var recordNode =
+        'https://developers.google.com/web/tools/chrome-devtools/evaluate-performance/', Common.UIString('Learn\xa0more'));
+    var recordKey =
         encloseWithTag('b', UI.shortcutRegistry.shortcutDescriptorsForAction('timeline.toggle-recording')[0].name);
-    var reloadNode = encloseWithTag('b', UI.shortcutRegistry.shortcutDescriptorsForAction('main.reload')[0].name);
+    var reloadKey = encloseWithTag('b', UI.shortcutRegistry.shortcutDescriptorsForAction('main.reload')[0].name);
     var navigateNode = encloseWithTag('b', Common.UIString('WASD'));
 
     this._landingPage = new UI.VBox();
     this._landingPage.contentElement.classList.add('timeline-landing-page', 'fill');
     var centered = this._landingPage.contentElement.createChild('div');
 
-    centered.createChild('p').appendChild(UI.formatLocalized(
-        'To capture a new recording, click the record button or hit %s.%s' +
-            'To evaluate the page load, click the reload button or hit %s to record the reload.',
-        [recordNode, createElement('br'), reloadNode]));
+    var recordButton = UI.Toolbar.createActionButton(this._toggleRecordAction).element;
+    var reloadButton = UI.Toolbar.createActionButtonForId('main.reload').element;
 
     centered.createChild('p').appendChild(UI.formatLocalized(
-        'After recording, select an area of interest in the overview by dragging. ' +
-            'Then, zoom and pan the timeline with the mousewheel or %s keys. %s',
+        'Click the record button %s or hit %s to capture a new recording.\n' +
+        'Click the reload button %s or hit %s to record and evaluate the page load.',
+        [recordButton, recordKey, reloadButton, reloadKey]));
+
+    centered.createChild('p').appendChild(UI.formatLocalized(
+        'After recording, select an area of interest in the overview by dragging.\n' +
+        'Then, zoom and pan the timeline with the mousewheel or %s keys.\n%s',
         [navigateNode, learnMoreNode]));
 
     var cpuProfilerHintSetting = Common.settings.createSetting('timelineShowProfilerHint', true);
@@ -748,6 +758,13 @@ Timeline.TimelinePanel = class extends UI.Panel {
   loadingProgress(progress) {
     if (typeof progress === 'number')
       this._statusPane.updateProgressBar(Common.UIString('Received'), progress * 100);
+  }
+
+  /**
+   * @override
+   */
+  processingStarted() {
+    this._statusPane.updateStatus(Common.UIString('Processing profile\u2026'));
   }
 
   /**
@@ -835,139 +852,6 @@ Timeline.TimelinePanel = class extends UI.Panel {
         return;
       this._stopRecording();
     }
-  }
-
-  // UI.Searchable implementation
-
-  /**
-   * @override
-   */
-  jumpToNextSearchResult() {
-    if (!this._searchResults || !this._searchResults.length)
-      return;
-    var index = this._selectedSearchResult ? this._searchResults.indexOf(this._selectedSearchResult) : -1;
-    this._jumpToSearchResult(index + 1);
-  }
-
-  /**
-   * @override
-   */
-  jumpToPreviousSearchResult() {
-    if (!this._searchResults || !this._searchResults.length)
-      return;
-    var index = this._selectedSearchResult ? this._searchResults.indexOf(this._selectedSearchResult) : 0;
-    this._jumpToSearchResult(index - 1);
-  }
-
-  /**
-   * @override
-   * @return {boolean}
-   */
-  supportsCaseSensitiveSearch() {
-    return false;
-  }
-
-  /**
-   * @override
-   * @return {boolean}
-   */
-  supportsRegexSearch() {
-    return false;
-  }
-
-  /**
-   * @param {number} index
-   */
-  _jumpToSearchResult(index) {
-    this._selectSearchResult((index + this._searchResults.length) % this._searchResults.length);
-    this._currentViews[0].highlightSearchResult(this._selectedSearchResult, this._searchRegex, true);
-  }
-
-  /**
-   * @param {number} index
-   */
-  _selectSearchResult(index) {
-    this._selectedSearchResult = this._searchResults[index];
-    this._searchableView.updateCurrentMatchIndex(index);
-  }
-
-  _clearHighlight() {
-    this._currentViews[0].highlightSearchResult(null);
-  }
-
-  /**
-   * @param {boolean} revealRecord
-   * @param {boolean} shouldJump
-   * @param {boolean=} jumpBackwards
-   */
-  _updateSearchHighlight(revealRecord, shouldJump, jumpBackwards) {
-    if (!this._searchRegex) {
-      this._clearHighlight();
-      return;
-    }
-
-    if (!this._searchResults)
-      this._updateSearchResults(shouldJump, jumpBackwards);
-    this._currentViews[0].highlightSearchResult(this._selectedSearchResult, this._searchRegex, revealRecord);
-  }
-
-  /**
-   * @param {boolean} shouldJump
-   * @param {boolean=} jumpBackwards
-   */
-  _updateSearchResults(shouldJump, jumpBackwards) {
-    if (!this._searchRegex)
-      return;
-
-    // FIXME: search on all threads.
-    var events = this._performanceModel ? this._performanceModel.timelineModel().mainThreadEvents() : [];
-    var filters = this._filters.concat([new Timeline.TimelineFilters.RegExp(this._searchRegex)]);
-    var matches = [];
-    for (var index = events.lowerBound(this._windowStartTime, (time, event) => time - event.startTime);
-         index < events.length; ++index) {
-      var event = events[index];
-      if (event.startTime > this._windowEndTime)
-        break;
-      if (TimelineModel.TimelineModel.isVisible(filters, event))
-        matches.push(event);
-    }
-
-    var matchesCount = matches.length;
-    if (matchesCount) {
-      this._searchResults = matches;
-      this._searchableView.updateSearchMatchesCount(matchesCount);
-
-      var selectedIndex = matches.indexOf(this._selectedSearchResult);
-      if (shouldJump && selectedIndex === -1)
-        selectedIndex = jumpBackwards ? this._searchResults.length - 1 : 0;
-      this._selectSearchResult(selectedIndex);
-    } else {
-      this._searchableView.updateSearchMatchesCount(0);
-      delete this._selectedSearchResult;
-    }
-  }
-
-  /**
-   * @override
-   */
-  searchCanceled() {
-    this._clearHighlight();
-    delete this._searchResults;
-    delete this._selectedSearchResult;
-    delete this._searchRegex;
-  }
-
-  /**
-   * @override
-   * @param {!UI.SearchableView.SearchConfig} searchConfig
-   * @param {boolean} shouldJump
-   * @param {boolean=} jumpBackwards
-   */
-  performSearch(searchConfig, shouldJump, jumpBackwards) {
-    var query = searchConfig.query;
-    this._searchRegex = createPlainTextSearchRegex(query, 'i');
-    delete this._searchResults;
-    this._updateSearchHighlight(true, shouldJump, jumpBackwards);
   }
 
   /**
@@ -1272,13 +1156,6 @@ Timeline.TimelineModeView.prototype = {
    * @param {?Timeline.PerformanceModel} model
    */
   setModel(model) {},
-
-  /**
-   * @param {?SDK.TracingModel.Event} event
-   * @param {string=} regex
-   * @param {boolean=} select
-   */
-  highlightSearchResult(event, regex, select) {},
 
   /**
    * @param {number} startTime

@@ -3496,7 +3496,7 @@ Protocol.DOMDebugger.DOMBreakpointType = {
     NodeRemoved: "node-removed"
 };
 
-/** @typedef {!{type:(string), useCapture:(boolean), passive:(boolean), once:(boolean), scriptId:(Protocol.Runtime.ScriptId), lineNumber:(number), columnNumber:(number), handler:(Protocol.Runtime.RemoteObject|undefined), originalHandler:(Protocol.Runtime.RemoteObject|undefined), removeFunction:(Protocol.Runtime.RemoteObject|undefined), backendNodeId:(Protocol.DOM.BackendNodeId|undefined)}} */
+/** @typedef {!{type:(string), useCapture:(boolean), passive:(boolean), once:(boolean), scriptId:(Protocol.Runtime.ScriptId), lineNumber:(number), columnNumber:(number), handler:(Protocol.Runtime.RemoteObject|undefined), originalHandler:(Protocol.Runtime.RemoteObject|undefined), backendNodeId:(Protocol.DOM.BackendNodeId|undefined)}} */
 Protocol.DOMDebugger.EventListener;
 /** @interface */
 Protocol.DOMDebuggerDispatcher = function() {};
@@ -4881,6 +4881,7 @@ Protocol.Log.ViolationSettingName = {
     LongLayout: "longLayout",
     BlockedEvent: "blockedEvent",
     BlockedParser: "blockedParser",
+    DiscouragedAPIUse: "discouragedAPIUse",
     Handler: "handler",
     RecurringHandler: "recurringHandler"
 };

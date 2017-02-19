@@ -178,7 +178,7 @@ Workspace.UISourceCode = class extends Common.Object {
   }
 
   remove() {
-    this._project.deleteFile(this.url());
+    this._project.deleteFile(this);
   }
 
   /**
