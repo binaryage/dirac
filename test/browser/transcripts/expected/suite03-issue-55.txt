@@ -32,7 +32,6 @@ devtools #1      setDiracPromptMode('status')
 devtools #1      setDiracPromptStatusContent('Disconnected')
 devtools #1      init-repl!
 devtools #1      setDiracPromptStatusContent('Checking for Dirac Runtime presence in your app...')
-automate #1      switch-prompt-to-dirac!
 devtools #1      setDiracPromptStatusContent('Dirac Agent connected. Bootstrapping ClojureScript REPL...')
 devtools #1      setDiracPromptMode('edit')
 automate #1      count-internal-dirac-errors
@@ -41,5 +40,5 @@ automate #1      close-devtools!
 extension        handling command: close-dirac-devtools
 extension        unregister devtools #1
 automate         close-scenario! ["scenario-tab#1"]
-summary          Automated 9 actions with 2 check-points containing 1 assertions.
+summary          Automated 8 actions with 2 check-points containing 1 assertions.
                  0 failures, 0 errors.

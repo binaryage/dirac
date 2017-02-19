@@ -12,7 +12,5 @@
         (<!* a/switch-prompt-to-dirac!)
         (<!* a/wait-for-prompt-to-enter-edit-mode)
         (<!* a/trigger! :reload)
-        (<! (timeout 3000))
-        (<!* a/switch-prompt-to-dirac!)
         (<!* a/wait-for-prompt-to-enter-edit-mode)
         (is (zero? (<!* a/count-internal-dirac-errors)))))))
