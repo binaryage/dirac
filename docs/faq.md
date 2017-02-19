@@ -144,3 +144,7 @@ Dirac DevTools needs to connect to a debugger to inspect target tab running your
 There is a fundamental limitation in current [Chrome debugger protocol](https://developer.chrome.com/devtools/docs/debugger-protocol) 
 implementation that only one debugger client can be attached at time (see [Simultaneous protocol clients](https://developer.chrome.com/devtools/docs/debugger-protocol#simultaneous)). 
 If you open internal DevTools or have some other debugger client already connected, Dirac won't be able to connect and will report this error.
+
+### Is it possible to use Dirac with Node.js projects?
+
+Yes! Please read [the documentation here](https://github.com/binaryage/dirac/blob/master/docs/node.md). 
