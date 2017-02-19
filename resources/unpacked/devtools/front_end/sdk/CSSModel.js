@@ -52,7 +52,7 @@ SDK.CSSModel = class extends SDK.SDKModel {
     /** @type {!Map.<string, !Object.<!Protocol.Page.FrameId, !Array.<!Protocol.CSS.StyleSheetId>>>} */
     this._styleSheetIdsForURL = new Map();
 
-    /** @type {!Map.<!SDK.CSSStyleSheetHeader, !Promise<string>>} */
+    /** @type {!Map.<!SDK.CSSStyleSheetHeader, !Promise<?string>>} */
     this._originalStyleSheetText = new Map();
 
     /** @type {!Multimap<string, !Protocol.CSS.StyleSheetId>} */
@@ -784,12 +784,12 @@ SDK.CSSModel = class extends SDK.SDKModel {
 
   /**
    * @param {!Protocol.CSS.StyleSheetId} styleSheetId
-   * @return {!Promise<string>}
+   * @return {!Promise<?string>}
    */
   _ensureOriginalStyleSheetText(styleSheetId) {
     var header = this.styleSheetHeaderForId(styleSheetId);
     if (!header)
-      return Promise.resolve('');
+      return Promise.resolve(/** @type {?string} */ (null));
     var promise = this._originalStyleSheetText.get(header);
     if (!promise) {
       promise = this.getStyleSheetText(header.id);
@@ -807,7 +807,7 @@ SDK.CSSModel = class extends SDK.SDKModel {
 
   /**
    * @param {!SDK.CSSStyleSheetHeader} header
-   * @return {!Promise<string>}
+   * @return {!Promise<?string>}
    */
   originalStyleSheetText(header) {
     return this._ensureOriginalStyleSheetText(header.id);
@@ -909,24 +909,23 @@ SDK.CSSModel = class extends SDK.SDKModel {
 
   /**
    * @param {!Protocol.CSS.StyleSheetId} styleSheetId
-   * @return {!Promise<string>}
+   * @return {!Promise<?string>}
    */
   getStyleSheetText(styleSheetId) {
     /**
      * @param {?Protocol.Error} error
      * @param {?string} text
-     * @return {string}
+     * @return {?string}
      */
     function textCallback(error, text) {
       if (error || text === null) {
         console.error('Failed to get text for stylesheet ' + styleSheetId + ': ' + error);
-        text = '';
-        // Fall through.
+        return null;
       }
       return SDK.CSSModel.trimSourceURL(text);
     }
 
-    return this._agent.getStyleSheetText(styleSheetId, textCallback).catchException(/** @type {string} */ (''));
+    return this._agent.getStyleSheetText(styleSheetId, textCallback).catchException(/** @type {?string} */ (null));
   }
 
   _resetStyleSheets() {
@@ -1036,7 +1035,7 @@ SDK.CSSLocation = class {
    * @param {number=} columnNumber
    */
   constructor(header, lineNumber, columnNumber) {
-    this._header = header;
+    this._cssModel = header.cssModel();
     this.styleSheetId = header.id;
     this.url = header.resourceURL();
     this.lineNumber = lineNumber;
@@ -1047,14 +1046,14 @@ SDK.CSSLocation = class {
    * @return {!SDK.CSSModel}
    */
   cssModel() {
-    return this._header.cssModel();
+    return this._cssModel;
   }
 
   /**
-   * @return {!SDK.CSSStyleSheetHeader}
+   * @return {?SDK.CSSStyleSheetHeader}
    */
   header() {
-    return this._header;
+    return this._cssModel.styleSheetHeaderForId(this.styleSheetId);
   }
 };
 
