@@ -334,7 +334,7 @@ Console.DiracPromptWithHistory = class extends UI.TextPrompt {
       }
     }
 
-    Components.JavaScriptAutocomplete.completionsForExpression(expressionString, prefix, force).then(completionsReadyCallback.bind(this, expressionString, prefix));
+    ObjectUI.JavaScriptAutocomplete.completionsForExpression(expressionString, prefix, force).then(completionsReadyCallback.bind(this, expressionString, prefix));
   }
 
   /**

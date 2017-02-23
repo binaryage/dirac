@@ -117,8 +117,8 @@ ObjectUI.ObjectPropertiesSection = class extends UI.TreeOutlineInShadow {
    */
   static CompareProperties(propertyA, propertyB) {
     if (dirac.hasClusteredLocals) {
-      var clusterA = Components.ObjectPropertiesSection.PropertyCluster(propertyA);
-      var clusterB = Components.ObjectPropertiesSection.PropertyCluster(propertyB);
+      var clusterA = ObjectUI.ObjectPropertiesSection.PropertyCluster(propertyA);
+      var clusterB = ObjectUI.ObjectPropertiesSection.PropertyCluster(propertyB);
 
       if (clusterA > clusterB) {
         return 1;
@@ -627,7 +627,7 @@ ObjectUI.ObjectPropertyTreeElement = class extends UI.TreeElement {
       property.parentObject = value;
 
       if (dirac.hasClusteredLocals) {
-        property._cluster = Components.ObjectPropertiesSection.PropertyCluster(property);
+        property._cluster = ObjectUI.ObjectPropertiesSection.PropertyCluster(property);
         if (previousProperty && property._cluster != previousProperty._cluster) {
           property._afterClusterBoundary = true;
           previousProperty._beforeClusterBoundary = true;
