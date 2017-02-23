@@ -325,6 +325,12 @@ def generate_namespace_externs(modules_by_name):
     namespace_externs_path = to_platform_path(namespace_externs_file.name)
     return namespace_externs_path
 
+def generate_namespace_externs_to_file(path):
+    loader = modular_build.DescriptorLoader(devtools_frontend_path)
+    descriptors = loader.load_applications(application_descriptors)
+    modules_by_name = descriptors.modules
+    tmp_namespace_externs_path = generate_namespace_externs(modules_by_name)
+    os.rename(tmp_namespace_externs_path, path)
 
 def main():
     errors_found = False

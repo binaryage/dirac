@@ -58,6 +58,7 @@ NOTIFY_DIR="$ROOT/.notify"
 PROTOCOL_JSON_FILE="$CHROMIUM_MIRROR_WEBKIT_SOURCE_BUILD_DIR/gen/blink/core/inspector/protocol.json"
 #PROTOCOL_EXTERNS_OUTPUT_FILE="$DEVTOOLS_ROOT/front_end/protocol_externs.js" ! compile_frontend.py will delete this file
 PROTOCOL_EXTERNS_OUTPUT_FILE="$DEVTOOLS_ROOT/front_end/generated_protocol_externs.js" # filename must differ from protocol_externs.js
+DEVTOOLS_NAMESPACES_EXTERNS_FILE="$DEVTOOLS_ROOT/front_end/generated_namespaces_externs.js"
 BROWSER_PROTOCOL_JSON_FILE="$CHROMIUM_MIRROR_WEBKIT_SOURCE_DIR/core/inspector/browser_protocol.json"
 V8_PROTOCOL_JSON_FILE="$CHROMIUM_MIRROR_DIR/v8/src/inspector/js_protocol.json"
 PEON_DIR="$SCRIPTS/peon"
