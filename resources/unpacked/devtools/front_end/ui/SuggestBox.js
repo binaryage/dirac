@@ -132,7 +132,7 @@ UI.SuggestBox = class {
     if (this.visible())
       return;
     // TODO(dgozman): take document as a parameter.
-    this._glassPane.showGlassPane(document);
+    this._glassPane.show(document);
     this._rowHeight =
         UI.measurePreferredSize(this.createElementForItem({text: '1', subtitle: '12'}), this._element).height;
   }
@@ -141,7 +141,7 @@ UI.SuggestBox = class {
     if (!this.visible())
       return;
     this._userInteracted = false;
-    this._glassPane.hideGlassPane();
+    this._glassPane.hide();
   }
 
   /**

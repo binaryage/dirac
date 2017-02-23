@@ -153,7 +153,7 @@ Profiler.HeapSnapshotView = class extends UI.SimpleView {
 
     this._selectedSizeText = new UI.ToolbarText();
 
-    this._popoverHelper = new Components.ObjectPopoverHelper(
+    this._popoverHelper = new ObjectUI.ObjectPopoverHelper(
         this.element, this._getHoverAnchor.bind(this), this._resolveObjectForPopover.bind(this), undefined, true);
 
     this._currentPerspectiveIndex = 0;
@@ -260,8 +260,6 @@ Profiler.HeapSnapshotView = class extends UI.SimpleView {
   willHide() {
     this._currentSearchResultIndex = -1;
     this._popoverHelper.hidePopover();
-    if (this.helpPopover && this.helpPopover.isShowing())
-      this.helpPopover.hide();
   }
 
   /**
@@ -2000,7 +1998,7 @@ Profiler.HeapTrackingOverviewGrid.OverviewCalculator = class {
 Profiler.HeapSnapshotStatisticsView = class extends UI.VBox {
   constructor() {
     super();
-    this.setMinimumSize(50, 25);
+    this.element.classList.add('heap-snapshot-statistics-view');
     this._pieChart = new PerfUI.PieChart(150, Profiler.HeapSnapshotStatisticsView._valueFormatter, true);
     this._pieChart.element.classList.add('heap-snapshot-stats-pie-chart');
     this.element.appendChild(this._pieChart.element);

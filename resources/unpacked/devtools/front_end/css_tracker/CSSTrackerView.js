@@ -2,6 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+/** @typedef {{range: !Protocol.CSS.SourceRange, wasUsed: boolean}} */
+CSSTracker.RangeUsage;
+
+/** @typedef {{styleSheetHeader: !SDK.CSSStyleSheetHeader, ranges: !Array<!CSSTracker.RangeUsage>}} */
+CSSTracker.StyleSheetUsage;
+
+/** @typedef {{url: string, totalSize: number, unusedSize: number, usedSize: number,
+ *      ranges: !Array<!CSSTracker.RangeUsage>}} */
+CSSTracker.CoverageInfo;
+
 CSSTracker.CSSTrackerView = class extends UI.VBox {
   constructor() {
     super(true);
@@ -22,8 +32,7 @@ CSSTracker.CSSTrackerView = class extends UI.VBox {
 
     this._cssResultsElement = this.contentElement.createChild('div', 'css-results');
     this._progressElement = this._cssResultsElement.createChild('div', 'progress-view');
-    this._treeOutline = new UI.TreeOutlineInShadow();
-    this._treeOutline.registerRequiredCSS('css_tracker/unusedRulesTree.css');
+    this._listView = new CSSTracker.CSSTrackerListView();
 
     this._statusToolbarElement = this.contentElement.createChild('div', 'css-toolbar-summary');
     this._statusMessageElement = this._statusToolbarElement.createChild('div', 'css-message');
@@ -35,11 +44,11 @@ CSSTracker.CSSTrackerView = class extends UI.VBox {
     Workspace.workspace.uiSourceCodes().forEach(
         uiSourceCode => uiSourceCode.removeDecorationsForType(CSSTracker.CSSTrackerView.LineDecorator.type));
 
+    this._listView.detach();
     this._cssResultsElement.removeChildren();
     this._progressElement.textContent = '';
     this._cssResultsElement.appendChild(this._progressElement);
 
-    this._treeOutline.removeChildren();
     this._statusMessageElement.textContent = '';
   }
 
@@ -90,271 +99,124 @@ CSSTracker.CSSTrackerView = class extends UI.VBox {
     /**
      * @param {!Array<!SDK.CSSModel.RuleUsage>} ruleUsageList
      * @this {!CSSTracker.CSSTrackerView}
-     * @return {!Promise<!Array<!CSSTracker.StyleSheetUsage>>}
+     * @return {!Promise<!Array<!CSSTracker.CoverageInfo>>}
      */
     function processRuleList(ruleUsageList) {
-      /** @type {!Map<?SDK.CSSStyleSheetHeader, !CSSTracker.StyleSheetUsage>} */
+      /** @type {!Map<?SDK.CSSStyleSheetHeader, !Array<!CSSTracker.RangeUsage>>} */
       var rulesByStyleSheet = new Map();
       for (var rule of ruleUsageList) {
         var styleSheetHeader = cssModel.styleSheetHeaderForId(rule.styleSheetId);
-        var entry = rulesByStyleSheet.get(styleSheetHeader);
-        if (!entry) {
-          entry = {styleSheetHeader: styleSheetHeader, rules: []};
-          rulesByStyleSheet.set(styleSheetHeader, entry);
+        var ranges = rulesByStyleSheet.get(styleSheetHeader);
+        if (!ranges) {
+          ranges = [];
+          rulesByStyleSheet.set(styleSheetHeader, ranges);
         }
-        entry.rules.push(rule);
+        ranges.push({range: rule.range, wasUsed: rule.wasUsed});
       }
-      return Promise.all(Array.from(
-          rulesByStyleSheet.values(),
-          entry => this._populateSourceInfo(/** @type {!CSSTracker.StyleSheetUsage} */ (entry))));
+      return Promise.all(
+          Array.from(rulesByStyleSheet.entries(), entry => this._convertToCoverageInfo(entry[0], entry[1])));
     }
 
     /**
-     * @param {!Array<!CSSTracker.StyleSheetUsage>} styleSheetUsages
+     * @param {!Array<!CSSTracker.CoverageInfo>} coverageInfo
      * @this {!CSSTracker.CSSTrackerView}
      */
-    function updateViews(styleSheetUsages) {
-      this._updateStats(styleSheetUsages);
-      this._updateGutter(styleSheetUsages);
-      this._updateTree(styleSheetUsages);
+    function updateViews(coverageInfo) {
+      coverageInfo = coalesceByURL(coverageInfo);
+      this._updateStats(coverageInfo);
+      this._updateGutter(coverageInfo);
+      this._cssResultsElement.removeChildren();
+      this._listView.update(coverageInfo);
+      this._listView.show(this._cssResultsElement);
+    }
+
+    /**
+     * @param {!Array<!CSSTracker.CoverageInfo>} coverageInfo
+     * @return {!Array<!CSSTracker.CoverageInfo>}
+     */
+    function coalesceByURL(coverageInfo) {
+      coverageInfo.sort((a, b) => (a.url || '').localeCompare(b.url));
+      var result = [];
+      for (var entry of coverageInfo) {
+        if (!entry.url)
+          continue;
+        if (result.length && result.peekLast().url === entry.url) {
+          var lastEntry = result.peekLast();
+          lastEntry.size += entry.size;
+          lastEntry.usedSize += entry.usedSize;
+          lastEntry.unusedSize += entry.unusedSize;
+        } else {
+          result.push(entry);
+        }
+      }
+      return result;
     }
   }
 
   /**
-   * @param {!CSSTracker.StyleSheetUsage} styleSheetUsage
-   * @return {!Promise<!CSSTracker.StyleSheetUsage>}
+   * @param {!SDK.CSSStyleSheetHeader} styleSheetHeader
+   * @param {!Array<!CSSTracker.RangeUsage>} ranges
+   * @return {!Promise<!CSSTracker.CoverageInfo>}
    */
-  _populateSourceInfo(styleSheetUsage) {
-    if (!styleSheetUsage.styleSheetHeader)
-      return Promise.resolve(styleSheetUsage);
-    var ruleIndex =
-        new Map(styleSheetUsage.rules.map(rule => [`${rule.range.startLine}.${rule.range.startColumn}`, rule]));
-
-    return new Promise(fulfill => {
-      styleSheetUsage.styleSheetHeader.requestContent().then(
-          content => Common.formatterWorkerPool.parseCSS(content || '', onRules));
-
-      /**
-       * @param {boolean} isLastChunk
-       * @param {!Array<!Common.FormatterWorkerPool.CSSStyleRule>} rules
-       */
-      function onRules(isLastChunk, rules) {
-        for (var rule of rules) {
-          if (!rule.styleRange)
-            continue;
-          var entry = ruleIndex.get(`${rule.styleRange.startLine}.${rule.styleRange.startColumn}`);
-          if (entry)
-            entry.selector = rule.selectorText;
-        }
-        if (isLastChunk)
-          fulfill(styleSheetUsage);
+  _convertToCoverageInfo(styleSheetHeader, ranges) {
+    var coverageInfo = {
+      url: styleSheetHeader.sourceURL,
+      ranges: ranges,
+    };
+    return styleSheetHeader.requestContent().then(content => {
+      if (!content)
+        return coverageInfo;
+      var text = new Common.Text(content);
+      var usedSize = 0;
+      var unusedSize = 0;
+      for (var entry of ranges) {
+        var range = entry.range;
+        var size = text.offsetFromPosition(range.endLine, range.endColumn) -
+            text.offsetFromPosition(range.startLine, range.startColumn);
+        if (entry.wasUsed)
+          usedSize += size;
+        else
+          unusedSize += size;
       }
+      coverageInfo.size = content.length;
+      coverageInfo.usedSize = usedSize;
+      coverageInfo.unusedSize = unusedSize;
+
+      return coverageInfo;
     });
   }
 
   /**
-   * @param {!Array<!CSSTracker.StyleSheetUsage>} styleSheetUsage
+   * @param {!Array<!CSSTracker.CoverageInfo>} coverageInfo
    */
-  _updateStats(styleSheetUsage) {
+  _updateStats(coverageInfo) {
     var total = 0;
     var unused = 0;
-    for (var styleSheet of styleSheetUsage) {
-      total += styleSheet.rules.length;
-      unused += styleSheet.rules.reduce((count, rule) => rule.wasUsed ? count : count + 1, 0);
+    for (var info of coverageInfo) {
+      total += info.size || 0;
+      unused += info.unusedSize || 0;
     }
     var percentUnused = total ? Math.round(100 * unused / total) : 0;
-    if (unused === 1) {
-      this._statusMessageElement.textContent =
-          Common.UIString('%d CSS rule is not used. (%d%%)', unused, percentUnused);
-    } else {
-      this._statusMessageElement.textContent =
-          Common.UIString('%d CSS rules are not used. (%d%%)', unused, percentUnused);
-    }
+    this._statusMessageElement.textContent = Common.UIString(
+        '%s of %s bytes are not used. (%d%%)', Number.bytesToString(unused), Number.bytesToString(total),
+        percentUnused);
   }
 
   /**
-   * @param {!Array<!CSSTracker.StyleSheetUsage>} styleSheetUsages
+   * @param {!Array<!CSSTracker.CoverageInfo>} coverageInfo
    */
-  _updateGutter(styleSheetUsages) {
-    for (var styleSheet of styleSheetUsages) {
-      if (!styleSheet.styleSheetHeader)
-        continue;
-      var url = styleSheet.styleSheetHeader.sourceURL;
-      var uiSourceCode = url && Workspace.workspace.uiSourceCodeForURL(url);
+  _updateGutter(coverageInfo) {
+    for (var info of coverageInfo) {
+      var uiSourceCode = info.url && Workspace.workspace.uiSourceCodeForURL(info.url);
       if (!uiSourceCode)
         continue;
-      for (var rule of styleSheet.rules) {
-        var gutterRange = Common.TextRange.fromObject(rule.range);
+      for (var range of info.ranges) {
+        var gutterRange = Common.TextRange.fromObject(range.range);
         if (gutterRange.startColumn)
           gutterRange.startColumn--;
-        uiSourceCode.addDecoration(gutterRange, CSSTracker.CSSTrackerView.LineDecorator.type, rule.wasUsed);
+        uiSourceCode.addDecoration(gutterRange, CSSTracker.CSSTrackerView.LineDecorator.type, range.wasUsed);
       }
     }
-  }
-
-  /**
-   * @param {!Array<!CSSTracker.StyleSheetUsage>} styleSheetUsages
-   */
-  _updateTree(styleSheetUsages) {
-    this._cssResultsElement.removeChildren();
-    this._cssResultsElement.appendChild(this._treeOutline.element);
-
-    for (var sheet of styleSheetUsages) {
-      var unusedRuleCount = sheet.rules.reduce((count, rule) => rule.wasUsed ? count : count + 1, 0);
-      if (sheet.styleSheetHeader) {
-        var url = sheet.styleSheetHeader.sourceURL;
-        if (!url)
-          continue;
-
-        var styleSheetTreeElement = new CSSTracker.CSSTrackerView.StyleSheetTreeElement(url, sheet.rules);
-        this._treeOutline.appendChild(styleSheetTreeElement);
-        continue;
-      }
-      if (!unusedRuleCount)
-        continue;
-      var removedStyleSheetStats = unusedRuleCount === 1 ?
-          Common.UIString('1 unused rule in a removed style sheet.') :
-          Common.UIString('%d unused rules in removed style sheets.', unusedRuleCount);
-
-      var treeElement = new UI.TreeElement(Common.UIString('Unknown style sheets'), true);
-      treeElement.toggleOnClick = true;
-      treeElement.selectable = false;
-
-      var stats = new UI.TreeElement(removedStyleSheetStats, false);
-      stats.selectable = false;
-      treeElement.appendChild(stats);
-      this._treeOutline.appendChild(treeElement);
-    }
-  }
-};
-
-/** @typedef {{range: !Protocol.CSS.SourceRange,
- *              selector: (string|undefined),
- *              wasUsed: boolean}}
- */
-CSSTracker.RuleUsage;
-
-/** @typedef {{styleSheetHeader: ?SDK.CSSStyleSheetHeader, rules: !Array<!CSSTracker.RuleUsage>}} */
-CSSTracker.StyleSheetUsage;
-
-CSSTracker.CSSTrackerView._rulesShownAtOnce = 20;
-
-CSSTracker.CSSTrackerView.StyleSheetTreeElement = class extends UI.TreeElement {
-  /**
-   * @param {string} url
-   * @param {!Array<!CSSTracker.RuleUsage>} ruleList
-   */
-  constructor(url, ruleList) {
-    super('', true);
-
-    this._uiSourceCode = Workspace.workspace.uiSourceCodeForURL(url);
-
-    /** @type {!Array<!CSSTracker.RuleUsage>} */
-    this._unusedRules = ruleList.filter(rule => !rule.wasUsed);
-
-    var lastLineNumber = 0;
-    for (var i = this._unusedRules.length - 1; i >= 0; --i) {
-      if (this._unusedRules[i].range) {
-        lastLineNumber = this._unusedRules[i].range.startLine;
-        break;
-      }
-    }
-    this._numberOfSpaces = lastLineNumber.toString().length + 1;
-
-    this._percentUnused = Math.round(100 * this._unusedRules.length / ruleList.length);
-
-    this.toggleOnClick = true;
-    this.selectable = false;
-
-    /** @type {?UI.TreeElement} */
-    this._showAllRulesTreeElement = null;
-
-    var title = createElementWithClass('div', 'rule-result');
-    var titleText;
-    if (this._uiSourceCode)
-      titleText = this._uiSourceCode.fullDisplayName();
-    else
-      titleText = Common.UIString('Style Sheet was removed');
-    title.createChild('span', 'rule-result-file-name').textContent = titleText;
-
-    var rulesCountSpan = title.createChild('span', 'rule-result-matches-count');
-
-    if (this._unusedRules.length === 1) {
-      rulesCountSpan.textContent =
-          Common.UIString('(%d unused rule : %d%%)', this._unusedRules.length, this._percentUnused);
-    } else {
-      rulesCountSpan.textContent =
-          Common.UIString('(%d unused rules : %d%%)', this._unusedRules.length, this._percentUnused);
-    }
-    this.title = title;
-  }
-
-  /**
-   * @override
-   */
-  onpopulate() {
-    var toIndex = Math.min(this._unusedRules.length, CSSTracker.CSSTrackerView._rulesShownAtOnce);
-    this._appendRules(0, toIndex);
-    if (toIndex < this._unusedRules.length)
-      this._appendShowAllRulesButton(toIndex);
-  }
-
-  /**
-   * @param {number} fromIndex
-   * @param {number} toIndex
-   */
-  _appendRules(fromIndex, toIndex) {
-    for (var i = fromIndex; i < toIndex; ++i) {
-      if (!this._uiSourceCode) {
-        var rule = this._unusedRules[i];
-        var contentSpan = createElementWithClass('span', 'rule-match-content');
-        contentSpan.textContent = rule.selector;
-        ruleElement.listItemElement.appendChild(contentSpan);
-        continue;
-      }
-
-      var rule = this._unusedRules[i];
-      var lineNumber = rule.range.startLine;
-      var columnNumber = rule.range.startColumn;
-
-      var anchor = Components.Linkifier.linkifyRevealable(this._uiSourceCode.uiLocation(lineNumber, columnNumber), '');
-
-      var lineNumberSpan = createElement('span');
-      lineNumberSpan.classList.add('rule-match-line-number');
-      lineNumberSpan.textContent = numberToStringWithSpacesPadding(lineNumber + 1, this._numberOfSpaces);
-      anchor.appendChild(lineNumberSpan);
-
-      var contentSpan = anchor.createChild('span', 'rule-match-content');
-      contentSpan.textContent = rule.selector;
-
-      var ruleElement = new UI.TreeElement();
-      ruleElement.selectable = true;
-      this.appendChild(ruleElement);
-      ruleElement.listItemElement.className = 'rule-match source-code';
-      ruleElement.listItemElement.appendChild(anchor);
-    }
-  }
-
-  /**
-   * @param {number} startMatchIndex
-   */
-  _appendShowAllRulesButton(startMatchIndex) {
-    var rulesLeftCount = this._unusedRules.length - startMatchIndex;
-    var button = UI.createTextButton('', this._showMoreRulesElementSelected.bind(this, startMatchIndex));
-    button.textContent = Common.UIString('Show all rules (%d more).', rulesLeftCount);
-    this._showAllRulesTreeElement = new UI.TreeElement(button);
-    this._showAllRulesTreeElement.selectable = false;
-    this.appendChild(this._showAllRulesTreeElement);
-  }
-
-  /**
-   * @param {number} startMatchIndex
-   */
-  _showMoreRulesElementSelected(startMatchIndex) {
-    if (!this._showAllRulesTreeElement)
-      return;
-    this.removeChild(this._showAllRulesTreeElement);
-    this._appendRules(startMatchIndex, this._unusedRules.length);
   }
 };
 

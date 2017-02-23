@@ -318,7 +318,7 @@ div.CodeMirror span.CodeMirror-nonmatchingbracket {
 .CodeMirror .text-editor-css-rule-unused-marker {
     text-align: right;
     padding-right: 2px;
-    background-color: red;
+    background-color: #E57373;
 }
 
 .CodeMirror .text-editor-css-rule-unused-marker::after {
@@ -328,7 +328,7 @@ div.CodeMirror span.CodeMirror-nonmatchingbracket {
 .CodeMirror .text-editor-css-rule-used-marker {
     text-align: right;
     padding-right: 2px;
-    background-color: green;
+    background-color: #81C784;
 }
 
 .CodeMirror .text-editor-css-rule-used-marker::after {
@@ -368,27 +368,6 @@ div.CodeMirror span.CodeMirror-nonmatchingbracket {
 .CodeMirror .cm-execution-line .text-editor-value-decoration {
     background-color: transparent;
     opacity: 0.5;
-}
-
-.text-editor-messages-description-container {
-    display: inline-block;
-}
-
-.text-editor-row-message:first-child {
-    border-top-width: 0;
-}
-
-.text-editor-row-message {
-    border-top: 1px solid rgb(215, 215, 215);
-    line-height: 1.2;
-    white-space: nowrap;
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-}
-
-.text-editor-row-message .message-repeat-count {
-    margin-right: 0.5em;
 }
 
 .CodeMirror .text-editor-line-decoration-icon {
