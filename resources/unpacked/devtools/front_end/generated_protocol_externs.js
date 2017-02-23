@@ -176,10 +176,11 @@ Protocol.PageAgent.prototype.invoke_reload = function(obj, opt_callback) {};
 
 /**
  * @param {string} url
+ * @param {string=} opt_referrer
  * @param {function(?Protocol.Error, Protocol.Page.FrameId):void=} opt_callback
  */
-Protocol.PageAgent.prototype.navigate = function(url, opt_callback) {};
-/** @typedef {!{url: string}} obj */
+Protocol.PageAgent.prototype.navigate = function(url, opt_referrer, opt_callback) {};
+/** @typedef {!{url: string, referrer: (string|undefined)}} obj */
 Protocol.PageAgent.prototype.navigate.Request;
 /**
  * @param {!Protocol.PageAgent.prototype.navigate.Request} obj
@@ -427,6 +428,18 @@ Protocol.PageAgent.prototype.captureScreenshot.Request;
 Protocol.PageAgent.prototype.invoke_captureScreenshot = function(obj, opt_callback) {};
 
 /**
+ * @param {function(?Protocol.Error, string):void=} opt_callback
+ */
+Protocol.PageAgent.prototype.printToPDF = function(opt_callback) {};
+/** @typedef {Object|undefined} obj */
+Protocol.PageAgent.prototype.printToPDF.Request;
+/**
+ * @param {!Protocol.PageAgent.prototype.printToPDF.Request} obj
+ * @param {function(?Protocol.Error, string):void=} opt_callback
+ */
+Protocol.PageAgent.prototype.invoke_printToPDF = function(obj, opt_callback) {};
+
+/**
  * @param {string=} opt_format
  * @param {number=} opt_quality
  * @param {number=} opt_maxWidth
@@ -561,14 +574,14 @@ Protocol.PageAgent.prototype.processNavigation.Request;
 Protocol.PageAgent.prototype.invoke_processNavigation = function(obj, opt_callback) {};
 
 /**
- * @param {function(?Protocol.Error, Protocol.Page.LayoutViewport, Protocol.Page.VisualViewport):void=} opt_callback
+ * @param {function(?Protocol.Error, Protocol.Page.LayoutViewport, Protocol.Page.VisualViewport, Protocol.DOM.Rect):void=} opt_callback
  */
 Protocol.PageAgent.prototype.getLayoutMetrics = function(opt_callback) {};
 /** @typedef {Object|undefined} obj */
 Protocol.PageAgent.prototype.getLayoutMetrics.Request;
 /**
  * @param {!Protocol.PageAgent.prototype.getLayoutMetrics.Request} obj
- * @param {function(?Protocol.Error, Protocol.Page.LayoutViewport, Protocol.Page.VisualViewport):void=} opt_callback
+ * @param {function(?Protocol.Error, Protocol.Page.LayoutViewport, Protocol.Page.VisualViewport, Protocol.DOM.Rect):void=} opt_callback
  */
 Protocol.PageAgent.prototype.invoke_getLayoutMetrics = function(obj, opt_callback) {};
 
@@ -5188,6 +5201,54 @@ Protocol.RuntimeAgent.prototype.runScript.Request;
  */
 Protocol.RuntimeAgent.prototype.invoke_runScript = function(obj, opt_callback) {};
 
+/**
+ * @param {function(?Protocol.Error):void=} opt_callback
+ */
+Protocol.RuntimeAgent.prototype.startPreciseCoverage = function(opt_callback) {};
+/** @typedef {Object|undefined} obj */
+Protocol.RuntimeAgent.prototype.startPreciseCoverage.Request;
+/**
+ * @param {!Protocol.RuntimeAgent.prototype.startPreciseCoverage.Request} obj
+ * @param {function(?Protocol.Error):void=} opt_callback
+ */
+Protocol.RuntimeAgent.prototype.invoke_startPreciseCoverage = function(obj, opt_callback) {};
+
+/**
+ * @param {function(?Protocol.Error):void=} opt_callback
+ */
+Protocol.RuntimeAgent.prototype.stopPreciseCoverage = function(opt_callback) {};
+/** @typedef {Object|undefined} obj */
+Protocol.RuntimeAgent.prototype.stopPreciseCoverage.Request;
+/**
+ * @param {!Protocol.RuntimeAgent.prototype.stopPreciseCoverage.Request} obj
+ * @param {function(?Protocol.Error):void=} opt_callback
+ */
+Protocol.RuntimeAgent.prototype.invoke_stopPreciseCoverage = function(obj, opt_callback) {};
+
+/**
+ * @param {function(?Protocol.Error, !Array<Protocol.Runtime.ScriptCoverage>):void=} opt_callback
+ */
+Protocol.RuntimeAgent.prototype.takePreciseCoverage = function(opt_callback) {};
+/** @typedef {Object|undefined} obj */
+Protocol.RuntimeAgent.prototype.takePreciseCoverage.Request;
+/**
+ * @param {!Protocol.RuntimeAgent.prototype.takePreciseCoverage.Request} obj
+ * @param {function(?Protocol.Error, !Array<Protocol.Runtime.ScriptCoverage>):void=} opt_callback
+ */
+Protocol.RuntimeAgent.prototype.invoke_takePreciseCoverage = function(obj, opt_callback) {};
+
+/**
+ * @param {function(?Protocol.Error, !Array<Protocol.Runtime.ScriptCoverage>):void=} opt_callback
+ */
+Protocol.RuntimeAgent.prototype.getBestEffortCoverage = function(opt_callback) {};
+/** @typedef {Object|undefined} obj */
+Protocol.RuntimeAgent.prototype.getBestEffortCoverage.Request;
+/**
+ * @param {!Protocol.RuntimeAgent.prototype.getBestEffortCoverage.Request} obj
+ * @param {function(?Protocol.Error, !Array<Protocol.Runtime.ScriptCoverage>):void=} opt_callback
+ */
+Protocol.RuntimeAgent.prototype.invoke_getBestEffortCoverage = function(obj, opt_callback) {};
+
 /** @typedef {string} */
 Protocol.Runtime.ScriptId;
 
@@ -5322,6 +5383,15 @@ Protocol.Runtime.CallFrame;
 
 /** @typedef {!{description:(string|undefined), callFrames:(!Array<Protocol.Runtime.CallFrame>), parent:(Protocol.Runtime.StackTrace|undefined), promiseCreationFrame:(Protocol.Runtime.CallFrame|undefined)}} */
 Protocol.Runtime.StackTrace;
+
+/** @typedef {!{startLineNumber:(number), startColumnNumber:(number), endLineNumber:(number), endColumnNumber:(number), count:(number)}} */
+Protocol.Runtime.CoverageRange;
+
+/** @typedef {!{functionName:(string), ranges:(!Array<Protocol.Runtime.CoverageRange>)}} */
+Protocol.Runtime.FunctionCoverage;
+
+/** @typedef {!{scriptId:(Protocol.Runtime.ScriptId), url:(string), functions:(!Array<Protocol.Runtime.FunctionCoverage>)}} */
+Protocol.Runtime.ScriptCoverage;
 /** @interface */
 Protocol.RuntimeDispatcher = function() {};
 /**
