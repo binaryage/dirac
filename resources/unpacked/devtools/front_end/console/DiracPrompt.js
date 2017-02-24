@@ -69,7 +69,11 @@ Console.DiracPromptWithHistory = class extends UI.TextPrompt {
    * @return {boolean}
    */
   _isSuggestBoxVisible() {
-    return this._suggestBox && this._suggestBox.visible();
+    if (this._suggestBox) {
+      return this._suggestBox.visible();
+    } else {
+      return false;
+    }
   }
 
   /**
@@ -863,7 +867,7 @@ Console.DiracPromptWithHistory = class extends UI.TextPrompt {
    */
   setSelection(textRange) {
     this._lastSelection = textRange;
-    var pos = TextEditor.CodeMirrorUtils.toPos(textRange);
+    const pos = TextEditor.CodeMirrorUtils.toPos(textRange);
     this._codeMirror.setSelection(pos.start, pos.end);
   }
 
@@ -904,6 +908,7 @@ Console.DiracPromptWithHistory = class extends UI.TextPrompt {
       this.clearAutocomplete();
 
       if (isPrevious) {
+        //noinspection JSCheckFunctionSignatures
         this.setSelection(Common.TextRange.createFromLocation(0, Infinity));
       } else {
         this.moveCaretToEndOfPrompt();
