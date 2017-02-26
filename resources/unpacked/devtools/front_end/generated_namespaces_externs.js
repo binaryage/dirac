@@ -9,8 +9,6 @@ var Audits2 = {};
 /** @type {!Object} */
 var Bindings = {};
 /** @type {!Object} */
-var CSSTracker = {};
-/** @type {!Object} */
 var Cm = {};
 /** @type {!Object} */
 var CmHeadless = {};
@@ -24,6 +22,8 @@ var Common = {};
 var Components = {};
 /** @type {!Object} */
 var CookieTable = {};
+/** @type {!Object} */
+var Coverage = {};
 /** @type {!Object} */
 var DataGrid = {};
 /** @type {!Object} */
@@ -52,6 +52,8 @@ var FormatterWorker = {};
 var HeapSnapshotModel = {};
 /** @type {!Object} */
 var HeapSnapshotWorker = {};
+/** @type {!Object} */
+var Help = {};
 /** @type {!Object} */
 var Host = {};
 /** @type {!Object} */

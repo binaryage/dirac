@@ -5201,54 +5201,6 @@ Protocol.RuntimeAgent.prototype.runScript.Request;
  */
 Protocol.RuntimeAgent.prototype.invoke_runScript = function(obj, opt_callback) {};
 
-/**
- * @param {function(?Protocol.Error):void=} opt_callback
- */
-Protocol.RuntimeAgent.prototype.startPreciseCoverage = function(opt_callback) {};
-/** @typedef {Object|undefined} obj */
-Protocol.RuntimeAgent.prototype.startPreciseCoverage.Request;
-/**
- * @param {!Protocol.RuntimeAgent.prototype.startPreciseCoverage.Request} obj
- * @param {function(?Protocol.Error):void=} opt_callback
- */
-Protocol.RuntimeAgent.prototype.invoke_startPreciseCoverage = function(obj, opt_callback) {};
-
-/**
- * @param {function(?Protocol.Error):void=} opt_callback
- */
-Protocol.RuntimeAgent.prototype.stopPreciseCoverage = function(opt_callback) {};
-/** @typedef {Object|undefined} obj */
-Protocol.RuntimeAgent.prototype.stopPreciseCoverage.Request;
-/**
- * @param {!Protocol.RuntimeAgent.prototype.stopPreciseCoverage.Request} obj
- * @param {function(?Protocol.Error):void=} opt_callback
- */
-Protocol.RuntimeAgent.prototype.invoke_stopPreciseCoverage = function(obj, opt_callback) {};
-
-/**
- * @param {function(?Protocol.Error, !Array<Protocol.Runtime.ScriptCoverage>):void=} opt_callback
- */
-Protocol.RuntimeAgent.prototype.takePreciseCoverage = function(opt_callback) {};
-/** @typedef {Object|undefined} obj */
-Protocol.RuntimeAgent.prototype.takePreciseCoverage.Request;
-/**
- * @param {!Protocol.RuntimeAgent.prototype.takePreciseCoverage.Request} obj
- * @param {function(?Protocol.Error, !Array<Protocol.Runtime.ScriptCoverage>):void=} opt_callback
- */
-Protocol.RuntimeAgent.prototype.invoke_takePreciseCoverage = function(obj, opt_callback) {};
-
-/**
- * @param {function(?Protocol.Error, !Array<Protocol.Runtime.ScriptCoverage>):void=} opt_callback
- */
-Protocol.RuntimeAgent.prototype.getBestEffortCoverage = function(opt_callback) {};
-/** @typedef {Object|undefined} obj */
-Protocol.RuntimeAgent.prototype.getBestEffortCoverage.Request;
-/**
- * @param {!Protocol.RuntimeAgent.prototype.getBestEffortCoverage.Request} obj
- * @param {function(?Protocol.Error, !Array<Protocol.Runtime.ScriptCoverage>):void=} opt_callback
- */
-Protocol.RuntimeAgent.prototype.invoke_getBestEffortCoverage = function(obj, opt_callback) {};
-
 /** @typedef {string} */
 Protocol.Runtime.ScriptId;
 
@@ -5383,15 +5335,6 @@ Protocol.Runtime.CallFrame;
 
 /** @typedef {!{description:(string|undefined), callFrames:(!Array<Protocol.Runtime.CallFrame>), parent:(Protocol.Runtime.StackTrace|undefined), promiseCreationFrame:(Protocol.Runtime.CallFrame|undefined)}} */
 Protocol.Runtime.StackTrace;
-
-/** @typedef {!{startLineNumber:(number), startColumnNumber:(number), endLineNumber:(number), endColumnNumber:(number), count:(number)}} */
-Protocol.Runtime.CoverageRange;
-
-/** @typedef {!{functionName:(string), ranges:(!Array<Protocol.Runtime.CoverageRange>)}} */
-Protocol.Runtime.FunctionCoverage;
-
-/** @typedef {!{scriptId:(Protocol.Runtime.ScriptId), url:(string), functions:(!Array<Protocol.Runtime.FunctionCoverage>)}} */
-Protocol.Runtime.ScriptCoverage;
 /** @interface */
 Protocol.RuntimeDispatcher = function() {};
 /**
@@ -5996,6 +5939,62 @@ Protocol.ProfilerAgent.prototype.stop.Request;
  */
 Protocol.ProfilerAgent.prototype.invoke_stop = function(obj, opt_callback) {};
 
+/**
+ * @param {function(?Protocol.Error):T=} opt_callback
+ * @return {!Promise.<T>}
+ * @template T
+ */
+Protocol.ProfilerAgent.prototype.startPreciseCoverage = function(opt_callback) {};
+/** @typedef {Object|undefined} obj */
+Protocol.ProfilerAgent.prototype.startPreciseCoverage.Request;
+/**
+ * @param {!Protocol.ProfilerAgent.prototype.startPreciseCoverage.Request} obj
+ * @param {function(?Protocol.Error):void=} opt_callback
+ */
+Protocol.ProfilerAgent.prototype.invoke_startPreciseCoverage = function(obj, opt_callback) {};
+
+/**
+ * @param {function(?Protocol.Error):T=} opt_callback
+ * @return {!Promise.<T>}
+ * @template T
+ */
+Protocol.ProfilerAgent.prototype.stopPreciseCoverage = function(opt_callback) {};
+/** @typedef {Object|undefined} obj */
+Protocol.ProfilerAgent.prototype.stopPreciseCoverage.Request;
+/**
+ * @param {!Protocol.ProfilerAgent.prototype.stopPreciseCoverage.Request} obj
+ * @param {function(?Protocol.Error):void=} opt_callback
+ */
+Protocol.ProfilerAgent.prototype.invoke_stopPreciseCoverage = function(obj, opt_callback) {};
+
+/**
+ * @param {function(?Protocol.Error, !Array<Protocol.Profiler.ScriptCoverage>):T} opt_callback
+ * @return {!Promise.<T>}
+ * @template T
+ */
+Protocol.ProfilerAgent.prototype.takePreciseCoverage = function(opt_callback) {};
+/** @typedef {Object|undefined} obj */
+Protocol.ProfilerAgent.prototype.takePreciseCoverage.Request;
+/**
+ * @param {!Protocol.ProfilerAgent.prototype.takePreciseCoverage.Request} obj
+ * @param {function(?Protocol.Error, !Array<Protocol.Profiler.ScriptCoverage>):void=} opt_callback
+ */
+Protocol.ProfilerAgent.prototype.invoke_takePreciseCoverage = function(obj, opt_callback) {};
+
+/**
+ * @param {function(?Protocol.Error, !Array<Protocol.Profiler.ScriptCoverage>):T} opt_callback
+ * @return {!Promise.<T>}
+ * @template T
+ */
+Protocol.ProfilerAgent.prototype.getBestEffortCoverage = function(opt_callback) {};
+/** @typedef {Object|undefined} obj */
+Protocol.ProfilerAgent.prototype.getBestEffortCoverage.Request;
+/**
+ * @param {!Protocol.ProfilerAgent.prototype.getBestEffortCoverage.Request} obj
+ * @param {function(?Protocol.Error, !Array<Protocol.Profiler.ScriptCoverage>):void=} opt_callback
+ */
+Protocol.ProfilerAgent.prototype.invoke_getBestEffortCoverage = function(obj, opt_callback) {};
+
 /** @typedef {!{id:(number), callFrame:(Protocol.Runtime.CallFrame), hitCount:(number|undefined), children:(!Array<number>|undefined), deoptReason:(string|undefined), positionTicks:(!Array<Protocol.Profiler.PositionTickInfo>|undefined)}} */
 Protocol.Profiler.ProfileNode;
 
@@ -6004,6 +6003,15 @@ Protocol.Profiler.Profile;
 
 /** @typedef {!{line:(number), ticks:(number)}} */
 Protocol.Profiler.PositionTickInfo;
+
+/** @typedef {!{startLineNumber:(number), startColumnNumber:(number), endLineNumber:(number), endColumnNumber:(number), count:(number)}} */
+Protocol.Profiler.CoverageRange;
+
+/** @typedef {!{functionName:(string), ranges:(!Array<Protocol.Profiler.CoverageRange>)}} */
+Protocol.Profiler.FunctionCoverage;
+
+/** @typedef {!{scriptId:(Protocol.Runtime.ScriptId), url:(string), functions:(!Array<Protocol.Profiler.FunctionCoverage>)}} */
+Protocol.Profiler.ScriptCoverage;
 /** @interface */
 Protocol.ProfilerDispatcher = function() {};
 /**
