@@ -1190,7 +1190,6 @@ UI.initializeUIUtils = function(document, themeSetting) {
 
   var body = /** @type {!Element} */ (document.body);
   UI.appendStyle(body, 'ui/inspectorStyle.css');
-  UI.appendStyle(body, 'ui/popover.css');
   UI.GlassPane.setContainer(/** @type {!Element} */ (document.body));
 };
 
@@ -1943,7 +1942,7 @@ UI.createExternalLink = function(url, linkText, className, preventClick) {
     a.href = href;
     a.classList.add('devtools-link');
     if (!preventClick) {
-      a.addEventListener('click', (event) => {
+      a.addEventListener('click', event => {
         event.consume(true);
         InspectorFrontendHost.openInNewTab(/** @type {string} */ (href));
       }, false);
