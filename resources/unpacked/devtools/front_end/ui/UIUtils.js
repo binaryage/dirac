@@ -95,9 +95,9 @@ UI.DragHandler = class {
   _createGlassPane() {
     this._glassPaneInUse = true;
     if (!UI.DragHandler._glassPaneUsageCount++) {
-      UI.DragHandler._glassPane = new UI.GlassPane(
-          UI.DragHandler._documentForMouseOut, false /* dimmed */, true /* blockPointerEvents */, event => {});
-      UI.DragHandler._glassPane.show();
+      UI.DragHandler._glassPane = new UI.GlassPane();
+      UI.DragHandler._glassPane.setBlockPointerEvents(true);
+      UI.DragHandler._glassPane.show(UI.DragHandler._documentForMouseOut);
     }
   }
 
@@ -1190,7 +1190,6 @@ UI.initializeUIUtils = function(document, themeSetting) {
 
   var body = /** @type {!Element} */ (document.body);
   UI.appendStyle(body, 'ui/inspectorStyle.css');
-  UI.appendStyle(body, 'ui/popover.css');
   UI.GlassPane.setContainer(/** @type {!Element} */ (document.body));
 };
 
@@ -1946,7 +1945,7 @@ UI.createExternalLink = function(url, linkText, className, preventClick) {
     a.href = href;
     a.classList.add('devtools-link');
     if (!preventClick) {
-      a.addEventListener('click', (event) => {
+      a.addEventListener('click', event => {
         event.consume(true);
         InspectorFrontendHost.openInNewTab(/** @type {string} */ (href));
       }, false);
@@ -2040,24 +2039,25 @@ UI.MaxLengthForDisplayedURLs = 150;
  */
 UI.ConfirmDialog = class extends UI.VBox {
   /**
+   * @param {!Document|!Element} where
    * @param {string} message
    * @param {!Function} callback
    */
-  static show(message, callback) {
+  static show(where, message, callback) {
     var dialog = new UI.Dialog();
-    dialog.setWrapsContent(true);
+    dialog.setSizeBehavior(UI.GlassPane.SizeBehavior.MeasureContent);
     dialog.addCloseButton();
     dialog.setDimmed(true);
     new UI
         .ConfirmDialog(
             message,
             () => {
-              dialog.detach();
+              dialog.hide();
               callback();
             },
-            () => dialog.detach())
-        .show(dialog.element);
-    dialog.show();
+            () => dialog.hide())
+        .show(dialog.contentElement);
+    dialog.show(where);
   }
 
   /**

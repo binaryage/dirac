@@ -44,7 +44,7 @@
         { "name": "sass", "condition": "!v8only" },
         { "name": "accessibility", "condition": "!v8only", "type": "remote" },
         { "name": "animation", "condition": "!v8only" },
-        { "name": "css_tracker", "condition": "!v8only" },
+        { "name": "coverage", "condition": "!v8only" },
         { "name": "screencast", "condition": "remoteFrontend", "type": "remote" },
         { "name": "emulated_devices", "condition": "!v8only" , "type": "remote" },
         { "name": "perf_ui" },
@@ -55,7 +55,9 @@
         { "name": "data_grid" },
         { "name": "heap_snapshot_model" },
         { "name": "network_conditions", "type": "autostart"},
-        { "name": "event_listeners" }
+        { "name": "event_listeners" },
+        { "name": "object_ui", "type": "autostart"},
+        { "name": "help", "type": "autostart"}
     ],
 
     "has_html": true

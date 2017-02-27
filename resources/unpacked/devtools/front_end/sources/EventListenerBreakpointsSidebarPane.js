@@ -24,8 +24,8 @@ Sources.EventListenerBreakpointsSidebarPane = class extends UI.VBox {
     // this._createCategory(Common.UIString("Drag"), ["drag", "drop", "dragstart", "dragend", "dragenter", "dragleave", "dragover"]);
     this._createCategory(
         Common.UIString('Animation'), ['requestAnimationFrame', 'cancelAnimationFrame', 'animationFrameFired'], true);
-    this._createCategory(Common.UIString('Canvas'), ['canvasContextCreated', 'webglErrorFired', 'webglWarningFired'],
-        true);
+    this._createCategory(
+        Common.UIString('Canvas'), ['canvasContextCreated', 'webglErrorFired', 'webglWarningFired'], true);
     this._createCategory(
         Common.UIString('Clipboard'), ['copy', 'cut', 'paste', 'beforecopy', 'beforecut', 'beforepaste']);
     this._createCategory(
@@ -37,7 +37,8 @@ Sources.EventListenerBreakpointsSidebarPane = class extends UI.VBox {
       'DOMNodeInsertedIntoDocument', 'DOMNodeRemoved', 'DOMNodeRemovedFromDocument', 'DOMSubtreeModified',
       'DOMContentLoaded'
     ]);
-    this._createCategory(Common.UIString('Geolocation'), ['navigator.geolocation.getCurrentPosition', 'navigator.geolocation.watchPosition'], true);
+    this._createCategory(
+        Common.UIString('Geolocation'), ['Geolocation.getCurrentPosition', 'Geolocation.watchPosition'], true);
     this._createCategory(Common.UIString('Drag / drop'), ['dragenter', 'dragover', 'dragleave', 'drop']);
     this._createCategory(Common.UIString('Keyboard'), ['keydown', 'keyup', 'keypress', 'input']);
     this._createCategory(
@@ -56,15 +57,16 @@ Sources.EventListenerBreakpointsSidebarPane = class extends UI.VBox {
       'mouseleave', 'mousewheel', 'wheel', 'contextmenu'
     ]);
     this._createCategory(Common.UIString('Notification'), ['Notification.requestPermission'], true);
-    this._createCategory(Common.UIString('Parse'), ['setInnerHTML', 'document.write'], true);
+    this._createCategory(Common.UIString('Parse'), ['setInnerHTML', 'Document.write'], true);
     this._createCategory(Common.UIString('Pointer'), [
       'pointerover', 'pointerout', 'pointerenter', 'pointerleave', 'pointerdown', 'pointerup', 'pointermove',
       'pointercancel', 'gotpointercapture', 'lostpointercapture'
     ]);
     this._createCategory(Common.UIString('Script'), ['scriptFirstStatement', 'scriptBlockedByCSP'], true);
-    this._createCategory(Common.UIString('Timer'), ['setTimer', 'clearTimer', 'timerFired'], true);
+    this._createCategory(
+        Common.UIString('Timer'), ['setTimeout', 'clearTimeout', 'setInterval', 'clearInterval', 'timerFired'], true);
     this._createCategory(Common.UIString('Touch'), ['touchstart', 'touchmove', 'touchend', 'touchcancel']);
-    this._createCategory(Common.UIString('Window'), ['close'], true);
+    this._createCategory(Common.UIString('Window'), ['DOMWindow.close'], true);
     this._createCategory(
         Common.UIString('XHR'),
         ['readystatechange', 'load', 'loadstart', 'loadend', 'abort', 'error', 'progress', 'timeout'], false,
@@ -84,21 +86,21 @@ Sources.EventListenerBreakpointsSidebarPane = class extends UI.VBox {
   static eventNameForUI(eventName, auxData) {
     if (!Sources.EventListenerBreakpointsSidebarPane._eventNamesForUI) {
       Sources.EventListenerBreakpointsSidebarPane._eventNamesForUI = {
-        'instrumentation:setTimer': Common.UIString('Set Timer'),
-        'instrumentation:clearTimer': Common.UIString('Clear Timer'),
         'instrumentation:timerFired': Common.UIString('Timer Fired'),
         'instrumentation:scriptFirstStatement': Common.UIString('Script First Statement'),
         'instrumentation:scriptBlockedByCSP': Common.UIString('Script Blocked by Content Security Policy'),
         'instrumentation:requestAnimationFrame': Common.UIString('Request Animation Frame'),
         'instrumentation:cancelAnimationFrame': Common.UIString('Cancel Animation Frame'),
-        'instrumentation:animationFrameFired': Common.UIString('Animation Frame Fired'),
+        'instrumentation:requestAnimationFrame.callback': Common.UIString('Animation Frame Fired'),
         'instrumentation:webglErrorFired': Common.UIString('WebGL Error Fired'),
         'instrumentation:webglWarningFired': Common.UIString('WebGL Warning Fired'),
-        'instrumentation:setInnerHTML': Common.UIString('Set innerHTML'),
+        'instrumentation:Element.setInnerHTML': Common.UIString('Set innerHTML'),
         'instrumentation:canvasContextCreated': Common.UIString('Create canvas context'),
-        'instrumentation:navigator.geolocation.getCurrentPosition': 'getCurrentPosition',
-        'instrumentation:navigator.geolocation.watchPosition': 'watchPosition',
+        'instrumentation:Geolocation.getCurrentPosition': 'getCurrentPosition',
+        'instrumentation:Geolocation.watchPosition': 'watchPosition',
         'instrumentation:Notification.requestPermission': 'requestPermission',
+        'instrumentation:DOMWindow.close': 'window.close',
+        'instrumentation:Document.write': 'document.write',
       };
     }
     if (auxData) {

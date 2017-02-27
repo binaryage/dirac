@@ -44,7 +44,7 @@ Sources.JavaScriptSourceFrame = class extends SourceFrame.UISourceCodeFrame {
     if (uiSourceCode.project().type() === Workspace.projectTypes.Debugger)
       this.element.classList.add('source-frame-debugger-script');
 
-    this._popoverHelper = new Components.ObjectPopoverHelper(
+    this._popoverHelper = new ObjectUI.ObjectPopoverHelper(
         this._scriptsPanel.element, this._getPopoverAnchor.bind(this), this._resolveObjectForPopover.bind(this),
         this._onHidePopover.bind(this), true);
     this._popoverHelper.setTimeout(250, 250);
@@ -682,7 +682,7 @@ Sources.JavaScriptSourceFrame = class extends SourceFrame.UISourceCodeFrame {
    * @param {number} toLine
    */
   _renderDecorations(infoMap, infoIdsPerLine, fromLine, toLine) {
-    var formatter = new Components.RemoteObjectPreviewFormatter();
+    var formatter = new ObjectUI.RemoteObjectPreviewFormatter();
     for (var i = fromLine; i < toLine; ++i) {
       var infoIds = infoIdsPerLine.get(i);
       var oldWidget = this._valueWidgets.get(i);
@@ -718,12 +718,12 @@ Sources.JavaScriptSourceFrame = class extends SourceFrame.UISourceCodeFrame {
         var propertyCount = value.preview ? value.preview.properties.length : 0;
         var entryCount = value.preview && value.preview.entries ? value.preview.entries.length : 0;
         if (dirac.hasInlineCFs && value.customPreview()) {
-          var customValueEl = (new Components.CustomPreviewComponent(value)).element;
+          var customValueEl = (new ObjectUI.CustomPreviewComponent(value)).element;
           nameValuePair.appendChild(customValueEl);
         } else if (value.preview && propertyCount + entryCount < 10) {
           formatter.appendObjectPreview(nameValuePair, value.preview, false /* isEntry */);
         } else {
-          nameValuePair.appendChild(Components.ObjectPropertiesSection.createValueElement(
+          nameValuePair.appendChild(ObjectUI.ObjectPropertiesSection.createValueElement(
               value, false /* wasThrown */, false /* showPreview */));
         }
         ++renderedNameCount;

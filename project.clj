@@ -1,6 +1,6 @@
 (def clj-logging-config-version "1.9.12")
 (def slf4j-log4j12-version "1.7.22")
-(defproject binaryage/dirac "1.1.5"
+(defproject binaryage/dirac "1.1.6"
   :description "Dirac DevTools - a Chrome DevTools fork for ClojureScript developers."
   :url "https://github.com/binaryage/dirac"
   :license {:name         "MIT License"
@@ -11,7 +11,7 @@
 
   :dependencies [[org.clojure/clojure "1.9.0-alpha14" :scope "provided"]
                  [org.clojure/clojurescript "1.9.473" :scope "provided"]
-                 [org.clojure/core.async "0.2.395"]
+                 [org.clojure/core.async "0.3.441"]
                  [org.clojure/tools.logging "0.3.1"]
                  [org.clojure/tools.cli "0.3.5"]
                  [org.clojure/tools.nrepl "0.2.12"]
@@ -24,8 +24,8 @@
                  ; we cannot use :dependencies under individual profiles because Cursive recognizes only root level
                  ; thus we mark extra deps with :scope "test" and filter them later when producing jar library
                  [binaryage/oops "0.5.2" :scope "test"]
-                 [binaryage/chromex "0.5.3" :scope "test"]
-                 [binaryage/devtools "0.9.1" :scope "test"]
+                 [binaryage/chromex "0.5.6" :scope "test"]
+                 [binaryage/devtools "0.9.2" :scope "test"]
                  [environ "1.1.0" :scope "test"]
                  [cljs-http "0.1.42" :scope "test"]
                  [figwheel "0.5.9" :scope "test"]
@@ -43,10 +43,10 @@
 
                  [http.async.client "1.2.0" :scope "test"]
 
-                 [org.seleniumhq.selenium/selenium-java "3.1.0" :scope "test"]
-                 [org.seleniumhq.selenium/selenium-chrome-driver "3.1.0" :scope "test"]
-                 [org.seleniumhq.selenium/selenium-support "3.1.0" :scope "test"]
-                 [org.seleniumhq.selenium/selenium-api "3.1.0" :scope "test"]
+                 [org.seleniumhq.selenium/selenium-java "3.2.0" :scope "test" :exclusions [org.seleniumhq.selenium/selenium-support]]
+                 [org.seleniumhq.selenium/selenium-chrome-driver "3.2.0" :scope "test"]
+                 [org.seleniumhq.selenium/selenium-support "3.2.0" :scope "test"]
+                 [org.seleniumhq.selenium/selenium-api "3.2.0" :scope "test"]
                  [org.seleniumhq.selenium/selenium-htmlunit-driver "2.52.0" :scope "test"]
 
                  [ring/ring-core "1.5.1" :scope "test"]

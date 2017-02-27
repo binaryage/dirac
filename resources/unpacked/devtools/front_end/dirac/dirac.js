@@ -34,11 +34,11 @@ Object.assign(window.dirac, (function() {
   }
 
   function hasDebugFlag(flagName) {
-    if (Runtime.queryParam("debug_all") == "1") {
+    if (Runtime.queryParam("debug_all") === "1") {
       return true;
     }
     const paramName = "debug_" + flagName.toLowerCase();
-    return Runtime.queryParam(paramName) == "1";
+    return Runtime.queryParam(paramName) === "1";
   }
 
   // taken from https://github.com/joliss/js-string-escape/blob/master/index.js

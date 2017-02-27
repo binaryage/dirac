@@ -132,7 +132,7 @@ Components.DOMPresentationUtils.linkifyDeferredNodeReference = function(deferred
   var link = shadowRoot.createChild('div', 'node-link');
   link.createChild('content');
   link.addEventListener('click', deferredNode.resolve.bind(deferredNode, onDeferredNodeResolved), false);
-  link.addEventListener('mousedown', (e) => e.consume(), false);
+  link.addEventListener('mousedown', e => e.consume(), false);
 
   /**
    * @param {?SDK.DOMNode} node
@@ -189,6 +189,7 @@ Components.DOMPresentationUtils.buildImagePreviewContents = function(
 
   function buildContent() {
     var container = createElement('table');
+    UI.appendStyle(container, 'components/imagePreview.css');
     container.className = 'image-preview-container';
     var naturalWidth = precomputedFeatures ? precomputedFeatures.naturalWidth : imageElement.naturalWidth;
     var naturalHeight = precomputedFeatures ? precomputedFeatures.naturalHeight : imageElement.naturalHeight;

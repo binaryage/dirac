@@ -53,7 +53,6 @@ UI.SuggestBox = class {
    * @param {!UI.SuggestBoxDelegate} suggestBoxDelegate
    * @param {number=} maxItemsHeight
    * @param {boolean=} captureEnter
-   * @suppressGlobalPropertiesCheck
    */
   constructor(suggestBoxDelegate, maxItemsHeight, captureEnter) {
     this._suggestBoxDelegate = suggestBoxDelegate;
@@ -71,10 +70,9 @@ UI.SuggestBox = class {
     this._element.classList.add('suggest-box');
     this._element.addEventListener('mousedown', event => event.preventDefault(), true);
 
-    // TODO(dgozman): take document in constructor.
-    this._glassPane =
-        new UI.GlassPane(document, false /* dimmed */, false /* blockPointerEvents */, this.hide.bind(this));
+    this._glassPane = new UI.GlassPane();
     this._glassPane.setAnchorBehavior(UI.GlassPane.AnchorBehavior.PreferBottom);
+    this._glassPane.setSetOutsideClickCallback(this.hide.bind(this));
     var shadowRoot = UI.createShadowRootWithCoreStyles(this._glassPane.contentElement, 'ui/suggestBox.css');
     UI.appendStyle(shadowRoot, "ui/suggestBox-dirac.css");
     shadowRoot.appendChild(this._element);
@@ -84,7 +82,7 @@ UI.SuggestBox = class {
    * @return {boolean}
    */
   visible() {
-    return this._glassPane.visible();
+    return this._glassPane.isShowing();
   }
 
   /**
@@ -127,10 +125,14 @@ UI.SuggestBox = class {
     return Math.min(kMaxWidth, UI.measurePreferredSize(element, this._element).width);
   }
 
+  /**
+   * @suppressGlobalPropertiesCheck
+   */
   _show() {
     if (this.visible())
       return;
-    this._glassPane.show();
+    // TODO(dgozman): take document as a parameter.
+    this._glassPane.show(document);
     this._rowHeight =
         UI.measurePreferredSize(this.createElementForItem({text: '1', subtitle: '12'}), this._element).height;
   }

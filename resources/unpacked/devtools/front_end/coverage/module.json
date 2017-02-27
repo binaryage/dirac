@@ -3,29 +3,31 @@
         {
             "type": "view",
             "location": "drawer-view",
-            "id": "css_tracker",
-            "title": "CSS Tracker",
+            "id": "coverage",
+            "title": "Coverage",
             "persistence": "closeable",
             "order": 0,
-            "className": "CSSTracker.CSSTrackerView",
+            "className": "Coverage.CoverageView",
             "experiment": "cssTrackerPanel"
         },
         {
             "type": "@SourceFrame.UISourceCodeFrame.LineDecorator",
-            "className": "CSSTracker.CSSTrackerView.LineDecorator",
+            "className": "Coverage.CoverageView.LineDecorator",
             "decoratorType": "coverage"
         }
     ],
     "dependencies": [
         "sdk",
         "ui",
-        "source_frame"
+        "source_frame",
+        "data_grid"
     ],
     "scripts": [
-        "CSSTrackerView.js"
+        "CoverageListView.js",
+        "CoverageView.js"
     ],
     "resources": [
-        "cssTrackerView.css",
-        "unusedRulesTree.css"
+        "coverageListView.css",
+        "coverageView.css"
     ]
 }

@@ -123,25 +123,26 @@ UI.Toolbar = class {
       var document = button.element.ownerDocument;
       document.documentElement.addEventListener('mouseup', mouseUp, false);
 
-      var optionsGlassPane = new UI.GlassPane(document, false /* dimmed */, true /* blockPointerEvents */, event => {});
-      optionsGlassPane.show();
+      var optionsGlassPane = new UI.GlassPane();
+      optionsGlassPane.setBlockPointerEvents(true);
+      optionsGlassPane.show(document);
       var optionsBar = new UI.Toolbar('fill', optionsGlassPane.contentElement);
       optionsBar._contentElement.classList.add('floating');
       const buttonHeight = 26;
 
-      var hostButtonPosition = button.element.totalOffset();
+      var hostButtonPosition = button.element.boxInWindow().relativeToElement(UI.GlassPane.container(document));
 
-      var topNotBottom = hostButtonPosition.top + buttonHeight * buttons.length < document.documentElement.offsetHeight;
+      var topNotBottom = hostButtonPosition.y + buttonHeight * buttons.length < document.documentElement.offsetHeight;
 
       if (topNotBottom)
         buttons = buttons.reverse();
 
       optionsBar.element.style.height = (buttonHeight * buttons.length) + 'px';
       if (topNotBottom)
-        optionsBar.element.style.top = (hostButtonPosition.top + 1) + 'px';
+        optionsBar.element.style.top = (hostButtonPosition.y - 5) + 'px';
       else
-        optionsBar.element.style.top = (hostButtonPosition.top - (buttonHeight * (buttons.length - 1))) + 'px';
-      optionsBar.element.style.left = (hostButtonPosition.left + 1) + 'px';
+        optionsBar.element.style.top = (hostButtonPosition.y - (buttonHeight * (buttons.length - 1)) - 6) + 'px';
+      optionsBar.element.style.left = (hostButtonPosition.x - 5) + 'px';
 
       for (var i = 0; i < buttons.length; ++i) {
         buttons[i].element.addEventListener('mousemove', mouseOver, false);
@@ -193,12 +194,15 @@ UI.Toolbar = class {
 
   /**
    * @param {boolean=} reverse
+   * @param {boolean=} growVertically
    */
-  makeWrappable(reverse) {
+  makeWrappable(reverse, growVertically) {
     this._contentElement.classList.add('wrappable');
     this._reverse = !!reverse;
     if (reverse)
       this._contentElement.classList.add('wrappable-reverse');
+    if (growVertically)
+      this._contentElement.classList.add('toolbar-grow-vertical');
   }
 
   makeVertical() {
@@ -427,6 +431,10 @@ UI.ToolbarItem = class extends Common.Object {
     this._visible = x;
     if (this._toolbar && !(this instanceof UI.ToolbarSeparator))
       this._toolbar._hideSeparatorDupes();
+  }
+
+  setRightAligned(alignRight) {
+    this.element.classList.toggle('toolbar-item-right-aligned', alignRight);
   }
 };
 

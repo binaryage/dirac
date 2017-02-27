@@ -176,10 +176,11 @@ Protocol.PageAgent.prototype.invoke_reload = function(obj, opt_callback) {};
 
 /**
  * @param {string} url
+ * @param {string=} opt_referrer
  * @param {function(?Protocol.Error, Protocol.Page.FrameId):void=} opt_callback
  */
-Protocol.PageAgent.prototype.navigate = function(url, opt_callback) {};
-/** @typedef {!{url: string}} obj */
+Protocol.PageAgent.prototype.navigate = function(url, opt_referrer, opt_callback) {};
+/** @typedef {!{url: string, referrer: (string|undefined)}} obj */
 Protocol.PageAgent.prototype.navigate.Request;
 /**
  * @param {!Protocol.PageAgent.prototype.navigate.Request} obj
@@ -427,6 +428,18 @@ Protocol.PageAgent.prototype.captureScreenshot.Request;
 Protocol.PageAgent.prototype.invoke_captureScreenshot = function(obj, opt_callback) {};
 
 /**
+ * @param {function(?Protocol.Error, string):void=} opt_callback
+ */
+Protocol.PageAgent.prototype.printToPDF = function(opt_callback) {};
+/** @typedef {Object|undefined} obj */
+Protocol.PageAgent.prototype.printToPDF.Request;
+/**
+ * @param {!Protocol.PageAgent.prototype.printToPDF.Request} obj
+ * @param {function(?Protocol.Error, string):void=} opt_callback
+ */
+Protocol.PageAgent.prototype.invoke_printToPDF = function(obj, opt_callback) {};
+
+/**
  * @param {string=} opt_format
  * @param {number=} opt_quality
  * @param {number=} opt_maxWidth
@@ -561,14 +574,14 @@ Protocol.PageAgent.prototype.processNavigation.Request;
 Protocol.PageAgent.prototype.invoke_processNavigation = function(obj, opt_callback) {};
 
 /**
- * @param {function(?Protocol.Error, Protocol.Page.LayoutViewport, Protocol.Page.VisualViewport):void=} opt_callback
+ * @param {function(?Protocol.Error, Protocol.Page.LayoutViewport, Protocol.Page.VisualViewport, Protocol.DOM.Rect):void=} opt_callback
  */
 Protocol.PageAgent.prototype.getLayoutMetrics = function(opt_callback) {};
 /** @typedef {Object|undefined} obj */
 Protocol.PageAgent.prototype.getLayoutMetrics.Request;
 /**
  * @param {!Protocol.PageAgent.prototype.getLayoutMetrics.Request} obj
- * @param {function(?Protocol.Error, Protocol.Page.LayoutViewport, Protocol.Page.VisualViewport):void=} opt_callback
+ * @param {function(?Protocol.Error, Protocol.Page.LayoutViewport, Protocol.Page.VisualViewport, Protocol.DOM.Rect):void=} opt_callback
  */
 Protocol.PageAgent.prototype.invoke_getLayoutMetrics = function(obj, opt_callback) {};
 
@@ -5926,6 +5939,62 @@ Protocol.ProfilerAgent.prototype.stop.Request;
  */
 Protocol.ProfilerAgent.prototype.invoke_stop = function(obj, opt_callback) {};
 
+/**
+ * @param {function(?Protocol.Error):T=} opt_callback
+ * @return {!Promise.<T>}
+ * @template T
+ */
+Protocol.ProfilerAgent.prototype.startPreciseCoverage = function(opt_callback) {};
+/** @typedef {Object|undefined} obj */
+Protocol.ProfilerAgent.prototype.startPreciseCoverage.Request;
+/**
+ * @param {!Protocol.ProfilerAgent.prototype.startPreciseCoverage.Request} obj
+ * @param {function(?Protocol.Error):void=} opt_callback
+ */
+Protocol.ProfilerAgent.prototype.invoke_startPreciseCoverage = function(obj, opt_callback) {};
+
+/**
+ * @param {function(?Protocol.Error):T=} opt_callback
+ * @return {!Promise.<T>}
+ * @template T
+ */
+Protocol.ProfilerAgent.prototype.stopPreciseCoverage = function(opt_callback) {};
+/** @typedef {Object|undefined} obj */
+Protocol.ProfilerAgent.prototype.stopPreciseCoverage.Request;
+/**
+ * @param {!Protocol.ProfilerAgent.prototype.stopPreciseCoverage.Request} obj
+ * @param {function(?Protocol.Error):void=} opt_callback
+ */
+Protocol.ProfilerAgent.prototype.invoke_stopPreciseCoverage = function(obj, opt_callback) {};
+
+/**
+ * @param {function(?Protocol.Error, !Array<Protocol.Profiler.ScriptCoverage>):T} opt_callback
+ * @return {!Promise.<T>}
+ * @template T
+ */
+Protocol.ProfilerAgent.prototype.takePreciseCoverage = function(opt_callback) {};
+/** @typedef {Object|undefined} obj */
+Protocol.ProfilerAgent.prototype.takePreciseCoverage.Request;
+/**
+ * @param {!Protocol.ProfilerAgent.prototype.takePreciseCoverage.Request} obj
+ * @param {function(?Protocol.Error, !Array<Protocol.Profiler.ScriptCoverage>):void=} opt_callback
+ */
+Protocol.ProfilerAgent.prototype.invoke_takePreciseCoverage = function(obj, opt_callback) {};
+
+/**
+ * @param {function(?Protocol.Error, !Array<Protocol.Profiler.ScriptCoverage>):T} opt_callback
+ * @return {!Promise.<T>}
+ * @template T
+ */
+Protocol.ProfilerAgent.prototype.getBestEffortCoverage = function(opt_callback) {};
+/** @typedef {Object|undefined} obj */
+Protocol.ProfilerAgent.prototype.getBestEffortCoverage.Request;
+/**
+ * @param {!Protocol.ProfilerAgent.prototype.getBestEffortCoverage.Request} obj
+ * @param {function(?Protocol.Error, !Array<Protocol.Profiler.ScriptCoverage>):void=} opt_callback
+ */
+Protocol.ProfilerAgent.prototype.invoke_getBestEffortCoverage = function(obj, opt_callback) {};
+
 /** @typedef {!{id:(number), callFrame:(Protocol.Runtime.CallFrame), hitCount:(number|undefined), children:(!Array<number>|undefined), deoptReason:(string|undefined), positionTicks:(!Array<Protocol.Profiler.PositionTickInfo>|undefined)}} */
 Protocol.Profiler.ProfileNode;
 
@@ -5934,6 +6003,15 @@ Protocol.Profiler.Profile;
 
 /** @typedef {!{line:(number), ticks:(number)}} */
 Protocol.Profiler.PositionTickInfo;
+
+/** @typedef {!{startLineNumber:(number), startColumnNumber:(number), endLineNumber:(number), endColumnNumber:(number), count:(number)}} */
+Protocol.Profiler.CoverageRange;
+
+/** @typedef {!{functionName:(string), ranges:(!Array<Protocol.Profiler.CoverageRange>)}} */
+Protocol.Profiler.FunctionCoverage;
+
+/** @typedef {!{scriptId:(Protocol.Runtime.ScriptId), url:(string), functions:(!Array<Protocol.Profiler.FunctionCoverage>)}} */
+Protocol.Profiler.ScriptCoverage;
 /** @interface */
 Protocol.ProfilerDispatcher = function() {};
 /**

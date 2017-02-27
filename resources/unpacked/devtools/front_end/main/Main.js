@@ -114,6 +114,7 @@ Main.Main = class {
     Runtime.experiments.register('objectPreviews', 'Object previews', true);
     Runtime.experiments.register('persistence2', 'Persistence 2.0');
     Runtime.experiments.register('persistenceValidation', 'Validate persistence bindings');
+    Runtime.experiments.register('releaseNote', 'Release note', true);
     Runtime.experiments.register('requestBlocking', 'Request blocking', true);
     Runtime.experiments.register('timelineShowAllEvents', 'Show all events on Timeline', true);
     Runtime.experiments.register('timelineShowAllProcesses', 'Show all processes on Timeline', true);
@@ -133,10 +134,12 @@ Main.Main = class {
       // Enable experiments for testing.
       if (testPath.indexOf('accessibility/') !== -1)
         Runtime.experiments.enableForTest('accessibilityInspection');
-      if (testPath.indexOf('css_tracker') !== -1)
+      if (testPath.indexOf('coverage') !== -1)
         Runtime.experiments.enableForTest('cssTrackerPanel');
       if (testPath.indexOf('audits2/') !== -1)
         Runtime.experiments.enableForTest('audits2');
+      if (testPath.indexOf('help/') !== -1)
+        Runtime.experiments.enableForTest('releaseNote');
     }
 
     Runtime.experiments.setDefaultExperiments(['persistenceValidation', 'timelineMultipleMainViews']);
@@ -287,6 +290,8 @@ Main.Main = class {
     this._registerShortcuts();
     Extensions.extensionServer.initializeExtensions();
     dirac.notifyFrontendInitialized();
+    if (!Host.isUnderTest())
+      Help.showReleaseNoteIfNeeded();
   }
 
   _registerForwardedShortcuts() {
@@ -880,10 +885,10 @@ Main.RemoteDebuggingTerminatedScreen = class extends UI.VBox {
    */
   static show(reason) {
     var dialog = new UI.Dialog();
-    dialog.setWrapsContent(true);
+    dialog.setSizeBehavior(UI.GlassPane.SizeBehavior.MeasureContent);
     dialog.addCloseButton();
     dialog.setDimmed(true);
-    new Main.RemoteDebuggingTerminatedScreen(reason).show(dialog.element);
+    new Main.RemoteDebuggingTerminatedScreen(reason).show(dialog.contentElement);
     dialog.show();
   }
 };
@@ -911,13 +916,13 @@ Main.TargetCrashedScreen = class extends UI.VBox {
    */
   static show(debuggerModel) {
     var dialog = new UI.Dialog();
-    dialog.setWrapsContent(true);
+    dialog.setSizeBehavior(UI.GlassPane.SizeBehavior.MeasureContent);
     dialog.addCloseButton();
     dialog.setDimmed(true);
-    var hideBound = dialog.detach.bind(dialog, false);
+    var hideBound = dialog.hide.bind(dialog);
     debuggerModel.addEventListener(SDK.DebuggerModel.Events.GlobalObjectCleared, hideBound);
 
-    new Main.TargetCrashedScreen(onHide).show(dialog.element);
+    new Main.TargetCrashedScreen(onHide).show(dialog.contentElement);
     dialog.show();
 
     function onHide() {

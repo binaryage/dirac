@@ -776,15 +776,15 @@ Runtime.Module = class {
     if (!this._descriptor.scripts || !this._descriptor.scripts.length)
       return Promise.resolve();
 
-    // the namespace keyword confuses clang-format
-    // NOTE: Update scripts/special_case_namespaces.json if you add a special cased namespace
-    // clang-format off
     // Module namespaces.
+    // NOTE: Update scripts/special_case_namespaces.json if you add a special cased namespace.
+    // The namespace keyword confuses clang-format.
+    // clang-format off
     const specialCases = {
       'sdk': 'SDK',
       'ui': 'UI',
+      'object_ui': 'ObjectUI',
       'perf_ui': 'PerfUI',
-      'css_tracker': 'CSSTracker'
     };
     var namespace = specialCases[this._name] || this._name.split('_').map(a => a.substring(0, 1).toUpperCase() + a.substring(1)).join('');
     self[namespace] = self[namespace] || {};

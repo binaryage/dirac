@@ -76,4 +76,4 @@
           ;(expect-status-msg! tunnel ["done"])
           (tunnel-client/send! tunnel {:op :bootstrap-done})))
       (agent/destroy!)
-      (log/info "dirac agent destroyed on" tunnel-port))))
+      (log/info "dirac agent stopped on" tunnel-port))))

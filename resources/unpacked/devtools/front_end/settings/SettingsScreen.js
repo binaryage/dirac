@@ -71,7 +71,7 @@ Settings.SettingsScreen = class extends UI.VBox {
       return;
     var dialog = new UI.Dialog();
     dialog.addCloseButton();
-    settingsScreen.show(dialog.element);
+    settingsScreen.show(dialog.contentElement);
     dialog.show();
     settingsScreen._selectTab(name || 'preferences');
   }

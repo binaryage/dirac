@@ -101,14 +101,15 @@ Resources.ResourcesPanel = class extends UI.PanelWithSidebar {
     this._databaseQueryViews = new Map();
     /** @type {!Map.<!Resources.Database, !Resources.DatabaseTreeElement>} */
     this._databaseTreeElements = new Map();
-    /** @type {!Map.<!Resources.DOMStorage, !Resources.DOMStorageItemsView>} */
-    this._domStorageViews = new Map();
     /** @type {!Map.<!Resources.DOMStorage, !Resources.DOMStorageTreeElement>} */
     this._domStorageTreeElements = new Map();
-    /** @type {!Object.<string, !Resources.CookieItemsView>} */
-    this._cookieViews = {};
     /** @type {!Object.<string, boolean>} */
     this._domains = {};
+
+    /** @type {?Resources.DOMStorageItemsView} */
+    this._domStorageView = null;
+    /** @type {?Resources.CookieItemsView} */
+    this._cookieView = null;
 
     this.panelSidebarElement().addEventListener('mousemove', this._onmousemove.bind(this), false);
     this.panelSidebarElement().addEventListener('mouseleave', this._onmouseleave.bind(this), false);
@@ -253,12 +254,11 @@ Resources.ResourcesPanel = class extends UI.PanelWithSidebar {
   }
 
   _resetDOMStorage() {
-    if (this.visibleView instanceof Resources.DOMStorageItemsView) {
+    if (this.visibleView === this._domStorageView) {
       this.visibleView.detach();
       delete this.visibleView;
     }
 
-    this._domStorageViews.clear();
     this._domStorageTreeElements.clear();
     this.localStorageListTreeElement.removeChildren();
     this.sessionStorageListTreeElement.removeChildren();
@@ -269,7 +269,6 @@ Resources.ResourcesPanel = class extends UI.PanelWithSidebar {
       this.visibleView.detach();
       delete this.visibleView;
     }
-    this._cookieViews = {};
     this.cookieListTreeElement.removeChildren();
   }
 
@@ -461,7 +460,6 @@ Resources.ResourcesPanel = class extends UI.PanelWithSidebar {
     if (wasSelected)
       parentListTreeElement.select();
     this._domStorageTreeElements.remove(domStorage);
-    this._domStorageViews.remove(domStorage);
   }
 
   /**
@@ -584,14 +582,11 @@ Resources.ResourcesPanel = class extends UI.PanelWithSidebar {
     if (!domStorage)
       return;
 
-    var view;
-    view = this._domStorageViews.get(domStorage);
-    if (!view) {
-      view = new Resources.DOMStorageItemsView(domStorage);
-      this._domStorageViews.set(domStorage, view);
-    }
-
-    this._innerShowView(view);
+    if (!this._domStorageView)
+      this._domStorageView = new Resources.DOMStorageItemsView(domStorage);
+    else
+      this._domStorageView.setStorage(domStorage);
+    this._innerShowView(this._domStorageView);
   }
 
   /**
@@ -600,21 +595,23 @@ Resources.ResourcesPanel = class extends UI.PanelWithSidebar {
    * @param {!SDK.Target} cookieFrameTarget
    */
   showCookies(treeElement, cookieDomain, cookieFrameTarget) {
-    var view = this._cookieViews[cookieDomain];
-    if (!view) {
-      view = new Resources.CookieItemsView(treeElement, cookieFrameTarget, cookieDomain);
-      this._cookieViews[cookieDomain] = view;
-    }
-
-    this._innerShowView(view);
+    var model = SDK.CookieModel.fromTarget(cookieFrameTarget);
+    if (!this._cookieView)
+      this._cookieView = new Resources.CookieItemsView(treeElement, model, cookieDomain);
+    else
+      this._cookieView.setCookiesDomain(model, cookieDomain);
+    this._innerShowView(this._cookieView);
   }
 
   /**
+   * @param {!SDK.Target} target
    * @param {string} cookieDomain
    */
-  clearCookies(cookieDomain) {
-    if (this._cookieViews[cookieDomain])
-      this._cookieViews[cookieDomain].deleteAllItems();
+  _clearCookies(target, cookieDomain) {
+    SDK.CookieModel.fromTarget(target).clear(cookieDomain, () => {
+      if (this._cookieView)
+        this._cookieView.refreshItems();
+    });
   }
 
   showApplicationCache(frameId) {
@@ -1949,13 +1946,15 @@ Resources.DOMStorageTreeElement = class extends Resources.BaseStorageTreeElement
   }
 };
 
-/**
- * @unrestricted
- */
 Resources.CookieTreeElement = class extends Resources.BaseStorageTreeElement {
+  /**
+   * @param {!Resources.ResourcesPanel} storagePanel
+   * @param {!SDK.ResourceTreeFrame} frame
+   * @param {string} cookieDomain
+   */
   constructor(storagePanel, frame, cookieDomain) {
     super(storagePanel, cookieDomain ? cookieDomain : Common.UIString('Local Files'), false);
-    this._frame = frame;
+    this._target = frame.target();
     this._cookieDomain = cookieDomain;
     var icon = UI.Icon.create('mediumicon-cookie', 'resource-tree-item');
     this.setLeadingIcons([icon]);
@@ -1978,15 +1977,9 @@ Resources.CookieTreeElement = class extends Resources.BaseStorageTreeElement {
    */
   _handleContextMenuEvent(event) {
     var contextMenu = new UI.ContextMenu(event);
-    contextMenu.appendItem(Common.UIString('Clear'), this._clearCookies.bind(this));
+    contextMenu.appendItem(
+        Common.UIString('Clear'), () => this._storagePanel._clearCookies(this._target, this._cookieDomain));
     contextMenu.show();
-  }
-
-  /**
-   * @param {string} domain
-   */
-  _clearCookies(domain) {
-    this._storagePanel.clearCookies(this._cookieDomain);
   }
 
   /**
@@ -1995,7 +1988,7 @@ Resources.CookieTreeElement = class extends Resources.BaseStorageTreeElement {
    */
   onselect(selectedByUser) {
     super.onselect(selectedByUser);
-    this._storagePanel.showCookies(this, this._cookieDomain, this._frame.target());
+    this._storagePanel.showCookies(this, this._cookieDomain, this._target);
     return false;
   }
 };

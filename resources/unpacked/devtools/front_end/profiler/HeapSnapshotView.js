@@ -153,7 +153,7 @@ Profiler.HeapSnapshotView = class extends UI.SimpleView {
 
     this._selectedSizeText = new UI.ToolbarText();
 
-    this._popoverHelper = new Components.ObjectPopoverHelper(
+    this._popoverHelper = new ObjectUI.ObjectPopoverHelper(
         this.element, this._getHoverAnchor.bind(this), this._resolveObjectForPopover.bind(this), undefined, true);
 
     this._currentPerspectiveIndex = 0;
@@ -260,8 +260,6 @@ Profiler.HeapSnapshotView = class extends UI.SimpleView {
   willHide() {
     this._currentSearchResultIndex = -1;
     this._popoverHelper.hidePopover();
-    if (this.helpPopover && this.helpPopover.isShowing())
-      this.helpPopover.hide();
   }
 
   /**
@@ -465,8 +463,9 @@ Profiler.HeapSnapshotView = class extends UI.SimpleView {
   _inspectedObjectChanged(event) {
     var selectedNode = /** @type {!DataGrid.DataGridNode} */ (event.data);
     var target = this._profile.target();
-    if (target && selectedNode instanceof Profiler.HeapSnapshotGenericObjectNode)
-      target.heapProfilerAgent().addInspectedHeapObject(String(selectedNode.snapshotNodeId));
+    var heapProfilerModel = target ? target.model(SDK.HeapProfilerModel) : null;
+    if (heapProfilerModel && selectedNode instanceof Profiler.HeapSnapshotGenericObjectNode)
+      heapProfilerModel.addInspectedHeapObject(String(selectedNode.snapshotNodeId));
   }
 
   /**
@@ -955,7 +954,7 @@ Profiler.HeapSnapshotView.StatisticsPerspective = class extends Profiler.HeapSna
 };
 
 /**
- * @implements {SDK.TargetManager.Observer}
+ * @implements {SDK.SDKModelObserver<!SDK.HeapProfilerModel>}
  * @unrestricted
  */
 Profiler.HeapSnapshotProfileType = class extends Profiler.ProfileType {
@@ -965,7 +964,7 @@ Profiler.HeapSnapshotProfileType = class extends Profiler.ProfileType {
    */
   constructor(id, title) {
     super(id || Profiler.HeapSnapshotProfileType.TypeId, title || Common.UIString('Take Heap Snapshot'));
-    SDK.targetManager.observeTargets(this);
+    SDK.targetManager.observeModels(SDK.HeapProfilerModel, this);
     SDK.targetManager.addModelListener(
         SDK.HeapProfilerModel, SDK.HeapProfilerModel.Events.ResetProfiles, this._resetProfiles, this);
     SDK.targetManager.addModelListener(
@@ -977,17 +976,17 @@ Profiler.HeapSnapshotProfileType = class extends Profiler.ProfileType {
 
   /**
    * @override
-   * @param {!SDK.Target} target
+   * @param {!SDK.HeapProfilerModel} heapProfilerModel
    */
-  targetAdded(target) {
-    target.heapProfilerModel.enable();
+  modelAdded(heapProfilerModel) {
+    heapProfilerModel.enable();
   }
 
   /**
    * @override
-   * @param {!SDK.Target} target
+   * @param {!SDK.HeapProfilerModel} heapProfilerModel
    */
-  targetRemoved(target) {
+  modelRemoved(heapProfilerModel) {
   }
 
   /**
@@ -1041,25 +1040,23 @@ Profiler.HeapSnapshotProfileType = class extends Profiler.ProfileType {
   _takeHeapSnapshot(callback) {
     if (this.profileBeingRecorded())
       return;
-    var target = /** @type {!SDK.Target} */ (UI.context.flavor(SDK.Target));
-    var profile = new Profiler.HeapProfileHeader(target, this);
+    var heapProfilerModel = UI.context.flavor(SDK.HeapProfilerModel);
+    if (!heapProfilerModel)
+      return;
+
+    var profile = new Profiler.HeapProfileHeader(heapProfilerModel.target(), this);
     this.setProfileBeingRecorded(profile);
     this.addProfile(profile);
     profile.updateStatus(Common.UIString('Snapshotting\u2026'));
 
-    /**
-     * @param {?string} error
-     * @this {Profiler.HeapSnapshotProfileType}
-     */
-    function didTakeHeapSnapshot(error) {
+    heapProfilerModel.takeHeapSnapshot(true).then(success => {
       var profile = this.profileBeingRecorded();
       profile.title = Common.UIString('Snapshot %d', profile.uid);
       profile._finishLoad();
       this.setProfileBeingRecorded(null);
       this.dispatchEventToListeners(Profiler.ProfileType.Events.ProfileComplete, profile);
       callback();
-    }
-    target.heapProfilerAgent().takeHeapSnapshot(true, didTakeHeapSnapshot.bind(this));
+    });
   }
 
   /**
@@ -1085,8 +1082,12 @@ Profiler.HeapSnapshotProfileType = class extends Profiler.ProfileType {
       profile._prepareToLoad();
   }
 
-  _resetProfiles() {
-    this.reset();
+  /**
+   * @param {!Common.Event} event
+   */
+  _resetProfiles(event) {
+    var heapProfilerModel = /** @type {!SDK.HeapProfilerModel} */ (event.data);
+    this.reset(heapProfilerModel.target());
   }
 
   _snapshotReceived(profile) {
@@ -1109,26 +1110,22 @@ Profiler.TrackingHeapSnapshotProfileType = class extends Profiler.HeapSnapshotPr
 
   /**
    * @override
-   * @param {!SDK.Target} target
+   * @param {!SDK.HeapProfilerModel} heapProfilerModel
    */
-  targetAdded(target) {
-    super.targetAdded(target);
-    target.heapProfilerModel.addEventListener(
-        SDK.HeapProfilerModel.Events.HeapStatsUpdate, this._heapStatsUpdate, this);
-    target.heapProfilerModel.addEventListener(
-        SDK.HeapProfilerModel.Events.LastSeenObjectId, this._lastSeenObjectId, this);
+  modelAdded(heapProfilerModel) {
+    super.modelAdded(heapProfilerModel);
+    heapProfilerModel.addEventListener(SDK.HeapProfilerModel.Events.HeapStatsUpdate, this._heapStatsUpdate, this);
+    heapProfilerModel.addEventListener(SDK.HeapProfilerModel.Events.LastSeenObjectId, this._lastSeenObjectId, this);
   }
 
   /**
    * @override
-   * @param {!SDK.Target} target
+   * @param {!SDK.HeapProfilerModel} heapProfilerModel
    */
-  targetRemoved(target) {
-    super.targetRemoved(target);
-    target.heapProfilerModel.removeEventListener(
-        SDK.HeapProfilerModel.Events.HeapStatsUpdate, this._heapStatsUpdate, this);
-    target.heapProfilerModel.removeEventListener(
-        SDK.HeapProfilerModel.Events.LastSeenObjectId, this._lastSeenObjectId, this);
+  modelRemoved(heapProfilerModel) {
+    super.modelRemoved(heapProfilerModel);
+    heapProfilerModel.removeEventListener(SDK.HeapProfilerModel.Events.HeapStatsUpdate, this._heapStatsUpdate, this);
+    heapProfilerModel.removeEventListener(SDK.HeapProfilerModel.Events.LastSeenObjectId, this._lastSeenObjectId, this);
   }
 
   /**
@@ -1201,29 +1198,39 @@ Profiler.TrackingHeapSnapshotProfileType = class extends Profiler.HeapSnapshotPr
   _startRecordingProfile() {
     if (this.profileBeingRecorded())
       return;
-    this._addNewProfile();
+    var heapProfilerModel = this._addNewProfile();
+    if (!heapProfilerModel)
+      return;
     var recordAllocationStacks = Common.moduleSetting('recordAllocationStacks').get();
-    this.profileBeingRecorded().target().heapProfilerAgent().startTrackingHeapObjects(recordAllocationStacks);
+    heapProfilerModel.startTrackingHeapObjects(recordAllocationStacks);
   }
 
+  /**
+   * @return {?SDK.HeapProfilerModel}
+   */
   _addNewProfile() {
-    var target = UI.context.flavor(SDK.Target);
-    this.setProfileBeingRecorded(new Profiler.HeapProfileHeader(target, this, undefined));
+    var heapProfilerModel = UI.context.flavor(SDK.HeapProfilerModel);
+    if (!heapProfilerModel)
+      return null;
+    this.setProfileBeingRecorded(new Profiler.HeapProfileHeader(heapProfilerModel.target(), this, undefined));
     this._profileSamples = new Profiler.TrackingHeapSnapshotProfileType.Samples();
     this.profileBeingRecorded()._profileSamples = this._profileSamples;
     this._recording = true;
     this.addProfile(/** @type {!Profiler.ProfileHeader} */ (this.profileBeingRecorded()));
     this.profileBeingRecorded().updateStatus(Common.UIString('Recording\u2026'));
     this.dispatchEventToListeners(Profiler.TrackingHeapSnapshotProfileType.TrackingStarted);
+    return heapProfilerModel;
   }
 
   _stopRecordingProfile() {
+    var heapProfilerModel =
+        /** @type {!SDK.HeapProfilerModel} */ (this.profileBeingRecorded().target().model(SDK.HeapProfilerModel));
     this.profileBeingRecorded().updateStatus(Common.UIString('Snapshotting\u2026'));
     /**
-     * @param {?string} error
+     * @param {boolean} success
      * @this {Profiler.HeapSnapshotProfileType}
      */
-    function didTakeHeapSnapshot(error) {
+    function didTakeHeapSnapshot(success) {
       var profile = this.profileBeingRecorded();
       if (!profile)
         return;
@@ -1233,8 +1240,7 @@ Profiler.TrackingHeapSnapshotProfileType = class extends Profiler.HeapSnapshotPr
       this.dispatchEventToListeners(Profiler.ProfileType.Events.ProfileComplete, profile);
     }
 
-    this.profileBeingRecorded().target().heapProfilerAgent().stopTrackingHeapObjects(
-        true, didTakeHeapSnapshot.bind(this));
+    heapProfilerModel.stopTrackingHeapObjects(true).then(didTakeHeapSnapshot.bind(this));
     this._recording = false;
     this.dispatchEventToListeners(Profiler.TrackingHeapSnapshotProfileType.TrackingStopped);
   }
@@ -1266,12 +1272,13 @@ Profiler.TrackingHeapSnapshotProfileType = class extends Profiler.HeapSnapshotPr
 
   /**
    * @override
+   * @param {!Common.Event} event
    */
-  _resetProfiles() {
+  _resetProfiles(event) {
     var wasRecording = this._recording;
     // Clear current profile to avoid stopping backend.
     this.setProfileBeingRecorded(null);
-    super._resetProfiles();
+    super._resetProfiles(event);
     this._profileSamples = null;
     if (wasRecording)
       this._addNewProfile();
@@ -2000,7 +2007,7 @@ Profiler.HeapTrackingOverviewGrid.OverviewCalculator = class {
 Profiler.HeapSnapshotStatisticsView = class extends UI.VBox {
   constructor() {
     super();
-    this.setMinimumSize(50, 25);
+    this.element.classList.add('heap-snapshot-statistics-view');
     this._pieChart = new PerfUI.PieChart(150, Profiler.HeapSnapshotStatisticsView._valueFormatter, true);
     this._pieChart.element.classList.add('heap-snapshot-stats-pie-chart');
     this.element.appendChild(this._pieChart.element);

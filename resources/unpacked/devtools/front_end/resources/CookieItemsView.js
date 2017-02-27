@@ -30,44 +30,65 @@
 Resources.CookieItemsView = class extends Resources.StorageItemsView {
   /**
    * @param {!Resources.CookieTreeElement} treeElement
-   * @param {!SDK.Target} target
+   * @param {!SDK.CookieModel} model
    * @param {string} cookieDomain
    */
-  constructor(treeElement, target, cookieDomain) {
+  constructor(treeElement, model, cookieDomain) {
     super(Common.UIString('Cookies'), 'cookiesPanel');
 
     this.element.classList.add('storage-view');
 
-    this._target = target;
+    this._model = model;
     this._treeElement = treeElement;
     this._cookieDomain = cookieDomain;
 
-    /** @type {?Array<!SDK.Cookie>} */
-    this._cookies = null;
     this._totalSize = 0;
     /** @type {?CookieTable.CookiesTable} */
     this._cookiesTable = null;
+    this.setCookiesDomain(model, cookieDomain);
+  }
+
+  /**
+   * @param {!SDK.CookieModel} model
+   * @param {string} domain
+   */
+  setCookiesDomain(model, domain) {
+    this._model = model;
+    this._cookieDomain = domain;
+    this.refreshItems();
+  }
+
+  /**
+   * @param {!SDK.Cookie} newCookie
+   * @param {?SDK.Cookie} oldCookie
+   * @param {function(?string)} callback
+   */
+  _saveCookie(newCookie, oldCookie, callback) {
+    if (!this._model) {
+      callback(Common.UIString('Unable to save the cookie'));
+      return;
+    }
+    if (oldCookie && (newCookie.name() !== oldCookie.name() || newCookie.url() !== oldCookie.url()))
+      this._model.deleteCookie(oldCookie);
+    this._model.saveCookie(newCookie, callback);
   }
 
   /**
    * @param {!Array.<!SDK.Cookie>} allCookies
    */
   _updateWithCookies(allCookies) {
-    this._cookies = allCookies;
     this._totalSize = allCookies.reduce((size, cookie) => size + cookie.size(), 0);
 
     if (!this._cookiesTable) {
       const parsedURL = this._cookieDomain.asParsedURL();
       const domain = parsedURL ? parsedURL.host : '';
       this._cookiesTable = new CookieTable.CookiesTable(
-          false, this.refreshItems.bind(this), () => this.setCanDeleteSelected(true), domain);
+          this._saveCookie.bind(this), this.refreshItems.bind(this), () => this.setCanDeleteSelected(true), domain);
     }
 
     var shownCookies = this.filter(allCookies, cookie => `${cookie.name()} ${cookie.value()} ${cookie.domain()}`);
     this._cookiesTable.setCookies(shownCookies);
     this._cookiesTable.show(this.element);
-    this._treeElement.subtitle =
-        String.sprintf(Common.UIString('%d cookies (%s)'), this._cookies.length, Number.bytesToString(this._totalSize));
     this.setCanFilter(true);
     this.setCanDeleteAll(true);
     this.setCanDeleteSelected(!!this._cookiesTable.selectedCookie());
@@ -77,8 +98,7 @@ Resources.CookieItemsView = class extends Resources.StorageItemsView {
    * @override
    */
   deleteAllItems() {
-    this._cookiesTable.clear();
-    this.refreshItems();
+    this._model.clear(this._cookieDomain, () => this.refreshItems());
   }
 
   /**
@@ -86,28 +106,14 @@ Resources.CookieItemsView = class extends Resources.StorageItemsView {
    */
   deleteSelectedItem() {
     var selectedCookie = this._cookiesTable.selectedCookie();
-    if (selectedCookie) {
-      selectedCookie.remove();
-      this.refreshItems();
-    }
+    if (selectedCookie)
+      this._model.deleteCookie(selectedCookie, () => this.refreshItems());
   }
 
   /**
    * @override
    */
   refreshItems() {
-    var resourceURLs = [];
-    var cookieDomain = this._cookieDomain;
-    /**
-     * @param {!SDK.Resource} resource
-     */
-    function populateResourceURLs(resource) {
-      var url = resource.documentURL.asParsedURL();
-      if (url && url.securityOrigin() === cookieDomain)
-        resourceURLs.push(resource.url);
-    }
-
-    SDK.ResourceTreeModel.fromTarget(this._target).forAllResources(populateResourceURLs);
-    SDK.Cookies.getCookiesAsync(this._target, resourceURLs, this._updateWithCookies.bind(this));
+    this._model.getCookiesForDomain(this._cookieDomain, cookies => this._updateWithCookies(cookies));
   }
 };

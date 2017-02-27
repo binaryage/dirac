@@ -10,5 +10,6 @@ pushd "$ROOT"
 ./scripts/generate-inspector-backend-commands.sh
 ./scripts/generate-supported-css-properties.sh
 ./scripts/generate-protocol-externs.sh
+./scripts/generate-namespaces-externs.sh
 
 popd

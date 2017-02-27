@@ -39,7 +39,7 @@ Profiler.ProfilesPanel = class extends UI.PanelWithSidebar {
     this.registerRequiredCSS('ui/panelEnablerView.css');
     this.registerRequiredCSS('profiler/heapProfiler.css');
     this.registerRequiredCSS('profiler/profilesPanel.css');
-    this.registerRequiredCSS('components/objectValue.css');
+    this.registerRequiredCSS('object_ui/objectValue.css');
 
     var mainContainer = new UI.VBox();
     this.splitWidget().setMainWidget(mainContainer);
@@ -80,9 +80,9 @@ Profiler.ProfilesPanel = class extends UI.PanelWithSidebar {
     this._profileViewToolbar = new UI.Toolbar('', this._toolbarElement);
 
     this._profileGroups = {};
-    this._launcherView = new Profiler.MultiProfileLauncherView(this);
+    this._launcherView = new Profiler.ProfileLauncherView(this);
     this._launcherView.addEventListener(
-        Profiler.MultiProfileLauncherView.Events.ProfileTypeSelected, this._onProfileTypeSelected, this);
+        Profiler.ProfileLauncherView.Events.ProfileTypeSelected, this._onProfileTypeSelected, this);
 
     this._profileToView = [];
     this._typeIdToSidebarSection = {};

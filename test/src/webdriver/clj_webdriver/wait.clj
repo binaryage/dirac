@@ -4,7 +4,7 @@
            org.openqa.selenium.WebDriver
            [org.openqa.selenium.support.ui WebDriverWait]
            [java.util.concurrent TimeUnit]
-           (java.util.function Predicate)))
+           (java.util.function Function)))
 
 ;; ## Wait Functionality ##
 (defprotocol IWait
@@ -16,7 +16,7 @@
     [driver pred timeout interval] "Set an explicit wait time `timeout` for a particular condition `pred`. Optionally set an `interval` for testing the given predicate. All units in milliseconds"))
 
 (extend-type Driver
-    
+
   IWait
   (implicit-wait [driver timeout]
     (.implicitlyWait (.. (:webdriver driver) manage timeouts) timeout TimeUnit/MILLISECONDS)
@@ -26,14 +26,10 @@
     ([driver pred] (wait-until driver pred 5000 0))
     ([driver pred timeout] (wait-until driver pred timeout 0))
     ([driver pred timeout interval]
-       (let [wait (WebDriverWait. (:webdriver driver) (/ timeout 1000) interval)]
-         (.until wait (proxy [Predicate] []
-                        (test [d] (let [result (pred (init-driver {:webdriver d}))]
-                                     ;; This allows us to wrap zero-arity functions
-                                     ;; in a single-arity function, so we don't need
-                                     ;; to write a macro or different function.
-                                     ;; (Taxi API support)
-                                     (if (fn? result)
-                                       (result)
-                                       result)))))
-         driver))))
+     (let [wait (WebDriverWait. (:webdriver driver) (/ timeout 1000) interval)]
+       (.until wait (proxy [Function] []
+                      (apply [d] (let [result (pred (init-driver {:webdriver d}))]
+                                   (if (fn? result)
+                                     (result)
+                                     result)))))
+       driver))))

@@ -39,11 +39,7 @@ Dirac DevTools can be just a keystroke away enabling following features:
   * improved display of URLs
   * better display of ClojureScript property names:
     * macro-generated names are renamed to friendly names using sub-indexes
-    * properties are grouped, the most important properties at top
-      * properties with nice names go first
-      * then macro-generated names
-      * then null values
-      * then undefined values
+    * properties are grouped, the most important properties go first
 
 ### Screenshots
 
