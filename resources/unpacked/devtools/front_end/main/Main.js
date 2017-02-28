@@ -104,9 +104,9 @@ Main.Main = class {
     Runtime.experiments.register('audits2', 'Audits 2.0', true);
     Runtime.experiments.register('autoAttachToCrossProcessSubframes', 'Auto-attach to cross-process subframes', true);
     Runtime.experiments.register('blackboxJSFramesOnTimeline', 'Blackbox JavaScript frames on Timeline', true);
+    Runtime.experiments.register('continueToLocationMarkers', 'Continue to location markers', true);
     Runtime.experiments.register('colorContrastRatio', 'Contrast ratio line in color picker', true);
-    Runtime.experiments.register('continueToFirstInvocation', 'Continue to first invocation', true);
-    Runtime.experiments.register('cssTrackerPanel', 'Panel that tracks the usage of CSS rules.');
+    Runtime.experiments.register('cssTrackerPanel', 'Coverage support');
     Runtime.experiments.register('emptySourceMapAutoStepping', 'Empty sourcemap auto-stepping');
     Runtime.experiments.register('inputEventsOnTimelineOverview', 'Input events on Timeline overview', true);
     Runtime.experiments.register('liveSASS', 'Live SASS');
@@ -188,7 +188,7 @@ Main.Main = class {
     Common.formatterWorkerPool = new Common.FormatterWorkerPool();
     Workspace.fileSystemMapping = new Workspace.FileSystemMapping(Workspace.isolatedFileSystemManager);
 
-    Main.networkProjectManager = new Bindings.NetworkProjectManager(SDK.targetManager, Workspace.workspace);
+    Bindings.networkProjectManager = new Bindings.NetworkProjectManager(SDK.targetManager, Workspace.workspace);
     Bindings.presentationConsoleMessageHelper = new Bindings.PresentationConsoleMessageHelper(Workspace.workspace);
     Bindings.cssWorkspaceBinding = new Bindings.CSSWorkspaceBinding(SDK.targetManager, Workspace.workspace);
     Bindings.debuggerWorkspaceBinding = new Bindings.DebuggerWorkspaceBinding(SDK.targetManager, Workspace.workspace);

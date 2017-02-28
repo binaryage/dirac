@@ -95,12 +95,6 @@ ObjectUI.ObjectPopoverHelper = class extends UI.PopoverHelper {
 
       var rawLocation = response.location;
       var linkContainer = title.createChild('div', 'function-title-link-container');
-      if (rawLocation && Runtime.experiments.isEnabled('continueToFirstInvocation')) {
-        var sectionToolbar = new UI.Toolbar('function-location-step-into', linkContainer);
-        var stepInto = new UI.ToolbarButton(Common.UIString('Continue to first invocation'), 'largeicon-step-in');
-        stepInto.addEventListener(UI.ToolbarButton.Events.Click, () => rawLocation.continueToLocation());
-        sectionToolbar.appendToolbarItem(stepInto);
-      }
       var sourceURL = rawLocation && rawLocation.script() ? rawLocation.script().sourceURL : null;
       if (rawLocation && sourceURL)
         linkContainer.appendChild(this._lazyLinkifier().linkifyRawLocation(rawLocation, sourceURL));
@@ -157,8 +151,8 @@ ObjectUI.ObjectPopoverHelper = class extends UI.PopoverHelper {
         } else {
           popoverContentElement = createElement('div');
           UI.appendStyle(popoverContentElement, 'object_ui/objectPopover.css');
-          this._titleElement = popoverContentElement.createChild('div', 'monospace');
-          this._titleElement.createChild('span', 'object-popover-title').textContent = description;
+          this._titleElement = popoverContentElement.createChild('div', 'monospace object-popover-title');
+          this._titleElement.createChild('span').textContent = description;
           var section = new ObjectUI.ObjectPropertiesSection(result, '', this._lazyLinkifier());
           section.element.classList.add('object-popover-tree');
           section.titleLessMode();
