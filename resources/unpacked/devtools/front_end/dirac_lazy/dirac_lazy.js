@@ -601,7 +601,9 @@ Object.assign(window.dirac, (function() {
    * @return {?SDK.Script}
    */
   function getScriptFromSourceCode(uiSourceCode) {
-    return Bindings.NetworkProject.getScriptFromSourceCode(uiSourceCode);
+    // we rely here on the fact that getRelevantSourceCodes filtered only suitable source codes
+    // and all of them should have SDK.Script as content provider
+    return /** @type {?SDK.Script} */(uiSourceCode.project().getContentProvider(uiSourceCode.url()));
   }
 
   function extractNamesFromSourceMap(uiSourceCode, namespaceName) {
