@@ -61,28 +61,26 @@
   (and (= (:op nrepl-message) "eval")
        (= "" (string/trim (:code nrepl-message)))))
 
+(defn really-forward-message-to-joined-session! [nrepl-message]
+  (let [{:keys [id session transport]} nrepl-message]
+    (if-let [target-dirac-session-descriptor (sessions/find-target-dirac-session-descriptor session)]
+      (if-let [forwardable-message (prepare-forwardable-message nrepl-message)]
+        (let [job-id (helpers/generate-uuid)
+              target-session (sessions/get-dirac-session-descriptor-session target-dirac-session-descriptor)
+              target-transport (sessions/get-dirac-session-descriptor-transport target-dirac-session-descriptor)
+              target-message (protocol/prepare-handle-forwarded-nrepl-message-response
+                               (helpers/generate-uuid)
+                               (sessions/get-session-id target-session)
+                               job-id
+                               (serialize-message forwardable-message))]
+          (jobs/register-observed-job! job-id id session transport 1000)
+          (transport/send target-transport target-message))
+        (report-nonforwardable-nrepl-message! nrepl-message))
+      (report-missing-target-session! nrepl-message))))
+
 (defn forward-message-to-joined-session! [nrepl-message]
   (log/trace "forward-message-to-joined-session!" (utils/pp nrepl-message))
   (cond
-    (is-eval-cljs-quit? nrepl-message)
-    (special/issue-dirac-special-command! nrepl-message ":disjoin")
-
-    (is-eval-empty-code? nrepl-message)
-    (helpers/send-response! nrepl-message (protocol/prepare-done-response))                                                   ; short-circuit it here, this is an edge case which would hang REPL
-
-    :else
-    (let [{:keys [id session transport]} nrepl-message]
-      (if-let [target-dirac-session-descriptor (sessions/find-target-dirac-session-descriptor session)]
-        (if-let [forwardable-message (prepare-forwardable-message nrepl-message)]
-          (let [job-id (helpers/generate-uuid)
-                target-session (sessions/get-dirac-session-descriptor-session target-dirac-session-descriptor)
-                target-transport (sessions/get-dirac-session-descriptor-transport target-dirac-session-descriptor)
-                target-message (protocol/prepare-handle-forwarded-nrepl-message-response
-                                 (helpers/generate-uuid)
-                                 (sessions/get-session-id target-session)
-                                 job-id
-                                 (serialize-message forwardable-message))]
-            (jobs/register-observed-job! job-id id session transport 1000)
-            (transport/send target-transport target-message))
-          (report-nonforwardable-nrepl-message! nrepl-message))
-        (report-missing-target-session! nrepl-message)))))
+    (is-eval-cljs-quit? nrepl-message) (special/issue-dirac-special-command! nrepl-message ":disjoin")
+    (is-eval-empty-code? nrepl-message) (helpers/send-response! nrepl-message (protocol/prepare-done-response))               ; short-circuit it here, this is an edge case which would hang REPL
+    :else (really-forward-message-to-joined-session! nrepl-message)))
