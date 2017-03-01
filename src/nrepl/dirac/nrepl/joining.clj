@@ -57,10 +57,20 @@
   (and (= (:op nrepl-message) "eval")
        (= ":cljs/quit" (string/trim (:code nrepl-message)))))
 
+(defn is-eval-empty-code? [nrepl-message]
+  (and (= (:op nrepl-message) "eval")
+       (= "" (string/trim (:code nrepl-message)))))
+
 (defn forward-message-to-joined-session! [nrepl-message]
   (log/trace "forward-message-to-joined-session!" (utils/pp nrepl-message))
-  (if (is-eval-cljs-quit? nrepl-message)
+  (cond
+    (is-eval-cljs-quit? nrepl-message)
     (special/issue-dirac-special-command! nrepl-message ":disjoin")
+
+    (is-eval-empty-code? nrepl-message)
+    (helpers/send-response! nrepl-message (protocol/prepare-done-response))                                                   ; short-circuit it here, this is an edge case which would hang REPL
+
+    :else
     (let [{:keys [id session transport]} nrepl-message]
       (if-let [target-dirac-session-descriptor (sessions/find-target-dirac-session-descriptor session)]
         (if-let [forwardable-message (prepare-forwardable-message nrepl-message)]
