@@ -300,14 +300,6 @@ Bindings.ContentProviderBasedProject = class extends Workspace.ProjectStore {
   }
 
   /**
-   * @param {string} url
-   * @return {?Common.ContentProvider}
-   */
-  getContentProvider(url) {
-    return this._contentProviders[url];
-  }
-
-  /**
    * @param {string} path
    */
   removeFile(path) {
