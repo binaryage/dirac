@@ -115,7 +115,7 @@ Main.Main = class {
     Runtime.experiments.register('sourceDiff', 'Source diff');
     Runtime.experiments.register('terminalInDrawer', 'Terminal in drawer', true);
     Runtime.experiments.register('timelineInvalidationTracking', 'Timeline invalidation tracking', true);
-    Runtime.experiments.register('timelineMultipleMainViews', 'Timeline with multiple main views');
+    Runtime.experiments.register('timelineMultipleMainViews', 'Tabbed views on Performance panel');
     Runtime.experiments.register('timelineTracingJSProfile', 'Timeline tracing based JS profiler', true);
     Runtime.experiments.register('timelineV8RuntimeCallStats', 'V8 Runtime Call Stats on Timeline', true);
     Runtime.experiments.register('timelinePerFrameTrack', 'Show track per frame on Timeline', true);
@@ -135,7 +135,7 @@ Main.Main = class {
         Runtime.experiments.enableForTest('releaseNote');
     }
 
-    Runtime.experiments.setDefaultExperiments(['persistenceValidation', 'timelineMultipleMainViews']);
+    Runtime.experiments.setDefaultExperiments(['persistenceValidation']);
   }
 
   /**
@@ -181,7 +181,7 @@ Main.Main = class {
     Common.formatterWorkerPool = new Common.FormatterWorkerPool();
     Workspace.fileSystemMapping = new Workspace.FileSystemMapping(Workspace.isolatedFileSystemManager);
 
-    Bindings.networkProjectManager = new Bindings.NetworkProjectManager(SDK.targetManager, Workspace.workspace);
+    Main.networkProjectManager = new Bindings.NetworkProjectManager(SDK.targetManager, Workspace.workspace);
     Bindings.presentationConsoleMessageHelper = new Bindings.PresentationConsoleMessageHelper(Workspace.workspace);
     Bindings.cssWorkspaceBinding = new Bindings.CSSWorkspaceBinding(SDK.targetManager, Workspace.workspace);
     Bindings.debuggerWorkspaceBinding = new Bindings.DebuggerWorkspaceBinding(SDK.targetManager, Workspace.workspace);
@@ -746,6 +746,10 @@ Main.Main.MainMenuItem = class {
       moreTools.appendItem(extension.title(), UI.viewManager.showView.bind(UI.viewManager, descriptor['id']));
     }
 
+    var helpSubMenu = contextMenu.namedSubMenu('mainMenuHelp');
+    helpSubMenu.appendAction('settings.documentation');
+    if (Runtime.experiments.isEnabled('releaseNote'))
+      helpSubMenu.appendItem('Release Notes', () => InspectorFrontendHost.openInNewTab(Help.latestReleaseNote().link));
     contextMenu.show();
   }
 };
