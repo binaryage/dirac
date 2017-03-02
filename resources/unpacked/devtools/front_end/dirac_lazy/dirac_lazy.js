@@ -436,7 +436,8 @@ Object.assign(window.dirac, (function() {
     if (!script) {
       return Promise.resolve([]);
     }
-    return parseNamespacesDescriptorsAsync(/** @type {!SDK.Script} */(script));
+    //noinspection JSCheckFunctionSignatures
+    return parseNamespacesDescriptorsAsync(script);
   }
 
   function prepareNamespacesFromDescriptors(namespaceDescriptors) {
