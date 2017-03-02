@@ -671,16 +671,12 @@ Network.NetworkPanel.FilmStripRecorder = class {
    * @param {!PerfUI.FilmStripView} filmStripView
    */
   constructor(timeCalculator, filmStripView) {
-    /** @type {?SDK.Target} */
-    this._target = null;
+    /** @type {?SDK.TracingManager} */
+    this._tracingManager = null;
+    /** @type {?SDK.ResourceTreeModel} */
+    this._resourceTreeModel = null;
     this._timeCalculator = timeCalculator;
     this._filmStripView = filmStripView;
-  }
-
-  /**
-   * @override
-   */
-  tracingStarted() {
   }
 
   /**
@@ -696,13 +692,15 @@ Network.NetworkPanel.FilmStripRecorder = class {
    * @override
    */
   tracingComplete() {
-    if (!this._tracingModel || !this._target)
+    if (!this._tracingModel || !this._tracingManager)
       return;
     this._tracingModel.tracingComplete();
-    SDK.targetManager.resumeReload(this._target);
-    this._target = null;
+    this._tracingManager = null;
     this._callback(new SDK.FilmStripModel(this._tracingModel, this._timeCalculator.minimumBoundary() * 1000));
     delete this._callback;
+    if (this._resourceTreeModel)
+      this._resourceTreeModel.resumeReload();
+    this._resourceTreeModel = null;
   }
 
   /**
@@ -721,33 +719,36 @@ Network.NetworkPanel.FilmStripRecorder = class {
   startRecording() {
     this._filmStripView.reset();
     this._filmStripView.setStatusText(Common.UIString('Recording frames...'));
-    if (this._target)
+    var tracingManagers = SDK.targetManager.models(SDK.TracingManager);
+    if (this._tracingManager || !tracingManagers.length)
       return;
 
-    this._target = SDK.targetManager.mainTarget();
+    this._tracingManager = tracingManagers[0];
+    this._resourceTreeModel = this._tracingManager.target().model(SDK.ResourceTreeModel);
     if (this._tracingModel)
       this._tracingModel.reset();
     else
       this._tracingModel = new SDK.TracingModel(new Bindings.TempFileBackingStorage('tracing'));
-    this._target.tracingManager.start(this, '-*,disabled-by-default-devtools.screenshot', '');
+    this._tracingManager.start(this, '-*,disabled-by-default-devtools.screenshot', '');
   }
 
   /**
    * @return {boolean}
    */
   isRecording() {
-    return !!this._target;
+    return !!this._tracingManager;
   }
 
   /**
    * @param {function(?SDK.FilmStripModel)} callback
    */
   stopRecording(callback) {
-    if (!this._target)
+    if (!this._tracingManager)
       return;
 
-    this._target.tracingManager.stop();
-    SDK.targetManager.suspendReload(this._target);
+    this._tracingManager.stop();
+    if (this._resourceTreeModel)
+      this._resourceTreeModel.suspendReload();
     this._callback = callback;
     this._filmStripView.setStatusText(Common.UIString('Fetching frames...'));
   }
