@@ -602,7 +602,18 @@ Object.assign(window.dirac, (function() {
    * @return {?SDK.Script}
    */
   function getScriptFromSourceCode(uiSourceCode) {
-    return Bindings.NetworkProject.getScriptFromSourceCode(uiSourceCode);
+    const script = Bindings.NetworkProject.getScriptFromSourceCode(uiSourceCode);
+    if (!script) {
+      throw new Error(
+        `uiSourceCode expected to have SDK.Script associated\n` +
+        `uiSourceCode: name=${uiSourceCode.name()} url=${uiSourceCode.url()} project=${uiSourceCode.project().type()}\n`);
+    }
+    if (!(script instanceof SDK.Script)) {
+      throw new Error(
+        `getScriptFromSourceCode expected to return an instance of SDK.Script\n` +
+        `uiSourceCode: name=${uiSourceCode.name()} url=${uiSourceCode.url()} project=${uiSourceCode.project().type()}\n`);
+    }
+    return script;
   }
 
   function extractNamesFromSourceMap(uiSourceCode, namespaceName) {
