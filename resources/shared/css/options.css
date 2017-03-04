@@ -30,6 +30,7 @@
 
 #options-form .switches {
   margin-top: 15px;
+  column-count: 2;
 }
 
 #options-form .switches .form-group {
