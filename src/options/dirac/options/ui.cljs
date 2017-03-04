@@ -28,6 +28,12 @@
   (reset! state default-state)
   (save-state!))
 
+(defn option-switch [data key label & [details]]
+  (let [label-view (if (some? details)
+                     [:span {:title details} label]
+                     label)]
+    (f/checkbox label-view data [:options key])))
+
 ; -- views ------------------------------------------------------------------------------------------------------------------
 
 (defc options-view < rum/reactive [data]
@@ -43,17 +49,17 @@
                      ["window" "as a new window"]
                      ["tab" "as a new tab"]])
           [:div {:class "switches"}
-           (f/checkbox "Print welcome message" data [:options :welcome-message])
-           (f/checkbox "Enable REPL" data [:options :enable-repl])
-           (f/checkbox "Enable Parinfer" data [:options :enable-parinfer])
-           (f/checkbox "Enable friendly locals" data [:options :enable-friendly-locals])
-           (f/checkbox "Enable clustered locals" data [:options :enable-clustered-locals])
-           (f/checkbox "Inline Custom Formatters" data [:options :inline-custom-formatters])
-           (f/checkbox "Enable clean URLs" data [:options :clean-urls])
-           (f/checkbox "Beautify function names" data [:options :beautify-function-names])
-           (f/checkbox "Enable link actions" data [:options :link-actions])
-           (f/checkbox "Use backend-supported API" data [:options :use-backend-supported-api])
-           (f/checkbox "Use backend-supported CSS" data [:options :use-backend-supported-css])]
+           (option-switch data :welcome-message "Print welcome message")
+           (option-switch data :enable-repl "Enable REPL")
+           (option-switch data :enable-parinfer "Enable Parinfer")
+           (option-switch data :enable-friendly-locals "Enable friendly locals")
+           (option-switch data :enable-clustered-locals "Enable clustered locals")
+           (option-switch data :inline-custom-formatters "Inline Custom Formatters")
+           (option-switch data :clean-urls "Enable clean URLs")
+           (option-switch data :beautify-function-names "Beautify function names")
+           (option-switch data :link-actions "Enable link actions")
+           (option-switch data :use-backend-supported-api "Use backend-supported API")
+           (option-switch data :use-backend-supported-css "Use backend-supported CSS")]
           (f/text "Extra frontend URL params:" data [:options :user-frontend-url-params]))
         (f/form-buttons
           (f/button "Reset to Defaults" reset-to-defaults!)
