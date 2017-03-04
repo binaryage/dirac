@@ -9,6 +9,29 @@
 
 (defonce state (atom {:options model/default-options}))
 
+(defn ^:dynamic friendly-locals-details []
+  (str "We will apply some renaming logic to make some generated variable names less painful to look at. "
+       "Basically we strip compiler-generated indices and replace them with our own local numbers displayed as subscripts."))
+
+(defn ^:dynamic clustered-locals-details []
+  (str "We will group object properties into clusters according to some heuristics. "
+       "For example nice names should go first, names looking like macro-generated names should go next "
+       "and null values should go last."))
+
+(defn ^:dynamic inline-custom-formatters-details []
+  (str "We will inline custom formatters on Sources Panel when debugging Javascript code."))
+
+(defn ^:dynamic clean-urls-details []
+  (str "We will strip extra url parameter in various UI widgets. "
+       "Figwheel tends to add cache busting timestamps and this makes the DevTools UI very noisy."))
+
+(defn ^:dynamic beautify-function-names-details []
+  (str "We will to guess original function names in ClojureScript. "
+       "Also we try to decorate names with other useful hints (arities, protocols, etc.)"))
+
+(defn ^:dynamic link-actions-details []
+  (str "For example 'Reveal via nREPL' when you right-click url links."))
+
 ; -- supporting functions ---------------------------------------------------------------------------------------------------
 
 (defn save-state! []
@@ -52,12 +75,12 @@
            (option-switch data :welcome-message "Print welcome message")
            (option-switch data :enable-repl "Enable REPL")
            (option-switch data :enable-parinfer "Enable Parinfer")
-           (option-switch data :enable-friendly-locals "Enable friendly locals")
-           (option-switch data :enable-clustered-locals "Enable clustered locals")
-           (option-switch data :inline-custom-formatters "Inline Custom Formatters")
-           (option-switch data :clean-urls "Enable clean URLs")
-           (option-switch data :beautify-function-names "Beautify function names")
-           (option-switch data :link-actions "Enable link actions")
+           (option-switch data :enable-friendly-locals "Enable friendly locals" (friendly-locals-details))
+           (option-switch data :enable-clustered-locals "Enable clustered locals" (clustered-locals-details))
+           (option-switch data :inline-custom-formatters "Inline Custom Formatters" (inline-custom-formatters-details))
+           (option-switch data :clean-urls "Enable clean URLs" (clean-urls-details))
+           (option-switch data :beautify-function-names "Beautify function names" (beautify-function-names-details))
+           (option-switch data :link-actions "Enable link actions" (link-actions-details))
            (option-switch data :use-backend-supported-api "Use backend-supported API")
            (option-switch data :use-backend-supported-css "Use backend-supported CSS")]
           (f/text "Extra frontend URL params:" data [:options :user-frontend-url-params]))
