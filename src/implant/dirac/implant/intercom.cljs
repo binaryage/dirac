@@ -331,7 +331,7 @@
     {:op   "eval"
      :code (pr-str `(do
                       (~'require '~'dirac.nrepl)
-                      (dirac.nrepl/boot-dirac-repl! ~nrepl-config)))}))
+                      (dirac.nrepl/boot-dirac-repl! '~nrepl-config)))}))
 
 (defmethod nrepl-tunnel-client/process-message :bootstrap [_client message]
   (check-agent-version! (:version message))
