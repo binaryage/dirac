@@ -414,3 +414,16 @@
             "interrupt" (handle-forwarded-interrupt-message! forwarded-nrepl-message job-id)
             (error-response job-id (unrecognized-forwarded-nrepl-op-msg op forwarded-nrepl-message))))
         (error-response job-id (unable-unserialize-msg forwarded-nrepl-message serialized-forwarded-nrepl-message))))))
+
+; -- devtools requests ------------------------------------------------------------------------------------------------------
+
+(defn make-devtools-request-message [request payload]
+  {:op      "dirac-devtools-request"
+   :request request
+   :payload payload})
+
+(defn send-devtools-request! [request payload]
+  (assert (repl-ready?))
+  (let [nrepl-message (make-devtools-request-message request payload)
+        responses-chan (nrepl-tunnel-client/tunnel-message-with-responses! nrepl-message)]
+    responses-chan))

@@ -15,7 +15,8 @@
             [dirac.implant.munging :as munging]
             [dirac.implant.helpers :as helpers]
             [dirac.implant.reporter :as reporter]
-            [dirac.implant.repl :as repl])
+            [dirac.implant.repl :as repl]
+            [dirac.implant.link-handlers :as link-handlers])
   (:import goog.async.Debouncer))
 
 (defonce ^:dynamic *console-initialized* false)
@@ -86,6 +87,7 @@
   (post-feedback! (str "setCurrentPanel: " panel-id)))
 
 (defn notify-frontend-initialized []
+  (link-handlers/install!)
   (helpers/warm-up-namespace-cache!))
 
 (defn trigger-internal-error-for-testing! []
