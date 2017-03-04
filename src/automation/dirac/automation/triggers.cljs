@@ -7,7 +7,7 @@
 
 (defn safe-reload! []
   (go
-    (<! (timeout 1000))                                                                                                       ; revent "Cannot find context with specified id" V8 errors ?
+    (<! (timeout 1000))                                                                                                       ; prevent "Cannot find context with specified id" V8 errors ?
     (js/window.location.reload)))
 
 ; -- triggers installers ----------------------------------------------------------------------------------------------------
