@@ -17,11 +17,13 @@
             [dirac.nrepl.special :as special]
             [dirac.nrepl.joining :as joining]
             [dirac.nrepl.protocol :as protocol]
+            [dirac.nrepl.requests :as requests]
             [dirac.nrepl.utils :as utils]))
 
 ; -- middleware dispatch logic ----------------------------------------------------------------------------------------------
 
 (def our-ops {"identify-dirac-nrepl-middleware" true
+              "dirac-devtools-request"          true
               "finish-dirac-job"                true
               "eval"                            #(state/dirac-session?)
               "load-file"                       #(state/dirac-session?)})
@@ -44,6 +46,13 @@
   (log/trace "handle-identify-message!")
   (helpers/send-response! nrepl-message (protocol/prepare-version-response version)))
 
+(defn handler-dirac-devtools-request! [nrepl-message]
+  (log/trace "handler-dirac-devtools-request!")
+  (let [payload (:payload nrepl-message)
+        request (:request nrepl-message)
+        result (requests/handle-request! request payload)]
+    (helpers/send-response! nrepl-message (merge (protocol/prepare-done-response) {:result result}))))
+
 (defn handle-finish-dirac-job-message! [nrepl-message]
   (log/trace "handle-finish-dirac-job!")
   (helpers/send-response! nrepl-message (protocol/extract-bare-status-response nrepl-message)))
@@ -63,6 +72,7 @@
     (assert (our-op? op))
     (case op
       "identify-dirac-nrepl-middleware" (handle-identify-message! nrepl-message)
+      "dirac-devtools-request" (handler-dirac-devtools-request! nrepl-message)
       "finish-dirac-job" (handle-finish-dirac-job-message! nrepl-message)
       "eval" (handle-eval-message! nrepl-message)
       "load-file" (handle-load-file-message! nrepl-message))))
