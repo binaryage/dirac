@@ -128,13 +128,16 @@
 
 ; -- REPL API ---------------------------------------------------------------------------------------------------------------
 
-(def api-version 8)                                                                                                           ; current version of our REPL API
+(def api-version 9)                                                                                                           ; current version of our REPL API
 
 (defn ^:export get-api-version []
   api-version)
 
 (defn ^:export get-effective-config []
   (clj->js (get-prefs)))
+
+(defn ^:export get-serialized-config []
+  (pr-str (get-prefs)))
 
 (defn ^:export present-repl-result
   "Called by our nREPL boilerplate when we capture a REPL evaluation result."
