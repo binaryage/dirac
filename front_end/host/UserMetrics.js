@@ -84,6 +84,10 @@ Host.UserMetrics.Action = {
   ConnectToNodeJSFromFrontend: 19,
   ConnectToNodeJSDirectly: 20,
   CpuThrottlingEnabled: 21,
+  CpuProfileNodeFocused: 22,
+  CpuProfileNodeExcluded: 23,
+  SelectFileFromFilePicker: 24,
+  SelectCommandFromCommandMenu: 25,
 };
 
 Host.UserMetrics._PanelCodes = {

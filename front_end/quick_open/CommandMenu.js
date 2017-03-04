@@ -217,14 +217,7 @@ QuickOpen.CommandMenuDelegate = class extends QuickOpen.FilteredListWidget.Deleg
     if (itemIndex === null)
       return;
     this._commands[itemIndex].execute();
-  }
-
-  /**
-   * @override
-   * @return {boolean}
-   */
-  renderMonospace() {
-    return false;
+    Host.userMetrics.actionTaken(Host.UserMetrics.Action.SelectCommandFromCommandMenu);
   }
 
   /**
