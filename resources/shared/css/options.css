@@ -30,11 +30,14 @@
 
 #options-form .switches {
   margin-top: 15px;
-  column-count: 2;
 }
 
 #options-form .switches .form-group {
   margin-top: 0px;
+}
+
+#options-form .switches .switches-list {
+  column-count: 2;
 }
 
 #options-form .panel-title {

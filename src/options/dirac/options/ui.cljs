@@ -32,6 +32,9 @@
 (defn ^:dynamic link-actions-details []
   (str "For example 'Reveal via nREPL' when you right-click url links."))
 
+(defn ^:dynamic extra-params-details []
+  (str "These parameters will be passed into Dirac DevTools app as additional URL parameters."))
+
 ; -- supporting functions ---------------------------------------------------------------------------------------------------
 
 (defn save-state! []
@@ -57,6 +60,13 @@
                      label)]
     (f/checkbox label-view data [:options key])))
 
+(defn extra-params-view [data]
+  (let [details (extra-params-details)
+        label-view [:span {:title details} "Extra frontend URL params:"]
+        attrs {:title details}
+        placeholder "param1=a&param2=b"]
+    (f/text attrs label-view data [:options :user-frontend-url-params] :placeholder placeholder)))
+
 ; -- views ------------------------------------------------------------------------------------------------------------------
 
 (defc options-view < rum/reactive [data]
@@ -72,18 +82,20 @@
                      ["window" "as a new window"]
                      ["tab" "as a new tab"]])
           [:div {:class "switches"}
-           (option-switch data :welcome-message "Print welcome message")
-           (option-switch data :enable-repl "Enable REPL")
-           (option-switch data :enable-parinfer "Enable Parinfer")
-           (option-switch data :enable-friendly-locals "Enable friendly locals" (friendly-locals-details))
-           (option-switch data :enable-clustered-locals "Enable clustered locals" (clustered-locals-details))
-           (option-switch data :inline-custom-formatters "Inline Custom Formatters" (inline-custom-formatters-details))
-           (option-switch data :clean-urls "Enable clean URLs" (clean-urls-details))
-           (option-switch data :beautify-function-names "Beautify function names" (beautify-function-names-details))
-           (option-switch data :link-actions "Enable link actions" (link-actions-details))
-           (option-switch data :use-backend-supported-api "Use backend-supported API")
-           (option-switch data :use-backend-supported-css "Use backend-supported CSS")]
-          (f/text "Extra frontend URL params:" data [:options :user-frontend-url-params] :placeholder "param1=a&param2=b"))
+           [:label "Switches:"]
+           [:div {:class "switches-list"}
+            (option-switch data :welcome-message "Print welcome message")
+            (option-switch data :enable-repl "Enable REPL")
+            (option-switch data :enable-parinfer "Enable Parinfer")
+            (option-switch data :enable-friendly-locals "Enable friendly locals" (friendly-locals-details))
+            (option-switch data :enable-clustered-locals "Enable clustered locals" (clustered-locals-details))
+            (option-switch data :inline-custom-formatters "Inline Custom Formatters" (inline-custom-formatters-details))
+            (option-switch data :clean-urls "Enable clean URLs" (clean-urls-details))
+            (option-switch data :beautify-function-names "Beautify function names" (beautify-function-names-details))
+            (option-switch data :link-actions "Enable link actions" (link-actions-details))
+            (option-switch data :use-backend-supported-api "Use backend-supported API")
+            (option-switch data :use-backend-supported-css "Use backend-supported CSS")]]
+          (extra-params-view data))
         (f/form-buttons
           (f/button "Reset to Defaults" reset-to-defaults!)
           (f/button "Save and Exit" save-state-and-exit!))))))
