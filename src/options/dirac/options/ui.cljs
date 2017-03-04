@@ -9,6 +9,11 @@
 
 (defonce state (atom {:options model/default-options}))
 
+(defn ^:dynamic debugger-url-details []
+  (str "Dirac DevTools needs a web-socket connection to Chrome Debugging Protocol. "
+       "You have to launch Chrome Canary with --remote-debugging-port=9222 flag. "
+       "Please see Dirac installation instructions."))
+
 (defn ^:dynamic welcome-message-details []
   (str "Display a welcome message in Dirac DevTools console on first launch. "
        "People don't read docs and this teaches them how to switch between prompts at least."))
@@ -46,7 +51,8 @@
   (str "These parameters will be passed into Dirac DevTools app as additional URL parameters."))
 
 (defn ^:dynamic api-details []
-  (str "See https://github.com/binaryage/dirac/blob/master/docs/faq.md#why-should-i-use-recent-chrome-canary-with-dirac-devtools"))
+  (str "See https://github.com/binaryage/dirac/blob/master/docs/faq.md"
+       "#why-should-i-use-recent-chrome-canary-with-dirac-devtools"))
 
 ; -- supporting functions ---------------------------------------------------------------------------------------------------
 
@@ -80,6 +86,13 @@
         placeholder "param1=a&param2=b"]
     (f/text attrs label-view data [:options :user-frontend-url-params] :placeholder placeholder)))
 
+(defn debugger-url-view [data]
+  (let [details (debugger-url-details)
+        label-view [:span {:title details} "Debugger URL:"]
+        attrs {:title details}
+        placeholder "http://localhost:9222"]
+    (f/url attrs label-view data [:options :target-url] :placeholder placeholder)))
+
 ; -- views ------------------------------------------------------------------------------------------------------------------
 
 (defc options-view < rum/reactive [data]
@@ -89,7 +102,7 @@
       (f/panel
         (f/form
           {:on-submit save-state-and-exit!}
-          (f/url "Debugger URL:" data [:options :target-url] :placeholder "http://localhost:9222")
+          (debugger-url-view data)
           (f/select "Open Dirac DevTools as:" data [:options :open-as]
                     [["panel" "a new panel (recommended)"]
                      ["window" "a new window"]
