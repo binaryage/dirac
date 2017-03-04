@@ -83,6 +83,17 @@ SDK.SourceMapEntry = class {
     this.sourceColumnNumber = sourceColumnNumber;
     this.name = name;
   }
+
+  /**
+   * @param {!SDK.SourceMapEntry} entry1
+   * @param {!SDK.SourceMapEntry} entry2
+   * @return {number}
+   */
+  static compare(entry1, entry2) {
+    if (entry1.lineNumber !== entry2.lineNumber)
+      return entry1.lineNumber - entry2.lineNumber;
+    return entry1.columnNumber - entry2.columnNumber;
+  }
 };
 
 /**
@@ -323,27 +334,26 @@ SDK.TextSourceMap = class {
    * @return {?SDK.SourceMapEntry}
    */
   findEntry(lineNumber, columnNumber) {
-    const mappings = this.mappings();
-    if (mappings.length <= 0) {
-      return null;
-    }
-    let first = 0;
-    let last = mappings.length - 1;
-    while (first < last) {
-      const middle = first + Math.floor((last + 1 - first) / 2);
-      const entry = mappings[middle];
-      if (lineNumber < entry.lineNumber || (lineNumber === entry.lineNumber && columnNumber < entry.columnNumber)) {
-        last = middle - 1;
+    var first = 0;
+    var mappings = this.mappings();
+    var count = mappings.length;
+    while (count > 1) {
+      var step = count >> 1;
+      var middle = first + step;
+      var mapping = mappings[middle];
+      if (lineNumber < mapping.lineNumber ||
+        (lineNumber === mapping.lineNumber && columnNumber < mapping.columnNumber)) {
+        count = step;
       } else {
         first = middle;
+        count -= step;
       }
     }
-    const entry = mappings[first];
-    if (entry && entry.lineNumber === lineNumber && entry.columnNumber <= columnNumber) {
-      return entry;
-    } else {
+    var entry = mappings[first];
+    if (!first && entry &&
+      (lineNumber < entry.lineNumber || (lineNumber === entry.lineNumber && columnNumber < entry.columnNumber)))
       return null;
-    }
+    return entry;
   }
 
   /**
@@ -497,22 +507,8 @@ SDK.TextSourceMap = class {
           lineNumber, columnNumber, sourceURL, sourceLineNumber, sourceColumnNumber, names[nameIndex]));
     }
 
-    // we have to sort the mappings for findEntry
-    // some source maps don't have monotonic mappings,
-    // _decodeVLQ might return negative values when updating columnNumber
-    // AFAIK, spec here does not disallow it:
-    //   https://docs.google.com/document/d/1U1RGAehQwRypUTovF1KRlpiOFze0b-_2gc6fAH0KY0k/edit
-    this._mappings.sort((a, b) => {
-      const al = a.lineNumber;
-      const bl = b.lineNumber;
-      const ac = a.columnNumber;
-      const bc = b.columnNumber;
-      if (al < bl || (al === bl && ac < bc)) {
-        return -1;
-      } else {
-        return 1;
-      }
-    });
+    // As per spec, mappings are not necessarily sorted.
+    this._mappings.stableSort(SDK.SourceMapEntry.compare);
   }
 
   /**
