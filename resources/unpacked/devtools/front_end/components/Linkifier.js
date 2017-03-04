@@ -445,7 +445,7 @@ Components.Linkifier = class {
       return;
     var actions = Components.Linkifier._linkActions(link);
     if (actions.length)
-      actions[0].handler.call(null);
+      actions[0].handler.call(null, event);
   }
 
   /**
@@ -522,6 +522,7 @@ Components.Linkifier = class {
     }
     if (contentProvider) {
       var lineNumber = uiLocation ? uiLocation.lineNumber : info.lineNumber || 0;
+      var columnNumber = uiLocation ? uiLocation.columnNumber : info.columnNumber || 0;
       for (var title of Components.Linkifier._linkHandlers.keys()) {
         var handler = Components.Linkifier._linkHandlers.get(title);
         var action = {
@@ -532,6 +533,13 @@ Components.Linkifier = class {
           result.unshift(action);
         else
           result.push(action);
+      }
+      const diracAction = Components.Linkifier.diracLinkHandlerAction;
+      if (diracAction) {
+        result.unshift({
+          title: diracAction.title,
+          handler: diracAction.handler.bind(null, result, contentProvider.contentURL(), lineNumber, columnNumber)
+        });
       }
     }
     if (resource || info.url) {

@@ -827,6 +827,13 @@ Object.assign(window.dirac, (function() {
     listeningForWorkspaceChanges = false;
   }
 
+  function registerDiracLinkAction(action) {
+    if (Components.Linkifier.diracLinkHandlerAction) {
+      throw new Error("registerDiracLinkAction already set");
+    }
+    Components.Linkifier.diracLinkHandlerAction = action;
+  }
+
   // --- exported interface -----------------------------------------------------------------------------------------------
 
   // don't forget to update externs.js too
@@ -850,7 +857,9 @@ Object.assign(window.dirac, (function() {
     extractMacroNamespaceSymbolsAsync: extractMacroNamespaceSymbolsAsync,
     extractNamespacesAsync: extractNamespacesAsync,
     invalidateNamespacesCache: invalidateNamespacesCache,
-    getMacroNamespaceNames: getMacroNamespaceNames
+    getMacroNamespaceNames: getMacroNamespaceNames,
+    registerDiracLinkAction: registerDiracLinkAction
+
   };
 
 })());

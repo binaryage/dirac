@@ -170,6 +170,10 @@ Object.assign(window.dirac, (function() {
     return loadLazyDirac().then(() => window.dirac.addConsoleMessageToMainTarget(...args));
   }
 
+  function registerDiracLinkAction(...args) {
+    return loadLazyDirac().then(() => window.dirac.registerDiracLinkAction(...args));
+  }
+
 // --- exported interface ---------------------------------------------------------------------------------------------------
 
   // don't forget to update externs.js too
@@ -218,7 +222,8 @@ Object.assign(window.dirac, (function() {
     extractNamespacesAsync: extractNamespacesAsync,
     invalidateNamespaceSymbolsCache: invalidateNamespaceSymbolsCache,
     invalidateNamespacesCache: invalidateNamespacesCache,
-    getMacroNamespaceNames: getMacroNamespaceNames
+    getMacroNamespaceNames: getMacroNamespaceNames,
+    registerDiracLinkAction: registerDiracLinkAction,
 
     // ...
 

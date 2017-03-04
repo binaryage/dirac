@@ -459,6 +459,11 @@ var dirac = {
     getMacroNamespaceNames: function(namespaces) {},
 
     /**
+    * @param {!Object} action
+    */
+    registerDiracLinkAction: function(action) {},
+
+    /**
      * @param {Array.<T>} coll
      * @param {function(T):string=} keyFn
      * @return {Array.<T>}
