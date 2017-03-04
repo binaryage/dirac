@@ -83,7 +83,7 @@
            (option-switch data :link-actions "Enable link actions" (link-actions-details))
            (option-switch data :use-backend-supported-api "Use backend-supported API")
            (option-switch data :use-backend-supported-css "Use backend-supported CSS")]
-          (f/text "Extra frontend URL params:" data [:options :user-frontend-url-params]))
+          (f/text "Extra frontend URL params:" data [:options :user-frontend-url-params] :placeholder "param1=a&param2=b"))
         (f/form-buttons
           (f/button "Reset to Defaults" reset-to-defaults!)
           (f/button "Save and Exit" save-state-and-exit!))))))
