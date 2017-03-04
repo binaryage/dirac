@@ -534,12 +534,14 @@ Components.Linkifier = class {
         else
           result.push(action);
       }
-      const diracAction = Components.Linkifier.diracLinkHandlerAction;
-      if (diracAction) {
-        result.unshift({
-          title: diracAction.title,
-          handler: diracAction.handler.bind(null, result, contentProvider.contentURL(), lineNumber, columnNumber)
-        });
+      if (dirac.hasLinkActions) {
+        const diracAction = Components.Linkifier.diracLinkHandlerAction;
+        if (diracAction) {
+          result.unshift({
+            title: diracAction.title,
+            handler: diracAction.handler.bind(null, result, contentProvider.contentURL(), lineNumber, columnNumber)
+          });
+        }
       }
     }
     if (resource || info.url) {

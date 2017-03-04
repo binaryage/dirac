@@ -51,6 +51,7 @@
            (f/checkbox "Inline Custom Formatters" data [:options :inline-custom-formatters])
            (f/checkbox "Enable clean URLs" data [:options :clean-urls])
            (f/checkbox "Beautify function names" data [:options :beautify-function-names])
+           (f/checkbox "Enable link actions" data [:options :link-actions])
            (f/checkbox "Use backend-supported API" data [:options :use-backend-supported-api])
            (f/checkbox "Use backend-supported CSS" data [:options :use-backend-supported-css])]
           (f/text "Extra frontend URL params:" data [:options :user-frontend-url-params]))

@@ -8,6 +8,7 @@ Object.assign(window.dirac, (function() {
 
   const featureFlags = {};
 
+  // WARNING: keep this in sync with dirac.background.tools/flag-keys
   const knownFeatureFlags = [
     "enable-repl",
     "enable-parinfer",
@@ -16,7 +17,8 @@ Object.assign(window.dirac, (function() {
     "inline-custom-formatters",
     "welcome-message",
     "clean-urls",
-    "beautify-function-names"];
+    "beautify-function-names",
+    "link-actions"];
 
   function hasFeature(feature) {
     const flag = featureFlags[feature];
@@ -196,6 +198,7 @@ Object.assign(window.dirac, (function() {
     hasWelcomeMessage: hasFeature("welcome-message"),
     hasCleanUrls: hasFeature("clean-urls"),
     hasBeautifyFunctionNames: hasFeature("beautify-function-names"),
+    hasLinkActions: hasFeature("link-actions"),
 
     // -- INTERFACE -----------------------------------------------------------------------------------------------------
     hasFeature: hasFeature,

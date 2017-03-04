@@ -381,6 +381,8 @@ var dirac = {
     hasCleanUrls: true,
     /** @type {boolean} */
     hasBeautifyFunctionNames: true,
+    /** @type {boolean} */
+    hasLinkActions: true,
     /** @type {?Object.<string, dirac.NamespaceDescriptor>} */
     _namespacesCache: null,
     /**
