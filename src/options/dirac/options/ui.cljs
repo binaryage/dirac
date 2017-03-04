@@ -9,6 +9,16 @@
 
 (defonce state (atom {:options model/default-options}))
 
+(defn ^:dynamic welcome-message-details []
+  (str "Display a welcome message in Dirac DevTools console on first launch. "
+       "People don't read docs and this teaches them how to switch between prompts at least."))
+
+(defn ^:dynamic repl-details []
+  (str "Enable REPL subsystem. This toggle is here for emergency reasons."))
+
+(defn ^:dynamic parinfer-details []
+  (str "Enable parinfer mode in Dirac REPL prompt. See https://shaunlebron.github.io/parinfer."))
+
 (defn ^:dynamic friendly-locals-details []
   (str "We will apply some renaming logic to make some generated variable names less painful to look at. "
        "Basically we strip compiler-generated indices and replace them with our own local numbers displayed as subscripts."))
@@ -34,6 +44,9 @@
 
 (defn ^:dynamic extra-params-details []
   (str "These parameters will be passed into Dirac DevTools app as additional URL parameters."))
+
+(defn ^:dynamic api-details []
+  (str "See https://github.com/binaryage/dirac/blob/master/docs/faq.md#why-should-i-use-recent-chrome-canary-with-dirac-devtools"))
 
 ; -- supporting functions ---------------------------------------------------------------------------------------------------
 
@@ -84,17 +97,17 @@
           [:div {:class "switches"}
            [:label "Switches:"]
            [:div {:class "switches-list"}
-            (option-switch data :welcome-message "Print welcome message")
-            (option-switch data :enable-repl "Enable REPL")
-            (option-switch data :enable-parinfer "Enable Parinfer")
+            (option-switch data :welcome-message "Print welcome message" (welcome-message-details))
+            (option-switch data :enable-repl "Enable REPL" (repl-details))
+            (option-switch data :enable-parinfer "Enable Parinfer" (parinfer-details))
             (option-switch data :enable-friendly-locals "Enable friendly locals" (friendly-locals-details))
             (option-switch data :enable-clustered-locals "Enable clustered locals" (clustered-locals-details))
             (option-switch data :inline-custom-formatters "Inline Custom Formatters" (inline-custom-formatters-details))
             (option-switch data :clean-urls "Enable clean URLs" (clean-urls-details))
             (option-switch data :beautify-function-names "Beautify function names" (beautify-function-names-details))
             (option-switch data :link-actions "Enable link actions" (link-actions-details))
-            (option-switch data :use-backend-supported-api "Use backend-supported API")
-            (option-switch data :use-backend-supported-css "Use backend-supported CSS")]]
+            (option-switch data :use-backend-supported-api "Use backend-supported API" (api-details))
+            (option-switch data :use-backend-supported-css "Use backend-supported CSS" (api-details))]]
           (extra-params-view data))
         (f/form-buttons
           (f/button "Reset to Defaults" reset-to-defaults!)
