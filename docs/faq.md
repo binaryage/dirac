@@ -147,4 +147,45 @@ If you open internal DevTools or have some other debugger client already connect
 
 ### Is it possible to use Dirac with Node.js projects?
 
-Yes! Please read [the documentation here](https://github.com/binaryage/dirac/blob/master/docs/node.md). 
+Yes! Please read [the documentation here](https://github.com/binaryage/dirac/blob/master/docs/node.md).
+ 
+### How do I reveal source files via nREPL?
+
+DevTools presents file urls in Console and other parts of UI as click-able links. Normally it opens urls in
+DevTools UI, for example in Sources Panel. 
+
+We would like to teach Dirac DevTools to [open files in our external editor](https://github.com/binaryage/dirac/issues/56)
+as well.
+
+<img src="https://dl.dropboxusercontent.com/u/559047/dirac-reveal-via-repl.png" width="800">
+
+This is not an easy task, because
+
+1. URLs known to DevTools are typically served by your dev server and mapping to original filesystem files might be unclear, highly dependent on your project configuration.
+2. ClojureScript generates files and they are served from different place than real location of source files (your compiler copies cljs files into "out" directory in dev mode)
+3. DevTools app does not have access to filesystem and cannot run shell commands.
+4. DevTools app might be running remotely.
+
+I decided to implement this using nREPL. When an url link is clicked, Dirac DevTools sends an nREPL message with a request to open url along with line and column information.
+Dirac middleware running inside nREPL server then decides how to handle it. By default it launches a shell script (if configured).
+ 
+You can specify nREPL config key `:reveal-url-request-handler` which is a Clojure function to handle :reveal-url requests. For convenience
+I have implemented a [default implementation](https://github.com/binaryage/dirac/blob/master/src/nrepl/dirac/nrepl/config_helpers.clj), 
+which delegates to a shell script specified with `:reveal-url-script-path` config key (if set).
+ 
+Please review relevant options in [nrepl's config.clj](https://github.com/binaryage/dirac/blob/master/src/nrepl/dirac/nrepl/config.clj).
+
+Typically you will want to add something like this to your `:compiler` options:
+ 
+    :external-config {:dirac.runtime/config {:nrepl-config {:reveal-url-script-path "scripts/reveal.sh" }}}
+    
+And implement `reveal.sh` tailored to your project structure using your favourite shell scripting tools.
+
+Please note that this feature was introduced in [Dirac 1.2.0](https://github.com/binaryage/dirac/releases/tag/v1.2.0) 
+and it works only with a working REPL connection. And you still have to provide a suitable shell script which can do 
+translation between urls and filesystem locations. This script will likely be project-specific. For inspiration, I have 
+implemented an example fuzzy file matching script in [dirac-sample project](https://github.com/binaryage/dirac-sample).
+Please see [this commit](https://github.com/binaryage/dirac-sample/commit/18eb3ec8d18602536202b1c08f69d5fcd489b689) and 
+[this commit](https://github.com/binaryage/dirac-sample/commit/3f6b149eca7bac6efc6ffd77f29d25bdc1606d3c) how you could 
+potentially implement something like this for your own project.
+
