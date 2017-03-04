@@ -11,6 +11,6 @@
         (<!* a/switch-to-console-panel!)
         (<!* a/switch-prompt-to-dirac!)
         (<!* a/wait-for-prompt-to-enter-edit-mode)
-        (<!* a/trigger! :reload)
+        (<!* a/reload!)
         (<!* a/wait-for-prompt-to-enter-edit-mode)
         (is (zero? (<!* a/count-internal-dirac-errors)))))))
