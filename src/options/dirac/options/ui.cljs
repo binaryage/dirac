@@ -90,10 +90,10 @@
         (f/form
           {:on-submit save-state-and-exit!}
           (f/url "Debugger URL:" data [:options :target-url] :placeholder "http://localhost:9222")
-          (f/select "Open Dirac DevTools:" data [:options :open-as]
-                    [["panel" "as a new panel (recommended)"]
-                     ["window" "as a new window"]
-                     ["tab" "as a new tab"]])
+          (f/select "Open Dirac DevTools as:" data [:options :open-as]
+                    [["panel" "a new panel (recommended)"]
+                     ["window" "a new window"]
+                     ["tab" "a new tab"]])
           [:div {:class "switches"}
            [:label "Switches:"]
            [:div {:class "switches-list"}
