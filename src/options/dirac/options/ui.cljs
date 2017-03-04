@@ -71,9 +71,10 @@
 (defn watch-options! []
   (add-watch model/cached-options :options-ui load-state!))
 
-(defn reset-to-defaults! []
+(defn reset-to-defaults-and-exit! []
   (reset! state default-state)
-  (save-state!))
+  (save-state!)
+  (.close js/window))
 
 ; -- views ------------------------------------------------------------------------------------------------------------------
 
@@ -125,7 +126,7 @@
             (switch-view data :use-backend-supported-css "Use backend-supported CSS" (api-details))]]
           (extra-params-view data))
         (f/form-buttons
-          (f/button "Reset to Defaults" reset-to-defaults!)
+          (f/button "Reset to Defaults and Exit" reset-to-defaults-and-exit!)
           (f/button "Save and Exit" save-state-and-exit!))))))
 
 (defc main-view [state]
