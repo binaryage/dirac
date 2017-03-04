@@ -9,6 +9,8 @@
 
 (defonce state (atom {:options model/default-options}))
 
+; -- help strings -----------------------------------------------------------------------------------------------------------
+
 (defn ^:dynamic debugger-url-details []
   (str "Dirac DevTools needs a web-socket connection to Chrome Debugging Protocol. "
        "You have to launch Chrome Canary with --remote-debugging-port=9222 flag. "
@@ -73,7 +75,9 @@
   (reset! state default-state)
   (save-state!))
 
-(defn option-switch [data key label & [details]]
+; -- views ------------------------------------------------------------------------------------------------------------------
+
+(defn switch-view [data key label & [details]]
   (let [label-view (if (some? details)
                      [:span {:title details} label]
                      label)]
@@ -93,8 +97,6 @@
         placeholder "http://localhost:9222"]
     (f/url attrs label-view data [:options :target-url] :placeholder placeholder)))
 
-; -- views ------------------------------------------------------------------------------------------------------------------
-
 (defc options-view < rum/reactive [data]
   (let [form-options {:form         {:horizontal true}
                       :button-group {:align "text-right"}}]
@@ -110,17 +112,17 @@
           [:div {:class "switches"}
            [:label "Switches:"]
            [:div {:class "switches-list"}
-            (option-switch data :welcome-message "Print welcome message" (welcome-message-details))
-            (option-switch data :enable-repl "Enable REPL" (repl-details))
-            (option-switch data :enable-parinfer "Enable Parinfer" (parinfer-details))
-            (option-switch data :enable-friendly-locals "Enable friendly locals" (friendly-locals-details))
-            (option-switch data :enable-clustered-locals "Enable clustered locals" (clustered-locals-details))
-            (option-switch data :inline-custom-formatters "Inline Custom Formatters" (inline-custom-formatters-details))
-            (option-switch data :clean-urls "Enable clean URLs" (clean-urls-details))
-            (option-switch data :beautify-function-names "Beautify function names" (beautify-function-names-details))
-            (option-switch data :link-actions "Enable link actions" (link-actions-details))
-            (option-switch data :use-backend-supported-api "Use backend-supported API" (api-details))
-            (option-switch data :use-backend-supported-css "Use backend-supported CSS" (api-details))]]
+            (switch-view data :welcome-message "Print welcome message" (welcome-message-details))
+            (switch-view data :enable-repl "Enable REPL" (repl-details))
+            (switch-view data :enable-parinfer "Enable Parinfer" (parinfer-details))
+            (switch-view data :enable-friendly-locals "Enable friendly locals" (friendly-locals-details))
+            (switch-view data :enable-clustered-locals "Enable clustered locals" (clustered-locals-details))
+            (switch-view data :inline-custom-formatters "Inline Custom Formatters" (inline-custom-formatters-details))
+            (switch-view data :clean-urls "Enable clean URLs" (clean-urls-details))
+            (switch-view data :beautify-function-names "Beautify function names" (beautify-function-names-details))
+            (switch-view data :link-actions "Enable link actions" (link-actions-details))
+            (switch-view data :use-backend-supported-api "Use backend-supported API" (api-details))
+            (switch-view data :use-backend-supported-css "Use backend-supported CSS" (api-details))]]
           (extra-params-view data))
         (f/form-buttons
           (f/button "Reset to Defaults" reset-to-defaults!)
