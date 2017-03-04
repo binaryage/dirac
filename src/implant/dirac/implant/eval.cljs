@@ -6,9 +6,17 @@
             [chromex.logging :refer-macros [log warn error]]
             [dirac.implant.feedback :as feedback]
             [clojure.string :as string]
-            [dirac.utils :as utils]))
+            [dirac.utils :as utils]
+            [cljs.tools.reader.edn :as edn]))
 
 (def installation-help-url "https://github.com/binaryage/dirac/blob/master/docs/installation.md")
+
+(defn ^:dynamic make-config-reading-error-message [e serialized-config]
+  (str "Unable to read runtime config: " (.-message e) "\n"
+       e "\n"
+       "\n"
+       "--- full config ---\n"
+       serialized-config "\n\n"))
 
 ; -- configuration ----------------------------------------------------------------------------------------------------------
 
@@ -327,8 +335,11 @@
 
 (defn get-runtime-config []
   (go
-    (let [value (<! (safely-eval-in-context! :default (js-obj) "dirac.runtime.repl.get_effective_config()"))]
-      (js->clj value :keywordize-keys true))))
+    (let [serialized-config (<! (safely-eval-in-context! :default "{}" "dirac.runtime.repl.get_serialized_config()"))]
+      (try
+        (edn/read-string serialized-config)
+        (catch :default e
+          (throw (ex-info (make-config-reading-error-message e serialized-config) {})))))))
 
 (defn get-runtime-tag []
   (go
