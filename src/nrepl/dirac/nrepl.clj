@@ -13,11 +13,14 @@
 (set-descriptor! #'middleware
                  {:requires #{"clone"}
                   :expects  #{"eval" "load-file"}                                                                             ; piggieback unconditionally hijacks eval and load-file
-                  :handles  {"identify-dirac-nrepl-middleware"
-                             {:doc      "Checks for presence of Dirac nREPL middleware"
-                              :requires {}
-                              :optional {}
-                              :returns  {"version" "Version of Dirac nREPL middleware."}}}})
+                  :handles  {"identify-dirac-nrepl-middleware" {:doc      "Checks for presence of Dirac nREPL middleware"
+                                                                :requires {}
+                                                                :optional {}
+                                                                :returns  {"version" "Version of Dirac nREPL middleware."}}
+                             "dirac-devtools-request"          {:doc      "Handles a request from devtools UI"
+                                                                :requires {}
+                                                                :optional {}
+                                                                :returns  {"result" "command result (if any)"}}}})
 
 ; -- support for booting into CLJS REPL -------------------------------------------------------------------------------------
 

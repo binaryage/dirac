@@ -436,7 +436,8 @@ Object.assign(window.dirac, (function() {
     if (!script) {
       return Promise.resolve([]);
     }
-    return parseNamespacesDescriptorsAsync(/** @type {!SDK.Script} */(script));
+    //noinspection JSCheckFunctionSignatures
+    return parseNamespacesDescriptorsAsync(script);
   }
 
   function prepareNamespacesFromDescriptors(namespaceDescriptors) {
@@ -601,7 +602,18 @@ Object.assign(window.dirac, (function() {
    * @return {?SDK.Script}
    */
   function getScriptFromSourceCode(uiSourceCode) {
-    return Bindings.NetworkProject.getScriptFromSourceCode(uiSourceCode);
+    const script = Bindings.NetworkProject.getScriptFromSourceCode(uiSourceCode);
+    if (!script) {
+      throw new Error(
+        `uiSourceCode expected to have SDK.Script associated\n` +
+        `uiSourceCode: name=${uiSourceCode.name()} url=${uiSourceCode.url()} project=${uiSourceCode.project().type()}\n`);
+    }
+    if (!(script instanceof SDK.Script)) {
+      throw new Error(
+        `getScriptFromSourceCode expected to return an instance of SDK.Script\n` +
+        `uiSourceCode: name=${uiSourceCode.name()} url=${uiSourceCode.url()} project=${uiSourceCode.project().type()}\n`);
+    }
+    return script;
   }
 
   function extractNamesFromSourceMap(uiSourceCode, namespaceName) {
@@ -815,6 +827,13 @@ Object.assign(window.dirac, (function() {
     listeningForWorkspaceChanges = false;
   }
 
+  function registerDiracLinkAction(action) {
+    if (Components.Linkifier.diracLinkHandlerAction) {
+      throw new Error("registerDiracLinkAction already set");
+    }
+    Components.Linkifier.diracLinkHandlerAction = action;
+  }
+
   // --- exported interface -----------------------------------------------------------------------------------------------
 
   // don't forget to update externs.js too
@@ -838,7 +857,9 @@ Object.assign(window.dirac, (function() {
     extractMacroNamespaceSymbolsAsync: extractMacroNamespaceSymbolsAsync,
     extractNamespacesAsync: extractNamespacesAsync,
     invalidateNamespacesCache: invalidateNamespacesCache,
-    getMacroNamespaceNames: getMacroNamespaceNames
+    getMacroNamespaceNames: getMacroNamespaceNames,
+    registerDiracLinkAction: registerDiracLinkAction
+
   };
 
 })());

@@ -469,7 +469,6 @@ all_devtools_files = [
   "front_end/sdk/ServiceWorkerCacheModel.js",
   "front_end/sdk/ServiceWorkerManager.js",
   "front_end/sdk/SourceMap.js",
-  "front_end/sdk/SubTargetsManager.js",
   "front_end/sdk/Target.js",
   "front_end/sdk/TargetManager.js",
   "front_end/sdk/TracingManager.js",
@@ -658,7 +657,6 @@ all_devtools_files = [
   "front_end/ui/SoftContextMenu.js",
   "front_end/ui/splitWidget.css",
   "front_end/ui/SplitWidget.js",
-  "front_end/ui/StackView.js",
   "front_end/ui/suggestBox.css",
   "front_end/ui/SuggestBox.js",
   "front_end/ui/tabbedPane.css",
@@ -826,7 +824,6 @@ generated_resources = [
   # this contains non-autostart non-remote modules only.
   "$resources_out_dir/animation/animation_module.js",
   "$resources_out_dir/audits/audits_module.js",
-  "$resources_out_dir/audits2_worker/audits2_worker_module.js",
   "$resources_out_dir/audits2/audits2_module.js",
   "$resources_out_dir/cm/cm_module.js",
   "$resources_out_dir/color_picker/color_picker_module.js",
@@ -861,6 +858,7 @@ generated_resources = [
 
 generated_remote_modules = [
   "$resources_out_dir/accessibility/accessibility_module.js",
+  "$resources_out_dir/audits2_worker/audits2_worker_module.js",
   "$resources_out_dir/cm_modes/cm_modes_module.js",
   "$resources_out_dir/emulated_devices/emulated_devices_module.js",
   "$resources_out_dir/gonzales/gonzales_module.js",

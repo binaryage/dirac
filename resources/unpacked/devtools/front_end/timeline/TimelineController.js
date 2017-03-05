@@ -3,36 +3,35 @@
 // found in the LICENSE file.
 
 /**
- * @implements {SDK.TargetManager.Observer}
+ * @implements {SDK.SDKModelObserver<!SDK.CPUProfilerModel>}
  * @implements {SDK.TracingManagerClient}
  * @unrestricted
  */
 Timeline.TimelineController = class {
   /**
-   * @param {!SDK.Target} target
+   * @param {!SDK.TracingManager} tracingManager
    * @param {!Timeline.PerformanceModel} performanceModel
    * @param {!Timeline.TimelineController.Client} client
    */
-  constructor(target, performanceModel, client) {
-    this._target = target;
+  constructor(tracingManager, performanceModel, client) {
+    this._tracingManager = tracingManager;
     this._performanceModel = performanceModel;
     this._client = client;
 
     this._tracingModelBackingStorage = new Bindings.TempFileBackingStorage('tracing');
     this._tracingModel = new SDK.TracingModel(this._tracingModelBackingStorage);
 
-    this._performanceModel.setMainTarget(target);
+    this._performanceModel.setMainTarget(tracingManager.target());
 
-    /** @type {!Array<!SDK.Target>} */
-    this._targets = [];
     /** @type {!Array<!Timeline.ExtensionTracingSession>} */
     this._extensionSessions = [];
-    SDK.targetManager.observeTargets(this);
+    SDK.targetManager.observeModels(SDK.CPUProfilerModel, this);
   }
 
   /**
    * @param {!Timeline.TimelineController.RecordingOptions} options
    * @param {!Array<!Extensions.ExtensionTraceProvider>} providers
+   * @return {!Promise}
    */
   startRecording(options, providers) {
     this._extensionTraceProviders = Extensions.extensionServer.traceProviders().slice();
@@ -72,15 +71,16 @@ Timeline.TimelineController = class {
     this._extensionSessions =
         providers.map(provider => new Timeline.ExtensionTracingSession(provider, this._performanceModel));
     this._extensionSessions.forEach(session => session.start());
-    this._startRecordingWithCategories(categoriesArray.join(','), options.enableJSSampling);
+    var startPromise = this._startRecordingWithCategories(categoriesArray.join(','), options.enableJSSampling);
     this._performanceModel.setRecordStartTime(Date.now());
+    return startPromise;
   }
 
   stopRecording() {
     var tracingStoppedPromises = [];
     tracingStoppedPromises.push(new Promise(resolve => this._tracingCompleteCallback = resolve));
-    tracingStoppedPromises.push(this._stopProfilingOnAllTargets());
-    this._target.tracingManager.stop();
+    tracingStoppedPromises.push(this._stopProfilingOnAllModels());
+    this._tracingManager.stop();
     tracingStoppedPromises.push(SDK.targetManager.resumeAllTargets());
 
     this._client.loadingStarted();
@@ -97,59 +97,38 @@ Timeline.TimelineController = class {
 
   /**
    * @override
-   * @param {!SDK.Target} target
+   * @param {!SDK.CPUProfilerModel} cpuProfilerModel
    */
-  targetAdded(target) {
-    this._targets.push(target);
+  modelAdded(cpuProfilerModel) {
     if (this._profiling)
-      this._startProfilingOnTarget(target);
+      cpuProfilerModel.startRecording();
   }
 
   /**
    * @override
-   * @param {!SDK.Target} target
+   * @param {!SDK.CPUProfilerModel} cpuProfilerModel
    */
-  targetRemoved(target) {
-    this._targets.remove(target, true);
+  modelRemoved(cpuProfilerModel) {
     // FIXME: We'd like to stop profiling on the target and retrieve a profile
     // but it's too late. Backend connection is closed.
   }
 
   /**
-   * @param {!SDK.Target} target
    * @return {!Promise}
    */
-  _startProfilingOnTarget(target) {
-    return target.hasJSCapability() ? target.profilerAgent().start() : Promise.resolve();
-  }
-
-  /**
-   * @return {!Promise}
-   */
-  _startProfilingOnAllTargets() {
-    var intervalUs = Common.moduleSetting('highResolutionCpuProfiling').get() ? 100 : 1000;
-    this._target.profilerAgent().setSamplingInterval(intervalUs);
+  _startProfilingOnAllModels() {
     this._profiling = true;
-    return Promise.all(this._targets.map(this._startProfilingOnTarget));
-  }
-
-  /**
-   * @param {!SDK.Target} target
-   * @return {!Promise}
-   */
-  _stopProfilingOnTarget(target) {
-    return target.hasJSCapability() ? target.profilerAgent().stop(this._addCpuProfile.bind(this, target.id())) :
-                                      Promise.resolve();
+    var models = SDK.targetManager.models(SDK.CPUProfilerModel);
+    return Promise.all(models.map(model => model.startRecording()));
   }
 
   /**
    * @param {string} targetId
-   * @param {?Protocol.Error} error
    * @param {?Protocol.Profiler.Profile} cpuProfile
    */
-  _addCpuProfile(targetId, error, cpuProfile) {
+  _addCpuProfile(targetId, cpuProfile) {
     if (!cpuProfile) {
-      Common.console.warn(Common.UIString('CPU profile for a target is not available. %s', error || ''));
+      Common.console.warn(Common.UIString('CPU profile for a target is not available.'));
       return;
     }
     if (!this._cpuProfiles)
@@ -160,43 +139,31 @@ Timeline.TimelineController = class {
   /**
    * @return {!Promise}
    */
-  _stopProfilingOnAllTargets() {
-    var targets = this._profiling ? this._targets : [];
+  _stopProfilingOnAllModels() {
+    var models = this._profiling ? SDK.targetManager.models(SDK.CPUProfilerModel) : [];
     this._profiling = false;
-    return Promise.all(targets.map(this._stopProfilingOnTarget, this));
+    var promises = [];
+    for (var model of models) {
+      var targetId = model.target().id();
+      var modelPromise = model.stopRecording().then(this._addCpuProfile.bind(this, targetId));
+      promises.push(modelPromise);
+    }
+    return Promise.all(promises);
   }
 
   /**
    * @param {string} categories
    * @param {boolean=} enableJSSampling
-   * @param {function(?string)=} callback
+   * @return {!Promise}
    */
-  _startRecordingWithCategories(categories, enableJSSampling, callback) {
+  _startRecordingWithCategories(categories, enableJSSampling) {
     SDK.targetManager.suspendAllTargets();
     var profilingStartedPromise = enableJSSampling && !Runtime.experiments.isEnabled('timelineTracingJSProfile') ?
-        this._startProfilingOnAllTargets() :
+        this._startProfilingOnAllModels() :
         Promise.resolve();
     var samplingFrequencyHz = Common.moduleSetting('highResolutionCpuProfiling').get() ? 10000 : 1000;
     var options = 'sampling-frequency=' + samplingFrequencyHz;
-    var target = this._target;
-    var tracingManager = target.tracingManager;
-    SDK.targetManager.suspendReload(target);
-    profilingStartedPromise.then(tracingManager.start.bind(tracingManager, this, categories, options, onTraceStarted));
-    /**
-     * @param {?string} error
-     */
-    function onTraceStarted(error) {
-      SDK.targetManager.resumeReload(target);
-      if (callback)
-        callback(error);
-    }
-  }
-
-  /**
-   * @override
-   */
-  tracingStarted() {
-    this._client.recordingStarted();
+    return profilingStartedPromise.then(() => this._tracingManager.start(this, categories, options));
   }
 
   /**
@@ -258,16 +225,13 @@ Timeline.TimelineController = class {
       return;
 
     var pid = mainMetaEvent.thread.process().id();
-    var mainCpuProfile = this._cpuProfiles.get(this._target.id());
+    var mainCpuProfile = this._cpuProfiles.get(this._tracingManager.target().id());
     this._injectCpuProfileEvent(pid, mainMetaEvent.thread.id(), mainCpuProfile);
 
     var workerMetaEvents = metadataEvents.filter(event => event.name === metadataEventTypes.TracingSessionIdForWorker);
     for (var metaEvent of workerMetaEvents) {
       var workerId = metaEvent.args['data']['workerId'];
-      var workerTarget = SDK.targetManager.targetById(workerId);
-      if (!workerTarget)
-        continue;
-      var cpuProfile = this._cpuProfiles.get(workerTarget.id());
+      var cpuProfile = this._cpuProfiles.get(workerId);
       this._injectCpuProfileEvent(
           metaEvent.thread.process().id(), metaEvent.args['data']['workerThreadId'], cpuProfile);
     }
@@ -298,8 +262,6 @@ Timeline.TimelineController = class {
 Timeline.TimelineController.Client = function() {};
 
 Timeline.TimelineController.Client.prototype = {
-  recordingStarted() {},
-
   /**
    * @param {number} usage
    */

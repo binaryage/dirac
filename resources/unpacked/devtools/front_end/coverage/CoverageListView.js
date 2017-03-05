@@ -7,7 +7,8 @@ Coverage.CoverageListView = class extends UI.VBox {
     super(true);
     this.registerRequiredCSS('coverage/coverageListView.css');
     var columns = [
-      {id: 'url', title: Common.UIString('URL'), width: '300px', fixedWidth: false, sortable: true}, {
+      {id: 'url', title: Common.UIString('URL'), width: '300px', fixedWidth: false, sortable: true},
+      {id: 'type', title: Common.UIString('Type'), width: '45px', fixedWidth: true, sortable: true}, {
         id: 'size',
         title: Common.UIString('Total Bytes'),
         width: '60px',
@@ -91,6 +92,9 @@ Coverage.CoverageListView = class extends UI.VBox {
       case 'url':
         sortFunction = compareURL;
         break;
+      case 'type':
+        sortFunction = compareNumericField.bind(null, 'type');
+        break;
       case 'size':
         sortFunction = compareNumericField.bind(null, 'size');
         break;
@@ -113,7 +117,7 @@ Coverage.CoverageListView = class extends UI.VBox {
       var nodeA = /** @type {!Coverage.CoverageListView.GridNode} */ (a);
       var nodeB = /** @type {!Coverage.CoverageListView.GridNode} */ (b);
 
-      return nodeA._coverageInfo.url.localeCompare(nodeB._coverageInfo.url);
+      return nodeA._displayURL.localeCompare(nodeB._displayURL);
     }
 
     /**
@@ -129,6 +133,18 @@ Coverage.CoverageListView = class extends UI.VBox {
       return nodeA._coverageInfo[fieldName] - nodeB._coverageInfo[fieldName];
     }
   }
+
+  /**
+   * @param {!Coverage.CoverageType} type
+   */
+  static _typeToString(type) {
+    var types = [];
+    if (type & Coverage.CoverageType.CSS)
+      types.push(Common.UIString('CSS'));
+    if (type & Coverage.CoverageType.JavaScript)
+      types.push(Common.UIString('JS'));
+    return types.join('+');
+  }
 };
 
 Coverage.CoverageListView.GridNode = class extends DataGrid.SortableDataGridNode {
@@ -139,6 +155,7 @@ Coverage.CoverageListView.GridNode = class extends DataGrid.SortableDataGridNode
   constructor(coverageInfo, maxSize) {
     super();
     this._coverageInfo = coverageInfo;
+    this._displayURL = new Common.ParsedURL(coverageInfo.url).displayName;
     this._maxSize = maxSize;
   }
 
@@ -151,15 +168,26 @@ Coverage.CoverageListView.GridNode = class extends DataGrid.SortableDataGridNode
     var cell = this.createTD(columnId);
     switch (columnId) {
       case 'url':
-        cell.textContent = this._coverageInfo.url;
+        cell.title = this._coverageInfo.url;
+        var outer = cell.createChild('div', 'url-outer');
+        var prefix = outer.createChild('div', 'url-prefix');
+        var suffix = outer.createChild('div', 'url-suffix');
+        var splitURL = /^(.*)(\/[^/]*)$/.exec(this._coverageInfo.url);
+        prefix.textContent = splitURL ? splitURL[1] : this._coverageInfo.url;
+        suffix.textContent = splitURL ? splitURL[2] : '';
+        break;
+      case 'type':
+        cell.textContent = Coverage.CoverageListView._typeToString(this._coverageInfo.type);
         break;
       case 'size':
         cell.classList.add('numeric-column');
-        cell.textContent = this._coverageInfo.size;
+        cell.textContent = Number.withThousandsSeparator(this._coverageInfo.size || 0);
         break;
       case 'unusedSize':
         cell.classList.add('numeric-column');
-        cell.textContent = this._coverageInfo.unusedSize;
+        cell.textContent = Number.withThousandsSeparator(this._coverageInfo.unusedSize || 0);
+        if (this._coverageInfo.size)
+          cell.title = Math.round(100 * this._coverageInfo.unusedSize / this._coverageInfo.size) + '%';
         break;
       case 'bars':
         var barContainer = cell.createChild('div', 'bar-container');

@@ -1,6 +1,7 @@
 {
     "dependencies": [
         "sources",
+        "components",
         "dirac"
     ],
     "scripts": [

@@ -27,7 +27,7 @@ devtools #1      setDiracPromptStatusStyle('info')
 devtools #1      setDiracPromptStatusContent('Dirac Agent connected. Bootstrapping ClojureScript REPL...')
 devtools #1      setDiracPromptNS('cljs.user')
 devtools #1      setDiracPromptMode('edit')
-automate         trigger! [:reload]
+automate #1      reload!
 devtools #1      setDiracPromptMode('status')
 devtools #1      setDiracPromptStatusContent('Disconnected')
 devtools #1      init-repl!

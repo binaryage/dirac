@@ -207,3 +207,9 @@
 (defn ^:devtools count-internal-dirac-errors [devtools-id]
   (go
     (count (<! (scrape devtools-id :find-logs "Internal Dirac Error")))))
+
+(defn ^:devtools reload! []
+  (go
+    (<! (timeout 2000))                                                                                                       ; prevent "Cannot find context with specified id" V8 errors ?
+    (<! (trigger! :reload))
+    (<! (timeout 2000))))                                                                                                     ; prevent "Cannot find context with specified id" V8 errors ?

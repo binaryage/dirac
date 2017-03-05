@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 /**
- * @implements {SDK.TargetManager.Observer}
+ * @implements {SDK.SDKModelObserver<!SDK.ServiceWorkerManager>}
  * @unrestricted
  */
 Resources.ServiceWorkersView = class extends UI.VBox {
@@ -35,26 +35,25 @@ Resources.ServiceWorkersView = class extends UI.VBox {
     this._showAllCheckbox.inputElement.addEventListener('change', this._updateSectionVisibility.bind(this), false);
     this._toolbar.appendToolbarItem(this._showAllCheckbox);
 
-    /** @type {!Map<!SDK.Target, !Array<!Common.EventTarget.EventDescriptor>>}*/
+    /** @type {!Map<!SDK.ServiceWorkerManager, !Array<!Common.EventTarget.EventDescriptor>>}*/
     this._eventListeners = new Map();
-    SDK.targetManager.observeTargets(this);
+    SDK.targetManager.observeModels(SDK.ServiceWorkerManager, this);
   }
 
   /**
    * @override
-   * @param {!SDK.Target} target
+   * @param {!SDK.ServiceWorkerManager} serviceWorkerManager
    */
-  targetAdded(target) {
-    if (this._manager || !target.serviceWorkerManager)
+  modelAdded(serviceWorkerManager) {
+    if (this._manager)
       return;
-    this._manager = target.serviceWorkerManager;
-    this._subTargetsManager = target.subTargetsManager;
-    this._securityOriginManager = SDK.SecurityOriginManager.fromTarget(target);
+    this._manager = serviceWorkerManager;
+    this._securityOriginManager = SDK.SecurityOriginManager.fromTarget(serviceWorkerManager.target());
 
     for (var registration of this._manager.registrations().values())
       this._updateRegistration(registration);
 
-    this._eventListeners.set(target, [
+    this._eventListeners.set(serviceWorkerManager, [
       this._manager.addEventListener(
           SDK.ServiceWorkerManager.Events.RegistrationUpdated, this._registrationUpdated, this),
       this._manager.addEventListener(
@@ -70,16 +69,15 @@ Resources.ServiceWorkersView = class extends UI.VBox {
 
   /**
    * @override
-   * @param {!SDK.Target} target
+   * @param {!SDK.ServiceWorkerManager} serviceWorkerManager
    */
-  targetRemoved(target) {
-    if (!this._manager || this._manager !== target.serviceWorkerManager)
+  modelRemoved(serviceWorkerManager) {
+    if (!this._manager || this._manager !== serviceWorkerManager)
       return;
 
-    Common.EventTarget.removeEventListeners(this._eventListeners.get(target));
-    this._eventListeners.delete(target);
+    Common.EventTarget.removeEventListeners(this._eventListeners.get(serviceWorkerManager));
+    this._eventListeners.delete(serviceWorkerManager);
     this._manager = null;
-    this._subTargetsManager = null;
     this._securityOriginManager = null;
   }
 
@@ -141,8 +139,8 @@ Resources.ServiceWorkersView = class extends UI.VBox {
   _updateRegistration(registration) {
     var section = this._sections.get(registration);
     if (!section) {
-      section = new Resources.ServiceWorkersView.Section(
-          this._manager, this._subTargetsManager, this._reportView.appendSection(''), registration);
+      section =
+          new Resources.ServiceWorkersView.Section(this._manager, this._reportView.appendSection(''), registration);
       this._sections.set(registration, section);
     }
     this._updateSectionVisibility();
@@ -174,13 +172,11 @@ Resources.ServiceWorkersView = class extends UI.VBox {
 Resources.ServiceWorkersView.Section = class {
   /**
    * @param {!SDK.ServiceWorkerManager} manager
-   * @param {!SDK.SubTargetsManager} subTargetsManager
    * @param {!UI.ReportView.Section} section
    * @param {!SDK.ServiceWorkerRegistration} registration
    */
-  constructor(manager, subTargetsManager, section, registration) {
+  constructor(manager, section, registration) {
     this._manager = manager;
-    this._subTargetsManager = subTargetsManager;
     this._section = section;
     this._registration = registration;
 
@@ -210,7 +206,7 @@ Resources.ServiceWorkersView.Section = class {
     this._errorsList.classList.add('service-worker-error-stack', 'monospace', 'hidden');
 
     this._linkifier = new Components.Linkifier();
-    /** @type {!Map<string, !SDK.TargetInfo>} */
+    /** @type {!Map<string, !Protocol.Target.TargetInfo>} */
     this._clientInfoCache = new Map();
     for (var error of registration.errors)
       this._addError(error);
@@ -287,9 +283,11 @@ Resources.ServiceWorkersView.Section = class {
       this._section.setFieldVisible(Common.UIString('Clients'), active.controlledClients.length);
       for (var client of active.controlledClients) {
         var clientLabelText = clientsList.createChild('div', 'service-worker-client');
-        if (this._clientInfoCache.has(client))
-          this._updateClientInfo(clientLabelText, /** @type {!SDK.TargetInfo} */ (this._clientInfoCache.get(client)));
-        this._subTargetsManager.getTargetInfo(client, this._onClientInfo.bind(this, clientLabelText));
+        if (this._clientInfoCache.has(client)) {
+          this._updateClientInfo(
+              clientLabelText, /** @type {!Protocol.Target.TargetInfo} */ (this._clientInfoCache.get(client)));
+        }
+        this._manager.target().targetAgent().getTargetInfo(client, this._onClientInfo.bind(this, clientLabelText));
       }
     }
 
@@ -384,36 +382,37 @@ Resources.ServiceWorkersView.Section = class {
 
   /**
    * @param {!Element} element
-   * @param {?SDK.TargetInfo} targetInfo
+   * @param {?Protocol.Error} error
+   * @param {?Protocol.Target.TargetInfo} targetInfo
    */
-  _onClientInfo(element, targetInfo) {
-    if (!targetInfo)
+  _onClientInfo(element, error, targetInfo) {
+    if (error || !targetInfo)
       return;
-    this._clientInfoCache.set(targetInfo.id, targetInfo);
+    this._clientInfoCache.set(targetInfo.targetId, targetInfo);
     this._updateClientInfo(element, targetInfo);
   }
 
   /**
    * @param {!Element} element
-   * @param {!SDK.TargetInfo} targetInfo
+   * @param {!Protocol.Target.TargetInfo} targetInfo
    */
   _updateClientInfo(element, targetInfo) {
-    if (!targetInfo.canActivate) {
-      element.createTextChild(targetInfo.title);
+    if (targetInfo.type !== 'page' && targetInfo.type === 'iframe') {
+      element.createTextChild(Common.UIString('Worker: %s', targetInfo.url));
       return;
     }
     element.removeChildren();
     element.createTextChild(targetInfo.url);
     var focusLabel = element.createChild('label', 'link');
     focusLabel.createTextChild('focus');
-    focusLabel.addEventListener('click', this._activateTarget.bind(this, targetInfo.id), true);
+    focusLabel.addEventListener('click', this._activateTarget.bind(this, targetInfo.targetId), true);
   }
 
   /**
    * @param {string} targetId
    */
   _activateTarget(targetId) {
-    this._subTargetsManager.activateTarget(targetId);
+    this._manager.target().targetAgent().activateTarget(targetId);
   }
 
   _startButtonClicked() {

@@ -53,13 +53,11 @@
         (<!* a/wait-for-prompt-to-enter-edit-mode)
         (with-console-feedback
           (<!* a/console-exec-and-match! "(+ 1 2)" "info> 3"))
-        (<!* a/trigger! :reload)
-        (<! (timeout 3000))
+        (<!* a/reload!)
         (<!* a/wait-for-prompt-to-enter-edit-mode)
         (with-console-feedback
           (<!* a/console-exec-and-match! "(+ 1 2)" "info> 3"))
-        (<!* a/trigger! :reload)
-        (<! (timeout 3000))
+        (<!* a/reload!)
         (<!* a/wait-for-prompt-to-enter-edit-mode)
         (with-console-feedback
           (<!* a/console-exec-and-match! "(+ 1 2)" "info> 3"))))
@@ -85,8 +83,7 @@
         (<!* a/switch-prompt-to-dirac!)
         (<!* a/wait-for-prompt-to-enter-edit-mode)
         (<!* a/switch-prompt-to-javascript!)
-        (<!* a/trigger! :reload)
-        (<! (timeout 3000))
+        (<!* a/reload!)
         ; after reload we should not reconnect in background because we were switched to javascript prompt
         (<!* a/wait-for-devtools-match "Disconnected")
         (<!* a/switch-prompt-to-dirac!)
@@ -96,10 +93,8 @@
     (testing "page refresh while REPL was not connected"
       (with-devtools
         (<!* a/switch-to-console-panel!)
-        (<!* a/trigger! :reload)
-        (<! (timeout 3000))
-        (<!* a/trigger! :reload)
-        (<! (timeout 3000))))
+        (<!* a/reload!)
+        (<!* a/reload!)))
     (testing "make sure `in-ns` works (https://github.com/binaryage/dirac/issues/47)"
       (with-devtools
         (<!* a/switch-to-console-panel!)

@@ -8,6 +8,7 @@ Object.assign(window.dirac, (function() {
 
   const featureFlags = {};
 
+  // WARNING: keep this in sync with dirac.background.tools/flag-keys
   const knownFeatureFlags = [
     "enable-repl",
     "enable-parinfer",
@@ -16,7 +17,8 @@ Object.assign(window.dirac, (function() {
     "inline-custom-formatters",
     "welcome-message",
     "clean-urls",
-    "beautify-function-names"];
+    "beautify-function-names",
+    "link-actions"];
 
   function hasFeature(feature) {
     const flag = featureFlags[feature];
@@ -170,6 +172,10 @@ Object.assign(window.dirac, (function() {
     return loadLazyDirac().then(() => window.dirac.addConsoleMessageToMainTarget(...args));
   }
 
+  function registerDiracLinkAction(...args) {
+    return loadLazyDirac().then(() => window.dirac.registerDiracLinkAction(...args));
+  }
+
 // --- exported interface ---------------------------------------------------------------------------------------------------
 
   // don't forget to update externs.js too
@@ -192,6 +198,7 @@ Object.assign(window.dirac, (function() {
     hasWelcomeMessage: hasFeature("welcome-message"),
     hasCleanUrls: hasFeature("clean-urls"),
     hasBeautifyFunctionNames: hasFeature("beautify-function-names"),
+    hasLinkActions: hasFeature("link-actions"),
 
     // -- INTERFACE -----------------------------------------------------------------------------------------------------
     hasFeature: hasFeature,
@@ -218,7 +225,8 @@ Object.assign(window.dirac, (function() {
     extractNamespacesAsync: extractNamespacesAsync,
     invalidateNamespaceSymbolsCache: invalidateNamespaceSymbolsCache,
     invalidateNamespacesCache: invalidateNamespacesCache,
-    getMacroNamespaceNames: getMacroNamespaceNames
+    getMacroNamespaceNames: getMacroNamespaceNames,
+    registerDiracLinkAction: registerDiracLinkAction,
 
     // ...
 

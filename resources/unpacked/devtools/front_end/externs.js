@@ -381,6 +381,8 @@ var dirac = {
     hasCleanUrls: true,
     /** @type {boolean} */
     hasBeautifyFunctionNames: true,
+    /** @type {boolean} */
+    hasLinkActions: true,
     /** @type {?Object.<string, dirac.NamespaceDescriptor>} */
     _namespacesCache: null,
     /**
@@ -457,6 +459,11 @@ var dirac = {
      * @return {Array.<string>}
      */
     getMacroNamespaceNames: function(namespaces) {},
+
+    /**
+    * @param {!Object} action
+    */
+    registerDiracLinkAction: function(action) {},
 
     /**
      * @param {Array.<T>} coll

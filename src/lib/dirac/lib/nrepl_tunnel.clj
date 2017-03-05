@@ -94,7 +94,8 @@
 
 (def ^:dynamic expected-nrepl-version "0.2.12")
 (def ^:dynamic expected-nrepl-middleware-ops
-  '(:clone :close :describe :eval :identify-dirac-nrepl-middleware :interrupt :load-file :ls-sessions :stdin))
+  (list :clone :close :describe :dirac-devtools-request :eval :identify-dirac-nrepl-middleware :interrupt :load-file
+        :ls-sessions :stdin))
 
 ; -- NREPLTunnel constructor ------------------------------------------------------------------------------------------------
 

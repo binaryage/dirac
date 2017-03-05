@@ -97,6 +97,7 @@
 
 #console-status-dirac .status-banner a:hover {
     color: #999;
+    cursor: pointer !important;
 }
 
 #console-status-dirac .status-content {

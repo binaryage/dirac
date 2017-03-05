@@ -160,6 +160,17 @@
     opacity: 0.5;
 }
 
+.cm-continue-to-location {
+    cursor: pointer;
+    opacity: 0.5;
+    position: relative;
+    top: 2px;
+}
+
+.cm-continue-to-location:hover {
+    opacity: 1;
+}
+
 div.CodeMirror span.CodeMirror-matchingbracket {
     background-color: rgba(0, 0, 0, 0.07);
     border-bottom: 1px solid rgba(0, 0, 0, 0.5);

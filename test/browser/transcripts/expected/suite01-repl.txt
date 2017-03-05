@@ -171,7 +171,7 @@ devtools #3      repl eval job started
 devtools #3      DF.info> 3
 devtools #3      repl eval job ended
 automate #3      disable-console-feedback!
-automate         trigger! [:reload]
+automate #3      reload!
 devtools #3      setDiracPromptMode('status')
 devtools #3      setDiracPromptStatusContent('Disconnected')
 devtools #3      init-repl!
@@ -186,7 +186,7 @@ devtools #3      repl eval job started
 devtools #3      DF.info> 3
 devtools #3      repl eval job ended
 automate #3      disable-console-feedback!
-automate         trigger! [:reload]
+automate #3      reload!
 devtools #3      setDiracPromptMode('status')
 devtools #3      setDiracPromptStatusContent('Disconnected')
 devtools #3      init-repl!
@@ -290,7 +290,7 @@ devtools #5      setDiracPromptNS('cljs.user')
 devtools #5      setDiracPromptMode('edit')
 automate #5      switch-prompt-to-javascript!
 devtools #5      switched console prompt to 'js'
-automate         trigger! [:reload]
+automate #5      reload!
 devtools #5      setDiracPromptMode('status')
 devtools #5      setDiracPromptStatusContent('Disconnected')
 automate #5      switch-prompt-to-dirac!
@@ -327,8 +327,8 @@ devtools #6      adopt-prompt-element use-parinfer? true
 devtools #6      setDiracPromptMode('status')
 devtools #6      ConsoleView constructed
 devtools #6      displayWelcomeMessage
-automate         trigger! [:reload]
-automate         trigger! [:reload]
+automate #6      reload!
+automate #6      reload!
 automate #6      close-devtools!
 extension        handling command: close-dirac-devtools
 extension        unregister devtools #6

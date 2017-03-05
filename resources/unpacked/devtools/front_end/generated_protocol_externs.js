@@ -4334,7 +4334,9 @@ Protocol.TracingAgent = function(){};
  * @param {number=} opt_bufferUsageReportingInterval
  * @param {string=} opt_transferMode
  * @param {Protocol.Tracing.TraceConfig=} opt_traceConfig
- * @param {function(?Protocol.Error):void=} opt_callback
+ * @param {function(?Protocol.Error):T=} opt_callback
+ * @return {!Promise.<T>}
+ * @template T
  */
 Protocol.TracingAgent.prototype.start = function(opt_categories, opt_options, opt_bufferUsageReportingInterval, opt_transferMode, opt_traceConfig, opt_callback) {};
 /** @typedef {!{transferMode: (string|undefined), traceConfig: (Protocol.Tracing.TraceConfig|undefined), bufferUsageReportingInterval: (number|undefined), options: (string|undefined), categories: (string|undefined)}} obj */
@@ -4346,7 +4348,9 @@ Protocol.TracingAgent.prototype.start.Request;
 Protocol.TracingAgent.prototype.invoke_start = function(obj, opt_callback) {};
 
 /**
- * @param {function(?Protocol.Error):void=} opt_callback
+ * @param {function(?Protocol.Error):T=} opt_callback
+ * @return {!Promise.<T>}
+ * @template T
  */
 Protocol.TracingAgent.prototype.end = function(opt_callback) {};
 /** @typedef {Object|undefined} obj */
@@ -4358,7 +4362,9 @@ Protocol.TracingAgent.prototype.end.Request;
 Protocol.TracingAgent.prototype.invoke_end = function(obj, opt_callback) {};
 
 /**
- * @param {function(?Protocol.Error, !Array<string>):void=} opt_callback
+ * @param {function(?Protocol.Error, !Array<string>):T} opt_callback
+ * @return {!Promise.<T>}
+ * @template T
  */
 Protocol.TracingAgent.prototype.getCategories = function(opt_callback) {};
 /** @typedef {Object|undefined} obj */
@@ -4370,7 +4376,9 @@ Protocol.TracingAgent.prototype.getCategories.Request;
 Protocol.TracingAgent.prototype.invoke_getCategories = function(obj, opt_callback) {};
 
 /**
- * @param {function(?Protocol.Error, string, boolean):void=} opt_callback
+ * @param {function(?Protocol.Error, string, boolean):T} opt_callback
+ * @return {!Promise.<T>}
+ * @template T
  */
 Protocol.TracingAgent.prototype.requestMemoryDump = function(opt_callback) {};
 /** @typedef {Object|undefined} obj */
@@ -4383,7 +4391,9 @@ Protocol.TracingAgent.prototype.invoke_requestMemoryDump = function(obj, opt_cal
 
 /**
  * @param {string} syncId
- * @param {function(?Protocol.Error):void=} opt_callback
+ * @param {function(?Protocol.Error):T=} opt_callback
+ * @return {!Promise.<T>}
+ * @template T
  */
 Protocol.TracingAgent.prototype.recordClockSyncMarker = function(syncId, opt_callback) {};
 /** @typedef {!{syncId: string}} obj */

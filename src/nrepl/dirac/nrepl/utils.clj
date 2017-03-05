@@ -48,7 +48,7 @@
 (defn start-new-cljs-compiler-repl-environment! [nrepl-message dirac-nrepl-config repl-env repl-options]
   (log/trace "start-new-cljs-compiler-repl-environment!\n")
   (let [compiler-env nil
-        code (or (:repl-init-code dirac-nrepl-config) config/standard-repl-init-code)
+        code (or (:repl-init-code dirac-nrepl-config) (:repl-init-code config/default-config))
         job-id "init"                                                                                                         ; this is a special case of init code
         ns (:ns nrepl-message)
         session (:session nrepl-message)

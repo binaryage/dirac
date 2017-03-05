@@ -22,6 +22,7 @@
             [dirac.utils :as utils]
             [dirac.background.action :as action]))
 
+; WARNING: keep this in sync with dirac.js/knownFeatureFlags
 (def flag-keys [:enable-repl
                 :enable-parinfer
                 :enable-friendly-locals
@@ -29,7 +30,8 @@
                 :inline-custom-formatters
                 :welcome-message
                 :clean-urls
-                :beautify-function-names])
+                :beautify-function-names
+                :link-actions])
 
 (def last-active-tab-query #js {"lastFocusedWindow" true
                                 "active"            true})
