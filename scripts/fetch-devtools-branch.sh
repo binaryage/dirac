@@ -30,14 +30,16 @@ popd
 # fresh splitting..., it should do the job incrementally from last run
 pushd "$CHROMIUM_MIRROR_DIR"
 
+git reset --hard HEAD
+git clean -fd
 git fetch chromium
-git checkout tracker
+git checkout -f tracker
 git reset --hard chromium/master
 git clean -fd
 gclient sync
 git filter-branch -f --prune-empty --subdirectory-filter third_party/WebKit/Source/devtools tracker
 
-git checkout devtools
+git checkout -f devtools
 git reset --hard tracker
 git push dirac devtools
 
