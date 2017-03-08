@@ -11,6 +11,7 @@
             "type": "setting",
             "settingName": "networkBlockedURLs",
             "settingType": "array",
+            "storageType": "session",
             "defaultValue": []
         },
         {

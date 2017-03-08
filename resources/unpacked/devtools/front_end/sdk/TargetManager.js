@@ -403,7 +403,7 @@ SDK.TargetManager = class extends Common.Object {
 
     var capabilities = SDK.Target.Capability.Browser | SDK.Target.Capability.DOM | SDK.Target.Capability.JS |
         SDK.Target.Capability.Log | SDK.Target.Capability.Network | SDK.Target.Capability.Target |
-        SDK.Target.Capability.ScreenCapture | SDK.Target.Capability.Tracing;
+        SDK.Target.Capability.ScreenCapture | SDK.Target.Capability.Tracing | SDK.Target.Capability.TouchEmulation;
     if (Runtime.queryParam('isSharedWorker')) {
       capabilities = SDK.Target.Capability.Browser | SDK.Target.Capability.Log | SDK.Target.Capability.Network |
           SDK.Target.Capability.Target;
@@ -414,7 +414,7 @@ SDK.TargetManager = class extends Common.Object {
 
     var target =
         this.createTarget('main', Common.UIString('Main'), capabilities, this._createMainConnection.bind(this), null);
-    target.runtimeAgent().runIfWaitingForDebugger();
+    target.runtimeModel.runIfWaitingForDebugger();
   }
 
   /**
@@ -477,12 +477,6 @@ SDK.ChildTargetManager = class {
       this._targetAgent.setRemoteLocations([{host: 'localhost', port: 9229}]);
       this._targetAgent.setDiscoverTargets(true);
     }
-
-    this._eventListeners = [];
-    if (resourceTreeModel) {
-      this._eventListeners.push(resourceTreeModel.addEventListener(
-          SDK.ResourceTreeModel.Events.MainFrameNavigated, this._detachWorkersOnMainFrameNavigated, this));
-    }
   }
 
   suspend() {
@@ -500,7 +494,6 @@ SDK.ChildTargetManager = class {
   }
 
   dispose() {
-    Common.EventTarget.removeEventListeners(this._eventListeners);
     // TODO(dgozman): this is O(n^2) when removing main target.
     var childTargets = this._targetManager._targets.filter(child => child.parentTarget() === this._parentTarget);
     for (var child of childTargets)
@@ -519,21 +512,11 @@ SDK.ChildTargetManager = class {
     if (type === 'iframe') {
       return SDK.Target.Capability.Browser | SDK.Target.Capability.DOM | SDK.Target.Capability.JS |
           SDK.Target.Capability.Log | SDK.Target.Capability.Network | SDK.Target.Capability.Target |
-          SDK.Target.Capability.Tracing;
+          SDK.Target.Capability.Tracing | SDK.Target.Capability.TouchEmulation;
     }
     if (type === 'node')
       return SDK.Target.Capability.JS;
     return 0;
-  }
-
-  _detachWorkersOnMainFrameNavigated() {
-    // TODO(dgozman): send these from backend.
-    var idsToDetach = [];
-    for (var target of this._targetManager._targets) {
-      if (target.parentTarget() === this._parentTarget && target[SDK.TargetManager._isWorkerSymbol])
-        idsToDetach.push(target.id());
-    }
-    idsToDetach.forEach(id => this.detachedFromTarget(id));
   }
 
   /**
@@ -582,9 +565,12 @@ SDK.ChildTargetManager = class {
     target[SDK.TargetManager._isWorkerSymbol] = targetInfo.type === 'worker';
 
     // Only pause the new worker if debugging SW - we are going through the pause on start checkbox.
-    if (!this._parentTarget.parentTarget() && Runtime.queryParam('isSharedWorker') && waitingForDebugger)
-      target.debuggerAgent().pause();
-    target.runtimeAgent().runIfWaitingForDebugger();
+    if (!this._parentTarget.parentTarget() && Runtime.queryParam('isSharedWorker') && waitingForDebugger) {
+      var debuggerModel = target.model(SDK.DebuggerModel);
+      if (debuggerModel)
+        debuggerModel.pause();
+    }
+    target.runtimeModel.runIfWaitingForDebugger();
   }
 
   /**
