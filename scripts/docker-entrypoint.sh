@@ -68,5 +68,15 @@ if [ "$1" = "test-browser" ]; then
   exit ${result}
 fi
 
-echo "(exec raw command) $ $@"
-exec "$@"
+if [ $# -eq 0 ]; then
+  echo "no arguments provided"
+  echo "please provide a command to run in dirac directory, e.g."
+  echo "  launch './scripts/run-docker.sh test'"
+  echo "  launch './scripts/run-docker.sh test-browser'"
+  echo "  launch './scripts/run-docker.sh bash'"
+  exit 1
+else
+  cd "$TRAVIS_BUILD_DIR"
+  echo "(in $(pwd)) [exec raw command] $ $@"
+  exec "$@"
+fi

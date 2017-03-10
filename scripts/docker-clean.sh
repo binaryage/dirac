@@ -5,16 +5,16 @@ false && source _config.sh # never executes, this is here just for IntelliJ Bash
 
 pushd "$DOCKER_TESTS_DIR"
 
-if [ ! -z "$(docker volumes ls | grep 'dirac-data-root$')" ]; then
-  docker volumes rm "dirac-data-root"
+if [ ! -z "$(docker volume ls | grep 'dirac-data-root$')" ]; then
+  docker volume rm "dirac-data-root"
 fi
 
-if [ ! -z "$(docker volumes ls | grep 'dirac-data-var-cache-apt$')" ]; then
-  docker volumes rm "dirac-data-var-cache-apt"
+if [ ! -z "$(docker volume ls | grep 'dirac-data-var-cache-apt$')" ]; then
+  docker volume rm "dirac-data-var-cache-apt"
 fi
 
 if [ ! -z "$(docker images ls | grep 'dirac$')" ]; then
-  docker rmi "dirac"
+  docker rmi -f "dirac"
 fi
 
 popd
