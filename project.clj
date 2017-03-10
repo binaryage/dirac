@@ -481,11 +481,12 @@
                        "tests"           ["lein" "auto-compile-browser-tests"]
                        "browser"         ["scripts/launch-test-browser.sh"]}}
              :dev-dirac-sample
-             {:cooper {"fig-dirac"  ["lein" "fig-dirac"]
-                       "fig-marion" ["lein" "fig-marion"]
-                       "marion-cs"  ["lein" "auto-compile-marion-cs"]
-                       "dev-sample" ["scripts/dev-sample.sh"]
-                       "browser"    ["scripts/launch-sample-browser.sh"]}}}
+             {:cooper {"fig-dirac"     ["lein" "fig-dirac"]
+                       "fig-marion"    ["lein" "fig-marion"]
+                       "marion-cs"     ["lein" "auto-compile-marion-cs"]
+                       "fig-sample"    ["scripts/dev-sample.sh" "dev-fig"]
+                       "server-sample" ["scripts/dev-sample.sh" "dev-server"]
+                       "browser"       ["scripts/launch-sample-browser.sh"]}}}
 
   :aliases {"check"                      ["shell" "scripts/check-code.sh"]
             "test"                       ["shell" "scripts/test-all.sh"]
