@@ -117,7 +117,7 @@ You can open internal DevTools to inspect Dirac DevTools window (e.g. press `CMD
 Tip: Also you may want to go to `chrome://extensions`, open Dirac DevTools options page and set "Open Dirac DevTools" to "as a new window".
  This way you can have internal DevTools docked inside Dirac DevTools window which I personally find more convenient.
 
-For more serious debugging you have to setup a dev environment and build a dev version of Dirac Chrome Extension.
+For more serious debugging you have to setup a dev environment and build a dev version of Dirac Chrome Extension. See [hacking.md](hacking.md).
 
 ### How to enable debug logging in Dirac Agent?
 
@@ -189,3 +189,6 @@ Please see [this commit](https://github.com/binaryage/dirac-sample/commit/18eb3e
 [this commit](https://github.com/binaryage/dirac-sample/commit/3f6b149eca7bac6efc6ffd77f29d25bdc1606d3c) how you could 
 potentially implement something like this for your own project.
 
+### I have a great idea for contribution! How to hack on Dirac itself?
+
+Please refer to [hacking.md](hacking.md).
