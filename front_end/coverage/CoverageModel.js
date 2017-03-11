@@ -2,18 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/** @typedef {{range: (Common.TextRange|undefined), startOffset: (number|undefined), endOffset: (number|undefined), count: number}} */
+/** @typedef {{startOffset: number, endOffset: number, count: number}} */
 Coverage.RangeUseCount;
+
+/** @typedef {{end: number, count: (number|undefined), depth: number}} */
+Coverage.CoverageSegment;
 
 /** @typedef {{
  *    contentProvider: !Common.ContentProvider,
- *    size: (number|undefined),
- *    unusedSize: (number|undefined),
- *    usedSize: (number|undefined),
+ *    size: number,
+ *    unusedSize: number,
+ *    usedSize: number,
  *    type: !Coverage.CoverageType,
  *    lineOffset: number,
  *    columnOffset: number,
- *    ranges: !Array<!{startOffset: number, endOffset: number, count: number}>
+ *    segments: !Array<!Coverage.CoverageSegment>
  * }}
  */
 Coverage.CoverageInfo;
@@ -99,30 +102,70 @@ Coverage.CoverageModel = class extends SDK.SDKModel {
   /**
    * @param {!SDK.DebuggerModel} debuggerModel
    * @param {!Array<!Protocol.Profiler.ScriptCoverage>} scriptsCoverage
-   * @return {!Promise<!Array<!Coverage.CoverageInfo>>}
+   * @return {!Array<!Coverage.CoverageInfo>}
    */
-  static async _processJSCoverage(debuggerModel, scriptsCoverage) {
-    var promises = [];
+  static _processJSCoverage(debuggerModel, scriptsCoverage) {
+    var result = [];
     for (var entry of scriptsCoverage) {
-      var ranges = [];
       var script = debuggerModel.scriptForId(entry.scriptId);
       if (!script)
         continue;
+      var ranges = [];
       for (var func of entry.functions) {
-        for (var range of func.ranges) {
-          if (typeof range.startOffset === 'number') {
-            ranges.push({startOffset: range.startOffset, endOffset: range.endOffset, count: range.count});
-          } else {
-            var textRange = new Common.TextRange(
-                range.startLineNumber, range.startColumnNumber, range.endLineNumber, range.endColumnNumber);
-            ranges.push({range: textRange, count: range.count});
-          }
+        for (var range of func.ranges)
+          ranges.push(range);
+      }
+      ranges.sort((a, b) => a.startOffset - b.startOffset);
+      result.push(Coverage.CoverageModel._buildCoverageInfo(
+          script, script.contentLength, script.lineOffset, script.columnOffset, ranges));
+    }
+    return result;
+  }
+
+  /**
+   * @param {!Array<!Coverage.RangeUseCount>} ranges
+   * @return {!Array<!Coverage.CoverageSegment>}
+   */
+  static _convertToDisjointSegments(ranges) {
+    var result = [];
+
+    var stack = [];
+    for (var entry of ranges) {
+      var top = stack.peekLast();
+      while (top && top.endOffset <= entry.startOffset) {
+        append(top.endOffset, top.count, stack.length);
+        stack.pop();
+        top = stack.peekLast();
+      }
+      append(entry.startOffset, top ? top.count : undefined, stack.length);
+      stack.push(entry);
+    }
+
+    while (stack.length) {
+      var depth = stack.length;
+      var top = stack.pop();
+      append(top.endOffset, top.count, depth);
+    }
+
+    /**
+     * @param {number} end
+     * @param {number} count
+     * @param {number} depth
+     */
+    function append(end, count, depth) {
+      var last = result.peekLast();
+      if (last) {
+        if (last.end === end)
+          return;
+        if (last.count === count && last.depth === depth) {
+          last.end = end;
+          return;
         }
       }
-      promises.push(
-          Coverage.CoverageModel._coverageInfoForText(script, script.lineOffset, script.columnOffset, ranges));
+      result.push({end: end, count: count, depth: depth});
     }
-    return Promise.all(promises);
+
+    return result;
   }
 
   /**
@@ -140,9 +183,9 @@ Coverage.CoverageModel = class extends SDK.SDKModel {
   /**
    * @param {!SDK.CSSModel} cssModel
    * @param {!Array<!Protocol.CSS.RuleUsage>} ruleUsageList
-   * @return {!Promise<!Array<!Coverage.CoverageInfo>>}
+   * @return {!Array<!Coverage.CoverageInfo>}
    */
-  static async _processCSSCoverage(cssModel, ruleUsageList) {
+  static _processCSSCoverage(cssModel, ruleUsageList) {
     /** @type {!Map<?SDK.CSSStyleSheetHeader, !Array<!Coverage.RangeUseCount>>} */
     var rulesByStyleSheet = new Map();
     for (var rule of ruleUsageList) {
@@ -154,20 +197,22 @@ Coverage.CoverageModel = class extends SDK.SDKModel {
       }
       ranges.push({startOffset: rule.startOffset, endOffset: rule.endOffset, count: Number(rule.used)});
     }
-    return Promise.all(Array.from(
+    return Array.from(
         rulesByStyleSheet.entries(),
-        entry =>
-            Coverage.CoverageModel._coverageInfoForText(entry[0], entry[0].startLine, entry[0].startColumn, entry[1])));
+        entry => Coverage.CoverageModel._buildCoverageInfo(
+            entry[0], entry[0].contentLength, entry[0].startLine, entry[0].startColumn, entry[1]));
   }
 
   /**
    * @param {!Common.ContentProvider} contentProvider
+   * @param {number} contentLength
    * @param {number} startLine
    * @param {number} startColumn
    * @param {!Array<!Coverage.RangeUseCount>} ranges
-   * @return {!Promise<?Coverage.CoverageInfo>}
+   * @return {!Coverage.CoverageInfo}
    */
-  static async _coverageInfoForText(contentProvider, startLine, startColumn, ranges) {
+  static _buildCoverageInfo(contentProvider, contentLength, startLine, startColumn, ranges) {
+    /** @type Coverage.CoverageType */
     var coverageType;
     var url = contentProvider.contentURL();
     if (contentProvider.contentType().isScript())
@@ -177,57 +222,24 @@ Coverage.CoverageModel = class extends SDK.SDKModel {
     else
       console.assert(false, `Unexpected resource type ${contentProvider.contentType().name} for ${url}`);
 
-    var content = await contentProvider.requestContent();
-    if (typeof content !== 'string')
-      return null;
-
-    var offsetRanges;
-    if (!ranges.length || typeof ranges[0].startOffset === 'number') {
-      offsetRanges = ranges.map(r => ({startOffset: r.startOffset, endOffset: r.endOffset, count: r.count}));
-    } else {
-      // FIXME: This branch should be gone once protocol conversion to offset ranges is complete.
-      var text = new Common.Text(content);
-      offsetRanges = ranges.map(r => {
-        var range = r.range.relativeTo(startLine, startColumn);
-        return {
-          startOffset: text.offsetFromPosition(range.startLine, range.startColumn),
-          endOffset: text.offsetFromPosition(range.endLine, range.endColumn),
-          count: r.count
-        };
-      });
-    }
-    var stack = [];
-    offsetRanges.sort((a, b) => a.startOffset - b.startOffset);
-    for (var entry of offsetRanges) {
-      while (stack.length && stack.peekLast().endOffset <= entry.startOffset)
-        stack.pop();
-
-      entry.ownSize = entry.endOffset - entry.startOffset;
-      var top = stack.peekLast();
-      if (top) {
-        if (top.endOffset < entry.endOffset) {
-          console.assert(
-              false, `Overlapping coverage entries in ${url}: ${top.start}-${top.end} vs. ${entry.start}-${entry.end}`);
-        }
-        top.ownSize -= entry.ownSize;
-      }
-      stack.push(entry);
-    }
-
+    var segments = Coverage.CoverageModel._convertToDisjointSegments(ranges);
     var usedSize = 0;
     var unusedSize = 0;
-    for (var entry of offsetRanges) {
-      if (entry.count)
-        usedSize += entry.ownSize;
-      else
-        unusedSize += entry.ownSize;
+    var last = 0;
+    for (var segment of segments) {
+      if (typeof segment.count === 'number') {
+        if (segment.count)
+          usedSize += segment.end - last;
+        else
+          unusedSize += segment.end - last;
+      }
+      last = segment.end;
     }
-
     var coverageInfo = {
       contentProvider: contentProvider,
-      ranges: offsetRanges,
+      segments: segments,
       type: coverageType,
-      size: content.length,
+      size: contentLength,
       usedSize: usedSize,
       unusedSize: unusedSize,
       lineOffset: startLine,

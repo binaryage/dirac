@@ -24,6 +24,9 @@ Network.BlockedURLsPane = class extends UI.VBox {
     clearButton.addEventListener(UI.ToolbarButton.Events.Click, this._removeAll, this);
     this._toolbar.appendToolbarItem(clearButton);
 
+    var enableRequestBlockingCheckbox = new UI.ToolbarSettingCheckbox(Common.moduleSetting('requestBlockingEnabled'));
+    this._toolbar.appendToolbarItem(enableRequestBlockingCheckbox);
+
     this._emptyElement = this.contentElement.createChild('div', 'no-blocked-urls');
     this._emptyElement.createChild('span').textContent = Common.UIString('Requests are not blocked. ');
     var addLink = this._emptyElement.createChild('span', 'link');
@@ -266,21 +269,3 @@ Network.BlockedURLsPane = class extends UI.VBox {
 
 /** @type {?Network.BlockedURLsPane} */
 Network.BlockedURLsPane._instance = null;
-
-
-/**
- * @implements {UI.ActionDelegate}
- * @unrestricted
- */
-Network.BlockedURLsPane.ActionDelegate = class {
-  /**
-   * @override
-   * @param {!UI.Context} context
-   * @param {string} actionId
-   * @return {boolean}
-   */
-  handleAction(context, actionId) {
-    UI.viewManager.showView('network.blocked-urls');
-    return true;
-  }
-};

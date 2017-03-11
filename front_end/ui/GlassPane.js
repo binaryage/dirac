@@ -234,6 +234,8 @@ UI.GlassPane = class {
         }
 
         positionX = Math.max(gutterSize, Math.min(anchorBox.x, containerWidth - width - gutterSize));
+        if (this._showArrow && positionX - arrowSize >= gutterSize)
+          positionX -= arrowSize;
         width = Math.min(width, containerWidth - positionX - gutterSize);
         if (2 * arrowSize >= width) {
           this._arrowElement.classList.add('arrow-none');
@@ -284,6 +286,8 @@ UI.GlassPane = class {
         }
 
         positionY = Math.max(gutterSize, Math.min(anchorBox.y, containerHeight - height - gutterSize));
+        if (this._showArrow && positionY - arrowSize >= gutterSize)
+          positionY -= arrowSize;
         height = Math.min(height, containerHeight - positionY - gutterSize);
         if (2 * arrowSize >= height) {
           this._arrowElement.classList.add('arrow-none');
@@ -301,17 +305,11 @@ UI.GlassPane = class {
       this._arrowElement.classList.add('arrow-none');
     }
 
-    if (this._sizeBehavior === UI.GlassPane.SizeBehavior.SetMaxSize)
-      this.contentElement.style.maxWidth = width + 'px';
-    else
-      this.contentElement.style.width = width + 'px';
-
-    if (this._sizeBehavior === UI.GlassPane.SizeBehavior.SetMaxSize ||
-        this._sizeBehavior === UI.GlassPane.SizeBehavior.SetExactWidthMaxHeight)
+    this.contentElement.style.width = width + 'px';
+    if (this._sizeBehavior === UI.GlassPane.SizeBehavior.SetExactWidthMaxHeight)
       this.contentElement.style.maxHeight = height + 'px';
     else
       this.contentElement.style.height = height + 'px';
-
 
     this.contentElement.positionAt(positionX, positionY, container);
     this._widget.doResize();
@@ -367,7 +365,6 @@ UI.GlassPane.AnchorBehavior = {
  */
 UI.GlassPane.SizeBehavior = {
   SetExactSize: Symbol('SetExactSize'),
-  SetMaxSize: Symbol('SetMaxSize'),
   SetExactWidthMaxHeight: Symbol('SetExactWidthMaxHeight'),
   MeasureContent: Symbol('MeasureContent')
 };

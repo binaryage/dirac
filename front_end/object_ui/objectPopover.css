@@ -8,6 +8,7 @@
     display: block;
     position: relative;
     overflow: hidden;
+    flex: 1 1 auto;
 }
 
 .object-popover-title {
@@ -48,6 +49,11 @@
     align-items: center;
     position: relative;
     margin-left: 10px;
+}
+
+.function-title-link-container .devtools-link {
+    white-space: nowrap;
+    overflow: hidden;
 }
 
 .function-location-step-into {

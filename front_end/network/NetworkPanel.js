@@ -110,6 +110,28 @@ Network.NetworkPanel = class extends UI.Panel {
     this._networkLogView.addEventListener(Network.NetworkLogView.Events.UpdateRequest, this._onUpdateRequest, this);
 
     Components.DataSaverInfobar.maybeShowInPanel(this);
+
+    var blockedURLsSetting = Common.moduleSetting('networkBlockedURLs');
+    blockedURLsSetting.addChangeListener(updateIconVisibility.bind(this));
+    var requestBlockingEnabledSetting = Common.moduleSetting('requestBlockingEnabled');
+    requestBlockingEnabledSetting.addChangeListener(updateIconVisibility.bind(this));
+
+    updateIconVisibility.call(this);
+
+    /**
+     * @this {Network.NetworkPanel}
+     */
+    function updateIconVisibility() {
+      var icon = null;
+      if (SDK.multitargetNetworkManager.isThrottling()) {
+        icon = UI.Icon.create('smallicon-warning');
+        icon.title = Common.UIString('Network throttling is enabled');
+      } else if (requestBlockingEnabledSetting.get() && blockedURLsSetting.get().length) {
+        icon = UI.Icon.create('smallicon-warning');
+        icon.title = Common.UIString('Requests may be blocked');
+      }
+      UI.inspectorView.setPanelIcon(this.name, icon);
+    }
   }
 
   /**
@@ -179,7 +201,6 @@ Network.NetworkPanel = class extends UI.Panel {
     this._panelToolbar.appendToolbarItem(this._disableCacheCheckbox);
 
     this._panelToolbar.appendSeparator();
-    this._panelToolbar.appendToolbarItem(this._createBlockedURLsButton());
     this._panelToolbar.appendToolbarItem(NetworkConditions.NetworkConditionsSelector.createOfflineToolbarCheckbox());
     this._panelToolbar.appendToolbarItem(this._createNetworkConditionsSelect());
 
@@ -217,23 +238,6 @@ Network.NetworkPanel = class extends UI.Panel {
           grouping => this._networkLogView.setGrouping(/** @type {?Network.NetworkGroupLookupInterface} */ (grouping)));
     } else {
       this._networkLogView.setGrouping(null);
-    }
-  }
-
-  /**
-   * @return {!UI.ToolbarItem}
-   */
-  _createBlockedURLsButton() {
-    var setting = Common.moduleSetting('networkBlockedURLs');
-    setting.addChangeListener(updateAction);
-    var action = /** @type {!UI.Action }*/ (UI.actionRegistry.action('network.blocked-urls.show'));
-    var button = UI.Toolbar.createActionButton(action);
-    button.setVisible(Runtime.experiments.isEnabled('requestBlocking'));
-    updateAction();
-    return button;
-
-    function updateAction() {
-      action.setToggled(!!setting.get().length);
     }
   }
 
