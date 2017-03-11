@@ -173,4 +173,5 @@ This will delete all caches and docker images for you to start from scratch:
 ./scripts/docker-clean.sh
 ```
 
-Please note that the tests might be flaky and fail for unknown "timing" issues. Next run usually goes well. You were warned.
+Please note that the tests might be flaky and fail for unknown "timing" issues. Next run usually goes well. Also I had to 
+increase Docker's memory limit to 6GB to overcome "error getting events from daemon: EOF" intermittent errors.
