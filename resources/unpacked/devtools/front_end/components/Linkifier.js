@@ -444,8 +444,10 @@ Components.Linkifier = class {
     if (link.preventFollow || UI.isBeingEdited(/** @type {!Node} */ (event.target)))
       return;
     var actions = Components.Linkifier._linkActions(link);
-    if (actions.length)
-      actions[0].handler.call(null, event);
+    if (actions.length) {
+      const handler = /** @type { function(?Event=) } */(actions[0].handler);
+      handler.call(null, event);
+    }
   }
 
   /**
