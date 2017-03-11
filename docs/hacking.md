@@ -136,9 +136,9 @@ lein test
 Or `lein test-browser` if you want to run just browser tests.
 
 Please note that browser tests require [latest chromedriver](https://sites.google.com/a/chromium.org/chromedriver/) to be 
-installed. Also note that we rsync whole project into `$DWS/_test_stage` and run tests from there. Tests could run longer than 
+installed. Also note that we rsync whole project into `$DWS/.test_stage` and run tests from there. Tests could run longer than 
 10 minutes on slower machines. This allows you to run tests in background and continue hacking on the `$DWS/dirac` working 
-copy.
+copy without disrupting the tests.
 
 ### Running tests via Docker
 
@@ -158,6 +158,19 @@ This will run all tests using "dirac" image similar to Travis environment:
 This will run only browser tests:
 ```
 ./scripts/docker-run.sh test-browser
+```
+
+Subsequent `./scripts/docker-run.sh test*` commands will reuse caches (in `$DWS/.docker_test_stage`). So you might want to 
+`lein clean` there in case of weird problems. 
+
+You can do that by running an arbitrary command (it will execute it in `$DWS/.docker_test_stage` within docker):
+```
+./scripts/docker-run.sh lein clean
+```
+
+This will delete all caches and docker images for you to start from scratch:
+```
+./scripts/docker-clean.sh
 ```
 
 Please note that the tests might be flaky and fail for unknown "timing" issues. Next run usually goes well. You were warned.
