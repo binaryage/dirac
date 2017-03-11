@@ -3,9 +3,11 @@
 source "$(dirname "${BASH_SOURCE[0]}")/_config.sh"
 false && source _config.sh # never executes, this is here just for IntelliJ Bash support to understand our sourcing
 
+TEST_STAGE=${1:-DIRAC_TEST_STAGE_DIR}
+
 pushd "$ROOT"
 
-mkdir -p "$DIRAC_TEST_STAGE_DIR"
+mkdir -p "$TEST_STAGE"
 
 RSYNC_VERSION=`rsync --version | head -n 1 | cut -d " " -f 4`
 
@@ -19,7 +21,9 @@ fi
 
 set -e
 
-echo "Syncing test stage in $(portable_realpath "$DIRAC_TEST_STAGE_DIR")"
-rsync -av --delete --exclude-from="$DIRAC_TEST_STAGE_RSYNC_EXCLUDE_FILE" "$ROOT/" "$DIRAC_TEST_STAGE_DIR"
+echo "Syncing test stage from '$ROOT' to '$(portable_realpath "$TEST_STAGE")'..."
+rsync -a --stats --delete --exclude-from="$DIRAC_TEST_STAGE_RSYNC_EXCLUDE_FILE" "$ROOT/" "$TEST_STAGE"
+echo "---"
+echo
 
 popd
