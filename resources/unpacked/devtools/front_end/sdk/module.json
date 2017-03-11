@@ -11,7 +11,6 @@
             "type": "setting",
             "settingName": "networkBlockedURLs",
             "settingType": "array",
-            "storageType": "session",
             "defaultValue": []
         },
         {
@@ -97,6 +96,25 @@
             "settingName": "customFormatters",
             "settingType": "boolean",
             "defaultValue": true
+        },
+        {
+            "type": "setting",
+            "category": "Network",
+            "title": "Enable request blocking",
+            "settingName": "requestBlockingEnabled",
+            "settingType": "boolean",
+            "storageType": "session",
+            "defaultValue": false,
+            "options": [
+                {
+                    "value": true,
+                    "title": "Enables request blocking"
+                },
+                {
+                    "value": false,
+                    "title": "Disable request blocking"
+                }
+            ]
         }
     ],
     "scripts": [

@@ -244,9 +244,6 @@ SDK.TargetManager = class extends Common.Object {
     var target = new SDK.Target(this, id, name, capabilitiesMask, connectionFactory, parentTarget);
     this._pendingTargets.add(target);
 
-    /** @type {!SDK.ConsoleModel} */
-    target.consoleModel = /** @type {!SDK.ConsoleModel} */ (target.model(SDK.ConsoleModel));
-
     var networkManager = target.model(SDK.NetworkManager);
     var resourceTreeModel = target.model(SDK.ResourceTreeModel);
     if (networkManager && resourceTreeModel)
@@ -255,6 +252,8 @@ SDK.TargetManager = class extends Common.Object {
     /** @type {!SDK.RuntimeModel} */
     target.runtimeModel = /** @type {!SDK.RuntimeModel} */ (target.model(SDK.RuntimeModel));
     target.model(SDK.DebuggerModel);
+    /** @type {!SDK.ConsoleModel} */
+    target.consoleModel = /** @type {!SDK.ConsoleModel} */ (target.model(SDK.ConsoleModel));
     target.model(SDK.DOMModel);
     target.model(SDK.CSSModel);
     target.model(SDK.CPUProfilerModel);
@@ -422,9 +421,10 @@ SDK.TargetManager = class extends Common.Object {
    * @return {!Protocol.InspectorBackend.Connection}
    */
   _createMainConnection(params) {
-    const wsParam = Runtime.queryParam("ws");
-    if (wsParam) {
-      var ws = 'ws://' + decodeURIComponent(wsParam);
+    var wsParam = Runtime.queryParam('ws');
+    var wssParam = Runtime.queryParam('wss');
+    if (wsParam || wssParam) {
+      var ws = wsParam ? `ws://${decodeURIComponent(wsParam)}` : `wss://${decodeURIComponent(wssParam)}`;
       this._mainConnection = new SDK.WebSocketConnection(ws, this._webSocketConnectionLostCallback, params);
     } else if (InspectorFrontendHost.isHostedMode()) {
       this._mainConnection = new SDK.StubConnection(params);
