@@ -14,23 +14,23 @@
     (output/log! text)))
 
 (defn on-message-handler [_server _client msg]
-  (log/debug "transcript-streamer server: got transcript-streamer message" msg)
+  (log/debug "got transcript-streamer message" msg)
   (case (:op msg)
     :ready nil                                                                                                                ; ignore
     :publish (publish! msg)
-    (log/error "transcript-streamer server: received unrecognized message" msg)))
+    (log/error "received unrecognized message" msg)))
 
 (defn create-transcript-streamer-server! []
-  (log/debug "transcript-streamer server: creating server")
+  (log/debug "creating transcript-streamer-server")
   (assert (not @current-server))
   (let [options {:name "Transcript Streamer (server)"
                  :host (get-transcript-streamer-server-host)
                  :port (get-transcript-streamer-server-port)}]
-    (log/info "transcript-streamer server: creating server with" options)
+    (log/info "creating transcript-streamer-server with" options)
     (vreset! current-server (ws-server/create! (merge options {:on-message on-message-handler})))))
 
 (defn destroy-transcript-streamer-server! []
-  (log/debug "transcript-streamer server: destroying server")
+  (log/debug "destroying transcript-streamer-server")
   (assert @current-server)
   (ws-server/destroy! @current-server))
 
