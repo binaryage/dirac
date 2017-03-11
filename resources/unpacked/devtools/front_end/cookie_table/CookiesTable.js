@@ -37,15 +37,13 @@ CookieTable.CookiesTable = class extends UI.VBox {
    * @param {function()=} refreshCallback
    * @param {function()=} selectedCallback
    * @param {function(!SDK.Cookie, function())=} deleteCallback
-   * @param {string=} cookieDomain
    */
-  constructor(saveCallback, refreshCallback, selectedCallback, deleteCallback, cookieDomain) {
+  constructor(saveCallback, refreshCallback, selectedCallback, deleteCallback) {
     super();
 
     this._saveCallback = saveCallback;
     this._refreshCallback = refreshCallback;
     this._deleteCallback = deleteCallback;
-    this._cookieDomain = cookieDomain;
 
     var editable = !!saveCallback;
 
@@ -105,6 +103,9 @@ CookieTable.CookiesTable = class extends UI.VBox {
 
     this._dataGrid.asWidget().show(this.element);
     this._data = [];
+
+    /** @type {string} */
+    this._cookieDomain = '';
   }
 
   /**
@@ -123,6 +124,13 @@ CookieTable.CookiesTable = class extends UI.VBox {
   }
 
   /**
+   * @param {string} cookieDomain
+   */
+  setCookieDomain(cookieDomain) {
+    this._cookieDomain = cookieDomain;
+  }
+
+  /**
    * @return {?SDK.Cookie}
    */
   selectedCookie() {
@@ -135,9 +143,13 @@ CookieTable.CookiesTable = class extends UI.VBox {
    */
   _getSelectionCookies() {
     var node = this._dataGrid.selectedNode;
-    var neighbor = node && (node.traverseNextNode(true) || node.traversePreviousNode(true));
+    var nextNeighbor = node && node.traverseNextNode(true);
+    var previousNeighbor = node && node.traversePreviousNode(true);
 
-    return {current: node && node.cookie, neighbor: neighbor && neighbor.cookie};
+    return {
+      current: node && node.cookie,
+      neighbor: (nextNeighbor && nextNeighbor.cookie) || (previousNeighbor && previousNeighbor.cookie)
+    };
   }
 
   /**
@@ -206,8 +218,8 @@ CookieTable.CookiesTable = class extends UI.VBox {
         this._populateNode(this._dataGrid.rootNode(), item.cookies, selectedCookie, lastEditedColumnId);
       }
     }
-    if (selectedCookie && lastEditedColumnId && !this._dataGrid.selectedNode)
-      this._addInactiveNode(this._dataGrid.rootNode(), selectedCookie, lastEditedColumnId);
+    if (selectionCookies.current && lastEditedColumnId && !this._dataGrid.selectedNode)
+      this._addInactiveNode(this._dataGrid.rootNode(), selectionCookies.current, lastEditedColumnId);
     if (this._saveCallback)
       this._dataGrid.addCreationNode(false);
   }

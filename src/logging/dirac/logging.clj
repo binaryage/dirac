@@ -24,7 +24,7 @@
 (def tests-options
   (standard-layout :magenta))
 
-(def transcript-stream-options
+(def tasks-output-options
   (standard-layout :yellow))
 
 (def weasel-options
@@ -41,7 +41,7 @@
         ; test runners
         "dirac.tests.backend" (merge-options tests-options options)
         "dirac.tests.browser" (merge-options tests-options options)
-        "dirac.tests.browser.tasks.transcript-streamer-server" (merge-options transcript-stream-options options)
+        "dirac.tests.browser.tasks.output" (merge-options tasks-output-options options)
         ; test mocks / helpers
         "dirac.test-lib" (merge-options tests-options options)
         ; agent

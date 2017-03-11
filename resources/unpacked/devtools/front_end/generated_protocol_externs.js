@@ -1221,30 +1221,17 @@ Protocol.NetworkAgent.prototype.getResponseBody.Request;
 Protocol.NetworkAgent.prototype.invoke_getResponseBody = function(obj, opt_callback) {};
 
 /**
- * @param {string} url
+ * @param {!Array<string>} urls
  * @param {function(?Protocol.Error):void=} opt_callback
  */
-Protocol.NetworkAgent.prototype.addBlockedURL = function(url, opt_callback) {};
-/** @typedef {!{url: string}} obj */
-Protocol.NetworkAgent.prototype.addBlockedURL.Request;
+Protocol.NetworkAgent.prototype.setBlockedURLs = function(urls, opt_callback) {};
+/** @typedef {!{urls: !Array<string>}} obj */
+Protocol.NetworkAgent.prototype.setBlockedURLs.Request;
 /**
- * @param {!Protocol.NetworkAgent.prototype.addBlockedURL.Request} obj
+ * @param {!Protocol.NetworkAgent.prototype.setBlockedURLs.Request} obj
  * @param {function(?Protocol.Error):void=} opt_callback
  */
-Protocol.NetworkAgent.prototype.invoke_addBlockedURL = function(obj, opt_callback) {};
-
-/**
- * @param {string} url
- * @param {function(?Protocol.Error):void=} opt_callback
- */
-Protocol.NetworkAgent.prototype.removeBlockedURL = function(url, opt_callback) {};
-/** @typedef {!{url: string}} obj */
-Protocol.NetworkAgent.prototype.removeBlockedURL.Request;
-/**
- * @param {!Protocol.NetworkAgent.prototype.removeBlockedURL.Request} obj
- * @param {function(?Protocol.Error):void=} opt_callback
- */
-Protocol.NetworkAgent.prototype.invoke_removeBlockedURL = function(obj, opt_callback) {};
+Protocol.NetworkAgent.prototype.invoke_setBlockedURLs = function(obj, opt_callback) {};
 
 /**
  * @param {Protocol.Network.RequestId} requestId
@@ -3254,13 +3241,13 @@ Protocol.CSS.Value;
 /** @typedef {!{selectors:(!Array<Protocol.CSS.Value>), text:(string)}} */
 Protocol.CSS.SelectorList;
 
-/** @typedef {!{styleSheetId:(Protocol.CSS.StyleSheetId), frameId:(Protocol.Page.FrameId), sourceURL:(string), sourceMapURL:(string|undefined), origin:(Protocol.CSS.StyleSheetOrigin), title:(string), ownerNode:(Protocol.DOM.BackendNodeId|undefined), disabled:(boolean), hasSourceURL:(boolean|undefined), isInline:(boolean), startLine:(number), startColumn:(number)}} */
+/** @typedef {!{styleSheetId:(Protocol.CSS.StyleSheetId), frameId:(Protocol.Page.FrameId), sourceURL:(string), sourceMapURL:(string|undefined), origin:(Protocol.CSS.StyleSheetOrigin), title:(string), ownerNode:(Protocol.DOM.BackendNodeId|undefined), disabled:(boolean), hasSourceURL:(boolean|undefined), isInline:(boolean), startLine:(number), startColumn:(number), length:(number)}} */
 Protocol.CSS.CSSStyleSheetHeader;
 
 /** @typedef {!{styleSheetId:(Protocol.CSS.StyleSheetId|undefined), selectorList:(Protocol.CSS.SelectorList), origin:(Protocol.CSS.StyleSheetOrigin), style:(Protocol.CSS.CSSStyle), media:(!Array<Protocol.CSS.CSSMedia>|undefined)}} */
 Protocol.CSS.CSSRule;
 
-/** @typedef {!{styleSheetId:(Protocol.CSS.StyleSheetId), range:(Protocol.CSS.SourceRange), used:(boolean)}} */
+/** @typedef {!{styleSheetId:(Protocol.CSS.StyleSheetId), startOffset:(number), endOffset:(number), used:(boolean)}} */
 Protocol.CSS.RuleUsage;
 
 /** @typedef {!{startLine:(number), startColumn:(number), endLine:(number), endColumn:(number)}} */
@@ -5484,14 +5471,15 @@ Protocol.DebuggerAgent.prototype.invoke_removeBreakpoint = function(obj, opt_cal
 /**
  * @param {Protocol.Debugger.Location} start
  * @param {Protocol.Debugger.Location=} opt_end
- * @param {function(?Protocol.Error, !Array<Protocol.Debugger.Location>):void=} opt_callback
+ * @param {boolean=} opt_restrictToFunction
+ * @param {function(?Protocol.Error, !Array<Protocol.Debugger.BreakLocation>):void=} opt_callback
  */
-Protocol.DebuggerAgent.prototype.getPossibleBreakpoints = function(start, opt_end, opt_callback) {};
-/** @typedef {!{start: Protocol.Debugger.Location, end: (Protocol.Debugger.Location|undefined)}} obj */
+Protocol.DebuggerAgent.prototype.getPossibleBreakpoints = function(start, opt_end, opt_restrictToFunction, opt_callback) {};
+/** @typedef {!{start: Protocol.Debugger.Location, end: (Protocol.Debugger.Location|undefined), restrictToFunction: (boolean|undefined)}} obj */
 Protocol.DebuggerAgent.prototype.getPossibleBreakpoints.Request;
 /**
  * @param {!Protocol.DebuggerAgent.prototype.getPossibleBreakpoints.Request} obj
- * @param {function(?Protocol.Error, !Array<Protocol.Debugger.Location>):void=} opt_callback
+ * @param {function(?Protocol.Error, !Array<Protocol.Debugger.BreakLocation>):void=} opt_callback
  */
 Protocol.DebuggerAgent.prototype.invoke_getPossibleBreakpoints = function(obj, opt_callback) {};
 
@@ -5555,6 +5543,18 @@ Protocol.DebuggerAgent.prototype.pause.Request;
  * @param {function(?Protocol.Error):void=} opt_callback
  */
 Protocol.DebuggerAgent.prototype.invoke_pause = function(obj, opt_callback) {};
+
+/**
+ * @param {function(?Protocol.Error):void=} opt_callback
+ */
+Protocol.DebuggerAgent.prototype.scheduleStepIntoAsync = function(opt_callback) {};
+/** @typedef {Object|undefined} obj */
+Protocol.DebuggerAgent.prototype.scheduleStepIntoAsync.Request;
+/**
+ * @param {!Protocol.DebuggerAgent.prototype.scheduleStepIntoAsync.Request} obj
+ * @param {function(?Protocol.Error):void=} opt_callback
+ */
+Protocol.DebuggerAgent.prototype.invoke_scheduleStepIntoAsync = function(obj, opt_callback) {};
 
 /**
  * @param {function(?Protocol.Error):void=} opt_callback
@@ -5747,6 +5747,16 @@ Protocol.Debugger.Scope;
 
 /** @typedef {!{lineNumber:(number), lineContent:(string)}} */
 Protocol.Debugger.SearchMatch;
+
+/** @enum {string} */
+Protocol.Debugger.BreakLocationType = {
+    DebuggerStatement: "debuggerStatement",
+    Call: "call",
+    Return: "return"
+};
+
+/** @typedef {!{scriptId:(Protocol.Runtime.ScriptId), lineNumber:(number), columnNumber:(number|undefined), type:(Protocol.Debugger.BreakLocationType|undefined)}} */
+Protocol.Debugger.BreakLocation;
 /** @interface */
 Protocol.DebuggerDispatcher = function() {};
 /**
@@ -5763,8 +5773,9 @@ Protocol.DebuggerDispatcher = function() {};
  * @param {string=} opt_sourceMapURL
  * @param {boolean=} opt_hasSourceURL
  * @param {boolean=} opt_isModule
+ * @param {number=} opt_length
  */
-Protocol.DebuggerDispatcher.prototype.scriptParsed = function(scriptId, url, startLine, startColumn, endLine, endColumn, executionContextId, hash, opt_executionContextAuxData, opt_isLiveEdit, opt_sourceMapURL, opt_hasSourceURL, opt_isModule) {};
+Protocol.DebuggerDispatcher.prototype.scriptParsed = function(scriptId, url, startLine, startColumn, endLine, endColumn, executionContextId, hash, opt_executionContextAuxData, opt_isLiveEdit, opt_sourceMapURL, opt_hasSourceURL, opt_isModule, opt_length) {};
 /**
  * @param {Protocol.Runtime.ScriptId} scriptId
  * @param {string} url
@@ -5778,8 +5789,9 @@ Protocol.DebuggerDispatcher.prototype.scriptParsed = function(scriptId, url, sta
  * @param {string=} opt_sourceMapURL
  * @param {boolean=} opt_hasSourceURL
  * @param {boolean=} opt_isModule
+ * @param {number=} opt_length
  */
-Protocol.DebuggerDispatcher.prototype.scriptFailedToParse = function(scriptId, url, startLine, startColumn, endLine, endColumn, executionContextId, hash, opt_executionContextAuxData, opt_sourceMapURL, opt_hasSourceURL, opt_isModule) {};
+Protocol.DebuggerDispatcher.prototype.scriptFailedToParse = function(scriptId, url, startLine, startColumn, endLine, endColumn, executionContextId, hash, opt_executionContextAuxData, opt_sourceMapURL, opt_hasSourceURL, opt_isModule, opt_length) {};
 /**
  * @param {Protocol.Debugger.BreakpointId} breakpointId
  * @param {Protocol.Debugger.Location} location
@@ -6014,7 +6026,7 @@ Protocol.Profiler.Profile;
 /** @typedef {!{line:(number), ticks:(number)}} */
 Protocol.Profiler.PositionTickInfo;
 
-/** @typedef {!{startLineNumber:(number), startColumnNumber:(number), endLineNumber:(number), endColumnNumber:(number), count:(number)}} */
+/** @typedef {!{startOffset:(number), endOffset:(number), count:(number)}} */
 Protocol.Profiler.CoverageRange;
 
 /** @typedef {!{functionName:(string), ranges:(!Array<Protocol.Profiler.CoverageRange>)}} */

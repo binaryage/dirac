@@ -34,10 +34,12 @@
     (warn (make-repl-readiness-warning-message url))))
 
 (defn open-via-nrepl-link-handler [all-actions url line column event]
+  ; note that event is nil when selecting exact item from link context menu (after right-click)
+  ; otherwise the event represent click event of link left-click
   (let [next-action (second all-actions)]
-    (if (should-call-dirac-action? event)
+    (if (or (nil? event) (should-call-dirac-action? event))
       (open-via-nrepl! url line column))
-    (if (and (some? next-action) (should-call-original-action? event))
+    (if (and (some? next-action) (some? event) (should-call-original-action? event))
       (ocall! next-action "handler"))))
 
 (defn register-open-via-nrepl-handler! []

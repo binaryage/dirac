@@ -5,6 +5,6 @@ false && source _config.sh # never executes, this is here just for IntelliJ Bash
 
 pushd "$DIRAC_SAMPLE_DIR"
 
-lein dev
+lein $@
 
 popd

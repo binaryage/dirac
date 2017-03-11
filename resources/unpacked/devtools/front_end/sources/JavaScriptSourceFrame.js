@@ -595,38 +595,63 @@ Sources.JavaScriptSourceFrame = class extends SourceFrame.UISourceCodeFrame {
     var callFrame = UI.context.flavor(SDK.DebuggerModel.CallFrame);
     if (!callFrame)
       return;
-    var localScope = callFrame.localScope();
-    if (!localScope)
-      return;
-    var start = localScope.startLocation();
-    var end = localScope.endLocation();
-    var debuggerModel = callFrame.debuggerModel;
-    debuggerModel.getPossibleBreakpoints(start, end, true)
-        .then(locations => this.textEditor.operation(renderLocations.bind(this, locations)));
-
     if (this._clearContinueToLocationsTimer) {
       clearTimeout(this._clearContinueToLocationsTimer);
       delete this._clearContinueToLocationsTimer;
     }
+    var localScope = callFrame.localScope();
+    if (!localScope) {
+      this.textEditor.operation(clearExistingLocations.bind(this));
+      return;
+    }
+    var start = localScope.startLocation();
+    var end = localScope.endLocation();
+    var debuggerModel = callFrame.debuggerModel;
+    var executionLocation = callFrame.location();
+    debuggerModel.getPossibleBreakpoints(start, end, true)
+        .then(locations => this.textEditor.operation(renderLocations.bind(this, locations)));
 
     /**
-     * @param {!Array<!SDK.DebuggerModel.Location>} locations
+     * @param {!Array<!SDK.DebuggerModel.BreakLocation>} locations
      * @this {Sources.JavaScriptSourceFrame}
      */
     function renderLocations(locations) {
-      var bookmarks = this.textEditor.bookmarks(
-          this.textEditor.fullRange(), Sources.JavaScriptSourceFrame.continueToLocationDecorationSymbol);
-      bookmarks.map(bookmark => bookmark.clear());
-
+      clearExistingLocations.call(this);
       for (var location of locations) {
-        var icon = UI.Icon.create('smallicon-green-arrow');
+        var icon;
+        var isCurrent = location.lineNumber === executionLocation.lineNumber &&
+            location.columnNumber === executionLocation.columnNumber;
+        if (!isCurrent || (location.type !== SDK.DebuggerModel.BreakLocationType.Call &&
+                           location.type !== SDK.DebuggerModel.BreakLocationType.Return)) {
+          icon = UI.Icon.create('smallicon-green-arrow');
+          icon.addEventListener('click', location.continueToLocation.bind(location));
+        } else if (location.type === SDK.DebuggerModel.BreakLocationType.Call) {
+          icon = UI.Icon.create('smallicon-step-in');
+          icon.addEventListener('click', () => {
+            debuggerModel.scheduleStepIntoAsync();
+            debuggerModel.stepInto();
+          });
+        } else if (location.type === SDK.DebuggerModel.BreakLocationType.Return) {
+          icon = UI.Icon.create('smallicon-step-out');
+          icon.addEventListener('click', () => {
+            debuggerModel.stepOut();
+          });
+        }
         icon.classList.add('cm-continue-to-location');
-        icon.addEventListener('click', location.continueToLocation.bind(location));
         icon.addEventListener('mousemove', hidePopoverAndConsumeEvent.bind(this));
         this.textEditor.addBookmark(
             location.lineNumber, location.columnNumber, icon,
             Sources.JavaScriptSourceFrame.continueToLocationDecorationSymbol);
       }
+    }
+
+    /**
+     * @this {Sources.JavaScriptSourceFrame}
+     */
+    function clearExistingLocations() {
+      var bookmarks = this.textEditor.bookmarks(
+          this.textEditor.fullRange(), Sources.JavaScriptSourceFrame.continueToLocationDecorationSymbol);
+      bookmarks.map(bookmark => bookmark.clear());
     }
 
     /**
