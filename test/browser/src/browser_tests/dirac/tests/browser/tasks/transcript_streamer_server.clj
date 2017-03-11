@@ -2,7 +2,8 @@
   (:require [clojure.tools.logging :as log]
             [dirac.settings :refer [get-transcript-streamer-server-host get-transcript-streamer-server-port]]
             [dirac.travis :refer [with-travis-fold]]
-            [dirac.lib.ws-server :as ws-server]))
+            [dirac.lib.ws-server :as ws-server]
+            [dirac.tests.browser.tasks.output :as output]))
 
 (defonce current-server (volatile! nil))
 
@@ -10,7 +11,7 @@
 
 (defn publish! [msg]
   (let [{:keys [text]} msg]
-    (log/info text)))
+    (output/log! text)))
 
 (defn on-message-handler [_server _client msg]
   (log/debug "transcript-streamer server: got transcript-streamer message" msg)
