@@ -1221,30 +1221,17 @@ Protocol.NetworkAgent.prototype.getResponseBody.Request;
 Protocol.NetworkAgent.prototype.invoke_getResponseBody = function(obj, opt_callback) {};
 
 /**
- * @param {string} url
+ * @param {!Array<string>} urls
  * @param {function(?Protocol.Error):void=} opt_callback
  */
-Protocol.NetworkAgent.prototype.addBlockedURL = function(url, opt_callback) {};
-/** @typedef {!{url: string}} obj */
-Protocol.NetworkAgent.prototype.addBlockedURL.Request;
+Protocol.NetworkAgent.prototype.setBlockedURLs = function(urls, opt_callback) {};
+/** @typedef {!{urls: !Array<string>}} obj */
+Protocol.NetworkAgent.prototype.setBlockedURLs.Request;
 /**
- * @param {!Protocol.NetworkAgent.prototype.addBlockedURL.Request} obj
+ * @param {!Protocol.NetworkAgent.prototype.setBlockedURLs.Request} obj
  * @param {function(?Protocol.Error):void=} opt_callback
  */
-Protocol.NetworkAgent.prototype.invoke_addBlockedURL = function(obj, opt_callback) {};
-
-/**
- * @param {string} url
- * @param {function(?Protocol.Error):void=} opt_callback
- */
-Protocol.NetworkAgent.prototype.removeBlockedURL = function(url, opt_callback) {};
-/** @typedef {!{url: string}} obj */
-Protocol.NetworkAgent.prototype.removeBlockedURL.Request;
-/**
- * @param {!Protocol.NetworkAgent.prototype.removeBlockedURL.Request} obj
- * @param {function(?Protocol.Error):void=} opt_callback
- */
-Protocol.NetworkAgent.prototype.invoke_removeBlockedURL = function(obj, opt_callback) {};
+Protocol.NetworkAgent.prototype.invoke_setBlockedURLs = function(obj, opt_callback) {};
 
 /**
  * @param {Protocol.Network.RequestId} requestId
@@ -6039,7 +6026,7 @@ Protocol.Profiler.Profile;
 /** @typedef {!{line:(number), ticks:(number)}} */
 Protocol.Profiler.PositionTickInfo;
 
-/** @typedef {!{startLineNumber:(number), startColumnNumber:(number), endLineNumber:(number), endColumnNumber:(number), startOffset:(number), endOffset:(number), count:(number)}} */
+/** @typedef {!{startOffset:(number), endOffset:(number), count:(number)}} */
 Protocol.Profiler.CoverageRange;
 
 /** @typedef {!{functionName:(string), ranges:(!Array<Protocol.Profiler.CoverageRange>)}} */

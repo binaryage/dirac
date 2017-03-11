@@ -1,5 +1,5 @@
-Protocol.BakedInspectorBackendAPIChromeTag='59.0.3035.2';
-Protocol.BakedInspectorBackendAPIChromeRev='aeb9264493efe716ae9c213373eb63e378480743';
+Protocol.BakedInspectorBackendAPIChromeTag='59.0.3038.2';
+Protocol.BakedInspectorBackendAPIChromeRev='207688fb45319568db61e59c4c8391517793bf47';
 Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerEvent("Inspector.detached", ["reason"]);\n'
 + 'Protocol.inspectorBackend.registerEvent("Inspector.targetCrashed", []);\n'
@@ -122,8 +122,7 @@ Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerCommand("Network.setUserAgentOverride", [{"name": "userAgent", "type": "string", "optional": false}], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Network.setExtraHTTPHeaders", [{"name": "headers", "type": "object", "optional": false}], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Network.getResponseBody", [{"name": "requestId", "type": "string", "optional": false}], ["body", "base64Encoded"], false);\n'
-+ 'Protocol.inspectorBackend.registerCommand("Network.addBlockedURL", [{"name": "url", "type": "string", "optional": false}], [], false);\n'
-+ 'Protocol.inspectorBackend.registerCommand("Network.removeBlockedURL", [{"name": "url", "type": "string", "optional": false}], [], false);\n'
++ 'Protocol.inspectorBackend.registerCommand("Network.setBlockedURLs", [{"name": "urls", "type": "object", "optional": false}], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Network.replayXHR", [{"name": "requestId", "type": "string", "optional": false}], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Network.setMonitoringXHREnabled", [{"name": "enabled", "type": "boolean", "optional": false}], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Network.canClearBrowserCache", [], ["result"], false);\n'
