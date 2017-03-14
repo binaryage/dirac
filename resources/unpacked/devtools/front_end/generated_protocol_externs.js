@@ -416,10 +416,11 @@ Protocol.PageAgent.prototype.invoke_setTouchEmulationEnabled = function(obj, opt
 /**
  * @param {string=} opt_format
  * @param {number=} opt_quality
+ * @param {boolean=} opt_fromSurface
  * @param {function(?Protocol.Error, string):void=} opt_callback
  */
-Protocol.PageAgent.prototype.captureScreenshot = function(opt_format, opt_quality, opt_callback) {};
-/** @typedef {!{quality: (number|undefined), format: (string|undefined)}} obj */
+Protocol.PageAgent.prototype.captureScreenshot = function(opt_format, opt_quality, opt_fromSurface, opt_callback) {};
+/** @typedef {!{fromSurface: (boolean|undefined), quality: (number|undefined), format: (string|undefined)}} obj */
 Protocol.PageAgent.prototype.captureScreenshot.Request;
 /**
  * @param {!Protocol.PageAgent.prototype.captureScreenshot.Request} obj

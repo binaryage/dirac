@@ -1,5 +1,5 @@
-Protocol.BakedInspectorBackendAPIChromeTag='59.0.3038.2';
-Protocol.BakedInspectorBackendAPIChromeRev='207688fb45319568db61e59c4c8391517793bf47';
+Protocol.BakedInspectorBackendAPIChromeTag='59.0.3041.2';
+Protocol.BakedInspectorBackendAPIChromeRev='ccb3715e9eede6f2d6f3a76654339bc8c4b4830f';
 Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerEvent("Inspector.detached", ["reason"]);\n'
 + 'Protocol.inspectorBackend.registerEvent("Inspector.targetCrashed", []);\n'
@@ -53,7 +53,7 @@ Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerCommand("Page.setDeviceOrientationOverride", [{"name": "alpha", "type": "number", "optional": false}, {"name": "beta", "type": "number", "optional": false}, {"name": "gamma", "type": "number", "optional": false}], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Page.clearDeviceOrientationOverride", [], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Page.setTouchEmulationEnabled", [{"name": "enabled", "type": "boolean", "optional": false}, {"name": "configuration", "type": "string", "optional": true}], [], false);\n'
-+ 'Protocol.inspectorBackend.registerCommand("Page.captureScreenshot", [{"name": "format", "type": "string", "optional": true}, {"name": "quality", "type": "number", "optional": true}], ["data"], false);\n'
++ 'Protocol.inspectorBackend.registerCommand("Page.captureScreenshot", [{"name": "format", "type": "string", "optional": true}, {"name": "quality", "type": "number", "optional": true}, {"name": "fromSurface", "type": "boolean", "optional": true}], ["data"], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Page.printToPDF", [], ["data"], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Page.startScreencast", [{"name": "format", "type": "string", "optional": true}, {"name": "quality", "type": "number", "optional": true}, {"name": "maxWidth", "type": "number", "optional": true}, {"name": "maxHeight", "type": "number", "optional": true}, {"name": "everyNthFrame", "type": "number", "optional": true}], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Page.stopScreencast", [], [], false);\n'
