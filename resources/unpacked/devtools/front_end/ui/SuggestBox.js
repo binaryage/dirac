@@ -79,6 +79,21 @@ UI.SuggestBox = class {
   }
 
   /**
+   * @param {boolean} value
+   */
+  setDefaultSelectionIsDimmed(value) {
+    this._element.classList.toggle('default-selection-is-dimmed', value);
+  }
+
+  /**
+   * @param {boolean} value
+   */
+  _setUserInteracted(value) {
+    this._userInteracted = value;
+    this._element.classList.toggle('user-has-interacted', value);
+  }
+
+  /**
    * @return {boolean}
    */
   visible() {
@@ -140,7 +155,7 @@ UI.SuggestBox = class {
   hide() {
     if (!this.visible())
       return;
-    this._userInteracted = false;
+    this._setUserInteracted(false);
     this._glassPane.hide();
   }
 
@@ -214,7 +229,7 @@ UI.SuggestBox = class {
 
     element.addEventListener('click', event => {
       this._list.selectItem(item);
-      this._userInteracted = true;
+      this._setUserInteracted(true);
       event.consume(true);
       this.acceptSuggestion();
     });
@@ -340,7 +355,7 @@ UI.SuggestBox = class {
         return false;
     }
     if (selected) {
-      this._userInteracted = true;
+      this._setUserInteracted(true);
       return true;
     }
     return false;
