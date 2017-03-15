@@ -66,7 +66,7 @@ You might want to change it to [http://localhost:9977/tests.html](http://localho
 
 You can validate extension configuration by visiting `chrome://extensions`:
 
-<img src="https://dl.dropboxusercontent.com/u/559047/dirac-dev-sample-extension-setup.png" width=800>
+<img src="https://box.binaryage.com/dirac-dev-sample-extension-setup.png" width=800>
 
 Chrome should have checked-in "Developer mode" (see top-right). Dirac DevTools must be pointing to `dirac/resources/unpacked` and
 Dirac Marionettist must be pointing to `dirac/test/marion/resources/unpacked`.
@@ -98,7 +98,7 @@ The output might look [like this](https://gist.github.com/darwin/5aa4038d4089fa2
 compile test projects using figwheel and launch an nREPL server with verbose logging.
 
 Launched Chrome instance should navigate to `http://localhost:9080/?set-agent-port=9041`:
-<img src="https://dl.dropboxusercontent.com/u/559047/dirac-tests-list.png" width=800>
+<img src="https://box.binaryage.com/dirac-tests-list.png" width=800>
 
 Clicking individual task links in "AVAILABLE TASKS" section you can run individual tests interactively. The "AVAILABLE SCENRAIOS"
 section is handy for cases when you want to manually open a scenario and test it ad-hoc.
@@ -116,13 +116,13 @@ anywhere in `go-task` instruction list. Sometimes it is the only way how to paus
 
 For example here I paused the `welcome-message` task by clicking the button:
 
-<img src="https://dl.dropboxusercontent.com/u/559047/dirac-task-runner-paused.png" width=800>
+<img src="https://box.binaryage.com/dirac-task-runner-paused.png" width=800>
 
 FYI, it could be done programmatically by placing `wait-for-resume` after [this line](https://github.com/binaryage/dirac/blob/c07f7dd3646c3153069258f9dad6e1f9cd809a3f/test/browser/fixtures/src/tasks/dirac/tests/tasks/suite02/welcome_message.cljs#L10).
 
 And here it was resumed and finished green:
 
-<img src="https://dl.dropboxusercontent.com/u/559047/dirac-task-runner-finished.png" width=800>
+<img src="https://box.binaryage.com/dirac-task-runner-finished.png" width=800>
 
 ### Running tests locally
 
