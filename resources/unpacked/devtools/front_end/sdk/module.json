@@ -141,6 +141,7 @@
         "DebuggerModel.js",
         "HAREntry.js",
         "LayerTreeBase.js",
+        "LogModel.js",
         "NetworkLog.js",
         "ServiceWorkerManager.js",
         "TracingManager.js",

@@ -251,8 +251,7 @@ Console.ConsoleView = class extends UI.VBox {
   }
 
   static clearConsole() {
-    for (var target of SDK.targetManager.targets())
-      target.consoleModel.requestClearMessages();
+    SDK.consoleModel.requestClearMessages();
   }
 
   /**
@@ -295,16 +294,12 @@ Console.ConsoleView = class extends UI.VBox {
   }
 
   _fetchMultitargetMessages() {
-    SDK.multitargetConsoleModel.addEventListener(SDK.ConsoleModel.Events.ConsoleCleared, this._consoleCleared, this);
-    SDK.multitargetConsoleModel.addEventListener(
-      SDK.ConsoleModel.Events.DiracMessage, this._onConsoleDiracMessage, this);
-    SDK.multitargetConsoleModel.addEventListener(
-        SDK.ConsoleModel.Events.MessageAdded, this._onConsoleMessageAdded, this);
-    SDK.multitargetConsoleModel.addEventListener(
-        SDK.ConsoleModel.Events.MessageUpdated, this._onConsoleMessageUpdated, this);
-    SDK.multitargetConsoleModel.addEventListener(
-        SDK.ConsoleModel.Events.CommandEvaluated, this._commandEvaluated, this);
-    SDK.multitargetConsoleModel.messages().forEach(this._addConsoleMessage, this);
+    SDK.consoleModel.addEventListener(SDK.ConsoleModel.Events.ConsoleCleared, this._consoleCleared, this);
+    SDK.consoleModel.addEventListener(SDK.ConsoleModel.Events.DiracMessage, this._onConsoleDiracMessage, this);
+    SDK.consoleModel.addEventListener(SDK.ConsoleModel.Events.MessageAdded, this._onConsoleMessageAdded, this);
+    SDK.consoleModel.addEventListener(SDK.ConsoleModel.Events.MessageUpdated, this._onConsoleMessageUpdated, this);
+    SDK.consoleModel.addEventListener(SDK.ConsoleModel.Events.CommandEvaluated, this._commandEvaluated, this);
+    SDK.consoleModel.messages().forEach(this._addConsoleMessage, this);
     this._viewport.invalidate();
   }
 
@@ -1355,7 +1350,7 @@ Console.ConsoleView = class extends UI.VBox {
           result.target(), exceptionDetails, SDK.ConsoleMessage.MessageType.Result, undefined, undefined);
     }
     message.setOriginatingMessage(originatingConsoleMessage);
-    result.target().consoleModel.addMessage(message);
+    SDK.consoleModel.addMessage(message);
   }
 
   /**
