@@ -163,7 +163,7 @@
              {:dependencies [[org.clojure/clojure "1.8.0" :scope "provided" :upgrade false]]}
 
              :clojure19
-             {:dependencies [[org.clojure/clojure "1.9.0-alpha14" :scope "provided" :upgrade false]]}
+             {:dependencies [[org.clojure/clojure "1.9.0-alpha15" :scope "provided" :upgrade false]]}
 
              :cooper
              {:plugins [[lein-cooper "1.2.2"]]}
