@@ -748,7 +748,7 @@ Console.ConsoleView = class extends UI.VBox {
     const level = SDK.ConsoleMessage.MessageLevel.Info;
     const type = SDK.ConsoleMessage.MessageType.DiracMarkup;
     const message = new SDK.ConsoleMessage(target, source, level, markup, type);
-    target.consoleModel.addMessage(message);
+    SDK.consoleModel.addMessage(message);
     return true;
   }
 
@@ -924,7 +924,7 @@ Console.ConsoleView = class extends UI.VBox {
     var type = SDK.ConsoleMessage.MessageType.DiracCommand;
     var commandMessage = new SDK.ConsoleMessage(target, SDK.ConsoleMessage.MessageSource.JS, SDK.ConsoleMessage.MessageLevel.Info, text, type);
     commandMessage.setExecutionContextId(executionContext.id);
-    target.consoleModel.addMessage(commandMessage);
+    SDK.consoleModel.addMessage(commandMessage);
 
     this._prompt.history().pushHistoryItem(text);
     this._diracHistorySetting.set(this._prompt.history().historyData().slice(-Console.ConsoleView.persistedHistorySize));
