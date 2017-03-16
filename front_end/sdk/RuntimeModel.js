@@ -334,10 +334,25 @@ SDK.RuntimeModel = class extends SDK.SDKModel {
   }
 
   /**
+   * @param {!Protocol.Runtime.ExceptionDetails} exceptionDetails
+   * @return {string}
+   */
+  static simpleTextFromException(exceptionDetails) {
+    var text = exceptionDetails.text;
+    if (exceptionDetails.exception && exceptionDetails.exception.description) {
+      var description = exceptionDetails.exception.description;
+      if (description.indexOf('\n') !== -1)
+        description = description.substring(0, description.indexOf('\n'));
+      text += ' ' + description;
+    }
+    return text;
+  }
+
+  /**
    * @param {number} timestamp
    * @param {!Protocol.Runtime.ExceptionDetails} exceptionDetails
    */
-  _exceptionThrown(timestamp, exceptionDetails) {
+  exceptionThrown(timestamp, exceptionDetails) {
     var exceptionWithTimestamp = {timestamp: timestamp, details: exceptionDetails};
     this.dispatchEventToListeners(SDK.RuntimeModel.Events.ExceptionThrown, exceptionWithTimestamp);
   }
@@ -432,7 +447,7 @@ SDK.RuntimeDispatcher = class {
    * @param {!Protocol.Runtime.ExceptionDetails} exceptionDetails
    */
   exceptionThrown(timestamp, exceptionDetails) {
-    this._runtimeModel._exceptionThrown(timestamp, exceptionDetails);
+    this._runtimeModel.exceptionThrown(timestamp, exceptionDetails);
   }
 
   /**
