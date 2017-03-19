@@ -21,6 +21,8 @@ var Common = {};
 /** @type {!Object} */
 var Components = {};
 /** @type {!Object} */
+var ConsoleModel = {};
+/** @type {!Object} */
 var CookieTable = {};
 /** @type {!Object} */
 var Coverage = {};
@@ -70,6 +72,8 @@ var Network = {};
 var NetworkConditions = {};
 /** @type {!Object} */
 var NetworkGroupLookup = {};
+/** @type {!Object} */
+var NetworkLog = {};
 /** @type {!Object} */
 var ObjectUI = {};
 /** @type {!Object} */
@@ -126,3 +130,5 @@ var UtilitySharedWorker = {};
 var WorkerService = {};
 /** @type {!Object} */
 var Workspace = {};
+/** @type {!Object} */
+var WorkspaceDiff = {};
