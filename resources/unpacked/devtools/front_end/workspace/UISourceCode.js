@@ -62,7 +62,7 @@ Workspace.UISourceCode = class extends Common.Object {
     this._decorations = null;
     /** @type {?Array.<!Workspace.Revision>} */
     this._history = null;
-    /** @type {?Array<!Workspace.UISourceCode.Message>} */
+    /** @type {?Set<!Workspace.UISourceCode.Message>} */
     this._messages = null;
     this._contentLoaded = false;
     /** @type {?string} */
@@ -537,10 +537,10 @@ Workspace.UISourceCode = class extends Common.Object {
   }
 
   /**
-   * @return {!Array<!Workspace.UISourceCode.Message>}
+   * @return {!Set<!Workspace.UISourceCode.Message>}
    */
   messages() {
-    return this._messages ? this._messages.slice() : [];
+    return this._messages ? new Set(this._messages) : new Set();
   }
 
   /**
@@ -564,8 +564,8 @@ Workspace.UISourceCode = class extends Common.Object {
   addMessage(level, text, range) {
     var message = new Workspace.UISourceCode.Message(this, level, text, range);
     if (!this._messages)
-      this._messages = [];
-    this._messages.push(message);
+      this._messages = new Set();
+    this._messages.add(message);
     this.dispatchEventToListeners(Workspace.UISourceCode.Events.MessageAdded, message);
     return message;
   }
@@ -574,7 +574,7 @@ Workspace.UISourceCode = class extends Common.Object {
    * @param {!Workspace.UISourceCode.Message} message
    */
   removeMessage(message) {
-    if (this._messages && this._messages.remove(message))
+    if (this._messages && this._messages.delete(message))
       this.dispatchEventToListeners(Workspace.UISourceCode.Events.MessageRemoved, message);
   }
 

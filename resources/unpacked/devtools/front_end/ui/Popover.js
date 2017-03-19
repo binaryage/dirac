@@ -47,7 +47,7 @@ UI.PopoverHelper = class {
 
   /**
    * @param {function(!Element, !Event):(!Element|!AnchorBox|undefined)} getAnchor
-   * @param {function(!Element, !UI.GlassPane):!Promise<boolean>} showPopover
+   * @param {function((!Element|!AnchorBox), !UI.GlassPane):!Promise<boolean>} showPopover
    * @param {function()=} onHide
    */
   initializeCallbacks(getAnchor, showPopover, onHide) {
@@ -182,8 +182,8 @@ UI.PopoverHelper = class {
 
   _mouseHover(element, document) {
     delete this._hoverTimer;
-    this._hoverElement = element;
     this._hidePopover();
+    this._hoverElement = element;
 
     this._popover = new UI.GlassPane();
     this._popover.registerRequiredCSS('ui/popover.css');

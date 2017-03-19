@@ -174,6 +174,9 @@ Timeline.TimelineUIUtils = class {
     eventStyles[recordTypes.GCCollectGarbage] =
         new Timeline.TimelineRecordStyle(Common.UIString('DOM GC'), categories['scripting']);
 
+    eventStyles[recordTypes.AsyncTask] =
+        new Timeline.TimelineRecordStyle(Common.UIString('Async Task'), categories['async']);
+
     Timeline.TimelineUIUtils._eventStylesMap = eventStyles;
     return eventStyles;
   }
@@ -527,6 +530,10 @@ Timeline.TimelineUIUtils = class {
         detailsText = Common.UIString('collect');
         break;
 
+      case recordType.AsyncTask:
+        detailsText = eventData ? eventData['name'] : null;
+        break;
+
       default:
         if (event.hasCategory(TimelineModel.TimelineModel.Category.Console))
           detailsText = null;
@@ -544,7 +551,7 @@ Timeline.TimelineUIUtils = class {
      * @return {?string}
      */
     function linkifyLocationAsText(scriptId, lineNumber, columnNumber) {
-      var debuggerModel = SDK.DebuggerModel.fromTarget(target);
+      var debuggerModel = target ? target.model(SDK.DebuggerModel) : null;
       if (!target || target.isDisposed() || !scriptId || !debuggerModel)
         return null;
       var rawLocation = debuggerModel.createRawLocationByScriptId(scriptId, lineNumber, columnNumber);
@@ -1473,6 +1480,8 @@ Timeline.TimelineUIUtils = class {
           'painting', Common.UIString('Painting'), true, 'hsl(109, 33%, 64%)', 'hsl(109, 33%, 55%)'),
       gpu: new Timeline.TimelineCategory(
           'gpu', Common.UIString('GPU'), false, 'hsl(109, 33%, 64%)', 'hsl(109, 33%, 55%)'),
+      async: new Timeline.TimelineCategory(
+          'async', Common.UIString('Async'), false, 'hsl(0, 100%, 50%)', 'hsl(0, 100%, 40%)'),
       other:
           new Timeline.TimelineCategory('other', Common.UIString('Other'), false, 'hsl(0, 0%, 87%)', 'hsl(0, 0%, 79%)'),
       idle: new Timeline.TimelineCategory('idle', Common.UIString('Idle'), false, 'hsl(0, 0%, 98%)', 'hsl(0, 0%, 98%)')

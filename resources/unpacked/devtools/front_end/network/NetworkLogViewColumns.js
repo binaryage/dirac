@@ -29,6 +29,9 @@ Network.NetworkLogViewColumns = class {
     /** @type {!Array.<!Network.NetworkLogViewColumns.Descriptor>} */
     this._columns = [];
 
+    /** @type {!Map<string, ?Network.NetworkColumnExtensionInterface>} */
+    this._columnExtensions = new Map();
+
     this._waterfallRequestsAreStale = false;
     this._waterfallScrollerWidthIsStale = true;
 
@@ -80,13 +83,14 @@ Network.NetworkLogViewColumns = class {
     this._columns = /** @type {!Array<!Network.NetworkLogViewColumns.Descriptor>} */ ([]);
     for (var currentConfigColumn of defaultColumns) {
       var columnConfig = /** @type {!Network.NetworkLogViewColumns.Descriptor} */ (
-          Object.assign(/** @type {!Object} */ ({}), defaultColumnConfig, currentConfigColumn));
+          Object.assign({}, defaultColumnConfig, currentConfigColumn));
       columnConfig.id = columnConfig.id;
       if (columnConfig.subtitle)
         columnConfig.titleDOMFragment = this._makeHeaderFragment(columnConfig.title, columnConfig.subtitle);
       this._columns.push(columnConfig);
     }
-    this._loadColumns();
+    this._loadColumnExtensions();
+    this._loadCustomColumnsAndSettings();
 
     this._popoverHelper = new UI.PopoverHelper(this._networkLogView.element);
     this._popoverHelper.initializeCallbacks(
@@ -327,16 +331,23 @@ Network.NetworkLogViewColumns = class {
   }
 
   /**
+   * @return {!Map<string, ?Network.NetworkColumnExtensionInterface>}
+   */
+  columnExtensions() {
+    return this._columnExtensions;
+  }
+
+  /**
    * @param {!Network.NetworkLogViewColumns.Descriptor} columnConfig
    */
   _toggleColumnVisibility(columnConfig) {
-    this._loadColumns();
+    this._loadCustomColumnsAndSettings();
     columnConfig.visible = !columnConfig.visible;
-    this._saveColumns();
+    this._saveColumnsSettings();
     this._updateColumns();
   }
 
-  _saveColumns() {
+  _saveColumnsSettings() {
     var saveableSettings = {};
     for (var columnConfig of this._columns)
       saveableSettings[columnConfig.id] = {visible: columnConfig.visible, title: columnConfig.title};
@@ -344,7 +355,44 @@ Network.NetworkLogViewColumns = class {
     this._persistantSettings.set(saveableSettings);
   }
 
-  _loadColumns() {
+  _loadColumnExtensions() {
+    var extensions = self.runtime.extensions(Network.NetworkColumnExtensionInterface);
+    for (var i = 0; i < extensions.length; i++) {
+      var extension = extensions[i];
+      var title = extension.title();
+      var columnId = title.toLowerCase() + '-extension';
+
+      this._columnExtensions.set(columnId, null);
+      extension.instance().then(extensionInstanceResolved.bind(this, columnId));
+
+      var columnConfig = /** @type {!Network.NetworkLogViewColumns.Descriptor} */ (
+          Object.assign({}, Network.NetworkLogViewColumns._defaultColumnConfig, {
+            id: columnId,
+            title: title,
+            isResponseHeader: false,
+            isCustomHeader: false,
+            visible: true,
+            sortingFunction:
+                Network.NetworkRequestNode.ExtensionColumnComparator.bind(null, this._columnExtensions, columnId)
+          }));
+      const columnIndex = i + 1;
+      this._columns.splice(columnIndex, 0, columnConfig);
+      if (this._dataGrid)
+        this._dataGrid.addColumn(Network.NetworkLogViewColumns._convertToDataGridDescriptor(columnConfig), columnIndex);
+    }
+
+    /**
+     * @param {string} columnId
+     * @param {!Network.NetworkColumnExtensionInterface} instance
+     * @this {Network.NetworkLogViewColumns}
+     */
+    function extensionInstanceResolved(columnId, instance) {
+      this._columnExtensions.set(columnId, instance);
+      this._networkLogView.columnExtensionResolved();
+    }
+  }
+
+  _loadCustomColumnsAndSettings() {
     var savedSettings = this._persistantSettings.get();
     var columnIds = Object.keys(savedSettings);
     for (var columnId of columnIds) {
@@ -461,7 +509,7 @@ Network.NetworkLogViewColumns = class {
       return false;
     this._columns.splice(index, 1);
     this._dataGrid.removeColumn(headerId);
-    this._saveColumns();
+    this._saveColumnsSettings();
     this._updateColumns();
     return true;
   }
@@ -483,7 +531,7 @@ Network.NetworkLogViewColumns = class {
       return null;
 
     var columnConfig = /** @type {!Network.NetworkLogViewColumns.Descriptor} */ (
-        Object.assign(/** @type {!Object} */ ({}), Network.NetworkLogViewColumns._defaultColumnConfig, {
+        Object.assign({}, Network.NetworkLogViewColumns._defaultColumnConfig, {
           id: headerId,
           title: headerTitle,
           isResponseHeader: true,
@@ -494,7 +542,7 @@ Network.NetworkLogViewColumns = class {
     this._columns.splice(index, 0, columnConfig);
     if (this._dataGrid)
       this._dataGrid.addColumn(Network.NetworkLogViewColumns._convertToDataGridDescriptor(columnConfig), index);
-    this._saveColumns();
+    this._saveColumnsSettings();
     this._updateColumns();
     return columnConfig;
   }
@@ -538,7 +586,7 @@ Network.NetworkLogViewColumns = class {
   }
 
   /**
-   * @param {!Element} anchor
+   * @param {!Element|!AnchorBox} anchor
    * @param {!UI.GlassPane} popover
    * @return {!Promise<boolean>}
    */
@@ -813,4 +861,24 @@ Network.NetworkLogViewColumns.WaterfallSortIds = {
   EndTime: 'endTime',
   Duration: 'duration',
   Latency: 'latency'
+};
+
+/**
+ * @interface
+ */
+Network.NetworkColumnExtensionInterface = function() {};
+
+Network.NetworkColumnExtensionInterface.prototype = {
+  /**
+   * @param {!SDK.NetworkRequest} request
+   * @return {string}
+   */
+  lookupColumnValue(request) {},
+
+  /**
+   * @param {!SDK.NetworkRequest} aRequest
+   * @param {!SDK.NetworkRequest} bRequest
+   * @return {number}
+   */
+  requestComparator(aRequest, bRequest) {}
 };

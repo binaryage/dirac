@@ -107,7 +107,8 @@ Network.NetworkLogView = class extends UI.VBox {
     this._resetSuggestionBuilder();
     this._initializeView();
 
-    Common.moduleSetting('networkColorCodeResourceTypes').addChangeListener(this._invalidateAllItems, this);
+    Common.moduleSetting('networkColorCodeResourceTypes')
+        .addChangeListener(this._invalidateAllItems.bind(this, false), this);
 
     SDK.targetManager.observeTargets(this);
     SDK.targetManager.addModelListener(
@@ -400,9 +401,7 @@ Network.NetworkLogView = class extends UI.VBox {
             SDK.ResourceTreeModel.Events.DOMContentLoaded, this._domContentLoadedEventFired, this);
       }
     }
-    var networkLog = SDK.NetworkLog.fromTarget(target);
-    if (networkLog)
-      networkLog.requests().forEach(this._appendRequest.bind(this));
+    NetworkLog.networkLog.requestsForTarget(target).forEach(this._appendRequest.bind(this));
   }
 
   /**
@@ -530,6 +529,10 @@ Network.NetworkLogView = class extends UI.VBox {
     if (!this._dataGrid)  // Not initialized yet.
       return [];
     return [this._dataGrid.scrollContainer];
+  }
+
+  columnExtensionResolved() {
+    this._invalidateAllItems(true);
   }
 
   _setupDataGrid() {
@@ -683,11 +686,17 @@ Network.NetworkLogView = class extends UI.VBox {
       this._refresh();
   }
 
-  _invalidateAllItems() {
+  /**
+   * @param {boolean=} deferUpdate
+   */
+  _invalidateAllItems(deferUpdate) {
     var requestIds = this._nodesByRequestId.keysArray();
     for (var i = 0; i < requestIds.length; ++i)
       this._staleRequestIds[requestIds[i]] = true;
-    this._refresh();
+    if (deferUpdate)
+      this.scheduleRefresh();
+    else
+      this._refresh();
   }
 
   /**
@@ -873,6 +882,7 @@ Network.NetworkLogView = class extends UI.VBox {
     if (group)
       return group;
     group = new Network.NetworkGroupNode(this, groupName);
+    group.setColumnExtensions(this._columns.columnExtensions());
     this._nodeGroups.set(groupName, group);
     return group;
   }
@@ -934,6 +944,7 @@ Network.NetworkLogView = class extends UI.VBox {
    */
   _appendRequest(request) {
     var node = new Network.NetworkRequestNode(this, request);
+    node.setColumnExtensions(this._columns.columnExtensions());
     node[Network.NetworkLogView._isFilteredOutSymbol] = true;
     node[Network.NetworkLogView._isMatchingSearchQuerySymbol] = false;
 
@@ -1026,8 +1037,7 @@ Network.NetworkLogView = class extends UI.VBox {
 
     // Pick provisional load requests.
     var requestsToPick = [];
-    var networkLog = SDK.NetworkLog.fromTarget(frame.target());
-    var requests = networkLog ? networkLog.requests() : [];
+    var requests = NetworkLog.networkLog.requestsForTarget(frame.target());
     for (var i = 0; i < requests.length; ++i) {
       var request = requests[i];
       if (request.loaderId === loaderId)
@@ -1172,7 +1182,7 @@ Network.NetworkLogView = class extends UI.VBox {
   }
 
   _copyAll() {
-    var harArchive = {log: (new SDK.HARLog(this._harRequests())).build()};
+    var harArchive = {log: (new NetworkLog.HARLog(this._harRequests())).build()};
     InspectorFrontendHost.copyText(JSON.stringify(harArchive, null, 2));
   }
 

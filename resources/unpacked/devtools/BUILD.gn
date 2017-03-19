@@ -134,6 +134,8 @@ all_devtools_files = [
   "front_end/console/ConsoleViewMessage.js",
   "front_end/console/ConsoleViewport.js",
   "front_end/console/module.json",
+  "front_end/console_model/ConsoleModel.js",
+  "front_end/console_model/module.json",
   "front_end/cookie_table/CookiesTable.js",
   "front_end/cookie_table/module.json",
   "front_end/coverage/coverageListView.css",
@@ -336,6 +338,9 @@ all_devtools_files = [
   "front_end/network_conditions/networkConditionsSettingsTab.css",
   "front_end/network_group_lookup/module.json",
   "front_end/network_group_lookup/NetworkProductGroupLookup.js",
+  "front_end/network_log/HAREntry.js",
+  "front_end/network_log/module.json",
+  "front_end/network_log/NetworkLog.js",
   "front_end/object_ui/customPreviewComponent.css",
   "front_end/object_ui/CustomPreviewComponent.js",
   "front_end/object_ui/JavaScriptAutocomplete.js",
@@ -436,7 +441,6 @@ all_devtools_files = [
   "front_end/screencast/screencastView.css",
   "front_end/screencast/ScreencastView.js",
   "front_end/sdk/Connections.js",
-  "front_end/sdk/ConsoleModel.js",
   "front_end/sdk/ContentProviders.js",
   "front_end/sdk/CookieModel.js",
   "front_end/sdk/CookieParser.js",
@@ -453,11 +457,10 @@ all_devtools_files = [
   "front_end/sdk/DebuggerModel.js",
   "front_end/sdk/DOMModel.js",
   "front_end/sdk/FilmStripModel.js",
-  "front_end/sdk/HAREntry.js",
   "front_end/sdk/HeapProfilerModel.js",
   "front_end/sdk/LayerTreeBase.js",
+  "front_end/sdk/LogModel.js",
   "front_end/sdk/module.json",
-  "front_end/sdk/NetworkLog.js",
   "front_end/sdk/NetworkManager.js",
   "front_end/sdk/NetworkRequest.js",
   "front_end/sdk/PaintProfiler.js",
@@ -695,6 +698,8 @@ all_devtools_files = [
   "front_end/workspace/SearchConfig.js",
   "front_end/workspace/UISourceCode.js",
   "front_end/workspace/Workspace.js",
+  "front_end/workspace_diff/WorkspaceDiff.js",
+  "front_end/workspace_diff/module.json",
 ]
 
 devtools_embedder_scripts = [
@@ -857,6 +862,7 @@ generated_resources = [
   "$resources_out_dir/text_editor/text_editor_module.js",
   "$resources_out_dir/timeline_model/timeline_model_module.js",
   "$resources_out_dir/timeline/timeline_module.js",
+  "$resources_out_dir/workspace_diff/workspace_diff_module.js",
 ]
 
 generated_remote_modules = [

@@ -416,10 +416,11 @@ Protocol.PageAgent.prototype.invoke_setTouchEmulationEnabled = function(obj, opt
 /**
  * @param {string=} opt_format
  * @param {number=} opt_quality
+ * @param {boolean=} opt_fromSurface
  * @param {function(?Protocol.Error, string):void=} opt_callback
  */
-Protocol.PageAgent.prototype.captureScreenshot = function(opt_format, opt_quality, opt_callback) {};
-/** @typedef {!{quality: (number|undefined), format: (string|undefined)}} obj */
+Protocol.PageAgent.prototype.captureScreenshot = function(opt_format, opt_quality, opt_fromSurface, opt_callback) {};
+/** @typedef {!{fromSurface: (boolean|undefined), quality: (number|undefined), format: (string|undefined)}} obj */
 Protocol.PageAgent.prototype.captureScreenshot.Request;
 /**
  * @param {!Protocol.PageAgent.prototype.captureScreenshot.Request} obj
@@ -5774,8 +5775,9 @@ Protocol.DebuggerDispatcher = function() {};
  * @param {boolean=} opt_hasSourceURL
  * @param {boolean=} opt_isModule
  * @param {number=} opt_length
+ * @param {Protocol.Runtime.StackTrace=} opt_stackTrace
  */
-Protocol.DebuggerDispatcher.prototype.scriptParsed = function(scriptId, url, startLine, startColumn, endLine, endColumn, executionContextId, hash, opt_executionContextAuxData, opt_isLiveEdit, opt_sourceMapURL, opt_hasSourceURL, opt_isModule, opt_length) {};
+Protocol.DebuggerDispatcher.prototype.scriptParsed = function(scriptId, url, startLine, startColumn, endLine, endColumn, executionContextId, hash, opt_executionContextAuxData, opt_isLiveEdit, opt_sourceMapURL, opt_hasSourceURL, opt_isModule, opt_length, opt_stackTrace) {};
 /**
  * @param {Protocol.Runtime.ScriptId} scriptId
  * @param {string} url
@@ -5790,8 +5792,9 @@ Protocol.DebuggerDispatcher.prototype.scriptParsed = function(scriptId, url, sta
  * @param {boolean=} opt_hasSourceURL
  * @param {boolean=} opt_isModule
  * @param {number=} opt_length
+ * @param {Protocol.Runtime.StackTrace=} opt_stackTrace
  */
-Protocol.DebuggerDispatcher.prototype.scriptFailedToParse = function(scriptId, url, startLine, startColumn, endLine, endColumn, executionContextId, hash, opt_executionContextAuxData, opt_sourceMapURL, opt_hasSourceURL, opt_isModule, opt_length) {};
+Protocol.DebuggerDispatcher.prototype.scriptFailedToParse = function(scriptId, url, startLine, startColumn, endLine, endColumn, executionContextId, hash, opt_executionContextAuxData, opt_sourceMapURL, opt_hasSourceURL, opt_isModule, opt_length, opt_stackTrace) {};
 /**
  * @param {Protocol.Debugger.BreakpointId} breakpointId
  * @param {Protocol.Debugger.Location} location

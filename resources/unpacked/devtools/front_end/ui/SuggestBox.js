@@ -61,6 +61,8 @@ UI.SuggestBox = class {
     this._rowHeight = 17;
     this._userInteracted = false;
     this._userEnteredText = '';
+    this._defaultSelectionIsDimmed = false;
+
     /** @type {?string} */
     this._onlyCompletion = null;
 
@@ -76,6 +78,22 @@ UI.SuggestBox = class {
     var shadowRoot = UI.createShadowRootWithCoreStyles(this._glassPane.contentElement, 'ui/suggestBox.css');
     UI.appendStyle(shadowRoot, "ui/suggestBox-dirac.css");
     shadowRoot.appendChild(this._element);
+  }
+
+  /**
+   * @param {boolean} value
+   */
+  setDefaultSelectionIsDimmed(value) {
+    this._defaultSelectionIsDimmed = value;
+    this._element.classList.toggle('default-selection-is-dimmed', value);
+  }
+
+  /**
+   * @param {boolean} value
+   */
+  _setUserInteracted(value) {
+    this._userInteracted = value;
+    this._element.classList.toggle('user-has-interacted', value);
   }
 
   /**
@@ -140,7 +158,7 @@ UI.SuggestBox = class {
   hide() {
     if (!this.visible())
       return;
-    this._userInteracted = false;
+    this._setUserInteracted(false);
     this._glassPane.hide();
   }
 
@@ -214,7 +232,7 @@ UI.SuggestBox = class {
 
     element.addEventListener('click', event => {
       this._list.selectItem(item);
-      this._userInteracted = true;
+      this._setUserInteracted(true);
       event.consume(true);
       this.acceptSuggestion();
     });
@@ -249,8 +267,11 @@ UI.SuggestBox = class {
   selectedItemChanged(from, to, fromElement, toElement) {
     if (fromElement)
       fromElement.classList.remove('selected', 'force-white-icons');
-    if (toElement)
-      toElement.classList.add('selected', 'force-white-icons');
+    if (toElement) {
+      toElement.classList.add('selected');
+      if (fromElement || this._userInteracted || !this._defaultSelectionIsDimmed)
+        toElement.classList.add('force-white-icons');
+    }
     if (!to)
       return;
     this._applySuggestion(true);
@@ -340,7 +361,7 @@ UI.SuggestBox = class {
         return false;
     }
     if (selected) {
-      this._userInteracted = true;
+      this._setUserInteracted(true);
       return true;
     }
     return false;

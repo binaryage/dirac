@@ -1,6 +1,6 @@
 (def clj-logging-config-version "1.9.12")
 (def slf4j-log4j12-version "1.7.22")
-(defproject binaryage/dirac "1.2.1"
+(defproject binaryage/dirac "1.2.2"
   :description "Dirac DevTools - a Chrome DevTools fork for ClojureScript developers."
   :url "https://github.com/binaryage/dirac"
   :license {:name         "MIT License"
@@ -9,9 +9,9 @@
   :scm {:name "git"
         :url  "https://github.com/binaryage/dirac"}
 
-  :dependencies [[org.clojure/clojure "1.9.0-alpha14" :scope "provided"]
+  :dependencies [[org.clojure/clojure "1.9.0-alpha15" :scope "provided"]
                  [org.clojure/clojurescript "1.9.473" :scope "provided"]
-                 [org.clojure/core.async "0.3.441"]
+                 [org.clojure/core.async "0.3.442"]
                  [org.clojure/tools.logging "0.3.1"]
                  [org.clojure/tools.cli "0.3.5"]
                  [org.clojure/tools.nrepl "0.2.12"]
@@ -43,10 +43,12 @@
 
                  [http.async.client "1.2.0" :scope "test"]
 
-                 [org.seleniumhq.selenium/selenium-java "3.2.0" :scope "test" :exclusions [org.seleniumhq.selenium/selenium-support]]
-                 [org.seleniumhq.selenium/selenium-chrome-driver "3.2.0" :scope "test"]
-                 [org.seleniumhq.selenium/selenium-support "3.2.0" :scope "test"]
-                 [org.seleniumhq.selenium/selenium-api "3.2.0" :scope "test"]
+                 ; guava is needed for selenium, they rely on latest guava which gets overriden by google closure compiler dep inside clojurescript
+                 [com.google.guava/guava "21.0" :scope "test"]
+                 [org.seleniumhq.selenium/selenium-java "3.3.1" :scope "test" :exclusions [org.seleniumhq.selenium/selenium-support]]
+                 [org.seleniumhq.selenium/selenium-chrome-driver "3.3.1" :scope "test"]
+                 [org.seleniumhq.selenium/selenium-support "3.3.1" :scope "test"]
+                 [org.seleniumhq.selenium/selenium-api "3.3.1" :scope "test"]
                  [org.seleniumhq.selenium/selenium-htmlunit-driver "2.52.0" :scope "test"]
 
                  [ring/ring-core "1.5.1" :scope "test"]
@@ -161,7 +163,7 @@
              {:dependencies [[org.clojure/clojure "1.8.0" :scope "provided" :upgrade false]]}
 
              :clojure19
-             {:dependencies [[org.clojure/clojure "1.9.0-alpha14" :scope "provided" :upgrade false]]}
+             {:dependencies [[org.clojure/clojure "1.9.0-alpha15" :scope "provided" :upgrade false]]}
 
              :cooper
              {:plugins [[lein-cooper "1.2.2"]]}

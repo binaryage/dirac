@@ -161,15 +161,9 @@ Object.assign(window.dirac, (function() {
       console.warn("Unable to add console message to main target: ", text);
       return;
     }
-    const consoleModel = target.consoleModel;
-    if (!consoleModel) {
-      console.warn("Unable to add console message (no consoleModel): ", text);
-      return;
-    }
-
-    const msg = new SDK.ConsoleMessage(target, SDK.ConsoleMessage.MessageSource.Other, level, text,
+    const msg = new ConsoleModel.ConsoleMessage(target, ConsoleModel.ConsoleMessage.MessageSource.Other, level, text,
       type, undefined, undefined, undefined, undefined, parameters);
-    consoleModel.addMessage(msg);
+    ConsoleModel.consoleModel.addMessage(msg);
   }
 
   // --- scope info -------------------------------------------------------------------------------------------------------

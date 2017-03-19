@@ -43,7 +43,7 @@ Ideally (with multi-monitor setup) your always-present Dirac REPL session will b
 from your code editor or any other app.
 
 This is my setup under Mac, note the "Global" selection for "Focus Console Prompt":
-<a href="https://dl.dropboxusercontent.com/u/559047/dirac-global-shortcuts.png"><img src="https://dl.dropboxusercontent.com/u/559047/dirac-global-shortcuts.png" width="800px"></a>
+<a href="https://box.binaryage.com/dirac-global-shortcuts.png"><img src="https://box.binaryage.com/dirac-global-shortcuts.png" width="800px"></a>
 
 ### Why can't I dock Dirac DevTools inside my Chrome window?
 
@@ -79,9 +79,9 @@ They should hint additional info about given suggestion. Let's look at some exam
 
 <table>
 <tr>
-<td valign="top"><a href="https://dl.dropboxusercontent.com/u/559047/dirac-suggest-lo.png"><img src="https://dl.dropboxusercontent.com/u/559047/dirac-suggest-lo.png"></a></td>
-<td valign="top"><a href="https://dl.dropboxusercontent.com/u/559047/dirac-suggest-dirac-run.png"><img src="https://dl.dropboxusercontent.com/u/559047/dirac-suggest-dirac-run.png"></a></td>
-<td valign="top"><a href="https://dl.dropboxusercontent.com/u/559047/dirac-suggest-goog-str.png"><img src="https://dl.dropboxusercontent.com/u/559047/dirac-suggest-goog-str.png"></a></td>
+<td valign="top"><a href="https://box.binaryage.com/dirac-suggest-lo.png"><img src="https://box.binaryage.com/dirac-suggest-lo.png"></a></td>
+<td valign="top"><a href="https://box.binaryage.com/dirac-suggest-dirac-run.png"><img src="https://box.binaryage.com/dirac-suggest-dirac-run.png"></a></td>
+<td valign="top"><a href="https://box.binaryage.com/dirac-suggest-goog-str.png"><img src="https://box.binaryage.com/dirac-suggest-goog-str.png"></a></td>
 </tr>
 </table>
 
@@ -157,7 +157,7 @@ DevTools UI, for example in Sources Panel.
 We would like to teach Dirac DevTools to [open files in our external editor](https://github.com/binaryage/dirac/issues/56)
 as well.
 
-<img src="https://dl.dropboxusercontent.com/u/559047/dirac-reveal-via-repl.png" width="800">
+<img src="https://box.binaryage.com/dirac-reveal-via-repl.png" width="800">
 
 This is not an easy task, because
 

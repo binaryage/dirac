@@ -1,5 +1,5 @@
-Protocol.BakedInspectorBackendAPIChromeTag='59.0.3038.2';
-Protocol.BakedInspectorBackendAPIChromeRev='207688fb45319568db61e59c4c8391517793bf47';
+Protocol.BakedInspectorBackendAPIChromeTag='59.0.3046.2';
+Protocol.BakedInspectorBackendAPIChromeRev='cd985f9583fec2bb3e2ca17843b67c8647c0da49';
 Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerEvent("Inspector.detached", ["reason"]);\n'
 + 'Protocol.inspectorBackend.registerEvent("Inspector.targetCrashed", []);\n'
@@ -53,7 +53,7 @@ Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerCommand("Page.setDeviceOrientationOverride", [{"name": "alpha", "type": "number", "optional": false}, {"name": "beta", "type": "number", "optional": false}, {"name": "gamma", "type": "number", "optional": false}], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Page.clearDeviceOrientationOverride", [], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Page.setTouchEmulationEnabled", [{"name": "enabled", "type": "boolean", "optional": false}, {"name": "configuration", "type": "string", "optional": true}], [], false);\n'
-+ 'Protocol.inspectorBackend.registerCommand("Page.captureScreenshot", [{"name": "format", "type": "string", "optional": true}, {"name": "quality", "type": "number", "optional": true}], ["data"], false);\n'
++ 'Protocol.inspectorBackend.registerCommand("Page.captureScreenshot", [{"name": "format", "type": "string", "optional": true}, {"name": "quality", "type": "number", "optional": true}, {"name": "fromSurface", "type": "boolean", "optional": true}], ["data"], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Page.printToPDF", [], ["data"], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Page.startScreencast", [{"name": "format", "type": "string", "optional": true}, {"name": "quality", "type": "number", "optional": true}, {"name": "maxWidth", "type": "number", "optional": true}, {"name": "maxHeight", "type": "number", "optional": true}, {"name": "everyNthFrame", "type": "number", "optional": true}], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Page.stopScreencast", [], [], false);\n'
@@ -410,8 +410,8 @@ Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerCommand("Runtime.runScript", [{"name": "scriptId", "type": "string", "optional": false}, {"name": "executionContextId", "type": "number", "optional": true}, {"name": "objectGroup", "type": "string", "optional": true}, {"name": "silent", "type": "boolean", "optional": true}, {"name": "includeCommandLineAPI", "type": "boolean", "optional": true}, {"name": "returnByValue", "type": "boolean", "optional": true}, {"name": "generatePreview", "type": "boolean", "optional": true}, {"name": "awaitPromise", "type": "boolean", "optional": true}], ["result", "exceptionDetails"], false);\n'
 + 'Protocol.inspectorBackend.registerEnum("Debugger.ScopeType", {Global: "global", Local: "local", With: "with", Closure: "closure", Catch: "catch", Block: "block", Script: "script", Eval: "eval", Module: "module"});\n'
 + 'Protocol.inspectorBackend.registerEnum("Debugger.BreakLocationType", {DebuggerStatement: "debuggerStatement", Call: "call", Return: "return"});\n'
-+ 'Protocol.inspectorBackend.registerEvent("Debugger.scriptParsed", ["scriptId", "url", "startLine", "startColumn", "endLine", "endColumn", "executionContextId", "hash", "executionContextAuxData", "isLiveEdit", "sourceMapURL", "hasSourceURL", "isModule", "length"]);\n'
-+ 'Protocol.inspectorBackend.registerEvent("Debugger.scriptFailedToParse", ["scriptId", "url", "startLine", "startColumn", "endLine", "endColumn", "executionContextId", "hash", "executionContextAuxData", "sourceMapURL", "hasSourceURL", "isModule", "length"]);\n'
++ 'Protocol.inspectorBackend.registerEvent("Debugger.scriptParsed", ["scriptId", "url", "startLine", "startColumn", "endLine", "endColumn", "executionContextId", "hash", "executionContextAuxData", "isLiveEdit", "sourceMapURL", "hasSourceURL", "isModule", "length", "stackTrace"]);\n'
++ 'Protocol.inspectorBackend.registerEvent("Debugger.scriptFailedToParse", ["scriptId", "url", "startLine", "startColumn", "endLine", "endColumn", "executionContextId", "hash", "executionContextAuxData", "sourceMapURL", "hasSourceURL", "isModule", "length", "stackTrace"]);\n'
 + 'Protocol.inspectorBackend.registerEvent("Debugger.breakpointResolved", ["breakpointId", "location"]);\n'
 + 'Protocol.inspectorBackend.registerEvent("Debugger.paused", ["callFrames", "reason", "data", "hitBreakpoints", "asyncStackTrace"]);\n'
 + 'Protocol.inspectorBackend.registerEvent("Debugger.resumed", []);\n'

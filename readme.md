@@ -47,9 +47,9 @@ Dirac DevTools can be just a keystroke away enabling following features:
 
 <table>
 <tr>
-<td><a href="https://dl.dropboxusercontent.com/u/559047/dirac-general-completions.png"><img src="https://dl.dropboxusercontent.com/u/559047/dirac-general-completions.png"></a></td>
-<td><a href="https://dl.dropboxusercontent.com/u/559047/dirac-ns-completions.png"><img src="https://dl.dropboxusercontent.com/u/559047/dirac-ns-completions.png"></a></td>
-<td><a href="https://dl.dropboxusercontent.com/u/559047/dirac-js-completions.png"><img src="https://dl.dropboxusercontent.com/u/559047/dirac-js-completions.png"></a></td>
+<td><a href="https://box.binaryage.com/dirac-general-completions.png"><img src="https://box.binaryage.com/dirac-general-completions.png"></a></td>
+<td><a href="https://box.binaryage.com/dirac-ns-completions.png"><img src="https://box.binaryage.com/dirac-ns-completions.png"></a></td>
+<td><a href="https://box.binaryage.com/dirac-js-completions.png"><img src="https://box.binaryage.com/dirac-js-completions.png"></a></td>
 </tr>
 </table>
 
@@ -60,5 +60,5 @@ Dirac DevTools can be just a keystroke away enabling following features:
 [5]: https://shaunlebron.github.io/parinfer
 [6]: https://docs.google.com/document/d/1FTascZXT9cxfetuPRT2eXPQKXui4nWFivUnS_335T3U
 [7]: https://github.com/binaryage/cljs-devtools
-[8]: https://dl.dropboxusercontent.com/u/559047/dirac-non-trivial-beautified-stack-trace.png
-[9]: https://dl.dropboxusercontent.com/u/559047/dirac-main-01.png
+[8]: https://box.binaryage.com/dirac-non-trivial-beautified-stack-trace.png
+[9]: https://box.binaryage.com/dirac-main-01.png

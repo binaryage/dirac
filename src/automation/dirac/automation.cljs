@@ -24,6 +24,9 @@
 
 ; -- automation actions -----------------------------------------------------------------------------------------------------
 
+(defn pause! []
+  (runner/wait-for-resume!))
+
 (defn wait-for-resume! []
   (runner/wait-for-resume!))
 

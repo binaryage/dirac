@@ -39,7 +39,8 @@ SourceFrame.UISourceCodeFrame = class extends SourceFrame.SourceFrame {
     this.setEditable(this._canEditSource());
 
     if (Runtime.experiments.isEnabled('sourceDiff'))
-      this._diff = new SourceFrame.SourceCodeDiff(uiSourceCode.requestOriginalContent(), this.textEditor);
+      this._diff = new SourceFrame.SourceCodeDiff(WorkspaceDiff.workspaceDiff(), uiSourceCode, this.textEditor);
+
 
     /** @type {?UI.AutocompleteConfig} */
     this._autocompleteConfig = {isWordChar: Common.TextUtils.isWordChar};
@@ -167,8 +168,6 @@ SourceFrame.UISourceCodeFrame = class extends SourceFrame.SourceFrame {
    * @override
    */
   onTextEditorContentSet() {
-    if (this._diff)
-      this._diff.updateDiffMarkersImmediately();
     super.onTextEditorContentSet();
     for (var message of this._allMessages())
       this._addMessageToSource(message);
@@ -176,12 +175,15 @@ SourceFrame.UISourceCodeFrame = class extends SourceFrame.SourceFrame {
   }
 
   /**
-   * @return {!Array<!Workspace.UISourceCode.Message>}
+   * @return {!Set<!Workspace.UISourceCode.Message>}
    */
   _allMessages() {
-    return this._persistenceBinding ?
-        this._persistenceBinding.network.messages().concat(this._persistenceBinding.fileSystem.messages()) :
-        this._uiSourceCode.messages();
+    if (this._persistenceBinding) {
+      var combinedSet = this._persistenceBinding.network.messages();
+      combinedSet.addAll(this._persistenceBinding.fileSystem.messages());
+      return combinedSet;
+    }
+    return this._uiSourceCode.messages();
   }
 
   /**
@@ -190,8 +192,6 @@ SourceFrame.UISourceCodeFrame = class extends SourceFrame.SourceFrame {
    * @param {!Common.TextRange} newRange
    */
   onTextChanged(oldRange, newRange) {
-    if (this._diff)
-      this._diff.updateDiffMarkersWhenPossible();
     super.onTextChanged(oldRange, newRange);
     this._errorPopoverHelper.hidePopover();
     if (this._isSettingContent)
@@ -321,6 +321,8 @@ SourceFrame.UISourceCodeFrame = class extends SourceFrame.SourceFrame {
   }
 
   dispose() {
+    if (this._diff)
+      this._diff.dispose();
     this.textEditor.dispose();
     Common.moduleSetting('textEditorAutocompletion').removeChangeListener(this._updateAutocomplete, this);
     this.detach();
@@ -400,16 +402,17 @@ SourceFrame.UISourceCodeFrame = class extends SourceFrame.SourceFrame {
   }
 
   /**
-   * @param {!Element} anchor
+   * @param {!Element|!AnchorBox} anchor
    * @param {!UI.GlassPane} popover
    * @return {!Promise<boolean>}
    */
   _showErrorPopover(anchor, popover) {
-    var messageBucket = anchor.enclosingNodeOrSelfWithClass('text-editor-line-decoration')._messageBucket;
+    var element = /** @type {!Element} */ (anchor);
+    var messageBucket = element.enclosingNodeOrSelfWithClass('text-editor-line-decoration')._messageBucket;
     var messagesOutline = messageBucket.messagesDescription();
     popover.setContentAnchorBox(
-        anchor.enclosingNodeOrSelfWithClass('text-editor-line-decoration-icon') ? anchor.boxInWindow() :
-                                                                                  this._errorWavePopoverAnchor);
+        element.enclosingNodeOrSelfWithClass('text-editor-line-decoration-icon') ? element.boxInWindow() :
+                                                                                   this._errorWavePopoverAnchor);
     popover.contentElement.appendChild(messagesOutline);
     return Promise.resolve(true);
   }
