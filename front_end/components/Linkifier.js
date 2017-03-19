@@ -153,7 +153,7 @@ Components.Linkifier = class {
         sourceURL ? Components.Linkifier.linkifyURL(sourceURL, undefined, classes, lineNumber, columnNumber) : null;
     if (!target || target.isDisposed())
       return fallbackAnchor;
-    var debuggerModel = SDK.DebuggerModel.fromTarget(target);
+    var debuggerModel = target.model(SDK.DebuggerModel);
     if (!debuggerModel)
       return fallbackAnchor;
 
@@ -228,7 +228,7 @@ Components.Linkifier = class {
     if (target.isDisposed())
       return fallbackAnchor;
 
-    var debuggerModel = SDK.DebuggerModel.fromTarget(target);
+    var debuggerModel = target.model(SDK.DebuggerModel);
     var rawLocations = debuggerModel.createRawLocationsByStackTrace(stackTrace);
     if (rawLocations.length === 0)
       return fallbackAnchor;
@@ -497,7 +497,7 @@ Components.Linkifier = class {
       uiLocation = uiSourceCode ? uiSourceCode.uiLocation(info.lineNumber || 0, info.columnNumber || 0) : null;
     }
     var resource = url ? Bindings.resourceForURL(url) : null;
-    var request = url ? SDK.NetworkLog.requestForURL(url) : null;
+    var request = url ? NetworkLog.networkLog.requestForURL(url) : null;
     var contentProvider = uiLocation ? uiLocation.uiSourceCode : resource;
 
     if (info.revealable)

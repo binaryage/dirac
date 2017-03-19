@@ -42,7 +42,7 @@
         { "name": "sass", "condition": "!v8only" },
         { "name": "accessibility", "condition": "!v8only", "type": "remote" },
         { "name": "animation", "condition": "!v8only" },
-        { "name": "coverage", "condition": "!v8only" },
+        { "name": "coverage" },
         { "name": "screencast", "condition": "remoteFrontend", "type": "remote" },
         { "name": "emulated_devices", "condition": "!v8only" , "type": "remote" },
         { "name": "perf_ui" },
@@ -56,7 +56,9 @@
         { "name": "event_listeners" },
         { "name": "object_ui", "type": "autostart"},
         { "name": "help", "type": "autostart"},
-        { "name": "workspace_diff" }
+        { "name": "workspace_diff" },
+        { "name": "console_model", "type": "autostart"},
+        { "name": "network_log", "type": "autostart"}
     ],
 
     "has_html": true

@@ -107,7 +107,6 @@ Main.Main = class {
     Runtime.experiments.register('objectPreviews', 'Object previews', true);
     Runtime.experiments.register('persistence2', 'Persistence 2.0');
     Runtime.experiments.register('persistenceValidation', 'Validate persistence bindings');
-    Runtime.experiments.register('releaseNote', 'Release note', true);
     Runtime.experiments.register('requestBlocking', 'Request blocking', true);
     Runtime.experiments.register('timelineShowAllEvents', 'Show all events on Timeline', true);
     Runtime.experiments.register('timelineShowAllProcesses', 'Show all processes on Timeline', true);
@@ -132,8 +131,6 @@ Main.Main = class {
         Runtime.experiments.enableForTest('cssTrackerPanel');
       if (testPath.indexOf('audits2/') !== -1)
         Runtime.experiments.enableForTest('audits2');
-      if (testPath.indexOf('help/') !== -1)
-        Runtime.experiments.enableForTest('releaseNote');
     }
 
     Runtime.experiments.setDefaultExperiments(['persistenceValidation']);
@@ -165,8 +162,9 @@ Main.Main = class {
     UI.ContextMenu.installHandler(document);
     UI.Tooltip.installHandler(document);
     Components.dockController = new Components.DockController(canDock);
-    SDK.consoleModel = new SDK.ConsoleModel();
+    ConsoleModel.consoleModel = new ConsoleModel.ConsoleModel();
     SDK.multitargetNetworkManager = new SDK.MultitargetNetworkManager();
+    NetworkLog.networkLog = new NetworkLog.NetworkLog();
     SDK.targetManager.addEventListener(
         SDK.TargetManager.Events.SuspendStateChanged, this._onSuspendStateChanged.bind(this));
 
@@ -490,7 +488,7 @@ Main.Main.InspectorDomainDispatcher = class {
    * @override
    */
   targetCrashed() {
-    var debuggerModel = SDK.DebuggerModel.fromTarget(this._target);
+    var debuggerModel = this._target.model(SDK.DebuggerModel);
     if (debuggerModel)
       Main.TargetCrashedScreen.show(debuggerModel);
   }
@@ -602,9 +600,9 @@ Main.Main.WarningErrorCounter = class {
     this._warnings = this._createItem(shadowRoot, 'smallicon-warning');
     this._titles = [];
 
-    SDK.consoleModel.addEventListener(SDK.ConsoleModel.Events.ConsoleCleared, this._update, this);
-    SDK.consoleModel.addEventListener(SDK.ConsoleModel.Events.MessageAdded, this._update, this);
-    SDK.consoleModel.addEventListener(SDK.ConsoleModel.Events.MessageUpdated, this._update, this);
+    ConsoleModel.consoleModel.addEventListener(ConsoleModel.ConsoleModel.Events.ConsoleCleared, this._update, this);
+    ConsoleModel.consoleModel.addEventListener(ConsoleModel.ConsoleModel.Events.MessageAdded, this._update, this);
+    ConsoleModel.consoleModel.addEventListener(ConsoleModel.ConsoleModel.Events.MessageUpdated, this._update, this);
     this._update();
   }
 
@@ -637,8 +635,8 @@ Main.Main.WarningErrorCounter = class {
   }
 
   _update() {
-    var errors = SDK.consoleModel.errors();
-    var warnings = SDK.consoleModel.warnings();
+    var errors = ConsoleModel.consoleModel.errors();
+    var warnings = ConsoleModel.consoleModel.warnings();
 
     this._titles = [];
     this._toolbarItem.setVisible(!!(errors || warnings));
@@ -743,8 +741,7 @@ Main.Main.MainMenuItem = class {
 
     var helpSubMenu = contextMenu.namedSubMenu('mainMenuHelp');
     helpSubMenu.appendAction('settings.documentation');
-    if (Runtime.experiments.isEnabled('releaseNote'))
-      helpSubMenu.appendItem('Release Notes', () => InspectorFrontendHost.openInNewTab(Help.latestReleaseNote().link));
+    helpSubMenu.appendItem('Release Notes', () => InspectorFrontendHost.openInNewTab(Help.latestReleaseNote().link));
     contextMenu.show();
   }
 };
