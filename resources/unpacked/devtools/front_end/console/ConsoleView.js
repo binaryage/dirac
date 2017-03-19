@@ -681,7 +681,7 @@ Console.ConsoleView = class extends UI.VBox {
     } catch (e) {}
 
     if (kind == "result") {
-      message.type = SDK.ConsoleMessage.MessageType.Result;
+      message.type = ConsoleModel.ConsoleMessage.MessageType.Result;
     }
 
     var originatingMessage = this._pendingDiracCommands[requestId];
@@ -701,7 +701,7 @@ Console.ConsoleView = class extends UI.VBox {
     if (isDiracFlavored) {
       return "DF";
     }
-    if (messageType==SDK.ConsoleMessage.MessageType.DiracCommand) {
+    if (messageType==ConsoleModel.ConsoleMessage.MessageType.DiracCommand) {
       return "DC";
     }
     return "JS";
@@ -749,11 +749,11 @@ Console.ConsoleView = class extends UI.VBox {
       return false;
     }
 
-    const source = SDK.ConsoleMessage.MessageSource.Other;
-    const level = SDK.ConsoleMessage.MessageLevel.Info;
-    const type = SDK.ConsoleMessage.MessageType.DiracMarkup;
-    const message = new SDK.ConsoleMessage(target, source, level, markup, type);
-    SDK.consoleModel.addMessage(message);
+    const source = ConsoleModel.ConsoleMessage.MessageSource.Other;
+    const level = ConsoleModel.ConsoleMessage.MessageLevel.Info;
+    const type = ConsoleModel.ConsoleMessage.MessageType.DiracMarkup;
+    const message = new ConsoleModel.ConsoleMessage(target, source, level, markup, type);
+    ConsoleModel.consoleModel.addMessage(message);
     return true;
   }
 
@@ -916,26 +916,28 @@ Console.ConsoleView = class extends UI.VBox {
       id = this._lastDiracCommandId++;
     }
 
-    var command = text;
-    var commandId = id;
+    const command = text;
+    const commandId = id;
 
-    var executionContext = UI.context.flavor(SDK.ExecutionContext);
+    const executionContext = UI.context.flavor(SDK.ExecutionContext);
     if (!executionContext) {
       return;
     }
 
     this._prompt.setText("");
-    var target = executionContext.target();
-    var type = SDK.ConsoleMessage.MessageType.DiracCommand;
-    var commandMessage = new SDK.ConsoleMessage(target, SDK.ConsoleMessage.MessageSource.JS, SDK.ConsoleMessage.MessageLevel.Info, text, type);
+    const target = executionContext.target();
+    const type = ConsoleModel.ConsoleMessage.MessageType.DiracCommand;
+    const source = ConsoleModel.ConsoleMessage.MessageSource.JS;
+    const level = ConsoleModel.ConsoleMessage.MessageLevel.Info;
+    const commandMessage = new ConsoleModel.ConsoleMessage(target, source, level, text, type);
     commandMessage.setExecutionContextId(executionContext.id);
-    SDK.consoleModel.addMessage(commandMessage);
+    ConsoleModel.consoleModel.addMessage(commandMessage);
 
     this._prompt.history().pushHistoryItem(text);
     this._diracHistorySetting.set(this._prompt.history().historyData().slice(-Console.ConsoleView.persistedHistorySize));
 
-    var debuggerModel = executionContext.debuggerModel;
-    var scopeInfoPromise = Promise.resolve(null);
+    const debuggerModel = executionContext.debuggerModel;
+    let scopeInfoPromise = Promise.resolve(null);
     if (debuggerModel) {
       scopeInfoPromise = dirac.extractScopeInfoFromScopeChainAsync(debuggerModel.selectedCallFrame());
     }
@@ -1065,9 +1067,9 @@ Console.ConsoleView = class extends UI.VBox {
     switch (message.type) {
       case ConsoleModel.ConsoleMessage.MessageType.Command:
         return new Console.ConsoleCommand(message, this._linkifier, nestingLevel);
-      case SDK.ConsoleMessage.MessageType.DiracCommand:
+      case ConsoleModel.ConsoleMessage.MessageType.DiracCommand:
         return new Console.ConsoleDiracCommand(message, this._linkifier, nestingLevel);
-      case SDK.ConsoleMessage.MessageType.DiracMarkup:
+      case ConsoleModel.ConsoleMessage.MessageType.DiracMarkup:
         return new Console.ConsoleDiracMarkup(message, this._linkifier, nestingLevel);
       case ConsoleModel.ConsoleMessage.MessageType.Result:
         return new Console.ConsoleCommandResult(message, this._linkifier, nestingLevel);
@@ -1777,7 +1779,7 @@ Console.ConsoleCommand.MaxLengthToIgnoreHighlighter = 10000;
  */
 Console.ConsoleDiracCommand = class extends Console.ConsoleCommand {
   /**
-   * @param {!SDK.ConsoleMessage} message
+   * @param {!ConsoleModel.ConsoleMessage} message
    * @param {!Components.Linkifier} linkifier
    * @param {number} nestingLevel
    */
@@ -1814,7 +1816,7 @@ Console.ConsoleDiracCommand = class extends Console.ConsoleCommand {
 Console.ConsoleDiracMarkup = class extends Console.ConsoleViewMessage {
 
   /**
-   * @param {!SDK.ConsoleMessage} message
+   * @param {!ConsoleModel.ConsoleMessage} message
    * @param {!Components.Linkifier} linkifier
    * @param {number} nestingLevel
    */
