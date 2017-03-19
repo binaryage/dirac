@@ -127,7 +127,8 @@
         "source_frame",
         "dirac",
         "data_grid",
-        "object_ui"
+        "object_ui",
+        "console_model"
     ],
     "scripts": [
         "clojure-parinfer.js",
