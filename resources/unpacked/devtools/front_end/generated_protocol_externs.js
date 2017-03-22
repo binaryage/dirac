@@ -660,8 +660,9 @@ Protocol.PageDispatcher.prototype.loadEventFired = function(timestamp) {};
 /**
  * @param {Protocol.Page.FrameId} frameId
  * @param {Protocol.Page.FrameId} parentFrameId
+ * @param {Protocol.Runtime.StackTrace=} opt_stack
  */
-Protocol.PageDispatcher.prototype.frameAttached = function(frameId, parentFrameId) {};
+Protocol.PageDispatcher.prototype.frameAttached = function(frameId, parentFrameId, opt_stack) {};
 /**
  * @param {Protocol.Page.Frame} frame
  */
@@ -1120,6 +1121,33 @@ Protocol.SecurityAgent.prototype.showCertificateViewer.Request;
  */
 Protocol.SecurityAgent.prototype.invoke_showCertificateViewer = function(obj, opt_callback) {};
 
+/**
+ * @param {number} eventId
+ * @param {Protocol.Security.CertificateErrorAction} action
+ * @param {function(?Protocol.Error):void=} opt_callback
+ */
+Protocol.SecurityAgent.prototype.handleCertificateError = function(eventId, action, opt_callback) {};
+/** @typedef {!{eventId: number, action: Protocol.Security.CertificateErrorAction}} obj */
+Protocol.SecurityAgent.prototype.handleCertificateError.Request;
+/**
+ * @param {!Protocol.SecurityAgent.prototype.handleCertificateError.Request} obj
+ * @param {function(?Protocol.Error):void=} opt_callback
+ */
+Protocol.SecurityAgent.prototype.invoke_handleCertificateError = function(obj, opt_callback) {};
+
+/**
+ * @param {boolean} override
+ * @param {function(?Protocol.Error):void=} opt_callback
+ */
+Protocol.SecurityAgent.prototype.setOverrideCertificateErrors = function(override, opt_callback) {};
+/** @typedef {!{override: boolean}} obj */
+Protocol.SecurityAgent.prototype.setOverrideCertificateErrors.Request;
+/**
+ * @param {!Protocol.SecurityAgent.prototype.setOverrideCertificateErrors.Request} obj
+ * @param {function(?Protocol.Error):void=} opt_callback
+ */
+Protocol.SecurityAgent.prototype.invoke_setOverrideCertificateErrors = function(obj, opt_callback) {};
+
 /** @typedef {number} */
 Protocol.Security.CertificateId;
 
@@ -1138,6 +1166,12 @@ Protocol.Security.SecurityStateExplanation;
 
 /** @typedef {!{ranMixedContent:(boolean), displayedMixedContent:(boolean), ranContentWithCertErrors:(boolean), displayedContentWithCertErrors:(boolean), ranInsecureContentStyle:(Protocol.Security.SecurityState), displayedInsecureContentStyle:(Protocol.Security.SecurityState)}} */
 Protocol.Security.InsecureContentStatus;
+
+/** @enum {string} */
+Protocol.Security.CertificateErrorAction = {
+    Continue: "continue",
+    Cancel: "cancel"
+};
 /** @interface */
 Protocol.SecurityDispatcher = function() {};
 /**
@@ -1148,6 +1182,12 @@ Protocol.SecurityDispatcher = function() {};
  * @param {string=} opt_summary
  */
 Protocol.SecurityDispatcher.prototype.securityStateChanged = function(securityState, schemeIsCryptographic, explanations, insecureContentStatus, opt_summary) {};
+/**
+ * @param {number} eventId
+ * @param {string} errorType
+ * @param {string} requestURL
+ */
+Protocol.SecurityDispatcher.prototype.certificateError = function(eventId, errorType, requestURL) {};
 Protocol.Network = {};
 
 

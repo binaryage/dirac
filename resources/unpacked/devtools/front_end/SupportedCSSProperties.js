@@ -1,5 +1,5 @@
-Protocol.BakedSupportedCSSPropertiesChromeTag='59.0.3046.2';
-Protocol.BakedSupportedCSSPropertiesChromeRev='cd985f9583fec2bb3e2ca17843b67c8647c0da49';
+Protocol.BakedSupportedCSSPropertiesChromeTag='59.0.3048.2';
+Protocol.BakedSupportedCSSPropertiesChromeRev='b24adc5bcbfde7fd67c6b23c3b0721610c77f63b';
 Protocol.BakedSupportedCSSProperties=''
 + '[{"name": "-webkit-app-region"},\n'
 + ' {"name": "-webkit-appearance"},\n'
@@ -201,7 +201,7 @@ Protocol.BakedSupportedCSSProperties=''
 + ' {"name": "content"},\n'
 + ' {"name": "counter-increment"},\n'
 + ' {"name": "counter-reset"},\n'
-+ ' {"inherited": true, "name": "cursor"},\n'
++ ' {"name": "cursor", "inherited": true},\n'
 + ' {"svg": true, "name": "cx"},\n'
 + ' {"svg": true, "name": "cy"},\n'
 + ' {"svg": true, "name": "d"},\n'
