@@ -28,7 +28,6 @@
  */
 /**
  * @implements {UI.Searchable}
- * @implements {SDK.TargetManager.Observer}
  * @implements {Console.ConsoleViewportProvider}
  * @unrestricted
  */
@@ -162,7 +161,6 @@ Console.ConsoleView = class extends UI.VBox {
     this._timestampsSetting.addChangeListener(this._consoleTimestampsSettingChanged, this);
 
     this._registerWithMessageSink();
-    SDK.targetManager.observeTargets(this);
 
     UI.context.addFlavorChangeListener(SDK.ExecutionContext, this._executionContextChanged, this);
 
@@ -170,6 +168,18 @@ Console.ConsoleView = class extends UI.VBox {
     this._messagesElement.addEventListener('mouseup', this._updateStickToBottomOnMouseUp.bind(this), false);
     this._messagesElement.addEventListener('mouseleave', this._updateStickToBottomOnMouseUp.bind(this), false);
     this._messagesElement.addEventListener('wheel', this._updateStickToBottomOnWheel.bind(this), false);
+
+    ConsoleModel.consoleModel.addEventListener(
+        ConsoleModel.ConsoleModel.Events.ConsoleCleared, this._consoleCleared, this);
+    ConsoleModel.consoleModel.addEventListener(
+        ConsoleModel.ConsoleModel.Events.MessageAdded, this._onConsoleMessageAdded, this);
+    ConsoleModel.consoleModel.addEventListener(
+        ConsoleModel.ConsoleModel.Events.MessageUpdated, this._onConsoleMessageUpdated, this);
+    ConsoleModel.consoleModel.addEventListener(
+        ConsoleModel.ConsoleModel.Events.CommandEvaluated, this._commandEvaluated, this);
+    ConsoleModel.consoleModel.messages().forEach(this._addConsoleMessage, this);
+    if (this._consoleMessages.length)
+      this._viewport.invalidate();
   }
 
   /**
@@ -199,42 +209,6 @@ Console.ConsoleView = class extends UI.VBox {
 
   _consoleHistoryAutocompleteChanged() {
     this._prompt.setAddCompletionsFromHistory(this._consoleHistoryAutocompleteSetting.get());
-  }
-
-  /**
-   * @param {!SDK.Target} target
-   */
-  _initConsoleMessages(target) {
-    var resourceTreeModel = SDK.ResourceTreeModel.fromTarget(target);
-    if (resourceTreeModel && !resourceTreeModel.cachedResourcesLoaded()) {
-      resourceTreeModel.addEventListener(
-          SDK.ResourceTreeModel.Events.CachedResourcesLoaded, this._onResourceTreeModelLoaded, this);
-      return;
-    }
-    this._fetchMultitargetMessages();
-  }
-
-  /**
-   * @param {!Common.Event} event
-   */
-  _onResourceTreeModelLoaded(event) {
-    var resourceTreeModel = /** @type {!SDK.ResourceTreeModel} */ (event.data);
-    resourceTreeModel.removeEventListener(
-        SDK.ResourceTreeModel.Events.CachedResourcesLoaded, this._onResourceTreeModelLoaded, this);
-    this._fetchMultitargetMessages();
-  }
-
-  _fetchMultitargetMessages() {
-    ConsoleModel.consoleModel.addEventListener(
-        ConsoleModel.ConsoleModel.Events.ConsoleCleared, this._consoleCleared, this);
-    ConsoleModel.consoleModel.addEventListener(
-        ConsoleModel.ConsoleModel.Events.MessageAdded, this._onConsoleMessageAdded, this);
-    ConsoleModel.consoleModel.addEventListener(
-        ConsoleModel.ConsoleModel.Events.MessageUpdated, this._onConsoleMessageUpdated, this);
-    ConsoleModel.consoleModel.addEventListener(
-        ConsoleModel.ConsoleModel.Events.CommandEvaluated, this._commandEvaluated, this);
-    ConsoleModel.consoleModel.messages().forEach(this._addConsoleMessage, this);
-    this._viewport.invalidate();
   }
 
   /**
@@ -269,23 +243,6 @@ Console.ConsoleView = class extends UI.VBox {
    */
   minimumRowHeight() {
     return 16;
-  }
-
-  /**
-   * @override
-   * @param {!SDK.Target} target
-   */
-  targetAdded(target) {
-    if (target === SDK.targetManager.mainTarget())
-      this._initConsoleMessages(target);
-    this._viewport.invalidate();
-  }
-
-  /**
-   * @override
-   * @param {!SDK.Target} target
-   */
-  targetRemoved(target) {
   }
 
   _registerWithMessageSink() {
@@ -387,24 +344,24 @@ Console.ConsoleView = class extends UI.VBox {
     this._prompt.clearAutocomplete();
   }
 
-  _scheduleViewportRefresh() {
-    /**
-     * @this {Console.ConsoleView}
-     * @return {!Promise.<undefined>}
-     */
-    function invalidateViewport() {
-      if (this._muteViewportUpdates) {
-        this._maybeDirtyWhileMuted = true;
-        return Promise.resolve();
-      }
-      if (this._needsFullUpdate) {
-        this._updateMessageList();
-        delete this._needsFullUpdate;
-      } else {
-        this._viewport.invalidate();
-      }
+  /**
+   * @return {!Promise.<undefined>}
+   */
+  _invalidateViewport() {
+    if (this._muteViewportUpdates) {
+      this._maybeDirtyWhileMuted = true;
       return Promise.resolve();
     }
+    if (this._needsFullUpdate) {
+      this._updateMessageList();
+      delete this._needsFullUpdate;
+    } else {
+      this._viewport.invalidate();
+    }
+    return Promise.resolve();
+  }
+
+  _scheduleViewportRefresh() {
     if (this._muteViewportUpdates) {
       this._maybeDirtyWhileMuted = true;
       this._scheduleViewportRefreshForTest(true);
@@ -412,7 +369,7 @@ Console.ConsoleView = class extends UI.VBox {
     } else {
       this._scheduleViewportRefreshForTest(false);
     }
-    this._viewportThrottler.schedule(invalidateViewport.bind(this));
+    this._viewportThrottler.schedule(this._invalidateViewport.bind(this));
   }
 
   /**
