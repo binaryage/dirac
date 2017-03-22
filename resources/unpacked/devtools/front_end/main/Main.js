@@ -44,9 +44,7 @@ Main.Main = class {
    * @param {boolean} hard
    */
   static _reloadPage(hard) {
-    var mainTarget = SDK.targetManager.mainTarget();
-    if (mainTarget && mainTarget.hasBrowserCapability())
-      SDK.targetManager.reloadPage(hard);
+    SDK.ResourceTreeModel.reloadAllPages(hard);
   }
 
   _loaded() {
@@ -114,6 +112,7 @@ Main.Main = class {
     Runtime.experiments.register('objectPreviews', 'Object previews', true);
     Runtime.experiments.register('persistence2', 'Persistence 2.0');
     Runtime.experiments.register('persistenceValidation', 'Validate persistence bindings');
+    Runtime.experiments.register('releaseNote', 'Release note', true);
     Runtime.experiments.register('requestBlocking', 'Request blocking', true);
     Runtime.experiments.register('timelineShowAllEvents', 'Show all events on Timeline', true);
     Runtime.experiments.register('timelineShowAllProcesses', 'Show all processes on Timeline', true);
@@ -138,6 +137,10 @@ Main.Main = class {
         Runtime.experiments.enableForTest('cssTrackerPanel');
       if (testPath.indexOf('audits2/') !== -1)
         Runtime.experiments.enableForTest('audits2');
+      if (testPath.indexOf('help/') !== -1)
+        Runtime.experiments.enableForTest('releaseNote');
+      if (testPath.indexOf('sass/') !== -1)
+        Runtime.experiments.enableForTest('liveSASS');
     }
 
     Runtime.experiments.setDefaultExperiments(['persistenceValidation']);
@@ -750,7 +753,8 @@ Main.Main.MainMenuItem = class {
 
     var helpSubMenu = contextMenu.namedSubMenu('mainMenuHelp');
     helpSubMenu.appendAction('settings.documentation');
-    helpSubMenu.appendItem('Release Notes', () => InspectorFrontendHost.openInNewTab(Help.latestReleaseNote().link));
+    if (Runtime.experiments.isEnabled('releaseNote'))
+      helpSubMenu.appendItem('Release Notes', () => InspectorFrontendHost.openInNewTab(Help.latestReleaseNote().link));
     contextMenu.show();
   }
 };

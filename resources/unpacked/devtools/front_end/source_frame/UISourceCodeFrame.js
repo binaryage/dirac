@@ -39,7 +39,7 @@ SourceFrame.UISourceCodeFrame = class extends SourceFrame.SourceFrame {
     this.setEditable(this._canEditSource());
 
     if (Runtime.experiments.isEnabled('sourceDiff'))
-      this._diff = new SourceFrame.SourceCodeDiff(WorkspaceDiff.workspaceDiff(), uiSourceCode, this.textEditor);
+      this._diff = new SourceFrame.SourceCodeDiff(WorkspaceDiff.workspaceDiff(), this.textEditor);
 
 
     /** @type {?UI.AutocompleteConfig} */
@@ -72,9 +72,9 @@ SourceFrame.UISourceCodeFrame = class extends SourceFrame.SourceFrame {
         () => UI.context.setFlavor(SourceFrame.UISourceCodeFrame, this));
 
     this._updateStyle();
+    this._updateDiffUISourceCode();
 
-    this._errorPopoverHelper = new UI.PopoverHelper(this.element);
-    this._errorPopoverHelper.initializeCallbacks(this._getErrorAnchor.bind(this), this._showErrorPopover.bind(this));
+    this._errorPopoverHelper = new UI.PopoverHelper(this.element, this._getErrorPopoverContent.bind(this));
     this._errorPopoverHelper.setHasPadding(true);
 
     this._errorPopoverHelper.setTimeout(100, 100);
@@ -241,6 +241,7 @@ SourceFrame.UISourceCodeFrame = class extends SourceFrame.SourceFrame {
     this._installMessageAndDecorationListeners();
     this._updateStyle();
     this._decorateAllTypes();
+    this._updateDiffUISourceCode();
     this.onBindingChanged();
   }
 
@@ -249,6 +250,17 @@ SourceFrame.UISourceCodeFrame = class extends SourceFrame.SourceFrame {
    */
   onBindingChanged() {
     // Overriden in subclasses.
+  }
+
+  _updateDiffUISourceCode() {
+    if (!this._diff)
+      return;
+    if (this._persistenceBinding)
+      this._diff.setUISourceCode(this._persistenceBinding.network);
+    else if (this._uiSourceCode.project().type() === Workspace.projectTypes.Network)
+      this._diff.setUISourceCode(this._uiSourceCode);
+    else
+      this._diff.setUISourceCode(null);
   }
 
   _updateStyle() {
@@ -388,33 +400,26 @@ SourceFrame.UISourceCodeFrame = class extends SourceFrame.SourceFrame {
   }
 
   /**
-   * @param {!Element} target
    * @param {!Event} event
-   * @return {(!Element|undefined)}
+   * @return {?UI.PopoverRequest}
    */
-  _getErrorAnchor(target, event) {
-    var element = target.enclosingNodeOrSelfWithClass('text-editor-line-decoration-icon') ||
-        target.enclosingNodeOrSelfWithClass('text-editor-line-decoration-wave');
+  _getErrorPopoverContent(event) {
+    var element = event.target.enclosingNodeOrSelfWithClass('text-editor-line-decoration-icon') ||
+        event.target.enclosingNodeOrSelfWithClass('text-editor-line-decoration-wave');
     if (!element)
-      return;
-    this._errorWavePopoverAnchor = new AnchorBox(event.clientX, event.clientY, 1, 1);
-    return element;
-  }
-
-  /**
-   * @param {!Element|!AnchorBox} anchor
-   * @param {!UI.GlassPane} popover
-   * @return {!Promise<boolean>}
-   */
-  _showErrorPopover(anchor, popover) {
-    var element = /** @type {!Element} */ (anchor);
-    var messageBucket = element.enclosingNodeOrSelfWithClass('text-editor-line-decoration')._messageBucket;
-    var messagesOutline = messageBucket.messagesDescription();
-    popover.setContentAnchorBox(
-        element.enclosingNodeOrSelfWithClass('text-editor-line-decoration-icon') ? element.boxInWindow() :
-                                                                                   this._errorWavePopoverAnchor);
-    popover.contentElement.appendChild(messagesOutline);
-    return Promise.resolve(true);
+      return null;
+    var anchor = element.enclosingNodeOrSelfWithClass('text-editor-line-decoration-icon') ?
+        element.boxInWindow() :
+        new AnchorBox(event.clientX, event.clientY, 1, 1);
+    return {
+      box: anchor,
+      show: popover => {
+        var messageBucket = element.enclosingNodeOrSelfWithClass('text-editor-line-decoration')._messageBucket;
+        var messagesOutline = messageBucket.messagesDescription();
+        popover.contentElement.appendChild(messagesOutline);
+        return Promise.resolve(true);
+      }
+    };
   }
 
   _updateBucketDecorations() {
