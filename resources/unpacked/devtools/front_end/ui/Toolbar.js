@@ -520,7 +520,7 @@ UI.ToolbarButton = class extends UI.ToolbarItem {
    */
   turnIntoSelect(width) {
     this.element.classList.add('toolbar-has-dropdown');
-    var dropdownArrowIcon = UI.Icon.create('smallicon-dropdown-arrow', 'toolbar-dropdown-arrow');
+    var dropdownArrowIcon = UI.Icon.create('smallicon-triangle-down', 'toolbar-dropdown-arrow');
     this.element.appendChild(dropdownArrowIcon);
     if (width)
       this.element.style.width = width + 'px';
@@ -585,7 +585,7 @@ UI.ToolbarInput = class extends UI.ToolbarItem {
 
   _setupSearchControls() {
     var clearButton = this.element.createChild('div', 'toolbar-input-clear-button');
-    clearButton.appendChild(UI.Icon.create('smallicon-clear-input', 'search-cancel-button'));
+    clearButton.appendChild(UI.Icon.create('smallicon-gray-cross-hover', 'search-cancel-button'));
     clearButton.addEventListener('click', () => this._internalSetValue('', true));
     this.input.addEventListener('keydown', event => this._onKeydownCallback(event));
   }
@@ -835,7 +835,7 @@ UI.ToolbarComboBox = class extends UI.ToolbarItem {
     super(createElementWithClass('span', 'toolbar-select-container'));
 
     this._selectElement = this.element.createChild('select', 'toolbar-item');
-    var dropdownArrowIcon = UI.Icon.create('smallicon-dropdown-arrow', 'toolbar-dropdown-arrow');
+    var dropdownArrowIcon = UI.Icon.create('smallicon-triangle-down', 'toolbar-dropdown-arrow');
     this.element.appendChild(dropdownArrowIcon);
     if (changeHandler)
       this._selectElement.addEventListener('change', changeHandler, false);

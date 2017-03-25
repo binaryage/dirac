@@ -76,8 +76,8 @@ Sources.SourceMapNamesResolver._scopeIdentifiers = function(scope) {
     if (!content)
       return Promise.resolve(/** @type {!Array<!Sources.SourceMapNamesResolver.Identifier>}*/ ([]));
 
-    var text = new Common.Text(content);
-    var scopeRange = new Common.TextRange(
+    var text = new TextUtils.Text(content);
+    var scopeRange = new TextUtils.TextRange(
         startLocation.lineNumber, startLocation.columnNumber, endLocation.lineNumber, endLocation.columnNumber);
     var scopeText = text.extract(scopeRange);
     var scopeStart = text.toSourceRange(scopeRange).offset;
@@ -87,7 +87,7 @@ Sources.SourceMapNamesResolver._scopeIdentifiers = function(scope) {
   }
 
   /**
-   * @param {!Common.Text} text
+   * @param {!TextUtils.Text} text
    * @param {number} scopeStart
    * @param {string} prefix
    * @param {!Array<!{name: string, offset: number}>} identifiers
@@ -95,7 +95,7 @@ Sources.SourceMapNamesResolver._scopeIdentifiers = function(scope) {
    */
   function onIdentifiers(text, scopeStart, prefix, identifiers) {
     var result = [];
-    var cursor = new Common.TextCursor(text.lineEndings());
+    var cursor = new TextUtils.TextCursor(text.lineEndings());
     for (var i = 0; i < identifiers.length; ++i) {
       var id = identifiers[i];
       if (id.offset < prefix.length)
@@ -122,7 +122,7 @@ Sources.SourceMapNamesResolver._resolveScope = function(scope) {
   if (!sourceMap)
     return Promise.resolve([]);
 
-  /** @type {!Map<string, !Common.Text>} */
+  /** @type {!Map<string, !TextUtils.Text>} */
   var textCache = new Map();
   identifiersPromise = Sources.SourceMapNamesResolver._scopeIdentifiers(scope).then(onIdentifiers);
   scope[Sources.SourceMapNamesResolver._cachedIdentifiersSymbol] = identifiersPromise;
@@ -182,7 +182,7 @@ Sources.SourceMapNamesResolver._resolveScope = function(scope) {
         !startEntry.sourceLineNumber || !startEntry.sourceColumnNumber || !endEntry.sourceLineNumber ||
         !endEntry.sourceColumnNumber)
       return Promise.resolve(/** @type {?Sources.SourceMapNamesResolver.NameDescriptor} */(null));
-    var sourceTextRange = new Common.TextRange(
+    var sourceTextRange = new TextUtils.TextRange(
         startEntry.sourceLineNumber, startEntry.sourceColumnNumber, endEntry.sourceLineNumber,
         endEntry.sourceColumnNumber);
     var uiSourceCode =
@@ -195,7 +195,7 @@ Sources.SourceMapNamesResolver._resolveScope = function(scope) {
   }
 
   /**
-   * @param {!Common.TextRange} sourceTextRange
+   * @param {!TextUtils.TextRange} sourceTextRange
    * @param {number} line
    * @param {number} column
    * @param {?string} content
@@ -206,7 +206,7 @@ Sources.SourceMapNamesResolver._resolveScope = function(scope) {
       return null;
     var text = textCache.get(content);
     if (!text) {
-      text = new Common.Text(content);
+      text = new TextUtils.Text(content);
       textCache.set(content, text);
     }
     var originalIdentifier = text.extract(sourceTextRange).trim();
@@ -370,9 +370,9 @@ Sources.SourceMapNamesResolver._resolveExpression = function(
     if (!content)
       return Promise.resolve('');
 
-    var text = new Common.Text(content);
+    var text = new TextUtils.Text(content);
     var textRange = sourceMap.reverseMapTextRange(
-        uiSourceCode.url(), new Common.TextRange(lineNumber, startColumnNumber, lineNumber, endColumnNumber));
+        uiSourceCode.url(), new TextUtils.TextRange(lineNumber, startColumnNumber, lineNumber, endColumnNumber));
     var originalText = text.extract(textRange);
     if (!originalText)
       return Promise.resolve('');
