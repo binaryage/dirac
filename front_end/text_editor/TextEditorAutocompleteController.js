@@ -71,7 +71,7 @@ TextEditor.TextEditorAutocompleteController = class {
    * @param {string} text
    */
   _addWordsFromText(text) {
-    Common.TextUtils.textToWords(
+    TextUtils.TextUtils.textToWords(
         text, /** @type {function(string):boolean} */ (this._config.isWordChar), addWord.bind(this));
 
     /**
@@ -88,7 +88,7 @@ TextEditor.TextEditorAutocompleteController = class {
    * @param {string} text
    */
   _removeWordsFromText(text) {
-    Common.TextUtils.textToWords(
+    TextUtils.TextUtils.textToWords(
         text, /** @type {function(string):boolean} */ (this._config.isWordChar),
         word => this._dictionary.removeWord(word));
   }
@@ -96,7 +96,7 @@ TextEditor.TextEditorAutocompleteController = class {
   /**
    * @param {number} lineNumber
    * @param {number} columnNumber
-   * @return {?Common.TextRange}
+   * @return {?TextUtils.TextRange}
    */
   _substituteRange(lineNumber, columnNumber) {
     var range =
@@ -107,16 +107,14 @@ TextEditor.TextEditorAutocompleteController = class {
   }
 
   /**
-   * @param {!Common.TextRange} queryRange
-   * @param {!Common.TextRange} substituteRange
+   * @param {!TextUtils.TextRange} queryRange
+   * @param {!TextUtils.TextRange} substituteRange
    * @param {boolean=} force
-   * @param {string=} tokenType
    * @return {!Promise.<!UI.SuggestBox.Suggestions>}
    */
-  _wordsWithQuery(queryRange, substituteRange, force, tokenType) {
-    var external = this._config.suggestionsCallback ?
-        this._config.suggestionsCallback(queryRange, substituteRange, force, tokenType) :
-        null;
+  _wordsWithQuery(queryRange, substituteRange, force) {
+    var external =
+        this._config.suggestionsCallback ? this._config.suggestionsCallback(queryRange, substituteRange, force) : null;
     if (external)
       return external;
 
@@ -193,7 +191,7 @@ TextEditor.TextEditorAutocompleteController = class {
   }
 
   /**
-   * @param {!Common.TextRange} mainSelection
+   * @param {!TextUtils.TextRange} mainSelection
    * @return {boolean}
    */
   _validateSelectionsContexts(mainSelection) {
@@ -235,9 +233,7 @@ TextEditor.TextEditorAutocompleteController = class {
     var hadSuggestBox = false;
     if (this._suggestBox)
       hadSuggestBox = true;
-    var token = this._textEditor.tokenAtTextPosition(substituteRange.startLine, substituteRange.startColumn);
-    var tokenType = (token && token.type) || '';
-    this._wordsWithQuery(queryRange, substituteRange, force, tokenType).then(wordsAcquired.bind(this));
+    this._wordsWithQuery(queryRange, substituteRange, force).then(wordsAcquired.bind(this));
 
     /**
      * @param {!UI.SuggestBox.Suggestions} wordsWithQuery
@@ -279,7 +275,7 @@ TextEditor.TextEditorAutocompleteController = class {
     var cursor = this._codeMirror.getCursor('to');
     if (this._hintMarker) {
       var position = this._hintMarker.position();
-      if (!position || !position.equal(Common.TextRange.createFromLocation(cursor.line, cursor.ch))) {
+      if (!position || !position.equal(TextUtils.TextRange.createFromLocation(cursor.line, cursor.ch))) {
         this._hintMarker.clear();
         this._hintMarker = null;
       }
