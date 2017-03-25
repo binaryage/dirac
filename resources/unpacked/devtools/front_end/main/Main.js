@@ -291,7 +291,7 @@ Main.Main = class {
     this._registerShortcuts();
     Extensions.extensionServer.initializeExtensions();
     dirac.notifyFrontendInitialized();
-    if (false && !Host.isUnderTest()) // don't show release notes in our fork
+    if (Runtime.queryParam('show-release-notes') && !Host.isUnderTest()) // don't show release notes in Dirac fork
       Help.showReleaseNoteIfNeeded();
   }
 
