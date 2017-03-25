@@ -78,7 +78,14 @@ Object.assign(window.dirac, (function() {
       }
       return null;
     }
-    const executionContexts = target.runtimeModel.executionContexts();
+    const runtimeModel = target.model(SDK.RuntimeModel);
+    if (!runtimeModel) {
+      if (dirac._DEBUG_EVAL) {
+        console.log("  !runtimeModel => bail out");
+      }
+      return null;
+    }
+    const executionContexts = runtimeModel.executionContexts();
     if (dirac._DEBUG_EVAL) {
       console.log("  execution contexts:", executionContexts);
     }
