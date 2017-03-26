@@ -422,7 +422,7 @@ Extensions.ExtensionServer = class extends Common.Object {
     var injectedScript;
     if (options.injectedScript)
       injectedScript = '(function(){' + options.injectedScript + '})()';
-    SDK.targetManager.reloadPage(!!options.ignoreCache, injectedScript);
+    SDK.ResourceTreeModel.reloadAllPages(!!options.ignoreCache, injectedScript);
     return this._status.OK();
   }
 
@@ -932,7 +932,8 @@ Extensions.ExtensionServer = class extends Common.Object {
     else if (options.scriptExecutionContext)
       contextSecurityOrigin = options.scriptExecutionContext;
 
-    var executionContexts = frame.target().runtimeModel.executionContexts();
+    var runtimeModel = frame.target().model(SDK.RuntimeModel);
+    var executionContexts = runtimeModel ? runtimeModel.executionContexts() : [];
     if (contextSecurityOrigin) {
       for (var i = 0; i < executionContexts.length; ++i) {
         var executionContext = executionContexts[i];

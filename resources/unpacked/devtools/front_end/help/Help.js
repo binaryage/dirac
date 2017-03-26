@@ -33,6 +33,8 @@ Help.showReleaseNoteIfNeeded = function() {
  * @param {number} latestVersion
  */
 Help._showReleaseNoteIfNeeded = function(lastSeenVersion, latestVersion) {
+  if (!Runtime.experiments.isEnabled('releaseNote'))
+    return;
   if (lastSeenVersion >= latestVersion)
     return;
   Help.releaseNoteVersionSetting().set(latestVersion);
@@ -58,17 +60,11 @@ Help.browserVersion = function() {
  */
 Help._releaseNoteViewId = 'release-note';
 
-/** @typedef {!{src: string}} */
-Help.ReleaseNoteImage;
-
-/** @typedef {!{text: string, link: (string | undefined)}} */
-Help.ReleaseNoteHighlightContent;
-
-/** @typedef {!{contents: !Array<!Help.ReleaseNoteHighlightContent>, featured: (boolean | undefined)}} */
+/** @typedef {!{title: string, subtitle: string, link: string}} */
 Help.ReleaseNoteHighlight;
 
 /**
  * @typedef {!{version: number, highlights: !Array<!Help.ReleaseNoteHighlight>,
- *    link: string, image: !Help.ReleaseNoteImage}}
+ *    link: string}}
  */
 Help.ReleaseNote;

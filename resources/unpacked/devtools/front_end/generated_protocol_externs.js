@@ -660,8 +660,9 @@ Protocol.PageDispatcher.prototype.loadEventFired = function(timestamp) {};
 /**
  * @param {Protocol.Page.FrameId} frameId
  * @param {Protocol.Page.FrameId} parentFrameId
+ * @param {Protocol.Runtime.StackTrace=} opt_stack
  */
-Protocol.PageDispatcher.prototype.frameAttached = function(frameId, parentFrameId) {};
+Protocol.PageDispatcher.prototype.frameAttached = function(frameId, parentFrameId, opt_stack) {};
 /**
  * @param {Protocol.Page.Frame} frame
  */
@@ -1120,6 +1121,33 @@ Protocol.SecurityAgent.prototype.showCertificateViewer.Request;
  */
 Protocol.SecurityAgent.prototype.invoke_showCertificateViewer = function(obj, opt_callback) {};
 
+/**
+ * @param {number} eventId
+ * @param {Protocol.Security.CertificateErrorAction} action
+ * @param {function(?Protocol.Error):void=} opt_callback
+ */
+Protocol.SecurityAgent.prototype.handleCertificateError = function(eventId, action, opt_callback) {};
+/** @typedef {!{eventId: number, action: Protocol.Security.CertificateErrorAction}} obj */
+Protocol.SecurityAgent.prototype.handleCertificateError.Request;
+/**
+ * @param {!Protocol.SecurityAgent.prototype.handleCertificateError.Request} obj
+ * @param {function(?Protocol.Error):void=} opt_callback
+ */
+Protocol.SecurityAgent.prototype.invoke_handleCertificateError = function(obj, opt_callback) {};
+
+/**
+ * @param {boolean} override
+ * @param {function(?Protocol.Error):void=} opt_callback
+ */
+Protocol.SecurityAgent.prototype.setOverrideCertificateErrors = function(override, opt_callback) {};
+/** @typedef {!{override: boolean}} obj */
+Protocol.SecurityAgent.prototype.setOverrideCertificateErrors.Request;
+/**
+ * @param {!Protocol.SecurityAgent.prototype.setOverrideCertificateErrors.Request} obj
+ * @param {function(?Protocol.Error):void=} opt_callback
+ */
+Protocol.SecurityAgent.prototype.invoke_setOverrideCertificateErrors = function(obj, opt_callback) {};
+
 /** @typedef {number} */
 Protocol.Security.CertificateId;
 
@@ -1138,6 +1166,12 @@ Protocol.Security.SecurityStateExplanation;
 
 /** @typedef {!{ranMixedContent:(boolean), displayedMixedContent:(boolean), ranContentWithCertErrors:(boolean), displayedContentWithCertErrors:(boolean), ranInsecureContentStyle:(Protocol.Security.SecurityState), displayedInsecureContentStyle:(Protocol.Security.SecurityState)}} */
 Protocol.Security.InsecureContentStatus;
+
+/** @enum {string} */
+Protocol.Security.CertificateErrorAction = {
+    Continue: "continue",
+    Cancel: "cancel"
+};
 /** @interface */
 Protocol.SecurityDispatcher = function() {};
 /**
@@ -1148,6 +1182,12 @@ Protocol.SecurityDispatcher = function() {};
  * @param {string=} opt_summary
  */
 Protocol.SecurityDispatcher.prototype.securityStateChanged = function(securityState, schemeIsCryptographic, explanations, insecureContentStatus, opt_summary) {};
+/**
+ * @param {number} eventId
+ * @param {string} errorType
+ * @param {string} requestURL
+ */
+Protocol.SecurityDispatcher.prototype.certificateError = function(eventId, errorType, requestURL) {};
 Protocol.Network = {};
 
 
@@ -2695,10 +2735,11 @@ Protocol.DOMAgent.prototype.invoke_getBoxModel = function(obj, opt_callback) {};
 /**
  * @param {number} x
  * @param {number} y
+ * @param {boolean=} opt_includeUserAgentShadowDOM
  * @param {function(?Protocol.Error, Protocol.DOM.NodeId):void=} opt_callback
  */
-Protocol.DOMAgent.prototype.getNodeForLocation = function(x, y, opt_callback) {};
-/** @typedef {!{y: number, x: number}} obj */
+Protocol.DOMAgent.prototype.getNodeForLocation = function(x, y, opt_includeUserAgentShadowDOM, opt_callback) {};
+/** @typedef {!{y: number, x: number, includeUserAgentShadowDOM: (boolean|undefined)}} obj */
 Protocol.DOMAgent.prototype.getNodeForLocation.Request;
 /**
  * @param {!Protocol.DOMAgent.prototype.getNodeForLocation.Request} obj
@@ -3201,6 +3242,20 @@ Protocol.CSSAgent.prototype.startRuleUsageTracking.Request;
  * @param {function(?Protocol.Error):void=} opt_callback
  */
 Protocol.CSSAgent.prototype.invoke_startRuleUsageTracking = function(obj, opt_callback) {};
+
+/**
+ * @param {function(?Protocol.Error, !Array<Protocol.CSS.RuleUsage>):T} opt_callback
+ * @return {!Promise.<T>}
+ * @template T
+ */
+Protocol.CSSAgent.prototype.takeCoverageDelta = function(opt_callback) {};
+/** @typedef {Object|undefined} obj */
+Protocol.CSSAgent.prototype.takeCoverageDelta.Request;
+/**
+ * @param {!Protocol.CSSAgent.prototype.takeCoverageDelta.Request} obj
+ * @param {function(?Protocol.Error, !Array<Protocol.CSS.RuleUsage>):void=} opt_callback
+ */
+Protocol.CSSAgent.prototype.invoke_takeCoverageDelta = function(obj, opt_callback) {};
 
 /**
  * @param {function(?Protocol.Error, !Array<Protocol.CSS.RuleUsage>):T} opt_callback
@@ -5233,6 +5288,8 @@ Protocol.Runtime.RemoteObjectSubtype = {
     Date: "date",
     Map: "map",
     Set: "set",
+    Weakmap: "weakmap",
+    Weakset: "weakset",
     Iterator: "iterator",
     Generator: "generator",
     Error: "error",
@@ -5267,6 +5324,8 @@ Protocol.Runtime.ObjectPreviewSubtype = {
     Date: "date",
     Map: "map",
     Set: "set",
+    Weakmap: "weakmap",
+    Weakset: "weakset",
     Iterator: "iterator",
     Generator: "generator",
     Error: "error"
@@ -5296,6 +5355,8 @@ Protocol.Runtime.PropertyPreviewSubtype = {
     Date: "date",
     Map: "map",
     Set: "set",
+    Weakmap: "weakmap",
+    Weakset: "weakset",
     Iterator: "iterator",
     Generator: "generator",
     Error: "error"
@@ -5965,12 +6026,13 @@ Protocol.ProfilerAgent.prototype.stop.Request;
 Protocol.ProfilerAgent.prototype.invoke_stop = function(obj, opt_callback) {};
 
 /**
+ * @param {boolean=} opt_callCount
  * @param {function(?Protocol.Error):T=} opt_callback
  * @return {!Promise.<T>}
  * @template T
  */
-Protocol.ProfilerAgent.prototype.startPreciseCoverage = function(opt_callback) {};
-/** @typedef {Object|undefined} obj */
+Protocol.ProfilerAgent.prototype.startPreciseCoverage = function(opt_callCount, opt_callback) {};
+/** @typedef {!{callCount: (boolean|undefined)}} obj */
 Protocol.ProfilerAgent.prototype.startPreciseCoverage.Request;
 /**
  * @param {!Protocol.ProfilerAgent.prototype.startPreciseCoverage.Request} obj

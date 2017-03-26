@@ -100,21 +100,6 @@ SDK.TargetManager = class extends Common.Object {
   }
 
   /**
-   * @param {boolean=} bypassCache
-   * @param {string=} injectedScript
-   */
-  reloadPage(bypassCache, injectedScript) {
-    if (!this._targets.length)
-      return;
-
-    var resourceTreeModel = SDK.ResourceTreeModel.fromTarget(this._targets[0]);
-    if (!resourceTreeModel)
-      return;
-
-    resourceTreeModel.reloadPage(bypassCache, injectedScript);
-  }
-
-  /**
    * @param {function(new:T,!SDK.Target)} modelClass
    * @param {!SDK.SDKModelObserver<T>} observer
    * @template T
@@ -245,9 +230,8 @@ SDK.TargetManager = class extends Common.Object {
     this._pendingTargets.add(target);
 
     target.model(SDK.NetworkManager);
-    var resourceTreeModel = target.model(SDK.ResourceTreeModel);
-    /** @type {!SDK.RuntimeModel} */
-    target.runtimeModel = /** @type {!SDK.RuntimeModel} */ (target.model(SDK.RuntimeModel));
+    target.model(SDK.ResourceTreeModel);
+    target.model(SDK.RuntimeModel);
     target.model(SDK.DebuggerModel);
     target.model(SDK.LogModel);
     target.model(SDK.DOMModel);
@@ -256,7 +240,7 @@ SDK.TargetManager = class extends Common.Object {
     target.model(SDK.ServiceWorkerManager);
 
     if (target.hasTargetCapability())
-      this._childTargetManagers.set(target, new SDK.ChildTargetManager(this, target, resourceTreeModel));
+      this._childTargetManagers.set(target, new SDK.ChildTargetManager(this, target));
 
     // Force creation of models which have observers.
     for (var modelClass of this._modelObservers.keys())
@@ -264,23 +248,6 @@ SDK.TargetManager = class extends Common.Object {
     this._pendingTargets.delete(target);
 
     this._targets.push(target);
-
-    if (resourceTreeModel && !target.parentTarget()) {
-      resourceTreeModel[SDK.TargetManager._listenersSymbol] = [
-        resourceTreeModel.addEventListener(
-            SDK.ResourceTreeModel.Events.MainFrameNavigated,
-            event => this.dispatchEventToListeners(SDK.TargetManager.Events.MainFrameNavigated, event.data)),
-        resourceTreeModel.addEventListener(
-            SDK.ResourceTreeModel.Events.Load,
-            event => this.dispatchEventToListeners(SDK.TargetManager.Events.Load, event.data)),
-        resourceTreeModel.addEventListener(
-            SDK.ResourceTreeModel.Events.PageReloadRequested,
-            event => this.dispatchEventToListeners(SDK.TargetManager.Events.PageReloadRequested, event.data)),
-        resourceTreeModel.addEventListener(
-            SDK.ResourceTreeModel.Events.WillReloadPage,
-            event => this.dispatchEventToListeners(SDK.TargetManager.Events.WillReloadPage, event.data)),
-      ];
-    }
 
     var copy = this._observersForTarget(target);
     for (var i = 0; i < copy.length; ++i)
@@ -323,10 +290,6 @@ SDK.TargetManager = class extends Common.Object {
       childTargetManager.dispose();
 
     this._targets.remove(target);
-    var resourceTreeModel = SDK.ResourceTreeModel.fromTarget(target);
-    var treeModelListeners = resourceTreeModel && resourceTreeModel[SDK.TargetManager._listenersSymbol];
-    if (treeModelListeners)
-      Common.EventTarget.removeEventListeners(treeModelListeners);
 
     for (var modelClass of target.models().keys())
       this._modelRemoved(target, modelClass, target.models().get(modelClass));
@@ -391,7 +354,7 @@ SDK.TargetManager = class extends Common.Object {
           this, 'main', Common.UIString('Node'), SDK.Target.Capability.Target, this._createMainConnection.bind(this),
           null);
       target.setInspectedURL('Node');
-      this._childTargetManagers.set(target, new SDK.ChildTargetManager(this, target, null));
+      this._childTargetManagers.set(target, new SDK.ChildTargetManager(this, target));
       Host.userMetrics.actionTaken(Host.UserMetrics.Action.ConnectToNodeJSFromFrontend);
       return;
     }
@@ -409,7 +372,7 @@ SDK.TargetManager = class extends Common.Object {
 
     var target =
         this.createTarget('main', Common.UIString('Main'), capabilities, this._createMainConnection.bind(this), null);
-    target.runtimeModel.runIfWaitingForDebugger();
+    target.runtimeAgent().runIfWaitingForDebugger();
   }
 
   /**
@@ -420,7 +383,7 @@ SDK.TargetManager = class extends Common.Object {
     var wsParam = Runtime.queryParam('ws');
     var wssParam = Runtime.queryParam('wss');
     if (wsParam || wssParam) {
-      var ws = wsParam ? `ws://${decodeURIComponent(wsParam)}` : `wss://${decodeURIComponent(wssParam)}`;
+      var ws = wsParam ? `ws://${decodeURIComponent(wsParam)}` : `wss://${decodeURIComponent(/** @type {string} */(wssParam))}`;
       this._mainConnection = new SDK.WebSocketConnection(ws, this._webSocketConnectionLostCallback, params);
     } else if (InspectorFrontendHost.isHostedMode()) {
       this._mainConnection = new SDK.StubConnection(params);
@@ -454,9 +417,8 @@ SDK.ChildTargetManager = class {
   /**
    * @param {!SDK.TargetManager} targetManager
    * @param {!SDK.Target} parentTarget
-   * @param {?SDK.ResourceTreeModel} resourceTreeModel
    */
-  constructor(targetManager, parentTarget, resourceTreeModel) {
+  constructor(targetManager, parentTarget) {
     this._targetManager = targetManager;
     this._parentTarget = parentTarget;
     this._targetAgent = parentTarget.targetAgent();
@@ -566,7 +528,7 @@ SDK.ChildTargetManager = class {
       if (debuggerModel)
         debuggerModel.pause();
     }
-    target.runtimeModel.runIfWaitingForDebugger();
+    target.runtimeAgent().runIfWaitingForDebugger();
   }
 
   /**
@@ -638,17 +600,11 @@ SDK.ChildConnection = class {
 /** @enum {symbol} */
 SDK.TargetManager.Events = {
   InspectedURLChanged: Symbol('InspectedURLChanged'),
-  Load: Symbol('Load'),
-  MainFrameNavigated: Symbol('MainFrameNavigated'),
   NameChanged: Symbol('NameChanged'),
-  PageReloadRequested: Symbol('PageReloadRequested'),
-  WillReloadPage: Symbol('WillReloadPage'),
-  TargetDisposed: Symbol('TargetDisposed'),
   SuspendStateChanged: Symbol('SuspendStateChanged'),
   AvailableNodeTargetsChanged: Symbol('AvailableNodeTargetsChanged')
 };
 
-SDK.TargetManager._listenersSymbol = Symbol('SDK.TargetManager.Listeners');
 SDK.TargetManager._isWorkerSymbol = Symbol('SDK.TargetManager.IsWorker');
 
 /**

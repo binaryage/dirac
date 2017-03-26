@@ -5,7 +5,7 @@
 /** @typedef {{startOffset: number, endOffset: number, count: number}} */
 Coverage.RangeUseCount;
 
-/** @typedef {{end: number, count: (number|undefined), depth: number}} */
+/** @typedef {{end: number, count: (number|undefined)}} */
 Coverage.CoverageSegment;
 
 /**
@@ -72,7 +72,6 @@ Coverage.CoverageModel = class extends SDK.SDKModel {
         for (var range of func.ranges)
           ranges.push(range);
       }
-      ranges.sort((a, b) => a.startOffset - b.startOffset);
       this._addCoverage(script, script.contentLength, script.lineOffset, script.columnOffset, ranges);
     }
   }
@@ -82,42 +81,41 @@ Coverage.CoverageModel = class extends SDK.SDKModel {
    * @return {!Array<!Coverage.CoverageSegment>}
    */
   static _convertToDisjointSegments(ranges) {
-    var result = [];
+    ranges.sort((a, b) => a.startOffset - b.startOffset);
 
+    var result = [];
     var stack = [];
     for (var entry of ranges) {
       var top = stack.peekLast();
       while (top && top.endOffset <= entry.startOffset) {
-        append(top.endOffset, top.count, stack.length);
+        append(top.endOffset, top.count);
         stack.pop();
         top = stack.peekLast();
       }
-      append(entry.startOffset, top ? top.count : undefined, stack.length);
+      append(entry.startOffset, top ? top.count : undefined);
       stack.push(entry);
     }
 
     while (stack.length) {
-      var depth = stack.length;
       var top = stack.pop();
-      append(top.endOffset, top.count, depth);
+      append(top.endOffset, top.count);
     }
 
     /**
      * @param {number} end
      * @param {number} count
-     * @param {number} depth
      */
-    function append(end, count, depth) {
+    function append(end, count) {
       var last = result.peekLast();
       if (last) {
         if (last.end === end)
           return;
-        if (last.count === count && last.depth === depth) {
+        if (last.count === count) {
           last.end = end;
           return;
         }
       }
-      result.push({end: end, count: count, depth: depth});
+      result.push({end: end, count: count});
     }
 
     return result;
@@ -174,6 +172,8 @@ Coverage.CoverageModel = class extends SDK.SDKModel {
       this._coverageByURL.set(url, entry);
     }
     var segments = Coverage.CoverageModel._convertToDisjointSegments(ranges);
+    if (segments.length && segments.peekLast().end < contentLength)
+      segments.push({end: contentLength});
     entry.update(contentProvider, contentLength, startLine, startColumn, segments);
   }
 };
@@ -187,7 +187,6 @@ Coverage.URLCoverageInfo = class {
     /** @type {!Map<string, !Coverage.CoverageInfo>} */
     this._coverageInfoByLocation = new Map();
     this._size = 0;
-    this._unusedSize = 0;
     this._usedSize = 0;
     /** @type {!Coverage.CoverageType} */
     this._type;
@@ -211,10 +210,8 @@ Coverage.URLCoverageInfo = class {
       this._type |= entry.type();
     }
     this._usedSize -= entry._usedSize;
-    this._unusedSize -= entry._unusedSize;
     entry.mergeCoverage(segments);
     this._usedSize += entry._usedSize;
-    this._unusedSize += entry._unusedSize;
   }
 
   /**
@@ -241,19 +238,19 @@ Coverage.URLCoverageInfo = class {
   /**
    * @return {number}
    */
-  unusedSize() {
-    return this._unusedSize;
-  }
-
-  /**
-   * @return {number}
-   */
   usedSize() {
     return this._usedSize;
   }
 
   /**
-   * @return {!Promise<!Array<!{range: !Common.TextRange, count: number}>>}
+   * @return {number}
+   */
+  unusedSize() {
+    return this._size - this._usedSize;
+  }
+
+  /**
+   * @return {!Promise<!Array<!{range: !TextUtils.TextRange, count: number}>>}
    */
   async buildTextRanges() {
     var textRangePromises = [];
@@ -275,7 +272,6 @@ Coverage.CoverageInfo = class {
     this._lineOffset = lineOffset;
     this._columnOffset = columnOffset;
     this._usedSize = 0;
-    this._unusedSize = 0;
 
     if (contentProvider.contentType().isScript()) {
       this._coverageType = Coverage.CoverageType.JavaScript;
@@ -318,11 +314,10 @@ Coverage.CoverageInfo = class {
       var b = segmentsB[indexB];
       var count =
           typeof a.count === 'number' || typeof b.count === 'number' ? (a.count || 0) + (b.count || 0) : undefined;
-      var depth = Math.max(a.depth, b.depth);
       var end = Math.min(a.end, b.end);
       var last = result.peekLast();
-      if (!last || last.count !== count || last.depth !== depth)
-        result.push({end: end, count: count, depth: depth});
+      if (!last || last.count !== count)
+        result.push({end: end, count: count});
       else
         last.end = end;
       if (a.end <= b.end)
@@ -339,20 +334,18 @@ Coverage.CoverageInfo = class {
   }
 
   /**
-   * @return {!Promise<!Array<!{range: !Common.TextRange, count: number}>>}
+   * @return {!Promise<!Array<!{range: !TextUtils.TextRange, count: number}>>}
    */
   async buildTextRanges() {
     var contents = await this._contentProvider.requestContent();
     if (!contents)
       return [];
-    var text = new Common.Text(contents);
+    var text = new TextUtils.Text(contents);
     var lastOffset = 0;
-    var rangesByDepth = [];
+    var result = [];
     for (var segment of this._segments) {
-      if (typeof segment.count !== 'number') {
-        lastOffset = segment.end;
+      if (!segment.end)
         continue;
-      }
       var startPosition = text.positionFromOffset(lastOffset);
       var endPosition = text.positionFromOffset(segment.end);
       if (!startPosition.lineNumber)
@@ -361,39 +354,21 @@ Coverage.CoverageInfo = class {
       if (!endPosition.lineNumber)
         endPosition.columnNumber += this._columnOffset;
       endPosition.lineNumber += this._lineOffset;
-
-      var ranges = rangesByDepth[segment.depth - 1];  // depth === 0 => count === undefined
-      if (!ranges) {
-        ranges = [];
-        rangesByDepth[segment.depth - 1] = ranges;
-      }
-      ranges.push({
-        count: segment.count,
-        range: new Common.TextRange(
-            startPosition.lineNumber, startPosition.columnNumber, endPosition.lineNumber, endPosition.columnNumber)
-      });
+      var range = new TextUtils.TextRange(
+          startPosition.lineNumber, startPosition.columnNumber, endPosition.lineNumber, endPosition.columnNumber);
+      result.push({count: segment.count || 0, range: range});
       lastOffset = segment.end;
-    }
-    var result = [];
-    for (var ranges of rangesByDepth) {
-      for (var r of ranges)
-        result.push({count: r.count, range: r.range});
     }
     return result;
   }
 
   _updateStats() {
     this._usedSize = 0;
-    this._unusedSize = 0;
 
     var last = 0;
     for (var segment of this._segments) {
-      if (typeof segment.count === 'number') {
-        if (segment.count)
-          this._usedSize += segment.end - last;
-        else
-          this._unusedSize += segment.end - last;
-      }
+      if (segment.count)
+        this._usedSize += segment.end - last;
       last = segment.end;
     }
   }

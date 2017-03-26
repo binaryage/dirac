@@ -1,6 +1,6 @@
 (def clj-logging-config-version "1.9.12")
 (def slf4j-log4j12-version "1.7.22")
-(defproject binaryage/dirac "1.2.2"
+(defproject binaryage/dirac "1.2.3"
   :description "Dirac DevTools - a Chrome DevTools fork for ClojureScript developers."
   :url "https://github.com/binaryage/dirac"
   :license {:name         "MIT License"
@@ -15,7 +15,7 @@
                  [org.clojure/tools.logging "0.3.1"]
                  [org.clojure/tools.cli "0.3.5"]
                  [org.clojure/tools.nrepl "0.2.12"]
-                 [binaryage/env-config "0.1.1"]
+                 [binaryage/env-config "0.2.0"]
                  [http-kit "2.2.0"]
                  [version-clj "0.1.2"]
                  [clansi "1.0.0"]
@@ -23,7 +23,7 @@
 
                  ; we cannot use :dependencies under individual profiles because Cursive recognizes only root level
                  ; thus we mark extra deps with :scope "test" and filter them later when producing jar library
-                 [binaryage/oops "0.5.2" :scope "test"]
+                 [binaryage/oops "0.5.3" :scope "test"]
                  [binaryage/chromex "0.5.6" :scope "test"]
                  [binaryage/devtools "0.9.2" :scope "test"]
                  [environ "1.1.0" :scope "test"]

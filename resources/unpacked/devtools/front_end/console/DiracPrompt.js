@@ -294,11 +294,11 @@ Console.DiracPromptWithHistory = class extends UI.TextPrompt {
       console.log("detected prefix='" + prefix + "'", javascriptCompletion);
     }
     if (javascriptCompletion) {
-      this._prefixRange = new Common.TextRange(cursor.line, token.start + javascriptCompletion.offset, cursor.line, cursor.ch);
+      this._prefixRange = new TextUtils.TextRange(cursor.line, token.start + javascriptCompletion.offset, cursor.line, cursor.ch);
       const completionsForJavascriptReady = this._completionsForJavascriptReady.bind(this, this._lastAutocompleteRequest, reverse, force);
       this._loadJavascriptCompletions(this._lastAutocompleteRequest, javascriptCompletion.prefix, force, completionsForJavascriptReady);
     } else {
-      this._prefixRange = new Common.TextRange(cursor.line, token.start, cursor.line, cursor.ch);
+      this._prefixRange = new TextUtils.TextRange(cursor.line, token.start, cursor.line, cursor.ch);
       const completionsForClojureScriptReady = this._completionsForClojureScriptReady.bind(this, this._lastAutocompleteRequest, reverse, force);
       this._loadClojureScriptCompletions(this._lastAutocompleteRequest, prefix, force, completionsForClojureScriptReady);
     }
@@ -863,7 +863,7 @@ Console.DiracPromptWithHistory = class extends UI.TextPrompt {
   }
 
   /**
-   * @param {!Common.TextRange} textRange
+   * @param {!TextUtils.TextRange} textRange
    */
   setSelection(textRange) {
     this._lastSelection = textRange;
@@ -908,8 +908,7 @@ Console.DiracPromptWithHistory = class extends UI.TextPrompt {
       this.clearAutocomplete();
 
       if (isPrevious) {
-        //noinspection JSCheckFunctionSignatures
-        this.setSelection(Common.TextRange.createFromLocation(0, Infinity));
+        this.setSelection(TextUtils.TextRange.createFromLocation(0, Infinity));
       } else {
         this.moveCaretToEndOfPrompt();
       }

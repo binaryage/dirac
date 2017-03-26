@@ -133,10 +133,10 @@ Profiler.HeapSnapshotGridNode = class extends DataGrid.DataGridNode {
 
   /**
    * @param {!SDK.Target} target
-   * @param {function(!SDK.RemoteObject)} callback
    * @param {string} objectGroupName
+   * @return {!Promise<!SDK.RemoteObject>}
    */
-  queryObjectContent(target, callback, objectGroupName) {
+  queryObjectContent(target, objectGroupName) {
   }
 
   /**
@@ -605,26 +605,29 @@ Profiler.HeapSnapshotGenericObjectNode = class extends Profiler.HeapSnapshotGrid
   /**
    * @override
    * @param {!SDK.Target} target
-   * @param {function(!SDK.RemoteObject)} callback
    * @param {string} objectGroupName
+   * @return {!Promise<!SDK.RemoteObject>}
    */
-  queryObjectContent(target, callback, objectGroupName) {
+  queryObjectContent(target, objectGroupName) {
+    var fulfill;
+    var promise = new Promise(x => fulfill = x);
+
     /**
      * @param {?SDK.RemoteObject} object
      */
     function onResult(object) {
-      callback(
-          object ||
-          target.runtimeModel.createRemoteObjectFromPrimitiveValue(Common.UIString('Preview is not available')));
+      fulfill(object || runtimeModel.createRemoteObjectFromPrimitiveValue(Common.UIString('Preview is not available')));
     }
 
     var heapProfilerModel = target.model(SDK.HeapProfilerModel);
+    var runtimeModel = target.model(SDK.RuntimeModel);
     if (this._type === 'string')
-      onResult(target.runtimeModel.createRemoteObjectFromPrimitiveValue(this._name));
-    else if (!heapProfilerModel)
+      onResult(runtimeModel.createRemoteObjectFromPrimitiveValue(this._name));
+    else if (!heapProfilerModel || !runtimeModel)
       onResult(null);
     else
       heapProfilerModel.objectForSnapshotObjectId(String(this.snapshotNodeId), objectGroupName).then(onResult);
+    return promise;
   }
 
   updateHasChildren() {

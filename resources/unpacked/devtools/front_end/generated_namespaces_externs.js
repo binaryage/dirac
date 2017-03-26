@@ -117,6 +117,8 @@ var TestRunner = {};
 /** @type {!Object} */
 var TextEditor = {};
 /** @type {!Object} */
+var TextUtils = {};
+/** @type {!Object} */
 var Timeline = {};
 /** @type {!Object} */
 var TimelineModel = {};
