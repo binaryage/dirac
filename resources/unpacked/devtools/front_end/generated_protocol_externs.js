@@ -1164,7 +1164,7 @@ Protocol.Security.SecurityState = {
 /** @typedef {!{securityState:(Protocol.Security.SecurityState), summary:(string), description:(string), hasCertificate:(boolean)}} */
 Protocol.Security.SecurityStateExplanation;
 
-/** @typedef {!{ranMixedContent:(boolean), displayedMixedContent:(boolean), ranContentWithCertErrors:(boolean), displayedContentWithCertErrors:(boolean), ranInsecureContentStyle:(Protocol.Security.SecurityState), displayedInsecureContentStyle:(Protocol.Security.SecurityState)}} */
+/** @typedef {!{ranMixedContent:(boolean), displayedMixedContent:(boolean), containedMixedForm:(boolean), ranContentWithCertErrors:(boolean), displayedContentWithCertErrors:(boolean), ranInsecureContentStyle:(Protocol.Security.SecurityState), displayedInsecureContentStyle:(Protocol.Security.SecurityState)}} */
 Protocol.Security.InsecureContentStatus;
 
 /** @enum {string} */
@@ -1550,7 +1550,7 @@ Protocol.Network.RequestReferrerPolicy = {
     NoReferrerWhenDowngradeOriginWhenCrossOrigin: "no-referrer-when-downgrade-origin-when-cross-origin"
 };
 
-/** @typedef {!{url:(string), method:(string), headers:(Protocol.Network.Headers), postData:(string|undefined), mixedContentType:(Protocol.Network.RequestMixedContentType|undefined), initialPriority:(Protocol.Network.ResourcePriority), referrerPolicy:(Protocol.Network.RequestReferrerPolicy)}} */
+/** @typedef {!{url:(string), method:(string), headers:(Protocol.Network.Headers), postData:(string|undefined), mixedContentType:(Protocol.Network.RequestMixedContentType|undefined), initialPriority:(Protocol.Network.ResourcePriority), referrerPolicy:(Protocol.Network.RequestReferrerPolicy), isLinkPreload:(boolean|undefined)}} */
 Protocol.Network.Request;
 
 /** @typedef {!{status:(string), origin:(string), logDescription:(string), logId:(string), timestamp:(Protocol.Network.Timestamp), hashAlgorithm:(string), signatureAlgorithm:(string), signatureData:(string)}} */

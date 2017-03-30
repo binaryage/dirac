@@ -9,6 +9,8 @@ var Audits2 = {};
 /** @type {!Object} */
 var Bindings = {};
 /** @type {!Object} */
+var Changes = {};
+/** @type {!Object} */
 var Cm = {};
 /** @type {!Object} */
 var CmHeadless = {};
