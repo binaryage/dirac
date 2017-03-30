@@ -29,22 +29,22 @@ Sources.AdvancedSearchView = class extends UI.VBox {
     this._search.setAttribute('results', '0');
     this._search.setAttribute('size', 42);
 
-    var searchIcon = UI.Icon.create('smallicon-search', 'search-icon');
+    var searchIcon = UI.Icon.create('mediumicon-search', 'search-icon');
     this._searchPanelElement.appendChild(searchIcon);
 
-    this._searchInputClearElement = UI.Icon.create('smallicon-gray-cross-hover', 'search-cancel-button');
+    this._searchInputClearElement = UI.Icon.create('mediumicon-gray-cross-hover', 'search-cancel-button');
     this._searchInputClearElement.classList.add('hidden');
     this._searchInputClearElement.addEventListener('click', this._onSearchInputClear.bind(this), false);
     var cancelButtonContainer = this._searchPanelElement.createChild('div', 'search-cancel-button-container');
     cancelButtonContainer.appendChild(this._searchInputClearElement);
 
-    this._ignoreCaseLabel = UI.createCheckboxLabel(Common.UIString('Ignore case'));
+    this._ignoreCaseLabel = UI.CheckboxLabel.create(Common.UIString('Ignore case'));
     this._ignoreCaseLabel.classList.add('search-config-label');
     this._searchPanelElement.appendChild(this._ignoreCaseLabel);
     this._ignoreCaseCheckbox = this._ignoreCaseLabel.checkboxElement;
     this._ignoreCaseCheckbox.classList.add('search-config-checkbox');
 
-    this._regexLabel = UI.createCheckboxLabel(Common.UIString('Regular expression'));
+    this._regexLabel = UI.CheckboxLabel.create(Common.UIString('Regular expression'));
     this._regexLabel.classList.add('search-config-label');
     this._searchPanelElement.appendChild(this._regexLabel);
     this._regexCheckbox = this._regexLabel.checkboxElement;

@@ -182,7 +182,7 @@ Animation.AnimationModel = class extends SDK.SDKModel {
   }
 };
 
-SDK.SDKModel.register(Animation.AnimationModel, SDK.Target.Capability.DOM);
+SDK.SDKModel.register(Animation.AnimationModel, SDK.Target.Capability.DOM, false);
 
 /** @enum {symbol} */
 Animation.AnimationModel.Events = {
@@ -348,9 +348,7 @@ Animation.AnimationModel.Animation = class {
     else
       return;
 
-    var cssModel = node.target().model(SDK.CSSModel);
-    if (!cssModel)
-      return;
+    var cssModel = node.domModel().cssModel();
     cssModel.setEffectivePropertyValueForNode(node.id, animationPrefix + 'duration', duration + 'ms');
     cssModel.setEffectivePropertyValueForNode(node.id, animationPrefix + 'delay', delay + 'ms');
   }

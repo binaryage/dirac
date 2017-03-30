@@ -95,6 +95,7 @@ Main.Main = class {
     Runtime.experiments.register('audits2', 'Audits 2.0', true);
     Runtime.experiments.register('autoAttachToCrossProcessSubframes', 'Auto-attach to cross-process subframes', true);
     Runtime.experiments.register('blackboxJSFramesOnTimeline', 'Blackbox JavaScript frames on Timeline', true);
+    Runtime.experiments.register('changesDrawer', 'Changes drawer', true);
     Runtime.experiments.register('continueToLocationMarkers', 'Continue to location markers', true);
     Runtime.experiments.register('colorContrastRatio', 'Contrast ratio line in color picker', true);
     Runtime.experiments.register('cssTrackerPanel', 'Coverage support');
@@ -105,12 +106,12 @@ Main.Main = class {
     Runtime.experiments.register('objectPreviews', 'Object previews', true);
     Runtime.experiments.register('persistence2', 'Persistence 2.0');
     Runtime.experiments.register('persistenceValidation', 'Validate persistence bindings');
-    Runtime.experiments.register('releaseNote', 'Release note', true);
     Runtime.experiments.register('requestBlocking', 'Request blocking', true);
     Runtime.experiments.register('timelineShowAllEvents', 'Show all events on Timeline', true);
     Runtime.experiments.register('timelineShowAllProcesses', 'Show all processes on Timeline', true);
     Runtime.experiments.register('timelinePaintTimingMarkers', 'Show paint timing markers on Timeline', true);
     Runtime.experiments.register('sourceDiff', 'Source diff');
+    Runtime.experiments.register('timelineEventInitiators', 'Timeline event initiators');
     Runtime.experiments.register('timelineFlowEvents', 'Timeline flow events', true);
     Runtime.experiments.register('terminalInDrawer', 'Terminal in drawer', true);
     Runtime.experiments.register('timelineInvalidationTracking', 'Timeline invalidation tracking', true);
@@ -130,13 +131,13 @@ Main.Main = class {
         Runtime.experiments.enableForTest('cssTrackerPanel');
       if (testPath.indexOf('audits2/') !== -1)
         Runtime.experiments.enableForTest('audits2');
-      if (testPath.indexOf('help/') !== -1)
-        Runtime.experiments.enableForTest('releaseNote');
+      if (testPath.indexOf('changes/') !== -1)
+        Runtime.experiments.enableForTest('changesDrawer');
       if (testPath.indexOf('sass/') !== -1)
         Runtime.experiments.enableForTest('liveSASS');
     }
 
-    Runtime.experiments.setDefaultExperiments(['persistenceValidation']);
+    Runtime.experiments.setDefaultExperiments(['persistenceValidation', 'persistence2']);
   }
 
   /**
@@ -201,6 +202,7 @@ Main.Main = class {
 
     new Main.Main.PauseListener();
     new Main.Main.InspectedNodeRevealer();
+    new Main.NetworkPanelIndicator();
     new Main.SourcesPanelIndicator();
     new Main.BackendSettingsSync();
     Components.domBreakpointsSidebarPane = new Components.DOMBreakpointsSidebarPane();
@@ -744,9 +746,35 @@ Main.Main.MainMenuItem = class {
 
     var helpSubMenu = contextMenu.namedSubMenu('mainMenuHelp');
     helpSubMenu.appendAction('settings.documentation');
-    if (Runtime.experiments.isEnabled('releaseNote'))
-      helpSubMenu.appendItem('Release Notes', () => InspectorFrontendHost.openInNewTab(Help.latestReleaseNote().link));
+    helpSubMenu.appendItem('Release Notes', () => InspectorFrontendHost.openInNewTab(Help.latestReleaseNote().link));
     contextMenu.show();
+  }
+};
+
+Main.NetworkPanelIndicator = class {
+  constructor() {
+    // TODO: we should not access network from other modules.
+    if (!UI.inspectorView.hasPanel('network'))
+      return;
+    var manager = SDK.multitargetNetworkManager;
+    manager.addEventListener(SDK.MultitargetNetworkManager.Events.ConditionsChanged, updateVisibility);
+    var blockedURLsSetting = Common.moduleSetting('networkBlockedURLs');
+    blockedURLsSetting.addChangeListener(updateVisibility);
+    var requestBlockingEnabledSetting = Common.moduleSetting('requestBlockingEnabled');
+    requestBlockingEnabledSetting.addChangeListener(updateVisibility);
+    updateVisibility();
+
+    function updateVisibility() {
+      var icon = null;
+      if (manager.isThrottling()) {
+        icon = UI.Icon.create('smallicon-warning');
+        icon.title = Common.UIString('Network throttling is enabled');
+      } else if (requestBlockingEnabledSetting.get() && blockedURLsSetting.get().length) {
+        icon = UI.Icon.create('smallicon-warning');
+        icon.title = Common.UIString('Requests may be blocked');
+      }
+      UI.inspectorView.setPanelIcon('network', icon);
+    }
   }
 };
 
