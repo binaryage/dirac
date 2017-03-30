@@ -100,7 +100,7 @@ Elements.ClassesPaneWidget = class extends UI.Widget {
     keys.sort(String.caseInsensetiveComparator);
     for (var i = 0; i < keys.length; ++i) {
       var className = keys[i];
-      var label = UI.createCheckboxLabel(className, classes.get(className));
+      var label = UI.CheckboxLabel.create(className, classes.get(className));
       label.visualizeFocus = true;
       label.classList.add('monospace');
       label.checkboxElement.addEventListener('click', this._onClick.bind(this, className), false);
@@ -226,7 +226,7 @@ Elements.ClassesPaneWidget.ClassNamePrompt = class extends UI.TextPrompt {
     var completions = new Set();
     this._selectedFrameId = selectedNode.frameId();
 
-    var cssModel = SDK.CSSModel.fromNode(selectedNode);
+    var cssModel = selectedNode.domModel().cssModel();
     var allStyleSheets = cssModel.allStyleSheets();
     for (var stylesheet of allStyleSheets) {
       if (stylesheet.frameId !== this._selectedFrameId)

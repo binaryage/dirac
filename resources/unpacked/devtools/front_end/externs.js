@@ -796,6 +796,7 @@ CodeMirror.overlayMode = function(mode1, mode2, squashSpans) {};
 CodeMirror.defineMode = function(modeName, modeConstructor) {};
 CodeMirror.startState = function(mode) {};
 CodeMirror.runMode = function(string, modespec, callback, options) {};
+CodeMirror.copyState = function(mode, state) {};
 
 /** @typedef {{canceled: boolean, from: !CodeMirror.Pos, to: !CodeMirror.Pos, text: string, origin: string, cancel: function()}} */
 CodeMirror.BeforeChangeObject;
@@ -816,12 +817,6 @@ CodeMirror.Pos.prototype.ch;
  * @return {number}
  */
 CodeMirror.cmpPos = function(pos1, pos2) {};
-
-/**
- * @param {string} mode
- * @param {?} definition
- */
-CodeMirror.defineSimpleMode = function(mode, definition) {};
 
 /** @constructor */
 CodeMirror.StringStream = function(line) {
@@ -869,6 +864,12 @@ CodeMirror.keyMap;
 
 /** @type {{scrollLeft: number, scrollTop: number}} */
 CodeMirror.doc;
+
+/**
+ * @param {string} mime
+ * @param {string} mode
+ */
+CodeMirror.defineMIME = function(mime, mode) {};
 
 /** @type {boolean} */
 window.dispatchStandaloneTestRunnerMessages;
