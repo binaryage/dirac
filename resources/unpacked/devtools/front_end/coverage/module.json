@@ -6,9 +6,8 @@
             "id": "coverage",
             "title": "Coverage",
             "persistence": "closeable",
-            "order": 0,
             "className": "Coverage.CoverageView",
-            "experiment": "cssTrackerPanel"
+            "order": 100
         },
         {
             "type": "@SourceFrame.UISourceCodeFrame.LineDecorator",
@@ -21,9 +20,8 @@
             "iconClass": "largeicon-start-recording",
             "toggledIconClass": "largeicon-stop-recording",
             "toggleWithRedColor": true,
-            "className": "Coverage.CoverageView.RecordActionDelegate",
+            "className": "Coverage.CoverageView.ActionDelegate",
             "category": "Performance",
-            "experiment": "cssTrackerPanel",
             "options": [
                 {
                     "value": true,
@@ -34,6 +32,14 @@
                     "title": "Stop instrumenting coverage and show results"
                 }
             ]
+        },
+        {
+            "type": "@UI.ActionDelegate",
+            "actionId": "coverage.start-with-reload",
+            "iconClass": "largeicon-refresh",
+            "className": "Coverage.CoverageView.ActionDelegate",
+            "category": "Performance",
+            "title": "Start recording and reload page"
         }
     ],
     "dependencies": [
