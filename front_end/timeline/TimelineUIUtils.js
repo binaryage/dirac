@@ -467,7 +467,7 @@ Timeline.TimelineUIUtils = class {
         var width = Timeline.TimelineUIUtils.quadWidth(eventData.clip);
         var height = Timeline.TimelineUIUtils.quadHeight(eventData.clip);
         if (width && height)
-          detailsText = Common.UIString('%d\u2009\u00d7\u2009%d', width, height);
+          detailsText = Common.UIString('%d\xa0\u00d7\xa0%d', width, height);
         break;
       case recordType.ParseHTML:
         var endLine = event.args['endData'] && event.args['endData']['endLine'];
@@ -709,7 +709,7 @@ Timeline.TimelineUIUtils = class {
       Timeline.TimelineUIUtils._collectInvalidationNodeIds(nodeIdsToResolve, invalidationTrackingEvents);
     var relatedNodes = null;
     if (nodeIdsToResolve.size) {
-      var domModel = SDK.DOMModel.fromTarget(target);
+      var domModel = target.model(SDK.DOMModel);
       if (domModel) {
         relatedNodes = await new Promise(fulfill =>
             domModel.pushNodesByBackendIdsToFrontend(nodeIdsToResolve, fulfill));

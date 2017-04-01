@@ -253,7 +253,7 @@ Sources.NavigatorView = class extends UI.VBox {
     var frame = Bindings.NetworkProject.frameForProject(uiSourceCode.project());
     if (!frame) {
       var target = Bindings.NetworkProject.targetForProject(uiSourceCode.project());
-      var resourceTreeModel = target && SDK.ResourceTreeModel.fromTarget(target);
+      var resourceTreeModel = target && target.model(SDK.ResourceTreeModel);
       frame = resourceTreeModel && resourceTreeModel.mainFrame;
     }
     return frame;
@@ -440,7 +440,7 @@ Sources.NavigatorView = class extends UI.VBox {
      */
     function hoverCallback(hovered) {
       if (hovered) {
-        var domModel = SDK.DOMModel.fromTarget(target);
+        var domModel = target.model(SDK.DOMModel);
         if (domModel)
           domModel.highlightFrame(frame.id);
       } else {
@@ -1343,7 +1343,7 @@ Sources.NavigatorUISourceCodeTreeNode = class extends Sources.NavigatorTreeNode 
     function commitHandler(element, newTitle, oldTitle) {
       if (newTitle !== oldTitle) {
         this._treeElement.title = newTitle;
-        this._uiSourceCode.rename(newTitle, renameCallback.bind(this));
+        this._uiSourceCode.rename(newTitle).then(renameCallback.bind(this));
         return;
       }
       afterEditing.call(this, true);
