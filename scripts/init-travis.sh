@@ -11,7 +11,7 @@ false && source _config.sh # never executes, this is here just for IntelliJ Bash
 #export DIRAC_LOG_LEVEL=debug
 export DIRAC_CHROME_DRIVER_VERBOSE=1
 export LEIN_FAST_TRAMPOLINE=1
-TRAVIS_CHROMEDRIVER_VERSION=${TRAVIS_CHROMEDRIVER_VERSION:-2.28}
+TRAVIS_CHROMEDRIVER_VERSION=${TRAVIS_CHROMEDRIVER_VERSION:-2.29}
 
 if [[ -z "$TRAVIS_SKIP_LEIN_UPGRADE" ]]; then
   # we need lein 2.5.3+ because of https://github.com/technomancy/leiningen/issues/1762
