@@ -103,7 +103,7 @@ Console.ConsoleView = class extends UI.VBox {
     settingsToolbarLeft.makeVertical();
     settingsToolbarLeft.appendToolbarItem(this._hideNetworkMessagesCheckbox);
     settingsToolbarLeft.appendToolbarItem(this._preserveLogCheckbox);
-    settingsToolbarLeft.appendToolbarItem(this._filter._showTargetMessagesCheckbox);
+    settingsToolbarLeft.appendToolbarItem(this._filter._filterByExecutionContextCheckbox);
 
     var settingsToolbarRight = new UI.Toolbar('', settingsPane.element);
     settingsToolbarRight.makeVertical();
@@ -360,7 +360,7 @@ Console.ConsoleView = class extends UI.VBox {
   _executionContextChanged() {
     this._switchToLastPrompt();
     this._prompt.clearAutocomplete();
-    if (this._filter._showTargetMessagesCheckbox.checked())
+    if (this._filter._filterByExecutionContextCheckbox.checked())
       this._updateMessageList();
   }
 
@@ -1309,7 +1309,7 @@ Console.ConsoleView = class extends UI.VBox {
     var message;
     if (!exceptionDetails) {
       message = new ConsoleModel.ConsoleMessage(
-          result.runtimeModel().target(), ConsoleModel.ConsoleMessage.MessageSource.JS, level, '',
+          result.runtimeModel(), ConsoleModel.ConsoleMessage.MessageSource.JS, level, '',
           ConsoleModel.ConsoleMessage.MessageType.Result, undefined, undefined, undefined, undefined, [result]);
     } else {
       message = ConsoleModel.ConsoleMessage.fromException(
@@ -1558,7 +1558,7 @@ Console.ConsoleViewFilter = class {
    * @param {function()} filterChangedCallback
    */
   constructor(filterChangedCallback) {
-    this._showTargetMessagesCheckbox = new UI.ToolbarCheckbox(
+    this._filterByExecutionContextCheckbox = new UI.ToolbarCheckbox(
         Common.UIString('Selected context only'),
         Common.UIString('Only show messages from the current context (top, iframe, worker, extension)'),
         filterChangedCallback);
@@ -1637,8 +1637,8 @@ Console.ConsoleViewFilter = class {
     var message = viewMessage.consoleMessage();
     var executionContext = UI.context.flavor(SDK.ExecutionContext);
 
-    if (this._showTargetMessagesCheckbox.checked() && executionContext) {
-      if (message.target() !== executionContext.target())
+    if (this._filterByExecutionContextCheckbox.checked() && executionContext) {
+      if (message.runtimeModel() !== executionContext.runtimeModel)
         return false;
       if (message.executionContextId && message.executionContextId !== executionContext.id)
         return false;
@@ -1677,7 +1677,7 @@ Console.ConsoleViewFilter = class {
   reset() {
     this._messageURLFiltersSetting.set({});
     this._messageLevelFiltersSetting.set(ConsoleModel.ConsoleMessage.MessageLevel.Info);
-    this._showTargetMessagesCheckbox.inputElement.checked = false;
+    this._filterByExecutionContextCheckbox.inputElement.checked = false;
     this._hideNetworkMessagesSetting.set(false);
     this._textFilterUI.setValue('');
     this._textFilterChanged();

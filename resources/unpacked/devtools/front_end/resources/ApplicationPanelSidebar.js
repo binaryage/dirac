@@ -736,7 +736,7 @@ Resources.DatabaseTreeElement = class extends Resources.BaseStorageTreeElement {
     function tableNamesCallback(tableNames) {
       var tableNamesLength = tableNames.length;
       for (var i = 0; i < tableNamesLength; ++i)
-        this.appendChild(new Resources.DatabaseTableTreeElement(this._storagePanel, this._database, tableNames[i]));
+        this.appendChild(new Resources.DatabaseTableTreeElement(this._sidebar, this._database, tableNames[i]));
     }
     this._database.getTableNames(tableNamesCallback.bind(this));
   }
@@ -746,6 +746,11 @@ Resources.DatabaseTreeElement = class extends Resources.BaseStorageTreeElement {
  * @unrestricted
  */
 Resources.DatabaseTableTreeElement = class extends Resources.BaseStorageTreeElement {
+  /**
+   * @param {!Resources.ApplicationPanelSidebar} sidebar
+   * @param {!Resources.Database} database
+   * @param {string} tableName
+   */
   constructor(sidebar, database, tableName) {
     super(sidebar._panel, tableName, false);
     this._sidebar = sidebar;
@@ -1506,7 +1511,7 @@ Resources.CookieTreeElement = class extends Resources.BaseStorageTreeElement {
    */
   constructor(storagePanel, frame, cookieDomain) {
     super(storagePanel, cookieDomain ? cookieDomain : Common.UIString('Local Files'), false);
-    this._target = frame.target();
+    this._target = frame.resourceTreeModel().target();
     this._cookieDomain = cookieDomain;
     var icon = UI.Icon.create('mediumicon-cookie', 'resource-tree-item');
     this.setLeadingIcons([icon]);
