@@ -29,7 +29,7 @@
  */
 /**
  * @implements {UI.Searchable}
- * @implements {SDK.TargetManager.Observer}
+ * @implements {SDK.SDKModelObserver<!SDK.NetworkManager>}
  * @unrestricted
  */
 Network.NetworkLogView = class extends UI.VBox {
@@ -110,7 +110,7 @@ Network.NetworkLogView = class extends UI.VBox {
     Common.moduleSetting('networkColorCodeResourceTypes')
         .addChangeListener(this._invalidateAllItems.bind(this, false), this);
 
-    SDK.targetManager.observeTargets(this);
+    SDK.targetManager.observeModels(SDK.NetworkManager, this);
     SDK.targetManager.addModelListener(
         SDK.NetworkManager, SDK.NetworkManager.Events.RequestStarted, this._onRequestStarted, this);
     SDK.targetManager.addModelListener(
@@ -389,11 +389,11 @@ Network.NetworkLogView = class extends UI.VBox {
 
   /**
    * @override
-   * @param {!SDK.Target} target
+   * @param {!SDK.NetworkManager} networkManager
    */
-  targetAdded(target) {
-    if (!target.parentTarget()) {
-      var resourceTreeModel = target.model(SDK.ResourceTreeModel);
+  modelAdded(networkManager) {
+    if (!networkManager.target().parentTarget()) {
+      var resourceTreeModel = networkManager.target().model(SDK.ResourceTreeModel);
       if (resourceTreeModel) {
         resourceTreeModel.addEventListener(
             SDK.ResourceTreeModel.Events.MainFrameNavigated, this._mainFrameNavigated, this);
@@ -402,16 +402,16 @@ Network.NetworkLogView = class extends UI.VBox {
             SDK.ResourceTreeModel.Events.DOMContentLoaded, this._domContentLoadedEventFired, this);
       }
     }
-    NetworkLog.networkLog.requestsForTarget(target).forEach(this._appendRequest.bind(this));
+    NetworkLog.networkLog.requestsForManager(networkManager).forEach(this._appendRequest.bind(this));
   }
 
   /**
    * @override
-   * @param {!SDK.Target} target
+   * @param {!SDK.NetworkManager} networkManager
    */
-  targetRemoved(target) {
-    if (!target.parentTarget()) {
-      var resourceTreeModel = target.model(SDK.ResourceTreeModel);
+  modelRemoved(networkManager) {
+    if (!networkManager.target().parentTarget()) {
+      var resourceTreeModel = networkManager.target().model(SDK.ResourceTreeModel);
       if (resourceTreeModel) {
         resourceTreeModel.removeEventListener(
             SDK.ResourceTreeModel.Events.MainFrameNavigated, this._mainFrameNavigated, this);
@@ -605,7 +605,8 @@ Network.NetworkLogView = class extends UI.VBox {
         selectedRequestsNumber++;
         selectedTransferSize += requestTransferSize;
       }
-      if (request.url() === request.target().inspectedURL() && request.resourceType() === Common.resourceTypes.Document)
+      if (request.url() === request.networkManager().target().inspectedURL() &&
+          request.resourceType() === Common.resourceTypes.Document)
         baseTime = request.startTime;
       if (request.endTime > maxTime)
         maxTime = request.endTime;
@@ -1038,7 +1039,8 @@ Network.NetworkLogView = class extends UI.VBox {
 
     // Pick provisional load requests.
     var requestsToPick = [];
-    var requests = NetworkLog.networkLog.requestsForTarget(frame.target());
+    var networkManager = frame.resourceTreeModel().target().model(SDK.NetworkManager);
+    var requests = networkManager ? NetworkLog.networkLog.requestsForManager(networkManager) : [];
     for (var i = 0; i < requests.length; ++i) {
       var request = requests[i];
       if (request.loaderId === loaderId)
@@ -1118,51 +1120,48 @@ Network.NetworkLogView = class extends UI.VBox {
     contextMenu.appendItem(Common.UIString.capitalize('Clear ^browser ^cache'), this._clearBrowserCache.bind(this));
     contextMenu.appendItem(Common.UIString.capitalize('Clear ^browser ^cookies'), this._clearBrowserCookies.bind(this));
 
-    if (request && Runtime.experiments.isEnabled('requestBlocking')) {  // Disabled until ready.
+    if (request) {
       contextMenu.appendSeparator();
 
-      var blockedSetting = Common.moduleSetting('networkBlockedURLs');
-      var blockedSettingData = blockedSetting.get();
-
       const maxBlockedURLLength = 20;
+      var manager = SDK.multitargetNetworkManager;
+      var patterns = manager.blockedPatterns();
+
       var urlWithoutScheme = request.parsedURL.urlWithoutScheme();
-      var blockedURLIndex = blockedSettingData.indexOf(urlWithoutScheme);
-      if (urlWithoutScheme && blockedURLIndex === -1) {
+      if (urlWithoutScheme && !patterns.find(pattern => pattern.url === urlWithoutScheme)) {
         contextMenu.appendItem(
             Common.UIString.capitalize('Block ^request URL'), addBlockedURL.bind(null, urlWithoutScheme));
       } else if (urlWithoutScheme) {
         const croppedURL = urlWithoutScheme.trimMiddle(maxBlockedURLLength);
         contextMenu.appendItem(
-            Common.UIString.capitalize('Unblock ' + croppedURL), removeBlockedURLIndex.bind(null, blockedURLIndex));
+            Common.UIString.capitalize('Unblock ' + croppedURL), removeBlockedURL.bind(null, urlWithoutScheme));
       }
 
       var domain = request.parsedURL.domain();
-      var blockedDomainIndex = blockedSettingData.indexOf(domain);
-      if (domain && blockedDomainIndex === -1) {
+      if (domain && !patterns.find(pattern => pattern.url === domain)) {
         contextMenu.appendItem(Common.UIString.capitalize('Block ^request ^domain'), addBlockedURL.bind(null, domain));
       } else if (domain) {
         const croppedDomain = domain.trimMiddle(maxBlockedURLLength);
         contextMenu.appendItem(
-            Common.UIString.capitalize('Unblock ' + croppedDomain),
-            removeBlockedURLIndex.bind(null, blockedDomainIndex));
+            Common.UIString.capitalize('Unblock ' + croppedDomain), removeBlockedURL.bind(null, domain));
       }
 
       /**
        * @param {string} url
        */
       function addBlockedURL(url) {
-        blockedSettingData.push(url);
-        blockedSetting.set(blockedSettingData);
+        patterns.push({enabled: true, url: url});
+        manager.setBlockedPatterns(patterns);
+        manager.setBlockingEnabled(true);
         UI.viewManager.showView('network.blocked-urls');
-        Common.moduleSetting('requestBlockingEnabled').set(true);
       }
 
       /**
-       * @param {number} index
+       * @param {string} url
        */
-      function removeBlockedURLIndex(index) {
-        blockedSettingData.splice(index, 1);
-        blockedSetting.set(blockedSettingData);
+      function removeBlockedURL(url) {
+        patterns = patterns.filter(pattern => pattern.url !== url);
+        manager.setBlockedPatterns(patterns);
         UI.viewManager.showView('network.blocked-urls');
       }
     }

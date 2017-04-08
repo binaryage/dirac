@@ -105,7 +105,6 @@ Main.Main = class {
     Runtime.experiments.register('objectPreviews', 'Object previews', true);
     Runtime.experiments.register('persistence2', 'Persistence 2.0');
     Runtime.experiments.register('persistenceValidation', 'Validate persistence bindings');
-    Runtime.experiments.register('requestBlocking', 'Request blocking', true);
     Runtime.experiments.register('timelineShowAllEvents', 'Show all events on Timeline', true);
     Runtime.experiments.register('timelineShowAllProcesses', 'Show all processes on Timeline', true);
     Runtime.experiments.register('timelinePaintTimingMarkers', 'Show paint timing markers on Timeline', true);
@@ -662,12 +661,11 @@ Main.Main.WarningErrorCounter = class {
 
 /**
  * @implements {UI.ToolbarItem.Provider}
- * @unrestricted
  */
 Main.Main.MainMenuItem = class {
   constructor() {
-    this._item = new UI.ToolbarButton(Common.UIString('Customize and control DevTools'), 'largeicon-menu');
-    this._item.addEventListener(UI.ToolbarButton.Events.MouseDown, this._mouseDown, this);
+    this._item = new UI.ToolbarMenuButton(this._handleContextMenu.bind(this), true);
+    this._item.setTitle(Common.UIString('Customize and control DevTools'));
   }
 
   /**
@@ -679,13 +677,9 @@ Main.Main.MainMenuItem = class {
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!UI.ContextMenu} contextMenu
    */
-  _mouseDown(event) {
-    var contextMenu = new UI.ContextMenu(
-        /** @type {!Event} */ (event.data), true, this._item.element.totalOffsetLeft(),
-        this._item.element.totalOffsetTop() + this._item.element.offsetHeight);
-
+  _handleContextMenu(contextMenu) {
     if (Components.dockController.canDock()) {
       var dockItemElement = createElementWithClass('div', 'flex-centered flex-auto');
       var titleElement = dockItemElement.createChild('span', 'flex-auto');
@@ -746,7 +740,6 @@ Main.Main.MainMenuItem = class {
     var helpSubMenu = contextMenu.namedSubMenu('mainMenuHelp');
     helpSubMenu.appendAction('settings.documentation');
     helpSubMenu.appendItem('Release Notes', () => InspectorFrontendHost.openInNewTab(Help.latestReleaseNote().link));
-    contextMenu.show();
   }
 };
 
@@ -757,10 +750,7 @@ Main.NetworkPanelIndicator = class {
       return;
     var manager = SDK.multitargetNetworkManager;
     manager.addEventListener(SDK.MultitargetNetworkManager.Events.ConditionsChanged, updateVisibility);
-    var blockedURLsSetting = Common.moduleSetting('networkBlockedURLs');
-    blockedURLsSetting.addChangeListener(updateVisibility);
-    var requestBlockingEnabledSetting = Common.moduleSetting('requestBlockingEnabled');
-    requestBlockingEnabledSetting.addChangeListener(updateVisibility);
+    manager.addEventListener(SDK.MultitargetNetworkManager.Events.BlockedPatternsChanged, updateVisibility);
     updateVisibility();
 
     function updateVisibility() {
@@ -768,7 +758,7 @@ Main.NetworkPanelIndicator = class {
       if (manager.isThrottling()) {
         icon = UI.Icon.create('smallicon-warning');
         icon.title = Common.UIString('Network throttling is enabled');
-      } else if (requestBlockingEnabledSetting.get() && blockedURLsSetting.get().length) {
+      } else if (manager.isBlocking()) {
         icon = UI.Icon.create('smallicon-warning');
         icon.title = Common.UIString('Requests may be blocked');
       }

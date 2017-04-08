@@ -123,7 +123,7 @@ UI.GlassPane = class {
       return;
     // Deliberately starts with 3000 to hide other z-indexed elements below.
     this.element.style.zIndex = 3000 + 1000 * UI.GlassPane._panes.size;
-    document.body.addEventListener('click', this._onMouseDownBound, true);
+    document.body.addEventListener('mousedown', this._onMouseDownBound, true);
     this._widget.show(document.body);
     UI.GlassPane._panes.add(this);
     this._positionContent();
@@ -133,7 +133,7 @@ UI.GlassPane = class {
     if (!this.isShowing())
       return;
     UI.GlassPane._panes.delete(this);
-    this.element.ownerDocument.body.removeEventListener('click', this._onMouseDownBound, true);
+    this.element.ownerDocument.body.removeEventListener('mousedown', this._onMouseDownBound, true);
     this._widget.detach();
   }
 
@@ -143,7 +143,8 @@ UI.GlassPane = class {
   _onMouseDown(event) {
     if (!this._onClickOutsideCallback)
       return;
-    if (this.contentElement.isSelfOrAncestor(/** @type {?Node} */ (event.deepElementFromPoint())))
+    var node = event.deepElementFromPoint();
+    if (!node || this.contentElement.isSelfOrAncestor(node))
       return;
     this._onClickOutsideCallback.call(null, event);
   }
@@ -240,7 +241,7 @@ UI.GlassPane = class {
 
         positionX = Math.max(gutterSize, Math.min(anchorBox.x, containerWidth - width - gutterSize));
         if (!enoughHeight)
-          positionX += arrowSize;
+          positionX = Math.min(positionX + arrowSize, containerWidth - width - gutterSize);
         else if (showArrow && positionX - arrowSize >= gutterSize)
           positionX -= arrowSize;
         width = Math.min(width, containerWidth - positionX - gutterSize);
@@ -298,7 +299,7 @@ UI.GlassPane = class {
 
         positionY = Math.max(gutterSize, Math.min(anchorBox.y, containerHeight - height - gutterSize));
         if (!enoughWidth)
-          positionY += arrowSize;
+          positionY = Math.min(positionY + arrowSize, containerHeight - height - gutterSize);
         else if (showArrow && positionY - arrowSize >= gutterSize)
           positionY -= arrowSize;
         height = Math.min(height, containerHeight - positionY - gutterSize);
