@@ -20,7 +20,6 @@ SourceFrame.SourcesTextEditor = class extends TextEditor.CodeMirrorTextEditor {
 
     this._delegate = delegate;
 
-    this.codeMirror().on('changes', this._fireTextChanged.bind(this));
     if (dirac.hasInlineCFs) {
       this.codeMirror().on("update", this._update.bind(this));
     }
@@ -309,9 +308,6 @@ SourceFrame.SourcesTextEditor = class extends TextEditor.CodeMirrorTextEditor {
    */
   editRange(range, text, origin) {
     var newRange = super.editRange(range, text, origin);
-    this.dispatchEventToListeners(
-        SourceFrame.SourcesTextEditor.Events.TextChanged, {oldRange: range, newRange: newRange});
-
     if (Common.moduleSetting('textEditorAutoDetectIndent').get())
       this._onUpdateEditorIndentation();
 
@@ -380,31 +376,6 @@ SourceFrame.SourcesTextEditor = class extends TextEditor.CodeMirrorTextEditor {
     }
   }
 
-  /**
-   * @param {!CodeMirror} codeMirror
-   * @param {!Array.<!CodeMirror.ChangeObject>} changes
-   */
-  _fireTextChanged(codeMirror, changes) {
-    if (!changes.length || this._muteTextChangedEvent)
-      return;
-    var edits = [];
-    var currentEdit;
-
-    for (var changeIndex = 0; changeIndex < changes.length; ++changeIndex) {
-      var changeObject = changes[changeIndex];
-      var edit = TextEditor.CodeMirrorUtils.changeObjectToEditOperation(changeObject);
-      if (currentEdit && edit.oldRange.equal(currentEdit.newRange)) {
-        currentEdit.newRange = edit.newRange;
-      } else {
-        currentEdit = edit;
-        edits.push(currentEdit);
-      }
-    }
-
-    for (var i = 0; i < edits.length; ++i)
-      this.dispatchEventToListeners(SourceFrame.SourcesTextEditor.Events.TextChanged, edits[i]);
-  }
-
   _cursorActivity() {
     if (!this._isSearchActive())
       this.codeMirror().operation(this._tokenHighlighter.highlightSelectedTokens.bind(this._tokenHighlighter));
@@ -468,11 +439,9 @@ SourceFrame.SourcesTextEditor = class extends TextEditor.CodeMirrorTextEditor {
    * @param {string} text
    */
   setText(text) {
-    this._muteTextChangedEvent = true;
     this._setEditorIndentation(
         text.split('\n').slice(0, SourceFrame.SourcesTextEditor.LinesToScanForIndentationGuessing));
     super.setText(text);
-    delete this._muteTextChangedEvent;
   }
 
   _updateWhitespace() {
@@ -611,7 +580,6 @@ SourceFrame.SourcesTextEditor.GutterClickEventData;
 /** @enum {symbol} */
 SourceFrame.SourcesTextEditor.Events = {
   GutterClick: Symbol('GutterClick'),
-  TextChanged: Symbol('TextChanged'),
   SelectionChanged: Symbol('SelectionChanged'),
   ScrollChanged: Symbol('ScrollChanged'),
   EditorFocused: Symbol('EditorFocused'),

@@ -53,7 +53,8 @@ TextEditor.CodeMirrorTextEditor = class extends UI.VBox {
       styleActiveLine: true,
       indentUnit: 4,
       lineWrapping: options.lineWrapping,
-      lineWiseCopyCut: false
+      lineWiseCopyCut: false,
+      tabIndex: 0
     });
     this._codeMirrorElement = this.element.lastElementChild;
 
@@ -144,7 +145,10 @@ TextEditor.CodeMirrorTextEditor = class extends UI.VBox {
 
     this._codeMirror.setOption('flattenSpans', false);
 
-    this._codeMirror.setOption('maxHighlightLength', TextEditor.CodeMirrorTextEditor.maxHighlightLength);
+    var maxHighlightLength = options.maxHighlightLength;
+    if (typeof maxHighlightLength !== 'number')
+      maxHighlightLength = TextEditor.CodeMirrorTextEditor.maxHighlightLength;
+    this._codeMirror.setOption('maxHighlightLength', maxHighlightLength);
     this._codeMirror.setOption('mode', null);
     this._codeMirror.setOption('crudeMeasuringFrom', 1000);
 
@@ -167,10 +171,8 @@ TextEditor.CodeMirrorTextEditor = class extends UI.VBox {
     /** @type {!Multimap<number, !TextEditor.CodeMirrorTextEditor.Decoration>} */
     this._decorations = new Multimap();
 
-    this.element.addEventListener('focus', this._handleElementFocus.bind(this), false);
     this.element.addEventListener('keydown', this._handleKeyDown.bind(this), true);
     this.element.addEventListener('keydown', this._handlePostKeyDown.bind(this), false);
-    this.element.tabIndex = 0;
 
     this._needsRefresh = true;
 
@@ -696,6 +698,14 @@ TextEditor.CodeMirrorTextEditor = class extends UI.VBox {
   }
 
   /**
+   * @param {!Object} mode
+   */
+  setHighlightMode(mode) {
+    this._mimeType = '';
+    this._codeMirror.setOption('mode', mode);
+  }
+
+  /**
    * @protected
    * @param {string} mimeType
    */
@@ -729,6 +739,13 @@ TextEditor.CodeMirrorTextEditor = class extends UI.VBox {
    */
   readOnly() {
     return !!this._codeMirror.getOption('readOnly');
+  }
+
+  /**
+   * @param {function(number):string} formatter
+   */
+  setLineNumberFormatter(formatter) {
+    this._codeMirror.setOption('lineNumberFormatter', formatter);
   }
 
   /**
@@ -791,10 +808,6 @@ TextEditor.CodeMirrorTextEditor = class extends UI.VBox {
    */
   hasFocus() {
     return this._codeMirror.hasFocus();
-  }
-
-  _handleElementFocus() {
-    this._codeMirror.focus();
   }
 
   /**
@@ -1004,8 +1017,10 @@ TextEditor.CodeMirrorTextEditor = class extends UI.VBox {
   editRange(range, text, origin) {
     var pos = TextEditor.CodeMirrorUtils.toPos(range);
     this._codeMirror.replaceRange(text, pos.start, pos.end, origin);
-    return TextEditor.CodeMirrorUtils.toRange(
+    var newRange = TextEditor.CodeMirrorUtils.toRange(
         pos.start, this._codeMirror.posFromIndex(this._codeMirror.indexFromPos(pos.start) + text.length));
+    this.dispatchEventToListeners(UI.TextEditor.Events.TextChanged, {oldRange: range, newRange: newRange});
+    return newRange;
   }
 
   /**
@@ -1051,6 +1066,25 @@ TextEditor.CodeMirrorTextEditor = class extends UI.VBox {
 
     this._decorations.valuesArray().forEach(decoration => this._codeMirror.removeLineWidget(decoration.widget));
     this._decorations.clear();
+
+    var edits = [];
+    var currentEdit;
+
+    for (var changeIndex = 0; changeIndex < changes.length; ++changeIndex) {
+      var changeObject = changes[changeIndex];
+      var edit = TextEditor.CodeMirrorUtils.changeObjectToEditOperation(changeObject);
+      if (currentEdit && edit.oldRange.equal(currentEdit.newRange)) {
+        currentEdit.newRange = edit.newRange;
+      } else {
+        currentEdit = edit;
+        edits.push(currentEdit);
+      }
+    }
+
+    for (var i = 0; i < edits.length; i++) {
+      this.dispatchEventToListeners(
+          UI.TextEditor.Events.TextChanged, {oldRange: edits[i].oldRange, newRange: edits[i].newRange});
+    }
   }
 
   /**

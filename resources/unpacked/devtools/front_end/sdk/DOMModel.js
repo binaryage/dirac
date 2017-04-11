@@ -32,12 +32,11 @@
 /**
  * @unrestricted
  */
-SDK.DOMNode = class extends SDK.SDKObject {
+SDK.DOMNode = class {
   /**
    * @param {!SDK.DOMModel} domModel
    */
   constructor(domModel) {
-    super(domModel.target());
     this._domModel = domModel;
   }
 
@@ -411,6 +410,15 @@ SDK.DOMNode = class extends SDK.SDKObject {
    */
   setAttributeValue(name, value, callback) {
     this._agent.setAttributeValue(this.id, name, value, this._domModel._markRevision(this, callback));
+  }
+
+  /**
+  * @param {string} name
+  * @param {string} value
+  * @return {!Promise<?Protocol.Error>}
+  */
+  setAttributeValuePromise(name, value) {
+    return new Promise(fulfill => this.setAttributeValue(name, value, fulfill));
   }
 
   /**
@@ -949,7 +957,7 @@ SDK.DeferredDOMNode = class {
    * @param {number} backendNodeId
    */
   constructor(target, backendNodeId) {
-    this._domModel = SDK.DOMModel.fromTarget(target);
+    this._domModel = target.model(SDK.DOMModel);
     this._backendNodeId = backendNodeId;
   }
 
@@ -1077,29 +1085,23 @@ SDK.DOMModel = class extends SDK.SDKModel {
   }
 
   /**
+   * @return {!SDK.CSSModel}
+   */
+  cssModel() {
+    return /** @type {!SDK.CSSModel} */ (this.target().model(SDK.CSSModel));
+  }
+
+  /**
    * @param {!SDK.RemoteObject} object
    */
   static highlightObjectAsDOMNode(object) {
-    var domModel = SDK.DOMModel.fromTarget(object.runtimeModel().target());
+    var domModel = object.runtimeModel().target().model(SDK.DOMModel);
     if (domModel)
       domModel.highlightDOMNode(undefined, undefined, undefined, object.objectId);
   }
 
-  /**
-   * @return {!Array<!SDK.DOMModel>}
-   */
-  static instances() {
-    var result = [];
-    for (var target of SDK.targetManager.targets()) {
-      var domModel = SDK.DOMModel.fromTarget(target);
-      if (domModel)
-        result.push(domModel);
-    }
-    return result;
-  }
-
   static hideDOMNodeHighlight() {
-    for (var domModel of SDK.DOMModel.instances())
+    for (var domModel of SDK.targetManager.models(SDK.DOMModel))
       domModel.highlightDOMNode(0);
   }
 
@@ -1113,16 +1115,8 @@ SDK.DOMModel = class extends SDK.SDKModel {
   }
 
   static cancelSearch() {
-    for (var domModel of SDK.DOMModel.instances())
+    for (var domModel of SDK.targetManager.models(SDK.DOMModel))
       domModel._cancelSearch();
-  }
-
-  /**
-   * @param {!SDK.Target} target
-   * @return {?SDK.DOMModel}
-   */
-  static fromTarget(target) {
-    return target.model(SDK.DOMModel);
   }
 
   /**
@@ -1919,7 +1913,7 @@ SDK.DOMModel = class extends SDK.SDKModel {
   }
 };
 
-SDK.SDKModel.register(SDK.DOMModel, SDK.Target.Capability.DOM);
+SDK.SDKModel.register(SDK.DOMModel, SDK.Target.Capability.DOM, true);
 
 /** @enum {symbol} */
 SDK.DOMModel.Events = {

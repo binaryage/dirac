@@ -42,10 +42,15 @@ SDK.DebuggerModel = class extends SDK.SDKModel {
     this._agent = target.debuggerAgent();
     this._runtimeModel = /** @type {!SDK.RuntimeModel} */ (target.model(SDK.RuntimeModel));
 
+    /** @type {!SDK.SourceMapManager<!SDK.Script>} */
+    this._sourceMapManager = new SDK.SourceMapManager(target);
+    /** @type {!Map<string, !SDK.Script>} */
+    this._sourceMapIdToScript = new Map();
+
     /** @type {?SDK.DebuggerPausedDetails} */
     this._debuggerPausedDetails = null;
-    /** @type {!Object.<string, !SDK.Script>} */
-    this._scripts = {};
+    /** @type {!Map<string, !SDK.Script>} */
+    this._scripts = new Map();
     /** @type {!Map.<string, !Array.<!SDK.Script>>} */
     this._scriptsBySourceURL = new Map();
     /** @type {!Array.<!SDK.Script>} */
@@ -65,6 +70,28 @@ SDK.DebuggerModel = class extends SDK.SDKModel {
 
     /** @type {!Map<string, string>} */
     this._stringMap = new Map();
+    this._sourceMapManager.setEnabled(Common.moduleSetting('jsSourceMapsEnabled').get());
+    Common.moduleSetting('jsSourceMapsEnabled')
+        .addChangeListener(event => this._sourceMapManager.setEnabled(/** @type {boolean} */ (event.data)));
+  }
+
+  /**
+   * @param {string} executionContextId
+   * @param {string} sourceURL
+   * @param {?string} sourceMapURL
+   * @return {?string}
+   */
+  static _sourceMapId(executionContextId, sourceURL, sourceMapURL) {
+    if (!sourceMapURL)
+      return null;
+    return executionContextId + ':' + sourceURL + ':' + sourceMapURL;
+  }
+
+  /**
+   * @return {!SDK.SourceMapManager<!SDK.Script>}
+   */
+  sourceMapManager() {
+    return this._sourceMapManager;
   }
 
   /**
@@ -314,17 +341,21 @@ SDK.DebuggerModel = class extends SDK.SDKModel {
   }
 
   _reset() {
-    this._scripts = {};
+    for (var scriptWithSourceMap of this._sourceMapIdToScript.values())
+      this._sourceMapManager.detachSourceMap(scriptWithSourceMap);
+    this._sourceMapIdToScript.clear();
+
+    this._scripts.clear();
     this._scriptsBySourceURL.clear();
     this._stringMap.clear();
     this._discardableScripts = [];
   }
 
   /**
-   * @return {!Object.<string, !SDK.Script>}
+   * @return {!Array<!SDK.Script>}
    */
-  get scripts() {
-    return this._scripts;
+  scripts() {
+    return Array.from(this._scripts.values());
   }
 
   /**
@@ -332,7 +363,7 @@ SDK.DebuggerModel = class extends SDK.SDKModel {
    * @return {?SDK.Script}
    */
   scriptForId(scriptId) {
-    return this._scripts[scriptId] || null;
+    return this._scripts.get(scriptId) || null;
   }
 
   /**
@@ -345,12 +376,26 @@ SDK.DebuggerModel = class extends SDK.SDKModel {
   }
 
   /**
+   * @param {!SDK.ExecutionContext} executionContext
+   * @return {!Array<!SDK.Script>}
+   */
+  scriptsForExecutionContext(executionContext) {
+    var result = [];
+    for (var script of this._scripts.values()) {
+      if (script.executionContextId === executionContext.id)
+        result.push(script);
+    }
+    return result;
+  }
+
+  /**
    * @param {!Protocol.Runtime.ScriptId} scriptId
    * @param {string} newSource
    * @param {function(?Protocol.Error, !Protocol.Runtime.ExceptionDetails=)} callback
    */
   setScriptSource(scriptId, newSource, callback) {
-    this._scripts[scriptId].editSource(newSource, this._didEditScriptSource.bind(this, scriptId, newSource, callback));
+    this._scripts.get(scriptId).editSource(
+        newSource, this._didEditScriptSource.bind(this, scriptId, newSource, callback));
   }
 
   /**
@@ -486,6 +531,18 @@ SDK.DebuggerModel = class extends SDK.SDKModel {
       this.dispatchEventToListeners(SDK.DebuggerModel.Events.ParsedScriptSource, script);
     else
       this.dispatchEventToListeners(SDK.DebuggerModel.Events.FailedToParseScriptSource, script);
+
+    var sourceMapId = SDK.DebuggerModel._sourceMapId(script.executionContextId, script.sourceURL, script.sourceMapURL);
+    if (sourceMapId && !hasSyntaxError) {
+      // Consecutive script evaluations in the same execution context with the same sourceURL
+      // and sourceMappingURL should result in source map reloading.
+      var previousScript = this._sourceMapIdToScript.get(sourceMapId);
+      if (previousScript)
+        this._sourceMapManager.detachSourceMap(previousScript);
+      this._sourceMapIdToScript.set(sourceMapId, script);
+      this._sourceMapManager.attachSourceMap(script, script.sourceURL, script.sourceMapURL);
+    }
+
     var isDiscardable = hasSyntaxError && script.isAnonymousScript();
     if (isDiscardable) {
       this._discardableScripts.push(script);
@@ -496,9 +553,41 @@ SDK.DebuggerModel = class extends SDK.SDKModel {
 
   /**
    * @param {!SDK.Script} script
+   * @param {string} newSourceMapURL
+   */
+  setSourceMapURL(script, newSourceMapURL) {
+    var sourceMapId = SDK.DebuggerModel._sourceMapId(script.executionContextId, script.sourceURL, script.sourceMapURL);
+    if (sourceMapId && this._sourceMapIdToScript.get(sourceMapId) === script)
+      this._sourceMapIdToScript.delete(sourceMapId);
+    this._sourceMapManager.detachSourceMap(script);
+
+    script.sourceMapURL = newSourceMapURL;
+    sourceMapId = SDK.DebuggerModel._sourceMapId(script.executionContextId, script.sourceURL, script.sourceMapURL);
+    if (!sourceMapId)
+      return;
+    this._sourceMapIdToScript.set(sourceMapId, script);
+    this._sourceMapManager.attachSourceMap(script, script.sourceURL, script.sourceMapURL);
+  }
+
+  /**
+   * @param {!SDK.ExecutionContext} executionContext
+   */
+  executionContextDestroyed(executionContext) {
+    var sourceMapIds = Array.from(this._sourceMapIdToScript.keys());
+    for (var sourceMapId of sourceMapIds) {
+      var script = this._sourceMapIdToScript.get(sourceMapId);
+      if (script.executionContextId === executionContext.id) {
+        this._sourceMapIdToScript.delete(sourceMapId);
+        this._sourceMapManager.detachSourceMap(script);
+      }
+    }
+  }
+
+  /**
+   * @param {!SDK.Script} script
    */
   _registerScript(script) {
-    this._scripts[script.scriptId] = script;
+    this._scripts.set(script.scriptId, script);
     if (script.isAnonymousScript())
       return;
 
@@ -515,7 +604,7 @@ SDK.DebuggerModel = class extends SDK.SDKModel {
    */
   _unregisterScript(script) {
     console.assert(script.isAnonymousScript());
-    delete this._scripts[script.scriptId];
+    this._scripts.delete(script.scriptId);
   }
 
   _collectDiscardedScripts() {
@@ -772,6 +861,7 @@ SDK.DebuggerModel = class extends SDK.SDKModel {
    * @override
    */
   dispose() {
+    this._sourceMapManager.dispose();
     Common.moduleSetting('pauseOnExceptionEnabled').removeChangeListener(this._pauseOnExceptionStateChanged, this);
     Common.moduleSetting('pauseOnCaughtException').removeChangeListener(this._pauseOnExceptionStateChanged, this);
     Common.moduleSetting('enableAsyncStackTraces').removeChangeListener(this.asyncStackTracesStateChanged, this);
@@ -820,7 +910,7 @@ SDK.DebuggerModel = class extends SDK.SDKModel {
   }
 };
 
-SDK.SDKModel.register(SDK.DebuggerModel, SDK.Target.Capability.JS);
+SDK.SDKModel.register(SDK.DebuggerModel, SDK.Target.Capability.JS, true);
 
 /** @typedef {{location: ?SDK.DebuggerModel.Location, functionName: string}} */
 SDK.DebuggerModel.FunctionDetails;
@@ -847,8 +937,7 @@ SDK.DebuggerModel.Events = {
   DiscardedAnonymousScriptSource: Symbol('DiscardedAnonymousScriptSource'),
   GlobalObjectCleared: Symbol('GlobalObjectCleared'),
   CallFrameSelected: Symbol('CallFrameSelected'),
-  ConsoleCommandEvaluatedInSelectedCallFrame: Symbol('ConsoleCommandEvaluatedInSelectedCallFrame'),
-  SourceMapURLAdded: Symbol('SourceMapURLAdded')
+  ConsoleCommandEvaluatedInSelectedCallFrame: Symbol('ConsoleCommandEvaluatedInSelectedCallFrame')
 };
 
 /** @enum {string} */

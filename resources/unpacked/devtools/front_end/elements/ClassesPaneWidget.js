@@ -19,48 +19,69 @@ Elements.ClassesPaneWidget = class extends UI.Widget {
 
     var proxyElement = this._prompt.attach(this._input);
     this._prompt.setPlaceholder(Common.UIString('Add new class'));
+    this._prompt.addEventListener(UI.TextPrompt.Events.TextChanged, this._onTextChanged, this);
     proxyElement.addEventListener('keydown', this._onKeyDown.bind(this), false);
 
     SDK.targetManager.addModelListener(SDK.DOMModel, SDK.DOMModel.Events.DOMMutated, this._onDOMMutated, this);
     /** @type {!Set<!SDK.DOMNode>} */
     this._mutatingNodes = new Set();
-    UI.context.addFlavorChangeListener(SDK.DOMNode, this._update, this);
+    /** @type {!Map<!SDK.DOMNode, string>} */
+    this._pendingNodeClasses = new Map();
+    this._updateNodeThrottler = new Common.Throttler(0);
+    /** @type {?SDK.DOMNode} */
+    this._previousTarget = null;
+    UI.context.addFlavorChangeListener(SDK.DOMNode, this._onSelectedNodeChanged, this);
+  }
+
+  /**
+   * @param {string} text
+   * @return {!Array.<string>}
+   */
+  _splitTextIntoClasses(text) {
+    return text.split(/[.,\s]/)
+      .map(className => className.trim())
+      .filter(className => className.length);
   }
 
   /**
    * @param {!Event} event
    */
   _onKeyDown(event) {
-    var text = event.target.textContent;
-    if (isEscKey(event)) {
-      event.target.textContent = '';
-      if (!text.isWhitespace())
-        event.consume(true);
+    if (!isEnterKey(event) && !isEscKey(event))
       return;
+
+    if (isEnterKey(event)) {
+      event.consume(true);
+      if (this._prompt.acceptAutoComplete())
+        return;
     }
 
-    if (!isEnterKey(event))
-      return;
-    if (this._prompt.acceptAutoComplete()) {
-      event.consume(true);
-      return;
+    var text = event.target.textContent;
+    if (isEscKey(event)) {
+      if (!text.isWhitespace())
+        event.consume(true);
+      text = '';
     }
+
+    this._prompt.clearAutocomplete();
+    event.target.textContent = '';
+
     var node = UI.context.flavor(SDK.DOMNode);
     if (!node)
       return;
 
-    this._prompt.clearAutocomplete();
-    event.target.textContent = '';
-    var classNames = text.split(/[.,\s]/);
-    for (var className of classNames) {
-      var className = className.trim();
-      if (!className.length)
-        continue;
+    var classNames = this._splitTextIntoClasses(text);
+    for (var className of classNames)
       this._toggleClass(node, className, true);
-    }
     this._installNodeClasses(node);
     this._update();
-    event.consume(true);
+  }
+
+  _onTextChanged() {
+    var node = UI.context.flavor(SDK.DOMNode);
+    if (!node)
+      return;
+    this._installNodeClasses(node);
   }
 
   /**
@@ -71,6 +92,18 @@ Elements.ClassesPaneWidget = class extends UI.Widget {
     if (this._mutatingNodes.has(node))
       return;
     delete node[Elements.ClassesPaneWidget._classesSymbol];
+    this._update();
+  }
+
+  /**
+   * @param {!Common.Event} event
+   */
+  _onSelectedNodeChanged(event) {
+    if (this._previousTarget && this._prompt.text()) {
+      this._input.textContent = '';
+      this._installNodeClasses(this._previousTarget);
+    }
+    this._previousTarget = /** @type {?SDK.DOMNode} */ (event.data);
     this._update();
   }
 
@@ -100,8 +133,7 @@ Elements.ClassesPaneWidget = class extends UI.Widget {
     keys.sort(String.caseInsensetiveComparator);
     for (var i = 0; i < keys.length; ++i) {
       var className = keys[i];
-      var label = UI.createCheckboxLabel(className, classes.get(className));
-      label.visualizeFocus = true;
+      var label = UI.CheckboxLabel.create(className, classes.get(className));
       label.classList.add('monospace');
       label.checkboxElement.addEventListener('click', this._onClick.bind(this, className), false);
       this._classesContainer.appendChild(label);
@@ -163,15 +195,35 @@ Elements.ClassesPaneWidget = class extends UI.Widget {
         activeClasses.add(className);
     }
 
+    var additionalClasses = this._splitTextIntoClasses(this._prompt.textWithCurrentSuggestion());
+    for (className of additionalClasses)
+      activeClasses.add(className);
+
     var newClasses = activeClasses.valuesArray();
     newClasses.sort();
-    this._mutatingNodes.add(node);
-    node.setAttributeValue('class', newClasses.join(' '), onClassNameUpdated.bind(this));
+
+    this._pendingNodeClasses.set(node, newClasses.join(' '));
+    this._updateNodeThrottler.schedule(this._flushPendingClasses.bind(this));
+  }
+
+  /**
+   * @return {!Promise}
+   */
+  _flushPendingClasses() {
+    var promises = [];
+    for (var node of this._pendingNodeClasses.keys()) {
+      this._mutatingNodes.add(node);
+      var promise = node.setAttributeValuePromise('class', this._pendingNodeClasses.get(node)).then(onClassValueUpdated.bind(this, node));
+      promises.push(promise);
+    }
+    this._pendingNodeClasses.clear();
+    return Promise.all(promises);
 
     /**
+     * @param {!SDK.DOMNode} node
      * @this {Elements.ClassesPaneWidget}
      */
-    function onClassNameUpdated() {
+    function onClassValueUpdated(node) {
       this._mutatingNodes.delete(node);
     }
   }
@@ -226,7 +278,7 @@ Elements.ClassesPaneWidget.ClassNamePrompt = class extends UI.TextPrompt {
     var completions = new Set();
     this._selectedFrameId = selectedNode.frameId();
 
-    var cssModel = SDK.CSSModel.fromNode(selectedNode);
+    var cssModel = selectedNode.domModel().cssModel();
     var allStyleSheets = cssModel.allStyleSheets();
     for (var stylesheet of allStyleSheets) {
       if (stylesheet.frameId !== this._selectedFrameId)

@@ -26,7 +26,7 @@ UI.GlassPane = class {
     this._anchorBox = null;
     this._anchorBehavior = UI.GlassPane.AnchorBehavior.PreferTop;
     this._sizeBehavior = UI.GlassPane.SizeBehavior.SetExactSize;
-    this._showArrow = false;
+    this._marginBehavior = UI.GlassPane.MarginBehavior.DefaultMargin;
   }
 
   /**
@@ -108,11 +108,11 @@ UI.GlassPane = class {
   }
 
   /**
-   * @param {boolean} showArrow
+   * @param {boolean} behavior
    */
-  setShowArrow(showArrow) {
-    this._showArrow = showArrow;
-    this._arrowElement.classList.toggle('hidden', !showArrow);
+  setMarginBehavior(behavior) {
+    this._marginBehavior = behavior;
+    this._arrowElement.classList.toggle('hidden', behavior !== UI.GlassPane.MarginBehavior.Arrow);
   }
 
   /**
@@ -143,7 +143,8 @@ UI.GlassPane = class {
   _onMouseDown(event) {
     if (!this._onClickOutsideCallback)
       return;
-    if (this.contentElement.isSelfOrAncestor(/** @type {?Node} */ (event.deepElementFromPoint())))
+    var node = event.deepElementFromPoint();
+    if (!node || this.contentElement.isSelfOrAncestor(node))
       return;
     this._onClickOutsideCallback.call(null, event);
   }
@@ -152,7 +153,8 @@ UI.GlassPane = class {
     if (!this.isShowing())
       return;
 
-    var gutterSize = this._showArrow ? 8 : 3;
+    var showArrow = this._marginBehavior === UI.GlassPane.MarginBehavior.Arrow;
+    var gutterSize = showArrow ? 8 : (this._marginBehavior === UI.GlassPane.MarginBehavior.NoMargin ? 0 : 3);
     var scrollbarSize = 14;
     var arrowSize = 10;
 
@@ -239,8 +241,8 @@ UI.GlassPane = class {
 
         positionX = Math.max(gutterSize, Math.min(anchorBox.x, containerWidth - width - gutterSize));
         if (!enoughHeight)
-          positionX += arrowSize;
-        else if (this._showArrow && positionX - arrowSize >= gutterSize)
+          positionX = Math.min(positionX + arrowSize, containerWidth - width - gutterSize);
+        else if (showArrow && positionX - arrowSize >= gutterSize)
           positionX -= arrowSize;
         width = Math.min(width, containerWidth - positionX - gutterSize);
         if (2 * arrowSize >= width) {
@@ -297,8 +299,8 @@ UI.GlassPane = class {
 
         positionY = Math.max(gutterSize, Math.min(anchorBox.y, containerHeight - height - gutterSize));
         if (!enoughWidth)
-          positionY += arrowSize;
-        else if (this._showArrow && positionY - arrowSize >= gutterSize)
+          positionY = Math.min(positionY + arrowSize, containerHeight - height - gutterSize);
+        else if (showArrow && positionY - arrowSize >= gutterSize)
           positionY -= arrowSize;
         height = Math.min(height, containerHeight - positionY - gutterSize);
         if (2 * arrowSize >= height) {
@@ -379,6 +381,15 @@ UI.GlassPane.SizeBehavior = {
   SetExactSize: Symbol('SetExactSize'),
   SetExactWidthMaxHeight: Symbol('SetExactWidthMaxHeight'),
   MeasureContent: Symbol('MeasureContent')
+};
+
+/**
+ * @enum {symbol}
+ */
+UI.GlassPane.MarginBehavior = {
+  Arrow: Symbol('Arrow'),
+  DefaultMargin: Symbol('DefaultMargin'),
+  NoMargin: Symbol('NoMargin')
 };
 
 /** @type {!Map<!Document, !Element>} */

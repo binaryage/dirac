@@ -102,9 +102,9 @@ Main.Main = class {
     Runtime.experiments.register('audits2', 'Audits 2.0', true);
     Runtime.experiments.register('autoAttachToCrossProcessSubframes', 'Auto-attach to cross-process subframes', true);
     Runtime.experiments.register('blackboxJSFramesOnTimeline', 'Blackbox JavaScript frames on Timeline', true);
+    Runtime.experiments.register('changesDrawer', 'Changes drawer', true);
     Runtime.experiments.register('continueToLocationMarkers', 'Continue to location markers', true);
     Runtime.experiments.register('colorContrastRatio', 'Contrast ratio line in color picker', true);
-    Runtime.experiments.register('cssTrackerPanel', 'Coverage support');
     Runtime.experiments.register('emptySourceMapAutoStepping', 'Empty sourcemap auto-stepping');
     Runtime.experiments.register('inputEventsOnTimelineOverview', 'Input events on Timeline overview', true);
     Runtime.experiments.register('liveSASS', 'Live SASS');
@@ -112,12 +112,11 @@ Main.Main = class {
     Runtime.experiments.register('objectPreviews', 'Object previews', true);
     Runtime.experiments.register('persistence2', 'Persistence 2.0');
     Runtime.experiments.register('persistenceValidation', 'Validate persistence bindings');
-    Runtime.experiments.register('releaseNote', 'Release note', true);
-    Runtime.experiments.register('requestBlocking', 'Request blocking', true);
     Runtime.experiments.register('timelineShowAllEvents', 'Show all events on Timeline', true);
     Runtime.experiments.register('timelineShowAllProcesses', 'Show all processes on Timeline', true);
     Runtime.experiments.register('timelinePaintTimingMarkers', 'Show paint timing markers on Timeline', true);
     Runtime.experiments.register('sourceDiff', 'Source diff');
+    Runtime.experiments.register('timelineEventInitiators', 'Timeline event initiators');
     Runtime.experiments.register('timelineFlowEvents', 'Timeline flow events', true);
     Runtime.experiments.register('terminalInDrawer', 'Terminal in drawer', true);
     Runtime.experiments.register('timelineInvalidationTracking', 'Timeline invalidation tracking', true);
@@ -137,13 +136,13 @@ Main.Main = class {
         Runtime.experiments.enableForTest('cssTrackerPanel');
       if (testPath.indexOf('audits2/') !== -1)
         Runtime.experiments.enableForTest('audits2');
-      if (testPath.indexOf('help/') !== -1)
-        Runtime.experiments.enableForTest('releaseNote');
+      if (testPath.indexOf('changes/') !== -1)
+        Runtime.experiments.enableForTest('changesDrawer');
       if (testPath.indexOf('sass/') !== -1)
         Runtime.experiments.enableForTest('liveSASS');
     }
 
-    Runtime.experiments.setDefaultExperiments(['persistenceValidation']);
+    Runtime.experiments.setDefaultExperiments(['persistenceValidation', 'persistence2']);
   }
 
   /**
@@ -208,6 +207,7 @@ Main.Main = class {
 
     new Main.Main.PauseListener();
     new Main.Main.InspectedNodeRevealer();
+    new Main.NetworkPanelIndicator();
     new Main.SourcesPanelIndicator();
     new Main.BackendSettingsSync();
     Components.domBreakpointsSidebarPane = new Components.DOMBreakpointsSidebarPane();
@@ -670,12 +670,11 @@ Main.Main.WarningErrorCounter = class {
 
 /**
  * @implements {UI.ToolbarItem.Provider}
- * @unrestricted
  */
 Main.Main.MainMenuItem = class {
   constructor() {
-    this._item = new UI.ToolbarButton(Common.UIString('Customize and control DevTools'), 'largeicon-menu');
-    this._item.addEventListener(UI.ToolbarButton.Events.MouseDown, this._mouseDown, this);
+    this._item = new UI.ToolbarMenuButton(this._handleContextMenu.bind(this), true);
+    this._item.setTitle(Common.UIString('Customize and control DevTools'));
   }
 
   /**
@@ -687,13 +686,9 @@ Main.Main.MainMenuItem = class {
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!UI.ContextMenu} contextMenu
    */
-  _mouseDown(event) {
-    var contextMenu = new UI.ContextMenu(
-        /** @type {!Event} */ (event.data), true, this._item.element.totalOffsetLeft(),
-        this._item.element.totalOffsetTop() + this._item.element.offsetHeight);
-
+  _handleContextMenu(contextMenu) {
     if (Components.dockController.canDock()) {
       var dockItemElement = createElementWithClass('div', 'flex-centered flex-auto');
       var titleElement = dockItemElement.createChild('span', 'flex-auto');
@@ -753,9 +748,31 @@ Main.Main.MainMenuItem = class {
 
     var helpSubMenu = contextMenu.namedSubMenu('mainMenuHelp');
     helpSubMenu.appendAction('settings.documentation');
-    if (Runtime.experiments.isEnabled('releaseNote'))
-      helpSubMenu.appendItem('Release Notes', () => InspectorFrontendHost.openInNewTab(Help.latestReleaseNote().link));
-    contextMenu.show();
+    helpSubMenu.appendItem('Release Notes', () => InspectorFrontendHost.openInNewTab(Help.latestReleaseNote().link));
+  }
+};
+
+Main.NetworkPanelIndicator = class {
+  constructor() {
+    // TODO: we should not access network from other modules.
+    if (!UI.inspectorView.hasPanel('network'))
+      return;
+    var manager = SDK.multitargetNetworkManager;
+    manager.addEventListener(SDK.MultitargetNetworkManager.Events.ConditionsChanged, updateVisibility);
+    manager.addEventListener(SDK.MultitargetNetworkManager.Events.BlockedPatternsChanged, updateVisibility);
+    updateVisibility();
+
+    function updateVisibility() {
+      var icon = null;
+      if (manager.isThrottling()) {
+        icon = UI.Icon.create('smallicon-warning');
+        icon.title = Common.UIString('Network throttling is enabled');
+      } else if (manager.isBlocking()) {
+        icon = UI.Icon.create('smallicon-warning');
+        icon.title = Common.UIString('Requests may be blocked');
+      }
+      UI.inspectorView.setPanelIcon('network', icon);
+    }
   }
 };
 

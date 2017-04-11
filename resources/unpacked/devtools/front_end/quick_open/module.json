@@ -1,6 +1,12 @@
 {
     "extensions": [
         {
+            "type": "@QuickOpen.FilteredListWidget.Provider",
+            "title": "Run a command",
+            "prefix": ">",
+            "className": "QuickOpen.CommandMenuProvider"
+        },
+        {
             "type": "@UI.ActionDelegate",
             "actionId": "commandMenu.show",
             "className": "QuickOpen.CommandMenu.ShowActionDelegate",
@@ -14,6 +20,23 @@
                     "shortcut": "Meta+Shift+P"
                 }
             ]
+        },
+        {
+            "type": "@UI.ActionDelegate",
+            "actionId": "quickOpen.show",
+            "title": "Go to file...",
+            "className": "QuickOpen.QuickOpen.ShowActionDelegate",
+            "order": 100,
+            "bindings": [
+                {
+                    "platform": "mac",
+                    "shortcut": "Meta+P Meta+O"
+                },
+                {
+                    "platform": "windows,linux",
+                    "shortcut": "Ctrl+P Ctrl+O"
+                }
+            ]
         }
     ],
     "dependencies": [
@@ -22,6 +45,7 @@
     ],
     "scripts": [
         "FilteredListWidget.js",
+        "QuickOpen.js",
         "CommandMenu.js"
     ],
     "resources": [

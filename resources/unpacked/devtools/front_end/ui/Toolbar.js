@@ -585,7 +585,7 @@ UI.ToolbarInput = class extends UI.ToolbarItem {
 
   _setupSearchControls() {
     var clearButton = this.element.createChild('div', 'toolbar-input-clear-button');
-    clearButton.appendChild(UI.Icon.create('smallicon-gray-cross-hover', 'search-cancel-button'));
+    clearButton.appendChild(UI.Icon.create('mediumicon-gray-cross-hover', 'search-cancel-button'));
     clearButton.addEventListener('click', () => this._internalSetValue('', true));
     this.input.addEventListener('keydown', event => this._onKeydownCallback(event));
   }
@@ -745,9 +745,8 @@ UI.ToolbarMenuButton = class extends UI.ToolbarButton {
    * @param {!Event} event
    */
   _clicked(event) {
-    if (!this._triggerTimeout)
-      return;
-    clearTimeout(this._triggerTimeout);
+    if (this._triggerTimeout)
+      clearTimeout(this._triggerTimeout);
     this._trigger(event);
   }
 };
@@ -1017,7 +1016,7 @@ UI.ToolbarCheckbox = class extends UI.ToolbarItem {
    * @param {function()=} listener
    */
   constructor(text, tooltip, listener) {
-    super(UI.createCheckboxLabel(text));
+    super(UI.CheckboxLabel.create(text));
     this.element.classList.add('checkbox');
     this.inputElement = this.element.checkboxElement;
     if (tooltip)

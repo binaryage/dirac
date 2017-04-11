@@ -5,13 +5,14 @@
 /**
  * @template T
  */
-SDK.SourceMapManager = class extends SDK.SDKObject {
+SDK.SourceMapManager = class extends Common.Object {
   /**
    * @param {!SDK.Target} target
    */
   constructor(target) {
-    super(target);
+    super();
 
+    this._target = target;
     this._isEnabled = true;
 
     /** @type {!Map<!T, string>} */
@@ -43,8 +44,7 @@ SDK.SourceMapManager = class extends SDK.SDKObject {
       var relativeSourceURL = this._relativeSourceURL.get(client);
       var relativeSourceMapURL = this._relativeSourceMapURL.get(client);
       this.detachSourceMap(client);
-      if (isEnabled)
-        this.attachSourceMap(client, relativeSourceURL, relativeSourceMapURL);
+      this.attachSourceMap(client, relativeSourceURL, relativeSourceMapURL);
     }
   }
 
@@ -52,7 +52,7 @@ SDK.SourceMapManager = class extends SDK.SDKObject {
    * @param {!Common.Event} event
    */
   _inspectedURLChanged(event) {
-    if (event.data !== this.target())
+    if (event.data !== this._target)
       return;
 
     var clients = Array.from(this._resolvedSourceMapURL.keys());
@@ -106,7 +106,7 @@ SDK.SourceMapManager = class extends SDK.SDKObject {
   _resolveRelativeURLs(sourceURL, sourceMapURL) {
     // |sourceURL| can be a random string, but is generally an absolute path.
     // Complete it to inspected page url for relative links.
-    var resolvedSourceURL = Common.ParsedURL.completeURL(this.target().inspectedURL(), sourceURL);
+    var resolvedSourceURL = Common.ParsedURL.completeURL(this._target.inspectedURL(), sourceURL);
     var resolvedSourceMapURL = resolvedSourceURL ? Common.ParsedURL.completeURL(resolvedSourceURL, sourceMapURL) : null;
     return {sourceURL: resolvedSourceURL, sourceMapURL: resolvedSourceMapURL};
   }
@@ -132,6 +132,8 @@ SDK.SourceMapManager = class extends SDK.SDKObject {
     if (!this._isEnabled)
       return;
 
+    this.dispatchEventToListeners(SDK.SourceMapManager.Events.SourceMapWillAttach, client);
+
     if (this._sourceMapByURL.has(sourceMapURL)) {
       attach.call(this, sourceMapURL, client);
       return;
@@ -156,7 +158,7 @@ SDK.SourceMapManager = class extends SDK.SDKObject {
       if (!factoryExtension)
         return Promise.resolve(/** @type {?SDK.SourceMap} */ (sourceMap));
       return factoryExtension.instance()
-          .then(factory => factory.editableSourceMap(this.target(), sourceMap))
+          .then(factory => factory.editableSourceMap(this._target, sourceMap))
           .then(map => map || sourceMap)
           .catchException(/** @type {?SDK.SourceMap} */ (null));
     }
@@ -170,8 +172,13 @@ SDK.SourceMapManager = class extends SDK.SDKObject {
       this._sourceMapLoadedForTest();
       var clients = this._sourceMapURLToLoadingClients.get(sourceMapURL);
       this._sourceMapURLToLoadingClients.removeAll(sourceMapURL);
-      if (!sourceMap || !clients.size)
+      if (!clients.size)
         return;
+      if (!sourceMap) {
+        for (var client of clients)
+          this.dispatchEventToListeners(SDK.SourceMapManager.Events.SourceMapFailedToAttach, client);
+        return;
+      }
       this._sourceMapByURL.set(sourceMapURL, sourceMap);
       for (var client of clients)
         attach.call(this, sourceMapURL, client);
@@ -184,7 +191,9 @@ SDK.SourceMapManager = class extends SDK.SDKObject {
      */
     function attach(sourceMapURL, client) {
       this._sourceMapURLToClients.set(sourceMapURL, client);
-      this.dispatchEventToListeners(SDK.SourceMapManager.Events.SourceMapAttached, client);
+      var sourceMap = this._sourceMapByURL.get(sourceMapURL);
+      this.dispatchEventToListeners(
+          SDK.SourceMapManager.Events.SourceMapAttached, {client: client, sourceMap: sourceMap});
     }
   }
 
@@ -216,13 +225,16 @@ SDK.SourceMapManager = class extends SDK.SDKObject {
     if (!sourceMapURL)
       return;
     if (!this._sourceMapURLToClients.hasValue(sourceMapURL, client)) {
-      this._sourceMapURLToLoadingClients.remove(sourceMapURL, client);
+      if (this._sourceMapURLToLoadingClients.remove(sourceMapURL, client))
+        this.dispatchEventToListeners(SDK.SourceMapManager.Events.SourceMapFailedToAttach, client);
       return;
     }
     this._sourceMapURLToClients.remove(sourceMapURL, client);
+    var sourceMap = this._sourceMapByURL.get(sourceMapURL);
     if (!this._sourceMapURLToClients.has(sourceMapURL))
       this._sourceMapByURL.delete(sourceMapURL);
-    this.dispatchEventToListeners(SDK.SourceMapManager.Events.SourceMapDetached, client);
+    this.dispatchEventToListeners(
+        SDK.SourceMapManager.Events.SourceMapDetached, {client: client, sourceMap: sourceMap});
   }
 
   _sourceMapLoadedForTest() {
@@ -235,6 +247,8 @@ SDK.SourceMapManager = class extends SDK.SDKObject {
 };
 
 SDK.SourceMapManager.Events = {
+  SourceMapWillAttach: Symbol('SourceMapWillAttach'),
+  SourceMapFailedToAttach: Symbol('SourceMapFailedToAttach'),
   SourceMapAttached: Symbol('SourceMapAttached'),
   SourceMapDetached: Symbol('SourceMapDetached'),
   SourceMapChanged: Symbol('SourceMapChanged')

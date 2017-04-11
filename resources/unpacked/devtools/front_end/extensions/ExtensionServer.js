@@ -481,8 +481,8 @@ Extensions.ExtensionServer = class extends Common.Object {
     uiSourceCodes =
         uiSourceCodes.concat(Workspace.workspace.uiSourceCodesForProjectType(Workspace.projectTypes.ContentScripts));
     uiSourceCodes.forEach(pushResourceData.bind(this));
-    for (var target of SDK.targetManager.targets(SDK.Target.Capability.DOM))
-      SDK.ResourceTreeModel.fromTarget(target).forAllResources(pushResourceData.bind(this));
+    for (var resourceTreeModel of SDK.targetManager.models(SDK.ResourceTreeModel))
+      resourceTreeModel.forAllResources(pushResourceData.bind(this));
     return resources.valuesArray();
   }
 
@@ -915,7 +915,7 @@ Extensions.ExtensionServer = class extends Common.Object {
       frame = resolveURLToFrame(options.frameURL);
     } else {
       var target = SDK.targetManager.mainTarget();
-      var resourceTreeModel = target && SDK.ResourceTreeModel.fromTarget(target);
+      var resourceTreeModel = target && target.model(SDK.ResourceTreeModel);
       frame = resourceTreeModel && resourceTreeModel.mainFrame;
     }
     if (!frame) {
@@ -932,7 +932,7 @@ Extensions.ExtensionServer = class extends Common.Object {
     else if (options.scriptExecutionContext)
       contextSecurityOrigin = options.scriptExecutionContext;
 
-    var runtimeModel = frame.target().model(SDK.RuntimeModel);
+    var runtimeModel = frame.resourceTreeModel().target().model(SDK.RuntimeModel);
     var executionContexts = runtimeModel ? runtimeModel.executionContexts() : [];
     if (contextSecurityOrigin) {
       for (var i = 0; i < executionContexts.length; ++i) {

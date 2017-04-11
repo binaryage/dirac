@@ -467,7 +467,7 @@ Timeline.TimelineUIUtils = class {
         var width = Timeline.TimelineUIUtils.quadWidth(eventData.clip);
         var height = Timeline.TimelineUIUtils.quadHeight(eventData.clip);
         if (width && height)
-          detailsText = Common.UIString('%d\u2009\u00d7\u2009%d', width, height);
+          detailsText = Common.UIString('%d\xa0\u00d7\xa0%d', width, height);
         break;
       case recordType.ParseHTML:
         var endLine = event.args['endData'] && event.args['endData']['endLine'];
@@ -690,16 +690,14 @@ Timeline.TimelineUIUtils = class {
     }
 
     var target = /** @type {!SDK.Target} */ (maybeTarget);
-    if (!event[Timeline.TimelineUIUtils._previewElementSymbol]) {
+    if (typeof event[Timeline.TimelineUIUtils._previewElementSymbol] === 'undefined') {
+      var previewElement = null;
       var url = TimelineModel.TimelineData.forEvent(event).url;
-      event[Timeline.TimelineUIUtils._previewElementSymbol] = await new Promise(fulfill => {
-        if (url)
-          Components.DOMPresentationUtils.buildImagePreviewContents(target, url, false).then(fulfill);
-        else if (TimelineModel.TimelineData.forEvent(event).picture)
-          Timeline.TimelineUIUtils.buildPicturePreviewContent(event, target, fulfill);
-        else
-          fulfill();
-      }) || null;
+      if (url)
+        previewElement = await Components.DOMPresentationUtils.buildImagePreviewContents(target, url, false);
+      else if (TimelineModel.TimelineData.forEvent(event).picture)
+        previewElement = await Timeline.TimelineUIUtils.buildPicturePreviewContent(event, target);
+      event[Timeline.TimelineUIUtils._previewElementSymbol] = previewElement;
     }
 
     var nodeIdsToResolve = new Set();
@@ -711,7 +709,7 @@ Timeline.TimelineUIUtils = class {
       Timeline.TimelineUIUtils._collectInvalidationNodeIds(nodeIdsToResolve, invalidationTrackingEvents);
     var relatedNodes = null;
     if (nodeIdsToResolve.size) {
-      var domModel = SDK.DOMModel.fromTarget(target);
+      var domModel = target.model(SDK.DOMModel);
       if (domModel) {
         relatedNodes = await new Promise(fulfill =>
             domModel.pushNodesByBackendIdsToFrontend(nodeIdsToResolve, fulfill));
@@ -924,7 +922,8 @@ Timeline.TimelineUIUtils = class {
       contentHelper.appendElementRow('', event[Timeline.TimelineUIUtils._previewElementSymbol]);
     }
 
-    if (timelineData.stackTraceForSelfOrInitiator() || TimelineModel.InvalidationTracker.invalidationEventsFor(event))
+    if (initiator || timelineData.stackTraceForSelfOrInitiator() ||
+        TimelineModel.InvalidationTracker.invalidationEventsFor(event))
       Timeline.TimelineUIUtils._generateCauses(event, model.targetByEvent(event), relatedNodesMap, contentHelper);
 
     var stats = {};
@@ -1382,40 +1381,26 @@ Timeline.TimelineUIUtils = class {
   /**
    * @param {!SDK.TracingModel.Event} event
    * @param {!SDK.Target} target
-   * @param {function(!Element=)} callback
+   * @return {!Promise<?Element>}
    */
-  static buildPicturePreviewContent(event, target, callback) {
-    new TimelineModel.LayerPaintEvent(event, target).snapshotPromise().then(onSnapshotLoaded);
-    /**
-     * @param {?SDK.SnapshotWithRect} snapshotWithRect
-     */
-    function onSnapshotLoaded(snapshotWithRect) {
-      if (!snapshotWithRect) {
-        callback();
-        return;
-      }
-      snapshotWithRect.snapshot.replay(null, null, 1).then(imageURL => onGotImage(imageURL));
-      snapshotWithRect.snapshot.release();
-    }
-
-    /**
-     * @param {?string} imageURL
-     */
-    function onGotImage(imageURL) {
-      if (!imageURL) {
-        callback();
-        return;
-      }
-      var container = createElement('div');
-      UI.appendStyle(container, 'components/imagePreview.css');
-      container.classList.add('image-preview-container', 'vbox', 'link');
-      var img = container.createChild('img');
-      img.src = imageURL;
-      var paintProfilerButton = container.createChild('a');
-      paintProfilerButton.textContent = Common.UIString('Paint Profiler');
-      container.addEventListener('click', showPaintProfiler, false);
-      callback(container);
-    }
+  static async buildPicturePreviewContent(event, target) {
+    var snapshotWithRect = await new TimelineModel.LayerPaintEvent(event, target).snapshotPromise();
+    if (!snapshotWithRect)
+      return null;
+    var imageURLPromise = snapshotWithRect.snapshot.replay(null, null, 1);
+    snapshotWithRect.snapshot.release();
+    var imageURL = await imageURLPromise;
+    if (!imageURL)
+      return null;
+    var container = createElement('div');
+    UI.appendStyle(container, 'components/imagePreview.css');
+    container.classList.add('image-preview-container', 'vbox', 'link');
+    var img = container.createChild('img');
+    img.src = imageURL;
+    var paintProfilerButton = container.createChild('a');
+    paintProfilerButton.textContent = Common.UIString('Paint Profiler');
+    container.addEventListener('click', showPaintProfiler, false);
+    return container;
 
     function showPaintProfiler() {
       Timeline.TimelinePanel.instance().select(

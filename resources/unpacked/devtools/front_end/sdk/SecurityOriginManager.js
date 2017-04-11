@@ -17,14 +17,6 @@ SDK.SecurityOriginManager = class extends SDK.SDKModel {
   }
 
   /**
-   * @param {!SDK.Target} target
-   * @return {!SDK.SecurityOriginManager}
-   */
-  static fromTarget(target) {
-    return /** @type {!SDK.SecurityOriginManager} */ (target.model(SDK.SecurityOriginManager));
-  }
-
-  /**
    * @param {!Set<string>} securityOrigins
    */
   updateSecurityOrigins(securityOrigins) {
@@ -65,7 +57,7 @@ SDK.SecurityOriginManager = class extends SDK.SDKModel {
   }
 };
 
-SDK.SDKModel.register(SDK.SecurityOriginManager, SDK.Target.Capability.None);
+SDK.SDKModel.register(SDK.SecurityOriginManager, SDK.Target.Capability.None, false);
 
 /** @enum {symbol} */
 SDK.SecurityOriginManager.Events = {

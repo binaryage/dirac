@@ -201,7 +201,7 @@ Elements.ComputedStyleWidget = class extends UI.ThrottledWidget {
         treeElement.listItemElement.addEventListener('mousedown', e => e.consume(), false);
         treeElement.listItemElement.addEventListener('dblclick', e => e.consume(), false);
         treeElement.listItemElement.addEventListener('click', handleClick.bind(null, treeElement), false);
-        var gotoSourceElement = UI.Icon.create('smallicon-arrow-in-circle', 'goto-source-icon');
+        var gotoSourceElement = UI.Icon.create('mediumicon-arrow-in-circle', 'goto-source-icon');
         gotoSourceElement.addEventListener('click', this._navigateToSource.bind(this, activeProperty));
         propertyValueElement.appendChild(gotoSourceElement);
         if (expandedProperties.has(propertyName))
@@ -272,22 +272,22 @@ Elements.ComputedStyleWidget = class extends UI.ThrottledWidget {
       var valueElement = renderer.renderValue();
       valueElement.classList.add('property-trace-value');
       valueElement.addEventListener('click', this._navigateToSource.bind(this, property), false);
-      var gotoSourceElement = UI.Icon.create('smallicon-arrow-in-circle', 'goto-source-icon');
+      var gotoSourceElement = UI.Icon.create('mediumicon-arrow-in-circle', 'goto-source-icon');
       gotoSourceElement.addEventListener('click', this._navigateToSource.bind(this, property));
       valueElement.insertBefore(gotoSourceElement, valueElement.firstChild);
 
       trace.appendChild(valueElement);
 
       var rule = property.ownerStyle.parentRule;
+      var selectorElement = trace.createChild('span', 'property-trace-selector');
+      selectorElement.textContent = rule ? rule.selectorText() : 'element.style';
+      selectorElement.title = selectorElement.textContent;
+
       if (rule) {
         var linkSpan = trace.createChild('span', 'trace-link');
         linkSpan.appendChild(
             Elements.StylePropertiesSection.createRuleOriginNode(matchedStyles, this._linkifier, rule));
       }
-
-      var selectorElement = trace.createChild('span', 'property-trace-selector');
-      selectorElement.textContent = rule ? rule.selectorText() : 'element.style';
-      selectorElement.title = selectorElement.textContent;
 
       var traceTreeElement = new UI.TreeElement();
       traceTreeElement.title = trace;

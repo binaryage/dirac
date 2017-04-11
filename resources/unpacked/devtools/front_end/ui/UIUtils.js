@@ -576,30 +576,30 @@ UI.handleElementValueModifications = function(event, element, finishHandler, sug
  */
 Number.preciseMillisToString = function(ms, precision) {
   precision = precision || 0;
-  var format = '%.' + precision + 'f\u2009ms';
+  var format = '%.' + precision + 'f\xa0ms';
   return Common.UIString(format, ms);
 };
 
 /** @type {!Common.UIStringFormat} */
-UI._microsFormat = new Common.UIStringFormat('%.0f\u2009\u03bcs');
+UI._microsFormat = new Common.UIStringFormat('%.0f\xa0\u03bcs');
 
 /** @type {!Common.UIStringFormat} */
-UI._subMillisFormat = new Common.UIStringFormat('%.2f\u2009ms');
+UI._subMillisFormat = new Common.UIStringFormat('%.2f\xa0ms');
 
 /** @type {!Common.UIStringFormat} */
-UI._millisFormat = new Common.UIStringFormat('%.0f\u2009ms');
+UI._millisFormat = new Common.UIStringFormat('%.0f\xa0ms');
 
 /** @type {!Common.UIStringFormat} */
-UI._secondsFormat = new Common.UIStringFormat('%.2f\u2009s');
+UI._secondsFormat = new Common.UIStringFormat('%.2f\xa0s');
 
 /** @type {!Common.UIStringFormat} */
-UI._minutesFormat = new Common.UIStringFormat('%.1f\u2009min');
+UI._minutesFormat = new Common.UIStringFormat('%.1f\xa0min');
 
 /** @type {!Common.UIStringFormat} */
-UI._hoursFormat = new Common.UIStringFormat('%.1f\u2009hrs');
+UI._hoursFormat = new Common.UIStringFormat('%.1f\xa0hrs');
 
 /** @type {!Common.UIStringFormat} */
-UI._daysFormat = new Common.UIStringFormat('%.1f\u2009days');
+UI._daysFormat = new Common.UIStringFormat('%.1f\xa0days');
 
 /**
  * @param {number} ms
@@ -653,19 +653,19 @@ Number.secondsToString = function(seconds, higherResolution) {
  */
 Number.bytesToString = function(bytes) {
   if (bytes < 1024)
-    return Common.UIString('%.0f\u2009B', bytes);
+    return Common.UIString('%.0f\xa0B', bytes);
 
   var kilobytes = bytes / 1024;
   if (kilobytes < 100)
-    return Common.UIString('%.1f\u2009KB', kilobytes);
+    return Common.UIString('%.1f\xa0KB', kilobytes);
   if (kilobytes < 1024)
-    return Common.UIString('%.0f\u2009KB', kilobytes);
+    return Common.UIString('%.0f\xa0KB', kilobytes);
 
   var megabytes = kilobytes / 1024;
   if (megabytes < 100)
-    return Common.UIString('%.1f\u2009MB', megabytes);
+    return Common.UIString('%.1f\xa0MB', megabytes);
   else
-    return Common.UIString('%.0f\u2009MB', megabytes);
+    return Common.UIString('%.0f\xa0MB', megabytes);
 };
 
 /**
@@ -676,7 +676,7 @@ Number.withThousandsSeparator = function(num) {
   var str = num + '';
   var re = /(\d+)(\d{3})/;
   while (str.match(re))
-    str = str.replace(re, '$1\u2009$2');  // \u2009 is a thin space.
+    str = str.replace(re, '$1\xa0$2');  // \xa0 is a non-breaking space
   return str;
 };
 
@@ -785,6 +785,10 @@ UI._focusChanged = function(event) {
   var document = event.target && event.target.ownerDocument;
   var element = document ? document.deepActiveElement() : null;
   UI.Widget.focusWidgetForNode(element);
+  if (!UI._keyboardFocus)
+    return;
+  element.setAttribute('data-keyboard-focus', 'true');
+  element.addEventListener('blur', () => element.removeAttribute('data-keyboard-focus'), {once: true, capture: true});
 };
 
 /**
@@ -1183,6 +1187,10 @@ UI.initializeUIUtils = function(document, themeSetting) {
   document.defaultView.addEventListener('focus', UI._windowFocused.bind(UI, document), false);
   document.defaultView.addEventListener('blur', UI._windowBlurred.bind(UI, document), false);
   document.addEventListener('focus', UI._focusChanged.bind(UI), true);
+  document.addEventListener('keydown', event => {
+    UI._keyboardFocus = true;
+    document.defaultView.requestAnimationFrame(() => UI._keyboardFocus = false);
+  }, true);
 
   if (!UI.themeSupport)
     UI.themeSupport = new UI.ThemeSupport(themeSetting);
@@ -1260,26 +1268,6 @@ UI.createLabel = function(title, iconClass) {
 };
 
 /**
- * @param {string=} title
- * @param {boolean=} checked
- * @param {string=} subtitle
- * @return {!Element}
- */
-UI.createCheckboxLabel = function(title, checked, subtitle) {
-  var element = createElement('label', 'dt-checkbox');
-  element.checkboxElement.checked = !!checked;
-  if (title !== undefined) {
-    element.textElement = element.shadowRoot.createChild('div', 'dt-checkbox-text');
-    element.textElement.textContent = title;
-    if (subtitle !== undefined) {
-      element.subtitleElement = element.textElement.createChild('div', 'dt-checkbox-subtitle');
-      element.subtitleElement.textContent = subtitle;
-    }
-  }
-  return element;
-};
-
-/**
  * @return {!Element}
  * @param {number} min
  * @param {number} max
@@ -1314,6 +1302,85 @@ UI.appendStyle = function(node, cssFile) {
     styleElement.type = 'text/css';
     styleElement.textContent = themeStyleSheet + '\n' + Runtime.resolveSourceURL(cssFile + '.theme');
     node.appendChild(styleElement);
+  }
+};
+
+/**
+ * @extends {HTMLLabelElement}
+ */
+UI.CheckboxLabel = class extends HTMLLabelElement {
+  constructor() {
+    super();
+    /** @type {!DocumentFragment} */
+    this._shadowRoot;
+    /** @type {!HTMLInputElement} */
+    this.checkboxElement;
+    /** @type {!Element} */
+    this.textElement;
+    throw new Error('Checkbox must be created via factory method.');
+  }
+
+  /**
+   * @override
+   */
+  createdCallback() {
+    UI.CheckboxLabel._lastId = (UI.CheckboxLabel._lastId || 0) + 1;
+    var id = 'ui-checkbox-label' + UI.CheckboxLabel._lastId;
+    this._shadowRoot = UI.createShadowRootWithCoreStyles(this, 'ui/checkboxTextLabel.css');
+    this.checkboxElement = /** @type {!HTMLInputElement} */ (this._shadowRoot.createChild('input'));
+    this.checkboxElement.type = 'checkbox';
+    this.checkboxElement.setAttribute('id', id);
+    this.textElement = this._shadowRoot.createChild('label', 'dt-checkbox-text');
+    this.textElement.setAttribute('for', id);
+    this._shadowRoot.createChild('content');
+  }
+
+  /**
+   * @param {string=} title
+   * @param {boolean=} checked
+   * @param {string=} subtitle
+   * @return {!UI.CheckboxLabel}
+   */
+  static create(title, checked, subtitle) {
+    if (!UI.CheckboxLabel._constructor)
+      UI.CheckboxLabel._constructor = UI.registerCustomElement('label', 'dt-checkbox', UI.CheckboxLabel.prototype);
+    var element = /** @type {!UI.CheckboxLabel} */ (new UI.CheckboxLabel._constructor());
+    element.checkboxElement.checked = !!checked;
+    if (title !== undefined) {
+      element.textElement.textContent = title;
+      if (subtitle !== undefined)
+        element.textElement.createChild('div', 'dt-checkbox-subtitle').textContent = subtitle;
+    }
+    return element;
+  }
+
+  /**
+   * @param {string} color
+   * @this {Element}
+   */
+  set backgroundColor(color) {
+    this.checkboxElement.classList.add('dt-checkbox-themed');
+    this.checkboxElement.style.backgroundColor = color;
+  }
+
+  /**
+   * @param {string} color
+   * @this {Element}
+   */
+  set checkColor(color) {
+    this.checkboxElement.classList.add('dt-checkbox-themed');
+    var stylesheet = createElement('style');
+    stylesheet.textContent = 'input.dt-checkbox-themed:checked:after { background-color: ' + color + '}';
+    this._shadowRoot.appendChild(stylesheet);
+  }
+
+  /**
+   * @param {string} color
+   * @this {Element}
+   */
+  set borderColor(color) {
+    this.checkboxElement.classList.add('dt-checkbox-themed');
+    this.checkboxElement.style.borderColor = color;
   }
 };
 
@@ -1358,74 +1425,6 @@ UI.appendStyle = function(node, cssFile) {
     this.radioElement.checked = true;
     this.radioElement.dispatchEvent(new Event('change'));
   }
-
-  UI.registerCustomElement('label', 'dt-checkbox', {
-    /**
-     * @this {Element}
-     */
-    createdCallback: function() {
-      this._root = UI.createShadowRootWithCoreStyles(this, 'ui/checkboxTextLabel.css');
-      var checkboxElement = createElementWithClass('input', 'dt-checkbox-button');
-      checkboxElement.type = 'checkbox';
-      this._root.appendChild(checkboxElement);
-      this.checkboxElement = checkboxElement;
-
-      this.addEventListener('click', toggleCheckbox.bind(this));
-
-      /**
-       * @param {!Event} event
-       * @this {Node}
-       */
-      function toggleCheckbox(event) {
-        var deepTarget = event.deepElementFromPoint();
-        if (deepTarget !== checkboxElement && deepTarget !== this) {
-          event.consume();
-          checkboxElement.click();
-        }
-      }
-
-      this._root.createChild('content');
-    },
-
-    /**
-     * @param {string} color
-     * @this {Element}
-     */
-    set backgroundColor(color) {
-      this.checkboxElement.classList.add('dt-checkbox-themed');
-      this.checkboxElement.style.backgroundColor = color;
-    },
-
-    /**
-     * @param {string} color
-     * @this {Element}
-     */
-    set checkColor(color) {
-      this.checkboxElement.classList.add('dt-checkbox-themed');
-      var stylesheet = createElement('style');
-      stylesheet.textContent = 'input.dt-checkbox-themed:checked:after { background-color: ' + color + '}';
-      this._root.appendChild(stylesheet);
-    },
-
-    /**
-     * @param {string} color
-     * @this {Element}
-     */
-    set borderColor(color) {
-      this.checkboxElement.classList.add('dt-checkbox-themed');
-      this.checkboxElement.style.borderColor = color;
-    },
-
-    /**
-     * @param {boolean} focus
-     * @this {Element}
-     */
-    set visualizeFocus(focus) {
-      this.checkboxElement.classList.toggle('dt-checkbox-visualize-focus', focus);
-    },
-
-    __proto__: HTMLLabelElement.prototype
-  });
 
   UI.registerCustomElement('label', 'dt-icon-label', {
     /**
@@ -1509,8 +1508,8 @@ UI.appendStyle = function(node, cssFile) {
       var root = UI.createShadowRootWithCoreStyles(this, 'ui/closeButton.css');
       this._buttonElement = root.createChild('div', 'close-button');
       var regularIcon = UI.Icon.create('smallicon-cross', 'default-icon');
-      this._hoverIcon = UI.Icon.create('smallicon-red-cross-hover', 'hover-icon');
-      this._activeIcon = UI.Icon.create('smallicon-red-cross-active', 'active-icon');
+      this._hoverIcon = UI.Icon.create('mediumicon-red-cross-hover', 'hover-icon');
+      this._activeIcon = UI.Icon.create('mediumicon-red-cross-active', 'active-icon');
       this._buttonElement.appendChild(regularIcon);
       this._buttonElement.appendChild(this._hoverIcon);
       this._buttonElement.appendChild(this._activeIcon);
@@ -1522,11 +1521,11 @@ UI.appendStyle = function(node, cssFile) {
      */
     set gray(gray) {
       if (gray) {
-        this._hoverIcon.setIconType('smallicon-gray-cross-hover');
-        this._activeIcon.setIconType('smallicon-gray-cross-active');
+        this._hoverIcon.setIconType('mediumicon-gray-cross-hover');
+        this._activeIcon.setIconType('mediumicon-gray-cross-active');
       } else {
-        this._hoverIcon.setIconType('smallicon-red-cross-hover');
-        this._activeIcon.setIconType('smallicon-red-cross-active');
+        this._hoverIcon.setIconType('mediumicon-red-cross-hover');
+        this._activeIcon.setIconType('mediumicon-red-cross-active');
       }
     },
 

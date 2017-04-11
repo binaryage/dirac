@@ -1,5 +1,5 @@
-Protocol.BakedInspectorBackendAPIChromeTag='59.0.3051.4';
-Protocol.BakedInspectorBackendAPIChromeRev='448d781143fc3adfc0fe22b3f903e281628aeab7';
+Protocol.BakedInspectorBackendAPIChromeTag='59.0.3066.2';
+Protocol.BakedInspectorBackendAPIChromeRev='f7338b32ab404c8dca728c4b8dabb8b660d5b4ec';
 Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerEvent("Inspector.detached", ["reason"]);\n'
 + 'Protocol.inspectorBackend.registerEvent("Inspector.targetCrashed", []);\n'
@@ -385,6 +385,10 @@ Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerEvent("Tethering.accepted", ["port", "connectionId"]);\n'
 + 'Protocol.inspectorBackend.registerCommand("Tethering.bind", [{"name": "port", "type": "number", "optional": false}], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Tethering.unbind", [{"name": "port", "type": "number", "optional": false}], [], false);\n'
++ 'Protocol.inspectorBackend.registerEnum("Browser.WindowState", {Normal: "normal", Minimized: "minimized", Maximized: "maximized", Fullscreen: "fullscreen"});\n'
++ 'Protocol.inspectorBackend.registerCommand("Browser.getWindowForTarget", [{"name": "targetId", "type": "string", "optional": false}], ["windowId", "bounds"], false);\n'
++ 'Protocol.inspectorBackend.registerCommand("Browser.setWindowBounds", [{"name": "windowId", "type": "number", "optional": false}, {"name": "bounds", "type": "object", "optional": false}], [], false);\n'
++ 'Protocol.inspectorBackend.registerCommand("Browser.getWindowBounds", [{"name": "windowId", "type": "number", "optional": false}], ["bounds"], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Schema.getDomains", [], ["domains"], false);\n'
 + 'Protocol.inspectorBackend.registerEnum("Runtime.UnserializableValue", {Infinity: "Infinity", NaN: "NaN", NegativeInfinity: "-Infinity", Negative0: "-0"});\n'
 + 'Protocol.inspectorBackend.registerEnum("Runtime.RemoteObjectType", {Object: "object", Function: "function", Undefined: "undefined", String: "string", Number: "number", Boolean: "boolean", Symbol: "symbol"});\n'

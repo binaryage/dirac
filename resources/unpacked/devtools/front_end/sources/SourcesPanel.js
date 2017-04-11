@@ -646,13 +646,11 @@ Sources.SourcesPanel = class extends UI.Panel {
     var executionContext = UI.context.flavor(SDK.ExecutionContext);
     if (!executionContext)
       return;
-
     // Always use 0 column.
-    var rawLocation = Bindings.debuggerWorkspaceBinding.uiLocationToRawLocation(
-        executionContext.debuggerModel, uiLocation.uiSourceCode, uiLocation.lineNumber, 0);
-    if (!rawLocation)
+    var rawLocation =
+        Bindings.debuggerWorkspaceBinding.uiLocationToRawLocation(uiLocation.uiSourceCode, uiLocation.lineNumber, 0);
+    if (!rawLocation || rawLocation.debuggerModel !== executionContext.debuggerModel)
       return;
-
     if (!this._prepareToResume())
       return;
 
@@ -998,10 +996,6 @@ Sources.SourcesPanel = class extends UI.Panel {
       this.showUILocation(uiLocation);
   }
 
-  showGoToSourceDialog() {
-    this._sourcesView.showOpenResourceDialog();
-  }
-
   _revealNavigatorSidebar() {
     this._setAsCurrentPanel();
     this.editorView.showBoth(true);
@@ -1224,9 +1218,6 @@ Sources.SourcesPanel.RevealingActionDelegate = class {
     switch (actionId) {
       case 'debugger.toggle-pause':
         panel._togglePause();
-        return true;
-      case 'sources.go-to-source':
-        panel.showGoToSourceDialog();
         return true;
     }
     return false;

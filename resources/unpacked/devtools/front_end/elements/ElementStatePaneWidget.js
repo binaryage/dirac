@@ -21,7 +21,7 @@ Elements.ElementStatePaneWidget = class extends UI.Widget {
       var node = UI.context.flavor(SDK.DOMNode);
       if (!node)
         return;
-      SDK.CSSModel.fromNode(node).forcePseudoState(node, event.target.state, event.target.checked);
+      node.domModel().cssModel().forcePseudoState(node, event.target.state, event.target.checked);
     }
 
     /**
@@ -30,7 +30,7 @@ Elements.ElementStatePaneWidget = class extends UI.Widget {
      */
     function createCheckbox(state) {
       var td = createElement('td');
-      var label = UI.createCheckboxLabel(':' + state);
+      var label = UI.CheckboxLabel.create(':' + state);
       var input = label.checkboxElement;
       input.state = state;
       input.addEventListener('click', clickListener, false);
@@ -79,9 +79,9 @@ Elements.ElementStatePaneWidget = class extends UI.Widget {
     if (node)
       node = node.enclosingElementOrSelf();
 
-    this._updateModel(node ? SDK.CSSModel.fromNode(node) : null);
+    this._updateModel(node ? node.domModel().cssModel() : null);
     if (node) {
-      var nodePseudoState = SDK.CSSModel.fromNode(node).pseudoState(node);
+      var nodePseudoState = node.domModel().cssModel().pseudoState(node);
       for (var input of this._inputs) {
         input.disabled = !!node.pseudoType();
         input.checked = nodePseudoState.indexOf(input.state) >= 0;

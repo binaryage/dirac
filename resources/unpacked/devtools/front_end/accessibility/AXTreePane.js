@@ -13,8 +13,10 @@ Accessibility.AXTreePane = class extends Accessibility.AccessibilitySubPane {
 
     this._axSidebarView = axSidebarView;
     this._treeOutline = this.createTreeOutline();
+    this._treeOutline.contentElement.classList.add('ax-tree');
     this._treeOutline.setPaddingSize(12);
     this._treeOutline.element.addEventListener('keydown', this._onKeyDown.bind(this), true);
+    this._treeOutline.element.addEventListener('mouseleave', this._onMouseLeave.bind(this), false);
 
     this.element.classList.add('accessibility-computed');
 
@@ -136,7 +138,14 @@ Accessibility.AXTreePane = class extends Accessibility.AccessibilitySubPane {
   }
 
   /**
-   * @param {!Accessibility.AXNodeTreeElement} treeElement
+   * @param {!Event} event
+   */
+  _onMouseLeave(event) {
+    this.setHoveredElement(null);
+  }
+
+  /**
+   * @param {?Accessibility.AXNodeTreeElement} treeElement
    */
   setHoveredElement(treeElement) {
     if (treeElement === this._hoveredElement)
@@ -144,6 +153,12 @@ Accessibility.AXTreePane = class extends Accessibility.AccessibilitySubPane {
     if (this._hoveredElement)
       this._hoveredElement.setHovered(false);
     this._hoveredElement = treeElement;
+    if (!this._hoveredElement) {
+      if (!this.node())
+        return;
+      // Highlight and scroll into view the currently inspected node.
+      this.node().domModel().nodeHighlightRequested(this.node().id);
+    }
   }
 
   /**
@@ -182,7 +197,7 @@ Accessibility.AXTreePane = class extends Accessibility.AccessibilitySubPane {
    * @return {!SDK.Target}
    */
   target() {
-    return this.node().target();
+    return this.node().domModel().target();
   }
 };
 
@@ -196,7 +211,7 @@ Accessibility.AXNodeTreeElement = class extends UI.TreeElement {
    */
   constructor(axNode, treePane) {
     // Pass an empty title, the title gets made later in onattach.
-    super('');
+    super('', false);
 
     /** @type {!Accessibility.AccessibilityNode} */
     this._axNode = axNode;
@@ -257,6 +272,16 @@ Accessibility.AXNodeTreeElement = class extends UI.TreeElement {
       this.listItemElement.setAttribute('tabIndex', 0);
     else
       this.listItemElement.removeAttribute('tabIndex');
+  }
+
+  /**
+   * @param {!Event} event
+   * @return {boolean}
+   * @override
+   */
+  isEventWithinDisclosureTriangle(event) {
+    // Accessibility tree doesn't have a "disclosure triangle" per se.
+    return false;
   }
 
   _onmousemove(event) {

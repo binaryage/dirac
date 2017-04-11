@@ -165,10 +165,15 @@ Object.assign(window.dirac, (function() {
   function addConsoleMessageToMainTarget(type, level, text, parameters) {
     const target = SDK.targetManager.mainTarget();
     if (!target) {
-      console.warn("Unable to add console message to main target: ", text);
+      console.warn("Unable to add console message to main target (no target): ", text);
       return;
     }
-    const msg = new ConsoleModel.ConsoleMessage(target, ConsoleModel.ConsoleMessage.MessageSource.Other, level, text,
+    const runtimeModel = target.model(SDK.RuntimeModel);
+    if (!runtimeModel) {
+      console.warn("Unable to add console message to main target (no runtime model): ", text);
+      return;
+    }
+    const msg = new ConsoleModel.ConsoleMessage(runtimeModel, ConsoleModel.ConsoleMessage.MessageSource.Other, level, text,
       type, undefined, undefined, undefined, undefined, parameters);
     ConsoleModel.consoleModel.addMessage(msg);
   }

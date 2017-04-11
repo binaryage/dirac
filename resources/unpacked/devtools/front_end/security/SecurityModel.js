@@ -17,11 +17,17 @@ Security.SecurityModel = class extends SDK.SDKModel {
   }
 
   /**
-   * @param {!SDK.Target} target
-   * @return {?Security.SecurityModel}
+   * @return {!SDK.ResourceTreeModel}
    */
-  static fromTarget(target) {
-    return target.model(Security.SecurityModel);
+  resourceTreeModel() {
+    return /** @type {!SDK.ResourceTreeModel} */ (this.target().model(SDK.ResourceTreeModel));
+  }
+
+  /**
+   * @return {!SDK.NetworkManager}
+   */
+  networkManager() {
+    return /** @type {!SDK.NetworkManager} */ (this.target().model(SDK.NetworkManager));
   }
 
   /**
@@ -58,7 +64,7 @@ Security.SecurityModel = class extends SDK.SDKModel {
   }
 };
 
-SDK.SDKModel.register(Security.SecurityModel, SDK.Target.Capability.None);
+SDK.SDKModel.register(Security.SecurityModel, SDK.Target.Capability.Security, false);
 
 /** @enum {symbol} */
 Security.SecurityModel.Events = {

@@ -569,11 +569,11 @@ Timeline.TimelineTreeView.GridNode = class extends DataGrid.SortableDataGridNode
     var cell = this.createTD(columnId);
     cell.className = 'numeric-column';
     var textDiv = cell.createChild('div');
-    textDiv.createChild('span').textContent = Common.UIString('%.1f\u2009ms', value);
+    textDiv.createChild('span').textContent = Common.UIString('%.1f\xa0ms', value);
 
     if (showPercents && this._treeView._exposePercentages()) {
       textDiv.createChild('span', 'percent-column').textContent =
-          Common.UIString('%.1f\u2009%%', value / this._grandTotalTime * 100);
+          Common.UIString('%.1f\xa0%%', value / this._grandTotalTime * 100);
     }
     if (maxTime) {
       textDiv.classList.add('background-percent-bar');
@@ -632,11 +632,6 @@ Timeline.AggregatedTimelineTreeView = class extends Timeline.TimelineTreeView {
     this._groupBySetting =
         Common.settings.createSetting('timelineTreeGroupBy', Timeline.AggregatedTimelineTreeView.GroupBy.None);
     this.init(filters);
-    var nonessentialEvents = [
-      TimelineModel.TimelineModel.RecordType.EventDispatch, TimelineModel.TimelineModel.RecordType.FunctionCall,
-      TimelineModel.TimelineModel.RecordType.TimerFire
-    ];
-    this._filters.push(new TimelineModel.ExclusiveNameFilter(nonessentialEvents));
     this._stackView = new Timeline.TimelineStackView(this);
     this._stackView.addEventListener(
         Timeline.TimelineStackView.Events.SelectionChanged, this._onStackViewSelectionChanged, this);

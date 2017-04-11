@@ -22,7 +22,7 @@ Resources.ResourcesSection = class {
     addListener(SDK.ResourceTreeModel.Events.ResourceAdded, this._resourceAdded, this);
 
     var mainTarget = SDK.targetManager.mainTarget();
-    var resourceTreeModel = mainTarget && mainTarget.hasDOMCapability() && SDK.ResourceTreeModel.fromTarget(mainTarget);
+    var resourceTreeModel = mainTarget && mainTarget.model(SDK.ResourceTreeModel);
     var mainFrame = resourceTreeModel && resourceTreeModel.mainFrame;
     if (mainFrame)
       this._populateFrame(mainFrame);
@@ -36,11 +36,10 @@ Resources.ResourcesSection = class {
     var parentFrame = frame.parentFrame;
     if (parentFrame)
       return parentFrame;
-    var parentTarget = frame.target().parentTarget();
+    var parentTarget = frame.resourceTreeModel().target().parentTarget();
     if (!parentTarget)
       return null;
-    console.assert(parentTarget.hasDOMCapability());
-    return SDK.ResourceTreeModel.fromTarget(parentTarget).mainFrame;
+    return parentTarget.model(SDK.ResourceTreeModel).mainFrame;
   }
 
   /**
@@ -165,9 +164,8 @@ Resources.FrameTreeElement = class extends Resources.BaseStorageTreeElement {
   set hovered(hovered) {
     if (hovered) {
       this.listItemElement.classList.add('hovered');
-      var domModel = SDK.DOMModel.fromTarget(this._frame.target());
-      if (domModel)
-        domModel.highlightFrame(this._frameId);
+      var domModel = this._frame.resourceTreeModel().domModel();
+      domModel.highlightFrame(this._frameId);
     } else {
       this.listItemElement.classList.remove('hovered');
       SDK.DOMModel.hideDOMNodeHighlight();

@@ -53,7 +53,8 @@ Bindings.StylesSourceMapping = class {
       this._cssModel.addEventListener(SDK.CSSModel.Events.StyleSheetAdded, this._styleSheetAdded, this),
       this._cssModel.addEventListener(SDK.CSSModel.Events.StyleSheetRemoved, this._styleSheetRemoved, this),
       this._cssModel.addEventListener(SDK.CSSModel.Events.StyleSheetChanged, this._styleSheetChanged, this),
-      SDK.ResourceTreeModel.fromTarget(cssModel.target())
+      cssModel.target()
+          .model(SDK.ResourceTreeModel)
           .addEventListener(SDK.ResourceTreeModel.Events.MainFrameNavigated, this._unbindAllUISourceCodes, this)
     ];
   }
@@ -144,8 +145,6 @@ Bindings.StylesSourceMapping = class {
    * @param {!Common.Event} event
    */
   _unbindAllUISourceCodes(event) {
-    if (event.data.target() !== this._cssModel.target())
-      return;
     for (var styleFile of this._styleFiles.values())
       styleFile.dispose();
     this._styleFiles.clear();

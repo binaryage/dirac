@@ -1,5 +1,5 @@
-Protocol.BakedSupportedCSSPropertiesChromeTag='59.0.3051.4';
-Protocol.BakedSupportedCSSPropertiesChromeRev='448d781143fc3adfc0fe22b3f903e281628aeab7';
+Protocol.BakedSupportedCSSPropertiesChromeTag='59.0.3066.2';
+Protocol.BakedSupportedCSSPropertiesChromeRev='f7338b32ab404c8dca728c4b8dabb8b660d5b4ec';
 Protocol.BakedSupportedCSSProperties=''
 + '[{"name": "-webkit-app-region"},\n'
 + ' {"name": "-webkit-appearance"},\n'
@@ -334,6 +334,8 @@ Protocol.BakedSupportedCSSProperties=''
 + ' {"name": "perspective"},\n'
 + ' {"name": "perspective-origin"},\n'
 + ' {"longhands": ["align-content", "justify-content"], "name": "place-content"},\n'
++ ' {"longhands": ["align-items", "justify-items"], "name": "place-items"},\n'
++ ' {"longhands": ["align-self", "justify-self"], "name": "place-self"},\n'
 + ' {"name": "pointer-events", "inherited": true},\n'
 + ' {"name": "position"},\n'
 + ' {"inherited": true, "name": "quotes"},\n'
@@ -390,6 +392,7 @@ Protocol.BakedSupportedCSSProperties=''
 + ' {"name": "top"},\n'
 + ' {"name": "touch-action"},\n'
 + ' {"name": "transform"},\n'
++ ' {"name": "transform-box"},\n'
 + ' {"name": "transform-origin"},\n'
 + ' {"name": "transform-style"},\n'
 + ' {"longhands": ["transition-property", "transition-duration", "transition-timing-function", "transition-delay"], "name": "transition"},\n'

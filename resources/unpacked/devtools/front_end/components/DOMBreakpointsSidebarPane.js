@@ -56,7 +56,7 @@ Components.DOMBreakpointsSidebarPane = class extends Components.BreakpointsSideb
     mainElement.appendChild(createTextNode(
         String.sprintf('Paused on %s', Components.DOMBreakpointsSidebarPane.BreakpointTypeNouns[auxData['type']])));
 
-    var domModel = SDK.DOMModel.fromTarget(details.debuggerModel.target());
+    var domModel = details.debuggerModel.target().model(SDK.DOMModel);
     if (domModel) {
       var subElement = messageWrapper.createChild('div', 'status-sub monospace');
       var node = domModel.nodeForId(auxData['nodeId']);
@@ -171,7 +171,7 @@ Components.DOMBreakpointsSidebarPane = class extends Components.BreakpointsSideb
       breakpointElement._checkboxElement.checked = enabled;
     }
     if (enabled)
-      node.target().domdebuggerAgent().setDOMBreakpoint(node.id, type);
+      node.domModel().target().domdebuggerAgent().setDOMBreakpoint(node.id, type);
     node.setMarker(Components.DOMBreakpointsSidebarPane.Marker, true);
   }
 
@@ -186,7 +186,7 @@ Components.DOMBreakpointsSidebarPane = class extends Components.BreakpointsSideb
     element._type = type;
     element.addEventListener('contextmenu', this._contextMenu.bind(this, node, type), true);
 
-    var checkboxLabel = UI.createCheckboxLabel('', enabled);
+    var checkboxLabel = UI.CheckboxLabel.create('', enabled);
     var checkboxElement = checkboxLabel.checkboxElement;
     checkboxElement.addEventListener('click', this._checkboxClicked.bind(this, node, type), false);
     element._checkboxElement = checkboxElement;
@@ -233,7 +233,7 @@ Components.DOMBreakpointsSidebarPane = class extends Components.BreakpointsSideb
     this.removeListElement(element);
     this._breakpointElements.delete(breakpointId);
     if (element._checkboxElement.checked)
-      node.target().domdebuggerAgent().removeDOMBreakpoint(node.id, type);
+      node.domModel().target().domdebuggerAgent().removeDOMBreakpoint(node.id, type);
     node.setMarker(Components.DOMBreakpointsSidebarPane.Marker, this.hasBreakpoints(node) ? true : null);
   }
 
@@ -265,9 +265,9 @@ Components.DOMBreakpointsSidebarPane = class extends Components.BreakpointsSideb
    */
   _checkboxClicked(node, type, event) {
     if (event.target.checked)
-      node.target().domdebuggerAgent().setDOMBreakpoint(node.id, type);
+      node.domModel().target().domdebuggerAgent().setDOMBreakpoint(node.id, type);
     else
-      node.target().domdebuggerAgent().removeDOMBreakpoint(node.id, type);
+      node.domModel().target().domdebuggerAgent().removeDOMBreakpoint(node.id, type);
     this._saveBreakpoints();
   }
 

@@ -16,6 +16,7 @@ UI.TextEditorFactory.prototype = {
 
 /**
  * @interface
+ * @extends {Common.EventTarget}
  */
 UI.TextEditor = function() {};
 
@@ -80,6 +81,11 @@ UI.TextEditor.prototype = {
   tokenAtTextPosition(lineNumber, columnNumber) {}
 };
 
+/** @enum {symbol} */
+UI.TextEditor.Events = {
+  TextChanged: Symbol('TextChanged')
+};
+
 /**
  * @typedef {{
  *  bracketMatchingSetting: (!Common.Setting|undefined),
@@ -87,7 +93,8 @@ UI.TextEditor.prototype = {
  *  lineWrapping: boolean,
  *  mimeType: (string|undefined),
  *  autoHeight: (boolean|undefined),
- *  padBottom: (boolean|undefined)
+ *  padBottom: (boolean|undefined),
+ *  maxHighlightLength: (number|undefined)
  * }}
  */
 UI.TextEditor.Options;

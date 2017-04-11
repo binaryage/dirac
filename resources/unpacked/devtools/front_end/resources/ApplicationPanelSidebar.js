@@ -132,12 +132,11 @@ Resources.ApplicationPanelSidebar = class extends UI.VBox {
     if (this._target)
       return;
     this._target = target;
-    this._databaseModel = Resources.DatabaseModel.fromTarget(target);
+    this._databaseModel = target.model(Resources.DatabaseModel);
+    this._databaseModel.addEventListener(Resources.DatabaseModel.Events.DatabaseAdded, this._databaseAdded, this);
+    this._databaseModel.addEventListener(Resources.DatabaseModel.Events.DatabasesRemoved, this._resetWebSQL, this);
 
-    this._databaseModel.on(Resources.DatabaseModel.DatabaseAddedEvent, this._databaseAdded, this);
-    this._databaseModel.on(Resources.DatabaseModel.DatabasesRemovedEvent, this._resetWebSQL, this);
-
-    var resourceTreeModel = SDK.ResourceTreeModel.fromTarget(target);
+    var resourceTreeModel = target.model(SDK.ResourceTreeModel);
     if (!resourceTreeModel)
       return;
 
@@ -158,14 +157,14 @@ Resources.ApplicationPanelSidebar = class extends UI.VBox {
       return;
     delete this._target;
 
-    var resourceTreeModel = SDK.ResourceTreeModel.fromTarget(target);
+    var resourceTreeModel = target.model(SDK.ResourceTreeModel);
     if (resourceTreeModel) {
       resourceTreeModel.removeEventListener(SDK.ResourceTreeModel.Events.CachedResourcesLoaded, this._initialize, this);
       resourceTreeModel.removeEventListener(
           SDK.ResourceTreeModel.Events.WillLoadCachedResources, this._resetWithFrames, this);
     }
-    this._databaseModel.off(Resources.DatabaseModel.DatabaseAddedEvent, this._databaseAdded, this);
-    this._databaseModel.off(Resources.DatabaseModel.DatabasesRemovedEvent, this._resetWebSQL, this);
+    this._databaseModel.removeEventListener(Resources.DatabaseModel.Events.DatabaseAdded, this._databaseAdded, this);
+    this._databaseModel.removeEventListener(Resources.DatabaseModel.Events.DatabasesRemoved, this._resetWebSQL, this);
 
     this._resetWithFrames();
   }
@@ -182,21 +181,21 @@ Resources.ApplicationPanelSidebar = class extends UI.VBox {
       this._addCookieDocument(frame);
     this._databaseModel.enable();
 
-    var indexedDBModel = Resources.IndexedDBModel.fromTarget(this._target);
+    var indexedDBModel = this._target.model(Resources.IndexedDBModel);
     if (indexedDBModel)
       indexedDBModel.enable();
 
-    var cacheStorageModel = SDK.ServiceWorkerCacheModel.fromTarget(this._target);
+    var cacheStorageModel = this._target.model(SDK.ServiceWorkerCacheModel);
     if (cacheStorageModel)
       cacheStorageModel.enable();
-    var resourceTreeModel = SDK.ResourceTreeModel.fromTarget(this._target);
+    var resourceTreeModel = this._target.model(SDK.ResourceTreeModel);
     if (resourceTreeModel)
       this._populateApplicationCacheTree(resourceTreeModel);
-    var domStorageModel = Resources.DOMStorageModel.fromTarget(this._target);
+    var domStorageModel = this._target.model(Resources.DOMStorageModel);
     if (domStorageModel)
       this._populateDOMStorageTree(domStorageModel);
     this.indexedDBListTreeElement._initialize();
-    var serviceWorkerCacheModel = SDK.ServiceWorkerCacheModel.fromTarget(this._target);
+    var serviceWorkerCacheModel = this._target.model(SDK.ServiceWorkerCacheModel);
     this.cacheStorageListTreeElement._initialize(serviceWorkerCacheModel);
     this._initDefaultSelection();
   }
@@ -282,11 +281,12 @@ Resources.ApplicationPanelSidebar = class extends UI.VBox {
   }
 
   /**
-   * @param {!Resources.DatabaseModel.DatabaseAddedEvent} event
+   * @param {!Common.Event} event
    */
   _databaseAdded(event) {
-    var databaseTreeElement = new Resources.DatabaseTreeElement(this, event.database);
-    this._databaseTreeElements.set(event.database, databaseTreeElement);
+    var database = /** @type {!Resources.Database} */ (event.data);
+    var databaseTreeElement = new Resources.DatabaseTreeElement(this, database);
+    this._databaseTreeElements.set(database, databaseTreeElement);
     this.databasesListTreeElement.appendChild(databaseTreeElement);
   }
 
@@ -491,7 +491,7 @@ Resources.ApplicationPanelSidebar = class extends UI.VBox {
    * @param {!SDK.ResourceTreeModel} resourceTreeModel
    */
   _populateApplicationCacheTree(resourceTreeModel) {
-    this._applicationCacheModel = Resources.ApplicationCacheModel.fromTarget(this._target);
+    this._applicationCacheModel = this._target.model(Resources.ApplicationCacheModel);
 
     this._applicationCacheViews = {};
     this._applicationCacheFrameElements = {};
@@ -522,7 +522,7 @@ Resources.ApplicationPanelSidebar = class extends UI.VBox {
       this._applicationCacheManifestElements[manifestURL] = manifestTreeElement;
     }
 
-    var model = SDK.ResourceTreeModel.fromTarget(this._target);
+    var model = this._target.model(SDK.ResourceTreeModel);
     var frameTreeElement = new Resources.ApplicationCacheFrameTreeElement(this, model.frameForId(frameId), manifestURL);
     manifestTreeElement.appendChild(frameTreeElement);
     manifestTreeElement.expand();
@@ -736,7 +736,7 @@ Resources.DatabaseTreeElement = class extends Resources.BaseStorageTreeElement {
     function tableNamesCallback(tableNames) {
       var tableNamesLength = tableNames.length;
       for (var i = 0; i < tableNamesLength; ++i)
-        this.appendChild(new Resources.DatabaseTableTreeElement(this._storagePanel, this._database, tableNames[i]));
+        this.appendChild(new Resources.DatabaseTableTreeElement(this._sidebar, this._database, tableNames[i]));
     }
     this._database.getTableNames(tableNamesCallback.bind(this));
   }
@@ -746,6 +746,11 @@ Resources.DatabaseTreeElement = class extends Resources.BaseStorageTreeElement {
  * @unrestricted
  */
 Resources.DatabaseTableTreeElement = class extends Resources.BaseStorageTreeElement {
+  /**
+   * @param {!Resources.ApplicationPanelSidebar} sidebar
+   * @param {!Resources.Database} database
+   * @param {string} tableName
+   */
   constructor(sidebar, database, tableName) {
     super(sidebar._panel, tableName, false);
     this._sidebar = sidebar;
@@ -1065,9 +1070,7 @@ Resources.IndexedDBTreeElement = class extends Resources.StorageCategoryTreeElem
     /** @type {!Array.<!Resources.IDBDatabaseTreeElement>} */
     this._idbDatabaseTreeElements = [];
 
-    var targets = SDK.targetManager.targets(SDK.Target.Capability.Browser);
-    for (var i = 0; i < targets.length; ++i) {
-      var indexedDBModel = Resources.IndexedDBModel.fromTarget(targets[i]);
+    for (var indexedDBModel of SDK.targetManager.models(Resources.IndexedDBModel)) {
       var databases = indexedDBModel.databases();
       for (var j = 0; j < databases.length; ++j)
         this._addIndexedDB(indexedDBModel, databases[j]);
@@ -1089,9 +1092,8 @@ Resources.IndexedDBTreeElement = class extends Resources.StorageCategoryTreeElem
   }
 
   refreshIndexedDB() {
-    var targets = SDK.targetManager.targets(SDK.Target.Capability.Browser);
-    for (var i = 0; i < targets.length; ++i)
-      Resources.IndexedDBModel.fromTarget(targets[i]).refreshDatabaseNames();
+    for (var indexedDBModel of SDK.targetManager.models(Resources.IndexedDBModel))
+      indexedDBModel.refreshDatabaseNames();
   }
 
   /**
@@ -1509,7 +1511,7 @@ Resources.CookieTreeElement = class extends Resources.BaseStorageTreeElement {
    */
   constructor(storagePanel, frame, cookieDomain) {
     super(storagePanel, cookieDomain ? cookieDomain : Common.UIString('Local Files'), false);
-    this._target = frame.target();
+    this._target = frame.resourceTreeModel().target();
     this._cookieDomain = cookieDomain;
     var icon = UI.Icon.create('mediumicon-cookie', 'resource-tree-item');
     this.setLeadingIcons([icon]);
