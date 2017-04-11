@@ -28,7 +28,7 @@
                  [binaryage/devtools "0.9.2" :scope "test"]
                  [environ "1.1.0" :scope "test"]
                  [cljs-http "0.1.42" :scope "test"]
-                 [figwheel "0.5.9" :scope "test"]
+                 [figwheel "0.5.10" :scope "test"]
                  [reforms "0.4.3" :scope "test"]
                  [rum "0.10.8" :scope "test"]
                  [rum-reforms "0.4.3" :scope "test"]
@@ -170,7 +170,7 @@
 
              :cljs
              {:plugins [[lein-cljsbuild "1.1.4"]
-                        [lein-figwheel "0.5.9"]]}
+                        [lein-figwheel "0.5.10"]]}
 
              :nuke-aliases
              {:aliases ^:replace {}}
