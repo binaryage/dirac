@@ -705,11 +705,14 @@ Console.ConsoleView = class extends UI.VBox {
     if (!target) {
       return false;
     }
-
+    const runtimeModel = target.model(SDK.RuntimeModel);
+    if (!runtimeModel) {
+      return false;
+    }
     const source = ConsoleModel.ConsoleMessage.MessageSource.Other;
     const level = ConsoleModel.ConsoleMessage.MessageLevel.Info;
     const type = ConsoleModel.ConsoleMessage.MessageType.DiracMarkup;
-    const message = new ConsoleModel.ConsoleMessage(target, source, level, markup, type);
+    const message = new ConsoleModel.ConsoleMessage(runtimeModel, source, level, markup, type);
     ConsoleModel.consoleModel.addMessage(message);
     return true;
   }
