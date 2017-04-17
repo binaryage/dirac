@@ -289,6 +289,8 @@
                             :compiler       {:output-to              "test/marion/resources/unpacked/.compiled/content_script/content_script.js"
                                              :output-dir             "test/marion/resources/unpacked/.compiled/content_script"
                                              :closure-output-charset "US-ASCII"
+                                             :external-config {:devtools/config {:silence-optimizations-warning true
+                                                                                 :dont-detect-custom-formatters true}}
                                              :optimizations          :whitespace                                              ; content scripts cannot do eval / load script dynamically
                                              :pretty-print           true
                                              :source-map             "test/marion/resources/unpacked/.compiled/content_script/content_script.js.map"}}}}}
