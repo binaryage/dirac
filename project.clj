@@ -358,7 +358,6 @@
                                            "src/lib"
                                            "src/shared"
                                            "src/project"
-                                           "src/devtools"
                                            "src/implant"]
                             :compiler     {:output-to     "target/resources/release/devtools/front_end/dirac/.compiled/implant/implant.js"
                                            :output-dir    "target/resources/release/devtools/front_end/dirac/.compiled/implant"
@@ -370,7 +369,6 @@
                                            "src/lib"
                                            "src/shared"
                                            "src/project"
-                                           "src/devtools"
                                            "src/background"]
                             :compiler     {:output-to     "target/resources/release/.compiled/background.js"
                                            :output-dir    "target/resources/release/.compiled/background"
@@ -382,7 +380,6 @@
                                            "src/lib"
                                            "src/shared"
                                            "src/project"
-                                           "src/devtools"
                                            "src/options"]
                             :compiler     {:output-to     "target/resources/release/.compiled/options.js"
                                            :output-dir    "target/resources/release/.compiled/options"
