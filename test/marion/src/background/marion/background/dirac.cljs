@@ -1,9 +1,9 @@
 (ns marion.background.dirac
   (:require-macros [cljs.core.async.macros :refer [go go-loop]]
                    [dirac.settings :refer [get-marion-initial-wait-time get-marion-reconnection-attempt-delay]]
-                   [marion.background.logging :refer [log info warn error]])
+                   [marion.background.logging :refer [log info warn error]]
+                   [devtools.toolbox :refer [envelope]])
   (:require [cljs.core.async :refer [<! chan timeout]]
-            [devtools.toolbox :refer [envelope]]
             [oops.core :refer [oget ocall oapply]]
             [chromex.chrome-event-channel :refer [make-chrome-event-channel]]
             [chromex.protocols :refer [post-message! get-sender]]

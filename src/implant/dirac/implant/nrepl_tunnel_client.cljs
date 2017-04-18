@@ -1,13 +1,13 @@
 (ns dirac.implant.nrepl-tunnel-client
   (:require-macros [cljs.core.async.macros :refer [go go-loop]]
-                   [dirac.implant.nrepl-tunnel-client :refer [log warn info error]])
+                   [dirac.implant.nrepl-tunnel-client :refer [log warn info error]]
+                   [devtools.toolbox :refer [envelope]])
   (:require [cljs.core.async :refer [<! chan put! timeout close!]]
             [cljs-uuid-utils.core :as uuid]
             [dirac.implant.eval :as eval]
             [dirac.lib.ws-client :as ws-client]
             [dirac.implant.version :as implant-version]
-            [dirac.implant.console :as console]
-            [devtools.toolbox :refer [envelope]]))
+            [dirac.implant.console :as console]))
 
 (defonce wannabe-client (atom nil))
 (defonce current-client (atom nil))                                                                                           ; only one client can be connected as a time
