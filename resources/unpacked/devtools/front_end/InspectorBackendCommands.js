@@ -1,5 +1,5 @@
-Protocol.BakedInspectorBackendAPIChromeTag='60.0.3073.2';
-Protocol.BakedInspectorBackendAPIChromeRev='3c8fc9840f9b47c4f1ab2d8c24eb8f172fc7c414';
+Protocol.BakedInspectorBackendAPIChromeTag='60.0.3074.2';
+Protocol.BakedInspectorBackendAPIChromeRev='b8126037096ad1da5aa13af72af5a5580cf22263';
 Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerEvent("Inspector.detached", ["reason"]);\n'
 + 'Protocol.inspectorBackend.registerEvent("Inspector.targetCrashed", []);\n'
@@ -26,7 +26,6 @@ Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerEvent("Page.javascriptDialogClosed", ["result"]);\n'
 + 'Protocol.inspectorBackend.registerEvent("Page.screencastFrame", ["data", "metadata", "sessionId"]);\n'
 + 'Protocol.inspectorBackend.registerEvent("Page.screencastVisibilityChanged", ["visible"]);\n'
-+ 'Protocol.inspectorBackend.registerEvent("Page.colorPicked", ["color"]);\n'
 + 'Protocol.inspectorBackend.registerEvent("Page.interstitialShown", []);\n'
 + 'Protocol.inspectorBackend.registerEvent("Page.interstitialHidden", []);\n'
 + 'Protocol.inspectorBackend.registerEvent("Page.navigationRequested", ["isInMainFrame", "isRedirect", "navigationId", "url"]);\n'
@@ -59,7 +58,6 @@ Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerCommand("Page.stopScreencast", [], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Page.screencastFrameAck", [{"name": "sessionId", "type": "number", "optional": false}], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Page.handleJavaScriptDialog", [{"name": "accept", "type": "boolean", "optional": false}, {"name": "promptText", "type": "string", "optional": true}], [], false);\n'
-+ 'Protocol.inspectorBackend.registerCommand("Page.setColorPickerEnabled", [{"name": "enabled", "type": "boolean", "optional": false}], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Page.configureOverlay", [{"name": "suspended", "type": "boolean", "optional": true}, {"name": "message", "type": "string", "optional": true}], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Page.getAppManifest", [], ["url", "errors", "data"], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Page.requestAppBanner", [], [], false);\n'
