@@ -307,6 +307,18 @@ Emulation.DeviceModeView = class extends UI.VBox {
     element.classList.toggle('hidden', !success);
   }
 
+  /**
+   * @param {!Element} element
+   */
+  setNonEmulatedAvailableSize(element) {
+    if (this._model.type() !== Emulation.DeviceModeModel.Type.None)
+      return;
+    var zoomFactor = UI.zoomManager.zoomFactor();
+    var rect = element.getBoundingClientRect();
+    var availableSize = new UI.Size(Math.max(rect.width * zoomFactor, 1), Math.max(rect.height * zoomFactor, 1));
+    this._model.setAvailableSize(availableSize, availableSize);
+  }
+
   _contentAreaResized() {
     var zoomFactor = UI.zoomManager.zoomFactor();
     var rect = this._contentArea.getBoundingClientRect();
@@ -363,16 +375,16 @@ Emulation.DeviceModeView = class extends UI.VBox {
    * @return {!Promise}
    */
   async captureScreenshot() {
-    SDK.DOMModel.muteHighlight();
+    SDK.OverlayModel.muteHighlight();
     var screenshot = await this._model.captureScreenshot(false);
-    SDK.DOMModel.unmuteHighlight();
+    SDK.OverlayModel.unmuteHighlight();
     if (screenshot === null)
       return;
 
     var pageImage = new Image();
     pageImage.src = 'data:image/png;base64,' + screenshot;
     pageImage.onload = async () => {
-      var scale = window.devicePixelRatio / this._model.scale();
+      var scale = window.devicePixelRatio / UI.zoomManager.zoomFactor() / this._model.scale();
       var outlineRect = this._model.outlineRect().scale(scale);
       var screenRect = this._model.screenRect().scale(scale);
       var visiblePageRect = this._model.visiblePageRect().scale(scale);
@@ -398,9 +410,9 @@ Emulation.DeviceModeView = class extends UI.VBox {
    * @return {!Promise}
    */
   async captureFullSizeScreenshot() {
-    SDK.DOMModel.muteHighlight();
+    SDK.OverlayModel.muteHighlight();
     var screenshot = await this._model.captureScreenshot(true);
-    SDK.DOMModel.unmuteHighlight();
+    SDK.OverlayModel.unmuteHighlight();
     if (screenshot === null)
       return;
 
