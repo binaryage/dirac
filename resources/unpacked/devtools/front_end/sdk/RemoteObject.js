@@ -313,13 +313,6 @@ SDK.RemoteObject = class {
   }
 
   /**
-   * @return {!Promise<?Array<!SDK.EventListener>>}
-   */
-  eventListeners() {
-    throw 'Not implemented';
-  }
-
-  /**
    * @param {!Protocol.Runtime.CallArgument} name
    * @param {function(string=)} callback
    */
@@ -557,62 +550,6 @@ SDK.RemoteObjectImpl = class extends SDK.RemoteObject {
 
   /**
    * @override
-   * @return {!Promise<?Array<!SDK.EventListener>>}
-   */
-  eventListeners() {
-    return new Promise(eventListeners.bind(this));
-    /**
-     * @param {function(?)} fulfill
-     * @param {function(*)} reject
-     * @this {SDK.RemoteObjectImpl}
-     */
-    function eventListeners(fulfill, reject) {
-      if (!this._runtimeModel.target().hasDOMCapability()) {
-        // TODO(kozyatinskiy): figure out how this should work for |window| when there is no DOMDebugger.
-        fulfill([]);
-        return;
-      }
-
-      if (!this._objectId) {
-        reject(new Error('No object id specified'));
-        return;
-      }
-
-      this._runtimeModel.target().domdebuggerAgent().getEventListeners(
-          this._objectId, undefined, undefined, mycallback.bind(this));
-
-      /**
-       * @this {SDK.RemoteObjectImpl}
-       * @param {?Protocol.Error} error
-       * @param {!Array<!Protocol.DOMDebugger.EventListener>} payloads
-       */
-      function mycallback(error, payloads) {
-        if (error) {
-          reject(new Error(error));
-          return;
-        }
-        fulfill(payloads.map(createEventListener.bind(this)));
-      }
-
-      /**
-       * @this {SDK.RemoteObjectImpl}
-       * @param {!Protocol.DOMDebugger.EventListener} payload
-       */
-      function createEventListener(payload) {
-        return new SDK.EventListener(
-            this._runtimeModel, this, payload.type, payload.useCapture, payload.passive, payload.once,
-            payload.handler ? this._runtimeModel.createRemoteObject(payload.handler) : null,
-            payload.originalHandler ? this._runtimeModel.createRemoteObject(payload.originalHandler) : null,
-            /** @type {!SDK.DebuggerModel.Location} */
-            (this.debuggerModel().createRawLocationByScriptId(
-                payload.scriptId, payload.lineNumber, payload.columnNumber)),
-            null);
-      }
-    }
-  }
-
-  /**
-   * @override
    * @param {!Array.<string>} propertyPath
    * @param {function(?SDK.RemoteObject, boolean=)} callback
    */
@@ -710,28 +647,23 @@ SDK.RemoteObjectImpl = class extends SDK.RemoteObject {
       return;
     }
 
-    this._runtimeAgent.invoke_evaluate({expression: value, silent: true}, evaluatedCallback.bind(this));
-
-    /**
-     * @param {?Protocol.Error} error
-     * @param {!Protocol.Runtime.RemoteObject} result
-     * @param {!Protocol.Runtime.ExceptionDetails=} exceptionDetails
-     * @this {SDK.RemoteObjectImpl}
-     */
-    function evaluatedCallback(error, result, exceptionDetails) {
-      if (error || !!exceptionDetails) {
-        callback(error || (result.type !== 'string' ? result.description : /** @type {string} */ (result.value)));
+    this._runtimeAgent.invoke_evaluate({expression: value, silent: true}).then(response => {
+      if (response[Protocol.Error] || response.exceptionDetails) {
+        callback(
+            response[Protocol.Error] ||
+            (response.result.type !== 'string' ? response.result.description :
+                                                 /** @type {string} */ (response.result.value)));
         return;
       }
 
       if (typeof name === 'string')
         name = SDK.RemoteObject.toCallArgument(name);
 
-      this.doSetObjectPropertyValue(result, name, callback);
+      this.doSetObjectPropertyValue(response.result, name, callback);
 
-      if (result.objectId)
-        this._runtimeAgent.releaseObject(result.objectId);
-    }
+      if (response.result.objectId)
+        this._runtimeAgent.releaseObject(response.result.objectId);
+    });
   }
 
   /**

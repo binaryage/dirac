@@ -26,7 +26,6 @@ QuickOpen.FilteredListWidget = class extends UI.VBox {
     this._promptElement.setAttribute('contenteditable', 'plaintext-only');
     this._prompt = new UI.TextPrompt();
     this._prompt.initialize(() => Promise.resolve([]));
-    this._prompt.renderAsBlock();
     var promptProxy = this._prompt.attach(this._promptElement);
     promptProxy.addEventListener('input', this._onInput.bind(this), false);
     promptProxy.classList.add('filtered-list-widget-prompt-element');
@@ -111,6 +110,13 @@ QuickOpen.FilteredListWidget = class extends UI.VBox {
     return false;
   }
 
+  /**
+   * @param {string} placeholder
+   */
+  setPlaceholder(placeholder) {
+    this._prompt.setPlaceholder(placeholder);
+  }
+
   showAsDialog() {
     this._dialog = new UI.Dialog();
     this._dialog.setMaxContentSize(new UI.Size(504, 340));
@@ -144,6 +150,8 @@ QuickOpen.FilteredListWidget = class extends UI.VBox {
   }
 
   _attachProvider() {
+    this._list.replaceAllItems([]);
+    this._list.invalidateItemHeight();
     if (this._provider) {
       this._provider.setRefreshCallback(this._itemsLoaded.bind(this, this._provider));
       this._provider.attach();
@@ -166,7 +174,6 @@ QuickOpen.FilteredListWidget = class extends UI.VBox {
    * @override
    */
   wasShown() {
-    this._list.invalidateItemHeight();
     this._attachProvider();
   }
 
@@ -289,6 +296,9 @@ QuickOpen.FilteredListWidget = class extends UI.VBox {
     this._scheduleFilter();
   }
 
+  /**
+   * @return {boolean}
+   */
   _tabKeyPressed() {
     var userEnteredText = this._prompt.text();
     var completion;
@@ -299,10 +309,11 @@ QuickOpen.FilteredListWidget = class extends UI.VBox {
       }
     }
     if (!completion)
-      return;
+      return false;
     this._prompt.setText(completion);
     this._prompt.setDOMSelection(userEnteredText.length, completion.length);
     this._scheduleFilter();
+    return true;
   }
 
   _itemsFilteredForTest() {
@@ -462,8 +473,8 @@ QuickOpen.FilteredListWidget = class extends UI.VBox {
         this._onEnter(event);
         return;
       case 'Tab':
-        this._tabKeyPressed();
-        return;
+        handled = this._tabKeyPressed();
+        break;
       case 'ArrowUp':
         handled = this._list.selectPreviousItem(true, false);
         break;

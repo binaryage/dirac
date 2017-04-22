@@ -97,33 +97,35 @@ Main.Main = class {
    * @param {!Object<string, string>} prefs
    */
   _initializeExperiments(prefs) {
+    // Keep this sorted alphabetically: both keys and values.
     Runtime.experiments.register('accessibilityInspection', 'Accessibility Inspection');
     Runtime.experiments.register('applyCustomStylesheet', 'Allow custom UI themes');
     Runtime.experiments.register('audits2', 'Audits 2.0', true);
     Runtime.experiments.register('autoAttachToCrossProcessSubframes', 'Auto-attach to cross-process subframes', true);
     Runtime.experiments.register('blackboxJSFramesOnTimeline', 'Blackbox JavaScript frames on Timeline', true);
     Runtime.experiments.register('changesDrawer', 'Changes drawer', true);
+    Runtime.experiments.register('colorContrastRatio', 'Color contrast ratio line in color picker', true);
     Runtime.experiments.register('continueToLocationMarkers', 'Continue to location markers', true);
-    Runtime.experiments.register('colorContrastRatio', 'Contrast ratio line in color picker', true);
     Runtime.experiments.register('emptySourceMapAutoStepping', 'Empty sourcemap auto-stepping');
     Runtime.experiments.register('inputEventsOnTimelineOverview', 'Input events on Timeline overview', true);
     Runtime.experiments.register('liveSASS', 'Live SASS');
     Runtime.experiments.register('networkGroupingRequests', 'Network request groups support', true);
     Runtime.experiments.register('objectPreviews', 'Object previews', true);
     Runtime.experiments.register('persistence2', 'Persistence 2.0');
-    Runtime.experiments.register('persistenceValidation', 'Validate persistence bindings');
-    Runtime.experiments.register('timelineShowAllEvents', 'Show all events on Timeline', true);
-    Runtime.experiments.register('timelineShowAllProcesses', 'Show all processes on Timeline', true);
-    Runtime.experiments.register('timelinePaintTimingMarkers', 'Show paint timing markers on Timeline', true);
     Runtime.experiments.register('sourceDiff', 'Source diff');
-    Runtime.experiments.register('timelineEventInitiators', 'Timeline event initiators');
-    Runtime.experiments.register('timelineFlowEvents', 'Timeline flow events', true);
     Runtime.experiments.register('terminalInDrawer', 'Terminal in drawer', true);
-    Runtime.experiments.register('timelineInvalidationTracking', 'Timeline invalidation tracking', true);
-    Runtime.experiments.register('timelineMultipleMainViews', 'Tabbed views on Performance panel');
-    Runtime.experiments.register('timelineTracingJSProfile', 'Timeline tracing based JS profiler', true);
-    Runtime.experiments.register('timelineV8RuntimeCallStats', 'V8 Runtime Call Stats on Timeline', true);
-    Runtime.experiments.register('timelinePerFrameTrack', 'Show track per frame on Timeline', true);
+
+    // Timeline
+    Runtime.experiments.register('timelineEventInitiators', 'Timeline: event initiators');
+    Runtime.experiments.register('timelineFlowEvents', 'Timeline: flow events', true);
+    Runtime.experiments.register('timelineInvalidationTracking', 'Timeline: invalidation tracking', true);
+    Runtime.experiments.register('timelineMultipleMainViews', 'Timeline: multiple main views');
+    Runtime.experiments.register('timelinePaintTimingMarkers', 'Timeline: paint timing markers', true);
+    Runtime.experiments.register('timelinePerFrameTrack', 'Timeline: per-frame tracks', true);
+    Runtime.experiments.register('timelineShowAllEvents', 'Timeline: show all events', true);
+    Runtime.experiments.register('timelineShowAllProcesses', 'Timeline: show all processes', true);
+    Runtime.experiments.register('timelineTracingJSProfile', 'Timeline: tracing based JS profiler', true);
+    Runtime.experiments.register('timelineV8RuntimeCallStats', 'Timeline: V8 Runtime Call Stats on Timeline', true);
 
     Runtime.experiments.cleanUpStaleExperiments();
 
@@ -142,7 +144,7 @@ Main.Main = class {
         Runtime.experiments.enableForTest('liveSASS');
     }
 
-    Runtime.experiments.setDefaultExperiments(['persistenceValidation', 'persistence2']);
+    Runtime.experiments.setDefaultExperiments([]);
   }
 
   /**
@@ -174,6 +176,7 @@ Main.Main = class {
     ConsoleModel.consoleModel = new ConsoleModel.ConsoleModel();
     SDK.multitargetNetworkManager = new SDK.MultitargetNetworkManager();
     NetworkLog.networkLog = new NetworkLog.NetworkLog();
+    SDK.domDebuggerManager = new SDK.DOMDebuggerManager();
     SDK.targetManager.addEventListener(
         SDK.TargetManager.Events.SuspendStateChanged, this._onSuspendStateChanged.bind(this));
 
@@ -201,7 +204,6 @@ Main.Main = class {
     Persistence.persistence =
         new Persistence.Persistence(Workspace.workspace, Bindings.breakpointManager, Workspace.fileSystemMapping);
 
-    new Main.OverlayController();
     new Main.ExecutionContextSelector(SDK.targetManager, UI.context);
     Bindings.blackboxManager = new Bindings.BlackboxManager(Bindings.debuggerWorkspaceBinding);
 
@@ -217,7 +219,6 @@ Main.Main = class {
     UI.ShortcutsScreen.registerShortcuts();
     this._registerForwardedShortcuts();
     this._registerMessageSinkListener();
-    new Main.Main.InspectorDomainObserver();
 
     self.runtime.extension(Common.AppProvider).instance().then(this._showAppUI.bind(this));
     console.timeEnd('Main._createAppUI');
@@ -450,41 +451,16 @@ Main.Main = class {
 };
 
 /**
- * @implements {SDK.TargetManager.Observer}
- * @unrestricted
- */
-Main.Main.InspectorDomainObserver = class {
-  constructor() {
-    SDK.targetManager.observeTargets(this, SDK.Target.Capability.Browser);
-  }
-
-  /**
-   * @override
-   * @param {!SDK.Target} target
-   */
-  targetAdded(target) {
-    target.registerInspectorDispatcher(new Main.Main.InspectorDomainDispatcher(target));
-    target.inspectorAgent().enable();
-  }
-
-  /**
-   * @override
-   * @param {!SDK.Target} target
-   */
-  targetRemoved(target) {
-  }
-};
-
-/**
  * @implements {Protocol.InspectorDispatcher}
- * @unrestricted
  */
-Main.Main.InspectorDomainDispatcher = class {
+Main.Main.InspectorModel = class extends SDK.SDKModel {
   /**
    * @param {!SDK.Target} target
    */
   constructor(target) {
-    this._target = target;
+    super(target);
+    target.registerInspectorDispatcher(this);
+    target.inspectorAgent().enable();
   }
 
   /**
@@ -500,11 +476,13 @@ Main.Main.InspectorDomainDispatcher = class {
    * @override
    */
   targetCrashed() {
-    var debuggerModel = this._target.model(SDK.DebuggerModel);
+    var debuggerModel = this.target().model(SDK.DebuggerModel);
     if (debuggerModel)
       Main.TargetCrashedScreen.show(debuggerModel);
   }
 };
+
+SDK.SDKModel.register(Main.Main.InspectorModel, SDK.Target.Capability.Inspector, true);
 
 /**
  * @implements {UI.ActionDelegate}
@@ -703,6 +681,10 @@ Main.Main.MainMenuItem = class {
       var bottom = new UI.ToolbarToggle(Common.UIString('Dock to bottom'), 'largeicon-dock-to-bottom');
       var right = new UI.ToolbarToggle(Common.UIString('Dock to right'), 'largeicon-dock-to-right');
       var left = new UI.ToolbarToggle(Common.UIString('Dock to left'), 'largeicon-dock-to-left');
+      undock.addEventListener(UI.ToolbarButton.Events.MouseDown, event => event.data.consume());
+      bottom.addEventListener(UI.ToolbarButton.Events.MouseDown, event => event.data.consume());
+      right.addEventListener(UI.ToolbarButton.Events.MouseDown, event => event.data.consume());
+      left.addEventListener(UI.ToolbarButton.Events.MouseDown, event => event.data.consume());
       undock.addEventListener(
           UI.ToolbarButton.Events.MouseUp, setDockSide.bind(null, Components.DockController.State.Undocked));
       bottom.addEventListener(
@@ -823,7 +805,8 @@ Main.Main.PauseListener = class {
  */
 Main.Main.InspectedNodeRevealer = class {
   constructor() {
-    SDK.targetManager.addModelListener(SDK.DOMModel, SDK.DOMModel.Events.NodeInspected, this._inspectNode, this);
+    SDK.targetManager.addModelListener(
+        SDK.OverlayModel, SDK.OverlayModel.Events.InspectNodeRequested, this._inspectNode, this);
   }
 
   /**
@@ -959,7 +942,6 @@ Main.BackendSettingsSync = class {
    */
   targetAdded(target) {
     this._updateTarget(target);
-    target.renderingAgent().setShowViewportSizeOnResize(true);
   }
 
   /**

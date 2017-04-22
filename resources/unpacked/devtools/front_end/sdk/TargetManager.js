@@ -334,10 +334,10 @@ SDK.TargetManager = class extends Common.Object {
     var capabilities = SDK.Target.Capability.Browser | SDK.Target.Capability.DOM | SDK.Target.Capability.JS |
         SDK.Target.Capability.Log | SDK.Target.Capability.Network | SDK.Target.Capability.Target |
         SDK.Target.Capability.ScreenCapture | SDK.Target.Capability.Tracing | SDK.Target.Capability.TouchEmulation |
-        SDK.Target.Capability.Security;
+        SDK.Target.Capability.Security | SDK.Target.Capability.Input | SDK.Target.Capability.Inspector;
     if (Runtime.queryParam('isSharedWorker')) {
       capabilities = SDK.Target.Capability.Browser | SDK.Target.Capability.Log | SDK.Target.Capability.Network |
-          SDK.Target.Capability.Target;
+          SDK.Target.Capability.Target | SDK.Target.Capability.Inspector;
     } else if (Runtime.queryParam('v8only')) {
       capabilities = SDK.Target.Capability.JS;
       Host.userMetrics.actionTaken(Host.UserMetrics.Action.ConnectToNodeJSDirectly);
@@ -418,10 +418,7 @@ SDK.ChildTargetManager = class {
    * @return {!Promise}
    */
   resume() {
-    var fulfill;
-    var promise = new Promise(callback => fulfill = callback);
-    this._targetAgent.invoke_setAutoAttach({autoAttach: true, waitForDebuggerOnStart: true}, fulfill);
-    return promise;
+    return this._targetAgent.invoke_setAutoAttach({autoAttach: true, waitForDebuggerOnStart: true});
   }
 
   dispose() {
@@ -443,7 +440,7 @@ SDK.ChildTargetManager = class {
     if (type === 'iframe') {
       return SDK.Target.Capability.Browser | SDK.Target.Capability.DOM | SDK.Target.Capability.JS |
           SDK.Target.Capability.Log | SDK.Target.Capability.Network | SDK.Target.Capability.Target |
-          SDK.Target.Capability.Tracing | SDK.Target.Capability.TouchEmulation;
+          SDK.Target.Capability.Tracing | SDK.Target.Capability.TouchEmulation | SDK.Target.Capability.Input;
     }
     if (type === 'node')
       return SDK.Target.Capability.JS;

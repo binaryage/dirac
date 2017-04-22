@@ -37,8 +37,11 @@ Sources.DebuggerPausedMessage = class {
     if (details.reason === SDK.DebuggerModel.BreakReason.DOM) {
       messageWrapper = Components.DOMBreakpointsSidebarPane.createBreakpointHitMessage(details);
     } else if (details.reason === SDK.DebuggerModel.BreakReason.EventListener) {
-      var eventName = details.auxData['eventName'];
-      var eventNameForUI = Sources.EventListenerBreakpointsSidebarPane.eventNameForUI(eventName, details.auxData);
+      var eventNameForUI = '';
+      if (details.auxData) {
+        eventNameForUI =
+            SDK.domDebuggerManager.resolveEventListenerBreakpointTitle(/** @type {!Object} */ (details.auxData));
+      }
       messageWrapper = buildWrapper(Common.UIString('Paused on event listener'), eventNameForUI);
     } else if (details.reason === SDK.DebuggerModel.BreakReason.XHR) {
       messageWrapper = buildWrapper(Common.UIString('Paused on XMLHttpRequest'), details.auxData['url'] || '');
@@ -87,10 +90,8 @@ Sources.DebuggerPausedMessage = class {
       if (subText) {
         var subElement = messageWrapper.createChild('div', 'status-sub monospace');
         subElement.textContent = subText;
+        subElement.title = title || subText;
       }
-      var tooltip = title || subText;
-      if (tooltip)
-        messageWrapper.title = tooltip;
       return messageWrapper;
     }
   }

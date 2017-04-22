@@ -1,8 +1,8 @@
 (ns dirac.background.state
-  (:require-macros [dirac.background.logging :refer [log info warn error]])
+  (:require-macros [dirac.background.logging :refer [log info warn error]]
+                   [devtools.toolbox :refer [envelope]])
   (:require [oops.core :refer [oget oset! ocall oapply]]
             [chromex.protocols :refer [post-message! get-sender get-name]]
-            [devtools.toolbox :as toolbox]
             [dirac.utils :as utils]
             [clojure.string :as string]))
 
@@ -69,7 +69,7 @@
 (defn post-to-marion! [message]
   (if-let [marion-port (get-marion-port)]
     (post-message! marion-port message)
-    (warn "marion not yet connected when called post-to-marion! with message:" (toolbox/envelope message))))
+    (warn "marion not yet connected when called post-to-marion! with message:" (envelope message))))
 
 (defn post-feedback! [text]
   (post-to-marion! #js {:type "feedback-from-extension" :transcript text}))

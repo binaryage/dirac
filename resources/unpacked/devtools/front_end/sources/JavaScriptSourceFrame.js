@@ -52,6 +52,14 @@ Sources.JavaScriptSourceFrame = class extends SourceFrame.UISourceCodeFrame {
         'scroll', this._popoverHelper.hidePopover.bind(this._popoverHelper), true);
 
     this.textEditor.element.addEventListener('keydown', this._onKeyDown.bind(this), true);
+    this.textEditor.element.addEventListener('keyup', this._onKeyUp.bind(this), true);
+    this.textEditor.element.addEventListener('mousemove', this._onMouseMove.bind(this), false);
+    if (Runtime.experiments.isEnabled('continueToLocationMarkers')) {
+      this.textEditor.element.addEventListener('wheel', event => {
+        if (UI.KeyboardShortcut.eventHasCtrlOrMeta(event))
+          event.preventDefault();
+      }, true);
+    }
 
     this.textEditor.addEventListener(
         SourceFrame.SourcesTextEditor.Events.GutterClick, this._handleGutterClick.bind(this), this);
@@ -165,8 +173,6 @@ Sources.JavaScriptSourceFrame = class extends SourceFrame.UISourceCodeFrame {
       // We need SourcesTextEditor to be initialized prior to this call. @see crbug.com/499889
       setImmediate(() => {
         this._generateValuesInSource();
-        if (Runtime.experiments.isEnabled('continueToLocationMarkers'))
-          this._showContinueToLocations();
       });
     }
   }
@@ -470,13 +476,48 @@ Sources.JavaScriptSourceFrame = class extends SourceFrame.UISourceCodeFrame {
     };
   }
 
+  /**
+   * @param {!KeyboardEvent} event
+   */
   _onKeyDown(event) {
     if (event.key === 'Escape') {
       if (this._popoverHelper.isPopoverVisible()) {
         this._popoverHelper.hidePopover();
         event.consume();
       }
+      return;
     }
+    if (UI.KeyboardShortcut.eventHasCtrlOrMeta(event) && this._executionLocation) {
+      if (!this._continueToLocationShown) {
+        this._showContinueToLocations();
+        this._continueToLocationShown = true;
+      }
+    }
+  }
+
+  /**
+   * @param {!MouseEvent} event
+   */
+  _onMouseMove(event) {
+    if (this._executionLocation && UI.KeyboardShortcut.eventHasCtrlOrMeta(event)) {
+      if (!this._continueToLocationShown) {
+        this._showContinueToLocations();
+        this._continueToLocationShown = true;
+      }
+      return;
+    }
+  }
+
+  /**
+   * @param {!KeyboardEvent} event
+   */
+  _onKeyUp(event) {
+    if (UI.KeyboardShortcut.eventHasCtrlOrMeta(event))
+      return;
+    if (!this._continueToLocationShown)
+      return;
+    this._clearContinueToLocations();
+    this._continueToLocationShown = false;
   }
 
   /**
@@ -541,8 +582,10 @@ Sources.JavaScriptSourceFrame = class extends SourceFrame.UISourceCodeFrame {
       // We need SourcesTextEditor to be initialized prior to this call. @see crbug.com/506566
       setImmediate(() => {
         this._generateValuesInSource();
-        if (Runtime.experiments.isEnabled('continueToLocationMarkers'))
-          this._showContinueToLocations();
+        if (Runtime.experiments.isEnabled('continueToLocationMarkers')) {
+          if (this._continueToLocationShown)
+            this._showContinueToLocations();
+        }
       });
     }
   }
@@ -571,6 +614,8 @@ Sources.JavaScriptSourceFrame = class extends SourceFrame.UISourceCodeFrame {
   }
 
   _showContinueToLocations() {
+    if (!Runtime.experiments.isEnabled('continueToLocationMarkers'))
+      return;
     var executionContext = UI.context.flavor(SDK.ExecutionContext);
     if (!executionContext)
       return;
@@ -592,7 +637,6 @@ Sources.JavaScriptSourceFrame = class extends SourceFrame.UISourceCodeFrame {
     var executionLocation = callFrame.location();
     debuggerModel.getPossibleBreakpoints(start, end, true)
         .then(locations => this.textEditor.operation(renderLocations.bind(this, locations)));
-
     /**
      * @param {!Array<!SDK.DebuggerModel.BreakLocation>} locations
      * @this {Sources.JavaScriptSourceFrame}
@@ -837,6 +881,8 @@ Sources.JavaScriptSourceFrame = class extends SourceFrame.UISourceCodeFrame {
   }
 
   _clearContinueToLocations() {
+    if (!Runtime.experiments.isEnabled('continueToLocationMarkers'))
+      return;
     delete this._clearContinueToLocationsTimer;
     var bookmarks = this.textEditor.bookmarks(
         this.textEditor.fullRange(), Sources.JavaScriptSourceFrame.continueToLocationDecorationSymbol);
@@ -1238,17 +1284,7 @@ Sources.JavaScriptSourceFrame = class extends SourceFrame.UISourceCodeFrame {
     if (this._prettyPrintInfobar)
       return;
 
-    var minified = false;
-    for (var i = 0; i < 10 && i < this.textEditor.linesCount; ++i) {
-      var line = this.textEditor.line(i);
-      if (line.startsWith('//#'))  // mind source map.
-        continue;
-      if (line.length > 500) {
-        minified = true;
-        break;
-      }
-    }
-    if (!minified)
+    if (!TextUtils.isMinified(/** @type {string} */ (this.uiSourceCode().content())))
       return;
 
     this._prettyPrintInfobar = UI.Infobar.create(

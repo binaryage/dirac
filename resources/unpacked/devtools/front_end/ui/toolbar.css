@@ -79,6 +79,7 @@
 
 .toolbar-has-dropdown {
     justify-content: space-between;
+    padding: 0 3px 0 5px;
 }
 
 .toolbar-has-dropdown .toolbar-text {
@@ -212,6 +213,10 @@ select.toolbar-item {
 select.toolbar-item[data-keyboard-focus="true"]:focus {
     background: rgba(0, 0, 0, 0.08);
     border-radius: 2px;
+}
+
+select.toolbar-item[data-keyboard-focus="true"]:focus > * {
+    background: white;
 }
 
 /* Input */

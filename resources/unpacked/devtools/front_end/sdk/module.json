@@ -85,6 +85,34 @@
         },
         {
             "type": "setting",
+            "settingName": "showPaintRects",
+            "settingType": "boolean",
+            "storageType": "session",
+            "defaultValue": false
+        },
+        {
+            "type": "setting",
+            "settingName": "showDebugBorders",
+            "settingType": "boolean",
+            "storageType": "session",
+            "defaultValue": false
+        },
+        {
+            "type": "setting",
+            "settingName": "showFPSCounter",
+            "settingType": "boolean",
+            "storageType": "session",
+            "defaultValue": false
+        },
+        {
+            "type": "setting",
+            "settingName": "showScrollBottleneckRects",
+            "settingType": "boolean",
+            "storageType": "session",
+            "defaultValue": false
+        },
+        {
+            "type": "setting",
             "category": "Console",
             "title": "Enable custom formatters",
             "settingName": "customFormatters",
@@ -130,6 +158,7 @@
         "CSSRule.js",
         "CSSStyleDeclaration.js",
         "CSSStyleSheetHeader.js",
+        "DOMDebuggerModel.js",
         "DOMModel.js",
         "DebuggerModel.js",
         "LayerTreeBase.js",
@@ -137,6 +166,7 @@
         "ServiceWorkerManager.js",
         "TracingManager.js",
         "TracingModel.js",
+        "OverlayModel.js",
         "RuntimeModel.js",
         "ScreenCaptureModel.js",
         "Script.js",

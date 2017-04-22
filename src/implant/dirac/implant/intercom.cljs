@@ -14,7 +14,6 @@
             [dirac.utils :as utils]
             [chromex.logging :refer-macros [log info warn error]]
             [dirac.implant.eval :as eval]
-            [devtools.toolbox :refer [envelope]]
             [dirac.implant.feedback :as feedback]
             [dirac.lib.ws-client :as ws-client]
             [goog.functions :as gfns])

@@ -55,7 +55,7 @@
 }
 
 #console-prompt-dirac::before {
-    background-position: -20px -20px;
+    background-position: -80px 90px;
     -webkit-filter: hue-rotate(280deg);
 }
 
@@ -81,8 +81,7 @@
     height: 10px;
     margin-top: -4px;
     -webkit-user-select: none;
-    background-image: url(Images/smallIcons.png);
-    background-size: 190px 30px;
+    background-image: -webkit-image-set(url(Images/smallIcons.png) 1x, url(Images/smallIcons_2x.png) 2x);
 }
 
 #console-status-dirac .status-banner {
@@ -112,12 +111,6 @@
 #console-status-dirac.dirac-prompt-status-error .status-content,
 #console-status-dirac.dirac-prompt-status-error .status-content a {
     color: #f00;
-}
-
-@media (-webkit-min-device-pixel-ratio: 1.5) {
-    #console-prompt-dirac::before {
-        background-image: url(Images/smallIcons_2x.png);
-    }
 }
 
 .dirac-prompt-placeholder {

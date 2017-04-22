@@ -1,6 +1,6 @@
 (def clj-logging-config-version "1.9.12")
 (def slf4j-log4j12-version "1.7.22")
-(defproject binaryage/dirac "1.2.4"
+(defproject binaryage/dirac "1.2.5"
   :description "Dirac DevTools - a Chrome DevTools fork for ClojureScript developers."
   :url "https://github.com/binaryage/dirac"
   :license {:name         "MIT License"
@@ -10,7 +10,7 @@
         :url  "https://github.com/binaryage/dirac"}
 
   :dependencies [[org.clojure/clojure "1.9.0-alpha15" :scope "provided"]
-                 [org.clojure/clojurescript "1.9.473" :scope "provided"]
+                 [org.clojure/clojurescript "1.9.521" :scope "provided"]
                  [org.clojure/core.async "0.3.442"]
                  [org.clojure/tools.logging "0.3.1"]
                  [org.clojure/tools.cli "0.3.5"]
@@ -24,8 +24,8 @@
                  ; we cannot use :dependencies under individual profiles because Cursive recognizes only root level
                  ; thus we mark extra deps with :scope "test" and filter them later when producing jar library
                  [binaryage/oops "0.5.3" :scope "test"]
-                 [binaryage/chromex "0.5.6" :scope "test"]
-                 [binaryage/devtools "0.9.2" :scope "test"]
+                 [binaryage/chromex "0.5.7" :scope "test"]
+                 [binaryage/devtools "0.9.4" :scope "test"]
                  [environ "1.1.0" :scope "test"]
                  [cljs-http "0.1.42" :scope "test"]
                  [figwheel "0.5.10" :scope "test"]
@@ -34,7 +34,7 @@
                  [rum-reforms "0.4.3" :scope "test"]
                  [cljsjs/parinfer "1.8.1-0" :scope "test"]
                  [com.lucasbradstreet/cljs-uuid-utils "1.0.2" :scope "test"]
-                 [com.rpl/specter "1.0.0" :scope "test"]
+                 [com.rpl/specter "1.0.1" :scope "test"]
                  [org.clojure/tools.namespace "0.3.0-alpha3" :scope "test"]
                  [org.clojure/tools.reader "1.0.0-beta1" :scope "test"]
 
@@ -43,19 +43,24 @@
 
                  [http.async.client "1.2.0" :scope "test"]
 
-                 ; guava is needed for selenium, they rely on latest guava which gets overriden by google closure compiler dep inside clojurescript
-                 [com.google.guava/guava "21.0" :scope "test"]
-                 [org.seleniumhq.selenium/selenium-java "3.3.1" :scope "test" :exclusions [org.seleniumhq.selenium/selenium-support]]
-                 [org.seleniumhq.selenium/selenium-chrome-driver "3.3.1" :scope "test"]
-                 [org.seleniumhq.selenium/selenium-support "3.3.1" :scope "test"]
-                 [org.seleniumhq.selenium/selenium-api "3.3.1" :scope "test"]
-                 [org.seleniumhq.selenium/selenium-htmlunit-driver "2.52.0" :scope "test"]
-
                  [ring/ring-core "1.5.1" :scope "test"]
                  [ring/ring-devel "1.5.1" :scope "test"]
                  [ring/ring-jetty-adapter "1.5.1" :scope "test"]
                  [clj-time "0.13.0" :scope "test"]
-                 [clansi "1.0.0" :scope "test"]]
+                 [clansi "1.0.0" :scope "test"]
+
+                 ; guava is needed for selenium, they rely on latest guava which gets overriden by google closure compiler dep inside clojurescript
+                 [com.google.guava/guava "21.0" :scope "test"]
+                 [org.seleniumhq.selenium/selenium-java "3.4.0" :scope "test"
+                  :exclusions [org.seleniumhq.selenium/selenium-api
+                               org.seleniumhq.selenium/selenium-support
+                               ; jetty mentioned in ring/ring-jetty-adapter conflicts with selenium
+                               org.eclipse.jetty/jetty-util
+                               org.eclipse.jetty/jetty-io]]
+                 [org.seleniumhq.selenium/selenium-chrome-driver "3.4.0" :scope "test"]
+                 [org.seleniumhq.selenium/selenium-support "3.4.0" :scope "test"]
+                 [org.seleniumhq.selenium/selenium-api "3.4.0" :scope "test"]
+                 [org.seleniumhq.selenium/selenium-htmlunit-driver "2.52.0" :scope "test"]]
 
   :plugins [[lein-shell "0.5.0"]
             [lein-environ "1.1.0"]]
@@ -289,6 +294,8 @@
                             :compiler       {:output-to              "test/marion/resources/unpacked/.compiled/content_script/content_script.js"
                                              :output-dir             "test/marion/resources/unpacked/.compiled/content_script"
                                              :closure-output-charset "US-ASCII"
+                                             :external-config        {:devtools/config {:silence-optimizations-warning true
+                                                                                        :dont-detect-custom-formatters true}}
                                              :optimizations          :whitespace                                              ; content scripts cannot do eval / load script dynamically
                                              :pretty-print           true
                                              :source-map             "test/marion/resources/unpacked/.compiled/content_script/content_script.js.map"}}}}}
@@ -356,7 +363,6 @@
                                            "src/lib"
                                            "src/shared"
                                            "src/project"
-                                           "src/devtools"
                                            "src/implant"]
                             :compiler     {:output-to     "target/resources/release/devtools/front_end/dirac/.compiled/implant/implant.js"
                                            :output-dir    "target/resources/release/devtools/front_end/dirac/.compiled/implant"
@@ -368,7 +374,6 @@
                                            "src/lib"
                                            "src/shared"
                                            "src/project"
-                                           "src/devtools"
                                            "src/background"]
                             :compiler     {:output-to     "target/resources/release/.compiled/background.js"
                                            :output-dir    "target/resources/release/.compiled/background"
@@ -380,7 +385,6 @@
                                            "src/lib"
                                            "src/shared"
                                            "src/project"
-                                           "src/devtools"
                                            "src/options"]
                             :compiler     {:output-to     "target/resources/release/.compiled/options.js"
                                            :output-dir    "target/resources/release/.compiled/options"

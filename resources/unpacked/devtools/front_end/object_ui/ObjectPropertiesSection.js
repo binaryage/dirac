@@ -362,8 +362,8 @@ ObjectUI.ObjectPropertiesSection = class extends UI.TreeOutlineInShadow {
         Common.Revealer.reveal(value);
         event.consume(true);
       }, false);
-      valueElement.addEventListener('mousemove', () => SDK.DOMModel.highlightObjectAsDOMNode(value), false);
-      valueElement.addEventListener('mouseleave', () => SDK.DOMModel.hideDOMNodeHighlight(), false);
+      valueElement.addEventListener('mousemove', () => SDK.OverlayModel.highlightObjectAsDOMNode(value), false);
+      valueElement.addEventListener('mouseleave', () => SDK.OverlayModel.hideDOMNodeHighlight(), false);
       return valueElement;
     }
 
@@ -994,7 +994,7 @@ ObjectUI.ObjectPropertyTreeElement = class extends UI.TreeElement {
    */
   _applyExpression(expression) {
     var property = SDK.RemoteObject.toCallArgument(this.property.symbol || this.property.name);
-    expression = expression.trim();
+    expression = SDK.RuntimeModel.wrapObjectLiteralExpressionIfNeeded(expression.trim());
     if (expression)
       this.property.parentObject.setPropertyValue(property, expression, callback.bind(this));
     else

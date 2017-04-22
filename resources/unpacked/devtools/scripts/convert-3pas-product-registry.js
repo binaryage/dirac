@@ -1,3 +1,6 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 const fs = require('fs');
 
 /*
@@ -18,6 +21,13 @@ How to use:
 const hexcase = 0;  /* hex output format. 0 - lowercase; 1 - uppercase        */
 const b64pad = '='; /* base-64 pad character. "=" for strict RFC compliance   */
 const chrsz = 8;    /* bits per input character. 8 - ASCII; 16 - Unicode      */
+
+const typeClassifications = new Map([
+  ['cdn_provider', 0], ['cdn_commercial_owner', 2], ['cdn_creative_agency', 2], ['ad_blocking', 0], ['ad_exchange', 0],
+  ['ad_server_ad_network', 0], ['ad_server_advertiser', 0], ['demand_side_platform', 0], ['vast_provider', 0],
+  ['data_management_platform', 1], ['research_analytics', 1], ['research_verification', 1],
+  ['research_brand_lift', 1]
+]);
 
 var data = fs.readFileSync('3pas.csv', 'utf8');
 var headerLine = data.split('\n', 1)[0];
@@ -154,7 +164,7 @@ for (var [baseDomain, subdomains] of map) {
         outputPart = {hash: hex_sha1(fullSubdomain).substr(0, 16), prefixes: {}};
         outputObj.set(fullSubdomain, outputPart);
       }
-      outputPart.prefixes[lineObj.prefix] = registerOutputProduct(lineObj.name_legal_product);
+      outputPart.prefixes[lineObj.prefix] = registerOutputProduct(lineObj.name_legal_product, lineObj.type_vendor);
     }
   }
 }
@@ -176,7 +186,7 @@ for (var i = 0; i < outputObjArray.length; i++) {
   var lineEnding = (i === outputObjArray.length - 1) ? '' : ',';
   var comments = [];
   for (var prefix in obj.prefixes)
-    comments.push('[' + outputProducts[obj.prefixes[prefix]] + ']');
+    comments.push('[' + outputProducts[obj.prefixes[prefix].product] + ']');
   console.log('  ' + JSON.stringify(obj) + lineEnding + ' // ' + comments.join(' '));
 }
 console.log(']);');
@@ -189,12 +199,23 @@ console.log(']);');
 
 
 // Linear but meh.
-function registerOutputProduct(name) {
+function registerOutputProduct(name, type) {
   var index = outputProducts.indexOf(name);
+  var typeIndex = registerOutputType(type);
+  var outObj = {product: index};
   if (index === -1) {
     outputProducts.push(name);
-    return outputProducts.length - 1;
+    outObj.product = outputProducts.length - 1;
   }
+  if (typeIndex !== -1)
+    outObj.type = typeIndex;
+  return outObj;
+}
+
+function registerOutputType(type) {
+  var index = typeClassifications.get(type);
+  if (index === undefined)
+    return -1;
   return index;
 }
 
