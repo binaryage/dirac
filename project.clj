@@ -43,19 +43,24 @@
 
                  [http.async.client "1.2.0" :scope "test"]
 
-                 ; guava is needed for selenium, they rely on latest guava which gets overriden by google closure compiler dep inside clojurescript
-                 [com.google.guava/guava "21.0" :scope "test"]
-                 [org.seleniumhq.selenium/selenium-java "3.3.1" :scope "test" :exclusions [org.seleniumhq.selenium/selenium-support]]
-                 [org.seleniumhq.selenium/selenium-chrome-driver "3.3.1" :scope "test"]
-                 [org.seleniumhq.selenium/selenium-support "3.3.1" :scope "test"]
-                 [org.seleniumhq.selenium/selenium-api "3.3.1" :scope "test"]
-                 [org.seleniumhq.selenium/selenium-htmlunit-driver "2.52.0" :scope "test"]
-
                  [ring/ring-core "1.5.1" :scope "test"]
                  [ring/ring-devel "1.5.1" :scope "test"]
                  [ring/ring-jetty-adapter "1.5.1" :scope "test"]
                  [clj-time "0.13.0" :scope "test"]
-                 [clansi "1.0.0" :scope "test"]]
+                 [clansi "1.0.0" :scope "test"]
+
+                 ; guava is needed for selenium, they rely on latest guava which gets overriden by google closure compiler dep inside clojurescript
+                 [com.google.guava/guava "21.0" :scope "test"]
+                 [org.seleniumhq.selenium/selenium-java "3.4.0" :scope "test"
+                  :exclusions [org.seleniumhq.selenium/selenium-api
+                               org.seleniumhq.selenium/selenium-support
+                               ; jetty mentioned in ring/ring-jetty-adapter conflicts with selenium
+                               org.eclipse.jetty/jetty-util
+                               org.eclipse.jetty/jetty-io]]
+                 [org.seleniumhq.selenium/selenium-chrome-driver "3.4.0" :scope "test"]
+                 [org.seleniumhq.selenium/selenium-support "3.4.0" :scope "test"]
+                 [org.seleniumhq.selenium/selenium-api "3.4.0" :scope "test"]
+                 [org.seleniumhq.selenium/selenium-htmlunit-driver "2.52.0" :scope "test"]]
 
   :plugins [[lein-shell "0.5.0"]
             [lein-environ "1.1.0"]]
@@ -289,8 +294,8 @@
                             :compiler       {:output-to              "test/marion/resources/unpacked/.compiled/content_script/content_script.js"
                                              :output-dir             "test/marion/resources/unpacked/.compiled/content_script"
                                              :closure-output-charset "US-ASCII"
-                                             :external-config {:devtools/config {:silence-optimizations-warning true
-                                                                                 :dont-detect-custom-formatters true}}
+                                             :external-config        {:devtools/config {:silence-optimizations-warning true
+                                                                                        :dont-detect-custom-formatters true}}
                                              :optimizations          :whitespace                                              ; content scripts cannot do eval / load script dynamically
                                              :pretty-print           true
                                              :source-map             "test/marion/resources/unpacked/.compiled/content_script/content_script.js.map"}}}}}
