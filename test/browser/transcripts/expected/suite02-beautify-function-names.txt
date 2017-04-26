@@ -76,8 +76,8 @@ stdout           displayed 23 items:
                   * marion$content_script$background$process_message_BANG_
                   * (anonymous)
                   * (anonymous)
-                  * marion$content_script$background$run_message_loop_BANG__$_state_machine__16324__auto____1
-                  * marion$content_script$background$run_message_loop_BANG__$_state_machine__16324__auto__
+                  * marion$content_script$background$run_message_loop_BANG__$_state_machine__*gen-num*__auto____*gen-num*
+                  * marion$content_script$background$run_message_loop_BANG__$_state_machine__*gen-num*__auto__
                   * cljs$core$async$impl$ioc_helpers$run_state_machine
                   * cljs$core$async$impl$ioc_helpers$run_state_machine_wrapped
                   * (anonymous)
