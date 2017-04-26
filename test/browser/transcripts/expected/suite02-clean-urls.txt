@@ -15,7 +15,7 @@ devtools #1      namespacesCache is cool now
 automate         trigger! [:pause-on-breakpoint]
 devtools #1      setCurrentPanel: sources
 automate #1      scrape! [:callstack-pane-locations]
-stdout           displayed 9 items:
+stdout           displayed 22 items:
                   * core.cljs:<line> / core.cljs:<line>
                   * core.cljs:<line> / core.cljs:<line>
                   * breakpoint.cljs:<line> / breakpoint.cljs:<line>
@@ -25,6 +25,19 @@ stdout           displayed 9 items:
                   * scenario.cljs:<line> / scenario.cljs:<line>
                   * notifications.cljs:<line> / notifications.cljs:<line>
                   * notifications.cljs:<line> / notifications.cljs:<line>
+                  * page.cljs:<line> / page.cljs:<line>
+                  * background.cljs:<line> / background.cljs:<line>
+                  * background.cljs:<line> / background.cljs:<line>
+                  * background.cljs:<line> / background.cljs:<line>
+                  * background.cljs:<line> / background.cljs:<line>
+                  * background.cljs:<line> / background.cljs:<line>
+                  * background.cljs:<line> / background.cljs:<line>
+                  * ioc_helpers.cljs:<line> / ioc_helpers.cljs:<line>
+                  * ioc_helpers.cljs:<line> / ioc_helpers.cljs:<line>
+                  * ioc_helpers.cljs:<line> / ioc_helpers.cljs:<line>
+                  * channels.cljs:<line> / channels.cljs:<line>
+                  * dispatch.cljs:<line> / dispatch.cljs:<line>
+                  * nexttick.js:211 / nexttick.js:211
 automate #1      close-devtools!
 extension        handling command: close-dirac-devtools
 extension        unregister devtools #1
@@ -46,7 +59,7 @@ devtools #2      namespacesCache is cool now
 automate         trigger! [:pause-on-breakpoint]
 devtools #2      setCurrentPanel: sources
 automate #2      scrape! [:callstack-pane-locations]
-stdout           displayed 9 items:
+stdout           displayed 22 items:
                   * core.cljs?rel=*** / core.cljs?rel=***
                   * core.cljs?rel=*** / core.cljs?rel=***
                   * breakpoint.cljs…*** / breakpoint.cljs?rel=***
@@ -56,6 +69,19 @@ stdout           displayed 9 items:
                   * scenario.cljs?r…*** / scenario.cljs?rel=***
                   * notifications.c…*** / notifications.cljs?rel=***
                   * notifications.c…*** / notifications.cljs?rel=***
+                  * page.cljs:<line> / page.cljs:<line>
+                  * background.cljs:<line> / background.cljs:<line>
+                  * background.cljs:<line> / background.cljs:<line>
+                  * background.cljs:<line> / background.cljs:<line>
+                  * background.cljs:<line> / background.cljs:<line>
+                  * background.cljs:<line> / background.cljs:<line>
+                  * background.cljs:<line> / background.cljs:<line>
+                  * ioc_helpers.cljs:<line> / ioc_helpers.cljs:<line>
+                  * ioc_helpers.cljs:<line> / ioc_helpers.cljs:<line>
+                  * ioc_helpers.cljs:<line> / ioc_helpers.cljs:<line>
+                  * channels.cljs:<line> / channels.cljs:<line>
+                  * dispatch.cljs:<line> / dispatch.cljs:<line>
+                  * nexttick.js:211 / nexttick.js:211
 automate #2      close-devtools!
 extension        handling command: close-dirac-devtools
 extension        unregister devtools #2
