@@ -1190,8 +1190,12 @@ Console.ConsoleView = class extends UI.VBox {
    */
   _messagesClicked(event) {
     var targetElement = event.deepElementFromPoint();
-    if (!targetElement || targetElement.isComponentSelectionCollapsed())
-      this.focus();
+    if (!targetElement || targetElement.isComponentSelectionCollapsed()) {
+      const isCustomExpandIcon = targetElement.classList.contains("custom-expand-icon");
+      if (!isCustomExpandIcon) { // see https://github.com/binaryage/dirac/issues/59
+        this.focus();
+      }
+    }
     var groupMessage = event.target.enclosingNodeOrSelfWithClass('console-group-title');
     if (!groupMessage)
       return;
