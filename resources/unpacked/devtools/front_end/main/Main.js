@@ -918,8 +918,6 @@ Main.BackendSettingsSync = class {
   constructor() {
     this._autoAttachSetting = Common.settings.moduleSetting('autoAttachToCreatedPages');
     this._autoAttachSetting.addChangeListener(this._update, this);
-    this._disableJavascriptSetting = Common.settings.moduleSetting('javaScriptDisabled');
-    this._disableJavascriptSetting.addChangeListener(this._update, this);
     SDK.targetManager.observeTargets(this, SDK.Target.Capability.Browser);
   }
 
@@ -928,7 +926,6 @@ Main.BackendSettingsSync = class {
    */
   _updateTarget(target) {
     target.pageAgent().setAutoAttachToCreatedPages(this._autoAttachSetting.get());
-    target.emulationAgent().setScriptExecutionDisabled(this._disableJavascriptSetting.get());
   }
 
   _update() {
