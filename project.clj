@@ -27,7 +27,7 @@
                  [binaryage/chromex "0.5.7" :scope "test"]
                  [binaryage/devtools "0.9.4" :scope "test"]
                  [environ "1.1.0" :scope "test"]
-                 [cljs-http "0.1.42" :scope "test"]
+                 [cljs-http "0.1.43" :scope "test"]
                  [figwheel "0.5.10" :scope "test"]
                  [reforms "0.4.3" :scope "test"]
                  [rum "0.10.8" :scope "test"]

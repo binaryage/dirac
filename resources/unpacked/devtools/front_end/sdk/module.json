@@ -63,17 +63,39 @@
         {
             "type": "setting",
             "category": "Debugger",
-            "settingName": "enableAsyncStackTraces",
+            "title": "Disable JavaScript",
+            "settingName": "javaScriptDisabled",
             "settingType": "boolean",
+            "storageType": "session",
+            "order": 1,
             "defaultValue": false,
             "options": [
                 {
                     "value": true,
-                    "title": "Capture async stack traces"
+                    "title": "Disable JavaScript"
                 },
                 {
                     "value": false,
+                    "title": "Enable JavaScript"
+                }
+            ]
+        },
+        {
+            "type": "setting",
+            "category": "Debugger",
+            "title": "Disable async stack traces",
+            "settingName": "disableAsyncStackTraces",
+            "settingType": "boolean",
+            "defaultValue": false,
+            "order": 2,
+            "options": [
+                {
+                    "value": true,
                     "title": "Do not capture async stack traces"
+                },
+                {
+                    "value": false,
+                    "title": "Capture async stack traces"
                 }
             ]
         },
@@ -161,6 +183,7 @@
         "DOMDebuggerModel.js",
         "DOMModel.js",
         "DebuggerModel.js",
+        "EmulationModel.js",
         "LayerTreeBase.js",
         "LogModel.js",
         "ServiceWorkerManager.js",

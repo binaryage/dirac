@@ -194,7 +194,9 @@
   (string/replace s #"[0-9]+:[0-9]*" "***"))
 
 (defn replace-gensyms [s]
-  (string/replace s #"--\d+" "--*gen-num*"))
+  (-> s
+      (string/replace #"--\d+" "--*gen-num*")
+      (string/replace #"__\d+" "__*gen-num*")))
 
 (def internal-error-re1 #"Dirac v.*?, Chrome.*?\n")
 

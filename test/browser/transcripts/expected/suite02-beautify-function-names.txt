@@ -15,7 +15,7 @@ devtools #1      namespacesCache is cool now
 automate         trigger! [:pause-on-breakpoint]
 devtools #1      setCurrentPanel: sources
 automate #1      scrape! [:callstack-pane-functions]
-stdout           displayed 9 items:
+stdout           displayed 23 items:
                   * breakpoint-demo / dirac.tests.scenarios.breakpoint.core/breakpoint-demo
                   * breakpoint-demo-handler / dirac.tests.scenarios.breakpoint.core/breakpoint-demo-handler
                   * λ
@@ -25,6 +25,20 @@ stdout           displayed 9 items:
                   * notification-handler! / dirac.automation.scenario/notification-handler!
                   * process-notification! / dirac.automation.notifications/process-notification!
                   * process-event! / dirac.automation.notifications/process-event!
+                  * postMessage (async)
+                  * marion$content-script$page$send-message! / marion$content-script$page$send-message!
+                  * marion$content-script$background$relay-message-to-page! / marion$content-script$background$relay-message-to-page!
+                  * marion$content-script$background$process-message! / marion$content-script$background$process-message!
+                  * λ
+                  * λ
+                  * marion$content-script$background$run-message-loop!-$-state-machine--*gen-num*--auto----*gen-num* / marion$content-script$background$run-message-loop!-$-state-machine--*gen-num*--auto----*gen-num*
+                  * marion$content-script$background$run-message-loop!-$-state-machine--*gen-num*--auto-- / marion$content-script$background$run-message-loop!-$-state-machine--*gen-num*--auto--
+                  * run-state-machine / cljs.core.async.impl.ioc-helpers/run-state-machine
+                  * run-state-machine-wrapped / cljs.core.async.impl.ioc-helpers/run-state-machine-wrapped
+                  * λ
+                  * λ
+                  * process-messages / cljs.core.async.impl.dispatch/process-messages
+                  * channel.port1.onmessage / channel.port1.onmessage
 automate #1      close-devtools!
 extension        handling command: close-dirac-devtools
 extension        unregister devtools #1
@@ -46,7 +60,7 @@ devtools #2      namespacesCache is cool now
 automate         trigger! [:pause-on-breakpoint]
 devtools #2      setCurrentPanel: sources
 automate #2      scrape! [:callstack-pane-functions]
-stdout           displayed 9 items:
+stdout           displayed 23 items:
                   * dirac$tests$scenarios$breakpoint$core$breakpoint_demo
                   * dirac$tests$scenarios$breakpoint$core$breakpoint_demo_handler
                   * (anonymous)
@@ -56,6 +70,20 @@ stdout           displayed 9 items:
                   * dirac$automation$scenario$notification_handler_BANG_
                   * dirac$automation$notifications$process_notification_BANG_
                   * dirac$automation$notifications$process_event_BANG_
+                  * postMessage (async)
+                  * marion$content_script$page$send_message_BANG_
+                  * marion$content_script$background$relay_message_to_page_BANG_
+                  * marion$content_script$background$process_message_BANG_
+                  * (anonymous)
+                  * (anonymous)
+                  * marion$content_script$background$run_message_loop_BANG__$_state_machine__*gen-num*__auto____*gen-num*
+                  * marion$content_script$background$run_message_loop_BANG__$_state_machine__*gen-num*__auto__
+                  * cljs$core$async$impl$ioc_helpers$run_state_machine
+                  * cljs$core$async$impl$ioc_helpers$run_state_machine_wrapped
+                  * (anonymous)
+                  * (anonymous)
+                  * cljs$core$async$impl$dispatch$process_messages
+                  * channel.port1.onmessage
 automate #2      close-devtools!
 extension        handling command: close-dirac-devtools
 extension        unregister devtools #2
@@ -83,7 +111,7 @@ devtools #3      displayWelcomeMessage
 automate         trigger! [:cause-exception]
 scenario         uncaught exception: Error: :invalid is not ISeqable
 automate #3      scrape! [:function-names-in-last-console-exception]
-stdout           displayed 30 items:
+stdout           displayed 43 items:
                   * seq
                   * IFn:-invoke³ (seq-reduce)
                   * IFn:-invoke³ (reduce)
@@ -114,6 +142,19 @@ stdout           displayed 30 items:
                   * notification-handler!
                   * process-notification!
                   * process-event!
+                  * marion$content-script$page$send-message!
+                  * marion$content-script$background$relay-message-to-page!
+                  * marion$content-script$background$process-message!
+                  * λ
+                  * λ
+                  * marion$content-script$background$run-message-loop!-$-state-machine--*gen-num*--auto----*gen-num*
+                  * marion$content-script$background$run-message-loop!-$-state-machine--*gen-num*--auto--
+                  * run-state-machine
+                  * run-state-machine-wrapped
+                  * λ
+                  * λ
+                  * process-messages
+                  * channel.port1.onmessage
 automate #3      close-devtools!
 extension        handling command: close-dirac-devtools
 extension        unregister devtools #3
@@ -132,7 +173,7 @@ devtools #4      namespacesCache is cool now
 automate         trigger! [:async]
 devtools #4      setCurrentPanel: sources
 automate #4      scrape! [:callstack-pane-functions]
-stdout           displayed 10 items:
+stdout           displayed 62 items:
                   * break-here! / dirac.tests.scenarios.core-async/break-here!
                   * λ
                   * λ
@@ -143,6 +184,58 @@ stdout           displayed 10 items:
                   * λ
                   * λ
                   * process-messages / cljs.core.async.impl.dispatch/process-messages
+                  * chained at
+                  * Promise resolved (async)
+                  * λ
+                  * promise-based-set-immediate / dirac.automation.runtime/promise-based-set-immediate
+                  * goog.async.nextTick / goog.async.nextTick
+                  * queue-dispatcher / cljs.core.async.impl.dispatch/queue-dispatcher
+                  * run / cljs.core.async.impl.dispatch/run
+                  * Channel:close!¹ (ManyToManyChannel) / cljs.core.async.impl.protocols.Channel:close!¹ (cljs.core.async.impl.channels/ManyToManyChannel)
+                  * close! / cljs.core.async.impl.protocols/close!
+                  * λ
+                  * setTimeout (async)
+                  * queue-delay / cljs.core.async.impl.dispatch/queue-delay
+                  * timeout / cljs.core.async.impl.timers/timeout
+                  * timeout / cljs.core.async/timeout
+                  * λ
+                  * λ
+                  * break-async-$-state-machine--*gen-num*--auto----*gen-num* / dirac.tests.scenarios.core-async/break-async-$-state-machine--*gen-num*--auto----*gen-num*
+                  * break-async-$-state-machine--*gen-num*--auto-- / dirac.tests.scenarios.core-async/break-async-$-state-machine--*gen-num*--auto--
+                  * run-state-machine / cljs.core.async.impl.ioc-helpers/run-state-machine
+                  * run-state-machine-wrapped / cljs.core.async.impl.ioc-helpers/run-state-machine-wrapped
+                  * λ
+                  * process-messages / cljs.core.async.impl.dispatch/process-messages
+                  * chained at
+                  * Promise resolved (async)
+                  * λ
+                  * promise-based-set-immediate / dirac.automation.runtime/promise-based-set-immediate
+                  * goog.async.nextTick / goog.async.nextTick
+                  * queue-dispatcher / cljs.core.async.impl.dispatch/queue-dispatcher
+                  * run / cljs.core.async.impl.dispatch/run
+                  * break-async / dirac.tests.scenarios.core-async/break-async
+                  * break-async-handler / dirac.tests.scenarios.core-async/break-async-handler
+                  * λ
+                  * IFn:-invoke² (apply) / cljs.core.IFn:-invoke² (cljs.core/apply)
+                  * apply / cljs.core/apply
+                  * call-trigger! / dirac.automation.scenario/call-trigger!
+                  * notification-handler! / dirac.automation.scenario/notification-handler!
+                  * process-notification! / dirac.automation.notifications/process-notification!
+                  * process-event! / dirac.automation.notifications/process-event!
+                  * postMessage (async)
+                  * marion$content-script$page$send-message! / marion$content-script$page$send-message!
+                  * marion$content-script$background$relay-message-to-page! / marion$content-script$background$relay-message-to-page!
+                  * marion$content-script$background$process-message! / marion$content-script$background$process-message!
+                  * λ
+                  * λ
+                  * marion$content-script$background$run-message-loop!-$-state-machine--*gen-num*--auto----*gen-num* / marion$content-script$background$run-message-loop!-$-state-machine--*gen-num*--auto----*gen-num*
+                  * marion$content-script$background$run-message-loop!-$-state-machine--*gen-num*--auto-- / marion$content-script$background$run-message-loop!-$-state-machine--*gen-num*--auto--
+                  * run-state-machine / cljs.core.async.impl.ioc-helpers/run-state-machine
+                  * run-state-machine-wrapped / cljs.core.async.impl.ioc-helpers/run-state-machine-wrapped
+                  * λ
+                  * λ
+                  * process-messages / cljs.core.async.impl.dispatch/process-messages
+                  * channel.port1.onmessage / channel.port1.onmessage
 automate #4      close-devtools!
 extension        handling command: close-dirac-devtools
 extension        unregister devtools #4
