@@ -11,10 +11,16 @@
   (str "travis_fold:" action ":" name CLEAR_LINE))
 
 (defn travis-start-time-command [timer-id]
-  (str "travis_time:start:" timer-id CLEAR_LINE))
+  (str "travis_time:"
+       "start:" timer-id
+       CLEAR_LINE))
 
 (defn travis-end-time-command [timer-id start-time end-time]
-  (str "travis_time:end:" timer-id ":start=" start-time ",finish=" end-time ",duration=" (- end-time start-time) CLEAR_LINE))
+  (str "\n"
+       "travis_time:"
+       "end:" timer-id ":"
+       "start=" start-time ",finish=" end-time ",duration=" (- end-time start-time)
+       CLEAR_LINE))
 
 ; -- wrappers ---------------------------------------------------------------------------------------------------------------
 
