@@ -6,7 +6,8 @@
             [dirac.travis :as travis]
             [dirac.logging :as logging]
             [cuerdas.core :as cuerdas]
-            [clansi :refer [style]]))
+            [clansi :refer [style]])
+  (:import (java.time Instant)))
 
 ; this is the default dirac test runner
 
@@ -19,18 +20,32 @@
   (logging/setup! {:log-out   :console
                    :log-level log-level}))
 
+(def timing-info (atom {}))
+
 ; -- custom reporting -------------------------------------------------------------------------------------------------------
 
 (defn get-fold-name [m]
   (cuerdas/kebab (ns-name (:ns m))))
 
+(defn get-timer-id [m]
+  (str "timer-" (cuerdas/kebab (ns-name (:ns m)))))
+
 (defmethod clojure.test/report :begin-test-ns [m]
-  (with-test-out
-    (print (travis/travis-fold-command "start" (get-fold-name m)))
-    (println (style (str "Testing " (ns-name (:ns m))) :cyan))))
+  (let [start-time (travis/current-nano-time)
+        timer-id (get-timer-id m)]
+    (swap! timing-info assoc timer-id start-time)
+    (with-test-out
+      (travis/print-and-flush (travis/travis-fold-command "start" (get-fold-name m)))
+      (travis/print-and-flush (travis/travis-start-time-command timer-id))
+      (println (style (str "Testing " (ns-name (:ns m))) :cyan)))))
 
 (defmethod clojure.test/report :end-test-ns [m]
-  (print (travis/travis-fold-command "end" (get-fold-name m))))
+  (let [timer-id (get-timer-id m)
+        start-time (get @timing-info timer-id)
+        end-time (travis/current-nano-time)]
+    (assert start-time)
+    (travis/print-and-flush (travis/travis-end-time-command timer-id start-time end-time)))
+  (travis/print-and-flush (travis/travis-fold-command "end" (get-fold-name m))))
 
 (defmethod clojure.test/report :summary [m]
   (let [assertions-count (+ (:pass m) (:fail m) (:error m))

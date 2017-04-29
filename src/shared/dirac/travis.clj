@@ -1,9 +1,15 @@
 (ns dirac.travis
-  (:require [cuerdas.core :as cuerdas])
-  (:import (java.time Instant)))
+  (:require [cuerdas.core :as cuerdas]))
 
 (def ANSI_CLEAR "\033[0K")
 (def CLEAR_LINE (str "\r" ANSI_CLEAR))
+
+(defn current-nano-time []
+  (System/nanoTime))
+
+(defn print-and-flush [& args]
+  (apply print args)
+  (flush))
 
 ; -- raw commands -----------------------------------------------------------------------------------------------------------
 
@@ -27,24 +33,24 @@
 
 (defn wrap-with-timing [forms]
   (let [timer-id (name (gensym "timer"))]
-    `(let [start-time# (.getNano (Instant/now))]
-       (print (travis-start-time-command ~timer-id))
+    `(let [start-time# (current-nano-time)]
+       (print-and-flush (travis-start-time-command ~timer-id))
        (try
          ~@forms
          (finally
-           (let [end-time# (.getNano (Instant/now))]
-             (print (travis-end-time-command ~timer-id start-time# end-time#))))))))
+           (let [end-time# (current-nano-time)]
+             (print-and-flush (travis-end-time-command ~timer-id start-time# end-time#))))))))
 
-(defn wrap-with-folding [title name forms]
+(defn wrap-with-folding [name forms]
   `(let [sanitized-name# (cuerdas/kebab ~name)]
-     (print (travis-fold-command "start" sanitized-name#))
-     (println ~title)
+     (print-and-flush (travis-fold-command "start" sanitized-name#))
      (try
        ~@forms
        (finally
-         (print (travis-fold-command "end" sanitized-name#))))))
+         (print-and-flush (travis-fold-command "end" sanitized-name#))))))
 
 ; -- public api -------------------------------------------------------------------------------------------------------------
 
 (defmacro with-travis-fold [title name & body]
-  (wrap-with-folding title name (list (wrap-with-timing body))))
+  (let [forms (cons `(println ~title) body)]
+    (wrap-with-folding name (list (wrap-with-timing forms)))))
