@@ -1046,13 +1046,14 @@ Timeline.TimelineUIUtils = class {
    */
   static _buildRangeStatsCacheIfNeeded(model) {
     var tasks = model.mainThreadTasks();
-    if (tasks.length && tasks[0][Timeline.TimelineUIUtils._categoryBreakdownCacheSymbol])
+    var filter = Timeline.TimelineUIUtils._filterForStats();
+    var firstTask = tasks.find(filter);
+    if (!firstTask || firstTask[Timeline.TimelineUIUtils._categoryBreakdownCacheSymbol])
       return;
     var aggregatedStats = {};
     var ownTimes = [];
     TimelineModel.TimelineModel.forEachEvent(
-        model.mainThreadEvents(), onStartEvent, onEndEvent, undefined, undefined, undefined,
-        Timeline.TimelineUIUtils._filterForStats());
+        model.mainThreadEvents(), onStartEvent, onEndEvent, undefined, undefined, undefined, filter);
 
     /**
      * @param {!SDK.TracingModel.Event} e
@@ -1818,21 +1819,6 @@ Timeline.TimelineUIUtils = class {
     if (!trimAt)
       trimAt = 30;
     return url.startsWith('about:') ? `"${frame.name.trimMiddle(trimAt)}"` : frame.url.trimEnd(trimAt);
-  }
-
-  /**
-   * @param {!SDK.FilmStripModel} filmStripModel
-   * @param {!TimelineModel.TimelineFrame} frame
-   * @return {?SDK.FilmStripModel.Frame}
-   */
-  static filmStripModelFrame(filmStripModel, frame) {
-    var screenshotTime = frame.idle ?
-        frame.startTime :
-        frame.endTime;  // For idle frames, look at the state at the beginning of the frame.
-    var filmStripFrame = filmStripModel.frameByTimestamp(screenshotTime);
-    if (filmStripFrame && filmStripFrame.timestamp - frame.endTime > 10)
-      filmStripFrame = null;
-    return filmStripFrame;
   }
 };
 
