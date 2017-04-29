@@ -1192,10 +1192,7 @@ Console.ConsoleView = class extends UI.VBox {
       var clickedOutsideMessageList = event.target === this._messagesElement;
       if (clickedOutsideMessageList)
         this._prompt.moveCaretToEndOfPrompt();
-      const isCustomExpandIcon = targetElement.classList.contains("custom-expand-icon");
-      if (!isCustomExpandIcon) { // see https://github.com/binaryage/dirac/issues/59
-        this.focus();
-      }
+      this.focus();
     }
     var groupMessage = event.target.enclosingNodeOrSelfWithClass('console-group-title');
     if (!groupMessage)
