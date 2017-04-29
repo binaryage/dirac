@@ -16,11 +16,12 @@
        CLEAR_LINE))
 
 (defn travis-end-time-command [timer-id start-time end-time]
-  (str "\n"
-       "travis_time:"
-       "end:" timer-id ":"
-       "start=" start-time ",finish=" end-time ",duration=" (- end-time start-time)
-       CLEAR_LINE))
+  (let [duration (- end-time start-time)]
+    (str "\n"
+         "travis_time:"
+         "end:" timer-id ":"
+         "start=" start-time ",finish=" end-time ",duration=" duration
+         CLEAR_LINE)))
 
 ; -- wrappers ---------------------------------------------------------------------------------------------------------------
 
