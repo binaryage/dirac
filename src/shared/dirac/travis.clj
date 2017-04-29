@@ -47,5 +47,4 @@
 ; -- public api -------------------------------------------------------------------------------------------------------------
 
 (defmacro with-travis-fold [title name & body]
-  (wrap-with-timing
-    (list (wrap-with-folding title name body))))
+  (wrap-with-folding title name (list (wrap-with-timing body))))
