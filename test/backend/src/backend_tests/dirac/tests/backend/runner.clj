@@ -33,7 +33,7 @@
 (defmethod clojure.test/report :begin-test-ns [m]
   (let [timer-name (get-timer-name m)
         start-time (travis/current-nano-time)
-        timer-id (str "backend-runner-timer-" (.nextLong (ThreadLocalRandom/current)))]
+        timer-id (travis/random-timer-id)]
     (swap! timing-info assoc timer-name {:start-time start-time
                                          :timer-id   timer-id})
     (with-test-out

@@ -1,11 +1,15 @@
 (ns dirac.travis
-  (:require [cuerdas.core :as cuerdas]))
+  (:require [cuerdas.core :as cuerdas])
+  (:import (java.util.concurrent ThreadLocalRandom)))
 
 (def ANSI_CLEAR "\033[0K")
 (def CLEAR_LINE (str "\r" ANSI_CLEAR))
 
 (defn current-nano-time []
   (System/nanoTime))
+
+(defn random-timer-id []
+  (str "dirac-travis-timer-" (Math/abs (.nextLong (ThreadLocalRandom/current)))))
 
 (defn print-and-flush [& args]
   (apply print args)
@@ -32,14 +36,14 @@
 ; -- wrappers ---------------------------------------------------------------------------------------------------------------
 
 (defn wrap-with-timing [forms]
-  (let [timer-id (name (gensym "timer"))]
-    `(let [start-time# (current-nano-time)]
-       (print-and-flush (travis-start-time-command ~timer-id))
-       (try
-         ~@forms
-         (finally
-           (let [end-time# (current-nano-time)]
-             (print-and-flush (travis-end-time-command ~timer-id start-time# end-time#))))))))
+  `(let [timer-id# (random-timer-id)
+         start-time# (current-nano-time)]
+     (print-and-flush (travis-start-time-command timer-id#))
+     (try
+       ~@forms
+       (finally
+         (let [end-time# (current-nano-time)]
+           (print-and-flush (travis-end-time-command timer-id# start-time# end-time#)))))))
 
 (defn wrap-with-folding [name forms]
   `(let [sanitized-name# (cuerdas/kebab ~name)]
