@@ -3,6 +3,7 @@
   (:import (java.util.concurrent ThreadLocalRandom)))
 
 (def ANSI_CLEAR "\033[0K")
+(def ANSI_LINEUP "\033[F")
 (def CLEAR_LINE (str "\r" ANSI_CLEAR))
 
 (defn current-nano-time []
@@ -12,13 +13,15 @@
   (str "dirac-travis-timer-" (Math/abs (.nextLong (ThreadLocalRandom/current)))))
 
 (defn print-and-flush [& args]
-  (apply print args)
-  (flush))
+  (apply println args)                                                                                                        ; this will force flush, print+flush won't work in some cases
+  (print ANSI_LINEUP))
 
 ; -- raw commands -----------------------------------------------------------------------------------------------------------
 
 (defn travis-fold-command [action name]
-  (str "travis_fold:" action ":" name CLEAR_LINE))
+  (str "travis_fold:" action
+       ":" name
+       CLEAR_LINE))
 
 (defn travis-start-time-command [timer-id]
   (str "travis_time:"
@@ -27,8 +30,7 @@
 
 (defn travis-end-time-command [timer-id start-time end-time]
   (let [duration (- end-time start-time)]
-    (str "\n"
-         "travis_time:"
+    (str "travis_time:"
          "end:" timer-id ":"
          "start=" start-time ",finish=" end-time ",duration=" duration
          CLEAR_LINE)))
@@ -51,8 +53,7 @@
      (try
        ~@forms
        (finally
-         (print-and-flush (travis-fold-command "end" sanitized-name#))
-         (println "TEST")))))
+         (print-and-flush (travis-fold-command "end" sanitized-name#))))))
 
 ; -- public api -------------------------------------------------------------------------------------------------------------
 
