@@ -53,16 +53,16 @@
            (print-and-flush (travis-end-time-command timer-id# start-time# end-time#)))))))
 
 (defn wrap-with-folding [name forms]
-  `(let [sanitized-name# (cuerdas/kebab ~name)]
-     (print-and-flush (travis-fold-command "start" sanitized-name#))
+  `(let [name# ~name]
+     (print-and-flush (travis-fold-command "start" name#))
      (try
        ~@forms
        (finally
-         (print-and-flush (travis-fold-command "end" sanitized-name#))))))
+         (print-and-flush (travis-fold-command "end" name#))))))
 
 ; -- public api -------------------------------------------------------------------------------------------------------------
 
 (defmacro with-travis-fold [title name & body]
   (let [forms (cons `(println ~title) body)
-        folding-name (get-folding-name name)]
+        folding-name `(get-folding-name ~name)]
     (wrap-with-folding folding-name (list (wrap-with-timing forms)))))
