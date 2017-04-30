@@ -3,7 +3,6 @@
   (:import (java.util.concurrent ThreadLocalRandom)))
 
 (def ANSI_CLEAR "\033[0K")
-(def ANSI_LINEUP "\033[F")
 (def CLEAR_LINE (str "\r" ANSI_CLEAR))
 
 (defn current-nano-time []
@@ -13,8 +12,10 @@
   (str "dirac-travis-timer-" (Math/abs (.nextLong (ThreadLocalRandom/current)))))
 
 (defn print-and-flush [& args]
-  (apply println args)                                                                                                        ; this will force flush, print+flush won't work in some cases
-  (print ANSI_LINEUP))
+  (let [s (with-out-str
+            (apply print args))]
+    (.print System/out s)
+    (.flush System/out)))
 
 ; -- raw commands -----------------------------------------------------------------------------------------------------------
 
