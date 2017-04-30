@@ -8,8 +8,14 @@
 (defn current-nano-time []
   (System/nanoTime))
 
-(defn random-timer-id []
-  (str "dirac-travis-timer-" (Math/abs (.nextLong (ThreadLocalRandom/current)))))
+(defn gen-random-long []
+  (Math/abs (.nextLong (ThreadLocalRandom/current))))
+
+(defn gen-random-timer-id []
+  (str "dirac-travis-timer-" (gen-random-long)))
+
+(defn get-folding-name [name]
+  (cuerdas/kebab name))
 
 (defn print-and-flush [& args]
   (apply print args)
@@ -37,7 +43,7 @@
 ; -- wrappers ---------------------------------------------------------------------------------------------------------------
 
 (defn wrap-with-timing [forms]
-  `(let [timer-id# (random-timer-id)
+  `(let [timer-id# (gen-random-timer-id)
          start-time# (current-nano-time)]
      (print-and-flush (travis-start-time-command timer-id#))
      (try
@@ -57,5 +63,6 @@
 ; -- public api -------------------------------------------------------------------------------------------------------------
 
 (defmacro with-travis-fold [title name & body]
-  (let [forms (cons `(println ~title) body)]
-    (wrap-with-folding name (list (wrap-with-timing forms)))))
+  (let [forms (cons `(println ~title) body)
+        folding-name (get-folding-name name)]
+    (wrap-with-folding folding-name (list (wrap-with-timing forms)))))
