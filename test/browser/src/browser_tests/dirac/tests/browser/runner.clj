@@ -56,8 +56,6 @@
 ; -- fixtures ---------------------------------------------------------------------------------------------------------------
 
 (defn run-tests! []
-  (log/info "---------------------------------------------------------------------------------------------------------------")
-  (log/info "Running browser test tasks...")
   (let [test-namespaces default-test-namespaces]
     (require-namespaces test-namespaces)                                                                                      ; we want to require namespaces dynamically for our loggging configuration to take effect
     (let [summary (apply run-tests test-namespaces)]
