@@ -51,7 +51,8 @@
      (try
        ~@forms
        (finally
-         (print-and-flush (travis-fold-command "end" sanitized-name#))))))
+         (print-and-flush (travis-fold-command "end" sanitized-name#))
+         (println "TEST")))))
 
 ; -- public api -------------------------------------------------------------------------------------------------------------
 
