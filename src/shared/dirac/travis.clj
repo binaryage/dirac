@@ -12,10 +12,8 @@
   (str "dirac-travis-timer-" (Math/abs (.nextLong (ThreadLocalRandom/current)))))
 
 (defn print-and-flush [& args]
-  (let [s (with-out-str
-            (apply print args))]
-    (.print System/out s)
-    (.flush System/out)))
+  (apply print args)
+  (flush))
 
 ; -- raw commands -----------------------------------------------------------------------------------------------------------
 
