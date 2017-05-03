@@ -1561,6 +1561,7 @@ UI.bindInput = function(input, apply, validate, numeric) {
     if (isEnterKey(event)) {
       if (validate(input.value))
         apply(input.value);
+      event.preventDefault();
       return;
     }
 
@@ -2011,6 +2012,14 @@ UI.loadImage = function(url) {
     image.addEventListener('error', () => fulfill(null));
     image.src = url;
   });
+};
+
+/**
+ * @param {?string} data
+ * @return {!Promise<?Image>}
+ */
+UI.loadImageFromData = function(data) {
+  return data ? UI.loadImage('data:image/jpg;base64,' + data) : Promise.resolve(null);
 };
 
 /** @type {!UI.ThemeSupport} */
