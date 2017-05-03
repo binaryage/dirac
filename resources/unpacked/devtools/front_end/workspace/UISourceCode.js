@@ -679,10 +679,11 @@ Workspace.UILocation = class {
   }
 
   /**
+   * @param {boolean=} skipTrim
    * @return {string}
    */
-  linkText() {
-    var linkText = this.uiSourceCode.displayName();
+  linkText(skipTrim) {
+    var linkText = this.uiSourceCode.displayName(skipTrim);
     if (typeof this.lineNumber === 'number')
       linkText += ':' + (this.lineNumber + 1);
     return linkText;
