@@ -1,5 +1,4 @@
-(ns dirac.runtime.util
-  (:require [clojure.string :as string]))
+(ns dirac.runtime.util)
 
 (def known-browsers ["Opera" "IE" "Edge" "Firefox" "Safari" "Coast" "Chrome" "Silk"])
 
@@ -11,7 +10,7 @@
                             (let [browser-check (symbol "goog.labs.userAgent.browser" (str "is" browser-name))]               ; e.g. goog.labs.userAgent.browser/isChrome
                               `(if (~browser-check) ~browser-name)))
          gen-browser-tests (map gen-browser-test browsers)]
-     `(string/join ", " (remove nil? [~@gen-browser-tests])))))
+     `(clojure.string/join ", " (remove nil? [~@gen-browser-tests])))))
 
 (def known-platforms [["Android" "Android"]
                       ["Ipod" "iPod"]
@@ -30,4 +29,4 @@
                              (let [platform-check (symbol "goog.labs.userAgent.platform" (str "is" platform-key))]            ; e.g. goog.labs.userAgent.platform/isMacintosh
                                `(if (~platform-check) ~platform-name)))
          gen-platform-tests (map gen-platform-test platforms)]
-     `(string/join ", " (remove nil? [~@gen-platform-tests])))))
+     `(clojure.string/join ", " (remove nil? [~@gen-platform-tests])))))
