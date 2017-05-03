@@ -1,5 +1,5 @@
-Protocol.BakedInspectorBackendAPIChromeTag='60.0.3078.2';
-Protocol.BakedInspectorBackendAPIChromeRev='01f3a59562c172c73a0f19876bbdc6f12ba529c8';
+Protocol.BakedInspectorBackendAPIChromeTag='60.0.3088.2';
+Protocol.BakedInspectorBackendAPIChromeRev='9cde810d897d01c57b889a39977b4f39b68cdfb1';
 Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerEvent("Inspector.detached", ["reason"]);\n'
 + 'Protocol.inspectorBackend.registerEvent("Inspector.targetCrashed", []);\n'

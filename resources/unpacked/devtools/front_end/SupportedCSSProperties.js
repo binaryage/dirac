@@ -1,5 +1,5 @@
-Protocol.BakedSupportedCSSPropertiesChromeTag='60.0.3078.2';
-Protocol.BakedSupportedCSSPropertiesChromeRev='01f3a59562c172c73a0f19876bbdc6f12ba529c8';
+Protocol.BakedSupportedCSSPropertiesChromeTag='60.0.3088.2';
+Protocol.BakedSupportedCSSPropertiesChromeRev='9cde810d897d01c57b889a39977b4f39b68cdfb1';
 Protocol.BakedSupportedCSSProperties=''
 + '[{"name": "-webkit-app-region"},\n'
 + ' {"name": "-webkit-appearance"},\n'
@@ -299,13 +299,12 @@ Protocol.BakedSupportedCSSProperties=''
 + ' {"name": "mix-blend-mode"},\n'
 + ' {"name": "object-fit"},\n'
 + ' {"name": "object-position"},\n'
-+ ' {"longhands": ["offset-path", "offset-distance", "offset-rotation"], "name": "offset"},\n'
++ ' {"longhands": ["offset-path", "offset-distance", "offset-rotate"], "name": "offset"},\n'
 + ' {"name": "offset-anchor"},\n'
 + ' {"name": "offset-distance"},\n'
 + ' {"name": "offset-path"},\n'
 + ' {"name": "offset-position"},\n'
 + ' {"name": "offset-rotate"},\n'
-+ ' {"name": "offset-rotation"},\n'
 + ' {"name": "opacity"},\n'
 + ' {"name": "order"},\n'
 + ' {"name": "orientation"},\n'

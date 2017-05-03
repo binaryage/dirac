@@ -73,8 +73,6 @@ var Network = {};
 /** @type {!Object} */
 var NetworkConditions = {};
 /** @type {!Object} */
-var NetworkGroupLookup = {};
-/** @type {!Object} */
 var NetworkLog = {};
 /** @type {!Object} */
 var ObjectUI = {};
@@ -86,6 +84,8 @@ var Persistence = {};
 var Platform = {};
 /** @type {!Object} */
 var ProductRegistry = {};
+/** @type {!Object} */
+var ProductRegistryImpl = {};
 /** @type {!Object} */
 var Profiler = {};
 /** @type {!Object} */
