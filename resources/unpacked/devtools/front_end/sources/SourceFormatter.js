@@ -155,18 +155,17 @@ Sources.SourceFormatter.ScriptMapping = class {
    * @param {!Workspace.UISourceCode} uiSourceCode
    * @param {number} lineNumber
    * @param {number} columnNumber
-   * @return {!Array<!SDK.DebuggerModel.Location>}
+   * @return {?SDK.DebuggerModel.Location}
    */
-  uiLocationToRawLocations(uiSourceCode, lineNumber, columnNumber) {
+  uiLocationToRawLocation(uiSourceCode, lineNumber, columnNumber) {
     var formatData = Sources.SourceFormatData._for(uiSourceCode);
     if (!formatData)
-      return [];
+      return null;
     var originalLocation = formatData.mapping.formattedToOriginal(lineNumber, columnNumber);
     var scripts = this._scriptsForUISourceCode(formatData.originalSourceCode);
     if (!scripts.length)
-      return [];
-    var location = scripts[0].debuggerModel.createRawLocation(scripts[0], originalLocation[0], originalLocation[1]);
-    return location ? [location] : [];
+      return null;
+    return scripts[0].debuggerModel.createRawLocation(scripts[0], originalLocation[0], originalLocation[1]);
   }
 
   /**
@@ -226,8 +225,9 @@ Sources.SourceFormatter.ScriptMapping = class {
       }
     }
     if (uiSourceCode.contentType().isScript()) {
-      return Bindings.debuggerWorkspaceBinding.uiLocationToRawLocations(uiSourceCode, 0, 0)
-          .map(location => location.script());
+      var rawLocation = Bindings.debuggerWorkspaceBinding.uiLocationToRawLocation(uiSourceCode, 0, 0);
+      if (rawLocation)
+        return [rawLocation.script()];
     }
     return [];
   }
@@ -254,6 +254,22 @@ Sources.SourceFormatter.StyleMapping = class {
     var formattedLocation =
         formatData.mapping.originalToFormatted(rawLocation.lineNumber, rawLocation.columnNumber || 0);
     return formatData.formattedSourceCode.uiLocation(formattedLocation[0], formattedLocation[1]);
+  }
+
+  /**
+   * @override
+   * @param {!Workspace.UILocation} uiLocation
+   * @return {!Array<!SDK.CSSLocation>}
+   */
+  uiLocationToRawLocations(uiLocation) {
+    var formatData = Sources.SourceFormatData._for(uiLocation.uiSourceCode);
+    if (!formatData)
+      return [];
+    var originalLocation = formatData.mapping.formattedToOriginal(uiLocation.lineNumber, uiLocation.columnNumber);
+    var header = Bindings.NetworkProject.styleHeaderForUISourceCode(formatData.originalSourceCode);
+    if (!header)
+      return [];
+    return [new SDK.CSSLocation(header, originalLocation[0], originalLocation[1])];
   }
 
   /**
