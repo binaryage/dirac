@@ -195,6 +195,7 @@ Network.NetworkPanel = class extends UI.Panel {
     var setting = Common.settings.createSetting('networkGrouping', '');
     this._panelToolbar.appendToolbarItem(new UI.ToolbarSettingComboBox(options, setting, Common.UIString('Group by')));
     setting.addChangeListener(event => this._networkLogView.setGrouping(/** @type {string} */ (event.data)));
+    this._networkLogView.setGrouping(/** @type {string} */ (setting.get()));
   }
 
   /**
@@ -319,7 +320,7 @@ Network.NetworkPanel = class extends UI.Panel {
       this._filmStripView.element.classList.add('network-film-strip');
       this._filmStripRecorder =
           new Network.NetworkPanel.FilmStripRecorder(this._networkLogView.timeCalculator(), this._filmStripView);
-      this._filmStripView.show(this.element, this.element.firstElementChild);
+      this._filmStripView.show(this.element, this._overviewPane.element);
       this._filmStripView.addEventListener(PerfUI.FilmStripView.Events.FrameSelected, this._onFilmFrameSelected, this);
       this._filmStripView.addEventListener(PerfUI.FilmStripView.Events.FrameEnter, this._onFilmFrameEnter, this);
       this._filmStripView.addEventListener(PerfUI.FilmStripView.Events.FrameExit, this._onFilmFrameExit, this);

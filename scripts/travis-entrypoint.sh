@@ -15,9 +15,11 @@ init_travis_env() {
   echo "====================================================================================================================="
   source "./scripts/lib/travis.sh"
   travis_fold start init-travis
+  travis_time_start
   set -x
   source "./scripts/init-travis.sh"
   set +x
+  travis_time_finish
   travis_fold end init-travis
 }
 

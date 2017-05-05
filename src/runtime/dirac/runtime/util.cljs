@@ -5,6 +5,7 @@
             [goog.object]
             [goog.labs.userAgent.browser :as ua-browser]
             [goog.labs.userAgent.platform :as ua-platform]
+            [clojure.string]                                                                                                  ; for dirac.runtime.util macros
             [dirac.project :refer [get-current-version]]
             [dirac.runtime.prefs :as prefs]))
 

@@ -6,7 +6,8 @@
             [dirac.travis :as travis]
             [dirac.logging :as logging]
             [cuerdas.core :as cuerdas]
-            [clansi :refer [style]]))
+            [clansi :refer [style]])
+  (:import (java.util.concurrent ThreadLocalRandom)))
 
 ; this is the default dirac test runner
 
@@ -19,18 +20,36 @@
   (logging/setup! {:log-out   :console
                    :log-level log-level}))
 
+(def timing-info (atom {}))
+
 ; -- custom reporting -------------------------------------------------------------------------------------------------------
 
 (defn get-fold-name [m]
   (cuerdas/kebab (ns-name (:ns m))))
 
+(defn get-timer-name [m]
+  (str "timer-" (cuerdas/kebab (ns-name (:ns m)))))
+
 (defmethod clojure.test/report :begin-test-ns [m]
-  (with-test-out
-    (print (travis/travis-fold-command "start" (get-fold-name m)))
-    (println (style (str "Testing " (ns-name (:ns m))) :cyan))))
+  (let [timer-name (get-timer-name m)
+        start-time (travis/current-nano-time)
+        timer-id (travis/gen-random-timer-id)]
+    (swap! timing-info assoc timer-name {:start-time start-time
+                                         :timer-id   timer-id})
+    (with-test-out
+      (travis/print-and-flush (travis/travis-fold-command "start" (get-fold-name m)))
+      (travis/print-and-flush (travis/travis-start-time-command timer-id))
+      (println (style (str "Testing " (ns-name (:ns m))) :cyan)))))
 
 (defmethod clojure.test/report :end-test-ns [m]
-  (print (travis/travis-fold-command "end" (get-fold-name m))))
+  (let [timer-name (get-timer-name m)
+        timing (get @timing-info timer-name)
+        timer-id (:timer-id timing)
+        start-time (:start-time timing)
+        end-time (travis/current-nano-time)]
+    (assert timing)
+    (travis/print-and-flush (travis/travis-end-time-command timer-id start-time end-time)))
+  (travis/print-and-flush (travis/travis-fold-command "end" (get-fold-name m))))
 
 (defmethod clojure.test/report :summary [m]
   (let [assertions-count (+ (:pass m) (:fail m) (:error m))
