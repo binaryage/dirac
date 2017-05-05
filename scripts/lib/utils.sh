@@ -59,3 +59,16 @@ portable_realpath() {
       realpath "$@" ;;
   esac
 }
+
+portable_stdbuf() {
+  case "$OSTYPE" in
+    darwin*)
+      if [ -z "$(which gstdbuf)" ]; then
+        echo "gstdbuf needed under OSX, please \`brew install coreutils\`"
+        exit 1
+      fi
+      gstdbuf "$@" ;;
+    *)
+      stdbuf "$@" ;;
+  esac
+}
