@@ -320,39 +320,49 @@ SDK.TextSourceMap = class {
    * @return {?SDK.SourceMapEntry}
    */
   findEntry(lineNumber, columnNumber) {
-    var first = 0;
     var mappings = this.mappings();
-    var count = mappings.length;
-    while (count > 1) {
-      var step = count >> 1;
-      var middle = first + step;
-      var mapping = mappings[middle];
-      if (lineNumber < mapping.lineNumber ||
-          (lineNumber === mapping.lineNumber && columnNumber < mapping.columnNumber)) {
-        count = step;
-      } else {
-        first = middle;
-        count -= step;
-      }
-    }
-    var entry = mappings[first];
-    if (!first && entry &&
-        (lineNumber < entry.lineNumber || (lineNumber === entry.lineNumber && columnNumber < entry.columnNumber)))
-      return null;
-    return entry;
+    var index = mappings.upperBound(
+        undefined, (unused, entry) => lineNumber - entry.lineNumber || columnNumber - entry.columnNumber);
+    return index ? mappings[index - 1] : null;
   }
 
   /**
    * @param {string} sourceURL
    * @param {number} lineNumber
+   * @return {?SDK.SourceMapEntry}
+   */
+  firstSourceLineMapping(sourceURL, lineNumber) {
+    var mappings = this._reversedMappings(sourceURL);
+    var index = mappings.lowerBound(lineNumber, lineComparator);
+    if (index >= mappings.length || mappings[index].sourceLineNumber !== lineNumber)
+      return null;
+    return mappings[index];
+
+    /**
+     * @param {number} lineNumber
+     * @param {!SDK.SourceMapEntry} mapping
+     * @return {number}
+     */
+    function lineComparator(lineNumber, mapping) {
+      return lineNumber - mapping.sourceLineNumber;
+    }
+  }
+
+  /**
+   * @param {string} sourceURL
+   * @param {number} lineNumber
+   * @param {number} columnNumber
    * @return {!Array<!SDK.SourceMapEntry>}
    */
-  mappingsForLine(sourceURL, lineNumber) {
+  findReverseEntries(sourceURL, lineNumber, columnNumber) {
     var mappings = this._reversedMappings(sourceURL);
-    var startIndex = mappings.lowerBound(lineNumber, (lineNumber, mapping) => lineNumber - mapping.sourceLineNumber);
-    var endIndex = startIndex;
-    while (endIndex < mappings.length && mappings[endIndex].sourceLineNumber === lineNumber)
-      ++endIndex;
+    var endIndex = mappings.upperBound(
+        undefined, (unused, entry) => lineNumber - entry.sourceLineNumber || columnNumber - entry.sourceColumnNumber);
+    var startIndex = endIndex;
+    while (startIndex > 0 && mappings[startIndex - 1].sourceLineNumber === mappings[endIndex - 1].sourceLineNumber &&
+           mappings[startIndex - 1].sourceColumnNumber === mappings[endIndex - 1].sourceColumnNumber)
+      --startIndex;
+
     return mappings.slice(startIndex, endIndex);
   }
 
