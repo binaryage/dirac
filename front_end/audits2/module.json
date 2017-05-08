@@ -4,10 +4,10 @@
             "type": "view",
             "location": "panel",
             "id": "audits2",
-            "title": "Audits 2.0",
+            "title": "Audits",
             "order": 90,
-            "persistence": "closeable",
-            "className": "Audits2.Audits2Panel"
+            "className": "Audits2.Audits2Panel",
+            "experiment": "audits2"
         }
     ],
     "dependencies": [
@@ -16,7 +16,6 @@
         "services",
         "ui"
     ],
-    "experiment": "audits2",
     "scripts": [
         "lighthouse/renderer/util.js",
         "lighthouse/renderer/dom.js",
