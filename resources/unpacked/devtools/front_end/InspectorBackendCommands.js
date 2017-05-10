@@ -1,5 +1,5 @@
-Protocol.BakedInspectorBackendAPIChromeTag='60.0.3090.4';
-Protocol.BakedInspectorBackendAPIChromeRev='f5baf6ee31f52f2a79925c7f03626c2f3d0b9b9f';
+Protocol.BakedInspectorBackendAPIChromeTag='60.0.3095.3';
+Protocol.BakedInspectorBackendAPIChromeRev='0cead9c8ed144d45719a31b648d44ccb487f1f3c';
 Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerEvent("Inspector.detached", ["reason"]);\n'
 + 'Protocol.inspectorBackend.registerEvent("Inspector.targetCrashed", []);\n'
@@ -53,7 +53,7 @@ Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerCommand("Page.clearDeviceOrientationOverride", [], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Page.setTouchEmulationEnabled", [{"name": "enabled", "type": "boolean", "optional": false}, {"name": "configuration", "type": "string", "optional": true}], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Page.captureScreenshot", [{"name": "format", "type": "string", "optional": true}, {"name": "quality", "type": "number", "optional": true}, {"name": "fromSurface", "type": "boolean", "optional": true}], ["data"], false);\n'
-+ 'Protocol.inspectorBackend.registerCommand("Page.printToPDF", [], ["data"], false);\n'
++ 'Protocol.inspectorBackend.registerCommand("Page.printToPDF", [{"name": "landscape", "type": "boolean", "optional": true}, {"name": "displayHeaderFooter", "type": "boolean", "optional": true}, {"name": "printBackground", "type": "boolean", "optional": true}, {"name": "scale", "type": "number", "optional": true}, {"name": "paperWidth", "type": "number", "optional": true}, {"name": "paperHeight", "type": "number", "optional": true}, {"name": "marginTop", "type": "number", "optional": true}, {"name": "marginBottom", "type": "number", "optional": true}, {"name": "marginLeft", "type": "number", "optional": true}, {"name": "marginRight", "type": "number", "optional": true}, {"name": "pageRanges", "type": "string", "optional": true}], ["data"], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Page.startScreencast", [{"name": "format", "type": "string", "optional": true}, {"name": "quality", "type": "number", "optional": true}, {"name": "maxWidth", "type": "number", "optional": true}, {"name": "maxHeight", "type": "number", "optional": true}, {"name": "everyNthFrame", "type": "number", "optional": true}], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Page.stopScreencast", [], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Page.screencastFrameAck", [{"name": "sessionId", "type": "number", "optional": false}], [], false);\n'
