@@ -26,7 +26,7 @@ if [ ! -z "$FIRST_SQUASH" ] ; then
 fi
 echo "MERGED_DEVTOOLS_RANGE=$MERGED_DEVTOOLS_RANGE"
 
-FROM_OFFICIAL_DEVTOOLS="from [official DevTools](https://developer.chrome.com/devtools)"
+FROM_OFFICIAL_DEVTOOLS="from [official DevTools](https://developers.google.com/web/tools/chrome-devtools)"
 
 CHROME_VERSION=`${SCRIPTS}/extract-backend-protocol-chrome-version.sh "$END_TAG"`
 echo "CHROME_VERSION=$CHROME_VERSION"
