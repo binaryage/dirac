@@ -38,7 +38,7 @@ echo "<--- cut here"
 echo "## Rolling DevTools"
 echo ""
 if [ ! -z "$MERGED_DEVTOOLS_RANGE" ] ; then
-  echo "Merged commits $MERGED_DEVTOOLS_RANGE $FROM_OFFICIAL_DEVTOOLS."
+  echo "Merged commits https://github.com/binaryage/dirac/compare/$MERGED_DEVTOOLS_RANGE $FROM_OFFICIAL_DEVTOOLS."
 else
   echo "Merged no commits $FROM_OFFICIAL_DEVTOOLS."
 fi
