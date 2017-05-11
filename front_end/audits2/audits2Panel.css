@@ -43,6 +43,7 @@
 
 .lh-root {
   --report-menu-width: 0 !important;
+  user-select: initial;
 }
 
 .audits2-landing-center button {
@@ -60,7 +61,7 @@
     border-top: 1px solid #ccc;
     border-bottom: 1px solid #ccc;
     padding: 5px 0;
-    margin: 5px 0;
+    margin: 5px 0 0 68px;
     overflow: auto;
 }
 

@@ -127,6 +127,17 @@ Audits2.Audits2Panel = class extends UI.PanelWithSidebar {
   }
 
   _start() {
+    var emulationModel = self.singleton(Emulation.DeviceModeModel);
+    this._emulationEnabledBefore = emulationModel.enabledSetting().get();
+    this._emulationOutlineEnabledBefore = emulationModel.deviceOutlineSetting().get();
+    emulationModel.enabledSetting().set(true);
+    emulationModel.deviceOutlineSetting().set(true);
+    emulationModel.toolbarControlsEnabledSetting().set(false);
+
+    for (var device of Emulation.EmulatedDevicesList.instance().standard()) {
+      if (device.title === 'Nexus 5X')
+        emulationModel.emulate(Emulation.DeviceModeModel.Type.Device, device, device.modes[0], 1);
+    }
     this._dialog.setCloseOnEscape(false);
     this._inspectedURL = SDK.targetManager.mainTarget().inspectedURL();
 
@@ -144,20 +155,24 @@ Audits2.Audits2Panel = class extends UI.PanelWithSidebar {
           this._updateStatus(Common.UIString('Loading\u2026'));
         })
         .then(_ => this._protocolService.startLighthouse(this._inspectedURL, categoryIDs))
-        .then(lighthouseResult => {
-          this._finish(lighthouseResult);
-          return this._stop();
-        })
-        .catch(err => {
+        .then(lighthouseResult =>
+          this._stopAndReattach().then(() => this._buildReportUI(lighthouseResult))
+        ).catch(err => {
           if (err instanceof Error)
             this._renderBugReport(err);
-        });
+         });
   }
 
   _hideDialog() {
     if (!this._dialog)
       return;
     this._dialog.hide();
+
+    var emulationModel = self.singleton(Emulation.DeviceModeModel);
+    emulationModel.enabledSetting().set(this._emulationEnabledBefore);
+    emulationModel.deviceOutlineSetting().set(this._emulationOutlineEnabledBefore);
+    emulationModel.toolbarControlsEnabledSetting().set(true);
+
     delete this._dialog;
     delete this._statusView;
     delete this._statusIcon;
@@ -166,12 +181,14 @@ Audits2.Audits2Panel = class extends UI.PanelWithSidebar {
     delete this._cancelButton;
     delete this._auditSelectorForm;
     delete this._headerTitleElement;
+    delete this._emulationEnabledBefore;
+    delete this._emulationOutlineEnabledBefore;
   }
 
   _cancel() {
     if (this._auditRunning) {
       this._updateStatus(Common.UIString('Cancelling\u2026'));
-      this._stop();
+      this._stopAndReattach();
     } else {
       this._hideDialog();
     }
@@ -202,23 +219,21 @@ Audits2.Audits2Panel = class extends UI.PanelWithSidebar {
   /**
    * @return {!Promise<undefined>}
    */
-  _stop() {
+  _stopAndReattach() {
     return this._protocolService.detach().then(_ => {
       Emulation.InspectedPagePlaceholder.instance().update(true);
       this._auditRunning = false;
       this._updateButton();
       var resourceTreeModel = SDK.targetManager.mainTarget().model(SDK.ResourceTreeModel);
-      if (resourceTreeModel && this._inspectedURL !== SDK.targetManager.mainTarget().inspectedURL())
-        resourceTreeModel.navigate(this._inspectedURL).then(() => this._hideDialog());
-      else
-        this._hideDialog();
+      // reload to reset the page state
+      resourceTreeModel.navigate(this._inspectedURL).then(() => this._hideDialog());
     });
   }
 
   /**
    * @param {!ReportRenderer.ReportJSON} lighthouseResult
    */
-  _finish(lighthouseResult) {
+  _buildReportUI(lighthouseResult) {
     if (lighthouseResult === null) {
       this._updateStatus(Common.UIString('Auditing failed.'));
       return;
@@ -288,7 +303,7 @@ Audits2.Audits2Panel = class extends UI.PanelWithSidebar {
     var data = JSON.parse(profile);
     if (!data['lighthouseVersion'])
       return;
-    this._finish(/** @type {!ReportRenderer.ReportJSON} */ (data));
+    this._buildReportUI(/** @type {!ReportRenderer.ReportJSON} */ (data));
   }
 };
 
@@ -418,8 +433,15 @@ Audits2.ProtocolService = class extends Common.Object {
             return;
           this._backend = backend;
           this._backend.on('statusUpdate', result => this._status(result.message));
-          this._backend.on('sendProtocolMessage', result => this._rawConnection.sendMessage(result.message));
+          this._backend.on('sendProtocolMessage', result => this._sendProtocolMessage(result.message));
         });
+  }
+
+  /**
+   * @param {string} message
+   */
+  _sendProtocolMessage(message) {
+    this._rawConnection.sendMessage(message);
   }
 
   /**
@@ -521,7 +543,7 @@ Audits2.Audits2Panel.TreeElement = class extends UI.TreeElement {
     this._reportContainer = this._resultsView.createChild('div', 'report-container lh-vars lh-root');
 
     var dom = new DOM(/** @type {!Document} */ (this._resultsView.ownerDocument));
-    var detailsRenderer = new DetailsRenderer(dom);
+    var detailsRenderer = new Audits2.DetailsRenderer(dom);
     var categoryRenderer = new CategoryRenderer(dom, detailsRenderer);
     var renderer = new Audits2.Audits2Panel.ReportRenderer(dom, categoryRenderer);
 
@@ -633,5 +655,57 @@ Audits2.Audits2Panel.TreeSubElement = class extends UI.TreeElement {
       return true;
     }
     return false;
+  }
+};
+
+Audits2.DetailsRenderer = class extends DetailsRenderer {
+  /**
+   * @param {!DOM} dom
+   */
+  constructor(dom) {
+    super(dom);
+    this._onMainFrameNavigatedPromise = null;
+  }
+
+  /**
+   * @override
+   * @param {!DetailsRenderer.NodeDetailsJSON} item
+   * @return {!Element}
+   */
+  renderNode(item) {
+    var element = super.renderNode(item);
+    this._replaceWithDeferredNodeBlock(element, item);
+    return element;
+  }
+
+  /**
+   * @param {!Element} origElement
+   * @param {!DetailsRenderer.NodeDetailsJSON} detailsItem
+   */
+  _replaceWithDeferredNodeBlock(origElement, detailsItem) {
+    var mainTarget = SDK.targetManager.mainTarget();
+    if (!this._onMainFrameNavigatedPromise) {
+      var resourceTreeModel = mainTarget.model(SDK.ResourceTreeModel);
+      this._onMainFrameNavigatedPromise = new Promise(resolve => {
+        resourceTreeModel.once(SDK.ResourceTreeModel.Events.MainFrameNavigated, resolve);
+      });
+    }
+
+    this._onMainFrameNavigatedPromise.then(_ => {
+      var domModel = mainTarget.model(SDK.DOMModel);
+      if (!detailsItem.path)
+        return;
+
+      domModel.pushNodeByPathToFrontend(detailsItem.path, nodeId => {
+        if (!nodeId)
+          return;
+        var node = domModel.nodeForId(nodeId);
+        if (!node)
+          return;
+
+        var element = Components.DOMPresentationUtils.linkifyNodeReference(node, undefined, detailsItem.snippet);
+        origElement.parentNode.replaceChild(element, origElement);
+      });
+    });
   }
 };
