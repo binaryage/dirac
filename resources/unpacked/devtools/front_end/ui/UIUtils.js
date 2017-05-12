@@ -2017,3 +2017,17 @@ UI.ConfirmDialog = class extends UI.VBox {
     buttonsBar.appendChild(UI.createTextButton(Common.UIString('Cancel'), cancelCallback));
   }
 };
+
+/**
+ * @param {!UI.ToolbarToggle} toolbarButton
+ * @return {!Element}
+ */
+UI.createInlineButton = function(toolbarButton) {
+  var element = createElement('span');
+  var shadowRoot = UI.createShadowRootWithCoreStyles(element, 'ui/inlineButton.css');
+  element.classList.add('inline-button');
+  var toolbar = new UI.Toolbar('');
+  toolbar.appendToolbarItem(toolbarButton);
+  shadowRoot.appendChild(toolbar.element);
+  return element;
+};

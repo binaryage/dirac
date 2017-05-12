@@ -128,7 +128,8 @@
         "dirac",
         "data_grid",
         "object_ui",
-        "console_model"
+        "console_model",
+        "product_registry"
     ],
     "scripts": [
         "clojure-parinfer.js",
@@ -144,6 +145,8 @@
         "clojure-parinfer.js"
     ],
     "resources": [
+        "consoleContextSelector.css",
+        "consoleContextSelectorButton.css",
         "consoleView.css",
         "dirac-hacks.css",
         "dirac-codemirror.css",

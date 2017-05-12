@@ -139,7 +139,7 @@ Coverage.CoverageListView = class extends UI.VBox {
       var nodeA = /** @type {!Coverage.CoverageListView.GridNode} */ (a);
       var nodeB = /** @type {!Coverage.CoverageListView.GridNode} */ (b);
 
-      return nodeA._displayURL.localeCompare(nodeB._displayURL);
+      return nodeA._url.localeCompare(nodeB._url);
     }
 
     /**
@@ -193,7 +193,6 @@ Coverage.CoverageListView.GridNode = class extends DataGrid.SortableDataGridNode
     /** @type {number|undefined} */
     this._lastUsedSize;
     this._url = coverageInfo.url();
-    this._displayURL = new Common.ParsedURL(this._url).displayName;
     this._maxSize = maxSize;
   }
 
@@ -243,9 +242,9 @@ Coverage.CoverageListView.GridNode = class extends DataGrid.SortableDataGridNode
       case 'bars':
         var barContainer = cell.createChild('div', 'bar-container');
         var unusedSizeBar = barContainer.createChild('div', 'bar bar-unused-size');
-        unusedSizeBar.style.width = Math.ceil(100 * this._coverageInfo.unusedSize() / this._maxSize) + '%';
+        unusedSizeBar.style.width = (100 * this._coverageInfo.unusedSize() / this._maxSize).toFixed(4) + '%';
         var usedSizeBar = barContainer.createChild('div', 'bar bar-used-size');
-        usedSizeBar.style.width = Math.floor(100 * this._coverageInfo.usedSize() / this._maxSize) + '%';
+        usedSizeBar.style.width = (100 * this._coverageInfo.usedSize() / this._maxSize).toFixed(4) + '%';
     }
     return cell;
   }
