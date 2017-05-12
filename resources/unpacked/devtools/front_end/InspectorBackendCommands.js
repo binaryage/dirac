@@ -1,5 +1,5 @@
-Protocol.BakedInspectorBackendAPIChromeTag='60.0.3095.3';
-Protocol.BakedInspectorBackendAPIChromeRev='0cead9c8ed144d45719a31b648d44ccb487f1f3c';
+Protocol.BakedInspectorBackendAPIChromeTag='60.0.3097.2';
+Protocol.BakedInspectorBackendAPIChromeRev='5a7bd66da934d6decc3d60a8c0640a990fc0d0a8';
 Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerEvent("Inspector.detached", ["reason"]);\n'
 + 'Protocol.inspectorBackend.registerEvent("Inspector.targetCrashed", []);\n'
@@ -63,6 +63,7 @@ Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerCommand("Page.setControlNavigations", [{"name": "enabled", "type": "boolean", "optional": false}], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Page.processNavigation", [{"name": "response", "type": "string", "optional": false}, {"name": "navigationId", "type": "number", "optional": false}], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Page.getLayoutMetrics", [], ["layoutViewport", "visualViewport", "contentSize"], false);\n'
++ 'Protocol.inspectorBackend.registerCommand("Page.createIsolatedWorld", [{"name": "frameId", "type": "string", "optional": false}, {"name": "worldName", "type": "string", "optional": true}, {"name": "grantUniveralAccess", "type": "boolean", "optional": true}], [], false);\n'
 + 'Protocol.inspectorBackend.registerEnum("Overlay.InspectMode", {SearchForNode: "searchForNode", SearchForUAShadowDOM: "searchForUAShadowDOM", None: "none"});\n'
 + 'Protocol.inspectorBackend.registerEvent("Overlay.nodeHighlightRequested", ["nodeId"]);\n'
 + 'Protocol.inspectorBackend.registerEvent("Overlay.inspectNodeRequested", ["backendNodeId"]);\n'
