@@ -336,18 +336,17 @@ SDK.TextSourceMap = class {
    */
   findEntry(lineNumber, columnNumber) {
     var mappings = this.mappings();
-    var index = mappings.upperBound(
-    undefined, (unused, entry) => lineNumber - entry.lineNumber || columnNumber - entry.columnNumber) ;
-      return index ? mappings[index - 1] : null;
-      }
+    var index = mappings.upperBound(undefined, (unused, entry) => lineNumber - entry.lineNumber || columnNumber - entry.columnNumber);
+    return index ? mappings[index - 1] : null;
+  }
 
-      /**
-          * @param {string} sourceURL
-   * @param {number}lineNumber
-        * @return {?SDK.SourceMapEntry}
-      */
-        firstSourceLineMapping(sourceURL, lineNumber) {
-        var mappings = this._reversedMappings(sourceURL);
+  /**
+   * @param {string} sourceURL
+   * @param {number} lineNumber
+   * @return {?SDK.SourceMapEntry}
+   */
+  firstSourceLineMapping(sourceURL, lineNumber) {
+    var mappings = this._reversedMappings(sourceURL);
     var index = mappings.lowerBound(lineNumber, lineComparator);
     if (index >= mappings.length || mappings[index].sourceLineNumber !==lineNumber )
       return null;
