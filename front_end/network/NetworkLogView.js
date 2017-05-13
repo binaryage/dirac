@@ -90,8 +90,8 @@ Network.NetworkLogView = class extends UI.VBox {
     this._currentMatchedRequestNode = null;
     this._currentMatchedRequestIndex = -1;
 
-    /** @type {!Components.Linkifier} */
     this.linkifier = new Components.Linkifier();
+    this.badgePool = new ProductRegistry.BadgePool();
 
     this._recording = false;
     this._preserveLog = false;
@@ -921,10 +921,8 @@ Network.NetworkLogView = class extends UI.VBox {
     this._calculator.reset();
 
     this._timeCalculator.setWindow(null);
-
-    var nodes = this._nodesByRequestId.valuesArray();
-    for (var i = 0; i < nodes.length; ++i)
-      nodes[i].dispose();
+    this.linkifier.reset();
+    this.badgePool.reset();
 
     if (this._activeGroupLookup)
       this._activeGroupLookup.reset();
