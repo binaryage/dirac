@@ -515,6 +515,26 @@ Sources.JavaScriptSourceFrame = class extends SourceFrame.UISourceCodeFrame {
       if (!this._continueToLocationDecorations)
         this._showContinueToLocations();
     }
+    if (this._continueToLocationDecorations) {
+      var textPosition = this.textEditor.coordinatesToCursorPosition(event.x, event.y);
+      var hovering = !!event.target.enclosingNodeOrSelfWithClass('source-frame-async-step-in');
+      this._setAsyncStepInHoveredLine(textPosition ? textPosition.startLine : null, hovering);
+    }
+  }
+
+  /**
+   * @param {?number} line
+   * @param {boolean} hovered
+   */
+  _setAsyncStepInHoveredLine(line, hovered) {
+    if (this._asyncStepInHoveredLine === line && this._asyncStepInHovered === hovered)
+      return;
+    if (this._asyncStepInHovered && this._asyncStepInHoveredLine)
+      this.textEditor.toggleLineClass(this._asyncStepInHoveredLine, 'source-frame-async-step-in-hovered', false);
+    this._asyncStepInHoveredLine = line;
+    this._asyncStepInHovered = hovered;
+    if (this._asyncStepInHovered && this._asyncStepInHoveredLine)
+      this.textEditor.toggleLineClass(this._asyncStepInHoveredLine, 'source-frame-async-step-in-hovered', true);
   }
 
   /**
@@ -719,7 +739,7 @@ Sources.JavaScriptSourceFrame = class extends SourceFrame.UISourceCodeFrame {
             tokenContent === 'setTimeout' || tokenContent === 'setInterval';
         var isCurrentPosition = this._executionLocation && lineNumber === this._executionLocation.lineNumber &&
             location.columnNumber === this._executionLocation.columnNumber;
-        if (location.type === Protocol.Debugger.BreakLocationType.Call && isAsyncCall && isCurrentPosition) {
+        if (location.type === Protocol.Debugger.BreakLocationType.Call && isAsyncCall) {
           var functionPosition = line.indexOf('(', token.endColumn);
           if (functionPosition !== -1) {
             functionPosition++;
@@ -734,14 +754,28 @@ Sources.JavaScriptSourceFrame = class extends SourceFrame.UISourceCodeFrame {
               highlightRange =
                   new TextUtils.TextRange(lineNumber, nextToken.startColumn, lineNumber, nextToken.endColumn - 1);
               decoration = this.textEditor.highlightRange(highlightRange, 'source-frame-async-step-in');
-              this._continueToLocationDecorations.set(decoration, () => {
-                debuggerModel.scheduleStepIntoAsync();
-                debuggerModel.stepInto();
-              });
+              this._continueToLocationDecorations.set(
+                  decoration, this._asyncStepIn.bind(this, location, isCurrentPosition));
             }
           }
         }
       }
+    }
+  }
+
+  /**
+   * @param {!SDK.DebuggerModel.BreakLocation} location
+   * @param {boolean} isCurrentPosition
+   */
+  _asyncStepIn(location, isCurrentPosition) {
+    if (!isCurrentPosition)
+      location.continueToLocation(asyncStepIn);
+    else
+      asyncStepIn();
+
+    function asyncStepIn() {
+      location.debuggerModel.scheduleStepIntoAsync();
+      location.debuggerModel.stepInto();
     }
   }
 
@@ -946,6 +980,7 @@ Sources.JavaScriptSourceFrame = class extends SourceFrame.UISourceCodeFrame {
       for (var decoration of this._continueToLocationDecorations.keys())
         this.textEditor.removeHighlight(decoration);
       this._continueToLocationDecorations = null;
+      this._setAsyncStepInHoveredLine(null, false);
     });
   }
 

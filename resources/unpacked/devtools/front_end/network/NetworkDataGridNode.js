@@ -361,9 +361,9 @@ Network.NetworkRequestNode = class extends Network.NetworkNode {
     /** @type {?Element} */
     this._nameCell = null;
     /** @type {?Element} */
-    this._initiatorCell = null;
+    this._nameBadgeElement = null;
     /** @type {?Element} */
-    this._linkifiedInitiatorAnchor = null;
+    this._initiatorCell = null;
     this._request = request;
     this._isNavigationRequest = false;
     this.selectable = true;
@@ -880,31 +880,6 @@ Network.NetworkRequestNode = class extends Network.NetworkNode {
 
   /**
    * @override
-   * @protected
-   */
-  willAttach() {
-    if (this._initiatorCell &&
-        NetworkLog.networkLog.initiatorInfoForRequest(this._request).type === SDK.NetworkRequest.InitiatorType.Script)
-      this._initiatorCell.insertBefore(this._linkifiedInitiatorAnchor, this._initiatorCell.firstChild);
-  }
-
-  /**
-   * @override
-   */
-  wasDetached() {
-    if (this._linkifiedInitiatorAnchor)
-      this._linkifiedInitiatorAnchor.remove();
-  }
-
-  dispose() {
-    if (this._linkifiedInitiatorAnchor) {
-      this.parentView().linkifier.disposeAnchor(
-          this._request.networkManager().target(), this._linkifiedInitiatorAnchor);
-    }
-  }
-
-  /**
-   * @override
    * @param {boolean=} supressSelectedEvent
    */
   select(supressSelectedEvent) {
@@ -958,6 +933,9 @@ Network.NetworkRequestNode = class extends Network.NetworkNode {
     iconElement.classList.add(this._request.resourceType().name());
 
     cell.appendChild(iconElement);
+    if (!this._nameBadgeElement)
+      this._nameBadgeElement = this.parentView().badgePool.badgeForURL(this._request.parsedURL);
+    cell.appendChild(this._nameBadgeElement);
     cell.createTextChild(this._request.networkManager().target().decorateLabel(this._request.name()));
     this._appendSubtitle(cell, this._request.path());
     cell.title = this._request.url();
@@ -1066,12 +1044,10 @@ Network.NetworkRequestNode = class extends Network.NetworkNode {
         break;
 
       case SDK.NetworkRequest.InitiatorType.Script:
-        if (!this._linkifiedInitiatorAnchor) {
-          this._linkifiedInitiatorAnchor = this.parentView().linkifier.linkifyScriptLocation(
-              request.networkManager().target(), initiator.scriptId, initiator.url, initiator.lineNumber,
-              initiator.columnNumber);
-          this._linkifiedInitiatorAnchor.title = '';
-        }
+        this._linkifiedInitiatorAnchor = this.parentView().linkifier.linkifyScriptLocation(
+            request.networkManager().target(), initiator.scriptId, initiator.url, initiator.lineNumber,
+            initiator.columnNumber);
+        this._linkifiedInitiatorAnchor.title = '';
         cell.appendChild(this._linkifiedInitiatorAnchor);
         this._appendSubtitle(cell, Common.UIString('Script'));
         cell.classList.add('network-script-initiated');
