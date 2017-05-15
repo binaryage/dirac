@@ -1,5 +1,15 @@
 #!/usr/bin/env bash
 
+echo "-----------------------------------------------------------------------------------------------------------------------"
+echo "running ${BASH_SOURCE[0]} on $(date)"
+
+finish () {
+  echo "finished ${BASH_SOURCE[0]} on $(date)"
+  echo
+  echo
+}
+trap finish EXIT
+
 source "$(dirname "${BASH_SOURCE[0]}")/_config.sh"
 false && source _config.sh # never executes, this is here just for IntelliJ Bash support to understand our sourcing
 
