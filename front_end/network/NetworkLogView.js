@@ -90,8 +90,8 @@ Network.NetworkLogView = class extends UI.VBox {
     this._currentMatchedRequestNode = null;
     this._currentMatchedRequestIndex = -1;
 
-    /** @type {!Components.Linkifier} */
     this.linkifier = new Components.Linkifier();
+    this.badgePool = new ProductRegistry.BadgePool();
 
     this._recording = false;
     this._preserveLog = false;
@@ -100,7 +100,7 @@ Network.NetworkLogView = class extends UI.VBox {
 
     /** @type {!Map<string, !Network.GroupLookupInterface>} */
     this._groupLookups = new Map();
-    this._groupLookups.set('Frame', new Network.FrameGrouper(this));
+    this._groupLookups.set('Frame', new Network.NetworkFrameGrouper(this));
 
     /** @type {?Network.GroupLookupInterface} */
     this._activeGroupLookup = null;
@@ -119,6 +119,14 @@ Network.NetworkLogView = class extends UI.VBox {
         SDK.NetworkManager, SDK.NetworkManager.Events.RequestUpdated, this._onRequestUpdated, this);
     SDK.targetManager.addModelListener(
         SDK.NetworkManager, SDK.NetworkManager.Events.RequestFinished, this._onRequestUpdated, this);
+
+    this._updateGroupByFrame();
+    Common.moduleSetting('network.group-by-frame').addChangeListener(() => this._updateGroupByFrame());
+  }
+
+  _updateGroupByFrame() {
+    var value = Common.moduleSetting('network.group-by-frame').get();
+    this._setGrouping(value ? 'Frame' : null);
   }
 
   /**
@@ -351,28 +359,14 @@ Network.NetworkLogView = class extends UI.VBox {
   }
 
   /**
-   * @return {!Map<string, !Network.GroupLookupInterface>}
+   * @param {?string} groupKey
    */
-  groupLookups() {
-    return this._groupLookups;
-  }
-
-  /**
-   * @param {string} groupKey
-   */
-  setGrouping(groupKey) {
-    var groupLookup = this._groupLookups.get(groupKey) || null;
+  _setGrouping(groupKey) {
+    var groupLookup = groupKey ? this._groupLookups.get(groupKey) || null : null;
     this._activeGroupLookup = groupLookup;
-    if (!groupLookup) {
-      this._invalidateAllItems();
-      return;
-    }
-    groupLookup.initialize().then(() => {
-      if (this._activeGroupLookup !== groupLookup)
-        return;
-      this._activeGroupLookup.reset();
-      this._invalidateAllItems();
-    });
+    if (groupLookup)
+      groupLookup.reset();
+    this._invalidateAllItems();
   }
 
   /**
@@ -922,6 +916,7 @@ Network.NetworkLogView = class extends UI.VBox {
 
     this._timeCalculator.setWindow(null);
     this.linkifier.reset();
+    this.badgePool.reset();
 
     if (this._activeGroupLookup)
       this._activeGroupLookup.reset();
@@ -1822,11 +1817,6 @@ Network.NetworkLogView.Filter;
 Network.GroupLookupInterface = function() {};
 
 Network.GroupLookupInterface.prototype = {
-  /**
-   * @return {!Promise}
-   */
-  initialize: function() {},
-
   /**
    * @param {!SDK.NetworkRequest} request
    * @return {?Network.NetworkGroupNode}
