@@ -75,10 +75,9 @@ ProductRegistry.BadgePool = class {
    * @param {!Element} badgeElement
    */
   async _renderBadge(badgeElement) {
+    var registry = await ProductRegistry.instance();
     if (!this._badgeElements.has(badgeElement))
       return;
-
-    var registry = await ProductRegistry.instance();
     var parsedUrl = await this._badgeElements.get(badgeElement)();
     var entryName = registry.nameForUrl(parsedUrl);
 
@@ -152,7 +151,7 @@ ProductRegistry.BadgePool = class {
   static colorForEntryName(entryName) {
     if (!ProductRegistry.BadgePool._colorGenerator) {
       ProductRegistry.BadgePool._colorGenerator =
-          new Common.Color.Generator({min: 30, max: 330}, {min: 50, max: 80, count: 3}, 85);
+          new Common.Color.Generator({min: 30, max: 330}, {min: 50, max: 80, count: 3}, 80);
     }
     return ProductRegistry.BadgePool._colorGenerator.colorForID(entryName);
   }
