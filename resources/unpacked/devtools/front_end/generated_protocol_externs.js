@@ -5524,7 +5524,7 @@ Protocol.SystemInfoAgent = function(){};
 Protocol.SystemInfoAgent.prototype.getInfo = function() {};
 /** @typedef {Object|undefined} */
 Protocol.SystemInfoAgent.GetInfoRequest;
-/** @typedef {!{gpu: Protocol.SystemInfo.GPUInfo, modelName: string, modelVersion: string}} */
+/** @typedef {!{gpu: Protocol.SystemInfo.GPUInfo, commandLine: string, modelName: string, modelVersion: string}} */
 Protocol.SystemInfoAgent.GetInfoResponse;
 /**
  * @param {!Protocol.SystemInfoAgent.GetInfoRequest} obj
@@ -6230,12 +6230,13 @@ Protocol.DebuggerAgent.prototype.invoke_getPossibleBreakpoints = function(obj) {
 
 /**
  * @param {Protocol.Debugger.Location} location
+ * @param {string=} opt_targetCallFrames
  * @param {function(?Protocol.Error):T=} opt_callback
  * @return {!Promise<T>}
  * @template T
  */
-Protocol.DebuggerAgent.prototype.continueToLocation = function(location, opt_callback) {};
-/** @typedef {!{location: Protocol.Debugger.Location}} */
+Protocol.DebuggerAgent.prototype.continueToLocation = function(location, opt_targetCallFrames, opt_callback) {};
+/** @typedef {!{location: Protocol.Debugger.Location, targetCallFrames: (string|undefined)}} */
 Protocol.DebuggerAgent.ContinueToLocationRequest;
 /** @typedef {Object|undefined} */
 Protocol.DebuggerAgent.ContinueToLocationResponse;

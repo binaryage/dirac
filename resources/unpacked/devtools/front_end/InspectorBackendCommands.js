@@ -1,5 +1,5 @@
-Protocol.BakedInspectorBackendAPIChromeTag='60.0.3099.2';
-Protocol.BakedInspectorBackendAPIChromeRev='2d8b867dfc360643d87634931521e9c5a39594fc';
+Protocol.BakedInspectorBackendAPIChromeTag='60.0.3102.1';
+Protocol.BakedInspectorBackendAPIChromeRev='969800e149ef1c56139535b273981982c2a404a6';
 Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerEvent("Inspector.detached", ["reason"]);\n'
 + 'Protocol.inspectorBackend.registerEvent("Inspector.targetCrashed", []);\n'
@@ -385,7 +385,7 @@ Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerCommand("Log.clear", [], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Log.startViolationsReport", [{"name": "config", "type": "object", "optional": false}], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Log.stopViolationsReport", [], [], false);\n'
-+ 'Protocol.inspectorBackend.registerCommand("SystemInfo.getInfo", [], ["gpu", "modelName", "modelVersion"], false);\n'
++ 'Protocol.inspectorBackend.registerCommand("SystemInfo.getInfo", [], ["gpu", "modelName", "modelVersion", "commandLine"], false);\n'
 + 'Protocol.inspectorBackend.registerEvent("Tethering.accepted", ["port", "connectionId"]);\n'
 + 'Protocol.inspectorBackend.registerCommand("Tethering.bind", [{"name": "port", "type": "number", "optional": false}], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Tethering.unbind", [{"name": "port", "type": "number", "optional": false}], [], false);\n'
@@ -436,7 +436,7 @@ Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerCommand("Debugger.setBreakpoint", [{"name": "location", "type": "object", "optional": false}, {"name": "condition", "type": "string", "optional": true}], ["breakpointId", "actualLocation"], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Debugger.removeBreakpoint", [{"name": "breakpointId", "type": "string", "optional": false}], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Debugger.getPossibleBreakpoints", [{"name": "start", "type": "object", "optional": false}, {"name": "end", "type": "object", "optional": true}, {"name": "restrictToFunction", "type": "boolean", "optional": true}], ["locations"], false);\n'
-+ 'Protocol.inspectorBackend.registerCommand("Debugger.continueToLocation", [{"name": "location", "type": "object", "optional": false}], [], false);\n'
++ 'Protocol.inspectorBackend.registerCommand("Debugger.continueToLocation", [{"name": "location", "type": "object", "optional": false}, {"name": "targetCallFrames", "type": "string", "optional": true}], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Debugger.stepOver", [], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Debugger.stepInto", [], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Debugger.stepOut", [], [], false);\n'
