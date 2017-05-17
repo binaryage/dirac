@@ -238,8 +238,6 @@ Timeline.TimelineTreeView = class extends UI.VBox {
    */
   refreshTree() {
     this._linkifier.reset();
-    if (this._searchableView)
-      this._searchableView.cancelSearch();
     this._dataGrid.rootNode().removeChildren();
     if (!this._model) {
       this._updateDetailsForSelection();
@@ -261,6 +259,8 @@ Timeline.TimelineTreeView = class extends UI.VBox {
     }
     this._sortingChanged();
     this._updateDetailsForSelection();
+    if (this._searchableView)
+      this._searchableView.refreshSearch();
   }
 
   /**
@@ -636,8 +636,6 @@ Timeline.AggregatedTimelineTreeView = class extends Timeline.TimelineTreeView {
     this._stackView = new Timeline.TimelineStackView(this);
     this._stackView.addEventListener(
         Timeline.TimelineStackView.Events.SelectionChanged, this._onStackViewSelectionChanged, this);
-    if (!Runtime.experiments.isEnabled('timelineColorByProduct'))
-      return;
     /** @type {!Map<string, string>} */
     this._productByURLCache = new Map();
     ProductRegistry.instance().then(registry => {
@@ -717,7 +715,7 @@ Timeline.AggregatedTimelineTreeView = class extends Timeline.TimelineTreeView {
 
       case Timeline.AggregatedTimelineTreeView.GroupBy.Product:
         var productName = this._productByEvent(/** @type {!SDK.TracingModel.Event} */ (node.event));
-        color = productName ? Timeline.TimelineUIUtils.colorForId(productName) : '#eee';
+        color = productName ? ProductRegistry.BadgePool.colorForEntryName(productName) : '#eee';
         var name = productName || this._domainByEvent(true, /** @type {!SDK.TracingModel.Event} */ (node.event)) || '';
         return {name: beautifyDomainName.call(this, name) || unattributed, color: color};
 
@@ -747,13 +745,11 @@ Timeline.AggregatedTimelineTreeView = class extends Timeline.TimelineTreeView {
       {label: Common.UIString('Group by Activity'), value: groupBy.EventName},
       {label: Common.UIString('Group by Category'), value: groupBy.Category},
       {label: Common.UIString('Group by Domain'), value: groupBy.Domain},
-      {label: Common.UIString('Group by Subdomain'), value: groupBy.Subdomain},
-      {label: Common.UIString('Group by Product'), value: groupBy.Product},
-      {label: Common.UIString('Group by URL'), value: groupBy.URL},
       {label: Common.UIString('Group by Frame'), value: groupBy.Frame},
+      {label: Common.UIString('Group by Product'), value: groupBy.Product},
+      {label: Common.UIString('Group by Subdomain'), value: groupBy.Subdomain},
+      {label: Common.UIString('Group by URL'), value: groupBy.URL},
     ];
-    if (!Runtime.experiments.isEnabled('timelineColorByProduct'))
-      options = options.filter(option => option.value !== groupBy.Product);
     toolbar.appendToolbarItem(new UI.ToolbarSettingComboBox(options, this._groupBySetting));
     toolbar.appendSpacer();
     toolbar.appendToolbarItem(this._splitWidget.createShowHideSidebarButton(Common.UIString('heaviest stack')));
@@ -863,7 +859,7 @@ Timeline.AggregatedTimelineTreeView = class extends Timeline.TimelineTreeView {
    */
   _productByEvent(event) {
     var url = TimelineModel.TimelineProfileTree.eventURL(event);
-    if (!url || !this._productByURLCache)
+    if (!url)
       return '';
     if (this._productByURLCache.has(url))
       return this._productByURLCache.get(url);
