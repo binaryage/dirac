@@ -40,24 +40,26 @@ Audits2.Audits2Panel = class extends UI.PanelWithSidebar {
         this.contentElement, [UI.DropTarget.Types.Files], Common.UIString('Drop audit file here'),
         this._handleDrop.bind(this));
 
+    for (var preset of Audits2.Audits2Panel.Presets)
+      preset.setting.addChangeListener(this._updateStartButtonEnabled.bind(this));
     this._showLandingPage();
   }
 
   _clearAll() {
     this._treeOutline.removeChildren();
-    if (!this._treeOutline.rootElement().childCount())
-      this._showLandingPage();
+    this._showLandingPage();
   }
 
   _deleteSelected() {
     var selection = this._treeOutline.selectedTreeElement;
     if (selection)
-      this._treeOutline.removeChild(selection);
-    if (!this._treeOutline.rootElement().childCount())
-      this._showLandingPage();
+      selection._deleteItem();
   }
 
   _showLandingPage() {
+    if (this._treeOutline.rootElement().childCount())
+      return;
+
     this.mainElement().removeChildren();
     var landingPage = this.mainElement().createChild('div', 'vbox audits2-landing-page');
     var landingCenter = landingPage.createChild('div', 'vbox audits2-landing-center');
@@ -103,6 +105,7 @@ Audits2.Audits2Panel = class extends UI.PanelWithSidebar {
     var buttonsRow = uiElement.createChild('div', 'audits2-dialog-buttons hbox');
     this._startButton =
         UI.createTextButton(Common.UIString('Run audit'), this._start.bind(this), 'material-button default');
+    this._updateStartButtonEnabled();
     buttonsRow.appendChild(this._startButton);
     this._cancelButton = UI.createTextButton(Common.UIString('Cancel'), this._cancel.bind(this), 'material-button');
     buttonsRow.appendChild(this._cancelButton);
@@ -112,6 +115,18 @@ Audits2.Audits2Panel = class extends UI.PanelWithSidebar {
     this._dialog.show(this.mainElement());
     auditsViewElement.tabIndex = 0;
     auditsViewElement.focus();
+  }
+
+  _updateStartButtonEnabled() {
+    if (!this._startButton)
+      return;
+    for (var preset of Audits2.Audits2Panel.Presets) {
+      if (preset.setting.get()) {
+        this._startButton.disabled = false;
+        return;
+      }
+    }
+    this._startButton.disabled = true;
   }
 
   /**
@@ -127,6 +142,17 @@ Audits2.Audits2Panel = class extends UI.PanelWithSidebar {
   }
 
   _start() {
+    var emulationModel = self.singleton(Emulation.DeviceModeModel);
+    this._emulationEnabledBefore = emulationModel.enabledSetting().get();
+    this._emulationOutlineEnabledBefore = emulationModel.deviceOutlineSetting().get();
+    emulationModel.enabledSetting().set(true);
+    emulationModel.deviceOutlineSetting().set(true);
+    emulationModel.toolbarControlsEnabledSetting().set(false);
+
+    for (var device of Emulation.EmulatedDevicesList.instance().standard()) {
+      if (device.title === 'Nexus 5X')
+        emulationModel.emulate(Emulation.DeviceModeModel.Type.Device, device, device.modes[0], 1);
+    }
     this._dialog.setCloseOnEscape(false);
     this._inspectedURL = SDK.targetManager.mainTarget().inspectedURL();
 
@@ -145,8 +171,13 @@ Audits2.Audits2Panel = class extends UI.PanelWithSidebar {
         })
         .then(_ => this._protocolService.startLighthouse(this._inspectedURL, categoryIDs))
         .then(lighthouseResult => {
-          this._finish(lighthouseResult);
-          return this._stop();
+          if (lighthouseResult && lighthouseResult.fatal) {
+            const error = new Error(lighthouseResult.message);
+            error.stack = lighthouseResult.stack;
+            throw error;
+          }
+
+          return this._stopAndReattach().then(() => this._buildReportUI(lighthouseResult));
         })
         .catch(err => {
           if (err instanceof Error)
@@ -158,6 +189,12 @@ Audits2.Audits2Panel = class extends UI.PanelWithSidebar {
     if (!this._dialog)
       return;
     this._dialog.hide();
+
+    var emulationModel = self.singleton(Emulation.DeviceModeModel);
+    emulationModel.enabledSetting().set(this._emulationEnabledBefore);
+    emulationModel.deviceOutlineSetting().set(this._emulationOutlineEnabledBefore);
+    emulationModel.toolbarControlsEnabledSetting().set(true);
+
     delete this._dialog;
     delete this._statusView;
     delete this._statusIcon;
@@ -166,12 +203,14 @@ Audits2.Audits2Panel = class extends UI.PanelWithSidebar {
     delete this._cancelButton;
     delete this._auditSelectorForm;
     delete this._headerTitleElement;
+    delete this._emulationEnabledBefore;
+    delete this._emulationOutlineEnabledBefore;
   }
 
   _cancel() {
     if (this._auditRunning) {
       this._updateStatus(Common.UIString('Cancelling\u2026'));
-      this._stop();
+      this._stopAndReattach();
     } else {
       this._hideDialog();
     }
@@ -202,27 +241,27 @@ Audits2.Audits2Panel = class extends UI.PanelWithSidebar {
   /**
    * @return {!Promise<undefined>}
    */
-  _stop() {
+  _stopAndReattach() {
     return this._protocolService.detach().then(_ => {
+      Emulation.InspectedPagePlaceholder.instance().update(true);
       this._auditRunning = false;
       this._updateButton();
       var resourceTreeModel = SDK.targetManager.mainTarget().model(SDK.ResourceTreeModel);
-      if (resourceTreeModel && this._inspectedURL !== SDK.targetManager.mainTarget().inspectedURL())
-        resourceTreeModel.navigate(this._inspectedURL).then(() => this._hideDialog());
-      else
-        this._hideDialog();
+      // reload to reset the page state
+      resourceTreeModel.navigate(this._inspectedURL).then(() => this._hideDialog());
     });
   }
 
   /**
    * @param {!ReportRenderer.ReportJSON} lighthouseResult
    */
-  _finish(lighthouseResult) {
+  _buildReportUI(lighthouseResult) {
     if (lighthouseResult === null) {
       this._updateStatus(Common.UIString('Auditing failed.'));
       return;
     }
-    var treeElement = new Audits2.Audits2Panel.TreeElement(lighthouseResult, this.mainElement());
+    var treeElement =
+        new Audits2.Audits2Panel.TreeElement(lighthouseResult, this.mainElement(), this._showLandingPage.bind(this));
     this._treeOutline.appendChild(treeElement);
     treeElement._populate();
     treeElement.select();
@@ -249,6 +288,8 @@ Audits2.Audits2Panel = class extends UI.PanelWithSidebar {
     var title = encodeURI('title=DevTools Error: ' + err.message.substring(0, 60));
 
     var qsBody = '';
+    qsBody += '**Initial URL**: ' + this._inspectedURL + '\n';
+    qsBody += '**Chrome Version**: ' + navigator.userAgent.match(/Chrome\/(\S+)/)[1] + '\n';
     qsBody += '**Error Message**: ' + err.message + '\n';
     qsBody += '**Stack Trace**:\n ```' + err.stack + '```';
     var body = '&body=' + encodeURI(qsBody);
@@ -286,7 +327,7 @@ Audits2.Audits2Panel = class extends UI.PanelWithSidebar {
     var data = JSON.parse(profile);
     if (!data['lighthouseVersion'])
       return;
-    this._finish(/** @type {!ReportRenderer.ReportJSON} */ (data));
+    this._buildReportUI(/** @type {!ReportRenderer.ReportJSON} */ (data));
   }
 };
 
@@ -416,8 +457,15 @@ Audits2.ProtocolService = class extends Common.Object {
             return;
           this._backend = backend;
           this._backend.on('statusUpdate', result => this._status(result.message));
-          this._backend.on('sendProtocolMessage', result => this._rawConnection.sendMessage(result.message));
+          this._backend.on('sendProtocolMessage', result => this._sendProtocolMessage(result.message));
         });
+  }
+
+  /**
+   * @param {string} message
+   */
+  _sendProtocolMessage(message) {
+    this._rawConnection.sendMessage(message);
   }
 
   /**
@@ -437,11 +485,13 @@ Audits2.Audits2Panel.TreeElement = class extends UI.TreeElement {
   /**
    * @param {!ReportRenderer.ReportJSON} lighthouseResult
    * @param {!Element} resultsView
+   * @param {function()} showLandingCallback
    */
-  constructor(lighthouseResult, resultsView) {
+  constructor(lighthouseResult, resultsView, showLandingCallback) {
     super('', false);
     this._lighthouseResult = lighthouseResult;
     this._resultsView = resultsView;
+    this._showLandingCallback = showLandingCallback;
     /** @type {?Element} */
     this._reportContainer = null;
 
@@ -472,6 +522,19 @@ Audits2.Audits2Panel.TreeElement = class extends UI.TreeElement {
   }
 
   /**
+   * @override
+   */
+  ondelete() {
+    this._deleteItem();
+    return true;
+  }
+
+  _deleteItem() {
+    this.treeOutline.removeChild(this);
+    this._showLandingCallback();
+  }
+
+  /**
    * @param {!Event} event
    */
   _handleContextMenuEvent(event) {
@@ -482,6 +545,7 @@ Audits2.Audits2Panel.TreeElement = class extends UI.TreeElement {
       var fileName = `${url}-${new Date(timestamp).toISO8601Compact()}.json`;
       Workspace.fileManager.save(fileName, JSON.stringify(this._lighthouseResult), true);
     });
+    contextMenu.appendItem(Common.UIString('Delete'), () => this._deleteItem());
     contextMenu.show();
   }
 
@@ -500,10 +564,10 @@ Audits2.Audits2Panel.TreeElement = class extends UI.TreeElement {
       return;
     }
 
-    this._reportContainer = this._resultsView.createChild('div', 'report-container lh-vars lh-root');
+    this._reportContainer = this._resultsView.createChild('div', 'report-container lh-vars lh-root lh-devtools');
 
     var dom = new DOM(/** @type {!Document} */ (this._resultsView.ownerDocument));
-    var detailsRenderer = new DetailsRenderer(dom);
+    var detailsRenderer = new Audits2.DetailsRenderer(dom);
     var categoryRenderer = new CategoryRenderer(dom, detailsRenderer);
     var renderer = new Audits2.Audits2Panel.ReportRenderer(dom, categoryRenderer);
 
@@ -544,5 +608,59 @@ Audits2.Audits2Panel.TreeSubElement = class extends UI.TreeElement {
       return true;
     }
     return false;
+  }
+};
+
+Audits2.DetailsRenderer = class extends DetailsRenderer {
+  /**
+   * @param {!DOM} dom
+   */
+  constructor(dom) {
+    super(dom);
+    this._onMainFrameNavigatedPromise = null;
+  }
+
+  /**
+   * @override
+   * @param {!DetailsRenderer.NodeDetailsJSON} item
+   * @return {!Element}
+   */
+  renderNode(item) {
+    var element = super.renderNode(item);
+    this._replaceWithDeferredNodeBlock(element, item);
+    return element;
+  }
+
+  /**
+   * @param {!Element} origElement
+   * @param {!DetailsRenderer.NodeDetailsJSON} detailsItem
+   */
+  _replaceWithDeferredNodeBlock(origElement, detailsItem) {
+    var mainTarget = SDK.targetManager.mainTarget();
+    if (!this._onMainFrameNavigatedPromise) {
+      var resourceTreeModel = mainTarget.model(SDK.ResourceTreeModel);
+      this._onMainFrameNavigatedPromise = new Promise(resolve => {
+        resourceTreeModel.once(SDK.ResourceTreeModel.Events.MainFrameNavigated, resolve);
+      });
+    }
+
+    this._onMainFrameNavigatedPromise.then(_ => {
+      var domModel = mainTarget.model(SDK.DOMModel);
+      if (!detailsItem.path)
+        return;
+
+      domModel.pushNodeByPathToFrontend(detailsItem.path, nodeId => {
+        if (!nodeId)
+          return;
+        var node = domModel.nodeForId(nodeId);
+        if (!node)
+          return;
+
+        var element = Components.DOMPresentationUtils.linkifyNodeReference(node, undefined, detailsItem.snippet);
+        origElement.title = '';
+        origElement.textContent = '';
+        origElement.appendChild(element);
+      });
+    });
   }
 };

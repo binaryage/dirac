@@ -96,10 +96,8 @@ Sources.CallStackSidebarPane = class extends UI.SimpleView {
       var isAwait = asyncStackTrace.description === 'async function';
       if (isAwait && peviousStackTrace.length && asyncStackTrace.callFrames.length) {
         var lastPreviousFrame = peviousStackTrace[peviousStackTrace.length - 1];
-        var topFrame = asyncStackTrace.callFrames[0];
         var lastPreviousFrameName = UI.beautifyFunctionName(lastPreviousFrame.functionName);
-        var topFrameName = UI.beautifyFunctionName(topFrame.functionName);
-        title = topFrameName + ' awaits ' + lastPreviousFrameName;
+        title = UI.asyncStackTraceLabel('await in ' + lastPreviousFrameName);
       } else {
         title = UI.asyncStackTraceLabel(asyncStackTrace.description);
       }
@@ -316,8 +314,8 @@ Sources.CallStackSidebarPane = class extends UI.SimpleView {
     if (!location)
       return;
     if (item.debuggerCallFrame && UI.context.flavor(SDK.DebuggerModel.CallFrame) !== item.debuggerCallFrame) {
-      UI.context.setFlavor(SDK.DebuggerModel.CallFrame, item.debuggerCallFrame);
       this._debuggerModel.setSelectedCallFrame(item.debuggerCallFrame);
+      UI.context.setFlavor(SDK.DebuggerModel.CallFrame, item.debuggerCallFrame);
     } else {
       Common.Revealer.reveal(Bindings.debuggerWorkspaceBinding.rawLocationToUILocation(location));
     }

@@ -1,7 +1,14 @@
 #!/usr/bin/env bash
 
 echo "-----------------------------------------------------------------------------------------------------------------------"
-echo "running auto-job.sh on $(date)"
+echo "running ${BASH_SOURCE[0]} on $(date)"
+
+finish () {
+  echo "finished ${BASH_SOURCE[0]} on $(date)"
+  echo
+  echo
+}
+trap finish EXIT
 
 export CHROMIUM_MIRROR_DIR=~/tasks/chromium/src/
 

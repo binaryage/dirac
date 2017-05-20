@@ -1,6 +1,7 @@
 (ns dirac.nrepl.eval
   (:require [clojure.tools.logging :as log]
             [cljs.repl]
+            [clojure.tools.reader]
             [cljs.analyzer :as analyzer]
             [cljs.compiler :as compiler]
             [dirac.nrepl.state :as state]
@@ -16,10 +17,8 @@
             [clojure.string :as string]
             [cuerdas.core :as cuerdas]
             [clojure.data.json :as json])
-  (:import clojure.lang.LineNumberingPushbackReader
+  (:import java.io.Writer
            java.io.StringReader
-           java.io.Writer
-           (java.io PushbackReader)
            (javax.xml.bind DatatypeConverter)))
 
 (defn prepare-current-env-info-response []
@@ -93,8 +92,26 @@
     (log/trace (str "repl-prepare-reader! (" job-id "/" iteration ")\n") (utils/pp reader))
     reader))
 
+; unfortunately CLJS-1572 introduced some problem I was unable to resolve
+; https://github.com/clojure/clojurescript/commit/dfadee51fa3fad58b7c4cf7de532e9a10e0f802f#diff-37f2c970502705d61a0ab1f75ce8fe12R109
+; calling unread on *in* was causing https://gist.github.com/darwin/e5adfa335dd382289526410dfcac4ff9
+; I decided to use the original implementation instead, because I have resolved the multi-forms problem on my own before:
+; https://github.com/binaryage/dirac/commit/826dc3c63054f0ae7af89c387c884e0108382da8
+(defn repl-read-prior-CLJS-1572
+  ([request-prompt request-exit]
+   (repl-read-prior-CLJS-1572 request-prompt request-exit cljs.repl/*repl-opts*))
+  ([request-prompt request-exit opts]
+   (binding [*in* (if (true? (:source-map-inline opts))
+                    ((:reader opts))
+                    *in*)]
+     (or ({:line-start request-prompt :stream-end request-exit}
+           (cljs.repl/skip-whitespace *in*))
+         (let [input (clojure.tools.reader/read {:read-cond :allow :features #{:cljs}} *in*)]
+           (cljs.repl/skip-if-eol *in*)
+           input)))))
+
 (defn repl-read! [job-id & args]
-  (let [result (apply cljs.repl/repl-read args)]
+  (let [result (apply repl-read-prior-CLJS-1572 args)]
     (log/trace (str "repl-read! (" job-id ")\n") (utils/pp result))
     result))
 

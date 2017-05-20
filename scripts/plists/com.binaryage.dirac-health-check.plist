@@ -8,7 +8,7 @@
         <array>
             <string>sh</string>
             <string>-c</string>
-            <string>/Users/darwin/tasks/dirac/scripts/health-check.sh</string>
+            <string>/Users/darwin/tasks/dirac/scripts/health-check-launcher.sh</string>
         </array>
         <key>StartCalendarInterval</key>
         <array>

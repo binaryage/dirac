@@ -100,7 +100,7 @@ Main.Main = class {
     // Keep this sorted alphabetically: both keys and values.
     Runtime.experiments.register('accessibilityInspection', 'Accessibility Inspection');
     Runtime.experiments.register('applyCustomStylesheet', 'Allow custom UI themes');
-    Runtime.experiments.register('audits2', 'Audits 2.0', true);
+    Runtime.experiments.register('audits2', 'Audits 2.0');
     Runtime.experiments.register('autoAttachToCrossProcessSubframes', 'Auto-attach to cross-process subframes', true);
     Runtime.experiments.register('blackboxJSFramesOnTimeline', 'Blackbox JavaScript frames on Timeline', true);
     Runtime.experiments.register('changesDrawer', 'Changes drawer', true);
@@ -116,6 +116,7 @@ Main.Main = class {
     Runtime.experiments.register('terminalInDrawer', 'Terminal in drawer', true);
 
     // Timeline
+    Runtime.experiments.register('timelineColorByProduct', 'Timeline: color by product', true);
     Runtime.experiments.register('timelineEventInitiators', 'Timeline: event initiators');
     Runtime.experiments.register('timelineFlowEvents', 'Timeline: flow events', true);
     Runtime.experiments.register('timelineInvalidationTracking', 'Timeline: invalidation tracking', true);
@@ -134,17 +135,20 @@ Main.Main = class {
       // Enable experiments for testing.
       if (testPath.indexOf('accessibility/') !== -1)
         Runtime.experiments.enableForTest('accessibilityInspection');
-      if (testPath.indexOf('coverage') !== -1)
-        Runtime.experiments.enableForTest('cssTrackerPanel');
       if (testPath.indexOf('audits2/') !== -1)
         Runtime.experiments.enableForTest('audits2');
+      if (testPath.indexOf('coverage/') !== -1)
+        Runtime.experiments.enableForTest('cssTrackerPanel');
       if (testPath.indexOf('changes/') !== -1)
         Runtime.experiments.enableForTest('changesDrawer');
       if (testPath.indexOf('sass/') !== -1)
         Runtime.experiments.enableForTest('liveSASS');
     }
 
-    Runtime.experiments.setDefaultExperiments(['continueToLocationMarkers', 'autoAttachToCrossProcessSubframes']);
+    Runtime.experiments.setDefaultExperiments([
+      'continueToLocationMarkers', 'autoAttachToCrossProcessSubframes', 'objectPreviews', 'audits2',
+      'networkGroupingRequests'
+    ]);
   }
 
   /**
@@ -156,7 +160,7 @@ Main.Main = class {
     UI.viewManager = new UI.ViewManager();
 
     // Request filesystems early, we won't create connections until callback is fired. Things will happen in parallel.
-    Workspace.isolatedFileSystemManager = new Workspace.IsolatedFileSystemManager();
+    Persistence.isolatedFileSystemManager = new Persistence.IsolatedFileSystemManager();
 
     var themeSetting = Common.settings.createSetting('uiTheme', 'default');
     UI.initializeUIUtils(document, themeSetting);
@@ -190,9 +194,9 @@ Main.Main = class {
     Workspace.fileManager = new Workspace.FileManager();
     Workspace.workspace = new Workspace.Workspace();
     Common.formatterWorkerPool = new Common.FormatterWorkerPool();
-    Workspace.fileSystemMapping = new Workspace.FileSystemMapping(Workspace.isolatedFileSystemManager);
+    Persistence.fileSystemMapping = new Persistence.FileSystemMapping(Persistence.isolatedFileSystemManager);
 
-    Main.networkProjectManager = new Bindings.NetworkProjectManager(SDK.targetManager, Workspace.workspace);
+    Bindings.networkProjectManager = new Bindings.NetworkProjectManager(SDK.targetManager, Workspace.workspace);
     Bindings.presentationConsoleMessageHelper = new Bindings.PresentationConsoleMessageHelper(Workspace.workspace);
     Bindings.cssWorkspaceBinding = new Bindings.CSSWorkspaceBinding(SDK.targetManager, Workspace.workspace);
     Bindings.debuggerWorkspaceBinding = new Bindings.DebuggerWorkspaceBinding(SDK.targetManager, Workspace.workspace);
@@ -200,9 +204,9 @@ Main.Main = class {
         new Bindings.BreakpointManager(null, Workspace.workspace, SDK.targetManager, Bindings.debuggerWorkspaceBinding);
     Extensions.extensionServer = new Extensions.ExtensionServer();
 
-    new Persistence.FileSystemWorkspaceBinding(Workspace.isolatedFileSystemManager, Workspace.workspace);
+    new Persistence.FileSystemWorkspaceBinding(Persistence.isolatedFileSystemManager, Workspace.workspace);
     Persistence.persistence =
-        new Persistence.Persistence(Workspace.workspace, Bindings.breakpointManager, Workspace.fileSystemMapping);
+        new Persistence.Persistence(Workspace.workspace, Bindings.breakpointManager, Persistence.fileSystemMapping);
 
     new Main.ExecutionContextSelector(SDK.targetManager, UI.context);
     Bindings.blackboxManager = new Bindings.BlackboxManager(Bindings.debuggerWorkspaceBinding);
@@ -730,6 +734,37 @@ Main.Main.MainMenuItem = class {
     var helpSubMenu = contextMenu.namedSubMenu('mainMenuHelp');
     helpSubMenu.appendAction('settings.documentation');
     helpSubMenu.appendItem('Release Notes', () => InspectorFrontendHost.openInNewTab(Help.latestReleaseNote().link));
+  }
+};
+
+/**
+ * @implements {UI.ToolbarItem.Provider}
+ */
+Main.Main.NodeIndicator = class {
+  constructor() {
+    var element = createElement('div');
+    var shadowRoot = UI.createShadowRootWithCoreStyles(element, 'main/nodeIcon.css');
+    this._element = shadowRoot.createChild('div', 'node-icon');
+    element.addEventListener('click', () => InspectorFrontendHost.openNodeFrontend(), false);
+    this._button = new UI.ToolbarItem(element);
+    this._button.setTitle(Common.UIString('Open dedicated DevTools for Node.js'));
+    SDK.targetManager.addEventListener(SDK.TargetManager.Events.AvailableNodeTargetsChanged, this._update, this);
+    this._button.setVisible(false);
+    this._update();
+  }
+
+  _update() {
+    this._element.classList.toggle('inactive', !SDK.targetManager.availableNodeTargetsCount());
+    if (SDK.targetManager.availableNodeTargetsCount())
+      this._button.setVisible(true);
+  }
+
+  /**
+   * @override
+   * @return {?UI.ToolbarItem}
+   */
+  item() {
+    return this._button;
   }
 };
 

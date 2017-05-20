@@ -60,9 +60,7 @@ Console.ConsoleView = class extends UI.VBox {
     this._regexMatchRanges = [];
     this._filter = new Console.ConsoleViewFilter(this._updateMessageList.bind(this));
 
-    this._executionContextComboBox = new UI.ToolbarComboBox(null, 'console-context');
-    this._executionContextComboBox.setMaxWidth(80);
-    this._consoleContextSelector = new Console.ConsoleContextSelector(this._executionContextComboBox.selectElement());
+    this._consoleContextSelector = new Console.ConsoleContextSelector();
 
     this._filterStatusText = new UI.ToolbarText();
     this._filterStatusText.element.classList.add('dimmed');
@@ -75,7 +73,7 @@ Console.ConsoleView = class extends UI.VBox {
     toolbar.appendToolbarItem(UI.Toolbar.createActionButton(
         /** @type {!UI.Action }*/ (UI.actionRegistry.action('console.clear'))));
     toolbar.appendSeparator();
-    toolbar.appendToolbarItem(this._executionContextComboBox);
+    toolbar.appendToolbarItem(this._consoleContextSelector.toolbarItem());
     toolbar.appendSeparator();
     toolbar.appendToolbarItem(this._filter._textFilterUI);
     toolbar.appendToolbarItem(this._filter._levelComboBox);
@@ -150,6 +148,7 @@ Console.ConsoleView = class extends UI.VBox {
     this._messagesElement.addEventListener('contextmenu', this._handleContextMenuEvent.bind(this), false);
 
     this._linkifier = new Components.Linkifier();
+    this._badgePool = new ProductRegistry.BadgePool();
 
     /** @type {!Array.<!Console.ConsoleViewMessage>} */
     this._consoleMessages = [];
@@ -1019,18 +1018,18 @@ Console.ConsoleView = class extends UI.VBox {
     var nestingLevel = this._currentGroup.nestingLevel();
     switch (message.type) {
       case ConsoleModel.ConsoleMessage.MessageType.Command:
-        return new Console.ConsoleCommand(message, this._linkifier, nestingLevel);
+        return new Console.ConsoleCommand(message, this._linkifier, this._badgePool, nestingLevel);
       case ConsoleModel.ConsoleMessage.MessageType.DiracCommand:
         return new Console.ConsoleDiracCommand(message, this._linkifier, nestingLevel);
       case ConsoleModel.ConsoleMessage.MessageType.DiracMarkup:
         return new Console.ConsoleDiracMarkup(message, this._linkifier, nestingLevel);
       case ConsoleModel.ConsoleMessage.MessageType.Result:
-        return new Console.ConsoleCommandResult(message, this._linkifier, nestingLevel);
+        return new Console.ConsoleCommandResult(message, this._linkifier, this._badgePool, nestingLevel);
       case ConsoleModel.ConsoleMessage.MessageType.StartGroupCollapsed:
       case ConsoleModel.ConsoleMessage.MessageType.StartGroup:
-        return new Console.ConsoleGroupViewMessage(message, this._linkifier, nestingLevel);
+        return new Console.ConsoleGroupViewMessage(message, this._linkifier, this._badgePool, nestingLevel);
       default:
-        return new Console.ConsoleViewMessage(message, this._linkifier, nestingLevel);
+        return new Console.ConsoleViewMessage(message, this._linkifier, this._badgePool, nestingLevel);
     }
   }
 
@@ -1041,6 +1040,7 @@ Console.ConsoleView = class extends UI.VBox {
     this._hidePromptSuggestBox();
     this._viewport.setStickToBottom(true);
     this._linkifier.reset();
+    this._badgePool.reset();
   }
 
   _handleContextMenuEvent(event) {
@@ -1683,10 +1683,11 @@ Console.ConsoleCommand = class extends Console.ConsoleViewMessage {
   /**
    * @param {!ConsoleModel.ConsoleMessage} message
    * @param {!Components.Linkifier} linkifier
+   * @param {!ProductRegistry.BadgePool} badgePool
    * @param {number} nestingLevel
    */
-  constructor(message, linkifier, nestingLevel) {
-    super(message, linkifier, nestingLevel);
+  constructor(message, linkifier, badgePool, nestingLevel) {
+    super(message, linkifier, badgePool, nestingLevel);
   }
 
   /**
@@ -1805,10 +1806,11 @@ Console.ConsoleCommandResult = class extends Console.ConsoleViewMessage {
   /**
    * @param {!ConsoleModel.ConsoleMessage} message
    * @param {!Components.Linkifier} linkifier
+   * @param {!ProductRegistry.BadgePool} badgePool
    * @param {number} nestingLevel
    */
-  constructor(message, linkifier, nestingLevel) {
-    super(message, linkifier, nestingLevel);
+  constructor(message, linkifier, badgePool, nestingLevel) {
+    super(message, linkifier, badgePool, nestingLevel);
   }
 
   /**

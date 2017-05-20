@@ -238,8 +238,6 @@ Timeline.TimelineTreeView = class extends UI.VBox {
    */
   refreshTree() {
     this._linkifier.reset();
-    if (this._searchableView)
-      this._searchableView.cancelSearch();
     this._dataGrid.rootNode().removeChildren();
     if (!this._model) {
       this._updateDetailsForSelection();
@@ -261,6 +259,8 @@ Timeline.TimelineTreeView = class extends UI.VBox {
     }
     this._sortingChanged();
     this._updateDetailsForSelection();
+    if (this._searchableView)
+      this._searchableView.refreshSearch();
   }
 
   /**
@@ -631,21 +631,17 @@ Timeline.AggregatedTimelineTreeView = class extends Timeline.TimelineTreeView {
     super();
     this._groupBySetting =
         Common.settings.createSetting('timelineTreeGroupBy', Timeline.AggregatedTimelineTreeView.GroupBy.None);
-    this._groupByCombobox = new UI.ToolbarComboBox(this._onGroupByChanged.bind(this));
+    this._groupBySetting.addChangeListener(this.refreshTree.bind(this));
     this.init(filters);
     this._stackView = new Timeline.TimelineStackView(this);
     this._stackView.addEventListener(
         Timeline.TimelineStackView.Events.SelectionChanged, this._onStackViewSelectionChanged, this);
-  }
-
-  /**
-   * @override
-   */
-  wasShown() {
-    var groupById = this._groupBySetting.get();
-    var option = this._groupByCombobox.options().find(option => option.value === groupById);
-    if (option)
-      this._groupByCombobox.select(option);
+    /** @type {!Map<string, string>} */
+    this._productByURLCache = new Map();
+    ProductRegistry.instance().then(registry => {
+      this._productRegistry = registry;
+      this.refreshTree();
+    });
   }
 
   /**
@@ -676,7 +672,21 @@ Timeline.AggregatedTimelineTreeView = class extends Timeline.TimelineTreeView {
     var categories = Timeline.TimelineUIUtils.categories();
     var color = node.id ? Timeline.TimelineUIUtils.eventColor(/** @type {!SDK.TracingModel.Event} */ (node.event)) :
                           categories['other'].color;
-
+    var unattributed = Common.UIString('[unattributed]');
+    /**
+     * @param {string} name
+     * @return {string}
+     * @this {Timeline.AggregatedTimelineTreeView}
+     */
+    function beautifyDomainName(name) {
+      if (Timeline.AggregatedTimelineTreeView._isExtensionInternalURL(name))
+        name = Common.UIString('[Chrome extensions overhead]');
+      else if (Timeline.AggregatedTimelineTreeView._isV8NativeURL(name))
+        name = Common.UIString('[V8 Runtime]');
+      else if (name.startsWith('chrome-extension'))
+        name = this._executionContextNamesByOrigin.get(name) || name;
+      return name;
+    }
     switch (this._groupBySetting.get()) {
       case Timeline.AggregatedTimelineTreeView.GroupBy.Category:
         var category = categories[node.id] || categories['other'];
@@ -684,14 +694,13 @@ Timeline.AggregatedTimelineTreeView = class extends Timeline.TimelineTreeView {
 
       case Timeline.AggregatedTimelineTreeView.GroupBy.Domain:
       case Timeline.AggregatedTimelineTreeView.GroupBy.Subdomain:
-        var name = node.id;
-        if (Timeline.AggregatedTimelineTreeView._isExtensionInternalURL(name))
-          name = Common.UIString('[Chrome extensions overhead]');
-        else if (Timeline.AggregatedTimelineTreeView._isV8NativeURL(name))
-          name = Common.UIString('[V8 Runtime]');
-        else if (name.startsWith('chrome-extension'))
-          name = this._executionContextNamesByOrigin.get(name) || name;
-        return {name: name || Common.UIString('unattributed'), color: color};
+        var domainName = beautifyDomainName.call(this, node.id);
+        if (domainName) {
+          var productName = this._productByEvent(/** @type {!SDK.TracingModel.Event} */ (node.event));
+          if (productName)
+            domainName += ' \u2014 ' + productName;
+        }
+        return {name: domainName || unattributed, color: color};
 
       case Timeline.AggregatedTimelineTreeView.GroupBy.EventName:
         var name = node.event.name === TimelineModel.TimelineModel.RecordType.JSFrame ?
@@ -704,17 +713,24 @@ Timeline.AggregatedTimelineTreeView = class extends Timeline.TimelineTreeView {
               color
         };
 
+      case Timeline.AggregatedTimelineTreeView.GroupBy.Product:
+        var productName = this._productByEvent(/** @type {!SDK.TracingModel.Event} */ (node.event));
+        color = productName ? ProductRegistry.BadgePool.colorForEntryName(productName) : '#eee';
+        var name = productName || this._domainByEvent(true, /** @type {!SDK.TracingModel.Event} */ (node.event)) || '';
+        return {name: beautifyDomainName.call(this, name) || unattributed, color: color};
+
       case Timeline.AggregatedTimelineTreeView.GroupBy.URL:
         break;
+
       case Timeline.AggregatedTimelineTreeView.GroupBy.Frame:
         var frame = this._model.timelineModel().pageFrameById(node.id);
         var frameName = frame ? Timeline.TimelineUIUtils.displayNameForFrame(frame, 80) : Common.UIString('Page');
         return {name: frameName, color: color};
 
       default:
-        console.assert(false, 'Unexpected aggregation type');
+        console.assert(false, 'Unexpected grouping type');
     }
-    return {name: node.id || Common.UIString('unattributed'), color: color};
+    return {name: node.id || unattributed, color: color};
   }
 
   /**
@@ -723,26 +739,18 @@ Timeline.AggregatedTimelineTreeView = class extends Timeline.TimelineTreeView {
    */
   populateToolbar(toolbar) {
     super.populateToolbar(toolbar);
-    /**
-     * @param {string} name
-     * @param {string} id
-     * @this {Timeline.TimelineTreeView}
-     */
-    function addGroupingOption(name, id) {
-      var option = this._groupByCombobox.createOption(name, '', id);
-      this._groupByCombobox.addOption(option);
-      if (id === this._groupBySetting.get())
-        this._groupByCombobox.select(option);
-    }
-    const groupBy = Timeline.AggregatedTimelineTreeView.GroupBy;
-    addGroupingOption.call(this, Common.UIString('No Grouping'), groupBy.None);
-    addGroupingOption.call(this, Common.UIString('Group by Activity'), groupBy.EventName);
-    addGroupingOption.call(this, Common.UIString('Group by Category'), groupBy.Category);
-    addGroupingOption.call(this, Common.UIString('Group by Domain'), groupBy.Domain);
-    addGroupingOption.call(this, Common.UIString('Group by Subdomain'), groupBy.Subdomain);
-    addGroupingOption.call(this, Common.UIString('Group by URL'), groupBy.URL);
-    addGroupingOption.call(this, Common.UIString('Group by Frame'), groupBy.Frame);
-    toolbar.appendToolbarItem(this._groupByCombobox);
+    var groupBy = Timeline.AggregatedTimelineTreeView.GroupBy;
+    var options = [
+      {label: Common.UIString('No Grouping'), value: groupBy.None},
+      {label: Common.UIString('Group by Activity'), value: groupBy.EventName},
+      {label: Common.UIString('Group by Category'), value: groupBy.Category},
+      {label: Common.UIString('Group by Domain'), value: groupBy.Domain},
+      {label: Common.UIString('Group by Frame'), value: groupBy.Frame},
+      {label: Common.UIString('Group by Product'), value: groupBy.Product},
+      {label: Common.UIString('Group by Subdomain'), value: groupBy.Subdomain},
+      {label: Common.UIString('Group by URL'), value: groupBy.URL},
+    ];
+    toolbar.appendToolbarItem(new UI.ToolbarSettingComboBox(options, this._groupBySetting));
     toolbar.appendSpacer();
     toolbar.appendToolbarItem(this._splitWidget.createShowHideSidebarButton(Common.UIString('heaviest stack')));
   }
@@ -774,11 +782,6 @@ Timeline.AggregatedTimelineTreeView = class extends Timeline.TimelineTreeView {
     return true;
   }
 
-  _onGroupByChanged() {
-    this._groupBySetting.set(this._groupByCombobox.selectedOption().value);
-    this.refreshTree();
-  }
-
   _onStackViewSelectionChanged() {
     var treeNode = this._stackView.selectedTreeNode();
     if (treeNode)
@@ -802,57 +805,70 @@ Timeline.AggregatedTimelineTreeView = class extends Timeline.TimelineTreeView {
    * @return {?function(!SDK.TracingModel.Event):string}
    */
   _groupingFunction(groupBy) {
-    /**
-     * @param {!SDK.TracingModel.Event} event
-     * @return {string}
-     */
-    function groupByURL(event) {
-      return TimelineModel.TimelineProfileTree.eventURL(event) || '';
-    }
-
-    /**
-     * @param {boolean} groupSubdomains
-     * @param {!SDK.TracingModel.Event} event
-     * @return {string}
-     */
-    function groupByDomain(groupSubdomains, event) {
-      var url = TimelineModel.TimelineProfileTree.eventURL(event) || '';
-      if (Timeline.AggregatedTimelineTreeView._isExtensionInternalURL(url))
-        return Timeline.AggregatedTimelineTreeView._extensionInternalPrefix;
-      if (Timeline.AggregatedTimelineTreeView._isV8NativeURL(url))
-        return Timeline.AggregatedTimelineTreeView._v8NativePrefix;
-      var parsedURL = url.asParsedURL();
-      if (!parsedURL)
-        return '';
-      if (parsedURL.scheme === 'chrome-extension')
-        return parsedURL.scheme + '://' + parsedURL.host;
-      if (!groupSubdomains)
-        return parsedURL.host;
-      if (/^[.0-9]+$/.test(parsedURL.host))
-        return parsedURL.host;
-      var domainMatch = /([^.]*\.)?[^.]*$/.exec(parsedURL.host);
-      return domainMatch && domainMatch[0] || '';
-    }
-
+    var GroupBy = Timeline.AggregatedTimelineTreeView.GroupBy;
     switch (groupBy) {
-      case Timeline.AggregatedTimelineTreeView.GroupBy.None:
+      case GroupBy.None:
         return null;
-      case Timeline.AggregatedTimelineTreeView.GroupBy.EventName:
+      case GroupBy.EventName:
         return event => Timeline.TimelineUIUtils.eventStyle(event).title;
-      case Timeline.AggregatedTimelineTreeView.GroupBy.Category:
+      case GroupBy.Category:
         return event => Timeline.TimelineUIUtils.eventStyle(event).category.name;
-      case Timeline.AggregatedTimelineTreeView.GroupBy.Subdomain:
-        return groupByDomain.bind(null, false);
-      case Timeline.AggregatedTimelineTreeView.GroupBy.Domain:
-        return groupByDomain.bind(null, true);
-      case Timeline.AggregatedTimelineTreeView.GroupBy.URL:
-        return groupByURL;
-      case Timeline.AggregatedTimelineTreeView.GroupBy.Frame:
+      case GroupBy.Subdomain:
+        return this._domainByEvent.bind(this, false);
+      case GroupBy.Domain:
+        return this._domainByEvent.bind(this, true);
+      case GroupBy.Product:
+        return event => this._productByEvent(event) || this._domainByEvent(true, event);
+      case GroupBy.URL:
+        return event => TimelineModel.TimelineProfileTree.eventURL(event) || '';
+      case GroupBy.Frame:
         return event => TimelineModel.TimelineData.forEvent(event).frameId;
       default:
         console.assert(false, `Unexpected aggregation setting: ${groupBy}`);
         return null;
     }
+  }
+
+  /**
+   * @param {boolean} groupSubdomains
+   * @param {!SDK.TracingModel.Event} event
+   * @return {string}
+   */
+  _domainByEvent(groupSubdomains, event) {
+    var url = TimelineModel.TimelineProfileTree.eventURL(event) || '';
+    if (Timeline.AggregatedTimelineTreeView._isExtensionInternalURL(url))
+      return Timeline.AggregatedTimelineTreeView._extensionInternalPrefix;
+    if (Timeline.AggregatedTimelineTreeView._isV8NativeURL(url))
+      return Timeline.AggregatedTimelineTreeView._v8NativePrefix;
+    var parsedURL = url.asParsedURL();
+    if (!parsedURL)
+      return '';
+    if (parsedURL.scheme === 'chrome-extension')
+      return parsedURL.scheme + '://' + parsedURL.host;
+    if (!groupSubdomains)
+      return parsedURL.host;
+    if (/^[.0-9]+$/.test(parsedURL.host))
+      return parsedURL.host;
+    var domainMatch = /([^.]*\.)?[^.]*$/.exec(parsedURL.host);
+    return domainMatch && domainMatch[0] || '';
+  }
+
+  /**
+   * @param {!SDK.TracingModel.Event} event
+   * @return {string}
+   */
+  _productByEvent(event) {
+    var url = TimelineModel.TimelineProfileTree.eventURL(event);
+    if (!url)
+      return '';
+    if (this._productByURLCache.has(url))
+      return this._productByURLCache.get(url);
+    if (!this._productRegistry)
+      return '';
+    var parsedURL = url.asParsedURL();
+    var name = parsedURL && this._productRegistry.nameForUrl(parsedURL) || '';
+    this._productByURLCache.set(url, name);
+    return name;
   }
 
   /**
@@ -900,6 +916,7 @@ Timeline.AggregatedTimelineTreeView.GroupBy = {
   Category: 'Category',
   Domain: 'Domain',
   Subdomain: 'Subdomain',
+  Product: 'Product',
   URL: 'URL',
   Frame: 'Frame'
 };

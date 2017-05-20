@@ -173,7 +173,7 @@ devtools #4      namespacesCache is cool now
 automate         trigger! [:async]
 devtools #4      setCurrentPanel: sources
 automate #4      scrape! [:callstack-pane-functions]
-stdout           displayed 62 items:
+stdout           displayed 58 items:
                   * break-here! / dirac.tests.scenarios.core-async/break-here!
                   * λ
                   * λ
@@ -184,9 +184,7 @@ stdout           displayed 62 items:
                   * λ
                   * λ
                   * process-messages / cljs.core.async.impl.dispatch/process-messages
-                  * chained at
                   * Promise resolved (async)
-                  * λ
                   * promise-based-set-immediate / dirac.automation.runtime/promise-based-set-immediate
                   * goog.async.nextTick / goog.async.nextTick
                   * queue-dispatcher / cljs.core.async.impl.dispatch/queue-dispatcher
@@ -206,9 +204,7 @@ stdout           displayed 62 items:
                   * run-state-machine-wrapped / cljs.core.async.impl.ioc-helpers/run-state-machine-wrapped
                   * λ
                   * process-messages / cljs.core.async.impl.dispatch/process-messages
-                  * chained at
                   * Promise resolved (async)
-                  * λ
                   * promise-based-set-immediate / dirac.automation.runtime/promise-based-set-immediate
                   * goog.async.nextTick / goog.async.nextTick
                   * queue-dispatcher / cljs.core.async.impl.dispatch/queue-dispatcher

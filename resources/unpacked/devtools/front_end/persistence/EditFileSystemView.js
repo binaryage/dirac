@@ -31,31 +31,31 @@
  * @implements {UI.ListWidget.Delegate}
  * @unrestricted
  */
-Settings.EditFileSystemView = class extends UI.VBox {
+Persistence.EditFileSystemView = class extends UI.VBox {
   /**
    * @param {string} fileSystemPath
    */
   constructor(fileSystemPath) {
     super(true);
-    this.registerRequiredCSS('settings/editFileSystemView.css');
+    this.registerRequiredCSS('persistence/editFileSystemView.css');
     this._fileSystemPath = fileSystemPath;
 
     this._eventListeners = [
-      Workspace.fileSystemMapping.addEventListener(
-          Workspace.FileSystemMapping.Events.FileMappingAdded, this._update, this),
-      Workspace.fileSystemMapping.addEventListener(
-          Workspace.FileSystemMapping.Events.FileMappingRemoved, this._update, this),
-      Workspace.isolatedFileSystemManager.addEventListener(
-          Workspace.IsolatedFileSystemManager.Events.ExcludedFolderAdded, this._update, this),
-      Workspace.isolatedFileSystemManager.addEventListener(
-          Workspace.IsolatedFileSystemManager.Events.ExcludedFolderRemoved, this._update, this)
+      Persistence.fileSystemMapping.addEventListener(
+          Persistence.FileSystemMapping.Events.FileMappingAdded, this._update, this),
+      Persistence.fileSystemMapping.addEventListener(
+          Persistence.FileSystemMapping.Events.FileMappingRemoved, this._update, this),
+      Persistence.isolatedFileSystemManager.addEventListener(
+          Persistence.IsolatedFileSystemManager.Events.ExcludedFolderAdded, this._update, this),
+      Persistence.isolatedFileSystemManager.addEventListener(
+          Persistence.IsolatedFileSystemManager.Events.ExcludedFolderRemoved, this._update, this)
     ];
 
 
     if (!Runtime.experiments.isEnabled('persistence2')) {
       this._mappingsList = new UI.ListWidget(this);
       this._mappingsList.element.classList.add('file-system-list');
-      this._mappingsList.registerRequiredCSS('settings/editFileSystemView.css');
+      this._mappingsList.registerRequiredCSS('persistence/editFileSystemView.css');
       var mappingsPlaceholder = createElementWithClass('div', 'file-system-list-empty');
       var mappingsHeader = this.contentElement.createChild('div', 'file-system-header');
       mappingsHeader.createChild('div', 'file-system-header-text').textContent = Common.UIString('Mappings');
@@ -73,7 +73,7 @@ Settings.EditFileSystemView = class extends UI.VBox {
         UI.createTextButton(Common.UIString('Add'), this._addExcludedFolderButtonClicked.bind(this), 'add-button'));
     this._excludedFoldersList = new UI.ListWidget(this);
     this._excludedFoldersList.element.classList.add('file-system-list');
-    this._excludedFoldersList.registerRequiredCSS('settings/editFileSystemView.css');
+    this._excludedFoldersList.registerRequiredCSS('persistence/editFileSystemView.css');
     var excludedFoldersPlaceholder = createElementWithClass('div', 'file-system-list-empty');
     excludedFoldersPlaceholder.textContent = Common.UIString('None');
     this._excludedFoldersList.setEmptyPlaceholder(excludedFoldersPlaceholder);
@@ -95,7 +95,7 @@ Settings.EditFileSystemView = class extends UI.VBox {
 
     this._excludedFoldersList.clear();
     this._excludedFolders = [];
-    for (var folder of Workspace.isolatedFileSystemManager.fileSystem(this._fileSystemPath)
+    for (var folder of Persistence.isolatedFileSystemManager.fileSystem(this._fileSystemPath)
              .excludedFolders()
              .values()) {
       this._excludedFolders.push(folder);
@@ -106,7 +106,7 @@ Settings.EditFileSystemView = class extends UI.VBox {
       return;
 
     this._mappingsList.clear();
-    var mappings = Workspace.fileSystemMapping.mappingEntries(this._fileSystemPath);
+    var mappings = Persistence.fileSystemMapping.mappingEntries(this._fileSystemPath);
     for (var entry of mappings) {
       this._mappingsList.appendItem(entry, true);
       this._mappings.push(entry);
@@ -114,7 +114,7 @@ Settings.EditFileSystemView = class extends UI.VBox {
   }
 
   _addMappingButtonClicked() {
-    var entry = new Workspace.FileSystemMapping.Entry(this._fileSystemPath, '', '');
+    var entry = new Persistence.FileSystemMapping.Entry(this._fileSystemPath, '', '');
     this._mappingsList.addNewItem(0, entry);
   }
 
@@ -130,8 +130,8 @@ Settings.EditFileSystemView = class extends UI.VBox {
    */
   renderItem(item, editable) {
     var element = createElementWithClass('div', 'file-system-list-item');
-    if (item instanceof Workspace.FileSystemMapping.Entry) {
-      var entry = /** @type {!Workspace.FileSystemMapping.Entry} */ (item);
+    if (item instanceof Persistence.FileSystemMapping.Entry) {
+      var entry = /** @type {!Persistence.FileSystemMapping.Entry} */ (item);
       var urlPrefixElement = element.createChild('div', 'file-system-value');
       urlPrefixElement.textContent = entry.urlPrefix;
       urlPrefixElement.title = entry.urlPrefix;
@@ -154,11 +154,11 @@ Settings.EditFileSystemView = class extends UI.VBox {
    * @param {number} index
    */
   removeItemRequested(item, index) {
-    if (item instanceof Workspace.FileSystemMapping.Entry) {
+    if (item instanceof Persistence.FileSystemMapping.Entry) {
       var entry = this._mappings[index];
-      Workspace.fileSystemMapping.removeFileMapping(entry.fileSystemPath, entry.urlPrefix, entry.pathPrefix);
+      Persistence.fileSystemMapping.removeFileMapping(entry.fileSystemPath, entry.urlPrefix, entry.pathPrefix);
     } else {
-      Workspace.isolatedFileSystemManager.fileSystem(this._fileSystemPath)
+      Persistence.isolatedFileSystemManager.fileSystem(this._fileSystemPath)
           .removeExcludedFolder(this._excludedFolders[index]);
     }
   }
@@ -171,19 +171,19 @@ Settings.EditFileSystemView = class extends UI.VBox {
    */
   commitEdit(item, editor, isNew) {
     this._muteUpdate = true;
-    if (item instanceof Workspace.FileSystemMapping.Entry) {
-      var entry = /** @type {!Workspace.FileSystemMapping.Entry} */ (item);
+    if (item instanceof Persistence.FileSystemMapping.Entry) {
+      var entry = /** @type {!Persistence.FileSystemMapping.Entry} */ (item);
       if (!isNew)
-        Workspace.fileSystemMapping.removeFileMapping(this._fileSystemPath, entry.urlPrefix, entry.pathPrefix);
-      Workspace.fileSystemMapping.addFileMapping(
+        Persistence.fileSystemMapping.removeFileMapping(this._fileSystemPath, entry.urlPrefix, entry.pathPrefix);
+      Persistence.fileSystemMapping.addFileMapping(
           this._fileSystemPath, this._normalizePrefix(editor.control('urlPrefix').value),
           this._normalizePrefix(editor.control('pathPrefix').value));
     } else {
       if (!isNew) {
-        Workspace.isolatedFileSystemManager.fileSystem(this._fileSystemPath)
+        Persistence.isolatedFileSystemManager.fileSystem(this._fileSystemPath)
             .removeExcludedFolder(/** @type {string} */ (item));
       }
-      Workspace.isolatedFileSystemManager.fileSystem(this._fileSystemPath)
+      Persistence.isolatedFileSystemManager.fileSystem(this._fileSystemPath)
           .addExcludedFolder(this._normalizePrefix(editor.control('pathPrefix').value));
     }
     this._muteUpdate = false;
@@ -196,8 +196,8 @@ Settings.EditFileSystemView = class extends UI.VBox {
    * @return {!UI.ListWidget.Editor}
    */
   beginEdit(item) {
-    if (item instanceof Workspace.FileSystemMapping.Entry) {
-      var entry = /** @type {!Workspace.FileSystemMapping.Entry} */ (item);
+    if (item instanceof Persistence.FileSystemMapping.Entry) {
+      var entry = /** @type {!Persistence.FileSystemMapping.Entry} */ (item);
       var editor = this._createMappingEditor();
       editor.control('urlPrefix').value = entry.urlPrefix;
       editor.control('pathPrefix').value = entry.pathPrefix;
@@ -240,7 +240,7 @@ Settings.EditFileSystemView = class extends UI.VBox {
      * @param {number} index
      * @param {!HTMLInputElement|!HTMLSelectElement} input
      * @return {boolean}
-     * @this {Settings.EditFileSystemView}
+     * @this {Persistence.EditFileSystemView}
      */
     function urlPrefixValidator(item, index, input) {
       var prefix = this._normalizePrefix(input.value);
@@ -256,7 +256,7 @@ Settings.EditFileSystemView = class extends UI.VBox {
      * @param {number} index
      * @param {!HTMLInputElement|!HTMLSelectElement} input
      * @return {boolean}
-     * @this {Settings.EditFileSystemView}
+     * @this {Persistence.EditFileSystemView}
      */
     function pathPrefixValidator(item, index, input) {
       var prefix = this._normalizePrefix(input.value);
@@ -293,12 +293,12 @@ Settings.EditFileSystemView = class extends UI.VBox {
      * @param {number} index
      * @param {!HTMLInputElement|!HTMLSelectElement} input
      * @return {boolean}
-     * @this {Settings.EditFileSystemView}
+     * @this {Persistence.EditFileSystemView}
      */
     function pathPrefixValidator(item, index, input) {
       var prefix = this._normalizePrefix(input.value);
       var configurableCount =
-          Workspace.isolatedFileSystemManager.fileSystem(this._fileSystemPath).excludedFolders().size;
+          Persistence.isolatedFileSystemManager.fileSystem(this._fileSystemPath).excludedFolders().size;
       for (var i = 0; i < configurableCount; ++i) {
         if (i !== index && this._excludedFolders[i] === prefix)
           return false;

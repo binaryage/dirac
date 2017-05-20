@@ -28,19 +28,24 @@ SDK.TargetManager = class extends Common.Object {
     this._webSocketConnectionLostCallback;
   }
 
+  /**
+   * @return {!Promise}
+   */
   suspendAllTargets() {
     if (this._isSuspended)
-      return;
+      return Promise.resolve();
     this._isSuspended = true;
     this.dispatchEventToListeners(SDK.TargetManager.Events.SuspendStateChanged);
 
+    var promises = [];
     for (var target of this._targets) {
       var childTargetManager = this._childTargetManagers.get(target);
       if (childTargetManager)
-        childTargetManager.suspend();
+        promises.push(childTargetManager.suspend());
       for (var model of target.models().values())
-        model.suspendModel();
+        promises.push(model.suspendModel());
     }
+    return Promise.all(promises);
   }
 
   /**
@@ -48,7 +53,7 @@ SDK.TargetManager = class extends Common.Object {
    */
   resumeAllTargets() {
     if (!this._isSuspended)
-      throw new Error('Not suspended');
+      return Promise.resolve();
     this._isSuspended = false;
     this.dispatchEventToListeners(SDK.TargetManager.Events.SuspendStateChanged);
 
@@ -323,9 +328,9 @@ SDK.TargetManager = class extends Common.Object {
   _connectAndCreateMainTarget() {
     if (Runtime.queryParam('nodeFrontend')) {
       var target = new SDK.Target(
-          this, 'main', Common.UIString('Node'), SDK.Target.Capability.Target, this._createMainConnection.bind(this),
+          this, 'main', Common.UIString('Node.js'), SDK.Target.Capability.Target, this._createMainConnection.bind(this),
           null);
-      target.setInspectedURL('Node');
+      target.setInspectedURL('Node.js');
       this._childTargetManagers.set(target, new SDK.ChildTargetManager(this, target));
       Host.userMetrics.actionTaken(Host.UserMetrics.Action.ConnectToNodeJSFromFrontend);
       return;
@@ -406,13 +411,37 @@ SDK.ChildTargetManager = class {
       this._targetAgent.setAttachToFrames(true);
 
     if (!parentTarget.parentTarget()) {
-      this._targetAgent.setRemoteLocations([{host: 'localhost', port: 9229}]);
       this._targetAgent.setDiscoverTargets(true);
+      if (Runtime.queryParam('nodeFrontend')) {
+        InspectorFrontendHost.setDevicesUpdatesEnabled(true);
+        InspectorFrontendHost.events.addEventListener(
+            InspectorFrontendHostAPI.Events.DevicesDiscoveryConfigChanged, this._devicesDiscoveryConfigChanged, this);
+      } else {
+        this._targetAgent.setRemoteLocations([{host: 'localhost', port: 9229}]);
+      }
     }
   }
 
+  /**
+   * @param {!Common.Event} event
+   */
+  _devicesDiscoveryConfigChanged(event) {
+    var config = /** @type {!Adb.Config} */ (event.data);
+    var locations = [];
+    for (var address of config.networkDiscoveryConfig) {
+      var parts = address.split(':');
+      var port = parseInt(parts[1], 10);
+      if (parts[0] && port)
+        locations.push({host: parts[0], port: port});
+    }
+    this._targetAgent.setRemoteLocations(locations);
+  }
+
+  /**
+   * @return {!Promise}
+   */
   suspend() {
-    this._targetAgent.invoke_setAutoAttach({autoAttach: true, waitForDebuggerOnStart: false});
+    return this._targetAgent.invoke_setAutoAttach({autoAttach: true, waitForDebuggerOnStart: false});
   }
 
   /**
@@ -423,6 +452,11 @@ SDK.ChildTargetManager = class {
   }
 
   dispose() {
+    if (Runtime.queryParam('nodeFrontend') && !this._parentTarget.parentTarget()) {
+      InspectorFrontendHost.events.removeEventListener(
+          InspectorFrontendHostAPI.Events.DevicesDiscoveryConfigChanged, this._devicesDiscoveryConfigChanged, this);
+    }
+
     // TODO(dgozman): this is O(n^2) when removing main target.
     var childTargets = this._targetManager._targets.filter(child => child.parentTarget() === this._parentTarget);
     for (var child of childTargets)
@@ -482,7 +516,7 @@ SDK.ChildTargetManager = class {
   attachedToTarget(targetInfo, waitingForDebugger) {
     var targetName = '';
     if (targetInfo.type === 'node') {
-      targetName = Common.UIString('Node: %s', targetInfo.url);
+      targetName = Common.UIString('Node.js: %s', targetInfo.url);
     } else if (targetInfo.type !== 'iframe') {
       var parsedURL = targetInfo.url.asParsedURL();
       targetName =
@@ -500,6 +534,9 @@ SDK.ChildTargetManager = class {
         debuggerModel.pause();
     }
     target.runtimeAgent().runIfWaitingForDebugger();
+
+    if (Runtime.queryParam('nodeFrontend'))
+      InspectorFrontendHost.bringToFront();
   }
 
   /**

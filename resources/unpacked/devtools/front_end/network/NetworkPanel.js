@@ -51,6 +51,8 @@ Network.NetworkPanel = class extends UI.Panel {
     this._filterBar = new UI.FilterBar('networkPanel', true);
     this._filterBar.show(this.element);
 
+    this._filmStripPlaceholderElement = this.element.createChild('div');
+
     // Create top overview component.
     this._overviewPane = new PerfUI.TimelineOverviewPane('network');
     this._overviewPane.addEventListener(
@@ -58,6 +60,8 @@ Network.NetworkPanel = class extends UI.Panel {
     this._overviewPane.element.id = 'network-overview-panel';
     this._networkOverview = new Network.NetworkOverview();
     this._overviewPane.setOverviewControls([this._networkOverview]);
+    this._overviewPlaceholderElement = this.element.createChild('div');
+
     this._calculator = new Network.NetworkTransferTimeCalculator();
 
     this._splitWidget = new UI.SplitWidget(true, false, 'networkPanelSplitViewState');
@@ -162,6 +166,12 @@ Network.NetworkPanel = class extends UI.Panel {
         this._networkLogShowOverviewSetting, 'largeicon-waterfall', Common.UIString('Show overview'),
         Common.UIString('Hide overview'));
     this._panelToolbar.appendToolbarItem(showOverviewButton);
+
+    if (Runtime.experiments.isEnabled('networkGroupingRequests')) {
+      this._panelToolbar.appendToolbarItem(new UI.ToolbarSettingCheckbox(
+          Common.moduleSetting('network.group-by-frame'), '', Common.UIString('Group by frame')));
+    }
+
     this._panelToolbar.appendSeparator();
 
     this._preserveLogCheckbox = new UI.ToolbarCheckbox(
@@ -179,23 +189,7 @@ Network.NetworkPanel = class extends UI.Panel {
     this._panelToolbar.appendToolbarItem(NetworkConditions.NetworkConditionsSelector.createOfflineToolbarCheckbox());
     this._panelToolbar.appendToolbarItem(this._createNetworkConditionsSelect());
 
-    this._setupGroupingCombo();
-
     this._panelToolbar.appendToolbarItem(new UI.ToolbarItem(this._progressBarContainer));
-  }
-
-  _setupGroupingCombo() {
-    if (!Runtime.experiments.isEnabled('networkGroupingRequests'))
-      return;
-    /** @type {!Array<!{value: string, label: string, title: string}>} */
-    var options = [{value: '', label: Common.UIString('No grouping'), title: Common.UIString('No grouping')}];
-    for (var name of this._networkLogView.groupLookups().keys())
-      options.push({value: name, label: Common.UIString(name), title: Common.UIString(name)});
-
-    var setting = Common.settings.createSetting('networkGrouping', '');
-    this._panelToolbar.appendToolbarItem(new UI.ToolbarSettingComboBox(options, setting, Common.UIString('Group by')));
-    setting.addChangeListener(event => this._networkLogView.setGrouping(/** @type {string} */ (event.data)));
-    this._networkLogView.setGrouping(/** @type {string} */ (setting.get()));
   }
 
   /**
@@ -306,7 +300,7 @@ Network.NetworkPanel = class extends UI.Panel {
   _toggleShowOverview() {
     var toggled = this._networkLogShowOverviewSetting.get();
     if (toggled)
-      this._overviewPane.show(this.element, this._splitWidget.element);
+      this._overviewPane.show(this._overviewPlaceholderElement);
     else
       this._overviewPane.detach();
     this.doResize();
@@ -320,7 +314,7 @@ Network.NetworkPanel = class extends UI.Panel {
       this._filmStripView.element.classList.add('network-film-strip');
       this._filmStripRecorder =
           new Network.NetworkPanel.FilmStripRecorder(this._networkLogView.timeCalculator(), this._filmStripView);
-      this._filmStripView.show(this.element, this._overviewPane.element);
+      this._filmStripView.show(this._filmStripPlaceholderElement);
       this._filmStripView.addEventListener(PerfUI.FilmStripView.Events.FrameSelected, this._onFilmFrameSelected, this);
       this._filmStripView.addEventListener(PerfUI.FilmStripView.Events.FrameEnter, this._onFilmFrameEnter, this);
       this._filmStripView.addEventListener(PerfUI.FilmStripView.Events.FrameExit, this._onFilmFrameExit, this);

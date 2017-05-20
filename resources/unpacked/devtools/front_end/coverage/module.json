@@ -39,7 +39,7 @@
             "iconClass": "largeicon-refresh",
             "className": "Coverage.CoverageView.ActionDelegate",
             "category": "Performance",
-            "title": "Start recording and reload page"
+            "title": "Start instrumenting coverage and reload page"
         }
     ],
     "dependencies": [
@@ -52,7 +52,8 @@
     "scripts": [
         "CoverageModel.js",
         "CoverageListView.js",
-        "CoverageView.js"
+        "CoverageView.js",
+        "CoverageDecorationManager.js"
     ],
     "resources": [
         "coverageListView.css",

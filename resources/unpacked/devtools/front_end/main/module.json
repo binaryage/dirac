@@ -204,6 +204,13 @@
         },
         {
             "type": "@UI.ToolbarItem.Provider",
+            "className": "Main.Main.NodeIndicator",
+            "order": 2,
+            "location": "main-toolbar-left",
+            "condition": "!nodeFrontend"
+        },
+        {
+            "type": "@UI.ToolbarItem.Provider",
             "className": "Main.Main.WarningErrorCounter",
             "order": 1,
             "location": "main-toolbar-right"
@@ -367,6 +374,7 @@
             "title": "Rendering",
             "persistence": "closeable",
             "order": 50,
+            "condition": "!v8only",
             "className": "Main.RenderingOptionsView"
         },
         {
@@ -437,6 +445,7 @@
     ],
     "resources": [
         "errorWarningCounter.css",
+        "nodeIcon.css",
         "remoteDebuggingTerminatedScreen.css",
         "renderingOptions.css",
         "targetCrashedScreen.css"

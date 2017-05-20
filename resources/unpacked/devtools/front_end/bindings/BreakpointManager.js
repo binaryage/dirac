@@ -110,6 +110,12 @@ Bindings.BreakpointManager = class extends Common.Object {
     var breakpointItems = this._storage.breakpointItems(fromURL);
     for (var item of breakpointItems)
       this.setBreakpoint(toSourceCode, item.lineNumber, item.columnNumber, item.condition, item.enabled);
+    // Since we can not have two provisional breakpoints which point to the same url, remove one of them.
+    if (fromURL === toSourceCode.url()) {
+      var provisionalBreakpoints = this._provisionalBreakpointsForURL(fromURL);
+      for (var breakpoint of provisionalBreakpoints.values())
+        breakpoint.remove();
+    }
   }
 
   removeProvisionalBreakpointsForTest() {
@@ -810,6 +816,8 @@ Bindings.BreakpointManager.ModelBreakpoint = class {
 
     var debuggerLocation = uiSourceCode &&
         Bindings.debuggerWorkspaceBinding.uiLocationToRawLocation(uiSourceCode, lineNumber, columnNumber);
+    if (debuggerLocation && debuggerLocation.debuggerModel !== this._debuggerModel)
+      debuggerLocation = null;
     var newState;
     if (this._breakpoint._isRemoved || !this._breakpoint.enabled() || this._scriptDiverged()) {
       newState = null;

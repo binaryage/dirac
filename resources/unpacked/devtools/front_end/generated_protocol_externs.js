@@ -506,12 +506,23 @@ Protocol.PageAgent.CaptureScreenshotResponse;
 Protocol.PageAgent.prototype.invoke_captureScreenshot = function(obj) {};
 
 /**
+ * @param {boolean=} opt_landscape
+ * @param {boolean=} opt_displayHeaderFooter
+ * @param {boolean=} opt_printBackground
+ * @param {number=} opt_scale
+ * @param {number=} opt_paperWidth
+ * @param {number=} opt_paperHeight
+ * @param {number=} opt_marginTop
+ * @param {number=} opt_marginBottom
+ * @param {number=} opt_marginLeft
+ * @param {number=} opt_marginRight
+ * @param {string=} opt_pageRanges
  * @param {function(?Protocol.Error, string):T=} opt_callback
  * @return {!Promise<T>}
  * @template T
  */
-Protocol.PageAgent.prototype.printToPDF = function(opt_callback) {};
-/** @typedef {Object|undefined} */
+Protocol.PageAgent.prototype.printToPDF = function(opt_landscape, opt_displayHeaderFooter, opt_printBackground, opt_scale, opt_paperWidth, opt_paperHeight, opt_marginTop, opt_marginBottom, opt_marginLeft, opt_marginRight, opt_pageRanges, opt_callback) {};
+/** @typedef {!{paperHeight: (number|undefined), scale: (number|undefined), displayHeaderFooter: (boolean|undefined), marginBottom: (number|undefined), paperWidth: (number|undefined), marginLeft: (number|undefined), printBackground: (boolean|undefined), marginRight: (number|undefined), pageRanges: (string|undefined), marginTop: (number|undefined), landscape: (boolean|undefined)}} */
 Protocol.PageAgent.PrintToPDFRequest;
 /** @typedef {!{data: string}} */
 Protocol.PageAgent.PrintToPDFResponse;
@@ -665,6 +676,24 @@ Protocol.PageAgent.GetLayoutMetricsResponse;
  * @param {!Protocol.PageAgent.GetLayoutMetricsRequest} obj
  * @return {!Promise<!Protocol.PageAgent.GetLayoutMetricsResponse>} */
 Protocol.PageAgent.prototype.invoke_getLayoutMetrics = function(obj) {};
+
+/**
+ * @param {Protocol.Page.FrameId} frameId
+ * @param {string=} opt_worldName
+ * @param {boolean=} opt_grantUniveralAccess
+ * @param {function(?Protocol.Error):T=} opt_callback
+ * @return {!Promise<T>}
+ * @template T
+ */
+Protocol.PageAgent.prototype.createIsolatedWorld = function(frameId, opt_worldName, opt_grantUniveralAccess, opt_callback) {};
+/** @typedef {!{grantUniveralAccess: (boolean|undefined), worldName: (string|undefined), frameId: Protocol.Page.FrameId}} */
+Protocol.PageAgent.CreateIsolatedWorldRequest;
+/** @typedef {Object|undefined} */
+Protocol.PageAgent.CreateIsolatedWorldResponse;
+/**
+ * @param {!Protocol.PageAgent.CreateIsolatedWorldRequest} obj
+ * @return {!Promise<!Protocol.PageAgent.CreateIsolatedWorldResponse>} */
+Protocol.PageAgent.prototype.invoke_createIsolatedWorld = function(obj) {};
 
 /** @enum {string} */
 Protocol.Page.ResourceType = {
@@ -5495,7 +5524,7 @@ Protocol.SystemInfoAgent = function(){};
 Protocol.SystemInfoAgent.prototype.getInfo = function() {};
 /** @typedef {Object|undefined} */
 Protocol.SystemInfoAgent.GetInfoRequest;
-/** @typedef {!{gpu: Protocol.SystemInfo.GPUInfo, modelName: string, modelVersion: string}} */
+/** @typedef {!{gpu: Protocol.SystemInfo.GPUInfo, commandLine: string, modelName: string, modelVersion: string}} */
 Protocol.SystemInfoAgent.GetInfoResponse;
 /**
  * @param {!Protocol.SystemInfoAgent.GetInfoRequest} obj
@@ -6201,12 +6230,13 @@ Protocol.DebuggerAgent.prototype.invoke_getPossibleBreakpoints = function(obj) {
 
 /**
  * @param {Protocol.Debugger.Location} location
+ * @param {string=} opt_targetCallFrames
  * @param {function(?Protocol.Error):T=} opt_callback
  * @return {!Promise<T>}
  * @template T
  */
-Protocol.DebuggerAgent.prototype.continueToLocation = function(location, opt_callback) {};
-/** @typedef {!{location: Protocol.Debugger.Location}} */
+Protocol.DebuggerAgent.prototype.continueToLocation = function(location, opt_targetCallFrames, opt_callback) {};
+/** @typedef {!{location: Protocol.Debugger.Location, targetCallFrames: (string|undefined)}} */
 Protocol.DebuggerAgent.ContinueToLocationRequest;
 /** @typedef {Object|undefined} */
 Protocol.DebuggerAgent.ContinueToLocationResponse;

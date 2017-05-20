@@ -79,6 +79,53 @@ Timeline.TimelineFlameChartView = class extends UI.VBox {
     this._nextExtensionIndex = 0;
 
     this._boundRefresh = this._refresh.bind(this);
+
+    this._mainDataProvider.setEventColorMapping(Timeline.TimelineUIUtils.eventColor);
+    if (!Runtime.experiments.isEnabled('timelineColorByProduct'))
+      return;
+    this._groupBySetting =
+        Common.settings.createSetting('timelineTreeGroupBy', Timeline.AggregatedTimelineTreeView.GroupBy.None);
+    this._groupBySetting.addChangeListener(this._onGroupByChanged, this);
+    this._onGroupByChanged();
+    ProductRegistry.instance().then(registry => this._productRegistry = registry);
+  }
+
+  _onGroupByChanged() {
+    /** @type {!Map<string, string>} */
+    this._urlToColorCache = new Map();
+    var colorByProduct = Runtime.experiments.isEnabled('timelineColorByProduct') &&
+        this._groupBySetting.get() === Timeline.AggregatedTimelineTreeView.GroupBy.Product;
+    this._mainDataProvider.setEventColorMapping(
+        colorByProduct ? eventToColorByProduct.bind(this) : Timeline.TimelineUIUtils.eventColor);
+    this._mainFlameChart.update();
+
+    /**
+     * @param {!SDK.TracingModel.Event} event
+     * @this {Timeline.TimelineFlameChartView}
+     * @return {string}
+     */
+    function eventToColorByProduct(event) {
+      var url = Timeline.TimelineUIUtils.eventURL(event) || '';
+      var color = this._urlToColorCache.get(url);
+      if (!color) {
+        var defaultColor = '#f2ecdc';
+        if (!this._productRegistry)
+          return defaultColor;
+        var parsedURL = url.asParsedURL();
+        if (!parsedURL)
+          return defaultColor;
+        var name = this._productRegistry.nameForUrl(parsedURL);
+        if (!name) {
+          name = parsedURL.host;
+          var rootFrames = this._model.timelineModel().rootFrames();
+          if (rootFrames.some(pageFrame => new Common.ParsedURL(pageFrame.url).host === name))
+            return defaultColor;
+        }
+        color = name ? ProductRegistry.BadgePool.colorForEntryName(name) : defaultColor;
+        this._urlToColorCache.set(url, color);
+      }
+      return color;
+    }
   }
 
   /**
@@ -447,16 +494,6 @@ Timeline.FlameChartStyle = {
 };
 
 /**
- * @enum {symbol}
- */
-Timeline.TimelineFlameChartEntryType = {
-  Frame: Symbol('Frame'),
-  Event: Symbol('Event'),
-  InteractionRecord: Symbol('InteractionRecord'),
-  ExtensionEvent: Symbol('ExtensionEvent')
-};
-
-/**
  * @implements {PerfUI.FlameChartMarker}
  * @unrestricted
  */
@@ -532,4 +569,10 @@ Timeline.TimelineFlameChartMarker = class {
     }
     context.restore();
   }
+};
+
+/** @enum {string} */
+Timeline.TimelineFlameChartView._ColorBy = {
+  URL: 'URL',
+  Product: 'Product'
 };

@@ -6,7 +6,18 @@
             "id": "audits",
             "title": "Audits",
             "order": 90,
-            "className": "Audits.AuditsPanel"
+            "className": "Audits.AuditsPanel",
+            "experiment": "!audits2"
+        },
+        {
+            "type": "view",
+            "location": "panel",
+            "id": "audits",
+            "title": "Legacy Audits",
+            "order": 90,
+            "persistence": "closeable",
+            "className": "Audits.AuditsPanel",
+            "experiment": "audits2"
         }
     ],
     "dependencies": [

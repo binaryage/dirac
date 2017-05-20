@@ -104,10 +104,6 @@ Network.NetworkNode = class extends DataGrid.SortableDataGridNode {
       color = color.blendWith(bgColors.Navigation);
     if (this.hovered())
       color = color.blendWith(bgColors.Hovered);
-    if (this.isFromFrame())
-      color = color.blendWith(bgColors.FromFrame);
-    else if (this._isProduct)
-      color = color.blendWith(bgColors.IsProduct);
     if (this.isOnInitiatorPath())
       color = color.blendWith(bgColors.InitiatorPath);
     if (this.isOnInitiatedPath())
@@ -280,6 +276,9 @@ Network.NetworkNode._SupportedBackgroundColors;
 /** @type {!Network.NetworkNode._SupportedBackgroundColors} */
 Network.NetworkNode._themedBackgroundColorsCache;
 
+/** @typedef {!{entry: !ProductRegistry.Registry.ProductEntry, matchedURL: !Common.ParsedURL}} */
+Network.NetworkNode._ProductEntryInfo;
+
 /**
  * @unrestricted
  */
@@ -293,9 +292,9 @@ Network.NetworkRequestNode = class extends Network.NetworkNode {
     /** @type {?Element} */
     this._nameCell = null;
     /** @type {?Element} */
-    this._initiatorCell = null;
+    this._nameBadgeElement = null;
     /** @type {?Element} */
-    this._linkifiedInitiatorAnchor = null;
+    this._initiatorCell = null;
     this._request = request;
     this._isNavigationRequest = false;
     this.selectable = true;
@@ -714,9 +713,6 @@ Network.NetworkRequestNode = class extends Network.NetworkNode {
     if (!Runtime.experiments.isEnabled('networkGroupingRequests'))
       return;
     ProductRegistry.instance().then(productRegistry => {
-      var frame = SDK.ResourceTreeModel.frameForRequest(this._request);
-      if (frame && frame.isMainFrame())
-        frame = null;
       if (productRegistry.entryForUrl(this._request.parsedURL)) {
         this._isProduct = true;
         this._updateBackgroundColor();
@@ -742,13 +738,6 @@ Network.NetworkRequestNode = class extends Network.NetworkNode {
     switch (columnId) {
       case 'name':
         this._renderNameCell(cell);
-        break;
-      case 'product':
-        if (!Runtime.experiments.isEnabled('networkGroupingRequests')) {
-          this._setTextAndTitle(cell, this._request.responseHeaderValue(columnId) || '');
-          break;
-        }
-        ProductRegistry.instance().then(this._renderProductCell.bind(this, cell));
         break;
       case 'method':
         this._setTextAndTitle(cell, this._request.requestMethod);
@@ -812,31 +801,6 @@ Network.NetworkRequestNode = class extends Network.NetworkNode {
 
   /**
    * @override
-   * @protected
-   */
-  willAttach() {
-    if (this._initiatorCell &&
-        NetworkLog.networkLog.initiatorInfoForRequest(this._request).type === SDK.NetworkRequest.InitiatorType.Script)
-      this._initiatorCell.insertBefore(this._linkifiedInitiatorAnchor, this._initiatorCell.firstChild);
-  }
-
-  /**
-   * @override
-   */
-  wasDetached() {
-    if (this._linkifiedInitiatorAnchor)
-      this._linkifiedInitiatorAnchor.remove();
-  }
-
-  dispose() {
-    if (this._linkifiedInitiatorAnchor) {
-      this.parentView().linkifier.disposeAnchor(
-          this._request.networkManager().target(), this._linkifiedInitiatorAnchor);
-    }
-  }
-
-  /**
-   * @override
    * @param {boolean=} supressSelectedEvent
    */
   select(supressSelectedEvent) {
@@ -890,29 +854,14 @@ Network.NetworkRequestNode = class extends Network.NetworkNode {
     iconElement.classList.add(this._request.resourceType().name());
 
     cell.appendChild(iconElement);
-    cell.createTextChild(this._request.networkManager().target().decorateLabel(this._request.name()));
+    if (!this._nameBadgeElement) {
+      this._nameBadgeElement = this.parentView().badgePool.badgeForURL(this._request.parsedURL);
+      this._nameBadgeElement.classList.add('network-badge');
+    }
+    cell.appendChild(this._nameBadgeElement);
+    cell.createTextChild(this._request.networkManager().target().decorateLabel(this._request.name().trimMiddle(100)));
     this._appendSubtitle(cell, this._request.path());
     cell.title = this._request.url();
-  }
-
-  /**
-   * @param {!Element} cell
-   * @param {!ProductRegistry.Registry} productRegistry
-   */
-  _renderProductCell(cell, productRegistry) {
-    var rowElement = this.existingElement();
-    if (!rowElement)
-      return;
-    var frame = SDK.ResourceTreeModel.frameForRequest(this._request);
-    if (frame && frame.isMainFrame())
-      frame = null;
-    var entry = frame ? productRegistry.entryForFrame(frame) : null;
-    if (!entry)
-      entry = productRegistry.entryForUrl(this._request.parsedURL);
-    if (!entry)
-      return;
-    cell.textContent = entry.name;
-    cell.title = entry.name;
   }
 
   /**
@@ -1000,12 +949,10 @@ Network.NetworkRequestNode = class extends Network.NetworkNode {
         break;
 
       case SDK.NetworkRequest.InitiatorType.Script:
-        if (!this._linkifiedInitiatorAnchor) {
-          this._linkifiedInitiatorAnchor = this.parentView().linkifier.linkifyScriptLocation(
-              request.networkManager().target(), initiator.scriptId, initiator.url, initiator.lineNumber,
-              initiator.columnNumber);
-          this._linkifiedInitiatorAnchor.title = '';
-        }
+        this._linkifiedInitiatorAnchor = this.parentView().linkifier.linkifyScriptLocation(
+            request.networkManager().target(), initiator.scriptId, initiator.url, initiator.lineNumber,
+            initiator.columnNumber);
+        this._linkifiedInitiatorAnchor.title = '';
         cell.appendChild(this._linkifiedInitiatorAnchor);
         this._appendSubtitle(cell, Common.UIString('Script'));
         cell.classList.add('network-script-initiated');

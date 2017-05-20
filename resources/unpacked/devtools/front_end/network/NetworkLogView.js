@@ -47,6 +47,7 @@ Network.NetworkLogView = class extends UI.VBox {
     this._networkResourceTypeFiltersSetting = Common.settings.createSetting('networkResourceTypeFilters', {});
 
     this._filterBar = filterBar;
+    this._rawRowHeight = 0;
     this._progressBarContainer = progressBarContainer;
     this._networkLogLargeRowsSetting = networkLogLargeRowsSetting;
     this._networkLogLargeRowsSetting.addChangeListener(updateRowHeight.bind(this), this);
@@ -62,7 +63,8 @@ Network.NetworkLogView = class extends UI.VBox {
      */
     function updateRowHeight() {
       /** @type {number} */
-      this._rowHeight = !!this._networkLogLargeRowsSetting.get() ? 41 : 21;
+      this._rawRowHeight = !!this._networkLogLargeRowsSetting.get() ? 41 : 21;
+      this._updateRowHeight();
     }
     updateRowHeight.call(this);
 
@@ -90,8 +92,8 @@ Network.NetworkLogView = class extends UI.VBox {
     this._currentMatchedRequestNode = null;
     this._currentMatchedRequestIndex = -1;
 
-    /** @type {!Components.Linkifier} */
     this.linkifier = new Components.Linkifier();
+    this.badgePool = new ProductRegistry.BadgePool();
 
     this._recording = false;
     this._preserveLog = false;
@@ -100,7 +102,7 @@ Network.NetworkLogView = class extends UI.VBox {
 
     /** @type {!Map<string, !Network.GroupLookupInterface>} */
     this._groupLookups = new Map();
-    this._groupLookups.set('Frame', new Network.FrameGrouper(this));
+    this._groupLookups.set('Frame', new Network.NetworkFrameGrouper(this));
 
     /** @type {?Network.GroupLookupInterface} */
     this._activeGroupLookup = null;
@@ -119,6 +121,14 @@ Network.NetworkLogView = class extends UI.VBox {
         SDK.NetworkManager, SDK.NetworkManager.Events.RequestUpdated, this._onRequestUpdated, this);
     SDK.targetManager.addModelListener(
         SDK.NetworkManager, SDK.NetworkManager.Events.RequestFinished, this._onRequestUpdated, this);
+
+    this._updateGroupByFrame();
+    Common.moduleSetting('network.group-by-frame').addChangeListener(() => this._updateGroupByFrame());
+  }
+
+  _updateGroupByFrame() {
+    var value = Common.moduleSetting('network.group-by-frame').get();
+    this._setGrouping(value ? 'Frame' : null);
   }
 
   /**
@@ -351,28 +361,18 @@ Network.NetworkLogView = class extends UI.VBox {
   }
 
   /**
-   * @return {!Map<string, !Network.GroupLookupInterface>}
+   * @param {?string} groupKey
    */
-  groupLookups() {
-    return this._groupLookups;
+  _setGrouping(groupKey) {
+    var groupLookup = groupKey ? this._groupLookups.get(groupKey) || null : null;
+    this._activeGroupLookup = groupLookup;
+    if (groupLookup)
+      groupLookup.reset();
+    this._invalidateAllItems();
   }
 
-  /**
-   * @param {string} groupKey
-   */
-  setGrouping(groupKey) {
-    var groupLookup = this._groupLookups.get(groupKey) || null;
-    this._activeGroupLookup = groupLookup;
-    if (!groupLookup) {
-      this._invalidateAllItems();
-      return;
-    }
-    groupLookup.initialize().then(() => {
-      if (this._activeGroupLookup !== groupLookup)
-        return;
-      this._activeGroupLookup.reset();
-      this._invalidateAllItems();
-    });
+  _updateRowHeight() {
+    this._rowHeight = Math.floor(this._rawRowHeight * window.devicePixelRatio) / window.devicePixelRatio;
   }
 
   /**
@@ -578,6 +578,13 @@ Network.NetworkLogView = class extends UI.VBox {
     var node = (this._dataGrid.dataGridNodeFromNode(/** @type {!Node} */ (event.target)));
     var highlightInitiatorChain = event.shiftKey;
     this._setHoveredNode(node, highlightInitiatorChain);
+  }
+
+  /**
+   * @return {?Network.NetworkNode}
+   */
+  hoveredNode() {
+    return this._hoveredNode;
   }
 
   /**
@@ -797,6 +804,13 @@ Network.NetworkLogView = class extends UI.VBox {
   }
 
   /**
+   * @override
+   */
+  onResize() {
+    this._updateRowHeight();
+  }
+
+  /**
    * @return {!Array<!Network.NetworkNode>}
    */
   flatNodesList() {
@@ -914,10 +928,8 @@ Network.NetworkLogView = class extends UI.VBox {
     this._calculator.reset();
 
     this._timeCalculator.setWindow(null);
-
-    var nodes = this._nodesByRequestId.valuesArray();
-    for (var i = 0; i < nodes.length; ++i)
-      nodes[i].dispose();
+    this.linkifier.reset();
+    this.badgePool.reset();
 
     if (this._activeGroupLookup)
       this._activeGroupLookup.reset();
@@ -928,10 +940,9 @@ Network.NetworkLogView = class extends UI.VBox {
     this._mainRequestLoadTime = -1;
     this._mainRequestDOMContentLoadedTime = -1;
 
-    if (this._dataGrid) {
-      this._dataGrid.rootNode().removeChildren();
-      this._updateSummaryBar();
-    }
+    this._dataGrid.rootNode().removeChildren();
+    this._updateSummaryBar();
+    this._dataGrid.setStickToBottom(true);
   }
 
   /**
@@ -1818,11 +1829,6 @@ Network.NetworkLogView.Filter;
 Network.GroupLookupInterface = function() {};
 
 Network.GroupLookupInterface.prototype = {
-  /**
-   * @return {!Promise}
-   */
-  initialize: function() {},
-
   /**
    * @param {!SDK.NetworkRequest} request
    * @return {?Network.NetworkGroupNode}

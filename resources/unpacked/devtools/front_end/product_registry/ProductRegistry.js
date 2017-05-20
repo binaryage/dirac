@@ -5,7 +5,10 @@
  * @return {!Promise<!ProductRegistry.Registry>}
  */
 ProductRegistry.instance = function() {
-  return self.runtime.extension(ProductRegistry.Registry).instance();
+  var extension = self.runtime.extension(ProductRegistry.Registry);
+  if (extension)
+    return extension.instance();
+  return Promise.resolve(self.singleton(ProductRegistry.RegistryStub));
 };
 
 /**
@@ -30,13 +33,39 @@ ProductRegistry.Registry.prototype = {
    * @param {!Common.ParsedURL} parsedUrl
    * @return {?number}
    */
-  typeForUrl: function(parsedUrl) {},
+  typeForUrl: function(parsedUrl) {}
+};
+
+/**
+ * @implements {ProductRegistry.Registry}
+ */
+ProductRegistry.RegistryStub = class {
+  /**
+   * @override
+   * @param {!Common.ParsedURL} parsedUrl
+   * @return {?string}
+   */
+  nameForUrl(parsedUrl) {
+    return null;
+  }
 
   /**
-   * @param {!SDK.ResourceTreeFrame} frame
+   * @override
+   * @param {!Common.ParsedURL} parsedUrl
    * @return {?ProductRegistry.Registry.ProductEntry}
    */
-  entryForFrame: function(frame) {}
+  entryForUrl(parsedUrl) {
+    return null;
+  }
+
+  /**
+   * @override
+   * @param {!Common.ParsedURL} parsedUrl
+   * @return {?number}
+   */
+  typeForUrl(parsedUrl) {
+    return null;
+  }
 };
 
 /** @typedef {!{name: string, type: ?number}} */

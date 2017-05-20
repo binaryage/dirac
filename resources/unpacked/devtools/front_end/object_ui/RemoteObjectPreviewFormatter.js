@@ -26,7 +26,9 @@ ObjectUI.RemoteObjectPreviewFormatter = class {
   appendObjectPreview(parentElement, preview, isEntry) {
     const previewExperimentEnabled = Runtime.experiments.isEnabled('objectPreviews');
     var description = preview.description;
-    if (preview.type !== 'object' || preview.subtype === 'null' || (previewExperimentEnabled && isEntry)) {
+    var subTypesWithoutValuePreview = new Set(['null', 'regexp', 'error', 'internal#entry']);
+    if (preview.type !== 'object' || subTypesWithoutValuePreview.has(preview.subtype) ||
+        (previewExperimentEnabled && isEntry)) {
       parentElement.appendChild(this.renderPropertyPreview(preview.type, preview.subtype, description));
       return;
     }
@@ -46,16 +48,19 @@ ObjectUI.RemoteObjectPreviewFormatter = class {
         parentElement.createChild('span', 'object-description').textContent = text + ' ';
     }
 
-    parentElement.createTextChild(isArrayOrTypedArray ? '[' : '{');
+    var propertiesElement = parentElement.createChild('span', 'object-properties-preview source-code');
+    propertiesElement.createTextChild(isArrayOrTypedArray ? '[' : '{');
     if (preview.entries)
-      this._appendEntriesPreview(parentElement, preview);
+      this._appendEntriesPreview(propertiesElement, preview);
     else if (isArrayOrTypedArray)
-      this._appendArrayPropertiesPreview(parentElement, preview);
+      this._appendArrayPropertiesPreview(propertiesElement, preview);
     else
-      this._appendObjectPropertiesPreview(parentElement, preview);
-    if (preview.overflow)
-      parentElement.createChild('span').textContent = '\u2026';
-    parentElement.createTextChild(isArrayOrTypedArray ? ']' : '}');
+      this._appendObjectPropertiesPreview(propertiesElement, preview);
+    if (preview.overflow) {
+      var ellipsisText = propertiesElement.textContent.length > 1 ? ',\u00a0\u2026' : '\u2026';
+      propertiesElement.createChild('span').textContent = ellipsisText;
+    }
+    propertiesElement.createTextChild(isArrayOrTypedArray ? ']' : '}');
   }
 
   /**
@@ -222,7 +227,7 @@ ObjectUI.RemoteObjectPreviewFormatter = class {
     }
 
     if (type === 'function') {
-      span.textContent = 'function';
+      span.textContent = '\u0192';
       return span;
     }
 
@@ -237,7 +242,10 @@ ObjectUI.RemoteObjectPreviewFormatter = class {
     }
 
     if (type === 'object' && !subtype) {
-      span.textContent = this._abbreviateFullQualifiedClassName(description);
+      var preview = this._abbreviateFullQualifiedClassName(description);
+      if (preview === 'Object')
+        preview = '{\u2026}';
+      span.textContent = preview;
       span.title = description;
       return span;
     }

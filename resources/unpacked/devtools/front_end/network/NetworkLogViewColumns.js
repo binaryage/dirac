@@ -32,9 +32,6 @@ Network.NetworkLogViewColumns = class {
     this._waterfallRequestsAreStale = false;
     this._waterfallScrollerWidthIsStale = true;
 
-    /** @type {?ProductRegistry.Registry} */
-    this._productRegistryInstance = null;
-
     /** @type {!Components.Linkifier} */
     this._popupLinkifier = new Components.Linkifier();
 
@@ -79,14 +76,6 @@ Network.NetworkLogViewColumns = class {
   _setupDataGrid() {
     var defaultColumns = Network.NetworkLogViewColumns._defaultColumns;
 
-    if (Runtime.experiments.isEnabled('networkGroupingRequests')) {
-      defaultColumns.splice(1, 0, /** @type {!Network.NetworkLogViewColumns.Descriptor} */ ({
-                              id: 'product',
-                              title: Common.UIString('Product'),
-                              visible: true
-                            }));
-    }
-
     var defaultColumnConfig = Network.NetworkLogViewColumns._defaultColumnConfig;
 
     this._columns = /** @type {!Array<!Network.NetworkLogViewColumns.Descriptor>} */ ([]);
@@ -102,6 +91,7 @@ Network.NetworkLogViewColumns = class {
 
     this._popoverHelper = new UI.PopoverHelper(this._networkLogView.element, this._getPopoverRequest.bind(this));
     this._popoverHelper.setHasPadding(true);
+    this._popoverHelper.setTimeout(300, 300);
 
     /** @type {!DataGrid.SortableDataGrid<!Network.NetworkNode>} */
     this._dataGrid =
@@ -128,8 +118,7 @@ Network.NetworkLogViewColumns = class {
   }
 
   _setupWaterfall() {
-    this._waterfallColumn =
-        new Network.NetworkWaterfallColumn(this._networkLogView.rowHeight(), this._networkLogView.calculator());
+    this._waterfallColumn = new Network.NetworkWaterfallColumn(this._networkLogView.calculator());
 
     this._waterfallColumn.element.addEventListener('contextmenu', handleContextMenu.bind(this));
     this._waterfallColumn.element.addEventListener('mousewheel', this._onMouseWheel.bind(this, false), {passive: true});
@@ -245,11 +234,12 @@ Network.NetworkLogViewColumns = class {
 
   _updateRowsSize() {
     var largeRows = !!this._networkLogLargeRowsSetting.get();
+
     this._dataGrid.element.classList.toggle('small', !largeRows);
     this._dataGrid.scheduleUpdate();
 
     this._waterfallScrollerWidthIsStale = true;
-    this._waterfallColumn.setRowHeight(this._networkLogView.rowHeight());
+    this._waterfallColumn.setRowHeight(largeRows ? 41 : 21);
     this._waterfallScroller.classList.toggle('small', !largeRows);
     this._waterfallHeaderElement.classList.toggle('small', !largeRows);
     this._waterfallColumn.setHeaderHeight(this._waterfallScroller.offsetTop);
@@ -286,17 +276,6 @@ Network.NetworkLogViewColumns = class {
       var sortFunction = Network.NetworkRequestNode.RequestPropertyComparator.bind(null, this._activeWaterfallSortId);
       this._dataGrid.sortNodes(sortFunction, !this._dataGrid.isSortOrderAscending());
       this._networkLogView.dataGridSorted();
-      return;
-    } else if (columnId === 'product' && !this._productRegistryInstance) {
-      ProductRegistry.instance().then(productRegistry => {
-        this._productRegistryInstance = productRegistry;
-        var columnConfig = this._columns.find(columnConfig => columnConfig.id === columnId);
-        if (!columnConfig)
-          return;
-        columnConfig.sortingFunction = Network.NetworkRequestNode.ProductComparator.bind(null, productRegistry);
-        if (this._dataGrid.sortColumnId() === 'product')
-          this._sortHandler();
-      });
       return;
     }
     this._waterfallColumnSortIcon.setIconType('');
@@ -549,13 +528,17 @@ Network.NetworkLogViewColumns = class {
   _getPopoverRequest(event) {
     if (!this._gridMode)
       return null;
+    var hoveredNode = this._networkLogView.hoveredNode();
+    if (!hoveredNode)
+      return null;
 
     var anchor = event.target.enclosingNodeOrSelfWithClass('network-script-initiated');
-    var request = /** @type {?SDK.NetworkRequest} */ (anchor ? anchor.request : null);
+    if (!anchor)
+      return null;
+    var request = hoveredNode.request();
     var initiator = request ? request.initiator() : null;
     if (!initiator || !initiator.stack)
       return null;
-
     return {
       box: anchor.boxInWindow(),
       show: popover => {
@@ -564,9 +547,7 @@ Network.NetworkLogViewColumns = class {
         popover.contentElement.appendChild(content);
         return Promise.resolve(true);
       },
-      hide: () => {
-        this._popupLinkifier.reset();
-      }
+      hide: this._popupLinkifier.reset.bind(this._popupLinkifier)
     };
   }
 
@@ -617,8 +598,6 @@ Network.NetworkLogViewColumns = class {
 };
 
 Network.NetworkLogViewColumns._initialSortColumn = 'waterfall';
-/** @type {?ProductRegistry.Registry} */
-Network.NetworkRequestNode._productRegistryInstance = null;
 
 /**
  * @typedef {{

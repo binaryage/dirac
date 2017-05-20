@@ -1,6 +1,6 @@
 (def clj-logging-config-version "1.9.12")
 (def slf4j-log4j12-version "1.7.22")
-(defproject binaryage/dirac "1.2.7"
+(defproject binaryage/dirac "1.2.8"
   :description "Dirac DevTools - a Chrome DevTools fork for ClojureScript developers."
   :url "https://github.com/binaryage/dirac"
   :license {:name         "MIT License"
@@ -9,8 +9,8 @@
   :scm {:name "git"
         :url  "https://github.com/binaryage/dirac"}
 
-  :dependencies [[org.clojure/clojure "1.9.0-alpha15" :scope "provided"]
-                 [org.clojure/clojurescript "1.9.521" :scope "provided"]
+  :dependencies [[org.clojure/clojure "1.9.0-alpha16" :scope "provided"]
+                 [org.clojure/clojurescript "1.9.542" :scope "provided"]
                  [org.clojure/core.async "0.3.442"]
                  [org.clojure/tools.logging "0.3.1"]
                  [org.clojure/tools.cli "0.3.5"]
@@ -23,7 +23,7 @@
 
                  ; we cannot use :dependencies under individual profiles because Cursive recognizes only root level
                  ; thus we mark extra deps with :scope "test" and filter them later when producing jar library
-                 [binaryage/oops "0.5.3" :scope "test"]
+                 [binaryage/oops "0.5.4" :scope "test"]
                  [binaryage/chromex "0.5.7" :scope "test"]
                  [binaryage/devtools "0.9.4" :scope "test"]
                  [environ "1.1.0" :scope "test"]
@@ -43,9 +43,9 @@
 
                  [http.async.client "1.2.0" :scope "test"]
 
-                 [ring/ring-core "1.6.0" :scope "test"]
-                 [ring/ring-devel "1.6.0" :scope "test"]
-                 [ring/ring-jetty-adapter "1.6.0" :scope "test"]
+                 [ring/ring-core "1.6.1" :scope "test"]
+                 [ring/ring-devel "1.6.1" :scope "test"]
+                 [ring/ring-jetty-adapter "1.6.1" :scope "test"]
                  [clj-time "0.13.0" :scope "test"]
                  [clansi "1.0.0" :scope "test"]
 

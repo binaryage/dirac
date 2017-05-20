@@ -115,10 +115,6 @@
     pointer-events: none;
 }
 
-#network-container:not(.brief-mode) .network-log-grid.data-grid td.name-column:hover {
-    text-decoration: underline;
-}
-
 .network-log-grid.data-grid th.sortable:active {
     background-image: none !important;
 }
@@ -126,6 +122,10 @@
 .network-cell-subtitle {
     font-weight: normal;
     color: gray;
+}
+
+.network-badge {
+    margin-right: 4px;
 }
 
 .network-error-row,
@@ -358,4 +358,13 @@
     align-items: center;
     margin-right: 4px;
     margin-bottom: -2px;
+}
+
+.network-frame-group-icon {
+    display: inline-block;
+    margin: -8px -2px;
+}
+
+.network-frame-group-badge {
+    margin-right: 4px;
 }
