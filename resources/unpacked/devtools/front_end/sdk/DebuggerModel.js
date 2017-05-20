@@ -940,6 +940,11 @@ SDK.DebuggerEventTypes = {
   NativeBreakpoint: 2
 };
 
+SDK.DebuggerModel.ContinueToLocationTargetCallFrames = {
+  Any: 'any',
+  Current: 'current'
+};
+
 /**
  * @implements {Protocol.DebuggerDispatcher}
  * @unrestricted
@@ -1076,7 +1081,8 @@ SDK.DebuggerModel.Location = class {
   continueToLocation(pausedCallback) {
     if (pausedCallback)
       this.debuggerModel._continueToLocationCallback = this._paused.bind(this, pausedCallback);
-    this.debuggerModel._agent.continueToLocation(this.payload());
+    this.debuggerModel._agent.continueToLocation(
+        this.payload(), SDK.DebuggerModel.ContinueToLocationTargetCallFrames.Current);
   }
 
   /**
@@ -1370,6 +1376,8 @@ SDK.DebuggerModel.Scope = class {
         return Common.UIString('With Block');
       case Protocol.Debugger.ScopeType.Global:
         return Common.UIString('Global');
+      case Protocol.Debugger.ScopeType.Module:
+        return Common.UIString('Module');
     }
     return '';
   }
