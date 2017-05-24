@@ -588,7 +588,6 @@ Runtime._queryParamsObject = {
 };
 
 Runtime._instanceSymbol = Symbol('instance');
-Runtime._extensionSymbol = Symbol('extension');
 
 /**
  * @type {!Object.<string, string>}

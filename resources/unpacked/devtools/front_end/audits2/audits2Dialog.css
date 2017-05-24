@@ -59,6 +59,11 @@ header {
     content: "";
 }
 
+.audits2-report-error {
+    display: block;
+    margin-top: 5px;
+}
+
 button {
     margin: 15px 10px;
 }
@@ -75,6 +80,11 @@ button {
 
 .audits2-launcher-description {
     padding: 3px 0 0 22px;
+}
+
+.audits2-dialog-help-text {
+    color: red;
+    margin-top: 10px;
 }
 
 .audits2-dialog-buttons {
