@@ -1028,9 +1028,9 @@ Console.ConsoleView = class extends UI.VBox {
       case ConsoleModel.ConsoleMessage.MessageType.Command:
         return new Console.ConsoleCommand(message, this._linkifier, this._badgePool, nestingLevel);
       case ConsoleModel.ConsoleMessage.MessageType.DiracCommand:
-        return new Console.ConsoleDiracCommand(message, this._linkifier, nestingLevel);
+        return new Console.ConsoleDiracCommand(message, this._linkifier, this._badgePool, nestingLevel);
       case ConsoleModel.ConsoleMessage.MessageType.DiracMarkup:
-        return new Console.ConsoleDiracMarkup(message, this._linkifier, nestingLevel);
+        return new Console.ConsoleDiracMarkup(message, this._linkifier, this._badgePool, nestingLevel);
       case ConsoleModel.ConsoleMessage.MessageType.Result:
         return new Console.ConsoleCommandResult(message, this._linkifier, this._badgePool, nestingLevel);
       case ConsoleModel.ConsoleMessage.MessageType.StartGroupCollapsed:
@@ -1750,10 +1750,11 @@ Console.ConsoleDiracCommand = class extends Console.ConsoleCommand {
   /**
    * @param {!ConsoleModel.ConsoleMessage} message
    * @param {!Components.Linkifier} linkifier
+   * @param {!ProductRegistry.BadgePool} badgePool
    * @param {number} nestingLevel
    */
-  constructor(message, linkifier, nestingLevel) {
-    super(message, linkifier, nestingLevel);
+  constructor(message, linkifier, badgePool, nestingLevel) {
+    super(message, linkifier, badgePool, nestingLevel);
   }
 
   /**
@@ -1787,10 +1788,11 @@ Console.ConsoleDiracMarkup = class extends Console.ConsoleViewMessage {
   /**
    * @param {!ConsoleModel.ConsoleMessage} message
    * @param {!Components.Linkifier} linkifier
+   * @param {!ProductRegistry.BadgePool} badgePool
    * @param {number} nestingLevel
    */
-  constructor(message, linkifier, nestingLevel) {
-    super(message, linkifier, nestingLevel);
+  constructor(message, linkifier, badgePool, nestingLevel) {
+    super(message, linkifier, badgePool, nestingLevel);
   }
 
   /**
