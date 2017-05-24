@@ -12,6 +12,7 @@
         { "name": "cm_modes", "type": "autostart" },
         { "name": "diff", "type": "autostart" },
         { "name": "shell", "type": "autostart" },
+        { "name": "dirac", "type": "autostart" },
         { "name": "test_runner", "type": "autostart" },
         { "name": "quick_open" },
         { "name": "inline_editor" },
