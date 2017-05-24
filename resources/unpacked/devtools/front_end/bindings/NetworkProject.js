@@ -302,6 +302,7 @@ Bindings.NetworkProject = class {
     var frameId = Bindings.frameIdForScript(script);
     script[Bindings.NetworkProject._frameIdSymbol] = frameId;
     var uiSourceCode = this._createFile(originalContentProvider, frameId, script.isContentScript());
+    uiSourceCode[Bindings.NetworkProject._scriptSymbol] = script;
     var metadata = this._fetchMetadata(frameId, uiSourceCode.url());
     this._addUISourceCodeWithProvider(uiSourceCode, originalContentProvider, metadata, 'text/javascript');
   }
@@ -517,6 +518,7 @@ Bindings.NetworkProject = class {
 };
 
 Bindings.NetworkProject._networkProjectSymbol = Symbol('networkProject');
+Bindings.NetworkProject._scriptSymbol = Symbol('script');
 Bindings.NetworkProject._styleSheetSymbol = Symbol('styleSheet');
 Bindings.NetworkProject._targetSymbol = Symbol('target');
 Bindings.NetworkProject._frameIdSymbol = Symbol('frameid');
