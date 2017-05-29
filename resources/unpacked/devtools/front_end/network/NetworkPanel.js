@@ -50,6 +50,7 @@ Network.NetworkPanel = class extends UI.Panel {
     this._panelToolbar = new UI.Toolbar('', this.element);
     this._filterBar = new UI.FilterBar('networkPanel', true);
     this._filterBar.show(this.element);
+    this.setDefaultFocusedChild(this._filterBar);
 
     this._filmStripPlaceholderElement = this.element.createChild('div');
 
@@ -173,12 +174,10 @@ Network.NetworkPanel = class extends UI.Panel {
     }
 
     this._panelToolbar.appendSeparator();
-
-    this._preserveLogCheckbox = new UI.ToolbarCheckbox(
-        Common.UIString('Preserve log'), Common.UIString('Do not clear log on page reload / navigation'));
-    this._preserveLogCheckbox.inputElement.addEventListener(
-        'change', this._onPreserveLogCheckboxChanged.bind(this), false);
-    this._panelToolbar.appendToolbarItem(this._preserveLogCheckbox);
+    this._preserveLogSetting = Common.moduleSetting('network.preserve-log');
+    this._panelToolbar.appendToolbarItem(new UI.ToolbarSettingCheckbox(
+        this._preserveLogSetting, Common.UIString('Do not clear log on page reload / navigation'),
+        Common.UIString('Preserve log')));
 
     this._disableCacheCheckbox = new UI.ToolbarSettingCheckbox(
         Common.moduleSetting('cacheDisabled'), Common.UIString('Disable cache (while DevTools is open)'),
@@ -203,7 +202,7 @@ Network.NetworkPanel = class extends UI.Panel {
   }
 
   _toggleRecording() {
-    if (!this._preserveLogCheckbox.checked() && !this._toggleRecordAction.toggled())
+    if (!this._preserveLogSetting.get() && !this._toggleRecordAction.toggled())
       this._reset();
     this._toggleRecord(!this._toggleRecordAction.toggled());
   }
@@ -241,13 +240,6 @@ Network.NetworkPanel = class extends UI.Panel {
   }
 
   /**
-   * @param {!Event} event
-   */
-  _onPreserveLogCheckboxChanged(event) {
-    this._networkLogView.setPreserveLog(this._preserveLogCheckbox.checked());
-  }
-
-  /**
    * @param {!Common.Event} event
    */
   _onClearButtonClicked(event) {
@@ -267,7 +259,7 @@ Network.NetworkPanel = class extends UI.Panel {
    * @param {!Common.Event} event
    */
   _willReloadPage(event) {
-    if (!this._preserveLogCheckbox.checked())
+    if (!this._preserveLogSetting.get())
       this._reset();
     this._toggleRecord(true);
     if (this._pendingStopTimer) {

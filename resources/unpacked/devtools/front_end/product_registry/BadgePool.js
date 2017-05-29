@@ -3,11 +3,24 @@
 // found in the LICENSE file.
 
 ProductRegistry.BadgePool = class {
-  constructor() {
-    this._setting = Common.settings.moduleSetting('product_registry.badges-visible');
-    this._setting.addChangeListener(this._settingUpdated.bind(this));
-    /** @type {!Map<!Element, function():!Promise<!Common.ParsedURL>>}*/
+  /**
+   * @param {boolean=} forceShow
+   */
+  constructor(forceShow) {
+    this._showTitles = false;
+    /** @type {!Map<!Element, function():!Promise<!Common.ParsedURL>>} */
     this._badgeElements = new Map();
+    if (!forceShow) {
+      this._setting = Common.settings.moduleSetting('product_registry.badges-visible');
+      this._setting.addChangeListener(this._settingUpdated.bind(this));
+    }
+  }
+
+  /**
+   * @param {boolean} value
+   */
+  setShowTitles(value) {
+    this._showTitles = value;
   }
 
   /**
@@ -37,18 +50,15 @@ ProductRegistry.BadgePool = class {
   _badgeForFrameOrUrl(urlResolver) {
     var element = createElementWithClass('span', 'hidden');
     var root = UI.createShadowRootWithCoreStyles(element, 'product_registry/badge.css');
-    var badgeElement = root.createChild('span', 'product-registry-badge monospace');
-    badgeElement.setAttribute('data-initial', '  ');
-    badgeElement.title = '';
+    var badgeElement = root.createChild('span');
+    badgeElement.classList.toggle('hide-badge-title', !this._showTitles);
     badgeElement.addEventListener('mousedown', event => event.consume());
     badgeElement.addEventListener('click', event => {
       this._showPopup(badgeElement);
       event.consume();
     }, false);
-
     this._badgeElements.set(badgeElement, urlResolver);
-    if (this._setting.get())
-      this._renderBadge(badgeElement);
+    this._renderBadge(badgeElement);
     return element;
   }
 
@@ -75,41 +85,52 @@ ProductRegistry.BadgePool = class {
    * @param {!Element} badgeElement
    */
   async _renderBadge(badgeElement) {
-    var registry = await ProductRegistry.instance();
-    if (!this._badgeElements.has(badgeElement))
-      return;
-    var parsedUrl = await this._badgeElements.get(badgeElement)();
-    var entryName = registry.nameForUrl(parsedUrl);
-
-    if (!entryName) {
-      badgeElement.setAttribute('data-initial', '  ');
-      badgeElement.title = '';
-      badgeElement.style.removeProperty('background-color');
+    if (badgeElement.children.length || !this._isVisible(badgeElement)) {
+      this._updateBadgeElementVisibility(badgeElement);
       return;
     }
 
-    var label;
+    var parsedUrl = await this._badgeElements.get(badgeElement)();
+    var registry = await ProductRegistry.instance();
+    var entryName = parsedUrl && registry.nameForUrl(parsedUrl);
+    if (!entryName)
+      return;
+
     var tokens = entryName.replace(/[a-z]*/g, '').split(' ');
+    var label;
     if (tokens.length > 1)
       label = tokens[0][0] + tokens[1][0];
     else
       label = entryName;
 
-    badgeElement.setAttribute('data-initial', label.substring(0, 2).toUpperCase());
-    badgeElement.title = entryName;
-    badgeElement.style.backgroundColor = ProductRegistry.BadgePool.colorForEntryName(entryName);
-    badgeElement.parentNodeOrShadowHost().parentNodeOrShadowHost().classList.toggle('hidden', !this._setting.get());
+    var iconElement = badgeElement.createChild('span', 'product-registry-badge monospace');
+    iconElement.setAttribute('data-initial', label.substring(0, 2).toUpperCase());
+    iconElement.title = entryName;
+    iconElement.style.backgroundColor = ProductRegistry.BadgePool.colorForEntryName(entryName);
+
+    badgeElement.createChild('span', 'product-registry-badge-title').textContent = entryName;
+    this._updateBadgeElementVisibility(badgeElement);
   }
 
   _settingUpdated() {
-    var enabled = this._setting.get();
-    if (!enabled) {
-      for (var badgeElement of this._badgeElements.keys())
-        badgeElement.parentNodeOrShadowHost().parentNodeOrShadowHost().classList.add('hidden');
-      return;
-    }
     for (var badgeElement of this._badgeElements.keys())
       this._renderBadge(badgeElement);
+  }
+
+  /**
+   * @param {!Element} badgeElement
+   * @return {boolean}
+   */
+  _isVisible(badgeElement) {
+    return !this._setting || this._setting.get();
+  }
+
+  /**
+   * @param {!Element} badgeElement
+   */
+  _updateBadgeElementVisibility(badgeElement) {
+    badgeElement.parentNodeOrShadowHost().parentNodeOrShadowHost().classList.toggle(
+        'hidden', !this._isVisible(badgeElement));
   }
 
   /**

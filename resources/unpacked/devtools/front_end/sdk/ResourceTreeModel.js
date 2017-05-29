@@ -56,7 +56,7 @@ SDK.ResourceTreeModel = class extends SDK.SDKModel {
     /** @type {?SDK.ResourceTreeFrame} */
     this.mainFrame = null;
 
-    this._agent.getResourceTree(this._processCachedResources.bind(this));
+    this._agent.getResourceTree().then(this._processCachedResources.bind(this));
   }
 
   /**
@@ -112,8 +112,11 @@ SDK.ResourceTreeModel = class extends SDK.SDKModel {
     return /** @type {!SDK.DOMModel} */ (this.target().model(SDK.DOMModel));
   }
 
-  _processCachedResources(error, mainFramePayload) {
-    if (!error) {
+  /**
+   * @param {?Protocol.Page.FrameResourceTree} mainFramePayload
+   */
+  _processCachedResources(mainFramePayload) {
+    if (mainFramePayload) {
       this.dispatchEventToListeners(SDK.ResourceTreeModel.Events.WillLoadCachedResources);
       this._addFramesRecursively(null, mainFramePayload);
       this.target().setInspectedURL(mainFramePayload.frame.url);
@@ -321,10 +324,6 @@ SDK.ResourceTreeModel = class extends SDK.SDKModel {
     var frame = new SDK.ResourceTreeFrame(this, parentFrame, framePayload.id, framePayload, null);
     this._addFrame(frame);
 
-    var frameResource = this._createResourceFromFramePayload(
-        framePayload, framePayload.url, Common.resourceTypes.Document, framePayload.mimeType, null, null);
-    frame.addResource(frameResource);
-
     for (var i = 0; frameTreePayload.childFrames && i < frameTreePayload.childFrames.length; ++i)
       this._addFramesRecursively(frame, frameTreePayload.childFrames[i]);
 
@@ -334,6 +333,12 @@ SDK.ResourceTreeModel = class extends SDK.SDKModel {
           framePayload, subresource.url, Common.resourceTypes[subresource.type], subresource.mimeType,
           subresource.lastModified || null, subresource.contentSize || null);
       frame.addResource(resource);
+    }
+
+    if (!frame._resourcesMap[framePayload.url]) {
+      var frameResource = this._createResourceFromFramePayload(
+          framePayload, framePayload.url, Common.resourceTypes.Document, framePayload.mimeType, null, null);
+      frame.addResource(frameResource);
     }
   }
 
@@ -385,18 +390,17 @@ SDK.ResourceTreeModel = class extends SDK.SDKModel {
    * @return {!Promise}
    */
   navigate(url) {
-    return this._agent.navigate(url, undefined, (error, frameId) => undefined);
+    return this._agent.navigate(url);
   }
 
   /**
    * @return {!Promise<?{currentIndex: number, entries: !Protocol.Page.NavigationEntry}>}
    */
-  navigationHistory() {
-    return this._agent.getNavigationHistory((error, currentIndex, entries) => {
-      if (error)
-        return null;
-      return {currentIndex: currentIndex, entries: entries};
-    });
+  async navigationHistory() {
+    var response = await this._agent.invoke_getNavigationHistory({});
+    if (response[Protocol.Error])
+      return null;
+    return {currentIndex: response.currentIndex, entries: response.entries};
   }
 
   /**
@@ -407,23 +411,14 @@ SDK.ResourceTreeModel = class extends SDK.SDKModel {
   }
 
   /**
-   * @param {function(string, ?string,!Array<!Protocol.Page.AppManifestError>)} callback
+   * @param {function(string, ?string, !Array<!Protocol.Page.AppManifestError>)} callback
    */
-  fetchAppManifest(callback) {
-    this._agent.getAppManifest(myCallback);
-    /**
-     * @param {?Protocol.Error} protocolError
-     * @param {string} url
-     * @param {!Array<!Protocol.Page.AppManifestError>} errors
-     * @param {string=} data
-     */
-    function myCallback(protocolError, url, errors, data) {
-      if (protocolError) {
-        callback(url, null, []);
-        return;
-      }
-      callback(url, data || null, errors);
-    }
+  async fetchAppManifest(callback) {
+    var response = await this._agent.invoke_getAppManifest({});
+    if (response[Protocol.Error])
+      callback(response.url, null, []);
+    else
+      callback(response.url, response.data || null, response.errors);
   }
   /**
    * @param {!SDK.ExecutionContext} a

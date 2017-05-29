@@ -12,10 +12,15 @@
         { "name": "cm_modes", "type": "autostart" },
         { "name": "diff", "type": "autostart" },
         { "name": "shell", "type": "autostart" },
+        { "name": "dirac", "type": "autostart" },
         { "name": "test_runner", "type": "autostart" },
         { "name": "quick_open" },
         { "name": "inline_editor" },
-        { "name": "data_grid" }
+        { "name": "sdk" },
+        { "name": "protocol" },
+        { "name": "data_grid" },
+        { "name": "product_registry" },
+        { "name": "product_registry_impl" }
     ],
     "has_html": true
 }

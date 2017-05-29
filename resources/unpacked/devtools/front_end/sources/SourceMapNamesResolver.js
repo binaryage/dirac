@@ -585,30 +585,24 @@ Sources.SourceMapNamesResolver.RemoteObject = class extends SDK.RemoteObject {
    * @override
    * @param {string|!Protocol.Runtime.CallArgument} argumentName
    * @param {string} value
-   * @param {function(string=)} callback
+   * @return {!Promise<string|undefined>}
    */
-  setPropertyValue(argumentName, value, callback) {
-    Sources.SourceMapNamesResolver._resolveScope(this._scope).then(resolveName.bind(this));
+  async setPropertyValue(argumentName, value) {
+    var namesMapping = await Sources.SourceMapNamesResolver._resolveScope(this._scope);
 
-    /**
-     * @param {!Sources.SourceMapNamesResolver.Mapping} namesMapping
-     * @this {Sources.SourceMapNamesResolver.RemoteObject}
-     */
-    function resolveName(namesMapping) {
-      var name;
-      if (typeof argumentName === 'string')
-        name = argumentName;
-      else
-        name = /** @type {string} */ (argumentName.value);
+    var name;
+    if (typeof argumentName === 'string')
+      name = argumentName;
+    else
+      name = /** @type {string} */ (argumentName.value);
 
-      var actualName = name;
-      let matchingRecords = Sources.SourceMapNamesResolver.collectMappingRecordsForOriginalName(namesMapping, name);
-      if (matchingRecords.length>0) {
-        // TODO: how to resolve the case when original name matches multiple compiled names?
-        actualName = matchingRecords[0].compiledNameDescriptor.name;
-      }
-      this._object.setPropertyValue(actualName, value, callback);
+    var actualName = name;
+    let matchingRecords = Sources.SourceMapNamesResolver.collectMappingRecordsForOriginalName(namesMapping, name);
+    if (matchingRecords.length>0) {
+      // TODO: how to resolve the case when original name matches multiple compiled names?
+      actualName = matchingRecords[0].compiledNameDescriptor.name;
     }
+    return this._object.setPropertyValue(actualName, value);
   }
 
   /**
@@ -623,10 +617,10 @@ Sources.SourceMapNamesResolver.RemoteObject = class extends SDK.RemoteObject {
   /**
    * @override
    * @param {!Protocol.Runtime.CallArgument} name
-   * @param {function(string=)} callback
+   * @return {!Promise<string|undefined>}
    */
-  deleteProperty(name, callback) {
-    this._object.deleteProperty(name, callback);
+  async deleteProperty(name) {
+    return this._object.deleteProperty(name);
   }
 
   /**

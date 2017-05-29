@@ -36,8 +36,8 @@ Sources.SourceFormatter = class {
         Workspace.workspace, this._projectId, Workspace.projectTypes.Formatter, 'formatter',
         true /* isServiceProject */);
 
-    /** @type {!Map<string, !Workspace.UISourceCode>} */
-    this._formattedPaths = new Map();
+    /** @type {!Map<!Workspace.UISourceCode, !{promise: !Promise<!Sources.SourceFormatData>, formatData: ?Sources.SourceFormatData}>} */
+    this._formattedSourceCodes = new Map();
     this._scriptMapping = new Sources.SourceFormatter.ScriptMapping();
     this._styleMapping = new Sources.SourceFormatter.StyleMapping();
     Workspace.workspace.addEventListener(
@@ -49,9 +49,10 @@ Sources.SourceFormatter = class {
    */
   _onUISourceCodeRemoved(event) {
     var uiSourceCode = /** @type {!Workspace.UISourceCode} */ (event.data);
-    var formattedUISourceCode = this._formattedPaths.get(uiSourceCode.project().id() + ':' + uiSourceCode.url());
-    if (formattedUISourceCode)
-      this.discardFormattedUISourceCode(formattedUISourceCode);
+    var cacheEntry = this._formattedSourceCodes.get(uiSourceCode);
+    if (cacheEntry && cacheEntry.formatData)
+      this._discardFormatData(cacheEntry.formatData);
+    this._formattedSourceCodes.remove(uiSourceCode);
   }
 
   /**
@@ -62,13 +63,19 @@ Sources.SourceFormatter = class {
     var formatData = Sources.SourceFormatData._for(formattedUISourceCode);
     if (!formatData)
       return null;
+    this._discardFormatData(formatData);
+    this._formattedSourceCodes.remove(formatData.originalSourceCode);
+    return formatData.originalSourceCode;
+  }
 
-    delete formattedUISourceCode[Sources.SourceFormatData._formatDataSymbol];
+  /**
+   * @param {!Sources.SourceFormatData} formatData
+   */
+  _discardFormatData(formatData) {
+    delete formatData.formattedSourceCode[Sources.SourceFormatData._formatDataSymbol];
     this._scriptMapping._setSourceMappingEnabled(formatData, false);
     this._styleMapping._setSourceMappingEnabled(formatData, false);
-    this._project.removeFile(formattedUISourceCode.url());
-    this._formattedPaths.remove(formatData.originalPath());
-    return formatData.originalSourceCode;
+    this._project.removeFile(formatData.formattedSourceCode.url());
   }
 
   /**
@@ -76,7 +83,7 @@ Sources.SourceFormatter = class {
    * @return {boolean}
    */
   hasFormatted(uiSourceCode) {
-    return this._formattedPaths.has(uiSourceCode.project().id() + ':' + uiSourceCode.url());
+    return this._formattedSourceCodes.has(uiSourceCode);
   }
 
   /**
@@ -84,17 +91,18 @@ Sources.SourceFormatter = class {
    * @return {!Promise<!Sources.SourceFormatData>}
    */
   async format(uiSourceCode) {
-    var formattedUISourceCode = this._formattedPaths.get(uiSourceCode.project().id() + ':' + uiSourceCode.url());
-    if (formattedUISourceCode)
-      return Sources.SourceFormatData._for(formattedUISourceCode);
+    var cacheEntry = this._formattedSourceCodes.get(uiSourceCode);
+    if (cacheEntry)
+      return cacheEntry.promise;
 
-    var content = await uiSourceCode.requestContent();
-    var highlighterType = Bindings.NetworkProject.uiSourceCodeMimeType(uiSourceCode);
     var fulfillFormatPromise;
     var resultPromise = new Promise(fulfill => {
       fulfillFormatPromise = fulfill;
     });
-    Sources.Formatter.format(uiSourceCode.contentType(), highlighterType, content || '', innerCallback.bind(this));
+    this._formattedSourceCodes.set(uiSourceCode, {promise: resultPromise, formatData: null});
+    var content = await uiSourceCode.requestContent();
+    // ------------ ASYNC ------------
+    Sources.Formatter.format(uiSourceCode.contentType(), uiSourceCode.mimeType(), content || '', formatDone.bind(this));
     return resultPromise;
 
     /**
@@ -102,18 +110,26 @@ Sources.SourceFormatter = class {
      * @param {string} formattedContent
      * @param {!Sources.FormatterSourceMapping} formatterMapping
      */
-    function innerCallback(formattedContent, formatterMapping) {
-      var formattedURL = uiSourceCode.url() + ':formatted';
+    function formatDone(formattedContent, formatterMapping) {
+      var cacheEntry = this._formattedSourceCodes.get(uiSourceCode);
+      if (!cacheEntry || cacheEntry.promise !== resultPromise)
+        return;
+      var formattedURL;
+      var count = 0;
+      var suffix = '';
+      do {
+        formattedURL = `${uiSourceCode.url()}:formatted${suffix}`;
+        suffix = `:${count++}`;
+      } while (this._project.uiSourceCodeForURL(formattedURL));
       var contentProvider =
           Common.StaticContentProvider.fromString(formattedURL, uiSourceCode.contentType(), formattedContent);
-      var formattedUISourceCode = this._project.addContentProvider(formattedURL, contentProvider);
+      var formattedUISourceCode =
+          this._project.addContentProvider(formattedURL, contentProvider, uiSourceCode.mimeType());
       var formatData = new Sources.SourceFormatData(uiSourceCode, formattedUISourceCode, formatterMapping);
       formattedUISourceCode[Sources.SourceFormatData._formatDataSymbol] = formatData;
       this._scriptMapping._setSourceMappingEnabled(formatData, true);
       this._styleMapping._setSourceMappingEnabled(formatData, true);
-
-      var path = formatData.originalPath();
-      this._formattedPaths.set(path, formattedUISourceCode);
+      cacheEntry.formatData = formatData;
 
       for (var decoration of uiSourceCode.allDecorations()) {
         var range = decoration.range();
@@ -239,6 +255,7 @@ Sources.SourceFormatter.ScriptMapping = class {
 Sources.SourceFormatter.StyleMapping = class {
   constructor() {
     Bindings.cssWorkspaceBinding.addSourceMapping(this);
+    this._headersSymbol = Symbol('Sources.SourceFormatter.StyleMapping._headersSymbol');
   }
 
   /**
@@ -266,10 +283,8 @@ Sources.SourceFormatter.StyleMapping = class {
     if (!formatData)
       return [];
     var originalLocation = formatData.mapping.formattedToOriginal(uiLocation.lineNumber, uiLocation.columnNumber);
-    var header = Bindings.NetworkProject.styleHeaderForUISourceCode(formatData.originalSourceCode);
-    if (!header)
-      return [];
-    return [new SDK.CSSLocation(header, originalLocation[0], originalLocation[1])];
+    var headers = formatData.originalSourceCode[this._headersSymbol];
+    return headers.map(header => new SDK.CSSLocation(header, originalLocation[0], originalLocation[1]));
   }
 
   /**
@@ -278,14 +293,18 @@ Sources.SourceFormatter.StyleMapping = class {
    */
   _setSourceMappingEnabled(formatData, enable) {
     var original = formatData.originalSourceCode;
-    var styleHeader = Bindings.NetworkProject.styleHeaderForUISourceCode(original);
-    if (!styleHeader)
+    var rawLocations = Bindings.cssWorkspaceBinding.uiLocationToRawLocations(original.uiLocation(0, 0));
+    var headers = rawLocations.map(rawLocation => rawLocation.header()).filter(header => !!header);
+    if (!headers.length)
       return;
-    if (enable)
-      styleHeader[Sources.SourceFormatData._formatDataSymbol] = formatData;
-    else
-      delete styleHeader[Sources.SourceFormatData._formatDataSymbol];
-    Bindings.cssWorkspaceBinding.updateLocations(styleHeader);
+    if (enable) {
+      original[this._headersSymbol] = headers;
+      headers.forEach(header => header[Sources.SourceFormatData._formatDataSymbol] = formatData);
+    } else {
+      original[this._headersSymbol] = null;
+      headers.forEach(header => delete header[Sources.SourceFormatData._formatDataSymbol]);
+    }
+    headers.forEach(header => Bindings.cssWorkspaceBinding.updateLocations(header));
   }
 };
 

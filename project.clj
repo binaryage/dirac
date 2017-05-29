@@ -1,6 +1,6 @@
 (def clj-logging-config-version "1.9.12")
 (def slf4j-log4j12-version "1.7.22")
-(defproject binaryage/dirac "1.2.8"
+(defproject binaryage/dirac "1.2.9"
   :description "Dirac DevTools - a Chrome DevTools fork for ClojureScript developers."
   :url "https://github.com/binaryage/dirac"
   :license {:name         "MIT License"
@@ -9,9 +9,9 @@
   :scm {:name "git"
         :url  "https://github.com/binaryage/dirac"}
 
-  :dependencies [[org.clojure/clojure "1.9.0-alpha16" :scope "provided"]
-                 [org.clojure/clojurescript "1.9.542" :scope "provided"]
-                 [org.clojure/core.async "0.3.442"]
+  :dependencies [[org.clojure/clojure "1.9.0-alpha17" :scope "provided"]
+                 [org.clojure/clojurescript "1.9.562" :scope "provided"]
+                 [org.clojure/core.async "0.3.443"]
                  [org.clojure/tools.logging "0.3.1"]
                  [org.clojure/tools.cli "0.3.5"]
                  [org.clojure/tools.nrepl "0.2.13"]
@@ -49,8 +49,8 @@
                  [clj-time "0.13.0" :scope "test"]
                  [clansi "1.0.0" :scope "test"]
 
-                 ; guava is needed for selenium, they rely on latest guava which gets overriden by google closure compiler dep inside clojurescript
-                 [com.google.guava/guava "21.0" :scope "test"]
+                 ; guava is needed for selenium, they rely on latest guava which gets overridden by google closure compiler dep inside clojurescript
+                 [com.google.guava/guava "22.0" :scope "test"]
                  [org.seleniumhq.selenium/selenium-java "3.4.0" :scope "test"
                   :exclusions [org.seleniumhq.selenium/selenium-api
                                org.seleniumhq.selenium/selenium-support
@@ -168,13 +168,13 @@
              {:dependencies [[org.clojure/clojure "1.8.0" :scope "provided" :upgrade false]]}
 
              :clojure19
-             {:dependencies [[org.clojure/clojure "1.9.0-alpha15" :scope "provided" :upgrade false]]}
+             {:dependencies [[org.clojure/clojure "1.9.0-alpha17" :scope "provided" :upgrade false]]}
 
              :cooper
              {:plugins [[lein-cooper "1.2.2"]]}
 
              :cljs
-             {:plugins [[lein-cljsbuild "1.1.4"]
+             {:plugins [[lein-cljsbuild "1.1.6"]
                         [lein-figwheel "0.5.10"]]}
 
              :nuke-aliases

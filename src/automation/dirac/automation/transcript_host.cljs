@@ -210,6 +210,9 @@
 (defn replace-cljs-line-numbers [s]
   (string/replace s #"\.cljs:\d+" ".cljs:<line>"))
 
+(defn replace-js-line-numbers [s]
+  (string/replace s #"\.js:\d+" ".js:<line>"))
+
 (defn replace-target-url-port-in-options [s]
   (string/replace s #":target-url \"http://localhost:\d+\"" ":target-url \"http://localhost:<port>\""))
 
@@ -223,6 +226,7 @@
       replace-dirac-repl-files
       replace-chrome-extension-urls
       replace-cljs-line-numbers
+      replace-js-line-numbers
       replace-target-url-port-in-options))
 
 (defn process-default-state! [label text]
