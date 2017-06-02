@@ -47,15 +47,12 @@ type_traits = {
 ref_types = {}
 
 NON_PROMISIFIED_DOMAINS = frozenset([
-    "Animation",
     "ApplicationCache",
     "CacheStorage",
     "CSS",
-    "DOM",
     "DOMDebugger",
     "IndexedDB",
     "LayerTree",
-    "Network",
 ])
 
 
