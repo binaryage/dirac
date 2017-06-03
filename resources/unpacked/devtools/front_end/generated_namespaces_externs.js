@@ -69,11 +69,13 @@ var Layers = {};
 /** @type {!Object} */
 var Main = {};
 /** @type {!Object} */
+var MobileThrottling = {};
+/** @type {!Object} */
 var Network = {};
 /** @type {!Object} */
-var NetworkConditions = {};
-/** @type {!Object} */
 var NetworkLog = {};
+/** @type {!Object} */
+var NetworkPriorities = {};
 /** @type {!Object} */
 var ObjectUI = {};
 /** @type {!Object} */
