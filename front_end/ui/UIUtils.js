@@ -711,6 +711,19 @@ UI.createShadowRootWithCoreStyles = function(element, cssFile) {
 UI._windowFocused = function(document, event) {
   if (event.target.document.nodeType === Node.DOCUMENT_NODE)
     document.body.classList.remove('inactive');
+  UI._keyboardFocus = true;
+  var listener = () => {
+    var activeElement = document.deepActiveElement();
+    if (activeElement)
+      activeElement.removeAttribute('data-keyboard-focus');
+    UI._keyboardFocus = false;
+  };
+  document.defaultView.requestAnimationFrame(() => {
+    UI._keyboardFocus = false;
+    document.removeEventListener('mousedown', listener, true);
+  });
+  document.addEventListener('mousedown', listener, true);
+
 };
 
 /**
@@ -1170,13 +1183,29 @@ UI.registerCustomElement = function(localName, typeExtension, prototype) {
  * @param {string} text
  * @param {function(!Event)=} clickHandler
  * @param {string=} className
+ * @param {boolean=} primary
  * @return {!Element}
  */
-UI.createTextButton = function(text, clickHandler, className) {
+UI.createTextButton = function(text, clickHandler, className, primary) {
   var element = createElementWithClass('button', className || '', 'text-button');
   element.textContent = text;
+  if (primary)
+    element.classList.add('primary-button');
   if (clickHandler)
     element.addEventListener('click', clickHandler, false);
+  return element;
+};
+
+/**
+ * @param {string=} className
+ * @param {string=} type
+ * @return {!Element}
+ */
+UI.createInput = function(className, type) {
+  var element = createElementWithClass('input', className || '');
+  element.classList.add('harmony-input');
+  if (type)
+    element.type = type;
   return element;
 };
 

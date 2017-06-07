@@ -85,14 +85,37 @@ Timeline.TimelineHistoryManager = class {
       console.assert(false, `selected recording not found`);
       return null;
     }
-    Timeline.TimelineHistoryManager._dataForModel(model).lastUsed = Date.now();
-    this._lastActiveModel = model;
-    this._button.setText(this._title(model));
+    this._setCurrentModel(model);
     return model;
   }
 
   cancelIfShowing() {
     Timeline.TimelineHistoryManager.DropDown.cancelIfShowing();
+  }
+
+  /**
+   * @param {number} direction
+   * @return {?Timeline.PerformanceModel}
+   */
+  navigate(direction) {
+    if (!this._enabled || !this._lastActiveModel)
+      return null;
+    var index = this._recordings.indexOf(this._lastActiveModel);
+    if (index < 0)
+      return null;
+    var newIndex = Number.constrain(index + direction, 0, this._recordings.length - 1);
+    var model = this._recordings[newIndex];
+    this._setCurrentModel(model);
+    return model;
+  }
+
+  /**
+   * @param {!Timeline.PerformanceModel} model
+   */
+  _setCurrentModel(model) {
+    Timeline.TimelineHistoryManager._dataForModel(model).lastUsed = Date.now();
+    this._lastActiveModel = model;
+    this._button.setText(this._title(model));
   }
 
   _updateState() {
@@ -257,7 +280,7 @@ Timeline.TimelineHistoryManager.DropDown = class {
     var listModel = new UI.ListModel();
     this._listControl = new UI.ListControl(listModel, this, UI.ListMode.NonViewport);
     this._listControl.element.addEventListener('mousemove', this._onMouseMove.bind(this), false);
-    listModel.replaceAllItems(models);
+    listModel.replaceAll(models);
 
     contentElement.appendChild(this._listControl.element);
     contentElement.addEventListener('keydown', this._onKeyDown.bind(this), false);
