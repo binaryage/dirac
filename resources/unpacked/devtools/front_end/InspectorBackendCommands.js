@@ -1,5 +1,5 @@
-Protocol.BakedInspectorBackendAPIChromeTag='61.0.3119.2';
-Protocol.BakedInspectorBackendAPIChromeRev='bb6532a9810ffdf9cd8b5f47824e06609a48aba4';
+Protocol.BakedInspectorBackendAPIChromeTag='61.0.3123.2';
+Protocol.BakedInspectorBackendAPIChromeRev='6b36f1c4bd9195ee5b7e3f96624207706585d17c';
 Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerEvent("Inspector.detached", ["reason"]);\n'
 + 'Protocol.inspectorBackend.registerEvent("Inspector.targetCrashed", []);\n'
@@ -135,7 +135,7 @@ Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerEvent("Network.webSocketFrameError", ["requestId", "timestamp", "errorMessage"]);\n'
 + 'Protocol.inspectorBackend.registerEvent("Network.webSocketFrameSent", ["requestId", "timestamp", "response"]);\n'
 + 'Protocol.inspectorBackend.registerEvent("Network.eventSourceMessageReceived", ["requestId", "timestamp", "eventName", "eventId", "data"]);\n'
-+ 'Protocol.inspectorBackend.registerEvent("Network.requestIntercepted", ["InterceptionId", "request", "redirectHeaders", "redirectStatusCode", "redirectUrl"]);\n'
++ 'Protocol.inspectorBackend.registerEvent("Network.requestIntercepted", ["InterceptionId", "request", "resourceType", "redirectHeaders", "redirectStatusCode", "redirectUrl"]);\n'
 + 'Protocol.inspectorBackend.registerCommand("Network.enable", [{"name": "maxTotalBufferSize", "type": "number", "optional": true}, {"name": "maxResourceBufferSize", "type": "number", "optional": true}], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Network.disable", [], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Network.setUserAgentOverride", [{"name": "userAgent", "type": "string", "optional": false}], [], false);\n'
