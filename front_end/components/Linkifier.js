@@ -551,30 +551,22 @@ Components.Linkifier = class {
 
     if (info.revealable)
       result.push({title: Common.UIString('Reveal'), handler: () => Common.Revealer.reveal(info.revealable)});
-    if (uiLocation) {
-      result.push({
-        title: Common.UIString.capitalize('Open in Sources ^panel'),
-        handler: () => Common.Revealer.reveal(uiLocation)
-      });
-    }
+    if (uiLocation)
+      result.push({title: Common.UIString('Open in Sources panel'), handler: () => Common.Revealer.reveal(uiLocation)});
+
     if (resource) {
-      result.push({
-        title: Common.UIString.capitalize('Open in Application ^panel'),
-        handler: () => Common.Revealer.reveal(resource)
-      });
+      result.push(
+          {title: Common.UIString('Open in Application panel'), handler: () => Common.Revealer.reveal(resource)});
     }
-    if (request) {
-      result.push({
-        title: Common.UIString.capitalize('Open in Network ^panel'),
-        handler: () => Common.Revealer.reveal(request)
-      });
-    }
+    if (request)
+      result.push({title: Common.UIString('Open in Network panel'), handler: () => Common.Revealer.reveal(request)});
+
     if (contentProvider) {
       var lineNumber = uiLocation ? uiLocation.lineNumber : info.lineNumber || 0;
       for (var title of Components.Linkifier._linkHandlers.keys()) {
         var handler = Components.Linkifier._linkHandlers.get(title);
         var action = {
-          title: Common.UIString.capitalize('Open using %s', title),
+          title: Common.UIString('Open using %s', title),
           handler: handler.bind(null, contentProvider, lineNumber)
         };
         if (title === Components.Linkifier._linkHandlerSetting().get())
@@ -661,65 +653,6 @@ Components.LinkDecorator.Events = {
 };
 
 /**
- * @param {string} string
- * @param {function(string,string,number=,number=):!Node} linkifier
- * @return {!DocumentFragment}
- */
-Components.linkifyStringAsFragmentWithCustomLinkifier = function(string, linkifier) {
-  var container = createDocumentFragment();
-  var linkStringRegEx =
-      /(?:[a-zA-Z][a-zA-Z0-9+.-]{2,}:\/\/|data:|www\.)[\w$\-_+*'=\|\/\\(){}[\]^%@&#~,:;.!?]{2,}[\w$\-_+*=\|\/\\({^%@&#~]/;
-  var pathLineRegex = /(?:\/[\w\.-]*)+\:[\d]+/;
-
-  while (string && string.length < Components.Linkifier.MaxLengthToIgnoreLinkifier) {
-    var linkString = linkStringRegEx.exec(string) || pathLineRegex.exec(string);
-    if (!linkString)
-      break;
-
-    linkString = linkString[0];
-    var linkIndex = string.indexOf(linkString);
-    var nonLink = string.substring(0, linkIndex);
-    container.appendChild(createTextNode(nonLink));
-
-    var title = linkString;
-    var realURL = (linkString.startsWith('www.') ? 'http://' + linkString : linkString);
-    var splitResult = Common.ParsedURL.splitLineAndColumn(realURL);
-    var linkNode;
-    if (splitResult)
-      linkNode = linkifier(title, splitResult.url, splitResult.lineNumber, splitResult.columnNumber);
-    else
-      linkNode = linkifier(title, realURL);
-
-    container.appendChild(linkNode);
-    string = string.substring(linkIndex + linkString.length, string.length);
-  }
-
-  if (string)
-    container.appendChild(createTextNode(string));
-
-  return container;
-};
-
-/**
- * @param {string} string
- * @return {!DocumentFragment}
- */
-Components.linkifyStringAsFragment = function(string) {
-  /**
-   * @param {string} title
-   * @param {string} url
-   * @param {number=} lineNumber
-   * @param {number=} columnNumber
-   * @return {!Node}
-   */
-  function linkifier(title, url, lineNumber, columnNumber) {
-    return Components.Linkifier.linkifyURL(url, {text: title, lineNumber: lineNumber, columnNumber: columnNumber});
-  }
-
-  return Components.linkifyStringAsFragmentWithCustomLinkifier(string, linkifier);
-};
-
-/**
  * @implements {UI.ContextMenu.Provider}
  * @unrestricted
  */
@@ -802,8 +735,7 @@ Components.Linkifier.ContentProviderContextMenuProvider = class {
         UI.openLinkExternallyLabel(), () => InspectorFrontendHost.openInNewTab(contentProvider.contentURL()));
     for (var title of Components.Linkifier._linkHandlers.keys()) {
       var handler = Components.Linkifier._linkHandlers.get(title);
-      contextMenu.appendItem(
-          Common.UIString.capitalize('Open using %s', title), handler.bind(null, contentProvider, 0));
+      contextMenu.appendItem(Common.UIString('Open using %s', title), handler.bind(null, contentProvider, 0));
     }
     if (contentProvider instanceof SDK.NetworkRequest)
       return;
@@ -844,7 +776,7 @@ Components.Linkifier.ContentProviderContextMenuProvider = class {
     if (contentProvider instanceof Workspace.UISourceCode) {
       var uiSourceCode = /** @type {!Workspace.UISourceCode} */ (contentProvider);
       if (!uiSourceCode.project().canSetFileContent())
-        contextMenu.appendItem(Common.UIString.capitalize('Save ^as...'), save.bind(null, true));
+        contextMenu.appendItem(Common.UIString('Save as...'), save.bind(null, true));
     }
   }
 };

@@ -109,7 +109,6 @@ all_devtools_files = [
   "front_end/common/Color.js",
   "front_end/common/Console.js",
   "front_end/common/ContentProvider.js",
-  "front_end/common/FormatterWorkerPool.js",
   "front_end/common/module.json",
   "front_end/common/ModuleExtensionInterfaces.js",
   "front_end/common/Object.js",
@@ -171,15 +170,18 @@ all_devtools_files = [
   "front_end/dom_extension/DOMExtension.js",
   "front_end/dom_extension/module.json",
   "front_end/elements/breadcrumbs.css",
+  "front_end/elements/classesPaneWidget.css",
   "front_end/elements/ClassesPaneWidget.js",
   "front_end/elements/ColorSwatchPopoverIcon.js",
   "front_end/elements/ComputedStyleModel.js",
   "front_end/elements/computedStyleSidebarPane.css",
+  "front_end/elements/computedStyleWidgetTree.css",
   "front_end/elements/ComputedStyleWidget.js",
   "front_end/elements/ElementsBreadcrumbs.js",
   "front_end/elements/elementsPanel.css",
   "front_end/elements/ElementsPanel.js",
   "front_end/elements/ElementsSidebarPane.js",
+  "front_end/elements/elementStatePaneWidget.css",
   "front_end/elements/ElementStatePaneWidget.js",
   "front_end/elements/ElementsTreeElement.js",
   "front_end/elements/ElementsTreeElementHighlighter.js",
@@ -187,6 +189,7 @@ all_devtools_files = [
   "front_end/elements/ElementsTreeOutline.js",
   "front_end/elements/EventListenersWidget.js",
   "front_end/elements/InspectElementModeController.js",
+  "front_end/elements/metricsSidebarPane.css",
   "front_end/elements/MetricsSidebarPane.js",
   "front_end/elements/module.json",
   "front_end/elements/platformFontsWidget.css",
@@ -224,6 +227,9 @@ all_devtools_files = [
   "front_end/extensions/ExtensionServer.js",
   "front_end/extensions/ExtensionView.js",
   "front_end/extensions/module.json",
+  "front_end/formatter/FormatterWorkerPool.js",
+  "front_end/formatter/module.json",
+  "front_end/formatter/ScriptFormatter.js",
   "front_end/formatter_worker.js",
   "front_end/formatter_worker.json",
   "front_end/formatter_worker/AcornTokenizer.js",
@@ -298,7 +304,6 @@ all_devtools_files = [
   "front_end/main/GCActionDelegate.js",
   "front_end/main/Main.js",
   "front_end/main/module.json",
-  "front_end/main/nodeIcon.css",
   "front_end/main/remoteDebuggingTerminatedScreen.css",
   "front_end/main/renderingOptions.css",
   "front_end/main/RenderingOptions.js",
@@ -572,7 +577,6 @@ all_devtools_files = [
   "front_end/sources/RevisionHistoryView.js",
   "front_end/sources/scopeChainSidebarPane.css",
   "front_end/sources/ScopeChainSidebarPane.js",
-  "front_end/sources/ScriptFormatter.js",
   "front_end/sources/ScriptFormatterEditorAction.js",
   "front_end/sources/serviceWorkersSidebar.css",
   "front_end/sources/SimpleHistoryManager.js",
@@ -815,7 +819,6 @@ devtools_image_files = [
   "front_end/Images/ic_warning_black_18dp.svg",
   "front_end/Images/navigationControls.png",
   "front_end/Images/navigationControls_2x.png",
-  "front_end/Images/nodeIcon.png",
   "front_end/Images/popoverArrows.png",
   "front_end/Images/profileGroupIcon.png",
   "front_end/Images/profileIcon.png",
@@ -860,7 +863,7 @@ generated_scripts = [
   "$resources_out_dir/SupportedCSSProperties.js",
 ]
 
-generated_resources = [
+generated_applications = [
   "$resources_out_dir/inspector.html",
   "$resources_out_dir/inspector.js",
   "$resources_out_dir/toolbox.html",
@@ -869,8 +872,9 @@ generated_resources = [
   "$resources_out_dir/formatter_worker.js",
   "$resources_out_dir/heap_snapshot_worker.js",
   "$resources_out_dir/utility_shared_worker.js",
+]
 
-  # this contains non-autostart non-remote modules only.
+generated_non_autostart_non_remote_modules = [
   "$resources_out_dir/animation/animation_module.js",
   "$resources_out_dir/audits/audits_module.js",
   "$resources_out_dir/audits2/audits2_module.js",
@@ -885,6 +889,7 @@ generated_resources = [
   "$resources_out_dir/diff/diff_module.js",
   "$resources_out_dir/elements/elements_module.js",
   "$resources_out_dir/event_listeners/event_listeners_module.js",
+  "$resources_out_dir/formatter/formatter_module.js",
   "$resources_out_dir/heap_snapshot_model/heap_snapshot_model_module.js",
   "$resources_out_dir/inline_editor/inline_editor_module.js",
   "$resources_out_dir/layer_viewer/layer_viewer_module.js",
@@ -902,12 +907,14 @@ generated_resources = [
   "$resources_out_dir/snippets/snippets_module.js",
   "$resources_out_dir/source_frame/source_frame_module.js",
   "$resources_out_dir/sources/sources_module.js",
-  "$resources_out_dir/terminal/terminal_module.js",
   "$resources_out_dir/text_editor/text_editor_module.js",
   "$resources_out_dir/timeline_model/timeline_model_module.js",
   "$resources_out_dir/timeline/timeline_module.js",
   "$resources_out_dir/workspace_diff/workspace_diff_module.js",
 ]
+
+generated_resources =
+    generated_applications + generated_non_autostart_non_remote_modules
 
 generated_remote_modules = [
   "$resources_out_dir/accessibility/accessibility_module.js",

@@ -46,7 +46,8 @@ Elements.EventListenersWidget = class extends UI.ThrottledWidget {
     this._showFrameworkListenersSetting = Common.settings.createSetting('showFrameowkrListeners', true);
     this._showFrameworkListenersSetting.setTitle(Common.UIString('Framework listeners'));
     this._showFrameworkListenersSetting.addChangeListener(this._showFrameworkListenersChanged.bind(this));
-    this._eventListenersView = new EventListeners.EventListenersView(this.element, this.update.bind(this));
+    this._eventListenersView = new EventListeners.EventListenersView(this.update.bind(this));
+    this._eventListenersView.show(this.element);
 
     var refreshButton = new UI.ToolbarButton(Common.UIString('Refresh'), 'largeicon-refresh');
     refreshButton.addEventListener(UI.ToolbarButton.Events.Click, this.update.bind(this));
@@ -100,11 +101,11 @@ Elements.EventListenersWidget = class extends UI.ThrottledWidget {
     this._lastRequestedNode = node;
     var selectedNodeOnly = !this._showForAncestorsSetting.get();
     var promises = [];
-    promises.push(node.resolveToObjectPromise(Elements.EventListenersWidget._objectGroupName));
+    promises.push(node.resolveToObject(Elements.EventListenersWidget._objectGroupName));
     if (!selectedNodeOnly) {
       var currentNode = node.parentNode;
       while (currentNode) {
-        promises.push(currentNode.resolveToObjectPromise(Elements.EventListenersWidget._objectGroupName));
+        promises.push(currentNode.resolveToObject(Elements.EventListenersWidget._objectGroupName));
         currentNode = currentNode.parentNode;
       }
       promises.push(this._windowObjectInNodeContext(node));

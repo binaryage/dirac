@@ -127,16 +127,17 @@ Elements.StylesSidebarPane = class extends Elements.ElementsSidebarPane {
    * @param {string} placeholder
    * @param {!Element} container
    * @param {function(?RegExp)} filterCallback
+   * @param {string} activeClassName
    * @return {!Element}
    */
-  static createPropertyFilterElement(placeholder, container, filterCallback) {
+  static createPropertyFilterElement(placeholder, container, filterCallback, activeClassName) {
     var input = createElementWithClass('input');
     input.placeholder = placeholder;
 
     function searchHandler() {
       var regex = input.value ? new RegExp(input.value.escapeForRegExp(), 'i') : null;
       filterCallback(regex);
-      container.classList.toggle('styles-filter-engaged', !!input.value);
+      container.classList.toggle(activeClassName, !!input.value);
     }
     input.addEventListener('input', searchHandler, false);
 
@@ -531,7 +532,7 @@ Elements.StylesSidebarPane = class extends Elements.ElementsSidebarPane {
     var hbox = container.createChild('div', 'hbox styles-sidebar-pane-toolbar');
     var filterContainerElement = hbox.createChild('div', 'styles-sidebar-pane-filter-box');
     var filterInput = Elements.StylesSidebarPane.createPropertyFilterElement(
-        Common.UIString('Filter'), hbox, this._onFilterChanged.bind(this));
+        Common.UIString('Filter'), hbox, this._onFilterChanged.bind(this), 'styles-filter-engaged');
     UI.ARIAUtils.setAccessibleName(filterInput, Common.UIString('Filter Styles'));
     filterContainerElement.appendChild(filterInput);
     var toolbar = new UI.Toolbar('styles-pane-toolbar', hbox);
@@ -1357,21 +1358,7 @@ Elements.StylePropertiesSection = class {
    * @param {!Event} event
    */
   _handleEmptySpaceClick(event) {
-    if (!this.editable)
-      return;
-
-    var targetElement = event.deepElementFromPoint();
-    if (targetElement && !targetElement.isComponentSelectionCollapsed())
-      return;
-
-    if (!event.target.isComponentSelectionCollapsed())
-      return;
-
-    if (this.propertiesTreeOutline.element.shadowRoot.firstChild &&
-        !this.propertiesTreeOutline.element.shadowRoot.firstChild.isComponentSelectionCollapsed())
-      return;
-
-    if (this._checkWillCancelEditing())
+    if (!this.editable || this.element.hasSelection() || this._checkWillCancelEditing())
       return;
 
     if (event.target.classList.contains('header') || this.element.classList.contains('read-only') ||
@@ -1682,7 +1669,7 @@ Elements.StylePropertiesSection = class {
    * @return {!Promise}
    */
   _manuallySetHeight() {
-    this.element.style.height = this._innerElement.clientHeight + 'px';
+    this.element.style.height = (this._innerElement.clientHeight + 1) + 'px';
     this.element.style.contain = 'strict';
     return Promise.resolve();
   }
@@ -2337,7 +2324,7 @@ Elements.StylePropertyTreeElement = class extends UI.TreeElement {
    * @param {!Event} event
    */
   _mouseClick(event) {
-    if (!event.target.isComponentSelectionCollapsed())
+    if (event.target.hasSelection())
       return;
 
     event.consume(true);
