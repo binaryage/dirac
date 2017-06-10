@@ -13,7 +13,16 @@ export DIRAC_CHROME_DRIVER_VERBOSE=1
 export LEIN_FAST_TRAMPOLINE=1
 TRAVIS_CHROMEDRIVER_VERSION=${TRAVIS_CHROMEDRIVER_VERSION:-2.30}
 
-if [[ -z "$TRAVIS_SKIP_LEIN_UPGRADE" ]]; then
+if [[ -z "${TRAVIS_SKIP_NSS3_UPGRADE}" ]]; then
+  # this is needed for recent chrome
+  # they require patched version of this lib or refuse to run:
+  #   FATAL:nss_util.cc(679)] NSS_VersionCheck("3.26") failed. NSS >= 3.26 is required. Please upgrade to the latest NSS, and if you still get this error, contact your distribution maintainer.
+  #
+  # see failure: https://travis-ci.org/binaryage/dirac/builds/241581291#L946
+  sudo apt-get install -y --reinstall libnss3
+fi
+
+if [[ -z "${TRAVIS_SKIP_LEIN_UPGRADE}" ]]; then
   # we need lein 2.5.3+ because of https://github.com/technomancy/leiningen/issues/1762
   # update lein to latest, https://github.com/technomancy/leiningen/issues/2014#issuecomment-153829977
   yes y | sudo lein upgrade || true # note: sudo lein upgrade exits with non-zero exit code if there is nothing to be updated
