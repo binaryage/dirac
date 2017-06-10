@@ -36,7 +36,7 @@
                  [com.lucasbradstreet/cljs-uuid-utils "1.0.2" :scope "test"]
                  [com.rpl/specter "1.0.1" :scope "test"]
                  [org.clojure/tools.namespace "0.3.0-alpha3" :scope "test"]
-                 [org.clojure/tools.reader "1.0.0-beta1" :scope "test"]
+                 [org.clojure/tools.reader "1.0.0" :scope "test"]
 
                  [clj-logging-config ~clj-logging-config-version :scope "test"]
                  [org.slf4j/slf4j-log4j12 ~slf4j-log4j12-version :scope "test"]
