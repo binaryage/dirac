@@ -51,6 +51,8 @@ var EventListeners = {};
 /** @type {!Object} */
 var Extensions = {};
 /** @type {!Object} */
+var Formatter = {};
+/** @type {!Object} */
 var FormatterWorker = {};
 /** @type {!Object} */
 var HeapSnapshotModel = {};

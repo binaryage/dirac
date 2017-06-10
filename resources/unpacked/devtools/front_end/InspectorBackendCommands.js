@@ -1,5 +1,5 @@
-Protocol.BakedInspectorBackendAPIChromeTag='61.0.3123.2';
-Protocol.BakedInspectorBackendAPIChromeRev='6b36f1c4bd9195ee5b7e3f96624207706585d17c';
+Protocol.BakedInspectorBackendAPIChromeTag='61.0.3126.2';
+Protocol.BakedInspectorBackendAPIChromeRev='3505cba91e5a004726c286f4396caf2aae3c2e17';
 Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerEvent("Inspector.detached", ["reason"]);\n'
 + 'Protocol.inspectorBackend.registerEvent("Inspector.targetCrashed", []);\n'
@@ -277,6 +277,7 @@ Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerCommand("CSS.startRuleUsageTracking", [], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("CSS.takeCoverageDelta", [], ["coverage"], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("CSS.stopRuleUsageTracking", [], ["ruleUsage"], false);\n'
++ 'Protocol.inspectorBackend.registerCommand("DOMSnapshot.getSnapshot", [{"name": "computedStyleWhitelist", "type": "object", "optional": false}], ["domNodes", "layoutTreeNodes", "computedStyles"], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("IO.read", [{"name": "handle", "type": "string", "optional": false}, {"name": "offset", "type": "number", "optional": true}, {"name": "size", "type": "number", "optional": true}], ["data", "eof"], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("IO.close", [{"name": "handle", "type": "string", "optional": false}], [], false);\n'
 + 'Protocol.inspectorBackend.registerEnum("DOMDebugger.DOMBreakpointType", {SubtreeModified: "subtree-modified", AttributeModified: "attribute-modified", NodeRemoved: "node-removed"});\n'
