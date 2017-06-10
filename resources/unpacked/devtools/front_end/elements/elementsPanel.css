@@ -56,101 +56,6 @@
     width: 100%;
 }
 
-.metrics {
-    padding: 8px;
-    font-size: 10px;
-    text-align: center;
-    white-space: nowrap;
-}
-
-.metrics .label {
-    position: absolute;
-    font-size: 10px;
-    margin-left: 3px;
-    padding-left: 2px;
-    padding-right: 2px;
-}
-
-.metrics .position {
-    border: 1px rgb(66%, 66%, 66%) dotted;
-    background-color: white;
-    display: inline-block;
-    text-align: center;
-    padding: 3px;
-    margin: 3px;
-}
-
-.metrics .margin {
-    border: 1px dashed;
-    background-color: white;
-    display: inline-block;
-    text-align: center;
-    vertical-align: middle;
-    padding: 3px;
-    margin: 3px;
-}
-
-.metrics .border {
-    border: 1px black solid;
-    background-color: white;
-    display: inline-block;
-    text-align: center;
-    vertical-align: middle;
-    padding: 3px;
-    margin: 3px;
-}
-
-.metrics .padding {
-    border: 1px grey dashed;
-    background-color: white;
-    display: inline-block;
-    text-align: center;
-    vertical-align: middle;
-    padding: 3px;
-    margin: 3px;
-}
-
-.metrics .content {
-    position: static;
-    border: 1px gray solid;
-    background-color: white;
-    display: inline-block;
-    text-align: center;
-    vertical-align: middle;
-    padding: 3px;
-    margin: 3px;
-    min-width: 80px;
-    overflow: visible;
-}
-
-.metrics .content span {
-    display: inline-block;
-}
-
-.metrics .editing {
-    position: relative;
-    z-index: 100;
-    cursor: text;
-}
-
-.metrics .left {
-    display: inline-block;
-    vertical-align: middle;
-}
-
-.metrics .right {
-    display: inline-block;
-    vertical-align: middle;
-}
-
-.metrics .top {
-    display: inline-block;
-}
-
-.metrics .bottom {
-    display: inline-block;
-}
-
 .styles-section {
     min-height: 18px;
     white-space: nowrap;
@@ -174,6 +79,10 @@
 
 .style-panes-wrapper {
     overflow: auto;
+}
+
+.style-panes-wrapper > div:not(:first-child) {
+    border-top: 1px solid #ccc;
 }
 
 .styles-section.read-only {
@@ -259,13 +168,6 @@
     padding-left: 0;
 }
 
-.styles-element-state-pane {
-    overflow: hidden;
-    height: 66px;
-    padding-left: 2px;
-    border-bottom: 1px solid rgb(189, 189, 189);
-}
-
 @keyframes styles-element-state-pane-slidein {
     from {
         margin-top: -60px;
@@ -294,57 +196,6 @@
     position: relative;
     overflow: hidden;
     flex-shrink: 0;
-}
-
-.styles-element-state-pane {
-    background-color: #f3f3f3;
-    border-bottom: 1px solid rgb(189, 189, 189);
-    margin-top: 0;
-}
-
-.styles-element-classes-pane {
-    background-color: #f3f3f3;
-    border-bottom: 1px solid rgb(189, 189, 189);
-    padding: 6px 2px 2px;
-}
-
-.styles-element-classes-container {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: flex-start;
-}
-
-.styles-element-classes-pane label {
-    margin-right: 15px;
-}
-
-.styles-element-classes-pane .title-container {
-    padding-bottom: 2px;
-}
-
-.styles-element-classes-pane .new-class-input {
-    padding-left: 3px;
-    padding-right: 3px;
-    overflow: hidden;
-    border: 1px solid #ddd;
-    line-height: 15px;
-    margin-left: 3px;
-    width: calc(100% - 7px);
-    background-color: #fff;
-    cursor: text;
-}
-
-.styles-element-state-pane > div {
-    margin: 8px 4px 6px;
-}
-
-.styles-element-state-pane > table {
-    width: 100%;
-    border-spacing: 0;
-}
-
-.styles-element-state-pane td {
-    padding: 0;
 }
 
 .styles-animations-controls-pane > * {
@@ -382,31 +233,6 @@
     cursor: text;
 }
 
-.metrics {
-    border-bottom: 1px solid #ccc;
-}
-
-.-theme-with-dark-background .metrics {
-    color: #222;
-}
-
-.-theme-with-dark-background .metrics > div:hover {
-    color: #ccc;
-}
-
-.metrics-and-styles .metrics {
-    border-top: 1px solid #ccc;
-    border-bottom: none;
-}
-
-.metrics {
-    min-height: 190px;
-    display: flex;
-    flex-direction: column;
-    -webkit-align-items: center;
-    -webkit-justify-content: center;
-}
-
 .metrics-and-styles,
 .metrics-and-computed {
     display: flex !important;
@@ -435,10 +261,6 @@
     width: 100%;
     background: transparent;
     margin-left: 4px;
-}
-
-.sidebar-pane.composite .metrics-and-styles .metrics {
-    border-bottom: none;
 }
 
 .styles-section.styles-panel-hovered:not(.read-only) span.simple-selector:hover,

@@ -863,17 +863,9 @@ SDK.DOMNode = class {
 
   /**
    * @param {string=} objectGroup
-   * @param {function(?SDK.RemoteObject)=} callback
-   */
-  resolveToObject(objectGroup, callback) {
-    this.resolveToObjectPromise(objectGroup).then(object => callback && callback(object));
-  }
-
-  /**
-   * @param {string=} objectGroup
    * @return {!Promise<?SDK.RemoteObject>}
    */
-  async resolveToObjectPromise(objectGroup) {
+  async resolveToObject(objectGroup) {
     var object = await this._agent.resolveNode(this.id, objectGroup);
     return object && this._domModel._runtimeModel.createRemoteObject(object);
   }
@@ -911,6 +903,23 @@ SDK.DOMNode = class {
     if (node && node.nodeType() !== Node.ELEMENT_NODE)
       node = null;
     return node;
+  }
+
+  async scrollIntoView() {
+    var node = this.enclosingElementOrSelf();
+    var object = await node.resolveToObject('');
+    if (object)
+      object.callFunction(scrollIntoView);
+    object.release();
+    node.highlightForTwoSeconds();
+
+    /**
+     * @suppressReceiverCheck
+     * @this {!Element}
+     */
+    function scrollIntoView() {
+      this.scrollIntoViewIfNeeded(true);
+    }
   }
 };
 
@@ -1429,19 +1438,9 @@ SDK.DOMModel = class extends SDK.SDKModel {
   /**
    * @param {string} query
    * @param {boolean} includeUserAgentShadowDOM
-   * @param {function(number)} searchCallback
-   */
-  performSearch(query, includeUserAgentShadowDOM, searchCallback) {
-    SDK.DOMModel.cancelSearch();
-    this.performSearchPromise(query, includeUserAgentShadowDOM).then(searchCallback);
-  }
-
-  /**
-   * @param {string} query
-   * @param {boolean} includeUserAgentShadowDOM
    * @return {!Promise<number>}
    */
-  async performSearchPromise(query, includeUserAgentShadowDOM) {
+  async performSearch(query, includeUserAgentShadowDOM) {
     var response = await this._agent.invoke_performSearch({query, includeUserAgentShadowDOM});
     if (!response[Protocol.Error])
       this._searchId = response.searchId;
