@@ -11,7 +11,6 @@ false && source _config.sh # never executes, this is here just for IntelliJ Bash
 #export DIRAC_LOG_LEVEL=debug
 export DIRAC_CHROME_DRIVER_VERBOSE=1
 export LEIN_FAST_TRAMPOLINE=1
-TRAVIS_CHROMEDRIVER_VERSION=${TRAVIS_CHROMEDRIVER_VERSION:-2.30}
 
 if [[ -z "${TRAVIS_SKIP_NSS3_UPGRADE}" ]]; then
   # this is needed for recent chrome
