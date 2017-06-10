@@ -98,8 +98,9 @@
       (System/exit 1))))
 
 (defn prepare-driver! []
-  (let [driver (chrome-driver/prepare-chrome-driver (chrome-driver/prepare-options))]
-    (set-driver! driver)))
+  (if-some [driver (chrome-driver/prepare-chrome-driver (chrome-driver/prepare-options))]
+    (set-driver! driver)
+    (System/exit 4)))
 
 (defn start-browser! []
   (log/debug "start-browser!")
@@ -167,7 +168,9 @@
   (wait-for-reconnection-cooldown!)
   (with-output-silencer
     (let [options (assoc (chrome-driver/prepare-options true) :debugger-port (chrome-driver/get-debugging-port))]
-      (set-driver! (chrome-driver/prepare-chrome-driver options)))))
+      (if-some [driver (chrome-driver/prepare-chrome-driver options)]
+        (set-driver! driver)
+        (System/exit 5)))))
 
 (defn setup-browser! []
   (start-browser!)
