@@ -81,15 +81,19 @@ fi
 export CHROME_LOG_FILE=`pwd`
 popd
 
+CHROMEDRIVER_CACHED_MARKER="chromedriver-${TRAVIS_CHROMEDRIVER_VERSION}-cached"
+
 # install chromedriver
 if [[ -z "${TRAVIS_SKIP_CHROMEDRIVER_UPDATE}" ]]; then
-  if [[ ! -z "${TRAVIS_DONT_CACHE_CHROMEDRIVER}" || ! -f chromedriver ]]; then
-    if [[ ! -z "${TRAVIS_USE_CUSTOM_CHROMEDRIVER}" ]]; then
-      wget -O chromedriver.zip "${TRAVIS_USE_CUSTOM_CHROMEDRIVER}" # http://x.binaryage.com/chromedriver.zip
-    else
-      wget -O chromedriver.zip https://chromedriver.storage.googleapis.com/${TRAVIS_CHROMEDRIVER_VERSION}/chromedriver_linux64.zip
-    fi
+  if [[ ! -z "${TRAVIS_USE_CUSTOM_CHROMEDRIVER}" ]]; then
+    wget -O chromedriver.zip "${TRAVIS_USE_CUSTOM_CHROMEDRIVER}" # http://x.binaryage.com/chromedriver.zip
     unzip -o chromedriver.zip
+  else
+    if [[ ! -z "${TRAVIS_DONT_CACHE_CHROMEDRIVER}" || ! -f "${CHROMEDRIVER_CACHED_MARKER}" ]]; then
+      wget -O chromedriver.zip https://chromedriver.storage.googleapis.com/${TRAVIS_CHROMEDRIVER_VERSION}/chromedriver_linux64.zip
+      unzip -o chromedriver.zip
+      touch "${CHROMEDRIVER_CACHED_MARKER}"
+    fi
   fi
-  export CHROME_DRIVER_PATH=`pwd`/chromedriver
 fi
+export CHROME_DRIVER_PATH=`pwd`/chromedriver
