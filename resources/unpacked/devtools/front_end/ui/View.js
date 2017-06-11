@@ -35,7 +35,9 @@ UI.View.prototype = {
   /**
    * @return {!Promise<!UI.Widget>}
    */
-  widget() {}
+  widget() {},
+
+  disposeView() {}
 };
 
 UI.View._symbol = Symbol('view');
@@ -126,6 +128,12 @@ UI.SimpleView = class extends UI.VBox {
   revealView() {
     return UI.viewManager.revealView(this);
   }
+
+  /**
+   * @override
+   */
+  disposeView() {
+  }
 };
 
 /**
@@ -192,13 +200,23 @@ UI.ProvidedView = class {
    * @override
    * @return {!Promise<!UI.Widget>}
    */
-  widget() {
-    return this._extension.instance().then(widget => {
-      if (!(widget instanceof UI.Widget))
-        throw new Error('view className should point to a UI.Widget');
-      widget[UI.View._symbol] = this;
-      return /** @type {!UI.Widget} */ (widget);
-    });
+  async widget() {
+    this._widgetRequested = true;
+    var widget = await this._extension.instance();
+    if (!(widget instanceof UI.Widget))
+      throw new Error('view className should point to a UI.Widget');
+    widget[UI.View._symbol] = this;
+    return /** @type {!UI.Widget} */ (widget);
+  }
+
+  /**
+   * @override
+   */
+  async disposeView() {
+    if (!this._widgetRequested)
+      return;
+    var widget = await this.widget();
+    widget.ownerViewDisposed();
   }
 };
 
@@ -712,6 +730,16 @@ UI.ViewManager._TabbedLocation = class extends UI.ViewManager._Location {
       }
     }
     this._appendTab(view, index);
+
+    if (view.isCloseable()) {
+      var tabs = this._closeableTabSetting.get();
+      var tabId = view.viewId();
+      if (!tabs[tabId]) {
+        tabs[tabId] = true;
+        this._closeableTabSetting.set(tabs);
+      }
+    }
+    this._persistTabOrder();
   }
 
   /**
@@ -750,17 +778,6 @@ UI.ViewManager._TabbedLocation = class extends UI.ViewManager._Location {
     var tabId = /** @type {string} */ (event.data.tabId);
     if (this._lastSelectedTabSetting && event.data['isUserGesture'])
       this._lastSelectedTabSetting.set(tabId);
-    var view = this._views.get(tabId);
-    if (!view)
-      return;
-
-    if (view.isCloseable()) {
-      var tabs = this._closeableTabSetting.get();
-      if (!tabs[tabId]) {
-        tabs[tabId] = true;
-        this._closeableTabSetting.set(tabs);
-      }
-    }
   }
 
   /**
@@ -773,12 +790,10 @@ UI.ViewManager._TabbedLocation = class extends UI.ViewManager._Location {
       delete tabs[id];
       this._closeableTabSetting.set(tabs);
     }
+    this._views.get(id).disposeView();
   }
 
-  /**
-   * @param {!Common.Event} event
-   */
-  _persistTabOrder(event) {
+  _persistTabOrder() {
     var tabIds = this._tabbedPane.tabIds();
     var tabOrders = {};
     for (var i = 0; i < tabIds.length; i++)

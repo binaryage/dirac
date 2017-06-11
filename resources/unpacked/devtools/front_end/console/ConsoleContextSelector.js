@@ -22,9 +22,11 @@ Console.ConsoleContextSelector = class {
     this._glassPane.setAnchorBehavior(UI.GlassPane.AnchorBehavior.PreferBottom);
     this._glassPane.setOutsideClickCallback(this._hide.bind(this));
     this._glassPane.setPointerEventsBehavior(UI.GlassPane.PointerEventsBehavior.BlockedByGlassPane);
-    this._list = new UI.ListControl(this, UI.ListMode.EqualHeightItems);
+    /** @type {!UI.ListModel<!SDK.ExecutionContext>} */
+    this._items = new UI.ListModel();
+    /** @type {!UI.ListControl<!SDK.ExecutionContext>} */
+    this._list = new UI.ListControl(this._items, this, UI.ListMode.EqualHeightItems);
     this._list.element.classList.add('context-list');
-    this._list.element.tabIndex = -1;
     this._rowHeight = 36;
     UI.createShadowRootWithCoreStyles(this._glassPane.contentElement, 'console/consoleContextSelector.css')
         .appendChild(this._list.element);
@@ -97,7 +99,7 @@ Console.ConsoleContextSelector = class {
   }
 
   _updateGlasspaneSize() {
-    var maxHeight = this._rowHeight * (Math.min(this._list.length(), 9));
+    var maxHeight = this._rowHeight * (Math.min(this._items.length, 9));
     this._glassPane.setMaxContentSize(new UI.Size(315, maxHeight));
     this._list.viewportResized();
   }
@@ -128,7 +130,7 @@ Console.ConsoleContextSelector = class {
         var currentExecutionContext = this._list.selectedItem();
         if (!currentExecutionContext)
           break;
-        var nextExecutionContext = this._list.itemAtIndex(this._list.selectedIndex() + 1);
+        var nextExecutionContext = this._items.at(this._list.selectedIndex() + 1);
         if (nextExecutionContext && this._depthFor(currentExecutionContext) < this._depthFor(nextExecutionContext))
           handled = this._list.selectNextItem(false, false);
         break;
@@ -138,9 +140,9 @@ Console.ConsoleContextSelector = class {
           break;
         var depth = this._depthFor(currentExecutionContext);
         for (var i = this._list.selectedIndex() - 1; i >= 0; i--) {
-          if (this._depthFor(this._list.itemAtIndex(i)) < depth) {
+          if (this._depthFor(this._items.at(i)) < depth) {
             handled = true;
-            this._list.selectItem(this._list.itemAtIndex(i), false);
+            this._list.selectItem(this._items.at(i), false);
             break;
           }
         }
@@ -152,18 +154,18 @@ Console.ConsoleContextSelector = class {
         handled = this._list.selectItemNextPage(false);
         break;
       case 'Home':
-        for (var i = 0; i < this._list.length(); i++) {
-          if (this.isItemSelectable(this._list.itemAtIndex(i))) {
-            this._list.selectItem(this._list.itemAtIndex(i));
+        for (var i = 0; i < this._items.length; i++) {
+          if (this.isItemSelectable(this._items.at(i))) {
+            this._list.selectItem(this._items.at(i));
             handled = true;
             break;
           }
         }
         break;
       case 'End':
-        for (var i = this._list.length() - 1; i >= 0; i--) {
-          if (this.isItemSelectable(this._list.itemAtIndex(i))) {
-            this._list.selectItem(this._list.itemAtIndex(i));
+        for (var i = this._items.length - 1; i >= 0; i--) {
+          if (this.isItemSelectable(this._items.at(i))) {
+            this._list.selectItem(this._items.at(i));
             handled = true;
             break;
           }
@@ -193,8 +195,8 @@ Console.ConsoleContextSelector = class {
         if (event.key.length === 1) {
           var selectedIndex = this._list.selectedIndex();
           var letter = event.key.toUpperCase();
-          for (var i = 0; i < this._list.length(); i++) {
-            var context = this._list.itemAtIndex((selectedIndex + i + 1) % this._list.length());
+          for (var i = 0; i < this._items.length; i++) {
+            var context = this._items.at((selectedIndex + i + 1) % this._items.length);
             if (this._titleFor(context).toUpperCase().startsWith(letter)) {
               this._list.selectItem(context);
               break;
@@ -297,7 +299,7 @@ Console.ConsoleContextSelector = class {
     if (!executionContext.target().hasJSCapability())
       return;
 
-    this._list.insertItemWithComparator(executionContext, executionContext.runtimeModel.executionContextComparator());
+    this._items.insertWithComparator(executionContext, executionContext.runtimeModel.executionContextComparator());
 
     if (executionContext === UI.context.flavor(SDK.ExecutionContext))
       this._updateSelectionTitle();
@@ -318,7 +320,7 @@ Console.ConsoleContextSelector = class {
    */
   _onExecutionContextChanged(event) {
     var executionContext = /** @type {!SDK.ExecutionContext} */ (event.data);
-    if (this._list.indexOfItem(executionContext) === -1)
+    if (this._items.indexOf(executionContext) === -1)
       return;
     this._executionContextDestroyed(executionContext);
     this._executionContextCreated(executionContext);
@@ -329,10 +331,11 @@ Console.ConsoleContextSelector = class {
    * @param {!SDK.ExecutionContext} executionContext
    */
   _executionContextDestroyed(executionContext) {
-    if (this._list.indexOfItem(executionContext) === -1)
+    var index = this._items.indexOf(executionContext);
+    if (index === -1)
       return;
     this._disposeExecutionContextBadge(executionContext);
-    this._list.removeItem(executionContext);
+    this._items.remove(index);
     this._updateGlasspaneSize();
   }
 
@@ -350,7 +353,7 @@ Console.ConsoleContextSelector = class {
    */
   _executionContextChangedExternally(event) {
     var executionContext = /** @type {?SDK.ExecutionContext} */ (event.data);
-    if (!executionContext || this._list.indexOfItem(executionContext) === -1)
+    if (!executionContext || this._items.indexOf(executionContext) === -1)
       return;
     this._list.selectItem(executionContext);
     this._updateSelectedContext();
@@ -384,11 +387,7 @@ Console.ConsoleContextSelector = class {
    * @return {boolean}
    */
   _hasTopContext() {
-    for (var i = 0; i < this._list.length(); i++) {
-      if (this._isTopContext(this._list.itemAtIndex(i)))
-        return true;
-    }
-    return false;
+    return this._items.some(executionContext => this._isTopContext(executionContext));
   }
 
   /**
@@ -404,9 +403,9 @@ Console.ConsoleContextSelector = class {
    * @param {!SDK.RuntimeModel} runtimeModel
    */
   modelRemoved(runtimeModel) {
-    for (var i = 0; i < this._list.length(); i++) {
-      if (this._list.itemAtIndex(i).runtimeModel === runtimeModel)
-        this._executionContextDestroyed(this._list.itemAtIndex(i));
+    for (var i = 0; i < this._items.length; i++) {
+      if (this._items.at(i).runtimeModel === runtimeModel)
+        this._executionContextDestroyed(this._items.at(i));
     }
   }
 
@@ -521,10 +520,10 @@ Console.ConsoleContextSelector = class {
    */
   _callFrameSelectedInModel(event) {
     var debuggerModel = /** @type {!SDK.DebuggerModel} */ (event.data);
-    for (var i = 0; i < this._list.length(); i++) {
-      if (this._list.itemAtIndex(i).debuggerModel === debuggerModel) {
-        this._disposeExecutionContextBadge(this._list.itemAtIndex(i));
-        this._list.refreshItemsInRange(i, i + 1);
+    for (var executionContext of this._items) {
+      if (executionContext.debuggerModel === debuggerModel) {
+        this._disposeExecutionContextBadge(executionContext);
+        this._list.refreshItem(executionContext);
       }
     }
   }
@@ -534,10 +533,10 @@ Console.ConsoleContextSelector = class {
    */
   _frameNavigated(event) {
     var frameId = event.data.id;
-    for (var i = 0; i < this._list.length(); i++) {
-      if (frameId === this._list.itemAtIndex(i).frameId) {
-        this._disposeExecutionContextBadge(this._list.itemAtIndex(i));
-        this._list.refreshItemsInRange(i, i + 1);
+    for (var executionContext of this._items) {
+      if (frameId === executionContext.frameId) {
+        this._disposeExecutionContextBadge(executionContext);
+        this._list.refreshItem(executionContext);
       }
     }
   }

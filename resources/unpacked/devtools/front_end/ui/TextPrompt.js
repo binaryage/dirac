@@ -45,6 +45,7 @@ UI.TextPrompt = class extends Common.Object {
     this._currentSuggestion = '';
     this._completionRequestId = 0;
     this._ghostTextElement = createElementWithClass('span', 'auto-complete-text');
+    this._ghostTextElement.setAttribute('contenteditable', 'false');
   }
 
   /**
@@ -581,6 +582,9 @@ UI.TextPrompt = class extends Common.Object {
     var node = selectionRange.startContainer;
     if (!node.isSelfOrDescendant(this._element))
       return false;
+
+    if (this._ghostTextElement.isAncestor(node))
+      return true;
 
     if (node.nodeType === Node.TEXT_NODE && selectionRange.startOffset < node.nodeValue.length)
       return false;

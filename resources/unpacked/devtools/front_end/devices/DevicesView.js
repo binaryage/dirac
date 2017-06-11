@@ -481,7 +481,7 @@ Devices.DevicesView.NetworkDiscoveryView = class extends UI.VBox {
 
     var addButton = UI.createTextButton(
         nodeFrontend ? Common.UIString('Add connection') : Common.UIString('Add address'),
-        this._addNetworkTargetButtonClicked.bind(this), 'add-network-target-button');
+        this._addNetworkTargetButtonClicked.bind(this), 'add-network-target-button', true /* primary */);
     this.element.appendChild(addButton);
 
     /** @type {!Array<{address: string}>} */
@@ -491,7 +491,6 @@ Devices.DevicesView.NetworkDiscoveryView = class extends UI.VBox {
     if (nodeFrontend) {
       this.element.classList.add('node-frontend');
       this._list.element.classList.add('node-frontend');
-      addButton.classList.add('material-button', 'default');
     }
   }
 
@@ -584,7 +583,6 @@ Devices.DevicesView.NetworkDiscoveryView = class extends UI.VBox {
       return this._editor;
 
     var editor = new UI.ListWidget.Editor();
-    editor.setMaterial(this._nodeFrontend);
     this._editor = editor;
     var content = editor.contentElement();
     var fields = content.createChild('div', 'network-discovery-edit-row');
@@ -685,8 +683,8 @@ Devices.DevicesView.DeviceView = class extends UI.VBox {
 
     var newTabRow = element.createChild('div', 'device-browser-new-tab');
     newTabRow.createChild('div', '').textContent = Common.UIString('New tab:');
-    var newTabInput = newTabRow.createChild('input', '');
-    newTabInput.type = 'text';
+    var newTabInput = UI.createInput('', 'text');
+    newTabRow.appendChild(newTabInput);
     newTabInput.placeholder = Common.UIString('Enter URL');
     newTabInput.addEventListener('keydown', newTabKeyDown, false);
     var newTabButton = UI.createTextButton(Common.UIString('Open'), openNewTab);
@@ -791,8 +789,7 @@ Devices.DevicesView.DeviceView = class extends UI.VBox {
 
     var titleRow = element.createChild('div', 'device-page-title-row');
     var title = titleRow.createChild('div', 'device-page-title');
-    var inspect =
-        UI.createTextButton(Common.UIString('Inspect'), doAction.bind(null, 'inspect'), 'device-inspect-button');
+    var inspect = UI.createTextButton(Common.UIString('Inspect'), doAction.bind(null, 'inspect'));
     titleRow.appendChild(inspect);
 
     var toolbar = new UI.Toolbar('');

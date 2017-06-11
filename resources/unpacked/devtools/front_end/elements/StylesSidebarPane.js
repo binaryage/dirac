@@ -35,6 +35,15 @@ Elements.StylesSidebarPane = class extends Elements.ElementsSidebarPane {
     Common.moduleSetting('colorFormat').addChangeListener(this.update.bind(this));
     Common.moduleSetting('textEditorIndent').addChangeListener(this.update.bind(this));
 
+    /** @type {?UI.Widget} */
+    this._currentToolbarPane = null;
+    /** @type {?UI.Widget} */
+    this._animatedToolbarPane = null;
+    /** @type {?UI.Widget} */
+    this._pendingWidget = null;
+    /** @type {?UI.ToolbarToggle} */
+    this._pendingWidgetToggle = null;
+    this._toolbarPaneElement = this._createStylesSidebarToolbar();
     this._sectionsContainer = this.element.createChild('div');
     this._swatchPopoverHelper = new InlineEditor.SwatchPopoverHelper();
     this._linkifier = new Components.Linkifier(Elements.StylesSidebarPane._maxLinkLength, /* useLinkDecorator */ true);
@@ -118,16 +127,17 @@ Elements.StylesSidebarPane = class extends Elements.ElementsSidebarPane {
    * @param {string} placeholder
    * @param {!Element} container
    * @param {function(?RegExp)} filterCallback
+   * @param {string} activeClassName
    * @return {!Element}
    */
-  static createPropertyFilterElement(placeholder, container, filterCallback) {
-    var input = createElement('input');
+  static createPropertyFilterElement(placeholder, container, filterCallback, activeClassName) {
+    var input = createElementWithClass('input');
     input.placeholder = placeholder;
 
     function searchHandler() {
       var regex = input.value ? new RegExp(input.value.escapeForRegExp(), 'i') : null;
       filterCallback(regex);
-      container.classList.toggle('styles-filter-engaged', !!input.value);
+      container.classList.toggle(activeClassName, !!input.value);
     }
     input.addEventListener('input', searchHandler, false);
 
@@ -222,7 +232,7 @@ Elements.StylesSidebarPane = class extends Elements.ElementsSidebarPane {
   /**
    * @param {?RegExp} regex
    */
-  onFilterChanged(regex) {
+  _onFilterChanged(regex) {
     this._filterRegex = regex;
     this._updateFilter();
   }
@@ -408,22 +418,17 @@ Elements.StylesSidebarPane = class extends Elements.ElementsSidebarPane {
     return blocks;
   }
 
-  _createNewRuleInViaInspectorStyleSheet() {
+  async _createNewRuleInViaInspectorStyleSheet() {
     var cssModel = this.cssModel();
     var node = this.node();
     if (!cssModel || !node)
       return;
     this._userOperation = true;
-    cssModel.requestViaInspectorStylesheet(node, onViaInspectorStyleSheet.bind(this));
 
-    /**
-     * @param {?SDK.CSSStyleSheetHeader} styleSheetHeader
-     * @this {Elements.StylesSidebarPane}
-     */
-    function onViaInspectorStyleSheet(styleSheetHeader) {
-      this._userOperation = false;
-      this._createNewRuleInStyleSheet(styleSheetHeader);
-    }
+    var styleSheetHeader = await cssModel.requestViaInspectorStylesheet(/** @type {!SDK.DOMNode} */ (node));
+
+    this._userOperation = false;
+    this._createNewRuleInStyleSheet(styleSheetHeader);
   }
 
   /**
@@ -517,6 +522,94 @@ Elements.StylesSidebarPane = class extends Elements.ElementsSidebarPane {
    */
   _clipboardCopy(event) {
     Host.userMetrics.actionTaken(Host.UserMetrics.Action.StyleRuleCopied);
+  }
+
+  /**
+   * @return {!Element}
+   */
+  _createStylesSidebarToolbar() {
+    var container = this.element.createChild('div', 'styles-sidebar-pane-toolbar-container');
+    var hbox = container.createChild('div', 'hbox styles-sidebar-pane-toolbar');
+    var filterContainerElement = hbox.createChild('div', 'styles-sidebar-pane-filter-box');
+    var filterInput = Elements.StylesSidebarPane.createPropertyFilterElement(
+        Common.UIString('Filter'), hbox, this._onFilterChanged.bind(this), 'styles-filter-engaged');
+    UI.ARIAUtils.setAccessibleName(filterInput, Common.UIString('Filter Styles'));
+    filterContainerElement.appendChild(filterInput);
+    var toolbar = new UI.Toolbar('styles-pane-toolbar', hbox);
+    toolbar.makeToggledGray();
+    toolbar.appendLocationItems('styles-sidebarpane-toolbar');
+    var toolbarPaneContainer = container.createChild('div', 'styles-sidebar-toolbar-pane-container');
+    var toolbarPaneContent = toolbarPaneContainer.createChild('div', 'styles-sidebar-toolbar-pane');
+
+    return toolbarPaneContent;
+  }
+
+  /**
+   * @param {?UI.Widget} widget
+   * @param {?UI.ToolbarToggle} toggle
+   */
+  showToolbarPane(widget, toggle) {
+    if (this._pendingWidgetToggle)
+      this._pendingWidgetToggle.setToggled(false);
+    this._pendingWidgetToggle = toggle;
+
+    if (this._animatedToolbarPane)
+      this._pendingWidget = widget;
+    else
+      this._startToolbarPaneAnimation(widget);
+
+    if (widget && toggle)
+      toggle.setToggled(true);
+  }
+
+  /**
+   * @param {?UI.Widget} widget
+   */
+  _startToolbarPaneAnimation(widget) {
+    if (widget === this._currentToolbarPane)
+      return;
+
+    if (widget && this._currentToolbarPane) {
+      this._currentToolbarPane.detach();
+      widget.show(this._toolbarPaneElement);
+      this._currentToolbarPane = widget;
+      this._currentToolbarPane.focus();
+      return;
+    }
+
+    this._animatedToolbarPane = widget;
+
+    if (this._currentToolbarPane)
+      this._toolbarPaneElement.style.animationName = 'styles-element-state-pane-slideout';
+    else if (widget)
+      this._toolbarPaneElement.style.animationName = 'styles-element-state-pane-slidein';
+
+    if (widget)
+      widget.show(this._toolbarPaneElement);
+
+    var listener = onAnimationEnd.bind(this);
+    this._toolbarPaneElement.addEventListener('animationend', listener, false);
+
+    /**
+     * @this {!Elements.StylesSidebarPane}
+     */
+    function onAnimationEnd() {
+      this._toolbarPaneElement.style.removeProperty('animation-name');
+      this._toolbarPaneElement.removeEventListener('animationend', listener, false);
+
+      if (this._currentToolbarPane)
+        this._currentToolbarPane.detach();
+
+      this._currentToolbarPane = this._animatedToolbarPane;
+      if (this._currentToolbarPane)
+        this._currentToolbarPane.focus();
+      this._animatedToolbarPane = null;
+
+      if (this._pendingWidget) {
+        this._startToolbarPaneAnimation(this._pendingWidget);
+        this._pendingWidget = null;
+      }
+    }
   }
 };
 
@@ -1265,21 +1358,7 @@ Elements.StylePropertiesSection = class {
    * @param {!Event} event
    */
   _handleEmptySpaceClick(event) {
-    if (!this.editable)
-      return;
-
-    var targetElement = event.deepElementFromPoint();
-    if (targetElement && !targetElement.isComponentSelectionCollapsed())
-      return;
-
-    if (!event.target.isComponentSelectionCollapsed())
-      return;
-
-    if (this.propertiesTreeOutline.element.shadowRoot.firstChild &&
-        !this.propertiesTreeOutline.element.shadowRoot.firstChild.isComponentSelectionCollapsed())
-      return;
-
-    if (this._checkWillCancelEditing())
+    if (!this.editable || this.element.hasSelection() || this._checkWillCancelEditing())
       return;
 
     if (event.target.classList.contains('header') || this.element.classList.contains('read-only') ||
@@ -1590,7 +1669,7 @@ Elements.StylePropertiesSection = class {
    * @return {!Promise}
    */
   _manuallySetHeight() {
-    this.element.style.height = this._innerElement.clientHeight + 'px';
+    this.element.style.height = (this._innerElement.clientHeight + 1) + 'px';
     this.element.style.contain = 'strict';
     return Promise.resolve();
   }
@@ -2245,7 +2324,7 @@ Elements.StylePropertyTreeElement = class extends UI.TreeElement {
    * @param {!Event} event
    */
   _mouseClick(event) {
-    if (!event.target.isComponentSelectionCollapsed())
+    if (event.target.hasSelection())
       return;
 
     event.consume(true);
@@ -3097,7 +3176,7 @@ Elements.StylesSidebarPropertyRenderer = class {
       hrefUrl = Common.ParsedURL.completeURL(this._rule.resourceURL(), url);
     else if (this._node)
       hrefUrl = this._node.resolveURL(url);
-    container.appendChild(Components.Linkifier.linkifyURL(hrefUrl || url, url, '', undefined, undefined, true));
+    container.appendChild(Components.Linkifier.linkifyURL(hrefUrl || url, {text: url, preventClick: true}));
     container.createTextChild(')');
     return container;
   }

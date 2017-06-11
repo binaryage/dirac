@@ -132,29 +132,6 @@ Settings.SettingsTab = class extends UI.VBox {
       block.createChild('div', 'help-section-title').textContent = name;
     return block;
   }
-
-  _createSelectSetting(name, options, setting) {
-    var p = createElement('p');
-    p.createChild('label').textContent = name;
-
-    var select = p.createChild('select', 'chrome-select');
-    var settingValue = setting.get();
-
-    for (var i = 0; i < options.length; ++i) {
-      var option = options[i];
-      select.add(new Option(option[0], option[1]));
-      if (settingValue === option[1])
-        select.selectedIndex = i;
-    }
-
-    function changeListener(e) {
-      // Don't use e.target.value to avoid conversion of the value to string.
-      setting.set(options[select.selectedIndex][1]);
-    }
-
-    select.addEventListener('change', changeListener, false);
-    return p;
-  }
 };
 
 /**
@@ -166,11 +143,9 @@ Settings.GenericSettingsTab = class extends Settings.SettingsTab {
 
     /** @const */
     var explicitSectionOrder =
-        ['', 'Appearance', 'Elements', 'Sources', 'Network', 'Profiler', 'Console', 'Extensions'];
+        ['', 'Appearance', 'Sources', 'Elements', 'Network', 'Performance', 'Console', 'Extensions'];
     /** @type {!Map<string, !Element>} */
     this._nameToSection = new Map();
-    /** @type {!Map<string, !Element>} */
-    this._nameToSettingElement = new Map();
     for (var sectionName of explicitSectionOrder)
       this._sectionElement(sectionName);
     self.runtime.extensions('setting').forEach(this._addSetting.bind(this));
@@ -204,36 +179,11 @@ Settings.GenericSettingsTab = class extends Settings.SettingsTab {
   _addSetting(extension) {
     if (!Settings.GenericSettingsTab.isSettingVisible(extension))
       return;
-    var descriptor = extension.descriptor();
-    var sectionName = descriptor['category'];
-    var settingName = descriptor['settingName'];
-    var setting = Common.moduleSetting(settingName);
-    var uiTitle = Common.UIString(extension.title());
-
-    var sectionElement = this._sectionElement(sectionName);
-    var settingControl;
-
-    switch (descriptor['settingType']) {
-      case 'boolean':
-        settingControl = UI.SettingsUI.createSettingCheckbox(uiTitle, setting);
-        break;
-      case 'enum':
-        var descriptorOptions = descriptor['options'];
-        var options = new Array(descriptorOptions.length);
-        for (var i = 0; i < options.length; ++i) {
-          // The "raw" flag indicates text is non-i18n-izable.
-          var optionName = descriptorOptions[i]['raw'] ? descriptorOptions[i]['text'] :
-                                                         Common.UIString(descriptorOptions[i]['text']);
-          options[i] = [optionName, descriptorOptions[i]['value']];
-        }
-        settingControl = this._createSelectSetting(uiTitle, options, setting);
-        break;
-      default:
-        console.error('Invalid setting type: ' + descriptor['settingType']);
-        return;
-    }
-    this._nameToSettingElement.set(settingName, settingControl);
-    sectionElement.appendChild(/** @type {!Element} */ (settingControl));
+    var sectionElement = this._sectionElement(extension.descriptor()['category']);
+    var setting = Common.moduleSetting(extension.descriptor()['settingName']);
+    var settingControl = UI.SettingsUI.createControlForSetting(setting);
+    if (settingControl)
+      sectionElement.appendChild(settingControl);
   }
 
   /**

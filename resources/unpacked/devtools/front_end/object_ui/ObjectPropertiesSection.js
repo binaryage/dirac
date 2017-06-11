@@ -694,7 +694,7 @@ ObjectUI.ObjectPropertyTreeElement = class extends UI.TreeElement {
     if (treeNode.childCount())
       return;
     var title = createElementWithClass('div', 'gray-info-message');
-    title.textContent = emptyPlaceholder || Common.UIString('No Properties');
+    title.textContent = emptyPlaceholder || Common.UIString('No properties');
     var infoElement = new UI.TreeElement(title);
     treeNode.appendChild(infoElement);
   }
@@ -916,7 +916,7 @@ ObjectUI.ObjectPropertyTreeElement = class extends UI.TreeElement {
       contextMenu.appendApplicableItems(property.value);
     var copyPathHandler = InspectorFrontendHost.copyText.bind(InspectorFrontendHost, this.nameElement.title);
     contextMenu.beforeShow(() => {
-      contextMenu.appendItem(Common.UIString.capitalize('Copy ^property ^path'), copyPathHandler);
+      contextMenu.appendItem(Common.UIString('Copy property path'), copyPathHandler);
     });
     contextMenu.show();
   }

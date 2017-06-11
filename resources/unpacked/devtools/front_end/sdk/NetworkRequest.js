@@ -927,10 +927,10 @@ SDK.NetworkRequest = class extends Common.Object {
    * @param {string} query
    * @param {boolean} caseSensitive
    * @param {boolean} isRegex
-   * @param {function(!Array.<!Common.ContentProvider.SearchMatch>)} callback
+   * @return {!Promise<!Array<!Common.ContentProvider.SearchMatch>>}
    */
-  searchInContent(query, caseSensitive, isRegex, callback) {
-    callback([]);
+  searchInContent(query, caseSensitive, isRegex) {
+    return Promise.resolve([]);
   }
 
   /**
@@ -1013,28 +1013,20 @@ SDK.NetworkRequest = class extends Common.Object {
     return Common.ContentProvider.contentAsDataURL(content, this.mimeType, true, charset);
   }
 
-  _innerRequestContent() {
+  async _innerRequestContent() {
     if (this._contentRequested)
       return;
     this._contentRequested = true;
 
-    /**
-     * @param {?Protocol.Error} error
-     * @param {string} content
-     * @param {boolean} contentEncoded
-     * @this {SDK.NetworkRequest}
-     */
-    function onResourceContent(error, content, contentEncoded) {
-      this._content = error ? null : content;
-      this._contentError = error;
-      this._contentEncoded = contentEncoded;
-      var callbacks = this._pendingContentCallbacks.slice();
-      for (var i = 0; i < callbacks.length; ++i)
-        callbacks[i](this._content);
-      this._pendingContentCallbacks.length = 0;
-      delete this._contentRequested;
-    }
-    this._networkManager.target().networkAgent().getResponseBody(this._requestId, onResourceContent.bind(this));
+    var response =
+        await this._networkManager.target().networkAgent().invoke_getResponseBody({requestId: this._requestId});
+
+    this._content = response[Protocol.Error] ? null : response.body;
+    this._contentError = response[Protocol.Error];
+    this._contentEncoded = response.base64Encoded;
+    for (var callback of this._pendingContentCallbacks.splice(0))
+      callback(this._content);
+    delete this._contentRequested;
   }
 
   /**
@@ -1106,10 +1098,6 @@ SDK.NetworkRequest = class extends Common.Object {
     var message = {time: this.pseudoWallTime(time), eventName: eventName, eventId: eventId, data: data};
     this._eventSourceMessages.push(message);
     this.dispatchEventToListeners(SDK.NetworkRequest.Events.EventSourceMessageAdded, message);
-  }
-
-  replayXHR() {
-    this._networkManager.target().networkAgent().replayXHR(this._requestId);
   }
 
   /**

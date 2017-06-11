@@ -37,11 +37,9 @@ SDK.DOMDebuggerModel = class extends SDK.SDKModel {
     if (!remoteObject.objectId)
       return [];
 
-    var payloads = await this._agent.getEventListeners(
-        /** @type {string} */ (remoteObject.objectId), undefined, undefined,
-        (error, payloads) => error ? [] : payloads);
+    var payloads = await this._agent.getEventListeners(/** @type {string} */ (remoteObject.objectId));
     var eventListeners = [];
-    for (var payload of payloads) {
+    for (var payload of payloads || []) {
       var location = this._runtimeModel.debuggerModel().createRawLocationByScriptId(
           payload.scriptId, payload.lineNumber, payload.columnNumber);
       if (!location)
@@ -56,7 +54,7 @@ SDK.DOMDebuggerModel = class extends SDK.SDKModel {
   }
 
   retrieveDOMBreakpoints() {
-    this._domModel.requestDocument();
+    this._domModel.requestDocumentPromise();
   }
 
   /**
@@ -185,7 +183,7 @@ SDK.DOMDebuggerModel = class extends SDK.SDKModel {
     var currentURL = this._currentURL();
     for (var breakpoint of this._domBreakpointsSetting.get()) {
       if (breakpoint.url === currentURL)
-        this._domModel.pushNodeByPathToFrontend(breakpoint.path, appendBreakpoint.bind(this, breakpoint));
+        this._domModel.pushNodeByPathToFrontend(breakpoint.path).then(appendBreakpoint.bind(this, breakpoint));
     }
 
     /**

@@ -120,6 +120,7 @@ Main.Main = class {
     Runtime.experiments.register('timelineEventInitiators', 'Timeline: event initiators');
     Runtime.experiments.register('timelineFlowEvents', 'Timeline: flow events', true);
     Runtime.experiments.register('timelineInvalidationTracking', 'Timeline: invalidation tracking', true);
+    Runtime.experiments.register('timelineKeepHistory', 'Timeline: keep recording history');
     Runtime.experiments.register('timelineMultipleMainViews', 'Timeline: multiple main views');
     Runtime.experiments.register('timelinePaintTimingMarkers', 'Timeline: paint timing markers', true);
     Runtime.experiments.register('timelinePerFrameTrack', 'Timeline: per-frame tracks', true);
@@ -193,7 +194,6 @@ Main.Main = class {
 
     Workspace.fileManager = new Workspace.FileManager();
     Workspace.workspace = new Workspace.Workspace();
-    Common.formatterWorkerPool = new Common.FormatterWorkerPool();
     Persistence.fileSystemMapping = new Persistence.FileSystemMapping(Persistence.isolatedFileSystemManager);
 
     Bindings.networkProjectManager = new Bindings.NetworkProjectManager(SDK.targetManager, Workspace.workspace);
@@ -734,37 +734,6 @@ Main.Main.MainMenuItem = class {
     var helpSubMenu = contextMenu.namedSubMenu('mainMenuHelp');
     helpSubMenu.appendAction('settings.documentation');
     helpSubMenu.appendItem('Release Notes', () => InspectorFrontendHost.openInNewTab(Help.latestReleaseNote().link));
-  }
-};
-
-/**
- * @implements {UI.ToolbarItem.Provider}
- */
-Main.Main.NodeIndicator = class {
-  constructor() {
-    var element = createElement('div');
-    var shadowRoot = UI.createShadowRootWithCoreStyles(element, 'main/nodeIcon.css');
-    this._element = shadowRoot.createChild('div', 'node-icon');
-    element.addEventListener('click', () => InspectorFrontendHost.openNodeFrontend(), false);
-    this._button = new UI.ToolbarItem(element);
-    this._button.setTitle(Common.UIString('Open dedicated DevTools for Node.js'));
-    SDK.targetManager.addEventListener(SDK.TargetManager.Events.AvailableNodeTargetsChanged, this._update, this);
-    this._button.setVisible(false);
-    this._update();
-  }
-
-  _update() {
-    this._element.classList.toggle('inactive', !SDK.targetManager.availableNodeTargetsCount());
-    if (SDK.targetManager.availableNodeTargetsCount())
-      this._button.setVisible(true);
-  }
-
-  /**
-   * @override
-   * @return {?UI.ToolbarItem}
-   */
-  item() {
-    return this._button;
   }
 };
 

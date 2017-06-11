@@ -487,7 +487,7 @@ Network.NetworkRequestNode = class extends Network.NetworkNode {
     var bRequest = b.requestOrFirstKnownChildRequest();
     if (!aRequest || !bRequest)
       return !aRequest ? -1 : 1;
-    var priorityMap = NetworkConditions.prioritySymbolToNumericMap();
+    var priorityMap = NetworkPriorities.prioritySymbolToNumericMap();
     var aPriority = aRequest.initialPriority();
     var aScore = aPriority ? priorityMap.get(aPriority) : 0;
     aScore = aScore || 0;
@@ -765,7 +765,7 @@ Network.NetworkRequestNode = class extends Network.NetworkNode {
         break;
       case 'priority':
         var priority = this._request.initialPriority();
-        this._setTextAndTitle(cell, priority ? NetworkConditions.uiLabelForPriority(priority) : '');
+        this._setTextAndTitle(cell, priority ? NetworkPriorities.uiLabelForPriority(priority) : '');
         break;
       case 'connectionid':
         this._setTextAndTitle(cell, this._request.connectionId);
@@ -929,9 +929,11 @@ Network.NetworkRequestNode = class extends Network.NetworkNode {
       case SDK.NetworkRequest.InitiatorType.Parser:
         cell.title = initiator.url + ':' + (initiator.lineNumber + 1);
         var uiSourceCode = Workspace.workspace.uiSourceCodeForURL(initiator.url);
-        cell.appendChild(Components.Linkifier.linkifyURL(
-            initiator.url, uiSourceCode ? uiSourceCode.displayName() : undefined, '', initiator.lineNumber,
-            initiator.columnNumber));
+        cell.appendChild(Components.Linkifier.linkifyURL(initiator.url, {
+          text: uiSourceCode ? uiSourceCode.displayName() : undefined,
+          lineNumber: initiator.lineNumber,
+          columnNumber: initiator.columnNumber
+        }));
         this._appendSubtitle(cell, Common.UIString('Parser'));
         break;
 

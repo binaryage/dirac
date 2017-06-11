@@ -159,7 +159,7 @@ Audits2.Audits2Panel = class extends UI.PanelWithSidebar {
         'click', () => InspectorFrontendHost.openInNewTab('https://developers.google.com/web/tools/lighthouse/'));
 
     var newButton = UI.createTextButton(
-        Common.UIString('Perform an audit\u2026'), this._showLauncherUI.bind(this), 'material-button default');
+        Common.UIString('Perform an audit\u2026'), this._showLauncherUI.bind(this), '', true /* primary */);
     landingCenter.appendChild(newButton);
     this.setDefaultFocusedElement(newButton);
   }
@@ -169,6 +169,10 @@ Audits2.Audits2Panel = class extends UI.PanelWithSidebar {
     this._dialog.setOutsideClickCallback(event => event.consume(true));
     var root = UI.createShadowRootWithCoreStyles(this._dialog.contentElement, 'audits2/audits2Dialog.css');
     var auditsViewElement = root.createChild('div', 'audits2-view');
+
+    var closeButton = auditsViewElement.createChild('div', 'dialog-close-button', 'dt-close-button');
+    closeButton.addEventListener('click', () => this._cancelAndClose());
+
     var uiElement = auditsViewElement.createChild('div');
     var headerElement = uiElement.createChild('header');
     this._headerTitleElement = headerElement.createChild('p');
@@ -190,10 +194,10 @@ Audits2.Audits2Panel = class extends UI.PanelWithSidebar {
 
     var buttonsRow = uiElement.createChild('div', 'audits2-dialog-buttons hbox');
     this._startButton =
-        UI.createTextButton(Common.UIString('Run audit'), this._start.bind(this), 'material-button default');
+        UI.createTextButton(Common.UIString('Run audit'), this._start.bind(this), '', true /* primary */);
     this._updateStartButtonEnabled();
     buttonsRow.appendChild(this._startButton);
-    this._cancelButton = UI.createTextButton(Common.UIString('Cancel'), this._cancel.bind(this), 'material-button');
+    this._cancelButton = UI.createTextButton(Common.UIString('Cancel'), this._cancel.bind(this));
     buttonsRow.appendChild(this._cancelButton);
 
     this._dialog.setSizeBehavior(UI.GlassPane.SizeBehavior.SetExactWidthMaxHeight);
@@ -302,6 +306,11 @@ Audits2.Audits2Panel = class extends UI.PanelWithSidebar {
     delete this._headerTitleElement;
     delete this._emulationEnabledBefore;
     delete this._emulationOutlineEnabledBefore;
+  }
+
+  _cancelAndClose() {
+    this._cancel();
+    this._hideDialog();
   }
 
   _cancel() {
@@ -737,7 +746,7 @@ Audits2.DetailsRenderer = class extends DetailsRenderer {
    * @param {!Element} origElement
    * @param {!DetailsRenderer.NodeDetailsJSON} detailsItem
    */
-  _replaceWithDeferredNodeBlock(origElement, detailsItem) {
+  async _replaceWithDeferredNodeBlock(origElement, detailsItem) {
     var mainTarget = SDK.targetManager.mainTarget();
     if (!this._onMainFrameNavigatedPromise) {
       var resourceTreeModel = mainTarget.model(SDK.ResourceTreeModel);
@@ -746,23 +755,23 @@ Audits2.DetailsRenderer = class extends DetailsRenderer {
       });
     }
 
-    this._onMainFrameNavigatedPromise.then(_ => {
-      var domModel = mainTarget.model(SDK.DOMModel);
-      if (!detailsItem.path)
-        return;
+    await this._onMainFrameNavigatedPromise;
 
-      domModel.pushNodeByPathToFrontend(detailsItem.path, nodeId => {
-        if (!nodeId)
-          return;
-        var node = domModel.nodeForId(nodeId);
-        if (!node)
-          return;
+    var domModel = mainTarget.model(SDK.DOMModel);
+    if (!detailsItem.path)
+      return;
 
-        var element = Components.DOMPresentationUtils.linkifyNodeReference(node, undefined, detailsItem.snippet);
-        origElement.title = '';
-        origElement.textContent = '';
-        origElement.appendChild(element);
-      });
-    });
+    var nodeId = await domModel.pushNodeByPathToFrontend(detailsItem.path);
+
+    if (!nodeId)
+      return;
+    var node = domModel.nodeForId(nodeId);
+    if (!node)
+      return;
+
+    var element = Components.DOMPresentationUtils.linkifyNodeReference(node, undefined, detailsItem.snippet);
+    origElement.title = '';
+    origElement.textContent = '';
+    origElement.appendChild(element);
   }
 };

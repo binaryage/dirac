@@ -34,14 +34,15 @@
 Resources.IDBDatabaseView = class extends UI.VBox {
   /**
    * @param {!Resources.IndexedDBModel} model
-   * @param {!Resources.IndexedDBModel.Database} database
+   * @param {?Resources.IndexedDBModel.Database} database
    */
   constructor(model, database) {
     super();
 
     this._model = model;
+    var databaseName = database ? database.databaseId.name : Common.UIString('Loading\u2026');
 
-    this._reportView = new UI.ReportView(database.databaseId.name);
+    this._reportView = new UI.ReportView(databaseName);
     this._reportView.show(this.contentElement);
 
     var bodySection = this._reportView.appendSection('');
@@ -53,7 +54,13 @@ Resources.IDBDatabaseView = class extends UI.VBox {
         Common.UIString('Delete database'), () => this._deleteDatabase(), Common.UIString('Delete database'));
     footer.appendChild(this._clearButton);
 
-    this.update(database);
+    this._refreshButton = UI.createTextButton(
+        Common.UIString('Refresh database'), () => this._refreshDatabaseButtonClicked(),
+        Common.UIString('Refresh database'));
+    footer.appendChild(this._refreshButton);
+
+    if (database)
+      this.update(database);
   }
 
   _refreshDatabase() {
@@ -61,12 +68,22 @@ Resources.IDBDatabaseView = class extends UI.VBox {
     this._versionElement.textContent = this._database.version;
   }
 
+  _refreshDatabaseButtonClicked() {
+    this._model.refreshDatabase(this._database.databaseId);
+  }
+
   /**
    * @param {!Resources.IndexedDBModel.Database} database
    */
   update(database) {
     this._database = database;
+    this._reportView.setTitle(this._database.databaseId.name);
     this._refreshDatabase();
+    this._updatedForTests();
+  }
+
+  _updatedForTests() {
+    // Sniffed in tests.
   }
 
   _deleteDatabase() {
@@ -188,7 +205,8 @@ Resources.IDBDataView = class extends UI.SimpleView {
     this._pageForwardButton.addEventListener(UI.ToolbarButton.Events.Click, this._pageForwardButtonClicked, this);
     editorToolbar.appendToolbarItem(this._pageForwardButton);
 
-    this._keyInputElement = editorToolbar.element.createChild('input', 'key-input');
+    this._keyInputElement = UI.createInput('key-input');
+    editorToolbar.element.appendChild(this._keyInputElement);
     this._keyInputElement.placeholder = Common.UIString('Start from key');
     this._keyInputElement.addEventListener('paste', this._keyInputChanged.bind(this), false);
     this._keyInputElement.addEventListener('cut', this._keyInputChanged.bind(this), false);
@@ -289,6 +307,7 @@ Resources.IDBDataView = class extends UI.SimpleView {
 
       this._pageBackButton.setEnabled(!!skipCount);
       this._pageForwardButton.setEnabled(hasMore);
+      this._updatedDataForTests();
     }
 
     var idbKeyRange = key ? window.IDBKeyRange.lowerBound(key) : null;
@@ -302,6 +321,10 @@ Resources.IDBDataView = class extends UI.SimpleView {
     }
   }
 
+  _updatedDataForTests() {
+    // Sniffed in tests.
+  }
+
   /**
    * @param {!Common.Event} event
    */
@@ -312,16 +335,11 @@ Resources.IDBDataView = class extends UI.SimpleView {
   /**
    * @param {!Common.Event} event
    */
-  _clearButtonClicked(event) {
-    /**
-     * @this {Resources.IDBDataView}
-     */
-    function cleared() {
-      this._clearButton.setEnabled(true);
-      this._updateData(true);
-    }
+  async _clearButtonClicked(event) {
     this._clearButton.setEnabled(false);
-    this._model.clearObjectStore(this._databaseId, this._objectStore.name, cleared.bind(this));
+    await this._model.clearObjectStore(this._databaseId, this._objectStore.name);
+    this._clearButton.setEnabled(true);
+    this._updateData(true);
   }
 
   /**

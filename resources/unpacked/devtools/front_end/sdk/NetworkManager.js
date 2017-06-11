@@ -58,6 +58,22 @@ SDK.NetworkManager = class extends SDK.SDKModel {
   }
 
   /**
+   * @param {!SDK.NetworkRequest} request
+   * @return {boolean}
+   */
+  static canReplayRequest(request) {
+    return request.resourceType() === Common.resourceTypes.XHR;
+  }
+
+  /**
+   * @param {!SDK.NetworkRequest} request
+   */
+  static replayRequest(request) {
+    // TODO(allada) networkAgent() will be removed from NetworkRequest, but in the mean time we extract it from request.
+    request.networkManager()._networkAgent.replayXHR(request.requestId());
+  }
+
+  /**
    * @param {!SDK.NetworkManager.Conditions} conditions
    * @return {!Protocol.Network.ConnectionType}
    * TODO(allada): this belongs to NetworkConditionsSelector, which should hardcode/guess it.
@@ -585,6 +601,19 @@ SDK.NetworkDispatcher = class {
   }
 
   /**
+   * @override
+   * @param {!Protocol.Network.RequestId} requestId
+   * @param {!Protocol.Network.Request} request
+   * @param {string} resourceType
+   * @param {!Protocol.Network.Headers=} redirectHeaders
+   * @param {number=} redirectStatusCode
+   * @param {string=} redirectUrl
+   */
+  requestIntercepted(requestId, request, resourceType, redirectHeaders, redirectStatusCode, redirectUrl) {
+    // Stub implementation.  Event not currently used by the frontend.
+  }
+
+  /**
    * @param {!Protocol.Network.RequestId} requestId
    * @param {!Protocol.Network.Timestamp} time
    * @param {string} redirectURL
@@ -883,19 +912,11 @@ SDK.MultitargetNetworkManager = class extends Common.Object {
 
   /**
    * @param {string} origin
-   * @param {function(!Array<string>)} callback
+   * @return {!Promise<!Array<string>>}
    */
-  getCertificate(origin, callback) {
+  getCertificate(origin) {
     var target = SDK.targetManager.mainTarget();
-    target.networkAgent().getCertificate(origin, mycallback);
-
-    /**
-     * @param {?Protocol.Error} error
-     * @param {!Array<string>} certificate
-     */
-    function mycallback(error, certificate) {
-      callback(error ? [] : certificate);
-    }
+    return target.networkAgent().getCertificate(origin).then(certificate => certificate || []);
   }
 
   /**

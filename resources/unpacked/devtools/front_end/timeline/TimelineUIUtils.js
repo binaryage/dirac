@@ -757,10 +757,8 @@ Timeline.TimelineUIUtils = class {
         Timeline.TimelineUIUtils._collectInvalidationNodeIds(nodeIdsToResolve, invalidationTrackingEvents);
       if (nodeIdsToResolve.size) {
         var domModel = target.model(SDK.DOMModel);
-        if (domModel) {
-          relatedNodesMap =
-              await new Promise(fulfill => domModel.pushNodesByBackendIdsToFrontend(nodeIdsToResolve, fulfill));
-        }
+        if (domModel)
+          relatedNodesMap = await domModel.pushNodesByBackendIdsToFrontend(nodeIdsToResolve);
       }
     }
 
@@ -827,7 +825,7 @@ Timeline.TimelineUIUtils = class {
         if (eventData['mimeType'])
           contentHelper.appendTextRow(Common.UIString('MIME Type'), eventData['mimeType']);
         if ('priority' in eventData) {
-          var priority = NetworkConditions.uiLabelForPriority(eventData['priority']);
+          var priority = NetworkPriorities.uiLabelForPriority(eventData['priority']);
           contentHelper.appendTextRow(Common.UIString('Priority'), priority);
         }
         if (eventData['encodedDataLength']) {
@@ -1144,7 +1142,7 @@ Timeline.TimelineUIUtils = class {
       contentHelper.appendTextRow(Common.UIString('Request Method'), request.requestMethod);
     if (typeof request.priority === 'string') {
       const priority =
-          NetworkConditions.uiLabelForPriority(/** @type {!Protocol.Network.ResourcePriority} */ (request.priority));
+          NetworkPriorities.uiLabelForPriority(/** @type {!Protocol.Network.ResourcePriority} */ (request.priority));
       contentHelper.appendTextRow(Common.UIString('Priority'), priority);
     }
     if (request.mimeType)
@@ -1415,7 +1413,7 @@ Timeline.TimelineUIUtils = class {
     var snapshotWithRect = await new TimelineModel.LayerPaintEvent(event, target).snapshotPromise();
     if (!snapshotWithRect)
       return null;
-    var imageURLPromise = snapshotWithRect.snapshot.replay(null, null, 1);
+    var imageURLPromise = snapshotWithRect.snapshot.replay();
     snapshotWithRect.snapshot.release();
     var imageURL = await imageURLPromise;
     if (!imageURL)
@@ -1427,13 +1425,10 @@ Timeline.TimelineUIUtils = class {
     img.src = imageURL;
     var paintProfilerButton = container.createChild('a');
     paintProfilerButton.textContent = Common.UIString('Paint Profiler');
-    container.addEventListener('click', showPaintProfiler, false);
+    container.addEventListener(
+        'click', () => Timeline.TimelinePanel.instance().select(Timeline.TimelineSelection.fromTraceEvent(event)),
+        false);
     return container;
-
-    function showPaintProfiler() {
-      Timeline.TimelinePanel.instance().select(
-          Timeline.TimelineSelection.fromTraceEvent(event), Timeline.TimelineDetailsView.Tab.PaintProfiler);
-    }
   }
 
   /**

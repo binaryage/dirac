@@ -68,6 +68,7 @@ UI.Toolbar = class {
     /** @type {?Element} */
     var longClickGlyph = null;
     toggled();
+    button.setEnabled(action.enabled());
     return button;
 
     /**
@@ -190,6 +191,13 @@ UI.Toolbar = class {
   static createActionButtonForId(actionId) {
     const action = UI.actionRegistry.action(actionId);
     return UI.Toolbar.createActionButton(/** @type {!UI.Action} */ (action));
+  }
+
+  /**
+   * @return {!Element}
+   */
+  gripElementForResize() {
+    return this._contentElement;
   }
 
   /**
@@ -449,6 +457,13 @@ UI.ToolbarText = class extends UI.ToolbarItem {
     super(createElementWithClass('div', 'toolbar-text'));
     this.element.classList.add('toolbar-text');
     this.setText(text || '');
+  }
+
+  /**
+   * @return {string}
+   */
+  text() {
+    return this.element.textContent;
   }
 
   /**

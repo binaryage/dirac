@@ -27,6 +27,7 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 /**
  * @implements {UI.Searchable}
  * @implements {SDK.SDKModelObserver<!SDK.DOMModel>}
@@ -68,13 +69,9 @@ Elements.ElementsPanel = class extends UI.Panel {
     this._breadcrumbs.show(crumbsContainer);
     this._breadcrumbs.addEventListener(Elements.ElementsBreadcrumbs.Events.NodeSelected, this._crumbNodeSelected, this);
 
-    this._currentToolbarPane = null;
-
     this._stylesWidget = new Elements.StylesSidebarPane();
     this._computedStyleWidget = new Elements.ComputedStyleWidget();
     this._metricsWidget = new Elements.MetricsSidebarPane();
-
-    this._stylesSidebarToolbar = this._createStylesSidebarToolbar();
 
     Common.moduleSetting('sidebarPosition').addChangeListener(this._updateSidebarPosition.bind(this));
     this._updateSidebarPosition();
@@ -111,26 +108,6 @@ Elements.ElementsPanel = class extends UI.Panel {
   }
 
   /**
-   * @return {!Element}
-   */
-  _createStylesSidebarToolbar() {
-    var container = createElementWithClass('div', 'styles-sidebar-pane-toolbar-container');
-    var hbox = container.createChild('div', 'hbox styles-sidebar-pane-toolbar');
-    var filterContainerElement = hbox.createChild('div', 'styles-sidebar-pane-filter-box');
-    var filterInput = Elements.StylesSidebarPane.createPropertyFilterElement(
-        Common.UIString('Filter'), hbox, this._stylesWidget.onFilterChanged.bind(this._stylesWidget));
-    UI.ARIAUtils.setAccessibleName(filterInput, Common.UIString('Filter Styles'));
-    filterContainerElement.appendChild(filterInput);
-    var toolbar = new UI.Toolbar('styles-pane-toolbar', hbox);
-    toolbar.makeToggledGray();
-    toolbar.appendLocationItems('styles-sidebarpane-toolbar');
-    var toolbarPaneContainer = container.createChild('div', 'styles-sidebar-toolbar-pane-container');
-    this._toolbarPaneElement = createElementWithClass('div', 'styles-sidebar-toolbar-pane');
-    toolbarPaneContainer.appendChild(this._toolbarPaneElement);
-    return container;
-  }
-
-  /**
    * @override
    * @param {string} locationName
    * @return {?UI.ViewLocation}
@@ -141,70 +118,11 @@ Elements.ElementsPanel = class extends UI.Panel {
 
   /**
    * @param {?UI.Widget} widget
-   * @param {!UI.ToolbarToggle=} toggle
+   * @param {?UI.ToolbarToggle} toggle
    */
   showToolbarPane(widget, toggle) {
-    if (this._pendingWidgetToggle)
-      this._pendingWidgetToggle.setToggled(false);
-    this._pendingWidgetToggle = toggle;
-
-    if (this._animatedToolbarPane !== undefined)
-      this._pendingWidget = widget;
-    else
-      this._startToolbarPaneAnimation(widget);
-
-    if (widget && toggle)
-      toggle.setToggled(true);
-  }
-
-  /**
-   * @param {?UI.Widget} widget
-   */
-  _startToolbarPaneAnimation(widget) {
-    if (widget === this._currentToolbarPane)
-      return;
-
-    if (widget && this._currentToolbarPane) {
-      this._currentToolbarPane.detach();
-      widget.show(this._toolbarPaneElement);
-      this._currentToolbarPane = widget;
-      this._currentToolbarPane.focus();
-      return;
-    }
-
-    this._animatedToolbarPane = widget;
-
-    if (this._currentToolbarPane)
-      this._toolbarPaneElement.style.animationName = 'styles-element-state-pane-slideout';
-    else if (widget)
-      this._toolbarPaneElement.style.animationName = 'styles-element-state-pane-slidein';
-
-    if (widget)
-      widget.show(this._toolbarPaneElement);
-
-    var listener = onAnimationEnd.bind(this);
-    this._toolbarPaneElement.addEventListener('animationend', listener, false);
-
-    /**
-     * @this {Elements.ElementsPanel}
-     */
-    function onAnimationEnd() {
-      this._toolbarPaneElement.style.removeProperty('animation-name');
-      this._toolbarPaneElement.removeEventListener('animationend', listener, false);
-
-      if (this._currentToolbarPane)
-        this._currentToolbarPane.detach();
-
-      this._currentToolbarPane = this._animatedToolbarPane;
-      if (this._currentToolbarPane)
-        this._currentToolbarPane.focus();
-      delete this._animatedToolbarPane;
-
-      if (this._pendingWidget !== undefined) {
-        this._startToolbarPaneAnimation(this._pendingWidget);
-        delete this._pendingWidget;
-      }
-    }
+    // TODO(luoe): remove this function once its providers have an alternative way to reveal their views.
+    this._stylesWidget.showToolbarPane(widget, toggle);
   }
 
   /**
@@ -261,7 +179,7 @@ Elements.ElementsPanel = class extends UI.Panel {
       return;
     header.removeChildren();
     header.createChild('div', 'elements-tree-header-frame').textContent = Common.UIString('Frame');
-    header.appendChild(Components.Linkifier.linkifyURL(target.inspectedURL(), target.name()));
+    header.appendChild(Components.Linkifier.linkifyURL(target.inspectedURL(), {text: target.name()}));
   }
 
   _updateTreeOutlineVisibleWidth() {
@@ -320,7 +238,7 @@ Elements.ElementsPanel = class extends UI.Panel {
         if (treeOutline.domModel().existingDocument())
           this._documentUpdated(treeOutline.domModel(), treeOutline.domModel().existingDocument());
         else
-          treeOutline.domModel().requestDocument();
+          treeOutline.domModel().requestDocumentPromise();
       }
     }
   }
@@ -412,7 +330,7 @@ Elements.ElementsPanel = class extends UI.Panel {
 
     if (!inspectedRootDocument) {
       if (this.isShowing())
-        domModel.requestDocument();
+        domModel.requestDocumentPromise();
       return;
     }
 
@@ -429,20 +347,11 @@ Elements.ElementsPanel = class extends UI.Panel {
      * @param {?SDK.DOMNode} staleNode
      * @this {Elements.ElementsPanel}
      */
-    function restoreNode(domModel, staleNode) {
+    async function restoreNode(domModel, staleNode) {
       var nodePath = staleNode ? staleNode.path() : null;
-      if (!nodePath) {
-        onNodeRestored.call(this, null);
-        return;
-      }
-      domModel.pushNodeByPathToFrontend(nodePath, onNodeRestored.bind(this));
-    }
 
-    /**
-     * @param {?Protocol.DOM.NodeId} restoredNodeId
-     * @this {Elements.ElementsPanel}
-     */
-    function onNodeRestored(restoredNodeId) {
+      var restoredNodeId = nodePath ? await domModel.pushNodeByPathToFrontend(nodePath) : null;
+
       if (savedSelectedNodeOnReset !== this._selectedNodeOnReset)
         return;
       var node = restoredNodeId ? domModel.nodeForId(restoredNodeId) : null;
@@ -507,12 +416,9 @@ Elements.ElementsPanel = class extends UI.Panel {
 
     this._searchConfig = searchConfig;
 
-    var promises = [];
+    var showUAShadowDOM = Common.moduleSetting('showUAShadowDOM').get();
     var domModels = SDK.targetManager.models(SDK.DOMModel);
-    for (var domModel of domModels) {
-      promises.push(
-          domModel.performSearchPromise(whitespaceTrimmedQuery, Common.moduleSetting('showUAShadowDOM').get()));
-    }
+    var promises = domModels.map(domModel => domModel.performSearch(whitespaceTrimmedQuery, showUAShadowDOM));
     Promise.all(promises).then(resultCountCallback.bind(this));
 
     /**
@@ -634,22 +540,17 @@ Elements.ElementsPanel = class extends UI.Panel {
     if (searchResult.node === null)
       return;
 
-    /**
-     * @param {?SDK.DOMNode} node
-     * @this {Elements.ElementsPanel}
-     */
-    function searchCallback(node) {
-      searchResult.node = node;
-      this._highlightCurrentSearchResult();
-    }
-
     if (typeof searchResult.node === 'undefined') {
       // No data for slot, request it.
-      searchResult.domModel.searchResult(searchResult.index, searchCallback.bind(this));
+      searchResult.domModel.searchResult(searchResult.index).then(node => {
+        searchResult.node = node;
+        this._highlightCurrentSearchResult();
+      });
       return;
     }
 
     var treeElement = this._treeElementForNode(searchResult.node);
+    searchResult.node.scrollIntoView();
     if (treeElement) {
       treeElement.highlightSearchResults(this._searchConfig.query);
       treeElement.reveal();
@@ -846,13 +747,10 @@ Elements.ElementsPanel = class extends UI.Panel {
     }
 
     this._splitWidget.setVertical(this._splitMode === Elements.ElementsPanel._splitMode.Vertical);
-    this.showToolbarPane(null);
+    this.showToolbarPane(null /* widget */, null /* toggle */);
 
-    var matchedStylesContainer = new UI.VBox();
-    matchedStylesContainer.element.appendChild(this._stylesSidebarToolbar);
     var matchedStylePanesWrapper = new UI.VBox();
     matchedStylePanesWrapper.element.classList.add('style-panes-wrapper');
-    matchedStylePanesWrapper.show(matchedStylesContainer.element);
     this._stylesWidget.show(matchedStylePanesWrapper.element);
 
     var computedStylePanesWrapper = new UI.VBox();
@@ -901,12 +799,12 @@ Elements.ElementsPanel = class extends UI.Panel {
 
       var splitWidget = new UI.SplitWidget(true, true, 'stylesPaneSplitViewState', 215);
       splitWidget.show(stylesView.element);
-      splitWidget.setMainWidget(matchedStylesContainer);
+      splitWidget.setMainWidget(matchedStylePanesWrapper);
       splitWidget.setSidebarWidget(computedStylePanesWrapper);
     } else {
       // Styles and computed are in separate tabs.
       stylesView.element.classList.add('flex-auto', 'metrics-and-styles');
-      matchedStylesContainer.show(stylesView.element);
+      matchedStylePanesWrapper.show(stylesView.element);
 
       var computedView = new UI.SimpleView(Common.UIString('Computed'));
       computedView.element.classList.add('composite', 'fill', 'metrics-and-computed');
@@ -972,7 +870,7 @@ Elements.ElementsPanel.ContextMenuProvider = class {
     if (Elements.ElementsPanel.instance().element.isAncestor(/** @type {!Node} */ (event.target)))
       return;
     var commandCallback = Common.Revealer.reveal.bind(Common.Revealer, object);
-    contextMenu.appendItem(Common.UIString.capitalize('Reveal in Elements ^panel'), commandCallback);
+    contextMenu.appendItem(Common.UIString('Reveal in Elements panel'), commandCallback);
   }
 };
 

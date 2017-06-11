@@ -11,9 +11,17 @@ false && source _config.sh # never executes, this is here just for IntelliJ Bash
 #export DIRAC_LOG_LEVEL=debug
 export DIRAC_CHROME_DRIVER_VERBOSE=1
 export LEIN_FAST_TRAMPOLINE=1
-TRAVIS_CHROMEDRIVER_VERSION=${TRAVIS_CHROMEDRIVER_VERSION:-2.29}
 
-if [[ -z "$TRAVIS_SKIP_LEIN_UPGRADE" ]]; then
+if [[ -z "${TRAVIS_SKIP_NSS3_UPGRADE}" ]]; then
+  # this is needed for recent chrome
+  # they require patched version of this lib or refuse to run:
+  #   FATAL:nss_util.cc(679)] NSS_VersionCheck("3.26") failed. NSS >= 3.26 is required. Please upgrade to the latest NSS, and if you still get this error, contact your distribution maintainer.
+  #
+  # see failure: https://travis-ci.org/binaryage/dirac/builds/241581291#L946
+  sudo apt-get install -y --reinstall libnss3
+fi
+
+if [[ -z "${TRAVIS_SKIP_LEIN_UPGRADE}" ]]; then
   # we need lein 2.5.3+ because of https://github.com/technomancy/leiningen/issues/1762
   # update lein to latest, https://github.com/technomancy/leiningen/issues/2014#issuecomment-153829977
   yes y | sudo lein upgrade || true # note: sudo lein upgrade exits with non-zero exit code if there is nothing to be updated
@@ -75,13 +83,22 @@ popd
 
 # install chromedriver
 if [[ -z "${TRAVIS_SKIP_CHROMEDRIVER_UPDATE}" ]]; then
-  if [[ ! -z "${TRAVIS_DONT_CACHE_CHROMEDRIVER}" || ! -f chromedriver ]]; then
-    if [[ ! -z "${TRAVIS_USE_CUSTOM_CHROMEDRIVER}" ]]; then
-      wget -O chromedriver.zip "${TRAVIS_USE_CUSTOM_CHROMEDRIVER}" # http://x.binaryage.com/chromedriver.zip
-    else
-      wget -O chromedriver.zip https://chromedriver.storage.googleapis.com/${TRAVIS_CHROMEDRIVER_VERSION}/chromedriver_linux64.zip
+  if [[ ! -z "${TRAVIS_USE_CUSTOM_CHROMEDRIVER}" ]]; then
+    CHROMEDRIVER_SLUG="chromedriver-custom"
+    wget -O "${CHROMEDRIVER_SLUG}.zip" "${TRAVIS_USE_CUSTOM_CHROMEDRIVER}" # http://x.binaryage.com/chromedriver.zip
+    rm -rf "${CHROMEDRIVER_SLUG}"
+    unzip -o "${CHROMEDRIVER_SLUG}.zip" -d "${CHROMEDRIVER_SLUG}"
+  else
+    CHROMEDRIVER_SLUG="chromedriver-${TRAVIS_CHROMEDRIVER_VERSION}"
+    if [[ ! -z "${TRAVIS_DONT_CACHE_CHROMEDRIVER}" || ! -f "${CHROMEDRIVER_SLUG}" ]]; then
+      wget -O "${CHROMEDRIVER_SLUG}.zip" "https://chromedriver.storage.googleapis.com/${TRAVIS_CHROMEDRIVER_VERSION}/chromedriver_linux64.zip"
+      rm -rf "${CHROMEDRIVER_SLUG}"
+      unzip -o "${CHROMEDRIVER_SLUG}.zip" -d "${CHROMEDRIVER_SLUG}"
     fi
-    unzip -o chromedriver.zip
   fi
-  export CHROME_DRIVER_PATH=`pwd`/chromedriver
+  rm -rf chromedriver
+  cp "${CHROMEDRIVER_SLUG}/chromedriver" chromedriver
 fi
+export CHROME_DRIVER_PATH=`pwd`/chromedriver
+
+${CHROME_DRIVER_PATH} --version

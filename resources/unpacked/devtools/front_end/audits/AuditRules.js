@@ -464,14 +464,13 @@ Audits.AuditRules.UnusedCssRule = class extends Audits.AuditRule {
             return;
           }
           var effectiveSelector = selectors[i].replace(pseudoSelectorRegexp, '');
-          domModel.querySelector(
-              document.id, effectiveSelector,
-              queryCallback.bind(
+          domModel.querySelector(document.id, effectiveSelector)
+              .then(queryCallback.bind(
                   null, i === selectors.length - 1 ? selectorsCallback.bind(null, styleSheets) : null, selectors[i]));
         }
       }
 
-      domModel.requestDocument(documentLoaded.bind(null, selectors));
+      domModel.requestDocumentPromise().then(documentLoaded.bind(null, selectors));
     }
 
     var styleSheetInfos = cssModel.allStyleSheets();
@@ -485,7 +484,7 @@ Audits.AuditRules.UnusedCssRule = class extends Audits.AuditRule {
 };
 
 /**
- * @typedef {!{sourceURL: string, rules: !Array.<!Common.FormatterWorkerPool.CSSStyleRule>}}
+ * @typedef {!{sourceURL: string, rules: !Array.<!Formatter.FormatterWorkerPool.CSSStyleRule>}}
  */
 Audits.AuditRules.ParsedStyleSheet;
 
@@ -518,11 +517,11 @@ Audits.AuditRules.StyleSheetProcessor = class {
 
     var allRules = [];
     this._currentStyleSheetHeader.requestContent().then(
-        content => Common.formatterWorkerPool.parseCSS(content || '', onRulesParsed.bind(this)));
+        content => Formatter.formatterWorkerPool().parseCSS(content || '', onRulesParsed.bind(this)));
 
     /**
      * @param {boolean} isLastChunk
-     * @param {!Array<!Common.FormatterWorkerPool.CSSRule>} rules
+     * @param {!Array<!Formatter.FormatterWorkerPool.CSSRule>} rules
      * @this {Audits.AuditRules.StyleSheetProcessor}
      */
     function onRulesParsed(isLastChunk, rules) {
@@ -533,7 +532,7 @@ Audits.AuditRules.StyleSheetProcessor = class {
   }
 
   /**
-   * @param {!Array.<!Common.FormatterWorkerPool.CSSRule>} rules
+   * @param {!Array.<!Formatter.FormatterWorkerPool.CSSRule>} rules
    */
   _onStyleSheetParsed(rules) {
     if (this._progress.isCanceled()) {
@@ -925,14 +924,14 @@ Audits.AuditRules.ImageDimensionsRule = class extends Audits.AuditRule {
         callback(null);
         return;
       }
-      domModel.querySelectorAll(root.id, 'img[src]', getStyles);
+      domModel.querySelectorAll(root.id, 'img[src]').then(getStyles);
     }
 
     if (progress.isCanceled()) {
       callback(null);
       return;
     }
-    domModel.requestDocument(onDocumentAvailable);
+    domModel.requestDocumentPromise().then(onDocumentAvailable);
   }
 };
 
@@ -1027,8 +1026,8 @@ Audits.AuditRules.CssInHeadRule = class extends Audits.AuditRule {
 
       if (!nodeIds)
         return;
-      domModel.querySelectorAll(
-          root.id, 'body link[rel~=\'stylesheet\'][href]', externalStylesheetsReceived.bind(null, root, nodeIds));
+      domModel.querySelectorAll(root.id, 'body link[rel~=\'stylesheet\'][href]')
+          .then(externalStylesheetsReceived.bind(null, root, nodeIds));
     }
 
     /**
@@ -1040,10 +1039,10 @@ Audits.AuditRules.CssInHeadRule = class extends Audits.AuditRule {
         return;
       }
 
-      domModel.querySelectorAll(root.id, 'body style', inlineStylesReceived.bind(null, root));
+      domModel.querySelectorAll(root.id, 'body style').then(inlineStylesReceived.bind(null, root));
     }
 
-    domModel.requestDocument(onDocumentAvailable);
+    domModel.requestDocumentPromise().then(onDocumentAvailable);
   }
 };
 
@@ -1070,51 +1069,33 @@ Audits.AuditRules.StylesScriptsOrderRule = class extends Audits.AuditRule {
       return;
     }
 
-    function evalCallback(resultValue) {
-      if (progress.isCanceled()) {
-        callback(null);
-        return;
-      }
-
-      if (!resultValue)
-        return callback(null);
-
-      var lateCssUrls = resultValue[0];
-      var cssBeforeInlineCount = resultValue[1];
-
-      if (lateCssUrls.length) {
-        var entry = result.addChild(
-            Common.UIString(
-                'The following external CSS files were included after an external JavaScript file in the document head. To ensure CSS files are downloaded in parallel, always include external CSS before external JavaScript.'),
-            true);
-        entry.addURLs(lateCssUrls);
-        result.violationCount += lateCssUrls.length;
-      }
-
-      if (cssBeforeInlineCount) {
-        result.addChild(Common.UIString(
-            ' %d inline script block%s found in the head between an external CSS file and another resource. To allow parallel downloading, move the inline script before the external CSS file, or after the next resource.',
-            cssBeforeInlineCount, cssBeforeInlineCount > 1 ? 's were' : ' was'));
-        result.violationCount += cssBeforeInlineCount;
-      }
-      callback(result);
-    }
+    domModel.requestDocumentPromise().then(onDocumentAvailable).then(callback);
 
     /**
-     * @param {!Array.<!Protocol.DOM.NodeId>} lateStyleIds
-     * @param {?Array.<!Protocol.DOM.NodeId>} nodeIds
+     * @param {!SDK.DOMDocument} root
+     * @return {!Promise<?Audits.AuditRuleResult>}
      */
-    function cssBeforeInlineReceived(lateStyleIds, nodeIds) {
-      if (progress.isCanceled()) {
-        callback(null);
-        return;
-      }
+    async function onDocumentAvailable(root) {
+      if (progress.isCanceled())
+        return null;
 
+      var lateStyleIds = await domModel.querySelectorAll(root.id, 'head script[src] ~ link[rel~=\'stylesheet\'][href]');
+
+      if (progress.isCanceled())
+        return null;
+      if (!lateStyleIds)
+        return null;
+
+      var nodeIds =
+          await domModel.querySelectorAll(root.id, 'head link[rel~=\'stylesheet\'][href] ~ script:not([src])');
+
+      if (progress.isCanceled())
+        return null;
       if (!nodeIds)
-        return;
+        return null;
 
       var cssBeforeInlineCount = nodeIds.length;
-      var result = null;
+      var resultValue = null;
       if (lateStyleIds.length || cssBeforeInlineCount) {
         var lateStyleUrls = [];
         for (var i = 0; i < lateStyleIds.length; ++i) {
@@ -1123,44 +1104,38 @@ Audits.AuditRules.StylesScriptsOrderRule = class extends Audits.AuditRule {
               Common.ParsedURL.completeURL(lateStyleNode.ownerDocument.baseURL, lateStyleNode.getAttribute('href'));
           lateStyleUrls.push(completeHref || '<empty>');
         }
-        result = [lateStyleUrls, cssBeforeInlineCount];
+        resultValue = [lateStyleUrls, cssBeforeInlineCount];
       }
 
-      evalCallback(result);
-    }
+      if (progress.isCanceled())
+        return null;
+      if (!resultValue)
+        return null;
 
-    /**
-     * @param {!SDK.DOMDocument} root
-     * @param {?Array<!Protocol.DOM.NodeId>} nodeIds
-     */
-    function lateStylesReceived(root, nodeIds) {
-      if (progress.isCanceled()) {
-        callback(null);
-        return;
+      var lateCssUrls = resultValue[0];
+      cssBeforeInlineCount = resultValue[1];
+
+      if (lateCssUrls.length) {
+        var entry = result.addChild(
+            Common.UIString(
+                'The following external CSS files were included after an external JavaScript file in the ' +
+                'document head. To ensure CSS files are downloaded in parallel, always include external CSS ' +
+                'before external JavaScript.'),
+            true);
+        entry.addURLs(lateCssUrls);
+        result.violationCount += lateCssUrls.length;
       }
 
-      if (!nodeIds)
-        return;
-
-      domModel.querySelectorAll(
-          root.id, 'head link[rel~=\'stylesheet\'][href] ~ script:not([src])',
-          cssBeforeInlineReceived.bind(null, nodeIds));
-    }
-
-    /**
-     * @param {!SDK.DOMDocument} root
-     */
-    function onDocumentAvailable(root) {
-      if (progress.isCanceled()) {
-        callback(null);
-        return;
+      if (cssBeforeInlineCount) {
+        result.addChild(Common.UIString(
+            ' %d inline script %s found in the head between an external CSS file and another resource. ' +
+                'To allow parallel downloading, move the inline script before the external CSS file, ' +
+                'or after the next resource.',
+            cssBeforeInlineCount, cssBeforeInlineCount > 1 ? 'blocks were' : 'block was'));
+        result.violationCount += cssBeforeInlineCount;
       }
-
-      domModel.querySelectorAll(
-          root.id, 'head script[src] ~ link[rel~=\'stylesheet\'][href]', lateStylesReceived.bind(null, root));
+      return result;
     }
-
-    domModel.requestDocument(onDocumentAvailable);
   }
 };
 
@@ -1230,7 +1205,7 @@ Audits.AuditRules.CSSRuleBase = class extends Audits.AuditRule {
 
   /**
    * @param {!Audits.AuditRules.ParsedStyleSheet} styleSheet
-   * @param {!Common.FormatterWorkerPool.CSSStyleRule} rule
+   * @param {!Formatter.FormatterWorkerPool.CSSStyleRule} rule
    * @param {!Audits.AuditRuleResult} result
    */
   _visitRule(styleSheet, rule, result) {
@@ -1259,7 +1234,7 @@ Audits.AuditRules.CSSRuleBase = class extends Audits.AuditRule {
 
   /**
    * @param {!Audits.AuditRules.ParsedStyleSheet} styleSheet
-   * @param {!Common.FormatterWorkerPool.CSSStyleRule} rule
+   * @param {!Formatter.FormatterWorkerPool.CSSStyleRule} rule
    * @param {!Audits.AuditRuleResult} result
    */
   visitRule(styleSheet, rule, result) {
@@ -1268,7 +1243,7 @@ Audits.AuditRules.CSSRuleBase = class extends Audits.AuditRule {
 
   /**
    * @param {!Audits.AuditRules.ParsedStyleSheet} styleSheet
-   * @param {!Common.FormatterWorkerPool.CSSStyleRule} rule
+   * @param {!Formatter.FormatterWorkerPool.CSSStyleRule} rule
    * @param {!Audits.AuditRuleResult} result
    */
   didVisitRule(styleSheet, rule, result) {
@@ -1277,8 +1252,8 @@ Audits.AuditRules.CSSRuleBase = class extends Audits.AuditRule {
 
   /**
    * @param {!Audits.AuditRules.ParsedStyleSheet} styleSheet
-   * @param {!Common.FormatterWorkerPool.CSSStyleRule} rule
-   * @param {!Common.FormatterWorkerPool.CSSProperty} property
+   * @param {!Formatter.FormatterWorkerPool.CSSStyleRule} rule
+   * @param {!Formatter.FormatterWorkerPool.CSSProperty} property
    * @param {!Audits.AuditRuleResult} result
    */
   visitProperty(styleSheet, rule, property, result) {
@@ -1317,7 +1292,7 @@ Audits.AuditRules.CookieRuleBase = class extends Audits.AuditRule {
     const nonDataUrls = requests.map(r => r.url()).filter(url => url && url.asParsedURL());
     var cookieModel = target.model(SDK.CookieModel);
     if (cookieModel)
-      cookieModel.getCookiesAsync(nonDataUrls, resultCallback);
+      cookieModel.getCookies(nonDataUrls).then(resultCallback);
     else
       callback(result);
   }

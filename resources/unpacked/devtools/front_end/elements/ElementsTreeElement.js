@@ -288,7 +288,7 @@ Elements.ElementsTreeElement = class extends UI.TreeElement {
    * @override
    */
   expandRecursively() {
-    this._node.getSubtree(-1, UI.TreeElement.prototype.expandRecursively.bind(this, Number.MAX_VALUE));
+    this._node.getSubtree(-1).then(UI.TreeElement.prototype.expandRecursively.bind(this, Number.MAX_VALUE));
   }
 
   /**
@@ -460,15 +460,13 @@ Elements.ElementsTreeElement = class extends UI.TreeElement {
   populateTagContextMenu(contextMenu, event) {
     // Add attribute-related actions.
     var treeElement = this._elementCloseTag ? this.treeOutline.findTreeElement(this._node) : this;
-    contextMenu.appendItem(
-        Common.UIString.capitalize('Add ^attribute'), treeElement._addNewAttribute.bind(treeElement));
+    contextMenu.appendItem(Common.UIString('Add attribute'), treeElement._addNewAttribute.bind(treeElement));
 
     var attribute = event.target.enclosingNodeOrSelfWithClass('webkit-html-attribute');
     var newAttribute = event.target.enclosingNodeOrSelfWithClass('add-attribute');
     if (attribute && !newAttribute) {
       contextMenu.appendItem(
-          Common.UIString.capitalize('Edit ^attribute'),
-          this._startEditingAttribute.bind(this, attribute, event.target));
+          Common.UIString('Edit attribute'), this._startEditingAttribute.bind(this, attribute, event.target));
     }
     this.populateNodeContextMenu(contextMenu);
     Elements.ElementsTreeElement.populateForcedPseudoStateItems(contextMenu, treeElement.node());
@@ -480,12 +478,12 @@ Elements.ElementsTreeElement = class extends UI.TreeElement {
    * @param {!UI.ContextMenu} contextMenu
    */
   populateScrollIntoView(contextMenu) {
-    contextMenu.appendItem(Common.UIString.capitalize('Scroll into ^view'), this._scrollIntoView.bind(this));
+    contextMenu.appendItem(Common.UIString('Scroll into view'), () => this._node.scrollIntoView());
   }
 
   populateTextContextMenu(contextMenu, textNode) {
     if (!this._editing)
-      contextMenu.appendItem(Common.UIString.capitalize('Edit ^text'), this._startEditingTextNode.bind(this, textNode));
+      contextMenu.appendItem(Common.UIString('Edit text'), this._startEditingTextNode.bind(this, textNode));
     this.populateNodeContextMenu(contextMenu);
   }
 
@@ -508,7 +506,7 @@ Elements.ElementsTreeElement = class extends UI.TreeElement {
       menuItem.setShortcut(createShortcut('V', modifier));
     }
     if (this._node.nodeType() === Node.ELEMENT_NODE)
-      copyMenu.appendItem(Common.UIString.capitalize('Copy selector'), this._copyCSSPath.bind(this));
+      copyMenu.appendItem(Common.UIString('Copy selector'), this._copyCSSPath.bind(this));
     if (!isShadowRoot)
       copyMenu.appendItem(Common.UIString('Copy XPath'), this._copyXPath.bind(this));
     if (!isShadowRoot) {
@@ -735,12 +733,12 @@ Elements.ElementsTreeElement = class extends UI.TreeElement {
   /**
    * @param {function(string, string)} commitCallback
    * @param {function()} disposeCallback
-   * @param {?Protocol.Error} error
-   * @param {string} initialValue
+   * @param {?string} maybeInitialValue
    */
-  _startEditingAsHTML(commitCallback, disposeCallback, error, initialValue) {
-    if (error)
+  _startEditingAsHTML(commitCallback, disposeCallback, maybeInitialValue) {
+    if (maybeInitialValue === null)
       return;
+    var initialValue = maybeInitialValue;  // To suppress a compiler warning.
     if (this._editing)
       return;
 
@@ -1276,7 +1274,7 @@ Elements.ElementsTreeElement = class extends UI.TreeElement {
         value = value.trimMiddle(60);
       var link = node.nodeName().toLowerCase() === 'a' ?
           UI.createExternalLink(rewrittenHref, value, '', true) :
-          Components.Linkifier.linkifyURL(rewrittenHref, value, '', undefined, undefined, true);
+          Components.Linkifier.linkifyURL(rewrittenHref, {text: value, preventClick: true});
       link[Elements.ElementsTreeElement.HrefSymbol] = rewrittenHref;
       return link;
     }
@@ -1595,7 +1593,7 @@ Elements.ElementsTreeElement = class extends UI.TreeElement {
     }
 
     var node = this._node;
-    node.getOuterHTML(this._startEditingAsHTML.bind(this, commitChange, disposeCallback));
+    node.getOuterHTML().then(this._startEditingAsHTML.bind(this, commitChange, disposeCallback));
   }
 
   _copyCSSPath() {
@@ -1627,23 +1625,6 @@ Elements.ElementsTreeElement = class extends UI.TreeElement {
 
     this._highlightResult = [];
     UI.highlightSearchResults(this.listItemElement, matchRanges, this._highlightResult);
-  }
-
-  _scrollIntoView() {
-    function scrollIntoViewCallback(object) {
-      /**
-       * @suppressReceiverCheck
-       * @this {!Element}
-       */
-      function scrollIntoView() {
-        this.scrollIntoViewIfNeeded(true);
-      }
-
-      if (object)
-        object.callFunction(scrollIntoView);
-    }
-
-    this._node.resolveToObject('', scrollIntoViewCallback);
   }
 
   _editAsHTML() {

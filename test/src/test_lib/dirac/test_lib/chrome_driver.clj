@@ -185,12 +185,17 @@
     caps))
 
 (defn prepare-chrome-driver [options]
-  (let [chrome-driver-service (build-chrome-driver-service options)
-        chrome-caps (prepare-chrome-caps options)
-        chrome-driver (ChromeDriver. chrome-driver-service chrome-caps)]
-    (set-current-chrome-driver-service! chrome-driver-service)
-    (set-current-chrome-driver! chrome-driver)
-    (init-driver chrome-driver)))
+  (try
+    (let [chrome-driver-service (build-chrome-driver-service options)
+          chrome-caps (prepare-chrome-caps options)
+          chrome-driver (ChromeDriver. chrome-driver-service chrome-caps)]
+      (set-current-chrome-driver-service! chrome-driver-service)
+      (set-current-chrome-driver! chrome-driver)
+      (init-driver chrome-driver))
+    (catch Exception e
+      (log/error (str "got an exception when trying to prepare chrome driver:\n" e))
+      (print-chromedriver-log!)
+      nil)))
 
 (defn prepare-options
   ([] (prepare-options false))

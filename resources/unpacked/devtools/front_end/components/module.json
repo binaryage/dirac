@@ -9,7 +9,9 @@
         },
         {
             "type": "@UI.ContextMenu.Provider",
-            "contextTypes": [ "SDK.DOMNode" ],
+            "contextTypes": [
+                "SDK.DOMNode"
+            ],
             "className": "Components.DOMBreakpointsSidebarPane.ContextMenuProvider"
         },
         {
@@ -45,8 +47,6 @@
         "network_log"
     ],
     "scripts": [
-        "BreakpointsSidebarPaneBase.js",
-        "CPUThrottlingManager.js",
         "DataSaverInfobar.js",
         "DOMBreakpointsSidebarPane.js",
         "DOMPresentationUtils.js",
@@ -55,7 +55,7 @@
         "Reload.js"
     ],
     "resources": [
-        "breakpointsList.css",
+        "domBreakpointsSidebarPane.css",
         "domUtils.css",
         "imagePreview.css"
     ]

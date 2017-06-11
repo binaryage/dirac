@@ -662,6 +662,61 @@
     step1();
   };
 
+  TestSuite.prototype.testDispatchKeyEventShowsAutoFill = function() {
+    var test = this;
+    var receivedReady = false;
+
+    function signalToShowAutofill() {
+      SDK.targetManager.mainTarget().inputAgent().invoke_dispatchKeyEvent(
+          {type: 'rawKeyDown', key: 'Down', windowsVirtualKeyCode: 40, nativeVirtualKeyCode: 40});
+      SDK.targetManager.mainTarget().inputAgent().invoke_dispatchKeyEvent(
+          {type: 'keyUp', key: 'Down', windowsVirtualKeyCode: 40, nativeVirtualKeyCode: 40});
+    }
+
+    function selectTopAutoFill() {
+      SDK.targetManager.mainTarget().inputAgent().invoke_dispatchKeyEvent(
+          {type: 'rawKeyDown', key: 'Down', windowsVirtualKeyCode: 40, nativeVirtualKeyCode: 40});
+      SDK.targetManager.mainTarget().inputAgent().invoke_dispatchKeyEvent(
+          {type: 'keyUp', key: 'Down', windowsVirtualKeyCode: 40, nativeVirtualKeyCode: 40});
+      SDK.targetManager.mainTarget().inputAgent().invoke_dispatchKeyEvent(
+          {type: 'rawKeyDown', key: 'Enter', windowsVirtualKeyCode: 13, nativeVirtualKeyCode: 13});
+      SDK.targetManager.mainTarget().inputAgent().invoke_dispatchKeyEvent(
+          {type: 'keyUp', key: 'Enter', windowsVirtualKeyCode: 13, nativeVirtualKeyCode: 13});
+
+      test.evaluateInConsole_('document.getElementById("name").value', onResultOfInput);
+    }
+
+    function onResultOfInput(value) {
+      // Console adds "" around the response.
+      test.assertEquals('"Abbf"', value);
+      test.releaseControl();
+    }
+
+    function onConsoleMessage(event) {
+      var message = event.data.messageText;
+      if (message === 'ready' && !receivedReady) {
+        receivedReady = true;
+        signalToShowAutofill();
+      }
+      // This log comes from the browser unittest code.
+      if (message === 'didShowSuggestions')
+        selectTopAutoFill();
+    }
+
+    this.takeControl();
+
+    // It is possible for the ready console messagage to be already received but not handled
+    // or received later. This ensures we can catch both cases.
+    ConsoleModel.consoleModel.addEventListener(ConsoleModel.ConsoleModel.Events.MessageAdded, onConsoleMessage, this);
+
+    var messages = ConsoleModel.consoleModel.messages();
+    if (messages.length) {
+      var text = messages[0].messageText;
+      this.assertEquals('ready', text);
+      signalToShowAutofill();
+    }
+  };
+
   TestSuite.prototype.testDispatchKeyEventDoesNotCrash = function() {
     SDK.targetManager.mainTarget().inputAgent().invoke_dispatchKeyEvent(
         {type: 'rawKeyDown', windowsVirtualKeyCode: 0x23, key: 'End'});
@@ -697,19 +752,19 @@
 
     function step1() {
       testPreset(
-          NetworkConditions.NetworkConditionsSelector.presets[0],
+          MobileThrottling.NetworkConditionsSelector.presets[0],
           ['offline event: online = false', 'connection change event: type = none; downlinkMax = 0'], step2);
     }
 
     function step2() {
       testPreset(
-          NetworkConditions.NetworkConditionsSelector.presets[1],
+          MobileThrottling.NetworkConditionsSelector.presets[1],
           ['online event: online = true', 'connection change event: type = cellular; downlinkMax = 0.390625'], step3);
     }
 
     function step3() {
       testPreset(
-          NetworkConditions.NetworkConditionsSelector.presets[2],
+          MobileThrottling.NetworkConditionsSelector.presets[2],
           ['connection change event: type = cellular; downlinkMax = 1.4400000000000002'],
           test.releaseControl.bind(test));
     }
@@ -847,10 +902,10 @@
 
     function onExecutionContexts() {
       var consoleView = Console.ConsoleView.instance();
-      var items = consoleView._consoleContextSelector._list._items;
+      var selector = consoleView._consoleContextSelector;
       var values = [];
-      for (var i = 0; i < items.length; ++i)
-        values.push(consoleView._consoleContextSelector._titleFor(items[i]));
+      for (var item of selector._items)
+        values.push(selector._titleFor(item));
       test.assertEquals('top', values[0]);
       test.assertEquals('Simple content script', values[1]);
       test.releaseControl();

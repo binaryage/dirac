@@ -49,7 +49,7 @@ Resources.DatabaseQueryView = class extends UI.VBox {
   }
 
   _messagesClicked() {
-    if (!this._prompt.isCaretInsidePrompt() && this.element.isComponentSelectionCollapsed())
+    if (!this._prompt.isCaretInsidePrompt() && !this.element.hasSelection())
       this._prompt.moveCaretToEndOfPrompt();
   }
 
@@ -104,7 +104,7 @@ Resources.DatabaseQueryView = class extends UI.VBox {
      */
     function moveBackIfOutside() {
       delete this._selectionTimeout;
-      if (!this._prompt.isCaretInsidePrompt() && this.element.isComponentSelectionCollapsed())
+      if (!this._prompt.isCaretInsidePrompt() && !this.element.hasSelection())
         this._prompt.moveCaretToEndOfPrompt();
       this._prompt.autoCompleteSoon();
     }
@@ -135,10 +135,10 @@ Resources.DatabaseQueryView = class extends UI.VBox {
 
   _queryFinished(query, columnNames, values) {
     var dataGrid = DataGrid.SortableDataGrid.create(columnNames, values);
-    dataGrid.setStriped(true);
     var trimmedQuery = query.trim();
 
     if (dataGrid) {
+      dataGrid.setStriped(true);
       dataGrid.renderInline();
       this._appendViewQueryResult(trimmedQuery, dataGrid.asWidget());
       dataGrid.autoSizeColumns(5);

@@ -9,13 +9,12 @@ EventListeners.EventListenersResult;
 /**
  * @unrestricted
  */
-EventListeners.EventListenersView = class {
+EventListeners.EventListenersView = class extends UI.VBox {
   /**
-   * @param {!Element} element
    * @param {function()} changeCallback
    */
-  constructor(element, changeCallback) {
-    this._element = element;
+  constructor(changeCallback) {
+    super();
     this._changeCallback = changeCallback;
     this._treeOutline = new UI.TreeOutlineInShadow();
     this._treeOutline.hideOverflow();
@@ -23,9 +22,9 @@ EventListeners.EventListenersView = class {
     this._treeOutline.registerRequiredCSS('event_listeners/eventListenersView.css');
     this._treeOutline.setComparator(EventListeners.EventListenersTreeElement.comparator);
     this._treeOutline.element.classList.add('monospace');
-    this._element.appendChild(this._treeOutline.element);
+    this.element.appendChild(this._treeOutline.element);
     this._emptyHolder = createElementWithClass('div', 'gray-info-message');
-    this._emptyHolder.textContent = Common.UIString('No Event Listeners');
+    this._emptyHolder.textContent = Common.UIString('No event listeners');
     this._linkifier = new Components.Linkifier();
     /** @type {!Map<string, !EventListeners.EventListenersTreeElement>} */
     this._treeItemMap = new Map();
@@ -191,7 +190,7 @@ EventListeners.EventListenersView = class {
       allHidden = allHidden && eventType.hidden;
     }
     if (allHidden && !this._emptyHolder.parentNode)
-      this._element.appendChild(this._emptyHolder);
+      this.element.appendChild(this._emptyHolder);
   }
 
   reset() {
