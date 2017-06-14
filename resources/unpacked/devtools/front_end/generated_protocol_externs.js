@@ -1836,7 +1836,9 @@ Protocol.Network.RequestReferrerPolicy = {
     NoReferrer: "no-referrer",
     Origin: "origin",
     OriginWhenCrossOrigin: "origin-when-cross-origin",
-    NoReferrerWhenDowngradeOriginWhenCrossOrigin: "no-referrer-when-downgrade-origin-when-cross-origin"
+    SameOrigin: "same-origin",
+    StrictOrigin: "strict-origin",
+    StrictOriginWhenCrossOrigin: "strict-origin-when-cross-origin"
 };
 
 /** @typedef {!{url:(string), method:(string), headers:(Protocol.Network.Headers), postData:(string|undefined), mixedContentType:(Protocol.Network.RequestMixedContentType|undefined), initialPriority:(Protocol.Network.ResourcePriority), referrerPolicy:(Protocol.Network.RequestReferrerPolicy), isLinkPreload:(boolean|undefined)}} */
@@ -1993,14 +1995,14 @@ Protocol.NetworkDispatcher.prototype.webSocketFrameSent = function(requestId, ti
  */
 Protocol.NetworkDispatcher.prototype.eventSourceMessageReceived = function(requestId, timestamp, eventName, eventId, data) {};
 /**
- * @param {Protocol.Network.InterceptionId} InterceptionId
+ * @param {Protocol.Network.InterceptionId} interceptionId
  * @param {Protocol.Network.Request} request
  * @param {Protocol.Page.ResourceType} resourceType
  * @param {Protocol.Network.Headers=} opt_redirectHeaders
  * @param {number=} opt_redirectStatusCode
  * @param {string=} opt_redirectUrl
  */
-Protocol.NetworkDispatcher.prototype.requestIntercepted = function(InterceptionId, request, resourceType, opt_redirectHeaders, opt_redirectStatusCode, opt_redirectUrl) {};
+Protocol.NetworkDispatcher.prototype.requestIntercepted = function(interceptionId, request, resourceType, opt_redirectHeaders, opt_redirectStatusCode, opt_redirectUrl) {};
 Protocol.Database = {};
 
 
@@ -2299,7 +2301,7 @@ Protocol.CacheStorageAgent.prototype.invoke_deleteEntry = function(obj) {};
 /** @typedef {string} */
 Protocol.CacheStorage.CacheId;
 
-/** @typedef {!{request:(string), response:(string)}} */
+/** @typedef {!{request:(string), response:(string), responseTime:(number)}} */
 Protocol.CacheStorage.DataEntry;
 
 /** @typedef {!{cacheId:(Protocol.CacheStorage.CacheId), securityOrigin:(string), cacheName:(string)}} */
@@ -5832,8 +5834,9 @@ Protocol.RuntimeDispatcher.prototype.exceptionRevoked = function(reason, excepti
  * @param {Protocol.Runtime.ExecutionContextId} executionContextId
  * @param {Protocol.Runtime.Timestamp} timestamp
  * @param {Protocol.Runtime.StackTrace=} opt_stackTrace
+ * @param {string=} opt_context
  */
-Protocol.RuntimeDispatcher.prototype.consoleAPICalled = function(type, args, executionContextId, timestamp, opt_stackTrace) {};
+Protocol.RuntimeDispatcher.prototype.consoleAPICalled = function(type, args, executionContextId, timestamp, opt_stackTrace, opt_context) {};
 /**
  * @param {Protocol.Runtime.RemoteObject} object
  * @param {!Object} hints

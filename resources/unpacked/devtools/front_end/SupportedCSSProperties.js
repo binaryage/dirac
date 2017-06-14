@@ -1,5 +1,5 @@
-Protocol.BakedSupportedCSSPropertiesChromeTag='61.0.3126.2';
-Protocol.BakedSupportedCSSPropertiesChromeRev='3505cba91e5a004726c286f4396caf2aae3c2e17';
+Protocol.BakedSupportedCSSPropertiesChromeTag='61.0.3130.3';
+Protocol.BakedSupportedCSSPropertiesChromeRev='4062088042578507d64ea2c45dfe22e06bfe793b';
 Protocol.BakedSupportedCSSProperties=''
 + '[{"name": "-webkit-app-region"},\n'
 + ' {"name": "-webkit-appearance"},\n'
@@ -299,7 +299,7 @@ Protocol.BakedSupportedCSSProperties=''
 + ' {"name": "mix-blend-mode"},\n'
 + ' {"name": "object-fit"},\n'
 + ' {"name": "object-position"},\n'
-+ ' {"longhands": ["offset-path", "offset-distance", "offset-rotate"], "name": "offset"},\n'
++ ' {"longhands": ["offset-position", "offset-path", "offset-distance", "offset-rotate", "offset-anchor"], "name": "offset"},\n'
 + ' {"name": "offset-anchor"},\n'
 + ' {"name": "offset-distance"},\n'
 + ' {"name": "offset-path"},\n'
