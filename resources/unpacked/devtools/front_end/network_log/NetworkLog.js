@@ -31,14 +31,16 @@
 /**
  * @implements {SDK.SDKModelObserver<!SDK.NetworkManager>}
  */
-NetworkLog.NetworkLog = class {
+NetworkLog.NetworkLog = class extends Common.Object {
   constructor() {
+    super();
     /** @type {!Array<!SDK.NetworkRequest>} */
     this._requests = [];
-    /** @type {!Map<!SDK.NetworkManager, !Map<string, !SDK.NetworkRequest>>} */
-    this._requestsByManagerAndId = new Map();
+    /** @type {!Set<!SDK.NetworkRequest>} */
+    this._requestsSet = new Set();
     /** @type {!Map<!SDK.NetworkManager, !NetworkLog.PageLoad>} */
-    this._currentPageLoad = new Map();
+    this._pageLoadForManager = new Map();
+    this._isRecording = true;
     SDK.targetManager.observeModels(SDK.NetworkManager, this);
   }
 
@@ -51,10 +53,16 @@ NetworkLog.NetworkLog = class {
     eventListeners.push(
         networkManager.addEventListener(SDK.NetworkManager.Events.RequestStarted, this._onRequestStarted, this));
     eventListeners.push(
+        networkManager.addEventListener(SDK.NetworkManager.Events.RequestUpdated, this._onRequestUpdated, this));
+    eventListeners.push(
         networkManager.addEventListener(SDK.NetworkManager.Events.RequestRedirected, this._onRequestRedirect, this));
+    eventListeners.push(
+        networkManager.addEventListener(SDK.NetworkManager.Events.RequestFinished, this._onRequestUpdated, this));
 
     var resourceTreeModel = networkManager.target().model(SDK.ResourceTreeModel);
     if (resourceTreeModel) {
+      eventListeners.push(
+          resourceTreeModel.addEventListener(SDK.ResourceTreeModel.Events.WillReloadPage, this._willReloadPage, this));
       eventListeners.push(resourceTreeModel.addEventListener(
           SDK.ResourceTreeModel.Events.MainFrameNavigated, this._onMainFrameNavigated, this));
       eventListeners.push(resourceTreeModel.addEventListener(SDK.ResourceTreeModel.Events.Load, this._onLoad, this));
@@ -63,7 +71,6 @@ NetworkLog.NetworkLog = class {
     }
 
     networkManager[NetworkLog.NetworkLog._events] = eventListeners;
-    this._requestsByManagerAndId.set(networkManager, new Map());
   }
 
   /**
@@ -71,8 +78,29 @@ NetworkLog.NetworkLog = class {
    * @param {!SDK.NetworkManager} networkManager
    */
   modelRemoved(networkManager) {
-    this._requestsByManagerAndId.delete(networkManager);
+    this._removeNetworkManagerListeners(networkManager);
+  }
+
+  /**
+   * @param {!SDK.NetworkManager} networkManager
+   */
+  _removeNetworkManagerListeners(networkManager) {
     Common.EventTarget.removeEventListeners(networkManager[NetworkLog.NetworkLog._events]);
+  }
+
+  /**
+   * @param {boolean} enabled
+   */
+  setIsRecording(enabled) {
+    if (this._isRecording === enabled)
+      return;
+    this._isRecording = enabled;
+    if (enabled) {
+      SDK.targetManager.observeModels(SDK.NetworkManager, this);
+    } else {
+      SDK.targetManager.unobserveModels(SDK.NetworkManager, this);
+      SDK.targetManager.models(SDK.NetworkManager).forEach(this._removeNetworkManagerListeners.bind(this));
+    }
   }
 
   /**
@@ -92,11 +120,17 @@ NetworkLog.NetworkLog = class {
 
   /**
    * @param {!SDK.NetworkManager} networkManager
-   * @return {!Array<!SDK.NetworkRequest>}
+   * @param {!Protocol.Network.RequestId} requestId
+   * @return {?SDK.NetworkRequest}
    */
-  requestsForManager(networkManager) {
-    var map = this._requestsByManagerAndId.get(networkManager);
-    return map ? Array.from(map.values()) : [];
+  requestByManagerAndId(networkManager, requestId) {
+    // We itterate backwards because the last item will likely be the one needed for console network request lookups.
+    for (var i = this._requests.length - 1; i >= 0; i--) {
+      var request = this._requests[i];
+      if (requestId === request.requestId() && networkManager === SDK.NetworkManager.forRequest(request))
+        return request;
+    }
+    return null;
   }
 
   /**
@@ -105,11 +139,8 @@ NetworkLog.NetworkLog = class {
    * @return {?SDK.NetworkRequest}
    */
   _requestByManagerAndURL(networkManager, url) {
-    var map = this._requestsByManagerAndId.get(networkManager);
-    if (!map)
-      return null;
-    for (var request of map.values()) {
-      if (request.url() === url)
+    for (var request of this._requests) {
+      if (url === request.url() && networkManager === SDK.NetworkManager.forRequest(request))
         return request;
     }
     return null;
@@ -145,9 +176,10 @@ NetworkLog.NetworkLog = class {
     var scriptId = null;
     var initiator = request.initiator();
 
-    if (request.redirectSource) {
+    var redirectSource = request.redirectSource();
+    if (redirectSource) {
       type = SDK.NetworkRequest.InitiatorType.Redirect;
-      url = request.redirectSource.url();
+      url = redirectSource.url();
     } else if (initiator) {
       if (initiator.type === Protocol.Network.InitiatorType.Parser) {
         type = SDK.NetworkRequest.InitiatorType.Parser;
@@ -182,12 +214,11 @@ NetworkLog.NetworkLog = class {
   initiatorGraphForRequest(request) {
     /** @type {!Set<!SDK.NetworkRequest>} */
     var initiated = new Set();
-    var map = this._requestsByManagerAndId.get(request.networkManager());
-    if (map) {
-      for (var otherRequest of map.values()) {
-        if (this._initiatorChain(otherRequest).has(request))
-          initiated.add(otherRequest);
-      }
+    var networkManager = SDK.NetworkManager.forRequest(request);
+    for (var otherRequest of this._requests) {
+      var otherRequestManager = SDK.NetworkManager.forRequest(request);
+      if (networkManager === otherRequestManager && this._initiatorChain(otherRequest).has(request))
+        initiated.add(otherRequest);
     }
     return {initiators: this._initiatorChain(request), initiated: initiated};
   }
@@ -223,8 +254,9 @@ NetworkLog.NetworkLog = class {
     if (request[NetworkLog.NetworkLog._initiatorDataSymbol].request !== undefined)
       return request[NetworkLog.NetworkLog._initiatorDataSymbol].request;
     var url = this.initiatorInfoForRequest(request).url;
+    var networkManager = SDK.NetworkManager.forRequest(request);
     request[NetworkLog.NetworkLog._initiatorDataSymbol].request =
-        this._requestByManagerAndURL(request.networkManager(), url);
+        networkManager ? this._requestByManagerAndURL(networkManager, url) : null;
     return request[NetworkLog.NetworkLog._initiatorDataSymbol].request;
   }
 
@@ -233,7 +265,12 @@ NetworkLog.NetworkLog = class {
    * @return {?NetworkLog.PageLoad}
    */
   pageLoadForRequest(request) {
-    return request[NetworkLog.NetworkLog._pageLoadForRequestSymbol];
+    return request[NetworkLog.NetworkLog._pageLoadForRequestSymbol] || null;
+  }
+
+  _willReloadPage() {
+    if (!Common.moduleSetting('network_log.preserve-log').get())
+      this.reset();
   }
 
   /**
@@ -241,30 +278,51 @@ NetworkLog.NetworkLog = class {
    */
   _onMainFrameNavigated(event) {
     var mainFrame = /** @type {!SDK.ResourceTreeFrame} */ (event.data);
-    var networkManager = mainFrame.resourceTreeModel().target().model(SDK.NetworkManager);
-    if (!networkManager)
+    var manager = mainFrame.resourceTreeModel().target().model(SDK.NetworkManager);
+    if (!manager)
       return;
 
-    this._currentPageLoad.delete(networkManager);
-    var oldRequests = this.requestsForManager(networkManager);
-    this._requests = this._requests.filter(request => request.networkManager() !== networkManager);
-    var idMap = new Map();
-    this._requestsByManagerAndId.set(networkManager, idMap);
+    var oldManagerRequests = this._requests.filter(request => SDK.NetworkManager.forRequest(request) === manager);
+    var oldRequestsSet = this._requestsSet;
+    this._requests = [];
+    this._requestsSet = new Set();
+    this.dispatchEventToListeners(NetworkLog.NetworkLog.Events.Reset);
 
     // Preserve requests from the new session.
     var currentPageLoad = null;
-    for (var i = 0; i < oldRequests.length; ++i) {
-      var request = oldRequests[i];
-      if (request.loaderId === mainFrame.loaderId) {
-        if (!currentPageLoad)
-          currentPageLoad = new NetworkLog.PageLoad(request);
+    var requestsToAdd = [];
+    for (var request of oldManagerRequests) {
+      if (request.loaderId !== mainFrame.loaderId)
+        continue;
+      if (!currentPageLoad) {
+        currentPageLoad = new NetworkLog.PageLoad(request);
+        var redirectSource = request.redirectSource();
+        while (redirectSource) {
+          requestsToAdd.push(redirectSource);
+          redirectSource = redirectSource.redirectSource();
+        }
+      }
+      requestsToAdd.push(request);
+    }
+
+    for (var request of requestsToAdd) {
+      oldRequestsSet.delete(request);
+      this._requests.push(request);
+      this._requestsSet.add(request);
+      request[NetworkLog.NetworkLog._pageLoadForRequestSymbol] = currentPageLoad;
+      this.dispatchEventToListeners(NetworkLog.NetworkLog.Events.RequestAdded, request);
+    }
+
+    if (Common.moduleSetting('network_log.preserve-log').get()) {
+      for (var request of oldRequestsSet) {
         this._requests.push(request);
-        idMap.set(request.requestId(), request);
-        request[NetworkLog.NetworkLog._pageLoadForRequestSymbol] = currentPageLoad;
+        this._requestsSet.add(request);
+        this.dispatchEventToListeners(NetworkLog.NetworkLog.Events.RequestAdded, request);
       }
     }
+
     if (currentPageLoad)
-      this._currentPageLoad.set(networkManager, currentPageLoad);
+      this._pageLoadForManager.set(manager, currentPageLoad);
   }
 
   /**
@@ -273,8 +331,22 @@ NetworkLog.NetworkLog = class {
   _onRequestStarted(event) {
     var request = /** @type {!SDK.NetworkRequest} */ (event.data);
     this._requests.push(request);
-    this._requestsByManagerAndId.get(request.networkManager()).set(request.requestId(), request);
-    request[NetworkLog.NetworkLog._pageLoadForRequestSymbol] = this._currentPageLoad.get(request.networkManager());
+    this._requestsSet.add(request);
+    var manager = SDK.NetworkManager.forRequest(request);
+    var pageLoad = manager ? this._pageLoadForManager.get(manager) : null;
+    if (pageLoad)
+      request[NetworkLog.NetworkLog._pageLoadForRequestSymbol] = pageLoad;
+    this.dispatchEventToListeners(NetworkLog.NetworkLog.Events.RequestAdded, request);
+  }
+
+  /**
+   * @param {!Common.Event} event
+   */
+  _onRequestUpdated(event) {
+    var request = /** @type {!SDK.NetworkRequest} */ (event.data);
+    if (!this._requestsSet.has(request))
+      return;
+    this.dispatchEventToListeners(NetworkLog.NetworkLog.Events.RequestUpdated, request);
   }
 
   /**
@@ -291,7 +363,7 @@ NetworkLog.NetworkLog = class {
    */
   _onDOMContentLoaded(resourceTreeModel, event) {
     var networkManager = resourceTreeModel.target().model(SDK.NetworkManager);
-    var pageLoad = networkManager ? this._currentPageLoad.get(networkManager) : null;
+    var pageLoad = networkManager ? this._pageLoadForManager.get(networkManager) : null;
     if (pageLoad)
       pageLoad.contentLoadTime = /** @type {number} */ (event.data);
   }
@@ -301,19 +373,21 @@ NetworkLog.NetworkLog = class {
    */
   _onLoad(event) {
     var networkManager = event.data.resourceTreeModel.target().model(SDK.NetworkManager);
-    var pageLoad = networkManager ? this._currentPageLoad.get(networkManager) : null;
+    var pageLoad = networkManager ? this._pageLoadForManager.get(networkManager) : null;
     if (pageLoad)
       pageLoad.loadTime = /** @type {number} */ (event.data.loadTime);
   }
 
-  /**
-   * @param {!SDK.NetworkManager} networkManager
-   * @param {!Protocol.Network.RequestId} requestId
-   * @return {?SDK.NetworkRequest}
-   */
-  requestForId(networkManager, requestId) {
-    var map = this._requestsByManagerAndId.get(networkManager);
-    return map ? (map.get(requestId) || null) : null;
+  reset() {
+    this._requests = [];
+    this._requestsSet.clear();
+    var managers = new Set(SDK.targetManager.models(SDK.NetworkManager));
+    for (var manager of this._pageLoadForManager.keys()) {
+      if (!managers.has(manager))
+        this._pageLoadForManager.delete(manager);
+    }
+
+    this.dispatchEventToListeners(NetworkLog.NetworkLog.Events.Reset);
   }
 };
 
@@ -329,6 +403,7 @@ NetworkLog.PageLoad = class {
     this.loadTime;
     /** @type {number} */
     this.contentLoadTime;
+    this.mainRequest = mainRequest;
   }
 };
 
@@ -336,6 +411,12 @@ NetworkLog.PageLoad._lastIdentifier = 0;
 
 /** @typedef {!{initiators: !Set<!SDK.NetworkRequest>, initiated: !Set<!SDK.NetworkRequest>}} */
 NetworkLog.NetworkLog.InitiatorGraph;
+
+NetworkLog.NetworkLog.Events = {
+  Reset: Symbol('Reset'),
+  RequestAdded: Symbol('RequestAdded'),
+  RequestUpdated: Symbol('RequestUpdated')
+};
 
 /** @typedef {!{type: !SDK.NetworkRequest.InitiatorType, url: string, lineNumber: number, columnNumber: number, scriptId: ?string}} */
 NetworkLog.NetworkLog._InitiatorInfo;
