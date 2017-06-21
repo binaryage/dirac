@@ -886,11 +886,11 @@ Console.ConsoleView = class extends UI.VBox {
     }
 
     this._prompt.setText("");
-    const target = executionContext.target();
+    const runtimeModel = executionContext.runtimeModel;
     const type = ConsoleModel.ConsoleMessage.MessageType.DiracCommand;
     const source = ConsoleModel.ConsoleMessage.MessageSource.JS;
     const level = ConsoleModel.ConsoleMessage.MessageLevel.Info;
-    const commandMessage = new ConsoleModel.ConsoleMessage(target, source, level, text, type);
+    const commandMessage = new ConsoleModel.ConsoleMessage(runtimeModel, source, level, text, type);
     commandMessage.setExecutionContextId(executionContext.id);
     ConsoleModel.consoleModel.addMessage(commandMessage);
 
