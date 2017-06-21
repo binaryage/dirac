@@ -681,13 +681,8 @@ Network.NetworkRequestNode = class extends Network.NetworkNode {
    * @return {boolean}
    */
   isNavigationRequest() {
-    return this._isNavigationRequest;
-  }
-
-  markAsNavigationRequest() {
-    this._isNavigationRequest = true;
-    this.refresh();
-    this._updateBackgroundColor();
+    var pageLoad = NetworkLog.networkLog.pageLoadForRequest(this._request);
+    return pageLoad ? pageLoad.mainRequest === this._request : false;
   }
 
   /**
@@ -859,7 +854,9 @@ Network.NetworkRequestNode = class extends Network.NetworkNode {
       this._nameBadgeElement.classList.add('network-badge');
     }
     cell.appendChild(this._nameBadgeElement);
-    cell.createTextChild(this._request.networkManager().target().decorateLabel(this._request.name().trimMiddle(100)));
+    var name = this._request.name().trimMiddle(100);
+    var networkManager = SDK.NetworkManager.forRequest(this._request);
+    cell.createTextChild(networkManager ? networkManager.target().decorateLabel(name) : name);
     this._appendSubtitle(cell, this._request.path());
     cell.title = this._request.url();
   }
@@ -939,8 +936,8 @@ Network.NetworkRequestNode = class extends Network.NetworkNode {
 
       case SDK.NetworkRequest.InitiatorType.Redirect:
         cell.title = initiator.url;
-        console.assert(request.redirectSource);
-        var redirectSource = /** @type {!SDK.NetworkRequest} */ (request.redirectSource);
+        var redirectSource = /** @type {!SDK.NetworkRequest} */ (request.redirectSource());
+        console.assert(redirectSource);
         if (this.parentView().nodeForRequest(redirectSource)) {
           cell.appendChild(
               Components.Linkifier.linkifyRevealable(redirectSource, Bindings.displayNameForURL(redirectSource.url())));
@@ -951,8 +948,9 @@ Network.NetworkRequestNode = class extends Network.NetworkNode {
         break;
 
       case SDK.NetworkRequest.InitiatorType.Script:
+        var networkManager = SDK.NetworkManager.forRequest(request);
         this._linkifiedInitiatorAnchor = this.parentView().linkifier.linkifyScriptLocation(
-            request.networkManager().target(), initiator.scriptId, initiator.url, initiator.lineNumber,
+            networkManager ? networkManager.target() : null, initiator.scriptId, initiator.url, initiator.lineNumber,
             initiator.columnNumber);
         this._linkifiedInitiatorAnchor.title = '';
         cell.appendChild(this._linkifiedInitiatorAnchor);
