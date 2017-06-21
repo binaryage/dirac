@@ -24,7 +24,7 @@ if [ -z "$POSITION" ] ; then
 fi
 
 MIN_POSITION=`expr ${POSITION} - ${RANGE}`
-for i in $(seq ${POSITION} ${MIN_POSITION}); do
+for i in $(seq ${POSITION} -1 ${MIN_POSITION}); do
   echo ${i};
   url="http://commondatastorage.googleapis.com/chromium-browser-snapshots/$PLATFORM/$i/$PLATFORM_ZIP"
   if curl --output /dev/null --silent --head --fail "$url"; then
