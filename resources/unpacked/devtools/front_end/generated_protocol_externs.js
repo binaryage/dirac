@@ -614,12 +614,12 @@ Protocol.PageAgent.prototype.invoke_getLayoutMetrics = function(obj) {};
  * @param {Protocol.Page.FrameId} frameId
  * @param {string=} opt_worldName
  * @param {boolean=} opt_grantUniveralAccess
- * @return {!Promise<undefined>}
+ * @return {!Promise<?Protocol.Runtime.ExecutionContextId>}
  */
 Protocol.PageAgent.prototype.createIsolatedWorld = function(frameId, opt_worldName, opt_grantUniveralAccess) {};
 /** @typedef {!{grantUniveralAccess: (boolean|undefined), worldName: (string|undefined), frameId: Protocol.Page.FrameId}} */
 Protocol.PageAgent.CreateIsolatedWorldRequest;
-/** @typedef {Object|undefined} */
+/** @typedef {!{executionContextId: Protocol.Runtime.ExecutionContextId}} */
 Protocol.PageAgent.CreateIsolatedWorldResponse;
 /**
  * @param {!Protocol.PageAgent.CreateIsolatedWorldRequest} obj
@@ -5163,7 +5163,7 @@ Protocol.StorageAgent.prototype.invoke_clearDataForOrigin = function(obj) {};
 Protocol.StorageAgent.prototype.getUsageAndQuota = function(origin) {};
 /** @typedef {!{origin: string}} */
 Protocol.StorageAgent.GetUsageAndQuotaRequest;
-/** @typedef {!{usage: number, quota: number}} */
+/** @typedef {!{usage: number, usageBreakdown: !Array<Protocol.Storage.UsageForType>, quota: number}} */
 Protocol.StorageAgent.GetUsageAndQuotaResponse;
 /**
  * @param {!Protocol.StorageAgent.GetUsageAndQuotaRequest} obj
@@ -5181,8 +5181,12 @@ Protocol.Storage.StorageType = {
     Websql: "websql",
     Service_workers: "service_workers",
     Cache_storage: "cache_storage",
-    All: "all"
+    All: "all",
+    Other: "other"
 };
+
+/** @typedef {!{storageType:(Protocol.Storage.StorageType), usage:(number)}} */
+Protocol.Storage.UsageForType;
 /** @interface */
 Protocol.StorageDispatcher = function() {};
 Protocol.Log = {};
@@ -6543,7 +6547,7 @@ Protocol.Profiler.PositionTickInfo;
 /** @typedef {!{startOffset:(number), endOffset:(number), count:(number)}} */
 Protocol.Profiler.CoverageRange;
 
-/** @typedef {!{functionName:(string), ranges:(!Array<Protocol.Profiler.CoverageRange>)}} */
+/** @typedef {!{functionName:(string), ranges:(!Array<Protocol.Profiler.CoverageRange>), isBlockCoverage:(boolean)}} */
 Protocol.Profiler.FunctionCoverage;
 
 /** @typedef {!{scriptId:(Protocol.Runtime.ScriptId), url:(string), functions:(!Array<Protocol.Profiler.FunctionCoverage>)}} */

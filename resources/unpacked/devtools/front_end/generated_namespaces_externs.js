@@ -25,6 +25,8 @@ var Components = {};
 /** @type {!Object} */
 var ConsoleModel = {};
 /** @type {!Object} */
+var ConsoleTestRunner = {};
+/** @type {!Object} */
 var CookieTable = {};
 /** @type {!Object} */
 var Coverage = {};
@@ -64,6 +66,8 @@ var Help = {};
 var Host = {};
 /** @type {!Object} */
 var InlineEditor = {};
+/** @type {!Object} */
+var IntegrationTestRunner = {};
 /** @type {!Object} */
 var LayerViewer = {};
 /** @type {!Object} */
