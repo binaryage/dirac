@@ -47,6 +47,24 @@ Main.Main = class {
     SDK.ResourceTreeModel.reloadAllPages(hard);
   }
 
+  /**
+   * @param {string} label
+   */
+  static time(label) {
+    if (Host.isUnderTest())
+      return;
+    console.time(label);
+  }
+
+  /**
+   * @param {string} label
+   */
+  static timeEnd(label) {
+    if (Host.isUnderTest())
+      return;
+    console.timeEnd(label);
+  }
+
   _loaded() {
     console.timeStamp('Main._loaded');
     Runtime.setPlatform(Host.platform());
@@ -156,7 +174,7 @@ Main.Main = class {
    * @suppressGlobalPropertiesCheck
    */
   _createAppUI() {
-    console.time('Main._createAppUI');
+    Main.Main.time('Main._createAppUI');
 
     UI.viewManager = new UI.ViewManager();
 
@@ -197,6 +215,7 @@ Main.Main = class {
     Persistence.fileSystemMapping = new Persistence.FileSystemMapping(Persistence.isolatedFileSystemManager);
 
     Bindings.networkProjectManager = new Bindings.NetworkProjectManager(SDK.targetManager, Workspace.workspace);
+    Bindings.resourceMapping = new Bindings.ResourceMapping(SDK.targetManager, Workspace.workspace);
     Bindings.presentationConsoleMessageHelper = new Bindings.PresentationConsoleMessageHelper(Workspace.workspace);
     Bindings.cssWorkspaceBinding = new Bindings.CSSWorkspaceBinding(SDK.targetManager, Workspace.workspace);
     Bindings.debuggerWorkspaceBinding = new Bindings.DebuggerWorkspaceBinding(SDK.targetManager, Workspace.workspace);
@@ -224,7 +243,7 @@ Main.Main = class {
     this._registerMessageSinkListener();
 
     self.runtime.extension(Common.AppProvider).instance().then(this._showAppUI.bind(this));
-    console.timeEnd('Main._createAppUI');
+    Main.Main.timeEnd('Main._createAppUI');
   }
 
   /**
@@ -232,7 +251,7 @@ Main.Main = class {
    * @suppressGlobalPropertiesCheck
    */
   _showAppUI(appProvider) {
-    console.time('Main._showAppUI');
+    Main.Main.time('Main._showAppUI');
     var app = /** @type {!Common.AppProvider} */ (appProvider).createApp();
     // It is important to kick controller lifetime after apps are instantiated.
     Components.dockController.initialize();
@@ -271,18 +290,18 @@ Main.Main = class {
 
     // Allow UI cycles to repaint prior to creating connection.
     setTimeout(this._initializeTarget.bind(this), 0);
-    console.timeEnd('Main._showAppUI');
+    Main.Main.timeEnd('Main._showAppUI');
     dirac.feedback("devtools ready");
   }
 
   _initializeTarget() {
-    console.time('Main._initializeTarget');
+    Main.Main.time('Main._initializeTarget');
     SDK.targetManager.connectToMainTarget(webSocketConnectionLost);
 
     InspectorFrontendHost.readyForTest();
     // Asynchronously run the extensions.
     setTimeout(this._lateInitialization.bind(this), 100);
-    console.timeEnd('Main._initializeTarget');
+    Main.Main.timeEnd('Main._initializeTarget');
 
     function webSocketConnectionLost() {
       if (!Main._disconnectedScreenWithReasonWasShown)
@@ -734,6 +753,37 @@ Main.Main.MainMenuItem = class {
     var helpSubMenu = contextMenu.namedSubMenu('mainMenuHelp');
     helpSubMenu.appendAction('settings.documentation');
     helpSubMenu.appendItem('Release Notes', () => InspectorFrontendHost.openInNewTab(Help.latestReleaseNote().link));
+  }
+};
+
+/**
+ * @implements {UI.ToolbarItem.Provider}
+ */
+Main.Main.NodeIndicator = class {
+  constructor() {
+    var element = createElement('div');
+    var shadowRoot = UI.createShadowRootWithCoreStyles(element, 'main/nodeIcon.css');
+    this._element = shadowRoot.createChild('div', 'node-icon');
+    element.addEventListener('click', () => InspectorFrontendHost.openNodeFrontend(), false);
+    this._button = new UI.ToolbarItem(element);
+    this._button.setTitle(Common.UIString('Open dedicated DevTools for Node.js'));
+    SDK.targetManager.addEventListener(SDK.TargetManager.Events.AvailableNodeTargetsChanged, this._update, this);
+    this._button.setVisible(false);
+    this._update();
+  }
+
+  _update() {
+    this._element.classList.toggle('inactive', !SDK.targetManager.availableNodeTargetsCount());
+    if (SDK.targetManager.availableNodeTargetsCount())
+      this._button.setVisible(true);
+  }
+
+  /**
+   * @override
+   * @return {?UI.ToolbarItem}
+   */
+  item() {
+    return this._button;
   }
 };
 

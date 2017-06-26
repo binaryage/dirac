@@ -59,18 +59,46 @@ SDK.NetworkManager = class extends SDK.SDKModel {
 
   /**
    * @param {!SDK.NetworkRequest} request
+   * @return {?SDK.NetworkManager}
+   */
+  static forRequest(request) {
+    return request[SDK.NetworkManager._networkManagerForRequestSymbol];
+  }
+
+  /**
+   * @param {!SDK.NetworkRequest} request
    * @return {boolean}
    */
   static canReplayRequest(request) {
-    return request.resourceType() === Common.resourceTypes.XHR;
+    return !!request[SDK.NetworkManager._networkManagerForRequestSymbol] &&
+        request.resourceType() === Common.resourceTypes.XHR;
   }
 
   /**
    * @param {!SDK.NetworkRequest} request
    */
   static replayRequest(request) {
-    // TODO(allada) networkAgent() will be removed from NetworkRequest, but in the mean time we extract it from request.
-    request.networkManager()._networkAgent.replayXHR(request.requestId());
+    var manager = request[SDK.NetworkManager._networkManagerForRequestSymbol];
+    if (!manager)
+      return;
+    manager._networkAgent.replayXHR(request.requestId());
+  }
+
+  /**
+   * @param {!SDK.NetworkRequest} request
+   * @return {!Promise<!SDK.NetworkRequest.ContentData>}
+   */
+  static async requestContentData(request) {
+    if (request.resourceType() === Common.resourceTypes.WebSocket)
+      return {error: 'Content for WebSockets is currently not supported', content: null, encoded: false};
+    if (!request.finished)
+      await request.once(SDK.NetworkRequest.Events.FinishedLoading);
+    var manager = SDK.NetworkManager.forRequest(request);
+    if (!manager)
+      return {error: 'No network manager for request', content: null, encoded: false};
+    var response = await manager._networkAgent.invoke_getResponseBody({requestId: request.requestId()});
+    var error = response[Protocol.Error] || null;
+    return {error: error, content: error ? null : response.body, encoded: response.base64Encoded};
   }
 
   /**
@@ -174,12 +202,16 @@ SDK.NetworkManager.OfflineConditions = {
 /** @typedef {{url: string, enabled: boolean}} */
 SDK.NetworkManager.BlockedPattern;
 
+SDK.NetworkManager._networkManagerForRequestSymbol = Symbol('NetworkManager');
 
 /**
  * @implements {Protocol.NetworkDispatcher}
  * @unrestricted
  */
 SDK.NetworkDispatcher = class {
+  /**
+   * @param {!SDK.NetworkManager} manager
+   */
   constructor(manager) {
     this._manager = manager;
     /** @type {!Object<!Protocol.Network.RequestId, !SDK.NetworkRequest>} */
@@ -473,7 +505,8 @@ SDK.NetworkDispatcher = class {
    * @param {!Protocol.Network.Initiator=} initiator
    */
   webSocketCreated(requestId, requestURL, initiator) {
-    var networkRequest = new SDK.NetworkRequest(this._manager, requestId, requestURL, '', '', '', initiator || null);
+    var networkRequest = new SDK.NetworkRequest(requestId, requestURL, '', '', '', initiator || null);
+    networkRequest[SDK.NetworkManager._networkManagerForRequestSymbol] = this._manager;
     networkRequest.setResourceType(Common.resourceTypes.WebSocket);
     this._startNetworkRequest(networkRequest);
   }
@@ -621,16 +654,16 @@ SDK.NetworkDispatcher = class {
    */
   _appendRedirect(requestId, time, redirectURL) {
     var originalNetworkRequest = this._inflightRequestsById[requestId];
-    var previousRedirects = originalNetworkRequest.redirects || [];
-    originalNetworkRequest.setRequestId(requestId + ':redirected.' + previousRedirects.length);
-    delete originalNetworkRequest.redirects;
-    if (previousRedirects.length > 0)
-      originalNetworkRequest.redirectSource = previousRedirects[previousRedirects.length - 1];
+    var redirectCount = 0;
+    for (var redirect = originalNetworkRequest.redirectSource(); redirect; redirect = redirect.redirectSource())
+      redirectCount++;
+
+    originalNetworkRequest.setRequestId(requestId + ':redirected.' + redirectCount);
     this._finishNetworkRequest(originalNetworkRequest, time, -1);
     var newNetworkRequest = this._createNetworkRequest(
         requestId, originalNetworkRequest.frameId, originalNetworkRequest.loaderId, redirectURL,
         originalNetworkRequest.documentURL, originalNetworkRequest.initiator());
-    newNetworkRequest.redirects = previousRedirects.concat(originalNetworkRequest);
+    newNetworkRequest.setRedirectSource(originalNetworkRequest);
     return newNetworkRequest;
   }
 
@@ -685,7 +718,9 @@ SDK.NetworkDispatcher = class {
    * @param {?Protocol.Network.Initiator} initiator
    */
   _createNetworkRequest(requestId, frameId, loaderId, url, documentURL, initiator) {
-    return new SDK.NetworkRequest(this._manager, requestId, url, documentURL, frameId, loaderId, initiator);
+    var request = new SDK.NetworkRequest(requestId, url, documentURL, frameId, loaderId, initiator);
+    request[SDK.NetworkManager._networkManagerForRequestSymbol] = this._manager;
+    return request;
   }
 };
 

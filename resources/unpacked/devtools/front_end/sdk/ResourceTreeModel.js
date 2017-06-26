@@ -64,7 +64,8 @@ SDK.ResourceTreeModel = class extends SDK.SDKModel {
    * @return {?SDK.ResourceTreeFrame}
    */
   static frameForRequest(request) {
-    var resourceTreeModel = request.networkManager().target().model(SDK.ResourceTreeModel);
+    var networkManager = SDK.NetworkManager.forRequest(request);
+    var resourceTreeModel = networkManager ? networkManager.target().model(SDK.ResourceTreeModel) : null;
     if (!resourceTreeModel)
       return null;
     return resourceTreeModel.frameForId(request.frameId);
@@ -228,19 +229,6 @@ SDK.ResourceTreeModel = class extends SDK.SDKModel {
     else
       frame._remove();
     this._updateSecurityOrigins();
-  }
-
-  /**
-   * @param {!Protocol.Page.FrameId} frameId
-   */
-  _frameStartedLoading(frameId) {
-    // Do nothing unless cached resource tree is processed - it will overwrite everything.
-    if (!this._cachedResourcesProcessed)
-      return;
-
-    var frame = this._frames.get(frameId);
-    if (!frame || frame.isMainFrame())
-      this.dispatchEventToListeners(SDK.ResourceTreeModel.Events.MainFrameStartedLoading);
   }
 
   /**
@@ -491,7 +479,6 @@ SDK.ResourceTreeModel.Events = {
   FrameResized: Symbol('FrameResized'),
   FrameWillNavigate: Symbol('FrameWillNavigate'),
   MainFrameNavigated: Symbol('MainFrameNavigated'),
-  MainFrameStartedLoading: Symbol('MainFrameStartedLoading'),
   ResourceAdded: Symbol('ResourceAdded'),
   WillLoadCachedResources: Symbol('WillLoadCachedResources'),
   CachedResourcesLoaded: Symbol('CachedResourcesLoaded'),
@@ -813,7 +800,6 @@ SDK.PageDispatcher = class {
    * @param {!Protocol.Page.FrameId} frameId
    */
   frameStartedLoading(frameId) {
-    this._resourceTreeModel._frameStartedLoading(frameId);
   }
 
   /**

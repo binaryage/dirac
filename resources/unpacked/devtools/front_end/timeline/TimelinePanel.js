@@ -89,7 +89,8 @@ Timeline.TimelinePanel = class extends UI.Panel {
 
     this._showScreenshotsSetting = Common.settings.createSetting('timelineShowScreenshots', true);
     this._showScreenshotsSetting.setTitle(Common.UIString('Screenshots'));
-    this._showScreenshotsSetting.addChangeListener(this._onModeChanged, this);
+    this._showScreenshotsSetting.addChangeListener(this._updateOverviewControls, this);
+
     this._showMemorySetting = Common.settings.createSetting('timelineShowMemory', false);
     this._showMemorySetting.setTitle(Common.UIString('Memory'));
     this._showMemorySetting.addChangeListener(this._onModeChanged, this);
@@ -348,7 +349,7 @@ Timeline.TimelinePanel = class extends UI.Panel {
     contextMenu.show();
   }
 
-  _saveToFile() {
+  async _saveToFile() {
     if (this._state !== Timeline.TimelinePanel.State.Idle)
       return;
     var performanceModel = this._performanceModel;
@@ -358,16 +359,12 @@ Timeline.TimelinePanel = class extends UI.Panel {
     var now = new Date();
     var fileName = 'Profile-' + now.toISO8601Compact() + '.json';
     var stream = new Bindings.FileOutputStream();
-    stream.open(fileName, callback);
 
-    /**
-     * @param {boolean} accepted
-     */
-    function callback(accepted) {
-      if (!accepted)
-        return;
-      performanceModel.save(stream, new Timeline.TracingTimelineSaver());
-    }
+    var accepted = await stream.open(fileName);
+    if (!accepted)
+      return;
+
+    performanceModel.save(stream, new Timeline.TracingTimelineSaver());
   }
 
   async _showHistory() {
@@ -418,8 +415,7 @@ Timeline.TimelinePanel = class extends UI.Panel {
     this._loader = Timeline.TimelineLoader.loadFromURL(url, this);
   }
 
-  _onModeChanged() {
-    // Set up overview controls.
+  _updateOverviewControls() {
     this._overviewControls = [];
     this._overviewControls.push(new Timeline.TimelineEventOverviewResponsiveness());
     if (Runtime.experiments.isEnabled('inputEventsOnTimelineOverview'))
@@ -434,6 +430,10 @@ Timeline.TimelinePanel = class extends UI.Panel {
     for (var control of this._overviewControls)
       control.setModel(this._performanceModel);
     this._overviewPane.setOverviewControls(this._overviewControls);
+  }
+
+  _onModeChanged() {
+    this._updateOverviewControls();
 
     // Set up main view.
     if (this._currentView)
@@ -551,7 +551,6 @@ Timeline.TimelinePanel = class extends UI.Panel {
 
     this._pendingPerformanceModel = new Timeline.PerformanceModel();
     this._controller = new Timeline.TimelineController(tracingManagers[0], this._pendingPerformanceModel, this);
-    Host.userMetrics.actionTaken(Host.UserMetrics.Action.TimelineStarted);
     this._setUIControlsEnabled(false);
     this._hideLandingPage();
     return this._controller.startRecording(recordingOptions, enabledTraceProviders)
@@ -590,6 +589,7 @@ Timeline.TimelinePanel = class extends UI.Panel {
     if (this._state === Timeline.TimelinePanel.State.Idle) {
       this._recordingPageReload = false;
       this._startRecording();
+      Host.userMetrics.actionTaken(Host.UserMetrics.Action.TimelineStarted);
     } else if (this._state === Timeline.TimelinePanel.State.Recording) {
       this._stopRecording();
     }
@@ -600,6 +600,7 @@ Timeline.TimelinePanel = class extends UI.Panel {
       return;
     this._recordingPageReload = true;
     this._startRecording();
+    Host.userMetrics.actionTaken(Host.UserMetrics.Action.TimelinePageReloadStarted);
   }
 
   _onClearButton() {
@@ -1273,6 +1274,7 @@ Timeline.TimelinePanel.StatusPane = class extends UI.VBox {
   showPane(parent) {
     this.show(parent);
     parent.classList.add('tinted');
+    this._stopButton.focus();
   }
 
   /**

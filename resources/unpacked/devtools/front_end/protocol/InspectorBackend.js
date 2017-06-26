@@ -374,8 +374,7 @@ Protocol.TargetBase = class {
       var domainName = method[0];
       if (!(domainName in this._dispatchers)) {
         Protocol.InspectorBackend.reportProtocolError(
-            'Protocol Error: the message ' + messageObject.method + ' is for non-existing domain \'' + domainName +
-                '\'',
+            `Protocol Error: the message ${messageObject.method} is for non-existing domain '${domainName}'`,
             messageObject);
         return;
       }
@@ -612,7 +611,7 @@ Protocol.InspectorBackend._AgentPrototype = class {
           return;
         }
         var args = this._replyArgs[method];
-        resolve(result && args.length && result[args[0]] || null);
+        resolve(result && args.length ? result[args[0]] : undefined);
       });
     });
   }
@@ -687,8 +686,7 @@ Protocol.InspectorBackend._DispatcherPrototype = class {
 
     if (!this._eventArgs[messageObject.method]) {
       Protocol.InspectorBackend.reportProtocolError(
-          'Protocol Error: Attempted to dispatch an unspecified method \'' + messageObject.method + '\'',
-          messageObject);
+          `Protocol Error: Attempted to dispatch an unspecified method '${messageObject.method}'`, messageObject);
       return;
     }
 

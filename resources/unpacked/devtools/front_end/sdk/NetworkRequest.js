@@ -33,7 +33,6 @@
  */
 SDK.NetworkRequest = class extends Common.Object {
   /**
-   * @param {!SDK.NetworkManager} networkManager
    * @param {!Protocol.Network.RequestId} requestId
    * @param {string} url
    * @param {string} documentURL
@@ -41,10 +40,9 @@ SDK.NetworkRequest = class extends Common.Object {
    * @param {!Protocol.Network.LoaderId} loaderId
    * @param {?Protocol.Network.Initiator} initiator
    */
-  constructor(networkManager, requestId, url, documentURL, frameId, loaderId, initiator) {
+  constructor(requestId, url, documentURL, frameId, loaderId, initiator) {
     super();
 
-    this._networkManager = networkManager;
     this._requestId = requestId;
     this.setUrl(url);
     this._documentURL = documentURL;
@@ -52,6 +50,8 @@ SDK.NetworkRequest = class extends Common.Object {
     this._loaderId = loaderId;
     /** @type {?Protocol.Network.Initiator} */
     this._initiator = initiator;
+    /** @type {?SDK.NetworkRequest} */
+    this._redirectSource = null;
     this._issueTime = -1;
     this._startTime = -1;
     this._endTime = -1;
@@ -73,6 +73,7 @@ SDK.NetworkRequest = class extends Common.Object {
 
     /** @type {!Common.ResourceType} */
     this._resourceType = Common.resourceTypes.Other;
+    // TODO(allada) Migrate everything away from this and remove it.
     this._contentEncoded = false;
     this._pendingContentCallbacks = [];
     /** @type {!Array.<!SDK.NetworkRequest.WebSocketFrame>} */
@@ -365,11 +366,8 @@ SDK.NetworkRequest = class extends Common.Object {
 
     this._finished = x;
 
-    if (x) {
+    if (x)
       this.dispatchEventToListeners(SDK.NetworkRequest.Events.FinishedLoading, this);
-      if (this._pendingContentCallbacks.length)
-        this._innerRequestContent();
-    }
   }
 
   /**
@@ -531,7 +529,8 @@ SDK.NetworkRequest = class extends Common.Object {
     } else {
       this._path = this._parsedURL.host + this._parsedURL.folderPathComponents;
 
-      var inspectedURL = this._networkManager.target().inspectedURL().asParsedURL();
+      var networkManager = SDK.NetworkManager.forRequest(this);
+      var inspectedURL = networkManager ? networkManager.target().inspectedURL().asParsedURL() : null;
       this._path = this._path.trimURL(inspectedURL ? inspectedURL.host : '');
       if (this._parsedURL.lastPathComponent || this._parsedURL.queryParams) {
         this._name =
@@ -591,17 +590,15 @@ SDK.NetworkRequest = class extends Common.Object {
   /**
    * @return {?SDK.NetworkRequest}
    */
-  get redirectSource() {
-    if (this.redirects && this.redirects.length > 0)
-      return this.redirects[this.redirects.length - 1];
+  redirectSource() {
     return this._redirectSource;
   }
 
   /**
-   * @param {?SDK.NetworkRequest} x
+   * @param {?SDK.NetworkRequest} originatingRequest
    */
-  set redirectSource(x) {
-    this._redirectSource = x;
+  setRedirectSource(originatingRequest) {
+    this._redirectSource = originatingRequest;
   }
 
   /**
@@ -865,6 +862,7 @@ SDK.NetworkRequest = class extends Common.Object {
     return values.join(', ');
   }
 
+  // TODO(allada) Migrate everything away from using this function and use .contentData() instead.
   /**
    * @return {?string|undefined}
    */
@@ -872,6 +870,7 @@ SDK.NetworkRequest = class extends Common.Object {
     return this._content;
   }
 
+  // TODO(allada) Migrate everything away from using this function and use .contentData() instead.
   /**
    * @return {?Protocol.Error|undefined}
    */
@@ -879,11 +878,22 @@ SDK.NetworkRequest = class extends Common.Object {
     return this._contentError;
   }
 
+  // TODO(allada) Migrate everything away from using this function and use .contentData() instead.
   /**
    * @return {boolean}
    */
   get contentEncoded() {
     return this._contentEncoded;
+  }
+
+  /**
+   * @return {!Promise<!SDK.NetworkRequest.ContentData>}
+   */
+  contentData() {
+    if (this._contentData)
+      return this._contentData;
+    this._contentData = SDK.NetworkManager.requestContentData(this);
+    return this._contentData;
   }
 
   /**
@@ -906,20 +916,13 @@ SDK.NetworkRequest = class extends Common.Object {
    * @override
    * @return {!Promise<?string>}
    */
-  requestContent() {
-    // We do not support content retrieval for WebSockets at the moment.
-    // Since WebSockets are potentially long-living, fail requests immediately
-    // to prevent caller blocking until resource is marked as finished.
-    if (this._resourceType === Common.resourceTypes.WebSocket)
-      return Promise.resolve(/** @type {?string} */ (null));
-    if (typeof this._content !== 'undefined')
-      return Promise.resolve(/** @type {?string} */ (this.content || null));
-    var callback;
-    var promise = new Promise(fulfill => callback = fulfill);
-    this._pendingContentCallbacks.push(callback);
-    if (this.finished)
-      this._innerRequestContent();
-    return promise;
+  async requestContent() {
+    var contentData = await this.contentData();
+    // TODO(allada) Migrate away from anyone using .content, .contentError and .contentEncoded.
+    this._content = contentData.content;
+    this._contentError = contentData.error;
+    this._contentEncoded = contentData.encoded;
+    return contentData.content;
   }
 
   /**
@@ -1001,35 +1004,6 @@ SDK.NetworkRequest = class extends Common.Object {
   }
 
   /**
-   * @return {?string}
-   */
-  asDataURL() {
-    var content = this._content;
-    var charset = null;
-    if (!this._contentEncoded) {
-      content = content.toBase64();
-      charset = 'utf-8';
-    }
-    return Common.ContentProvider.contentAsDataURL(content, this.mimeType, true, charset);
-  }
-
-  async _innerRequestContent() {
-    if (this._contentRequested)
-      return;
-    this._contentRequested = true;
-
-    var response =
-        await this._networkManager.target().networkAgent().invoke_getResponseBody({requestId: this._requestId});
-
-    this._content = response[Protocol.Error] ? null : response.body;
-    this._contentError = response[Protocol.Error];
-    this._contentEncoded = response.base64Encoded;
-    for (var callback of this._pendingContentCallbacks.splice(0))
-      callback(this._content);
-    delete this._contentRequested;
-  }
-
-  /**
    * @return {?Protocol.Network.Initiator}
    */
   initiator() {
@@ -1099,13 +1073,6 @@ SDK.NetworkRequest = class extends Common.Object {
     this._eventSourceMessages.push(message);
     this.dispatchEventToListeners(SDK.NetworkRequest.Events.EventSourceMessageAdded, message);
   }
-
-  /**
-   * @return {!SDK.NetworkManager}
-   */
-  networkManager() {
-    return this._networkManager;
-  }
 };
 
 /** @enum {symbol} */
@@ -1143,3 +1110,6 @@ SDK.NetworkRequest.WebSocketFrame;
 
 /** @typedef {!{time: number, eventName: string, eventId: string, data: string}} */
 SDK.NetworkRequest.EventSourceMessage;
+
+/** @typedef {!{error: ?string, content: ?string, encoded: boolean}} */
+SDK.NetworkRequest.ContentData;

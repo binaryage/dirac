@@ -614,12 +614,12 @@ Protocol.PageAgent.prototype.invoke_getLayoutMetrics = function(obj) {};
  * @param {Protocol.Page.FrameId} frameId
  * @param {string=} opt_worldName
  * @param {boolean=} opt_grantUniveralAccess
- * @return {!Promise<undefined>}
+ * @return {!Promise<?Protocol.Runtime.ExecutionContextId>}
  */
 Protocol.PageAgent.prototype.createIsolatedWorld = function(frameId, opt_worldName, opt_grantUniveralAccess) {};
 /** @typedef {!{grantUniveralAccess: (boolean|undefined), worldName: (string|undefined), frameId: Protocol.Page.FrameId}} */
 Protocol.PageAgent.CreateIsolatedWorldRequest;
-/** @typedef {Object|undefined} */
+/** @typedef {!{executionContextId: Protocol.Runtime.ExecutionContextId}} */
 Protocol.PageAgent.CreateIsolatedWorldResponse;
 /**
  * @param {!Protocol.PageAgent.CreateIsolatedWorldRequest} obj
@@ -1748,10 +1748,11 @@ Protocol.NetworkAgent.prototype.invoke_enableRequestInterception = function(obj)
  * @param {string=} opt_method
  * @param {string=} opt_postData
  * @param {Protocol.Network.Headers=} opt_headers
+ * @param {Protocol.Network.AuthChallengeResponse=} opt_authChallengeResponse
  * @return {!Promise<undefined>}
  */
-Protocol.NetworkAgent.prototype.continueInterceptedRequest = function(interceptionId, opt_errorReason, opt_rawResponse, opt_url, opt_method, opt_postData, opt_headers) {};
-/** @typedef {!{postData: (string|undefined), headers: (Protocol.Network.Headers|undefined), url: (string|undefined), errorReason: (Protocol.Network.ErrorReason|undefined), interceptionId: Protocol.Network.InterceptionId, rawResponse: (string|undefined), method: (string|undefined)}} */
+Protocol.NetworkAgent.prototype.continueInterceptedRequest = function(interceptionId, opt_errorReason, opt_rawResponse, opt_url, opt_method, opt_postData, opt_headers, opt_authChallengeResponse) {};
+/** @typedef {!{postData: (string|undefined), headers: (Protocol.Network.Headers|undefined), url: (string|undefined), authChallengeResponse: (Protocol.Network.AuthChallengeResponse|undefined), errorReason: (Protocol.Network.ErrorReason|undefined), interceptionId: Protocol.Network.InterceptionId, rawResponse: (string|undefined), method: (string|undefined)}} */
 Protocol.NetworkAgent.ContinueInterceptedRequestRequest;
 /** @typedef {Object|undefined} */
 Protocol.NetworkAgent.ContinueInterceptedRequestResponse;
@@ -1836,7 +1837,9 @@ Protocol.Network.RequestReferrerPolicy = {
     NoReferrer: "no-referrer",
     Origin: "origin",
     OriginWhenCrossOrigin: "origin-when-cross-origin",
-    NoReferrerWhenDowngradeOriginWhenCrossOrigin: "no-referrer-when-downgrade-origin-when-cross-origin"
+    SameOrigin: "same-origin",
+    StrictOrigin: "strict-origin",
+    StrictOriginWhenCrossOrigin: "strict-origin-when-cross-origin"
 };
 
 /** @typedef {!{url:(string), method:(string), headers:(Protocol.Network.Headers), postData:(string|undefined), mixedContentType:(Protocol.Network.RequestMixedContentType|undefined), initialPriority:(Protocol.Network.ResourcePriority), referrerPolicy:(Protocol.Network.RequestReferrerPolicy), isLinkPreload:(boolean|undefined)}} */
@@ -1886,6 +1889,25 @@ Protocol.Network.Initiator;
 
 /** @typedef {!{name:(string), value:(string), domain:(string), path:(string), expires:(number), size:(number), httpOnly:(boolean), secure:(boolean), session:(boolean), sameSite:(Protocol.Network.CookieSameSite|undefined)}} */
 Protocol.Network.Cookie;
+
+/** @enum {string} */
+Protocol.Network.AuthChallengeSource = {
+    Server: "Server",
+    Proxy: "Proxy"
+};
+
+/** @typedef {!{source:(Protocol.Network.AuthChallengeSource|undefined), origin:(string), scheme:(string), realm:(string)}} */
+Protocol.Network.AuthChallenge;
+
+/** @enum {string} */
+Protocol.Network.AuthChallengeResponseResponse = {
+    Default: "Default",
+    CancelAuth: "CancelAuth",
+    ProvideCredentials: "ProvideCredentials"
+};
+
+/** @typedef {!{response:(Protocol.Network.AuthChallengeResponseResponse), username:(string|undefined), password:(string|undefined)}} */
+Protocol.Network.AuthChallengeResponse;
 /** @interface */
 Protocol.NetworkDispatcher = function() {};
 /**
@@ -1993,14 +2015,15 @@ Protocol.NetworkDispatcher.prototype.webSocketFrameSent = function(requestId, ti
  */
 Protocol.NetworkDispatcher.prototype.eventSourceMessageReceived = function(requestId, timestamp, eventName, eventId, data) {};
 /**
- * @param {Protocol.Network.InterceptionId} InterceptionId
+ * @param {Protocol.Network.InterceptionId} interceptionId
  * @param {Protocol.Network.Request} request
  * @param {Protocol.Page.ResourceType} resourceType
  * @param {Protocol.Network.Headers=} opt_redirectHeaders
  * @param {number=} opt_redirectStatusCode
  * @param {string=} opt_redirectUrl
+ * @param {Protocol.Network.AuthChallenge=} opt_authChallenge
  */
-Protocol.NetworkDispatcher.prototype.requestIntercepted = function(InterceptionId, request, resourceType, opt_redirectHeaders, opt_redirectStatusCode, opt_redirectUrl) {};
+Protocol.NetworkDispatcher.prototype.requestIntercepted = function(interceptionId, request, resourceType, opt_redirectHeaders, opt_redirectStatusCode, opt_redirectUrl, opt_authChallenge) {};
 Protocol.Database = {};
 
 
@@ -2299,7 +2322,7 @@ Protocol.CacheStorageAgent.prototype.invoke_deleteEntry = function(obj) {};
 /** @typedef {string} */
 Protocol.CacheStorage.CacheId;
 
-/** @typedef {!{request:(string), response:(string)}} */
+/** @typedef {!{request:(string), response:(string), responseTime:(number)}} */
 Protocol.CacheStorage.DataEntry;
 
 /** @typedef {!{cacheId:(Protocol.CacheStorage.CacheId), securityOrigin:(string), cacheName:(string)}} */
@@ -3472,20 +3495,6 @@ Protocol.CSSAgent.GetBackgroundColorsResponse;
 Protocol.CSSAgent.prototype.invoke_getBackgroundColors = function(obj) {};
 
 /**
- * @param {!Array<string>} computedStyleWhitelist
- * @return {!Promise<?Array<Protocol.CSS.LayoutTreeNode>>}
- */
-Protocol.CSSAgent.prototype.getLayoutTreeAndStyles = function(computedStyleWhitelist) {};
-/** @typedef {!{computedStyleWhitelist: !Array<string>}} */
-Protocol.CSSAgent.GetLayoutTreeAndStylesRequest;
-/** @typedef {!{layoutTreeNodes: !Array<Protocol.CSS.LayoutTreeNode>, computedStyles: !Array<Protocol.CSS.ComputedStyle>}} */
-Protocol.CSSAgent.GetLayoutTreeAndStylesResponse;
-/**
- * @param {!Protocol.CSSAgent.GetLayoutTreeAndStylesRequest} obj
- * @return {!Promise<!Protocol.CSSAgent.GetLayoutTreeAndStylesResponse>} */
-Protocol.CSSAgent.prototype.invoke_getLayoutTreeAndStyles = function(obj) {};
-
-/**
  * @return {!Promise<undefined>}
  */
 Protocol.CSSAgent.prototype.startRuleUsageTracking = function() {};
@@ -3605,12 +3614,6 @@ Protocol.CSS.StyleDeclarationEdit;
 
 /** @typedef {!{boundingBox:(Protocol.DOM.Rect), startCharacterIndex:(number), numCharacters:(number)}} */
 Protocol.CSS.InlineTextBox;
-
-/** @typedef {!{nodeId:(Protocol.DOM.NodeId), boundingBox:(Protocol.DOM.Rect), layoutText:(string|undefined), inlineTextNodes:(!Array<Protocol.CSS.InlineTextBox>|undefined), styleIndex:(number|undefined)}} */
-Protocol.CSS.LayoutTreeNode;
-
-/** @typedef {!{properties:(!Array<Protocol.CSS.CSSComputedStyleProperty>)}} */
-Protocol.CSS.ComputedStyle;
 /** @interface */
 Protocol.CSSDispatcher = function() {};
 Protocol.CSSDispatcher.prototype.mediaQueryResultChanged = function() {};
@@ -5153,6 +5156,20 @@ Protocol.StorageAgent.ClearDataForOriginResponse;
  * @return {!Promise<!Protocol.StorageAgent.ClearDataForOriginResponse>} */
 Protocol.StorageAgent.prototype.invoke_clearDataForOrigin = function(obj) {};
 
+/**
+ * @param {string} origin
+ * @return {!Promise<?number>}
+ */
+Protocol.StorageAgent.prototype.getUsageAndQuota = function(origin) {};
+/** @typedef {!{origin: string}} */
+Protocol.StorageAgent.GetUsageAndQuotaRequest;
+/** @typedef {!{usage: number, usageBreakdown: !Array<Protocol.Storage.UsageForType>, quota: number}} */
+Protocol.StorageAgent.GetUsageAndQuotaResponse;
+/**
+ * @param {!Protocol.StorageAgent.GetUsageAndQuotaRequest} obj
+ * @return {!Promise<!Protocol.StorageAgent.GetUsageAndQuotaResponse>} */
+Protocol.StorageAgent.prototype.invoke_getUsageAndQuota = function(obj) {};
+
 /** @enum {string} */
 Protocol.Storage.StorageType = {
     Appcache: "appcache",
@@ -5164,8 +5181,12 @@ Protocol.Storage.StorageType = {
     Websql: "websql",
     Service_workers: "service_workers",
     Cache_storage: "cache_storage",
-    All: "all"
+    All: "all",
+    Other: "other"
 };
+
+/** @typedef {!{storageType:(Protocol.Storage.StorageType), usage:(number)}} */
+Protocol.Storage.UsageForType;
 /** @interface */
 Protocol.StorageDispatcher = function() {};
 Protocol.Log = {};
@@ -5832,8 +5853,9 @@ Protocol.RuntimeDispatcher.prototype.exceptionRevoked = function(reason, excepti
  * @param {Protocol.Runtime.ExecutionContextId} executionContextId
  * @param {Protocol.Runtime.Timestamp} timestamp
  * @param {Protocol.Runtime.StackTrace=} opt_stackTrace
+ * @param {string=} opt_context
  */
-Protocol.RuntimeDispatcher.prototype.consoleAPICalled = function(type, args, executionContextId, timestamp, opt_stackTrace) {};
+Protocol.RuntimeDispatcher.prototype.consoleAPICalled = function(type, args, executionContextId, timestamp, opt_stackTrace, opt_context) {};
 /**
  * @param {Protocol.Runtime.RemoteObject} object
  * @param {!Object} hints
@@ -6525,7 +6547,7 @@ Protocol.Profiler.PositionTickInfo;
 /** @typedef {!{startOffset:(number), endOffset:(number), count:(number)}} */
 Protocol.Profiler.CoverageRange;
 
-/** @typedef {!{functionName:(string), ranges:(!Array<Protocol.Profiler.CoverageRange>)}} */
+/** @typedef {!{functionName:(string), ranges:(!Array<Protocol.Profiler.CoverageRange>), isBlockCoverage:(boolean)}} */
 Protocol.Profiler.FunctionCoverage;
 
 /** @typedef {!{scriptId:(Protocol.Runtime.ScriptId), url:(string), functions:(!Array<Protocol.Profiler.FunctionCoverage>)}} */
