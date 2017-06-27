@@ -15,10 +15,11 @@ devtools #1      namespacesCache is cool now
 automate         trigger! [:pause-on-breakpoint]
 devtools #1      setCurrentPanel: sources
 automate #1      scrape! [:callstack-pane-functions]
-stdout           displayed 23 items:
+stdout           displayed 24 items:
                   * breakpoint-demo / dirac.tests.scenarios.breakpoint.core/breakpoint-demo
                   * breakpoint-demo-handler / dirac.tests.scenarios.breakpoint.core/breakpoint-demo-handler
                   * λ
+                  * IFn:-invoke² (apply-to-simple) / cljs.core.IFn:-invoke² (cljs.core/apply-to-simple)
                   * IFn:-invoke² (apply) / cljs.core.IFn:-invoke² (cljs.core/apply)
                   * apply / cljs.core/apply
                   * call-trigger! / dirac.automation.scenario/call-trigger!
@@ -60,10 +61,11 @@ devtools #2      namespacesCache is cool now
 automate         trigger! [:pause-on-breakpoint]
 devtools #2      setCurrentPanel: sources
 automate #2      scrape! [:callstack-pane-functions]
-stdout           displayed 23 items:
+stdout           displayed 24 items:
                   * dirac$tests$scenarios$breakpoint$core$breakpoint_demo
                   * dirac$tests$scenarios$breakpoint$core$breakpoint_demo_handler
                   * (anonymous)
+                  * cljs.core.apply_to_simple.cljs$core$IFn$_invoke$arity$2
                   * cljs.core.apply.cljs$core$IFn$_invoke$arity$2
                   * cljs$core$apply
                   * dirac$automation$scenario$call_trigger_BANG_
@@ -111,7 +113,7 @@ devtools #3      displayWelcomeMessage
 automate         trigger! [:cause-exception]
 scenario         uncaught exception: Error: :invalid is not ISeqable
 automate #3      scrape! [:function-names-in-last-console-exception]
-stdout           displayed 43 items:
+stdout           displayed 44 items:
                   * seq
                   * IFn:-invoke³ (seq-reduce)
                   * IFn:-invoke³ (reduce)
@@ -136,6 +138,7 @@ stdout           displayed 43 items:
                   * exception-demo!
                   * exception-demo-handler
                   * λ
+                  * IFn:-invoke² (apply-to-simple)
                   * IFn:-invoke² (apply)
                   * apply
                   * call-trigger!
@@ -173,7 +176,7 @@ devtools #4      namespacesCache is cool now
 automate         trigger! [:async]
 devtools #4      setCurrentPanel: sources
 automate #4      scrape! [:callstack-pane-functions]
-stdout           displayed 58 items:
+stdout           displayed 59 items:
                   * break-here! / dirac.tests.scenarios.core-async/break-here!
                   * λ
                   * λ
@@ -212,6 +215,7 @@ stdout           displayed 58 items:
                   * break-async / dirac.tests.scenarios.core-async/break-async
                   * break-async-handler / dirac.tests.scenarios.core-async/break-async-handler
                   * λ
+                  * IFn:-invoke² (apply-to-simple) / cljs.core.IFn:-invoke² (cljs.core/apply-to-simple)
                   * IFn:-invoke² (apply) / cljs.core.IFn:-invoke² (cljs.core/apply)
                   * apply / cljs.core/apply
                   * call-trigger! / dirac.automation.scenario/call-trigger!
@@ -237,5 +241,5 @@ extension        handling command: close-dirac-devtools
 extension        unregister devtools #4
 ∎
 automate         close-scenario! ["scenario-tab#4"]
-summary          Automated 28 actions with 11 check-points containing 4 assertions.
+summary          Automated 28 actions with 11 check-points containing 0 assertions.
                  0 failures, 0 errors.

@@ -15,10 +15,11 @@ devtools #1      namespacesCache is cool now
 automate         trigger! [:pause-on-breakpoint]
 devtools #1      setCurrentPanel: sources
 automate #1      scrape! [:callstack-pane-locations]
-stdout           displayed 22 items:
+stdout           displayed 23 items:
                   * core.cljs:<line> / core.cljs:<line>
                   * core.cljs:<line> / core.cljs:<line>
                   * breakpoint.cljs:<line> / breakpoint.cljs:<line>
+                  * core.cljs:<line> / core.cljs:<line>
                   * core.cljs:<line> / core.cljs:<line>
                   * core.cljs:<line> / core.cljs:<line>
                   * scenario.cljs:<line> / scenario.cljs:<line>
@@ -59,10 +60,11 @@ devtools #2      namespacesCache is cool now
 automate         trigger! [:pause-on-breakpoint]
 devtools #2      setCurrentPanel: sources
 automate #2      scrape! [:callstack-pane-locations]
-stdout           displayed 22 items:
+stdout           displayed 23 items:
                   * core.cljs?rel=*** / core.cljs?rel=***
                   * core.cljs?rel=*** / core.cljs?rel=***
                   * breakpoint.cljs…*** / breakpoint.cljs?rel=***
+                  * core.cljs:<line> / core.cljs:<line>
                   * core.cljs:<line> / core.cljs:<line>
                   * core.cljs:<line> / core.cljs:<line>
                   * scenario.cljs?r…*** / scenario.cljs?rel=***
@@ -89,5 +91,5 @@ automate         restore-options!
 extension        reset extension options:{:enable-clustered-locals true, :inline-custom-formatters true, :use-backend-supported-api true, :enable-parinfer true, :use-backend-supported-css true, :beautify-function-names true, :enable-friendly-locals true, :user-frontend-url-params nil, :clean-urls true, :enable-repl true, :welcome-message true, :open-as "window", :target-url "http://localhost:<port>", :link-actions true}
 ∎
 automate         close-scenario! ["scenario-tab#2"]
-summary          Automated 15 actions with 4 check-points containing 2 assertions.
+summary          Automated 15 actions with 4 check-points containing 0 assertions.
                  0 failures, 0 errors.
