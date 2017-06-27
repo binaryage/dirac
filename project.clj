@@ -10,7 +10,7 @@
         :url  "https://github.com/binaryage/dirac"}
 
   :dependencies [[org.clojure/clojure "1.9.0-alpha17" :scope "provided"]
-                 [org.clojure/clojurescript "1.9.562" :scope "provided"]
+                 [org.clojure/clojurescript "1.9.660" :scope "provided"]
                  [org.clojure/core.async "0.3.443"]
                  [org.clojure/tools.logging "0.4.0"]
                  [org.clojure/tools.cli "0.3.5"]
@@ -34,7 +34,7 @@
                  [rum-reforms "0.4.3" :scope "test"]
                  [cljsjs/parinfer "2.0.0-0" :scope "test"]
                  [com.lucasbradstreet/cljs-uuid-utils "1.0.2" :scope "test"]
-                 [com.rpl/specter "1.0.2" :scope "test"]
+                 [com.rpl/specter "1.0.3-SNAPSHOT" :scope "test"]
                  [org.clojure/tools.namespace "0.3.0-alpha3" :scope "test"]
                  [org.clojure/tools.reader "1.0.0" :scope "test"]
 
