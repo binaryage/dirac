@@ -52,10 +52,10 @@ Accessibility.AccessibilitySidebarView = class extends UI.ThrottledWidget {
 
     this._axNode = axNode;
 
-    if (axNode.ignored())
-      this._sidebarPaneStack.removeView(this._ariaSubPane);
-    else
+    if (axNode.isDOMNode())
       this._sidebarPaneStack.showView(this._ariaSubPane, this._axNodeSubPane);
+    else
+      this._sidebarPaneStack.removeView(this._ariaSubPane);
 
     if (this._axNodeSubPane)
       this._axNodeSubPane.setAXNode(axNode);
@@ -153,7 +153,7 @@ Accessibility.AccessibilitySubPane = class extends UI.SimpleView {
     super(name);
 
     this._axNode = null;
-    this.registerRequiredCSS('accessibility/accessibilityNode.css');
+    this.registerRequiredCSS('accessibility/accessibilityProperties.css');
   }
 
   /**
@@ -195,9 +195,11 @@ Accessibility.AccessibilitySubPane = class extends UI.SimpleView {
   createTreeOutline() {
     var treeOutline = new UI.TreeOutlineInShadow();
     treeOutline.registerRequiredCSS('accessibility/accessibilityNode.css');
+    treeOutline.registerRequiredCSS('accessibility/accessibilityProperties.css');
     treeOutline.registerRequiredCSS('object_ui/objectValue.css');
 
     treeOutline.element.classList.add('hidden');
+    treeOutline.hideOverflow();
     this.element.appendChild(treeOutline.element);
     return treeOutline;
   }

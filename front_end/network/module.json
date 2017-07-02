@@ -119,20 +119,16 @@
         "perf_ui",
         "cookie_table",
         "data_grid",
-        "object_ui",
         "network_log",
         "product_registry",
         "mobile_throttling",
-        "network_priorities",
-        "formatter"
+        "network_priorities"
     ],
     "scripts": [
         "BlockedURLsPane.js",
         "EventSourceMessagesView.js",
         "FilterSuggestionBuilder.js",
         "HARWriter.js",
-        "JSONView.js",
-        "RequestView.js",
         "NetworkConfigView.js",
         "NetworkDataGridNode.js",
         "NetworkItemView.js",
@@ -146,12 +142,11 @@
         "RequestCookiesView.js",
         "RequestHeadersView.js",
         "RequestHTMLView.js",
-        "RequestPreviewView.js",
         "RequestResponseView.js",
+        "RequestPreviewView.js",
         "RequestTimingView.js",
         "ResourceWebSocketFrameView.js",
-        "NetworkPanel.js",
-        "XMLView.js"
+        "NetworkPanel.js"
     ],
     "resources": [
         "blockedURLsPane.css",
@@ -165,8 +160,6 @@
         "requestCookiesView.css",
         "requestHeadersTree.css",
         "requestHeadersView.css",
-        "webSocketFrameView.css",
-        "xmlTree.css",
-        "xmlView.css"
+        "webSocketFrameView.css"
     ]
 }
