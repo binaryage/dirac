@@ -1,146 +1,146 @@
-/** @type {!Object} */
+/** @const */
 var Accessibility = {};
-/** @type {!Object} */
+/** @const */
 var Animation = {};
-/** @type {!Object} */
+/** @const */
 var Audits = {};
-/** @type {!Object} */
+/** @const */
 var Audits2 = {};
-/** @type {!Object} */
+/** @const */
 var Bindings = {};
-/** @type {!Object} */
+/** @const */
 var Changes = {};
-/** @type {!Object} */
+/** @const */
 var Cm = {};
-/** @type {!Object} */
+/** @const */
 var CmHeadless = {};
-/** @type {!Object} */
+/** @const */
 var CmModes = {};
-/** @type {!Object} */
+/** @const */
 var ColorPicker = {};
-/** @type {!Object} */
+/** @const */
 var Common = {};
-/** @type {!Object} */
+/** @const */
 var Components = {};
-/** @type {!Object} */
+/** @const */
 var ConsoleModel = {};
-/** @type {!Object} */
+/** @const */
 var ConsoleTestRunner = {};
-/** @type {!Object} */
+/** @const */
 var CookieTable = {};
-/** @type {!Object} */
+/** @const */
 var Coverage = {};
-/** @type {!Object} */
+/** @const */
 var DataGrid = {};
-/** @type {!Object} */
+/** @const */
 var Devices = {};
-/** @type {!Object} */
+/** @const */
 var Diff = {};
-/** @type {!Object} */
+/** @const */
 var Dirac = {};
-/** @type {!Object} */
+/** @const */
 var DiracLazy = {};
-/** @type {!Object} */
+/** @const */
 var DomExtension = {};
-/** @type {!Object} */
+/** @const */
 var Elements = {};
-/** @type {!Object} */
+/** @const */
 var EmulatedDevices = {};
-/** @type {!Object} */
+/** @const */
 var Emulation = {};
-/** @type {!Object} */
+/** @const */
 var EventListeners = {};
-/** @type {!Object} */
+/** @const */
 var Extensions = {};
-/** @type {!Object} */
+/** @const */
 var Formatter = {};
-/** @type {!Object} */
+/** @const */
 var FormatterWorker = {};
-/** @type {!Object} */
+/** @const */
 var HeapSnapshotModel = {};
-/** @type {!Object} */
+/** @const */
 var HeapSnapshotWorker = {};
-/** @type {!Object} */
+/** @const */
 var Help = {};
-/** @type {!Object} */
+/** @const */
 var Host = {};
-/** @type {!Object} */
+/** @const */
 var InlineEditor = {};
-/** @type {!Object} */
+/** @const */
 var IntegrationTestRunner = {};
-/** @type {!Object} */
+/** @const */
 var LayerViewer = {};
-/** @type {!Object} */
+/** @const */
 var Layers = {};
-/** @type {!Object} */
+/** @const */
 var Main = {};
-/** @type {!Object} */
+/** @const */
 var MobileThrottling = {};
-/** @type {!Object} */
+/** @const */
 var Network = {};
-/** @type {!Object} */
+/** @const */
 var NetworkLog = {};
-/** @type {!Object} */
+/** @const */
 var NetworkPriorities = {};
-/** @type {!Object} */
+/** @const */
 var ObjectUI = {};
-/** @type {!Object} */
+/** @const */
 var PerfUI = {};
-/** @type {!Object} */
+/** @const */
 var Persistence = {};
-/** @type {!Object} */
+/** @const */
 var Platform = {};
-/** @type {!Object} */
+/** @const */
 var ProductRegistry = {};
-/** @type {!Object} */
+/** @const */
 var ProductRegistryImpl = {};
-/** @type {!Object} */
+/** @const */
 var Profiler = {};
-/** @type {!Object} */
+/** @const */
 var Protocol = {};
-/** @type {!Object} */
+/** @const */
 var QuickOpen = {};
-/** @type {!Object} */
+/** @const */
 var Resources = {};
-/** @type {!Object} */
+/** @const */
 var SDK = {};
-/** @type {!Object} */
+/** @const */
 var Sass = {};
-/** @type {!Object} */
+/** @const */
 var Screencast = {};
-/** @type {!Object} */
+/** @const */
 var Security = {};
-/** @type {!Object} */
+/** @const */
 var Services = {};
-/** @type {!Object} */
+/** @const */
 var Settings = {};
-/** @type {!Object} */
+/** @const */
 var Shell = {};
-/** @type {!Object} */
+/** @const */
 var Snippets = {};
-/** @type {!Object} */
+/** @const */
 var SourceFrame = {};
-/** @type {!Object} */
+/** @const */
 var Sources = {};
-/** @type {!Object} */
+/** @const */
 var TestRunner = {};
-/** @type {!Object} */
+/** @const */
 var TextEditor = {};
-/** @type {!Object} */
+/** @const */
 var TextUtils = {};
-/** @type {!Object} */
+/** @const */
 var Timeline = {};
-/** @type {!Object} */
+/** @const */
 var TimelineModel = {};
-/** @type {!Object} */
+/** @const */
 var ToolboxBootstrap = {};
-/** @type {!Object} */
+/** @const */
 var UI = {};
-/** @type {!Object} */
+/** @const */
 var UtilitySharedWorker = {};
-/** @type {!Object} */
+/** @const */
 var WorkerService = {};
-/** @type {!Object} */
+/** @const */
 var Workspace = {};
-/** @type {!Object} */
+/** @const */
 var WorkspaceDiff = {};

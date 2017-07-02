@@ -1,5 +1,5 @@
-Protocol.BakedSupportedCSSPropertiesChromeTag='61.0.3141.4';
-Protocol.BakedSupportedCSSPropertiesChromeRev='142058a0c172ba2260fde35aded4749bd346decd';
+Protocol.BakedSupportedCSSPropertiesChromeTag='61.0.3147.2';
+Protocol.BakedSupportedCSSPropertiesChromeRev='829f2e0b37d0175ac65aee0cbc9a603fcc994db7';
 Protocol.BakedSupportedCSSProperties=''
 + '[{"name": "-webkit-app-region"},\n'
 + ' {"name": "-webkit-appearance"},\n'
@@ -183,7 +183,7 @@ Protocol.BakedSupportedCSSProperties=''
 + ' {"name": "clip"},\n'
 + ' {"name": "clip-path"},\n'
 + ' {"svg": true, "name": "clip-rule", "inherited": true},\n'
-+ ' {"inherited": true, "name": "color"},\n'
++ ' {"name": "color", "inherited": true},\n'
 + ' {"svg": true, "name": "color-interpolation", "inherited": true},\n'
 + ' {"svg": true, "name": "color-interpolation-filters", "inherited": true},\n'
 + ' {"svg": true, "name": "color-rendering", "inherited": true},\n'

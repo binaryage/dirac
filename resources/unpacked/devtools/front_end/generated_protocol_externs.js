@@ -3652,7 +3652,7 @@ Protocol.DOMSnapshotAgent.GetSnapshotResponse;
  * @return {!Promise<!Protocol.DOMSnapshotAgent.GetSnapshotResponse>} */
 Protocol.DOMSnapshotAgent.prototype.invoke_getSnapshot = function(obj) {};
 
-/** @typedef {!{nodeType:(number), nodeName:(string), nodeValue:(string), backendNodeId:(Protocol.DOM.BackendNodeId), childNodeIndexes:(!Array<number>|undefined), attributes:(!Array<Protocol.DOMSnapshot.NameValue>|undefined), pseudoElementIndexes:(!Array<number>|undefined), layoutNodeIndex:(number|undefined), documentURL:(string|undefined), baseURL:(string|undefined), publicId:(string|undefined), systemId:(string|undefined), frameId:(Protocol.Page.FrameId|undefined), contentDocumentIndex:(number|undefined), importedDocumentIndex:(number|undefined), templateContentIndex:(number|undefined), pseudoType:(Protocol.DOM.PseudoType|undefined)}} */
+/** @typedef {!{nodeType:(number), nodeName:(string), nodeValue:(string), backendNodeId:(Protocol.DOM.BackendNodeId), childNodeIndexes:(!Array<number>|undefined), attributes:(!Array<Protocol.DOMSnapshot.NameValue>|undefined), pseudoElementIndexes:(!Array<number>|undefined), layoutNodeIndex:(number|undefined), documentURL:(string|undefined), baseURL:(string|undefined), contentLanguage:(string|undefined), publicId:(string|undefined), systemId:(string|undefined), frameId:(Protocol.Page.FrameId|undefined), contentDocumentIndex:(number|undefined), importedDocumentIndex:(number|undefined), templateContentIndex:(number|undefined), pseudoType:(Protocol.DOM.PseudoType|undefined), isClickable:(boolean|undefined)}} */
 Protocol.DOMSnapshot.DOMNode;
 
 /** @typedef {!{domNodeIndex:(number), boundingBox:(Protocol.DOM.Rect), layoutText:(string|undefined), inlineTextNodes:(!Array<Protocol.CSS.InlineTextBox>|undefined), styleIndex:(number|undefined)}} */
@@ -4071,7 +4071,7 @@ Protocol.Target.TargetID;
 /** @typedef {string} */
 Protocol.Target.BrowserContextID;
 
-/** @typedef {!{targetId:(Protocol.Target.TargetID), type:(string), title:(string), url:(string)}} */
+/** @typedef {!{targetId:(Protocol.Target.TargetID), type:(string), title:(string), url:(string), attached:(boolean)}} */
 Protocol.Target.TargetInfo;
 
 /** @typedef {!{host:(string), port:(number)}} */
@@ -4082,6 +4082,10 @@ Protocol.TargetDispatcher = function() {};
  * @param {Protocol.Target.TargetInfo} targetInfo
  */
 Protocol.TargetDispatcher.prototype.targetCreated = function(targetInfo) {};
+/**
+ * @param {Protocol.Target.TargetInfo} targetInfo
+ */
+Protocol.TargetDispatcher.prototype.targetInfoChanged = function(targetInfo) {};
 /**
  * @param {Protocol.Target.TargetID} targetId
  */

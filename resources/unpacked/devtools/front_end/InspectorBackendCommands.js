@@ -1,5 +1,5 @@
-Protocol.BakedInspectorBackendAPIChromeTag='61.0.3141.4';
-Protocol.BakedInspectorBackendAPIChromeRev='142058a0c172ba2260fde35aded4749bd346decd';
+Protocol.BakedInspectorBackendAPIChromeTag='61.0.3147.2';
+Protocol.BakedInspectorBackendAPIChromeRev='829f2e0b37d0175ac65aee0cbc9a603fcc994db7';
 Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerEvent("Inspector.detached", ["reason"]);\n'
 + 'Protocol.inspectorBackend.registerEvent("Inspector.targetCrashed", []);\n'
@@ -292,6 +292,7 @@ Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerCommand("DOMDebugger.removeXHRBreakpoint", [{"name": "url", "type": "string", "optional": false}], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("DOMDebugger.getEventListeners", [{"name": "objectId", "type": "string", "optional": false}, {"name": "depth", "type": "number", "optional": true}, {"name": "pierce", "type": "boolean", "optional": true}], ["listeners"], false);\n'
 + 'Protocol.inspectorBackend.registerEvent("Target.targetCreated", ["targetInfo"]);\n'
++ 'Protocol.inspectorBackend.registerEvent("Target.targetInfoChanged", ["targetInfo"]);\n'
 + 'Protocol.inspectorBackend.registerEvent("Target.targetDestroyed", ["targetId"]);\n'
 + 'Protocol.inspectorBackend.registerEvent("Target.attachedToTarget", ["targetInfo", "waitingForDebugger"]);\n'
 + 'Protocol.inspectorBackend.registerEvent("Target.detachedFromTarget", ["targetId"]);\n'
