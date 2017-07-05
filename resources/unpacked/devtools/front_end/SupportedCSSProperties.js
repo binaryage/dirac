@@ -1,5 +1,5 @@
-Protocol.BakedSupportedCSSPropertiesChromeTag='61.0.3147.2';
-Protocol.BakedSupportedCSSPropertiesChromeRev='829f2e0b37d0175ac65aee0cbc9a603fcc994db7';
+Protocol.BakedSupportedCSSPropertiesChromeTag='61.0.3149.2';
+Protocol.BakedSupportedCSSPropertiesChromeRev='3c79d018fb4953a250235e6bcbafe7a18d52dc52';
 Protocol.BakedSupportedCSSProperties=''
 + '[{"name": "-webkit-app-region"},\n'
 + ' {"name": "-webkit-appearance"},\n'

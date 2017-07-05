@@ -1,5 +1,5 @@
-Protocol.BakedInspectorBackendAPIChromeTag='61.0.3147.2';
-Protocol.BakedInspectorBackendAPIChromeRev='829f2e0b37d0175ac65aee0cbc9a603fcc994db7';
+Protocol.BakedInspectorBackendAPIChromeTag='61.0.3149.2';
+Protocol.BakedInspectorBackendAPIChromeRev='3c79d018fb4953a250235e6bcbafe7a18d52dc52';
 Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerEvent("Inspector.detached", ["reason"]);\n'
 + 'Protocol.inspectorBackend.registerEvent("Inspector.targetCrashed", []);\n'
@@ -123,9 +123,9 @@ Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerEnum("Network.AuthChallengeSource", {Server: "Server", Proxy: "Proxy"});\n'
 + 'Protocol.inspectorBackend.registerEnum("Network.AuthChallengeResponseResponse", {Default: "Default", CancelAuth: "CancelAuth", ProvideCredentials: "ProvideCredentials"});\n'
 + 'Protocol.inspectorBackend.registerEvent("Network.resourceChangedPriority", ["requestId", "newPriority", "timestamp"]);\n'
-+ 'Protocol.inspectorBackend.registerEvent("Network.requestWillBeSent", ["requestId", "frameId", "loaderId", "documentURL", "request", "timestamp", "wallTime", "initiator", "redirectResponse", "type"]);\n'
++ 'Protocol.inspectorBackend.registerEvent("Network.requestWillBeSent", ["requestId", "loaderId", "documentURL", "request", "timestamp", "wallTime", "initiator", "redirectResponse", "type", "frameId"]);\n'
 + 'Protocol.inspectorBackend.registerEvent("Network.requestServedFromCache", ["requestId"]);\n'
-+ 'Protocol.inspectorBackend.registerEvent("Network.responseReceived", ["requestId", "frameId", "loaderId", "timestamp", "type", "response"]);\n'
++ 'Protocol.inspectorBackend.registerEvent("Network.responseReceived", ["requestId", "loaderId", "timestamp", "type", "response", "frameId"]);\n'
 + 'Protocol.inspectorBackend.registerEvent("Network.dataReceived", ["requestId", "timestamp", "dataLength", "encodedDataLength"]);\n'
 + 'Protocol.inspectorBackend.registerEvent("Network.loadingFinished", ["requestId", "timestamp", "encodedDataLength"]);\n'
 + 'Protocol.inspectorBackend.registerEvent("Network.loadingFailed", ["requestId", "timestamp", "type", "errorText", "canceled", "blockedReason"]);\n'
