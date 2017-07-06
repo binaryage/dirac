@@ -1918,7 +1918,6 @@ Protocol.NetworkDispatcher = function() {};
 Protocol.NetworkDispatcher.prototype.resourceChangedPriority = function(requestId, newPriority, timestamp) {};
 /**
  * @param {Protocol.Network.RequestId} requestId
- * @param {Protocol.Page.FrameId} frameId
  * @param {Protocol.Network.LoaderId} loaderId
  * @param {string} documentURL
  * @param {Protocol.Network.Request} request
@@ -1927,21 +1926,22 @@ Protocol.NetworkDispatcher.prototype.resourceChangedPriority = function(requestI
  * @param {Protocol.Network.Initiator} initiator
  * @param {Protocol.Network.Response=} opt_redirectResponse
  * @param {Protocol.Page.ResourceType=} opt_type
+ * @param {Protocol.Page.FrameId=} opt_frameId
  */
-Protocol.NetworkDispatcher.prototype.requestWillBeSent = function(requestId, frameId, loaderId, documentURL, request, timestamp, wallTime, initiator, opt_redirectResponse, opt_type) {};
+Protocol.NetworkDispatcher.prototype.requestWillBeSent = function(requestId, loaderId, documentURL, request, timestamp, wallTime, initiator, opt_redirectResponse, opt_type, opt_frameId) {};
 /**
  * @param {Protocol.Network.RequestId} requestId
  */
 Protocol.NetworkDispatcher.prototype.requestServedFromCache = function(requestId) {};
 /**
  * @param {Protocol.Network.RequestId} requestId
- * @param {Protocol.Page.FrameId} frameId
  * @param {Protocol.Network.LoaderId} loaderId
  * @param {Protocol.Network.Timestamp} timestamp
  * @param {Protocol.Page.ResourceType} type
  * @param {Protocol.Network.Response} response
+ * @param {Protocol.Page.FrameId=} opt_frameId
  */
-Protocol.NetworkDispatcher.prototype.responseReceived = function(requestId, frameId, loaderId, timestamp, type, response) {};
+Protocol.NetworkDispatcher.prototype.responseReceived = function(requestId, loaderId, timestamp, type, response, opt_frameId) {};
 /**
  * @param {Protocol.Network.RequestId} requestId
  * @param {Protocol.Network.Timestamp} timestamp
@@ -3652,7 +3652,7 @@ Protocol.DOMSnapshotAgent.GetSnapshotResponse;
  * @return {!Promise<!Protocol.DOMSnapshotAgent.GetSnapshotResponse>} */
 Protocol.DOMSnapshotAgent.prototype.invoke_getSnapshot = function(obj) {};
 
-/** @typedef {!{nodeType:(number), nodeName:(string), nodeValue:(string), backendNodeId:(Protocol.DOM.BackendNodeId), childNodeIndexes:(!Array<number>|undefined), attributes:(!Array<Protocol.DOMSnapshot.NameValue>|undefined), pseudoElementIndexes:(!Array<number>|undefined), layoutNodeIndex:(number|undefined), documentURL:(string|undefined), baseURL:(string|undefined), publicId:(string|undefined), systemId:(string|undefined), frameId:(Protocol.Page.FrameId|undefined), contentDocumentIndex:(number|undefined), importedDocumentIndex:(number|undefined), templateContentIndex:(number|undefined), pseudoType:(Protocol.DOM.PseudoType|undefined)}} */
+/** @typedef {!{nodeType:(number), nodeName:(string), nodeValue:(string), backendNodeId:(Protocol.DOM.BackendNodeId), childNodeIndexes:(!Array<number>|undefined), attributes:(!Array<Protocol.DOMSnapshot.NameValue>|undefined), pseudoElementIndexes:(!Array<number>|undefined), layoutNodeIndex:(number|undefined), documentURL:(string|undefined), baseURL:(string|undefined), contentLanguage:(string|undefined), publicId:(string|undefined), systemId:(string|undefined), frameId:(Protocol.Page.FrameId|undefined), contentDocumentIndex:(number|undefined), importedDocumentIndex:(number|undefined), templateContentIndex:(number|undefined), pseudoType:(Protocol.DOM.PseudoType|undefined), isClickable:(boolean|undefined)}} */
 Protocol.DOMSnapshot.DOMNode;
 
 /** @typedef {!{domNodeIndex:(number), boundingBox:(Protocol.DOM.Rect), layoutText:(string|undefined), inlineTextNodes:(!Array<Protocol.CSS.InlineTextBox>|undefined), styleIndex:(number|undefined)}} */
@@ -4071,7 +4071,7 @@ Protocol.Target.TargetID;
 /** @typedef {string} */
 Protocol.Target.BrowserContextID;
 
-/** @typedef {!{targetId:(Protocol.Target.TargetID), type:(string), title:(string), url:(string)}} */
+/** @typedef {!{targetId:(Protocol.Target.TargetID), type:(string), title:(string), url:(string), attached:(boolean)}} */
 Protocol.Target.TargetInfo;
 
 /** @typedef {!{host:(string), port:(number)}} */
@@ -4082,6 +4082,10 @@ Protocol.TargetDispatcher = function() {};
  * @param {Protocol.Target.TargetInfo} targetInfo
  */
 Protocol.TargetDispatcher.prototype.targetCreated = function(targetInfo) {};
+/**
+ * @param {Protocol.Target.TargetInfo} targetInfo
+ */
+Protocol.TargetDispatcher.prototype.targetInfoChanged = function(targetInfo) {};
 /**
  * @param {Protocol.Target.TargetID} targetId
  */

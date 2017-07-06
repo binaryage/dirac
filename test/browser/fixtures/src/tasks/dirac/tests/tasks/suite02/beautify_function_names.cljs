@@ -11,7 +11,7 @@
       (with-devtools
         (<!* a/trigger! :pause-on-breakpoint)
         (<!* a/wait-for-devtools-match "setCurrentPanel: sources")
-        (is (= (line-count (<!* a/scrape! :callstack-pane-functions)) 24))
+        (<!* a/scrape! :callstack-pane-functions)
         (<!* a/wait-for-match "* breakpoint-demo / dirac.tests.scenarios.breakpoint.core/breakpoint-demo")
         (<!* a/wait-for-match "* λ")
         (<!* a/wait-for-match "* call-trigger! / dirac.automation.scenario/call-trigger!"))))
@@ -21,7 +21,7 @@
         (with-devtools
           (<!* a/trigger! :pause-on-breakpoint)
           (<!* a/wait-for-devtools-match "setCurrentPanel: sources")
-          (is (= (line-count (<!* a/scrape! :callstack-pane-functions)) 24))
+          (<!* a/scrape! :callstack-pane-functions)
           (<!* a/wait-for-match "* dirac$tests$scenarios$breakpoint$core$breakpoint_demo")
           (<!* a/wait-for-match "* (anonymous)")
           (<!* a/wait-for-match "* dirac$automation$scenario$call_trigger_BANG_")))))
@@ -32,12 +32,12 @@
         (<!* a/trigger! :cause-exception)
         (<!* a/wait-for-match "uncaught exception: Error: :invalid is not ISeqable")
         (<! (timeout 200))                                                                                                    ; we have to give the renderer some time to present it in the dom
-        (is (= (line-count (<!* a/scrape! :function-names-in-last-console-exception)) 44)))))
+        (<!* a/scrape! :function-names-in-last-console-exception))))
   (with-scenario "core-async"
     (testing "core async stack traces"
       (with-devtools
         (<!* a/trigger! :async)
         (<!* a/wait-for-devtools-match "setCurrentPanel: sources")
         (<! (timeout 200))
-        (is (= (line-count (<!* a/scrape! :callstack-pane-functions)) 59))
+        (<!* a/scrape! :callstack-pane-functions)
         (<!* a/wait-for-match "* break-here! / dirac.tests.scenarios.core-async/break-here!")))))
