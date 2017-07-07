@@ -11,7 +11,8 @@
             [dirac.test-lib.agent :refer [with-dirac-agent]]
             [dirac.test-lib.taxi :refer [with-taxi-setup]]
             [dirac.test-lib.nrepl-server :as test-nrepl-server]
-            [dirac.tests.browser.tasks.transcript-streamer-server :refer [with-transcript-streamer-server]]))
+            [dirac.tests.browser.tasks.transcript-streamer-server :refer [with-transcript-streamer-server]])
+  (:import (java.util.logging Logger Level)))
 
 ; this test runner runs tests against real chrome browser using chrome driver
 
@@ -25,9 +26,21 @@
 (def log-level (or (env :dirac-log-level)
                    (env :dirac-browser-tests-log-level) "INFO"))                                                              ; INFO, DEBUG, TRACE, ALL
 
+(def pinned-loggers (atom {}))                                                                                                ; see https://stackoverflow.com/a/40934452/84283
+(defn pin-logger! [name]
+  (let [logger (Logger/getLogger name)]
+    (assert logger)
+    (swap! pinned-loggers assoc name logger)
+    logger))
+
+(defn make-selenium-logger-less-verbose! []
+  (let [selenium-logger (pin-logger! "org.openqa.selenium")]
+    (.setLevel selenium-logger Level/WARNING)))
+
 (defn setup-logging! []
   (logging/setup! {:log-out   :console
-                   :log-level log-level}))
+                   :log-level log-level})
+  (make-selenium-logger-less-verbose!))
 
 (def default-test-namespaces
   ['dirac.tests.browser.tasks.tests])
