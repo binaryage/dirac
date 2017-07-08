@@ -71,6 +71,9 @@
       (machinery/push-devtools-id-to-stack! devtools-id)
       (machinery/DevToolsID. devtools-id))))                                                                                  ; note: we wrap it so we can easily auto-fill devtools-id parameters in action! method
 
+(defn wait-for-devtools-ui [& [delay]]
+  (timeout (or delay 1000)))                                                                                                  ; sometimes we have to give devtools UI some time to update
+
 ; -- devtools-instance targeting actions ------------------------------------------------------------------------------------
 
 (defn ^:devtools close-devtools! [devtools-id]

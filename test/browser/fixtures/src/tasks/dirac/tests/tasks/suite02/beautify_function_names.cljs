@@ -31,13 +31,13 @@
         (<!* a/switch-to-console-panel!)
         (<!* a/trigger! :cause-exception)
         (<!* a/wait-for-match "uncaught exception: Error: :invalid is not ISeqable")
-        (<! (timeout 200))                                                                                                    ; we have to give the renderer some time to present it in the dom
+        (<!* a/wait-for-devtools-ui)
         (<!* a/scrape! :function-names-in-last-console-exception))))
   (with-scenario "core-async"
     (testing "core async stack traces"
       (with-devtools
         (<!* a/trigger! :async)
         (<!* a/wait-for-devtools-match "setCurrentPanel: sources")
-        (<! (timeout 200))
+        (<!* a/wait-for-devtools-ui)
         (<!* a/scrape! :callstack-pane-functions)
         (<!* a/wait-for-match "* break-here! / dirac.tests.scenarios.core-async/break-here!")))))

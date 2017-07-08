@@ -1,5 +1,5 @@
-Protocol.BakedSupportedCSSPropertiesChromeTag='61.0.3149.2';
-Protocol.BakedSupportedCSSPropertiesChromeRev='3c79d018fb4953a250235e6bcbafe7a18d52dc52';
+Protocol.BakedSupportedCSSPropertiesChromeTag='61.0.3151.0';
+Protocol.BakedSupportedCSSPropertiesChromeRev='c8db6c6371ca047c24d41f3972d5819bc83d83ae';
 Protocol.BakedSupportedCSSProperties=''
 + '[{"name": "-webkit-app-region"},\n'
 + ' {"name": "-webkit-appearance"},\n'
@@ -283,7 +283,7 @@ Protocol.BakedSupportedCSSProperties=''
 + ' {"name": "marker-end", "svg": true, "inherited": true},\n'
 + ' {"name": "marker-mid", "svg": true, "inherited": true},\n'
 + ' {"name": "marker-start", "svg": true, "inherited": true},\n'
-+ ' {"svg": true, "name": "mask"},\n'
++ ' {"name": "mask", "svg": true},\n'
 + ' {"name": "mask-source-type"},\n'
 + ' {"svg": true, "name": "mask-type"},\n'
 + ' {"name": "max-block-size"},\n'

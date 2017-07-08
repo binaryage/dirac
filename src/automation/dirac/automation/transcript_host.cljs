@@ -88,7 +88,7 @@
   (doseq [value (get-output-segment-values)]
     (match-observer-record! observer-record value)))
 
-(defn apppend-to-output-segment! [value]
+(defn append-to-output-segment! [value]
   (swap! output-segment conj value))
 
 ; -- rewriting machine ------------------------------------------------------------------------------------------------------
@@ -284,7 +284,7 @@
 (defn run-output-matching-loop! []
   (go-loop []
     (when-let [value (<! output-recorder)]
-      (apppend-to-output-segment! value)
+      (append-to-output-segment! value)
       (doseq [observer-record @output-observers]
         (match-observer-record! observer-record value))
       (recur))))

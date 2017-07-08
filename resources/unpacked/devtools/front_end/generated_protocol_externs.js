@@ -157,6 +157,34 @@ Protocol.PageAgent.RemoveScriptToEvaluateOnLoadResponse;
 Protocol.PageAgent.prototype.invoke_removeScriptToEvaluateOnLoad = function(obj) {};
 
 /**
+ * @param {string} source
+ * @return {!Promise<?Protocol.Page.ScriptIdentifier>}
+ */
+Protocol.PageAgent.prototype.addScriptToEvaluateOnNewDocument = function(source) {};
+/** @typedef {!{source: string}} */
+Protocol.PageAgent.AddScriptToEvaluateOnNewDocumentRequest;
+/** @typedef {!{identifier: Protocol.Page.ScriptIdentifier}} */
+Protocol.PageAgent.AddScriptToEvaluateOnNewDocumentResponse;
+/**
+ * @param {!Protocol.PageAgent.AddScriptToEvaluateOnNewDocumentRequest} obj
+ * @return {!Promise<!Protocol.PageAgent.AddScriptToEvaluateOnNewDocumentResponse>} */
+Protocol.PageAgent.prototype.invoke_addScriptToEvaluateOnNewDocument = function(obj) {};
+
+/**
+ * @param {Protocol.Page.ScriptIdentifier} identifier
+ * @return {!Promise<undefined>}
+ */
+Protocol.PageAgent.prototype.removeScriptToEvaluateOnNewDocument = function(identifier) {};
+/** @typedef {!{identifier: Protocol.Page.ScriptIdentifier}} */
+Protocol.PageAgent.RemoveScriptToEvaluateOnNewDocumentRequest;
+/** @typedef {Object|undefined} */
+Protocol.PageAgent.RemoveScriptToEvaluateOnNewDocumentResponse;
+/**
+ * @param {!Protocol.PageAgent.RemoveScriptToEvaluateOnNewDocumentRequest} obj
+ * @return {!Promise<!Protocol.PageAgent.RemoveScriptToEvaluateOnNewDocumentResponse>} */
+Protocol.PageAgent.prototype.invoke_removeScriptToEvaluateOnNewDocument = function(obj) {};
+
+/**
  * @param {boolean} autoAttach
  * @return {!Promise<undefined>}
  */
@@ -649,7 +677,7 @@ Protocol.Page.FrameId;
 /** @typedef {!{id:(string), parentId:(string|undefined), loaderId:(Protocol.Network.LoaderId), name:(string|undefined), url:(string), securityOrigin:(string), mimeType:(string)}} */
 Protocol.Page.Frame;
 
-/** @typedef {!{url:(string), type:(Protocol.Page.ResourceType), mimeType:(string), lastModified:(Protocol.Network.Timestamp|undefined), contentSize:(number|undefined), failed:(boolean|undefined), canceled:(boolean|undefined)}} */
+/** @typedef {!{url:(string), type:(Protocol.Page.ResourceType), mimeType:(string), lastModified:(Protocol.Network.TimeSinceEpoch|undefined), contentSize:(number|undefined), failed:(boolean|undefined), canceled:(boolean|undefined)}} */
 Protocol.Page.FrameResource;
 
 /** @typedef {!{frame:(Protocol.Page.Frame), childFrames:(!Array<Protocol.Page.FrameResourceTree>|undefined), resources:(!Array<Protocol.Page.FrameResource>)}} */
@@ -677,7 +705,7 @@ Protocol.Page.TransitionType = {
 /** @typedef {!{id:(number), url:(string), userTypedURL:(string), title:(string), transitionType:(Protocol.Page.TransitionType)}} */
 Protocol.Page.NavigationEntry;
 
-/** @typedef {!{offsetTop:(number), pageScaleFactor:(number), deviceWidth:(number), deviceHeight:(number), scrollOffsetX:(number), scrollOffsetY:(number), timestamp:(number|undefined)}} */
+/** @typedef {!{offsetTop:(number), pageScaleFactor:(number), deviceWidth:(number), deviceHeight:(number), scrollOffsetX:(number), scrollOffsetY:(number), timestamp:(Protocol.Network.TimeSinceEpoch|undefined)}} */
 Protocol.Page.ScreencastFrameMetadata;
 
 /** @enum {string} */
@@ -706,11 +734,11 @@ Protocol.Page.VisualViewport;
 /** @interface */
 Protocol.PageDispatcher = function() {};
 /**
- * @param {number} timestamp
+ * @param {Protocol.Network.MonotonicTime} timestamp
  */
 Protocol.PageDispatcher.prototype.domContentEventFired = function(timestamp) {};
 /**
- * @param {number} timestamp
+ * @param {Protocol.Network.MonotonicTime} timestamp
  */
 Protocol.PageDispatcher.prototype.loadEventFired = function(timestamp) {};
 /**
@@ -1380,6 +1408,13 @@ Protocol.SecurityAgent.prototype.invoke_setOverrideCertificateErrors = function(
 Protocol.Security.CertificateId;
 
 /** @enum {string} */
+Protocol.Security.MixedContentType = {
+    Blockable: "blockable",
+    OptionallyBlockable: "optionally-blockable",
+    None: "none"
+};
+
+/** @enum {string} */
 Protocol.Security.SecurityState = {
     Unknown: "unknown",
     Neutral: "neutral",
@@ -1389,7 +1424,7 @@ Protocol.Security.SecurityState = {
     Info: "info"
 };
 
-/** @typedef {!{securityState:(Protocol.Security.SecurityState), summary:(string), description:(string), hasCertificate:(boolean)}} */
+/** @typedef {!{securityState:(Protocol.Security.SecurityState), summary:(string), description:(string), hasCertificate:(boolean), mixedContentType:(Protocol.Security.MixedContentType)}} */
 Protocol.Security.SecurityStateExplanation;
 
 /** @typedef {!{ranMixedContent:(boolean), displayedMixedContent:(boolean), containedMixedForm:(boolean), ranContentWithCertErrors:(boolean), displayedContentWithCertErrors:(boolean), ranInsecureContentStyle:(Protocol.Security.SecurityState), displayedInsecureContentStyle:(Protocol.Security.SecurityState)}} */
@@ -1625,11 +1660,11 @@ Protocol.NetworkAgent.prototype.invoke_deleteCookie = function(obj) {};
  * @param {boolean=} opt_secure
  * @param {boolean=} opt_httpOnly
  * @param {Protocol.Network.CookieSameSite=} opt_sameSite
- * @param {Protocol.Network.Timestamp=} opt_expirationDate
+ * @param {Protocol.Network.TimeSinceEpoch=} opt_expirationDate
  * @return {!Promise<?boolean>}
  */
 Protocol.NetworkAgent.prototype.setCookie = function(url, name, value, opt_domain, opt_path, opt_secure, opt_httpOnly, opt_sameSite, opt_expirationDate) {};
-/** @typedef {!{domain: (string|undefined), name: string, url: string, value: string, expirationDate: (Protocol.Network.Timestamp|undefined), sameSite: (Protocol.Network.CookieSameSite|undefined), path: (string|undefined), httpOnly: (boolean|undefined), secure: (boolean|undefined)}} */
+/** @typedef {!{domain: (string|undefined), name: string, url: string, value: string, expirationDate: (Protocol.Network.TimeSinceEpoch|undefined), sameSite: (Protocol.Network.CookieSameSite|undefined), path: (string|undefined), httpOnly: (boolean|undefined), secure: (boolean|undefined)}} */
 Protocol.NetworkAgent.SetCookieRequest;
 /** @typedef {!{success: boolean}} */
 Protocol.NetworkAgent.SetCookieResponse;
@@ -1730,15 +1765,15 @@ Protocol.NetworkAgent.prototype.invoke_getCertificate = function(obj) {};
  * @param {boolean} enabled
  * @return {!Promise<undefined>}
  */
-Protocol.NetworkAgent.prototype.enableRequestInterception = function(enabled) {};
+Protocol.NetworkAgent.prototype.setRequestInterceptionEnabled = function(enabled) {};
 /** @typedef {!{enabled: boolean}} */
-Protocol.NetworkAgent.EnableRequestInterceptionRequest;
+Protocol.NetworkAgent.SetRequestInterceptionEnabledRequest;
 /** @typedef {Object|undefined} */
-Protocol.NetworkAgent.EnableRequestInterceptionResponse;
+Protocol.NetworkAgent.SetRequestInterceptionEnabledResponse;
 /**
- * @param {!Protocol.NetworkAgent.EnableRequestInterceptionRequest} obj
- * @return {!Promise<!Protocol.NetworkAgent.EnableRequestInterceptionResponse>} */
-Protocol.NetworkAgent.prototype.invoke_enableRequestInterception = function(obj) {};
+ * @param {!Protocol.NetworkAgent.SetRequestInterceptionEnabledRequest} obj
+ * @return {!Promise<!Protocol.NetworkAgent.SetRequestInterceptionEnabledResponse>} */
+Protocol.NetworkAgent.prototype.invoke_setRequestInterceptionEnabled = function(obj) {};
 
 /**
  * @param {Protocol.Network.InterceptionId} interceptionId
@@ -1787,7 +1822,10 @@ Protocol.Network.ErrorReason = {
 };
 
 /** @typedef {number} */
-Protocol.Network.Timestamp;
+Protocol.Network.TimeSinceEpoch;
+
+/** @typedef {number} */
+Protocol.Network.MonotonicTime;
 
 /** @typedef {!Object} */
 Protocol.Network.Headers;
@@ -1824,13 +1862,6 @@ Protocol.Network.ResourcePriority = {
 };
 
 /** @enum {string} */
-Protocol.Network.RequestMixedContentType = {
-    Blockable: "blockable",
-    OptionallyBlockable: "optionally-blockable",
-    None: "none"
-};
-
-/** @enum {string} */
 Protocol.Network.RequestReferrerPolicy = {
     UnsafeUrl: "unsafe-url",
     NoReferrerWhenDowngrade: "no-referrer-when-downgrade",
@@ -1842,13 +1873,13 @@ Protocol.Network.RequestReferrerPolicy = {
     StrictOriginWhenCrossOrigin: "strict-origin-when-cross-origin"
 };
 
-/** @typedef {!{url:(string), method:(string), headers:(Protocol.Network.Headers), postData:(string|undefined), mixedContentType:(Protocol.Network.RequestMixedContentType|undefined), initialPriority:(Protocol.Network.ResourcePriority), referrerPolicy:(Protocol.Network.RequestReferrerPolicy), isLinkPreload:(boolean|undefined)}} */
+/** @typedef {!{url:(string), method:(string), headers:(Protocol.Network.Headers), postData:(string|undefined), mixedContentType:(Protocol.Security.MixedContentType|undefined), initialPriority:(Protocol.Network.ResourcePriority), referrerPolicy:(Protocol.Network.RequestReferrerPolicy), isLinkPreload:(boolean|undefined)}} */
 Protocol.Network.Request;
 
-/** @typedef {!{status:(string), origin:(string), logDescription:(string), logId:(string), timestamp:(Protocol.Network.Timestamp), hashAlgorithm:(string), signatureAlgorithm:(string), signatureData:(string)}} */
+/** @typedef {!{status:(string), origin:(string), logDescription:(string), logId:(string), timestamp:(Protocol.Network.TimeSinceEpoch), hashAlgorithm:(string), signatureAlgorithm:(string), signatureData:(string)}} */
 Protocol.Network.SignedCertificateTimestamp;
 
-/** @typedef {!{protocol:(string), keyExchange:(string), keyExchangeGroup:(string|undefined), cipher:(string), mac:(string|undefined), certificateId:(Protocol.Security.CertificateId), subjectName:(string), sanList:(!Array<string>), issuer:(string), validFrom:(Protocol.Network.Timestamp), validTo:(Protocol.Network.Timestamp), signedCertificateTimestampList:(!Array<Protocol.Network.SignedCertificateTimestamp>)}} */
+/** @typedef {!{protocol:(string), keyExchange:(string), keyExchangeGroup:(string|undefined), cipher:(string), mac:(string|undefined), certificateId:(Protocol.Security.CertificateId), subjectName:(string), sanList:(!Array<string>), issuer:(string), validFrom:(Protocol.Network.TimeSinceEpoch), validTo:(Protocol.Network.TimeSinceEpoch), signedCertificateTimestampList:(!Array<Protocol.Network.SignedCertificateTimestamp>)}} */
 Protocol.Network.SecurityDetails;
 
 /** @enum {string} */
@@ -1913,7 +1944,7 @@ Protocol.NetworkDispatcher = function() {};
 /**
  * @param {Protocol.Network.RequestId} requestId
  * @param {Protocol.Network.ResourcePriority} newPriority
- * @param {Protocol.Network.Timestamp} timestamp
+ * @param {Protocol.Network.MonotonicTime} timestamp
  */
 Protocol.NetworkDispatcher.prototype.resourceChangedPriority = function(requestId, newPriority, timestamp) {};
 /**
@@ -1921,8 +1952,8 @@ Protocol.NetworkDispatcher.prototype.resourceChangedPriority = function(requestI
  * @param {Protocol.Network.LoaderId} loaderId
  * @param {string} documentURL
  * @param {Protocol.Network.Request} request
- * @param {Protocol.Network.Timestamp} timestamp
- * @param {Protocol.Network.Timestamp} wallTime
+ * @param {Protocol.Network.MonotonicTime} timestamp
+ * @param {Protocol.Network.TimeSinceEpoch} wallTime
  * @param {Protocol.Network.Initiator} initiator
  * @param {Protocol.Network.Response=} opt_redirectResponse
  * @param {Protocol.Page.ResourceType=} opt_type
@@ -1936,7 +1967,7 @@ Protocol.NetworkDispatcher.prototype.requestServedFromCache = function(requestId
 /**
  * @param {Protocol.Network.RequestId} requestId
  * @param {Protocol.Network.LoaderId} loaderId
- * @param {Protocol.Network.Timestamp} timestamp
+ * @param {Protocol.Network.MonotonicTime} timestamp
  * @param {Protocol.Page.ResourceType} type
  * @param {Protocol.Network.Response} response
  * @param {Protocol.Page.FrameId=} opt_frameId
@@ -1944,20 +1975,20 @@ Protocol.NetworkDispatcher.prototype.requestServedFromCache = function(requestId
 Protocol.NetworkDispatcher.prototype.responseReceived = function(requestId, loaderId, timestamp, type, response, opt_frameId) {};
 /**
  * @param {Protocol.Network.RequestId} requestId
- * @param {Protocol.Network.Timestamp} timestamp
+ * @param {Protocol.Network.MonotonicTime} timestamp
  * @param {number} dataLength
  * @param {number} encodedDataLength
  */
 Protocol.NetworkDispatcher.prototype.dataReceived = function(requestId, timestamp, dataLength, encodedDataLength) {};
 /**
  * @param {Protocol.Network.RequestId} requestId
- * @param {Protocol.Network.Timestamp} timestamp
+ * @param {Protocol.Network.MonotonicTime} timestamp
  * @param {number} encodedDataLength
  */
 Protocol.NetworkDispatcher.prototype.loadingFinished = function(requestId, timestamp, encodedDataLength) {};
 /**
  * @param {Protocol.Network.RequestId} requestId
- * @param {Protocol.Network.Timestamp} timestamp
+ * @param {Protocol.Network.MonotonicTime} timestamp
  * @param {Protocol.Page.ResourceType} type
  * @param {string} errorText
  * @param {boolean=} opt_canceled
@@ -1966,14 +1997,14 @@ Protocol.NetworkDispatcher.prototype.loadingFinished = function(requestId, times
 Protocol.NetworkDispatcher.prototype.loadingFailed = function(requestId, timestamp, type, errorText, opt_canceled, opt_blockedReason) {};
 /**
  * @param {Protocol.Network.RequestId} requestId
- * @param {Protocol.Network.Timestamp} timestamp
- * @param {Protocol.Network.Timestamp} wallTime
+ * @param {Protocol.Network.MonotonicTime} timestamp
+ * @param {Protocol.Network.TimeSinceEpoch} wallTime
  * @param {Protocol.Network.WebSocketRequest} request
  */
 Protocol.NetworkDispatcher.prototype.webSocketWillSendHandshakeRequest = function(requestId, timestamp, wallTime, request) {};
 /**
  * @param {Protocol.Network.RequestId} requestId
- * @param {Protocol.Network.Timestamp} timestamp
+ * @param {Protocol.Network.MonotonicTime} timestamp
  * @param {Protocol.Network.WebSocketResponse} response
  */
 Protocol.NetworkDispatcher.prototype.webSocketHandshakeResponseReceived = function(requestId, timestamp, response) {};
@@ -1985,30 +2016,30 @@ Protocol.NetworkDispatcher.prototype.webSocketHandshakeResponseReceived = functi
 Protocol.NetworkDispatcher.prototype.webSocketCreated = function(requestId, url, opt_initiator) {};
 /**
  * @param {Protocol.Network.RequestId} requestId
- * @param {Protocol.Network.Timestamp} timestamp
+ * @param {Protocol.Network.MonotonicTime} timestamp
  */
 Protocol.NetworkDispatcher.prototype.webSocketClosed = function(requestId, timestamp) {};
 /**
  * @param {Protocol.Network.RequestId} requestId
- * @param {Protocol.Network.Timestamp} timestamp
+ * @param {Protocol.Network.MonotonicTime} timestamp
  * @param {Protocol.Network.WebSocketFrame} response
  */
 Protocol.NetworkDispatcher.prototype.webSocketFrameReceived = function(requestId, timestamp, response) {};
 /**
  * @param {Protocol.Network.RequestId} requestId
- * @param {Protocol.Network.Timestamp} timestamp
+ * @param {Protocol.Network.MonotonicTime} timestamp
  * @param {string} errorMessage
  */
 Protocol.NetworkDispatcher.prototype.webSocketFrameError = function(requestId, timestamp, errorMessage) {};
 /**
  * @param {Protocol.Network.RequestId} requestId
- * @param {Protocol.Network.Timestamp} timestamp
+ * @param {Protocol.Network.MonotonicTime} timestamp
  * @param {Protocol.Network.WebSocketFrame} response
  */
 Protocol.NetworkDispatcher.prototype.webSocketFrameSent = function(requestId, timestamp, response) {};
 /**
  * @param {Protocol.Network.RequestId} requestId
- * @param {Protocol.Network.Timestamp} timestamp
+ * @param {Protocol.Network.MonotonicTime} timestamp
  * @param {string} eventName
  * @param {string} eventId
  * @param {string} data
@@ -4334,7 +4365,7 @@ Protocol.InputAgent.prototype.invoke_setIgnoreInputEvents = function(obj) {};
 /**
  * @param {string} type
  * @param {number=} opt_modifiers
- * @param {number=} opt_timestamp
+ * @param {Protocol.Input.TimeSinceEpoch=} opt_timestamp
  * @param {string=} opt_text
  * @param {string=} opt_unmodifiedText
  * @param {string=} opt_keyIdentifier
@@ -4348,7 +4379,7 @@ Protocol.InputAgent.prototype.invoke_setIgnoreInputEvents = function(obj) {};
  * @return {!Promise<undefined>}
  */
 Protocol.InputAgent.prototype.dispatchKeyEvent = function(type, opt_modifiers, opt_timestamp, opt_text, opt_unmodifiedText, opt_keyIdentifier, opt_code, opt_key, opt_windowsVirtualKeyCode, opt_nativeVirtualKeyCode, opt_autoRepeat, opt_isKeypad, opt_isSystemKey) {};
-/** @typedef {!{code: (string|undefined), keyIdentifier: (string|undefined), modifiers: (number|undefined), timestamp: (number|undefined), autoRepeat: (boolean|undefined), isSystemKey: (boolean|undefined), unmodifiedText: (string|undefined), key: (string|undefined), text: (string|undefined), nativeVirtualKeyCode: (number|undefined), windowsVirtualKeyCode: (number|undefined), type: string, isKeypad: (boolean|undefined)}} */
+/** @typedef {!{code: (string|undefined), keyIdentifier: (string|undefined), modifiers: (number|undefined), timestamp: (Protocol.Input.TimeSinceEpoch|undefined), autoRepeat: (boolean|undefined), isSystemKey: (boolean|undefined), unmodifiedText: (string|undefined), key: (string|undefined), text: (string|undefined), nativeVirtualKeyCode: (number|undefined), windowsVirtualKeyCode: (number|undefined), type: string, isKeypad: (boolean|undefined)}} */
 Protocol.InputAgent.DispatchKeyEventRequest;
 /** @typedef {Object|undefined} */
 Protocol.InputAgent.DispatchKeyEventResponse;
@@ -4362,13 +4393,13 @@ Protocol.InputAgent.prototype.invoke_dispatchKeyEvent = function(obj) {};
  * @param {number} x
  * @param {number} y
  * @param {number=} opt_modifiers
- * @param {number=} opt_timestamp
+ * @param {Protocol.Input.TimeSinceEpoch=} opt_timestamp
  * @param {string=} opt_button
  * @param {number=} opt_clickCount
  * @return {!Promise<undefined>}
  */
 Protocol.InputAgent.prototype.dispatchMouseEvent = function(type, x, y, opt_modifiers, opt_timestamp, opt_button, opt_clickCount) {};
-/** @typedef {!{modifiers: (number|undefined), clickCount: (number|undefined), timestamp: (number|undefined), button: (string|undefined), y: number, x: number, type: string}} */
+/** @typedef {!{modifiers: (number|undefined), clickCount: (number|undefined), timestamp: (Protocol.Input.TimeSinceEpoch|undefined), button: (string|undefined), y: number, x: number, type: string}} */
 Protocol.InputAgent.DispatchMouseEventRequest;
 /** @typedef {Object|undefined} */
 Protocol.InputAgent.DispatchMouseEventResponse;
@@ -4381,11 +4412,11 @@ Protocol.InputAgent.prototype.invoke_dispatchMouseEvent = function(obj) {};
  * @param {string} type
  * @param {!Array<Protocol.Input.TouchPoint>} touchPoints
  * @param {number=} opt_modifiers
- * @param {number=} opt_timestamp
+ * @param {Protocol.Input.TimeSinceEpoch=} opt_timestamp
  * @return {!Promise<undefined>}
  */
 Protocol.InputAgent.prototype.dispatchTouchEvent = function(type, touchPoints, opt_modifiers, opt_timestamp) {};
-/** @typedef {!{timestamp: (number|undefined), modifiers: (number|undefined), type: string, touchPoints: !Array<Protocol.Input.TouchPoint>}} */
+/** @typedef {!{timestamp: (Protocol.Input.TimeSinceEpoch|undefined), modifiers: (number|undefined), type: string, touchPoints: !Array<Protocol.Input.TouchPoint>}} */
 Protocol.InputAgent.DispatchTouchEventRequest;
 /** @typedef {Object|undefined} */
 Protocol.InputAgent.DispatchTouchEventResponse;
@@ -4398,7 +4429,7 @@ Protocol.InputAgent.prototype.invoke_dispatchTouchEvent = function(obj) {};
  * @param {string} type
  * @param {number} x
  * @param {number} y
- * @param {number} timestamp
+ * @param {Protocol.Input.TimeSinceEpoch} timestamp
  * @param {string} button
  * @param {number=} opt_deltaX
  * @param {number=} opt_deltaY
@@ -4407,7 +4438,7 @@ Protocol.InputAgent.prototype.invoke_dispatchTouchEvent = function(obj) {};
  * @return {!Promise<undefined>}
  */
 Protocol.InputAgent.prototype.emulateTouchFromMouseEvent = function(type, x, y, timestamp, button, opt_deltaX, opt_deltaY, opt_modifiers, opt_clickCount) {};
-/** @typedef {!{modifiers: (number|undefined), clickCount: (number|undefined), deltaX: (number|undefined), timestamp: number, button: string, deltaY: (number|undefined), y: number, x: number, type: string}} */
+/** @typedef {!{modifiers: (number|undefined), clickCount: (number|undefined), deltaX: (number|undefined), timestamp: Protocol.Input.TimeSinceEpoch, button: string, deltaY: (number|undefined), y: number, x: number, type: string}} */
 Protocol.InputAgent.EmulateTouchFromMouseEventRequest;
 /** @typedef {Object|undefined} */
 Protocol.InputAgent.EmulateTouchFromMouseEventResponse;
@@ -4495,6 +4526,9 @@ Protocol.Input.GestureSourceType = {
     Touch: "touch",
     Mouse: "mouse"
 };
+
+/** @typedef {number} */
+Protocol.Input.TimeSinceEpoch;
 /** @interface */
 Protocol.InputDispatcher = function() {};
 Protocol.LayerTree = {};
