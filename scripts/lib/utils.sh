@@ -72,3 +72,7 @@ portable_stdbuf() {
       stdbuf "$@" ;;
   esac
 }
+
+echoerr() {
+  printf "\e[31m%s\e[0m\n" "$*" >&2;
+}
