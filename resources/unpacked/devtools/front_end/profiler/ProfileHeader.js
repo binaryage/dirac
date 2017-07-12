@@ -19,6 +19,14 @@ Profiler.ProfileHeader = class extends Common.Object {
   }
 
   /**
+   * @param {string} title
+   */
+  setTitle(title) {
+    this.title = title;
+    this.dispatchEventToListeners(Profiler.ProfileHeader.Events.ProfileTitleChanged, this);
+  }
+
+  /**
    * @return {!Profiler.ProfileType}
    */
   profileType() {
@@ -40,7 +48,7 @@ Profiler.ProfileHeader = class extends Common.Object {
    * @return {!Profiler.ProfileSidebarTreeElement}
    */
   createSidebarTreeElement(dataDisplayDelegate) {
-    throw new Error('Needs implemented.');
+    throw new Error('Not implemented.');
   }
 
   /**
@@ -67,14 +75,14 @@ Profiler.ProfileHeader = class extends Common.Object {
   }
 
   saveToFile() {
-    throw new Error('Needs implemented');
+    throw new Error('Not implemented');
   }
 
   /**
    * @param {!File} file
    */
   loadFromFile(file) {
-    throw new Error('Needs implemented');
+    throw new Error('Not implemented');
   }
 
   /**
@@ -108,5 +116,6 @@ Profiler.ProfileHeader.StatusUpdate = class {
 /** @enum {symbol} */
 Profiler.ProfileHeader.Events = {
   UpdateStatus: Symbol('UpdateStatus'),
-  ProfileReceived: Symbol('ProfileReceived')
+  ProfileReceived: Symbol('ProfileReceived'),
+  ProfileTitleChanged: Symbol('ProfileTitleChanged')
 };

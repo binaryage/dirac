@@ -1962,6 +1962,7 @@ Console.ConsoleView.ActionDelegate = class {
   handleAction(context, actionId) {
     switch (actionId) {
       case 'console.show':
+        InspectorFrontendHost.bringToFront();
         Common.console.show();
         return true;
       case 'console.clear':
