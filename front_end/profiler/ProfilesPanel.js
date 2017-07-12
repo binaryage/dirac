@@ -159,13 +159,13 @@ Profiler.ProfilesPanel = class extends UI.PanelWithSidebar {
           continue;
         extensions.push(extension);
       }
-      Common.console.error(Common.UIString(
-          'Can\'t load file. Only files with extensions \'%s\' can be loaded.', extensions.join('\', \'')));
+      Common.console.error(
+          Common.UIString(`Can't load file. Only files with extensions '%s' can be loaded.`, extensions.join(`', '`)));
       return;
     }
 
     if (!!profileType.profileBeingRecorded()) {
-      Common.console.error(Common.UIString('Can\'t load profile while another profile is recording.'));
+      Common.console.error(Common.UIString(`Can't load profile while another profile is being recorded.`));
       return;
     }
 
@@ -639,6 +639,41 @@ Profiler.ProfileSidebarTreeElement = class extends UI.TreeElement {
     }
     if (typeof statusUpdate.wait === 'boolean' && this.listItemElement)
       this.listItemElement.classList.toggle('wait', statusUpdate.wait);
+  }
+
+  /**
+   * @override
+   * @param {!Event} event
+   * @return {boolean}
+   */
+  ondblclick(event) {
+    if (!this._editing)
+      this._startEditing(/** @type {!Element} */ (event.target));
+    return false;
+  }
+
+  /**
+   * @param {!Element} eventTarget
+   */
+  _startEditing(eventTarget) {
+    var container = eventTarget.enclosingNodeOrSelfWithClass('title');
+    if (!container)
+      return;
+    var config = new UI.InplaceEditor.Config(this._editingCommitted.bind(this), this._editingCancelled.bind(this));
+    this._editing = UI.InplaceEditor.startEditing(container, config);
+  }
+
+  /**
+   * @param {!Element} container
+   * @param {string} newTitle
+   */
+  _editingCommitted(container, newTitle) {
+    delete this._editing;
+    this.profile.setTitle(newTitle);
+  }
+
+  _editingCancelled() {
+    delete this._editing;
   }
 
   dispose() {

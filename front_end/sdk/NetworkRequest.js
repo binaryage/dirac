@@ -463,18 +463,22 @@ SDK.NetworkRequest = class extends Common.Object {
   }
 
   /**
-   * @param {!Protocol.Network.ResourceTiming|undefined} x
+   * @param {!Protocol.Network.ResourceTiming|undefined} timingInfo
    */
-  set timing(x) {
-    if (x && !this._fromMemoryCache) {
-      // Take startTime and responseReceivedTime from timing data for better accuracy.
-      // Timing's requestTime is a baseline in seconds, rest of the numbers there are ticks in millis.
-      this._startTime = x.requestTime;
-      this._responseReceivedTime = x.requestTime + x.receiveHeadersEnd / 1000.0;
+  set timing(timingInfo) {
+    if (!timingInfo || this._fromMemoryCache)
+      return;
+    // Take startTime and responseReceivedTime from timing data for better accuracy.
+    // Timing's requestTime is a baseline in seconds, rest of the numbers there are ticks in millis.
+    this._startTime = timingInfo.requestTime;
+    var headersReceivedTime = timingInfo.requestTime + timingInfo.receiveHeadersEnd / 1000.0;
+    if ((this._responseReceivedTime || -1) < 0 || this._responseReceivedTime > headersReceivedTime)
+      this._responseReceivedTime = headersReceivedTime;
+    if (this._startTime > this._responseReceivedTime)
+      this._responseReceivedTime = this._startTime;
 
-      this._timing = x;
-      this.dispatchEventToListeners(SDK.NetworkRequest.Events.TimingChanged, this);
-    }
+    this._timing = timingInfo;
+    this.dispatchEventToListeners(SDK.NetworkRequest.Events.TimingChanged, this);
   }
 
   /**
@@ -668,10 +672,24 @@ SDK.NetworkRequest = class extends Common.Object {
   /**
    * @return {string}
    */
+  _filteredProtocolName() {
+    var protocol = this.protocol.toLowerCase();
+    if (protocol === 'h2')
+      return 'http/2.0';
+    return protocol.replace(/^http\/2(\.0)?\+/, 'http/2.0+');
+  }
+
+  /**
+   * @return {string}
+   */
   requestHttpVersion() {
     var headersText = this.requestHeadersText();
-    if (!headersText)
-      return this.requestHeaderValue('version') || this.requestHeaderValue(':version') || 'unknown';
+    if (!headersText) {
+      var version = this.requestHeaderValue('version') || this.requestHeaderValue(':version');
+      if (version)
+        return version;
+      return this._filteredProtocolName();
+    }
     var firstLine = headersText.split(/\r\n/)[0];
     var match = firstLine.match(/(HTTP\/\d+\.\d+)$/);
     return match ? match[1] : 'HTTP/0.9';
@@ -818,8 +836,12 @@ SDK.NetworkRequest = class extends Common.Object {
    */
   responseHttpVersion() {
     var headersText = this._responseHeadersText;
-    if (!headersText)
-      return this.responseHeaderValue('version') || this.responseHeaderValue(':version') || 'unknown';
+    if (!headersText) {
+      var version = this.responseHeaderValue('version') || this.responseHeaderValue(':version');
+      if (version)
+        return version;
+      return this._filteredProtocolName();
+    }
     var firstLine = headersText.split(/\r\n/)[0];
     var match = firstLine.match(/^(HTTP\/\d+\.\d+)/);
     return match ? match[1] : 'HTTP/0.9';
