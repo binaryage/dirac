@@ -112,6 +112,9 @@ Audits2.Audits2Panel = class extends UI.PanelWithSidebar {
    * @return {?string}
    */
   _unauditablePageMessage() {
+    if (!this._manager)
+      return null;
+
     var inspectedURL = SDK.targetManager.mainTarget().inspectedURL();
     if (/^about:/.test(inspectedURL))
       return Common.UIString('Cannot audit about:* pages. Navigate to a different page to start an audit.');
@@ -245,6 +248,8 @@ Audits2.Audits2Panel = class extends UI.PanelWithSidebar {
     if (!executionContext)
       return Promise.resolve();
 
+    // Evaluate location.href for a more specific URL than inspectedURL provides so that SPA hash navigation routes
+    // will be respected and audited.
     return new Promise(resolve => {
       executionContext.evaluate('window.location.href', 'audits', false, false, true, false, false, (object, err) => {
         if (!err && object) {
@@ -578,7 +583,7 @@ Audits2.ProtocolService = class extends Common.Object {
 
   _initWorker() {
     this._backendPromise =
-        Services.serviceManager.createAppService('audits2_worker', 'Audits2Service', false).then(backend => {
+        Services.serviceManager.createAppService('audits2_worker', 'Audits2Service').then(backend => {
           if (this._backend)
             return;
           this._backend = backend;
