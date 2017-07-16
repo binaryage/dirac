@@ -117,8 +117,7 @@ application_descriptors = [ #
     'integration_test_runner.json', #
     'unit_test_runner.json', #
     'formatter_worker.json', #
-    'heap_snapshot_worker.json', #
-    'utility_shared_worker.json', #
+    'heap_snapshot_worker.json' #
 ] #
 # <------- cut here
 
@@ -327,6 +326,7 @@ def generate_namespace_externs(modules_by_name):
     namespace_externs_path = to_platform_path(namespace_externs_file.name)
     return namespace_externs_path
 
+# do not remove, this is needed by resources/unpacked/devtools/scripts/generate_namespaces_externs.py
 def generate_namespace_externs_to_file(path):
     loader = modular_build.DescriptorLoader(devtools_frontend_path)
     descriptors = loader.load_applications(application_descriptors)
