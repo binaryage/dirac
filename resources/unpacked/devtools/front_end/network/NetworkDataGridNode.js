@@ -681,7 +681,7 @@ Network.NetworkRequestNode = class extends Network.NetworkNode {
    * @return {boolean}
    */
   isNavigationRequest() {
-    var pageLoad = NetworkLog.networkLog.pageLoadForRequest(this._request);
+    var pageLoad = NetworkLog.PageLoad.forRequest(this._request);
     return pageLoad ? pageLoad.mainRequest === this._request : false;
   }
 
@@ -920,7 +920,8 @@ Network.NetworkRequestNode = class extends Network.NetworkNode {
     var request = this._request;
     var initiator = NetworkLog.networkLog.initiatorInfoForRequest(request);
 
-    if (request.timing && request.timing.pushStart)
+    var timing = request.timing;
+    if (timing && timing.pushStart)
       cell.appendChild(createTextNode(Common.UIString('Push / ')));
     switch (initiator.type) {
       case SDK.NetworkRequest.InitiatorType.Parser:

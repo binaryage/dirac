@@ -166,6 +166,9 @@ Profiler.HeapSnapshotView = class extends UI.SimpleView {
 
     this._populate();
     this._searchThrottler = new Common.Throttler(0);
+
+    for (var existingProfile of this._profiles())
+      existingProfile.addEventListener(Profiler.ProfileHeader.Events.ProfileTitleChanged, this._updateControls, this);
   }
 
   /**
@@ -607,33 +610,33 @@ Profiler.HeapSnapshotView = class extends UI.SimpleView {
 
   _updateBaseOptions() {
     var list = this._profiles();
-    // We're assuming that snapshots can only be added.
-    if (this._baseSelect.size() === list.length)
-      return;
+    var selectedIndex = this._baseSelect.selectedIndex();
 
-    for (var i = this._baseSelect.size(), n = list.length; i < n; ++i) {
-      var title = list[i].title;
-      this._baseSelect.createOption(title);
-    }
+    this._baseSelect.removeOptions();
+    for (var item of list)
+      this._baseSelect.createOption(item.title);
+
+    if (selectedIndex > -1)
+      this._baseSelect.setSelectedIndex(selectedIndex);
   }
 
   _updateFilterOptions() {
     var list = this._profiles();
-    // We're assuming that snapshots can only be added.
-    if (this._filterSelect.size() - 1 === list.length)
-      return;
+    var selectedIndex = this._filterSelect.selectedIndex();
 
-    if (!this._filterSelect.size())
-      this._filterSelect.createOption(Common.UIString('All objects'));
-
-    for (var i = this._filterSelect.size() - 1, n = list.length; i < n; ++i) {
-      var title = list[i].title;
+    this._filterSelect.removeOptions();
+    this._filterSelect.createOption(Common.UIString('All objects'));
+    for (var i = 0; i < list.length; ++i) {
+      var title;
       if (!i)
-        title = Common.UIString('Objects allocated before %s', title);
+        title = Common.UIString('Objects allocated before %s', list[i].title);
       else
-        title = Common.UIString('Objects allocated between %s and %s', list[i - 1].title, title);
+        title = Common.UIString('Objects allocated between %s and %s', list[i - 1].title, list[i].title);
       this._filterSelect.createOption(title);
     }
+
+    if (selectedIndex > -1)
+      this._filterSelect.setSelectedIndex(selectedIndex);
   }
 
   _updateControls() {
@@ -647,6 +650,8 @@ Profiler.HeapSnapshotView = class extends UI.SimpleView {
    */
   _onReceiveSnapshot(event) {
     this._updateControls();
+    var profile = event.data;
+    profile.addEventListener(Profiler.ProfileHeader.Events.ProfileTitleChanged, this._updateControls, this);
   }
 
   /**
@@ -654,6 +659,8 @@ Profiler.HeapSnapshotView = class extends UI.SimpleView {
    */
   _onProfileHeaderRemoved(event) {
     var profile = event.data;
+    profile.removeEventListener(Profiler.ProfileHeader.Events.ProfileTitleChanged, this._updateControls, this);
+
     if (this._profile === profile) {
       this.detach();
       this._profile.profileType().removeEventListener(
@@ -1316,6 +1323,8 @@ Profiler.HeapProfileHeader = class extends Profiler.ProfileHeader {
     this._loadPromise = new Promise(resolve => this._fulfillLoad = resolve);
     this._totalNumberOfChunks = 0;
     this._bufferedWriter = null;
+    /** @type {?Bindings.TempFile} */
+    this._tempFile = null;
   }
 
   /**
@@ -1349,16 +1358,17 @@ Profiler.HeapProfileHeader = class extends Profiler.ProfileHeader {
     this.updateStatus(Common.UIString('Loading\u2026'), true);
   }
 
-  async _finishLoad() {
+  _finishLoad() {
     if (!this._wasDisposed)
       this._receiver.close();
     if (!this._bufferedWriter)
       return;
-    var file = await this._bufferedWriter.finishWriting();
-    this._bufferedWriter = null;
-    this._didWriteToTempFile(file);
+    this._didWriteToTempFile(this._bufferedWriter);
   }
 
+  /**
+   * @param {!Bindings.TempFile} tempFile
+   */
   _didWriteToTempFile(tempFile) {
     if (this._wasDisposed) {
       if (tempFile)
@@ -1425,7 +1435,7 @@ Profiler.HeapProfileHeader = class extends Profiler.ProfileHeader {
    */
   transferChunk(chunk) {
     if (!this._bufferedWriter)
-      this._bufferedWriter = new Bindings.DeferredTempFile('heap-profiler', String(this.uid));
+      this._bufferedWriter = new Bindings.TempFile();
     this._bufferedWriter.write([chunk]);
 
     ++this._totalNumberOfChunks;
@@ -1470,25 +1480,39 @@ Profiler.HeapProfileHeader = class extends Profiler.ProfileHeader {
      * @param {boolean} accepted
      * @this {Profiler.HeapProfileHeader}
      */
-    function onOpen(accepted) {
+    async function onOpen(accepted) {
       if (!accepted)
         return;
-
       if (this._failedToCreateTempFile) {
         Common.console.error('Failed to open temp file with heap snapshot');
         fileOutputStream.close();
-      } else if (this._tempFile) {
-        var delegate = new Profiler.SaveSnapshotOutputStreamDelegate(this);
-        this._tempFile.copyToOutputStream(fileOutputStream, delegate);
-      } else {
-        this._onTempFileReady = onOpen.bind(this, accepted);
-        this._updateSaveProgress(0, 1);
+        return;
       }
+      if (this._tempFile) {
+        var error = await this._tempFile.copyToOutputStream(fileOutputStream, this._onChunkTransferred.bind(this));
+        if (error)
+          Common.console.error('Failed to read heap snapshot from temp file: ' + error.message);
+        this._didCompleteSnapshotTransfer();
+        return;
+      }
+      this._onTempFileReady = onOpen.bind(this, accepted);
+      this._updateSaveProgress(0, 1);
     }
   }
 
+  /**
+   * @param {!Bindings.ChunkedReader} reader
+   */
+  _onChunkTransferred(reader) {
+    this._updateSaveProgress(reader.loadedSize(), reader.fileSize());
+  }
+
+  /**
+   * @param {number} value
+   * @param {number} total
+   */
   _updateSaveProgress(value, total) {
-    var percentValue = ((total ? (value / total) : 0) * 100).toFixed(0);
+    var percentValue = ((total && value / total) * 100).toFixed(0);
     this.updateStatus(Common.UIString('Saving\u2026 %d%%', percentValue));
   }
 
@@ -1496,119 +1520,13 @@ Profiler.HeapProfileHeader = class extends Profiler.ProfileHeader {
    * @override
    * @param {!File} file
    */
-  loadFromFile(file) {
+  async loadFromFile(file) {
     this.updateStatus(Common.UIString('Loading\u2026'), true);
     this._setupWorker();
-    var delegate = new Profiler.HeapSnapshotLoadFromFileDelegate(this);
-    var fileReader = this._createFileReader(file, delegate);
-    fileReader.start(/** @type {!Common.OutputStream} */ (this._receiver));
-  }
-
-  /**
-   * @param {!File} file
-   * @param {!Profiler.HeapSnapshotLoadFromFileDelegate} delegate
-   * @return {!Bindings.ChunkedFileReader}
-   */
-  _createFileReader(file, delegate) {
-    return new Bindings.ChunkedFileReader(file, 10000000, delegate);
-  }
-};
-
-/**
- * @implements {Bindings.OutputStreamDelegate}
- * @unrestricted
- */
-Profiler.HeapSnapshotLoadFromFileDelegate = class {
-  /**
-   * @param {!Profiler.HeapProfileHeader} snapshotHeader
-   */
-  constructor(snapshotHeader) {
-    this._snapshotHeader = snapshotHeader;
-  }
-
-  /**
-   * @override
-   */
-  onTransferStarted() {
-  }
-
-  /**
-   * @override
-   * @param {!Bindings.ChunkedReader} reader
-   */
-  onChunkTransferred(reader) {
-  }
-
-  /**
-   * @override
-   */
-  onTransferFinished() {
-  }
-
-  /**
-   * @override
-   * @param {!Bindings.ChunkedReader} reader
-   * @param {!Event} e
-   */
-  onError(reader, e) {
-    var subtitle;
-    switch (e.target.error.code) {
-      case e.target.error.NOT_FOUND_ERR:
-        subtitle = Common.UIString('\'%s\' not found.', reader.fileName());
-        break;
-      case e.target.error.NOT_READABLE_ERR:
-        subtitle = Common.UIString('\'%s\' is not readable', reader.fileName());
-        break;
-      case e.target.error.ABORT_ERR:
-        return;
-      default:
-        subtitle = Common.UIString('\'%s\' error %d', reader.fileName(), e.target.error.code);
-    }
-    this._snapshotHeader.updateStatus(subtitle);
-  }
-};
-
-/**
- * @implements {Bindings.OutputStreamDelegate}
- */
-Profiler.SaveSnapshotOutputStreamDelegate = class {
-  /**
-   * @param {!Profiler.HeapProfileHeader} profileHeader
-   */
-  constructor(profileHeader) {
-    this._profileHeader = profileHeader;
-  }
-
-  /**
-   * @override
-   */
-  onTransferStarted() {
-    this._profileHeader._updateSaveProgress(0, 1);
-  }
-
-  /**
-   * @override
-   */
-  onTransferFinished() {
-    this._profileHeader._didCompleteSnapshotTransfer();
-  }
-
-  /**
-   * @override
-   * @param {!Bindings.ChunkedReader} reader
-   */
-  onChunkTransferred(reader) {
-    this._profileHeader._updateSaveProgress(reader.loadedSize(), reader.fileSize());
-  }
-
-  /**
-   * @override
-   * @param {!Bindings.ChunkedReader} reader
-   * @param {!Event} event
-   */
-  onError(reader, event) {
-    Common.console.error('Failed to read heap snapshot from temp file: ' + /** @type {!ErrorEvent} */ (event).message);
-    this.onTransferFinished();
+    var reader = new Bindings.ChunkedFileReader(file, 10000000);
+    var success = await reader.read(/** @type {!Common.OutputStream} */ (this._receiver));
+    if (!success)
+      this.updateStatus(reader.error().message);
   }
 };
 

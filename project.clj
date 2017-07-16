@@ -1,6 +1,6 @@
 (def clj-logging-config-version "1.9.12")
 (def slf4j-log4j12-version "1.7.22")
-(defproject binaryage/dirac "1.2.13"
+(defproject binaryage/dirac "1.2.14"
   :description "Dirac DevTools - a Chrome DevTools fork for ClojureScript developers."
   :url "https://github.com/binaryage/dirac"
   :license {:name         "MIT License"
@@ -34,19 +34,19 @@
                  [rum-reforms "0.4.3" :scope "test"]
                  [cljsjs/parinfer "2.0.0-0" :scope "test"]
                  [com.lucasbradstreet/cljs-uuid-utils "1.0.2" :scope "test"]
-                 [com.rpl/specter "1.0.3-SNAPSHOT" :scope "test"]
+                 [com.rpl/specter "1.0.2" :scope "test"]
                  [org.clojure/tools.namespace "0.3.0-alpha3" :scope "test"]
-                 [org.clojure/tools.reader "1.0.0" :scope "test"]
+                 [org.clojure/tools.reader "1.0.2" :scope "test"]
 
                  [clj-logging-config ~clj-logging-config-version :scope "test"]
                  [org.slf4j/slf4j-log4j12 ~slf4j-log4j12-version :scope "test"]
 
                  [http.async.client "1.2.0" :scope "test"]
 
-                 [ring/ring-core "1.6.1" :scope "test"]
-                 [ring/ring-devel "1.6.1" :scope "test"]
-                 [ring/ring-jetty-adapter "1.6.1" :scope "test"]
-                 [clj-time "0.13.0" :scope "test"]
+                 [ring/ring-core "1.6.2" :scope "test"]
+                 [ring/ring-devel "1.6.2" :scope "test"]
+                 [ring/ring-jetty-adapter "1.6.2" :scope "test"]
+                 [clj-time "0.14.0" :scope "test"]
                  [clansi "1.0.0" :scope "test"]
 
                  ; guava is needed for selenium, they rely on latest guava which gets overridden by google closure compiler dep inside clojurescript

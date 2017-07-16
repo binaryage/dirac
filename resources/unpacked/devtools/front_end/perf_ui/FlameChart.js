@@ -168,6 +168,8 @@ PerfUI.FlameChart = class extends UI.VBox {
   highlightEntry(entryIndex) {
     if (this._highlightedEntryIndex === entryIndex)
       return;
+    if (!this._dataProvider.entryColor(entryIndex))
+      return;
     this._highlightedEntryIndex = entryIndex;
     this._updateElementPosition(this._highlightElement, this._highlightedEntryIndex);
     this.dispatchEventToListeners(PerfUI.FlameChart.Events.EntryHighlighted, entryIndex);
@@ -642,6 +644,7 @@ PerfUI.FlameChart = class extends UI.VBox {
     var entryTotalTimes = timelineData.entryTotalTimes;
     var entryStartTimes = timelineData.entryStartTimes;
     var entryLevels = timelineData.entryLevels;
+    var timeToPixel = this._chartViewport.timeToPixel();
 
     var titleIndices = [];
     var markerIndices = [];
@@ -691,7 +694,6 @@ PerfUI.FlameChart = class extends UI.VBox {
       var color = colors[c];
       var indexes = colorBuckets.get(color);
       context.beginPath();
-      context.fillStyle = color;
       for (var i = 0; i < indexes.length; ++i) {
         var entryIndex = indexes[i];
         var entryStartTime = entryStartTimes[entryIndex];
@@ -708,14 +710,17 @@ PerfUI.FlameChart = class extends UI.VBox {
         }
         var barRight = this._timeToPositionClipped(entryStartTime + duration);
         var barWidth = Math.max(barRight - barX, 1);
-        context.rect(barX, barY, barWidth - 0.4, barHeight - 1);
+        if (color)
+          context.rect(barX, barY, barWidth - 0.4, barHeight - 1);
         if (barWidth > minTextWidth || this._dataProvider.forceDecoration(entryIndex))
           titleIndices.push(entryIndex);
       }
+      if (!color)
+        continue;
+      context.fillStyle = color;
       context.fill();
     }
 
-    context.strokeStyle = 'rgba(0, 0, 0, 0.2)';
     context.beginPath();
     for (var m = 0; m < markerIndices.length; ++m) {
       var entryIndex = markerIndices[m];
@@ -726,6 +731,7 @@ PerfUI.FlameChart = class extends UI.VBox {
       context.moveTo(barX + this._markerRadius, y);
       context.arc(barX, y, this._markerRadius, 0, Math.PI * 2);
     }
+    context.strokeStyle = 'rgba(0, 0, 0, 0.2)';
     context.stroke();
 
     context.textBaseline = 'alphabetic';
@@ -745,7 +751,7 @@ PerfUI.FlameChart = class extends UI.VBox {
       var unclippedBarX = this._chartViewport.timeToPosition(entryStartTime);
       var barHeight = this._levelHeight(barLevel);
       if (this._dataProvider.decorateEntry(
-              entryIndex, context, text, barX, barY, barWidth, barHeight, unclippedBarX, this._timeToPixel))
+              entryIndex, context, text, barX, barY, barWidth, barHeight, unclippedBarX, timeToPixel))
         continue;
       if (!text || !text.length)
         continue;
@@ -935,6 +941,7 @@ PerfUI.FlameChart = class extends UI.VBox {
     var barHeight = group.style.height;
     var entryStartTimes = this._rawTimelineData.entryStartTimes;
     var entryTotalTimes = this._rawTimelineData.entryTotalTimes;
+    var timeToPixel = this._chartViewport.timeToPixel();
 
     for (var level = group.startLevel; level < endLevel; ++level) {
       var levelIndexes = this._timelineLevels[level];
@@ -961,7 +968,7 @@ PerfUI.FlameChart = class extends UI.VBox {
           context.fillStyle = color;
           context.fillRect(barX, y, barWidth, barHeight - 1);
           this._dataProvider.decorateEntry(
-              entryIndex, context, '', barX, y, barWidth, barHeight, unclippedBarX, this._timeToPixel);
+              entryIndex, context, '', barX, y, barWidth, barHeight, unclippedBarX, timeToPixel);
           continue;
         }
         range.append(new Common.Segment(barX, endBarX, color));
@@ -1065,6 +1072,7 @@ PerfUI.FlameChart = class extends UI.VBox {
     var markers = this._timelineData().markers;
     var left = this._markerIndexBeforeTime(this._calculator.minimumBoundary());
     var rightBoundary = this._calculator.maximumBoundary();
+    var timeToPixel = this._chartViewport.timeToPixel();
 
     var context = /** @type {!CanvasRenderingContext2D} */ (this._canvas.getContext('2d'));
     context.save();
@@ -1076,7 +1084,7 @@ PerfUI.FlameChart = class extends UI.VBox {
       var timestamp = markers[i].startTime();
       if (timestamp > rightBoundary)
         break;
-      markers[i].draw(context, this._calculator.computePosition(timestamp), height, this._timeToPixel);
+      markers[i].draw(context, this._calculator.computePosition(timestamp), height, timeToPixel);
     }
     context.restore();
   }
@@ -1306,9 +1314,6 @@ PerfUI.FlameChart = class extends UI.VBox {
     var totalPixels = Math.floor(this._offsetWidth / windowWidth);
     this._pixelWindowLeft = Math.floor(totalPixels * this._windowLeft);
 
-    this._timeToPixel = totalPixels / this._totalTime;
-    this._pixelToTime = this._totalTime / totalPixels;
-
     this._chartViewport.setBoundaries(this._minimumBoundary, this._totalTime);
   }
 
@@ -1487,10 +1492,10 @@ PerfUI.FlameChartDataProvider.prototype = {
    * @param {number} barWidth
    * @param {number} barHeight
    * @param {number} unclippedBarX
-   * @param {number} timeToPixels
+   * @param {number} timeToPixelRatio
    * @return {boolean}
    */
-  decorateEntry(entryIndex, context, text, barX, barY, barWidth, barHeight, unclippedBarX, timeToPixels) {},
+  decorateEntry(entryIndex, context, text, barX, barY, barWidth, barHeight, unclippedBarX, timeToPixelRatio) {},
 
   /**
    * @param {number} entryIndex

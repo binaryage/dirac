@@ -8,6 +8,7 @@ pushd "$ROOT"
 END_TAG=${1:-`git describe --tags --match "v*" --abbrev=0 "HEAD"`}
 START_TAG=`git describe --tags --match "v*" --abbrev=0 "$END_TAG^"`
 RANGE="$START_TAG..$END_TAG"
+OVERRIDE_CHROME_VERSION=${OVERRIDE_CHROME_VERSION}
 
 echo "RANGE=$RANGE"
 
@@ -28,7 +29,11 @@ echo "MERGED_DEVTOOLS_RANGE=$MERGED_DEVTOOLS_RANGE"
 
 FROM_OFFICIAL_DEVTOOLS="from [official DevTools](https://developers.google.com/web/tools/chrome-devtools)"
 
-CHROME_VERSION=`${SCRIPTS}/extract-backend-protocol-chrome-version.sh "$END_TAG"`
+if [ -z "$OVERRIDE_CHROME_VERSION" ]; then
+  CHROME_VERSION=`${SCRIPTS}/extract-backend-protocol-chrome-version.sh "$END_TAG"`
+else
+  CHROME_VERSION="$OVERRIDE_CHROME_VERSION"
+fi
 echo "CHROME_VERSION=$CHROME_VERSION"
 
 LINKS=`${SCRIPTS}/prepare-chromium-links.sh "$CHROME_VERSION" | tail -n 4 | tr '\n' "@" | sed 's/@$//' | sed 's/@/ | /g'`
