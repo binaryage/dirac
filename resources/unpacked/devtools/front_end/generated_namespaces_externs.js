@@ -45,6 +45,8 @@ var DomExtension = {};
 /** @const */
 var Elements = {};
 /** @const */
+var ElementsTestRunner = {};
+/** @const */
 var EmulatedDevices = {};
 /** @const */
 var Emulation = {};
@@ -136,10 +138,6 @@ var TimelineModel = {};
 var ToolboxBootstrap = {};
 /** @const */
 var UI = {};
-/** @const */
-var UtilitySharedWorker = {};
-/** @const */
-var WorkerService = {};
 /** @const */
 var Workspace = {};
 /** @const */

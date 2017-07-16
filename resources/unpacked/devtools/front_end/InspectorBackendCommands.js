@@ -1,5 +1,5 @@
-Protocol.BakedInspectorBackendAPIChromeTag='61.0.3155.2';
-Protocol.BakedInspectorBackendAPIChromeRev='e10717185a8bf3159a0488ba815fa8ad0399e9c8';
+Protocol.BakedInspectorBackendAPIChromeTag='61.0.3159.2';
+Protocol.BakedInspectorBackendAPIChromeRev='f7f59ab61befc2f61f0832263b38f0bcb50a0e28';
 Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerEvent("Inspector.detached", ["reason"]);\n'
 + 'Protocol.inspectorBackend.registerEvent("Inspector.targetCrashed", []);\n'
@@ -244,9 +244,9 @@ Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerCommand("DOM.undo", [], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("DOM.redo", [], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("DOM.markUndoableState", [], [], false);\n'
-+ 'Protocol.inspectorBackend.registerCommand("DOM.focus", [{"name": "nodeId", "type": "number", "optional": false}], [], false);\n'
-+ 'Protocol.inspectorBackend.registerCommand("DOM.setFileInputFiles", [{"name": "nodeId", "type": "number", "optional": false}, {"name": "files", "type": "object", "optional": false}], [], false);\n'
-+ 'Protocol.inspectorBackend.registerCommand("DOM.getBoxModel", [{"name": "nodeId", "type": "number", "optional": false}], ["model"], false);\n'
++ 'Protocol.inspectorBackend.registerCommand("DOM.focus", [{"name": "nodeId", "type": "number", "optional": true}, {"name": "backendNodeId", "type": "number", "optional": true}, {"name": "objectId", "type": "string", "optional": true}], [], false);\n'
++ 'Protocol.inspectorBackend.registerCommand("DOM.setFileInputFiles", [{"name": "files", "type": "object", "optional": false}, {"name": "nodeId", "type": "number", "optional": true}, {"name": "backendNodeId", "type": "number", "optional": true}, {"name": "objectId", "type": "string", "optional": true}], [], false);\n'
++ 'Protocol.inspectorBackend.registerCommand("DOM.getBoxModel", [{"name": "nodeId", "type": "number", "optional": true}, {"name": "backendNodeId", "type": "number", "optional": true}, {"name": "objectId", "type": "string", "optional": true}], ["model"], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("DOM.getNodeForLocation", [{"name": "x", "type": "number", "optional": false}, {"name": "y", "type": "number", "optional": false}, {"name": "includeUserAgentShadowDOM", "type": "boolean", "optional": true}], ["nodeId"], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("DOM.getRelayoutBoundary", [{"name": "nodeId", "type": "number", "optional": false}], ["nodeId"], false);\n'
 + 'Protocol.inspectorBackend.registerEnum("CSS.StyleSheetOrigin", {Injected: "injected", UserAgent: "user-agent", Inspector: "inspector", Regular: "regular"});\n'
