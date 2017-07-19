@@ -162,7 +162,7 @@ ConsoleModel.ConsoleModel = class extends Common.Object {
 
     if (msg.source === ConsoleModel.ConsoleMessage.MessageSource.ConsoleAPI &&
         msg.type === ConsoleModel.ConsoleMessage.MessageType.Clear)
-      this._clear();
+      this._clearIfNecessary();
 
     if (msg.parameters) {
       var firstParam = msg.parameters[0];
@@ -258,10 +258,7 @@ ConsoleModel.ConsoleModel = class extends Common.Object {
     this.addMessage(consoleMessage);
   }
 
-  /**
-   * @param {!Common.Event} event
-   */
-  _clearIfNecessary(event) {
+  _clearIfNecessary() {
     if (!Common.moduleSetting('preserveConsoleLog').get())
       this._clear();
   }
