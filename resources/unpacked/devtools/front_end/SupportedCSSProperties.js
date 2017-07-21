@@ -1,5 +1,5 @@
-Protocol.BakedSupportedCSSPropertiesChromeTag='61.0.3159.2';
-Protocol.BakedSupportedCSSPropertiesChromeRev='f7f59ab61befc2f61f0832263b38f0bcb50a0e28';
+Protocol.BakedSupportedCSSPropertiesChromeTag='61.0.3163.5';
+Protocol.BakedSupportedCSSPropertiesChromeRev='9ec90197bf020480b3283904fc11a05c251b4542';
 Protocol.BakedSupportedCSSProperties=''
 + '[{"name": "-webkit-app-region"},\n'
 + ' {"name": "-webkit-appearance"},\n'
@@ -162,7 +162,7 @@ Protocol.BakedSupportedCSSProperties=''
 + ' {"name": "border-right-style"},\n'
 + ' {"name": "border-right-width"},\n'
 + ' {"longhands": ["-webkit-border-horizontal-spacing", "-webkit-border-vertical-spacing"], "name": "border-spacing"},\n'
-+ ' {"longhands": ["border-top-style", "border-right-style", "border-bottom-style", "border-left-style"], "name": "border-style"},\n'
++ ' {"name": "border-style", "longhands": ["border-top-style", "border-right-style", "border-bottom-style", "border-left-style"]},\n'
 + ' {"longhands": ["border-top-width", "border-top-style", "border-top-color"], "name": "border-top"},\n'
 + ' {"name": "border-top-color"},\n'
 + ' {"name": "border-top-left-radius"},\n'
@@ -346,6 +346,9 @@ Protocol.BakedSupportedCSSProperties=''
 + ' {"name": "ry", "svg": true},\n'
 + ' {"name": "scale"},\n'
 + ' {"name": "scroll-behavior"},\n'
++ ' {"longhands": ["scroll-boundary-behavior-x", "scroll-boundary-behavior-y"], "name": "scroll-boundary-behavior"},\n'
++ ' {"name": "scroll-boundary-behavior-x"},\n'
++ ' {"name": "scroll-boundary-behavior-y"},\n'
 + ' {"longhands": ["scroll-padding-top", "scroll-padding-right", "scroll-padding-bottom", "scroll-padding-left"], "name": "scroll-padding"},\n'
 + ' {"longhands": ["scroll-padding-block-start", "scroll-padding-block-end"], "name": "scroll-padding-block"},\n'
 + ' {"name": "scroll-padding-block-end"},\n'

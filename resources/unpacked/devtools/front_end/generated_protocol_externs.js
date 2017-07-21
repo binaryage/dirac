@@ -363,19 +363,17 @@ Protocol.PageAgent.prototype.invoke_setDocumentContent = function(obj) {};
  * @param {number} height
  * @param {number} deviceScaleFactor
  * @param {boolean} mobile
- * @param {boolean=} opt_fitWindow
  * @param {number=} opt_scale
- * @param {number=} opt_offsetX
- * @param {number=} opt_offsetY
  * @param {number=} opt_screenWidth
  * @param {number=} opt_screenHeight
  * @param {number=} opt_positionX
  * @param {number=} opt_positionY
+ * @param {boolean=} opt_dontSetVisibleSize
  * @param {Protocol.Emulation.ScreenOrientation=} opt_screenOrientation
  * @return {!Promise<undefined>}
  */
-Protocol.PageAgent.prototype.setDeviceMetricsOverride = function(width, height, deviceScaleFactor, mobile, opt_fitWindow, opt_scale, opt_offsetX, opt_offsetY, opt_screenWidth, opt_screenHeight, opt_positionX, opt_positionY, opt_screenOrientation) {};
-/** @typedef {!{deviceScaleFactor: number, positionX: (number|undefined), scale: (number|undefined), screenHeight: (number|undefined), mobile: boolean, offsetX: (number|undefined), screenOrientation: (Protocol.Emulation.ScreenOrientation|undefined), fitWindow: (boolean|undefined), offsetY: (number|undefined), height: number, width: number, positionY: (number|undefined), screenWidth: (number|undefined)}} */
+Protocol.PageAgent.prototype.setDeviceMetricsOverride = function(width, height, deviceScaleFactor, mobile, opt_scale, opt_screenWidth, opt_screenHeight, opt_positionX, opt_positionY, opt_dontSetVisibleSize, opt_screenOrientation) {};
+/** @typedef {!{deviceScaleFactor: number, positionX: (number|undefined), scale: (number|undefined), screenHeight: (number|undefined), mobile: boolean, screenOrientation: (Protocol.Emulation.ScreenOrientation|undefined), dontSetVisibleSize: (boolean|undefined), height: number, width: number, positionY: (number|undefined), screenWidth: (number|undefined)}} */
 Protocol.PageAgent.SetDeviceMetricsOverrideRequest;
 /** @typedef {Object|undefined} */
 Protocol.PageAgent.SetDeviceMetricsOverrideResponse;
@@ -499,10 +497,11 @@ Protocol.PageAgent.prototype.invoke_captureScreenshot = function(obj) {};
  * @param {number=} opt_marginLeft
  * @param {number=} opt_marginRight
  * @param {string=} opt_pageRanges
+ * @param {boolean=} opt_ignoreInvalidPageRanges
  * @return {!Promise<?string>}
  */
-Protocol.PageAgent.prototype.printToPDF = function(opt_landscape, opt_displayHeaderFooter, opt_printBackground, opt_scale, opt_paperWidth, opt_paperHeight, opt_marginTop, opt_marginBottom, opt_marginLeft, opt_marginRight, opt_pageRanges) {};
-/** @typedef {!{paperHeight: (number|undefined), scale: (number|undefined), displayHeaderFooter: (boolean|undefined), marginBottom: (number|undefined), paperWidth: (number|undefined), marginLeft: (number|undefined), printBackground: (boolean|undefined), marginRight: (number|undefined), pageRanges: (string|undefined), marginTop: (number|undefined), landscape: (boolean|undefined)}} */
+Protocol.PageAgent.prototype.printToPDF = function(opt_landscape, opt_displayHeaderFooter, opt_printBackground, opt_scale, opt_paperWidth, opt_paperHeight, opt_marginTop, opt_marginBottom, opt_marginLeft, opt_marginRight, opt_pageRanges, opt_ignoreInvalidPageRanges) {};
+/** @typedef {!{paperHeight: (number|undefined), scale: (number|undefined), displayHeaderFooter: (boolean|undefined), marginBottom: (number|undefined), paperWidth: (number|undefined), marginLeft: (number|undefined), printBackground: (boolean|undefined), marginRight: (number|undefined), ignoreInvalidPageRanges: (boolean|undefined), pageRanges: (string|undefined), marginTop: (number|undefined), landscape: (boolean|undefined)}} */
 Protocol.PageAgent.PrintToPDFRequest;
 /** @typedef {!{data: string}} */
 Protocol.PageAgent.PrintToPDFResponse;
@@ -675,7 +674,7 @@ Protocol.Page.ResourceType = {
 /** @typedef {string} */
 Protocol.Page.FrameId;
 
-/** @typedef {!{id:(string), parentId:(string|undefined), loaderId:(Protocol.Network.LoaderId), name:(string|undefined), url:(string), securityOrigin:(string), mimeType:(string)}} */
+/** @typedef {!{id:(string), parentId:(string|undefined), loaderId:(Protocol.Network.LoaderId), name:(string|undefined), url:(string), securityOrigin:(string), mimeType:(string), unreachableUrl:(string|undefined)}} */
 Protocol.Page.Frame;
 
 /** @typedef {!{url:(string), type:(Protocol.Page.ResourceType), mimeType:(string), lastModified:(Protocol.Network.TimeSinceEpoch|undefined), contentSize:(number|undefined), failed:(boolean|undefined), canceled:(boolean|undefined)}} */
@@ -1079,19 +1078,17 @@ Protocol.EmulationAgent = function(){};
  * @param {number} height
  * @param {number} deviceScaleFactor
  * @param {boolean} mobile
- * @param {boolean=} opt_fitWindow
  * @param {number=} opt_scale
- * @param {number=} opt_offsetX
- * @param {number=} opt_offsetY
  * @param {number=} opt_screenWidth
  * @param {number=} opt_screenHeight
  * @param {number=} opt_positionX
  * @param {number=} opt_positionY
+ * @param {boolean=} opt_dontSetVisibleSize
  * @param {Protocol.Emulation.ScreenOrientation=} opt_screenOrientation
  * @return {!Promise<undefined>}
  */
-Protocol.EmulationAgent.prototype.setDeviceMetricsOverride = function(width, height, deviceScaleFactor, mobile, opt_fitWindow, opt_scale, opt_offsetX, opt_offsetY, opt_screenWidth, opt_screenHeight, opt_positionX, opt_positionY, opt_screenOrientation) {};
-/** @typedef {!{deviceScaleFactor: number, positionX: (number|undefined), scale: (number|undefined), screenHeight: (number|undefined), mobile: boolean, offsetX: (number|undefined), screenOrientation: (Protocol.Emulation.ScreenOrientation|undefined), fitWindow: (boolean|undefined), offsetY: (number|undefined), height: number, width: number, positionY: (number|undefined), screenWidth: (number|undefined)}} */
+Protocol.EmulationAgent.prototype.setDeviceMetricsOverride = function(width, height, deviceScaleFactor, mobile, opt_scale, opt_screenWidth, opt_screenHeight, opt_positionX, opt_positionY, opt_dontSetVisibleSize, opt_screenOrientation) {};
+/** @typedef {!{deviceScaleFactor: number, positionX: (number|undefined), scale: (number|undefined), screenHeight: (number|undefined), mobile: boolean, screenOrientation: (Protocol.Emulation.ScreenOrientation|undefined), dontSetVisibleSize: (boolean|undefined), height: number, width: number, positionY: (number|undefined), screenWidth: (number|undefined)}} */
 Protocol.EmulationAgent.SetDeviceMetricsOverrideRequest;
 /** @typedef {Object|undefined} */
 Protocol.EmulationAgent.SetDeviceMetricsOverrideResponse;
@@ -2325,6 +2322,21 @@ Protocol.CacheStorageAgent.DeleteEntryResponse;
  * @return {!Promise<!Protocol.CacheStorageAgent.DeleteEntryResponse>} */
 Protocol.CacheStorageAgent.prototype.invoke_deleteEntry = function(obj) {};
 
+/**
+ * @param {Protocol.CacheStorage.CacheId} cacheId
+ * @param {string} requestURL
+ * @return {!Promise<?Protocol.CacheStorage.CachedResponse>}
+ */
+Protocol.CacheStorageAgent.prototype.requestCachedResponse = function(cacheId, requestURL) {};
+/** @typedef {!{cacheId: Protocol.CacheStorage.CacheId, requestURL: string}} */
+Protocol.CacheStorageAgent.RequestCachedResponseRequest;
+/** @typedef {!{response: Protocol.CacheStorage.CachedResponse}} */
+Protocol.CacheStorageAgent.RequestCachedResponseResponse;
+/**
+ * @param {!Protocol.CacheStorageAgent.RequestCachedResponseRequest} obj
+ * @return {!Promise<!Protocol.CacheStorageAgent.RequestCachedResponseResponse>} */
+Protocol.CacheStorageAgent.prototype.invoke_requestCachedResponse = function(obj) {};
+
 /** @typedef {string} */
 Protocol.CacheStorage.CacheId;
 
@@ -2333,6 +2345,9 @@ Protocol.CacheStorage.DataEntry;
 
 /** @typedef {!{cacheId:(Protocol.CacheStorage.CacheId), securityOrigin:(string), cacheName:(string)}} */
 Protocol.CacheStorage.Cache;
+
+/** @typedef {!{headers:(!Object), body:(string)}} */
+Protocol.CacheStorage.CachedResponse;
 /** @interface */
 Protocol.CacheStorageDispatcher = function() {};
 Protocol.DOMStorage = {};
@@ -3937,12 +3952,13 @@ Protocol.TargetAgent.SetRemoteLocationsResponse;
 Protocol.TargetAgent.prototype.invoke_setRemoteLocations = function(obj) {};
 
 /**
- * @param {Protocol.Target.TargetID} targetId
  * @param {string} message
+ * @param {Protocol.Target.SessionID=} opt_sessionId
+ * @param {Protocol.Target.TargetID=} opt_targetId
  * @return {!Promise<undefined>}
  */
-Protocol.TargetAgent.prototype.sendMessageToTarget = function(targetId, message) {};
-/** @typedef {!{message: string, targetId: Protocol.Target.TargetID}} */
+Protocol.TargetAgent.prototype.sendMessageToTarget = function(message, opt_sessionId, opt_targetId) {};
+/** @typedef {!{message: string, targetId: (Protocol.Target.TargetID|undefined), sessionId: (Protocol.Target.SessionID|undefined)}} */
 Protocol.TargetAgent.SendMessageToTargetRequest;
 /** @typedef {Object|undefined} */
 Protocol.TargetAgent.SendMessageToTargetResponse;
@@ -3995,12 +4011,12 @@ Protocol.TargetAgent.prototype.invoke_closeTarget = function(obj) {};
 
 /**
  * @param {Protocol.Target.TargetID} targetId
- * @return {!Promise<?boolean>}
+ * @return {!Promise<?Protocol.Target.SessionID>}
  */
 Protocol.TargetAgent.prototype.attachToTarget = function(targetId) {};
 /** @typedef {!{targetId: Protocol.Target.TargetID}} */
 Protocol.TargetAgent.AttachToTargetRequest;
-/** @typedef {!{success: boolean}} */
+/** @typedef {!{sessionId: Protocol.Target.SessionID}} */
 Protocol.TargetAgent.AttachToTargetResponse;
 /**
  * @param {!Protocol.TargetAgent.AttachToTargetRequest} obj
@@ -4008,11 +4024,12 @@ Protocol.TargetAgent.AttachToTargetResponse;
 Protocol.TargetAgent.prototype.invoke_attachToTarget = function(obj) {};
 
 /**
- * @param {Protocol.Target.TargetID} targetId
+ * @param {Protocol.Target.SessionID=} opt_sessionId
+ * @param {Protocol.Target.TargetID=} opt_targetId
  * @return {!Promise<undefined>}
  */
-Protocol.TargetAgent.prototype.detachFromTarget = function(targetId) {};
-/** @typedef {!{targetId: Protocol.Target.TargetID}} */
+Protocol.TargetAgent.prototype.detachFromTarget = function(opt_sessionId, opt_targetId) {};
+/** @typedef {!{sessionId: (Protocol.Target.SessionID|undefined), targetId: (Protocol.Target.TargetID|undefined)}} */
 Protocol.TargetAgent.DetachFromTargetRequest;
 /** @typedef {Object|undefined} */
 Protocol.TargetAgent.DetachFromTargetResponse;
@@ -4082,6 +4099,9 @@ Protocol.TargetAgent.prototype.invoke_getTargets = function(obj) {};
 Protocol.Target.TargetID;
 
 /** @typedef {string} */
+Protocol.Target.SessionID;
+
+/** @typedef {string} */
 Protocol.Target.BrowserContextID;
 
 /** @typedef {!{targetId:(Protocol.Target.TargetID), type:(string), title:(string), url:(string), attached:(boolean)}} */
@@ -4104,19 +4124,22 @@ Protocol.TargetDispatcher.prototype.targetInfoChanged = function(targetInfo) {};
  */
 Protocol.TargetDispatcher.prototype.targetDestroyed = function(targetId) {};
 /**
+ * @param {Protocol.Target.SessionID} sessionId
  * @param {Protocol.Target.TargetInfo} targetInfo
  * @param {boolean} waitingForDebugger
  */
-Protocol.TargetDispatcher.prototype.attachedToTarget = function(targetInfo, waitingForDebugger) {};
+Protocol.TargetDispatcher.prototype.attachedToTarget = function(sessionId, targetInfo, waitingForDebugger) {};
 /**
- * @param {Protocol.Target.TargetID} targetId
+ * @param {Protocol.Target.SessionID} sessionId
+ * @param {Protocol.Target.TargetID=} opt_targetId
  */
-Protocol.TargetDispatcher.prototype.detachedFromTarget = function(targetId) {};
+Protocol.TargetDispatcher.prototype.detachedFromTarget = function(sessionId, opt_targetId) {};
 /**
- * @param {Protocol.Target.TargetID} targetId
+ * @param {Protocol.Target.SessionID} sessionId
  * @param {string} message
+ * @param {Protocol.Target.TargetID=} opt_targetId
  */
-Protocol.TargetDispatcher.prototype.receivedMessageFromTarget = function(targetId, message) {};
+Protocol.TargetDispatcher.prototype.receivedMessageFromTarget = function(sessionId, message, opt_targetId) {};
 Protocol.ServiceWorker = {};
 
 

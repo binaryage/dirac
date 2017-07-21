@@ -59,6 +59,8 @@ var Formatter = {};
 /** @const */
 var FormatterWorker = {};
 /** @const */
+var HARImporter = {};
+/** @const */
 var HeapSnapshotModel = {};
 /** @const */
 var HeapSnapshotWorker = {};
