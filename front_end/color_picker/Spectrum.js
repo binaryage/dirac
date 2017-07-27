@@ -52,8 +52,9 @@ ColorPicker.Spectrum = class extends UI.VBox {
     this._colorDragElement = this._colorElement.createChild('div', 'spectrum-sat fill')
                                  .createChild('div', 'spectrum-val fill')
                                  .createChild('div', 'spectrum-dragger');
-    var contrastRatioSVG = this._colorElement.createSVGChild('svg', 'spectrum-contrast-container fill');
-    this._contrastRatioLine = contrastRatioSVG.createSVGChild('path', 'spectrum-contrast-line');
+
+    if (Runtime.experiments.isEnabled('colorContrastRatio'))
+      this._setUpContrastRatioUI();
 
     var toolbar = new UI.Toolbar('spectrum-eye-dropper', this.contentElement);
     this._colorPickerButton = new UI.ToolbarToggle(Common.UIString('Toggle color picker'), 'largeicon-eyedropper');
@@ -100,7 +101,7 @@ ColorPicker.Spectrum = class extends UI.VBox {
     this._hexContainer = this.contentElement.createChild('div', 'spectrum-text spectrum-text-hex source-code');
     this._hexValue = UI.createInput('spectrum-text-value');
     this._hexContainer.appendChild(this._hexValue);
-    this._hexValue.maxLength = 7;
+    this._hexValue.maxLength = 9;
     this._hexValue.addEventListener('keydown', this._inputChanged.bind(this), false);
     this._hexValue.addEventListener('input', this._inputChanged.bind(this), false);
     this._hexValue.addEventListener('mousewheel', this._inputChanged.bind(this), false);
@@ -178,12 +179,7 @@ ColorPicker.Spectrum = class extends UI.VBox {
       var newAlpha = Math.round((event.x - this._hueAlphaLeft) / this._hueAlphaWidth * 100) / 100;
       var hsva = this._hsv.slice();
       hsva[3] = Number.constrain(newAlpha, 0, 1);
-      var colorFormat = undefined;
-      if (hsva[3] !== 1 &&
-          (this._colorFormat === Common.Color.Format.ShortHEX || this._colorFormat === Common.Color.Format.HEX ||
-           this._colorFormat === Common.Color.Format.Nickname))
-        colorFormat = Common.Color.Format.RGB;
-      this._innerSetColor(hsva, '', colorFormat, ColorPicker.Spectrum._ChangeSource.Other);
+      this._innerSetColor(hsva, '', undefined, ColorPicker.Spectrum._ChangeSource.Other);
     }
 
     /**
@@ -194,7 +190,25 @@ ColorPicker.Spectrum = class extends UI.VBox {
       var hsva = this._hsv.slice();
       hsva[1] = Number.constrain((event.x - this._colorOffset.left) / this.dragWidth, 0, 1);
       hsva[2] = Number.constrain(1 - (event.y - this._colorOffset.top) / this.dragHeight, 0, 1);
+
+      if (Runtime.experiments.isEnabled('colorContrastRatio'))
+        positionContrastInfo(this._contrastInfo, event);
+
       this._innerSetColor(hsva, '', undefined, ColorPicker.Spectrum._ChangeSource.Other);
+    }
+
+    /**
+     * @param {!Element} info
+     * @param {!Event} event
+     */
+    function positionContrastInfo(info, event) {
+      if (!info.boxInWindow().contains(event.x, event.y))
+        return;
+
+      if (info.offsetWidth > ((info.offsetParent.offsetWidth / 2) - 10))
+        info.classList.toggle('contrast-info-top');
+      else
+        info.classList.toggle('contrast-info-left');
     }
   }
 
@@ -588,11 +602,16 @@ ColorPicker.Spectrum = class extends UI.VBox {
     if (colorString !== undefined)
       this._colorString = colorString;
     if (colorFormat !== undefined) {
-      console.assert(colorFormat !== Common.Color.Format.Original, 'Spectrum\'s color format cannot be Original');
-      if (colorFormat === Common.Color.Format.RGBA)
-        colorFormat = Common.Color.Format.RGB;
-      else if (colorFormat === Common.Color.Format.HSLA)
-        colorFormat = Common.Color.Format.HSL;
+      var cf = Common.Color.Format;
+      console.assert(colorFormat !== cf.Original, 'Spectrum\'s color format cannot be Original');
+      if (colorFormat === cf.RGBA)
+        colorFormat = cf.RGB;
+      else if (colorFormat === cf.HSLA)
+        colorFormat = cf.HSL;
+      else if (colorFormat === cf.HEXA)
+        colorFormat = cf.HEX;
+      else if (colorFormat === cf.ShortHEXA)
+        colorFormat = cf.ShortHEX;
       this._colorFormat = colorFormat;
     }
 
@@ -632,15 +651,19 @@ ColorPicker.Spectrum = class extends UI.VBox {
     if (colorString)
       return colorString;
 
-    if (this._colorFormat === cf.Nickname || this._colorFormat === cf.ShortHEX) {
-      colorString = color.asString(cf.HEX);
-      if (colorString)
-        return colorString;
-    }
+    if (this._colorFormat === cf.Nickname)
+      colorString = color.asString(color.hasAlpha() ? cf.HEXA : cf.HEX);
+    else if (this._colorFormat === cf.ShortHEX)
+      colorString = color.asString(color.detectHEXFormat());
+    else if (this._colorFormat === cf.HEX)
+      colorString = color.asString(cf.HEXA);
+    else if (this._colorFormat === cf.HSL)
+      colorString = color.asString(cf.HSLA);
+    else
+      colorString = color.asString(cf.RGBA);
 
-    console.assert(color.hasAlpha());
-    return this._colorFormat === cf.HSL ? /** @type {string} */ (color.asString(cf.HSLA)) :
-                                          /** @type {string} */ (color.asString(cf.RGBA));
+    console.assert(colorString);
+    return colorString || '';
   }
 
   _updateHelperLocations() {
@@ -674,10 +697,11 @@ ColorPicker.Spectrum = class extends UI.VBox {
     if (this._colorFormat === cf.HEX || this._colorFormat === cf.ShortHEX || this._colorFormat === cf.Nickname) {
       this._hexContainer.hidden = false;
       this._displayContainer.hidden = true;
-      if (this._colorFormat === cf.ShortHEX && this._color().canBeShortHex())
-        this._hexValue.value = this._color().asString(cf.ShortHEX);
-      else
-        this._hexValue.value = this._color().asString(cf.HEX);
+      if (this._colorFormat === cf.ShortHEX) {
+        this._hexValue.value = this._color().asString(this._color().detectHEXFormat());
+      } else {  // Don't use ShortHEX if original was not in that format.
+        this._hexValue.value = this._color().asString(this._color().hasAlpha() ? cf.HEXA : cf.HEX);
+      }
     } else {
       // RGBA, HSLA display.
       this._hexContainer.hidden = true;
@@ -696,8 +720,10 @@ ColorPicker.Spectrum = class extends UI.VBox {
 
   /**
    * @param {number} requiredContrast
+   * @param {!Array<number>} bgRGBA
+   * @param {!Array<number>} fgRGBA
    */
-  _drawContrastRatioLine(requiredContrast) {
+  _drawContrastRatioLine(requiredContrast, bgRGBA, fgRGBA) {
     if (!this._contrastColor || !this.dragWidth || !this.dragHeight)
       return;
 
@@ -710,11 +736,10 @@ ColorPicker.Spectrum = class extends UI.VBox {
     /** const */ var V = 2;
     /** const */ var A = 3;
 
-    var fgRGBA = [];
-    Common.Color.hsva2rgba(this._hsv, fgRGBA);
-    var fgLuminance = Common.Color.luminance(fgRGBA);
-    var bgRGBA = this._contrastColor.rgba();
     var bgLuminance = Common.Color.luminance(bgRGBA);
+    var blendedRGBA = [];
+    Common.Color.blendColors(fgRGBA, bgRGBA, blendedRGBA);
+    var fgLuminance = Common.Color.luminance(blendedRGBA);
     var fgIsLighter = fgLuminance > bgLuminance;
     var desiredLuminance = Common.Color.desiredLuminance(bgLuminance, requiredContrast, fgIsLighter);
 
@@ -724,7 +749,6 @@ ColorPicker.Spectrum = class extends UI.VBox {
     var pathBuilder = [];
     var candidateRGBA = [];
     Common.Color.hsva2rgba(candidateHSVA, candidateRGBA);
-    var blendedRGBA = [];
     Common.Color.blendColors(candidateRGBA, bgRGBA, blendedRGBA);
 
     /**
@@ -780,13 +804,64 @@ ColorPicker.Spectrum = class extends UI.VBox {
     this._contrastRatioLine.setAttribute('d', pathBuilder.join(' '));
   }
 
+  _setUpContrastRatioUI() {
+    var contrastRatioSVG = this._colorElement.createSVGChild('svg', 'spectrum-contrast-container fill');
+    this._contrastRatioLine = contrastRatioSVG.createSVGChild('path', 'spectrum-contrast-line');
+    this._contrastInfo = this._colorElement.createChild('div', 'spectrum-contrast-info');
+    this._contrastInfo.classList.add('force-white-icons');
+    this._contrastInfo.createChild('span', 'low-contrast').textContent = Common.UIString('Low contrast');
+    this._contrastInfo.createChild('span', 'value');
+    this._contrastInfo.appendChild(UI.Icon.create('smallicon-contrast-ratio'));
+  }
+
+
+  /**
+   * @param {boolean} show
+   */
+  _setContrastInfoVisible(show) {
+    var info = this._contrastInfo;
+    if (!show) {
+      info.classList.add('hidden');
+      return;
+    }
+
+    info.classList.remove('hidden');
+
+    var fgRGBA = [];
+    Common.Color.hsva2rgba(this._hsv, fgRGBA);
+    var bgRGBA = this._contrastColor.rgba();
+    var contrastRatio = Common.Color.calculateContrastRatio(fgRGBA, bgRGBA);
+
+    // TODO(aboxhall): Determine size of text and switch between AA/AAA ratings.
+    var requiredContrast = 4.5;
+
+    this._contrastInfo.querySelector('.value').textContent = contrastRatio.toFixed(2);
+    this._contrastInfo.classList.toggle('contrast-fail', (contrastRatio < requiredContrast));
+    this._drawContrastRatioLine(requiredContrast, bgRGBA, fgRGBA);
+
+    var draggerBox = this._colorDragElement.boxInWindow();
+    var dragX = draggerBox.x + (draggerBox.width / 2);
+    var dragY = draggerBox.y + (draggerBox.height / 2);
+    var infoBox = info.boxInWindow();
+    if (infoBox.contains(dragX, dragY)) {
+      if (info.offsetWidth > ((info.offsetParent.offsetWidth / 2) - 10))
+        info.classList.toggle('contrast-info-top');
+      else
+        info.classList.toggle('contrast-info-left');
+    }
+  }
+
+
   _updateUI() {
     var h = Common.Color.fromHSVA([this._hsv[0], 1, 1, 1]);
     this._colorElement.style.backgroundColor = /** @type {string} */ (h.asString(Common.Color.Format.RGB));
     if (Runtime.experiments.isEnabled('colorContrastRatio')) {
-      // TODO(samli): Determine size of text and switch between AA/AAA ratings.
-      this._drawContrastRatioLine(4.5);
+      if (this.dragWidth && this._contrastColor)
+        this._setContrastInfoVisible(true);
+      else
+        this._setContrastInfoVisible(false);
     }
+
     this._swatchInnerElement.style.backgroundColor =
         /** @type {string} */ (this._color().asString(Common.Color.Format.RGBA));
     // Show border if the swatch is white.
@@ -803,8 +878,8 @@ ColorPicker.Spectrum = class extends UI.VBox {
     var format = cf.RGB;
     if (this._colorFormat === cf.RGB)
       format = cf.HSL;
-    else if (this._colorFormat === cf.HSL && !this._color().hasAlpha())
-      format = this._originalFormat === cf.ShortHEX ? cf.ShortHEX : cf.HEX;
+    else if (this._colorFormat === cf.HSL)
+      format = (this._originalFormat === cf.ShortHEX || this._originalFormat === cf.ShortHEXA) ? cf.ShortHEX : cf.HEX;
     this._innerSetColor(undefined, '', format, ColorPicker.Spectrum._ChangeSource.Other);
   }
 
@@ -831,7 +906,7 @@ ColorPicker.Spectrum = class extends UI.VBox {
 
     const cf = Common.Color.Format;
     var colorString;
-    if (this._colorFormat === cf.HEX || this._colorFormat === cf.ShortHEX) {
+    if (this._colorFormat === cf.Nickname || this._colorFormat === cf.HEX || this._colorFormat === cf.ShortHEX) {
       colorString = this._hexValue.value;
     } else {
       var format = this._colorFormat === cf.RGB ? 'rgba' : 'hsla';
@@ -842,10 +917,11 @@ ColorPicker.Spectrum = class extends UI.VBox {
     var color = Common.Color.parse(colorString);
     if (!color)
       return;
-    var hsv = color.hsva();
+
+    var colorFormat = undefined;
     if (this._colorFormat === cf.HEX || this._colorFormat === cf.ShortHEX)
-      this._colorFormat = color.canBeShortHex() ? cf.ShortHEX : cf.HEX;
-    this._innerSetColor(hsv, colorString, undefined, ColorPicker.Spectrum._ChangeSource.Input);
+      colorFormat = color.detectHEXFormat();
+    this._innerSetColor(color.hsva(), colorString, colorFormat, ColorPicker.Spectrum._ChangeSource.Input);
   }
 
   /**

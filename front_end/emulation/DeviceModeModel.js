@@ -14,7 +14,6 @@ Emulation.DeviceModeModel = class extends Common.Object {
     this._availableSize = new UI.Size(1, 1);
     this._preferredSize = new UI.Size(1, 1);
     this._initialized = false;
-    this._deviceMetricsThrottler = new Common.Throttler(0);
     this._appliedDeviceSize = new UI.Size(1, 1);
     this._appliedDeviceScaleFactor = window.devicePixelRatio;
     this._appliedUserAgentType = Emulation.DeviceModeModel.UA.Desktop;
@@ -598,57 +597,42 @@ Emulation.DeviceModeModel = class extends Common.Object {
       pageHeight = 0;
     }
 
-    this._deviceMetricsThrottler.schedule(setDeviceMetricsOverride.bind(this));
+    if (!this._emulationModel)
+      return;
 
-    /**
-     * @this {Emulation.DeviceModeModel}
-     * @return {!Promise.<?>}
-     */
-    function setDeviceMetricsOverride() {
-      if (!this._emulationModel)
-        return Promise.resolve();
-
-      var clear = !pageWidth && !pageHeight && !mobile && !deviceScaleFactor && scale === 1 && !screenOrientation;
-      var allPromises = [];
-      if (resetPageScaleFactor)
-        allPromises.push(this._emulationModel.resetPageScaleFactor());
-      var metrics = null;
-      if (!clear) {
-        metrics = {
-          width: pageWidth,
-          height: pageHeight,
-          deviceScaleFactor: deviceScaleFactor,
-          mobile: mobile,
-          scale: scale,
-          screenWidth: screenSize.width,
-          screenHeight: screenSize.height,
-          positionX: positionX,
-          positionY: positionY,
-          dontSetVisibleSize: true
-        };
-        if (screenOrientation)
-          metrics.screenOrientation = {type: screenOrientation, angle: screenOrientationAngle};
-      }
-      allPromises.push(this._emulationModel.emulateDevice(metrics));
-      return Promise.all(allPromises);
+    if (resetPageScaleFactor)
+      this._emulationModel.resetPageScaleFactor();
+    if (pageWidth || pageHeight || mobile || deviceScaleFactor || scale !== 1 || screenOrientation) {
+      var metrics = {
+        width: pageWidth,
+        height: pageHeight,
+        deviceScaleFactor: deviceScaleFactor,
+        mobile: mobile,
+        scale: scale,
+        screenWidth: screenSize.width,
+        screenHeight: screenSize.height,
+        positionX: positionX,
+        positionY: positionY,
+        dontSetVisibleSize: true
+      };
+      if (screenOrientation)
+        metrics.screenOrientation = {type: screenOrientation, angle: screenOrientationAngle};
+      this._emulationModel.emulateDevice(metrics);
+    } else {
+      this._emulationModel.emulateDevice(null);
     }
   }
 
   /**
    * @param {boolean} fullSize
+   * @param {!Protocol.Page.Viewport=} clip
    * @return {!Promise<?string>}
    */
-  async captureScreenshot(fullSize) {
+  async captureScreenshot(fullSize, clip) {
     var screenCaptureModel = this._emulationModel ? this._emulationModel.target().model(SDK.ScreenCaptureModel) : null;
     if (!screenCaptureModel)
       return null;
 
-    var metrics = await screenCaptureModel.fetchLayoutMetrics();
-    if (!metrics)
-      return null;
-
-    if (!this._emulatedPageSize)
-      this._calculateAndEmulate(false);
     var overlayModel = this._emulationModel ? this._emulationModel.overlayModel() : null;
     if (overlayModel)
       overlayModel.setShowViewportSizeOnResize(false);
@@ -656,13 +640,16 @@ Emulation.DeviceModeModel = class extends Common.Object {
     // Emulate full size device if necessary.
     var deviceMetrics;
     if (fullSize) {
-      var pageSize = fullSize ? new UI.Size(metrics.contentWidth, metrics.contentHeight) : this._emulatedPageSize;
+      var metrics = await screenCaptureModel.fetchLayoutMetrics();
+      if (!metrics)
+        return null;
       deviceMetrics = {
-        width: Math.floor(pageSize.width),
-        height: Math.floor(pageSize.height),
-        deviceScaleFactor: this._device ? this._device.deviceScaleFactor : window.devicePixelRatio,
+        width: Math.floor(metrics.contentWidth),
+        height: Math.floor(metrics.contentHeight),
+        deviceScaleFactor: this._appliedDeviceScaleFactor,
         mobile: this._isMobile(),
       };
+      clip = {x: 0, y: 0, width: deviceMetrics.width, height: deviceMetrics.height, scale: 1};
 
       if (this._device) {
         var screenOrientation = this._mode.orientation === Emulation.EmulatedDevice.Horizontal ?
@@ -675,8 +662,7 @@ Emulation.DeviceModeModel = class extends Common.Object {
       await this._emulationModel.resetPageScaleFactor();
       await this._emulationModel.emulateDevice(deviceMetrics);
     }
-
-    var screenshot = await screenCaptureModel.captureScreenshot('png', 100);
+    var screenshot = await screenCaptureModel.captureScreenshot('png', 100, clip);
     if (fullSize) {
       if (this._device) {
         var orientation = this._device.orientationByName(this._mode.orientation);
