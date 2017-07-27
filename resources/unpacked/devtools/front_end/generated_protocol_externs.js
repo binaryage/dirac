@@ -654,6 +654,19 @@ Protocol.PageAgent.CreateIsolatedWorldResponse;
  * @return {!Promise<!Protocol.PageAgent.CreateIsolatedWorldResponse>} */
 Protocol.PageAgent.prototype.invoke_createIsolatedWorld = function(obj) {};
 
+/**
+ * @return {!Promise<undefined>}
+ */
+Protocol.PageAgent.prototype.bringToFront = function() {};
+/** @typedef {Object|undefined} */
+Protocol.PageAgent.BringToFrontRequest;
+/** @typedef {Object|undefined} */
+Protocol.PageAgent.BringToFrontResponse;
+/**
+ * @param {!Protocol.PageAgent.BringToFrontRequest} obj
+ * @return {!Promise<!Protocol.PageAgent.BringToFrontResponse>} */
+Protocol.PageAgent.prototype.invoke_bringToFront = function(obj) {};
+
 /** @enum {string} */
 Protocol.Page.ResourceType = {
     Document: "Document",
@@ -769,8 +782,10 @@ Protocol.PageDispatcher.prototype.frameStoppedLoading = function(frameId) {};
 /**
  * @param {Protocol.Page.FrameId} frameId
  * @param {number} delay
+ * @param {string} reason
+ * @param {string} url
  */
-Protocol.PageDispatcher.prototype.frameScheduledNavigation = function(frameId, delay) {};
+Protocol.PageDispatcher.prototype.frameScheduledNavigation = function(frameId, delay, reason, url) {};
 /**
  * @param {Protocol.Page.FrameId} frameId
  */
@@ -3705,12 +3720,12 @@ Protocol.IOAgent = function(){};
  * @param {Protocol.IO.StreamHandle} handle
  * @param {number=} opt_offset
  * @param {number=} opt_size
- * @return {!Promise<?string>}
+ * @return {!Promise<?boolean>}
  */
 Protocol.IOAgent.prototype.read = function(handle, opt_offset, opt_size) {};
 /** @typedef {!{size: (number|undefined), handle: Protocol.IO.StreamHandle, offset: (number|undefined)}} */
 Protocol.IOAgent.ReadRequest;
-/** @typedef {!{data: string, eof: boolean}} */
+/** @typedef {!{data: string, base64Encoded: boolean, eof: boolean}} */
 Protocol.IOAgent.ReadResponse;
 /**
  * @param {!Protocol.IOAgent.ReadRequest} obj
@@ -3730,6 +3745,20 @@ Protocol.IOAgent.CloseResponse;
  * @param {!Protocol.IOAgent.CloseRequest} obj
  * @return {!Promise<!Protocol.IOAgent.CloseResponse>} */
 Protocol.IOAgent.prototype.invoke_close = function(obj) {};
+
+/**
+ * @param {Protocol.Runtime.RemoteObjectId} objectId
+ * @return {!Promise<?string>}
+ */
+Protocol.IOAgent.prototype.resolveBlob = function(objectId) {};
+/** @typedef {!{objectId: Protocol.Runtime.RemoteObjectId}} */
+Protocol.IOAgent.ResolveBlobRequest;
+/** @typedef {!{uuid: string}} */
+Protocol.IOAgent.ResolveBlobResponse;
+/**
+ * @param {!Protocol.IOAgent.ResolveBlobRequest} obj
+ * @return {!Promise<!Protocol.IOAgent.ResolveBlobResponse>} */
+Protocol.IOAgent.prototype.invoke_resolveBlob = function(obj) {};
 
 /** @typedef {string} */
 Protocol.IO.StreamHandle;
@@ -4690,10 +4719,13 @@ Protocol.LayerTree.ScrollRectType = {
 /** @typedef {!{rect:(Protocol.DOM.Rect), type:(Protocol.LayerTree.ScrollRectType)}} */
 Protocol.LayerTree.ScrollRect;
 
+/** @typedef {!{stickyBoxRect:(Protocol.DOM.Rect), containingBlockRect:(Protocol.DOM.Rect), nearestLayerShiftingStickyBox:(Protocol.LayerTree.LayerId|undefined), nearestLayerShiftingContainingBlock:(Protocol.LayerTree.LayerId|undefined)}} */
+Protocol.LayerTree.StickyPositionConstraint;
+
 /** @typedef {!{x:(number), y:(number), picture:(string)}} */
 Protocol.LayerTree.PictureTile;
 
-/** @typedef {!{layerId:(Protocol.LayerTree.LayerId), parentLayerId:(Protocol.LayerTree.LayerId|undefined), backendNodeId:(Protocol.DOM.BackendNodeId|undefined), offsetX:(number), offsetY:(number), width:(number), height:(number), transform:(!Array<number>|undefined), anchorX:(number|undefined), anchorY:(number|undefined), anchorZ:(number|undefined), paintCount:(number), drawsContent:(boolean), invisible:(boolean|undefined), scrollRects:(!Array<Protocol.LayerTree.ScrollRect>|undefined)}} */
+/** @typedef {!{layerId:(Protocol.LayerTree.LayerId), parentLayerId:(Protocol.LayerTree.LayerId|undefined), backendNodeId:(Protocol.DOM.BackendNodeId|undefined), offsetX:(number), offsetY:(number), width:(number), height:(number), transform:(!Array<number>|undefined), anchorX:(number|undefined), anchorY:(number|undefined), anchorZ:(number|undefined), paintCount:(number), drawsContent:(boolean), invisible:(boolean|undefined), scrollRects:(!Array<Protocol.LayerTree.ScrollRect>|undefined), stickyPositionConstraint:(Protocol.LayerTree.StickyPositionConstraint|undefined)}} */
 Protocol.LayerTree.Layer;
 
 /** @typedef {!Array<!number>} */

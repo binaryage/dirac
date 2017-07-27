@@ -23,6 +23,8 @@ var Common = {};
 /** @const */
 var Components = {};
 /** @const */
+var ConsoleCounters = {};
+/** @const */
 var ConsoleModel = {};
 /** @const */
 var ConsoleTestRunner = {};
