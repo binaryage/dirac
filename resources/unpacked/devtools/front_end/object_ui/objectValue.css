@@ -37,21 +37,6 @@
     cursor: pointer;
 }
 
-.object-value-object,
-.object-value-promise,
-.object-value-map,
-.object-value-set,
-.object-value-iterator,
-.object-value-generator,
-.object-value-node,
-.object-value-typedarray,
-.object-value-array {
-    position: relative;
-    vertical-align: baseline;
-    color: inherit;
-    display: inline-block;
-}
-
 .object-value-number {
     color: rgb(28, 0, 207);
 }
@@ -70,6 +55,10 @@
 
 .object-value-node {
     color: rgb(136, 18, 128);
+    position: relative;
+    vertical-align: baseline;
+    color: inherit;
+    display: inline-block;
 }
 
 .object-value-null,

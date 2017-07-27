@@ -291,7 +291,7 @@ ConsoleTestRunner.dumpConsoleClassesBrief = function() {
 };
 
 ConsoleTestRunner.dumpConsoleCounters = function() {
-  var counter = Main.Main.WarningErrorCounter._instanceForTest;
+  var counter = ConsoleCounters.WarningErrorCounter._instanceForTest;
   for (var index = 0; index < counter._titles.length; ++index)
     TestRunner.addResult(counter._titles[index]);
   ConsoleTestRunner.dumpConsoleClassesBrief();
@@ -512,4 +512,12 @@ ConsoleTestRunner.selectConsoleMessages = function(fromMessage, fromTextOffset, 
     }
     return null;
   }
+};
+
+/**
+ * @param {!Function} override
+ * @param {boolean=} opt_sticky
+ */
+ConsoleTestRunner.addConsoleSniffer = function(override, opt_sticky) {
+  TestRunner.addSniffer(ConsoleModel.ConsoleModel.prototype, 'addMessage', override, opt_sticky);
 };
