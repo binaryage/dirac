@@ -1,5 +1,5 @@
-Protocol.BakedInspectorBackendAPIChromeTag='62.0.3168.2';
-Protocol.BakedInspectorBackendAPIChromeRev='36d38a29dc4a584117af2fdbc29368f5c13c11d4';
+Protocol.BakedInspectorBackendAPIChromeTag='62.0.3170.2';
+Protocol.BakedInspectorBackendAPIChromeRev='68fcefe9187dd0647fa7d8c91763941fa49d5bec';
 Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerEvent("Inspector.detached", ["reason"]);\n'
 + 'Protocol.inspectorBackend.registerEvent("Inspector.targetCrashed", []);\n'
@@ -38,6 +38,7 @@ Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerCommand("Page.removeScriptToEvaluateOnNewDocument", [{"name": "identifier", "type": "string", "optional": false}], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Page.setAutoAttachToCreatedPages", [{"name": "autoAttach", "type": "boolean", "optional": false}], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Page.reload", [{"name": "ignoreCache", "type": "boolean", "optional": true}, {"name": "scriptToEvaluateOnLoad", "type": "string", "optional": true}], [], false);\n'
++ 'Protocol.inspectorBackend.registerCommand("Page.setAdBlockingEnabled", [{"name": "enabled", "type": "boolean", "optional": false}], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Page.navigate", [{"name": "url", "type": "string", "optional": false}, {"name": "referrer", "type": "string", "optional": true}, {"name": "transitionType", "type": "string", "optional": true}], ["frameId"], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Page.stopLoading", [], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Page.getNavigationHistory", [], ["currentIndex", "entries"], false);\n'
@@ -71,6 +72,7 @@ Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerEnum("Overlay.InspectMode", {SearchForNode: "searchForNode", SearchForUAShadowDOM: "searchForUAShadowDOM", None: "none"});\n'
 + 'Protocol.inspectorBackend.registerEvent("Overlay.nodeHighlightRequested", ["nodeId"]);\n'
 + 'Protocol.inspectorBackend.registerEvent("Overlay.inspectNodeRequested", ["backendNodeId"]);\n'
++ 'Protocol.inspectorBackend.registerEvent("Overlay.screenshotRequested", ["viewport"]);\n'
 + 'Protocol.inspectorBackend.registerCommand("Overlay.enable", [], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Overlay.disable", [], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Overlay.setShowPaintRects", [{"name": "result", "type": "boolean", "optional": false}], [], false);\n'

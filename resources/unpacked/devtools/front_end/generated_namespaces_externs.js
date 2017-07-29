@@ -35,6 +35,8 @@ var Coverage = {};
 /** @const */
 var DataGrid = {};
 /** @const */
+var DataGridTestRunner = {};
+/** @const */
 var Devices = {};
 /** @const */
 var Diff = {};
@@ -128,6 +130,8 @@ var Snippets = {};
 var SourceFrame = {};
 /** @const */
 var Sources = {};
+/** @const */
+var SourcesTestRunner = {};
 /** @const */
 var TestRunner = {};
 /** @const */
