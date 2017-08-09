@@ -45,10 +45,23 @@ Console.ConsoleView = class extends UI.VBox {
     this._searchableView = new UI.SearchableView(this);
     this._searchableView.setPlaceholder(Common.UIString('Find string in logs'));
     this._searchableView.setMinimalSearchQuerySize(0);
-    this._searchableView.show(this.element);
+    this._sidebar = new Console.ConsoleSidebar();
 
+    var toolbar = new UI.Toolbar('', this.element);
+    if (Runtime.experiments.isEnabled('logManagement')) {
+      this._splitWidget =
+          new UI.SplitWidget(true /* isVertical */, false /* secondIsSidebar */, 'console.sidebar.width', 100);
+      this._splitWidget.setMainWidget(this._searchableView);
+      this._splitWidget.setSidebarWidget(this._sidebar);
+      this._splitWidget.hideSidebar();
+      this._splitWidget.show(this.element);
+      toolbar.appendToolbarItem(this._splitWidget.createShowHideSidebarButton('console sidebar'));
+    } else {
+      this._searchableView.show(this.element);
+    }
     this._contentsElement = this._searchableView.element;
-    this._contentsElement.classList.add('console-view');
+    this.element.classList.add('console-view');
+
     /** @type {!Array.<!Console.ConsoleViewMessage>} */
     this._visibleViewMessages = [];
     this._urlToMessageCount = {};
@@ -69,7 +82,6 @@ Console.ConsoleView = class extends UI.VBox {
         this._showSettingsPaneSetting, 'largeicon-settings-gear', Common.UIString('Console settings'));
     this._progressToolbarItem = new UI.ToolbarItem(createElement('div'));
 
-    var toolbar = new UI.Toolbar('', this._contentsElement);
     toolbar.appendToolbarItem(UI.Toolbar.createActionButton(
         /** @type {!UI.Action }*/ (UI.actionRegistry.action('console.clear'))));
     toolbar.appendSeparator();
@@ -244,6 +256,10 @@ Console.ConsoleView = class extends UI.VBox {
     this._messagesElement.addEventListener("mouseup", this._updateStickToBottomOnMouseUp.bind(this), false);
     this._messagesElement.addEventListener("mouseleave", this._updateStickToBottomOnMouseUp.bind(this), false);
     this._messagesElement.addEventListener("wheel", this._updateStickToBottomOnWheel.bind(this), false);
+
+    this._sidebar.addEventListener(Console.ConsoleSidebar.Events.ContextSelected, event => {
+      this._filter.setContext(/** @type {string|symbol} */ (event.data));
+    });
 
     ConsoleModel.consoleModel.addEventListener(
         ConsoleModel.ConsoleModel.Events.ConsoleCleared, this._consoleCleared, this);
@@ -429,6 +445,7 @@ Console.ConsoleView = class extends UI.VBox {
       this._updateMessageList();
       delete this._needsFullUpdate;
     } else {
+      this._sidebar.refresh();
       this._viewport.invalidate();
     }
     return Promise.resolve();
@@ -925,24 +942,15 @@ Console.ConsoleView = class extends UI.VBox {
    * @param {!ConsoleModel.ConsoleMessage} message
    */
   _addConsoleMessage(message) {
-    /**
-     * @param {!Console.ConsoleViewMessage} viewMessage1
-     * @param {!Console.ConsoleViewMessage} viewMessage2
-     * @return {number}
-     */
-    function compareTimestamps(viewMessage1, viewMessage2) {
-      return ConsoleModel.ConsoleMessage.timestampComparator(
-          viewMessage1.consoleMessage(), viewMessage2.consoleMessage());
-    }
-
-    // this hack is needed for node.js, we would get some log messages issued by DevTools with wrong timestamps
-    // if (message.type === ConsoleModel.ConsoleMessage.MessageType.Command ||
-    //     message.type === ConsoleModel.ConsoleMessage.MessageType.Result) {
-    this._normalizeMessageTimestamp(message);
-    // }
     var viewMessage = this._createViewMessage(message);
     message[this._viewMessageSymbol] = viewMessage;
-    var insertAt = this._consoleMessages.upperBound(viewMessage, compareTimestamps);
+    if (message.type === ConsoleModel.ConsoleMessage.MessageType.Command ||
+        message.type === ConsoleModel.ConsoleMessage.MessageType.Result) {
+      var lastMessage = this._consoleMessages.peekLast();
+      viewMessage[Console.ConsoleView._messageSortingTimeSymbol] = lastMessage ? timeForSorting(lastMessage) : 0;
+    }
+    var insertAt = this._consoleMessages.upperBound(
+        viewMessage, (viewMessage1, viewMessage2) => timeForSorting(viewMessage1) - timeForSorting(viewMessage2));
     var insertedInMiddle = insertAt < this._consoleMessages.length;
     this._consoleMessages.splice(insertAt, 0, viewMessage);
 
@@ -961,6 +969,14 @@ Console.ConsoleView = class extends UI.VBox {
 
     this._scheduleViewportRefresh();
     this._consoleMessageAddedForTest(viewMessage);
+
+    /**
+     * @param {!Console.ConsoleViewMessage} viewMessage
+     * @return {number}
+     */
+    function timeForSorting(viewMessage) {
+      return viewMessage[Console.ConsoleView._messageSortingTimeSymbol] || viewMessage.consoleMessage().timestamp;
+    }
   }
 
   /**
@@ -985,6 +1001,10 @@ Console.ConsoleView = class extends UI.VBox {
    * @param {!Console.ConsoleViewMessage} viewMessage
    */
   _appendMessageToEnd(viewMessage) {
+    var context = viewMessage.consoleMessage().context;
+    if (context)
+      this._sidebar.addGroup({name: context, context: context});
+
     if (!this._filter.shouldBeVisible(viewMessage)) {
       this._hiddenByFilterCount++;
       return;
@@ -1045,6 +1065,7 @@ Console.ConsoleView = class extends UI.VBox {
   _consoleCleared() {
     this._currentMatchRangeIndex = -1;
     this._consoleMessages = [];
+    this._sidebar.clear();
     this._updateMessageList();
     this._hidePromptSuggestBox();
     this._viewport.setStickToBottom(true);
@@ -1170,6 +1191,7 @@ Console.ConsoleView = class extends UI.VBox {
       this._appendMessageToEnd(this._consoleMessages[i]);
     this._updateFilterStatus();
     this._searchableView.updateSearchMatchesCount(this._regexMatchRanges.length);
+    this._sidebar.refresh();
     this._viewport.invalidate();
   }
 
@@ -1538,6 +1560,7 @@ Console.ConsoleViewFilter = class {
    */
   constructor(filterChangedCallback) {
     this._filterChanged = filterChangedCallback;
+    this._context = Console.ConsoleSidebar.AllContextsFilter;
 
     this._messageURLFiltersSetting = Common.settings.createSetting('messageURLFilters', {});
     this._messageLevelFiltersSetting = Console.ConsoleViewFilter.levelFilterSetting();
@@ -1597,6 +1620,16 @@ Console.ConsoleViewFilter = class {
     var result = Console.ConsoleViewFilter.allLevelsFilterValue();
     result[ConsoleModel.ConsoleMessage.MessageLevel.Verbose] = false;
     return result;
+  }
+
+  /**
+   * @param {string|symbol} context
+   */
+  setContext(context) {
+    if (this._context !== context) {
+      this._context = context;
+      this._filterChanged();
+    }
   }
 
   _updateLevelMenuButtonText() {
@@ -1733,10 +1766,14 @@ Console.ConsoleViewFilter = class {
         message.source !== ConsoleModel.ConsoleMessage.MessageSource.ConsoleAPI)
       return false;
 
+    if (this._context !== Console.ConsoleSidebar.AllContextsFilter && message.context !== this._context)
+      return false;
+
     return true;
   }
 
   reset() {
+    this._context = Console.ConsoleSidebar.AllContextsFilter;
     this._messageURLFiltersSetting.set({});
     this._messageLevelFiltersSetting.set(Console.ConsoleViewFilter.defaultLevelsFilterValue());
     this._filterByExecutionContextSetting.set(false);
@@ -1966,3 +2003,6 @@ Console.ConsoleView.ActionDelegate = class {
  * @typedef {{messageIndex: number, matchIndex: number}}
  */
 Console.ConsoleView.RegexMatchRange;
+
+/** @type {symbol} */
+Console.ConsoleView._messageSortingTimeSymbol = Symbol('messageSortingTime');

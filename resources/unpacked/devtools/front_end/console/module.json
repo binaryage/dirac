@@ -173,6 +173,7 @@
         "clojure-parinfer.js",
         "DiracPrompt.js",
         "ConsoleContextSelector.js",
+        "ConsoleSidebar.js",
         "ConsoleViewport.js",
         "ConsoleViewMessage.js",
         "ConsolePrompt.js",
@@ -184,6 +185,7 @@
     ],
     "resources": [
         "consoleContextSelector.css",
+        "consoleSidebar.css",
         "consoleView.css",
         "dirac-hacks.css",
         "dirac-codemirror.css",
