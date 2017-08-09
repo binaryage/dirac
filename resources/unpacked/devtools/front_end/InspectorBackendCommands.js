@@ -1,5 +1,5 @@
-Protocol.BakedInspectorBackendAPIChromeTag='62.0.3175.2';
-Protocol.BakedInspectorBackendAPIChromeRev='6dac5f26570be463f4ec3aba1992450470565aaa';
+Protocol.BakedInspectorBackendAPIChromeTag='62.0.3180.1';
+Protocol.BakedInspectorBackendAPIChromeRev='8cd3b9f9386ab9b562611d0b7166dab335ef8846';
 Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerEvent("Inspector.detached", ["reason"]);\n'
 + 'Protocol.inspectorBackend.registerEvent("Inspector.targetCrashed", []);\n'
@@ -275,7 +275,7 @@ Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerCommand("CSS.forcePseudoState", [{"name": "nodeId", "type": "number", "optional": false}, {"name": "forcedPseudoClasses", "type": "object", "optional": false}], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("CSS.getMediaQueries", [], ["medias"], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("CSS.setEffectivePropertyValueForNode", [{"name": "nodeId", "type": "number", "optional": false}, {"name": "propertyName", "type": "string", "optional": false}, {"name": "value", "type": "string", "optional": false}], [], false);\n'
-+ 'Protocol.inspectorBackend.registerCommand("CSS.getBackgroundColors", [{"name": "nodeId", "type": "number", "optional": false}], ["backgroundColors"], false);\n'
++ 'Protocol.inspectorBackend.registerCommand("CSS.getBackgroundColors", [{"name": "nodeId", "type": "number", "optional": false}], ["backgroundColors", "computedFontSize", "computedFontWeight", "computedBodyFontSize"], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("CSS.startRuleUsageTracking", [], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("CSS.takeCoverageDelta", [], ["coverage"], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("CSS.stopRuleUsageTracking", [], ["ruleUsage"], false);\n'

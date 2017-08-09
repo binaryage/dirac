@@ -1,5 +1,5 @@
-Protocol.BakedSupportedCSSPropertiesChromeTag='62.0.3175.2';
-Protocol.BakedSupportedCSSPropertiesChromeRev='6dac5f26570be463f4ec3aba1992450470565aaa';
+Protocol.BakedSupportedCSSPropertiesChromeTag='62.0.3180.1';
+Protocol.BakedSupportedCSSPropertiesChromeRev='8cd3b9f9386ab9b562611d0b7166dab335ef8846';
 Protocol.BakedSupportedCSSProperties=''
 + '[{"name": "-webkit-app-region"},\n'
 + ' {"name": "-webkit-appearance"},\n'
@@ -386,8 +386,8 @@ Protocol.BakedSupportedCSSProperties=''
 + ' {"name": "stroke", "svg": true, "inherited": true},\n'
 + ' {"name": "stroke-dasharray", "svg": true, "inherited": true},\n'
 + ' {"name": "stroke-dashoffset", "svg": true, "inherited": true},\n'
-+ ' {"svg": true, "name": "stroke-linecap", "inherited": true},\n'
-+ ' {"svg": true, "name": "stroke-linejoin", "inherited": true},\n'
++ ' {"name": "stroke-linecap", "svg": true, "inherited": true},\n'
++ ' {"name": "stroke-linejoin", "svg": true, "inherited": true},\n'
 + ' {"name": "stroke-miterlimit", "svg": true, "inherited": true},\n'
 + ' {"name": "stroke-opacity", "svg": true, "inherited": true},\n'
 + ' {"name": "stroke-width", "svg": true, "inherited": true},\n'
