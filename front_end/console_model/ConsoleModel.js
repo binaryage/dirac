@@ -121,36 +121,43 @@ ConsoleModel.ConsoleModel = class extends Common.Object {
 
   /**
    * @param {!SDK.ExecutionContext} executionContext
-   * @param {string} text
+   * @param {!ConsoleModel.ConsoleMessage} originatingMessage
+   * @param {string} expression
    * @param {boolean} useCommandLineAPI
+   * @param {boolean} awaitPromise
    */
-  evaluateCommandInConsole(executionContext, text, useCommandLineAPI) {
-    var requestedText = text;
+  async evaluateCommandInConsole(executionContext, originatingMessage, expression, useCommandLineAPI, awaitPromise) {
+    var result = await executionContext.evaluate(
+        {
+          expression: expression,
+          objectGroup: 'console',
+          includeCommandLineAPI: useCommandLineAPI,
+          silent: false,
+          returnByValue: false,
+          generatePreview: true
+        },
+        /* userGesture */ true, awaitPromise);
+    Host.userMetrics.actionTaken(Host.UserMetrics.Action.ConsoleEvaluated);
+    if (result.error)
+      return;
+    await Common.console.showPromise();
+    this.dispatchEventToListeners(
+        ConsoleModel.ConsoleModel.Events.CommandEvaluated,
+        {result: result.object, commandMessage: originatingMessage, exceptionDetails: result.exceptionDetails});
+  }
+
+  /**
+   * @param {!SDK.ExecutionContext} executionContext
+   * @param {string} text
+   * @return {!ConsoleModel.ConsoleMessage}
+   */
+  addCommandMessage(executionContext, text) {
     var commandMessage = new ConsoleModel.ConsoleMessage(
         executionContext.runtimeModel, ConsoleModel.ConsoleMessage.MessageSource.JS, null, text,
         ConsoleModel.ConsoleMessage.MessageType.Command);
     commandMessage.setExecutionContextId(executionContext.id);
     this.addMessage(commandMessage);
-
-    /**
-     * @param {?SDK.RemoteObject} result
-     * @param {!Protocol.Runtime.ExceptionDetails=} exceptionDetails
-     * @this {ConsoleModel.ConsoleModel}
-     */
-    function printResult(result, exceptionDetails) {
-      if (!result)
-        return;
-
-      Common.console.showPromise().then(() => {
-        this.dispatchEventToListeners(
-            ConsoleModel.ConsoleModel.Events.CommandEvaluated,
-            {result: result, text: requestedText, commandMessage: commandMessage, exceptionDetails: exceptionDetails});
-      });
-    }
-
-    text = SDK.RuntimeModel.wrapObjectLiteralExpressionIfNeeded(text);
-    executionContext.evaluate(text, 'console', useCommandLineAPI, false, false, true, true, printResult.bind(this));
-    Host.userMetrics.actionTaken(Host.UserMetrics.Action.ConsoleEvaluated);
+    return commandMessage;
   }
 
   /**
