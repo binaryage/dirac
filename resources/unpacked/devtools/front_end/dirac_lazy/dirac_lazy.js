@@ -44,7 +44,14 @@ Object.assign(window.dirac, (function() {
       if (dirac._DEBUG_EVAL) {
         console.log("evalInContext", context, code);
       }
-      context.evaluate(code, "console", true, true, true, false, false, resultCallback);
+      context.evaluate({
+          expression: code,
+          objectGroup: 'console',
+          includeCommandLineAPI: true,
+          silent: true,
+          returnByValue: true,
+          generatePreview: false
+        }, false, false).then(answer => resultCallback(answer.object, answer.exceptionDetails));
     } catch (e) {
       console.error("failed js evaluation in context:", context, "code", code);
     }
