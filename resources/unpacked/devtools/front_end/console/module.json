@@ -167,7 +167,8 @@
         "data_grid",
         "object_ui",
         "console_model",
-        "product_registry"
+        "product_registry",
+        "formatter"
     ],
     "scripts": [
         "clojure-parinfer.js",

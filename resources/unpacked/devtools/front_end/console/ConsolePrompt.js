@@ -152,7 +152,7 @@ Console.ConsolePrompt = class extends UI.Widget {
   /**
    * @param {!KeyboardEvent} event
    */
-  _enterKeyPressed(event) {
+  async _enterKeyPressed(event) {
     if (event.altKey || event.ctrlKey || event.shiftKey)
       return;
 
@@ -169,38 +169,40 @@ Console.ConsolePrompt = class extends UI.Widget {
       this._appendCommand(str, true);
       return;
     }
-    currentExecutionContext.runtimeModel.compileScript(
-        str, '', false, currentExecutionContext.id, compileCallback.bind(this));
-
-    /**
-     * @param {!Protocol.Runtime.ScriptId=} scriptId
-     * @param {?Protocol.Runtime.ExceptionDetails=} exceptionDetails
-     * @this {Console.ConsolePrompt}
-     */
-    function compileCallback(scriptId, exceptionDetails) {
-      if (str !== this.text())
-        return;
-      if (exceptionDetails &&
-          (exceptionDetails.exception.description.startsWith('SyntaxError: Unexpected end of input') ||
-           exceptionDetails.exception.description.startsWith('SyntaxError: Unterminated template literal'))) {
-        this._editor.newlineAndIndent();
-        this._enterProcessedForTest();
-        return;
-      }
-      this._appendCommand(str, true);
+    var result = await currentExecutionContext.runtimeModel.compileScript(str, '', false, currentExecutionContext.id);
+    if (str !== this.text())
+      return;
+    var exceptionDetails = result.exceptionDetails;
+    if (exceptionDetails &&
+        (exceptionDetails.exception.description.startsWith('SyntaxError: Unexpected end of input') ||
+         exceptionDetails.exception.description.startsWith('SyntaxError: Unterminated template literal'))) {
+      this._editor.newlineAndIndent();
       this._enterProcessedForTest();
+      return;
     }
+    await this._appendCommand(str, true);
+    this._enterProcessedForTest();
   }
 
   /**
    * @param {string} text
    * @param {boolean} useCommandLineAPI
    */
-  _appendCommand(text, useCommandLineAPI) {
+  async _appendCommand(text, useCommandLineAPI) {
     this.setText('');
     var currentExecutionContext = UI.context.flavor(SDK.ExecutionContext);
     if (currentExecutionContext) {
-      ConsoleModel.consoleModel.evaluateCommandInConsole(currentExecutionContext, text, useCommandLineAPI);
+      var executionContext = currentExecutionContext;
+      var message = ConsoleModel.consoleModel.addCommandMessage(executionContext, text);
+      text = SDK.RuntimeModel.wrapObjectLiteralExpressionIfNeeded(text);
+      var preprocessed = false;
+      if (text.indexOf('await') !== -1) {
+        var preprocessedText = await Formatter.formatterWorkerPool().preprocessTopLevelAwaitExpressions(text);
+        preprocessed = !!preprocessedText;
+        text = preprocessedText || text;
+      }
+      ConsoleModel.consoleModel.evaluateCommandInConsole(
+          executionContext, message, text, useCommandLineAPI, /* awaitPromise */ preprocessed);
       if (Console.ConsolePanel.instance().isShowing())
         Host.userMetrics.actionTaken(Host.UserMetrics.Action.CommandEvaluatedInConsolePanel);
     }
