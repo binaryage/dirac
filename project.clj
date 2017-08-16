@@ -15,7 +15,7 @@
                  [org.clojure/tools.logging "0.4.0"]
                  [org.clojure/tools.cli "0.3.5"]
                  [org.clojure/tools.nrepl "0.2.13"]
-                 [binaryage/env-config "0.2.1"]
+                 [binaryage/env-config "0.2.2"]
                  [http-kit "2.2.0"]
                  [version-clj "0.1.2"]
                  [clansi "1.0.0"]
@@ -28,13 +28,13 @@
                  [binaryage/devtools "0.9.4" :scope "test"]
                  [environ "1.1.0" :scope "test"]
                  [cljs-http "0.1.43" :scope "test"]
-                 [figwheel "0.5.12" :scope "test"]
+                 [figwheel "0.5.13" :scope "test"]
                  [reforms "0.4.3" :scope "test"]
                  [rum "0.10.8" :scope "test"]
                  [rum-reforms "0.4.3" :scope "test"]
                  [cljsjs/parinfer "2.0.0-0" :scope "test"]
                  [com.lucasbradstreet/cljs-uuid-utils "1.0.2" :scope "test"]
-                 [com.rpl/specter "1.0.2" :scope "test"]
+                 [com.rpl/specter "1.0.3" :scope "test"]
                  [org.clojure/tools.namespace "0.3.0-alpha3" :scope "test"]
                  [org.clojure/tools.reader "1.0.5" :scope "test"]
 
@@ -175,7 +175,7 @@
 
              :cljs
              {:plugins [[lein-cljsbuild "1.1.6"]
-                        [lein-figwheel "0.5.12"]]}
+                        [lein-figwheel "0.5.13"]]}
 
              :nuke-aliases
              {:aliases ^:replace {}}
