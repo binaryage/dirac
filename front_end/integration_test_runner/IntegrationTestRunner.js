@@ -21,6 +21,7 @@ IntegrationTestRunner._setupTestHelpers = function(target) {
   TestRunner.HeapProfilerAgent = target.heapProfilerAgent();
   TestRunner.InspectorAgent = target.inspectorAgent();
   TestRunner.NetworkAgent = target.networkAgent();
+  TestRunner.OverlayAgent = target.overlayAgent();
   TestRunner.PageAgent = target.pageAgent();
   TestRunner.ProfilerAgent = target.profilerAgent();
   TestRunner.RuntimeAgent = target.runtimeAgent();
@@ -35,6 +36,7 @@ IntegrationTestRunner._setupTestHelpers = function(target) {
   TestRunner.domDebuggerModel = target.model(SDK.DOMDebuggerModel);
   TestRunner.cssModel = target.model(SDK.CSSModel);
   TestRunner.cpuProfilerModel = target.model(SDK.CPUProfilerModel);
+  TestRunner.overlayModel = target.model(SDK.OverlayModel);
   TestRunner.serviceWorkerManager = target.model(SDK.ServiceWorkerManager);
   TestRunner.tracingManager = target.model(SDK.TracingManager);
   TestRunner.mainTarget = target;
@@ -167,6 +169,60 @@ TestRunner.addScriptTag = function(path) {
     })();
   `);
 };
+
+/**
+ * @param {string} path
+ * @return {!Promise<!SDK.RemoteObject|undefined>}
+ */
+TestRunner.addStylesheetTag = function(path) {
+  var testScriptURL = /** @type {string} */ (Runtime.queryParam('test'));
+  var resolvedPath = testScriptURL + '/../' + path;
+
+  return TestRunner.evaluateInPageAsync(`
+    (function(){
+      var link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.type = 'text/css';
+      link.href = '${resolvedPath}';
+      link.onload = onload;
+      document.head.append(link);
+      var resolve;
+      var promise = new Promise(r => resolve = r);
+      function onload() {
+        // Force style recalc
+        window.getComputedStyle(document.body).color;
+        resolve();
+      }
+      return promise;
+    })();
+  `);
+};
+
+/**
+ * @param {string} path
+ * @return {!Promise<!SDK.RemoteObject|undefined>}
+ */
+TestRunner.addIframe = function(path) {
+  var testScriptURL = /** @type {string} */ (Runtime.queryParam('test'));
+  var resolvedPath = testScriptURL + '/../' + path;
+
+  return TestRunner.evaluateInPageAsync(`
+    (function(){
+      var iframe = document.createElement('iframe');
+      iframe.src = '${resolvedPath}';
+      iframe.onload = onload;
+      document.body.appendChild(iframe);
+
+      var resolve;
+      var promise = new Promise(r => resolve = r);
+      function onload() {
+        resolve();
+      }
+      return promise;
+    })();
+  `);
+};
+
 
 /**
  * @param {string} title
@@ -732,6 +788,41 @@ TestRunner.describeTargetType = function(target) {
   return 'frame';
 };
 
+/**
+ * @param {string} urlSuffix
+ * @param {!Workspace.projectTypes=} projectType
+ * @return {!Promise}
+ */
+TestRunner.waitForUISourceCode = function(urlSuffix, projectType) {
+  /**
+   * @param {!Workspace.UISourceCode} uiSourceCode
+   * @return {boolean}
+   */
+  function matches(uiSourceCode) {
+    if (projectType && uiSourceCode.project().type() !== projectType)
+      return false;
+    if (!projectType && uiSourceCode.project().type() === Workspace.projectTypes.Service)
+      return false;
+    if (urlSuffix && !uiSourceCode.url().endsWith(urlSuffix))
+      return false;
+    return true;
+  }
+
+  for (var uiSourceCode of Workspace.workspace.uiSourceCodes()) {
+    if (urlSuffix && matches(uiSourceCode))
+      return Promise.resolve(uiSourceCode);
+  }
+
+  return TestRunner.waitForEvent(Workspace.Workspace.Events.UISourceCodeAdded, Workspace.workspace, matches);
+};
+
+/**
+ * @param {!Function} callback
+ */
+TestRunner.waitForUISourceCodeRemoved = function(callback) {
+  Workspace.workspace.once(Workspace.Workspace.Events.UISourceCodeRemoved).then(callback);
+};
+
 /** @type {boolean} */
 IntegrationTestRunner._startedTest = false;
 
@@ -748,7 +839,7 @@ IntegrationTestRunner.TestObserver = class {
       return;
     IntegrationTestRunner._startedTest = true;
     IntegrationTestRunner._setupTestHelpers(target);
-    TestRunner.executeTestScript();
+    IntegrationTestRunner.runTest();
   }
 
   /**
@@ -757,6 +848,17 @@ IntegrationTestRunner.TestObserver = class {
    */
   targetRemoved(target) {
   }
+};
+
+IntegrationTestRunner.runTest = async function() {
+  var testScriptURL = /** @type {string} */ (Runtime.queryParam('test'));
+  var basePath = testScriptURL + '/../';
+  await TestRunner.evaluateInPagePromise(`
+    function relativeToTest(relativePath) {
+      return '${basePath}' + relativePath;
+    }
+  `);
+  TestRunner.executeTestScript();
 };
 
 SDK.targetManager.observeTargets(new IntegrationTestRunner.TestObserver());
