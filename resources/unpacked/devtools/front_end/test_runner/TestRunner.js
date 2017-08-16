@@ -8,10 +8,18 @@
 self.testRunner;
 
 TestRunner.executeTestScript = function() {
-  const testScriptURL = /** @type {string} */ (Runtime.queryParam('test'));
+  var testScriptURL = /** @type {string} */ (Runtime.queryParam('test'));
   fetch(testScriptURL)
       .then(data => data.text())
-      .then(testScript => eval(`(function test(){${testScript}})()\n//# sourceURL=${testScriptURL}`))
+      .then(testScript => {
+        if (!self.testRunner || Runtime.queryParam('debugFrontend')) {
+          self.eval(`function test(){${testScript}}\n//# sourceURL=${testScriptURL}`);
+          TestRunner.addResult = console.log;
+          TestRunner.completeTest = () => console.log('Test completed');
+          return;
+        }
+        eval(`(function test(){${testScript}})()\n//# sourceURL=${testScriptURL}`);
+      })
       .catch(error => {
         TestRunner.addResult(`Unable to execute test script because of error: ${error}`);
         TestRunner.completeTest();
@@ -22,10 +30,6 @@ TestRunner.executeTestScript = function() {
 TestRunner._results = [];
 
 TestRunner.completeTest = function() {
-  if (!self.testRunner) {
-    console.log('Test Done');
-    return;
-  }
   TestRunner.flushResults();
   self.testRunner.notifyDone();
 };
@@ -54,10 +58,7 @@ TestRunner.flushResults = function() {
  * @param {*} text
  */
 TestRunner.addResult = function(text) {
-  if (self.testRunner)
-    TestRunner._results.push(String(text));
-  else
-    console.log(text);
+  TestRunner._results.push(String(text));
 };
 
 /**
@@ -153,12 +154,33 @@ TestRunner.addSnifferPromise = function(receiver, methodName) {
   });
 };
 
+/** @type {number} */
+TestRunner._pendingInits = 0;
+
+/** @type {function():void} */
+TestRunner._resolveOnFinishInits;
+
+/**
+ * @param {function():!Promise} asyncFunction
+ */
+TestRunner.initAsync = async function(asyncFunction) {
+  TestRunner._pendingInits++;
+  await asyncFunction();
+  TestRunner._pendingInits--;
+  if (!TestRunner._pendingInits)
+    TestRunner._resolveOnFinishInits();
+};
+
 /**
  * @param {string} module
  * @return {!Promise<undefined>}
  */
-TestRunner.loadModule = function(module) {
-  return self.runtime.loadModulePromise(module);
+TestRunner.loadModule = async function(module) {
+  var promise = new Promise(resolve => TestRunner._resolveOnFinishInits = resolve);
+  await self.runtime.loadModulePromise(module);
+  if (!TestRunner._pendingInits)
+    return;
+  return promise;
 };
 
 /**
@@ -269,17 +291,6 @@ TestRunner.textContentWithoutStyles = function(node) {
   }
   return buffer;
 };
-
-/**
- * @param {!Function} testFunction
- * @return {!Function}
- */
-function debugTest(testFunction) {
-  self.test = testFunction;
-  TestRunner.addResult = console.log;
-  TestRunner.completeTest = () => console.log('Test completed');
-  return () => {};
-}
 
 (function() {
   /**
