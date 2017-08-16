@@ -1796,6 +1796,8 @@ Console.ConsoleCommand = class extends Console.ConsoleViewMessage {
    */
   constructor(message, linkifier, badgePool, nestingLevel) {
     super(message, linkifier, badgePool, nestingLevel);
+    this._contentElement = null;
+    this._formattedCommand = null;
   }
 
   /**
@@ -1872,7 +1874,7 @@ Console.ConsoleDiracCommand = class extends Console.ConsoleCommand {
   }
 };
 
-Console.ConsoleDiracMarkup = class extends Console.ConsoleViewMessage {
+Console.ConsoleDiracMarkup = class extends Console.ConsoleCommand {
 
   /**
    * @param {!ConsoleModel.ConsoleMessage} message
