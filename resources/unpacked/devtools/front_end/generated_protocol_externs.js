@@ -94,6 +94,62 @@ Protocol.Memory.PressureLevel = {
 };
 /** @interface */
 Protocol.MemoryDispatcher = function() {};
+Protocol.Performance = {};
+
+
+/**
+ * @constructor
+*/
+Protocol.PerformanceAgent = function(){};
+
+/**
+ * @return {!Promise<undefined>}
+ */
+Protocol.PerformanceAgent.prototype.enable = function() {};
+/** @typedef {Object|undefined} */
+Protocol.PerformanceAgent.EnableRequest;
+/** @typedef {Object|undefined} */
+Protocol.PerformanceAgent.EnableResponse;
+/**
+ * @param {!Protocol.PerformanceAgent.EnableRequest} obj
+ * @return {!Promise<!Protocol.PerformanceAgent.EnableResponse>} */
+Protocol.PerformanceAgent.prototype.invoke_enable = function(obj) {};
+
+/**
+ * @return {!Promise<undefined>}
+ */
+Protocol.PerformanceAgent.prototype.disable = function() {};
+/** @typedef {Object|undefined} */
+Protocol.PerformanceAgent.DisableRequest;
+/** @typedef {Object|undefined} */
+Protocol.PerformanceAgent.DisableResponse;
+/**
+ * @param {!Protocol.PerformanceAgent.DisableRequest} obj
+ * @return {!Promise<!Protocol.PerformanceAgent.DisableResponse>} */
+Protocol.PerformanceAgent.prototype.invoke_disable = function(obj) {};
+
+/**
+ * @return {!Promise<?Array<Protocol.Performance.Metric>>}
+ */
+Protocol.PerformanceAgent.prototype.getMetrics = function() {};
+/** @typedef {Object|undefined} */
+Protocol.PerformanceAgent.GetMetricsRequest;
+/** @typedef {!{metrics: !Array<Protocol.Performance.Metric>}} */
+Protocol.PerformanceAgent.GetMetricsResponse;
+/**
+ * @param {!Protocol.PerformanceAgent.GetMetricsRequest} obj
+ * @return {!Promise<!Protocol.PerformanceAgent.GetMetricsResponse>} */
+Protocol.PerformanceAgent.prototype.invoke_getMetrics = function(obj) {};
+
+/** @typedef {!{name:(string), value:(number)}} */
+Protocol.Performance.Metric;
+/** @interface */
+Protocol.PerformanceDispatcher = function() {};
+/**
+ * @param {!Array<Protocol.Performance.Metric>} metrics
+ * @param {string} title
+ */
+Protocol.PerformanceDispatcher.prototype.metrics = function(metrics, title) {};
 Protocol.Page = {};
 
 
@@ -1042,7 +1098,7 @@ Protocol.OverlayAgent.GetHighlightObjectForTestResponse;
  * @return {!Promise<!Protocol.OverlayAgent.GetHighlightObjectForTestResponse>} */
 Protocol.OverlayAgent.prototype.invoke_getHighlightObjectForTest = function(obj) {};
 
-/** @typedef {!{showInfo:(boolean|undefined), showRulers:(boolean|undefined), showExtensionLines:(boolean|undefined), displayAsMaterial:(boolean|undefined), contentColor:(Protocol.DOM.RGBA|undefined), paddingColor:(Protocol.DOM.RGBA|undefined), borderColor:(Protocol.DOM.RGBA|undefined), marginColor:(Protocol.DOM.RGBA|undefined), eventTargetColor:(Protocol.DOM.RGBA|undefined), shapeColor:(Protocol.DOM.RGBA|undefined), shapeMarginColor:(Protocol.DOM.RGBA|undefined), selectorList:(string|undefined)}} */
+/** @typedef {!{showInfo:(boolean|undefined), showRulers:(boolean|undefined), showExtensionLines:(boolean|undefined), displayAsMaterial:(boolean|undefined), contentColor:(Protocol.DOM.RGBA|undefined), paddingColor:(Protocol.DOM.RGBA|undefined), borderColor:(Protocol.DOM.RGBA|undefined), marginColor:(Protocol.DOM.RGBA|undefined), eventTargetColor:(Protocol.DOM.RGBA|undefined), shapeColor:(Protocol.DOM.RGBA|undefined), shapeMarginColor:(Protocol.DOM.RGBA|undefined), selectorList:(string|undefined), cssGridColor:(Protocol.DOM.RGBA|undefined)}} */
 Protocol.Overlay.HighlightConfig;
 
 /** @enum {string} */
@@ -1197,11 +1253,11 @@ Protocol.EmulationAgent.prototype.invoke_clearGeolocationOverride = function(obj
 
 /**
  * @param {boolean} enabled
- * @param {string=} opt_configuration
+ * @param {number=} opt_maxTouchPoints
  * @return {!Promise<undefined>}
  */
-Protocol.EmulationAgent.prototype.setTouchEmulationEnabled = function(enabled, opt_configuration) {};
-/** @typedef {!{configuration: (string|undefined), enabled: boolean}} */
+Protocol.EmulationAgent.prototype.setTouchEmulationEnabled = function(enabled, opt_maxTouchPoints) {};
+/** @typedef {!{maxTouchPoints: (number|undefined), enabled: boolean}} */
 Protocol.EmulationAgent.SetTouchEmulationEnabledRequest;
 /** @typedef {Object|undefined} */
 Protocol.EmulationAgent.SetTouchEmulationEnabledResponse;
@@ -1209,6 +1265,21 @@ Protocol.EmulationAgent.SetTouchEmulationEnabledResponse;
  * @param {!Protocol.EmulationAgent.SetTouchEmulationEnabledRequest} obj
  * @return {!Promise<!Protocol.EmulationAgent.SetTouchEmulationEnabledResponse>} */
 Protocol.EmulationAgent.prototype.invoke_setTouchEmulationEnabled = function(obj) {};
+
+/**
+ * @param {boolean} enabled
+ * @param {string=} opt_configuration
+ * @return {!Promise<undefined>}
+ */
+Protocol.EmulationAgent.prototype.setEmitTouchEventsForMouse = function(enabled, opt_configuration) {};
+/** @typedef {!{configuration: (string|undefined), enabled: boolean}} */
+Protocol.EmulationAgent.SetEmitTouchEventsForMouseRequest;
+/** @typedef {Object|undefined} */
+Protocol.EmulationAgent.SetEmitTouchEventsForMouseResponse;
+/**
+ * @param {!Protocol.EmulationAgent.SetEmitTouchEventsForMouseRequest} obj
+ * @return {!Promise<!Protocol.EmulationAgent.SetEmitTouchEventsForMouseResponse>} */
+Protocol.EmulationAgent.prototype.invoke_setEmitTouchEventsForMouse = function(obj) {};
 
 /**
  * @param {string} media
@@ -1335,19 +1406,6 @@ Protocol.SecurityAgent.DisableResponse;
 Protocol.SecurityAgent.prototype.invoke_disable = function(obj) {};
 
 /**
- * @return {!Promise<undefined>}
- */
-Protocol.SecurityAgent.prototype.showCertificateViewer = function() {};
-/** @typedef {Object|undefined} */
-Protocol.SecurityAgent.ShowCertificateViewerRequest;
-/** @typedef {Object|undefined} */
-Protocol.SecurityAgent.ShowCertificateViewerResponse;
-/**
- * @param {!Protocol.SecurityAgent.ShowCertificateViewerRequest} obj
- * @return {!Promise<!Protocol.SecurityAgent.ShowCertificateViewerResponse>} */
-Protocol.SecurityAgent.prototype.invoke_showCertificateViewer = function(obj) {};
-
-/**
  * @param {number} eventId
  * @param {Protocol.Security.CertificateErrorAction} action
  * @return {!Promise<undefined>}
@@ -1396,7 +1454,7 @@ Protocol.Security.SecurityState = {
     Info: "info"
 };
 
-/** @typedef {!{securityState:(Protocol.Security.SecurityState), summary:(string), description:(string), hasCertificate:(boolean), mixedContentType:(Protocol.Security.MixedContentType)}} */
+/** @typedef {!{securityState:(Protocol.Security.SecurityState), summary:(string), description:(string), mixedContentType:(Protocol.Security.MixedContentType), certificate:(!Array<string>)}} */
 Protocol.Security.SecurityStateExplanation;
 
 /** @typedef {!{ranMixedContent:(boolean), displayedMixedContent:(boolean), containedMixedForm:(boolean), ranContentWithCertErrors:(boolean), displayedContentWithCertErrors:(boolean), ranInsecureContentStyle:(Protocol.Security.SecurityState), displayedInsecureContentStyle:(Protocol.Security.SecurityState)}} */
@@ -1624,19 +1682,19 @@ Protocol.NetworkAgent.DeleteCookieResponse;
 Protocol.NetworkAgent.prototype.invoke_deleteCookie = function(obj) {};
 
 /**
- * @param {string} url
  * @param {string} name
  * @param {string} value
+ * @param {string=} opt_url
  * @param {string=} opt_domain
  * @param {string=} opt_path
  * @param {boolean=} opt_secure
  * @param {boolean=} opt_httpOnly
  * @param {Protocol.Network.CookieSameSite=} opt_sameSite
- * @param {Protocol.Network.TimeSinceEpoch=} opt_expirationDate
+ * @param {Protocol.Network.TimeSinceEpoch=} opt_expires
  * @return {!Promise<?boolean>}
  */
-Protocol.NetworkAgent.prototype.setCookie = function(url, name, value, opt_domain, opt_path, opt_secure, opt_httpOnly, opt_sameSite, opt_expirationDate) {};
-/** @typedef {!{domain: (string|undefined), name: string, url: string, value: string, expirationDate: (Protocol.Network.TimeSinceEpoch|undefined), sameSite: (Protocol.Network.CookieSameSite|undefined), path: (string|undefined), httpOnly: (boolean|undefined), secure: (boolean|undefined)}} */
+Protocol.NetworkAgent.prototype.setCookie = function(name, value, opt_url, opt_domain, opt_path, opt_secure, opt_httpOnly, opt_sameSite, opt_expires) {};
+/** @typedef {!{domain: (string|undefined), name: string, url: (string|undefined), expires: (Protocol.Network.TimeSinceEpoch|undefined), value: string, sameSite: (Protocol.Network.CookieSameSite|undefined), path: (string|undefined), httpOnly: (boolean|undefined), secure: (boolean|undefined)}} */
 Protocol.NetworkAgent.SetCookieRequest;
 /** @typedef {!{success: boolean}} */
 Protocol.NetworkAgent.SetCookieResponse;
@@ -1644,6 +1702,20 @@ Protocol.NetworkAgent.SetCookieResponse;
  * @param {!Protocol.NetworkAgent.SetCookieRequest} obj
  * @return {!Promise<!Protocol.NetworkAgent.SetCookieResponse>} */
 Protocol.NetworkAgent.prototype.invoke_setCookie = function(obj) {};
+
+/**
+ * @param {!Array<Protocol.Network.CookieParam>} cookies
+ * @return {!Promise<undefined>}
+ */
+Protocol.NetworkAgent.prototype.setCookies = function(cookies) {};
+/** @typedef {!{cookies: !Array<Protocol.Network.CookieParam>}} */
+Protocol.NetworkAgent.SetCookiesRequest;
+/** @typedef {Object|undefined} */
+Protocol.NetworkAgent.SetCookiesResponse;
+/**
+ * @param {!Protocol.NetworkAgent.SetCookiesRequest} obj
+ * @return {!Promise<!Protocol.NetworkAgent.SetCookiesResponse>} */
+Protocol.NetworkAgent.prototype.invoke_setCookies = function(obj) {};
 
 /**
  * @return {!Promise<?boolean>}
@@ -1892,6 +1964,9 @@ Protocol.Network.Initiator;
 
 /** @typedef {!{name:(string), value:(string), domain:(string), path:(string), expires:(number), size:(number), httpOnly:(boolean), secure:(boolean), session:(boolean), sameSite:(Protocol.Network.CookieSameSite|undefined)}} */
 Protocol.Network.Cookie;
+
+/** @typedef {!{name:(string), value:(string), url:(string|undefined), domain:(string|undefined), path:(string|undefined), secure:(boolean|undefined), httpOnly:(boolean|undefined), sameSite:(Protocol.Network.CookieSameSite|undefined), expires:(Protocol.Network.TimeSinceEpoch|undefined)}} */
+Protocol.Network.CookieParam;
 
 /** @enum {string} */
 Protocol.Network.AuthChallengeSource = {
@@ -4416,10 +4491,12 @@ Protocol.InputAgent.prototype.invoke_dispatchKeyEvent = function(obj) {};
  * @param {Protocol.Input.TimeSinceEpoch=} opt_timestamp
  * @param {string=} opt_button
  * @param {number=} opt_clickCount
+ * @param {number=} opt_deltaX
+ * @param {number=} opt_deltaY
  * @return {!Promise<undefined>}
  */
-Protocol.InputAgent.prototype.dispatchMouseEvent = function(type, x, y, opt_modifiers, opt_timestamp, opt_button, opt_clickCount) {};
-/** @typedef {!{modifiers: (number|undefined), clickCount: (number|undefined), timestamp: (Protocol.Input.TimeSinceEpoch|undefined), button: (string|undefined), y: number, x: number, type: string}} */
+Protocol.InputAgent.prototype.dispatchMouseEvent = function(type, x, y, opt_modifiers, opt_timestamp, opt_button, opt_clickCount, opt_deltaX, opt_deltaY) {};
+/** @typedef {!{modifiers: (number|undefined), clickCount: (number|undefined), deltaX: (number|undefined), timestamp: (Protocol.Input.TimeSinceEpoch|undefined), button: (string|undefined), deltaY: (number|undefined), y: number, x: number, type: string}} */
 Protocol.InputAgent.DispatchMouseEventRequest;
 /** @typedef {Object|undefined} */
 Protocol.InputAgent.DispatchMouseEventResponse;
@@ -5231,6 +5308,34 @@ Protocol.StorageAgent.GetUsageAndQuotaResponse;
  * @return {!Promise<!Protocol.StorageAgent.GetUsageAndQuotaResponse>} */
 Protocol.StorageAgent.prototype.invoke_getUsageAndQuota = function(obj) {};
 
+/**
+ * @param {string} origin
+ * @return {!Promise<undefined>}
+ */
+Protocol.StorageAgent.prototype.trackCacheStorageForOrigin = function(origin) {};
+/** @typedef {!{origin: string}} */
+Protocol.StorageAgent.TrackCacheStorageForOriginRequest;
+/** @typedef {Object|undefined} */
+Protocol.StorageAgent.TrackCacheStorageForOriginResponse;
+/**
+ * @param {!Protocol.StorageAgent.TrackCacheStorageForOriginRequest} obj
+ * @return {!Promise<!Protocol.StorageAgent.TrackCacheStorageForOriginResponse>} */
+Protocol.StorageAgent.prototype.invoke_trackCacheStorageForOrigin = function(obj) {};
+
+/**
+ * @param {string} origin
+ * @return {!Promise<undefined>}
+ */
+Protocol.StorageAgent.prototype.untrackCacheStorageForOrigin = function(origin) {};
+/** @typedef {!{origin: string}} */
+Protocol.StorageAgent.UntrackCacheStorageForOriginRequest;
+/** @typedef {Object|undefined} */
+Protocol.StorageAgent.UntrackCacheStorageForOriginResponse;
+/**
+ * @param {!Protocol.StorageAgent.UntrackCacheStorageForOriginRequest} obj
+ * @return {!Promise<!Protocol.StorageAgent.UntrackCacheStorageForOriginResponse>} */
+Protocol.StorageAgent.prototype.invoke_untrackCacheStorageForOrigin = function(obj) {};
+
 /** @enum {string} */
 Protocol.Storage.StorageType = {
     Appcache: "appcache",
@@ -5250,6 +5355,15 @@ Protocol.Storage.StorageType = {
 Protocol.Storage.UsageForType;
 /** @interface */
 Protocol.StorageDispatcher = function() {};
+/**
+ * @param {string} origin
+ */
+Protocol.StorageDispatcher.prototype.cacheStorageListUpdated = function(origin) {};
+/**
+ * @param {string} origin
+ * @param {string} cacheName
+ */
+Protocol.StorageDispatcher.prototype.cacheStorageContentUpdated = function(origin, cacheName) {};
 Protocol.Log = {};
 
 
@@ -5461,6 +5575,19 @@ Protocol.BrowserAgent.GetWindowForTargetResponse;
  * @param {!Protocol.BrowserAgent.GetWindowForTargetRequest} obj
  * @return {!Promise<!Protocol.BrowserAgent.GetWindowForTargetResponse>} */
 Protocol.BrowserAgent.prototype.invoke_getWindowForTarget = function(obj) {};
+
+/**
+ * @return {!Promise<?string>}
+ */
+Protocol.BrowserAgent.prototype.getVersion = function() {};
+/** @typedef {Object|undefined} */
+Protocol.BrowserAgent.GetVersionRequest;
+/** @typedef {!{userAgent: string, product: string, revision: string, jsVersion: string, protocolVersion: string}} */
+Protocol.BrowserAgent.GetVersionResponse;
+/**
+ * @param {!Protocol.BrowserAgent.GetVersionRequest} obj
+ * @return {!Promise<!Protocol.BrowserAgent.GetVersionResponse>} */
+Protocol.BrowserAgent.prototype.invoke_getVersion = function(obj) {};
 
 /**
  * @param {Protocol.Browser.WindowID} windowId
@@ -6829,6 +6956,12 @@ Protocol.TargetBase.prototype.memoryAgent = function(){};
  * @param {!Protocol.MemoryDispatcher} dispatcher
  */
 Protocol.TargetBase.prototype.registerMemoryDispatcher = function(dispatcher) {}
+/** @return {!Protocol.PerformanceAgent}*/
+Protocol.TargetBase.prototype.performanceAgent = function(){};
+/**
+ * @param {!Protocol.PerformanceDispatcher} dispatcher
+ */
+Protocol.TargetBase.prototype.registerPerformanceDispatcher = function(dispatcher) {}
 /** @return {!Protocol.PageAgent}*/
 Protocol.TargetBase.prototype.pageAgent = function(){};
 /**

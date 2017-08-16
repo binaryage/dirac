@@ -1,13 +1,21 @@
 /** @const */
 var Accessibility = {};
 /** @const */
+var AccessibilityTestRunner = {};
+/** @const */
 var Animation = {};
+/** @const */
+var ApplicationTestRunner = {};
 /** @const */
 var Audits = {};
 /** @const */
 var Audits2 = {};
 /** @const */
+var AuditsTestRunner = {};
+/** @const */
 var Bindings = {};
+/** @const */
+var BindingsTestRunner = {};
 /** @const */
 var Changes = {};
 /** @const */
@@ -33,9 +41,13 @@ var CookieTable = {};
 /** @const */
 var Coverage = {};
 /** @const */
+var CoverageTestRunner = {};
+/** @const */
 var DataGrid = {};
 /** @const */
 var DataGridTestRunner = {};
+/** @const */
+var DeviceModeTestRunner = {};
 /** @const */
 var Devices = {};
 /** @const */
@@ -59,6 +71,8 @@ var EventListeners = {};
 /** @const */
 var Extensions = {};
 /** @const */
+var ExtensionsTestRunner = {};
+/** @const */
 var Formatter = {};
 /** @const */
 var FormatterWorker = {};
@@ -81,6 +95,8 @@ var LayerViewer = {};
 /** @const */
 var Layers = {};
 /** @const */
+var LayersTestRunner = {};
+/** @const */
 var Main = {};
 /** @const */
 var MobileThrottling = {};
@@ -91,9 +107,13 @@ var NetworkLog = {};
 /** @const */
 var NetworkPriorities = {};
 /** @const */
+var NetworkTestRunner = {};
+/** @const */
 var ObjectUI = {};
 /** @const */
 var PerfUI = {};
+/** @const */
+var PerformanceTestRunner = {};
 /** @const */
 var Persistence = {};
 /** @const */
@@ -105,11 +125,15 @@ var ProductRegistryImpl = {};
 /** @const */
 var Profiler = {};
 /** @const */
+var ProfilerTestRunner = {};
+/** @const */
 var Protocol = {};
 /** @const */
 var QuickOpen = {};
 /** @const */
 var Resources = {};
+/** @const */
+var SASSTestRunner = {};
 /** @const */
 var SDK = {};
 /** @const */
@@ -118,6 +142,8 @@ var Sass = {};
 var Screencast = {};
 /** @const */
 var Security = {};
+/** @const */
+var SecurityTestRunner = {};
 /** @const */
 var Services = {};
 /** @const */
