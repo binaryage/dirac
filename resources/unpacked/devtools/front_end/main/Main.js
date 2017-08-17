@@ -125,11 +125,12 @@ Main.Main = class {
     Runtime.experiments.register('colorContrastRatio', 'Color contrast ratio line in color picker', true);
     Runtime.experiments.register('continueToLocationMarkers', 'Continue to location markers', true);
     Runtime.experiments.register('emptySourceMapAutoStepping', 'Empty sourcemap auto-stepping');
+    Runtime.experiments.register('highlightCssGrid', 'Highlight CSS grid layout');
     Runtime.experiments.register('inputEventsOnTimelineOverview', 'Input events on Timeline overview', true);
+    Runtime.experiments.register('logManagement', 'Log management', true);
     Runtime.experiments.register('liveSASS', 'Live SASS');
     Runtime.experiments.register('networkGroupingRequests', 'Network request groups support', true);
     Runtime.experiments.register('objectPreviews', 'Object previews', true);
-    Runtime.experiments.register('networkInWorkers', 'Network in workers', true);
     Runtime.experiments.register('persistence2', 'Persistence 2.0');
     Runtime.experiments.register('sourceDiff', 'Source diff');
     Runtime.experiments.register('terminalInDrawer', 'Terminal in drawer', true);
@@ -597,80 +598,6 @@ Main.Main.SearchActionDelegate = class {
   }
 };
 
-
-/**
- * @implements {UI.ToolbarItem.Provider}
- * @unrestricted
- */
-Main.Main.WarningErrorCounter = class {
-  constructor() {
-    Main.Main.WarningErrorCounter._instanceForTest = this;
-
-    this._counter = createElement('div');
-    this._counter.addEventListener('click', Common.console.show.bind(Common.console), false);
-    this._toolbarItem = new UI.ToolbarItem(this._counter);
-    var shadowRoot = UI.createShadowRootWithCoreStyles(this._counter, 'main/errorWarningCounter.css');
-
-    this._errors = this._createItem(shadowRoot, 'smallicon-error');
-    this._warnings = this._createItem(shadowRoot, 'smallicon-warning');
-    this._titles = [];
-
-    ConsoleModel.consoleModel.addEventListener(ConsoleModel.ConsoleModel.Events.ConsoleCleared, this._update, this);
-    ConsoleModel.consoleModel.addEventListener(ConsoleModel.ConsoleModel.Events.MessageAdded, this._update, this);
-    ConsoleModel.consoleModel.addEventListener(ConsoleModel.ConsoleModel.Events.MessageUpdated, this._update, this);
-    this._update();
-  }
-
-  /**
-   * @param {!Node} shadowRoot
-   * @param {string} iconType
-   * @return {!{item: !Element, text: !Element}}
-   */
-  _createItem(shadowRoot, iconType) {
-    var item = createElementWithClass('span', 'counter-item');
-    var icon = item.createChild('label', '', 'dt-icon-label');
-    icon.type = iconType;
-    var text = icon.createChild('span');
-    shadowRoot.appendChild(item);
-    return {item: item, text: text};
-  }
-
-  /**
-   * @param {!{item: !Element, text: !Element}} item
-   * @param {number} count
-   * @param {boolean} first
-   * @param {string} title
-   */
-  _updateItem(item, count, first, title) {
-    item.item.classList.toggle('hidden', !count);
-    item.item.classList.toggle('counter-item-first', first);
-    item.text.textContent = count;
-    if (count)
-      this._titles.push(title);
-  }
-
-  _update() {
-    var errors = ConsoleModel.consoleModel.errors();
-    var warnings = ConsoleModel.consoleModel.warnings();
-
-    this._titles = [];
-    this._toolbarItem.setVisible(!!(errors || warnings));
-    this._updateItem(this._errors, errors, false, Common.UIString(errors === 1 ? '%d error' : '%d errors', errors));
-    this._updateItem(
-        this._warnings, warnings, !errors, Common.UIString(warnings === 1 ? '%d warning' : '%d warnings', warnings));
-    this._counter.title = this._titles.join(', ');
-    UI.inspectorView.toolbarItemResized();
-  }
-
-  /**
-   * @override
-   * @return {?UI.ToolbarItem}
-   */
-  item() {
-    return this._toolbarItem;
-  }
-};
-
 /**
  * @implements {UI.ToolbarItem.Provider}
  */
@@ -975,6 +902,10 @@ Main.BackendSettingsSync = class {
   constructor() {
     this._autoAttachSetting = Common.settings.moduleSetting('autoAttachToCreatedPages');
     this._autoAttachSetting.addChangeListener(this._update, this);
+
+    this._adBlockEnabledSetting = Common.settings.moduleSetting('network.adBlockingEnabled');
+    this._adBlockEnabledSetting.addChangeListener(this._update, this);
+
     SDK.targetManager.observeTargets(this, SDK.Target.Capability.Browser);
   }
 
@@ -983,6 +914,7 @@ Main.BackendSettingsSync = class {
    */
   _updateTarget(target) {
     target.pageAgent().setAutoAttachToCreatedPages(this._autoAttachSetting.get());
+    target.pageAgent().setAdBlockingEnabled(this._adBlockEnabledSetting.get());
   }
 
   _update() {

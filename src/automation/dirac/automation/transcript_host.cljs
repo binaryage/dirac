@@ -213,6 +213,9 @@
 (defn replace-js-line-numbers [s]
   (string/replace s #"\.js:\d+" ".js:<line>"))
 
+(defn replace-js-map-line-numbers [s]
+  (string/replace s #"\.js\.map:\d+" ".js.map:<line>"))
+
 (defn replace-target-url-port-in-options [s]
   (string/replace s #":target-url \"http://localhost:\d+\"" ":target-url \"http://localhost:<port>\""))
 
@@ -227,6 +230,7 @@
       replace-chrome-extension-urls
       replace-cljs-line-numbers
       replace-js-line-numbers
+      replace-js-map-line-numbers
       replace-target-url-port-in-options))
 
 (defn process-default-state! [label text]

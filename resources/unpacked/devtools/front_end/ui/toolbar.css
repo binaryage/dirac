@@ -65,6 +65,7 @@
     overflow: hidden;
     min-width: 28px;
     background: transparent;
+    border-radius: 0;
 }
 
 .toolbar-text {
@@ -117,7 +118,6 @@
 .toolbar-glyph {
     background-color: #5a5a5a;
     flex: none;
-    transform: translateX(-2px);
 }
 
 /* Button */

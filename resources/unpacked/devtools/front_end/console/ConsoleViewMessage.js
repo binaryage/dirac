@@ -204,7 +204,12 @@ Console.ConsoleViewMessage = class {
           break;
         case ConsoleModel.ConsoleMessage.MessageType.Clear:
           messageElement = createElementWithClass('span', 'console-info');
-          messageElement.textContent = Common.UIString('Console was cleared');
+          if (Common.moduleSetting('preserveConsoleLog').get())
+            messageElement.textContent = Common.UIString('console.clear() was prevented due to \'Preserve log\'');
+          else
+            messageElement.textContent = Common.UIString('Console was cleared');
+          messageElement.title =
+              Common.UIString('Clear all messages with ' + UI.shortcutRegistry.shortcutTitleForAction('console.clear'));
           break;
         case ConsoleModel.ConsoleMessage.MessageType.Assert:
           var args = [Common.UIString('Assertion failed:')];
@@ -447,20 +452,21 @@ Console.ConsoleViewMessage = class {
   }
 
   /**
-   * @param {!Array.<!SDK.RemoteObject|string>} parameters
+   * @param {!Array.<!SDK.RemoteObject|string>} rawParameters
    * @return {!Element}
    */
-  _format(parameters) {
+  _format(rawParameters) {
     // This node is used like a Builder. Values are continually appended onto it.
     var formattedResult = createElement('span');
-    if (!parameters.length)
+    if (!rawParameters.length)
       return formattedResult;
 
     // Formatting code below assumes that parameters are all wrappers whereas frontend console
     // API allows passing arbitrary values as messages (strings, numbers, etc.). Wrap them here.
     // FIXME: Only pass runtime wrappers here.
-    for (var i = 0; i < parameters.length; ++i)
-      parameters[i] = this._parameterToRemoteObject(parameters[i]);
+    var parameters = [];
+    for (var i = 0; i < rawParameters.length; ++i)
+      parameters[i] = this._parameterToRemoteObject(rawParameters[i]);
 
     // There can be string log and string eval result. We distinguish between them based on message type.
     var shouldFormatMessage =
@@ -503,16 +509,16 @@ Console.ConsoleViewMessage = class {
     var type = forceObjectFormat ? 'object' : (output.subtype || output.type);
     var element;
     switch (type) {
-      case 'array':
-      case 'typedarray':
-        element = this._formatParameterAsObject(output, includePreview);
-        break;
       case 'error':
         element = this._formatParameterAsError(output);
         break;
       case 'function':
         element = this._formatParameterAsFunction(output, includePreview);
         break;
+      case 'array':
+      case 'arraybuffer':
+      case 'blob':
+      case 'dataview':
       case 'generator':
       case 'iterator':
       case 'map':
@@ -520,6 +526,7 @@ Console.ConsoleViewMessage = class {
       case 'promise':
       case 'proxy':
       case 'set':
+      case 'typedarray':
       case 'weakmap':
       case 'weakset':
         element = this._formatParameterAsObject(output, includePreview);

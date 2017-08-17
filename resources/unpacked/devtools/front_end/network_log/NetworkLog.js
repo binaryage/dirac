@@ -323,6 +323,20 @@ NetworkLog.NetworkLog = class extends Common.Object {
   }
 
   /**
+   * @param {!Array<!SDK.NetworkRequest>} requests
+   */
+  importRequests(requests) {
+    this.reset();
+    this._requests = [];
+    this._requestsSet.clear();
+    for (var request of requests) {
+      this._requests.push(request);
+      this._requestsSet.add(request);
+      this.dispatchEventToListeners(NetworkLog.NetworkLog.Events.RequestAdded, request);
+    }
+  }
+
+  /**
    * @param {!Common.Event} event
    */
   _onRequestStarted(event) {
@@ -401,6 +415,26 @@ NetworkLog.PageLoad = class {
     /** @type {number} */
     this.contentLoadTime;
     this.mainRequest = mainRequest;
+
+    this._showDataSaverWarningIfNeeded();
+  }
+
+  async _showDataSaverWarningIfNeeded() {
+    var manager = SDK.NetworkManager.forRequest(this.mainRequest);
+    if (!manager)
+      return;
+    if (!this.mainRequest.finished)
+      await this.mainRequest.once(SDK.NetworkRequest.Events.FinishedLoading);
+    var saveDataHeader = this.mainRequest.requestHeaderValue('Save-Data');
+    if (!NetworkLog.PageLoad._dataSaverMessageWasShown && saveDataHeader && saveDataHeader === 'on') {
+      var message = Common.UIString(
+          'Consider disabling %s while debugging. For more info see: %s', Common.UIString('Chrome Data Saver'),
+          'https://support.google.com/chrome/?p=datasaver');
+      manager.dispatchEventToListeners(
+          SDK.NetworkManager.Events.MessageGenerated,
+          {message: message, requestId: this.mainRequest.requestId(), warning: true});
+      NetworkLog.PageLoad._dataSaverMessageWasShown = true;
+    }
   }
 
   /**
@@ -421,6 +455,8 @@ NetworkLog.PageLoad = class {
 
 NetworkLog.PageLoad._lastIdentifier = 0;
 NetworkLog.PageLoad._pageLoadForRequestSymbol = Symbol('PageLoadForRequest');
+
+NetworkLog.PageLoad._dataSaverMessageWasShown = false;
 
 /** @typedef {!{initiators: !Set<!SDK.NetworkRequest>, initiated: !Set<!SDK.NetworkRequest>}} */
 NetworkLog.NetworkLog.InitiatorGraph;

@@ -175,6 +175,15 @@ ConsoleTestRunner.evaluateInConsole = function(code, callback, dontForceMainCont
 };
 
 /**
+ * @param {string} code
+ * @param {boolean=} dontForceMainContext
+ * @return {!Promise}
+ */
+ConsoleTestRunner.evaluateInConsolePromise = function(code, dontForceMainContext) {
+  return new Promise(fulfill => ConsoleTestRunner.evaluateInConsole(code, fulfill, dontForceMainContext));
+};
+
+/**
  * @param {!Function} override
  * @param {boolean=} opt_sticky
  */
@@ -208,7 +217,7 @@ ConsoleTestRunner.consoleMessagesCount = function() {
 };
 
 /**
- * @param {function(!Element):string} messageFormatter
+ * @param {function(!Element):string|undefined} messageFormatter
  * @param {!Element} node
  * @return {string}
  */
@@ -252,7 +261,7 @@ ConsoleTestRunner.dumpConsoleMessagesIgnoreErrorStackFrames = function(
     printOriginatingCommand, dumpClassNames, messageFormatter) {
   TestRunner.addResults(ConsoleTestRunner.dumpConsoleMessagesIntoArray(
       printOriginatingCommand, dumpClassNames,
-      messageFormatter ? ConsoleTestRunner.formatterIgnoreStackFrameUrls.bind(this, messageFormatter) : undefined));
+      ConsoleTestRunner.formatterIgnoreStackFrameUrls.bind(this, messageFormatter)));
 };
 
 ConsoleTestRunner.dumpConsoleMessagesWithStyles = function() {
@@ -291,7 +300,7 @@ ConsoleTestRunner.dumpConsoleClassesBrief = function() {
 };
 
 ConsoleTestRunner.dumpConsoleCounters = function() {
-  var counter = Main.Main.WarningErrorCounter._instanceForTest;
+  var counter = ConsoleCounters.WarningErrorCounter._instanceForTest;
   for (var index = 0; index < counter._titles.length; ++index)
     TestRunner.addResult(counter._titles[index]);
   ConsoleTestRunner.dumpConsoleClassesBrief();
@@ -401,11 +410,11 @@ ConsoleTestRunner.waitForRemoteObjectsConsoleMessages = function(callback) {
 ConsoleTestRunner.waitUntilConsoleEditorLoaded = function() {
   var fulfill;
   var promise = new Promise(x => (fulfill = x));
-  var editor = Console.ConsoleView.instance()._prompt._editor;
-  if (editor)
-    fulfill(editor);
+  var prompt = Console.ConsoleView.instance()._prompt;
+  if (prompt._editor)
+    fulfill(prompt._editor);
   else
-    TestRunner.addSniffer(Console.ConsolePrompt.prototype, '_editorSetForTest', _ => fulfill(editor));
+    TestRunner.addSniffer(Console.ConsolePrompt.prototype, '_editorSetForTest', _ => fulfill(prompt._editor));
   return promise;
 };
 
@@ -512,4 +521,27 @@ ConsoleTestRunner.selectConsoleMessages = function(fromMessage, fromTextOffset, 
     }
     return null;
   }
+};
+
+/**
+ * @param {!Function} override
+ * @param {boolean=} opt_sticky
+ */
+ConsoleTestRunner.addConsoleSniffer = function(override, opt_sticky) {
+  TestRunner.addSniffer(ConsoleModel.ConsoleModel.prototype, 'addMessage', override, opt_sticky);
+};
+
+/**
+ * @param {!Function} func
+ * @return {!Function}
+ */
+ConsoleTestRunner.wrapListener = function(func) {
+  /**
+   * @this {*}
+   */
+  async function wrapper() {
+    await Promise.resolve();
+    func.apply(this, arguments);
+  }
+  return wrapper;
 };

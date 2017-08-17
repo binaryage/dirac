@@ -211,12 +211,6 @@
         },
         {
             "type": "@UI.ToolbarItem.Provider",
-            "className": "Main.Main.WarningErrorCounter",
-            "order": 1,
-            "location": "main-toolbar-right"
-        },
-        {
-            "type": "@UI.ToolbarItem.Provider",
             "separator": true,
             "order": 98,
             "location": "main-toolbar-right"
@@ -249,6 +243,25 @@
                 {
                     "value": false,
                     "title": "Enable cache"
+                }
+            ]
+        },
+        {
+            "type": "setting",
+            "category": "Network",
+            "title": "Force ad blocking on this site",
+            "settingName": "network.adBlockingEnabled",
+            "settingType": "boolean",
+            "storageType": "session",
+            "defaultValue": false,
+            "options": [
+                {
+                    "value": true,
+                    "title": "Block ads on this site"
+                },
+                {
+                    "value": false,
+                    "title": "Show ads on this site, if allowed"
                 }
             ]
         },
@@ -436,7 +449,8 @@
         "persistence",
         "help",
         "console_model",
-        "network_log"
+        "network_log",
+        "console_counters"
     ],
     "scripts": [
         "RenderingOptions.js",
@@ -447,7 +461,6 @@
         "Main.js"
     ],
     "resources": [
-        "errorWarningCounter.css",
         "nodeIcon.css",
         "remoteDebuggingTerminatedScreen.css",
         "renderingOptions.css",

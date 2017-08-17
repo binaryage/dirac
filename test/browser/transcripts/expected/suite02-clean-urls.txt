@@ -38,7 +38,7 @@ stdout           displayed 23 items:
                   * ioc_helpers.cljs:<line> / ioc_helpers.cljs:<line>
                   * channels.cljs:<line> / channels.cljs:<line>
                   * dispatch.cljs:<line> / dispatch.cljs:<line>
-                  * nexttick.js:<line> / nexttick.js:<line>
+                  * content_script.js.map:<line> / content_script.js.map:<line>
 automate #1      close-devtools!
 extension        handling command: close-dirac-devtools
 extension        unregister devtools #1
@@ -83,7 +83,7 @@ stdout           displayed 23 items:
                   * ioc_helpers.cljs:<line> / ioc_helpers.cljs:<line>
                   * channels.cljs:<line> / channels.cljs:<line>
                   * dispatch.cljs:<line> / dispatch.cljs:<line>
-                  * nexttick.js:<line> / nexttick.js:<line>
+                  * content_script.js.map:<line> / content_script.js.map:<line>
 automate #2      close-devtools!
 extension        handling command: close-dirac-devtools
 extension        unregister devtools #2

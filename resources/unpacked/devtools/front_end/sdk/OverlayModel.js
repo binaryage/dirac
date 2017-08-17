@@ -210,6 +210,10 @@ SDK.OverlayModel = class extends SDK.SDKModel {
       highlightConfig.shapeMarginColor = Common.Color.PageHighlight.ShapeMargin.toProtocolRGBA();
       highlightConfig.displayAsMaterial = true;
     }
+
+    if (mode === 'all' && Runtime.experiments.isEnabled('highlightCssGrid'))
+      highlightConfig.cssGridColor = Common.Color.PageHighlight.CssGrid.toProtocolRGBA();
+
     return highlightConfig;
   }
 
@@ -231,6 +235,14 @@ SDK.OverlayModel = class extends SDK.SDKModel {
     var deferredNode = new SDK.DeferredDOMNode(this.target(), backendNodeId);
     this.dispatchEventToListeners(SDK.OverlayModel.Events.InspectNodeRequested, deferredNode);
   }
+
+  /**
+   * @override
+   * @param {!Protocol.Page.Viewport} viewport
+   */
+  screenshotRequested(viewport) {
+    this.dispatchEventToListeners(SDK.OverlayModel.Events.ScreenshotRequested, viewport);
+  }
 };
 
 SDK.SDKModel.register(SDK.OverlayModel, SDK.Target.Capability.DOM, true);
@@ -240,6 +252,7 @@ SDK.OverlayModel.Events = {
   InspectModeWillBeToggled: Symbol('InspectModeWillBeToggled'),
   HighlightNodeRequested: Symbol('HighlightNodeRequested'),
   InspectNodeRequested: Symbol('InspectNodeRequested'),
+  ScreenshotRequested: Symbol('ScreenshotRequested'),
 };
 
 /**

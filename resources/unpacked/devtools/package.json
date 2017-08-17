@@ -7,7 +7,6 @@
     "server": "node scripts/hosted_mode/server.js",
     "test": "node scripts/npm_test.js",
     "debug-test": "node scripts/npm_test.js --debug-devtools",
-    "compat-test": "node scripts/npm_test.js --compat-protocol=1.2",
     "lint": "eslint front_end",
     "format": "git cl format --js .",
     "closure": "python scripts/compile_frontend.py",
@@ -16,7 +15,8 @@
     "extract": "node scripts/extract_module/extract_module.js",
     "check-gn": "node scripts/check_gn.js",
     "check-json": "node scripts/json_validator/validate_module_json.js",
-    "check-descriptors": "node scripts/check_application_descriptors.js"
+    "check-descriptors": "node scripts/check_application_descriptors.js",
+    "migrate": "node scripts/migrate_test/migrate_test.js"
   },
   "repository": {
     "type": "git",

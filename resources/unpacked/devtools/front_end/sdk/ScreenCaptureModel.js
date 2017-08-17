@@ -43,10 +43,11 @@ SDK.ScreenCaptureModel = class extends SDK.SDKModel {
   /**
    * @param {string} format
    * @param {number} quality
+   * @param {!Protocol.Page.Viewport=} clip
    * @return {!Promise<?string>}
    */
-  captureScreenshot(format, quality) {
-    return this._agent.captureScreenshot(format, quality, undefined, true);
+  captureScreenshot(format, quality, clip) {
+    return this._agent.captureScreenshot(format, quality, clip, true);
   }
 
   /**
@@ -159,17 +160,20 @@ SDK.ScreenCaptureModel = class extends SDK.SDKModel {
 
   /**
    * @override
+   * @param {string} url
    * @param {string} message
    * @param {string} dialogType
+   * @param {string=} prompt
    */
-  javascriptDialogOpening(message, dialogType) {
+  javascriptDialogOpening(url, message, dialogType, prompt) {
   }
 
   /**
    * @override
    * @param {boolean} result
+   * @param {string} userInput
    */
-  javascriptDialogClosed(result) {
+  javascriptDialogClosed(result, userInput) {
   }
 
   /**
@@ -182,12 +186,6 @@ SDK.ScreenCaptureModel = class extends SDK.SDKModel {
    * @override
    */
   interstitialHidden() {
-  }
-
-  /**
-   * @override
-   */
-  navigationRequested() {
   }
 };
 

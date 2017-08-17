@@ -38,37 +38,27 @@ Security.SecurityPanel = class extends UI.PanelWithSidebar {
 
   /**
    * @param {string} text
-   * @param {!Security.SecurityPanel} panel
+   * @param {string} origin
    * @return {!Element}
    */
-  static createCertificateViewerButton(text, panel) {
-    /**
-     * @param {!Event} e
-     */
-    function showCertificateViewer(e) {
+  static createCertificateViewerButtonForOrigin(text, origin) {
+    return UI.createTextButton(text, async e => {
       e.consume();
-      panel.showCertificateViewer();
-    }
-
-    return UI.createTextButton(text, showCertificateViewer, 'security-certificate-button');
+      var names = await SDK.multitargetNetworkManager.getCertificate(origin);
+      InspectorFrontendHost.showCertificateViewer(names);
+    }, 'security-certificate-button');
   }
 
   /**
    * @param {string} text
-   * @param {string} origin
+   * @param {!Array<string>} names
    * @return {!Element}
    */
-  static createCertificateViewerButton2(text, origin) {
-    /**
-     * @param {!Event} e
-     */
-    function showCertificateViewer(e) {
+  static createCertificateViewerButtonForCert(text, names) {
+    return UI.createTextButton(text, e => {
       e.consume();
-      SDK.multitargetNetworkManager.getCertificate(origin).then(
-          names => InspectorFrontendHost.showCertificateViewer(names));
-    }
-
-    return UI.createTextButton(text, showCertificateViewer, 'security-certificate-button');
+      InspectorFrontendHost.showCertificateViewer(names);
+    }, 'security-certificate-button');
   }
 
   /**
@@ -256,10 +246,6 @@ Security.SecurityPanel = class extends UI.PanelWithSidebar {
    */
   filterRequestCount(filterKey) {
     return this._filterRequestCounts.get(filterKey) || 0;
-  }
-
-  showCertificateViewer() {
-    this._securityModel.showCertificateViewer();
   }
 
   /**
@@ -614,11 +600,10 @@ Security.SecurityMainView = class extends UI.VBox {
     text.createChild('div', 'security-explanation-title').textContent = explanation.summary;
     text.createChild('div').textContent = explanation.description;
 
-    if (explanation.hasCertificate) {
-      text.appendChild(
-          Security.SecurityPanel.createCertificateViewerButton(Common.UIString('View certificate'), this._panel));
+    if (explanation.certificate.length) {
+      text.appendChild(Security.SecurityPanel.createCertificateViewerButtonForCert(
+          Common.UIString('View certificate'), explanation.certificate));
     }
-
     return text;
   }
 
@@ -660,114 +645,46 @@ Security.SecurityMainView = class extends UI.VBox {
     this._securityExplanationsMain.removeChildren();
     this._securityExplanationsExtra.removeChildren();
     for (var explanation of this._explanations) {
-      if (explanation.securityState === Protocol.Security.SecurityState.Info)
+      if (explanation.securityState === Protocol.Security.SecurityState.Info) {
         this._addExplanation(this._securityExplanationsExtra, explanation);
-      else
-        this._addExplanation(this._securityExplanationsMain, explanation);
-    }
-
-    this._addMixedContentExplanations();
-    this._addContentWithCertErrorsExplanations();
-
-    // If all resources were served securely, add a Secure explanation.
-    if (this._schemeIsCryptographic && this._insecureContentStatus &&
-        (!this._insecureContentStatus.displayedMixedContent && !this._insecureContentStatus.ranMixedContent &&
-         !this._insecureContentStatus.displayedContentWithCertErrors &&
-         !this._insecureContentStatus.ranContentWithCertErrors)) {
-      this._addExplanation(this._securityExplanationsMain, /** @type {!Protocol.Security.SecurityStateExplanation} */ ({
-                             'securityState': Protocol.Security.SecurityState.Secure,
-                             'summary': Common.UIString('Secure resources'),
-                             'description': Common.UIString('All resources on this page are served securely.')
-                           }));
-    }
-  }
-
-  _addMixedContentExplanations() {
-    if (!this._schemeIsCryptographic)
-      return;
-
-    if (this._insecureContentStatus &&
-        (this._insecureContentStatus.ranMixedContent || this._insecureContentStatus.displayedMixedContent ||
-         this._insecureContentStatus.containedMixedForm)) {
-      if (this._insecureContentStatus.ranMixedContent) {
-        this._addMixedContentExplanation(
-            this._securityExplanationsMain, this._insecureContentStatus.ranInsecureContentStyle,
-            Common.UIString('Active mixed content'),
-            Common.UIString(
-                'You have recently allowed non-secure content (such as scripts or iframes) to run on this site.'),
-            Network.NetworkLogView.MixedContentFilterValues.BlockOverridden,
-            showBlockOverriddenMixedContentInNetworkPanel);
-      }
-      if (this._insecureContentStatus.containedMixedForm) {
-        this._addMixedFormExplanation(
-            // TODO(elawrence): Replace |displayedInsecureContentStyle| with |containedMixedFormStyle|. https://crbug.com/705003
-            this._securityExplanationsMain, this._insecureContentStatus.displayedInsecureContentStyle,
-            Common.UIString('Non-secure form'),
-            Common.UIString('The page includes a form with a non-secure "action" attribute.'));
-      }
-      if (this._insecureContentStatus.displayedMixedContent) {
-        this._addMixedContentExplanation(
-            this._securityExplanationsMain, this._insecureContentStatus.displayedInsecureContentStyle,
-            Common.UIString('Mixed content'), Common.UIString('The site includes HTTP resources.'),
-            Network.NetworkLogView.MixedContentFilterValues.Displayed, showDisplayedMixedContentInNetworkPanel);
+      } else {
+        switch (explanation.mixedContentType) {
+          case Protocol.Security.MixedContentType.Blockable:
+            this._addMixedContentExplanation(
+                this._securityExplanationsMain, explanation,
+                Network.NetworkLogView.MixedContentFilterValues.BlockOverridden);
+            break;
+          case Protocol.Security.MixedContentType.OptionallyBlockable:
+            this._addMixedContentExplanation(
+                this._securityExplanationsMain, explanation, Network.NetworkLogView.MixedContentFilterValues.Displayed);
+            break;
+          default:
+            this._addExplanation(this._securityExplanationsMain, explanation);
+            break;
+        }
       }
     }
 
     if (this._panel.filterRequestCount(Network.NetworkLogView.MixedContentFilterValues.Blocked) > 0) {
+      var explanation = /** @type {!Protocol.Security.SecurityStateExplanation} */ ({
+        securityState: Protocol.Security.SecurityState.Info,
+        summary: Common.UIString('Blocked mixed content'),
+        description: Common.UIString('Your page requested non-secure resources that were blocked.'),
+        mixedContentType: Protocol.Security.MixedContentType.Blockable,
+        certificate: []
+      });
       this._addMixedContentExplanation(
-          this._securityExplanationsExtra, Protocol.Security.SecurityState.Info,
-          Common.UIString('Blocked mixed content'),
-          Common.UIString('Your page requested non-secure resources that were blocked.'),
-          Network.NetworkLogView.MixedContentFilterValues.Blocked, showBlockedMixedContentInNetworkPanel);
-    }
-
-    /**
-     * @param {!Event} e
-     */
-    function showDisplayedMixedContentInNetworkPanel(e) {
-      e.consume();
-      Network.NetworkPanel.revealAndFilter([{
-        filterType: Network.NetworkLogView.FilterType.MixedContent,
-        filterValue: Network.NetworkLogView.MixedContentFilterValues.Displayed
-      }]);
-    }
-
-    /**
-     * @param {!Event} e
-     */
-    function showBlockOverriddenMixedContentInNetworkPanel(e) {
-      e.consume();
-      Network.NetworkPanel.revealAndFilter([{
-        filterType: Network.NetworkLogView.FilterType.MixedContent,
-        filterValue: Network.NetworkLogView.MixedContentFilterValues.BlockOverridden
-      }]);
-    }
-
-    /**
-     * @param {!Event} e
-     */
-    function showBlockedMixedContentInNetworkPanel(e) {
-      e.consume();
-      Network.NetworkPanel.revealAndFilter([{
-        filterType: Network.NetworkLogView.FilterType.MixedContent,
-        filterValue: Network.NetworkLogView.MixedContentFilterValues.Blocked
-      }]);
+          this._securityExplanationsMain, explanation, Network.NetworkLogView.MixedContentFilterValues.Blocked);
     }
   }
 
   /**
    * @param {!Element} parent
-   * @param {!Protocol.Security.SecurityState} securityState
-   * @param {string} summary
-   * @param {string} description
+   * @param {!Protocol.Security.SecurityStateExplanation} explanation
    * @param {!Network.NetworkLogView.MixedContentFilterValues} filterKey
-   * @param {!Function} networkFilterFn
    */
-  _addMixedContentExplanation(parent, securityState, summary, description, filterKey, networkFilterFn) {
-    var mixedContentExplanation = /** @type {!Protocol.Security.SecurityStateExplanation} */ (
-        {'securityState': securityState, 'summary': summary, 'description': description});
-
-    var explanation = this._addExplanation(parent, mixedContentExplanation);
+  _addMixedContentExplanation(parent, explanation, filterKey) {
+    var element = this._addExplanation(parent, explanation);
 
     var filterRequestCount = this._panel.filterRequestCount(filterKey);
     if (!filterRequestCount) {
@@ -776,59 +693,29 @@ Security.SecurityMainView = class extends UI.VBox {
       // individual mixed requests at this point. Prompt them to refresh
       // instead of pointing them to the Network panel to get prompted
       // to refresh.
-      var refreshPrompt = explanation.createChild('div', 'security-mixed-content');
+      var refreshPrompt = element.createChild('div', 'security-mixed-content');
       refreshPrompt.textContent = Common.UIString('Reload the page to record requests for HTTP resources.');
       return;
     }
 
-    var requestsAnchor = explanation.createChild('div', 'security-mixed-content link');
+    var requestsAnchor = element.createChild('div', 'security-mixed-content link');
     if (filterRequestCount === 1)
       requestsAnchor.textContent = Common.UIString('View %d request in Network Panel', filterRequestCount);
     else
       requestsAnchor.textContent = Common.UIString('View %d requests in Network Panel', filterRequestCount);
 
     requestsAnchor.href = '';
-    requestsAnchor.addEventListener('click', networkFilterFn);
+    requestsAnchor.addEventListener('click', this.showNetworkFilter.bind(this, filterKey));
   }
 
   /**
-   * @param {!Element} parent
-   * @param {!Protocol.Security.SecurityState} securityState
-   * @param {string} summary
-   * @param {string} description
+   * @param {!Network.NetworkLogView.MixedContentFilterValues} filterKey
+   * @param {!Event} e
    */
-  _addMixedFormExplanation(parent, securityState, summary, description) {
-    var mixedContentExplanation = /** @type {!Protocol.Security.SecurityStateExplanation} */ (
-        {'securityState': securityState, 'summary': summary, 'description': description});
-
-    this._addExplanation(parent, mixedContentExplanation);
-  }
-
-  _addContentWithCertErrorsExplanations() {
-    if (!this._schemeIsCryptographic)
-      return;
-
-    if (!this._insecureContentStatus)
-      return;
-
-    if (this._insecureContentStatus.ranContentWithCertErrors) {
-      this._addExplanation(
-          this._securityExplanationsMain, /** @type {!Protocol.Security.SecurityStateExplanation} */ ({
-            'securityState': this._insecureContentStatus.ranInsecureContentStyle,
-            'summary': Common.UIString('Active content with certificate errors'),
-            'description': Common.UIString(
-                'You have recently allowed content loaded with certificate errors (such as scripts or iframes) to run on this site.')
-          }));
-    }
-
-    if (this._insecureContentStatus.displayedContentWithCertErrors) {
-      this._addExplanation(
-          this._securityExplanationsMain, /** @type {!Protocol.Security.SecurityStateExplanation} */ ({
-            'securityState': this._insecureContentStatus.displayedInsecureContentStyle,
-            'summary': Common.UIString('Content with certificate errors'),
-            'description': Common.UIString('This site includes resources that were loaded with certificate errors.')
-          }));
-    }
+  showNetworkFilter(filterKey, e) {
+    e.consume();
+    Network.NetworkPanel.revealAndFilter(
+        [{filterType: Network.NetworkLogView.FilterType.MixedContent, filterValue: filterKey}]);
   }
 };
 
@@ -904,9 +791,11 @@ Security.SecurityOriginView = class extends UI.VBox {
       table.addRow(Common.UIString('Valid from'), validFromString);
       table.addRow(Common.UIString('Valid until'), validUntilString);
       table.addRow(Common.UIString('Issuer'), originState.securityDetails.issuer);
+
       table.addRow(
-          '', Security.SecurityPanel.createCertificateViewerButton2(
-                  Common.UIString('Open full certificate details'), origin));
+          '',
+          Security.SecurityPanel.createCertificateViewerButtonForOrigin(
+              Common.UIString('Open full certificate details'), origin));
 
       if (!originState.securityDetails.signedCertificateTimestampList.length)
         return;

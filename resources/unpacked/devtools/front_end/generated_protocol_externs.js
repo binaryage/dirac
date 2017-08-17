@@ -94,6 +94,62 @@ Protocol.Memory.PressureLevel = {
 };
 /** @interface */
 Protocol.MemoryDispatcher = function() {};
+Protocol.Performance = {};
+
+
+/**
+ * @constructor
+*/
+Protocol.PerformanceAgent = function(){};
+
+/**
+ * @return {!Promise<undefined>}
+ */
+Protocol.PerformanceAgent.prototype.enable = function() {};
+/** @typedef {Object|undefined} */
+Protocol.PerformanceAgent.EnableRequest;
+/** @typedef {Object|undefined} */
+Protocol.PerformanceAgent.EnableResponse;
+/**
+ * @param {!Protocol.PerformanceAgent.EnableRequest} obj
+ * @return {!Promise<!Protocol.PerformanceAgent.EnableResponse>} */
+Protocol.PerformanceAgent.prototype.invoke_enable = function(obj) {};
+
+/**
+ * @return {!Promise<undefined>}
+ */
+Protocol.PerformanceAgent.prototype.disable = function() {};
+/** @typedef {Object|undefined} */
+Protocol.PerformanceAgent.DisableRequest;
+/** @typedef {Object|undefined} */
+Protocol.PerformanceAgent.DisableResponse;
+/**
+ * @param {!Protocol.PerformanceAgent.DisableRequest} obj
+ * @return {!Promise<!Protocol.PerformanceAgent.DisableResponse>} */
+Protocol.PerformanceAgent.prototype.invoke_disable = function(obj) {};
+
+/**
+ * @return {!Promise<?Array<Protocol.Performance.Metric>>}
+ */
+Protocol.PerformanceAgent.prototype.getMetrics = function() {};
+/** @typedef {Object|undefined} */
+Protocol.PerformanceAgent.GetMetricsRequest;
+/** @typedef {!{metrics: !Array<Protocol.Performance.Metric>}} */
+Protocol.PerformanceAgent.GetMetricsResponse;
+/**
+ * @param {!Protocol.PerformanceAgent.GetMetricsRequest} obj
+ * @return {!Promise<!Protocol.PerformanceAgent.GetMetricsResponse>} */
+Protocol.PerformanceAgent.prototype.invoke_getMetrics = function(obj) {};
+
+/** @typedef {!{name:(string), value:(number)}} */
+Protocol.Performance.Metric;
+/** @interface */
+Protocol.PerformanceDispatcher = function() {};
+/**
+ * @param {!Array<Protocol.Performance.Metric>} metrics
+ * @param {string} title
+ */
+Protocol.PerformanceDispatcher.prototype.metrics = function(metrics, title) {};
 Protocol.Page = {};
 
 
@@ -212,6 +268,20 @@ Protocol.PageAgent.ReloadResponse;
  * @param {!Protocol.PageAgent.ReloadRequest} obj
  * @return {!Promise<!Protocol.PageAgent.ReloadResponse>} */
 Protocol.PageAgent.prototype.invoke_reload = function(obj) {};
+
+/**
+ * @param {boolean} enabled
+ * @return {!Promise<undefined>}
+ */
+Protocol.PageAgent.prototype.setAdBlockingEnabled = function(enabled) {};
+/** @typedef {!{enabled: boolean}} */
+Protocol.PageAgent.SetAdBlockingEnabledRequest;
+/** @typedef {Object|undefined} */
+Protocol.PageAgent.SetAdBlockingEnabledResponse;
+/**
+ * @param {!Protocol.PageAgent.SetAdBlockingEnabledRequest} obj
+ * @return {!Promise<!Protocol.PageAgent.SetAdBlockingEnabledResponse>} */
+Protocol.PageAgent.prototype.invoke_setAdBlockingEnabled = function(obj) {};
 
 /**
  * @param {string} url
@@ -363,19 +433,17 @@ Protocol.PageAgent.prototype.invoke_setDocumentContent = function(obj) {};
  * @param {number} height
  * @param {number} deviceScaleFactor
  * @param {boolean} mobile
- * @param {boolean=} opt_fitWindow
  * @param {number=} opt_scale
- * @param {number=} opt_offsetX
- * @param {number=} opt_offsetY
  * @param {number=} opt_screenWidth
  * @param {number=} opt_screenHeight
  * @param {number=} opt_positionX
  * @param {number=} opt_positionY
+ * @param {boolean=} opt_dontSetVisibleSize
  * @param {Protocol.Emulation.ScreenOrientation=} opt_screenOrientation
  * @return {!Promise<undefined>}
  */
-Protocol.PageAgent.prototype.setDeviceMetricsOverride = function(width, height, deviceScaleFactor, mobile, opt_fitWindow, opt_scale, opt_offsetX, opt_offsetY, opt_screenWidth, opt_screenHeight, opt_positionX, opt_positionY, opt_screenOrientation) {};
-/** @typedef {!{deviceScaleFactor: number, positionX: (number|undefined), scale: (number|undefined), screenHeight: (number|undefined), mobile: boolean, offsetX: (number|undefined), screenOrientation: (Protocol.Emulation.ScreenOrientation|undefined), fitWindow: (boolean|undefined), offsetY: (number|undefined), height: number, width: number, positionY: (number|undefined), screenWidth: (number|undefined)}} */
+Protocol.PageAgent.prototype.setDeviceMetricsOverride = function(width, height, deviceScaleFactor, mobile, opt_scale, opt_screenWidth, opt_screenHeight, opt_positionX, opt_positionY, opt_dontSetVisibleSize, opt_screenOrientation) {};
+/** @typedef {!{deviceScaleFactor: number, positionX: (number|undefined), scale: (number|undefined), screenHeight: (number|undefined), mobile: boolean, screenOrientation: (Protocol.Emulation.ScreenOrientation|undefined), dontSetVisibleSize: (boolean|undefined), height: number, width: number, positionY: (number|undefined), screenWidth: (number|undefined)}} */
 Protocol.PageAgent.SetDeviceMetricsOverrideRequest;
 /** @typedef {Object|undefined} */
 Protocol.PageAgent.SetDeviceMetricsOverrideResponse;
@@ -499,10 +567,11 @@ Protocol.PageAgent.prototype.invoke_captureScreenshot = function(obj) {};
  * @param {number=} opt_marginLeft
  * @param {number=} opt_marginRight
  * @param {string=} opt_pageRanges
+ * @param {boolean=} opt_ignoreInvalidPageRanges
  * @return {!Promise<?string>}
  */
-Protocol.PageAgent.prototype.printToPDF = function(opt_landscape, opt_displayHeaderFooter, opt_printBackground, opt_scale, opt_paperWidth, opt_paperHeight, opt_marginTop, opt_marginBottom, opt_marginLeft, opt_marginRight, opt_pageRanges) {};
-/** @typedef {!{paperHeight: (number|undefined), scale: (number|undefined), displayHeaderFooter: (boolean|undefined), marginBottom: (number|undefined), paperWidth: (number|undefined), marginLeft: (number|undefined), printBackground: (boolean|undefined), marginRight: (number|undefined), pageRanges: (string|undefined), marginTop: (number|undefined), landscape: (boolean|undefined)}} */
+Protocol.PageAgent.prototype.printToPDF = function(opt_landscape, opt_displayHeaderFooter, opt_printBackground, opt_scale, opt_paperWidth, opt_paperHeight, opt_marginTop, opt_marginBottom, opt_marginLeft, opt_marginRight, opt_pageRanges, opt_ignoreInvalidPageRanges) {};
+/** @typedef {!{paperHeight: (number|undefined), scale: (number|undefined), displayHeaderFooter: (boolean|undefined), marginBottom: (number|undefined), paperWidth: (number|undefined), marginLeft: (number|undefined), printBackground: (boolean|undefined), marginRight: (number|undefined), ignoreInvalidPageRanges: (boolean|undefined), pageRanges: (string|undefined), marginTop: (number|undefined), landscape: (boolean|undefined)}} */
 Protocol.PageAgent.PrintToPDFRequest;
 /** @typedef {!{data: string}} */
 Protocol.PageAgent.PrintToPDFResponse;
@@ -598,35 +667,6 @@ Protocol.PageAgent.RequestAppBannerResponse;
 Protocol.PageAgent.prototype.invoke_requestAppBanner = function(obj) {};
 
 /**
- * @param {boolean} enabled
- * @return {!Promise<undefined>}
- */
-Protocol.PageAgent.prototype.setControlNavigations = function(enabled) {};
-/** @typedef {!{enabled: boolean}} */
-Protocol.PageAgent.SetControlNavigationsRequest;
-/** @typedef {Object|undefined} */
-Protocol.PageAgent.SetControlNavigationsResponse;
-/**
- * @param {!Protocol.PageAgent.SetControlNavigationsRequest} obj
- * @return {!Promise<!Protocol.PageAgent.SetControlNavigationsResponse>} */
-Protocol.PageAgent.prototype.invoke_setControlNavigations = function(obj) {};
-
-/**
- * @param {Protocol.Page.NavigationResponse} response
- * @param {number} navigationId
- * @return {!Promise<undefined>}
- */
-Protocol.PageAgent.prototype.processNavigation = function(response, navigationId) {};
-/** @typedef {!{navigationId: number, response: Protocol.Page.NavigationResponse}} */
-Protocol.PageAgent.ProcessNavigationRequest;
-/** @typedef {Object|undefined} */
-Protocol.PageAgent.ProcessNavigationResponse;
-/**
- * @param {!Protocol.PageAgent.ProcessNavigationRequest} obj
- * @return {!Promise<!Protocol.PageAgent.ProcessNavigationResponse>} */
-Protocol.PageAgent.prototype.invoke_processNavigation = function(obj) {};
-
-/**
  * @return {!Promise<?Protocol.Page.LayoutViewport>}
  */
 Protocol.PageAgent.prototype.getLayoutMetrics = function() {};
@@ -655,6 +695,19 @@ Protocol.PageAgent.CreateIsolatedWorldResponse;
  * @return {!Promise<!Protocol.PageAgent.CreateIsolatedWorldResponse>} */
 Protocol.PageAgent.prototype.invoke_createIsolatedWorld = function(obj) {};
 
+/**
+ * @return {!Promise<undefined>}
+ */
+Protocol.PageAgent.prototype.bringToFront = function() {};
+/** @typedef {Object|undefined} */
+Protocol.PageAgent.BringToFrontRequest;
+/** @typedef {Object|undefined} */
+Protocol.PageAgent.BringToFrontResponse;
+/**
+ * @param {!Protocol.PageAgent.BringToFrontRequest} obj
+ * @return {!Promise<!Protocol.PageAgent.BringToFrontResponse>} */
+Protocol.PageAgent.prototype.invoke_bringToFront = function(obj) {};
+
 /** @enum {string} */
 Protocol.Page.ResourceType = {
     Document: "Document",
@@ -675,7 +728,7 @@ Protocol.Page.ResourceType = {
 /** @typedef {string} */
 Protocol.Page.FrameId;
 
-/** @typedef {!{id:(string), parentId:(string|undefined), loaderId:(Protocol.Network.LoaderId), name:(string|undefined), url:(string), securityOrigin:(string), mimeType:(string)}} */
+/** @typedef {!{id:(string), parentId:(string|undefined), loaderId:(Protocol.Network.LoaderId), name:(string|undefined), url:(string), securityOrigin:(string), mimeType:(string), unreachableUrl:(string|undefined)}} */
 Protocol.Page.Frame;
 
 /** @typedef {!{url:(string), type:(Protocol.Page.ResourceType), mimeType:(string), lastModified:(Protocol.Network.TimeSinceEpoch|undefined), contentSize:(number|undefined), failed:(boolean|undefined), canceled:(boolean|undefined)}} */
@@ -770,22 +823,27 @@ Protocol.PageDispatcher.prototype.frameStoppedLoading = function(frameId) {};
 /**
  * @param {Protocol.Page.FrameId} frameId
  * @param {number} delay
+ * @param {string} reason
+ * @param {string} url
  */
-Protocol.PageDispatcher.prototype.frameScheduledNavigation = function(frameId, delay) {};
+Protocol.PageDispatcher.prototype.frameScheduledNavigation = function(frameId, delay, reason, url) {};
 /**
  * @param {Protocol.Page.FrameId} frameId
  */
 Protocol.PageDispatcher.prototype.frameClearedScheduledNavigation = function(frameId) {};
 Protocol.PageDispatcher.prototype.frameResized = function() {};
 /**
+ * @param {string} url
  * @param {string} message
  * @param {Protocol.Page.DialogType} type
+ * @param {string=} opt_defaultPrompt
  */
-Protocol.PageDispatcher.prototype.javascriptDialogOpening = function(message, type) {};
+Protocol.PageDispatcher.prototype.javascriptDialogOpening = function(url, message, type, opt_defaultPrompt) {};
 /**
  * @param {boolean} result
+ * @param {string} userInput
  */
-Protocol.PageDispatcher.prototype.javascriptDialogClosed = function(result) {};
+Protocol.PageDispatcher.prototype.javascriptDialogClosed = function(result, userInput) {};
 /**
  * @param {string} data
  * @param {Protocol.Page.ScreencastFrameMetadata} metadata
@@ -798,13 +856,6 @@ Protocol.PageDispatcher.prototype.screencastFrame = function(data, metadata, ses
 Protocol.PageDispatcher.prototype.screencastVisibilityChanged = function(visible) {};
 Protocol.PageDispatcher.prototype.interstitialShown = function() {};
 Protocol.PageDispatcher.prototype.interstitialHidden = function() {};
-/**
- * @param {boolean} isInMainFrame
- * @param {boolean} isRedirect
- * @param {number} navigationId
- * @param {string} url
- */
-Protocol.PageDispatcher.prototype.navigationRequested = function(isInMainFrame, isRedirect, navigationId, url) {};
 Protocol.Overlay = {};
 
 
@@ -1047,7 +1098,7 @@ Protocol.OverlayAgent.GetHighlightObjectForTestResponse;
  * @return {!Promise<!Protocol.OverlayAgent.GetHighlightObjectForTestResponse>} */
 Protocol.OverlayAgent.prototype.invoke_getHighlightObjectForTest = function(obj) {};
 
-/** @typedef {!{showInfo:(boolean|undefined), showRulers:(boolean|undefined), showExtensionLines:(boolean|undefined), displayAsMaterial:(boolean|undefined), contentColor:(Protocol.DOM.RGBA|undefined), paddingColor:(Protocol.DOM.RGBA|undefined), borderColor:(Protocol.DOM.RGBA|undefined), marginColor:(Protocol.DOM.RGBA|undefined), eventTargetColor:(Protocol.DOM.RGBA|undefined), shapeColor:(Protocol.DOM.RGBA|undefined), shapeMarginColor:(Protocol.DOM.RGBA|undefined), selectorList:(string|undefined)}} */
+/** @typedef {!{showInfo:(boolean|undefined), showRulers:(boolean|undefined), showExtensionLines:(boolean|undefined), displayAsMaterial:(boolean|undefined), contentColor:(Protocol.DOM.RGBA|undefined), paddingColor:(Protocol.DOM.RGBA|undefined), borderColor:(Protocol.DOM.RGBA|undefined), marginColor:(Protocol.DOM.RGBA|undefined), eventTargetColor:(Protocol.DOM.RGBA|undefined), shapeColor:(Protocol.DOM.RGBA|undefined), shapeMarginColor:(Protocol.DOM.RGBA|undefined), selectorList:(string|undefined), cssGridColor:(Protocol.DOM.RGBA|undefined)}} */
 Protocol.Overlay.HighlightConfig;
 
 /** @enum {string} */
@@ -1066,6 +1117,10 @@ Protocol.OverlayDispatcher.prototype.nodeHighlightRequested = function(nodeId) {
  * @param {Protocol.DOM.BackendNodeId} backendNodeId
  */
 Protocol.OverlayDispatcher.prototype.inspectNodeRequested = function(backendNodeId) {};
+/**
+ * @param {Protocol.Page.Viewport} viewport
+ */
+Protocol.OverlayDispatcher.prototype.screenshotRequested = function(viewport) {};
 Protocol.Emulation = {};
 
 
@@ -1079,19 +1134,17 @@ Protocol.EmulationAgent = function(){};
  * @param {number} height
  * @param {number} deviceScaleFactor
  * @param {boolean} mobile
- * @param {boolean=} opt_fitWindow
  * @param {number=} opt_scale
- * @param {number=} opt_offsetX
- * @param {number=} opt_offsetY
  * @param {number=} opt_screenWidth
  * @param {number=} opt_screenHeight
  * @param {number=} opt_positionX
  * @param {number=} opt_positionY
+ * @param {boolean=} opt_dontSetVisibleSize
  * @param {Protocol.Emulation.ScreenOrientation=} opt_screenOrientation
  * @return {!Promise<undefined>}
  */
-Protocol.EmulationAgent.prototype.setDeviceMetricsOverride = function(width, height, deviceScaleFactor, mobile, opt_fitWindow, opt_scale, opt_offsetX, opt_offsetY, opt_screenWidth, opt_screenHeight, opt_positionX, opt_positionY, opt_screenOrientation) {};
-/** @typedef {!{deviceScaleFactor: number, positionX: (number|undefined), scale: (number|undefined), screenHeight: (number|undefined), mobile: boolean, offsetX: (number|undefined), screenOrientation: (Protocol.Emulation.ScreenOrientation|undefined), fitWindow: (boolean|undefined), offsetY: (number|undefined), height: number, width: number, positionY: (number|undefined), screenWidth: (number|undefined)}} */
+Protocol.EmulationAgent.prototype.setDeviceMetricsOverride = function(width, height, deviceScaleFactor, mobile, opt_scale, opt_screenWidth, opt_screenHeight, opt_positionX, opt_positionY, opt_dontSetVisibleSize, opt_screenOrientation) {};
+/** @typedef {!{deviceScaleFactor: number, positionX: (number|undefined), scale: (number|undefined), screenHeight: (number|undefined), mobile: boolean, screenOrientation: (Protocol.Emulation.ScreenOrientation|undefined), dontSetVisibleSize: (boolean|undefined), height: number, width: number, positionY: (number|undefined), screenWidth: (number|undefined)}} */
 Protocol.EmulationAgent.SetDeviceMetricsOverrideRequest;
 /** @typedef {Object|undefined} */
 Protocol.EmulationAgent.SetDeviceMetricsOverrideResponse;
@@ -1200,11 +1253,11 @@ Protocol.EmulationAgent.prototype.invoke_clearGeolocationOverride = function(obj
 
 /**
  * @param {boolean} enabled
- * @param {string=} opt_configuration
+ * @param {number=} opt_maxTouchPoints
  * @return {!Promise<undefined>}
  */
-Protocol.EmulationAgent.prototype.setTouchEmulationEnabled = function(enabled, opt_configuration) {};
-/** @typedef {!{configuration: (string|undefined), enabled: boolean}} */
+Protocol.EmulationAgent.prototype.setTouchEmulationEnabled = function(enabled, opt_maxTouchPoints) {};
+/** @typedef {!{maxTouchPoints: (number|undefined), enabled: boolean}} */
 Protocol.EmulationAgent.SetTouchEmulationEnabledRequest;
 /** @typedef {Object|undefined} */
 Protocol.EmulationAgent.SetTouchEmulationEnabledResponse;
@@ -1212,6 +1265,21 @@ Protocol.EmulationAgent.SetTouchEmulationEnabledResponse;
  * @param {!Protocol.EmulationAgent.SetTouchEmulationEnabledRequest} obj
  * @return {!Promise<!Protocol.EmulationAgent.SetTouchEmulationEnabledResponse>} */
 Protocol.EmulationAgent.prototype.invoke_setTouchEmulationEnabled = function(obj) {};
+
+/**
+ * @param {boolean} enabled
+ * @param {string=} opt_configuration
+ * @return {!Promise<undefined>}
+ */
+Protocol.EmulationAgent.prototype.setEmitTouchEventsForMouse = function(enabled, opt_configuration) {};
+/** @typedef {!{configuration: (string|undefined), enabled: boolean}} */
+Protocol.EmulationAgent.SetEmitTouchEventsForMouseRequest;
+/** @typedef {Object|undefined} */
+Protocol.EmulationAgent.SetEmitTouchEventsForMouseResponse;
+/**
+ * @param {!Protocol.EmulationAgent.SetEmitTouchEventsForMouseRequest} obj
+ * @return {!Promise<!Protocol.EmulationAgent.SetEmitTouchEventsForMouseResponse>} */
+Protocol.EmulationAgent.prototype.invoke_setEmitTouchEventsForMouse = function(obj) {};
 
 /**
  * @param {string} media
@@ -1338,19 +1406,6 @@ Protocol.SecurityAgent.DisableResponse;
 Protocol.SecurityAgent.prototype.invoke_disable = function(obj) {};
 
 /**
- * @return {!Promise<undefined>}
- */
-Protocol.SecurityAgent.prototype.showCertificateViewer = function() {};
-/** @typedef {Object|undefined} */
-Protocol.SecurityAgent.ShowCertificateViewerRequest;
-/** @typedef {Object|undefined} */
-Protocol.SecurityAgent.ShowCertificateViewerResponse;
-/**
- * @param {!Protocol.SecurityAgent.ShowCertificateViewerRequest} obj
- * @return {!Promise<!Protocol.SecurityAgent.ShowCertificateViewerResponse>} */
-Protocol.SecurityAgent.prototype.invoke_showCertificateViewer = function(obj) {};
-
-/**
  * @param {number} eventId
  * @param {Protocol.Security.CertificateErrorAction} action
  * @return {!Promise<undefined>}
@@ -1399,7 +1454,7 @@ Protocol.Security.SecurityState = {
     Info: "info"
 };
 
-/** @typedef {!{securityState:(Protocol.Security.SecurityState), summary:(string), description:(string), hasCertificate:(boolean), mixedContentType:(Protocol.Security.MixedContentType)}} */
+/** @typedef {!{securityState:(Protocol.Security.SecurityState), summary:(string), description:(string), mixedContentType:(Protocol.Security.MixedContentType), certificate:(!Array<string>)}} */
 Protocol.Security.SecurityStateExplanation;
 
 /** @typedef {!{ranMixedContent:(boolean), displayedMixedContent:(boolean), containedMixedForm:(boolean), ranContentWithCertErrors:(boolean), displayedContentWithCertErrors:(boolean), ranInsecureContentStyle:(Protocol.Security.SecurityState), displayedInsecureContentStyle:(Protocol.Security.SecurityState)}} */
@@ -1627,19 +1682,19 @@ Protocol.NetworkAgent.DeleteCookieResponse;
 Protocol.NetworkAgent.prototype.invoke_deleteCookie = function(obj) {};
 
 /**
- * @param {string} url
  * @param {string} name
  * @param {string} value
+ * @param {string=} opt_url
  * @param {string=} opt_domain
  * @param {string=} opt_path
  * @param {boolean=} opt_secure
  * @param {boolean=} opt_httpOnly
  * @param {Protocol.Network.CookieSameSite=} opt_sameSite
- * @param {Protocol.Network.TimeSinceEpoch=} opt_expirationDate
+ * @param {Protocol.Network.TimeSinceEpoch=} opt_expires
  * @return {!Promise<?boolean>}
  */
-Protocol.NetworkAgent.prototype.setCookie = function(url, name, value, opt_domain, opt_path, opt_secure, opt_httpOnly, opt_sameSite, opt_expirationDate) {};
-/** @typedef {!{domain: (string|undefined), name: string, url: string, value: string, expirationDate: (Protocol.Network.TimeSinceEpoch|undefined), sameSite: (Protocol.Network.CookieSameSite|undefined), path: (string|undefined), httpOnly: (boolean|undefined), secure: (boolean|undefined)}} */
+Protocol.NetworkAgent.prototype.setCookie = function(name, value, opt_url, opt_domain, opt_path, opt_secure, opt_httpOnly, opt_sameSite, opt_expires) {};
+/** @typedef {!{domain: (string|undefined), name: string, url: (string|undefined), expires: (Protocol.Network.TimeSinceEpoch|undefined), value: string, sameSite: (Protocol.Network.CookieSameSite|undefined), path: (string|undefined), httpOnly: (boolean|undefined), secure: (boolean|undefined)}} */
 Protocol.NetworkAgent.SetCookieRequest;
 /** @typedef {!{success: boolean}} */
 Protocol.NetworkAgent.SetCookieResponse;
@@ -1647,6 +1702,20 @@ Protocol.NetworkAgent.SetCookieResponse;
  * @param {!Protocol.NetworkAgent.SetCookieRequest} obj
  * @return {!Promise<!Protocol.NetworkAgent.SetCookieResponse>} */
 Protocol.NetworkAgent.prototype.invoke_setCookie = function(obj) {};
+
+/**
+ * @param {!Array<Protocol.Network.CookieParam>} cookies
+ * @return {!Promise<undefined>}
+ */
+Protocol.NetworkAgent.prototype.setCookies = function(cookies) {};
+/** @typedef {!{cookies: !Array<Protocol.Network.CookieParam>}} */
+Protocol.NetworkAgent.SetCookiesRequest;
+/** @typedef {Object|undefined} */
+Protocol.NetworkAgent.SetCookiesResponse;
+/**
+ * @param {!Protocol.NetworkAgent.SetCookiesRequest} obj
+ * @return {!Promise<!Protocol.NetworkAgent.SetCookiesResponse>} */
+Protocol.NetworkAgent.prototype.invoke_setCookies = function(obj) {};
 
 /**
  * @return {!Promise<?boolean>}
@@ -1896,6 +1965,9 @@ Protocol.Network.Initiator;
 /** @typedef {!{name:(string), value:(string), domain:(string), path:(string), expires:(number), size:(number), httpOnly:(boolean), secure:(boolean), session:(boolean), sameSite:(Protocol.Network.CookieSameSite|undefined)}} */
 Protocol.Network.Cookie;
 
+/** @typedef {!{name:(string), value:(string), url:(string|undefined), domain:(string|undefined), path:(string|undefined), secure:(boolean|undefined), httpOnly:(boolean|undefined), sameSite:(Protocol.Network.CookieSameSite|undefined), expires:(Protocol.Network.TimeSinceEpoch|undefined)}} */
+Protocol.Network.CookieParam;
+
 /** @enum {string} */
 Protocol.Network.AuthChallengeSource = {
     Server: "Server",
@@ -2024,12 +2096,13 @@ Protocol.NetworkDispatcher.prototype.eventSourceMessageReceived = function(reque
  * @param {Protocol.Network.InterceptionId} interceptionId
  * @param {Protocol.Network.Request} request
  * @param {Protocol.Page.ResourceType} resourceType
+ * @param {boolean} isNavigationRequest
  * @param {Protocol.Network.Headers=} opt_redirectHeaders
  * @param {number=} opt_redirectStatusCode
  * @param {string=} opt_redirectUrl
  * @param {Protocol.Network.AuthChallenge=} opt_authChallenge
  */
-Protocol.NetworkDispatcher.prototype.requestIntercepted = function(interceptionId, request, resourceType, opt_redirectHeaders, opt_redirectStatusCode, opt_redirectUrl, opt_authChallenge) {};
+Protocol.NetworkDispatcher.prototype.requestIntercepted = function(interceptionId, request, resourceType, isNavigationRequest, opt_redirectHeaders, opt_redirectStatusCode, opt_redirectUrl, opt_authChallenge) {};
 Protocol.Database = {};
 
 
@@ -2325,6 +2398,21 @@ Protocol.CacheStorageAgent.DeleteEntryResponse;
  * @return {!Promise<!Protocol.CacheStorageAgent.DeleteEntryResponse>} */
 Protocol.CacheStorageAgent.prototype.invoke_deleteEntry = function(obj) {};
 
+/**
+ * @param {Protocol.CacheStorage.CacheId} cacheId
+ * @param {string} requestURL
+ * @return {!Promise<?Protocol.CacheStorage.CachedResponse>}
+ */
+Protocol.CacheStorageAgent.prototype.requestCachedResponse = function(cacheId, requestURL) {};
+/** @typedef {!{cacheId: Protocol.CacheStorage.CacheId, requestURL: string}} */
+Protocol.CacheStorageAgent.RequestCachedResponseRequest;
+/** @typedef {!{response: Protocol.CacheStorage.CachedResponse}} */
+Protocol.CacheStorageAgent.RequestCachedResponseResponse;
+/**
+ * @param {!Protocol.CacheStorageAgent.RequestCachedResponseRequest} obj
+ * @return {!Promise<!Protocol.CacheStorageAgent.RequestCachedResponseResponse>} */
+Protocol.CacheStorageAgent.prototype.invoke_requestCachedResponse = function(obj) {};
+
 /** @typedef {string} */
 Protocol.CacheStorage.CacheId;
 
@@ -2333,6 +2421,9 @@ Protocol.CacheStorage.DataEntry;
 
 /** @typedef {!{cacheId:(Protocol.CacheStorage.CacheId), securityOrigin:(string), cacheName:(string)}} */
 Protocol.CacheStorage.Cache;
+
+/** @typedef {!{headers:(!Object), body:(string)}} */
+Protocol.CacheStorage.CachedResponse;
 /** @interface */
 Protocol.CacheStorageDispatcher = function() {};
 Protocol.DOMStorage = {};
@@ -3500,7 +3591,7 @@ Protocol.CSSAgent.prototype.invoke_setEffectivePropertyValueForNode = function(o
 Protocol.CSSAgent.prototype.getBackgroundColors = function(nodeId) {};
 /** @typedef {!{nodeId: Protocol.DOM.NodeId}} */
 Protocol.CSSAgent.GetBackgroundColorsRequest;
-/** @typedef {!{backgroundColors: !Array<string>}} */
+/** @typedef {!{backgroundColors: !Array<string>, computedFontWeight: string, computedFontSize: string, computedBodyFontSize: string}} */
 Protocol.CSSAgent.GetBackgroundColorsResponse;
 /**
  * @param {!Protocol.CSSAgent.GetBackgroundColorsRequest} obj
@@ -3665,7 +3756,7 @@ Protocol.DOMSnapshotAgent.GetSnapshotResponse;
  * @return {!Promise<!Protocol.DOMSnapshotAgent.GetSnapshotResponse>} */
 Protocol.DOMSnapshotAgent.prototype.invoke_getSnapshot = function(obj) {};
 
-/** @typedef {!{nodeType:(number), nodeName:(string), nodeValue:(string), textValue:(string|undefined), inputValue:(string|undefined), inputChecked:(boolean|undefined), optionSelected:(boolean|undefined), backendNodeId:(Protocol.DOM.BackendNodeId), childNodeIndexes:(!Array<number>|undefined), attributes:(!Array<Protocol.DOMSnapshot.NameValue>|undefined), pseudoElementIndexes:(!Array<number>|undefined), layoutNodeIndex:(number|undefined), documentURL:(string|undefined), baseURL:(string|undefined), contentLanguage:(string|undefined), publicId:(string|undefined), systemId:(string|undefined), frameId:(Protocol.Page.FrameId|undefined), contentDocumentIndex:(number|undefined), importedDocumentIndex:(number|undefined), templateContentIndex:(number|undefined), pseudoType:(Protocol.DOM.PseudoType|undefined), isClickable:(boolean|undefined)}} */
+/** @typedef {!{nodeType:(number), nodeName:(string), nodeValue:(string), textValue:(string|undefined), inputValue:(string|undefined), inputChecked:(boolean|undefined), optionSelected:(boolean|undefined), backendNodeId:(Protocol.DOM.BackendNodeId), childNodeIndexes:(!Array<number>|undefined), attributes:(!Array<Protocol.DOMSnapshot.NameValue>|undefined), pseudoElementIndexes:(!Array<number>|undefined), layoutNodeIndex:(number|undefined), documentURL:(string|undefined), baseURL:(string|undefined), contentLanguage:(string|undefined), documentEncoding:(string|undefined), publicId:(string|undefined), systemId:(string|undefined), frameId:(Protocol.Page.FrameId|undefined), contentDocumentIndex:(number|undefined), importedDocumentIndex:(number|undefined), templateContentIndex:(number|undefined), pseudoType:(Protocol.DOM.PseudoType|undefined), isClickable:(boolean|undefined)}} */
 Protocol.DOMSnapshot.DOMNode;
 
 /** @typedef {!{domNodeIndex:(number), boundingBox:(Protocol.DOM.Rect), layoutText:(string|undefined), inlineTextNodes:(!Array<Protocol.CSS.InlineTextBox>|undefined), styleIndex:(number|undefined)}} */
@@ -3690,12 +3781,12 @@ Protocol.IOAgent = function(){};
  * @param {Protocol.IO.StreamHandle} handle
  * @param {number=} opt_offset
  * @param {number=} opt_size
- * @return {!Promise<?string>}
+ * @return {!Promise<?boolean>}
  */
 Protocol.IOAgent.prototype.read = function(handle, opt_offset, opt_size) {};
 /** @typedef {!{size: (number|undefined), handle: Protocol.IO.StreamHandle, offset: (number|undefined)}} */
 Protocol.IOAgent.ReadRequest;
-/** @typedef {!{data: string, eof: boolean}} */
+/** @typedef {!{data: string, base64Encoded: boolean, eof: boolean}} */
 Protocol.IOAgent.ReadResponse;
 /**
  * @param {!Protocol.IOAgent.ReadRequest} obj
@@ -3715,6 +3806,20 @@ Protocol.IOAgent.CloseResponse;
  * @param {!Protocol.IOAgent.CloseRequest} obj
  * @return {!Promise<!Protocol.IOAgent.CloseResponse>} */
 Protocol.IOAgent.prototype.invoke_close = function(obj) {};
+
+/**
+ * @param {Protocol.Runtime.RemoteObjectId} objectId
+ * @return {!Promise<?string>}
+ */
+Protocol.IOAgent.prototype.resolveBlob = function(objectId) {};
+/** @typedef {!{objectId: Protocol.Runtime.RemoteObjectId}} */
+Protocol.IOAgent.ResolveBlobRequest;
+/** @typedef {!{uuid: string}} */
+Protocol.IOAgent.ResolveBlobResponse;
+/**
+ * @param {!Protocol.IOAgent.ResolveBlobRequest} obj
+ * @return {!Promise<!Protocol.IOAgent.ResolveBlobResponse>} */
+Protocol.IOAgent.prototype.invoke_resolveBlob = function(obj) {};
 
 /** @typedef {string} */
 Protocol.IO.StreamHandle;
@@ -3937,12 +4042,13 @@ Protocol.TargetAgent.SetRemoteLocationsResponse;
 Protocol.TargetAgent.prototype.invoke_setRemoteLocations = function(obj) {};
 
 /**
- * @param {Protocol.Target.TargetID} targetId
  * @param {string} message
+ * @param {Protocol.Target.SessionID=} opt_sessionId
+ * @param {Protocol.Target.TargetID=} opt_targetId
  * @return {!Promise<undefined>}
  */
-Protocol.TargetAgent.prototype.sendMessageToTarget = function(targetId, message) {};
-/** @typedef {!{message: string, targetId: Protocol.Target.TargetID}} */
+Protocol.TargetAgent.prototype.sendMessageToTarget = function(message, opt_sessionId, opt_targetId) {};
+/** @typedef {!{message: string, targetId: (Protocol.Target.TargetID|undefined), sessionId: (Protocol.Target.SessionID|undefined)}} */
 Protocol.TargetAgent.SendMessageToTargetRequest;
 /** @typedef {Object|undefined} */
 Protocol.TargetAgent.SendMessageToTargetResponse;
@@ -3995,12 +4101,12 @@ Protocol.TargetAgent.prototype.invoke_closeTarget = function(obj) {};
 
 /**
  * @param {Protocol.Target.TargetID} targetId
- * @return {!Promise<?boolean>}
+ * @return {!Promise<?Protocol.Target.SessionID>}
  */
 Protocol.TargetAgent.prototype.attachToTarget = function(targetId) {};
 /** @typedef {!{targetId: Protocol.Target.TargetID}} */
 Protocol.TargetAgent.AttachToTargetRequest;
-/** @typedef {!{success: boolean}} */
+/** @typedef {!{sessionId: Protocol.Target.SessionID}} */
 Protocol.TargetAgent.AttachToTargetResponse;
 /**
  * @param {!Protocol.TargetAgent.AttachToTargetRequest} obj
@@ -4008,11 +4114,12 @@ Protocol.TargetAgent.AttachToTargetResponse;
 Protocol.TargetAgent.prototype.invoke_attachToTarget = function(obj) {};
 
 /**
- * @param {Protocol.Target.TargetID} targetId
+ * @param {Protocol.Target.SessionID=} opt_sessionId
+ * @param {Protocol.Target.TargetID=} opt_targetId
  * @return {!Promise<undefined>}
  */
-Protocol.TargetAgent.prototype.detachFromTarget = function(targetId) {};
-/** @typedef {!{targetId: Protocol.Target.TargetID}} */
+Protocol.TargetAgent.prototype.detachFromTarget = function(opt_sessionId, opt_targetId) {};
+/** @typedef {!{sessionId: (Protocol.Target.SessionID|undefined), targetId: (Protocol.Target.TargetID|undefined)}} */
 Protocol.TargetAgent.DetachFromTargetRequest;
 /** @typedef {Object|undefined} */
 Protocol.TargetAgent.DetachFromTargetResponse;
@@ -4082,6 +4189,9 @@ Protocol.TargetAgent.prototype.invoke_getTargets = function(obj) {};
 Protocol.Target.TargetID;
 
 /** @typedef {string} */
+Protocol.Target.SessionID;
+
+/** @typedef {string} */
 Protocol.Target.BrowserContextID;
 
 /** @typedef {!{targetId:(Protocol.Target.TargetID), type:(string), title:(string), url:(string), attached:(boolean)}} */
@@ -4104,19 +4214,22 @@ Protocol.TargetDispatcher.prototype.targetInfoChanged = function(targetInfo) {};
  */
 Protocol.TargetDispatcher.prototype.targetDestroyed = function(targetId) {};
 /**
+ * @param {Protocol.Target.SessionID} sessionId
  * @param {Protocol.Target.TargetInfo} targetInfo
  * @param {boolean} waitingForDebugger
  */
-Protocol.TargetDispatcher.prototype.attachedToTarget = function(targetInfo, waitingForDebugger) {};
+Protocol.TargetDispatcher.prototype.attachedToTarget = function(sessionId, targetInfo, waitingForDebugger) {};
 /**
- * @param {Protocol.Target.TargetID} targetId
+ * @param {Protocol.Target.SessionID} sessionId
+ * @param {Protocol.Target.TargetID=} opt_targetId
  */
-Protocol.TargetDispatcher.prototype.detachedFromTarget = function(targetId) {};
+Protocol.TargetDispatcher.prototype.detachedFromTarget = function(sessionId, opt_targetId) {};
 /**
- * @param {Protocol.Target.TargetID} targetId
+ * @param {Protocol.Target.SessionID} sessionId
  * @param {string} message
+ * @param {Protocol.Target.TargetID=} opt_targetId
  */
-Protocol.TargetDispatcher.prototype.receivedMessageFromTarget = function(targetId, message) {};
+Protocol.TargetDispatcher.prototype.receivedMessageFromTarget = function(sessionId, message, opt_targetId) {};
 Protocol.ServiceWorker = {};
 
 
@@ -4378,10 +4491,12 @@ Protocol.InputAgent.prototype.invoke_dispatchKeyEvent = function(obj) {};
  * @param {Protocol.Input.TimeSinceEpoch=} opt_timestamp
  * @param {string=} opt_button
  * @param {number=} opt_clickCount
+ * @param {number=} opt_deltaX
+ * @param {number=} opt_deltaY
  * @return {!Promise<undefined>}
  */
-Protocol.InputAgent.prototype.dispatchMouseEvent = function(type, x, y, opt_modifiers, opt_timestamp, opt_button, opt_clickCount) {};
-/** @typedef {!{modifiers: (number|undefined), clickCount: (number|undefined), timestamp: (Protocol.Input.TimeSinceEpoch|undefined), button: (string|undefined), y: number, x: number, type: string}} */
+Protocol.InputAgent.prototype.dispatchMouseEvent = function(type, x, y, opt_modifiers, opt_timestamp, opt_button, opt_clickCount, opt_deltaX, opt_deltaY) {};
+/** @typedef {!{modifiers: (number|undefined), clickCount: (number|undefined), deltaX: (number|undefined), timestamp: (Protocol.Input.TimeSinceEpoch|undefined), button: (string|undefined), deltaY: (number|undefined), y: number, x: number, type: string}} */
 Protocol.InputAgent.DispatchMouseEventRequest;
 /** @typedef {Object|undefined} */
 Protocol.InputAgent.DispatchMouseEventResponse;
@@ -4667,10 +4782,13 @@ Protocol.LayerTree.ScrollRectType = {
 /** @typedef {!{rect:(Protocol.DOM.Rect), type:(Protocol.LayerTree.ScrollRectType)}} */
 Protocol.LayerTree.ScrollRect;
 
+/** @typedef {!{stickyBoxRect:(Protocol.DOM.Rect), containingBlockRect:(Protocol.DOM.Rect), nearestLayerShiftingStickyBox:(Protocol.LayerTree.LayerId|undefined), nearestLayerShiftingContainingBlock:(Protocol.LayerTree.LayerId|undefined)}} */
+Protocol.LayerTree.StickyPositionConstraint;
+
 /** @typedef {!{x:(number), y:(number), picture:(string)}} */
 Protocol.LayerTree.PictureTile;
 
-/** @typedef {!{layerId:(Protocol.LayerTree.LayerId), parentLayerId:(Protocol.LayerTree.LayerId|undefined), backendNodeId:(Protocol.DOM.BackendNodeId|undefined), offsetX:(number), offsetY:(number), width:(number), height:(number), transform:(!Array<number>|undefined), anchorX:(number|undefined), anchorY:(number|undefined), anchorZ:(number|undefined), paintCount:(number), drawsContent:(boolean), invisible:(boolean|undefined), scrollRects:(!Array<Protocol.LayerTree.ScrollRect>|undefined)}} */
+/** @typedef {!{layerId:(Protocol.LayerTree.LayerId), parentLayerId:(Protocol.LayerTree.LayerId|undefined), backendNodeId:(Protocol.DOM.BackendNodeId|undefined), offsetX:(number), offsetY:(number), width:(number), height:(number), transform:(!Array<number>|undefined), anchorX:(number|undefined), anchorY:(number|undefined), anchorZ:(number|undefined), paintCount:(number), drawsContent:(boolean), invisible:(boolean|undefined), scrollRects:(!Array<Protocol.LayerTree.ScrollRect>|undefined), stickyPositionConstraint:(Protocol.LayerTree.StickyPositionConstraint|undefined)}} */
 Protocol.LayerTree.Layer;
 
 /** @typedef {!Array<!number>} */
@@ -5096,6 +5214,7 @@ Protocol.Accessibility.AXValue;
 
 /** @enum {string} */
 Protocol.Accessibility.AXGlobalStates = {
+    Busy: "busy",
     Disabled: "disabled",
     Hidden: "hidden",
     HiddenRoot: "hiddenRoot",
@@ -5109,7 +5228,6 @@ Protocol.Accessibility.AXLiveRegionAttributes = {
     Live: "live",
     Atomic: "atomic",
     Relevant: "relevant",
-    Busy: "busy",
     Root: "root"
 };
 
@@ -5190,6 +5308,34 @@ Protocol.StorageAgent.GetUsageAndQuotaResponse;
  * @return {!Promise<!Protocol.StorageAgent.GetUsageAndQuotaResponse>} */
 Protocol.StorageAgent.prototype.invoke_getUsageAndQuota = function(obj) {};
 
+/**
+ * @param {string} origin
+ * @return {!Promise<undefined>}
+ */
+Protocol.StorageAgent.prototype.trackCacheStorageForOrigin = function(origin) {};
+/** @typedef {!{origin: string}} */
+Protocol.StorageAgent.TrackCacheStorageForOriginRequest;
+/** @typedef {Object|undefined} */
+Protocol.StorageAgent.TrackCacheStorageForOriginResponse;
+/**
+ * @param {!Protocol.StorageAgent.TrackCacheStorageForOriginRequest} obj
+ * @return {!Promise<!Protocol.StorageAgent.TrackCacheStorageForOriginResponse>} */
+Protocol.StorageAgent.prototype.invoke_trackCacheStorageForOrigin = function(obj) {};
+
+/**
+ * @param {string} origin
+ * @return {!Promise<undefined>}
+ */
+Protocol.StorageAgent.prototype.untrackCacheStorageForOrigin = function(origin) {};
+/** @typedef {!{origin: string}} */
+Protocol.StorageAgent.UntrackCacheStorageForOriginRequest;
+/** @typedef {Object|undefined} */
+Protocol.StorageAgent.UntrackCacheStorageForOriginResponse;
+/**
+ * @param {!Protocol.StorageAgent.UntrackCacheStorageForOriginRequest} obj
+ * @return {!Promise<!Protocol.StorageAgent.UntrackCacheStorageForOriginResponse>} */
+Protocol.StorageAgent.prototype.invoke_untrackCacheStorageForOrigin = function(obj) {};
+
 /** @enum {string} */
 Protocol.Storage.StorageType = {
     Appcache: "appcache",
@@ -5209,6 +5355,15 @@ Protocol.Storage.StorageType = {
 Protocol.Storage.UsageForType;
 /** @interface */
 Protocol.StorageDispatcher = function() {};
+/**
+ * @param {string} origin
+ */
+Protocol.StorageDispatcher.prototype.cacheStorageListUpdated = function(origin) {};
+/**
+ * @param {string} origin
+ * @param {string} cacheName
+ */
+Protocol.StorageDispatcher.prototype.cacheStorageContentUpdated = function(origin, cacheName) {};
 Protocol.Log = {};
 
 
@@ -5420,6 +5575,19 @@ Protocol.BrowserAgent.GetWindowForTargetResponse;
  * @param {!Protocol.BrowserAgent.GetWindowForTargetRequest} obj
  * @return {!Promise<!Protocol.BrowserAgent.GetWindowForTargetResponse>} */
 Protocol.BrowserAgent.prototype.invoke_getWindowForTarget = function(obj) {};
+
+/**
+ * @return {!Promise<?string>}
+ */
+Protocol.BrowserAgent.prototype.getVersion = function() {};
+/** @typedef {Object|undefined} */
+Protocol.BrowserAgent.GetVersionRequest;
+/** @typedef {!{userAgent: string, product: string, revision: string, jsVersion: string, protocolVersion: string}} */
+Protocol.BrowserAgent.GetVersionResponse;
+/**
+ * @param {!Protocol.BrowserAgent.GetVersionRequest} obj
+ * @return {!Promise<!Protocol.BrowserAgent.GetVersionResponse>} */
+Protocol.BrowserAgent.prototype.invoke_getVersion = function(obj) {};
 
 /**
  * @param {Protocol.Browser.WindowID} windowId
@@ -6788,6 +6956,12 @@ Protocol.TargetBase.prototype.memoryAgent = function(){};
  * @param {!Protocol.MemoryDispatcher} dispatcher
  */
 Protocol.TargetBase.prototype.registerMemoryDispatcher = function(dispatcher) {}
+/** @return {!Protocol.PerformanceAgent}*/
+Protocol.TargetBase.prototype.performanceAgent = function(){};
+/**
+ * @param {!Protocol.PerformanceDispatcher} dispatcher
+ */
+Protocol.TargetBase.prototype.registerPerformanceDispatcher = function(dispatcher) {}
 /** @return {!Protocol.PageAgent}*/
 Protocol.TargetBase.prototype.pageAgent = function(){};
 /**

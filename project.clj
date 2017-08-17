@@ -1,6 +1,6 @@
 (def clj-logging-config-version "1.9.12")
 (def slf4j-log4j12-version "1.7.22")
-(defproject binaryage/dirac "1.2.14"
+(defproject binaryage/dirac "1.2.15"
   :description "Dirac DevTools - a Chrome DevTools fork for ClojureScript developers."
   :url "https://github.com/binaryage/dirac"
   :license {:name         "MIT License"
@@ -10,12 +10,12 @@
         :url  "https://github.com/binaryage/dirac"}
 
   :dependencies [[org.clojure/clojure "1.9.0-alpha17" :scope "provided"]
-                 [org.clojure/clojurescript "1.9.671" :scope "provided"]
+                 [org.clojure/clojurescript "1.9.908" :scope "provided"]
                  [org.clojure/core.async "0.3.443"]
                  [org.clojure/tools.logging "0.4.0"]
                  [org.clojure/tools.cli "0.3.5"]
                  [org.clojure/tools.nrepl "0.2.13"]
-                 [binaryage/env-config "0.2.0"]
+                 [binaryage/env-config "0.2.2"]
                  [http-kit "2.2.0"]
                  [version-clj "0.1.2"]
                  [clansi "1.0.0"]
@@ -23,20 +23,20 @@
 
                  ; we cannot use :dependencies under individual profiles because Cursive recognizes only root level
                  ; thus we mark extra deps with :scope "test" and filter them later when producing jar library
-                 [binaryage/oops "0.5.5" :scope "test"]
+                 [binaryage/oops "0.5.6" :scope "test"]
                  [binaryage/chromex "0.5.9" :scope "test"]
                  [binaryage/devtools "0.9.4" :scope "test"]
                  [environ "1.1.0" :scope "test"]
                  [cljs-http "0.1.43" :scope "test"]
-                 [figwheel "0.5.11" :scope "test"]
+                 [figwheel "0.5.13" :scope "test"]
                  [reforms "0.4.3" :scope "test"]
                  [rum "0.10.8" :scope "test"]
                  [rum-reforms "0.4.3" :scope "test"]
                  [cljsjs/parinfer "2.0.0-0" :scope "test"]
                  [com.lucasbradstreet/cljs-uuid-utils "1.0.2" :scope "test"]
-                 [com.rpl/specter "1.0.2" :scope "test"]
+                 [com.rpl/specter "1.0.3" :scope "test"]
                  [org.clojure/tools.namespace "0.3.0-alpha3" :scope "test"]
-                 [org.clojure/tools.reader "1.0.2" :scope "test"]
+                 [org.clojure/tools.reader "1.0.5" :scope "test"]
 
                  [clj-logging-config ~clj-logging-config-version :scope "test"]
                  [org.slf4j/slf4j-log4j12 ~slf4j-log4j12-version :scope "test"]
@@ -50,7 +50,7 @@
                  [clansi "1.0.0" :scope "test"]
 
                  ; guava is needed for selenium, they rely on latest guava which gets overridden by google closure compiler dep inside clojurescript
-                 [com.google.guava/guava "22.0" :scope "test"]
+                 [com.google.guava/guava "22.0" :scope "test" :upgrade false]
                  [org.seleniumhq.selenium/selenium-java "3.4.0" :scope "test"
                   :exclusions [org.seleniumhq.selenium/selenium-api
                                org.seleniumhq.selenium/selenium-support
@@ -175,7 +175,7 @@
 
              :cljs
              {:plugins [[lein-cljsbuild "1.1.6"]
-                        [lein-figwheel "0.5.11"]]}
+                        [lein-figwheel "0.5.13"]]}
 
              :nuke-aliases
              {:aliases ^:replace {}}

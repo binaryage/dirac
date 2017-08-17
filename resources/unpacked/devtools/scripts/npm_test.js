@@ -10,12 +10,12 @@ var shell = require('child_process').execSync;
 var utils = require('./utils');
 
 var Flags = {
+  DEBUG_RELEASE: '--debug-release',
   DEBUG_DEVTOOLS: '--debug-devtools',
   DEBUG_DEVTOOLS_SHORTHAND: '-d',
   FETCH_CONTENT_SHELL: '--fetch-content-shell',
-  COMPAT_PROTOCOL: '--compat-protocol',  // backwards compatibility testing
-  CHROMIUM_PATH: '--chromium-path',      // useful for bisecting
-  TARGET: '--target',                    // build sub-directory (e.g. Release, Default)
+  CHROMIUM_PATH: '--chromium-path',  // useful for bisecting
+  TARGET: '--target',                // build sub-directory (e.g. Release, Default)
 };
 
 var COMPAT_URL_MAPPING = {
@@ -24,7 +24,7 @@ var COMPAT_URL_MAPPING = {
 
 var IS_DEBUG_ENABLED =
     utils.includes(process.argv, Flags.DEBUG_DEVTOOLS) || utils.includes(process.argv, Flags.DEBUG_DEVTOOLS_SHORTHAND);
-var COMPAT_PROTOCOL = utils.parseArgs(process.argv)[Flags.COMPAT_PROTOCOL];
+var IS_DEBUG_RELEASE = utils.includes(process.argv, Flags.DEBUG_RELEASE);
 var CUSTOM_CHROMIUM_PATH = utils.parseArgs(process.argv)[Flags.CHROMIUM_PATH];
 var IS_FETCH_CONTENT_SHELL = utils.includes(process.argv, Flags.FETCH_CONTENT_SHELL);
 var TARGET = utils.parseArgs(process.argv)[Flags.TARGET] || 'Release';
@@ -91,10 +91,6 @@ function main() {
     mkdir(CACHE_PATH);
   deleteOldContentShells();
 
-  if (COMPAT_PROTOCOL) {
-    runCompatibilityTests();
-    return;
-  }
   var hasUserCompiledContentShell = utils.isFile(getContentShellBinaryPath(RELEASE_PATH));
   if (!IS_FETCH_CONTENT_SHELL && hasUserCompiledContentShell) {
     var outDir = path.resolve(RELEASE_PATH, '..');
@@ -113,26 +109,6 @@ function main() {
   }
 }
 main();
-
-function runCompatibilityTests() {
-  const folder = `compat-protocol-${COMPAT_PROTOCOL}`;
-  utils.removeRecursive(path.resolve(RELEASE_PATH, 'resources', 'inspector'));
-  compileFrontend();
-  var outPath = path.resolve(CACHE_PATH, folder, 'out');
-  var contentShellDirPath = path.resolve(outPath, TARGET);
-  var hasCachedContentShell = utils.isFile(getContentShellBinaryPath(contentShellDirPath));
-  if (hasCachedContentShell) {
-    console.log(`Using cached content shell at: ${outPath}`);
-    copyFrontendToCompatBuildPath(contentShellDirPath, RELEASE_PATH);
-    runTests(outPath, IS_DEBUG_ENABLED);
-    return;
-  }
-  prepareContentShellDirectory(folder)
-      .then(() => downloadContentShell(COMPAT_URL_MAPPING[COMPAT_PROTOCOL], folder))
-      .then(extractContentShell)
-      .then(() => copyFrontendToCompatBuildPath(contentShellDirPath, RELEASE_PATH))
-      .then(() => runTests(outPath, IS_DEBUG_ENABLED));
-}
 
 function compileFrontend() {
   console.log('Compiling devtools frontend');
@@ -316,15 +292,7 @@ function runTests(buildDirectoryPath, useDebugDevtools) {
   else
     console.log('TIP: You can debug a test using: npm run debug-test inspector/test-name.html');
 
-  if (COMPAT_PROTOCOL) {
-    const platform = `protocol-${COMPAT_PROTOCOL}`;
-    const testsPath = path.resolve(DEVTOOLS_PATH, 'tests');
-    const compatBaselinePath = path.resolve(testsPath, 'baseline', platform);
-    testArgs.push(`--additional-platform-directory=${compatBaselinePath}`);
-    const expectationsPath = path.resolve(testsPath, 'TestExpectations');
-    testArgs.push(`--additional-expectations=${expectationsPath}`);
-  }
-  if (IS_DEBUG_ENABLED) {
+  if (IS_DEBUG_ENABLED || IS_DEBUG_RELEASE) {
     testArgs.push('--additional-driver-flag=--remote-debugging-port=9222');
     testArgs.push('--time-out-ms=6000000');
     console.log('\n=============================================');
@@ -341,16 +309,19 @@ function getTestFlags() {
   var flagValues = Object.keys(Flags).map(key => Flags[key]);
   return process.argv.slice(2).filter(arg => {
     var flagName = utils.includes(arg, '=') ? arg.slice(0, arg.indexOf('=')) : arg;
-    return !utils.includes(flagValues, flagName) && !utils.includes(arg, 'inspector');
+    return !utils.includes(flagValues, flagName) && !utils.includes(arg, 'inspector') &&
+        !utils.includes(arg, 'http/tests/devtools');
   });
 }
 
 function getInspectorTests() {
-  var specificTests = process.argv.filter(arg => utils.includes(arg, 'inspector'));
+  var specificTests =
+      process.argv.filter(arg => utils.includes(arg, 'inspector') || utils.includes(arg, 'http/tests/devtools'));
   if (specificTests.length)
     return specificTests;
   return [
     'inspector*',
     'http/tests/inspector*',
+    'http/tests/devtools',
   ];
 }
