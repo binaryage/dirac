@@ -4,11 +4,14 @@
 
 ColorPicker.ContrastInfo = class {
   constructor() {
-    /** @type {?Array<number>} */
-    this._hsva = null;
+    /** @type {?Common.Color} */
+    this._fgColor = null;
 
     /** @type {?Common.Color} */
     this._bgColor = null;
+
+    /** @type {?Array<!Common.Color>} */
+    this._gradient = null;
 
     /** @type {?number} */
     this._contrastRatio = null;
@@ -27,11 +30,7 @@ ColorPicker.ContrastInfo = class {
     this._contrastRatio = null;
     this._contrastRatioThresholds = null;
     this._bgColor = null;
-
-    // TODO(aboxhall): distinguish between !backgroundColors (no text) and
-    // !backgroundColors.length (no computed bg color)
-    if (!contrastInfo.backgroundColors || !contrastInfo.backgroundColors.length)
-      return;
+    this._gradient = null;
 
     if (contrastInfo.computedFontSize && contrastInfo.computedFontWeight && contrastInfo.computedBodyFontSize) {
       var isLargeFont = ColorPicker.ContrastInfo.computeIsLargeFont(
@@ -41,13 +40,24 @@ ColorPicker.ContrastInfo = class {
           ColorPicker.ContrastInfo._ContrastThresholds[(isLargeFont ? 'largeFont' : 'normalFont')];
     }
 
-    // TODO(aboxhall): figure out what to do in the case of multiple background colors (i.e. gradients)
-    var bgColorText = contrastInfo.backgroundColors[0];
-    var bgColor = Common.Color.parse(bgColorText);
-    if (!bgColor)
+    if (!contrastInfo.backgroundColors || !contrastInfo.backgroundColors.length)
       return;
 
-    this.setBgColor(bgColor);
+    if (contrastInfo.backgroundColors.length > 1) {
+      this._gradient = [];
+      for (var bgColorText of contrastInfo.backgroundColors) {
+        var bgColor = Common.Color.parse(bgColorText);
+        if (bgColor)
+          this._gradient.push(bgColor);
+      }
+      if (this._fgColor)
+        this._updateBgColorFromGradient();
+    } else {
+      var bgColorText = contrastInfo.backgroundColors[0];
+      var bgColor = Common.Color.parse(bgColorText);
+      if (bgColor)
+        this.setBgColor(bgColor);
+    }
   }
 
   /**
@@ -55,9 +65,19 @@ ColorPicker.ContrastInfo = class {
    * @param {string} colorString
    */
   setColor(hsva, colorString) {
-    this._hsva = hsva;
+    this._fgColor = Common.Color.fromHSVA(hsva);
     this._colorString = colorString;
-    this._updateContrastRatio();
+    if (this._gradient)
+      this._updateBgColorFromGradient();
+    else
+      this._updateContrastRatio();
+  }
+
+  /**
+   * @return {?number}
+   */
+  contrastRatio() {
+    return this._contrastRatio;
   }
 
   /**
@@ -71,7 +91,7 @@ ColorPicker.ContrastInfo = class {
    * @return {?Array<number>}
    */
   hsva() {
-    return this._hsva;
+    return this._fgColor.hsva();
   }
 
   /**
@@ -80,11 +100,10 @@ ColorPicker.ContrastInfo = class {
   setBgColor(bgColor) {
     this._bgColor = bgColor;
 
-    if (!this._hsva)
+    if (!this._fgColor)
       return;
 
-    var fgRGBA = [];
-    Common.Color.hsva2rgba(this._hsva, fgRGBA);
+    var fgRGBA = this._fgColor.rgba();
 
     // If we have a semi-transparent background color over an unknown
     // background, draw the line for the "worst case" scenario: where
@@ -95,15 +114,7 @@ ColorPicker.ContrastInfo = class {
       this._bgColor = new Common.Color(blendedRGBA, Common.Color.Format.RGBA);
     }
 
-    var bgRGBA = this._bgColor.rgba();
-    this._contrastRatio = Common.Color.calculateContrastRatio(fgRGBA, bgRGBA);
-  }
-
-  /**
-   * @return {?number}
-   */
-  contrastRatio() {
-    return this._contrastRatio;
+    this._contrastRatio = Common.Color.calculateContrastRatio(fgRGBA, this._bgColor.rgba());
   }
 
   /**
@@ -113,13 +124,38 @@ ColorPicker.ContrastInfo = class {
     return this._bgColor;
   }
 
+  /**
+   * @return {?Array<!Common.Color>}
+   */
+  gradient() {
+    return this._gradient;
+  }
+
   _updateContrastRatio() {
-    if (!this._bgColor || !this._hsva)
+    if (!this._bgColor || !this._fgColor)
       return;
-    var fgRGBA = [];
-    Common.Color.hsva2rgba(this._hsva, fgRGBA);
-    var bgRGBA = this._bgColor.rgba();
-    this._contrastRatio = Common.Color.calculateContrastRatio(fgRGBA, bgRGBA);
+    this._contrastRatio = Common.Color.calculateContrastRatio(this._fgColor.rgba(), this._bgColor.rgba());
+  }
+
+  /**
+   * Choose the gradient stop closest in luminance to the foreground color.
+   */
+  _updateBgColorFromGradient() {
+    if (!this._gradient || !this._fgColor)
+      return;
+    var fgLuminance = Common.Color.luminance(this._fgColor.rgba());
+    var luminanceDiff = 2;  // Max luminance == 1
+    var closestBgColor = null;
+    for (var bgColor of this._gradient) {
+      var bgLuminance = Common.Color.luminance(bgColor.rgba());
+      var currentLuminanceDiff = Math.abs(fgLuminance - bgLuminance);
+      if (currentLuminanceDiff < luminanceDiff) {
+        closestBgColor = bgColor;
+        luminanceDiff = currentLuminanceDiff;
+      }
+    }
+    if (closestBgColor)
+      this.setBgColor(closestBgColor);
   }
 
   /**
@@ -127,6 +163,8 @@ ColorPicker.ContrastInfo = class {
    * @return {?number}
    */
   contrastRatioThreshold(level) {
+    if (!this._contrastRatioThresholds)
+      return null;
     return this._contrastRatioThresholds[level];
   }
 
@@ -202,6 +240,8 @@ ColorPicker.ContrastOverlay = class {
     this._hueForCurrentLine = null;
     /** @type {?number} */
     this._alphaForCurrentLine = null;
+    /** @type {?string} */
+    this._bgColorForCurrentLine = null;
   }
 
   /**
@@ -226,7 +266,8 @@ ColorPicker.ContrastOverlay = class {
    * @param {number} y
    */
   moveAwayFrom(x, y) {
-    if (!this._contrastValueBubbleBoxInWindow.contains(x, y))
+    if (!this._contrastValueBubbleBoxInWindow.width || !this._contrastValueBubbleBoxInWindow.height ||
+        !this._contrastValueBubbleBoxInWindow.contains(x, y))
       return;
 
     var bubble = this._contrastValueBubble;
@@ -237,21 +278,23 @@ ColorPicker.ContrastOverlay = class {
   }
 
   _update() {
-    if (this._contrastInfo.contrastRatio() === null)
-      return;
-
-    this._contrastValue.textContent = this._contrastInfo.contrastRatio().toFixed(2);
-    this._contrastValueBubbleBoxInWindow = this._contrastValueBubble.boxInWindow();
-
     var AA = this._contrastInfo.contrastRatioThreshold('AA');
     if (!AA)
       return;
 
-    this._contrastRatioLineThrottler.schedule(this._drawContrastRatioLineBound);
+    this._contrastValue.textContent = '';
+    if (this._contrastInfo.contrastRatio() !== null) {
+      this._contrastValue.textContent = this._contrastInfo.contrastRatio().toFixed(2);
+      this._contrastRatioLineThrottler.schedule(this._drawContrastRatioLineBound);
+      var passesAA = this._contrastInfo.contrastRatio() >= AA;
+      this._contrastValueBubble.classList.toggle('contrast-fail', !passesAA);
+      this._contrastValueBubble.classList.remove('contrast-unknown');
+    } else {
+      this._contrastValueBubble.classList.remove('contrast-fail');
+      this._contrastValueBubble.classList.add('contrast-unknown');
+    }
 
-    var passesAA = this._contrastInfo.contrastRatio() >= AA;
-    this._contrastValueBubble.classList.toggle('contrast-fail', !passesAA);
-
+    this._contrastValueBubbleBoxInWindow = this._contrastValueBubble.boxInWindow();
     this._contrastDetails.update();
   }
 
@@ -262,7 +305,7 @@ ColorPicker.ContrastOverlay = class {
    * @param {number} dragY
    */
   show(width, height, dragX, dragY) {
-    if (this._contrastInfo.contrastRatio() === null) {
+    if (this._contrastInfo.contrastRatioThreshold('AA') === null) {
       this.hide();
       return;
     }
@@ -300,7 +343,7 @@ ColorPicker.ContrastOverlay = class {
       return Promise.resolve();
 
     const dS = 0.02;
-    const epsilon = 0.002;
+    const epsilon = 0.0002;
     const H = 0;
     const S = 1;
     const V = 2;
@@ -310,7 +353,9 @@ ColorPicker.ContrastOverlay = class {
     var bgColor = this._contrastInfo.bgColor();
     if (!hsva || !bgColor)
       return Promise.resolve();
-    if (hsva[H] === this._hueForCurrentLine && hsva[A] === this._alphaForCurrentLine)
+    var bgColorString = bgColor.asString(Common.Color.Format.RGBA);
+    if (hsva[H] === this._hueForCurrentLine && hsva[A] === this._alphaForCurrentLine &&
+        bgColorString === this._bgColorForCurrentLine)
       return Promise.resolve();
 
     var fgRGBA = [];
@@ -333,56 +378,91 @@ ColorPicker.ContrastOverlay = class {
     Common.Color.blendColors(candidateRGBA, bgRGBA, blendedRGBA);
 
     /**
-     * Approach the desired contrast ratio by modifying the given component
-     * from the given starting value.
      * @param {number} index
      * @param {number} x
-     * @param {boolean} onAxis
-     * @return {?number}
      */
-    function approach(index, x, onAxis) {
-      while (0 <= x && x <= 1) {
-        candidateHSVA[index] = x;
-        Common.Color.hsva2rgba(candidateHSVA, candidateRGBA);
-        Common.Color.blendColors(candidateRGBA, bgRGBA, blendedRGBA);
-        var fgLuminance = Common.Color.luminance(blendedRGBA);
-        var dLuminance = fgLuminance - desiredLuminance;
+    function updateCandidateAndComputeDelta(index, x) {
+      candidateHSVA[index] = x;
+      Common.Color.hsva2rgba(candidateHSVA, candidateRGBA);
+      Common.Color.blendColors(candidateRGBA, bgRGBA, blendedRGBA);
+      return Common.Color.luminance(blendedRGBA) - desiredLuminance;
+    }
 
-        if (Math.abs(dLuminance) < (onAxis ? epsilon / 10 : epsilon))
+    /**
+     * Approach a value of the given component of `candidateHSVA` such that the
+     * calculated luminance of `candidateHSVA` approximates `desiredLuminance`.
+     * @param {number} index The component of `candidateHSVA` to modify.
+     * @return {?number} The new value for the modified component, or `null` if
+     *     no suitable value exists.
+     */
+    function approach(index) {
+      var x = candidateHSVA[index];
+      var multiplier = 1;
+      var dLuminance = updateCandidateAndComputeDelta(index, x);
+      var previousSign = Math.sign(dLuminance);
+
+      for (var guard = 100; guard; guard--) {
+        if (Math.abs(dLuminance) < epsilon)
           return x;
 
-        x += (index === V ? -dLuminance : dLuminance);
+        var sign = Math.sign(dLuminance);
+        if (sign !== previousSign) {
+          // If `x` overshoots the correct value, halve the step size.
+          multiplier /= 2;
+          previousSign = sign;
+        } else if (x < 0 || x > 1) {
+          // If there is no overshoot and `x` is out of bounds, there is no
+          // acceptable value for `x`.
+          return null;
+        }
+
+        // Adjust `x` by a multiple of `dLuminance` to decrease step size as
+        // the computed luminance converges on `desiredLuminance`.
+        x += multiplier * (index === V ? -dLuminance : dLuminance);
+
+        dLuminance = updateCandidateAndComputeDelta(index, x);
       }
+      // The loop should always converge or go out of bounds on its own.
+      console.error('Loop exited unexpectedly');
       return null;
     }
 
+    // Plot V for values of S such that the computed luminance approximates
+    // `desiredLuminance`, until no suitable value for V can be found, or the
+    // current value of S goes of out bounds.
     for (var s = 0; s < 1 + dS; s += dS) {
       s = Math.min(1, s);
       candidateHSVA[S] = s;
 
-      var v = lastV;
-      v = lastV + currentSlope * dS;
+      // Extrapolate the approximate next value for `v` using the approximate
+      // gradient of the curve.
+      candidateHSVA[V] = lastV + currentSlope * dS;
 
-      v = approach(V, v, s === 0);
+      var v = approach(V);
       if (v === null)
         break;
 
-      currentSlope = (v - lastV) / dS;
+      // Approximate the current gradient of the curve.
+      currentSlope = s === 0 ? 0 : (v - lastV) / dS;
+      lastV = v;
 
       pathBuilder.push(pathBuilder.length ? 'L' : 'M');
-      pathBuilder.push(s * width);
-      pathBuilder.push((1 - v) * height);
+      pathBuilder.push((s * width).toFixed(2));
+      pathBuilder.push(((1 - v) * height).toFixed(2));
     }
 
+    // If no suitable V value for an in-bounds S value was found, find the value
+    // of S such that V === 1 and add that to the path.
     if (s < 1 + dS) {
       s -= dS;
       candidateHSVA[V] = 1;
-      s = approach(S, s, true);
+      s = approach(S);
       if (s !== null)
-        pathBuilder = pathBuilder.concat(['L', s * width, -1]);
+        pathBuilder = pathBuilder.concat(['L', (s * width).toFixed(2), '-0.1']);
     }
 
     this._contrastRatioLine.setAttribute('d', pathBuilder.join(' '));
+    this._bgColorForCurrentLine = bgColorString;
     this._hueForCurrentLine = hsva[H];
     this._alphaForCurrentLine = hsva[A];
 
@@ -433,6 +513,9 @@ ColorPicker.ContrastDetails = class {
     closeButton.addEventListener(UI.ToolbarButton.Events.Click, this.hide.bind(this));
     toolbar.appendToolbarItem(closeButton);
 
+    this._chooseBgColor = this._contrastDetails.createChild('div', 'contrast-choose-bg-color');
+    this._chooseBgColor.textContent = Common.UIString('Please select background color to compute contrast ratio.');
+
     this._contrastThresholds = this._contrastDetails.createChild('div', 'contrast-thresholds');
     this._contrastAA = this._contrastThresholds.createChild('div', 'contrast-threshold');
     this._contrastAA.appendChild(UI.Icon.create('smallicon-checkmark-square'));
@@ -446,7 +529,7 @@ ColorPicker.ContrastDetails = class {
 
     var bgColorRow = this._contrastDetails.createChild('div');
     bgColorRow.createTextChild(Common.UIString('Background color:'));
-    this._bgColorSwatch = new ColorPicker.Spectrum.Swatch(bgColorRow, 'contrast');
+    this._bgColorSwatch = new ColorPicker.ContrastDetails.Swatch(bgColorRow);
 
     this._bgColorPicker = bgColorRow.createChild('button', 'background-color-picker');
     this._bgColorPicker.appendChild(UI.Icon.create('largeicon-eyedropper'));
@@ -455,16 +538,43 @@ ColorPicker.ContrastDetails = class {
   }
 
   update() {
-    var contrastRatio = this._contrastInfo.contrastRatio();
-    var bgColor = this._contrastInfo.bgColor();
-    if (!contrastRatio || !bgColor)
-      return;
-
-    this._contrastValue.textContent = contrastRatio.toFixed(2);
-    this._bgColorSwatch.setColor(bgColor);
-
     var AA = this._contrastInfo.contrastRatioThreshold('AA');
     var AAA = this._contrastInfo.contrastRatioThreshold('AAA');
+    if (!AA)
+      return;
+
+    var contrastRatio = this._contrastInfo.contrastRatio();
+    var bgColor = this._contrastInfo.bgColor();
+    if (!contrastRatio || !bgColor) {
+      this._contrastValue.textContent = '?';
+      this._contrastValueBubble.classList.add('contrast-unknown');
+      this._chooseBgColor.classList.remove('hidden');
+      this._contrastThresholds.classList.add('hidden');
+      return;
+    }
+
+    this._chooseBgColor.classList.add('hidden');
+    this._contrastThresholds.classList.remove('hidden');
+    this._contrastValueBubble.classList.remove('contrast-unknown');
+    this._contrastValue.textContent = contrastRatio.toFixed(2);
+
+    var gradient = this._contrastInfo.gradient();
+    if (gradient && gradient.length) {
+      var darkest = null;
+      var lightness = null;
+      for (var color of gradient) {
+        var hsla = color.hsla();
+        if (!darkest || hsla[2] < lightness) {
+          darkest = color;
+          lightness = hsla[2];
+        }
+      }
+      var gradientStrings = gradient.map(color => color.asString(Common.Color.Format.RGBA));
+      var gradientString = String.sprintf('linear-gradient(90deg, %s)', gradientStrings.join(', '));
+      this._bgColorSwatch.setColor(/** @type {!Common.Color} */ (darkest), gradientString);
+    } else {
+      this._bgColorSwatch.setColor(bgColor);
+    }
 
     var passesAA = this._contrastInfo.contrastRatio() >= AA;
     this._contrastPassFailAA.textContent = '';
@@ -566,5 +676,31 @@ ColorPicker.ContrastDetails = class {
             'background', this._contrastInfo.colorString(), 'important');
       }
     }
+  }
+};
+
+ColorPicker.ContrastDetails.Swatch = class {
+  /**
+   * @param {!Element} parentElement
+   */
+  constructor(parentElement) {
+    this._parentElement = parentElement;
+    this._swatchElement = parentElement.createChild('span', 'swatch contrast');
+    this._swatchInnerElement = this._swatchElement.createChild('span', 'swatch-inner');
+  }
+
+  /**
+   * @param {!Common.Color} color
+   * @param {string=} colorString
+   */
+  setColor(color, colorString) {
+    if (colorString) {
+      this._swatchInnerElement.style.background = colorString;
+    } else {
+      this._swatchInnerElement.style.background =
+          /** @type {string} */ (color.asString(Common.Color.Format.RGBA));
+    }
+    // Show border if the swatch is white.
+    this._swatchElement.classList.toggle('swatch-inner-white', color.hsla()[2] > 0.9);
   }
 };
