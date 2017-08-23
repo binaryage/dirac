@@ -16,6 +16,7 @@ Resources.ServiceWorkerCacheView = class extends UI.SimpleView {
     this.element.classList.add('service-worker-cache-data-view');
     this.element.classList.add('storage-view');
 
+    var editorToolbar = new UI.Toolbar('data-view-toolbar', this.element);
     this._splitWidget = new UI.SplitWidget(false, false);
     this._splitWidget.show(this.element);
 
@@ -35,8 +36,6 @@ Resources.ServiceWorkerCacheView = class extends UI.SimpleView {
     /** @type {?number} */
     this._lastSkipCount = null;
 
-    var editorToolbar = new UI.Toolbar('data-view-toolbar', this.element);
-
     this._pageBackButton = new UI.ToolbarButton(Common.UIString('Show previous page'), 'largeicon-play-back');
     this._pageBackButton.addEventListener(UI.ToolbarButton.Events.Click, this._pageBackButtonClicked, this);
     editorToolbar.appendToolbarItem(this._pageBackButton);
@@ -54,6 +53,16 @@ Resources.ServiceWorkerCacheView = class extends UI.SimpleView {
     this._deleteSelectedButton.addEventListener(UI.ToolbarButton.Events.Click, () => this._deleteButtonClicked(null));
     editorToolbar.appendToolbarItem(this._deleteSelectedButton);
 
+    var needsRefresh = createElement('div');
+    var needsRefreshIcon = needsRefresh.createChild('label', '', 'dt-icon-label');
+    needsRefreshIcon.type = 'smallicon-warning';
+    needsRefreshIcon.createChild('span').textContent = Common.UIString('Refresh needed');
+    this._needsRefresh = new UI.ToolbarItem(needsRefresh);
+    this._needsRefresh.setVisible(false);
+    this._needsRefresh.setTitle(Common.UIString('Some entries have been modified'));
+    editorToolbar.appendSpacer();
+    editorToolbar.appendToolbarItem(this._needsRefresh);
+
     this._pageSize = 50;
     this._skipCount = 0;
 
@@ -62,6 +71,19 @@ Resources.ServiceWorkerCacheView = class extends UI.SimpleView {
 
     this.update(cache);
     this._entries = [];
+  }
+
+  /**
+   * @param {string} requestUrl
+   * @return {string}
+   */
+  static _requestPath(requestUrl) {
+    var path = Common.ParsedURL.extractPath(requestUrl);
+    if (!path)
+      return requestUrl;
+    if (path.match(/\/.+/))
+      return path.substring(1);
+    return path;
   }
 
   /**
@@ -81,9 +103,10 @@ Resources.ServiceWorkerCacheView = class extends UI.SimpleView {
    */
   _createDataGrid() {
     var columns = /** @type {!Array<!DataGrid.DataGrid.ColumnDescriptor>} */ ([
-      {id: 'number', title: Common.UIString('#'), width: '50px'}, {id: 'request', title: Common.UIString('Request')},
-      {id: 'response', title: Common.UIString('Response')},
-      {id: 'responseTime', title: Common.UIString('Time Cached')}
+      // {id: 'number', title: Common.UIString('#'), width: '50px'},
+      {id: 'path', title: Common.UIString('Path')},
+      // {id: 'response', title: Common.UIString('Response')},
+      {id: 'responseTime', title: Common.UIString('Time Cached'), width: '12em'}
     ]);
     var dataGrid = new DataGrid.DataGrid(
         columns, undefined, this._deleteButtonClicked.bind(this), this._updateData.bind(this, true));
@@ -149,9 +172,8 @@ Resources.ServiceWorkerCacheView = class extends UI.SimpleView {
     this._entries = entries;
     for (var i = 0; i < entries.length; ++i) {
       var data = {};
-      data['number'] = i + skipCount;
       data['request'] = entries[i].request;
-      data['response'] = entries[i].response;
+      data['path'] = Resources.ServiceWorkerCacheView._requestPath(entries[i].request);
       data['responseTime'] = entries[i].responseTime;
       var node = new DataGrid.DataGridNode(data);
       node.selectable = true;
@@ -159,6 +181,7 @@ Resources.ServiceWorkerCacheView = class extends UI.SimpleView {
     }
     this._pageBackButton.setEnabled(!!skipCount);
     this._pageForwardButton.setEnabled(hasMore);
+    this._needsRefresh.setVisible(false);
   }
 
   /**
@@ -187,6 +210,10 @@ Resources.ServiceWorkerCacheView = class extends UI.SimpleView {
    */
   _refreshButtonClicked(event) {
     this._updateData(true);
+  }
+
+  markNeedsRefresh() {
+    this._needsRefresh.setVisible(true);
   }
 
   clear() {
