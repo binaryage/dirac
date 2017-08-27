@@ -967,6 +967,7 @@ Console.ConsoleView = class extends UI.VBox {
       this._needsFullUpdate = true;
     }
 
+    this._sidebar.onMessageAdded(message);
     this._scheduleViewportRefresh();
     this._consoleMessageAddedForTest(viewMessage);
 
@@ -1002,10 +1003,6 @@ Console.ConsoleView = class extends UI.VBox {
    * @param {!Console.ConsoleViewMessage} viewMessage
    */
   _appendMessageToEnd(viewMessage) {
-    var context = viewMessage.consoleMessage().context;
-    if (context)
-      this._sidebar.addGroup({name: context, context: context});
-
     if (!this._filter.shouldBeVisible(viewMessage)) {
       this._hiddenByFilterCount++;
       return;
