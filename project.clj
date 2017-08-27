@@ -49,16 +49,11 @@
                  [clansi "1.0.0" :scope "test"]
 
                  ; guava is needed for selenium, they rely on latest guava which gets overridden by google closure compiler dep inside clojurescript
-                 [com.google.guava/guava "22.0" :scope "test" :upgrade false]
-                 [org.seleniumhq.selenium/selenium-java "3.4.0" :scope "test"
-                  :exclusions [org.seleniumhq.selenium/selenium-api
-                               org.seleniumhq.selenium/selenium-support
-                               ; jetty mentioned in ring/ring-jetty-adapter conflicts with selenium
-                               org.eclipse.jetty/jetty-util
-                               org.eclipse.jetty/jetty-io]]
-                 [org.seleniumhq.selenium/selenium-chrome-driver "3.4.0" :scope "test"]
-                 [org.seleniumhq.selenium/selenium-support "3.4.0" :scope "test"]
-                 [org.seleniumhq.selenium/selenium-api "3.4.0" :scope "test"]
+                 ;[com.google.guava/guava "23.0" :scope "test" :upgrade false]
+                 [org.seleniumhq.selenium/selenium-java "3.5.2" :scope "test"]
+                 [org.seleniumhq.selenium/selenium-chrome-driver "3.5.2" :scope "test"]
+                 [org.seleniumhq.selenium/selenium-support "3.5.2" :scope "test"]
+                 [org.seleniumhq.selenium/selenium-api "3.5.2" :scope "test"]
                  [org.seleniumhq.selenium/selenium-htmlunit-driver "2.52.0" :scope "test"]]
 
   :plugins [[lein-shell "0.5.0"]
