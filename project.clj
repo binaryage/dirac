@@ -50,10 +50,10 @@
 
                  ; guava is needed for selenium, they rely on latest guava which gets overridden by google closure compiler dep inside clojurescript
                  ;[com.google.guava/guava "23.0" :scope "test" :upgrade false]
-                 [org.seleniumhq.selenium/selenium-java "3.5.2" :scope "test"]
-                 [org.seleniumhq.selenium/selenium-chrome-driver "3.5.2" :scope "test"]
-                 [org.seleniumhq.selenium/selenium-support "3.5.2" :scope "test"]
-                 [org.seleniumhq.selenium/selenium-api "3.5.2" :scope "test"]
+                 [org.seleniumhq.selenium/selenium-java "3.5.3" :scope "test"]
+                 [org.seleniumhq.selenium/selenium-chrome-driver "3.5.3" :scope "test"]
+                 [org.seleniumhq.selenium/selenium-support "3.5.3" :scope "test"]
+                 [org.seleniumhq.selenium/selenium-api "3.5.3" :scope "test"]
                  [org.seleniumhq.selenium/selenium-htmlunit-driver "2.52.0" :scope "test"]]
 
   :plugins [[lein-shell "0.5.0"]
