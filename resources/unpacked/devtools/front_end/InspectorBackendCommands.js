@@ -1,5 +1,5 @@
-Protocol.BakedInspectorBackendAPIChromeTag='62.0.3197.4';
-Protocol.BakedInspectorBackendAPIChromeRev='094666f0ac3fd9e846b7ce547bf54f5aeafcc59c';
+Protocol.BakedInspectorBackendAPIChromeTag='62.0.3200.2';
+Protocol.BakedInspectorBackendAPIChromeRev='325831d9d48bb977720ab66e575a00a3a903ed77';
 Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerEvent("Inspector.detached", ["reason"]);\n'
 + 'Protocol.inspectorBackend.registerEvent("Inspector.targetCrashed", []);\n'
@@ -7,6 +7,7 @@ Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerCommand("Inspector.disable", [], [], false);\n'
 + 'Protocol.inspectorBackend.registerEnum("Memory.PressureLevel", {Moderate: "moderate", Critical: "critical"});\n'
 + 'Protocol.inspectorBackend.registerCommand("Memory.getDOMCounters", [], ["documents", "nodes", "jsEventListeners"], false);\n'
++ 'Protocol.inspectorBackend.registerCommand("Memory.prepareForLeakDetection", [], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Memory.setPressureNotificationsSuppressed", [{"name": "suppressed", "type": "boolean", "optional": false}], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Memory.simulatePressureNotification", [{"name": "level", "type": "string", "optional": false}], [], false);\n'
 + 'Protocol.inspectorBackend.registerEvent("Performance.metrics", ["metrics", "title"]);\n'

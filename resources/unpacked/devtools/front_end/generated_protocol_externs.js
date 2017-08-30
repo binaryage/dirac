@@ -60,6 +60,19 @@ Protocol.MemoryAgent.GetDOMCountersResponse;
 Protocol.MemoryAgent.prototype.invoke_getDOMCounters = function(obj) {};
 
 /**
+ * @return {!Promise<undefined>}
+ */
+Protocol.MemoryAgent.prototype.prepareForLeakDetection = function() {};
+/** @typedef {Object|undefined} */
+Protocol.MemoryAgent.PrepareForLeakDetectionRequest;
+/** @typedef {Object|undefined} */
+Protocol.MemoryAgent.PrepareForLeakDetectionResponse;
+/**
+ * @param {!Protocol.MemoryAgent.PrepareForLeakDetectionRequest} obj
+ * @return {!Promise<!Protocol.MemoryAgent.PrepareForLeakDetectionResponse>} */
+Protocol.MemoryAgent.prototype.invoke_prepareForLeakDetection = function(obj) {};
+
+/**
  * @param {boolean} suppressed
  * @return {!Promise<undefined>}
  */
@@ -2464,13 +2477,16 @@ Protocol.CacheStorageAgent.prototype.invoke_requestCachedResponse = function(obj
 /** @typedef {string} */
 Protocol.CacheStorage.CacheId;
 
-/** @typedef {!{request:(string), response:(string), responseTime:(number)}} */
+/** @typedef {!{requestURL:(string), responseTime:(number), responseHeaders:(!Array<Protocol.CacheStorage.Header>)}} */
 Protocol.CacheStorage.DataEntry;
 
 /** @typedef {!{cacheId:(Protocol.CacheStorage.CacheId), securityOrigin:(string), cacheName:(string)}} */
 Protocol.CacheStorage.Cache;
 
-/** @typedef {!{headers:(!Object), body:(string)}} */
+/** @typedef {!{name:(string), value:(string)}} */
+Protocol.CacheStorage.Header;
+
+/** @typedef {!{body:(string)}} */
 Protocol.CacheStorage.CachedResponse;
 /** @interface */
 Protocol.CacheStorageDispatcher = function() {};
