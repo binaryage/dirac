@@ -2477,7 +2477,7 @@ Protocol.CacheStorageAgent.prototype.invoke_requestCachedResponse = function(obj
 /** @typedef {string} */
 Protocol.CacheStorage.CacheId;
 
-/** @typedef {!{requestURL:(string), responseTime:(number), responseHeaders:(!Array<Protocol.CacheStorage.Header>)}} */
+/** @typedef {!{requestURL:(string), requestMethod:(string), requestHeaders:(!Array<Protocol.CacheStorage.Header>), responseTime:(number), responseStatus:(number), responseStatusText:(string), responseHeaders:(!Array<Protocol.CacheStorage.Header>)}} */
 Protocol.CacheStorage.DataEntry;
 
 /** @typedef {!{cacheId:(Protocol.CacheStorage.CacheId), securityOrigin:(string), cacheName:(string)}} */
@@ -5780,18 +5780,20 @@ Protocol.RuntimeAgent.AwaitPromiseResponse;
 Protocol.RuntimeAgent.prototype.invoke_awaitPromise = function(obj) {};
 
 /**
- * @param {Protocol.Runtime.RemoteObjectId} objectId
  * @param {string} functionDeclaration
+ * @param {Protocol.Runtime.RemoteObjectId=} opt_objectId
  * @param {!Array<Protocol.Runtime.CallArgument>=} opt__arguments
  * @param {boolean=} opt_silent
  * @param {boolean=} opt_returnByValue
  * @param {boolean=} opt_generatePreview
  * @param {boolean=} opt_userGesture
  * @param {boolean=} opt_awaitPromise
+ * @param {Protocol.Runtime.ExecutionContextId=} opt_executionContextId
+ * @param {string=} opt_objectGroup
  * @return {!Promise<?Protocol.Runtime.RemoteObject>}
  */
-Protocol.RuntimeAgent.prototype.callFunctionOn = function(objectId, functionDeclaration, opt__arguments, opt_silent, opt_returnByValue, opt_generatePreview, opt_userGesture, opt_awaitPromise) {};
-/** @typedef {!{silent: (boolean|undefined), objectId: Protocol.Runtime.RemoteObjectId, functionDeclaration: string, generatePreview: (boolean|undefined), returnByValue: (boolean|undefined), _arguments: (!Array<Protocol.Runtime.CallArgument>|undefined), userGesture: (boolean|undefined), awaitPromise: (boolean|undefined)}} */
+Protocol.RuntimeAgent.prototype.callFunctionOn = function(functionDeclaration, opt_objectId, opt__arguments, opt_silent, opt_returnByValue, opt_generatePreview, opt_userGesture, opt_awaitPromise, opt_executionContextId, opt_objectGroup) {};
+/** @typedef {!{objectGroup: (string|undefined), silent: (boolean|undefined), objectId: (Protocol.Runtime.RemoteObjectId|undefined), functionDeclaration: string, generatePreview: (boolean|undefined), executionContextId: (Protocol.Runtime.ExecutionContextId|undefined), returnByValue: (boolean|undefined), _arguments: (!Array<Protocol.Runtime.CallArgument>|undefined), userGesture: (boolean|undefined), awaitPromise: (boolean|undefined)}} */
 Protocol.RuntimeAgent.CallFunctionOnRequest;
 /** @typedef {!{exceptionDetails: Protocol.Runtime.ExceptionDetails, result: Protocol.Runtime.RemoteObject}} */
 Protocol.RuntimeAgent.CallFunctionOnResponse;
