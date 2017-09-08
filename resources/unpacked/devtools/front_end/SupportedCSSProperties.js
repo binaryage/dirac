@@ -1,5 +1,5 @@
-Protocol.BakedSupportedCSSPropertiesChromeTag='63.0.3204.2';
-Protocol.BakedSupportedCSSPropertiesChromeRev='b8a89ea3b367ee6e6bcf60d2fb97ec13d76b253a';
+Protocol.BakedSupportedCSSPropertiesChromeTag='63.0.3210.0';
+Protocol.BakedSupportedCSSPropertiesChromeRev='d861d7c800cc3aafdef879f301b62bc929259709';
 Protocol.BakedSupportedCSSProperties=''
 + '[{"name": "-webkit-app-region"},\n'
 + ' {"name": "-webkit-appearance"},\n'
@@ -238,7 +238,7 @@ Protocol.BakedSupportedCSSProperties=''
 + ' {"name": "font-variant-numeric", "inherited": true},\n'
 + ' {"name": "font-variation-settings", "inherited": true},\n'
 + ' {"name": "font-weight", "inherited": true},\n'
-+ ' {"longhands": ["grid-template-rows", "grid-template-columns", "grid-template-areas", "grid-auto-flow", "grid-auto-rows", "grid-auto-columns", "grid-column-gap", "grid-row-gap"], "name": "grid"},\n'
++ ' {"longhands": ["grid-template-rows", "grid-template-columns", "grid-template-areas", "grid-auto-flow", "grid-auto-rows", "grid-auto-columns"], "name": "grid"},\n'
 + ' {"longhands": ["grid-row-start", "grid-column-start", "grid-row-end", "grid-column-end"], "name": "grid-area"},\n'
 + ' {"name": "grid-auto-columns"},\n'
 + ' {"name": "grid-auto-flow"},\n'

@@ -1,5 +1,5 @@
-Protocol.BakedInspectorBackendAPIChromeTag='63.0.3204.2';
-Protocol.BakedInspectorBackendAPIChromeRev='b8a89ea3b367ee6e6bcf60d2fb97ec13d76b253a';
+Protocol.BakedInspectorBackendAPIChromeTag='63.0.3210.0';
+Protocol.BakedInspectorBackendAPIChromeRev='d861d7c800cc3aafdef879f301b62bc929259709';
 Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerEvent("Inspector.detached", ["reason"]);\n'
 + 'Protocol.inspectorBackend.registerEvent("Inspector.targetCrashed", []);\n'
@@ -96,6 +96,7 @@ Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerEnum("Emulation.ScreenOrientationType", {PortraitPrimary: "portraitPrimary", PortraitSecondary: "portraitSecondary", LandscapePrimary: "landscapePrimary", LandscapeSecondary: "landscapeSecondary"});\n'
 + 'Protocol.inspectorBackend.registerEnum("Emulation.VirtualTimePolicy", {Advance: "advance", Pause: "pause", PauseIfNetworkFetchesPending: "pauseIfNetworkFetchesPending"});\n'
 + 'Protocol.inspectorBackend.registerEvent("Emulation.virtualTimeBudgetExpired", []);\n'
++ 'Protocol.inspectorBackend.registerEvent("Emulation.virtualTimePaused", ["virtualTimeElapsed"]);\n'
 + 'Protocol.inspectorBackend.registerCommand("Emulation.setDeviceMetricsOverride", [{"name": "width", "type": "number", "optional": false}, {"name": "height", "type": "number", "optional": false}, {"name": "deviceScaleFactor", "type": "number", "optional": false}, {"name": "mobile", "type": "boolean", "optional": false}, {"name": "scale", "type": "number", "optional": true}, {"name": "screenWidth", "type": "number", "optional": true}, {"name": "screenHeight", "type": "number", "optional": true}, {"name": "positionX", "type": "number", "optional": true}, {"name": "positionY", "type": "number", "optional": true}, {"name": "dontSetVisibleSize", "type": "boolean", "optional": true}, {"name": "screenOrientation", "type": "object", "optional": true}], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Emulation.clearDeviceMetricsOverride", [], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Emulation.resetPageScaleFactor", [], [], false);\n'
