@@ -1,5 +1,5 @@
-Protocol.BakedInspectorBackendAPIChromeTag='63.0.3210.0';
-Protocol.BakedInspectorBackendAPIChromeRev='d861d7c800cc3aafdef879f301b62bc929259709';
+Protocol.BakedInspectorBackendAPIChromeTag='63.0.3214.2';
+Protocol.BakedInspectorBackendAPIChromeRev='60345b63eb89379e689347ff01d7c8b52cfaa18a';
 Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerEvent("Inspector.detached", ["reason"]);\n'
 + 'Protocol.inspectorBackend.registerEvent("Inspector.targetCrashed", []);\n'
@@ -111,6 +111,7 @@ Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerCommand("Emulation.setCPUThrottlingRate", [{"name": "rate", "type": "number", "optional": false}], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Emulation.canEmulate", [], ["result"], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Emulation.setVirtualTimePolicy", [{"name": "policy", "type": "string", "optional": false}, {"name": "budget", "type": "number", "optional": true}], [], false);\n'
++ 'Protocol.inspectorBackend.registerCommand("Emulation.setNavigatorOverrides", [{"name": "platform", "type": "string", "optional": false}], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Emulation.setDefaultBackgroundColorOverride", [{"name": "color", "type": "object", "optional": true}], [], false);\n'
 + 'Protocol.inspectorBackend.registerEnum("Security.MixedContentType", {Blockable: "blockable", OptionallyBlockable: "optionally-blockable", None: "none"});\n'
 + 'Protocol.inspectorBackend.registerEnum("Security.SecurityState", {Unknown: "unknown", Neutral: "neutral", Insecure: "insecure", Secure: "secure", Info: "info"});\n'
@@ -492,6 +493,9 @@ Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerCommand("Profiler.stopPreciseCoverage", [], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Profiler.takePreciseCoverage", [], ["result"], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Profiler.getBestEffortCoverage", [], ["result"], false);\n'
++ 'Protocol.inspectorBackend.registerCommand("Profiler.startTypeProfile", [], [], false);\n'
++ 'Protocol.inspectorBackend.registerCommand("Profiler.stopTypeProfile", [], [], false);\n'
++ 'Protocol.inspectorBackend.registerCommand("Profiler.takeTypeProfile", [], ["result"], false);\n'
 + 'Protocol.inspectorBackend.registerEvent("HeapProfiler.addHeapSnapshotChunk", ["chunk"]);\n'
 + 'Protocol.inspectorBackend.registerEvent("HeapProfiler.resetProfiles", []);\n'
 + 'Protocol.inspectorBackend.registerEvent("HeapProfiler.reportHeapSnapshotProgress", ["done", "total", "finished"]);\n'

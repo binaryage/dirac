@@ -1,5 +1,5 @@
-Protocol.BakedSupportedCSSPropertiesChromeTag='63.0.3210.0';
-Protocol.BakedSupportedCSSPropertiesChromeRev='d861d7c800cc3aafdef879f301b62bc929259709';
+Protocol.BakedSupportedCSSPropertiesChromeTag='63.0.3214.2';
+Protocol.BakedSupportedCSSPropertiesChromeRev='60345b63eb89379e689347ff01d7c8b52cfaa18a';
 Protocol.BakedSupportedCSSProperties=''
 + '[{"name": "-webkit-app-region"},\n'
 + ' {"name": "-webkit-appearance"},\n'
@@ -223,7 +223,7 @@ Protocol.BakedSupportedCSSProperties=''
 + ' {"name": "float"},\n'
 + ' {"name": "flood-color", "svg": true},\n'
 + ' {"name": "flood-opacity", "svg": true},\n'
-+ ' {"longhands": ["font-style", "font-variant-ligatures", "font-variant-caps", "font-variant-numeric", "font-weight", "font-stretch", "font-size", "line-height", "font-family"], "name": "font"},\n'
++ ' {"longhands": ["font-style", "font-variant-ligatures", "font-variant-caps", "font-variant-numeric", "font-variant-east-asian", "font-weight", "font-stretch", "font-size", "line-height", "font-family"], "name": "font"},\n'
 + ' {"name": "font-display"},\n'
 + ' {"name": "font-family", "inherited": true},\n'
 + ' {"name": "font-feature-settings", "inherited": true},\n'
@@ -232,8 +232,9 @@ Protocol.BakedSupportedCSSProperties=''
 + ' {"name": "font-size-adjust", "inherited": true},\n'
 + ' {"name": "font-stretch", "inherited": true},\n'
 + ' {"name": "font-style", "inherited": true},\n'
-+ ' {"longhands": ["font-variant-ligatures", "font-variant-caps", "font-variant-numeric"], "name": "font-variant"},\n'
++ ' {"longhands": ["font-variant-ligatures", "font-variant-caps", "font-variant-numeric", "font-variant-east-asian"], "name": "font-variant"},\n'
 + ' {"name": "font-variant-caps", "inherited": true},\n'
++ ' {"name": "font-variant-east-asian", "inherited": true},\n'
 + ' {"name": "font-variant-ligatures", "inherited": true},\n'
 + ' {"name": "font-variant-numeric", "inherited": true},\n'
 + ' {"name": "font-variation-settings", "inherited": true},\n'
