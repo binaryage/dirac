@@ -1025,7 +1025,7 @@ SDK.MultitargetNetworkManager = class extends Common.Object {
    */
   async _requestIntercepted(interceptedRequest) {
     for (var pattern of this._requestInterceptorMap.keysArray()) {
-      if (!SDK.RequestInterceptor.patternMatchesUrl(pattern, interceptedRequest.request.url))
+      if (SDK.RequestInterceptor.patternMatchedIndex(pattern, interceptedRequest.request.url) === -1)
         continue;
       for (var requestInterceptor of this._requestInterceptorMap.get(pattern)) {
         console.assert(requestInterceptor.enabled());
@@ -1102,12 +1102,12 @@ SDK.RequestInterceptor = class {
 
   /**
    * @param {string} pattern
-   * @param {string} url
-   * @return {boolean}
+   * @param {string} input
+   * @return {number}
    */
-  static patternMatchesUrl(pattern, url) {
+  static patternMatchedIndex(pattern, input) {
     if (!pattern.length)
-      return false;
+      return -1;
     var parts = [];
     var prevIndex = 0;
     var index = indexOfWildOrEscape(0);
@@ -1123,27 +1123,27 @@ SDK.RequestInterceptor = class {
     parts.push(pattern.substring(prevIndex));
     // If a pattern is a wild card only it'll be an empty string.
     var firstPart = parts.shift();
-    if (firstPart && !url.startsWith(firstPart))
-      return false;
+    if (firstPart && !input.startsWith(firstPart))
+      return -1;
 
-    // Check ending of url against pattern.
+    // Check ending of input against pattern.
     if (parts.length) {
       var lastPart = parts.pop();
-      if (lastPart && !url.endsWith(lastPart))
-        return false;
-      url = url.substring(0, url.length - lastPart.length);
+      if (lastPart && !input.endsWith(lastPart))
+        return -1;
+      input = input.substring(0, input.length - lastPart.length);
     }
 
     var pos = firstPart.length;
     for (var part of parts) {
       if (!part.length)
         continue;
-      pos = url.indexOf(part, pos);
+      pos = input.indexOf(part, pos);
       if (pos === -1)
-        return false;
+        return -1;
       pos += part.length;
     }
-    return true;
+    return pos;
 
     /**
      * @param {number} fromPosition
@@ -1239,21 +1239,41 @@ SDK.InterceptedRequest = class {
   }
 
   /**
-   * @param {string} content
-   * @param {string} mimeType
+   * @param {!Blob} contentBlob
    */
-  continueRequestWithContent(content, mimeType) {
+  async continueRequestWithContent(contentBlob) {
     this._hasResponded = true;
     var headers = [
       'HTTP/1.1 200 OK',
       'Date: ' + (new Date()).toUTCString(),
       'Server: Chrome Devtools Request Interceptor',
       'Connection: closed',
-      'Content-Length: ' + content.length,
-      'Content-Type: ' + mimeType,
+      'Content-Length: ' + contentBlob.size,
+      'Content-Type: ' + contentBlob.type || 'text/x-unknown',
     ];
-    var encodedResponse = (headers.join('\r\n') + '\r\n\r\n' + content).toBase64();
+    var encodedResponse = await blobToBase64(new Blob([headers.join('\r\n'), '\r\n\r\n', contentBlob]));
     this._networkAgent.continueInterceptedRequest(this._interceptionId, undefined, encodedResponse);
+
+    /**
+     * @param {!Blob} blob
+     * @return {!Promise<string>}
+     */
+    async function blobToBase64(blob) {
+      var reader = new FileReader();
+      var fileContentsLoadedPromise = new Promise(resolve => reader.onloadend = resolve);
+      reader.readAsDataURL(blob);
+      await fileContentsLoadedPromise;
+      if (reader.error) {
+        console.error('Could not convert blob to base64.', reader.error);
+        return '';
+      }
+      var result = reader.result;
+      if (result === undefined) {
+        console.error('Could not convert blob to base64.');
+        return '';
+      }
+      return result.substring(result.indexOf(',') + 1);
+    }
   }
 
   continueRequestWithoutChange() {
