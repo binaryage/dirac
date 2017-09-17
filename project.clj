@@ -1,6 +1,6 @@
 (def clj-logging-config-version "1.9.12")
 (def slf4j-log4j12-version "1.7.25")
-(defproject binaryage/dirac "1.2.15"
+(defproject binaryage/dirac "1.2.16"
   :description "Dirac DevTools - a Chrome DevTools fork for ClojureScript developers."
   :url "https://github.com/binaryage/dirac"
   :license {:name         "MIT License"
