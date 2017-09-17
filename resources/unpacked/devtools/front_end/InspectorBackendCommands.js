@@ -1,5 +1,5 @@
-Protocol.BakedInspectorBackendAPIChromeTag='63.0.3214.2';
-Protocol.BakedInspectorBackendAPIChromeRev='60345b63eb89379e689347ff01d7c8b52cfaa18a';
+Protocol.BakedInspectorBackendAPIChromeTag='63.0.3218.2';
+Protocol.BakedInspectorBackendAPIChromeRev='f3421d838b3f7863b06f5a6371325a01a7893a96';
 Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerEvent("Inspector.detached", ["reason"]);\n'
 + 'Protocol.inspectorBackend.registerEvent("Inspector.targetCrashed", []);\n'
@@ -337,6 +337,7 @@ Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerCommand("ServiceWorker.startWorker", [{"name": "scopeURL", "type": "string", "optional": false}], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("ServiceWorker.skipWaiting", [{"name": "scopeURL", "type": "string", "optional": false}], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("ServiceWorker.stopWorker", [{"name": "versionId", "type": "string", "optional": false}], [], false);\n'
++ 'Protocol.inspectorBackend.registerCommand("ServiceWorker.stopAllWorkers", [], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("ServiceWorker.inspectWorker", [{"name": "versionId", "type": "string", "optional": false}], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("ServiceWorker.setForceUpdateOnPageLoad", [{"name": "forceUpdateOnPageLoad", "type": "boolean", "optional": false}], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("ServiceWorker.deliverPushMessage", [{"name": "origin", "type": "string", "optional": false}, {"name": "registrationId", "type": "string", "optional": false}, {"name": "data", "type": "string", "optional": false}], [], false);\n'
