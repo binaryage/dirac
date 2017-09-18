@@ -967,6 +967,7 @@ Console.ConsoleView = class extends UI.VBox {
       this._needsFullUpdate = true;
     }
 
+    this._sidebar.onMessageAdded(message);
     this._scheduleViewportRefresh();
     this._consoleMessageAddedForTest(viewMessage);
 
@@ -975,7 +976,8 @@ Console.ConsoleView = class extends UI.VBox {
      * @return {number}
      */
     function timeForSorting(viewMessage) {
-      return viewMessage[Console.ConsoleView._messageSortingTimeSymbol] || viewMessage.consoleMessage().timestamp;
+      var adjustedTime = viewMessage[Console.ConsoleView._messageSortingTimeSymbol];
+      return typeof adjustedTime === 'undefined' ? viewMessage.consoleMessage().timestamp : adjustedTime;
     }
   }
 
@@ -1001,10 +1003,6 @@ Console.ConsoleView = class extends UI.VBox {
    * @param {!Console.ConsoleViewMessage} viewMessage
    */
   _appendMessageToEnd(viewMessage) {
-    var context = viewMessage.consoleMessage().context;
-    if (context)
-      this._sidebar.addGroup({name: context, context: context});
-
     if (!this._filter.shouldBeVisible(viewMessage)) {
       this._hiddenByFilterCount++;
       return;
@@ -1575,11 +1573,12 @@ Console.ConsoleViewFilter = class {
     this._filterByExecutionContextSetting.addChangeListener(this._filterChanged);
     this._filterByConsoleAPISetting.addChangeListener(this._filterChanged);
 
-    this._textFilterUI = new UI.ToolbarInput(Common.UIString('Filter'), 0.2, 1, true);
+    this._textFilterUI = new UI.ToolbarInput(Common.UIString('Filter'), 0.2, 1);
+    this._textFilterUI.element.title = Common.UIString('e.g. /event\\d/ -cdn url:a.com');
     this._textFilterUI.addEventListener(UI.ToolbarInput.Event.TextChanged, this._textFilterChanged, this);
-    this._filterText = this._textFilterUI.value();
-    /** @type {?RegExp} */
-    this._filterRegex = null;
+    this._filterParser = new TextUtils.FilterParser(Object.values(Console.ConsoleViewFilter._filterType));
+    /** @type {!Array<!TextUtils.FilterParser.ParsedFilter>} */
+    this._filters = [];
 
     this._levelLabels = {};
     this._levelLabels[ConsoleModel.ConsoleMessage.MessageLevel.Verbose] = Common.UIString('Verbose');
@@ -1680,14 +1679,7 @@ Console.ConsoleViewFilter = class {
   }
 
   _textFilterChanged() {
-    this._filterText = this._textFilterUI.value();
-    this._filterRegex = null;
-    if (this._filterText.startsWith('/') && this._filterText.endsWith('/')) {
-      try {
-        this._filterRegex = new RegExp(this._filterText.substring(1, this._filterText.length - 1), 'i');
-      } catch (e) {
-      }
-    }
+    this._filters = this._filterParser.parse(this._textFilterUI.value());
     this._filterChanged();
   }
 
@@ -1754,14 +1746,6 @@ Console.ConsoleViewFilter = class {
     if (!levels[message.level])
       return false;
 
-    if (this._filterRegex) {
-      if (!viewMessage.matchesFilterRegex(this._filterRegex))
-        return false;
-    } else if (this._filterText) {
-      if (!viewMessage.matchesFilterText(this._filterText))
-        return false;
-    }
-
     if (this._filterByConsoleAPISetting.get() &&
         message.source !== ConsoleModel.ConsoleMessage.MessageSource.ConsoleAPI)
       return false;
@@ -1769,7 +1753,54 @@ Console.ConsoleViewFilter = class {
     if (this._context !== Console.ConsoleSidebar.AllContextsFilter && message.context !== this._context)
       return false;
 
+    for (var filter of this._filters) {
+      if (!filter.key) {
+        if (filter.regex && viewMessage.matchesFilterRegex(filter.regex) === filter.negative)
+          return false;
+        if (filter.text && viewMessage.matchesFilterText(filter.text) === filter.negative)
+          return false;
+      } else {
+        switch (filter.key) {
+          case Console.ConsoleViewFilter._filterType.Context:
+            if (!passesFilter(filter, message.context, false /* exactMatch */))
+              return false;
+            break;
+          case Console.ConsoleViewFilter._filterType.Source:
+            var sourceNameForMessage = message.source ?
+                ConsoleModel.ConsoleMessage.MessageSourceDisplayName.get(
+                    /** @type {!ConsoleModel.ConsoleMessage.MessageSource} */ (message.source)) :
+                message.source;
+            if (!passesFilter(filter, sourceNameForMessage, true /* exactMatch */))
+              return false;
+            break;
+          case Console.ConsoleViewFilter._filterType.Url:
+            if (!passesFilter(filter, message.url, false /* exactMatch */))
+              return false;
+            break;
+        }
+      }
+    }
     return true;
+
+    /**
+     * @param {!TextUtils.FilterParser.ParsedFilter} filter
+     * @param {string|undefined} value
+     * @param {boolean} exactMatch
+     * @return {boolean}
+     */
+    function passesFilter(filter, value, exactMatch) {
+      if (!value && !filter.negative)
+        return false;
+      if (value) {
+        var filterText = /** @type {string} */ (filter.text).toLowerCase();
+        var lowerCaseValue = value.toLowerCase();
+        if (exactMatch && (lowerCaseValue === filterText) === filter.negative)
+          return false;
+        if (!exactMatch && lowerCaseValue.includes(filterText) === filter.negative)
+          return false;
+      }
+      return true;
+    }
   }
 
   reset() {
@@ -1782,6 +1813,13 @@ Console.ConsoleViewFilter = class {
     this._textFilterUI.setValue('');
     this._textFilterChanged();
   }
+};
+
+/** @enum {string} */
+Console.ConsoleViewFilter._filterType = {
+  Context: 'context',
+  Source: 'source',
+  Url: 'url'
 };
 
 /**

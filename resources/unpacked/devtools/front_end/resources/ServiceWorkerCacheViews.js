@@ -12,10 +12,12 @@ Resources.ServiceWorkerCacheView = class extends UI.SimpleView {
     this.registerRequiredCSS('resources/serviceWorkerCacheViews.css');
 
     this._model = model;
+    this._entriesForTest = null;
 
     this.element.classList.add('service-worker-cache-data-view');
     this.element.classList.add('storage-view');
 
+    var editorToolbar = new UI.Toolbar('data-view-toolbar', this.element);
     this._splitWidget = new UI.SplitWidget(false, false);
     this._splitWidget.show(this.element);
 
@@ -34,8 +36,7 @@ Resources.ServiceWorkerCacheView = class extends UI.SimpleView {
     this._lastPageSize = null;
     /** @type {?number} */
     this._lastSkipCount = null;
-
-    var editorToolbar = new UI.Toolbar('data-view-toolbar', this.element);
+    this._refreshThrottler = new Common.Throttler(300);
 
     this._pageBackButton = new UI.ToolbarButton(Common.UIString('Show previous page'), 'largeicon-play-back');
     this._pageBackButton.addEventListener(UI.ToolbarButton.Events.Click, this._pageBackButtonClicked, this);
@@ -57,17 +58,32 @@ Resources.ServiceWorkerCacheView = class extends UI.SimpleView {
     this._pageSize = 50;
     this._skipCount = 0;
 
-    /** @type {!Array<!Resources.ServiceWorkerCacheView._Response>} */
-    this._recentlyPreviewedResponses = [];
-
     this.update(cache);
-    this._entries = [];
+  }
+
+  /**
+   * @override
+   */
+  wasShown() {
+    this._model.addEventListener(
+        SDK.ServiceWorkerCacheModel.Events.CacheStorageContentUpdated, this._cacheContentUpdated, this);
+    this._updateData(true);
+  }
+
+  /**
+   * @override
+   */
+  willHide() {
+    this._model.removeEventListener(
+        SDK.ServiceWorkerCacheModel.Events.CacheStorageContentUpdated, this._cacheContentUpdated, this);
   }
 
   /**
    * @param {?UI.Widget} preview
    */
   _showPreview(preview) {
+    if (this._preview === preview)
+      return;
     if (this._preview)
       this._preview.detach();
     if (!preview)
@@ -81,16 +97,57 @@ Resources.ServiceWorkerCacheView = class extends UI.SimpleView {
    */
   _createDataGrid() {
     var columns = /** @type {!Array<!DataGrid.DataGrid.ColumnDescriptor>} */ ([
-      {id: 'number', title: Common.UIString('#'), width: '50px'}, {id: 'request', title: Common.UIString('Request')},
-      {id: 'response', title: Common.UIString('Response')},
-      {id: 'responseTime', title: Common.UIString('Time Cached')}
+      {id: 'path', title: Common.UIString('Path'), weight: 4, sortable: true},
+      {id: 'contentType', title: Common.UIString('Content-Type'), weight: 1, sortable: true}, {
+        id: 'contentLength',
+        title: Common.UIString('Content-Length'),
+        weight: 1,
+        align: DataGrid.DataGrid.Align.Right,
+        sortable: true
+      },
+      {
+        id: 'responseTime',
+        title: Common.UIString('Time Cached'),
+        width: '12em',
+        weight: 1,
+        align: DataGrid.DataGrid.Align.Right,
+        sortable: true
+      }
     ]);
     var dataGrid = new DataGrid.DataGrid(
         columns, undefined, this._deleteButtonClicked.bind(this), this._updateData.bind(this, true));
+
+    dataGrid.addEventListener(DataGrid.DataGrid.Events.SortingChanged, this._sortingChanged, this);
+
     dataGrid.addEventListener(
-        DataGrid.DataGrid.Events.SelectedNode, event => this._previewCachedResponse(event.data.data['request']), this);
+        DataGrid.DataGrid.Events.SelectedNode, event => this._previewCachedResponse(event.data.data), this);
     dataGrid.setStriped(true);
     return dataGrid;
+  }
+
+  _sortingChanged() {
+    if (!this._dataGrid)
+      return;
+
+    var accending = this._dataGrid.isSortOrderAscending();
+    var columnId = this._dataGrid.sortColumnId();
+    var comparator;
+    if (columnId === 'path')
+      comparator = (a, b) => a._path.localeCompare(b._path);
+    else if (columnId === 'contentType')
+      comparator = (a, b) => a.data.mimeType.localeCompare(b.data.mimeType);
+    else if (columnId === 'contentLength')
+      comparator = (a, b) => a.data.resourceSize - b.data.resourceSize;
+    else if (columnId === 'responseTime')
+      comparator = (a, b) => a.data.endTime - b.data.endTime;
+
+    var children = this._dataGrid.rootNode().children.slice();
+    this._dataGrid.rootNode().removeChildren();
+    children.sort((a, b) => {
+      var result = comparator(a, b);
+      return accending ? result : -result;
+    });
+    children.forEach(child => this._dataGrid.rootNode().appendChild(child));
   }
 
   /**
@@ -118,8 +175,7 @@ Resources.ServiceWorkerCacheView = class extends UI.SimpleView {
       if (!node)
         return;
     }
-
-    await this._model.deleteCacheEntry(this._cache, /** @type {string} */ (node.data['request']));
+    await this._model.deleteCacheEntry(this._cache, /** @type {string} */ (node.data.url()));
     node.remove();
   }
 
@@ -139,26 +195,39 @@ Resources.ServiceWorkerCacheView = class extends UI.SimpleView {
 
   /**
    * @param {number} skipCount
-   * @param {!Array.<!SDK.ServiceWorkerCacheModel.Entry>} entries
+   * @param {!Array<!Protocol.CacheStorage.DataEntry>} entries
    * @param {boolean} hasMore
    * @this {Resources.ServiceWorkerCacheView}
    */
   _updateDataCallback(skipCount, entries, hasMore) {
+    var selected = this._dataGrid.selectedNode && this._dataGrid.selectedNode.data.url();
     this._refreshButton.setEnabled(true);
-    this.clear();
-    this._entries = entries;
-    for (var i = 0; i < entries.length; ++i) {
-      var data = {};
-      data['number'] = i + skipCount;
-      data['request'] = entries[i].request;
-      data['response'] = entries[i].response;
-      data['responseTime'] = entries[i].responseTime;
-      var node = new DataGrid.DataGridNode(data);
-      node.selectable = true;
-      this._dataGrid.rootNode().appendChild(node);
+    this._entriesForTest = entries;
+
+    /** @type {!Map<string, !DataGrid.DataGridNode>} */
+    var oldEntries = new Map();
+    var rootNode = this._dataGrid.rootNode();
+    for (var node of rootNode.children)
+      oldEntries.set(node.data.url, node);
+    rootNode.removeChildren();
+    var selectedNode = null;
+    for (var entry of entries) {
+      var node = oldEntries.get(entry.requestURL);
+      if (!node || node.data.responseTime !== entry.responseTime) {
+        node = new Resources.ServiceWorkerCacheView.DataGridNode(this._createRequest(entry));
+        node.selectable = true;
+      }
+      rootNode.appendChild(node);
+      if (entry.requestURL === selected)
+        selectedNode = node;
     }
     this._pageBackButton.setEnabled(!!skipCount);
     this._pageForwardButton.setEnabled(hasMore);
+    if (!selectedNode)
+      this._showPreview(null);
+    else
+      selectedNode.revealAndSelect();
+    this._updatedForTest();
   }
 
   /**
@@ -170,7 +239,6 @@ Resources.ServiceWorkerCacheView = class extends UI.SimpleView {
 
     if (!force && this._lastPageSize === pageSize && this._lastSkipCount === skipCount)
       return;
-    this._showPreview(null);
     this._refreshButton.setEnabled(false);
     if (this._lastPageSize !== pageSize) {
       skipCount = 0;
@@ -178,7 +246,6 @@ Resources.ServiceWorkerCacheView = class extends UI.SimpleView {
     }
     this._lastPageSize = pageSize;
     this._lastSkipCount = skipCount;
-    this._recentlyPreviewedResponses = [];
     this._model.loadCacheData(this._cache, skipCount, pageSize, this._updateDataCallback.bind(this, skipCount));
   }
 
@@ -189,127 +256,154 @@ Resources.ServiceWorkerCacheView = class extends UI.SimpleView {
     this._updateData(true);
   }
 
-  clear() {
-    this._dataGrid.rootNode().removeChildren();
-    this._entries = [];
-  }
-
   /**
-   * @param {string} url
-   * @return {!Resources.ServiceWorkerCacheView._Response}
+   * @param {!Common.Event} event
    */
-  _responseForUrl(url) {
-    var response = null;
-    var index = this._recentlyPreviewedResponses.findIndex(response => response.url === url);
-    if (index >= 0) {
-      response = this._recentlyPreviewedResponses[index];
-      this._recentlyPreviewedResponses.splice(index, 1);
-    } else {
-      response = new Resources.ServiceWorkerCacheView._Response(this._cache, url);
-    }
-    if (this._recentlyPreviewedResponses.length === Resources.ServiceWorkerCacheView._RESPONSE_CACHE_SIZE)
-      this._recentlyPreviewedResponses.pop();
-    this._recentlyPreviewedResponses.unshift(response);
-    return response;
-  }
-
-  /**
-   * @param {string} url
-   */
-  async _previewCachedResponse(url) {
-    var preview = await this._responseForUrl(url)._previewPromise;
-    // It is possible that table selection changes before the preview opens
-    var selectedRequest = this._dataGrid.selectedNode.data['request'];
-    if (url !== selectedRequest)
+  _cacheContentUpdated(event) {
+    var nameAndOrigin = event.data;
+    if (this._cache.securityOrigin !== nameAndOrigin.origin || this._cache.cacheName !== nameAndOrigin.cacheName)
       return;
-    this._showPreview(preview);
+    this._refreshThrottler.schedule(() => Promise.resolve(this._updateData(true)), true);
   }
 
   /**
-   * @override
+   * @param {!SDK.NetworkRequest} request
    */
-  willHide() {
-    this._recentlyPreviewedResponses = [];
-  }
-};
+  async _previewCachedResponse(request) {
+    var preview = request[Resources.ServiceWorkerCacheView._previewSymbol];
+    if (!preview) {
+      preview = new Resources.ServiceWorkerCacheView.RequestView(request);
+      request[Resources.ServiceWorkerCacheView._previewSymbol] = preview;
+    }
 
-Resources.ServiceWorkerCacheView._Response = class {
-  /**
-   * @param {!SDK.ServiceWorkerCacheModel.Cache} cache
-   * @param {string} url
-   */
-  constructor(cache, url) {
-    this.url = url;
-    /** @type {!Promise<!UI.Widget>} */
-    this._previewPromise = this._innerPreview(cache);
+    // It is possible that table selection changes before the preview opens.
+    if (request === this._dataGrid.selectedNode.data)
+      this._showPreview(preview);
   }
 
   /**
-   * @param {!SDK.ServiceWorkerCacheModel.Cache} cache
-   * @return {!Promise<!UI.Widget>}
+   * @param {!Protocol.CacheStorage.DataEntry} entry
+   * @return {!SDK.NetworkRequest}
    */
-  async _innerPreview(cache) {
-    var response = await cache.requestCachedResponse(this.url);
-    if (!response)
-      return new UI.EmptyWidget(Common.UIString('Preview is not available'));
+  _createRequest(entry) {
+    var request = new SDK.NetworkRequest('cache-storage-' + entry.requestURL, entry.requestURL, '', '', '', null);
+    request.requestMethod = entry.requestMethod;
+    request.setRequestHeaders(entry.requestHeaders);
+    request.statusCode = entry.responseStatus;
+    request.statusText = entry.responseStatusText;
+    request.protocol = new Common.ParsedURL(entry.requestURL).scheme;
+    request.responseHeaders = entry.responseHeaders;
+    request.setRequestHeadersText('');
+    request.endTime = entry.responseTime;
 
-    var contentType = response.headers['content-type'];
+    var header = entry.responseHeaders.find(header => header.name.toLowerCase() === 'content-type');
+    var contentType = header ? header.value : 'text/plain';
+    request.mimeType = contentType;
+
+    header = entry.responseHeaders.find(header => header.name.toLowerCase() === 'content-length');
+    request.resourceSize = (header && header.value) | 0;
+
     var resourceType = Common.ResourceType.fromMimeType(contentType);
-    var body = resourceType.isTextType() ? window.atob(response.body) : response.body;
-    var provider = new Resources.ServiceWorkerCacheView._ResponseContentProvider(this.url, resourceType, body);
-    var preview = SourceFrame.PreviewFactory.createPreview(provider, contentType);
-    if (!preview)
-      return new UI.EmptyWidget(Common.UIString('Preview is not available'));
-    return preview;
+    if (!resourceType)
+      resourceType = Common.ResourceType.fromURL(entry.requestURL) || Common.resourceTypes.Other;
+    request.setResourceType(resourceType);
+    request.setContentDataProvider(this._requestContent.bind(this, request));
+    return request;
+  }
+
+  /**
+   * @param {!SDK.NetworkRequest} request
+   * @return {!Promise<!SDK.NetworkRequest.ContentData>}
+   */
+  async _requestContent(request) {
+    var isText = request.resourceType().isTextType();
+    var contentData = {error: null, content: null, encoded: !isText};
+    var response = await this._cache.requestCachedResponse(request.url());
+    if (response)
+      contentData.content = isText ? window.atob(response.body) : response.body;
+    return contentData;
+  }
+
+  _updatedForTest() {
   }
 };
 
-/**
- * @implements {Common.ContentProvider}
- */
-Resources.ServiceWorkerCacheView._ResponseContentProvider = class {
-  /**
-   * @param {string} url
-   * @param {!Common.ResourceType} resourceType
-   * @param {string} body
-   */
-  constructor(url, resourceType, body) {
-    this._url = url;
-    this._resourceType = resourceType;
-    this._body = body;
-  }
-
-  /**
-   * @override
-   * @return {!Common.ResourceType}
-   */
-  contentType() {
-    return this._resourceType;
-  }
-
-  /**
-   * @override
-   * @return {string}
-   */
-  contentURL() {
-    return this._url;
-  }
-
-  /**
-   * @override
-   * @return {!Promise<?string>}
-   */
-  requestContent() {
-    return /** @type {!Promise<?string>} */ (Promise.resolve(this._body));
-  }
-
-  /**
-   * @override
-   * @return {!Promise<!Array<!Common.ContentProvider.SearchMatch>>}
-   */
-  searchInContent() {
-    return Promise.resolve([]);
-  }
-};
+Resources.ServiceWorkerCacheView._previewSymbol = Symbol('preview');
 
 Resources.ServiceWorkerCacheView._RESPONSE_CACHE_SIZE = 10;
+
+Resources.ServiceWorkerCacheView.DataGridNode = class extends DataGrid.DataGridNode {
+  /**
+   * @param {!SDK.NetworkRequest} request
+   */
+  constructor(request) {
+    super(request);
+    this._path = Common.ParsedURL.extractPath(request.url());
+    if (!this._path)
+      this._path = request.url();
+    if (this._path.length > 1 && this._path.startsWith('/'))
+      this._path = this._path.substring(1);
+    this._request = request;
+  }
+
+  /**
+   * @override
+   * @param {string} columnId
+   * @return {!Element}
+   */
+  createCell(columnId) {
+    var cell = this.createTD(columnId);
+    var value;
+    if (columnId === 'path')
+      value = this._path;
+    else if (columnId === 'contentType')
+      value = this._request.mimeType;
+    else if (columnId === 'contentLength')
+      value = (this._request.resourceSize | 0).toLocaleString('en-US');
+    else if (columnId === 'responseTime')
+      value = new Date(this._request.endTime * 1000).toLocaleString();
+    DataGrid.DataGrid.setElementText(cell, value || '', true);
+    return cell;
+  }
+};
+
+Resources.ServiceWorkerCacheView.RequestView = class extends UI.VBox {
+  /**
+   * @param {!SDK.NetworkRequest} request
+   */
+  constructor(request) {
+    super();
+
+    this._tabbedPane = new UI.TabbedPane();
+    this._tabbedPane.addEventListener(UI.TabbedPane.Events.TabSelected, this._tabSelected, this);
+    this._resourceViewTabSetting = Common.settings.createSetting('cacheStorageViewTab', 'preview');
+
+    this._tabbedPane.appendTab('headers', Common.UIString('Headers'), new Network.RequestHeadersView(request));
+    this._tabbedPane.appendTab('preview', Common.UIString('Preview'), new Network.RequestPreviewView(request));
+    this._tabbedPane.show(this.element);
+  }
+
+  /**
+   * @override
+   */
+  wasShown() {
+    super.wasShown();
+    this._selectTab();
+  }
+
+  /**
+   * @param {string=} tabId
+   */
+  _selectTab(tabId) {
+    if (!tabId)
+      tabId = this._resourceViewTabSetting.get();
+    if (!this._tabbedPane.selectTab(tabId))
+      this._tabbedPane.selectTab('headers');
+  }
+
+  _tabSelected(event) {
+    if (!event.data.isUserGesture)
+      return;
+    this._resourceViewTabSetting.set(event.data.tabId);
+  }
+};

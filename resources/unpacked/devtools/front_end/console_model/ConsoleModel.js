@@ -97,6 +97,8 @@ ConsoleModel.ConsoleModel = class extends Common.Object {
           SDK.RuntimeModel.Events.ConsoleAPICalled, this._consoleAPICalled.bind(this, runtimeModel)));
       eventListeners.push(runtimeModel.debuggerModel().addEventListener(
           SDK.DebuggerModel.Events.GlobalObjectCleared, this._clearIfNecessary, this));
+      eventListeners.push(runtimeModel.addEventListener(
+          SDK.RuntimeModel.Events.QueryObjectRequested, this._queryObjectRequested.bind(this, runtimeModel)));
     }
 
     var networkManager = target.model(SDK.NetworkManager);
@@ -262,6 +264,18 @@ ConsoleModel.ConsoleModel = class extends Common.Object {
         /** @type {string} */ (message), call.type, callFrame ? callFrame.url : undefined,
         callFrame ? callFrame.lineNumber : undefined, callFrame ? callFrame.columnNumber : undefined, undefined,
         call.args, call.stackTrace, call.timestamp, call.executionContextId, undefined, undefined, call.context);
+    this.addMessage(consoleMessage);
+  }
+
+  /**
+   * @param {!SDK.RuntimeModel} runtimeModel
+   * @param {!Common.Event} event
+   */
+  _queryObjectRequested(runtimeModel, event) {
+    var consoleMessage = new ConsoleModel.ConsoleMessage(
+        runtimeModel, ConsoleModel.ConsoleMessage.MessageSource.ConsoleAPI,
+        ConsoleModel.ConsoleMessage.MessageLevel.Info, '', undefined, undefined, undefined, undefined, undefined,
+        [event.data.objects], undefined, undefined, undefined, undefined, undefined, undefined);
     this.addMessage(consoleMessage);
   }
 
@@ -659,6 +673,23 @@ ConsoleModel.ConsoleMessage.MessageLevel = {
   Warning: 'warning',
   Error: 'error'
 };
+
+/** @type {!Map<!ConsoleModel.ConsoleMessage.MessageSource, string>} */
+ConsoleModel.ConsoleMessage.MessageSourceDisplayName = new Map([
+  [ConsoleModel.ConsoleMessage.MessageSource.XML, 'xml'], [ConsoleModel.ConsoleMessage.MessageSource.JS, 'javascript'],
+  [ConsoleModel.ConsoleMessage.MessageSource.Network, 'network'],
+  [ConsoleModel.ConsoleMessage.MessageSource.ConsoleAPI, 'console-api'],
+  [ConsoleModel.ConsoleMessage.MessageSource.Storage, 'storage'],
+  [ConsoleModel.ConsoleMessage.MessageSource.AppCache, 'appcache'],
+  [ConsoleModel.ConsoleMessage.MessageSource.Rendering, 'rendering'],
+  [ConsoleModel.ConsoleMessage.MessageSource.CSS, 'css'],
+  [ConsoleModel.ConsoleMessage.MessageSource.Security, 'security'],
+  [ConsoleModel.ConsoleMessage.MessageSource.Deprecation, 'deprecation'],
+  [ConsoleModel.ConsoleMessage.MessageSource.Worker, 'worker'],
+  [ConsoleModel.ConsoleMessage.MessageSource.Violation, 'violation'],
+  [ConsoleModel.ConsoleMessage.MessageSource.Intervention, 'intervention'],
+  [ConsoleModel.ConsoleMessage.MessageSource.Other, 'other']
+]);
 
 ConsoleModel.ConsoleModel._events = Symbol('ConsoleModel.ConsoleModel.events');
 

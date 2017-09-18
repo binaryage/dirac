@@ -22,6 +22,9 @@ SDK.ServiceWorkerCacheModel = class extends SDK.SDKModel {
 
     this._securityOriginManager = target.model(SDK.SecurityOriginManager);
 
+    this._originsUpdated = new Set();
+    this._throttler = new Common.Throttler(2000);
+
     /** @type {boolean} */
     this._enabled = false;
   }
@@ -88,7 +91,7 @@ SDK.ServiceWorkerCacheModel = class extends SDK.SDKModel {
    * @param {!SDK.ServiceWorkerCacheModel.Cache} cache
    * @param {number} skipCount
    * @param {number} pageSize
-   * @param {function(!Array.<!SDK.ServiceWorkerCacheModel.Entry>, boolean)} callback
+   * @param {function(!Array.<!Protocol.CacheStorage.DataEntry>, boolean)} callback
    */
   loadCacheData(cache, skipCount, pageSize, callback) {
     this._requestEntries(cache, skipCount, pageSize, callback);
@@ -121,7 +124,8 @@ SDK.ServiceWorkerCacheModel = class extends SDK.SDKModel {
 
   _addOrigin(securityOrigin) {
     this._loadCacheNames(securityOrigin);
-    this._storageAgent.trackCacheStorageForOrigin(securityOrigin);
+    if (this._isValidSecurityOrigin(securityOrigin))
+      this._storageAgent.trackCacheStorageForOrigin(securityOrigin);
   }
 
   /**
@@ -135,7 +139,17 @@ SDK.ServiceWorkerCacheModel = class extends SDK.SDKModel {
         this._cacheRemoved(cache);
       }
     }
-    this._storageAgent.untrackCacheStorageForOrigin(securityOrigin);
+    if (this._isValidSecurityOrigin(securityOrigin))
+      this._storageAgent.untrackCacheStorageForOrigin(securityOrigin);
+  }
+
+  /**
+   * @param {string} securityOrigin
+   * @return {boolean}
+   */
+  _isValidSecurityOrigin(securityOrigin) {
+    var parsedURL = securityOrigin.asParsedURL();
+    return !!parsedURL && parsedURL.scheme.startsWith('http');
   }
 
   /**
@@ -219,7 +233,7 @@ SDK.ServiceWorkerCacheModel = class extends SDK.SDKModel {
    * @param {!SDK.ServiceWorkerCacheModel.Cache} cache
    * @param {number} skipCount
    * @param {number} pageSize
-   * @param {function(!Array<!SDK.ServiceWorkerCacheModel.Entry>, boolean)} callback
+   * @param {function(!Array<!Protocol.CacheStorage.DataEntry>, boolean)} callback
    */
   async _requestEntries(cache, skipCount, pageSize, callback) {
     var response = await this._cacheAgent.invoke_requestEntries({cacheId: cache.cacheId, skipCount, pageSize});
@@ -227,10 +241,7 @@ SDK.ServiceWorkerCacheModel = class extends SDK.SDKModel {
       console.error('ServiceWorkerCacheAgent error while requesting entries: ', response[Protocol.Error]);
       return;
     }
-    var entries = response.cacheDataEntries.map(
-        dataEntry => new SDK.ServiceWorkerCacheModel.Entry(
-            dataEntry.request, dataEntry.response, new Date(dataEntry.responseTime * 1000).toLocaleString()));
-    callback(entries, response.hasMore);
+    callback(response.cacheDataEntries, response.hasMore);
   }
 
   /**
@@ -238,7 +249,13 @@ SDK.ServiceWorkerCacheModel = class extends SDK.SDKModel {
    * @override
    */
   cacheStorageListUpdated(origin) {
-    this.dispatchEventToListeners(SDK.ServiceWorkerCacheModel.Events.CacheStorageListUpdated, {origin: origin});
+    this._originsUpdated.add(origin);
+
+    this._throttler.schedule(() => {
+      var promises = Array.from(this._originsUpdated, origin => this._loadCacheNames(origin));
+      this._originsUpdated.clear();
+      return Promise.all(promises);
+    });
   }
 
   /**
@@ -258,24 +275,7 @@ SDK.SDKModel.register(SDK.ServiceWorkerCacheModel, SDK.Target.Capability.Browser
 SDK.ServiceWorkerCacheModel.Events = {
   CacheAdded: Symbol('CacheAdded'),
   CacheRemoved: Symbol('CacheRemoved'),
-  CacheStorageListUpdated: Symbol('CacheStorageListUpdated'),
   CacheStorageContentUpdated: Symbol('CacheStorageContentUpdated')
-};
-
-/**
- * @unrestricted
- */
-SDK.ServiceWorkerCacheModel.Entry = class {
-  /**
-   * @param {string} request
-   * @param {string} response
-   * @param {string} responseTime
-   */
-  constructor(request, response, responseTime) {
-    this.request = request;
-    this.response = response;
-    this.responseTime = responseTime;
-  }
 };
 
 /**

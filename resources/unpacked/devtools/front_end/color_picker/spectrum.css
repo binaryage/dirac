@@ -101,6 +101,11 @@
     background-color: rgba(255, 255, 255, 0.2);
     align-items: center;
     transition: right .05s ease-out, left .05s ease-out, bottom .05s ease-out, top .05s ease-out;
+    cursor: pointer;
+}
+
+.spectrum-contrast-info.contrast-unknown .value {
+    display: none;
 }
 
 .spectrum-contrast-info .low-contrast {
@@ -208,10 +213,21 @@
     margin-left: 0.5em;
     padding: 1px 3px;
     align-items:  baseline;
+    position: absolute;
+    margin-top: -2px;
+    border: 1px solid transparent;
+}
+
+.contrast-details-value.contrast-unknown {
+    background-color: white;
+    color: #333;
+    border: 1px solid #ddd;
+    width: 3em;
+    text-align: center;
 }
 
 .contrast-details-value.contrast-color-white {
-    border: 1px solid #ddd;
+    border-color: #ddd;
 }
 
 .contrast-details-value.contrast-fail.hover {
@@ -608,6 +624,10 @@ button.background-color-picker {
     top: 7px;
 }
 
-button.background-color-picker.active [is=ui-icon].largeicon-eyedropper.icon-mask{
+button.background-color-picker.active [is=ui-icon].largeicon-eyedropper.icon-mask {
     background-color: hsl(218, 81%, 59%);
+}
+
+button.background-color-picker:hover [is=ui-icon].largeicon-eyedropper.icon-mask {
+    background-color: #333;
 }

@@ -55,6 +55,7 @@
 }
 
 .service-worker-active-circle,
+.service-worker-redundant-circle,
 .service-worker-waiting-circle,
 .service-worker-installing-circle {
     position: relative;
@@ -78,6 +79,9 @@
     background-color: white;
 }
 
+.service-worker-redundant-circle {
+    background-color: gray;
+}
 
 .service-worker-subtitle {
     padding-left: 14px;
@@ -87,4 +91,22 @@
 
 .link {
     margin-left: 10px;
+}
+
+.service-worker-editor-with-button {
+    align-items: baseline;
+    display: flex;
+}
+
+.service-worker-notification-editor {
+    border: solid 1px #d8d8d8;
+    display: flex;
+    flex: auto;
+    margin-right: 4px;
+    max-width: 400px;
+}
+
+.service-worker-notification-editor.source-code {
+    /** Simulate CodeMirror that is shown above */
+    padding: 4px;
 }
