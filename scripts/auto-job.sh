@@ -3,6 +3,9 @@
 echo "-----------------------------------------------------------------------------------------------------------------------"
 echo "running ${BASH_SOURCE[0]} on $(date)"
 
+echo "ENVIRONMENT:"
+env
+
 finish () {
   echo "finished ${BASH_SOURCE[0]} on $(date)"
   echo
