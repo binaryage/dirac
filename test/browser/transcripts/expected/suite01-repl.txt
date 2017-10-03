@@ -46,10 +46,8 @@ automate #1      focus-console-prompt!
 automate #1      simulate-console-action! ["SHIFT+ENTER"]
 automate #1      simulate-console-input! ["7"]
 automate #1      simulate-console-action! ["ENTER"]
-devtools #1      DC.info>
-                 7
-devtools #1      send-eval-request:
-                 7
+devtools #1      DC.info> 7
+devtools #1      send-eval-request: 7
 devtools #1      repl eval job started
 automate #1      console-wait-for-repl-job-match! ["info> 7"]
 devtools #1      DF.info> 7
