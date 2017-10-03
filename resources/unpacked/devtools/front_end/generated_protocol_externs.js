@@ -5212,10 +5212,10 @@ Protocol.Animation.AnimationType = {
     WebAnimation: "WebAnimation"
 };
 
-/** @typedef {!{id:(string), name:(string), pausedState:(boolean), playState:(string), playbackRate:(number), startTime:(number), currentTime:(number), source:(Protocol.Animation.AnimationEffect), type:(Protocol.Animation.AnimationType), cssId:(string|undefined)}} */
+/** @typedef {!{id:(string), name:(string), pausedState:(boolean), playState:(string), playbackRate:(number), startTime:(number), currentTime:(number), type:(Protocol.Animation.AnimationType), source:(Protocol.Animation.AnimationEffect|undefined), cssId:(string|undefined)}} */
 Protocol.Animation.Animation;
 
-/** @typedef {!{delay:(number), endDelay:(number), iterationStart:(number), iterations:(number), duration:(number), direction:(string), fill:(string), backendNodeId:(Protocol.DOM.BackendNodeId), keyframesRule:(Protocol.Animation.KeyframesRule|undefined), easing:(string)}} */
+/** @typedef {!{delay:(number), endDelay:(number), iterationStart:(number), iterations:(number), duration:(number), direction:(string), fill:(string), backendNodeId:(Protocol.DOM.BackendNodeId|undefined), keyframesRule:(Protocol.Animation.KeyframesRule|undefined), easing:(string)}} */
 Protocol.Animation.AnimationEffect;
 
 /** @typedef {!{name:(string|undefined), keyframes:(!Array<Protocol.Animation.KeyframeStyle>)}} */
@@ -5442,6 +5442,34 @@ Protocol.StorageAgent.UntrackCacheStorageForOriginResponse;
  * @return {!Promise<!Protocol.StorageAgent.UntrackCacheStorageForOriginResponse>} */
 Protocol.StorageAgent.prototype.invoke_untrackCacheStorageForOrigin = function(obj) {};
 
+/**
+ * @param {string} origin
+ * @return {!Promise<undefined>}
+ */
+Protocol.StorageAgent.prototype.trackIndexedDBForOrigin = function(origin) {};
+/** @typedef {!{origin: string}} */
+Protocol.StorageAgent.TrackIndexedDBForOriginRequest;
+/** @typedef {Object|undefined} */
+Protocol.StorageAgent.TrackIndexedDBForOriginResponse;
+/**
+ * @param {!Protocol.StorageAgent.TrackIndexedDBForOriginRequest} obj
+ * @return {!Promise<!Protocol.StorageAgent.TrackIndexedDBForOriginResponse>} */
+Protocol.StorageAgent.prototype.invoke_trackIndexedDBForOrigin = function(obj) {};
+
+/**
+ * @param {string} origin
+ * @return {!Promise<undefined>}
+ */
+Protocol.StorageAgent.prototype.untrackIndexedDBForOrigin = function(origin) {};
+/** @typedef {!{origin: string}} */
+Protocol.StorageAgent.UntrackIndexedDBForOriginRequest;
+/** @typedef {Object|undefined} */
+Protocol.StorageAgent.UntrackIndexedDBForOriginResponse;
+/**
+ * @param {!Protocol.StorageAgent.UntrackIndexedDBForOriginRequest} obj
+ * @return {!Promise<!Protocol.StorageAgent.UntrackIndexedDBForOriginResponse>} */
+Protocol.StorageAgent.prototype.invoke_untrackIndexedDBForOrigin = function(obj) {};
+
 /** @enum {string} */
 Protocol.Storage.StorageType = {
     Appcache: "appcache",
@@ -5470,6 +5498,16 @@ Protocol.StorageDispatcher.prototype.cacheStorageListUpdated = function(origin) 
  * @param {string} cacheName
  */
 Protocol.StorageDispatcher.prototype.cacheStorageContentUpdated = function(origin, cacheName) {};
+/**
+ * @param {string} origin
+ */
+Protocol.StorageDispatcher.prototype.indexedDBListUpdated = function(origin) {};
+/**
+ * @param {string} origin
+ * @param {string} databaseName
+ * @param {string} objectStoreName
+ */
+Protocol.StorageDispatcher.prototype.indexedDBContentUpdated = function(origin, databaseName, objectStoreName) {};
 Protocol.Log = {};
 
 
@@ -5557,6 +5595,7 @@ Protocol.Log.LogEntrySource = {
     Worker: "worker",
     Violation: "violation",
     Intervention: "intervention",
+    Recommendation: "recommendation",
     Other: "other"
 };
 
@@ -5568,7 +5607,7 @@ Protocol.Log.LogEntryLevel = {
     Error: "error"
 };
 
-/** @typedef {!{source:(Protocol.Log.LogEntrySource), level:(Protocol.Log.LogEntryLevel), text:(string), timestamp:(Protocol.Runtime.Timestamp), url:(string|undefined), lineNumber:(number|undefined), stackTrace:(Protocol.Runtime.StackTrace|undefined), networkRequestId:(Protocol.Network.RequestId|undefined), workerId:(string|undefined)}} */
+/** @typedef {!{source:(Protocol.Log.LogEntrySource), level:(Protocol.Log.LogEntryLevel), text:(string), timestamp:(Protocol.Runtime.Timestamp), url:(string|undefined), lineNumber:(number|undefined), stackTrace:(Protocol.Runtime.StackTrace|undefined), networkRequestId:(Protocol.Network.RequestId|undefined), workerId:(string|undefined), args:(!Array<Protocol.Runtime.RemoteObject>|undefined)}} */
 Protocol.Log.LogEntry;
 
 /** @enum {string} */
