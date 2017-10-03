@@ -1,6 +1,7 @@
 (def clj-logging-config-version "1.9.12")
 (def slf4j-log4j12-version "1.7.25")
 (def figwheel-version "0.5.14")
+(def selected-clojure-version "1.9.0-alpha19")
 (defproject binaryage/dirac "1.2.16"
   :description "Dirac DevTools - a Chrome DevTools fork for ClojureScript developers."
   :url "https://github.com/binaryage/dirac"
@@ -10,7 +11,7 @@
   :scm {:name "git"
         :url  "https://github.com/binaryage/dirac"}
 
-  :dependencies [[org.clojure/clojure "1.9.0-alpha19" :scope "provided"]
+  :dependencies [[org.clojure/clojure ~selected-clojure-version :scope "provided"]
                  [org.clojure/clojurescript "1.9.908" :scope "provided"]
                  [org.clojure/core.async "0.3.443"]
                  [org.clojure/tools.logging "0.4.0"]
@@ -163,7 +164,7 @@
              {:dependencies [[org.clojure/clojure "1.8.0" :scope "provided" :upgrade false]]}
 
              :clojure19
-             {:dependencies [[org.clojure/clojure "1.9.0-alpha19" :scope "provided" :upgrade false]]}
+             {:dependencies [[org.clojure/clojure ~selected-clojure-version :scope "provided" :upgrade false]]}
 
              :cooper
              {:plugins [[lein-cooper "1.2.2"]]}
