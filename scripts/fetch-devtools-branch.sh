@@ -36,7 +36,7 @@ git fetch chromium
 git checkout -f tracker
 git reset --hard chromium/master
 git clean -fd
-gclient sync
+gclient sync --force --reset -vv # force reset to overcome recent 'unstaged changes' issues => https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/q_r7KKVakfs
 git filter-branch -f --prune-empty --subdirectory-filter third_party/WebKit/Source/devtools tracker
 
 git checkout -f devtools
