@@ -1421,6 +1421,10 @@ Protocol.EmulationDispatcher.prototype.virtualTimeBudgetExpired = function() {};
 /**
  * @param {number} virtualTimeElapsed
  */
+Protocol.EmulationDispatcher.prototype.virtualTimeAdvanced = function(virtualTimeElapsed) {};
+/**
+ * @param {number} virtualTimeElapsed
+ */
 Protocol.EmulationDispatcher.prototype.virtualTimePaused = function(virtualTimeElapsed) {};
 Protocol.Security = {};
 
@@ -6276,12 +6280,13 @@ Protocol.DebuggerAgent.prototype.invoke_setSkipAllPauses = function(obj) {};
  * @param {number} lineNumber
  * @param {string=} opt_url
  * @param {string=} opt_urlRegex
+ * @param {string=} opt_scriptHash
  * @param {number=} opt_columnNumber
  * @param {string=} opt_condition
  * @return {!Promise<?Protocol.Debugger.BreakpointId>}
  */
-Protocol.DebuggerAgent.prototype.setBreakpointByUrl = function(lineNumber, opt_url, opt_urlRegex, opt_columnNumber, opt_condition) {};
-/** @typedef {!{url: (string|undefined), columnNumber: (number|undefined), urlRegex: (string|undefined), condition: (string|undefined), lineNumber: number}} */
+Protocol.DebuggerAgent.prototype.setBreakpointByUrl = function(lineNumber, opt_url, opt_urlRegex, opt_scriptHash, opt_columnNumber, opt_condition) {};
+/** @typedef {!{columnNumber: (number|undefined), urlRegex: (string|undefined), url: (string|undefined), lineNumber: number, scriptHash: (string|undefined), condition: (string|undefined)}} */
 Protocol.DebuggerAgent.SetBreakpointByUrlRequest;
 /** @typedef {!{breakpointId: Protocol.Debugger.BreakpointId, locations: !Array<Protocol.Debugger.Location>}} */
 Protocol.DebuggerAgent.SetBreakpointByUrlResponse;

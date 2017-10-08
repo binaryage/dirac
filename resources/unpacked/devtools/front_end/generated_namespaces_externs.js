@@ -11,6 +11,8 @@ var Audits = {};
 /** @const */
 var Audits2 = {};
 /** @const */
+var Audits2TestRunner = {};
+/** @const */
 var AuditsTestRunner = {};
 /** @const */
 var Bindings = {};
@@ -89,8 +91,6 @@ var Host = {};
 /** @const */
 var InlineEditor = {};
 /** @const */
-var IntegrationTestRunner = {};
-/** @const */
 var LayerViewer = {};
 /** @const */
 var Layers = {};
@@ -137,6 +137,8 @@ var SASSTestRunner = {};
 /** @const */
 var SDK = {};
 /** @const */
+var SDKTestRunner = {};
+/** @const */
 var Sass = {};
 /** @const */
 var Screencast = {};
@@ -148,8 +150,6 @@ var SecurityTestRunner = {};
 var Services = {};
 /** @const */
 var Settings = {};
-/** @const */
-var Shell = {};
 /** @const */
 var Snippets = {};
 /** @const */
