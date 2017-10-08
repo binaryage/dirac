@@ -75,7 +75,7 @@ SourcesTestRunner.runDebuggerTestSuite = function(testSuite) {
 };
 
 SourcesTestRunner.runTestFunction = function() {
-  TestRunner.evaluateInPage('scheduleTestFunction()');
+  TestRunner.evaluateInPageAnonymously('scheduleTestFunction()');
   TestRunner.addResult('Set timer for test function.');
 };
 
@@ -749,10 +749,8 @@ SourcesTestRunner.setEventListenerBreakpoint = function(id, enabled, targetName)
   }
 };
 
-TestRunner.initAsync(async function() {
-  await TestRunner.evaluateInPagePromise(`
-    function scheduleTestFunction() {
-      setTimeout(testFunction, 0);
-    }
-  `);
-});
+TestRunner.initAsync(`
+  function scheduleTestFunction() {
+    setTimeout(testFunction, 0);
+  }
+`);
