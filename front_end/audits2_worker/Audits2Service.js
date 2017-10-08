@@ -40,6 +40,9 @@ var Audits2Service = class {
    * @return {!Promise<!ReportRenderer.ReportJSON>}
    */
   start(params) {
+    if (Runtime.queryParam('isUnderTest'))
+      this._disableLoggingForTest();
+
     self.listenForStatus(message => {
       this.statusUpdate(message[1]);
     });
@@ -114,6 +117,10 @@ var Audits2Service = class {
       this._onMessage = cb;
     if (eventName === 'close')
       this._onClose = cb;
+  }
+
+  _disableLoggingForTest() {
+    console.log = () => undefined;  // eslint-disable-line no-console
   }
 };
 

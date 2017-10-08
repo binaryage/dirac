@@ -1,10 +1,9 @@
 {
   "dependencies": [
-    "common",
     "test_runner",
-    "ui"
+    "audits2"
   ],
   "scripts": [
-    "TestShell.js"
+    "Audits2TestRunner.js"
   ]
 }

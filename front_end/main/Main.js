@@ -144,7 +144,7 @@ Main.Main = class {
     Runtime.experiments.cleanUpStaleExperiments();
 
     if (Host.isUnderTest(prefs)) {
-      var testPath = JSON.parse(prefs['testPath'] || '""');
+      var testPath = Runtime.queryParam('test') || JSON.parse(prefs['testPath'] || '""');
       // Enable experiments for testing.
       if (testPath.indexOf('accessibility/') !== -1)
         Runtime.experiments.enableForTest('accessibilityInspection');
@@ -155,8 +155,8 @@ Main.Main = class {
     }
 
     Runtime.experiments.setDefaultExperiments([
-      'continueToLocationMarkers', 'autoAttachToCrossProcessSubframes', 'objectPreviews', 'networkGroupingRequests',
-      'timelineColorByProduct'
+      'continueToLocationMarkers', 'autoAttachToCrossProcessSubframes', 'objectPreviews', 'persistence2',
+      'networkGroupingRequests', 'timelineColorByProduct'
     ]);
   }
 
