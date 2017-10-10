@@ -110,44 +110,43 @@
   :profiles {:lib
              ^{:pom-scope :provided}                                                                                          ; ! to overcome default jar/pom behaviour, our :dependencies replacement would be ignored for some reason
              [:nuke-aliases
-              {:dependencies   ~(let [lock-file-path "/tmp/dirac.lein.lock.file"
-                                      lock-file (clojure.java.io/as-file lock-file-path)]
-                                  ; we have need to call lein recursively but somehow prevent infinite recursion because
-                                  ; this code gets evaluated on each re-enter
-                                  ; since I was unable to use java.io.RandomAccessFile withing the leiningen context
-                                  ; I ended up using existence of plain file for locking, but there is a danger that the file will
-                                  ; won't get deleted in some edge cases (eg. process gets killed)
-                                  (if (.exists lock-file)                                                                     ; ***
-                                    ; lock file exists, this means we are in a child lein process
-                                    ; this is just a safety net for dangling lock file
-                                    ; more than 5s is unexpected
-                                    (let [file-time-ms (.lastModified lock-file)
-                                          current-time-ms (System/currentTimeMillis)
-                                          diff-time-ms (- current-time-ms file-time-ms)]
-                                      (if (> diff-time-ms 5000)
-                                        (throw (ex-info (str "The lock file '" lock-file-path "' "
-                                                          "is too old (" (/ diff-time-ms 1000.0) "s). "
-                                                          "Remove it and run the task again.") {})))
-                                      ^:replace [])                                                                           ; prevent recursion
-                                    (do
-                                      (let [{:keys [exit]} (clojure.java.shell/sh "which" "lein")]
-                                        (if (zero? exit) ; non-zero status means lein is not on path, this happens when evaluated by Cursive
-                                          (try
-                                            (spit lock-file "")
-                                            (let [{:keys [exit out err]} (clojure.java.shell/sh "lein" "pprint" ":dependencies")] ; see the other branch which prevents infinite recursion ***
-                                              (when-not (zero? exit)
-                                                (throw (ex-info (str err "\n" out) {:exit exit})))
-                                              (let [full-dependencies (read-string out)
-                                                    _ (assert (pos? (count full-dependencies)))
-                                                    test-dep? #(->> % (drop 2) (apply hash-map) :scope (= "test"))
-                                                    non-test-deps (remove test-dep? full-dependencies)]
-                                                (with-meta non-test-deps {:replace true})))
-                                            (catch Throwable e
-                                              (throw (ex-info (str "Problems parsing 'lein pprint :dependencies' for :lib profile\n"
-                                                                e) {})))
-                                            (finally
-                                              (clojure.java.io/delete-file lock-file)))
-                                          ^:replace [])))))
+              {:dependencies
+               ; this is here to skip this expensive brain surgery under normal circumstances
+                               ~(when (some? (System/getenv "DIRAC_LIB_PROFILE_SURGERY"))
+                                  (let [lock-file-path "/tmp/dirac.lein.lock.file"
+                                        lock-file (clojure.java.io/as-file lock-file-path)]
+                                    ; we have need to call lein recursively but somehow prevent infinite recursion because
+                                    ; this code gets evaluated on each re-enter
+                                    ; since I was unable to use java.io.RandomAccessFile withing the leiningen context
+                                    ; I ended up using existence of plain file for locking, but there is a danger that the file will
+                                    ; won't get deleted in some edge cases (eg. process gets killed)
+                                    (if (.exists lock-file)                                                                   ; ***
+                                      ; lock file exists, this means we are in a child lein process
+                                      ; this is just a safety net for dangling lock file
+                                      ; more than 5s is unexpected
+                                      (let [file-time-ms (.lastModified lock-file)
+                                            current-time-ms (System/currentTimeMillis)
+                                            diff-time-ms (- current-time-ms file-time-ms)]
+                                        (if (> diff-time-ms 5000)
+                                          (throw (ex-info (str "The lock file '" lock-file-path "' "
+                                                            "is too old (" (/ diff-time-ms 1000.0) "s). "
+                                                            "Remove it and run the task again.") {})))
+                                        ^:replace [])                                                                         ; prevent recursion
+                                      (try
+                                        (spit lock-file "")
+                                        (let [{:keys [exit out err]} (clojure.java.shell/sh "scripts/print-project-dependencies.sh")] ; see the other branch which prevents infinite recursion ***
+                                          (when-not (zero? exit)
+                                            (throw (ex-info (str err "\n" out) {:exit exit})))
+                                          (let [full-dependencies (read-string out)
+                                                _ (assert (pos? (count full-dependencies)))
+                                                test-dep? #(->> % (drop 2) (apply hash-map) :scope (= "test"))
+                                                non-test-deps (remove test-dep? full-dependencies)]
+                                            (with-meta non-test-deps {:replace true})))
+                                        (catch Throwable e
+                                          (throw (ex-info (str "Problems running 'scripts/print-project-dependencies.sh'\n"
+                                                            e) {})))
+                                        (finally
+                                          (clojure.java.io/delete-file lock-file))))))
                :source-paths   ^:replace ["src/project"
                                           "src/settings"
                                           "src/backport"
