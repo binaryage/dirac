@@ -129,7 +129,7 @@ And here it was resumed and finished green:
 If you have your local machine in a good shape with all dependencies, it should be as easy as:
  
 ```
-cd "$DWS"
+cd "$DWS/dirac"
 lein test
 ```
 
@@ -144,6 +144,10 @@ copy without disrupting the tests.
 
 If you don't want to setup your local environment or if you want to run tests under the same system as [travis] you can
 use my docker scripts below.
+
+```
+cd "$DWS/dirac"
+```
 
 This will build "dirac" docker image:
 ```

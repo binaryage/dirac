@@ -1619,7 +1619,8 @@ Elements.StylePropertiesSection = class {
       return;
 
     element.scrollIntoViewIfNeeded(false);
-    element.textContent = element.textContent;  // Reset selector marks in group.
+    // Reset selector marks in group, and normalize whitespace.
+    element.textContent = element.textContent.replace(/\s+/g, ' ').trim();
 
     var config =
         new UI.InplaceEditor.Config(this.editingSelectorCommitted.bind(this), this.editingSelectorCancelled.bind(this));
@@ -2599,7 +2600,6 @@ Elements.StylePropertyTreeElement = class extends UI.TreeElement {
     var result;
 
     if (isEnterKey(event)) {
-      event.preventDefault();
       result = 'forward';
     } else if (event.keyCode === UI.KeyboardShortcut.Keys.Esc.code || event.key === 'Escape') {
       result = 'cancel';

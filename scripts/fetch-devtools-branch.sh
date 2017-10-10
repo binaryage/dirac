@@ -36,7 +36,7 @@ git fetch chromium
 git checkout -f tracker
 git reset --hard chromium/master
 git clean -fd
-gclient sync
+gclient sync --with_branch_heads --reset --delete_unversioned_trees
 git filter-branch -f --prune-empty --subdirectory-filter third_party/WebKit/Source/devtools tracker
 
 git checkout -f devtools

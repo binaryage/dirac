@@ -905,20 +905,6 @@
     }
   };
 
-  TestSuite.prototype.testCreateTargetType = function() {
-    var test = this;
-    test.takeControl();
-
-    var target = SDK.targetManager.mainTarget();
-    target.registerTargetDispatcher({
-      targetCreated: function(targetInfo) {
-        test.assertEquals('page', targetInfo.type);
-        test.releaseControl();
-      }
-    });
-    target.targetAgent().createTarget('about:blank');
-  };
-
   TestSuite.prototype.testWindowInitializedOnNavigateBack = function() {
     var messages = ConsoleModel.consoleModel.messages();
     this.assertEquals(1, messages.length);
@@ -986,6 +972,13 @@
           test.releaseControl();
       }
     }
+  };
+
+  TestSuite.prototype.testDOMWarnings = function() {
+    var messages = ConsoleModel.consoleModel.messages();
+    this.assertEquals(1, messages.length);
+    var expectedPrefix = '[DOM] Found 2 elements with non-unique id #dup:';
+    this.assertTrue(messages[0].messageText.startsWith(expectedPrefix));
   };
 
   TestSuite.prototype.waitForTestResultsInConsole = function() {

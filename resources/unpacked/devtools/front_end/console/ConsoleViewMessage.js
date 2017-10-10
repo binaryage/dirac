@@ -256,13 +256,17 @@ Console.ConsoleViewMessage = class {
         messageElement = this._format([messageText]);
       }
     } else {
+      var messageInParameters =
+          this._message.parameters && messageText === /** @type {string} */ (this._message.parameters[0]);
       if (this._message.source === ConsoleModel.ConsoleMessage.MessageSource.Violation)
         messageText = Common.UIString('[Violation] %s', messageText);
       else if (this._message.source === ConsoleModel.ConsoleMessage.MessageSource.Intervention)
         messageText = Common.UIString('[Intervention] %s', messageText);
-      if (this._message.source === ConsoleModel.ConsoleMessage.MessageSource.Deprecation)
+      else if (this._message.source === ConsoleModel.ConsoleMessage.MessageSource.Deprecation)
         messageText = Common.UIString('[Deprecation] %s', messageText);
       var args = this._message.parameters || [messageText];
+      if (messageInParameters)
+        args[0] = messageText;
       messageElement = this._format(args);
     }
     messageElement.classList.add('console-message-text');
@@ -762,12 +766,13 @@ Console.ConsoleViewMessage = class {
 
     /**
      * @param {boolean} force
+     * @param {boolean} includePreview
      * @param {!SDK.RemoteObject} obj
      * @return {!Element}
      * @this {Console.ConsoleViewMessage}
      */
-    function parameterFormatter(force, obj) {
-      return this._formatParameter(obj, force, false);
+    function parameterFormatter(force, includePreview, obj) {
+      return this._formatParameter(obj, force, includePreview);
     }
 
     function stringFormatter(obj) {
@@ -815,7 +820,7 @@ Console.ConsoleViewMessage = class {
     }
 
     // Firebug uses %o for formatting objects.
-    formatters.o = parameterFormatter.bind(this, false);
+    formatters.o = parameterFormatter.bind(this, false /* force */, true /* includePreview */);
     formatters.s = stringFormatter;
     formatters.f = floatFormatter;
     // Firebug allows both %i and %d for formatting integers.
@@ -826,7 +831,7 @@ Console.ConsoleViewMessage = class {
     formatters.c = styleFormatter;
 
     // Support %O to force object formatting, instead of the type-based %o formatting.
-    formatters.O = parameterFormatter.bind(this, true);
+    formatters.O = parameterFormatter.bind(this, true /* force */, false /* includePreview */);
 
     formatters._ = bypassFormatter;
 
@@ -1030,6 +1035,7 @@ Console.ConsoleViewMessage = class {
         case ConsoleModel.ConsoleMessage.MessageSource.Violation:
         case ConsoleModel.ConsoleMessage.MessageSource.Deprecation:
         case ConsoleModel.ConsoleMessage.MessageSource.Intervention:
+        case ConsoleModel.ConsoleMessage.MessageSource.Recommendation:
           this._element.classList.add('console-warning-level');
           break;
       }

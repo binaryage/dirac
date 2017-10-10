@@ -3,6 +3,9 @@
 echo "-----------------------------------------------------------------------------------------------------------------------"
 echo "running ${BASH_SOURCE[0]} on $(date)"
 
+echo "ENVIRONMENT:"
+env
+
 finish () {
   echo "finished ${BASH_SOURCE[0]} on $(date)"
   echo
@@ -65,7 +68,7 @@ git merge --no-edit --no-verify-signatures -Xtheirs -m "merge tag $TAG into heal
 
 # commit an empty commit to trigger travis build
 # note that CHROMIUM_DOWNLOAD_URL will be used by travis
-git commit --allow-empty -F- << EOF
+git commit --author="BinaryAge Bot <bot@binaryage.com>" --allow-empty -F- << EOF
 check Dirac ${TAG} under ${CHROMIUM_VERSION}
 
 CHROMIUM_REVISION=${CHROMIUM_REVISION}

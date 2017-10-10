@@ -9,7 +9,7 @@
 
 ApplicationTestRunner.createAndNavigateIFrame = function(url, callback) {
   TestRunner.addSniffer(SDK.ResourceTreeModel.prototype, '_frameNavigated', frameNavigated);
-  TestRunner.evaluateInPage('createAndNavigateIFrame(unescape(\'' + escape(url) + '\'))');
+  TestRunner.evaluateInPageAnonymously('createAndNavigateIFrame(unescape(\'' + escape(url) + '\'))');
 
   function frameNavigated(frame) {
     callback(frame.id);
@@ -18,7 +18,7 @@ ApplicationTestRunner.createAndNavigateIFrame = function(url, callback) {
 
 ApplicationTestRunner.navigateIFrame = function(frameId, url, callback) {
   var frame = TestRunner.resourceTreeModel.frameForId(frameId);
-  TestRunner.evaluateInPage(
+  TestRunner.evaluateInPageAnonymously(
       'navigateIFrame(unescape(\'' + escape(frame.name) + '\'), unescape(\'' + escape(url) + '\'))');
   TestRunner.addSniffer(SDK.ResourceTreeModel.prototype, '_frameNavigated', frameNavigated);
 
@@ -29,7 +29,7 @@ ApplicationTestRunner.navigateIFrame = function(frameId, url, callback) {
 
 ApplicationTestRunner.removeIFrame = function(frameId, callback) {
   var frame = TestRunner.resourceTreeModel.frameForId(frameId);
-  TestRunner.evaluateInPage('removeIFrame(unescape(\'' + escape(frame.name) + '\'))');
+  TestRunner.evaluateInPageAnonymously('removeIFrame(unescape(\'' + escape(frame.name) + '\'))');
   TestRunner.addSniffer(SDK.ResourceTreeModel.prototype, '_frameDetached', frameDetached);
 
   function frameDetached(frame) {
@@ -39,7 +39,7 @@ ApplicationTestRunner.removeIFrame = function(frameId, callback) {
 
 ApplicationTestRunner.swapFrameCache = function(frameId) {
   var frame = TestRunner.resourceTreeModel.frameForId(frameId);
-  TestRunner.evaluateInPage('swapFrameCache(unescape(\'' + escape(frame.name) + '\'))');
+  TestRunner.evaluateInPageAnonymously('swapFrameCache(unescape(\'' + escape(frame.name) + '\'))');
 };
 
 ApplicationTestRunner.dumpApplicationCache = function() {
@@ -185,31 +185,29 @@ ApplicationTestRunner.ensureFrameStatusEventsReceived = function(frameId, count,
   ApplicationTestRunner.awaitedFrameStatusEventsCount[frameId] = {count: eventsLeft, callback: callback};
 };
 
-TestRunner.initAsync(async function() {
-  await TestRunner.evaluateInPagePromise(`
-    var framesCount = 0;
+TestRunner.initAsync(`
+  var framesCount = 0;
 
-    function createAndNavigateIFrame(url) {
-      var iframe = document.createElement('iframe');
-      iframe.src = url;
-      iframe.name = 'frame' + ++framesCount;
-      iframe.id = iframe.name;
-      document.body.appendChild(iframe);
-    }
+  function createAndNavigateIFrame(url) {
+    var iframe = document.createElement('iframe');
+    iframe.src = url;
+    iframe.name = 'frame' + ++framesCount;
+    iframe.id = iframe.name;
+    document.body.appendChild(iframe);
+  }
 
-    function removeIFrame(name) {
-      var iframe = document.querySelector('#' + name);
-      iframe.parentElement.removeChild(iframe);
-    }
+  function removeIFrame(name) {
+    var iframe = document.querySelector('#' + name);
+    iframe.parentElement.removeChild(iframe);
+  }
 
-    function navigateIFrame(name, url) {
-      var iframe = document.querySelector('#' + name);
-      iframe.src = url;
-    }
+  function navigateIFrame(name, url) {
+    var iframe = document.querySelector('#' + name);
+    iframe.src = url;
+  }
 
-    function swapFrameCache(name) {
-      var iframe = document.querySelector('#' + name);
-      iframe.contentWindow.applicationCache.swapCache();
-    }
-  `);
-});
+  function swapFrameCache(name) {
+    var iframe = document.querySelector('#' + name);
+    iframe.contentWindow.applicationCache.swapCache();
+  }
+`);

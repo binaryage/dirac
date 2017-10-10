@@ -40,7 +40,7 @@
         <key>EnvironmentVariables</key>
         <dict>
             <key>PATH</key>
-            <string>/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin:/Users/darwin/bin:/Users/darwin/bin/depot_tools</string>
+            <string>/Users/darwin/bin/depot_tools:/Users/darwin/bin:/usr/local/bin:/usr/bin:/bin:/usr/local/sbin:/usr/sbin:/sbin</string>
             <key>PYTHONPATH</key>
             <string>/usr/local/lib/python2.7/site-packages</string>
         </dict>

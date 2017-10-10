@@ -1,6 +1,8 @@
 (def clj-logging-config-version "1.9.12")
 (def slf4j-log4j12-version "1.7.25")
-(defproject binaryage/dirac "1.2.16"
+(def figwheel-version "0.5.14")
+(def selected-clojure-version "1.9.0-beta2")
+(defproject binaryage/dirac "1.2.17"
   :description "Dirac DevTools - a Chrome DevTools fork for ClojureScript developers."
   :url "https://github.com/binaryage/dirac"
   :license {:name         "MIT License"
@@ -9,8 +11,8 @@
   :scm {:name "git"
         :url  "https://github.com/binaryage/dirac"}
 
-  :dependencies [[org.clojure/clojure "1.9.0-alpha19" :scope "provided"]
-                 [org.clojure/clojurescript "1.9.908" :scope "provided"]
+  :dependencies [[org.clojure/clojure ~selected-clojure-version :scope "provided"]
+                 [org.clojure/clojurescript "1.9.946" :scope "provided"]
                  [org.clojure/core.async "0.3.443"]
                  [org.clojure/tools.logging "0.4.0"]
                  [org.clojure/tools.cli "0.3.5"]
@@ -19,16 +21,16 @@
                  [http-kit "2.2.0"]
                  [version-clj "0.1.2"]
                  [clansi "1.0.0"]
-                 [funcool/cuerdas "2.0.3"]
+                 [funcool/cuerdas "2.0.4"]
 
                  ; we cannot use :dependencies under individual profiles because Cursive recognizes only root level
                  ; thus we mark extra deps with :scope "test" and filter them later when producing jar library
                  [binaryage/oops "0.5.6" :scope "test"]
-                 [binaryage/chromex "0.5.10" :scope "test"]
-                 [binaryage/devtools "0.9.4" :scope "test"]
+                 [binaryage/chromex "0.5.12" :scope "test"]
+                 [binaryage/devtools "0.9.7" :scope "test"]
                  [environ "1.1.0" :scope "test"]
                  [cljs-http "0.1.43" :scope "test"]
-                 [figwheel "0.5.13" :scope "test"]
+                 [figwheel ~figwheel-version :scope "test"]
                  [reforms "0.4.3" :scope "test"]
                  [rum "0.10.8" :scope "test"]
                  [rum-reforms "0.4.3" :scope "test"]
@@ -50,10 +52,10 @@
 
                  ; guava is needed for selenium, they rely on latest guava which gets overridden by google closure compiler dep inside clojurescript
                  ;[com.google.guava/guava "23.0" :scope "test" :upgrade false]
-                 [org.seleniumhq.selenium/selenium-java "3.5.3" :scope "test"]
-                 [org.seleniumhq.selenium/selenium-chrome-driver "3.5.3" :scope "test"]
-                 [org.seleniumhq.selenium/selenium-support "3.5.3" :scope "test"]
-                 [org.seleniumhq.selenium/selenium-api "3.5.3" :scope "test"]
+                 [org.seleniumhq.selenium/selenium-java "3.6.0" :scope "test"]
+                 [org.seleniumhq.selenium/selenium-chrome-driver "3.6.0" :scope "test"]
+                 [org.seleniumhq.selenium/selenium-support "3.6.0" :scope "test"]
+                 [org.seleniumhq.selenium/selenium-api "3.6.0" :scope "test"]
                  [org.seleniumhq.selenium/selenium-htmlunit-driver "2.52.0" :scope "test"]]
 
   :plugins [[lein-shell "0.5.0"]
@@ -162,14 +164,14 @@
              {:dependencies [[org.clojure/clojure "1.8.0" :scope "provided" :upgrade false]]}
 
              :clojure19
-             {:dependencies [[org.clojure/clojure "1.9.0-alpha19" :scope "provided" :upgrade false]]}
+             {:dependencies [[org.clojure/clojure ~selected-clojure-version :scope "provided" :upgrade false]]}
 
              :cooper
              {:plugins [[lein-cooper "1.2.2"]]}
 
              :cljs
              {:plugins [[lein-cljsbuild "1.1.6"]
-                        [lein-figwheel "0.5.13"]]}
+                        [lein-figwheel ~figwheel-version]]}
 
              :nuke-aliases
              {:aliases ^:replace {}}

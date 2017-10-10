@@ -7,7 +7,8 @@ pushd "$CHROMIUM_MIRROR_DIR"
 
 git checkout master
 git pull
+git clean -fd
 
-gclient sync
+gclient sync --with_branch_heads --reset --delete_unversioned_trees
 
 popd
