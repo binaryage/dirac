@@ -48,7 +48,6 @@
                  [ring/ring-core "1.6.2" :scope "test"]
                  [ring/ring-devel "1.6.2" :scope "test"]
                  [clj-time "0.14.0" :scope "test"]
-                 [clansi "1.0.0" :scope "test"]
 
                  ; guava is needed for selenium, they rely on latest guava which gets overridden by google closure compiler dep inside clojurescript
                  ;[com.google.guava/guava "23.0" :scope "test" :upgrade false]
