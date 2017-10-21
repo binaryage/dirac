@@ -1,5 +1,5 @@
-Protocol.BakedSupportedCSSPropertiesChromeTag='63.0.3235.4';
-Protocol.BakedSupportedCSSPropertiesChromeRev='5b98c4f564a21e98be5450fb02c50d2aabc66404';
+Protocol.BakedSupportedCSSPropertiesChromeTag='64.0.3246.2';
+Protocol.BakedSupportedCSSPropertiesChromeRev='f63505d336bdad19fc6a57a9a72e5c154846bfd5';
 Protocol.BakedSupportedCSSProperties=''
 + '[{"name": "-webkit-app-region"},\n'
 + ' {"name": "-webkit-appearance"},\n'
@@ -92,7 +92,7 @@ Protocol.BakedSupportedCSSProperties=''
 + ' {"longhands": ["-webkit-text-emphasis-style", "-webkit-text-emphasis-color"], "name": "-webkit-text-emphasis"},\n'
 + ' {"name": "-webkit-text-emphasis-color", "inherited": true},\n'
 + ' {"name": "-webkit-text-emphasis-position", "inherited": true},\n'
-+ ' {"inherited": true, "name": "-webkit-text-emphasis-style"},\n'
++ ' {"name": "-webkit-text-emphasis-style", "inherited": true},\n'
 + ' {"name": "-webkit-text-fill-color", "inherited": true},\n'
 + ' {"name": "-webkit-text-orientation", "inherited": true},\n'
 + ' {"name": "-webkit-text-security", "inherited": true},\n'
@@ -330,7 +330,7 @@ Protocol.BakedSupportedCSSProperties=''
 + ' {"longhands": ["break-after"], "name": "page-break-after"},\n'
 + ' {"longhands": ["break-before"], "name": "page-break-before"},\n'
 + ' {"longhands": ["break-inside"], "name": "page-break-inside"},\n'
-+ ' {"name": "paint-order", "svg": true, "inherited": true},\n'
++ ' {"svg": true, "inherited": true, "name": "paint-order"},\n'
 + ' {"name": "perspective"},\n'
 + ' {"name": "perspective-origin"},\n'
 + ' {"longhands": ["align-content", "justify-content"], "name": "place-content"},\n'
