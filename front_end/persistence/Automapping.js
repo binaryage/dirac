@@ -22,6 +22,8 @@ Persistence.Automapping = class {
 
     /** @type {!Map<string, !Workspace.UISourceCode>} */
     this._fileSystemUISourceCodes = new Map();
+    /** @type {!Set<!Workspace.Project>} */
+    this._ignoredProjects = new Set();
     this._sweepThrottler = new Common.Throttler(100);
 
     var pathEncoder = new Persistence.Automapping.PathEncoder();
@@ -50,6 +52,24 @@ Persistence.Automapping = class {
       this._onProjectAdded(fileSystem);
     for (var uiSourceCode of workspace.uiSourceCodes())
       this._onUISourceCodeAdded(uiSourceCode);
+  }
+
+  /**
+   * @override
+   * @param {!Workspace.Project} project
+   */
+  ignoreProject(project) {
+    this._ignoredProjects.add(project);
+    this._scheduleRemap();
+  }
+
+  /**
+   * @override
+   * @param {!Workspace.Project} project
+   */
+  removeIgnoredProject(project) {
+    this._ignoredProjects.delete(project);
+    this._scheduleRemap();
   }
 
   _scheduleRemap() {
@@ -83,6 +103,7 @@ Persistence.Automapping = class {
    * @param {!Workspace.Project} project
    */
   _onProjectRemoved(project) {
+    this._ignoredProjects.delete(project);
     for (var uiSourceCode of project.uiSourceCodes())
       this._onUISourceCodeRemoved(uiSourceCode);
     if (project.type() !== Workspace.projectTypes.FileSystem)
@@ -98,12 +119,13 @@ Persistence.Automapping = class {
    * @param {!Workspace.Project} project
    */
   _onProjectAdded(project) {
-    if (project.type() !== Workspace.projectTypes.FileSystem)
+    if (project.type() !== Workspace.projectTypes.FileSystem || this._ignoredProjects.has(project))
       return;
     var fileSystem = /** @type {!Persistence.FileSystemWorkspaceBinding.FileSystem} */ (project);
     for (var gitFolder of fileSystem.initialGitFolders())
       this._projectFoldersIndex.addFolder(gitFolder);
     this._projectFoldersIndex.addFolder(fileSystem.fileSystemPath());
+    project.uiSourceCodes().forEach(this._onUISourceCodeAdded.bind(this));
     this._scheduleRemap();
   }
 
@@ -111,6 +133,8 @@ Persistence.Automapping = class {
    * @param {!Workspace.UISourceCode} uiSourceCode
    */
   _onUISourceCodeAdded(uiSourceCode) {
+    if (this._ignoredProjects.has(uiSourceCode.project()))
+      return;
     if (uiSourceCode.project().type() === Workspace.projectTypes.FileSystem) {
       this._filesIndex.addPath(uiSourceCode.url());
       this._fileSystemUISourceCodes.set(uiSourceCode.url(), uiSourceCode);
@@ -160,7 +184,7 @@ Persistence.Automapping = class {
    */
   _bindNetwork(networkSourceCode) {
     if (networkSourceCode[Persistence.Automapping._processingPromise] ||
-        networkSourceCode[Persistence.Automapping._binding])
+        networkSourceCode[Persistence.Automapping._binding] || this._ignoredProjects.has(networkSourceCode.project()))
       return;
     var createBindingPromise = this._createBinding(networkSourceCode).then(onBinding.bind(this));
     networkSourceCode[Persistence.Automapping._processingPromise] = createBindingPromise;

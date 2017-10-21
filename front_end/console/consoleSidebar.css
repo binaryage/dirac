@@ -5,58 +5,44 @@
  */
 
 :host {
-    background-color: #eee;
-    overflow: hidden;
+    overflow: auto;
 }
 
-.list {
-    flex: 1;
-    overflow-x: hidden;
-}
-
-.context-item {
-    cursor: pointer;
-    padding: 6px 6px 6px 16px;
-    height: 28px;
-    display: flex;
-}
-
-.context-item.selected {
-    background-color: #3c7bd6;
-}
-
-.name {
-    flex-grow: 1;
-    flex-shrink: 0;
-    overflow: hidden;
+.tree-outline-disclosure {
     max-width: 100%;
+    padding-left: 6px;
+}
+
+.count {
+    flex: none;
+    margin: 0 8px;
+}
+
+[is=ui-icon] {
+    margin: 0 5px;
+}
+
+[is=ui-icon].icon-warning {
+    background: linear-gradient(45deg, hsla(48, 100%, 50%, 1), hsla(48, 70%, 50%, 1));
+}
+
+li {
+    height: 24px;
+}
+
+li .largeicon-navigator-file {
+    background: linear-gradient(45deg, hsl(48, 70%, 50%), hsl(48, 70%, 70%));
+    margin: 0;
+}
+
+li .largeicon-navigator-folder {
+    background: linear-gradient(45deg, hsl(210, 82%, 65%), hsl(210, 82%, 80%));
+    margin: -3px -3px 0 -5px;
+}
+
+.tree-element-title {
+    flex-shrink: 100;
+    flex-grow: 1;
+    overflow: hidden;
     text-overflow: ellipsis;
-}
-
-.context-item.selected .name {
-    color: white;
-}
-
-.info-count, .warning-count, .error-count {
-  background-color: white;
-  border-radius: 4px;
-  margin: 0 3px;
-  text-align: center;
-  height: 14px;
-  line-height: 14px;
-  padding: 0px 3px;
-}
-
-.warning-count {
-  background-color: hsl(50, 100%, 90%);
-  color: brown;
-}
-
-.error-count {
-  background-color: hsl(0, 100%, 90%);
-  color: crimson;
-}
-
-.counters {
-  margin-left: 10px;
 }
