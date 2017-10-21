@@ -123,12 +123,12 @@
         "product_registry",
         "mobile_throttling",
         "har_importer",
-        "network_priorities"
+        "network_priorities",
+        "persistence"
     ],
     "scripts": [
         "BlockedURLsPane.js",
         "EventSourceMessagesView.js",
-        "FilterSuggestionBuilder.js",
         "HARWriter.js",
         "NetworkConfigView.js",
         "NetworkDataGridNode.js",

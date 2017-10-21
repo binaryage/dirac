@@ -135,7 +135,10 @@ Workspace.UISourceCode = class extends Common.Object {
       return Common.UIString('(index)');
     var name = this._name;
     try {
-      name = decodeURI(name);
+      if (this.project().type() === Workspace.projectTypes.FileSystem)
+        name = unescape(name);
+      else
+        name = decodeURI(name);
       if (dirac.hasCleanUrls) {
         // strip all after ? in the name
         const qmarkIndex = name.indexOf("?");
@@ -356,8 +359,10 @@ Workspace.UISourceCode = class extends Common.Object {
     }
   }
 
-  saveAs() {
-    Workspace.fileManager.save(this._url, this.workingCopy(), true).then(saveResponse => {
+  async saveAs() {
+    // Because workingCopy() might return an empty string if the content has not been loaded yet, we load it first.
+    var content = this.isDirty() ? this.workingCopy() : await this.requestContent();
+    Workspace.fileManager.save(this._url, content, true).then(saveResponse => {
       if (!saveResponse)
         return;
       this._contentCommitted(this.workingCopy(), true);

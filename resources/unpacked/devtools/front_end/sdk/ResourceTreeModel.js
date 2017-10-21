@@ -771,10 +771,11 @@ SDK.PageDispatcher = class {
 
   /**
    * @override
+   * @param {!Protocol.Page.FrameId} frameId
    * @param {string} name
    * @param {number} time
    */
-  lifecycleEvent(name, time) {
+  lifecycleEvent(frameId, name, time) {
   }
 
   /**
@@ -887,5 +888,15 @@ SDK.PageDispatcher = class {
   interstitialHidden() {
     this._resourceTreeModel._isInterstitialShowing = false;
     this._resourceTreeModel.dispatchEventToListeners(SDK.ResourceTreeModel.Events.InterstitialHidden);
+  }
+
+  /**
+   * @override
+   * @param {string} url
+   * @param {string} windowName
+   * @param {string} windowFeatures
+   * @param {boolean} userGesture
+   */
+  windowOpen(url, windowName, windowFeatures, userGesture) {
   }
 };
