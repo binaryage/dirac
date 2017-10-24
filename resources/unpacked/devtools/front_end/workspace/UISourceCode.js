@@ -67,6 +67,8 @@ Workspace.UISourceCode = class extends Common.Object {
     this._contentLoaded = false;
     /** @type {?string} */
     this._content = null;
+    /** @type {boolean|undefined} */
+    this._contentEncoded;
     this._forceLoadOnCheckContent = false;
     this._checkingContent = false;
     /** @type {?string} */
@@ -229,6 +231,15 @@ Workspace.UISourceCode = class extends Common.Object {
   }
 
   /**
+   * @override
+   * @return {!Promise<boolean>}
+   */
+  async contentEncoded() {
+    await this.requestContent();
+    return this._contentEncoded || false;
+  }
+
+  /**
    * @return {!Workspace.Project}
    */
   project() {
@@ -248,9 +259,10 @@ Workspace.UISourceCode = class extends Common.Object {
     } else {
       var fulfill;
       this._requestContentPromise = new Promise(x => fulfill = x);
-      this._project.requestFileContent(this, content => {
+      this._project.requestFileContent(this, (content, encoded) => {
         this._contentLoaded = true;
         this._content = content;
+        this._contentEncoded = encoded;
         fulfill(content);
       });
     }
@@ -269,9 +281,10 @@ Workspace.UISourceCode = class extends Common.Object {
 
     /**
      * @param {?string} updatedContent
+     * @param {boolean} encoded
      * @this {Workspace.UISourceCode}
      */
-    function contentLoaded(updatedContent) {
+    function contentLoaded(updatedContent, encoded) {
       this._checkingContent = false;
       if (updatedContent === null) {
         var workingCopy = this.workingCopy();
@@ -309,22 +322,17 @@ Workspace.UISourceCode = class extends Common.Object {
    * @return {!Promise<?string>}
    */
   requestOriginalContent() {
-    var callback;
-    var promise = new Promise(fulfill => callback = fulfill);
-    this._project.requestFileContent(this, callback);
-    return promise;
+    return new Promise(fulfill => {
+      this._project.requestFileContent(this, (content, encoded) => fulfill(content));
+    });
   }
 
   /**
    * @param {string} content
    */
   _commitContent(content) {
-    if (this._project.canSetFileContent()) {
-      this._project.setFileContent(this, content, function() {});
-    } else if (this._url && Workspace.fileManager.isURLSaved(this._url)) {
-      Workspace.fileManager.save(this._url, content, false);
-      Workspace.fileManager.close(this._url);
-    }
+    if (this._project.canSetFileContent())
+      this._project.setFileContent(this, content, false, function() {});
     this._contentCommitted(content, true);
   }
 
@@ -357,17 +365,6 @@ Workspace.UISourceCode = class extends Common.Object {
       this._project.workspace().dispatchEventToListeners(
           Workspace.Workspace.Events.WorkingCopyCommittedByUser, {uiSourceCode: this, content: content});
     }
-  }
-
-  async saveAs() {
-    // Because workingCopy() might return an empty string if the content has not been loaded yet, we load it first.
-    var content = this.isDirty() ? this.workingCopy() : await this.requestContent();
-    Workspace.fileManager.save(this._url, content, true).then(saveResponse => {
-      if (!saveResponse)
-        return;
-      this._contentCommitted(this.workingCopy(), true);
-    });
-    Workspace.fileManager.close(this._url);
   }
 
   /**
@@ -789,6 +786,14 @@ Workspace.Revision = class {
    */
   contentType() {
     return this._uiSourceCode.contentType();
+  }
+
+  /**
+   * @override
+   * @return {!Promise<boolean>}
+   */
+  contentEncoded() {
+    return Promise.resolve(false);
   }
 
   /**

@@ -153,11 +153,11 @@
     margin-left: 16px;
 }
 
-.console-group-title {
+.console-group-title.console-from-api {
     font-weight: bold;
 }
 
-.console-group-title:not(.repeated-message) {
+.console-group-title .console-message {
     margin-left: 12px;
 }
 
@@ -169,6 +169,17 @@
     left: 10px;
     top: 5px;
     margin-right: 2px;
+}
+
+.console-group-title .message-level-icon {
+    display: none;
+}
+
+.console-message-repeat-count .expand-group-icon {
+    left: 2px;
+    top: 2px;
+    background-color: #fff;
+    margin-right: 4px;
 }
 
 .console-group {

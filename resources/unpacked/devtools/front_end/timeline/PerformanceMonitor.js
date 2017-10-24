@@ -25,6 +25,8 @@ Timeline.PerformanceMonitor = class extends UI.HBox {
     this._controlPane = new Timeline.PerformanceMonitor.ControlPane(this.contentElement);
     var chartContainer = this.contentElement.createChild('div', 'perfmon-chart-container');
     this._canvas = /** @type {!HTMLCanvasElement} */ (chartContainer.createChild('canvas'));
+    this.contentElement.createChild('div', 'perfmon-chart-suspend-overlay fill').createChild('div').textContent =
+        Common.UIString('Paused');
 
     var mode = Timeline.PerformanceMonitor.MetricMode;
     /** @type {!Map<string, !Timeline.PerformanceMonitor.MetricMode>} */
@@ -36,14 +38,38 @@ Timeline.PerformanceMonitor = class extends UI.HBox {
     /** @type {!Map<string, !{lastValue: (number|undefined), lastTimestamp: (number|undefined)}>} */
     this._metricData = new Map();
     this._controlPane.addEventListener(
-        Timeline.PerformanceMonitor.ControlPane.Events.MetricChanged, () => this._recalcChartHeight());
+        Timeline.PerformanceMonitor.ControlPane.Events.MetricChanged, this._recalcChartHeight, this);
   }
 
   /**
    * @override
    */
   wasShown() {
+    SDK.targetManager.addEventListener(SDK.TargetManager.Events.SuspendStateChanged, this._suspendStateChanged, this);
     this._model.enable();
+    this._suspendStateChanged();
+  }
+
+  /**
+   * @override
+   */
+  willHide() {
+    SDK.targetManager.removeEventListener(
+        SDK.TargetManager.Events.SuspendStateChanged, this._suspendStateChanged, this);
+    this._stopPolling();
+    this._model.disable();
+  }
+
+  _suspendStateChanged() {
+    var suspended = SDK.targetManager.allTargetsSuspended();
+    if (suspended)
+      this._stopPolling();
+    else
+      this._startPolling();
+    this.contentElement.classList.toggle('suspended', suspended);
+  }
+
+  _startPolling() {
     this._startTimestamp = 0;
     this._pollTimer = setInterval(() => this._poll(), this._pollIntervalMs);
     this.onResize();
@@ -58,13 +84,9 @@ Timeline.PerformanceMonitor = class extends UI.HBox {
     }
   }
 
-  /**
-   * @override
-   */
-  willHide() {
+  _stopPolling() {
     clearInterval(this._pollTimer);
     this.contentElement.window().cancelAnimationFrame(this._animationId);
-    this._model.disable();
     this._metricsBuffer = [];
   }
 
@@ -212,15 +234,14 @@ Timeline.PerformanceMonitor = class extends UI.HBox {
         if (metrics.timestamp < startTime)
           break;
       }
-      max = Math.max(1, max);
     }
-    if (!isFinite(max))
-      return 1;
+    if (!this._metricsBuffer.length)
+      return 10;
 
     var base10 = Math.pow(10, Math.floor(Math.log10(max)));
     max = Math.ceil(max / base10 / 2) * base10 * 2;
 
-    var alpha = 0.1;
+    var alpha = 0.2;
     chartInfo.currentMax = max * alpha + (chartInfo.currentMax || max) * (1 - alpha);
     return chartInfo.currentMax;
   }
@@ -503,8 +524,9 @@ Timeline.PerformanceMonitor.MetricIndicator = class {
     this._active = active;
     this._onToggle = onToggle;
     this.element = parent.createChild('div', 'perfmon-indicator');
-    this._swatchElement = this.element.createChild('div', 'perfmon-indicator-swatch');
-    this._swatchElement.style.borderColor = color;
+    this._swatchElement = UI.Icon.create('smallicon-checkmark-square', 'perfmon-indicator-swatch');
+    this._swatchElement.style.backgroundColor = color;
+    this.element.appendChild(this._swatchElement);
     this.element.createChild('div', 'perfmon-indicator-title').textContent = info.title;
     this._valueElement = this.element.createChild('div', 'perfmon-indicator-value');
     this._valueElement.style.color = color;

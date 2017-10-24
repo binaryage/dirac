@@ -562,6 +562,18 @@ ConsoleModel.ConsoleMessage = class {
   }
 
   /**
+   * @return {boolean}
+   */
+  isGroupable() {
+    return (
+        this.source !== ConsoleModel.ConsoleMessage.MessageSource.ConsoleAPI &&
+        this.level !== ConsoleModel.ConsoleMessage.MessageLevel.Error &&
+        this.type !== ConsoleModel.ConsoleMessage.MessageType.Command &&
+        this.type !== ConsoleModel.ConsoleMessage.MessageType.Result &&
+        this.type !== ConsoleModel.ConsoleMessage.MessageType.System);
+  }
+
+  /**
    * @param {?ConsoleModel.ConsoleMessage} msg
    * @return {boolean}
    */
@@ -663,7 +675,8 @@ ConsoleModel.ConsoleMessage.MessageType = {
   ProfileEnd: 'profileEnd',
   DiracCommand: "diracCommand",
   DiracMarkup: "diracMarkup",
-  Command: 'command'
+  Command: 'command',
+  System: 'system'
 };
 
 /**
