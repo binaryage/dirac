@@ -1,5 +1,5 @@
-Protocol.BakedInspectorBackendAPIChromeTag='64.0.3246.2';
-Protocol.BakedInspectorBackendAPIChromeRev='f63505d336bdad19fc6a57a9a72e5c154846bfd5';
+Protocol.BakedInspectorBackendAPIChromeTag='64.0.3248.3';
+Protocol.BakedInspectorBackendAPIChromeRev='0d4e57f4c9aac32a4b31979fc082db3a674679b1';
 Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerEvent("Inspector.detached", ["reason"]);\n'
 + 'Protocol.inspectorBackend.registerEvent("Inspector.targetCrashed", []);\n'
@@ -332,7 +332,7 @@ Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerEvent("HeadlessExperimental.mainFrameReadyForScreenshots", []);\n'
 + 'Protocol.inspectorBackend.registerCommand("HeadlessExperimental.enable", [], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("HeadlessExperimental.disable", [], [], false);\n'
-+ 'Protocol.inspectorBackend.registerCommand("HeadlessExperimental.beginFrame", [{"name": "frameTime", "type": "number", "optional": true}, {"name": "deadline", "type": "number", "optional": true}, {"name": "interval", "type": "number", "optional": true}, {"name": "screenshot", "type": "object", "optional": true}], ["hasDamage", "screenshotData"], false);\n'
++ 'Protocol.inspectorBackend.registerCommand("HeadlessExperimental.beginFrame", [{"name": "frameTime", "type": "number", "optional": true}, {"name": "deadline", "type": "number", "optional": true}, {"name": "interval", "type": "number", "optional": true}, {"name": "screenshot", "type": "object", "optional": true}], ["hasDamage", "mainFrameContentUpdated", "screenshotData"], false);\n'
 + 'Protocol.inspectorBackend.registerEnum("ServiceWorker.ServiceWorkerVersionRunningStatus", {Stopped: "stopped", Starting: "starting", Running: "running", Stopping: "stopping"});\n'
 + 'Protocol.inspectorBackend.registerEnum("ServiceWorker.ServiceWorkerVersionStatus", {New: "new", Installing: "installing", Installed: "installed", Activating: "activating", Activated: "activated", Redundant: "redundant"});\n'
 + 'Protocol.inspectorBackend.registerEvent("ServiceWorker.workerRegistrationUpdated", ["registrations"]);\n'
