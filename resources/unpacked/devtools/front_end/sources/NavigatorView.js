@@ -127,7 +127,7 @@ Sources.NavigatorView = class extends UI.VBox {
     }
 
     var addFolderLabel = Common.UIString('Add folder to workspace');
-    contextMenu.appendItem(addFolderLabel, addFolder);
+    contextMenu.defaultSection().appendItem(addFolderLabel, addFolder);
   }
 
   /**
@@ -144,7 +144,7 @@ Sources.NavigatorView = class extends UI.VBox {
       path = '*';
       searchLabel = Common.UIString('Search in all files');
     }
-    contextMenu.appendItem(searchLabel, searchPath);
+    contextMenu.viewSection().appendItem(searchLabel, searchPath);
   }
 
   /**
@@ -694,15 +694,15 @@ Sources.NavigatorView = class extends UI.VBox {
     var uiSourceCode = node.uiSourceCode();
     var contextMenu = new UI.ContextMenu(event);
     contextMenu.appendApplicableItems(uiSourceCode);
-    contextMenu.appendSeparator();
 
     var project = uiSourceCode.project();
     if (project.type() === Workspace.projectTypes.FileSystem) {
-      contextMenu.appendItem(Common.UIString('Rename\u2026'), this._handleContextMenuRename.bind(this, node));
-      contextMenu.appendItem(
+      contextMenu.editSection().appendItem(
+          Common.UIString('Rename\u2026'), this._handleContextMenuRename.bind(this, node));
+      contextMenu.editSection().appendItem(
           Common.UIString('Make a copy\u2026'), this._handleContextMenuCreate.bind(this, project, '', uiSourceCode));
-      contextMenu.appendItem(Common.UIString('Delete'), this._handleContextMenuDelete.bind(this, uiSourceCode));
-      contextMenu.appendSeparator();
+      contextMenu.editSection().appendItem(
+          Common.UIString('Delete'), this._handleContextMenuDelete.bind(this, uiSourceCode));
     }
 
     contextMenu.show();
@@ -719,13 +719,13 @@ Sources.NavigatorView = class extends UI.VBox {
     var contextMenu = new UI.ContextMenu(event);
 
     Sources.NavigatorView.appendSearchItem(contextMenu, path);
-    contextMenu.appendSeparator();
-
     if (project.type() !== Workspace.projectTypes.FileSystem)
       return;
 
-    contextMenu.appendItem(Common.UIString('New file'), this._handleContextMenuCreate.bind(this, project, path));
-    contextMenu.appendItem(Common.UIString('Exclude folder'), this._handleContextMenuExclude.bind(this, project, path));
+    contextMenu.defaultSection().appendItem(
+        Common.UIString('New file'), this._handleContextMenuCreate.bind(this, project, path));
+    contextMenu.defaultSection().appendItem(
+        Common.UIString('Exclude folder'), this._handleContextMenuExclude.bind(this, project, path));
 
     function removeFolder() {
       var shouldRemove = window.confirm(Common.UIString('Are you sure you want to remove this folder?'));
@@ -733,10 +733,9 @@ Sources.NavigatorView = class extends UI.VBox {
         project.remove();
     }
 
-    contextMenu.appendSeparator();
     Sources.NavigatorView.appendAddFolderItem(contextMenu);
     if (node instanceof Sources.NavigatorGroupTreeNode)
-      contextMenu.appendItem(Common.UIString('Remove folder from workspace'), removeFolder);
+      contextMenu.defaultSection().appendItem(Common.UIString('Remove folder from workspace'), removeFolder);
 
     contextMenu.show();
   }
@@ -1317,8 +1316,7 @@ Sources.NavigatorUISourceCodeTreeNode = class extends Sources.NavigatorTreeNode 
       return;
 
     var titleText = this._uiSourceCode.displayName();
-    if (!ignoreIsDirty &&
-        (this._uiSourceCode.isDirty() || Persistence.persistence.hasUnsavedCommittedChanges(this._uiSourceCode)))
+    if (!ignoreIsDirty && this._uiSourceCode.isDirty())
       titleText = '*' + titleText;
 
     this._treeElement.title = titleText;
