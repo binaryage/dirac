@@ -573,7 +573,8 @@ UI.TabbedPane = class extends UI.VBox {
       var tab = this._tabs[i];
       if (tab._shown)
         continue;
-      menu.appendCheckboxItem(tab.title, this._dropDownMenuItemSelected.bind(this, tab), this._tabsHistory[0] === tab);
+      menu.defaultSection().appendCheckboxItem(
+          tab.title, this._dropDownMenuItemSelected.bind(this, tab), this._tabsHistory[0] === tab);
     }
     menu.show();
   }
@@ -782,8 +783,10 @@ UI.TabbedPane = class extends UI.VBox {
     if (!this._currentTab || !this._sliderEnabled)
       return;
     var left = 0;
-    for (var i = 0; i < this._tabs.length && this._currentTab !== this._tabs[i] && this._tabs[i]._shown; i++)
-      left += this._tabs[i]._measuredWidth;
+    for (var i = 0; i < this._tabs.length && this._currentTab !== this._tabs[i]; i++) {
+      if (this._tabs[i]._shown)
+        left += this._tabs[i]._measuredWidth;
+    }
     var sliderWidth = this._currentTab._shown ? this._currentTab._measuredWidth : this._dropDownButton.offsetWidth;
     var scaleFactor = window.devicePixelRatio >= 1.5 ? ' scaleY(0.75)' : '';
     this._tabSlider.style.transform = 'translateX(' + left + 'px)' + scaleFactor;
@@ -1185,10 +1188,10 @@ UI.TabbedPaneTab = class {
 
     var contextMenu = new UI.ContextMenu(event);
     if (this._closeable) {
-      contextMenu.appendItem(Common.UIString('Close'), close.bind(this));
-      contextMenu.appendItem(Common.UIString('Close others'), closeOthers.bind(this));
-      contextMenu.appendItem(Common.UIString('Close tabs to the right'), closeToTheRight.bind(this));
-      contextMenu.appendItem(Common.UIString('Close all'), closeAll.bind(this));
+      contextMenu.defaultSection().appendItem(Common.UIString('Close'), close.bind(this));
+      contextMenu.defaultSection().appendItem(Common.UIString('Close others'), closeOthers.bind(this));
+      contextMenu.defaultSection().appendItem(Common.UIString('Close tabs to the right'), closeToTheRight.bind(this));
+      contextMenu.defaultSection().appendItem(Common.UIString('Close all'), closeAll.bind(this));
     }
     if (this._delegate)
       this._delegate.onContextMenu(this.id, contextMenu);
