@@ -268,6 +268,20 @@ Protocol.PageAgent.SetAutoAttachToCreatedPagesResponse;
 Protocol.PageAgent.prototype.invoke_setAutoAttachToCreatedPages = function(obj) {};
 
 /**
+ * @param {boolean} enabled
+ * @return {!Promise<undefined>}
+ */
+Protocol.PageAgent.prototype.setLifecycleEventsEnabled = function(enabled) {};
+/** @typedef {!{enabled: boolean}} */
+Protocol.PageAgent.SetLifecycleEventsEnabledRequest;
+/** @typedef {Object|undefined} */
+Protocol.PageAgent.SetLifecycleEventsEnabledResponse;
+/**
+ * @param {!Protocol.PageAgent.SetLifecycleEventsEnabledRequest} obj
+ * @return {!Promise<!Protocol.PageAgent.SetLifecycleEventsEnabledResponse>} */
+Protocol.PageAgent.prototype.invoke_setLifecycleEventsEnabled = function(obj) {};
+
+/**
  * @param {boolean=} opt_ignoreCache
  * @param {string=} opt_scriptToEvaluateOnLoad
  * @return {!Promise<undefined>}
@@ -305,7 +319,7 @@ Protocol.PageAgent.prototype.invoke_setAdBlockingEnabled = function(obj) {};
 Protocol.PageAgent.prototype.navigate = function(url, opt_referrer, opt_transitionType) {};
 /** @typedef {!{url: string, referrer: (string|undefined), transitionType: (Protocol.Page.TransitionType|undefined)}} */
 Protocol.PageAgent.NavigateRequest;
-/** @typedef {!{frameId: Protocol.Page.FrameId}} */
+/** @typedef {!{loaderId: Protocol.Network.LoaderId, frameId: Protocol.Page.FrameId}} */
 Protocol.PageAgent.NavigateResponse;
 /**
  * @param {!Protocol.PageAgent.NavigateRequest} obj
@@ -392,6 +406,19 @@ Protocol.PageAgent.GetResourceTreeResponse;
  * @param {!Protocol.PageAgent.GetResourceTreeRequest} obj
  * @return {!Promise<!Protocol.PageAgent.GetResourceTreeResponse>} */
 Protocol.PageAgent.prototype.invoke_getResourceTree = function(obj) {};
+
+/**
+ * @return {!Promise<?Protocol.Page.FrameTree>}
+ */
+Protocol.PageAgent.prototype.getFrameTree = function() {};
+/** @typedef {Object|undefined} */
+Protocol.PageAgent.GetFrameTreeRequest;
+/** @typedef {!{frameTree: Protocol.Page.FrameTree}} */
+Protocol.PageAgent.GetFrameTreeResponse;
+/**
+ * @param {!Protocol.PageAgent.GetFrameTreeRequest} obj
+ * @return {!Promise<!Protocol.PageAgent.GetFrameTreeResponse>} */
+Protocol.PageAgent.prototype.invoke_getFrameTree = function(obj) {};
 
 /**
  * @param {Protocol.Page.FrameId} frameId
@@ -766,6 +793,9 @@ Protocol.Page.FrameResource;
 /** @typedef {!{frame:(Protocol.Page.Frame), childFrames:(!Array<Protocol.Page.FrameResourceTree>|undefined), resources:(!Array<Protocol.Page.FrameResource>)}} */
 Protocol.Page.FrameResourceTree;
 
+/** @typedef {!{frame:(Protocol.Page.Frame), childFrames:(!Array<Protocol.Page.FrameTree>|undefined)}} */
+Protocol.Page.FrameTree;
+
 /** @typedef {string} */
 Protocol.Page.ScriptIdentifier;
 
@@ -802,13 +832,6 @@ Protocol.Page.DialogType = {
 /** @typedef {!{message:(string), critical:(number), line:(number), column:(number)}} */
 Protocol.Page.AppManifestError;
 
-/** @enum {string} */
-Protocol.Page.NavigationResponse = {
-    Proceed: "Proceed",
-    Cancel: "Cancel",
-    CancelAndIgnore: "CancelAndIgnore"
-};
-
 /** @typedef {!{pageX:(number), pageY:(number), clientWidth:(number), clientHeight:(number)}} */
 Protocol.Page.LayoutViewport;
 
@@ -829,10 +852,11 @@ Protocol.PageDispatcher.prototype.domContentEventFired = function(timestamp) {};
 Protocol.PageDispatcher.prototype.loadEventFired = function(timestamp) {};
 /**
  * @param {Protocol.Page.FrameId} frameId
+ * @param {Protocol.Network.LoaderId} loaderId
  * @param {string} name
  * @param {Protocol.Network.MonotonicTime} timestamp
  */
-Protocol.PageDispatcher.prototype.lifecycleEvent = function(frameId, name, timestamp) {};
+Protocol.PageDispatcher.prototype.lifecycleEvent = function(frameId, loaderId, name, timestamp) {};
 /**
  * @param {Protocol.Page.FrameId} frameId
  * @param {Protocol.Page.FrameId} parentFrameId
@@ -894,7 +918,7 @@ Protocol.PageDispatcher.prototype.interstitialHidden = function() {};
 /**
  * @param {string} url
  * @param {string} windowName
- * @param {string} windowFeatures
+ * @param {!Array<string>} windowFeatures
  * @param {boolean} userGesture
  */
 Protocol.PageDispatcher.prototype.windowOpen = function(url, windowName, windowFeatures, userGesture) {};
@@ -3835,9 +3859,6 @@ Protocol.CSS.CSSKeyframeRule;
 
 /** @typedef {!{styleSheetId:(Protocol.CSS.StyleSheetId), range:(Protocol.CSS.SourceRange), text:(string)}} */
 Protocol.CSS.StyleDeclarationEdit;
-
-/** @typedef {!{boundingBox:(Protocol.DOM.Rect), startCharacterIndex:(number), numCharacters:(number)}} */
-Protocol.CSS.InlineTextBox;
 /** @interface */
 Protocol.CSSDispatcher = function() {};
 Protocol.CSSDispatcher.prototype.mediaQueryResultChanged = function() {};
@@ -3879,7 +3900,10 @@ Protocol.DOMSnapshotAgent.prototype.invoke_getSnapshot = function(obj) {};
 /** @typedef {!{nodeType:(number), nodeName:(string), nodeValue:(string), textValue:(string|undefined), inputValue:(string|undefined), inputChecked:(boolean|undefined), optionSelected:(boolean|undefined), backendNodeId:(Protocol.DOM.BackendNodeId), childNodeIndexes:(!Array<number>|undefined), attributes:(!Array<Protocol.DOMSnapshot.NameValue>|undefined), pseudoElementIndexes:(!Array<number>|undefined), layoutNodeIndex:(number|undefined), documentURL:(string|undefined), baseURL:(string|undefined), contentLanguage:(string|undefined), documentEncoding:(string|undefined), publicId:(string|undefined), systemId:(string|undefined), frameId:(Protocol.Page.FrameId|undefined), contentDocumentIndex:(number|undefined), importedDocumentIndex:(number|undefined), templateContentIndex:(number|undefined), pseudoType:(Protocol.DOM.PseudoType|undefined), isClickable:(boolean|undefined)}} */
 Protocol.DOMSnapshot.DOMNode;
 
-/** @typedef {!{domNodeIndex:(number), boundingBox:(Protocol.DOM.Rect), layoutText:(string|undefined), inlineTextNodes:(!Array<Protocol.CSS.InlineTextBox>|undefined), styleIndex:(number|undefined)}} */
+/** @typedef {!{boundingBox:(Protocol.DOM.Rect), startCharacterIndex:(number), numCharacters:(number)}} */
+Protocol.DOMSnapshot.InlineTextBox;
+
+/** @typedef {!{domNodeIndex:(number), boundingBox:(Protocol.DOM.Rect), layoutText:(string|undefined), inlineTextNodes:(!Array<Protocol.DOMSnapshot.InlineTextBox>|undefined), styleIndex:(number|undefined)}} */
 Protocol.DOMSnapshot.LayoutTreeNode;
 
 /** @typedef {!{properties:(!Array<Protocol.DOMSnapshot.NameValue>)}} */
