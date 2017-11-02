@@ -1311,7 +1311,10 @@ Console.ConsoleView = class extends UI.VBox {
         this._prompt.moveCaretToEndOfPrompt();
       // Prevent scrolling when expanding objects in console, but focus the prompt anyway.
       var oldScrollTop = this._viewport.element.scrollTop;
-      this.focus();
+      const isCustomExpandIcon = targetElement.classList.contains("custom-expand-icon");
+      if (!isCustomExpandIcon) { // see https://github.com/binaryage/dirac/issues/59
+        this.focus();
+      }
       this._viewport.element.scrollTop = oldScrollTop;
     }
     // TODO: fix this.
