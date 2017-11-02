@@ -772,10 +772,11 @@ SDK.PageDispatcher = class {
   /**
    * @override
    * @param {!Protocol.Page.FrameId} frameId
+   * @param {!Protocol.Network.LoaderId} loaderId
    * @param {string} name
    * @param {number} time
    */
-  lifecycleEvent(frameId, name, time) {
+  lifecycleEvent(frameId, loaderId, name, time) {
   }
 
   /**
@@ -894,7 +895,7 @@ SDK.PageDispatcher = class {
    * @override
    * @param {string} url
    * @param {string} windowName
-   * @param {string} windowFeatures
+   * @param {!Array<string>} windowFeatures
    * @param {boolean} userGesture
    */
   windowOpen(url, windowName, windowFeatures, userGesture) {
