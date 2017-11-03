@@ -18,9 +18,14 @@ TestRunner.executeTestScript = function() {
       .then(data => data.text())
       .then(testScript => {
         if (!self.testRunner || Runtime.queryParam('debugFrontend')) {
-          self.eval(`function test(){${testScript}}\n//# sourceURL=${testScriptURL}`);
           TestRunner.addResult = console.log;
           TestRunner.completeTest = () => console.log('Test completed');
+
+          // Auto-start unit tests
+          if (!self.testRunner)
+            eval(`(function test(){${testScript}})()\n//# sourceURL=${testScriptURL}`);
+          else
+            self.eval(`function test(){${testScript}}\n//# sourceURL=${testScriptURL}`);
           return;
         }
         eval(`(function test(){${testScript}})()\n//# sourceURL=${testScriptURL}`);
@@ -30,6 +35,20 @@ TestRunner.executeTestScript = function() {
         TestRunner.completeTest();
       });
 };
+
+/**
+ * Note: This is only needed to debug a test in release DevTools.
+ * Usage: wrap the entire test with debugTest() and use dtrun test --debug-release
+ * @param {!Function} testFunction
+ * @return {!Function}
+ */
+function debugReleaseTest(testFunction) {
+  return testRunner => {
+    TestRunner.addResult = console.log;
+    TestRunner.completeTest = () => console.log('Test completed');
+    window.test = () => testFunction(testRunner);
+  };
+}
 
 /** @type {!Array<string>} */
 TestRunner._results = [];
@@ -445,10 +464,16 @@ TestRunner.deprecatedRunAfterPendingDispatches = function(callback) {
 };
 
 /**
+ * This ensures a base tag is set so all DOM references
+ * are relative to the test file and not the inspected page
+ * (i.e. http/tests/devtools/resources/inspected-page.html).
  * @param {string} html
  * @return {!Promise<undefined>}
  */
 TestRunner.loadHTML = function(html) {
+  var testPath = TestRunner.url();
+  if (!html.includes('<base'))
+    html = `<base href="${testPath}">` + html;
   html = html.replace(/'/g, '\\\'').replace(/\n/g, '\\n');
   return TestRunner.evaluateInPageAnonymously(`document.write('${html}');document.close();`);
 };
@@ -461,7 +486,7 @@ TestRunner.addScriptTag = function(path) {
   return TestRunner.evaluateInPageAsync(`
     (function(){
       var script = document.createElement('script');
-      script.src = '${TestRunner.url(path)}';
+      script.src = '${path}';
       document.head.append(script);
       return new Promise(f => script.onload = f);
     })();
@@ -478,7 +503,7 @@ TestRunner.addStylesheetTag = function(path) {
       var link = document.createElement('link');
       link.rel = 'stylesheet';
       link.type = 'text/css';
-      link.href = '${TestRunner.url(path)}';
+      link.href = '${path}';
       link.onload = onload;
       document.head.append(link);
       var resolve;
@@ -492,16 +517,20 @@ TestRunner.addStylesheetTag = function(path) {
     })();
   `);
 };
-
 /**
  * @param {string} path
+ * @param {!Object|undefined} options
  * @return {!Promise<!SDK.RemoteObject|undefined>}
  */
-TestRunner.addIframe = function(path) {
+TestRunner.addIframe = function(path, options = {}) {
+  options.id = options.id || '';
+  options.name = options.name || '';
   return TestRunner.evaluateInPageAsync(`
     (function(){
       var iframe = document.createElement('iframe');
-      iframe.src = '${TestRunner.url(path)}';
+      iframe.src = '${path}';
+      iframe.id = '${options.id}';
+      iframe.name = '${options.name}';
       document.body.appendChild(iframe);
       return new Promise(f => iframe.onload = f);
     })();
@@ -556,6 +585,16 @@ TestRunner.formatters = {};
  */
 TestRunner.formatters.formatAsTypeName = function(value) {
   return '<' + typeof value + '>';
+};
+
+/**
+ * @param {*} value
+ * @return {string}
+ */
+TestRunner.formatters.formatAsTypeNameOrNull = function(value) {
+  if (value === null)
+    return 'null';
+  return TestRunner.formatters.formatAsTypeName(value);
 };
 
 /**
@@ -819,6 +858,9 @@ TestRunner.assertGreaterOrEqual = function(a, b, message) {
  */
 TestRunner.navigate = function(url, callback) {
   TestRunner._pageLoadedCallback = TestRunner.safeWrap(callback);
+  TestRunner.resourceTreeModel.addEventListener(SDK.ResourceTreeModel.Events.Load, TestRunner._pageNavigated);
+  // Note: injected <base> means that url is relative to test
+  // and not the inspected page
   TestRunner.evaluateInPageAnonymously('window.location.replace(\'' + url + '\')');
 };
 
@@ -827,6 +869,11 @@ TestRunner.navigate = function(url, callback) {
  */
 TestRunner.navigatePromise = function(url) {
   return new Promise(fulfill => TestRunner.navigate(url, fulfill));
+};
+
+TestRunner._pageNavigated = function() {
+  TestRunner.resourceTreeModel.removeEventListener(SDK.ResourceTreeModel.Events.Load, TestRunner._pageNavigated);
+  TestRunner._handlePageLoaded();
 };
 
 /**
@@ -863,6 +910,10 @@ TestRunner._innerReloadPage = function(hardReload, callback) {
 TestRunner.pageLoaded = function() {
   TestRunner.resourceTreeModel.removeEventListener(SDK.ResourceTreeModel.Events.Load, TestRunner.pageLoaded);
   TestRunner.addResult('Page reloaded.');
+  TestRunner._handlePageLoaded();
+};
+
+TestRunner._handlePageLoaded = function() {
   if (TestRunner._pageLoadedCallback) {
     var callback = TestRunner._pageLoadedCallback;
     delete TestRunner._pageLoadedCallback;
@@ -886,15 +937,22 @@ TestRunner.runWhenPageLoads = function(callback) {
 /**
  * @param {!Array<function(function():void)>} testSuite
  */
-TestRunner.runTestSuite = async function(testSuite) {
-  for (var test of testSuite) {
+TestRunner.runTestSuite = function(testSuite) {
+  var testSuiteTests = testSuite.slice();
+
+  function runner() {
+    if (!testSuiteTests.length) {
+      TestRunner.completeTest();
+      return;
+    }
+    var nextTest = testSuiteTests.shift();
     TestRunner.addResult('');
     TestRunner.addResult(
         'Running: ' +
-        /function\s([^(]*)/.exec(test)[1]);
-    await new Promise(fulfill => TestRunner.safeWrap(test)(fulfill));
+        /function\s([^(]*)/.exec(nextTest)[1]);
+    TestRunner.safeWrap(nextTest)(runner);
   }
-  TestRunner.completeTest();
+  runner();
 };
 
 /**
@@ -957,6 +1015,7 @@ TestRunner.override = function(receiver, methodName, override, opt_sticky) {
 TestRunner.clearSpecificInfoFromStackFrames = function(text) {
   var buffer = text.replace(/\(file:\/\/\/(?:[^)]+\)|[\w\/:-]+)/g, '(...)');
   buffer = buffer.replace(/\(http:\/\/(?:[^)]+\)|[\w\/:-]+)/g, '(...)');
+  buffer = buffer.replace(/\(test:\/\/(?:[^)]+\)|[\w\/:-]+)/g, '(...)');
   buffer = buffer.replace(/\(<anonymous>:[^)]+\)/g, '(...)');
   buffer = buffer.replace(/VM\d+/g, 'VM');
   return buffer.replace(/\s*at[^()]+\(native\)/g, '');
@@ -1033,7 +1092,8 @@ TestRunner.MockSetting = class {
  * @return {!Array<!Runtime.Module>}
  */
 TestRunner.loadedModules = function() {
-  return self.runtime._modules.filter(module => module._loadedForTest);
+  return self.runtime._modules.filter(module => module._loadedForTest)
+      .filter(module => module.name().indexOf('test_runner') === -1);
 };
 
 /**
@@ -1123,12 +1183,18 @@ TestRunner.waitForUISourceCodeRemoved = function(callback) {
 };
 
 /**
- * @param {string} relativeURL
+ * @param {string=} url
  * @return {string}
  */
-TestRunner.url = function(relativeURL) {
-  var testScriptURL = /** @type {string} */ (Runtime.queryParam('test'));
-  return testScriptURL + '/../' + relativeURL;
+TestRunner.url = function(url = '') {
+  // TODO(chenwilliam): only new-style tests will have a test queryParam;
+  // remove inspectedURL() after all tests have been migrated to new test framework.
+  var testScriptURL =
+      /** @type {string} */ (Runtime.queryParam('test')) || SDK.targetManager.mainTarget().inspectedURL();
+
+  // This handles relative (e.g. "../file"), root (e.g. "/resource"),
+  // absolute (e.g. "http://", "data:") and empty (e.g. "") paths
+  return new URL(url, testScriptURL + '/../').href;
 };
 
 /**
@@ -1155,6 +1221,32 @@ TestRunner.dumpSyntaxHighlight = function(str, mimeType) {
 
     TestRunner.addResult(str + ': ' + node_parts.join(', '));
   }
+};
+
+/**
+ * @param {string} messageType
+ */
+TestRunner._consoleOutputHook = function(messageType) {
+  TestRunner.addResult(messageType + ': ' + Array.prototype.slice.call(arguments, 1));
+};
+
+/**
+ * This monkey patches console functions in DevTools context so the console
+ * messages are shown in the right places, instead of having all of the console
+ * messages printed at the top of the test expectation file (default behavior).
+ */
+TestRunner.printDevToolsConsole = function() {
+  console.log = TestRunner._consoleOutputHook.bind(TestRunner, 'log');
+  console.error = TestRunner._consoleOutputHook.bind(TestRunner, 'error');
+  console.info = TestRunner._consoleOutputHook.bind(TestRunner, 'info');
+};
+
+/**
+ * @param {string} querySelector
+ */
+TestRunner.dumpInspectedPageElementText = async function(querySelector) {
+  var remoteObject = await TestRunner.evaluateInPageAsync(`document.querySelector('${querySelector}').innerText`);
+  TestRunner.addResult(remoteObject.value);
 };
 
 /** @type {boolean} */
@@ -1185,17 +1277,20 @@ TestRunner.TestObserver = class {
 };
 
 TestRunner.runTest = async function() {
-  var basePath = TestRunner.url('');
-  var code = `
-    function relativeToTest(relativePath) {
-      return '${basePath}' + relativePath;
-    }
-  `;
-  await TestRunner.RuntimeAgent.invoke_evaluate({expression: code, objectGroup: 'console'});
+  var testPath = TestRunner.url();
+  await TestRunner.loadHTML(`
+    <head>
+      <base href="${testPath}">
+    </head>
+    <body>
+    </body>
+  `);
   TestRunner.executeTestScript();
 };
 
-SDK.targetManager.observeTargets(new TestRunner.TestObserver());
+// Old-style tests start test using inspector-test.js
+if (Runtime.queryParam('test'))
+  SDK.targetManager.observeTargets(new TestRunner.TestObserver());
 
 (function() {
 /**

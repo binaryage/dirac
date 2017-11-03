@@ -72,6 +72,16 @@ Persistence.FileSystemWorkspaceBinding = class {
 
   /**
    * @param {!Workspace.Project} project
+   * @return {string}
+   */
+  static fileSystemType(project) {
+    var fileSystem =
+        /** @type {!Persistence.FileSystemWorkspaceBinding.FileSystem}*/ (project)._fileSystem;
+    return fileSystem.type();
+  }
+
+  /**
+   * @param {!Workspace.Project} project
    * @param {string} relativePath
    * @return {string}
    */
@@ -189,17 +199,7 @@ Persistence.FileSystemWorkspaceBinding._scriptExtensions = new Set([
 
 Persistence.FileSystemWorkspaceBinding._imageExtensions = Persistence.IsolatedFileSystem.ImageExtensions;
 
-Persistence.FileSystemWorkspaceBinding._binaryExtensions = new Set([
-  // Executable extensions, roughly taken from https://en.wikipedia.org/wiki/Comparison_of_executable_file_formats
-  'cmd', 'com', 'exe',
-  // Archive extensions, roughly taken from https://en.wikipedia.org/wiki/List_of_archive_formats
-  'a', 'ar', 'iso', 'tar', 'bz2', 'gz', 'lz', 'lzma', 'z', '7z', 'apk', 'arc', 'cab', 'dmg', 'jar', 'pak', 'rar', 'zip',
-  // Audio file extensions, roughly taken from https://en.wikipedia.org/wiki/Audio_file_format#List_of_formats
-  '3gp', 'aac', 'aiff', 'flac', 'm4a', 'mmf', 'mp3', 'ogg', 'oga', 'raw', 'sln', 'wav', 'wma', 'webm',
-  // Video file extensions, roughly taken from https://en.wikipedia.org/wiki/Video_file_format
-  'mkv', 'flv', 'vob', 'ogv', 'gif', 'gifv', 'avi', 'mov', 'qt', 'mp4', 'm4p', 'm4v', 'mpg', 'mpeg'
-]);
-
+Persistence.FileSystemWorkspaceBinding._binaryExtensions = Persistence.IsolatedFileSystem.BinaryExtensions;
 
 /**
  * @implements {Workspace.Project}
@@ -293,28 +293,21 @@ Persistence.FileSystemWorkspaceBinding.FileSystem = class extends Workspace.Proj
   }
 
   /**
+   * @param {!Workspace.UISourceCode} uiSourceCode
+   * @return {!Promise<?Blob>}
+   */
+  requestFileBlob(uiSourceCode) {
+    return this._fileSystem.requestFileBlob(this._filePathForUISourceCode(uiSourceCode));
+  }
+
+  /**
    * @override
    * @param {!Workspace.UISourceCode} uiSourceCode
-   * @param {function(?string)} callback
+   * @param {function(?string, boolean)} callback
    */
   requestFileContent(uiSourceCode, callback) {
     var filePath = this._filePathForUISourceCode(uiSourceCode);
-    var isImage =
-        Persistence.FileSystemWorkspaceBinding._imageExtensions.has(Common.ParsedURL.extractExtension(filePath));
-
-    this._fileSystem.requestFileContent(filePath, isImage ? base64CallbackWrapper : callback);
-
-    /**
-     * @param {?string} result
-     */
-    function base64CallbackWrapper(result) {
-      if (!result) {
-        callback(result);
-        return;
-      }
-      var index = result.indexOf(',');
-      callback(result.substring(index + 1));
-    }
+    this._fileSystem.requestFileContent(filePath, callback);
   }
 
   /**
@@ -329,11 +322,12 @@ Persistence.FileSystemWorkspaceBinding.FileSystem = class extends Workspace.Proj
    * @override
    * @param {!Workspace.UISourceCode} uiSourceCode
    * @param {string} newContent
+   * @param {boolean} isBase64
    * @param {function(?string)} callback
    */
-  setFileContent(uiSourceCode, newContent, callback) {
+  setFileContent(uiSourceCode, newContent, isBase64, callback) {
     var filePath = this._filePathForUISourceCode(uiSourceCode);
-    this._fileSystem.setFileContent(filePath, newContent, callback.bind(this, ''));
+    this._fileSystem.setFileContent(filePath, newContent, isBase64, callback.bind(this, ''));
   }
 
   /**
@@ -501,35 +495,16 @@ Persistence.FileSystemWorkspaceBinding.FileSystem = class extends Workspace.Proj
    * @param {string} path
    * @param {?string} name
    * @param {string} content
-   * @param {function(?Workspace.UISourceCode)} callback
+   * @param {boolean=} isBase64
+   * @return {!Promise<?Workspace.UISourceCode>}
    */
-  createFile(path, name, content, callback) {
-    this._fileSystem.createFile(path, name, innerCallback.bind(this));
-    var createFilePath;
-
-    /**
-     * @param {?string} filePath
-     * @this {Persistence.FileSystemWorkspaceBinding.FileSystem}
-     */
-    function innerCallback(filePath) {
-      if (!filePath) {
-        callback(null);
-        return;
-      }
-      createFilePath = filePath;
-      if (!content) {
-        contentSet.call(this);
-        return;
-      }
-      this._fileSystem.setFileContent(filePath, content, contentSet.bind(this));
-    }
-
-    /**
-     * @this {Persistence.FileSystemWorkspaceBinding.FileSystem}
-     */
-    function contentSet() {
-      callback(this._addFile(createFilePath));
-    }
+  async createFile(path, name, content, isBase64) {
+    var filePath = await this._fileSystem.createFile(path, name);
+    if (!filePath)
+      return null;
+    if (content)
+      await new Promise(resolve => this._fileSystem.setFileContent(filePath, content, isBase64 || false, resolve));
+    return this._addFile(filePath);
   }
 
   /**

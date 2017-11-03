@@ -15,7 +15,7 @@
                 "Workspace.UILocation",
                 "SDK.RemoteObject",
                 "SDK.NetworkRequest",
-                "SourceFrame.UISourceCodeFrame"
+                "Sources.UISourceCodeFrame"
             ],
             "className": "Sources.SourcesPanel"
         },
@@ -185,7 +185,7 @@
             "className": "Sources.WatchExpressionsSidebarPane",
             "title": "Add selected text to watches",
             "contextTypes": [
-                "SourceFrame.UISourceCodeFrame"
+                "Sources.UISourceCodeFrame"
             ],
             "bindings": [
                 {
@@ -206,7 +206,7 @@
             "className": "Sources.SourcesPanel.DebuggingActionDelegate",
             "title": "Evaluate in console",
             "contextTypes": [
-                "SourceFrame.UISourceCodeFrame"
+                "Sources.UISourceCodeFrame"
             ],
             "bindings": [
                 {
@@ -234,12 +234,12 @@
         },
         {
             "type": "context-menu-item",
-            "location": "mainMenu/navigate",
+            "location": "mainMenu/default",
             "actionId": "sources.search.toggle"
         },
         {
             "type": "context-menu-item",
-            "location": "navigatorMenu/navigate",
+            "location": "navigatorMenu/default",
             "actionId": "quickOpen.show"
         },
         {
@@ -311,9 +311,19 @@
         {
             "type": "view",
             "location": "navigator-view",
+            "id": "navigator-overrides",
+            "title": "Overrides",
+            "order": 4,
+            "persistence": "permanent",
+            "className": "Sources.OverridesNavigatorView",
+            "experiment": "networkPersistence"
+        },
+        {
+            "type": "view",
+            "location": "navigator-view",
             "id": "navigator-contentScripts",
             "title": "Content scripts",
-            "order": 4,
+            "order": 5,
             "persistence": "permanent",
             "className": "Sources.ContentScriptsNavigatorView"
         },
@@ -322,7 +332,7 @@
             "location": "navigator-view",
             "id": "navigator-snippets",
             "title": "Snippets",
-            "order": 5,
+            "order": 6,
             "persistence": "permanent",
             "className": "Sources.SnippetsNavigatorView"
         },
@@ -343,6 +353,12 @@
             "viewId": "navigator-files",
             "className": "Sources.FilesNavigatorView",
             "experiment": "persistence2"
+        },
+        {
+            "type": "@Sources.NavigatorView",
+            "viewId": "navigator-overrides",
+            "className": "Sources.OverridesNavigatorView",
+            "experiment": "networkPersistence"
         },
         {
             "type": "@Sources.NavigatorView",
@@ -524,7 +540,7 @@
             "type": "view",
             "location": "sources-sidebar",
             "id": "sources.xhrBreakpoints",
-            "title": "XHR Breakpoints",
+            "title": "XHR/fetch Breakpoints",
             "order": 5,
             "hasToolbar": true,
             "persistence": "permanent",
@@ -632,8 +648,9 @@
         "GoToLineQuickOpen.js",
         "SourceMapNamesResolver.js",
         "JavaScriptBreakpointsSidebarPane.js",
+        "UISourceCodeFrame.js",
         "JavaScriptSourceFrame.js",
-        "CSSSourceFrame.js",
+        "CSSPlugin.js",
         "NavigatorView.js",
         "RevisionHistoryView.js",
         "ScopeChainSidebarPane.js",

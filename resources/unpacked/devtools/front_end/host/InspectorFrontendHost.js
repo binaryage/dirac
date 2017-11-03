@@ -216,9 +216,9 @@ Host.InspectorFrontendHostStub = class {
 
   /**
    * @override
-   * @param {string=} fileSystemPath
+   * @param {string=} type
    */
-  addFileSystem(fileSystemPath) {
+  addFileSystem(type) {
   }
 
   /**

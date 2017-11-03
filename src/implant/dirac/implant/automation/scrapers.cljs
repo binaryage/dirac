@@ -86,8 +86,8 @@
 (defn find-all-console-log-elements []
   (dom/query-selector "html /deep/ .console-message-wrapper"))
 
-(defn find-console-group-title [el]
-  (first (dom/query-selector el ".console-group-title")))
+(defn find-expand-group-icon [el]
+  (first (dom/query-selector el ".expand-group-icon")))
 
 (defn find-console-log-elements [kind]
   (dom/query-selector (str "html /deep/ .console-message-wrapper" (log-kind-to-class-name kind))))
@@ -140,11 +140,11 @@
     (doall
       (let [expand! (fn [console-message-wrapper-el]
                       (assert (string/includes? (dom/get-class-name console-message-wrapper-el) "console-message-wrapper"))
-                      (if-let [group-title-el (find-console-group-title console-message-wrapper-el)]
+                      (if-let [expand-group-el (find-expand-group-icon console-message-wrapper-el)]
                         (do
-                          (ocall group-title-el "click")
+                          (ocall expand-group-el "click")
                           console-message-wrapper-el)
-                        (error "no .console-group-title under" console-message-wrapper-el)))
+                        (error "no .expand-group-icon under" console-message-wrapper-el)))
             expanded-group-els (keep expand! els)]
         (<! (timeout 500))                                                                                                    ; give it some time to re-render/invalidate
         expanded-group-els))))

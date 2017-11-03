@@ -20,6 +20,7 @@ Persistence.Automapping = class {
     /** @type {!Set<!Persistence.PersistenceBinding>} */
     this._bindings = new Set();
 
+    this._enabled = true;
     /** @type {!Map<string, !Workspace.UISourceCode>} */
     this._fileSystemUISourceCodes = new Map();
     this._sweepThrottler = new Common.Throttler(100);
@@ -50,6 +51,16 @@ Persistence.Automapping = class {
       this._onProjectAdded(fileSystem);
     for (var uiSourceCode of workspace.uiSourceCodes())
       this._onUISourceCodeAdded(uiSourceCode);
+  }
+
+  /**
+   * @param {boolean} enabled
+   */
+  setEnabled(enabled) {
+    if (this._enabled === enabled)
+      return;
+    this._enabled = enabled;
+    this._scheduleRemap();
   }
 
   _scheduleRemap() {
@@ -104,6 +115,7 @@ Persistence.Automapping = class {
     for (var gitFolder of fileSystem.initialGitFolders())
       this._projectFoldersIndex.addFolder(gitFolder);
     this._projectFoldersIndex.addFolder(fileSystem.fileSystemPath());
+    project.uiSourceCodes().forEach(this._onUISourceCodeAdded.bind(this));
     this._scheduleRemap();
   }
 
@@ -111,11 +123,15 @@ Persistence.Automapping = class {
    * @param {!Workspace.UISourceCode} uiSourceCode
    */
   _onUISourceCodeAdded(uiSourceCode) {
-    if (uiSourceCode.project().type() === Workspace.projectTypes.FileSystem) {
+    var project = uiSourceCode.project();
+    if (project.type() === Workspace.projectTypes.FileSystem) {
+      // Never do bindings to filesystems that are typed to another client.
+      if (Persistence.FileSystemWorkspaceBinding.fileSystemType(project))
+        return;
       this._filesIndex.addPath(uiSourceCode.url());
       this._fileSystemUISourceCodes.set(uiSourceCode.url(), uiSourceCode);
       this._scheduleSweep();
-    } else if (uiSourceCode.project().type() === Workspace.projectTypes.Network) {
+    } else if (project.type() === Workspace.projectTypes.Network) {
       this._bindNetwork(uiSourceCode);
     }
   }
@@ -160,7 +176,7 @@ Persistence.Automapping = class {
    */
   _bindNetwork(networkSourceCode) {
     if (networkSourceCode[Persistence.Automapping._processingPromise] ||
-        networkSourceCode[Persistence.Automapping._binding])
+        networkSourceCode[Persistence.Automapping._binding] || !this._enabled)
       return;
     var createBindingPromise = this._createBinding(networkSourceCode).then(onBinding.bind(this));
     networkSourceCode[Persistence.Automapping._processingPromise] = createBindingPromise;

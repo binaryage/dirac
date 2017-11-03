@@ -33,6 +33,28 @@ Persistence.Persistence = class extends Common.Object {
   }
 
   /**
+   * @param {boolean} enabled
+   */
+  setAutomappingEnabled(enabled) {
+    if (this._mapping instanceof Persistence.Automapping)
+      this._mapping.setEnabled(enabled);
+  }
+
+  /**
+   * @param {!Persistence.PersistenceBinding} binding
+   */
+  addBinding(binding) {
+    this._establishBinding(binding);
+  }
+
+  /**
+   * @param {!Persistence.PersistenceBinding} binding
+   */
+  removeBinding(binding) {
+    this._innerRemoveBinding(binding);
+  }
+
+  /**
    * @param {function(function(!Persistence.PersistenceBinding), function(!Persistence.PersistenceBinding)):!Persistence.MappingSystem} mappingFactory
    */
   _setMappingForTest(mappingFactory) {
@@ -115,7 +137,7 @@ Persistence.Persistence = class extends Common.Object {
   /**
    * @param {!Persistence.PersistenceBinding} binding
    */
-  _onBindingRemoved(binding) {
+  _innerRemoveBinding(binding) {
     binding._removed = true;
     if (binding.network[Persistence.Persistence._binding] !== binding)
       return;
@@ -141,6 +163,13 @@ Persistence.Persistence = class extends Common.Object {
     this._notifyBindingEvent(binding.network);
     this._notifyBindingEvent(binding.fileSystem);
     this.dispatchEventToListeners(Persistence.Persistence.Events.BindingRemoved, binding);
+  }
+
+  /**
+   * @param {!Persistence.PersistenceBinding} binding
+   */
+  _onBindingRemoved(binding) {
+    this._innerRemoveBinding(binding);
   }
 
   /**
@@ -266,13 +295,11 @@ Persistence.Persistence = class extends Common.Object {
   hasUnsavedCommittedChanges(uiSourceCode) {
     if (this._workspace.hasResourceContentTrackingExtensions())
       return false;
-    if (uiSourceCode.url() && Workspace.fileManager.isURLSaved(uiSourceCode.url()))
-      return false;
     if (uiSourceCode.project().canSetFileContent())
       return false;
     if (uiSourceCode[Persistence.Persistence._binding])
       return false;
-    return !!uiSourceCode.history.length;
+    return !!uiSourceCode.history().length;
   }
 
   /**

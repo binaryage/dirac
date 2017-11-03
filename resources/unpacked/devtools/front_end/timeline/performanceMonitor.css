@@ -8,12 +8,39 @@
   overflow: hidden;
 }
 
+.perfmon-pane.suspended {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.perfmon-pane .perfmon-chart-suspend-overlay {
+  display: none;
+  font-size: 26px;
+  align-items: center;
+  justify-content: center;
+}
+
+.perfmon-pane.suspended .perfmon-chart-suspend-overlay {
+  display: flex;
+}
+
 .perfmon-control-pane {
   display: flex;
   flex-direction: column;
   padding: 6px 0;
   overflow-x: hidden;
   overflow-y: auto;
+}
+
+.perfmon-chart-container {
+  display: flex;
+  flex: 1 1;
+  border-left: 1px solid #ccc;
+  overflow-y: auto;
+}
+
+.perfmon-chart-container canvas {
+  width: 100%;
 }
 
 .perfmon-indicator {
@@ -29,16 +56,11 @@
 }
 
 .perfmon-indicator-swatch {
-  flex: 0 0 10px;
-  border-radius: 10px;
-  border: 1px solid #ccc;
   margin-right: 6px;
-  margin-top: 1px;
-  height: 10px;
 }
 
 .perfmon-indicator:not(.active) .perfmon-indicator-swatch {
-  border-color: #ccc !important;
+  background-color: #eee !important;
 }
 
 .perfmon-indicator-title {
@@ -69,10 +91,4 @@
 
 .perfmon-add-button:not(:hover) {
   color: #bbb;
-}
-
-.perfmon-pane canvas {
-  display: flex;
-  flex: 1 1;
-  border-left: 1px solid #ccc;
 }

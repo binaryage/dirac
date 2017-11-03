@@ -383,8 +383,6 @@ UI.ToolbarItem = class extends Common.Object {
     this.element.classList.add('toolbar-item');
     this._visible = true;
     this._enabled = true;
-    this.element.addEventListener('mouseenter', this._mouseEnter.bind(this), false);
-    this.element.addEventListener('mouseleave', this._mouseLeave.bind(this), false);
   }
 
   /**
@@ -395,14 +393,6 @@ UI.ToolbarItem = class extends Common.Object {
       return;
     this._title = title;
     UI.Tooltip.install(this.element, title);
-  }
-
-  _mouseEnter() {
-    this.element.classList.add('hover');
-  }
-
-  _mouseLeave() {
-    this.element.classList.remove('hover');
   }
 
   /**
@@ -530,6 +520,10 @@ UI.ToolbarButton = class extends UI.ToolbarItem {
     this.element.style.backgroundImage = 'url(' + iconURL + ')';
   }
 
+  setDarkText() {
+    this.element.classList.add('dark-text');
+  }
+
   /**
    * @param {number=} width
    */
@@ -545,6 +539,8 @@ UI.ToolbarButton = class extends UI.ToolbarItem {
    * @param {!Event} event
    */
   _clicked(event) {
+    if (!this._enabled)
+      return;
     this.dispatchEventToListeners(UI.ToolbarButton.Events.Click, event);
     event.consume();
   }
@@ -553,6 +549,8 @@ UI.ToolbarButton = class extends UI.ToolbarItem {
    * @param {!Event} event
    */
   _mouseDown(event) {
+    if (!this._enabled)
+      return;
     this.dispatchEventToListeners(UI.ToolbarButton.Events.MouseDown, event);
   }
 
@@ -560,6 +558,8 @@ UI.ToolbarButton = class extends UI.ToolbarItem {
    * @param {!Event} event
    */
   _mouseUp(event) {
+    if (!this._enabled)
+      return;
     this.dispatchEventToListeners(UI.ToolbarButton.Events.MouseUp, event);
   }
 };
@@ -576,8 +576,9 @@ UI.ToolbarInput = class extends UI.ToolbarItem {
    * @param {number=} growFactor
    * @param {number=} shrinkFactor
    * @param {string=} tooltip
+   * @param {(function(string, string, boolean=):!Promise<!UI.SuggestBox.Suggestions>)=} completions
    */
-  constructor(placeholder, growFactor, shrinkFactor, tooltip) {
+  constructor(placeholder, growFactor, shrinkFactor, tooltip, completions) {
     super(createElementWithClass('div', 'toolbar-input'));
 
     var internalPromptElement = this.element.createChild('div', 'toolbar-input-prompt');
@@ -588,7 +589,7 @@ UI.ToolbarInput = class extends UI.ToolbarItem {
     this._proxyElement = this._prompt.attach(internalPromptElement);
     this._proxyElement.classList.add('toolbar-prompt-proxy');
     this._proxyElement.addEventListener('keydown', event => this._onKeydownCallback(event));
-    this._prompt.initialize(() => Promise.resolve([]));
+    this._prompt.initialize(completions || (() => Promise.resolve([])), ' ');
     if (tooltip)
       this._prompt.setTitle(tooltip);
     this._prompt.setPlaceholder(placeholder);
@@ -636,7 +637,7 @@ UI.ToolbarInput = class extends UI.ToolbarItem {
    * @return {string}
    */
   value() {
-    return this._prompt.text();
+    return this._prompt.textWithCurrentSuggestion();
   }
 
   /**

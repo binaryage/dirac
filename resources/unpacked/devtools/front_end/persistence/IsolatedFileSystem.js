@@ -37,12 +37,14 @@ Persistence.IsolatedFileSystem = class {
    * @param {string} path
    * @param {string} embedderPath
    * @param {!DOMFileSystem} domFileSystem
+   * @param {string} type
    */
-  constructor(manager, path, embedderPath, domFileSystem) {
+  constructor(manager, path, embedderPath, domFileSystem, type) {
     this._manager = manager;
     this._path = path;
     this._embedderPath = embedderPath;
     this._domFileSystem = domFileSystem;
+    this._type = type;
     this._excludedFoldersSetting = Common.settings.createLocalSetting('workspaceExcludedFolders', {});
     /** @type {!Set<string>} */
     this._excludedFolders = new Set(this._excludedFoldersSetting.get()[path] || []);
@@ -57,16 +59,17 @@ Persistence.IsolatedFileSystem = class {
    * @param {!Persistence.IsolatedFileSystemManager} manager
    * @param {string} path
    * @param {string} embedderPath
+   * @param {string} type
    * @param {string} name
    * @param {string} rootURL
    * @return {!Promise<?Persistence.IsolatedFileSystem>}
    */
-  static create(manager, path, embedderPath, name, rootURL) {
+  static create(manager, path, embedderPath, type, name, rootURL) {
     var domFileSystem = InspectorFrontendHost.isolatedFileSystem(name, rootURL);
     if (!domFileSystem)
       return Promise.resolve(/** @type {?Persistence.IsolatedFileSystem} */ (null));
 
-    var fileSystem = new Persistence.IsolatedFileSystem(manager, path, embedderPath, domFileSystem);
+    var fileSystem = new Persistence.IsolatedFileSystem(manager, path, embedderPath, domFileSystem, type);
     return fileSystem._initializeFilePaths()
         .then(() => fileSystem)
         .catchException(/** @type {?Persistence.IsolatedFileSystem} */ (null));
@@ -136,6 +139,13 @@ Persistence.IsolatedFileSystem = class {
   }
 
   /**
+   * @return {string}
+   */
+  type() {
+    return this._type;
+  }
+
+  /**
    * @return {!Promise}
    */
   _initializeFilePaths() {
@@ -175,58 +185,75 @@ Persistence.IsolatedFileSystem = class {
   }
 
   /**
+   * @param {string} folderPath
+   * @return {!Promise<?DirectoryEntry>}
+   */
+  async _createFoldersIfNotExist(folderPath) {
+    // Fast-path. If parent directory already exists we return it immidiatly.
+    var dirEntry = await new Promise(
+        resolve => this._domFileSystem.root.getDirectory(folderPath, undefined, resolve, () => resolve(null)));
+    if (dirEntry)
+      return dirEntry;
+    var paths = folderPath.split('/');
+    var activePath = '';
+    for (var path of paths) {
+      activePath = activePath + '/' + path;
+      dirEntry = await this._innerCreateFolderIfNeeded(activePath);
+      if (!dirEntry)
+        return null;
+    }
+    return dirEntry;
+  }
+
+  /**
+   * @param {string} path
+   * @return {!Promise<?DirectoryEntry>}
+   */
+  _innerCreateFolderIfNeeded(path) {
+    return new Promise(resolve => {
+      this._domFileSystem.root.getDirectory(path, {create: true}, dirEntry => resolve(dirEntry), error => {
+        var errorMessage = Persistence.IsolatedFileSystem.errorMessage(error);
+        console.error(errorMessage + ' trying to create directory \'' + path + '\'');
+        resolve(null);
+      });
+    });
+  }
+
+  /**
    * @param {string} path
    * @param {?string} name
-   * @param {function(?string)} callback
+   * @return {!Promise<?string>}
    */
-  createFile(path, name, callback) {
-    var newFileIndex = 1;
-    if (!name)
-      name = 'NewFile';
-    var nameCandidate;
-
-    this._domFileSystem.root.getDirectory(path, undefined, dirEntryLoaded.bind(this), errorHandler.bind(this));
-
-    /**
-     * @param {!DirectoryEntry} dirEntry
-     * @this {Persistence.IsolatedFileSystem}
-     */
-    function dirEntryLoaded(dirEntry) {
-      var nameCandidate = name;
-      if (newFileIndex > 1)
-        nameCandidate += newFileIndex;
-      ++newFileIndex;
-      dirEntry.getFile(nameCandidate, {create: true, exclusive: true}, fileCreated, fileCreationError.bind(this));
-
-      function fileCreated(entry) {
-        callback(entry.fullPath.substr(1));
-      }
-
-      /**
-       * @this {Persistence.IsolatedFileSystem}
-       */
-      function fileCreationError(error) {
-        if (error.name === 'InvalidModificationError') {
-          dirEntryLoaded.call(this, dirEntry);
-          return;
-        }
-        var errorMessage = Persistence.IsolatedFileSystem.errorMessage(error);
-        console.error(
-            errorMessage + ' when testing if file exists \'' + (this._path + '/' + path + '/' + nameCandidate) + '\'');
-        callback(null);
-      }
-    }
+  async createFile(path, name) {
+    var dirEntry = await this._createFoldersIfNotExist(path);
+    if (!dirEntry)
+      return null;
+    var fileEntry = await createFileCandidate.call(this, name || 'NewFile');
+    if (!fileEntry)
+      return null;
+    return fileEntry.fullPath.substr(1);
 
     /**
+     * @param {string} name
+     * @param {number=} newFileIndex
+     * @return {!Promise<?FileEntry>}
      * @this {Persistence.IsolatedFileSystem}
      */
-    function errorHandler(error) {
-      var errorMessage = Persistence.IsolatedFileSystem.errorMessage(error);
-      var filePath = this._path + '/' + path;
-      if (nameCandidate)
-        filePath += '/' + nameCandidate;
-      console.error(errorMessage + ' when getting content for file \'' + (filePath) + '\'');
-      callback(null);
+    function createFileCandidate(name, newFileIndex) {
+      return new Promise(resolve => {
+        var nameCandidate = name + (newFileIndex || '');
+        dirEntry.getFile(nameCandidate, {create: true, exclusive: true}, resolve, error => {
+          if (error.name === 'InvalidModificationError') {
+            resolve(createFileCandidate.call(this, name, (newFileIndex ? newFileIndex + 1 : 1)));
+            return;
+          }
+          var errorMessage = Persistence.IsolatedFileSystem.errorMessage(error);
+          console.error(
+              errorMessage + ' when testing if file exists \'' + (this._path + '/' + path + '/' + nameCandidate) +
+              '\'');
+          resolve(null);
+        });
+      });
     }
   }
 
@@ -287,49 +314,49 @@ Persistence.IsolatedFileSystem = class {
 
   /**
    * @param {string} path
-   * @return {!Promise<?string>}
+   * @param {function(?string,boolean)} callback
    */
-  async requestFileContentPromise(path) {
+  async requestFileContent(path, callback) {
     var blob = await this.requestFileBlob(path);
     if (!blob)
       return null;
 
     var reader = new FileReader();
-    var fileContentsLoadedPromise = new Promise(resolve => reader.onloadend = resolve);
-    if (Persistence.IsolatedFileSystem.ImageExtensions.has(Common.ParsedURL.extractExtension(path)))
-      reader.readAsDataURL(blob);
+    var extension = Common.ParsedURL.extractExtension(path);
+    var encoded = Persistence.IsolatedFileSystem.BinaryExtensions.has(extension);
+    reader.onloadend = content => {
+      if (reader.error) {
+        console.error('Can\'t read file: ' + path + ': ' + reader.error);
+        callback(null, false);
+        return;
+      }
+      var result;
+      try {
+        result = reader.result;
+      } catch (e) {
+        result = null;
+        console.error('Can\'t read file: ' + path + ': ' + e);
+      }
+      if (result === undefined || result === null) {
+        callback(null, false);
+        return;
+      }
+      callback(encoded ? btoa(result) : result, encoded);
+    };
+
+    if (encoded)
+      reader.readAsBinaryString(blob);
     else
       reader.readAsText(blob);
-    await fileContentsLoadedPromise;
-    if (reader.error) {
-      console.error('Can\'t read file: ' + path + ': ' + reader.error);
-      return null;
-    }
-    try {
-      var result = reader.result;
-    } catch (e) {
-      result = null;
-      console.error('Can\'t read file: ' + path + ': ' + e);
-    }
-    if (result === undefined)
-      return null;
-    return result;
-  }
-
-  /**
-   * @param {string} path
-   * @param {function(?string)} callback
-   */
-  requestFileContent(path, callback) {
-    this.requestFileContentPromise(path).then(callback);
   }
 
   /**
    * @param {string} path
    * @param {string} content
+   * @param {boolean} isBase64
    * @param {function()} callback
    */
-  setFileContent(path, content, callback) {
+  setFileContent(path, content, isBase64, callback) {
     Host.userMetrics.actionTaken(Host.UserMetrics.Action.FileSavedInWorkspace);
     this._domFileSystem.root.getFile(path, {create: true}, fileEntryLoaded.bind(this), errorHandler.bind(this));
 
@@ -345,10 +372,14 @@ Persistence.IsolatedFileSystem = class {
      * @param {!FileWriter} fileWriter
      * @this {Persistence.IsolatedFileSystem}
      */
-    function fileWriterCreated(fileWriter) {
+    async function fileWriterCreated(fileWriter) {
       fileWriter.onerror = errorHandler.bind(this);
       fileWriter.onwriteend = fileWritten;
-      var blob = new Blob([content], {type: 'text/plain'});
+      var blob;
+      if (isBase64)
+        blob = await(await fetch(`data:application/octet-stream;base64,${content}`)).blob();
+      else
+        blob = new Blob([content], {type: 'text/plain'});
       fileWriter.write(blob);
 
       function fileWritten() {
@@ -573,3 +604,16 @@ Persistence.IsolatedFileSystem = class {
 
 Persistence.IsolatedFileSystem.ImageExtensions =
     new Set(['jpeg', 'jpg', 'svg', 'gif', 'webp', 'png', 'ico', 'tiff', 'tif', 'bmp']);
+
+Persistence.IsolatedFileSystem.BinaryExtensions = new Set([
+  // Executable extensions, roughly taken from https://en.wikipedia.org/wiki/Comparison_of_executable_file_formats
+  'cmd', 'com', 'exe',
+  // Archive extensions, roughly taken from https://en.wikipedia.org/wiki/List_of_archive_formats
+  'a', 'ar', 'iso', 'tar', 'bz2', 'gz', 'lz', 'lzma', 'z', '7z', 'apk', 'arc', 'cab', 'dmg', 'jar', 'pak', 'rar', 'zip',
+  // Audio file extensions, roughly taken from https://en.wikipedia.org/wiki/Audio_file_format#List_of_formats
+  '3gp', 'aac', 'aiff', 'flac', 'm4a', 'mmf', 'mp3', 'ogg', 'oga', 'raw', 'sln', 'wav', 'wma', 'webm',
+  // Video file extensions, roughly taken from https://en.wikipedia.org/wiki/Video_file_format
+  'mkv', 'flv', 'vob', 'ogv', 'gifv', 'avi', 'mov', 'qt', 'mp4', 'm4p', 'm4v', 'mpg', 'mpeg',
+  // Image file extensions
+  'jpeg', 'jpg', 'gif', 'webp', 'png', 'ico', 'tiff', 'tif', 'bmp'
+]);

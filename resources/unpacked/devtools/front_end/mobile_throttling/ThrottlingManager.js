@@ -117,6 +117,7 @@ MobileThrottling.ThrottlingManager = class extends Common.Object {
     button.setTitle(Common.UIString('Throttling'));
     button.setGlyph('');
     button.turnIntoSelect();
+    button.setDarkText();
 
     /** @type {!MobileThrottling.ConditionsList} */
     var options = [];
@@ -130,14 +131,12 @@ MobileThrottling.ThrottlingManager = class extends Common.Object {
     function appendItems(contextMenu) {
       for (var index = 0; index < options.length; ++index) {
         var conditions = options[index];
-        if (!conditions) {
-          contextMenu.appendSeparator();
+        if (!conditions)
           continue;
-        }
         if (conditions.title === MobileThrottling.CustomConditions.title &&
             conditions.description === MobileThrottling.CustomConditions.description)
           continue;
-        contextMenu.appendCheckboxItem(
+        contextMenu.defaultSection().appendCheckboxItem(
             Common.UIString(conditions.title),
             selector.optionSelected.bind(selector, /** @type {!MobileThrottling.Conditions} */ (conditions)),
             selectedIndex === index);

@@ -28,7 +28,7 @@ function mapTestFilename(filename) {
                             .join('');
   let filenamePrefix = namespacePrefix;
   if (namespacePrefix === 'PageMock')
-    namespacePrefix = '';
+    namespacePrefix = 'SDK';
   if (namespacePrefix === 'SyntaxHighlight')
     namespacePrefix = '';
   if (namespacePrefix === 'Datagrid') {
@@ -95,8 +95,6 @@ function mapTestFilename(filename) {
     namespacePrefix = 'Elements';
     filenamePrefix = 'SetOuterHTML';
   }
-  if (namespacePrefix === 'HeapSnapshot')
-    namespacePrefix = 'Profiler';
   if (namespacePrefix === 'Sass') {
     namespacePrefix = 'SASS';
     filenamePrefix = 'SASS';

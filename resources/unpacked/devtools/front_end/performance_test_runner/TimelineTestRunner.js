@@ -17,13 +17,9 @@ PerformanceTestRunner.timelinePropertyFormatters = {
   scriptName: 'formatAsTypeName',
   scriptId: 'formatAsTypeName',
   usedHeapSizeDelta: 'skip',
-  mimeType: 'formatAsTypeName',
   id: 'formatAsTypeName',
   timerId: 'formatAsTypeName',
-  scriptLine: 'formatAsTypeName',
   layerId: 'formatAsTypeName',
-  lineNumber: 'formatAsTypeName',
-  columnNumber: 'formatAsTypeName',
   frameId: 'formatAsTypeName',
   frame: 'formatAsTypeName',
   page: 'formatAsTypeName',
@@ -39,7 +35,10 @@ PerformanceTestRunner.timelinePropertyFormatters = {
   allottedMilliseconds: 'formatAsTypeName',
   timedOut: 'formatAsTypeName',
   networkTime: 'formatAsTypeName',
-  timing: 'formatAsTypeName'
+  timing: 'formatAsTypeName',
+  streamed: 'formatAsTypeName',
+  producedCacheSize: 'formatAsTypeName',
+  consumedCacheSize: 'formatAsTypeName'
 };
 
 PerformanceTestRunner.InvalidationFormatters = {
@@ -372,7 +371,7 @@ PerformanceTestRunner.loadTimeline = function(timelineData) {
 TestRunner.initAsync(`
   function wrapCallFunctionForTimeline(f) {
     var script = document.createElement('script');
-    script.textContent = '(' + f.toString() + ')()\n//# sourceURL=wrapCallFunctionForTimeline.js';
+    script.textContent = '(' + f.toString() + ')()\\n//# sourceURL=wrapCallFunctionForTimeline.js';
     document.body.appendChild(script);
   }
 

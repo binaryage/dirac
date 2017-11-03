@@ -83,6 +83,8 @@ var HARImporter = {};
 /** @const */
 var HeapSnapshotModel = {};
 /** @const */
+var HeapSnapshotTestRunner = {};
+/** @const */
 var HeapSnapshotWorker = {};
 /** @const */
 var Help = {};

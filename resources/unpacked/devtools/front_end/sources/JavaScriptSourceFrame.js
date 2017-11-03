@@ -31,7 +31,7 @@
 /**
  * @unrestricted
  */
-Sources.JavaScriptSourceFrame = class extends SourceFrame.UISourceCodeFrame {
+Sources.JavaScriptSourceFrame = class extends Sources.UISourceCodeFrame {
   /**
    * @param {!Workspace.UISourceCode} uiSourceCode
    */
@@ -225,20 +225,20 @@ Sources.JavaScriptSourceFrame = class extends SourceFrame.UISourceCodeFrame {
                             .map(decoration => decoration.breakpoint)
                             .filter(breakpoint => !!breakpoint);
       if (!breakpoints.length) {
-        contextMenu.appendItem(
+        contextMenu.debugSection().appendItem(
             Common.UIString('Add breakpoint'), this._createNewBreakpoint.bind(this, lineNumber, '', true));
-        contextMenu.appendItem(
+        contextMenu.debugSection().appendItem(
             Common.UIString('Add conditional breakpoint\u2026'),
             this._editBreakpointCondition.bind(this, lineNumber, null, null));
-        contextMenu.appendItem(
+        contextMenu.debugSection().appendItem(
             Common.UIString('Never pause here'), this._createNewBreakpoint.bind(this, lineNumber, 'false', true));
       } else {
         var hasOneBreakpoint = breakpoints.length === 1;
         var removeTitle =
             hasOneBreakpoint ? Common.UIString('Remove breakpoint') : Common.UIString('Remove all breakpoints in line');
-        contextMenu.appendItem(removeTitle, () => breakpoints.map(breakpoint => breakpoint.remove()));
+        contextMenu.debugSection().appendItem(removeTitle, () => breakpoints.map(breakpoint => breakpoint.remove()));
         if (hasOneBreakpoint) {
-          contextMenu.appendItem(
+          contextMenu.debugSection().appendItem(
               Common.UIString('Edit breakpoint\u2026'),
               this._editBreakpointCondition.bind(this, lineNumber, breakpoints[0], null));
         }
@@ -246,13 +246,15 @@ Sources.JavaScriptSourceFrame = class extends SourceFrame.UISourceCodeFrame {
         if (hasEnabled) {
           var title = hasOneBreakpoint ? Common.UIString('Disable breakpoint') :
                                          Common.UIString('Disable all breakpoints in line');
-          contextMenu.appendItem(title, () => breakpoints.map(breakpoint => breakpoint.setEnabled(false)));
+          contextMenu.debugSection().appendItem(
+              title, () => breakpoints.map(breakpoint => breakpoint.setEnabled(false)));
         }
         var hasDisabled = breakpoints.some(breakpoint => !breakpoint.enabled());
         if (hasDisabled) {
           var title = hasOneBreakpoint ? Common.UIString('Enable breakpoint') :
                                          Common.UIString('Enabled all breakpoints in line');
-          contextMenu.appendItem(title, () => breakpoints.map(breakpoint => breakpoint.setEnabled(true)));
+          contextMenu.debugSection().appendItem(
+              title, () => breakpoints.map(breakpoint => breakpoint.setEnabled(true)));
         }
       }
       resolve();
@@ -292,8 +294,7 @@ Sources.JavaScriptSourceFrame = class extends SourceFrame.UISourceCodeFrame {
         if (this._scriptFileForDebuggerModel.size) {
           var scriptFile = this._scriptFileForDebuggerModel.valuesArray()[0];
           var addSourceMapURLLabel = Common.UIString('Add source map\u2026');
-          contextMenu.appendItem(addSourceMapURLLabel, addSourceMapURL.bind(null, scriptFile));
-          contextMenu.appendSeparator();
+          contextMenu.debugSection().appendItem(addSourceMapURLLabel, addSourceMapURL.bind(null, scriptFile));
         }
       }
     }
@@ -1219,14 +1220,14 @@ Sources.JavaScriptSourceFrame = class extends SourceFrame.UISourceCodeFrame {
       return;
     var contextMenu = new UI.ContextMenu(event);
     if (decoration.breakpoint) {
-      contextMenu.appendItem(
+      contextMenu.debugSection().appendItem(
           Common.UIString('Edit breakpoint\u2026'),
           this._editBreakpointCondition.bind(this, location.lineNumber, decoration.breakpoint, null));
     } else {
-      contextMenu.appendItem(
+      contextMenu.debugSection().appendItem(
           Common.UIString('Add conditional breakpoint\u2026'),
           this._editBreakpointCondition.bind(this, location.lineNumber, null, location));
-      contextMenu.appendItem(
+      contextMenu.debugSection().appendItem(
           Common.UIString('Never pause here'),
           this._setBreakpoint.bind(this, location.lineNumber, location.columnNumber, 'false', true));
     }
@@ -1569,10 +1570,11 @@ Sources.JavaScriptSourceFrame = class extends SourceFrame.UISourceCodeFrame {
       const maxLengthToCheck = 1024;
       if (lineNumber >= this.textEditor.linesCount)
         return Promise.resolve(/** @type {?Array<!Workspace.UILocation>} */ ([]));
-      if (this.textEditor.line(lineNumber).length >= maxLengthToCheck)
+      var lineLength = this.textEditor.line(lineNumber).length;
+      if (lineLength >= maxLengthToCheck)
         return Promise.resolve(/** @type {?Array<!Workspace.UILocation>} */ ([]));
       return this._breakpointManager
-          .possibleBreakpoints(this._debuggerSourceCode, new TextUtils.TextRange(lineNumber, 0, lineNumber + 1, 0))
+          .possibleBreakpoints(this._debuggerSourceCode, new TextUtils.TextRange(lineNumber, 0, lineNumber, lineLength))
           .then(locations => locations.length ? locations : null);
     }
 

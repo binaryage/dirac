@@ -51,11 +51,13 @@ Bindings.ContentProviderBasedProject = class extends Workspace.ProjectStore {
   /**
    * @override
    * @param {!Workspace.UISourceCode} uiSourceCode
-   * @param {function(?string)} callback
+   * @param {function(?string,boolean)} callback
    */
   requestFileContent(uiSourceCode, callback) {
     var contentProvider = this._contentProviders[uiSourceCode.url()];
-    contentProvider.requestContent().then(callback);
+    (async () => {
+      callback(await contentProvider.requestContent(), await contentProvider.contentEncoded());
+    })();
   }
 
   /**
@@ -87,9 +89,10 @@ Bindings.ContentProviderBasedProject = class extends Workspace.ProjectStore {
    * @override
    * @param {!Workspace.UISourceCode} uiSourceCode
    * @param {string} newContent
+   * @param {boolean} isBase64
    * @param {function(?string)} callback
    */
-  setFileContent(uiSourceCode, newContent, callback) {
+  setFileContent(uiSourceCode, newContent, isBase64, callback) {
     callback(null);
   }
 
@@ -164,9 +167,10 @@ Bindings.ContentProviderBasedProject = class extends Workspace.ProjectStore {
    * @param {string} path
    * @param {?string} name
    * @param {string} content
-   * @param {function(?Workspace.UISourceCode)} callback
+   * @param {boolean=} isBase64
+   * @return {!Promise<?Workspace.UISourceCode>}
    */
-  createFile(path, name, content, callback) {
+  createFile(path, name, content, isBase64) {
   }
 
   /**

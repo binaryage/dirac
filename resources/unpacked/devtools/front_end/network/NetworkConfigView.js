@@ -142,7 +142,6 @@ Network.NetworkConfigView = class extends UI.VBox {
   }
 };
 
-
 /** @type {!Array.<{title: string, values: !Array.<{title: string, value: string}>}>} */
 Network.NetworkConfigView._userAgentGroups = [
   {

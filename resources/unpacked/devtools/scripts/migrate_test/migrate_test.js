@@ -65,6 +65,7 @@ function migrateTest(inputPath, identifierMap) {
   const htmlTestFile = fs.readFileSync(inputPath, 'utf-8');
   const $ = cheerio.load(htmlTestFile);
 
+  const inputFilename = path.basename(inputPath);
   const inputExpectationsPath = inputPath.replace('.js', '-expected.txt').replace('.html', '-expected.txt');
   const bodyText = $('body').text().trim();
   const prologue = getPrologue(inputExpectationsPath, bodyText);
@@ -81,7 +82,7 @@ function migrateTest(inputPath, identifierMap) {
   const helperScripts = [];
   const resourceScripts = [];
   $('script[src]').toArray().map((n) => n.attribs.src).forEach(src => {
-    if (src.indexOf('resources/') !== -1) {
+    if (src.indexOf('resources/') !== -1 && src.indexOf('-test.js') === -1) {
       resourceScripts.push(src);
       return;
     }
@@ -95,7 +96,7 @@ function migrateTest(inputPath, identifierMap) {
 
   let outputCode;
   try {
-    const testHelpers = mapTestHelpers(helperScripts);
+    const testHelpers = mapTestHelpers(helperScripts, htmlTestFile.includes('ConsoleTestRunner'));
     let domFixture = $('body')
                          .html()
                          .trim()
@@ -113,11 +114,15 @@ function migrateTest(inputPath, identifierMap) {
                          .replace(/<script.*?>([\S\s]*?)<\/script>/g, '')
                          .trim();
     const docType = htmlTestFile.match(/<!DOCTYPE.*>/) ? htmlTestFile.match(/<!DOCTYPE.*>/)[0] : '';
+    const inlineStylesheets =
+        $('style').toArray().map(n => n.children[0].data).map(text => `<style>${text}</style>`).join('\n');
+    if (inlineStylesheets)
+      domFixture = inlineStylesheets + (domFixture.length ? '\n' : '') + domFixture;
     if (docType)
       domFixture = docType + (domFixture.length ? '\n' : '') + domFixture;
     outputCode = transformTestScript(
-        inputCode, prologue, identifierMap, testHelpers, javascriptFixtures, getPanel(inputPath), domFixture,
-        onloadFunctionName, relativeResourcePaths, stylesheetPaths);
+        inputCode, prologue, identifierMap, testHelpers, javascriptFixtures, getPanels(inputPath, inputCode),
+        domFixture, onloadFunctionName, relativeResourcePaths, stylesheetPaths, inputFilename);
   } catch (err) {
     console.log('Unable to migrate: ', inputPath);
     console.log('ERROR: ', err);
@@ -138,8 +143,8 @@ function migrateTest(inputPath, identifierMap) {
 }
 
 function transformTestScript(
-    inputCode, prologue, identifierMap, explicitTestHelpers, javascriptFixtures, panel, domFixture, onloadFunctionName,
-    relativeResourcePaths, stylesheetPaths) {
+    inputCode, prologue, identifierMap, explicitTestHelpers, javascriptFixtures, panels, domFixture, onloadFunctionName,
+    relativeResourcePaths, stylesheetPaths, inputFilename) {
   const ast = recast.parse(inputCode);
 
   /**
@@ -178,7 +183,8 @@ function transformTestScript(
           path.parentPath.value.object.name === 'InspectorTest' && path.value.name !== 'InspectorTest') {
         const newParentIdentifier = identifierMap.get(path.value.name);
         if (!newParentIdentifier) {
-          throw new Error('Could not find identifier for: ' + path.value.name);
+          console.log('ERROR: Could not find identifier for: ' + path.value.name);
+          return false;
         }
         path.parentPath.value.object.name = newParentIdentifier;
         namespacesUsed.add(newParentIdentifier.split('.')[0]);
@@ -226,7 +232,7 @@ function transformTestScript(
   for (const helper of allTestHelpers) {
     headerLines.push(createAwaitExpressionNode(`await TestRunner.loadModule('${helper}');`));
   }
-  if (panel)
+  for (const panel of panels)
     headerLines.push(createAwaitExpressionNode(`await TestRunner.showPanel('${panel}');`));
 
   if (domFixture) {
@@ -266,7 +272,12 @@ ${formattedNonTestCode}
   iife.async = true;
   ast.program.body = [b.expressionStatement(b.callExpression(iife, []))];
 
-  return print(ast);
+  const outputFilename = inputFilename.replace('.html', '.js');
+  return print(ast)
+      .split(inputFilename)
+      .join(outputFilename)
+      .replace(/TestRunner.consoleModel/g, 'ConsoleModel.consoleModel')
+      .replace(/TestRunner.networkLog/g, 'NetworkLog.networkLog');
 }
 
 /**
@@ -296,9 +307,6 @@ function formatNonTestCode(ast, onloadFunctionName) {
       .map(line => '    ' + line)
       .join('\n')
       .replace(/\\n/g, '\\\\n')
-      .replace(/new Worker\("(.*)"\)/g, 'new Worker(relativeToTest("$1"))')
-      .replace(/\.src = "(.*)"/, `.src = relativeToTest("$1")`)
-      .replace(/\.src = '(.*)'/, `.src = relativeToTest('$1')`)
       .replace(RUN_TEST_REGEX, '');
 }
 
@@ -355,11 +363,17 @@ function print(ast) {
   return copyrightedCode;
 }
 
-function getPanel(inputPath) {
+function getPanels(inputPath, inputCode) {
+  const panels = new Set();
+  if (inputCode.includes('SourcesTestRunner.waitForScriptSource'))
+    panels.add('sources');
   const panelByFolder = {
     'animation': 'elements',
+    'appcache': 'resources',
+    'application-panel': 'resources',
     'audits': 'audits',
     'console': 'console',
+    'cache-storage': 'resources',
     'elements': 'elements',
     'editor': 'sources',
     'layers': 'layers',
@@ -378,14 +392,21 @@ function getPanel(inputPath) {
   const folder = inputPath.indexOf('LayoutTests/inspector') === -1 ? components[4] : components[2];
   if (folder.endsWith('.html'))
     return;
-  return panelByFolder[folder];
+  const panel = panelByFolder[folder];
+  if (panel)
+    panels.add(panel);
+  return Array.from(panels);
 }
 
-function mapTestHelpers(testHelpers) {
+function mapTestHelpers(testHelpers, includeConsole) {
+  const specialCases = {
+    'SDKTestRunner': 'sdk_test_runner',
+  };
   const mappedHelpers = new Set();
   for (const helper of testHelpers) {
     const namespace = migrateUtils.mapTestFilename(helper).namespacePrefix + 'TestRunner';
-    const mappedHelper = namespace.replace(/([A-Z])/g, '_$1').replace(/^_/, '').toLowerCase();
+    const mappedHelper =
+        specialCases[namespace] || namespace.replace(/([A-Z])/g, '_$1').replace(/^_/, '').toLowerCase();
     if (!mappedHelper) {
       throw Error('Could not map helper ' + helper);
     }
@@ -393,6 +414,8 @@ function mapTestHelpers(testHelpers) {
       mappedHelpers.add(mappedHelper);
     }
   }
+  if (includeConsole)
+    mappedHelpers.add('console_test_runner');
   return Array.from(mappedHelpers);
 }
 

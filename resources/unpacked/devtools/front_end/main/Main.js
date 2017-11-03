@@ -128,6 +128,7 @@ Main.Main = class {
     Runtime.experiments.register('logManagement', 'Log management', true);
     Runtime.experiments.register('liveSASS', 'Live SASS');
     Runtime.experiments.register('networkGroupingRequests', 'Network request groups support', true);
+    Runtime.experiments.register('networkPersistence', 'Override requests with workspace project');
     Runtime.experiments.register('objectPreviews', 'Object previews', true);
     Runtime.experiments.register('performanceMonitor', 'Performance Monitor', true);
     Runtime.experiments.register('persistence2', 'Persistence 2.0');
@@ -157,13 +158,16 @@ Main.Main = class {
         Runtime.experiments.enableForTest('accessibilityInspection');
       if (testPath.indexOf('changes/') !== -1)
         Runtime.experiments.enableForTest('changesDrawer');
+      if (testPath.indexOf('console-sidebar/') !== -1)
+        Runtime.experiments.enableForTest('logManagement');
       if (testPath.indexOf('sass/') !== -1)
         Runtime.experiments.enableForTest('liveSASS');
     }
 
     Runtime.experiments.setDefaultExperiments([
       'continueToLocationMarkers', 'autoAttachToCrossProcessSubframes', 'objectPreviews', 'persistence2',
-      'networkGroupingRequests', 'timelineColorByProduct'
+      'networkGroupingRequests', 'timelineColorByProduct', 'accessibilityInspection', 'networkPersistence',
+      'logManagement', 'performanceMonitor'
     ]);
   }
 
@@ -223,6 +227,7 @@ Main.Main = class {
     new Persistence.FileSystemWorkspaceBinding(Persistence.isolatedFileSystemManager, Workspace.workspace);
     Persistence.persistence =
         new Persistence.Persistence(Workspace.workspace, Bindings.breakpointManager, Persistence.fileSystemMapping);
+    Persistence.networkPersistenceManager = new Persistence.NetworkPersistenceManager(Workspace.workspace);
 
     new Main.ExecutionContextSelector(SDK.targetManager, UI.context);
     Bindings.blackboxManager = new Bindings.BlackboxManager(Bindings.debuggerWorkspaceBinding);
@@ -648,8 +653,7 @@ Main.Main.MainMenuItem = class {
       dockItemToolbar.appendToolbarItem(left);
       dockItemToolbar.appendToolbarItem(bottom);
       dockItemToolbar.appendToolbarItem(right);
-      contextMenu.appendCustomItem(dockItemElement);
-      contextMenu.appendSeparator();
+      contextMenu.headerSection().appendCustomItem(dockItemElement);
     }
 
     /**
@@ -660,11 +664,12 @@ Main.Main.MainMenuItem = class {
       contextMenu.discard();
     }
 
-    contextMenu.appendAction(
-        'main.toggle-drawer', UI.inspectorView.drawerVisible() ? Common.UIString('Hide console drawer') :
-                                                                 Common.UIString('Show console drawer'));
+    contextMenu.defaultSection().appendAction(
+        'main.toggle-drawer',
+        UI.inspectorView.drawerVisible() ? Common.UIString('Hide console drawer') :
+                                           Common.UIString('Show console drawer'));
     contextMenu.appendItemsAtLocation('mainMenu');
-    var moreTools = contextMenu.namedSubMenu('mainMenuMoreTools');
+    var moreTools = contextMenu.defaultSection().appendSubMenuItem(Common.UIString('More tools'));
     var extensions = self.runtime.extensions('view', undefined, true);
     for (var extension of extensions) {
       var descriptor = extension.descriptor();
@@ -672,12 +677,14 @@ Main.Main.MainMenuItem = class {
         continue;
       if (descriptor['location'] !== 'drawer-view' && descriptor['location'] !== 'panel')
         continue;
-      moreTools.appendItem(extension.title(), UI.viewManager.showView.bind(UI.viewManager, descriptor['id']));
+      moreTools.defaultSection().appendItem(
+          extension.title(), UI.viewManager.showView.bind(UI.viewManager, descriptor['id']));
     }
 
-    var helpSubMenu = contextMenu.namedSubMenu('mainMenuHelp');
-    helpSubMenu.appendAction('settings.documentation');
-    helpSubMenu.appendItem('Release Notes', () => InspectorFrontendHost.openInNewTab(Help.latestReleaseNote().link));
+    var helpSubMenu = contextMenu.footerSection().appendSubMenuItem(Common.UIString('Help'));
+    helpSubMenu.defaultSection().appendAction('settings.documentation');
+    helpSubMenu.defaultSection().appendItem(
+        'Release Notes', () => InspectorFrontendHost.openInNewTab(Help.latestReleaseNote().link));
   }
 };
 

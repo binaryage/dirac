@@ -45,13 +45,13 @@ Object.assign(window.dirac, (function() {
         console.log("evalInContext", context, code);
       }
       context.evaluate({
-          expression: code,
-          objectGroup: 'console',
-          includeCommandLineAPI: true,
-          silent: true,
-          returnByValue: true,
-          generatePreview: false
-        }, false, false).then(answer => resultCallback(answer.object, answer.exceptionDetails));
+        expression: code,
+        objectGroup: 'console',
+        includeCommandLineAPI: true,
+        silent: true,
+        returnByValue: true,
+        generatePreview: false
+      }, false, false).then(answer => resultCallback(answer.object, answer.exceptionDetails));
     } catch (e) {
       console.error("failed js evaluation in context:", context, "code", code);
     }
@@ -180,8 +180,9 @@ Object.assign(window.dirac, (function() {
       console.warn("Unable to add console message to main target (no runtime model): ", text);
       return;
     }
-    const msg = new ConsoleModel.ConsoleMessage(runtimeModel, ConsoleModel.ConsoleMessage.MessageSource.Other, level, text,
-      type, undefined, undefined, undefined, undefined, parameters);
+    const sanitizedText = text || "";
+    const msg = new ConsoleModel.ConsoleMessage(runtimeModel, ConsoleModel.ConsoleMessage.MessageSource.Other, level,
+      sanitizedText, type, undefined, undefined, undefined, undefined, parameters);
     ConsoleModel.consoleModel.addMessage(msg);
   }
 
@@ -389,7 +390,7 @@ Object.assign(window.dirac, (function() {
     }
 
     Bindings.debuggerWorkspaceBinding.maybeLoadSourceMap(script);
-    return ensureSourceMapLoadedAsync(script).then(/** @suppressGlobalPropertiesCheck */ sourceMap => {
+    return ensureSourceMapLoadedAsync(script).then(/** @suppressGlobalPropertiesCheck */sourceMap => {
       const scriptUrl = script.contentURL();
       let promises = [];
       let realNamespace = false;

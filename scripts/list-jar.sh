@@ -5,23 +5,26 @@ false && source _config.sh # never executes, this is here just for IntelliJ Bash
 
 pushd "$ROOT"
 
-LIB_PROFILE=${1:-lib}
+LIB_PROFILES=${1:-lib}
 
 ./scripts/check-versions.sh
 
-lein with-profile "${LIB_PROFILE}" jar
+lein with-profile "${LIB_PROFILES}" jar
 
 LEIN_VERSION=`cat "$PROJECT_FILE" | grep "defproject" | cut -d' ' -f3 | cut -d\" -f2`
+BASE_FILE="dirac-$LEIN_VERSION"
+POM_PATH="META-INF/maven/binaryage/dirac/pom.xml"
 
-JAR_FILE="target/dirac-$LEIN_VERSION.jar"
+cd target
+unzip -l "$BASE_FILE.jar"
+unzip "$BASE_FILE.jar" "$POM_PATH" -d inspect
 
-echo "listing content of $JAR_FILE"
-echo ""
+echo
+echo "approx. pom.xml dependencies:"
+cat "inspect/$POM_PATH" | grep -E -i "artifactId|version"
 
-unzip -l "$JAR_FILE"
-
-echo ""
+echo
 echo "----------------------------"
-echo ""
+echo
 
 popd

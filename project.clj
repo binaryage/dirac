@@ -2,7 +2,7 @@
 (def slf4j-log4j12-version "1.7.25")
 (def figwheel-version "0.5.14")
 (def selected-clojure-version "1.9.0-beta2")
-(defproject binaryage/dirac "1.2.17"
+(defproject binaryage/dirac "1.2.18"
   :description "Dirac DevTools - a Chrome DevTools fork for ClojureScript developers."
   :url "https://github.com/binaryage/dirac"
   :license {:name         "MIT License"
@@ -29,14 +29,14 @@
                  [binaryage/chromex "0.5.12" :scope "test"]
                  [binaryage/devtools "0.9.7" :scope "test"]
                  [environ "1.1.0" :scope "test"]
-                 [cljs-http "0.1.43" :scope "test"]
+                 [cljs-http "0.1.44" :scope "test"]
                  [figwheel ~figwheel-version :scope "test"]
                  [reforms "0.4.3" :scope "test"]
                  [rum "0.10.8" :scope "test"]
                  [rum-reforms "0.4.3" :scope "test"]
-                 [cljsjs/parinfer "2.0.0-0" :scope "test"]
+                 [cljsjs/parinfer "3.11.0-0" :scope "test"]
                  [com.lucasbradstreet/cljs-uuid-utils "1.0.2" :scope "test"]
-                 [com.rpl/specter "1.0.3" :scope "test"]
+                 [com.rpl/specter "1.0.4" :scope "test"]
                  [org.clojure/tools.namespace "0.3.0-alpha3" :scope "test"]
                  [org.clojure/tools.reader "1.1.0" :scope "test"]
 
@@ -48,7 +48,6 @@
                  [ring/ring-core "1.6.2" :scope "test"]
                  [ring/ring-devel "1.6.2" :scope "test"]
                  [clj-time "0.14.0" :scope "test"]
-                 [clansi "1.0.0" :scope "test"]
 
                  ; guava is needed for selenium, they rely on latest guava which gets overridden by google closure compiler dep inside clojurescript
                  ;[com.google.guava/guava "23.0" :scope "test" :upgrade false]
@@ -111,14 +110,43 @@
   :profiles {:lib
              ^{:pom-scope :provided}                                                                                          ; ! to overcome default jar/pom behaviour, our :dependencies replacement would be ignored for some reason
              [:nuke-aliases
-              {:dependencies   ~(let [project-str (or
-                                                    (try (slurp "project.clj") (catch Throwable _ nil))
-                                                    (try (slurp "/Users/darwin/code/dirac-ws/dirac/project.clj") (catch Throwable _ nil)))
-                                      find-defproject #(first (filter (fn [x] (and (list? x) (= (first x) 'defproject))) %))
-                                      project (->> (str "[" project-str "]") read-string (find-defproject) (drop 3) (apply hash-map))
-                                      test-dep? #(->> % (drop 2) (apply hash-map) :scope (= "test"))
-                                      non-test-deps (remove test-dep? (:dependencies project))]
-                                  (with-meta (vec non-test-deps) {:replace true}))                                            ; so ugly!
+              {:dependencies
+               ; this is here to skip this expensive brain surgery under normal circumstances
+                               ~(when (some? (System/getenv "DIRAC_LIB_PROFILE_SURGERY"))
+                                  (let [lock-file-path "/tmp/dirac.lein.lock.file"
+                                        lock-file (clojure.java.io/as-file lock-file-path)]
+                                    ; we have need to call lein recursively but somehow prevent infinite recursion because
+                                    ; this code gets evaluated on each re-enter
+                                    ; since I was unable to use java.io.RandomAccessFile withing the leiningen context
+                                    ; I ended up using existence of plain file for locking, but there is a danger that the file will
+                                    ; won't get deleted in some edge cases (eg. process gets killed)
+                                    (if (.exists lock-file)                                                                   ; ***
+                                      ; lock file exists, this means we are in a child lein process
+                                      ; this is just a safety net for dangling lock file
+                                      ; more than 5s is unexpected
+                                      (let [file-time-ms (.lastModified lock-file)
+                                            current-time-ms (System/currentTimeMillis)
+                                            diff-time-ms (- current-time-ms file-time-ms)]
+                                        (if (> diff-time-ms 5000)
+                                          (throw (ex-info (str "The lock file '" lock-file-path "' "
+                                                            "is too old (" (/ diff-time-ms 1000.0) "s). "
+                                                            "Remove it and run the task again.") {})))
+                                        ^:replace [])                                                                         ; prevent recursion
+                                      (try
+                                        (spit lock-file "")
+                                        (let [{:keys [exit out err]} (clojure.java.shell/sh "scripts/print-project-dependencies.sh")] ; see the other branch which prevents infinite recursion ***
+                                          (when-not (zero? exit)
+                                            (throw (ex-info (str err "\n" out) {:exit exit})))
+                                          (let [full-dependencies (read-string out)
+                                                _ (assert (pos? (count full-dependencies)))
+                                                test-dep? #(->> % (drop 2) (apply hash-map) :scope (= "test"))
+                                                non-test-deps (remove test-dep? full-dependencies)]
+                                            (with-meta non-test-deps {:replace true})))
+                                        (catch Throwable e
+                                          (throw (ex-info (str "Problems running 'scripts/print-project-dependencies.sh'\n"
+                                                            e) {})))
+                                        (finally
+                                          (clojure.java.io/delete-file lock-file))))))
                :source-paths   ^:replace ["src/project"
                                           "src/settings"
                                           "src/backport"

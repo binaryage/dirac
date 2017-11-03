@@ -41,6 +41,7 @@ ConsoleModel.ConsoleModel = class extends Common.Object {
     this._messageByExceptionId = new Map();
     this._warnings = 0;
     this._errors = 0;
+    this._pageLoadSequenceNumber = 0;
 
     SDK.targetManager.observeTargets(this);
   }
@@ -169,6 +170,7 @@ ConsoleModel.ConsoleModel = class extends Common.Object {
     if (msg.source === ConsoleModel.ConsoleMessage.MessageSource.Worker && SDK.targetManager.targetById(msg.workerId))
       return;
 
+    msg._pageLoadSequenceNumber = this._pageLoadSequenceNumber;
     if (msg.source === ConsoleModel.ConsoleMessage.MessageSource.ConsoleAPI &&
         msg.type === ConsoleModel.ConsoleMessage.MessageType.Clear)
       this._clearIfNecessary();
@@ -255,8 +257,10 @@ ConsoleModel.ConsoleModel = class extends Common.Object {
         call.type === ConsoleModel.ConsoleMessage.MessageType.Log)
       level = ConsoleModel.ConsoleMessage.MessageLevel.Info;
     var message = '';
-    if (call.args.length && typeof call.args[0].value === 'string')
-      message = call.args[0].value;
+    if (call.args.length && call.args[0].unserializableValue)
+      message = call.args[0].unserializableValue;
+    else if (call.args.length && (typeof call.args[0].value !== 'object' || call.args[0].value === null))
+      message = call.args[0].value + '';
     else if (call.args.length && call.args[0].description)
       message = call.args[0].description;
     var callFrame = call.stackTrace && call.stackTrace.callFrames.length ? call.stackTrace.callFrames[0] : null;
@@ -283,6 +287,7 @@ ConsoleModel.ConsoleModel = class extends Common.Object {
   _clearIfNecessary() {
     if (!Common.moduleSetting('preserveConsoleLog').get())
       this._clear();
+    ++this._pageLoadSequenceNumber;
   }
 
   /**
@@ -562,6 +567,26 @@ ConsoleModel.ConsoleMessage = class {
   }
 
   /**
+   * @return {boolean}
+   */
+  isGroupable() {
+    var isJSError = this.source === ConsoleModel.ConsoleMessage.MessageSource.JS &&
+        this.level === ConsoleModel.ConsoleMessage.MessageLevel.Error;
+    return (
+        this.source !== ConsoleModel.ConsoleMessage.MessageSource.ConsoleAPI &&
+        this.type !== ConsoleModel.ConsoleMessage.MessageType.Command &&
+        this.type !== ConsoleModel.ConsoleMessage.MessageType.Result &&
+        this.type !== ConsoleModel.ConsoleMessage.MessageType.System && !isJSError);
+  }
+
+  /**
+   * @return {string}
+   */
+  groupCategoryKey() {
+    return [this.source, this.level, this.type, this._pageLoadSequenceNumber].join(':');
+  }
+
+  /**
    * @param {?ConsoleModel.ConsoleMessage} msg
    * @return {boolean}
    */
@@ -663,7 +688,8 @@ ConsoleModel.ConsoleMessage.MessageType = {
   ProfileEnd: 'profileEnd',
   DiracCommand: "diracCommand",
   DiracMarkup: "diracMarkup",
-  Command: 'command'
+  Command: 'command',
+  System: 'system'
 };
 
 /**
@@ -690,6 +716,7 @@ ConsoleModel.ConsoleMessage.MessageSourceDisplayName = new Map([
   [ConsoleModel.ConsoleMessage.MessageSource.Worker, 'worker'],
   [ConsoleModel.ConsoleMessage.MessageSource.Violation, 'violation'],
   [ConsoleModel.ConsoleMessage.MessageSource.Intervention, 'intervention'],
+  [ConsoleModel.ConsoleMessage.MessageSource.Recommendation, 'recommendation'],
   [ConsoleModel.ConsoleMessage.MessageSource.Other, 'other']
 ]);
 

@@ -133,7 +133,8 @@ Network.NetworkLogView = class extends UI.VBox {
     filterBar.addFilter(this._resourceCategoryFilterUI);
 
     this._filterParser = new TextUtils.FilterParser(Network.NetworkLogView._searchKeys);
-    this._suggestionBuilder = new Network.FilterSuggestionBuilder(Network.NetworkLogView._searchKeys);
+    this._suggestionBuilder =
+        new UI.FilterSuggestionBuilder(Network.NetworkLogView._searchKeys, Network.NetworkLogView._sortSearchValues);
     this._resetSuggestionBuilder();
 
     this._dataGrid = this._columns.dataGrid();
@@ -143,7 +144,7 @@ Network.NetworkLogView = class extends UI.VBox {
     this._summaryBarElement = this.element.createChild('div', 'network-summary-bar');
 
     new UI.DropTarget(
-        this.element, [UI.DropTarget.Types.Files], Common.UIString('Drop HAR files here'), this._handleDrop.bind(this));
+        this.element, [UI.DropTarget.Type.File], Common.UIString('Drop HAR files here'), this._handleDrop.bind(this));
 
     Common.moduleSetting('networkColorCodeResourceTypes')
         .addChangeListener(this._invalidateAllItems.bind(this, false), this);
@@ -160,6 +161,23 @@ Network.NetworkLogView = class extends UI.VBox {
   _updateGroupByFrame() {
     var value = Common.moduleSetting('network.group-by-frame').get();
     this._setGrouping(value ? 'Frame' : null);
+  }
+
+  /**
+   * @param {string} key
+   * @param {!Array<string>} values
+   */
+  static _sortSearchValues(key, values) {
+    if (key === Network.NetworkLogView.FilterType.Priority) {
+      var symbolToNumeric = NetworkPriorities.prioritySymbolToNumericMap();
+      values.sort((a, b) => {
+        var aPriority = /** @type {!Protocol.Network.ResourcePriority} */ (NetworkPriorities.uiLabelToPriority(a));
+        var bPriority = /** @type {!Protocol.Network.ResourcePriority} */ (NetworkPriorities.uiLabelToPriority(b));
+        return symbolToNumeric.get(aPriority) - symbolToNumeric.get(bPriority);
+      });
+    } else {
+      values.sort();
+    }
   }
 
   /**
@@ -553,6 +571,7 @@ Network.NetworkLogView = class extends UI.VBox {
   }
 
   _resetSuggestionBuilder() {
+    this._suggestionBuilder.clear();
     this._suggestionBuilder.addItem(Network.NetworkLogView.FilterType.Is, Network.NetworkLogView.IsFilterType.Running);
     this._suggestionBuilder.addItem(
         Network.NetworkLogView.FilterType.Is, Network.NetworkLogView.IsFilterType.FromCache);
@@ -584,6 +603,14 @@ Network.NetworkLogView = class extends UI.VBox {
       hintText.createChild('br');
       hintText.appendChild(
           UI.formatLocalized('Perform a request or hit %s to record the reload.', [reloadShortcutNode]));
+
+      // TODO(lukasza): https://crbug.com/750901: Remove the hint below once
+      // the --site-per-process trial is over (i.e. on or after 2017-10-23).
+      hintText.createChild('br');
+      hintText.appendChild(UI.formatLocalized(
+          'Note: some network activity from out-of-process iframes might be missing. ' +
+              'See http://crbug.com/750901#c4 for more details.',
+          []));
     } else {
       var recordNode = hintText.createChild('b');
       recordNode.textContent = UI.shortcutRegistry.shortcutTitleForAction('network.toggle-recording');
@@ -1120,74 +1147,77 @@ Network.NetworkLogView = class extends UI.VBox {
    */
   handleContextMenuForRequest(contextMenu, request) {
     contextMenu.appendApplicableItems(request);
-    var copyMenu = contextMenu.appendSubMenuItem(Common.UIString('Copy'));
+    var copyMenu = contextMenu.clipboardSection().appendSubMenuItem(Common.UIString('Copy'));
+    var footerSection = copyMenu.footerSection();
     if (request) {
-      copyMenu.appendItem(
+      copyMenu.defaultSection().appendItem(
           UI.copyLinkAddressLabel(), InspectorFrontendHost.copyText.bind(InspectorFrontendHost, request.contentURL()));
-      copyMenu.appendSeparator();
-
       if (request.requestHeadersText()) {
-        copyMenu.appendItem(
+        copyMenu.defaultSection().appendItem(
             Common.UIString('Copy request headers'), Network.NetworkLogView._copyRequestHeaders.bind(null, request));
       }
 
       if (request.responseHeadersText) {
-        copyMenu.appendItem(
+        copyMenu.defaultSection().appendItem(
             Common.UIString('Copy response headers'), Network.NetworkLogView._copyResponseHeaders.bind(null, request));
       }
 
-      if (request.finished)
-        copyMenu.appendItem(Common.UIString('Copy response'), Network.NetworkLogView._copyResponse.bind(null, request));
+      if (request.finished) {
+        copyMenu.defaultSection().appendItem(
+            Common.UIString('Copy response'), Network.NetworkLogView._copyResponse.bind(null, request));
+      }
 
       if (Host.isWin()) {
-        copyMenu.appendItem(Common.UIString('Copy as cURL (cmd)'), this._copyCurlCommand.bind(this, request, 'win'));
-        copyMenu.appendItem(Common.UIString('Copy as cURL (bash)'), this._copyCurlCommand.bind(this, request, 'unix'));
-        copyMenu.appendItem(Common.UIString('Copy All as cURL (cmd)'), this._copyAllCurlCommand.bind(this, 'win'));
-        copyMenu.appendItem(Common.UIString('Copy All as cURL (bash)'), this._copyAllCurlCommand.bind(this, 'unix'));
+        footerSection.appendItem(
+            Common.UIString('Copy as cURL (cmd)'), this._copyCurlCommand.bind(this, request, 'win'));
+        footerSection.appendItem(
+            Common.UIString('Copy as cURL (bash)'), this._copyCurlCommand.bind(this, request, 'unix'));
+        footerSection.appendItem(Common.UIString('Copy All as cURL (cmd)'), this._copyAllCurlCommand.bind(this, 'win'));
+        footerSection.appendItem(
+            Common.UIString('Copy All as cURL (bash)'), this._copyAllCurlCommand.bind(this, 'unix'));
       } else {
-        copyMenu.appendItem(Common.UIString('Copy as cURL'), this._copyCurlCommand.bind(this, request, 'unix'));
-        copyMenu.appendItem(Common.UIString('Copy All as cURL'), this._copyAllCurlCommand.bind(this, 'unix'));
+        footerSection.appendItem(Common.UIString('Copy as cURL'), this._copyCurlCommand.bind(this, request, 'unix'));
+        footerSection.appendItem(Common.UIString('Copy All as cURL'), this._copyAllCurlCommand.bind(this, 'unix'));
       }
     } else {
-      copyMenu = contextMenu.appendSubMenuItem(Common.UIString('Copy'));
+      copyMenu = contextMenu.clipboardSection().appendSubMenuItem(Common.UIString('Copy'));
     }
-    copyMenu.appendItem(Common.UIString('Copy all as HAR'), this._copyAll.bind(this));
+    footerSection.appendItem(Common.UIString('Copy all as HAR'), this._copyAll.bind(this));
 
-    contextMenu.appendSeparator();
-    contextMenu.appendItem(Common.UIString('Save as HAR with content'), this._exportAll.bind(this));
+    contextMenu.saveSection().appendItem(Common.UIString('Save as HAR with content'), this._exportAll.bind(this));
 
-    contextMenu.appendSeparator();
-    contextMenu.appendItem(Common.UIString('Clear browser cache'), this._clearBrowserCache.bind(this));
-    contextMenu.appendItem(Common.UIString('Clear browser cookies'), this._clearBrowserCookies.bind(this));
+    contextMenu.editSection().appendItem(Common.UIString('Clear browser cache'), this._clearBrowserCache.bind(this));
+    contextMenu.editSection().appendItem(
+        Common.UIString('Clear browser cookies'), this._clearBrowserCookies.bind(this));
 
     if (request) {
-      contextMenu.appendSeparator();
-
       const maxBlockedURLLength = 20;
       var manager = SDK.multitargetNetworkManager;
       var patterns = manager.blockedPatterns();
 
       var urlWithoutScheme = request.parsedURL.urlWithoutScheme();
       if (urlWithoutScheme && !patterns.find(pattern => pattern.url === urlWithoutScheme)) {
-        contextMenu.appendItem(Common.UIString('Block request URL'), addBlockedURL.bind(null, urlWithoutScheme));
+        contextMenu.debugSection().appendItem(
+            Common.UIString('Block request URL'), addBlockedURL.bind(null, urlWithoutScheme));
       } else if (urlWithoutScheme) {
         const croppedURL = urlWithoutScheme.trimMiddle(maxBlockedURLLength);
-        contextMenu.appendItem(
+        contextMenu.debugSection().appendItem(
             Common.UIString('Unblock %s', croppedURL), removeBlockedURL.bind(null, urlWithoutScheme));
       }
 
       var domain = request.parsedURL.domain();
       if (domain && !patterns.find(pattern => pattern.url === domain)) {
-        contextMenu.appendItem(Common.UIString('Block request domain'), addBlockedURL.bind(null, domain));
+        contextMenu.debugSection().appendItem(
+            Common.UIString('Block request domain'), addBlockedURL.bind(null, domain));
       } else if (domain) {
         const croppedDomain = domain.trimMiddle(maxBlockedURLLength);
-        contextMenu.appendItem(Common.UIString('Unblock %s', croppedDomain), removeBlockedURL.bind(null, domain));
+        contextMenu.debugSection().appendItem(
+            Common.UIString('Unblock %s', croppedDomain), removeBlockedURL.bind(null, domain));
       }
 
       if (SDK.NetworkManager.canReplayRequest(request)) {
-        contextMenu.appendSeparator();
-        contextMenu.appendItem(Common.UIString('Replay XHR'), SDK.NetworkManager.replayRequest.bind(null, request));
-        contextMenu.appendSeparator();
+        contextMenu.debugSection().appendItem(
+            Common.UIString('Replay XHR'), SDK.NetworkManager.replayRequest.bind(null, request));
       }
 
       /**

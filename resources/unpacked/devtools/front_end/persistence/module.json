@@ -2,7 +2,8 @@
     "dependencies": [
         "bindings",
         "workspace",
-        "components"
+        "components",
+        "sdk"
     ],
     "extensions": [
         {
@@ -12,6 +13,35 @@
             "title": "Workspace",
             "order": 1,
             "className": "Persistence.WorkspaceSettingsTab"
+        },
+        {
+            "type": "setting",
+            "category": "Persistence",
+            "title": "Enable Network Overrides",
+            "settingName": "persistenceNetworkOverridesEnabled",
+            "settingType": "boolean",
+            "storageType": "session",
+            "defaultValue": false,
+            "tags": "interception, override, network, rewrite, request",
+            "options": [
+                {
+                    "value": true,
+                    "title": "Enable override network requests"
+                },
+                {
+                    "value": false,
+                    "title": "Disable override network requests"
+                }
+            ]
+        },
+        {
+            "type": "@UI.ContextMenu.Provider",
+            "contextTypes": [
+                "Workspace.UISourceCode",
+                "SDK.Resource",
+                "SDK.NetworkRequest"
+            ],
+            "className": "Persistence.PersistenceActions.ContextMenuProvider"
         }
     ],
     "scripts": [
@@ -20,7 +50,9 @@
         "FileSystemWorkspaceBinding.js",
         "DefaultMapping.js",
         "Automapping.js",
+        "NetworkPersistenceManager.js",
         "Persistence.js",
+        "PersistenceActions.js",
         "PersistenceUtils.js",
         "FileSystemMapping.js",
         "EditFileSystemView.js",

@@ -283,7 +283,8 @@ Snippets.ScriptSnippetModel = class extends Common.Object {
   _printRunScriptResult(runtimeModel, result, scriptId, sourceURL) {
     var consoleMessage = new ConsoleModel.ConsoleMessage(
         runtimeModel, ConsoleModel.ConsoleMessage.MessageSource.JS, ConsoleModel.ConsoleMessage.MessageLevel.Info, '',
-        undefined, sourceURL, undefined, undefined, undefined, [result], undefined, undefined, undefined, scriptId);
+        ConsoleModel.ConsoleMessage.MessageType.Result, sourceURL, undefined, undefined, undefined, [result], undefined,
+        undefined, undefined, scriptId);
     ConsoleModel.consoleModel.addMessage(consoleMessage);
   }
 
@@ -495,6 +496,14 @@ Snippets.SnippetContentProvider = class {
 
   /**
    * @override
+   * @return {!Promise<boolean>}
+   */
+  contentEncoded() {
+    return Promise.resolve(false);
+  }
+
+  /**
+   * @override
    * @return {!Promise<?string>}
    */
   requestContent() {
@@ -547,9 +556,10 @@ Snippets.SnippetsProject = class extends Bindings.ContentProviderBasedProject {
    * @override
    * @param {!Workspace.UISourceCode} uiSourceCode
    * @param {string} newContent
+   * @param {boolean} isBase64
    * @param {function(?string)} callback
    */
-  setFileContent(uiSourceCode, newContent, callback) {
+  setFileContent(uiSourceCode, newContent, isBase64, callback) {
     this._model._setScriptSnippetContent(uiSourceCode.url(), newContent);
     callback('');
   }
@@ -577,10 +587,11 @@ Snippets.SnippetsProject = class extends Bindings.ContentProviderBasedProject {
    * @param {string} url
    * @param {?string} name
    * @param {string} content
-   * @param {function(?Workspace.UISourceCode)} callback
+   * @param {boolean=} isBase64
+   * @return {!Promise<?Workspace.UISourceCode>}
    */
-  createFile(url, name, content, callback) {
-    callback(this._model.createScriptSnippet(content));
+  createFile(url, name, content, isBase64) {
+    return /** @type {!Promise<?Workspace.UISourceCode>} */ (Promise.resolve(this._model.createScriptSnippet(content)));
   }
 
   /**
