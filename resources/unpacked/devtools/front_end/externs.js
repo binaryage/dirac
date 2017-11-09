@@ -412,14 +412,16 @@ var dirac = {
     lookupCurrentContext: function() {},
     /**
     * @param {string} code
+    * @param {boolean} silent
     * @param {?} callback
     */
-    evalInCurrentContext: function(code, callback) {},
+    evalInCurrentContext: function(code, silent, callback) {},
     /**
     * @param {string} code
+    * @param {boolean} silent
     * @param {?} callback
     */
-    evalInDefaultContext: function(code, callback) {},
+    evalInDefaultContext: function(code, silent, callback) {},
     /**
     * @return {boolean}
     */

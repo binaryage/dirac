@@ -103,30 +103,29 @@
     [::eval-exception exception-details] or
     [::context-timeout]
   Throws on internal error."
-  ([context code]
-   (eval-with-callback! context code nil))
-  ([context code callback]
-   (let [dirac (get-dirac)
-         has-context-fn-name (get-has-context-fn-name context)]
-     (if-let [has-context-fn (oget+ dirac "?" has-context-fn-name)]
-       (let [eval-fn-name (get-eval-in-context-fn-name context)]
-         (if-let [eval-fn (oget+ dirac "?" eval-fn-name)]
-           (let [callback-wrapper (fn [result-remote-object exception-details]
-                                    (if callback
-                                      (let [result (if (some? exception-details)
-                                                     [::eval-exception exception-details]
-                                                     [::ok (if result-remote-object (oget result-remote-object "value"))])]
-                                        (callback result))))
-                 call-fn (fn [] (eval-fn code callback-wrapper))
-                 timeout-fn (fn []
-                              (error "Unable to resolve javascript context in time" context code)
-                              (if callback
-                                (callback [::context-timeout])))
-                 trial-delay (pref :context-availability-next-trial-waiting-time)
-                 time-limit (pref :context-availability-total-time-limit)]
-             (check-and-call-when-avail-or-timeout has-context-fn call-fn timeout-fn trial-delay time-limit))
-           (throw (ex-info (str "Function '" eval-fn-name "' not found in window.dirac object") dirac))))
-       (throw (ex-info (str "Function '" has-context-fn-name "' not found in window.dirac object") dirac))))))
+  [context code & [callback silent]]
+  (let [dirac (get-dirac)
+        silent? (or (nil? silent) (true? silent))                                                                             ; by default we execute silently
+        has-context-fn-name (get-has-context-fn-name context)]
+    (if-let [has-context-fn (oget+ dirac "?" has-context-fn-name)]
+      (let [eval-fn-name (get-eval-in-context-fn-name context)]
+        (if-let [eval-fn (oget+ dirac "?" eval-fn-name)]
+          (let [callback-wrapper (fn [result-remote-object exception-details]
+                                   (if callback
+                                     (let [result (if (some? exception-details)
+                                                    [::eval-exception exception-details]
+                                                    [::ok (if result-remote-object (oget result-remote-object "value"))])]
+                                       (callback result))))
+                call-fn (fn [] (eval-fn code silent? callback-wrapper))
+                timeout-fn (fn []
+                             (error "Unable to resolve javascript context in time" context code)
+                             (if callback
+                               (callback [::context-timeout])))
+                trial-delay (pref :context-availability-next-trial-waiting-time)
+                time-limit (pref :context-availability-total-time-limit)]
+            (check-and-call-when-avail-or-timeout has-context-fn call-fn timeout-fn trial-delay time-limit))
+          (throw (ex-info (str "Function '" eval-fn-name "' not found in window.dirac object") dirac))))
+      (throw (ex-info (str "Function '" has-context-fn-name "' not found in window.dirac object") dirac)))))
 
 (defn update-banner! [msg]
   (if-let [banner-fn (pref :update-banner-fn)]
@@ -193,7 +192,7 @@
      [::eval-exception exception-details] in case of eval exception
      [::ok value] in case of proper execution
      "
-  [context code time-limit]
+  [context code time-limit silent?]
   {:pre [(context supported-contexts)]}
   (let [result-chan (chan)
         timeout-chan (timeout time-limit)
@@ -201,7 +200,7 @@
                    (put! result-chan result))]
     (go
       (try
-        (eval-with-callback! context code callback)
+        (eval-with-callback! context code callback silent?)
         (catch :default e
           (put! result-chan [::internal-error e])))
       (let [[result ch] (alts! [result-chan timeout-chan])]                                                                   ; when timeout channel closes, the result is nil
@@ -224,7 +223,7 @@
     (go-loop []
       (if (core-async/closed? timeout-chan)
         (return)
-        (let [result-chan (call-eval-with-timeout! :default installation-test-code installation-test-eval-time-limit)
+        (let [result-chan (call-eval-with-timeout! :default installation-test-code installation-test-eval-time-limit true)
               [result] (alts! [result-chan timeout-chan])]
           (case (first result)
             ::ok (return result)
@@ -266,7 +265,7 @@
 
 (defn start-eval-request-queue-processing-loop! []
   (go-loop []
-    (if-let [[context code handler] (<! eval-requests)]
+    (if-let [[context code silent? handler] (<! eval-requests)]
       (let [call-handler! (fn [result-code value error]
                             (if (some? error)
                               (display-user-error! error))
@@ -277,7 +276,7 @@
         (case (first install-result)
           ::failure (let [reason (second install-result)]
                       (call-handler! ::install-failure reason (missing-runtime-msg reason)))
-          ::ok (let [eval-result (<! (call-eval-with-timeout! context code eval-time-limit))]
+          ::ok (let [eval-result (<! (call-eval-with-timeout! context code eval-time-limit silent?))]
                  (case (first eval-result)
                    ::ok (call-handler! ::ok (second eval-result))
                    ::internal-error (call-handler! ::internal-error
@@ -294,21 +293,21 @@
 
 ; -- queued evaluation in context -------------------------------------------------------------------------------------------
 
-(defn queue-eval-request! [context code handler]
-  (put! eval-requests [context code handler]))
+(defn queue-eval-request! [context code silent? handler]
+  (put! eval-requests [context code silent? handler]))
 
-(defn eval-in-context! [context code]
+(defn eval-in-context! [context code silent?]
   (let [result-chan (chan)
         handler (fn [& args]
                   (put! result-chan args))]
-    (queue-eval-request! context code handler)
+    (queue-eval-request! context code silent? handler)
     result-chan))
 
-(defn safely-eval-in-context! [context safe-value code]
+(defn safely-eval-in-context! [context safe-value code & [silent?]]
   {:pre [(context supported-contexts)
          (string? code)]}
   (go
-    (let [[value error] (<! (eval-in-context! context code))]
+    (let [[value error] (<! (eval-in-context! context code silent?))]
       (if (nil? error)
         value
         safe-value))))
@@ -317,7 +316,7 @@
 
 (defn is-runtime-present? []
   (go
-    (let [[value error] (<! (eval-in-context! :default "dirac.runtime"))]
+    (let [[value error] (<! (eval-in-context! :default "dirac.runtime" true))]
       (if (nil? error)
         true
         (format-reason value)))))
@@ -361,4 +360,12 @@
 ; -- fancy evaluation in currently selected context -------------------------------------------------------------------------
 
 (defn eval-in-current-context! [code]
-  (eval-in-context! :current code))
+  ; this should be called from weasel for all compiled clojurescript snippets coming via REPL
+  ; we want to eval it with silent=false so that "Pause on caught exceptions works" with commands entered into Dirac prompt
+  ; see https://github.com/binaryage/dirac/issues/70
+  ; note that staying stuck on a paused exception in Dirac DevTools UI might trigger evaluation timeout with a warning message
+  ; "Dirac encountered internal eval timeout while evaluating", we don't want to suppress this because this message could
+  ; be relevant in other scenarios (for example entering an infinite loop) and we have no easy way how to distinguish them.
+  ; TODO: Investigate if I could query DevTools and ask if execution is paused or get some events about it
+  ;       hint: look into SDK.DebuggerModel.Events.DebuggerPaused/Resumed
+  (eval-in-context! :current code false))
