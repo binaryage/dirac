@@ -135,13 +135,9 @@ var QuickOpen = {};
 /** @const */
 var Resources = {};
 /** @const */
-var SASSTestRunner = {};
-/** @const */
 var SDK = {};
 /** @const */
 var SDKTestRunner = {};
-/** @const */
-var Sass = {};
 /** @const */
 var Screencast = {};
 /** @const */
