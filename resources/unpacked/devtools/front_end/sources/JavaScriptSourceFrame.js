@@ -1489,7 +1489,8 @@ Sources.JavaScriptSourceFrame = class extends Sources.UISourceCodeFrame {
     if (this._prettyPrintInfobar)
       return;
 
-    if (!TextUtils.isMinified(/** @type {string} */ (this.uiSourceCode().content())))
+    var content = this.uiSourceCode().content();
+    if (!content || !TextUtils.isMinified(content))
       return;
 
     this._prettyPrintInfobar = UI.Infobar.create(
