@@ -137,14 +137,6 @@ Then you can export an environmental variable controlling logging verbosity in y
 And then in the same shell session run your actual repl command, for example `lein repl` in case of Leiningen. Repl init code
 should pickup the custom dirac library if versions match in dependencies.
 
-### Getting error "Cannot attach Dirac DevTools...". What now?
-
-Dirac DevTools needs to connect to a debugger to inspect target tab running your page. 
-
-There is a fundamental limitation in current [Chrome debugger protocol](https://developer.chrome.com/devtools/docs/debugger-protocol) 
-implementation that only one debugger client can be attached at time (see [Simultaneous protocol clients](https://developer.chrome.com/devtools/docs/debugger-protocol#simultaneous)). 
-If you open internal DevTools or have some other debugger client already connected, Dirac won't be able to connect and will report this error.
-
 ### Is it possible to use Dirac with Node.js projects?
 
 Yes! Please read [the documentation here](https://github.com/binaryage/dirac/blob/master/docs/node.md).
