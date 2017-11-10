@@ -140,14 +140,24 @@ Object.assign(window.dirac, (function() {
     const globalObjectClearedHandler = (...args) => {
       callback("GlobalObjectCleared", ...args);
     };
+    const debuggerPausedHandler = (...args) => {
+      callback("DebuggerPaused", ...args);
+    };
+    const debuggerResumedHandler = (...args) => {
+      callback("DebuggerResumed", ...args);
+    };
 
     SDK.targetManager.addModelListener(SDK.DebuggerModel, SDK.DebuggerModel.Events.GlobalObjectCleared, globalObjectClearedHandler, window.dirac);
+    SDK.targetManager.addModelListener(SDK.DebuggerModel, SDK.DebuggerModel.Events.DebuggerPaused, debuggerPausedHandler, window.dirac);
+    SDK.targetManager.addModelListener(SDK.DebuggerModel, SDK.DebuggerModel.Events.DebuggerResumed, debuggerResumedHandler, window.dirac);
 
     /**
      * @return {boolean}
      */
     debuggerEventsUnsubscriber = () => {
       SDK.targetManager.removeModelListener(SDK.DebuggerModel, SDK.DebuggerModel.Events.GlobalObjectCleared, globalObjectClearedHandler, window.dirac);
+      SDK.targetManager.removeModelListener(SDK.DebuggerModel, SDK.DebuggerModel.Events.DebuggerPaused, debuggerPausedHandler, window.dirac);
+      SDK.targetManager.removeModelListener(SDK.DebuggerModel, SDK.DebuggerModel.Events.DebuggerResumed, debuggerResumedHandler, window.dirac);
       return true;
     };
 
