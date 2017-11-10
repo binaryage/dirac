@@ -181,6 +181,72 @@
   (str "Dirac encountered internal eval timeout while evaluating:\n"
        code))
 
+; -- resumable timer --------------------------------------------------------------------------------------------------------
+
+(defprotocol IResumable
+  (-pause [o])
+  (-resume [o]))
+
+(deftype ResumableTimer [callback ^:mutable remaining ^:mutable start ^:mutable timer-id]
+  IResumable
+  (-pause [this]
+    (assert timer-id)
+    (assert start)
+    (js/clearTimeout timer-id)
+    (set! timer-id nil)
+    (set! remaining (- remaining (- (js/Date.now) start)))
+    (set! start nil))
+  (-resume [this]
+    (assert remaining)
+    (assert callback)
+    (set! start (js/Date.now))
+    (set! timer-id (js/setTimeout callback remaining))))
+
+(defn make-resumable-timer [callback delay]
+  (let [resumable-timer (ResumableTimer. callback delay nil nil)]
+    (-resume resumable-timer)
+    resumable-timer))
+
+; -- debugger-aware timeout -------------------------------------------------------------------------------------------------
+
+(defonce ^:dynamic *subscribed-to-debugger-events* false)
+(defonce ^:dynamic *managed-resumable-timers* #{})
+
+(defn pause-managed-timers []
+  (doseq [resumable-timer *managed-resumable-timers*]
+    (-pause resumable-timer)))
+
+(defn resume-managed-timers []
+  (doseq [resumable-timer *managed-resumable-timers*]
+    (-resume resumable-timer)))
+
+(defn handle-debugger-event [kind & args]
+  (case kind
+    "DebuggerPaused" (pause-managed-timers)
+    "DebuggerResumed" (resume-managed-timers)
+    true))
+
+(defn subscribe-to-debugger-events-if-needed! []
+  (when-not *subscribed-to-debugger-events*
+    (subscribe-debugger-events! handle-debugger-event)
+    (set! *subscribed-to-debugger-events* true)))
+
+(defn start-managing-timer-on-debugger-pauses! [resumable-timer]
+  (subscribe-to-debugger-events-if-needed!)
+  (set! *managed-resumable-timers* (conj *managed-resumable-timers* resumable-timer)))
+
+(defn stop-managing-timer-on-debugger-pauses! [resumable-timer]
+  (set! *managed-resumable-timers* (disj *managed-resumable-timers* resumable-timer)))
+
+(defn make-debugger-aware-timeout! [msec]
+  (let [wait-chan (chan)
+        resumable-timer (make-resumable-timer #(close! wait-chan) msec)]
+    (go
+      (start-managing-timer-on-debugger-pauses! resumable-timer)
+      (<! wait-chan)
+      (stop-managing-timer-on-debugger-pauses! resumable-timer)
+      true)))
+
 ; -- convenient eval wrapper ------------------------------------------------------------------------------------------------
 
 (defn call-eval-with-timeout!
@@ -195,7 +261,7 @@
   [context code time-limit silent?]
   {:pre [(context supported-contexts)]}
   (let [result-chan (chan)
-        timeout-chan (timeout time-limit)
+        timeout-chan (make-debugger-aware-timeout! time-limit)
         callback (fn [result]
                    (put! result-chan result))]
     (go
@@ -363,9 +429,4 @@
   ; this should be called from weasel for all compiled clojurescript snippets coming via REPL
   ; we want to eval it with silent=false so that "Pause on caught exceptions works" with commands entered into Dirac prompt
   ; see https://github.com/binaryage/dirac/issues/70
-  ; note that staying stuck on a paused exception in Dirac DevTools UI might trigger evaluation timeout with a warning message
-  ; "Dirac encountered internal eval timeout while evaluating", we don't want to suppress this because this message could
-  ; be relevant in other scenarios (for example entering an infinite loop) and we have no easy way how to distinguish them.
-  ; TODO: Investigate if I could query DevTools and ask if execution is paused or get some events about it
-  ;       hint: look into SDK.DebuggerModel.Events.DebuggerPaused/Resumed
   (eval-in-context! :current code false))
