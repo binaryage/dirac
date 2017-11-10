@@ -319,7 +319,7 @@ Protocol.PageAgent.prototype.invoke_setAdBlockingEnabled = function(obj) {};
 Protocol.PageAgent.prototype.navigate = function(url, opt_referrer, opt_transitionType) {};
 /** @typedef {!{url: string, referrer: (string|undefined), transitionType: (Protocol.Page.TransitionType|undefined)}} */
 Protocol.PageAgent.NavigateRequest;
-/** @typedef {!{loaderId: Protocol.Network.LoaderId, frameId: Protocol.Page.FrameId}} */
+/** @typedef {!{errorText: string, frameId: Protocol.Page.FrameId}} */
 Protocol.PageAgent.NavigateResponse;
 /**
  * @param {!Protocol.PageAgent.NavigateRequest} obj
@@ -6312,6 +6312,9 @@ Protocol.Runtime.CallFrame;
 
 /** @typedef {!{description:(string|undefined), callFrames:(!Array<Protocol.Runtime.CallFrame>), parent:(Protocol.Runtime.StackTrace|undefined), promiseCreationFrame:(Protocol.Runtime.CallFrame|undefined)}} */
 Protocol.Runtime.StackTrace;
+
+/** @typedef {string} */
+Protocol.Runtime.AsyncTaskId;
 /** @interface */
 Protocol.RuntimeDispatcher = function() {};
 /**
@@ -6489,6 +6492,20 @@ Protocol.DebuggerAgent.ContinueToLocationResponse;
 Protocol.DebuggerAgent.prototype.invoke_continueToLocation = function(obj) {};
 
 /**
+ * @param {Protocol.Runtime.AsyncTaskId} asyncTaskId
+ * @return {!Promise<undefined>}
+ */
+Protocol.DebuggerAgent.prototype.pauseOnAsyncTask = function(asyncTaskId) {};
+/** @typedef {!{asyncTaskId: Protocol.Runtime.AsyncTaskId}} */
+Protocol.DebuggerAgent.PauseOnAsyncTaskRequest;
+/** @typedef {Object|undefined} */
+Protocol.DebuggerAgent.PauseOnAsyncTaskResponse;
+/**
+ * @param {!Protocol.DebuggerAgent.PauseOnAsyncTaskRequest} obj
+ * @return {!Promise<!Protocol.DebuggerAgent.PauseOnAsyncTaskResponse>} */
+Protocol.DebuggerAgent.prototype.invoke_pauseOnAsyncTask = function(obj) {};
+
+/**
  * @return {!Promise<undefined>}
  */
 Protocol.DebuggerAgent.prototype.stepOver = function() {};
@@ -6502,10 +6519,11 @@ Protocol.DebuggerAgent.StepOverResponse;
 Protocol.DebuggerAgent.prototype.invoke_stepOver = function(obj) {};
 
 /**
+ * @param {boolean=} opt_breakOnAsyncCall
  * @return {!Promise<undefined>}
  */
-Protocol.DebuggerAgent.prototype.stepInto = function() {};
-/** @typedef {Object|undefined} */
+Protocol.DebuggerAgent.prototype.stepInto = function(opt_breakOnAsyncCall) {};
+/** @typedef {!{breakOnAsyncCall: (boolean|undefined)}} */
 Protocol.DebuggerAgent.StepIntoRequest;
 /** @typedef {Object|undefined} */
 Protocol.DebuggerAgent.StepIntoResponse;
@@ -6680,6 +6698,20 @@ Protocol.DebuggerAgent.SetVariableValueResponse;
 Protocol.DebuggerAgent.prototype.invoke_setVariableValue = function(obj) {};
 
 /**
+ * @param {Protocol.Runtime.CallArgument} newValue
+ * @return {!Promise<undefined>}
+ */
+Protocol.DebuggerAgent.prototype.setReturnValue = function(newValue) {};
+/** @typedef {!{newValue: Protocol.Runtime.CallArgument}} */
+Protocol.DebuggerAgent.SetReturnValueRequest;
+/** @typedef {Object|undefined} */
+Protocol.DebuggerAgent.SetReturnValueResponse;
+/**
+ * @param {!Protocol.DebuggerAgent.SetReturnValueRequest} obj
+ * @return {!Promise<!Protocol.DebuggerAgent.SetReturnValueResponse>} */
+Protocol.DebuggerAgent.prototype.invoke_setReturnValue = function(obj) {};
+
+/**
  * @param {number} maxDepth
  * @return {!Promise<undefined>}
  */
@@ -6813,8 +6845,9 @@ Protocol.DebuggerDispatcher.prototype.breakpointResolved = function(breakpointId
  * @param {!Object=} opt_data
  * @param {!Array<string>=} opt_hitBreakpoints
  * @param {Protocol.Runtime.StackTrace=} opt_asyncStackTrace
+ * @param {Protocol.Runtime.AsyncTaskId=} opt_scheduledAsyncTaskId
  */
-Protocol.DebuggerDispatcher.prototype.paused = function(callFrames, reason, opt_data, opt_hitBreakpoints, opt_asyncStackTrace) {};
+Protocol.DebuggerDispatcher.prototype.paused = function(callFrames, reason, opt_data, opt_hitBreakpoints, opt_asyncStackTrace, opt_scheduledAsyncTaskId) {};
 Protocol.DebuggerDispatcher.prototype.resumed = function() {};
 Protocol.Console = {};
 
@@ -7261,6 +7294,19 @@ Protocol.HeapProfilerAgent.StopSamplingResponse;
  * @param {!Protocol.HeapProfilerAgent.StopSamplingRequest} obj
  * @return {!Promise<!Protocol.HeapProfilerAgent.StopSamplingResponse>} */
 Protocol.HeapProfilerAgent.prototype.invoke_stopSampling = function(obj) {};
+
+/**
+ * @return {!Promise<?Protocol.HeapProfiler.SamplingHeapProfile>}
+ */
+Protocol.HeapProfilerAgent.prototype.getSamplingProfile = function() {};
+/** @typedef {Object|undefined} */
+Protocol.HeapProfilerAgent.GetSamplingProfileRequest;
+/** @typedef {!{profile: Protocol.HeapProfiler.SamplingHeapProfile}} */
+Protocol.HeapProfilerAgent.GetSamplingProfileResponse;
+/**
+ * @param {!Protocol.HeapProfilerAgent.GetSamplingProfileRequest} obj
+ * @return {!Promise<!Protocol.HeapProfilerAgent.GetSamplingProfileResponse>} */
+Protocol.HeapProfilerAgent.prototype.invoke_getSamplingProfile = function(obj) {};
 
 /** @typedef {string} */
 Protocol.HeapProfiler.HeapSnapshotObjectId;

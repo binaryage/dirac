@@ -412,14 +412,16 @@ var dirac = {
     lookupCurrentContext: function() {},
     /**
     * @param {string} code
+    * @param {boolean} silent
     * @param {?} callback
     */
-    evalInCurrentContext: function(code, callback) {},
+    evalInCurrentContext: function(code, silent, callback) {},
     /**
     * @param {string} code
+    * @param {boolean} silent
     * @param {?} callback
     */
-    evalInDefaultContext: function(code, callback) {},
+    evalInDefaultContext: function(code, silent, callback) {},
     /**
     * @return {boolean}
     */
@@ -1024,42 +1026,6 @@ ESTree.TemplateLiteralNode = function() {
   this.quasis;
   /** @type {!Array.<!ESTree.Node>} */
   this.expressions;
-};
-/** @type {!Object} */
-var Gonzales = {};
-var gonzales = {
-  /**
-   * @param {string} text
-   * @param {!Object=} options
-   * @return {!Gonzales.Node}
-   */
-  parse: function(text, options) {},
-};
-
-/**
- * @constructor
- */
-Gonzales.Location = function() {
-  /** @type {number} */
-  this.line;
-  /** @type {number} */
-  this.column;
-};
-
-/**
- * @constructor
- */
-Gonzales.Node = function() {
-  /** @type {string} */
-  this.type;
-  /** @type {string} */
-  this.syntax;
-  /** @type {!Gonzales.Location} */
-  this.start;
-  /** @type {!Gonzales.Location} */
-  this.end;
-  /** @type {(string|!Array<!Gonzales.Node>)} */
-  this.content;
 };
 
 /**

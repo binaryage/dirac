@@ -1,10 +1,8 @@
-Protocol.BakedSupportedCSSPropertiesChromeTag='64.0.3256.1';
-Protocol.BakedSupportedCSSPropertiesChromeRev='74e01b054b2759a7de9868bbfe4d23a877e4b5d5';
+Protocol.BakedSupportedCSSPropertiesChromeTag='64.0.3264.0';
+Protocol.BakedSupportedCSSPropertiesChromeRev='20cde4eaa43549ff7e7039c7dd28fa21d3a56f79';
 Protocol.BakedSupportedCSSProperties=''
 + '[{"name": "-webkit-app-region"},\n'
 + ' {"name": "-webkit-appearance"},\n'
-+ ' {"name": "-webkit-background-clip"},\n'
-+ ' {"name": "-webkit-background-origin"},\n'
 + ' {"longhands": ["-webkit-border-after-width", "-webkit-border-after-style", "-webkit-border-after-color"], "name": "-webkit-border-after"},\n'
 + ' {"name": "-webkit-border-after-color"},\n'
 + ' {"name": "-webkit-border-after-style"},\n'
@@ -401,7 +399,7 @@ Protocol.BakedSupportedCSSProperties=''
 + ' {"longhands": ["text-decoration-line", "text-decoration-style", "text-decoration-color"], "name": "text-decoration"},\n'
 + ' {"name": "text-decoration-color"},\n'
 + ' {"name": "text-decoration-line"},\n'
-+ ' {"name": "text-decoration-skip", "inherited": true},\n'
++ ' {"name": "text-decoration-skip-ink", "inherited": true},\n'
 + ' {"name": "text-decoration-style"},\n'
 + ' {"name": "text-indent", "inherited": true},\n'
 + ' {"name": "text-justify", "inherited": true},\n'

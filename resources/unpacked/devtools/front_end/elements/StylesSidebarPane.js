@@ -48,6 +48,7 @@ Elements.StylesSidebarPane = class extends Elements.ElementsSidebarPane {
     this._toolbarPaneElement = this._createStylesSidebarToolbar();
 
     this._sectionsContainer = this.contentElement.createChild('div');
+    UI.ARIAUtils.markAsTree(this._sectionsContainer);
     this._sectionsContainer.addEventListener('keydown', this._sectionsContainerKeyDown.bind(this), false);
     this._sectionsContainer.addEventListener('focusin', this._sectionsContainerFocusChanged.bind(this), false);
     this._sectionsContainer.addEventListener('focusout', this._sectionsContainerFocusChanged.bind(this), false);
@@ -213,6 +214,14 @@ Elements.StylesSidebarPane = class extends Elements.ElementsSidebarPane {
         sectionToFocus.element.focus();
         event.consume(true);
         break;
+      case 'Home':
+        section.firstSibling().element.focus();
+        event.consume(true);
+        break;
+      case 'End':
+        section.lastSibling().element.focus();
+        event.consume(true);
+        break;
     }
   }
 
@@ -285,11 +294,10 @@ Elements.StylesSidebarPane = class extends Elements.ElementsSidebarPane {
     if (!node)
       return;
 
-    var fullRefresh = Runtime.experiments.isEnabled('liveSASS');
     for (var section of this.allSections()) {
       if (section.isBlank)
         continue;
-      section.update(fullRefresh || section === editedSection);
+      section.update(section === editedSection);
     }
 
     if (this._filterRegex)
@@ -493,28 +501,19 @@ Elements.StylesSidebarPane = class extends Elements.ElementsSidebarPane {
     var styleSheetHeader = await cssModel.requestViaInspectorStylesheet(/** @type {!SDK.DOMNode} */ (node));
 
     this._userOperation = false;
-    this._createNewRuleInStyleSheet(styleSheetHeader);
+    await this._createNewRuleInStyleSheet(styleSheetHeader);
   }
 
   /**
    * @param {?SDK.CSSStyleSheetHeader} styleSheetHeader
    */
-  _createNewRuleInStyleSheet(styleSheetHeader) {
+  async _createNewRuleInStyleSheet(styleSheetHeader) {
     if (!styleSheetHeader)
       return;
-    styleSheetHeader.requestContent().then(onStyleSheetContent.bind(this, styleSheetHeader.id));
-
-    /**
-     * @param {string} styleSheetId
-     * @param {?string} text
-     * @this {Elements.StylesSidebarPane}
-     */
-    function onStyleSheetContent(styleSheetId, text) {
-      text = text || '';
-      var lines = text.split('\n');
-      var range = TextUtils.TextRange.createFromLocation(lines.length - 1, lines[lines.length - 1].length);
-      this._addBlankSection(this._sectionBlocks[0].sections[0], styleSheetId, range);
-    }
+    var text = await styleSheetHeader.requestContent() || '';
+    var lines = text.split('\n');
+    var range = TextUtils.TextRange.createFromLocation(lines.length - 1, lines[lines.length - 1].length);
+    this._addBlankSection(this._sectionBlocks[0].sections[0], styleSheetHeader.id, range);
   }
 
   /**
@@ -760,6 +759,7 @@ Elements.StylePropertiesSection = class {
     var rule = style.parentRule;
     this.element = createElementWithClass('div', 'styles-section matched-styles monospace');
     this.element.tabIndex = -1;
+    UI.ARIAUtils.markAsTreeitem(this.element);
     this._editing = false;
     this.element.addEventListener('keydown', this._onKeyDown.bind(this), false);
     this.element._section = this;
@@ -975,6 +975,7 @@ Elements.StylePropertiesSection = class {
     setItemsVisibility.call(this, items, false);
     sectionToolbar.element.addEventListener('mouseenter', setItemsVisibility.bind(this, items, true));
     sectionToolbar.element.addEventListener('mouseleave', setItemsVisibility.bind(this, items, false));
+    UI.ARIAUtils.markAsHidden(sectionToolbar.element);
 
     /**
      * @param {!Array<!UI.ToolbarButton>} items
@@ -1866,11 +1867,11 @@ Elements.BlankStylePropertiesSection = class extends Elements.StylePropertiesSec
         this.propertiesTreeOutline.element.classList.add('no-affect');
 
       this._updateRuleOrigin();
-      if (this.element.parentElement)  // Might have been detached already.
-        this._moveEditorFromSelector(moveDirection);
 
       this._parentPane._userOperation = false;
       this._editingSelectorEnded();
+      if (this.element.parentElement)  // Might have been detached already.
+        this._moveEditorFromSelector(moveDirection);
       this._markSelectorMatches();
 
       this._editingSelectorCommittedForTest();

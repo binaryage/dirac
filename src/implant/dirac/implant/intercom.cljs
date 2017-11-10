@@ -292,7 +292,7 @@
   (log "on-debugger-event" type)
   (case type
     "GlobalObjectCleared" (apply on-global-object-cleared args)
-    (error "on-debugger-event recevied unknown event type" type args)))
+    true))
 
 (defn subscribe-debugger-events! []
   (when-not *debugger-events-subscribed*

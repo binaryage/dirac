@@ -13,7 +13,7 @@ Object.assign(window.dirac, (function() {
     return UI.context.flavor(SDK.ExecutionContext);
   }
 
-  function evalInContext(context, code, callback) {
+  function evalInContext(context, code, silent, callback) {
     if (!context) {
       console.warn("Requested evalInContext with null context:", code);
       return;
@@ -42,13 +42,13 @@ Object.assign(window.dirac, (function() {
     };
     try {
       if (dirac._DEBUG_EVAL) {
-        console.log("evalInContext", context, code);
+        console.log("evalInContext", context, silent, code);
       }
       context.evaluate({
         expression: code,
         objectGroup: 'console',
         includeCommandLineAPI: true,
-        silent: true,
+        silent: silent,
         returnByValue: true,
         generatePreview: false
       }, false, false).then(answer => resultCallback(answer.object, answer.exceptionDetails));
@@ -61,11 +61,11 @@ Object.assign(window.dirac, (function() {
     return !!lookupCurrentContext();
   }
 
-  function evalInCurrentContext(code, callback) {
+  function evalInCurrentContext(code, silent, callback) {
     if (dirac._DEBUG_EVAL) {
-      console.log("evalInCurrentContext called:", code, callback);
+      console.log("evalInCurrentContext called:", code, silent, callback);
     }
-    evalInContext(lookupCurrentContext(), code, callback);
+    evalInContext(lookupCurrentContext(), code, silent, callback);
   }
 
   function lookupDefaultContext() {
@@ -121,11 +121,11 @@ Object.assign(window.dirac, (function() {
     return !!lookupDefaultContext();
   }
 
-  function evalInDefaultContext(code, callback) {
+  function evalInDefaultContext(code, silent, callback) {
     if (dirac._DEBUG_EVAL) {
-      console.log("evalInDefaultContext called:", code, callback);
+      console.log("evalInDefaultContext called:", code, silent, callback);
     }
-    evalInContext(lookupDefaultContext(), code, callback);
+    evalInContext(lookupDefaultContext(), code, silent, callback);
   }
 
   let debuggerEventsUnsubscriber = null;
@@ -140,14 +140,24 @@ Object.assign(window.dirac, (function() {
     const globalObjectClearedHandler = (...args) => {
       callback("GlobalObjectCleared", ...args);
     };
+    const debuggerPausedHandler = (...args) => {
+      callback("DebuggerPaused", ...args);
+    };
+    const debuggerResumedHandler = (...args) => {
+      callback("DebuggerResumed", ...args);
+    };
 
     SDK.targetManager.addModelListener(SDK.DebuggerModel, SDK.DebuggerModel.Events.GlobalObjectCleared, globalObjectClearedHandler, window.dirac);
+    SDK.targetManager.addModelListener(SDK.DebuggerModel, SDK.DebuggerModel.Events.DebuggerPaused, debuggerPausedHandler, window.dirac);
+    SDK.targetManager.addModelListener(SDK.DebuggerModel, SDK.DebuggerModel.Events.DebuggerResumed, debuggerResumedHandler, window.dirac);
 
     /**
      * @return {boolean}
      */
     debuggerEventsUnsubscriber = () => {
       SDK.targetManager.removeModelListener(SDK.DebuggerModel, SDK.DebuggerModel.Events.GlobalObjectCleared, globalObjectClearedHandler, window.dirac);
+      SDK.targetManager.removeModelListener(SDK.DebuggerModel, SDK.DebuggerModel.Events.DebuggerPaused, debuggerPausedHandler, window.dirac);
+      SDK.targetManager.removeModelListener(SDK.DebuggerModel, SDK.DebuggerModel.Events.DebuggerResumed, debuggerResumedHandler, window.dirac);
       return true;
     };
 
