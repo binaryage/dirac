@@ -164,8 +164,8 @@ Object.assign(window.dirac, (function() {
     return loadLazyDirac().then(() => window.dirac.subscribeDebuggerEvents(...args));
   }
 
-  function unsubscribeDebuggerEvents() {
-    return loadLazyDirac().then(() => window.dirac.unsubscribeDebuggerEvents());
+  function unsubscribeDebuggerEvents(...args) {
+    return loadLazyDirac().then(() => window.dirac.unsubscribeDebuggerEvents(...args));
   }
 
   function addConsoleMessageToMainTarget(...args) {

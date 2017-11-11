@@ -128,14 +128,14 @@ Object.assign(window.dirac, (function() {
     evalInContext(lookupDefaultContext(), code, silent, callback);
   }
 
-  let debuggerEventsUnsubscriber = null;
+  let debuggerEventsUnsubscribers = new Map();
 
   /**
    * @return {boolean}
    */
   function subscribeDebuggerEvents(callback) {
-    if (debuggerEventsUnsubscriber) {
-      return false;
+    if (debuggerEventsUnsubscribers.has(callback)) {
+      throw new Error("subscribeDebuggerEvents called without prior unsubscribeDebuggerEvents for callback " + callback);
     }
     const globalObjectClearedHandler = (...args) => {
       callback("GlobalObjectCleared", ...args);
@@ -151,15 +151,12 @@ Object.assign(window.dirac, (function() {
     SDK.targetManager.addModelListener(SDK.DebuggerModel, SDK.DebuggerModel.Events.DebuggerPaused, debuggerPausedHandler, window.dirac);
     SDK.targetManager.addModelListener(SDK.DebuggerModel, SDK.DebuggerModel.Events.DebuggerResumed, debuggerResumedHandler, window.dirac);
 
-    /**
-     * @return {boolean}
-     */
-    debuggerEventsUnsubscriber = () => {
+    debuggerEventsUnsubscribers.set(callback, () => {
       SDK.targetManager.removeModelListener(SDK.DebuggerModel, SDK.DebuggerModel.Events.GlobalObjectCleared, globalObjectClearedHandler, window.dirac);
       SDK.targetManager.removeModelListener(SDK.DebuggerModel, SDK.DebuggerModel.Events.DebuggerPaused, debuggerPausedHandler, window.dirac);
       SDK.targetManager.removeModelListener(SDK.DebuggerModel, SDK.DebuggerModel.Events.DebuggerResumed, debuggerResumedHandler, window.dirac);
       return true;
-    };
+    });
 
     return true;
   }
@@ -167,14 +164,14 @@ Object.assign(window.dirac, (function() {
   /**
    * @return {boolean}
    */
-  function unsubscribeDebuggerEvents() {
-    if (!debuggerEventsUnsubscriber) {
-      return false;
+  function unsubscribeDebuggerEvents(callback) {
+    if (!debuggerEventsUnsubscribers.has(callback)) {
+      throw new Error("unsubscribeDebuggerEvents called without prior subscribeDebuggerEvents for callback " + callback);
     }
 
-    const res = debuggerEventsUnsubscriber();
-    debuggerEventsUnsubscriber = null;
-    return res;
+    const unsubscriber = debuggerEventsUnsubscribers.get(callback);
+    debuggerEventsUnsubscribers.delete(callback);
+    return unsubscriber();
   }
 
   // --- console ----------------------------------------------------------------------------------------------------------

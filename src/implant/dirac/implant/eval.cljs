@@ -187,20 +187,20 @@
   (-pause [o])
   (-resume [o]))
 
-(deftype ResumableTimer [callback ^:mutable remaining ^:mutable start ^:mutable timer-id]
+(deftype ResumableTimer [callback ^:mutable remaining-time ^:mutable start-time ^:mutable timer-id]
   IResumable
   (-pause [this]
     (assert timer-id)
-    (assert start)
+    (assert start-time)
     (js/clearTimeout timer-id)
     (set! timer-id nil)
-    (set! remaining (- remaining (- (js/Date.now) start)))
-    (set! start nil))
+    (set! remaining-time (- remaining-time (- (get-current-time) start-time)))
+    (set! start-time nil))
   (-resume [this]
-    (assert remaining)
+    (assert remaining-time)
     (assert callback)
-    (set! start (js/Date.now))
-    (set! timer-id (js/setTimeout callback remaining))))
+    (set! start-time (get-current-time))
+    (set! timer-id (js/setTimeout callback remaining-time))))
 
 (defn make-resumable-timer [callback delay]
   (let [resumable-timer (ResumableTimer. callback delay nil nil)]

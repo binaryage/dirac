@@ -438,9 +438,10 @@ var dirac = {
      */
     subscribeDebuggerEvents: function(callback) {},
     /**
+     * @param {?} callback
      * @return {boolean}
      */
-    unsubscribeDebuggerEvents: function() {},
+    unsubscribeDebuggerEvents: function(callback) {},
 
     /**
     * @param {?} callFrame
