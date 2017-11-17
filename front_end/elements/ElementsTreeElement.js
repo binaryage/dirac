@@ -106,7 +106,7 @@ Elements.ElementsTreeElement = class extends UI.TreeElement {
    * @param {!SDK.DOMNode} node
    */
   static populateForcedPseudoStateItems(contextMenu, node) {
-    const pseudoClasses = ['active', 'hover', 'focus', 'visited'];
+    const pseudoClasses = ['active', 'hover', 'focus', 'visited', 'focus-within'];
     var forcedPseudoState = node.domModel().cssModel().pseudoState(node);
     var stateMenu = contextMenu.debugSection().appendSubMenuItem(Common.UIString('Force state'));
     for (var i = 0; i < pseudoClasses.length; ++i) {
@@ -473,6 +473,9 @@ Elements.ElementsTreeElement = class extends UI.TreeElement {
     this.populateNodeContextMenu(contextMenu);
     Elements.ElementsTreeElement.populateForcedPseudoStateItems(contextMenu, treeElement.node());
     this.populateScrollIntoView(contextMenu);
+    contextMenu.viewSection().appendItem(Common.UIString('Focus'), async () => {
+      await this._node.focus();
+    });
   }
 
   /**
