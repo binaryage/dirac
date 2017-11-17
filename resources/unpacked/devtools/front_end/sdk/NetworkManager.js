@@ -86,6 +86,22 @@ SDK.NetworkManager = class extends SDK.SDKModel {
 
   /**
    * @param {!SDK.NetworkRequest} request
+   * @param {string} query
+   * @param {boolean} caseSensitive
+   * @param {boolean} isRegex
+   * @return {!Promise<!Array<!Common.ContentProvider.SearchMatch>>}
+   */
+  static async searchInRequest(request, query, caseSensitive, isRegex) {
+    var manager = SDK.NetworkManager.forRequest(request);
+    if (!manager)
+      return [];
+    var response = await manager._networkAgent.invoke_searchInResponseBody(
+        {requestId: request.requestId(), query: query, caseSensitive: caseSensitive, isRegex: isRegex});
+    return response.result || [];
+  }
+
+  /**
+   * @param {!SDK.NetworkRequest} request
    * @return {!Promise<!SDK.NetworkRequest.ContentData>}
    */
   static async requestContentData(request) {
@@ -669,17 +685,18 @@ SDK.NetworkDispatcher = class {
    * @param {!Protocol.Page.FrameId} frameId
    * @param {!Protocol.Page.ResourceType} resourceType
    * @param {boolean} isNavigationRequest
-   * @param {!Protocol.Network.Headers=} redirectHeaders
-   * @param {number=} redirectStatusCode
    * @param {string=} redirectUrl
    * @param {!Protocol.Network.AuthChallenge=} authChallenge
+   * @param {!Protocol.Network.ErrorReason=} responseErrorReason
+   * @param {number=} responseStatusCode
+   * @param {!Protocol.Network.Headers=} responseHeaders
    */
   requestIntercepted(
-      interceptionId, request, frameId, resourceType, isNavigationRequest, redirectHeaders, redirectStatusCode,
-      redirectUrl, authChallenge) {
+      interceptionId, request, frameId, resourceType, isNavigationRequest, redirectUrl, authChallenge,
+      responseErrorReason, responseStatusCode, responseHeaders) {
     SDK.multitargetNetworkManager._requestIntercepted(new SDK.MultitargetNetworkManager.InterceptedRequest(
         this._manager.target().networkAgent(), interceptionId, request, frameId, resourceType, isNavigationRequest,
-        redirectHeaders, redirectStatusCode, redirectUrl, authChallenge));
+        redirectUrl, authChallenge, responseErrorReason, responseStatusCode, responseHeaders));
   }
 
   /**
@@ -1025,6 +1042,8 @@ SDK.MultitargetNetworkManager = class extends Common.Object {
    * @return {!Promise}
    */
   _updateInterceptionPatterns() {
+    if (!Common.moduleSetting('cacheDisabled').get())
+      Common.moduleSetting('cacheDisabled').set(true);
     this._updatingInterceptionPatternsPromise = null;
     var promises = /** @type {!Array<!Promise>} */ ([]);
     for (var agent of this._agents) {
@@ -1110,14 +1129,15 @@ SDK.MultitargetNetworkManager.InterceptedRequest = class {
    * @param {!Protocol.Page.FrameId} frameId
    * @param {!Protocol.Page.ResourceType} resourceType
    * @param {boolean} isNavigationRequest
-   * @param {!Protocol.Network.Headers=} redirectHeaders
-   * @param {number=} redirectStatusCode
    * @param {string=} redirectUrl
    * @param {!Protocol.Network.AuthChallenge=} authChallenge
+   * @param {!Protocol.Network.ErrorReason=} responseErrorReason
+   * @param {number=} responseStatusCode
+   * @param {!Protocol.Network.Headers=} responseHeaders
    */
   constructor(
-      networkAgent, interceptionId, request, frameId, resourceType, isNavigationRequest, redirectHeaders,
-      redirectStatusCode, redirectUrl, authChallenge) {
+      networkAgent, interceptionId, request, frameId, resourceType, isNavigationRequest, redirectUrl, authChallenge,
+      responseErrorReason, responseStatusCode, responseHeaders) {
     this._networkAgent = networkAgent;
     this._interceptionId = interceptionId;
     this._hasResponded = false;
@@ -1125,10 +1145,11 @@ SDK.MultitargetNetworkManager.InterceptedRequest = class {
     this.frameId = frameId;
     this.resourceType = resourceType;
     this.isNavigationRequest = isNavigationRequest;
-    this.redirectHeaders = redirectHeaders;
-    this.redirectStatusCode = redirectStatusCode;
     this.redirectUrl = redirectUrl;
     this.authChallenge = authChallenge;
+    this.responseErrorReason = responseErrorReason;
+    this.responseStatusCode = responseStatusCode;
+    this.responseHeaders = responseHeaders;
   }
 
   /**
