@@ -1,8 +1,7 @@
 (ns dirac.background.marion
-  (:require-macros [cljs.core.async.macros :refer [go go-loop]]
-                   [dirac.background.logging :refer [log info warn error]]
+  (:require-macros [dirac.background.logging :refer [log info warn error]]
                    [devtools.toolbox :refer [envelope]])
-  (:require [cljs.core.async :refer [<! chan put!]]
+  (:require [cljs.core.async :refer [<! chan put! go go-loop]]
             [oops.core :refer [oget ocall oapply]]
             [chromex.protocols :refer [post-message! get-sender get-name]]
             [dirac.background.state :as state]

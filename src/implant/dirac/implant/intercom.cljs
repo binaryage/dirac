@@ -1,7 +1,6 @@
 (ns dirac.implant.intercom
-  (:require-macros [cljs.core.async.macros :refer [go go-loop]]
-                   [dirac.implant.intercom :refer [error-response]])
-  (:require [cljs.core.async :refer [<! chan put! timeout close!]]
+  (:require-macros [dirac.implant.intercom :refer [error-response]])
+  (:require [cljs.core.async :refer [<! chan put! timeout close! go go-loop]]
             [cljs.tools.reader.edn :as reader-edn]
             [cljs.tools.reader.reader-types :as reader-types]
             [clojure.walk :as walk]

@@ -1,6 +1,5 @@
 (ns dirac.sugar
-  (:require-macros [cljs.core.async.macros :refer [go go-loop]])
-  (:require [cljs.core.async :refer [<! chan put! close!]]
+  (:require [cljs.core.async :refer [<! chan put! close! go go-loop]]
             [oops.core :refer [oget oset! ocall oapply]]
             [chromex.logging :refer-macros [log info warn error group group-end]]
             [chromex.config :refer-macros [with-muted-error-reporting]]

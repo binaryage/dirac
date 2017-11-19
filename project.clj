@@ -13,7 +13,7 @@
 
   :dependencies [[org.clojure/clojure ~selected-clojure-version :scope "provided"]
                  [org.clojure/clojurescript "1.9.946" :scope "provided"]
-                 [org.clojure/core.async "0.3.443"]
+                 [org.clojure/core.async "0.3.465"]
                  [org.clojure/tools.logging "0.4.0"]
                  [org.clojure/tools.cli "0.3.5"]
                  [org.clojure/tools.nrepl "0.2.13"]

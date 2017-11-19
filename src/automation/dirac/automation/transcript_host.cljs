@@ -1,10 +1,9 @@
 (ns dirac.automation.transcript-host
-  (:require-macros [cljs.core.async.macros :refer [go go-loop]]
-                   [dirac.automation.transcript-host :refer [debug-log]]
+  (:require-macros [dirac.automation.transcript-host :refer [debug-log]]
                    [dirac.settings :refer [get-transcript-match-timeout
                                            get-transcript-label-padding-length
                                            get-transcript-label-padding-type]])
-  (:require [cljs.core.async :refer [put! <! chan timeout alts! close!]]
+  (:require [cljs.core.async :refer [put! <! chan timeout alts! close! go go-loop]]
             [dirac.automation.transcript :as transcript]
             [dirac.automation.transcript-streamer :as streamer]
             [oops.core :refer [oget oset! ocall oapply gcall!]]

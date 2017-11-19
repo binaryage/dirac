@@ -1,6 +1,5 @@
 (ns dirac.implant.link-handlers
-  (:require-macros [cljs.core.async.macros :refer [go go-loop]])
-  (:require [cljs.core.async :refer [put! <! chan timeout alts! close!]]
+  (:require [cljs.core.async :refer [put! <! chan timeout alts! close! go go-loop]]
             [oops.core :refer [gset! oget oset! oset!+ ocall! ocall oapply gget gcall!]]
             [chromex.logging :refer-macros [log warn error info]]
             [dirac.implant.intercom :as intercom]))

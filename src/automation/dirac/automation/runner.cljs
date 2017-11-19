@@ -1,6 +1,5 @@
 (ns dirac.automation.runner
-  (:require-macros [cljs.core.async.macros :refer [go go-loop]])
-  (:require [cljs.core.async :refer [put! <! chan timeout alts! close!]]
+  (:require [cljs.core.async :refer [put! <! chan timeout alts! close! go go-loop]]
             [devtools.core :as devtools]
             [oops.core :refer [oget oset! ocall oapply gcall! gset!]]
             [chromex.logging :refer-macros [log warn error info]]

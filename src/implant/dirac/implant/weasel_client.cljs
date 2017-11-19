@@ -14,9 +14,8 @@
 ; see dirac.implant.eval
 ;
 (ns dirac.implant.weasel-client
-  (:require-macros [cljs.core.async.macros :refer [go go-loop]]
-                   [dirac.implant.weasel-client :refer [log warn info error]])
-  (:require [cljs.core.async :refer [<! chan put! timeout]]
+  (:require-macros [dirac.implant.weasel-client :refer [log warn info error]])
+  (:require [cljs.core.async :refer [<! chan put! timeout go go-loop]]
             [dirac.implant.eval :as eval]
             [dirac.lib.ws-client :as ws-client]
             [clojure.string :as string]))

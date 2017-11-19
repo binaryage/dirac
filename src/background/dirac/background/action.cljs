@@ -1,6 +1,5 @@
 (ns dirac.background.action
-  (:require-macros [cljs.core.async.macros :refer [go]])
-  (:require [cljs.core.async :refer [<! chan put!]]
+  (:require [cljs.core.async :refer [<! chan put! go]]
             [chromex.logging :refer-macros [log info warn error group group-end]]
             [dirac.sugar :refer [tab-exists?]]
             [chromex.ext.browser-action :as browser-action]))

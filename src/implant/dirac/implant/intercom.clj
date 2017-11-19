@@ -1,7 +1,7 @@
 (ns dirac.implant.intercom)
 
 (defmacro error-response [id & args]
-  `(cljs.core.async.macros/go
+  `(cljs.core.async/go
      (~'error ~@args)
      {:op  :error
       :id  ~id

@@ -1,6 +1,5 @@
 (ns dirac.automation.triggers
-  (:require-macros [cljs.core.async.macros :refer [go]])
-  (:require [cljs.core.async :refer [timeout]]
+  (:require [cljs.core.async :refer [timeout go]]
             [dirac.automation.scenario :as scenario]))
 
 ; -- helpers ----------------------------------------------------------------------------------------------------------------
