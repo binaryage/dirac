@@ -49,6 +49,10 @@ NetworkTestRunner.recordNetwork = function() {
   UI.panels.network._networkLogView.setRecording(true);
 };
 
+NetworkTestRunner.networkWaterfallColumn = function() {
+  return UI.panels.network._networkLogView._columns._waterfallColumn;
+};
+
 NetworkTestRunner.networkRequests = function() {
   return Array.from(NetworkLog.networkLog.requests());
 };
@@ -145,7 +149,7 @@ NetworkTestRunner.HARPropertyFormatters = {
 NetworkTestRunner.HARPropertyFormattersWithSize = JSON.parse(JSON.stringify(NetworkTestRunner.HARPropertyFormatters));
 NetworkTestRunner.HARPropertyFormattersWithSize.size = 'formatAsTypeName';
 
-TestRunner.initAsync(`
+TestRunner.deprecatedInitAsync(`
   var lastXHRIndex = 0;
 
   function xhrLoadedCallback() {
