@@ -319,7 +319,7 @@ Protocol.PageAgent.prototype.invoke_setAdBlockingEnabled = function(obj) {};
 Protocol.PageAgent.prototype.navigate = function(url, opt_referrer, opt_transitionType) {};
 /** @typedef {!{url: string, referrer: (string|undefined), transitionType: (Protocol.Page.TransitionType|undefined)}} */
 Protocol.PageAgent.NavigateRequest;
-/** @typedef {!{errorText: string, frameId: Protocol.Page.FrameId}} */
+/** @typedef {!{loaderId: Protocol.Network.LoaderId, errorText: string, frameId: Protocol.Page.FrameId}} */
 Protocol.PageAgent.NavigateResponse;
 /**
  * @param {!Protocol.PageAgent.NavigateRequest} obj
@@ -6332,7 +6332,7 @@ Protocol.Runtime.Timestamp;
 /** @typedef {!{functionName:(string), scriptId:(Protocol.Runtime.ScriptId), url:(string), lineNumber:(number), columnNumber:(number)}} */
 Protocol.Runtime.CallFrame;
 
-/** @typedef {!{description:(string|undefined), callFrames:(!Array<Protocol.Runtime.CallFrame>), parent:(Protocol.Runtime.StackTrace|undefined), promiseCreationFrame:(Protocol.Runtime.CallFrame|undefined)}} */
+/** @typedef {!{description:(string|undefined), callFrames:(!Array<Protocol.Runtime.CallFrame>), parent:(Protocol.Runtime.StackTrace|undefined)}} */
 Protocol.Runtime.StackTrace;
 
 /** @typedef {string} */

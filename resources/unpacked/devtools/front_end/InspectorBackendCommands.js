@@ -1,5 +1,5 @@
-Protocol.BakedInspectorBackendAPIChromeTag='64.0.3273.1';
-Protocol.BakedInspectorBackendAPIChromeRev='8fff75b5f82f72763d7220cf75aa2cf7872c7c61';
+Protocol.BakedInspectorBackendAPIChromeTag='64.0.3275.2';
+Protocol.BakedInspectorBackendAPIChromeRev='f7c6aed9e1b358f66f60f2965a2348c6b9b4ad21';
 Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerEvent("Inspector.detached", ["reason"]);\n'
 + 'Protocol.inspectorBackend.registerEvent("Inspector.targetCrashed", []);\n'
@@ -45,7 +45,7 @@ Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerCommand("Page.setLifecycleEventsEnabled", [{"name": "enabled", "type": "boolean", "optional": false}], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Page.reload", [{"name": "ignoreCache", "type": "boolean", "optional": true}, {"name": "scriptToEvaluateOnLoad", "type": "string", "optional": true}], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Page.setAdBlockingEnabled", [{"name": "enabled", "type": "boolean", "optional": false}], [], false);\n'
-+ 'Protocol.inspectorBackend.registerCommand("Page.navigate", [{"name": "url", "type": "string", "optional": false}, {"name": "referrer", "type": "string", "optional": true}, {"name": "transitionType", "type": "string", "optional": true}], ["frameId", "errorText"], false);\n'
++ 'Protocol.inspectorBackend.registerCommand("Page.navigate", [{"name": "url", "type": "string", "optional": false}, {"name": "referrer", "type": "string", "optional": true}, {"name": "transitionType", "type": "string", "optional": true}], ["frameId", "loaderId", "errorText"], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Page.stopLoading", [], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Page.getNavigationHistory", [], ["currentIndex", "entries"], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Page.navigateToHistoryEntry", [{"name": "entryId", "type": "number", "optional": false}], [], false);\n'
