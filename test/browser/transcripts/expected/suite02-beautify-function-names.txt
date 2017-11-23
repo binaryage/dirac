@@ -187,7 +187,7 @@ stdout           displayed 59 items:
                   * λ
                   * λ
                   * process-messages / cljs.core.async.impl.dispatch/process-messages
-                  * Promise resolved (async)
+                  * Promise.then (async)
                   * promise-based-set-immediate / dirac.automation.runtime/promise-based-set-immediate
                   * goog.async.nextTick / goog.async.nextTick
                   * queue-dispatcher / cljs.core.async.impl.dispatch/queue-dispatcher
@@ -207,7 +207,7 @@ stdout           displayed 59 items:
                   * run-state-machine-wrapped / cljs.core.async.impl.ioc-helpers/run-state-machine-wrapped
                   * λ
                   * process-messages / cljs.core.async.impl.dispatch/process-messages
-                  * Promise resolved (async)
+                  * Promise.then (async)
                   * promise-based-set-immediate / dirac.automation.runtime/promise-based-set-immediate
                   * goog.async.nextTick / goog.async.nextTick
                   * queue-dispatcher / cljs.core.async.impl.dispatch/queue-dispatcher
