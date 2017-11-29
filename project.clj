@@ -2,6 +2,60 @@
 (def slf4j-log4j12-version "1.7.25")
 (def figwheel-version "0.5.14")
 (def selected-clojure-version "1.9.0-RC1")
+
+(def provided-deps
+  [['org.clojure/clojure selected-clojure-version :scope "provided"]
+   ['org.clojure/clojurescript "1.9.946" :scope "provided"]])
+
+(def required-deps
+  [['org.clojure/core.async "0.3.465"]
+   ['org.clojure/tools.logging "0.4.0"]
+   ['org.clojure/tools.cli "0.3.5"]
+   ['org.clojure/tools.nrepl "0.2.13"]
+   ['binaryage/env-config "0.2.2"]
+   ['http-kit "2.2.0"]
+   ['version-clj "0.1.2"]
+   ['clansi "1.0.0"]
+   ['funcool/cuerdas "2.0.4"]])
+
+(def test-deps
+  [; we cannot use :dependencies under individual profiles because Cursive recognizes only root level
+   ; thus we mark extra deps with :scope "test" and filter them later when producing jar library
+   ['binaryage/oops "0.5.6" :scope "test"]
+   ['binaryage/chromex "0.5.13" :scope "test"]
+   ['binaryage/devtools "0.9.7" :scope "test"]
+   ['environ "1.1.0" :scope "test"]
+   ['cljs-http "0.1.44" :scope "test"]
+   ['figwheel figwheel-version :scope "test"]
+   ['reforms "0.4.3" :scope "test"]
+   ['rum "0.10.8" :scope "test"]
+   ['rum-reforms "0.4.3" :scope "test"]
+   ['cljsjs/parinfer "3.11.0-0" :scope "test"]
+   ['com.lucasbradstreet/cljs-uuid-utils "1.0.2" :scope "test"]
+   ['com.rpl/specter "1.0.5" :scope "test"]
+   ['org.clojure/tools.namespace "0.3.0-alpha3" :scope "test"]
+   ['org.clojure/tools.reader "1.1.1" :scope "test"]
+
+   ['clj-logging-config clj-logging-config-version :scope "test"]
+   ['org.slf4j/slf4j-log4j12 slf4j-log4j12-version :scope "test"]
+
+   ['http.async.client "1.2.0" :scope "test"]
+
+   ['ring/ring-core "1.6.3" :scope "test"]
+   ['ring/ring-devel "1.6.3" :scope "test"]
+   ['clj-time "0.14.2" :scope "test"]
+
+   ; guava is needed for selenium, they rely on latest guava which gets overridden by google closure compiler dep inside clojurescript
+   ;[com.google.guava/guava "23.0" :scope "test" :upgrade false]
+   ['org.seleniumhq.selenium/selenium-java "3.7.1" :scope "test"]
+   ['org.seleniumhq.selenium/selenium-chrome-driver "3.7.1" :scope "test"]
+   ['org.seleniumhq.selenium/selenium-support "3.7.1" :scope "test"]
+   ['org.seleniumhq.selenium/selenium-api "3.7.1" :scope "test"]
+   ['org.seleniumhq.selenium/selenium-htmlunit-driver "2.52.0" :scope "test"]])
+
+(def lib-deps (concat provided-deps required-deps))
+(def all-deps (concat lib-deps test-deps))
+
 (defproject binaryage/dirac "1.2.20"
   :description "Dirac DevTools - a Chrome DevTools fork for ClojureScript developers."
   :url "https://github.com/binaryage/dirac"
@@ -11,51 +65,7 @@
   :scm {:name "git"
         :url  "https://github.com/binaryage/dirac"}
 
-  :dependencies [[org.clojure/clojure ~selected-clojure-version :scope "provided"]
-                 [org.clojure/clojurescript "1.9.946" :scope "provided"]
-                 [org.clojure/core.async "0.3.465"]
-                 [org.clojure/tools.logging "0.4.0"]
-                 [org.clojure/tools.cli "0.3.5"]
-                 [org.clojure/tools.nrepl "0.2.13"]
-                 [binaryage/env-config "0.2.2"]
-                 [http-kit "2.2.0"]
-                 [version-clj "0.1.2"]
-                 [clansi "1.0.0"]
-                 [funcool/cuerdas "2.0.4"]
-
-                 ; we cannot use :dependencies under individual profiles because Cursive recognizes only root level
-                 ; thus we mark extra deps with :scope "test" and filter them later when producing jar library
-                 [binaryage/oops "0.5.6" :scope "test"]
-                 [binaryage/chromex "0.5.13" :scope "test"]
-                 [binaryage/devtools "0.9.7" :scope "test"]
-                 [environ "1.1.0" :scope "test"]
-                 [cljs-http "0.1.44" :scope "test"]
-                 [figwheel ~figwheel-version :scope "test"]
-                 [reforms "0.4.3" :scope "test"]
-                 [rum "0.10.8" :scope "test"]
-                 [rum-reforms "0.4.3" :scope "test"]
-                 [cljsjs/parinfer "3.11.0-0" :scope "test"]
-                 [com.lucasbradstreet/cljs-uuid-utils "1.0.2" :scope "test"]
-                 [com.rpl/specter "1.0.5" :scope "test"]
-                 [org.clojure/tools.namespace "0.3.0-alpha3" :scope "test"]
-                 [org.clojure/tools.reader "1.1.1" :scope "test"]
-
-                 [clj-logging-config ~clj-logging-config-version :scope "test"]
-                 [org.slf4j/slf4j-log4j12 ~slf4j-log4j12-version :scope "test"]
-
-                 [http.async.client "1.2.0" :scope "test"]
-
-                 [ring/ring-core "1.6.3" :scope "test"]
-                 [ring/ring-devel "1.6.3" :scope "test"]
-                 [clj-time "0.14.2" :scope "test"]
-
-                 ; guava is needed for selenium, they rely on latest guava which gets overridden by google closure compiler dep inside clojurescript
-                 ;[com.google.guava/guava "23.0" :scope "test" :upgrade false]
-                 [org.seleniumhq.selenium/selenium-java "3.7.1" :scope "test"]
-                 [org.seleniumhq.selenium/selenium-chrome-driver "3.7.1" :scope "test"]
-                 [org.seleniumhq.selenium/selenium-support "3.7.1" :scope "test"]
-                 [org.seleniumhq.selenium/selenium-api "3.7.1" :scope "test"]
-                 [org.seleniumhq.selenium/selenium-htmlunit-driver "2.52.0" :scope "test"]]
+  :dependencies ~all-deps
 
   :plugins [[lein-shell "0.5.0"]
             [lein-environ "1.1.0"]]
@@ -110,43 +120,7 @@
   :profiles {:lib
              ^{:pom-scope :provided}                                                                                          ; ! to overcome default jar/pom behaviour, our :dependencies replacement would be ignored for some reason
              [:nuke-aliases
-              {:dependencies
-               ; this is here to skip this expensive brain surgery under normal circumstances
-                               ~(when (some? (System/getenv "DIRAC_LIB_PROFILE_SURGERY"))
-                                  (let [lock-file-path "/tmp/dirac.lein.lock.file"
-                                        lock-file (clojure.java.io/as-file lock-file-path)]
-                                    ; we have need to call lein recursively but somehow prevent infinite recursion because
-                                    ; this code gets evaluated on each re-enter
-                                    ; since I was unable to use java.io.RandomAccessFile withing the leiningen context
-                                    ; I ended up using existence of plain file for locking, but there is a danger that the file will
-                                    ; won't get deleted in some edge cases (eg. process gets killed)
-                                    (if (.exists lock-file)                                                                   ; ***
-                                      ; lock file exists, this means we are in a child lein process
-                                      ; this is just a safety net for dangling lock file
-                                      ; more than 5s is unexpected
-                                      (let [file-time-ms (.lastModified lock-file)
-                                            current-time-ms (System/currentTimeMillis)
-                                            diff-time-ms (- current-time-ms file-time-ms)]
-                                        (if (> diff-time-ms 5000)
-                                          (throw (ex-info (str "The lock file '" lock-file-path "' "
-                                                            "is too old (" (/ diff-time-ms 1000.0) "s). "
-                                                            "Remove it and run the task again.") {})))
-                                        ^:replace [])                                                                         ; prevent recursion
-                                      (try
-                                        (spit lock-file "")
-                                        (let [{:keys [exit out err]} (clojure.java.shell/sh "scripts/print-project-dependencies.sh")] ; see the other branch which prevents infinite recursion ***
-                                          (when-not (zero? exit)
-                                            (throw (ex-info (str err "\n" out) {:exit exit})))
-                                          (let [full-dependencies (read-string out)
-                                                _ (assert (pos? (count full-dependencies)))
-                                                test-dep? #(->> % (drop 2) (apply hash-map) :scope (= "test"))
-                                                non-test-deps (remove test-dep? full-dependencies)]
-                                            (with-meta non-test-deps {:replace true})))
-                                        (catch Throwable e
-                                          (throw (ex-info (str "Problems running 'scripts/print-project-dependencies.sh'\n"
-                                                            e) {})))
-                                        (finally
-                                          (clojure.java.io/delete-file lock-file))))))
+              {:dependencies   ~(with-meta lib-deps {:replace true})
                :source-paths   ^:replace ["src/project"
                                           "src/settings"
                                           "src/backport"
