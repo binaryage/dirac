@@ -1,6 +1,5 @@
 (ns dirac.automation.transcript-streamer
-  (:require-macros [cljs.core.async.macros :refer [go go-loop]])
-  (:require [cljs.core.async :refer [<! chan sliding-buffer put! timeout]]
+  (:require [cljs.core.async :refer [<! chan sliding-buffer put! timeout go go-loop]]
             [chromex.logging :refer-macros [log warn error info]]
             [dirac.lib.ws-client :as ws-client]))
 

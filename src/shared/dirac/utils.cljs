@@ -1,7 +1,6 @@
 (ns dirac.utils
-  (:require-macros [cljs.core.async.macros :refer [go go-loop]]
-                   [dirac.utils])
-  (:require [cljs.core.async :refer [put! <! chan close!]]
+  (:require-macros [dirac.utils])
+  (:require [cljs.core.async :refer [put! <! chan close! go go-loop]]
             [cljs.core.async.impl.protocols :as async-protocols]
             [cuerdas.core :as cuerdas]
             [cljs.pprint]

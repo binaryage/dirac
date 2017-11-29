@@ -793,7 +793,7 @@ CodeMirror.prototype = {
   undo: function() {},
   unlinkDoc: function(other) {}
 };
-/** @type {!{cursorDiv: Element, lineDiv: Element}} */
+/** @type {!{cursorDiv: Element, lineDiv: Element, lineSpace: Element}} */
 CodeMirror.prototype.display;
 /** @type {!{mode: string}} */
 CodeMirror.prototype.options;

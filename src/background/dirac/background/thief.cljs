@@ -1,7 +1,6 @@
 (ns dirac.background.thief
-  (:require-macros [cljs.core.async.macros :refer [go go-loop]]
-                   [dirac.background.logging :refer [log info warn error]])
-  (:require [cljs.core.async :refer [<! chan timeout]]
+  (:require-macros [dirac.background.logging :refer [log info warn error]])
+  (:require [cljs.core.async :refer [<! chan timeout go go-loop]]
             [oops.core :refer [oget oset! ocall oapply]]
             [chromex.ext.page-capture :as page-capture]
             [dirac.mime :as mime]

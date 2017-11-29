@@ -1,6 +1,5 @@
 (ns dirac.implant
-  (:require-macros [cljs.core.async.macros :refer [go go-loop]])
-  (:require [cljs.core.async :refer [put! <! chan timeout alts! close!]]
+  (:require [cljs.core.async :refer [put! <! chan timeout alts! close! go go-loop]]
             [oops.core :refer [oget oset! oset!+ ocall oapply gget gcall!]]
             [chromex.logging :refer-macros [log warn error info]]
             [dirac.utils :refer [runonce]]

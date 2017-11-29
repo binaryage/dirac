@@ -47,7 +47,7 @@ Console.ConsoleView = class extends UI.VBox {
     this._searchableView.setMinimalSearchQuerySize(0);
     this._badgePool = new ProductRegistry.BadgePool();
     this._sidebar = new Console.ConsoleSidebar(this._badgePool);
-    this._sidebar.addEventListener(Console.ConsoleSidebar.Events.FilterSelected, this._updateMessageList.bind(this));
+    this._sidebar.addEventListener(Console.ConsoleSidebar.Events.FilterSelected, this._onFilterChanged.bind(this));
     this._isSidebarOpen = false;
 
     var toolbar = new UI.Toolbar('', this.element);
@@ -1187,6 +1187,10 @@ Console.ConsoleView = class extends UI.VBox {
     contextMenu.defaultSection().appendAction('console.clear');
     contextMenu.defaultSection().appendAction('console.clear.history');
     contextMenu.saveSection().appendItem(Common.UIString('Save as...'), this._saveConsole.bind(this));
+    if (this.element.hasSelection()) {
+      contextMenu.clipboardSection().appendItem(
+          Common.UIString('Copy visible styled selection'), this._viewport.copyWithStyles.bind(this._viewport));
+    }
 
     var request = consoleMessage ? consoleMessage.request : null;
     if (request && SDK.NetworkManager.canReplayRequest(request)) {

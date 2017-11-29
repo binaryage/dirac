@@ -74,6 +74,5 @@ EXPECTED_TRANSCRIPTS_PATH="test/browser/transcripts/expected"
 DOCKER_TESTS_DIR="$ROOT/test/docker"
 ROOT_TMP_DIR="$ROOT/.tmp"
 TRAVIS_CHROMEDRIVER_VERSION=${TRAVIS_CHROMEDRIVER_VERSION:-2.32}
-CLEAN_PROJECT_PROFILES="-user,-base,-dev,-repl" # default profiles introducing random shit into our pom.xml
 
 popd

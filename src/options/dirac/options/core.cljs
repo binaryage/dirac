@@ -1,6 +1,5 @@
 (ns dirac.options.core
-  (:require-macros [cljs.core.async.macros :refer [go go-loop]])
-  (:require [cljs.core.async :refer [<! chan]]
+  (:require [cljs.core.async :refer [<! chan go go-loop]]
             [dirac.options.ui :as ui]
             [dirac.options.model :as model]))
 

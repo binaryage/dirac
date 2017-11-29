@@ -49,6 +49,10 @@ NetworkTestRunner.recordNetwork = function() {
   UI.panels.network._networkLogView.setRecording(true);
 };
 
+NetworkTestRunner.networkWaterfallColumn = function() {
+  return UI.panels.network._networkLogView._columns._waterfallColumn;
+};
+
 NetworkTestRunner.networkRequests = function() {
   return Array.from(NetworkLog.networkLog.requests());
 };
@@ -116,9 +120,11 @@ NetworkTestRunner.makeFetchInWorker = function(url, requestInitializer, callback
 };
 
 NetworkTestRunner.clearNetworkCache = function() {
-  var networkAgent = TestRunner.NetworkAgent;
-  var promise = networkAgent.setCacheDisabled(true);
-  return promise.then(() => networkAgent.setCacheDisabled(false));
+  // This turns cache off and then on, effectively clearning the memory cache.
+  return Promise.all([
+    TestRunner.NetworkAgent.clearBrowserCache(),
+    TestRunner.NetworkAgent.setCacheDisabled(true).then(() => TestRunner.NetworkAgent.setCacheDisabled(false))
+  ]);
 };
 
 NetworkTestRunner.HARPropertyFormatters = {
@@ -143,7 +149,7 @@ NetworkTestRunner.HARPropertyFormatters = {
 NetworkTestRunner.HARPropertyFormattersWithSize = JSON.parse(JSON.stringify(NetworkTestRunner.HARPropertyFormatters));
 NetworkTestRunner.HARPropertyFormattersWithSize.size = 'formatAsTypeName';
 
-TestRunner.initAsync(`
+TestRunner.deprecatedInitAsync(`
   var lastXHRIndex = 0;
 
   function xhrLoadedCallback() {

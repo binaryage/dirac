@@ -1,7 +1,7 @@
 (ns dirac.automation)
 
 (defmacro go-job [& body]
-  `(cljs.core.async.macros/go
+  `(cljs.core.async/go
      (cljs.core.async/<! (dirac.automation.task/task-started!))
      ~@body
      (if (dirac.automation.task/running?)
@@ -33,7 +33,7 @@
   (let [safe-number-of-commands 17                                                                                            ; this number was determined experimentally, 18 seems to be smallest size causing stack overflow
         command-chunks (partition-all safe-number-of-commands commands)
         gen-chunk (fn [commands]
-                    `(cljs.core.async/<! (cljs.core.async.macros/go
+                    `(cljs.core.async/<! (cljs.core.async/go
                                            ~@commands)))]
     `(do
        ~@(map gen-chunk command-chunks))))

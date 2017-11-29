@@ -1095,6 +1095,8 @@ TimelineModel.TimelineModel.RecordType = {
   XHRLoad: 'XHRLoad',
   CompileScript: 'v8.compile',
   EvaluateScript: 'EvaluateScript',
+  CompileModule: 'v8.compileModule',
+  EvaluateModule: 'v8.evaluateModule',
 
   CommitLoad: 'CommitLoad',
   MarkLoad: 'MarkLoad',
@@ -1165,6 +1167,17 @@ TimelineModel.TimelineModel.RecordType = {
   GCIdleLazySweep: 'ThreadState::performIdleLazySweep',
   GCCompleteSweep: 'ThreadState::completeSweep',
   GCCollectGarbage: 'BlinkGCMarking',
+
+  CryptoDoEncrypt: 'DoEncrypt',
+  CryptoDoEncryptReply: 'DoEncryptReply',
+  CryptoDoDecrypt: 'DoDecrypt',
+  CryptoDoDecryptReply: 'DoDecryptReply',
+  CryptoDoDigest: 'DoDigest',
+  CryptoDoDigestReply: 'DoDigestReply',
+  CryptoDoSign: 'DoSign',
+  CryptoDoSignReply: 'DoSignReply',
+  CryptoDoVerify: 'DoVerify',
+  CryptoDoVerifyReply: 'DoVerifyReply',
 
   // CpuProfile is a virtual event created on frontend to support
   // serialization of CPU Profiles within tracing timeline data.

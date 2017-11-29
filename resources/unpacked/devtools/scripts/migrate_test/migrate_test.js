@@ -53,6 +53,20 @@ function getPrologue(inputExpectationsPath, bodyText) {
       return line;
     }
   }
+  return '';
+}
+
+function appendBugLink(prologue, text) {
+  var match;
+  if (match = text.match(/crbug.com\/\d+/)) {
+    if (!prologue.includes(match[0]))
+      return prologue + ' ' + match[0];
+  }
+  if (match = text.match(/https:\/\/bugs.webkit.org\/show_bug.cgi\?id=\d+/)) {
+    if (!prologue.includes(match[0]))
+      return prologue + ' ' + match[0];
+  }
+  return prologue;
 }
 
 function escapeRegExp(str) {
@@ -68,7 +82,8 @@ function migrateTest(inputPath, identifierMap) {
   const inputFilename = path.basename(inputPath);
   const inputExpectationsPath = inputPath.replace('.js', '-expected.txt').replace('.html', '-expected.txt');
   const bodyText = $('body').text().trim();
-  const prologue = getPrologue(inputExpectationsPath, bodyText);
+
+  const prologue = appendBugLink(getPrologue(inputExpectationsPath, bodyText), htmlTestFile);
 
   const stylesheetPaths = $('link').toArray().filter(l => l.attribs.rel === 'stylesheet').map(l => l.attribs.href);
   const onloadFunctionName = $('body')[0].attribs.onload ? $('body')[0].attribs.onload.slice(0, -2) : '';
@@ -391,7 +406,7 @@ function getPanels(inputPath, inputCode) {
   const components = inputPath.slice(inputPath.indexOf('LayoutTests/')).split('/');
   const folder = inputPath.indexOf('LayoutTests/inspector') === -1 ? components[4] : components[2];
   if (folder.endsWith('.html'))
-    return;
+    return [];
   const panel = panelByFolder[folder];
   if (panel)
     panels.add(panel);
@@ -410,9 +425,12 @@ function mapTestHelpers(testHelpers, includeConsole) {
     if (!mappedHelper) {
       throw Error('Could not map helper ' + helper);
     }
-    if (mappedHelper !== 'inspector_test_runner') {
-      mappedHelpers.add(mappedHelper);
-    }
+    if (mappedHelper === 'inspector_test_runner')
+      continue;
+    // Some tests reference tracing-test.js which doesn't exist
+    if (mappedHelper === 'tracing_test_runner')
+      continue;
+    mappedHelpers.add(mappedHelper);
   }
   if (includeConsole)
     mappedHelpers.add('console_test_runner');

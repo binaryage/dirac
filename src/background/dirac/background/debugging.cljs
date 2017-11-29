@@ -1,9 +1,8 @@
 (ns dirac.background.debugging
-  (:require-macros [cljs.core.async.macros :refer [go]]
-                   [dirac.background.logging :refer [log info warn error]])
+  (:require-macros [dirac.background.logging :refer [log info warn error]])
   (:require [cljs-http.client :as http]
             [oops.core :refer [oget]]
-            [cljs.core.async :refer [<! timeout]]
+            [cljs.core.async :refer [<! timeout go]]
             [dirac.settings :refer [get-backend-url-resolution-trials
                                     get-failed-backend-url-resolution-delay]]))
 

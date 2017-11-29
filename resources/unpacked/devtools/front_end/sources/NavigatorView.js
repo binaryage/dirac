@@ -742,10 +742,10 @@ Sources.NavigatorView = class extends UI.VBox {
 
   /**
    * @param {!Sources.NavigatorUISourceCodeTreeNode} node
-   * @param {boolean} deleteIfCanceled
+   * @param {boolean} creatingNewUISourceCode
    * @protected
    */
-  rename(node, deleteIfCanceled) {
+  rename(node, creatingNewUISourceCode) {
     var uiSourceCode = node.uiSourceCode();
     node.rename(callback.bind(this));
 
@@ -754,13 +754,12 @@ Sources.NavigatorView = class extends UI.VBox {
      * @param {boolean} committed
      */
     function callback(committed) {
-      if (!committed) {
-        if (deleteIfCanceled)
-          uiSourceCode.remove();
+      if (!creatingNewUISourceCode)
         return;
-      }
-
-      this._sourceSelected(uiSourceCode, true);
+      if (!committed)
+        uiSourceCode.remove();
+      else if (node._treeElement.listItemElement.hasFocus())
+        this._sourceSelected(uiSourceCode, true);
     }
   }
 
@@ -1361,6 +1360,8 @@ Sources.NavigatorUISourceCodeTreeNode = class extends Sources.NavigatorTreeNode 
     if (!this._treeElement)
       return;
 
+    this._treeElement.listItemElement.focus();
+
     // Tree outline should be marked as edited as well as the tree element to prevent search from starting.
     var treeOutlineElement = this._treeElement.treeOutline.element;
     UI.markBeingEdited(treeOutlineElement, true);
@@ -1401,7 +1402,6 @@ Sources.NavigatorUISourceCodeTreeNode = class extends Sources.NavigatorTreeNode 
     function afterEditing(committed) {
       UI.markBeingEdited(treeOutlineElement, false);
       this.updateTitle();
-      this._treeElement.treeOutline.focus();
       if (callback)
         callback(committed);
     }

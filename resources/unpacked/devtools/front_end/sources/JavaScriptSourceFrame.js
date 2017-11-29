@@ -206,8 +206,6 @@ Sources.JavaScriptSourceFrame = class extends Sources.UISourceCodeFrame {
   onTextChanged(oldRange, newRange) {
     this._scriptsPanel.updateLastModificationTime();
     super.onTextChanged(oldRange, newRange);
-    if (this._compiler)
-      this._compiler.scheduleCompile();
   }
 
   /**
@@ -694,19 +692,9 @@ Sources.JavaScriptSourceFrame = class extends Sources.UISourceCodeFrame {
     var callFrame = UI.context.flavor(SDK.DebuggerModel.CallFrame);
     if (!callFrame)
       return;
-    var localScope = callFrame.localScope();
-    if (!localScope) {
-      this._clearContinueToLocationsNoRestore();
-      return;
-    }
-    var start = localScope.startLocation();
-    var end = localScope.endLocation();
-    if (!start || !end) {
-      this._clearContinueToLocationsNoRestore();
-      return;
-    }
+    var start = callFrame.functionLocation() || callFrame.location();
     var debuggerModel = callFrame.debuggerModel;
-    debuggerModel.getPossibleBreakpoints(start, end, true)
+    debuggerModel.getPossibleBreakpoints(start, null, true)
         .then(locations => this.textEditor.operation(renderLocations.bind(this, locations)));
 
     /**
@@ -1364,13 +1352,6 @@ Sources.JavaScriptSourceFrame = class extends Sources.UISourceCodeFrame {
     this._updateDebuggerSourceCode();
     this._updateScriptFiles();
     this._refreshBreakpoints();
-
-    var canLiveCompileJavascript = this._scriptFileForDebuggerModel.size ||
-        this._debuggerSourceCode.extension() === 'js' ||
-        this._debuggerSourceCode.project().type() === Workspace.projectTypes.Snippets;
-    if (!!canLiveCompileJavascript !== !!this._compiler)
-      this._compiler = canLiveCompileJavascript ? new Sources.JavaScriptCompiler(this) : null;
-
     this._showBlackboxInfobarIfNeeded();
     this._updateLinesWithoutMappingHighlight();
   }

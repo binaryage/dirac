@@ -19,6 +19,8 @@ var Bindings = {};
 /** @const */
 var BindingsTestRunner = {};
 /** @const */
+var CPUProfilerTestRunner = {};
+/** @const */
 var Changes = {};
 /** @const */
 var Cm = {};
@@ -81,9 +83,9 @@ var FormatterWorker = {};
 /** @const */
 var HARImporter = {};
 /** @const */
-var HeapSnapshotModel = {};
+var HeapProfilerTestRunner = {};
 /** @const */
-var HeapSnapshotTestRunner = {};
+var HeapSnapshotModel = {};
 /** @const */
 var HeapSnapshotWorker = {};
 /** @const */
@@ -126,8 +128,6 @@ var ProductRegistry = {};
 var ProductRegistryImpl = {};
 /** @const */
 var Profiler = {};
-/** @const */
-var ProfilerTestRunner = {};
 /** @const */
 var Protocol = {};
 /** @const */

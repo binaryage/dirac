@@ -14,6 +14,7 @@ PerformanceTestRunner.timelinePropertyFormatters = {
   startTime: 'formatAsTypeName',
   stackTrace: 'formatAsTypeName',
   url: 'formatAsURL',
+  fileName: 'formatAsURL',
   scriptName: 'formatAsTypeName',
   scriptId: 'formatAsTypeName',
   usedHeapSizeDelta: 'skip',
@@ -182,14 +183,14 @@ PerformanceTestRunner.performActionsAndPrint = function(actions, typeName, inclu
 };
 
 PerformanceTestRunner.printTimelineRecords = function(name) {
-  for (let event of PerformanceTestRunner.timelineModel().mainThreadEvents()) {
+  for (let event of PerformanceTestRunner.timelineModel().inspectedTargetEvents()) {
     if (event.name === name)
       PerformanceTestRunner.printTraceEventProperties(event);
   }
 };
 
 PerformanceTestRunner.printTimelineRecordsWithDetails = function(name) {
-  for (let event of PerformanceTestRunner.timelineModel().mainThreadEvents()) {
+  for (let event of PerformanceTestRunner.timelineModel().inspectedTargetEvents()) {
     if (name === event.name)
       PerformanceTestRunner.printTraceEventPropertiesWithDetails(event);
   }
@@ -368,7 +369,7 @@ PerformanceTestRunner.loadTimeline = function(timelineData) {
   return promise;
 };
 
-TestRunner.initAsync(`
+TestRunner.deprecatedInitAsync(`
   function wrapCallFunctionForTimeline(f) {
     var script = document.createElement('script');
     script.textContent = '(' + f.toString() + ')()\\n//# sourceURL=wrapCallFunctionForTimeline.js';

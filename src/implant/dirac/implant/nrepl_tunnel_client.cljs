@@ -1,8 +1,7 @@
 (ns dirac.implant.nrepl-tunnel-client
-  (:require-macros [cljs.core.async.macros :refer [go go-loop]]
-                   [dirac.implant.nrepl-tunnel-client :refer [log warn info error]]
+  (:require-macros [dirac.implant.nrepl-tunnel-client :refer [log warn info error]]
                    [devtools.toolbox :refer [envelope]])
-  (:require [cljs.core.async :refer [<! chan put! timeout close!]]
+  (:require [cljs.core.async :refer [<! chan put! timeout close! go go-loop]]
             [cljs-uuid-utils.core :as uuid]
             [dirac.implant.eval :as eval]
             [dirac.lib.ws-client :as ws-client]
