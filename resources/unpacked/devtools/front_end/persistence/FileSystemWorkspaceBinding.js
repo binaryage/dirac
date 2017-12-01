@@ -161,24 +161,25 @@ Persistence.FileSystemWorkspaceBinding = class {
    */
   _fileSystemFilesChanged(event) {
     var paths = /** @type {!Persistence.IsolatedFileSystemManager.FilesChangedData} */ (event.data);
-    forEachFile.call(this, paths.changed, (path, fileSystem) => fileSystem._fileChanged(path));
-    forEachFile.call(this, paths.added, (path, fileSystem) => fileSystem._fileChanged(path));
-    forEachFile.call(this, paths.removed, (path, fileSystem) => fileSystem.removeUISourceCode(path));
+    for (var fileSystemPath of paths.changed.keysArray()) {
+      var fileSystem = this._boundFileSystems.get(fileSystemPath);
+      if (!fileSystem)
+        continue;
+      paths.changed.get(fileSystemPath).forEach(path => fileSystem._fileChanged(path));
+    }
 
-    /**
-     * @param {!Array<string>} filePaths
-     * @param {function(string, !Persistence.FileSystemWorkspaceBinding.FileSystem)} callback
-     * @this {Persistence.FileSystemWorkspaceBinding}
-     */
-    function forEachFile(filePaths, callback) {
-      for (var filePath of filePaths) {
-        for (var fileSystemPath of this._boundFileSystems.keys()) {
-          var pathPrefix = fileSystemPath.endsWith('/') ? fileSystemPath : fileSystemPath + '/';
-          if (!filePath.startsWith(pathPrefix))
-            continue;
-          callback(filePath, this._boundFileSystems.get(fileSystemPath));
-        }
-      }
+    for (var fileSystemPath of paths.added.keysArray()) {
+      var fileSystem = this._boundFileSystems.get(fileSystemPath);
+      if (!fileSystem)
+        continue;
+      paths.added.get(fileSystemPath).forEach(path => fileSystem._fileChanged(path));
+    }
+
+    for (var fileSystemPath of paths.removed.keysArray()) {
+      var fileSystem = this._boundFileSystems.get(fileSystemPath);
+      if (!fileSystem)
+        continue;
+      paths.removed.get(fileSystemPath).forEach(path => fileSystem.removeUISourceCode(path));
     }
   }
 
@@ -195,7 +196,7 @@ Persistence.FileSystemWorkspaceBinding._styleSheetExtensions = new Set(['css', '
 Persistence.FileSystemWorkspaceBinding._documentExtensions = new Set(['htm', 'html', 'asp', 'aspx', 'phtml', 'jsp']);
 Persistence.FileSystemWorkspaceBinding._scriptExtensions = new Set([
   'asp', 'aspx', 'c', 'cc', 'cljs', 'coffee', 'cpp', 'cs', 'dart', 'java', 'js',
-  'jsp', 'jsx',  'h', 'm',  'mm',   'py',     'sh',  'ts', 'tsx',  'ls'
+  'jsp', 'jsx',  'h', 'm',  'mjs',  'mm',     'py',  'sh', 'ts',   'tsx',  'ls'
 ]);
 
 Persistence.FileSystemWorkspaceBinding._imageExtensions = Persistence.IsolatedFileSystem.ImageExtensions;
