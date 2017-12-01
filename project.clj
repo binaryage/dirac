@@ -2,6 +2,7 @@
 (def slf4j-log4j12-version "1.7.25")
 (def figwheel-version "0.5.14")
 (def selected-clojure-version "1.9.0-RC2")
+(def selenium-version "3.8.1")
 
 (def provided-deps
   [['org.clojure/clojure selected-clojure-version :scope "provided"]
@@ -47,10 +48,10 @@
 
    ; guava is needed for selenium, they rely on latest guava which gets overridden by google closure compiler dep inside clojurescript
    ;[com.google.guava/guava "23.0" :scope "test" :upgrade false]
-   ['org.seleniumhq.selenium/selenium-java "3.7.1" :scope "test"]
-   ['org.seleniumhq.selenium/selenium-chrome-driver "3.7.1" :scope "test"]
-   ['org.seleniumhq.selenium/selenium-support "3.7.1" :scope "test"]
-   ['org.seleniumhq.selenium/selenium-api "3.7.1" :scope "test"]
+   ['org.seleniumhq.selenium/selenium-java selenium-version :scope "test"]
+   ['org.seleniumhq.selenium/selenium-chrome-driver selenium-version :scope "test"]
+   ['org.seleniumhq.selenium/selenium-support selenium-version :scope "test"]
+   ['org.seleniumhq.selenium/selenium-api selenium-version :scope "test"]
    ['org.seleniumhq.selenium/selenium-htmlunit-driver "2.52.0" :scope "test"]])
 
 (def lib-deps (concat provided-deps required-deps))
