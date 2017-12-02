@@ -916,6 +916,11 @@ Console.DiracPromptWithHistory = class extends UI.TextPrompt {
       return;
     }
 
-    UI.TextPrompt.prototype.onKeyDown.apply(this, arguments);
+    try {
+      dirac.ignoreEnter = true; // a workaround for https://github.com/binaryage/dirac/issues/72
+      UI.TextPrompt.prototype.onKeyDown.apply(this, arguments);
+    } finally {
+      dirac.ignoreEnter = false;
+    }
   }
 };
