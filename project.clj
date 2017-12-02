@@ -31,7 +31,6 @@
    ['reforms "0.4.3" :scope "test"]
    ['rum "0.10.8" :scope "test"]
    ['rum-reforms "0.4.3" :scope "test"]
-   ['cljsjs/parinfer "3.11.0-0" :scope "test"]
    ['com.lucasbradstreet/cljs-uuid-utils "1.0.2" :scope "test"]
    ['com.rpl/specter "1.0.5" :scope "test"]
    ['org.clojure/tools.namespace "0.3.0-alpha3" :scope "test"]
@@ -455,10 +454,7 @@
                           {:dirac-implant
                            {:compiler {:optimizations          :whitespace
                                        :pretty-print           true
-                                       :closure-output-charset "US-ASCII"
-                                       ; waiting for https://github.com/shaunlebron/parinfer/issues/120
-                                       :foreign-libs           [{:file     "https://raw.githubusercontent.com/shaunlebron/parinfer/master/lib/parinfer.js"
-                                                                 :provides ["cljsjs.parinfer"]}]}}
+                                       :closure-output-charset "US-ASCII"}}
                            :dirac-background
                            {:compiler {:optimizations          :whitespace
                                        :pretty-print           true

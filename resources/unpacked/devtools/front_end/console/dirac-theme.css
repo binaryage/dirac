@@ -82,3 +82,7 @@ div.CodeMirror span.CodeMirror-nonmatchingbracket {
 .CodeMirror.cm-x-parinfer .cm-bracket.cm-eol {
     opacity: 0.4;
 }
+
+.CodeMirror.cm-x-parinfer .parinfer-error {
+    background: #FFBEBE;
+}

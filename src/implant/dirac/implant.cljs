@@ -44,9 +44,7 @@
 
 (defn adopt-prompt! [text-area-element use-parinfer?]
   (feedback/post! (str "adopt-prompt-element" " use-parinfer? " use-parinfer?))
-  (let [editor (editor/create-editor! text-area-element :prompt use-parinfer?)]
-    (editor/start-editor-sync!)
-    editor))
+  (editor/create-editor! text-area-element :prompt use-parinfer?))
 
 (defn send-eval-request! [request-id code scope-info]
   (feedback/post! (str "send-eval-request: " code))
@@ -125,7 +123,7 @@
   (let [debouncer (get-namespaces-cache-debouncer)]
     (.fire debouncer)))
 
-; -- dirac object augumentation ---------------------------------------------------------------------------------------------
+; -- dirac object augmentation ----------------------------------------------------------------------------------------------
 
 ; !!! don't forget to update externs.js when touching this !!!
 (def dirac-api-to-export
