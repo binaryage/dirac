@@ -2,6 +2,7 @@
 (def slf4j-log4j12-version "1.7.25")
 (def figwheel-version "0.5.14")
 (def selected-clojure-version "1.9.0-RC2")
+(def selenium-version "3.8.1")
 
 (def provided-deps
   [['org.clojure/clojure selected-clojure-version :scope "provided"]
@@ -30,7 +31,6 @@
    ['reforms "0.4.3" :scope "test"]
    ['rum "0.10.8" :scope "test"]
    ['rum-reforms "0.4.3" :scope "test"]
-   ['cljsjs/parinfer "3.11.0-0" :scope "test"]
    ['com.lucasbradstreet/cljs-uuid-utils "1.0.2" :scope "test"]
    ['com.rpl/specter "1.0.5" :scope "test"]
    ['org.clojure/tools.namespace "0.3.0-alpha3" :scope "test"]
@@ -47,16 +47,16 @@
 
    ; guava is needed for selenium, they rely on latest guava which gets overridden by google closure compiler dep inside clojurescript
    ;[com.google.guava/guava "23.0" :scope "test" :upgrade false]
-   ['org.seleniumhq.selenium/selenium-java "3.7.1" :scope "test"]
-   ['org.seleniumhq.selenium/selenium-chrome-driver "3.7.1" :scope "test"]
-   ['org.seleniumhq.selenium/selenium-support "3.7.1" :scope "test"]
-   ['org.seleniumhq.selenium/selenium-api "3.7.1" :scope "test"]
+   ['org.seleniumhq.selenium/selenium-java selenium-version :scope "test"]
+   ['org.seleniumhq.selenium/selenium-chrome-driver selenium-version :scope "test"]
+   ['org.seleniumhq.selenium/selenium-support selenium-version :scope "test"]
+   ['org.seleniumhq.selenium/selenium-api selenium-version :scope "test"]
    ['org.seleniumhq.selenium/selenium-htmlunit-driver "2.52.0" :scope "test"]])
 
 (def lib-deps (concat provided-deps required-deps))
 (def all-deps (concat lib-deps test-deps))
 
-(defproject binaryage/dirac "1.2.21"
+(defproject binaryage/dirac "1.2.22"
   :description "Dirac DevTools - a Chrome DevTools fork for ClojureScript developers."
   :url "https://github.com/binaryage/dirac"
   :license {:name         "MIT License"
@@ -454,10 +454,7 @@
                           {:dirac-implant
                            {:compiler {:optimizations          :whitespace
                                        :pretty-print           true
-                                       :closure-output-charset "US-ASCII"
-                                       ; waiting for https://github.com/shaunlebron/parinfer/issues/120
-                                       :foreign-libs           [{:file     "https://raw.githubusercontent.com/shaunlebron/parinfer/master/lib/parinfer.js"
-                                                                 :provides ["cljsjs.parinfer"]}]}}
+                                       :closure-output-charset "US-ASCII"}}
                            :dirac-background
                            {:compiler {:optimizations          :whitespace
                                        :pretty-print           true

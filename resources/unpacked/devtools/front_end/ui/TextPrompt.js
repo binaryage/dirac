@@ -302,8 +302,10 @@ UI.TextPrompt = class extends Common.Object {
         }
         break;
     }
-    if (isEnterKey(event))
-      event.preventDefault();
+    if (!dirac.ignoreEnter) {
+      if (isEnterKey(event))
+        event.preventDefault();
+    }
 
     if (handled)
       event.consume(true);

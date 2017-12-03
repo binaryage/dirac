@@ -12,6 +12,28 @@ var commandMenuShortcut = Host.isMac() ? 'Command + Shift + P' : 'Control + Shif
 /** @type {!Array<!Help.ReleaseNote>} */
 Help.releaseNoteText = [
   {
+    version: 7,
+    header: 'Highlights from the Chrome 64 update',
+    highlights: [
+      {
+        title: 'Performance monitor',
+        subtitle: 'Get a real-time view of various performance metrics.',
+        link: 'https://developers.google.com/web/updates/2017/11/devtools-release-notes#perf-monitor',
+      },
+      {
+        title: 'Console sidebar',
+        subtitle: 'Reduce console noise and focus on the messages that are important to you.',
+        link: 'https://developers.google.com/web/updates/2017/11/devtools-release-notes#console-sidebar',
+      },
+      {
+        title: 'Group similar console messages',
+        subtitle: 'The Console now groups similar messages by default.',
+        link: 'https://developers.google.com/web/updates/2017/11/devtools-release-notes#group-similar',
+      },
+    ],
+    link: 'https://developers.google.com/web/updates/2017/11/devtools-release-notes',
+  },
+  {
     version: 6,
     header: 'Highlights from the Chrome 63 update',
     highlights: [

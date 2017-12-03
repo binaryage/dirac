@@ -5,12 +5,16 @@
         "host"
     ],
     "scripts": [
+        "parinfer.js",
+        "parinfer-codemirror.js",
         "keysim.js",
         "dirac.js",
         ".compiled/implant/implant.js",
         "require-implant.js"
     ],
     "skip_compilation": [
+        "parinfer.js",
+        "parinfer-codemirror.js",
         "keysim.js",
         ".compiled/implant/implant.js",
         "require-implant.js"

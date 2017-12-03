@@ -7,13 +7,9 @@ var Animation = {};
 /** @const */
 var ApplicationTestRunner = {};
 /** @const */
-var Audits = {};
-/** @const */
 var Audits2 = {};
 /** @const */
 var Audits2TestRunner = {};
-/** @const */
-var AuditsTestRunner = {};
 /** @const */
 var Bindings = {};
 /** @const */
