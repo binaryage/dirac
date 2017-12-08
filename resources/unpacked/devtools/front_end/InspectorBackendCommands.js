@@ -1,5 +1,5 @@
-Protocol.BakedInspectorBackendAPIChromeTag='65.0.3286.2';
-Protocol.BakedInspectorBackendAPIChromeRev='8df4b4272105c1563292a931927d6f341ec3480c';
+Protocol.BakedInspectorBackendAPIChromeTag='65.0.3288.3';
+Protocol.BakedInspectorBackendAPIChromeRev='55d42e80a50141c6ca9e64f64ce40ef9e06aee92';
 Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerEnum("Accessibility.AXValueType", {Boolean: "boolean", Tristate: "tristate", BooleanOrUndefined: "booleanOrUndefined", Idref: "idref", IdrefList: "idrefList", Integer: "integer", Node: "node", NodeList: "nodeList", Number: "number", String: "string", ComputedString: "computedString", Token: "token", TokenList: "tokenList", DomRelation: "domRelation", Role: "role", InternalRole: "internalRole", ValueUndefined: "valueUndefined"});\n'
 + 'Protocol.inspectorBackend.registerEnum("Accessibility.AXValueSourceType", {Attribute: "attribute", Implicit: "implicit", Style: "style", Contents: "contents", Placeholder: "placeholder", RelatedElement: "relatedElement"});\n'
@@ -184,6 +184,7 @@ Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerEnum("IndexedDB.KeyPathType", {Null: "null", String: "string", Array: "array"});\n'
 + 'Protocol.inspectorBackend.registerCommand("IndexedDB.clearObjectStore", [{"name": "securityOrigin", "type": "string", "optional": false}, {"name": "databaseName", "type": "string", "optional": false}, {"name": "objectStoreName", "type": "string", "optional": false}], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("IndexedDB.deleteDatabase", [{"name": "securityOrigin", "type": "string", "optional": false}, {"name": "databaseName", "type": "string", "optional": false}], [], false);\n'
++ 'Protocol.inspectorBackend.registerCommand("IndexedDB.deleteObjectStoreEntries", [{"name": "securityOrigin", "type": "string", "optional": false}, {"name": "databaseName", "type": "string", "optional": false}, {"name": "objectStoreName", "type": "string", "optional": false}, {"name": "keyRange", "type": "object", "optional": false}], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("IndexedDB.disable", [], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("IndexedDB.enable", [], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("IndexedDB.requestData", [{"name": "securityOrigin", "type": "string", "optional": false}, {"name": "databaseName", "type": "string", "optional": false}, {"name": "objectStoreName", "type": "string", "optional": false}, {"name": "indexName", "type": "string", "optional": false}, {"name": "skipCount", "type": "number", "optional": false}, {"name": "pageSize", "type": "number", "optional": false}, {"name": "keyRange", "type": "object", "optional": true}], ["objectStoreDataEntries", "hasMore"], false);\n'
