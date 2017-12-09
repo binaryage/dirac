@@ -39,11 +39,6 @@
     border-bottom: 1px solid #ccc;
 }
 
-.indexed-db-data-view .data-view-toolbar .key-input {
-    margin: auto 0;
-    width: 200px;
-}
-
 .indexed-db-data-view .data-grid {
     flex: auto;
 }
@@ -58,6 +53,11 @@
 
 .indexed-db-data-view .data-grid .data-container tr:nth-last-child(2) td {
     border-bottom: 1px solid #aaa;
+}
+
+.indexed-db-data-view .data-grid:focus .data-container tr.selected {
+    background-color: #cdddf5;
+    color: inherit;
 }
 
 .indexed-db-data-view .section,
@@ -82,4 +82,8 @@
     color: rgb(196, 26, 22);
     white-space: pre-wrap;
     unicode-bidi: -webkit-isolate;
+}
+
+.resources-toolbar {
+    padding-right: 10px;
 }

@@ -135,62 +135,50 @@ PerformanceTestRunner.runWhenTimelineIsReady = function(callback) {
   TestRunner.addSniffer(UI.panels.timeline, 'loadingComplete', () => callback());
 };
 
-PerformanceTestRunner.startTimeline = function(callback) {
-  var panel = UI.panels.timeline;
-  TestRunner.addSniffer(panel, '_recordingStarted', callback);
+PerformanceTestRunner.startTimeline = function() {
+  const panel = UI.panels.timeline;
   panel._toggleRecording();
+  return TestRunner.addSnifferPromise(panel, '_recordingStarted');
 };
 
-PerformanceTestRunner.stopTimeline = function(callback) {
-  PerformanceTestRunner.runWhenTimelineIsReady(callback);
-  UI.panels.timeline._toggleRecording();
+PerformanceTestRunner.stopTimeline = function() {
+  return new Promise(resolve => {
+    PerformanceTestRunner.runWhenTimelineIsReady(resolve);
+    UI.panels.timeline._toggleRecording();
+  });
 };
 
-PerformanceTestRunner.evaluateWithTimeline = function(actions, doneCallback) {
-  PerformanceTestRunner.startTimeline(step1);
-
-  async function step1() {
-    await TestRunner.evaluateInPageAnonymously(actions);
-    PerformanceTestRunner.stopTimeline(doneCallback);
-  }
+PerformanceTestRunner.evaluateWithTimeline = async function(actions) {
+  await PerformanceTestRunner.startTimeline();
+  await TestRunner.evaluateInPageAnonymously(actions);
+  await PerformanceTestRunner.stopTimeline();
 };
 
-PerformanceTestRunner.invokeAsyncWithTimeline = function(functionName, doneCallback) {
-  PerformanceTestRunner.startTimeline(step1);
-
-  function step1() {
-    TestRunner.callFunctionInPageAsync(functionName).then(step2);
-  }
-
-  function step2() {
-    PerformanceTestRunner.stopTimeline(TestRunner.safeWrap(doneCallback));
-  }
+PerformanceTestRunner.invokeAsyncWithTimeline = async function(functionName) {
+  await PerformanceTestRunner.startTimeline();
+  await TestRunner.callFunctionInPageAsync(functionName);
+  await PerformanceTestRunner.stopTimeline();
 };
 
-PerformanceTestRunner.performActionsAndPrint = function(actions, typeName, includeTimeStamps) {
-  function callback() {
-    PerformanceTestRunner.printTimelineRecordsWithDetails(typeName);
-
-    if (includeTimeStamps) {
-      TestRunner.addResult('Timestamp records: ');
-      PerformanceTestRunner.printTimestampRecords(typeName);
-    }
-
-    TestRunner.completeTest();
+PerformanceTestRunner.performActionsAndPrint = async function(actions, typeName, includeTimeStamps) {
+  await PerformanceTestRunner.evaluateWithTimeline(actions);
+  PerformanceTestRunner.printTimelineRecordsWithDetails(typeName);
+  if (includeTimeStamps) {
+    TestRunner.addResult('Timestamp records: ');
+    PerformanceTestRunner.printTimestampRecords(typeName);
   }
-
-  PerformanceTestRunner.evaluateWithTimeline(actions, callback);
+  TestRunner.completeTest();
 };
 
 PerformanceTestRunner.printTimelineRecords = function(name) {
-  for (let event of PerformanceTestRunner.timelineModel().inspectedTargetEvents()) {
+  for (const event of PerformanceTestRunner.timelineModel().inspectedTargetEvents()) {
     if (event.name === name)
       PerformanceTestRunner.printTraceEventProperties(event);
   }
 };
 
 PerformanceTestRunner.printTimelineRecordsWithDetails = function(name) {
-  for (let event of PerformanceTestRunner.timelineModel().inspectedTargetEvents()) {
+  for (const event of PerformanceTestRunner.timelineModel().inspectedTargetEvents()) {
     if (name === event.name)
       PerformanceTestRunner.printTraceEventPropertiesWithDetails(event);
   }
