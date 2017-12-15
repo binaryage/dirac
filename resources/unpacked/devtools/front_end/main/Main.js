@@ -141,7 +141,6 @@ Main.Main = class {
     Runtime.experiments.register('timelineFlowEvents', 'Timeline: flow events', true);
     Runtime.experiments.register('timelineInvalidationTracking', 'Timeline: invalidation tracking', true);
     Runtime.experiments.register('timelineKeepHistory', 'Timeline: keep recording history');
-    Runtime.experiments.register('timelineMultipleMainViews', 'Timeline: multiple main views');
     Runtime.experiments.register('timelinePaintTimingMarkers', 'Timeline: paint timing markers', true);
     Runtime.experiments.register('timelinePerFrameTrack', 'Timeline: per-frame tracks', true);
     Runtime.experiments.register('timelineShowAllEvents', 'Timeline: show all events', true);
@@ -164,7 +163,7 @@ Main.Main = class {
 
     Runtime.experiments.setDefaultExperiments([
       'accessibilityInspection', 'colorContrastRatio', 'logManagement', 'performanceMonitor', 'persistence2',
-      'stepIntoAsync'
+      'stepIntoAsync', 'timelineKeepHistory'
     ]);
   }
 
@@ -287,8 +286,12 @@ Main.Main = class {
       handler.handleQueryParam(value);
     }
 
-    // Allow UI cycles to repaint prior to creating connection.
-    setTimeout(this._initializeTarget.bind(this), 0);
+    if (Host.isStartupTest()) {
+      setTimeout(() => InspectorFrontendHost.readyForTest(), 0);
+    } else {
+      // Allow UI cycles to repaint prior to creating connection.
+      setTimeout(this._initializeTarget.bind(this), 0);
+    }
     Main.Main.timeEnd('Main._showAppUI');
     dirac.feedback("devtools ready");
   }
@@ -297,7 +300,8 @@ Main.Main = class {
     Main.Main.time('Main._initializeTarget');
     SDK.targetManager.connectToMainTarget(webSocketConnectionLost);
 
-    InspectorFrontendHost.readyForTest();
+    if (!Host.isStartupTest())
+      InspectorFrontendHost.readyForTest();
     // Asynchronously run the extensions.
     setTimeout(this._lateInitialization.bind(this), 100);
     Main.Main.timeEnd('Main._initializeTarget');

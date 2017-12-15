@@ -165,12 +165,9 @@ Sources.UISourceCodeFrame = class extends SourceFrame.SourceFrame {
       return true;
     if (this._uiSourceCode.project().isServiceProject())
       return false;
-    var networkPersistenceProject = Persistence.networkPersistenceManager.activeProject();
-    if (this._uiSourceCode.project().type() === Workspace.projectTypes.Network && networkPersistenceProject) {
-      var projectDomain = Persistence.networkPersistenceManager.domainForProject(networkPersistenceProject);
-      if (projectDomain)
-        return true;
-    }
+    if (this._uiSourceCode.project().type() === Workspace.projectTypes.Network &&
+        Persistence.networkPersistenceManager.active())
+      return true;
     return this._uiSourceCode.contentType() !== Common.resourceTypes.Document;
   }
 
@@ -255,10 +252,15 @@ Sources.UISourceCodeFrame = class extends SourceFrame.SourceFrame {
     var binding = Persistence.persistence.binding(this._uiSourceCode);
     var pluginUISourceCode = binding ? binding.network : this._uiSourceCode;
 
+    // The order of these plugins matters for toolbar items
     if (Sources.CSSPlugin.accepts(pluginUISourceCode))
       this._plugins.push(new Sources.CSSPlugin(this.textEditor));
     if (Sources.JavaScriptCompilerPlugin.accepts(pluginUISourceCode))
       this._plugins.push(new Sources.JavaScriptCompilerPlugin(this.textEditor, pluginUISourceCode));
+    if (Sources.SnippetsPlugin.accepts(pluginUISourceCode))
+      this._plugins.push(new Sources.SnippetsPlugin(this.textEditor, pluginUISourceCode));
+
+    this.dispatchEventToListeners(Sources.UISourceCodeFrame.Events.ToolbarItemsChanged);
   }
 
   _disposePlugins() {
@@ -496,6 +498,24 @@ Sources.UISourceCodeFrame = class extends SourceFrame.SourceFrame {
       if (this._uiSourceCode.decorationsForType(type))
         this._decorateTypeThrottled(type);
     }
+  }
+
+  /**
+   * @override
+   * @return {!Array<!UI.ToolbarItem>}
+   */
+  syncToolbarItems() {
+    var leftToolbarItems = super.syncToolbarItems();
+    var rightToolbarItems = [];
+    for (var plugin of this._plugins) {
+      leftToolbarItems.pushAll(plugin.leftToolbarItems());
+      rightToolbarItems.pushAll(plugin.rightToolbarItems());
+    }
+
+    if (!rightToolbarItems.length)
+      return leftToolbarItems;
+
+    return [...leftToolbarItems, new UI.ToolbarSeparator(true), ...rightToolbarItems];
   }
 };
 
@@ -737,6 +757,23 @@ Sources.UISourceCodeFrame.Plugin = class {
   static accepts(uiSourceCode) {
   }
 
+  /**
+   * @return {!Array<!UI.ToolbarItem>}
+   */
+  rightToolbarItems() {
+  }
+
+  /**
+   * @return {!Array<!UI.ToolbarItem>}
+   */
+  leftToolbarItems() {
+  }
+
   dispose() {
   }
+};
+
+/** @enum {symbol} */
+Sources.UISourceCodeFrame.Events = {
+  ToolbarItemsChanged: Symbol('ToolbarItemsChanged')
 };
