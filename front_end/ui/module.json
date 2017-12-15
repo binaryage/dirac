@@ -6,6 +6,7 @@
         "host"
     ],
     "scripts": [
+        "XElement.js",
         "Widget.js",
         "View.js",
         "treeoutline.js",
@@ -22,6 +23,7 @@
         "FilterBar.js",
         "FilterSuggestionBuilder.js",
         "ForwardedInputEventHandler.js",
+        "Fragment.js",
         "HistoryInput.js",
         "Icon.js",
         "Infobar.js",
