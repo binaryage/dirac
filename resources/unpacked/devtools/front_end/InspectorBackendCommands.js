@@ -1,5 +1,5 @@
-Protocol.BakedInspectorBackendAPIChromeTag='65.0.3299.3';
-Protocol.BakedInspectorBackendAPIChromeRev='f920e13ac4b3b345e20c70d113d0874176a17106';
+Protocol.BakedInspectorBackendAPIChromeTag='65.0.3300.2';
+Protocol.BakedInspectorBackendAPIChromeRev='d1842c49ccba4a7659d8503b3defa9ae3e1b1658';
 Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerEnum("Accessibility.AXValueType", {Boolean: "boolean", Tristate: "tristate", BooleanOrUndefined: "booleanOrUndefined", Idref: "idref", IdrefList: "idrefList", Integer: "integer", Node: "node", NodeList: "nodeList", Number: "number", String: "string", ComputedString: "computedString", Token: "token", TokenList: "tokenList", DomRelation: "domRelation", Role: "role", InternalRole: "internalRole", ValueUndefined: "valueUndefined"});\n'
 + 'Protocol.inspectorBackend.registerEnum("Accessibility.AXValueSourceType", {Attribute: "attribute", Implicit: "implicit", Style: "style", Contents: "contents", Placeholder: "placeholder", RelatedElement: "relatedElement"});\n'
@@ -373,6 +373,7 @@ Protocol.BakedInspectorBackendAPI=''
 + 'Protocol.inspectorBackend.registerEvent("Security.securityStateChanged", ["securityState", "schemeIsCryptographic", "explanations", "insecureContentStatus", "summary"]);\n'
 + 'Protocol.inspectorBackend.registerCommand("Security.disable", [], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Security.enable", [], [], false);\n'
++ 'Protocol.inspectorBackend.registerCommand("Security.setIgnoreCertificateErrors", [{"name": "ignore", "type": "boolean", "optional": false}], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Security.handleCertificateError", [{"name": "eventId", "type": "number", "optional": false}, {"name": "action", "type": "string", "optional": false}], [], false);\n'
 + 'Protocol.inspectorBackend.registerCommand("Security.setOverrideCertificateErrors", [{"name": "override", "type": "boolean", "optional": false}], [], false);\n'
 + 'Protocol.inspectorBackend.registerEnum("ServiceWorker.ServiceWorkerVersionRunningStatus", {Stopped: "stopped", Starting: "starting", Running: "running", Stopping: "stopping"});\n'
