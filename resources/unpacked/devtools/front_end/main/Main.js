@@ -283,12 +283,8 @@ Main.Main = class {
       handler.handleQueryParam(value);
     }
 
-    if (Host.isStartupTest()) {
-      setTimeout(() => InspectorFrontendHost.readyForTest(), 0);
-    } else {
-      // Allow UI cycles to repaint prior to creating connection.
-      setTimeout(this._initializeTarget.bind(this), 0);
-    }
+    // Allow UI cycles to repaint prior to creating connection.
+    setTimeout(this._initializeTarget.bind(this), 0);
     Main.Main.timeEnd('Main._showAppUI');
     dirac.feedback("devtools ready");
   }
@@ -296,9 +292,11 @@ Main.Main = class {
   _initializeTarget() {
     Main.Main.time('Main._initializeTarget');
     SDK.targetManager.connectToMainTarget(webSocketConnectionLost);
+    InspectorFrontendHost.connectionReady();
 
-    if (!Host.isStartupTest())
-      InspectorFrontendHost.readyForTest();
+    // Used for browser tests.
+    InspectorFrontendHost.readyForTest();
+
     // Asynchronously run the extensions.
     setTimeout(this._lateInitialization.bind(this), 100);
     Main.Main.timeEnd('Main._initializeTarget');
@@ -905,7 +903,8 @@ Main.TargetCrashedScreen = class extends UI.VBox {
 Main.BackendSettingsSync = class {
   constructor() {
     this._autoAttachSetting = Common.settings.moduleSetting('autoAttachToCreatedPages');
-    this._autoAttachSetting.addChangeListener(this._update, this);
+    this._autoAttachSetting.addChangeListener(this._updateAutoAttach, this);
+    this._updateAutoAttach();
 
     this._adBlockEnabledSetting = Common.settings.moduleSetting('network.adBlockingEnabled');
     this._adBlockEnabledSetting.addChangeListener(this._update, this);
@@ -917,8 +916,11 @@ Main.BackendSettingsSync = class {
    * @param {!SDK.Target} target
    */
   _updateTarget(target) {
-    target.pageAgent().setAutoAttachToCreatedPages(this._autoAttachSetting.get());
     target.pageAgent().setAdBlockingEnabled(this._adBlockEnabledSetting.get());
+  }
+
+  _updateAutoAttach() {
+    InspectorFrontendHost.setOpenNewWindowForPopups(this._autoAttachSetting.get());
   }
 
   _update() {

@@ -47,8 +47,11 @@ all_devtools_files = [
   "front_end/audits2/lighthouse/renderer/dom.js",
   "front_end/audits2/lighthouse/renderer/details-renderer.js",
   "front_end/audits2/lighthouse/renderer/category-renderer.js",
+  "front_end/audits2/lighthouse/renderer/crc-details-renderer.js",
   "front_end/audits2/lighthouse/renderer/report-renderer.js",
   "front_end/audits2/lighthouse/renderer/util.js",
+  "front_end/audits2/lighthouse/report-styles.css",
+  "front_end/audits2/lighthouse/templates.html",
   "front_end/audits2/module.json",
   "front_end/audits2_test_runner/Audits2TestRunner.js",
   "front_end/audits2_test_runner/module.json",
@@ -98,11 +101,13 @@ all_devtools_files = [
   "front_end/cm_modes/clojure.js",
   "front_end/cm_modes/coffeescript.js",
   "front_end/cm_modes/DefaultCodeMirrorMimeMode.js",
+  "front_end/cm_modes/jsx.js",
   "front_end/cm_modes/livescript.js",
   "front_end/cm_modes/module.json",
   "front_end/cm_modes/php.js",
   "front_end/cm_modes/python.js",
   "front_end/cm_modes/shell.js",
+  "front_end/cm_modes/stylus.js",
   "front_end/cm_web_modes/css.js",
   "front_end/cm_web_modes/htmlembedded.js",
   "front_end/cm_web_modes/htmlmixed.js",
@@ -217,6 +222,7 @@ all_devtools_files = [
   "front_end/elements/module.json",
   "front_end/elements/platformFontsWidget.css",
   "front_end/elements/PlatformFontsWidget.js",
+  "front_end/elements/propertiesWidget.css",
   "front_end/elements/PropertiesWidget.js",
   "front_end/elements/StylePropertyHighlighter.js",
   "front_end/elements/stylesSectionTree.css",
@@ -250,10 +256,10 @@ all_devtools_files = [
   "front_end/event_listeners/EventListenersView.js",
   "front_end/event_listeners/module.json",
   "front_end/extensions/ExtensionAPI.js",
-
   "front_end/extensions/ExtensionPanel.js",
   "front_end/extensions/ExtensionRegistryStub.js",
   "front_end/extensions/ExtensionServer.js",
+  "front_end/extensions/ExtensionTraceProvider.js",
   "front_end/extensions/ExtensionView.js",
   "front_end/extensions/module.json",
   "front_end/extensions_test_runner/ExtensionsNetworkTestRunner.js",
@@ -376,6 +382,7 @@ all_devtools_files = [
   "front_end/network/NetworkPanel.js",
   "front_end/network/NetworkTimeCalculator.js",
   "front_end/network/networkTimingTable.css",
+  "front_end/network/networkWaterfallColumn.css",
   "front_end/network/NetworkWaterfallColumn.js",
   "front_end/network/requestCookiesView.css",
   "front_end/network/RequestCookiesView.js",
@@ -408,7 +415,6 @@ all_devtools_files = [
   "front_end/object_ui/RemoteObjectPreviewFormatter.js",
   "front_end/perf_ui/chartViewport.css",
   "front_end/perf_ui/ChartViewport.js",
-  "front_end/perf_ui/filmStripDialog.css",
   "front_end/perf_ui/filmStripView.css",
   "front_end/perf_ui/FilmStripView.js",
   "front_end/perf_ui/flameChart.css",
@@ -549,6 +555,7 @@ all_devtools_files = [
   "front_end/sdk/ScreenCaptureModel.js",
   "front_end/sdk/Script.js",
   "front_end/sdk/SecurityOriginManager.js",
+  "front_end/sdk/ServerTiming.js",
   "front_end/sdk/ServiceWorkerCacheModel.js",
   "front_end/sdk/ServiceWorkerManager.js",
   "front_end/sdk/SourceMap.js",
@@ -600,6 +607,8 @@ all_devtools_files = [
   "front_end/sources/CallStackSidebarPane.js",
   "front_end/sources/CSSPlugin.js",
   "front_end/sources/dialog.css",
+  "front_end/sources/debuggerPausedMessage.css",
+  "front_end/sources/DebuggerPausedMessage.js",
   "front_end/sources/EditingLocationHistoryManager.js",
   "front_end/sources/eventListenerBreakpoints.css",
   "front_end/sources/EventListenerBreakpointsSidebarPane.js",
@@ -679,6 +688,7 @@ all_devtools_files = [
   "front_end/timeline_model/TracingLayerTree.js",
   "front_end/timeline/CountersGraph.js",
   "front_end/timeline/EventsTimelineTreeView.js",
+  "front_end/timeline/ExtensionTracingSession.js",
   "front_end/timeline/historyToolbarButton.css",
   "front_end/timeline/invalidationsTree.css",
   "front_end/timeline/module.json",
@@ -796,6 +806,7 @@ all_devtools_files = [
   "front_end/ui/Widget.js",
   "front_end/ui/XElement.js",
   "front_end/ui/XLink.js",
+  "front_end/ui/XWidget.js",
   "front_end/ui/ZoomManager.js",
   "front_end/worker_service/ServiceDispatcher.js",
   "front_end/workspace/FileManager.js",
@@ -1211,17 +1222,21 @@ group("devtools_closure_compile") {
   ]
 }
 
-group("devtools_eslint") {
-  data = [
-    # Needed for isolate script to execute.
-    ".eslintignore",
-    ".eslintrc.js",
-    "front_end/",
-    "scripts/buildbot/run_eslint.py",
-    "scripts/local_node/",
-    "//testing/scripts/common.py",
-    "//testing/scripts/run_devtools_check.py",
-    "//testing/xvfb.py",
-    "//third_party/devtools-node-modules/",
-  ]
+if (is_linux && !is_chromeos) {
+  group("devtools_eslint") {
+    data = [
+      # Needed for isolate script to execute.
+      ".eslintignore",
+      ".eslintrc.js",
+      "front_end/",
+      "scripts/lint_javascript.py",
+      "scripts/local_node.py",
+      "//testing/scripts/common.py",
+      "//testing/scripts/run_devtools_check.py",
+      "//testing/xvfb.py",
+      "//third_party/devtools-node-modules/",
+      "//third_party/node/node.py",
+      "//third_party/node/linux/node-linux-x64/",
+    ]
+  }
 }
